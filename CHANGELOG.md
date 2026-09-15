@@ -1,5 +1,19 @@
 # Changelog
 
+## v3.2.8
+- **Consolidated Single Updater Changelog Link**:
+  - Removed duplicate inline changelog link from the update notes HTML body, maintaining a single, clean **"View Full Changelog in Browser ↗"** link in the release header.
+- **"Clear Everything" Master Cleanup Control**:
+  - Added a prominent **Clear Everything** button at the bottom of the "Cleanup Data" Preferences page (`Settings > Preferences > Cleanup Data`).
+  - Completely purges all downloaded AI models, clears all temporary audio/video caches, resets user preferences to factory defaults, and clears app logs and updater installer packages in a single operation with confirmation.
+- **Updated "All" & "Select" Button Labels**:
+  - Standardized button wording across the Cleanup Data controls for visual clarity:
+    - **Clear All Downloaded AI Models…**
+    - **Clear Select AI Models…** (renamed from Open Model Manager)
+    - **Clear All Temporary Caches (Waveforms, Audio Extracts, & Thumbnails)…**
+    - **Clear All User Preferences (Reset Settings to Defaults)…**
+    - **Clear All other App Data, Activity Logs & Update Packages…**
+
 ## v3.2.7
 - **Centralized "Cleanup Data" Tab in Preferences**:
   - Added a dedicated "Cleanup Data" tab in the Preferences dialog (`Settings > Preferences > Cleanup Data`), consolidating all storage and application data management options in a clean, unified location.

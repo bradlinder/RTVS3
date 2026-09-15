@@ -1925,12 +1925,12 @@ class PlaybackPreferencesMixin:
         cleanup_form = QVBoxLayout(cleanup_group)
         cleanup_form.setSpacing(10)
 
-        # 1. Clear Downloaded AI Models
-        clear_models_btn = QPushButton("Clear Downloaded AI Models…")
+        # 1. Clear All Downloaded AI Models
+        clear_models_btn = QPushButton("Clear All Downloaded AI Models…")
         clear_models_btn.setToolTip("Purge all downloaded speech recognition and machine translation model files from disk.")
         def _on_clear_models():
             ans = QMessageBox.question(
-                dialog, "Clear Downloaded AI Models",
+                dialog, "Clear All Downloaded AI Models",
                 "Are you sure you want to delete all locally downloaded AI model files (Whisper, Parakeet, OPUS-MT)?\n\n"
                 "Models can be downloaded again when needed.",
                 QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
@@ -1945,9 +1945,9 @@ class PlaybackPreferencesMixin:
         clear_models_btn.clicked.connect(_on_clear_models)
         cleanup_form.addWidget(clear_models_btn)
 
-        # 2. Open Model Manager
-        open_mgr_btn = QPushButton("Open Model Manager…")
-        open_mgr_btn.setToolTip("Open the detailed Model Management window to view exact disk sizes or delete individual models.")
+        # 2. Clear Select AI Models (Model Manager)
+        open_mgr_btn = QPushButton("Clear Select AI Models…")
+        open_mgr_btn.setToolTip("Open the detailed Model Management window to inspect exact disk sizes or delete specific individual models.")
         def _on_open_mgr():
             dialog.accept()
             if hasattr(self, "open_model_cleanup_dialog"):
@@ -1955,12 +1955,12 @@ class PlaybackPreferencesMixin:
         open_mgr_btn.clicked.connect(_on_open_mgr)
         cleanup_form.addWidget(open_mgr_btn)
 
-        # 3. Clear Cache
-        clear_cache_btn = QPushButton("Clear Temporary Caches (Waveforms, Audio Extracts, & Thumbnails)…")
+        # 3. Clear All Temporary Caches
+        clear_cache_btn = QPushButton("Clear All Temporary Caches (Waveforms, Audio Extracts, & Thumbnails)…")
         clear_cache_btn.setToolTip("Delete generated waveform peak files, temporary audio segment extracts, and video thumbnails to free disk space.")
         def _on_clear_cache():
             ans = QMessageBox.question(
-                dialog, "Clear Caches",
+                dialog, "Clear All Temporary Caches",
                 "Are you sure you want to delete all temporary audio extracts, waveform peak files, and video thumbnail caches?",
                 QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
                 QMessageBox.StandardButton.No
@@ -1982,12 +1982,12 @@ class PlaybackPreferencesMixin:
         clear_cache_btn.clicked.connect(_on_clear_cache)
         cleanup_form.addWidget(clear_cache_btn)
 
-        # 4. Clear User Preferences
-        clear_prefs_btn = QPushButton("Clear User Preferences (Reset Settings to Defaults)…")
+        # 4. Clear All User Preferences
+        clear_prefs_btn = QPushButton("Clear All User Preferences (Reset Settings to Defaults)…")
         clear_prefs_btn.setToolTip("Reset all user preferences and options back to factory defaults.")
         def _on_clear_prefs():
             ans = QMessageBox.question(
-                dialog, "Clear User Preferences",
+                dialog, "Clear All User Preferences",
                 "Are you sure you want to reset all user preferences and settings to factory defaults?",
                 QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
                 QMessageBox.StandardButton.No
@@ -2004,8 +2004,8 @@ class PlaybackPreferencesMixin:
         clear_prefs_btn.clicked.connect(_on_clear_prefs)
         cleanup_form.addWidget(clear_prefs_btn)
 
-        # 5. Clear App Data & Activity Logs
-        clear_logs_btn = QPushButton("Clear App Data, Activity Logs & Update Packages…")
+        # 5. Clear All other App Data, Activity Logs & Update Packages
+        clear_logs_btn = QPushButton("Clear All other App Data, Activity Logs & Update Packages…")
         clear_logs_btn.setToolTip("Delete application activity logs, crash reports, and downloaded update installer packages.")
         def _on_clear_logs():
             ans = QMessageBox.question(
@@ -2043,6 +2043,79 @@ class PlaybackPreferencesMixin:
                     QMessageBox.warning(dialog, "Clear App Data Error", f"Failed to clear app data: {exc}")
         clear_logs_btn.clicked.connect(_on_clear_logs)
         cleanup_form.addWidget(clear_logs_btn)
+
+        # 6. Clear Everything Button
+        clear_everything_btn = QPushButton("Clear Everything (All Models, Caches, Preferences & App Data)…")
+        clear_everything_btn.setToolTip("Completely purge all downloaded AI models, temporary caches, reset all user preferences to defaults, and clear app logs and updater files.")
+        clear_everything_btn.setStyleSheet("color: #b3261e; font-weight: 600; padding: 6px;")
+        def _on_clear_everything():
+            ans = QMessageBox.warning(
+                dialog, "Clear Everything",
+                "<b>Are you sure you want to CLEAR EVERYTHING?</b><br><br>"
+                "This action will perform a complete cleanup:<br>"
+                "• Delete all downloaded AI models (Whisper, Parakeet, OPUS-MT)<br>"
+                "• Delete all temporary caches (waveforms, audio extracts, thumbnails)<br>"
+                "• Reset all user preferences and settings to factory defaults<br>"
+                "• Purge all application activity logs and downloaded installer packages<br><br>"
+                "<b>This cannot be undone. Do you wish to proceed?</b>",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                QMessageBox.StandardButton.No
+            )
+            if ans == QMessageBox.StandardButton.Yes:
+                summary_lines = []
+                # 1. Clear Caches
+                try:
+                    from prs_shared import purge_caches
+                    files_deleted, bytes_freed = purge_caches(clear_thumbnails=True, clear_waveforms=True, clear_audio_extracts=True)
+                    from updater import format_byte_size
+                    freed_str = format_byte_size(bytes_freed)
+                    summary_lines.append(f"• Temporary Caches: Cleared {files_deleted} files ({freed_str} reclaimed)")
+                except Exception as exc:
+                    summary_lines.append(f"• Temporary Caches: Error ({exc})")
+
+                # 2. Clear App Data & Logs
+                try:
+                    from updater import cleanup_old_installers, get_app_data_dir
+                    purged_installers = cleanup_old_installers(force_all=True)
+                    app_data = get_app_data_dir()
+                    logs_cleared = 0
+                    for file_path in app_data.glob("*.log"):
+                        try:
+                            file_path.unlink(missing_ok=True)
+                            logs_cleared += 1
+                        except Exception:
+                            pass
+                    for file_path in app_data.glob("*.txt"):
+                        if "activity" in file_path.name.lower() or "log" in file_path.name.lower():
+                            try:
+                                file_path.unlink(missing_ok=True)
+                                logs_cleared += 1
+                            except Exception:
+                                pass
+                    summary_lines.append(f"• App Data & Logs: Cleared {logs_cleared} log files and {purged_installers} update installer packages")
+                except Exception as exc:
+                    summary_lines.append(f"• App Data & Logs: Error ({exc})")
+
+                # 3. Clear User Preferences
+                try:
+                    self.settings_store.clear()
+                    self.settings_store.sync()
+                    summary_lines.append("• User Preferences: Reset all settings to factory defaults")
+                except Exception as exc:
+                    summary_lines.append(f"• User Preferences: Error ({exc})")
+
+                # 4. Clear Models
+                if hasattr(self, "purge_all_data_action"):
+                    self.purge_all_data_action(parent_widget=dialog)
+                    summary_lines.append("• AI Models: Purged downloaded AI models and model caches")
+
+                summary_msg = "Successfully cleared all requested data:\n\n" + "\n".join(summary_lines)
+                QMessageBox.information(dialog, "Clear Everything Complete", summary_msg)
+                dialog.accept()
+                self.open_preferences_dialog(initial_category="Cleanup Data")
+
+        clear_everything_btn.clicked.connect(_on_clear_everything)
+        cleanup_form.addWidget(clear_everything_btn)
 
         cleanup_layout.addWidget(cleanup_group)
         _add_custom_defaults_btn(cleanup_layout, "Cleanup Data Defaults")

@@ -56,7 +56,7 @@ try:
     )
 except Exception:
     APP_DISPLAY_NAME = "Radio & TV Segmenter"
-    PROJECT_VERSION = "3.2.7"
+    PROJECT_VERSION = "3.2.8"
     DEFAULT_GITHUB_REPO = "bradlinder/RTVS3"
 
     INTERNAL_APP_ID = "RadioTVStorySegmenter"
@@ -872,8 +872,7 @@ class CheckUpdateDialog(QDialog):
         formatted_body = body.replace("\r\n", "\n").replace("\n", "<br>")
         self.notes_browser.setHtml(
             f"<div style='font-family: sans-serif; line-height: 1.4;'>"
-            f"<b>Release:</b> {name} ({tag}) &nbsp;•&nbsp; "
-            f"<a href='{changelog_url}' style='color: #1976d2; font-weight: 500;'>Full Changelog ↗</a><br>"
+            f"<b>Release:</b> {name} ({tag})<br>"
             f"<hr style='border: 0; border-top: 1px solid #ddd;'>"
             f"{formatted_body}"
             f"</div>"

@@ -29,17 +29,16 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 --------------------------------------------------------------------------------
 TABLE OF CONTENTS & STATUS OVERVIEW
 --------------------------------------------------------------------------------
-1. Previous Release: Preferences GPU Acceleration, 100% Optional CUDA Across Transcription, Translation & Diarization (Completed in v3.2.6)
-   [x] 1.1 Dedicated GPU Acceleration Page in Preferences Dialog (`Settings > Preferences > GPU Acceleration` with real-time NVIDIA hardware detection)
-   [x] 1.2 Granular CUDA Tool Toggles (Independent checkboxes for Faster-Whisper ASR, MarianMT / CTranslate2 translation, and WeSpeaker / ONNX-GPU diarization)
-   [x] 1.3 100% Optional Architecture with 0 MB Disk Footprint when Disabled (Optional on-demand environment in `RuntimeManager` with instant uninstallation and CPU fallback)
-   [x] 1.4 Quick-Access "Purge All Downloaded Models & Cache Data" Action (Integrated in Tools menu and Preferences AI Models pane)
+1. Previous Release: Centralized "Cleanup Data" Tab in Preferences & Windows Installer UAC Fix (Completed in v3.2.7)
+   [x] 1.1 Centralized "Cleanup Data" Tab in Preferences (`Settings > Preferences > Cleanup Data` with controls to clear models, caches, user preferences, and app data logs)
+   [x] 1.2 Removal of Redundant Top-Level Purge Action (Kept centralized inside Model Manager and Cleanup Data tab)
+   [x] 1.3 Clickable Full Changelog URL Link in Updater Window (Direct `https://github.com/bradlinder/RTVS3/blob/main/CHANGELOG.md` browser launch)
+   [x] 1.4 Windows Installer Shell Launch & UAC Elevation Fix (`os.startfile()` in `updater.py` with default `max_to_keep=2` installer retention)
 
-2. Current Release: Centralized "Cleanup Data" Tab in Preferences, Clickable Changelog Link, and Windows Installer UAC Launch Fix (Completed in v3.2.7)
-   [x] 2.1 Centralized "Cleanup Data" Tab in Preferences (`Settings > Preferences > Cleanup Data` with controls to clear models, caches, user preferences, and app data logs)
-   [x] 2.2 Removal of Redundant Top-Level Purge Action (Kept centralized inside Model Manager and Cleanup Data tab)
-   [x] 2.3 Clickable Full Changelog URL Link in Updater Window (Direct `https://github.com/bradlinder/RTVS3/blob/main/CHANGELOG.md` browser launch)
-   [x] 2.4 Windows Installer Shell Launch & UAC Elevation Fix (`os.startfile()` in `updater.py` with default `max_to_keep=2` installer retention)
+2. Current Release: Consolidated Updater Link, Clear Everything Button & Standardized Cleanup Labels (Completed in v3.2.8)
+   [x] 2.1 Consolidated Single Updater Changelog Link (Removed duplicate link inside notes browser body)
+   [x] 2.2 Master "Clear Everything" Cleanup Button in Preferences (`Settings > Preferences > Cleanup Data` complete purge control)
+   [x] 2.3 Standardized "Clear All" & "Clear Select" Action Labels across Cleanup Data Controls
 
 3. Future Milestone: Expanded NLE & DAW Timeline Interchange (Phase 4 - Planned for v3.4) [NOT STARTED]
    [ ] 3.1 Cockos Reaper Project (.rpp) Generator
