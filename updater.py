@@ -11,6 +11,7 @@ Handles:
 from __future__ import annotations
 
 import json
+import logging
 import os
 import re
 import hashlib
@@ -21,6 +22,8 @@ import time
 import urllib.error
 import urllib.request
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 try:
     from prs_shared import (
@@ -56,7 +59,7 @@ try:
     )
 except Exception:
     APP_DISPLAY_NAME = "Radio & TV Segmenter"
-    PROJECT_VERSION = "3.2.10"
+    PROJECT_VERSION = "3.2.11"
     DEFAULT_GITHUB_REPO = "bradlinder/RTVS3"
 
     INTERNAL_APP_ID = "RadioTVStorySegmenter"

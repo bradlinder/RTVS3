@@ -29,16 +29,15 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 --------------------------------------------------------------------------------
 TABLE OF CONTENTS & STATUS OVERVIEW
 --------------------------------------------------------------------------------
-1. Previous Release: Aggressive Diarization & PyTorch Runtime Pruning (~70% Footprint Reduction) (Completed in v3.2.9)
-   [x] 1.1 Non-Runtime C++ Header & Build Metadata Stripping (`torch/include`, `torch/share`, `torch/bin`)
-   [x] 1.2 Distributed Training & Test Suite Pruning (`torch/distributed`, `torch/testing`, `scipy/tests`, `numpy/tests`)
-   [x] 2.3 GPU Compiler & CUDA Artifact Purging (`triton`, `nvidia` package folders and loose CUDA shared libraries)
-   [x] 1.4 Reduced `diarize_env` Footprint from ~2.0 GB down to ~500–650 MB without altering inference performance
+1. Previous Release: Robust Windows UAC Elevation & Installer Launch Fix (Completed in v3.2.10)
+   [x] 1.1 Explicit `ctypes.windll.shell32.ShellExecuteW` Windows Shell API integration
+   [x] 1.2 `"runas"` verb enforcement for reliable UAC administrative permission prompting
+   [x] 1.3 Correct working directory and execution state passing for Inno Setup installer startup
 
-2. Current Release: Robust Windows UAC Elevation & Installer Launch Fix (Completed in v3.2.10)
-   [x] 2.1 Explicit `ctypes.windll.shell32.ShellExecuteW` Windows Shell API integration
-   [x] 2.2 `"runas"` verb enforcement for reliable UAC administrative permission prompting
-   [x] 2.3 Correct working directory and execution state passing for Inno Setup installer startup
+2. Current Release: Fixed Updater Logger NameError & Seamless Download Cleanup (Completed in v3.2.11)
+   [x] 2.1 Standardized `logging` import & `logger` initialization in `updater.py`
+   [x] 2.2 Resolved `NameError: name 'logger' is not defined` during installer cache pruning (`cleanup_old_installers`)
+   [x] 2.3 Verified zero-crash background update downloads across Windows releases
 
 3. Future Milestone: Expanded NLE & DAW Timeline Interchange (Phase 4 - Planned for v3.4) [NOT STARTED]
    [ ] 3.1 Cockos Reaper Project (.rpp) Generator

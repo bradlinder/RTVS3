@@ -1,5 +1,10 @@
 # Changelog
 
+## v3.2.11
+- **Fixed Updater `logger` NameError Bug**:
+  - Imported `logging` and initialized `logger = logging.getLogger(__name__)` in `updater.py`.
+  - Resolved `NameError: name 'logger' is not defined` during updater download cache cleanup (`cleanup_old_installers`), enabling seamless non-blocking update downloads.
+
 ## v3.2.10
 - **Robust Windows UAC Elevation & Installer Launch Fix**:
   - Replaced basic shell execution in `launch_and_install` (`updater.py`) with explicit `ctypes.windll.shell32.ShellExecuteW` invocation using the `"runas"` verb on Windows.
