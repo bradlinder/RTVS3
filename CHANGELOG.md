@@ -1,5 +1,23 @@
 # Changelog
 
+## v3.2.7
+- **Centralized "Cleanup Data" Tab in Preferences**:
+  - Added a dedicated "Cleanup Data" tab in the Preferences dialog (`Settings > Preferences > Cleanup Data`), consolidating all storage and application data management options in a clean, unified location.
+  - Controls include:
+    - **Clear Downloaded AI Models**: Purge all locally downloaded Whisper ASR, Parakeet, and translation models.
+    - **Open Model Manager**: Open the detailed Model Management window for granular model inspection and deletion.
+    - **Clear Temporary Caches**: Wipe generated waveform peak files, temporary audio extracts, and video thumbnails to reclaim storage.
+    - **Clear User Preferences**: Reset application options and QSettings back to factory defaults with confirmation.
+    - **Clear App Data & Activity Logs**: Purge log files, crash reports, and downloaded update installer packages from AppData.
+  - Removed redundant "Purge All Models" item from the top-level Tools menu, keeping it centralized in the Model Manager and Cleanup Data tab.
+- **Clickable Full Changelog URL Link**:
+  - Upgraded the Check for Updates window (`Help > Check for Updates…`) to feature a prominent, clickable "View Full Changelog in Browser ↗" link above the release notes and inside the release summary.
+  - Clicking opens `https://github.com/bradlinder/RTVS3/blob/main/CHANGELOG.md` directly in the default web browser.
+- **Windows Installer Launch & UAC Elevation Fix**:
+  - Updated `launch_and_install` in `updater.py` to launch downloaded installers on Windows via `os.startfile()`.
+  - Fixes Windows Shell API execution, ensuring UAC administrator elevation permission prompts display cleanly and launch the installer window seamlessly after authorization.
+  - Adjusted `cleanup_old_installers()` default retention (`max_to_keep=2`) to preserve recent downloaded installer packages in AppData.
+
 ## v3.2.6
 - **Preferences GPU Acceleration Panel & Granular CUDA Tool Toggles**:
   - Relocated GPU acceleration configuration to a dedicated "GPU Acceleration" page inside the main Preferences dialog (`Settings > Preferences > GPU Acceleration`).

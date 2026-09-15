@@ -1252,7 +1252,7 @@ class PlaybackPreferencesMixin:
         # Left category tree / list
         cat_list = QListWidget(dialog)
         cat_list.setFixedWidth(160)
-        categories = ["General", "Keyboard Shortcuts", "Audio Hardware", "Updates & GitHub", "AI Models", "GPU Acceleration", "Playback & Timeline", "Detection", "Batch Processing"]
+        categories = ["General", "Keyboard Shortcuts", "Audio Hardware", "Updates & GitHub", "AI Models", "GPU Acceleration", "Playback & Timeline", "Detection", "Batch Processing", "Cleanup Data"]
         show_wp = hasattr(self, "plugin_manager") and self.plugin_manager.is_plugin_enabled("wordpress")
         show_yt = hasattr(self, "plugin_manager") and self.plugin_manager.is_plugin_enabled("youtube")
         if show_wp:
@@ -1582,7 +1582,7 @@ class PlaybackPreferencesMixin:
 
         mod_layout.addLayout(mod_form)
 
-        manage_models_btn = QPushButton("Open Full Model Manager (Download / Remove Models)…")
+        manage_models_btn = QPushButton("Open Model Manager (Download / Remove Models)…")
         manage_models_btn.setToolTip("View exact disk sizes, pre-download, or delete local models.")
         def _open_mgr():
             dialog.accept()
@@ -1590,18 +1590,6 @@ class PlaybackPreferencesMixin:
                 self.open_model_cleanup_dialog()
         manage_models_btn.clicked.connect(_open_mgr)
         mod_layout.addWidget(manage_models_btn)
-
-        purge_models_btn = QPushButton("Purge All Downloaded Models & Cache Data…")
-        purge_models_btn.setToolTip("Delete all downloaded models, log files, updater cache, and translation runtimes to completely free up disk space.")
-        purge_models_btn.setStyleSheet("color: #b3261e; font-weight: 500;")
-        def _purge_data_prefs():
-            if hasattr(self, "purge_all_data_action"):
-                self.purge_all_data_action(parent_widget=dialog)
-            elif hasattr(self, "open_model_cleanup_dialog"):
-                dialog.accept()
-                self.open_model_cleanup_dialog()
-        purge_models_btn.clicked.connect(_purge_data_prefs)
-        mod_layout.addWidget(purge_models_btn)
 
         _add_custom_defaults_btn(mod_layout, "AI Models")
         mod_layout.addStretch()
@@ -1920,6 +1908,147 @@ class PlaybackPreferencesMixin:
         batch_layout.addStretch()
         stack.addWidget(page_batch)
 
+        # 7b. Cleanup Data Page
+        page_cleanup = QWidget()
+        cleanup_layout = QVBoxLayout(page_cleanup)
+        cleanup_layout.setSpacing(12)
+
+        cleanup_desc = QLabel(
+            "<b>Storage & Application Data Cleanup</b><br>"
+            "<span style='color: #64748b; font-size: 12px;'>"
+            "Manage local disk space by clearing downloaded AI model weights, temporary media caches, user preferences, or application activity logs.</span>"
+        )
+        cleanup_desc.setWordWrap(True)
+        cleanup_layout.addWidget(cleanup_desc)
+
+        cleanup_group = QGroupBox("Data Management & Cleanup Controls")
+        cleanup_form = QVBoxLayout(cleanup_group)
+        cleanup_form.setSpacing(10)
+
+        # 1. Clear Downloaded AI Models
+        clear_models_btn = QPushButton("Clear Downloaded AI Models…")
+        clear_models_btn.setToolTip("Purge all downloaded speech recognition and machine translation model files from disk.")
+        def _on_clear_models():
+            ans = QMessageBox.question(
+                dialog, "Clear Downloaded AI Models",
+                "Are you sure you want to delete all locally downloaded AI model files (Whisper, Parakeet, OPUS-MT)?\n\n"
+                "Models can be downloaded again when needed.",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                QMessageBox.StandardButton.No
+            )
+            if ans == QMessageBox.StandardButton.Yes:
+                if hasattr(self, "purge_all_data_action"):
+                    self.purge_all_data_action(parent_widget=dialog)
+                elif hasattr(self, "open_model_cleanup_dialog"):
+                    dialog.accept()
+                    self.open_model_cleanup_dialog()
+        clear_models_btn.clicked.connect(_on_clear_models)
+        cleanup_form.addWidget(clear_models_btn)
+
+        # 2. Open Model Manager
+        open_mgr_btn = QPushButton("Open Model Manager…")
+        open_mgr_btn.setToolTip("Open the detailed Model Management window to view exact disk sizes or delete individual models.")
+        def _on_open_mgr():
+            dialog.accept()
+            if hasattr(self, "open_model_cleanup_dialog"):
+                self.open_model_cleanup_dialog()
+        open_mgr_btn.clicked.connect(_on_open_mgr)
+        cleanup_form.addWidget(open_mgr_btn)
+
+        # 3. Clear Cache
+        clear_cache_btn = QPushButton("Clear Temporary Caches (Waveforms, Audio Extracts, & Thumbnails)…")
+        clear_cache_btn.setToolTip("Delete generated waveform peak files, temporary audio segment extracts, and video thumbnails to free disk space.")
+        def _on_clear_cache():
+            ans = QMessageBox.question(
+                dialog, "Clear Caches",
+                "Are you sure you want to delete all temporary audio extracts, waveform peak files, and video thumbnail caches?",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                QMessageBox.StandardButton.No
+            )
+            if ans == QMessageBox.StandardButton.Yes:
+                try:
+                    from prs_shared import purge_caches
+                    files_deleted, bytes_freed = purge_caches(clear_thumbnails=True, clear_waveforms=True, clear_audio_extracts=True)
+                    from updater import format_byte_size
+                    freed_str = format_byte_size(bytes_freed)
+                    QMessageBox.information(
+                        dialog, "Cache Cleared",
+                        f"Successfully cleared temporary caches:\n\n"
+                        f"• Files deleted: {files_deleted}\n"
+                        f"• Storage reclaimed: {freed_str}"
+                    )
+                except Exception as exc:
+                    QMessageBox.warning(dialog, "Clear Cache Error", f"Failed to clear cache: {exc}")
+        clear_cache_btn.clicked.connect(_on_clear_cache)
+        cleanup_form.addWidget(clear_cache_btn)
+
+        # 4. Clear User Preferences
+        clear_prefs_btn = QPushButton("Clear User Preferences (Reset Settings to Defaults)…")
+        clear_prefs_btn.setToolTip("Reset all user preferences and options back to factory defaults.")
+        def _on_clear_prefs():
+            ans = QMessageBox.question(
+                dialog, "Clear User Preferences",
+                "Are you sure you want to reset all user preferences and settings to factory defaults?",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                QMessageBox.StandardButton.No
+            )
+            if ans == QMessageBox.StandardButton.Yes:
+                self.settings_store.clear()
+                self.settings_store.sync()
+                QMessageBox.information(
+                    dialog, "Preferences Reset",
+                    "All user preferences have been reset to factory defaults."
+                )
+                dialog.accept()
+                self.open_preferences_dialog(initial_category="Cleanup Data")
+        clear_prefs_btn.clicked.connect(_on_clear_prefs)
+        cleanup_form.addWidget(clear_prefs_btn)
+
+        # 5. Clear App Data & Activity Logs
+        clear_logs_btn = QPushButton("Clear App Data, Activity Logs & Update Packages…")
+        clear_logs_btn.setToolTip("Delete application activity logs, crash reports, and downloaded update installer packages.")
+        def _on_clear_logs():
+            ans = QMessageBox.question(
+                dialog, "Clear App Data & Logs",
+                "Are you sure you want to clear activity log files and downloaded update installer packages from AppData?",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                QMessageBox.StandardButton.No
+            )
+            if ans == QMessageBox.StandardButton.Yes:
+                try:
+                    from updater import cleanup_old_installers, get_app_data_dir
+                    purged_installers = cleanup_old_installers(force_all=True)
+                    app_data = get_app_data_dir()
+                    logs_cleared = 0
+                    for file_path in app_data.glob("*.log"):
+                        try:
+                            file_path.unlink(missing_ok=True)
+                            logs_cleared += 1
+                        except Exception:
+                            pass
+                    for file_path in app_data.glob("*.txt"):
+                        if "activity" in file_path.name.lower() or "log" in file_path.name.lower():
+                            try:
+                                file_path.unlink(missing_ok=True)
+                                logs_cleared += 1
+                            except Exception:
+                                pass
+                    QMessageBox.information(
+                        dialog, "App Data & Logs Cleared",
+                        f"Successfully cleared application logs and updater files:\n\n"
+                        f"• Update installer packages purged: {purged_installers}\n"
+                        f"• Log files cleared: {logs_cleared}"
+                    )
+                except Exception as exc:
+                    QMessageBox.warning(dialog, "Clear App Data Error", f"Failed to clear app data: {exc}")
+        clear_logs_btn.clicked.connect(_on_clear_logs)
+        cleanup_form.addWidget(clear_logs_btn)
+
+        cleanup_layout.addWidget(cleanup_group)
+        _add_custom_defaults_btn(cleanup_layout, "Cleanup Data Defaults")
+        cleanup_layout.addStretch()
+        stack.addWidget(page_cleanup)
+
         # 8. WordPress Page
         from wordpress_export import _get_wp_password, _set_wp_password, WordPressClient
 
@@ -2106,6 +2235,11 @@ class PlaybackPreferencesMixin:
             "detection": "detection",
             "detect": "detection",
             "batch": "batch processing",
+            "cleanup": "cleanup data",
+            "cleanup data": "cleanup data",
+            "purge": "cleanup data",
+            "clear": "cleanup data",
+            "cache": "cleanup data",
             "wordpress": "wordpress",
             "youtube": "youtube",
         }

@@ -912,11 +912,6 @@ class UiLayoutMixin:
         self.translation_model_action = self.manage_models_action
         tools_menu.addAction(self.manage_models_action)
 
-        self.purge_models_action = QAction("&Purge All Downloaded Models && Cache Data...", self)
-        self.purge_models_action.setToolTip("Delete all downloaded AI models, log files, and caches to free disk space")
-        self.purge_models_action.triggered.connect(lambda: self.purge_all_data_action(self) if hasattr(self, "purge_all_data_action") else None)
-        tools_menu.addAction(self.purge_models_action)
-
         self.manage_plugins_action = QAction("&Manage Plugins && Add-ons...", self)
         self.manage_plugins_action.setShortcut(platform_seq("Ctrl+Shift+X"))
         self.manage_plugins_action.triggered.connect(self.open_plugins_manager)

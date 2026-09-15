@@ -56,7 +56,7 @@ try:
     )
 except Exception:
     APP_DISPLAY_NAME = "Radio & TV Segmenter"
-    PROJECT_VERSION = "3.2.6"
+    PROJECT_VERSION = "3.2.7"
     DEFAULT_GITHUB_REPO = "bradlinder/RTVS3"
 
     INTERNAL_APP_ID = "RadioTVStorySegmenter"
@@ -395,13 +395,19 @@ def launch_and_install(file_path: str, parent: QWidget | None = None) -> bool:
 
     if sys.platform == "win32":
         try:
-            creationflags = subprocess.CREATE_NO_WINDOW if sys.platform == 'win32' else 0
-            subprocess.Popen([str(path)], creationflags=creationflags)
+            # On Windows, os.startfile hands execution directly to the Windows Shell API.
+            # This ensures standard UAC elevation prompts display cleanly without inheriting
+            # hidden process constraints or flags like CREATE_NO_WINDOW.
+            os.startfile(str(path))
             return True
-        except Exception as exc:
-            if parent:
-                QMessageBox.critical(parent, "Launch Error", f"Failed to execute installer:\n{exc}")
-            return False
+        except Exception as exc1:
+            try:
+                subprocess.Popen([str(path)], shell=True)
+                return True
+            except Exception as exc2:
+                if parent:
+                    QMessageBox.critical(parent, "Launch Error", f"Failed to execute installer:\n{exc2}")
+                return False
 
     elif sys.platform == "darwin":
         try:
@@ -486,12 +492,12 @@ class CheckUpdateWorker(QThread):
             self.error.emit(f"Failed to check for updates: {exc}")
 
 
-def cleanup_old_installers(max_to_keep: int = 1, force_all: bool = False) -> int:
+def cleanup_old_installers(max_to_keep: int = 2, force_all: bool = False) -> int:
     """Clean up old downloaded application update installers from AppData/updates directory.
 
     Ensures that downloaded .exe, .dmg, .pkg, .deb, .rpm, .AppImage, or zip installer packages
     from prior versions do not accumulate and consume multi-gigabyte disk space over time.
-    Keeps at most `max_to_keep` (default 1) recent installer package for the current/pending update,
+    Keeps at most `max_to_keep` (default 2, preserving current and recent releases) recent installer package,
     or purges all installers if `force_all` is True.
 
     Returns the count of purged files.
@@ -728,10 +734,23 @@ class CheckUpdateDialog(QDialog):
         self.version_select_container.hide()
         main_layout.addWidget(self.version_select_container)
 
+        notes_header_layout = QHBoxLayout()
+        notes_header_layout.setContentsMargins(0, 0, 0, 0)
+
         self.notes_label = QLabel("Release Notes:")
         self.notes_label.setStyleSheet("font-size: 12px; font-weight: bold; margin-top: 4px;")
         self.notes_label.hide()
-        main_layout.addWidget(self.notes_label)
+        notes_header_layout.addWidget(self.notes_label)
+
+        notes_header_layout.addStretch()
+
+        self.full_changelog_label = QLabel()
+        self.full_changelog_label.setOpenExternalLinks(True)
+        self.full_changelog_label.setStyleSheet("font-size: 12px; margin-top: 4px;")
+        self.full_changelog_label.hide()
+        notes_header_layout.addWidget(self.full_changelog_label)
+
+        main_layout.addLayout(notes_header_layout)
 
         self.notes_browser = QTextBrowser()
         self.notes_browser.setOpenExternalLinks(True)
@@ -842,12 +861,19 @@ class CheckUpdateDialog(QDialog):
 
         self.progress_bar.hide()
         self.notes_label.show()
+
+        changelog_url = f"https://github.com/{self.repo}/blob/main/CHANGELOG.md"
+        self.full_changelog_label.setText(
+            f'<a href="{changelog_url}" style="color: #1976d2; font-weight: 500; text-decoration: underline;">View Full Changelog in Browser ↗</a>'
+        )
+        self.full_changelog_label.show()
         self.notes_browser.show()
 
         formatted_body = body.replace("\r\n", "\n").replace("\n", "<br>")
         self.notes_browser.setHtml(
             f"<div style='font-family: sans-serif; line-height: 1.4;'>"
-            f"<b>Release:</b> {name} ({tag})<br>"
+            f"<b>Release:</b> {name} ({tag}) &nbsp;•&nbsp; "
+            f"<a href='{changelog_url}' style='color: #1976d2; font-weight: 500;'>Full Changelog ↗</a><br>"
             f"<hr style='border: 0; border-top: 1px solid #ddd;'>"
             f"{formatted_body}"
             f"</div>"
