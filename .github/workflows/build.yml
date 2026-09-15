@@ -1,0 +1,519 @@
+name: Build & Release Installers
+
+on:
+  push:
+    tags:
+      - 'v*' # Triggers on semantic version tag pushes (e.g., v2.1)
+  workflow_dispatch:
+    inputs:
+      build_windows:
+        description: 'Build Windows Installer (.exe)'
+        type: boolean
+        default: true
+      build_macos:
+        description: 'Build macOS Disk Image (.dmg)'
+        type: boolean
+        default: true
+      build_linux:
+        description: 'Build Linux Package (.deb & .tar.gz)'
+        type: boolean
+        default: true
+      plugin_wordpress:
+        description: 'Include Plugin: WordPress Publisher'
+        type: boolean
+        default: true
+      plugin_youtube:
+        description: 'Include Plugin: YouTube Publisher'
+        type: boolean
+        default: true
+      plugin_translation:
+        description: 'Include Plugin: Language Translation'
+        type: boolean
+        default: true
+      create_release:
+        description: 'Publish as a GitHub Release'
+        type: boolean
+        default: true
+      release_tag:
+        description: 'Release Tag (e.g., v2.8 - optional, defaults to git tag)'
+        type: string
+        default: ''
+
+env:
+  ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: "true"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+  PYTHONUNBUFFERED: "1"
+  PYTHONUTF8: "1"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # =========================================================================
+  # STANDALONE PLUGINS PACKAGING
+  # =========================================================================
+  build-plugins:
+    name: Package Standalone Plugins
+    if: >-
+      github.event_name == 'push' ||
+      inputs.plugin_wordpress ||
+      inputs.plugin_youtube ||
+      inputs.plugin_translation
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Extract Project Version
+        id: get_version
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "push" ] && [[ "${GITHUB_REF_NAME}" =~ ^[vV]?[0-9] ]]; then
+            VERSION="${GITHUB_REF_NAME}"
+          elif [ -n "${{ inputs.release_tag }}" ]; then
+            VERSION="${{ inputs.release_tag }}"
+          else
+            VERSION=$(python3 -c "import re, pathlib; print(re.search(r'PROJECT_VERSION\s*=\s*[\x22\x27]([^\x22\x27]+)', pathlib.Path('prs_shared.py').read_text(encoding='utf-8')).group(1))")
+          fi
+          # Strip leading v/V and sanitize duplicate dots / invalid characters
+          VERSION=$(echo "$VERSION" | sed -E 's/^[vV]+//' | tr -s '.' | tr -cd '0-9.a-zA-Z_-')
+          if [ -z "$VERSION" ]; then
+            echo "::error::Could not extract version"
+            exit 1
+          fi
+          echo "Extracted version: ${VERSION}"
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+
+      - name: Package Selected Plugins
+        env:
+          BUILD_VERSION: ${{ steps.get_version.outputs.version }}
+          BUILD_TARGET: 'plugins'
+          BUILD_PLUGIN_WORDPRESS: ${{ inputs.plugin_wordpress != false }}
+          BUILD_PLUGIN_YOUTUBE: ${{ inputs.plugin_youtube != false }}
+          BUILD_PLUGIN_TRANSLATION: ${{ inputs.plugin_translation != false }}
+        run: python3 build_installer.py --target plugins
+
+      - name: Upload Plugins Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: RadioTVSegmenter-Plugins
+          path: |
+            dist/plugins/*.zip
+            dist/plugins/*.rtvs-addon
+          retention-days: 3
+          if-no-files-found: ignore
+
+  # =========================================================================
+  # WINDOWS BUILD
+  # =========================================================================
+  build-windows:
+    name: Build Windows
+    if: github.event_name == 'push' || inputs.build_windows
+    runs-on: windows-latest
+    timeout-minutes: 75
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install and configure uv with cache
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: "requirements*.txt"
+
+      - name: Configure Windows Defender Exclusions & Disable Realtime Monitoring (Fast I/O)
+        shell: pwsh
+        run: |
+          Set-MpPreference -DisableRealtimeMonitoring $true -DisableScriptScanning $true -DisableIOAVProtection $true -DisableBehaviorMonitoring $true -ErrorAction SilentlyContinue
+          Set-MpPreference -ExclusionPath "C:\", "D:\" -ErrorAction SilentlyContinue
+          Get-MpPreference | Select-Object DisableRealtimeMonitoring, ExclusionPath
+
+      - name: Setup FFmpeg (Fast)
+        uses: FedericoCarboni/setup-ffmpeg@v3
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install Inno Setup
+        run: |
+          choco install innosetup --no-progress
+          "C:\Program Files (x86)\Inno Setup 6" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+      - name: Install Python dependencies (Fast CPU PyTorch)
+        env:
+          UV_LINK_MODE: copy
+        run: |
+          uv pip install --system --no-deps --index-url https://download.pytorch.org/whl/cpu "torch>=2.0.0,<2.4.0" "torchaudio>=2.0.0,<2.4.0"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          uv pip install --system -r requirements.txt -r requirements-build.txt
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python -c "import torch; print('Torch ' + torch.__version__ + ' CUDA=' + str(torch.version.cuda)); assert torch.version.cuda is None; print('torch._C OK')"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Extract Project Version
+        id: get_version
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "push" ] && [[ "${GITHUB_REF_NAME}" =~ ^[vV]?[0-9] ]]; then
+            VERSION="${GITHUB_REF_NAME}"
+          elif [ -n "${{ inputs.release_tag }}" ]; then
+            VERSION="${{ inputs.release_tag }}"
+          else
+            VERSION=$(python3 -c "import re, pathlib; print(re.search(r'PROJECT_VERSION\s*=\s*[\x22\x27]([^\x22\x27]+)', pathlib.Path('prs_shared.py').read_text(encoding='utf-8')).group(1))")
+          fi
+          # Strip leading v/V and sanitize duplicate dots / invalid characters
+          VERSION=$(echo "$VERSION" | sed -E 's/^[vV]+//' | tr -s '.' | tr -cd '0-9.a-zA-Z_-')
+          if [ -z "$VERSION" ]; then
+            echo "::error::Could not extract PROJECT_VERSION"
+            exit 1
+          fi
+          echo "Extracted version: ${VERSION}"
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+
+      - name: Run PyInstaller build
+        env:
+          BUILD_VERSION: ${{ steps.get_version.outputs.version }}
+          BUILD_TARGET: 'all'
+          BUILD_PLUGIN_WORDPRESS: ${{ inputs.plugin_wordpress != false }}
+          BUILD_PLUGIN_YOUTUBE: ${{ inputs.plugin_youtube != false }}
+          BUILD_PLUGIN_TRANSLATION: ${{ inputs.plugin_translation != false }}
+        run: python build_installer.py --no-installer
+
+      - name: Compile Inno Setup Installer
+        shell: pwsh
+        run: |
+          $iscc = Get-Command iscc.exe -ErrorAction SilentlyContinue
+          if (-not $iscc) {
+            if (Test-Path "C:\Program Files (x86)\Inno Setup 6\ISCC.exe") {
+              $isccPath = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
+            } elseif (Test-Path "C:\Program Files\Inno Setup 6\ISCC.exe") {
+              $isccPath = "C:\Program Files\Inno Setup 6\ISCC.exe"
+            } elseif (Test-Path "C:\ProgramData\chocolatey\bin\iscc.exe") {
+              $isccPath = "C:\ProgramData\chocolatey\bin\iscc.exe"
+            } else {
+              throw "Inno Setup compiler (ISCC.exe) not found!"
+            }
+          } else {
+            $isccPath = $iscc.Source
+          }
+          Write-Host "Using Inno Setup compiler: $isccPath"
+          & "$isccPath" /DMyAppVersion="${{ steps.get_version.outputs.version }}" installer\Windows\RadioTVStorySegmenter.iss
+
+      - name: Verify installer was produced
+        shell: pwsh
+        run: |
+          $exe = Get-ChildItem -Path "dist\installer" -Filter "*.exe" -ErrorAction SilentlyContinue
+          if (-not $exe) {
+            throw "No .exe found in dist\installer after Inno Setup compile -- failing the job now instead of silently uploading an empty artifact."
+          }
+          Write-Host "Found installer: $($exe.FullName) ($([math]::Round($exe.Length / 1MB, 1)) MB)"
+          Copy-Item -Path "dist\installer\*.exe" -Destination "dist\" -Force
+
+      - name: Upload Windows Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: RadioTVSegmenter-Windows
+          path: |
+            dist/*.exe
+            dist/plugins/*.zip
+          retention-days: 3
+          if-no-files-found: error
+
+  # =========================================================================
+  # MACOS BUILD
+  # =========================================================================
+  build-macos:
+    name: Build macOS
+    if: github.event_name == 'push' || inputs.build_macos
+    runs-on: macos-latest
+    timeout-minutes: 45
+    env:
+      DEVELOPER_ID_APPLICATION: ${{ secrets.DEVELOPER_ID_APPLICATION }}
+      NOTARY_PROFILE: ${{ secrets.NOTARY_PROFILE }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install and configure uv with cache
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: "requirements*.txt"
+
+      - name: Setup FFmpeg (Static macOS Binaries)
+        run: |
+          ARCH=$(uname -m)
+          echo "Setting up FFmpeg for macOS ($ARCH)..."
+          mkdir -p "$HOME/bin" bin
+          
+          if [ "$ARCH" = "arm64" ]; then
+            FFMPEG_URL="https://github.com/Tyrrrz/FFmpegBin/releases/download/7.0.2/ffmpeg-osx-arm64.zip"
+          else
+            FFMPEG_URL="https://github.com/Tyrrrz/FFmpegBin/releases/download/7.0.2/ffmpeg-osx-x64.zip"
+          fi
+          
+          echo "Downloading static FFmpeg from $FFMPEG_URL..."
+          if curl -fsSL "$FFMPEG_URL" -o /tmp/ffmpeg.zip && unzip -q -o /tmp/ffmpeg.zip -d "$HOME/bin"; then
+            rm -f /tmp/ffmpeg.zip
+            chmod +x "$HOME/bin/ffmpeg" "$HOME/bin/ffprobe"
+            cp "$HOME/bin/ffmpeg" bin/ 2>/dev/null || true
+            cp "$HOME/bin/ffprobe" bin/ 2>/dev/null || true
+            echo "$HOME/bin" >> $GITHUB_PATH
+            export PATH="$HOME/bin:$PATH"
+          fi
+          
+          if ! command -v ffmpeg >/dev/null 2>&1 || ! command -v ffprobe >/dev/null 2>&1; then
+            echo "Falling back to Homebrew for FFmpeg..."
+            HOMEBREW_NO_AUTO_UPDATE=1 brew install ffmpeg
+            mkdir -p bin
+            cp "$(which ffmpeg)" bin/ 2>/dev/null || true
+            cp "$(which ffprobe)" bin/ 2>/dev/null || true
+          fi
+
+      - name: Verify FFmpeg Tools
+        run: |
+          ffmpeg -version
+          ffprobe -version
+
+      - name: Install Python dependencies (Fast uv)
+        run: |
+          uv pip install --system -r requirements.txt -r requirements-build.txt
+
+      - name: Extract Project Version
+        id: get_version
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "push" ] && [[ "${GITHUB_REF_NAME}" =~ ^[vV]?[0-9] ]]; then
+            VERSION="${GITHUB_REF_NAME}"
+          elif [ -n "${{ inputs.release_tag }}" ]; then
+            VERSION="${{ inputs.release_tag }}"
+          else
+            VERSION=$(python3 -c "import re, pathlib; print(re.search(r'PROJECT_VERSION\s*=\s*[\x22\x27]([^\x22\x27]+)', pathlib.Path('prs_shared.py').read_text(encoding='utf-8')).group(1))")
+          fi
+          # Strip leading v/V and sanitize duplicate dots / invalid characters
+          VERSION=$(echo "$VERSION" | sed -E 's/^[vV]+//' | tr -s '.' | tr -cd '0-9.a-zA-Z_-')
+          if [ -z "$VERSION" ]; then
+            echo "::error::Could not extract version"
+            exit 1
+          fi
+          echo "Extracted version: ${VERSION}"
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+
+      - name: Run PyInstaller build
+        env:
+          BUILD_VERSION: ${{ steps.get_version.outputs.version }}
+          BUILD_TARGET: 'all'
+          BUILD_PLUGIN_WORDPRESS: ${{ inputs.plugin_wordpress != false }}
+          BUILD_PLUGIN_YOUTUBE: ${{ inputs.plugin_youtube != false }}
+          BUILD_PLUGIN_TRANSLATION: ${{ inputs.plugin_translation != false }}
+        run: python3 build_installer.py
+
+      - name: Package .app into .dmg
+        run: bash installer/macOS/build_app.sh
+
+      - name: Verify installer was produced
+        run: |
+          if ! ls dist/*.dmg >/dev/null 2>&1; then
+            echo "::error::No .dmg found in dist/ after build_app.sh -- failing the job now instead of silently uploading an empty artifact."
+            exit 1
+          fi
+          ls -lh dist/*.dmg
+
+      - name: Upload macOS Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: RadioTVSegmenter-macOS
+          path: |
+            dist/*.dmg
+            dist/plugins/*.zip
+          retention-days: 3
+          if-no-files-found: error
+
+  # =========================================================================
+  # LINUX BUILD
+  # =========================================================================
+  build-linux:
+    name: Build Linux
+    if: github.event_name == 'push' || inputs.build_linux
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install and configure uv with cache
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: "requirements*.txt"
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg libxcb-cursor0 libpulse0 binutils dpkg-dev
+
+      - name: Install Python dependencies (Fast CPU PyTorch with uv)
+        run: |
+          uv pip install --system --no-deps --index-url https://download.pytorch.org/whl/cpu "torch>=2.0.0,<2.4.0" "torchaudio>=2.0.0,<2.4.0"
+          uv pip install --system -r requirements.txt -r requirements-build.txt
+
+      - name: Extract Project Version
+        id: get_version
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "push" ] && [[ "${GITHUB_REF_NAME}" =~ ^[vV]?[0-9] ]]; then
+            VERSION="${GITHUB_REF_NAME}"
+          elif [ -n "${{ inputs.release_tag }}" ]; then
+            VERSION="${{ inputs.release_tag }}"
+          else
+            VERSION=$(python3 -c "import re, pathlib; print(re.search(r'PROJECT_VERSION\s*=\s*[\x22\x27]([^\x22\x27]+)', pathlib.Path('prs_shared.py').read_text(encoding='utf-8')).group(1))")
+          fi
+          # Strip leading v/V and sanitize duplicate dots / invalid characters
+          VERSION=$(echo "$VERSION" | sed -E 's/^[vV]+//' | tr -s '.' | tr -cd '0-9.a-zA-Z_-')
+          if [ -z "$VERSION" ]; then
+            echo "::error::Could not extract version"
+            exit 1
+          fi
+          echo "Extracted version: ${VERSION}"
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+
+      - name: Run PyInstaller build
+        env:
+          BUILD_VERSION: ${{ steps.get_version.outputs.version }}
+          BUILD_TARGET: 'all'
+          BUILD_PLUGIN_WORDPRESS: ${{ inputs.plugin_wordpress != false }}
+          BUILD_PLUGIN_YOUTUBE: ${{ inputs.plugin_youtube != false }}
+          BUILD_PLUGIN_TRANSLATION: ${{ inputs.plugin_translation != false }}
+        run: python3 build_installer.py
+
+      - name: Package Debian (.deb) & Distributable Tarball (.tar.gz)
+        env:
+          BUILD_VERSION: ${{ steps.get_version.outputs.version }}
+        run: |
+          bash installer/Linux/build_deb.sh
+          VERSION="${BUILD_VERSION}"
+          if [ -z "$VERSION" ]; then
+            VERSION=$(python3 -c "import re, pathlib; print(re.search(r'PROJECT_VERSION\s*=\s*[\x22\x27]([^\x22\x27]+)', pathlib.Path('prs_shared.py').read_text(encoding='utf-8')).group(1))")
+          fi
+          cd dist
+          GZIP=-9 tar -czvf "RadioTVSegmenter-${VERSION}-Linux-x86_64.tar.gz" RadioTVSegmenter/
+          cd ..
+
+      - name: Verify Asset Sizes (<2GB GitHub Release Limit)
+        run: |
+          echo "Checking generated package sizes:"
+          if ! ls dist/*.deb dist/*.tar.gz >/dev/null 2>&1; then
+            echo "::error::Missing .deb or .tar.gz in dist/ -- failing the job now instead of silently uploading an empty artifact."
+            exit 1
+          fi
+          ls -lh dist/*.deb dist/*.tar.gz
+
+      - name: Upload Linux Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: RadioTVSegmenter-Linux
+          path: |
+            dist/*.deb
+            dist/*.tar.gz
+            dist/plugins/*.zip
+          retention-days: 3
+          if-no-files-found: error
+
+  # =========================================================================
+  # PUBLISH GITHUB RELEASE
+  # =========================================================================
+  publish-release:
+    name: Publish GitHub Release
+    needs: [build-plugins, build-windows, build-macos, build-linux]
+    if: >-
+      always() &&
+      !contains(needs.*.result, 'failure') &&
+      !contains(needs.*.result, 'cancelled') &&
+      (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') ||
+       (github.event_name == 'workflow_dispatch' && inputs.create_release))
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download all build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release_assets/
+          merge-multiple: true
+
+      - name: Flatten release assets & Generate SHA-256 checksums
+        working-directory: release_assets
+        run: |
+          set -e
+          # Flatten any nested subdirectories created by artifact downloads
+          find . -mindepth 2 -type f -exec mv -f -t . {} +
+          find . -mindepth 1 -type d -empty -delete
+          
+          rm -f SHA256SUMS
+          for f in *; do
+            [ -f "$f" ] || continue
+            sha256sum "$f" | tee -a SHA256SUMS
+            sha256sum "$f" > "$f.sha256"
+          done
+          echo "Generated checksums:"
+          cat SHA256SUMS
+
+      - name: Determine Release Tag
+        id: vars
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          RELEASE_TAG: ${{ inputs.release_tag }}
+        run: |
+          if [ "$EVENT_NAME" = "push" ] && [[ "${GITHUB_REF_NAME}" =~ ^v[0-9] ]]; then
+            TAG="${GITHUB_REF_NAME}"
+          elif [ -n "$RELEASE_TAG" ]; then
+            CLEAN_TAG=$(echo "$RELEASE_TAG" | tr -s '.' | tr -cd '0-9.a-zA-Z_-')
+            if [[ ! "$CLEAN_TAG" =~ ^v ]]; then
+              TAG="v${CLEAN_TAG}"
+            else
+              TAG="${CLEAN_TAG}"
+            fi
+          else
+            VERSION=$(python3 -c "import re, pathlib; print(re.search(r'PROJECT_VERSION\s*=\s*[\x22\x27]([^\x22\x27]+)', pathlib.Path('prs_shared.py').read_text(encoding='utf-8')).group(1))")
+            TAG="v${VERSION}"
+          fi
+          # Ensure clean tag (no consecutive dots or trailing dots)
+          TAG=$(echo "$TAG" | tr -s '.' | sed 's/\.*$//')
+          echo "Determined release tag: ${TAG}"
+          echo "tag=${TAG}" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release & Upload Binaries
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.vars.outputs.tag }}
+          name: "Radio & TV Segmenter ${{ steps.vars.outputs.tag }}"
+          draft: false
+          prerelease: false
+          make_latest: true
+          generate_release_notes: true
+          files: release_assets/*

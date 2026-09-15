@@ -1,0 +1,2114 @@
+"""Radio & TV Segmenter v3.2.1-dev — transcript story responsibilities.
+
+
+Methods intentionally retain the MainWindow-facing API so behavior remains
+maintaining the established MainWindow-facing API while responsibilities are isolated.
+"""
+
+from typing import List, Optional
+from prs_shared import *
+
+
+class TranscriptStoryMixin:
+    def render_transcript(self):
+        if not self.transcript:
+            return
+
+        self.is_updating_transcript_view = True
+        display_mode = getattr(self, "translation_display_mode", "en")
+        if display_mode == "bilingual":
+            display_mode = "split"
+        segments = self.transcript.get("segments", [])
+        es_item = self.get_spanish_translation_item() if hasattr(self, "get_spanish_translation_item") else None
+        es_segments = es_item.get("segments", []) if isinstance(es_item, dict) else []
+
+        active_segments = segments
+        if display_mode == "es" and es_segments:
+            active_segments = es_segments
+
+        if not active_segments:
+            self.transcript_view.setHtml("")
+            self.transcript_view.set_char_timestamp_map([])
+            self._block_segment_groups = []
+            if hasattr(self, "_capture_project_state") and not getattr(self, "is_restoring_undo", False):
+                self._transcript_edit_baseline = self._capture_project_state()
+            self.is_updating_transcript_view = False
+            return
+
+        word_tokens = []
+        for seg_idx, segment in enumerate(active_segments):
+            start = segment.get("start", 0.0) if isinstance(segment, dict) else getattr(segment, "start", 0.0)
+            end = segment.get("end", start) if isinstance(segment, dict) else getattr(segment, "end", start)
+            raw_spk = self.segment_speaker_overrides.get(seg_idx) or self.speaker_at_time(start, end)
+            orig_segment = segments[seg_idx] if 0 <= seg_idx < len(segments) else segment
+            spk_name = self.get_effective_speaker_name(seg_idx, orig_segment)
+
+            words = segment.get("words", [])
+            if words and display_mode != "es":
+                for w in words:
+                    token = {
+                        "word": w.get("word", ""),
+                        "start": w.get("start", start),
+                        "end": w.get("end", end),
+                        "seg_idx": seg_idx,
+                        "speaker_name": spk_name,
+                        "raw_speaker": raw_spk,
+                        "deleted": bool(w.get("deleted", False)),
+                    }
+                    if w.get("bold"): token["bold"] = True
+                    if w.get("italic"): token["italic"] = True
+                    if w.get("underline"): token["underline"] = True
+                    if w.get("strike"): token["strike"] = True
+                    if w.get("highlight"):
+                        hl = w.get("highlight")
+                        token["highlight"] = "#fef08a" if isinstance(hl, bool) or hl in ("True", "true", 1) else str(hl)
+                    word_tokens.append(token)
+            else:
+                seg_text = segment.get("text", "")
+                for word in seg_text.split():
+                    word_tokens.append({
+                        "word": word,
+                        "start": start,
+                        "end": end,
+                        "seg_idx": seg_idx,
+                        "speaker_name": spk_name,
+                        "raw_speaker": raw_spk,
+                        "deleted": False,
+                    })
+
+        if not word_tokens:
+            self.transcript_view.setHtml("")
+            self.transcript_view.set_char_timestamp_map([])
+            self._block_segment_groups = []
+            if hasattr(self, "_capture_project_state") and not getattr(self, "is_restoring_undo", False):
+                self._transcript_edit_baseline = self._capture_project_state()
+            self.is_updating_transcript_view = False
+            return
+
+        # Batch document changes using QTextCursor EditBlock to prevent UI freezes
+        doc = self.transcript_view.document()
+        cursor = QTextCursor(doc)
+        cursor.beginEditBlock()
+
+        html_parts = []
+        char_timestamp_map = []
+        current_char_pos = 0
+        block_segment_groups = []
+
+        curr_theme = getattr(self.transcript_view, "current_theme", "dark")
+        if curr_theme == "light":
+            word_color = "#111111"
+            speaker_color = "#0056b3"
+            time_color = "#555c68"
+            spanish_color = "#1a7f37"
+            spanish_tag_color = "#57606a"
+        elif curr_theme == "high_contrast":
+            word_color = "#ffffff"
+            speaker_color = "#00ffff"
+            time_color = "#ffff00"
+            spanish_color = "#00ff00"
+            spanish_tag_color = "#ffff00"
+        else:
+            word_color = "#ffffff"
+            speaker_color = "#58a6ff"
+            time_color = "#8b949e"
+            spanish_color = "#7ee787"
+            spanish_tag_color = "#8b949e"
+
+        curr_para_words = []
+        curr_speaker_name = None
+        curr_raw_speaker = None
+        last_rendered_speaker_name = None
+
+        def render_paragraph_block(p_words, p_speaker_name, p_raw_speaker, is_speaker_change):
+            nonlocal current_char_pos
+            if not p_words:
+                return ""
+
+            start_time = p_words[0]["start"]
+            first_seg_idx = p_words[0]["seg_idx"]
+
+            time_str = format_time(start_time)
+
+            if p_speaker_name and is_speaker_change and self.show_speaker_labels:
+                esc_spk = html.escape(p_speaker_name)
+                esc_raw = html.escape(str(p_raw_speaker or ""))
+                speaker_html = (
+                    f'<a href="speaker:{first_seg_idx}:{esc_raw}" style="color:{speaker_color}; font-weight:bold; text-decoration:none;">'
+                    f'{esc_spk}:</a> '
+                )
+            else:
+                speaker_html = ""
+            plain_prefix = (f"{time_str} " if self.show_timestamps else "")
+            if self.show_speaker_labels and p_speaker_name and is_speaker_change:
+                plain_prefix += f"{p_speaker_name}: "
+
+            current_char_pos += len(plain_prefix)
+
+            word_html_list = []
+            current_hl_color = None
+            current_hl_words = []
+
+            def _flush_hl_group():
+                nonlocal current_hl_words, current_hl_color
+                if not current_hl_words:
+                    return
+                joined_html = " ".join(current_hl_words)
+                if current_hl_color:
+                    word_html_list.append(
+                        f'<span style="background-color:{current_hl_color}; color:#0f172a; padding:1px 0px; border-radius:2px;">{joined_html}</span>'
+                    )
+                else:
+                    word_html_list.append(joined_html)
+                current_hl_words = []
+
+            for item in p_words:
+                w_text = item["word"]
+                w_start = item["start"]
+                w_seg = item["seg_idx"]
+
+                w_len = len(w_text) + 1
+                char_timestamp_map.append((current_char_pos, current_char_pos + w_len, w_start, item.get("end", w_start), w_seg))
+                current_char_pos += w_len
+
+                esc_w = html.escape(w_text)
+                w_style = f"color:{word_color}; text-decoration:none;"
+                if item.get("bold"):
+                    w_style += " font-weight:bold;"
+                if item.get("italic"):
+                    w_style += " font-style:italic;"
+                if item.get("underline") and item.get("strike"):
+                    w_style += " text-decoration:underline line-through;"
+                elif item.get("underline"):
+                    w_style += " text-decoration:underline;"
+                elif item.get("strike"):
+                    w_style += " text-decoration:line-through;"
+
+                hl_val = item.get("highlight")
+                item_hl_color = None
+                if hl_val:
+                    item_hl_color = "#fef08a" if isinstance(hl_val, bool) or hl_val in ("True", "true", 1) else str(hl_val)
+                    w_style += f" color:#0f172a;"
+
+                if item_hl_color != current_hl_color:
+                    _flush_hl_group()
+                    current_hl_color = item_hl_color
+
+                current_hl_words.append(f'<a href="word:{w_start}:{w_seg}" style="{w_style}">{esc_w}</a>')
+
+            _flush_hl_group()
+            current_char_pos += 2
+
+            body_content = " ".join(word_html_list)
+
+            timestamp_html = (
+                f'<a href="time:{start_time}" style="color:{time_color}; text-decoration:none;"><b>{time_str}</b></a> '
+                if self.show_timestamps else ""
+            )
+
+            if display_mode in ("split", "bilingual") and es_segments:
+                es_text_parts = [es_segments[idx].get("text", "") for idx in seg_indices if 0 <= idx < len(es_segments)]
+                es_text = " ".join(t.strip() for t in es_text_parts if t.strip())
+                if es_text:
+                    esc_es_text = html.escape(es_text)
+                    return (
+                        f'<p style="margin-bottom: 14px;">'
+                        f'{timestamp_html}{speaker_html}'
+                        f'<span style="color:{word_color};">{body_content}</span><br/>'
+                        f'<span style="color:{spanish_tag_color}; font-weight:bold; font-size:0.86em;">ES: </span>'
+                        f'<span style="color:{spanish_color};"><i>{esc_es_text}</i></span>'
+                        f'</p>'
+                    )
+
+            return (
+                f'<p style="margin-bottom: 14px; color: {word_color};">'
+                f'{timestamp_html}{speaker_html}'
+                f'<span style="color:{word_color};">{body_content}</span>'
+                f'</p>'
+            )
+
+        def _summarize_paragraph_segments(p_words):
+            """Contiguous (seg_idx, word_count) run-length groups for one
+            rendered paragraph, used to map edited text in that paragraph
+            back to the original segment(s) it was built from."""
+            groups = []
+            for w in p_words:
+                seg_idx = w["seg_idx"]
+                if groups and groups[-1][0] == seg_idx:
+                    groups[-1] = (seg_idx, groups[-1][1] + 1)
+                else:
+                    groups.append((seg_idx, 1))
+            return groups
+
+        for token in word_tokens:
+            spk_name = token["speaker_name"]
+            raw_spk = token["raw_speaker"]
+
+            if curr_speaker_name is None:
+                curr_speaker_name = spk_name
+                curr_raw_speaker = raw_spk
+
+            speaker_changed = (spk_name != curr_speaker_name)
+            word_count_exceeded = (len(curr_para_words) >= MIN_WORDS_PER_PARAGRAPH)
+            prev_word_ended_sentence = curr_para_words and is_sentence_end(curr_para_words[-1]["word"])
+
+            if curr_para_words and (speaker_changed or (word_count_exceeded and prev_word_ended_sentence)):
+                is_change = (curr_speaker_name != last_rendered_speaker_name)
+                html_parts.append(render_paragraph_block(curr_para_words, curr_speaker_name, curr_raw_speaker, is_change))
+                block_segment_groups.append(_summarize_paragraph_segments(curr_para_words))
+                last_rendered_speaker_name = curr_speaker_name
+
+                curr_para_words = [token]
+                curr_speaker_name = spk_name
+                curr_raw_speaker = raw_spk
+            else:
+                curr_para_words.append(token)
+
+        if curr_para_words:
+            is_change = (curr_speaker_name != last_rendered_speaker_name)
+            html_parts.append(render_paragraph_block(curr_para_words, curr_speaker_name, curr_raw_speaker, is_change))
+            block_segment_groups.append(_summarize_paragraph_segments(curr_para_words))
+
+        self.transcript_view.setHtml("".join(html_parts))
+        cursor.endEditBlock()
+        self._block_segment_groups = block_segment_groups
+
+        self.timeline.set_transcript_selection_range(None, None)
+        self.transcript_view.rebuild_anchor_index()
+        self.transcript_view.set_time_anchor_index(
+            [
+                (item["start"], item["end"], f"word:{item['start']}:{item['seg_idx']}")
+                for item in word_tokens
+            ]
+        )
+        self.transcript_view.set_char_timestamp_map(char_timestamp_map)
+        if hasattr(self, "comments_panel"):
+            self.comments_panel.set_comments(self.transcript.get("segments", []))
+        if hasattr(self, "transcript_view"):
+            self.transcript_view.update_extra_selections()
+        # This is the exact project state represented by the rendered editor.
+        # Text edits are grouped from this baseline into one undoable action.
+        if hasattr(self, "_capture_project_state") and not getattr(self, "is_restoring_undo", False):
+            self._transcript_edit_baseline = self._capture_project_state()
+        self.is_updating_transcript_view = False
+
+        if display_mode != "en":
+            self.transcript_view.setReadOnly(True)
+            if hasattr(self, "transcript_mode_toggle_btn"):
+                self.transcript_mode_toggle_btn.setEnabled(False)
+                self.transcript_mode_toggle_btn.setToolTip("Editing is disabled while viewing translations. Switch to English (Original) to edit.")
+        else:
+            if hasattr(self, "transcript_mode_toggle_btn"):
+                self.transcript_mode_toggle_btn.setEnabled(True)
+                self.transcript_mode_toggle_btn.setToolTip("Toggle between Viewing Mode (click to play/seek audio) and Editing Mode (type/edit transcript text).")
+            self.transcript_view.setReadOnly(not getattr(self.transcript_view, "is_editing_mode", False))
+
+    def on_transcript_selection_changed(self):
+        if self.is_updating_transcript_view:
+            return
+        selected_range = self.transcript_view.get_selected_time_range()
+        if selected_range:
+            self.last_position_source = "transcript"
+            self.timeline.set_transcript_selection_range(*selected_range)
+            self.statusBar().showMessage(
+                f"Transcript selection: {format_time(selected_range[0])} – {format_time(selected_range[1])}"
+            )
+        else:
+            if not getattr(self.transcript_view, "has_active_selection", lambda: False)():
+                self.timeline.set_transcript_selection_range(None, None)
+            cursor = self.transcript_view.textCursor()
+            ts = self.transcript_view.get_timestamp_at_cursor(cursor)
+            if ts is not None and ts >= 0:
+                self.last_transcript_cursor_time = ts
+                self.last_position_source = "transcript"
+
+        # Reverse Selection: bring corresponding comment card into active focus when user clicks highlighted text
+        cursor = self.transcript_view.textCursor()
+        target_seg = self.transcript_view.get_segment_index_at_cursor(cursor)
+        if target_seg is None:
+            target_seg = cursor.blockNumber()
+
+        active_comment_seg = None
+        segments = self.transcript.get("segments", []) if self.transcript else []
+        if 0 <= target_seg < len(segments):
+            seg = segments[target_seg]
+            if (seg.get("comments") or seg.get("notes", "")).strip():
+                active_comment_seg = target_seg
+
+        if active_comment_seg is None and segments:
+            pos = cursor.position()
+            doc_text = self.transcript_view.document().toPlainText()
+            for idx, seg in enumerate(segments):
+                if (seg.get("comments") or seg.get("notes", "")).strip():
+                    c_start = seg.get("comment_char_start")
+                    c_end = seg.get("comment_char_end")
+                    if c_start is not None and c_end is not None and c_start <= pos <= c_end:
+                        active_comment_seg = idx
+                        break
+                    sel_quote = (seg.get("comment_selected_text") or "").strip()
+                    if sel_quote and sel_quote in doc_text:
+                        q_pos = doc_text.find(sel_quote)
+                        if q_pos >= 0 and q_pos <= pos <= (q_pos + len(sel_quote)):
+                            active_comment_seg = idx
+                            break
+
+        if hasattr(self, "comments_panel"):
+            self.comments_panel.highlight_segment(active_comment_seg)
+
+    def on_transcript_text_changed(self):
+        if self.is_updating_transcript_view or getattr(self, "is_restoring_undo", False) or not self.transcript:
+            return
+        if getattr(self, "translation_display_mode", "en") != "en":
+            return
+
+        # Keep the data model synchronized with the editor. Each rendered
+        # paragraph (Qt "block") isn't reliably one segment -- same-speaker
+        # segments get merged into one paragraph, and long runs get split by
+        # word count rather than segment boundary. self._block_segment_groups
+        # (captured at the last render_transcript()) records, per block, the
+        # ordered original (seg_idx, word_count) groups it was built from, so
+        # an edit lands on the right segment(s) instead of on block index i.
+        doc = self.transcript_view.document()
+        blocks_count = doc.blockCount()
+        segments = self.transcript.get("segments", [])
+        block_groups = getattr(self, "_block_segment_groups", None) or []
+
+        known_speaker_labels = None
+
+        def _extract_block_word_formatting(block, prefix_len=0):
+            word_formats = []
+            it = block.begin()
+            curr_pos = 0
+            while not it.atEnd():
+                frag = it.fragment()
+                if frag.isValid():
+                    frag_text = frag.text()
+                    fmt = frag.charFormat()
+                    frag_len = len(frag_text)
+                    frag_start = curr_pos
+                    frag_end = curr_pos + frag_len
+                    if frag_end > prefix_len:
+                        start_in_frag = max(0, prefix_len - frag_start)
+                        usable_text = frag_text[start_in_frag:]
+                        is_bold = fmt.fontWeight() > QFont.Weight.Medium
+                        is_italic = fmt.fontItalic()
+                        is_underline = fmt.fontUnderline()
+                        is_strike = fmt.fontStrikeOut()
+                        bg = fmt.background().color()
+                        highlight = bg.name() if (bg.isValid() and bg.alpha() > 0 and fmt.background().style() != Qt.BrushStyle.NoBrush) else None
+                        for w in usable_text.split():
+                            word_formats.append({
+                                "word": w,
+                                "bold": is_bold,
+                                "italic": is_italic,
+                                "underline": is_underline,
+                                "strike": is_strike,
+                                "highlight": highlight,
+                            })
+                    curr_pos += frag_len
+                it += 1
+            return word_formats
+
+        for i in range(min(blocks_count, len(block_groups))):
+            groups = [g for g in block_groups[i] if 0 <= g[0] < len(segments)]
+            if not groups:
+                continue
+
+            block = doc.findBlockByNumber(i)
+            block_text = block.text()
+            cleaned_text = re.sub(r'^\d{2}:\d{2}(?::\d{2})?\.\d{3}\s+', '', block_text)
+            # Remove any displayed speaker prefix, including custom names.
+            if ": " in cleaned_text:
+                prefix, remainder = cleaned_text.split(": ", 1)
+                if known_speaker_labels is None:
+                    known_speaker_labels = set(self.speaker_names.values())
+                    known_speaker_labels.update(
+                        self.get_all_known_speakers() if hasattr(self, "get_all_known_speakers") else []
+                    )
+                if prefix.strip() in {str(x).strip() for x in known_speaker_labels if x}:
+                    cleaned_text = remainder
+            cleaned_text = re.sub(r'^Speaker \d+:\s+', '', cleaned_text)
+            cleaned_text = cleaned_text.strip()
+
+            prefix_len = block_text.find(cleaned_text) if (cleaned_text and cleaned_text in block_text) else 0
+            block_fmts = _extract_block_word_formatting(block, prefix_len)
+
+            if len(groups) == 1:
+                target_seg = segments[groups[0][0]]
+                target_seg["text"] = cleaned_text
+                self.sync_segment_words(target_seg, cleaned_text, block_fmts)
+                continue
+
+            # This paragraph was built from more than one original segment
+            # (merged same-speaker turns). Redistribute the edited words
+            # across those segments in proportion to how many words each
+            # originally contributed -- an approximation, but it keeps
+            # edits attached to roughly the right segment instead of all
+            # landing on whichever segment happens to share the block index.
+            words = cleaned_text.split()
+            total_original_words = sum(g[1] for g in groups) or 1
+            remaining_words = words
+            remaining_fmts = block_fmts
+            for gi, (seg_idx, orig_count) in enumerate(groups):
+                if gi == len(groups) - 1:
+                    share, remaining_words = remaining_words, []
+                    share_fmts, remaining_fmts = remaining_fmts, []
+                else:
+                    n = round(len(words) * (orig_count / total_original_words))
+                    n = max(0, min(n, len(remaining_words)))
+                    share, remaining_words = remaining_words[:n], remaining_words[n:]
+                    share_fmts, remaining_fmts = remaining_fmts[:n], remaining_fmts[n:]
+                seg_text = " ".join(share)
+                segments[seg_idx]["text"] = seg_text
+                self.sync_segment_words(segments[seg_idx], seg_text, share_fmts)
+
+        if self.translations:
+            for key in self.translations:
+                self.translations[key]["status"] = "stale"
+            self.log_activity("[TRANSLATION] Source transcript edited; existing translations marked for update.", mark_dirty=False)
+
+        if hasattr(self, "transcript_view"):
+            self.transcript_view.update_extra_selections()
+
+        if getattr(self, "_pending_transcript_edit_before", None) is None:
+            baseline = getattr(self, "_transcript_edit_baseline", None)
+            if baseline is not None:
+                self._pending_transcript_edit_before = baseline
+
+        timer = getattr(self, "_transcript_undo_timer", None)
+        if timer is not None:
+            timer.start()
+
+
+        self.mark_project_dirty()
+
+    def transcript_clicked(self, url):
+        text = url.toString()
+        if text.startswith("time:"):
+            seconds = float(text.split(":", 1)[1])
+            self.last_position_source = "transcript"
+            self.last_transcript_cursor_time = seconds
+            self.seek_to(seconds)
+            if hasattr(self.transcript_view, "move_cursor_to_time"):
+                self.transcript_view.move_cursor_to_time(seconds, self.transcript)
+        elif text.startswith("word:"):
+            # Viewing-mode left-click is navigation only.  Speaker actions
+            # are available from the right-click context menu.
+            parts = text.split(":")
+            seconds = float(parts[1])
+            self.last_position_source = "transcript"
+            self.last_transcript_cursor_time = seconds
+            self.seek_to(seconds)
+            if hasattr(self.transcript_view, "move_cursor_to_time"):
+                self.transcript_view.move_cursor_to_time(seconds, self.transcript)
+        elif text.startswith("speaker:"):
+            parts = text.split(":")
+            if len(parts) >= 2 and parts[1].isdigit():
+                seg_idx = int(parts[1])
+                segments = self.transcript.get("segments", []) if self.transcript else []
+                if 0 <= seg_idx < len(segments):
+                    seg = segments[seg_idx]
+                    start_time = float(seg.get("start", 0.0))
+                    self.last_position_source = "transcript"
+                    self.last_transcript_cursor_time = start_time
+                    self.seek_to(start_time)
+                    if hasattr(self.transcript_view, "move_cursor_to_time"):
+                        self.transcript_view.move_cursor_to_time(start_time, self.transcript)
+
+    def edit_segment_comment_dialog(
+        self,
+        seg_idx: int,
+        sel_text: str = "",
+        start_char: Optional[int] = None,
+        end_char: Optional[int] = None,
+        t_range: Optional[tuple[float, float]] = None,
+        covered_indices: Optional[List[int]] = None
+    ):
+        """Open comment editor dialog for the targeted transcript segment and selection range."""
+        if not self.transcript or "segments" not in self.transcript:
+            QMessageBox.information(self, "No Transcript", "No transcript is currently loaded.")
+            return
+        segments = self.transcript["segments"]
+        if not (0 <= seg_idx < len(segments)):
+            return
+        seg = segments[seg_idx]
+        current_comment = seg.get("comments") or seg.get("notes", "")
+
+        # If no explicit selection was passed, use any previously saved comment text selection
+        if not sel_text:
+            sel_text = seg.get("comment_selected_text", "")
+
+        prompt = f"Comment for Segment {seg_idx + 1} ({format_time(seg.get('start', 0.0))}):"
+        if sel_text:
+            disp_quote = sel_text if len(sel_text) <= 80 else sel_text[:77] + "..."
+            prompt = f'Comment for selection: "{disp_quote}"'
+
+        dialog = CommentEditorDialog(
+            self,
+            comment_text=current_comment,
+            title="Edit Comment" if current_comment else "Add Comment",
+            prompt=prompt,
+        )
+        if dialog.exec() == QDialog.DialogCode.Accepted:
+            before_state = self._capture_project_state() if hasattr(self, "_capture_project_state") else None
+            # Force exactly one target segment index to prevent comment duplication
+            target_indices = [seg_idx]
+            if dialog.is_deleted():
+                for idx in target_indices:
+                    if 0 <= idx < len(segments):
+                        s = segments[idx]
+                        s.pop("comments", None)
+                        s.pop("notes", None)
+                        s.pop("comment_selected_text", None)
+                        s.pop("comment_char_start", None)
+                        s.pop("comment_char_end", None)
+                        s.pop("comment_start_time", None)
+                        s.pop("comment_end_time", None)
+            else:
+                text = dialog.get_comment_text()
+                if text.strip():
+                    for idx in target_indices:
+                        if 0 <= idx < len(segments):
+                            s = segments[idx]
+                            s["comments"] = text
+                            s["notes"] = text  # preserve backward compatibility
+                            if sel_text:
+                                s["comment_selected_text"] = sel_text
+                            if start_char is not None and end_char is not None:
+                                s["comment_char_start"] = start_char
+                                s["comment_char_end"] = end_char
+                            if t_range:
+                                s["comment_start_time"] = t_range[0]
+                                s["comment_end_time"] = t_range[1]
+                else:
+                    for idx in target_indices:
+                        if 0 <= idx < len(segments):
+                            s = segments[idx]
+                            s.pop("comments", None)
+                            s.pop("notes", None)
+                            s.pop("comment_selected_text", None)
+                            s.pop("comment_char_start", None)
+                            s.pop("comment_char_end", None)
+                            s.pop("comment_start_time", None)
+                            s.pop("comment_end_time", None)
+
+            self.mark_project_dirty()
+            if hasattr(self, "transcript_view"):
+                self.transcript_view.update_extra_selections()
+            if hasattr(self, "comments_panel"):
+                self.comments_panel.set_comments(segments)
+                self.comments_panel.highlight_segment(seg_idx)
+            if before_state and hasattr(self, "_commit_project_state_change"):
+                self._commit_project_state_change(before_state, "Update Comment")
+
+    # Alias for backward compatibility
+    edit_segment_note_dialog = edit_segment_comment_dialog
+
+    def add_comment_from_selection(self):
+        """Add or edit comment anchored to the active transcript selection."""
+        if not hasattr(self, "transcript_view") or not self.transcript or "segments" not in self.transcript:
+            return
+
+        segments = self.transcript.get("segments", [])
+        cursor = self.transcript_view.textCursor()
+        sel_text = ""
+        start_char = None
+        end_char = None
+        t_range = None
+        covered_indices = []
+
+        if cursor.hasSelection():
+            sel_text = cursor.selectedText().replace('\u2029', '\n').strip()
+            start_char = min(cursor.selectionStart(), cursor.selectionEnd())
+            end_char = max(cursor.selectionStart(), cursor.selectionEnd())
+            if hasattr(self.transcript_view, "get_time_range_for_char_span"):
+                t_range = self.transcript_view.get_time_range_for_char_span(start_char, end_char)
+        elif hasattr(self.transcript_view, "saved_selections") and self.transcript_view.saved_selections:
+            sel = self.transcript_view.saved_selections[0]
+            sel_text = sel.get("text", "").strip()
+            start_char = sel.get("start_char")
+            end_char = sel.get("end_char")
+            if "start_time" in sel and "end_time" in sel:
+                t_range = (sel["start_time"], sel["end_time"])
+
+        if t_range and t_range[0] is not None and t_range[1] is not None:
+            st, et = t_range
+            for i, s in enumerate(segments):
+                s_start = s.get("start", 0.0)
+                s_end = s.get("end", 0.0)
+                if (s_start < et and s_end > st):
+                    covered_indices.append(i)
+
+        seg_idx = None
+        if covered_indices:
+            seg_idx = covered_indices[0]
+        else:
+            seg_idx = self.transcript_view.get_segment_index_at_cursor(cursor)
+            if seg_idx is None:
+                ranges = self.transcript_view.get_all_selected_story_ranges()
+                if ranges and hasattr(self, "transcript") and self.transcript:
+                    t = ranges[0].get("start_time", 0.0)
+                    for i, s in enumerate(segments):
+                        if s.get("start", 0.0) <= t <= s.get("end", 0.0):
+                            seg_idx = i
+                            break
+            if seg_idx is None:
+                seg_idx = cursor.blockNumber()
+
+        if seg_idx is not None and 0 <= seg_idx < len(segments):
+            self.edit_segment_comment_dialog(
+                seg_idx,
+                sel_text=sel_text,
+                start_char=start_char,
+                end_char=end_char,
+                t_range=t_range,
+                covered_indices=covered_indices
+            )
+
+    def delete_segment_comment(self, seg_idx):
+        """Delete comment anchored to the specified segment and clear associated highlights."""
+        if not self.transcript or "segments" not in self.transcript:
+            return
+        before_state = self._capture_project_state() if hasattr(self, "_capture_project_state") else None
+        segments = self.transcript["segments"]
+        if 0 <= seg_idx < len(segments):
+            seg = segments[seg_idx]
+            seg.pop("comments", None)
+            seg.pop("notes", None)
+            seg.pop("comment_selected_text", None)
+            seg.pop("comment_char_start", None)
+            seg.pop("comment_char_end", None)
+            seg.pop("comment_start_time", None)
+            seg.pop("comment_end_time", None)
+            seg.pop("highlight", None)
+            if "words" in seg and isinstance(seg["words"], list):
+                for w in seg["words"]:
+                    if isinstance(w, dict):
+                        w.pop("highlight", None)
+            self.mark_project_dirty()
+            if hasattr(self, "transcript_view"):
+                self.transcript_view.update_extra_selections()
+            if hasattr(self, "comments_panel"):
+                self.comments_panel.set_comments(segments)
+            if before_state and hasattr(self, "_commit_project_state_change"):
+                self._commit_project_state_change(before_state, "Delete Comment")
+
+    def toggle_comments_panel(self):
+        """Toggle visibility of the comments sidebar."""
+        if hasattr(self, "comments_panel"):
+            is_vis = not self.comments_panel.isVisible()
+            self.toggle_show_comments(is_vis)
+
+    def toggle_show_comments(self, checked):
+        """Toggle display of comments sidebar and yellow anchor highlights."""
+        self.show_comments = checked
+        self.show_notes = checked
+        if hasattr(self, "settings_store"):
+            self.settings_store.setValue("show_comments", checked)
+            self.settings_store.setValue("show_notes", checked)
+        if hasattr(self, "comments_panel"):
+            self.comments_panel.setVisible(checked)
+        if hasattr(self, "comments_toggle_btn"):
+            self.comments_toggle_btn.blockSignals(True)
+            self.comments_toggle_btn.setChecked(checked)
+            self.comments_toggle_btn.blockSignals(False)
+        if hasattr(self, "toggle_comments_action"):
+            self.toggle_comments_action.blockSignals(True)
+            self.toggle_comments_action.setChecked(checked)
+            self.toggle_comments_action.blockSignals(False)
+        if hasattr(self, "transcript_show_comments_action"):
+            self.transcript_show_comments_action.blockSignals(True)
+            self.transcript_show_comments_action.setChecked(checked)
+            self.transcript_show_comments_action.blockSignals(False)
+        if hasattr(self, "transcript_view"):
+            self.transcript_view.update_extra_selections()
+
+    # Alias for backward compatibility
+    toggle_show_notes = toggle_show_comments
+
+    def handle_insert_speaker_request(self, seg_idx, split_time, speaker_name):
+        """Dispatched from the right-click 'Add Speaker Label Here' context menu."""
+        if speaker_name == "__NEW__":
+            self.add_speaker_label_at(seg_idx, split_time, name=None)
+        else:
+            self.add_speaker_label_at(seg_idx, split_time, name=speaker_name)
+
+    def add_speaker_label_at(self, seg_idx, split_time, name=None):
+        """Adds a speaker label break: assigns or splits the segment at split_time."""
+        if not self.transcript or "segments" not in self.transcript:
+            self.statusBar().showMessage("No transcript available.")
+            return False
+
+        segments = self.transcript.get("segments", [])
+        if not segments:
+            return False
+
+        # If seg_idx is invalid, locate the segment that contains split_time
+        if seg_idx is None or seg_idx < 0 or seg_idx >= len(segments):
+            for i, seg in enumerate(segments):
+                s_start = float(seg.get("start", 0.0))
+                s_end = float(seg.get("end", s_start))
+                if s_start <= split_time <= s_end:
+                    seg_idx = i
+                    break
+            if seg_idx is None:
+                seg_idx = max(0, min(len(segments) - 1, int(seg_idx or 0)))
+
+        if name is None:
+            known = self.get_all_known_speakers() if hasattr(self, "get_all_known_speakers") else []
+            if known:
+                name, accepted = QInputDialog.getItem(
+                    self, "Add Speaker Label", "Speaker name for this label:", known, 0, True
+                )
+            else:
+                name, accepted = QInputDialog.getText(self, "Add Speaker Label", "Speaker name for this label:")
+            if not accepted:
+                return False
+
+        name = (name or "").strip()
+        if not name:
+            self.statusBar().showMessage("Speaker label needs a name.")
+            return False
+
+        target_seg = segments[seg_idx]
+        words = target_seg.get("words", [])
+
+        # Check if click is at or before the very first word of the segment
+        is_at_segment_start = False
+        if words:
+            if split_time <= words[0].get("start", target_seg["start"]) + 0.05:
+                is_at_segment_start = True
+        else:
+            if split_time <= float(target_seg.get("start", 0.0)) + 0.1:
+                is_at_segment_start = True
+
+        # If click is at start of segment, reassign this segment directly without splitting
+        if is_at_segment_start:
+            self.flush_pending_transcript_undo() if hasattr(self, "flush_pending_transcript_undo") else None
+            before_state = self._capture_project_state() if hasattr(self, "_capture_project_state") else None
+
+            override_key = f"SEG_{seg_idx}_SPEAKER"
+            self.speaker_names[override_key] = name
+            self.segment_speaker_overrides[seg_idx] = override_key
+            self._diar_index_key = None
+
+            if before_state is not None and hasattr(self, "_commit_project_state_change"):
+                self._commit_project_state_change(before_state, f"Add Speaker Label ({name})")
+
+            self.add_custom_speaker_to_glossary(name)
+            self.log_activity(f"[SPEAKER] Set speaker label '{name}' at segment #{seg_idx + 1}")
+            self.save_project()
+            self.render_transcript()
+            return True
+
+        # Otherwise, split segment at word boundary
+        if not self.split_segment_at_time(seg_idx, split_time, new_speaker_name=name):
+            # Fallback: if words-based split rejected because split_time was slightly off,
+            # assign to the segment directly so the user action always succeeds
+            self.flush_pending_transcript_undo() if hasattr(self, "flush_pending_transcript_undo") else None
+            before_state = self._capture_project_state() if hasattr(self, "_capture_project_state") else None
+
+            override_key = f"SEG_{seg_idx}_SPEAKER"
+            self.speaker_names[override_key] = name
+            self.segment_speaker_overrides[seg_idx] = override_key
+            self._diar_index_key = None
+
+            if before_state is not None and hasattr(self, "_commit_project_state_change"):
+                self._commit_project_state_change(before_state, f"Add Speaker Label ({name})")
+
+            self.add_custom_speaker_to_glossary(name)
+            self.log_activity(f"[SPEAKER] Assigned speaker label '{name}' to segment #{seg_idx + 1}")
+            self.save_project()
+            self.render_transcript()
+            return True
+
+        self.add_custom_speaker_to_glossary(name)
+        return True
+
+    def split_segment_at_time(self, seg_idx, split_time, new_speaker_name=None):
+        """Split a segment at an exact word timestamp."""
+        if not self.transcript or "segments" not in self.transcript:
+            return False
+
+        segments = self.transcript.get("segments", [])
+        if seg_idx < 0 or seg_idx >= len(segments):
+            return False
+
+        target_seg = segments[seg_idx]
+        words = target_seg.get("words", [])
+
+        if words:
+            # Find the best split split index by proximity
+            split_idx = -1
+            for w_i, w in enumerate(words):
+                if w.get("start", target_seg["start"]) >= split_time - 0.01:
+                    split_idx = w_i
+                    break
+
+            if split_idx <= 0 or split_idx >= len(words):
+                return False
+
+            left_words = words[:split_idx]
+            right_words = words[split_idx:]
+
+            seg1 = dict(target_seg)
+            seg1["end"] = left_words[-1].get("end", split_time)
+            seg1["words"] = left_words
+            seg1["text"] = " ".join(w.get("word", "") for w in left_words)
+
+            seg2 = dict(target_seg)
+            seg2["start"] = right_words[0].get("start", split_time)
+            seg2["words"] = right_words
+            seg2["text"] = " ".join(w.get("word", "") for w in right_words)
+        else:
+            seg_text = target_seg.get("text", "").split()
+            if len(seg_text) < 2:
+                return False
+
+            seg_start = float(target_seg.get("start", split_time))
+            seg_end = float(target_seg.get("end", split_time))
+            duration = max(0.0, seg_end - seg_start)
+            ratio = max(0.0, min(1.0, (float(split_time) - seg_start) / duration)) if duration > 0 else 0.5
+            split_word = max(1, min(len(seg_text) - 1, round(len(seg_text) * ratio)))
+
+            seg1 = dict(target_seg)
+            seg1["end"] = float(split_time)
+            seg1["text"] = " ".join(seg_text[:split_word])
+
+            seg2 = dict(target_seg)
+            seg2["start"] = float(split_time)
+            seg2["text"] = " ".join(seg_text[split_word:])
+
+        self.flush_pending_transcript_undo() if hasattr(self, "flush_pending_transcript_undo") else None
+        before_state = self._capture_project_state() if hasattr(self, "_capture_project_state") else None
+
+        segments[seg_idx] = seg1
+        segments.insert(seg_idx + 1, seg2)
+
+        # Shift overrides down
+        new_overrides = {}
+        for idx_k, spk in self.segment_speaker_overrides.items():
+            k = int(idx_k)
+            if k <= seg_idx:
+                new_overrides[k] = spk
+            else:
+                new_overrides[k + 1] = spk
+        self.segment_speaker_overrides = new_overrides
+
+        if new_speaker_name:
+            override_key = f"SEG_{seg_idx + 1}_SPEAKER"
+            self.speaker_names[override_key] = str(new_speaker_name).strip()
+            self.segment_speaker_overrides[seg_idx + 1] = override_key
+
+        self._diar_index_key = None
+
+        if before_state is not None and hasattr(self, "_commit_project_state_change"):
+            self._commit_project_state_change(
+                before_state,
+                f"Add Speaker Label{' (' + str(new_speaker_name) + ')' if new_speaker_name else ''}"
+            )
+
+        self.log_activity(f"[SPEAKER] Added speaker label break at {format_time(split_time)} (Split Segment #{seg_idx + 1})")
+        self.save_project()
+        self.render_transcript()
+        return True
+
+    def prompt_rename_custom_speaker(self, old_name):
+        self.flush_pending_transcript_undo() if hasattr(self, "flush_pending_transcript_undo") else None
+        before_state = self._capture_project_state() if hasattr(self, "_capture_project_state") else None
+        new_name, accepted = QInputDialog.getText(
+            self,
+            "Rename Speaker",
+            f"Enter new name for {old_name}:",
+            QLineEdit.EchoMode.Normal,
+            old_name,
+        )
+        if accepted and new_name.strip():
+            self.speaker_names[f"CUSTOM_{old_name}"] = new_name.strip()
+            self.add_custom_speaker_to_glossary(new_name.strip())
+            if before_state is not None and hasattr(self, "_commit_project_state_change"):
+                self._commit_project_state_change(before_state, f"Rename Speaker: {old_name} → {new_name.strip()}")
+            self.render_transcript()
+            self.save_project()
+            self.log_activity(f"[SPEAKER] Renamed custom speaker '{old_name}' to '{new_name.strip()}'")
+
+    def display_speaker(self, speaker):
+        if speaker is None:
+            return ""
+
+        speaker = str(speaker)
+        custom_name = self.speaker_names.get(speaker)
+        if custom_name:
+            return custom_name
+
+        match = re.search(r"(\d+)$", speaker)
+        if match:
+            number = int(match.group(1)) + 1
+            return f"Speaker {number}"
+
+        return speaker
+
+    def get_all_known_speakers(self):
+        """Return a sorted list of unique speaker names currently known or used in the project."""
+        speakers = set()
+        # Custom speaker name overrides
+        if hasattr(self, "speaker_names") and self.speaker_names:
+            for k, v in self.speaker_names.items():
+                if v and isinstance(v, str) and v.strip() and not k.startswith("SEG_"):
+                    speakers.add(v.strip())
+        # Transcript segment effective speakers
+        if getattr(self, "transcript", None) and isinstance(self.transcript, dict) and "segments" in self.transcript:
+            for idx, seg in enumerate(self.transcript["segments"]):
+                name = self.get_effective_speaker_name(idx, seg)
+                if name and name.strip():
+                    speakers.add(name.strip())
+        # Diarization segments
+        diar_data = getattr(self, "diarization_result", None) or getattr(self, "diarization", None)
+        if isinstance(diar_data, dict) and "segments" in diar_data:
+            for seg in diar_data["segments"]:
+                spk = seg.get("speaker")
+                if spk:
+                    disp = self.display_speaker(spk)
+                    if disp and disp.strip():
+                        speakers.add(disp.strip())
+        # Custom speakers in glossary
+        if hasattr(self, "custom_speakers") and self.custom_speakers:
+            for spk in self.custom_speakers:
+                if spk and isinstance(spk, str) and spk.strip():
+                    speakers.add(spk.strip())
+
+        def natural_sort_key(s):
+            is_speaker_num = s.startswith("Speaker ") and s[8:].isdigit()
+            if is_speaker_num:
+                return (0, int(s[8:]), s.lower())
+            return (1, 0, [int(t) if t.isdigit() else t.lower() for t in re.split(r"(\d+)", s)])
+
+        return sorted(speakers, key=natural_sort_key)
+
+    def execute_speaker_rename(self, seg_idx, raw_speaker, target_name):
+        """Reassign or rename a speaker from the context menu or speaker options."""
+        if not self.transcript or "segments" not in self.transcript:
+            return
+        segments = self.transcript.get("segments", [])
+        if seg_idx < 0 or seg_idx >= len(segments):
+            return
+
+        current_name = (
+            self.get_effective_speaker_name(seg_idx, segments[seg_idx])
+            if seg_idx < len(segments)
+            else self.display_speaker(raw_speaker)
+        )
+
+        if target_name == "__NEW__":
+            new_name, accepted = QInputDialog.getText(
+                self,
+                "New Speaker Name",
+                f"Enter new name for '{current_name}':",
+                QLineEdit.EchoMode.Normal,
+                "",
+            )
+            if not accepted or not new_name.strip():
+                return
+            target_name = new_name.strip()
+        else:
+            target_name = str(target_name).strip()
+
+        if not target_name or target_name == current_name:
+            return
+
+        # Prompt whether to change all instances or this instance only
+        msg_box = QMessageBox(self)
+        msg_box.setWindowTitle("Change Speaker")
+        msg_box.setText(f"Change '{current_name}' to '{target_name}' for:")
+
+        all_btn = msg_box.addButton(f"All Instances of '{current_name}'", QMessageBox.ButtonRole.AcceptRole)
+        single_btn = msg_box.addButton("This Instance Only", QMessageBox.ButtonRole.ActionRole)
+        cancel_btn = msg_box.addButton(QMessageBox.StandardButton.Cancel)
+
+        msg_box.exec()
+        clicked = msg_box.clickedButton()
+        if clicked not in (all_btn, single_btn):
+            return
+
+        self.flush_pending_transcript_undo() if hasattr(self, "flush_pending_transcript_undo") else None
+        before_state = self._capture_project_state() if hasattr(self, "_capture_project_state") else None
+
+        if clicked == all_btn:
+            if raw_speaker:
+                self.speaker_names[str(raw_speaker)] = target_name
+            self.add_custom_speaker_to_glossary(target_name)
+            for idx, seg in enumerate(segments):
+                if self.get_effective_speaker_name(idx, seg) == current_name:
+                    override_key = f"SEG_{idx}_SPEAKER"
+                    self.speaker_names[override_key] = target_name
+                    self.segment_speaker_overrides[idx] = override_key
+            self.log_activity(f"[SPEAKER] Changed all instances of '{current_name}' to '{target_name}'")
+        elif clicked == single_btn:
+            override_key = f"SEG_{seg_idx}_SPEAKER"
+            self.speaker_names[override_key] = target_name
+            self.segment_speaker_overrides[seg_idx] = override_key
+            self.add_custom_speaker_to_glossary(target_name)
+            self.log_activity(
+                f"[SPEAKER] Changed single instance of '{current_name}' to '{target_name}' (Segment #{seg_idx})"
+            )
+
+        if before_state is not None and hasattr(self, "_commit_project_state_change"):
+            self._commit_project_state_change(before_state, f"Change Speaker: {current_name} → {target_name}")
+
+        self.render_transcript()
+        self.save_project()
+        self.statusBar().showMessage(f"Updated speaker to: {target_name}")
+
+    def prompt_rename_speaker(self, seg_idx, speaker):
+        self.execute_speaker_rename(seg_idx, speaker, "__NEW__")
+
+    def remove_speaker_label_at_segment(self, seg_idx):
+        """Remove a speaker label strictly for this specific instance/turn, 
+        reassigning only this contiguous section to the preceding speaker."""
+        if not self.transcript or "segments" not in self.transcript:
+            return False
+
+        segments = self.transcript.get("segments", [])
+        if seg_idx <= 0 or seg_idx >= len(segments):
+            return False  # Must have a previous segment to merge into
+
+        self.flush_pending_transcript_undo() if hasattr(self, "flush_pending_transcript_undo") else None
+        before_state = self._capture_project_state() if hasattr(self, "_capture_project_state") else None
+
+        # 1. Determine the target speaker immediately preceding this label
+        prev_seg_idx = seg_idx - 1
+        target_name = self.get_effective_speaker_name(prev_seg_idx, segments[prev_seg_idx])
+        target_raw = (
+            self.segment_speaker_overrides.get(prev_seg_idx) 
+            or self.speaker_for_segment(segments[prev_seg_idx])
+        )
+
+        # 2. Identify the speaker being removed at this specific position
+        removed_name = self.get_effective_speaker_name(seg_idx, segments[seg_idx])
+
+        # 3. Find only the CONTIGUOUS run of segments in this specific turn
+        section_indices = []
+        for i in range(seg_idx, len(segments)):
+            if self.get_effective_speaker_name(i, segments[i]) == removed_name:
+                section_indices.append(i)
+            else:
+                break  # Stop as soon as another speaker turn begins
+
+        if not section_indices:
+            return False
+
+        section_indices_set = set(section_indices)
+
+        # 4. Create isolated segment overrides for this section only.
+        # We do NOT touch or reuse global speaker names to avoid altering 
+        # other instances of either speaker that occur before or after.
+        for idx in section_indices:
+            instance_key = f"SEG_{idx}_SPEAKER"
+            self.speaker_names[instance_key] = target_name
+            self.segment_speaker_overrides[idx] = instance_key
+
+        # 5. Reassign underlying diarization segments ONLY within this specific time range
+        if self.diarization and isinstance(self.diarization, dict):
+            sec_start = float(segments[section_indices[0]].get("start", 0.0))
+            sec_end = float(segments[section_indices[-1]].get("end", sec_start))
+            diar_segs = self.diarization.get("segments", [])
+            updated_diar = False
+
+            # Use the previous segment's underlying raw identity if valid, else an isolated key
+            new_diar_speaker = target_raw or f"SEG_{prev_seg_idx}_SPEAKER"
+
+            for d_seg in diar_segs:
+                d_start = float(d_seg.get("start", 0.0))
+                d_end = float(d_seg.get("end", d_start))
+
+                # Check strict time-boundary overlap with this specific turn
+                overlap = min(sec_end, d_end) - max(sec_start, d_start)
+                if overlap <= 0.001:
+                    continue
+
+                # Find which transcript segment in this turn the diarization segment best overlaps
+                best_seg_idx = None
+                best_seg_overlap = 0.0
+
+                for s_idx in section_indices:
+                    t_seg = segments[s_idx]
+                    t_start = float(t_seg.get("start", 0.0))
+                    t_end = float(t_seg.get("end", t_start))
+                    cur_overlap = min(t_end, d_end) - max(t_start, d_start)
+                    if cur_overlap > best_seg_overlap:
+                        best_seg_overlap = cur_overlap
+                        best_seg_idx = s_idx
+
+                if best_seg_idx in section_indices_set:
+                    d_seg["speaker"] = new_diar_speaker
+                    updated_diar = True
+
+            if updated_diar:
+                self._diar_index_key = None
+
+        if before_state is not None and hasattr(self, "_commit_project_state_change"):
+            self._commit_project_state_change(
+                before_state,
+                f"Remove Speaker Label: {removed_name} → {target_name} (turn at #{seg_idx + 1})"
+            )
+
+        self.log_activity(
+            f"[SPEAKER] Removed speaker label '{removed_name}' at segment #{seg_idx + 1}; "
+            f"merged {len(section_indices)} segment(s) into '{target_name}'"
+        )
+        self.save_project()
+        self.render_transcript()
+        self.statusBar().showMessage(f"Removed '{removed_name}' label at {format_time(segments[seg_idx].get('start', 0))}.")
+        return True
+
+    def sync_segment_words(self, segment, new_text, word_formats=None):
+        """
+        Interpolate and maintain word-level timestamps when segment text is edited.
+        Preserves exact timing of unchanged words, and linearly interpolates
+        timestamps for modified, inserted, or substituted words (Token Splicing).
+        """
+        if not isinstance(segment, dict):
+            return
+
+        old_words = segment.get("words")
+        new_tokens = [tok.strip() for tok in new_text.split()] if isinstance(new_text, str) else []
+
+        seg_start = float(segment.get("start", 0.0))
+        seg_end = float(segment.get("end", seg_start + 1.0))
+        total_dur = max(0.01, seg_end - seg_start)
+
+        if not old_words or not isinstance(old_words, list):
+            if not new_tokens:
+                segment["words"] = []
+                return
+            w_dur = total_dur / len(new_tokens)
+            new_words = [
+                {
+                    "word": tok,
+                    "start": round(seg_start + i * w_dur, 3),
+                    "end": round(seg_start + (i + 1) * w_dur, 3),
+                    "deleted": False,
+                }
+                for i, tok in enumerate(new_tokens)
+            ]
+            if word_formats:
+                for idx, w_dict in enumerate(new_words):
+                    if 0 <= idx < len(word_formats):
+                        fmt = word_formats[idx]
+                        if fmt.get("bold"): w_dict["bold"] = True
+                        if fmt.get("italic"): w_dict["italic"] = True
+                        if fmt.get("underline"): w_dict["underline"] = True
+                        if fmt.get("strike"): w_dict["strike"] = True
+                        if fmt.get("highlight"): w_dict["highlight"] = fmt["highlight"]
+            segment["words"] = new_words
+            return
+
+        if not new_tokens:
+            segment["words"] = []
+            return
+
+        import difflib
+        old_toks = [str(w.get("word", "")).strip() for w in old_words]
+        matcher = difflib.SequenceMatcher(None, [t.lower() for t in old_toks], [t.lower() for t in new_tokens])
+
+        new_words_list = []
+
+        for tag, i1, i2, j1, j2 in matcher.get_opcodes():
+            if tag == 'equal':
+                for old_idx, new_idx in zip(range(i1, i2), range(j1, j2)):
+                    w_obj = dict(old_words[old_idx])
+                    w_obj["word"] = new_tokens[new_idx]
+                    new_words_list.append(w_obj)
+            elif tag == 'replace':
+                t_start = float(old_words[i1].get("start", seg_start))
+                t_end = float(old_words[i2 - 1].get("end", seg_end))
+                t_span = max(0.01, t_end - t_start)
+                num_new = max(1, j2 - j1)
+                w_dur = t_span / num_new
+                for k, new_idx in enumerate(range(j1, j2)):
+                    new_words_list.append({
+                        "word": new_tokens[new_idx],
+                        "start": round(t_start + k * w_dur, 3),
+                        "end": round(t_start + (k + 1) * w_dur, 3),
+                        "deleted": False,
+                    })
+            elif tag == 'insert':
+                if i1 > 0 and i1 <= len(old_words):
+                    t_start = float(old_words[i1 - 1].get("end", seg_start))
+                else:
+                    t_start = seg_start
+
+                if i1 < len(old_words):
+                    t_end = float(old_words[i1].get("start", seg_end))
+                else:
+                    t_end = seg_end
+
+                if t_end < t_start:
+                    t_end = t_start + 0.2 * (j2 - j1)
+                t_span = max(0.01, t_end - t_start)
+                num_new = max(1, j2 - j1)
+                w_dur = t_span / num_new
+                for k, new_idx in enumerate(range(j1, j2)):
+                    new_words_list.append({
+                        "word": new_tokens[new_idx],
+                        "start": round(t_start + k * w_dur, 3),
+                        "end": round(t_start + (k + 1) * w_dur, 3),
+                        "deleted": False,
+                    })
+            elif tag == 'delete':
+                pass
+
+        if word_formats:
+            for idx, w_dict in enumerate(new_words_list):
+                if 0 <= idx < len(word_formats):
+                    fmt = word_formats[idx]
+                    if fmt.get("bold"): w_dict["bold"] = True
+                    else: w_dict.pop("bold", None)
+                    if fmt.get("italic"): w_dict["italic"] = True
+                    else: w_dict.pop("italic", None)
+                    if fmt.get("underline"): w_dict["underline"] = True
+                    else: w_dict.pop("underline", None)
+                    if fmt.get("strike"): w_dict["strike"] = True
+                    else: w_dict.pop("strike", None)
+                    if fmt.get("highlight"): w_dict["highlight"] = fmt["highlight"]
+                    else: w_dict.pop("highlight", None)
+
+        segment["words"] = new_words_list
+
+    def merge_speakers(self, source_speaker: str, target_speaker: str) -> bool:
+        """
+        Global speaker merge: reassigns all segment tags, diarization tracks, and overrides
+        from source_speaker to target_speaker across the entire timeline in one pass.
+        """
+        source = (source_speaker or "").strip()
+        target = (target_speaker or "").strip()
+        if not source or not target or source == target:
+            return False
+
+        if not self.transcript or not self.transcript.get("segments"):
+            return False
+
+        self.flush_pending_transcript_undo() if hasattr(self, "flush_pending_transcript_undo") else None
+        before_state = self._capture_project_state() if hasattr(self, "_capture_project_state") else None
+
+        segments = self.transcript.get("segments", [])
+        reassigned_segments = 0
+
+        for idx, seg in enumerate(segments):
+            curr_name = self.get_effective_speaker_name(idx, seg)
+            raw_spk = self.segment_speaker_overrides.get(idx) or seg.get("speaker")
+            if curr_name == source or str(raw_spk) == source:
+                override_key = f"SEG_{idx}_SPEAKER"
+                self.speaker_names[override_key] = target
+                self.segment_speaker_overrides[idx] = override_key
+                seg["speaker"] = target
+                reassigned_segments += 1
+
+        # Reassign diarization clusters
+        diar_data = getattr(self, "diarization", None)
+        if isinstance(diar_data, dict) and "segments" in diar_data:
+            for d_seg in diar_data["segments"]:
+                raw_d = str(d_seg.get("speaker", ""))
+                disp_d = self.display_speaker(raw_d)
+                if disp_d == source or raw_d == source:
+                    d_seg["speaker"] = target
+            unique_speakers = {s.get("speaker") for s in diar_data["segments"] if s.get("speaker")}
+            diar_data["num_speakers"] = len(unique_speakers)
+            self._diar_index_key = None
+
+        # Alias mapping update
+        self.speaker_names[source] = target
+        if hasattr(self, "custom_speakers"):
+            if source in self.custom_speakers:
+                self.custom_speakers.remove(source)
+            if target not in self.custom_speakers:
+                self.custom_speakers.append(target)
+
+        if before_state is not None and hasattr(self, "_commit_project_state_change"):
+            self._commit_project_state_change(
+                before_state,
+                f"Merge Speaker '{source}' into '{target}'"
+            )
+
+        self.log_activity(f"[SPEAKER] Merged speaker '{source}' into '{target}' across {reassigned_segments} segment(s).")
+        self.save_project()
+        self.render_transcript()
+        if hasattr(self, "timeline"):
+            self.timeline.update()
+        if hasattr(self, "statusBar"):
+            self.statusBar().showMessage(f"Merged '{source}' into '{target}'.")
+        return True
+
+    def open_speaker_manager_dialog(self):
+        """Display the dedicated Speaker Manager & Diarization Clusters dialog."""
+        dialog = SpeakerManagerDialog(self)
+        dialog.exec()
+
+    def merge_contiguous_speaker_segments(self):
+        if not self.transcript or "segments" not in self.transcript:
+            return
+
+        segments = self.transcript["segments"]
+        if not segments:
+            return
+
+        merged_segments = []
+        new_overrides = {}
+        curr_block = None
+        curr_effective_name = None
+
+        for idx, seg in enumerate(segments):
+            effective_name = self.get_effective_speaker_name(idx, seg)
+
+            if curr_block is None:
+                curr_block = dict(seg)
+                curr_block["words"] = list(seg.get("words", []))
+                curr_effective_name = effective_name
+            else:
+                if effective_name == curr_effective_name:
+                    curr_block["end"] = seg["end"]
+                    curr_block["text"] = (curr_block["text"].strip() + " " + seg.get("text", "").strip()).strip()
+                    curr_block["words"].extend(seg.get("words", []))
+                else:
+                    merged_idx = len(merged_segments)
+                    merged_segments.append(curr_block)
+                    if idx - 1 in self.segment_speaker_overrides:
+                        new_overrides[merged_idx] = self.segment_speaker_overrides[idx - 1]
+
+                    curr_block = dict(seg)
+                    curr_block["words"] = list(seg.get("words", []))
+                    curr_effective_name = effective_name
+
+        if curr_block:
+            merged_idx = len(merged_segments)
+            merged_segments.append(curr_block)
+            if len(segments) - 1 in self.segment_speaker_overrides:
+                new_overrides[merged_idx] = self.segment_speaker_overrides[len(segments) - 1]
+
+        self.transcript["segments"] = merged_segments
+        self.segment_speaker_overrides = new_overrides
+
+    def refresh_story_list(self):
+        selected_indices = list(self.current_selected_story_indices)
+
+        self.story_list.blockSignals(True)
+        self.story_list.clear()
+
+        for index, story in enumerate(self.stories, start=1):
+            text = f"{index}. {format_time(story.start)} – {format_time(story.end)}  {story.title}"
+            item = QListWidgetItem(text)
+            item.setData(Qt.ItemDataRole.UserRole, story.to_dict())
+            self.story_list.addItem(item)
+
+        for idx in selected_indices:
+            if 0 <= idx < self.story_list.count():
+                self.story_list.item(idx).setSelected(True)
+
+        self.story_list.blockSignals(False)
+        self.timeline.set_stories(self.stories, selected_indices)
+
+    def handle_new_story_started(self, start_time, end_time):
+        self.pre_drag_stories_snapshot = [Story.from_dict(s.to_dict()) for s in self.stories]
+        is_music = getattr(self, "story_detection_mode", "voice") == "music"
+        default_title = "Untitled Song" if is_music else "Untitled Story"
+        story = Story(start=start_time, end=end_time, title=default_title)
+        self.stories.append(story)
+
+        self.refresh_story_list()
+        self.story_selection_changed()
+
+        self.start_input.setText(format_time(story.start))
+        self.end_input.setText(format_time(story.end))
+        self.title_input.setText(story.title)
+
+    def handle_new_story_updated(self, start_time, end_time):
+        if self.stories:
+            story = self.stories[-1]
+            story.start = start_time
+            story.end = end_time
+
+            self.start_input.setText(format_time(story.start))
+            self.end_input.setText(format_time(story.end))
+            self.refresh_story_list()
+
+    def handle_drag_story_region(self, index, start_time, end_time):
+        if not self.pre_drag_stories_snapshot:
+            self.pre_drag_stories_snapshot = [Story.from_dict(s.to_dict()) for s in self.stories]
+
+        if 0 <= index < len(self.stories):
+            story = self.stories[index]
+            story.start = start_time
+            story.end = end_time
+
+            if self.current_selected_story_indices != [index]:
+                self.apply_story_selection_indices([index], seek=False)
+            else:
+                self.start_input.setText(format_time(story.start))
+                self.end_input.setText(format_time(story.end))
+                self.refresh_story_list()
+
+    def handle_drag_finished(self):
+        if self.pre_drag_stories_snapshot:
+            old_stories = self.pre_drag_stories_snapshot
+            self.pre_drag_stories_snapshot = []
+
+            # Identify which story boundary changed
+            changed_idx = None
+            for i in range(min(len(old_stories), len(self.stories))):
+                if (
+                    abs(old_stories[i].start - self.stories[i].start) > 0.001
+                    or abs(old_stories[i].end - self.stories[i].end) > 0.001
+                ):
+                    changed_idx = i
+                    break
+
+            if changed_idx is not None and hasattr(self, "undo_stack"):
+                old_start = old_stories[changed_idx].start
+                old_end = old_stories[changed_idx].end
+                new_start = self.stories[changed_idx].start
+                new_end = self.stories[changed_idx].end
+                desc = f"Adjust Story #{changed_idx + 1} Boundary"
+                # Temporarily revert so push() executes redo() cleanly
+                self.stories[changed_idx].start = old_start
+                self.stories[changed_idx].end = old_end
+                cmd = StoryBoundaryChangeCommand(self, changed_idx, old_start, old_end, new_start, new_end, desc)
+                self.undo_stack.push(cmd)
+            else:
+                new_stories = [Story.from_dict(s.to_dict()) for s in self.stories]
+                self.commit_story_change(old_stories, new_stories, "Adjust Story Selection")
+                self.refresh_story_list()
+                self.save_project()
+
+    def update_selected_story(self):
+        selected_rows = list(self.current_selected_story_indices)
+
+        if not selected_rows:
+            return
+
+        try:
+            start = parse_time(self.start_input.text())
+            end = parse_time(self.end_input.text())
+        except ValueError as exc:
+            QMessageBox.warning(self, "Invalid Time", str(exc))
+            return
+
+        if end <= start:
+            QMessageBox.warning(self, "Invalid Story", "End time must be after start time.")
+            return
+
+        index = selected_rows[0]
+        if not (0 <= index < len(self.stories)):
+            return
+
+        old_stories = [Story.from_dict(s.to_dict()) for s in self.stories]
+        new_stories = [Story.from_dict(s.to_dict()) for s in self.stories]
+
+        new_stories[index].start = start
+        new_stories[index].end = end
+        new_stories[index].title = self.title_input.text().strip() or "Untitled Story"
+
+        start_changed = abs(new_stories[index].start - old_stories[index].start) >= 0.001
+        end_changed = abs(new_stories[index].end - old_stories[index].end) >= 0.001
+        title_changed = new_stories[index].title != old_stories[index].title
+
+        if not start_changed and not end_changed and not title_changed:
+            return
+
+        if (start_changed or end_changed) and not title_changed and hasattr(self, "undo_stack"):
+            desc = f"Adjust Story #{index + 1} Boundary"
+            cmd = StoryBoundaryChangeCommand(
+                self, index, old_stories[index].start, old_stories[index].end,
+                new_stories[index].start, new_stories[index].end, desc
+            )
+            self.undo_stack.push(cmd)
+            self.apply_story_selection_indices([index], seek=False)
+            return
+
+        self.commit_story_change(old_stories, new_stories, "Update Story Details")
+        self.apply_story_selection_indices([index], seek=False)
+
+    def delete_selected_story(self):
+        selected_rows = sorted(list(self.current_selected_story_indices), reverse=True)
+
+        if not selected_rows:
+            return
+
+        is_music = getattr(self, "story_detection_mode", "voice") == "music"
+        term = "Song" if is_music else "Story"
+        term_plural = "Songs" if is_music else "Stories"
+
+        old_stories = [Story.from_dict(s.to_dict()) for s in self.stories]
+        new_stories = [Story.from_dict(s.to_dict()) for s in self.stories]
+
+        for idx in selected_rows:
+            del new_stories[idx]
+
+        count = len(selected_rows)
+        # Clear story selection so that deleting a highlighted story removes the selection
+        self.apply_story_selection_indices([], seek=False)
+
+        # Clear any timeline drag selection range if present
+        if hasattr(self, "timeline") and hasattr(self.timeline, "canvas"):
+            self.timeline.canvas.selection_start = None
+            self.timeline.canvas.selection_end = None
+            self.timeline.canvas.selectionRangeChanged.emit(None, None)
+            self.timeline.canvas.update()
+
+        desc = f"Delete {term if count == 1 else term_plural}"
+        self.commit_story_change(old_stories, new_stories, desc)
+
+    def get_current_interaction_time(self, for_boundary="start"):
+        """
+        Determines the relevant timestamp for setting a story boundary.
+        Checks in order of user intent:
+        1. Active drag-selection on the timeline canvas
+        2. Active text selection in the transcript view
+        3. Active text cursor position in the transcript view (if last focused/edited)
+        4. Current playback / playhead / waveform position
+        """
+        canvas = getattr(getattr(self, "timeline", None), "canvas", None)
+        if canvas and canvas.selection_start is not None and canvas.selection_end is not None:
+            s = min(canvas.selection_start, canvas.selection_end)
+            e = max(canvas.selection_start, canvas.selection_end)
+            return s if for_boundary == "start" else e
+
+        if hasattr(self, "transcript_view"):
+            if self.transcript_view.has_active_selection():
+                sel_range = self.transcript_view.get_selected_time_range()
+                if sel_range:
+                    return sel_range[0] if for_boundary == "start" else sel_range[1]
+
+            if getattr(self, "last_position_source", None) == "transcript":
+                last_ts = getattr(self, "last_transcript_cursor_time", None)
+                if last_ts is not None and last_ts >= 0:
+                    return last_ts
+
+        return getattr(self, "current_position", 0.0)
+
+    def set_selected_story_start(self):
+        """Update the start boundary of the currently selected story to match the current transcript/timeline position."""
+        selected_rows = list(self.current_selected_story_indices)
+        if len(selected_rows) != 1:
+            return
+
+        index = selected_rows[0]
+        if not (0 <= index < len(self.stories)):
+            return
+
+        current_story = self.stories[index]
+        target_time = self.get_current_interaction_time(for_boundary="start")
+        if target_time is None:
+            target_time = getattr(self, "current_position", 0.0)
+
+        target_time = round(max(0.0, float(target_time)), 3)
+
+        if target_time >= current_story.end:
+            QMessageBox.warning(
+                self,
+                "Invalid Boundary",
+                f"Start time ({format_time(target_time)}) must be earlier than story end time ({format_time(current_story.end)})."
+            )
+            return
+
+        if abs(target_time - current_story.start) < 0.001:
+            return
+
+        # Clear any temporary drag selection on timeline
+        canvas = getattr(getattr(self, "timeline", None), "canvas", None)
+        if canvas and canvas.selection_start is not None:
+            canvas.selection_start = None
+            canvas.selection_end = None
+            canvas.update()
+
+        desc = f"Set Story #{index + 1} Start Time to {format_time(target_time)}"
+        if hasattr(self, "undo_stack"):
+            cmd = StoryBoundaryChangeCommand(
+                self, index, current_story.start, current_story.end,
+                target_time, current_story.end, desc
+            )
+            self.undo_stack.push(cmd)
+            self.apply_story_selection_indices([index], seek=True)
+        else:
+            old_stories = [Story.from_dict(s.to_dict()) for s in self.stories]
+            new_stories = [Story.from_dict(s.to_dict()) for s in self.stories]
+            new_stories[index].start = target_time
+            self.commit_story_change(old_stories, new_stories, desc)
+            self.refresh_story_list()
+            self.apply_story_selection_indices([index], seek=True)
+            self.mark_project_dirty(desc)
+            self.save_project()
+
+    def set_selected_story_end(self):
+        """Update the end boundary of the currently selected story to match the current transcript/timeline position."""
+        selected_rows = list(self.current_selected_story_indices)
+        if len(selected_rows) != 1:
+            return
+
+        index = selected_rows[0]
+        if not (0 <= index < len(self.stories)):
+            return
+
+        current_story = self.stories[index]
+        target_time = self.get_current_interaction_time(for_boundary="end")
+        if target_time is None:
+            target_time = getattr(self, "current_position", 0.0)
+
+        target_time = round(max(0.0, float(target_time)), 3)
+
+        if target_time <= current_story.start:
+            QMessageBox.warning(
+                self,
+                "Invalid Boundary",
+                f"End time ({format_time(target_time)}) must be later than story start time ({format_time(current_story.start)})."
+            )
+            return
+
+        if abs(target_time - current_story.end) < 0.001:
+            return
+
+        # Clear any temporary drag selection on timeline
+        canvas = getattr(getattr(self, "timeline", None), "canvas", None)
+        if canvas and canvas.selection_start is not None:
+            canvas.selection_start = None
+            canvas.selection_end = None
+            canvas.update()
+
+        desc = f"Set Story #{index + 1} End Time to {format_time(target_time)}"
+        if hasattr(self, "undo_stack"):
+            cmd = StoryBoundaryChangeCommand(
+                self, index, current_story.start, current_story.end,
+                current_story.start, target_time, desc
+            )
+            self.undo_stack.push(cmd)
+            self.apply_story_selection_indices([index], seek=False)
+        else:
+            old_stories = [Story.from_dict(s.to_dict()) for s in self.stories]
+            new_stories = [Story.from_dict(s.to_dict()) for s in self.stories]
+            new_stories[index].end = target_time
+            self.commit_story_change(old_stories, new_stories, desc)
+            self.refresh_story_list()
+            self.apply_story_selection_indices([index], seek=False)
+            self.mark_project_dirty(desc)
+            self.save_project()
+	
+    def add_selection_to_story(self):
+        """Create a new story segment spanning the selected transcript text."""
+        if not hasattr(self, "transcript_view"):
+            return
+
+        ranges = []
+        if hasattr(self.transcript_view, "get_all_selected_story_ranges"):
+            ranges = self.transcript_view.get_all_selected_story_ranges()
+
+        if not ranges:
+            cursor = self.transcript_view.textCursor()
+            if not cursor.hasSelection():
+                QMessageBox.information(
+                    self,
+                    "No Selection",
+                    "Highlight a portion of the transcript first to create a story from it."
+                )
+                return
+
+        is_music = getattr(self, "story_detection_mode", "voice") == "music"
+        term = "Song" if is_music else "Story"
+        term_plural = "Songs" if is_music else "Stories"
+
+        # Multiple selections workflow: create separate stories/songs for each selected section
+        if len(ranges) > 1:
+            old_stories = [Story.from_dict(s.to_dict()) for s in getattr(self, "stories", [])]
+            created_stories = []
+            for r in ranges:
+                s_time = r.get("start_time", 0.0)
+                e_time = r.get("end_time", s_time + 1.0)
+                if e_time <= s_time:
+                    e_time = s_time + 1.0
+                text = r.get("text", "").strip()
+                words = text.split()
+                t = " ".join(words[:6]) + ("..." if len(words) > 6 else "") if words else f"New {term}"
+                created_stories.append(Story(start=s_time, end=e_time, title=t))
+
+            new_stories = sorted(old_stories + created_stories, key=lambda s: s.start)
+            if hasattr(self, "commit_story_change"):
+                self.commit_story_change(old_stories, new_stories, f"Add {len(created_stories)} {term_plural} from Multi-Selection")
+            else:
+                self.stories = new_stories
+                self.refresh_story_list()
+
+            new_indices = [new_stories.index(s) for s in created_stories]
+            if hasattr(self, "apply_story_selection_indices"):
+                self.apply_story_selection_indices(new_indices)
+
+            self.transcript_view.clear_all_selections()
+            self.log_activity(f"[{'SONG' if is_music else 'STORY'}] Added {len(created_stories)} {term_plural.lower()} from multi-selection.")
+            self.statusBar().showMessage(f"Created {len(created_stories)} {term_plural.lower()} from multiple selections.")
+            return
+
+        # Single selection workflow
+        start_time = None
+        end_time = None
+        selected_text = ""
+        if ranges:
+            start_time = ranges[0].get("start_time")
+            end_time = ranges[0].get("end_time")
+            selected_text = ranges[0].get("text", "")
+        else:
+            cursor = self.transcript_view.textCursor()
+            selected_text = cursor.selectedText().strip()
+            if hasattr(self.transcript_view, "get_selected_time_range"):
+                sel_range = self.transcript_view.get_selected_time_range()
+                if sel_range and sel_range[0] is not None and sel_range[1] is not None:
+                    start_time, end_time = sel_range
+
+        # Fallback to mapping character offsets to timestamps
+        if start_time is None or end_time is None:
+            cursor = self.transcript_view.textCursor()
+            start_char = cursor.selectionStart()
+            end_char = cursor.selectionEnd()
+            char_map = getattr(self.transcript_view, "char_timestamp_map", [])
+            for c_start, c_end, w_start, w_end, _ in char_map:
+                if c_start <= start_char <= c_end and start_time is None:
+                    start_time = w_start
+                if c_start <= end_char <= c_end:
+                    end_time = w_end
+
+        # Fallback to playhead if mapping could not find timestamps
+        if start_time is None:
+            start_time = getattr(self, "current_position", 0.0)
+        if end_time is None:
+            end_time = min(getattr(self, "duration", start_time + 5.0), start_time + 5.0)
+
+        if end_time <= start_time:
+            end_time = start_time + 1.0
+
+        # Auto-generate a preliminary title from the first few words of the selection
+        words = selected_text.split()
+        default_title = " ".join(words[:6]) + ("..." if len(words) > 6 else "") if words else f"New {term}"
+
+        # Update input boxes if present
+        if hasattr(self, "start_input"):
+            self.start_input.setText(format_time(start_time))
+        if hasattr(self, "end_input"):
+            self.end_input.setText(format_time(end_time))
+        if hasattr(self, "title_input"):
+            self.title_input.setText(default_title)
+
+        # Create the new story and commit it through the undo history
+        new_story = Story(start=start_time, end=end_time, title=default_title)
+        old_stories = [Story.from_dict(s.to_dict()) for s in getattr(self, "stories", [])]
+        new_stories = sorted(old_stories + [new_story], key=lambda s: s.start)
+
+        if hasattr(self, "commit_story_change"):
+            self.commit_story_change(old_stories, new_stories, f"Add {term} from Selection: '{default_title}'")
+        else:
+            self.stories = new_stories
+            self.refresh_story_list()
+
+        # Select the newly added story
+        new_idx = new_stories.index(new_story)
+        if hasattr(self, "apply_story_selection_indices"):
+            self.apply_story_selection_indices([new_idx])
+
+        self.transcript_view.clear_all_selections()
+        self.log_activity(f"[{'SONG' if is_music else 'STORY'}] Added {term.lower()} from selection ({format_time(start_time)} – {format_time(end_time)}).")
+        self.statusBar().showMessage(f"Created {term.lower()}: {default_title}")
+
+    def play_transcript_selection(self):
+        """Play audio corresponding to the current transcript selection."""
+        if not hasattr(self, "transcript_view"):
+            return
+        ranges = []
+        if hasattr(self.transcript_view, "get_all_selected_story_ranges"):
+            ranges = self.transcript_view.get_all_selected_story_ranges()
+        if not ranges and hasattr(self.transcript_view, "get_selected_time_range"):
+            tr = self.transcript_view.get_selected_time_range()
+            if tr and tr[0] is not None:
+                ranges = [{"start_time": tr[0], "end_time": tr[1]}]
+
+        if ranges:
+            start_t = ranges[0].get("start_time", 0.0)
+            self.seek_to(start_t)
+            if hasattr(self, "player") and hasattr(self, "toggle_play"):
+                if self.player.playbackState() != QMediaPlayer.PlaybackState.PlayingState:
+                    self.toggle_play()
+
+    def select_all_stories(self):
+        """Select every story in the story list and timeline."""
+        if not getattr(self, "stories", []):
+            return
+
+        all_indices = list(range(len(self.stories)))
+        self.apply_story_selection_indices(all_indices)
+        if hasattr(self, "timeline"):
+            self.timeline.set_stories(self.stories, all_indices)
+        self.statusBar().showMessage(f"Selected all {len(self.stories)} stories.")
+
+    def handle_timeline_selection_range_changed(self, start_time, end_time):
+        """Synchronize timeline right-drag selection by highlighting transcript text."""
+        if not hasattr(self, "transcript_view"):
+            return
+
+        if start_time is None or end_time is None:
+            cursor = self.transcript_view.textCursor()
+            if cursor.hasSelection():
+                cursor.clearSelection()
+                self.transcript_view.setTextCursor(cursor)
+            return
+
+        s = min(float(start_time), float(end_time))
+        e = max(float(start_time), float(end_time))
+        char_map = getattr(self.transcript_view, "char_timestamp_map", [])
+        if not char_map:
+            return
+
+        first_char = None
+        last_char = None
+
+        for item in char_map:
+            c_start = item[0]
+            c_end = item[1]
+            w_start = item[2]
+            w_end = item[3] if len(item) >= 4 else w_start
+
+            if w_end >= s and first_char is None:
+                first_char = c_start
+            if w_start <= e:
+                last_char = c_end
+
+        if first_char is not None and last_char is not None and last_char > first_char:
+            cursor = self.transcript_view.textCursor()
+            cursor.setPosition(first_char)
+            cursor.setPosition(last_char, QTextCursor.MoveMode.KeepAnchor)
+            self.transcript_view.setTextCursor(cursor)
+            self.transcript_view.ensureCursorVisible()
+
+    def add_story_from_range(self, start_time, end_time):
+        """Create and commit a story spanning start_time to end_time."""
+        s = min(float(start_time), float(end_time))
+        e = max(float(start_time), float(end_time))
+        if e <= s:
+            e = s + 1.0
+
+        default_title = "New Story"
+        if hasattr(self, "transcript_for_range"):
+            segs = self.transcript_for_range(s, e)
+            words = " ".join(seg.get("text", "").strip() for seg in segs).split()
+            if words:
+                default_title = " ".join(words[:6]) + ("..." if len(words) > 6 else "")
+
+        if hasattr(self, "start_input"):
+            self.start_input.setText(format_time(s))
+        if hasattr(self, "end_input"):
+            self.end_input.setText(format_time(e))
+        if hasattr(self, "title_input"):
+            self.title_input.setText(default_title)
+
+        new_story = Story(start=s, end=e, title=default_title)
+        old_stories = [Story.from_dict(item.to_dict()) for item in getattr(self, "stories", [])]
+        new_stories = sorted(old_stories + [new_story], key=lambda item: item.start)
+
+        if hasattr(self, "commit_story_change"):
+            self.commit_story_change(old_stories, new_stories, f"Add Story: '{default_title}'")
+        else:
+            self.stories = new_stories
+            self.refresh_story_list()
+
+        new_idx = new_stories.index(new_story)
+        if hasattr(self, "apply_story_selection_indices"):
+            self.apply_story_selection_indices([new_idx])
+
+        self.log_activity(f"[STORY] Added story from selection ({format_time(s)} – {format_time(e)}).")
+        self.statusBar().showMessage(f"Created story: {default_title}")
+
+    def add_story_from_active_selection(self):
+        """Add story using current timeline drag selection or highlighted transcript text."""
+        canvas = getattr(getattr(self, "timeline", None), "canvas", None)
+        if canvas and canvas.selection_start is not None and canvas.selection_end is not None:
+            s = min(canvas.selection_start, canvas.selection_end)
+            e = max(canvas.selection_start, canvas.selection_end)
+            canvas.selection_start = None
+            canvas.selection_end = None
+            canvas.update()
+            self.add_story_from_range(s, e)
+            return
+
+        if hasattr(self, "transcript_view") and self.transcript_view.has_active_selection():
+            self.add_selection_to_story()
+            return
+
+        QMessageBox.information(
+            self,
+            "No Selection",
+            "Make a selection first by right-click dragging across the timeline or highlighting transcript text."
+        )
+
+
+class SpeakerManagerDialog(QDialog):
+    """
+    Manager dialog for inspecting, aliasing, and merging detected speaker clusters.
+    """
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.main_win = parent
+        self.setWindowTitle("Manage Speakers & Detection Clusters")
+        self.resize(720, 460)
+        self._init_ui()
+        self._populate()
+
+    def _init_ui(self):
+        layout = QVBoxLayout(self)
+
+        desc = QLabel(
+            "<b>Speakers & Detection Clusters</b><br>"
+            "Inspect all detected speaker clusters, rename / assign global aliases, or merge redundant clusters."
+        )
+        desc.setWordWrap(True)
+        layout.addWidget(desc)
+
+        self.table = QTableWidget(self)
+        self.table.setColumnCount(5)
+        self.table.setHorizontalHeaderLabels([
+            "Speaker Name / Alias", "Cluster / Raw ID", "Turns", "Total Duration", "Actions"
+        ])
+        self.table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
+        self.table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
+        self.table.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
+        self.table.horizontalHeader().setSectionResizeMode(3, QHeaderView.ResizeMode.ResizeToContents)
+        self.table.horizontalHeader().setSectionResizeMode(4, QHeaderView.ResizeMode.ResizeToContents)
+        self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+        self.table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+        layout.addWidget(self.table)
+
+        btn_row = QHBoxLayout()
+        self.merge_all_btn = QPushButton("Merge Two Speakers...", self)
+        self.merge_all_btn.clicked.connect(self._on_quick_merge)
+        btn_row.addWidget(self.merge_all_btn)
+
+        btn_row.addStretch()
+
+        close_btn = QPushButton("Close", self)
+        close_btn.clicked.connect(self.accept)
+        btn_row.addWidget(close_btn)
+        layout.addLayout(btn_row)
+
+    def _populate(self):
+        self.table.setRowCount(0)
+        if not self.main_win or not getattr(self.main_win, "transcript", None):
+            return
+
+        segments = self.main_win.transcript.get("segments", [])
+        speaker_stats = {}
+
+        for idx, seg in enumerate(segments):
+            name = self.main_win.get_effective_speaker_name(idx, seg) or "Unknown Speaker"
+            raw = str(self.main_win.segment_speaker_overrides.get(idx) or seg.get("speaker") or name)
+            start = float(seg.get("start", 0.0))
+            end = float(seg.get("end", start))
+            dur = max(0.0, end - start)
+
+            if name not in speaker_stats:
+                speaker_stats[name] = {"raw": raw, "turns": 0, "duration": 0.0}
+            speaker_stats[name]["turns"] += 1
+            speaker_stats[name]["duration"] += dur
+
+        self.table.setRowCount(len(speaker_stats))
+        for row, (name, info) in enumerate(sorted(speaker_stats.items(), key=lambda x: -x[1]["duration"])):
+            name_item = QTableWidgetItem(name)
+            self.table.setItem(row, 0, name_item)
+
+            raw_item = QTableWidgetItem(info["raw"])
+            raw_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+            self.table.setItem(row, 1, raw_item)
+
+            turns_item = QTableWidgetItem(str(info["turns"]))
+            turns_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+            self.table.setItem(row, 2, turns_item)
+
+            dur_item = QTableWidgetItem(format_time(info["duration"]))
+            dur_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+            self.table.setItem(row, 3, dur_item)
+
+            action_widget = QWidget(self)
+            action_layout = QHBoxLayout(action_widget)
+            action_layout.setContentsMargins(4, 2, 4, 2)
+            action_layout.setSpacing(6)
+
+            rename_btn = QPushButton("Rename / Alias", action_widget)
+            rename_btn.clicked.connect(lambda _, n=name, r=info["raw"]: self._rename_speaker(n, r))
+            action_layout.addWidget(rename_btn)
+
+            merge_btn = QPushButton("Merge Into...", action_widget)
+            merge_btn.clicked.connect(lambda _, n=name: self._merge_speaker_into(n))
+            action_layout.addWidget(merge_btn)
+
+            self.table.setCellWidget(row, 4, action_widget)
+
+    def _rename_speaker(self, current_name, raw_id):
+        new_name, accepted = QInputDialog.getText(
+            self, "Rename Speaker Alias",
+            f"Enter new display alias for '{current_name}':",
+            QLineEdit.EchoMode.Normal, current_name
+        )
+        if accepted and new_name.strip() and new_name.strip() != current_name:
+            target = new_name.strip()
+            self.main_win.speaker_names[str(raw_id)] = target
+            self.main_win.speaker_names[current_name] = target
+            self.main_win.add_custom_speaker_to_glossary(target)
+
+            segments = self.main_win.transcript.get("segments", [])
+            for idx, seg in enumerate(segments):
+                if self.main_win.get_effective_speaker_name(idx, seg) == current_name:
+                    override_key = f"SEG_{idx}_SPEAKER"
+                    self.main_win.speaker_names[override_key] = target
+                    self.main_win.segment_speaker_overrides[idx] = override_key
+
+            self.main_win.render_transcript()
+            self.main_win.save_project()
+            self.main_win.log_activity(f"[SPEAKER] Renamed speaker '{current_name}' to '{target}'.")
+            self._populate()
+
+    def _merge_speaker_into(self, source_name):
+        known = [s for s in self.main_win.get_all_known_speakers() if s != source_name]
+        if not known:
+            QMessageBox.information(self, "Merge Speakers", "No other speakers available to merge into.")
+            return
+
+        target, accepted = QInputDialog.getItem(
+            self, "Merge Speaker",
+            f"Merge all turns from '{source_name}' into which speaker?",
+            known, 0, False
+        )
+        if accepted and target:
+            confirm = QMessageBox.question(
+                self, "Confirm Merge",
+                f"Are you sure you want to merge all occurrences of '{source_name}' into '{target}'?\n\n"
+                f"This will reassign all segments and diarization tracks across the entire timeline.",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                QMessageBox.StandardButton.Yes
+            )
+            if confirm == QMessageBox.StandardButton.Yes:
+                self.main_win.merge_speakers(source_name, target)
+                self._populate()
+
+    def _on_quick_merge(self):
+        known = self.main_win.get_all_known_speakers()
+        if len(known) < 2:
+            QMessageBox.information(self, "Merge Speakers", "At least two distinct speakers are required to merge.")
+            return
+
+        source, ok1 = QInputDialog.getItem(
+            self, "Merge Speakers", "Select Source Speaker to merge (will be replaced):", known, 0, False
+        )
+        if not ok1 or not source:
+            return
+
+        candidates = [s for s in known if s != source]
+        target, ok2 = QInputDialog.getItem(
+            self, "Merge Speakers", f"Select Target Speaker (to receive '{source}'):", candidates, 0, False
+        )
+        if not ok2 or not target:
+            return
+
+        self.main_win.merge_speakers(source, target)
+        self._populate()
+

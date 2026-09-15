@@ -1,0 +1,181 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# ==============================================================================
+# Radio & TV Segmenter — Debian / Ubuntu (.deb) Package Builder
+# ==============================================================================
+ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+APP_NAME="RadioTVSegmenter"
+PKG_NAME="radiotvsegmenter"
+
+# Extract project version from single source of truth (prs_shared.py) or environment
+if [[ -n "${BUILD_VERSION:-}" ]]; then
+    VERSION=$(echo "$BUILD_VERSION" | tr -s '.' | tr -cd '0-9.a-zA-Z_~+-' | sed -E 's/^[vV]+//')
+else
+    VERSION=$(python3 -c "import re, pathlib; v = re.search(r'PROJECT_VERSION\s*=\s*[\x22\x27]([^\x22\x27]+)', pathlib.Path('$ROOT/prs_shared.py').read_text(encoding='utf-8')).group(1); print(re.sub(r'^[vV]+', '', re.sub(r'\.+', '.', v.strip())))")
+fi
+if [[ -z "$VERSION" ]]; then
+    echo "[ERROR] Could not extract PROJECT_VERSION from prs_shared.py"
+    exit 1
+fi
+
+# Ensure Debian-compliant version string (Debian version numbers prohibit underscores and uppercase)
+# 1. Strip leading 'v' / 'V'
+# 2. Lowercase all characters
+# 3. Replace hyphens with tildes '~' so pre-releases sort before final releases (e.g. 3.0.0~beta.2 < 3.0.0)
+# 4. Replace underscores '_' with dots '.' (Debian Policy § 5.6.12 strictly forbids underscores)
+# 5. Remove any other disallowed characters (only 0-9, a-z, ., +, ~, - are allowed)
+DEB_VERSION=$(echo "$VERSION" | sed -E 's/^[vV]+//' | tr '[:upper:]' '[:lower:]' | tr '-' '~' | tr '_' '.' | tr -cd '0-9a-z.+~-')
+if [[ ! "$DEB_VERSION" =~ ^[0-9] ]]; then
+    DEB_VERSION="0.${DEB_VERSION}"
+fi
+DIST="$ROOT/dist"
+SOURCE_APP="$DIST/$APP_NAME"
+DEB_FILENAME="RadioTVSegmenter-${VERSION}-Linux-amd64.deb"
+DEB_OUTPUT="$DIST/$DEB_FILENAME"
+
+echo "====================================================================="
+echo " Packaging Debian / Ubuntu Package (.deb) for ${APP_NAME} v${VERSION}"
+echo "====================================================================="
+
+if [[ ! -d "$SOURCE_APP" ]]; then
+    echo "[ERROR] Application directory not found: $SOURCE_APP"
+    echo "Please compile the application binary first using 'python3 build_installer.py'."
+    exit 1
+fi
+
+if ! command -v dpkg-deb >/dev/null 2>&1; then
+    echo "[ERROR] 'dpkg-deb' utility not found."
+    echo "Please install dpkg-dev (e.g. 'sudo apt-get install dpkg-dev')."
+    exit 1
+fi
+
+STAGING="$DIST/deb_staging"
+rm -rf "$STAGING"
+mkdir -p "$STAGING"
+
+# 1. Create target Debian filesystem layout
+echo "[1/5] Creating Debian package filesystem layout..."
+mkdir -p "$STAGING/opt/$APP_NAME"
+mkdir -p "$STAGING/usr/bin"
+mkdir -p "$STAGING/usr/share/applications"
+mkdir -p "$STAGING/usr/share/mime/packages"
+mkdir -p "$STAGING/usr/share/icons/hicolor/scalable/apps"
+mkdir -p "$STAGING/usr/share/icons/hicolor/256x256/apps"
+mkdir -p "$STAGING/usr/share/doc/$PKG_NAME"
+mkdir -p "$STAGING/DEBIAN"
+
+# 2. Copy compiled application files to /opt/RadioTVSegmenter
+echo "[2/5] Copying application files to /opt/$APP_NAME..."
+cp -a "$SOURCE_APP/." "$STAGING/opt/$APP_NAME/"
+
+# Ensure executable permissions for binaries
+chmod 755 "$STAGING/opt/$APP_NAME/$APP_NAME"
+if [[ -d "$STAGING/opt/$APP_NAME/runtime/bin" ]]; then
+    chmod 755 "$STAGING/opt/$APP_NAME/runtime/bin/"* 2>/dev/null || true
+fi
+
+# 3. Create convenient PATH symlinks
+echo "[3/5] Creating executable symlinks in /usr/bin..."
+ln -sf "/opt/$APP_NAME/$APP_NAME" "$STAGING/usr/bin/$PKG_NAME"
+ln -sf "/opt/$APP_NAME/$APP_NAME" "$STAGING/usr/bin/$APP_NAME"
+
+# 4. Install Desktop file, icons, and legal documentation
+echo "[4/5] Installing desktop integration files & metadata..."
+cp "$ROOT/installer/Linux/radiotvsegmenter.desktop" "$STAGING/usr/share/applications/radiotvsegmenter.desktop"
+chmod 644 "$STAGING/usr/share/applications/radiotvsegmenter.desktop"
+
+if [[ -f "$ROOT/installer/Linux/radiotvsegmenter-mimetypes.xml" ]]; then
+    cp "$ROOT/installer/Linux/radiotvsegmenter-mimetypes.xml" "$STAGING/usr/share/mime/packages/radiotvsegmenter.xml"
+    chmod 644 "$STAGING/usr/share/mime/packages/radiotvsegmenter.xml"
+fi
+
+if [[ -f "$ROOT/resources/icon.svg" ]]; then
+    cp "$ROOT/resources/icon.svg" "$STAGING/usr/share/icons/hicolor/scalable/apps/radiotvsegmenter.svg"
+    chmod 644 "$STAGING/usr/share/icons/hicolor/scalable/apps/radiotvsegmenter.svg"
+fi
+
+if [[ -f "$ROOT/resources/icon.png" ]]; then
+    cp "$ROOT/resources/icon.png" "$STAGING/usr/share/icons/hicolor/256x256/apps/radiotvsegmenter.png"
+    chmod 644 "$STAGING/usr/share/icons/hicolor/256x256/apps/radiotvsegmenter.png"
+fi
+
+if [[ -f "$ROOT/NOTICES.txt" ]]; then
+    cp "$ROOT/NOTICES.txt" "$STAGING/usr/share/doc/$PKG_NAME/copyright"
+fi
+if [[ -f "$ROOT/LICENSE" ]]; then
+    cp "$ROOT/LICENSE" "$STAGING/usr/share/doc/$PKG_NAME/LICENSE"
+fi
+
+# Calculate installed size in KiB
+INSTALLED_SIZE=$(du -sk "$STAGING" | cut -f1)
+
+# Generate DEBIAN/control file
+cat <<EOF > "$STAGING/DEBIAN/control"
+Package: ${PKG_NAME}
+Version: ${DEB_VERSION}
+Section: sound
+Priority: optional
+Architecture: amd64
+Maintainer: Radio & TV Segmenter Team <https://github.com/bradlinder/RTVS>
+Installed-Size: ${INSTALLED_SIZE}
+Depends: ffmpeg, libxcb-cursor0, libpulse0
+Recommends: pulseaudio | pipewire-pulse
+Description: Radio & TV Segmenter
+ AI-powered story segmenting, transcription, and editing for broadcast audio/video.
+ Radio & TV Segmenter helps journalists, broadcasters, and podcasters
+ automatically transcribe audio/video, detect speakers, identify stories,
+ and export polished broadcast segments.
+EOF
+chmod 644 "$STAGING/DEBIAN/control"
+
+# Generate DEBIAN/postinst script (updates desktop & icon caches)
+cat <<'EOF' > "$STAGING/DEBIAN/postinst"
+#!/bin/sh
+set -e
+if command -v update-desktop-database >/dev/null 2>&1; then
+    update-desktop-database -q /usr/share/applications || true
+fi
+if command -v gtk-update-icon-cache >/dev/null 2>&1; then
+    gtk-update-icon-cache -q /usr/share/icons/hicolor || true
+fi
+if command -v update-mime-database >/dev/null 2>&1; then
+    update-mime-database /usr/share/mime || true
+fi
+exit 0
+EOF
+chmod 755 "$STAGING/DEBIAN/postinst"
+
+# Generate DEBIAN/postrm script (cleans up desktop & icon caches)
+cat <<'EOF' > "$STAGING/DEBIAN/postrm"
+#!/bin/sh
+set -e
+if command -v update-desktop-database >/dev/null 2>&1; then
+    update-desktop-database -q /usr/share/applications || true
+fi
+if command -v gtk-update-icon-cache >/dev/null 2>&1; then
+    gtk-update-icon-cache -q /usr/share/icons/hicolor || true
+fi
+if command -v update-mime-database >/dev/null 2>&1; then
+    update-mime-database /usr/share/mime || true
+fi
+exit 0
+EOF
+chmod 755 "$STAGING/DEBIAN/postrm"
+
+# 5. Build .deb package using high-efficiency XZ compression
+echo "[5/5] Building .deb archive using maximum XZ compression..."
+rm -f "$DEB_OUTPUT"
+dpkg-deb --build --root-owner-group -Zxz -z9 "$STAGING" "$DEB_OUTPUT"
+
+# Cleanup staging directory
+rm -rf "$STAGING"
+
+PKG_SIZE=$(ls -lh "$DEB_OUTPUT" | awk '{print $5}')
+
+echo ""
+echo "====================================================================="
+echo " DEBIAN PACKAGE CREATED SUCCESSFULLY!"
+echo " Output File : $DEB_OUTPUT (${PKG_SIZE})"
+echo " Installation: sudo apt install ./${DEB_FILENAME}"
+echo "====================================================================="

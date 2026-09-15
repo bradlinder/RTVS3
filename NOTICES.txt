@@ -1,0 +1,138 @@
+===============================================================================
+Radio & TV Story Segmenter - Third-Party Notices and Licenses
+===============================================================================
+
+This software bundles, links to, or interfaces with third-party open source
+libraries, models, and assets. Their respective copyright notices and license
+terms are reproduced below.
+
+-------------------------------------------------------------------------------
+1. PySide6 / Qt 6
+   License: LGPL v3 / Commercial
+   Copyright (C) The Qt Company Ltd. and other contributors.
+   Available under the GNU Lesser General Public License version 3:
+   https://www.gnu.org/licenses/lgpl-3.0.html
+-------------------------------------------------------------------------------
+
+2. faster-whisper & CTranslate2
+   License: MIT License
+   faster-whisper: Copyright (c) 2023 Guillaume Klein
+   CTranslate2:    Copyright (c) 2019 OpenNMT
+
+   Permission is hereby granted, free of charge, to any person obtaining a copy
+   of this software and associated documentation files (the "Software"), to deal
+   in the Software without restriction, including without limitation the rights
+   to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+   copies of the Software, and to permit persons to whom the Software is
+   furnished to do so, subject to the following conditions:
+
+   The above copyright notice and this permission notice shall be included in
+   all copies or substantial portions of the Software.
+
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+   SOFTWARE.
+
+-------------------------------------------------------------------------------
+3. Silero VAD
+   License: MIT License
+   Copyright (c) 2020 Silero Team
+
+   Permission is hereby granted, free of charge, to any person obtaining a copy
+   of this software and associated documentation files (the "Software"), to deal
+   in the Software without restriction, including without limitation the rights
+   to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+   copies of the Software, and to permit persons to whom the Software is
+   furnished to do so, subject to the following conditions:
+
+   The above copyright notice and this permission notice shall be included in
+   all copies or substantial portions of the Software.
+
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND.
+
+-------------------------------------------------------------------------------
+4. diarize, sherpa-onnx, WeSpeaker & onnxruntime
+   diarize:      License: Apache License, Version 2.0
+                 Copyright (c) 2024 FoxNoseTech
+   sherpa-onnx:  License: Apache License, Version 2.0
+                 Copyright (c) 2022-2024 Xiaomi Corporation / sherpa-onnx contributors
+   WeSpeaker:    License: Apache License, Version 2.0
+                 Copyright (c) 2022 WeSpeaker contributors
+   onnxruntime:  License: MIT License
+                 Copyright (c) Microsoft Corporation
+
+   Licensed under the Apache License, Version 2.0 (for diarize, sherpa-onnx, and WeSpeaker):
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Permission is hereby granted, free of charge, to any person obtaining a copy
+   of onnxruntime and associated documentation files (the "Software"), to deal
+   in the Software without restriction, subject to the conditions of the MIT License.
+
+-------------------------------------------------------------------------------
+5. Hugging Face Transformers, Tokenizers & Helsinki-NLP MarianMT
+   License: Apache License, Version 2.0
+   Copyright 2018-present The Hugging Face team and Helsinki-NLP contributors.
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at:
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+
+-------------------------------------------------------------------------------
+6. FFmpeg
+   License: LGPL v2.1+ / GPL v2+ (depending on build flags)
+   Copyright (c) the FFmpeg developers.
+   Radio & TV Story Segmenter executes FFmpeg as an external process.
+   Source code for FFmpeg is available at https://ffmpeg.org.
+
+-------------------------------------------------------------------------------
+7. React, Vite, Tailwind CSS (Frontend UI / Web Components)
+   License: MIT License
+   React:        Copyright (c) Meta Platforms, Inc. and affiliates.
+   Vite:         Copyright (c) 2019-present Evan You & Vite Contributors.
+   Tailwind CSS: Copyright (c) Tailwind Labs, Inc.
+
+   Permission is hereby granted, free of charge, to any person obtaining a copy
+   of this software and associated documentation files.
+   (Standard MIT conditions apply as stated above.)
+
+-------------------------------------------------------------------------------
+8. Iconography & Graphical Assets
+   - noun_electronicmedia_5929933.svg
+     Created via The Noun Project.
+     Licensed under Creative Commons Attribution 3.0 (CC BY 3.0 US).
+     https://creativecommons.org/licenses/by/3.0/us/
+     Attribution: "Electronic Media" icon from The Noun Project.
+
+-------------------------------------------------------------------------------
+9. SciPy & scikit-learn
+   License: BSD 3-Clause License
+   SciPy:        Copyright (c) 2001-2002 Enthought, Inc. 2003-2024 SciPy Developers.
+   scikit-learn: Copyright (c) 2007-2024 The scikit-learn developers.
+
+   Redistribution and use in source and binary forms, with or without modification,
+   are permitted provided that the copyright notices and BSD conditions are met.
+
+-------------------------------------------------------------------------------
+10. cryptography & keyring
+   cryptography: Dual-licensed under Apache License, Version 2.0 and BSD 3-Clause
+                 Copyright (c) Individual contributors.
+   keyring:      License: MIT License
+                 Copyright Jason R. Coombs and contributors.
+
+-------------------------------------------------------------------------------
+11. uv (Astral Software)
+   License: Dual-licensed under MIT License and Apache License, Version 2.0
+   Copyright (c) 2024 Astral Software Inc.
+   https://github.com/astral-sh/uv
+===============================================================================

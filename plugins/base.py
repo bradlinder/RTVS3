@@ -1,0 +1,193 @@
+"""Radio & TV Segmenter — Plugin Base Interfaces and Manifest."""
+from __future__ import annotations
+
+import json
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Any, Callable, Dict, List, Optional
+
+
+@dataclass
+class PluginManifest:
+    """Metadata describing a plugin, parsed from manifest.json."""
+    id: str
+    name: str
+    version: str = "1.0.0"
+    description: str = ""
+    author: str = ""
+    website: str = ""
+    min_app_version: str = "2.6.0"
+    category: str = "tools"  # "export", "ai", "tools", "ui"
+    entry_point: str = "plugin:Plugin"
+    dependencies: List[str] = field(default_factory=list)
+    icon: Optional[str] = None
+    enabled_by_default: bool = False
+    runtime_type: str = "core"
+    runtime_name: str = ""
+    runtime_entry_point: str = ""
+    runtime_requirements: str = ""
+    models: Dict[str, Any] = field(default_factory=dict)
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> PluginManifest:
+        return cls(
+            id=str(data.get("id", "")).strip(),
+            name=str(data.get("name", "Unnamed Plugin")),
+            version=str(data.get("version", "1.0.0")),
+            description=str(data.get("description", "")),
+            author=str(data.get("author", "")),
+            website=str(data.get("website", "")),
+            min_app_version=str(data.get("min_app_version", "2.6.0")),
+            category=str(data.get("category", "tools")),
+            entry_point=str(data.get("entry_point", "plugin:Plugin")),
+            dependencies=list(data.get("dependencies", [])),
+            icon=data.get("icon"),
+            enabled_by_default=bool(data.get("enabled_by_default", False)),
+            runtime_type=str(data.get("runtime", {}).get("type", data.get("runtime_type", "core"))),
+            runtime_name=str(data.get("runtime", {}).get("name", data.get("runtime_name", ""))),
+            runtime_entry_point=str(data.get("runtime", {}).get("entry_point", "")),
+            runtime_requirements=str(data.get("runtime", {}).get("requirements", "")),
+            models=dict(data.get("models", {})),
+
+        )
+
+    @classmethod
+    def from_file(cls, path: Path | str) -> PluginManifest:
+        p = Path(path)
+        with open(p, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        manifest = cls.from_dict(data)
+        if not manifest.id:
+            manifest.id = p.parent.name
+        return manifest
+
+
+class BasePlugin:
+    """Base class for all Radio & TV Segmenter plugins.
+    
+    Plugins can hook into:
+    - Main application window events and state
+    - Export menu and Unified Export Center
+    - Tools menu
+    - Application Preferences
+    - Project save/load metadata
+    """
+
+    def __init__(self, manifest: PluginManifest, app: Any = None):
+        self.manifest = manifest
+        self.app = app
+        self._enabled = True
+
+    @property
+    def id(self) -> str:
+        return self.manifest.id
+
+    @property
+    def name(self) -> str:
+        return self.manifest.name
+
+    @property
+    def version(self) -> str:
+        return self.manifest.version
+
+    @property
+    def is_enabled(self) -> bool:
+        return self._enabled
+
+    def get_enabled(self) -> bool:
+        return self._enabled
+
+    def set_enabled(self, enabled: bool) -> None:
+        if self._enabled == enabled:
+            return
+        self._enabled = enabled
+        if enabled:
+            self.on_enable()
+        else:
+            self.on_disable()
+
+    def on_load(self) -> bool:
+        """Called immediately after the plugin module is loaded.
+        Return False if prerequisites fail.
+        """
+        return True
+
+    def on_unload(self) -> None:
+        """Called when plugin is about to be unloaded or application closes."""
+        pass
+
+    def on_enable(self) -> None:
+        """Called when the user enables the plugin."""
+        pass
+
+    def on_disable(self) -> None:
+        """Called when the user disables the plugin."""
+        pass
+
+    def get_export_actions(self) -> List[tuple[str, Callable]]:
+        """Return list of (Action Label, callback_function) for Export menu."""
+        return []
+
+    def get_export_destinations(self) -> List[ExportDestination]:
+        """Return list of ExportDestination providers to embed into UnifiedExportDialog."""
+        return []
+
+    def get_tools_actions(self) -> List[tuple[str, Callable]]:
+        """Return list of (Action Label, callback_function) for Tools menu."""
+        return []
+
+    def get_preferences_widget(self, parent: Any = None) -> Any:
+        """Return a QWidget to be embedded into the Preferences dialog, or None."""
+        return None
+
+    def save_preferences(self, widget: Any) -> None:
+        """Called when the user saves the Preferences dialog."""
+        pass
+
+    def on_project_loaded(self, project_data: Dict[str, Any]) -> None:
+        """Called when an .rtvs project is loaded. Allows reading plugin metadata."""
+        pass
+
+    def on_project_saving(self, project_data: Dict[str, Any]) -> None:
+        """Called before an .rtvs project is saved. Allows injecting plugin metadata."""
+        pass
+
+
+class ExportDestination:
+    """Base class for plugin-provided export destinations in UnifiedExportDialog."""
+
+    def __init__(
+        self,
+        id: str,
+        title: str,
+        description: str = "",
+        icon: Optional[str] = None,
+        button_label: Optional[str] = None,
+    ):
+        self.id = id
+        self.title = title
+        self.description = description
+        self.icon = icon
+        self.button_label = button_label or f"Export {title}..."
+        self.action_title = self.button_label
+
+    def create_widget(self, parent: Any, main_window: Any) -> Any:
+        """Create the configuration and preview widget embedded into the destination tab."""
+        raise NotImplementedError
+
+    def on_scope_changed(self, scope: str, stories: list) -> None:
+        """Called when export scope changes in the dialog (full, selected, all)."""
+        pass
+
+    def validate(self) -> tuple[bool, str]:
+        """Validate destination settings before export begins. Returns (ok, error_msg)."""
+        return True, ""
+
+    def get_export_data(self) -> Dict[str, Any]:
+        """Collect export parameters to include in the final dialog result."""
+        return {}
+
+    def execute_export(self, main_window: Any, export_data: Dict[str, Any], progress_dialog: Any = None) -> bool:
+        """Execute the export action for this destination."""
+        return True
+

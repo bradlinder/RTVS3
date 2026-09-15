@@ -1,0 +1,2057 @@
+"""Radio & TV Segmenter v1.1.1 — processing responsibilities.
+
+Methods intentionally retain the MainWindow-facing API so behavior remains
+maintaining the established MainWindow-facing API while responsibilities are isolated.
+"""
+
+import sys
+import os
+import json
+import html
+from pathlib import Path
+from PySide6.QtCore import QProcess, QProcessEnvironment, QThread, Qt, QTimer, QEventLoop, Signal
+from PySide6.QtGui import QTextCursor
+from PySide6.QtWidgets import (
+    QApplication,
+    QDialog,
+    QProgressDialog,
+    QVBoxLayout,
+    QHBoxLayout,
+    QLabel,
+    QCheckBox,
+    QPushButton,
+    QMessageBox,
+    QInputDialog,
+)
+
+from prs_shared import (
+    HELPER_PROTOCOL_VERSION,
+    Story,
+    SetStoriesCommand,
+    SelectStoriesCommand,
+    StoryAutoDetectWorker,
+    format_time,
+    get_models_storage_dir,
+    register_process,     
+    unregister_process,
+)
+
+
+from prs_shared import (
+    compute_file_sha256,
+    verify_file_sha256,
+    collapse_repeating_ngrams,
+    strip_hallucination_phrases,
+    trim_trailing_degenerate_tail,
+    scrub_transcript_segments,
+    scrub_transcript,
+)
+from model_management import WhisperModelInstallWorker
+
+
+class RuntimeSetupWorker(QThread):
+    """Runs runtime_manager.ensure_environment() off the GUI thread, so that
+    a first-time (or version-upgrade) isolated-venv build for the local AI
+    worker doesn't freeze the main window ("Application Not Responding").
+    """
+    progress = Signal(str)
+    finished_ok = Signal(bool)
+
+    def __init__(self, runtime_mgr, feature, parent=None, ensure_kwargs=None):
+        super().__init__(parent)
+        self.runtime_mgr = runtime_mgr
+        self.feature = feature
+        self.ensure_kwargs = dict(ensure_kwargs or {})
+        self.cancel_event = threading.Event()
+
+    def cancel(self):
+        self.cancel_event.set()
+
+    def run(self):
+        try:
+            ok = self.runtime_mgr.ensure_environment(
+                self.feature,
+                progress_cb=lambda msg: self.progress.emit(str(msg)),
+                cancel_event=self.cancel_event,
+                **self.ensure_kwargs,
+            )
+        except Exception as exc:
+            self.progress.emit(f"Error: {exc}")
+            ok = False
+        self.finished_ok.emit(ok)
+
+
+class ProcessingMixin:
+    # Features genuinely baked into the frozen core app (no venv is ever
+    # created for these) -- everything else (e.g. "translate", which is
+    # provisioned by its own plugin on first use) needs real provisioning
+    # even in a frozen/installed build, not just when running from source.
+    _CORE_BUNDLED_FEATURES = {"transcribe", "diarize"}
+
+    def _ensure_runtime_environment_responsive(self, feature, **ensure_kwargs) -> bool:
+        """Make sure the isolated venv for `feature` is ready before
+        launching the local worker, without freezing the GUI if it still
+        needs to be created or upgraded.
+
+        Extra keyword arguments (e.g. `plugin_dir=...` for the translation
+        plugin) are passed straight through to runtime_mgr.ensure_environment().
+
+        Returns True once ready to proceed, False if setup failed or the
+        user cancelled -- callers should abort the launch in that case,
+        the same way they already do for a FileNotFoundError raised by
+        _worker_command()/_resolve_worker_command().
+        """
+        if getattr(sys, "frozen", False) and feature in self._CORE_BUNDLED_FEATURES:
+            return True  # frozen builds use a pre-built worker executable; no venv is ever created here
+        runtime_mgr = getattr(self, "runtime_mgr", None)
+        if runtime_mgr is None:
+            return True
+        gpu_launch_fn = getattr(self, "gpu_worker_launch_info", None)
+        if feature in self._CORE_BUNDLED_FEATURES and callable(gpu_launch_fn) and gpu_launch_fn() is not None:
+            return True  # the GPU path provisions its own environment elsewhere
+
+        try:
+            if runtime_mgr.is_env_up_to_date(feature):
+                return True
+        except Exception:
+            pass
+
+        progress_dialog = QProgressDialog(
+            f"Preparing the local {feature} environment (first run, or an update is needed)...",
+            "Cancel", 0, 0, self,
+        )
+        progress_dialog.setWindowTitle("Preparing Local Environment")
+        progress_dialog.setWindowModality(Qt.WindowModality.WindowModal)
+        progress_dialog.setMinimumDuration(0)
+        progress_dialog.setAutoClose(True)
+        progress_dialog.setAutoReset(True)
+
+        worker = RuntimeSetupWorker(runtime_mgr, feature, self, ensure_kwargs=ensure_kwargs)
+        loop = QEventLoop(self)
+        result = {"ok": False, "cancelled": False}
+
+        worker.progress.connect(progress_dialog.setLabelText)
+        if hasattr(self, "set_processing_stage"):
+            worker.progress.connect(lambda msg: self.set_processing_stage(f"{feature.title()} Runtime", msg))
+
+        def _on_finished(ok):
+            result["ok"] = ok
+            loop.quit()
+
+        def _on_cancel():
+            result["cancelled"] = True
+            worker.cancel()
+            loop.quit()
+
+        worker.finished_ok.connect(_on_finished)
+        progress_dialog.canceled.connect(_on_cancel)
+        worker.start()
+        progress_dialog.show()
+        loop.exec()
+        progress_dialog.close()
+
+        if result["cancelled"] or not worker.isFinished():
+            worker.cancel()
+            worker.wait(2000)
+            self.log_activity(
+                f"[PROCESSING] {feature.title()} environment setup cancelled by user.",
+                mark_dirty=False,
+            )
+            return False
+
+        if not result["ok"]:
+            err_detail = None
+            try:
+                err_detail = runtime_mgr.get_last_error()
+            except Exception:
+                pass
+            detail_text = f"\n\nDetails:\n{err_detail}" if err_detail else ""
+            QMessageBox.critical(
+                self, "Environment Setup Failed",
+                f"Could not prepare the local {feature} environment. Check the activity log for details.{detail_text}",
+            )
+        return result["ok"]
+
+    def cancel_current_process(self):
+        # Halt any ongoing file export or WordPress upload
+        if hasattr(self, "cancel_export"):
+            self.cancel_export()
+        if self.batch_active:
+            self.batch_active = False
+            self.batch_queue = []
+            self.batch_document_queue = []
+            self.pipeline_queue = []
+            self.pipeline_active = False
+            self.pipeline_start_monotonic = None
+            self.pipeline_rerun_confirmed = False
+            if self.transcription_process is not None:
+                self.cleanup_transcription_process()
+            if self.diarization_process is not None:
+                self.cleanup_diarization_process()
+            if self.thread is not None:
+                self.stop_story_detection_worker(timeout_ms=5000)
+            if self.translation_thread is not None:
+                self.stop_translation_worker(timeout_ms=5000)
+            self.progress.hide()
+            self.cancel_button.hide()
+            self.set_processing_stage(None)
+            self.set_tools_actions_enabled(True)
+            self.log_activity("[BATCH] Batch processing canceled by user.")
+            self.statusBar().showMessage("Batch processing canceled.")
+            return
+
+        if (
+            self.transcription_process is not None
+            or self.diarization_process is not None
+            or self.thread is not None
+            or getattr(self, "translation_thread", None) is not None
+        ):
+            if self.pipeline_active:
+                answer = QMessageBox.question(
+                    self,
+                    "Stop Processing?",
+                    "Run Processing is currently active. Stopping it will keep completed stages and you can resume later.\n\nStop now?",
+                    QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                )
+            else:
+                answer = QMessageBox.question(
+                    self,
+                    "Stop Processing?",
+                    "Stop the current processing operation? Any completed results will be preserved.",
+                    QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                )
+            if answer != QMessageBox.StandardButton.Yes:
+                return
+
+        self.pipeline_active = False
+        self.pipeline_start_monotonic = None
+        self.pipeline_queue = []
+        self.pipeline_rerun_confirmed = False
+
+        if self.transcription_process is not None:
+            self.log_activity("[PROCESS] Terminating local transcription helper...")
+            self.statusBar().showMessage("Canceling transcription...")
+            self.cleanup_transcription_process()
+            self.transcription_result_received = False
+            self.pending_diarization = False
+            self.pipeline_speaker_detection_requested = False
+            self.pending_auto_detect_stories = False
+            self.pipeline_active = False
+            self.set_processing_stage(None)
+            self.progress.hide()
+            self.cancel_button.hide()
+            self.set_tools_actions_enabled(True)
+            self.log_activity("[TRANSCRIPTION] Canceled by user.")
+            self.statusBar().showMessage("Transcription canceled by user.")
+            return
+
+        if self.translation_thread is not None:
+            self.log_activity("[PROCESS] Canceling local translation...")
+            self.stop_translation_worker()
+            self.pipeline_active = False
+            self.pipeline_rerun_confirmed = False
+            self.set_processing_stage(None)
+            self.progress.hide()
+            self.cancel_button.hide()
+            self.set_tools_actions_enabled(True)
+            self.log_activity("[TRANSLATION] Canceled by user.")
+            return
+
+        if self.diarization_process is not None:
+            self.log_activity("[PROCESS] Terminating local Speaker Detection helper...")
+            self.statusBar().showMessage("Canceling Speaker Detection...")
+            self.cleanup_diarization_process()
+            self.diarization_result_received = False
+            self.pending_diarization = False
+            self.pipeline_speaker_detection_requested = False
+            self.pending_auto_detect_stories = False
+            self.pipeline_active = False
+            self.set_processing_stage(None)
+            self.progress.hide()
+            self.cancel_button.hide()
+            self.set_tools_actions_enabled(True)
+            self.log_activity("[SPEAKER DETECT] Canceled by user.")
+            self.statusBar().showMessage("Speaker detection canceled by user.")
+            return
+
+        if self.thread is not None:
+            self.log_activity("[PROCESS] Canceling local Story Detection worker...")
+            self.statusBar().showMessage("Canceling Story Detection...")
+            self.stop_story_detection_worker(timeout_ms=5000)
+            self.pending_auto_detect_stories = False
+            self.pending_diarization = False
+            self.pipeline_speaker_detection_requested = False
+            self.pipeline_active = False
+            self.set_processing_stage(None)
+            self.progress.hide()
+            self.cancel_button.hide()
+            self.set_tools_actions_enabled(True)
+            self.log_activity("[STORY DETECT] Canceled by user.")
+            self.statusBar().showMessage("Story detection canceled by user.")
+            return
+
+        self.log_activity("[PROCESS] No cancellable process is currently running.")
+
+    def commit_story_change(self, old_stories, new_stories, description="Modify Story"):
+        # Story changes are part of the same complete project-state undo
+        # history as transcript/speaker edits. Capture the state before the
+        # caller's mutation and construct the after-state with the new stories.
+        before_state = self._capture_project_state()
+        if old_stories is not None:
+            before_state["stories"] = [s.to_dict() for s in old_stories]
+        self.stories = [Story.from_dict(s.to_dict()) for s in new_stories]
+        self._commit_project_state_change(before_state, description)
+        self.refresh_story_list()
+        if hasattr(self, "timeline"):
+            self.timeline.set_stories(self.stories, self.current_selected_story_indices)
+        self.mark_project_dirty(description)
+        self.save_project()
+        if not self.is_restoring_snapshot:
+            self.log_activity(f"[STORY] {description} ({len(new_stories)} story/stories total)")
+
+    def apply_story_selection_indices(self, selected_rows, seek=True):
+        self.is_updating_selection = True
+        self.current_selected_story_indices = list(selected_rows)
+
+        self.story_list.blockSignals(True)
+        self.story_list.clearSelection()
+
+        for idx in selected_rows:
+            if 0 <= idx < self.story_list.count():
+                self.story_list.item(idx).setSelected(True)
+
+        if len(selected_rows) == 1:
+            idx = selected_rows[0]
+            if 0 <= idx < self.story_list.count():
+                self.story_list.setCurrentRow(idx)
+                self.story_list.scrollToItem(self.story_list.item(idx))
+
+        self.story_list.blockSignals(False)
+
+        if len(selected_rows) == 1:
+            idx = selected_rows[0]
+            if 0 <= idx < len(self.stories):
+                story = self.stories[idx]
+                self.start_input.setText(format_time(story.start))
+                self.end_input.setText(format_time(story.end))
+                self.title_input.setText(story.title)
+                if seek:
+                    self.seek_to(story.start)
+                if hasattr(self, "story_boundary_container"):
+                    self.story_boundary_container.setVisible(True)
+            else:
+                if hasattr(self, "story_boundary_container"):
+                    self.story_boundary_container.setVisible(False)
+        else:
+            self.start_input.clear()
+            self.end_input.clear()
+            self.title_input.clear()
+            if hasattr(self, "story_boundary_container"):
+                self.story_boundary_container.setVisible(False)
+
+        self.timeline.set_stories(self.stories, selected_rows)
+        self.is_updating_selection = False
+
+    def on_timeline_story_clicked(self, index):
+        """Handle user clicking a story region directly on the timeline canvas."""
+        if 0 <= index < len(self.stories):
+            is_music = getattr(self, "story_detection_mode", "voice") == "music"
+            term = "Song" if is_music else "Story"
+            self.apply_story_selection_indices([index], seek=False)
+            if 0 <= index < self.story_list.count():
+                self.story_list.setCurrentRow(index)
+                self.story_list.scrollToItem(self.story_list.item(index))
+            if not getattr(self, "is_restoring_snapshot", False):
+                self.log_activity(f"[{'SONG' if is_music else 'STORY'} SELECT] Clicked {term} #{index + 1}: '{self.stories[index].title}'")
+
+    def story_selection_changed(self):
+        if self.is_updating_selection:
+            return
+
+        selected_rows = sorted([item.row() for item in self.story_list.selectedIndexes()])
+
+        if selected_rows != self.current_selected_story_indices:
+            new_sel = list(selected_rows)
+
+            desc = "Cleared Story Selection"
+            if len(new_sel) == 1 and new_sel[0] < len(self.stories):
+                desc = f"Selected Story #{new_sel[0] + 1}: '{self.stories[new_sel[0]].title}'"
+            elif len(new_sel) > 1:
+                desc = f"Selected {len(new_sel)} Stories"
+
+            self.apply_story_selection_indices(new_sel)
+            if not self.is_restoring_snapshot:
+                self.log_activity(f"[STORY SELECT] {desc}")
+
+    def handle_timeline_multi_selection(self, selected_indices):
+        if self.is_updating_selection:
+            return
+
+        selected_rows = sorted(selected_indices)
+        if selected_rows != self.current_selected_story_indices:
+            new_sel = list(selected_rows)
+
+            desc = f"Box Selected {len(new_sel)} Stories" if len(new_sel) > 1 else "Timeline Selected Story"
+            self.apply_story_selection_indices(new_sel)
+            if not self.is_restoring_snapshot:
+                self.log_activity(f"[STORY SELECT] {desc}")
+
+    def set_tools_actions_enabled(self, enabled):
+        has_audio = bool(self.audio_file) and enabled
+        self.transcribe_action.setEnabled(has_audio)
+        self.diarize_action.setEnabled(has_audio)
+        self.auto_detect_action.setEnabled(has_audio)
+        self.transcribe_diarize_action.setEnabled(has_audio)
+        self.transcribe_diarize_detect_action.setEnabled(has_audio)
+        self.translate_action.setEnabled(bool(self.transcript) and enabled)
+        self.translation_model_action.setEnabled(True)
+        if hasattr(self, "export_translation_action"):
+            self.export_translation_action.setEnabled(
+                has_audio
+                and self.translation_is_current(
+                    self.translation_key(self.source_language_code(), self.target_language_code())
+                )
+            )
+        if hasattr(self, "translate_button"):
+            self.translate_button.setEnabled(bool(self.transcript))
+        if hasattr(self, "regen_waveform_action"):
+            self.regen_waveform_action.setEnabled(has_audio)
+        if hasattr(self, "regen_thumbnails_action"):
+            self.regen_thumbnails_action.setEnabled(
+                has_audio and bool(getattr(self, "current_media_is_video", False))
+            )
+
+    def stop_story_detection_worker(self, timeout_ms=5000):
+        """Cancel Story Detection and wait for its QThread to finish."""
+        thread = getattr(self, "thread", None)
+        worker = getattr(self, "worker", None)
+        if thread is None:
+            return True
+        if thread.isRunning():
+            if worker is not None:
+                try:
+                    worker.cancel()
+                except Exception:
+                    pass
+            thread.quit()
+            if not thread.wait(timeout_ms):
+                self.log_activity(
+                    "[WARNING] Story Detection worker did not stop within the normal shutdown window; cancellation is still in progress.",
+                    mark_dirty=False,
+                )
+                return False
+        if not thread.isRunning():
+            self.thread = None
+            self.worker = None
+            return True
+        return False
+
+    def stop_all_processing(self, timeout_ms=5000):
+        """Stop every local processing job before changing media/projects or exiting."""
+        ok = True
+        if self.transcription_process is not None:
+            self.cleanup_transcription_process()
+        if self.diarization_process is not None:
+            self.cleanup_diarization_process()
+        if not self.stop_story_detection_worker(timeout_ms):
+            ok = False
+        if not self.stop_translation_worker(timeout_ms):
+            ok = False
+        self.pending_diarization = False
+        self.pending_auto_detect_stories = False
+        self.pipeline_speaker_detection_requested = False
+        self.pipeline_active = False
+        return ok
+
+    def confirm_stop_processing_for_media_change(self):
+        active = (
+            self.transcription_process is not None
+            or self.diarization_process is not None
+            or self.thread is not None
+            or self.translation_thread is not None
+            or self.pipeline_active
+        )
+        if not active:
+            return True
+        answer = QMessageBox.question(
+            self,
+            "Processing in Progress",
+            "Processing is currently running. Opening another media file or project will stop it. "
+            "Completed results will be preserved.\n\nContinue?",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+        )
+        if answer != QMessageBox.StandardButton.Yes:
+            return False
+        self.log_activity(
+            "[PROCESS] Stopping active processing before changing media/project.", mark_dirty=False
+        )
+        return self.stop_all_processing(timeout_ms=5000)
+
+    def worker_thread_finished(self):
+        self.thread = None
+        self.worker = None
+
+    def start_full_auto_pipeline(self):
+        """Open a chooser for the processing stages to run, then run them in order."""
+        if not self.audio_file:
+            return
+
+        dialog = QDialog(self)
+        dialog.setWindowTitle("Run Processing")
+        dialog.setMinimumWidth(520)
+        layout = QVBoxLayout(dialog)
+        layout.addWidget(
+            QLabel(
+                "Select the processing stages you want to run. Existing results are shown below; you can choose to rerun them when the stage starts."
+            )
+        )
+
+        choices = [
+            ("transcription", "Transcribe", self.transcript),
+            ("diarization", "Detect Speakers", self.diarization),
+            ("stories", "Detect Stories", self.stories),
+        ]
+        pm = getattr(self, "plugin_manager", None)
+        translation_installed = bool(pm and pm.is_plugin_installed("translation") and pm.is_plugin_enabled("translation"))
+        if translation_installed:
+            choices.append(("translation", "Translate Transcript", self.translations))
+
+        boxes = []
+        for key, label, data in choices:
+            row = QHBoxLayout()
+            cb = QCheckBox(label)
+            is_complete = bool(self.processing_status.get(key, False))
+
+            if key == "translation":
+                # Only check translation by default if the required translation model is already installed
+                from_c = self.source_language_code()
+                to_c = self.target_language_code()
+                var = getattr(self, "translation_model_variant", "tiny")
+                w_cls = None
+                try:
+                    from translation import _translation_worker_class
+                    w_cls = _translation_worker_class()
+                except Exception:
+                    pass
+                model_installed = bool(w_cls and w_cls.model_is_installed(from_c, to_c, var))
+                cb.setChecked(model_installed and not is_complete)
+                if not model_installed:
+                    state = "Model Not Installed"
+                elif is_complete:
+                    state = "Complete"
+                elif data:
+                    state = "Partial"
+                else:
+                    state = "Not Started"
+            else:
+                cb.setChecked(not is_complete)
+                if is_complete:
+                    state = "Complete"
+                elif data:
+                    state = "Partial"
+                else:
+                    state = "Not Started"
+
+            row.addWidget(cb)
+            row.addStretch()
+            row.addWidget(QLabel(state))
+            layout.addLayout(row)
+            boxes.append((key, cb))
+
+        layout.addSpacing(8)
+        buttons = QHBoxLayout()
+        select_all = QPushButton("Select All")
+        clear_all = QPushButton("Clear All")
+        run_btn = QPushButton("Run Selected")
+        cancel_btn = QPushButton("Cancel")
+        buttons.addWidget(select_all)
+        buttons.addWidget(clear_all)
+        buttons.addStretch()
+        buttons.addWidget(run_btn)
+        buttons.addWidget(cancel_btn)
+        layout.addLayout(buttons)
+        select_all.clicked.connect(lambda: [cb.setChecked(True) for _, cb in boxes])
+        clear_all.clicked.connect(lambda: [cb.setChecked(False) for _, cb in boxes])
+        cancel_btn.clicked.connect(dialog.reject)
+
+        def run_selected():
+            selected = [key for key, cb in boxes if cb.isChecked()]
+            if not selected:
+                QMessageBox.information(
+                    dialog, "Run Processing", "Select at least one processing stage."
+                )
+                return
+            if "translation" in selected and "transcription" not in selected:
+                raw_segs = self.transcript.get("segments", []) if isinstance(self.transcript, dict) else (self.transcript if isinstance(self.transcript, list) else [])
+                if not raw_segs:
+                    QMessageBox.warning(
+                        dialog,
+                        "Run Processing",
+                        "Translation requires a transcript. Please include Transcribe in the selected stages or load a transcript first.",
+                    )
+                    return
+            if "translation" in selected:
+                from_code = self.source_language_code()
+                to_code = self.target_language_code()
+                variant = getattr(self, "translation_model_variant", "tiny")
+                worker_cls = None
+                try:
+                    from translation import _translation_worker_class
+                    worker_cls = _translation_worker_class()
+                except Exception:
+                    pass
+                model_installed = bool(worker_cls and worker_cls.model_is_installed(from_code, to_code, variant))
+                if not model_installed:
+                    variant_display = "OPUS-MT-tiny" if variant == "tiny" else "OPUS-MT"
+                    res = QMessageBox.question(
+                        dialog,
+                        "Translation Model Missing",
+                        f"The {variant_display} translation model ({from_code.upper()} → {to_code.upper()}) is not currently installed.\n\n"
+                        "Would you like to download and install it during processing?\n\n"
+                        "Click 'Yes' to download the model, or 'No' to proceed without translation.",
+                        QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                        QMessageBox.StandardButton.No,
+                    )
+                    if res != QMessageBox.StandardButton.Yes:
+                        selected.remove("translation")
+                        for k, b in boxes:
+                            if k == "translation":
+                                b.setChecked(False)
+                        if not selected:
+                            return
+            if len(selected) > 1 and not self.ensure_project_for_processing_pipeline():
+                return
+            if not self._confirm_pipeline_rerun_if_needed(selected, parent=dialog):
+                return
+            dialog.accept()
+            self.pipeline_queue = list(selected)
+            self.pipeline_total_stages = len(selected)
+            self.pipeline_all_stages = list(selected)
+            self.pipeline_current_stage_idx = 0
+            self.pipeline_active = True
+            import time
+            self.pipeline_start_monotonic = time.monotonic()
+            self.pending_diarization = False
+            self.pending_auto_detect_stories = False
+            self.pipeline_speaker_detection_requested = False
+            self.log_activity(
+                "[AUTOMATION] Run Processing selected: " + ", ".join(selected) + "."
+            )
+            QTimer.singleShot(0, self._run_next_selected_processing)
+
+        run_btn.clicked.connect(run_selected)
+        dialog.exec()
+
+    def _confirm_pipeline_rerun_if_needed(self, stages, parent=None):
+        """Look ahead at stages about to run in a pipeline. If any have already
+        completed or have existing data, prompt the user ONCE upfront whether to
+        re-run and overwrite existing results.
+        Returns True to proceed, False to cancel.
+        """
+        if getattr(self, "batch_active", False):
+            self.pipeline_rerun_confirmed = True
+            return True
+
+        stage_labels = {
+            "transcription": "Transcription",
+            "diarization": "Speaker Detection",
+            "stories": "Story Detection",
+            "translation": "Translation",
+        }
+
+        completed = []
+        for s in stages:
+            data = {
+                "transcription": self.transcript,
+                "diarization": self.diarization or getattr(self, "diarization_result", None),
+                "stories": self.stories,
+                "translation": getattr(self, "translations", {}),
+            }.get(s)
+            status = self.processing_status.get(s, False)
+            if data or status:
+                label = stage_labels.get(s, s.title())
+                completed.append((s, label))
+
+        if not completed:
+            self.pipeline_rerun_confirmed = True
+            return True
+
+        parent_widget = parent or self
+        if len(completed) == 1:
+            stage_key, stage_label = completed[0]
+            answer = QMessageBox.question(
+                parent_widget,
+                f"{stage_label} Already Complete",
+                f"{stage_label} has already been completed. Run it again?",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                QMessageBox.StandardButton.Yes,
+            )
+        else:
+            bullets = "\n".join(f"• {label}" for _, label in completed)
+            answer = QMessageBox.question(
+                parent_widget,
+                "Re-run Completed Stages?",
+                f"The following processing stage(s) have already been completed:\n\n{bullets}\n\n"
+                "Do you want to re-run these stages and overwrite existing results?",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                QMessageBox.StandardButton.Yes,
+            )
+
+        if answer == QMessageBox.StandardButton.Yes:
+            self.pipeline_rerun_confirmed = True
+            return True
+        else:
+            self.pipeline_rerun_confirmed = False
+            return False
+
+    def _run_next_selected_processing(self):
+        if not self.pipeline_active:
+            return
+        if not self.pipeline_queue:
+            self.pipeline_rerun_confirmed = False
+            if self.batch_active:
+                self.pipeline_active = False
+                self.pipeline_start_monotonic = None
+                self.set_processing_stage(None)
+                self.set_tools_actions_enabled(True)
+                self.update_processing_stage_summary()
+                self.save_project() if self.audio_file else None
+                self._batch_export_current()
+                QTimer.singleShot(0, self._batch_next_media)
+                return
+            self.pipeline_active = False
+            self.pipeline_start_monotonic = None
+            self.set_processing_stage(None)
+            self.set_tools_actions_enabled(True)
+            self.update_processing_stage_summary()
+            self.statusBar().showMessage("Selected processing complete.")
+            self.log_activity("[AUTOMATION] Selected processing complete.")
+            return
+
+        kind = self.pipeline_queue.pop(0)
+        self.pipeline_current_stage_idx = max(1, getattr(self, "pipeline_total_stages", 1) - len(self.pipeline_queue))
+        skip_choice = self.batch_active or getattr(self, "pipeline_rerun_confirmed", False)
+        if kind == "transcription":
+            if not skip_choice:
+                choice = self._processing_choice("transcription")
+                if choice == "cancel":
+                    self.pipeline_queue = []
+                    self.pipeline_active = False
+                    self.pipeline_rerun_confirmed = False
+                    self.set_tools_actions_enabled(True)
+                    return
+                if choice == "start_over":
+                    self.transcript = []
+                    self.processing_status["transcription"] = False
+            self.start_transcription()
+        elif kind == "diarization":
+            if not skip_choice:
+                choice = self._processing_choice("diarization")
+                if choice == "cancel":
+                    self.pipeline_queue = []
+                    self.pipeline_active = False
+                    self.pipeline_rerun_confirmed = False
+                    self.set_tools_actions_enabled(True)
+                    return
+                if choice == "start_over":
+                    self.diarization = {}
+                    self.processing_status["diarization"] = False
+            self.start_diarization()
+        elif kind == "stories":
+            if not skip_choice:
+                choice = self._processing_choice("stories")
+                if choice == "cancel":
+                    self.pipeline_queue = []
+                    self.pipeline_active = False
+                    self.pipeline_rerun_confirmed = False
+                    self.set_tools_actions_enabled(True)
+                    return
+            self.start_auto_detect_stories()
+        elif kind == "translation":
+            if not self.transcript:
+                QMessageBox.warning(
+                    self,
+                    "Run Processing",
+                    "Translation requires a transcript. Select Transcribe first or load a project containing a transcript.",
+                )
+                self.pipeline_queue = []
+                self.pipeline_active = False
+                self.pipeline_rerun_confirmed = False
+                self.set_processing_stage(None)
+                self.set_tools_actions_enabled(True)
+                return
+            from_code = self.source_language_code()
+            to_code = self.target_language_code()
+            self.start_translation(from_code, to_code, install_if_missing=True)
+
+    def start_transcribe_and_diarize(self):
+        if not self.audio_file:
+            return
+        if not self.ensure_project_for_processing_pipeline():
+            return
+        stages = ["transcription", "diarization"]
+        if not self._confirm_pipeline_rerun_if_needed(stages):
+            return
+        self.pipeline_queue = list(stages)
+        self.pipeline_total_stages = len(stages)
+        self.pipeline_all_stages = list(stages)
+        self.pipeline_current_stage_idx = 0
+        self.pipeline_active = True
+        import time
+        self.pipeline_start_monotonic = time.monotonic()
+        self.pending_diarization = False
+        self.pending_auto_detect_stories = False
+        self.pipeline_speaker_detection_requested = False
+        self.log_activity("[AUTOMATION] Started Transcribe & Detect Speakers chain")
+        QTimer.singleShot(0, self._run_next_selected_processing)
+
+    def _processing_choice(self, kind):
+        """Return: run, continue, start_over, or cancel based on current state."""
+        status = self.processing_status.get(kind, False)
+        data = {
+            "transcription": self.transcript,
+            "diarization": self.diarization,
+            "translation": getattr(self, "translations", {}),
+        }.get(kind)
+        if not data:
+            return "run"
+        complete = bool(status)
+        if complete:
+            answer = QMessageBox.question(
+                self,
+                f"{kind.title()} Already Complete",
+                f"{kind.title()} has already been completed. Run it again?",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            )
+            return "run" if answer == QMessageBox.StandardButton.Yes else "cancel"
+        box = QMessageBox(self)
+        box.setWindowTitle(f"Incomplete {kind.title()}")
+        box.setText(f"An incomplete {kind.title().lower()} exists.")
+        cont = box.addButton("Continue", QMessageBox.ButtonRole.AcceptRole)
+        restart = box.addButton("Start Over", QMessageBox.ButtonRole.DestructiveRole)
+        cancel = box.addButton("Cancel", QMessageBox.ButtonRole.RejectRole)
+        box.exec()
+        clicked = box.clickedButton()
+        if clicked is cont:
+            return "continue"
+        if clicked is restart:
+            return "start_over"
+        return "cancel"
+
+    def _worker_command(self, args):
+        """Return (executable, args, env_overrides) for the local AI worker,
+        with HF_HOME always pointed at the user's configured model storage
+        directory (Preferences > Processing).
+
+        The worker subprocess intentionally does not import prs_shared/Qt to
+        stay lightweight, so it can only learn the configured model
+        directory via an inherited environment variable -- this is computed
+        here, in the already-running main app, where QSettings access is
+        always safe, rather than at process bootstrap before QApplication
+        exists.
+        """
+        executable, worker_args, env_overrides = self._resolve_worker_command(args)
+        env_overrides = dict(env_overrides or {})
+        storage_dir = str(get_models_storage_dir())
+        env_overrides.setdefault("PRS_MODELS_DIR", storage_dir)
+        env_overrides.setdefault("HF_HOME", str(get_models_storage_dir() / "huggingface"))
+        return executable, worker_args, env_overrides
+
+    def _resolve_worker_command(self, args):
+        """Return (executable, args, env_overrides) for the local AI worker.
+
+        Source builds launch the Python worker script. Frozen/installed builds
+        launch the separately packaged worker executable so they do not require
+        a system Python installation. Either way, if GPU acceleration has been
+        installed and enabled from Settings, that takes priority: the worker
+        source runs under the separately-provisioned CUDA-enabled environment
+        instead, with PRS_WHISPER_DEVICE/PRS_WHISPER_COMPUTE_TYPE set so it
+        actually uses the GPU.
+        """
+        gpu_launch = self.gpu_worker_launch_info() if hasattr(self, "gpu_worker_launch_info") else None
+        if gpu_launch is not None:
+            python_exe, worker_script, env_overrides = gpu_launch
+            return python_exe, [worker_script, *args], env_overrides
+
+        if getattr(sys, "frozen", False):
+            exe_name = "prs_worker.exe" if os.name == "nt" else "prs_worker"
+            app_dir = Path(sys.executable).resolve().parent
+
+            # 1. Primary candidate: dedicated prs_worker.exe in app_dir (lives alongside _internal/)
+            app_worker = app_dir / exe_name
+            if app_worker.exists():
+                return str(app_worker), list(args), {}
+
+            # 2. Re-use the main frozen executable with the lightweight worker CLI flag
+            # RadioTVSegmenter directly runs radio_tv_story_segmenter_worker.main() without GUI
+            if Path(sys.executable).exists():
+                return sys.executable, ["--prs-worker", *args], {}
+
+            # 3. Subdirectory worker (ONLY if it has its own _internal directory adjacent to it)
+            sub_worker = app_dir / "workers" / exe_name
+            if sub_worker.exists() and (sub_worker.parent / "_internal").exists():
+                return str(sub_worker), list(args), {}
+
+            # Fallback
+            return sys.executable, ["--prs-worker", *args], {}
+        helper = Path(__file__).with_name("radio_tv_story_segmenter_worker.py")
+        if not helper.exists():
+            raise FileNotFoundError(f"Local AI worker not found: {helper}")
+        feature = "diarize" if args and args[0] == "--diarize" else "transcribe"
+        runtime_mgr = getattr(self, "runtime_mgr", None)
+        if runtime_mgr is not None:
+            ok = runtime_mgr.ensure_environment(feature)
+            if not ok:
+                raise RuntimeError(f"Could not initialize the {feature} runtime environment.")
+            return runtime_mgr.get_executable(feature), [str(helper), *args], {}
+        return sys.executable, [str(helper), *args], {}
+
+
+    def _apply_worker_env_overrides(self, process, env_overrides):
+        """Applies extra environment variables (e.g. GPU device selection)
+        to a QProcess before starting it, on top of the normal inherited
+        environment. No-op when there's nothing to override."""
+        if not env_overrides:
+            return
+        process_env = process.processEnvironment()
+        if process_env.isEmpty():
+            process_env = QProcessEnvironment.systemEnvironment()
+        for key, value in env_overrides.items():
+            process_env.insert(key, str(value))
+        process.setProcessEnvironment(process_env)
+
+    def start_transcription(self):
+        if not self.audio_file:
+            self.log_activity("[TRANSCRIPTION] Aborted: no media file is loaded.")
+            return
+
+        # Stop background thumbnail and waveform workers during heavy ML tasks to free CPU/disk I/O
+        self.stop_waveform_worker()
+        self.stop_video_thumbnail_worker()
+
+        if not self.pipeline_active and not getattr(self, "pipeline_rerun_confirmed", False):
+            choice = self._processing_choice("transcription")
+            if choice == "cancel":
+                self.log_activity("[TRANSCRIPTION] User canceled processing choice.")
+                return
+            if choice == "start_over":
+                self.transcript = []
+                self.processing_status["transcription"] = False
+                self.log_activity("[TRANSCRIPTION] Starting over; previous transcript discarded.")
+            elif choice == "continue":
+                self.log_activity("[TRANSCRIPTION] Continuing from existing partial transcript.")
+
+        if self.transcription_process is not None:
+            self.log_activity("[TRANSCRIPTION] A transcription job is already running.")
+            return
+
+        if not self._ensure_runtime_environment_responsive("transcribe"):
+            return
+
+        self.set_tools_actions_enabled(False)
+        self.progress.setValue(0)
+        self.progress.show()
+        self.cancel_button.show()
+
+        model_name = self.current_whisper_model()
+        self.whisper_model = model_name
+        try:
+            if not self.is_whisper_model_available(model_name):
+                label = model_name.replace("-v3", "").title()
+                answer = QMessageBox.question(
+                    self,
+                    "Model Not Installed",
+                    f"Whisper {label} is not yet installed locally.\n\n"
+                    "Would you like to download it now? Once downloaded, transcription will begin automatically.",
+                    QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                    QMessageBox.StandardButton.Yes,
+                )
+                if answer != QMessageBox.StandardButton.Yes:
+                    self.log_activity(
+                        f"[TRANSCRIPTION] Model '{model_name}' is not installed; transcription canceled by user.",
+                        mark_dirty=False
+                    )
+                    self.pipeline_active = False
+                    self.pipeline_queue = []
+                    self.progress.hide()
+                    self.cancel_button.hide()
+                    self.set_tools_actions_enabled(True)
+                    return
+
+                # Responsive threaded download with progress and cancel support
+                progress_box = QProgressDialog(f"Downloading Whisper {label} model...", "Cancel", 0, 100, self)
+                progress_box.setWindowTitle("Downloading Model")
+                progress_box.setWindowModality(Qt.WindowModality.WindowModal)
+                progress_box.setMinimumDuration(0)
+                progress_box.setAutoClose(True)
+                progress_box.setAutoReset(True)
+
+                dl_worker = WhisperModelInstallWorker(model_name)
+                dl_thread = QThread(self)
+                dl_worker.moveToThread(dl_thread)
+
+                dl_res = {"err": None, "cancelled": False}
+
+                def _on_dl_progress(pct, msg):
+                    progress_box.setValue(pct)
+                    progress_box.setLabelText(msg)
+
+                def _on_dl_finished(err):
+                    dl_res["err"] = err
+                    dl_thread.quit()
+
+                def _on_dl_cancel():
+                    dl_res["cancelled"] = True
+                    dl_worker.cancel()
+                    dl_thread.quit()
+
+                dl_worker.progress.connect(_on_dl_progress)
+                dl_worker.finished.connect(_on_dl_finished)
+                progress_box.canceled.connect(_on_dl_cancel)
+                dl_thread.started.connect(dl_worker.run)
+
+                dl_loop = QEventLoop(self)
+                dl_thread.finished.connect(dl_loop.quit)
+
+                dl_thread.start()
+                progress_box.show()
+                dl_loop.exec()
+                progress_box.close()
+
+                if dl_thread.isRunning():
+                    dl_thread.wait(2000)
+                dl_worker.deleteLater()
+                dl_thread.deleteLater()
+
+                if dl_res["cancelled"]:
+                    self.log_activity(f"[MODELS] Whisper {label} download cancelled by user.")
+                    self.pipeline_active = False
+                    self.pipeline_queue = []
+                    self.progress.hide()
+                    self.cancel_button.hide()
+                    self.set_tools_actions_enabled(True)
+                    return
+
+                err = dl_res["err"]
+                if err:
+                    QMessageBox.critical(self, "Download Failed", f"Could not download Whisper '{model_name}':\n\n{err}")
+                    self.pipeline_active = False
+                    self.pipeline_queue = []
+                    self.progress.hide()
+                    self.cancel_button.hide()
+                    self.set_tools_actions_enabled(True)
+                    return
+
+                self.log_activity(f"[MODELS] Whisper {label} downloaded successfully. Starting transcription...")
+                if hasattr(self, "refresh_whisper_model_chooser"):
+                    self.refresh_whisper_model_chooser()
+        except Exception as exc:
+            self.set_tools_actions_enabled(True)
+            self.progress.hide()
+            self.cancel_button.hide()
+            self.pipeline_active = False
+            self.pipeline_queue = []
+            self.log_activity(f"[TRANSCRIPTION] Error preparing model '{model_name}': {exc}")
+            QMessageBox.critical(self, "Transcription Error", f"Failed to prepare model '{model_name}':\n\n{exc}")
+            return
+
+        if not self.pipeline_active:
+            self.processing_status["transcription"] = False
+        self.set_processing_stage("Transcription", f"Whisper {model_name}")
+        self.transcription_output_buffer = ""
+        self.transcription_helper_ready = False
+        self.transcription_result_received = False
+        
+        # Prepare transcript view for live streaming preview
+        if hasattr(self, "transcript_view"):
+            self.transcript_view.setReadOnly(True)
+            self.transcript_view.clear()
+            self.transcript_view.set_char_timestamp_map([])
+        self.streaming_transcript_segments = []
+        self.log_activity(
+            f"[TRANSCRIPTION] Started local Whisper transcription (Model: '{model_name}')."
+        )
+        self.log_activity("[TRANSCRIPTION] Starting isolated local transcription helper...")
+        self.log_activity(
+            "[TRANSCRIPTION] Processing backend: CPU (hardware acceleration not enabled in this version)."
+        )
+        self.statusBar().showMessage("Starting local transcription...")
+
+        process = QProcess(self)
+        process.setProcessChannelMode(QProcess.ProcessChannelMode.SeparateChannels)
+        process.readyReadStandardOutput.connect(self.on_transcription_output)
+        process.readyReadStandardError.connect(self.on_transcription_stderr)
+        process.finished.connect(self.on_transcription_process_finished)
+        process.finished.connect(lambda: unregister_process(process))
+        process.errorOccurred.connect(self.on_transcription_process_error)
+        process.errorOccurred.connect(lambda: unregister_process(process))
+        
+        self.transcription_process = process
+
+        beam_size = getattr(self, "whisper_beam_size", 5)
+        if hasattr(self, "settings_store"):
+            try:
+                beam_size = int(self.settings_store.value("whisper_beam_size", beam_size) or 5)
+            except Exception:
+                beam_size = 5
+
+        try:
+            worker_executable, worker_args, env_overrides = self._worker_command([
+                "--transcribe",
+                str(self.audio_file),
+                model_name,
+                getattr(self, "whisper_initial_prompt", ""),
+                str(beam_size),
+            ])
+        except FileNotFoundError as exc:
+            self.cleanup_transcription_process()
+            self.transcription_error(str(exc))
+            return
+
+        self._apply_worker_env_overrides(process, env_overrides)
+        process.start(worker_executable, worker_args)
+
+        if not process.waitForStarted(3000):
+            error = process.errorString() or "Unknown process-start error."
+            self.cleanup_transcription_process()
+            self.transcription_error(
+                f"Could not start the local transcription process:\n\n{error}"
+            )
+            return
+
+        register_process(process)
+        
+        self.log_activity(
+            f"[TRANSCRIPTION] Local helper process started (PID {process.processId()})."
+        )
+
+    def on_transcription_output(self):
+        process = self.transcription_process
+        if process is None:
+            return
+
+        data = bytes(process.readAllStandardOutput()).decode("utf-8", errors="replace")
+        self.transcription_output_buffer += data
+
+        while "\n" in self.transcription_output_buffer:
+            line, self.transcription_output_buffer = self.transcription_output_buffer.split(
+                "\n", 1
+            )
+            line = line.strip()
+            if not line:
+                continue
+
+            try:
+                message = json.loads(line)
+            except json.JSONDecodeError:
+                lowered = line.lower()
+                if "warning" in lowered or "warnings.warn" in lowered:
+                    level = "[WARNING]"
+                elif "error" in lowered or "traceback" in lowered or "exception" in lowered:
+                    level = "[ERROR]"
+                else:
+                    level = "[INFO]"
+                self.log_activity(f"[TRANSCRIPTION] {level} Helper: {line}")
+                continue
+
+            kind = message.get("type")
+            if kind == "hello":
+                version = str(message.get("protocol", ""))
+                capabilities = message.get("capabilities", [])
+                if version != HELPER_PROTOCOL_VERSION:
+                    self.transcription_error(
+                        "The local processing helper is incompatible with this version of the application.\n\n"
+                        f"Expected helper protocol {HELPER_PROTOCOL_VERSION}, but found {version or 'unknown'}.\n\n"
+                        "Please use the helper included with this version of Radio & TV Story Segmenter."
+                    )
+                    return
+                if "transcribe" not in capabilities:
+                    self.transcription_error(
+                        "The installed local helper does not support Whisper transcription.\n\n"
+                        "Please use the helper included with this version of Radio & TV Story Segmenter."
+                    )
+                    return
+                self.transcription_helper_ready = True
+                self.log_activity(
+                    f"[TRANSCRIPTION] Helper protocol {version} verified; transcription capability available."
+                )
+            elif kind == "streaming_segment":
+                seg = message.get("segment")
+                if seg:
+                    self._handle_live_streaming_segment(seg)
+            elif kind == "progress":
+                percent = int(message.get("percent", 0))
+                status = str(message.get("message", "Transcription in progress..."))
+                self.transcription_progress(status, percent)
+                self.log_activity(f"[TRANSCRIPTION] {status}")
+            elif kind == "finished":
+                if not self.transcription_helper_ready:
+                    self.transcription_helper_ready = True
+
+                self.transcription_result_received = True
+                self.transcription_finished(message.get("result", {}))
+            elif kind == "warning":
+                self.log_activity(f"[WARNING] Transcription helper: {message.get('message', '')}")
+            elif kind == "error":
+                self.transcription_error(str(message.get("message", "Transcription failed.")))
+
+    def on_transcription_stderr(self):
+        """Route the worker's stderr (third-party library warnings, C-level
+        driver output) straight to the log. This is deliberately a separate
+        channel from stdout (see SeparateChannels above) rather than merged
+        with it -- stdout carries the line-based JSON protocol, and a stray
+        stderr write landing mid-line there could corrupt a JSON message
+        (e.g. the final "finished" result) and silently fail the job.
+        """
+        process = self.transcription_process
+        if process is None:
+            return
+        data = bytes(process.readAllStandardError()).decode("utf-8", errors="replace")
+        for line in data.splitlines():
+            line = line.strip()
+            if not line:
+                continue
+            lowered = line.lower()
+            if "error" in lowered or "traceback" in lowered or "exception" in lowered:
+                level = "[ERROR]"
+            elif "warning" in lowered or "warnings.warn" in lowered:
+                level = "[WARNING]"
+            else:
+                level = "[INFO]"
+            self.log_activity(f"[TRANSCRIPTION] {level} Helper (stderr): {line}", mark_dirty=False)
+
+    def _handle_live_streaming_segment(self, segment):
+        """Append an incoming live transcript chunk directly to the view without rebuilding the map."""
+        if not hasattr(self, "streaming_transcript_segments"):
+            self.streaming_transcript_segments = []
+        self.streaming_transcript_segments.append(segment)
+
+        if not hasattr(self, "transcript_view"):
+            return
+
+        text = segment.get("text", "").strip()
+        if not text:
+            return
+
+        start_time = segment.get("start", 0.0)
+        time_str = format_time(start_time)
+
+        curr_theme = getattr(self.transcript_view, "current_theme", "dark")
+        if curr_theme == "light":
+            text_color = "#24292f"
+            time_color = "#57606a"
+        elif curr_theme == "high_contrast":
+            text_color = "#ffffff"
+            time_color = "#ffff00"
+        else:
+            text_color = "#c9d1d9"
+            time_color = "#8b949e"
+
+        time_html = f'<span style="color: {time_color}; font-weight: bold;">[{time_str}]</span> ' if getattr(self, "show_timestamps", True) else ""
+        escaped_text = html.escape(text)
+        para_html = f'<p style="margin-bottom: 8px; color: {text_color};">{time_html}{escaped_text}</p>'
+
+        cursor = self.transcript_view.textCursor()
+        cursor.beginEditBlock()
+        cursor.movePosition(QTextCursor.MoveOperation.End)
+        cursor.insertHtml(para_html)
+        cursor.endEditBlock()
+
+        v_bar = self.transcript_view.verticalScrollBar()
+        if v_bar:
+            v_bar.setValue(v_bar.maximum())
+    
+    def on_transcription_process_finished(self, exit_code, exit_status):
+        self.on_transcription_output()
+        if self.transcription_process is None:
+            return
+
+        output = self.transcription_output_buffer.strip()
+        was_successful = self.transcription_result_received
+
+        self.cleanup_transcription_process()
+
+        if was_successful:
+            self.log_activity("[TRANSCRIPTION] Local helper process completed successfully.")
+            return
+
+        if exit_code != 0:
+            self.cleanup_transcription_process()
+            self.transcription_error(
+                f"The local transcription helper exited unexpectedly (exit code {exit_code})."
+                + (f"\n\nHelper output:\n{output}" if output else "")
+            )
+            return
+
+        self.cleanup_transcription_process()
+        self.transcription_error("Transcription ended without returning results.")
+
+    def on_transcription_process_error(self, error):
+        if self.transcription_process is None:
+            return
+        message = self.transcription_process.errorString()
+        self.cleanup_transcription_process()
+        self.transcription_error(
+            f"The local transcription process reported an error:\n\n{message}"
+        )
+
+    def cleanup_transcription_process(self):
+        process = self.transcription_process
+        self.transcription_process = None
+        self.transcription_output_buffer = ""
+        self.transcription_helper_ready = False
+        self.transcription_result_received = False
+        if process is not None:
+            unregister_process(process)
+            try:
+                if process.state() != QProcess.ProcessState.NotRunning:
+                    process.kill()
+                    process.waitForFinished(3000)
+            except Exception:
+                pass
+            try:
+                process.deleteLater()
+            except Exception:
+                pass
+
+    def transcription_progress(self, message, percent):
+        self.update_processing_progress(percent, message)
+
+    def transcription_finished(self, transcript):
+        if not isinstance(transcript, dict) or "segments" not in transcript:
+            self.transcription_error(
+                "The transcription helper returned an invalid transcript result."
+            )
+            return
+
+        try:
+            transcript = scrub_transcript(transcript)
+        except Exception as scrub_err:
+            logger.warning(f"Failed to scrub transcript payload: {scrub_err}")
+
+        self.flush_pending_transcript_undo() if hasattr(self, "flush_pending_transcript_undo") else None
+        before_state = self._capture_project_state() if hasattr(self, "_capture_project_state") else None
+        self.progress.setValue(100)
+        self.transcript = transcript
+        self.processing_status["transcription"] = True
+        self.progress.hide()
+        self.cancel_button.hide()
+
+        self.set_tools_actions_enabled(True)
+        self.update_translation_language_selector()
+
+        # If Diarization is scheduled to run immediately next in the pipeline,
+        # skip rebuilding the document layout here so the final speaker tags
+        # and anchor map can be built cleanly once diarization finishes.
+        will_diarize_next = (
+            getattr(self, "pipeline_active", False)
+            and "diarization" in getattr(self, "pipeline_queue", [])
+        )
+        if not will_diarize_next:
+            self.render_transcript()
+        else:
+            self.log_activity("[TRANSCRIPTION] Live text ready. Speaker detection will assign speakers next.", mark_dirty=False)
+
+        self.render_translation_view()
+
+        if before_state is not None and hasattr(self, "_commit_project_state_change"):
+            self._commit_project_state_change(before_state, "Transcription")
+
+        self.log_activity("[TRANSCRIPTION] Complete. Rendered interactive transcript.")
+        self.update_processing_stage_summary()
+        self.statusBar().showMessage("Transcription complete.")
+        self.save_project()
+
+        if self.pipeline_active and self.pipeline_queue:
+            QTimer.singleShot(0, self._run_next_selected_processing)
+        elif self.batch_active and self.pipeline_active:
+            self.pipeline_active = False
+            self._batch_export_current()
+            QTimer.singleShot(0, self._batch_next_media)
+
+    def transcription_error(self, message):
+        self.cleanup_transcription_process()
+        self.pending_diarization = False
+        self.pending_auto_detect_stories = False
+        self.pipeline_speaker_detection_requested = False
+        self.pipeline_active = False
+        self.pipeline_queue = []
+        self.pipeline_rerun_confirmed = False
+        if getattr(self, "batch_active", False):
+            self.batch_active = False
+        self.progress.hide()
+        self.cancel_button.hide()
+        self.set_processing_stage(None)
+        self.set_tools_actions_enabled(True)
+
+        if message == "Process canceled by user.":
+            self.statusBar().showMessage("Transcription canceled by user.")
+        else:
+            QMessageBox.critical(self, "Transcription Error", message)
+
+    def on_diarization_process_error(self, error):
+        """Handles QProcess execution errors for the diarization process."""
+        if getattr(self, "diarization_result_received", False):
+            self.cleanup_diarization_process()
+            return
+
+        error_descriptions = {
+            QProcess.ProcessError.FailedToStart: "The diarization helper process failed to start. Ensure Python and dependencies are correctly installed.",
+            QProcess.ProcessError.Crashed: "The diarization helper process crashed unexpectedly (segmentation fault or unhandled native/Python exception).",
+            QProcess.ProcessError.Timedout: "The diarization process timed out.",
+            QProcess.ProcessError.WriteError: "An error occurred while writing to the diarization process.",
+            QProcess.ProcessError.ReadError: "An error occurred while reading from the diarization process.",
+            QProcess.ProcessError.UnknownError: "An unknown error occurred in the diarization process.",
+        }
+        desc = error_descriptions.get(
+            error, f"Diarization process error occurred (code: {error})"
+        )
+
+        detail_msg = desc
+        if self.diarization_output_buffer.strip():
+            detail_msg += (
+                f"\n\nCaptured Output Buffer:\n{self.diarization_output_buffer.strip()}"
+            )
+
+        if hasattr(self, "log_activity"):
+            self.log_activity(f"[ERROR] {desc}")
+
+        if hasattr(self, "set_processing_stage"):
+            self.set_processing_stage(None)
+
+        self.cleanup_diarization_process()
+
+        if getattr(self, "batch_active", False):
+            self.log_activity(
+                "[BATCH WARNING] Diarization failed; proceeding with export using available transcript data."
+            )
+            self._batch_export_current()
+
+            if self.pipeline_active and self.pipeline_queue:
+                QTimer.singleShot(0, self._run_next_selected_processing)
+            else:
+                self.pipeline_active = False
+                QTimer.singleShot(0, self._batch_next_media)
+        else:
+            QMessageBox.critical(
+                self, "Diarization Error", f"Failed to run diarization process:\n\n{detail_msg}"
+            )
+
+    def start_diarization(self):
+        self.log_activity("[SPEAKER DETECT] Speaker Detection startup requested.")
+        self._diar_stage_idx = 0
+        self._diar_last_raw_pct = 0.0
+        self._diar_last_overall_percent = 0
+
+        if not self.audio_file:
+            self.log_activity("[SPEAKER DETECT] Aborted: no audio file is loaded.")
+            self.diarization_error("No audio file is loaded.")
+            return
+
+        # Stop background thumbnail and waveform workers during heavy ML tasks to free CPU/disk I/O
+        self.stop_waveform_worker()
+        self.stop_video_thumbnail_worker()
+
+        if not self.batch_active and not self.pipeline_active and not getattr(self, "pipeline_rerun_confirmed", False):
+            choice = self._processing_choice("diarization")
+            if choice == "cancel":
+                self.log_activity("[SPEAKER DETECT] User canceled processing choice.")
+                return
+            elif choice == "start_over":
+                self.diarization = {}
+                self.processing_status["diarization"] = False
+        else:
+            if self.batch_active:
+                self.diarization = {}
+                self.processing_status["diarization"] = False
+
+        if self.diarization_process is not None:
+            self.log_activity("[SPEAKER DETECT] A job is already running.")
+            return
+
+        expected_speakers = str(getattr(self, "expected_speakers", "auto") or "auto")
+        # Interactive speaker estimate: batch processing and multi-stage automated pipelines
+        # are deliberately non-interactive and use auto without prompting, while standalone
+        # Detect Speakers runs can still prompt if enabled.
+        ask_each_time = str(self.settings_store.value("ask_expected_speakers", "true")).lower() in {"1", "true", "yes"}
+        if not getattr(self, "batch_active", False) and not getattr(self, "pipeline_active", False) and ask_each_time:
+            choices = [
+                "Auto-Detect",
+                "1 Speaker (Solo)",
+                "2 Speakers (Interview)",
+                "3+ Speakers (Panel / Group)",
+            ]
+            current_map = {"auto": 0, "1": 1, "2": 2, "3+": 3}
+            choice, ok = QInputDialog.getItem(
+                self,
+                "Detect Speakers",
+                "Estimated number of speakers:",
+                choices,
+                current_map.get(expected_speakers, 0),
+                False,
+            )
+            if not ok:
+                self.log_activity("[SPEAKER DETECT] Speaker estimate dialog canceled by user.")
+                if getattr(self, "pipeline_active", False):
+                    self.pipeline_queue = []
+                    self.pipeline_active = False
+                    self.pipeline_rerun_confirmed = False
+                    self.set_tools_actions_enabled(True)
+                return
+            expected_speakers = {
+                "Auto-Detect": "auto",
+                "1 Speaker (Solo)": "1",
+                "2 Speakers (Interview)": "2",
+                "3+ Speakers (Panel / Group)": "3+",
+            }.get(choice, "auto")
+            self.expected_speakers = expected_speakers
+        else:
+            # During automated pipelines, batch jobs, or when prompting is disabled,
+            # default directly to auto speaker detection.
+            expected_speakers = "auto"
+            self.expected_speakers = "auto"
+
+        # Pre-transcribed bypass: with a single expected speaker there is
+        # nothing to detect that the transcript doesn't already imply --
+        # skip spawning the local worker process entirely and just label
+        # every existing transcript segment "Speaker 1" in memory.
+        transcript_segments = (self.transcript or {}).get("segments") if self.transcript else None
+        if expected_speakers == "1" and transcript_segments:
+            self.log_activity(
+                "[SPEAKER DETECT] Single expected speaker with an existing transcript -- "
+                "assigning \"Speaker 1\" to every segment without running the local helper."
+            )
+            last_end = max((float(seg.get("end", 0.0) or 0.0) for seg in transcript_segments), default=0.0)
+            result = {
+                "num_speakers": 1,
+                "speakers": ["Speaker 1"],
+                "audio_duration": float(self.duration) if self.duration else last_end,
+                "segments": [
+                    {
+                        "start": float(seg.get("start", 0.0) or 0.0),
+                        "end": float(seg.get("end", 0.0) or 0.0),
+                        "speaker": "Speaker 1",
+                    }
+                    for seg in transcript_segments
+                ],
+            }
+            self.diarization_finished(result)
+            return
+
+        if not self._ensure_runtime_environment_responsive("diarize"):
+            return
+
+        self.set_tools_actions_enabled(False)
+        self.progress.setValue(0)
+        self.progress.show()
+        self.cancel_button.show()
+        self.set_processing_stage("Speaker Detection")
+        if not self.pipeline_active:
+            self.processing_status["diarization"] = False
+
+        self.log_activity("[SPEAKER DETECT] Starting isolated local diarization helper...")
+        self.log_activity(
+            "[SPEAKER DETECT] Processing backend: CPU (hardware acceleration not enabled in this version)."
+        )
+        self.statusBar().showMessage("Starting local Speaker Detection...")
+
+        self.diarization_output_buffer = ""
+        self.diarization_helper_ready = False
+        self.diarization_result_received = False
+
+        process = QProcess(self)
+        process.setProcessChannelMode(QProcess.ProcessChannelMode.SeparateChannels)
+        process.readyReadStandardOutput.connect(self.on_diarization_output)
+        process.readyReadStandardError.connect(self.on_diarization_stderr)
+        process.finished.connect(self.on_diarization_process_finished)
+        process.finished.connect(lambda: unregister_process(process))
+        process.errorOccurred.connect(self.on_diarization_process_error)
+        process.errorOccurred.connect(lambda: unregister_process(process))
+
+        self.diarization_process = process
+
+        worker_cmd = [
+            "--diarize", str(self.audio_file), "--expected-speakers", str(expected_speakers)
+        ]
+        if transcript_segments:
+            try:
+                import tempfile
+                import json
+                tf = tempfile.NamedTemporaryFile(
+                    prefix="diarize_transcript_", suffix=".json", delete=False, mode="w", encoding="utf-8"
+                )
+                json.dump({"segments": transcript_segments}, tf)
+                tf.close()
+                self.diarization_transcript_file = tf.name
+                worker_cmd.extend(["--transcript-file", str(tf.name)])
+                self.log_activity(
+                    f"[SPEAKER DETECT] Fast transcript-guided diarization enabled ({len(transcript_segments)} segments)."
+                )
+            except Exception as exc:
+                self.log_activity(f"[SPEAKER DETECT] Could not write temporary transcript file: {exc}")
+
+        try:
+            worker_executable, worker_args, env_overrides = self._worker_command(worker_cmd)
+        except FileNotFoundError as exc:
+            self.cleanup_diarization_process()
+            self.diarization_error(str(exc))
+            return
+
+        self._apply_worker_env_overrides(process, env_overrides)
+        process.start(worker_executable, worker_args)
+
+        if not process.waitForStarted(3000):
+            error = process.errorString() or "Unknown process-start error."
+            self.cleanup_diarization_process()
+            self.diarization_error(
+                f"Could not start the local Speaker Detection process:\n\n{error}"
+            )
+            return
+
+        register_process(process)
+        
+        self.log_activity(
+            f"[SPEAKER DETECT] Local helper process started (PID {process.processId()})."
+        )
+
+    def on_diarization_output(self):
+        process = self.diarization_process
+        if process is None:
+            return
+
+        data = bytes(process.readAllStandardOutput()).decode("utf-8", errors="replace")
+        self.diarization_output_buffer += data
+
+        while "\n" in self.diarization_output_buffer:
+            line, self.diarization_output_buffer = self.diarization_output_buffer.split(
+                "\n", 1
+            )
+            line = line.strip()
+            if not line:
+                continue
+
+            try:
+                message = json.loads(line)
+            except json.JSONDecodeError:
+                lowered = line.lower()
+                if "warning" in lowered or "warnings.warn" in lowered:
+                    level = "[WARNING]"
+                elif "error" in lowered or "traceback" in lowered or "exception" in lowered:
+                    level = "[ERROR]"
+                else:
+                    level = "[INFO]"
+                self.log_activity(f"[SPEAKER DETECT] {level} Helper: {line}")
+                continue
+
+            kind = message.get("type")
+
+            if kind == "hello":
+                version = str(message.get("protocol", ""))
+                capabilities = message.get("capabilities", [])
+                if version != HELPER_PROTOCOL_VERSION:
+                    self.diarization_error(
+                        "The local processing helper is incompatible with this version of the application.\n\n"
+                        f"Expected helper protocol {HELPER_PROTOCOL_VERSION}, but found {version or 'unknown'}.\n\n"
+                        "Please use the helper included with this version of Radio & TV Story Segmenter."
+                    )
+                    return
+                if "diarize" not in capabilities:
+                    self.diarization_error(
+                        "The installed local helper does not support Speaker Detection.\n\n"
+                        "Please use the helper included with this version of Radio & TV Story Segmenter."
+                    )
+                    return
+                self.diarization_helper_ready = True
+                self.log_activity(
+                    f"[SPEAKER DETECT] Helper protocol {version} verified; diarization capability available."
+                )
+
+            elif kind == "progress":
+                percent = int(message.get("percent", 0))
+                status = str(message.get("message", "Speaker Detection in progress..."))
+                status_lower = status.lower()
+
+                # Map stage index reliably using status keywords instead of brittle percentage drops
+                if any(k in status_lower for k in ["vad", "speech", "detect", "init", "load", "audio"]):
+                    stage_idx = 0
+                elif any(k in status_lower for k in ["embed", "vector", "extract", "feature", "compute"]):
+                    stage_idx = 1
+                elif any(k in status_lower for k in ["cluster", "group", "assemble", "final", "segment"]):
+                    stage_idx = 2
+                else:
+                    stage_idx = getattr(self, "_diar_stage_idx", 0)
+
+                self._diar_stage_idx = stage_idx
+                total_stages = 3
+                effective_stage = min(stage_idx, total_stages - 1)
+                calculated_percent = int(((effective_stage * 100.0) + float(percent)) / float(total_stages))
+
+                last_overall = getattr(self, "_diar_last_overall_percent", 0)
+                overall_percent = max(last_overall, calculated_percent)
+                overall_percent = max(0, min(99, overall_percent))
+                self._diar_last_overall_percent = overall_percent
+
+                stable_msg = "Speaker Detection"
+                self.update_processing_progress(overall_percent, stable_msg)
+                self.log_activity(f"[SPEAKER DETECT] {status}")
+
+            elif kind == "finished":
+                if not self.diarization_helper_ready:
+                    self.diarization_helper_ready = True
+
+                self.diarization_result_received = True
+                result = message.get("result", {})
+                self.diarization_finished(result)
+
+            elif kind == "error":
+                self.diarization_error(
+                    str(message.get("message", "Speaker Detection failed."))
+                )
+
+    def on_diarization_stderr(self):
+        """Route the worker's stderr straight to the log, separate from the
+        stdout JSON protocol (see SeparateChannels above) so third-party
+        library output can't corrupt an in-flight JSON message."""
+        process = self.diarization_process
+        if process is None:
+            return
+        data = bytes(process.readAllStandardError()).decode("utf-8", errors="replace")
+        for line in data.splitlines():
+            line = line.strip()
+            if not line:
+                continue
+            lowered = line.lower()
+            if "error" in lowered or "traceback" in lowered or "exception" in lowered:
+                level = "[ERROR]"
+            elif "warning" in lowered or "warnings.warn" in lowered:
+                level = "[WARNING]"
+            else:
+                level = "[INFO]"
+            self.log_activity(f"[SPEAKER DETECT] {level} Helper (stderr): {line}", mark_dirty=False)
+
+    def on_diarization_process_finished(self, exit_code, exit_status):
+        self.on_diarization_output()
+
+        if self.diarization_process is None:
+            return
+
+        error_text = self.diarization_output_buffer.strip()
+        was_successful = self.diarization_result_received
+
+        self.cleanup_diarization_process()
+
+        if was_successful:
+            self.log_activity("[SPEAKER DETECT] Local helper process exited normally.")
+            if self.pipeline_active and self.pipeline_queue:
+                QTimer.singleShot(0, self._run_next_selected_processing)
+            elif self.batch_active and self.pipeline_active:
+                self._batch_export_current()
+                self.pipeline_active = False
+                QTimer.singleShot(0, self._batch_next_media)
+            return
+
+        if exit_code != 0:
+            self.diarization_error(
+                "The local Speaker Detection helper exited unexpectedly "
+                f"(exit code {exit_code})."
+                + (f"\n\nHelper output:\n{error_text}" if error_text else "")
+            )
+            return
+
+        self.diarization_error("Speaker Detection ended without returning results.")
+
+    def cleanup_diarization_process(self):
+        process = self.diarization_process
+        self.diarization_process = None
+        self.diarization_output_buffer = ""
+        self.diarization_helper_ready = False
+        self.diarization_result_received = False
+        self._diar_stage_idx = 0
+        self._diar_last_raw_pct = 0.0
+        self._diar_last_overall_percent = 0
+
+        if process is not None:
+            
+            unregister_process(process)
+            
+            try:
+                if process.state() != QProcess.ProcessState.NotRunning:
+                    process.kill()
+                    process.waitForFinished(2000)
+            except Exception:
+                pass
+            try:
+                process.deleteLater()
+            except Exception:
+                pass
+
+        transcript_tmp = getattr(self, "diarization_transcript_file", None)
+        if transcript_tmp:
+            self.diarization_transcript_file = None
+            try:
+                if os.path.exists(transcript_tmp):
+                    os.unlink(transcript_tmp)
+            except OSError:
+                pass
+
+    def diarization_progress(self, message, percent):
+        self.update_processing_progress(percent, message)
+
+    def diarization_finished(self, result):
+        self._diar_stage_idx = 0
+        self._diar_last_raw_pct = 0.0
+        self._diar_last_overall_percent = 0
+        self.progress.hide()
+        self.cancel_button.hide()
+        self.set_tools_actions_enabled(True)
+
+        self.flush_pending_transcript_undo() if hasattr(self, "flush_pending_transcript_undo") else None
+        before_state = self._capture_project_state() if hasattr(self, "_capture_project_state") else None
+        self.diarization = result
+        self.processing_status["diarization"] = True
+
+        number = result.get("num_speakers", 0)
+        self.speaker_status.setText(
+            f"Speaker detection complete: {number} speaker(s) detected."
+        )
+
+        self.render_transcript()
+        # The progress-stage label is a transient processing indicator.  Do not
+        # leave the last diarization percentage (for example, 95%) above the
+        # timeline after speaker detection has completed.
+        self.set_processing_stage(None)
+        if before_state is not None and hasattr(self, "_commit_project_state_change"):
+            self._commit_project_state_change(before_state, "Speaker Detection")
+        self.save_project()
+
+        self.log_activity(
+            f"[SPEAKER DETECT] Complete: identified {number} speaker(s) locally."
+        )
+        self.update_processing_stage_summary()
+        self.statusBar().showMessage(f"Speaker detection complete: {number} speaker(s) detected.")
+
+    def diarization_error(self, message):
+        self._diar_stage_idx = 0
+        self._diar_last_raw_pct = 0.0
+        self._diar_last_overall_percent = 0
+        self.pending_diarization = False
+        self.pipeline_speaker_detection_requested = False
+        self.pipeline_active = False
+        self.pipeline_queue = []
+        self.pipeline_rerun_confirmed = False
+        self.pending_auto_detect_stories = False
+        if getattr(self, "batch_active", False):
+            self.batch_active = False
+        self.progress.hide()
+        self.cancel_button.hide()
+        self.set_processing_stage(None)
+        self.set_tools_actions_enabled(True)
+
+        if message == "Process canceled by user.":
+            self.statusBar().showMessage("Speaker detection canceled by user.")
+            self.log_activity("[SPEAKER DETECT] Canceled by user.")
+        else:
+            self.log_activity(f"[SPEAKER DETECT] Error: {message}")
+            QMessageBox.critical(self, "Speaker Detection Error", message)
+
+    def start_auto_detect_stories(self):
+        if not self.audio_file:
+            return
+
+        is_music = (getattr(self, "story_detection_mode", "voice") == "music")
+        term = "Song" if is_music else "Story"
+        term_plural = "Songs" if is_music else "Stories"
+
+        if self.stories and not self.pipeline_active and not getattr(self, "pipeline_rerun_confirmed", False):
+            answer = QMessageBox.question(
+                self,
+                f"Detect {term_plural}",
+                f"Detecting {term.lower()} boundaries will replace your current {term_plural} list.\n\nDo you want to proceed?",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            )
+            if answer != QMessageBox.StandardButton.Yes:
+                return
+
+        self.set_tools_actions_enabled(False)
+        self.set_processing_stage(f"{term} Detection")
+        if not self.pipeline_active:
+            self.processing_status["stories"] = False
+        self.progress.setValue(0)
+        self.progress.show()
+        self.cancel_button.show()
+        mode_str = str(getattr(self, "story_detection_mode", "voice") or "voice").capitalize()
+        self.log_activity(
+            f"[{'SONG' if is_music else 'STORY'} DETECT] Started {term.lower()} detection (Mode: {mode_str}, Threshold: {self.silence_threshold}s)"
+        )
+
+        self.story_job_token += 1
+        job_token = self.story_job_token
+        self.thread = QThread(self)
+        self._track_worker_thread(self.thread)
+
+        transcript_segments = []
+        if isinstance(self.transcript, dict):
+            transcript_segments = self.transcript.get("segments", [])
+        elif isinstance(self.transcript, list):
+            transcript_segments = self.transcript
+
+        self.worker = StoryAutoDetectWorker(
+            self.audio_file,
+            silence_threshold=self.silence_threshold,
+            lead_in_padding=self.lead_in_padding,
+            audio_duration=getattr(self, "duration", 0),
+            transcript_segments=transcript_segments,
+            whisper_model=getattr(self, "whisper_model", "parakeet-onnx"),
+            detection_mode=getattr(self, "story_detection_mode", "voice"),
+        )
+        self.worker.moveToThread(self.thread)
+        self.worker._job_token = job_token
+        self.thread.setProperty("job_token", job_token)
+
+        self.thread.started.connect(self.worker.run)
+        self.worker.progress.connect(self.auto_detect_progress)
+        self.worker.finished.connect(self.auto_detect_finished)
+        self.worker.error.connect(self.auto_detect_error)
+
+        self.worker.finished.connect(self.thread.quit)
+        self.worker.error.connect(self.thread.quit)
+        self.thread.finished.connect(self.worker_thread_finished)
+
+        self.thread.start()
+
+    def auto_detect_progress(self, message, percent):
+        self.update_processing_progress(percent, message)
+
+    def auto_detect_finished(self, new_stories):
+        # 1. Complete progress and stop the 1-second ETA timer unconditionally
+        self.progress.setValue(100)
+        self.progress.hide()
+        self.cancel_button.hide()
+        self.set_processing_stage(None)
+        self.set_tools_actions_enabled(True)
+
+        # 2. Commit stories to project state and update UI lists
+        is_music = (getattr(self, "story_detection_mode", "voice") == "music")
+        term = "Song" if is_music else "Story"
+        term_plural = "Songs" if is_music else "Stories"
+        old_stories = [Story.from_dict(s.to_dict()) for s in self.stories]
+        self.commit_story_change(old_stories, new_stories, f"Detect {term_plural}")
+
+        count = len(new_stories)
+        self.processing_status["stories"] = True
+        self.update_processing_stage_summary()
+        msg = f"{term} detection complete: Created {count} {term.lower()} region(s)."
+        self.log_activity(f"[{'SONG' if is_music else 'STORY'} DETECT] Complete: Auto-created {count} {term.lower()} region(s).")
+        self.statusBar().showMessage(msg)
+        self.save_project()
+
+        # 3. Advance automated multi-stage pipelines if active
+        if self.pipeline_active and self.pipeline_queue:
+            QTimer.singleShot(0, self._run_next_selected_processing)
+        elif self.batch_active and self.pipeline_active:
+            self.pipeline_active = False
+            self._batch_export_current()
+            QTimer.singleShot(0, self._batch_next_media)
+        elif self.pipeline_active:
+            self.pipeline_active = False
+            self.log_activity("[AUTOMATION] Selected processing complete.")
+
+    def auto_detect_error(self, message):
+        self.progress.hide()
+        self.cancel_button.hide()
+        self.set_tools_actions_enabled(True)
+        self.set_processing_stage(None)
+        if getattr(self, "pipeline_active", False):
+            self.pipeline_active = False
+            self.pipeline_queue = []
+            self.pipeline_rerun_confirmed = False
+        if getattr(self, "batch_active", False):
+            self.batch_active = False
+
+        if message == "Process canceled by user.":
+            self.statusBar().showMessage("Story detection canceled by user.")
+        else:
+            self.log_activity(f"[STORY DETECT] Error: {message}")
+            self.log_activity(
+                "[AUTOMATION] Story Detection failed. Run All Processing can resume from completed stages after the error is addressed."
+            )
+            QMessageBox.critical(self, "Story Detection Error", message)
+
+    def _diar_segments_cache_key(self):
+        segments = self.diarization.get("segments") if self.diarization else None
+        if not segments:
+            return None
+        return (id(segments), len(segments))
+
+    def _ensure_diar_speaker_index(self):
+        key = self._diar_segments_cache_key()
+        if key == self._diar_index_key:
+            return
+        if key is None:
+            self._diar_sorted_segments = []
+            self._diar_sorted_orig_idx = []
+            self._diar_sorted_starts = []
+            self._diar_max_end_prefix = []
+            self._diar_speaker_labels = set()
+            self._diar_index_key = None
+            return
+
+        segments = self.diarization.get("segments", [])
+        order = sorted(range(len(segments)), key=lambda i: segments[i]["start"])
+        sorted_segments = [segments[i] for i in order]
+        starts = [segments[i]["start"] for i in order]
+        max_end_prefix = []
+        running_max = float("-inf")
+        for seg in sorted_segments:
+            running_max = max(running_max, seg["end"])
+            max_end_prefix.append(running_max)
+
+        self._diar_sorted_segments = sorted_segments
+        self._diar_sorted_orig_idx = order
+        self._diar_sorted_starts = starts
+        self._diar_max_end_prefix = max_end_prefix
+        self._diar_speaker_labels = {
+            self.display_speaker(s["speaker"]) for s in segments if s.get("speaker")
+        }
+        self._diar_index_key = key
+
+    def speaker_at_time(self, start, end):
+        if not self.diarization:
+            return None
+
+        self._ensure_diar_speaker_index()
+        segments = self._diar_sorted_segments
+        if not segments:
+            return None
+
+        from bisect import bisect_right
+
+        hi = bisect_right(self._diar_sorted_starts, end)
+        if hi == 0:
+            return None
+        lo = bisect_right(self._diar_max_end_prefix, start, 0, hi)
+
+        best_speaker = None
+        best_key = None
+        orig_idx = self._diar_sorted_orig_idx
+
+        for i in range(lo, hi):
+            diar_segment = segments[i]
+            overlap_start = max(start, diar_segment["start"])
+            overlap_end = min(end, diar_segment["end"])
+            overlap = overlap_end - overlap_start
+            if overlap <= 0:
+                continue
+
+            key = (overlap, -orig_idx[i])
+            if best_key is None or key > best_key:
+                best_key = key
+                best_speaker = diar_segment["speaker"]
+
+        return best_speaker
+
+    def get_effective_speaker_name(self, seg_idx, segment):
+        raw_speaker = self.segment_speaker_overrides.get(
+            seg_idx
+        ) or self.speaker_for_segment(segment)
+        return self.display_speaker(raw_speaker)

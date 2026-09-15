@@ -1,0 +1,168 @@
+================================================================================
+RADIO & TV STORY SEGMENTER - DEVELOPMENT ROADMAP & TECHNICAL SPECIFICATION
+================================================================================
+This document outlines the architectural roadmap and implementation specifications
+for future versions of the Radio & TV Story Segmenter. Adapted from best-in-class
+heuristics, modular runtime architectures, and timeline serialization algorithms.
+
+--------------------------------------------------------------------------------
+ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
+--------------------------------------------------------------------------------
+- The roadmap maintains a rolling window: it displays the current/immediate past
+  release ($N-1$) for baseline context, followed by active upcoming development
+  milestones ($N$, $N+1$).
+- Status Notation Policy (Modeled after Social Digest):
+  * All milestones and feature items are annotated with explicit progress indicators:
+    - [x] Completed item / feature
+    - [-] In-progress item / active development
+    - [ ] Planned / not started item
+  * When work commences on an item, mark it immediately as [-] [IN-PROGRESS].
+  * Mark an item as [x] [COMPLETED] when implementation is finalized, upon user
+    confirmation, or inferred when development transitions to another part of the roadmap.
+- When a new version is built, its completed specifications are recorded, and any
+  versions older than $N-1$ are pruned to keep the document focused and actionable.
+- Whenever any code change, bug fix, packaging adjustment, or feature refinement is
+  made during a release cycle, it MUST be recorded immediately in the current release
+  section of roadmap.txt and CHANGELOG.md (even if it occurs after the initial version
+  number bump).
+
+--------------------------------------------------------------------------------
+TABLE OF CONTENTS & STATUS OVERVIEW
+--------------------------------------------------------------------------------
+1. Previous Release: Shortcut Conflict Resolution & Comment Duplicate Prevention (Completed in v3.1.6)
+   [x] 1.1 Resolve Comment Shortcut (Ctrl+M) Conflict and Restore Global Shortcuts
+   [x] 1.2 Prevent Duplicate Comment Creation on Text Selection Overlaps
+
+2. Current Release: Stability, Security, Child Process Teardown, Async Provisioning & Hallucination Scrubber (Completed in v3.2.1-dev)
+   [x] 2.1 OS-Level Child Process Binding (Windows Job Objects & POSIX Process Groups)
+   [x] 2.2 Translation Plugin Self-Containment & Pure CTranslate2 Isolation (Purge PyTorch Fallback)
+   [x] 2.3 Emergency Unhandled Exception Project Snapshot & Crash Recovery (`.crash_recovery.rtvs`)
+   [x] 2.4 Unified Core Async Runtime Provisioner & Responsive Dialog (`runtime_manager.py`)
+   [x] 2.6 Whisper Hallucination & Degenerate Loop Scrubber (`prs_shared.py`, `processing.py`, worker)
+   [ ] 2.5 Media Transcoding & Format Conversion on Export (Audio & Video Codecs)
+   [ ] 2.7 Multi-Lingual Filler Word & Disfluency Detection
+   [ ] 2.8 Pipeline Integration & UI Controls
+
+3. Future Milestone: Expanded NLE & DAW Timeline Interchange (Phase 4 - Planned for v3.3) [NOT STARTED]
+   [ ] 3.1 Cockos Reaper Project (.rpp) Generator
+   [ ] 3.2 Magix Samplitude EDL (v1.5) Export
+   [ ] 3.3 Video NLE Interchange (FCPXML, Premiere / DaVinci Resolve xmeml XML)
+   [ ] 3.4 Avid / Pro Tools AAF Composition
+   [ ] 3.5 Rational Timecode & Audio Sample Rate Math
+   [ ] 3.6 UI & Batch Export Integration
+
+4. Future Milestone: Text-Driven Audio Editing & Precision Alignment (Phase 5 - Planned for v4.0) [NOT STARTED]
+   [ ] 4.1 "Text-as-Timeline" Rough-Cut Editing Engine
+   [ ] 4.2 Seamless Non-Destructive Playback Preview
+   [ ] 4.3 CTC Word Boundary Refinement & Forced Alignment
+   [ ] 4.4 Memory-Bounded Diarization & Chunked Streaming
+
+================================================================================
+1. PREVIOUS RELEASE: SHORTCUT CONFLICT RESOLUTION & COMMENT DUPLICATE PREVENTION (Completed in v3.1.6)
+================================================================================
+
+[x] 1.1 RESOLVE COMMENT SHORTCUT (CTRL+M) CONFLICT and RESTORE GLOBAL SHORTCUTS
+-------------------------------------------------------------------------------
+- Connected the global `add_comment_action` (`Ctrl+M`) to the MainWindow `add_comment_from_selection()` method instead of a non-existent transcript view method. This ensures that pressing `Ctrl+M` works globally across the application, whether the transcript view is focused or not, and eliminates silent shortcut collisions.
+
+[x] 1.2 PREVENT DUPLICATE COMMENT CREATION ON TEXT SELECTION OVERLAPS
+---------------------------------------------------------------------
+- Restricted selection-based comments to exactly one primary segment target index in the comment editor dialog instead of copy-creating multiple independent comments when a selection boundary slightly overlaps adjacent segments. This ensures that clicking the comment button or using the shortcut adds exactly one comment per selection range.
+
+================================================================================
+2. CURRENT RELEASE: STABILITY, SECURITY, CHILD PROCESS TEARDOWN & ASYNC PROVISIONING (Planned for v3.2) [IN-PROGRESS]
+================================================================================
+
+[x] 2.1 OS-LEVEL CHILD PROCESS BINDING (WINDOWS JOB OBJECTS & POSIX PROCESS GROUPS)
+------------------------------------------------------------------------------------
+- Problem: If the application crashes, panics in native C code, or is terminated via Windows Task Manager, spawned worker processes (`python.exe`, `ffmpeg.exe`, translation/diarization workers) can leak and continue running in the background.
+- Implementation:
+  * Windows: Automatically create and bind the parent process and all spawned workers to an OS Job Object configured with `JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE` via `ctypes.windll.kernel32`.
+  * POSIX (macOS/Linux): Spawn background workers with new process groups (`preexec_fn=os.setsid` or `creationflags=os.setsid`) and register `atexit` / signal handlers to terminate the process group cleanly.
+  * Register translation worker `QProcess` in `translation.py` directly into `register_process()`.
+
+[x] 2.2 TRANSLATION PLUGIN SELF-CONTAINMENT & PURE CTRANSLATE2 ISOLATION
+------------------------------------------------------------------------
+- Problem: The translation worker retained a fallback to Hugging Face `transformers.AutoModelForSeq2SeqLM` and `torch`, forcing the isolated translation runtime to carry hundreds of megabytes of heavy PyTorch binaries and dependencies.
+- Implementation:
+  * Remove `torch` and `transformers` fallbacks from `plugins/translation/worker.py`.
+  * Standardize model loading exclusively on quantized `ctranslate2.Translator` and `sentencepiece`.
+  * Clean up `requirements-runtime.txt` in `plugins/translation/` to remove `torch` and reduce installation footprint, installation time, and DLL collision risks.
+
+[x] 2.3 EMERGENCY UNHANDLED EXCEPTION PROJECT SNAPSHOT & CRASH RECOVERY
+------------------------------------------------------------------------
+- Problem: `sys.excepthook` writes a stack trace to log files, but does not preserve unsaved project data if an unhandled exception or native fault occurs.
+- Implementation:
+  * In `playback_preferences.py`, update `excepthook` to serialize the current project state into `<project_file>.crash_recovery.rtvs`.
+  * On subsequent application launch, detect any existing `.crash_recovery.rtvs` files and prompt the user to recover unsaved work.
+
+[x] 2.4 UNIFIED CORE ASYNC RUNTIME PROVISIONER (RUNTIMEMANAGER ENGINE)
+-----------------------------------------------------------------------
+- Consolidate background venv setup into `runtime_manager.py` with `threading.Event` cancellation and non-blocking process polling.
+- Threaded `RuntimeSetupWorker` and responsive `WhisperModelInstallWorker` integration in `processing.py` to prevent GUI lockups and process leaks upon cancellation.
+
+[x] 2.6 WHISPER HALLUCINATION & DEGENERATE LOOP SCRUBBER
+---------------------------------------------------------
+- Module Functions: `collapse_repeating_ngrams`, `strip_hallucination_phrases`, `trim_trailing_degenerate_tail`, `scrub_transcript_segments`, `scrub_transcript`.
+- Strips repetitive degenerate loops and standard ASR artifact phrases from transcripts in `prs_shared.py`, `processing.py`, and `radio_tv_story_segmenter_worker.py`.
+
+[ ] 2.5 MEDIA TRANSCODING & FORMAT CONVERSION ON EXPORT (AUDIO & VIDEO CODECS)
+
+[ ] 2.7 MULTI-LINGUAL FILLER WORD & DISFLUENCY DETECTION
+----------------------------------------------------------
+- Cross-lingual dictionary detection for hesitations, fillers ("um", "uh", "äh", "euh"), and ASR sound placeholders.
+
+[ ] 2.8 PIPELINE INTEGRATION & UI CONTROLS
+-------------------------------------------
+- Settings options for automated transcript cleaning and filler highlighting.
+- Integration into `radio_tv_story_segmenter_worker.py` batch pipeline.
+
+================================================================================
+3. FUTURE MILESTONE: EXPANDED NLE & DAW TIMELINE INTERCHANGE (Phase 4 - Planned for v3.3) [NOT STARTED]
+================================================================================
+
+[ ] 3.1 COCKOS REAPER PROJECT (.rpp) GENERATOR
+-----------------------------------------------
+Upgrades the simple EDL marker export to full multi-track Reaper project files.
+- RPP Structure: Root `<REAPER_PROJECT 0.1 "7.0">`, `<TRACK`, `<ITEM` definitions with micro-fades.
+
+[ ] 3.2 MAGIX SAMPLITUDE EDL (v1.5) EXPORT
+-------------------------------------------
+Sample-accurate text-based cut-list widely supported by legacy radio broadcast consoles and DAW tools.
+
+[ ] 3.3 VIDEO NLE INTERCHANGE (FCPXML & XMEML XML)
+---------------------------------------------------
+Generates sequence timelines for video newsrooms and multi-cam podcast edits (FCPXML v1.9/1.10 and Adobe Premiere/Resolve XML).
+
+[ ] 3.4 AVID & PRO TOOLS AAF COMPOSITION
+-----------------------------------------
+Support AAF composition export for high-end post-production facilities.
+
+[ ] 3.5 RATIONAL TIMECODE & AUDIO SAMPLE RATE MATH
+---------------------------------------------------
+Rational time base conversions to ensure sub-millisecond sync across DAW and NLE workflows.
+
+[ ] 3.6 UI & BATCH EXPORT INTEGRATION
+--------------------------------------
+Expand Export Menu in `RadioTVSegmenter.py` with direct DAW and NLE options.
+
+================================================================================
+4. FUTURE MILESTONE: TEXT-DRIVEN AUDIO EDITING & PRECISION ALIGNMENT (Phase 5 - Planned for v4.0) [NOT STARTED]
+================================================================================
+
+[ ] 4.1 "TEXT-AS-TIMELINE" ROUGH-CUT EDITING ENGINE
+----------------------------------------------------
+Allows journalists to edit audio/video directly by striking through or deleting words in the transcript UI.
+
+[ ] 4.2 SEAMLESS NON-DESTRUCTIVE PLAYBACK PREVIEW
+--------------------------------------------------
+Custom audio playback handler in PySide6 / QMediaPlayer playing strictly inside keep ranges with anti-click crossfades.
+
+[ ] 4.3 CTC WORD BOUNDARY REFINEMENT & FORCED ALIGNMENT
+--------------------------------------------------------
+Lightweight acoustic phone alignment pass for sub-10ms boundary precision.
+
+[ ] 4.4 MEMORY-BOUNDED DIARIZATION & CHUNKED STREAMING
+-------------------------------------------------------
+Chunked streaming diarization to avoid out-of-memory errors on long broadcast recordings.
+
