@@ -10,8 +10,8 @@ This document defines the core architectural rules, module boundaries, and machi
 | :--- | :--- | :--- | :--- |
 | **Transcription** | `faster-whisper` (CTranslate2) & `sherpa-onnx` (Parakeet TDT) | Core Desktop / Worker | Fast CPU & optional CUDA GPU acceleration |
 | **Voice Activity Detection** | `silero-vad` (ONNX) | Core Desktop / Worker | Acoustic story segmentation & silence boundary detection |
-| **Speaker Diarization** | `wespeakerruntime` (WeSpeaker ResNet34-LM ONNX) | Core Desktop / Worker | In-memory Fbank computation; no heavy PyTorch PyAnnote dependency |
-| **Machine Translation** | `CTranslate2` / Hugging Face MarianMT & NLLB | `plugins/translation/` | Isolated runtime virtual environment |
+| **Speaker Diarization** | `wespeakerruntime` (WeSpeaker ResNet34-LM ONNX) | Core Desktop / Worker | In-memory Fbank computation; CPU-optimized; no CUDA or heavy PyTorch PyAnnote dependencies |
+| **Machine Translation** | `CTranslate2` / Hugging Face MarianMT & NLLB | `plugins/translation/` | Isolated CPU-only runtime virtual environment with automated CUDA artifact pruning |
 
 ---
 

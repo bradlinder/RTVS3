@@ -517,20 +517,42 @@ class ModelManagementMixin:
                 _rm = RuntimeManager()
                 _tr_env_dir = _rm.get_env_dir("translate")
                 _tr_env_installed = _tr_env_dir.exists() and _rm._get_raw_executable("translate").exists()
-                translation_rows.append(add_row("translation_runtime", "translate_env", "Translation Runtime & Dependencies (CTranslate2)", _tr_env_dir, _tr_env_installed,
+                if _tr_env_installed and hasattr(_rm, "prune_cuda_artifacts"):
+                    _rm.prune_cuda_artifacts(_tr_env_dir)
+                translation_rows.append(add_row("translation_runtime", "translate_env", "Translation Runtime & Dependencies (CTranslate2, CPU-only)", _tr_env_dir, _tr_env_installed,
                         lambda _, f="en", t="es", d="tiny": self.install_translation_models_for_manager(f, t, d, dialog)))
+
+                _diar_env_dir = _rm.get_env_dir("diarize")
+                _diar_env_installed = _diar_env_dir.exists() and _rm._get_raw_executable("diarize").exists()
+                if _diar_env_installed and hasattr(_rm, "prune_cuda_artifacts"):
+                    _rm.prune_cuda_artifacts(_diar_env_dir)
             except Exception:
                 pass
+
+        # Downloaded Installer & Update Packages
+        try:
+            updates_dir = get_app_data_dir() / "updates"
+            updates_exist = updates_dir.exists() and any(updates_dir.iterdir())
+            models_layout.addSpacing(10)
+            models_layout.addWidget(QLabel("<b>Application Updates & Installer Cache</b>"))
+            from updater import cleanup_old_installers
+            add_row("installer_cache", "updates_cache", "Downloaded Update Installers (AppData/updates)", updates_dir, updates_exist,
+                    lambda _, d=dialog: (cleanup_old_installers(force_all=True), refresh_rows()))
+        except Exception:
+            pass
 
         models_layout.addStretch()
         scroll_area.setWidget(scroll_content)
         layout.addWidget(scroll_area, 1)
 
         layout.addSpacing(4)
-        layout.addWidget(QLabel("Select <b>Remove</b> beside any installed model you no longer need, then click Remove Selected."))
+        layout.addWidget(QLabel("Select <b>Remove</b> beside any installed model you no longer need, or click <b>Purge All Models & Cache</b> to free up disk space."))
         buttons = QHBoxLayout()
+        purge_all_btn = QPushButton("Purge All Models & Cache Data…")
+        purge_all_btn.setToolTip("Delete all downloaded ASR/translation models, log files, and caches to reclaim disk space.")
         remove_btn = QPushButton("Remove Selected")
         close_btn = QPushButton("Close")
+        buttons.addWidget(purge_all_btn)
         buttons.addStretch(); buttons.addWidget(remove_btn); buttons.addWidget(close_btn)
         layout.addLayout(buttons)
         close_btn.clicked.connect(dialog.reject)
@@ -546,6 +568,9 @@ class ModelManagementMixin:
                     _rm = RuntimeManager()
                     item["path"] = _rm.get_env_dir("translate")
                     installed_now = item["path"].exists() and _rm._get_raw_executable("translate").exists()
+                elif item["kind"] == "installer_cache":
+                    item["path"] = get_app_data_dir() / "updates"
+                    installed_now = item["path"].exists() and any(item["path"].iterdir())
                 else:
                     variant, pair = item["model_id"].split(":", 1)
                     f, t = pair.split("-", 1)
@@ -553,7 +578,7 @@ class ModelManagementMixin:
                     installed_now = _translation_worker_class().model_is_installed(f, t, variant)
                 item["status"].setText("✓ Installed" if installed_now else "Not installed")
                 item["size"].setText(size_text(item["path"]) if installed_now else "—")
-                item["button"].setText("Repair / Reinstall" if installed_now else "Download / Install")
+                item["button"].setText("Clear Cache" if item["kind"] == "installer_cache" else ("Repair / Reinstall" if installed_now else "Download / Install"))
                 item["button"].setEnabled(not busy)
                 item["remove"].setEnabled(installed_now and not busy)
                 if not installed_now:
@@ -579,6 +604,9 @@ class ModelManagementMixin:
                         rm = RuntimeManager()
                         rm.kill_all_subprocesses()
                         rm.remove_environment("translate")
+                    elif item["kind"] == "installer_cache":
+                        from updater import cleanup_old_installers
+                        cleanup_old_installers(force_all=True)
                     elif item["path"].exists():
                         shutil.rmtree(item["path"])
                     item["remove"].setChecked(False)
@@ -623,7 +651,60 @@ class ModelManagementMixin:
                 self.refresh_translation_model_chooser()
             refresh_rows()
 
+        def purge_all_data():
+            answer = QMessageBox.question(
+                dialog, "Purge All Downloaded Models & Cache",
+                "Are you sure you want to purge all downloaded AI models, log files, and runtime caches?\n\n"
+                "This will free up disk space across all platforms. Exported audio, video, and project files will NOT be deleted.\n\n"
+                "Models can be re-downloaded at any time when needed.",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                QMessageBox.StandardButton.No
+            )
+            if answer != QMessageBox.StandardButton.Yes:
+                return
+            try:
+                from runtime_manager import RuntimeManager
+                rm = RuntimeManager()
+                rm.kill_all_subprocesses()
+                rm.remove_environment("translate")
+            except Exception:
+                pass
+
+            models_dir = get_models_storage_dir()
+            if models_dir.exists():
+                try:
+                    shutil.rmtree(models_dir)
+                    models_dir.mkdir(parents=True, exist_ok=True)
+                except Exception as exc:
+                    self.log_activity(f"[MODELS] Error purging models directory: {exc}", mark_dirty=False)
+
+            log_dir = get_app_data_dir() / "logs"
+            if log_dir.exists():
+                try:
+                    for f in log_dir.glob("*"):
+                        if f.is_file():
+                            try:
+                                f.unlink(missing_ok=True)
+                            except Exception:
+                                pass
+                except Exception:
+                    pass
+
+            try:
+                from updater import cleanup_old_installers
+                cleanup_old_installers(force_all=True)
+            except Exception:
+                pass
+
+            self.log_activity("[MODELS] Purged all downloaded models, log files, and runtime caches.", mark_dirty=False)
+            QMessageBox.information(dialog, "Purge Complete", "All downloaded AI models, log files, and runtime caches have been removed.")
+            self.refresh_whisper_model_chooser()
+            if _translation_plugin_installed(self):
+                self.refresh_translation_model_chooser()
+            refresh_rows()
+
         remove_btn.clicked.connect(remove_selected)
+        purge_all_btn.clicked.connect(purge_all_data)
         dialog.refresh_models = refresh_rows
         refresh_rows()
         dialog.exec()

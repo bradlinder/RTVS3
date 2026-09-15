@@ -125,7 +125,8 @@ class TranslationWorker(QObject):
             eff_variant = "standard"
         self.model_variant = eff_variant
         self.status_only = status_only
-        self.translation_device = device
+        # Enforce CPU execution for translation to avoid CUDA runtime bloat
+        self.translation_device = "cpu"
         self._cancelled = False
         self._is_cancelled = False
         

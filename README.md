@@ -48,7 +48,7 @@ pip install -r requirements.txt
 
 ### 3. GPU Hardware Acceleration (Optional - Windows NVIDIA)
 
-The base application is CPU-first by design to keep download and install footprints minimal and universally compatible across platforms. On Windows systems equipped with a supported NVIDIA GPU, you can optionally download and enable a dedicated CUDA-accelerated Whisper and diarization environment:
+The base application is CPU-first by design to keep download and install footprints minimal and universally compatible across platforms. Diarization (WeSpeaker ONNX) and Translation (CTranslate2 INT8) run exclusively on optimized CPU backends with zero CUDA bloat. On Windows systems equipped with a supported NVIDIA GPU, you can optionally download and enable a dedicated CUDA-accelerated Whisper transcription environment:
 1. Open the application.
 2. Go to **Settings > GPU Acceleration (NVIDIA CUDA)...**
 3. Click **Download and Install** to provision the isolated CUDA runtime.

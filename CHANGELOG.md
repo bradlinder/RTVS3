@@ -1,5 +1,24 @@
 # Changelog
 
+## v3.2.4
+- **CPU-First Diarization & Translation Runtime Footprint Optimization**:
+  - Stripped heavy CUDA/cuDNN dependencies from both the isolated translation (`runtimes/translate`) and diarization (`runtimes/diarize`) runtimes, configuring them with PyTorch CPU wheels (`https://download.pytorch.org/whl/cpu`) and reducing disk footprints by over 1.4 GB per runtime.
+  - Implemented automatic CUDA artifact pruning (`prune_cuda_artifacts`) across `RuntimeManager` and `model_management.py` to systematically strip bundled NVIDIA packages (`nvidia-cublas*`, `nvidia-cudnn*`, `nvidia-nvrtc*`, `torch_cuda*`) upon environment setup and during Model Manager inspection.
+  - Enforced pure CPU execution across `plugins/translation/worker.py` and `radio_tv_story_segmenter_worker.py`.
+  - Updated Model Manager table labels to `"Translation Runtime & Dependencies (CTranslate2, CPU-only)"` for clear visibility of environment requirements.
+- **AppData Installer Cache Management & Automatic Cleanup**:
+  - Implemented `cleanup_old_installers()` in `updater.py` to automatically scan `AppData/updates` (and macOS/Linux app data equivalents) and delete older downloaded installer files (`.exe`, `.dmg`, `.pkg`, `.deb`, `.rpm`, `.AppImage`, etc.), retaining at most 1 recent package and removing all orphaned `.download` files.
+  - Hooked automated installer cleanup into app startup, background update checks, download completion, and the Check for Updates dialog.
+  - Added "Downloaded Update Installers" inspection and deletion to the AI Models & Cache Manager (`model_management.py`), as well as full cache purge support in `purge_all_data()`.
+- **Documentation & Build Specification Accuracy**:
+  - Synchronized `README.md`, `BUILD_INSTRUCTIONS.txt`, `STABILITY_NOTES.md`, and `ARCHITECTURE.md` to reflect the CPU-first architecture for translation and diarization and clarify optional Whisper GPU acceleration.
+
+## v3.2.3
+- **Interactive Windows Uninstaller Data Cleanup Prompt**:
+  - Implemented custom Inno Setup `[Code]` uninstall hook in `installer/Windows/RadioTVStorySegmenter.iss` prompting users during uninstallation to optionally purge saved preferences, log files, and downloaded AI models from `%LOCALAPPDATA%\RadioTVStorySegmenter`.
+- **Cross-Platform In-App Storage & Model Purge Manager**:
+  - Added a "Purge All Models & Cache Data…" option in `model_management.py` and the AI Models Preferences pane, enabling macOS, Linux, and Windows users to safely delete downloaded Whisper ASR models, translation models, and log files to reclaim multi-gigabyte disk space at any time.
+
 ## v3.2.2-beta
 - **Automatic GitHub Update Repository Migration (`bradlinder/RTVS3`)**:
   - Implemented automatic migration in `get_github_repo()` across `prs_shared.py`, `updater.py`, and `utils/constants.py` to detect legacy stored repository values (`bradlinder/RTVS`, `bradlinder/RadioTVStorySegmenter`) in user `QSettings` and seamlessly upgrade them to `bradlinder/RTVS3`.

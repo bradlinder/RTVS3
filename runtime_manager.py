@@ -210,8 +210,9 @@ def _run_pip_with_progress(
 # Feature configuration matrix with explicit versioning and python targets
 ENV_CONFIGS = {
     "diarize": {
-        "version": "1.0.2",
+        "version": "1.1.0",
         "python_version": "3.12",
+        "extra_index_url": "https://download.pytorch.org/whl/cpu",
         "packages": [
             "numpy<2.0.0",
             "scipy",
@@ -231,7 +232,7 @@ ENV_CONFIGS = {
         ]
     },
     "translate": {
-        "version": "2.8",
+        "version": "2.9",
         "python_version": "3.12",
         "extra_index_url": "https://download.pytorch.org/whl/cpu",
         "packages": [
@@ -644,6 +645,44 @@ class RuntimeManager:
             logger.error("Could not remove runtime %s: %s", feature_name, e2)
             return False
 
+    @staticmethod
+    def prune_cuda_artifacts(env_dir: Path) -> int:
+        """Strip unused CUDA/cuDNN packages and heavy native DLLs/so files from CPU runtimes.
+
+        Saves ~1.4 GB of disk space from isolated feature runtimes like translation.
+        """
+        if not env_dir or not Path(env_dir).exists():
+            return 0
+        target = Path(env_dir)
+        cuda_purged = 0
+        cuda_lib_prefixes = (
+            "libnvrtc", "nvrtc", "libcudnn", "cudnn",
+            "libcublas", "cublas", "libcusolver", "cusolver", "libcurand", "curand",
+            "libcufft", "cufft", "libnccl", "nccl", "libnvJitLink", "libnvblas",
+            "nvjitlink", "cusparse", "nvjpeg", "torch_cuda", "c10_cuda", "libtorch_cuda",
+        )
+        try:
+            # 1. Purge all nvidia package directories (e.g. site-packages/nvidia)
+            for nvidia_dir in list(target.glob("**/nvidia")):
+                if nvidia_dir.is_dir():
+                    try:
+                        shutil.rmtree(nvidia_dir, ignore_errors=True)
+                        cuda_purged += 1
+                        logger.info("Purged CUDA package directory from runtime: %s", nvidia_dir)
+                    except Exception:
+                        pass
+            # 2. Purge loose CUDA shared libraries / DLLs
+            for item in list(target.rglob("*")):
+                if item.is_file() and any(item.name.lower().startswith(p.lower()) for p in cuda_lib_prefixes):
+                    try:
+                        item.unlink(missing_ok=True)
+                        cuda_purged += 1
+                    except Exception:
+                        pass
+        except Exception as exc:
+            logger.warning("Error while pruning CUDA artifacts from %s: %s", target, exc)
+        return cuda_purged
+
     def get_runtime_executable(self, feature_name: str, progress_cb=None) -> str:
         """Ensure and return the executable for an isolated feature runtime."""
         if not self.ensure_environment(feature_name, progress_cb=progress_cb):
@@ -880,6 +919,11 @@ class RuntimeManager:
                 self.remove_environment(feature_name)
                 self._last_error = "Operation cancelled by user."
                 return False
+            if feature_name in ("translate", "diarize"):
+                _emit_progress(progress_cb, 95.0, f"Pruning unused CUDA packages and libraries from {feature_name} runtime…")
+                purged_count = self.prune_cuda_artifacts(env_dir)
+                if purged_count:
+                    logger.info("Pruned %d CUDA artifacts from %s runtime.", purged_count, feature_name)
             # Record manifest for future version checks
             _emit_progress(progress_cb, 96.0, f"Verifying runtime manifest for '{feature_name}'…")
             self.write_manifest(feature_name, python_binary, packages=packages)

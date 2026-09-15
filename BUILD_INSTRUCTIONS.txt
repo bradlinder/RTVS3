@@ -1,9 +1,9 @@
-Radio & TV Segmenter v2.9.2 Build Notes
+Radio & TV Story Segmenter v3.2.4 Build Notes
 
 Windows builds produce the main desktop GUI and a dedicated `workers\prs_worker.exe`
 AI worker, sharing a unified runtime. Build-time self-tests smoke-test PyTorch/torch._C,
 CTranslate2, Silero VAD, and WeSpeaker ONNX (`wespeakerruntime`). Heavy machine translation
-(Hugging Face Transformers / MarianMT) is isolated within `plugins/translation/`.
+(CTranslate2 / Hugging Face MarianMT & NLLB) is isolated within `plugins/translation/`.
 
 ===============================================================================
 Radio & TV Story Segmenter - Build & Environment Setup Instructions
@@ -18,9 +18,10 @@ Radio & TV Story Segmenter - Build & Environment Setup Instructions
 
 2. HARDWARE ACCELERATION (NVIDIA CUDA - WINDOWS)
 -------------------------------------------------------------------------------
-The core application is CPU-first across all operating systems. On Windows
-systems with an NVIDIA GPU, an isolated CUDA environment can be downloaded
-on demand directly from Settings > GPU Acceleration (NVIDIA CUDA)...
+The core application, speaker diarization (WeSpeaker ONNX), and machine translation
+(CTranslate2 INT8) are CPU-first and CUDA-free across all operating systems.
+On Windows systems with an NVIDIA GPU, an isolated CUDA environment for Whisper
+transcription can be downloaded on demand directly from Settings > GPU Acceleration (NVIDIA CUDA)...
 No manual PyTorch or CUDA driver installation is required in the base environment.
 
 3. PYTHON VIRTUAL ENVIRONMENT & DEPENDENCIES

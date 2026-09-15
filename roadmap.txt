@@ -29,17 +29,15 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 --------------------------------------------------------------------------------
 TABLE OF CONTENTS & STATUS OVERVIEW
 --------------------------------------------------------------------------------
-1. Previous Release: Child Process Teardown, Pure CTranslate2, Async Provisioning & Hallucination Scrubber (Completed in v3.2.1-dev)
-   [x] 1.1 OS-Level Child Process Binding (Windows Job Objects & POSIX Process Groups)
-   [x] 1.2 Translation Plugin Self-Containment & Pure CTranslate2 Isolation (Purge PyTorch Fallback)
-   [x] 1.3 Emergency Unhandled Exception Project Snapshot & Crash Recovery (`.crash_recovery.rtvs`)
-   [x] 1.4 Unified Core Async Runtime Provisioner & Responsive Dialog (`runtime_manager.py`)
-   [x] 1.5 Whisper Hallucination & Degenerate Loop Scrubber (`prs_shared.py`, `processing.py`, worker)
+1. Previous Release: Windows Uninstaller Data Cleanup Prompt & In-App Storage Manager (Completed in v3.2.3)
+   [x] 1.1 Interactive Inno Setup Uninstall Prompt (`installer/Windows/RadioTVStorySegmenter.iss`)
+   [x] 1.2 Cross-Platform In-App Storage & Model Purge Manager (`model_management.py`, Preferences)
 
-2. Current Release: Update Repository Migration, Dead Code Pruning & Architectural Cleanup (Completed in v3.2.2-beta)
-   [x] 2.1 Automatic GitHub Update Repository Migration to `bradlinder/RTVS3` (Settings Auto-Upgrade)
-   [x] 2.2 Dead Code & Orphaned Dialog Module Pruning (`models.py`, `ui/dialogs/`, binary addon archive)
-   [x] 2.3 Architectural Invariant Decoupling & Import Consolidation (decouple core from plugins, clean worker signatures)
+2. Current Release: CPU-First Diarization & Translation Runtimes, CUDA Pruning & Installer Cache Cleanup (Completed in v3.2.4)
+   [x] 2.1 Translation & Diarization Runtime CUDA Removal (shrink environments via CPU wheels and zero GPU bloat)
+   [x] 2.2 Automated Runtime CUDA Pruning (`prune_cuda_artifacts` across `translate` and `diarize` in `RuntimeManager` and `model_management.py`)
+   [x] 2.3 AppData Installer Cache Management & Automatic Cleanup (`cleanup_old_installers` in `updater.py` and `model_management.py`)
+   [x] 2.4 Documentation & Build Specification Synchronization (`README.md`, `BUILD_INSTRUCTIONS.txt`, `STABILITY_NOTES.md`, `ARCHITECTURE.md`)
 
 3. Future Milestone: Expanded NLE & DAW Timeline Interchange (Phase 4 - Planned for v3.3) [NOT STARTED]
    [ ] 3.1 Cockos Reaper Project (.rpp) Generator
@@ -56,50 +54,45 @@ TABLE OF CONTENTS & STATUS OVERVIEW
    [ ] 4.4 Memory-Bounded Diarization & Chunked Streaming
 
 ================================================================================
-1. PREVIOUS RELEASE: STABILITY, SECURITY, ASYNC PROVISIONING & HALLUCINATION SCRUBBER (Completed in v3.2.1-dev)
+1. PREVIOUS RELEASE: WINDOWS UNINSTALLER DATA CLEANUP & IN-APP STORAGE MANAGER (Completed in v3.2.3)
 ================================================================================
 
-[x] 1.1 OS-LEVEL CHILD PROCESS BINDING (WINDOWS JOB OBJECTS & POSIX PROCESS GROUPS)
-------------------------------------------------------------------------------------
-- Bound application and all child worker processes (`python.exe`, `ffmpeg.exe`, translation/diarization workers) to an OS Job Object (`JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE`) on Windows and isolated process groups on POSIX, eliminating orphaned background processes on crash or Task Manager termination.
+[x] 1.1 INTERACTIVE INNO SETUP UNINSTALL PROMPT
+------------------------------------------------
+- Added custom Inno Setup `[Code]` uninstall procedure `CurUninstallStepChanged` to `installer/Windows/RadioTVStorySegmenter.iss`.
+- Prompts user during Windows uninstallation: "Would you like to also remove saved preferences, log files, and downloaded AI models?".
+- Safely deletes `%LOCALAPPDATA%\RadioTVStorySegmenter` and registry keys when 'Yes' is chosen while protecting exported media and project files.
 
-[x] 1.2 TRANSLATION PLUGIN SELF-CONTAINMENT & PURE CTRANSLATE2 ISOLATION
-------------------------------------------------------------------------
-- Stripped `torch` and Hugging Face `transformers` dependencies from `plugins/translation/`, standardizing model loading exclusively on quantized `ctranslate2.Translator` and `sentencepiece` for minimal memory and disk footprint.
-
-[x] 1.3 EMERGENCY UNHANDLED EXCEPTION PROJECT SNAPSHOT & CRASH RECOVERY
-------------------------------------------------------------------------
-- Updated `excepthook` in `playback_preferences.py` to serialize project state to `<project_file>.crash_recovery.rtvs` upon unhandled exceptions, with automated recovery prompts on subsequent launches.
-
-[x] 1.4 UNIFIED CORE ASYNC RUNTIME PROVISIONER (RUNTIMEMANAGER ENGINE)
------------------------------------------------------------------------
-- Consolidated background virtual environment creation and package installation into `runtime_manager.py` with `threading.Event` cancellation, non-blocking subprocess polling, and responsive dialog workers.
-
-[x] 1.5 WHISPER HALLUCINATION & DEGENERATE LOOP SCRUBBER
----------------------------------------------------------
-- Implemented `collapse_repeating_ngrams`, `strip_hallucination_phrases`, and `trim_trailing_degenerate_tail` in `prs_shared.py` to automatically prune repetitive degenerate loops and standard ASR artifacts from generated transcripts.
+[x] 1.2 CROSS-PLATFORM IN-APP STORAGE & MODEL PURGE MANAGER
+------------------------------------------------------------
+- Implemented `purge_all_data()` in `model_management.py` and exposed "Purge All Models & Cache Data…" button in the Preferences dialog and Model Manager.
+- Enables macOS, Linux, and Windows users to delete downloaded Whisper ASR models, translation models, diagnostic logs, and temporary caches in one click to reclaim multi-gigabyte disk space at any time.
 
 ================================================================================
-2. CURRENT RELEASE: UPDATE REPOSITORY MIGRATION, DEAD CODE PRUNING & ARCHITECTURAL CLEANUP (Completed in v3.2.2-beta)
+2. CURRENT RELEASE: CPU-FIRST DIARIZATION & TRANSLATION, CUDA PRUNING & INSTALLER CACHE (Completed in v3.2.4)
 ================================================================================
 
-[x] 2.1 AUTOMATIC GITHUB UPDATE REPOSITORY MIGRATION TO `bradlinder/RTVS3`
--------------------------------------------------------------------------
-- Implemented automated migration inside `get_github_repo()` (`prs_shared.py`, `updater.py`, `utils/constants.py`) to detect legacy saved repository keys (`bradlinder/RTVS`, `bradlinder/RadioTVStorySegmenter`) in user `QSettings` and seamlessly upgrade them to `bradlinder/RTVS3`.
-- Updated hardcoded `"bradlinder/RTVS"` defaults in `playback_preferences.py` ("Restore Defaults" for Software Updates) to use `DEFAULT_GITHUB_REPO`.
-- Added repository normalization on preferences save and upon initializing the Check for Updates dialog to prevent stale update queries against deprecated repositories.
+[x] 2.1 TRANSLATION & DIARIZATION RUNTIME CUDA REMOVAL
+------------------------------------------------------
+- Stripped all unused CUDA/cuDNN dependencies from both the isolated translation (`runtimes/translate`) and diarization (`runtimes/diarize`) environments.
+- Enforced PyTorch CPU wheel index (`https://download.pytorch.org/whl/cpu`) in `ENV_CONFIGS`, reducing environment footprints by over 1.4 GB per environment.
+- Preserved 100% INT8 translation performance using CPU-optimized CTranslate2 execution and fast ONNX WeSpeaker diarization.
+- Bumped isolated translate environment version to `2.9` and diarize environment version to `1.1.0`.
 
-[x] 2.2 DEAD CODE & ORPHANED DIALOG MODULE PRUNING
----------------------------------------------------
-- Removed obsolete `models.py` (185 lines of unused dataclasses replaced by native dictionaries in `prs_shared.py`).
-- Pruned redundant dialog duplicates in `ui/dialogs/` (`find_replace.py` and `comment_editor.py`), eliminating the orphaned `ui/` directory tree.
-- Removed committed 12 KB binary archive artifact `plugins/translation/translation.rtvs-addon` from the source repository.
+[x] 2.2 AUTOMATED RUNTIME CUDA PRUNING
+--------------------------------------
+- Added `RuntimeManager.prune_cuda_artifacts(env_dir)` to systematically delete heavy NVIDIA directories (`**/nvidia`) and loose CUDA libraries (`libnvrtc*`, `libcudnn*`, `libcublas*`, `torch_cuda*`, etc.).
+- Integrated automated pruning across `translate` and `diarize` runtimes in `RuntimeManager.ensure_environment` and `model_management.py` upon inspection and post-install.
 
-[x] 2.3 ARCHITECTURAL INVARIANT DECOUPLING & IMPORT CONSOLIDATION
-------------------------------------------------------------------
-- Replaced top-level plugin import `YouTubeAssistedUploadGuideDialog` in `project_export.py` with lazy, guarded import inside `export_youtube_bundle`, enforcing the invariant that core modules must not import from `plugins/` on startup.
-- Updated `export/docx.py` to import `format_time` directly from `prs_shared.py`, removing the sole external import dependency on `utils.time_format`.
-- Cleaned vestigial `torch_mod` parameters and returns in `plugins/translation/worker.py` following pure CTranslate2 engine isolation.
+[x] 2.3 APPDATA INSTALLER CACHE MANAGEMENT & AUTOMATIC CLEANUP
+-------------------------------------------------------------
+- Implemented `cleanup_old_installers(max_to_keep=1, force_all=False)` in `updater.py` to scan `AppData/updates` (and macOS/Linux app data directories) and delete outdated installer binaries (`.exe`, `.dmg`, `.pkg`, `.deb`, `.rpm`, `.AppImage`, `.zip`, `.tar.gz`) and orphaned `.download` files.
+- Hooked automated cleanup into app startup, background update checks, download completion, and the Check for Updates dialog.
+- Added Downloaded Update Installers inspection, size tracking, and deletion to `model_management.py` and connected it to `purge_all_data()`.
+
+[x] 2.4 DOCUMENTATION & BUILD SPECIFICATION SYNCHRONIZATION
+-----------------------------------------------------------
+- Synchronized `README.md`, `BUILD_INSTRUCTIONS.txt`, `STABILITY_NOTES.md`, and `ARCHITECTURE.md` to document CPU-first architecture for translation and diarization and clarify optional Whisper GPU acceleration.
 
 ================================================================================
 3. FUTURE MILESTONE: EXPANDED NLE & DAW TIMELINE INTERCHANGE (Phase 4 - Planned for v3.3) [NOT STARTED]

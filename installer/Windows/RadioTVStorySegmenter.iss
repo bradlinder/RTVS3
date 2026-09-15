@@ -1,7 +1,7 @@
 #define MyAppName "Radio & TV Segmenter"
 
 #ifndef MyAppVersion
-#define MyAppVersion "3.2.2-beta"
+#define MyAppVersion "3.2.4"
 #endif
 
 
@@ -60,6 +60,27 @@ Root: HKA; Subkey: "Software\Classes\RTVSProject\shell\open\command"; ValueType:
 Filename: "{app}\{#MyAppExeName}"; Description: "Launch {#MyAppName}"; Flags: nowait postinstall skipifsilent
 
 [UninstallDelete]
-; Never delete the per-user data directory. It contains projects, settings, logs,[cite: 10]
-; downloaded models, and optional runtimes that should survive an application update/uninstall.[cite: 10]
 Type: filesandordirs; Name: "{app}"
+
+[Code]
+procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
+var
+  DataDir: String;
+  RegKey: String;
+begin
+  if CurUninstallStep = usUninstall then
+  begin
+    if MsgBox('Would you like to also remove saved preferences, log files, and downloaded AI models?' + #13#10 + #13#10 +
+              'Choosing "Yes" will delete downloaded Whisper/translation models and settings from %LOCALAPPDATA%\RadioTVStorySegmenter.' + #13#10 + #13#10 +
+              '(Note: Your exported audio, video, and project files will NOT be touched.)',
+              mbConfirmation, MB_YESNO or MB_DEFBUTTON2) = IDYES then
+    begin
+      DataDir := ExpandConstant('{localappdata}\RadioTVStorySegmenter');
+      if DirExists(DataDir) then
+        DelTree(DataDir, True, True, True);
+
+      RegKey := 'Software\RadioTVSegmenter';
+      RegDeleteKeyIncludingSubkeys(HKEY_CURRENT_USER, RegKey);
+    end;
+  end;
+end;

@@ -56,7 +56,7 @@ try:
     )
 except Exception:
     APP_DISPLAY_NAME = "Radio & TV Segmenter"
-    PROJECT_VERSION = "3.2.2-beta"
+    PROJECT_VERSION = "3.2.4"
     DEFAULT_GITHUB_REPO = "bradlinder/RTVS3"
 
     INTERNAL_APP_ID = "RadioTVStorySegmenter"
@@ -486,6 +486,68 @@ class CheckUpdateWorker(QThread):
             self.error.emit(f"Failed to check for updates: {exc}")
 
 
+def cleanup_old_installers(max_to_keep: int = 1, force_all: bool = False) -> int:
+    """Clean up old downloaded application update installers from AppData/updates directory.
+
+    Ensures that downloaded .exe, .dmg, .pkg, .deb, .rpm, .AppImage, or zip installer packages
+    from prior versions do not accumulate and consume multi-gigabyte disk space over time.
+    Keeps at most `max_to_keep` (default 1) recent installer package for the current/pending update,
+    or purges all installers if `force_all` is True.
+
+    Returns the count of purged files.
+    """
+    updates_dir = get_app_data_dir() / "updates"
+    if not updates_dir.exists():
+        return 0
+
+    purged_count = 0
+    installer_extensions = {".exe", ".msi", ".dmg", ".pkg", ".deb", ".rpm", ".appimage", ".zip", ".tar.gz", ".tar.xz", ".download"}
+
+    try:
+        # First remove any orphaned partial .download files
+        for partial_file in updates_dir.glob("*.download"):
+            try:
+                partial_file.unlink(missing_ok=True)
+                purged_count += 1
+            except Exception:
+                pass
+
+        # Collect existing installer packages
+        installer_files: list[Path] = []
+        for file_path in updates_dir.iterdir():
+            if file_path.is_file():
+                ext = file_path.suffix.lower()
+                compound_ext = "".join(file_path.suffixes).lower()
+                if ext in installer_extensions or compound_ext in installer_extensions:
+                    installer_files.append(file_path)
+
+        if force_all:
+            for file_path in installer_files:
+                try:
+                    file_path.unlink(missing_ok=True)
+                    purged_count += 1
+                except Exception:
+                    pass
+            return purged_count
+
+        # Sort by modification time (newest first)
+        installer_files.sort(key=lambda p: p.stat().st_mtime if p.exists() else 0, reverse=True)
+
+        # Keep only the newest max_to_keep files; delete the rest
+        if len(installer_files) > max_to_keep:
+            for old_file in installer_files[max_to_keep:]:
+                try:
+                    old_file.unlink(missing_ok=True)
+                    purged_count += 1
+                    logger.info("Purged outdated downloaded installer: %s", old_file.name)
+                except Exception as e:
+                    logger.warning("Could not purge old installer %s: %s", old_file, e)
+    except Exception as exc:
+        logger.warning("Error during installer cache cleanup: %s", exc)
+
+    return purged_count
+
+
 class DownloadUpdateWorker(QThread):
     progress = Signal(int, int, int, str)
     finished = Signal(str)
@@ -563,6 +625,8 @@ class DownloadUpdateWorker(QThread):
                     return
 
             shutil.move(str(temp_dest), str(destination))
+            # Automatically purge any older installer binaries, keeping only this latest package
+            cleanup_old_installers(max_to_keep=1)
             self.finished.emit(str(destination))
 
         except Exception as exc:
@@ -576,6 +640,9 @@ class CheckUpdateDialog(QDialog):
         self.setMinimumWidth(580)
         self.setMinimumHeight(480)
         self.resize(600, 500)
+
+        # Proactively prune older installer downloads to prevent storage bloat
+        cleanup_old_installers(max_to_keep=1)
 
         self.repo = get_github_repo()
         if self.repo.lower() in ("bradlinder/rtvs", "bradlinder/radiotvstorysegmenter", "radiotvstorysegmenter"):
@@ -1002,6 +1069,7 @@ class CheckUpdateDialog(QDialog):
 
 class UpdaterMixin:
     def check_for_updates(self, interactive: bool = True):
+        cleanup_old_installers(max_to_keep=1)
         dialog = CheckUpdateDialog(self, auto_start=True)
         if interactive:
             dialog.exec()
