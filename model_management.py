@@ -41,7 +41,11 @@ def _translation_worker_class():
 
 def _translation_plugin_installed(self) -> bool:
     manager = getattr(self, "plugin_manager", None)
-    return bool(manager and manager.is_plugin_installed("translation"))
+    return bool(
+        manager and
+        manager.is_plugin_installed("translation") and
+        manager.is_plugin_enabled("translation")
+    )
 
 
 class WhisperModelInstallWorker(QObject):
@@ -499,35 +503,73 @@ class ModelManagementMixin:
             add_row("whisper", model_id, label, path, installed,
                     lambda _, m=model_id: self.install_whisper_model_for_manager(m, dialog))  # Added '_' here
 
+        # Speaker Diarization Runtime & Models
+        try:
+            from runtime_manager import RuntimeManager
+            _rm = RuntimeManager()
+            _diar_env_dir = _rm.get_env_dir("diarize")
+            _diar_env_installed = _diar_env_dir.exists() and _rm._get_raw_executable("diarize").exists()
+            if _diar_env_installed and hasattr(_rm, "prune_cuda_artifacts"):
+                _rm.prune_cuda_artifacts(_diar_env_dir)
+            models_layout.addSpacing(10)
+            models_layout.addWidget(QLabel("<b>Speaker Diarization models & runtime</b>"))
+            add_row("diarize_runtime", "diarize_env", "Speaker Diarization Runtime & Models (WeSpeaker / ONNX / PyTorch)", _diar_env_dir, _diar_env_installed,
+                    lambda _, d=dialog: QMessageBox.information(d, "Speaker Diarization", "Speaker Diarization runtime dependencies are initialized automatically when speaker diarization is performed."))
+        except Exception:
+            pass
+
         translation_rows = []
-        if _translation_plugin_installed(self):
+        is_trans_active = _translation_plugin_installed(self)
+
+        # Gather translation model states
+        all_trans_items = []
+        orphan_trans_items = []
+        for variant, variant_label in (("tiny", "OPUS-MT-tiny"), ("standard", "OPUS-MT")):
+            for pair, pair_label in ((("en", "es"), "English → Spanish"), (("es", "en"), "Spanish → English")):
+                from_code, to_code = pair
+                path = _translation_worker_class().model_dir(from_code, to_code, variant)
+                installed = _translation_worker_class().model_is_installed(from_code, to_code, variant)
+                label = f"{variant_label} — {pair_label}"
+                item_tuple = ("translation", f"{variant}:{from_code}-{to_code}", label, path, installed,
+                             lambda _, f=from_code, t=to_code, d=variant: self.install_translation_models_for_manager(f, t, d, dialog))
+                all_trans_items.append(item_tuple)
+                if installed or Path(path).exists():
+                    orphan_trans_items.append(item_tuple)
+
+        tr_runtime_tuple = None
+        try:
+            from runtime_manager import RuntimeManager
+            _rm = RuntimeManager()
+            _tr_env_dir = _rm.get_env_dir("translate")
+            _tr_env_installed = _tr_env_dir.exists() and _rm._get_raw_executable("translate").exists()
+            if _tr_env_installed and hasattr(_rm, "prune_cuda_artifacts"):
+                _rm.prune_cuda_artifacts(_tr_env_dir)
+            tr_runtime_tuple = ("translation_runtime", "translate_env", "Translation Runtime & Dependencies (CTranslate2, CPU-only)", _tr_env_dir, _tr_env_installed,
+                               lambda _, f="en", t="es", d="tiny": self.install_translation_models_for_manager(f, t, d, dialog))
+
+            _diar_env_dir = _rm.get_env_dir("diarize")
+            _diar_env_installed = _diar_env_dir.exists() and _rm._get_raw_executable("diarize").exists()
+            if _diar_env_installed and hasattr(_rm, "prune_cuda_artifacts"):
+                _rm.prune_cuda_artifacts(_diar_env_dir)
+        except Exception:
+            pass
+
+        if is_trans_active:
             models_layout.addSpacing(10)
             models_layout.addWidget(QLabel("<b>Translation models</b>"))
-            for variant, variant_label in (("tiny", "OPUS-MT-tiny"), ("standard", "OPUS-MT")):
-                for pair, pair_label in ((("en", "es"), "English → Spanish"), (("es", "en"), "Spanish → English")):
-                    from_code, to_code = pair
-                    path = _translation_worker_class().model_dir(from_code, to_code, variant)
-                    installed = _translation_worker_class().model_is_installed(from_code, to_code, variant)
-                    label = f"{variant_label} — {pair_label}"
-                    translation_rows.append(add_row("translation", f"{variant}:{from_code}-{to_code}", label, path, installed,
-                            lambda _, f=from_code, t=to_code, d=variant: self.install_translation_models_for_manager(f, t, d, dialog)))
-
-            try:
-                from runtime_manager import RuntimeManager
-                _rm = RuntimeManager()
-                _tr_env_dir = _rm.get_env_dir("translate")
-                _tr_env_installed = _tr_env_dir.exists() and _rm._get_raw_executable("translate").exists()
-                if _tr_env_installed and hasattr(_rm, "prune_cuda_artifacts"):
-                    _rm.prune_cuda_artifacts(_tr_env_dir)
-                translation_rows.append(add_row("translation_runtime", "translate_env", "Translation Runtime & Dependencies (CTranslate2, CPU-only)", _tr_env_dir, _tr_env_installed,
-                        lambda _, f="en", t="es", d="tiny": self.install_translation_models_for_manager(f, t, d, dialog)))
-
-                _diar_env_dir = _rm.get_env_dir("diarize")
-                _diar_env_installed = _diar_env_dir.exists() and _rm._get_raw_executable("diarize").exists()
-                if _diar_env_installed and hasattr(_rm, "prune_cuda_artifacts"):
-                    _rm.prune_cuda_artifacts(_diar_env_dir)
-            except Exception:
-                pass
+            for kind, model_id, label, path, installed, install_fn in all_trans_items:
+                translation_rows.append(add_row(kind, model_id, label, path, installed, install_fn))
+            if tr_runtime_tuple:
+                kind, model_id, label, path, installed, install_fn = tr_runtime_tuple
+                translation_rows.append(add_row(kind, model_id, label, path, installed, install_fn))
+        elif orphan_trans_items or (tr_runtime_tuple and tr_runtime_tuple[4]):
+            models_layout.addSpacing(10)
+            models_layout.addWidget(QLabel("<b>Translation models (Plugin Not Active)</b>"))
+            for kind, model_id, label, path, installed, install_fn in orphan_trans_items:
+                translation_rows.append(add_row(kind, model_id, label, path, installed, install_fn))
+            if tr_runtime_tuple and tr_runtime_tuple[4]:
+                kind, model_id, label, path, installed, install_fn = tr_runtime_tuple
+                translation_rows.append(add_row(kind, model_id, label, path, installed, install_fn))
 
         # Downloaded Installer & Update Packages
         try:
@@ -563,6 +605,11 @@ class ModelManagementMixin:
                 if item["kind"] == "whisper":
                     item["path"] = self.model_cache_path(item["model_id"])
                     installed_now = self.is_whisper_model_available(item["model_id"])
+                elif item["kind"] == "diarize_runtime":
+                    from runtime_manager import RuntimeManager
+                    _rm = RuntimeManager()
+                    item["path"] = _rm.get_env_dir("diarize")
+                    installed_now = item["path"].exists() and _rm._get_raw_executable("diarize").exists()
                 elif item["kind"] == "translation_runtime":
                     from runtime_manager import RuntimeManager
                     _rm = RuntimeManager()
@@ -604,6 +651,11 @@ class ModelManagementMixin:
                         rm = RuntimeManager()
                         rm.kill_all_subprocesses()
                         rm.remove_environment("translate")
+                    elif item["kind"] == "diarize_runtime":
+                        from runtime_manager import RuntimeManager
+                        rm = RuntimeManager()
+                        rm.kill_all_subprocesses()
+                        rm.remove_environment("diarize")
                     elif item["kind"] == "installer_cache":
                         from updater import cleanup_old_installers
                         cleanup_old_installers(force_all=True)
@@ -676,6 +728,7 @@ class ModelManagementMixin:
             rm = RuntimeManager()
             rm.kill_all_subprocesses()
             rm.remove_environment("translate")
+            rm.remove_environment("diarize")
         except Exception:
             pass
 

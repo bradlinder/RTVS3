@@ -1546,7 +1546,11 @@ class PlaybackPreferencesMixin:
 
         # Translation Model (OPUS-MT) selector
         pref_trans_combo = QComboBox()
-        translation_installed = hasattr(self, "plugin_manager") and self.plugin_manager.is_plugin_installed("translation")
+        translation_installed = (
+            hasattr(self, "plugin_manager") and
+            self.plugin_manager.is_plugin_installed("translation") and
+            self.plugin_manager.is_plugin_enabled("translation")
+        )
         if translation_installed:
             trans_variants = [
                 ("tiny", "OPUS-MT-tiny"),

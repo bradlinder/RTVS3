@@ -1,5 +1,16 @@
 # Changelog
 
+## v3.2.13
+- **Integrated Speaker Diarization Models & Runtime into Manage Models**:
+  - Added full visibility, disk size metrics, and removal options for the Speaker Diarization Runtime & Models (`diarize_env` / WeSpeaker / ONNX / PyTorch) inside the *Manage Models & AI Data* tool.
+  - Included `diarize_env` in the *Purge All Models & Cache* workflow to ensure complete cleanup of speaker identification models and environment dependencies.
+
+## v3.2.12
+- **Refined Translation Model Visibility in Manage Models & Preferences**:
+  - Updated `_translation_plugin_installed` in `model_management.py` and `translation_installed` in `playback_preferences.py` to check both plugin installation AND enablement status (`is_plugin_installed("translation") and is_plugin_enabled("translation")`).
+  - Bundled plugin manifests previously caused translation models to be displayed even when the translation plugin was not enabled or installed.
+  - Manage Models now hides translation models when the translation plugin is inactive, unless orphaned translation model files already exist on disk (shown under "Translation models (Plugin Not Active)" with a "Remove" button to clean up disk space).
+
 ## v3.2.11
 - **Fixed Updater `logger` NameError Bug**:
   - Imported `logging` and initialized `logger = logging.getLogger(__name__)` in `updater.py`.
