@@ -39,6 +39,7 @@ TABLE OF CONTENTS & STATUS OVERVIEW
    [x] 2.3 Emergency Unhandled Exception Project Snapshot & Crash Recovery (`.crash_recovery.rtvs`)
    [x] 2.4 Unified Core Async Runtime Provisioner & Responsive Dialog (`runtime_manager.py`)
    [x] 2.6 Whisper Hallucination & Degenerate Loop Scrubber (`prs_shared.py`, `processing.py`, worker)
+   [x] 2.9 GitHub Update Repository & Release Target Migration (`bradlinder/RTVS3`)
    [ ] 2.5 Media Transcoding & Format Conversion on Export (Audio & Video Codecs)
    [ ] 2.7 Multi-Lingual Filler Word & Disfluency Detection
    [ ] 2.8 Pipeline Integration & UI Controls

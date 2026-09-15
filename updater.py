@@ -57,7 +57,7 @@ try:
 except Exception:
     APP_DISPLAY_NAME = "Radio & TV Segmenter"
     PROJECT_VERSION = "3.2.1-dev"
-    DEFAULT_GITHUB_REPO = "bradlinder/RTVS"
+    DEFAULT_GITHUB_REPO = "bradlinder/RTVS3"
 
     INTERNAL_APP_ID = "RadioTVStorySegmenter"
 
@@ -949,7 +949,7 @@ class CheckUpdateDialog(QDialog):
             "Installer Binary Not Found",
             f"Could not download installer directly:\n{message}\n\n"
             "The release tag exists on GitHub, but the Windows Setup .exe has not yet been uploaded as a release asset.\n\n"
-            "Opening https://github.com/bradlinder/RTVS/releases in your browser now.",
+            "Opening https://github.com/bradlinder/RTVS3/releases in your browser now.",
         )
         self._open_github_release()
 

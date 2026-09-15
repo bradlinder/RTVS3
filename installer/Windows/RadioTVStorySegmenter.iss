@@ -6,7 +6,7 @@
 
 
 #define MyAppPublisher "Radio & TV Segmenter"
-#define MyAppURL "https://github.com/bradlinder/RTVS"
+#define MyAppURL "https://github.com/bradlinder/RTVS3"
 #define MyAppExeName "RadioTVSegmenter.exe"
 
 [Setup]

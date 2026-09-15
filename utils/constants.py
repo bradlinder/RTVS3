@@ -8,8 +8,8 @@ except ImportError:
 
 # Display branding shown to the user (title bar, About box, installers).
 APP_DISPLAY_NAME = "Radio & TV Segmenter"
-PROJECT_VERSION = "3.1.1-beta-2"
-DEFAULT_GITHUB_REPO = "bradlinder/RTVS"
+PROJECT_VERSION = "3.2.1-dev"
+DEFAULT_GITHUB_REPO = "bradlinder/RTVS3"
 
 # Internal identifiers are intentionally left as "RadioTVStorySegmenter" (the
 # original project name) rather than renamed to match APP_DISPLAY_NAME: this

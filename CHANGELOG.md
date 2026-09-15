@@ -1,6 +1,8 @@
 # Changelog
 
 ## v3.2.1-dev (In Development / Roadmap)
+- **GitHub Update Repository & Release Target Migration (`bradlinder/RTVS3`)**:
+  - Migrated update check endpoints, release asset downloads, issue links, and manifest metadata from `bradlinder/RTVS` to `bradlinder/RTVS3` across `prs_shared.py`, `updater.py`, `utils/constants.py`, installer scripts, and plugin manifests.
 - **Unified Core Asynchronous Runtime Provisioner & Responsive Dialog**:
   - Re-architected virtual environment creation and pip installation in `runtime_manager.py` with non-blocking subprocess polling and `threading.Event` cancellation.
   - Replaced blocking modal execution in `processing.py` with responsive threaded workers (`RuntimeSetupWorker` and `WhisperModelInstallWorker`), enabling seamless user cancellation without UI freezes or leaked background processes.

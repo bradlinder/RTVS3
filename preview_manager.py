@@ -287,7 +287,7 @@ export function App() {
 
           <div className="flex items-center space-x-3 w-full md:w-auto">
             <a 
-              href="https://github.com/bradlinder/RTVS" 
+              href="https://github.com/bradlinder/RTVS3" 
               target="_blank" 
               rel="noreferrer"
               className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition"
@@ -296,7 +296,7 @@ export function App() {
               <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
             </a>
             <a 
-              href="https://github.com/bradlinder/RTVS/releases" 
+              href="https://github.com/bradlinder/RTVS3/releases" 
               target="_blank" 
               rel="noreferrer"
               className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white shadow-sm shadow-cyan-600/30 transition"

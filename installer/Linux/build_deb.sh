@@ -117,7 +117,7 @@ Version: ${DEB_VERSION}
 Section: sound
 Priority: optional
 Architecture: amd64
-Maintainer: Radio & TV Segmenter Team <https://github.com/bradlinder/RTVS>
+Maintainer: Radio & TV Segmenter Team <https://github.com/bradlinder/RTVS3>
 Installed-Size: ${INSTALLED_SIZE}
 Depends: ffmpeg, libxcb-cursor0, libpulse0
 Recommends: pulseaudio | pipewire-pulse
