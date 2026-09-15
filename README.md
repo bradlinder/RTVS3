@@ -1,4 +1,4 @@
-# Radio & TV Story Segmenter
+# Radio & TV Story Segmenter v3
 
 Radio & TV Story Segmenter is a cross-platform desktop application built with Python and PySide6. Designed for broadcast journalists, audio producers, podcasters, and researchers, it transcribes long-form audio and video recordings, labels distinct speakers, translates text across languages, and segments programs into independent, publishable stories.
 
