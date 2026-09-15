@@ -29,15 +29,15 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 --------------------------------------------------------------------------------
 TABLE OF CONTENTS & STATUS OVERVIEW
 --------------------------------------------------------------------------------
-1. Previous Release: macOS Speaker Detection & Translation Stability (Completed in v3.2.16)
-   [x] 1.1 Set global OpenMP, Tokenizers, and Hugging Face environment variables (`KMP_DUPLICATE_LIB_OK`, `TOKENIZERS_PARALLELISM`, etc.) across worker processes
-   [x] 1.2 Added dynamic library resolution (`DYLD_LIBRARY_PATH`) in `QProcessEnvironment` for macOS translation worker subprocesses
-   [x] 1.3 Automated Gatekeeper quarantine attribute removal (`xattr -dr com.apple.quarantine`) in `runtime_manager.py` for downloaded runtimes on macOS
+1. Previous Release: Non-Blocking macOS & Linux Translation Cancellation (Completed in v3.2.17)
+   [x] 1.1 Replaced 5000ms blocking wait in `stop_translation_worker()` with 150ms graceful probe + `SIGKILL` to eliminate Qt main GUI thread hangs on macOS
+   [x] 1.2 Connected `cancel_event` directly to `TranslationEnvSetupWorker` and `manager.ensure_environment()` for clean background environment setup cancellation
+   [x] 1.3 Added signal disconnection during worker thread cleanup to prevent post-cancellation UI popups or error dialogs
 
-2. Current Release: Non-Blocking macOS & Linux Translation Process Cancellation (Completed in v3.2.17)
-   [x] 2.1 Replaced 5000ms blocking wait in `stop_translation_worker()` with 150ms graceful probe + `SIGKILL` to eliminate Qt main GUI thread hangs on macOS
-   [x] 2.2 Connected `cancel_event` directly to `TranslationEnvSetupWorker` and `manager.ensure_environment()` for clean background environment setup cancellation
-   [x] 2.3 Added signal disconnection during worker thread cleanup to prevent post-cancellation UI popups or error dialogs
+2. Current Release: macOS SSL Certificate Verification & Clean Exit Fixes (Completed in v3.2.18)
+   [x] 2.1 Configured CA certificate bundles (`certifi.where()`) across startup modules and worker scripts to fix `URLError: <urlopen error [SSL: CERTIFICATE_VERIFY_FAILED]>` on macOS
+   [x] 2.2 Filtered out Python interpreter flags (`-B`, `-u`, `--prs-worker`) in `radio_tv_story_segmenter_worker.py`'s `main()` to eliminate `Error: Unknown processing mode: -B`
+   [x] 2.3 Added `closeEvent(event)` and `_is_closing` IPC server guards in `RadioTVSegmenter.py` to stop background workers and prevent the app from instantly reopening when closed
 
 3. Future Milestone: Expanded NLE & DAW Timeline Interchange (Phase 4 - Planned for v3.4) [NOT STARTED]
    [ ] 3.1 Cockos Reaper Project (.rpp) Generator

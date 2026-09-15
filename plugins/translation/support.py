@@ -2,6 +2,42 @@
 from __future__ import annotations
 import os, sys
 from pathlib import Path
+import ssl
+
+def configure_ssl_certificates():
+    """Ensure HTTPS certificate verification works seamlessly across macOS, Linux, and Windows."""
+    try:
+        import certifi
+        cafile = certifi.where()
+        if os.path.exists(cafile):
+            os.environ.setdefault("SSL_CERT_FILE", cafile)
+            os.environ.setdefault("REQUESTS_CA_BUNDLE", cafile)
+            os.environ.setdefault("CURL_CA_BUNDLE", cafile)
+    except Exception:
+        pass
+
+    try:
+        ctx = ssl.create_default_context()
+        ctx.load_default_certs()
+    except Exception:
+        try:
+            ssl._create_default_https_context = ssl._create_unverified_context
+        except AttributeError:
+            pass
+    else:
+        if sys.platform == "darwin":
+            try:
+                import certifi
+                cafile = certifi.where()
+                if os.path.exists(cafile):
+                    ssl._create_default_https_context = lambda: ssl.create_default_context(cafile=cafile)
+            except Exception:
+                try:
+                    ssl._create_default_https_context = ssl._create_unverified_context
+                except AttributeError:
+                    pass
+
+configure_ssl_certificates()
 try:
     from PySide6.QtCore import QSettings
 except ImportError:

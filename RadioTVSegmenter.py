@@ -298,6 +298,41 @@ class MainWindow(
         else:
             self.open_media_file(str(p))
 
+    def closeEvent(self, event):
+        """Cleanly handle application window closing to prevent process lingering,
+        stray IPC reactivation, or double-open behavior upon exit."""
+        self._is_closing = True
+
+        if hasattr(self, "ipc_server") and self.ipc_server:
+            try:
+                self.ipc_server.close()
+                QLocalServer.removeServer("RadioTVStorySegmenter_IPC_Server")
+            except Exception:
+                pass
+
+        for stop_fn in (
+            "stop_waveform_worker",
+            "stop_video_thumbnail_worker",
+            "stop_transcription_worker",
+            "stop_diarization_worker",
+            "stop_translation_worker",
+        ):
+            if hasattr(self, stop_fn):
+                try:
+                    getattr(self, stop_fn)()
+                except Exception:
+                    pass
+
+        if getattr(self, "project_dirty", False) and getattr(self, "project_file", None):
+            try:
+                self.save_project()
+            except Exception:
+                pass
+
+        event.accept()
+        QCoreApplication.quit()
+
+
 def main():
     if sys.platform == "win32":
         try:
@@ -352,14 +387,20 @@ def main():
         window.setWindowIcon(icon)
 
     ipc_server = QLocalServer()
+    window.ipc_server = ipc_server
     QLocalServer.removeServer(server_name)
     if ipc_server.listen(server_name):
         def _handle_ipc_connection():
+            if getattr(window, "_is_closing", False):
+                return
             client_socket = ipc_server.nextPendingConnection()
             if not client_socket:
                 return
             if client_socket.waitForReadyRead(1000):
                 data = client_socket.readAll().data().decode("utf-8", errors="ignore").strip()
+                if getattr(window, "_is_closing", False):
+                    client_socket.disconnectFromServer()
+                    return
                 if data and data != "ACTIVATE" and Path(data).exists():
                     window.handle_external_open_request(data)
                 else:

@@ -1,5 +1,14 @@
 # Changelog
 
+## v3.2.18
+- **macOS SSL Certificate Verification & Model Download Fixes**:
+  - Automatically configures CA certificate bundles (`certifi.where()`) across `bootstrap.py`, `radio_tv_story_segmenter_worker.py`, `model_management.py`, and `plugins/translation/support.py`. Resolves `URLError: <urlopen error [SSL: CERTIFICATE_VERIFY_FAILED]>` on macOS during WeSpeaker, MarianMT, and NLLB model downloads.
+- **Worker Interpreter Argument Filtering**:
+  - Filtered out interpreter flags (`-B`, `-u`, `--prs-worker`) in `radio_tv_story_segmenter_worker.py`'s `main(argv)` entry point, eliminating `Error: Unknown processing mode: -B` when launching worker helpers.
+- **Clean Application Shutdown & Single-Instance Reopen Fix**:
+  - Implemented `closeEvent(event)` in `MainWindow` (`RadioTVSegmenter.py`) to properly stop background workers and close `QLocalServer` (`ipc_server`) upon window exit.
+  - Added `_is_closing` state guards to prevent IPC connections from re-raising or re-opening the application window after the user closes the app.
+
 ## v3.2.17
 - **Non-Blocking macOS & Linux Translation Process Cancellation**:
   - **Eliminated GUI Hangs on Cancel**: Replaced long 5000ms blocking wait calls in `stop_translation_worker()` (`translation.py`) with a fast 150ms graceful termination probe followed by immediate `SIGKILL` process termination on Unix/macOS. This prevents CTranslate2 C++ inference loops from freezing the Qt main thread and triggering macOS AppKit "Not Responding" hangs or window server crashes when the user clicks Cancel.

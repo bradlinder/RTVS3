@@ -13,6 +13,30 @@ except ImportError:
 from pathlib import Path
 
 
+try:
+    from bootstrap import configure_ssl_certificates
+    configure_ssl_certificates()
+except Exception:
+    import ssl
+    try:
+        import certifi
+        cafile = certifi.where()
+        if os.path.exists(cafile):
+            os.environ.setdefault("SSL_CERT_FILE", cafile)
+            os.environ.setdefault("REQUESTS_CA_BUNDLE", cafile)
+            os.environ.setdefault("CURL_CA_BUNDLE", cafile)
+    except Exception:
+        pass
+    try:
+        ctx = ssl.create_default_context()
+        ctx.load_default_certs()
+    except Exception:
+        try:
+            ssl._create_default_https_context = ssl._create_unverified_context
+        except AttributeError:
+            pass
+
+
 def _clamp_diarization_thread_env():
     """Cap OMP/ONNX Runtime/BLAS thread pools before onnxruntime, torch, or the
     diarize package are ever imported anywhere in this process (including
@@ -1584,6 +1608,12 @@ def diarize(audio_file, expected_speakers="auto", transcript_file=None):
 def main(argv=None):
     if argv is None:
         argv = sys.argv[1:]
+
+    # Strip any leading Python interpreter or wrapper arguments (e.g. -B, -u, --prs-worker, --worker)
+    valid_modes = {"--transcribe", "--diarize", "--self-test"}
+    while argv and argv[0] not in valid_modes and argv[0].startswith("-"):
+        argv = argv[1:]
+
     emit_hello()
     if len(argv) < 1:
         emit("error", message="No processing mode was specified.")

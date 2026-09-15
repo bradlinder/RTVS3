@@ -5,6 +5,11 @@ maintaining the established MainWindow-facing API while responsibilities are iso
 """
 
 from prs_shared import *
+try:
+    from bootstrap import configure_ssl_certificates
+    configure_ssl_certificates()
+except Exception:
+    pass
 
 
 class NullWriter:

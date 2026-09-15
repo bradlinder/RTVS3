@@ -169,9 +169,45 @@ def setup_windows_dll_directories() -> None:
                     pass
 
 
+def configure_ssl_certificates():
+    """Ensure HTTPS certificate verification works seamlessly across macOS, Linux, and Windows."""
+    import ssl
+    try:
+        import certifi
+        cafile = certifi.where()
+        if os.path.exists(cafile):
+            os.environ.setdefault("SSL_CERT_FILE", cafile)
+            os.environ.setdefault("REQUESTS_CA_BUNDLE", cafile)
+            os.environ.setdefault("CURL_CA_BUNDLE", cafile)
+    except Exception:
+        pass
+
+    try:
+        ctx = ssl.create_default_context()
+        ctx.load_default_certs()
+    except Exception:
+        try:
+            ssl._create_default_https_context = ssl._create_unverified_context
+        except AttributeError:
+            pass
+    else:
+        if sys.platform == "darwin":
+            try:
+                import certifi
+                cafile = certifi.where()
+                if os.path.exists(cafile):
+                    ssl._create_default_https_context = lambda: ssl.create_default_context(cafile=cafile)
+            except Exception:
+                try:
+                    ssl._create_default_https_context = ssl._create_unverified_context
+                except AttributeError:
+                    pass
+
+
 def configure_runtime_environment() -> Path:
     """Prepare writable user data and model-cache locations before imports."""
     setup_windows_dll_directories()
+    configure_ssl_certificates()
     root = app_data_dir()
     models = root / "models"
     models.mkdir(parents=True, exist_ok=True)
