@@ -226,6 +226,99 @@ class WhisperModelInstallWorker(QObject):
         self.finished.emit(error)
 
 
+def get_diarization_model_dir() -> Path:
+    candidates = [
+        get_models_storage_dir() / "wespeaker",
+        Path.home() / ".wespeaker",
+    ]
+    for c in candidates:
+        if c.exists():
+            try:
+                if any(c.iterdir()):
+                    return c
+            except Exception:
+                pass
+    try:
+        from runtime_manager import RuntimeManager
+        _rm = RuntimeManager()
+        _dir = _rm.get_env_dir("diarize")
+        if _dir.exists() and any(_dir.iterdir()):
+            return _dir
+    except Exception:
+        pass
+    return Path.home() / ".wespeaker"
+
+
+def is_diarization_model_available() -> bool:
+    candidates = [
+        get_models_storage_dir() / "wespeaker",
+        Path.home() / ".wespeaker",
+    ]
+    for c in candidates:
+        if c.exists():
+            try:
+                if any(c.iterdir()):
+                    return True
+            except Exception:
+                pass
+    try:
+        from runtime_manager import RuntimeManager
+        _rm = RuntimeManager()
+        _dir = _rm.get_env_dir("diarize")
+        if _dir.exists() and _rm._get_raw_executable("diarize").exists():
+            return True
+    except Exception:
+        pass
+    return False
+
+
+class DiarizationModelInstallWorker(QObject):
+    progress = Signal(int, str)
+    finished = Signal(object)
+
+    def __init__(self):
+        super().__init__()
+        self._cancelled = False
+
+    def cancel(self):
+        self._cancelled = True
+
+    def run(self):
+        error = None
+        try:
+            self.progress.emit(10, "Initializing Speaker Diarization runtime…")
+            loaded = False
+            try:
+                import wespeakerruntime as wespeaker_rt
+                if self._cancelled:
+                    raise InterruptedError("Installation cancelled.")
+                self.progress.emit(40, "Downloading WeSpeaker ResNet34 ONNX voice embedding model…")
+                _speaker = wespeaker_rt.Speaker(lang="en")
+                loaded = True
+                self.progress.emit(100, "Speaker Diarization model installed successfully.")
+            except ImportError:
+                pass
+
+            if not loaded and not self._cancelled:
+                self.progress.emit(30, "Downloading WeSpeaker model via background worker…")
+                worker_script = Path(__file__).resolve().parent / "radio_tv_story_segmenter_worker.py"
+                if worker_script.exists():
+                    proc = subprocess.run(
+                        [sys.executable, str(worker_script), "--self-test"],
+                        capture_output=True,
+                        text=True,
+                        timeout=120,
+                    )
+                    if proc.returncode != 0 and "error" in proc.stderr.lower():
+                        raise RuntimeError(proc.stderr.strip() or "Failed to download WeSpeaker model.")
+                    self.progress.emit(100, "Speaker Diarization model ready.")
+                else:
+                    self.progress.emit(100, "Speaker Diarization runtime ready.")
+        except Exception as exc:
+            error = f"{type(exc).__name__}: {exc}"
+        self.finished.emit(error)
+
+
 class ModelManagementMixin:
     def model_cache_candidates(self, model_name):
         """Return all potential candidate directories where model weights might be stored."""
@@ -503,20 +596,19 @@ class ModelManagementMixin:
             add_row("whisper", model_id, label, path, installed,
                     lambda _, m=model_id: self.install_whisper_model_for_manager(m, dialog))  # Added '_' here
 
-        # Speaker Diarization Runtime & Models
-        try:
-            from runtime_manager import RuntimeManager
-            _rm = RuntimeManager()
-            _diar_env_dir = _rm.get_env_dir("diarize")
-            _diar_env_installed = _diar_env_dir.exists() and _rm._get_raw_executable("diarize").exists()
-            if _diar_env_installed and hasattr(_rm, "prune_cuda_artifacts"):
-                _rm.prune_cuda_artifacts(_diar_env_dir)
-            models_layout.addSpacing(10)
-            models_layout.addWidget(QLabel("<b>Speaker Diarization models & runtime</b>"))
-            add_row("diarize_runtime", "diarize_env", "Speaker Diarization Runtime & Models (WeSpeaker / ONNX / PyTorch)", _diar_env_dir, _diar_env_installed,
-                    lambda _, d=dialog: QMessageBox.information(d, "Speaker Diarization", "Speaker Diarization runtime dependencies are initialized automatically when speaker diarization is performed."))
-        except Exception:
-            pass
+        # Speaker Diarization Model (WeSpeaker ONNX)
+        diar_model_dir = get_diarization_model_dir()
+        diar_installed = is_diarization_model_available()
+        models_layout.addSpacing(10)
+        models_layout.addWidget(QLabel("<b>Speaker Diarization model</b>"))
+        add_row(
+            "diarize_model",
+            "wespeaker_resnet34",
+            "Speaker Diarization Model (WeSpeaker ResNet34 ONNX Voice Embedding)",
+            diar_model_dir,
+            diar_installed,
+            lambda _, d=dialog: self.install_diarization_model_for_manager(d),
+        )
 
         translation_rows = []
         is_trans_active = _translation_plugin_installed(self)
@@ -605,11 +697,9 @@ class ModelManagementMixin:
                 if item["kind"] == "whisper":
                     item["path"] = self.model_cache_path(item["model_id"])
                     installed_now = self.is_whisper_model_available(item["model_id"])
-                elif item["kind"] == "diarize_runtime":
-                    from runtime_manager import RuntimeManager
-                    _rm = RuntimeManager()
-                    item["path"] = _rm.get_env_dir("diarize")
-                    installed_now = item["path"].exists() and _rm._get_raw_executable("diarize").exists()
+                elif item["kind"] in ("diarize_model", "diarize_runtime"):
+                    item["path"] = get_diarization_model_dir()
+                    installed_now = is_diarization_model_available()
                 elif item["kind"] == "translation_runtime":
                     from runtime_manager import RuntimeManager
                     _rm = RuntimeManager()
@@ -651,11 +741,20 @@ class ModelManagementMixin:
                         rm = RuntimeManager()
                         rm.kill_all_subprocesses()
                         rm.remove_environment("translate")
-                    elif item["kind"] == "diarize_runtime":
-                        from runtime_manager import RuntimeManager
-                        rm = RuntimeManager()
-                        rm.kill_all_subprocesses()
-                        rm.remove_environment("diarize")
+                    elif item["kind"] in ("diarize_model", "diarize_runtime"):
+                        for p in [get_models_storage_dir() / "wespeaker", Path.home() / ".wespeaker"]:
+                            if p.exists():
+                                try:
+                                    shutil.rmtree(p)
+                                except Exception:
+                                    pass
+                        try:
+                            from runtime_manager import RuntimeManager
+                            rm = RuntimeManager()
+                            rm.kill_all_subprocesses()
+                            rm.remove_environment("diarize")
+                        except Exception:
+                            pass
                     elif item["kind"] == "installer_cache":
                         from updater import cleanup_old_installers
                         cleanup_old_installers(force_all=True)
@@ -739,6 +838,13 @@ class ModelManagementMixin:
                 models_dir.mkdir(parents=True, exist_ok=True)
             except Exception as exc:
                 self.log_activity(f"[MODELS] Error purging models directory: {exc}", mark_dirty=False)
+
+        for wespeaker_path in [Path.home() / ".wespeaker", get_models_storage_dir() / "wespeaker"]:
+            if wespeaker_path.exists():
+                try:
+                    shutil.rmtree(wespeaker_path)
+                except Exception as exc:
+                    self.log_activity(f"[MODELS] Error purging WeSpeaker cache: {exc}", mark_dirty=False)
 
         log_dir = get_app_data_dir() / "logs"
         if log_dir.exists():
@@ -884,6 +990,36 @@ class ModelManagementMixin:
     def _poll_model_install(self, dialog):
         # Compatibility no-op; model installation completion is signal-driven.
         return
+
+    def install_diarization_model_for_manager(self, dialog):
+        """Install or repair the WeSpeaker ResNet34 ONNX diarization voice embedding model."""
+        if getattr(self, "_model_install_thread", None) is not None:
+            return
+
+        self._model_install_dialog = dialog
+        self._model_install_model = "Speaker Diarization (WeSpeaker ResNet34)"
+        self._model_install_kind = "diarize"
+        self._model_install_error = None
+
+        self.set_processing_stage("Model Download", "Speaker Diarization Model")
+        self.progress.setValue(0)
+        self.progress.show()
+
+        self.log_activity("[MODELS] Starting download/install for Speaker Diarization model (WeSpeaker ResNet34 ONNX)...")
+
+        self._model_install_qthread = QThread(self)
+        self._model_install_worker = DiarizationModelInstallWorker()
+        self._model_install_worker.moveToThread(self._model_install_qthread)
+        if hasattr(self, "_track_worker_thread"):
+            self._track_worker_thread(self._model_install_qthread)
+        self._model_install_qthread.started.connect(self._model_install_worker.run)
+        self._model_install_worker.progress.connect(self._on_model_install_progress)
+        self._model_install_worker.finished.connect(self._model_install_finished)
+        self._model_install_worker.finished.connect(self._model_install_qthread.quit)
+        self._model_install_qthread.finished.connect(self._model_install_thread_finished)
+        self._model_install_thread = self._model_install_qthread
+        self._model_install_qthread.start()
+        dialog.refresh_models()
 
     def install_translation_models_for_manager(self, from_code, to_code, variant, dialog):
         """Install an OPUS-MT model through the translation plugin's isolated runtime."""

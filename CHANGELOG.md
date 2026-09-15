@@ -1,5 +1,24 @@
 # Changelog
 
+## v3.2.15
+- **Comprehensive Translation Job Cancellation**:
+  - Enhanced `cancel_current_process` and media change guards in `processing.py` to reliably detect and terminate active translation tasks across `translation_process`, `translation_thread`, `_translation_env_thread`, and `_translation_env_worker`.
+  - Upgraded `stop_translation_worker` in `translation.py` to terminate subprocess workers, disconnect pending signals, cleanly remove temporary request JSON files, and immediately restore the UI to an idle state.
+  - Added `is_exporting` state tracker in `project_export.py` to prevent erroneous `[EXPORT] Cancel requested by user` log messages when cancelling processing tasks.
+- **Accurate Speaker Diarization Model Management**:
+  - Replaced the placeholder diarization informational message with interactive model management for the Speaker Diarization Model (WeSpeaker ResNet34 ONNX Voice Embedding).
+  - Accurately checks WeSpeaker cache directories (`~/.wespeaker` and `models/wespeaker`) to display genuine installation status and disk footprint.
+  - Provided interactive **Download / Install** (via background worker) and individual **Remove** controls in the *Manage Models & AI Data* dialog, and integrated WeSpeaker cache purging into the *Purge All Models & Cache Data* workflow.
+
+## v3.2.14
+- **Fixed Windows Update Installer Launch & Clean Process Exit**:
+  - Enhanced `launch_and_install` in `updater.py` with multi-tier process execution on Windows, utilizing `subprocess.Popen` with `DETACHED_PROCESS` and `CREATE_NEW_PROCESS_GROUP` flags alongside 64-bit typed `ctypes.windll.shell32.ShellExecuteW` (`"open"` and `"runas"` UAC elevation fallback) and `os.startfile`.
+  - Added clean window teardown and guaranteed background exit (`os._exit(0)`) in `_install_and_restart` so the running application releases all file locks immediately upon launching the installer, allowing Inno Setup to overwrite binaries seamlessly without blocking.
+  - Automatically detects previously cached and verified installer packages in AppData/updates to present an immediate **"Install & Restart"** action.
+- **Corrected Action Button Ampersand Formatting**:
+  - Properly escaped accelerator ampersands as `"Install && Restart"` in Qt button declarations to ensure the label renders cleanly as **"Install & Restart"** in the updater interface.
+  - Updated primary action handler to normalize and match both escaped and unescaped button strings.
+
 ## v3.2.13
 - **Integrated Speaker Diarization Models & Runtime into Manage Models**:
   - Added full visibility, disk size metrics, and removal options for the Speaker Diarization Runtime & Models (`diarize_env` / WeSpeaker / ONNX / PyTorch) inside the *Manage Models & AI Data* tool.

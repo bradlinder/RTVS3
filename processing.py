@@ -174,7 +174,7 @@ class ProcessingMixin:
 
     def cancel_current_process(self):
         # Halt any ongoing file export or WordPress upload
-        if hasattr(self, "cancel_export"):
+        if getattr(self, "is_exporting", False) and hasattr(self, "cancel_export"):
             self.cancel_export()
         if self.batch_active:
             self.batch_active = False
@@ -190,7 +190,11 @@ class ProcessingMixin:
                 self.cleanup_diarization_process()
             if self.thread is not None:
                 self.stop_story_detection_worker(timeout_ms=5000)
-            if self.translation_thread is not None:
+            if (
+                getattr(self, "translation_process", None) is not None
+                or getattr(self, "translation_thread", None) is not None
+                or getattr(self, "_translation_env_thread", None) is not None
+            ):
                 self.stop_translation_worker(timeout_ms=5000)
             self.progress.hide()
             self.cancel_button.hide()
@@ -200,11 +204,18 @@ class ProcessingMixin:
             self.statusBar().showMessage("Batch processing canceled.")
             return
 
+        is_trans_running = (
+            getattr(self, "translation_process", None) is not None
+            or getattr(self, "translation_thread", None) is not None
+            or getattr(self, "_translation_env_thread", None) is not None
+            or getattr(self, "_translation_env_worker", None) is not None
+        )
+
         if (
             self.transcription_process is not None
             or self.diarization_process is not None
             or self.thread is not None
-            or getattr(self, "translation_thread", None) is not None
+            or is_trans_running
         ):
             if self.pipeline_active:
                 answer = QMessageBox.question(
@@ -245,8 +256,9 @@ class ProcessingMixin:
             self.statusBar().showMessage("Transcription canceled by user.")
             return
 
-        if self.translation_thread is not None:
+        if is_trans_running:
             self.log_activity("[PROCESS] Canceling local translation...")
+            self.statusBar().showMessage("Canceling translation...")
             self.stop_translation_worker()
             self.pipeline_active = False
             self.pipeline_rerun_confirmed = False
@@ -255,6 +267,7 @@ class ProcessingMixin:
             self.cancel_button.hide()
             self.set_tools_actions_enabled(True)
             self.log_activity("[TRANSLATION] Canceled by user.")
+            self.statusBar().showMessage("Translation canceled by user.")
             return
 
         if self.diarization_process is not None:
@@ -468,7 +481,10 @@ class ProcessingMixin:
             self.transcription_process is not None
             or self.diarization_process is not None
             or self.thread is not None
-            or self.translation_thread is not None
+            or getattr(self, "translation_thread", None) is not None
+            or getattr(self, "translation_process", None) is not None
+            or getattr(self, "_translation_env_thread", None) is not None
+            or getattr(self, "_translation_env_worker", None) is not None
             or self.pipeline_active
         )
         if not active:

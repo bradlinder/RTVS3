@@ -1005,10 +1005,18 @@ class ProjectExportMixin:
 
     def cancel_export(self):
         """Flag the running export operation to halt at the next iteration."""
-        self.export_cancelled = True
-        self.log_activity("[EXPORT] Cancel requested by user.")
+        if getattr(self, "is_exporting", False) or getattr(self, "export_active", False):
+            self.export_cancelled = True
+            self.log_activity("[EXPORT] Cancel requested by user.")
 
     def _export_story_files(self, stories_with_indices, formats, base, options, directory, start_idx=0, total_batch=None, is_custom_location=False):
+        self.is_exporting = True
+        try:
+            return self._do_export_story_files(stories_with_indices, formats, base, options, directory, start_idx=start_idx, total_batch=total_batch, is_custom_location=is_custom_location)
+        finally:
+            self.is_exporting = False
+
+    def _do_export_story_files(self, stories_with_indices, formats, base, options, directory, start_idx=0, total_batch=None, is_custom_location=False):
         out = Path(directory)
         create_bundle = str(self.settings_store.value("create_project_subfolders", "true")).lower() in {"1", "true", "yes"}
         if create_bundle and not is_custom_location:

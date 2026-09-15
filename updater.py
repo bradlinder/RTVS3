@@ -59,7 +59,7 @@ try:
     )
 except Exception:
     APP_DISPLAY_NAME = "Radio & TV Segmenter"
-    PROJECT_VERSION = "3.2.13"
+    PROJECT_VERSION = "3.2.15"
     DEFAULT_GITHUB_REPO = "bradlinder/RTVS3"
 
     INTERNAL_APP_ID = "RadioTVStorySegmenter"
@@ -397,28 +397,74 @@ def launch_and_install(file_path: str, parent: QWidget | None = None) -> bool:
         return False
 
     if sys.platform == "win32":
+        launched = False
+        last_error = ""
+
+        # 1. Primary approach: detached subprocess.Popen
+        # In Windows, spawning the installer with CREATE_NEW_PROCESS_GROUP and DETACHED_PROCESS
+        # ensures the child process runs independently and survives the parent application exiting.
         try:
-            # Explicitly use ShellExecuteW with 'runas' verb to trigger proper UAC elevation prompt
-            # and spawn the installer successfully with administrative privileges.
-            import ctypes
-            ret = ctypes.windll.shell32.ShellExecuteW(None, "runas", str(path), "", str(path.parent), 1)
-            if int(ret) <= 32:
-                ret2 = ctypes.windll.shell32.ShellExecuteW(None, "open", str(path), "", str(path.parent), 1)
-                if int(ret2) <= 32:
-                    raise OSError(f"ShellExecuteW failed with code {ret} / {ret2}")
-            return True
-        except Exception as exc1:
+            creationflags = 0
+            if hasattr(subprocess, "DETACHED_PROCESS"):
+                creationflags |= subprocess.DETACHED_PROCESS
+            if hasattr(subprocess, "CREATE_NEW_PROCESS_GROUP"):
+                creationflags |= subprocess.CREATE_NEW_PROCESS_GROUP
+            subprocess.Popen([str(path)], cwd=str(path.parent), creationflags=creationflags)
+            launched = True
+        except Exception as exc_pop:
+            last_error = f"subprocess.Popen: {exc_pop}"
+
+        # 2. Secondary approach: ShellExecuteW with proper 64-bit ctypes types
+        if not launched:
+            try:
+                import ctypes
+                from ctypes import wintypes
+                shell32 = ctypes.windll.shell32
+                shell32.ShellExecuteW.argtypes = [
+                    wintypes.HWND,
+                    wintypes.LPCWSTR,
+                    wintypes.LPCWSTR,
+                    wintypes.LPCWSTR,
+                    wintypes.LPCWSTR,
+                    ctypes.c_int,
+                ]
+                shell32.ShellExecuteW.restype = wintypes.HINSTANCE
+
+                # Try 'open' first
+                ret = shell32.ShellExecuteW(None, "open", str(path), "", str(path.parent), 1)
+                ret_val = int(ctypes.cast(ret, ctypes.c_void_p).value or 0)
+                if ret_val > 32:
+                    launched = True
+                else:
+                    # Retry with 'runas' for explicit administrator UAC elevation prompt
+                    ret2 = shell32.ShellExecuteW(None, "runas", str(path), "", str(path.parent), 1)
+                    ret2_val = int(ctypes.cast(ret2, ctypes.c_void_p).value or 0)
+                    if ret2_val > 32:
+                        launched = True
+                    else:
+                        last_error = f"ShellExecuteW returned code {ret_val} / {ret2_val}"
+            except Exception as exc_shell:
+                last_error = f"ShellExecuteW: {exc_shell}"
+
+        # 3. Tertiary fallback: os.startfile
+        if not launched:
             try:
                 os.startfile(str(path))
-                return True
-            except Exception as exc2:
-                try:
-                    subprocess.Popen([str(path)], shell=True)
-                    return True
-                except Exception as exc3:
-                    if parent:
-                        QMessageBox.critical(parent, "Launch Error", f"Failed to execute installer:\n{exc3}")
-                    return False
+                launched = True
+            except Exception as exc_start:
+                last_error = f"os.startfile: {exc_start}"
+
+        if not launched:
+            if parent:
+                QMessageBox.critical(
+                    parent,
+                    "Launch Error",
+                    f"Failed to execute installer:\n{last_error}\n\n"
+                    f"The update installer was downloaded to:\n{path}\n\n"
+                    f"Please launch this installer manually to complete the update.",
+                )
+            return False
+        return True
 
     elif sys.platform == "darwin":
         try:
@@ -928,7 +974,19 @@ class CheckUpdateDialog(QDialog):
 
             self.asset_info_label.setText(f"Platform package: <b>{asset_name}</b> ({asset_size}){notice_html}")
             self.asset_info_label.show()
-            self.action_btn.setText(f"{primary_verb} {tag}")
+
+            # Check if this exact installer file is already cached on disk and complete
+            updates_dir = get_app_data_dir() / "updates"
+            existing_file = (updates_dir / Path(asset_name).name).resolve() if asset_name else None
+            expected_size = int(self.asset_info.get("size", 0))
+            if existing_file and existing_file.is_file() and (expected_size <= 0 or existing_file.stat().st_size >= expected_size * 0.95):
+                self.downloaded_path = str(existing_file)
+                self.action_btn.setText("Install && Restart")
+                self.status_label.setText(f"✓ Update package for {tag} is already downloaded and ready to install.")
+                self.status_label.setStyleSheet("font-size: 13px; color: #2e7d32; font-weight: bold;")
+            else:
+                self.downloaded_path = None
+                self.action_btn.setText(f"{primary_verb} {tag}")
         else:
             self.asset_info_label.setText("No automated binary package detected for your OS. Visit GitHub to download.")
             self.asset_info_label.show()
@@ -963,12 +1021,12 @@ class CheckUpdateDialog(QDialog):
         self.github_link_btn.show()
 
     def _handle_primary_action(self):
-        btn_text = self.action_btn.text()
+        btn_text = self.action_btn.text().replace("&&", "&").strip()
         if btn_text in ("Check Again", "Retry Check"):
             self.start_check()
         elif btn_text == "Open Download Page":
             self._open_github_release()
-        elif btn_text == "Install & Restart":
+        elif btn_text in ("Install & Restart", "Install Restart"):
             self._install_and_restart()
         else:
             tag = self.release_info.get("tag_name", "")
@@ -1038,7 +1096,7 @@ class CheckUpdateDialog(QDialog):
         self.progress_bar.setValue(100)
         self.status_label.setText("✓ Download complete! Ready to install.")
         self.status_label.setStyleSheet("font-size: 14px; color: #2e7d32; font-weight: bold;")
-        self.action_btn.setText("Install & Restart")
+        self.action_btn.setText("Install && Restart")
         self.action_btn.setEnabled(True)
         self.close_btn.setText("Later")
 
@@ -1071,7 +1129,7 @@ class CheckUpdateDialog(QDialog):
         confirm = QMessageBox.question(
             self,
             "Install Update",
-            f"Radio & TV Segmenter will now launch the installer for {tag} and exit.\n\n"
+            f"Radio & TV Segmenter will now launch the installer for {tag} and close the application to complete the update.\n\n"
             f"Proceed with installation?",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
             QMessageBox.StandardButton.Yes,
@@ -1082,7 +1140,22 @@ class CheckUpdateDialog(QDialog):
         success = launch_and_install(self.downloaded_path, parent=self)
         if success:
             self.accept()
-            QApplication.instance().quit()
+            # Cleanly close all top-level windows and force process exit to release all file locks
+            app = QApplication.instance()
+            if app:
+                try:
+                    for widget in app.topLevelWidgets():
+                        if widget != self:
+                            widget.close()
+                except Exception:
+                    pass
+                app.quit()
+            import threading
+            def _force_exit():
+                time.sleep(0.5)
+                os._exit(0)
+            t = threading.Thread(target=_force_exit, daemon=True)
+            t.start()
 
     def _open_github_release(self):
         url = self.release_info.get("html_url") or f"https://github.com/{self.repo}/releases"

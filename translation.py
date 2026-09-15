@@ -310,9 +310,26 @@ class TranslationMixin:
             except Exception:
                 pass
         self._cleanup_translation_env_thread()
+        self._pending_translation_setup = None
 
         proc = getattr(self, "translation_process", None)
         if proc is not None:
+            try:
+                unregister_process(proc)
+            except Exception:
+                pass
+            try:
+                proc.readyReadStandardOutput.disconnect()
+            except Exception:
+                pass
+            try:
+                proc.finished.disconnect()
+            except Exception:
+                pass
+            try:
+                proc.errorOccurred.disconnect()
+            except Exception:
+                pass
             try:
                 proc.terminate()
                 if not proc.waitForFinished(timeout_ms):
@@ -320,6 +337,17 @@ class TranslationMixin:
                     proc.waitForFinished(1000)
             except Exception:
                 pass
+            try:
+                req_file = getattr(proc, "_rtvs_request_file", None)
+                if req_file and Path(req_file).exists():
+                    Path(req_file).unlink(missing_ok=True)
+            except Exception:
+                pass
+            try:
+                proc.deleteLater()
+            except Exception:
+                pass
+
         self.translation_process = None
         self.translation_thread = None
         self.translation_worker = None
