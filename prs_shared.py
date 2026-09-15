@@ -515,7 +515,7 @@ class CollapsibleSection(QWidget):
 
 # Display branding shown to the user (title bar, About box, installers).
 APP_DISPLAY_NAME = "Radio & TV Segmenter"
-PROJECT_VERSION = "3.2.1-dev"
+PROJECT_VERSION = "3.2.2-beta"
 DEFAULT_GITHUB_REPO = "bradlinder/RTVS3"
 
 
@@ -744,6 +744,10 @@ def get_github_repo() -> str:
         settings = QSettings(INTERNAL_APP_ID, INTERNAL_APP_ID)
         val = str(settings.value("github_repo", "") or "").strip()
         if val:
+            # Transparently migrate legacy repository references to RTVS3
+            if val.lower() in ("bradlinder/rtvs", "bradlinder/radiotvstorysegmenter", "radiotvstorysegmenter"):
+                settings.setValue("github_repo", DEFAULT_GITHUB_REPO)
+                return DEFAULT_GITHUB_REPO
             return val
     except Exception:
         pass

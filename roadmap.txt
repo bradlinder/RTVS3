@@ -29,20 +29,17 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 --------------------------------------------------------------------------------
 TABLE OF CONTENTS & STATUS OVERVIEW
 --------------------------------------------------------------------------------
-1. Previous Release: Shortcut Conflict Resolution & Comment Duplicate Prevention (Completed in v3.1.6)
-   [x] 1.1 Resolve Comment Shortcut (Ctrl+M) Conflict and Restore Global Shortcuts
-   [x] 1.2 Prevent Duplicate Comment Creation on Text Selection Overlaps
+1. Previous Release: Child Process Teardown, Pure CTranslate2, Async Provisioning & Hallucination Scrubber (Completed in v3.2.1-dev)
+   [x] 1.1 OS-Level Child Process Binding (Windows Job Objects & POSIX Process Groups)
+   [x] 1.2 Translation Plugin Self-Containment & Pure CTranslate2 Isolation (Purge PyTorch Fallback)
+   [x] 1.3 Emergency Unhandled Exception Project Snapshot & Crash Recovery (`.crash_recovery.rtvs`)
+   [x] 1.4 Unified Core Async Runtime Provisioner & Responsive Dialog (`runtime_manager.py`)
+   [x] 1.5 Whisper Hallucination & Degenerate Loop Scrubber (`prs_shared.py`, `processing.py`, worker)
 
-2. Current Release: Stability, Security, Child Process Teardown, Async Provisioning & Hallucination Scrubber (Completed in v3.2.1-dev)
-   [x] 2.1 OS-Level Child Process Binding (Windows Job Objects & POSIX Process Groups)
-   [x] 2.2 Translation Plugin Self-Containment & Pure CTranslate2 Isolation (Purge PyTorch Fallback)
-   [x] 2.3 Emergency Unhandled Exception Project Snapshot & Crash Recovery (`.crash_recovery.rtvs`)
-   [x] 2.4 Unified Core Async Runtime Provisioner & Responsive Dialog (`runtime_manager.py`)
-   [x] 2.6 Whisper Hallucination & Degenerate Loop Scrubber (`prs_shared.py`, `processing.py`, worker)
-   [x] 2.9 GitHub Update Repository & Release Target Migration (`bradlinder/RTVS3`)
-   [ ] 2.5 Media Transcoding & Format Conversion on Export (Audio & Video Codecs)
-   [ ] 2.7 Multi-Lingual Filler Word & Disfluency Detection
-   [ ] 2.8 Pipeline Integration & UI Controls
+2. Current Release: Update Repository Migration, Dead Code Pruning & Architectural Cleanup (Completed in v3.2.2-beta)
+   [x] 2.1 Automatic GitHub Update Repository Migration to `bradlinder/RTVS3` (Settings Auto-Upgrade)
+   [x] 2.2 Dead Code & Orphaned Dialog Module Pruning (`models.py`, `ui/dialogs/`, binary addon archive)
+   [x] 2.3 Architectural Invariant Decoupling & Import Consolidation (decouple core from plugins, clean worker signatures)
 
 3. Future Milestone: Expanded NLE & DAW Timeline Interchange (Phase 4 - Planned for v3.3) [NOT STARTED]
    [ ] 3.1 Cockos Reaper Project (.rpp) Generator
@@ -59,64 +56,50 @@ TABLE OF CONTENTS & STATUS OVERVIEW
    [ ] 4.4 Memory-Bounded Diarization & Chunked Streaming
 
 ================================================================================
-1. PREVIOUS RELEASE: SHORTCUT CONFLICT RESOLUTION & COMMENT DUPLICATE PREVENTION (Completed in v3.1.6)
+1. PREVIOUS RELEASE: STABILITY, SECURITY, ASYNC PROVISIONING & HALLUCINATION SCRUBBER (Completed in v3.2.1-dev)
 ================================================================================
 
-[x] 1.1 RESOLVE COMMENT SHORTCUT (CTRL+M) CONFLICT and RESTORE GLOBAL SHORTCUTS
--------------------------------------------------------------------------------
-- Connected the global `add_comment_action` (`Ctrl+M`) to the MainWindow `add_comment_from_selection()` method instead of a non-existent transcript view method. This ensures that pressing `Ctrl+M` works globally across the application, whether the transcript view is focused or not, and eliminates silent shortcut collisions.
-
-[x] 1.2 PREVENT DUPLICATE COMMENT CREATION ON TEXT SELECTION OVERLAPS
----------------------------------------------------------------------
-- Restricted selection-based comments to exactly one primary segment target index in the comment editor dialog instead of copy-creating multiple independent comments when a selection boundary slightly overlaps adjacent segments. This ensures that clicking the comment button or using the shortcut adds exactly one comment per selection range.
-
-================================================================================
-2. CURRENT RELEASE: STABILITY, SECURITY, CHILD PROCESS TEARDOWN & ASYNC PROVISIONING (Planned for v3.2) [IN-PROGRESS]
-================================================================================
-
-[x] 2.1 OS-LEVEL CHILD PROCESS BINDING (WINDOWS JOB OBJECTS & POSIX PROCESS GROUPS)
+[x] 1.1 OS-LEVEL CHILD PROCESS BINDING (WINDOWS JOB OBJECTS & POSIX PROCESS GROUPS)
 ------------------------------------------------------------------------------------
-- Problem: If the application crashes, panics in native C code, or is terminated via Windows Task Manager, spawned worker processes (`python.exe`, `ffmpeg.exe`, translation/diarization workers) can leak and continue running in the background.
-- Implementation:
-  * Windows: Automatically create and bind the parent process and all spawned workers to an OS Job Object configured with `JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE` via `ctypes.windll.kernel32`.
-  * POSIX (macOS/Linux): Spawn background workers with new process groups (`preexec_fn=os.setsid` or `creationflags=os.setsid`) and register `atexit` / signal handlers to terminate the process group cleanly.
-  * Register translation worker `QProcess` in `translation.py` directly into `register_process()`.
+- Bound application and all child worker processes (`python.exe`, `ffmpeg.exe`, translation/diarization workers) to an OS Job Object (`JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE`) on Windows and isolated process groups on POSIX, eliminating orphaned background processes on crash or Task Manager termination.
 
-[x] 2.2 TRANSLATION PLUGIN SELF-CONTAINMENT & PURE CTRANSLATE2 ISOLATION
+[x] 1.2 TRANSLATION PLUGIN SELF-CONTAINMENT & PURE CTRANSLATE2 ISOLATION
 ------------------------------------------------------------------------
-- Problem: The translation worker retained a fallback to Hugging Face `transformers.AutoModelForSeq2SeqLM` and `torch`, forcing the isolated translation runtime to carry hundreds of megabytes of heavy PyTorch binaries and dependencies.
-- Implementation:
-  * Remove `torch` and `transformers` fallbacks from `plugins/translation/worker.py`.
-  * Standardize model loading exclusively on quantized `ctranslate2.Translator` and `sentencepiece`.
-  * Clean up `requirements-runtime.txt` in `plugins/translation/` to remove `torch` and reduce installation footprint, installation time, and DLL collision risks.
+- Stripped `torch` and Hugging Face `transformers` dependencies from `plugins/translation/`, standardizing model loading exclusively on quantized `ctranslate2.Translator` and `sentencepiece` for minimal memory and disk footprint.
 
-[x] 2.3 EMERGENCY UNHANDLED EXCEPTION PROJECT SNAPSHOT & CRASH RECOVERY
+[x] 1.3 EMERGENCY UNHANDLED EXCEPTION PROJECT SNAPSHOT & CRASH RECOVERY
 ------------------------------------------------------------------------
-- Problem: `sys.excepthook` writes a stack trace to log files, but does not preserve unsaved project data if an unhandled exception or native fault occurs.
-- Implementation:
-  * In `playback_preferences.py`, update `excepthook` to serialize the current project state into `<project_file>.crash_recovery.rtvs`.
-  * On subsequent application launch, detect any existing `.crash_recovery.rtvs` files and prompt the user to recover unsaved work.
+- Updated `excepthook` in `playback_preferences.py` to serialize project state to `<project_file>.crash_recovery.rtvs` upon unhandled exceptions, with automated recovery prompts on subsequent launches.
 
-[x] 2.4 UNIFIED CORE ASYNC RUNTIME PROVISIONER (RUNTIMEMANAGER ENGINE)
+[x] 1.4 UNIFIED CORE ASYNC RUNTIME PROVISIONER (RUNTIMEMANAGER ENGINE)
 -----------------------------------------------------------------------
-- Consolidate background venv setup into `runtime_manager.py` with `threading.Event` cancellation and non-blocking process polling.
-- Threaded `RuntimeSetupWorker` and responsive `WhisperModelInstallWorker` integration in `processing.py` to prevent GUI lockups and process leaks upon cancellation.
+- Consolidated background virtual environment creation and package installation into `runtime_manager.py` with `threading.Event` cancellation, non-blocking subprocess polling, and responsive dialog workers.
 
-[x] 2.6 WHISPER HALLUCINATION & DEGENERATE LOOP SCRUBBER
+[x] 1.5 WHISPER HALLUCINATION & DEGENERATE LOOP SCRUBBER
 ---------------------------------------------------------
-- Module Functions: `collapse_repeating_ngrams`, `strip_hallucination_phrases`, `trim_trailing_degenerate_tail`, `scrub_transcript_segments`, `scrub_transcript`.
-- Strips repetitive degenerate loops and standard ASR artifact phrases from transcripts in `prs_shared.py`, `processing.py`, and `radio_tv_story_segmenter_worker.py`.
+- Implemented `collapse_repeating_ngrams`, `strip_hallucination_phrases`, and `trim_trailing_degenerate_tail` in `prs_shared.py` to automatically prune repetitive degenerate loops and standard ASR artifacts from generated transcripts.
 
-[ ] 2.5 MEDIA TRANSCODING & FORMAT CONVERSION ON EXPORT (AUDIO & VIDEO CODECS)
+================================================================================
+2. CURRENT RELEASE: UPDATE REPOSITORY MIGRATION, DEAD CODE PRUNING & ARCHITECTURAL CLEANUP (Completed in v3.2.2-beta)
+================================================================================
 
-[ ] 2.7 MULTI-LINGUAL FILLER WORD & DISFLUENCY DETECTION
-----------------------------------------------------------
-- Cross-lingual dictionary detection for hesitations, fillers ("um", "uh", "äh", "euh"), and ASR sound placeholders.
+[x] 2.1 AUTOMATIC GITHUB UPDATE REPOSITORY MIGRATION TO `bradlinder/RTVS3`
+-------------------------------------------------------------------------
+- Implemented automated migration inside `get_github_repo()` (`prs_shared.py`, `updater.py`, `utils/constants.py`) to detect legacy saved repository keys (`bradlinder/RTVS`, `bradlinder/RadioTVStorySegmenter`) in user `QSettings` and seamlessly upgrade them to `bradlinder/RTVS3`.
+- Updated hardcoded `"bradlinder/RTVS"` defaults in `playback_preferences.py` ("Restore Defaults" for Software Updates) to use `DEFAULT_GITHUB_REPO`.
+- Added repository normalization on preferences save and upon initializing the Check for Updates dialog to prevent stale update queries against deprecated repositories.
 
-[ ] 2.8 PIPELINE INTEGRATION & UI CONTROLS
--------------------------------------------
-- Settings options for automated transcript cleaning and filler highlighting.
-- Integration into `radio_tv_story_segmenter_worker.py` batch pipeline.
+[x] 2.2 DEAD CODE & ORPHANED DIALOG MODULE PRUNING
+---------------------------------------------------
+- Removed obsolete `models.py` (185 lines of unused dataclasses replaced by native dictionaries in `prs_shared.py`).
+- Pruned redundant dialog duplicates in `ui/dialogs/` (`find_replace.py` and `comment_editor.py`), eliminating the orphaned `ui/` directory tree.
+- Removed committed 12 KB binary archive artifact `plugins/translation/translation.rtvs-addon` from the source repository.
+
+[x] 2.3 ARCHITECTURAL INVARIANT DECOUPLING & IMPORT CONSOLIDATION
+------------------------------------------------------------------
+- Replaced top-level plugin import `YouTubeAssistedUploadGuideDialog` in `project_export.py` with lazy, guarded import inside `export_youtube_bundle`, enforcing the invariant that core modules must not import from `plugins/` on startup.
+- Updated `export/docx.py` to import `format_time` directly from `prs_shared.py`, removing the sole external import dependency on `utils.time_format`.
+- Cleaned vestigial `torch_mod` parameters and returns in `plugins/translation/worker.py` following pure CTranslate2 engine isolation.
 
 ================================================================================
 3. FUTURE MILESTONE: EXPANDED NLE & DAW TIMELINE INTERCHANGE (Phase 4 - Planned for v3.3) [NOT STARTED]

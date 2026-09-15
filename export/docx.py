@@ -16,7 +16,7 @@ from typing import Any, Dict, List, Optional
 import xml.etree.ElementTree as ET
 import zipfile
 
-from utils.time_format import format_time
+from prs_shared import format_time
 
 try:
     from docx import Document

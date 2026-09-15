@@ -1009,11 +1009,11 @@ class PlaybackPreferencesMixin:
         # 5. Software Updates
         if "software_updates" in selected_set:
             self.settings_store.setValue("auto_check_updates", "true")
-            self.settings_store.setValue("github_repo", "bradlinder/RTVS")
+            self.settings_store.setValue("github_repo", DEFAULT_GITHUB_REPO)
             if "auto_update_chk" in lw and lw["auto_update_chk"]:
                 lw["auto_update_chk"].setChecked(True)
             if "repo_edit" in lw and lw["repo_edit"]:
-                lw["repo_edit"].setText("bradlinder/RTVS")
+                lw["repo_edit"].setText(DEFAULT_GITHUB_REPO)
 
         # 6. AI Models & Storage
         if "ai_models" in selected_set:
@@ -2114,6 +2114,8 @@ class PlaybackPreferencesMixin:
             self.settings_store.setValue("auto_check_updates", str(auto_update_chk.isChecked()).lower())
             new_repo = repo_edit.text().strip()
             if new_repo:
+                if new_repo.lower() in ("bradlinder/rtvs", "bradlinder/radiotvstorysegmenter", "radiotvstorysegmenter"):
+                    new_repo = DEFAULT_GITHUB_REPO
                 self.settings_store.setValue("github_repo", new_repo)
 
             # Save Models dir & selections

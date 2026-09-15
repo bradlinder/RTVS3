@@ -21,7 +21,6 @@ from export.subtitles import (
 )
 from export.docx import create_story_docx
 from export.dialog import UnifiedExportDialog
-from plugins.youtube.guide_dialog import YouTubeAssistedUploadGuideDialog
 
 
 def show_export_completion_dialog(parent, title: str, message: str, export_path: str = ""):
@@ -1685,15 +1684,19 @@ class ProjectExportMixin:
             "Subtitles (.srt)": exported_srt_path,
             "YouTube Info Notes": str(info_file),
         }
-        guide = YouTubeAssistedUploadGuideDialog(
-            self,
-            title=title,
-            description=description,
-            tags=tags,
-            files_dict=files_dict,
-            privacy=privacy,
-        )
-        guide.exec()
+        try:
+            from plugins.youtube.guide_dialog import YouTubeAssistedUploadGuideDialog
+            guide = YouTubeAssistedUploadGuideDialog(
+                self,
+                title=title,
+                description=description,
+                tags=tags,
+                files_dict=files_dict,
+                privacy=privacy,
+            )
+            guide.exec()
+        except ImportError:
+            pass
 
     def export_full_episode(self, custom_formats=None, custom_base=None, custom_options=None, directory=None, show_completion=True, progress_dialog=None, progress_value=0, is_custom_location=False):
         if not self.transcript and not self.audio_file:

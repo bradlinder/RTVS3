@@ -56,7 +56,7 @@ try:
     )
 except Exception:
     APP_DISPLAY_NAME = "Radio & TV Segmenter"
-    PROJECT_VERSION = "3.2.1-dev"
+    PROJECT_VERSION = "3.2.2-beta"
     DEFAULT_GITHUB_REPO = "bradlinder/RTVS3"
 
     INTERNAL_APP_ID = "RadioTVStorySegmenter"
@@ -578,6 +578,13 @@ class CheckUpdateDialog(QDialog):
         self.resize(600, 500)
 
         self.repo = get_github_repo()
+        if self.repo.lower() in ("bradlinder/rtvs", "bradlinder/radiotvstorysegmenter", "radiotvstorysegmenter"):
+            self.repo = DEFAULT_GITHUB_REPO
+            try:
+                settings = QSettings(INTERNAL_APP_ID, INTERNAL_APP_ID)
+                settings.setValue("github_repo", DEFAULT_GITHUB_REPO)
+            except Exception:
+                pass
         self.releases: list[dict] = []
         self.selected_release_idx: int = 0
         self.release_info: dict = {}

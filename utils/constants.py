@@ -8,7 +8,7 @@ except ImportError:
 
 # Display branding shown to the user (title bar, About box, installers).
 APP_DISPLAY_NAME = "Radio & TV Segmenter"
-PROJECT_VERSION = "3.2.1-dev"
+PROJECT_VERSION = "3.2.2-beta"
 DEFAULT_GITHUB_REPO = "bradlinder/RTVS3"
 
 # Internal identifiers are intentionally left as "RadioTVStorySegmenter" (the
@@ -31,10 +31,14 @@ def get_github_repo() -> str:
     if env_repo:
         return env_repo
     try:
-        settings = QSettings(INTERNAL_APP_ID, INTERNAL_APP_ID)
-        val = str(settings.value("github_repo", "") or "").strip()
-        if val:
-            return val
+        if QSettings is not None:
+            settings = QSettings(INTERNAL_APP_ID, INTERNAL_APP_ID)
+            val = str(settings.value("github_repo", "") or "").strip()
+            if val:
+                if val.lower() in ("bradlinder/rtvs", "bradlinder/radiotvstorysegmenter", "radiotvstorysegmenter"):
+                    settings.setValue("github_repo", DEFAULT_GITHUB_REPO)
+                    return DEFAULT_GITHUB_REPO
+                return val
     except Exception:
         pass
     return DEFAULT_GITHUB_REPO

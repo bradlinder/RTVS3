@@ -1,5 +1,19 @@
 # Changelog
 
+## v3.2.2-beta
+- **Automatic GitHub Update Repository Migration (`bradlinder/RTVS3`)**:
+  - Implemented automatic migration in `get_github_repo()` across `prs_shared.py`, `updater.py`, and `utils/constants.py` to detect legacy stored repository values (`bradlinder/RTVS`, `bradlinder/RadioTVStorySegmenter`) in user `QSettings` and seamlessly upgrade them to `bradlinder/RTVS3`.
+  - Fixed hardcoded `"bradlinder/RTVS"` defaults in `playback_preferences.py` ("Restore Defaults" for Software Updates) to target `DEFAULT_GITHUB_REPO`.
+  - Added repository string normalization on settings save and upon opening the Check for Updates dialog to prevent stale checks against older release repositories.
+- **Dead Code & Orphaned Dialog Module Pruning**:
+  - Purged obsolete `models.py` containing 185 lines of unused dataclasses replaced by native dictionary schemas in `prs_shared.py`.
+  - Removed redundant dialog duplicates in `ui/dialogs/` (`find_replace.py` and `comment_editor.py`), eliminating the orphaned `ui/` folder tree.
+  - Pruned committed 12 KB binary archive artifact `plugins/translation/translation.rtvs-addon` from the source repository.
+- **Architectural Decoupling & Import Consolidation**:
+  - Replaced hard top-level import of `YouTubeAssistedUploadGuideDialog` in `project_export.py` with lazy, guarded import inside `export_youtube_bundle`, preserving the architectural invariant that core modules must not import from `plugins/` on startup.
+  - Consolidated `format_time` in `export/docx.py` to import directly from `prs_shared`, eliminating the last external dependency on `utils.time_format`.
+  - Cleaned vestigial `torch_mod` parameter signatures and returns from `plugins/translation/worker.py` following the pure CTranslate2 engine transition.
+
 ## v3.2.1-dev (In Development / Roadmap)
 - **GitHub Update Repository & Release Target Migration (`bradlinder/RTVS3`)**:
   - Migrated update check endpoints, release asset downloads, issue links, and manifest metadata from `bradlinder/RTVS` to `bradlinder/RTVS3` across `prs_shared.py`, `updater.py`, `utils/constants.py`, installer scripts, and plugin manifests.

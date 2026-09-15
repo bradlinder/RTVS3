@@ -434,14 +434,14 @@ class TranslationWorker(QObject):
                 intra_threads=num_threads,
             )
             self.translation_device = "cpu"
-            return "ctranslate2", tokenizer, translator, None
+            return "ctranslate2", tokenizer, translator
         except Exception as ct2_exc:
             raise RuntimeError(
                 f"OPUS-MT {self.model_variant} requires the CTranslate2 translation engine. "
                 f"Details: {ct2_exc}"
             ) from ct2_exc
 
-    def _translate_batches(self, engine_type, tokenizer, model_or_translator, torch_mod=None):
+    def _translate_batches(self, engine_type, tokenizer, model_or_translator):
         results = list(self.resume_results)
         start_index = len(results)
         total = max(1, len(self.segments))
@@ -543,11 +543,11 @@ class TranslationWorker(QObject):
                 return
 
             self.progress.emit(5, "Loading OPUS-MT model into memory…")
-            engine_type, tokenizer, model_or_translator, torch_mod = self._load_local_translation()
+            engine_type, tokenizer, model_or_translator = self._load_local_translation()
             if self._cancelled:
                 self.cancelled.emit(self.resume_results, f"{self.from_code}-{self.to_code}")
                 return
-            results = self._translate_batches(engine_type, tokenizer, model_or_translator, torch_mod)
+            results = self._translate_batches(engine_type, tokenizer, model_or_translator)
             if results is not None and not self._cancelled:
                 self.progress.emit(100, "Translation complete.")
                 self.finished.emit(results, f"{self.from_code}-{self.to_code}")
