@@ -606,8 +606,13 @@ class RuntimeManager:
             progress_cb(self._last_error)
         return ""
 
+    def kill_all_subprocesses(self):
+        """Force terminate any lingering isolated worker subprocesses."""
+        kill_all_subprocesses()
+
     def remove_environment(self, feature_name: str) -> bool:
         """Remove an isolated feature environment without touching its models."""
+        kill_all_subprocesses()
         env_dir = self.get_env_dir(feature_name)
         if not env_dir.exists():
             return True

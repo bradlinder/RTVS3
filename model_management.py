@@ -223,19 +223,16 @@ class WhisperModelInstallWorker(QObject):
 
 
 class ModelManagementMixin:
-    def model_cache_path(self, model_name):
+    def model_cache_candidates(self, model_name):
+        """Return all potential candidate directories where model weights might be stored."""
         models_dir = get_models_storage_dir()
         if model_name.startswith("parakeet"):
-            parakeet_dirs = [
+            return [
                 models_dir / "parakeet_onnx",
                 get_app_data_dir() / "models" / "parakeet_onnx",
                 Path(__file__).resolve().parent / "models" / "parakeet_onnx",
                 models_dir,
             ]
-            for pd in parakeet_dirs:
-                if pd.exists() and any(pd.rglob("*.onnx")):
-                    return pd
-            return models_dir / "parakeet_onnx"
 
         # Determine the canonical Hugging Face hub folder slug
         if model_name == "distil-medium.en":
@@ -281,10 +278,13 @@ class ModelManagementMixin:
             for cr in cache_roots:
                 candidates.append(cr / clean_dir_name)
         candidates.append(models_dir / model_name)
+        return candidates
 
+    def model_cache_path(self, model_name):
+        candidates = self.model_cache_candidates(model_name)
         # 1. Prefer candidate containing actual weights
         for p in candidates:
-            if p.exists() and (any(p.rglob("model.bin")) or any(p.rglob("*.bin")) or any(p.rglob("*.safetensors"))):
+            if p.exists() and (any(p.rglob("model.bin")) or any(p.rglob("*.bin")) or any(p.rglob("*.safetensors")) or (model_name.startswith("parakeet") and any(p.rglob("*.onnx")))):
                 return p
 
         # 2. Fallback to first existing directory
