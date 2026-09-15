@@ -1,4 +1,4 @@
-"""Radio & TV Segmenter v3.2.8 — transcript story responsibilities.
+"""Radio & TV Segmenter v3.2.10 — transcript story responsibilities.
 
 
 Methods intentionally retain the MainWindow-facing API so behavior remains

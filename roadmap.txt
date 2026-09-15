@@ -29,16 +29,16 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 --------------------------------------------------------------------------------
 TABLE OF CONTENTS & STATUS OVERVIEW
 --------------------------------------------------------------------------------
-1. Previous Release: Centralized "Cleanup Data" Tab in Preferences & Windows Installer UAC Fix (Completed in v3.2.7)
-   [x] 1.1 Centralized "Cleanup Data" Tab in Preferences (`Settings > Preferences > Cleanup Data` with controls to clear models, caches, user preferences, and app data logs)
-   [x] 1.2 Removal of Redundant Top-Level Purge Action (Kept centralized inside Model Manager and Cleanup Data tab)
-   [x] 1.3 Clickable Full Changelog URL Link in Updater Window (Direct `https://github.com/bradlinder/RTVS3/blob/main/CHANGELOG.md` browser launch)
-   [x] 1.4 Windows Installer Shell Launch & UAC Elevation Fix (`os.startfile()` in `updater.py` with default `max_to_keep=2` installer retention)
+1. Previous Release: Aggressive Diarization & PyTorch Runtime Pruning (~70% Footprint Reduction) (Completed in v3.2.9)
+   [x] 1.1 Non-Runtime C++ Header & Build Metadata Stripping (`torch/include`, `torch/share`, `torch/bin`)
+   [x] 1.2 Distributed Training & Test Suite Pruning (`torch/distributed`, `torch/testing`, `scipy/tests`, `numpy/tests`)
+   [x] 2.3 GPU Compiler & CUDA Artifact Purging (`triton`, `nvidia` package folders and loose CUDA shared libraries)
+   [x] 1.4 Reduced `diarize_env` Footprint from ~2.0 GB down to ~500–650 MB without altering inference performance
 
-2. Current Release: Consolidated Updater Link, Clear Everything Button & Standardized Cleanup Labels (Completed in v3.2.8)
-   [x] 2.1 Consolidated Single Updater Changelog Link (Removed duplicate link inside notes browser body)
-   [x] 2.2 Master "Clear Everything" Cleanup Button in Preferences (`Settings > Preferences > Cleanup Data` complete purge control)
-   [x] 2.3 Standardized "Clear All" & "Clear Select" Action Labels across Cleanup Data Controls
+2. Current Release: Robust Windows UAC Elevation & Installer Launch Fix (Completed in v3.2.10)
+   [x] 2.1 Explicit `ctypes.windll.shell32.ShellExecuteW` Windows Shell API integration
+   [x] 2.2 `"runas"` verb enforcement for reliable UAC administrative permission prompting
+   [x] 2.3 Correct working directory and execution state passing for Inno Setup installer startup
 
 3. Future Milestone: Expanded NLE & DAW Timeline Interchange (Phase 4 - Planned for v3.4) [NOT STARTED]
    [ ] 3.1 Cockos Reaper Project (.rpp) Generator

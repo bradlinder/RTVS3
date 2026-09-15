@@ -1,5 +1,15 @@
 # Changelog
 
+## v3.2.10
+- **Robust Windows UAC Elevation & Installer Launch Fix**:
+  - Replaced basic shell execution in `launch_and_install` (`updater.py`) with explicit `ctypes.windll.shell32.ShellExecuteW` invocation using the `"runas"` verb on Windows.
+  - Correctly triggers the Windows UAC permission prompt and ensures installer execution parameters and working directories are properly passed so the Inno Setup installer launches reliably upon user confirmation.
+
+## v3.2.9
+- **Aggressive Diarization & PyTorch Runtime Pruning (~70% Footprint Reduction)**:
+  - Upgraded `prune_cuda_artifacts` in `runtime_manager.py` to strip heavy non-runtime development assets, C++ build headers (`torch/include`), CMake target metadata (`torch/share`), distributed multi-GPU training modules (`torch/distributed`), test suites (`torch/testing`, `torch/test`, `scipy/tests`, `numpy/tests`, `torchaudio/tests`), and GPU compiler packages (`triton`, `nvidia`) from CPU feature runtimes.
+  - Reduces the `diarize_env` disk footprint from **~2.0 GB down to ~500–650 MB** without affecting speaker detection performance, accuracy, or inference speed.
+
 ## v3.2.8
 - **Consolidated Single Updater Changelog Link**:
   - Removed duplicate inline changelog link from the update notes HTML body, maintaining a single, clean **"View Full Changelog in Browser ↗"** link in the release header.

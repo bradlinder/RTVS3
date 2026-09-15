@@ -56,7 +56,7 @@ try:
     )
 except Exception:
     APP_DISPLAY_NAME = "Radio & TV Segmenter"
-    PROJECT_VERSION = "3.2.8"
+    PROJECT_VERSION = "3.2.10"
     DEFAULT_GITHUB_REPO = "bradlinder/RTVS3"
 
     INTERNAL_APP_ID = "RadioTVStorySegmenter"
@@ -395,19 +395,27 @@ def launch_and_install(file_path: str, parent: QWidget | None = None) -> bool:
 
     if sys.platform == "win32":
         try:
-            # On Windows, os.startfile hands execution directly to the Windows Shell API.
-            # This ensures standard UAC elevation prompts display cleanly without inheriting
-            # hidden process constraints or flags like CREATE_NO_WINDOW.
-            os.startfile(str(path))
+            # Explicitly use ShellExecuteW with 'runas' verb to trigger proper UAC elevation prompt
+            # and spawn the installer successfully with administrative privileges.
+            import ctypes
+            ret = ctypes.windll.shell32.ShellExecuteW(None, "runas", str(path), "", str(path.parent), 1)
+            if int(ret) <= 32:
+                ret2 = ctypes.windll.shell32.ShellExecuteW(None, "open", str(path), "", str(path.parent), 1)
+                if int(ret2) <= 32:
+                    raise OSError(f"ShellExecuteW failed with code {ret} / {ret2}")
             return True
         except Exception as exc1:
             try:
-                subprocess.Popen([str(path)], shell=True)
+                os.startfile(str(path))
                 return True
             except Exception as exc2:
-                if parent:
-                    QMessageBox.critical(parent, "Launch Error", f"Failed to execute installer:\n{exc2}")
-                return False
+                try:
+                    subprocess.Popen([str(path)], shell=True)
+                    return True
+                except Exception as exc3:
+                    if parent:
+                        QMessageBox.critical(parent, "Launch Error", f"Failed to execute installer:\n{exc3}")
+                    return False
 
     elif sys.platform == "darwin":
         try:
