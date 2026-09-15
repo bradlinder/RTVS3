@@ -1,5 +1,23 @@
 # Changelog
 
+## v3.2.6
+- **Preferences GPU Acceleration Panel & Granular CUDA Tool Toggles**:
+  - Relocated GPU acceleration configuration to a dedicated "GPU Acceleration" page inside the main Preferences dialog (`Settings > Preferences > GPU Acceleration`).
+  - Added dedicated, granular acceleration checkboxes for all CUDA-capable tools:
+    - **Transcription ASR**: Accelerated Faster-Whisper inference via CUDA FP16.
+    - **Machine Translation**: Accelerated MarianMT / OPUS-MT translation via CTranslate2 CUDA FP16.
+    - **Speaker Detection / Diarization**: Accelerated WeSpeaker ResNet34-LM voice embedding extraction via ONNX Runtime GPU (`CUDAExecutionProvider`).
+  - Added real-time hardware status indicators reflecting whether an NVIDIA GPU is physically present (`detect_nvidia_gpu`) and whether the optional GPU runtime is currently installed.
+- **100% Optional Architecture with Zero Disk Footprint When Disabled**:
+  - The base distribution installer remains 100% CPU-first, lightweight, and completely free of CUDA/cuDNN packages.
+  - Optional CUDA acceleration packages (`torch` cu121, `ctranslate2`, `onnxruntime-gpu`, `wespeakerruntime`) are isolated inside the on-demand `gpu_transcribe` virtual environment (`runtime_manager.py`).
+  - When disabled or not installed, GPU acceleration consumes exactly **0 MB** of disk space.
+  - Added one-click "Uninstall GPU Runtime (Reclaim Disk Space)" button in Preferences allowing users to remove the optional environment at any time to instantly reclaim ~1.5 GB.
+- **Direct Accessibility for "Purge All Data & Cache"**:
+  - Exposed the full data purge action directly in the main window menu under `Tools > Purge All Downloaded Models & Cache Data…`.
+  - Added a matching "Purge All Downloaded Models & Cache Data…" button directly in `Preferences > AI Models` alongside the Model Manager.
+  - Allows immediate one-click deletion of all downloaded Whisper ASR models, translation models, updater cache, log files, and optional virtual environments.
+
 ## v3.2.4
 - **CPU-First Diarization & Translation Runtime Footprint Optimization**:
   - Stripped heavy CUDA/cuDNN dependencies from both the isolated translation (`runtimes/translate`) and diarization (`runtimes/diarize`) runtimes, configuring them with PyTorch CPU wheels (`https://download.pytorch.org/whl/cpu`) and reducing disk footprints by over 1.4 GB per runtime.

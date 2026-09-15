@@ -651,63 +651,70 @@ class ModelManagementMixin:
                 self.refresh_translation_model_chooser()
             refresh_rows()
 
-        def purge_all_data():
-            answer = QMessageBox.question(
-                dialog, "Purge All Downloaded Models & Cache",
-                "Are you sure you want to purge all downloaded AI models, log files, and runtime caches?\n\n"
-                "This will free up disk space across all platforms. Exported audio, video, and project files will NOT be deleted.\n\n"
-                "Models can be re-downloaded at any time when needed.",
-                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
-                QMessageBox.StandardButton.No
-            )
-            if answer != QMessageBox.StandardButton.Yes:
-                return
-            try:
-                from runtime_manager import RuntimeManager
-                rm = RuntimeManager()
-                rm.kill_all_subprocesses()
-                rm.remove_environment("translate")
-            except Exception:
-                pass
-
-            models_dir = get_models_storage_dir()
-            if models_dir.exists():
-                try:
-                    shutil.rmtree(models_dir)
-                    models_dir.mkdir(parents=True, exist_ok=True)
-                except Exception as exc:
-                    self.log_activity(f"[MODELS] Error purging models directory: {exc}", mark_dirty=False)
-
-            log_dir = get_app_data_dir() / "logs"
-            if log_dir.exists():
-                try:
-                    for f in log_dir.glob("*"):
-                        if f.is_file():
-                            try:
-                                f.unlink(missing_ok=True)
-                            except Exception:
-                                pass
-                except Exception:
-                    pass
-
-            try:
-                from updater import cleanup_old_installers
-                cleanup_old_installers(force_all=True)
-            except Exception:
-                pass
-
-            self.log_activity("[MODELS] Purged all downloaded models, log files, and runtime caches.", mark_dirty=False)
-            QMessageBox.information(dialog, "Purge Complete", "All downloaded AI models, log files, and runtime caches have been removed.")
-            self.refresh_whisper_model_chooser()
-            if _translation_plugin_installed(self):
-                self.refresh_translation_model_chooser()
-            refresh_rows()
-
         remove_btn.clicked.connect(remove_selected)
-        purge_all_btn.clicked.connect(purge_all_data)
+        purge_all_btn.clicked.connect(lambda: self.purge_all_data_action(parent_widget=dialog, on_complete=refresh_rows))
         dialog.refresh_models = refresh_rows
         refresh_rows()
         dialog.exec()
+
+    def purge_all_data_action(self, parent_widget=None, on_complete=None):
+        """Purge all downloaded AI models, log files, updater cache, and translation runtimes."""
+        parent = parent_widget if parent_widget is not None else getattr(self, "main_window", self)
+        answer = QMessageBox.question(
+            parent, "Purge All Downloaded Models & Cache",
+            "Are you sure you want to purge all downloaded AI models, log files, and runtime caches?\n\n"
+            "This will free up disk space across all platforms. Exported audio, video, and project files will NOT be deleted.\n\n"
+            "Models can be re-downloaded at any time when needed.",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No
+        )
+        if answer != QMessageBox.StandardButton.Yes:
+            return
+
+        try:
+            from runtime_manager import RuntimeManager
+            rm = RuntimeManager()
+            rm.kill_all_subprocesses()
+            rm.remove_environment("translate")
+        except Exception:
+            pass
+
+        models_dir = get_models_storage_dir()
+        if models_dir.exists():
+            try:
+                shutil.rmtree(models_dir)
+                models_dir.mkdir(parents=True, exist_ok=True)
+            except Exception as exc:
+                self.log_activity(f"[MODELS] Error purging models directory: {exc}", mark_dirty=False)
+
+        log_dir = get_app_data_dir() / "logs"
+        if log_dir.exists():
+            try:
+                for f in log_dir.glob("*"):
+                    if f.is_file():
+                        try:
+                            f.unlink(missing_ok=True)
+                        except Exception:
+                            pass
+            except Exception:
+                pass
+
+        try:
+            from updater import cleanup_old_installers
+            cleanup_old_installers(force_all=True)
+        except Exception:
+            pass
+
+        self.log_activity("[MODELS] Purged all downloaded models, log files, and runtime caches.", mark_dirty=False)
+        QMessageBox.information(parent, "Purge Complete", "All downloaded AI models, log files, and runtime caches have been removed.")
+        self.refresh_whisper_model_chooser()
+        if _translation_plugin_installed(self):
+            self.refresh_translation_model_chooser()
+        if callable(on_complete):
+            try:
+                on_complete()
+            except Exception:
+                pass
 
     def open_translation_model_manager(self):
         # Compatibility alias: translation model management is now consolidated.

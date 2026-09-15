@@ -427,14 +427,26 @@ class TranslationWorker(QObject):
             tokenizer = AutoTokenizer.from_pretrained(str(model_dir), local_files_only=True, use_fast=False)
 
             num_threads = self._get_optimal_cpu_threads()
-            translator = ctranslate2.Translator(
-                str(ct2_dir),
-                device="cpu",
-                compute_type="int8",
-                inter_threads=1,
-                intra_threads=num_threads,
-            )
-            self.translation_device = "cpu"
+            pref_device = os.environ.get("PRS_TRANSLATE_DEVICE", "cpu").strip().lower() or "cpu"
+            pref_compute = os.environ.get("PRS_TRANSLATE_COMPUTE_TYPE", "int8").strip().lower() or "int8"
+            try:
+                translator = ctranslate2.Translator(
+                    str(ct2_dir),
+                    device=pref_device,
+                    compute_type=pref_compute if pref_device == "cuda" else "int8",
+                    inter_threads=1,
+                    intra_threads=num_threads,
+                )
+                self.translation_device = pref_device
+            except Exception:
+                translator = ctranslate2.Translator(
+                    str(ct2_dir),
+                    device="cpu",
+                    compute_type="int8",
+                    inter_threads=1,
+                    intra_threads=num_threads,
+                )
+                self.translation_device = "cpu"
             return "ctranslate2", tokenizer, translator
         except Exception as ct2_exc:
             raise RuntimeError(

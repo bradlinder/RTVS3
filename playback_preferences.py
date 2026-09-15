@@ -1252,7 +1252,7 @@ class PlaybackPreferencesMixin:
         # Left category tree / list
         cat_list = QListWidget(dialog)
         cat_list.setFixedWidth(160)
-        categories = ["General", "Keyboard Shortcuts", "Audio Hardware", "Updates & GitHub", "AI Models", "Playback & Timeline", "Detection", "Batch Processing"]
+        categories = ["General", "Keyboard Shortcuts", "Audio Hardware", "Updates & GitHub", "AI Models", "GPU Acceleration", "Playback & Timeline", "Detection", "Batch Processing"]
         show_wp = hasattr(self, "plugin_manager") and self.plugin_manager.is_plugin_enabled("wordpress")
         show_yt = hasattr(self, "plugin_manager") and self.plugin_manager.is_plugin_enabled("youtube")
         if show_wp:
@@ -1590,9 +1590,128 @@ class PlaybackPreferencesMixin:
                 self.open_model_cleanup_dialog()
         manage_models_btn.clicked.connect(_open_mgr)
         mod_layout.addWidget(manage_models_btn)
+
+        purge_models_btn = QPushButton("Purge All Downloaded Models & Cache Data…")
+        purge_models_btn.setToolTip("Delete all downloaded models, log files, updater cache, and translation runtimes to completely free up disk space.")
+        purge_models_btn.setStyleSheet("color: #b3261e; font-weight: 500;")
+        def _purge_data_prefs():
+            if hasattr(self, "purge_all_data_action"):
+                self.purge_all_data_action(parent_widget=dialog)
+            elif hasattr(self, "open_model_cleanup_dialog"):
+                dialog.accept()
+                self.open_model_cleanup_dialog()
+        purge_models_btn.clicked.connect(_purge_data_prefs)
+        mod_layout.addWidget(purge_models_btn)
+
         _add_custom_defaults_btn(mod_layout, "AI Models")
         mod_layout.addStretch()
         stack.addWidget(page_models)
+
+        # 5b. GPU Acceleration Page (100% Optional NVIDIA CUDA Acceleration)
+        page_gpu = QWidget()
+        gpu_layout = QVBoxLayout(page_gpu)
+        gpu_layout.setSpacing(10)
+
+        gpu_desc = QLabel(
+            "<b>Optional NVIDIA CUDA GPU Acceleration</b><br>"
+            "<span style='color: #64748b; font-size: 12px;'>"
+            "By default, all processing runs on the CPU to keep installer size small and maximize portability. "
+            "If you have an NVIDIA graphics card, you can enable 100% optional GPU acceleration below. "
+            "When disabled or uninstalled, it consumes <b>0 MB</b> of disk space.</span>"
+        )
+        gpu_desc.setWordWrap(True)
+        gpu_layout.addWidget(gpu_desc)
+
+        from runtime_manager import detect_nvidia_gpu, RuntimeManager
+        has_nvidia = detect_nvidia_gpu()
+        rm = RuntimeManager()
+        gpu_installed = False
+        try:
+            gpu_installed = rm.is_env_up_to_date("gpu_transcribe")
+        except Exception:
+            gpu_installed = False
+
+        status_box = QGroupBox("Hardware & Runtime Status")
+        status_form = QFormLayout(status_box)
+
+        hw_label = QLabel("NVIDIA GPU detected on system" if has_nvidia else "No NVIDIA GPU detected (CPU mode only)")
+        hw_label.setStyleSheet("color: #15803d; font-weight: bold;" if has_nvidia else "color: #b45309;")
+        status_form.addRow("Hardware:", hw_label)
+
+        rt_label = QLabel("Installed (CUDA Ready)" if gpu_installed else "Not Installed (0 MB disk footprint)")
+        rt_label.setStyleSheet("color: #15803d; font-weight: bold;" if gpu_installed else "color: #64748b;")
+        status_form.addRow("Runtime:", rt_label)
+        gpu_layout.addWidget(status_box)
+
+        feat_group = QGroupBox("Accelerated Workflows")
+        feat_layout = QVBoxLayout(feat_group)
+
+        global_gpu_chk = QCheckBox("Enable GPU Acceleration (Master Switch)")
+        curr_global_gpu = str(self.settings_store.value("gpu_acceleration_enabled", "false")).lower() in {"1", "true", "yes"}
+        global_gpu_chk.setChecked(curr_global_gpu)
+        global_gpu_chk.setEnabled(has_nvidia and gpu_installed)
+        feat_layout.addWidget(global_gpu_chk)
+
+        gpu_trans_chk = QCheckBox("Transcription ASR (Faster-Whisper on CUDA)")
+        curr_trans = str(self.settings_store.value("gpu_transcription_enabled", "true")).lower() in {"1", "true", "yes"}
+        gpu_trans_chk.setChecked(curr_trans)
+        gpu_trans_chk.setEnabled(has_nvidia and gpu_installed)
+        feat_layout.addWidget(gpu_trans_chk)
+
+        gpu_translate_chk = QCheckBox("Machine Translation (MarianMT / CTranslate2 on CUDA)")
+        curr_translate = str(self.settings_store.value("gpu_translation_enabled", "true")).lower() in {"1", "true", "yes"}
+        gpu_translate_chk.setChecked(curr_translate)
+        gpu_translate_chk.setEnabled(has_nvidia and gpu_installed)
+        feat_layout.addWidget(gpu_translate_chk)
+
+        gpu_diarize_chk = QCheckBox("Speaker Detection / Diarization (WeSpeaker on CUDA/ONNX-GPU)")
+        curr_diarize = str(self.settings_store.value("gpu_diarization_enabled", "true")).lower() in {"1", "true", "yes"}
+        gpu_diarize_chk.setChecked(curr_diarize)
+        gpu_diarize_chk.setEnabled(has_nvidia and gpu_installed)
+        feat_layout.addWidget(gpu_diarize_chk)
+
+        gpu_layout.addWidget(feat_group)
+
+        action_layout = QHBoxLayout()
+        install_gpu_btn = QPushButton("Download & Install GPU Runtime…" if not gpu_installed else "Update / Reinstall GPU Runtime…")
+        install_gpu_btn.setEnabled(has_nvidia)
+        def _on_install_gpu():
+            dialog.accept()
+            if hasattr(self, "_start_gpu_acceleration_install"):
+                self._start_gpu_acceleration_install(dialog)
+        install_gpu_btn.clicked.connect(_on_install_gpu)
+        action_layout.addWidget(install_gpu_btn)
+
+        uninstall_gpu_btn = QPushButton("Uninstall GPU Runtime (Reclaim Disk Space)")
+        uninstall_gpu_btn.setEnabled(gpu_installed)
+        def _on_uninstall_gpu():
+            ans = QMessageBox.question(
+                dialog, "Uninstall GPU Runtime",
+                "Are you sure you want to remove the optional GPU acceleration environment?\n\n"
+                "All workflows will automatically fall back to CPU execution, and ~1.5 GB of disk space will be reclaimed.",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                QMessageBox.StandardButton.No
+            )
+            if ans == QMessageBox.StandardButton.Yes:
+                try:
+                    import shutil
+                    rm_inner = RuntimeManager()
+                    env_dir = rm_inner.get_env_dir("gpu_transcribe")
+                    shutil.rmtree(env_dir, ignore_errors=True)
+                except Exception as exc:
+                    QMessageBox.warning(dialog, "Uninstall Notice", f"Error removing environment directory: {exc}")
+                self.settings_store.setValue("gpu_acceleration_enabled", "false")
+                self.settings_store.sync()
+                QMessageBox.information(dialog, "GPU Runtime Removed", "GPU acceleration runtime has been removed and disk space reclaimed.")
+                dialog.accept()
+                self.open_preferences_dialog(initial_category="GPU Acceleration")
+        uninstall_gpu_btn.clicked.connect(_on_uninstall_gpu)
+        action_layout.addWidget(uninstall_gpu_btn)
+
+        gpu_layout.addLayout(action_layout)
+        _add_custom_defaults_btn(gpu_layout, "GPU Acceleration")
+        gpu_layout.addStretch()
+        stack.addWidget(page_gpu)
 
         # 4. Playback & Timeline Page
         page_play = QWidget()
@@ -1979,6 +2098,9 @@ class PlaybackPreferencesMixin:
             "models": "ai models",
             "ai": "ai models",
             "ai models": "ai models",
+            "gpu": "gpu acceleration",
+            "cuda": "gpu acceleration",
+            "gpu acceleration": "gpu acceleration",
             "playback": "playback & timeline",
             "timeline": "playback & timeline",
             "detection": "detection",
@@ -2037,6 +2159,10 @@ class PlaybackPreferencesMixin:
             "batch_vtt_chk": batch_vtt_chk,
             "batch_spk_chk": batch_spk_chk,
             "batch_time_chk": batch_time_chk,
+            "global_gpu_chk": global_gpu_chk,
+            "gpu_trans_chk": gpu_trans_chk,
+            "gpu_translate_chk": gpu_translate_chk,
+            "gpu_diarize_chk": gpu_diarize_chk,
         }
 
         bottom_bar = QHBoxLayout()
@@ -2206,6 +2332,12 @@ class PlaybackPreferencesMixin:
             self.settings_store.setValue("batch_opt_fmt_vtt", batch_vtt_chk.isChecked())
             self.settings_store.setValue("batch_opt_include_speakers", batch_spk_chk.isChecked())
             self.settings_store.setValue("batch_opt_include_times", batch_time_chk.isChecked())
+
+            # Save GPU Acceleration
+            self.settings_store.setValue("gpu_acceleration_enabled", "true" if global_gpu_chk.isChecked() else "false")
+            self.settings_store.setValue("gpu_transcription_enabled", "true" if gpu_trans_chk.isChecked() else "false")
+            self.settings_store.setValue("gpu_translation_enabled", "true" if gpu_translate_chk.isChecked() else "false")
+            self.settings_store.setValue("gpu_diarization_enabled", "true" if gpu_diarize_chk.isChecked() else "false")
 
             # Save WordPress only when values have been modified
             wp_url = wp_url_edit.text().strip()

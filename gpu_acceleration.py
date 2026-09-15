@@ -53,6 +53,24 @@ class GpuAccelerationMixin:
             return False
         return str(store.value(self.gpu_acceleration_settings_key(), "false")).lower() in {"1", "true", "yes"}
 
+    def is_gpu_transcription_enabled(self):
+        store = getattr(self, "settings_store", None)
+        if store is None or not self.is_gpu_acceleration_enabled():
+            return False
+        return str(store.value("gpu_transcription_enabled", "true")).lower() in {"1", "true", "yes"}
+
+    def is_gpu_translation_enabled(self):
+        store = getattr(self, "settings_store", None)
+        if store is None or not self.is_gpu_acceleration_enabled():
+            return False
+        return str(store.value("gpu_translation_enabled", "true")).lower() in {"1", "true", "yes"}
+
+    def is_gpu_diarization_enabled(self):
+        store = getattr(self, "settings_store", None)
+        if store is None or not self.is_gpu_acceleration_enabled():
+            return False
+        return str(store.value("gpu_diarization_enabled", "true")).lower() in {"1", "true", "yes"}
+
     def is_gpu_acceleration_installed(self):
         try:
             return RuntimeManager().is_env_up_to_date("gpu_transcribe")
@@ -64,7 +82,7 @@ class GpuAccelerationMixin:
         (python_executable, worker_script_path, env_overrides) to launch the
         AI worker with; otherwise returns None, meaning the caller should
         fall back to its normal (CPU) worker launch path unchanged."""
-        if sys.platform != "win32" or not (self.is_gpu_acceleration_enabled() and self.is_gpu_acceleration_installed()):
+        if not (self.is_gpu_acceleration_enabled() and self.is_gpu_acceleration_installed()):
             return None
         try:
             runtime_mgr = RuntimeManager()
@@ -78,18 +96,39 @@ class GpuAccelerationMixin:
             worker_script = Path(__file__).with_name("radio_tv_story_segmenter_worker.py")
 
         if not worker_script.exists() or python_exe == sys.executable:
-            # python_exe falling back to the host interpreter means the GPU
-            # env isn't actually ready despite is_env_up_to_date() -- don't
-            # silently run the CPU-only host interpreter and call it GPU mode.
             return None
 
-        env_overrides = {
-            "PRS_WHISPER_DEVICE": "cuda",
-            "PRS_WHISPER_COMPUTE_TYPE": "float16",
-        }
+        env_overrides = {}
+        if self.is_gpu_transcription_enabled():
+            env_overrides["PRS_WHISPER_DEVICE"] = "cuda"
+            env_overrides["PRS_WHISPER_COMPUTE_TYPE"] = "float16"
+        else:
+            env_overrides["PRS_WHISPER_DEVICE"] = "cpu"
+            env_overrides["PRS_WHISPER_COMPUTE_TYPE"] = "int8"
+
+        if self.is_gpu_translation_enabled():
+            env_overrides["PRS_TRANSLATE_DEVICE"] = "cuda"
+            env_overrides["PRS_TRANSLATE_COMPUTE_TYPE"] = "float16"
+        else:
+            env_overrides["PRS_TRANSLATE_DEVICE"] = "cpu"
+            env_overrides["PRS_TRANSLATE_COMPUTE_TYPE"] = "int8"
+
+        if self.is_diarization_gpu_enabled():
+            env_overrides["PRS_DIARIZE_DEVICE"] = "cuda"
+            env_overrides["PRS_ONNX_PROVIDERS"] = "CUDAExecutionProvider,CPUExecutionProvider"
+        else:
+            env_overrides["PRS_DIARIZE_DEVICE"] = "cpu"
+            env_overrides["PRS_ONNX_PROVIDERS"] = "CPUExecutionProvider"
+
         return python_exe, str(worker_script), env_overrides
 
+    def is_diarization_gpu_enabled(self):
+        return self.is_gpu_diarization_enabled()
+
     def open_gpu_acceleration_settings(self):
+        if hasattr(self, "open_preferences_dialog"):
+            self.open_preferences_dialog(initial_category="GPU Acceleration")
+            return
         if sys.platform != "win32":
             QMessageBox.information(
                 self, "GPU Acceleration",

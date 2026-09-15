@@ -213,7 +213,7 @@ export function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedVersion, setSelectedVersion] = useState('all');
   const [copiedVersion, setCopiedVersion] = useState<string | null>(null);
-  const [expandedVersions, setExpandedVersions] = useState<Record<string, boolean>>({ 'v3.0.0-beta': true, 'v2.9.6': true });
+  const [expandedVersions, setExpandedVersions] = useState<Record<string, boolean>>({ '__VERSION_TAG__': true });
 
   const releases: ReleaseSection[] = useMemo(() => {
     const rawSections = CHANGELOG_MARKDOWN.split(/\\n(?=## )/);
@@ -534,7 +534,7 @@ def restore_preview(force: bool = False) -> int:
         ROOT_DIR / "src" / "main.tsx": SRC_MAIN_TSX,
         ROOT_DIR / "src" / "index.css": SRC_INDEX_CSS,
         ROOT_DIR / "src" / "vite-env.d.ts": SRC_VITE_ENV_D_TS,
-        ROOT_DIR / "src" / "App.tsx": SRC_APP_TSX,
+        ROOT_DIR / "src" / "App.tsx": SRC_APP_TSX.replace("__VERSION_TAG__", f"v{version}"),
     }
 
     created = 0

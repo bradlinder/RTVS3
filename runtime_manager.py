@@ -247,12 +247,12 @@ ENV_CONFIGS = {
         ]
     },
     "gpu_transcribe": {
-        # Optional, user-triggered environment (Settings > Processing > GPU
+        # Optional, user-triggered environment (Settings > Preferences > GPU
         # Acceleration). Not installed by default and not part of the base
         # installer -- this is the whole point of keeping the base install
-        # CPU-only and small. Built from the CUDA wheel index rather than
-        # plain PyPI, which defaults to CPU-only torch on some platforms.
-        "version": "1.0.0",
+        # CPU-only and small (0 MB when not enabled). Built from CUDA wheels
+        # on demand for transcription, translation, and speaker diarization.
+        "version": "1.1.0",
         "python_version": "3.12",
         "extra_index_url": "https://download.pytorch.org/whl/cu121",
         "packages": [
@@ -264,6 +264,8 @@ ENV_CONFIGS = {
             "diarize==0.1.2",
             "faster-whisper",
             "ctranslate2",
+            "wespeakerruntime>=1.0.0,<2.0.0",
+            "onnxruntime-gpu",
         ]
     }
 }
