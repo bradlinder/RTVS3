@@ -29,17 +29,15 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 --------------------------------------------------------------------------------
 TABLE OF CONTENTS & STATUS OVERVIEW
 --------------------------------------------------------------------------------
-1. Previous Release: Fixed Windows Update Installer Launch & Button Labeling (Completed in v3.2.14)
-   [x] 1.1 Fixed Windows installer spawn failure with detached process execution and 64-bit ShellExecuteW elevation
-   [x] 1.2 Added clean window teardown and guaranteed background exit (`os._exit(0)`) to release file locks for Inno Setup
-   [x] 1.3 Corrected Qt ampersand escaping in button labels (`"Install && Restart"`) so text renders cleanly as "Install & Restart"
-   [x] 1.4 Added automated detection of cached installer binaries in AppData/updates for instant installation
+1. Previous Release: macOS Speaker Detection & Translation Stability (Completed in v3.2.16)
+   [x] 1.1 Set global OpenMP, Tokenizers, and Hugging Face environment variables (`KMP_DUPLICATE_LIB_OK`, `TOKENIZERS_PARALLELISM`, etc.) across worker processes
+   [x] 1.2 Added dynamic library resolution (`DYLD_LIBRARY_PATH`) in `QProcessEnvironment` for macOS translation worker subprocesses
+   [x] 1.3 Automated Gatekeeper quarantine attribute removal (`xattr -dr com.apple.quarantine`) in `runtime_manager.py` for downloaded runtimes on macOS
 
-2. Current Release: Robust Translation Cancellation & Diarization Model Management (Completed in v3.2.15)
-   [x] 2.1 Multi-tier translation process cancellation detecting `translation_process`, `translation_thread`, and worker environments
-   [x] 2.2 Cleaned up `stop_translation_worker` with subprocess termination, signal disconnection, and IPC request cleanup
-   [x] 2.3 Prevented erroneous export cancellation log notices via `is_exporting` state tracker in `project_export.py`
-   [x] 2.4 Interactive Speaker Diarization model detection, installation (`DiarizationModelInstallWorker`), and cache purging
+2. Current Release: Non-Blocking macOS & Linux Translation Process Cancellation (Completed in v3.2.17)
+   [x] 2.1 Replaced 5000ms blocking wait in `stop_translation_worker()` with 150ms graceful probe + `SIGKILL` to eliminate Qt main GUI thread hangs on macOS
+   [x] 2.2 Connected `cancel_event` directly to `TranslationEnvSetupWorker` and `manager.ensure_environment()` for clean background environment setup cancellation
+   [x] 2.3 Added signal disconnection during worker thread cleanup to prevent post-cancellation UI popups or error dialogs
 
 3. Future Milestone: Expanded NLE & DAW Timeline Interchange (Phase 4 - Planned for v3.4) [NOT STARTED]
    [ ] 3.1 Cockos Reaper Project (.rpp) Generator
@@ -67,43 +65,36 @@ CORE ARCHITECTURAL INVARIANTS
 - 0 MB Default GPU Footprint: Base installer contains 0 MB of CUDA bloat; GPU features are purely optional and provisioned on demand.
 
 ================================================================================
-1. PREVIOUS RELEASE: WINDOWS UPDATER SPAWN FIX & BUTTON LABELING (Completed in v3.2.14)
+1. PREVIOUS RELEASE: MACOS SPEAKER DETECTION & TRANSLATION STABILITY (Completed in v3.2.16)
 ================================================================================
 
-[x] 1.1 WINDOWS DETACHED PROCESS EXECUTION & UAC ELEVATION
-----------------------------------------------------------
-- Enhanced `launch_and_install` in `updater.py` with multi-tier execution on Windows using `subprocess.Popen(..., creationflags=DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP)`.
-- Added 64-bit typed `ctypes.windll.shell32.ShellExecuteW` fallback with `"runas"` UAC elevation verb and `os.startfile`.
+[x] 1.1 GLOBAL OPENMP & TOKENIZERS ENVIRONMENT FLAGS
+---------------------------------------------------
+- Automatically sets `KMP_DUPLICATE_LIB_OK="TRUE"`, `TOKENIZERS_PARALLELISM="false"`, `HF_HUB_DISABLE_SYMLINKS_WARNING="1"`, `HF_HUB_DISABLE_PROGRESS_BARS="1"`, and `TQDM_DISABLE="1"` globally in `radio_tv_story_segmenter_worker.py` and `plugins/translation/support.py` across macOS, Linux, and Windows.
 
-[x] 1.2 GUARANTEED PROCESS EXIT & FILE LOCK TEARDOWN
------------------------------------------------------
-- Implemented window teardown and guaranteed exit (`os._exit(0)`) in `_install_and_restart` to release all file locks immediately so Inno Setup can overwrite binaries cleanly.
+[x] 1.2 MACOS SUBPROCESS DYNAMIC LIBRARY RESOLUTION
+---------------------------------------------------
+- Injects `DYLD_LIBRARY_PATH` into `QProcessEnvironment` in `translation.py` when spawning translation worker subprocesses on macOS so CTranslate2 and SentencePiece shared libraries (.dylib) resolve cleanly.
 
-[x] 1.3 QT ACCELERATOR AMPERSAND ESCAPING
------------------------------------------
-- Properly escaped accelerator ampersands as `"Install && Restart"` in Qt button declarations to ensure text renders cleanly as **"Install & Restart"**.
+[x] 1.3 GATEKEEPER QUARANTINE ATTRIBUTE STRIPPING
+-------------------------------------------------
+- Added `_remove_macos_quarantine` helper in `runtime_manager.py` to automatically execute `xattr -dr com.apple.quarantine` on downloaded `uv` binaries, standalone Python runtimes, and isolated virtual environment directories on macOS to eliminate Gatekeeper security blocks (`Permission denied` / `Killed: 9`).
 
 ================================================================================
-2. CURRENT RELEASE: ROBUST TRANSLATION CANCELLATION & DIARIZATION MODEL MANAGEMENT (Completed in v3.2.15)
+2. CURRENT RELEASE: NON-BLOCKING MACOS & LINUX TRANSLATION PROCESS CANCELLATION (Completed in v3.2.17)
 ================================================================================
 
-[x] 2.1 MULTI-TIER TRANSLATION CANCELLATION
--------------------------------------------
-- Updated `cancel_current_process` and `confirm_stop_processing_for_media_change` in `processing.py` to check `translation_process`, `translation_thread`, `_translation_env_thread`, and `_translation_env_worker`.
-- Replaced error `[PROCESS] No cancellable process is currently running` with deterministic termination of active translation runs.
+[x] 2.1 NON-BLOCKING SUBPROCESS CANCELLATION
+----------------------------------------------
+- Replaced 5000ms blocking wait in `stop_translation_worker()` (`translation.py`) with a fast 150ms graceful termination probe followed immediately by `SIGKILL`. Prevents CTranslate2 C++ inference loops from freezing the Qt main thread and triggering macOS AppKit "Not Responding" hangs or crashes.
 
-[x] 2.2 ISOLATED TRANSLATION WORKER TEARDOWN & CLEANUP
-------------------------------------------------------
-- Enhanced `stop_translation_worker` in `translation.py` to cancel worker threads, kill subprocesses, disconnect pending signals, unlink temporary IPC request JSON files, and restore UI controls to idle.
+[x] 2.2 ASYNCHRONOUS ENVIRONMENT SETUP CANCELLATION
+----------------------------------------------------
+- Connected `cancel_event` directly to `TranslationEnvSetupWorker` and `manager.ensure_environment()` in `translation.py`, allowing background translation runtime provisioning and package downloads to stop cleanly upon cancellation.
 
-[x] 2.3 EXPORT STATE TRACKING ISOLATION
+[x] 2.3 SIGNAL DISCONNECTION & CLEANUP
 ---------------------------------------
-- Added `is_exporting` state flag to `project_export.py` so background task cancellation does not trigger spurious `[EXPORT] Cancel requested by user` log lines.
-
-[x] 2.4 SPEAKER DIARIZATION MODEL MANAGEMENT & PURGING
-------------------------------------------------------
-- Replaced static informational message with interactive model management for Speaker Diarization (WeSpeaker ResNet34 ONNX Voice Embedding).
-- Added genuine directory inspection (`~/.wespeaker`, `models/wespeaker`), live size calculation, background download worker (`DiarizationModelInstallWorker`), individual model removal, and complete cache purging.
+- Safely disconnects background thread progress and completion signals during worker teardown to prevent delayed asynchronous callbacks from updating the UI or spawning error dialogs after cancellation.
 
 ================================================================================
 3. FUTURE MILESTONE: EXPANDED NLE & DAW TIMELINE INTERCHANGE (Phase 4 - Planned for v3.4) [NOT STARTED]

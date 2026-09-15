@@ -363,6 +363,23 @@ class RuntimeManager:
         logger.warning(f"Target Python {target_version} not found on the host.")
         return ""
 
+def _remove_macos_quarantine(target_path: Path | str) -> None:
+    """Strip Gatekeeper com.apple.quarantine attribute on macOS for standalone executables."""
+    if sys.platform != "darwin":
+        return
+    try:
+        p = Path(target_path)
+        if p.exists():
+            subprocess.run(
+                ["xattr", "-dr", "com.apple.quarantine", str(p)],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                check=False,
+            )
+    except Exception:
+        pass
+
+
     def bundled_uv_path(self) -> Path | None:
         """Return the uv binary shipped with the application across Windows, macOS, and Linux, or None if unavailable."""
         name = "uv.exe" if sys.platform == "win32" else "uv"
@@ -379,6 +396,7 @@ class RuntimeManager:
                 if sys.platform != "win32":
                     try:
                         candidate.chmod(candidate.stat().st_mode | 0o755)
+                        _remove_macos_quarantine(candidate)
                     except Exception:
                         pass
                 return candidate
@@ -453,6 +471,7 @@ class RuntimeManager:
                 if sys.platform != "win32":
                     try:
                         uv_dest.chmod(0o755)
+                        _remove_macos_quarantine(uv_dest)
                     except Exception:
                         pass
                 return uv_dest
@@ -541,6 +560,7 @@ class RuntimeManager:
             with tarfile.open(archive_path, "r:*") as tar:
                 safe_extract_tar(tar, dest_dir)
 
+            _remove_macos_quarantine(dest_dir)
             return self._find_extracted_python(target_version)
         except Exception as exc:
             logger.warning("Could not download standalone Python: %s", exc)

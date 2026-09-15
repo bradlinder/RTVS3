@@ -59,7 +59,7 @@ try:
     )
 except Exception:
     APP_DISPLAY_NAME = "Radio & TV Segmenter"
-    PROJECT_VERSION = "3.2.15"
+    PROJECT_VERSION = "3.2.17"
     DEFAULT_GITHUB_REPO = "bradlinder/RTVS3"
 
     INTERNAL_APP_ID = "RadioTVStorySegmenter"
@@ -401,15 +401,20 @@ def launch_and_install(file_path: str, parent: QWidget | None = None) -> bool:
         last_error = ""
 
         # 1. Primary approach: detached subprocess.Popen
-        # In Windows, spawning the installer with CREATE_NEW_PROCESS_GROUP and DETACHED_PROCESS
-        # ensures the child process runs independently and survives the parent application exiting.
+        # In Windows, spawning the installer with CREATE_NEW_PROCESS_GROUP, DETACHED_PROCESS,
+        # and CREATE_BREAKAWAY_FROM_JOB (0x01000000) ensures the child process runs independently
+        # and survives the parent application and job object exiting.
         try:
             creationflags = 0
             if hasattr(subprocess, "DETACHED_PROCESS"):
                 creationflags |= subprocess.DETACHED_PROCESS
             if hasattr(subprocess, "CREATE_NEW_PROCESS_GROUP"):
                 creationflags |= subprocess.CREATE_NEW_PROCESS_GROUP
-            subprocess.Popen([str(path)], cwd=str(path.parent), creationflags=creationflags)
+            try:
+                # 0x01000000 = CREATE_BREAKAWAY_FROM_JOB
+                subprocess.Popen([str(path)], cwd=str(path.parent), creationflags=creationflags | 0x01000000)
+            except Exception:
+                subprocess.Popen([str(path)], cwd=str(path.parent), creationflags=creationflags)
             launched = True
         except Exception as exc_pop:
             last_error = f"subprocess.Popen: {exc_pop}"

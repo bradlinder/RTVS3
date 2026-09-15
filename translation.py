@@ -40,9 +40,11 @@ class TranslationEnvSetupWorker(QObject):
         super().__init__()
         self.plugin_dir = plugin_dir
         self._cancelled = False
+        self.cancel_event = threading.Event()
 
     def cancel(self):
         self._cancelled = True
+        self.cancel_event.set()
 
     def run(self):
         error = None
@@ -50,7 +52,7 @@ class TranslationEnvSetupWorker(QObject):
             manager = _translation_runtime_manager()
 
             def _on_progress(pct_or_msg, msg=""):
-                if self._cancelled:
+                if self._cancelled or self.cancel_event.is_set():
                     return
                 if isinstance(pct_or_msg, (int, float)):
                     pct = float(pct_or_msg)
@@ -64,16 +66,20 @@ class TranslationEnvSetupWorker(QObject):
                 "translate",
                 progress_cb=_on_progress,
                 plugin_dir=self.plugin_dir,
+                cancel_event=self.cancel_event,
             )
-            if not ok:
+            if not ok and not self._cancelled and not self.cancel_event.is_set():
                 err_detail = manager.get_last_error()
                 error = "The isolated translation runtime could not be installed or updated."
                 if err_detail:
                     error = f"{error}\n\nDetails:\n{err_detail}"
-            elif self._cancelled:
+            elif self._cancelled or self.cancel_event.is_set():
                 error = "Translation environment preparation was cancelled."
         except Exception as exc:
-            error = f"{type(exc).__name__}: {exc}"
+            if not self._cancelled and not self.cancel_event.is_set():
+                error = f"{type(exc).__name__}: {exc}"
+            else:
+                error = "Translation environment preparation was cancelled."
         self.finished.emit(error)
 
 
@@ -277,11 +283,21 @@ class TranslationMixin:
         t.start()
 
     def _cleanup_translation_env_thread(self):
+        worker = getattr(self, "_translation_env_worker", None)
+        if worker is not None:
+            try:
+                worker.progress.disconnect()
+            except Exception:
+                pass
+            try:
+                worker.finished.disconnect()
+            except Exception:
+                pass
         thread = getattr(self, "_translation_env_qthread", None)
         if thread is not None:
             try:
                 thread.quit()
-                thread.wait(1000)
+                thread.wait(200)
             except Exception:
                 pass
         self._translation_env_thread = None
@@ -331,10 +347,13 @@ class TranslationMixin:
             except Exception:
                 pass
             try:
-                proc.terminate()
-                if not proc.waitForFinished(timeout_ms):
-                    proc.kill()
-                    proc.waitForFinished(1000)
+                if proc.state() != QProcess.ProcessState.NotRunning:
+                    # On macOS/Unix, ML inference subprocesses (CTranslate2/OpenMP) often block SIGTERM.
+                    # Attempt a fast 150ms graceful termination before using SIGKILL to prevent main GUI thread hangs.
+                    proc.terminate()
+                    if not proc.waitForFinished(150):
+                        proc.kill()
+                        proc.waitForFinished(500)
             except Exception:
                 pass
             try:
@@ -502,6 +521,14 @@ class TranslationMixin:
         proc_env.insert("TOKENIZERS_PARALLELISM", "false")
         proc_env.insert("RTVS_MODELS_DIR", models_dir)
         proc_env.insert("HF_HOME", str(Path(models_dir) / "huggingface"))
+        if sys.platform == "darwin":
+            try:
+                py_lib = Path(python_exe).resolve().parent.parent / "lib"
+                if py_lib.is_dir():
+                    existing_dyld = proc_env.value("DYLD_LIBRARY_PATH", "")
+                    proc_env.insert("DYLD_LIBRARY_PATH", f"{py_lib}:{existing_dyld}" if existing_dyld else str(py_lib))
+            except Exception:
+                pass
         proc.setProcessEnvironment(proc_env)
         proc.setProgram(python_exe)
         proc.setArguments([str(entry), str(request_file)])

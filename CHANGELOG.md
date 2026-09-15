@@ -1,5 +1,17 @@
 # Changelog
 
+## v3.2.17
+- **Non-Blocking macOS & Linux Translation Process Cancellation**:
+  - **Eliminated GUI Hangs on Cancel**: Replaced long 5000ms blocking wait calls in `stop_translation_worker()` (`translation.py`) with a fast 150ms graceful termination probe followed by immediate `SIGKILL` process termination on Unix/macOS. This prevents CTranslate2 C++ inference loops from freezing the Qt main thread and triggering macOS AppKit "Not Responding" hangs or window server crashes when the user clicks Cancel.
+  - **Asynchronous Environment Setup Cancellation**: Connected `cancel_event` directly to `TranslationEnvSetupWorker` and `manager.ensure_environment()` in `translation.py`, allowing background translation runtime provisioning and package downloads to stop cleanly upon cancellation.
+  - **Signal Disconnection Safety**: Safely disconnects background thread progress and completion signals during worker teardown to prevent delayed asynchronous callbacks from updating the UI or spawning error dialogs after cancellation.
+
+## v3.2.16
+- **macOS Speaker Diarization & Translation Stability Fixes**:
+  - **OpenMP & Hugging Face Runtime Environment Flags**: Automatically sets `KMP_DUPLICATE_LIB_OK="TRUE"`, `TOKENIZERS_PARALLELISM="false"`, `HF_HUB_DISABLE_SYMLINKS_WARNING="1"`, `HF_HUB_DISABLE_PROGRESS_BARS="1"`, and `TQDM_DISABLE="1"` globally across worker processes and translation execution runtimes on macOS, Linux, and Windows.
+  - **macOS Dynamic Library Resolution (`DYLD_LIBRARY_PATH`)**: Automatically injects `DYLD_LIBRARY_PATH` into `QProcessEnvironment` when launching translation worker subprocesses on macOS, ensuring CTranslate2 and SentencePiece shared libraries load seamlessly.
+  - **macOS Gatekeeper Quarantine Removal (`com.apple.quarantine`)**: Added automatic quarantine attribute stripping (`xattr -dr com.apple.quarantine`) in `runtime_manager.py` when downloading or unpacking `uv`, standalone Python runtimes, or isolated virtual environments on macOS to prevent Gatekeeper permission blocks (`Permission denied` / `Killed: 9`).
+
 ## v3.2.15
 - **Comprehensive Translation Job Cancellation**:
   - Enhanced `cancel_current_process` and media change guards in `processing.py` to reliably detect and terminate active translation tasks across `translation_process`, `translation_thread`, `_translation_env_thread`, and `_translation_env_worker`.

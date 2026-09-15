@@ -105,7 +105,7 @@ def model_is_installed(from_code: str, to_code: str, variant: str = "tiny") -> b
                 return True
     return False
 
-def setup_windows_dll_directories() -> None:
+def setup_runtime_environment() -> None:
     os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
     os.environ["HF_HUB_DISABLE_SYMLINKS_WARNING"] = "1"
     os.environ["HF_HUB_DISABLE_PROGRESS_BARS"] = "1"
@@ -136,3 +136,5 @@ def setup_windows_dll_directories() -> None:
             os.add_dll_directory(str(dll))
     except Exception:
         pass
+
+setup_windows_dll_directories = setup_runtime_environment

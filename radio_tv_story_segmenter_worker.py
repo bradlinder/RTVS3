@@ -40,6 +40,10 @@ def _clamp_diarization_thread_env():
     ):
         os.environ.setdefault(var, str(capped))
 
+    os.environ.setdefault("KMP_DUPLICATE_LIB_OK", "TRUE")
+    os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")
+    os.environ.setdefault("HF_HUB_DISABLE_SYMLINKS_WARNING", "1")
+
 _clamp_diarization_thread_env()
 
 _GLOBAL_WORKER_DLL_HANDLES = []
