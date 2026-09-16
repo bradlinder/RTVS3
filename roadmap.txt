@@ -42,6 +42,7 @@ TABLE OF CONTENTS & STATUS OVERVIEW
    [x] 2.3 Master Volume Preservation & Seamless Reset (Restores `master_volume` on stop/pause or exiting fade regions)
    [x] 2.4 Playback & Timeline Preferences for Audio Fades (Toggles for `enable_audio_fades` and `preview_audio_fades` in Preferences, persisted in `QSettings`)
    [x] 2.5 Timeline Canvas Performance & Tooltip Debouncing (Viewport bounding box culling on envelope hit-testing and painting; debounced mouseMove tooltips)
+   [x] 2.6 Windows In-App Updater & Installer Launch Hardening (Mark-of-the-Web removal via `_unblock_windows_file`, detached `cmd.exe` trampoline with 1s timeout, `ShellExecuteW` "runas" UAC elevation, and "Restart & Install" UX flow)
 
 3. Future Milestone: Expanded NLE & DAW Timeline Interchange (Phase 4 - Planned for v3.4) [NOT STARTED]
    [ ] 3.1 Cockos Reaper Project (.rpp) Generator
@@ -135,6 +136,13 @@ CORE ARCHITECTURAL INVARIANTS
 ---------------------------------------------------------
 - Viewport bounding box culling on envelope hit-testing (`find_fade_handle_at_pos`) and painting (`end_x < -16 or start_x > width + 16`).
 - Debounced hover tooltips on the timeline canvas to avoid continuous OS redraw events during scrubbing and playback.
+
+[x] 2.6 WINDOWS IN-APP UPDATER & INSTALLER LAUNCH HARDENING
+------------------------------------------------------------
+- Implemented automatic Mark-of-the-Web removal (`_unblock_windows_file`) stripping the NTFS `Zone.Identifier` alternate data stream and executing PowerShell `Unblock-File` so Windows Defender SmartScreen does not silently block downloaded update packages.
+- Upgraded Windows installer execution to an asynchronous decoupled shell trampoline (`cmd.exe /c timeout /t 1 /nobreak >nul & start "" "installer.exe"` with `DETACHED_PROCESS` and `CREATE_BREAKAWAY_FROM_JOB`), giving Python 1 second to cleanly exit and release binary locks before setup launches.
+- Added primary and secondary fallback execution paths via Windows `ShellExecuteW` with explicit `"runas"` administrative verb (attaching parent window handle `hwnd` for native UAC elevation dialogs) and `os.startfile`.
+- Updated in-app updater action button to *"Restart & Install"* with clear confirmation messaging explaining that the application will close and hand off to the setup wizard.
 
 ================================================================================
 3. FUTURE MILESTONE: EXPANDED NLE & DAW TIMELINE INTERCHANGE (Phase 4 - Planned for v3.4) [NOT STARTED]

@@ -5,6 +5,11 @@
   - Implemented real-time volume gain modulation during audio playback (`get_fade_volume_factor_at_time(t)` and `update_realtime_fade_volume()`) that tracks story fade-in and fade-out envelope curves in 25ms timer intervals (`fade_preview_timer`), modulating `QAudioOutput` gain dynamically.
   - Automatically restores master playback volume (`master_volume`) seamlessly upon pause, stop, or leaving fade envelope boundaries.
   - Added *"Audition Story (With Fades ▶)"* (`audition_story`) to the story list right-click context menu, enabling one-click auditioning of story clips from start to finish with fade envelope gain curves applied and automatic stop at story completion.
+- **Windows In-App Updater & Installer Launch Hardening**:
+  - Implemented automatic Mark-of-the-Web removal (`_unblock_windows_file`) stripping the NTFS `Zone.Identifier` alternate data stream and executing PowerShell `Unblock-File` so Windows Defender SmartScreen does not silently block downloaded update packages.
+  - Upgraded Windows installer execution to an asynchronous decoupled shell trampoline (`cmd.exe /c timeout /t 1 /nobreak >nul & start "" "installer.exe"` with `DETACHED_PROCESS` and `CREATE_BREAKAWAY_FROM_JOB`), giving Python 1 second to cleanly exit and release binary locks before setup launches.
+  - Added primary and secondary fallback execution paths via Windows `ShellExecuteW` with explicit `"runas"` administrative verb (attaching parent window handle `hwnd` for native UAC elevation dialogs) and `os.startfile`.
+  - Updated in-app updater action button to *"Restart & Install"* with clear confirmation messaging explaining that the application will close and hand off to the setup wizard.
 - **Playback & Timeline Preferences for Audio Fades**:
   - Added user toggles in Preferences -> *"Playback & Timeline"*:
     - *"Enable story audio fades and timeline envelope handles"* (`enable_audio_fades`, persisted across sessions in `QSettings`).
