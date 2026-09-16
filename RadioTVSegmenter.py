@@ -218,8 +218,8 @@ class MainWindow(
         except (TypeError, ValueError):
             self.transcript_font_scale = 1.0
 
-        self.enable_audio_fades = str(self.settings_store.value("enable_audio_fades", "true")).lower() in {"1", "true", "yes"}
-        self.preview_audio_fades = str(self.settings_store.value("preview_audio_fades", "true")).lower() in {"1", "true", "yes"}
+        self.enable_audio_fades = str(self.settings_store.value("enable_audio_fades", "false")).lower() in {"1", "true", "yes"}
+        self.preview_audio_fades = str(self.settings_store.value("preview_audio_fades", "false")).lower() in {"1", "true", "yes"}
         try:
             self.master_volume = float(self.settings_store.value("audio_output_volume", 100) or 100) / 100.0
         except Exception:

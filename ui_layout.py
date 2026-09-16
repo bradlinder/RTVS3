@@ -145,7 +145,7 @@ class UiLayoutMixin:
         self.timeline = TimelineWidget(self)
         self.timeline.setObjectName("timeline_widget")
         if hasattr(self.timeline, "canvas"):
-            self.timeline.canvas.show_audio_fades = getattr(self, "enable_audio_fades", True)
+            self.timeline.canvas.show_audio_fades = getattr(self, "enable_audio_fades", False)
         self.top_panel = self.timeline  # Compatibility alias
         main_layout.addWidget(self.timeline)
 

@@ -1,5 +1,47 @@
 # Changelog
 
+## v3.3.4
+- **Non-Linear Audio Fade Envelope Curves & Custom Gain Profiles**:
+  - Implemented selectable audio fade curve profiles: **Linear Ramp**, **Cosine S-Curve** ($0.5 \cdot (1 - \cos(\pi \cdot u))$), **Logarithmic** ($\log_{10}(1 + 9u)$), and **Exponential** ($(10^u - 1)/9$).
+  - Fully supported across real-time playback gain modulation (`get_fade_volume_factor_at_time`), interactive 16-step vector curve drawing on `TimelineCanvas`, global default setting in Preferences -> *"Playback & Timeline"*, and story JSON project serialization (`fade_curve` field).
+- **Magnetic Timeline Snapping Engine**:
+  - Added magnetic snapping on `TimelineCanvas` (`snap_time()`) that magnetically snaps cursor drags during selection range adjustments, playhead scrubbing, story edge trimming, and audio fade handle dragging.
+  - Snaps to nearby story start/end boundaries, playhead location, and selection region anchors within a 10-pixel threshold (`enable_magnetic_snapping`).
+- **Story List Right-Click Context Menu & Batch Audio Fade Controls**:
+  - Created `StoryListWidget` custom right-click context menu with dedicated **Audio Fades** sub-menu enabling one-click auditioning, batch fade application (`apply_fades_to_selected_stories`), batch fade removal (`remove_fades_from_selected_stories`), and quick fade curve profile selection across selected stories.
+  - Expanded `StoryFadesDialog` to configure fade curve profile per story or project-wide, and added rich status tooltips and badges (`[In:0.5s Out:1.0s]`) to story list items.
+
+## v3.3.3
+- **Timeline Fades Optional by Default on New Installs**:
+  - Configured `enable_audio_fades` and `preview_audio_fades` to default to `False` across all application initialization paths, QSettings fallbacks, and the "Restore Defaults" preferences routine.
+  - New installations will keep timeline fades cleanly disabled until explicitly enabled by the user in Preferences -> *"Playback & Timeline"*, preserving maximum interface responsiveness and visual simplicity.
+  - Existing user configurations that have already enabled or disabled the feature are respected and preserved across sessions.
+- **Audio Output Volume Throttling & Playback Performance Optimization**:
+  - Eliminated high-frequency redundant `setVolume()` calls into the system audio daemon during playback by tracking `_last_applied_fade_vol` and only applying gain changes when volume shifts by `>= 0.005`.
+  - Adjusted real-time fade preview timer interval to 35ms (~28 FPS), significantly reducing CPU overhead while maintaining smooth, artifact-free audio crossfades.
+  - Automatically suspends fade timers and restores full master volume when playback pauses or reaches the end of an auditioned story segment.
+- **Timeline Canvas Tooltip Storm & Mouse Lag Elimination**:
+  - Fixed an issue where millisecond-precision timestamp recalculations caused `QToolTip.showText()` to fire continuously (up to 100 times per second) during any cursor movement across the timeline.
+  - Isolated timeline tooltips strictly to interactive hover targets (story edge boundaries and tactile fade envelope grab handles), automatically hiding tooltips during free scrubbing and panning for seamless 60+ FPS cursor response.
+  - Cached boundary and fade hit-test lookups within `mouseMoveEvent` to prevent redundant coordinate recalculations.
+- **Optimized Fade Overlay & Ramp Vector Painting**:
+  - Replaced computationally intensive antialiased dashed line calculations (`DashLine`) in `paintEvent` with crisp, high-performance solid 1.2px vector ramp strokes.
+  - Clamped polygon vertex arrays strictly to viewport bounds to minimize rasterization overhead.
+
+## v3.3.2
+- **Playback & Timeline Preferences Reorganization & Dynamic Visibility**:
+  - Moved *"Default Story Fade-In"* and *"Default Story Fade-Out"* numeric controls from the Detection settings pane to Preferences -> *"Playback & Timeline"* directly below the Audio Fades section.
+  - Implemented dynamic visibility grouping: *"Fade Audio Preview"* and the default fade duration controls are now conditionally displayed only when *"Enable story audio fades and timeline envelope handles"* is checked.
+- **Active Cursor-Anchored Timeline Zooming**:
+  - Updated `TimelineCanvas.set_zoom()` and all zoom triggers (`+`, `-`, `=`, and vertical mouse wheel) to anchor zoom transformations strictly at the active cursor/playhead position (`position`).
+  - Clicking anywhere on the timeline immediately locks the active focus point so zooming in and out remains centered on that exact timestamp.
+- **Multi-Axis Horizontal Scrolling & Trackpad Navigation**:
+  - Added native horizontal scroll support in `TimelineCanvas.wheelEvent()` for dedicated horizontal scroll wheels, tilted scroll wheels, two-finger horizontal trackpad swipe gestures, and `Shift`+vertical wheel panning.
+- **Interactive Overview Navigation Pill & Edge Drag-to-Zoom**:
+  - Replaced the standard horizontal scrollbar with `TimelineOverviewBar`, a taller (16px) interactive overview strip featuring full-duration mini story segments and an active viewport pill.
+  - Implemented tactile left and right edge grab handles allowing users to zoom in and out by clicking and dragging either edge of the navigation pill.
+  - Supports click-to-jump navigation and smooth dragging across the media file with real-time cursor feedback and tooltips.
+
 ## v3.3.1
 - **Real-Time Audio Fade Playback Preview & Auditioning System**:
   - Implemented real-time volume gain modulation during audio playback (`get_fade_volume_factor_at_time(t)` and `update_realtime_fade_volume()`) that tracks story fade-in and fade-out envelope curves in 25ms timer intervals (`fade_preview_timer`), modulating `QAudioOutput` gain dynamically.

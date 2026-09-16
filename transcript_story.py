@@ -1,4 +1,4 @@
-"""Radio & TV Segmenter v3.3.1 — transcript story responsibilities.
+"""Radio & TV Segmenter v3.3.4 — transcript story responsibilities.
 
 
 Methods intentionally retain the MainWindow-facing API so behavior remains
@@ -1394,9 +1394,27 @@ class TranscriptStoryMixin:
         self.story_list.blockSignals(True)
         self.story_list.clear()
 
+        curve_labels = {"linear": "Linear", "s_curve": "S-Curve", "logarithmic": "Logarithmic", "exponential": "Exponential"}
+
         for index, story in enumerate(self.stories, start=1):
-            text = f"{index}. {format_time(story.start)} – {format_time(story.end)}  {story.title}"
+            fin = getattr(story, "fade_in", 0.0)
+            fout = getattr(story, "fade_out", 0.0)
+            fcurve = getattr(story, "fade_curve", "linear") or "linear"
+
+            fade_parts = []
+            if fin > 0:
+                fade_parts.append(f"In:{fin:.1f}s")
+            if fout > 0:
+                fade_parts.append(f"Out:{fout:.1f}s")
+
+            fade_badge = f"  [{' '.join(fade_parts)}]" if fade_parts else ""
+            text = f"{index}. {format_time(story.start)} – {format_time(story.end)}  {story.title}{fade_badge}"
             item = QListWidgetItem(text)
+
+            curve_name = curve_labels.get(fcurve, fcurve.capitalize())
+            fade_info = f"Fade-In: {fin:.2f}s | Fade-Out: {fout:.2f}s ({curve_name} Curve)" if (fin > 0 or fout > 0) else "No Fades Applied"
+            item.setToolTip(f"Story #{index}: {story.title}\nTime Range: {format_time(story.start)} – {format_time(story.end)}\n{fade_info}")
+
             item.setData(Qt.ItemDataRole.UserRole, story.to_dict())
             self.story_list.addItem(item)
 
@@ -1468,14 +1486,15 @@ class TranscriptStoryMixin:
         self.apply_story_selection_indices([index], seek=False)
         self.seek_to(story.start)
         # If fade_in > 0 and fades preview is enabled, start volume at 0.0 before playing
-        if getattr(self, "preview_audio_fades", True) and getattr(self, "enable_audio_fades", True):
+        if getattr(self, "preview_audio_fades", False) and getattr(self, "enable_audio_fades", False):
             fin = getattr(story, "fade_in", 0.0)
             if fin > 0 and hasattr(self, "audio_output"):
                 self.audio_output.setVolume(0.0)
+                self._last_applied_fade_vol = 0.0
         self.player.play()
-        if getattr(self, "preview_audio_fades", True) and getattr(self, "enable_audio_fades", True):
+        if getattr(self, "preview_audio_fades", False) and getattr(self, "enable_audio_fades", False):
             if hasattr(self, "fade_preview_timer"):
-                self.fade_preview_timer.start(25)
+                self.fade_preview_timer.start(35)
             self.update_realtime_fade_volume()
         self.timeline.set_playing_state(True)
         self.play_button.setText("❚❚ Pause")
@@ -1980,7 +1999,7 @@ class TranscriptStoryMixin:
         )
 
     def open_story_fades_dialog(self, story_index=None):
-        """Open fine-grained audio fade-in and fade-out modal dialog for the selected story."""
+        """Open fine-grained audio fade-in, fade-out, and curve profile modal dialog for the selected story."""
         if not hasattr(self, "stories") or not self.stories:
             QMessageBox.information(self, "No Stories", "There are no stories created yet.")
             return
@@ -1997,9 +2016,10 @@ class TranscriptStoryMixin:
         story = self.stories[story_index]
         dlg = StoryFadesDialog(self, story=story, story_index=story_index)
         if dlg.exec() == QDialog.DialogCode.Accepted:
-            new_in, new_out, apply_all = dlg.get_fades()
+            new_in, new_out, new_curve, apply_all = dlg.get_fades()
             old_in = getattr(story, "fade_in", 0.0)
             old_out = getattr(story, "fade_out", 0.0)
+            old_curve = getattr(story, "fade_curve", "linear") or "linear"
 
             if apply_all:
                 old_stories = [Story.from_dict(s.to_dict()) for s in self.stories]
@@ -2008,6 +2028,7 @@ class TranscriptStoryMixin:
                     st_copy = Story.from_dict(s.to_dict())
                     st_copy.fade_in = new_in
                     st_copy.fade_out = new_out
+                    st_copy.fade_curve = new_curve
                     new_stories.append(st_copy)
                 if hasattr(self, "undo_stack"):
                     self.undo_stack.push(SetStoriesCommand(self, old_stories, new_stories, "Set Audio Fades on All Stories"))
@@ -2020,15 +2041,82 @@ class TranscriptStoryMixin:
                     self.save_project()
             else:
                 if hasattr(self, "undo_stack"):
-                    self.undo_stack.push(StoryFadesChangeCommand(self, story_index, old_in, old_out, new_in, new_out))
+                    self.undo_stack.push(StoryFadesChangeCommand(self, story_index, old_in, old_out, new_in, new_out, old_curve, new_curve))
                 else:
                     story.fade_in = new_in
                     story.fade_out = new_out
+                    story.fade_curve = new_curve
                     self.refresh_story_list()
                     if hasattr(self, "timeline"):
                         self.timeline.set_stories(self.stories, self.current_selected_story_indices)
                         self.timeline.update()
                     self.save_project()
+
+    def apply_fades_to_selected_stories(self, fade_in=None, fade_out=None, fade_curve=None):
+        """Apply configured or default fade settings to all selected stories in batch."""
+        if not hasattr(self, "stories") or not self.stories:
+            return
+
+        indices = list(getattr(self, "current_selected_story_indices", []))
+        if not indices:
+            indices = list(range(len(self.stories)))
+
+        settings = QSettings("RadioTVStorySegmenter", "RadioTVStorySegmenter")
+        if fade_in is None:
+            fade_in = float(settings.value("default_fade_in_duration", 0.0))
+        if fade_out is None:
+            fade_out = float(settings.value("default_fade_out_duration", 1.0))
+        if fade_curve is None:
+            fade_curve = str(settings.value("default_fade_curve", "linear") or "linear")
+
+        old_stories = [Story.from_dict(s.to_dict()) for s in self.stories]
+        new_stories = [Story.from_dict(s.to_dict()) for s in self.stories]
+
+        for i in indices:
+            if 0 <= i < len(new_stories):
+                new_stories[i].fade_in = fade_in
+                new_stories[i].fade_out = fade_out
+                new_stories[i].fade_curve = fade_curve
+
+        if hasattr(self, "undo_stack"):
+            self.undo_stack.push(SetStoriesCommand(self, old_stories, new_stories, "Apply Audio Fades to Selected Stories"))
+        else:
+            self.stories = new_stories
+            self.refresh_story_list()
+            if hasattr(self, "timeline"):
+                self.timeline.set_stories(self.stories, self.current_selected_story_indices)
+                self.timeline.update()
+            self.save_project()
+
+    def remove_fades_from_selected_stories(self):
+        """Remove audio fade-in and fade-out ramps (set 0.0s) from selected stories."""
+        self.apply_fades_to_selected_stories(fade_in=0.0, fade_out=0.0)
+
+    def set_fade_curve_for_selected_stories(self, curve_type: str):
+        """Change the fade curve profile for all selected stories without altering duration values."""
+        if not hasattr(self, "stories") or not self.stories:
+            return
+
+        indices = list(getattr(self, "current_selected_story_indices", []))
+        if not indices:
+            indices = list(range(len(self.stories)))
+
+        old_stories = [Story.from_dict(s.to_dict()) for s in self.stories]
+        new_stories = [Story.from_dict(s.to_dict()) for s in self.stories]
+
+        for i in indices:
+            if 0 <= i < len(new_stories):
+                new_stories[i].fade_curve = curve_type
+
+        if hasattr(self, "undo_stack"):
+            self.undo_stack.push(SetStoriesCommand(self, old_stories, new_stories, f"Set Fade Curve ({curve_type}) on Selected Stories"))
+        else:
+            self.stories = new_stories
+            self.refresh_story_list()
+            if hasattr(self, "timeline"):
+                self.timeline.set_stories(self.stories, self.current_selected_story_indices)
+                self.timeline.update()
+            self.save_project()
 
 
 class StoryFadesDialog(QDialog):
@@ -2041,7 +2129,7 @@ class StoryFadesDialog(QDialog):
         self.story_index = story_index
         title = story.title if story and getattr(story, "title", None) else f"Story #{story_index + 1}"
         self.setWindowTitle(f"Audio Fades — {title}")
-        self.resize(440, 260)
+        self.resize(440, 300)
         self._init_ui()
 
     def _init_ui(self):
@@ -2057,7 +2145,7 @@ class StoryFadesDialog(QDialog):
         header_label.setWordWrap(True)
         layout.addWidget(header_label)
 
-        form_group = QGroupBox("Audio Fade Durations (Seconds)", self)
+        form_group = QGroupBox("Audio Fade Durations & Profile", self)
         form_layout = QFormLayout(form_group)
         form_layout.setContentsMargins(14, 14, 14, 14)
         form_layout.setSpacing(10)
@@ -2080,6 +2168,17 @@ class StoryFadesDialog(QDialog):
         self.fade_out_spin.setValue(curr_out)
         form_layout.addRow("Fade Out Duration:", self.fade_out_spin)
 
+        self.fade_curve_combo = QComboBox(self)
+        self.fade_curve_combo.addItem("Linear Ramp", "linear")
+        self.fade_curve_combo.addItem("Cosine S-Curve", "s_curve")
+        self.fade_curve_combo.addItem("Logarithmic", "logarithmic")
+        self.fade_curve_combo.addItem("Exponential", "exponential")
+        curr_curve = getattr(self.story, "fade_curve", "linear") if self.story else "linear"
+        c_idx = self.fade_curve_combo.findData(curr_curve)
+        if c_idx >= 0:
+            self.fade_curve_combo.setCurrentIndex(c_idx)
+        form_layout.addRow("Fade Curve Profile:", self.fade_curve_combo)
+
         layout.addWidget(form_group)
 
         preset_layout = QHBoxLayout()
@@ -2096,7 +2195,7 @@ class StoryFadesDialog(QDialog):
         preset_layout.addStretch()
         layout.addLayout(preset_layout)
 
-        self.apply_all_cb = QCheckBox("Apply these fade durations to all stories in project", self)
+        self.apply_all_cb = QCheckBox("Apply these fade settings to all stories in project", self)
         layout.addWidget(self.apply_all_cb)
 
         btn_box = QHBoxLayout()
@@ -2116,11 +2215,15 @@ class StoryFadesDialog(QDialog):
         settings = QSettings("RadioTVStorySegmenter", "RadioTVStorySegmenter")
         def_in = float(settings.value("default_fade_in_duration", 0.0))
         def_out = float(settings.value("default_fade_out_duration", 1.0))
+        def_curve = str(settings.value("default_fade_curve", "linear") or "linear")
         self.fade_in_spin.setValue(def_in)
         self.fade_out_spin.setValue(def_out)
+        idx = self.fade_curve_combo.findData(def_curve)
+        if idx >= 0:
+            self.fade_curve_combo.setCurrentIndex(idx)
 
     def get_fades(self):
-        return self.fade_in_spin.value(), self.fade_out_spin.value(), self.apply_all_cb.isChecked()
+        return self.fade_in_spin.value(), self.fade_out_spin.value(), self.fade_curve_combo.currentData(), self.apply_all_cb.isChecked()
 
 
 class SpeakerManagerDialog(QDialog):

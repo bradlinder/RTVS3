@@ -1105,6 +1105,20 @@ class PlaybackPreferencesMixin:
                 idx = lw["sel_mode_combo"].findData("replace")
                 if idx >= 0:
                     lw["sel_mode_combo"].setCurrentIndex(idx)
+            if "enable_fades_chk" in lw and lw["enable_fades_chk"]:
+                lw["enable_fades_chk"].setChecked(False)
+            if "preview_fades_chk" in lw and lw["preview_fades_chk"]:
+                lw["preview_fades_chk"].setChecked(False)
+            if "fade_in_spin" in lw and lw["fade_in_spin"]:
+                lw["fade_in_spin"].setValue(0.0)
+            if "fade_out_spin" in lw and lw["fade_out_spin"]:
+                lw["fade_out_spin"].setValue(1.0)
+            self.enable_audio_fades = False
+            self.preview_audio_fades = False
+            self.settings_store.setValue("enable_audio_fades", "false")
+            self.settings_store.setValue("preview_audio_fades", "false")
+            self.settings_store.setValue("default_fade_in_duration", 0.0)
+            self.settings_store.setValue("default_fade_out_duration", 1.0)
 
         # 9. Story Detection & Diarization
         if "detection_diarization" in selected_set:
@@ -1746,13 +1760,57 @@ class PlaybackPreferencesMixin:
 
         enable_fades_chk = QCheckBox("Enable story audio fades and timeline envelope handles")
         enable_fades_chk.setToolTip("Enables tactile fade-in and fade-out handles on the timeline and applies fade ramps to exported stories. Disabling this turns off fade envelope rendering and export processing for maximum timeline responsiveness.")
-        enable_fades_chk.setChecked(getattr(self, "enable_audio_fades", True))
+        enable_fades_chk.setChecked(getattr(self, "enable_audio_fades", False))
         play_form.addRow("Audio Fades:", enable_fades_chk)
+
+        # Dynamic sub-options container for audio fades
+        fades_sub_widget = QWidget()
+        fades_sub_layout = QFormLayout(fades_sub_widget)
+        fades_sub_layout.setContentsMargins(0, 0, 0, 0)
 
         preview_fades_chk = QCheckBox("Preview audio fades in real-time during playback")
         preview_fades_chk.setToolTip("Modulates preview audio playback volume in real-time when crossing story fade-in and fade-out envelopes.")
-        preview_fades_chk.setChecked(getattr(self, "preview_audio_fades", True))
-        play_form.addRow("Fade Audio Preview:", preview_fades_chk)
+        preview_fades_chk.setChecked(getattr(self, "preview_audio_fades", False))
+        fades_sub_layout.addRow("Fade Audio Preview:", preview_fades_chk)
+
+        fade_in_spin = QDoubleSpinBox()
+        fade_in_spin.setRange(0.0, 10.0)
+        fade_in_spin.setSingleStep(0.1)
+        fade_in_spin.setDecimals(2)
+        fade_in_spin.setValue(float(self.settings_store.value("default_fade_in_duration", 0.0)))
+        fade_in_spin.setSuffix(" sec")
+        fade_in_spin.setToolTip("Default audio fade-in duration automatically applied to newly created stories.")
+        fades_sub_layout.addRow("Default Story Fade-In:", fade_in_spin)
+
+        fade_out_spin = QDoubleSpinBox()
+        fade_out_spin.setRange(0.0, 10.0)
+        fade_out_spin.setSingleStep(0.1)
+        fade_out_spin.setDecimals(2)
+        fade_out_spin.setValue(float(self.settings_store.value("default_fade_out_duration", 1.0)))
+        fade_out_spin.setSuffix(" sec")
+        fade_out_spin.setToolTip("Default audio fade-out duration automatically applied to newly created stories.")
+        fades_sub_layout.addRow("Default Story Fade-Out:", fade_out_spin)
+
+        fade_curve_combo = QComboBox()
+        fade_curve_combo.addItem("Linear Ramp", "linear")
+        fade_curve_combo.addItem("Cosine S-Curve", "s_curve")
+        fade_curve_combo.addItem("Logarithmic", "logarithmic")
+        fade_curve_combo.addItem("Exponential", "exponential")
+        curr_def_curve = str(self.settings_store.value("default_fade_curve", "linear") or "linear")
+        curve_idx = fade_curve_combo.findData(curr_def_curve)
+        if curve_idx >= 0:
+            fade_curve_combo.setCurrentIndex(curve_idx)
+        fade_curve_combo.setToolTip("Default volume envelope curve profile applied to audio fade transitions.")
+        fades_sub_layout.addRow("Default Fade Curve:", fade_curve_combo)
+
+        play_form.addRow("", fades_sub_widget)
+
+        # Dynamic visibility: only show sub-options if enable_fades_chk is checked
+        def _update_fades_options_visibility(enabled):
+            fades_sub_widget.setVisible(bool(enabled))
+
+        enable_fades_chk.toggled.connect(_update_fades_options_visibility)
+        _update_fades_options_visibility(enable_fades_chk.isChecked())
 
         play_layout.addLayout(play_form)
         _add_custom_defaults_btn(play_layout, "Playback & Timeline")
@@ -1793,24 +1851,6 @@ class PlaybackPreferencesMixin:
         pad_spin.setValue(self.lead_in_padding)
         pad_spin.setSuffix(" sec")
         det_form.addRow("Lead-In Padding:", pad_spin)
-
-        fade_in_spin = QDoubleSpinBox()
-        fade_in_spin.setRange(0.0, 10.0)
-        fade_in_spin.setSingleStep(0.1)
-        fade_in_spin.setDecimals(2)
-        fade_in_spin.setValue(float(self.settings_store.value("default_fade_in_duration", 0.0)))
-        fade_in_spin.setSuffix(" sec")
-        fade_in_spin.setToolTip("Default audio fade-in duration automatically applied to newly created stories.")
-        det_form.addRow("Default Story Fade-In:", fade_in_spin)
-
-        fade_out_spin = QDoubleSpinBox()
-        fade_out_spin.setRange(0.0, 10.0)
-        fade_out_spin.setSingleStep(0.1)
-        fade_out_spin.setDecimals(2)
-        fade_out_spin.setValue(float(self.settings_store.value("default_fade_out_duration", 1.0)))
-        fade_out_spin.setSuffix(" sec")
-        fade_out_spin.setToolTip("Default audio fade-out duration automatically applied to newly created stories.")
-        det_form.addRow("Default Story Fade-Out:", fade_out_spin)
 
         expected_speakers_combo = QComboBox()
         expected_speakers_combo.addItem("Auto-Detect", "auto")
@@ -2380,6 +2420,11 @@ class PlaybackPreferencesMixin:
             "thumb_chk": thumb_chk,
             "thumb_pos_combo": thumb_pos_combo,
             "sel_mode_combo": sel_mode_combo,
+            "enable_fades_chk": enable_fades_chk,
+            "preview_fades_chk": preview_fades_chk,
+            "fade_in_spin": fade_in_spin,
+            "fade_out_spin": fade_out_spin,
+            "fade_curve_combo": fade_curve_combo,
             "gap_spin": gap_spin,
             "pad_spin": pad_spin,
             "expected_speakers_combo": expected_speakers_combo,
@@ -2566,6 +2611,7 @@ class PlaybackPreferencesMixin:
             self.settings_store.setValue("lead_in_padding", self.lead_in_padding)
             self.settings_store.setValue("default_fade_in_duration", fade_in_spin.value())
             self.settings_store.setValue("default_fade_out_duration", fade_out_spin.value())
+            self.settings_store.setValue("default_fade_curve", fade_curve_combo.currentData() or "linear")
             self.settings_store.setValue("default_expected_speakers", self.expected_speakers)
             self.settings_store.setValue("ask_expected_speakers", ask_speakers_chk.isChecked())
 
@@ -2824,9 +2870,9 @@ class PlaybackPreferencesMixin:
             self.play_button.setText("▶ Play")
         else:
             self.player.play()
-            if getattr(self, "enable_audio_fades", True) and getattr(self, "preview_audio_fades", True):
+            if getattr(self, "enable_audio_fades", False) and getattr(self, "preview_audio_fades", False):
                 if hasattr(self, "fade_preview_timer"):
-                    self.fade_preview_timer.start(25)
+                    self.fade_preview_timer.start(35)
                 self.update_realtime_fade_volume()
             self.timeline.set_playing_state(True)
             self.play_button.setText("❚❚ Pause")
@@ -2837,7 +2883,9 @@ class PlaybackPreferencesMixin:
             self.fade_preview_timer.stop()
         self._audition_story_index = None
         if hasattr(self, "audio_output") and self.audio_output:
-            self.audio_output.setVolume(getattr(self, "master_volume", 1.0))
+            master_vol = getattr(self, "master_volume", 1.0)
+            self.audio_output.setVolume(master_vol)
+            self._last_applied_fade_vol = master_vol
         self.timeline.set_playing_state(False)
         self.play_button.setText("▶ Play")
 
@@ -2875,7 +2923,7 @@ class PlaybackPreferencesMixin:
 
     def get_fade_volume_factor_at_time(self, t: float) -> float:
         """Calculate the real-time audio volume fade factor [0.0, 1.0] for position `t`."""
-        if not getattr(self, "enable_audio_fades", True) or not getattr(self, "preview_audio_fades", True):
+        if not getattr(self, "enable_audio_fades", False) or not getattr(self, "preview_audio_fades", False):
             return 1.0
 
         stories = getattr(self, "stories", [])
@@ -2903,15 +2951,20 @@ class PlaybackPreferencesMixin:
         story_dur = max(0.001, story.end - story.start)
         fin = min(getattr(story, "fade_in", 0.0), story_dur)
         fout = min(getattr(story, "fade_out", 0.0), max(0.0, story_dur - fin))
+        fcurve = getattr(story, "fade_curve", "linear") or "linear"
+
+        from prs_shared import calculate_fade_curve_factor
 
         factor = 1.0
         # Fade In ramp
         if fin > 0 and t >= story.start and t < (story.start + fin):
-            factor = min(factor, max(0.0, (t - story.start) / fin))
+            u = (t - story.start) / fin
+            factor = min(factor, calculate_fade_curve_factor(u, fcurve))
 
         # Fade Out ramp
         if fout > 0 and t > (story.end - fout) and t <= story.end:
-            factor = min(factor, max(0.0, (story.end - t) / fout))
+            u = (story.end - t) / fout
+            factor = min(factor, calculate_fade_curve_factor(u, fcurve))
 
         return factor
 
@@ -2933,7 +2986,10 @@ class PlaybackPreferencesMixin:
 
         factor = self.get_fade_volume_factor_at_time(self.current_position)
         target_vol = max(0.0, min(1.0, master_vol * factor))
-        self.audio_output.setVolume(target_vol)
+        last_vol = getattr(self, "_last_applied_fade_vol", None)
+        if last_vol is None or abs(target_vol - last_vol) >= 0.005:
+            self.audio_output.setVolume(target_vol)
+            self._last_applied_fade_vol = target_vol
 
     def _on_fade_timer_tick(self):
         if hasattr(self, "player") and self.player.playbackState() == QMediaPlayer.PlaybackState.PlayingState:

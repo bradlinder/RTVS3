@@ -516,7 +516,7 @@ class CollapsibleSection(QWidget):
 
 # Display branding shown to the user (title bar, About box, installers).
 APP_DISPLAY_NAME = "Radio & TV Segmenter"
-PROJECT_VERSION = "3.3.1"
+PROJECT_VERSION = "3.3.4"
 DEFAULT_GITHUB_REPO = "bradlinder/RTVS3"
 
 
@@ -1178,6 +1178,19 @@ class ExportDialog(QDialog):
 # Data model
 # ============================================================
 
+def calculate_fade_curve_factor(u: float, fcurve: str = "linear") -> float:
+    """Calculate normalized fade multiplier (0.0 to 1.0) given progress `u` in [0, 1]."""
+    u = max(0.0, min(1.0, float(u)))
+    if fcurve == "s_curve":
+        return float(0.5 * (1.0 - math.cos(math.pi * u)))
+    elif fcurve == "logarithmic":
+        return float(math.log10(1.0 + 9.0 * u))
+    elif fcurve == "exponential":
+        return float((math.pow(10.0, u) - 1.0) / 9.0)
+    else:  # "linear"
+        return u
+
+
 class Story:
     def __init__(
         self,
@@ -1188,6 +1201,7 @@ class Story:
         metadata=None,
         fade_in=None,
         fade_out=None,
+        fade_curve=None,
     ):
         self.start = float(start)
         self.end = float(end)
@@ -1215,6 +1229,16 @@ class Story:
             except Exception:
                 self.fade_out = 1.0
 
+        if fade_curve is not None:
+            self.fade_curve = str(fade_curve)
+        else:
+            try:
+                from PySide6.QtCore import QSettings
+                settings = QSettings("RadioTVStorySegmenter", "RadioTVStorySegmenter")
+                self.fade_curve = str(settings.value("default_fade_curve", "linear") or "linear")
+            except Exception:
+                self.fade_curve = "linear"
+
     def to_dict(self):
         d = {
             "start": self.start,
@@ -1223,6 +1247,7 @@ class Story:
             "suggestion": self.suggestion,
             "fade_in": self.fade_in,
             "fade_out": self.fade_out,
+            "fade_curve": getattr(self, "fade_curve", "linear"),
         }
         if self.metadata:
             d["metadata"] = dict(self.metadata)
@@ -1230,7 +1255,7 @@ class Story:
 
     @classmethod
     def from_dict(cls, data):
-        known = {"start", "end", "title", "suggestion", "metadata", "fade_in", "fade_out"}
+        known = {"start", "end", "title", "suggestion", "metadata", "fade_in", "fade_out", "fade_curve"}
         meta = dict(data.get("metadata", {})) if isinstance(data.get("metadata"), dict) else {}
         for k, v in data.items():
             if k not in known:
@@ -1243,6 +1268,7 @@ class Story:
             metadata=meta,
             fade_in=data.get("fade_in"),
             fade_out=data.get("fade_out"),
+            fade_curve=data.get("fade_curve"),
         )
 
 
@@ -1251,9 +1277,9 @@ class Story:
 # ============================================================
 
 class StoryFadesChangeCommand(QUndoCommand):
-    """Discrete undo/redo command for story audio fade-in and fade-out adjustments."""
+    """Discrete undo/redo command for story audio fade-in, fade-out, and curve adjustments."""
 
-    def __init__(self, main_window, story_index, old_in, old_out, new_in, new_out, description="Adjust Audio Fades"):
+    def __init__(self, main_window, story_index, old_in, old_out, new_in, new_out, old_curve="linear", new_curve="linear", description="Adjust Audio Fades"):
         super().__init__(description)
         self.main_window = main_window
         self.story_index = story_index
@@ -1261,17 +1287,21 @@ class StoryFadesChangeCommand(QUndoCommand):
         self.old_out = round(float(old_out), 3)
         self.new_in = round(float(new_in), 3)
         self.new_out = round(float(new_out), 3)
+        self.old_curve = str(old_curve)
+        self.new_curve = str(new_curve)
 
     def undo(self):
         if 0 <= self.story_index < len(self.main_window.stories):
             self.main_window.stories[self.story_index].fade_in = self.old_in
             self.main_window.stories[self.story_index].fade_out = self.old_out
+            self.main_window.stories[self.story_index].fade_curve = self.old_curve
             self._sync_ui()
 
     def redo(self):
         if 0 <= self.story_index < len(self.main_window.stories):
             self.main_window.stories[self.story_index].fade_in = self.new_in
             self.main_window.stories[self.story_index].fade_out = self.new_out
+            self.main_window.stories[self.story_index].fade_curve = self.new_curve
             self._sync_ui()
 
     def _sync_ui(self):
@@ -1489,7 +1519,7 @@ class StoryCardDelegate(QStyledItemDelegate):
             # Time range metadata
             if time_str:
                 win = self.parent().window() if self.parent() else None
-                fades_enabled = getattr(win, "enable_audio_fades", True)
+                fades_enabled = getattr(win, "enable_audio_fades", False)
                 if fades_enabled:
                     fade_in = getattr(story, "fade_in", 0.0) if story else 0.0
                     fade_out = getattr(story, "fade_out", 0.0) if story else 0.0
@@ -4761,7 +4791,8 @@ class TimelineCanvas(QWidget):
         self.active_selection_handle = None
         self.active_fade_target = None  # Tuple: (story_index, 'fade_in' | 'fade_out')
         self._fade_drag_start_val = 0.0
-        self.show_audio_fades = True
+        self.show_audio_fades = False
+        self.enable_magnetic_snapping = True
         self._last_tooltip_text = ""
 
         self.stories = []
@@ -4906,6 +4937,7 @@ class TimelineCanvas(QWidget):
             return
 
         vis_dur = self.visible_duration()
+        old_offset = self.scroll_offset
 
         if self.is_playing:
             self.scroll_offset = target_time - (vis_dur / 2.0)
@@ -4917,6 +4949,10 @@ class TimelineCanvas(QWidget):
             if target_time < (view_start + margin) or target_time > (view_end - margin):
                 self.scroll_offset = target_time - (vis_dur / 2.0)
                 self.clamp_scroll_offset()
+
+        if self.scroll_offset != old_offset:
+            self.scrollOffsetChanged.emit(self.scroll_offset)
+            self.pixmap_dirty = True
 
     def set_transcript_selection_range(self, start, end):
         if start is None or end is None:
@@ -4978,6 +5014,45 @@ class TimelineCanvas(QWidget):
         ratio = x_val / max(1, width)
         return self.scroll_offset + (ratio * self.visible_duration())
 
+    def snap_time(self, raw_time: float, exclude_story_idx: int = None, width: int = None, pixel_threshold: int = 10) -> float:
+        """Snap raw_time to nearby story boundaries, playhead, or selection anchors if within pixel_threshold pixels."""
+        if not getattr(self, "enable_magnetic_snapping", True):
+            return raw_time
+
+        width = width or max(1, self.width())
+        vis_dur = max(0.001, self.visible_duration())
+        threshold_dt = (pixel_threshold / max(1, width)) * vis_dur
+
+        snap_points = []
+
+        # 1. Playhead position
+        if hasattr(self, "position") and self.position is not None:
+            snap_points.append(float(self.position))
+
+        # 2. Selection region anchors
+        if getattr(self, "selection_start", None) is not None:
+            snap_points.append(float(self.selection_start))
+        if getattr(self, "selection_end", None) is not None:
+            snap_points.append(float(self.selection_end))
+
+        # 3. Story boundaries
+        for idx, story in enumerate(getattr(self, "stories", [])):
+            if exclude_story_idx is not None and idx == exclude_story_idx:
+                continue
+            snap_points.append(float(story.start))
+            snap_points.append(float(story.end))
+
+        best_snap = raw_time
+        min_diff = threshold_dt + 0.00001
+
+        for pt in snap_points:
+            diff = abs(raw_time - pt)
+            if diff <= threshold_dt and diff < min_diff:
+                min_diff = diff
+                best_snap = pt
+
+        return best_snap
+
     def find_edge_at_pos(self, pos_x, width):
         for index, story in enumerate(self.stories):
             start_x = self.time_to_x(story.start, width)
@@ -4993,7 +5068,7 @@ class TimelineCanvas(QWidget):
 
     def find_fade_handle_at_pos(self, pos_x, pos_y, width):
         """Hit-test tactile fade-in and fade-out envelope handles near the top edge of story blocks."""
-        if not getattr(self, "show_audio_fades", True):
+        if not getattr(self, "show_audio_fades", False):
             return None
 
         top_y = self.RULER_HEIGHT
@@ -5035,20 +5110,31 @@ class TimelineCanvas(QWidget):
         cursor_x = self.time_to_x(self.position, width)
         return abs(pos_x - cursor_x) <= self.CURSOR_GRAB_THRESHOLD
 
-    def set_zoom(self, new_zoom, center_x=None):
-        if center_x is None:
-            center_x = self.width() / 2.0
+    def set_zoom(self, new_zoom, center_x=None, focus_time=None):
+        width = max(1, self.width())
+        if focus_time is None:
+            # Anchor zoom around the active cursor position (self.position)
+            focus_time = getattr(self, "position", 0.0)
+            if focus_time is None:
+                focus_time = 0.0
 
-        focus_time = self.x_to_time(center_x, self.width())
+        if center_x is None:
+            # Keep the active cursor at its current screen x position, or center if off-screen
+            cur_x = self.time_to_x(focus_time, width)
+            if 0 <= cur_x <= width:
+                center_x = cur_x
+            else:
+                center_x = width / 2.0
 
         self.zoom_level = max(self.min_zoom, min(self.max_zoom, new_zoom))
 
         new_visible = self.visible_duration()
-        ratio = center_x / max(1, self.width())
+        ratio = center_x / max(1, width)
         self.scroll_offset = focus_time - (ratio * new_visible)
 
         self.clamp_scroll_offset()
         self.zoomChanged.emit()
+        self.scrollOffsetChanged.emit(self.scroll_offset)
         self.pixmap_dirty = True
         self.update()
 
@@ -5057,22 +5143,56 @@ class TimelineCanvas(QWidget):
         super().resizeEvent(event)
 
     def wheelEvent(self, event):
+        # 1. Check for horizontal scrolling (trackpad 2-finger horizontal gesture, horizontal tilt/side wheel, or Shift+vertical wheel)
+        h_delta_px = event.pixelDelta().x() if hasattr(event, "pixelDelta") else 0
+        h_delta_angle = event.angleDelta().x() if hasattr(event, "angleDelta") else 0
+        v_delta_angle = event.angleDelta().y() if hasattr(event, "angleDelta") else 0
+        v_delta_px = event.pixelDelta().y() if hasattr(event, "pixelDelta") else 0
         modifiers = event.modifiers()
-        delta = event.angleDelta().y()
 
-        if modifiers & Qt.KeyboardModifier.ShiftModifier:
-            pan_delta = (delta / 120.0) * (self.visible_duration() * 0.1)
-            self.scroll_offset -= pan_delta
+        is_shift = bool(modifiers & Qt.KeyboardModifier.ShiftModifier)
+
+        # Explicit horizontal input (horizontal scroll wheel or trackpad 2-finger horizontal pan)
+        if h_delta_px != 0 or h_delta_angle != 0:
+            if h_delta_px != 0:
+                pan_dt = (h_delta_px / max(1, self.width())) * self.visible_duration()
+                self.scroll_offset -= pan_dt
+            else:
+                pan_dt = (h_delta_angle / 120.0) * (self.visible_duration() * 0.1)
+                self.scroll_offset -= pan_dt
             self.clamp_scroll_offset()
+            self.scrollOffsetChanged.emit(self.scroll_offset)
+            self.pixmap_dirty = True
             self.update()
-        else:
-            mouse_x = event.position().x()
-            if delta > 0:
-                self.set_zoom(self.zoom_level * 1.15, mouse_x)
-            elif delta < 0:
-                self.set_zoom(self.zoom_level / 1.15, mouse_x)
+            event.accept()
+            return
 
-        event.accept()
+        # Shift + vertical wheel -> horizontal scrolling
+        if is_shift:
+            if v_delta_px != 0:
+                pan_dt = (v_delta_px / max(1, self.width())) * self.visible_duration()
+                self.scroll_offset -= pan_dt
+            else:
+                pan_dt = (v_delta_angle / 120.0) * (self.visible_duration() * 0.1)
+                self.scroll_offset -= pan_dt
+            self.clamp_scroll_offset()
+            self.scrollOffsetChanged.emit(self.scroll_offset)
+            self.pixmap_dirty = True
+            self.update()
+            event.accept()
+            return
+
+        # Vertical scroll wheel / standard wheel -> Zoom centered on active cursor
+        if v_delta_angle != 0:
+            factor = 1.15 ** (abs(v_delta_angle) / 120.0)
+            if v_delta_angle > 0:
+                self.set_zoom(self.zoom_level * factor)
+            else:
+                self.set_zoom(self.zoom_level / factor)
+            event.accept()
+            return
+
+        super().wheelEvent(event)
 
     def mousePressEvent(self, event):
         self.setFocus()
@@ -5148,6 +5268,7 @@ class TimelineCanvas(QWidget):
         # Use right-click + drag on handles or the Set Story Start/End buttons.
         if event.button() == Qt.MouseButton.LeftButton:
             time = max(0, min(self.duration, self.x_to_time(pos_x, width)))
+            self.position = time
             self.is_left_down = True
             self.is_scrubbing = True
             self.positionClicked.emit(time)
@@ -5155,6 +5276,7 @@ class TimelineCanvas(QWidget):
             story_idx = self.find_story_at_time(time)
             if story_idx is not None:
                 self.storyClicked.emit(story_idx)
+            self.update()
             event.accept()
             return
 
@@ -5173,7 +5295,8 @@ class TimelineCanvas(QWidget):
 
         # --- RIGHT-CLICK DRAG: Update Selection Region and Handles ---
         if self.is_right_dragging:
-            curr_time = max(0.0, min(self.duration, self.x_to_time(pos_x, width)))
+            raw_time = max(0.0, min(self.duration, self.x_to_time(pos_x, width)))
+            curr_time = self.snap_time(raw_time, width=width)
             if self.active_selection_handle == "start":
                 self.selection_start = curr_time
             elif self.active_selection_handle == "end":
@@ -5188,7 +5311,8 @@ class TimelineCanvas(QWidget):
 
         # --- LEFT-CLICK DRAG: Continuous Audio Scrubbing ---
         if self.is_left_down and self.is_scrubbing:
-            curr_time = max(0, min(self.duration, self.x_to_time(pos_x, width)))
+            raw_time = max(0, min(self.duration, self.x_to_time(pos_x, width)))
+            curr_time = self.snap_time(raw_time, width=width)
             self.scrubPositionChanged.emit(curr_time)
             event.accept()
             return
@@ -5199,7 +5323,8 @@ class TimelineCanvas(QWidget):
             if 0 <= idx < len(self.stories):
                 story = self.stories[idx]
                 story_dur = max(0.01, story.end - story.start)
-                curr_time = max(0.0, min(self.duration, self.x_to_time(pos_x, width)))
+                raw_time = max(0.0, min(self.duration, self.x_to_time(pos_x, width)))
+                curr_time = self.snap_time(raw_time, width=width)
                 if f_type == "fade_in":
                     max_in = max(0.0, story_dur - getattr(story, "fade_out", 0.0))
                     story.fade_in = round(max(0.0, min(max_in, curr_time - story.start)), 2)
@@ -5213,7 +5338,8 @@ class TimelineCanvas(QWidget):
         if self.active_edge_target:
             idx, edge_type = self.active_edge_target
             if 0 <= idx < len(self.stories):
-                curr_time = max(0, min(self.duration, self.x_to_time(pos_x, width)))
+                raw_time = max(0, min(self.duration, self.x_to_time(pos_x, width)))
+                curr_time = self.snap_time(raw_time, exclude_story_idx=idx, width=width)
                 story = self.stories[idx]
 
                 if edge_type == 'start':
@@ -5227,32 +5353,35 @@ class TimelineCanvas(QWidget):
             return
 
         pos_y = event.position().y()
-        if self.is_near_playhead(pos_x, width) or self.find_edge_at_pos(pos_x, width) or self.find_fade_handle_at_pos(pos_x, pos_y, width):
+        edge_hit = self.find_edge_at_pos(pos_x, width)
+        fade_hit = self.find_fade_handle_at_pos(pos_x, pos_y, width)
+
+        if self.is_near_playhead(pos_x, width) or edge_hit or fade_hit:
             self.setCursor(Qt.CursorShape.SizeHorCursor)
         else:
             self.unsetCursor()
 
         if not (self.is_panning or self.is_left_down or self.is_right_dragging or self.active_edge_target or self.active_fade_target):
-            hover_time = max(0, min(self.duration, self.x_to_time(pos_x, width)))
-            mins = int(hover_time // 60)
-            secs = int(hover_time % 60)
-            millis = int((hover_time - int(hover_time)) * 1000)
-
-            tooltip_text = f"{mins:02d}:{secs:02d}.{millis:03d}"
-            edge_hit = self.find_edge_at_pos(pos_x, width)
-            fade_hit = self.find_fade_handle_at_pos(pos_x, pos_y, width)
+            tooltip_text = ""
             if fade_hit:
                 idx, f_type = fade_hit
-                f_dur = getattr(self.stories[idx], f_type, 0.0)
-                f_name = "Fade-In" if f_type == "fade_in" else "Fade-Out"
-                tooltip_text += f"\n{self.stories[idx].title} ({f_name}: {f_dur:.2f}s)\nDrag handle horizontally to adjust audio fade"
+                if 0 <= idx < len(self.stories):
+                    f_dur = getattr(self.stories[idx], f_type, 0.0)
+                    f_name = "Fade-In" if f_type == "fade_in" else "Fade-Out"
+                    tooltip_text = f"{self.stories[idx].title} ({f_name}: {f_dur:.2f}s)\nDrag handle horizontally to adjust audio fade"
             elif edge_hit:
                 idx, edge_type = edge_hit
                 title = self.stories[idx].title if 0 <= idx < len(self.stories) else f"Story #{idx+1}"
-                tooltip_text += f"\n{title} ({edge_type.capitalize()} Boundary)\nRight-click and drag to adjust"
-            if tooltip_text != getattr(self, "_last_tooltip_text", ""):
-                self._last_tooltip_text = tooltip_text
-                QToolTip.showText(event.globalPosition().toPoint(), tooltip_text, self)
+                tooltip_text = f"{title} ({edge_type.capitalize()} Boundary)\nRight-click and drag to adjust"
+
+            if tooltip_text:
+                if tooltip_text != getattr(self, "_last_tooltip_text", ""):
+                    self._last_tooltip_text = tooltip_text
+                    QToolTip.showText(event.globalPosition().toPoint(), tooltip_text, self)
+            else:
+                if getattr(self, "_last_tooltip_text", ""):
+                    self._last_tooltip_text = ""
+                    QToolTip.hideText()
 
         super().mouseMoveEvent(event)
 
@@ -5796,9 +5925,10 @@ class TimelineCanvas(QWidget):
             )
 
             # --- Audio Fade Ramps & Envelope Visualization ---
-            if getattr(self, "show_audio_fades", True):
+            if getattr(self, "show_audio_fades", False):
                 fin = getattr(story, "fade_in", 0.0)
                 fout = getattr(story, "fade_out", 0.0)
+                fcurve = getattr(story, "fade_curve", "linear") or "linear"
                 if fin > 0 or fout > 0:
                     story_dur = max(0.001, story.end - story.start)
                     fin = min(fin, story_dur)
@@ -5810,19 +5940,31 @@ class TimelineCanvas(QWidget):
                     if fin > 0:
                         fin_apex_x = self.time_to_x(story.start + fin, width)
                         if fin_apex_x >= 0 and start_x <= width:
-                            fade_in_poly = QPolygonF([
-                                QPointF(start_x, bottom_y),
-                                QPointF(start_x, top_y),
-                                QPointF(fin_apex_x, top_y),
-                            ])
-                            painter.setBrush(QColor(0, 0, 0, 95 if is_selected else 65))
-                            painter.setPen(Qt.PenStyle.NoPen)
-                            painter.drawPolygon(fade_in_poly)
+                            in_path = QPainterPath()
+                            in_path.moveTo(start_x, bottom_y)
+                            steps = 16
+                            for step_i in range(1, steps + 1):
+                                u = step_i / float(steps)
+                                px = start_x + u * (fin_apex_x - start_x)
+                                val = calculate_fade_curve_factor(u, fcurve)
+                                py = bottom_y - val * (bottom_y - top_y)
+                                in_path.lineTo(px, py)
 
-                            # Diagonal ramp line
-                            ramp_pen = QPen(QColor("#38bdf8" if is_selected else "#7dd3fc"), 1.5, Qt.PenStyle.DashLine)
+                            # Fill shaded polygon area under curve
+                            fill_path = QPainterPath(in_path)
+                            fill_path.lineTo(start_x, top_y)
+                            fill_path.lineTo(start_x, bottom_y)
+                            fill_path.closeSubpath()
+
+                            painter.setBrush(QColor(0, 0, 0, 85 if is_selected else 55))
+                            painter.setPen(Qt.PenStyle.NoPen)
+                            painter.drawPath(fill_path)
+
+                            # Smooth ramp stroke
+                            ramp_pen = QPen(QColor("#38bdf8" if is_selected else "#7dd3fc"), 1.2)
                             painter.setPen(ramp_pen)
-                            painter.drawLine(QPointF(start_x, bottom_y), QPointF(fin_apex_x, top_y))
+                            painter.setBrush(Qt.BrushStyle.NoBrush)
+                            painter.drawPath(in_path)
 
                             # Tactile Grab Handle at apex along top edge
                             if 0 <= fin_apex_x <= width:
@@ -5834,19 +5976,31 @@ class TimelineCanvas(QWidget):
                     if fout > 0:
                         fout_apex_x = self.time_to_x(story.end - fout, width)
                         if end_x >= 0 and fout_apex_x <= width:
-                            fade_out_poly = QPolygonF([
-                                QPointF(fout_apex_x, top_y),
-                                QPointF(end_x, top_y),
-                                QPointF(end_x, bottom_y),
-                            ])
-                            painter.setBrush(QColor(0, 0, 0, 95 if is_selected else 65))
-                            painter.setPen(Qt.PenStyle.NoPen)
-                            painter.drawPolygon(fade_out_poly)
+                            out_path = QPainterPath()
+                            out_path.moveTo(fout_apex_x, top_y)
+                            steps = 16
+                            for step_i in range(1, steps + 1):
+                                u = step_i / float(steps)
+                                px = fout_apex_x + u * (end_x - fout_apex_x)
+                                # fade out goes from 1.0 down to 0.0
+                                val = 1.0 - calculate_fade_curve_factor(u, fcurve)
+                                py = bottom_y - val * (bottom_y - top_y)
+                                out_path.lineTo(px, py)
 
-                            # Diagonal ramp line
-                            ramp_pen = QPen(QColor("#f43f5e" if is_selected else "#fb7185"), 1.5, Qt.PenStyle.DashLine)
+                            fill_path = QPainterPath(out_path)
+                            fill_path.lineTo(end_x, top_y)
+                            fill_path.lineTo(fout_apex_x, top_y)
+                            fill_path.closeSubpath()
+
+                            painter.setBrush(QColor(0, 0, 0, 85 if is_selected else 55))
+                            painter.setPen(Qt.PenStyle.NoPen)
+                            painter.drawPath(fill_path)
+
+                            # Smooth ramp stroke
+                            ramp_pen = QPen(QColor("#f43f5e" if is_selected else "#fb7185"), 1.2)
                             painter.setPen(ramp_pen)
-                            painter.drawLine(QPointF(fout_apex_x, top_y), QPointF(end_x, bottom_y))
+                            painter.setBrush(Qt.BrushStyle.NoBrush)
+                            painter.drawPath(out_path)
 
                             # Tactile Grab Handle at apex along top edge
                             if 0 <= fout_apex_x <= width:
@@ -5956,6 +6110,295 @@ class TimelineResizeHandle(QWidget):
         super().mouseReleaseEvent(event)
 
 
+class TimelineOverviewBar(QWidget):
+    """Interactive navigation overview pill below the timeline with drag-to-zoom edge handles."""
+    valueChanged = Signal(int)
+
+    HANDLE_WIDTH = 7
+    BAR_HEIGHT = 16
+
+    def __init__(self, canvas, parent=None, tokens=None):
+        super().__init__(parent)
+        self.canvas = canvas
+        self.tokens = tokens if tokens is not None else ThemeTokens()
+        self.setFixedHeight(self.BAR_HEIGHT)
+        self.setMouseTracking(True)
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
+
+        self._dragging = None  # None, 'pan', 'left_handle', 'right_handle'
+        self._drag_start_x = 0
+        self._drag_start_offset = 0.0
+        self._drag_fixed_left = 0.0
+        self._drag_fixed_right = 0.0
+        self._hover_handle = None
+
+        if hasattr(self.canvas, "scrollOffsetChanged"):
+            self.canvas.scrollOffsetChanged.connect(lambda _: self.update())
+        if hasattr(self.canvas, "zoomChanged"):
+            self.canvas.zoomChanged.connect(self.update)
+
+    def get_pill_rect(self):
+        w = max(1, self.width())
+        dur = max(0.001, getattr(self.canvas, "duration", 1.0))
+        vis = min(dur, max(0.001, self.canvas.visible_duration()))
+        offset = max(0.0, min(dur - vis, getattr(self.canvas, "scroll_offset", 0.0)))
+
+        pill_x = (offset / dur) * w
+        pill_w = max(16.0, (vis / dur) * w)
+        if pill_x + pill_w > w:
+            pill_x = max(0.0, w - pill_w)
+
+        return QRectF(pill_x, 2.0, pill_w, max(4.0, self.height() - 4.0))
+
+    def _hit_test(self, pos_x):
+        pill = self.get_pill_rect()
+        if not pill.contains(QPointF(pos_x, self.height() / 2.0)):
+            return 'track'
+
+        # Left edge handle hit (resizable)
+        if abs(pos_x - pill.left()) <= self.HANDLE_WIDTH:
+            return 'left'
+        # Right edge handle hit (resizable)
+        if abs(pos_x - pill.right()) <= self.HANDLE_WIDTH:
+            return 'right'
+
+        return 'pill'
+
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing, True)
+        w = max(1, self.width())
+        h = max(1, self.height())
+        dur = max(0.001, getattr(self.canvas, "duration", 1.0))
+
+        is_dark = self.palette().window().color().value() < 128
+
+        # 1. Track background
+        track_bg = QColor("#161b22") if is_dark else QColor("#e8ecf1")
+        track_border = QColor("#21262d") if is_dark else QColor("#d0d7de")
+        painter.setPen(QPen(track_border, 1.0))
+        painter.setBrush(track_bg)
+        painter.drawRoundedRect(QRectF(0.5, 1.0, w - 1.0, h - 2.0), 3.0, 3.0)
+
+        # 2. Mini story segments in overview
+        stories = getattr(self.canvas, "stories", [])
+        if stories and dur > 0:
+            for s_idx, story in enumerate(stories):
+                s_start = max(0.0, min(dur, getattr(story, "start", 0.0)))
+                s_end = max(s_start, min(dur, getattr(story, "end", 0.0)))
+                if s_end > s_start:
+                    sx = (s_start / dur) * w
+                    sw = max(2.0, ((s_end - s_start) / dur) * w)
+                    s_color = self.tokens.story_segment_color(s_idx)
+                    s_color.setAlpha(110 if is_dark else 130)
+                    painter.setPen(Qt.PenStyle.NoPen)
+                    painter.setBrush(s_color)
+                    painter.drawRect(QRectF(sx, 3.0, sw, h - 6.0))
+
+        # 3. Viewport Pill
+        pill = self.get_pill_rect()
+
+        # Pill base style
+        if self._dragging == 'pan' or self._hover_handle == 'pill':
+            pill_bg = QColor("#3f4c60") if is_dark else QColor("#9aa8ba")
+            pill_border = QColor("#58a6ff") if is_dark else QColor("#0969da")
+        else:
+            pill_bg = QColor("#303846") if is_dark else QColor("#afbccb")
+            pill_border = QColor("#485569") if is_dark else QColor("#8c99a8")
+
+        painter.setPen(QPen(pill_border, 1.0))
+        painter.setBrush(pill_bg)
+        painter.drawRoundedRect(pill, 4.0, 4.0)
+
+        # 4. Resizable Left & Right edge grab handles
+        left_h_active = (self._hover_handle == 'left' or self._dragging == 'left_handle')
+        right_h_active = (self._hover_handle == 'right' or self._dragging == 'right_handle')
+
+        # Left handle styling
+        if left_h_active:
+            painter.setBrush(QColor("#38bdf8" if is_dark else "#0284c7"))
+            painter.setPen(Qt.PenStyle.NoPen)
+            painter.drawRoundedRect(QRectF(pill.left(), pill.top(), 5.0, pill.height()), 2.0, 2.0)
+        else:
+            painter.setPen(QPen(QColor("#8b949e" if is_dark else "#ffffff"), 1.2))
+            mid_y = pill.top() + pill.height() / 2.0
+            painter.drawLine(QPointF(pill.left() + 3.0, mid_y - 3.0), QPointF(pill.left() + 3.0, mid_y + 3.0))
+
+        # Right handle styling
+        if right_h_active:
+            painter.setBrush(QColor("#38bdf8" if is_dark else "#0284c7"))
+            painter.setPen(Qt.PenStyle.NoPen)
+            painter.drawRoundedRect(QRectF(pill.right() - 5.0, pill.top(), 5.0, pill.height()), 2.0, 2.0)
+        else:
+            painter.setPen(QPen(QColor("#8b949e" if is_dark else "#ffffff"), 1.2))
+            mid_y = pill.top() + pill.height() / 2.0
+            painter.drawLine(QPointF(pill.right() - 3.0, mid_y - 3.0), QPointF(pill.right() - 3.0, mid_y + 3.0))
+
+        # 5. Playhead indicator tick
+        pos = getattr(self.canvas, "position", 0.0)
+        if 0 <= pos <= dur:
+            cur_x = (pos / dur) * w
+            painter.setPen(QPen(QColor("#ef4444" if is_dark else "#dc2626"), 1.5))
+            painter.drawLine(QPointF(cur_x, 1.0), QPointF(cur_x, h - 1.0))
+
+        painter.end()
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.MouseButton.LeftButton:
+            pos_x = event.position().x()
+            w = max(1, self.width())
+            dur = max(0.001, getattr(self.canvas, "duration", 1.0))
+            hit = self._hit_test(pos_x)
+
+            if hit == 'left':
+                self._dragging = 'left_handle'
+                self._drag_start_x = pos_x
+                self._drag_fixed_right = self.canvas.scroll_offset + self.canvas.visible_duration()
+                self.setCursor(Qt.CursorShape.SizeHorCursor)
+                self.update()
+                event.accept()
+                return
+
+            elif hit == 'right':
+                self._dragging = 'right_handle'
+                self._drag_start_x = pos_x
+                self._drag_fixed_left = self.canvas.scroll_offset
+                self.setCursor(Qt.CursorShape.SizeHorCursor)
+                self.update()
+                event.accept()
+                return
+
+            elif hit == 'pill':
+                self._dragging = 'pan'
+                self._drag_start_x = pos_x
+                self._drag_start_offset = self.canvas.scroll_offset
+                self.setCursor(Qt.CursorShape.ClosedHandCursor)
+                self.update()
+                event.accept()
+                return
+
+            elif hit == 'track':
+                # Center viewport around clicked position
+                clicked_time = (pos_x / w) * dur
+                vis = self.canvas.visible_duration()
+                self.canvas.scroll_offset = clicked_time - (vis / 2.0)
+                self.canvas.clamp_scroll_offset()
+                self.canvas.scrollOffsetChanged.emit(self.canvas.scroll_offset)
+                self.canvas.pixmap_dirty = True
+                self.canvas.update()
+
+                self._dragging = 'pan'
+                self._drag_start_x = pos_x
+                self._drag_start_offset = self.canvas.scroll_offset
+                self.setCursor(Qt.CursorShape.ClosedHandCursor)
+                self.update()
+                event.accept()
+                return
+
+        super().mousePressEvent(event)
+
+    def mouseMoveEvent(self, event):
+        pos_x = event.position().x()
+        w = max(1, self.width())
+        dur = max(0.001, getattr(self.canvas, "duration", 1.0))
+
+        if self._dragging == 'pan':
+            dx = pos_x - self._drag_start_x
+            dt = (dx / w) * dur
+            self.canvas.scroll_offset = self._drag_start_offset + dt
+            self.canvas.clamp_scroll_offset()
+            self.canvas.scrollOffsetChanged.emit(self.canvas.scroll_offset)
+            self.canvas.pixmap_dirty = True
+            self.canvas.update()
+            self.update()
+            event.accept()
+            return
+
+        elif self._dragging == 'left_handle':
+            new_left_time = max(0.0, min(self._drag_fixed_right - 0.1, (pos_x / w) * dur))
+            new_vis_dur = max(0.05, self._drag_fixed_right - new_left_time)
+            min_vis = dur / self.canvas.max_zoom
+            max_vis = dur / self.canvas.min_zoom
+            new_vis_dur = max(min_vis, min(max_vis, new_vis_dur))
+            new_left_time = max(0.0, self._drag_fixed_right - new_vis_dur)
+
+            self.canvas.zoom_level = max(self.canvas.min_zoom, min(self.canvas.max_zoom, dur / new_vis_dur))
+            self.canvas.scroll_offset = new_left_time
+            self.canvas.clamp_scroll_offset()
+            self.canvas.zoomChanged.emit()
+            self.canvas.scrollOffsetChanged.emit(self.canvas.scroll_offset)
+            self.canvas.pixmap_dirty = True
+            self.canvas.update()
+            self.update()
+            event.accept()
+            return
+
+        elif self._dragging == 'right_handle':
+            new_right_time = min(dur, max(self._drag_fixed_left + 0.1, (pos_x / w) * dur))
+            new_vis_dur = max(0.05, new_right_time - self._drag_fixed_left)
+            min_vis = dur / self.canvas.max_zoom
+            max_vis = dur / self.canvas.min_zoom
+            new_vis_dur = max(min_vis, min(max_vis, new_vis_dur))
+
+            self.canvas.zoom_level = max(self.canvas.min_zoom, min(self.canvas.max_zoom, dur / new_vis_dur))
+            self.canvas.scroll_offset = self._drag_fixed_left
+            self.canvas.clamp_scroll_offset()
+            self.canvas.zoomChanged.emit()
+            self.canvas.scrollOffsetChanged.emit(self.canvas.scroll_offset)
+            self.canvas.pixmap_dirty = True
+            self.canvas.update()
+            self.update()
+            event.accept()
+            return
+
+        hit = self._hit_test(pos_x)
+        self._hover_handle = hit
+        if hit in ('left', 'right'):
+            self.setCursor(Qt.CursorShape.SizeHorCursor)
+            self.setToolTip("Drag edge to zoom in or out")
+        elif hit == 'pill':
+            self.setCursor(Qt.CursorShape.OpenHandCursor)
+            self.setToolTip("Drag pill to scroll timeline")
+        else:
+            self.setCursor(Qt.CursorShape.PointingHandCursor)
+            self.setToolTip("Click to jump to point in timeline")
+        self.update()
+        super().mouseMoveEvent(event)
+
+    def mouseReleaseEvent(self, event):
+        if event.button() == Qt.MouseButton.LeftButton and self._dragging is not None:
+            self._dragging = None
+            pos_x = event.position().x()
+            hit = self._hit_test(pos_x)
+            if hit in ('left', 'right'):
+                self.setCursor(Qt.CursorShape.SizeHorCursor)
+            elif hit == 'pill':
+                self.setCursor(Qt.CursorShape.OpenHandCursor)
+            else:
+                self.setCursor(Qt.CursorShape.PointingHandCursor)
+            self.update()
+            event.accept()
+            return
+        super().mouseReleaseEvent(event)
+
+    def leaveEvent(self, event):
+        self._hover_handle = None
+        self.update()
+        super().leaveEvent(event)
+
+    def setRange(self, min_val, max_val):
+        self.update()
+
+    def setPageStep(self, step):
+        self.update()
+
+    def setSingleStep(self, step):
+        self.update()
+
+    def setValue(self, val):
+        self.update()
+
+
 class TimelineWidget(QWidget):
     mediaDropped = Signal(str)
 
@@ -5969,11 +6412,12 @@ class TimelineWidget(QWidget):
         layout.setSpacing(0)
 
         self.canvas = TimelineCanvas(self, tokens=self.tokens)
-        self.scrollbar = QScrollBar(Qt.Orientation.Horizontal)
+        self.overview_bar = TimelineOverviewBar(self.canvas, parent=self, tokens=self.tokens)
+        self.scrollbar = self.overview_bar
         self.resize_handle = TimelineResizeHandle(self)
 
         layout.addWidget(self.canvas, 1)
-        layout.addWidget(self.scrollbar)
+        layout.addWidget(self.overview_bar)
         layout.addWidget(self.resize_handle)
 
         settings = QSettings("RadioTVStorySegmenter", "RadioTVStorySegmenter")
@@ -6057,6 +6501,73 @@ class TimelineWidget(QWidget):
 # ============================================================
 
 
+
+
+class StoryListWidget(QListWidget):
+    """QListWidget subclass for story segmentation list with right-click context menu and drag-drop support."""
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        self.customContextMenuRequested.connect(self._show_context_menu)
+
+    def _show_context_menu(self, pos):
+        parent = self.parent()
+        while parent and not hasattr(parent, "open_story_fades_dialog"):
+            parent = parent.parent()
+        if not parent:
+            return
+
+        if not self.selectedItems():
+            return
+
+        menu = QMenu(self)
+
+        audition_act = QAction("Audition Story Playback", self)
+        audition_act.triggered.connect(lambda: parent.audition_story(self.currentRow()))
+        menu.addAction(audition_act)
+
+        menu.addSeparator()
+
+        fade_menu = menu.addMenu("Audio Fades")
+
+        adjust_fades_act = QAction("Adjust Fades for Selected Story...", self)
+        adjust_fades_act.triggered.connect(lambda: parent.open_story_fades_dialog())
+        fade_menu.addAction(adjust_fades_act)
+
+        apply_default_fades_act = QAction("Apply Default Fades to Selected Stories", self)
+        apply_default_fades_act.triggered.connect(lambda: parent.apply_fades_to_selected_stories())
+        fade_menu.addAction(apply_default_fades_act)
+
+        remove_fades_act = QAction("Remove Fades from Selected Stories", self)
+        remove_fades_act.triggered.connect(lambda: parent.remove_fades_from_selected_stories())
+        fade_menu.addAction(remove_fades_act)
+
+        fade_menu.addSeparator()
+        curve_menu = fade_menu.addMenu("Set Fade Curve Profile")
+
+        linear_act = QAction("Linear Ramp", self)
+        linear_act.triggered.connect(lambda: parent.set_fade_curve_for_selected_stories("linear"))
+        curve_menu.addAction(linear_act)
+
+        scurve_act = QAction("Cosine S-Curve", self)
+        scurve_act.triggered.connect(lambda: parent.set_fade_curve_for_selected_stories("s_curve"))
+        curve_menu.addAction(scurve_act)
+
+        log_act = QAction("Logarithmic", self)
+        log_act.triggered.connect(lambda: parent.set_fade_curve_for_selected_stories("logarithmic"))
+        curve_menu.addAction(log_act)
+
+        exp_act = QAction("Exponential", self)
+        exp_act.triggered.connect(lambda: parent.set_fade_curve_for_selected_stories("exponential"))
+        curve_menu.addAction(exp_act)
+
+        menu.addSeparator()
+
+        del_act = QAction("Delete Selected Story", self)
+        del_act.triggered.connect(lambda: parent.delete_selected_story())
+        menu.addAction(del_act)
+
+        menu.exec(self.mapToGlobal(pos))
 
 
 class BatchFileListWidget(QListWidget):
