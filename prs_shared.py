@@ -169,6 +169,7 @@ from PySide6.QtCore import (
     QProcessEnvironment,
     QSettings,
     QSize,
+    QCoreApplication,
 )
 from PySide6.QtNetwork import QLocalServer, QLocalSocket
 
@@ -517,7 +518,7 @@ class CollapsibleSection(QWidget):
 
 # Display branding shown to the user (title bar, About box, installers).
 APP_DISPLAY_NAME = "Radio & TV Segmenter"
-PROJECT_VERSION = "3.3.12"
+PROJECT_VERSION = "3.3.13"
 DEFAULT_GITHUB_REPO = "bradlinder/RTVS3"
 
 

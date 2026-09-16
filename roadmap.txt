@@ -29,15 +29,13 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 --------------------------------------------------------------------------------
 TABLE OF CONTENTS & STATUS OVERVIEW
 --------------------------------------------------------------------------------
-1. Previous Release: Magnetic Snapping Disabling & Audio Fade Handle Visibility Restoration (Completed in v3.3.11)
-   [x] 1.1 Default Magnetic Snapping Disabled (Set `enable_magnetic_snapping = False` in `prs_shared.py` to restore fluid, unconstrained 60 FPS story boundary dragging)
-   [x] 1.2 Tactile Audio Fade Handles Always Visible (Fade-in blue handle and fade-out rose handle are drawn along the top edge of every story block when audio fades are enabled, even at 0.0s fade duration)
-   [x] 1.3 Expanded Fade Handle Hit-Testing (Increased `FADE_HANDLE_THRESHOLD` to 12px and expanded vertical hit zone for effortless left and right mouse button dragging)
-   [x] 1.4 Story Context Menu Audio Fade Access (Ensured right-clicking story blocks reliably opens the timeline context menu with "Set Audio Fades..." action)
+1. Previous Release: QPainterPath Symbol Import Fix & Timeline Canvas Error Resolution (Completed in v3.3.12)
+   [x] 1.1 QPainterPath Symbol Import (Imported `QPainterPath` from `PySide6.QtGui` in `prs_shared.py` to fix NameError in paintEvent)
+   [x] 1.2 Audio Fade Ramp Visual Rendering (Restored full rendering of blue fade-in & rose fade-out ramp paths and top-edge grab handles)
 
-2. Current Release: QPainterPath Symbol Import Fix & Timeline Canvas Error Resolution (Completed in v3.3.12)
-   [x] 2.1 QPainterPath Symbol Import (Imported `QPainterPath` from `PySide6.QtGui` in `prs_shared.py` to fix NameError in paintEvent)
-   [x] 2.2 Audio Fade Ramp Visual Rendering (Restored full rendering of blue fade-in & rose fade-out ramp paths and top-edge grab handles)
+2. Current Release: QCoreApplication Symbol Import & Clean Exit Fix (Completed in v3.3.13)
+   [x] 2.1 QCoreApplication Symbol Import (Imported `QCoreApplication` from `PySide6.QtCore` in `prs_shared.py` to resolve NameError in MainWindow.closeEvent)
+   [x] 2.2 Clean Application Shutdown (Ensured zero traceback exceptions on app close)
 
 3. Future Milestone: Expanded NLE & DAW Timeline Interchange (Phase 4 - Planned for v3.4) [NOT STARTED]
    [ ] 3.1 Cockos Reaper Project (.rpp) Generator

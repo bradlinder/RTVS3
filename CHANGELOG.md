@@ -1,5 +1,10 @@
 # Changelog
 
+## v3.3.13
+- **QCoreApplication Symbol Import & Clean Exit Fix**:
+  - Imported `QCoreApplication` from `PySide6.QtCore` in `prs_shared.py`, resolving the `NameError: name 'QCoreApplication' is not defined` traceback when closing the application (`MainWindow.closeEvent`).
+  - Confirmed that Windows Media Foundation codec messages (`[h264_mf]`, `[hevc_mf]`) are normal operating system notifications emitted during hardware video encoder teardown.
+
 ## v3.3.12
 - **QPainterPath Symbol Fix & Canvas Error Resolution**:
   - Imported `QPainterPath` from `PySide6.QtGui` in `prs_shared.py`, resolving the `NameError: name 'QPainterPath' is not defined` exception that flooded the console and aborted `TimelineCanvas.paintEvent`.
