@@ -36,9 +36,10 @@ class TranslationEnvSetupWorker(QObject):
     progress = Signal(float, str)
     finished = Signal(object)  # None on success, error message (str) on failure
 
-    def __init__(self, plugin_dir: Path | None = None):
+    def __init__(self, plugin_dir: Path | None = None, runtime_mgr=None):
         super().__init__()
         self.plugin_dir = plugin_dir
+        self.runtime_mgr = runtime_mgr
         self._cancelled = False
         self.cancel_event = threading.Event()
 
@@ -49,7 +50,10 @@ class TranslationEnvSetupWorker(QObject):
     def run(self):
         error = None
         try:
-            manager = _translation_runtime_manager()
+            manager = self.runtime_mgr if self.runtime_mgr is not None else _translation_runtime_manager()
+            if not hasattr(manager, "ensure_environment"):
+                import runtime_manager
+                manager = runtime_manager.RuntimeManager()
 
             def _on_progress(pct_or_msg, msg=""):
                 if self._cancelled or self.cancel_event.is_set():
@@ -62,14 +66,18 @@ class TranslationEnvSetupWorker(QObject):
                     text = str(pct_or_msg)
                 self.progress.emit(pct, text)
 
-            ok = manager.ensure_environment(
+            ensure_fn = getattr(manager, "ensure_environment", None)
+            if ensure_fn is None:
+                raise AttributeError("RuntimeManager has no 'ensure_environment' method.")
+
+            ok = ensure_fn(
                 "translate",
                 progress_cb=_on_progress,
                 plugin_dir=self.plugin_dir,
                 cancel_event=self.cancel_event,
             )
             if not ok and not self._cancelled and not self.cancel_event.is_set():
-                err_detail = manager.get_last_error()
+                err_detail = getattr(manager, "get_last_error", lambda: "")()
                 error = "The isolated translation runtime could not be installed or updated."
                 if err_detail:
                     error = f"{error}\n\nDetails:\n{err_detail}"
@@ -111,7 +119,12 @@ def _translation_runtime_entry_path(app=None) -> Path:
 
     return Path()
 
-def _translation_runtime_manager():
+def _translation_runtime_manager(app=None):
+    if app is not None and hasattr(app, "runtime_mgr") and app.runtime_mgr is not None:
+        return app.runtime_mgr
+    import runtime_manager
+    if hasattr(runtime_manager, "RuntimeManager"):
+        return runtime_manager.RuntimeManager()
     from runtime_manager import RuntimeManager
     return RuntimeManager()
 
@@ -386,7 +399,7 @@ class TranslationMixin:
             self._on_translation_error("The translation plugin runtime entry point is missing.")
             return False
 
-        manager = _translation_runtime_manager()
+        manager = _translation_runtime_manager(self)
         plugin_dir = entry.parent if entry and entry.exists() else None
 
         from_code = request.get("from_code", "en")
@@ -445,7 +458,10 @@ class TranslationMixin:
             self.cancel_button.setEnabled(True)
 
         self._translation_env_qthread = QThread(self)
-        self._translation_env_worker = TranslationEnvSetupWorker(plugin_dir=plugin_dir)
+        self._translation_env_worker = TranslationEnvSetupWorker(
+            plugin_dir=plugin_dir,
+            runtime_mgr=getattr(self, "runtime_mgr", None) or manager
+        )
         self._translation_env_worker.moveToThread(self._translation_env_qthread)
         if hasattr(self, "_track_worker_thread"):
             self._track_worker_thread(self._translation_env_qthread)
@@ -477,7 +493,7 @@ class TranslationMixin:
                     pass
             return
 
-        manager = _translation_runtime_manager()
+        manager = _translation_runtime_manager(self)
         py_exe = manager.get_executable("translate")
         if not py_exe or not Path(py_exe).exists():
             err = "The isolated translation Python runtime is unavailable."

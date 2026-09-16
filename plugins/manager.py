@@ -385,10 +385,14 @@ class PluginManager:
 
         for rname in runtimes_to_remove:
             try:
-                from runtime_manager import RuntimeManager
-                rm = RuntimeManager()
-                rm.kill_all_subprocesses()
-                rm.remove_environment(rname)
+                import runtime_manager
+                rm = getattr(self, "runtime_mgr", None) or runtime_manager.RuntimeManager()
+                if hasattr(rm, "kill_all_subprocesses"):
+                    rm.kill_all_subprocesses()
+                else:
+                    runtime_manager.kill_all_subprocesses()
+                if hasattr(rm, "remove_environment"):
+                    rm.remove_environment(rname)
             except Exception as exc:
                 print(f"[PLUGINS] Could not remove isolated runtime {rname} for {plugin_id}: {exc}")
 

@@ -1,5 +1,12 @@
 # Changelog
 
+## v3.2.19
+- **Resilient Translation Runtime Manager Resolution & macOS Execution Fixes**:
+  - Implemented multi-layered `RuntimeManager` resolution in `translation.py`, `model_management.py`, and `plugins/manager.py` to prevent `AttributeError: 'RuntimeManager' object has no attribute 'ensure_environment'` or `kill_all_subprocesses` errors on macOS when launching translation background setup workers or managing model caches.
+  - Explicitly passed `runtime_mgr` instance into `TranslationEnvSetupWorker` and fallback module importers to guarantee that `ensure_environment`, `kill_all_subprocesses`, and `remove_environment` are accessible across worker threads.
+- **Preview & Version Inspector Synchronization**:
+  - Synchronized version `v3.2.19` across `prs_shared.py`, `updater.py`, `build_installer.py`, Windows installer definitions, plugin manifests, `package.json`, `metadata.json`, and `index.html`.
+
 ## v3.2.18
 - **macOS SSL Certificate Verification & Model Download Fixes**:
   - Automatically configures CA certificate bundles (`certifi.where()`) across `bootstrap.py`, `radio_tv_story_segmenter_worker.py`, `model_management.py`, and `plugins/translation/support.py`. Resolves `URLError: <urlopen error [SSL: CERTIFICATE_VERIFY_FAILED]>` on macOS during WeSpeaker, MarianMT, and NLLB model downloads.

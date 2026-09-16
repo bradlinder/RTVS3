@@ -742,10 +742,17 @@ class ModelManagementMixin:
             for item in selected:
                 try:
                     if item["kind"] == "translation_runtime":
-                        from runtime_manager import RuntimeManager
-                        rm = RuntimeManager()
-                        rm.kill_all_subprocesses()
-                        rm.remove_environment("translate")
+                        rm = getattr(self, "runtime_mgr", None)
+                        if rm is None:
+                            import runtime_manager
+                            rm = runtime_manager.RuntimeManager()
+                        if hasattr(rm, "kill_all_subprocesses"):
+                            rm.kill_all_subprocesses()
+                        else:
+                            import runtime_manager
+                            runtime_manager.kill_all_subprocesses()
+                        if hasattr(rm, "remove_environment"):
+                            rm.remove_environment("translate")
                     elif item["kind"] in ("diarize_model", "diarize_runtime"):
                         for p in [get_models_storage_dir() / "wespeaker", Path.home() / ".wespeaker"]:
                             if p.exists():
@@ -754,10 +761,17 @@ class ModelManagementMixin:
                                 except Exception:
                                     pass
                         try:
-                            from runtime_manager import RuntimeManager
-                            rm = RuntimeManager()
-                            rm.kill_all_subprocesses()
-                            rm.remove_environment("diarize")
+                            rm = getattr(self, "runtime_mgr", None)
+                            if rm is None:
+                                import runtime_manager
+                                rm = runtime_manager.RuntimeManager()
+                            if hasattr(rm, "kill_all_subprocesses"):
+                                rm.kill_all_subprocesses()
+                            else:
+                                import runtime_manager
+                                runtime_manager.kill_all_subprocesses()
+                            if hasattr(rm, "remove_environment"):
+                                rm.remove_environment("diarize")
                         except Exception:
                             pass
                     elif item["kind"] == "installer_cache":
@@ -828,11 +842,18 @@ class ModelManagementMixin:
             return
 
         try:
-            from runtime_manager import RuntimeManager
-            rm = RuntimeManager()
-            rm.kill_all_subprocesses()
-            rm.remove_environment("translate")
-            rm.remove_environment("diarize")
+            rm = getattr(self, "runtime_mgr", None)
+            if rm is None:
+                import runtime_manager
+                rm = runtime_manager.RuntimeManager()
+            if hasattr(rm, "kill_all_subprocesses"):
+                rm.kill_all_subprocesses()
+            else:
+                import runtime_manager
+                runtime_manager.kill_all_subprocesses()
+            if hasattr(rm, "remove_environment"):
+                rm.remove_environment("translate")
+                rm.remove_environment("diarize")
         except Exception:
             pass
 

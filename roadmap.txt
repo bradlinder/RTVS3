@@ -29,15 +29,15 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 --------------------------------------------------------------------------------
 TABLE OF CONTENTS & STATUS OVERVIEW
 --------------------------------------------------------------------------------
-1. Previous Release: Non-Blocking macOS & Linux Translation Cancellation (Completed in v3.2.17)
-   [x] 1.1 Replaced 5000ms blocking wait in `stop_translation_worker()` with 150ms graceful probe + `SIGKILL` to eliminate Qt main GUI thread hangs on macOS
-   [x] 1.2 Connected `cancel_event` directly to `TranslationEnvSetupWorker` and `manager.ensure_environment()` for clean background environment setup cancellation
-   [x] 1.3 Added signal disconnection during worker thread cleanup to prevent post-cancellation UI popups or error dialogs
+1. Previous Release: macOS SSL Certificate Verification & Clean Exit Fixes (Completed in v3.2.18)
+   [x] 1.1 Configured CA certificate bundles (`certifi.where()`) across startup modules and worker scripts to fix `URLError: <urlopen error [SSL: CERTIFICATE_VERIFY_FAILED]>` on macOS
+   [x] 1.2 Filtered out Python interpreter flags (`-B`, `-u`, `--prs-worker`) in `radio_tv_story_segmenter_worker.py`'s `main()` to eliminate `Error: Unknown processing mode: -B`
+   [x] 1.3 Added `closeEvent(event)` and `_is_closing` IPC server guards in `RadioTVSegmenter.py` to stop background workers and prevent the app from instantly reopening when closed
 
-2. Current Release: macOS SSL Certificate Verification & Clean Exit Fixes (Completed in v3.2.18)
-   [x] 2.1 Configured CA certificate bundles (`certifi.where()`) across startup modules and worker scripts to fix `URLError: <urlopen error [SSL: CERTIFICATE_VERIFY_FAILED]>` on macOS
-   [x] 2.2 Filtered out Python interpreter flags (`-B`, `-u`, `--prs-worker`) in `radio_tv_story_segmenter_worker.py`'s `main()` to eliminate `Error: Unknown processing mode: -B`
-   [x] 2.3 Added `closeEvent(event)` and `_is_closing` IPC server guards in `RadioTVSegmenter.py` to stop background workers and prevent the app from instantly reopening when closed
+2. Current Release: Resilient Translation Runtime Manager Resolution (Completed in v3.2.19)
+   [x] 2.1 Multi-layered `RuntimeManager` resolution in `translation.py`, `model_management.py`, and `plugins/manager.py` preventing `AttributeError: 'RuntimeManager' object has no attribute 'ensure_environment'` or `kill_all_subprocesses` on macOS
+   [x] 2.2 Passed `runtime_mgr` instance directly into `TranslationEnvSetupWorker` and fallback importers to guarantee background environment setup methods exist across threads
+   [x] 2.3 Synchronized v3.2.19 version declarations across manifests, installer scripts, package config, and web preview inspectable UI
 
 3. Future Milestone: Expanded NLE & DAW Timeline Interchange (Phase 4 - Planned for v3.4) [NOT STARTED]
    [ ] 3.1 Cockos Reaper Project (.rpp) Generator
