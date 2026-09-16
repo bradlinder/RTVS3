@@ -1,5 +1,18 @@
 # Changelog
 
+## v3.2.20
+- **macOS System CLI Tool & Homebrew PATH Environment Integration**:
+  - Implemented `setup_macos_path_environment()` in `bootstrap.py` and `radio_tv_story_segmenter_worker.py` to ensure standard macOS tool directories (`/opt/homebrew/bin`, `/opt/homebrew/sbin`, `/usr/local/bin`, `/usr/local/sbin`, `~/.local/bin`, `~/.cargo/bin`) are present in `os.environ["PATH"]`.
+  - Applications launched from macOS Finder / Dock / Spotlight run under `launchd` with a stripped-down `PATH` (`/usr/bin:/bin:/usr/sbin:/sbin`), which previously made Homebrew-installed `ffmpeg`, `ffprobe`, `python3`, and `uv` invisible.
+  - Enhanced `find_bundled_executable()` in `prs_shared.py` to directly search Homebrew and standard macOS bin directories if not found on `PATH`.
+- **Robust SSL Context Factory (Keyword Argument Handling)**:
+  - Fixed a critical `TypeError: <lambda>() got an unexpected keyword argument 'purpose'` bug in `bootstrap.py` and `plugins/translation/support.py` where `ssl._create_default_https_context` was previously assigned a 0-argument lambda. Replaced with a flexible context factory accepting all keyword arguments (`purpose`, `cafile`, `capath`, `cadata`), ensuring downstream libraries (`requests`, `urllib3`, `pip`, `huggingface_hub`) never crash during SSL handshakes.
+- **Worker Subprocess Environment Hardening & OpenMP Safety**:
+  - Enhanced `_apply_worker_env_overrides()` in `processing.py` and `_launch_translation_process()` in `translation.py` to automatically propagate `KMP_DUPLICATE_LIB_OK`, `TOKENIZERS_PARALLELISM`, `HF_HUB_DISABLE_SYMLINKS_WARNING`, SSL certificate bundles, and Homebrew `PATH` into `QProcessEnvironment` across all worker subprocesses.
+- **WeSpeaker Dependency & Gatekeeper Quarantine Clearance**:
+  - Added `"wespeakerruntime>=1.0.0,<2.0.0"` to `ENV_CONFIGS["diarize"]["packages"]` in `runtime_manager.py` to ensure fresh diarization environments automatically install the required ONNX voice embedding engine.
+  - Added recursive Gatekeeper quarantine removal (`_remove_macos_quarantine(env_dir)`) upon isolated virtual environment creation in `runtime_manager.py` to prevent macOS from terminating child processes or dylibs with `SIGKILL` (Killed: 9).
+
 ## v3.2.19
 - **Resilient Translation Runtime Manager Resolution & macOS Execution Fixes**:
   - Implemented multi-layered `RuntimeManager` resolution in `translation.py`, `model_management.py`, and `plugins/manager.py` to prevent `AttributeError: 'RuntimeManager' object has no attribute 'ensure_environment'` or `kill_all_subprocesses` errors on macOS when launching translation background setup workers or managing model caches.

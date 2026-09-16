@@ -6,36 +6,47 @@ import ssl
 
 def configure_ssl_certificates():
     """Ensure HTTPS certificate verification works seamlessly across macOS, Linux, and Windows."""
+    target_cafile = None
     try:
         import certifi
         cafile = certifi.where()
         if os.path.exists(cafile):
+            target_cafile = cafile
             os.environ.setdefault("SSL_CERT_FILE", cafile)
             os.environ.setdefault("REQUESTS_CA_BUNDLE", cafile)
             os.environ.setdefault("CURL_CA_BUNDLE", cafile)
     except Exception:
         pass
 
-    try:
-        ctx = ssl.create_default_context()
-        ctx.load_default_certs()
-    except Exception:
-        try:
-            ssl._create_default_https_context = ssl._create_unverified_context
-        except AttributeError:
-            pass
-    else:
-        if sys.platform == "darwin":
+    if sys.platform == "darwin":
+        # On macOS, use a flexible context factory accepting all arguments (purpose, cafile, etc.)
+        def _mac_ssl_context(purpose=ssl.Purpose.SERVER_AUTH, *, cafile=None, capath=None, cadata=None):
+            eff_cafile = cafile or target_cafile
             try:
-                import certifi
-                cafile = certifi.where()
-                if os.path.exists(cafile):
-                    ssl._create_default_https_context = lambda: ssl.create_default_context(cafile=cafile)
+                if eff_cafile and os.path.exists(eff_cafile):
+                    return ssl.create_default_context(purpose=purpose, cafile=eff_cafile, capath=capath, cadata=cadata)
+                ctx = ssl.create_default_context(purpose=purpose, capath=capath, cadata=cadata)
+                ctx.load_default_certs()
+                return ctx
             except Exception:
                 try:
-                    ssl._create_default_https_context = ssl._create_unverified_context
-                except AttributeError:
-                    pass
+                    return ssl._create_unverified_context(purpose=purpose, cafile=eff_cafile, capath=capath, cadata=cadata)
+                except Exception:
+                    return ssl._create_unverified_context()
+
+        try:
+            ssl._create_default_https_context = _mac_ssl_context
+        except Exception:
+            pass
+    else:
+        try:
+            ctx = ssl.create_default_context()
+            ctx.load_default_certs()
+        except Exception:
+            try:
+                ssl._create_default_https_context = ssl._create_unverified_context
+            except AttributeError:
+                pass
 
 configure_ssl_certificates()
 try:

@@ -93,4 +93,11 @@ These rules document solutions to specific historical bugs and must be preserved
 - **Issue**: YouTube Studio rejects chapter timestamps or fails to generate timeline chapters if timestamps do not begin with `00:00` or have fewer than 3 chapters of at least 10 seconds each.
 - **Rule**: `plugins/youtube/` must automatically enforce YouTube's formal chapter rules during story export (guaranteeing `00:00:00 - Introduction` and valid ascending interval formatting).
 
+### 9. Lazy App-Synchronized Plugin Versioning Policy
+- **Issue**: Forcing all plugin manifests (`plugins/*/manifest.json`) to bump their version numbers on every core release creates misleading version churn and redundant packaging when plugins had zero code, schema, or asset changes. Conversely, decoupling plugin versions into arbitrary numbers (e.g. 1.0) obscures which core release baseline the plugin was developed or tested against.
+- **Rule**:
+  1. If no changes are made to a plugin in a given release cycle, leave its `manifest.json` `version` untouched. A user running app v3.2.20 can seamlessly and correctly run v3.2.15 of the YouTube plugin.
+  2. Whenever a change *is* made that affects a plugin, bring its version number up to date to match the current application release (`PROJECT_VERSION`), preserving alignment with the host application version baseline.
+
+
 

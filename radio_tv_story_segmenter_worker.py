@@ -14,7 +14,8 @@ from pathlib import Path
 
 
 try:
-    from bootstrap import configure_ssl_certificates
+    from bootstrap import configure_ssl_certificates, setup_macos_path_environment
+    setup_macos_path_environment()
     configure_ssl_certificates()
 except Exception:
     import ssl

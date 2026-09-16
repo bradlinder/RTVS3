@@ -169,44 +169,92 @@ def setup_windows_dll_directories() -> None:
                     pass
 
 
+def setup_macos_path_environment() -> None:
+    """Ensure standard CLI tool paths (Homebrew, MacPorts, ~/.local/bin) are
+    present in PATH on macOS.
+
+    Applications launched from Finder / Dock / Spotlight on macOS inherit a
+    stripped-down PATH (/usr/bin:/bin:/usr/sbin:/sbin) from launchd, making
+    system tools like ffmpeg, ffprobe, python3, and uv installed via Homebrew
+    or pip invisible unless explicitly added to PATH.
+    """
+    if sys.platform != "darwin":
+        return
+    home = Path.home()
+    candidates = [
+        Path("/opt/homebrew/bin"),
+        Path("/opt/homebrew/sbin"),
+        Path("/usr/local/bin"),
+        Path("/usr/local/sbin"),
+        Path("/opt/local/bin"),
+        Path("/opt/local/sbin"),
+        home / ".local" / "bin",
+        home / ".cargo" / "bin",
+    ]
+    current_path = os.environ.get("PATH", "")
+    existing_parts = current_path.split(os.pathsep) if current_path else []
+    existing_set = {p.rstrip("/") for p in existing_parts}
+    to_add = []
+    for c in candidates:
+        sc = str(c)
+        if c.is_dir() and sc not in existing_set:
+            to_add.append(sc)
+            existing_set.add(sc)
+    if to_add:
+        os.environ["PATH"] = os.pathsep.join(to_add) + (os.pathsep + current_path if current_path else "")
+
+
 def configure_ssl_certificates():
     """Ensure HTTPS certificate verification works seamlessly across macOS, Linux, and Windows."""
     import ssl
+    target_cafile = None
     try:
         import certifi
         cafile = certifi.where()
         if os.path.exists(cafile):
+            target_cafile = cafile
             os.environ.setdefault("SSL_CERT_FILE", cafile)
             os.environ.setdefault("REQUESTS_CA_BUNDLE", cafile)
             os.environ.setdefault("CURL_CA_BUNDLE", cafile)
     except Exception:
         pass
 
-    try:
-        ctx = ssl.create_default_context()
-        ctx.load_default_certs()
-    except Exception:
-        try:
-            ssl._create_default_https_context = ssl._create_unverified_context
-        except AttributeError:
-            pass
-    else:
-        if sys.platform == "darwin":
+    if sys.platform == "darwin":
+        # On macOS, Python often fails to locate system root certificates unless configured.
+        # Use a flexible context factory accepting all arguments (purpose, cafile, etc.)
+        def _mac_ssl_context(purpose=ssl.Purpose.SERVER_AUTH, *, cafile=None, capath=None, cadata=None):
+            eff_cafile = cafile or target_cafile
             try:
-                import certifi
-                cafile = certifi.where()
-                if os.path.exists(cafile):
-                    ssl._create_default_https_context = lambda: ssl.create_default_context(cafile=cafile)
+                if eff_cafile and os.path.exists(eff_cafile):
+                    return ssl.create_default_context(purpose=purpose, cafile=eff_cafile, capath=capath, cadata=cadata)
+                ctx = ssl.create_default_context(purpose=purpose, capath=capath, cadata=cadata)
+                ctx.load_default_certs()
+                return ctx
             except Exception:
                 try:
-                    ssl._create_default_https_context = ssl._create_unverified_context
-                except AttributeError:
-                    pass
+                    return ssl._create_unverified_context(purpose=purpose, cafile=eff_cafile, capath=capath, cadata=cadata)
+                except Exception:
+                    return ssl._create_unverified_context()
+
+        try:
+            ssl._create_default_https_context = _mac_ssl_context
+        except Exception:
+            pass
+    else:
+        try:
+            ctx = ssl.create_default_context()
+            ctx.load_default_certs()
+        except Exception:
+            try:
+                ssl._create_default_https_context = ssl._create_unverified_context
+            except AttributeError:
+                pass
 
 
 def configure_runtime_environment() -> Path:
     """Prepare writable user data and model-cache locations before imports."""
     setup_windows_dll_directories()
+    setup_macos_path_environment()
     configure_ssl_certificates()
     root = app_data_dir()
     models = root / "models"

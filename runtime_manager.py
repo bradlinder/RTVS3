@@ -210,7 +210,7 @@ def _run_pip_with_progress(
 # Feature configuration matrix with explicit versioning and python targets
 ENV_CONFIGS = {
     "diarize": {
-        "version": "1.1.0",
+        "version": "1.2.0",
         "python_version": "3.12",
         "extra_index_url": "https://download.pytorch.org/whl/cpu",
         "packages": [
@@ -219,7 +219,8 @@ ENV_CONFIGS = {
             "soundfile",
             "torch>=2.0.0,<2.4.0",
             "torchaudio",
-            "diarize==0.1.2"
+            "diarize==0.1.2",
+            "wespeakerruntime>=1.0.0,<2.0.0"
         ]
     },
     "transcribe": {
@@ -973,6 +974,7 @@ def _remove_macos_quarantine(target_path: Path | str) -> None:
                 purged_count = self.prune_cuda_artifacts(env_dir)
                 if purged_count:
                     logger.info("Pruned %d CUDA artifacts from %s runtime.", purged_count, feature_name)
+            _remove_macos_quarantine(env_dir)
             # Record manifest for future version checks
             _emit_progress(progress_cb, 96.0, f"Verifying runtime manifest for '{feature_name}'…")
             self.write_manifest(feature_name, python_binary, packages=packages)

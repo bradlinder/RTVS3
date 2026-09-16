@@ -924,16 +924,41 @@ class ProcessingMixin:
 
 
     def _apply_worker_env_overrides(self, process, env_overrides):
-        """Applies extra environment variables (e.g. GPU device selection)
-        to a QProcess before starting it, on top of the normal inherited
-        environment. No-op when there's nothing to override."""
-        if not env_overrides:
-            return
+        """Applies extra environment variables (e.g. GPU device selection, SSL certs,
+        OpenMP safety, and macOS Homebrew PATH) to a QProcess before starting it."""
         process_env = process.processEnvironment()
         if process_env.isEmpty():
             process_env = QProcessEnvironment.systemEnvironment()
-        for key, value in env_overrides.items():
-            process_env.insert(key, str(value))
+
+        process_env.insert("KMP_DUPLICATE_LIB_OK", "TRUE")
+        process_env.insert("TOKENIZERS_PARALLELISM", "false")
+        process_env.insert("HF_HUB_DISABLE_SYMLINKS_WARNING", "1")
+
+        for key in ("SSL_CERT_FILE", "REQUESTS_CA_BUNDLE", "CURL_CA_BUNDLE"):
+            val = os.environ.get(key)
+            if val:
+                process_env.insert(key, val)
+
+        if sys.platform == "darwin":
+            existing_path = process_env.value("PATH", "")
+            mac_paths = [
+                "/opt/homebrew/bin",
+                "/opt/homebrew/sbin",
+                "/usr/local/bin",
+                "/usr/local/sbin",
+                "/opt/local/bin",
+                str(Path.home() / ".local" / "bin"),
+                str(Path.home() / ".cargo" / "bin"),
+            ]
+            parts = existing_path.split(os.pathsep) if existing_path else []
+            for p in reversed(mac_paths):
+                if Path(p).is_dir() and p not in parts:
+                    parts.insert(0, p)
+            process_env.insert("PATH", os.pathsep.join(parts))
+
+        if env_overrides:
+            for key, value in env_overrides.items():
+                process_env.insert(key, str(value))
         process.setProcessEnvironment(process_env)
 
     def start_transcription(self):

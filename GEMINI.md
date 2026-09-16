@@ -28,7 +28,9 @@ When bumping or updating the application version number, you MUST update **ALL**
 2. `updater.py` (`PROJECT_VERSION` fallback)
 3. `build_installer.py` (`PROJECT_VERSION` fallback)
 4. `installer/Windows/RadioTVStorySegmenter.iss` (`#define MyAppVersion`)
-5. `plugins/*/manifest.json` (`version` across `wordpress`, `youtube`, `translation`)
+5. `plugins/*/manifest.json` (Selective / Lazy Catch-Up Policy):
+   - **No Changes, No Bump**: If no code, schema, dependency, or asset changes are made to a specific plugin during a release cycle, DO NOT bump that plugin's `version` in `manifest.json`. It is completely expected and supported for a user running e.g. v3.2.20 of the application to run v3.2.15 of the YouTube plugin.
+   - **Catch-Up Synchronization on Modification**: The next time a change *does* affect a plugin, its `version` field in `manifest.json` MUST be brought up to date to match the current application `PROJECT_VERSION` being released.
 6. `transcript_story.py` (docstring version header)
 7. `package.json`, `metadata.json`, and `index.html` (title & meta tags)
 8. `CHANGELOG.md` & `/src/App.tsx` (version notes and expanded accordion defaults)

@@ -515,7 +515,7 @@ class CollapsibleSection(QWidget):
 
 # Display branding shown to the user (title bar, About box, installers).
 APP_DISPLAY_NAME = "Radio & TV Segmenter"
-PROJECT_VERSION = "3.2.19"
+PROJECT_VERSION = "3.2.20"
 DEFAULT_GITHUB_REPO = "bradlinder/RTVS3"
 
 
@@ -822,13 +822,28 @@ def get_bundled_runtime_dir() -> Path:
 
 
 def find_bundled_executable(name: str) -> str | None:
-    """Find a bundled executable first, then fall back to PATH."""
+    """Find a bundled executable first, then fall back to PATH and common macOS locations."""
     filename = name + (".exe" if os.name == "nt" and not name.lower().endswith(".exe") else "")
     for root in (get_bundled_runtime_dir() / "bin", get_bundled_runtime_dir()):
         candidate = root / filename
         if candidate.is_file():
             return str(candidate)
-    return shutil.which(name)
+    found = shutil.which(name)
+    if found:
+        return found
+    if sys.platform == "darwin":
+        for mac_bin in (
+            Path("/opt/homebrew/bin") / name,
+            Path("/opt/homebrew/sbin") / name,
+            Path("/usr/local/bin") / name,
+            Path("/usr/local/sbin") / name,
+            Path("/opt/local/bin") / name,
+            Path.home() / ".local" / "bin" / name,
+            Path.home() / ".cargo" / "bin" / name,
+        ):
+            if mac_bin.is_file():
+                return str(mac_bin)
+    return None
 
 
 def ffmpeg_path() -> str | None:

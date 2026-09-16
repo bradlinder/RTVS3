@@ -537,7 +537,26 @@ class TranslationMixin:
         proc_env.insert("TOKENIZERS_PARALLELISM", "false")
         proc_env.insert("RTVS_MODELS_DIR", models_dir)
         proc_env.insert("HF_HOME", str(Path(models_dir) / "huggingface"))
+        for key in ("SSL_CERT_FILE", "REQUESTS_CA_BUNDLE", "CURL_CA_BUNDLE"):
+            val = os.environ.get(key)
+            if val:
+                proc_env.insert(key, val)
         if sys.platform == "darwin":
+            existing_path = proc_env.value("PATH", "")
+            mac_paths = [
+                "/opt/homebrew/bin",
+                "/opt/homebrew/sbin",
+                "/usr/local/bin",
+                "/usr/local/sbin",
+                "/opt/local/bin",
+                str(Path.home() / ".local" / "bin"),
+                str(Path.home() / ".cargo" / "bin"),
+            ]
+            parts = existing_path.split(os.pathsep) if existing_path else []
+            for p in reversed(mac_paths):
+                if Path(p).is_dir() and p not in parts:
+                    parts.insert(0, p)
+            proc_env.insert("PATH", os.pathsep.join(parts))
             try:
                 py_lib = Path(python_exe).resolve().parent.parent / "lib"
                 if py_lib.is_dir():
