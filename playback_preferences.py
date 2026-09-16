@@ -1744,6 +1744,16 @@ class PlaybackPreferencesMixin:
             sel_mode_combo.setCurrentIndex(0)
         play_form.addRow("New Text Selection Behavior:", sel_mode_combo)
 
+        enable_fades_chk = QCheckBox("Enable story audio fades and timeline envelope handles")
+        enable_fades_chk.setToolTip("Enables tactile fade-in and fade-out handles on the timeline and applies fade ramps to exported stories. Disabling this turns off fade envelope rendering and export processing for maximum timeline responsiveness.")
+        enable_fades_chk.setChecked(getattr(self, "enable_audio_fades", True))
+        play_form.addRow("Audio Fades:", enable_fades_chk)
+
+        preview_fades_chk = QCheckBox("Preview audio fades in real-time during playback")
+        preview_fades_chk.setToolTip("Modulates preview audio playback volume in real-time when crossing story fade-in and fade-out envelopes.")
+        preview_fades_chk.setChecked(getattr(self, "preview_audio_fades", True))
+        play_form.addRow("Fade Audio Preview:", preview_fades_chk)
+
         play_layout.addLayout(play_form)
         _add_custom_defaults_btn(play_layout, "Playback & Timeline")
         play_layout.addStretch()
@@ -2533,6 +2543,17 @@ class PlaybackPreferencesMixin:
                 if hasattr(self.transcript_view, "selection_bubble") and not self.show_floating_selection_toolbar:
                     self.transcript_view.selection_bubble.hide()
 
+            # Save Audio Fades Preferences
+            self.enable_audio_fades = enable_fades_chk.isChecked()
+            self.settings_store.setValue("enable_audio_fades", "true" if self.enable_audio_fades else "false")
+            self.preview_audio_fades = preview_fades_chk.isChecked()
+            self.settings_store.setValue("preview_audio_fades", "true" if self.preview_audio_fades else "false")
+            if hasattr(self, "timeline") and hasattr(self.timeline, "canvas"):
+                self.timeline.canvas.show_audio_fades = self.enable_audio_fades
+                self.timeline.canvas.update()
+            if hasattr(self, "story_list"):
+                self.story_list.viewport().update()
+
             # Save Detection
             self.story_detection_mode = str(det_mode_combo.currentData() or "voice")
             self.settings_store.setValue("story_detection_mode", self.story_detection_mode)
@@ -2794,15 +2815,29 @@ class PlaybackPreferencesMixin:
     def toggle_play(self):
         if self.player.playbackState() == QMediaPlayer.PlaybackState.PlayingState:
             self.player.pause()
+            if hasattr(self, "fade_preview_timer"):
+                self.fade_preview_timer.stop()
+            self._audition_story_index = None
+            if hasattr(self, "audio_output") and self.audio_output:
+                self.audio_output.setVolume(getattr(self, "master_volume", 1.0))
             self.timeline.set_playing_state(False)
             self.play_button.setText("▶ Play")
         else:
             self.player.play()
+            if getattr(self, "enable_audio_fades", True) and getattr(self, "preview_audio_fades", True):
+                if hasattr(self, "fade_preview_timer"):
+                    self.fade_preview_timer.start(25)
+                self.update_realtime_fade_volume()
             self.timeline.set_playing_state(True)
             self.play_button.setText("❚❚ Pause")
 
     def stop_audio(self):
         self.player.stop()
+        if hasattr(self, "fade_preview_timer"):
+            self.fade_preview_timer.stop()
+        self._audition_story_index = None
+        if hasattr(self, "audio_output") and self.audio_output:
+            self.audio_output.setVolume(getattr(self, "master_volume", 1.0))
         self.timeline.set_playing_state(False)
         self.play_button.setText("▶ Play")
 
@@ -2818,6 +2853,8 @@ class PlaybackPreferencesMixin:
             )
         if hasattr(self, "transcript_view"):
             self.transcript_view.highlight_word_at_time(seconds, self.transcript)
+        if hasattr(self, "player") and self.player.playbackState() == QMediaPlayer.PlaybackState.PlayingState:
+            self.update_realtime_fade_volume()
 
     def seek_relative(self, delta_seconds):
         duration = float(getattr(self, "duration", 0.0) or 0.0)
@@ -2834,6 +2871,73 @@ class PlaybackPreferencesMixin:
             f"{format_time(self.current_position)} / {format_time(self.duration)}"
         )
         self.transcript_view.highlight_word_at_time(self.current_position, self.transcript)
+        self.update_realtime_fade_volume()
+
+    def get_fade_volume_factor_at_time(self, t: float) -> float:
+        """Calculate the real-time audio volume fade factor [0.0, 1.0] for position `t`."""
+        if not getattr(self, "enable_audio_fades", True) or not getattr(self, "preview_audio_fades", True):
+            return 1.0
+
+        stories = getattr(self, "stories", [])
+        if not stories:
+            return 1.0
+
+        # If auditioning a specific story, check that story
+        audition_idx = getattr(self, "_audition_story_index", None)
+        if audition_idx is not None and 0 <= audition_idx < len(stories):
+            active_stories = [stories[audition_idx]]
+        else:
+            # Check story under playhead, prioritizing currently selected stories
+            selected_indices = getattr(self, "current_selected_story_indices", [])
+            selected_matching = [stories[i] for i in selected_indices if 0 <= i < len(stories) and stories[i].start <= t <= stories[i].end]
+            if selected_matching:
+                active_stories = selected_matching
+            else:
+                active_stories = [s for s in stories if s.start <= t <= s.end]
+
+        if not active_stories:
+            return 1.0
+
+        # Calculate volume envelope for active story
+        story = active_stories[0]
+        story_dur = max(0.001, story.end - story.start)
+        fin = min(getattr(story, "fade_in", 0.0), story_dur)
+        fout = min(getattr(story, "fade_out", 0.0), max(0.0, story_dur - fin))
+
+        factor = 1.0
+        # Fade In ramp
+        if fin > 0 and t >= story.start and t < (story.start + fin):
+            factor = min(factor, max(0.0, (t - story.start) / fin))
+
+        # Fade Out ramp
+        if fout > 0 and t > (story.end - fout) and t <= story.end:
+            factor = min(factor, max(0.0, (story.end - t) / fout))
+
+        return factor
+
+    def update_realtime_fade_volume(self):
+        """Modulate QAudioOutput volume in real-time according to story fade envelopes."""
+        if not hasattr(self, "audio_output") or not self.audio_output:
+            return
+
+        master_vol = getattr(self, "master_volume", 1.0)
+
+        # Check if auditioning reached end of story
+        audition_idx = getattr(self, "_audition_story_index", None)
+        if audition_idx is not None and 0 <= audition_idx < len(getattr(self, "stories", [])):
+            target_story = self.stories[audition_idx]
+            if self.current_position >= (target_story.end + 0.05):
+                self._audition_story_index = None
+                self.stop_audio()
+                return
+
+        factor = self.get_fade_volume_factor_at_time(self.current_position)
+        target_vol = max(0.0, min(1.0, master_vol * factor))
+        self.audio_output.setVolume(target_vol)
+
+    def _on_fade_timer_tick(self):
+        if hasattr(self, "player") and self.player.playbackState() == QMediaPlayer.PlaybackState.PlayingState:
+            self.update_realtime_fade_volume()
 
     def audio_duration_changed(self, duration):
         self.duration = duration / 1000

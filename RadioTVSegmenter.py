@@ -218,8 +218,16 @@ class MainWindow(
         except (TypeError, ValueError):
             self.transcript_font_scale = 1.0
 
+        self.enable_audio_fades = str(self.settings_store.value("enable_audio_fades", "true")).lower() in {"1", "true", "yes"}
+        self.preview_audio_fades = str(self.settings_store.value("preview_audio_fades", "true")).lower() in {"1", "true", "yes"}
+        try:
+            self.master_volume = float(self.settings_store.value("audio_output_volume", 100) or 100) / 100.0
+        except Exception:
+            self.master_volume = 1.0
+        self._audition_story_index = None
+
         self.audio_output = QAudioOutput()
-        self.audio_output.setVolume(1.0)
+        self.audio_output.setVolume(self.master_volume)
 
         self.player = QMediaPlayer()
         self.player.setAudioOutput(self.audio_output)
@@ -227,6 +235,10 @@ class MainWindow(
             self.apply_audio_output_device()
         self.player.positionChanged.connect(self.audio_position_changed)
         self.player.durationChanged.connect(self.audio_duration_changed)
+
+        self.fade_preview_timer = QTimer(self)
+        self.fade_preview_timer.setInterval(25)
+        self.fade_preview_timer.timeout.connect(self._on_fade_timer_tick)
 
         self.video_preview_dialog = None
         self.video_preview_widget = None

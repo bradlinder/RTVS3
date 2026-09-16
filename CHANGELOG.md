@@ -1,5 +1,20 @@
 # Changelog
 
+## v3.3.1
+- **Real-Time Audio Fade Playback Preview & Auditioning System**:
+  - Implemented real-time volume gain modulation during audio playback (`get_fade_volume_factor_at_time(t)` and `update_realtime_fade_volume()`) that tracks story fade-in and fade-out envelope curves in 25ms timer intervals (`fade_preview_timer`), modulating `QAudioOutput` gain dynamically.
+  - Automatically restores master playback volume (`master_volume`) seamlessly upon pause, stop, or leaving fade envelope boundaries.
+  - Added *"Audition Story (With Fades ▶)"* (`audition_story`) to the story list right-click context menu, enabling one-click auditioning of story clips from start to finish with fade envelope gain curves applied and automatic stop at story completion.
+- **Playback & Timeline Preferences for Audio Fades**:
+  - Added user toggles in Preferences -> *"Playback & Timeline"*:
+    - *"Enable story audio fades and timeline envelope handles"* (`enable_audio_fades`, persisted across sessions in `QSettings`).
+    - *"Preview audio fades in real-time during playback"* (`preview_audio_fades`, persisted across sessions in `QSettings`).
+  - Seamlessly toggles timeline envelope grab handles, dark gain masks, and diagonal dashed ramp overlays on the canvas.
+  - Honors `enable_audio_fades` across timeline rendering, hit-testing, story delegate metadata display (`Fades: X.Xs / Y.Ys`), and the export pipeline in `project_export.py`.
+- **Timeline Canvas Performance & Tooltip Optimization**:
+  - Enhanced canvas hit-testing and envelope painting with horizontal bounding box culling (`end_x < -16 or start_x > width + 16`) to skip offscreen stories during zoom and pan.
+  - Debounced mouseMove hover tooltips on the timeline canvas to eliminate redundant OS tooltip redraw events during playback and scrubbing.
+
 ## v3.3.0
 - **Story Audio Fade-In & Fade-Out Envelope Architecture**:
   - Extended the core `Story` data model with native `fade_in` and `fade_out` duration attributes, fully serialized into JSON project files and `.rtvs` archives with backwards-compatible migration.

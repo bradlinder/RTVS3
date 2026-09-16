@@ -59,7 +59,7 @@ try:
     )
 except Exception:
     APP_DISPLAY_NAME = "Radio & TV Segmenter"
-    PROJECT_VERSION = "3.3.0"
+    PROJECT_VERSION = "3.3.1"
     DEFAULT_GITHUB_REPO = "bradlinder/RTVS3"
 
     INTERNAL_APP_ID = "RadioTVStorySegmenter"
@@ -389,6 +389,29 @@ def fetch_latest_release(repo: str) -> dict:
     raise RuntimeError("No published releases found.")
 
 
+def _unblock_windows_file(path: Path) -> None:
+    """Remove NTFS Zone.Identifier alternate data stream (Mark-of-the-Web) if present.
+    This prevents Windows Defender SmartScreen from blocking the downloaded installer."""
+    if sys.platform == "win32":
+        try:
+            # Method 1: Delete Zone.Identifier NTFS alternate data stream directly
+            zone_stream = Path(f"{str(path)}:Zone.Identifier")
+            if zone_stream.exists():
+                zone_stream.unlink(missing_ok=True)
+        except Exception:
+            pass
+        try:
+            # Method 2: PowerShell Unblock-File fallback
+            subprocess.run(
+                ["powershell", "-NoProfile", "-NonInteractive", "-Command", f"Unblock-File -LiteralPath '{str(path)}'"],
+                capture_output=True,
+                creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
+                timeout=3,
+            )
+        except Exception:
+            pass
+
+
 def launch_and_install(file_path: str, parent: QWidget | None = None) -> bool:
     path = Path(file_path).resolve()
     if not path.is_file():
@@ -397,29 +420,34 @@ def launch_and_install(file_path: str, parent: QWidget | None = None) -> bool:
         return False
 
     if sys.platform == "win32":
+        _unblock_windows_file(path)
         launched = False
         last_error = ""
 
-        # 1. Primary approach: detached subprocess.Popen
-        # In Windows, spawning the installer with CREATE_NEW_PROCESS_GROUP, DETACHED_PROCESS,
-        # and CREATE_BREAKAWAY_FROM_JOB (0x01000000) ensures the child process runs independently
-        # and survives the parent application and job object exiting.
+        # 1. Primary approach: detached Windows shell trampoline
+        # Running via 'cmd.exe /c timeout /t 1 /nobreak >nul & start "" "installer.exe"'
+        # completely decouples the process from Python, waits 1 second for the Python process
+        # to release all file locks and exit cleanly, and triggers Windows Shell UAC elevation natively.
         try:
             creationflags = 0
             if hasattr(subprocess, "DETACHED_PROCESS"):
                 creationflags |= subprocess.DETACHED_PROCESS
             if hasattr(subprocess, "CREATE_NEW_PROCESS_GROUP"):
                 creationflags |= subprocess.CREATE_NEW_PROCESS_GROUP
-            try:
-                # 0x01000000 = CREATE_BREAKAWAY_FROM_JOB
-                subprocess.Popen([str(path)], cwd=str(path.parent), creationflags=creationflags | 0x01000000)
-            except Exception:
-                subprocess.Popen([str(path)], cwd=str(path.parent), creationflags=creationflags)
+            # CREATE_BREAKAWAY_FROM_JOB = 0x01000000
+            flags = creationflags | 0x01000000
+            cmd_str = f'timeout /t 1 /nobreak >nul & start "" "{str(path)}"'
+            subprocess.Popen(
+                ["cmd.exe", "/c", cmd_str],
+                cwd=str(path.parent),
+                creationflags=flags,
+                shell=False,
+            )
             launched = True
-        except Exception as exc_pop:
-            last_error = f"subprocess.Popen: {exc_pop}"
+        except Exception as exc_cmd:
+            last_error = f"cmd trampoline: {exc_cmd}"
 
-        # 2. Secondary approach: ShellExecuteW with proper 64-bit ctypes types
+        # 2. Secondary approach: ShellExecuteW with 'runas' (explicit UAC elevation)
         if not launched:
             try:
                 import ctypes
@@ -435,14 +463,15 @@ def launch_and_install(file_path: str, parent: QWidget | None = None) -> bool:
                 ]
                 shell32.ShellExecuteW.restype = wintypes.HINSTANCE
 
-                # Try 'open' first
-                ret = shell32.ShellExecuteW(None, "open", str(path), "", str(path.parent), 1)
+                hwnd = parent.winId() if parent and hasattr(parent, "winId") else None
+                # Try 'runas' first to trigger UAC elevation prompt directly
+                ret = shell32.ShellExecuteW(hwnd, "runas", str(path), "", str(path.parent), 1)
                 ret_val = int(ctypes.cast(ret, ctypes.c_void_p).value or 0)
                 if ret_val > 32:
                     launched = True
                 else:
-                    # Retry with 'runas' for explicit administrator UAC elevation prompt
-                    ret2 = shell32.ShellExecuteW(None, "runas", str(path), "", str(path.parent), 1)
+                    # Retry with 'open'
+                    ret2 = shell32.ShellExecuteW(hwnd, "open", str(path), "", str(path.parent), 1)
                     ret2_val = int(ctypes.cast(ret2, ctypes.c_void_p).value or 0)
                     if ret2_val > 32:
                         launched = True
@@ -986,7 +1015,7 @@ class CheckUpdateDialog(QDialog):
             expected_size = int(self.asset_info.get("size", 0))
             if existing_file and existing_file.is_file() and (expected_size <= 0 or existing_file.stat().st_size >= expected_size * 0.95):
                 self.downloaded_path = str(existing_file)
-                self.action_btn.setText("Install && Restart")
+                self.action_btn.setText("Restart && Install")
                 self.status_label.setText(f"✓ Update package for {tag} is already downloaded and ready to install.")
                 self.status_label.setStyleSheet("font-size: 13px; color: #2e7d32; font-weight: bold;")
             else:
@@ -1031,7 +1060,7 @@ class CheckUpdateDialog(QDialog):
             self.start_check()
         elif btn_text == "Open Download Page":
             self._open_github_release()
-        elif btn_text in ("Install & Restart", "Install Restart"):
+        elif btn_text in ("Restart & Install", "Restart Install", "Install & Restart", "Install Restart"):
             self._install_and_restart()
         else:
             tag = self.release_info.get("tag_name", "")
@@ -1101,7 +1130,7 @@ class CheckUpdateDialog(QDialog):
         self.progress_bar.setValue(100)
         self.status_label.setText("✓ Download complete! Ready to install.")
         self.status_label.setStyleSheet("font-size: 14px; color: #2e7d32; font-weight: bold;")
-        self.action_btn.setText("Install && Restart")
+        self.action_btn.setText("Restart && Install")
         self.action_btn.setEnabled(True)
         self.close_btn.setText("Later")
 
@@ -1133,9 +1162,9 @@ class CheckUpdateDialog(QDialog):
         tag = self.release_info.get("tag_name", "update")
         confirm = QMessageBox.question(
             self,
-            "Install Update",
-            f"Radio & TV Segmenter will now launch the installer for {tag} and close the application to complete the update.\n\n"
-            f"Proceed with installation?",
+            "Restart & Install Update",
+            f"Radio & TV Segmenter will now close the application and launch the installer for {tag} to complete the update.\n\n"
+            f"Proceed with restart and installation?",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
             QMessageBox.StandardButton.Yes,
         )
@@ -1157,7 +1186,7 @@ class CheckUpdateDialog(QDialog):
                 app.quit()
             import threading
             def _force_exit():
-                time.sleep(0.5)
+                time.sleep(1.0)
                 os._exit(0)
             t = threading.Thread(target=_force_exit, daemon=True)
             t.start()

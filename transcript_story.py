@@ -1,4 +1,4 @@
-"""Radio & TV Segmenter v3.3.0 — transcript story responsibilities.
+"""Radio & TV Segmenter v3.3.1 — transcript story responsibilities.
 
 
 Methods intentionally retain the MainWindow-facing API so behavior remains
@@ -1429,7 +1429,13 @@ class TranscriptStoryMixin:
 
             self.start_input.setText(format_time(story.start))
             self.end_input.setText(format_time(story.end))
-            self.refresh_story_list()
+            # Optimize: Update only the last item in-place without rebuilding the entire list widget
+            if hasattr(self, "story_list") and self.story_list.count() > 0:
+                last_idx = self.story_list.count() - 1
+                item = self.story_list.item(last_idx)
+                if item:
+                    item.setText(f"{len(self.stories)}. {format_time(story.start)} – {format_time(story.end)}  {story.title}")
+                    item.setData(Qt.ItemDataRole.UserRole, story.to_dict())
 
     def handle_drag_story_region(self, index, start_time, end_time):
         if not self.pre_drag_stories_snapshot:
@@ -1445,7 +1451,38 @@ class TranscriptStoryMixin:
             else:
                 self.start_input.setText(format_time(story.start))
                 self.end_input.setText(format_time(story.end))
-                self.refresh_story_list()
+                # Optimize: Update only the target story item in-place during drag
+                # Full list rebuild is deferred to handle_drag_finished to maintain 60+ FPS
+                if hasattr(self, "story_list") and 0 <= index < self.story_list.count():
+                    item = self.story_list.item(index)
+                    if item:
+                        item.setText(f"{index + 1}. {format_time(story.start)} – {format_time(story.end)}  {story.title}")
+                        item.setData(Qt.ItemDataRole.UserRole, story.to_dict())
+
+    def audition_story(self, index: int):
+        """Audition playback for a specific story with real-time fade-in & fade-out envelopes."""
+        if not (0 <= index < len(self.stories)):
+            return
+        story = self.stories[index]
+        self._audition_story_index = index
+        self.apply_story_selection_indices([index], seek=False)
+        self.seek_to(story.start)
+        # If fade_in > 0 and fades preview is enabled, start volume at 0.0 before playing
+        if getattr(self, "preview_audio_fades", True) and getattr(self, "enable_audio_fades", True):
+            fin = getattr(story, "fade_in", 0.0)
+            if fin > 0 and hasattr(self, "audio_output"):
+                self.audio_output.setVolume(0.0)
+        self.player.play()
+        if getattr(self, "preview_audio_fades", True) and getattr(self, "enable_audio_fades", True):
+            if hasattr(self, "fade_preview_timer"):
+                self.fade_preview_timer.start(25)
+            self.update_realtime_fade_volume()
+        self.timeline.set_playing_state(True)
+        self.play_button.setText("❚❚ Pause")
+        if hasattr(self, "log_activity"):
+            is_music = getattr(self, "story_detection_mode", "voice") == "music"
+            term = "Song" if is_music else "Story"
+            self.log_activity(f"[AUDITION] Auditioning {term} #{index + 1} with real-time fades ({story.start:.2f}s - {story.end:.2f}s)")
 
     def handle_drag_finished(self):
         if self.pre_drag_stories_snapshot:

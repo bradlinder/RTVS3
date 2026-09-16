@@ -29,19 +29,19 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 --------------------------------------------------------------------------------
 TABLE OF CONTENTS & STATUS OVERVIEW
 --------------------------------------------------------------------------------
-1. Previous Release: macOS System CLI & Homebrew PATH Integration, Robust SSL Context, & Subprocess Hardening (Completed in v3.2.20)
-   [x] 1.1 Implemented `setup_macos_path_environment()` in `bootstrap.py` and `radio_tv_story_segmenter_worker.py` to ensure standard macOS tool directories (`/opt/homebrew/bin`, `/opt/homebrew/sbin`, `/usr/local/bin`, `/usr/local/sbin`, `~/.local/bin`, `~/.cargo/bin`) are present in `os.environ["PATH"]`
-   [x] 1.2 Enhanced `find_bundled_executable()` in `prs_shared.py` with macOS Homebrew and standard path fallback so `ffmpeg_path()` and `ffprobe_path()` reliably find Homebrew binaries even when launched from Finder/Dock with stripped `launchd` PATH
-   [x] 1.3 Resolved `TypeError: <lambda>() got an unexpected keyword argument 'purpose'` bug in `bootstrap.py` and `plugins/translation/support.py` with flexible SSL context factory accepting all keyword arguments
-   [x] 1.4 Enhanced `_apply_worker_env_overrides()` in `processing.py` and `_launch_translation_process()` in `translation.py` to automatically propagate OpenMP safety (`KMP_DUPLICATE_LIB_OK`), tokenizer flags, SSL certs, and Homebrew PATH into `QProcessEnvironment`
-   [x] 1.5 Added `"wespeakerruntime>=1.0.0,<2.0.0"` to `ENV_CONFIGS["diarize"]["packages"]` and added recursive Gatekeeper quarantine stripping (`_remove_macos_quarantine(env_dir)`) in `runtime_manager.py`
+1. Previous Release: Story Audio Fade-In/Out & Per-Story Envelope Controls (Completed in v3.3.0)
+   [x] 1.1 Global & Export-Time Fade Controls with Performance Notice (Toggle in Unified Export Dialog with UI notice: "Re-encoding required; export may be slower")
+   [x] 1.2 Configurable Default Fade Durations in Preferences (Settings -> Detection & Diarization: Default Story Fade-In & Fade-Out duration spinboxes)
+   [x] 1.3 Interactive Timeline Fade Handles for In & Out (Dual tactile handles along top edge of story blocks with live waveform ramp overlays and drag sizing)
+   [x] 1.4 Per-Story Fade Durations in Stories Menu & Context Menu (Right-click menu / story dialog for sample-accurate numeric entry of both fade-in and fade-out with Undo/Redo)
+   [x] 1.5 Chained FFmpeg Audio Filter Graph (`afade=t=in...` and `afade=t=out...` with `-c:v copy` and container-native audio codecs)
 
-2. Current Release: Story Audio Fade-In/Out & Per-Story Envelope Controls (Completed in v3.3.0)
-   [x] 2.1 Global & Export-Time Fade Controls with Performance Notice (Toggle in Unified Export Dialog with UI notice: "Re-encoding required; export may be slower")
-   [x] 2.2 Configurable Default Fade Durations in Preferences (Settings -> Detection & Diarization: Default Story Fade-In & Fade-Out duration spinboxes)
-   [x] 2.3 Interactive Timeline Fade Handles for In & Out (Dual tactile handles along top edge of story blocks with live waveform ramp overlays and drag sizing)
-   [x] 2.4 Per-Story Fade Durations in Stories Menu & Context Menu (Right-click menu / story dialog for sample-accurate numeric entry of both fade-in and fade-out with Undo/Redo)
-   [x] 2.5 Chained FFmpeg Audio Filter Graph (`afade=t=in...` and `afade=t=out...` with `-c:v copy` and container-native audio codecs)
+2. Current Release: Real-Time Audio Fade Playback Preview & Auditioning System (Completed in v3.3.1)
+   [x] 2.1 Dynamic Gain Modulation During Playback (`get_fade_volume_factor_at_time(t)` and 25ms `fade_preview_timer` tracking fade envelopes in `QAudioOutput`)
+   [x] 2.2 Story Clip Auditioning (`audition_story` via story list right-click context menu with automatic boundary stop and fade ramp auditioning)
+   [x] 2.3 Master Volume Preservation & Seamless Reset (Restores `master_volume` on stop/pause or exiting fade regions)
+   [x] 2.4 Playback & Timeline Preferences for Audio Fades (Toggles for `enable_audio_fades` and `preview_audio_fades` in Preferences, persisted in `QSettings`)
+   [x] 2.5 Timeline Canvas Performance & Tooltip Debouncing (Viewport bounding box culling on envelope hit-testing and painting; debounced mouseMove tooltips)
 
 3. Future Milestone: Expanded NLE & DAW Timeline Interchange (Phase 4 - Planned for v3.4) [NOT STARTED]
    [ ] 3.1 Cockos Reaper Project (.rpp) Generator
@@ -69,46 +69,23 @@ CORE ARCHITECTURAL INVARIANTS
 - 0 MB Default GPU Footprint: Base installer contains 0 MB of CUDA bloat; GPU features are purely optional and provisioned on demand.
 
 ================================================================================
-1. PREVIOUS RELEASE: MACOS SYSTEM CLI & HOMEBREW PATH INTEGRATION, ROBUST SSL CONTEXT, & SUBPROCESS HARDENING (Completed in v3.2.20)
+1. PREVIOUS RELEASE: STORY AUDIO FADE-IN/OUT & PER-STORY ENVELOPE CONTROLS (Completed in v3.3.0)
 ================================================================================
 
-[x] 1.1 MACOS SYSTEM CLI & HOMEBREW PATH ENVIRONMENT INTEGRATION
--------------------------------------------------------------------
-- Implemented `setup_macos_path_environment()` in `bootstrap.py` and `radio_tv_story_segmenter_worker.py` to ensure standard macOS tool directories (`/opt/homebrew/bin`, `/opt/homebrew/sbin`, `/usr/local/bin`, `/usr/local/sbin`, `~/.local/bin`, `~/.cargo/bin`) are present in `os.environ["PATH"]`.
-- Applications launched from macOS Finder / Dock / Spotlight run under `launchd` with a stripped-down `PATH` (`/usr/bin:/bin:/usr/sbin:/sbin`), which previously made Homebrew-installed `ffmpeg`, `ffprobe`, `python3`, and `uv` invisible.
-- Enhanced `find_bundled_executable()` in `prs_shared.py` to directly search Homebrew and standard macOS bin directories if not found on `PATH`.
-
-[x] 1.2 ROBUST SSL CONTEXT FACTORY (KEYWORD ARGUMENT HANDLING)
------------------------------------------------------------------
-- Fixed a critical `TypeError: <lambda>() got an unexpected keyword argument 'purpose'` bug in `bootstrap.py` and `plugins/translation/support.py` where `ssl._create_default_https_context` was previously assigned a 0-argument lambda. Replaced with a flexible context factory accepting all keyword arguments (`purpose`, `cafile`, `capath`, `cadata`), ensuring downstream libraries (`requests`, `urllib3`, `pip`, `huggingface_hub`) never crash during SSL handshakes.
-
-[x] 1.3 WORKER SUBPROCESS ENVIRONMENT HARDENING & OPENMP SAFETY
-------------------------------------------------------------------
-- Enhanced `_apply_worker_env_overrides()` in `processing.py` and `_launch_translation_process()` in `translation.py` to automatically propagate `KMP_DUPLICATE_LIB_OK`, `TOKENIZERS_PARALLELISM`, `HF_HUB_DISABLE_SYMLINKS_WARNING`, SSL certificate bundles, and Homebrew `PATH` into `QProcessEnvironment` across all worker subprocesses.
-
-[x] 1.4 WESPEAKER DEPENDENCY & GATEKEEPER QUARANTINE CLEARANCE
------------------------------------------------------------------
-- Added `"wespeakerruntime>=1.0.0,<2.0.0"` to `ENV_CONFIGS["diarize"]["packages"]` in `runtime_manager.py` to ensure fresh diarization environments automatically install the required ONNX voice embedding engine.
-- Added recursive Gatekeeper quarantine removal (`_remove_macos_quarantine(env_dir)`) upon isolated virtual environment creation in `runtime_manager.py` to prevent macOS from terminating child processes or dylibs with `SIGKILL` (Killed: 9).
-
-================================================================================
-2. CURRENT RELEASE: STORY AUDIO FADE-IN/OUT & PER-STORY ENVELOPE CONTROLS (Completed in v3.3.0)
-================================================================================
-
-[x] 2.1 GLOBAL & EXPORT-TIME FADE CONTROLS WITH PERFORMANCE NOTICE
+[x] 1.1 GLOBAL & EXPORT-TIME FADE CONTROLS WITH PERFORMANCE NOTICE
 -------------------------------------------------------------------
 - Added an explicit toggle in the Unified Export Dialog (`export/dialog.py`) next to media format options: `[x] Apply audio fade-in & fade-out`.
 - Included prominent helper tooltip in the UI: *"Renders smooth audio fade ramps at start and end of exported story media clips."*
 - Remembers user selection across application sessions using `QSettings`.
 
-[x] 2.2 CONFIGURABLE DEFAULT FADE DURATIONS IN PREFERENCES
+[x] 1.2 CONFIGURABLE DEFAULT FADE DURATIONS IN PREFERENCES
 ------------------------------------------------------------
 - Exposed configurable default duration spinboxes in `playback_preferences.py` under the Detection & Diarization settings tab:
   * Default Story Fade-In Duration: `0.0s` (Range: `0.0s` - `10.0s`)
   * Default Story Fade-Out Duration: `1.0s` (Range: `0.0s` - `10.0s`)
 - Values persisted to user preferences via `QSettings` and automatically applied as default properties when creating or detecting stories.
 
-[x] 2.3 INTERACTIVE TIMELINE FADE HANDLES (DUAL CORNER MANIPULATION)
+[x] 1.3 INTERACTIVE TIMELINE FADE HANDLES (DUAL CORNER MANIPULATION)
 ----------------------------------------------------------------------
 - Added dual tactile drag-and-drop fade handles to each story block in the waveform/timeline canvas:
   * Top-Left Apex: Fade-In handle (drag horizontally to lengthen/shorten fade-in ramp).
@@ -117,16 +94,47 @@ CORE ARCHITECTURAL INVARIANTS
 - Real-time rendering of diagonal dashed fade ramp lines and darkened attenuation masks directly on the waveform showing exact envelope shapes.
 - Supported with full `StoryFadesChangeCommand` undo/redo stack recording.
 
-[x] 2.4 PER-STORY FADE DURATIONS VIA STORIES MENU & CONTEXT MENU
+[x] 1.4 PER-STORY FADE DURATIONS VIA STORIES MENU & CONTEXT MENU
 -----------------------------------------------------------------
 - Provided sample-accurate numerical entry dialog via right-click context menu on timeline story segments and story list items (`Set Audio Fades...`).
 - Implemented `StoryFadesDialog` with precision decimal spinboxes for Fade-In (s) and Fade-Out (s) with quick presets (`No Fades (0s)`, `Restore Defaults`), duration clamping, and optional project-wide application.
 
-[x] 2.5 CHAINED FFMPEG AUDIO FILTER PIPELINE INTEGRATION
+[x] 1.5 CHAINED FFMPEG AUDIO FILTER PIPELINE INTEGRATION
 ----------------------------------------------------------
 - Updated `extract_media()` in `project_export.py` to evaluate both `fade_in` and `fade_out` durations.
 - Dynamically constructs chained audio filter arguments: `afade=t=in:ss=0:d={in_dur:.3f}` and `afade=t=out:st={duration - out_dur:.3f}:d={out_dur:.3f}`.
 - Keeps video tracks stream-copied (`-c:v copy`) for video containers (`.mp4`, `.mov`, etc.), re-encoding only the audio stream to native container formats (`aac`, `libmp3lame`, `pcm_s16le`, `libopus`).
+
+================================================================================
+2. CURRENT RELEASE: REAL-TIME AUDIO FADE PLAYBACK PREVIEW & AUDITIONING SYSTEM (Completed in v3.3.1)
+================================================================================
+
+[x] 2.1 DYNAMIC GAIN MODULATION DURING PLAYBACK
+-------------------------------------------------
+- Implemented real-time volume gain calculation (`get_fade_volume_factor_at_time(t)`) evaluating story fade-in and fade-out envelope curves.
+- Connected a 25ms timer (`fade_preview_timer`) during playback to smoothly modulate `QAudioOutput.setVolume(...)` as the playhead traverses fade ramps.
+
+[x] 2.2 STORY CLIP AUDITIONING WITH FADE RAMPS
+------------------------------------------------
+- Added *"Audition Story (With Fades ▶)"* to the story list right-click context menu.
+- Auditions target story from start to finish with fade envelope curves active and stops playback automatically at story boundary (`end + 0.05s`).
+
+[x] 2.3 MASTER VOLUME PRESERVATION & SEAMLESS RESET
+----------------------------------------------------
+- Caches user-configured master playback volume (`master_volume`).
+- Automatically restores volume upon pausing, stopping playback, or seeking outside fade regions.
+
+[x] 2.4 PLAYBACK & TIMELINE PREFERENCES FOR AUDIO FADES
+--------------------------------------------------------
+- Added toggles in Preferences -> *"Playback & Timeline"*:
+  * `[x] Enable story audio fades and timeline envelope handles` (`enable_audio_fades`)
+  * `[x] Preview audio fades in real-time during playback` (`preview_audio_fades`)
+- Dynamically toggles timeline envelope grab handles, dark gain masks, diagonal dashed ramp overlays, story delegate fade indicators, and export processing.
+
+[x] 2.5 TIMELINE CANVAS PERFORMANCE & TOOLTIP DEBOUNCING
+---------------------------------------------------------
+- Viewport bounding box culling on envelope hit-testing (`find_fade_handle_at_pos`) and painting (`end_x < -16 or start_x > width + 16`).
+- Debounced hover tooltips on the timeline canvas to avoid continuous OS redraw events during scrubbing and playback.
 
 ================================================================================
 3. FUTURE MILESTONE: EXPANDED NLE & DAW TIMELINE INTERCHANGE (Phase 4 - Planned for v3.4) [NOT STARTED]

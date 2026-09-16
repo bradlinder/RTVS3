@@ -2126,8 +2126,9 @@ class ProjectExportMixin:
         creationflags = subprocess.CREATE_NO_WINDOW if sys.platform == 'win32' else 0
         ff_bin = ffmpeg_path() or "ffmpeg"
 
-        fade_in = max(0.0, min(float(fade_in or 0.0), duration))
-        fade_out = max(0.0, min(float(fade_out or 0.0), max(0.0, duration - fade_in)))
+        fades_enabled = getattr(self, "enable_audio_fades", True)
+        fade_in = max(0.0, min(float(fade_in or 0.0), duration)) if fades_enabled else 0.0
+        fade_out = max(0.0, min(float(fade_out or 0.0), max(0.0, duration - fade_in))) if fades_enabled else 0.0
 
         # Build audio filter chain if fades are requested
         af_chain = []

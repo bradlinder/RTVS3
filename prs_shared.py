@@ -516,7 +516,7 @@ class CollapsibleSection(QWidget):
 
 # Display branding shown to the user (title bar, About box, installers).
 APP_DISPLAY_NAME = "Radio & TV Segmenter"
-PROJECT_VERSION = "3.3.0"
+PROJECT_VERSION = "3.3.1"
 DEFAULT_GITHUB_REPO = "bradlinder/RTVS3"
 
 
@@ -1488,10 +1488,13 @@ class StoryCardDelegate(QStyledItemDelegate):
 
             # Time range metadata
             if time_str:
-                fade_in = getattr(story, "fade_in", 0.0) if story else 0.0
-                fade_out = getattr(story, "fade_out", 0.0) if story else 0.0
-                if fade_in > 0 or fade_out > 0:
-                    time_str += f"  •  Fades: {fade_in:.1f}s / {fade_out:.1f}s"
+                win = self.parent().window() if self.parent() else None
+                fades_enabled = getattr(win, "enable_audio_fades", True)
+                if fades_enabled:
+                    fade_in = getattr(story, "fade_in", 0.0) if story else 0.0
+                    fade_out = getattr(story, "fade_out", 0.0) if story else 0.0
+                    if fade_in > 0 or fade_out > 0:
+                        time_str += f"  •  Fades: {fade_in:.1f}s / {fade_out:.1f}s"
                 time_font = QFont(option.font)
                 time_font.setPointSize(8)
                 painter.setFont(time_font)
@@ -1561,6 +1564,11 @@ class StoryListWidget(QListWidget):
             fades_action = menu.addAction("Ajustar fundidos de audio..." if is_es else "Set Audio Fades...")
             row = self.row(item)
             fades_action.triggered.connect(lambda: win.open_story_fades_dialog(story_index=row))
+
+        if hasattr(win, "audition_story"):
+            audition_action = menu.addAction("Audicionar con fundidos (▶)" if is_es else "Audition Story (With Fades ▶)")
+            row = self.row(item)
+            audition_action.triggered.connect(lambda: win.audition_story(row))
             menu.addSeparator()
 
         delete_action = menu.addAction(f"Delete {term}")
@@ -4753,6 +4761,8 @@ class TimelineCanvas(QWidget):
         self.active_selection_handle = None
         self.active_fade_target = None  # Tuple: (story_index, 'fade_in' | 'fade_out')
         self._fade_drag_start_val = 0.0
+        self.show_audio_fades = True
+        self._last_tooltip_text = ""
 
         self.stories = []
         self.waveform_peaks = []
@@ -4983,11 +4993,19 @@ class TimelineCanvas(QWidget):
 
     def find_fade_handle_at_pos(self, pos_x, pos_y, width):
         """Hit-test tactile fade-in and fade-out envelope handles near the top edge of story blocks."""
+        if not getattr(self, "show_audio_fades", True):
+            return None
+
         top_y = self.RULER_HEIGHT
         if pos_y < (top_y - 6) or pos_y > (top_y + 18):
             return None
 
         for index, story in enumerate(self.stories):
+            start_x = self.time_to_x(story.start, width)
+            end_x = self.time_to_x(story.end, width)
+            if end_x < -16 or start_x > width + 16:
+                continue
+
             fin = getattr(story, "fade_in", 0.0)
             fout = getattr(story, "fade_out", 0.0)
 
@@ -5232,7 +5250,9 @@ class TimelineCanvas(QWidget):
                 idx, edge_type = edge_hit
                 title = self.stories[idx].title if 0 <= idx < len(self.stories) else f"Story #{idx+1}"
                 tooltip_text += f"\n{title} ({edge_type.capitalize()} Boundary)\nRight-click and drag to adjust"
-            QToolTip.showText(event.globalPosition().toPoint(), tooltip_text, self)
+            if tooltip_text != getattr(self, "_last_tooltip_text", ""):
+                self._last_tooltip_text = tooltip_text
+                QToolTip.showText(event.globalPosition().toPoint(), tooltip_text, self)
 
         super().mouseMoveEvent(event)
 
@@ -5776,60 +5796,64 @@ class TimelineCanvas(QWidget):
             )
 
             # --- Audio Fade Ramps & Envelope Visualization ---
-            fin = getattr(story, "fade_in", 0.0)
-            fout = getattr(story, "fade_out", 0.0)
-            story_dur = max(0.001, story.end - story.start)
-            fin = min(fin, story_dur)
-            fout = min(fout, max(0.0, story_dur - fin))
+            if getattr(self, "show_audio_fades", True):
+                fin = getattr(story, "fade_in", 0.0)
+                fout = getattr(story, "fade_out", 0.0)
+                if fin > 0 or fout > 0:
+                    story_dur = max(0.001, story.end - story.start)
+                    fin = min(fin, story_dur)
+                    fout = min(fout, max(0.0, story_dur - fin))
 
-            top_y = float(self.RULER_HEIGHT)
-            bottom_y = float(height)
+                    top_y = float(self.RULER_HEIGHT)
+                    bottom_y = float(height)
 
-            if fin > 0:
-                fin_apex_x = self.time_to_x(story.start + fin, width)
-                fade_in_poly = QPolygonF([
-                    QPointF(start_x, bottom_y),
-                    QPointF(start_x, top_y),
-                    QPointF(fin_apex_x, top_y),
-                ])
-                painter.setBrush(QColor(0, 0, 0, 95 if is_selected else 65))
-                painter.setPen(Qt.PenStyle.NoPen)
-                painter.drawPolygon(fade_in_poly)
+                    if fin > 0:
+                        fin_apex_x = self.time_to_x(story.start + fin, width)
+                        if fin_apex_x >= 0 and start_x <= width:
+                            fade_in_poly = QPolygonF([
+                                QPointF(start_x, bottom_y),
+                                QPointF(start_x, top_y),
+                                QPointF(fin_apex_x, top_y),
+                            ])
+                            painter.setBrush(QColor(0, 0, 0, 95 if is_selected else 65))
+                            painter.setPen(Qt.PenStyle.NoPen)
+                            painter.drawPolygon(fade_in_poly)
 
-                # Diagonal ramp line
-                ramp_pen = QPen(QColor("#38bdf8" if is_selected else "#7dd3fc"), 1.5, Qt.PenStyle.DashLine)
-                painter.setPen(ramp_pen)
-                painter.drawLine(QPointF(start_x, bottom_y), QPointF(fin_apex_x, top_y))
+                            # Diagonal ramp line
+                            ramp_pen = QPen(QColor("#38bdf8" if is_selected else "#7dd3fc"), 1.5, Qt.PenStyle.DashLine)
+                            painter.setPen(ramp_pen)
+                            painter.drawLine(QPointF(start_x, bottom_y), QPointF(fin_apex_x, top_y))
 
-                # Tactile Grab Handle at apex along top edge
-                if 0 <= fin_apex_x <= width:
-                    handle_color = QColor("#38bdf8" if is_selected else "#93c5fd")
-                    painter.setPen(QPen(handle_color.darker(130), 1))
-                    painter.setBrush(handle_color)
-                    painter.drawRect(QRectF(fin_apex_x - 3, top_y + 1, 6, 8))
+                            # Tactile Grab Handle at apex along top edge
+                            if 0 <= fin_apex_x <= width:
+                                handle_color = QColor("#38bdf8" if is_selected else "#93c5fd")
+                                painter.setPen(QPen(handle_color.darker(130), 1))
+                                painter.setBrush(handle_color)
+                                painter.drawRect(QRectF(fin_apex_x - 3, top_y + 1, 6, 8))
 
-            if fout > 0:
-                fout_apex_x = self.time_to_x(story.end - fout, width)
-                fade_out_poly = QPolygonF([
-                    QPointF(fout_apex_x, top_y),
-                    QPointF(end_x, top_y),
-                    QPointF(end_x, bottom_y),
-                ])
-                painter.setBrush(QColor(0, 0, 0, 95 if is_selected else 65))
-                painter.setPen(Qt.PenStyle.NoPen)
-                painter.drawPolygon(fade_out_poly)
+                    if fout > 0:
+                        fout_apex_x = self.time_to_x(story.end - fout, width)
+                        if end_x >= 0 and fout_apex_x <= width:
+                            fade_out_poly = QPolygonF([
+                                QPointF(fout_apex_x, top_y),
+                                QPointF(end_x, top_y),
+                                QPointF(end_x, bottom_y),
+                            ])
+                            painter.setBrush(QColor(0, 0, 0, 95 if is_selected else 65))
+                            painter.setPen(Qt.PenStyle.NoPen)
+                            painter.drawPolygon(fade_out_poly)
 
-                # Diagonal ramp line
-                ramp_pen = QPen(QColor("#f43f5e" if is_selected else "#fb7185"), 1.5, Qt.PenStyle.DashLine)
-                painter.setPen(ramp_pen)
-                painter.drawLine(QPointF(fout_apex_x, top_y), QPointF(end_x, bottom_y))
+                            # Diagonal ramp line
+                            ramp_pen = QPen(QColor("#f43f5e" if is_selected else "#fb7185"), 1.5, Qt.PenStyle.DashLine)
+                            painter.setPen(ramp_pen)
+                            painter.drawLine(QPointF(fout_apex_x, top_y), QPointF(end_x, bottom_y))
 
-                # Tactile Grab Handle at apex along top edge
-                if 0 <= fout_apex_x <= width:
-                    handle_color = QColor("#f43f5e" if is_selected else "#fca5a5")
-                    painter.setPen(QPen(handle_color.darker(130), 1))
-                    painter.setBrush(handle_color)
-                    painter.drawRect(QRectF(fout_apex_x - 3, top_y + 1, 6, 8))
+                            # Tactile Grab Handle at apex along top edge
+                            if 0 <= fout_apex_x <= width:
+                                handle_color = QColor("#f43f5e" if is_selected else "#fca5a5")
+                                painter.setPen(QPen(handle_color.darker(130), 1))
+                                painter.setBrush(handle_color)
+                                painter.drawRect(QRectF(fout_apex_x - 3, top_y + 1, 6, 8))
 
             painter.setPen(self.tokens.story_segment_pen(index, is_selected=is_selected))
             if 0 <= start_x <= width:
