@@ -217,6 +217,11 @@ class UnifiedExportDialog(QDialog):
         media_ext = audio_file.suffix.lower() if audio_file else "media"
         self.cb_media = QCheckBox(f"Media clip ({media_ext})")
 
+        self.cb_apply_fades = QCheckBox("Apply audio fade-in & fade-out")
+        self.cb_apply_fades.setToolTip("Renders smooth audio fade ramps at start and end of exported story media clips.")
+        settings = QSettings("RadioTVStorySegmenter", "RadioTVStorySegmenter")
+        self.cb_apply_fades.setChecked(str(settings.value("export_apply_audio_fades", "true")).lower() in {"1", "true", "yes"})
+
         is_music_mode = getattr(self.main_window, "story_detection_mode", "") == "music"
         self.cb_txt.setChecked(not is_music_mode)
         self.cb_docx.setChecked(not is_music_mode)
@@ -225,6 +230,8 @@ class UnifiedExportDialog(QDialog):
         self.cb_tracklist.setChecked(is_music_mode)
         self.cb_media.setChecked(audio_file is not None)
         self.cb_media.setEnabled(audio_file is not None)
+        self.cb_apply_fades.setEnabled(audio_file is not None and self.cb_media.isChecked())
+        self.cb_media.toggled.connect(lambda checked: self.cb_apply_fades.setEnabled(checked))
 
         self.formats_section.add_widget(self.cb_txt)
         self.formats_section.add_widget(self.cb_docx)
@@ -234,6 +241,7 @@ class UnifiedExportDialog(QDialog):
         self.formats_section.add_widget(self.cb_cue)
         self.formats_section.add_widget(self.cb_tracklist)
         self.formats_section.add_widget(self.cb_media)
+        self.formats_section.add_widget(self.cb_apply_fades)
         local_layout.addWidget(self.formats_section)
 
         # Content & Language options
@@ -452,6 +460,10 @@ class UnifiedExportDialog(QDialog):
                 "cue": self.cb_cue.isChecked(),
                 "tracklist": self.cb_tracklist.isChecked(),
             }
+            apply_fades = self.cb_apply_fades.isChecked()
+            settings = QSettings("RadioTVStorySegmenter", "RadioTVStorySegmenter")
+            settings.setValue("export_apply_audio_fades", "true" if apply_fades else "false")
+
             options = {
                 "include_speakers": self.cb_speakers.isChecked(),
                 "include_timestamps": self.cb_timestamps.isChecked(),
@@ -459,6 +471,7 @@ class UnifiedExportDialog(QDialog):
                 "include_notes": self.cb_notes.isChecked(),
                 "include_english": self.cb_en.isChecked(),
                 "include_spanish": self.cb_es.isChecked(),
+                "apply_audio_fades": apply_fades,
             }
             base = safe_filename(self.filename_edit.text().strip() or "export")
             export_dir = None

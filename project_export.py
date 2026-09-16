@@ -1202,7 +1202,10 @@ class ProjectExportMixin:
             # Export Media Clip
             if formats.get("media") and self.audio_file:
                 media_file = media_out / f"{story_base}{self.audio_file.suffix.lower()}"
-                self.extract_media(story.start, story.end, media_file)
+                apply_fades = bool(options.get("apply_audio_fades", True))
+                f_in = getattr(story, "fade_in", 0.0) if apply_fades else 0.0
+                f_out = getattr(story, "fade_out", 0.0) if apply_fades else 0.0
+                self.extract_media(story.start, story.end, media_file, fade_in=f_in, fade_out=f_out)
 
         # Export CUE sheet and tracklist if requested
         if formats.get("cue") and stories_with_indices:
@@ -2107,8 +2110,10 @@ class ProjectExportMixin:
                 lines.extend([f"{self._subtitle_timestamp(start, True)} --> {self._subtitle_timestamp(end, True)}", text, ""])
         Path(path).write_text("\n".join(lines), encoding="utf-8")
 
-    def extract_media(self, start, end, output_file):
-        """Export a media range using the same container/format as the imported file."""
+    def extract_media(self, start, end, output_file, fade_in=0.0, fade_out=0.0):
+        """Export a media range using the same container/format as the imported file,
+        optionally applying audio fade-in and fade-out filters.
+        """
         if not self.audio_file:
             raise RuntimeError("No source media is loaded.")
         output_file = Path(output_file)
@@ -2117,29 +2122,66 @@ class ProjectExportMixin:
             raise RuntimeError("The selected media range is empty.")
 
         ext = output_file.suffix.lower()
-        copy_cmd = [ffmpeg_path() or "ffmpeg", "-y", "-ss", str(start), "-i", str(self.audio_file), "-t", str(duration), "-map", "0", "-c", "copy", str(output_file)]
+        has_video = bool(getattr(self, "current_media_is_video", False))
         creationflags = subprocess.CREATE_NO_WINDOW if sys.platform == 'win32' else 0
-        result = subprocess.run(copy_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, timeout=600, creationflags=creationflags)
-        if result.returncode == 0:
+        ff_bin = ffmpeg_path() or "ffmpeg"
+
+        fade_in = max(0.0, min(float(fade_in or 0.0), duration))
+        fade_out = max(0.0, min(float(fade_out or 0.0), max(0.0, duration - fade_in)))
+
+        # Build audio filter chain if fades are requested
+        af_chain = []
+        if fade_in > 0:
+            af_chain.append(f"afade=t=in:ss=0:d={fade_in:.3f}")
+        if fade_out > 0:
+            fade_out_start = max(0.0, duration - fade_out)
+            af_chain.append(f"afade=t=out:st={fade_out_start:.3f}:d={fade_out:.3f}")
+
+        if not af_chain:
+            # Fast-path: stream-copy when no audio filters are needed
+            copy_cmd = [ff_bin, "-y", "-ss", str(start), "-i", str(self.audio_file), "-t", str(duration), "-map", "0", "-c", "copy", str(output_file)]
+            result = subprocess.run(copy_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, timeout=600, creationflags=creationflags)
+            if result.returncode == 0:
+                return
+
+        af_args = ["-af", ",".join(af_chain)] if af_chain else []
+
+        # When exporting video with audio fades, keep video stream copied (-c:v copy) where possible
+        if has_video or ext in {".mp4", ".mov", ".webm", ".mkv", ".avi"}:
+            if ext == ".webm":
+                audio_codec = ["-c:a", "libopus"]
+                fallback_vcodec = ["-c:v", "libvpx-vp9"]
+            else:
+                audio_codec = ["-c:a", "aac", "-b:a", "192k"]
+                fallback_vcodec = ["-c:v", "libx264"]
+
+            # Try stream-copying video while filtering and re-encoding audio
+            video_copy_cmd = [ff_bin, "-y", "-ss", str(start), "-i", str(self.audio_file), "-t", str(duration), "-map", "0", "-c:v", "copy"] + audio_codec + af_args + [str(output_file)]
+            res_vcopy = subprocess.run(video_copy_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, timeout=900, creationflags=creationflags)
+            if res_vcopy.returncode == 0:
+                return
+
+            # Fallback to full transcode if video copy failed
+            transcode_cmd = [ff_bin, "-y", "-ss", str(start), "-i", str(self.audio_file), "-t", str(duration), "-map", "0"] + fallback_vcodec + audio_codec + af_args + [str(output_file)]
+            result2 = subprocess.run(transcode_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, timeout=1800, creationflags=creationflags)
+            if result2.returncode != 0:
+                raise RuntimeError(result2.stderr or res_vcopy.stderr)
             return
 
-        codec_args = {
+        # Audio-only containers
+        audio_codecs = {
             ".wav": ["-c:a", "pcm_s16le"],
             ".mp3": ["-c:a", "libmp3lame", "-q:a", "2"],
             ".flac": ["-c:a", "flac"],
             ".m4a": ["-c:a", "aac", "-b:a", "192k"],
-            ".mp4": ["-c:v", "libx264", "-c:a", "aac", "-b:a", "192k"],
-            ".mov": ["-c:v", "libx264", "-c:a", "aac", "-b:a", "192k"],
-            ".webm": ["-c:v", "libvpx-vp9", "-c:a", "libopus"],
             ".ogg": ["-c:a", "libvorbis"],
             ".aac": ["-c:a", "aac", "-b:a", "192k"],
-        }.get(ext)
-        if codec_args is None:
-            raise RuntimeError(f"Could not export media in the original format ({ext or 'unknown'}).\n\n{result.stderr}")
-        transcode_cmd = [ffmpeg_path() or "ffmpeg", "-y", "-ss", str(start), "-i", str(self.audio_file), "-t", str(duration), "-map", "0"] + codec_args + [str(output_file)]
+        }
+        codec_args = audio_codecs.get(ext, ["-c:a", "aac", "-b:a", "192k"])
+        transcode_cmd = [ff_bin, "-y", "-ss", str(start), "-i", str(self.audio_file), "-t", str(duration), "-map", "0:a"] + codec_args + af_args + [str(output_file)]
         result2 = subprocess.run(transcode_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, timeout=1800, creationflags=creationflags)
         if result2.returncode != 0:
-            raise RuntimeError(result2.stderr or result.stderr)
+            raise RuntimeError(result2.stderr)
 
     def extract_audio(self, start, end, output_file):
         # Backward-compatible helper for older project/export code.

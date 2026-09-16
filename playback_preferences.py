@@ -1784,6 +1784,24 @@ class PlaybackPreferencesMixin:
         pad_spin.setSuffix(" sec")
         det_form.addRow("Lead-In Padding:", pad_spin)
 
+        fade_in_spin = QDoubleSpinBox()
+        fade_in_spin.setRange(0.0, 10.0)
+        fade_in_spin.setSingleStep(0.1)
+        fade_in_spin.setDecimals(2)
+        fade_in_spin.setValue(float(self.settings_store.value("default_fade_in_duration", 0.0)))
+        fade_in_spin.setSuffix(" sec")
+        fade_in_spin.setToolTip("Default audio fade-in duration automatically applied to newly created stories.")
+        det_form.addRow("Default Story Fade-In:", fade_in_spin)
+
+        fade_out_spin = QDoubleSpinBox()
+        fade_out_spin.setRange(0.0, 10.0)
+        fade_out_spin.setSingleStep(0.1)
+        fade_out_spin.setDecimals(2)
+        fade_out_spin.setValue(float(self.settings_store.value("default_fade_out_duration", 1.0)))
+        fade_out_spin.setSuffix(" sec")
+        fade_out_spin.setToolTip("Default audio fade-out duration automatically applied to newly created stories.")
+        det_form.addRow("Default Story Fade-Out:", fade_out_spin)
+
         expected_speakers_combo = QComboBox()
         expected_speakers_combo.addItem("Auto-Detect", "auto")
         expected_speakers_combo.addItem("1 Speaker (Solo Fast-Path)", "1")
@@ -2525,6 +2543,8 @@ class PlaybackPreferencesMixin:
             self.expected_speakers = str(expected_speakers_combo.currentData() or "auto")
             self.settings_store.setValue("silence_threshold", self.silence_threshold)
             self.settings_store.setValue("lead_in_padding", self.lead_in_padding)
+            self.settings_store.setValue("default_fade_in_duration", fade_in_spin.value())
+            self.settings_store.setValue("default_fade_out_duration", fade_out_spin.value())
             self.settings_store.setValue("default_expected_speakers", self.expected_speakers)
             self.settings_store.setValue("ask_expected_speakers", ask_speakers_chk.isChecked())
 

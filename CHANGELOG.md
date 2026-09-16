@@ -1,5 +1,24 @@
 # Changelog
 
+## v3.3.0
+- **Story Audio Fade-In & Fade-Out Envelope Architecture**:
+  - Extended the core `Story` data model with native `fade_in` and `fade_out` duration attributes, fully serialized into JSON project files and `.rtvs` archives with backwards-compatible migration.
+  - Newly detected or manually created stories automatically inherit default fade settings from application preferences (default: 0.0s fade-in, 1.0s fade-out).
+  - Added `StoryDelegate` rendering support displaying active fade durations (`Fades: X.Xs / Y.Ys`) directly in the story list sidebar.
+- **Interactive Timeline Fade Ramps & Tactile Envelope Handles**:
+  - Rendered audio gain envelopes directly on the timeline waveform canvas with semi-transparent gain masks and high-contrast diagonal ramp indicators (cyan for fade-in, rose for fade-out).
+  - Added tactile envelope grab handles along the top edge of story blocks allowing direct horizontal drag-and-drop adjustment of fade durations with real-time cursor feedback and precision tooltips.
+  - Integrated with `QUndoStack` through `StoryFadesChangeCommand` for discrete, non-destructive undo/redo of fade adjustments.
+- **Story Fades Dialog & Context Menu Integration**:
+  - Added *"Set Audio Fades..."* to both the timeline right-click context menu and the story list context menu.
+  - Implemented `StoryFadesDialog` with precision decimal spinboxes, story duration clamps, quick presets (*"No Fades (0s)"* and *"Restore Defaults"*), and an option to apply settings project-wide.
+- **Global Preferences & Detection Settings**:
+  - Added *"Default Story Fade-In"* and *"Default Story Fade-Out"* numeric controls to the Detection settings pane in `playback_preferences.py`, persisted across sessions in `QSettings`.
+- **Export Pipeline & FFmpeg Audio Filter Processing**:
+  - Integrated FFmpeg audio filter chains (`afade=t=in:ss=0:d=...` and `afade=t=out:st=...:d=...`) into `extract_media()` in `project_export.py`.
+  - Added an *"Apply audio fade-in & fade-out"* toggle option to the Unified Export Dialog (`export/dialog.py`), remembering user preferences.
+  - Implemented intelligent video stream-copying (`-c:v copy`) when exporting video stories, re-encoding only the audio stream with fade filters to preserve visual quality and export speed.
+
 ## v3.2.20
 - **macOS System CLI Tool & Homebrew PATH Environment Integration**:
   - Implemented `setup_macos_path_environment()` in `bootstrap.py` and `radio_tv_story_segmenter_worker.py` to ensure standard macOS tool directories (`/opt/homebrew/bin`, `/opt/homebrew/sbin`, `/usr/local/bin`, `/usr/local/sbin`, `~/.local/bin`, `~/.cargo/bin`) are present in `os.environ["PATH"]`.

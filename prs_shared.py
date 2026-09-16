@@ -177,6 +177,7 @@ from PySide6.QtGui import (
     QColor,
     QPainter,
     QPen,
+    QPolygonF,
     QFont,
     QAction,
     QActionGroup,
@@ -515,7 +516,7 @@ class CollapsibleSection(QWidget):
 
 # Display branding shown to the user (title bar, About box, installers).
 APP_DISPLAY_NAME = "Radio & TV Segmenter"
-PROJECT_VERSION = "3.2.20"
+PROJECT_VERSION = "3.3.0"
 DEFAULT_GITHUB_REPO = "bradlinder/RTVS3"
 
 
@@ -1185,6 +1186,8 @@ class Story:
         title="Untitled Story",
         suggestion=False,
         metadata=None,
+        fade_in=None,
+        fade_out=None,
     ):
         self.start = float(start)
         self.end = float(end)
@@ -1192,12 +1195,34 @@ class Story:
         self.suggestion = suggestion
         self.metadata = dict(metadata) if isinstance(metadata, dict) else {}
 
+        if fade_in is not None:
+            self.fade_in = max(0.0, float(fade_in))
+        else:
+            try:
+                from PySide6.QtCore import QSettings
+                settings = QSettings("RadioTVStorySegmenter", "RadioTVStorySegmenter")
+                self.fade_in = max(0.0, float(settings.value("default_fade_in_duration", 0.0)))
+            except Exception:
+                self.fade_in = 0.0
+
+        if fade_out is not None:
+            self.fade_out = max(0.0, float(fade_out))
+        else:
+            try:
+                from PySide6.QtCore import QSettings
+                settings = QSettings("RadioTVStorySegmenter", "RadioTVStorySegmenter")
+                self.fade_out = max(0.0, float(settings.value("default_fade_out_duration", 1.0)))
+            except Exception:
+                self.fade_out = 1.0
+
     def to_dict(self):
         d = {
             "start": self.start,
             "end": self.end,
             "title": self.title,
             "suggestion": self.suggestion,
+            "fade_in": self.fade_in,
+            "fade_out": self.fade_out,
         }
         if self.metadata:
             d["metadata"] = dict(self.metadata)
@@ -1205,7 +1230,7 @@ class Story:
 
     @classmethod
     def from_dict(cls, data):
-        known = {"start", "end", "title", "suggestion", "metadata"}
+        known = {"start", "end", "title", "suggestion", "metadata", "fade_in", "fade_out"}
         meta = dict(data.get("metadata", {})) if isinstance(data.get("metadata"), dict) else {}
         for k, v in data.items():
             if k not in known:
@@ -1216,12 +1241,48 @@ class Story:
             title=data.get("title", "Untitled Story"),
             suggestion=data.get("suggestion", False),
             metadata=meta,
+            fade_in=data.get("fade_in"),
+            fade_out=data.get("fade_out"),
         )
 
 
 # ============================================================
 # Undo / Redo Commands
 # ============================================================
+
+class StoryFadesChangeCommand(QUndoCommand):
+    """Discrete undo/redo command for story audio fade-in and fade-out adjustments."""
+
+    def __init__(self, main_window, story_index, old_in, old_out, new_in, new_out, description="Adjust Audio Fades"):
+        super().__init__(description)
+        self.main_window = main_window
+        self.story_index = story_index
+        self.old_in = round(float(old_in), 3)
+        self.old_out = round(float(old_out), 3)
+        self.new_in = round(float(new_in), 3)
+        self.new_out = round(float(new_out), 3)
+
+    def undo(self):
+        if 0 <= self.story_index < len(self.main_window.stories):
+            self.main_window.stories[self.story_index].fade_in = self.old_in
+            self.main_window.stories[self.story_index].fade_out = self.old_out
+            self._sync_ui()
+
+    def redo(self):
+        if 0 <= self.story_index < len(self.main_window.stories):
+            self.main_window.stories[self.story_index].fade_in = self.new_in
+            self.main_window.stories[self.story_index].fade_out = self.new_out
+            self._sync_ui()
+
+    def _sync_ui(self):
+        if hasattr(self.main_window, "refresh_story_list"):
+            self.main_window.refresh_story_list()
+        if hasattr(self.main_window, "timeline"):
+            self.main_window.timeline.set_stories(self.main_window.stories, self.main_window.current_selected_story_indices)
+            self.main_window.timeline.update()
+        if hasattr(self.main_window, "save_project"):
+            self.main_window.save_project()
+
 
 class SetStoriesCommand(QUndoCommand):
     def __init__(self, main_window, old_stories, new_stories, description="Modify Stories"):
@@ -1427,6 +1488,10 @@ class StoryCardDelegate(QStyledItemDelegate):
 
             # Time range metadata
             if time_str:
+                fade_in = getattr(story, "fade_in", 0.0) if story else 0.0
+                fade_out = getattr(story, "fade_out", 0.0) if story else 0.0
+                if fade_in > 0 or fade_out > 0:
+                    time_str += f"  •  Fades: {fade_in:.1f}s / {fade_out:.1f}s"
                 time_font = QFont(option.font)
                 time_font.setPointSize(8)
                 painter.setFont(time_font)
@@ -1492,6 +1557,12 @@ class StoryListWidget(QListWidget):
             yt_action.triggered.connect(win.open_youtube_publish_dialog)
 
         menu.addSeparator()
+        if hasattr(win, "open_story_fades_dialog"):
+            fades_action = menu.addAction("Ajustar fundidos de audio..." if is_es else "Set Audio Fades...")
+            row = self.row(item)
+            fades_action.triggered.connect(lambda: win.open_story_fades_dialog(story_index=row))
+            menu.addSeparator()
+
         delete_action = menu.addAction(f"Delete {term}")
         delete_action.triggered.connect(self.deleteRequested.emit)
         menu.exec(self.mapToGlobal(pos))
@@ -4680,6 +4751,8 @@ class TimelineCanvas(QWidget):
         self.selection_end = None
         self.is_right_dragging = False
         self.active_selection_handle = None
+        self.active_fade_target = None  # Tuple: (story_index, 'fade_in' | 'fade_out')
+        self._fade_drag_start_val = 0.0
 
         self.stories = []
         self.waveform_peaks = []
@@ -4906,6 +4979,29 @@ class TimelineCanvas(QWidget):
                 return (index, 'end')
         return None
 
+    FADE_HANDLE_THRESHOLD = 8
+
+    def find_fade_handle_at_pos(self, pos_x, pos_y, width):
+        """Hit-test tactile fade-in and fade-out envelope handles near the top edge of story blocks."""
+        top_y = self.RULER_HEIGHT
+        if pos_y < (top_y - 6) or pos_y > (top_y + 18):
+            return None
+
+        for index, story in enumerate(self.stories):
+            fin = getattr(story, "fade_in", 0.0)
+            fout = getattr(story, "fade_out", 0.0)
+
+            # Fade-in handle apex sits at (start + fade_in) along top edge
+            fin_x = self.time_to_x(story.start + fin, width)
+            if abs(pos_x - fin_x) <= self.FADE_HANDLE_THRESHOLD:
+                return (index, "fade_in")
+
+            # Fade-out handle apex sits at (end - fade_out) along top edge
+            fout_x = self.time_to_x(story.end - fout, width)
+            if abs(pos_x - fout_x) <= self.FADE_HANDLE_THRESHOLD:
+                return (index, "fade_out")
+        return None
+
     def find_story_at_time(self, time):
         """Return the index of the story enclosing `time`, picking the most specific (shortest) if overlapping."""
         candidates = []
@@ -4970,6 +5066,16 @@ class TimelineCanvas(QWidget):
             self.pan_start_x = pos_x
             self.pan_start_offset = self.scroll_offset
             self.setCursor(Qt.CursorShape.ClosedHandCursor)
+            event.accept()
+            return
+
+        # --- FADE ENVELOPE HANDLE INTERACTION ---
+        fade_hit = self.find_fade_handle_at_pos(pos_x, event.position().y(), width)
+        if fade_hit:
+            self.active_fade_target = fade_hit
+            idx, f_type = fade_hit
+            self._fade_drag_start_val = getattr(self.stories[idx], f_type, 0.0)
+            self.setCursor(Qt.CursorShape.SizeHorCursor)
             event.accept()
             return
 
@@ -5069,6 +5175,23 @@ class TimelineCanvas(QWidget):
             event.accept()
             return
 
+        # --- FADE HANDLE DRAG ---
+        if self.active_fade_target:
+            idx, f_type = self.active_fade_target
+            if 0 <= idx < len(self.stories):
+                story = self.stories[idx]
+                story_dur = max(0.01, story.end - story.start)
+                curr_time = max(0.0, min(self.duration, self.x_to_time(pos_x, width)))
+                if f_type == "fade_in":
+                    max_in = max(0.0, story_dur - getattr(story, "fade_out", 0.0))
+                    story.fade_in = round(max(0.0, min(max_in, curr_time - story.start)), 2)
+                elif f_type == "fade_out":
+                    max_out = max(0.0, story_dur - getattr(story, "fade_in", 0.0))
+                    story.fade_out = round(max(0.0, min(max_out, story.end - curr_time)), 2)
+                self.update()
+            event.accept()
+            return
+
         if self.active_edge_target:
             idx, edge_type = self.active_edge_target
             if 0 <= idx < len(self.stories):
@@ -5085,12 +5208,13 @@ class TimelineCanvas(QWidget):
             event.accept()
             return
 
-        if self.is_near_playhead(pos_x, width) or self.find_edge_at_pos(pos_x, width):
+        pos_y = event.position().y()
+        if self.is_near_playhead(pos_x, width) or self.find_edge_at_pos(pos_x, width) or self.find_fade_handle_at_pos(pos_x, pos_y, width):
             self.setCursor(Qt.CursorShape.SizeHorCursor)
         else:
             self.unsetCursor()
 
-        if not (self.is_panning or self.is_left_down or self.is_right_dragging or self.active_edge_target):
+        if not (self.is_panning or self.is_left_down or self.is_right_dragging or self.active_edge_target or self.active_fade_target):
             hover_time = max(0, min(self.duration, self.x_to_time(pos_x, width)))
             mins = int(hover_time // 60)
             secs = int(hover_time % 60)
@@ -5098,7 +5222,13 @@ class TimelineCanvas(QWidget):
 
             tooltip_text = f"{mins:02d}:{secs:02d}.{millis:03d}"
             edge_hit = self.find_edge_at_pos(pos_x, width)
-            if edge_hit:
+            fade_hit = self.find_fade_handle_at_pos(pos_x, pos_y, width)
+            if fade_hit:
+                idx, f_type = fade_hit
+                f_dur = getattr(self.stories[idx], f_type, 0.0)
+                f_name = "Fade-In" if f_type == "fade_in" else "Fade-Out"
+                tooltip_text += f"\n{self.stories[idx].title} ({f_name}: {f_dur:.2f}s)\nDrag handle horizontally to adjust audio fade"
+            elif edge_hit:
                 idx, edge_type = edge_hit
                 title = self.stories[idx].title if 0 <= idx < len(self.stories) else f"Story #{idx+1}"
                 tooltip_text += f"\n{title} ({edge_type.capitalize()} Boundary)\nRight-click and drag to adjust"
@@ -5107,6 +5237,29 @@ class TimelineCanvas(QWidget):
         super().mouseMoveEvent(event)
 
     def mouseReleaseEvent(self, event):
+        if self.active_fade_target:
+            idx, f_type = self.active_fade_target
+            self.active_fade_target = None
+            self.unsetCursor()
+            if 0 <= idx < len(self.stories):
+                win = self.window()
+                curr_val = getattr(self.stories[idx], f_type, 0.0)
+                if abs(curr_val - self._fade_drag_start_val) >= 0.01:
+                    if f_type == "fade_in":
+                        old_in, new_in = self._fade_drag_start_val, curr_val
+                        old_out, new_out = self.stories[idx].fade_out, self.stories[idx].fade_out
+                    else:
+                        old_in, new_in = self.stories[idx].fade_in, self.stories[idx].fade_in
+                        old_out, new_out = self._fade_drag_start_val, curr_val
+                    if hasattr(win, "undo_stack"):
+                        win.undo_stack.push(StoryFadesChangeCommand(win, idx, old_in, old_out, new_in, new_out))
+                    elif hasattr(win, "save_project"):
+                        win.save_project()
+                if hasattr(win, "refresh_story_list"):
+                    win.refresh_story_list()
+            self.update()
+            event.accept()
+            return
         if event.button() == Qt.MouseButton.MiddleButton:
             self.is_panning = False
             self.unsetCursor()
@@ -5167,9 +5320,12 @@ class TimelineCanvas(QWidget):
         term = ("Canción" if is_es else "Song") if is_music else ("Historia" if is_es else "Story")
 
         select_action = None
+        fades_action = None
         delete_action = None
         if story_idx is not None and 0 <= story_idx < len(self.stories):
             select_action = menu.addAction(f"{('Seleccionar' if is_es else 'Select')} {term} #{story_idx + 1}")
+            if hasattr(win, "open_story_fades_dialog"):
+                fades_action = menu.addAction("Ajustar fundidos de audio..." if is_es else "Set Audio Fades...")
             delete_action = menu.addAction(f"{('Eliminar' if is_es else 'Delete')} {term} #{story_idx + 1}")
             menu.addSeparator()
 
@@ -5195,6 +5351,9 @@ class TimelineCanvas(QWidget):
         if story_idx is not None and 0 <= story_idx < len(self.stories):
             if select_action and selected == select_action:
                 self.storyClicked.emit(story_idx)
+            elif fades_action and selected == fades_action:
+                if hasattr(win, "open_story_fades_dialog"):
+                    win.open_story_fades_dialog(story_index=story_idx)
             elif delete_action and selected == delete_action:
                 if hasattr(win, "apply_story_selection_indices") and hasattr(win, "delete_selected_story"):
                     win.apply_story_selection_indices([story_idx], seek=False)
@@ -5615,6 +5774,62 @@ class TimelineCanvas(QWidget):
                 QRectF(rect_start, self.RULER_HEIGHT, max(1, rect_end - rect_start), waveform_height),
                 self.tokens.story_segment_brush(index, is_selected=is_selected),
             )
+
+            # --- Audio Fade Ramps & Envelope Visualization ---
+            fin = getattr(story, "fade_in", 0.0)
+            fout = getattr(story, "fade_out", 0.0)
+            story_dur = max(0.001, story.end - story.start)
+            fin = min(fin, story_dur)
+            fout = min(fout, max(0.0, story_dur - fin))
+
+            top_y = float(self.RULER_HEIGHT)
+            bottom_y = float(height)
+
+            if fin > 0:
+                fin_apex_x = self.time_to_x(story.start + fin, width)
+                fade_in_poly = QPolygonF([
+                    QPointF(start_x, bottom_y),
+                    QPointF(start_x, top_y),
+                    QPointF(fin_apex_x, top_y),
+                ])
+                painter.setBrush(QColor(0, 0, 0, 95 if is_selected else 65))
+                painter.setPen(Qt.PenStyle.NoPen)
+                painter.drawPolygon(fade_in_poly)
+
+                # Diagonal ramp line
+                ramp_pen = QPen(QColor("#38bdf8" if is_selected else "#7dd3fc"), 1.5, Qt.PenStyle.DashLine)
+                painter.setPen(ramp_pen)
+                painter.drawLine(QPointF(start_x, bottom_y), QPointF(fin_apex_x, top_y))
+
+                # Tactile Grab Handle at apex along top edge
+                if 0 <= fin_apex_x <= width:
+                    handle_color = QColor("#38bdf8" if is_selected else "#93c5fd")
+                    painter.setPen(QPen(handle_color.darker(130), 1))
+                    painter.setBrush(handle_color)
+                    painter.drawRect(QRectF(fin_apex_x - 3, top_y + 1, 6, 8))
+
+            if fout > 0:
+                fout_apex_x = self.time_to_x(story.end - fout, width)
+                fade_out_poly = QPolygonF([
+                    QPointF(fout_apex_x, top_y),
+                    QPointF(end_x, top_y),
+                    QPointF(end_x, bottom_y),
+                ])
+                painter.setBrush(QColor(0, 0, 0, 95 if is_selected else 65))
+                painter.setPen(Qt.PenStyle.NoPen)
+                painter.drawPolygon(fade_out_poly)
+
+                # Diagonal ramp line
+                ramp_pen = QPen(QColor("#f43f5e" if is_selected else "#fb7185"), 1.5, Qt.PenStyle.DashLine)
+                painter.setPen(ramp_pen)
+                painter.drawLine(QPointF(fout_apex_x, top_y), QPointF(end_x, bottom_y))
+
+                # Tactile Grab Handle at apex along top edge
+                if 0 <= fout_apex_x <= width:
+                    handle_color = QColor("#f43f5e" if is_selected else "#fca5a5")
+                    painter.setPen(QPen(handle_color.darker(130), 1))
+                    painter.setBrush(handle_color)
+                    painter.drawRect(QRectF(fout_apex_x - 3, top_y + 1, 6, 8))
 
             painter.setPen(self.tokens.story_segment_pen(index, is_selected=is_selected))
             if 0 <= start_x <= width:

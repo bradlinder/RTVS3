@@ -1,4 +1,4 @@
-"""Radio & TV Segmenter v3.2.20 — transcript story responsibilities.
+"""Radio & TV Segmenter v3.3.0 — transcript story responsibilities.
 
 
 Methods intentionally retain the MainWindow-facing API so behavior remains
@@ -1941,6 +1941,149 @@ class TranscriptStoryMixin:
             "No Selection",
             "Make a selection first by right-click dragging across the timeline or highlighting transcript text."
         )
+
+    def open_story_fades_dialog(self, story_index=None):
+        """Open fine-grained audio fade-in and fade-out modal dialog for the selected story."""
+        if not hasattr(self, "stories") or not self.stories:
+            QMessageBox.information(self, "No Stories", "There are no stories created yet.")
+            return
+
+        if story_index is None:
+            if hasattr(self, "current_selected_story_indices") and self.current_selected_story_indices:
+                story_index = self.current_selected_story_indices[0]
+            else:
+                story_index = 0
+
+        if not (0 <= story_index < len(self.stories)):
+            return
+
+        story = self.stories[story_index]
+        dlg = StoryFadesDialog(self, story=story, story_index=story_index)
+        if dlg.exec() == QDialog.DialogCode.Accepted:
+            new_in, new_out, apply_all = dlg.get_fades()
+            old_in = getattr(story, "fade_in", 0.0)
+            old_out = getattr(story, "fade_out", 0.0)
+
+            if apply_all:
+                old_stories = [Story.from_dict(s.to_dict()) for s in self.stories]
+                new_stories = []
+                for s in self.stories:
+                    st_copy = Story.from_dict(s.to_dict())
+                    st_copy.fade_in = new_in
+                    st_copy.fade_out = new_out
+                    new_stories.append(st_copy)
+                if hasattr(self, "undo_stack"):
+                    self.undo_stack.push(SetStoriesCommand(self, old_stories, new_stories, "Set Audio Fades on All Stories"))
+                else:
+                    self.stories = new_stories
+                    self.refresh_story_list()
+                    if hasattr(self, "timeline"):
+                        self.timeline.set_stories(self.stories, self.current_selected_story_indices)
+                        self.timeline.update()
+                    self.save_project()
+            else:
+                if hasattr(self, "undo_stack"):
+                    self.undo_stack.push(StoryFadesChangeCommand(self, story_index, old_in, old_out, new_in, new_out))
+                else:
+                    story.fade_in = new_in
+                    story.fade_out = new_out
+                    self.refresh_story_list()
+                    if hasattr(self, "timeline"):
+                        self.timeline.set_stories(self.stories, self.current_selected_story_indices)
+                        self.timeline.update()
+                    self.save_project()
+
+
+class StoryFadesDialog(QDialog):
+    """Dialog for fine-grained numerical adjustment of audio fade-in and fade-out durations."""
+
+    def __init__(self, parent=None, story=None, story_index=0):
+        super().__init__(parent)
+        self.main_win = parent
+        self.story = story
+        self.story_index = story_index
+        title = story.title if story and getattr(story, "title", None) else f"Story #{story_index + 1}"
+        self.setWindowTitle(f"Audio Fades — {title}")
+        self.resize(440, 260)
+        self._init_ui()
+
+    def _init_ui(self):
+        layout = QVBoxLayout(self)
+        layout.setSpacing(14)
+
+        story_dur = max(0.01, (self.story.end - self.story.start)) if self.story else 10.0
+        header_text = (
+            f"<b>Story #{self.story_index + 1}: {html.escape(self.story.title if self.story else '')}</b><br>"
+            f"<span style='color: #8b949e;'>Duration: {format_time(story_dur, include_millis=True)} ({story_dur:.2f}s)</span>"
+        )
+        header_label = QLabel(header_text, self)
+        header_label.setWordWrap(True)
+        layout.addWidget(header_label)
+
+        form_group = QGroupBox("Audio Fade Durations (Seconds)", self)
+        form_layout = QFormLayout(form_group)
+        form_layout.setContentsMargins(14, 14, 14, 14)
+        form_layout.setSpacing(10)
+
+        self.fade_in_spin = QDoubleSpinBox(self)
+        self.fade_in_spin.setRange(0.0, story_dur)
+        self.fade_in_spin.setSingleStep(0.1)
+        self.fade_in_spin.setDecimals(2)
+        self.fade_in_spin.setSuffix(" s")
+        curr_in = getattr(self.story, "fade_in", 0.0) if self.story else 0.0
+        self.fade_in_spin.setValue(curr_in)
+        form_layout.addRow("Fade In Duration:", self.fade_in_spin)
+
+        self.fade_out_spin = QDoubleSpinBox(self)
+        self.fade_out_spin.setRange(0.0, story_dur)
+        self.fade_out_spin.setSingleStep(0.1)
+        self.fade_out_spin.setDecimals(2)
+        self.fade_out_spin.setSuffix(" s")
+        curr_out = getattr(self.story, "fade_out", 0.0) if self.story else 0.0
+        self.fade_out_spin.setValue(curr_out)
+        form_layout.addRow("Fade Out Duration:", self.fade_out_spin)
+
+        layout.addWidget(form_group)
+
+        preset_layout = QHBoxLayout()
+        preset_label = QLabel("Presets:", self)
+        preset_layout.addWidget(preset_label)
+
+        btn_none = QPushButton("No Fades (0s)", self)
+        btn_none.clicked.connect(lambda: (self.fade_in_spin.setValue(0.0), self.fade_out_spin.setValue(0.0)))
+        preset_layout.addWidget(btn_none)
+
+        btn_default = QPushButton("Restore Defaults", self)
+        btn_default.clicked.connect(self._restore_defaults)
+        preset_layout.addWidget(btn_default)
+        preset_layout.addStretch()
+        layout.addLayout(preset_layout)
+
+        self.apply_all_cb = QCheckBox("Apply these fade durations to all stories in project", self)
+        layout.addWidget(self.apply_all_cb)
+
+        btn_box = QHBoxLayout()
+        btn_box.addStretch()
+        cancel_btn = QPushButton("Cancel", self)
+        cancel_btn.clicked.connect(self.reject)
+        btn_box.addWidget(cancel_btn)
+
+        save_btn = QPushButton("Save Fades", self)
+        save_btn.setDefault(True)
+        save_btn.clicked.connect(self.accept)
+        btn_box.addWidget(save_btn)
+
+        layout.addLayout(btn_box)
+
+    def _restore_defaults(self):
+        settings = QSettings("RadioTVStorySegmenter", "RadioTVStorySegmenter")
+        def_in = float(settings.value("default_fade_in_duration", 0.0))
+        def_out = float(settings.value("default_fade_out_duration", 1.0))
+        self.fade_in_spin.setValue(def_in)
+        self.fade_out_spin.setValue(def_out)
+
+    def get_fades(self):
+        return self.fade_in_spin.value(), self.fade_out_spin.value(), self.apply_all_cb.isChecked()
 
 
 class SpeakerManagerDialog(QDialog):
