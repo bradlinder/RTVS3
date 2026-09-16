@@ -210,14 +210,14 @@ def _run_pip_with_progress(
 # Feature configuration matrix with explicit versioning and python targets
 ENV_CONFIGS = {
     "diarize": {
-        "version": "1.2.0",
+        "version": "1.2.5",
         "python_version": "3.12",
         "extra_index_url": "https://download.pytorch.org/whl/cpu",
         "packages": [
             "numpy<2.0.0",
             "scipy",
             "soundfile",
-            "torch>=2.0.0,<2.4.0",
+            "torch>=2.4.1",
             "torchaudio",
             "diarize==0.1.2",
             "wespeakerruntime>=1.0.0,<2.0.0"
@@ -233,7 +233,7 @@ ENV_CONFIGS = {
         ]
     },
     "translate": {
-        "version": "2.9",
+        "version": "2.14",
         "python_version": "3.12",
         "extra_index_url": "https://download.pytorch.org/whl/cpu",
         "packages": [
@@ -244,7 +244,7 @@ ENV_CONFIGS = {
             "ctranslate2>=4.0,<5",
             "sentencepiece>=0.2,<1",
             "sacremoses>=0.0.53",
-            "torch>=2.0.0,<2.4.0"
+            "torch>=2.4.1"
         ]
     },
     "gpu_transcribe": {
@@ -260,7 +260,8 @@ ENV_CONFIGS = {
             "numpy<2.0.0",
             "scipy",
             "soundfile",
-            "torch>=2.0.0,<2.4.0",
+            "torch>=2.4.1",
+            "intel-openmp",
             "torchaudio",
             "diarize==0.1.2",
             "faster-whisper",
@@ -288,6 +289,22 @@ def detect_nvidia_gpu() -> bool:
     except Exception:
         return False
 
+
+def _remove_macos_quarantine(target_path: Path | str) -> None:
+    """Strip Gatekeeper com.apple.quarantine attribute on macOS for standalone executables."""
+    if sys.platform != "darwin":
+        return
+    try:
+        p = Path(target_path)
+        if p.exists():
+            subprocess.run(
+                ["xattr", "-dr", "com.apple.quarantine", str(p)],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                check=False,
+            )
+    except Exception:
+        pass
 
 
 class RuntimeManager:
@@ -363,22 +380,6 @@ class RuntimeManager:
         # System fallback
         logger.warning(f"Target Python {target_version} not found on the host.")
         return ""
-
-def _remove_macos_quarantine(target_path: Path | str) -> None:
-    """Strip Gatekeeper com.apple.quarantine attribute on macOS for standalone executables."""
-    if sys.platform != "darwin":
-        return
-    try:
-        p = Path(target_path)
-        if p.exists():
-            subprocess.run(
-                ["xattr", "-dr", "com.apple.quarantine", str(p)],
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
-                check=False,
-            )
-    except Exception:
-        pass
 
 
     def bundled_uv_path(self) -> Path | None:
@@ -680,15 +681,14 @@ def _remove_macos_quarantine(target_path: Path | str) -> None:
 
         Reduces runtime disk space (e.g. diarize_env) from ~2.0 GB down to ~500-650 MB.
         """
-        if not env_dir or not Path(env_dir).exists():
-            return 0
-        target = Path(env_dir)
-        purged_count = 0
+        # Bypassed completely to ensure total environment stability and prevent Windows DLL/circular import crashes.
+        # Clean CPU wheels from download.pytorch.org are already extremely lightweight (~200MB) and contain zero CUDA bloat.
+        return 0
 
         # 1. Non-runtime heavy directories (C++ headers, cmake files, tests, distributed modules, GPU compilers)
         non_runtime_dirs = (
             "nvidia", "triton",
-            "torch/include", "torch/share", "torch/distributed", "torch/testing", "torch/test", "torch/bin",
+            "torch/include", "torch/share", "torch/testing", "torch/test",
             "scipy/tests", "scipy/doc", "numpy/tests", "torchaudio/tests"
         )
         for rel_dir in non_runtime_dirs:

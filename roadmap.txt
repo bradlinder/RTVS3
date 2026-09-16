@@ -29,13 +29,14 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 --------------------------------------------------------------------------------
 TABLE OF CONTENTS & STATUS OVERVIEW
 --------------------------------------------------------------------------------
-1. Previous Release: QPainterPath Symbol Import Fix & Timeline Canvas Error Resolution (Completed in v3.3.12)
-   [x] 1.1 QPainterPath Symbol Import (Imported `QPainterPath` from `PySide6.QtGui` in `prs_shared.py` to fix NameError in paintEvent)
-   [x] 1.2 Audio Fade Ramp Visual Rendering (Restored full rendering of blue fade-in & rose fade-out ramp paths and top-edge grab handles)
+1. Previous Release: Translation Dependencies & Diarization UI Thread Responsiveness (Completed in v3.3.23)
+   [x] 1.1 Added `torch>=2.4.1` to `plugins/translation/requirements-runtime.txt` to fix missing PyTorch in translation runtime.
+   [x] 1.2 Bumped `translate` config version to `2.14` to trigger an automatic self-healing environment rebuild.
+   [x] 1.3 Implemented diarization log-activity progress rate-limiting in `processing.py` to prevent Qt thread locks on long files.
 
-2. Current Release: QCoreApplication Symbol Import & Clean Exit Fix (Completed in v3.3.13)
-   [x] 2.1 QCoreApplication Symbol Import (Imported `QCoreApplication` from `PySide6.QtCore` in `prs_shared.py` to resolve NameError in MainWindow.closeEvent)
-   [x] 2.2 Clean Application Shutdown (Ensured zero traceback exceptions on app close)
+2. Current Release: QProcess Buffer Draining & Speaker Detection Progress Detail (Completed in v3.3.24)
+   [x] 2.1 Added `read_output()` at the beginning of the `finished` slot in `translation.py` to fully drain and process remaining standard output buffer.
+   [x] 2.2 Swapped hardcoded progress message with the dynamic helper message in `processing.py` to show precise diarization steps in real-time.
 
 3. Future Milestone: Expanded NLE & DAW Timeline Interchange (Phase 4 - Planned for v3.4) [NOT STARTED]
    [ ] 3.1 Cockos Reaper Project (.rpp) Generator
@@ -63,28 +64,36 @@ CORE ARCHITECTURAL INVARIANTS
 - 0 MB Default GPU Footprint: Base installer contains 0 MB of CUDA bloat; GPU features are purely optional and provisioned on demand.
 
 ================================================================================
-1. PREVIOUS RELEASE: NATIVE DWM WINDOW SUBCLASSING ELIMINATION & MINIMIZE/RESIZE STABILITY (Completed in v3.3.9)
+1. PREVIOUS RELEASE: TRANSLATION DEPENDENCIES & DIARIZATION UI RESPONSIVENESS (Completed in v3.3.23)
 ================================================================================
 
-[x] 1.1 NATIVE DWM ATTRIBUTE CONFIGURATION
--------------------------------------------
-- Replaced `pywinstyles` HWND subclassing with native Windows 10/11 `DwmSetWindowAttribute` API call (`DWMWA_USE_IMMERSIVE_DARK_MODE` attribute 20/19), eliminating window frame margin offsets and backing store crashes during minimize, restore, and drag-resize operations.
+[x] 1.1 ADDED PYTORCH TO TRANSLATION PLUGIN RUNTIME
+---------------------------------------------------
+- Discovered that the translation plugin setup reads directly from `plugins/translation/requirements-runtime.txt` instead of falling back to core `ENV_CONFIGS`, which omitted PyTorch completely from pip installs.
+- Added `torch>=2.4.1` to `plugins/translation/requirements-runtime.txt` to resolve `name 'torch' is not defined` errors.
 
-[x] 1.2 WINDOW MINIMIZE PAINT ENGINE GUARD
--------------------------------------------
-- Added `not self.isMinimized()` state guard in `MainWindow.changeEvent` to prevent invalid paint engine calls while the window is minimized.
+[x] 1.2 TRIGGERED TRANSLATION SPEC REBUILD
+------------------------------------------
+- Bumped `translate` feature version to `2.14` in `runtime_manager.py` to trigger a clean, automated self-healing build for all users.
+
+[x] 1.3 RATE-LIMITED DIARIZATION LOGGING IN UI
+----------------------------------------------
+- Implemented rate-limiting for speaker detection status updates logged to `self.log_activity` in `processing.py`.
+- Prevents deep-cloning all story objects and history snapshots on every tqdm tick, eliminating application freezes on long audio files.
 
 ================================================================================
-2. CURRENT RELEASE: THEMETOKENS STORY_SEGMENT_COLOR RESTORATION & EXCEPTION-SAFE QPAINTER PAINTING (Completed in v3.3.10)
+2. CURRENT RELEASE: QPROCESS BUFFER DRAINING & SPEAKER DETECT PROGRESS DETAIL (Completed in v3.3.24)
 ================================================================================
 
-[x] 2.1 STORY_SEGMENT_COLOR METHOD RESTORATION
-------------------------------------------------
-- Added missing `story_segment_color(index, is_selected, alpha)` helper method to `ThemeTokens` in `theme_tokens.py`, resolving the `AttributeError` exception during timeline overview rendering when projects contain story segments.
+[x] 2.1 RESOLVED QPROCESS STDOUT RACE CONDITION ON EXIT
+-------------------------------------------------------
+- Discovered that when the translation subprocess finishes and exits, the final `"finished"` JSON message is sometimes left unread in the QProcess stdout buffer because the `finished` slot did not read standard output before unregistering.
+- Explicitly called `read_output()` inside the `finished` slot in `translation.py` to safely drain and parse any remaining payload data, enabling instant, reliable completion.
 
-[x] 2.2 EXCEPTION-SAFE PAINT ENGINE WRAPPER
---------------------------------------------
-- Enclosed `TimelineOverviewWidget.paintEvent` inside `try...finally: painter.end()` blocks to guarantee `QPainter.end()` execution, preventing unclosed painters from corrupting `QBackingStore` or aborting the process during window resize, minimize, or restore transitions.
+[x] 2.2 IMPLEMENTED DYNAMIC SPEAKER DETECT PROGRESS DETAIL
+----------------------------------------------------------
+- Replaced the generic hardcoded progress message placeholder with the actual, dynamic subprocess status message in `processing.py`.
+- Keeps the user informed of active background steps (such as VAD, signature extraction, and AHC clustering) in real-time, eliminating the perception of being stuck.
 
 ================================================================================
 3. FUTURE MILESTONE: EXPANDED NLE & DAW TIMELINE INTERCHANGE (Phase 4 - Planned for v3.4) [NOT STARTED]

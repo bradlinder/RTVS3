@@ -984,7 +984,7 @@ class PlaybackPreferencesMixin:
             else:
                 try:
                     from PySide6.QtCore import QSettings
-                    sc_settings = QSettings("RadioTVStorySegmenter", "RadioTVStorySegmenter")
+                    sc_settings = QSettings(INTERNAL_APP_ID, INTERNAL_APP_ID)
                     sc_settings.remove("keyboard_shortcuts")
                     sc_settings.sync()
                 except Exception:
@@ -1189,7 +1189,7 @@ class PlaybackPreferencesMixin:
         if "export_options" in selected_set:
             try:
                 from PySide6.QtCore import QSettings
-                exp_settings = QSettings("RadioTVStorySegmenter", "RadioTVStorySegmenter")
+                exp_settings = QSettings(INTERNAL_APP_ID, INTERNAL_APP_ID)
                 for k in [
                     "export_opt_fmt_txt", "export_opt_fmt_docx", "export_opt_fmt_srt", "export_opt_fmt_vtt",
                     "export_opt_fmt_media", "export_opt_include_speakers", "export_opt_include_timestamps",
@@ -1204,7 +1204,7 @@ class PlaybackPreferencesMixin:
         if "export_directory" in selected_set:
             try:
                 from PySide6.QtCore import QSettings
-                exp_settings = QSettings("RadioTVStorySegmenter", "RadioTVStorySegmenter")
+                exp_settings = QSettings(INTERNAL_APP_ID, INTERNAL_APP_ID)
                 exp_settings.remove("export_opt_custom_loc_enabled")
                 exp_settings.remove("export_opt_custom_dir")
                 exp_settings.sync()
@@ -1215,7 +1215,7 @@ class PlaybackPreferencesMixin:
         if "wordpress_settings" in selected_set:
             try:
                 from PySide6.QtCore import QSettings
-                wp_settings = QSettings("RadioTVStorySegmenter", "RadioTVStorySegmenter")
+                wp_settings = QSettings(INTERNAL_APP_ID, INTERNAL_APP_ID)
                 wp_user = str(wp_settings.value("wp_username", "") or "").strip()
                 wp_settings.remove("wp_site_url")
                 wp_settings.remove("wp_username")

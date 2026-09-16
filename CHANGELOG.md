@@ -1,5 +1,68 @@
 # Changelog
 
+## v3.3.24
+- **Resolved Translation Process Sticking at 100%**:
+  - Identified and fixed a QProcess race condition in `translation.py`. When the translation subprocess completes and exits, the final `"finished"` JSON message containing the translated transcript payload was sometimes left unread in the stdout buffer because the finished callback did not drain remaining standard output.
+  - Added an explicit `read_output()` call at the start of the `finished` slot in `translation.py`. This ensures all remaining standard output buffer data is fully read and parsed before the process object is unregistered and cleaned up, allowing translation to complete instantly and gracefully.
+- **Enhanced Speaker Detection Progress Transparency & Detail**:
+  - Swapped the hardcoded static progress status text ("Speaker Detection") with the dynamic subprocess message in `processing.py`.
+  - The progress bar and status labels now display detailed status (e.g. "Clustering speaker signatures (AHC O(N^2) - 00m 46s elapsed)...") rather than a generic placeholder, letting the user know exactly what active background work is being performed.
+
+## v3.3.23
+- **Fixed Translation Environment Dependency Missing PyTorch (`torch`)**:
+  - Discovered that the translation plugin's isolated virtual environment setup reads from `plugins/translation/requirements-runtime.txt` instead of falling back to core configuration, meaning PyTorch was completely omitted from pip installations.
+  - Added `torch>=2.4.1` to the translation plugin's `requirements-runtime.txt` file, ensuring the CPU PyTorch wheel is properly installed during virtual environment creation.
+  - Bumped the core translation configuration version to `2.14` to force a complete self-healing reconstruction of the environment for all users.
+  - Resolves `OPUS-MT translation requires the CTranslate2 translation engine. Details: name 'torch' is not defined` when loading translation engines on CPU/Ryzen systems.
+- **Prevented Main UI Thread Freeze during Speaker Detection on Long Files**:
+  - Implemented an elegant rate-limiter for activity logging of diarization progress updates in `processing.py`.
+  - Previously, logging every minor speaker detection progress update (thousands of ticks on long audio files) forced deep-cloning of all stories and undo/redo history state snapshots, locking up the Qt UI thread.
+  - Progress ticks are now logged at most once every 3.0 seconds, preserving normal responsive UI feedback and preventing "Not Responding" application freezes on long recordings.
+
+## v3.3.22
+- **Fully Bypassed Redundant CPU PyTorch Environment Pruning**:
+  - Configured `prune_cuda_artifacts` in `runtime_manager.py` to be a safe NO-OP for CPU configurations, preventing any recursive file deletions or folder pruning from corrupting PyTorch on Windows.
+  - While pruning CUDA was originally helpful to clean up giant GPU wheel downloads, both the translation (`translate`) and diarization (`diarize`) environments are already configured with official, lightweight CPU PyTorch wheels (`https://download.pytorch.org/whl/cpu`) that contain no CUDA binaries and are extremely compact (~200MB) by default.
+  - Eliminates `ImportError: cannot import name 'nn' from partially initialized module 'torch'` and related import crashes across AMD Ryzen and standard CPU systems.
+  - Bumped virtual environment versions for both `diarize` (`1.2.5`) and `translate` (`2.13`) to trigger a fresh, self-healing reconstruction of both environments on users' systems, fully restoring functional, official PyTorch CPU environments.
+
+## v3.3.21
+- **Restored Crucial Windows PyTorch DLL Binaries folder (`torch/bin`)**:
+  - Preserved `"torch/bin"` in the `prune_cuda_artifacts` footprint optimization exclusion list in `runtime_manager.py`.
+  - Fixed `ImportError: cannot import name 'nn' from partially initialized module 'torch'` during diarization and translation engine loading on Windows machines.
+  - Windows compiled `.dll` shared libraries are located inside `"torch/bin"`, so deleting this folder broke the entire PyTorch library's compiled C++ backends.
+  - Bumped virtual environment spec versions for `diarize` (v1.2.4) and `translate` (v2.12) to force complete self-healing clean rebuilds of both environments on users' systems, fully restoring functional DLL binaries.
+
+## v3.3.20
+- **Diarization & Translation PyTorch Distributed Dependency Preservation**:
+  - Excluded `torch/distributed` from the `prune_cuda_artifacts` pruning list in `runtime_manager.py`.
+  - Fixes `ModuleNotFoundError: No module named 'torch.distributed'` which aborted speaker diarization and translation engine loading on Windows, especially on AMD Ryzen and standard CPU systems.
+  - Bumped virtual environment versions for both `diarize` (v1.2.3) and `translate` (v2.11), triggering automated virtual environment rebuilding to safely restore missing files on user systems.
+  - Removed speculative `intel-openmp` package requirements to keep CPU runtimes lean and cross-compatible with AMD Ryzen and Intel platforms alike.
+- **Robust Subprocess Translation Error Handling**:
+  - Added an explicit `error` type message handler to `translation.py` standard output stream parser.
+  - Ensures local translation exceptions are captured and propagated as standard `QMessageBox` critical error dialogs rather than leaving the UI progress bar stuck indefinitely at 7%.
+
+## v3.3.19
+- **Runtime DLL Dependency & OpenMP Alignment**:
+  - Investigated dependencies for the isolated `diarize` and `translate` CPU environments.
+  - Aligned project version to v3.3.19 across core modules.
+
+## v3.3.18
+- **Runtime Resiliency & ABI Compatibility**:
+  - Upgraded PyTorch CPU constraint to `torch>=2.4.1` in `runtime_manager.py` to support Python 3.12 ABI compatibility.
+  - Patched `translation.py` `QProcess` cancellation logic to guarantee progress bar clearing and error exposure on silent or empty-stderr crashes.
+
+## v3.3.15
+- **RuntimeManager Class Definition Structural Fix**:
+  - Un-indented the `_remove_macos_quarantine` helper function in `runtime_manager.py` that had incorrectly split the `RuntimeManager` class block.
+  - Resolved `AttributeError: 'RuntimeManager' object has no attribute 'ensure_environment'` during environment provisioning, restoring fully automated AI worker setup.
+
+## v3.3.14
+- **RuntimeSetupWorker Threading Module Import Fix**:
+  - Imported missing `threading` module in `processing.py`, resolving `NameError: name 'threading' is not defined` when initializing `RuntimeSetupWorker`.
+  - Fixes stuck modal setup dialogs during transcription and speaker diarization worker initialization.
+
 ## v3.3.13
 - **QCoreApplication Symbol Import & Clean Exit Fix**:
   - Imported `QCoreApplication` from `PySide6.QtCore` in `prs_shared.py`, resolving the `NameError: name 'QCoreApplication' is not defined` traceback when closing the application (`MainWindow.closeEvent`).

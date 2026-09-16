@@ -518,7 +518,7 @@ class CollapsibleSection(QWidget):
 
 # Display branding shown to the user (title bar, About box, installers).
 APP_DISPLAY_NAME = "Radio & TV Segmenter"
-PROJECT_VERSION = "3.3.13"
+PROJECT_VERSION = "3.3.24"
 DEFAULT_GITHUB_REPO = "bradlinder/RTVS3"
 
 
@@ -778,7 +778,7 @@ def get_app_data_dir() -> Path:
 def get_models_storage_dir() -> Path:
     """Return the directory configured for storing downloaded models.
     Defaults to get_app_data_dir() / 'models' if not customized in settings."""
-    settings = QSettings("RadioTVSegmenter", "RadioTVStorySegmenter")
+    settings = QSettings(INTERNAL_APP_ID, INTERNAL_APP_ID)
     custom = settings.value("models_dir", "")
     if custom and isinstance(custom, str) and custom.strip():
         p = Path(custom.strip())
@@ -794,7 +794,7 @@ def get_models_storage_dir() -> Path:
 
 def set_models_storage_dir(new_path=None) -> Path:
     """Set and persist a custom models storage directory."""
-    settings = QSettings("RadioTVSegmenter", "RadioTVStorySegmenter")
+    settings = QSettings(INTERNAL_APP_ID, INTERNAL_APP_ID)
     if not new_path or not str(new_path).strip():
         settings.remove("models_dir")
         target = get_app_data_dir() / "models"
@@ -1216,7 +1216,7 @@ class Story:
         else:
             try:
                 from PySide6.QtCore import QSettings
-                settings = QSettings("RadioTVStorySegmenter", "RadioTVStorySegmenter")
+                settings = QSettings(INTERNAL_APP_ID, INTERNAL_APP_ID)
                 self.fade_in = max(0.0, float(settings.value("default_fade_in_duration", 0.0)))
             except Exception:
                 self.fade_in = 0.0
@@ -1226,7 +1226,7 @@ class Story:
         else:
             try:
                 from PySide6.QtCore import QSettings
-                settings = QSettings("RadioTVStorySegmenter", "RadioTVStorySegmenter")
+                settings = QSettings(INTERNAL_APP_ID, INTERNAL_APP_ID)
                 self.fade_out = max(0.0, float(settings.value("default_fade_out_duration", 1.0)))
             except Exception:
                 self.fade_out = 1.0
@@ -1236,7 +1236,7 @@ class Story:
         else:
             try:
                 from PySide6.QtCore import QSettings
-                settings = QSettings("RadioTVStorySegmenter", "RadioTVStorySegmenter")
+                settings = QSettings(INTERNAL_APP_ID, INTERNAL_APP_ID)
                 self.fade_curve = str(settings.value("default_fade_curve", "linear") or "linear")
             except Exception:
                 self.fade_curve = "linear"
@@ -6105,7 +6105,7 @@ class TimelineResizeHandle(QWidget):
         if self._dragging and event.button() == Qt.MouseButton.LeftButton:
             self._dragging = False
             try:
-                settings = QSettings("RadioTVStorySegmenter", "RadioTVStorySegmenter")
+                settings = QSettings(INTERNAL_APP_ID, INTERNAL_APP_ID)
                 settings.setValue("timeline_height", self.target_widget.height())
                 settings.sync()
             except Exception:
@@ -6427,7 +6427,7 @@ class TimelineWidget(QWidget):
         layout.addWidget(self.overview_bar)
         layout.addWidget(self.resize_handle)
 
-        settings = QSettings("RadioTVStorySegmenter", "RadioTVStorySegmenter")
+        settings = QSettings(INTERNAL_APP_ID, INTERNAL_APP_ID)
         saved_h = settings.value("timeline_height", 140)
         try:
             saved_h = int(saved_h)
@@ -7306,7 +7306,7 @@ def get_cache_disk_usage(project_dirs=None) -> dict:
     # Auto-populate search dirs from QSettings if not provided
     p_candidates = list(project_dirs or [])
     try:
-        settings = QSettings("RadioTVStorySegmenter", "RadioTVStorySegmenter")
+        settings = QSettings(INTERNAL_APP_ID, INTERNAL_APP_ID)
         for key in ("default_project_directory", "last_saved_project_path", "last_open_directory"):
             val = settings.value(key)
             if val:

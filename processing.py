@@ -1,4 +1,4 @@
-"""Radio & TV Segmenter v1.1.1 — processing responsibilities.
+"""Radio & TV Segmenter v3.3.24 — processing responsibilities.
 
 Methods intentionally retain the MainWindow-facing API so behavior remains
 maintaining the established MainWindow-facing API while responsibilities are isolated.
@@ -8,6 +8,7 @@ import sys
 import os
 import json
 import html
+import threading
 from pathlib import Path
 from PySide6.QtCore import QProcess, QProcessEnvironment, QThread, Qt, QTimer, QEventLoop, Signal
 from PySide6.QtGui import QTextCursor
@@ -130,25 +131,33 @@ class ProcessingMixin:
         loop = QEventLoop(self)
         result = {"ok": False, "cancelled": False}
 
+        worker_finished = [False]
+
         worker.progress.connect(progress_dialog.setLabelText)
         if hasattr(self, "set_processing_stage"):
             worker.progress.connect(lambda msg: self.set_processing_stage(f"{feature.title()} Runtime", msg))
 
         def _on_finished(ok):
+            worker_finished[0] = True
             result["ok"] = ok
             loop.quit()
 
         def _on_cancel():
+            if worker_finished[0]:
+                return
             result["cancelled"] = True
             worker.cancel()
             loop.quit()
 
         worker.finished_ok.connect(_on_finished)
+        worker.finished.connect(loop.quit)
         progress_dialog.canceled.connect(_on_cancel)
         worker.start()
         progress_dialog.show()
         loop.exec()
         progress_dialog.close()
+
+        
 
         if result["cancelled"] or not worker.isFinished():
             worker.cancel()
@@ -1732,9 +1741,17 @@ class ProcessingMixin:
                 overall_percent = max(0, min(99, overall_percent))
                 self._diar_last_overall_percent = overall_percent
 
-                stable_msg = "Speaker Detection"
-                self.update_processing_progress(overall_percent, stable_msg)
-                self.log_activity(f"[SPEAKER DETECT] {status}")
+                self.current_processing_stage_detail = status
+                self.update_processing_progress(overall_percent, status)
+                
+                # Rate limit logging of speaker detection progress to prevent Qt UI thread lockup on long files.
+                import time as _time
+                now = _time.monotonic()
+                last_log = getattr(self, "_last_diar_log_time", 0.0)
+                is_milestone = any(k in status_lower for k in ["init", "load", "analyzing", "bypassing", "complete", "finished", "error"])
+                if is_milestone or now - last_log >= 3.0:
+                    self._last_diar_log_time = now
+                    self.log_activity(f"[SPEAKER DETECT] {status}")
 
             elif kind == "finished":
                 if not self.diarization_helper_ready:

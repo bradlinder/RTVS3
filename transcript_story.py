@@ -1,4 +1,4 @@
-"""Radio & TV Segmenter v3.3.13 — transcript story responsibilities.
+"""Radio & TV Segmenter v3.3.24 — transcript story responsibilities.
 
 
 Methods intentionally retain the MainWindow-facing API so behavior remains
@@ -2061,7 +2061,7 @@ class TranscriptStoryMixin:
         if not indices:
             indices = list(range(len(self.stories)))
 
-        settings = QSettings("RadioTVStorySegmenter", "RadioTVStorySegmenter")
+        settings = QSettings(INTERNAL_APP_ID, INTERNAL_APP_ID)
         if fade_in is None:
             fade_in = float(settings.value("default_fade_in_duration", 0.0))
         if fade_out is None:
@@ -2212,7 +2212,7 @@ class StoryFadesDialog(QDialog):
         layout.addLayout(btn_box)
 
     def _restore_defaults(self):
-        settings = QSettings("RadioTVStorySegmenter", "RadioTVStorySegmenter")
+        settings = QSettings(INTERNAL_APP_ID, INTERNAL_APP_ID)
         def_in = float(settings.value("default_fade_in_duration", 0.0))
         def_out = float(settings.value("default_fade_out_duration", 1.0))
         def_curve = str(settings.value("default_fade_curve", "linear") or "linear")

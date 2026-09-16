@@ -6,6 +6,7 @@ translation state management, UI language toggling, and asynchronous model verif
 
 from __future__ import annotations
 
+import sys
 import copy
 import json
 import os
@@ -598,8 +599,11 @@ class TranslationMixin:
                         self._on_translation_finished(msg.get("result", []), msg.get("key", ""))
                 elif kind == "cancelled":
                     self._on_translation_cancelled(msg.get("result", []), msg.get("key", ""))
+                elif kind == "error":
+                    self._on_translation_error(msg.get("message", "Unknown translation error"))
 
         def finished(exit_code, exit_status):
+            read_output()
             unregister_process(proc)
             stderr = bytes(proc.readAllStandardError()).decode("utf-8", errors="replace").strip()
             if proc._rtvs_callback:
@@ -607,8 +611,9 @@ class TranslationMixin:
                     proc._rtvs_callback(exit_code, stderr, proc._rtvs_output)
                 except Exception as exc:
                     self.log_activity(f"[TRANSLATION] Runtime callback error: {exc}", mark_dirty=False)
-            if exit_code != 0 and stderr:
-                self._on_translation_error(stderr[-4000:])
+            if exit_code != 0 or exit_status == QProcess.ExitStatus.CrashExit:
+                err_msg = stderr[-4000:] if stderr else f"Process crashed or exited with code {exit_code}."
+                self._on_translation_error(err_msg)
             try:
                 proc._rtvs_request_file.unlink(missing_ok=True)
             except Exception:
