@@ -59,7 +59,7 @@ try:
     )
 except Exception:
     APP_DISPLAY_NAME = "Radio & TV Segmenter"
-    PROJECT_VERSION = "3.3.4"
+    PROJECT_VERSION = "3.3.7"
     DEFAULT_GITHUB_REPO = "bradlinder/RTVS3"
 
     INTERNAL_APP_ID = "RadioTVStorySegmenter"
@@ -424,28 +424,60 @@ def launch_and_install(file_path: str, parent: QWidget | None = None) -> bool:
         launched = False
         last_error = ""
 
-        # 1. Primary approach: detached Windows shell trampoline
-        # Running via 'cmd.exe /c timeout /t 1 /nobreak >nul & start "" "installer.exe"'
-        # completely decouples the process from Python, waits 1 second for the Python process
-        # to release all file locks and exit cleanly, and triggers Windows Shell UAC elevation natively.
+        # 1. Primary approach: detached PowerShell PID supervisor process
+        # Monitors parent Python process termination via PID check ($pidToWait).
+        # Ensures main app completely closes and releases file locks BEFORE UAC dialog pops up.
+        # Uses 'Start-Process -FilePath ... -Verb RunAs' to trigger UAC elevation natively while
+        # keeping the PowerShell supervisor active during user UAC interaction.
+        current_pid = os.getpid()
         try:
             creationflags = 0
             if hasattr(subprocess, "DETACHED_PROCESS"):
                 creationflags |= subprocess.DETACHED_PROCESS
             if hasattr(subprocess, "CREATE_NEW_PROCESS_GROUP"):
                 creationflags |= subprocess.CREATE_NEW_PROCESS_GROUP
-            # CREATE_BREAKAWAY_FROM_JOB = 0x01000000
             flags = creationflags | 0x01000000
-            cmd_str = f'timeout /t 1 /nobreak >nul & start "" "{str(path)}"'
+
+            escaped_path = str(path).replace("'", "''")
+            ps_script = (
+                f"$pidToWait = {current_pid}; "
+                f"while (Get-Process -Id $pidToWait -ErrorAction SilentlyContinue) {{ Start-Sleep -Milliseconds 200 }}; "
+                f"Start-Sleep -Seconds 1; "
+                f"Start-Process -FilePath '{escaped_path}' -Verb RunAs"
+            )
+
+            ps_args = [
+                "powershell.exe",
+                "-NoProfile",
+                "-NonInteractive",
+                "-WindowStyle", "Hidden",
+                "-ExecutionPolicy", "Bypass",
+                "-Command", ps_script,
+            ]
+
             subprocess.Popen(
-                ["cmd.exe", "/c", cmd_str],
+                ps_args,
                 cwd=str(path.parent),
                 creationflags=flags,
                 shell=False,
             )
             launched = True
-        except Exception as exc_cmd:
-            last_error = f"cmd trampoline: {exc_cmd}"
+        except Exception as exc_ps:
+            last_error = f"powershell supervisor: {exc_ps}"
+
+        # 2. Secondary approach: CMD process trampoline with expanded timeout delay
+        if not launched:
+            try:
+                cmd_str = f'timeout /t 3 /nobreak >nul & start "" "{str(path)}"'
+                subprocess.Popen(
+                    ["cmd.exe", "/c", cmd_str],
+                    cwd=str(path.parent),
+                    creationflags=flags,
+                    shell=False,
+                )
+                launched = True
+            except Exception as exc_cmd:
+                last_error += f" | cmd trampoline: {exc_cmd}"
 
         # 2. Secondary approach: ShellExecuteW with 'runas' (explicit UAC elevation)
         if not launched:

@@ -600,6 +600,7 @@ class UiLayoutMixin:
         self.story_list.deleteRequested.connect(self.delete_selected_story)
         self.story_list.exportRequested.connect(self.export_selected_stories)
         self.story_list.exportStoryWordPressRequested.connect(self.open_unified_export_dialog)
+        self.story_list.filesDropped.connect(lambda paths: getattr(self, "open_media_file", lambda p: None)(paths[0]) if paths else None)
 
         # Initialize status bar
         self.statusBar().showMessage("Ready")

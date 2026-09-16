@@ -1,5 +1,22 @@
 # Changelog
 
+## v3.3.7
+- **Story List Native File Drag-and-Drop Restoration**:
+  - Added `filesDropped = Signal(list)` signal definition and drag event overrides (`dragEnterEvent`, `dragMoveEvent`, `dropEvent`) to `StoryListWidget`.
+  - Connected `self.story_list.filesDropped` in `ui_layout.py` to seamlessly handle dropping audio or video media files directly onto the stories panel.
+
+## v3.3.6
+- **Story List Signal Architecture Restoration & Keyboard Shortcut Support**:
+  - Restored missing `deleteRequested`, `exportRequested`, and `exportStoryWordPressRequested` PySignal attributes on `StoryListWidget`.
+  - Added native key press handling (`keyPressEvent`) for `Delete` and `Backspace` keys on `StoryListWidget` items to emit `deleteRequested` signal for story deletion.
+  - Resolved `AttributeError: 'StoryListWidget' object has no attribute 'deleteRequested'` crash on Windows application startup.
+
+## v3.3.5
+- **Asynchronous PowerShell Process Supervisor for Windows Updates**:
+  - Fixed an issue where the Windows Check for Updates feature triggered the UAC elevation prompt before the application closed, causing Windows UAC to drop the installer launch token when the parent process exited prematurely.
+  - Implemented a detached PowerShell supervisor process in `launch_and_install` that monitors the main application process ID (`Get-Process -Id $pidToWait`) to ensure the application completely closes and releases all file locks BEFORE triggering the UAC dialog.
+  - Kept the supervisor process active during user interaction with UAC (`Start-Process -Verb RunAs`), guaranteeing seamless elevation and execution of the installer.
+
 ## v3.3.4
 - **Non-Linear Audio Fade Envelope Curves & Custom Gain Profiles**:
   - Implemented selectable audio fade curve profiles: **Linear Ramp**, **Cosine S-Curve** ($0.5 \cdot (1 - \cos(\pi \cdot u))$), **Logarithmic** ($\log_{10}(1 + 9u)$), and **Exponential** ($(10^u - 1)/9$).

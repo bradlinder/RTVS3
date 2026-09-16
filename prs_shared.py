@@ -516,7 +516,7 @@ class CollapsibleSection(QWidget):
 
 # Display branding shown to the user (title bar, About box, installers).
 APP_DISPLAY_NAME = "Radio & TV Segmenter"
-PROJECT_VERSION = "3.3.4"
+PROJECT_VERSION = "3.3.7"
 DEFAULT_GITHUB_REPO = "bradlinder/RTVS3"
 
 
@@ -6505,10 +6505,44 @@ class TimelineWidget(QWidget):
 
 class StoryListWidget(QListWidget):
     """QListWidget subclass for story segmentation list with right-click context menu and drag-drop support."""
+    deleteRequested = Signal()
+    exportRequested = Signal()
+    exportStoryWordPressRequested = Signal()
+    filesDropped = Signal(list)
+
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.setAcceptDrops(True)
         self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.customContextMenuRequested.connect(self._show_context_menu)
+
+    def dragEnterEvent(self, event):
+        if event.mimeData().hasUrls():
+            event.acceptProposedAction()
+        else:
+            super().dragEnterEvent(event)
+
+    def dragMoveEvent(self, event):
+        if event.mimeData().hasUrls():
+            event.acceptProposedAction()
+        else:
+            super().dragMoveEvent(event)
+
+    def dropEvent(self, event):
+        if event.mimeData().hasUrls():
+            paths = [u.toLocalFile() for u in event.mimeData().urls() if u.isLocalFile()]
+            if paths:
+                self.filesDropped.emit(paths)
+                event.acceptProposedAction()
+                return
+        super().dropEvent(event)
+
+    def keyPressEvent(self, event):
+        if event.key() in (Qt.Key.Key_Delete, Qt.Key.Key_Backspace):
+            self.deleteRequested.emit()
+            event.accept()
+        else:
+            super().keyPressEvent(event)
 
     def _show_context_menu(self, pos):
         parent = self.parent()
@@ -6563,8 +6597,18 @@ class StoryListWidget(QListWidget):
 
         menu.addSeparator()
 
+        export_act = QAction("Export Selected Stories...", self)
+        export_act.triggered.connect(lambda: self.exportRequested.emit())
+        menu.addAction(export_act)
+
+        wp_act = QAction("Export to WordPress / CMS...", self)
+        wp_act.triggered.connect(lambda: self.exportStoryWordPressRequested.emit())
+        menu.addAction(wp_act)
+
+        menu.addSeparator()
+
         del_act = QAction("Delete Selected Story", self)
-        del_act.triggered.connect(lambda: parent.delete_selected_story())
+        del_act.triggered.connect(lambda: self.deleteRequested.emit())
         menu.addAction(del_act)
 
         menu.exec(self.mapToGlobal(pos))

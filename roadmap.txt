@@ -29,16 +29,14 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 --------------------------------------------------------------------------------
 TABLE OF CONTENTS & STATUS OVERVIEW
 --------------------------------------------------------------------------------
-1. Previous Release: Optional Fade Defaults & Audio/Timeline Performance Optimization (Completed in v3.3.3)
-   [x] 1.1 Timeline Fades Optional by Default (`enable_audio_fades = false` and `preview_audio_fades = false` on new installs across all init paths, QSettings fallbacks, and reset defaults)
-   [x] 1.2 Audio Output Volume Throttling & Playback Cache (Eliminated redundant `setVolume()` calls into audio daemon via `_last_applied_fade_vol` threshold caching; 35ms timer interval)
-   [x] 1.3 Mouse Hover & Tooltip Lag Elimination (Suppressed 100 Hz millisecond tooltip thrashing across timeline canvas; isolated tooltips strictly to interactive story boundaries and fade grab handles)
-   [x] 1.4 Optimized Fade Overlay & Vector Painting (Replaced antialiased dashed line calculations with high-efficiency solid vector ramp strokes and clamped polygon vertices)
+1. Previous Release: Story List Signal Architecture Restoration & Keyboard Shortcuts (Completed in v3.3.6)
+   [x] 1.1 Story List PySignal Restoration (Restored `deleteRequested`, `exportRequested`, and `exportStoryWordPressRequested` PySignal attributes on `StoryListWidget`)
+   [x] 1.2 Native Keyboard Shortcut Handling (`keyPressEvent` maps Delete/Backspace keys to `deleteRequested.emit()` for story removal)
+   [x] 1.3 Context Menu Signal Routing (Replaced direct parent caller references with decoupled PySignal events for export and deletion)
 
-2. Current Release: Non-Linear Fade Curves, Magnetic Snapping, & Context Menu Audio Fades (Completed in v3.3.4)
-   [x] 2.1 Non-Linear Audio Fade Envelope Curves (Linear, Cosine S-Curve, Logarithmic, Exponential gain math, vector rendering, and QSettings defaults)
-   [x] 2.2 Magnetic Timeline Snapping Engine (`snap_time()` magnetically snaps selection region drag, playhead scrubbing, story edge trimming, and fade handles within 10px threshold)
-   [x] 2.3 Story List Context Menu & Batch Audio Fade Controls (`StoryListWidget` right-click context menu with dedicated Audio Fades sub-menu for auditioning, batch apply/remove, and curve profile selection)
+2. Current Release: Story List Native File Drag-and-Drop Restoration (Completed in v3.3.7)
+   [x] 2.1 Native Media Drag-and-Drop (`filesDropped = Signal(list)` and `dragEnterEvent` / `dropEvent` overrides on `StoryListWidget`)
+   [x] 2.2 Story List Media Loader Integration (Connected `story_list.filesDropped` in `ui_layout.py` to auto-load media files when dropped onto stories panel)
 
 3. Future Milestone: Expanded NLE & DAW Timeline Interchange (Phase 4 - Planned for v3.4) [NOT STARTED]
    [ ] 3.1 Cockos Reaper Project (.rpp) Generator
@@ -66,50 +64,33 @@ CORE ARCHITECTURAL INVARIANTS
 - 0 MB Default GPU Footprint: Base installer contains 0 MB of CUDA bloat; GPU features are purely optional and provisioned on demand.
 
 ================================================================================
-1. PREVIOUS RELEASE: OPTIONAL FADE DEFAULTS & AUDIO/TIMELINE PERFORMANCE OPTIMIZATION (Completed in v3.3.3)
+1. PREVIOUS RELEASE: STORY LIST SIGNAL ARCHITECTURE RESTORATION & KEYBOARD SHORTCUTS (Completed in v3.3.6)
 ================================================================================
 
-[x] 1.1 TIMELINE FADES OPTIONAL BY DEFAULT ON NEW INSTALLS
-----------------------------------------------------------
-- Configured `enable_audio_fades` and `preview_audio_fades` to default to `False` across all application initialization paths, QSettings fallbacks, and the "Restore Defaults" preferences routine.
-- New installations keep timeline audio fades cleanly disabled until explicitly enabled by the user in Preferences -> *"Playback & Timeline"*, preserving maximum interface responsiveness and visual simplicity.
-- Existing user configurations that have already enabled or disabled the feature are respected and preserved across sessions.
+[x] 1.1 STORY LIST PYSIGNAL RESTORATION
+----------------------------------------
+- Restored missing `deleteRequested`, `exportRequested`, and `exportStoryWordPressRequested` PySignal attributes on `StoryListWidget`.
+- Eliminates the startup `AttributeError` crash on application launch.
 
-[x] 1.2 AUDIO OUTPUT VOLUME THROTTLING & PLAYBACK PERFORMANCE OPTIMIZATION
---------------------------------------------------------------------------
-- Eliminated high-frequency redundant `setVolume()` calls into the system audio daemon during playback by tracking `_last_applied_fade_vol` and only applying gain changes when volume shifts by `>= 0.005`.
-- Adjusted real-time fade preview timer interval to 35ms (~28 FPS), significantly reducing CPU overhead while maintaining smooth, artifact-free audio crossfades.
-- Automatically suspends fade timers and restores full master volume when playback pauses or reaches the end of an auditioned story segment.
+[x] 1.2 NATIVE KEYBOARD SHORTCUT HANDLING
+------------------------------------------
+- Added native key press handling (`keyPressEvent`) for `Delete` and `Backspace` keys on `StoryListWidget` items to emit `deleteRequested` signal for story deletion.
 
-[x] 1.3 TIMELINE CANVAS TOOLTIP STORM & MOUSE LAG ELIMINATION
--------------------------------------------------------------
-- Fixed an issue where millisecond-precision timestamp recalculations caused `QToolTip.showText()` to fire continuously (up to 100 times per second) during any cursor movement across the timeline.
-- Isolated timeline tooltips strictly to interactive hover targets (story edge boundaries and tactile fade envelope grab handles), automatically hiding tooltips during free scrubbing and panning for seamless 60+ FPS cursor response.
-- Cached boundary and fade hit-test lookups within `mouseMoveEvent` to prevent redundant coordinate recalculations.
-
-[x] 1.4 OPTIMIZED FADE OVERLAY & VECTOR PAINTING
-------------------------------------------------
-- Replaced computationally intensive antialiased dashed line calculations (`DashLine`) in `paintEvent` with crisp, high-performance solid 1.2px vector ramp strokes.
-- Clamped polygon vertex arrays strictly to viewport bounds to minimize rasterization overhead.
+[x] 1.3 CONTEXT MENU SIGNAL ROUTING
+-----------------------------------
+- Routed right-click context menu export and delete actions directly through `StoryListWidget` PySignal events for clean component decoupling.
 
 ================================================================================
-2. CURRENT RELEASE: NON-LINEAR FADE CURVES, MAGNETIC SNAPPING, & CONTEXT MENU AUDIO FADES (Completed in v3.3.4)
+2. CURRENT RELEASE: STORY LIST NATIVE FILE DRAG-AND-DROP RESTORATION (Completed in v3.3.7)
 ================================================================================
 
-[x] 2.1 NON-LINEAR AUDIO FADE ENVELOPE CURVES & CUSTOM GAIN PROFILES
----------------------------------------------------------------------
-- Added selectable audio fade curve profiles: **Linear Ramp**, **Cosine S-Curve** ($0.5 \cdot (1 - \cos(\pi \cdot u))$), **Logarithmic** ($\log_{10}(1 + 9u)$), and **Exponential** ($(10^u - 1)/9$).
-- Supported across real-time playback gain modulation (`get_fade_volume_factor_at_time`), interactive 16-step vector curve drawing on `TimelineCanvas`, global default setting in Preferences -> *"Playback & Timeline"*, and story JSON serialization (`fade_curve` field).
+[x] 2.1 NATIVE MEDIA DRAG-AND-DROP
+-----------------------------------
+- Added `filesDropped = Signal(list)` signal definition and drag event overrides (`dragEnterEvent`, `dragMoveEvent`, `dropEvent`) to `StoryListWidget`.
 
-[x] 2.2 MAGNETIC TIMELINE SNAPPING ENGINE
------------------------------------------
-- Implemented magnetic snapping on `TimelineCanvas` (`snap_time()`) that magnetically snaps cursor drags during selection range adjustments, playhead scrubbing, story edge trimming, and audio fade handle dragging.
-- Snaps to nearby story start/end boundaries, playhead location, and selection region anchors within a 10-pixel threshold (`enable_magnetic_snapping`).
-
-[x] 2.3 STORY LIST CONTEXT MENU & BATCH AUDIO FADE CONTROLS
-------------------------------------------------------------
-- Created `StoryListWidget` right-click context menu with dedicated **Audio Fades** sub-menu allowing users to audition stories, batch apply default/custom fades, batch remove fades, and set fade curve profiles across selected stories.
-- Expanded `StoryFadesDialog` to include fade curve profile selection and updated story list delegates with status tooltips and badges (`[In:0.5s Out:1.0s]`).
+[x] 2.2 STORY LIST MEDIA LOADER INTEGRATION
+--------------------------------------------
+- Connected `story_list.filesDropped` in `ui_layout.py` to auto-load media files when dropped directly onto the stories panel.
 
 ================================================================================
 3. FUTURE MILESTONE: EXPANDED NLE & DAW TIMELINE INTERCHANGE (Phase 4 - Planned for v3.4) [NOT STARTED]
