@@ -1,5 +1,33 @@
 # Changelog
 
+## v3.3.12
+- **QPainterPath Symbol Fix & Canvas Error Resolution**:
+  - Imported `QPainterPath` from `PySide6.QtGui` in `prs_shared.py`, resolving the `NameError: name 'QPainterPath' is not defined` exception that flooded the console and aborted `TimelineCanvas.paintEvent`.
+  - Restored full visual rendering of audio fade ramps (blue fade-in slope & rose fade-out slope) and tactile grab handles on the timeline canvas.
+
+## v3.3.11
+- **Magnetic Snapping Disabling & Audio Fade Handle Visibility Restoration**:
+  - Disabled default magnetic snapping in `TimelineCanvas` (`prs_shared.py`), restoring fluid, unconstrained 60 FPS story border dragging and edge adjustment.
+  - Made tactile fade-in (blue) and fade-out (rose) drag handles ALWAYS visible along the top edge of every story block when audio fades are enabled, even when `fade_in` or `fade_out` is currently `0.0s`.
+  - Expanded hit-testing threshold (`FADE_HANDLE_THRESHOLD = 12`) and vertical bounds for fade handles, allowing seamless grab-and-drag for both left and right mouse buttons to create audio fades directly on the timeline canvas.
+  - Ensured right-clicking story blocks reliably opens the timeline context menu with "Set Audio Fades..." and story management actions.
+
+## v3.3.10
+- **ThemeTokens `story_segment_color` Restoration & Exception-Safe QPainter Painting**:
+  - Added missing `story_segment_color(index, is_selected, alpha)` method to `ThemeTokens` (`theme_tokens.py`), fixing `AttributeError` during timeline overview rendering.
+  - Wrapped `TimelineOverviewWidget.paintEvent` in exception-safe `try...finally: painter.end()` blocks to prevent unclosed `QPainter` instances from corrupting `QBackingStore` and crashing the application on window resize, minimize, or restore.
+
+## v3.3.9
+- **Native DWM Window Subclassing Elimination & Minimize/Resize Stability**:
+  - Replaced `pywinstyles` HWND subclassing with native Windows 10/11 DWM title bar attribute (`DwmSetWindowAttribute`), preventing client area coordinate offsets and backing store crashes during minimize, restore, and resize actions.
+  - Added `not self.isMinimized()` state guard in `MainWindow.changeEvent` to prevent paint engine calls while minimized.
+
+## v3.3.8
+- **Window Maximization & Window State Change Stability Fix**:
+  - Replaced native Windows `pywinstyles.apply_style("mica")` DWM hook with safe dark theme styling to prevent crashes on window maximize.
+  - Added `changeEvent` handler on `MainWindow` to gracefully respond to `WindowStateChange` events (maximize, restore, minimize).
+  - Added `painter.isActive()` guard assertions to `TimelineCanvas` rendering routines to prevent native QPainter crashes on window resizing.
+
 ## v3.3.7
 - **Story List Native File Drag-and-Drop Restoration**:
   - Added `filesDropped = Signal(list)` signal definition and drag event overrides (`dragEnterEvent`, `dragMoveEvent`, `dropEvent`) to `StoryListWidget`.

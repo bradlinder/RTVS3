@@ -176,6 +176,7 @@ from PySide6.QtGui import (
     QBrush,
     QColor,
     QPainter,
+    QPainterPath,
     QPen,
     QPolygonF,
     QFont,
@@ -516,7 +517,7 @@ class CollapsibleSection(QWidget):
 
 # Display branding shown to the user (title bar, About box, installers).
 APP_DISPLAY_NAME = "Radio & TV Segmenter"
-PROJECT_VERSION = "3.3.7"
+PROJECT_VERSION = "3.3.12"
 DEFAULT_GITHUB_REPO = "bradlinder/RTVS3"
 
 
@@ -4792,7 +4793,7 @@ class TimelineCanvas(QWidget):
         self.active_fade_target = None  # Tuple: (story_index, 'fade_in' | 'fade_out')
         self._fade_drag_start_val = 0.0
         self.show_audio_fades = False
-        self.enable_magnetic_snapping = True
+        self.enable_magnetic_snapping = False
         self._last_tooltip_text = ""
 
         self.stories = []
@@ -5064,7 +5065,7 @@ class TimelineCanvas(QWidget):
                 return (index, 'end')
         return None
 
-    FADE_HANDLE_THRESHOLD = 8
+    FADE_HANDLE_THRESHOLD = 12
 
     def find_fade_handle_at_pos(self, pos_x, pos_y, width):
         """Hit-test tactile fade-in and fade-out envelope handles near the top edge of story blocks."""
@@ -5072,7 +5073,7 @@ class TimelineCanvas(QWidget):
             return None
 
         top_y = self.RULER_HEIGHT
-        if pos_y < (top_y - 6) or pos_y > (top_y + 18):
+        if pos_y < (top_y - 8) or pos_y > (top_y + 26):
             return None
 
         for index, story in enumerate(self.stories):
@@ -5653,6 +5654,8 @@ class TimelineCanvas(QWidget):
         pixmap.fill(self.tokens.color(self.tokens.bg_surface))
 
         painter = QPainter(pixmap)
+        if not painter.isActive():
+            return pixmap
         painter.setRenderHint(QPainter.RenderHint.Antialiasing, True)
 
         available = max(20, height - self.RULER_HEIGHT)
@@ -5816,6 +5819,8 @@ class TimelineCanvas(QWidget):
 
     def paintEvent(self, event):
         painter = QPainter(self)
+        if not painter.isActive():
+            return
         painter.setRenderHint(QPainter.RenderHint.Antialiasing, True)
 
         width = self.width()
@@ -5929,85 +5934,84 @@ class TimelineCanvas(QWidget):
                 fin = getattr(story, "fade_in", 0.0)
                 fout = getattr(story, "fade_out", 0.0)
                 fcurve = getattr(story, "fade_curve", "linear") or "linear"
-                if fin > 0 or fout > 0:
-                    story_dur = max(0.001, story.end - story.start)
-                    fin = min(fin, story_dur)
-                    fout = min(fout, max(0.0, story_dur - fin))
+                story_dur = max(0.001, story.end - story.start)
+                fin = max(0.0, min(fin, story_dur))
+                fout = max(0.0, min(fout, max(0.0, story_dur - fin)))
 
-                    top_y = float(self.RULER_HEIGHT)
-                    bottom_y = float(height)
+                top_y = float(self.RULER_HEIGHT)
+                bottom_y = float(height)
 
-                    if fin > 0:
-                        fin_apex_x = self.time_to_x(story.start + fin, width)
-                        if fin_apex_x >= 0 and start_x <= width:
-                            in_path = QPainterPath()
-                            in_path.moveTo(start_x, bottom_y)
-                            steps = 16
-                            for step_i in range(1, steps + 1):
-                                u = step_i / float(steps)
-                                px = start_x + u * (fin_apex_x - start_x)
-                                val = calculate_fade_curve_factor(u, fcurve)
-                                py = bottom_y - val * (bottom_y - top_y)
-                                in_path.lineTo(px, py)
+                fin_apex_x = self.time_to_x(story.start + fin, width)
+                if fin > 0:
+                    if fin_apex_x >= 0 and start_x <= width:
+                        in_path = QPainterPath()
+                        in_path.moveTo(start_x, bottom_y)
+                        steps = 16
+                        for step_i in range(1, steps + 1):
+                            u = step_i / float(steps)
+                            px = start_x + u * (fin_apex_x - start_x)
+                            val = calculate_fade_curve_factor(u, fcurve)
+                            py = bottom_y - val * (bottom_y - top_y)
+                            in_path.lineTo(px, py)
 
-                            # Fill shaded polygon area under curve
-                            fill_path = QPainterPath(in_path)
-                            fill_path.lineTo(start_x, top_y)
-                            fill_path.lineTo(start_x, bottom_y)
-                            fill_path.closeSubpath()
+                        # Fill shaded polygon area under curve
+                        fill_path = QPainterPath(in_path)
+                        fill_path.lineTo(start_x, top_y)
+                        fill_path.lineTo(start_x, bottom_y)
+                        fill_path.closeSubpath()
 
-                            painter.setBrush(QColor(0, 0, 0, 85 if is_selected else 55))
-                            painter.setPen(Qt.PenStyle.NoPen)
-                            painter.drawPath(fill_path)
+                        painter.setBrush(QColor(0, 0, 0, 85 if is_selected else 55))
+                        painter.setPen(Qt.PenStyle.NoPen)
+                        painter.drawPath(fill_path)
 
-                            # Smooth ramp stroke
-                            ramp_pen = QPen(QColor("#38bdf8" if is_selected else "#7dd3fc"), 1.2)
-                            painter.setPen(ramp_pen)
-                            painter.setBrush(Qt.BrushStyle.NoBrush)
-                            painter.drawPath(in_path)
+                        # Smooth ramp stroke
+                        ramp_pen = QPen(QColor("#38bdf8" if is_selected else "#7dd3fc"), 1.2)
+                        painter.setPen(ramp_pen)
+                        painter.setBrush(Qt.BrushStyle.NoBrush)
+                        painter.drawPath(in_path)
 
-                            # Tactile Grab Handle at apex along top edge
-                            if 0 <= fin_apex_x <= width:
-                                handle_color = QColor("#38bdf8" if is_selected else "#93c5fd")
-                                painter.setPen(QPen(handle_color.darker(130), 1))
-                                painter.setBrush(handle_color)
-                                painter.drawRect(QRectF(fin_apex_x - 3, top_y + 1, 6, 8))
+                # Tactile Grab Handle for Fade-In at apex along top edge
+                if 0 <= fin_apex_x <= width:
+                    handle_color = QColor("#38bdf8" if is_selected else "#60a5fa")
+                    painter.setPen(QPen(handle_color.darker(130), 1))
+                    painter.setBrush(handle_color)
+                    painter.drawRoundedRect(QRectF(fin_apex_x - 4, top_y + 1, 8, 10), 2.0, 2.0)
 
-                    if fout > 0:
-                        fout_apex_x = self.time_to_x(story.end - fout, width)
-                        if end_x >= 0 and fout_apex_x <= width:
-                            out_path = QPainterPath()
-                            out_path.moveTo(fout_apex_x, top_y)
-                            steps = 16
-                            for step_i in range(1, steps + 1):
-                                u = step_i / float(steps)
-                                px = fout_apex_x + u * (end_x - fout_apex_x)
-                                # fade out goes from 1.0 down to 0.0
-                                val = 1.0 - calculate_fade_curve_factor(u, fcurve)
-                                py = bottom_y - val * (bottom_y - top_y)
-                                out_path.lineTo(px, py)
+                fout_apex_x = self.time_to_x(story.end - fout, width)
+                if fout > 0:
+                    if end_x >= 0 and fout_apex_x <= width:
+                        out_path = QPainterPath()
+                        out_path.moveTo(fout_apex_x, top_y)
+                        steps = 16
+                        for step_i in range(1, steps + 1):
+                            u = step_i / float(steps)
+                            px = fout_apex_x + u * (end_x - fout_apex_x)
+                            # fade out goes from 1.0 down to 0.0
+                            val = 1.0 - calculate_fade_curve_factor(u, fcurve)
+                            py = bottom_y - val * (bottom_y - top_y)
+                            out_path.lineTo(px, py)
 
-                            fill_path = QPainterPath(out_path)
-                            fill_path.lineTo(end_x, top_y)
-                            fill_path.lineTo(fout_apex_x, top_y)
-                            fill_path.closeSubpath()
+                        fill_path = QPainterPath(out_path)
+                        fill_path.lineTo(end_x, top_y)
+                        fill_path.lineTo(fout_apex_x, top_y)
+                        fill_path.closeSubpath()
 
-                            painter.setBrush(QColor(0, 0, 0, 85 if is_selected else 55))
-                            painter.setPen(Qt.PenStyle.NoPen)
-                            painter.drawPath(fill_path)
+                        painter.setBrush(QColor(0, 0, 0, 85 if is_selected else 55))
+                        painter.setPen(Qt.PenStyle.NoPen)
+                        painter.drawPath(fill_path)
 
-                            # Smooth ramp stroke
-                            ramp_pen = QPen(QColor("#f43f5e" if is_selected else "#fb7185"), 1.2)
-                            painter.setPen(ramp_pen)
-                            painter.setBrush(Qt.BrushStyle.NoBrush)
-                            painter.drawPath(out_path)
+                        # Smooth ramp stroke
+                        ramp_pen = QPen(QColor("#f43f5e" if is_selected else "#fb7185"), 1.2)
+                        painter.setPen(ramp_pen)
+                        painter.setBrush(Qt.BrushStyle.NoBrush)
+                        painter.drawPath(out_path)
 
-                            # Tactile Grab Handle at apex along top edge
-                            if 0 <= fout_apex_x <= width:
-                                handle_color = QColor("#f43f5e" if is_selected else "#fca5a5")
-                                painter.setPen(QPen(handle_color.darker(130), 1))
-                                painter.setBrush(handle_color)
-                                painter.drawRect(QRectF(fout_apex_x - 3, top_y + 1, 6, 8))
+                # Tactile Grab Handle for Fade-Out at apex along top edge
+                if 0 <= fout_apex_x <= width:
+                    handle_color = QColor("#f43f5e" if is_selected else "#f87171")
+                    painter.setPen(QPen(handle_color.darker(130), 1))
+                    painter.setBrush(handle_color)
+                    painter.drawRoundedRect(QRectF(fout_apex_x - 4, top_y + 1, 8, 10), 2.0, 2.0)
 
             painter.setPen(self.tokens.story_segment_pen(index, is_selected=is_selected))
             if 0 <= start_x <= width:
@@ -6166,82 +6170,84 @@ class TimelineOverviewBar(QWidget):
 
     def paintEvent(self, event):
         painter = QPainter(self)
-        painter.setRenderHint(QPainter.RenderHint.Antialiasing, True)
-        w = max(1, self.width())
-        h = max(1, self.height())
-        dur = max(0.001, getattr(self.canvas, "duration", 1.0))
+        if not painter.isActive():
+            return
+        try:
+            painter.setRenderHint(QPainter.RenderHint.Antialiasing, True)
+            w = max(1, self.width())
+            h = max(1, self.height())
+            dur = max(0.001, getattr(self.canvas, "duration", 1.0))
 
-        is_dark = self.palette().window().color().value() < 128
+            is_dark = self.palette().window().color().value() < 128
 
-        # 1. Track background
-        track_bg = QColor("#161b22") if is_dark else QColor("#e8ecf1")
-        track_border = QColor("#21262d") if is_dark else QColor("#d0d7de")
-        painter.setPen(QPen(track_border, 1.0))
-        painter.setBrush(track_bg)
-        painter.drawRoundedRect(QRectF(0.5, 1.0, w - 1.0, h - 2.0), 3.0, 3.0)
+            # 1. Track background
+            track_bg = QColor("#161b22") if is_dark else QColor("#e8ecf1")
+            track_border = QColor("#21262d") if is_dark else QColor("#d0d7de")
+            painter.setPen(QPen(track_border, 1.0))
+            painter.setBrush(track_bg)
+            painter.drawRoundedRect(QRectF(0.5, 1.0, w - 1.0, h - 2.0), 3.0, 3.0)
 
-        # 2. Mini story segments in overview
-        stories = getattr(self.canvas, "stories", [])
-        if stories and dur > 0:
-            for s_idx, story in enumerate(stories):
-                s_start = max(0.0, min(dur, getattr(story, "start", 0.0)))
-                s_end = max(s_start, min(dur, getattr(story, "end", 0.0)))
-                if s_end > s_start:
-                    sx = (s_start / dur) * w
-                    sw = max(2.0, ((s_end - s_start) / dur) * w)
-                    s_color = self.tokens.story_segment_color(s_idx)
-                    s_color.setAlpha(110 if is_dark else 130)
-                    painter.setPen(Qt.PenStyle.NoPen)
-                    painter.setBrush(s_color)
-                    painter.drawRect(QRectF(sx, 3.0, sw, h - 6.0))
+            # 2. Mini story segments in overview
+            stories = getattr(self.canvas, "stories", [])
+            if stories and dur > 0:
+                for s_idx, story in enumerate(stories):
+                    s_start = max(0.0, min(dur, getattr(story, "start", 0.0)))
+                    s_end = max(s_start, min(dur, getattr(story, "end", 0.0)))
+                    if s_end > s_start:
+                        sx = (s_start / dur) * w
+                        sw = max(2.0, ((s_end - s_start) / dur) * w)
+                        s_color = self.tokens.story_segment_color(s_idx, alpha=110 if is_dark else 130)
+                        painter.setPen(Qt.PenStyle.NoPen)
+                        painter.setBrush(s_color)
+                        painter.drawRect(QRectF(sx, 3.0, sw, h - 6.0))
 
-        # 3. Viewport Pill
-        pill = self.get_pill_rect()
+            # 3. Viewport Pill
+            pill = self.get_pill_rect()
 
-        # Pill base style
-        if self._dragging == 'pan' or self._hover_handle == 'pill':
-            pill_bg = QColor("#3f4c60") if is_dark else QColor("#9aa8ba")
-            pill_border = QColor("#58a6ff") if is_dark else QColor("#0969da")
-        else:
-            pill_bg = QColor("#303846") if is_dark else QColor("#afbccb")
-            pill_border = QColor("#485569") if is_dark else QColor("#8c99a8")
+            # Pill base style
+            if self._dragging == 'pan' or self._hover_handle == 'pill':
+                pill_bg = QColor("#3f4c60") if is_dark else QColor("#9aa8ba")
+                pill_border = QColor("#58a6ff") if is_dark else QColor("#0969da")
+            else:
+                pill_bg = QColor("#303846") if is_dark else QColor("#afbccb")
+                pill_border = QColor("#485569") if is_dark else QColor("#8c99a8")
 
-        painter.setPen(QPen(pill_border, 1.0))
-        painter.setBrush(pill_bg)
-        painter.drawRoundedRect(pill, 4.0, 4.0)
+            painter.setPen(QPen(pill_border, 1.0))
+            painter.setBrush(pill_bg)
+            painter.drawRoundedRect(pill, 4.0, 4.0)
 
-        # 4. Resizable Left & Right edge grab handles
-        left_h_active = (self._hover_handle == 'left' or self._dragging == 'left_handle')
-        right_h_active = (self._hover_handle == 'right' or self._dragging == 'right_handle')
+            # 4. Resizable Left & Right edge grab handles
+            left_h_active = (self._hover_handle == 'left' or self._dragging == 'left_handle')
+            right_h_active = (self._hover_handle == 'right' or self._dragging == 'right_handle')
 
-        # Left handle styling
-        if left_h_active:
-            painter.setBrush(QColor("#38bdf8" if is_dark else "#0284c7"))
-            painter.setPen(Qt.PenStyle.NoPen)
-            painter.drawRoundedRect(QRectF(pill.left(), pill.top(), 5.0, pill.height()), 2.0, 2.0)
-        else:
-            painter.setPen(QPen(QColor("#8b949e" if is_dark else "#ffffff"), 1.2))
-            mid_y = pill.top() + pill.height() / 2.0
-            painter.drawLine(QPointF(pill.left() + 3.0, mid_y - 3.0), QPointF(pill.left() + 3.0, mid_y + 3.0))
+            # Left handle styling
+            if left_h_active:
+                painter.setBrush(QColor("#38bdf8" if is_dark else "#0284c7"))
+                painter.setPen(Qt.PenStyle.NoPen)
+                painter.drawRoundedRect(QRectF(pill.left(), pill.top(), 5.0, pill.height()), 2.0, 2.0)
+            else:
+                painter.setPen(QPen(QColor("#8b949e" if is_dark else "#ffffff"), 1.2))
+                mid_y = pill.top() + pill.height() / 2.0
+                painter.drawLine(QPointF(pill.left() + 3.0, mid_y - 3.0), QPointF(pill.left() + 3.0, mid_y + 3.0))
 
-        # Right handle styling
-        if right_h_active:
-            painter.setBrush(QColor("#38bdf8" if is_dark else "#0284c7"))
-            painter.setPen(Qt.PenStyle.NoPen)
-            painter.drawRoundedRect(QRectF(pill.right() - 5.0, pill.top(), 5.0, pill.height()), 2.0, 2.0)
-        else:
-            painter.setPen(QPen(QColor("#8b949e" if is_dark else "#ffffff"), 1.2))
-            mid_y = pill.top() + pill.height() / 2.0
-            painter.drawLine(QPointF(pill.right() - 3.0, mid_y - 3.0), QPointF(pill.right() - 3.0, mid_y + 3.0))
+            # Right handle styling
+            if right_h_active:
+                painter.setBrush(QColor("#38bdf8" if is_dark else "#0284c7"))
+                painter.setPen(Qt.PenStyle.NoPen)
+                painter.drawRoundedRect(QRectF(pill.right() - 5.0, pill.top(), 5.0, pill.height()), 2.0, 2.0)
+            else:
+                painter.setPen(QPen(QColor("#8b949e" if is_dark else "#ffffff"), 1.2))
+                mid_y = pill.top() + pill.height() / 2.0
+                painter.drawLine(QPointF(pill.right() - 3.0, mid_y - 3.0), QPointF(pill.right() - 3.0, mid_y + 3.0))
 
-        # 5. Playhead indicator tick
-        pos = getattr(self.canvas, "position", 0.0)
-        if 0 <= pos <= dur:
-            cur_x = (pos / dur) * w
-            painter.setPen(QPen(QColor("#ef4444" if is_dark else "#dc2626"), 1.5))
-            painter.drawLine(QPointF(cur_x, 1.0), QPointF(cur_x, h - 1.0))
-
-        painter.end()
+            # 5. Playhead indicator tick
+            pos = getattr(self.canvas, "position", 0.0)
+            if 0 <= pos <= dur:
+                cur_x = (pos / dur) * w
+                painter.setPen(QPen(QColor("#ef4444" if is_dark else "#dc2626"), 1.5))
+                painter.drawLine(QPointF(cur_x, 1.0), QPointF(cur_x, h - 1.0))
+        finally:
+            painter.end()
 
     def mousePressEvent(self, event):
         if event.button() == Qt.MouseButton.LeftButton:

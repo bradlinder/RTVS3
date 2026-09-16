@@ -29,14 +29,15 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 --------------------------------------------------------------------------------
 TABLE OF CONTENTS & STATUS OVERVIEW
 --------------------------------------------------------------------------------
-1. Previous Release: Story List Signal Architecture Restoration & Keyboard Shortcuts (Completed in v3.3.6)
-   [x] 1.1 Story List PySignal Restoration (Restored `deleteRequested`, `exportRequested`, and `exportStoryWordPressRequested` PySignal attributes on `StoryListWidget`)
-   [x] 1.2 Native Keyboard Shortcut Handling (`keyPressEvent` maps Delete/Backspace keys to `deleteRequested.emit()` for story removal)
-   [x] 1.3 Context Menu Signal Routing (Replaced direct parent caller references with decoupled PySignal events for export and deletion)
+1. Previous Release: Magnetic Snapping Disabling & Audio Fade Handle Visibility Restoration (Completed in v3.3.11)
+   [x] 1.1 Default Magnetic Snapping Disabled (Set `enable_magnetic_snapping = False` in `prs_shared.py` to restore fluid, unconstrained 60 FPS story boundary dragging)
+   [x] 1.2 Tactile Audio Fade Handles Always Visible (Fade-in blue handle and fade-out rose handle are drawn along the top edge of every story block when audio fades are enabled, even at 0.0s fade duration)
+   [x] 1.3 Expanded Fade Handle Hit-Testing (Increased `FADE_HANDLE_THRESHOLD` to 12px and expanded vertical hit zone for effortless left and right mouse button dragging)
+   [x] 1.4 Story Context Menu Audio Fade Access (Ensured right-clicking story blocks reliably opens the timeline context menu with "Set Audio Fades..." action)
 
-2. Current Release: Story List Native File Drag-and-Drop Restoration (Completed in v3.3.7)
-   [x] 2.1 Native Media Drag-and-Drop (`filesDropped = Signal(list)` and `dragEnterEvent` / `dropEvent` overrides on `StoryListWidget`)
-   [x] 2.2 Story List Media Loader Integration (Connected `story_list.filesDropped` in `ui_layout.py` to auto-load media files when dropped onto stories panel)
+2. Current Release: QPainterPath Symbol Import Fix & Timeline Canvas Error Resolution (Completed in v3.3.12)
+   [x] 2.1 QPainterPath Symbol Import (Imported `QPainterPath` from `PySide6.QtGui` in `prs_shared.py` to fix NameError in paintEvent)
+   [x] 2.2 Audio Fade Ramp Visual Rendering (Restored full rendering of blue fade-in & rose fade-out ramp paths and top-edge grab handles)
 
 3. Future Milestone: Expanded NLE & DAW Timeline Interchange (Phase 4 - Planned for v3.4) [NOT STARTED]
    [ ] 3.1 Cockos Reaper Project (.rpp) Generator
@@ -64,33 +65,28 @@ CORE ARCHITECTURAL INVARIANTS
 - 0 MB Default GPU Footprint: Base installer contains 0 MB of CUDA bloat; GPU features are purely optional and provisioned on demand.
 
 ================================================================================
-1. PREVIOUS RELEASE: STORY LIST SIGNAL ARCHITECTURE RESTORATION & KEYBOARD SHORTCUTS (Completed in v3.3.6)
+1. PREVIOUS RELEASE: NATIVE DWM WINDOW SUBCLASSING ELIMINATION & MINIMIZE/RESIZE STABILITY (Completed in v3.3.9)
 ================================================================================
 
-[x] 1.1 STORY LIST PYSIGNAL RESTORATION
-----------------------------------------
-- Restored missing `deleteRequested`, `exportRequested`, and `exportStoryWordPressRequested` PySignal attributes on `StoryListWidget`.
-- Eliminates the startup `AttributeError` crash on application launch.
+[x] 1.1 NATIVE DWM ATTRIBUTE CONFIGURATION
+-------------------------------------------
+- Replaced `pywinstyles` HWND subclassing with native Windows 10/11 `DwmSetWindowAttribute` API call (`DWMWA_USE_IMMERSIVE_DARK_MODE` attribute 20/19), eliminating window frame margin offsets and backing store crashes during minimize, restore, and drag-resize operations.
 
-[x] 1.2 NATIVE KEYBOARD SHORTCUT HANDLING
-------------------------------------------
-- Added native key press handling (`keyPressEvent`) for `Delete` and `Backspace` keys on `StoryListWidget` items to emit `deleteRequested` signal for story deletion.
-
-[x] 1.3 CONTEXT MENU SIGNAL ROUTING
------------------------------------
-- Routed right-click context menu export and delete actions directly through `StoryListWidget` PySignal events for clean component decoupling.
+[x] 1.2 WINDOW MINIMIZE PAINT ENGINE GUARD
+-------------------------------------------
+- Added `not self.isMinimized()` state guard in `MainWindow.changeEvent` to prevent invalid paint engine calls while the window is minimized.
 
 ================================================================================
-2. CURRENT RELEASE: STORY LIST NATIVE FILE DRAG-AND-DROP RESTORATION (Completed in v3.3.7)
+2. CURRENT RELEASE: THEMETOKENS STORY_SEGMENT_COLOR RESTORATION & EXCEPTION-SAFE QPAINTER PAINTING (Completed in v3.3.10)
 ================================================================================
 
-[x] 2.1 NATIVE MEDIA DRAG-AND-DROP
------------------------------------
-- Added `filesDropped = Signal(list)` signal definition and drag event overrides (`dragEnterEvent`, `dragMoveEvent`, `dropEvent`) to `StoryListWidget`.
+[x] 2.1 STORY_SEGMENT_COLOR METHOD RESTORATION
+------------------------------------------------
+- Added missing `story_segment_color(index, is_selected, alpha)` helper method to `ThemeTokens` in `theme_tokens.py`, resolving the `AttributeError` exception during timeline overview rendering when projects contain story segments.
 
-[x] 2.2 STORY LIST MEDIA LOADER INTEGRATION
+[x] 2.2 EXCEPTION-SAFE PAINT ENGINE WRAPPER
 --------------------------------------------
-- Connected `story_list.filesDropped` in `ui_layout.py` to auto-load media files when dropped directly onto the stories panel.
+- Enclosed `TimelineOverviewWidget.paintEvent` inside `try...finally: painter.end()` blocks to guarantee `QPainter.end()` execution, preventing unclosed painters from corrupting `QBackingStore` or aborting the process during window resize, minimize, or restore transitions.
 
 ================================================================================
 3. FUTURE MILESTONE: EXPANDED NLE & DAW TIMELINE INTERCHANGE (Phase 4 - Planned for v3.4) [NOT STARTED]

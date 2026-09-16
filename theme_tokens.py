@@ -176,6 +176,13 @@ class ThemeTokens:
         alpha = self.story_selected_alpha if is_selected else self.story_unselected_alpha
         return self.brush(base_color, alpha=alpha)
 
+    def story_segment_color(self, index: int, is_selected: bool = False, alpha: int = None) -> QColor:
+        """Return QColor for story region with index-based palette and selection alpha."""
+        base_color = self.story_palette[index % len(self.story_palette)]
+        if alpha is None:
+            alpha = self.story_selected_alpha if is_selected else self.story_unselected_alpha
+        return self.color(base_color, alpha=alpha)
+
     def story_segment_pen(self, index: int, is_selected: bool = False) -> QPen:
         """Return QPen for story region boundary line."""
         if is_selected:

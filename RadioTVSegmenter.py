@@ -94,9 +94,17 @@ class MainWindow(
 
         if sys.platform == "win32":
             try:
-                import pywinstyles
-                pywinstyles.apply_style(self, "mica")
-            except Exception as e:
+                import ctypes
+                hwnd = int(self.winId())
+                c_true = ctypes.c_int(1)
+                for attr in (20, 19):
+                    try:
+                        ctypes.windll.dwmapi.DwmSetWindowAttribute(
+                            hwnd, attr, ctypes.byref(c_true), ctypes.sizeof(c_true)
+                        )
+                    except Exception:
+                        pass
+            except Exception:
                 pass
 
         self.runtime_mgr = RuntimeManager()
@@ -309,6 +317,15 @@ class MainWindow(
             self.load_project_file(str(p))
         else:
             self.open_media_file(str(p))
+
+    def changeEvent(self, event):
+        """Handle window state changes (e.g. maximize, restore, minimize) safely."""
+        super().changeEvent(event)
+        if event.type() == QEvent.Type.WindowStateChange:
+            if not self.isMinimized():
+                if hasattr(self, "timeline") and hasattr(self.timeline, "canvas"):
+                    self.timeline.canvas.pixmap_dirty = True
+                    self.timeline.canvas.update()
 
     def closeEvent(self, event):
         """Cleanly handle application window closing to prevent process lingering,

@@ -67,3 +67,8 @@ Always adhere strictly to the invariants defined in `ARCHITECTURE.md`:
     Then run `python preview_manager.py --sync` and verify with `lint_applet` & `compile_applet`.
   - To create a new stable snapshot: `python snapshot_manager.py --create <name> --stable`.
 
+## 6. Verified Stable Release Policy
+- **User-Tested & Verified Stable Builds (`verified-stable`)**:
+  - Whenever the user asks to mark a build or release as stable, the agent MUST explicitly ask: *"Would you like to mark this as 'verified-stable' to set it apart from automatic designations?"*
+  - Ensure manually user-tested stable builds are explicitly tagged and recorded as `verified-stable` in snapshot metadata (`snapshot_manager.py`).
+
