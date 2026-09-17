@@ -29,27 +29,44 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 --------------------------------------------------------------------------------
 TABLE OF CONTENTS & STATUS OVERVIEW
 --------------------------------------------------------------------------------
-1. Previous Release: QProcess Buffer Draining & Speaker Detection Progress Detail (Completed in v3.3.24)
-   [x] 1.1 Added `read_output()` at the beginning of the `finished` slot in `translation.py` to fully drain and process remaining standard output buffer.
-   [x] 1.2 Swapped hardcoded progress message with the dynamic helper message in `processing.py` to show precise diarization steps in real-time.
+1. Previous Release: Strict Transcript Viewport Stability & Auto-Scroll Elimination (Completed in v3.4.11)
+   [x] 1.1 Complete Elimination of Unsolicited Auto-Scrolling: Removed automatic viewport scroll mutations from `highlight_word_at_time()` so that transcript word highlighting during playback, audio seek, or transcript refresh never alters the user's scroll position. The transcript viewport now moves strictly upon direct user scroll interaction.
+   [x] 1.2 Speaker Label Interaction Decoupling: Updated speaker label click routing in `transcript_clicked()` to trigger the speaker renaming flow directly without seeking audio or displacing the transcript viewport.
+   [x] 1.3 Multi-Pass Scroll Restoration: Hardened scrollbar position restoration across consecutive Qt document layout cycles (`QTimer.singleShot` stagger) during `render_transcript()` to guarantee zero viewport drift across any number of successive speaker modifications.
 
-2. Current Release: QProcess Buffer Flush & Truncation Hotfix (Completed in v3.3.25)
-   [x] 2.1 Enforced `force_flush=True` at process exit in `processing.py` and `translation.py` to parse leftover JSON without trailing newlines.
-   [x] 2.2 Resolved the "Translation complete. (100%)" application hang caused by orphaned pipes.
+2. Current Release: Zero-Jump Transcript Viewport Stability & Focus Isolation (Completed in v3.4.12)
+   [x] 2.1 Focus Event Isolation & Cursor Suppression: Overrode `focusInEvent` in `InteractiveTranscriptEdit` to suppress Qt's default `ensureCursorVisible()` behavior when speaker rename or prompt dialogs close, guaranteeing that focus changes never shift the viewport.
+   [x] 2.2 Dynamic Scroll Lock & Range-Changed Pinning: Introduced `lock_scroll_position()` in `InteractiveTranscriptEdit` which listens to `verticalScrollBar().rangeChanged` and anchors scrollbars to exact pre-action positions while layout reflows settle, automatically releasing upon manual user scroll interaction (mouse wheel, trackpad, or scrollbar dragging).
+   [x] 2.3 Dialog Lifecycle Scroll Preservation: Captured scroll offsets prior to opening `ChangeSpeakerDialog` or `QInputDialog` and preserved them across dialog acceptance, cancellation, and re-rendering lifecycles.
+   [x] 2.4 Eliminated Undo-Push Playhead Seek Jump: Bypassed redundant initial `redo()` re-execution on `ProjectStateCommand` push to `QUndoStack` and enforced `seek=False` in `_restore_project_state_for_undo()`, preventing speaker label modifications or project state commits from causing unwanted playhead jumps to selected story boundaries.
 
-3. Future Milestone: Expanded NLE & DAW Timeline Interchange (Phase 4 - Planned for v3.4) [NOT STARTED]
-   [ ] 3.1 Cockos Reaper Project (.rpp) Generator
-   [ ] 3.2 Magix Samplitude EDL (v1.5) Export
-   [ ] 3.3 Video NLE Interchange (FCPXML, Premiere / DaVinci Resolve xmeml XML)
-   [ ] 3.4 Avid / Pro Tools AAF Composition
-   [ ] 3.5 Rational Timecode & Audio Sample Rate Math
-   [ ] 3.6 UI & Batch Export Integration
+3. Future Milestone: Phase 2 Modularization of prs_shared.py (UI & Qt Components) [PLANNED]
+   [ ] 3.1 Cache Management & ClearCacheDialog Extraction (`cache_manager.py`)
+   [ ] 3.2 Story Widgets, Cards, & Metadata Dialogs (`story_widgets.py`)
+   [ ] 3.3 Timeline Ruler, Track Views, & Playhead Overlays (`timeline_widgets.py`)
+   [ ] 3.4 Transcript Viewer, Word Highlighting, & Search/Replace (`transcript_editor.py`)
+   [ ] 3.5 Cautious Incremental Testing Protocol (Verified step-by-step testing after each extraction)
 
-4. Future Milestone: Text-Driven Audio Editing & Precision Alignment (Phase 5 - Planned for v4.0) [NOT STARTED]
-   [ ] 4.1 "Text-as-Timeline" Rough-Cut Editing Engine
-   [ ] 4.2 Seamless Non-Destructive Playback Preview
-   [ ] 4.3 CTC Word Boundary Refinement & Forced Alignment
-   [ ] 4.4 Memory-Bounded Diarization & Chunked Streaming
+4. Future Milestone: Google Docs & Drive Export Plugin (`plugins/gdocs`) (Planned for v3.5) [NOT STARTED]
+   [ ] 4.1 Plugin Architecture & OAuth 2.0 Authentication Engine (`plugins/gdocs/auth.py`, keyring token storage, local loopback handler)
+   [ ] 4.2 Google Docs Document Serializer & REST Exporter (Formatted text, speaker headers, word highlights, story metadata)
+   [ ] 4.3 Native Margin Comments & Text Range Anchoring (`drive.comments.create` integration for story notes & transcript comments)
+   [ ] 4.4 Unified Export Center & Menu Integration (Progress worker, batch export, zero core bundle overhead)
+   [ ] 4.5 (Optional) One-Time Review & Comment Pull ("Import Reviews from Google Doc" diff dialog)
+
+5. Future Milestone: Expanded NLE & DAW Timeline Interchange (Phase 4 - Planned for v3.6) [NOT STARTED]
+   [ ] 5.1 Cockos Reaper Project (.rpp) Generator
+   [ ] 5.2 Magix Samplitude EDL (v1.5) Export
+   [ ] 5.3 Video NLE Interchange (FCPXML, Premiere / DaVinci Resolve xmeml XML)
+   [ ] 5.4 Avid / Pro Tools AAF Composition
+   [ ] 5.5 Rational Timecode & Audio Sample Rate Math
+   [ ] 5.6 UI & Batch Export Integration
+
+6. Future Milestone: Text-Driven Audio Editing & Precision Alignment (Phase 5 - Planned for v4.0) [NOT STARTED]
+   [ ] 6.1 "Text-as-Timeline" Rough-Cut Editing Engine
+   [ ] 6.2 Seamless Non-Destructive Playback Preview
+   [ ] 6.3 CTC Word Boundary Refinement & Forced Alignment
+   [ ] 6.4 Memory-Bounded Diarization & Chunked Streaming
 
 ================================================================================
 CORE ARCHITECTURAL INVARIANTS
@@ -63,61 +80,151 @@ CORE ARCHITECTURAL INVARIANTS
 - 0 MB Default GPU Footprint: Base installer contains 0 MB of CUDA bloat; GPU features are purely optional and provisioned on demand.
 
 ================================================================================
-================================================================================
-1. PREVIOUS RELEASE: QPROCESS BUFFER DRAINING & SPEAKER DETECT PROGRESS (Completed in v3.3.24)
+1. PREVIOUS RELEASE: ELIMINATED VIEWPORT JUMPS ON SPEAKER UPDATES (Completed in v3.4.10)
 ================================================================================
 
-[x] 1.1 RESOLVED QPROCESS STDOUT RACE CONDITION ON EXIT
--------------------------------------------------------
-- Discovered that when the translation subprocess finishes and exits, the final `"finished"` JSON message is sometimes left unread in the QProcess stdout buffer because the `finished` slot did not read standard output before unregistering.
-- Explicitly called `read_output()` inside the `finished` slot in `translation.py` to safely drain and parse any remaining payload data, enabling instant, reliable completion.
+[x] 1.1 AUTO-SCROLL DECOUPLING ON TRANSCRIPT REFRESH
+----------------------------------------------------
+- Added explicit `auto_scroll=False` parameter to `highlight_word_at_time()` when called during transcript re-rendering (`render_transcript()`), preventing the viewport from auto-scrolling toward distant audio playhead positions when modifying speaker labels.
 
-[x] 1.2 IMPLEMENTED DYNAMIC SPEAKER DETECT PROGRESS DETAIL
+[x] 1.2 ZERO VIEWPORT DRIFT ON INITIAL RENDER
+---------------------------------------------
+- Preserved vertical and horizontal scrollbar positions across initial single and all-instance speaker renames, speaker additions, and speaker label deletions while retaining the active word highlight styling.
+
+================================================================================
+2. CURRENT RELEASE: STRICT TRANSCRIPT VIEWPORT STABILITY & AUTO-SCROLL ELIMINATION (Completed in v3.4.11)
+================================================================================
+
+[x] 2.1 COMPLETE ELIMINATION OF UNSOLICITED AUTO-SCROLLING
 ----------------------------------------------------------
-- Replaced the generic hardcoded progress message placeholder with the actual, dynamic subprocess status message in `processing.py`.
-- Keeps the user informed of active background steps (such as VAD, signature extraction, and AHC clustering) in real-time, eliminating the perception of being stuck.
+- Removed automatic viewport scroll mutations from `highlight_word_at_time()` so that transcript word highlighting during playback, audio seek, or transcript refresh never alters the user's scroll position.
+- The transcript viewport now moves strictly upon direct user scroll interaction (scrollbar dragging, mouse wheel, or trackpad gestures).
+
+[x] 2.2 SPEAKER LABEL INTERACTION DECOUPLING
+--------------------------------------------
+- Updated speaker label click routing in `transcript_clicked()` to trigger the speaker renaming flow directly without seeking audio or displacing the transcript viewport.
+
+[x] 2.3 MULTI-PASS SCROLL RESTORATION
+-------------------------------------
+- Hardened scrollbar position restoration across consecutive Qt document layout cycles (`QTimer.singleShot` stagger) during `render_transcript()` to guarantee zero viewport drift across any number of successive speaker modifications.
 
 ================================================================================
-2. PREVIOUS RELEASE: QPROCESS BUFFER FLUSH & TRUNCATION HOTFIX (Completed in v3.3.25)
+3. FUTURE MILESTONE: PHASE 2 MODULARIZATION OF PRS_SHARED.PY (UI & Qt Components)
 ================================================================================
 
-[x] 2.1 ENFORCED BUFFER FLUSH ON MISSING TRAILING NEWLINES
-----------------------------------------------------------
-- Fixed a bug where a final JSON payload missing a trailing newline would be left orphaned in the output buffer when `QProcess` closed its pipes.
-- Updated `processing.py` and `translation.py` to aggressively parse remaining chunks via `force_flush=True`.
+Proceed with extreme caution: unlike Phase 1's pure-Python modules, Phase 2 components are tightly coupled to PySide6/Qt signals, slots, widget parenting hierarchies, and paint events.
+
+[ ] 3.1 CAUTIOUS TESTING & VERIFICATION METHODOLOGY (Protocol for Every Single Extraction)
+------------------------------------------------------------------------------------------
+To avoid cascading regressions or subtle Qt widget crashes, execute the following 5-step cycle for EACH extracted component module:
+1. **Isolated Module Extraction**:
+   - Extract only ONE logical domain at a time (e.g. `cache_manager` first, which has minimal Qt widget hierarchy).
+   - Identify all internal dependencies and verify whether they need to import from `prs_shared.py` or base Qt modules.
+2. **Re-Export Shim Installation**:
+   - Add explicit re-export shims in `prs_shared.py` (`from <new_module> import *`) immediately so external callers remain 100% intact.
+3. **Multi-Tier Syntax & Compilation Verification**:
+   - Run `python -m py_compile <new_module>.py prs_shared.py RadioTVSegmenter.py ui_layout.py transcript_story.py processing.py`.
+4. **Headless Import & Symbol Verification**:
+   - Run automated headless script checking:
+     * Module importability without cyclical import errors.
+     * All expected classes, signals, and functions are present and callable.
+     * Instantiation of non-widget classes and default dataclasses/namedtuples.
+5. **Interactive UI Smoke Check & Snapshot**:
+   - Verify widget instantiation in offscreen/test mode.
+   - Run web preview linter & compiler (`lint_applet` & `compile_applet`).
+   - Create a rollback checkpoint or snapshot before moving to the next module.
+
+[ ] 3.2 TARGET MODULE EXTRACTION SEQUENCE
+-----------------------------------------
+- **Step 1: `cache_manager.py` (Low-to-Medium Risk)**:
+  * Targets: `format_byte_size`, `get_cache_disk_usage`, `cleanup_old_thumbnail_cache`, `ClearCacheDialog`, `VideoThumbnailCache`.
+  * Dependencies: PySide6 QDialog/QThread, `core_utils`.
+- **Step 2: `story_widgets.py` (Medium Risk)**:
+  * Targets: `StoryListWidget`, `StoryItemWidget`, `StoryCardWidget`, `StoryMetadataDialog`, drag-and-drop file queues.
+  * Dependencies: PySide6 QListWidget, custom signals (`filesDropped`), styling sheets.
+- **Step 3: `timeline_widgets.py` (Medium-to-High Risk)**:
+  * Targets: `TimelineRulerWidget`, `TimelineTrackWidget`, `PlayheadOverlay`, waveform peak painting, coordinate-to-time mapping.
+  * Dependencies: QPainter, custom paint events, audio time conversion.
+- **Step 4: `transcript_editor.py` (High Risk)**:
+  * Targets: `TranscriptTextViewer`, `TranscriptSegmentWidget`, word-level span highlighting, search-and-replace dialog.
+  * Dependencies: QTextEdit/QPlainTextEdit, cursor manipulation, speaker coloring, audio synchronization slots.
 
 ================================================================================
-3. CURRENT RELEASE: SILENT SUBPROCESS PAYLOAD DROP & UNICODE FIX (Completed in v3.3.26)
+4. MILESTONE: UI/UX ENHANCEMENTS (Completed in v3.4.1)
 ================================================================================
 
-[x] 3.1 FIXED UNICODE ENCODE ERRORS IN SUBPROCESS STDOUT
---------------------------------------------------------
-- Found the actual root cause of the "Translation complete (100%)" application hang. 
-- `sys.stdout.write` on Windows was defaulting to `cp1252`, causing unencodable characters (e.g. Spanish accents) to throw a `UnicodeEncodeError`. 
-- The background thread caught and discarded this exception silently, causing the process to exit with code 0 but drop the final translated payload entirely.
-- Transitioned all `emit()` IPC functions in `plugins/translation/runtime_entry.py` and `radio_tv_story_segmenter_worker.py` to write raw UTF-8 bytes to `sys.stdout.buffer` directly.
+[x] 4.1 Replace written description of fade curve options with visual ones in the preferences menu and the right-click context menu. (Completed in v3.4.1)
+    - Implemented high-DPI visual curve profile rendering (`create_fade_curve_pixmap`, `create_fade_curve_icon`) showing exact volume attenuation envelopes (Linear Ramp ╱, Cosine S-Curve ∿, Logarithmic ⌒, Exponential ◞) with reference guidelines and shaded amplitude areas.
+    - Designed `FadeCurveVisualSelector`: an interactive, accessible card button selector replacing the plain text combo in the Preferences dialog with visual curve icons, hover/checked styling, and acoustic behavior tooltips.
+    - Upgraded Story List right-click context menu ("Audio Fades" -> "Set Fade Curve Profile") with visual curve icons, active story curve check indicators, and tooltips.
+    - Integrated `FadeCurveVisualSelector` into `StoryFadesDialog` for visual per-story fade adjustment.
+
+[x] 4.2 Correct logarithmic and exponential fade-out curve inversion to match visual preview and acoustic behavior. (Completed in v3.4.1)
+    - Created `calculate_fade_out_factor` in `prs_shared.py` to fix reversed math between logarithmic and exponential ramps during fade-outs.
+
+[x] 4.3 Comments UI ergonomics: sidebar closed by default on launch, persistent transcript highlights, hover previews, click-to-seek without playback, and export controls. (Completed in v3.4.1)
+    - Added floating `QToolTip` previews and non-playing seek behavior on highlight click.
+    - Added global View/Transcript menu toggle (`Ctrl+Shift+H` / `F9`) and general preference checkboxes.
+    - Added document export checkboxes (`include_highlights`) for DOCX and PDF.
+
+================================================================================
+5. FUTURE MILESTONE: GOOGLE DOCS & DRIVE EXPORT PLUGIN (Planned for v3.5) [NOT STARTED]
 ================================================================================
 
-[x] 2.1 ENFORCED BUFFER FLUSH ON MISSING TRAILING NEWLINES
-----------------------------------------------------------
-- Fixed a bug where a final JSON payload missing a trailing newline would be left orphaned in the output buffer when `QProcess` closed its pipes.
-- Updated `processing.py` and `translation.py` to aggressively parse remaining chunks via `force_flush=True`.
+Architectural Objective:
+Implement Google Docs & Drive export as a dedicated, self-contained export plugin (`plugins/gdocs/`) rather than integrating directly into the core desktop binary.
+
+Key Architectural & Packaging Benefits:
+- Core Binary Savings: Avoids bundling official Google client libraries (`google-api-python-client`, `google-auth`, etc.) or cloud SDK stubs in the core PyInstaller distribution, saving 20-45 MB uncompressed disk footprint and 10-18 MB in the installer executable.
+- Zero Memory / Startup Impact: Utilizes RTVS lazy plugin registration so offline-first users incur zero overhead or dependency initialization at launch.
+- Security & Credential Isolation: Encapsulates OAuth 2.0 client credentials, user authorization scopes (`drive.file`, `documents`), and refresh tokens strictly within plugin-scoped secure OS keyring storage.
+- Independent Release Cadence: Allows updating OAuth flows or Google Docs API formatting logic via standalone `.rtvs-addon` packages without requiring a rebuild of the full native desktop app.
+
+[ ] 5.1 Plugin Scaffolding & OAuth 2.0 Auth Engine (`plugins/gdocs/auth.py`)
+-------------------------------------------------------------------------
+- Create `plugins/gdocs/manifest.json` (category: "export", lazy-enabled) and plugin base class implementation in `plugins/gdocs/plugin.py`.
+- Build an isolated OAuth 2.0 authorization module supporting loopback redirect on localhost (`127.0.0.1:port`) for seamless browser-based user sign-in.
+- Securely persist refresh tokens using the OS keyring (`keyring` module already present in core requirements) with manual disconnect/revoke capability in plugin preferences.
+
+[ ] 5.2 Google Docs Document Serializer & REST Exporter (`plugins/gdocs/formatter.py`, `client.py`)
+-------------------------------------------------------------------------------------------------
+- Implement lightweight Google Docs REST client using Python's standard `requests` library (avoiding heavy external Google SDK dependencies).
+- Serialize segmented transcript data into structured Google Docs `batchUpdate` requests:
+  * Document header: Broadcast title, date, total duration, detected speakers, and story summary table.
+  * Story headings & cards: Heading styles, story metadata tables (word count, duration, in/out points).
+  * Styled transcript body: Speaker name badges with distinct colors, italicized timecode markers, and preserved word-level text highlights (`backgroundColor` style updates matching Word/DOCX styles).
+
+[ ] 5.3 Native Margin Comments & Annotation Anchoring (`plugins/gdocs/comments.py`)
+---------------------------------------------------------------------------------
+- Map RTVS story notes and transcript inline comments directly to native Google Drive margin comments via `drive.comments.create`.
+- Anchor comments to corresponding text ranges or paragraph spans in the generated document using Google Docs document range offsets.
+
+[ ] 5.4 Unified Export Center & Menu Integration
+----------------------------------------------
+- Register the Google Docs export destination in the Unified Export Center and the main window Transcript menu ("Export" -> "Export to Google Docs...").
+- Provide a non-blocking asynchronous export worker with progress bar updates, rate-limiting retry handling, and direct "Open in Google Docs" link generation upon completion.
+
+[ ] 5.5 (Optional) One-Time Review & Comment Pull ("Import Reviews from Google Doc")
+-----------------------------------------------------------------------------------
+- Add an optional menu action to fetch updated margin comments or suggested edits from a linked Google Doc.
+- Present changes in a non-destructive review diff dialog, allowing the editor to selectively accept or dismiss comments without breaking word-level audio alignment.
 
 ================================================================================
-5. FUTURE MILESTONE: EXPANDED NLE & DAW TIMELINE INTERCHANGE (Phase 4 - Planned for v3.4) [NOT STARTED]
+6. FUTURE MILESTONE: EXPANDED NLE & DAW TIMELINE INTERCHANGE (Phase 4 - Planned for v3.6) [NOT STARTED]
 ================================================================================
 
 - Generates non-destructive timeline project files to import translated or diarized stories seamlessly into professional post-production workflows.
-- 3.1 Cockos Reaper (.rpp) Generator
-- 3.2 Magix Samplitude EDL (.edl)
-- 3.3 Video NLE Interchange (FCPXML / Premiere Pro)
-- 3.4 Avid / Pro Tools AAF Composition
+- 6.1 Cockos Reaper (.rpp) Generator
+- 6.2 Magix Samplitude EDL (.edl)
+- 6.3 Video NLE Interchange (FCPXML / Premiere Pro)
+- 6.4 Avid / Pro Tools AAF Composition
 
 ================================================================================
-6. FUTURE MILESTONE: TEXT-DRIVEN AUDIO EDITING & PRECISION ALIGNMENT (Phase 5 - Planned for v4.0) [NOT STARTED]
+7. FUTURE MILESTONE: TEXT-DRIVEN AUDIO EDITING & PRECISION ALIGNMENT (Phase 5 - Planned for v4.0) [NOT STARTED]
 ================================================================================
 
 - "Text-as-Timeline" Rough-Cut Editing Engine
 - Seamless Non-Destructive Playback Preview
 - CTC Word Boundary Refinement & Forced Alignment
 - Memory-Bounded Diarization & Chunked Streaming
+

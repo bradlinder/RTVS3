@@ -1148,6 +1148,7 @@ class ProjectExportMixin:
                         include_speakers=options.get("include_speakers", True),
                         include_timestamps=options.get("include_timestamps", True),
                         include_comments=options.get("include_comments", options.get("include_notes", True)),
+                        include_highlights=options.get("include_highlights", True),
                         lang_code=lang_code,
                         source_segments=self.transcript.get("segments", []) if self.transcript else None,
                     )
@@ -1189,6 +1190,7 @@ class ProjectExportMixin:
                             speaker=effective_speaker,
                             timestamp=t_stamp,
                             comment=seg_comment,
+                            highlight=(bool(seg_comment) and options.get("include_highlights", True)),
                         )
                     with open(pdf_file, "wb") as pf:
                         pf.write(pdf_writer.get_pdf_bytes())
@@ -1870,6 +1872,7 @@ class ProjectExportMixin:
                         include_speakers=options.get("include_speakers", True),
                         include_timestamps=options.get("include_timestamps", True),
                         include_comments=options.get("include_comments", options.get("include_notes", True)),
+                        include_highlights=options.get("include_highlights", True),
                         lang_code=lang_code,
                         source_segments=self.transcript.get("segments", []) if self.transcript else None,
                     )
@@ -1914,6 +1917,7 @@ class ProjectExportMixin:
                                 speaker=effective_speaker,
                                 timestamp=t_stamp,
                                 comment=seg_comment,
+                                highlight=(bool(seg_comment) and options.get("include_highlights", True)),
                             )
                     with open(pdf_file, "wb") as pf:
                         pf.write(pdf_writer.get_pdf_bytes())

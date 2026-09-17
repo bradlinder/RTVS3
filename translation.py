@@ -234,6 +234,11 @@ class TranslationMixin:
     def update_translation_language_selector(self):
         """Update translation UI selector states (tabs / combobox / actions)."""
         has_es = self.has_spanish_translation()
+        is_plugin_on = False
+        if hasattr(self, "plugin_manager"):
+            is_plugin_on = self.plugin_manager.is_plugin_enabled("translation")
+        has_any_trans = has_es or bool(getattr(self, "translations", {})) or getattr(self, "translation_display_mode", "en") != "en"
+
         if hasattr(self, "transcript_language_selector") and self.transcript_language_selector is not None:
             self.transcript_language_selector.blockSignals(True)
             self.transcript_language_selector.clear()
@@ -253,6 +258,24 @@ class TranslationMixin:
                 self.translation_display_mode = "en"
             self.transcript_language_selector.setCurrentIndex(cur_idx)
             self.transcript_language_selector.blockSignals(False)
+            self.transcript_language_selector.setVisible(is_plugin_on or has_any_trans)
+
+        # Sync View -> Transcript -> Language Display menu actions
+        cur_mode = getattr(self, "translation_display_mode", "en")
+        if hasattr(self, "lang_en_action"):
+            self.lang_en_action.blockSignals(True)
+            self.lang_en_action.setChecked(cur_mode == "en")
+            self.lang_en_action.blockSignals(False)
+        if hasattr(self, "lang_es_action"):
+            self.lang_es_action.blockSignals(True)
+            self.lang_es_action.setChecked(cur_mode == "es")
+            self.lang_es_action.setEnabled(has_es)
+            self.lang_es_action.blockSignals(False)
+        if hasattr(self, "lang_split_action"):
+            self.lang_split_action.blockSignals(True)
+            self.lang_split_action.setChecked(cur_mode in {"split", "bilingual"})
+            self.lang_split_action.setEnabled(has_es)
+            self.lang_split_action.blockSignals(False)
 
         if hasattr(self, "export_translation_action") and self.export_translation_action is not None:
             self.export_translation_action.setEnabled(has_es)
@@ -273,6 +296,8 @@ class TranslationMixin:
         if mode_str == "bilingual":
             mode_str = "split"
         self.translation_display_mode = mode_str
+        if hasattr(self, "update_translation_language_selector"):
+            self.update_translation_language_selector()
         self.render_transcript()
 
     def render_translation_view(self):

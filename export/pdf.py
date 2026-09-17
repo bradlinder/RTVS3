@@ -106,7 +106,7 @@ class TranscriptPdfWriter:
             lines.append(' '.join(cur_line))
         return lines
 
-    def add_paragraph(self, text: str, speaker: str = '', timestamp: str = '', comment: str = ''):
+    def add_paragraph(self, text: str, speaker: str = '', timestamp: str = '', comment: str = '', highlight: bool = False):
         font_size = 10.0
         line_height = 14.0
         prefix_parts = []
@@ -121,6 +121,12 @@ class TranscriptPdfWriter:
 
         needed_height = (len(lines) * line_height) + 8
         self.check_space(min(needed_height, 50))
+
+        if highlight:
+            hl_h = (len(lines) * line_height) + 4
+            hl_y = self.y - hl_h + 10
+            hl_cmd = f'1.0 0.96 0.78 rg\n{self.margin - 2} {hl_y} {self.content_width + 4} {hl_h} re f\n'
+            self.cur_stream.write(hl_cmd.encode('latin1', errors='replace'))
 
         for line in lines:
             self.check_space(line_height)

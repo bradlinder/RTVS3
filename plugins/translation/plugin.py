@@ -32,7 +32,8 @@ class Plugin(BasePlugin):
     def on_disable(self) -> None:
         if self.app:
             if hasattr(self.app, "transcript_language_selector"):
-                self.app.transcript_language_selector.setVisible(False)
+                has_es = getattr(self.app, "has_spanish_translation", lambda: False)() or getattr(self.app, "translation_display_mode", "en") != "en"
+                self.app.transcript_language_selector.setVisible(has_es)
             if hasattr(self.app, "translate_button"):
                 self.app.translate_button.setVisible(False)
             if hasattr(self.app, "translate_action"):

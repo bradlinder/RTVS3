@@ -762,7 +762,7 @@ class PlaybackPreferencesMixin:
                 if hasattr(self, "comments_panel") and self.comments_panel:
                     self.comments_panel.set_comments([])
             self.refresh_story_list()
-            self.apply_story_selection_indices(self.current_selected_story_indices)
+            self.apply_story_selection_indices(self.current_selected_story_indices, seek=False)
             self.project_dirty = True
             self.update_window_title()
             self.save_project()
@@ -1113,12 +1113,15 @@ class PlaybackPreferencesMixin:
                 lw["fade_in_spin"].setValue(0.0)
             if "fade_out_spin" in lw and lw["fade_out_spin"]:
                 lw["fade_out_spin"].setValue(1.0)
+            if "fade_curve_combo" in lw and lw["fade_curve_combo"]:
+                lw["fade_curve_combo"].setCurrentData("linear")
             self.enable_audio_fades = False
             self.preview_audio_fades = False
             self.settings_store.setValue("enable_audio_fades", "false")
             self.settings_store.setValue("preview_audio_fades", "false")
             self.settings_store.setValue("default_fade_in_duration", 0.0)
             self.settings_store.setValue("default_fade_out_duration", 1.0)
+            self.settings_store.setValue("default_fade_curve", "linear")
 
         # 9. Story Detection & Diarization
         if "detection_diarization" in selected_set:
@@ -1219,6 +1222,10 @@ class PlaybackPreferencesMixin:
                 wp_user = str(wp_settings.value("wp_username", "") or "").strip()
                 wp_settings.remove("wp_site_url")
                 wp_settings.remove("wp_username")
+                wp_settings.remove("wp_custom_text")
+                wp_settings.remove("wp_custom_text_pos")
+                wp_settings.remove("wp_custom_text_no_snippet")
+                wp_settings.remove("wp_custom_text_no_excerpt")
                 wp_settings.remove("wp_cached_categories")
                 wp_settings.remove("wp_cached_authors")
                 if wp_user:
@@ -1385,6 +1392,16 @@ class PlaybackPreferencesMixin:
         curr_floating = str(getattr(self, "show_floating_selection_toolbar", self.settings_store.value("show_floating_selection_toolbar", "true"))).lower() in {"1", "true", "yes"}
         floating_toolbar_chk.setChecked(curr_floating)
         gen_form.addRow("Selection Popup:", floating_toolbar_chk)
+
+        open_comments_chk = QCheckBox("Open Comments sidebar on startup")
+        open_comments_chk.setToolTip("When unchecked (default), the Comments sidebar remains closed at startup until opened explicitly.")
+        open_comments_chk.setChecked(str(self.settings_store.value("open_comments_on_launch", "false")).lower() in {"1", "true", "yes"})
+        gen_form.addRow("Comments Sidebar:", open_comments_chk)
+
+        show_highlights_chk = QCheckBox("Show Comment highlights in transcript")
+        show_highlights_chk.setToolTip("When checked (default), amber/yellow highlights mark commented text in the transcript.")
+        show_highlights_chk.setChecked(str(self.settings_store.value("show_comment_highlights", "true")).lower() in {"1", "true", "yes"})
+        gen_form.addRow("Transcript Highlights:", show_highlights_chk)
 
         autosave_spin = QSpinBox()
         autosave_spin.setRange(0, 120)
@@ -1791,15 +1808,10 @@ class PlaybackPreferencesMixin:
         fade_out_spin.setToolTip("Default audio fade-out duration automatically applied to newly created stories.")
         fades_sub_layout.addRow("Default Story Fade-Out:", fade_out_spin)
 
-        fade_curve_combo = QComboBox()
-        fade_curve_combo.addItem("Linear Ramp", "linear")
-        fade_curve_combo.addItem("Cosine S-Curve", "s_curve")
-        fade_curve_combo.addItem("Logarithmic", "logarithmic")
-        fade_curve_combo.addItem("Exponential", "exponential")
+        from prs_shared import FadeCurveVisualSelector
+        fade_curve_combo = FadeCurveVisualSelector(parent=fades_sub_widget)
         curr_def_curve = str(self.settings_store.value("default_fade_curve", "linear") or "linear")
-        curve_idx = fade_curve_combo.findData(curr_def_curve)
-        if curve_idx >= 0:
-            fade_curve_combo.setCurrentIndex(curve_idx)
+        fade_curve_combo.setCurrentData(curr_def_curve)
         fade_curve_combo.setToolTip("Default volume envelope curve profile applied to audio fade transitions.")
         fades_sub_layout.addRow("Default Fade Curve:", fade_curve_combo)
 
@@ -2210,7 +2222,8 @@ class PlaybackPreferencesMixin:
         orig_wp_user = str(self.settings_store.value("wp_username", "") or "").strip()
         orig_wp_pwd = _get_wp_password(orig_wp_user) if orig_wp_user else ""
 
-        wp_form = QFormLayout()
+        wp_cred_group = QGroupBox("WordPress Credentials")
+        wp_form = QFormLayout(wp_cred_group)
         wp_url_edit = QLineEdit(orig_wp_url)
         wp_url_edit.setPlaceholderText("https://yoursite.com")
         wp_user_edit = QLineEdit(orig_wp_user)
@@ -2224,7 +2237,56 @@ class PlaybackPreferencesMixin:
         wp_form.addRow("Site URL:", wp_url_edit)
         wp_form.addRow("Username:", wp_user_edit)
         wp_form.addRow("App Password:", wp_pass_edit)
-        wp_layout.addLayout(wp_form)
+        wp_layout.addWidget(wp_cred_group)
+
+        # Default Custom Header / Footer Text Group
+        wp_custom_group = QGroupBox("Default Custom Text / Disclaimer (Optional)")
+        wp_cg_layout = QVBoxLayout(wp_custom_group)
+
+        wp_custom_text_edit = QTextEdit()
+        wp_custom_text_edit.setPlaceholderText(
+            "e.g. Note: The following transcript was machine-generated and may contain some spelling errors or other inaccuracies."
+        )
+        wp_custom_text_edit.setMaximumHeight(65)
+        wp_custom_text_edit.setPlainText(str(self.settings_store.value("wp_custom_text", "") or ""))
+        wp_cg_layout.addWidget(wp_custom_text_edit)
+
+        wp_pos_row = QHBoxLayout()
+        wp_pos_button_group = QButtonGroup(dialog)
+        wp_rad_pos_top = QRadioButton("Place at top of post")
+        wp_rad_pos_bottom = QRadioButton("Place at bottom of post")
+        wp_pos_button_group.addButton(wp_rad_pos_top)
+        wp_pos_button_group.addButton(wp_rad_pos_bottom)
+        saved_wp_pos = str(self.settings_store.value("wp_custom_text_pos", "top") or "top").lower()
+        if saved_wp_pos == "bottom":
+            wp_rad_pos_bottom.setChecked(True)
+        else:
+            wp_rad_pos_top.setChecked(True)
+        wp_pos_row.addWidget(wp_rad_pos_top)
+        wp_pos_row.addWidget(wp_rad_pos_bottom)
+        wp_pos_row.addStretch()
+        wp_cg_layout.addLayout(wp_pos_row)
+
+        wp_opt_layout = QVBoxLayout()
+        wp_chk_no_snippet = QCheckBox("Hide from Google & search engine snippets (data-nosnippet)")
+        wp_chk_no_snippet.setToolTip(
+            "Wraps custom text in data-nosnippet and Google search engine directives so search engines index the story but exclude this notice from search result summaries."
+        )
+        wp_chk_no_excerpt = QCheckBox("Exclude this text from WordPress post excerpts")
+        wp_chk_no_excerpt.setToolTip(
+            "Prevents this notice from appearing in automated WordPress theme excerpts or post list teasers."
+        )
+        wp_chk_no_snippet.setChecked(
+            str(self.settings_store.value("wp_custom_text_no_snippet", "true")).lower() in ("true", "1", "yes")
+        )
+        wp_chk_no_excerpt.setChecked(
+            str(self.settings_store.value("wp_custom_text_no_excerpt", "true")).lower() in ("true", "1", "yes")
+        )
+        wp_opt_layout.addWidget(wp_chk_no_snippet)
+        wp_opt_layout.addWidget(wp_chk_no_excerpt)
+        wp_cg_layout.addLayout(wp_opt_layout)
+
+        wp_layout.addWidget(wp_custom_group)
 
         wp_status_label = QLabel("")
         wp_status_label.setWordWrap(True)
@@ -2512,6 +2574,12 @@ class PlaybackPreferencesMixin:
             self.settings_store.setValue("auto_save_minutes", self.auto_save_minutes)
             self.update_auto_save_timer()
 
+            self.settings_store.setValue("open_comments_on_launch", "true" if open_comments_chk.isChecked() else "false")
+            new_show_hl = show_highlights_chk.isChecked()
+            self.settings_store.setValue("show_comment_highlights", "true" if new_show_hl else "false")
+            if hasattr(self, "toggle_comment_highlights"):
+                self.toggle_comment_highlights(new_show_hl)
+
             # Save Audio Hardware
             new_dev = audio_dev_combo.currentText()
             self.settings_store.setValue("audio_output_device", new_dev)
@@ -2646,6 +2714,11 @@ class PlaybackPreferencesMixin:
                 self.settings_store.setValue("wp_site_url", wp_url)
             if wp_user != orig_wp_user:
                 self.settings_store.setValue("wp_username", wp_user)
+
+            self.settings_store.setValue("wp_custom_text", wp_custom_text_edit.toPlainText())
+            self.settings_store.setValue("wp_custom_text_pos", "bottom" if wp_rad_pos_bottom.isChecked() else "top")
+            self.settings_store.setValue("wp_custom_text_no_snippet", wp_chk_no_snippet.isChecked())
+            self.settings_store.setValue("wp_custom_text_no_excerpt", wp_chk_no_excerpt.isChecked())
 
             # Only re-save the credential and trigger the keyring warning if username/password actually changed
             if wp_user and wp_pwd and (wp_user != orig_wp_user or wp_pwd != orig_wp_pwd):
@@ -2953,7 +3026,7 @@ class PlaybackPreferencesMixin:
         fout = min(getattr(story, "fade_out", 0.0), max(0.0, story_dur - fin))
         fcurve = getattr(story, "fade_curve", "linear") or "linear"
 
-        from prs_shared import calculate_fade_curve_factor
+        from prs_shared import calculate_fade_curve_factor, calculate_fade_out_factor
 
         factor = 1.0
         # Fade In ramp
@@ -2961,10 +3034,10 @@ class PlaybackPreferencesMixin:
             u = (t - story.start) / fin
             factor = min(factor, calculate_fade_curve_factor(u, fcurve))
 
-        # Fade Out ramp
+        # Fade Out ramp (progress u from 0.0 at fade start to 1.0 at silence)
         if fout > 0 and t > (story.end - fout) and t <= story.end:
-            u = (story.end - t) / fout
-            factor = min(factor, calculate_fade_curve_factor(u, fcurve))
+            u = (t - (story.end - fout)) / fout
+            factor = min(factor, calculate_fade_out_factor(u, fcurve))
 
         return factor
 

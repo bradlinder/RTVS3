@@ -48,107 +48,67 @@ def _ensure_runtime_bin_on_path():
 
 _ensure_runtime_bin_on_path()
 
-def compute_file_sha256(file_path: str | Path, chunk_size: int = 65536) -> str:
-    """Compute the SHA-256 hexadecimal digest of a file."""
-    hasher = hashlib.sha256()
-    with open(file_path, "rb") as f:
-        for chunk in iter(lambda: f.read(chunk_size), b""):
-            hasher.update(chunk)
-    return hasher.hexdigest()
+# Re-exports from Phase 1 modularization (core_utils, transcript_cleaner, project_serialization, process_lifecycle)
+from core_utils import (
+    compute_file_sha256,
+    verify_file_sha256,
+    safe_extract_zip,
+    safe_extract_tar,
+    safe_replace,
+    get_github_repo,
+    get_app_data_dir,
+    get_models_storage_dir,
+    set_models_storage_dir,
+    get_bundled_runtime_dir,
+    find_bundled_executable,
+    ffmpeg_path,
+    ffprobe_path,
+    format_time,
+    parse_time,
+    safe_filename,
+    is_sentence_end,
+)
+from transcript_cleaner import (
+    HALLUCINATION_PHRASES,
+    HALLUCINATION_PATTERNS,
+    REPEATED_BRACKET_PATTERN,
+    REPEATED_PAREN_PATTERN,
+    REPEATED_MUSIC_NOTE_PATTERN,
+    REPEATED_PUNCTUATION_PATTERN,
+    collapse_repeating_ngrams,
+    strip_hallucination_phrases,
+    trim_trailing_degenerate_tail,
+    scrub_transcript_segments,
+    scrub_transcript,
+)
+from project_serialization import (
+    MAX_DECOMPRESSED_PROJECT_BYTES,
+    sanitize_project_data_for_storage,
+    serialize_rtvs_project,
+    deserialize_rtvs_project,
+    _decompress_gzip_bounded,
+    read_rtvs_project_file,
+    write_rtvs_project_file,
+)
+from process_lifecycle import (
+    _REGISTERED_PROCESSES,
+    _WINDOWS_JOB_HANDLE,
+    init_child_process_job_isolation,
+    bind_subprocess_to_job,
+    register_process,
+    unregister_process,
+    terminate_all_registered_processes,
+)
 
-def verify_file_sha256(file_path: str | Path, expected_sha256: str) -> bool:
-    """Verify that a file matches the expected SHA-256 checksum (case-insensitive)."""
-    if not expected_sha256:
-        return True
-    try:
-        actual = compute_file_sha256(file_path)
-        return actual.lower() == expected_sha256.strip().lower()
-    except Exception:
-        return False
-
-def safe_extract_zip(zip_source, dest_dir) -> None:
-    """Safely extracts a ZIP archive to a destination directory, guarding against path traversal (Zip Slip)."""
-    import zipfile
-    dest_path = Path(dest_dir).resolve()
-    
-    def _verify_and_extract(zf):
-        for member in zf.infolist():
-            normalized = Path(os.path.abspath(os.path.join(dest_path, member.filename)))
-            try:
-                normalized.relative_to(dest_path)
-            except ValueError:
-                raise PermissionError(f"Attempted path traversal in ZIP member: {member.filename}")
-        zf.extractall(dest_path)
-
-    if isinstance(zip_source, (str, Path)):
-        with zipfile.ZipFile(zip_source, "r") as z:
-            _verify_and_extract(z)
-    else:
-        _verify_and_extract(zip_source)
-
-def safe_extract_tar(tar_source, dest_dir) -> None:
-    """Safely extracts a TAR archive to a destination directory, guarding against path traversal."""
-    import tarfile
-    dest_path = Path(dest_dir).resolve()
-
-    def _verify_and_extract(tf):
-        for member in tf.getmembers():
-            normalized = Path(os.path.abspath(os.path.join(dest_path, member.name)))
-            try:
-                normalized.relative_to(dest_path)
-            except ValueError:
-                raise PermissionError(f"Attempted path traversal in TAR member: {member.name}")
-        tf.extractall(dest_path)
-
-    if isinstance(tar_source, (str, Path)):
-        with tarfile.open(tar_source, "r:*") as t:
-            _verify_and_extract(t)
-    else:
-        _verify_and_extract(tar_source)
-
-def safe_replace(src: str | Path, dest: str | Path) -> None:
-    """
-    Safely and atomically replace dest with src, handling file locks, permissions,
-    and network share anomalies (e.g., WinError 5 PermissionError) with retry loops
-    and a final robust write-copy stream fallback.
-    """
-    src_path = Path(src).resolve()
-    dest_path = Path(dest).resolve()
-    for i in range(5):
-        try:
-            os.replace(src_path, dest_path)
-            return
-        except PermissionError as e:
-            if i < 4:
-                time.sleep(0.05 * (2 ** i))  # exponential backoff (0.05s, 0.1s, 0.2s, 0.4s)
-                continue
-            else:
-                # If atomic replace still fails, attempt copy-and-unlink fallback.
-                # Writing directly to the existing destination handle/path bypasses 
-                # rename lock constraints common on Windows SMB/UNC network shares.
-                try:
-                    shutil.copyfile(src_path, dest_path)
-                    try:
-                        os.unlink(src_path)
-                    except Exception:
-                        pass
-                    return
-                except Exception:
-                    raise e
-        except Exception:
-            try:
-                os.replace(src_path, dest_path)
-                return
-            except Exception:
-                shutil.copyfile(src_path, dest_path)
-                try:
-                    os.unlink(src_path)
-                except Exception:
-                    pass
-                return
-
-from docx import Document
-from docx.shared import Pt, RGBColor
+try:
+    from docx import Document
+    from docx.shared import Pt, RGBColor
+    DOCX_AVAILABLE = True
+except ImportError:
+    Document = None
+    Pt = None
+    RGBColor = None
+    DOCX_AVAILABLE = False
 
 from html.parser import HTMLParser
 
@@ -518,7 +478,7 @@ class CollapsibleSection(QWidget):
 
 # Display branding shown to the user (title bar, About box, installers).
 APP_DISPLAY_NAME = "Radio & TV Segmenter"
-PROJECT_VERSION = "3.3.27"
+PROJECT_VERSION = "3.4.12"
 DEFAULT_GITHUB_REPO = "bradlinder/RTVS3"
 
 
@@ -534,327 +494,6 @@ WAVEFORM_ANALYSIS_RATE = 8000
 WAVEFORM_POINTS_PER_SECOND = 200
 MIN_WORDS_PER_PARAGRAPH = 100
 MAX_ACTIVITY_SNAPSHOTS = 50
-
-
-# ============================================================
-# Whisper Hallucination & Degenerate Loop Scrubber
-# ============================================================
-
-HALLUCINATION_PHRASES = [
-    r"subtitles\s+by\s+(?:the\s+)?amara\.org(?:\s+community)?",
-    r"subtitles\s+by\b.*",
-    r"sous-titres\s+faits\s+par\b.*",
-    r"transcribed\s+by\b.*",
-    r"transcription\s+by\b.*",
-    r"thank\s+you\s+for\s+watching(?:\s+this\s+video)?(?:\s+and\s+listening)?",
-    r"thanks\s+for\s+watching(?:\s+this\s+video)?",
-    r"please\s+(?:like\s+and\s+)?subscribe(?:\s+to\s+(?:our|the|my)\s+channel)?",
-    r"subscribe\s+to\s+(?:our|the|my)\s+channel",
-    r"don\'t\s+forget\s+to\s+like\s+and\s+subscribe",
-    r"like\s+and\s+subscribe(?:\s+for\s+more)?",
-    r"see\s+you\s+in\s+the\s+next\s+video",
-    r"see\s+you\s+next\s+time",
-]
-
-HALLUCINATION_PATTERNS = [re.compile(p, re.IGNORECASE) for p in HALLUCINATION_PHRASES]
-REPEATED_BRACKET_PATTERN = re.compile(r'(\[(?:music|applause|laughter|silence|inaudible|whispering|coughing|screaming|bell|cheering|background\s+music)\]\s*){2,}', re.IGNORECASE)
-REPEATED_PAREN_PATTERN = re.compile(r'(\((?:music|applause|laughter|silence|inaudible|whispering|coughing|screaming|bell|cheering|background\s+music)\)\s*){2,}', re.IGNORECASE)
-REPEATED_MUSIC_NOTE_PATTERN = re.compile(r'(?:[♪♫♩♬]\s*){3,}')
-REPEATED_PUNCTUATION_PATTERN = re.compile(r'([.?!,;:-]\s*){4,}')
-
-
-def collapse_repeating_ngrams(text: str, max_n: int = 10, min_repeats: int = 3) -> str:
-    """Detect and collapse degenerate repeating word/token loops in transcription text.
-    
-    Handles both single-word stutters ('yeah yeah yeah yeah yeah' -> 'yeah yeah')
-    and multi-word runaway hallucination loops ('thank you very much. thank you very much...' -> 'thank you very much.').
-    """
-    if not text or not text.strip():
-        return ""
-    
-    cleaned = text.strip()
-    tokens = re.findall(r'\S+', cleaned)
-    if len(tokens) < 4:
-        return cleaned
-
-    num_tokens = len(tokens)
-    for n in range(min(max_n, num_tokens // 2), 0, -1):
-        i = 0
-        new_tokens = []
-        changed = False
-        while i < len(tokens):
-            if i + n > len(tokens):
-                new_tokens.extend(tokens[i:])
-                break
-            
-            pattern = [t.lower().rstrip('.,!?;:') for t in tokens[i:i+n]]
-            
-            repeat_count = 1
-            cursor = i + n
-            while cursor + n <= len(tokens):
-                candidate = [t.lower().rstrip('.,!?;:') for t in tokens[cursor:cursor+n]]
-                if candidate == pattern:
-                    repeat_count += 1
-                    cursor += n
-                else:
-                    break
-            
-            threshold = min_repeats if n <= 2 else 2
-            if repeat_count >= threshold:
-                keep_reps = 2 if (n == 1 and repeat_count > 2 and len(tokens[i]) <= 4) else 1
-                new_tokens.extend(tokens[i:i + n * keep_reps])
-                i = cursor
-                changed = True
-            else:
-                new_tokens.append(tokens[i])
-                i += 1
-        
-        if changed:
-            tokens = new_tokens
-
-    collapsed = " ".join(tokens)
-    collapsed = re.sub(r'\s+([.,!?;:])', r'\1', collapsed)
-    return collapsed.strip()
-
-
-def strip_hallucination_phrases(text: str) -> str:
-    """Filter out standard Whisper hallucination phrases and repetitive acoustic tags."""
-    if not text or not text.strip():
-        return ""
-    
-    res = text.strip()
-    res = REPEATED_BRACKET_PATTERN.sub(lambda m: m.group(1).strip() + " ", res)
-    res = REPEATED_PAREN_PATTERN.sub(lambda m: m.group(1).strip() + " ", res)
-    res = REPEATED_MUSIC_NOTE_PATTERN.sub("♪ ", res)
-    res = REPEATED_PUNCTUATION_PATTERN.sub("... ", res)
-    
-    for pattern in HALLUCINATION_PATTERNS:
-        if pattern.fullmatch(res.strip(' .,!?;:')):
-            return ""
-        res = pattern.sub("", res)
-        
-    return res.strip()
-
-
-def trim_trailing_degenerate_tail(segments: list[dict], min_tail_repeats: int = 3) -> list[dict]:
-    """Inspect the trailing segments of a transcript and truncate degenerate infinite loops at the end."""
-    if not segments or len(segments) < min_tail_repeats:
-        return segments
-    
-    last_texts = [s.get("text", "").strip().lower() for s in segments[-min_tail_repeats:]]
-    if len(last_texts) >= min_tail_repeats and all(t and t == last_texts[0] for t in last_texts):
-        first_rep_idx = len(segments) - min_tail_repeats
-        while first_rep_idx > 0 and segments[first_rep_idx - 1].get("text", "").strip().lower() == last_texts[0]:
-            first_rep_idx -= 1
-        return segments[:first_rep_idx + 1]
-    
-    return segments
-
-
-def scrub_transcript_segments(segments: list[dict], collapse_loops: bool = True) -> list[dict]:
-    """Comprehensive scrubber for transcript segment lists:
-    1. Sanity-checks and clamps start/end timestamps.
-    2. Strips hallucination phrases and collapses repeating n-grams.
-    3. Collapses consecutive duplicate segments.
-    4. Trims trailing degenerate tails.
-    5. Cleans and aligns word timestamp lists.
-    """
-    if not segments:
-        return []
-    
-    cleaned_segments = []
-    prev_text_norm = ""
-    
-    for seg in segments:
-        if not isinstance(seg, dict):
-            continue
-        
-        start = max(0.0, float(seg.get("start", 0.0)))
-        end = max(start, float(seg.get("end", start)))
-        raw_text = str(seg.get("text", "")).strip()
-        
-        scrubbed_text = strip_hallucination_phrases(raw_text)
-        if collapse_loops and scrubbed_text:
-            scrubbed_text = collapse_repeating_ngrams(scrubbed_text)
-        
-        if not scrubbed_text:
-            continue
-            
-        curr_text_norm = scrubbed_text.lower().rstrip('.,!?;:')
-        if curr_text_norm and curr_text_norm == prev_text_norm and cleaned_segments:
-            cleaned_segments[-1]["end"] = max(cleaned_segments[-1]["end"], end)
-            continue
-        
-        words = seg.get("words", [])
-        if end - start > 300.0 and len(scrubbed_text.split()) < 15:
-            if words and len(words) > 0:
-                end = max(start + 1.0, float(words[-1].get("end", start + 5.0)))
-            else:
-                end = start + min(30.0, max(2.0, len(scrubbed_text.split()) * 0.4))
-        
-        clean_words = []
-        if isinstance(words, list):
-            for w in words:
-                if not isinstance(w, dict):
-                    continue
-                w_text = str(w.get("word", "")).strip()
-                if not w_text:
-                    continue
-                w_start = max(start, float(w.get("start", start)))
-                w_end = max(w_start, float(w.get("end", w_start)))
-                clean_w = dict(w)
-                clean_w["word"] = w_text
-                clean_w["start"] = w_start
-                clean_w["end"] = w_end
-                clean_words.append(clean_w)
-        
-        new_seg = dict(seg)
-        new_seg["start"] = start
-        new_seg["end"] = end
-        new_seg["text"] = scrubbed_text
-        if clean_words:
-            new_seg["words"] = clean_words
-        elif "words" in new_seg:
-            new_seg["words"] = []
-            
-        cleaned_segments.append(new_seg)
-        prev_text_norm = curr_text_norm
-        
-    cleaned_segments = trim_trailing_degenerate_tail(cleaned_segments)
-    return cleaned_segments
-
-
-def scrub_transcript(transcript: dict) -> dict:
-    """Clean and sanitize a complete transcript payload dictionary."""
-    if not isinstance(transcript, dict):
-        return transcript
-    
-    clean = copy.deepcopy(transcript)
-    segments = clean.get("segments", [])
-    if isinstance(segments, list):
-        clean_segs = scrub_transcript_segments(segments)
-        clean["segments"] = clean_segs
-        clean["text"] = " ".join([s.get("text", "").strip() for s in clean_segs if s.get("text", "").strip()])
-    return clean
-
-
-def get_github_repo() -> str:
-    """Return the configured GitHub repository owner/repo string."""
-    env_repo = os.environ.get("GITHUB_REPO", "").strip()
-    if env_repo:
-        return env_repo
-    try:
-        settings = QSettings(INTERNAL_APP_ID, INTERNAL_APP_ID)
-        val = str(settings.value("github_repo", "") or "").strip()
-        if val:
-            # Transparently migrate legacy repository references to RTVS3
-            if val.lower() in ("bradlinder/rtvs", "bradlinder/radiotvstorysegmenter", "radiotvstorysegmenter"):
-                settings.setValue("github_repo", DEFAULT_GITHUB_REPO)
-                return DEFAULT_GITHUB_REPO
-            return val
-    except Exception:
-        pass
-    return DEFAULT_GITHUB_REPO
-
-
-def get_app_data_dir() -> Path:
-    """Return the per-user writable application-data directory.
-
-    Installed applications must not write mutable data beside the executable
-    (for example, Program Files on Windows).
-    """
-    if sys.platform == "win32":
-        root = os.environ.get("LOCALAPPDATA") or os.environ.get("APPDATA")
-        base = Path(root) if root else Path.home() / "AppData" / "Local"
-    elif sys.platform == "darwin":
-        base = Path.home() / "Library" / "Application Support"
-    else:
-        base = Path(os.environ.get("XDG_DATA_HOME", Path.home() / ".local" / "share"))
-    path = base / INTERNAL_APP_ID
-    path.mkdir(parents=True, exist_ok=True)
-    return path
-
-
-def get_models_storage_dir() -> Path:
-    """Return the directory configured for storing downloaded models.
-    Defaults to get_app_data_dir() / 'models' if not customized in settings."""
-    settings = QSettings(INTERNAL_APP_ID, INTERNAL_APP_ID)
-    custom = settings.value("models_dir", "")
-    if custom and isinstance(custom, str) and custom.strip():
-        p = Path(custom.strip())
-        try:
-            p.mkdir(parents=True, exist_ok=True)
-            return p
-        except Exception:
-            pass
-    default_path = get_app_data_dir() / "models"
-    default_path.mkdir(parents=True, exist_ok=True)
-    return default_path
-
-
-def set_models_storage_dir(new_path=None) -> Path:
-    """Set and persist a custom models storage directory."""
-    settings = QSettings(INTERNAL_APP_ID, INTERNAL_APP_ID)
-    if not new_path or not str(new_path).strip():
-        settings.remove("models_dir")
-        target = get_app_data_dir() / "models"
-    else:
-        p = Path(str(new_path).strip())
-        p.mkdir(parents=True, exist_ok=True)
-        settings.setValue("models_dir", str(p.resolve()))
-        target = p
-    hf_dir = target / "huggingface"
-    hf_dir.mkdir(parents=True, exist_ok=True)
-    os.environ["HF_HOME"] = str(hf_dir.resolve())
-    return target
-
-
-def get_bundled_runtime_dir() -> Path:
-    """Locate the installed/bundled runtime resource directory."""
-    candidates = []
-    meipass = getattr(sys, "_MEIPASS", None)
-    if meipass:
-        candidates.append(Path(meipass) / "runtime")
-    if getattr(sys, "frozen", False):
-        candidates.append(Path(sys.executable).resolve().parent / "runtime")
-    candidates.append(Path(__file__).resolve().parent / "runtime")
-    for candidate in candidates:
-        if candidate.exists():
-            return candidate
-    return candidates[-1]
-
-
-def find_bundled_executable(name: str) -> str | None:
-    """Find a bundled executable first, then fall back to PATH and common macOS locations."""
-    filename = name + (".exe" if os.name == "nt" and not name.lower().endswith(".exe") else "")
-    for root in (get_bundled_runtime_dir() / "bin", get_bundled_runtime_dir()):
-        candidate = root / filename
-        if candidate.is_file():
-            return str(candidate)
-    found = shutil.which(name)
-    if found:
-        return found
-    if sys.platform == "darwin":
-        for mac_bin in (
-            Path("/opt/homebrew/bin") / name,
-            Path("/opt/homebrew/sbin") / name,
-            Path("/usr/local/bin") / name,
-            Path("/usr/local/sbin") / name,
-            Path("/opt/local/bin") / name,
-            Path.home() / ".local" / "bin" / name,
-            Path.home() / ".cargo" / "bin" / name,
-        ):
-            if mac_bin.is_file():
-                return str(mac_bin)
-    return None
-
-
-def ffmpeg_path() -> str | None:
-    return find_bundled_executable("ffmpeg")
-
-
-def ffprobe_path() -> str | None:
-    return find_bundled_executable("ffprobe")
 
 
 def platform_seq(key_str: str) -> QKeySequence:
@@ -935,69 +574,6 @@ def get_license_file_path(filename: str = "NOTICES.txt") -> Path | None:
         if p.is_file():
             return p
     return None
-
-
-# ============================================================
-# Utilities
-# ============================================================
-
-def format_time(seconds, include_millis=True):
-    seconds = max(0, float(seconds))
-    hours = int(seconds // 3600)
-    minutes = int((seconds % 3600) // 60)
-    secs = int(seconds % 60)
-    millis = int((seconds - int(seconds)) * 1000)
-
-    if include_millis:
-        if hours:
-            return f"{hours:02d}:{minutes:02d}:{secs:02d}.{millis:03d}"
-        return f"{minutes:02d}:{secs:02d}.{millis:03d}"
-    else:
-        if hours:
-            return f"{hours:02d}:{minutes:02d}:{secs:02d}"
-        return f"{minutes:02d}:{secs:02d}"
-
-
-def parse_time(value):
-    value = value.strip()
-    try:
-        return float(value)
-    except ValueError:
-        pass
-
-    parts = value.split(":")
-    if len(parts) == 2:
-        return float(parts[0]) * 60 + float(parts[1])
-    if len(parts) == 3:
-        return (
-            float(parts[0]) * 3600
-            + float(parts[1]) * 60
-            + float(parts[2])
-        )
-    raise ValueError(f"Invalid time: {value}")
-
-
-def safe_filename(text):
-    text = text.strip()
-    if not text:
-        text = "Untitled Story"
-    text = re.sub(r'[<>:"/\\|?*]', "", text)
-    text = re.sub(r"\s+", "_", text)
-    text = text[:100]
-    # A result that's nothing but dots (".", "..", "....") is a
-    # current-dir/parent-dir path component when used as a single path
-    # segment, not a real filename -- e.g. a project folder-name prompt or
-    # a story title of ".." would otherwise resolve one level *above* the
-    # intended export directory. This can come from direct user input or
-    # from a loaded project file's own data, so guard it once here rather
-    # than at each of this function's call sites.
-    if not text.strip("."):
-        text = "Untitled_Story"
-    return text
-
-
-def is_sentence_end(text):
-    return bool(re.search(r"[.!?]+[\"'”’)\]]*$", text.strip()))
 
 
 # ============================================================
@@ -1139,10 +715,15 @@ class ExportDialog(QDialog):
         self.notes_checkbox = QCheckBox("Include Segment & Project Notes")
         self.notes_checkbox.setChecked(True)
 
+        self.highlights_checkbox = QCheckBox("Include Comment Highlights")
+        self.highlights_checkbox.setToolTip("Apply visual highlights to commented sections in exported DOCX & PDF documents.")
+        self.highlights_checkbox.setChecked(True)
+
         self.format_section.add_widget(self.txt_checkbox)
         self.format_section.add_widget(self.docx_checkbox)
         self.format_section.add_widget(self.pdf_checkbox)
         self.format_section.add_widget(self.notes_checkbox)
+        self.format_section.add_widget(self.highlights_checkbox)
         self.format_section.add_widget(self.media_checkbox)
         layout.addWidget(self.format_section)
 
@@ -1172,6 +753,7 @@ class ExportDialog(QDialog):
             "docx": self.docx_checkbox.isChecked(),
             "pdf": self.pdf_checkbox.isChecked(),
             "include_notes": self.notes_checkbox.isChecked(),
+            "include_highlights": self.highlights_checkbox.isChecked(),
             "media": self.media_checkbox.isChecked(),
             "filename": self.filename_input.text().strip() or self.default_name,
         }
@@ -1181,8 +763,9 @@ class ExportDialog(QDialog):
 # ============================================================
 
 def calculate_fade_curve_factor(u: float, fcurve: str = "linear") -> float:
-    """Calculate normalized fade multiplier (0.0 to 1.0) given progress `u` in [0, 1]."""
+    """Calculate normalized fade-in multiplier (0.0 to 1.0) given progress `u` in [0, 1]."""
     u = max(0.0, min(1.0, float(u)))
+    fcurve = str(fcurve).lower()
     if fcurve == "s_curve":
         return float(0.5 * (1.0 - math.cos(math.pi * u)))
     elif fcurve == "logarithmic":
@@ -1191,6 +774,294 @@ def calculate_fade_curve_factor(u: float, fcurve: str = "linear") -> float:
         return float((math.pow(10.0, u) - 1.0) / 9.0)
     else:  # "linear"
         return u
+
+
+def calculate_fade_out_factor(u: float, fcurve: str = "linear") -> float:
+    """Calculate normalized fade-out multiplier (1.0 to 0.0) given progress `u` from 0.0 (fade start) to 1.0 (silence).
+
+    Accurately maps the visual preview cues to the applied fade-out:
+    - Logarithmic (⌒): Gentle initial volume roll-off, steepening near the end (convex / domed).
+    - Exponential (◞): Rapid initial volume attenuation, followed by a gentle tail to silence (concave / scooped).
+    - S-Curve (∿): Smooth cosine ease-in and ease-out transition.
+    - Linear (╱): Constant-rate linear attenuation (1.0 - u).
+    """
+    u = max(0.0, min(1.0, float(u)))
+    fcurve = str(fcurve).lower()
+    if fcurve == "s_curve":
+        return float(0.5 * (1.0 + math.cos(math.pi * u)))
+    elif fcurve == "logarithmic":
+        # Matches Logarithmic preview (⌒): stays high initially before dropping at end
+        return float(max(0.0, min(1.0, 1.0 - (math.pow(10.0, u) - 1.0) / 9.0)))
+    elif fcurve == "exponential":
+        # Matches Exponential preview (◞): drops fast initially then gently glides to silence
+        return float(max(0.0, min(1.0, 1.0 - math.log10(1.0 + 9.0 * u))))
+    else:
+        return float(1.0 - u)
+
+
+FADE_CURVE_PROFILES = [
+    {
+        "id": "linear",
+        "symbol": "╱",
+        "title": "Linear",
+        "full_name": "Linear Ramp",
+        "desc": "Straight line constant-rate volume attenuation (╱)",
+    },
+    {
+        "id": "s_curve",
+        "symbol": "∿",
+        "title": "S-Curve",
+        "full_name": "Cosine S-Curve",
+        "desc": "Smooth cosine ease-in and ease-out transition (∿)",
+    },
+    {
+        "id": "logarithmic",
+        "symbol": "⌒",
+        "title": "Logarithmic",
+        "full_name": "Logarithmic",
+        "desc": "Rapid initial volume rise with gentle plateau (⌒)",
+    },
+    {
+        "id": "exponential",
+        "symbol": "◞",
+        "title": "Exponential",
+        "full_name": "Exponential",
+        "desc": "Gentle initial volume roll with steep acceleration (◞)",
+    },
+]
+
+_FADE_CURVE_PIXMAP_CACHE = {}
+_FADE_CURVE_ICON_CACHE = {}
+
+
+def create_fade_curve_pixmap(
+    curve_type: str,
+    width: int = 56,
+    height: int = 30,
+    is_selected: bool = False,
+    accent_color: QColor = None,
+    bg_color: QColor = None,
+) -> QPixmap:
+    """Render a high-DPI visual curve representation showing the volume attenuation shape."""
+    cache_key = (str(curve_type), int(width), int(height), bool(is_selected))
+    if accent_color is None and bg_color is None and cache_key in _FADE_CURVE_PIXMAP_CACHE:
+        return _FADE_CURVE_PIXMAP_CACHE[cache_key]
+
+    pix = QPixmap(width, height)
+    pix.fill(Qt.GlobalColor.transparent)
+
+    painter = QPainter(pix)
+    painter.setRenderHint(QPainter.RenderHint.Antialiasing, True)
+
+    bg = bg_color if bg_color is not None else (QColor(15, 23, 42, 235) if not is_selected else QColor(30, 41, 59, 255))
+    border_color = QColor(56, 189, 248, 220) if is_selected else QColor(51, 65, 85, 180)
+    painter.setPen(QPen(border_color, 1.2 if is_selected else 1.0))
+    painter.setBrush(QBrush(bg))
+    card_rect = QRectF(1.0, 1.0, width - 2.0, height - 2.0)
+    painter.drawRoundedRect(card_rect, 4.0, 4.0)
+
+    pad_x = 7.0
+    pad_top = 5.0
+    pad_bottom = 5.0
+    plot_w = width - 2.0 * pad_x
+    plot_h = height - pad_top - pad_bottom
+
+    # Subtle ceiling and baseline reference lines
+    grid_pen = QPen(QColor(148, 163, 184, 45), 0.8, Qt.PenStyle.DashLine)
+    painter.setPen(grid_pen)
+    painter.drawLine(QPointF(pad_x, pad_top), QPointF(width - pad_x, pad_top))
+    painter.drawLine(QPointF(pad_x, height - pad_bottom), QPointF(width - pad_x, height - pad_bottom))
+
+    if accent_color is None:
+        palette = {
+            "linear": QColor("#38bdf8"),
+            "s_curve": QColor("#818cf8"),
+            "logarithmic": QColor("#34d399"),
+            "exponential": QColor("#fb923c"),
+        }
+        color = palette.get(str(curve_type).lower(), QColor("#38bdf8"))
+    else:
+        color = accent_color
+
+    steps = 24
+    points = []
+    for step_i in range(steps + 1):
+        u = step_i / float(steps)
+        val = calculate_fade_curve_factor(u, curve_type)
+        px = pad_x + u * plot_w
+        py = (height - pad_bottom) - val * plot_h
+        points.append(QPointF(px, py))
+
+    curve_path = QPainterPath()
+    if points:
+        curve_path.moveTo(points[0])
+        for pt in points[1:]:
+            curve_path.lineTo(pt)
+
+    # Shaded polygon area beneath the curve
+    fill_path = QPainterPath(curve_path)
+    fill_path.lineTo(QPointF(width - pad_x, height - pad_bottom))
+    fill_path.lineTo(QPointF(pad_x, height - pad_bottom))
+    fill_path.closeSubpath()
+
+    fill_color = QColor(color.red(), color.green(), color.blue(), 55 if is_selected else 35)
+    painter.setPen(Qt.PenStyle.NoPen)
+    painter.setBrush(QBrush(fill_color))
+    painter.drawPath(fill_path)
+
+    # Curve stroke
+    pen_width = 2.0 if is_selected else 1.6
+    painter.setPen(QPen(color, pen_width, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap, Qt.PenJoinStyle.RoundJoin))
+    painter.setBrush(Qt.BrushStyle.NoBrush)
+    painter.drawPath(curve_path)
+
+    # Tactile terminal nodes
+    painter.setPen(QPen(QColor(15, 23, 42), 1.0))
+    painter.setBrush(QBrush(color))
+    if points:
+        painter.drawEllipse(points[0], 2.2, 2.2)
+        painter.drawEllipse(points[-1], 2.2, 2.2)
+
+    painter.end()
+
+    if accent_color is None and bg_color is None:
+        _FADE_CURVE_PIXMAP_CACHE[cache_key] = pix
+    return pix
+
+
+def create_fade_curve_icon(curve_type: str, width: int = 56, height: int = 30) -> QIcon:
+    """Return a QIcon containing visual render of the specified audio fade curve."""
+    cache_key = (str(curve_type), int(width), int(height))
+    if cache_key in _FADE_CURVE_ICON_CACHE:
+        return _FADE_CURVE_ICON_CACHE[cache_key]
+
+    normal_pix = create_fade_curve_pixmap(curve_type, width=width, height=height, is_selected=False)
+    selected_pix = create_fade_curve_pixmap(curve_type, width=width, height=height, is_selected=True)
+    icon = QIcon()
+    icon.addPixmap(normal_pix, QIcon.Mode.Normal, QIcon.State.Off)
+    icon.addPixmap(selected_pix, QIcon.Mode.Normal, QIcon.State.On)
+    icon.addPixmap(selected_pix, QIcon.Mode.Active, QIcon.State.Off)
+    icon.addPixmap(selected_pix, QIcon.Mode.Active, QIcon.State.On)
+
+    _FADE_CURVE_ICON_CACHE[cache_key] = icon
+    return icon
+
+
+def setup_visual_fade_curve_combo(combo: QComboBox, current_curve: str = "linear"):
+    """Populate a QComboBox with visual curve icons, symbols, and descriptions."""
+    combo.clear()
+    combo.setIconSize(QSize(48, 24))
+    for profile in FADE_CURVE_PROFILES:
+        icon = create_fade_curve_icon(profile["id"], width=48, height=24)
+        combo.addItem(icon, f"{profile['symbol']} {profile['full_name']}", profile["id"])
+    idx = combo.findData(str(current_curve or "linear"))
+    if idx >= 0:
+        combo.setCurrentIndex(idx)
+
+
+class FadeCurveVisualSelector(QWidget):
+    """Visual selector widget providing interactive card buttons for audio fade curves."""
+    currentDataChanged = Signal(str)
+    currentIndexChanged = Signal(int)
+
+    def __init__(self, parent=None, button_width=92, button_height=60):
+        super().__init__(parent)
+        self._current_data = "linear"
+        self._buttons = []
+        self._button_group = QButtonGroup(self)
+        self._button_group.setExclusive(True)
+
+        layout = QHBoxLayout(self)
+        layout.setContentsMargins(0, 2, 0, 2)
+        layout.setSpacing(8)
+
+        for idx, profile in enumerate(FADE_CURVE_PROFILES):
+            cid = profile["id"]
+            btn = QToolButton(self)
+            btn.setCheckable(True)
+            btn.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextUnderIcon)
+            btn.setIconSize(QSize(56, 28))
+            btn.setIcon(create_fade_curve_icon(cid, width=56, height=28))
+            btn.setText(f"{profile['symbol']} {profile['title']}")
+            btn.setToolTip(f"{profile['full_name']}\n{profile['desc']}")
+            btn.setFixedSize(button_width, button_height)
+            btn.setCursor(Qt.CursorShape.PointingHandCursor)
+
+            btn.setStyleSheet("""
+                QToolButton {
+                    background-color: rgba(30, 41, 59, 0.7);
+                    border: 1px solid #475569;
+                    border-radius: 6px;
+                    color: #cbd5e1;
+                    font-size: 11px;
+                    font-weight: 500;
+                    padding: 2px;
+                }
+                QToolButton:hover {
+                    background-color: rgba(51, 65, 85, 0.85);
+                    border: 1px solid #94a3b8;
+                    color: #f8fafc;
+                }
+                QToolButton:checked {
+                    background-color: rgba(14, 116, 144, 0.35);
+                    border: 2px solid #38bdf8;
+                    color: #38bdf8;
+                    font-weight: bold;
+                }
+            """)
+
+            self._button_group.addButton(btn, idx)
+            btn.toggled.connect(self._on_button_toggled)
+            layout.addWidget(btn)
+            self._buttons.append((cid, btn))
+
+        layout.addStretch()
+        self.setCurrentData("linear")
+
+    def _on_button_toggled(self, checked):
+        if not checked:
+            return
+        for idx, (cid, btn) in enumerate(self._buttons):
+            if btn.isChecked():
+                if self._current_data != cid:
+                    self._current_data = cid
+                    self.currentDataChanged.emit(cid)
+                    self.currentIndexChanged.emit(idx)
+                break
+
+    def currentData(self) -> str:
+        return self._current_data
+
+    def setCurrentData(self, curve_type: str):
+        target = str(curve_type or "linear").lower().strip()
+        found = False
+        for idx, (cid, btn) in enumerate(self._buttons):
+            if cid == target:
+                btn.setChecked(True)
+                self._current_data = cid
+                found = True
+                break
+        if not found and self._buttons:
+            self._buttons[0][1].setChecked(True)
+            self._current_data = self._buttons[0][0]
+
+    def findData(self, curve_type: str) -> int:
+        target = str(curve_type or "linear").lower().strip()
+        for idx, (cid, _) in enumerate(self._buttons):
+            if cid == target:
+                return idx
+        return -1
+
+    def currentIndex(self) -> int:
+        for idx, (cid, _) in enumerate(self._buttons):
+            if cid == self._current_data:
+                return idx
+        return 0
+
+    def setCurrentIndex(self, idx: int):
+        if 0 <= idx < len(self._buttons):
+            self.setCurrentData(self._buttons[idx][0])
+
 
 
 class Story:
@@ -1407,17 +1278,21 @@ class ProjectStateCommand(QUndoCommand):
         # recursive deepcopy duplication and prevents GC hitches on long files (>60 min).
         self.before_state = copy.deepcopy(before_state) if isinstance(before_state, dict) else before_state
         self.after_state = copy.deepcopy(after_state) if isinstance(after_state, dict) else after_state
+        self._first_redo = True
 
     def undo(self):
         self.main_window._restore_project_state_for_undo(self.before_state)
 
     def redo(self):
+        if self._first_redo:
+            self._first_redo = False
+            return
         self.main_window._restore_project_state_for_undo(self.after_state)
 
 
 # ============================================================
 # ============================================================
-# Custom Story Card Delegate & ListWidget (Milestones 3.10 & 3.14)
+# Custom Story Card Delegate (Milestones 3.10 & 3.14)
 # ============================================================
 
 class StoryCardDelegate(QStyledItemDelegate):
@@ -1541,78 +1416,6 @@ class StoryCardDelegate(QStyledItemDelegate):
             painter.drawText(option.rect.adjusted(8, 0, -8, 0), Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft, str(raw_text))
         finally:
             painter.restore()
-
-
-class StoryListWidget(QListWidget):
-    deleteRequested = Signal()
-    exportRequested = Signal()
-    exportStoryWordPressRequested = Signal()
-
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
-        self.customContextMenuRequested.connect(self._show_context_menu)
-        self.setItemDelegate(StoryCardDelegate(self))
-
-    def paintEvent(self, event):
-        super().paintEvent(event)
-        if self.count() == 0:
-            painter = QPainter(self.viewport())
-            painter.setRenderHint(QPainter.RenderHint.Antialiasing, True)
-            rect = self.viewport().rect()
-            painter.setPen(QColor("#64748b"))
-            font = QFont(self.font())
-            font.setPointSize(9)
-            painter.setFont(font)
-            text = "No stories created yet.\n\nHighlight words in transcript\nand click '+ New Story' (Enter)\nto create an audio cut."
-            painter.drawText(rect, Qt.AlignmentFlag.AlignCenter, text)
-            painter.end()
-
-    def _show_context_menu(self, pos):
-        item = self.itemAt(pos)
-        if not item:
-            return
-        win = self.window()
-        is_music = getattr(win, "story_detection_mode", "voice") == "music"
-        is_es = getattr(win, "language", "en") == "es"
-        term = ("Canción" if is_es else "Song") if is_music else ("Historia" if is_es else "Story")
-        menu = QMenu(self)
-        export_action = menu.addAction(f"Export {term}...")
-        export_action.triggered.connect(self.exportRequested.emit)
-
-        pm = getattr(win, "plugin_manager", None)
-        wp_enabled = pm and pm.is_plugin_enabled("wordpress")
-        if wp_enabled:
-            wp_action = menu.addAction("Export Draft to WordPress...")
-            wp_action.triggered.connect(self.exportStoryWordPressRequested.emit)
-
-        yt_enabled = pm and pm.is_plugin_enabled("youtube")
-        if yt_enabled and hasattr(win, "open_youtube_publish_dialog"):
-            yt_action = menu.addAction("Publish to YouTube...")
-            yt_action.triggered.connect(win.open_youtube_publish_dialog)
-
-        menu.addSeparator()
-        if hasattr(win, "open_story_fades_dialog"):
-            fades_action = menu.addAction("Ajustar fundidos de audio..." if is_es else "Set Audio Fades...")
-            row = self.row(item)
-            fades_action.triggered.connect(lambda: win.open_story_fades_dialog(story_index=row))
-
-        if hasattr(win, "audition_story"):
-            audition_action = menu.addAction("Audicionar con fundidos (▶)" if is_es else "Audition Story (With Fades ▶)")
-            row = self.row(item)
-            audition_action.triggered.connect(lambda: win.audition_story(row))
-            menu.addSeparator()
-
-        delete_action = menu.addAction(f"Delete {term}")
-        delete_action.triggered.connect(self.deleteRequested.emit)
-        menu.exec(self.mapToGlobal(pos))
-
-    def keyPressEvent(self, event):
-        if event.key() in (Qt.Key.Key_Delete, Qt.Key.Key_Backspace):
-            self.deleteRequested.emit()
-            event.accept()
-            return
-        super().keyPressEvent(event)
 
 
 # ============================================================
@@ -2120,20 +1923,132 @@ class InteractiveTranscriptEdit(QTextEdit):
             | Qt.TextInteractionFlag.LinksAccessibleByMouse
         )
 
+        # Scroll stability & lock tracking
+        self._is_scroll_locked = False
+        self._scroll_lock_target_v = None
+        self._scroll_lock_target_h = None
+        self._scroll_lock_timer = None
+        self._user_scrolled_recently = False
+
+        if self.verticalScrollBar():
+            self.verticalScrollBar().rangeChanged.connect(self._on_v_range_changed)
+            self.verticalScrollBar().sliderPressed.connect(self._release_scroll_lock)
+
+    def lock_scroll_position(self, v_val: int, h_val: int = 0, duration_ms: int = 400):
+        """Pin vertical and horizontal scrollbars to exact pixel values during layout reflows.
+        Automatically detaches when the layout stabilizes or when the user manually scrolls."""
+        self._scroll_lock_target_v = max(0, int(v_val))
+        self._scroll_lock_target_h = max(0, int(h_val))
+        self._is_scroll_locked = True
+
+        v_bar = self.verticalScrollBar()
+        h_bar = self.horizontalScrollBar()
+
+        if v_bar:
+            v_bar.setValue(self._scroll_lock_target_v)
+        if h_bar:
+            h_bar.setValue(self._scroll_lock_target_h)
+
+        if not hasattr(self, "_scroll_lock_timer") or self._scroll_lock_timer is None:
+            self._scroll_lock_timer = QTimer(self)
+            self._scroll_lock_timer.setSingleShot(True)
+            self._scroll_lock_timer.timeout.connect(self._release_scroll_lock)
+
+        self._scroll_lock_timer.stop()
+        self._scroll_lock_timer.start(max(50, int(duration_ms)))
+
+    def _release_scroll_lock(self):
+        self._is_scroll_locked = False
+        self._scroll_lock_target_v = None
+        self._scroll_lock_target_h = None
+
+    def _on_v_range_changed(self, min_val, max_val):
+        if getattr(self, "_is_scroll_locked", False) and self._scroll_lock_target_v is not None:
+            v_bar = self.verticalScrollBar()
+            if v_bar and v_bar.value() != self._scroll_lock_target_v:
+                v_bar.setValue(self._scroll_lock_target_v)
+
+    def focusInEvent(self, event):
+        # Override QTextEdit's default focusInEvent which invokes ensureCursorVisible()
+        # and causes unwanted viewport jumps when dialogs close.
+        v_bar = self.verticalScrollBar()
+        h_bar = self.horizontalScrollBar()
+        v_val = v_bar.value() if v_bar else 0
+        h_val = h_bar.value() if h_bar else 0
+
+        super().focusInEvent(event)
+
+        if v_bar and v_bar.value() != v_val:
+            v_bar.setValue(v_val)
+        if h_bar and h_bar.value() != h_val:
+            h_bar.setValue(h_val)
+
+        # Defend against delayed Qt event-loop cursor visibility enforcement
+        QTimer.singleShot(0, lambda: self._enforce_scroll_after_focus(v_val, h_val))
+
+    def _enforce_scroll_after_focus(self, target_v: int, target_h: int):
+        v_bar = self.verticalScrollBar()
+        h_bar = self.horizontalScrollBar()
+        if v_bar and v_bar.value() != target_v and not getattr(self, "_user_scrolled_recently", False):
+            v_bar.setValue(target_v)
+        if h_bar and h_bar.value() != target_h and not getattr(self, "_user_scrolled_recently", False):
+            h_bar.setValue(target_h)
+
+    def wheelEvent(self, event):
+        # Manual user scroll cancels any active scroll lock
+        self._release_scroll_lock()
+        self._user_scrolled_recently = True
+        QTimer.singleShot(500, lambda: setattr(self, "_user_scrolled_recently", False))
+        super().wheelEvent(event)
+
     def event(self, e):
         if e.type() == QEvent.Type.ToolTip:
             main_win = self.window()
-            show_comments = str(getattr(main_win, "show_comments", getattr(main_win, "show_notes", True))).lower() in {"1", "true", "yes"}
-            if show_comments and hasattr(self, "transcript_data") and self.transcript_data:
+            show_highlights = str(getattr(main_win, "show_comment_highlights", getattr(self, "show_comment_highlights", True))).lower() in {"1", "true", "yes"}
+            if show_highlights and hasattr(self, "comment_spans") and self.comment_spans:
                 cursor = self.cursorForPosition(e.pos())
-                seg_idx = self.get_segment_index_at_cursor(cursor)
-                if seg_idx is not None:
-                    segments = self.transcript_data.get("segments", [])
-                    if 0 <= seg_idx < len(segments):
-                        c_text = segments[seg_idx].get("comments") or segments[seg_idx].get("notes", "")
-                        if c_text and c_text.strip():
-                            QToolTip.showText(e.globalPos(), f"💬 Comment:\n{c_text.strip()}", self)
-                            return True
+                cpos = cursor.position()
+                matching_span = None
+                for span in self.comment_spans:
+                    if span["start"] <= cpos <= span["end"]:
+                        matching_span = span
+                        break
+                if matching_span:
+                    st = matching_span.get("start_time", 0.0)
+                    m, s = divmod(int(st), 60)
+                    h, m = divmod(m, 60)
+                    time_str = f"{h:02d}:{m:02d}:{s:02d}" if h > 0 else f"{m:02d}:{s:02d}"
+
+                    quote_txt = matching_span.get("selected_text", "").strip()
+                    if quote_txt:
+                        trunc = quote_txt[:90] + ("..." if len(quote_txt) > 90 else "")
+                        quote_html = (
+                            f"<div style='font-size: 11px; color: #94a3b8; font-style: italic; margin-bottom: 5px; "
+                            f"border-left: 2px solid #f59e0b; padding-left: 6px;'>&ldquo;{html.escape(trunc)}&rdquo;</div>"
+                        )
+                    else:
+                        quote_html = ""
+
+                    c_body = html.escape(matching_span.get("comment", ""))
+                    is_light = getattr(self, "current_theme", "dark") == "light"
+                    bg_col = "#ffffff" if is_light else "#0f172a"
+                    text_col = "#0f172a" if is_light else "#f8fafc"
+                    border_col = "#d97706" if is_light else "#f59e0b"
+
+                    tooltip_html = (
+                        f"<div style='background-color: {bg_col}; color: {text_col}; border: 1.5px solid {border_col}; "
+                        f"border-radius: 6px; padding: 7px 11px; font-family: sans-serif; max-width: 360px;'>"
+                        f"<div style='font-weight: bold; color: {border_col}; margin-bottom: 4px; font-size: 12px;'>"
+                        f"💬 Comment &bull; {time_str}</div>"
+                        f"{quote_html}"
+                        f"<div style='white-space: pre-wrap; line-height: 1.4; font-size: 12px; margin-bottom: 6px;'>{c_body}</div>"
+                        f"<div style='font-size: 10px; color: #64748b; border-top: 1px solid rgba(245, 158, 11, 0.3); padding-top: 3px;'>"
+                        f"Click highlight to open comment window &bull; Spacebar to play</div>"
+                        f"</div>"
+                    )
+                    pos = e.globalPos() if hasattr(e, "globalPos") else (e.globalPosition().toPoint() if hasattr(e, "globalPosition") else self.mapToGlobal(e.pos()))
+                    QToolTip.showText(pos, tooltip_html, self.viewport())
+                    return True
             QToolTip.hideText()
         return super().event(e)
 
@@ -2396,13 +2311,14 @@ class InteractiveTranscriptEdit(QTextEdit):
     def update_extra_selections(self):
         extras = []
         main_win = self.window()
-        show_comments = str(getattr(main_win, "show_comments", getattr(main_win, "show_notes", True))).lower() in {"1", "true", "yes"}
+        self.comment_spans = []
+        show_highlights = str(getattr(main_win, "show_comment_highlights", getattr(self, "show_comment_highlights", True))).lower() in {"1", "true", "yes"}
 
         # Amber / Yellow Comment Highlights (Word & Google Docs Style)
         t_data = getattr(self, "transcript_data", None)
         if not t_data and hasattr(main_win, "transcript"):
             t_data = main_win.transcript
-        if show_comments and t_data and isinstance(t_data, dict) and "segments" in t_data:
+        if t_data and isinstance(t_data, dict) and "segments" in t_data:
             segments = t_data.get("segments", [])
             doc = self.document()
             doc_text = doc.toPlainText()
@@ -2445,20 +2361,33 @@ class InteractiveTranscriptEdit(QTextEdit):
                                 positions = (block.position(), block.position() + max(1, block.length() - 1))
 
                     if positions:
-                        comment_fmt = QTextCharFormat()
-                        if getattr(self, "current_theme", "dark") == "light":
-                            comment_fmt.setBackground(QColor(254, 240, 138, 220))  # Warm amber highlight
-                            comment_fmt.setForeground(QColor(133, 77, 14))
-                        else:
-                            comment_fmt.setBackground(QColor(133, 77, 14, 200))  # Dark warm amber highlight
-                            comment_fmt.setForeground(QColor(254, 240, 138))
-                        comment_cursor = QTextCursor(doc)
-                        comment_cursor.setPosition(positions[0])
-                        comment_cursor.setPosition(positions[1], QTextCursor.MoveMode.KeepAnchor)
-                        extra = QTextEdit.ExtraSelection()
-                        extra.format = comment_fmt
-                        extra.cursor = comment_cursor
-                        extras.append(extra)
+                        # Always register span for hover tooltips and click navigation
+                        self.comment_spans.append({
+                            "start": positions[0],
+                            "end": positions[1],
+                            "seg_idx": idx,
+                            "comment": comment_text.strip(),
+                            "selected_text": c_selected,
+                            "start_time": float(seg.get("start", 0.0)),
+                            "end_time": float(seg.get("end", 0.0)),
+                        })
+
+                        # Amber highlight extra selection (toggled by Show/Hide Highlights)
+                        if show_highlights:
+                            comment_fmt = QTextCharFormat()
+                            if getattr(self, "current_theme", "dark") == "light":
+                                comment_fmt.setBackground(QColor(254, 240, 138, 220))  # Warm amber highlight
+                                comment_fmt.setForeground(QColor(133, 77, 14))
+                            else:
+                                comment_fmt.setBackground(QColor(133, 77, 14, 200))  # Dark warm amber highlight
+                                comment_fmt.setForeground(QColor(254, 240, 138))
+                            comment_cursor = QTextCursor(doc)
+                            comment_cursor.setPosition(positions[0])
+                            comment_cursor.setPosition(positions[1], QTextCursor.MoveMode.KeepAnchor)
+                            extra = QTextEdit.ExtraSelection()
+                            extra.format = comment_fmt
+                            extra.cursor = comment_cursor
+                            extras.append(extra)
 
         if hasattr(self, "saved_selections") and self.saved_selections:
             fmt = QTextCharFormat()
@@ -2584,7 +2513,15 @@ class InteractiveTranscriptEdit(QTextEdit):
         self.is_editing_mode = enabled
         self.setReadOnly(not enabled)
         if enabled:
+            self.setTextInteractionFlags(Qt.TextInteractionFlag.TextEditorInteraction)
             self.clear_highlight()
+            self.setFocus()
+        else:
+            self.setTextInteractionFlags(
+                Qt.TextInteractionFlag.TextSelectableByMouse
+                | Qt.TextInteractionFlag.TextSelectableByKeyboard
+                | Qt.TextInteractionFlag.LinksAccessibleByMouse
+            )
         self.editingModeChanged.emit(enabled)
 
     def toggle_bold(self):
@@ -2655,14 +2592,11 @@ class InteractiveTranscriptEdit(QTextEdit):
         self.formatChanged.emit()
 
     def toggle_highlight(self, color_name="#fef08a", force_apply=False):
-        """Toggle or apply rich color highlighting on active text selection while preserving selection."""
+        """Toggle or change color of rich highlighting on active text selection or contiguous highlighted region."""
         cursor = self.textCursor()
         main_win = self.window()
         before_state = main_win._capture_project_state() if hasattr(main_win, "_capture_project_state") else None
 
-        fmt = QTextCharFormat()
-        
-        # Check current highlight state
         cur_fmt = self.currentCharFormat()
         curr_bg = cur_fmt.background().color()
         has_active_highlight = (
@@ -2672,15 +2606,133 @@ class InteractiveTranscriptEdit(QTextEdit):
             and curr_bg.name().lower() not in ["#000000", "#1e1e1e", "#0f172a", "#ffffff", "#00000000"]
         )
 
-        if has_active_highlight and not force_apply:
-            # Turn off highlight across contiguous section
+        target_color = QColor(color_name)
+        target_hex = target_color.name().lower()
+
+        # If already highlighted with exact same color and force_apply is False, toggle it off
+        if has_active_highlight and not force_apply and curr_bg.name().lower() == target_hex:
             self.remove_highlight()
             return
+
+        # 1. Update underlying transcript data model (for both View and Edit modes)
+        segs = main_win.transcript.get("segments", []) if (hasattr(main_win, "transcript") and main_win.transcript) else []
+
+        target_segs = set()
+        if cursor.hasSelection():
+            sel_start = min(cursor.selectionStart(), cursor.selectionEnd())
+            sel_end = max(cursor.selectionStart(), cursor.selectionEnd())
+            if hasattr(self, "get_time_range_for_char_span"):
+                t_range = self.get_time_range_for_char_span(sel_start, sel_end)
+                if t_range and t_range[0] is not None and t_range[1] is not None:
+                    st, et = t_range
+                    for i, s in enumerate(segs):
+                        s_st = s.get("start", 0.0)
+                        s_et = s.get("end", 0.0)
+                        if s_st <= et and s_et >= st:
+                            target_segs.add(i)
+
+        if not target_segs:
+            c_seg = self.get_segment_index_at_cursor(cursor)
+            if c_seg is not None and 0 <= c_seg < len(segs):
+                target_segs.add(c_seg)
+            else:
+                blk = cursor.blockNumber()
+                if 0 <= blk < len(segs):
+                    target_segs.add(blk)
+
+        # Build flattened word list to identify contiguous highlighted regions
+        flat_words = []
+        for s_idx, seg in enumerate(segs):
+            if not isinstance(seg, dict):
+                continue
+            seg_hl = seg.get("highlight")
+            words = seg.get("words", [])
+            if isinstance(words, list) and words:
+                for w_idx, w in enumerate(words):
+                    if isinstance(w, dict):
+                        w_hl = w.get("highlight") or seg_hl
+                        is_hl = bool(w_hl and w_hl not in (False, "false", "False", 0, None))
+                        flat_words.append({
+                            "seg_idx": s_idx,
+                            "word_idx": w_idx,
+                            "word_dict": w,
+                            "seg_dict": seg,
+                            "is_hl": is_hl
+                        })
+            else:
+                text = seg.get("text", "")
+                for w_idx, word_str in enumerate(text.split()):
+                    is_hl = bool(seg_hl and seg_hl not in (False, "false", "False", 0, None))
+                    flat_words.append({
+                        "seg_idx": s_idx,
+                        "word_idx": w_idx,
+                        "word_dict": None,
+                        "seg_dict": seg,
+                        "is_hl": is_hl
+                    })
+
+        total_words = len(flat_words)
+        targeted_flat_indices = set()
+        for idx, fw in enumerate(flat_words):
+            if fw["seg_idx"] in target_segs:
+                targeted_flat_indices.add(idx)
+
+        # Expand backwards and forwards across contiguous highlighted word blocks to recolor full region
+        indices_to_recolor = set()
+        for t_idx in targeted_flat_indices:
+            if 0 <= t_idx < total_words:
+                if flat_words[t_idx]["is_hl"]:
+                    start_i = t_idx
+                    while start_i > 0 and flat_words[start_i - 1]["is_hl"]:
+                        start_i -= 1
+                    end_i = t_idx
+                    while end_i < total_words - 1 and flat_words[end_i + 1]["is_hl"]:
+                        end_i += 1
+                    for k in range(start_i, end_i + 1):
+                        indices_to_recolor.add(k)
+                elif cursor.hasSelection():
+                    indices_to_recolor.add(t_idx)
+
+        # If user clicked near a highlighted region (e.g. adjacent word boundary)
+        if not indices_to_recolor and targeted_flat_indices:
+            for t_idx in targeted_flat_indices:
+                for offset in (-1, 1, -2, 2):
+                    adj = t_idx + offset
+                    if 0 <= adj < total_words and flat_words[adj]["is_hl"]:
+                        start_i = adj
+                        while start_i > 0 and flat_words[start_i - 1]["is_hl"]:
+                            start_i -= 1
+                        end_i = adj
+                        while end_i < total_words - 1 and flat_words[end_i + 1]["is_hl"]:
+                            end_i += 1
+                        for k in range(start_i, end_i + 1):
+                            indices_to_recolor.add(k)
+
+        # Apply new highlight color to targeted data words & segments
+        affected_segs = set()
+        if indices_to_recolor:
+            for k in indices_to_recolor:
+                fw = flat_words[k]
+                if fw["word_dict"]:
+                    fw["word_dict"]["highlight"] = target_hex
+                affected_segs.add(fw["seg_idx"])
+            for s_idx in affected_segs:
+                seg = segs[s_idx]
+                seg["highlight"] = target_hex
         else:
-            # Apply vibrant highlight with contrasting text color
-            highlight_color = QColor(color_name)
-            fmt.setBackground(QBrush(highlight_color))
-            fmt.setForeground(QBrush(QColor("#0f172a")))
+            for s_idx in target_segs:
+                if 0 <= s_idx < len(segs):
+                    seg = segs[s_idx]
+                    seg["highlight"] = target_hex
+                    if "words" in seg and isinstance(seg["words"], list):
+                        for w in seg["words"]:
+                            if isinstance(w, dict):
+                                w["highlight"] = target_hex
+
+        # 2. Update QTextCharFormat on editor / view
+        fmt = QTextCharFormat()
+        fmt.setBackground(QBrush(target_color))
+        fmt.setForeground(QBrush(QColor("#0f172a")))
 
         if cursor.hasSelection():
             sel_start = cursor.selectionStart()
@@ -2692,11 +2744,19 @@ class InteractiveTranscriptEdit(QTextEdit):
         else:
             self.mergeCurrentCharFormat(fmt)
 
+        if hasattr(main_win, "mark_project_dirty"):
+            main_win.mark_project_dirty()
+
+        # Re-render transcript view so HTML reflects updated colors in both View and Edit modes
+        if hasattr(main_win, "render_transcript"):
+            main_win.render_transcript()
+
         if before_state and hasattr(main_win, "_commit_project_state_change"):
-            main_win._commit_project_state_change(before_state, "Toggle Highlight")
+            main_win._commit_project_state_change(before_state, "Change Highlight Color")
 
         self.setFocus()
         self.formatChanged.emit()
+        self.update_extra_selections()
 
     def remove_highlight(self):
         """Removes background highlighting for the entire contiguous highlighted section(s) intersecting active selection or cursor."""
@@ -2962,7 +3022,30 @@ class InteractiveTranscriptEdit(QTextEdit):
                 event.accept()
                 return
 
+        # Passive Hover: cursor shape indicator over comment highlights
+        hit_cursor = self.cursorForPosition(pos)
+        hit_pos = hit_cursor.position()
+        over_comment = False
+        show_highlights = str(getattr(self.window(), "show_comment_highlights", getattr(self, "show_comment_highlights", True))).lower() in {"1", "true", "yes"}
+        if show_highlights and hasattr(self, "comment_spans") and self.comment_spans:
+            for span in self.comment_spans:
+                if span["start"] <= hit_pos <= span["end"]:
+                    over_comment = True
+                    break
+        if over_comment:
+            self.viewport().setCursor(Qt.CursorShape.PointingHandCursor)
+        else:
+            href = hit_cursor.charFormat().anchorHref()
+            if not href:
+                self.viewport().unsetCursor()
+
         super().mouseMoveEvent(event)
+
+    def leaveEvent(self, event):
+        QToolTip.hideText()
+        if not getattr(self, "is_editing_mode", False):
+            self.viewport().unsetCursor()
+        super().leaveEvent(event)
 
     def mouseReleaseEvent(self, event):
         if self.is_editing_mode:
@@ -2984,16 +3067,42 @@ class InteractiveTranscriptEdit(QTextEdit):
             has_sel = cursor.hasSelection() and (cursor.selectionEnd() - cursor.selectionStart() > 0)
 
             if not was_dragging and not has_sel:
-                # Single Left-Click without dragging -> seek/navigation
+                # Single Left-Click without dragging -> check for comment highlight or seek/navigation
                 if self.selection_mode == "replace":
                     self.clear_all_selections()
+
+                hit_cursor = self.cursorForPosition(pos)
+                hit_pos = hit_cursor.position()
+                clicked_span = None
+                show_highlights = str(getattr(self.window(), "show_comment_highlights", getattr(self, "show_comment_highlights", True))).lower() in {"1", "true", "yes"}
+                if show_highlights and hasattr(self, "comment_spans") and self.comment_spans:
+                    for span in self.comment_spans:
+                        if span["start"] <= hit_pos <= span["end"]:
+                            clicked_span = span
+                            break
+
+                if clicked_span:
+                    main_win = self.window()
+                    # 1. Open the comments window/pane if closed
+                    if hasattr(main_win, "toggle_show_comments"):
+                        main_win.toggle_show_comments(True)
+                    # 2. Highlight and scroll to this comment card in comments panel
+                    if hasattr(main_win, "comments_panel") and hasattr(main_win.comments_panel, "highlight_segment"):
+                        main_win.comments_panel.highlight_segment(clicked_span["seg_idx"])
+                    # 3. Seek to time position WITHOUT starting playback
+                    seek_time = clicked_span["start_time"]
+                    if hasattr(main_win, "seek_to"):
+                        main_win.seek_to(seek_time)
+                    if hasattr(main_win, "timeline") and hasattr(main_win.timeline, "ensure_position_visible"):
+                        main_win.timeline.ensure_position_visible(seek_time)
+                    event.accept()
+                    return
 
                 if pending_href and (pending_href.startswith("word:") or pending_href.startswith("time:") or pending_href.startswith("speaker:")):
                     self.linkClicked.emit(QUrl(pending_href))
                     event.accept()
                     return
                 else:
-                    hit_cursor = self.cursorForPosition(pos)
                     href = hit_cursor.charFormat().anchorHref()
                     if href and (href.startswith("word:") or href.startswith("time:") or href.startswith("speaker:")):
                         self.linkClicked.emit(QUrl(href))
@@ -3483,9 +3592,47 @@ class InteractiveTranscriptEdit(QTextEdit):
                 )
                 menu.addAction(del_comment_act)
 
-            rem_hl_act = QAction("🎨 Remove Highlight", menu)
-            rem_hl_act.triggered.connect(self.remove_highlight)
-            menu.addAction(rem_hl_act)
+            cur_fmt = hit_cursor.charFormat() if hit_cursor else self.currentCharFormat()
+            curr_bg = cur_fmt.background().color()
+            active_hl_hex = None
+            if (
+                cur_fmt.background().style() != Qt.BrushStyle.NoBrush
+                and curr_bg.isValid()
+                and curr_bg.alpha() > 0
+                and curr_bg.name().lower() not in ["#000000", "#1e1e1e", "#0f172a", "#ffffff", "#00000000"]
+            ):
+                active_hl_hex = curr_bg.name().lower()
+
+            if not active_hl_hex and hasattr(main_win, "transcript") and main_win.transcript:
+                segs = main_win.transcript.get("segments", [])
+                target_seg_i = self.get_segment_index_at_cursor(hit_cursor)
+                if target_seg_i is not None and 0 <= target_seg_i < len(segs):
+                    seg = segs[target_seg_i]
+                    s_hl = seg.get("highlight")
+                    if s_hl and s_hl not in (False, "false", "False", 0, None):
+                        active_hl_hex = "#fef08a" if isinstance(s_hl, bool) else str(s_hl).lower()
+
+            hl_title = "🎨 Change Highlight Color" if active_hl_hex else "🖊️ Highlight Text"
+
+            hl_colors = [
+                ("🟡 Yellow", "#fef08a"),
+                ("🟢 Green", "#bbf7d0"),
+                ("🔵 Blue / Cyan", "#bae6fd"),
+                ("🌸 Pink", "#fbcfe8"),
+                ("🟠 Orange", "#fed7aa"),
+                ("🟣 Purple", "#e9d5ff"),
+            ]
+
+            hl_menu = menu.addMenu(hl_title)
+            for label, hex_code in hl_colors:
+                lbl_text = label
+                if active_hl_hex and hex_code.lower() == active_hl_hex:
+                    lbl_text += " (Current)"
+                act = hl_menu.addAction(lbl_text)
+                act.triggered.connect(lambda _, c=hex_code: self.toggle_highlight(c, force_apply=True))
+            hl_menu.addSeparator()
+            act_rem_hl = hl_menu.addAction("⚪ Remove Highlight")
+            act_rem_hl.triggered.connect(self.remove_highlight)
 
             toggle_comments_act = QAction("💬 Toggle Comments Sidebar\tCtrl+Alt+C", menu)
             toggle_comments_act.triggered.connect(lambda: getattr(main_win, "toggle_comments_panel", lambda: None)())
@@ -3510,10 +3657,38 @@ class InteractiveTranscriptEdit(QTextEdit):
             act_strike.triggered.connect(self.toggle_strikethrough)
 
             fmt_menu.addSeparator()
-            act_highlight = fmt_menu.addAction("Highlight (Yellow)\tCtrl+Shift+H")
-            act_highlight.triggered.connect(self.toggle_highlight)
 
-            act_rem_hl = fmt_menu.addAction("Remove Highlight")
+            cur_fmt = hit_cursor.charFormat() if hit_cursor else self.currentCharFormat()
+            curr_bg = cur_fmt.background().color()
+            active_hl_hex = None
+            if (
+                cur_fmt.background().style() != Qt.BrushStyle.NoBrush
+                and curr_bg.isValid()
+                and curr_bg.alpha() > 0
+                and curr_bg.name().lower() not in ["#000000", "#1e1e1e", "#0f172a", "#ffffff", "#00000000"]
+            ):
+                active_hl_hex = curr_bg.name().lower()
+
+            if not active_hl_hex and hasattr(main_win, "transcript") and main_win.transcript:
+                segs = main_win.transcript.get("segments", [])
+                target_seg_i = self.get_segment_index_at_cursor(hit_cursor)
+                if target_seg_i is not None and 0 <= target_seg_i < len(segs):
+                    seg = segs[target_seg_i]
+                    s_hl = seg.get("highlight")
+                    if s_hl and s_hl not in (False, "false", "False", 0, None):
+                        active_hl_hex = "#fef08a" if isinstance(s_hl, bool) else str(s_hl).lower()
+
+            hl_title = "🎨 Change Highlight Color" if active_hl_hex else "🖊️ Highlight Text"
+
+            hl_menu = fmt_menu.addMenu(hl_title)
+            for label, hex_code in hl_colors:
+                lbl_text = label
+                if active_hl_hex and hex_code.lower() == active_hl_hex:
+                    lbl_text += " (Current)"
+                act = hl_menu.addAction(lbl_text)
+                act.triggered.connect(lambda _, c=hex_code: self.toggle_highlight(c, force_apply=True))
+            hl_menu.addSeparator()
+            act_rem_hl = hl_menu.addAction("⚪ Remove Highlight")
             act_rem_hl.triggered.connect(self.remove_highlight)
 
             act_clear = fmt_menu.addAction("Clear Formatting\tCtrl+\\")
@@ -3589,7 +3764,7 @@ class InteractiveTranscriptEdit(QTextEdit):
         self._playback_highlight_selection = None
         self.update_extra_selections()
 
-    def highlight_word_at_time(self, seconds, transcript_data):
+    def highlight_word_at_time(self, seconds, transcript_data, auto_scroll: bool = False):
         if self.is_editing_mode or not transcript_data:
             return
 
@@ -3643,15 +3818,6 @@ class InteractiveTranscriptEdit(QTextEdit):
         self._playback_highlight_selection = extra
         self.update_extra_selections()
 
-        cursor_rect = self.cursorRect(target_cursor)
-        viewport_rect = self.viewport().rect()
-        v_scroll = self.verticalScrollBar()
-
-        if cursor_rect.bottom() > viewport_rect.bottom():
-            v_scroll.setValue(v_scroll.value() + viewport_rect.height() // 3)
-        elif cursor_rect.top() < viewport_rect.top():
-            v_scroll.setValue(max(0, v_scroll.value() - viewport_rect.height() // 3))
-
 # ============================================================
 # Document Reading Utilities
 # ============================================================
@@ -3660,6 +3826,8 @@ def read_document_text(path: Path) -> str:
     ext = path.suffix.lower()
 
     if ext == ".docx":
+        if not DOCX_AVAILABLE or Document is None:
+            raise ImportError("python-docx is required to read .docx files")
         doc = Document(str(path))
         return "\n".join(p.text for p in doc.paragraphs)
 
@@ -4470,112 +4638,6 @@ class WaveformWorker(QObject):
             if process is not None:
                 unregister_process(process)
             self._process = None
-
-
-# ============================================================
-# Transparent Gzip Compression & Optimized RTVS Serialization
-# ============================================================
-
-def sanitize_project_data_for_storage(data, parent_key: str = ""):
-    """Recursively optimize project data before serialization:
-    - Omit heavy binary/derived waveform peaks, thumbnails, and undo histories.
-    - Round audio timestamps, durations, and offsets to millisecond precision (round(t, 3)).
-    - Round confidence scores, logprobs, and temperatures to practical precision (round(p, 3)).
-    - Round other general floating-point values to 4 decimal places.
-    """
-    if isinstance(data, dict):
-        cleaned = {}
-        for k, v in data.items():
-            if k in ("waveform_peaks", "undo_stack", "history", "video_thumbnails", "thumbnail_cache"):
-                continue
-            cleaned[k] = sanitize_project_data_for_storage(v, parent_key=k)
-        return cleaned
-    elif isinstance(data, list):
-        return [sanitize_project_data_for_storage(item, parent_key=parent_key) for item in data]
-    elif isinstance(data, float):
-        if math.isnan(data) or math.isinf(data):
-            return 0.0
-        k_lower = parent_key.lower()
-        if any(ts_key in k_lower for ts_key in ("start", "end", "duration", "position", "time", "offset", "padding", "threshold")):
-            r = round(data, 3)
-        elif any(prob_key in k_lower for prob_key in ("prob", "confidence", "logprob", "temperature", "ratio", "score")):
-            r = round(data, 3)
-        else:
-            r = round(data, 4)
-        return 0.0 if r == -0.0 else r
-    else:
-        return data
-
-
-def serialize_rtvs_project(data: dict) -> bytes:
-    """Serialize project dictionary into a transparently gzip-compressed payload."""
-    clean_data = sanitize_project_data_for_storage(data)
-    json_bytes = json.dumps(clean_data, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
-    return gzip.compress(json_bytes, compresslevel=6)
-
-
-def deserialize_rtvs_project(raw_bytes: bytes) -> dict:
-    """Deserialize project payload, transparently handling both gzip-compressed (.rtvs)
-    and legacy uncompressed UTF-8 JSON files.
-
-    Decompression is streamed with an upper ceiling (MAX_DECOMPRESSED_PROJECT_BYTES)
-    rather than done in one unbounded gzip.decompress() call, so a corrupted or
-    maliciously crafted small gzip payload that expands to gigabytes can't exhaust
-    memory and crash the app -- legitimate project JSON is orders of magnitude
-    smaller than the ceiling.
-    """
-    if not raw_bytes:
-        return {}
-    if len(raw_bytes) >= 2 and raw_bytes[:2] == b"\x1f\x8b":
-        text = _decompress_gzip_bounded(raw_bytes).decode("utf-8")
-    else:
-        text = raw_bytes.decode("utf-8", errors="replace")
-    return json.loads(text)
-
-
-MAX_DECOMPRESSED_PROJECT_BYTES = 200 * 1024 * 1024  # 200 MB; far larger than any legitimate project JSON
-
-
-def _decompress_gzip_bounded(raw_bytes: bytes, max_bytes: int = MAX_DECOMPRESSED_PROJECT_BYTES) -> bytes:
-    """Decompress a gzip payload in chunks, stopping with a clear error the
-    moment the decompressed size would exceed max_bytes, instead of
-    materializing an unbounded amount of data in one gzip.decompress() call.
-    """
-    chunk_size = 1024 * 1024
-    out = bytearray()
-    with gzip.GzipFile(fileobj=io.BytesIO(raw_bytes), mode="rb") as gz:
-        while True:
-            chunk = gz.read(chunk_size)
-            if not chunk:
-                break
-            out += chunk
-            if len(out) > max_bytes:
-                raise ValueError(
-                    f"Project file decompresses to more than {max_bytes // (1024 * 1024)} MB; "
-                    "refusing to load (the file may be corrupted or invalid)."
-                )
-    return bytes(out)
-
-
-def read_rtvs_project_file(file_path) -> dict:
-    """Transparently read an .rtvs or .json project file from disk (compressed or uncompressed)."""
-    p = Path(file_path)
-    with open(p, "rb") as f:
-        raw = f.read()
-    return deserialize_rtvs_project(raw)
-
-
-def write_rtvs_project_file(file_path, data: dict):
-    """Safely and atomically write a gzip-compressed .rtvs project file."""
-    p = Path(file_path).resolve()
-    p.parent.mkdir(parents=True, exist_ok=True)
-    temp_file = p.with_name(p.name + ".tmp")
-    blob = serialize_rtvs_project(data)
-    with open(temp_file, "wb") as f:
-        f.write(blob)
-        f.flush()
-        os.fsync(f.fileno())
-    safe_replace(temp_file, p)
 
 
 # ============================================================
@@ -5987,8 +6049,8 @@ class TimelineCanvas(QWidget):
                         for step_i in range(1, steps + 1):
                             u = step_i / float(steps)
                             px = fout_apex_x + u * (end_x - fout_apex_x)
-                            # fade out goes from 1.0 down to 0.0
-                            val = 1.0 - calculate_fade_curve_factor(u, fcurve)
+                            # fade out volume factor goes from 1.0 down to 0.0 matching preview cues
+                            val = calculate_fade_out_factor(u, fcurve)
                             py = bottom_y - val * (bottom_y - top_y)
                             out_path.lineTo(px, py)
 
@@ -6586,21 +6648,23 @@ class StoryListWidget(QListWidget):
         fade_menu.addSeparator()
         curve_menu = fade_menu.addMenu("Set Fade Curve Profile")
 
-        linear_act = QAction("Linear Ramp", self)
-        linear_act.triggered.connect(lambda: parent.set_fade_curve_for_selected_stories("linear"))
-        curve_menu.addAction(linear_act)
+        # Determine current curve from selected story if available
+        curr_curve = "linear"
+        if hasattr(parent, "stories") and parent.stories:
+            curr_row = self.currentRow()
+            if 0 <= curr_row < len(parent.stories):
+                curr_curve = getattr(parent.stories[curr_row], "fade_curve", "linear") or "linear"
 
-        scurve_act = QAction("Cosine S-Curve", self)
-        scurve_act.triggered.connect(lambda: parent.set_fade_curve_for_selected_stories("s_curve"))
-        curve_menu.addAction(scurve_act)
-
-        log_act = QAction("Logarithmic", self)
-        log_act.triggered.connect(lambda: parent.set_fade_curve_for_selected_stories("logarithmic"))
-        curve_menu.addAction(log_act)
-
-        exp_act = QAction("Exponential", self)
-        exp_act.triggered.connect(lambda: parent.set_fade_curve_for_selected_stories("exponential"))
-        curve_menu.addAction(exp_act)
+        for profile in FADE_CURVE_PROFILES:
+            cid = profile["id"]
+            icon = create_fade_curve_icon(cid, width=44, height=22)
+            act = QAction(icon, f"{profile['symbol']}  {profile['full_name']}", self)
+            act.setIconVisibleInMenu(True)
+            act.setCheckable(True)
+            act.setChecked(cid == curr_curve)
+            act.setToolTip(profile["desc"])
+            act.triggered.connect(lambda checked=False, ck=cid: parent.set_fade_curve_for_selected_stories(ck))
+            curve_menu.addAction(act)
 
         menu.addSeparator()
 
@@ -7081,174 +7145,6 @@ class BatchProcessingDialog(QDialog):
         self.fmt_srt.setEnabled(has_media)
         self.fmt_vtt.setEnabled(has_media)
         self.scope_combo.setEnabled(has_media)
-
-# ============================================================
-# Global Subprocess & Child Process Management (Job Objects & Groups)
-# ============================================================
-
-_REGISTERED_PROCESSES = set()
-_WINDOWS_JOB_HANDLE = None
-
-
-def init_child_process_job_isolation():
-    """Initialize OS-level guarantees that child processes terminate when parent exits.
-    On Windows: Configures a Job Object with JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE.
-    """
-    global _WINDOWS_JOB_HANDLE
-    if sys.platform == "win32" and _WINDOWS_JOB_HANDLE is None:
-        try:
-            import ctypes
-            from ctypes import wintypes
-
-            kernel32 = ctypes.windll.kernel32
-
-            # Job object creation and limits
-            CreateJobObjectW = kernel32.CreateJobObjectW
-            CreateJobObjectW.restype = wintypes.HANDLE
-            CreateJobObjectW.argtypes = [wintypes.LPVOID, wintypes.LPCWSTR]
-
-            SetInformationJobObject = kernel32.SetInformationJobObject
-            SetInformationJobObject.restype = wintypes.BOOL
-
-            AssignProcessToJobObject = kernel32.AssignProcessToJobObject
-            AssignProcessToJobObject.restype = wintypes.BOOL
-            AssignProcessToJobObject.argtypes = [wintypes.HANDLE, wintypes.HANDLE]
-
-            GetCurrentProcess = kernel32.GetCurrentProcess
-            GetCurrentProcess.restype = wintypes.HANDLE
-
-            job = CreateJobObjectW(None, None)
-            if job:
-                # JobObjectExtendedLimitInformation = 9
-                JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE = 0x00002000
-
-                class IO_COUNTERS(ctypes.Structure):
-                    _fields_ = [
-                        ("ReadOperationCount", ctypes.c_uint64),
-                        ("WriteOperationCount", ctypes.c_uint64),
-                        ("OtherOperationCount", ctypes.c_uint64),
-                        ("ReadTransferCount", ctypes.c_uint64),
-                        ("WriteTransferCount", ctypes.c_uint64),
-                        ("OtherTransferCount", ctypes.c_uint64),
-                    ]
-
-                class JOBOBJECT_BASIC_LIMIT_INFORMATION(ctypes.Structure):
-                    _fields_ = [
-                        ("PerProcessUserTimeLimit", ctypes.c_int64),
-                        ("PerJobUserTimeLimit", ctypes.c_int64),
-                        ("LimitFlags", wintypes.DWORD),
-                        ("MinimumWorkingSetSize", ctypes.c_size_t),
-                        ("MaximumWorkingSetSize", ctypes.c_size_t),
-                        ("ActiveProcessLimit", wintypes.DWORD),
-                        ("Affinity", ctypes.c_size_t),
-                        ("PriorityClass", wintypes.DWORD),
-                        ("SchedulingClass", wintypes.DWORD),
-                    ]
-
-                class JOBOBJECT_EXTENDED_LIMIT_INFORMATION(ctypes.Structure):
-                    _fields_ = [
-                        ("BasicLimitInformation", JOBOBJECT_BASIC_LIMIT_INFORMATION),
-                        ("IoInfo", IO_COUNTERS),
-                        ("ProcessMemoryLimit", ctypes.c_size_t),
-                        ("JobMemoryLimit", ctypes.c_size_t),
-                        ("PeakProcessMemoryLimit", ctypes.c_size_t),
-                        ("PeakJobMemoryLimit", ctypes.c_size_t),
-                    ]
-
-                info = JOBOBJECT_EXTENDED_LIMIT_INFORMATION()
-                info.BasicLimitInformation.LimitFlags = JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE
-
-                if SetInformationJobObject(
-                    job,
-                    9,  # JobObjectExtendedLimitInformation
-                    ctypes.byref(info),
-                    ctypes.sizeof(info),
-                ):
-                    # Assign the current parent process to this job so all child processes
-                    # automatically inherit the job assignment
-                    AssignProcessToJobObject(job, GetCurrentProcess())
-                    _WINDOWS_JOB_HANDLE = job
-        except Exception:
-            _WINDOWS_JOB_HANDLE = None
-
-
-def bind_subprocess_to_job(proc):
-    """Assign an individual process (by HANDLE or PID) to the Windows Job Object if needed."""
-    if sys.platform == "win32" and _WINDOWS_JOB_HANDLE:
-        try:
-            import ctypes
-            from ctypes import wintypes
-            kernel32 = ctypes.windll.kernel32
-            OpenProcess = kernel32.OpenProcess
-            OpenProcess.restype = wintypes.HANDLE
-            OpenProcess.argtypes = [wintypes.DWORD, wintypes.BOOL, wintypes.DWORD]
-            CloseHandle = kernel32.CloseHandle
-            CloseHandle.restype = wintypes.BOOL
-            CloseHandle.argtypes = [wintypes.HANDLE]
-            AssignProcessToJobObject = kernel32.AssignProcessToJobObject
-            AssignProcessToJobObject.restype = wintypes.BOOL
-            AssignProcessToJobObject.argtypes = [wintypes.HANDLE, wintypes.HANDLE]
-
-            pid = None
-            if hasattr(proc, "pid"):
-                p = proc.pid
-                pid = p() if callable(p) else p
-            elif hasattr(proc, "processId"):
-                pid = proc.processId()
-
-            if pid and pid > 0:
-                PROCESS_SET_QUOTA = 0x0100
-                PROCESS_TERMINATE = 0x0001
-                h_proc = OpenProcess(PROCESS_SET_QUOTA | PROCESS_TERMINATE, False, int(pid))
-                if h_proc:
-                    AssignProcessToJobObject(_WINDOWS_JOB_HANDLE, h_proc)
-                    CloseHandle(h_proc)
-        except Exception:
-            pass
-
-
-def register_process(proc):
-    """Register a QProcess or subprocess.Popen instance to track its lifecycle."""
-    if proc is not None:
-        _REGISTERED_PROCESSES.add(proc)
-        bind_subprocess_to_job(proc)
-
-
-def unregister_process(proc):
-    """Unregister a process when it exits naturally or is cleaned up."""
-    _REGISTERED_PROCESSES.discard(proc)
-
-
-def terminate_all_registered_processes():
-    """Terminate and wait on all active child processes upon application close."""
-    for proc in list(_REGISTERED_PROCESSES):
-        if proc is None:
-            continue
-        try:
-            # Handle PySide6 QProcess
-            if hasattr(proc, "state"):
-                if proc.state() != QProcess.ProcessState.NotRunning:
-                    proc.terminate()
-                    if not proc.waitForFinished(300):
-                        proc.kill()
-                        proc.waitForFinished(300)
-            # Handle standard Python subprocess.Popen
-            elif hasattr(proc, "poll") and proc.poll() is None:
-                proc.terminate()
-                try:
-                    proc.wait(timeout=0.3)
-                except Exception:
-                    proc.kill()
-        except Exception:
-            pass
-    _REGISTERED_PROCESSES.clear()
-
-
-# Initialize Job Object isolation on Windows as early as possible
-try:
-    init_child_process_job_isolation()
-except Exception:
-    pass
 
 
 def cleanup_old_thumbnail_cache(max_age_hours=168):

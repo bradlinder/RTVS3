@@ -1,4 +1,4 @@
-"""Radio & TV Segmenter v3.3.27 — transcript story responsibilities.
+"""Radio & TV Segmenter v3.4.12 — transcript story responsibilities.
 
 
 Methods intentionally retain the MainWindow-facing API so behavior remains
@@ -9,10 +9,73 @@ from typing import List, Optional
 from prs_shared import *
 
 
+class ChangeSpeakerDialog(QDialog):
+    """Dialog prompting whether to apply a speaker name change to all instances or a single instance."""
+
+    def __init__(self, current_name: str, target_name: str, seg_idx: int = -1, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("Change Speaker")
+        self.setMinimumWidth(480)
+        self.choice = None  # 'all', 'single', or None
+
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(20, 20, 20, 20)
+        layout.setSpacing(16)
+
+        prompt_lbl = QLabel(
+            f"Change <b>'{html.escape(current_name)}'</b> to <b>'{html.escape(target_name)}'</b> for:",
+            self,
+        )
+        prompt_lbl.setWordWrap(True)
+        prompt_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(prompt_lbl)
+
+        # Streamlined horizontal button row with concise labels that prevent text clipping
+        btn_layout = QHBoxLayout()
+        btn_layout.setSpacing(10)
+
+        self.btn_all = QPushButton("All Instances", self)
+        self.btn_all.setDefault(True)
+        self.btn_all.setMinimumHeight(36)
+        self.btn_all.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_all.clicked.connect(self._on_all)
+        btn_layout.addWidget(self.btn_all, 1)
+
+        self.btn_single = QPushButton("This Instance Only", self)
+        self.btn_single.setMinimumHeight(36)
+        self.btn_single.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_single.clicked.connect(self._on_single)
+        btn_layout.addWidget(self.btn_single, 1)
+
+        self.btn_cancel = QPushButton("Cancel", self)
+        self.btn_cancel.setMinimumHeight(36)
+        self.btn_cancel.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_cancel.clicked.connect(self.reject)
+        btn_layout.addWidget(self.btn_cancel, 1)
+
+        layout.addLayout(btn_layout)
+        self.adjustSize()
+
+    def _on_all(self):
+        self.choice = "all"
+        self.accept()
+
+    def _on_single(self):
+        self.choice = "single"
+        self.accept()
+
+
 class TranscriptStoryMixin:
     def render_transcript(self):
         if not self.transcript:
             return
+
+        v_scroll = 0
+        h_scroll = 0
+        if hasattr(self, "transcript_view") and self.transcript_view:
+            v_scroll = self.transcript_view.verticalScrollBar().value()
+            h_scroll = self.transcript_view.horizontalScrollBar().value()
+            self.transcript_view.active_highlight_anchor = None
 
         self.is_updating_transcript_view = True
         display_mode = getattr(self, "translation_display_mode", "en")
@@ -44,7 +107,7 @@ class TranscriptStoryMixin:
             spk_name = self.get_effective_speaker_name(seg_idx, orig_segment)
 
             words = segment.get("words", [])
-            if words and display_mode != "es":
+            if words:
                 for w in words:
                     token = {
                         "word": w.get("word", ""),
@@ -274,6 +337,10 @@ class TranscriptStoryMixin:
         cursor.endEditBlock()
         self._block_segment_groups = block_segment_groups
 
+        # Force synchronous text layout calculation so scroll ranges and metrics are immediately valid
+        # if hasattr(self.transcript_view, "document") and self.transcript_view.document():
+        #     self.transcript_view.document().adjustSize()
+
         self.timeline.set_transcript_selection_range(None, None)
         self.transcript_view.rebuild_anchor_index()
         self.transcript_view.set_time_anchor_index(
@@ -287,21 +354,66 @@ class TranscriptStoryMixin:
             self.comments_panel.set_comments(self.transcript.get("segments", []))
         if hasattr(self, "transcript_view"):
             self.transcript_view.update_extra_selections()
+
+        # Restore vertical/horizontal scrollbar positions to preserve viewport offset
+        if hasattr(self, "transcript_view") and self.transcript_view:
+            self.transcript_view.active_highlight_anchor = None
+            if hasattr(self.transcript_view, "lock_scroll_position"):
+                self.transcript_view.lock_scroll_position(v_scroll, h_scroll, duration_ms=400)
+            else:
+                self.transcript_view.verticalScrollBar().setValue(v_scroll)
+                self.transcript_view.horizontalScrollBar().setValue(h_scroll)
+
+            def _restore_scroll(vs=v_scroll, hs=h_scroll):
+                if hasattr(self, "transcript_view") and self.transcript_view:
+                    self.transcript_view.verticalScrollBar().setValue(vs)
+                    self.transcript_view.horizontalScrollBar().setValue(hs)
+            QTimer.singleShot(0, _restore_scroll)
+            QTimer.singleShot(25, _restore_scroll)
+            QTimer.singleShot(60, _restore_scroll)
+            QTimer.singleShot(150, _restore_scroll)
+
+            # Re-apply word highlight for current position if available WITHOUT moving the scroll viewport
+            cur_pos = getattr(self, "current_position", 0.0)
+            if cur_pos >= 0 and hasattr(self.transcript_view, "highlight_word_at_time"):
+                self.transcript_view.highlight_word_at_time(cur_pos, self.transcript, auto_scroll=False)
+
         # This is the exact project state represented by the rendered editor.
         # Text edits are grouped from this baseline into one undoable action.
         if hasattr(self, "_capture_project_state") and not getattr(self, "is_restoring_undo", False):
             self._transcript_edit_baseline = self._capture_project_state()
         self.is_updating_transcript_view = False
 
-        if display_mode != "en":
-            self.transcript_view.setReadOnly(True)
-            if hasattr(self, "transcript_mode_toggle_btn"):
+        if hasattr(self, "transcript_mode_toggle_btn"):
+            if display_mode in ("split", "bilingual"):
                 self.transcript_mode_toggle_btn.setEnabled(False)
-                self.transcript_mode_toggle_btn.setToolTip("Editing is disabled while viewing translations. Switch to English (Original) to edit.")
-        else:
-            if hasattr(self, "transcript_mode_toggle_btn"):
+                self.transcript_mode_toggle_btn.setChecked(False)
+                self.transcript_mode_toggle_btn.setText("Edit Transcript")
+                self.transcript_mode_toggle_btn.setStyleSheet("")
+                self.transcript_mode_toggle_btn.setToolTip("Editing is only available in single-language views (English or Español).")
+            else:
                 self.transcript_mode_toggle_btn.setEnabled(True)
-                self.transcript_mode_toggle_btn.setToolTip("Toggle between Viewing Mode (click to play/seek audio) and Editing Mode (type/edit transcript text).")
+                is_editing = getattr(self.transcript_view, "is_editing_mode", False)
+                self.transcript_mode_toggle_btn.setChecked(is_editing)
+                if is_editing:
+                    self.transcript_mode_toggle_btn.setText("View Transcript")
+                    self.transcript_mode_toggle_btn.setToolTip("Click to exit editing mode and return to interactive viewing.")
+                    self.transcript_mode_toggle_btn.setStyleSheet("font-weight: bold; background-color: #2b5278; color: white;")
+                else:
+                    self.transcript_mode_toggle_btn.setText("Edit Transcript")
+                    self.transcript_mode_toggle_btn.setStyleSheet("")
+                    if display_mode == "es":
+                        self.transcript_mode_toggle_btn.setToolTip("Toggle between Viewing Mode and Editing Mode for Spanish translation (F2)")
+                    else:
+                        self.transcript_mode_toggle_btn.setToolTip("Toggle between Viewing Mode (click to play/seek audio) and Editing Mode (type/edit transcript text) (F2)")
+
+        if hasattr(self, "transcript_edit_mode_action"):
+            self.transcript_edit_mode_action.setEnabled(display_mode not in ("split", "bilingual"))
+            self.transcript_edit_mode_action.setChecked(False if display_mode in ("split", "bilingual") else getattr(self.transcript_view, "is_editing_mode", False))
+
+        if display_mode in ("split", "bilingual"):
+            self.transcript_view.setReadOnly(True)
+        else:
             self.transcript_view.setReadOnly(not getattr(self.transcript_view, "is_editing_mode", False))
 
     def on_transcript_selection_changed(self):
@@ -359,7 +471,19 @@ class TranscriptStoryMixin:
     def on_transcript_text_changed(self):
         if self.is_updating_transcript_view or getattr(self, "is_restoring_undo", False) or not self.transcript:
             return
-        if getattr(self, "translation_display_mode", "en") != "en":
+        display_mode = getattr(self, "translation_display_mode", "en")
+        if display_mode in ("split", "bilingual"):
+            return
+
+        if display_mode == "es":
+            es_item = self.get_spanish_translation_item() if hasattr(self, "get_spanish_translation_item") else None
+            if not es_item or not isinstance(es_item, dict):
+                return
+            target_segments = es_item.get("segments", [])
+        else:
+            target_segments = self.transcript.get("segments", [])
+
+        if not target_segments:
             return
 
         # Keep the data model synchronized with the editor. Each rendered
@@ -371,7 +495,6 @@ class TranscriptStoryMixin:
         # an edit lands on the right segment(s) instead of on block index i.
         doc = self.transcript_view.document()
         blocks_count = doc.blockCount()
-        segments = self.transcript.get("segments", [])
         block_groups = getattr(self, "_block_segment_groups", None) or []
 
         known_speaker_labels = None
@@ -411,7 +534,7 @@ class TranscriptStoryMixin:
             return word_formats
 
         for i in range(min(blocks_count, len(block_groups))):
-            groups = [g for g in block_groups[i] if 0 <= g[0] < len(segments)]
+            groups = [g for g in block_groups[i] if 0 <= g[0] < len(target_segments)]
             if not groups:
                 continue
 
@@ -435,7 +558,7 @@ class TranscriptStoryMixin:
             block_fmts = _extract_block_word_formatting(block, prefix_len)
 
             if len(groups) == 1:
-                target_seg = segments[groups[0][0]]
+                target_seg = target_segments[groups[0][0]]
                 target_seg["text"] = cleaned_text
                 self.sync_segment_words(target_seg, cleaned_text, block_fmts)
                 continue
@@ -460,13 +583,18 @@ class TranscriptStoryMixin:
                     share, remaining_words = remaining_words[:n], remaining_words[n:]
                     share_fmts, remaining_fmts = remaining_fmts[:n], remaining_fmts[n:]
                 seg_text = " ".join(share)
-                segments[seg_idx]["text"] = seg_text
-                self.sync_segment_words(segments[seg_idx], seg_text, share_fmts)
+                target_segments[seg_idx]["text"] = seg_text
+                self.sync_segment_words(target_segments[seg_idx], seg_text, share_fmts)
 
-        if self.translations:
+        if display_mode == "en" and self.translations:
             for key in self.translations:
                 self.translations[key]["status"] = "stale"
             self.log_activity("[TRANSLATION] Source transcript edited; existing translations marked for update.", mark_dirty=False)
+        elif display_mode == "es":
+            if hasattr(self, "get_spanish_translation_item"):
+                es_item = self.get_spanish_translation_item()
+                if es_item and isinstance(es_item, dict):
+                    es_item["status"] = "ready"
 
         if hasattr(self, "transcript_view"):
             self.transcript_view.update_extra_selections()
@@ -479,7 +607,6 @@ class TranscriptStoryMixin:
         timer = getattr(self, "_transcript_undo_timer", None)
         if timer is not None:
             timer.start()
-
 
         self.mark_project_dirty()
 
@@ -503,18 +630,12 @@ class TranscriptStoryMixin:
             if hasattr(self.transcript_view, "move_cursor_to_time"):
                 self.transcript_view.move_cursor_to_time(seconds, self.transcript)
         elif text.startswith("speaker:"):
-            parts = text.split(":")
+            parts = text.split(":", 2)
             if len(parts) >= 2 and parts[1].isdigit():
                 seg_idx = int(parts[1])
-                segments = self.transcript.get("segments", []) if self.transcript else []
-                if 0 <= seg_idx < len(segments):
-                    seg = segments[seg_idx]
-                    start_time = float(seg.get("start", 0.0))
-                    self.last_position_source = "transcript"
-                    self.last_transcript_cursor_time = start_time
-                    self.seek_to(start_time)
-                    if hasattr(self.transcript_view, "move_cursor_to_time"):
-                        self.transcript_view.move_cursor_to_time(start_time, self.transcript)
+                raw_spk = parts[2] if len(parts) > 2 else ""
+                if hasattr(self, "prompt_rename_speaker"):
+                    self.prompt_rename_speaker(seg_idx, raw_spk)
 
     def edit_segment_comment_dialog(
         self,
@@ -726,6 +847,26 @@ class TranscriptStoryMixin:
 
     # Alias for backward compatibility
     toggle_show_notes = toggle_show_comments
+
+    def toggle_comment_highlights(self, checked):
+        """Toggle display of amber comment highlights in transcript view."""
+        self.show_comment_highlights = checked
+        if hasattr(self, "settings_store"):
+            self.settings_store.setValue("show_comment_highlights", "true" if checked else "false")
+        if hasattr(self, "toggle_comment_highlights_action"):
+            self.toggle_comment_highlights_action.blockSignals(True)
+            self.toggle_comment_highlights_action.setChecked(checked)
+            self.toggle_comment_highlights_action.blockSignals(False)
+        if hasattr(self, "transcript_show_highlights_action"):
+            self.transcript_show_highlights_action.blockSignals(True)
+            self.transcript_show_highlights_action.setChecked(checked)
+            self.transcript_show_highlights_action.blockSignals(False)
+        if hasattr(self, "transcript_view"):
+            self.transcript_view.show_comment_highlights = checked
+            self.transcript_view.update_extra_selections()
+        msg = "Comment highlights visible." if checked else "Comment highlights hidden."
+        if hasattr(self, "statusBar") and self.statusBar():
+            self.statusBar().showMessage(msg, 3000)
 
     def handle_insert_speaker_request(self, seg_idx, split_time, speaker_name):
         """Dispatched from the right-click 'Add Speaker Label Here' context menu."""
@@ -994,6 +1135,10 @@ class TranscriptStoryMixin:
         if seg_idx < 0 or seg_idx >= len(segments):
             return
 
+        # Capture viewport scroll position before modal dialogs take focus
+        v_scroll_before = self.transcript_view.verticalScrollBar().value() if hasattr(self, "transcript_view") and self.transcript_view else 0
+        h_scroll_before = self.transcript_view.horizontalScrollBar().value() if hasattr(self, "transcript_view") and self.transcript_view else 0
+
         current_name = (
             self.get_effective_speaker_name(seg_idx, segments[seg_idx])
             if seg_idx < len(segments)
@@ -1009,32 +1154,30 @@ class TranscriptStoryMixin:
                 "",
             )
             if not accepted or not new_name.strip():
+                if hasattr(self, "transcript_view") and self.transcript_view:
+                    self.transcript_view.lock_scroll_position(v_scroll_before, h_scroll_before, duration_ms=200)
                 return
             target_name = new_name.strip()
         else:
             target_name = str(target_name).strip()
 
         if not target_name or target_name == current_name:
+            if hasattr(self, "transcript_view") and self.transcript_view:
+                self.transcript_view.lock_scroll_position(v_scroll_before, h_scroll_before, duration_ms=200)
             return
 
         # Prompt whether to change all instances or this instance only
-        msg_box = QMessageBox(self)
-        msg_box.setWindowTitle("Change Speaker")
-        msg_box.setText(f"Change '{current_name}' to '{target_name}' for:")
-
-        all_btn = msg_box.addButton(f"All Instances of '{current_name}'", QMessageBox.ButtonRole.AcceptRole)
-        single_btn = msg_box.addButton("This Instance Only", QMessageBox.ButtonRole.ActionRole)
-        cancel_btn = msg_box.addButton(QMessageBox.StandardButton.Cancel)
-
-        msg_box.exec()
-        clicked = msg_box.clickedButton()
-        if clicked not in (all_btn, single_btn):
+        spk_dlg = ChangeSpeakerDialog(current_name, target_name, seg_idx=seg_idx, parent=self)
+        spk_dlg.exec()
+        if spk_dlg.choice not in ("all", "single"):
+            if hasattr(self, "transcript_view") and self.transcript_view:
+                self.transcript_view.lock_scroll_position(v_scroll_before, h_scroll_before, duration_ms=200)
             return
 
         self.flush_pending_transcript_undo() if hasattr(self, "flush_pending_transcript_undo") else None
         before_state = self._capture_project_state() if hasattr(self, "_capture_project_state") else None
 
-        if clicked == all_btn:
+        if spk_dlg.choice == "all":
             if raw_speaker:
                 self.speaker_names[str(raw_speaker)] = target_name
             self.add_custom_speaker_to_glossary(target_name)
@@ -1044,7 +1187,7 @@ class TranscriptStoryMixin:
                     self.speaker_names[override_key] = target_name
                     self.segment_speaker_overrides[idx] = override_key
             self.log_activity(f"[SPEAKER] Changed all instances of '{current_name}' to '{target_name}'")
-        elif clicked == single_btn:
+        elif spk_dlg.choice == "single":
             override_key = f"SEG_{seg_idx}_SPEAKER"
             self.speaker_names[override_key] = target_name
             self.segment_speaker_overrides[seg_idx] = override_key
@@ -1055,6 +1198,9 @@ class TranscriptStoryMixin:
 
         if before_state is not None and hasattr(self, "_commit_project_state_change"):
             self._commit_project_state_change(before_state, f"Change Speaker: {current_name} → {target_name}")
+
+        if hasattr(self, "transcript_view") and self.transcript_view:
+            self.transcript_view.lock_scroll_position(v_scroll_before, h_scroll_before, duration_ms=400)
 
         self.render_transcript()
         self.save_project()
@@ -2169,15 +2315,10 @@ class StoryFadesDialog(QDialog):
         self.fade_out_spin.setValue(curr_out)
         form_layout.addRow("Fade Out Duration:", self.fade_out_spin)
 
-        self.fade_curve_combo = QComboBox(self)
-        self.fade_curve_combo.addItem("Linear Ramp", "linear")
-        self.fade_curve_combo.addItem("Cosine S-Curve", "s_curve")
-        self.fade_curve_combo.addItem("Logarithmic", "logarithmic")
-        self.fade_curve_combo.addItem("Exponential", "exponential")
+        from prs_shared import FadeCurveVisualSelector
+        self.fade_curve_combo = FadeCurveVisualSelector(self, button_width=86, button_height=56)
         curr_curve = getattr(self.story, "fade_curve", "linear") if self.story else "linear"
-        c_idx = self.fade_curve_combo.findData(curr_curve)
-        if c_idx >= 0:
-            self.fade_curve_combo.setCurrentIndex(c_idx)
+        self.fade_curve_combo.setCurrentData(curr_curve)
         form_layout.addRow("Fade Curve Profile:", self.fade_curve_combo)
 
         layout.addWidget(form_group)
@@ -2219,9 +2360,7 @@ class StoryFadesDialog(QDialog):
         def_curve = str(settings.value("default_fade_curve", "linear") or "linear")
         self.fade_in_spin.setValue(def_in)
         self.fade_out_spin.setValue(def_out)
-        idx = self.fade_curve_combo.findData(def_curve)
-        if idx >= 0:
-            self.fade_curve_combo.setCurrentIndex(idx)
+        self.fade_curve_combo.setCurrentData(def_curve)
 
     def get_fades(self):
         return self.fade_in_spin.value(), self.fade_out_spin.value(), self.fade_curve_combo.currentData(), self.apply_all_cb.isChecked()

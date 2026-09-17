@@ -181,11 +181,6 @@ class UiLayoutMixin:
         self.transcript_language_selector.currentIndexChanged.connect(self.change_translation_display)
         search_bar.addWidget(self.transcript_language_selector)
 
-        self.translate_button = QPushButton("Translate...", self)
-        self.translate_button.setObjectName("translate_button")
-        self.translate_button.clicked.connect(lambda: self.start_translation("en", "es"))
-        search_bar.addWidget(self.translate_button)
-
         self.transcript_mode_toggle_btn = QPushButton("Edit Transcript", self)
         self.transcript_mode_toggle_btn.setCheckable(True)
         self.transcript_mode_toggle_btn.setChecked(False)
@@ -193,31 +188,101 @@ class UiLayoutMixin:
         self.transcript_mode_toggle_btn.clicked.connect(self.toggle_transcript_editing_mode)
         search_bar.addWidget(self.transcript_mode_toggle_btn)
 
-        # Compact transcript font controls. The font size is independent of the
+        # 6-Color Persistent Transcript Highlighter (accessible in both View and Edit modes)
+        self.current_highlight_color = "#fef08a"
+        self.transcript_highlight_btn = QToolButton(self)
+        self.transcript_highlight_btn.setObjectName("transcript_highlight_btn")
+        self.transcript_highlight_btn.setText("🖊️ Highlight ▾")
+        self.transcript_highlight_btn.setPopupMode(QToolButton.ToolButtonPopupMode.MenuButtonPopup)
+        self.transcript_highlight_btn.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.transcript_highlight_btn.setToolTip("Highlight selected text (Yellow) (Ctrl+Shift+H)")
+        self.transcript_highlight_btn.setStyleSheet("padding: 2px 6px;")
+
+        hdr_highlight_menu = QMenu(self.transcript_highlight_btn)
+        hl_colors = [
+            ("🟡 Yellow", "#fef08a"),
+            ("🟢 Green", "#bbf7d0"),
+            ("🔵 Blue / Cyan", "#bae6fd"),
+            ("🌸 Pink", "#fbcfe8"),
+            ("🟠 Orange", "#fed7aa"),
+            ("🟣 Purple", "#e9d5ff"),
+        ]
+
+        def _make_hdr_hl_handler(col_hex, label_name):
+            def _handler():
+                self.current_highlight_color = col_hex
+                self.transcript_highlight_btn.setToolTip(f"Highlight text ({label_name}) (Ctrl+Shift+H)")
+                if hasattr(self, "transcript_view") and hasattr(self.transcript_view, "toggle_highlight"):
+                    self.transcript_view.toggle_highlight(col_hex, force_apply=True)
+            return _handler
+
+        for label, hex_code in hl_colors:
+            act = hdr_highlight_menu.addAction(label)
+            act.triggered.connect(_make_hdr_hl_handler(hex_code, label))
+
+        hdr_highlight_menu.addSeparator()
+        clear_hl_act = hdr_highlight_menu.addAction("⚪ Remove Highlight")
+        clear_hl_act.triggered.connect(
+            lambda: getattr(self.transcript_view, "remove_highlight", lambda: None)()
+        )
+
+        self.transcript_highlight_btn.setMenu(hdr_highlight_menu)
+        self.transcript_highlight_btn.clicked.connect(
+            lambda: getattr(self.transcript_view, "toggle_highlight", lambda c: None)(getattr(self, "current_highlight_color", "#fef08a"))
+        )
+        search_bar.addWidget(self.transcript_highlight_btn)
+
+        # Single consolidated transcript font size dropdown. The font size is independent of the
         # rest of the application and is persisted between sessions.
-        self.transcript_font_down_btn = QPushButton("A−", self)
-        self.transcript_font_down_btn.setObjectName("transcript_font_down_btn")
-        self.transcript_font_down_btn.setToolTip("Decrease transcript font size (Ctrl+-)")
-        self.transcript_font_down_btn.clicked.connect(lambda: self.adjust_transcript_font_size(-1))
-        search_bar.addWidget(self.transcript_font_down_btn)
+        self.transcript_font_size_combo = QComboBox(self)
+        self.transcript_font_size_combo.setObjectName("transcript_font_size_combo")
+        self.transcript_font_size_combo.setToolTip("Transcript font size (Ctrl++, Ctrl+-, Ctrl+0)")
+        self.transcript_font_size_combo.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.transcript_font_size_combo.setStyleSheet("padding: 2px 6px;")
+        font_scales = [
+            ("80%", 0.80),
+            ("90%", 0.90),
+            ("100%", 1.00),
+            ("110%", 1.10),
+            ("120%", 1.20),
+            ("130%", 1.30),
+            ("140%", 1.40),
+            ("150%", 1.50),
+            ("160%", 1.60),
+            ("175%", 1.75),
+            ("180%", 1.80),
+        ]
+        for label, scale_val in font_scales:
+            self.transcript_font_size_combo.addItem(label, scale_val)
 
-        self.transcript_font_reset_btn = QPushButton("A", self)
-        self.transcript_font_reset_btn.setObjectName("transcript_font_reset_btn")
-        self.transcript_font_reset_btn.setToolTip("Reset transcript font size (Ctrl+0)")
-        self.transcript_font_reset_btn.clicked.connect(self.reset_transcript_font_size)
-        search_bar.addWidget(self.transcript_font_reset_btn)
+        init_scale = getattr(self, "transcript_font_scale", 1.0)
+        best_init_idx = 2
+        min_diff = 999.0
+        for i in range(self.transcript_font_size_combo.count()):
+            val = float(self.transcript_font_size_combo.itemData(i))
+            diff = abs(val - init_scale)
+            if diff < min_diff:
+                min_diff = diff
+                best_init_idx = i
+        self.transcript_font_size_combo.setCurrentIndex(best_init_idx)
+        self.transcript_font_size_combo.currentIndexChanged.connect(self._on_font_size_combo_changed)
+        search_bar.addWidget(self.transcript_font_size_combo)
 
-        self.transcript_font_up_btn = QPushButton("A+", self)
-        self.transcript_font_up_btn.setObjectName("transcript_font_up_btn")
-        self.transcript_font_up_btn.setToolTip("Increase transcript font size (Ctrl++)")
-        self.transcript_font_up_btn.clicked.connect(lambda: self.adjust_transcript_font_size(1))
-        search_bar.addWidget(self.transcript_font_up_btn)
+        open_comments = False
+        if hasattr(self, "settings_store") and self.settings_store is not None:
+            open_comments = str(self.settings_store.value("open_comments_on_launch", "false")).lower() in {"1", "true", "yes"}
+        self.show_comments = open_comments
+
+        show_hl = True
+        if hasattr(self, "settings_store") and self.settings_store is not None:
+            show_hl = str(self.settings_store.value("show_comment_highlights", "true")).lower() in {"1", "true", "yes"}
+        self.show_comment_highlights = show_hl
 
         self.comments_toggle_btn = QPushButton("💬 Comments", self)
         self.comments_toggle_btn.setObjectName("comments_toggle_btn")
         self.comments_toggle_btn.setCheckable(True)
-        self.comments_toggle_btn.setChecked(getattr(self, "show_comments", True))
-        self.comments_toggle_btn.setToolTip("Toggle comments sidebar & annotations (Ctrl+Alt+C)")
+        self.comments_toggle_btn.setChecked(self.show_comments)
+        self.comments_toggle_btn.setToolTip("Toggle comments sidebar (Ctrl+Alt+C)")
         self.comments_toggle_btn.clicked.connect(lambda: getattr(self, "toggle_comments_panel", lambda: None)())
         search_bar.addWidget(self.comments_toggle_btn)
 
@@ -271,49 +336,6 @@ class UiLayoutMixin:
         fmt_sep1.setFrameShadow(QFrame.Shadow.Sunken)
         fmt_layout.addWidget(fmt_sep1)
 
-        # 6 Custom Highlighter Color Options
-        self.current_highlight_color = "#fef08a"
-        self.fmt_highlight_btn = QToolButton(self.transcript_format_toolbar)
-        self.fmt_highlight_btn.setText("🖊️ Highlight ▾")
-        self.fmt_highlight_btn.setPopupMode(QToolButton.ToolButtonPopupMode.MenuButtonPopup)
-        self.fmt_highlight_btn.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        self.fmt_highlight_btn.setToolTip("Highlight selected text (Ctrl+Shift+H)")
-        self.fmt_highlight_btn.setStyleSheet("padding: 2px 6px;")
-
-        highlight_menu = QMenu(self.fmt_highlight_btn)
-        hl_colors = [
-            ("🟡 Yellow", "#fef08a"),
-            ("🟢 Green", "#bbf7d0"),
-            ("🔵 Blue / Cyan", "#bae6fd"),
-            ("🌸 Pink", "#fbcfe8"),
-            ("🟠 Orange", "#fed7aa"),
-            ("🟣 Purple", "#e9d5ff"),
-        ]
-
-        def _make_hl_handler(col_hex, label_name):
-            def _handler():
-                self.current_highlight_color = col_hex
-                self.fmt_highlight_btn.setToolTip(f"Highlight text ({label_name}) (Ctrl+Shift+H)")
-                if hasattr(self, "transcript_view") and hasattr(self.transcript_view, "toggle_highlight"):
-                    self.transcript_view.toggle_highlight(col_hex, force_apply=True)
-            return _handler
-
-        for label, hex_code in hl_colors:
-            act = highlight_menu.addAction(label)
-            act.triggered.connect(_make_hl_handler(hex_code, label))
-
-        highlight_menu.addSeparator()
-        clear_hl_act = highlight_menu.addAction("⚪ Remove Highlight")
-        clear_hl_act.triggered.connect(
-            lambda: getattr(self.transcript_view, "toggle_highlight", lambda c: None)("#00000000", force_apply=False)
-        )
-
-        self.fmt_highlight_btn.setMenu(highlight_menu)
-        self.fmt_highlight_btn.clicked.connect(
-            lambda: getattr(self.transcript_view, "toggle_highlight", lambda c: None)(self.current_highlight_color)
-        )
-        fmt_layout.addWidget(self.fmt_highlight_btn)
-
         self.fmt_clear_btn = QToolButton(self.transcript_format_toolbar)
         self.fmt_clear_btn.setText("Tx Clear")
         self.fmt_clear_btn.setFocusPolicy(Qt.FocusPolicy.NoFocus)
@@ -365,6 +387,7 @@ class UiLayoutMixin:
         self.comments_panel.commentEditRequested.connect(lambda s: getattr(self, "edit_segment_comment_dialog", getattr(self, "edit_segment_note_dialog", lambda x: None))(s))
         self.comments_panel.commentDeleteRequested.connect(lambda s: getattr(self, "delete_segment_comment", lambda x: None)(s))
         self.transcript_comments_splitter.addWidget(self.comments_panel)
+        self.comments_panel.setVisible(getattr(self, "show_comments", False))
         self.transcript_comments_splitter.setStretchFactor(0, 3)
         self.transcript_comments_splitter.setStretchFactor(1, 1)
 
@@ -577,10 +600,12 @@ class UiLayoutMixin:
         self.fmt_strike_action.triggered.connect(lambda: getattr(self.transcript_view, "toggle_strikethrough", lambda: None)())
         self.addAction(self.fmt_strike_action)
 
-        self.fmt_highlight_action = QAction("Highlight Text (Yellow)", self)
+        self.fmt_highlight_action = QAction("Highlight Text", self)
         self.fmt_highlight_action.setShortcut(platform_seq("Ctrl+Shift+H"))
         self.fmt_highlight_action.setShortcutContext(Qt.ShortcutContext.ApplicationShortcut)
-        self.fmt_highlight_action.triggered.connect(lambda: getattr(self.transcript_view, "toggle_highlight", lambda: None)())
+        self.fmt_highlight_action.triggered.connect(
+            lambda: getattr(self.transcript_view, "toggle_highlight", lambda c: None)(getattr(self, "current_highlight_color", "#fef08a"))
+        )
         self.addAction(self.fmt_highlight_action)
 
         self.fmt_clear_action = QAction("Clear Text Formatting", self)
@@ -764,13 +789,20 @@ class UiLayoutMixin:
         self.toggle_activity_action.toggled.connect(lambda checked: self.activity_panel.setVisible(checked))
         view_menu.addAction(self.toggle_activity_action)
 
-        self.toggle_comments_action = QAction("Show &Comments Sidebar & Highlights", self, checkable=True)
+        self.toggle_comments_action = QAction("&Comments Sidebar Panel", self, checkable=True)
         self.toggle_comments_action.setShortcut(platform_seq("Ctrl+Alt+C"))
         self.toggle_comments_action.setShortcutContext(Qt.ShortcutContext.ApplicationShortcut)
-        self.toggle_comments_action.setChecked(str(getattr(self, "show_comments", getattr(self, "show_notes", True))).lower() in {"1", "true", "yes"})
+        self.toggle_comments_action.setChecked(str(getattr(self, "show_comments", False)).lower() in {"1", "true", "yes"})
         self.toggle_comments_action.toggled.connect(lambda checked: getattr(self, "toggle_show_comments", getattr(self, "toggle_show_notes", lambda c: None))(checked))
         view_menu.addAction(self.toggle_comments_action)
         self.toggle_notes_action = self.toggle_comments_action
+
+        self.toggle_comment_highlights_action = QAction("Show &Comment Highlights", self, checkable=True)
+        self.toggle_comment_highlights_action.setShortcut(platform_seq("Ctrl+Alt+H"))
+        self.toggle_comment_highlights_action.setShortcutContext(Qt.ShortcutContext.ApplicationShortcut)
+        self.toggle_comment_highlights_action.setChecked(str(getattr(self, "show_comment_highlights", True)).lower() in {"1", "true", "yes"})
+        self.toggle_comment_highlights_action.toggled.connect(lambda checked: getattr(self, "toggle_comment_highlights", lambda c: None)(checked))
+        view_menu.addAction(self.toggle_comment_highlights_action)
 
         view_menu.addSeparator()
 
@@ -817,11 +849,41 @@ class UiLayoutMixin:
         self.transcript_show_comments_action = self.toggle_comments_action
         transcript_menu.addAction(self.transcript_show_comments_action)
 
+        self.transcript_show_highlights_action = self.toggle_comment_highlights_action
+        transcript_menu.addAction(self.transcript_show_highlights_action)
+
         self.transcript_edit_mode_action = QAction("&Edit Transcript Mode", self, checkable=True)
         self.transcript_edit_mode_action.setShortcut(platform_seq("F2"))
+        self.transcript_edit_mode_action.setShortcutContext(Qt.ShortcutContext.ApplicationShortcut)
         self.transcript_edit_mode_action.setChecked(getattr(self.transcript_view, "is_editing_mode", False) if hasattr(self, "transcript_view") else False)
-        self.transcript_edit_mode_action.toggled.connect(lambda checked: getattr(self, "toggle_transcript_editing_mode", lambda: None)())
+        self.transcript_edit_mode_action.triggered.connect(lambda checked: getattr(self, "toggle_transcript_editing_mode", lambda: None)(checked))
+        self.addAction(self.transcript_edit_mode_action)
         transcript_menu.addAction(self.transcript_edit_mode_action)
+
+        transcript_menu.addSeparator()
+
+        # Language Display Submenu
+        self.language_display_menu = transcript_menu.addMenu("&Language Display")
+        self.lang_action_group = QActionGroup(self)
+        self.lang_action_group.setExclusive(True)
+
+        self.lang_en_action = QAction("English (Original)", self, checkable=True)
+        self.lang_en_action.setChecked(True)
+        self.lang_en_action.triggered.connect(lambda: getattr(self, "change_translation_display", lambda m: None)("en"))
+        self.lang_action_group.addAction(self.lang_en_action)
+        self.language_display_menu.addAction(self.lang_en_action)
+
+        self.lang_es_action = QAction("Español (Translation)", self, checkable=True)
+        self.lang_es_action.setEnabled(False)
+        self.lang_es_action.triggered.connect(lambda: getattr(self, "change_translation_display", lambda m: None)("es"))
+        self.lang_action_group.addAction(self.lang_es_action)
+        self.language_display_menu.addAction(self.lang_es_action)
+
+        self.lang_split_action = QAction("Bilingual (Split View)", self, checkable=True)
+        self.lang_split_action.setEnabled(False)
+        self.lang_split_action.triggered.connect(lambda: getattr(self, "change_translation_display", lambda m: None)("split"))
+        self.lang_action_group.addAction(self.lang_split_action)
+        self.language_display_menu.addAction(self.lang_split_action)
 
         view_menu.addSeparator()
 
@@ -1161,34 +1223,60 @@ class UiLayoutMixin:
         self.find_dialog.raise_()
         self.find_dialog.activateWindow()
 
-    def toggle_transcript_editing_mode(self):
+    def toggle_transcript_editing_mode(self, *args, **kwargs):
         """Toggle between Viewing Mode (navigation/click-to-seek) and Editing Mode (text editing)."""
         if not hasattr(self, "transcript_view"):
             return
-        if getattr(self, "translation_display_mode", "en") != "en":
-            if hasattr(self, "statusBar"):
-                self.statusBar().showMessage("Editing is only available in English (Original) view.")
+        display_mode = getattr(self, "translation_display_mode", "en")
+        if display_mode in ("split", "bilingual"):
+            if hasattr(self, "statusBar") and self.statusBar():
+                self.statusBar().showMessage("Editing is only available in single-language views (English or Español).", 4000)
+            if hasattr(self, "transcript_edit_mode_action"):
+                self.transcript_edit_mode_action.blockSignals(True)
+                self.transcript_edit_mode_action.setChecked(False)
+                self.transcript_edit_mode_action.blockSignals(False)
+            if hasattr(self, "transcript_mode_toggle_btn"):
+                self.transcript_mode_toggle_btn.blockSignals(True)
+                self.transcript_mode_toggle_btn.setChecked(False)
+                self.transcript_mode_toggle_btn.blockSignals(False)
             return
-        new_mode = not getattr(self.transcript_view, "is_editing_mode", False)
+
+        if args and isinstance(args[0], bool):
+            new_mode = args[0]
+        else:
+            new_mode = not getattr(self.transcript_view, "is_editing_mode", False)
         self.transcript_view.set_editing_mode(new_mode)
 
     def _on_transcript_editing_mode_changed(self, is_editing: bool):
         """Respond to changes in transcript edit vs view mode."""
+        display_mode = getattr(self, "translation_display_mode", "en")
         if hasattr(self, "transcript_mode_toggle_btn"):
-            self.transcript_mode_toggle_btn.setChecked(is_editing)
-            if is_editing:
-                self.transcript_mode_toggle_btn.setText("View Transcript")
-                self.transcript_mode_toggle_btn.setToolTip("Click to exit editing mode and return to interactive viewing.")
-                self.transcript_mode_toggle_btn.setStyleSheet("font-weight: bold; background-color: #2b5278; color: white;")
-            else:
+            if display_mode in ("split", "bilingual"):
+                self.transcript_mode_toggle_btn.setChecked(False)
+                self.transcript_mode_toggle_btn.setEnabled(False)
                 self.transcript_mode_toggle_btn.setText("Edit Transcript")
-                self.transcript_mode_toggle_btn.setToolTip("Click to edit transcript text.")
+                self.transcript_mode_toggle_btn.setToolTip("Editing is only available in single-language views (English or Español).")
                 self.transcript_mode_toggle_btn.setStyleSheet("")
+            else:
+                self.transcript_mode_toggle_btn.setEnabled(True)
+                self.transcript_mode_toggle_btn.setChecked(is_editing)
+                if is_editing:
+                    self.transcript_mode_toggle_btn.setText("View Transcript")
+                    self.transcript_mode_toggle_btn.setToolTip("Click to exit editing mode and return to interactive viewing.")
+                    self.transcript_mode_toggle_btn.setStyleSheet("font-weight: bold; background-color: #2b5278; color: white;")
+                else:
+                    self.transcript_mode_toggle_btn.setText("Edit Transcript")
+                    if display_mode == "es":
+                        self.transcript_mode_toggle_btn.setToolTip("Toggle between Viewing Mode and Editing Mode for Spanish translation (F2)")
+                    else:
+                        self.transcript_mode_toggle_btn.setToolTip("Toggle between Viewing Mode (click to play/seek audio) and Editing Mode (type/edit transcript text) (F2)")
+                    self.transcript_mode_toggle_btn.setStyleSheet("")
         if hasattr(self, "transcript_format_toolbar"):
             self.transcript_format_toolbar.setVisible(is_editing)
         if hasattr(self, "transcript_edit_mode_action"):
             self.transcript_edit_mode_action.blockSignals(True)
             self.transcript_edit_mode_action.setChecked(is_editing)
+            self.transcript_edit_mode_action.setEnabled(display_mode not in ("split", "bilingual"))
             self.transcript_edit_mode_action.blockSignals(False)
         if is_editing:
             self._sync_format_toolbar_buttons()
@@ -1235,11 +1323,29 @@ class UiLayoutMixin:
         self.transcript_font_scale = scale
         if hasattr(self, "transcript_view"):
             self.transcript_view.set_font_scale(scale)
+        if hasattr(self, "transcript_font_size_combo") and self.transcript_font_size_combo is not None:
+            self.transcript_font_size_combo.blockSignals(True)
+            best_idx = 0
+            min_diff = 999.0
+            for i in range(self.transcript_font_size_combo.count()):
+                val = float(self.transcript_font_size_combo.itemData(i))
+                diff = abs(val - scale)
+                if diff < min_diff:
+                    min_diff = diff
+                    best_idx = i
+            self.transcript_font_size_combo.setCurrentIndex(best_idx)
+            self.transcript_font_size_combo.blockSignals(False)
         if persist and hasattr(self, "settings_store"):
             self.settings_store.setValue("transcript_font_scale", scale)
             self.settings_store.sync()
         if hasattr(self, "statusBar"):
             self.statusBar().showMessage(f"Transcript font size: {round(scale * 100)}%", 1500)
+
+    def _on_font_size_combo_changed(self, index: int):
+        if hasattr(self, "transcript_font_size_combo") and self.transcript_font_size_combo is not None:
+            scale_val = self.transcript_font_size_combo.itemData(index)
+            if scale_val is not None:
+                self._apply_transcript_font_scale(float(scale_val))
 
     def adjust_transcript_font_size(self, direction):
         """Increase or decrease transcript font size by one 5% step."""
@@ -1555,10 +1661,11 @@ class UiLayoutMixin:
 
         # 3. Synchronize core UI elements according to plugin enabled state
         is_translation_enabled = self.plugin_manager.is_plugin_enabled("translation")
+        has_translations = getattr(self, "has_spanish_translation", lambda: False)() or bool(getattr(self, "translations", {})) or getattr(self, "translation_display_mode", "en") != "en"
         if hasattr(self, "translate_button"):
             self.translate_button.setVisible(is_translation_enabled)
         if hasattr(self, "transcript_language_selector"):
-            self.transcript_language_selector.setVisible(is_translation_enabled)
+            self.transcript_language_selector.setVisible(is_translation_enabled or has_translations)
         if hasattr(self, "translate_action"):
             self.translate_action.setVisible(is_translation_enabled)
         if hasattr(self, "tools_translate_action"):

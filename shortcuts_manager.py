@@ -255,11 +255,11 @@ SHORTCUT_DEFINITIONS: List[ShortcutDef] = [
     ),
     ShortcutDef(
         action_id="fmt_highlight",
-        name="Highlight Text (Yellow)",
+        name="Highlight Text",
         category="Transcript Editing & Formatting",
         default_seq="Ctrl+Shift+H",
         default_mac="Meta+Shift+H",
-        description="Apply or remove yellow highlight on selected transcript text",
+        description="Apply or toggle highlight on selected transcript text",
         attr_name="fmt_highlight_action",
     ),
     ShortcutDef(
@@ -987,7 +987,7 @@ class ShortcutsManager(QObject):
             "fmt_italic": ("fmt_italic_btn", "Italic"),
             "fmt_underline": ("fmt_underline_btn", "Underline"),
             "fmt_strikethrough": ("fmt_strike_btn", "Strikethrough"),
-            "fmt_highlight": ("fmt_highlight_btn", "Highlight Text (Yellow)"),
+            "fmt_highlight": ("transcript_highlight_btn", "Highlight Selected Text"),
             "fmt_clear": ("fmt_clear_btn", "Clear Formatting"),
             "split_speaker": ("fmt_split_btn", "Split Speaker Segment at Cursor"),
             "play_pause": ("play_pause_btn", "Play / Pause playback"),

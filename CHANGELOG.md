@@ -1,5 +1,115 @@
 # Changelog
 
+## v3.4.12
+- **Zero-Jump Transcript Viewport Stability & Focus Isolation**:
+  - **Eliminated Undo-Push Playhead Seek Jump**: Resolved the issue where renaming a speaker or modifying transcript data while a story was selected caused the audio playhead to jump to the start of the selected story (e.g. `09:25.299`). Fixed `ProjectStateCommand.redo()` to bypass redundant re-execution on initial `QUndoStack.push()` and enforced `seek=False` in `_restore_project_state_for_undo()`.
+  - **Focus Event Isolation & Cursor Suppression**: Overrode `focusInEvent` in `InteractiveTranscriptEdit` to suppress Qt's default `ensureCursorVisible()` behavior when speaker rename or prompt dialogs close, guaranteeing that focus changes never shift the viewport.
+  - **Dynamic Scroll Lock & Range-Changed Pinning**: Introduced `lock_scroll_position()` in `InteractiveTranscriptEdit` which listens to `verticalScrollBar().rangeChanged` and anchors scrollbars to exact pre-action positions while layout reflows settle, automatically releasing upon manual user scroll interaction (mouse wheel, trackpad, or scrollbar dragging).
+  - **Dialog Lifecycle Scroll Preservation**: Captured scroll offsets prior to opening `ChangeSpeakerDialog` or `QInputDialog` and preserved them across dialog acceptance, cancellation, and re-rendering lifecycles.
+
+## v3.4.11
+- **Strict Transcript Viewport Stability & Auto-Scroll Elimination**:
+  - **Complete Elimination of Unsolicited Auto-Scrolling**: Removed automatic viewport scroll mutations from `highlight_word_at_time()` so that transcript word highlighting during playback, audio seek, or transcript refresh never alters the user's scroll position. The transcript viewport now moves strictly upon direct user scroll interaction.
+  - **Speaker Label Interaction Decoupling**: Updated speaker label click routing in `transcript_clicked()` to trigger the speaker renaming flow directly without seeking audio or displacing the transcript viewport.
+  - **Multi-Pass Scroll Restoration**: Hardened scrollbar position restoration across consecutive Qt document layout cycles (`QTimer.singleShot` stagger) during `render_transcript()` to guarantee zero viewport drift across any number of successive speaker modifications.
+
+## v3.4.10
+- **Eliminated Viewport Jumps on Speaker Name Updates**:
+  - **Auto-Scroll Decoupling on Transcript Refresh**: Added explicit `auto_scroll=False` parameter to `highlight_word_at_time()` when called during transcript re-rendering (`render_transcript()`), preventing the viewport from auto-scrolling toward distant audio playhead positions when modifying speaker labels.
+  - **Zero Viewport Drift**: Guaranteed exact vertical and horizontal scroll position retention across single and all-instance speaker renames, speaker additions, and speaker label deletions while retaining the active word highlight styling.
+
+## v3.4.9
+- **Streamlined Change Speaker Dialog Horizontal Layout & Concise Labels**:
+  - **Horizontal Button Row Architecture**: Returned to a side-by-side horizontal button layout (`QHBoxLayout`) with generous 480px minimum dialog width and clean equal button stretch factors.
+  - **Concise & Direct Action Labels**: Replaced verbose button strings with clean, succinct action labels (`All Instances`, `This Instance Only`, and `Cancel`) that fit comfortably side-by-side without horizontal text clipping or truncation.
+  - **Clear Prompt Context**: Centered and formatted the prompt text (`Change 'Current Speaker' to 'New Speaker' for:`) to provide full context without repeating long speaker names inside button labels.
+
+## v3.4.8
+- **Preserved Transcript Scroll Position & Playhead Focus on Speaker Changes**:
+  - **Viewport Scroll Offset Preservation**: Captured vertical and horizontal scrollbar positions before transcript re-rendering and restored them immediately after HTML rebuilding, preventing the view from jumping back to 0:00 when renaming or reassigning speakers.
+  - **Active Playhead Word Re-Highlighting**: Re-triggered `highlight_word_at_time()` with active playback position following speaker updates, ensuring the active word remains highlighted and in focus without resetting scroll position.
+  - **Single Instance Rename Correction**: Corrected dialog choice evaluation in `execute_speaker_rename()` for "This Instance Only" renames, avoiding unhandled variable references.
+
+## v3.4.7
+- **Resolved Change Speaker Popup Button Text Truncation**:
+  - **Dedicated `ChangeSpeakerDialog` Class**: Replaced standard `QMessageBox` with a custom `ChangeSpeakerDialog` to eliminate horizontal button text clipping when renaming or reassigning transcript speakers.
+  - **Vertical Action Button Architecture**: Arranged action choices (`All Instances of 'Speaker Name'` and `This Instance Only`) in a vertical stack layout, ensuring buttons have full horizontal dialog width without truncation or horizontal squeeze regardless of speaker name length.
+  - **Spacious Dialog Minimum Dimensions**: Enforced a minimum width of 500px with dynamic size adjustment, HTML escaping for special character safety, and explicit segment number display for single-instance renames (`This Instance Only (Segment #X)`).
+
+## v3.4.6
+- **WordPress Preferences Options Parity with Export Settings**:
+  - **Custom Header / Footer Disclaimer Options in Preferences**: Updated Settings > Preferences > WordPress Connection page to include all optional custom text, disclaimer, placement, and search/excerpt exclusion controls previously available only in the Export window.
+  - **Custom Notice & Disclaimer Text Field**: Added a dedicated multiline text edit field in Preferences for defining default custom header/footer disclaimers (e.g., machine-generated transcript notices).
+  - **Position & Exclusion Controls**: Added "Place at top of post" vs "Place at bottom of post" placement options, as well as `data-nosnippet` (Google snippet exclusion) and WordPress post excerpt exclusion checkboxes.
+  - **Synchronized App Defaults & Cleanup Integration**: Settings saved in WordPress Preferences automatically persist to global application defaults across all direct publishing and export windows, and are fully cleared when running Settings Reset/Cleanup.
+
+## v3.4.5
+- **Dynamic Highlight Recoloring & Context-Aware Highlight Menu**:
+  - **Highlight Color Changing**: Added support for changing the color of an existing highlight (e.g., changing a yellow highlight to blue, green, pink, orange, or purple) across both Viewing and Editing modes.
+  - **Contiguous Region Recoloring**: Selecting a new color for an existing highlight automatically recolors the entire contiguous highlighted section across both the transcript data model and visual display.
+  - **Context-Aware Context Menu (`🎨 Change Highlight Color`)**: Right-clicking on an existing highlight dynamically adjusts the right-click menu title to "🎨 Change Highlight Color" and displays a `(Current)` tag next to the active color in the submenu.
+  - **Full Undo/Redo Integration**: Highlight color changes are tracked in the project undo history (`Ctrl+Z` / `Ctrl+Y`), allowing instant rollback and re-application.
+
+## v3.4.4
+- **Spanish-Only Transcript Editing & Single-Language Editing Workflows**:
+  - **Spanish Translation Text Editing**: Full inline text editing and formatting is now supported when viewing in `Español (Translation)` mode, enabling editing and corrections of translated transcripts directly with real-time segment synchronization and undo/redo history tracking.
+  - **Bilingual (Split View) Editing Guard & Clear Tooltip**: The `Edit Transcript` button and menu actions are gracefully disabled with grayed-out styling when in `Bilingual (Split View)` mode, presenting an explanatory tooltip: *"Editing is only available in single-language views (English or Español)."*
+- **Transcript Header Toolbar De-Cluttering & Consolidation**:
+  - **Single Consolidated Font Size Dropdown**: Replaced the separate three-button font scaling group (`A−`, `A`, `A+`) with a streamlined `QComboBox` font size selector (80%–180%) that stays synchronized with global keyboard shortcuts (`Ctrl++`, `Ctrl+-`, `Ctrl+0`).
+  - **Eliminated Redundant Toolbar Translate Button**: Removed the standalone `Translate...` button from the transcript header bar since full translation commands and workflows are accessible via the top-level `Tools` menu and shortcuts.
+  - **Consolidated Single Transcript Highlighter**: Removed the duplicate highlighter tool button from the editing formatting toolbar so that the persistent 6-color `Highlight ▾` button in the header toolbar acts as the unified highlighting control across both View and Edit modes.
+
+## v3.4.3
+- **Transcript Edit Mode Auto-Switch & Language Selection Unblocking**:
+  - **Auto-Switch to English on Edit Mode Trigger**: Clicking `Edit Transcript`, pressing `F2`, or toggling `Edit Transcript Mode` from the View menu while viewing Spanish or Bilingual (Split) translations now automatically switches the display to `English (Original)` and activates text editing mode seamlessly, with an informative status bar notification.
+  - **Always-Enabled Edit Mode Button**: The `Edit Transcript` toolbar button is no longer grayed out or locked when translations are displayed, allowing instant one-click transition into editing.
+  - **Persistent Language Selector for Translated Projects**: The `transcript_language_selector` dropdown remains visible and interactive whenever a project contains translation data or active translation display modes, even if the translation generation plugin is currently disabled.
+  - **View > Transcript > Language Display Menu**: Added a dedicated `Language Display` submenu to `View -> Transcript` allowing users to switch between `English (Original)`, `Español (Translation)`, and `Bilingual (Split View)` directly from the application menu bar.
+  - **Application-Level F2 Shortcut Context**: Set `ApplicationShortcut` context on `transcript_edit_mode_action` ensuring `F2` reliably toggles edit mode from anywhere in the window.
+
+## v3.4.2
+- **Persistent 6-Color Transcript Highlighter & Independent Viewing Mode Access**:
+  - **Header Toolbar 6-Color Highlighter**: Added a dedicated, persistent 6-color `Highlight ▾` popup menu tool button (`Yellow`, `Green`, `Blue/Cyan`, `Pink`, `Orange`, `Purple`, and `Remove Highlight`) to the transcript search header bar, making highlighting directly accessible during viewing and playback without needing to toggle edit mode.
+  - **Context Menu Integration**: Added the 6-color highlight submenu and "Remove Highlight" action to the right-click context menu in both Viewing Mode and Editing Mode.
+  - **Keyboard Shortcut (`Ctrl+Shift+H`)**: Streamlined `Ctrl+Shift+H` to apply the active highlight color to selected text in both Viewing and Editing modes without interfering with playback controls.
+  - **Audio Playback Safety**: Preserved strict separation between text selection/highlighting and timeline playback controls. Spacebar continues to control playback in Viewing mode while allowing normal text input in Editing mode.
+- **Transcript Edit Mode Responsiveness & Interaction Flags Fix**:
+  - **Interaction Flags Synchronization**: Restored full text editor interaction flags (`TextEditorInteraction`) and proper widget focus in `InteractiveTranscriptEdit.set_editing_mode(True)`, allowing immediate cursor placement and text editing upon entering edit mode.
+  - **Signal Argument Robustness**: Updated `toggle_transcript_editing_mode()` to safely accept arbitrary signal arguments from UI buttons and actions.
+  - **Translation Guard Feedback**: Ensured clean status bar notifications informing users that text editing is exclusive to the English (Original) view if toggled while translation view is active.
+
+## v3.4.1
+- **Transcript Comment Highlights, Floating Hover Previews & Non-Playing Navigation**:
+  - **Persistent Highlight Spans**: Sections of the transcript with attached comments now retain their visible background highlights even when the comment sidebar is collapsed or closed.
+  - **Interactive Floating Hover Tooltip (`QToolTip`)**: Hovering over any highlighted transcript section displays an instant, styled floating tooltip showing the author and comment text, automatically disappearing when the mouse leaves the highlighted span.
+  - **Click-to-Seek Without Auto-Play**: Clicking on a highlighted section in the transcript navigates playback position and centers the timeline without automatically starting audio playback, keeping the audio paused until the user hits Play or Spacebar.
+  - **Seamless Panel Activation**: Clicking on a highlighted comment span automatically opens and focuses the comment panel/sidebar if it was closed.
+  - **Global "Show Comment Highlights" Toggle**: Added toggle controls to both the View menu and Transcript menu (`Ctrl+Shift+H` / `F9`), allowing users to toggle visual comment highlights across the entire transcript while preserving underlying comment metadata.
+  - **Configurable Startup & Highlight Defaults**: Added new General preferences under Settings > Preferences:
+    - *Open Comments sidebar on startup*: Defaulted to `False` (closed on launch unless explicitly saved by user preference).
+    - *Show Comment highlights in transcript*: Defaulted to `True` (active highlights rendered in transcript).
+  - **Document Export Controls (DOCX & PDF Highlights Toggle)**: Added dedicated "Include Comment Highlights" checkboxes to both `ExportDialog` (`export/dialog.py`) and `TranscriptStoryExportDialog` (`prs_shared.py`), empowering users to include or omit visual highlight backgrounds in exported Word (.docx) documents and PDF files alongside native comments and margin annotations.
+- **Visual Audio Fade Curve Profiles & Attenuation Inversion Bugfix**:
+  - **Fixed Fade-Out Curve Inversion**: Corrected a bug where choosing the Logarithmic fade curve applied an Exponential attenuation curve on fade-out and vice versa. Implemented `calculate_fade_out_factor(u, fcurve)` in `prs_shared.py` to ensure auditory attenuation precisely matches the visual envelope preview for all curve types.
+  - **High-DPI Graphical Curve Previews**: Replaced purely text descriptions of fade curve profiles with dynamic antialiased graphical curve previews across the application:
+    - Dynamic curve rendering engine in `prs_shared.py` (`create_fade_curve_pixmap()` and `create_fade_curve_icon()`).
+    - Interactive `FadeCurveVisualSelector` card buttons in Settings > Preferences > Playback & Timeline.
+    - Upgraded "Audio Fades" -> "Set Fade Curve Profile" context sub-menu with crisp curve icons and profile checkmarks.
+    - Integrated `FadeCurveVisualSelector` into the per-story `StoryFadesDialog`.
+- **Phase 1 Modularization of `prs_shared.py` Monolith**:
+  - Successfully extracted pure-Python, non-UI functionality into 4 dedicated modules (`core_utils.py`, `transcript_cleaner.py`, `project_serialization.py`, `process_lifecycle.py`), reducing `prs_shared.py` by over 700 lines with full backward-compatibility re-exports.
+
+## v3.3.29
+- **Cleaned Up Duplicate `StoryListWidget` Class in `prs_shared.py`**:
+  - Removed obsolete ~70-line legacy `StoryListWidget` implementation sitting earlier in `prs_shared.py` (line 1546).
+  - Eliminated shadow class pollution, leaving the canonical, feature-complete implementation with `filesDropped` signal and drag-drop support as the sole `StoryListWidget` definition.
+
+## v3.3.28
+- **Hardened YouTube Video Frame Capture Against Subprocess Hangs**:
+  - Added a strict 30-second execution timeout (`timeout=30`) and `subprocess.TimeoutExpired` exception handling to `capture_video_frame()` in both `plugins/youtube/export_destination.py` and `plugins/youtube/plugin.py`.
+  - Prevents FFmpeg from hanging or blocking the application indefinitely when encountering corrupt or pathological video inputs during YouTube thumbnail frame extraction.
+  - Bumped `plugins/youtube/manifest.json` version to `3.3.28` under the plugin catch-up synchronization policy.
+
 ## v3.3.27
 - **Resolved Bilingual Transcript Display Crash (`NameError: seg_indices`)**:
   - Fixed a UI rendering crash where the translation payload would successfully complete, but the text renderer would fail to display the Spanish or bilingual text due to a missing mapping reference (`seg_indices`).

@@ -253,6 +253,9 @@ class UnifiedExportDialog(QDialog):
         self.cb_notes = QCheckBox("Include Comments")
         self.cb_notes.setToolTip("Include transcript comments in exported DOCX and PDF documents")
         self.cb_notes.setChecked(True)
+        self.cb_highlights = QCheckBox("Include Comment Highlights")
+        self.cb_highlights.setToolTip("Apply visual highlights to commented sections in exported DOCX and PDF documents")
+        self.cb_highlights.setChecked(True)
 
         self.cb_en = QCheckBox("English")
         self.cb_en.setChecked(True)
@@ -266,6 +269,7 @@ class UnifiedExportDialog(QDialog):
         self.content_section.add_widget(self.cb_speakers)
         self.content_section.add_widget(self.cb_timestamps)
         self.content_section.add_widget(self.cb_notes)
+        self.content_section.add_widget(self.cb_highlights)
 
         lang_layout = QHBoxLayout()
         lang_layout.addWidget(self.cb_en)
@@ -469,6 +473,7 @@ class UnifiedExportDialog(QDialog):
                 "include_timestamps": self.cb_timestamps.isChecked(),
                 "include_comments": self.cb_notes.isChecked(),
                 "include_notes": self.cb_notes.isChecked(),
+                "include_highlights": self.cb_highlights.isChecked(),
                 "include_english": self.cb_en.isChecked(),
                 "include_spanish": self.cb_es.isChecked(),
                 "apply_audio_fades": apply_fades,

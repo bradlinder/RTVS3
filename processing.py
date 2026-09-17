@@ -1,4 +1,4 @@
-"""Radio & TV Segmenter v3.3.27 — processing responsibilities.
+"""Radio & TV Segmenter v3.3.29 — processing responsibilities.
 
 Methods intentionally retain the MainWindow-facing API so behavior remains
 maintaining the established MainWindow-facing API while responsibilities are isolated.

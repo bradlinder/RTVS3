@@ -41,6 +41,7 @@ def _add_formatted_text_to_paragraph(
     text: str,
     words: Optional[List[Dict[str, Any]]] = None,
     block_fmt: Optional[Dict[str, Any]] = None,
+    include_highlights: bool = True,
 ):
     """Applies word-level or block-level rich text formatting (bold, italic, underline, strike, highlight) to DOCX runs."""
     if words and len(words) > 0:
@@ -51,7 +52,7 @@ def _add_formatted_text_to_paragraph(
                 i = bool(w_item.get("italic"))
                 u = bool(w_item.get("underline"))
                 s = bool(w_item.get("strike"))
-                hl = w_item.get("highlight")
+                hl = w_item.get("highlight") if include_highlights else None
             else:
                 w_str = str(w_item)
                 b = i = u = s = False
@@ -73,7 +74,7 @@ def _add_formatted_text_to_paragraph(
                     r.font.strike = True
                 except Exception:
                     pass
-            if hl:
+            if hl and include_highlights:
                 try:
                     if WD_COLOR_INDEX is not None:
                         r.font.highlight_color = WD_COLOR_INDEX.YELLOW
@@ -96,7 +97,7 @@ def _add_formatted_text_to_paragraph(
                     r.font.strike = True
                 except Exception:
                     pass
-            if block_fmt.get("highlight"):
+            if block_fmt.get("highlight") and include_highlights:
                 try:
                     if WD_COLOR_INDEX is not None:
                         r.font.highlight_color = WD_COLOR_INDEX.YELLOW
@@ -366,6 +367,7 @@ def create_story_docx(
     include_speakers: bool = True,
     include_timestamps: bool = True,
     include_comments: bool = True,
+    include_highlights: bool = True,
     lang_code: str = "en",
     source_segments: Optional[List[Dict[str, Any]]] = None,
 ) -> bool:
@@ -422,7 +424,7 @@ def create_story_docx(
                         if seg_words and isinstance(seg_words, list):
                             words.extend(seg_words)
 
-        _add_formatted_text_to_paragraph(p, p_text, words=words, block_fmt=block)
+        _add_formatted_text_to_paragraph(p, p_text, words=words, block_fmt=block, include_highlights=include_highlights)
         p.paragraph_format.space_after = Pt(6)
 
         if include_comments:

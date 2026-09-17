@@ -230,7 +230,7 @@ QLineEdit#transcript_search_input {
 QLineEdit#transcript_search_input:focus { border-color: #38bdf8; background: #1e222a; }
 
 QPushButton#transcript_font_down_btn, QPushButton#transcript_font_reset_btn,
-QPushButton#transcript_font_up_btn {
+QPushButton#transcript_font_up_btn, QComboBox#transcript_font_size_combo {
     background: #181b20;
     color: #8b949e;
     border: 1px solid #282c35;
@@ -241,7 +241,7 @@ QPushButton#transcript_font_up_btn {
     font-weight: 700;
 }
 QPushButton#transcript_font_down_btn:hover, QPushButton#transcript_font_reset_btn:hover,
-QPushButton#transcript_font_up_btn:hover {
+QPushButton#transcript_font_up_btn:hover, QComboBox#transcript_font_size_combo:hover {
     background: #20242b; color: #f0f3f6; border-color: #38bdf8;
 }
 

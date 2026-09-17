@@ -54,8 +54,11 @@ def capture_video_frame(video_path: str, timestamp: float, output_path: str) -> 
         str(output_path),
     ]
     flags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
-    res = subprocess.run(cmd, capture_output=True, creationflags=flags)
-    return res.returncode == 0 and Path(output_path).exists() and Path(output_path).stat().st_size > 0
+    try:
+        res = subprocess.run(cmd, capture_output=True, timeout=30, creationflags=flags)
+        return res.returncode == 0 and Path(output_path).exists() and Path(output_path).stat().st_size > 0
+    except (subprocess.TimeoutExpired, Exception):
+        return False
 
 
 class YouTubeExportTabWidget(QWidget):

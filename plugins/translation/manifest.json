@@ -1,7 +1,7 @@
 {
   "id": "translation",
   "name": "Language Translation",
-  "version": "3.3.27",
+  "version": "3.4.4",
   "description": "Provides local multi-language neural machine translation (MarianMT and NLLB models) via CPU-optimized CTranslate2 with synchronized bilingual split-view editing and translated exports.",
 
   "author": "Radio & TV Segmenter Team",
