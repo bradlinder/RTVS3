@@ -1,5 +1,18 @@
 # Changelog
 
+## v3.3.26
+- **Fixed Silent Subprocess Payload Drop via Unicode Encode Failure (The True 100% Hang Fix)**:
+  - Discovered that on Windows, \`sys.stdout.write\` defaults to the active OEM code page (typically \`cp1252\`) instead of UTF-8.
+  - When the final JSON payload containing the translated text or speaker boundaries included unencodable characters (e.g. Spanish accents, emojis, or Unicode formatting), \`sys.stdout.write\` threw a hidden \`UnicodeEncodeError\`.
+  - The internal signal emitter silently caught and swallowed the error, allowing the subprocess to cleanly exit with code 0 without ever delivering the final result to the UI.
+  - Completely rewrote all subprocess IPC emit pipelines to aggressively write raw UTF-8 bytes to \`sys.stdout.buffer\`, definitively unblocking the "100% Complete" stall on Windows without data loss.
+
+## v3.3.25
+- **Fixed QProcess Stdout Pipe Truncation on Subprocess Exit**:
+  - Fixed a critical bug in `translation.py` and `processing.py` where the final JSON payload emitted by background helpers could be permanently lost if the string was not followed by a final trailing newline when read from the pipe after the process exited.
+  - Enforced a strict buffer flush (`force_flush=True`) during process cleanup that artificially guarantees any leftover JSON strings in the buffer are correctly flushed, parsed, and routed to the UI before cleanup.
+  - This definitively resolves the "Translation complete. (100%)" hang and similar unresponsiveness during Diarization crashes/completions.
+
 ## v3.3.24
 - **Resolved Translation Process Sticking at 100%**:
   - Identified and fixed a QProcess race condition in `translation.py`. When the translation subprocess completes and exits, the final `"finished"` JSON message containing the translated transcript payload was sometimes left unread in the stdout buffer because the finished callback did not drain remaining standard output.

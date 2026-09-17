@@ -1,4 +1,4 @@
-"""Radio & TV Segmenter v3.3.24 — processing responsibilities.
+"""Radio & TV Segmenter v3.3.26 — processing responsibilities.
 
 Methods intentionally retain the MainWindow-facing API so behavior remains
 maintaining the established MainWindow-facing API while responsibilities are isolated.
@@ -1175,13 +1175,16 @@ class ProcessingMixin:
             f"[TRANSCRIPTION] Local helper process started (PID {process.processId()})."
         )
 
-    def on_transcription_output(self):
+    def on_transcription_output(self, force_flush=False):
         process = self.transcription_process
         if process is None:
             return
 
         data = bytes(process.readAllStandardOutput()).decode("utf-8", errors="replace")
         self.transcription_output_buffer += data
+        
+        if force_flush and "\n" not in self.transcription_output_buffer and self.transcription_output_buffer.strip():
+            self.transcription_output_buffer += "\n"
 
         while "\n" in self.transcription_output_buffer:
             line, self.transcription_output_buffer = self.transcription_output_buffer.split(
@@ -1312,7 +1315,7 @@ class ProcessingMixin:
             v_bar.setValue(v_bar.maximum())
     
     def on_transcription_process_finished(self, exit_code, exit_status):
-        self.on_transcription_output()
+        self.on_transcription_output(force_flush=True)
         if self.transcription_process is None:
             return
 
@@ -1664,13 +1667,16 @@ class ProcessingMixin:
             f"[SPEAKER DETECT] Local helper process started (PID {process.processId()})."
         )
 
-    def on_diarization_output(self):
+    def on_diarization_output(self, force_flush=False):
         process = self.diarization_process
         if process is None:
             return
 
         data = bytes(process.readAllStandardOutput()).decode("utf-8", errors="replace")
         self.diarization_output_buffer += data
+        
+        if force_flush and "\n" not in self.diarization_output_buffer and self.diarization_output_buffer.strip():
+            self.diarization_output_buffer += "\n"
 
         while "\n" in self.diarization_output_buffer:
             line, self.diarization_output_buffer = self.diarization_output_buffer.split(
@@ -1788,7 +1794,7 @@ class ProcessingMixin:
             self.log_activity(f"[SPEAKER DETECT] {level} Helper (stderr): {line}", mark_dirty=False)
 
     def on_diarization_process_finished(self, exit_code, exit_status):
-        self.on_diarization_output()
+        self.on_diarization_output(force_flush=True)
 
         if self.diarization_process is None:
             return

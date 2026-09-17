@@ -14,8 +14,8 @@ except ImportError:
 from plugins.translation.worker import TranslationWorker
 
 def emit(obj):
-    sys.stdout.write(json.dumps(obj, ensure_ascii=False, separators=(",", ":")) + "\n")
-    sys.stdout.flush()
+    sys.stdout.buffer.write((json.dumps(obj, ensure_ascii=False, separators=(",", ":")) + "\n").encode("utf-8"))
+    sys.stdout.buffer.flush()
 
 def main():
     app = QCoreApplication(sys.argv) if QCoreApplication is not None else None

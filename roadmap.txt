@@ -29,14 +29,13 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 --------------------------------------------------------------------------------
 TABLE OF CONTENTS & STATUS OVERVIEW
 --------------------------------------------------------------------------------
-1. Previous Release: Translation Dependencies & Diarization UI Thread Responsiveness (Completed in v3.3.23)
-   [x] 1.1 Added `torch>=2.4.1` to `plugins/translation/requirements-runtime.txt` to fix missing PyTorch in translation runtime.
-   [x] 1.2 Bumped `translate` config version to `2.14` to trigger an automatic self-healing environment rebuild.
-   [x] 1.3 Implemented diarization log-activity progress rate-limiting in `processing.py` to prevent Qt thread locks on long files.
+1. Previous Release: QProcess Buffer Draining & Speaker Detection Progress Detail (Completed in v3.3.24)
+   [x] 1.1 Added `read_output()` at the beginning of the `finished` slot in `translation.py` to fully drain and process remaining standard output buffer.
+   [x] 1.2 Swapped hardcoded progress message with the dynamic helper message in `processing.py` to show precise diarization steps in real-time.
 
-2. Current Release: QProcess Buffer Draining & Speaker Detection Progress Detail (Completed in v3.3.24)
-   [x] 2.1 Added `read_output()` at the beginning of the `finished` slot in `translation.py` to fully drain and process remaining standard output buffer.
-   [x] 2.2 Swapped hardcoded progress message with the dynamic helper message in `processing.py` to show precise diarization steps in real-time.
+2. Current Release: QProcess Buffer Flush & Truncation Hotfix (Completed in v3.3.25)
+   [x] 2.1 Enforced `force_flush=True` at process exit in `processing.py` and `translation.py` to parse leftover JSON without trailing newlines.
+   [x] 2.2 Resolved the "Translation complete. (100%)" application hang caused by orphaned pipes.
 
 3. Future Milestone: Expanded NLE & DAW Timeline Interchange (Phase 4 - Planned for v3.4) [NOT STARTED]
    [ ] 3.1 Cockos Reaper Project (.rpp) Generator
@@ -64,82 +63,61 @@ CORE ARCHITECTURAL INVARIANTS
 - 0 MB Default GPU Footprint: Base installer contains 0 MB of CUDA bloat; GPU features are purely optional and provisioned on demand.
 
 ================================================================================
-1. PREVIOUS RELEASE: TRANSLATION DEPENDENCIES & DIARIZATION UI RESPONSIVENESS (Completed in v3.3.23)
+================================================================================
+1. PREVIOUS RELEASE: QPROCESS BUFFER DRAINING & SPEAKER DETECT PROGRESS (Completed in v3.3.24)
 ================================================================================
 
-[x] 1.1 ADDED PYTORCH TO TRANSLATION PLUGIN RUNTIME
----------------------------------------------------
-- Discovered that the translation plugin setup reads directly from `plugins/translation/requirements-runtime.txt` instead of falling back to core `ENV_CONFIGS`, which omitted PyTorch completely from pip installs.
-- Added `torch>=2.4.1` to `plugins/translation/requirements-runtime.txt` to resolve `name 'torch' is not defined` errors.
-
-[x] 1.2 TRIGGERED TRANSLATION SPEC REBUILD
-------------------------------------------
-- Bumped `translate` feature version to `2.14` in `runtime_manager.py` to trigger a clean, automated self-healing build for all users.
-
-[x] 1.3 RATE-LIMITED DIARIZATION LOGGING IN UI
-----------------------------------------------
-- Implemented rate-limiting for speaker detection status updates logged to `self.log_activity` in `processing.py`.
-- Prevents deep-cloning all story objects and history snapshots on every tqdm tick, eliminating application freezes on long audio files.
-
-================================================================================
-2. CURRENT RELEASE: QPROCESS BUFFER DRAINING & SPEAKER DETECT PROGRESS DETAIL (Completed in v3.3.24)
-================================================================================
-
-[x] 2.1 RESOLVED QPROCESS STDOUT RACE CONDITION ON EXIT
+[x] 1.1 RESOLVED QPROCESS STDOUT RACE CONDITION ON EXIT
 -------------------------------------------------------
 - Discovered that when the translation subprocess finishes and exits, the final `"finished"` JSON message is sometimes left unread in the QProcess stdout buffer because the `finished` slot did not read standard output before unregistering.
 - Explicitly called `read_output()` inside the `finished` slot in `translation.py` to safely drain and parse any remaining payload data, enabling instant, reliable completion.
 
-[x] 2.2 IMPLEMENTED DYNAMIC SPEAKER DETECT PROGRESS DETAIL
+[x] 1.2 IMPLEMENTED DYNAMIC SPEAKER DETECT PROGRESS DETAIL
 ----------------------------------------------------------
 - Replaced the generic hardcoded progress message placeholder with the actual, dynamic subprocess status message in `processing.py`.
 - Keeps the user informed of active background steps (such as VAD, signature extraction, and AHC clustering) in real-time, eliminating the perception of being stuck.
 
 ================================================================================
-3. FUTURE MILESTONE: EXPANDED NLE & DAW TIMELINE INTERCHANGE (Phase 4 - Planned for v3.4) [NOT STARTED]
+2. PREVIOUS RELEASE: QPROCESS BUFFER FLUSH & TRUNCATION HOTFIX (Completed in v3.3.25)
 ================================================================================
 
-[ ] 3.1 COCKOS REAPER PROJECT (.rpp) GENERATOR
------------------------------------------------
-Upgrades the simple EDL marker export to full multi-track Reaper project files.
-- RPP Structure: Root `<REAPER_PROJECT 0.1 "7.0">`, `<TRACK`, `<ITEM` definitions with micro-fades.
-
-[ ] 3.2 MAGIX SAMPLITUDE EDL (v1.5) EXPORT
--------------------------------------------
-Sample-accurate text-based cut-list widely supported by legacy radio broadcast consoles and DAW tools.
-
-[ ] 3.3 VIDEO NLE INTERCHANGE (FCPXML & XMEML XML)
----------------------------------------------------
-Generates sequence timelines for video newsrooms and multi-cam podcast edits (FCPXML v1.9/1.10 and Adobe Premiere/Resolve XML).
-
-[ ] 3.4 AVID & PRO TOOLS AAF COMPOSITION
------------------------------------------
-Support AAF composition export for high-end post-production facilities.
-
-[ ] 3.5 RATIONAL TIMECODE & AUDIO SAMPLE RATE MATH
----------------------------------------------------
-Rational time base conversions to ensure sub-millisecond sync across DAW and NLE workflows.
-
-[ ] 3.6 UI & BATCH EXPORT INTEGRATION
---------------------------------------
-Expand Export Menu in `RadioTVSegmenter.py` with direct DAW and NLE options.
+[x] 2.1 ENFORCED BUFFER FLUSH ON MISSING TRAILING NEWLINES
+----------------------------------------------------------
+- Fixed a bug where a final JSON payload missing a trailing newline would be left orphaned in the output buffer when `QProcess` closed its pipes.
+- Updated `processing.py` and `translation.py` to aggressively parse remaining chunks via `force_flush=True`.
 
 ================================================================================
-4. FUTURE MILESTONE: TEXT-DRIVEN AUDIO EDITING & PRECISION ALIGNMENT (Phase 5 - Planned for v4.0) [NOT STARTED]
+3. CURRENT RELEASE: SILENT SUBPROCESS PAYLOAD DROP & UNICODE FIX (Completed in v3.3.26)
 ================================================================================
 
-[ ] 4.1 "TEXT-AS-TIMELINE" ROUGH-CUT EDITING ENGINE
-----------------------------------------------------
-Allows journalists to edit audio/video directly by striking through or deleting words in the transcript UI.
-
-[ ] 4.2 SEAMLESS NON-DESTRUCTIVE PLAYBACK PREVIEW
---------------------------------------------------
-Custom audio playback handler in PySide6 / QMediaPlayer playing strictly inside keep ranges with anti-click crossfades.
-
-[ ] 4.3 CTC WORD BOUNDARY REFINEMENT & FORCED ALIGNMENT
+[x] 3.1 FIXED UNICODE ENCODE ERRORS IN SUBPROCESS STDOUT
 --------------------------------------------------------
-Lightweight acoustic phone alignment pass for sub-10ms boundary precision.
+- Found the actual root cause of the "Translation complete (100%)" application hang. 
+- `sys.stdout.write` on Windows was defaulting to `cp1252`, causing unencodable characters (e.g. Spanish accents) to throw a `UnicodeEncodeError`. 
+- The background thread caught and discarded this exception silently, causing the process to exit with code 0 but drop the final translated payload entirely.
+- Transitioned all `emit()` IPC functions in `plugins/translation/runtime_entry.py` and `radio_tv_story_segmenter_worker.py` to write raw UTF-8 bytes to `sys.stdout.buffer` directly.
+================================================================================
 
-[ ] 4.4 MEMORY-BOUNDED DIARIZATION & CHUNKED STREAMING
--------------------------------------------------------
-Chunked streaming diarization to avoid out-of-memory errors on long broadcast recordings.
+[x] 2.1 ENFORCED BUFFER FLUSH ON MISSING TRAILING NEWLINES
+----------------------------------------------------------
+- Fixed a bug where a final JSON payload missing a trailing newline would be left orphaned in the output buffer when `QProcess` closed its pipes.
+- Updated `processing.py` and `translation.py` to aggressively parse remaining chunks via `force_flush=True`.
+
+================================================================================
+4. FUTURE MILESTONE: EXPANDED NLE & DAW TIMELINE INTERCHANGE (Phase 4 - Planned for v3.4) [NOT STARTED]
+================================================================================
+
+- Generates non-destructive timeline project files to import translated or diarized stories seamlessly into professional post-production workflows.
+- 3.1 Cockos Reaper (.rpp) Generator
+- 3.2 Magix Samplitude EDL (.edl)
+- 3.3 Video NLE Interchange (FCPXML / Premiere Pro)
+- 3.4 Avid / Pro Tools AAF Composition
+
+================================================================================
+5. FUTURE MILESTONE: TEXT-DRIVEN AUDIO EDITING & PRECISION ALIGNMENT (Phase 5 - Planned for v4.0) [NOT STARTED]
+================================================================================
+
+- "Text-as-Timeline" Rough-Cut Editing Engine
+- Seamless Non-Destructive Playback Preview
+- CTC Word Boundary Refinement & Forced Alignment
+- Memory-Bounded Diarization & Chunked Streaming

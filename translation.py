@@ -577,33 +577,42 @@ class TranslationMixin:
         # Keep compatibility with existing busy checks.
         self.translation_thread = proc
 
-        def read_output():
+        def read_output(force_flush=False):
             data = bytes(proc.readAllStandardOutput()).decode("utf-8", errors="replace")
             proc._rtvs_output += data
             proc._rtvs_line_buffer += data
             lines = proc._rtvs_line_buffer.split("\n")
             proc._rtvs_line_buffer = lines.pop() if lines else ""
+            
+            if force_flush and proc._rtvs_line_buffer.strip():
+                lines.append(proc._rtvs_line_buffer)
+                proc._rtvs_line_buffer = ""
+                
             for line in lines:
                 line = line.strip()
                 if not line:
                     continue
                 try:
                     msg = json.loads(line)
-                except Exception:
+                except Exception as exc:
+                    self.log_activity(f"[TRANSLATION] JSON parse error on final payload: {exc}", mark_dirty=False)
                     continue
                 kind = msg.get("type")
                 if kind == "progress":
                     self._on_translation_progress(msg.get("percent", 0), msg.get("message", ""))
                 elif kind == "finished":
                     if not request.get("installation_only"):
-                        self._on_translation_finished(msg.get("result", []), msg.get("key", ""))
+                        try:
+                            self._on_translation_finished(msg.get("result", []), msg.get("key", ""))
+                        except Exception as exc:
+                            self.log_activity(f"[TRANSLATION] Error during processing finished payload: {exc}", mark_dirty=False)
                 elif kind == "cancelled":
                     self._on_translation_cancelled(msg.get("result", []), msg.get("key", ""))
                 elif kind == "error":
                     self._on_translation_error(msg.get("message", "Unknown translation error"))
 
         def finished(exit_code, exit_status):
-            read_output()
+            read_output(force_flush=True)
             unregister_process(proc)
             stderr = bytes(proc.readAllStandardError()).decode("utf-8", errors="replace").strip()
             if proc._rtvs_callback:
