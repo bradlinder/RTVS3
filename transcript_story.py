@@ -1,4 +1,4 @@
-"""Radio & TV Segmenter v3.3.26 — transcript story responsibilities.
+"""Radio & TV Segmenter v3.3.27 — transcript story responsibilities.
 
 
 Methods intentionally retain the MainWindow-facing API so behavior remains
@@ -207,6 +207,7 @@ class TranscriptStoryMixin:
             )
 
             if display_mode in ("split", "bilingual") and es_segments:
+                seg_indices = list(dict.fromkeys(item["seg_idx"] for item in p_words))
                 es_text_parts = [es_segments[idx].get("text", "") for idx in seg_indices if 0 <= idx < len(es_segments)]
                 es_text = " ".join(t.strip() for t in es_text_parts if t.strip())
                 if es_text:

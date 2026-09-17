@@ -1,5 +1,10 @@
 # Changelog
 
+## v3.3.27
+- **Resolved Bilingual Transcript Display Crash (`NameError: seg_indices`)**:
+  - Fixed a UI rendering crash where the translation payload would successfully complete, but the text renderer would fail to display the Spanish or bilingual text due to a missing mapping reference (`seg_indices`).
+  - The UI now successfully maps the translated segments back into the transcript viewer paragraph blocks, restoring bilingual mode functionality.
+
 ## v3.3.26
 - **Fixed Silent Subprocess Payload Drop via Unicode Encode Failure (The True 100% Hang Fix)**:
   - Discovered that on Windows, \`sys.stdout.write\` defaults to the active OEM code page (typically \`cp1252\`) instead of UTF-8.

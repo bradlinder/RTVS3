@@ -104,7 +104,7 @@ CORE ARCHITECTURAL INVARIANTS
 - Updated `processing.py` and `translation.py` to aggressively parse remaining chunks via `force_flush=True`.
 
 ================================================================================
-4. FUTURE MILESTONE: EXPANDED NLE & DAW TIMELINE INTERCHANGE (Phase 4 - Planned for v3.4) [NOT STARTED]
+5. FUTURE MILESTONE: EXPANDED NLE & DAW TIMELINE INTERCHANGE (Phase 4 - Planned for v3.4) [NOT STARTED]
 ================================================================================
 
 - Generates non-destructive timeline project files to import translated or diarized stories seamlessly into professional post-production workflows.
@@ -114,7 +114,7 @@ CORE ARCHITECTURAL INVARIANTS
 - 3.4 Avid / Pro Tools AAF Composition
 
 ================================================================================
-5. FUTURE MILESTONE: TEXT-DRIVEN AUDIO EDITING & PRECISION ALIGNMENT (Phase 5 - Planned for v4.0) [NOT STARTED]
+6. FUTURE MILESTONE: TEXT-DRIVEN AUDIO EDITING & PRECISION ALIGNMENT (Phase 5 - Planned for v4.0) [NOT STARTED]
 ================================================================================
 
 - "Text-as-Timeline" Rough-Cut Editing Engine
