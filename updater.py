@@ -59,7 +59,7 @@ try:
     )
 except Exception:
     APP_DISPLAY_NAME = "Radio & TV Segmenter"
-    PROJECT_VERSION = "3.4.12"
+    PROJECT_VERSION = "3.4.13"
     DEFAULT_GITHUB_REPO = "bradlinder/RTVS3"
 
     INTERNAL_APP_ID = "RadioTVStorySegmenter"
@@ -432,17 +432,30 @@ def launch_and_install(file_path: str, parent: QWidget | None = None) -> bool:
         current_pid = os.getpid()
         try:
             creationflags = 0
+            if hasattr(subprocess, "CREATE_NO_WINDOW"):
+                creationflags |= subprocess.CREATE_NO_WINDOW
+            else:
+                creationflags |= 0x08000000  # CREATE_NO_WINDOW
             if hasattr(subprocess, "DETACHED_PROCESS"):
                 creationflags |= subprocess.DETACHED_PROCESS
             if hasattr(subprocess, "CREATE_NEW_PROCESS_GROUP"):
                 creationflags |= subprocess.CREATE_NEW_PROCESS_GROUP
-            flags = creationflags | 0x01000000
+            flags = creationflags | 0x01000000  # CREATE_BREAKAWAY_FROM_JOB
+
+            startupinfo = None
+            if hasattr(subprocess, "STARTUPINFO"):
+                startupinfo = subprocess.STARTUPINFO()
+                if hasattr(subprocess, "STARTF_USESHOWWINDOW"):
+                    startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+                else:
+                    startupinfo.dwFlags |= 1
+                startupinfo.wShowWindow = 0  # SW_HIDE
 
             escaped_path = str(path).replace("'", "''")
             ps_script = (
                 f"$pidToWait = {current_pid}; "
-                f"while (Get-Process -Id $pidToWait -ErrorAction SilentlyContinue) {{ Start-Sleep -Milliseconds 200 }}; "
-                f"Start-Sleep -Seconds 1; "
+                f"while ($true) {{ try {{ $p = Get-Process -Id $pidToWait -ErrorAction Stop }} catch {{ break }}; Start-Sleep -Milliseconds 200 }}; "
+                f"Start-Sleep -Seconds 2; "
                 f"Start-Process -FilePath '{escaped_path}' -Verb RunAs"
             )
 
@@ -459,6 +472,7 @@ def launch_and_install(file_path: str, parent: QWidget | None = None) -> bool:
                 ps_args,
                 cwd=str(path.parent),
                 creationflags=flags,
+                startupinfo=startupinfo,
                 shell=False,
             )
             launched = True
@@ -473,6 +487,7 @@ def launch_and_install(file_path: str, parent: QWidget | None = None) -> bool:
                     ["cmd.exe", "/c", cmd_str],
                     cwd=str(path.parent),
                     creationflags=flags,
+                    startupinfo=startupinfo,
                     shell=False,
                 )
                 launched = True
@@ -754,8 +769,8 @@ class DownloadUpdateWorker(QThread):
                     return
 
             shutil.move(str(temp_dest), str(destination))
-            # Automatically purge any older installer binaries, keeping only this latest package
-            cleanup_old_installers(max_to_keep=1)
+            # Automatically purge older installer packages, retaining recent installers
+            cleanup_old_installers(max_to_keep=2)
             self.finished.emit(str(destination))
 
         except Exception as exc:
@@ -770,8 +785,8 @@ class CheckUpdateDialog(QDialog):
         self.setMinimumHeight(480)
         self.resize(600, 500)
 
-        # Proactively prune older installer downloads to prevent storage bloat
-        cleanup_old_installers(max_to_keep=1)
+        # Proactively prune older installer downloads to prevent storage bloat while retaining recent packages
+        cleanup_old_installers(max_to_keep=2)
 
         self.repo = get_github_repo()
         if self.repo.lower() in ("bradlinder/rtvs", "bradlinder/radiotvstorysegmenter", "radiotvstorysegmenter"):
@@ -1218,7 +1233,7 @@ class CheckUpdateDialog(QDialog):
                 app.quit()
             import threading
             def _force_exit():
-                time.sleep(1.0)
+                time.sleep(0.5)
                 os._exit(0)
             t = threading.Thread(target=_force_exit, daemon=True)
             t.start()
@@ -1244,7 +1259,7 @@ class CheckUpdateDialog(QDialog):
 
 class UpdaterMixin:
     def check_for_updates(self, interactive: bool = True):
-        cleanup_old_installers(max_to_keep=1)
+        cleanup_old_installers(max_to_keep=2)
         dialog = CheckUpdateDialog(self, auto_start=True)
         if interactive:
             dialog.exec()

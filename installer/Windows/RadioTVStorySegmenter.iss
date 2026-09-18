@@ -1,7 +1,7 @@
 #define MyAppName "Radio & TV Segmenter"
 
 #ifndef MyAppVersion
-#define MyAppVersion "3.4.12"
+#define MyAppVersion "3.4.13"
 #endif
 
 
@@ -33,6 +33,8 @@ WizardStyle=modern
 Uninstallable=yes
 LicenseFile=..\..\NOTICES.txt
 ChangesAssociations=yes
+CloseApplications=yes
+CloseApplicationsFilter=*.exe
 
 [InstallDelete]
 ; Clean up legacy shortcuts created by previous releases (with "Story" in the name)

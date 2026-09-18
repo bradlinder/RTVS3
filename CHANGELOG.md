@@ -1,5 +1,13 @@
 # Changelog
 
+## v3.4.13
+- **Windows Update Supervisor & Application Shutdown Synchronization**:
+  - **Hardened PowerShell Supervisor Exit Check**: Upgraded the detached PowerShell PID supervisor loop in `launch_and_install` (`updater.py`) to an explicit `try { Get-Process -Id $pidToWait -ErrorAction Stop } catch { break }` exception handler. Guarantees that the supervisor accurately blocks until the main application process (`RadioTVSegmenter.exe`) has completely terminated before triggering UAC elevation (`Start-Process -Verb RunAs`).
+  - **Post-Exit File Lock Settlement Buffer**: Added a 2-second safety sleep (`Start-Sleep -Seconds 2`) after process exit confirmation, ensuring Windows kernel handle cleanup, DLL unloading, and executable file lock releases are 100% complete before launching the update setup binary.
+  - **Inno Setup Process Termination Rules**: Configured `CloseApplications=yes` and `CloseApplicationsFilter=*.exe` in the Windows Inno Setup installer specification (`RadioTVStorySegmenter.iss`), ensuring installer runs cleanly signal and wait for active application instances.
+- **Installer Cache Retention Policy**:
+  - **Multi-Package Retention Window**: Relaxed installer auto-cleanup threshold to `max_to_keep=2` across update checks and post-download tasks, preserving recent downloaded installer packages in `AppData/Local/RadioTVSegmenter/updates` rather than aggressively purging older binaries on every check.
+
 ## v3.4.12
 - **Zero-Jump Transcript Viewport Stability & Focus Isolation**:
   - **Eliminated Undo-Push Playhead Seek Jump**: Resolved the issue where renaming a speaker or modifying transcript data while a story was selected caused the audio playhead to jump to the start of the selected story (e.g. `09:25.299`). Fixed `ProjectStateCommand.redo()` to bypass redundant re-execution on initial `QUndoStack.push()` and enforced `seek=False` in `_restore_project_state_for_undo()`.
