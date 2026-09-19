@@ -1156,22 +1156,44 @@ class CheckUpdateDialog(QDialog):
         success = launch_and_install(self.downloaded_path, parent=self)
         if success:
             self.accept()
-            # Cleanly close all top-level windows and force process exit to release all file locks
+            # Cleanly close all top-level windows and allow Qt event loop / closeEvents to complete
             app = QApplication.instance()
             if app:
                 try:
                     for widget in app.topLevelWidgets():
-                        if widget != self:
+                        if widget != self and hasattr(widget, "close"):
                             widget.close()
                 except Exception:
                     pass
+
+                # Flush application settings if available on main window or QSettings
+                try:
+                    from PySide6.QtCore import QSettings
+                    from prs_shared import INTERNAL_APP_ID
+                    QSettings(INTERNAL_APP_ID, INTERNAL_APP_ID).sync()
+                except Exception:
+                    pass
+
+                # Graceful shutdown with aboutToQuit coordination
+                import threading
+                quitting_event = threading.Event()
+                try:
+                    app.aboutToQuit.connect(quitting_event.set)
+                except Exception:
+                    pass
+
+                def _safety_exit_watcher():
+                    # Wait up to 5 seconds for natural Qt event loop termination and window teardown
+                    if quitting_event.wait(timeout=3.0):
+                        # Give the Python runtime up to 1.5 seconds to exit cleanly
+                        time.sleep(1.0)
+                    # If process has still not exited naturally, force exit to ensure installer doesn't contend on file locks
+                    os._exit(0)
+
+                threading.Thread(target=_safety_exit_watcher, daemon=True).start()
                 app.quit()
-            import threading
-            def _force_exit():
-                time.sleep(0.5)
+            else:
                 os._exit(0)
-            t = threading.Thread(target=_force_exit, daemon=True)
-            t.start()
 
     def _open_github_release(self):
         url = self.release_info.get("html_url") or f"https://github.com/{self.repo}/releases"

@@ -39,9 +39,10 @@ TABLE OF CONTENTS & STATUS OVERVIEW
 2. Current Release: Windows Job Object Breakaway & Antivirus Remediation (Completed in v3.4.17)
    [x] 2.1 Enabled Job Object Breakaway (`JOB_OBJECT_LIMIT_BREAKAWAY_OK`): In `process_lifecycle.py`, added `JOB_OBJECT_LIMIT_BREAKAWAY_OK` (`0x00000800`) to the Windows Job Object limits. Without this flag, Windows `CreateProcess` fails with `ERROR_ACCESS_DENIED` whenever a child process requests `CREATE_BREAKAWAY_FROM_JOB`. This previously prevented the updater launcher from detaching, trapping the installer inside the parent process's Job Object, where it was killed on application exit (`KILL_ON_JOB_CLOSE`).
    [x] 2.2 Clean Detached Breakaway Update Launch: Configured `launch_and_install` in `updater.py` to launch the installer via `cmd.exe /c start` with `CREATE_BREAKAWAY_FROM_JOB` (`0x01000000`). This ensures the installer runs outside the Job Object and executes uninterrupted when the main application shuts down.
-   [x] 2.3 Eliminated Mark-of-the-Web (MotW) Stripping: Completely removed `_unblock_windows_file` (which deleted the NTFS `:Zone.Identifier` Alternate Data Stream and executed PowerShell `Unblock-File`). In modern heuristic and ML-based antivirus engines (including Windows Defender / SmartScreen), modifying `:Zone.Identifier` or unblocking downloaded executables is categorized as security defense evasion (MITRE ATT&CK T1564.004), which caused browsers like Google Chrome and Windows Defender to falsely flag repository download archives (`RTVS3-*.zip`) as infected.
-   [x] 2.4 Replaced PowerShell Scripting with Native APIs: Removed `powershell.exe -ExecutionPolicy Bypass` and replaced it with direct `cmd start`, Win32 `ShellExecuteW`, and `os.startfile`.
-   [x] 2.5 Graceful Fallback Chain: Preserved clean fallbacks to `ShellExecuteW` (`"runas"` and `"open"` verbs) and Python's built-in `os.startfile` when elevated execution is cancelled or restricted by local system policy.
+   [x] 2.3 Coordinated Exit & Settings Flush: Replaced the fixed 0.5-second `os._exit(0)` delay in `_install_and_restart()` with an `aboutToQuit`-coordinated event watcher and explicit `QSettings.sync()` flush on window close, preventing hard-kill races against unflushed settings and project saves.
+   [x] 2.4 Eliminated Mark-of-the-Web (MotW) Stripping: Completely removed `_unblock_windows_file` (which deleted the NTFS `:Zone.Identifier` Alternate Data Stream and executed PowerShell `Unblock-File`). In modern heuristic and ML-based antivirus engines (including Windows Defender / SmartScreen), modifying `:Zone.Identifier` or unblocking downloaded executables is categorized as security defense evasion (MITRE ATT&CK T1564.004), which caused browsers like Google Chrome and Windows Defender to falsely flag repository download archives (`RTVS3-*.zip`) as infected.
+   [x] 2.5 Replaced PowerShell Scripting with Native APIs: Removed `powershell.exe -ExecutionPolicy Bypass` and replaced it with direct `cmd start`, Win32 `ShellExecuteW`, and `os.startfile`.
+   [x] 2.6 Graceful Fallback Chain: Preserved clean fallbacks to `ShellExecuteW` (`"runas"` and `"open"` verbs) and Python's built-in `os.startfile` when elevated execution is cancelled or restricted by local system policy.
 
 3. Upcoming Milestone: Automated Test Runner & Performance Benchmark Suite [PLANNED for v3.4.18]
    [ ] 3.1 Zero-Dependency Core Test Runner (`test_runner.py`):
@@ -139,16 +140,21 @@ CORE ARCHITECTURAL INVARIANTS
 - Configured `launch_and_install` in `updater.py` to launch the installer via `cmd.exe /c start` with `CREATE_BREAKAWAY_FROM_JOB` (0x01000000).
 - With `JOB_OBJECT_LIMIT_BREAKAWAY_OK` enabled, the launcher cleanly breaks away from the Job Object, allowing the Inno Setup installer wizard to run continuously across parent application exit and UAC elevation prompts.
 
-[x] 2.3 ELIMINATED MARK-OF-THE-WEB (MOTW) STRIPPING
+[x] 2.3 COORDINATED EXIT & SETTINGS FLUSH
+-----------------------------------------
+- Replaced the fixed 0.5-second `os._exit(0)` delay in `_install_and_restart()` (`updater.py`) with an `aboutToQuit`-coordinated event watcher and explicit `QSettings.sync()` flush on window close, preventing hard-kill races against unflushed settings and project saves.
+- Added explicit `settings_store.sync()` in `closeEvent` of `RadioTVSegmenter.py`.
+
+[x] 2.4 ELIMINATED MARK-OF-THE-WEB (MOTW) STRIPPING
 ---------------------------------------------------
 - Completely removed `_unblock_windows_file` from `updater.py` (which deleted NTFS `:Zone.Identifier` Alternate Data Streams and executed PowerShell `Unblock-File`).
 - In modern heuristic and machine-learning antivirus engines (such as Microsoft Defender and Google Safe Browsing), programmatic tampering with Zone.Identifier or unblocking downloaded executables is categorized as security defense evasion (MITRE ATT&CK T1564.004), causing browsers like Chrome to falsely classify repository release archives (`RTVS3-*.zip`) as infected with trojans.
 
-[x] 2.4 REPLACED POWERSHELL SCRIPTING WITH NATIVE APIS
+[x] 2.5 REPLACED POWERSHELL SCRIPTING WITH NATIVE APIS
 ------------------------------------------------------
 - Removed `powershell.exe -ExecutionPolicy Bypass` commands from the update flow, relying on native `cmd start`, Win32 `ShellExecuteW`, and `os.startfile`.
 
-[x] 2.5 GRACEFUL FALLBACK CHAIN
+[x] 2.6 GRACEFUL FALLBACK CHAIN
 -------------------------------
 - Preserved clean fallbacks to `ShellExecuteW` (`"runas"` and `"open"` verbs) and Python's built-in `os.startfile` when elevated execution is cancelled or restricted by local system policy.
 

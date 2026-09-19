@@ -395,6 +395,12 @@ class MainWindow(
             except Exception:
                 pass
 
+        if hasattr(self, "settings_store") and self.settings_store:
+            try:
+                self.settings_store.sync()
+            except Exception:
+                pass
+
         event.accept()
         QCoreApplication.quit()
 
