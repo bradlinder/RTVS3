@@ -42,34 +42,54 @@ TABLE OF CONTENTS & STATUS OVERVIEW
    [x] 2.4 Subprocess Set Thread-Safety: Added `_SUBPROCESS_LOCK = threading.Lock()` guarding `_ACTIVE_SUBPROCESSES` mutations and iterations in `runtime_manager.py` (`register_process`, `unregister_process`, and `kill_all_subprocesses`) to prevent `RuntimeError: Set changed size during iteration` during multi-threaded teardowns.
    [x] 2.5 Prune Dead Code & Clean Duplicate Initializers: Removed unreferenced `setup_visual_fade_curve_combo()` in `prs_shared.py` and eliminated redundant duplicate attribute assignments in `WaveformWorker.__init__`.
    [x] 2.6 Sync Application Header Metadata: Refreshed legacy header docstrings in `RadioTVSegmenter.py` and `transcript_story.py` to match current project version.
+   [x] 2.7 GitHub Actions CI/CD Hardening: Pinned FFmpeg version to `"7.0.2"` in `FedericoCarboni/setup-ffmpeg@v3` step and eliminated conflicting legacy Node 20 environment overrides (`ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION` and `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24`) in `.github/workflows/build.yml`.
 
-3. Upcoming Milestone: Phase 2 Modularization of prs_shared.py (UI & Qt Components) [PLANNED]
-   [ ] 3.1 Cache Management & ClearCacheDialog Extraction (`cache_manager.py`)
-   [ ] 3.2 Story Widgets, Cards, & Metadata Dialogs (`story_widgets.py`)
-   [ ] 3.3 Timeline Ruler, Track Views, & Playhead Overlays (`timeline_widgets.py`)
-   [ ] 3.4 Transcript Viewer, Word Highlighting, & Search/Replace (`transcript_editor.py`)
-   [ ] 3.5 Cautious Incremental Testing Protocol (Verified step-by-step testing after each extraction)
+3. Upcoming Milestone: Automated Test Runner & Performance Benchmark Suite [PLANNED for v3.4.15]
+   [ ] 3.1 Zero-Dependency Core Test Runner (`test_runner.py`):
+       - Multi-tiered CLI test harness using Python's built-in `unittest` and Qt `QTest` with sandbox temporary directory isolation.
+       - In-memory synthetic audio generation fixture (`wave`/`math`) producing realistic multi-tone audio without external files.
+       - Tier 1: Pure logic unit tests (RTVS project file round-trip serialization, time string parsing/formatting fuzzing, safe filename sanitization, subtitle SRT/VTT generators, and WordPress export payload validation).
+       - Tier 2: Media processing & worker concurrency tests (FFmpeg executable discovery, synthetic waveform envelope calculation, worker thread-safe cancellation, and `_SUBPROCESS_LOCK` stress tests).
+       - Tier 3: Headless Qt UI & event loop integration (`QT_QPA_PLATFORM=offscreen` testing `InteractiveTranscriptEdit` scroll-lock stability, `TimelineWidget` scrollbar synchronization, and `QUndoStack` state restoration).
+       - Tier 4: Environment & native ML runtime smoke test integration (delegating to `RadioTVSegmenter.py --self-test`).
+   [ ] 3.2 Performance & Speed Benchmark Engine (`benchmark.py` / CLI & Diagnostic GUI):
+       - Real-Time Factor (RTF) calculation engine ($\text{RTF} = \text{Audio Duration} / \text{Processing Time}$) with `time.perf_counter()` nanosecond precision.
+       - Waveform audio decoding and envelope extraction throughput benchmark (MB/s & RTF).
+       - Silero VAD chunk evaluation latency & WeSpeaker ONNX embedding extraction speed (embeddings/second).
+       - Project state serialization / deserialization throughput benchmark (segments/second).
+       - UI formatting & document reflow latency benchmark (words/second rendered).
+       - Diagnostic report formatter with CPU/GPU hardware profile and optional JSON export.
+       - (Optional GUI) "Run System Benchmark..." dialog under Help menu with progress bar and copyable summary.
+   [ ] 3.3 Continuous Maintenance & Future Feature Test Coverage Policy:
+       - Active policy requiring all future releases that introduce new processing features, export plugins, or UI widgets to synchronously add corresponding unit tests to `test_runner.py` and benchmark checkpoints to `benchmark.py`.
 
-4. Future Milestone: Google Docs & Drive Export Plugin (`plugins/gdocs`) (Planned for v3.5) [NOT STARTED]
-   [ ] 4.1 Plugin Architecture & OAuth 2.0 Authentication Engine (`plugins/gdocs/auth.py`, keyring token storage, local loopback handler)
-   [ ] 4.2 Google Docs Document Serializer & REST Exporter (Formatted text, speaker headers, word highlights, story metadata)
-   [ ] 4.3 Native Margin Comments & Text Range Anchoring (`drive.comments.create` integration for story notes & transcript comments)
-   [ ] 4.4 Unified Export Center & Menu Integration (Progress worker, batch export, zero core bundle overhead)
-   [ ] 4.5 (Optional) One-Time Review & Comment Pull ("Import Reviews from Google Doc" diff dialog)
+4. Future Milestone: Phase 2 Modularization of prs_shared.py (UI & Qt Components) [PLANNED]
+   [ ] 4.1 Cache Management & ClearCacheDialog Extraction (`cache_manager.py`)
+   [ ] 4.2 Story Widgets, Cards, & Metadata Dialogs (`story_widgets.py`)
+   [ ] 4.3 Timeline Ruler, Track Views, & Playhead Overlays (`timeline_widgets.py`)
+   [ ] 4.4 Transcript Viewer, Word Highlighting, & Search/Replace (`transcript_editor.py`)
+   [ ] 4.5 Cautious Incremental Testing Protocol (Verified step-by-step testing after each extraction)
 
-5. Future Milestone: Expanded NLE & DAW Timeline Interchange (Phase 4 - Planned for v3.6) [NOT STARTED]
-   [ ] 5.1 Cockos Reaper Project (.rpp) Generator
-   [ ] 5.2 Magix Samplitude EDL (v1.5) Export
-   [ ] 5.3 Video NLE Interchange (FCPXML, Premiere / DaVinci Resolve xmeml XML)
-   [ ] 5.4 Avid / Pro Tools AAF Composition
-   [ ] 5.5 Rational Timecode & Audio Sample Rate Math
-   [ ] 5.6 UI & Batch Export Integration
+5. Future Milestone: Google Docs & Drive Export Plugin (`plugins/gdocs`) (Planned for v3.5) [NOT STARTED]
+   [ ] 5.1 Plugin Architecture & OAuth 2.0 Authentication Engine (`plugins/gdocs/auth.py`, keyring token storage, local loopback handler)
+   [ ] 5.2 Google Docs Document Serializer & REST Exporter (Formatted text, speaker headers, word highlights, story metadata)
+   [ ] 5.3 Native Margin Comments & Text Range Anchoring (`drive.comments.create` integration for story notes & transcript comments)
+   [ ] 5.4 Unified Export Center & Menu Integration (Progress worker, batch export, zero core bundle overhead)
+   [ ] 5.5 (Optional) One-Time Review & Comment Pull ("Import Reviews from Google Doc" diff dialog)
 
-6. Future Milestone: Text-Driven Audio Editing & Precision Alignment (Phase 5 - Planned for v4.0) [NOT STARTED]
-   [ ] 6.1 "Text-as-Timeline" Rough-Cut Editing Engine
-   [ ] 6.2 Seamless Non-Destructive Playback Preview
-   [ ] 6.3 CTC Word Boundary Refinement & Forced Alignment
-   [ ] 6.4 Memory-Bounded Diarization & Chunked Streaming
+6. Future Milestone: Expanded NLE & DAW Timeline Interchange (Phase 4 - Planned for v3.6) [NOT STARTED]
+   [ ] 6.1 Cockos Reaper Project (.rpp) Generator
+   [ ] 6.2 Magix Samplitude EDL (v1.5) Export
+   [ ] 6.3 Video NLE Interchange (FCPXML, Premiere / DaVinci Resolve xmeml XML)
+   [ ] 6.4 Avid / Pro Tools AAF Composition
+   [ ] 6.5 Rational Timecode & Audio Sample Rate Math
+   [ ] 6.6 UI & Batch Export Integration
+
+7. Future Milestone: Text-Driven Audio Editing & Precision Alignment (Phase 5 - Planned for v4.0) [NOT STARTED]
+   [ ] 7.1 "Text-as-Timeline" Rough-Cut Editing Engine
+   [ ] 7.2 Seamless Non-Destructive Playback Preview
+   [ ] 7.3 CTC Word Boundary Refinement & Forced Alignment
+   [ ] 7.4 Memory-Bounded Diarization & Chunked Streaming
 
 ================================================================================
 CORE ARCHITECTURAL INVARIANTS
@@ -133,8 +153,64 @@ CORE ARCHITECTURAL INVARIANTS
 ----------------------------------------
 - Refreshed legacy header docstrings in `RadioTVSegmenter.py` and `transcript_story.py` to match current project version.
 
+[x] 2.7 GITHUB ACTIONS CI/CD HARDENING
+--------------------------------------
+- Pinned `ffmpeg-version: "7.0.2"` in the `FedericoCarboni/setup-ffmpeg@v3` step in `.github/workflows/build.yml` to prevent runner assertion failures (`Cannot get latest release`) caused by dynamic upstream release lookups.
+- Removed conflicting legacy Node 20 environment variables (`ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION` and `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24`), standardizing runners on Node 24 without configuration warnings.
+
 ================================================================================
-3. UPCOMING MILESTONE: PHASE 2 MODULARIZATION OF PRS_SHARED.PY (UI & Qt Components) [PLANNED]
+3. UPCOMING MILESTONE: AUTOMATED TEST RUNNER & PERFORMANCE BENCHMARK SUITE [PLANNED for v3.4.15]
+================================================================================
+
+[ ] 3.1 ZERO-DEPENDENCY CORE TEST RUNNER (`test_runner.py`)
+----------------------------------------------------------
+- Build a unified test runner using Python's standard `unittest` and `QTest` executing against sandboxed temporary environments (`tempfile.TemporaryDirectory()`).
+- Implement an in-memory synthetic audio generation fixture using Python standard `wave` and `math.sin` (3-second 16kHz speech-like test audio generated in < 10ms with zero disk bloat).
+- Implement Tier 1 Pure Logic Tests:
+  * Project serialization / deserialization round-tripping for `.rtvs` files (JSON and gzip-compressed).
+  * Fuzz testing for `format_time()` and `parse_time()` edge cases (`0.0`, `59.999`, `3599.999`, `86400.0`, negative values, malformed inputs).
+  * Safe filename sanitization for Windows-reserved characters (`< > : " / \ | ? *`) and traversal paths (`..`).
+  * Subtitle SRT and WebVTT timestamp formatting, sequence ordering, and text escaping.
+  * WordPress REST API payload formatting (`data-nosnippet`, audio disclaimer placement, excerpt extraction).
+- Implement Tier 2 Worker & Subprocess Concurrency Tests:
+  * Bundled executable and system path resolution (`find_bundled_executable("ffmpeg")`, `ffprobe_path()`).
+  * `WaveformWorker` synthetic audio peak computation and cancellation responsiveness (< 500ms FFmpeg shutdown).
+  * `runtime_manager` process lifecycle and thread-safe lock stress tests (`register_process`, `unregister_process`, `kill_all_subprocesses`).
+- Implement Tier 3 Headless Qt UI & Event Loop Tests (`QT_QPA_PLATFORM=offscreen`):
+  * `InteractiveTranscriptEdit` focus isolation and scroll-lock position retention during simulated dialog triggers.
+  * `TimelineWidget` scrollbar-to-canvas and canvas-to-scrollbar lock cycle verification (`try...finally` re-entrancy).
+  * `QUndoStack` command push and undo/redo execution without unexpected playhead seek jumps.
+- Implement Tier 4 Native ML Runtime Smoke Tests:
+  * Harness integration with `RadioTVSegmenter.py --self-test` (PyTorch, CTranslate2, Silero VAD, WeSpeaker ONNX runtime).
+- Provide clean CLI flags:
+  * `python test_runner.py --quick` (Tier 1 pure logic, sub-second execution).
+  * `python test_runner.py --all` (Tiers 1–3, comprehensive local test).
+  * `python test_runner.py --self-test` (Tier 4 native ML runtime verification).
+
+[ ] 3.2 PERFORMANCE & SPEED BENCHMARK ENGINE (`benchmark.py` / CLI & Diagnostic GUI)
+-------------------------------------------------------------------------------------
+- Implement a lightweight, high-precision performance benchmarking harness using standard `time.perf_counter()` and `tracemalloc`.
+- Real-Time Factor (RTF) Calculation Engine:
+  * Calculate standard audio industry RTF: $\text{RTF} = \text{Audio Duration} / \text{Processing Time}$.
+- Core Throughput Benchmarks:
+  * Waveform Extraction Throughput: Stream synthetic audio through FFmpeg peak extraction to measure MB/s and RTF.
+  * VAD Chunk Processing Latency: Measure Silero Voice Activity Detection chunk evaluation time per audio second.
+  * Speaker Diarization Latency: Measure WeSpeaker ONNX embedding extraction speed (embeddings/second).
+  * Project I/O Throughput: Measure serialization and deserialization speeds across large segment counts (segments/second).
+  * UI Rendering & Document Reflow Latency: Measure text formatting and layout recalculation time in `InteractiveTranscriptEdit` (words/second).
+- Formatted Diagnostic Output:
+  * Terminal dashboard displaying subsystem timings, memory deltas, RTF values, and system specifications (CPU model, thread count, OS, GPU/CUDA availability).
+  * Optional JSON export (`--json`) for automated regression tracking across release builds.
+- (Optional GUI Dialog):
+  * Add Help -> "Run System Performance Benchmark..." action launching a non-blocking background benchmark dialog with progress bar and copyable summary report.
+
+[ ] 3.3 CONTINUOUS MAINTENANCE & FUTURE FEATURE TEST COVERAGE POLICY
+--------------------------------------------------------------------
+- **Mandatory Synchronous Test Addition**: Whenever a future release introduces a new processing algorithm, timeline feature, export plugin, or UI interaction component, corresponding test cases MUST be synchronously added to `test_runner.py` and benchmark checkpoints added to `benchmark.py`.
+- **Regression Guard**: All CI and pre-release verification workflows must pass `test_runner.py --quick` and `test_runner.py --all` prior to creating stable release snapshots or tagging versions.
+
+================================================================================
+4. FUTURE MILESTONE: PHASE 2 MODULARIZATION OF PRS_SHARED.PY (UI & Qt Components) [PLANNED]
 ================================================================================
 
 Proceed with extreme caution: unlike Phase 1's pure-Python modules, Phase 2 components are tightly coupled to PySide6/Qt signals, slots, widget parenting hierarchies, and paint events.

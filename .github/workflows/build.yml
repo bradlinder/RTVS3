@@ -40,8 +40,6 @@ on:
         default: ''
 
 env:
-  ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: "true"
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
   PYTHONUNBUFFERED: "1"
   PYTHONUTF8: "1"
 
@@ -143,6 +141,7 @@ jobs:
       - name: Setup FFmpeg (Fast)
         uses: FedericoCarboni/setup-ffmpeg@v3
         with:
+          ffmpeg-version: "7.0.2"
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install Inno Setup

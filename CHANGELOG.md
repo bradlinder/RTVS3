@@ -14,6 +14,9 @@
   - **Eliminated Duplicate Initializers**: Cleaned redundant duplicate attribute assignments in `WaveformWorker.__init__` (`prs_shared.py`).
   - **Pruned Dead Code**: Removed obsolete, unreferenced `setup_visual_fade_curve_combo()` helper function in `prs_shared.py`.
   - **Synchronized Header Metadata**: Refreshed legacy application header docstrings in `RadioTVSegmenter.py` and `transcript_story.py` to match the current release version.
+- **CI/CD Workflow Hardening**:
+  - **Pinned FFmpeg Setup Version**: Added `ffmpeg-version: "7.0.2"` to the `FedericoCarboni/setup-ffmpeg@v3` step in `.github/workflows/build.yml` to prevent GitHub Actions runner build failures (`Cannot get latest release`) caused by dynamic upstream release lookups.
+  - **Resolved Node.js Environment Warnings**: Removed conflicting legacy `ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION` and `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24` environment variables, standardizing runners on Node 24 without configuration warnings.
 
 ## v3.4.13
 - **Windows Update Supervisor & Application Shutdown Synchronization**:
