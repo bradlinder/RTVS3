@@ -15,7 +15,7 @@
   - **Pruned Dead Code**: Removed obsolete, unreferenced `setup_visual_fade_curve_combo()` helper function in `prs_shared.py`.
   - **Synchronized Header Metadata**: Refreshed legacy application header docstrings in `RadioTVSegmenter.py` and `transcript_story.py` to match the current release version.
 - **CI/CD Workflow Hardening**:
-  - **Pinned FFmpeg Setup Version**: Added `ffmpeg-version: "7.0.2"` to the `FedericoCarboni/setup-ffmpeg@v3` step in `.github/workflows/build.yml` to prevent GitHub Actions runner build failures (`Cannot get latest release`) caused by dynamic upstream release lookups.
+  - **Deterministic Static FFmpeg Setup for Windows & macOS**: Replaced the error-prone `FedericoCarboni/setup-ffmpeg@v3` action (which broke with `AssertionError: Cannot get latest release` and `Requested version is not available`) with a reliable, direct PowerShell static binary download from `Tyrrrz/FFmpegBin` (`7.0.2`), matching the proven static binary setup used on macOS and guaranteeing 100% deterministic builds without third-party action lookups.
   - **Resolved Node.js Environment Warnings**: Removed conflicting legacy `ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION` and `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24` environment variables, standardizing runners on Node 24 without configuration warnings.
 
 ## v3.4.13

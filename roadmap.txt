@@ -42,7 +42,7 @@ TABLE OF CONTENTS & STATUS OVERVIEW
    [x] 2.4 Subprocess Set Thread-Safety: Added `_SUBPROCESS_LOCK = threading.Lock()` guarding `_ACTIVE_SUBPROCESSES` mutations and iterations in `runtime_manager.py` (`register_process`, `unregister_process`, and `kill_all_subprocesses`) to prevent `RuntimeError: Set changed size during iteration` during multi-threaded teardowns.
    [x] 2.5 Prune Dead Code & Clean Duplicate Initializers: Removed unreferenced `setup_visual_fade_curve_combo()` in `prs_shared.py` and eliminated redundant duplicate attribute assignments in `WaveformWorker.__init__`.
    [x] 2.6 Sync Application Header Metadata: Refreshed legacy header docstrings in `RadioTVSegmenter.py` and `transcript_story.py` to match current project version.
-   [x] 2.7 GitHub Actions CI/CD Hardening: Pinned FFmpeg version to `"7.0.2"` in `FedericoCarboni/setup-ffmpeg@v3` step and eliminated conflicting legacy Node 20 environment overrides (`ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION` and `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24`) in `.github/workflows/build.yml`.
+   [x] 2.7 GitHub Actions CI/CD Hardening: Replaced fragile `setup-ffmpeg@v3` action with direct static Windows binary download (`Tyrrrz/FFmpegBin` v7.0.2) matching macOS, eliminating runner assertion errors (`Cannot get latest release` / `Requested version is not available`), and removed conflicting Node 20 environment overrides in `.github/workflows/build.yml`.
 
 3. Upcoming Milestone: Automated Test Runner & Performance Benchmark Suite [PLANNED for v3.4.15]
    [ ] 3.1 Zero-Dependency Core Test Runner (`test_runner.py`):
@@ -155,7 +155,7 @@ CORE ARCHITECTURAL INVARIANTS
 
 [x] 2.7 GITHUB ACTIONS CI/CD HARDENING
 --------------------------------------
-- Pinned `ffmpeg-version: "7.0.2"` in the `FedericoCarboni/setup-ffmpeg@v3` step in `.github/workflows/build.yml` to prevent runner assertion failures (`Cannot get latest release`) caused by dynamic upstream release lookups.
+- Replaced the fragile `FedericoCarboni/setup-ffmpeg@v3` action with a direct PowerShell static binary download from `Tyrrrz/FFmpegBin` (`7.0.2`), matching the proven pattern used on macOS and completely eliminating runner assertion errors (`Cannot get latest release` and `Requested version is not available`).
 - Removed conflicting legacy Node 20 environment variables (`ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION` and `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24`), standardizing runners on Node 24 without configuration warnings.
 
 ================================================================================
