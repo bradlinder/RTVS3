@@ -1,4 +1,4 @@
-"""Radio & TV Segmenter — v3.4.14
+"""Radio & TV Segmenter — v3.4.15
 
 This is the thin application composition root. UI/processing responsibilities
 are implemented in focused mixins so future changes can target smaller files
@@ -46,10 +46,47 @@ if len(sys.argv) > 1 and sys.argv[1] == "--self-test":
         checks.append(f"[SELF-TEST] Transformers (Optional/Plugin): PASS ({transformers.__version__})")
     except ImportError:
         checks.append("[SELF-TEST] Transformers (Optional/Plugin): Skipped (Isolated in translation plugin runtime)")
-    # Windowed PyInstaller builds may have no stdout/stderr. Persist the
-    # diagnostic beside the executable so the build can inspect it.
-    test_file = Path(sys.executable).resolve().parent / "ai_self_test.txt" if getattr(sys, "frozen", False) else Path("ai_self_test.txt")
-    test_file.write_text("\n".join(checks) + "\n", encoding="utf-8")
+    # Windowed PyInstaller builds may have no stdout/stderr or may be running in
+    # write-protected Program Files directories. Print to console and persist the
+    # diagnostic report to a writable path (%LOCALAPPDATA% or %TEMP%) as well as
+    # beside the executable when permitted.
+    output_text = "\n".join(checks) + "\n"
+    try:
+        print(output_text, flush=True)
+    except Exception:
+        pass
+
+    target_paths = []
+    if getattr(sys, "frozen", False):
+        exe_dir_file = Path(sys.executable).resolve().parent / "ai_self_test.txt"
+        target_paths.append(exe_dir_file)
+        if sys.platform == "win32":
+            local_app_data = os.environ.get("LOCALAPPDATA")
+            if local_app_data:
+                app_dir = Path(local_app_data) / "RadioTVStorySegmenter"
+                try:
+                    app_dir.mkdir(parents=True, exist_ok=True)
+                    target_paths.append(app_dir / "ai_self_test.txt")
+                except Exception:
+                    pass
+        import tempfile
+        target_paths.append(Path(tempfile.gettempdir()) / "ai_self_test.txt")
+    else:
+        target_paths.append(Path("ai_self_test.txt"))
+
+    written = False
+    for path in target_paths:
+        try:
+            path.write_text(output_text, encoding="utf-8")
+            written = True
+            try:
+                print(f"[SELF-TEST] Diagnostic log saved to: {path}", flush=True)
+            except Exception:
+                pass
+            break
+        except Exception:
+            continue
+
     raise SystemExit(1 if failures else 0)
 
 from prs_shared import *

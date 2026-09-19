@@ -29,22 +29,21 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 --------------------------------------------------------------------------------
 TABLE OF CONTENTS & STATUS OVERVIEW
 --------------------------------------------------------------------------------
-1. Previous Release: Windows Update Supervisor & Installer Retention Fix (Completed in v3.4.13)
-   [x] 1.1 Hardened PowerShell Supervisor Exit Loop: Upgraded PID wait supervisor in `launch_and_install` (`updater.py`) to an explicit `try { Get-Process -Id $pidToWait -ErrorAction Stop } catch { break }` exception loop, guaranteeing the supervisor blocks until `RadioTVSegmenter.exe` has completely exited before invoking UAC elevation.
-   [x] 1.2 Post-Exit Lock Settlement Buffer: Added a 2-second safety delay (`Start-Sleep -Seconds 2`) after application process exit to guarantee Windows kernel file handle cleanup and DLL unloads complete before triggering the update setup executable.
-   [x] 1.3 Inno Setup Process Termination Directive: Configured `CloseApplications=yes` and `CloseApplicationsFilter=*.exe` in `RadioTVStorySegmenter.iss` so setup runs cleanly signal and wait for active application instances.
-   [x] 1.4 Multi-Package Installer Retention: Relaxed auto-cleanup policy to `max_to_keep=2` across update checks and post-downloads, preserving recent downloaded installers in `AppData/Local/RadioTVSegmenter/updates` rather than purging previous packages.
+1. Previous Release: Desktop Robustness, Non-Blocking IPC & Polish (Completed in v3.4.14)
+   [x] 1.1 Windows Path Escaping Fix: Escaped single quotes in `Unblock-File` call inside `updater.py` (`escaped = str(path).replace("'", "''")`) to ensure reliable unblocking on paths with apostrophes.
+   [x] 1.2 Non-Blocking Single-Instance IPC & Socket Retention: Migrated `waitForReadyRead(1000)` in `_handle_ipc_connection()` (`RadioTVSegmenter.py`) to asynchronous `readyRead` signal handling, stored incoming sockets in `window._pending_ipc_sockets` to prevent premature Python garbage collection, and attached `deleteLater` on disconnection.
+   [x] 1.3 Timeline Scroll Lock Safeguard: Wrapped `self.is_internal_scrollbar_update` modifications in `try...finally` blocks in `TimelineWidget.update_scrollbar_from_canvas` and `update_canvas_from_scrollbar` to prevent lock freezes on unexpected layout interruptions.
+   [x] 1.4 Subprocess Set Thread-Safety: Added `_SUBPROCESS_LOCK = threading.Lock()` guarding `_ACTIVE_SUBPROCESSES` mutations and iterations in `runtime_manager.py` (`register_process`, `unregister_process`, and `kill_all_subprocesses`) to prevent `RuntimeError: Set changed size during iteration` during multi-threaded teardowns.
+   [x] 1.5 Prune Dead Code & Clean Duplicate Initializers: Removed unreferenced `setup_visual_fade_curve_combo()` in `prs_shared.py` and eliminated redundant duplicate attribute assignments in `WaveformWorker.__init__`.
+   [x] 1.6 Sync Application Header Metadata: Refreshed legacy header docstrings in `RadioTVSegmenter.py` and `transcript_story.py` to match current project version.
+   [x] 1.7 GitHub Actions CI/CD Hardening: Replaced fragile `setup-ffmpeg@v3` action with direct static Windows binary download (`Tyrrrz/FFmpegBin` v7.0.2) matching macOS, eliminating runner assertion errors (`Cannot get latest release` / `Requested version is not available`), and removed conflicting Node 20 environment overrides in `.github/workflows/build.yml`.
 
-2. Current Release: Desktop Robustness, Non-Blocking IPC & Polish (Completed in v3.4.14)
-   [x] 2.1 Windows Path Escaping Fix: Escaped single quotes in `Unblock-File` call inside `updater.py` (`escaped = str(path).replace("'", "''")`) to ensure reliable unblocking on paths with apostrophes.
-   [x] 2.2 Non-Blocking Single-Instance IPC & Socket Retention: Migrated `waitForReadyRead(1000)` in `_handle_ipc_connection()` (`RadioTVSegmenter.py`) to asynchronous `readyRead` signal handling, stored incoming sockets in `window._pending_ipc_sockets` to prevent premature Python garbage collection, and attached `deleteLater` on disconnection.
-   [x] 2.3 Timeline Scroll Lock Safeguard: Wrapped `self.is_internal_scrollbar_update` modifications in `try...finally` blocks in `TimelineWidget.update_scrollbar_from_canvas` and `update_canvas_from_scrollbar` to prevent lock freezes on unexpected layout interruptions.
-   [x] 2.4 Subprocess Set Thread-Safety: Added `_SUBPROCESS_LOCK = threading.Lock()` guarding `_ACTIVE_SUBPROCESSES` mutations and iterations in `runtime_manager.py` (`register_process`, `unregister_process`, and `kill_all_subprocesses`) to prevent `RuntimeError: Set changed size during iteration` during multi-threaded teardowns.
-   [x] 2.5 Prune Dead Code & Clean Duplicate Initializers: Removed unreferenced `setup_visual_fade_curve_combo()` in `prs_shared.py` and eliminated redundant duplicate attribute assignments in `WaveformWorker.__init__`.
-   [x] 2.6 Sync Application Header Metadata: Refreshed legacy header docstrings in `RadioTVSegmenter.py` and `transcript_story.py` to match current project version.
-   [x] 2.7 GitHub Actions CI/CD Hardening: Replaced fragile `setup-ffmpeg@v3` action with direct static Windows binary download (`Tyrrrz/FFmpegBin` v7.0.2) matching macOS, eliminating runner assertion errors (`Cannot get latest release` / `Requested version is not available`), and removed conflicting Node 20 environment overrides in `.github/workflows/build.yml`.
+2. Current Release: Self-Test Diagnostic Resilience & Process Polish (Completed in v3.4.15)
+   [x] 2.1 Permission-Safe Self-Test Diagnostic Output: Hardened `RadioTVSegmenter.py --self-test` to print diagnostics directly to console/standard output and write reports to writable locations (`%LOCALAPPDATA%\RadioTVStorySegmenter\ai_self_test.txt` or system temp), resolving `PermissionError: [Errno 13]` when running inside protected Program Files directories without administrative elevation.
+   [x] 2.2 Diarization Cancellation Signal Cleanup: Added `_diarization_canceled_by_user` state tracking in `cancel_current_process()` (`processing.py`) to cleanly intercept worker termination signals in `on_diarization_process_error` and `on_diarization_process_finished`, preventing false-alarm crash dialog popups upon user cancellation.
+   [x] 2.3 Windows Installer Supervisor & Elevation Hardening: Enhanced detached PowerShell supervisor in `launch_and_install` (`updater.py`) with a bounded 15-second polling loop and an automatic elevation fallback (`try { Start-Process -Verb RunAs } catch { Start-Process }`), guaranteeing the installer launches reliably across all Windows account types.
 
-3. Upcoming Milestone: Automated Test Runner & Performance Benchmark Suite [PLANNED for v3.4.15]
+3. Upcoming Milestone: Automated Test Runner & Performance Benchmark Suite [PLANNED for v3.4.16]
    [ ] 3.1 Zero-Dependency Core Test Runner (`test_runner.py`):
        - Multi-tiered CLI test harness using Python's built-in `unittest` and Qt `QTest` with sandbox temporary directory isolation.
        - In-memory synthetic audio generation fixture (`wave`/`math`) producing realistic multi-tone audio without external files.
@@ -103,63 +102,62 @@ CORE ARCHITECTURAL INVARIANTS
 - 0 MB Default GPU Footprint: Base installer contains 0 MB of CUDA bloat; GPU features are purely optional and provisioned on demand.
 
 ================================================================================
-1. PREVIOUS RELEASE: WINDOWS UPDATE SUPERVISOR & INSTALLER RETENTION FIX (Completed in v3.4.13)
+1. PREVIOUS RELEASE: DESKTOP ROBUSTNESS, NON-BLOCKING IPC & POLISH (Completed in v3.4.14)
 ================================================================================
 
-[x] 1.1 HARDENED POWERSHELL SUPERVISOR EXIT LOOP
-------------------------------------------------
-- Upgraded PID wait supervisor in `launch_and_install` (`updater.py`) to an explicit `try { Get-Process -Id $pidToWait -ErrorAction Stop } catch { break }` exception loop, guaranteeing the supervisor blocks until `RadioTVSegmenter.exe` has completely exited before invoking UAC elevation.
-
-[x] 1.2 POST-EXIT LOCK SETTLEMENT BUFFER
-----------------------------------------
-- Added a 2-second safety delay (`Start-Sleep -Seconds 2`) after application process exit to guarantee Windows kernel file handle cleanup and DLL unloads complete before triggering the update setup executable.
-
-[x] 1.3 INNO SETUP PROCESS TERMINATION DIRECTIVE
-------------------------------------------------
-- Configured `CloseApplications=yes` and `CloseApplicationsFilter=*.exe` in `RadioTVStorySegmenter.iss` so setup runs cleanly signal and wait for active application instances.
-
-[x] 1.4 MULTI-PACKAGE INSTALLER RETENTION
------------------------------------------
-- Relaxed auto-cleanup policy to `max_to_keep=2` across update checks and post-downloads, preserving recent downloaded installers in `AppData/Local/RadioTVSegmenter/updates` rather than purging previous packages.
-
-================================================================================
-2. CURRENT RELEASE: DESKTOP ROBUSTNESS, NON-BLOCKING IPC & POLISH (Completed in v3.4.14)
-================================================================================
-
-[x] 2.1 WINDOWS PATH ESCAPING FIX
+[x] 1.1 WINDOWS PATH ESCAPING FIX
 ---------------------------------
 - Escaped single quotes in `Unblock-File` call inside `updater.py` (`escaped = str(path).replace("'", "''")`) to ensure reliable unblocking on paths with apostrophes.
 
-[x] 2.2 NON-BLOCKING SINGLE-INSTANCE IPC & SOCKET RETENTION
+[x] 1.2 NON-BLOCKING SINGLE-INSTANCE IPC & SOCKET RETENTION
 -----------------------------------------------------------
 - Migrated `waitForReadyRead(1000)` in `_handle_ipc_connection()` (`RadioTVSegmenter.py`) to asynchronous `readyRead` signal handling.
 - Stored incoming client sockets in `window._pending_ipc_sockets` to prevent premature Python garbage collection.
 - Connected `socket.disconnected` to `deleteLater` and removal from pending set.
 
-[x] 2.3 TIMELINE SCROLL LOCK SAFEGUARD
+[x] 1.3 TIMELINE SCROLL LOCK SAFEGUARD
 --------------------------------------
 - Wrapped `self.is_internal_scrollbar_update` modifications in `try...finally` blocks in `TimelineWidget.update_scrollbar_from_canvas` and `update_canvas_from_scrollbar` to prevent lock freezes on unexpected layout interruptions.
 
-[x] 2.4 SUBPROCESS SET THREAD-SAFETY
+[x] 1.4 SUBPROCESS SET THREAD-SAFETY
 ------------------------------------
 - Added a dedicated `threading.Lock()` (`_SUBPROCESS_LOCK`) guarding `_ACTIVE_SUBPROCESSES` mutations and iteration in `runtime_manager.py` (`register_process`, `unregister_process`, and `kill_all_subprocesses`), preventing race conditions and `RuntimeError: Set changed size during iteration` during multi-threaded teardowns.
 
-[x] 2.5 PRUNE DEAD CODE & CLEAN DUPLICATE INITIALIZERS
+[x] 1.5 PRUNE DEAD CODE & CLEAN DUPLICATE INITIALIZERS
 ------------------------------------------------------
 - Removed unreferenced `setup_visual_fade_curve_combo()` in `prs_shared.py`.
 - Eliminated redundant duplicate attribute assignments in `WaveformWorker.__init__`.
 
-[x] 2.6 SYNC APPLICATION HEADER METADATA
+[x] 1.6 SYNC APPLICATION HEADER METADATA
 ----------------------------------------
 - Refreshed legacy header docstrings in `RadioTVSegmenter.py` and `transcript_story.py` to match current project version.
 
-[x] 2.7 GITHUB ACTIONS CI/CD HARDENING
+[x] 1.7 GITHUB ACTIONS CI/CD HARDENING
 --------------------------------------
 - Replaced the fragile `FedericoCarboni/setup-ffmpeg@v3` action with a direct PowerShell static binary download from `Tyrrrz/FFmpegBin` (`7.0.2`), matching the proven pattern used on macOS and completely eliminating runner assertion errors (`Cannot get latest release` and `Requested version is not available`).
 - Removed conflicting legacy Node 20 environment variables (`ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION` and `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24`), standardizing runners on Node 24 without configuration warnings.
 
 ================================================================================
-3. UPCOMING MILESTONE: AUTOMATED TEST RUNNER & PERFORMANCE BENCHMARK SUITE [PLANNED for v3.4.15]
+2. CURRENT RELEASE: SELF-TEST DIAGNOSTIC RESILIENCE & PROCESS POLISH (Completed in v3.4.15)
+================================================================================
+
+[x] 2.1 PERMISSION-SAFE SELF-TEST DIAGNOSTIC OUTPUT
+----------------------------------------------------
+- Updated `RadioTVSegmenter.py --self-test` to print full diagnostic check lines to standard output/console.
+- Added support for writing diagnostics into `%LOCALAPPDATA%\RadioTVStorySegmenter\ai_self_test.txt` or system temp, resolving `PermissionError: [Errno 13]` when executed in protected directories (`C:\Program Files\Radio & TV Segmenter\`) without administrator privileges.
+
+[x] 2.2 DIARIZATION CANCELLATION SIGNAL CLEANUP
+------------------------------------------------
+- Added `_diarization_canceled_by_user` state flag in `cancel_current_process()` (`processing.py`).
+- Guarded `on_diarization_process_error` and `on_diarization_process_finished` to intercept process kill signals, cleanly resetting state without popping up false-alarm crash or unexpected-exit error dialogs.
+
+[x] 2.3 WINDOWS INSTALLER SUPERVISOR & ELEVATION HARDENING
+-----------------------------------------------------------
+- Updated detached PowerShell supervisor in `launch_and_install` (`updater.py`) with a bounded 15-second loop timeout (`$maxWaitSeconds = 15; $elapsed = 0`).
+- Implemented automatic fallback execution (`try { Start-Process -Verb RunAs } catch { Start-Process }`) to ensure installer launches interactively under all Windows user account and elevation conditions.
+
+================================================================================
+3. UPCOMING MILESTONE: AUTOMATED TEST RUNNER & PERFORMANCE BENCHMARK SUITE [PLANNED for v3.4.16]
 ================================================================================
 
 [ ] 3.1 ZERO-DEPENDENCY CORE TEST RUNNER (`test_runner.py`)

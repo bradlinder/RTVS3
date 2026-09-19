@@ -59,7 +59,7 @@ try:
     )
 except Exception:
     APP_DISPLAY_NAME = "Radio & TV Segmenter"
-    PROJECT_VERSION = "3.4.14"
+    PROJECT_VERSION = "3.4.15"
     DEFAULT_GITHUB_REPO = "bradlinder/RTVS3"
 
     INTERNAL_APP_ID = "RadioTVStorySegmenter"
@@ -455,9 +455,17 @@ def launch_and_install(file_path: str, parent: QWidget | None = None) -> bool:
             escaped_path = str(path).replace("'", "''")
             ps_script = (
                 f"$pidToWait = {current_pid}; "
-                f"while ($true) {{ try {{ $p = Get-Process -Id $pidToWait -ErrorAction Stop }} catch {{ break }}; Start-Sleep -Milliseconds 200 }}; "
-                f"Start-Sleep -Seconds 2; "
-                f"Start-Process -FilePath '{escaped_path}' -Verb RunAs"
+                f"$maxWaitSeconds = 15; "
+                f"$elapsed = 0; "
+                f"while ($elapsed -lt $maxWaitSeconds) {{ "
+                f"    try {{ $p = Get-Process -Id $pidToWait -ErrorAction Stop; Start-Sleep -Milliseconds 250; $elapsed += 0.25 }} catch {{ break }} "
+                f"}}; "
+                f"Start-Sleep -Seconds 1; "
+                f"try {{ "
+                f"    Start-Process -FilePath '{escaped_path}' -Verb RunAs -ErrorAction Stop "
+                f"}} catch {{ "
+                f"    Start-Process -FilePath '{escaped_path}' "
+                f"}}"
             )
 
             ps_args = [

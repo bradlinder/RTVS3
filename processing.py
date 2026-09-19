@@ -282,6 +282,7 @@ class ProcessingMixin:
         if self.diarization_process is not None:
             self.log_activity("[PROCESS] Terminating local Speaker Detection helper...")
             self.statusBar().showMessage("Canceling Speaker Detection...")
+            self._diarization_canceled_by_user = True
             self.cleanup_diarization_process()
             self.diarization_result_received = False
             self.pending_diarization = False
@@ -1444,6 +1445,10 @@ class ProcessingMixin:
 
     def on_diarization_process_error(self, error):
         """Handles QProcess execution errors for the diarization process."""
+        if getattr(self, "_diarization_canceled_by_user", False):
+            self.cleanup_diarization_process()
+            return
+
         if getattr(self, "diarization_result_received", False):
             self.cleanup_diarization_process()
             return
@@ -1611,6 +1616,7 @@ class ProcessingMixin:
         self.diarization_output_buffer = ""
         self.diarization_helper_ready = False
         self.diarization_result_received = False
+        self._diarization_canceled_by_user = False
 
         process = QProcess(self)
         process.setProcessChannelMode(QProcess.ProcessChannelMode.SeparateChannels)
@@ -1795,6 +1801,10 @@ class ProcessingMixin:
 
     def on_diarization_process_finished(self, exit_code, exit_status):
         self.on_diarization_output(force_flush=True)
+
+        if getattr(self, "_diarization_canceled_by_user", False):
+            self.cleanup_diarization_process()
+            return
 
         if self.diarization_process is None:
             return

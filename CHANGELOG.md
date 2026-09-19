@@ -1,5 +1,13 @@
 # Changelog
 
+## v3.4.15
+- **Self-Test Diagnostic Resilience & Non-Elevated Output**:
+  - **Permission-Safe Diagnostic Output**: Updated `--self-test` in `RadioTVSegmenter.py` to gracefully handle non-writable install directories (`C:\Program Files\Radio & TV Segmenter\`). Diagnostic logs are now printed directly to standard output/console and persisted to writable user locations (`%LOCALAPPDATA%\RadioTVStorySegmenter\ai_self_test.txt` or system temp) instead of throwing an unhandled `PermissionError: [Errno 13]`.
+- **Diarization Cancellation Cleanup**:
+  - **Graceful Speaker Detection Cancellation**: Added `_diarization_canceled_by_user` state tracking in `cancel_current_process()` (`processing.py`). When a user cancels an active speaker detection run, the process termination signals are caught cleanly, suppressing false-alarm "helper process crashed" and "exited unexpectedly" critical error popups.
+- **Windows Installer Launch & UAC Supervisor Hardening**:
+  - **Bounded Supervisor Polling with Automatic Fallback**: Enhanced the detached PowerShell installer supervisor in `launch_and_install` (`updater.py`) with a bounded 15-second PID polling ceiling and an automatic elevation fallback (`try { Start-Process -Verb RunAs } catch { Start-Process }`). Ensures that the update installer is reliably launched even if the parent PID drops from process table tracking or Windows UAC encounters permission delays.
+
 ## v3.4.14
 - **Windows Path Escaping in PowerShell Unblock-File**:
   - **Literal Path Single-Quote Escaping**: Escaped single quotes (`str(path).replace("'", "''")`) when invoking PowerShell's `Unblock-File -LiteralPath` in `_unblock_windows_file` (`updater.py`), ensuring reliable unblocking on systems where user accounts, directory structures, or downloads contain apostrophes.
