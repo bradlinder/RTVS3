@@ -400,29 +400,46 @@ def launch_and_install(file_path: str, parent: QWidget | None = None) -> bool:
         launched = False
         last_error = ""
 
-        # 1. Primary approach: Detached process with CREATE_BREAKAWAY_FROM_JOB
+        # 1. Primary approach: Detached launcher script with CREATE_BREAKAWAY_FROM_JOB
         # Since process_lifecycle.py enables JOB_OBJECT_LIMIT_BREAKAWAY_OK on the Windows Job Object,
         # CREATE_BREAKAWAY_FROM_JOB allows the launcher to break away from the job so the installer
         # is NOT killed when the main application exits (KILL_ON_JOB_CLOSE).
-        # We use cmd.exe /c start which invokes ShellExecuteEx to handle UAC elevation natively.
+        # We generate a temporary launcher .bat script to completely avoid cmd.exe /c quote-mangling
+        # (which previously caused Windows to attempt running '\\' as an executable).
+        # We also configure SW_HIDE + CREATE_NO_WINDOW so no command prompt window ever flashes.
         try:
+            import tempfile
+            launcher_bat = Path(tempfile.gettempdir()) / "rtvs_update_launcher.bat"
+            # ping 127.0.0.1 -n 2 provides a reliable 1-second delay without requiring an active console
+            bat_content = (
+                "@echo off\r\n"
+                "ping 127.0.0.1 -n 2 >nul\r\n"
+                f'start "" "{str(path)}"\r\n'
+                'del "%~f0"\r\n'
+            )
+            launcher_bat.write_text(bat_content, encoding="utf-8")
+
+            startupinfo = None
+            if hasattr(subprocess, "STARTUPINFO"):
+                startupinfo = subprocess.STARTUPINFO()
+                if hasattr(subprocess, "STARTF_USESHOWWINDOW"):
+                    startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+                else:
+                    startupinfo.dwFlags |= 1
+                startupinfo.wShowWindow = 0  # SW_HIDE
+
             creationflags = 0
             if hasattr(subprocess, "CREATE_NO_WINDOW"):
                 creationflags |= subprocess.CREATE_NO_WINDOW
             else:
                 creationflags |= 0x08000000  # CREATE_NO_WINDOW
-            if hasattr(subprocess, "DETACHED_PROCESS"):
-                creationflags |= subprocess.DETACHED_PROCESS
-            if hasattr(subprocess, "CREATE_NEW_PROCESS_GROUP"):
-                creationflags |= subprocess.CREATE_NEW_PROCESS_GROUP
             flags = creationflags | 0x01000000  # CREATE_BREAKAWAY_FROM_JOB
 
-            cmd_str = f'timeout /t 1 /nobreak >nul & start "" /D "{str(path.parent)}" "{str(path)}"'
             subprocess.Popen(
-                ["cmd.exe", "/c", cmd_str],
+                ["cmd.exe", "/c", str(launcher_bat)],
                 cwd=str(path.parent),
                 creationflags=flags,
-                startupinfo=None,
+                startupinfo=startupinfo,
                 shell=False,
             )
             launched = True
