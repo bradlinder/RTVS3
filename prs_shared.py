@@ -478,7 +478,7 @@ class CollapsibleSection(QWidget):
 
 # Display branding shown to the user (title bar, About box, installers).
 APP_DISPLAY_NAME = "Radio & TV Segmenter"
-PROJECT_VERSION = "3.4.13"
+PROJECT_VERSION = "3.4.14"
 DEFAULT_GITHUB_REPO = "bradlinder/RTVS3"
 
 
@@ -945,18 +945,6 @@ def create_fade_curve_icon(curve_type: str, width: int = 56, height: int = 30) -
 
     _FADE_CURVE_ICON_CACHE[cache_key] = icon
     return icon
-
-
-def setup_visual_fade_curve_combo(combo: QComboBox, current_curve: str = "linear"):
-    """Populate a QComboBox with visual curve icons, symbols, and descriptions."""
-    combo.clear()
-    combo.setIconSize(QSize(48, 24))
-    for profile in FADE_CURVE_PROFILES:
-        icon = create_fade_curve_icon(profile["id"], width=48, height=24)
-        combo.addItem(icon, f"{profile['symbol']} {profile['full_name']}", profile["id"])
-    idx = combo.findData(str(current_curve or "linear"))
-    if idx >= 0:
-        combo.setCurrentIndex(idx)
 
 
 class FadeCurveVisualSelector(QWidget):
@@ -4496,9 +4484,6 @@ class WaveformWorker(QObject):
         self.project_file = project_file
         self._cancel_event = threading.Event()
         self._process = None
-        self.points_per_second = points_per_second
-        self._cancel_event = threading.Event()
-        self._process = None
 
     def cancel(self):
         """Thread-safe cancellation request; also stops the FFmpeg child process."""
@@ -6548,18 +6533,22 @@ class TimelineWidget(QWidget):
             return
 
         self.is_internal_scrollbar_update = True
-        self.scrollbar.setValue(int(offset * 1000))
-        self.is_internal_scrollbar_update = False
+        try:
+            self.scrollbar.setValue(int(offset * 1000))
+        finally:
+            self.is_internal_scrollbar_update = False
 
     def update_canvas_from_scrollbar(self, val):
         if self.is_internal_scrollbar_update:
             return
 
         self.is_internal_scrollbar_update = True
-        self.canvas.scroll_offset = val / 1000.0
-        self.canvas.clamp_scroll_offset()
-        self.canvas.update()
-        self.is_internal_scrollbar_update = False
+        try:
+            self.canvas.scroll_offset = val / 1000.0
+            self.canvas.clamp_scroll_offset()
+            self.canvas.update()
+        finally:
+            self.is_internal_scrollbar_update = False
 
     def __getattr__(self, name):
         return getattr(self.canvas, name)

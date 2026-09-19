@@ -59,7 +59,7 @@ try:
     )
 except Exception:
     APP_DISPLAY_NAME = "Radio & TV Segmenter"
-    PROJECT_VERSION = "3.4.13"
+    PROJECT_VERSION = "3.4.14"
     DEFAULT_GITHUB_REPO = "bradlinder/RTVS3"
 
     INTERNAL_APP_ID = "RadioTVStorySegmenter"
@@ -402,8 +402,9 @@ def _unblock_windows_file(path: Path) -> None:
             pass
         try:
             # Method 2: PowerShell Unblock-File fallback
+            escaped_path = str(path).replace("'", "''")
             subprocess.run(
-                ["powershell", "-NoProfile", "-NonInteractive", "-Command", f"Unblock-File -LiteralPath '{str(path)}'"],
+                ["powershell", "-NoProfile", "-NonInteractive", "-Command", f"Unblock-File -LiteralPath '{escaped_path}'"],
                 capture_output=True,
                 creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
                 timeout=3,

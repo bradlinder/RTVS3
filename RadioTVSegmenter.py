@@ -1,4 +1,4 @@
-"""Radio & TV Segmenter — v2.8
+"""Radio & TV Segmenter — v3.4.14
 
 This is the thin application composition root. UI/processing responsibilities
 are implemented in focused mixins so future changes can target smaller files
@@ -81,7 +81,7 @@ class MainWindow(
     GpuAccelerationMixin,
     QMainWindow,
 ):
-    """Main application window for the v1.1 release.
+    """Main application window for Radio & TV Segmenter.
 
     The constructor remains here because it defines the shared application
     state and Qt object graph. Feature methods live in focused mixins.
@@ -417,6 +417,7 @@ def main():
 
     ipc_server = QLocalServer()
     window.ipc_server = ipc_server
+    window._pending_ipc_sockets = set()
     QLocalServer.removeServer(server_name)
     if ipc_server.listen(server_name):
         def _handle_ipc_connection():
@@ -425,17 +426,34 @@ def main():
             client_socket = ipc_server.nextPendingConnection()
             if not client_socket:
                 return
-            if client_socket.waitForReadyRead(1000):
-                data = client_socket.readAll().data().decode("utf-8", errors="ignore").strip()
-                if getattr(window, "_is_closing", False):
+
+            window._pending_ipc_sockets.add(client_socket)
+
+            def _on_ready_read():
+                try:
+                    data = client_socket.readAll().data().decode("utf-8", errors="ignore").strip()
+                    if getattr(window, "_is_closing", False):
+                        return
+                    if data and data != "ACTIVATE" and Path(data).exists():
+                        window.handle_external_open_request(data)
+                    else:
+                        window.raise_()
+                        window.activateWindow()
+                except Exception as exc:
+                    print(f"[IPC] Warning: Failed to process incoming IPC payload: {exc}")
+                finally:
                     client_socket.disconnectFromServer()
-                    return
-                if data and data != "ACTIVATE" and Path(data).exists():
-                    window.handle_external_open_request(data)
-                else:
-                    window.raise_()
-                    window.activateWindow()
-            client_socket.disconnectFromServer()
+
+            def _on_disconnected():
+                window._pending_ipc_sockets.discard(client_socket)
+                client_socket.deleteLater()
+
+            client_socket.readyRead.connect(_on_ready_read)
+            client_socket.disconnected.connect(_on_disconnected)
+
+            # If data was already buffered before signal connection, handle immediately
+            if client_socket.bytesAvailable() > 0:
+                _on_ready_read()
 
         ipc_server.newConnection.connect(_handle_ipc_connection)
 

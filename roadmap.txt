@@ -29,19 +29,21 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 --------------------------------------------------------------------------------
 TABLE OF CONTENTS & STATUS OVERVIEW
 --------------------------------------------------------------------------------
-1. Previous Release: Zero-Jump Transcript Viewport Stability & Focus Isolation (Completed in v3.4.12)
-   [x] 1.1 Focus Event Isolation & Cursor Suppression: Overrode `focusInEvent` in `InteractiveTranscriptEdit` to suppress Qt's default `ensureCursorVisible()` behavior when speaker rename or prompt dialogs close, guaranteeing that focus changes never shift the viewport.
-   [x] 1.2 Dynamic Scroll Lock & Range-Changed Pinning: Introduced `lock_scroll_position()` in `InteractiveTranscriptEdit` which listens to `verticalScrollBar().rangeChanged` and anchors scrollbars to exact pre-action positions while layout reflows settle, automatically releasing upon manual user scroll interaction.
-   [x] 1.3 Dialog Lifecycle Scroll Preservation: Captured scroll offsets prior to opening `ChangeSpeakerDialog` or `QInputDialog` and preserved them across dialog acceptance, cancellation, and re-rendering lifecycles.
-   [x] 1.4 Eliminated Undo-Push Playhead Seek Jump: Bypassed redundant initial `redo()` re-execution on `ProjectStateCommand` push to `QUndoStack` and enforced `seek=False` in `_restore_project_state_for_undo()`.
+1. Previous Release: Windows Update Supervisor & Installer Retention Fix (Completed in v3.4.13)
+   [x] 1.1 Hardened PowerShell Supervisor Exit Loop: Upgraded PID wait supervisor in `launch_and_install` (`updater.py`) to an explicit `try { Get-Process -Id $pidToWait -ErrorAction Stop } catch { break }` exception loop, guaranteeing the supervisor blocks until `RadioTVSegmenter.exe` has completely exited before invoking UAC elevation.
+   [x] 1.2 Post-Exit Lock Settlement Buffer: Added a 2-second safety delay (`Start-Sleep -Seconds 2`) after application process exit to guarantee Windows kernel file handle cleanup and DLL unloads complete before triggering the update setup executable.
+   [x] 1.3 Inno Setup Process Termination Directive: Configured `CloseApplications=yes` and `CloseApplicationsFilter=*.exe` in `RadioTVStorySegmenter.iss` so setup runs cleanly signal and wait for active application instances.
+   [x] 1.4 Multi-Package Installer Retention: Relaxed auto-cleanup policy to `max_to_keep=2` across update checks and post-downloads, preserving recent downloaded installers in `AppData/Local/RadioTVSegmenter/updates` rather than purging previous packages.
 
-2. Current Release: Windows Update Supervisor & Installer Retention Fix (Completed in v3.4.13)
-   [x] 2.1 Hardened PowerShell Supervisor Exit Loop: Upgraded PID wait supervisor in `launch_and_install` (`updater.py`) to an explicit `try { Get-Process -Id $pidToWait -ErrorAction Stop } catch { break }` exception loop, guaranteeing the supervisor blocks until `RadioTVSegmenter.exe` has completely exited before invoking UAC elevation.
-   [x] 2.2 Post-Exit Lock Settlement Buffer: Added a 2-second safety delay (`Start-Sleep -Seconds 2`) after application process exit to guarantee Windows kernel file handle cleanup and DLL unloads complete before triggering the update setup executable.
-   [x] 2.3 Inno Setup Process Termination Directive: Configured `CloseApplications=yes` and `CloseApplicationsFilter=*.exe` in `RadioTVStorySegmenter.iss` so setup runs cleanly signal and wait for active application instances.
-   [x] 2.4 Multi-Package Installer Retention: Relaxed auto-cleanup policy to `max_to_keep=2` across update checks and post-downloads, preserving recent downloaded installers in `AppData/Local/RadioTVSegmenter/updates` rather than purging previous packages.
+2. Current Release: Desktop Robustness, Non-Blocking IPC & Polish (Completed in v3.4.14)
+   [x] 2.1 Windows Path Escaping Fix: Escaped single quotes in `Unblock-File` call inside `updater.py` (`escaped = str(path).replace("'", "''")`) to ensure reliable unblocking on paths with apostrophes.
+   [x] 2.2 Non-Blocking Single-Instance IPC & Socket Retention: Migrated `waitForReadyRead(1000)` in `_handle_ipc_connection()` (`RadioTVSegmenter.py`) to asynchronous `readyRead` signal handling, stored incoming sockets in `window._pending_ipc_sockets` to prevent premature Python garbage collection, and attached `deleteLater` on disconnection.
+   [x] 2.3 Timeline Scroll Lock Safeguard: Wrapped `self.is_internal_scrollbar_update` modifications in `try...finally` blocks in `TimelineWidget.update_scrollbar_from_canvas` and `update_canvas_from_scrollbar` to prevent lock freezes on unexpected layout interruptions.
+   [x] 2.4 Subprocess Set Thread-Safety: Added `_SUBPROCESS_LOCK = threading.Lock()` guarding `_ACTIVE_SUBPROCESSES` mutations and iterations in `runtime_manager.py` (`register_process`, `unregister_process`, and `kill_all_subprocesses`) to prevent `RuntimeError: Set changed size during iteration` during multi-threaded teardowns.
+   [x] 2.5 Prune Dead Code & Clean Duplicate Initializers: Removed unreferenced `setup_visual_fade_curve_combo()` in `prs_shared.py` and eliminated redundant duplicate attribute assignments in `WaveformWorker.__init__`.
+   [x] 2.6 Sync Application Header Metadata: Refreshed legacy header docstrings in `RadioTVSegmenter.py` and `transcript_story.py` to match current project version.
 
-3. Future Milestone: Phase 2 Modularization of prs_shared.py (UI & Qt Components) [PLANNED]
+3. Upcoming Milestone: Phase 2 Modularization of prs_shared.py (UI & Qt Components) [PLANNED]
    [ ] 3.1 Cache Management & ClearCacheDialog Extraction (`cache_manager.py`)
    [ ] 3.2 Story Widgets, Cards, & Metadata Dialogs (`story_widgets.py`)
    [ ] 3.3 Timeline Ruler, Track Views, & Playhead Overlays (`timeline_widgets.py`)
@@ -81,41 +83,63 @@ CORE ARCHITECTURAL INVARIANTS
 - 0 MB Default GPU Footprint: Base installer contains 0 MB of CUDA bloat; GPU features are purely optional and provisioned on demand.
 
 ================================================================================
-1. PREVIOUS RELEASE: ELIMINATED VIEWPORT JUMPS ON SPEAKER UPDATES (Completed in v3.4.10)
+1. PREVIOUS RELEASE: WINDOWS UPDATE SUPERVISOR & INSTALLER RETENTION FIX (Completed in v3.4.13)
 ================================================================================
 
-[x] 1.1 AUTO-SCROLL DECOUPLING ON TRANSCRIPT REFRESH
-----------------------------------------------------
-- Added explicit `auto_scroll=False` parameter to `highlight_word_at_time()` when called during transcript re-rendering (`render_transcript()`), preventing the viewport from auto-scrolling toward distant audio playhead positions when modifying speaker labels.
+[x] 1.1 HARDENED POWERSHELL SUPERVISOR EXIT LOOP
+------------------------------------------------
+- Upgraded PID wait supervisor in `launch_and_install` (`updater.py`) to an explicit `try { Get-Process -Id $pidToWait -ErrorAction Stop } catch { break }` exception loop, guaranteeing the supervisor blocks until `RadioTVSegmenter.exe` has completely exited before invoking UAC elevation.
 
-[x] 1.2 ZERO VIEWPORT DRIFT ON INITIAL RENDER
----------------------------------------------
-- Preserved vertical and horizontal scrollbar positions across initial single and all-instance speaker renames, speaker additions, and speaker label deletions while retaining the active word highlight styling.
+[x] 1.2 POST-EXIT LOCK SETTLEMENT BUFFER
+----------------------------------------
+- Added a 2-second safety delay (`Start-Sleep -Seconds 2`) after application process exit to guarantee Windows kernel file handle cleanup and DLL unloads complete before triggering the update setup executable.
 
-================================================================================
-2. CURRENT RELEASE: STRICT TRANSCRIPT VIEWPORT STABILITY & AUTO-SCROLL ELIMINATION (Completed in v3.4.11)
-================================================================================
+[x] 1.3 INNO SETUP PROCESS TERMINATION DIRECTIVE
+------------------------------------------------
+- Configured `CloseApplications=yes` and `CloseApplicationsFilter=*.exe` in `RadioTVStorySegmenter.iss` so setup runs cleanly signal and wait for active application instances.
 
-[x] 2.1 COMPLETE ELIMINATION OF UNSOLICITED AUTO-SCROLLING
-----------------------------------------------------------
-- Removed automatic viewport scroll mutations from `highlight_word_at_time()` so that transcript word highlighting during playback, audio seek, or transcript refresh never alters the user's scroll position.
-- The transcript viewport now moves strictly upon direct user scroll interaction (scrollbar dragging, mouse wheel, or trackpad gestures).
-
-[x] 2.2 SPEAKER LABEL INTERACTION DECOUPLING
---------------------------------------------
-- Updated speaker label click routing in `transcript_clicked()` to trigger the speaker renaming flow directly without seeking audio or displacing the transcript viewport.
-
-[x] 2.3 MULTI-PASS SCROLL RESTORATION
--------------------------------------
-- Hardened scrollbar position restoration across consecutive Qt document layout cycles (`QTimer.singleShot` stagger) during `render_transcript()` to guarantee zero viewport drift across any number of successive speaker modifications.
+[x] 1.4 MULTI-PACKAGE INSTALLER RETENTION
+-----------------------------------------
+- Relaxed auto-cleanup policy to `max_to_keep=2` across update checks and post-downloads, preserving recent downloaded installers in `AppData/Local/RadioTVSegmenter/updates` rather than purging previous packages.
 
 ================================================================================
-3. FUTURE MILESTONE: PHASE 2 MODULARIZATION OF PRS_SHARED.PY (UI & Qt Components)
+2. CURRENT RELEASE: DESKTOP ROBUSTNESS, NON-BLOCKING IPC & POLISH (Completed in v3.4.14)
+================================================================================
+
+[x] 2.1 WINDOWS PATH ESCAPING FIX
+---------------------------------
+- Escaped single quotes in `Unblock-File` call inside `updater.py` (`escaped = str(path).replace("'", "''")`) to ensure reliable unblocking on paths with apostrophes.
+
+[x] 2.2 NON-BLOCKING SINGLE-INSTANCE IPC & SOCKET RETENTION
+-----------------------------------------------------------
+- Migrated `waitForReadyRead(1000)` in `_handle_ipc_connection()` (`RadioTVSegmenter.py`) to asynchronous `readyRead` signal handling.
+- Stored incoming client sockets in `window._pending_ipc_sockets` to prevent premature Python garbage collection.
+- Connected `socket.disconnected` to `deleteLater` and removal from pending set.
+
+[x] 2.3 TIMELINE SCROLL LOCK SAFEGUARD
+--------------------------------------
+- Wrapped `self.is_internal_scrollbar_update` modifications in `try...finally` blocks in `TimelineWidget.update_scrollbar_from_canvas` and `update_canvas_from_scrollbar` to prevent lock freezes on unexpected layout interruptions.
+
+[x] 2.4 SUBPROCESS SET THREAD-SAFETY
+------------------------------------
+- Added a dedicated `threading.Lock()` (`_SUBPROCESS_LOCK`) guarding `_ACTIVE_SUBPROCESSES` mutations and iteration in `runtime_manager.py` (`register_process`, `unregister_process`, and `kill_all_subprocesses`), preventing race conditions and `RuntimeError: Set changed size during iteration` during multi-threaded teardowns.
+
+[x] 2.5 PRUNE DEAD CODE & CLEAN DUPLICATE INITIALIZERS
+------------------------------------------------------
+- Removed unreferenced `setup_visual_fade_curve_combo()` in `prs_shared.py`.
+- Eliminated redundant duplicate attribute assignments in `WaveformWorker.__init__`.
+
+[x] 2.6 SYNC APPLICATION HEADER METADATA
+----------------------------------------
+- Refreshed legacy header docstrings in `RadioTVSegmenter.py` and `transcript_story.py` to match current project version.
+
+================================================================================
+3. UPCOMING MILESTONE: PHASE 2 MODULARIZATION OF PRS_SHARED.PY (UI & Qt Components) [PLANNED]
 ================================================================================
 
 Proceed with extreme caution: unlike Phase 1's pure-Python modules, Phase 2 components are tightly coupled to PySide6/Qt signals, slots, widget parenting hierarchies, and paint events.
 
-[ ] 3.1 CAUTIOUS TESTING & VERIFICATION METHODOLOGY (Protocol for Every Single Extraction)
+[ ] 4.1 CAUTIOUS TESTING & VERIFICATION METHODOLOGY (Protocol for Every Single Extraction)
 ------------------------------------------------------------------------------------------
 To avoid cascading regressions or subtle Qt widget crashes, execute the following 5-step cycle for EACH extracted component module:
 1. **Isolated Module Extraction**:
@@ -135,7 +159,7 @@ To avoid cascading regressions or subtle Qt widget crashes, execute the followin
    - Run web preview linter & compiler (`lint_applet` & `compile_applet`).
    - Create a rollback checkpoint or snapshot before moving to the next module.
 
-[ ] 3.2 TARGET MODULE EXTRACTION SEQUENCE
+[ ] 4.2 TARGET MODULE EXTRACTION SEQUENCE
 -----------------------------------------
 - **Step 1: `cache_manager.py` (Low-to-Medium Risk)**:
   * Targets: `format_byte_size`, `get_cache_disk_usage`, `cleanup_old_thumbnail_cache`, `ClearCacheDialog`, `VideoThumbnailCache`.
@@ -149,24 +173,6 @@ To avoid cascading regressions or subtle Qt widget crashes, execute the followin
 - **Step 4: `transcript_editor.py` (High Risk)**:
   * Targets: `TranscriptTextViewer`, `TranscriptSegmentWidget`, word-level span highlighting, search-and-replace dialog.
   * Dependencies: QTextEdit/QPlainTextEdit, cursor manipulation, speaker coloring, audio synchronization slots.
-
-================================================================================
-4. MILESTONE: UI/UX ENHANCEMENTS (Completed in v3.4.1)
-================================================================================
-
-[x] 4.1 Replace written description of fade curve options with visual ones in the preferences menu and the right-click context menu. (Completed in v3.4.1)
-    - Implemented high-DPI visual curve profile rendering (`create_fade_curve_pixmap`, `create_fade_curve_icon`) showing exact volume attenuation envelopes (Linear Ramp ╱, Cosine S-Curve ∿, Logarithmic ⌒, Exponential ◞) with reference guidelines and shaded amplitude areas.
-    - Designed `FadeCurveVisualSelector`: an interactive, accessible card button selector replacing the plain text combo in the Preferences dialog with visual curve icons, hover/checked styling, and acoustic behavior tooltips.
-    - Upgraded Story List right-click context menu ("Audio Fades" -> "Set Fade Curve Profile") with visual curve icons, active story curve check indicators, and tooltips.
-    - Integrated `FadeCurveVisualSelector` into `StoryFadesDialog` for visual per-story fade adjustment.
-
-[x] 4.2 Correct logarithmic and exponential fade-out curve inversion to match visual preview and acoustic behavior. (Completed in v3.4.1)
-    - Created `calculate_fade_out_factor` in `prs_shared.py` to fix reversed math between logarithmic and exponential ramps during fade-outs.
-
-[x] 4.3 Comments UI ergonomics: sidebar closed by default on launch, persistent transcript highlights, hover previews, click-to-seek without playback, and export controls. (Completed in v3.4.1)
-    - Added floating `QToolTip` previews and non-playing seek behavior on highlight click.
-    - Added global View/Transcript menu toggle (`Ctrl+Shift+H` / `F9`) and general preference checkboxes.
-    - Added document export checkboxes (`include_highlights`) for DOCX and PDF.
 
 ================================================================================
 5. FUTURE MILESTONE: GOOGLE DOCS & DRIVE EXPORT PLUGIN (Planned for v3.5) [NOT STARTED]

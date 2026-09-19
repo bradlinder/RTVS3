@@ -35,11 +35,13 @@ STANDALONE_PYTHON_URLS = {
 
 # Track active subprocesses spawned by feature environments or external runners
 _ACTIVE_SUBPROCESSES = set()
+_SUBPROCESS_LOCK = threading.Lock()
 
 
 def register_process(proc: subprocess.Popen):
     """Register an active Popen process for teardown monitoring."""
-    _ACTIVE_SUBPROCESSES.add(proc)
+    with _SUBPROCESS_LOCK:
+        _ACTIVE_SUBPROCESSES.add(proc)
     try:
         from prs_shared import register_process as _prs_register_proc
         _prs_register_proc(proc)
@@ -49,7 +51,8 @@ def register_process(proc: subprocess.Popen):
 
 def unregister_process(proc: subprocess.Popen):
     """Remove completed process from tracking."""
-    _ACTIVE_SUBPROCESSES.discard(proc)
+    with _SUBPROCESS_LOCK:
+        _ACTIVE_SUBPROCESSES.discard(proc)
     try:
         from prs_shared import unregister_process as _prs_unregister_proc
         _prs_unregister_proc(proc)
@@ -59,7 +62,9 @@ def unregister_process(proc: subprocess.Popen):
 
 def kill_all_subprocesses():
     """Force terminate any lingering isolated worker subprocesses."""
-    for proc in list(_ACTIVE_SUBPROCESSES):
+    with _SUBPROCESS_LOCK:
+        procs_to_kill = list(_ACTIVE_SUBPROCESSES)
+    for proc in procs_to_kill:
         if proc.poll() is None:  # Process is still running
             try:
                 proc.terminate()
@@ -69,7 +74,8 @@ def kill_all_subprocesses():
                     proc.kill()
                 except OSError:
                     pass
-    _ACTIVE_SUBPROCESSES.clear()
+    with _SUBPROCESS_LOCK:
+        _ACTIVE_SUBPROCESSES.clear()
 
 
 def _emit_progress(progress_cb, percent: float, message: str):

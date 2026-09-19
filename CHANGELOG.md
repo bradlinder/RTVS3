@@ -1,5 +1,20 @@
 # Changelog
 
+## v3.4.14
+- **Windows Path Escaping in PowerShell Unblock-File**:
+  - **Literal Path Single-Quote Escaping**: Escaped single quotes (`str(path).replace("'", "''")`) when invoking PowerShell's `Unblock-File -LiteralPath` in `_unblock_windows_file` (`updater.py`), ensuring reliable unblocking on systems where user accounts, directory structures, or downloads contain apostrophes.
+- **Asynchronous Non-Blocking Single-Instance IPC**:
+  - **Non-Blocking Connection Lifecycle**: Migrated IPC connection handling (`_handle_ipc_connection` in `RadioTVSegmenter.py`) from synchronous blocking `waitForReadyRead(1000)` to event-driven `readyRead` and `disconnected` signal listeners.
+  - **Socket Retention & Resource Reclamation**: Retained incoming `QLocalSocket` references in `window._pending_ipc_sockets` to protect against premature Python garbage collection during async reading, and attached `deleteLater` upon disconnection to guarantee proper memory cleanup.
+- **Timeline Canvas & Scrollbar Synchronization Safeguards**:
+  - **Re-entrant Scroll Lock Protection**: Wrapped `self.is_internal_scrollbar_update` modifications in `try...finally` blocks in `TimelineWidget.update_scrollbar_from_canvas` and `update_canvas_from_scrollbar`, preventing scroll update lock freezes during unexpected layout reflows or asynchronous event loops.
+- **Thread-Safe Subprocess Teardown & Process Lifecycle**:
+  - **Concurrent Subprocess Tracking**: Added a dedicated `threading.Lock()` (`_SUBPROCESS_LOCK`) guarding `_ACTIVE_SUBPROCESSES` mutations and iteration in `runtime_manager.py` (`register_process`, `unregister_process`, and `kill_all_subprocesses`), preventing `RuntimeError: Set changed size during iteration` during multi-threaded cancellations and application shutdown.
+- **Codebase Polish & Metadata Cleanup**:
+  - **Eliminated Duplicate Initializers**: Cleaned redundant duplicate attribute assignments in `WaveformWorker.__init__` (`prs_shared.py`).
+  - **Pruned Dead Code**: Removed obsolete, unreferenced `setup_visual_fade_curve_combo()` helper function in `prs_shared.py`.
+  - **Synchronized Header Metadata**: Refreshed legacy application header docstrings in `RadioTVSegmenter.py` and `transcript_story.py` to match the current release version.
+
 ## v3.4.13
 - **Windows Update Supervisor & Application Shutdown Synchronization**:
   - **Hardened PowerShell Supervisor Exit Check**: Upgraded the detached PowerShell PID supervisor loop in `launch_and_install` (`updater.py`) to an explicit `try { Get-Process -Id $pidToWait -ErrorAction Stop } catch { break }` exception handler. Guarantees that the supervisor accurately blocks until the main application process (`RadioTVSegmenter.exe`) has completely terminated before triggering UAC elevation (`Start-Process -Verb RunAs`).
