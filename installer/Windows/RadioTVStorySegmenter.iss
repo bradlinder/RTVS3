@@ -1,7 +1,7 @@
 #define MyAppName "Radio & TV Segmenter"
 
 #ifndef MyAppVersion
-#define MyAppVersion "3.4.15"
+#define MyAppVersion "3.4.16"
 #endif
 
 
@@ -33,6 +33,7 @@ WizardStyle=modern
 Uninstallable=yes
 LicenseFile=..\..\NOTICES.txt
 ChangesAssociations=yes
+SetupLogging=yes
 CloseApplications=yes
 CloseApplicationsFilter=*.exe
 

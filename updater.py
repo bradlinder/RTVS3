@@ -59,7 +59,7 @@ try:
     )
 except Exception:
     APP_DISPLAY_NAME = "Radio & TV Segmenter"
-    PROJECT_VERSION = "3.4.15"
+    PROJECT_VERSION = "3.4.16"
     DEFAULT_GITHUB_REPO = "bradlinder/RTVS3"
 
     INTERNAL_APP_ID = "RadioTVStorySegmenter"
@@ -428,8 +428,9 @@ def launch_and_install(file_path: str, parent: QWidget | None = None) -> bool:
         # 1. Primary approach: detached PowerShell PID supervisor process
         # Monitors parent Python process termination via PID check ($pidToWait).
         # Ensures main app completely closes and releases file locks BEFORE UAC dialog pops up.
-        # Uses 'Start-Process -FilePath ... -Verb RunAs' to trigger UAC elevation natively while
-        # keeping the PowerShell supervisor active during user UAC interaction.
+        # Uses 'Start-Process -FilePath ... -WorkingDirectory ... -Verb RunAs -WindowStyle Normal -Wait'
+        # to trigger UAC elevation natively, keep PowerShell active as supervisor during execution,
+        # and enforce WindowStyle Normal so GUI windows are never hidden by inherited SW_HIDE flags.
         current_pid = os.getpid()
         try:
             creationflags = 0
@@ -443,16 +444,15 @@ def launch_and_install(file_path: str, parent: QWidget | None = None) -> bool:
                 creationflags |= subprocess.CREATE_NEW_PROCESS_GROUP
             flags = creationflags | 0x01000000  # CREATE_BREAKAWAY_FROM_JOB
 
+            # Crucial: Do NOT set startupinfo.wShowWindow = SW_HIDE (0) or STARTF_USESHOWWINDOW.
+            # In Windows, STARTUPINFO with SW_HIDE is inherited by child processes (including GUI installers
+            # launched via PowerShell's Start-Process), causing their initial window to be forced hidden (SW_HIDE)
+            # upon creation, appearing to the user as a brief flash followed by immediate disappearance!
+            # CREATE_NO_WINDOW is already set to suppress the PowerShell console window without hiding GUI children.
             startupinfo = None
-            if hasattr(subprocess, "STARTUPINFO"):
-                startupinfo = subprocess.STARTUPINFO()
-                if hasattr(subprocess, "STARTF_USESHOWWINDOW"):
-                    startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-                else:
-                    startupinfo.dwFlags |= 1
-                startupinfo.wShowWindow = 0  # SW_HIDE
 
             escaped_path = str(path).replace("'", "''")
+            escaped_dir = str(path.parent).replace("'", "''")
             ps_script = (
                 f"$pidToWait = {current_pid}; "
                 f"$maxWaitSeconds = 15; "
@@ -462,9 +462,9 @@ def launch_and_install(file_path: str, parent: QWidget | None = None) -> bool:
                 f"}}; "
                 f"Start-Sleep -Seconds 1; "
                 f"try {{ "
-                f"    Start-Process -FilePath '{escaped_path}' -Verb RunAs -ErrorAction Stop "
+                f"    Start-Process -FilePath '{escaped_path}' -WorkingDirectory '{escaped_dir}' -Verb RunAs -WindowStyle Normal -Wait -ErrorAction Stop "
                 f"}} catch {{ "
-                f"    Start-Process -FilePath '{escaped_path}' "
+                f"    Start-Process -FilePath '{escaped_path}' -WorkingDirectory '{escaped_dir}' -WindowStyle Normal -Wait "
                 f"}}"
             )
 
@@ -472,7 +472,6 @@ def launch_and_install(file_path: str, parent: QWidget | None = None) -> bool:
                 "powershell.exe",
                 "-NoProfile",
                 "-NonInteractive",
-                "-WindowStyle", "Hidden",
                 "-ExecutionPolicy", "Bypass",
                 "-Command", ps_script,
             ]
@@ -488,15 +487,15 @@ def launch_and_install(file_path: str, parent: QWidget | None = None) -> bool:
         except Exception as exc_ps:
             last_error = f"powershell supervisor: {exc_ps}"
 
-        # 2. Secondary approach: CMD process trampoline with expanded timeout delay
+        # 2. Secondary approach: CMD process trampoline with explicit directory and timeout delay
         if not launched:
             try:
-                cmd_str = f'timeout /t 3 /nobreak >nul & start "" "{str(path)}"'
+                cmd_str = f'timeout /t 3 /nobreak >nul & start "" /D "{str(path.parent)}" "{str(path)}"'
                 subprocess.Popen(
                     ["cmd.exe", "/c", cmd_str],
                     cwd=str(path.parent),
                     creationflags=flags,
-                    startupinfo=startupinfo,
+                    startupinfo=None,
                     shell=False,
                 )
                 launched = True

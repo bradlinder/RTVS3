@@ -1,5 +1,13 @@
 # Changelog
 
+## v3.4.16
+- **Windows Update Supervisor & Window Visibility Hardening**:
+  - **Eliminated Hidden Window Inheritance (`SW_HIDE`)**: Cleared inherited `STARTUPINFO.wShowWindow = SW_HIDE` from Python's detached supervisor launcher (`launch_and_install` in `updater.py`). Passing `wShowWindow = SW_HIDE` to the supervisor caused child processes to inherit the hidden flag, which forced Inno Setup's GUI wizard to momentarily flash and then disappear.
+  - **Explicit WindowStyle Normalization**: Configured PowerShell's `Start-Process` with `-WindowStyle Normal`, explicitly instructing Windows to render the installer wizard dialog visibly (`SW_SHOWNORMAL`).
+  - **Explicit Working Directory Configuration**: Added `-WorkingDirectory '{escaped_dir}'` to `Start-Process` and `/D "{str(path.parent)}"` to CMD trampoline fallbacks, ensuring the installer executes within its containing folder rather than defaulting to `C:\Windows\System32`.
+  - **Persistent Supervisor Execution**: Added `-Wait` to `Start-Process`, ensuring the PowerShell supervisor remains active until the installation finishes rather than exiting prematurely while UAC or Inno Setup is initializing.
+  - **Inno Setup Diagnostic Logging**: Enabled `SetupLogging=yes` in `installer/Windows/RadioTVStorySegmenter.iss` to automatically record setup actions to `%TEMP%`.
+
 ## v3.4.15
 - **Self-Test Diagnostic Resilience & Non-Elevated Output**:
   - **Permission-Safe Diagnostic Output**: Updated `--self-test` in `RadioTVSegmenter.py` to gracefully handle non-writable install directories (`C:\Program Files\Radio & TV Segmenter\`). Diagnostic logs are now printed directly to standard output/console and persisted to writable user locations (`%LOCALAPPDATA%\RadioTVStorySegmenter\ai_self_test.txt` or system temp) instead of throwing an unhandled `PermissionError: [Errno 13]`.
