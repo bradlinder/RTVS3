@@ -48,6 +48,7 @@ def init_child_process_job_isolation():
             if job:
                 # JobObjectExtendedLimitInformation = 9
                 JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE = 0x00002000
+                JOB_OBJECT_LIMIT_BREAKAWAY_OK = 0x00000800
 
                 class IO_COUNTERS(ctypes.Structure):
                     _fields_ = [
@@ -83,7 +84,9 @@ def init_child_process_job_isolation():
                     ]
 
                 info = JOBOBJECT_EXTENDED_LIMIT_INFORMATION()
-                info.BasicLimitInformation.LimitFlags = JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE
+                info.BasicLimitInformation.LimitFlags = (
+                    JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE | JOB_OBJECT_LIMIT_BREAKAWAY_OK
+                )
 
                 if SetInformationJobObject(
                     job,

@@ -59,7 +59,7 @@ try:
     )
 except Exception:
     APP_DISPLAY_NAME = "Radio & TV Segmenter"
-    PROJECT_VERSION = "3.4.16"
+    PROJECT_VERSION = "3.4.17"
     DEFAULT_GITHUB_REPO = "bradlinder/RTVS3"
 
     INTERNAL_APP_ID = "RadioTVStorySegmenter"
@@ -389,30 +389,6 @@ def fetch_latest_release(repo: str) -> dict:
     raise RuntimeError("No published releases found.")
 
 
-def _unblock_windows_file(path: Path) -> None:
-    """Remove NTFS Zone.Identifier alternate data stream (Mark-of-the-Web) if present.
-    This prevents Windows Defender SmartScreen from blocking the downloaded installer."""
-    if sys.platform == "win32":
-        try:
-            # Method 1: Delete Zone.Identifier NTFS alternate data stream directly
-            zone_stream = Path(f"{str(path)}:Zone.Identifier")
-            if zone_stream.exists():
-                zone_stream.unlink(missing_ok=True)
-        except Exception:
-            pass
-        try:
-            # Method 2: PowerShell Unblock-File fallback
-            escaped_path = str(path).replace("'", "''")
-            subprocess.run(
-                ["powershell", "-NoProfile", "-NonInteractive", "-Command", f"Unblock-File -LiteralPath '{escaped_path}'"],
-                capture_output=True,
-                creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
-                timeout=3,
-            )
-        except Exception:
-            pass
-
-
 def launch_and_install(file_path: str, parent: QWidget | None = None) -> bool:
     path = Path(file_path).resolve()
     if not path.is_file():
@@ -421,17 +397,14 @@ def launch_and_install(file_path: str, parent: QWidget | None = None) -> bool:
         return False
 
     if sys.platform == "win32":
-        _unblock_windows_file(path)
         launched = False
         last_error = ""
 
-        # 1. Primary approach: detached PowerShell PID supervisor process
-        # Monitors parent Python process termination via PID check ($pidToWait).
-        # Ensures main app completely closes and releases file locks BEFORE UAC dialog pops up.
-        # Uses 'Start-Process -FilePath ... -WorkingDirectory ... -Verb RunAs -WindowStyle Normal -Wait'
-        # to trigger UAC elevation natively, keep PowerShell active as supervisor during execution,
-        # and enforce WindowStyle Normal so GUI windows are never hidden by inherited SW_HIDE flags.
-        current_pid = os.getpid()
+        # 1. Primary approach: Detached process with CREATE_BREAKAWAY_FROM_JOB
+        # Since process_lifecycle.py enables JOB_OBJECT_LIMIT_BREAKAWAY_OK on the Windows Job Object,
+        # CREATE_BREAKAWAY_FROM_JOB allows the launcher to break away from the job so the installer
+        # is NOT killed when the main application exits (KILL_ON_JOB_CLOSE).
+        # We use cmd.exe /c start which invokes ShellExecuteEx to handle UAC elevation natively.
         try:
             creationflags = 0
             if hasattr(subprocess, "CREATE_NO_WINDOW"):
@@ -444,65 +417,19 @@ def launch_and_install(file_path: str, parent: QWidget | None = None) -> bool:
                 creationflags |= subprocess.CREATE_NEW_PROCESS_GROUP
             flags = creationflags | 0x01000000  # CREATE_BREAKAWAY_FROM_JOB
 
-            # Crucial: Do NOT set startupinfo.wShowWindow = SW_HIDE (0) or STARTF_USESHOWWINDOW.
-            # In Windows, STARTUPINFO with SW_HIDE is inherited by child processes (including GUI installers
-            # launched via PowerShell's Start-Process), causing their initial window to be forced hidden (SW_HIDE)
-            # upon creation, appearing to the user as a brief flash followed by immediate disappearance!
-            # CREATE_NO_WINDOW is already set to suppress the PowerShell console window without hiding GUI children.
-            startupinfo = None
-
-            escaped_path = str(path).replace("'", "''")
-            escaped_dir = str(path.parent).replace("'", "''")
-            ps_script = (
-                f"$pidToWait = {current_pid}; "
-                f"$maxWaitSeconds = 15; "
-                f"$elapsed = 0; "
-                f"while ($elapsed -lt $maxWaitSeconds) {{ "
-                f"    try {{ $p = Get-Process -Id $pidToWait -ErrorAction Stop; Start-Sleep -Milliseconds 250; $elapsed += 0.25 }} catch {{ break }} "
-                f"}}; "
-                f"Start-Sleep -Seconds 1; "
-                f"try {{ "
-                f"    Start-Process -FilePath '{escaped_path}' -WorkingDirectory '{escaped_dir}' -Verb RunAs -WindowStyle Normal -Wait -ErrorAction Stop "
-                f"}} catch {{ "
-                f"    Start-Process -FilePath '{escaped_path}' -WorkingDirectory '{escaped_dir}' -WindowStyle Normal -Wait "
-                f"}}"
-            )
-
-            ps_args = [
-                "powershell.exe",
-                "-NoProfile",
-                "-NonInteractive",
-                "-ExecutionPolicy", "Bypass",
-                "-Command", ps_script,
-            ]
-
+            cmd_str = f'timeout /t 1 /nobreak >nul & start "" /D "{str(path.parent)}" "{str(path)}"'
             subprocess.Popen(
-                ps_args,
+                ["cmd.exe", "/c", cmd_str],
                 cwd=str(path.parent),
                 creationflags=flags,
-                startupinfo=startupinfo,
+                startupinfo=None,
                 shell=False,
             )
             launched = True
-        except Exception as exc_ps:
-            last_error = f"powershell supervisor: {exc_ps}"
+        except Exception as exc_breakaway:
+            last_error = f"breakaway launch: {exc_breakaway}"
 
-        # 2. Secondary approach: CMD process trampoline with explicit directory and timeout delay
-        if not launched:
-            try:
-                cmd_str = f'timeout /t 3 /nobreak >nul & start "" /D "{str(path.parent)}" "{str(path)}"'
-                subprocess.Popen(
-                    ["cmd.exe", "/c", cmd_str],
-                    cwd=str(path.parent),
-                    creationflags=flags,
-                    startupinfo=None,
-                    shell=False,
-                )
-                launched = True
-            except Exception as exc_cmd:
-                last_error += f" | cmd trampoline: {exc_cmd}"
-
-        # 2. Secondary approach: ShellExecuteW with 'runas' (explicit UAC elevation)
+        # 2. Secondary approach: Direct Win32 ShellExecuteW with 'runas' verb
         if not launched:
             try:
                 import ctypes
@@ -519,29 +446,29 @@ def launch_and_install(file_path: str, parent: QWidget | None = None) -> bool:
                 shell32.ShellExecuteW.restype = wintypes.HINSTANCE
 
                 hwnd = parent.winId() if parent and hasattr(parent, "winId") else None
-                # Try 'runas' first to trigger UAC elevation prompt directly
+                # Standard SW_SHOWNORMAL = 1
                 ret = shell32.ShellExecuteW(hwnd, "runas", str(path), "", str(path.parent), 1)
                 ret_val = int(ctypes.cast(ret, ctypes.c_void_p).value or 0)
                 if ret_val > 32:
                     launched = True
                 else:
-                    # Retry with 'open'
+                    # User declined elevation or runas verb unavailable, retry with 'open'
                     ret2 = shell32.ShellExecuteW(hwnd, "open", str(path), "", str(path.parent), 1)
                     ret2_val = int(ctypes.cast(ret2, ctypes.c_void_p).value or 0)
                     if ret2_val > 32:
                         launched = True
                     else:
-                        last_error = f"ShellExecuteW returned code {ret_val} / {ret2_val}"
+                        last_error += f" | ShellExecuteW: {ret_val} / {ret2_val}"
             except Exception as exc_shell:
-                last_error = f"ShellExecuteW: {exc_shell}"
+                last_error += f" | ShellExecuteW: {exc_shell}"
 
-        # 3. Tertiary fallback: os.startfile
+        # 3. Tertiary fallback: os.startfile (standard Python Windows shell launcher)
         if not launched:
             try:
                 os.startfile(str(path))
                 launched = True
             except Exception as exc_start:
-                last_error = f"os.startfile: {exc_start}"
+                last_error += f" | os.startfile: {exc_start}"
 
         if not launched:
             if parent:

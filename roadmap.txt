@@ -29,19 +29,21 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 --------------------------------------------------------------------------------
 TABLE OF CONTENTS & STATUS OVERVIEW
 --------------------------------------------------------------------------------
-1. Previous Release: Self-Test Diagnostic Resilience & Process Polish (Completed in v3.4.15)
-   [x] 1.1 Permission-Safe Self-Test Diagnostic Output: Hardened `RadioTVSegmenter.py --self-test` to print diagnostics directly to console/standard output and write reports to writable locations (`%LOCALAPPDATA%\RadioTVStorySegmenter\ai_self_test.txt` or system temp), resolving `PermissionError: [Errno 13]` when running inside protected Program Files directories without administrative elevation.
-   [x] 1.2 Diarization Cancellation Signal Cleanup: Added `_diarization_canceled_by_user` state tracking in `cancel_current_process()` (`processing.py`) to cleanly intercept worker termination signals in `on_diarization_process_error` and `on_diarization_process_finished`, preventing false-alarm crash dialog popups upon user cancellation.
-   [x] 1.3 Windows Installer Supervisor & Elevation Hardening: Enhanced detached PowerShell supervisor in `launch_and_install` (`updater.py`) with a bounded 15-second polling loop and an automatic elevation fallback (`try { Start-Process -Verb RunAs } catch { Start-Process }`), guaranteeing the installer launches reliably across all Windows account types.
+1. Previous Release: Windows Installer Visibility & WindowStyle Normalization (Completed in v3.4.16)
+   [x] 1.1 Eliminated Hidden Window Inheritance (`SW_HIDE`): Cleared inherited `STARTUPINFO.wShowWindow = SW_HIDE` from Python's detached supervisor launcher (`launch_and_install` in `updater.py`). Passing `wShowWindow = SW_HIDE` to the supervisor caused child processes to inherit the hidden flag, which forced Inno Setup's GUI wizard to momentarily flash and then disappear.
+   [x] 1.2 Explicit WindowStyle Normalization: Configured PowerShell's `Start-Process` with `-WindowStyle Normal`, explicitly instructing Windows to render the installer wizard dialog visibly (`SW_SHOWNORMAL`).
+   [x] 1.3 Explicit Working Directory Configuration: Added `-WorkingDirectory '{escaped_dir}'` to `Start-Process` and `/D "{str(path.parent)}"` to CMD trampoline fallbacks, ensuring the installer executes within its containing folder rather than defaulting to `C:\Windows\System32`.
+   [x] 1.4 Persistent Supervisor Execution: Added `-Wait` to `Start-Process`, ensuring the PowerShell supervisor remains active until the installation finishes rather than exiting prematurely while UAC or Inno Setup is initializing.
+   [x] 1.5 Inno Setup Diagnostic Logging: Enabled `SetupLogging=yes` in `installer/Windows/RadioTVStorySegmenter.iss` to automatically record setup actions to `%TEMP%`.
 
-2. Current Release: Windows Installer Visibility & WindowStyle Normalization (Completed in v3.4.16)
-   [x] 2.1 Eliminated Hidden Window Inheritance (`SW_HIDE`): Cleared inherited `STARTUPINFO.wShowWindow = SW_HIDE` from Python's detached supervisor launcher (`launch_and_install` in `updater.py`). Passing `wShowWindow = SW_HIDE` to the supervisor caused child processes to inherit the hidden flag, which forced Inno Setup's GUI wizard to momentarily flash and then disappear.
-   [x] 2.2 Explicit WindowStyle Normalization: Configured PowerShell's `Start-Process` with `-WindowStyle Normal`, explicitly instructing Windows to render the installer wizard dialog visibly (`SW_SHOWNORMAL`).
-   [x] 2.3 Explicit Working Directory Configuration: Added `-WorkingDirectory '{escaped_dir}'` to `Start-Process` and `/D "{str(path.parent)}"` to CMD trampoline fallbacks, ensuring the installer executes within its containing folder rather than defaulting to `C:\Windows\System32`.
-   [x] 2.4 Persistent Supervisor Execution: Added `-Wait` to `Start-Process`, ensuring the PowerShell supervisor remains active until the installation finishes rather than exiting prematurely while UAC or Inno Setup is initializing.
-   [x] 2.5 Inno Setup Diagnostic Logging: Enabled `SetupLogging=yes` in `installer/Windows/RadioTVStorySegmenter.iss` to automatically record setup actions to `%TEMP%`.
+2. Current Release: Windows Job Object Breakaway & Antivirus Remediation (Completed in v3.4.17)
+   [x] 2.1 Enabled Job Object Breakaway (`JOB_OBJECT_LIMIT_BREAKAWAY_OK`): In `process_lifecycle.py`, added `JOB_OBJECT_LIMIT_BREAKAWAY_OK` (`0x00000800`) to the Windows Job Object limits. Without this flag, Windows `CreateProcess` fails with `ERROR_ACCESS_DENIED` whenever a child process requests `CREATE_BREAKAWAY_FROM_JOB`. This previously prevented the updater launcher from detaching, trapping the installer inside the parent process's Job Object, where it was killed on application exit (`KILL_ON_JOB_CLOSE`).
+   [x] 2.2 Clean Detached Breakaway Update Launch: Configured `launch_and_install` in `updater.py` to launch the installer via `cmd.exe /c start` with `CREATE_BREAKAWAY_FROM_JOB` (`0x01000000`). This ensures the installer runs outside the Job Object and executes uninterrupted when the main application shuts down.
+   [x] 2.3 Eliminated Mark-of-the-Web (MotW) Stripping: Completely removed `_unblock_windows_file` (which deleted the NTFS `:Zone.Identifier` Alternate Data Stream and executed PowerShell `Unblock-File`). In modern heuristic and ML-based antivirus engines (including Windows Defender / SmartScreen), modifying `:Zone.Identifier` or unblocking downloaded executables is categorized as security defense evasion (MITRE ATT&CK T1564.004), which caused browsers like Google Chrome and Windows Defender to falsely flag repository download archives (`RTVS3-*.zip`) as infected.
+   [x] 2.4 Replaced PowerShell Scripting with Native APIs: Removed `powershell.exe -ExecutionPolicy Bypass` and replaced it with direct `cmd start`, Win32 `ShellExecuteW`, and `os.startfile`.
+   [x] 2.5 Graceful Fallback Chain: Preserved clean fallbacks to `ShellExecuteW` (`"runas"` and `"open"` verbs) and Python's built-in `os.startfile` when elevated execution is cancelled or restricted by local system policy.
 
-3. Upcoming Milestone: Automated Test Runner & Performance Benchmark Suite [PLANNED for v3.4.17]
+3. Upcoming Milestone: Automated Test Runner & Performance Benchmark Suite [PLANNED for v3.4.18]
    [ ] 3.1 Zero-Dependency Core Test Runner (`test_runner.py`):
        - Multi-tiered CLI test harness using Python's built-in `unittest` and Qt `QTest` with sandbox temporary directory isolation.
        - In-memory synthetic audio generation fixture (`wave`/`math`) producing realistic multi-tone audio without external files.
@@ -100,50 +102,58 @@ CORE ARCHITECTURAL INVARIANTS
 - 0 MB Default GPU Footprint: Base installer contains 0 MB of CUDA bloat; GPU features are purely optional and provisioned on demand.
 
 ================================================================================
-1. PREVIOUS RELEASE: SELF-TEST DIAGNOSTIC RESILIENCE & PROCESS POLISH (Completed in v3.4.15)
+1. PREVIOUS RELEASE: WINDOWS INSTALLER VISIBILITY & WINDOWSTYLE NORMALIZATION (Completed in v3.4.16)
 ================================================================================
 
-[x] 1.1 PERMISSION-SAFE SELF-TEST DIAGNOSTIC OUTPUT
-----------------------------------------------------
-- Updated `RadioTVSegmenter.py --self-test` to print full diagnostic check lines to standard output/console.
-- Added support for writing diagnostics into `%LOCALAPPDATA%\RadioTVStorySegmenter\ai_self_test.txt` or system temp, resolving `PermissionError: [Errno 13]` when executed in protected directories (`C:\Program Files\Radio & TV Segmenter\`) without administrator privileges.
-
-[x] 1.2 DIARIZATION CANCELLATION SIGNAL CLEANUP
-------------------------------------------------
-- Added `_diarization_canceled_by_user` state flag in `cancel_current_process()` (`processing.py`).
-- Guarded `on_diarization_process_error` and `on_diarization_process_finished` to intercept process kill signals, cleanly resetting state without popping up false-alarm crash or unexpected-exit error dialogs.
-
-[x] 1.3 WINDOWS INSTALLER SUPERVISOR & ELEVATION HARDENING
------------------------------------------------------------
-- Updated detached PowerShell supervisor in `launch_and_install` (`updater.py`) with a bounded 15-second loop timeout (`$maxWaitSeconds = 15; $elapsed = 0`).
-- Implemented automatic fallback execution (`try { Start-Process -Verb RunAs } catch { Start-Process }`) to ensure installer launches interactively under all Windows user account and elevation conditions.
-
-================================================================================
-2. CURRENT RELEASE: WINDOWS INSTALLER VISIBILITY & WINDOWSTYLE NORMALIZATION (Completed in v3.4.16)
-================================================================================
-
-[x] 2.1 ELIMINATED HIDDEN WINDOW INHERITANCE (SW_HIDE)
+[x] 1.1 ELIMINATED HIDDEN WINDOW INHERITANCE (SW_HIDE)
 ------------------------------------------------------
 - Cleared inherited `STARTUPINFO.wShowWindow = SW_HIDE` from Python's detached supervisor launcher (`launch_and_install` in `updater.py`). Previously, passing `wShowWindow = SW_HIDE` to the supervisor caused Windows `ShowWindow()` inside child processes to inherit the hidden flag, causing Inno Setup's GUI wizard to flash momentarily and disappear from view.
 
-[x] 2.2 EXPLICIT WINDOWSTYLE NORMALIZATION
+[x] 1.2 EXPLICIT WINDOWSTYLE NORMALIZATION
 ------------------------------------------
 - Configured PowerShell's `Start-Process` with `-WindowStyle Normal`, explicitly instructing Windows to render the installer wizard dialog visibly (`SW_SHOWNORMAL`).
 
-[x] 2.3 EXPLICIT WORKING DIRECTORY CONFIGURATION
+[x] 1.3 EXPLICIT WORKING DIRECTORY CONFIGURATION
 ------------------------------------------------
 - Added `-WorkingDirectory '{escaped_dir}'` to `Start-Process` and `/D "{str(path.parent)}"` to CMD trampoline fallbacks, ensuring the installer executes within its containing folder rather than defaulting to `C:\Windows\System32`.
 
-[x] 2.4 PERSISTENT SUPERVISOR EXECUTION
+[x] 1.4 PERSISTENT SUPERVISOR EXECUTION
 ---------------------------------------
 - Added `-Wait` to `Start-Process`, ensuring the PowerShell supervisor remains active until the installation finishes rather than exiting prematurely while UAC or Inno Setup is initializing.
 
-[x] 2.5 INNO SETUP DIAGNOSTIC LOGGING
+[x] 1.5 INNO SETUP DIAGNOSTIC LOGGING
 -------------------------------------
 - Enabled `SetupLogging=yes` in `installer/Windows/RadioTVStorySegmenter.iss` to automatically record setup actions to `%TEMP%`.
 
 ================================================================================
-3. UPCOMING MILESTONE: AUTOMATED TEST RUNNER & PERFORMANCE BENCHMARK SUITE [PLANNED for v3.4.17]
+2. CURRENT RELEASE: WINDOWS JOB OBJECT BREAKAWAY & ANTIVIRUS REMEDIATION (Completed in v3.4.17)
+================================================================================
+
+[x] 2.1 ENABLED JOB OBJECT BREAKAWAY (JOB_OBJECT_LIMIT_BREAKAWAY_OK)
+--------------------------------------------------------------------
+- In `process_lifecycle.py`, added `JOB_OBJECT_LIMIT_BREAKAWAY_OK = 0x00000800` to the Job Object limit flags (`LimitFlags = JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE | JOB_OBJECT_LIMIT_BREAKAWAY_OK`).
+- Without `JOB_OBJECT_LIMIT_BREAKAWAY_OK`, Win32 `CreateProcess` unconditionally fails with `ERROR_ACCESS_DENIED` whenever a child process specifies `CREATE_BREAKAWAY_FROM_JOB` (0x01000000). This previously prevented the detached update supervisor from detaching from the main application's job, leaving the installer trapped in the Job Object and causing it to be killed by Windows (`KILL_ON_JOB_CLOSE`) when `RadioTVSegmenter` exited.
+
+[x] 2.2 CLEAN DETACHED BREAKAWAY UPDATE LAUNCH
+----------------------------------------------
+- Configured `launch_and_install` in `updater.py` to launch the installer via `cmd.exe /c start` with `CREATE_BREAKAWAY_FROM_JOB` (0x01000000).
+- With `JOB_OBJECT_LIMIT_BREAKAWAY_OK` enabled, the launcher cleanly breaks away from the Job Object, allowing the Inno Setup installer wizard to run continuously across parent application exit and UAC elevation prompts.
+
+[x] 2.3 ELIMINATED MARK-OF-THE-WEB (MOTW) STRIPPING
+---------------------------------------------------
+- Completely removed `_unblock_windows_file` from `updater.py` (which deleted NTFS `:Zone.Identifier` Alternate Data Streams and executed PowerShell `Unblock-File`).
+- In modern heuristic and machine-learning antivirus engines (such as Microsoft Defender and Google Safe Browsing), programmatic tampering with Zone.Identifier or unblocking downloaded executables is categorized as security defense evasion (MITRE ATT&CK T1564.004), causing browsers like Chrome to falsely classify repository release archives (`RTVS3-*.zip`) as infected with trojans.
+
+[x] 2.4 REPLACED POWERSHELL SCRIPTING WITH NATIVE APIS
+------------------------------------------------------
+- Removed `powershell.exe -ExecutionPolicy Bypass` commands from the update flow, relying on native `cmd start`, Win32 `ShellExecuteW`, and `os.startfile`.
+
+[x] 2.5 GRACEFUL FALLBACK CHAIN
+-------------------------------
+- Preserved clean fallbacks to `ShellExecuteW` (`"runas"` and `"open"` verbs) and Python's built-in `os.startfile` when elevated execution is cancelled or restricted by local system policy.
+
+================================================================================
+3. UPCOMING MILESTONE: AUTOMATED TEST RUNNER & PERFORMANCE BENCHMARK SUITE [PLANNED for v3.4.18]
 ================================================================================
 
 [ ] 3.1 ZERO-DEPENDENCY CORE TEST RUNNER (`test_runner.py`)
