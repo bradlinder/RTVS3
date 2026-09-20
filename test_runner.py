@@ -181,6 +181,16 @@ class DiagnosticEngine:
                 "Subtitles & Export Formats",
                 "Validates generate_youtube_chapters() zero-start enforcement and time alignment",
             ),
+            DiagnosticItem(
+                "Cockos REAPER Project (.rpp) Generator",
+                "Subtitles & Export Formats",
+                "Validates generate_reaper_project() track S-expressions, item bounds, fades, and regions",
+            ),
+            DiagnosticItem(
+                "Magix Samplitude EDL (v1.5) Export",
+                "Subtitles & Export Formats",
+                "Validates generate_samplitude_edl() header structure, timecode parsing, and track entries",
+            ),
 
             # 3. AI Runtimes & Inference Stack
             DiagnosticItem(
@@ -490,6 +500,83 @@ class DiagnosticEngine:
             raise AssertionError("YouTube chapters missing 02:00 marker")
         item.status = "PASS"
         item.message = "YouTube chapter timestamps and 00:00 start verified"
+
+    def _test_cockos_reaper_project_rpp_generator(self, item: DiagnosticItem):
+        try:
+            from export.daw import generate_reaper_project
+        except ImportError:
+            import importlib.util
+            spec = importlib.util.spec_from_file_location("export_daw", "export/daw.py")
+            if not spec or not spec.loader:
+                raise ImportError("Could not locate export.daw module")
+            mod = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(mod)
+            generate_reaper_project = mod.generate_reaper_project
+
+        class DummyStory:
+            def __init__(self, start, end, title, fade_in=0.0, fade_out=0.0):
+                self.start = start
+                self.end = end
+                self.title = title
+                self.fade_in = fade_in
+                self.fade_out = fade_out
+
+        stories = [
+            DummyStory(0.0, 95.5, "Segment A", 0.05, 0.1),
+            DummyStory(95.5, 230.0, "Segment B", 0.0, 0.05),
+        ]
+        rpp = generate_reaper_project(stories, "audio.wav", "Test Project", apply_fades=True)
+        if "<REAPER_PROJECT" not in rpp:
+            raise AssertionError("Missing REAPER_PROJECT root tag")
+        if "<TRACK" not in rpp:
+            raise AssertionError("Missing TRACK container in RPP")
+        if "<ITEM" not in rpp:
+            raise AssertionError("Missing ITEM blocks in RPP")
+        if 'MARKER 1 0.000000 "Segment A" 1 95.500000 1 0' not in rpp:
+            raise AssertionError("Missing REAPER Region 1 definition")
+        if 'MARKER 2 95.500000 "Segment B" 1 230.000000 1 0' not in rpp:
+            raise AssertionError("Missing REAPER Region 2 definition")
+        item.status = "PASS"
+        item.message = "REAPER .rpp timeline S-expressions, item blocks, and region markers verified"
+
+    def _test_magix_samplitude_edl_v1_5_export(self, item: DiagnosticItem):
+        try:
+            from export.daw import generate_samplitude_edl, format_edl_timestamp
+        except ImportError:
+            import importlib.util
+            spec = importlib.util.spec_from_file_location("export_daw", "export/daw.py")
+            if not spec or not spec.loader:
+                raise ImportError("Could not locate export.daw module")
+            mod = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(mod)
+            generate_samplitude_edl = mod.generate_samplitude_edl
+            format_edl_timestamp = mod.format_edl_timestamp
+
+        tc = format_edl_timestamp(3665.123)
+        if tc != "01:01:05:123":
+            raise AssertionError(f"format_edl_timestamp(3665.123) returned '{tc}', expected '01:01:05:123'")
+
+        class DummyStory:
+            def __init__(self, start, end, title, fade_in=0.0, fade_out=0.0):
+                self.start = start
+                self.end = end
+                self.title = title
+                self.fade_in = fade_in
+                self.fade_out = fade_out
+
+        stories = [
+            DummyStory(0.0, 60.0, "Intro", 0.05, 0.1),
+            DummyStory(60.0, 185.5, "Outro", 0.0, 0.0),
+        ]
+        edl = generate_samplitude_edl(stories, "broadcast.wav", "News Hour")
+        if '"Samplitude EDL File Version 1.5"' not in edl:
+            raise AssertionError("Missing Samplitude EDL Version 1.5 header")
+        if '"Project: News Hour"' not in edl:
+            raise AssertionError("Missing project title in EDL header")
+        if "00:00:00:000   00:01:00:000" not in edl:
+            raise AssertionError("Missing Track 1 timecode span in EDL")
+        item.status = "PASS"
+        item.message = "Samplitude EDL v1.5 timecode formatting and track decision list verified"
 
     def _test_pytorch_and_torch_native_extensions(self, item: DiagnosticItem):
         try:

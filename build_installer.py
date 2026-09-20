@@ -59,7 +59,7 @@ try:
 except ImportError as e:
     print(f"[BUILD] Warning: Could not import prs_shared ({e}), using fallback values")
     APP_DISPLAY_NAME = "Radio & TV Segmenter"
-    PROJECT_VERSION = "3.5.0"
+    PROJECT_VERSION = "5.0.1"
 except Exception as e:
     print(f"[BUILD] Unexpected error importing prs_shared: {type(e).__name__}: {e}")
     raise
@@ -808,6 +808,11 @@ def main() -> None:
         "--hidden-import", "runtime_manager",
         "--hidden-import", "radio_tv_story_segmenter_worker",
         "--hidden-import", "updater",
+        "--hidden-import", "export.daw",
+        "--hidden-import", "export.subtitles",
+        "--hidden-import", "export.pdf",
+        "--hidden-import", "export.docx",
+        "--hidden-import", "export.dialog",
         "--hidden-import", "plugins.manager",
     ])
 

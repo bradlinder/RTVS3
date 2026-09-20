@@ -212,6 +212,8 @@ class UnifiedExportDialog(QDialog):
         self.cb_vtt = QCheckBox("WebVTT subtitles (.vtt)")
         self.cb_cue = QCheckBox("CUE sheet (.cue)")
         self.cb_tracklist = QCheckBox("Tracklist / YouTube Chapters (.txt)")
+        self.cb_rpp = QCheckBox("Cockos REAPER project (.rpp)")
+        self.cb_edl = QCheckBox("Samplitude EDL v1.5 (.edl)")
 
         audio_file = getattr(self.main_window, "audio_file", None)
         media_ext = audio_file.suffix.lower() if audio_file else "media"
@@ -228,6 +230,8 @@ class UnifiedExportDialog(QDialog):
         self.cb_pdf.setChecked(not is_music_mode)
         self.cb_cue.setChecked(is_music_mode)
         self.cb_tracklist.setChecked(is_music_mode)
+        self.cb_rpp.setChecked(False)
+        self.cb_edl.setChecked(False)
         self.cb_media.setChecked(audio_file is not None)
         self.cb_media.setEnabled(audio_file is not None)
         self.cb_apply_fades.setEnabled(audio_file is not None and self.cb_media.isChecked())
@@ -239,7 +243,33 @@ class UnifiedExportDialog(QDialog):
         self.formats_section.add_widget(self.cb_srt)
         self.formats_section.add_widget(self.cb_vtt)
         self.formats_section.add_widget(self.cb_cue)
-        self.formats_section.add_widget(self.cb_tracklist)
+
+        tracklist_row = QHBoxLayout()
+        tracklist_row.addWidget(self.cb_tracklist)
+        self.copy_yt_btn = QPushButton("📋 Copy Chapters")
+        self.copy_yt_btn.setToolTip("Copy formatted YouTube chapter markers to clipboard immediately")
+        self.copy_yt_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #1e293b;
+                color: #38bdf8;
+                border: 1px solid #0284c7;
+                border-radius: 4px;
+                padding: 2px 8px;
+                font-size: 11px;
+                font-weight: 500;
+            }
+            QPushButton:hover {
+                background-color: #0369a1;
+                color: #ffffff;
+            }
+        """)
+        self.copy_yt_btn.clicked.connect(self._copy_youtube_chapters)
+        tracklist_row.addWidget(self.copy_yt_btn)
+        tracklist_row.addStretch()
+        self.formats_section.add_layout(tracklist_row)
+
+        self.formats_section.add_widget(self.cb_rpp)
+        self.formats_section.add_widget(self.cb_edl)
         self.formats_section.add_widget(self.cb_media)
         self.formats_section.add_widget(self.cb_apply_fades)
         local_layout.addWidget(self.formats_section)
@@ -362,6 +392,24 @@ class UnifiedExportDialog(QDialog):
         for _, dest, _ in self._plugin_destinations:
             dest.on_scope_changed(scope, stories)
 
+    def _copy_youtube_chapters(self):
+        if hasattr(self.main_window, "copy_youtube_chapters_to_clipboard"):
+            copied = self.main_window.copy_youtube_chapters_to_clipboard()
+            if copied:
+                QMessageBox.information(self, "Chapters Copied", "YouTube chapter markers copied to clipboard!")
+        else:
+            from export.subtitles import generate_youtube_chapters
+            stories = getattr(self.main_window, "stories", [])
+            if not stories:
+                QMessageBox.warning(self, "No Stories", "No stories available to generate chapters.")
+                return
+            chapters = generate_youtube_chapters(stories)
+            from PySide6.QtWidgets import QApplication
+            clipboard = QApplication.clipboard()
+            if clipboard:
+                clipboard.setText(chapters)
+                QMessageBox.information(self, "Chapters Copied", "YouTube chapter markers copied to clipboard!")
+
     def _load_saved_options(self):
         settings = QSettings(INTERNAL_APP_ID, INTERNAL_APP_ID)
         self.cb_txt.setChecked(str(settings.value("export_opt_fmt_txt", "true")).lower() in {"1", "true", "yes"})
@@ -371,6 +419,8 @@ class UnifiedExportDialog(QDialog):
         self.cb_vtt.setChecked(str(settings.value("export_opt_fmt_vtt", "false")).lower() in {"1", "true", "yes"})
         self.cb_cue.setChecked(str(settings.value("export_opt_fmt_cue", "false")).lower() in {"1", "true", "yes"})
         self.cb_tracklist.setChecked(str(settings.value("export_opt_fmt_tracklist", "false")).lower() in {"1", "true", "yes"})
+        self.cb_rpp.setChecked(str(settings.value("export_opt_fmt_rpp", "false")).lower() in {"1", "true", "yes"})
+        self.cb_edl.setChecked(str(settings.value("export_opt_fmt_edl", "false")).lower() in {"1", "true", "yes"})
         if self.cb_media.isEnabled():
             self.cb_media.setChecked(str(settings.value("export_opt_fmt_media", "false")).lower() in {"1", "true", "yes"})
 
@@ -398,6 +448,8 @@ class UnifiedExportDialog(QDialog):
         settings.setValue("export_opt_fmt_vtt", self.cb_vtt.isChecked())
         settings.setValue("export_opt_fmt_cue", self.cb_cue.isChecked())
         settings.setValue("export_opt_fmt_tracklist", self.cb_tracklist.isChecked())
+        settings.setValue("export_opt_fmt_rpp", self.cb_rpp.isChecked())
+        settings.setValue("export_opt_fmt_edl", self.cb_edl.isChecked())
         settings.setValue("export_opt_fmt_media", self.cb_media.isChecked())
 
         settings.setValue("export_opt_include_speakers", self.cb_speakers.isChecked())
@@ -432,6 +484,8 @@ class UnifiedExportDialog(QDialog):
                 "media": self.cb_media.isChecked(),
                 "cue": self.cb_cue.isChecked(),
                 "tracklist": self.cb_tracklist.isChecked(),
+                "rpp": self.cb_rpp.isChecked(),
+                "edl": self.cb_edl.isChecked(),
             }
             if not any(formats.values()):
                 QMessageBox.warning(self, "Export", "Please select at least one format to export.")
@@ -463,6 +517,8 @@ class UnifiedExportDialog(QDialog):
                 "media": self.cb_media.isChecked(),
                 "cue": self.cb_cue.isChecked(),
                 "tracklist": self.cb_tracklist.isChecked(),
+                "rpp": self.cb_rpp.isChecked(),
+                "edl": self.cb_edl.isChecked(),
             }
             apply_fades = self.cb_apply_fades.isChecked()
             settings = QSettings("RadioTVStorySegmenter", "RadioTVStorySegmenter")

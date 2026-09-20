@@ -19,6 +19,10 @@ from export.subtitles import (
     generate_vtt_content,
     generate_cue_content,
 )
+from export.daw import (
+    generate_reaper_project,
+    generate_samplitude_edl,
+)
 from export.docx import create_story_docx
 from export.dialog import UnifiedExportDialog
 
@@ -1226,6 +1230,24 @@ class ProjectExportMixin:
             with open(chapters_file, "w", encoding="utf-8") as f:
                 f.write(chapters_text)
 
+        if formats.get("rpp") and stories_with_indices:
+            stories_subset = [s for _, s in stories_with_indices]
+            rpp_file = transcripts_out / f"{base}.rpp"
+            media_name = self.audio_file.name if self.audio_file else ""
+            apply_fades = bool(options.get("apply_audio_fades", True))
+            rpp_text = generate_reaper_project(stories_subset, media_name, base, apply_fades=apply_fades)
+            with open(rpp_file, "w", encoding="utf-8") as f:
+                f.write(rpp_text)
+
+        if formats.get("edl") and stories_with_indices:
+            stories_subset = [s for _, s in stories_with_indices]
+            edl_file = transcripts_out / f"{base}.edl"
+            media_name = self.audio_file.name if self.audio_file else ""
+            apply_fades = bool(options.get("apply_audio_fades", True))
+            edl_text = generate_samplitude_edl(stories_subset, media_name, base, apply_fades=apply_fades)
+            with open(edl_file, "w", encoding="utf-8") as f:
+                f.write(edl_text)
+
         return True
 
     def export_selected_stories(self, custom_formats=None, custom_base=None, custom_options=None, directory=None, is_custom_location=False):
@@ -1950,6 +1972,22 @@ class ProjectExportMixin:
                 with open(chapters_file, "w", encoding="utf-8") as f:
                     f.write(chapters_text)
 
+            if formats.get("rpp") and getattr(self, "stories", None):
+                rpp_file = transcripts_out / f"{base}.rpp"
+                media_name = self.audio_file.name if self.audio_file else ""
+                apply_fades = bool(options.get("apply_audio_fades", True))
+                rpp_text = generate_reaper_project(self.stories, media_name, base, apply_fades=apply_fades)
+                with open(rpp_file, "w", encoding="utf-8") as f:
+                    f.write(rpp_text)
+
+            if formats.get("edl") and getattr(self, "stories", None):
+                edl_file = transcripts_out / f"{base}.edl"
+                media_name = self.audio_file.name if self.audio_file else ""
+                apply_fades = bool(options.get("apply_audio_fades", True))
+                edl_text = generate_samplitude_edl(self.stories, media_name, base, apply_fades=apply_fades)
+                with open(edl_file, "w", encoding="utf-8") as f:
+                    f.write(edl_text)
+
             if progress_dialog is not None and created_local_dialog:
                 progress_dialog.setValue(1)
                 QApplication.processEvents()
@@ -2593,6 +2631,80 @@ class ProjectExportMixin:
         if not destination_path:
             show_export_completion_dialog(self, "Export Complete", f"Tracklist / Chapters exported successfully to:\n{save_path}", save_path)
         return True
+
+    def export_reaper_project(self, destination_path=None):
+        """Export story segments as a Cockos REAPER project file (.rpp)."""
+        is_music = getattr(self, "story_detection_mode", "voice") == "music"
+        term_plural = "Songs" if is_music else "Stories"
+        if not getattr(self, "stories", []):
+            QMessageBox.warning(self, f"No {term_plural}", f"There are no {term_plural.lower()} to export.")
+            return False
+        base = safe_filename(self.project_file.stem if self.project_file else (self.audio_file.stem if self.audio_file else "project"))
+        if not destination_path:
+            save_path, _ = QFileDialog.getSaveFileName(
+                self, "Export REAPER Project",
+                str(Path(self._dialog_directory()) / f"{base}.rpp"),
+                "Cockos REAPER Project (*.rpp)"
+            )
+            if not save_path:
+                return False
+        else:
+            save_path = destination_path
+
+        media_name = self.audio_file.name if getattr(self, "audio_file", None) else ""
+        content = generate_reaper_project(self.stories, media_name, base, apply_fades=True)
+        with open(save_path, "w", encoding="utf-8") as f:
+            f.write(content)
+        self.log_activity(f"[EXPORT] Exported REAPER project (.rpp) to {save_path}")
+        if not destination_path:
+            show_export_completion_dialog(self, "Export Complete", f"REAPER project exported successfully to:\n{save_path}", save_path)
+        return True
+
+    def export_samplitude_edl(self, destination_path=None):
+        """Export story segments as a Magix Samplitude EDL (v1.5) broadcast edit decision list."""
+        is_music = getattr(self, "story_detection_mode", "voice") == "music"
+        term_plural = "Songs" if is_music else "Stories"
+        if not getattr(self, "stories", []):
+            QMessageBox.warning(self, f"No {term_plural}", f"There are no {term_plural.lower()} to export.")
+            return False
+        base = safe_filename(self.project_file.stem if self.project_file else (self.audio_file.stem if self.audio_file else "project"))
+        if not destination_path:
+            save_path, _ = QFileDialog.getSaveFileName(
+                self, "Export Samplitude EDL",
+                str(Path(self._dialog_directory()) / f"{base}.edl"),
+                "Samplitude EDL (*.edl)"
+            )
+            if not save_path:
+                return False
+        else:
+            save_path = destination_path
+
+        media_name = self.audio_file.name if getattr(self, "audio_file", None) else ""
+        content = generate_samplitude_edl(self.stories, media_name, base, apply_fades=True)
+        with open(save_path, "w", encoding="utf-8") as f:
+            f.write(content)
+        self.log_activity(f"[EXPORT] Exported Samplitude EDL (.edl) to {save_path}")
+        if not destination_path:
+            show_export_completion_dialog(self, "Export Complete", f"Samplitude EDL exported successfully to:\n{save_path}", save_path)
+        return True
+
+    def copy_youtube_chapters_to_clipboard(self) -> bool:
+        """Format story segments as YouTube chapters and copy them directly to the system clipboard."""
+        stories = getattr(self, "stories", [])
+        if not stories:
+            if hasattr(self, "statusBar") and self.statusBar():
+                self.statusBar().showMessage("No stories available to copy YouTube chapters.", 3000)
+            return False
+        chapters_text = generate_youtube_chapters(stories)
+        clipboard = QApplication.clipboard()
+        if clipboard:
+            clipboard.setText(chapters_text)
+            msg = f"Copied {len(stories)} YouTube chapter markers to clipboard!"
+            if hasattr(self, "statusBar") and self.statusBar():
+                self.statusBar().showMessage(msg, 4000)
+            self.log_activity(f"[EXPORT] {msg}")
+            return True
+        return False
 
     def perform_stories_export(
         self,

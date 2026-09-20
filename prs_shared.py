@@ -480,7 +480,7 @@ class CollapsibleSection(QWidget):
 
 # Display branding shown to the user (title bar, About box, installers).
 APP_DISPLAY_NAME = "Radio & TV Segmenter"
-PROJECT_VERSION = "3.5.0"
+PROJECT_VERSION = "5.0.1"
 DEFAULT_GITHUB_REPO = "bradlinder/RTVS3"
 
 

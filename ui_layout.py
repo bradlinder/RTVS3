@@ -711,6 +711,25 @@ class UiLayoutMixin:
         self.export_action = export_act
         file_menu.addAction(export_act)
 
+        export_timeline_menu = file_menu.addMenu("Export &Timeline / DAW")
+        export_reaper_act = QAction("Cockos &REAPER Project (.rpp)...", self)
+        export_reaper_act.triggered.connect(lambda: self.export_reaper_project() if hasattr(self, "export_reaper_project") else None)
+        export_timeline_menu.addAction(export_reaper_act)
+
+        export_samplitude_act = QAction("Magix Samplitude &EDL v1.5 (.edl)...", self)
+        export_samplitude_act.triggered.connect(lambda: self.export_samplitude_edl() if hasattr(self, "export_samplitude_edl") else None)
+        export_timeline_menu.addAction(export_samplitude_act)
+
+        export_cue_act = QAction("&CUE Sheet (.cue)...", self)
+        export_cue_act.triggered.connect(lambda: self.export_cue_sheet() if hasattr(self, "export_cue_sheet") else None)
+        export_timeline_menu.addAction(export_cue_act)
+
+        copy_yt_act = QAction("Copy &YouTube Chapters to Clipboard", self)
+        copy_yt_act.setShortcut(platform_seq("Ctrl+Shift+Y"))
+        copy_yt_act.triggered.connect(lambda: self.copy_youtube_chapters_to_clipboard() if hasattr(self, "copy_youtube_chapters_to_clipboard") else None)
+        self.copy_yt_chapters_action = copy_yt_act
+        file_menu.addAction(copy_yt_act)
+
         batch_act = QAction("&Batch Processing...", self)
         batch_act.setShortcut(platform_seq("Ctrl+Shift+B"))
         batch_act.triggered.connect(self.open_batch_processing_dialog)

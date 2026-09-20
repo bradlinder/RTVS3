@@ -1,5 +1,21 @@
 # Changelog
 
+## v5.0.1
+- **Stable Release — DAW Timeline Interchange & YouTube Chapter Marker Export (`export/daw.py`)**:
+  - **Cockos REAPER Project Export (`.rpp`)**:
+    - Generates multi-track REAPER project files with full XML-like S-expression syntax (`<REAPER_PROJECT`, `<TRACK`, `<ITEM`, `<SOURCE WAV>`).
+    - Translates story segments into precision-aligned timeline items with source sample offsets (`SOFFS`), story titles (`NAME`), non-destructive fade-in/fade-out curves (`FADEIN`, `FADEOUT`), and color-coded project region markers (`MARKER`).
+  - **Magix Samplitude EDL (v1.5) Export (`.edl`)**:
+    - Generates standard broadcast Edit Decision Lists (v1.5) compatible with Magix Samplitude and Sequoia.
+    - Implements millisecond-precision `HH:MM:SS:mmm` timecode formatting (`format_edl_timestamp`) mapping timeline start/end boundaries to project and source tracks.
+  - **One-Click YouTube Chapter Marker Clipboard Copy**:
+    - Added instant `Ctrl+Shift+Y` shortcut and "Copy Chapters" button to copy zero-based (`00:00 - Introduction`) YouTube chapter markers directly to the system clipboard.
+  - **Unified Export Center & Menu Integration**:
+    - Integrated DAW export checkboxes in `UnifiedExportDialog` with persistent `QSettings` state.
+    - Added dedicated "Export Timeline / DAW" submenu and YouTube chapter actions to the File menu and batch export pipeline.
+  - **Diagnostic Test Bench Expansion (`test_runner.py`)**:
+    - Added automated unit and fuzz diagnostics for REAPER S-expression generation, Samplitude EDL header/timecode parsing, and chapter marker zero-start enforcement.
+
 ## v3.5.0
 - **Stable Release — Phase 2 Architecture Modularization & Performance Milestone**:
   - **Comprehensive Monolith Decomposition (`prs_shared.py`)**:
