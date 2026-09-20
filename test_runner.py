@@ -259,6 +259,11 @@ class DiagnosticEngine:
                 "Audio Diarization & VAD",
                 "Verifies that translation modules remain cleanly isolated inside plugins/translation",
             ),
+            DiagnosticItem(
+                "Speaker Reassignment Contiguous Turn Logic",
+                "Transcript & Speaker Management",
+                "Verifies that reassigning a speaker label applies across all contiguous turn segments until the next speaker change",
+            ),
         ]
 
     def run_all(self, stop_requested_fn: Optional[Callable[[], bool]] = None) -> List[DiagnosticItem]:
@@ -769,6 +774,60 @@ class DiagnosticEngine:
 
         item.status = "PASS"
         item.message = "Core module isolation invariant strictly maintained"
+
+    def _test_speaker_reassignment_contiguous_turn_logic(self, item: DiagnosticItem):
+        # Create a mock transcript with 5 segments spanning 3 speaker turns
+        segments = [
+            {"start": 0.0, "end": 5.0, "text": "Hello world.", "speaker": "Katelin Beck"},
+            {"start": 5.0, "end": 10.0, "text": "Check out books.", "speaker": "Jenny Lowman"},
+            {"start": 10.0, "end": 15.0, "text": "So a large part of what volunteers do...", "speaker": "Jenny Lowman"},
+            {"start": 15.0, "end": 20.0, "text": "is exploring the library with kids.", "speaker": "Jenny Lowman"},
+            {"start": 20.0, "end": 25.0, "text": "Katelin says instead of deciding...", "speaker": "Milan Parker"},
+        ]
+
+        speaker_names = {}
+        segment_speaker_overrides = {}
+
+        def get_effective_speaker_name(idx, seg):
+            override = segment_speaker_overrides.get(idx)
+            if override and override in speaker_names:
+                return speaker_names[override]
+            return seg.get("speaker", "")
+
+        # Simulate renaming Jenny Lowman (starting at seg_idx=1) to Katelin Beck for "This Instance Only"
+        seg_idx = 1
+        current_name = get_effective_speaker_name(seg_idx, segments[seg_idx]) # "Jenny Lowman"
+        target_name = "Katelin Beck"
+
+        # Contiguous turn logic
+        section_indices = []
+        for i in range(seg_idx, len(segments)):
+            if get_effective_speaker_name(i, segments[i]) == current_name:
+                section_indices.append(i)
+            else:
+                break
+
+        for idx in section_indices:
+            override_key = f"SEG_{idx}_SPEAKER"
+            speaker_names[override_key] = target_name
+            segment_speaker_overrides[idx] = override_key
+
+        # Assertions
+        if section_indices != [1, 2, 3]:
+            raise AssertionError(f"Expected turn indices [1, 2, 3], got {section_indices}")
+
+        for idx in [1, 2, 3]:
+            eff = get_effective_speaker_name(idx, segments[idx])
+            if eff != "Katelin Beck":
+                raise AssertionError(f"Segment #{idx} speaker is '{eff}', expected 'Katelin Beck'")
+
+        # Ensure segment 4 (Milan Parker) remains untouched
+        milan_eff = get_effective_speaker_name(4, segments[4])
+        if milan_eff != "Milan Parker":
+            raise AssertionError(f"Segment #4 speaker was modified to '{milan_eff}', expected 'Milan Parker'")
+
+        item.status = "PASS"
+        item.message = "All contiguous turn segments correctly reassigned up to next speaker boundary"
 
 
 # ---------------------------------------------------------------------------

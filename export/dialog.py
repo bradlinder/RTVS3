@@ -270,8 +270,34 @@ class UnifiedExportDialog(QDialog):
 
         self.formats_section.add_widget(self.cb_rpp)
         self.formats_section.add_widget(self.cb_edl)
-        self.formats_section.add_widget(self.cb_media)
-        self.formats_section.add_widget(self.cb_apply_fades)
+
+        media_row = QHBoxLayout()
+        media_row.setSpacing(10)
+        media_row.addWidget(self.cb_media)
+        media_row.addWidget(self.cb_apply_fades)
+
+        self.edit_id3_btn = QPushButton("🏷️ Edit ID3 Tags")
+        self.edit_id3_btn.setToolTip("Open MP3 ID3 Tag Editor dialog")
+        self.edit_id3_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #1e293b;
+                color: #38bdf8;
+                border: 1px solid #0284c7;
+                border-radius: 4px;
+                padding: 2px 8px;
+                font-size: 11px;
+                font-weight: 500;
+            }
+            QPushButton:hover {
+                background-color: #0369a1;
+                color: #ffffff;
+            }
+        """)
+        self.edit_id3_btn.clicked.connect(self._open_id3_editor)
+        media_row.addWidget(self.edit_id3_btn)
+        media_row.addStretch()
+
+        self.formats_section.add_layout(media_row)
         local_layout.addWidget(self.formats_section)
 
         # Content & Language options
@@ -391,6 +417,18 @@ class UnifiedExportDialog(QDialog):
         stories = getattr(self.main_window, "stories", []) or []
         for _, dest, _ in self._plugin_destinations:
             dest.on_scope_changed(scope, stories)
+
+    def _open_id3_editor(self):
+        """Open the ID3 Tag Editor for MP3 files."""
+        if hasattr(self.main_window, "open_id3_tag_editor"):
+            self.main_window.open_id3_tag_editor()
+        else:
+            try:
+                from id3_editor import ID3TagEditorDialog
+                dlg = ID3TagEditorDialog(parent=self.main_window or self)
+                dlg.exec()
+            except Exception as exc:
+                QMessageBox.critical(self, "ID3 Editor Error", f"Failed to launch ID3 Tag Editor:\n\n{exc}")
 
     def _copy_youtube_chapters(self):
         if hasattr(self.main_window, "copy_youtube_chapters_to_clipboard"):

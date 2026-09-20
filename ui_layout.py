@@ -1001,6 +1001,11 @@ class UiLayoutMixin:
         self.manage_plugins_action.triggered.connect(self.open_plugins_manager)
         tools_menu.addAction(self.manage_plugins_action)
 
+        self.id3_editor_action = QAction("ID3 &Tag Editor (MP3)...", self)
+        self.id3_editor_action.setShortcut(platform_seq("Ctrl+Shift+I"))
+        self.id3_editor_action.triggered.connect(lambda: self.open_id3_tag_editor())
+        tools_menu.addAction(self.id3_editor_action)
+
         # ==========================================
         # Settings Menu
         # ==========================================
@@ -1680,6 +1685,20 @@ class UiLayoutMixin:
         dlg = PluginManagerDialog(self.plugin_manager, self)
         dlg.exec()
         self.refresh_plugin_menus()
+
+    def open_id3_tag_editor(self, mp3_path: str | None = None):
+        """Open the ID3 Tag Editor dialog to view and edit MP3 audio metadata."""
+        try:
+            from id3_editor import ID3TagEditorDialog
+            dlg = ID3TagEditorDialog(parent=self, mp3_path=mp3_path)
+            dlg.exec()
+        except Exception as exc:
+            from PySide6.QtWidgets import QMessageBox
+            QMessageBox.critical(
+                self,
+                "ID3 Tag Editor Error",
+                f"Failed to launch the ID3 Tag Editor dialog:\n\n{exc}"
+            )
 
     def refresh_plugin_menus(self):
         """Dynamically populate plugin export actions, tools menu actions, and core UI controls."""

@@ -60,7 +60,7 @@ try:
     )
 except Exception:
     APP_DISPLAY_NAME = "Radio & TV Segmenter"
-    PROJECT_VERSION = "3.5.2"
+    PROJECT_VERSION = "3.5.4"
     DEFAULT_GITHUB_REPO = "bradlinder/RTVS3"
 
     INTERNAL_APP_ID = "RadioTVStorySegmenter"
@@ -414,65 +414,83 @@ def launch_and_install(file_path: str, parent: QWidget | None = None) -> bool:
         launched = False
         last_error = ""
 
-        # 1. Primary approach: Direct Win32 ShellExecuteW with 'runas' (UAC Elevation)
-        # Directly asks Windows Shell to run the Inno Setup installer with elevation.
-        # This breaks away from Job Objects naturally, presents the UAC elevation prompt,
-        # avoids cmd.exe / batch file quote-mangling errors (such as Windows searching for '\\'),
-        # and displays the installer GUI wizard cleanly in the foreground.
+        # 1. Primary approach: Detached PowerShell supervisor that waits for the current process
+        # (os.getpid()) to terminate before invoking the installer with 'RunAs' (UAC Elevation).
+        # This prevents the installer from launching while RadioTVSegmenter.exe is still running,
+        # which previously caused file lock contention and installer premature auto-close.
         try:
-            import ctypes
-            from ctypes import wintypes
-            shell32 = ctypes.windll.shell32
-            shell32.ShellExecuteW.argtypes = [
-                wintypes.HWND,
-                wintypes.LPCWSTR,
-                wintypes.LPCWSTR,
-                wintypes.LPCWSTR,
-                wintypes.LPCWSTR,
-                ctypes.c_int,
-            ]
-            shell32.ShellExecuteW.restype = wintypes.HINSTANCE
+            curr_pid = os.getpid()
+            escaped_path = str(path).replace("'", "''")
+            ps_script = (
+                f"$p = {curr_pid}; "
+                f"while (Get-Process -Id $p -ErrorAction SilentlyContinue) {{ Start-Sleep -Milliseconds 200 }}; "
+                f"Start-Sleep -Milliseconds 500; "
+                f"Start-Process -FilePath '{escaped_path}' -Verb RunAs"
+            )
 
-            hwnd = parent.winId() if parent and hasattr(parent, "winId") else None
-            # Standard SW_SHOWNORMAL = 1
-            ret = shell32.ShellExecuteW(hwnd, "runas", str(path), "", str(path.parent), 1)
-            ret_val = int(ctypes.cast(ret, ctypes.c_void_p).value or 0)
-            if ret_val > 32:
-                launched = True
+            creationflags = 0
+            if hasattr(subprocess, "CREATE_NO_WINDOW"):
+                creationflags |= subprocess.CREATE_NO_WINDOW
+            if hasattr(subprocess, "DETACHED_PROCESS"):
+                creationflags |= subprocess.DETACHED_PROCESS
             else:
-                # User declined elevation (SE_ERR_ACCESSDENIED = 5) or verb unavailable, retry with 'open'
-                ret2 = shell32.ShellExecuteW(hwnd, "open", str(path), "", str(path.parent), 1)
-                ret2_val = int(ctypes.cast(ret2, ctypes.c_void_p).value or 0)
-                if ret2_val > 32:
-                    launched = True
-                else:
-                    last_error = f"ShellExecuteW (runas: {ret_val}, open: {ret2_val})"
-        except Exception as exc_shell:
-            last_error = f"ShellExecuteW error: {exc_shell}"
+                creationflags |= 0x00000008
+            if hasattr(subprocess, "CREATE_BREAKAWAY_FROM_JOB"):
+                creationflags |= subprocess.CREATE_BREAKAWAY_FROM_JOB
+            else:
+                creationflags |= 0x01000000
 
-        # 2. Secondary approach: Direct detached subprocess with CREATE_BREAKAWAY_FROM_JOB
+            subprocess.Popen(
+                [
+                    "powershell.exe",
+                    "-NoProfile",
+                    "-NonInteractive",
+                    "-ExecutionPolicy",
+                    "Bypass",
+                    "-Command",
+                    ps_script,
+                ],
+                cwd=str(path.parent),
+                creationflags=creationflags,
+                close_fds=True,
+                shell=False,
+            )
+            launched = True
+        except Exception as exc_ps:
+            last_error = f"PowerShell supervisor error: {exc_ps}"
+
+        # 2. Secondary approach: Direct Win32 ShellExecuteW with 'runas' (UAC Elevation)
         if not launched:
             try:
-                creationflags = 0
-                if hasattr(subprocess, "DETACHED_PROCESS"):
-                    creationflags |= subprocess.DETACHED_PROCESS
-                else:
-                    creationflags |= 0x00000008
-                if hasattr(subprocess, "CREATE_BREAKAWAY_FROM_JOB"):
-                    creationflags |= subprocess.CREATE_BREAKAWAY_FROM_JOB
-                else:
-                    creationflags |= 0x01000000
+                import ctypes
+                from ctypes import wintypes
+                shell32 = ctypes.windll.shell32
+                shell32.ShellExecuteW.argtypes = [
+                    wintypes.HWND,
+                    wintypes.LPCWSTR,
+                    wintypes.LPCWSTR,
+                    wintypes.LPCWSTR,
+                    wintypes.LPCWSTR,
+                    ctypes.c_int,
+                ]
+                shell32.ShellExecuteW.restype = wintypes.HINSTANCE
 
-                subprocess.Popen(
-                    [str(path)],
-                    cwd=str(path.parent),
-                    creationflags=creationflags,
-                    close_fds=True,
-                    shell=False,
-                )
-                launched = True
-            except Exception as exc_popen:
-                last_error += f" | Popen: {exc_popen}"
+                hwnd = parent.winId() if parent and hasattr(parent, "winId") else None
+                # Standard SW_SHOWNORMAL = 1
+                ret = shell32.ShellExecuteW(hwnd, "runas", str(path), "", str(path.parent), 1)
+                ret_val = int(ctypes.cast(ret, ctypes.c_void_p).value or 0)
+                if ret_val > 32:
+                    launched = True
+                else:
+                    # User declined elevation (SE_ERR_ACCESSDENIED = 5) or verb unavailable, retry with 'open'
+                    ret2 = shell32.ShellExecuteW(hwnd, "open", str(path), "", str(path.parent), 1)
+                    ret2_val = int(ctypes.cast(ret2, ctypes.c_void_p).value or 0)
+                    if ret2_val > 32:
+                        launched = True
+                    else:
+                        last_error += f" | ShellExecuteW (runas: {ret_val}, open: {ret2_val})"
+            except Exception as exc_shell:
+                last_error += f" | ShellExecuteW error: {exc_shell}"
 
         # 3. Tertiary fallback: os.startfile (standard Python Windows shell launcher)
         if not launched:

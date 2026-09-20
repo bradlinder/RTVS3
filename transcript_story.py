@@ -1,4 +1,4 @@
-"""Radio & TV Segmenter v3.5.2 — transcript story responsibilities.
+"""Radio & TV Segmenter v3.5.4 — transcript story responsibilities.
 
 
 Methods intentionally retain the MainWindow-facing API so behavior remains
@@ -929,16 +929,28 @@ class TranscriptStoryMixin:
             self.flush_pending_transcript_undo() if hasattr(self, "flush_pending_transcript_undo") else None
             before_state = self._capture_project_state() if hasattr(self, "_capture_project_state") else None
 
-            override_key = f"SEG_{seg_idx}_SPEAKER"
-            self.speaker_names[override_key] = name
-            self.segment_speaker_overrides[seg_idx] = override_key
+            current_name = self.get_effective_speaker_name(seg_idx, segments[seg_idx])
+            section_indices = []
+            for i in range(seg_idx, len(segments)):
+                if self.get_effective_speaker_name(i, segments[i]) == current_name:
+                    section_indices.append(i)
+                else:
+                    break
+
+            if not section_indices:
+                section_indices = [seg_idx]
+
+            for idx in section_indices:
+                override_key = f"SEG_{idx}_SPEAKER"
+                self.speaker_names[override_key] = name
+                self.segment_speaker_overrides[idx] = override_key
             self._diar_index_key = None
 
             if before_state is not None and hasattr(self, "_commit_project_state_change"):
                 self._commit_project_state_change(before_state, f"Add Speaker Label ({name})")
 
             self.add_custom_speaker_to_glossary(name)
-            self.log_activity(f"[SPEAKER] Set speaker label '{name}' at segment #{seg_idx + 1}")
+            self.log_activity(f"[SPEAKER] Set speaker label '{name}' across {len(section_indices)} segment(s) starting at segment #{seg_idx + 1}")
             self.save_project()
             self.render_transcript()
             return True
@@ -950,16 +962,28 @@ class TranscriptStoryMixin:
             self.flush_pending_transcript_undo() if hasattr(self, "flush_pending_transcript_undo") else None
             before_state = self._capture_project_state() if hasattr(self, "_capture_project_state") else None
 
-            override_key = f"SEG_{seg_idx}_SPEAKER"
-            self.speaker_names[override_key] = name
-            self.segment_speaker_overrides[seg_idx] = override_key
+            current_name = self.get_effective_speaker_name(seg_idx, segments[seg_idx])
+            section_indices = []
+            for i in range(seg_idx, len(segments)):
+                if self.get_effective_speaker_name(i, segments[i]) == current_name:
+                    section_indices.append(i)
+                else:
+                    break
+
+            if not section_indices:
+                section_indices = [seg_idx]
+
+            for idx in section_indices:
+                override_key = f"SEG_{idx}_SPEAKER"
+                self.speaker_names[override_key] = name
+                self.segment_speaker_overrides[idx] = override_key
             self._diar_index_key = None
 
             if before_state is not None and hasattr(self, "_commit_project_state_change"):
                 self._commit_project_state_change(before_state, f"Add Speaker Label ({name})")
 
             self.add_custom_speaker_to_glossary(name)
-            self.log_activity(f"[SPEAKER] Assigned speaker label '{name}' to segment #{seg_idx + 1}")
+            self.log_activity(f"[SPEAKER] Assigned speaker label '{name}' across {len(section_indices)} segment(s) starting at segment #{seg_idx + 1}")
             self.save_project()
             self.render_transcript()
             return True
@@ -1024,6 +1048,9 @@ class TranscriptStoryMixin:
         self.flush_pending_transcript_undo() if hasattr(self, "flush_pending_transcript_undo") else None
         before_state = self._capture_project_state() if hasattr(self, "_capture_project_state") else None
 
+        # Capture original effective speaker before split modification
+        orig_spk_name = self.get_effective_speaker_name(seg_idx, target_seg)
+
         segments[seg_idx] = seg1
         segments.insert(seg_idx + 1, seg2)
 
@@ -1038,9 +1065,18 @@ class TranscriptStoryMixin:
         self.segment_speaker_overrides = new_overrides
 
         if new_speaker_name:
-            override_key = f"SEG_{seg_idx + 1}_SPEAKER"
-            self.speaker_names[override_key] = str(new_speaker_name).strip()
-            self.segment_speaker_overrides[seg_idx + 1] = override_key
+            target_spk = str(new_speaker_name).strip()
+            section_indices = [seg_idx + 1]
+            for i in range(seg_idx + 2, len(segments)):
+                if self.get_effective_speaker_name(i, segments[i]) == orig_spk_name:
+                    section_indices.append(i)
+                else:
+                    break
+
+            for idx in section_indices:
+                override_key = f"SEG_{idx}_SPEAKER"
+                self.speaker_names[override_key] = target_spk
+                self.segment_speaker_overrides[idx] = override_key
 
         self._diar_index_key = None
 
@@ -1188,12 +1224,40 @@ class TranscriptStoryMixin:
                     self.segment_speaker_overrides[idx] = override_key
             self.log_activity(f"[SPEAKER] Changed all instances of '{current_name}' to '{target_name}'")
         elif spk_dlg.choice == "single":
-            override_key = f"SEG_{seg_idx}_SPEAKER"
-            self.speaker_names[override_key] = target_name
-            self.segment_speaker_overrides[seg_idx] = override_key
+            # Identify the contiguous run of segments in this turn starting from seg_idx
+            # up to the next occurrence of a different speaker label.
+            section_indices = []
+            for i in range(seg_idx, len(segments)):
+                if self.get_effective_speaker_name(i, segments[i]) == current_name:
+                    section_indices.append(i)
+                else:
+                    break  # Stop as soon as another speaker turn begins
+
+            if not section_indices:
+                section_indices = [seg_idx]
+
             self.add_custom_speaker_to_glossary(target_name)
+            for idx in section_indices:
+                override_key = f"SEG_{idx}_SPEAKER"
+                self.speaker_names[override_key] = target_name
+                self.segment_speaker_overrides[idx] = override_key
+
+            # Update underlying diarization segments in this time window if present
+            if self.diarization and isinstance(self.diarization, dict):
+                sec_start = float(segments[section_indices[0]].get("start", 0.0))
+                sec_end = float(segments[section_indices[-1]].get("end", sec_start))
+                if "segments" in self.diarization:
+                    for d_seg in self.diarization["segments"]:
+                        d_start = float(d_seg.get("start", 0.0))
+                        d_end = float(d_seg.get("end", 0.0))
+                        if d_start < sec_end and d_end > sec_start:
+                            disp = self.display_speaker(str(d_seg.get("speaker", "")))
+                            if disp == current_name or d_seg.get("speaker") == current_name:
+                                d_seg["speaker"] = target_name
+                    self._diar_index_key = None
+
             self.log_activity(
-                f"[SPEAKER] Changed single instance of '{current_name}' to '{target_name}' (Segment #{seg_idx})"
+                f"[SPEAKER] Changed instance of '{current_name}' to '{target_name}' across {len(section_indices)} segment(s) (starting at Segment #{seg_idx + 1})"
             )
 
         if before_state is not None and hasattr(self, "_commit_project_state_change"):

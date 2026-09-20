@@ -1213,6 +1213,27 @@ class ProjectExportMixin:
                 f_out = getattr(story, "fade_out", 0.0) if apply_fades else 0.0
                 self.extract_media(story.start, story.end, media_file, fade_in=f_in, fade_out=f_out)
 
+                # Embed ID3 tags if exported media is MP3
+                if media_file.suffix.lower() == ".mp3" and media_file.is_file():
+                    try:
+                        import datetime
+                        from id3_editor import write_id3_tags
+                        st_title = getattr(story, "title", "") or getattr(story, "suggestion", "") or f"Story {idx}"
+                        st_spk = getattr(story, "speaker", "") or getattr(story, "speaker_label", "") or ""
+                        write_id3_tags(
+                            str(media_file),
+                            {
+                                "title": st_title,
+                                "artist": st_spk,
+                                "album": base,
+                                "track": str(idx),
+                                "year": str(datetime.datetime.now().year),
+                                "composer": "Radio & TV Segmenter",
+                            },
+                        )
+                    except Exception:
+                        pass
+
         # Export CUE sheet and tracklist if requested
         if formats.get("cue") and stories_with_indices:
             stories_subset = [s for _, s in stories_with_indices]

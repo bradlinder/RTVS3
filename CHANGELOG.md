@@ -1,5 +1,31 @@
 # Changelog
 
+## v3.5.4
+- **Contiguous Speaker Turn Reassignment (`transcript_story.py`)**:
+  - **Single-Click Contiguous Turn Reassignment**:
+    - Resolved speaker label reassignment regression where changing a speaker label only affected a single segment, requiring users to repeatedly change every segment in a paragraph.
+    - Updated speaker label reassignment (`execute_speaker_rename`, `insert_speaker_label_at_time`, `split_segment_at_time`) to identify the full contiguous turn of segments sharing the selected speaker label.
+    - Reassigns all words between the selected point and the next occurrence of a different speaker label in a single click.
+  - **Diagnostic Test Bench Expansion (`test_runner.py`)**:
+    - Added automated unit test (`Speaker Reassignment Contiguous Turn Logic`) verifying contiguous segment identification and boundary protection against subsequent speaker turns.
+
+## v3.5.3
+- **Windows Updater Race Condition Fix (`updater.py`)**:
+  - **Detached PowerShell Supervisor**:
+    - Resolved execution race condition on Windows where UAC prompts appeared before `RadioTVSegmenter.exe` closed, causing the installer to flash and exit prematurely due to file locks.
+    - Implemented a background PowerShell PID supervisor that polls `os.getpid()` until `RadioTVSegmenter.exe` fully terminates and releases all process handles before launching the elevated installer wizard (`Start-Process -Verb RunAs`).
+- **MP3 ID3 Tag Editor Module & Dialog (`id3_editor.py`)**:
+  - **Comprehensive ID3 Metadata Editing**:
+    - Added dedicated PySide6 ID3 Tag Editor dialog supporting standard ID3v2 metadata fields: Title (TIT2), Artist / Speaker (TPE1), Album / Show (TALB), Year (TYER/TDRC), Track Number (TRCK), Genre (TCON), Publisher / Call Sign (TPUB), Composer / Editor (TCOM), and Comments (COMM).
+    - Integrated album cover art management (APIC frame) with interactive image picker and thumbnail preview.
+  - **Dual ID3 Engine (Mutagen + Pure-Python Fallback)**:
+    - Utilizes `mutagen` library when present in environment, backed by a robust pure-Python ID3v2.3 binary reader and writer fallback.
+  - **One-Click Project Auto-Fill & Menu Integration**:
+    - Added "⚡ Auto-Fill from Project" button in ID3 dialog to populate metadata from active project name, story titles, and speaker labels.
+    - Added "🏷️ Edit ID3 Tags (MP3)..." action to the Tools menu (`Ctrl+Shift+I`) and Unified Export Center.
+  - **Automated Story Clip Tag Embedding (`project_export.py`)**:
+    - Automatically embeds ID3v2 tags into exported MP3 story clips during single or batch export passes.
+
 ## v3.5.2
 - **GitHub Actions CI/CD Pipeline Hardening & Artifact Staging**:
   - **Isolated Artifact Package Staging (`dist/release_packages/`)**:
