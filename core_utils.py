@@ -171,6 +171,24 @@ def get_github_repo() -> str:
     return DEFAULT_GITHUB_REPO
 
 
+def get_update_channel() -> str:
+    """Return the configured software update release channel: 'stable' or 'beta'."""
+    env_chan = os.environ.get("RTVS_UPDATE_CHANNEL", "").strip().lower()
+    if env_chan in ("beta", "prerelease", "all"):
+        return "beta"
+    if env_chan == "stable":
+        return "stable"
+    try:
+        if QSettings is not None:
+            settings = QSettings(INTERNAL_APP_ID, INTERNAL_APP_ID)
+            val = str(settings.value("update_channel", "stable") or "stable").strip().lower()
+            if val in ("beta", "prerelease", "all"):
+                return "beta"
+    except Exception:
+        pass
+    return "stable"
+
+
 def get_app_data_dir() -> Path:
     """Return the per-user writable application-data directory.
 

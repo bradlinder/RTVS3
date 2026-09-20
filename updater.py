@@ -34,6 +34,7 @@ try:
         get_app_data_dir,
         get_app_icon,
         get_github_repo,
+        get_update_channel,
         QApplication,
         QColor,
         QComboBox,
@@ -59,13 +60,16 @@ try:
     )
 except Exception:
     APP_DISPLAY_NAME = "Radio & TV Segmenter"
-    PROJECT_VERSION = "3.4.17"
+    PROJECT_VERSION = "3.5.0-beta-2"
     DEFAULT_GITHUB_REPO = "bradlinder/RTVS3"
 
     INTERNAL_APP_ID = "RadioTVStorySegmenter"
 
     def get_github_repo() -> str:
         return os.environ.get("GITHUB_REPO", "").strip() or DEFAULT_GITHUB_REPO
+
+    def get_update_channel() -> str:
+        return os.environ.get("RTVS_UPDATE_CHANNEL", "stable").strip().lower()
 
     def get_app_data_dir() -> Path:
         p = Path.home() / f".{INTERNAL_APP_ID.lower()}"
@@ -132,21 +136,30 @@ except Exception:
         QSize = None
 
 
-def parse_version_tuple(version_str: str) -> tuple[tuple[int, ...], int]:
-    """Parse version string into comparable numerical components and a stability weight.
-    Releases without pre-release tags receive weight 1; pre-releases ('-beta', '-rc') receive 0.
-    Handles 'v2.8.5', 'v.2.8.5', 'version-2.8.5', '2.9..6', and raw '2.8.5'.
+def parse_version_tuple(version_str: str) -> tuple[tuple[int, ...], tuple[int, int]]:
+    """Parse version string into comparable numerical components and a pre-release weight tuple.
+    Releases without pre-release tags receive (99, 0); pre-releases receive (type_rank, build_num).
+    Handles 'v3.5.0-beta-1', 'v3.5.0-beta.1', 'v2.8.5', 'version-2.8.5', and raw '2.8.5'.
     """
     if not version_str:
-        return ((0, 0, 0), 0)
+        return ((0, 0, 0), (0, 0))
     # Strip any leading 'version', 'ver', 'v', dots, underscores, dashes, or whitespace
     cleaned = re.sub(r"^(?:version|ver|v)?[.\s_-]*", "", version_str.strip(), flags=re.IGNORECASE)
-    # Collapse any duplicate/consecutive dots
     cleaned = re.sub(r"\.+", ".", cleaned)
-    is_prerelease = bool(re.search(r"[-_.]?(beta|alpha|rc|dev|preview)", version_str, re.IGNORECASE))
+
+    # Extract prerelease identifier if any (e.g. beta-1, beta.2, rc1, preview, dev)
+    prerelease_match = re.search(r"[-_.]?(alpha|beta|rc|preview|dev)[-_.]?(\d+)?", version_str, re.IGNORECASE)
+    if prerelease_match:
+        ptype = prerelease_match.group(1).lower()
+        pnum = int(prerelease_match.group(2)) if prerelease_match.group(2) else 1
+        type_rank = {"dev": 0, "alpha": 1, "beta": 2, "preview": 2, "rc": 3}.get(ptype, 2)
+        prerelease_info = (type_rank, pnum)
+    else:
+        prerelease_info = (99, 0)  # Final / Stable release
 
     parts = []
-    for chunk in cleaned.split("."):
+    base_ver = re.split(r"[-_](?:alpha|beta|rc|preview|dev)", cleaned, flags=re.IGNORECASE)[0]
+    for chunk in base_ver.split("."):
         if not chunk:
             continue
         m = re.match(r"^(\d+)", chunk)
@@ -156,17 +169,15 @@ def parse_version_tuple(version_str: str) -> tuple[tuple[int, ...], int]:
             break
     while len(parts) < 3:
         parts.append(0)
-    return (tuple(parts[:3]), 0 if is_prerelease else 1)
+    return (tuple(parts[:3]), prerelease_info)
 
 
 def is_version_newer(remote_version_str: str, current_version_str: str = PROJECT_VERSION) -> bool:
     """Return True if remote_version_str is strictly newer than current_version_str."""
     try:
-        remote_nums, remote_weight = parse_version_tuple(remote_version_str)
-        curr_nums, curr_weight = parse_version_tuple(current_version_str)
-        if remote_nums != curr_nums:
-            return remote_nums > curr_nums
-        return remote_weight > curr_weight
+        remote_tuple = parse_version_tuple(remote_version_str)
+        curr_tuple = parse_version_tuple(current_version_str)
+        return remote_tuple > curr_tuple
     except Exception:
         return False
 
@@ -174,11 +185,9 @@ def is_version_newer(remote_version_str: str, current_version_str: str = PROJECT
 def is_version_older(remote_version_str: str, current_version_str: str = PROJECT_VERSION) -> bool:
     """Return True if remote_version_str is strictly older than current_version_str."""
     try:
-        remote_nums, remote_weight = parse_version_tuple(remote_version_str)
-        curr_nums, curr_weight = parse_version_tuple(current_version_str)
-        if remote_nums != curr_nums:
-            return remote_nums < curr_nums
-        return remote_weight < curr_weight
+        remote_tuple = parse_version_tuple(remote_version_str)
+        curr_tuple = parse_version_tuple(current_version_str)
+        return remote_tuple < curr_tuple
     except Exception:
         return False
 
@@ -320,10 +329,18 @@ def select_best_asset_for_platform(assets: list[dict], target_version: str = "",
     }
 
 
-def fetch_releases(repo: str, max_releases: int = 30) -> list[dict]:
-    """Query GitHub API for published releases (including pre-releases), sorted semantically by version number,
-    with robust offline/fallback release data.
+def fetch_releases(repo: str, max_releases: int = 30, channel: str | None = None) -> list[dict]:
+    """Query GitHub API for published releases, sorted semantically by version number.
+    If channel is 'stable' (default), pre-releases are filtered out.
+    If channel is 'beta', all releases (including pre-releases) are included.
     """
+    if channel is None:
+        try:
+            channel = get_update_channel()
+        except Exception:
+            channel = "stable"
+    channel = str(channel).strip().lower()
+
     url = f"https://api.github.com/repos/{repo}/releases?per_page={max(10, min(100, max_releases))}"
     try:
         req = urllib.request.Request(
@@ -340,11 +357,21 @@ def fetch_releases(repo: str, max_releases: int = 30) -> list[dict]:
                 releases = json.loads(raw)
                 if isinstance(releases, list) and releases:
                     published = [r for r in releases if isinstance(r, dict) and not r.get("draft", False) and r.get("tag_name")]
+                    if channel == "stable":
+                        # Filter out pre-releases for users on the stable channel
+                        published = [
+                            r for r in published
+                            if not r.get("prerelease", False)
+                            and not bool(re.search(r"[-_.]?(beta|alpha|rc|dev|preview)", r.get("tag_name", ""), re.IGNORECASE))
+                        ]
                     if published:
                         # Sort semantically newest to oldest using parse_version_tuple
                         published.sort(key=lambda r: parse_version_tuple(r.get("tag_name", "")), reverse=True)
                         return published
             elif isinstance(releases, dict) and "tag_name" in releases and not releases.get("draft", False):
+                is_pre = releases.get("prerelease", False) or bool(re.search(r"[-_.]?(beta|alpha|rc|dev|preview)", releases.get("tag_name", ""), re.IGNORECASE))
+                if channel == "stable" and is_pre:
+                    return []
                 return [releases]
     except Exception:
         pass
@@ -353,28 +380,15 @@ def fetch_releases(repo: str, max_releases: int = 30) -> list[dict]:
     target_repo = repo or DEFAULT_GITHUB_REPO
     return [
         {
-            "tag_name": "v2.9.6",
-            "name": "Radio & TV Segmenter v2.9.6",
-            "body": "## v2.9.6\n- **Windows & Cross-Platform Artifact Naming Normalization**: Resolved double-dot naming issues in Windows setup executables.\n- **Updater Engine Resilient Asset Matching**: Enhanced asset matching and semantic comparison logic.\n- **Full Project Version Alignment**: Synchronized v2.9.6 across core and plugins.",
-            "html_url": f"https://github.com/{target_repo}/releases/tag/v2.9.6",
+            "tag_name": "v3.4.17",
+            "name": "Radio & TV Segmenter v3.4.17",
+            "body": "## v3.4.17\n- Windows Job Object Breakaway & Antivirus Remediation.\n- Clean Detached Update Launcher Script.",
+            "html_url": f"https://github.com/{target_repo}/releases/tag/v3.4.17",
             "assets": [
                 {
-                    "name": "RadioTVSegmenter-2.9.6-Windows-Setup.exe",
+                    "name": "RadioTVSegmenter-3.4.17-Windows-Setup.exe",
                     "size": 45123456,
-                    "browser_download_url": f"https://github.com/{target_repo}/releases/download/v2.9.6/RadioTVSegmenter-2.9.6-Windows-Setup.exe"
-                }
-            ]
-        },
-        {
-            "tag_name": "v2.9.5",
-            "name": "Radio & TV Segmenter v2.9.5",
-            "body": "## v2.9.5\n- WordPress Export Media Notice Placement fix.\n- Updater Engine Semantic Comparison fix.",
-            "html_url": f"https://github.com/{target_repo}/releases/tag/v2.9.5",
-            "assets": [
-                {
-                    "name": "RadioTVSegmenter-2.9.5-Windows-Setup.exe",
-                    "size": 45000000,
-                    "browser_download_url": f"https://github.com/{target_repo}/releases/download/v2.9.5/RadioTVSegmenter-2.9.5-Windows-Setup.exe"
+                    "browser_download_url": f"https://github.com/{target_repo}/releases/download/v3.4.17/RadioTVSegmenter-3.4.17-Windows-Setup.exe"
                 }
             ]
         }
@@ -532,15 +546,20 @@ class CheckUpdateWorker(QThread):
     up_to_date = Signal(str, str)
     error = Signal(str)
 
-    def __init__(self, repo: str | None = None, parent: QObject | None = None):
+    def __init__(self, repo: str | None = None, parent: QObject | None = None, channel: str | None = None):
+        if isinstance(parent, str) and channel is None:
+            channel = parent
+            parent = None
         super().__init__(parent)
         self.repo = repo or get_github_repo()
+        self.channel = channel if channel is not None else get_update_channel()
 
     def run(self):
         try:
-            releases = fetch_releases(self.repo)
+            releases = fetch_releases(self.repo, channel=self.channel)
             if not releases:
-                self.error.emit(f"No published releases found for repository '{self.repo}'.")
+                chan_str = "stable" if self.channel == "stable" else "beta or stable"
+                self.error.emit(f"No published {chan_str} releases found for repository '{self.repo}'.")
                 return
 
             self.releases_loaded.emit(releases)
@@ -806,6 +825,25 @@ class CheckUpdateDialog(QDialog):
         self.progress_bar.setFixedHeight(18)
         main_layout.addWidget(self.progress_bar)
 
+        # Update Channel selector row
+        self.channel_layout = QHBoxLayout()
+        self.channel_layout.setSpacing(8)
+
+        self.channel_label = QLabel("Release Channel:")
+        self.channel_label.setStyleSheet("font-size: 12px; font-weight: bold;")
+        self.channel_layout.addWidget(self.channel_label)
+
+        self.channel_combo = QComboBox()
+        self.channel_combo.setStyleSheet("font-size: 12px; padding: 3px 8px;")
+        self.channel_combo.addItem("Stable Releases Only (Recommended)", "stable")
+        self.channel_combo.addItem("Stable & Beta Releases", "beta")
+        curr_chan = get_update_channel()
+        self.channel_combo.setCurrentIndex(1 if curr_chan == "beta" else 0)
+        self.channel_combo.currentIndexChanged.connect(self._on_channel_changed)
+        self.channel_layout.addWidget(self.channel_combo)
+        self.channel_layout.addStretch()
+        main_layout.addLayout(self.channel_layout)
+
         # Version selection dropdown row (Historical Release Selector)
         self.version_select_layout = QHBoxLayout()
         self.version_select_layout.setSpacing(8)
@@ -879,8 +917,21 @@ class CheckUpdateDialog(QDialog):
 
         main_layout.addLayout(self.btn_layout)
 
+    def _on_channel_changed(self, index: int):
+        new_chan = self.channel_combo.currentData() or "stable"
+        try:
+            settings = QSettings(INTERNAL_APP_ID, INTERNAL_APP_ID)
+            settings.setValue("update_channel", new_chan)
+        except Exception:
+            pass
+        self.start_check()
+
     def start_check(self):
-        self.status_label.setText(f"Checking for updates from {self.repo}...")
+        chan = get_update_channel()
+        if hasattr(self, "channel_combo") and self.channel_combo:
+            chan = self.channel_combo.currentData() or chan
+        chan_desc = "Beta & Stable" if chan == "beta" else "Stable"
+        self.status_label.setText(f"Checking for {chan_desc} updates from {self.repo}...")
         self.progress_bar.show()
         self.progress_bar.setRange(0, 0)
         self.version_select_container.hide()
@@ -890,7 +941,7 @@ class CheckUpdateDialog(QDialog):
         self.github_link_btn.hide()
         self.action_btn.setEnabled(False)
 
-        self.check_worker = CheckUpdateWorker(self.repo, self)
+        self.check_worker = CheckUpdateWorker(self.repo, parent=self, channel=chan)
         self.check_worker.releases_loaded.connect(self._on_releases_loaded)
         self.check_worker.update_available.connect(self._on_update_available)
         self.check_worker.up_to_date.connect(self._on_up_to_date)
@@ -1250,7 +1301,8 @@ class UpdaterMixin:
             pass
 
         repo = get_github_repo()
-        worker = CheckUpdateWorker(repo, self)
+        channel = get_update_channel()
+        worker = CheckUpdateWorker(repo, parent=self, channel=channel)
         if hasattr(self, "_track_worker_thread"):
             self._track_worker_thread(worker)
 

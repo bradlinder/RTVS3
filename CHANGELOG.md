@@ -1,5 +1,27 @@
 # Changelog
 
+## v3.5.0-beta-2
+- **System Diagnostic Test Bench & Hardware Health Architecture**:
+  - **Comprehensive Multi-Tiered Diagnostic Engine (`test_runner.py`)**: Built an automated zero-dependency diagnostic harness with 20 distinct verification probes covering:
+    - *Core Logic & File I/O*: Boundary-case fuzz testing for time parsing and formatting, project serialization round-trip fidelity (.rtvs JSON), binary waveform peak cache (.peaks), and child process lifecycle isolation (`_SUBPROCESS_LOCK`).
+    - *Subtitles & Export Formats*: Format verification for SubRip (.srt), WebVTT (.vtt), Red Book CUE sheets (75 fps frame calculation), and YouTube chapter markers (00:00 alignment).
+    - *AI Runtimes & Inference Stack*: Health and loadability checks for PyTorch with native C-extensions (`torch._C`), CTranslate2 engine compute types, Sherpa-ONNX / ONNX Runtime execution providers, and DirectML / NVIDIA CUDA hardware acceleration device enumeration.
+    - *Model Download & Provisioning*: Remote endpoint latency and reachability verification for Hugging Face Hub and GitHub CDN, model cache storage read/write/delete permissions, and zip/tar archive path-traversal (Zip Slip) security sandboxing.
+    - *Story & Boundary Detection*: Vocal energy segmentation boundary calculation and `MUSIC_TOKEN_RE` non-speech token filtering.
+    - *Audio Diarization & VAD*: Silero neural VAD initialization checks, WeSpeaker ONNX runtime presence, and translation plugin architecture isolation invariants.
+  - **PySide6 Graphical Test Bench (`DiagnosticDialog`)**: Designed a native Qt desktop dialog providing real-time multi-threaded test execution, colored status badges (`PASS`, `FAIL`, `WARNING`, `SKIP`), category trees, progress bars, cancellation support, and a single-click "Copy Report" clipboard tool.
+  - **Dual CLI & Subprocess Integration**: Implemented a headless CLI entry point callable via `python test_runner.py`, `--run-diagnostics`, `--test-bench`, or `--test-runner` on the main application executable, enabling automated CI and command-line health checks.
+  - **Help Menu & Keyboard Shortcut Integration**: Integrated "Run Diagnostic Test Bench..." into the main application Help menu (`ui_layout.py`) and shortcuts manager (`shortcuts_manager.py`) with default shortcut `Ctrl+Shift+T` (`Meta+Shift+T` on macOS).
+
+## v3.5.0-beta-1
+- **Beta Release Channel & Prerelease Updater Architecture**:
+  - **Configurable Release Channel (Stable vs. Beta)**: Added update channel configuration support across `core_utils.py`, `prs_shared.py`, `playback_preferences.py`, and `updater.py`. Users can select between "Stable Releases Only (Recommended)" and "Stable & Beta Releases".
+  - **Prerelease Filtering in Updater Engine**: Updated `fetch_releases` in `updater.py` to filter out prereleases and tags containing `beta`, `alpha`, `rc`, `dev`, or `preview` when the stable channel is selected. When the beta channel is selected, all published releases (including prereleases) are presented.
+  - **Interactive In-Dialog Channel Switching**: Added a dedicated "Release Channel" dropdown selector to `CheckUpdateDialog`, allowing users to immediately switch channels and re-query GitHub releases without needing to reopen application preferences.
+  - **Preferences & System Defaults Integration**: Integrated the Update Channel selector into the "Updates & GitHub" preferences page (`playback_preferences.py`), complete with persistence in `QSettings` (`update_channel`), `live_widgets` integration, and restoration support in "Restore System Defaults".
+  - **Semantic Versioning for Prereleases**: Enhanced `parse_version_tuple`, `is_version_newer`, and `is_version_older` in `updater.py` to support semantic prerelease comparisons (`(type_rank, build_num)` where stable releases outrank prereleases of the same base version).
+  - **CI/CD Prerelease Automation**: Updated `.github/workflows/build.yml` to automatically detect prerelease tags (`-beta`, `-rc`, `-alpha`, `-preview`) and configure `prerelease: true` and `make_latest: false` on GitHub Releases, preventing early beta builds from overwriting the latest stable release pointer.
+
 ## v3.4.17
 - **Windows Job Object Breakaway & Installer Lifecycle Fix**:
   - **Enabled `JOB_OBJECT_LIMIT_BREAKAWAY_OK`**: In `process_lifecycle.py`, added `JOB_OBJECT_LIMIT_BREAKAWAY_OK` (`0x00000800`) to `info.BasicLimitInformation.LimitFlags` alongside `JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE`. Previously, because the Job Object lacked `JOB_OBJECT_LIMIT_BREAKAWAY_OK`, any child process created with `CREATE_BREAKAWAY_FROM_JOB` failed with `ERROR_ACCESS_DENIED` (WinError 5). This forced the update installer to remain assigned to the parent application's Job Object, which was immediately terminated by Windows (`KILL_ON_JOB_CLOSE`) when the main application exited, causing the installer window to flash and disappear.

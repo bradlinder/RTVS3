@@ -1069,6 +1069,12 @@ class UiLayoutMixin:
         self.log_action = log_act
         help_menu.addAction(log_act)
 
+        test_bench_act = QAction("&Run Diagnostic Test Bench...", self)
+        test_bench_act.setShortcut(platform_seq("Ctrl+Shift+T"))
+        test_bench_act.triggered.connect(self.show_diagnostic_test_bench)
+        self.test_bench_action = test_bench_act
+        help_menu.addAction(test_bench_act)
+
         licenses_act = QAction("&Third-Party Licenses", self)
         licenses_act.setShortcut(platform_seq("Ctrl+Shift+F1"))
         licenses_act.triggered.connect(self.show_licenses_dialog)
@@ -1612,6 +1618,20 @@ class UiLayoutMixin:
         layout.addWidget(button_box)
 
         dialog.exec()
+
+    def show_diagnostic_test_bench(self):
+        """Open the interactive System Diagnostic Test Bench dialog."""
+        try:
+            from test_runner import create_diagnostic_dialog
+            dlg = create_diagnostic_dialog(parent=self)
+            dlg.exec()
+        except Exception as exc:
+            from PySide6.QtWidgets import QMessageBox
+            QMessageBox.critical(
+                self,
+                "Diagnostic Test Bench Error",
+                f"Failed to launch the Diagnostic Test Bench dialog:\n\n{exc}"
+            )
 
     def open_plugins_manager(self):
         """Open the Plugin Manager dialog to enable, disable, or inspect plugins."""

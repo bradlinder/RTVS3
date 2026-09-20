@@ -20,6 +20,18 @@ if len(sys.argv) > 1 and sys.argv[1] in ("--prs-worker", "--worker"):
     import radio_tv_story_segmenter_worker
     raise SystemExit(radio_tv_story_segmenter_worker.main(sys.argv[2:]))
 
+# If invoked to run the diagnostic test bench (CLI mode or standalone GUI dialog)
+if len(sys.argv) > 1 and sys.argv[1] in ("--run-diagnostics", "--test-bench", "--test-runner"):
+    import test_runner
+    if "--gui" in sys.argv:
+        from PySide6.QtWidgets import QApplication
+        _app = QApplication.instance() or QApplication(sys.argv)
+        _dlg = test_runner.create_diagnostic_dialog()
+        _dlg.exec()
+        raise SystemExit(0)
+    else:
+        raise SystemExit(test_runner.run_cli_diagnostics(verbose=True))
+
 # Build-time/runtime smoke test. This runs before Qt is imported so the frozen
 # executable can prove that its own native ML stack is loadable.
 if len(sys.argv) > 1 and sys.argv[1] == "--self-test":

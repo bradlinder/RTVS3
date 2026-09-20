@@ -16,7 +16,7 @@ class RestoreSelectedSettingsDialog(QDialog):
         ("general_autosave", "Auto-save Interval", "Automatic project save interval (5 minutes)."),
         ("keyboard_shortcuts", "Keyboard Shortcuts", "Custom keyboard shortcut assignments for all menu actions, tools, navigation, and editing commands."),
         ("audio_hardware", "Audio Hardware & Volume", "Audio output device (System Default) and default volume (100%)."),
-        ("software_updates", "Software Updates & Repository", "Automatic update checks (Enabled) and official GitHub repository."),
+        ("software_updates", "Software Updates & Repository", "Automatic update checks (Enabled), release channel (Stable), and official GitHub repository."),
         ("ai_models", "AI Models & Storage Directory", "Whisper speech recognition model (small, beam size 5), translation model (tiny), and models storage folder."),
         ("gpu_acceleration", "Hardware / GPU Acceleration", "GPU and DirectML hardware acceleration settings."),
         ("playback_timeline", "Playback & Timeline Display", "Skip duration (5s), waveform visibility, thumbnail strip, and transcript selection mode."),
@@ -1010,10 +1010,13 @@ class PlaybackPreferencesMixin:
         if "software_updates" in selected_set:
             self.settings_store.setValue("auto_check_updates", "true")
             self.settings_store.setValue("github_repo", DEFAULT_GITHUB_REPO)
+            self.settings_store.setValue("update_channel", "stable")
             if "auto_update_chk" in lw and lw["auto_update_chk"]:
                 lw["auto_update_chk"].setChecked(True)
             if "repo_edit" in lw and lw["repo_edit"]:
                 lw["repo_edit"].setText(DEFAULT_GITHUB_REPO)
+            if "update_channel_combo" in lw and lw["update_channel_combo"]:
+                lw["update_channel_combo"].setCurrentIndex(0)
 
         # 6. AI Models & Storage
         if "ai_models" in selected_set:
@@ -1488,6 +1491,13 @@ class PlaybackPreferencesMixin:
         curr_auto = str(self.settings_store.value("auto_check_updates", "true")).lower() in {"1", "true", "yes"}
         auto_update_chk.setChecked(curr_auto)
         up_form.addRow("Auto-Check:", auto_update_chk)
+
+        update_channel_combo = QComboBox()
+        update_channel_combo.addItem("Stable Releases Only (Recommended)", "stable")
+        update_channel_combo.addItem("Stable & Beta Releases", "beta")
+        curr_chan = get_update_channel()
+        update_channel_combo.setCurrentIndex(1 if curr_chan == "beta" else 0)
+        up_form.addRow("Update Channel:", update_channel_combo)
 
         repo_edit = QLineEdit(get_github_repo())
         repo_edit.setPlaceholderText("owner/repository")
@@ -2472,6 +2482,7 @@ class PlaybackPreferencesMixin:
             "audio_dev_combo": audio_dev_combo,
             "vol_slider": vol_slider,
             "auto_update_chk": auto_update_chk,
+            "update_channel_combo": update_channel_combo,
             "repo_edit": repo_edit,
             "model_dir_edit": model_dir_edit,
             "pref_whisper_combo": pref_whisper_combo,
@@ -2590,6 +2601,8 @@ class PlaybackPreferencesMixin:
 
             # Save Updates
             self.settings_store.setValue("auto_check_updates", str(auto_update_chk.isChecked()).lower())
+            new_chan = update_channel_combo.currentData() or "stable"
+            self.settings_store.setValue("update_channel", new_chan)
             new_repo = repo_edit.text().strip()
             if new_repo:
                 if new_repo.lower() in ("bradlinder/rtvs", "bradlinder/radiotvstorysegmenter", "radiotvstorysegmenter"):

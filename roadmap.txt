@@ -29,30 +29,23 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 --------------------------------------------------------------------------------
 TABLE OF CONTENTS & STATUS OVERVIEW
 --------------------------------------------------------------------------------
-1. Previous Release: Windows Installer Visibility & WindowStyle Normalization (Completed in v3.4.16)
-   [x] 1.1 Eliminated Hidden Window Inheritance (`SW_HIDE`): Cleared inherited `STARTUPINFO.wShowWindow = SW_HIDE` from Python's detached supervisor launcher (`launch_and_install` in `updater.py`). Passing `wShowWindow = SW_HIDE` to the supervisor caused child processes to inherit the hidden flag, which forced Inno Setup's GUI wizard to momentarily flash and then disappear.
-   [x] 1.2 Explicit WindowStyle Normalization: Configured PowerShell's `Start-Process` with `-WindowStyle Normal`, explicitly instructing Windows to render the installer wizard dialog visibly (`SW_SHOWNORMAL`).
-   [x] 1.3 Explicit Working Directory Configuration: Added `-WorkingDirectory '{escaped_dir}'` to `Start-Process` and `/D "{str(path.parent)}"` to CMD trampoline fallbacks, ensuring the installer executes within its containing folder rather than defaulting to `C:\Windows\System32`.
-   [x] 1.4 Persistent Supervisor Execution: Added `-Wait` to `Start-Process`, ensuring the PowerShell supervisor remains active until the installation finishes rather than exiting prematurely while UAC or Inno Setup is initializing.
-   [x] 1.5 Inno Setup Diagnostic Logging: Enabled `SetupLogging=yes` in `installer/Windows/RadioTVStorySegmenter.iss` to automatically record setup actions to `%TEMP%`.
+1. Previous Release: Beta Release Channel & Prerelease Updater Engine (Completed in v3.5.0-beta-1)
+   [x] 1.1 Configurable Release Channel (Stable vs. Beta): Added `get_update_channel()` across `core_utils.py`, `prs_shared.py`, `playback_preferences.py`, and `updater.py`. Users can select between "Stable Releases Only (Recommended)" and "Stable & Beta Releases".
+   [x] 1.2 Prerelease Filtering in Updater Engine: Updated `fetch_releases` in `updater.py` to filter out prereleases and tags containing `beta`, `alpha`, `rc`, `dev`, or `preview` when the stable channel is selected. When the beta channel is selected, all published releases (including prereleases) are presented.
+   [x] 1.3 Interactive In-Dialog Channel Switching: Added a dedicated "Release Channel" dropdown selector to `CheckUpdateDialog`, allowing users to immediately switch channels and re-query GitHub releases without needing to reopen application preferences.
+   [x] 1.4 Preferences & System Defaults Integration: Integrated the Update Channel selector into the "Updates & GitHub" preferences page (`playback_preferences.py`), complete with persistence in `QSettings` (`update_channel`), `live_widgets` integration, and restoration support in "Restore System Defaults".
+   [x] 1.5 Semantic Versioning for Prereleases: Enhanced `parse_version_tuple`, `is_version_newer`, and `is_version_older` in `updater.py` to support semantic prerelease comparisons (`(type_rank, build_num)` where stable releases outrank prereleases of the same base version).
+   [x] 1.6 CI/CD Prerelease Automation: Updated `.github/workflows/build.yml` to automatically detect prerelease tags (`-beta`, `-rc`, `-alpha`, `-preview`) and configure `prerelease: true` and `make_latest: false` on GitHub Releases, preventing early beta builds from overwriting the latest stable release pointer.
 
-2. Current Release: Windows Job Object Breakaway & Antivirus Remediation (Completed in v3.4.17)
-   [x] 2.1 Enabled Job Object Breakaway (`JOB_OBJECT_LIMIT_BREAKAWAY_OK`): In `process_lifecycle.py`, added `JOB_OBJECT_LIMIT_BREAKAWAY_OK` (`0x00000800`) to the Windows Job Object limits. Without this flag, Windows `CreateProcess` fails with `ERROR_ACCESS_DENIED` whenever a child process requests `CREATE_BREAKAWAY_FROM_JOB`. This previously prevented the updater launcher from detaching, trapping the installer inside the parent process's Job Object, where it was killed on application exit (`KILL_ON_JOB_CLOSE`).
-   [x] 2.2 Clean Detached Breakaway Update Launch: Configured `launch_and_install` in `updater.py` to launch the installer via a temporary `.bat` script with `CREATE_BREAKAWAY_FROM_JOB` (`0x01000000`) and `SW_HIDE`. This prevents Windows quote-mangling (which caused the error 'Windows cannot find \\') and prevents black console window flashes while breaking away cleanly from the Job Object.
-   [x] 2.3 Coordinated Exit & Settings Flush: Replaced the fixed 0.5-second `os._exit(0)` delay in `_install_and_restart()` with an `aboutToQuit`-coordinated event watcher and explicit `QSettings.sync()` flush on window close, preventing hard-kill races against unflushed settings and project saves.
-   [x] 2.4 Eliminated Mark-of-the-Web (MotW) Stripping: Completely removed `_unblock_windows_file` (which deleted the NTFS `:Zone.Identifier` Alternate Data Stream and executed PowerShell `Unblock-File`). In modern heuristic and ML-based antivirus engines (including Windows Defender / SmartScreen), modifying `:Zone.Identifier` or unblocking downloaded executables is categorized as security defense evasion (MITRE ATT&CK T1564.004), which caused browsers like Google Chrome and Windows Defender to falsely flag repository download archives (`RTVS3-*.zip`) as infected.
-   [x] 2.5 Replaced PowerShell Scripting with Native APIs: Removed `powershell.exe -ExecutionPolicy Bypass` and replaced it with direct `cmd start`, Win32 `ShellExecuteW`, and `os.startfile`.
-   [x] 2.6 Graceful Fallback Chain: Preserved clean fallbacks to `ShellExecuteW` (`"runas"` and `"open"` verbs) and Python's built-in `os.startfile` when elevated execution is cancelled or restricted by local system policy.
+2. Current Release: System Diagnostic Test Bench & Hardware Health Architecture (Completed in v3.5.0-beta-2)
+   [x] 2.1 Multi-Tiered Diagnostic Test Engine (`test_runner.py`): Zero-dependency automated test runner executing 20 distinct verification probes covering Core Logic & File I/O, Subtitles & Export Formats, AI Runtimes & Inference Stack, Model Download & Provisioning, Story & Boundary Detection, and Audio Diarization & VAD.
+   [x] 2.2 PySide6 Graphical Test Bench Dialog (`DiagnosticDialog`): Real-time graphical diagnostic dialog featuring category grouping trees, asynchronous QThread execution, real-time status badges (PASS / FAIL / WARNING / SKIP), live progress bar, cancellation control, and one-click clipboard report generation.
+   [x] 2.3 Standalone & Bundled Executable CLI Modes: Headless console diagnostic execution via `python test_runner.py` and application executable CLI flag dispatch (`--run-diagnostics`, `--test-bench`, `--test-runner`).
+   [x] 2.4 Help Menu & Keyboard Shortcut Integration: Integrated "Run Diagnostic Test Bench..." action into the application Help menu (`ui_layout.py`) and shortcuts manager (`shortcuts_manager.py`) with default keyboard shortcut `Ctrl+Shift+T` (`Meta+Shift+T` on macOS).
+   [x] 2.5 In-Memory Synthetic Acoustic Generation: Built-in PCM waveform synthesis using standard `wave` and `math.sin` generating multi-frequency dual-tone test audio without requiring external audio files.
 
-3. Upcoming Milestone: Automated Test Runner & Performance Benchmark Suite [PLANNED for v3.4.18]
-   [ ] 3.1 Zero-Dependency Core Test Runner (`test_runner.py`):
-       - Multi-tiered CLI test harness using Python's built-in `unittest` and Qt `QTest` with sandbox temporary directory isolation.
-       - In-memory synthetic audio generation fixture (`wave`/`math`) producing realistic multi-tone audio without external files.
-       - Tier 1: Pure logic unit tests (RTVS project file round-trip serialization, time string parsing/formatting fuzzing, safe filename sanitization, subtitle SRT/VTT generators, and WordPress export payload validation).
-       - Tier 2: Media processing & worker concurrency tests (FFmpeg executable discovery, synthetic waveform envelope calculation, worker thread-safe cancellation, and `_SUBPROCESS_LOCK` stress tests).
-       - Tier 3: Headless Qt UI & event loop integration (`QT_QPA_PLATFORM=offscreen` testing `InteractiveTranscriptEdit` scroll-lock stability, `TimelineWidget` scrollbar synchronization, and `QUndoStack` state restoration).
-       - Tier 4: Environment & native ML runtime smoke test integration (delegating to `RadioTVSegmenter.py --self-test`).
-   [ ] 3.2 Performance & Speed Benchmark Engine (`benchmark.py` / CLI & Diagnostic GUI):
+3. Upcoming Milestone: Performance & Speed Benchmark Engine [PLANNED for v3.5.0-beta-3]
+   [ ] 3.1 Performance & Speed Benchmark Engine (`benchmark.py` / CLI & Diagnostic GUI):
        - Real-Time Factor (RTF) calculation engine ($\text{RTF} = \text{Audio Duration} / \text{Processing Time}$) with `time.perf_counter()` nanosecond precision.
        - Waveform audio decoding and envelope extraction throughput benchmark (MB/s & RTF).
        - Silero VAD chunk evaluation latency & WeSpeaker ONNX embedding extraction speed (embeddings/second).
@@ -60,7 +53,7 @@ TABLE OF CONTENTS & STATUS OVERVIEW
        - UI formatting & document reflow latency benchmark (words/second rendered).
        - Diagnostic report formatter with CPU/GPU hardware profile and optional JSON export.
        - (Optional GUI) "Run System Benchmark..." dialog under Help menu with progress bar and copyable summary.
-   [ ] 3.3 Continuous Maintenance & Future Feature Test Coverage Policy:
+   [ ] 3.2 Continuous Maintenance & Future Feature Test Coverage Policy:
        - Active policy requiring all future releases that introduce new processing features, export plugins, or UI widgets to synchronously add corresponding unit tests to `test_runner.py` and benchmark checkpoints to `benchmark.py`.
 
 4. Future Milestone: Phase 2 Modularization of prs_shared.py (UI & Qt Components) [PLANNED]
@@ -103,91 +96,73 @@ CORE ARCHITECTURAL INVARIANTS
 - 0 MB Default GPU Footprint: Base installer contains 0 MB of CUDA bloat; GPU features are purely optional and provisioned on demand.
 
 ================================================================================
-1. PREVIOUS RELEASE: WINDOWS INSTALLER VISIBILITY & WINDOWSTYLE NORMALIZATION (Completed in v3.4.16)
+1. PREVIOUS RELEASE: BETA RELEASE CHANNEL & PRERELEASE UPDATER ENGINE (Completed in v3.5.0-beta-1)
 ================================================================================
 
-[x] 1.1 ELIMINATED HIDDEN WINDOW INHERITANCE (SW_HIDE)
+[x] 1.1 CONFIGURABLE RELEASE CHANNEL (STABLE VS. BETA)
 ------------------------------------------------------
-- Cleared inherited `STARTUPINFO.wShowWindow = SW_HIDE` from Python's detached supervisor launcher (`launch_and_install` in `updater.py`). Previously, passing `wShowWindow = SW_HIDE` to the supervisor caused Windows `ShowWindow()` inside child processes to inherit the hidden flag, causing Inno Setup's GUI wizard to flash momentarily and disappear from view.
+- Added `get_update_channel()` across `core_utils.py`, `prs_shared.py`, `playback_preferences.py`, and `updater.py`.
+- Persisted release channel preference in `QSettings` under `"update_channel"` (`"stable"` or `"beta"`), with environment variable override (`RTVS_UPDATE_CHANNEL`).
 
-[x] 1.2 EXPLICIT WINDOWSTYLE NORMALIZATION
-------------------------------------------
-- Configured PowerShell's `Start-Process` with `-WindowStyle Normal`, explicitly instructing Windows to render the installer wizard dialog visibly (`SW_SHOWNORMAL`).
-
-[x] 1.3 EXPLICIT WORKING DIRECTORY CONFIGURATION
-------------------------------------------------
-- Added `-WorkingDirectory '{escaped_dir}'` to `Start-Process` and `/D "{str(path.parent)}"` to CMD trampoline fallbacks, ensuring the installer executes within its containing folder rather than defaulting to `C:\Windows\System32`.
-
-[x] 1.4 PERSISTENT SUPERVISOR EXECUTION
----------------------------------------
-- Added `-Wait` to `Start-Process`, ensuring the PowerShell supervisor remains active until the installation finishes rather than exiting prematurely while UAC or Inno Setup is initializing.
-
-[x] 1.5 INNO SETUP DIAGNOSTIC LOGGING
--------------------------------------
-- Enabled `SetupLogging=yes` in `installer/Windows/RadioTVStorySegmenter.iss` to automatically record setup actions to `%TEMP%`.
-
-================================================================================
-2. CURRENT RELEASE: WINDOWS JOB OBJECT BREAKAWAY & ANTIVIRUS REMEDIATION (Completed in v3.4.17)
-================================================================================
-
-[x] 2.1 ENABLED JOB OBJECT BREAKAWAY (JOB_OBJECT_LIMIT_BREAKAWAY_OK)
---------------------------------------------------------------------
-- In `process_lifecycle.py`, added `JOB_OBJECT_LIMIT_BREAKAWAY_OK = 0x00000800` to the Job Object limit flags (`LimitFlags = JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE | JOB_OBJECT_LIMIT_BREAKAWAY_OK`).
-- Without `JOB_OBJECT_LIMIT_BREAKAWAY_OK`, Win32 `CreateProcess` unconditionally fails with `ERROR_ACCESS_DENIED` whenever a child process specifies `CREATE_BREAKAWAY_FROM_JOB` (0x01000000). This previously prevented the detached update supervisor from detaching from the main application's job, leaving the installer trapped in the Job Object and causing it to be killed by Windows (`KILL_ON_JOB_CLOSE`) when `RadioTVSegmenter` exited.
-
-[x] 2.2 CLEAN DETACHED BREAKAWAY UPDATE LAUNCH
+[x] 1.2 PRERELEASE FILTERING IN UPDATER ENGINE
 ----------------------------------------------
-- Configured `launch_and_install` in `updater.py` to generate and execute a temporary `.bat` launcher script in `%TEMP%` with `CREATE_BREAKAWAY_FROM_JOB` (0x01000000) and `STARTUPINFO.wShowWindow = SW_HIDE`.
-- This eliminates Windows `cmd.exe /c` quote-escaping collisions (which previously caused Windows Shell to misparse nested quotes and attempt to execute `\\`), prevents console window flashes, and breaks away cleanly from the Job Object so the Inno Setup installer wizard runs uninterrupted.
+- Enhanced `fetch_releases` in `updater.py` with `channel` filtering:
+  * When `channel == "stable"`, filters out releases marked `prerelease: true` or containing `alpha`, `beta`, `rc`, `dev`, or `preview`.
+  * When `channel == "beta"`, returns all published releases (including prereleases and stable releases).
 
-[x] 2.3 COORDINATED EXIT & SETTINGS FLUSH
------------------------------------------
-- Replaced the fixed 0.5-second `os._exit(0)` delay in `_install_and_restart()` (`updater.py`) with an `aboutToQuit`-coordinated event watcher and explicit `QSettings.sync()` flush on window close, preventing hard-kill races against unflushed settings and project saves.
-- Added explicit `settings_store.sync()` in `closeEvent` of `RadioTVSegmenter.py`.
+[x] 1.3 INTERACTIVE IN-DIALOG CHANNEL SWITCHING
+-----------------------------------------------
+- Integrated a live "Release Channel" combo box in `CheckUpdateDialog`. Users can toggle between "Stable Releases Only (Recommended)" and "Stable & Beta Releases" directly inside the update dialog, which instantly saves the preference and initiates a fresh check without closing the dialog.
 
-[x] 2.4 ELIMINATED MARK-OF-THE-WEB (MOTW) STRIPPING
----------------------------------------------------
-- Completely removed `_unblock_windows_file` from `updater.py` (which deleted NTFS `:Zone.Identifier` Alternate Data Streams and executed PowerShell `Unblock-File`).
-- In modern heuristic and machine-learning antivirus engines (such as Microsoft Defender and Google Safe Browsing), programmatic tampering with Zone.Identifier or unblocking downloaded executables is categorized as security defense evasion (MITRE ATT&CK T1564.004), causing browsers like Chrome to falsely classify repository release archives (`RTVS3-*.zip`) as infected with trojans.
+[x] 1.4 PREFERENCES & SYSTEM DEFAULTS INTEGRATION
+-------------------------------------------------
+- Added the "Update Channel" dropdown to the "Updates & GitHub" page in `playback_preferences.py`.
+- Integrated `update_channel_combo` into `live_widgets` and the save workflow.
+- Updated "Restore System Defaults" under "Software Updates & Repository" to restore the channel to factory default ("stable").
 
-[x] 2.5 REPLACED POWERSHELL SCRIPTING WITH NATIVE APIS
-------------------------------------------------------
-- Removed `powershell.exe -ExecutionPolicy Bypass` commands from the update flow, relying on native `cmd start`, Win32 `ShellExecuteW`, and `os.startfile`.
+[x] 1.5 SEMANTIC VERSIONING FOR PRERELEASES
+-------------------------------------------
+- Updated `parse_version_tuple`, `is_version_newer`, and `is_version_older` in `updater.py` to evaluate pre-release tags (`(type_rank, build_num)`). Stable releases (`(99, 0)`) cleanly outrank pre-releases of the same base version.
 
-[x] 2.6 GRACEFUL FALLBACK CHAIN
--------------------------------
-- Preserved clean fallbacks to `ShellExecuteW` (`"runas"` and `"open"` verbs) and Python's built-in `os.startfile` when elevated execution is cancelled or restricted by local system policy.
+[x] 1.6 CI/CD PRERELEASE AUTOMATION
+-----------------------------------
+- Updated `.github/workflows/build.yml` to automatically parse tag names in the `vars` step. Tags containing `-beta`, `-rc`, `-alpha`, or `-preview` configure `prerelease: true` and `make_latest: false` on GitHub Releases, preventing experimental builds from superseding stable releases.
 
 ================================================================================
-3. UPCOMING MILESTONE: AUTOMATED TEST RUNNER & PERFORMANCE BENCHMARK SUITE [PLANNED for v3.4.18]
+2. CURRENT RELEASE: SYSTEM DIAGNOSTIC TEST BENCH & HARDWARE HEALTH (Completed in v3.5.0-beta-2)
 ================================================================================
 
-[ ] 3.1 ZERO-DEPENDENCY CORE TEST RUNNER (`test_runner.py`)
-----------------------------------------------------------
-- Build a unified test runner using Python's standard `unittest` and `QTest` executing against sandboxed temporary environments (`tempfile.TemporaryDirectory()`).
-- Implement an in-memory synthetic audio generation fixture using Python standard `wave` and `math.sin` (3-second 16kHz speech-like test audio generated in < 10ms with zero disk bloat).
-- Implement Tier 1 Pure Logic Tests:
-  * Project serialization / deserialization round-tripping for `.rtvs` files (JSON and gzip-compressed).
-  * Fuzz testing for `format_time()` and `parse_time()` edge cases (`0.0`, `59.999`, `3599.999`, `86400.0`, negative values, malformed inputs).
-  * Safe filename sanitization for Windows-reserved characters (`< > : " / \ | ? *`) and traversal paths (`..`).
-  * Subtitle SRT and WebVTT timestamp formatting, sequence ordering, and text escaping.
-  * WordPress REST API payload formatting (`data-nosnippet`, audio disclaimer placement, excerpt extraction).
-- Implement Tier 2 Worker & Subprocess Concurrency Tests:
-  * Bundled executable and system path resolution (`find_bundled_executable("ffmpeg")`, `ffprobe_path()`).
-  * `WaveformWorker` synthetic audio peak computation and cancellation responsiveness (< 500ms FFmpeg shutdown).
-  * `runtime_manager` process lifecycle and thread-safe lock stress tests (`register_process`, `unregister_process`, `kill_all_subprocesses`).
-- Implement Tier 3 Headless Qt UI & Event Loop Tests (`QT_QPA_PLATFORM=offscreen`):
-  * `InteractiveTranscriptEdit` focus isolation and scroll-lock position retention during simulated dialog triggers.
-  * `TimelineWidget` scrollbar-to-canvas and canvas-to-scrollbar lock cycle verification (`try...finally` re-entrancy).
-  * `QUndoStack` command push and undo/redo execution without unexpected playhead seek jumps.
-- Implement Tier 4 Native ML Runtime Smoke Tests:
-  * Harness integration with `RadioTVSegmenter.py --self-test` (PyTorch, CTranslate2, Silero VAD, WeSpeaker ONNX runtime).
-- Provide clean CLI flags:
-  * `python test_runner.py --quick` (Tier 1 pure logic, sub-second execution).
-  * `python test_runner.py --all` (Tiers 1–3, comprehensive local test).
-  * `python test_runner.py --self-test` (Tier 4 native ML runtime verification).
+[x] 2.1 MULTI-TIERED DIAGNOSTIC TEST ENGINE (test_runner.py)
+------------------------------------------------------------
+- Built a zero-dependency diagnostic test suite executing 20 distinct verification probes:
+  * Core Logic & File I/O: format_time() / parse_time() fuzz testing, project serialization fidelity (.rtvs JSON round-trip), binary waveform peak cache verification (.peaks), and child process lifecycle isolation (_SUBPROCESS_LOCK).
+  * Subtitles & Export Formats: SubRip (.srt), WebVTT (.vtt), Red Book CUE sheets (75 fps frame calculation), and YouTube chapter markers (00:00 introductory alignment).
+  * AI Runtimes & Inference Stack: PyTorch with native C-extensions (torch._C), CTranslate2 compute types, Sherpa-ONNX / ONNX Runtime execution providers, and DirectML / NVIDIA CUDA device enumeration.
+  * Model Download & Provisioning: Remote endpoint latency and reachability verification for Hugging Face Hub and GitHub CDN, model cache storage read/write/delete permissions, and zip/tar archive path-traversal (Zip Slip) security sandboxing.
+  * Story & Boundary Detection: Vocal energy segmentation boundary calculation and MUSIC_TOKEN_RE non-speech token filtering.
+  * Audio Diarization & VAD: Silero neural VAD initialization checks, WeSpeaker ONNX runtime presence, and translation plugin architecture isolation invariants.
 
-[ ] 3.2 PERFORMANCE & SPEED BENCHMARK ENGINE (`benchmark.py` / CLI & Diagnostic GUI)
+[x] 2.2 PYSIDE6 GRAPHICAL TEST BENCH DIALOG (DiagnosticDialog)
+--------------------------------------------------------------
+- Designed an interactive Qt desktop dialog featuring category grouping trees, asynchronous QThread execution, real-time status badges (PASS / FAIL / WARNING / SKIP), live progress bar, cancellation control, and a one-click clipboard report generator.
+
+[x] 2.3 CLI & APPLICATION EXECUTABLE DISPATCH
+---------------------------------------------
+- Supported headless console execution via `python test_runner.py` and application executable CLI flags (`RadioTVSegmenter.exe --run-diagnostics`, `--test-bench`, `--test-runner`).
+
+[x] 2.4 HELP MENU & SHORTCUT INTEGRATION
+----------------------------------------
+- Added "Run Diagnostic Test Bench..." action to the application Help menu (`ui_layout.py`) and shortcuts manager (`shortcuts_manager.py`) with default keyboard shortcut `Ctrl+Shift+T` (`Meta+Shift+T` on macOS).
+
+[x] 2.5 IN-MEMORY SYNTHETIC ACOUSTIC GENERATION
+-----------------------------------------------
+- Built-in multi-tone waveform generation fixture (`generate_synthetic_wav`) using standard `wave` and `math.sin` producing dual-tone test audio with speech-like silence intervals in < 10ms with zero external file dependencies.
+
+================================================================================
+3. UPCOMING MILESTONE: PERFORMANCE & SPEED BENCHMARK ENGINE [PLANNED for v3.5.0-beta-3]
+================================================================================
+
+[ ] 3.1 PERFORMANCE & SPEED BENCHMARK ENGINE (`benchmark.py` / CLI & Diagnostic GUI)
 -------------------------------------------------------------------------------------
 - Implement a lightweight, high-precision performance benchmarking harness using standard `time.perf_counter()` and `tracemalloc`.
 - Real-Time Factor (RTF) Calculation Engine:

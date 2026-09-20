@@ -56,6 +56,7 @@ from core_utils import (
     safe_extract_tar,
     safe_replace,
     get_github_repo,
+    get_update_channel,
     get_app_data_dir,
     get_models_storage_dir,
     set_models_storage_dir,
@@ -478,7 +479,7 @@ class CollapsibleSection(QWidget):
 
 # Display branding shown to the user (title bar, About box, installers).
 APP_DISPLAY_NAME = "Radio & TV Segmenter"
-PROJECT_VERSION = "3.4.17"
+PROJECT_VERSION = "3.5.0-beta-2"
 DEFAULT_GITHUB_REPO = "bradlinder/RTVS3"
 
 

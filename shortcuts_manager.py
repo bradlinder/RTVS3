@@ -639,6 +639,15 @@ SHORTCUT_DEFINITIONS: List[ShortcutDef] = [
         attr_name="log_action",
     ),
     ShortcutDef(
+        action_id="diagnostic_test_bench",
+        name="Run Diagnostic Test Bench...",
+        category="Help",
+        default_seq="Ctrl+Shift+T",
+        default_mac="Meta+Shift+T",
+        description="Run comprehensive automated diagnostics on audio runtimes, AI models, and file exporters",
+        attr_name="test_bench_action",
+    ),
+    ShortcutDef(
         action_id="licenses",
         name="Third-Party Licenses",
         category="Help",

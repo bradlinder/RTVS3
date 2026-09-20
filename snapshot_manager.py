@@ -90,16 +90,20 @@ def ensure_git_repo():
         subprocess.run(["git", "config", "user.email", "support@radiotvsegmenter.local"], cwd=ROOT_DIR, check=False)
 
 
-def create_snapshot(name: str, is_stable: bool = False):
+def create_snapshot(name: str, is_stable: bool = False, is_verified_stable: bool = False):
     ensure_git_repo()
     SNAPSHOTS_DIR.mkdir(parents=True, exist_ok=True)
+
+    if is_verified_stable:
+        is_stable = True
 
     version = get_current_project_version()
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     archive_name = f"{name}.tar.gz"
     archive_path = SNAPSHOTS_DIR / archive_name
 
-    print(f"[*] Creating snapshot '{name}' (App Version: v{version}, Stable={is_stable})...")
+    desc = "Verified-Stable" if is_verified_stable else ("Stable" if is_stable else "Development")
+    print(f"[*] Creating snapshot '{name}' (App Version: v{version}, Type={desc})...")
 
     # 1. Archive core project files
     def tar_filter(tarinfo):
@@ -121,12 +125,17 @@ def create_snapshot(name: str, is_stable: bool = False):
     try:
         subprocess.run(["git", "add", "-A"], cwd=ROOT_DIR, check=False)
         commit_msg = f"Release Snapshot: {name} (v{version})"
+        if is_verified_stable:
+            commit_msg += " [verified-stable]"
         subprocess.run(["git", "commit", "-m", commit_msg], cwd=ROOT_DIR, check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         # Create or update git tag
         subprocess.run(["git", "tag", "-f", name], cwd=ROOT_DIR, check=False)
         if is_stable:
             subprocess.run(["git", "tag", "-f", "latest-stable"], cwd=ROOT_DIR, check=False)
             subprocess.run(["git", "branch", "-f", "stable"], cwd=ROOT_DIR, check=False)
+        if is_verified_stable:
+            subprocess.run(["git", "tag", "-f", f"{name}-verified-stable"], cwd=ROOT_DIR, check=False)
+            subprocess.run(["git", "tag", "-f", "verified-stable"], cwd=ROOT_DIR, check=False)
     except Exception as e:
         print(f"[!] Warning: Git tag could not be updated: {e}")
 
@@ -136,14 +145,19 @@ def create_snapshot(name: str, is_stable: bool = False):
         "version": version,
         "timestamp": timestamp,
         "is_stable": is_stable,
+        "is_verified_stable": is_verified_stable,
         "archive": archive_name,
     }
     if is_stable:
         manifest["latest_stable"] = name
+    if is_verified_stable:
+        manifest["latest_verified_stable"] = name
     save_manifest(manifest)
 
     print(f"[✓] Snapshot '{name}' successfully saved to {archive_path}")
-    if is_stable:
+    if is_verified_stable:
+        print(f"[✓] Marked '{name}' as VERIFIED-STABLE release.")
+    elif is_stable:
         print(f"[✓] Marked '{name}' as the latest stable release.")
 
 
@@ -161,8 +175,12 @@ def list_snapshots():
         return
 
     for name, info in sorted(snapshots.items()):
-        marker = " [LATEST STABLE]" if name == latest_stable else ""
-        if info.get("is_stable") and not marker:
+        marker = ""
+        if info.get("is_verified_stable"):
+            marker = " [VERIFIED-STABLE]"
+        elif name == latest_stable:
+            marker = " [LATEST STABLE]"
+        elif info.get("is_stable"):
             marker = " [STABLE]"
         print(f"  • {name:<22} v{info.get('version', '?'):<8} {info.get('timestamp', '')}{marker}")
     print("=" * 60 + "\n")
@@ -172,7 +190,12 @@ def restore_snapshot(name: str):
     manifest = load_manifest()
     snapshots = manifest.get("snapshots", {})
 
-    if name in ("stable", "latest-stable", "latest"):
+    if name in ("verified-stable", "verified"):
+        name = manifest.get("latest_verified_stable") or manifest.get("latest_stable")
+        if not name:
+            print("[!] Error: No snapshot marked as verified stable found.")
+            sys.exit(1)
+    elif name in ("stable", "latest-stable", "latest"):
         name = manifest.get("latest_stable")
         if not name:
             print("[!] Error: No snapshot marked as latest stable found.")
@@ -224,14 +247,15 @@ def main():
     parser = argparse.ArgumentParser(description="Snapshot Manager for Radio & TV Story Segmenter")
     parser.add_argument("--create", type=str, help="Create a named snapshot")
     parser.add_argument("--stable", action="store_true", help="Mark snapshot as stable release")
-    parser.add_argument("--restore", type=str, help="Restore named snapshot (or 'stable')")
+    parser.add_argument("--verified-stable", action="store_true", help="Mark snapshot as user-verified stable release")
+    parser.add_argument("--restore", type=str, help="Restore named snapshot (or 'stable', 'verified-stable')")
     parser.add_argument("--list", action="store_true", help="List all available snapshots")
     parser.add_argument("--status", action="store_true", help="Show current project version and latest stable snapshot")
 
     args = parser.parse_args()
 
     if args.create:
-        create_snapshot(args.create, is_stable=args.stable)
+        create_snapshot(args.create, is_stable=args.stable, is_verified_stable=getattr(args, "verified_stable", False))
     elif args.restore:
         restore_snapshot(args.restore)
     elif args.list:
