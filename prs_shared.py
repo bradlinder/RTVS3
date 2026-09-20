@@ -69,6 +69,7 @@ from core_utils import (
     safe_filename,
     is_sentence_end,
 )
+get_app_storage_dir = get_app_data_dir
 from transcript_cleaner import (
     HALLUCINATION_PHRASES,
     HALLUCINATION_PATTERNS,
@@ -1071,6 +1072,8 @@ from background_workers import (
     VideoThumbnailWorker,
     PEAKS_MAGIC,
     PEAKS_VERSION,
+    WAVEFORM_ANALYSIS_RATE,
+    WAVEFORM_POINTS_PER_SECOND,
 )
 
 # ============================================================
@@ -1080,3 +1083,55 @@ from batch_dialog import (
     BatchFileListWidget,
     BatchProcessingDialog,
 )
+
+# ============================================================
+# Story Widgets (Extracted to story_widgets.py)
+# ============================================================
+from story_widgets import (
+    StoryListWidget,
+)
+
+# ============================================================
+# Timeline & Waveform Widgets (Extracted to timeline_widgets.py)
+# ============================================================
+from timeline_widgets import (
+    TimelineCanvas,
+    TimelineOverviewBar,
+    TimelineResizeHandle,
+    TimelineWidget,
+    WaveformEnvelope,
+    build_waveform_pyramid,
+    StoryFadesChangeCommand,
+)
+
+# ============================================================
+# Transcript Editor & Selection (Extracted to transcript_editor.py)
+# ============================================================
+from transcript_editor import (
+    InteractiveTranscriptEdit,
+    TranscriptSelectionBubble,
+    FindReplaceDialog,
+    transcript_text_view_stylesheet,
+)
+
+# ============================================================
+# Comments & Notes Panel (Extracted to comment_widgets.py)
+# ============================================================
+from comment_widgets import (
+    CommentEditorDialog,
+    NoteEditorDialog,
+    CommentCardWidget,
+    CommentsPanel,
+)
+
+# ============================================================
+# Cache Manager (Extracted to cache_manager.py)
+# ============================================================
+from cache_manager import (
+    ClearCacheDialog,
+    cleanup_old_thumbnail_cache,
+    format_byte_size,
+    get_cache_disk_usage,
+    purge_caches,
+)
+

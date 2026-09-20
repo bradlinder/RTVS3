@@ -12,7 +12,8 @@
     - **Story Manager Widgets (`story_widgets.py`)**: Extracted `StoryListWidget` (~610 lines).
     - **Cache & Storage Layer (`cache_manager.py`)**: Extracted persistent model and thumbnail cache managers (~536 lines).
   - **100% Backward-Compatible Zero-Regression Shims**:
-    - Maintained transparent re-exports in `prs_shared.py` ensuring seamless backward compatibility for all internal callers and plugins with zero code breaks.
+    - Maintained transparent re-exports in `prs_shared.py` ensuring seamless backward compatibility for all internal callers and plugins (`StoryListWidget`, `TimelineWidget`, `InteractiveTranscriptEdit`, `CommentsPanel`, etc.) with zero code breaks.
+    - Updated `build_installer.py` with explicit hidden imports for all modularized source modules (`story_widgets`, `timeline_widgets`, `transcript_editor`, `comment_widgets`, `background_workers`, `batch_dialog`, `cache_manager`, etc.) to guarantee zero import failures in frozen PyInstaller Windows releases.
   - **Benchmark Suite Responsive Geometry (`benchmark.py`)**:
     - Screen-aware default dialog sizing (`780x540`, min `640x420`) with persistent `QSettings` dimensions.
 
