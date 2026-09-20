@@ -32,6 +32,20 @@ if len(sys.argv) > 1 and sys.argv[1] in ("--run-diagnostics", "--test-bench", "-
     else:
         raise SystemExit(test_runner.run_cli_diagnostics(verbose=True))
 
+# If invoked to run the performance and speed benchmark engine
+if len(sys.argv) > 1 and sys.argv[1] in ("--benchmark", "--bench", "--run-benchmark"):
+    import benchmark
+    if "--gui" in sys.argv:
+        from PySide6.QtWidgets import QApplication
+        _app = QApplication.instance() or QApplication(sys.argv)
+        _dlg = benchmark.create_benchmark_dialog()
+        _dlg.exec()
+        raise SystemExit(0)
+    else:
+        _quick = "--quick" in sys.argv
+        _json = "--json" in sys.argv
+        raise SystemExit(benchmark.run_cli_benchmark(quick=_quick, as_json=_json))
+
 # Build-time/runtime smoke test. This runs before Qt is imported so the frozen
 # executable can prove that its own native ML stack is loadable.
 if len(sys.argv) > 1 and sys.argv[1] == "--self-test":

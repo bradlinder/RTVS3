@@ -648,6 +648,15 @@ SHORTCUT_DEFINITIONS: List[ShortcutDef] = [
         attr_name="test_bench_action",
     ),
     ShortcutDef(
+        action_id="performance_benchmark",
+        name="Run Performance Benchmark...",
+        category="Help",
+        default_seq="Ctrl+Shift+B",
+        default_mac="Meta+Shift+B",
+        description="Profile system throughput, memory footprints, Real-Time Factor (RTF), and speed benchmarks",
+        attr_name="benchmark_action",
+    ),
+    ShortcutDef(
         action_id="licenses",
         name="Third-Party Licenses",
         category="Help",

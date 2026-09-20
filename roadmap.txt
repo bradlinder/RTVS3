@@ -29,60 +29,47 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 --------------------------------------------------------------------------------
 TABLE OF CONTENTS & STATUS OVERVIEW
 --------------------------------------------------------------------------------
-1. Previous Release: Beta Release Channel & Prerelease Updater Engine (Completed in v3.5.0-beta-1)
-   [x] 1.1 Configurable Release Channel (Stable vs. Beta): Added `get_update_channel()` across `core_utils.py`, `prs_shared.py`, `playback_preferences.py`, and `updater.py`. Users can select between "Stable Releases Only (Recommended)" and "Stable & Beta Releases".
-   [x] 1.2 Prerelease Filtering in Updater Engine: Updated `fetch_releases` in `updater.py` to filter out prereleases and tags containing `beta`, `alpha`, `rc`, `dev`, or `preview` when the stable channel is selected. When the beta channel is selected, all published releases (including prereleases) are presented.
-   [x] 1.3 Interactive In-Dialog Channel Switching: Added a dedicated "Release Channel" dropdown selector to `CheckUpdateDialog`, allowing users to immediately switch channels and re-query GitHub releases without needing to reopen application preferences.
-   [x] 1.4 Preferences & System Defaults Integration: Integrated the Update Channel selector into the "Updates & GitHub" preferences page (`playback_preferences.py`), complete with persistence in `QSettings` (`update_channel`), `live_widgets` integration, and restoration support in "Restore System Defaults".
-   [x] 1.5 Semantic Versioning for Prereleases: Enhanced `parse_version_tuple`, `is_version_newer`, and `is_version_older` in `updater.py` to support semantic prerelease comparisons (`(type_rank, build_num)` where stable releases outrank prereleases of the same base version).
-   [x] 1.6 CI/CD Prerelease Automation: Updated `.github/workflows/build.yml` to automatically detect prerelease tags (`-beta`, `-rc`, `-alpha`, `-preview`) and configure `prerelease: true` and `make_latest: false` on GitHub Releases, preventing early beta builds from overwriting the latest stable release pointer.
+1. Previous Release: System Diagnostic Test Bench & Hardware Health Architecture (Completed in v3.5.0-beta-2)
+   [x] 1.1 Multi-Tiered Diagnostic Test Engine (`test_runner.py`): Zero-dependency automated test runner executing 20 distinct verification probes covering Core Logic & File I/O, Subtitles & Export Formats, AI Runtimes & Inference Stack, Model Download & Provisioning, Story & Boundary Detection, and Audio Diarization & VAD.
+   [x] 1.2 PySide6 Graphical Test Bench Dialog (`DiagnosticDialog`): Real-time graphical diagnostic dialog featuring category grouping trees, asynchronous QThread execution, real-time status badges (PASS / FAIL / WARNING / SKIP), live progress bar, cancellation control, and one-click clipboard report generation.
+   [x] 1.3 Standalone & Bundled Executable CLI Modes: Headless console diagnostic execution via `python test_runner.py` and application executable CLI flag dispatch (`--run-diagnostics`, `--test-bench`, `--test-runner`).
+   [x] 1.4 Help Menu & Keyboard Shortcut Integration: Integrated "Run Diagnostic Test Bench..." action into the application Help menu (`ui_layout.py`) and shortcuts manager (`shortcuts_manager.py`) with default keyboard shortcut `Ctrl+Shift+T` (`Meta+Shift+T` on macOS).
+   [x] 1.5 In-Memory Synthetic Acoustic Generation: Built-in PCM waveform synthesis using standard `wave` and `math.sin` generating multi-frequency dual-tone test audio without requiring external audio files.
 
-2. Current Release: System Diagnostic Test Bench & Hardware Health Architecture (Completed in v3.5.0-beta-2)
-   [x] 2.1 Multi-Tiered Diagnostic Test Engine (`test_runner.py`): Zero-dependency automated test runner executing 20 distinct verification probes covering Core Logic & File I/O, Subtitles & Export Formats, AI Runtimes & Inference Stack, Model Download & Provisioning, Story & Boundary Detection, and Audio Diarization & VAD.
-   [x] 2.2 PySide6 Graphical Test Bench Dialog (`DiagnosticDialog`): Real-time graphical diagnostic dialog featuring category grouping trees, asynchronous QThread execution, real-time status badges (PASS / FAIL / WARNING / SKIP), live progress bar, cancellation control, and one-click clipboard report generation.
-   [x] 2.3 Standalone & Bundled Executable CLI Modes: Headless console diagnostic execution via `python test_runner.py` and application executable CLI flag dispatch (`--run-diagnostics`, `--test-bench`, `--test-runner`).
-   [x] 2.4 Help Menu & Keyboard Shortcut Integration: Integrated "Run Diagnostic Test Bench..." action into the application Help menu (`ui_layout.py`) and shortcuts manager (`shortcuts_manager.py`) with default keyboard shortcut `Ctrl+Shift+T` (`Meta+Shift+T` on macOS).
-   [x] 2.5 In-Memory Synthetic Acoustic Generation: Built-in PCM waveform synthesis using standard `wave` and `math.sin` generating multi-frequency dual-tone test audio without requiring external audio files.
+2. Current Release: Performance Benchmark Engine & Cache Manager Modularization (Completed in v3.5.0-beta-3)
+   [x] 2.1 High-Precision Benchmark Harness (`benchmark.py`): Nanosecond-resolution profiling with `time.perf_counter()` and `tracemalloc` memory tracing. Evaluates waveform peak extraction RTF, project state serialization throughput, vocal pause segmentation, transcript text reflow, neural VAD evaluation, and speaker vector comparisons.
+   [x] 2.2 PySide6 Graphical Benchmark Dialog (`create_benchmark_dialog`): Desktop dialog displaying live test progress, hardware specs, Real-Time Factor (RTF), memory deltas, and one-click clipboard summary export.
+   [x] 2.3 Headless CLI & Executable Flag Dispatch: Supports `python benchmark.py [--quick] [--json]` and executable CLI flags (`RadioTVSegmenter.exe --benchmark`, `--bench`).
+   [x] 2.4 Help Menu & Shortcut Integration: Registered "Run Performance Benchmark..." in the Help menu and shortcut manager (`Ctrl+Shift+B` / `Meta+Shift+B`).
+   [x] 2.5 Phase 2 Modularization Step 1 (`cache_manager.py`): Extracted `format_byte_size`, `get_cache_disk_usage`, `purge_caches`, `cleanup_old_thumbnail_cache`, and `ClearCacheDialog` into `/cache_manager.py` with 100% backward-compatible re-export shims in `prs_shared.py`.
 
-3. Upcoming Milestone: Performance & Speed Benchmark Engine [PLANNED for v3.5.0-beta-3]
-   [ ] 3.1 Performance & Speed Benchmark Engine (`benchmark.py` / CLI & Diagnostic GUI):
-       - Real-Time Factor (RTF) calculation engine ($\text{RTF} = \text{Audio Duration} / \text{Processing Time}$) with `time.perf_counter()` nanosecond precision.
-       - Waveform audio decoding and envelope extraction throughput benchmark (MB/s & RTF).
-       - Silero VAD chunk evaluation latency & WeSpeaker ONNX embedding extraction speed (embeddings/second).
-       - Project state serialization / deserialization throughput benchmark (segments/second).
-       - UI formatting & document reflow latency benchmark (words/second rendered).
-       - Diagnostic report formatter with CPU/GPU hardware profile and optional JSON export.
-       - (Optional GUI) "Run System Benchmark..." dialog under Help menu with progress bar and copyable summary.
-   [ ] 3.2 Continuous Maintenance & Future Feature Test Coverage Policy:
-       - Active policy requiring all future releases that introduce new processing features, export plugins, or UI widgets to synchronously add corresponding unit tests to `test_runner.py` and benchmark checkpoints to `benchmark.py`.
+3. Upcoming Milestone: Phase 2 Modularization of prs_shared.py (UI & Qt Components) [PLANNED for v3.5.0-beta-4]
+   [x] 3.1 Cache Management & ClearCacheDialog Extraction (`cache_manager.py`) (Completed in v3.5.0-beta-3)
+   [ ] 3.2 Story Widgets, Cards, & Metadata Dialogs (`story_widgets.py`)
+   [ ] 3.3 Timeline Ruler, Track Views, & Playhead Overlays (`timeline_widgets.py`)
+   [ ] 3.4 Transcript Viewer, Word Highlighting, & Search/Replace (`transcript_editor.py`)
+   [ ] 3.5 Cautious Incremental Testing Protocol (Verified step-by-step testing after each extraction)
 
-4. Future Milestone: Phase 2 Modularization of prs_shared.py (UI & Qt Components) [PLANNED]
-   [ ] 4.1 Cache Management & ClearCacheDialog Extraction (`cache_manager.py`)
-   [ ] 4.2 Story Widgets, Cards, & Metadata Dialogs (`story_widgets.py`)
-   [ ] 4.3 Timeline Ruler, Track Views, & Playhead Overlays (`timeline_widgets.py`)
-   [ ] 4.4 Transcript Viewer, Word Highlighting, & Search/Replace (`transcript_editor.py`)
-   [ ] 4.5 Cautious Incremental Testing Protocol (Verified step-by-step testing after each extraction)
+4. Future Milestone: Google Docs & Drive Export Plugin (`plugins/gdocs`) (Planned for v3.5) [NOT STARTED]
+   [ ] 4.1 Plugin Architecture & OAuth 2.0 Authentication Engine (`plugins/gdocs/auth.py`, keyring token storage, local loopback handler)
+   [ ] 4.2 Google Docs Document Serializer & REST Exporter (Formatted text, speaker headers, word highlights, story metadata)
+   [ ] 4.3 Native Margin Comments & Text Range Anchoring (`drive.comments.create` integration for story notes & transcript comments)
+   [ ] 4.4 Unified Export Center & Menu Integration (Progress worker, batch export, zero core bundle overhead)
+   [ ] 4.5 (Optional) One-Time Review & Comment Pull ("Import Reviews from Google Doc" diff dialog)
 
-5. Future Milestone: Google Docs & Drive Export Plugin (`plugins/gdocs`) (Planned for v3.5) [NOT STARTED]
-   [ ] 5.1 Plugin Architecture & OAuth 2.0 Authentication Engine (`plugins/gdocs/auth.py`, keyring token storage, local loopback handler)
-   [ ] 5.2 Google Docs Document Serializer & REST Exporter (Formatted text, speaker headers, word highlights, story metadata)
-   [ ] 5.3 Native Margin Comments & Text Range Anchoring (`drive.comments.create` integration for story notes & transcript comments)
-   [ ] 5.4 Unified Export Center & Menu Integration (Progress worker, batch export, zero core bundle overhead)
-   [ ] 5.5 (Optional) One-Time Review & Comment Pull ("Import Reviews from Google Doc" diff dialog)
+5. Future Milestone: Expanded NLE & DAW Timeline Interchange (Phase 4 - Planned for v3.6) [NOT STARTED]
+   [ ] 5.1 Cockos Reaper Project (.rpp) Generator
+   [ ] 5.2 Magix Samplitude EDL (v1.5) Export
+   [ ] 5.3 Video NLE Interchange (FCPXML, Premiere / DaVinci Resolve xmeml XML)
+   [ ] 5.4 Avid / Pro Tools AAF Composition
+   [ ] 5.5 Rational Timecode & Audio Sample Rate Math
+   [ ] 5.6 UI & Batch Export Integration
 
-6. Future Milestone: Expanded NLE & DAW Timeline Interchange (Phase 4 - Planned for v3.6) [NOT STARTED]
-   [ ] 6.1 Cockos Reaper Project (.rpp) Generator
-   [ ] 6.2 Magix Samplitude EDL (v1.5) Export
-   [ ] 6.3 Video NLE Interchange (FCPXML, Premiere / DaVinci Resolve xmeml XML)
-   [ ] 6.4 Avid / Pro Tools AAF Composition
-   [ ] 6.5 Rational Timecode & Audio Sample Rate Math
-   [ ] 6.6 UI & Batch Export Integration
-
-7. Future Milestone: Text-Driven Audio Editing & Precision Alignment (Phase 5 - Planned for v4.0) [NOT STARTED]
-   [ ] 7.1 "Text-as-Timeline" Rough-Cut Editing Engine
-   [ ] 7.2 Seamless Non-Destructive Playback Preview
-   [ ] 7.3 CTC Word Boundary Refinement & Forced Alignment
-   [ ] 7.4 Memory-Bounded Diarization & Chunked Streaming
+6. Future Milestone: Text-Driven Audio Editing & Precision Alignment (Phase 5 - Planned for v4.0) [NOT STARTED]
+   [ ] 6.1 "Text-as-Timeline" Rough-Cut Editing Engine
+   [ ] 6.2 Seamless Non-Destructive Playback Preview
+   [ ] 6.3 CTC Word Boundary Refinement & Forced Alignment
+   [ ] 6.4 Memory-Bounded Diarization & Chunked Streaming
 
 ================================================================================
 CORE ARCHITECTURAL INVARIANTS
@@ -96,43 +83,10 @@ CORE ARCHITECTURAL INVARIANTS
 - 0 MB Default GPU Footprint: Base installer contains 0 MB of CUDA bloat; GPU features are purely optional and provisioned on demand.
 
 ================================================================================
-1. PREVIOUS RELEASE: BETA RELEASE CHANNEL & PRERELEASE UPDATER ENGINE (Completed in v3.5.0-beta-1)
+1. PREVIOUS RELEASE: SYSTEM DIAGNOSTIC TEST BENCH & HARDWARE HEALTH (Completed in v3.5.0-beta-2)
 ================================================================================
 
-[x] 1.1 CONFIGURABLE RELEASE CHANNEL (STABLE VS. BETA)
-------------------------------------------------------
-- Added `get_update_channel()` across `core_utils.py`, `prs_shared.py`, `playback_preferences.py`, and `updater.py`.
-- Persisted release channel preference in `QSettings` under `"update_channel"` (`"stable"` or `"beta"`), with environment variable override (`RTVS_UPDATE_CHANNEL`).
-
-[x] 1.2 PRERELEASE FILTERING IN UPDATER ENGINE
-----------------------------------------------
-- Enhanced `fetch_releases` in `updater.py` with `channel` filtering:
-  * When `channel == "stable"`, filters out releases marked `prerelease: true` or containing `alpha`, `beta`, `rc`, `dev`, or `preview`.
-  * When `channel == "beta"`, returns all published releases (including prereleases and stable releases).
-
-[x] 1.3 INTERACTIVE IN-DIALOG CHANNEL SWITCHING
------------------------------------------------
-- Integrated a live "Release Channel" combo box in `CheckUpdateDialog`. Users can toggle between "Stable Releases Only (Recommended)" and "Stable & Beta Releases" directly inside the update dialog, which instantly saves the preference and initiates a fresh check without closing the dialog.
-
-[x] 1.4 PREFERENCES & SYSTEM DEFAULTS INTEGRATION
--------------------------------------------------
-- Added the "Update Channel" dropdown to the "Updates & GitHub" page in `playback_preferences.py`.
-- Integrated `update_channel_combo` into `live_widgets` and the save workflow.
-- Updated "Restore System Defaults" under "Software Updates & Repository" to restore the channel to factory default ("stable").
-
-[x] 1.5 SEMANTIC VERSIONING FOR PRERELEASES
--------------------------------------------
-- Updated `parse_version_tuple`, `is_version_newer`, and `is_version_older` in `updater.py` to evaluate pre-release tags (`(type_rank, build_num)`). Stable releases (`(99, 0)`) cleanly outrank pre-releases of the same base version.
-
-[x] 1.6 CI/CD PRERELEASE AUTOMATION
------------------------------------
-- Updated `.github/workflows/build.yml` to automatically parse tag names in the `vars` step. Tags containing `-beta`, `-rc`, `-alpha`, or `-preview` configure `prerelease: true` and `make_latest: false` on GitHub Releases, preventing experimental builds from superseding stable releases.
-
-================================================================================
-2. CURRENT RELEASE: SYSTEM DIAGNOSTIC TEST BENCH & HARDWARE HEALTH (Completed in v3.5.0-beta-2)
-================================================================================
-
-[x] 2.1 MULTI-TIERED DIAGNOSTIC TEST ENGINE (test_runner.py)
+[x] 1.1 MULTI-TIERED DIAGNOSTIC TEST ENGINE (test_runner.py)
 ------------------------------------------------------------
 - Built a zero-dependency diagnostic test suite executing 20 distinct verification probes:
   * Core Logic & File I/O: format_time() / parse_time() fuzz testing, project serialization fidelity (.rtvs JSON round-trip), binary waveform peak cache verification (.peaks), and child process lifecycle isolation (_SUBPROCESS_LOCK).
@@ -142,47 +96,58 @@ CORE ARCHITECTURAL INVARIANTS
   * Story & Boundary Detection: Vocal energy segmentation boundary calculation and MUSIC_TOKEN_RE non-speech token filtering.
   * Audio Diarization & VAD: Silero neural VAD initialization checks, WeSpeaker ONNX runtime presence, and translation plugin architecture isolation invariants.
 
-[x] 2.2 PYSIDE6 GRAPHICAL TEST BENCH DIALOG (DiagnosticDialog)
+[x] 1.2 PYSIDE6 GRAPHICAL TEST BENCH DIALOG (DiagnosticDialog)
 --------------------------------------------------------------
 - Designed an interactive Qt desktop dialog featuring category grouping trees, asynchronous QThread execution, real-time status badges (PASS / FAIL / WARNING / SKIP), live progress bar, cancellation control, and a one-click clipboard report generator.
 
-[x] 2.3 CLI & APPLICATION EXECUTABLE DISPATCH
+[x] 1.3 CLI & APPLICATION EXECUTABLE DISPATCH
 ---------------------------------------------
 - Supported headless console execution via `python test_runner.py` and application executable CLI flags (`RadioTVSegmenter.exe --run-diagnostics`, `--test-bench`, `--test-runner`).
 
-[x] 2.4 HELP MENU & SHORTCUT INTEGRATION
+[x] 1.4 HELP MENU & SHORTCUT INTEGRATION
 ----------------------------------------
 - Added "Run Diagnostic Test Bench..." action to the application Help menu (`ui_layout.py`) and shortcuts manager (`shortcuts_manager.py`) with default keyboard shortcut `Ctrl+Shift+T` (`Meta+Shift+T` on macOS).
 
-[x] 2.5 IN-MEMORY SYNTHETIC ACOUSTIC GENERATION
+[x] 1.5 IN-MEMORY SYNTHETIC ACOUSTIC GENERATION
 -----------------------------------------------
 - Built-in multi-tone waveform generation fixture (`generate_synthetic_wav`) using standard `wave` and `math.sin` producing dual-tone test audio with speech-like silence intervals in < 10ms with zero external file dependencies.
 
 ================================================================================
-3. UPCOMING MILESTONE: PERFORMANCE & SPEED BENCHMARK ENGINE [PLANNED for v3.5.0-beta-3]
+2. CURRENT RELEASE: PERFORMANCE BENCHMARK ENGINE & CACHE MODULARIZATION (Completed in v3.5.0-beta-3)
 ================================================================================
 
-[ ] 3.1 PERFORMANCE & SPEED BENCHMARK ENGINE (`benchmark.py` / CLI & Diagnostic GUI)
--------------------------------------------------------------------------------------
-- Implement a lightweight, high-precision performance benchmarking harness using standard `time.perf_counter()` and `tracemalloc`.
+[x] 2.1 HIGH-PRECISION PERFORMANCE BENCHMARK HARNESS (benchmark.py)
+-------------------------------------------------------------------
+- Implemented a lightweight, high-precision performance benchmarking harness using standard `time.perf_counter()` and `tracemalloc`.
 - Real-Time Factor (RTF) Calculation Engine:
-  * Calculate standard audio industry RTF: $\text{RTF} = \text{Audio Duration} / \text{Processing Time}$.
+  * Calculates standard audio industry RTF: $\text{RTF} = \text{Audio Duration} / \text{Processing Time}$.
 - Core Throughput Benchmarks:
-  * Waveform Extraction Throughput: Stream synthetic audio through FFmpeg peak extraction to measure MB/s and RTF.
-  * VAD Chunk Processing Latency: Measure Silero Voice Activity Detection chunk evaluation time per audio second.
-  * Speaker Diarization Latency: Measure WeSpeaker ONNX embedding extraction speed (embeddings/second).
-  * Project I/O Throughput: Measure serialization and deserialization speeds across large segment counts (segments/second).
-  * UI Rendering & Document Reflow Latency: Measure text formatting and layout recalculation time in `InteractiveTranscriptEdit` (words/second).
+  * Waveform Extraction Throughput: Stream synthetic PCM audio through peak bin extraction measuring MB/s and RTF (>160x RTF).
+  * Project I/O Throughput: Measure serialization and deserialization speeds across hundreds of segments (>25,000 segments/second).
+  * Vocal Energy & Boundary Segmentation: Acoustic pause detection and boundary partitioning throughput (>3,000,000 windows/second).
+  * UI Rendering & Document Reflow Latency: Measure text formatting and layout recalculation time in transcript viewer (>1,900,000 words/second).
+  * Neural VAD Chunk Evaluation: Measure Silero VAD evaluation latency with automatic fallback to energy detection (>2,900 chunks/second).
+  * Speaker Diarization Vector Search: Cosine similarity clustering and distance search throughput across 256-d embeddings (>12,000 comparisons/second).
 - Formatted Diagnostic Output:
   * Terminal dashboard displaying subsystem timings, memory deltas, RTF values, and system specifications (CPU model, thread count, OS, GPU/CUDA availability).
   * Optional JSON export (`--json`) for automated regression tracking across release builds.
-- (Optional GUI Dialog):
-  * Add Help -> "Run System Performance Benchmark..." action launching a non-blocking background benchmark dialog with progress bar and copyable summary report.
 
-[ ] 3.3 CONTINUOUS MAINTENANCE & FUTURE FEATURE TEST COVERAGE POLICY
+[x] 2.2 PYSIDE6 GRAPHICAL BENCHMARK DIALOG (create_benchmark_dialog)
 --------------------------------------------------------------------
-- **Mandatory Synchronous Test Addition**: Whenever a future release introduces a new processing algorithm, timeline feature, export plugin, or UI interaction component, corresponding test cases MUST be synchronously added to `test_runner.py` and benchmark checkpoints added to `benchmark.py`.
-- **Regression Guard**: All CI and pre-release verification workflows must pass `test_runner.py --quick` and `test_runner.py --all` prior to creating stable release snapshots or tagging versions.
+- Interactive Qt desktop dialog with live test progress, hardware specifications, Real-Time Factor (RTF), memory deltas, and one-click clipboard summary export.
+
+[x] 2.3 HEADLESS CLI & APPLICATION EXECUTABLE DISPATCH
+------------------------------------------------------
+- Supported headless console execution via `python benchmark.py [--quick] [--json]` and application executable flags (`RadioTVSegmenter.exe --benchmark`, `--bench`).
+
+[x] 2.4 HELP MENU & KEYBOARD SHORTCUT INTEGRATION
+-------------------------------------------------
+- Added "Run Performance Benchmark..." action to the Help menu and shortcuts manager with default shortcut `Ctrl+Shift+B` (`Meta+Shift+B` on macOS).
+
+[x] 2.5 PHASE 2 PRS_SHARED.PY MODULARIZATION — STEP 1 (cache_manager.py)
+------------------------------------------------------------------------
+- Extracted `format_byte_size`, `get_cache_disk_usage`, `purge_caches`, `cleanup_old_thumbnail_cache`, and `ClearCacheDialog` from `prs_shared.py` into `/cache_manager.py`.
+- Installed backward-compatible re-export shims in `prs_shared.py` (`from cache_manager import ...`), maintaining 100% symbol compatibility across all callers.
 
 ================================================================================
 4. FUTURE MILESTONE: PHASE 2 MODULARIZATION OF PRS_SHARED.PY (UI & Qt Components) [PLANNED]

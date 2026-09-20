@@ -1075,6 +1075,12 @@ class UiLayoutMixin:
         self.test_bench_action = test_bench_act
         help_menu.addAction(test_bench_act)
 
+        benchmark_act = QAction("Run &Performance Benchmark...", self)
+        benchmark_act.setShortcut(platform_seq("Ctrl+Shift+B"))
+        benchmark_act.triggered.connect(self.show_performance_benchmark)
+        self.benchmark_action = benchmark_act
+        help_menu.addAction(benchmark_act)
+
         licenses_act = QAction("&Third-Party Licenses", self)
         licenses_act.setShortcut(platform_seq("Ctrl+Shift+F1"))
         licenses_act.triggered.connect(self.show_licenses_dialog)
@@ -1631,6 +1637,20 @@ class UiLayoutMixin:
                 self,
                 "Diagnostic Test Bench Error",
                 f"Failed to launch the Diagnostic Test Bench dialog:\n\n{exc}"
+            )
+
+    def show_performance_benchmark(self):
+        """Open the interactive System Performance & Speed Benchmark dialog."""
+        try:
+            from benchmark import create_benchmark_dialog
+            dlg = create_benchmark_dialog(parent=self)
+            dlg.exec()
+        except Exception as exc:
+            from PySide6.QtWidgets import QMessageBox
+            QMessageBox.critical(
+                self,
+                "Performance Benchmark Error",
+                f"Failed to launch the Performance Benchmark dialog:\n\n{exc}"
             )
 
     def open_plugins_manager(self):

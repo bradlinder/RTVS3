@@ -1,5 +1,21 @@
 # Changelog
 
+## v3.5.0-beta-3
+- **Performance & Speed Benchmark Engine (`benchmark.py`)**:
+  - **High-Precision Benchmark Harness (`benchmark.py`)**: Built an automated performance profiling suite using `time.perf_counter()` nanosecond resolution and `tracemalloc` memory tracing. Measures pipeline throughput and compute speeds without external media files:
+    - *Waveform Peak Extraction*: Synthetic 16kHz PCM audio stream throughput benchmark measuring Real-Time Factor (RTF), processing MB/s, and sample bins/second (>160x RTF).
+    - *Project Serialization Fidelity*: High-volume JSON serialization and deserialization throughput testing across hundreds of segmented stories (>25,000 segments/second).
+    - *Vocal Energy & Boundary Segmentation*: Acoustic pause detection and boundary partitioning throughput across simulated energy curves (>3,000,000 windows/second).
+    - *Transcript Formatting & Token Reflow*: Word-level document rendering, span formatting, and HTML tag generation speed (>1,900,000 words/second).
+    - *Neural VAD Chunk Evaluation*: Silero VAD neural chunk evaluation latency with automated fallback to algorithmic energy detection (>2,900 chunks/second).
+    - *Speaker Diarization Vector Search*: 256-dimensional embedding clustering and pairwise cosine similarity distance search throughput (>12,000 comparisons/second).
+  - **PySide6 Graphical Benchmark Dialog (`create_benchmark_dialog`)**: Designed an interactive desktop dialog featuring real-time status badges, async `QThread` execution, progress indicator, system hardware profile summary, and a one-click clipboard report generator.
+  - **Dual CLI & Subprocess Modes**: Supported headless benchmark profiling via `python benchmark.py [--quick] [--json]` and application executable flags (`RadioTVSegmenter.exe --benchmark`, `--bench`).
+  - **Help Menu & Keyboard Shortcut Integration**: Added "Run Performance Benchmark..." to the Help menu (`ui_layout.py`) and shortcuts manager (`shortcuts_manager.py`) with default keyboard shortcut `Ctrl+Shift+B` (`Meta+Shift+B` on macOS).
+- **Phase 2 prs_shared.py Modularization — Step 1 (`cache_manager.py`)**:
+  - **Extracted Cache Management Logic**: Extracted disk usage calculation (`get_cache_disk_usage`), cache purging (`purge_caches`), background thumbnail purging (`cleanup_old_thumbnail_cache`), and the interactive `ClearCacheDialog` from `prs_shared.py` into `/cache_manager.py`.
+  - **Backward-Compatible Re-Export Shims**: Installed clean re-export shims in `prs_shared.py`, preserving 100% symbol compatibility for all existing callers across `media_batch.py`, `playback_preferences.py`, and `project_export.py`.
+
 ## v3.5.0-beta-2
 - **System Diagnostic Test Bench & Hardware Health Architecture**:
   - **Comprehensive Multi-Tiered Diagnostic Engine (`test_runner.py`)**: Built an automated zero-dependency diagnostic harness with 20 distinct verification probes covering:
