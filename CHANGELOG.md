@@ -1,6 +1,6 @@
 # Changelog
 
-## v5.0.2
+## v3.5.2
 - **GitHub Actions CI/CD Pipeline Hardening & Artifact Staging**:
   - **Isolated Artifact Package Staging (`dist/release_packages/`)**:
     - Created dedicated release packaging directories across Linux, Windows, macOS, and plugin build jobs.
@@ -9,7 +9,7 @@
     - Added `continue-on-error: true` and direct GitHub Release asset publishing (`softprops/action-gh-release@v2`) across all runner platforms.
     - Hardened `publish-release` job to download artifacts flexibly and generate SHA-256 checksum manifests (`SHA256SUMS`).
 
-## v5.0.1
+## v3.5.1
 - **Stable Release — DAW Timeline Interchange & YouTube Chapter Marker Export (`export/daw.py`)**:
   - **Cockos REAPER Project Export (`.rpp`)**:
     - Generates multi-track REAPER project files with full XML-like S-expression syntax (`<REAPER_PROJECT`, `<TRACK`, `<ITEM`, `<SOURCE WAV>`).
