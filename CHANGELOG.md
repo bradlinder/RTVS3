@@ -1,5 +1,15 @@
 # Changelog
 
+## v3.5.7
+- **Detached Process Supervisor & UAC Elevation Synchronization (`updater.py`)**:
+  - **Process Lifecycle Synchronization**:
+    - Replaced synchronous installer elevation with a fully detached, multi-stage supervisor script (`.ps1` with `.cmd` fallback).
+    - The supervisor script monitors both the current process PID (`curr_pid`) and any process matching `RadioTVSegmenter.exe` / `RadioTVStorySegmenter.exe` until termination before triggering `Start-Process -Verb RunAs`.
+    - Integrated a mandatory 2-second kernel release delay after process exit to guarantee all DLLs and executable file handles are released before setup launches.
+  - **Instant UI Teardown**:
+    - Refactored `_install_and_restart()` to immediately hide all top-level application windows (`widget.hide()`) and flush `QSettings` before scheduling a 0.8s hard exit watcher.
+    - Prevents UAC elevation dialogs from popping up over active application windows and resolves installer premature auto-close collisions caused by file lock contention.
+
 ## v3.5.6
 - **WordPress Export Scope Filtering Fix (`plugins/wordpress/export_destination.py`)**:
   - **Resolved Export Scope Regression**:

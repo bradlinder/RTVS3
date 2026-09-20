@@ -60,7 +60,7 @@ try:
     )
 except Exception:
     APP_DISPLAY_NAME = "Radio & TV Segmenter"
-    PROJECT_VERSION = "3.5.6"
+    PROJECT_VERSION = "3.5.7"
     DEFAULT_GITHUB_REPO = "bradlinder/RTVS3"
 
     INTERNAL_APP_ID = "RadioTVStorySegmenter"
@@ -414,19 +414,31 @@ def launch_and_install(file_path: str, parent: QWidget | None = None) -> bool:
         launched = False
         last_error = ""
 
-        # 1. Primary approach: Detached PowerShell supervisor that waits for the current process
-        # (os.getpid()) to terminate before invoking the installer with 'RunAs' (UAC Elevation).
-        # This prevents the installer from launching while RadioTVSegmenter.exe is still running,
-        # which previously caused file lock contention and installer premature auto-close.
+        # Detached supervisor that waits for current process PID AND any process
+        # matching RadioTVSegmenter* or RadioTVStorySegmenter* to terminate completely,
+        # plus a safety delay, before invoking the installer with 'RunAs' (UAC Elevation).
+        # This prevents the installer from launching while RadioTVSegmenter.exe is still running
+        # or holding file locks, avoiding UAC prompts over active windows and installer premature exits.
         try:
             curr_pid = os.getpid()
             escaped_path = str(path).replace("'", "''")
-            ps_script = (
-                f"$p = {curr_pid}; "
-                f"while (Get-Process -Id $p -ErrorAction SilentlyContinue) {{ Start-Sleep -Milliseconds 200 }}; "
-                f"Start-Sleep -Milliseconds 500; "
-                f"Start-Process -FilePath '{escaped_path}' -Verb RunAs"
+
+            supervisor_ps = (
+                f"$targetPid = {curr_pid}\n"
+                f"while (Get-Process -Id $targetPid -ErrorAction SilentlyContinue) {{\n"
+                f"    Start-Sleep -Milliseconds 200\n"
+                f"}}\n"
+                f"while (Get-Process -Name 'RadioTVSegmenter*', 'RadioTVStorySegmenter*' -ErrorAction SilentlyContinue) {{\n"
+                f"    Start-Sleep -Milliseconds 200\n"
+                f"}}\n"
+                f"Start-Sleep -Seconds 2\n"
+                f"Start-Process -FilePath '{escaped_path}' -Verb RunAs\n"
             )
+
+            import tempfile
+            temp_dir = Path(tempfile.gettempdir())
+            script_path = temp_dir / "rtvs_update_supervisor.ps1"
+            script_path.write_text(supervisor_ps, encoding="utf-8")
 
             creationflags = 0
             if hasattr(subprocess, "CREATE_NO_WINDOW"):
@@ -447,8 +459,8 @@ def launch_and_install(file_path: str, parent: QWidget | None = None) -> bool:
                     "-NonInteractive",
                     "-ExecutionPolicy",
                     "Bypass",
-                    "-Command",
-                    ps_script,
+                    "-File",
+                    str(script_path),
                 ],
                 cwd=str(path.parent),
                 creationflags=creationflags,
@@ -459,7 +471,40 @@ def launch_and_install(file_path: str, parent: QWidget | None = None) -> bool:
         except Exception as exc_ps:
             last_error = f"PowerShell supervisor error: {exc_ps}"
 
-        # 2. Secondary approach: Direct Win32 ShellExecuteW with 'runas' (UAC Elevation)
+            try:
+                cmd_script = (
+                    f"@echo off\n"
+                    f":wait_pid\n"
+                    f'tasklist /FI "PID eq {curr_pid}" 2>NUL | find /I "{curr_pid}" >NUL\n'
+                    f'if "%ERRORLEVEL%"=="0" (\n'
+                    f'    timeout /t 1 /nobreak >NUL\n'
+                    f'    goto wait_pid\n'
+                    f')\n'
+                    f':wait_exe\n'
+                    f'tasklist /FI "IMAGENAME eq RadioTVSegmenter.exe" 2>NUL | find /I "RadioTVSegmenter.exe" >NUL\n'
+                    f'if "%ERRORLEVEL%"=="0" (\n'
+                    f'    timeout /t 1 /nobreak >NUL\n'
+                    f'    goto wait_exe\n'
+                    f')\n'
+                    f'timeout /t 2 /nobreak >NUL\n'
+                    f'powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "Start-Process -FilePath \'{escaped_path}\' -Verb RunAs"\n'
+                    f'if %ERRORLEVEL% NEQ 0 start "" "{path}"\n'
+                    f'del "%~f0" 2>NUL\n'
+                )
+                cmd_path = temp_dir / "rtvs_update_supervisor.cmd"
+                cmd_path.write_text(cmd_script, encoding="utf-8")
+
+                subprocess.Popen(
+                    ["cmd.exe", "/c", str(cmd_path)],
+                    cwd=str(path.parent),
+                    creationflags=creationflags,
+                    close_fds=True,
+                    shell=False,
+                )
+                launched = True
+            except Exception as exc_cmd:
+                last_error += f" | CMD supervisor error: {exc_cmd}"
+
         if not launched:
             try:
                 import ctypes
@@ -476,13 +521,11 @@ def launch_and_install(file_path: str, parent: QWidget | None = None) -> bool:
                 shell32.ShellExecuteW.restype = wintypes.HINSTANCE
 
                 hwnd = parent.winId() if parent and hasattr(parent, "winId") else None
-                # Standard SW_SHOWNORMAL = 1
                 ret = shell32.ShellExecuteW(hwnd, "runas", str(path), "", str(path.parent), 1)
                 ret_val = int(ctypes.cast(ret, ctypes.c_void_p).value or 0)
                 if ret_val > 32:
                     launched = True
                 else:
-                    # User declined elevation (SE_ERR_ACCESSDENIED = 5) or verb unavailable, retry with 'open'
                     ret2 = shell32.ShellExecuteW(hwnd, "open", str(path), "", str(path.parent), 1)
                     ret2_val = int(ctypes.cast(ret2, ctypes.c_void_p).value or 0)
                     if ret2_val > 32:
@@ -492,7 +535,6 @@ def launch_and_install(file_path: str, parent: QWidget | None = None) -> bool:
             except Exception as exc_shell:
                 last_error += f" | ShellExecuteW error: {exc_shell}"
 
-        # 3. Tertiary fallback: os.startfile (standard Python Windows shell launcher)
         if not launched:
             try:
                 os.startfile(str(path))
@@ -1223,12 +1265,14 @@ class CheckUpdateDialog(QDialog):
         success = launch_and_install(self.downloaded_path, parent=self)
         if success:
             self.accept()
-            # Cleanly close all top-level windows and allow Qt event loop / closeEvents to complete
             app = QApplication.instance()
             if app:
+                # Instantly hide all top-level windows so the app visual interface disappears immediately
                 try:
                     for widget in app.topLevelWidgets():
-                        if widget != self and hasattr(widget, "close"):
+                        if hasattr(widget, "hide"):
+                            widget.hide()
+                        if hasattr(widget, "close"):
                             widget.close()
                 except Exception:
                     pass
@@ -1241,23 +1285,13 @@ class CheckUpdateDialog(QDialog):
                 except Exception:
                     pass
 
-                # Graceful shutdown with aboutToQuit coordination
+                # Force immediate exit watcher after 0.8s if Qt event loop delays shutdown
                 import threading
-                quitting_event = threading.Event()
-                try:
-                    app.aboutToQuit.connect(quitting_event.set)
-                except Exception:
-                    pass
-
-                def _safety_exit_watcher():
-                    # Wait up to 5 seconds for natural Qt event loop termination and window teardown
-                    if quitting_event.wait(timeout=3.0):
-                        # Give the Python runtime up to 1.5 seconds to exit cleanly
-                        time.sleep(1.0)
-                    # If process has still not exited naturally, force exit to ensure installer doesn't contend on file locks
+                def _force_exit_watcher():
+                    time.sleep(0.8)
                     os._exit(0)
 
-                threading.Thread(target=_safety_exit_watcher, daemon=True).start()
+                threading.Thread(target=_force_exit_watcher, daemon=True).start()
                 app.quit()
             else:
                 os._exit(0)
