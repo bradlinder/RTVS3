@@ -414,84 +414,65 @@ def launch_and_install(file_path: str, parent: QWidget | None = None) -> bool:
         launched = False
         last_error = ""
 
-        # 1. Primary approach: Detached launcher script with CREATE_BREAKAWAY_FROM_JOB
-        # Since process_lifecycle.py enables JOB_OBJECT_LIMIT_BREAKAWAY_OK on the Windows Job Object,
-        # CREATE_BREAKAWAY_FROM_JOB allows the launcher to break away from the job so the installer
-        # is NOT killed when the main application exits (KILL_ON_JOB_CLOSE).
-        # We generate a temporary launcher .bat script to completely avoid cmd.exe /c quote-mangling
-        # (which previously caused Windows to attempt running '\\' as an executable).
-        # We also configure SW_HIDE + CREATE_NO_WINDOW so no command prompt window ever flashes.
+        # 1. Primary approach: Direct Win32 ShellExecuteW with 'runas' (UAC Elevation)
+        # Directly asks Windows Shell to run the Inno Setup installer with elevation.
+        # This breaks away from Job Objects naturally, presents the UAC elevation prompt,
+        # avoids cmd.exe / batch file quote-mangling errors (such as Windows searching for '\\'),
+        # and displays the installer GUI wizard cleanly in the foreground.
         try:
-            import tempfile
-            launcher_bat = Path(tempfile.gettempdir()) / "rtvs_update_launcher.bat"
-            # ping 127.0.0.1 -n 2 provides a reliable 1-second delay without requiring an active console
-            bat_content = (
-                "@echo off\r\n"
-                "ping 127.0.0.1 -n 2 >nul\r\n"
-                f'start "" "{str(path)}"\r\n'
-                'del "%~f0"\r\n'
-            )
-            launcher_bat.write_text(bat_content, encoding="utf-8")
+            import ctypes
+            from ctypes import wintypes
+            shell32 = ctypes.windll.shell32
+            shell32.ShellExecuteW.argtypes = [
+                wintypes.HWND,
+                wintypes.LPCWSTR,
+                wintypes.LPCWSTR,
+                wintypes.LPCWSTR,
+                wintypes.LPCWSTR,
+                ctypes.c_int,
+            ]
+            shell32.ShellExecuteW.restype = wintypes.HINSTANCE
 
-            startupinfo = None
-            if hasattr(subprocess, "STARTUPINFO"):
-                startupinfo = subprocess.STARTUPINFO()
-                if hasattr(subprocess, "STARTF_USESHOWWINDOW"):
-                    startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-                else:
-                    startupinfo.dwFlags |= 1
-                startupinfo.wShowWindow = 0  # SW_HIDE
-
-            creationflags = 0
-            if hasattr(subprocess, "CREATE_NO_WINDOW"):
-                creationflags |= subprocess.CREATE_NO_WINDOW
+            hwnd = parent.winId() if parent and hasattr(parent, "winId") else None
+            # Standard SW_SHOWNORMAL = 1
+            ret = shell32.ShellExecuteW(hwnd, "runas", str(path), "", str(path.parent), 1)
+            ret_val = int(ctypes.cast(ret, ctypes.c_void_p).value or 0)
+            if ret_val > 32:
+                launched = True
             else:
-                creationflags |= 0x08000000  # CREATE_NO_WINDOW
-            flags = creationflags | 0x01000000  # CREATE_BREAKAWAY_FROM_JOB
-
-            subprocess.Popen(
-                ["cmd.exe", "/c", str(launcher_bat)],
-                cwd=str(path.parent),
-                creationflags=flags,
-                startupinfo=startupinfo,
-                shell=False,
-            )
-            launched = True
-        except Exception as exc_breakaway:
-            last_error = f"breakaway launch: {exc_breakaway}"
-
-        # 2. Secondary approach: Direct Win32 ShellExecuteW with 'runas' verb
-        if not launched:
-            try:
-                import ctypes
-                from ctypes import wintypes
-                shell32 = ctypes.windll.shell32
-                shell32.ShellExecuteW.argtypes = [
-                    wintypes.HWND,
-                    wintypes.LPCWSTR,
-                    wintypes.LPCWSTR,
-                    wintypes.LPCWSTR,
-                    wintypes.LPCWSTR,
-                    ctypes.c_int,
-                ]
-                shell32.ShellExecuteW.restype = wintypes.HINSTANCE
-
-                hwnd = parent.winId() if parent and hasattr(parent, "winId") else None
-                # Standard SW_SHOWNORMAL = 1
-                ret = shell32.ShellExecuteW(hwnd, "runas", str(path), "", str(path.parent), 1)
-                ret_val = int(ctypes.cast(ret, ctypes.c_void_p).value or 0)
-                if ret_val > 32:
+                # User declined elevation (SE_ERR_ACCESSDENIED = 5) or verb unavailable, retry with 'open'
+                ret2 = shell32.ShellExecuteW(hwnd, "open", str(path), "", str(path.parent), 1)
+                ret2_val = int(ctypes.cast(ret2, ctypes.c_void_p).value or 0)
+                if ret2_val > 32:
                     launched = True
                 else:
-                    # User declined elevation or runas verb unavailable, retry with 'open'
-                    ret2 = shell32.ShellExecuteW(hwnd, "open", str(path), "", str(path.parent), 1)
-                    ret2_val = int(ctypes.cast(ret2, ctypes.c_void_p).value or 0)
-                    if ret2_val > 32:
-                        launched = True
-                    else:
-                        last_error += f" | ShellExecuteW: {ret_val} / {ret2_val}"
-            except Exception as exc_shell:
-                last_error += f" | ShellExecuteW: {exc_shell}"
+                    last_error = f"ShellExecuteW (runas: {ret_val}, open: {ret2_val})"
+        except Exception as exc_shell:
+            last_error = f"ShellExecuteW error: {exc_shell}"
+
+        # 2. Secondary approach: Direct detached subprocess with CREATE_BREAKAWAY_FROM_JOB
+        if not launched:
+            try:
+                creationflags = 0
+                if hasattr(subprocess, "DETACHED_PROCESS"):
+                    creationflags |= subprocess.DETACHED_PROCESS
+                else:
+                    creationflags |= 0x00000008
+                if hasattr(subprocess, "CREATE_BREAKAWAY_FROM_JOB"):
+                    creationflags |= subprocess.CREATE_BREAKAWAY_FROM_JOB
+                else:
+                    creationflags |= 0x01000000
+
+                subprocess.Popen(
+                    [str(path)],
+                    cwd=str(path.parent),
+                    creationflags=creationflags,
+                    close_fds=True,
+                    shell=False,
+                )
+                launched = True
+            except Exception as exc_popen:
+                last_error += f" | Popen: {exc_popen}"
 
         # 3. Tertiary fallback: os.startfile (standard Python Windows shell launcher)
         if not launched:
