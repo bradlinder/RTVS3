@@ -16,7 +16,10 @@ from typing import Any, Dict, List, Optional
 import xml.etree.ElementTree as ET
 import zipfile
 
-from prs_shared import format_time
+try:
+    from core_utils import format_time
+except ImportError:
+    from prs_shared import format_time
 
 try:
     from docx import Document

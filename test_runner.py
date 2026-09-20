@@ -264,6 +264,16 @@ class DiagnosticEngine:
                 "Transcript & Speaker Management",
                 "Verifies that reassigning a speaker label applies across all contiguous turn segments until the next speaker change",
             ),
+            DiagnosticItem(
+                "DAW Timeline Interchange and Gap Handling",
+                "Export & Packaging Engines",
+                "Validates multi-format DAW timeline clip generation, gap detection, split and muted unselected audio modes across REAPER, Samplitude EDL, Audacity, Audition XML, and CSV",
+            ),
+            DiagnosticItem(
+                "WordPress Export Scope Post Builder",
+                "Subtitles & Export Formats",
+                "Validates WordPress export post items rebuilding across selected stories, all stories, full episode, and full episode + all stories scope modes",
+            ),
         ]
 
     def run_all(self, stop_requested_fn: Optional[Callable[[], bool]] = None) -> List[DiagnosticItem]:
@@ -828,6 +838,152 @@ class DiagnosticEngine:
 
         item.status = "PASS"
         item.message = "All contiguous turn segments correctly reassigned up to next speaker boundary"
+
+    def _test_daw_timeline_interchange_and_gap_handling(self, item: DiagnosticItem):
+        from export.daw import (
+            build_timeline_clips,
+            generate_reaper_project,
+            generate_samplitude_edl,
+            generate_audacity_labels,
+            generate_audition_xml,
+            generate_daw_marker_csv,
+        )
+
+        stories = [
+            {"title": "Story Alpha", "start_time": 10.0, "end_time": 20.0, "summary_en": "First segment"},
+            {"title": "Story Beta", "start_time": 30.0, "end_time": 40.0, "summary_en": "Second segment"},
+        ]
+        total_dur = 50.0
+
+        # 1. Exclude mode
+        clips_ex = build_timeline_clips(stories, total_dur, unselected_audio_mode="exclude")
+        if len(clips_ex) != 2:
+            raise AssertionError(f"Exclude mode expected 2 clips, got {len(clips_ex)}")
+        if clips_ex[0]["is_unselected"] or clips_ex[1]["is_unselected"]:
+            raise AssertionError("Exclude mode returned unselected clips")
+
+        # 2. Split mode
+        clips_split = build_timeline_clips(stories, total_dur, unselected_audio_mode="split")
+        if len(clips_split) != 5:
+            raise AssertionError(f"Split mode expected 5 clips (gap, story, gap, story, gap), got {len(clips_split)}")
+        if not clips_split[0]["is_unselected"] or clips_split[0]["duration"] != 10.0:
+            raise AssertionError(f"Gap 1 incorrect: {clips_split[0]}")
+        if clips_split[1]["is_unselected"] or clips_split[1]["title"] != "Story Alpha":
+            raise AssertionError(f"Story 1 incorrect: {clips_split[1]}")
+
+        # 3. Muted mode
+        clips_muted = build_timeline_clips(stories, total_dur, unselected_audio_mode="muted")
+        if len(clips_muted) != 5:
+            raise AssertionError(f"Muted mode expected 5 clips, got {len(clips_muted)}")
+        if not clips_muted[0]["is_muted"] or not clips_muted[2]["is_muted"]:
+            raise AssertionError("Muted mode clips missing is_muted flag")
+
+        # 4. Verify Formatters output
+        reaper_out = generate_reaper_project(stories, "test.wav", "TestProject", total_duration=total_dur, unselected_audio_mode="muted")
+        if "MUTE 1" not in reaper_out or "Story Alpha" not in reaper_out:
+            raise AssertionError("REAPER project export missing muted clip markers or story titles")
+
+        edl_out = generate_samplitude_edl(stories, "test.wav", "TestProject", total_duration=total_dur, unselected_audio_mode="split")
+        if "Unselected Audio 1" not in edl_out or "Story Alpha" not in edl_out:
+            raise AssertionError("Samplitude EDL export missing unselected gap entries")
+
+        audacity_out = generate_audacity_labels(stories, total_duration=total_dur, unselected_audio_mode="split")
+        if "10.000000" not in audacity_out or "Unselected Audio 1" not in audacity_out or "Story Alpha" not in audacity_out:
+            raise AssertionError("Audacity label track export missing timestamps or labels")
+
+        xml_out = generate_audition_xml(stories, "test.wav", "TestProject", total_duration=total_dur, unselected_audio_mode="muted")
+        if "<xmeml" not in xml_out or "Story Alpha" not in xml_out:
+            raise AssertionError("Audition XML export missing xmeml structure or story sequence")
+
+        csv_out = generate_daw_marker_csv(stories, total_duration=total_dur, unselected_audio_mode="exclude")
+        if "Marker Name" not in csv_out or "Story Alpha" not in csv_out:
+            raise AssertionError("DAW Marker CSV export missing header or story markers")
+
+        item.status = "PASS"
+        item.message = "Multi-format DAW timeline clip generation & unselected gap modes fully verified"
+
+    def _test_wordpress_export_scope_post_builder(self, item: DiagnosticItem):
+        try:
+            import PySide6
+        except ImportError:
+            item.status = "WARNING"
+            item.message = "PySide6 Qt GUI framework not present in current environment"
+            return
+
+        try:
+            from plugins.wordpress.export_destination import WordPressExportTabWidget
+        except ImportError:
+            import importlib.util
+            spec = importlib.util.spec_from_file_location("wp_export_dest", "plugins/wordpress/export_destination.py")
+            if not spec or not spec.loader:
+                raise ImportError("Could not locate plugins/wordpress/export_destination.py module")
+            mod = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(mod)
+            WordPressExportTabWidget = mod.WordPressExportTabWidget
+
+        class DummyStory:
+            def __init__(self, start, end, title):
+                self.start = start
+                self.end = end
+                self.title = title
+
+        class DummyMainWindow:
+            def __init__(self):
+                self.audio_file = "episode_01.mp3"
+                self.stories = [
+                    DummyStory(0.0, 120.0, "Local News"),
+                    DummyStory(120.0, 300.0, "Weather Update"),
+                ]
+                self.current_selected_story_indices = [1]
+                self.current_position = 0.0
+
+            def _get_transcript_text_slice(self, start, end):
+                return "Sample transcript slice text"
+
+        # Instantiate a mock widget object to exercise rebuild_post_items
+        mock_widget = type("MockWpWidget", (), {})()
+        mock_widget.main_window = DummyMainWindow()
+        mock_widget.wp_post_items = []
+        mock_widget.wp_post_items_list = []
+        mock_widget.window = lambda: None
+        mock_widget.parent = lambda: None
+        mock_widget._update_post_list_item_label = lambda idx: None
+        mock_widget.wp_posts_list = type("MockListWidget", (), {
+            "blockSignals": lambda self, b: None,
+            "clear": lambda self: None,
+            "addItem": lambda self, item: None,
+            "count": lambda self: len(mock_widget.wp_post_items),
+            "setCurrentRow": lambda self, r: None,
+        })()
+        mock_widget.wp_post_nav_widget = type("MockNav", (), {"setVisible": lambda self, v: None})()
+        mock_widget.wp_bulk_box = type("MockBulk", (), {"setVisible": lambda self, v: None})()
+        mock_widget._load_post_editor_state = lambda idx: None
+
+        # Bind rebuild_post_items
+        mock_widget.rebuild_post_items = WordPressExportTabWidget.rebuild_post_items.__get__(mock_widget, type(mock_widget))
+
+        # 1. Full scope
+        mock_widget.rebuild_post_items(scope="full")
+        if len(mock_widget.wp_post_items) != 1 or mock_widget.wp_post_items[0]["task_label"] != "Full Episode":
+            raise AssertionError(f"Full scope failed: expected 1 'Full Episode' item, got {mock_widget.wp_post_items}")
+
+        # 2. Selected stories scope
+        mock_widget.rebuild_post_items(scope="selected_stories")
+        if len(mock_widget.wp_post_items) != 1 or "Weather Update" not in mock_widget.wp_post_items[0]["title"]:
+            raise AssertionError(f"Selected stories scope failed: expected 1 'Weather Update' item, got {mock_widget.wp_post_items}")
+
+        # 3. All stories scope
+        mock_widget.rebuild_post_items(scope="all_stories")
+        if len(mock_widget.wp_post_items) != 2:
+            raise AssertionError(f"All stories scope failed: expected 2 items, got {len(mock_widget.wp_post_items)}")
+
+        # 4. Full and all stories scope
+        mock_widget.rebuild_post_items(scope="full_and_all_stories")
+        if len(mock_widget.wp_post_items) != 3:
+            raise AssertionError(f"Full and all stories scope failed: expected 3 items, got {len(mock_widget.wp_post_items)}")
+
+        item.status = "PASS"
+        item.message = "WordPress export post items rebuilding across all scope modes fully verified"
 
 
 # ---------------------------------------------------------------------------

@@ -214,6 +214,9 @@ class UnifiedExportDialog(QDialog):
         self.cb_tracklist = QCheckBox("Tracklist / YouTube Chapters (.txt)")
         self.cb_rpp = QCheckBox("Cockos REAPER project (.rpp)")
         self.cb_edl = QCheckBox("Samplitude EDL v1.5 (.edl)")
+        self.cb_audacity = QCheckBox("Audacity label track (.txt)")
+        self.cb_audition_xml = QCheckBox("Adobe Audition / FCP XML (.xml)")
+        self.cb_daw_csv = QCheckBox("Universal DAW marker list (.csv)")
 
         audio_file = getattr(self.main_window, "audio_file", None)
         media_ext = audio_file.suffix.lower() if audio_file else "media"
@@ -232,6 +235,9 @@ class UnifiedExportDialog(QDialog):
         self.cb_tracklist.setChecked(is_music_mode)
         self.cb_rpp.setChecked(False)
         self.cb_edl.setChecked(False)
+        self.cb_audacity.setChecked(False)
+        self.cb_audition_xml.setChecked(False)
+        self.cb_daw_csv.setChecked(False)
         self.cb_media.setChecked(audio_file is not None)
         self.cb_media.setEnabled(audio_file is not None)
         self.cb_apply_fades.setEnabled(audio_file is not None and self.cb_media.isChecked())
@@ -270,6 +276,38 @@ class UnifiedExportDialog(QDialog):
 
         self.formats_section.add_widget(self.cb_rpp)
         self.formats_section.add_widget(self.cb_edl)
+        self.formats_section.add_widget(self.cb_audacity)
+        self.formats_section.add_widget(self.cb_audition_xml)
+        self.formats_section.add_widget(self.cb_daw_csv)
+
+        unselected_row = QHBoxLayout()
+        unselected_row.setSpacing(8)
+        lbl_unsel = QLabel("Unselected Audio Mode:")
+        lbl_unsel.setStyleSheet("color: #94a3b8; font-size: 12px; font-weight: 500;")
+        unselected_row.addWidget(lbl_unsel)
+        self.unselected_audio_combo = QComboBox()
+        self.unselected_audio_combo.addItem("Exclude unselected audio", "exclude")
+        self.unselected_audio_combo.addItem("Include unselected audio (Split Clips)", "split")
+        self.unselected_audio_combo.addItem("Include unselected audio (Muted Clips)", "muted")
+        self.unselected_audio_combo.setToolTip("Controls how unselected audio gaps between story segments are handled in DAW timeline exports.")
+        self.unselected_audio_combo.setStyleSheet("""
+            QComboBox {
+                background-color: #0f172a;
+                color: #e2e8f0;
+                border: 1px solid #334155;
+                border-radius: 4px;
+                padding: 3px 8px;
+                font-size: 12px;
+            }
+            QComboBox QAbstractItemView {
+                background-color: #1e293b;
+                color: #e2e8f0;
+                selection-background-color: #0284c7;
+            }
+        """)
+        unselected_row.addWidget(self.unselected_audio_combo)
+        unselected_row.addStretch()
+        self.formats_section.add_layout(unselected_row)
 
         media_row = QHBoxLayout()
         media_row.setSpacing(10)
@@ -459,6 +497,15 @@ class UnifiedExportDialog(QDialog):
         self.cb_tracklist.setChecked(str(settings.value("export_opt_fmt_tracklist", "false")).lower() in {"1", "true", "yes"})
         self.cb_rpp.setChecked(str(settings.value("export_opt_fmt_rpp", "false")).lower() in {"1", "true", "yes"})
         self.cb_edl.setChecked(str(settings.value("export_opt_fmt_edl", "false")).lower() in {"1", "true", "yes"})
+        self.cb_audacity.setChecked(str(settings.value("export_opt_fmt_audacity", "false")).lower() in {"1", "true", "yes"})
+        self.cb_audition_xml.setChecked(str(settings.value("export_opt_fmt_audition_xml", "false")).lower() in {"1", "true", "yes"})
+        self.cb_daw_csv.setChecked(str(settings.value("export_opt_fmt_daw_csv", "false")).lower() in {"1", "true", "yes"})
+
+        unsel_mode = str(settings.value("export_opt_unselected_audio_mode", "exclude")).lower().strip()
+        idx = self.unselected_audio_combo.findData(unsel_mode)
+        if idx >= 0:
+            self.unselected_audio_combo.setCurrentIndex(idx)
+
         if self.cb_media.isEnabled():
             self.cb_media.setChecked(str(settings.value("export_opt_fmt_media", "false")).lower() in {"1", "true", "yes"})
 
@@ -488,6 +535,10 @@ class UnifiedExportDialog(QDialog):
         settings.setValue("export_opt_fmt_tracklist", self.cb_tracklist.isChecked())
         settings.setValue("export_opt_fmt_rpp", self.cb_rpp.isChecked())
         settings.setValue("export_opt_fmt_edl", self.cb_edl.isChecked())
+        settings.setValue("export_opt_fmt_audacity", self.cb_audacity.isChecked())
+        settings.setValue("export_opt_fmt_audition_xml", self.cb_audition_xml.isChecked())
+        settings.setValue("export_opt_fmt_daw_csv", self.cb_daw_csv.isChecked())
+        settings.setValue("export_opt_unselected_audio_mode", self.unselected_audio_combo.currentData())
         settings.setValue("export_opt_fmt_media", self.cb_media.isChecked())
 
         settings.setValue("export_opt_include_speakers", self.cb_speakers.isChecked())
@@ -524,6 +575,9 @@ class UnifiedExportDialog(QDialog):
                 "tracklist": self.cb_tracklist.isChecked(),
                 "rpp": self.cb_rpp.isChecked(),
                 "edl": self.cb_edl.isChecked(),
+                "audacity": self.cb_audacity.isChecked(),
+                "audition_xml": self.cb_audition_xml.isChecked(),
+                "daw_csv": self.cb_daw_csv.isChecked(),
             }
             if not any(formats.values()):
                 QMessageBox.warning(self, "Export", "Please select at least one format to export.")
@@ -557,10 +611,15 @@ class UnifiedExportDialog(QDialog):
                 "tracklist": self.cb_tracklist.isChecked(),
                 "rpp": self.cb_rpp.isChecked(),
                 "edl": self.cb_edl.isChecked(),
+                "audacity": self.cb_audacity.isChecked(),
+                "audition_xml": self.cb_audition_xml.isChecked(),
+                "daw_csv": self.cb_daw_csv.isChecked(),
             }
             apply_fades = self.cb_apply_fades.isChecked()
+            unselected_mode = self.unselected_audio_combo.currentData() or "exclude"
             settings = QSettings("RadioTVStorySegmenter", "RadioTVStorySegmenter")
             settings.setValue("export_apply_audio_fades", "true" if apply_fades else "false")
+            settings.setValue("export_opt_unselected_audio_mode", unselected_mode)
 
             options = {
                 "include_speakers": self.cb_speakers.isChecked(),
@@ -571,6 +630,7 @@ class UnifiedExportDialog(QDialog):
                 "include_english": self.cb_en.isChecked(),
                 "include_spanish": self.cb_es.isChecked(),
                 "apply_audio_fades": apply_fades,
+                "unselected_audio_mode": unselected_mode,
             }
             base = safe_filename(self.filename_edit.text().strip() or "export")
             export_dir = None

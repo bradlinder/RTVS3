@@ -861,10 +861,15 @@ class WordPressExportTabWidget(QWidget):
             pix = QPixmap(fn).scaled(160, 90, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
             self.wp_thumb_preview_label.setPixmap(pix)
 
-    def rebuild_post_items(self):
-        scope = "full"
-        if hasattr(self.parent(), "scope_combo"):
-            scope = self.parent().scope_combo.currentData()
+    def rebuild_post_items(self, scope: Optional[str] = None):
+        if scope is None:
+            dlg = self.window()
+            if hasattr(dlg, "scope_combo"):
+                scope = dlg.scope_combo.currentData()
+            elif hasattr(self.parent(), "scope_combo"):
+                scope = self.parent().scope_combo.currentData()
+            else:
+                scope = "full"
         audio_file = getattr(self.main_window, "audio_file", None)
         base_name = Path(audio_file).stem if audio_file else "Draft Story"
         stories = getattr(self.main_window, "stories", []) or []
@@ -1075,7 +1080,7 @@ class WordPressExportDestination(ExportDestination):
 
     def on_scope_changed(self, scope: str, stories: list) -> None:
         if self.tab_widget:
-            self.tab_widget.rebuild_post_items()
+            self.tab_widget.rebuild_post_items(scope=scope)
 
     def validate(self) -> Tuple[bool, str]:
         if not self.tab_widget:

@@ -312,7 +312,10 @@ class YouTubeExportTabWidget(QWidget):
 
     def _get_yt_bounds(self) -> Tuple[float, float]:
         scope = "full"
-        if hasattr(self.parent(), "scope_combo"):
+        dlg = self.window()
+        if hasattr(dlg, "scope_combo"):
+            scope = dlg.scope_combo.currentData()
+        elif hasattr(self.parent(), "scope_combo"):
             scope = self.parent().scope_combo.currentData()
         stories = getattr(self.main_window, "stories", [])
         if scope == "selected_stories":

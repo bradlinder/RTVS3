@@ -22,6 +22,9 @@ from export.subtitles import (
 from export.daw import (
     generate_reaper_project,
     generate_samplitude_edl,
+    generate_audacity_labels,
+    generate_audition_xml,
+    generate_daw_marker_csv,
 )
 from export.docx import create_story_docx
 from export.dialog import UnifiedExportDialog
@@ -1251,12 +1254,15 @@ class ProjectExportMixin:
             with open(chapters_file, "w", encoding="utf-8") as f:
                 f.write(chapters_text)
 
+        unselected_mode = options.get("unselected_audio_mode", "exclude")
+        tot_dur = float(getattr(self, "duration", 0.0) or getattr(self, "audio_duration", 0.0) or 0.0)
+
         if formats.get("rpp") and stories_with_indices:
             stories_subset = [s for _, s in stories_with_indices]
             rpp_file = transcripts_out / f"{base}.rpp"
             media_name = self.audio_file.name if self.audio_file else ""
             apply_fades = bool(options.get("apply_audio_fades", True))
-            rpp_text = generate_reaper_project(stories_subset, media_name, base, apply_fades=apply_fades)
+            rpp_text = generate_reaper_project(stories_subset, media_name, base, apply_fades=apply_fades, total_duration=tot_dur, unselected_audio_mode=unselected_mode)
             with open(rpp_file, "w", encoding="utf-8") as f:
                 f.write(rpp_text)
 
@@ -1265,9 +1271,31 @@ class ProjectExportMixin:
             edl_file = transcripts_out / f"{base}.edl"
             media_name = self.audio_file.name if self.audio_file else ""
             apply_fades = bool(options.get("apply_audio_fades", True))
-            edl_text = generate_samplitude_edl(stories_subset, media_name, base, apply_fades=apply_fades)
+            edl_text = generate_samplitude_edl(stories_subset, media_name, base, apply_fades=apply_fades, total_duration=tot_dur, unselected_audio_mode=unselected_mode)
             with open(edl_file, "w", encoding="utf-8") as f:
                 f.write(edl_text)
+
+        if formats.get("audacity") and stories_with_indices:
+            stories_subset = [s for _, s in stories_with_indices]
+            audacity_file = transcripts_out / f"{base}_labels.txt"
+            aud_text = generate_audacity_labels(stories_subset, total_duration=tot_dur, unselected_audio_mode=unselected_mode)
+            with open(audacity_file, "w", encoding="utf-8") as f:
+                f.write(aud_text)
+
+        if formats.get("audition_xml") and stories_with_indices:
+            stories_subset = [s for _, s in stories_with_indices]
+            xml_file = transcripts_out / f"{base}.xml"
+            media_name = self.audio_file.name if self.audio_file else ""
+            xml_text = generate_audition_xml(stories_subset, media_name, base, total_duration=tot_dur, unselected_audio_mode=unselected_mode)
+            with open(xml_file, "w", encoding="utf-8") as f:
+                f.write(xml_text)
+
+        if formats.get("daw_csv") and stories_with_indices:
+            stories_subset = [s for _, s in stories_with_indices]
+            csv_file = transcripts_out / f"{base}_markers.csv"
+            csv_text = generate_daw_marker_csv(stories_subset, total_duration=tot_dur, unselected_audio_mode=unselected_mode)
+            with open(csv_file, "w", encoding="utf-8") as f:
+                f.write(csv_text)
 
         return True
 
@@ -1993,11 +2021,14 @@ class ProjectExportMixin:
                 with open(chapters_file, "w", encoding="utf-8") as f:
                     f.write(chapters_text)
 
+            unselected_mode = options.get("unselected_audio_mode", "exclude")
+            tot_dur = float(getattr(self, "duration", 0.0) or getattr(self, "audio_duration", 0.0) or 0.0)
+
             if formats.get("rpp") and getattr(self, "stories", None):
                 rpp_file = transcripts_out / f"{base}.rpp"
                 media_name = self.audio_file.name if self.audio_file else ""
                 apply_fades = bool(options.get("apply_audio_fades", True))
-                rpp_text = generate_reaper_project(self.stories, media_name, base, apply_fades=apply_fades)
+                rpp_text = generate_reaper_project(self.stories, media_name, base, apply_fades=apply_fades, total_duration=tot_dur, unselected_audio_mode=unselected_mode)
                 with open(rpp_file, "w", encoding="utf-8") as f:
                     f.write(rpp_text)
 
@@ -2005,9 +2036,28 @@ class ProjectExportMixin:
                 edl_file = transcripts_out / f"{base}.edl"
                 media_name = self.audio_file.name if self.audio_file else ""
                 apply_fades = bool(options.get("apply_audio_fades", True))
-                edl_text = generate_samplitude_edl(self.stories, media_name, base, apply_fades=apply_fades)
+                edl_text = generate_samplitude_edl(self.stories, media_name, base, apply_fades=apply_fades, total_duration=tot_dur, unselected_audio_mode=unselected_mode)
                 with open(edl_file, "w", encoding="utf-8") as f:
                     f.write(edl_text)
+
+            if formats.get("audacity") and getattr(self, "stories", None):
+                audacity_file = transcripts_out / f"{base}_labels.txt"
+                aud_text = generate_audacity_labels(self.stories, total_duration=tot_dur, unselected_audio_mode=unselected_mode)
+                with open(audacity_file, "w", encoding="utf-8") as f:
+                    f.write(aud_text)
+
+            if formats.get("audition_xml") and getattr(self, "stories", None):
+                xml_file = transcripts_out / f"{base}.xml"
+                media_name = self.audio_file.name if self.audio_file else ""
+                xml_text = generate_audition_xml(self.stories, media_name, base, total_duration=tot_dur, unselected_audio_mode=unselected_mode)
+                with open(xml_file, "w", encoding="utf-8") as f:
+                    f.write(xml_text)
+
+            if formats.get("daw_csv") and getattr(self, "stories", None):
+                csv_file = transcripts_out / f"{base}_markers.csv"
+                csv_text = generate_daw_marker_csv(self.stories, total_duration=tot_dur, unselected_audio_mode=unselected_mode)
+                with open(csv_file, "w", encoding="utf-8") as f:
+                    f.write(csv_text)
 
             if progress_dialog is not None and created_local_dialog:
                 progress_dialog.setValue(1)
@@ -2653,7 +2703,14 @@ class ProjectExportMixin:
             show_export_completion_dialog(self, "Export Complete", f"Tracklist / Chapters exported successfully to:\n{save_path}", save_path)
         return True
 
-    def export_reaper_project(self, destination_path=None):
+    def _get_unselected_audio_mode_pref(self) -> str:
+        try:
+            settings = QSettings("RadioTVStorySegmenter", "RadioTVStorySegmenter")
+            return str(settings.value("export_opt_unselected_audio_mode", "exclude")).lower().strip()
+        except Exception:
+            return "exclude"
+
+    def export_reaper_project(self, destination_path=None, unselected_audio_mode=None):
         """Export story segments as a Cockos REAPER project file (.rpp)."""
         is_music = getattr(self, "story_detection_mode", "voice") == "music"
         term_plural = "Songs" if is_music else "Stories"
@@ -2672,8 +2729,10 @@ class ProjectExportMixin:
         else:
             save_path = destination_path
 
+        mode = unselected_audio_mode if unselected_audio_mode is not None else self._get_unselected_audio_mode_pref()
+        tot_dur = float(getattr(self, "duration", 0.0) or getattr(self, "audio_duration", 0.0) or 0.0)
         media_name = self.audio_file.name if getattr(self, "audio_file", None) else ""
-        content = generate_reaper_project(self.stories, media_name, base, apply_fades=True)
+        content = generate_reaper_project(self.stories, media_name, base, apply_fades=True, total_duration=tot_dur, unselected_audio_mode=mode)
         with open(save_path, "w", encoding="utf-8") as f:
             f.write(content)
         self.log_activity(f"[EXPORT] Exported REAPER project (.rpp) to {save_path}")
@@ -2681,7 +2740,7 @@ class ProjectExportMixin:
             show_export_completion_dialog(self, "Export Complete", f"REAPER project exported successfully to:\n{save_path}", save_path)
         return True
 
-    def export_samplitude_edl(self, destination_path=None):
+    def export_samplitude_edl(self, destination_path=None, unselected_audio_mode=None):
         """Export story segments as a Magix Samplitude EDL (v1.5) broadcast edit decision list."""
         is_music = getattr(self, "story_detection_mode", "voice") == "music"
         term_plural = "Songs" if is_music else "Stories"
@@ -2700,13 +2759,103 @@ class ProjectExportMixin:
         else:
             save_path = destination_path
 
+        mode = unselected_audio_mode if unselected_audio_mode is not None else self._get_unselected_audio_mode_pref()
+        tot_dur = float(getattr(self, "duration", 0.0) or getattr(self, "audio_duration", 0.0) or 0.0)
         media_name = self.audio_file.name if getattr(self, "audio_file", None) else ""
-        content = generate_samplitude_edl(self.stories, media_name, base, apply_fades=True)
+        content = generate_samplitude_edl(self.stories, media_name, base, apply_fades=True, total_duration=tot_dur, unselected_audio_mode=mode)
         with open(save_path, "w", encoding="utf-8") as f:
             f.write(content)
         self.log_activity(f"[EXPORT] Exported Samplitude EDL (.edl) to {save_path}")
         if not destination_path:
             show_export_completion_dialog(self, "Export Complete", f"Samplitude EDL exported successfully to:\n{save_path}", save_path)
+        return True
+
+    def export_audacity_labels(self, destination_path=None, unselected_audio_mode=None):
+        """Export story segments as an Audacity Label Track (.txt)."""
+        is_music = getattr(self, "story_detection_mode", "voice") == "music"
+        term_plural = "Songs" if is_music else "Stories"
+        if not getattr(self, "stories", []):
+            QMessageBox.warning(self, f"No {term_plural}", f"There are no {term_plural.lower()} to export.")
+            return False
+        base = safe_filename(self.project_file.stem if self.project_file else (self.audio_file.stem if self.audio_file else "project"))
+        if not destination_path:
+            save_path, _ = QFileDialog.getSaveFileName(
+                self, "Export Audacity Labels",
+                str(Path(self._dialog_directory()) / f"{base}_labels.txt"),
+                "Text File (*.txt)"
+            )
+            if not save_path:
+                return False
+        else:
+            save_path = destination_path
+
+        mode = unselected_audio_mode if unselected_audio_mode is not None else self._get_unselected_audio_mode_pref()
+        tot_dur = float(getattr(self, "duration", 0.0) or getattr(self, "audio_duration", 0.0) or 0.0)
+        content = generate_audacity_labels(self.stories, total_duration=tot_dur, unselected_audio_mode=mode)
+        with open(save_path, "w", encoding="utf-8") as f:
+            f.write(content)
+        self.log_activity(f"[EXPORT] Exported Audacity label track to {save_path}")
+        if not destination_path:
+            show_export_completion_dialog(self, "Export Complete", f"Audacity label track exported successfully to:\n{save_path}", save_path)
+        return True
+
+    def export_audition_xml(self, destination_path=None, unselected_audio_mode=None):
+        """Export story segments as Adobe Audition / Final Cut Pro XML (.xml)."""
+        is_music = getattr(self, "story_detection_mode", "voice") == "music"
+        term_plural = "Songs" if is_music else "Stories"
+        if not getattr(self, "stories", []):
+            QMessageBox.warning(self, f"No {term_plural}", f"There are no {term_plural.lower()} to export.")
+            return False
+        base = safe_filename(self.project_file.stem if self.project_file else (self.audio_file.stem if self.audio_file else "project"))
+        if not destination_path:
+            save_path, _ = QFileDialog.getSaveFileName(
+                self, "Export Adobe Audition / FCP XML",
+                str(Path(self._dialog_directory()) / f"{base}.xml"),
+                "XML Sequence (*.xml)"
+            )
+            if not save_path:
+                return False
+        else:
+            save_path = destination_path
+
+        mode = unselected_audio_mode if unselected_audio_mode is not None else self._get_unselected_audio_mode_pref()
+        tot_dur = float(getattr(self, "duration", 0.0) or getattr(self, "audio_duration", 0.0) or 0.0)
+        media_name = self.audio_file.name if getattr(self, "audio_file", None) else ""
+        content = generate_audition_xml(self.stories, media_name, base, total_duration=tot_dur, unselected_audio_mode=mode)
+        with open(save_path, "w", encoding="utf-8") as f:
+            f.write(content)
+        self.log_activity(f"[EXPORT] Exported Audition / FCP XML to {save_path}")
+        if not destination_path:
+            show_export_completion_dialog(self, "Export Complete", f"Audition / FCP XML sequence exported successfully to:\n{save_path}", save_path)
+        return True
+
+    def export_daw_marker_csv(self, destination_path=None, unselected_audio_mode=None):
+        """Export story segments as a Universal DAW Marker List (.csv)."""
+        is_music = getattr(self, "story_detection_mode", "voice") == "music"
+        term_plural = "Songs" if is_music else "Stories"
+        if not getattr(self, "stories", []):
+            QMessageBox.warning(self, f"No {term_plural}", f"There are no {term_plural.lower()} to export.")
+            return False
+        base = safe_filename(self.project_file.stem if self.project_file else (self.audio_file.stem if self.audio_file else "project"))
+        if not destination_path:
+            save_path, _ = QFileDialog.getSaveFileName(
+                self, "Export DAW Marker List",
+                str(Path(self._dialog_directory()) / f"{base}_markers.csv"),
+                "CSV Marker List (*.csv)"
+            )
+            if not save_path:
+                return False
+        else:
+            save_path = destination_path
+
+        mode = unselected_audio_mode if unselected_audio_mode is not None else self._get_unselected_audio_mode_pref()
+        tot_dur = float(getattr(self, "duration", 0.0) or getattr(self, "audio_duration", 0.0) or 0.0)
+        content = generate_daw_marker_csv(self.stories, total_duration=tot_dur, unselected_audio_mode=mode)
+        with open(save_path, "w", encoding="utf-8") as f:
+            f.write(content)
+        self.log_activity(f"[EXPORT] Exported DAW marker list (.csv) to {save_path}")
+        if not destination_path:
+            show_export_completion_dialog(self, "Export Complete", f"DAW marker list (.csv) exported successfully to:\n{save_path}", save_path)
         return True
 
     def copy_youtube_chapters_to_clipboard(self) -> bool:

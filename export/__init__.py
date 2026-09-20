@@ -11,10 +11,18 @@ from export.subtitles import (
     generate_youtube_chapters,
 )
 from export.docx import create_story_docx
-from export.dialog import UnifiedExportDialog
+try:
+    from export.dialog import UnifiedExportDialog
+except ImportError:
+    UnifiedExportDialog = None
+
 from export.daw import (
+    build_timeline_clips,
     generate_reaper_project,
     generate_samplitude_edl,
+    generate_audacity_labels,
+    generate_audition_xml,
+    generate_daw_marker_csv,
     format_edl_timestamp,
 )
 
@@ -30,7 +38,11 @@ __all__ = [
     "generate_vtt_content",
     "generate_cue_content",
     "generate_youtube_chapters",
+    "build_timeline_clips",
     "generate_reaper_project",
     "generate_samplitude_edl",
+    "generate_audacity_labels",
+    "generate_audition_xml",
+    "generate_daw_marker_csv",
     "create_story_docx",
 ]

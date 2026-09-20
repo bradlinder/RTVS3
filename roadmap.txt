@@ -29,16 +29,15 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 --------------------------------------------------------------------------------
 TABLE OF CONTENTS & STATUS OVERVIEW
 --------------------------------------------------------------------------------
-1. Previous Release: Windows Updater Detached Supervisor & MP3 ID3 Tag Editor (Completed in v3.5.3)
-   [x] 1.1 Detached Process Supervisor for Windows Updater (`updater.py`): Resolved update execution race condition where UAC prompt and installer auto-closed due to file lock contention. Implemented a detached background PowerShell PID monitor that waits for `RadioTVSegmenter.exe` to completely terminate before triggering the elevated installer executable.
-   [x] 1.2 MP3 ID3 Tag Editor Module & Dialog (`id3_editor.py`): Added complete PySide6 ID3 Tag Editor dialog supporting standard ID3v2 tags (Title, Artist, Album, Year, Track, Genre, Publisher, Composer, Comment) and album cover artwork (APIC image thumbnail with file picker).
-   [x] 1.3 Dual ID3 Engine (Mutagen + Pure-Python Fallback): Supports `mutagen` library when installed, backed by a robust pure-Python ID3v2.3 binary reader and writer fallback.
-   [x] 1.4 One-Click Project Auto-Fill & Unified Export Integration: Added "⚡ Auto-Fill from Project" button in ID3 dialog and integrated "🏷️ Edit ID3 Tags" into the Unified Export Center and Tools menu (`Ctrl+Shift+I`).
-   [x] 1.5 Automated Story Clip ID3 Tag Embedding: Automatically embeds ID3v2 tags into exported MP3 story clips during single or batch export passes (`project_export.py`).
+1. Previous Release: Multi-Format DAW Interchange & Unselected Audio Modes (Completed in v3.5.5)
+   [x] 1.1 Expanded DAW & NLE Interchange Formats (`export/daw.py`): Added native support for Audacity Label Tracks (`.txt`), Adobe Audition / Final Cut Pro / Premiere XML (`.xml`), and Universal DAW Marker Lists (`.csv`) alongside REAPER (`.rpp`) and Samplitude EDL (`v1.5`).
+   [x] 1.2 Unselected Audio Timeline Handling (`export/daw.py`, `export/dialog.py`): Resolved timeline export exclusion of unselected audio gaps with configurable Exclude, Split, or Muted modes.
+   [x] 1.3 Diagnostic Test Bench Expansion (`test_runner.py`): Added automated unit test (`DAW Timeline Interchange and Gap Handling`) verifying clip construction across all DAW export engines.
 
-2. Current Release: Contiguous Speaker Turn Reassignment (Completed in v3.5.4)
-   [x] 2.1 Single-Click Contiguous Turn Reassignment (`transcript_story.py`): Resolved speaker label reassignment regression where changing a speaker label only affected a single segment. Reassigns all segments in the contiguous speaker turn between the selected point and the next occurrence of a different speaker label in a single click.
-   [x] 2.2 Diagnostic Test Bench Expansion (`test_runner.py`): Added automated unit test (`Speaker Reassignment Contiguous Turn Logic`) verifying contiguous segment identification and boundary protection against subsequent speaker turns.
+2. Current Release: WordPress Export Scope Routing & Filtering Fix (Completed in v3.5.6)
+   [x] 2.1 Resolved WordPress Export Scope Regression (`plugins/wordpress/export_destination.py`): Fixed parent widget hierarchy lookup in `rebuild_post_items()` so `scope_combo.currentData()` is accurately retrieved from `UnifiedExportDialog` rather than defaulting to `"full"`.
+   [x] 2.2 Synchronized Scope Signal Dispatch (`plugins/wordpress/export_destination.py`): Updated `on_scope_changed()` to explicitly pass the updated `scope` string parameter to `rebuild_post_items(scope=scope)` when users toggle dropdown options ("Selected Stories", "All Stories", "Full Episode", "Full Episode & All Stories").
+   [x] 2.3 Diagnostic Test Bench Expansion (`test_runner.py`): Added automated unit test (`WordPress Export Scope Post Builder`) verifying post items rebuilding across all four export scope modes.
 
 3. Upcoming Milestone: Google Docs & Drive Export Plugin (`plugins/gdocs`) [PLANNED for v3.6.0]
    [ ] 3.1 Plugin Architecture & OAuth 2.0 Authentication Engine (`plugins/gdocs/auth.py`, keyring token storage, local loopback handler)

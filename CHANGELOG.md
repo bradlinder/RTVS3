@@ -1,5 +1,32 @@
 # Changelog
 
+## v3.5.6
+- **WordPress Export Scope Filtering Fix (`plugins/wordpress/export_destination.py`)**:
+  - **Resolved Export Scope Regression**:
+    - Fixed scope resolution in `rebuild_post_items()` so the export destination correctly queries `self.window()` (the top-level `UnifiedExportDialog`) for `scope_combo.currentData()`.
+    - Resolved parent widget hierarchy traversal failure where `self.parent()` pointed to `QStackedWidget` rather than the export dialog, preventing scope checks from falling back to `"full"`.
+  - **Synchronized Scope Signal Handling**:
+    - Updated `WordPressExportDestination.on_scope_changed()` to explicitly forward the updated `scope` string parameter to `rebuild_post_items(scope=scope)`.
+    - Ensures switching dropdown options between "Selected Stories", "All Stories", "Full Episode", and "Full Episode & All Stories" immediately updates the post navigation sidebar and configures draft uploads for the requested scope.
+- **Diagnostic Test Bench Expansion (`test_runner.py`)**:
+  - Added automated unit test (`WordPress Export Scope Post Builder`) verifying post items rebuilding and excerpt generation across all four export scope modes.
+
+## v3.5.5
+- **Multi-Format DAW Timeline Interchange Expansion (`export/daw.py`, `export/dialog.py`, `project_export.py`)**:
+  - **Expanded DAW & NLE Interchange Formats**:
+    - Added native support for Audacity Label Tracks (`.txt`), Adobe Audition / Final Cut Pro / Premiere XML (`.xml`), and Universal DAW Marker Lists (`.csv`) alongside Cockos REAPER (`.rpp`) and Magix Samplitude EDL (`v1.5`).
+    - Added individual format toggle options in the Unified Export Center dialog with persistent state saved via `QSettings`.
+  - **Unselected Audio Timeline Handling**:
+    - Resolved issue where timeline exports excluded unselected audio gaps between story boundaries.
+    - Added configurable "Unselected Audio Mode" setting in the Export Center with three modes:
+      - **Exclude**: Export only selected story boundaries (legacy behavior).
+      - **Split into Separate Clips**: Generate timeline clips for unselected audio gaps between stories.
+      - **Include as Muted Clips**: Include unselected timeline gaps as explicitly muted audio clips in supporting DAWs (e.g. REAPER, Audition XML).
+  - **Standalone DAW Format Exporters (`project_export.py`)**:
+    - Exposed standalone export menu options and helper methods (`export_audacity_labels`, `export_audition_xml`, `export_daw_marker_csv`).
+- **Diagnostic Test Bench Expansion (`test_runner.py`)**:
+  - Added automated unit test (`DAW Timeline Interchange and Gap Handling`) verifying timeline clip construction, gap splitting, muting flags, and output format syntax across all DAW generators.
+
 ## v3.5.4
 - **Contiguous Speaker Turn Reassignment (`transcript_story.py`)**:
   - **Single-Click Contiguous Turn Reassignment**:
