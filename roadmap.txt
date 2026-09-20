@@ -42,6 +42,7 @@ TABLE OF CONTENTS & STATUS OVERVIEW
    [x] 2.3 Headless CLI & Executable Flag Dispatch: Supports `python benchmark.py [--quick] [--json]` and executable CLI flags (`RadioTVSegmenter.exe --benchmark`, `--bench`).
    [x] 2.4 Help Menu & Shortcut Integration: Registered "Run Performance Benchmark..." in the Help menu and shortcut manager (`Ctrl+Shift+B` / `Meta+Shift+B`).
    [x] 2.5 Phase 2 Modularization Step 1 (`cache_manager.py`): Extracted `format_byte_size`, `get_cache_disk_usage`, `purge_caches`, `cleanup_old_thumbnail_cache`, and `ClearCacheDialog` into `/cache_manager.py` with 100% backward-compatible re-export shims in `prs_shared.py`.
+   [x] 2.6 Windows In-App Updater & Diagnostic Test Bench Fixes: Win32 `ShellExecuteW` direct UAC elevation in `updater.py` and packaged build import resolution in `test_runner.py`.
 
 3. Upcoming Milestone: Phase 2 Modularization of prs_shared.py (UI & Qt Components) [PLANNED for v3.5.0-beta-4]
    [x] 3.1 Cache Management & ClearCacheDialog Extraction (`cache_manager.py`) (Completed in v3.5.0-beta-3)

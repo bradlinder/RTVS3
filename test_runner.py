@@ -402,36 +402,54 @@ class DiagnosticEngine:
         item.message = f"_SUBPROCESS_LOCK verified; tracking {len(current_procs)} active child processes"
 
     def _test_subrip_srt_timestamp_formatting(self, item: DiagnosticItem):
-        import importlib.util
-        spec = importlib.util.spec_from_file_location("export_subtitles", "export/subtitles.py")
-        mod = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(mod)
+        try:
+            from export.subtitles import format_srt_timestamp
+        except ImportError:
+            import importlib.util
+            spec = importlib.util.spec_from_file_location("export_subtitles", "export/subtitles.py")
+            if not spec or not spec.loader:
+                raise ImportError("Could not locate export.subtitles module")
+            mod = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(mod)
+            format_srt_timestamp = mod.format_srt_timestamp
 
-        res = mod.format_srt_timestamp(3665.123)
+        res = format_srt_timestamp(3665.123)
         if res != "01:01:05,123":
             raise AssertionError(f"format_srt_timestamp(3665.123) returned '{res}', expected '01:01:05,123'")
-        if mod.format_srt_timestamp(0.0) != "00:00:00,000":
+        if format_srt_timestamp(0.0) != "00:00:00,000":
             raise AssertionError("SRT zero timestamp mismatch")
         item.status = "PASS"
         item.message = "SRT comma-delimited milliseconds formatted correctly"
 
     def _test_webvtt_vtt_formatting(self, item: DiagnosticItem):
-        import importlib.util
-        spec = importlib.util.spec_from_file_location("export_subtitles", "export/subtitles.py")
-        mod = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(mod)
+        try:
+            from export.subtitles import format_vtt_timestamp
+        except ImportError:
+            import importlib.util
+            spec = importlib.util.spec_from_file_location("export_subtitles", "export/subtitles.py")
+            if not spec or not spec.loader:
+                raise ImportError("Could not locate export.subtitles module")
+            mod = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(mod)
+            format_vtt_timestamp = mod.format_vtt_timestamp
 
-        res = mod.format_vtt_timestamp(3665.123)
+        res = format_vtt_timestamp(3665.123)
         if res != "01:01:05.123":
             raise AssertionError(f"format_vtt_timestamp(3665.123) returned '{res}', expected '01:01:05.123'")
         item.status = "PASS"
         item.message = "WebVTT period-delimited timestamps verified"
 
     def _test_red_book_cue_sheet_generation(self, item: DiagnosticItem):
-        import importlib.util
-        spec = importlib.util.spec_from_file_location("export_subtitles", "export/subtitles.py")
-        mod = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(mod)
+        try:
+            from export.subtitles import generate_cue_sheet
+        except ImportError:
+            import importlib.util
+            spec = importlib.util.spec_from_file_location("export_subtitles", "export/subtitles.py")
+            if not spec or not spec.loader:
+                raise ImportError("Could not locate export.subtitles module")
+            mod = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(mod)
+            generate_cue_sheet = mod.generate_cue_sheet
 
         class DummyStory:
             def __init__(self, start, title):
@@ -439,7 +457,7 @@ class DiagnosticEngine:
                 self.title = title
 
         stories = [DummyStory(0.0, "Intro"), DummyStory(65.5, "Main Topic")]
-        cue_text = mod.generate_cue_sheet(stories, "test.wav", "Radio Show")
+        cue_text = generate_cue_sheet(stories, "test.wav", "Radio Show")
         if "FILE \"test.wav\" WAVE" not in cue_text:
             raise AssertionError("Missing FILE header in CUE sheet")
         if "INDEX 01 00:00:00" not in cue_text:
@@ -448,10 +466,16 @@ class DiagnosticEngine:
         item.message = "75 fps red-book CUE frame calculations verified"
 
     def _test_youtube_chapter_markers(self, item: DiagnosticItem):
-        import importlib.util
-        spec = importlib.util.spec_from_file_location("export_subtitles", "export/subtitles.py")
-        mod = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(mod)
+        try:
+            from export.subtitles import generate_youtube_chapters
+        except ImportError:
+            import importlib.util
+            spec = importlib.util.spec_from_file_location("export_subtitles", "export/subtitles.py")
+            if not spec or not spec.loader:
+                raise ImportError("Could not locate export.subtitles module")
+            mod = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(mod)
+            generate_youtube_chapters = mod.generate_youtube_chapters
 
         class DummyStory:
             def __init__(self, start, title):
@@ -459,7 +483,7 @@ class DiagnosticEngine:
                 self.title = title
 
         stories = [DummyStory(0.0, "Introduction"), DummyStory(120.0, "Interview")]
-        chapters = mod.generate_youtube_chapters(stories)
+        chapters = generate_youtube_chapters(stories)
         if "00:00 - Introduction" not in chapters:
             raise AssertionError("YouTube chapters missing 00:00 introductory marker")
         if "02:00 - Interview" not in chapters:
