@@ -29,27 +29,25 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 --------------------------------------------------------------------------------
 TABLE OF CONTENTS & STATUS OVERVIEW
 --------------------------------------------------------------------------------
-1. Previous Release: System Diagnostic Test Bench & Hardware Health Architecture (Completed in v3.5.0-beta-2)
-   [x] 1.1 Multi-Tiered Diagnostic Test Engine (`test_runner.py`): Zero-dependency automated test runner executing 20 distinct verification probes covering Core Logic & File I/O, Subtitles & Export Formats, AI Runtimes & Inference Stack, Model Download & Provisioning, Story & Boundary Detection, and Audio Diarization & VAD.
-   [x] 1.2 PySide6 Graphical Test Bench Dialog (`DiagnosticDialog`): Real-time graphical diagnostic dialog featuring category grouping trees, asynchronous QThread execution, real-time status badges (PASS / FAIL / WARNING / SKIP), live progress bar, cancellation control, and one-click clipboard report generation.
-   [x] 1.3 Standalone & Bundled Executable CLI Modes: Headless console diagnostic execution via `python test_runner.py` and application executable CLI flag dispatch (`--run-diagnostics`, `--test-bench`, `--test-runner`).
-   [x] 1.4 Help Menu & Keyboard Shortcut Integration: Integrated "Run Diagnostic Test Bench..." action into the application Help menu (`ui_layout.py`) and shortcuts manager (`shortcuts_manager.py`) with default keyboard shortcut `Ctrl+Shift+T` (`Meta+Shift+T` on macOS).
-   [x] 1.5 In-Memory Synthetic Acoustic Generation: Built-in PCM waveform synthesis using standard `wave` and `math.sin` generating multi-frequency dual-tone test audio without requiring external audio files.
+1. Previous Release: Performance Benchmark Engine & Cache Manager Modularization (Completed in v3.5.0-beta-3)
+   [x] 1.1 High-Precision Benchmark Harness (`benchmark.py`): Nanosecond-resolution profiling with `time.perf_counter()` and `tracemalloc` memory tracing. Evaluates waveform peak extraction RTF, project state serialization throughput, vocal pause segmentation, transcript text reflow, neural VAD evaluation, and speaker vector comparisons.
+   [x] 1.2 PySide6 Graphical Benchmark Dialog (`create_benchmark_dialog`): Desktop dialog displaying live test progress, hardware specs, Real-Time Factor (RTF), memory deltas, and one-click clipboard summary export.
+   [x] 1.3 Headless CLI & Executable Flag Dispatch: Supports `python benchmark.py [--quick] [--json]` and executable CLI flags (`RadioTVSegmenter.exe --benchmark`, `--bench`).
+   [x] 1.4 Help Menu & Shortcut Integration: Registered "Run Performance Benchmark..." in the Help menu and shortcut manager (`Ctrl+Shift+B` / `Meta+Shift+B`).
+   [x] 1.5 Phase 2 Modularization Step 1 (`cache_manager.py`): Extracted `format_byte_size`, `get_cache_disk_usage`, `purge_caches`, `cleanup_old_thumbnail_cache`, and `ClearCacheDialog` into `/cache_manager.py` with 100% backward-compatible re-export shims in `prs_shared.py`.
+   [x] 1.6 Windows In-App Updater & Diagnostic Test Bench Fixes: Win32 `ShellExecuteW` direct UAC elevation in `updater.py` and packaged build import resolution in `test_runner.py`.
 
-2. Current Release: Performance Benchmark Engine & Cache Manager Modularization (Completed in v3.5.0-beta-3)
-   [x] 2.1 High-Precision Benchmark Harness (`benchmark.py`): Nanosecond-resolution profiling with `time.perf_counter()` and `tracemalloc` memory tracing. Evaluates waveform peak extraction RTF, project state serialization throughput, vocal pause segmentation, transcript text reflow, neural VAD evaluation, and speaker vector comparisons.
-   [x] 2.2 PySide6 Graphical Benchmark Dialog (`create_benchmark_dialog`): Desktop dialog displaying live test progress, hardware specs, Real-Time Factor (RTF), memory deltas, and one-click clipboard summary export.
-   [x] 2.3 Headless CLI & Executable Flag Dispatch: Supports `python benchmark.py [--quick] [--json]` and executable CLI flags (`RadioTVSegmenter.exe --benchmark`, `--bench`).
-   [x] 2.4 Help Menu & Shortcut Integration: Registered "Run Performance Benchmark..." in the Help menu and shortcut manager (`Ctrl+Shift+B` / `Meta+Shift+B`).
-   [x] 2.5 Phase 2 Modularization Step 1 (`cache_manager.py`): Extracted `format_byte_size`, `get_cache_disk_usage`, `purge_caches`, `cleanup_old_thumbnail_cache`, and `ClearCacheDialog` into `/cache_manager.py` with 100% backward-compatible re-export shims in `prs_shared.py`.
-   [x] 2.6 Windows In-App Updater & Diagnostic Test Bench Fixes: Win32 `ShellExecuteW` direct UAC elevation in `updater.py` and packaged build import resolution in `test_runner.py`.
+2. Current Release: Rigorous Benchmark Suite & Story Widgets Modularization (Completed in v3.5.0-beta-4)
+   [x] 2.1 Phase 2 Modularization Step 2 (`story_widgets.py`): Extracted `StoryCardDelegate`, `StoryListWidget`, `FadeCurveVisualSelector`, `StoryFadesChangeCommand`, `StoryBoundaryChangeCommand`, `SetStoriesCommand`, and `SelectStoriesCommand` from `prs_shared.py` into isolated `/story_widgets.py` with 100% backward-compatible re-export shims.
+   [x] 2.2 Rigorous Hardware Benchmark Suite (`benchmark.py`): Upgraded benchmark engine with multi-tier peak extraction, 80-bin Mel scale filterbank extraction, multi-threaded CPU core scaling, high-dimensional diarization vector clustering, deep JSON interval indexing, and transformer self-attention GEMM simulation.
+   [x] 2.3 Composite Hardware Performance Score ("RTVS Hardware Score"): Introduced aggregate hardware performance index with category sub-scores (Audio Pipeline, Multi-Core Compute, AI & Diarization, Memory & I/O, UI & Text Engine) and rating tier classification (Entry, Mid-Range, High Performance, Studio Workstation).
+   [x] 2.4 Zero-Disk-Footprint Synthetic Acoustic Fixtures: Fast RAM-only speech acoustic seed generation with multi-frequency modulation and instant memory tiling.
+   [x] 2.5 PySide6 Graphical Benchmark Dialog Enhancement: Prominent Score Card banner with live score and hardware tier badge, Quick Mode toggle (~3s check vs 10s full suite), real-time progress indicators, and comprehensive clipboard summary export.
 
-3. Upcoming Milestone: Phase 2 Modularization of prs_shared.py (UI & Qt Components) [PLANNED for v3.5.0-beta-4]
-   [x] 3.1 Cache Management & ClearCacheDialog Extraction (`cache_manager.py`) (Completed in v3.5.0-beta-3)
-   [ ] 3.2 Story Widgets, Cards, & Metadata Dialogs (`story_widgets.py`)
-   [ ] 3.3 Timeline Ruler, Track Views, & Playhead Overlays (`timeline_widgets.py`)
-   [ ] 3.4 Transcript Viewer, Word Highlighting, & Search/Replace (`transcript_editor.py`)
-   [ ] 3.5 Cautious Incremental Testing Protocol (Verified step-by-step testing after each extraction)
+3. Upcoming Milestone: Phase 2 Modularization of prs_shared.py Continued [PLANNED for v3.5.0-beta-5]
+   [ ] 3.1 Timeline Ruler, Track Views, & Playhead Overlays (`timeline_widgets.py`)
+   [ ] 3.2 Transcript Viewer, Word Highlighting, & Search/Replace (`transcript_editor.py`)
+   [ ] 3.3 Cautious Incremental Testing Protocol (Verified step-by-step testing after each extraction)
 
 4. Future Milestone: Google Docs & Drive Export Plugin (`plugins/gdocs`) (Planned for v3.5) [NOT STARTED]
    [ ] 4.1 Plugin Architecture & OAuth 2.0 Authentication Engine (`plugins/gdocs/auth.py`, keyring token storage, local loopback handler)
@@ -84,171 +82,105 @@ CORE ARCHITECTURAL INVARIANTS
 - 0 MB Default GPU Footprint: Base installer contains 0 MB of CUDA bloat; GPU features are purely optional and provisioned on demand.
 
 ================================================================================
-1. PREVIOUS RELEASE: SYSTEM DIAGNOSTIC TEST BENCH & HARDWARE HEALTH (Completed in v3.5.0-beta-2)
+1. PREVIOUS RELEASE: PERFORMANCE BENCHMARK ENGINE & CACHE MANAGER (Completed in v3.5.0-beta-3)
 ================================================================================
 
-[x] 1.1 MULTI-TIERED DIAGNOSTIC TEST ENGINE (test_runner.py)
-------------------------------------------------------------
-- Built a zero-dependency diagnostic test suite executing 20 distinct verification probes:
-  * Core Logic & File I/O: format_time() / parse_time() fuzz testing, project serialization fidelity (.rtvs JSON round-trip), binary waveform peak cache verification (.peaks), and child process lifecycle isolation (_SUBPROCESS_LOCK).
-  * Subtitles & Export Formats: SubRip (.srt), WebVTT (.vtt), Red Book CUE sheets (75 fps frame calculation), and YouTube chapter markers (00:00 introductory alignment).
-  * AI Runtimes & Inference Stack: PyTorch with native C-extensions (torch._C), CTranslate2 compute types, Sherpa-ONNX / ONNX Runtime execution providers, and DirectML / NVIDIA CUDA device enumeration.
-  * Model Download & Provisioning: Remote endpoint latency and reachability verification for Hugging Face Hub and GitHub CDN, model cache storage read/write/delete permissions, and zip/tar archive path-traversal (Zip Slip) security sandboxing.
-  * Story & Boundary Detection: Vocal energy segmentation boundary calculation and MUSIC_TOKEN_RE non-speech token filtering.
-  * Audio Diarization & VAD: Silero neural VAD initialization checks, WeSpeaker ONNX runtime presence, and translation plugin architecture isolation invariants.
+[x] 1.1 HIGH-PRECISION BENCHMARK HARNESS (benchmark.py)
+-------------------------------------------------------
+- Nanosecond-resolution profiling with time.perf_counter() and tracemalloc memory tracing.
+- Subsystem evaluations for waveform peak extraction RTF, project state serialization throughput, vocal pause segmentation, transcript text reflow, neural VAD evaluation, and speaker vector comparisons.
 
-[x] 1.2 PYSIDE6 GRAPHICAL TEST BENCH DIALOG (DiagnosticDialog)
---------------------------------------------------------------
-- Designed an interactive Qt desktop dialog featuring category grouping trees, asynchronous QThread execution, real-time status badges (PASS / FAIL / WARNING / SKIP), live progress bar, cancellation control, and a one-click clipboard report generator.
-
-[x] 1.3 CLI & APPLICATION EXECUTABLE DISPATCH
----------------------------------------------
-- Supported headless console execution via `python test_runner.py` and application executable CLI flags (`RadioTVSegmenter.exe --run-diagnostics`, `--test-bench`, `--test-runner`).
-
-[x] 1.4 HELP MENU & SHORTCUT INTEGRATION
-----------------------------------------
-- Added "Run Diagnostic Test Bench..." action to the application Help menu (`ui_layout.py`) and shortcuts manager (`shortcuts_manager.py`) with default keyboard shortcut `Ctrl+Shift+T` (`Meta+Shift+T` on macOS).
-
-[x] 1.5 IN-MEMORY SYNTHETIC ACOUSTIC GENERATION
------------------------------------------------
-- Built-in multi-tone waveform generation fixture (`generate_synthetic_wav`) using standard `wave` and `math.sin` producing dual-tone test audio with speech-like silence intervals in < 10ms with zero external file dependencies.
-
-================================================================================
-2. CURRENT RELEASE: PERFORMANCE BENCHMARK ENGINE & CACHE MODULARIZATION (Completed in v3.5.0-beta-3)
-================================================================================
-
-[x] 2.1 HIGH-PRECISION PERFORMANCE BENCHMARK HARNESS (benchmark.py)
--------------------------------------------------------------------
-- Implemented a lightweight, high-precision performance benchmarking harness using standard `time.perf_counter()` and `tracemalloc`.
-- Real-Time Factor (RTF) Calculation Engine:
-  * Calculates standard audio industry RTF: $\text{RTF} = \text{Audio Duration} / \text{Processing Time}$.
-- Core Throughput Benchmarks:
-  * Waveform Extraction Throughput: Stream synthetic PCM audio through peak bin extraction measuring MB/s and RTF (>160x RTF).
-  * Project I/O Throughput: Measure serialization and deserialization speeds across hundreds of segments (>25,000 segments/second).
-  * Vocal Energy & Boundary Segmentation: Acoustic pause detection and boundary partitioning throughput (>3,000,000 windows/second).
-  * UI Rendering & Document Reflow Latency: Measure text formatting and layout recalculation time in transcript viewer (>1,900,000 words/second).
-  * Neural VAD Chunk Evaluation: Measure Silero VAD evaluation latency with automatic fallback to energy detection (>2,900 chunks/second).
-  * Speaker Diarization Vector Search: Cosine similarity clustering and distance search throughput across 256-d embeddings (>12,000 comparisons/second).
-- Formatted Diagnostic Output:
-  * Terminal dashboard displaying subsystem timings, memory deltas, RTF values, and system specifications (CPU model, thread count, OS, GPU/CUDA availability).
-  * Optional JSON export (`--json`) for automated regression tracking across release builds.
-
-[x] 2.2 PYSIDE6 GRAPHICAL BENCHMARK DIALOG (create_benchmark_dialog)
+[x] 1.2 PYSIDE6 GRAPHICAL BENCHMARK DIALOG (create_benchmark_dialog)
 --------------------------------------------------------------------
 - Interactive Qt desktop dialog with live test progress, hardware specifications, Real-Time Factor (RTF), memory deltas, and one-click clipboard summary export.
 
-[x] 2.3 HEADLESS CLI & APPLICATION EXECUTABLE DISPATCH
+[x] 1.3 HEADLESS CLI & APPLICATION EXECUTABLE DISPATCH
 ------------------------------------------------------
-- Supported headless console execution via `python benchmark.py [--quick] [--json]` and application executable flags (`RadioTVSegmenter.exe --benchmark`, `--bench`).
+- Supported headless console execution via python benchmark.py [--quick] [--json] and application executable flags (RadioTVSegmenter.exe --benchmark, --bench).
 
-[x] 2.4 HELP MENU & KEYBOARD SHORTCUT INTEGRATION
+[x] 1.4 HELP MENU & KEYBOARD SHORTCUT INTEGRATION
 -------------------------------------------------
-- Added "Run Performance Benchmark..." action to the Help menu and shortcuts manager with default shortcut `Ctrl+Shift+B` (`Meta+Shift+B` on macOS).
+- Added "Run Performance Benchmark..." action to the Help menu and shortcuts manager with default shortcut Ctrl+Shift+B (Meta+Shift+B on macOS).
 
-[x] 2.5 PHASE 2 PRS_SHARED.PY MODULARIZATION — STEP 1 (cache_manager.py)
+[x] 1.5 PHASE 2 PRS_SHARED.PY MODULARIZATION — STEP 1 (cache_manager.py)
 ------------------------------------------------------------------------
-- Extracted `format_byte_size`, `get_cache_disk_usage`, `purge_caches`, `cleanup_old_thumbnail_cache`, and `ClearCacheDialog` from `prs_shared.py` into `/cache_manager.py`.
-- Installed backward-compatible re-export shims in `prs_shared.py` (`from cache_manager import ...`), maintaining 100% symbol compatibility across all callers.
+- Extracted format_byte_size, get_cache_disk_usage, purge_caches, cleanup_old_thumbnail_cache, and ClearCacheDialog from prs_shared.py into /cache_manager.py.
+- Installed backward-compatible re-export shims in prs_shared.py (from cache_manager import ...), maintaining 100% symbol compatibility across all callers.
 
 ================================================================================
-4. FUTURE MILESTONE: PHASE 2 MODULARIZATION OF PRS_SHARED.PY (UI & Qt Components) [PLANNED]
+2. CURRENT RELEASE: RIGOROUS BENCHMARK SUITE & STORY WIDGETS MODULARIZATION (Completed in v3.5.0-beta-4)
 ================================================================================
 
-Proceed with extreme caution: unlike Phase 1's pure-Python modules, Phase 2 components are tightly coupled to PySide6/Qt signals, slots, widget parenting hierarchies, and paint events.
+[x] 2.1 PHASE 2 PRS_SHARED.PY MODULARIZATION — STEP 2 (story_widgets.py)
+------------------------------------------------------------------------
+- Extracted StoryCardDelegate, StoryListWidget, FadeCurveVisualSelector, StoryFadesChangeCommand, StoryBoundaryChangeCommand, SetStoriesCommand, and SelectStoriesCommand from prs_shared.py into isolated /story_widgets.py.
+- Maintained zero-regression re-export shims in prs_shared.py ensuring 100% backward compatibility across all callers (RadioTVSegmenter.py, transcript_story.py, etc.).
+- Decoupled Qt styling, custom painting, selection signals, drag-and-drop boundary adjustments, and undo/redo stacks.
 
-[ ] 4.1 CAUTIOUS TESTING & VERIFICATION METHODOLOGY (Protocol for Every Single Extraction)
-------------------------------------------------------------------------------------------
-To avoid cascading regressions or subtle Qt widget crashes, execute the following 5-step cycle for EACH extracted component module:
-1. **Isolated Module Extraction**:
-   - Extract only ONE logical domain at a time (e.g. `cache_manager` first, which has minimal Qt widget hierarchy).
-   - Identify all internal dependencies and verify whether they need to import from `prs_shared.py` or base Qt modules.
-2. **Re-Export Shim Installation**:
-   - Add explicit re-export shims in `prs_shared.py` (`from <new_module> import *`) immediately so external callers remain 100% intact.
-3. **Multi-Tier Syntax & Compilation Verification**:
-   - Run `python -m py_compile <new_module>.py prs_shared.py RadioTVSegmenter.py ui_layout.py transcript_story.py processing.py`.
-4. **Headless Import & Symbol Verification**:
-   - Run automated headless script checking:
-     * Module importability without cyclical import errors.
-     * All expected classes, signals, and functions are present and callable.
-     * Instantiation of non-widget classes and default dataclasses/namedtuples.
-5. **Interactive UI Smoke Check & Snapshot**:
-   - Verify widget instantiation in offscreen/test mode.
-   - Run web preview linter & compiler (`lint_applet` & `compile_applet`).
-   - Create a rollback checkpoint or snapshot before moving to the next module.
+[x] 2.2 RIGOROUS HARDWARE BENCHMARK SUITE (benchmark.py)
+--------------------------------------------------------
+- Upgraded the benchmark engine to provide demanding, standardized compute stress tests for cross-hardware performance comparison:
+  * Multi-Tier Waveform Peak & RMS Envelope Extraction: 6,000 peak bins + RMS power calculation measuring Real-Time Factor (RTF), processing MB/s, and sample bins/second (>110x RTF).
+  * Audio STFT & 80-bin Mel Filterbank Feature Extraction: 512-point FFT windowing and Mel scale filterbank projection measuring frames/second and acoustic modeling pre-processing speed.
+  * Multi-Core Speech Segmentation (Scaling Test): Distributes parallel vocal chunk boundary detections across all logical CPU cores using ThreadPoolExecutor, measuring multi-core scaling efficiency and audio minutes processed per second.
+  * Speaker Diarization Vector Clustering: 256-dimensional embedding vectors with pairwise cosine distance matrix and agglomerative hierarchical centroid clustering (>19,000 comparisons/second).
+  * Deep Project Serialization & Timeline Interval Indexing: 1,000 story segments with 30,000 word timestamp objects evaluating JSON throughput (MB/s) and binary interval search tree seeking latency.
+  * Transcript Formatting, Token Reflow & Lexical Search: 35,000 words formatted into speaker-attributed HTML spans with an inverted search index (>300,000 words/second).
+  * Neural Transformer Self-Attention Kernel: Multi-Head Attention (Q * K^T / sqrt(d_k) * V) across 4 heads and 64 dimensions, measuring floating-point GFLOPS.
 
-[ ] 4.2 TARGET MODULE EXTRACTION SEQUENCE
------------------------------------------
-- **Step 1: `cache_manager.py` (Low-to-Medium Risk)**:
-  * Targets: `format_byte_size`, `get_cache_disk_usage`, `cleanup_old_thumbnail_cache`, `ClearCacheDialog`, `VideoThumbnailCache`.
-  * Dependencies: PySide6 QDialog/QThread, `core_utils`.
-- **Step 2: `story_widgets.py` (Medium Risk)**:
-  * Targets: `StoryListWidget`, `StoryItemWidget`, `StoryCardWidget`, `StoryMetadataDialog`, drag-and-drop file queues.
-  * Dependencies: PySide6 QListWidget, custom signals (`filesDropped`), styling sheets.
-- **Step 3: `timeline_widgets.py` (Medium-to-High Risk)**:
-  * Targets: `TimelineRulerWidget`, `TimelineTrackWidget`, `PlayheadOverlay`, waveform peak painting, coordinate-to-time mapping.
-  * Dependencies: QPainter, custom paint events, audio time conversion.
-- **Step 4: `transcript_editor.py` (High Risk)**:
-  * Targets: `TranscriptTextViewer`, `TranscriptSegmentWidget`, word-level span highlighting, search-and-replace dialog.
-  * Dependencies: QTextEdit/QPlainTextEdit, cursor manipulation, speaker coloring, audio synchronization slots.
+[x] 2.3 COMPOSITE HARDWARE PERFORMANCE SCORE ("RTVS Hardware Score")
+---------------------------------------------------------------------
+- Introduced an aggregate hardware performance index with category sub-scores (Audio Pipeline, Multi-Core Compute, AI & Diarization, Memory & I/O, UI & Text Engine).
+- Established hardware classification tiers: Entry / Portable, Mid-Range / Mainstream, High Performance / Pro, and Studio Workstation / Extreme.
+
+[x] 2.4 ZERO-DISK-FOOTPRINT SYNTHETIC ACOUSTIC FIXTURES
+-------------------------------------------------------
+- Fast RAM-only speech acoustic seed generation with multi-frequency modulation and instant memory tiling, requiring zero external media files or disk I/O.
+
+[x] 2.5 PYSIDE6 GRAPHICAL BENCHMARK DIALOG ENHANCEMENT
+------------------------------------------------------
+- Added Score Card banner with live score and hardware tier badge, Quick Mode toggle (~3s check vs 10s full suite), real-time progress indicators, and comprehensive clipboard summary export.
 
 ================================================================================
-5. FUTURE MILESTONE: GOOGLE DOCS & DRIVE EXPORT PLUGIN (Planned for v3.5) [NOT STARTED]
+3. UPCOMING MILESTONE: PHASE 2 MODULARIZATION OF PRS_SHARED.PY CONTINUED [PLANNED for v3.5.0-beta-5]
 ================================================================================
 
-Architectural Objective:
-Implement Google Docs & Drive export as a dedicated, self-contained export plugin (`plugins/gdocs/`) rather than integrating directly into the core desktop binary.
+[ ] 3.1 TIMELINE RULER, TRACK VIEWS, & PLAYHEAD OVERLAYS (timeline_widgets.py)
+------------------------------------------------------------------------------
+- Target: Extract TimelineRulerWidget, TimelineTrackWidget, PlayheadOverlay, waveform peak painting, and coordinate-to-time mapping into /timeline_widgets.py.
+- Maintain re-export shims in prs_shared.py and verify zero paint or signal regressions.
 
-Key Architectural & Packaging Benefits:
-- Core Binary Savings: Avoids bundling official Google client libraries (`google-api-python-client`, `google-auth`, etc.) or cloud SDK stubs in the core PyInstaller distribution, saving 20-45 MB uncompressed disk footprint and 10-18 MB in the installer executable.
-- Zero Memory / Startup Impact: Utilizes RTVS lazy plugin registration so offline-first users incur zero overhead or dependency initialization at launch.
-- Security & Credential Isolation: Encapsulates OAuth 2.0 client credentials, user authorization scopes (`drive.file`, `documents`), and refresh tokens strictly within plugin-scoped secure OS keyring storage.
-- Independent Release Cadence: Allows updating OAuth flows or Google Docs API formatting logic via standalone `.rtvs-addon` packages without requiring a rebuild of the full native desktop app.
-
-[ ] 5.1 Plugin Scaffolding & OAuth 2.0 Auth Engine (`plugins/gdocs/auth.py`)
--------------------------------------------------------------------------
-- Create `plugins/gdocs/manifest.json` (category: "export", lazy-enabled) and plugin base class implementation in `plugins/gdocs/plugin.py`.
-- Build an isolated OAuth 2.0 authorization module supporting loopback redirect on localhost (`127.0.0.1:port`) for seamless browser-based user sign-in.
-- Securely persist refresh tokens using the OS keyring (`keyring` module already present in core requirements) with manual disconnect/revoke capability in plugin preferences.
-
-[ ] 5.2 Google Docs Document Serializer & REST Exporter (`plugins/gdocs/formatter.py`, `client.py`)
--------------------------------------------------------------------------------------------------
-- Implement lightweight Google Docs REST client using Python's standard `requests` library (avoiding heavy external Google SDK dependencies).
-- Serialize segmented transcript data into structured Google Docs `batchUpdate` requests:
-  * Document header: Broadcast title, date, total duration, detected speakers, and story summary table.
-  * Story headings & cards: Heading styles, story metadata tables (word count, duration, in/out points).
-  * Styled transcript body: Speaker name badges with distinct colors, italicized timecode markers, and preserved word-level text highlights (`backgroundColor` style updates matching Word/DOCX styles).
-
-[ ] 5.3 Native Margin Comments & Annotation Anchoring (`plugins/gdocs/comments.py`)
----------------------------------------------------------------------------------
-- Map RTVS story notes and transcript inline comments directly to native Google Drive margin comments via `drive.comments.create`.
-- Anchor comments to corresponding text ranges or paragraph spans in the generated document using Google Docs document range offsets.
-
-[ ] 5.4 Unified Export Center & Menu Integration
-----------------------------------------------
-- Register the Google Docs export destination in the Unified Export Center and the main window Transcript menu ("Export" -> "Export to Google Docs...").
-- Provide a non-blocking asynchronous export worker with progress bar updates, rate-limiting retry handling, and direct "Open in Google Docs" link generation upon completion.
-
-[ ] 5.5 (Optional) One-Time Review & Comment Pull ("Import Reviews from Google Doc")
------------------------------------------------------------------------------------
-- Add an optional menu action to fetch updated margin comments or suggested edits from a linked Google Doc.
-- Present changes in a non-destructive review diff dialog, allowing the editor to selectively accept or dismiss comments without breaking word-level audio alignment.
+[ ] 3.2 TRANSCRIPT VIEWER, WORD HIGHLIGHTING, & SEARCH/REPLACE (transcript_editor.py)
+-------------------------------------------------------------------------------------
+- Target: Extract TranscriptTextViewer, TranscriptSegmentWidget, word-level span highlighting, and search-and-replace dialog into /transcript_editor.py.
+- Maintain backward-compatible re-export shims and verify Qt text cursor synchronization.
 
 ================================================================================
-6. FUTURE MILESTONE: EXPANDED NLE & DAW TIMELINE INTERCHANGE (Phase 4 - Planned for v3.6) [NOT STARTED]
+4. FUTURE MILESTONE: GOOGLE DOCS & DRIVE EXPORT PLUGIN (Planned for v3.5) [NOT STARTED]
 ================================================================================
 
-- Generates non-destructive timeline project files to import translated or diarized stories seamlessly into professional post-production workflows.
-- 6.1 Cockos Reaper (.rpp) Generator
-- 6.2 Magix Samplitude EDL (.edl)
-- 6.3 Video NLE Interchange (FCPXML / Premiere Pro)
-- 6.4 Avid / Pro Tools AAF Composition
+[ ] 4.1 Plugin Scaffolding & OAuth 2.0 Auth Engine (plugins/gdocs/auth.py)
+[ ] 4.2 Google Docs Document Serializer & REST Exporter (plugins/gdocs/formatter.py, client.py)
+[ ] 4.3 Native Margin Comments & Text Range Anchoring (drive.comments.create integration)
+[ ] 4.4 Unified Export Center & Menu Integration
+[ ] 4.5 (Optional) One-Time Review & Comment Pull ("Import Reviews from Google Doc" diff dialog)
 
 ================================================================================
-7. FUTURE MILESTONE: TEXT-DRIVEN AUDIO EDITING & PRECISION ALIGNMENT (Phase 5 - Planned for v4.0) [NOT STARTED]
+5. FUTURE MILESTONE: EXPANDED NLE & DAW TIMELINE INTERCHANGE (Phase 4 - Planned for v3.6) [NOT STARTED]
 ================================================================================
 
-- "Text-as-Timeline" Rough-Cut Editing Engine
-- Seamless Non-Destructive Playback Preview
-- CTC Word Boundary Refinement & Forced Alignment
-- Memory-Bounded Diarization & Chunked Streaming
+[ ] 5.1 Cockos Reaper Project (.rpp) Generator
+[ ] 5.2 Magix Samplitude EDL (v1.5) Export
+[ ] 5.3 Video NLE Interchange (FCPXML, Premiere / DaVinci Resolve xmeml XML)
+[ ] 5.4 Avid / Pro Tools AAF Composition
+[ ] 5.5 Rational Timecode & Audio Sample Rate Math
+[ ] 5.6 UI & Batch Export Integration
 
+================================================================================
+6. FUTURE MILESTONE: TEXT-DRIVEN AUDIO EDITING & PRECISION ALIGNMENT (Phase 5 - Planned for v4.0) [NOT STARTED]
+================================================================================
+
+[ ] 6.1 "Text-as-Timeline" Rough-Cut Editing Engine
+[ ] 6.2 Seamless Non-Destructive Playback Preview
+[ ] 6.3 CTC Word Boundary Refinement & Forced Alignment
+[ ] 6.4 Memory-Bounded Diarization & Chunked Streaming

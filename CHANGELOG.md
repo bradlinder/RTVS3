@@ -1,5 +1,27 @@
 # Changelog
 
+## v3.5.0-beta-4
+- **Phase 2 prs_shared.py Modularization — Step 2: Story Widgets, Cards, & Delegates (`story_widgets.py`)**:
+  - **Extracted Story UI & Undo Architecture**: Extracted `StoryCardDelegate`, `StoryListWidget`, `FadeCurveVisualSelector`, `StoryFadesChangeCommand`, `StoryBoundaryChangeCommand`, `SetStoriesCommand`, and `SelectStoriesCommand` from `prs_shared.py` into `/story_widgets.py`.
+  - **Zero-Regression Re-Export Shims**: Configured complete symbol re-exports in `prs_shared.py`, maintaining 100% backward compatibility across all dependent modules (`RadioTVSegmenter.py`, `transcript_story.py`, and plugins).
+  - **Decoupled Qt Styling & Delegation**: Story list rendering, fade curve selection overlays, selection signals, and undo/redo stacks now operate as a self-contained component.
+- **Rigorous Performance & Speed Benchmark Suite (`benchmark.py`)**:
+  - **High-Demand Multi-Subsystem Workloads**: Upgraded the benchmark engine to provide rigorous, standardized compute stress tests for cross-hardware performance comparison:
+    - *Multi-Tier Waveform Peak & RMS Envelope Extraction*: 6,000 peak bins + RMS power calculation measuring Real-Time Factor (RTF), processing MB/s, and sample bins/second (>110x RTF).
+    - *Audio STFT & 80-bin Mel Filterbank Feature Extraction*: 512-point FFT windowing and Mel scale filterbank projection measuring frames/second and acoustic modeling pre-processing speed.
+    - *Multi-Core Speech Segmentation (Scaling Test)*: Distributes parallel vocal chunk boundary detections across all logical CPU cores using `ThreadPoolExecutor`, measuring multi-core scaling efficiency and audio minutes processed per second.
+    - *Speaker Diarization Vector Clustering*: 256-dimensional embedding vectors with pairwise cosine distance matrix and agglomerative hierarchical centroid clustering (>19,000 comparisons/second).
+    - *Deep Project Serialization & Timeline Interval Indexing*: 1,000 story segments with 30,000 word timestamp objects evaluating JSON throughput (MB/s) and binary interval search tree seeking latency.
+    - *Transcript Formatting, Token Reflow & Lexical Search*: 35,000 words formatted into speaker-attributed HTML spans with an inverted search index (>300,000 words/second).
+    - *Neural Transformer Self-Attention Kernel*: Multi-Head Attention ($Q \times K^T / \sqrt{d_k} \times V$) across 4 heads and 64 dimensions, measuring floating-point GFLOPS.
+  - **Composite Hardware Performance Score ("RTVS Hardware Score")**:
+    - Introduced a normalized composite benchmark score with subsystem breakdowns (Audio Pipeline, Multi-Core Compute, AI & Diarization, Memory & I/O, UI & Text Engine).
+    - Established hardware classification tiers: *Entry / Portable*, *Mid-Range / Mainstream*, *High Performance / Pro*, and *Studio Workstation / Extreme*.
+  - **Zero-Disk-Footprint Synthetic Acoustic Fixtures**:
+    - Fast RAM-only speech acoustic seed generation with multi-frequency modulation and instant tiling, requiring zero external media files or disk I/O.
+  - **PySide6 Graphical Benchmark Dialog Enhancement**:
+    - Added Score Card banner with live score and hardware tier, Quick Mode toggle (~3s check vs 10s full suite), real-time progress indicators, and comprehensive clipboard summary export.
+
 ## v3.5.0-beta-3
 - **Performance & Speed Benchmark Engine (`benchmark.py`)**:
   - **High-Precision Benchmark Harness (`benchmark.py`)**: Built an automated performance profiling suite using `time.perf_counter()` nanosecond resolution and `tracemalloc` memory tracing. Measures pipeline throughput and compute speeds without external media files:
