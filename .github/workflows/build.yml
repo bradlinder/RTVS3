@@ -43,6 +43,9 @@ env:
   PYTHONUNBUFFERED: "1"
   PYTHONUTF8: "1"
 
+permissions:
+  contents: write
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -98,14 +101,19 @@ jobs:
           BUILD_PLUGIN_TRANSLATION: ${{ inputs.plugin_translation != false }}
         run: python3 build_installer.py --target plugins
 
+      - name: Stage Plugins Artifacts
+        run: |
+          mkdir -p dist/release_packages
+          cp dist/plugins/*.zip dist/plugins/*.rtvs-addon dist/release_packages/ 2>/dev/null || true
+          ls -lh dist/release_packages
+
       - name: Upload Plugins Artifact
         uses: actions/upload-artifact@v4
+        continue-on-error: true
         with:
           name: RadioTVSegmenter-Plugins
-          path: |
-            dist/plugins/*.zip
-            dist/plugins/*.rtvs-addon
-          retention-days: 3
+          path: dist/release_packages/*
+          retention-days: 1
           if-no-files-found: ignore
 
   # =========================================================================
@@ -241,14 +249,21 @@ jobs:
           Write-Host "Found installer: $($exe.FullName) ($([math]::Round($exe.Length / 1MB, 1)) MB)"
           Copy-Item -Path "dist\installer\*.exe" -Destination "dist\" -Force
 
+      - name: Stage Windows Release Artifacts
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path "dist\release_packages" | Out-Null
+          Copy-Item -Path "dist\*.exe" -Destination "dist\release_packages\" -Force -ErrorAction SilentlyContinue
+          Copy-Item -Path "dist\plugins\*.zip" -Destination "dist\release_packages\" -Force -ErrorAction SilentlyContinue
+          Get-ChildItem -Path "dist\release_packages"
+
       - name: Upload Windows Artifact
         uses: actions/upload-artifact@v4
+        continue-on-error: true
         with:
           name: RadioTVSegmenter-Windows
-          path: |
-            dist/*.exe
-            dist/plugins/*.zip
-          retention-days: 3
+          path: dist/release_packages/*
+          retention-days: 1
           if-no-files-found: error
 
   # =========================================================================
@@ -356,14 +371,20 @@ jobs:
           fi
           ls -lh dist/*.dmg
 
+      - name: Stage macOS Release Artifacts
+        run: |
+          mkdir -p dist/release_packages
+          cp dist/*.dmg dist/release_packages/ 2>/dev/null || true
+          cp dist/plugins/*.zip dist/release_packages/ 2>/dev/null || true
+          ls -lh dist/release_packages
+
       - name: Upload macOS Artifact
         uses: actions/upload-artifact@v4
+        continue-on-error: true
         with:
           name: RadioTVSegmenter-macOS
-          path: |
-            dist/*.dmg
-            dist/plugins/*.zip
-          retention-days: 3
+          path: dist/release_packages/*
+          retention-days: 1
           if-no-files-found: error
 
   # =========================================================================
@@ -450,15 +471,21 @@ jobs:
           fi
           ls -lh dist/*.deb dist/*.tar.gz
 
+      - name: Stage Linux Release Artifacts
+        run: |
+          mkdir -p dist/release_packages
+          cp dist/*.deb dist/release_packages/ 2>/dev/null || true
+          cp dist/*.tar.gz dist/release_packages/ 2>/dev/null || true
+          cp dist/plugins/*.zip dist/release_packages/ 2>/dev/null || true
+          ls -lh dist/release_packages
+
       - name: Upload Linux Artifact
         uses: actions/upload-artifact@v4
+        continue-on-error: true
         with:
           name: RadioTVSegmenter-Linux
-          path: |
-            dist/*.deb
-            dist/*.tar.gz
-            dist/plugins/*.zip
-          retention-days: 3
+          path: dist/release_packages/*
+          retention-days: 1
           if-no-files-found: error
 
   # =========================================================================
@@ -482,26 +509,34 @@ jobs:
 
       - name: Download all build artifacts
         uses: actions/download-artifact@v4
+        continue-on-error: true
         with:
           path: release_assets/
           merge-multiple: true
 
       - name: Flatten release assets & Generate SHA-256 checksums
-        working-directory: release_assets
         run: |
           set -e
+          mkdir -p release_assets
+          cd release_assets
           # Flatten any nested subdirectories created by artifact downloads
-          find . -mindepth 2 -type f -exec mv -f -t . {} +
-          find . -mindepth 1 -type d -empty -delete
+          find . -mindepth 2 -type f -exec mv -f -t . {} + 2>/dev/null || true
+          find . -mindepth 1 -type d -empty -delete 2>/dev/null || true
           
           rm -f SHA256SUMS
+          count=0
           for f in *; do
             [ -f "$f" ] || continue
             sha256sum "$f" | tee -a SHA256SUMS
             sha256sum "$f" > "$f.sha256"
+            count=$((count+1))
           done
-          echo "Generated checksums:"
-          cat SHA256SUMS
+          if [ -f SHA256SUMS ]; then
+            echo "Generated checksums for $count assets:"
+            cat SHA256SUMS
+          else
+            echo "No downloaded artifact files to checksum."
+          fi
 
       - name: Determine Release Tag
         id: vars
