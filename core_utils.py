@@ -7,6 +7,7 @@ time string formatting/parsing, and runtime path discovery.
 from __future__ import annotations
 
 import hashlib
+import math
 import os
 import re
 import shutil
@@ -357,3 +358,41 @@ def safe_filename(text):
 
 def is_sentence_end(text):
     return bool(re.search(r"[.!?]+[\"'”’)\]]*$", str(text or "").strip()))
+
+
+def calculate_fade_curve_factor(u: float, fcurve: str = "linear") -> float:
+    """Calculate normalized fade-in multiplier (0.0 to 1.0) given progress `u` in [0, 1]."""
+    u = max(0.0, min(1.0, float(u)))
+    fcurve = str(fcurve).lower()
+    if fcurve == "s_curve":
+        return float(0.5 * (1.0 - math.cos(math.pi * u)))
+    elif fcurve == "logarithmic":
+        return float(math.log10(1.0 + 9.0 * u))
+    elif fcurve == "exponential":
+        return float((math.pow(10.0, u) - 1.0) / 9.0)
+    else:  # "linear"
+        return u
+
+
+def calculate_fade_out_factor(u: float, fcurve: str = "linear") -> float:
+    """Calculate normalized fade-out multiplier (1.0 to 0.0) given progress `u` from 0.0 (fade start) to 1.0 (silence).
+
+    Accurately maps the visual preview cues to the applied fade-out:
+    - Logarithmic (⌒): Gentle initial volume roll-off, steepening near the end (convex / domed).
+    - Exponential (◞): Rapid initial volume attenuation, followed by a gentle tail to silence (concave / scooped).
+    - S-Curve (∿): Smooth cosine ease-in and ease-out transition.
+    - Linear (╱): Constant-rate linear attenuation (1.0 - u).
+    """
+    u = max(0.0, min(1.0, float(u)))
+    fcurve = str(fcurve).lower()
+    if fcurve == "s_curve":
+        return float(0.5 * (1.0 + math.cos(math.pi * u)))
+    elif fcurve == "logarithmic":
+        # Matches Logarithmic preview (⌒): stays high initially before dropping at end
+        return float(max(0.0, min(1.0, 1.0 - (math.pow(10.0, u) - 1.0) / 9.0)))
+    elif fcurve == "exponential":
+        # Matches Exponential preview (◞): drops fast initially then gently glides to silence
+        return float(max(0.0, min(1.0, 1.0 - math.log10(1.0 + 9.0 * u))))
+    else:
+        return float(1.0 - u)
+

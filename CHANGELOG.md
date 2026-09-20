@@ -1,5 +1,56 @@
 # Changelog
 
+## v3.5.0
+- **Stable Release — Phase 2 Architecture Modularization & Performance Milestone**:
+  - **Comprehensive Monolith Decomposition (`prs_shared.py`)**:
+    - Modularized the historic 6,719-line monolith into dedicated, self-contained domain modules, shrinking `prs_shared.py` down to **1,082 lines** (an **84% reduction**).
+    - **Background Concurrency Workers (`background_workers.py`)**: Extracted `StoryAutoDetectWorker`, `WaveformWorker`, `VideoThumbnailWorker`, and binary waveform peak cache persistence into `background_workers.py` (~984 lines).
+    - **Batch Processing Center (`batch_dialog.py`)**: Extracted `BatchProcessingDialog` and `BatchFileListWidget` drag-and-drop orchestrator into `batch_dialog.py` (~507 lines).
+    - **Comments Panel & Editor (`comment_widgets.py`)**: Extracted `CommentEditorDialog`, `NoteEditorDialog`, `CommentCardWidget`, and `CommentsPanel` (~320 lines).
+    - **Transcript Editor (`transcript_editor.py`)**: Extracted `InteractiveTranscriptEdit`, `TranscriptSelectionBubble`, `FindReplaceDialog`, and stylesheet definitions (~2,160 lines).
+    - **Timeline Widgets (`timeline_widgets.py`)**: Extracted `TimelineCanvas`, `TimelineOverviewBar`, `TimelineWidget`, and `WaveformEnvelope` (~1,831 lines).
+    - **Story Manager Widgets (`story_widgets.py`)**: Extracted `StoryListWidget` (~610 lines).
+    - **Cache & Storage Layer (`cache_manager.py`)**: Extracted persistent model and thumbnail cache managers (~536 lines).
+  - **100% Backward-Compatible Zero-Regression Shims**:
+    - Maintained transparent re-exports in `prs_shared.py` ensuring seamless backward compatibility for all internal callers and plugins with zero code breaks.
+  - **Benchmark Suite Responsive Geometry (`benchmark.py`)**:
+    - Screen-aware default dialog sizing (`780x540`, min `640x420`) with persistent `QSettings` dimensions.
+
+## v3.5.0-beta-10
+- **Phase 2 prs_shared.py Modularization — Comments Panel & Editor Extraction (`comment_widgets.py`)**:
+  - **Extracted Range-Anchored Comment Components**:
+    - Extracted `CommentEditorDialog`, `NoteEditorDialog`, `CommentCardWidget`, and `CommentsPanel` (~320 lines) from `prs_shared.py` into a dedicated, self-contained module `comment_widgets.py`.
+    - Preserved all rich commenting features: multi-line rich editing with line breaks (`Enter`), quick-save (`Ctrl+Enter`), timestamp range displays, excerpt quoting, seek synchronization, and active visual selection styles.
+  - **Zero-Regression Re-Export Shims**:
+    - Installed transparent re-export shims in `prs_shared.py`, guaranteeing that `ui_layout.py`, `transcript_story.py`, and all dependent plugins continue accessing comment widgets without changes.
+  - **Continued Monolith Footprint Reduction**:
+    - Reduced `prs_shared.py` from 2,751 lines down to 2,443 lines (a cumulative ~64% reduction from its original 6,719 lines).
+
+## v3.5.0-beta-9
+- **Phase 2 prs_shared.py Modularization — Transcript Editor Extraction (`transcript_editor.py`)**:
+  - **Extracted Interactive Transcript Components**:
+    - Extracted `InteractiveTranscriptEdit`, `TranscriptSelectionBubble`, `FindReplaceDialog`, and `transcript_text_view_stylesheet` (~2,160 lines) from `prs_shared.py` into a dedicated, self-contained module `transcript_editor.py`.
+    - Fully preserved all rich interactive capabilities: word-level audio playback highlighting, speaker attribution context menus, floating quick-action selection bubble toolbar, find-and-replace document operations, and undo/redo stacks.
+  - **Zero-Regression Re-Export Shims**:
+    - Installed complete re-export shims in `prs_shared.py` ensuring that existing callers (`ui_layout.py`, `playback_preferences.py`, `transcript_story.py`, and plugins) continue accessing all transcript symbols seamlessly.
+  - **Substantial Footprint Reduction**:
+    - Reduced monolithic `prs_shared.py` from 4,907 lines down to 2,751 lines (a 2,156-line / ~44% reduction this release, and a cumulative ~59% reduction from its original 6,719 lines).
+- **Benchmark Suite: Responsive Initial Window Sizing & Size Persistence (`benchmark.py`)**:
+  - **Screen-Aware Default Window Size**:
+    - Replaced the oversized static `1000x760` window size with a screen-aware default (`780x540`) and a minimum size of `640x420`, ensuring the dialog opens at a well-proportioned size on standard laptops, DPI-scaled displays, and external monitors on first launch without requiring manual resizing.
+  - **Persistent Custom Window Geometry**:
+    - Added window size persistence via `QSettings` (`benchmark_dialog_width` and `benchmark_dialog_height`) in `closeEvent`, `accept`, and `reject`, automatically remembering any user-adjusted dimensions for future runs.
+
+## v3.5.0-beta-8
+- **Phase 2 prs_shared.py Modularization — Timeline Widgets Extraction (`timeline_widgets.py`)**:
+  - **Extracted Timeline Components**:
+    - Extracted `TimelineCanvas`, `TimelineResizeHandle`, `TimelineOverviewBar`, `TimelineWidget`, `WaveformEnvelope`, and `build_waveform_pyramid` (~1,831 lines) from `prs_shared.py` into a dedicated, self-contained module `timeline_widgets.py`.
+    - Moved normalized fade calculation utilities `calculate_fade_curve_factor` and `calculate_fade_out_factor` into `core_utils.py`.
+  - **100% Backward-Compatible Re-Export Architecture**:
+    - Installed complete re-export shims in `prs_shared.py` so existing modules (`RadioTVSegmenter.py`, `transcript_story.py`, `ui_layout.py`, plugins) continue to access all timeline symbols without modification.
+  - **Substantial Footprint Reduction**:
+    - Reduced monolithic `prs_shared.py` from 6,719 lines down to 4,907 lines (an 1,812-line / ~27% reduction).
+
 ## v3.5.0-beta-7
 - **Benchmark Suite: Flexible Rigor & Duration Profiles (`benchmark.py`)**:
   - **4-Tier Workload & Audio Duration Selector**:

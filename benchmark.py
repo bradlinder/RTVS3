@@ -1354,7 +1354,37 @@ def create_benchmark_dialog(parent=None):
         def __init__(self, parent=None):
             super().__init__(parent)
             self.setWindowTitle("System Performance & Speed Benchmark")
-            self.resize(1000, 760)
+            # Responsive default dialog size suitable for standard laptops and monitors (prevents oversized window on first launch)
+            self.setMinimumSize(640, 420)
+            default_w, default_h = 780, 540
+            screen = None
+            try:
+                from PySide6.QtGui import QGuiApplication
+                screen = QGuiApplication.primaryScreen()
+                if screen:
+                    avail = screen.availableGeometry()
+                    target_w = min(default_w, max(640, int(avail.width() * 0.75)))
+                    target_h = min(default_h, max(420, int(avail.height() * 0.75)))
+                    self.resize(target_w, target_h)
+                else:
+                    self.resize(default_w, default_h)
+            except Exception:
+                self.resize(default_w, default_h)
+
+            # Restore previous user-saved custom window size if valid
+            try:
+                from PySide6.QtCore import QSettings
+                settings = QSettings("RadioTVStorySegmenter", "RadioTVStorySegmenter")
+                saved_w = settings.value("benchmark_dialog_width", type=int)
+                saved_h = settings.value("benchmark_dialog_height", type=int)
+                if saved_w and saved_h and saved_w >= 600 and saved_h >= 400:
+                    if screen:
+                        avail = screen.availableGeometry()
+                        saved_w = min(saved_w, avail.width())
+                        saved_h = min(saved_h, avail.height())
+                    self.resize(saved_w, saved_h)
+            except Exception:
+                pass
 
             # Detect if parent has active media path
             self.active_parent_media = None
@@ -1609,6 +1639,27 @@ def create_benchmark_dialog(parent=None):
                 self.source_combo.setCurrentIndex(0)
             self._update_source_ui()
             self._update_duration_desc()
+
+        def _save_window_size(self):
+            try:
+                from PySide6.QtCore import QSettings
+                settings = QSettings("RadioTVStorySegmenter", "RadioTVStorySegmenter")
+                settings.setValue("benchmark_dialog_width", self.width())
+                settings.setValue("benchmark_dialog_height", self.height())
+            except Exception:
+                pass
+
+        def closeEvent(self, event):
+            self._save_window_size()
+            super().closeEvent(event)
+
+        def accept(self):
+            self._save_window_size()
+            super().accept()
+
+        def reject(self):
+            self._save_window_size()
+            super().reject()
 
         def _get_selected_duration_mode(self) -> str:
             if not hasattr(self, "duration_combo"):
