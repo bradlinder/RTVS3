@@ -59,7 +59,7 @@ try:
 except ImportError as e:
     print(f"[BUILD] Warning: Could not import prs_shared ({e}), using fallback values")
     APP_DISPLAY_NAME = "Radio & TV Segmenter"
-    PROJECT_VERSION = "3.5.0-beta-4"
+    PROJECT_VERSION = "3.5.0-beta-7"
 except Exception as e:
     print(f"[BUILD] Unexpected error importing prs_shared: {type(e).__name__}: {e}")
     raise
@@ -855,6 +855,13 @@ def main() -> None:
         for res in (ROOT / "resources").iterdir():
             if res.is_file():
                 shutil.copy2(res, resources_dir / res.name)
+
+    samples_dir = app_root / "samples"
+    samples_dir.mkdir(parents=True, exist_ok=True)
+    if (ROOT / "samples").exists():
+        for s_file in (ROOT / "samples").iterdir():
+            if s_file.is_file():
+                shutil.copy2(s_file, samples_dir / s_file.name)
 
     shutil.copy2(ffmpeg, runtime_bin / Path(ffmpeg).name)
     shutil.copy2(ffprobe, runtime_bin / Path(ffprobe).name)

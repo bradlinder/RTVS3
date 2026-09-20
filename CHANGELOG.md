@@ -1,5 +1,50 @@
 # Changelog
 
+## v3.5.0-beta-7
+- **Benchmark Suite: Flexible Rigor & Duration Profiles (`benchmark.py`)**:
+  - **4-Tier Workload & Audio Duration Selector**:
+    - Replaced the binary quick checkbox with a configurable duration selector matching desired benchmark intensity:
+      - *⚡ Quick Spot-Check (1-Min Audio | ~3–5s Evaluation)*: Rapid sanity check with scaled-down workloads.
+      - *🎯 Standard Benchmark (5-Min Audio | ~15–25s Run) [Default / Recommended]*: Balanced multi-core evaluation and steady-state hardware rating.
+      - *🔥 Sustained Thermal Stress (10-Min Audio | ~45–90s Run)*: Measures multi-core memory bandwidth, sustained boost clocks, and thermal dissipation under continuous stress.
+      - *🏔️ Full 30-Minute Broadcast Pass (30-Min Audio | ~2–5m Run)*: Complete end-to-end stress test across the full 30-minute broadcast duration.
+  - **Dynamic UI Guidance & Responsive Action Labels**:
+    - Added live duration description banner and adaptive button labels that dynamically update based on the selected workload scale.
+  - **CLI & Automation Flags**:
+    - Added `--quick`, `--standard`, `--sustained`, `--full`, and `--duration=<mode>` command-line arguments with full JSON reporting support.
+- **Benchmark Dialog Initialization Fix**:
+  - Fixed an initialization sequence bug where `_update_duration_desc()` was invoked before `run_btn` was instantiated, causing `'BenchmarkDialog' object has no attribute 'run_btn'`.
+  - Added attribute safety guards (`hasattr`) for `run_btn`, `duration_desc_lbl`, and `duration_combo` to ensure crash-free dialog initialization across all PySide6 environments.
+
+## v3.5.0-beta-6
+- **Benchmark Engine: Real 30-Min Audio Source Toggle & Sample Asset Manager (`benchmark.py`)**:
+  - **Audio Source Selection & Multi-Source Benchmark Support**:
+    - Added user-selectable audio source modes in the Benchmark Dialog and CLI (`--sample`, `--file <path>`):
+      - *In-Memory Synthetic RAM Stream*: Zero disk footprint, instant memory-only acoustic speech fixture.
+      - *Standard 30-Min Broadcast Sample*: Real-world 32kbps MP3 audio file (~6.9 MB, 29m 58s) testing true FFmpeg decoding throughput and acoustic vocal characteristics.
+      - *Custom Media File / Active Timeline Media*: Ability to benchmark directly against any user-selected local audio/video file or active project media.
+  - **On-Demand Sample Download & Disk Cleanup Manager**:
+    - Added non-blocking asynchronous download thread (`SampleDownloadWorker`) with live percentage progress bar to fetch the 30-minute test audio file from GitHub releases/mirrors.
+    - Added instant one-click `Delete Sample` button and CLI `--delete-sample` command to delete the MP3 file and free up ~6.9 MB of disk space whenever desired.
+  - **Dual ASR Model Turnaround & Interactive Engine Toggle**:
+    - *Parakeet TDT 0.6B (Sherpa-ONNX FastConformer)*: Non-autoregressive acoustic transducer model providing high-throughput speech recognition (~30–45s on 24-core CPUs, ~40x to 70x RTF).
+    - *Whisper INT8 / Distil-Whisper (Encoder-Decoder)*: Standard autoregressive sequence-to-sequence transformer model (~2m 15s–2m 30s on 24-core CPUs, ~12x to 15x RTF).
+    - Interactive `ASR Engine:` selector dropdown in the Benchmark Dialog and side-by-side reporting across CLI, JSON, and clipboard export.
+  - **Installer & Packaging Integration (`build_installer.py`)**:
+    - Automatically bundles the `samples/` directory and test audio into application distribution builds if present.
+
+## v3.5.0-beta-5
+- **Benchmark Engine: 30-Minute Broadcast Processing Time Estimates (`benchmark.py`)**:
+  - **Hardware-Calibrated Time-to-Process (TTP) Engine**: Integrated execution time estimation logic predicting turnaround times for standard 30-minute broadcast audio files based on live subsystem benchmark results:
+    - *Story & Boundary Detection*: Estimates peak envelope extraction and multi-core pause analysis duration (~3–6s on modern CPUs).
+    - *AI Transcription (Speech-to-Text)*: Estimates INT8 Whisper / Sherpa-ONNX inference turnaround and Real-Time Factor (e.g. ~2m 26s at 12.3x RTF on high-core CPUs).
+    - *Speaker Diarization*: Estimates WeSpeaker 256-dimensional voice embedding extraction, pairwise distance matrix calculation, and agglomerative clustering turnaround (~20–80s).
+    - *Neural Translation*: Estimates MarianMT / NLLB-200 INT8 sentence translation speed (~15–75s for typical 4,200-word broadcasts) and detects if the translation plugin runtime is installed and active.
+    - *Complete Pipeline Turnaround*: Calculates combined end-to-end turnaround time and overall pipeline Real-Time Factor.
+  - **PySide6 Graphical Benchmark Dialog & CLI Enhancements**:
+    - Added dedicated top status banner card displaying formatted 30-minute processing breakdown and whole-pipeline RTF.
+    - Added 30-minute turnaround estimates section to the CLI terminal output, JSON output schema (`--json`), and one-click clipboard summary export.
+
 ## v3.5.0-beta-4
 - **Phase 2 prs_shared.py Modularization — Step 2: Story Widgets, Cards, & Delegates (`story_widgets.py`)**:
   - **Extracted Story UI & Undo Architecture**: Extracted `StoryCardDelegate`, `StoryListWidget`, `FadeCurveVisualSelector`, `StoryFadesChangeCommand`, `StoryBoundaryChangeCommand`, `SetStoriesCommand`, and `SelectStoriesCommand` from `prs_shared.py` into `/story_widgets.py`.

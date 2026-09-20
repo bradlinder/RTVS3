@@ -29,22 +29,20 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 --------------------------------------------------------------------------------
 TABLE OF CONTENTS & STATUS OVERVIEW
 --------------------------------------------------------------------------------
-1. Previous Release: Performance Benchmark Engine & Cache Manager Modularization (Completed in v3.5.0-beta-3)
-   [x] 1.1 High-Precision Benchmark Harness (`benchmark.py`): Nanosecond-resolution profiling with `time.perf_counter()` and `tracemalloc` memory tracing. Evaluates waveform peak extraction RTF, project state serialization throughput, vocal pause segmentation, transcript text reflow, neural VAD evaluation, and speaker vector comparisons.
-   [x] 1.2 PySide6 Graphical Benchmark Dialog (`create_benchmark_dialog`): Desktop dialog displaying live test progress, hardware specs, Real-Time Factor (RTF), memory deltas, and one-click clipboard summary export.
-   [x] 1.3 Headless CLI & Executable Flag Dispatch: Supports `python benchmark.py [--quick] [--json]` and executable CLI flags (`RadioTVSegmenter.exe --benchmark`, `--bench`).
-   [x] 1.4 Help Menu & Shortcut Integration: Registered "Run Performance Benchmark..." in the Help menu and shortcut manager (`Ctrl+Shift+B` / `Meta+Shift+B`).
-   [x] 1.5 Phase 2 Modularization Step 1 (`cache_manager.py`): Extracted `format_byte_size`, `get_cache_disk_usage`, `purge_caches`, `cleanup_old_thumbnail_cache`, and `ClearCacheDialog` into `/cache_manager.py` with 100% backward-compatible re-export shims in `prs_shared.py`.
-   [x] 1.6 Windows In-App Updater & Diagnostic Test Bench Fixes: Win32 `ShellExecuteW` direct UAC elevation in `updater.py` and packaged build import resolution in `test_runner.py`.
+1. Previous Release: Dual ASR Models, Real 30-Min Audio Source & Asset Manager (Completed in v3.5.0-beta-6)
+   [x] 1.1 Dual ASR Architecture Support: Added specialized runtime estimation metrics for both Parakeet TDT 0.6B (Sherpa-ONNX FastConformer) and Whisper INT8 / Distil-Whisper (Encoder-Decoder Transformer).
+   [x] 1.2 PySide6 Graphical Engine Selector Dropdown: Interactive `ASR Engine:` selector in the benchmark dialog enabling real-time switching between Parakeet and Whisper turnaround calculations.
+   [x] 1.3 Real 30-Minute Broadcast Audio Source: Bundled and integrated low-bitrate (32kbps MP3 ~6.9 MB, 29m 58s) real-world broadcast audio file (`samples/performance_test_audio.mp3`) with dual support for synthetic RAM stream, real broadcast sample, and custom user media files.
+   [x] 1.4 Sample Audio Download & Deletion Manager: Interactive UI controls to download the sample MP3 on demand from GitHub with progress bar, or delete it instantly to free up disk space.
+   [x] 1.5 Multi-Source CLI & Reporting: Added `--sample`, `--file <path>`, `--download-sample`, and `--delete-sample` flags to CLI, and updated JSON/clipboard reports with audio source metadata.
 
-2. Current Release: Rigorous Benchmark Suite & Story Widgets Modularization (Completed in v3.5.0-beta-4)
-   [x] 2.1 Phase 2 Modularization Step 2 (`story_widgets.py`): Extracted `StoryCardDelegate`, `StoryListWidget`, `FadeCurveVisualSelector`, `StoryFadesChangeCommand`, `StoryBoundaryChangeCommand`, `SetStoriesCommand`, and `SelectStoriesCommand` from `prs_shared.py` into isolated `/story_widgets.py` with 100% backward-compatible re-export shims.
-   [x] 2.2 Rigorous Hardware Benchmark Suite (`benchmark.py`): Upgraded benchmark engine with multi-tier peak extraction, 80-bin Mel scale filterbank extraction, multi-threaded CPU core scaling, high-dimensional diarization vector clustering, deep JSON interval indexing, and transformer self-attention GEMM simulation.
-   [x] 2.3 Composite Hardware Performance Score ("RTVS Hardware Score"): Introduced aggregate hardware performance index with category sub-scores (Audio Pipeline, Multi-Core Compute, AI & Diarization, Memory & I/O, UI & Text Engine) and rating tier classification (Entry, Mid-Range, High Performance, Studio Workstation).
-   [x] 2.4 Zero-Disk-Footprint Synthetic Acoustic Fixtures: Fast RAM-only speech acoustic seed generation with multi-frequency modulation and instant memory tiling.
-   [x] 2.5 PySide6 Graphical Benchmark Dialog Enhancement: Prominent Score Card banner with live score and hardware tier badge, Quick Mode toggle (~3s check vs 10s full suite), real-time progress indicators, and comprehensive clipboard summary export.
+2. Current Release: Flexible Benchmark Rigor Profiles & Dialog Crash Fix (Completed in v3.5.0-beta-7)
+   [x] 2.1 4-Tier Benchmark Rigor Selector: Configurable duration selector with Quick Spot-Check (1m), Standard Benchmark (5m), Sustained Thermal Stress (10m), and Full 30-Min Broadcast Pass (30m).
+   [x] 2.2 Dynamic UI Guidance & Action Labels: Live contextual descriptions and adaptive button labels corresponding to selected audio duration and workload scale.
+   [x] 2.3 Comprehensive CLI Support: Added `--quick`, `--standard`, `--sustained`, `--full`, and `--duration=<mode>` command-line arguments.
+   [x] 2.4 Dialog Initialization Fix & Attribute Guards: Fixed `BenchmarkDialog` initialization sequence error where `run_btn` was accessed prior to instantiation, with `hasattr` defensive guards.
 
-3. Upcoming Milestone: Phase 2 Modularization of prs_shared.py Continued [PLANNED for v3.5.0-beta-5]
+3. Upcoming Milestone: Phase 2 Modularization of prs_shared.py Continued [PLANNED for v3.5.0-beta-8]
    [ ] 3.1 Timeline Ruler, Track Views, & Playhead Overlays (`timeline_widgets.py`)
    [ ] 3.2 Transcript Viewer, Word Highlighting, & Search/Replace (`transcript_editor.py`)
    [ ] 3.3 Cautious Incremental Testing Protocol (Verified step-by-step testing after each extraction)
