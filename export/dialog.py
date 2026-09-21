@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 try:
-    from PySide6.QtCore import Qt, QSettings
+    from PySide6.QtCore import Qt, QSettings, QEvent
     from PySide6.QtWidgets import (
         QButtonGroup,
         QCheckBox,
@@ -53,6 +53,8 @@ class UnifiedExportDialog(QDialog):
         super().__init__(parent or main_window)
         self.main_window = main_window
         self.setWindowTitle("Export")
+        self.setWindowFlags(self.windowFlags() | Qt.WindowType.WindowMaximizeButtonHint | Qt.WindowType.WindowMinimizeButtonHint)
+        self.setSizeGripEnabled(True)
         self.setMinimumWidth(780)
         self.setMinimumHeight(520)
         self.resize(840, 620)
@@ -64,9 +66,10 @@ class UnifiedExportDialog(QDialog):
         layout.setContentsMargins(12, 10, 12, 10)
         layout.setSpacing(8)
 
-        # Header bar with Expand / Collapse All control
+        # Header bar with Expand / Collapse All control and Maximize / Restore button
         hdr_row = QHBoxLayout()
         hdr_row.setContentsMargins(2, 0, 2, 0)
+        hdr_row.setSpacing(6)
         hdr_label = QLabel("<b>Unified Export Center</b>")
         hdr_label.setStyleSheet("font-size: 13px; color: #f1f5f9;")
         self.toggle_all_btn = QPushButton("▾ Collapse All")
@@ -87,9 +90,31 @@ class UnifiedExportDialog(QDialog):
             }
         """)
         self.toggle_all_btn.clicked.connect(self._toggle_all_sections)
+
+        self.maximize_btn = QPushButton("⛶", self)
+        self.maximize_btn.setToolTip("Maximize Export window")
+        self.maximize_btn.setFixedSize(28, 24)
+        self.maximize_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #1e293b;
+                color: #94a3b8;
+                border: 1px solid #334155;
+                border-radius: 4px;
+                padding: 0px;
+                font-size: 13px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #334155;
+                color: #f1f5f9;
+            }
+        """)
+        self.maximize_btn.clicked.connect(self._toggle_maximize)
+
         hdr_row.addWidget(hdr_label)
         hdr_row.addStretch()
         hdr_row.addWidget(self.toggle_all_btn)
+        hdr_row.addWidget(self.maximize_btn)
         layout.addLayout(hdr_row)
 
         # Export Destination Selection
@@ -351,14 +376,33 @@ class UnifiedExportDialog(QDialog):
         self.cb_highlights.setToolTip("Apply visual highlights to commented sections in exported DOCX and PDF documents")
         self.cb_highlights.setChecked(True)
 
-        self.cb_en = QCheckBox("English")
-        self.cb_en.setChecked(True)
-        has_spanish = bool(getattr(self.main_window, "spanish_transcript", None))
-        self.cb_es = QCheckBox("Spanish (Translated)")
-        self.cb_es.setChecked(has_spanish)
-        self.cb_es.setEnabled(has_spanish)
-        if not has_spanish:
-            self.cb_es.setToolTip("Spanish translation is not available for this project. Generate a translation first to enable.")
+        src_code = self.main_window.source_language_code() if hasattr(self.main_window, "source_language_code") else "en"
+        has_translation = False
+        if hasattr(self.main_window, "get_spanish_translation_item"):
+            trans_item = self.main_window.get_spanish_translation_item()
+            if trans_item and isinstance(trans_item, dict):
+                has_translation = bool(trans_item.get("segments"))
+
+        if src_code == "es":
+            self.cb_es = QCheckBox("Spanish")
+            self.cb_es.setChecked(True)
+            self.cb_es.setEnabled(True)
+
+            self.cb_en = QCheckBox("English (Translated)")
+            self.cb_en.setChecked(has_translation)
+            self.cb_en.setEnabled(has_translation)
+            if not has_translation:
+                self.cb_en.setToolTip("English translation is not available for this project. Generate a translation first to enable.")
+        else:
+            self.cb_en = QCheckBox("English")
+            self.cb_en.setChecked(True)
+            self.cb_en.setEnabled(True)
+
+            self.cb_es = QCheckBox("Spanish (Translated)")
+            self.cb_es.setChecked(has_translation)
+            self.cb_es.setEnabled(has_translation)
+            if not has_translation:
+                self.cb_es.setToolTip("Spanish translation is not available for this project. Generate a translation first to enable.")
 
         self.content_section.add_widget(self.cb_speakers)
         self.content_section.add_widget(self.cb_timestamps)
@@ -512,9 +556,17 @@ class UnifiedExportDialog(QDialog):
         self.cb_speakers.setChecked(str(settings.value("export_opt_include_speakers", "true")).lower() in {"1", "true", "yes"})
         self.cb_timestamps.setChecked(str(settings.value("export_opt_include_timestamps", "false")).lower() in {"1", "true", "yes"})
         self.cb_notes.setChecked(str(settings.value("export_opt_include_notes", "true")).lower() in {"1", "true", "yes"})
-        self.cb_en.setChecked(str(settings.value("export_opt_include_en", "true")).lower() in {"1", "true", "yes"})
-        if self.cb_es.isEnabled():
-            self.cb_es.setChecked(str(settings.value("export_opt_include_es", "false")).lower() in {"1", "true", "yes"})
+        src_code = self.main_window.source_language_code() if hasattr(self.main_window, "source_language_code") else "en"
+        if src_code == "es":
+            if self.cb_es.isEnabled():
+                self.cb_es.setChecked(str(settings.value("export_opt_include_es", "true")).lower() in {"1", "true", "yes"})
+            if self.cb_en.isEnabled():
+                self.cb_en.setChecked(str(settings.value("export_opt_include_en", "true")).lower() in {"1", "true", "yes"})
+        else:
+            if self.cb_en.isEnabled():
+                self.cb_en.setChecked(str(settings.value("export_opt_include_en", "true")).lower() in {"1", "true", "yes"})
+            if self.cb_es.isEnabled():
+                self.cb_es.setChecked(str(settings.value("export_opt_include_es", "false")).lower() in {"1", "true", "yes"})
 
         use_custom_loc = str(settings.value("export_opt_custom_loc_enabled", "false")).lower() in {"1", "true", "yes"}
         saved_custom_dir = str(settings.value("export_opt_custom_dir", "") or "").strip()
@@ -665,3 +717,24 @@ class UnifiedExportDialog(QDialog):
                 except Exception:
                     pass
         super().done(r)
+
+    def _toggle_maximize(self):
+        if self.isMaximized():
+            self.showNormal()
+            self.maximize_btn.setText("⛶")
+            self.maximize_btn.setToolTip("Maximize Export window")
+        else:
+            self.showMaximized()
+            self.maximize_btn.setText("❐")
+            self.maximize_btn.setToolTip("Restore normal size")
+
+    def changeEvent(self, event):
+        super().changeEvent(event)
+        if event.type() == QEvent.Type.WindowStateChange:
+            if hasattr(self, "maximize_btn"):
+                if self.isMaximized():
+                    self.maximize_btn.setText("❐")
+                    self.maximize_btn.setToolTip("Restore normal size")
+                else:
+                    self.maximize_btn.setText("⛶")
+                    self.maximize_btn.setToolTip("Maximize Export window")

@@ -29,29 +29,52 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 --------------------------------------------------------------------------------
 TABLE OF CONTENTS & STATUS OVERVIEW
 --------------------------------------------------------------------------------
-1. Previous Release: Audio Fades "Apply" Action & Timeline Navigation Performance Optimization (Completed in v3.5.8)
-   [x] 1.1 Audio Fades Dialog "Apply" Action & Live Auditioning (`transcript_story.py`): Added an "Apply" button to `StoryFadesDialog` alongside "Save Fades" and "Cancel", enabling real-time timeline visualization and playback auditioning without closing the dialog. Supported full pre-dialog snapshot rollback on "Cancel" and clean undo/redo synchronization.
-   [x] 1.2 Timeline Navigation & Drag Performance Optimization (`timeline_widgets.py`, `transcript_story.py`): Throttled continuous drag events to 60 FPS (~16ms) in `TimelineCanvas.mouseMoveEvent`, deferred sidebar `QListWidgetItem` relayout until drag completion in `handle_drag_finished`, implemented 16-step precomputed fade curve lookup tables, and pre-cached painter brushes/pens and story snap points.
+1. Previous Release: Dynamic Language Selection & Custom Labeling in Export Options (Completed in v3.5.30)
+   [x] 1.1 Dynamic Language Suffixes & Symmetrical Exporter Configurations (`project_export.py`): Configured document export outputs to map translated suffix tags dynamically (`_en` or `_es`) according to the active translation directions of the project.
+   [x] 1.2 Symmetrical UI Labeling & Enablers (`export/dialog.py`, `plugins/wordpress/export_destination.py`): Dynamically re-labels track checkboxes depending on project source language, automatically checks and enables tracks only when translated segments exist, and selects the correct default primary language track.
 
-2. Current Release: WordPress Metadata Integration, Window Expansion & Project Export Modularization (Completed in v3.5.9 / Plugin v3.5.9.1)
-   [x] 2.1 Story Editor WordPress Metadata Assignment: Exposed all WordPress export options (Author, Excerpt, Categories, Tags, Featured Image, Post Status) directly within the main Stories widget/editor via dynamic plugin extension (`WordPressStoryMetadataWidget`).
-   [x] 2.2 Project Serialization & Export Pre-Population: Persisted assigned story WordPress metadata into `.rtvs` project files and automatically pre-populated `UnifiedExportDialog` fields during export while preserving full editability in the export window.
-   [x] 2.3 Export Window Fullscreen Expansion Controls: Added maximize/minimize buttons to `UnifiedExportDialog` allowing it to toggle into full screen mode and return to standard dialog size.
-   [x] 2.4 Story Widget Workspace Expansion Controls: Added maximize/minimize buttons to the main Story Editor widget allowing it to expand to fill the entire application workspace and return to standard split view layout.
-   [x] 2.5 Project Export & Lifecycle Modularization: Decoupled project file persistence (`close_project`, `save_project`, `open_project`) into `project_lifecycle.py` and broadcast audio rendering/stem processing into `export/audio.py`.
-   [x] 2.6 WordPress Episode & Story Cross-Linking (v3.5.9.1): Automatically capture Full Episode post URLs and inject customizable attribution links into individual story posts. Optionally append a linked story Table of Contents block to the Full Episode post.
-   [x] 2.7 WordPress Rich Text & Markdown Hyperlinks (v3.5.9.1): Converted Markdown link syntax (`[text](url)`), auto-linked raw URLs, and enabled safe HTML tag passthrough in exported transcript bodies and custom notices.
+2. Current Release: Symmetrical Language Swapping & Fallbacks in Document Exports (Completed in v3.5.31)
+   [x] 2.1 Symmetrical Filename-to-Language Mapping (`project_export.py`): Corrected the fallback `source_code` logic to dynamically resolve to the active project's source language code (`src_code`) instead of hardcoding `"en"`, resolving swapped `.txt` and `.pdf` files in Spanish-source projects.
+   [x] 2.2 Symmetrical Word-Level DOCX Formatting Filters (`project_export.py`): Restricted word-level source segment passing to `create_story_docx` only for matching original languages (`lang_code == src_code`), preventing translation tracks from incorrectly falling back to original source language words in `.docx` files.
 
-3. Upcoming Milestone: Google Docs & Drive Export Plugin (`plugins/gdocs`) [PLANNED for v3.6.0] [NOT STARTED]
-   [ ] 3.1 Plugin Architecture & OAuth 2.0 Authentication Engine (`plugins/gdocs/auth.py`, keyring token storage, local loopback handler)
-   [ ] 3.2 Google Docs Document Serializer & REST Exporter (Formatted text, speaker headers, word highlights, story metadata)
-   [ ] 3.3 Native Margin Comments & Text Range Anchoring (`drive.comments.create` integration for story notes & transcript comments)
-   [ ] 3.4 Unified Export Center & Menu Integration (Progress worker, batch export, zero core bundle overhead)
-   [ ] 3.5 (Optional) One-Time Review & Comment Pull ("Import Reviews from Google Doc" diff dialog)
+3. Upcoming Milestone: Selective Project Data Purge & Wipe Utility (`project_lifecycle.py`, `ui_layout.py`) [PLANNED for v3.5.32] [NOT STARTED]
+   [ ] 3.1 Checkbox-Driven Modular Purge Dialog (`ui_layout.py`): Add a secure modal dialog with separate options to wipe Transcript/Words, delete Saved Translations, reset Speaker Diarization, or clear Stories & Metadata.
+   [ ] 3.2 Destructive State Guards & Warnings: Implement visual validation/warning indicators and confirmation gates to prevent accidental clicks.
+   [ ] 3.3 Modular Core Reset Methods (`project_lifecycle.py`): Integrate robust cleanup methods to wipe targeted properties and synchronize standard empty default structures safely.
+   [ ] 3.4 Undo Stack Integration: Push the pre-purge project state onto the Undo stack before purging, enabling instant recovery via `Ctrl+Z`.
 
-4. Future Milestone: Multi-Platform Timeline & DAW Interchange Engine (`export/timeline.py`, `export/dialog.py`, `ui_layout.py`) [PLANNED for v3.7.0] [NOT STARTED]
-   [ ] 4.1 Migration to Unified Export Center Tab: Move timeline and DAW exports from the legacy File menu submenu into a dedicated "Timeline & DAW" tab in the Unified Export Center dialog, streamlining menu navigation and providing a unified UI for multi-format timeline exporting.
-   [ ] 4.2 Streamlined Multi-Platform Timeline Format Exporters (Zero Feature Loss):
+4. Upcoming Milestone: Diagnostic Test Bench Coverage Extension (`test_runner.py`) [PLANNED for v3.5.40] [NOT STARTED]
+   [ ] 4.1 Translation Routing & Key Priority Unit Test: Assert that `source_language_code()` detects correct language and `get_spanish_translation_item()` selects correct translation keys (`es-en` vs `en-es`) without falling back to stale legacy data.
+   [ ] 4.2 Symmetrical Translation Editing State Test: Validate that editing translation segments properly updates the core translation dictionary and marks other translation states as stale.
+   [ ] 4.3 Interactive Change Speaker Dialogue Flow Test: Programmatically mock options (All Instances, This Instance Only, Cancel) to assert correct downstream reassignment outcomes.
+   [ ] 4.4 Story Boundary Validation & Overlap Test: Assert that adding, moving, or resizing story timestamps enforces non-overlapping integrity constraints.
+   [ ] 4.5 Audio / Subtitle Sync Drift Test: Ensure that SRT, WebVTT, and chapter markers maintain timestamp alignment across multi-format exports.
+   [ ] 4.6 Interactive Transcript Editing & Split/Join Unit Tests: Assert text replacement, segment joining/splitting, word-level time interpolation, and correct propagation to Undo/Redo queues without desynchronizing paragraph elements.
+   [ ] 4.7 Exporter Structure Invariant Tests: Verify formatted output structures (REAPER `.rpp` syntax trees, Samplitude `.edl` crossfades, Final Cut Pro XML elements) to ensure zero silent syntax errors during export generation.
+   [ ] 4.8 Plugin Interface Sandbox Testing: Validate integration payloads for Google Docs exporting, verifying correct styling tags, author metadata headers, and localized comment-anchoring ranges.
+   [ ] 4.9 Project File Integrity & Portable Path Resolution: Test loading damaged/corrupted `.rtvs` files, verifying automatic fallback defaults, and testing graceful user-prompts when the original source media has been moved on disk.
+
+5. Future Milestone: Translation Model Selection & Preference Integration (`playback_preferences.py`, `plugins/translation/`) [PLANNED for v3.5.50] [NOT STARTED]
+   [ ] 5.1 Model Selection Interface: Add dropdown menus to Settings > Preferences for users to explicitly select their preferred NMT/translation engines for en->es and es->en pairs (e.g., NLLB, M2M100, or custom fine-tuned checkpoints).
+   [ ] 5.2 Dynamic Translation Pipeline Re-initialization: Programmatically reload translation workers upon model changes in Preferences without requiring a full project restart.
+   [ ] 5.3 Model Compatibility Validation: Add on-the-fly validation to ensure selected models are locally cached or downloadable, with clear UI error messages if a requested model is missing.
+   [ ] 5.4 Persistent User Preferences Serialization: Ensure model selections are serialized to `.rtvs` project states and global application preferences correctly.
+
+6. Future Milestone: Acoustic Voice Profile Matcher & On-Demand Re-Clustering (`transcript_story.py`, `radio_tv_story_segmenter_worker.py`) [PLANNED for v3.6.0] [NOT STARTED]
+   [ ] 6.1 Voice Embedding Vector Storage & Persistence (`diarization["embeddings"]`): Preserve segment-level 256-dimensional WeSpeaker ONNX embedding vectors in project state.
+   [ ] 6.2 One-Sample Voice Profile Assignment ("Teach This Voice"): Add a "Set as Reference Profile for New Speaker" option to the speaker menu when user identifies an unseparated speaker.
+   [ ] 6.3 On-Demand Cosine Similarity Re-Clustering Worker: Rapidly scan remaining segments in the same cluster, compute cosine similarities against the reference embedding, and automatically reassign matching turns to the new speaker label without re-running full timeline diarization.
+
+7. Future Milestone: Google Docs & Drive Export Plugin (`plugins/gdocs`) [PLANNED for v3.7.0] [NOT STARTED]
+   [ ] 7.1 Plugin Architecture & OAuth 2.0 Authentication Engine (`plugins/gdocs/auth.py`, keyring token storage, local loopback handler)
+   [ ] 7.2 Google Docs Document Serializer & REST Exporter (Formatted text, speaker headers, word highlights, story metadata)
+   [ ] 7.3 Native Margin Comments & Text Range Anchoring (`drive.comments.create` integration for story notes & transcript comments)
+   [ ] 7.4 Unified Export Center & Menu Integration (Progress worker, batch export, zero core bundle overhead)
+   [ ] 7.5 (Optional) One-Time Review & Comment Pull ("Import Reviews from Google Doc" diff dialog)
+
+8. Future Milestone: Multi-Platform Timeline & DAW Interchange Engine (`export/timeline.py`, `export/dialog.py`, `ui_layout.py`) [PLANNED for v3.8.0] [NOT STARTED]
+   [ ] 8.1 Migration to Unified Export Center Tab: Move timeline and DAW exports from the legacy File menu submenu into a dedicated "Timeline & DAW" tab in the Unified Export Center dialog, streamlining menu navigation and providing a unified UI for multi-format timeline exporting.
+   [ ] 8.2 Streamlined Multi-Platform Timeline Format Exporters (Zero Feature Loss):
        - Final Cut Pro 7 XML Interchange (.xml / xmeml): Adobe Premiere Pro, Adobe Audition, DaVinci Resolve, Descript (Full multi-track sequences, cuts, clip positions, volume envelopes, crossfades, and marker tracks).
        - Final Cut Pro X XML (.fcpxml): Apple Final Cut Pro (FCPX), Apple Logic Pro (Native modern Apple timeline sequence with multi-channel audio components, retimed clips, markers, and volume automation without third-party converters).
        - Universal AAF Interchange (.aaf) & Session Text: Avid Pro Tools, Apple Logic Pro, Avid Media Composer, Cubase/Nuendo (Full broadcast timeline session interchange, multi-track stems, non-destructive clip gain, fades, and track markers via `pyaaf2`).
@@ -59,7 +82,7 @@ TABLE OF CONTENTS & STATUS OVERVIEW
        - Cockos REAPER Project (.rpp): Cockos REAPER (Complete non-destructive project files with item fades, volume envelopes, markers, regions, and take notes).
        - Magix Samplitude / Sequoia EDL (.edl v1.5): Magix Samplitude, Sequoia (Broadcast audio edit decision list with crossfades and track gain).
        - Audacity Labels & Podcast Cues (.txt / .cue): Audacity, Podcasting mastering tools, CD/playout automation (Standard label tracks and CUE sheets with chapter markers and boundary synchronization).
-   [ ] 4.3 Future-Proofed Non-Destructive Editing & Timeline Engine:
+   [ ] 8.3 Future-Proofed Non-Destructive Editing & Timeline Engine:
        - Multi-track routing layouts (Single track, Checkerboard A/B roll, or Split tracks per identified speaker).
        - Unselected audio & rough cut handling (Omit/Ripple-delete, Include as Muted Items for sync preservation, or Route to separate B-Roll reference track).
        - Clip gain, volume automation curves, and non-destructive fade handles (linear, logarithmic, exponential, S-curve, equal-power).
@@ -67,11 +90,11 @@ TABLE OF CONTENTS & STATUS OVERVIEW
        - Source media linking flexibility (Absolute paths, Relative paths for portable session packages, or Auto-rendered isolated WAV stems).
        - Rational timecode & audio sample rate math (44.1, 48, 96 kHz; 23.976, 24, 25 PAL, 29.97 NDF/DF, 30, 59.94 fps, custom start timecode e.g. 01:00:00:00).
 
-5. Future Milestone: Text-Driven Audio Editing & Precision Alignment (Phase 5) [PLANNED for v4.0.0] [NOT STARTED]
-   [ ] 5.1 "Text-as-Timeline" Rough-Cut Editing Engine
-   [ ] 5.2 Seamless Non-Destructive Playback Preview
-   [ ] 5.3 CTC Word Boundary Refinement & Forced Alignment
-   [ ] 5.4 Memory-Bounded Diarization & Chunked Streaming
+9. Future Milestone: Text-Driven Audio Editing & Precision Alignment (Phase 5) [PLANNED for v4.0.0] [NOT STARTED]
+   [ ] 9.1 "Text-as-Timeline" Rough-Cut Editing Engine
+   [ ] 9.2 Seamless Non-Destructive Playback Preview
+   [ ] 9.3 CTC Word Boundary Refinement & Forced Alignment
+   [ ] 9.4 Memory-Bounded Diarization & Chunked Streaming
 
 ================================================================================
 CORE ARCHITECTURAL INVARIANTS
@@ -85,69 +108,52 @@ CORE ARCHITECTURAL INVARIANTS
 - 0 MB Default GPU Footprint: Base installer contains 0 MB of CUDA bloat; GPU features are purely optional and provisioned on demand.
 
 ================================================================================
-1. PREVIOUS RELEASE: AUDIO FADES "APPLY" & TIMELINE NAVIGATION OPTIMIZATION (Completed in v3.5.8)
+1. PREVIOUS RELEASE: DEDICATED WORDPRESS POST SETTINGS DIALOG & STORIES LAUNCHER (Completed in v3.5.11 / Plugin v3.5.11)
 ================================================================================
 
-[x] 1.1 AUDIO FADES DIALOG "APPLY" ACTION & LIVE AUDITIONING (transcript_story.py)
------------------------------------------------------------------------------------
-- Added an "Apply" button in `StoryFadesDialog` alongside "Save Fades" and "Cancel", allowing real-time timeline visualization and playback auditioning without closing the dialog.
-- Preserved a pre-dialog snapshot (`_initial_fades`) across all stories, ensuring clicking "Cancel" after applying reverts all modifications seamlessly.
-- Aligned `MainWindow.edit_story_fades` undo/redo stack commands with the pre-dialog baseline values, guaranteeing predictable single-step undo history.
+[x] 1.1 Dedicated WordPress Post Settings Dialog (`plugins/wordpress/export_destination.py`)
+--------------------------------------------------------------------------------------------
+- Implemented `WordPressPostMetadataDialog` wrapping `WordPressExportTabWidget` for spacious, tabbed, multi-pane configuration of all post metadata (authors, categories, excerpts, titles, featured images) for the full episode and all individual stories.
+- Integrated side-by-side multi-pane layouts for Authors (with Co-Authors Plus guest author support and filtering) and Categories (hierarchical with filter search).
 
-[x] 1.2 TIMELINE DRAG & SCRUB PERFORMANCE THROTTLING (timeline_widgets.py)
----------------------------------------------------------------------------
-- Implemented a 60 FPS (~16ms) rate limiter in `TimelineCanvas.mouseMoveEvent` during dragging, scrubbing, fade handle adjustment, and region selection.
-- Prevented UI thread event loop starvation and eliminate mouse lag during rapid pointer gestures.
+[x] 1.2 Compact Stories Panel Launcher & Summary Card (`plugins/wordpress/plugin.py`)
+-------------------------------------------------------------------------------------
+- Replaced crowded sidebar forms with a clean summary card and primary action button ("🗗 WordPress Post Settings..."), displaying configured title, authors, categories, featured image, and status at a glance with quick excerpt generation and taxonomy refresh.
 
-[x] 1.3 DEFERRED SIDEBAR LIST RELAYOUT (transcript_story.py)
--------------------------------------------------------------
-- Removed continuous `QListWidgetItem` string reformatting and serialization from `handle_drag_story_region`.
-- Kept numerical start/end inputs responsive in real-time, deferring full sidebar item relayout to `handle_drag_finished`.
+[x] 1.3 Incremental & Batch Project Persistence (`plugins/wordpress/export_destination.py`)
+-------------------------------------------------------------------------------------------
+- Added real-time two-way synchronization between the modal dialog and the active story UI inputs in the main window, saving progress directly to the `.rtvs` project file whether users configure one post or all posts.
 
-[x] 1.4 PRECOMPUTED FADE CURVE LOOKUP TABLES & VECTOR CACHING (timeline_widgets.py)
-------------------------------------------------------------------------------------
-- Precomputed 16-step lookup tables for all fade curve profiles (`linear`, `s_curve`, `logarithmic`, `exponential`), eliminating repeated exponential/trigonometric function evaluations per story per frame.
-- Pre-cached QPen and QBrush objects in `TimelineCanvas` for fade fills, ramps, and grab handles.
-- Cached story boundary snapping points in `set_stories` and during active drag updates.
+[x] 1.4 Bug Fixes & Hardening
+-----------------------------
+- Fixed `TypeError: format_time() got an unexpected keyword argument 'include_hours'` by aligning timestamp formatting with `format_time(include_millis=True)`.
+- Resolved `AttributeError` for custom notice section in `WordPressExportTabWidget`.
 
 ================================================================================
-2. CURRENT RELEASE: WORDPRESS METADATA INTEGRATION, WINDOW EXPANSION & MODULARIZATION (Completed in v3.5.9 / Plugin v3.5.9.1)
+2. CURRENT RELEASE: UNIFIED STORY & POST METADATA ARCHITECTURE (In-Progress in v3.5.12 / Plugin v3.5.12)
 ================================================================================
 
-[x] 2.1 Story Editor WordPress Metadata Assignment (`plugins/wordpress/`)
--------------------------------------------------------------------------
-- Exposed all WordPress export options (Author, Excerpt, Categories, Tags, Featured Image, Post Status/Schedule) within the main Stories widget/editor view via dynamic plugin extension.
-- Allowed users to assign and preview story-level WordPress post data directly while editing story boundaries and transcripts.
+[-] 2.1 Universal Core Story & Post Metadata Dialog (`story_widgets.py`, `ui_layout.py`)
+------------------------------------------------------------------------------------------
+- Create a dedicated modal dialog (`StoryMetadataDialog`) accessible via a standard "🗗 Story Metadata..." button in the Stories panel.
+- Provides tabbed navigation across the Full Episode and all segmented stories.
+- Multi-pane editor including side-by-side Authors and Categories/Tags panels, Title, Range, Excerpt (with auto-generate), Video Frame / Featured Image scrubber with live preview, and Editorial Notes.
+- Operates 100% offline without requiring any plugins to be active.
 
-[x] 2.2 Project File Serialization & Export Pre-Population (`project_serialization.py`)
----------------------------------------------------------------------------------------
-- Stored assigned WordPress metadata inside the `.rtvs` project file structure (`stories` JSON records).
-- Pre-populated these settings automatically into the `UnifiedExportDialog` WordPress tab during export, while retaining full editability at export time.
+[-] 2.2 Dynamic WordPress & Plugin Taxonomy Enrichment (`plugins/wordpress/`)
+------------------------------------------------------------------------------
+- When the WordPress plugin is enabled, the dialog dynamically populates Authors (users + Co-Authors Plus guest authors) and hierarchical Categories from the WP REST API, plus WordPress-specific options (post status, slug, cross-linking).
+- When WordPress is disabled, provides offline author and category/tag entry with tag cloud and autocompletion.
 
-[x] 2.3 Export Window Fullscreen Expansion Controls (`export/dialog.py`)
-------------------------------------------------------------------------
-- Added dedicated Maximize / Fullscreen and Restore / Minimize window controls to `UnifiedExportDialog`.
-- Allows the export center to expand to true full screen for managing complex multi-story publishing tasks, with seamless toggle back to standard dialog dimensions.
+[-] 2.3 Instant Two-Way UI & Story List Synchronization (`transcript_story.py`, `story_widgets.py`)
+---------------------------------------------------------------------------------------------------
+- Synchronize dialog edits immediately to the active story UI fields (Title, Author, Excerpt).
+- Trigger `update_story_list()` so story list item titles and timing ranges update instantly in the list view.
+- Persist all changes immediately into the `.rtvs` project file storage.
 
-[x] 2.4 Story Widget Workspace Expansion Controls (`ui_layout.py`, `transcript_story.py`)
------------------------------------------------------------------------------------------
-- Added dedicated Maximize / Expand and Restore / Minimize buttons to the Story Editor widget in the main application window.
-- Allows the story view to expand to fill the entire application window workspace for focused editing, and collapse back to its standard split layout once finished.
-
-[x] 2.5 Project Export & Lifecycle Modularization (`project_lifecycle.py`, `export/audio.py`)
----------------------------------------------------------------------------------------------
-- Extracted project open, save, close, dirty flag tracking, and undo stack resets from `project_export.py` into a standalone `project_lifecycle.py`.
-- Migrated audio rendering engines (broadcast WAV formatting, stem splitting, ID3v2 tag writing, MP3 encoding) into dedicated modules inside `export/audio.py`.
-- Retained `ProjectExportMixin` on `MainWindow` as a clean facade to guarantee 100% backward compatibility for all existing callers.
-
-[x] 2.6 WordPress Episode & Story Cross-Linking (`plugins/wordpress/client.py`, `export_destination.py`)
---------------------------------------------------------------------------------------------------------
-- Automatically capture Full Episode post URLs and inject customizable attribution links (e.g. "This story was broadcast as part of {episode_link}") into individual story posts.
-- Added automated back-linking: once all individual stories are published, optionally update the parent Full Episode post with a linked Table of Contents block indexing all broadcast stories.
-
-[x] 2.7 WordPress Rich Text & Markdown Hyperlinks (`plugins/wordpress/client.py`)
----------------------------------------------------------------------------------
-- Converted Markdown link syntax (`[text](url)`), auto-linked raw URLs (`https://...`), and enabled safe HTML tag passthrough in exported transcript bodies and custom notices.
+[-] 2.4 Streamlined Stories Panel Layout (`ui_layout.py`)
+----------------------------------------------------------
+- Eliminate separate plugin-specific group boxes from the Stories sidebar in favor of the universal Story Metadata launcher and clean quick-edit fields.
 
 ================================================================================
 3. UPCOMING MILESTONE: GOOGLE DOCS & DRIVE EXPORT PLUGIN [PLANNED for v3.6.0]

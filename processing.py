@@ -358,19 +358,45 @@ class ProcessingMixin:
                 self.start_input.setText(format_time(story.start))
                 self.end_input.setText(format_time(story.end))
                 self.title_input.setText(story.title)
+                if hasattr(self, "author_input"):
+                    meta = getattr(story, "metadata", {}) or {}
+                    wp_meta = meta.get("wordpress", {}) if isinstance(meta.get("wordpress"), dict) else {}
+                    auth_val = meta.get("author") or wp_meta.get("manual_author") or ""
+                    if not auth_val and isinstance(wp_meta.get("author_names"), list):
+                        auth_val = ", ".join(wp_meta["author_names"])
+                    self.author_input.setText(auth_val)
+                if hasattr(self, "excerpt_edit"):
+                    meta = getattr(story, "metadata", {}) or {}
+                    wp_meta = meta.get("wordpress", {}) if isinstance(meta.get("wordpress"), dict) else {}
+                    exc_val = meta.get("excerpt") or wp_meta.get("excerpt") or ""
+                    self.excerpt_edit.blockSignals(True)
+                    self.excerpt_edit.setPlainText(exc_val)
+                    self.excerpt_edit.blockSignals(False)
                 if seek:
                     self.seek_to(story.start)
                 if hasattr(self, "story_boundary_container"):
                     self.story_boundary_container.setVisible(True)
+                if hasattr(self, "notify_story_selection_to_plugins"):
+                    self.notify_story_selection_to_plugins(story)
             else:
                 if hasattr(self, "story_boundary_container"):
                     self.story_boundary_container.setVisible(False)
+                if hasattr(self, "notify_story_selection_to_plugins"):
+                    self.notify_story_selection_to_plugins(None)
         else:
             self.start_input.clear()
             self.end_input.clear()
             self.title_input.clear()
+            if hasattr(self, "author_input"):
+                self.author_input.clear()
+            if hasattr(self, "excerpt_edit"):
+                self.excerpt_edit.blockSignals(True)
+                self.excerpt_edit.clear()
+                self.excerpt_edit.blockSignals(False)
             if hasattr(self, "story_boundary_container"):
                 self.story_boundary_container.setVisible(False)
+            if hasattr(self, "notify_story_selection_to_plugins"):
+                self.notify_story_selection_to_plugins(None)
 
         self.timeline.set_stories(self.stories, selected_rows)
         self.is_updating_selection = False
@@ -881,6 +907,8 @@ class ProcessingMixin:
         storage_dir = str(get_models_storage_dir())
         env_overrides.setdefault("PRS_MODELS_DIR", storage_dir)
         env_overrides.setdefault("HF_HOME", str(get_models_storage_dir() / "huggingface"))
+        auto_fallback = str(self.settings_store.value("auto_detect_fallback_whisper", "true")).lower() == "true"
+        env_overrides.setdefault("PRS_AUTO_LANGUAGE_FALLBACK", "1" if auto_fallback else "0")
         return executable, worker_args, env_overrides
 
     def _resolve_worker_command(self, args):
@@ -1108,7 +1136,29 @@ class ProcessingMixin:
 
         if not self.pipeline_active:
             self.processing_status["transcription"] = False
-        self.set_processing_stage("Transcription", f"Whisper {model_name}")
+
+        if model_name.startswith("parakeet"):
+            stage_desc = "Parakeet ONNX"
+        elif model_name == "fastconformer-es-onnx":
+            stage_desc = "Spanish FastConformer"
+            if hasattr(self, "project_metadata") and isinstance(getattr(self, "project_metadata", None), object):
+                try: setattr(self.project_metadata, "source_language", "es")
+                except Exception: pass
+            self.translation_display_mode = "es"
+            if hasattr(self, "update_translation_language_selector"):
+                self.update_translation_language_selector()
+        elif model_name == "fastconformer-multilingual-onnx":
+            stage_desc = "Multilingual FastConformer"
+            if hasattr(self, "project_metadata") and getattr(self.project_metadata, "source_language", "").startswith("es"):
+                self.translation_display_mode = "es"
+                if hasattr(self, "update_translation_language_selector"):
+                    self.update_translation_language_selector()
+        elif str(model_name).lower().startswith("whisper"):
+            stage_desc = model_name
+        else:
+            stage_desc = f"Whisper {model_name}"
+
+        self.set_processing_stage("Transcription", stage_desc)
         self.transcription_output_buffer = ""
         self.transcription_helper_ready = False
         self.transcription_result_received = False
@@ -1236,6 +1286,19 @@ class ProcessingMixin:
             elif kind == "progress":
                 percent = int(message.get("percent", 0))
                 status = str(message.get("message", "Transcription in progress..."))
+                if "Spanish" in status or "detected spanish" in status.lower() or "switching to spanish" in status.lower():
+                    if "switching to Whisper" in status or "No Spanish FastConformer" in status:
+                        self.current_processing_stage_detail = "Whisper Small"
+                    elif "Spanish FastConformer" in status:
+                        self.current_processing_stage_detail = "Spanish FastConformer ONNX"
+                    elif "Multilingual FastConformer" in status:
+                        self.current_processing_stage_detail = "Multilingual FastConformer ONNX"
+                    if hasattr(self, "project_metadata") and isinstance(getattr(self, "project_metadata", None), object):
+                        try: setattr(self.project_metadata, "source_language", "es")
+                        except Exception: pass
+                    self.translation_display_mode = "es"
+                    if hasattr(self, "update_translation_language_selector"):
+                        self.update_translation_language_selector()
                 self.transcription_progress(status, percent)
                 self.log_activity(f"[TRANSCRIPTION] {status}")
             elif kind == "finished":
@@ -1388,6 +1451,21 @@ class ProcessingMixin:
         self.progress.setValue(100)
         self.transcript = transcript
         self.processing_status["transcription"] = True
+
+        # Sync detected spoken language
+        detected_lang = str((transcript or {}).get("language", "en") or "en").lower()
+        if hasattr(self, "project_metadata") and isinstance(self.project_metadata, object):
+            try:
+                setattr(self.project_metadata, "source_language", detected_lang)
+            except Exception:
+                pass
+        if detected_lang.startswith("es"):
+            self.translation_display_mode = "es"
+            self.log_activity("[TRANSCRIPTION] Spoken language detected: Spanish (es). Setting source view to Español.", mark_dirty=False)
+        else:
+            self.translation_display_mode = "en"
+            self.log_activity(f"[TRANSCRIPTION] Spoken language detected: {detected_lang.upper()}.", mark_dirty=False)
+
         self.progress.hide()
         self.cancel_button.hide()
 
@@ -1402,6 +1480,7 @@ class ProcessingMixin:
             and "diarization" in getattr(self, "pipeline_queue", [])
         )
         if not will_diarize_next:
+            self.set_processing_stage(None)
             self.render_transcript()
         else:
             self.log_activity("[TRANSCRIPTION] Live text ready. Speaker detection will assign speakers next.", mark_dirty=False)
@@ -1415,6 +1494,30 @@ class ProcessingMixin:
         self.update_processing_stage_summary()
         self.statusBar().showMessage("Transcription complete.")
         self.save_project()
+
+        # Prompt user if Spanish was detected and no Spanish FastConformer model is installed
+        # (Worker sets need_spanish_model_prompt=True when it had to fall back to Whisper)
+        if (
+            detected_lang.startswith("es")
+            and isinstance(transcript, dict)
+            and transcript.get("need_spanish_model_prompt") is True
+        ):
+            if not getattr(self, "_prompted_spanish_model_download", False):
+                self._prompted_spanish_model_download = True
+                try:
+                    from PySide6.QtWidgets import QMessageBox
+                    reply = QMessageBox.question(
+                        self,
+                        "Spanish Speech Detected — Model Download Recommended",
+                        "Spanish speech was detected in this audio file.\n\n"
+                        "Would you like to open Manage AI Models to download the Spanish FastConformer or Multilingual FastConformer model (~250MB) for up to 10x faster Spanish transcriptions?",
+                        QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                        QMessageBox.StandardButton.Yes
+                    )
+                    if reply == QMessageBox.StandardButton.Yes:
+                        self.open_model_cleanup_dialog()
+                except Exception as p_err:
+                    logger.warning(f"Failed to display Spanish model download prompt: {p_err}")
 
         if self.pipeline_active and self.pipeline_queue:
             QTimer.singleShot(0, self._run_next_selected_processing)
@@ -1629,8 +1732,11 @@ class ProcessingMixin:
 
         self.diarization_process = process
 
+        sens = str(self.settings_store.value("diarization_sensitivity", getattr(self, "diarization_sensitivity", "normal")) or "normal")
         worker_cmd = [
-            "--diarize", str(self.audio_file), "--expected-speakers", str(expected_speakers)
+            "--diarize", str(self.audio_file),
+            "--expected-speakers", str(expected_speakers),
+            "--diarization-sensitivity", str(sens)
         ]
         if transcript_segments:
             try:

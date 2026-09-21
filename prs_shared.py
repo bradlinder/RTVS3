@@ -48,6 +48,11 @@ def _ensure_runtime_bin_on_path():
 
 _ensure_runtime_bin_on_path()
 
+INTERNAL_APP_ID = "RadioTVStorySegmenter"
+APP_DISPLAY_NAME = "Radio & TV Segmenter"
+PROJECT_VERSION = "3.5.31"
+DEFAULT_GITHUB_REPO = "bradlinder/RTVS3"
+
 # Re-exports from Phase 1 modularization (core_utils, transcript_cleaner, project_serialization, process_lifecycle)
 from core_utils import (
     compute_file_sha256,
@@ -479,9 +484,7 @@ class CollapsibleSection(QWidget):
 # ============================================================
 
 # Display branding shown to the user (title bar, About box, installers).
-APP_DISPLAY_NAME = "Radio & TV Segmenter"
-PROJECT_VERSION = "3.5.9"
-DEFAULT_GITHUB_REPO = "bradlinder/RTVS3"
+# APP_DISPLAY_NAME, PROJECT_VERSION, and DEFAULT_GITHUB_REPO are defined at the top of prs_shared.py.
 
 
 # Internal identifiers are intentionally left as "RadioTVStorySegmenter" (the
@@ -494,7 +497,7 @@ INTERNAL_APP_ID = "RadioTVStorySegmenter"
 HELPER_PROTOCOL_VERSION = "1.0"
 WAVEFORM_ANALYSIS_RATE = 8000
 WAVEFORM_POINTS_PER_SECOND = 200
-MIN_WORDS_PER_PARAGRAPH = 100
+MIN_WORDS_PER_PARAGRAPH = 35
 MAX_ACTIVITY_SNAPSHOTS = 50
 
 
@@ -1070,6 +1073,9 @@ from background_workers import (
     invalidate_waveform_peak_cache,
     WaveformWorker,
     VideoThumbnailWorker,
+    get_video_thumbnail_cache_dir,
+    read_video_thumbnail_cache,
+    invalidate_video_thumbnail_cache,
     PEAKS_MAGIC,
     PEAKS_VERSION,
     WAVEFORM_ANALYSIS_RATE,

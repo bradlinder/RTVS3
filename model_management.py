@@ -165,7 +165,37 @@ class WhisperModelInstallWorker(QObject):
                 marker.write_text(f"{repo_id}\n{datetime.now().isoformat()}\n", encoding="utf-8")
                 self.progress.emit(100, "Parakeet ONNX model verified.")
 
-            elif target_model in ("distil-medium.en", "distil-large-v3") or target_model.startswith("distil-") or target_model in ("tiny", "base", "small", "medium", "large-v3"):
+            elif target_model == "fastconformer-es-onnx":
+                target_dir = get_models_storage_dir() / "fastconformer_es_onnx"
+                target_dir.mkdir(parents=True, exist_ok=True)
+                repo_id = "csukuangfj/sherpa-onnx-nemo-fast-conformer-ctc-es-1424-int8"
+
+                self.progress.emit(2, "Downloading Spanish FastConformer tokens...")
+                self._download_file_with_fallback(repo_id, "tokens.txt", target_dir / "tokens.txt", 2, 10, "tokens.txt")
+
+                self.progress.emit(10, "Downloading Spanish FastConformer CTC model weights...")
+                self._download_file_with_fallback(repo_id, "model.int8.onnx", target_dir / "model.int8.onnx", 10, 95, "model.int8.onnx")
+
+                marker = target_dir / ".complete"
+                marker.write_text(f"{repo_id}\n{datetime.now().isoformat()}\n", encoding="utf-8")
+                self.progress.emit(100, "Spanish FastConformer ONNX model verified.")
+
+            elif target_model == "fastconformer-multilingual-onnx":
+                target_dir = get_models_storage_dir() / "fastconformer_multilingual_onnx"
+                target_dir.mkdir(parents=True, exist_ok=True)
+                repo_id = "csukuangfj/sherpa-onnx-nemo-fast-conformer-ctc-be-de-en-es-fr-hr-it-pl-ru-uk-20k"
+
+                self.progress.emit(2, "Downloading Multilingual FastConformer tokens...")
+                self._download_file_with_fallback(repo_id, "tokens.txt", target_dir / "tokens.txt", 2, 10, "tokens.txt")
+
+                self.progress.emit(10, "Downloading Multilingual FastConformer CTC model weights...")
+                self._download_file_with_fallback(repo_id, "model.onnx", target_dir / "model.onnx", 10, 95, "model.onnx")
+
+                marker = target_dir / ".complete"
+                marker.write_text(f"{repo_id}\n{datetime.now().isoformat()}\n", encoding="utf-8")
+                self.progress.emit(100, "Multilingual FastConformer ONNX model verified.")
+
+            elif target_model in ("tiny", "base", "small", "medium", "large-v3"):
                 if target_model == "distil-medium.en":
                     resolved = "Systran/faster-distil-whisper-medium.en"
                 elif target_model == "distil-large-v3":
@@ -333,34 +363,25 @@ class ModelManagementMixin:
                 models_dir / "parakeet_onnx",
                 get_app_data_dir() / "models" / "parakeet_onnx",
                 Path(__file__).resolve().parent / "models" / "parakeet_onnx",
-                models_dir,
+            ]
+        elif model_name == "fastconformer-es-onnx":
+            return [
+                models_dir / "fastconformer_es_onnx",
+                get_app_data_dir() / "models" / "fastconformer_es_onnx",
+                Path(__file__).resolve().parent / "models" / "fastconformer_es_onnx",
+            ]
+        elif model_name == "fastconformer-multilingual-onnx":
+            return [
+                models_dir / "fastconformer_multilingual_onnx",
+                get_app_data_dir() / "models" / "fastconformer_multilingual_onnx",
+                Path(__file__).resolve().parent / "models" / "fastconformer_multilingual_onnx",
             ]
 
         # Determine the canonical Hugging Face hub folder slug
-        if model_name == "distil-medium.en":
-            slugs = [
-                "models--Systran--faster-distil-whisper-medium.en",
-                "models--Systran--faster-distil-medium.en",
-                "models--Systran--faster-distil-whisper-distil-medium.en",
-            ]
-        elif model_name == "distil-large-v3":
-            slugs = [
-                "models--Systran--faster-distil-whisper-large-v3",
-                "models--Systran--faster-distil-large-v3",
-                "models--Systran--faster-distil-whisper-distil-large-v3",
-            ]
-        elif model_name.startswith("distil-"):
-            clean = model_name[7:]
-            slugs = [
-                f"models--Systran--faster-distil-whisper-{clean}",
-                f"models--Systran--faster-distil-whisper-{model_name}",
-                f"models--Systran--faster-{model_name}",
-            ]
-        else:
-            slugs = [
-                f"models--Systran--faster-whisper-{model_name}",
-                f"models--openai--whisper-{model_name}",
-            ]
+        slugs = [
+            f"models--Systran--faster-whisper-{model_name}",
+            f"models--openai--whisper-{model_name}",
+        ]
 
         cache_roots = [
             models_dir / "huggingface" / "hub",
@@ -386,7 +407,7 @@ class ModelManagementMixin:
         candidates = self.model_cache_candidates(model_name)
         # 1. Prefer candidate containing actual weights
         for p in candidates:
-            if p.exists() and (any(p.rglob("model.bin")) or any(p.rglob("*.bin")) or any(p.rglob("*.safetensors")) or (model_name.startswith("parakeet") and any(p.rglob("*.onnx")))):
+            if p.exists() and (any(p.rglob("model.bin")) or any(p.rglob("*.bin")) or any(p.rglob("*.safetensors")) or any(p.rglob("*.onnx"))):
                 return p
 
         # 2. Fallback to first existing directory
@@ -403,6 +424,14 @@ class ModelManagementMixin:
         if model_name.startswith("parakeet"):
             required = ("encoder.int8.onnx", "decoder.int8.onnx", "joiner.int8.onnx", "tokens.txt")
             return all(any(p.is_file() and p.stat().st_size > 0 for p in path.rglob(name)) for name in required)
+        elif model_name in ("fastconformer-es-onnx", "fastconformer-multilingual-onnx"):
+            expected_folder = "fastconformer_es_onnx" if model_name == "fastconformer-es-onnx" else "fastconformer_multilingual_onnx"
+            if path.name != expected_folder and not (path / expected_folder).is_dir():
+                return False
+            actual_path = path if path.name == expected_folder else (path / expected_folder)
+            has_onnx = any(p.is_file() and p.stat().st_size > 1024 and p.name.endswith(".onnx") for p in actual_path.rglob("*"))
+            has_tokens = any(p.is_file() and p.name == "tokens.txt" for p in actual_path.rglob("*"))
+            return has_onnx and has_tokens
         if path.is_dir():
             has_bin = any(p.is_file() and p.stat().st_size > 1024 for p in path.rglob("*.bin"))
             has_safetensors = any(p.is_file() and p.stat().st_size > 1024 for p in path.rglob("*.safetensors"))
@@ -416,14 +445,14 @@ class ModelManagementMixin:
         self.model_input.blockSignals(True)
         self.model_input.clear()
         models = [
-            ("parakeet-onnx", "Parakeet ONNX (Ultra-Fast)"),
-            ("tiny", "Tiny"),
-            ("base", "Base"),
-            ("small", "Small"),
-            ("distil-medium.en", "Distil-Medium.en (4x Fast)"),
-            ("medium", "Medium"),
-            ("distil-large-v3", "Distil-Large-v3 (Fast Large)"),
-            ("large-v3", "Large"),
+            ("parakeet-onnx", "Parakeet ONNX Fast TDT (English)"),
+            ("fastconformer-es-onnx", "Spanish FastConformer (Spanish)"),
+            ("fastconformer-multilingual-onnx", "Multilingual FastConformer (English & Spanish)"),
+            ("tiny", "Whisper Tiny"),
+            ("base", "Whisper Base"),
+            ("small", "Whisper Small"),
+            ("medium", "Whisper Medium"),
+            ("large-v3", "Whisper Large v3"),
         ]
         for model_id, label in models:
             available = self.is_whisper_model_available(model_id)
@@ -588,12 +617,13 @@ class ModelManagementMixin:
         models_layout.addWidget(QLabel("<b>Transcription models</b>"))
         whisper_models = [
             ("parakeet-onnx", "Parakeet ONNX Fast TDT (English)"),
-            ("tiny", "Whisper Tiny"), ("base", "Whisper Base"),
+            ("fastconformer-es-onnx", "Spanish FastConformer (Spanish)"),
+            ("fastconformer-multilingual-onnx", "Multilingual FastConformer (English & Spanish)"),
+            ("tiny", "Whisper Tiny"),
+            ("base", "Whisper Base"),
             ("small", "Whisper Small"),
-            ("distil-medium.en", "Distil-Whisper Medium (English)"),
             ("medium", "Whisper Medium"),
-            ("distil-large-v3", "Distil-Whisper Large v3 (English)"),
-            ("large-v3", "Whisper Large"),
+            ("large-v3", "Whisper Large v3"),
         ]
         for model_id, label in whisper_models:
             path = self.model_cache_path(model_id)
@@ -953,15 +983,22 @@ class ModelManagementMixin:
                 repo_id = "csukuangfj/sherpa-onnx-nemo-parakeet-tdt-0.6b-v2-int8"
                 for fname in ["encoder.int8.onnx", "decoder.int8.onnx", "joiner.int8.onnx", "tokens.txt"]:
                     hf_hub_download(repo_id=repo_id, filename=fname, local_dir=str(target_dir))
+            elif model_name == "fastconformer-es-onnx":
+                target_dir = get_models_storage_dir() / "fastconformer_es_onnx"
+                target_dir.mkdir(parents=True, exist_ok=True)
+                from huggingface_hub import hf_hub_download
+                repo_id = "csukuangfj/sherpa-onnx-nemo-fast-conformer-ctc-es-1424-int8"
+                for fname in ["model.int8.onnx", "tokens.txt"]:
+                    hf_hub_download(repo_id=repo_id, filename=fname, local_dir=str(target_dir))
+            elif model_name == "fastconformer-multilingual-onnx":
+                target_dir = get_models_storage_dir() / "fastconformer_multilingual_onnx"
+                target_dir.mkdir(parents=True, exist_ok=True)
+                from huggingface_hub import hf_hub_download
+                repo_id = "csukuangfj/sherpa-onnx-nemo-fast-conformer-ctc-be-de-en-es-fr-hr-it-pl-ru-uk-20k"
+                for fname in ["model.onnx", "tokens.txt"]:
+                    hf_hub_download(repo_id=repo_id, filename=fname, local_dir=str(target_dir))
             else:
-                if model_name == "distil-medium.en":
-                    resolved = "Systran/faster-distil-whisper-medium.en"
-                elif model_name == "distil-large-v3":
-                    resolved = "Systran/faster-distil-whisper-large-v3"
-                elif model_name.startswith("distil-"):
-                    clean = model_name[7:]
-                    resolved = f"Systran/faster-distil-whisper-{clean}"
-                elif "/" in model_name:
+                if "/" in model_name:
                     resolved = model_name
                 else:
                     resolved = f"Systran/faster-whisper-{model_name}"

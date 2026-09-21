@@ -39,6 +39,7 @@ from PySide6.QtWidgets import (
 
 from core_utils import format_time
 from theme_tokens import ThemeTokens
+from story_metadata_dialog import StoryMetadataDialog
 
 
 def _get_fade_curve_profiles() -> List[Dict[str, Any]]:
@@ -517,6 +518,10 @@ class StoryListWidget(QListWidget):
 
         menu.addSeparator()
 
+        meta_act = QAction("Story & Post Metadata...", self)
+        meta_act.triggered.connect(lambda: parent.open_story_metadata_dialog(self.currentRow()) if hasattr(parent, "open_story_metadata_dialog") else None)
+        menu.addAction(meta_act)
+
         export_act = QAction("Export Selected Stories...", self)
         export_act.triggered.connect(lambda: self.exportRequested.emit())
         menu.addAction(export_act)
@@ -545,3 +550,14 @@ class StoryListWidget(QListWidget):
         menu.addAction(del_act)
 
         menu.exec(self.mapToGlobal(pos))
+
+    def adjust_height_to_contents(self, min_h: int = 65, max_h: int = 220) -> int:
+        """Dynamically size the list widget to only fit the number of stories."""
+        cnt = self.count()
+        if cnt == 0:
+            h = min_h
+        else:
+            row_h = self.sizeHintForRow(0) if self.sizeHintForRow(0) > 0 else 28
+            h = max(min_h, min(max_h, cnt * row_h + self.frameWidth() * 2 + 8))
+        self.setFixedHeight(h)
+        return h

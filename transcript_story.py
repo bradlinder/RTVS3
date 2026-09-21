@@ -1,4 +1,4 @@
-"""Radio & TV Segmenter v3.5.9 — transcript story responsibilities.
+"""Radio & TV Segmenter v3.5.31 — transcript story responsibilities.
 
 
 Methods intentionally retain the MainWindow-facing API so behavior remains
@@ -10,12 +10,12 @@ from prs_shared import *
 
 
 class ChangeSpeakerDialog(QDialog):
-    """Dialog prompting whether to apply a speaker name change to all instances or a single instance."""
+    """Dialog prompting whether to apply a speaker name change to all instances or a single turn."""
 
     def __init__(self, current_name: str, target_name: str, seg_idx: int = -1, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Change Speaker")
-        self.setMinimumWidth(480)
+        self.setMinimumWidth(520)
         self.choice = None  # 'all', 'single', or None
 
         layout = QVBoxLayout(self)
@@ -30,7 +30,7 @@ class ChangeSpeakerDialog(QDialog):
         prompt_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(prompt_lbl)
 
-        # Streamlined horizontal button row with concise labels that prevent text clipping
+        # Streamlined horizontal button row with concise labels
         btn_layout = QHBoxLayout()
         btn_layout.setSpacing(10)
 
@@ -38,12 +38,14 @@ class ChangeSpeakerDialog(QDialog):
         self.btn_all.setDefault(True)
         self.btn_all.setMinimumHeight(36)
         self.btn_all.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_all.setToolTip("Apply this name change to every occurrence of this speaker across the entire project")
         self.btn_all.clicked.connect(self._on_all)
         btn_layout.addWidget(self.btn_all, 1)
 
         self.btn_single = QPushButton("This Instance Only", self)
         self.btn_single.setMinimumHeight(36)
         self.btn_single.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_single.setToolTip("Apply this name change strictly to this instance (contiguous speaker turn)")
         self.btn_single.clicked.connect(self._on_single)
         btn_layout.addWidget(self.btn_single, 1)
 
@@ -58,6 +60,10 @@ class ChangeSpeakerDialog(QDialog):
 
     def _on_all(self):
         self.choice = "all"
+        self.accept()
+
+    def _on_subsequent(self):
+        self.choice = "subsequent"
         self.accept()
 
     def _on_single(self):
@@ -85,9 +91,19 @@ class TranscriptStoryMixin:
         es_item = self.get_spanish_translation_item() if hasattr(self, "get_spanish_translation_item") else None
         es_segments = es_item.get("segments", []) if isinstance(es_item, dict) else []
 
+        src_code = self.source_language_code() if hasattr(self, "source_language_code") else "en"
         active_segments = segments
-        if display_mode == "es" and es_segments:
-            active_segments = es_segments
+        is_rendering_translation = False
+        if src_code == "es":
+            if display_mode == "en" and es_segments:
+                active_segments = es_segments
+                is_rendering_translation = True
+            self.log_activity(f"[DEBUG] render_transcript: src_code=es, display_mode={display_mode}, active_segments_len={len(active_segments)}, es_segments_len={len(es_segments)}")
+        else:
+            if display_mode == "es" and es_segments:
+                active_segments = es_segments
+                is_rendering_translation = True
+            self.log_activity(f"[DEBUG] render_transcript: src_code={src_code}, display_mode={display_mode}, active_segments_len={len(active_segments)}, es_segments_len={len(es_segments)}")
 
         if not active_segments:
             self.transcript_view.setHtml("")
@@ -106,7 +122,7 @@ class TranscriptStoryMixin:
             orig_segment = segments[seg_idx] if 0 <= seg_idx < len(segments) else segment
             spk_name = self.get_effective_speaker_name(seg_idx, orig_segment)
 
-            words = segment.get("words", [])
+            words = [] if is_rendering_translation else segment.get("words", [])
             if words:
                 for w in words:
                     token = {
@@ -275,11 +291,13 @@ class TranscriptStoryMixin:
                 es_text = " ".join(t.strip() for t in es_text_parts if t.strip())
                 if es_text:
                     esc_es_text = html.escape(es_text)
+                    src_code = self.source_language_code() if hasattr(self, "source_language_code") else "en"
+                    tag_label = "EN: " if src_code == "es" else "ES: "
                     return (
                         f'<p style="margin-bottom: 14px;">'
                         f'{timestamp_html}{speaker_html}'
                         f'<span style="color:{word_color};">{body_content}</span><br/>'
-                        f'<span style="color:{spanish_tag_color}; font-weight:bold; font-size:0.86em;">ES: </span>'
+                        f'<span style="color:{spanish_tag_color}; font-weight:bold; font-size:0.86em;">{tag_label}</span>'
                         f'<span style="color:{spanish_color};"><i>{esc_es_text}</i></span>'
                         f'</p>'
                     )
@@ -313,10 +331,22 @@ class TranscriptStoryMixin:
                 curr_raw_speaker = raw_spk
 
             speaker_changed = (spk_name != curr_speaker_name)
-            word_count_exceeded = (len(curr_para_words) >= MIN_WORDS_PER_PARAGRAPH)
-            prev_word_ended_sentence = curr_para_words and is_sentence_end(curr_para_words[-1]["word"])
+            prev_token = curr_para_words[-1] if curr_para_words else None
+            time_gap = (token["start"] - prev_token["end"]) if prev_token and "end" in prev_token and "start" in token else 0.0
+            prev_word_ended_sentence = prev_token and is_sentence_end(prev_token["word"])
+            word_count = len(curr_para_words)
 
-            if curr_para_words and (speaker_changed or (word_count_exceeded and prev_word_ended_sentence)):
+            silence_thresh = float(getattr(self, "silence_threshold", 3.0) or 3.0)
+            major_silence = (time_gap >= max(2.5, silence_thresh))
+
+            should_break = (
+                speaker_changed
+                or major_silence
+                or (word_count >= MIN_WORDS_PER_PARAGRAPH and prev_word_ended_sentence)
+                or (word_count >= 50)
+            )
+
+            if curr_para_words and should_break:
                 is_change = (curr_speaker_name != last_rendered_speaker_name)
                 html_parts.append(render_paragraph_block(curr_para_words, curr_speaker_name, curr_raw_speaker, is_change))
                 block_segment_groups.append(_summarize_paragraph_segments(curr_para_words))
@@ -402,10 +432,17 @@ class TranscriptStoryMixin:
                 else:
                     self.transcript_mode_toggle_btn.setText("Edit Transcript")
                     self.transcript_mode_toggle_btn.setStyleSheet("")
-                    if display_mode == "es":
-                        self.transcript_mode_toggle_btn.setToolTip("Toggle between Viewing Mode and Editing Mode for Spanish translation (F2)")
+                    src_code = self.source_language_code() if hasattr(self, "source_language_code") else "en"
+                    if src_code == "es":
+                        if display_mode == "en":
+                            self.transcript_mode_toggle_btn.setToolTip("Toggle between Viewing Mode and Editing Mode for English translation (F2)")
+                        else:
+                            self.transcript_mode_toggle_btn.setToolTip("Toggle between Viewing Mode (click to play/seek audio) and Editing Mode (type/edit transcript text) (F2)")
                     else:
-                        self.transcript_mode_toggle_btn.setToolTip("Toggle between Viewing Mode (click to play/seek audio) and Editing Mode (type/edit transcript text) (F2)")
+                        if display_mode == "es":
+                            self.transcript_mode_toggle_btn.setToolTip("Toggle between Viewing Mode and Editing Mode for Spanish translation (F2)")
+                        else:
+                            self.transcript_mode_toggle_btn.setToolTip("Toggle between Viewing Mode (click to play/seek audio) and Editing Mode (type/edit transcript text) (F2)")
 
         if hasattr(self, "transcript_edit_mode_action"):
             self.transcript_edit_mode_action.setEnabled(display_mode not in ("split", "bilingual"))
@@ -475,7 +512,13 @@ class TranscriptStoryMixin:
         if display_mode in ("split", "bilingual"):
             return
 
-        if display_mode == "es":
+        src_code = self.source_language_code() if hasattr(self, "source_language_code") else "en"
+        if src_code == "es":
+            use_translation = (display_mode == "en")
+        else:
+            use_translation = (display_mode == "es")
+
+        if use_translation:
             es_item = self.get_spanish_translation_item() if hasattr(self, "get_spanish_translation_item") else None
             if not es_item or not isinstance(es_item, dict):
                 return
@@ -586,15 +629,28 @@ class TranscriptStoryMixin:
                 target_segments[seg_idx]["text"] = seg_text
                 self.sync_segment_words(target_segments[seg_idx], seg_text, share_fmts)
 
-        if display_mode == "en" and self.translations:
-            for key in self.translations:
-                self.translations[key]["status"] = "stale"
-            self.log_activity("[TRANSLATION] Source transcript edited; existing translations marked for update.", mark_dirty=False)
-        elif display_mode == "es":
-            if hasattr(self, "get_spanish_translation_item"):
-                es_item = self.get_spanish_translation_item()
-                if es_item and isinstance(es_item, dict):
-                    es_item["status"] = "ready"
+        src_code = self.source_language_code() if hasattr(self, "source_language_code") else "en"
+        if src_code == "es":
+            if display_mode == "es":
+                if hasattr(self, "translations") and self.translations:
+                    for key in self.translations:
+                        self.translations[key]["status"] = "stale"
+                    self.log_activity("[TRANSLATION] Source transcript edited; existing translations marked for update.", mark_dirty=False)
+            elif display_mode == "en":
+                if hasattr(self, "get_spanish_translation_item"):
+                    es_item = self.get_spanish_translation_item()
+                    if es_item and isinstance(es_item, dict):
+                        es_item["status"] = "ready"
+        else:
+            if display_mode == "en" and hasattr(self, "translations") and self.translations:
+                for key in self.translations:
+                    self.translations[key]["status"] = "stale"
+                self.log_activity("[TRANSLATION] Source transcript edited; existing translations marked for update.", mark_dirty=False)
+            elif display_mode == "es":
+                if hasattr(self, "get_spanish_translation_item"):
+                    es_item = self.get_spanish_translation_item()
+                    if es_item and isinstance(es_item, dict):
+                        es_item["status"] = "ready"
 
         if hasattr(self, "transcript_view"):
             self.transcript_view.update_extra_selections()
@@ -1202,10 +1258,10 @@ class TranscriptStoryMixin:
                 self.transcript_view.lock_scroll_position(v_scroll_before, h_scroll_before, duration_ms=200)
             return
 
-        # Prompt whether to change all instances or this instance only
+        # Prompt whether to change all instances, this & subsequent, or this instance only
         spk_dlg = ChangeSpeakerDialog(current_name, target_name, seg_idx=seg_idx, parent=self)
         spk_dlg.exec()
-        if spk_dlg.choice not in ("all", "single"):
+        if spk_dlg.choice not in ("all", "subsequent", "single"):
             if hasattr(self, "transcript_view") and self.transcript_view:
                 self.transcript_view.lock_scroll_position(v_scroll_before, h_scroll_before, duration_ms=200)
             return
@@ -1223,6 +1279,31 @@ class TranscriptStoryMixin:
                     self.speaker_names[override_key] = target_name
                     self.segment_speaker_overrides[idx] = override_key
             self.log_activity(f"[SPEAKER] Changed all instances of '{current_name}' to '{target_name}'")
+        elif spk_dlg.choice == "subsequent":
+            self.add_custom_speaker_to_glossary(target_name)
+            changed_count = 0
+            start_seg_idx = seg_idx if seg_idx >= 0 else 0
+            for idx in range(start_seg_idx, len(segments)):
+                if self.get_effective_speaker_name(idx, segments[idx]) == current_name:
+                    override_key = f"SEG_{idx}_SPEAKER"
+                    self.speaker_names[override_key] = target_name
+                    self.segment_speaker_overrides[idx] = override_key
+                    changed_count += 1
+
+            if self.diarization and isinstance(self.diarization, dict):
+                sec_start = float(segments[start_seg_idx].get("start", 0.0))
+                if "segments" in self.diarization:
+                    for d_seg in self.diarization["segments"]:
+                        d_start = float(d_seg.get("start", 0.0))
+                        if d_start >= sec_start:
+                            disp = self.display_speaker(str(d_seg.get("speaker", "")))
+                            if disp == current_name or d_seg.get("speaker") == current_name:
+                                d_seg["speaker"] = target_name
+                    self._diar_index_key = None
+
+            self.log_activity(
+                f"[SPEAKER] Changed '{current_name}' to '{target_name}' across {changed_count} subsequent segment(s) (starting at Segment #{start_seg_idx + 1})"
+            )
         elif spk_dlg.choice == "single":
             # Identify the contiguous run of segments in this turn starting from seg_idx
             # up to the next occurrence of a different speaker label.
@@ -1635,6 +1716,11 @@ class TranscriptStoryMixin:
 
         self.story_list.blockSignals(False)
         self.timeline.set_stories(self.stories, selected_indices)
+        if hasattr(self, "update_story_list_height"):
+            self.update_story_list_height()
+        if hasattr(self, "notify_story_selection_to_plugins"):
+            st = self.stories[selected_indices[0]] if len(selected_indices) == 1 and 0 <= selected_indices[0] < len(self.stories) else None
+            self.notify_story_selection_to_plugins(st)
 
     def handle_new_story_started(self, start_time, end_time):
         self.pre_drag_stories_snapshot = [Story.from_dict(s.to_dict()) for s in self.stories]
@@ -1769,14 +1855,31 @@ class TranscriptStoryMixin:
         new_stories[index].end = end
         new_stories[index].title = self.title_input.text().strip() or "Untitled Story"
 
+        author_val = self.author_input.text().strip() if hasattr(self, "author_input") else ""
+        excerpt_val = self.excerpt_edit.toPlainText().strip() if hasattr(self, "excerpt_edit") else ""
+
+        if not hasattr(new_stories[index], "metadata") or new_stories[index].metadata is None:
+            new_stories[index].metadata = {}
+
+        old_author = old_stories[index].metadata.get("author", "") if hasattr(old_stories[index], "metadata") and old_stories[index].metadata else ""
+        old_excerpt = old_stories[index].metadata.get("excerpt", "") if hasattr(old_stories[index], "metadata") and old_stories[index].metadata else ""
+
+        new_stories[index].metadata["author"] = author_val
+        new_stories[index].metadata["excerpt"] = excerpt_val
+        wp_meta = new_stories[index].metadata.setdefault("wordpress", {})
+        wp_meta["manual_author"] = author_val
+        wp_meta["excerpt"] = excerpt_val
+
         start_changed = abs(new_stories[index].start - old_stories[index].start) >= 0.001
         end_changed = abs(new_stories[index].end - old_stories[index].end) >= 0.001
         title_changed = new_stories[index].title != old_stories[index].title
+        author_changed = author_val != old_author
+        excerpt_changed = excerpt_val != old_excerpt
 
-        if not start_changed and not end_changed and not title_changed:
+        if not start_changed and not end_changed and not title_changed and not author_changed and not excerpt_changed:
             return
 
-        if (start_changed or end_changed) and not title_changed and hasattr(self, "undo_stack"):
+        if (start_changed or end_changed) and not title_changed and not author_changed and not excerpt_changed and hasattr(self, "undo_stack"):
             desc = f"Adjust Story #{index + 1} Boundary"
             cmd = StoryBoundaryChangeCommand(
                 self, index, old_stories[index].start, old_stories[index].end,
@@ -2333,6 +2436,14 @@ class TranscriptStoryMixin:
                 self.timeline.set_stories(self.stories, self.current_selected_story_indices)
                 self.timeline.update()
             self.save_project()
+
+    def open_story_metadata_dialog(self, target_story_index: Optional[int] = None):
+        """Open the universal Story & Post Metadata dialog for editing full episode and story metadata."""
+        from story_metadata_dialog import StoryMetadataDialog
+        if target_story_index is None and getattr(self, "current_selected_story_indices", None):
+            target_story_index = self.current_selected_story_indices[0]
+        dlg = StoryMetadataDialog(self, main_window=self, target_story_index=target_story_index)
+        dlg.exec()
 
 
 class StoryFadesDialog(QDialog):

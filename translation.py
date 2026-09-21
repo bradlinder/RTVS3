@@ -137,15 +137,35 @@ class TranslationMixin:
 
         Honors an explicit direction chosen via the batch dialog's
         Translation control ("en-es" or "es-en"); for "auto" (the default),
-        flips based on the transcript's Whisper-detected language so a
-        Spanish-language recording translates to English and vice versa.
+        flips based on the transcript's Whisper-detected language or project
+        source_language metadata so a Spanish-language recording translates to English.
         """
         direction = str(getattr(self, "translation_direction", "auto") or "auto")
         if direction == "es-en":
             return "es"
         if direction == "en-es":
             return "en"
-        detected = str((self.transcript or {}).get("language", "en") or "en").lower()
+        meta_lang = ""
+        if hasattr(self, "project_metadata") and isinstance(getattr(self, "project_metadata", None), object):
+            meta_lang = str(getattr(self.project_metadata, "source_language", "") or "").lower()
+        curr_mode = str(getattr(self, "translation_display_mode", "en") or "en").lower()
+        trans_lang = str((self.transcript or {}).get("language", "") or "").lower()
+        if not trans_lang and self.transcript and isinstance(self.transcript, dict):
+            # Lightweight heuristics: check if the first 300 characters contain Spanish stopwords
+            txt = str(self.transcript.get("text", "")).lower()[:300]
+            if txt:
+                import re
+                spanish_words = {"hola", "bienvenidas", "el", "la", "en", "de", "los", "las", "un", "una", "y", "atrévete"}
+                words = set(re.findall(r"\b\w+\b", txt))
+                if len(words & spanish_words) >= 3:
+                    trans_lang = "es"
+        if meta_lang.startswith("es"):
+            return "es"
+        if trans_lang.startswith("es"):
+            return "es"
+            
+        detected = meta_lang or trans_lang or curr_mode
+        self.log_activity(f"[DEBUG] source_language_code: meta_lang={meta_lang}, trans_lang={trans_lang}, curr_mode={curr_mode}, detected={detected}")
         return "es" if detected.startswith("es") else "en"
 
     def target_language_code(self) -> str:
@@ -213,14 +233,26 @@ class TranslationMixin:
         return bool(segments)
 
     def get_spanish_translation_item(self) -> dict | None:
-        """Return the translation dictionary for en-es if present."""
+        """Return the translation dictionary for en-es or es-en if present."""
         if not hasattr(self, "translations") or not isinstance(self.translations, dict):
             return None
-        return (
-            self.translations.get("en-es")
-            or self.translations.get("en_es")
-            or None
-        )
+        src_code = self.source_language_code() if hasattr(self, "source_language_code") else "en"
+        if src_code == "es":
+            return (
+                self.translations.get("es-en")
+                or self.translations.get("es_en")
+                or self.translations.get("en-es")
+                or self.translations.get("en_es")
+                or None
+            )
+        else:
+            return (
+                self.translations.get("en-es")
+                or self.translations.get("en_es")
+                or self.translations.get("es-en")
+                or self.translations.get("es_en")
+                or None
+            )
 
     def mark_stale_translations(self):
         """Mark all existing translations as stale when transcript text changes."""
@@ -233,29 +265,43 @@ class TranslationMixin:
 
     def update_translation_language_selector(self):
         """Update translation UI selector states (tabs / combobox / actions)."""
-        has_es = self.has_spanish_translation()
+        src_code = self.source_language_code()
+        tgt_code = self.target_language_code()
+
+        trans_item = self.get_spanish_translation_item()
+        has_trans = bool(trans_item and trans_item.get("segments"))
+        has_es = has_trans or self.has_spanish_translation()
+        is_stale = isinstance(trans_item, dict) and trans_item.get("status") == "stale"
+
         is_plugin_on = False
         if hasattr(self, "plugin_manager"):
             is_plugin_on = self.plugin_manager.is_plugin_enabled("translation")
-        has_any_trans = has_es or bool(getattr(self, "translations", {})) or getattr(self, "translation_display_mode", "en") != "en"
+        has_any_trans = has_trans or bool(getattr(self, "translations", {})) or getattr(self, "translation_display_mode", "en") not in {"en", "es"}
 
         if hasattr(self, "transcript_language_selector") and self.transcript_language_selector is not None:
             self.transcript_language_selector.blockSignals(True)
             self.transcript_language_selector.clear()
-            self.transcript_language_selector.addItem("English (Original)", "en")
-            if has_es:
-                es_item = self.get_spanish_translation_item()
-                is_stale = isinstance(es_item, dict) and es_item.get("status") == "stale"
-                es_label = "Español (Translation - Outdated)" if is_stale else "Español (Translation)"
-                self.transcript_language_selector.addItem(es_label, "es")
-                self.transcript_language_selector.addItem("Bilingual (Split)", "split")
-            target_mode = getattr(self, "translation_display_mode", "en")
+
+            if src_code == "es":
+                self.transcript_language_selector.addItem("Español (Original)", "es")
+                if has_trans:
+                    lbl = "English (Translation - Outdated)" if is_stale else "English (Translation)"
+                    self.transcript_language_selector.addItem(lbl, "en")
+                    self.transcript_language_selector.addItem("Bilingual (Split)", "split")
+            else:
+                self.transcript_language_selector.addItem("English (Original)", "en")
+                if has_trans:
+                    lbl = "Español (Translation - Outdated)" if is_stale else "Español (Translation)"
+                    self.transcript_language_selector.addItem(lbl, "es")
+                    self.transcript_language_selector.addItem("Bilingual (Split)", "split")
+
+            target_mode = getattr(self, "translation_display_mode", src_code)
             if target_mode == "bilingual":
                 target_mode = "split"
             cur_idx = self.transcript_language_selector.findData(target_mode)
             if cur_idx < 0:
                 cur_idx = 0
-                self.translation_display_mode = "en"
+                self.translation_display_mode = src_code
             self.transcript_language_selector.setCurrentIndex(cur_idx)
             self.transcript_language_selector.blockSignals(False)
             self.transcript_language_selector.setVisible(is_plugin_on or has_any_trans)
@@ -675,8 +721,11 @@ class TranslationMixin:
             return False
         return True
 
-    def start_translation(self, from_code: str = "en", to_code: str = "es", install_if_missing: bool = True):
+    def start_translation(self, from_code: str = None, to_code: str = None, install_if_missing: bool = True):
         """Start local translation in the translation plugin's isolated runtime."""
+        if from_code is None or to_code is None or (from_code == "en" and to_code == "es" and self.source_language_code() == "es"):
+            from_code = self.source_language_code()
+            to_code = self.target_language_code()
         if hasattr(self, "plugin_manager") and not self.plugin_manager.is_plugin_enabled("translation"):
             QMessageBox.warning(self, "Plugin Disabled", "The Language Translation plugin is currently disabled.\nYou can enable it in Settings > Manage Plugins & Add-ons.")
             return
@@ -754,6 +803,14 @@ class TranslationMixin:
         """Handle successful translation results."""
         if not hasattr(self, "translations") or not isinstance(self.translations, dict):
             self.translations = {}
+
+        # Remove obsolete/outdated translation directions to avoid state pollution
+        if translation_key in ("es-en", "es_en"):
+            self.translations.pop("en-es", None)
+            self.translations.pop("en_es", None)
+        elif translation_key in ("en-es", "en_es"):
+            self.translations.pop("es-en", None)
+            self.translations.pop("es_en", None)
 
         if isinstance(translated_transcript, list):
             translated_dict = copy.deepcopy(self.transcript) if isinstance(self.transcript, dict) else {}

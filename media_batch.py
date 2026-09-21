@@ -5,6 +5,11 @@ maintaining the established MainWindow-facing API while responsibilities are iso
 """
 
 from prs_shared import *
+from background_workers import (
+    get_video_thumbnail_cache_dir,
+    read_video_thumbnail_cache,
+    invalidate_video_thumbnail_cache,
+)
 
 
 class MediaBatchMixin:

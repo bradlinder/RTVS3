@@ -350,7 +350,25 @@ class ProjectLifecycleMixin:
 
         transcript = data.get("transcript")
         if transcript is not None:
-            segments = transcript.get("segments") if isinstance(transcript, dict) else None
+            if isinstance(transcript, list):
+                transcript = {"segments": transcript}
+                data["transcript"] = transcript
+                if hasattr(self, "transcript"):
+                    self.transcript = transcript
+            elif not isinstance(transcript, dict):
+                transcript = {"segments": []}
+                data["transcript"] = transcript
+                if hasattr(self, "transcript"):
+                    self.transcript = transcript
+
+            segments = transcript.get("segments")
+            if not isinstance(segments, list):
+                transcript["segments"] = []
+                data["transcript"] = transcript
+                if hasattr(self, "transcript"):
+                    self.transcript = transcript
+                segments = []
+
             if not isinstance(segments, list):
                 errors.append("Transcript segments are missing or invalid.")
             else:

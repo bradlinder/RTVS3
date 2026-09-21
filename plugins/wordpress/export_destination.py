@@ -17,6 +17,7 @@ from PySide6.QtWidgets import (
     QButtonGroup,
     QCheckBox,
     QComboBox,
+    QDialog,
     QFileDialog,
     QFormLayout,
     QFrame,
@@ -74,9 +75,10 @@ def capture_video_frame(video_path: str, timestamp: float, output_path: str) -> 
 class WordPressExportTabWidget(QWidget):
     """Configuration and preview panel for WordPress Draft Posts."""
 
-    def __init__(self, parent: QWidget, main_window: Any):
+    def __init__(self, parent: QWidget, main_window: Any, metadata_editor_mode: bool = False):
         super().__init__(parent)
         self.main_window = main_window
+        self.metadata_editor_mode = metadata_editor_mode
         self.settings = QSettings(INTERNAL_APP_ID, INTERNAL_APP_ID)
         self._is_video_project = bool(getattr(self.main_window, "current_media_is_video", False))
         self._temp_preview_files = set()
@@ -110,10 +112,16 @@ class WordPressExportTabWidget(QWidget):
         wp_layout.setSpacing(10)
 
         self.wp_info_section = CollapsibleSection("WordPress Post Configuration", self, is_expanded=True, subtitle="Title, Excerpt, Authors, Categories")
-        wp_notice = QLabel(
-            "Extracts audio as <b>128 kbps MP3</b>, uploads to your WordPress Media Library, "
-            "and creates a <b>Draft Post</b> with Gutenberg audio player and formatted transcript."
-        )
+        if self.metadata_editor_mode:
+            wp_notice = QLabel(
+                "Configure WordPress post titles, excerpts, authors, categories, and featured images "
+                "for the full episode and all stories. Changes are saved directly to your project."
+            )
+        else:
+            wp_notice = QLabel(
+                "Extracts audio as <b>128 kbps MP3</b>, uploads to your WordPress Media Library, "
+                "and creates a <b>Draft Post</b> with Gutenberg audio player and formatted transcript."
+            )
         wp_notice.setWordWrap(True)
         self.wp_info_section.add_widget(wp_notice)
 
@@ -326,23 +334,58 @@ class WordPressExportTabWidget(QWidget):
         self.wp_rad_thumb_grab.toggled.connect(self._on_wp_thumb_mode_changed)
         self.wp_rad_thumb_file.toggled.connect(self._on_wp_thumb_mode_changed)
 
-        # Bulk Actions Row
+        # Bulk Actions Rows
         self.wp_bulk_box = QWidget()
-        bulk_layout = QHBoxLayout(self.wp_bulk_box)
-        bulk_layout.setContentsMargins(0, 0, 0, 0)
+        bulk_vbox = QVBoxLayout(self.wp_bulk_box)
+        bulk_vbox.setContentsMargins(0, 4, 0, 4)
+        bulk_vbox.setSpacing(4)
+
+        bulk_hdr = QLabel("<b>Bulk Apply to Other Posts / Stories:</b>")
+        bulk_hdr.setStyleSheet("color: #94a3b8; font-size: 11px;")
+        bulk_vbox.addWidget(bulk_hdr)
+
+        bulk_row1 = QHBoxLayout()
+        bulk_row1.setSpacing(6)
+        self.wp_apply_authors_selected_btn = QPushButton("Apply Authors to Selected Stories")
+        self.wp_apply_authors_selected_btn.setToolTip("Copy this post's author selection to currently selected stories")
+        self.wp_apply_authors_selected_btn.clicked.connect(self._apply_authors_to_selected_stories)
+
         self.wp_apply_authors_all_btn = QPushButton("Apply Authors to All Posts")
         self.wp_apply_authors_all_btn.setToolTip("Copy this post's author selection to all other posts in the queue")
         self.wp_apply_authors_all_btn.clicked.connect(self._apply_authors_to_all_posts)
+        bulk_row1.addWidget(self.wp_apply_authors_selected_btn)
+        bulk_row1.addWidget(self.wp_apply_authors_all_btn)
+        bulk_row1.addStretch()
+        bulk_vbox.addLayout(bulk_row1)
+
+        bulk_row2 = QHBoxLayout()
+        bulk_row2.setSpacing(6)
+        self.wp_apply_cats_selected_btn = QPushButton("Apply Categories to Selected Stories")
+        self.wp_apply_cats_selected_btn.setToolTip("Copy this post's category selection to currently selected stories")
+        self.wp_apply_cats_selected_btn.clicked.connect(self._apply_categories_to_selected_stories)
+
         self.wp_apply_cats_all_btn = QPushButton("Apply Categories to All Posts")
         self.wp_apply_cats_all_btn.setToolTip("Copy this post's category selection to all other posts in the queue")
         self.wp_apply_cats_all_btn.clicked.connect(self._apply_categories_to_all_posts)
+        bulk_row2.addWidget(self.wp_apply_cats_selected_btn)
+        bulk_row2.addWidget(self.wp_apply_cats_all_btn)
+        bulk_row2.addStretch()
+        bulk_vbox.addLayout(bulk_row2)
+
+        bulk_row3 = QHBoxLayout()
+        bulk_row3.setSpacing(6)
+        self.wp_apply_thumb_selected_btn = QPushButton("Apply Thumbnail to Selected Stories")
+        self.wp_apply_thumb_selected_btn.setToolTip("Copy this post's thumbnail selection to currently selected stories")
+        self.wp_apply_thumb_selected_btn.clicked.connect(self._apply_thumbnails_to_selected_stories)
+
         self.wp_apply_thumb_all_btn = QPushButton("Apply Thumbnail to All Posts")
         self.wp_apply_thumb_all_btn.setToolTip("Copy this post's thumbnail selection to all other posts in the queue")
         self.wp_apply_thumb_all_btn.clicked.connect(self._apply_thumbnails_to_all_posts)
-        bulk_layout.addWidget(self.wp_apply_authors_all_btn)
-        bulk_layout.addWidget(self.wp_apply_cats_all_btn)
-        bulk_layout.addWidget(self.wp_apply_thumb_all_btn)
-        bulk_layout.addStretch()
+        bulk_row3.addWidget(self.wp_apply_thumb_selected_btn)
+        bulk_row3.addWidget(self.wp_apply_thumb_all_btn)
+        bulk_row3.addStretch()
+        bulk_vbox.addLayout(bulk_row3)
+
         editor_layout.addWidget(self.wp_bulk_box)
 
         self.wp_posts_container.addWidget(self.wp_post_editor_widget)
@@ -367,14 +410,34 @@ class WordPressExportTabWidget(QWidget):
         # Languages & Presentation
         self.wp_lang_section = CollapsibleSection("Transcript Languages & Presentation", self, is_expanded=True)
         wp_lang_checks = QHBoxLayout()
-        self.wp_cb_en = QCheckBox("English")
-        self.wp_cb_en.setChecked(True)
-        has_es = bool(getattr(self.main_window, "spanish_transcript", None))
-        self.wp_cb_es = QCheckBox("Spanish (Translated)")
-        self.wp_cb_es.setChecked(has_es)
-        self.wp_cb_es.setEnabled(has_es)
-        if not has_es:
-            self.wp_cb_es.setToolTip("Spanish translation is not available for this project. Generate a translation first to enable.")
+        src_code = self.main_window.source_language_code() if hasattr(self.main_window, "source_language_code") else "en"
+        has_translation = False
+        if hasattr(self.main_window, "get_spanish_translation_item"):
+            trans_item = self.main_window.get_spanish_translation_item()
+            if trans_item and isinstance(trans_item, dict):
+                has_translation = bool(trans_item.get("segments"))
+
+        if src_code == "es":
+            self.wp_cb_es = QCheckBox("Spanish")
+            self.wp_cb_es.setChecked(True)
+            self.wp_cb_es.setEnabled(True)
+
+            self.wp_cb_en = QCheckBox("English (Translated)")
+            self.wp_cb_en.setChecked(has_translation)
+            self.wp_cb_en.setEnabled(has_translation)
+            if not has_translation:
+                self.wp_cb_en.setToolTip("English translation is not available for this project. Generate a translation first to enable.")
+        else:
+            self.wp_cb_en = QCheckBox("English")
+            self.wp_cb_en.setChecked(True)
+            self.wp_cb_en.setEnabled(True)
+
+            self.wp_cb_es = QCheckBox("Spanish (Translated)")
+            self.wp_cb_es.setChecked(has_translation)
+            self.wp_cb_es.setEnabled(has_translation)
+            if not has_translation:
+                self.wp_cb_es.setToolTip("Spanish translation is not available for this project. Generate a translation first to enable.")
+
         wp_lang_checks.addWidget(self.wp_cb_en)
         wp_lang_checks.addWidget(self.wp_cb_es)
         wp_lang_checks.addStretch()
@@ -391,6 +454,9 @@ class WordPressExportTabWidget(QWidget):
         self.wp_primary_lang_combo = QComboBox()
         self.wp_primary_lang_combo.addItem("English", "en")
         self.wp_primary_lang_combo.addItem("Spanish", "es")
+        idx = self.wp_primary_lang_combo.findData(src_code)
+        if idx >= 0:
+            self.wp_primary_lang_combo.setCurrentIndex(idx)
         prim_row.addWidget(prim_label)
         prim_row.addWidget(self.wp_primary_lang_combo)
         prim_row.addStretch()
@@ -485,6 +551,11 @@ class WordPressExportTabWidget(QWidget):
 
         self.wp_crosslink_section.add_layout(crosslink_layout)
         wp_layout.addWidget(self.wp_crosslink_section)
+
+        if self.metadata_editor_mode:
+            self.wp_lang_section.setVisible(False)
+            self.wp_custom_section.setVisible(False)
+            self.wp_crosslink_section.setVisible(False)
 
         # Connection status footer
         wp_conn_layout = QHBoxLayout()
@@ -589,6 +660,114 @@ class WordPressExportTabWidget(QWidget):
             self.wp_post_items[self._current_post_index]["category_ids"] = []
             self._update_post_list_item_label(self._current_post_index)
 
+    def _get_selected_story_indices(self) -> List[int]:
+        indices = list(getattr(self.main_window, "current_selected_story_indices", []) or [])
+        if not indices and hasattr(self.main_window, "story_list"):
+            indices = [self.main_window.story_list.row(it) for it in self.main_window.story_list.selectedItems()]
+        return [i for i in indices if i >= 0]
+
+    def _apply_authors_to_selected_stories(self):
+        if not (0 <= self._current_post_index < len(self.wp_post_items)):
+            return
+        current_auth_ids = list(self.wp_post_items[self._current_post_index].get("author_ids", []))
+        current_term_ids = list(self.wp_post_items[self._current_post_index].get("author_term_ids", []))
+        selected_indices = self._get_selected_story_indices()
+        stories = getattr(self.main_window, "stories", []) or []
+        if not selected_indices:
+            QMessageBox.information(self, "No Stories Selected", "Please select one or more stories in the story list.")
+            return
+
+        applied = 0
+        for idx in selected_indices:
+            if 0 <= idx < len(stories):
+                st = stories[idx]
+                if not hasattr(st, "metadata") or st.metadata is None:
+                    st.metadata = {}
+                wp_meta = st.metadata.setdefault("wordpress", {})
+                wp_meta["author_ids"] = list(current_auth_ids)
+                wp_meta["author_term_ids"] = list(current_term_ids)
+                applied += 1
+
+        for post in self.wp_post_items:
+            for idx in selected_indices:
+                if 0 <= idx < len(stories) and post.get("start") == stories[idx].start:
+                    post["author_ids"] = list(current_auth_ids)
+                    post["author_term_ids"] = list(current_term_ids)
+
+        for i in range(len(self.wp_post_items)):
+            self._update_post_list_item_label(i)
+
+        if hasattr(self.main_window, "set_unsaved_changes"):
+            self.main_window.set_unsaved_changes(True)
+        QMessageBox.information(self, "Applied Authors", f"Applied author selection to {applied} selected stories.")
+
+    def _apply_categories_to_selected_stories(self):
+        if not (0 <= self._current_post_index < len(self.wp_post_items)):
+            return
+        current_cat_ids = list(self.wp_post_items[self._current_post_index].get("category_ids", []))
+        selected_indices = self._get_selected_story_indices()
+        stories = getattr(self.main_window, "stories", []) or []
+        if not selected_indices:
+            QMessageBox.information(self, "No Stories Selected", "Please select one or more stories in the story list.")
+            return
+
+        applied = 0
+        for idx in selected_indices:
+            if 0 <= idx < len(stories):
+                st = stories[idx]
+                if not hasattr(st, "metadata") or st.metadata is None:
+                    st.metadata = {}
+                wp_meta = st.metadata.setdefault("wordpress", {})
+                wp_meta["category_ids"] = list(current_cat_ids)
+                applied += 1
+
+        for post in self.wp_post_items:
+            for idx in selected_indices:
+                if 0 <= idx < len(stories) and post.get("start") == stories[idx].start:
+                    post["category_ids"] = list(current_cat_ids)
+
+        for i in range(len(self.wp_post_items)):
+            self._update_post_list_item_label(i)
+
+        if hasattr(self.main_window, "set_unsaved_changes"):
+            self.main_window.set_unsaved_changes(True)
+        QMessageBox.information(self, "Applied Categories", f"Applied category selection to {applied} selected stories.")
+
+    def _apply_thumbnails_to_selected_stories(self):
+        if not (0 <= self._current_post_index < len(self.wp_post_items)):
+            return
+        current_img = self.wp_post_items[self._current_post_index].get("featured_image")
+        current_mode = self.wp_post_items[self._current_post_index].get("featured_image_mode", "none")
+        current_pos = self.wp_post_items[self._current_post_index].get("frame_pos")
+        selected_indices = self._get_selected_story_indices()
+        stories = getattr(self.main_window, "stories", []) or []
+        if not selected_indices:
+            QMessageBox.information(self, "No Stories Selected", "Please select one or more stories in the story list.")
+            return
+
+        applied = 0
+        for idx in selected_indices:
+            if 0 <= idx < len(stories):
+                st = stories[idx]
+                if not hasattr(st, "metadata") or st.metadata is None:
+                    st.metadata = {}
+                wp_meta = st.metadata.setdefault("wordpress", {})
+                wp_meta["featured_image"] = current_img
+                wp_meta["featured_image_mode"] = current_mode
+                wp_meta["frame_pos"] = current_pos
+                applied += 1
+
+        for post in self.wp_post_items:
+            for idx in selected_indices:
+                if 0 <= idx < len(stories) and post.get("start") == stories[idx].start:
+                    post["featured_image"] = current_img
+                    post["featured_image_mode"] = current_mode
+                    post["frame_pos"] = current_pos
+
+        if hasattr(self.main_window, "set_unsaved_changes"):
+            self.main_window.set_unsaved_changes(True)
+        QMessageBox.information(self, "Applied Thumbnails", f"Applied thumbnail settings to {applied} selected stories.")
+
     def _apply_authors_to_all_posts(self):
         if not (0 <= self._current_post_index < len(self.wp_post_items)):
             return
@@ -597,8 +776,17 @@ class WordPressExportTabWidget(QWidget):
         for post in self.wp_post_items:
             post["author_ids"] = list(current_auth_ids)
             post["author_term_ids"] = list(current_term_ids)
+        stories = getattr(self.main_window, "stories", []) or []
+        for st in stories:
+            if not hasattr(st, "metadata") or st.metadata is None:
+                st.metadata = {}
+            wp_meta = st.metadata.setdefault("wordpress", {})
+            wp_meta["author_ids"] = list(current_auth_ids)
+            wp_meta["author_term_ids"] = list(current_term_ids)
         for idx in range(len(self.wp_post_items)):
             self._update_post_list_item_label(idx)
+        if hasattr(self.main_window, "set_unsaved_changes"):
+            self.main_window.set_unsaved_changes(True)
         QMessageBox.information(self, "Applied Authors", f"Assigned author selection to all {len(self.wp_post_items)} posts.")
 
     def _apply_categories_to_all_posts(self):
@@ -607,8 +795,16 @@ class WordPressExportTabWidget(QWidget):
         current_cat_ids = list(self.wp_post_items[self._current_post_index].get("category_ids", []))
         for post in self.wp_post_items:
             post["category_ids"] = list(current_cat_ids)
+        stories = getattr(self.main_window, "stories", []) or []
+        for st in stories:
+            if not hasattr(st, "metadata") or st.metadata is None:
+                st.metadata = {}
+            wp_meta = st.metadata.setdefault("wordpress", {})
+            wp_meta["category_ids"] = list(current_cat_ids)
         for idx in range(len(self.wp_post_items)):
             self._update_post_list_item_label(idx)
+        if hasattr(self.main_window, "set_unsaved_changes"):
+            self.main_window.set_unsaved_changes(True)
         QMessageBox.information(self, "Applied Categories", f"Assigned category selection to all {len(self.wp_post_items)} posts.")
 
     def _apply_thumbnails_to_all_posts(self):
@@ -616,10 +812,125 @@ class WordPressExportTabWidget(QWidget):
             return
         current_img = self.wp_post_items[self._current_post_index].get("featured_image")
         current_mode = self.wp_post_items[self._current_post_index].get("featured_image_mode", "none")
+        current_pos = self.wp_post_items[self._current_post_index].get("frame_pos")
         for post in self.wp_post_items:
             post["featured_image"] = current_img
             post["featured_image_mode"] = current_mode
+            post["frame_pos"] = current_pos
+        stories = getattr(self.main_window, "stories", []) or []
+        for st in stories:
+            if not hasattr(st, "metadata") or st.metadata is None:
+                st.metadata = {}
+            wp_meta = st.metadata.setdefault("wordpress", {})
+            wp_meta["featured_image"] = current_img
+            wp_meta["featured_image_mode"] = current_mode
+            wp_meta["frame_pos"] = current_pos
+        if hasattr(self.main_window, "set_unsaved_changes"):
+            self.main_window.set_unsaved_changes(True)
         QMessageBox.information(self, "Applied Thumbnails", f"Applied thumbnail settings to all {len(self.wp_post_items)} posts.")
+
+    def _sync_post_to_project(self, idx: int):
+        if not (0 <= idx < len(self.wp_post_items)):
+            return
+        post = self.wp_post_items[idx]
+        task_label = post.get("task_label", "")
+        # Full Episode
+        if task_label == "Full Episode" or post.get("start") is None:
+            proj_meta = getattr(self.main_window, "project_metadata", None)
+            if not isinstance(proj_meta, dict):
+                proj_meta = {}
+                self.main_window.project_metadata = proj_meta
+            wp_meta = proj_meta.setdefault("wordpress", {})
+            wp_meta["title"] = post.get("title", "")
+            wp_meta["excerpt"] = post.get("excerpt", "")
+            wp_meta["author_ids"] = list(post.get("author_ids") or [])
+            wp_meta["author_term_ids"] = list(post.get("author_term_ids") or [])
+            wp_meta["category_ids"] = list(post.get("category_ids") or [])
+            wp_meta["featured_image"] = post.get("featured_image")
+            wp_meta["featured_image_mode"] = post.get("featured_image_mode", "none")
+            wp_meta["frame_pos"] = post.get("frame_pos")
+            wp_meta["status"] = post.get("status", "draft")
+            wp_meta["tags"] = list(post.get("tags") or [])
+        else:
+            stories = getattr(self.main_window, "stories", []) or []
+            target_story = None
+            st_start = post.get("start")
+            for st in stories:
+                if st.start == st_start:
+                    target_story = st
+                    break
+            if not target_story and task_label.startswith("Story "):
+                try:
+                    num_part = task_label.split(":")[0].replace("Story ", "").strip()
+                    s_idx = int(num_part) - 1
+                    if 0 <= s_idx < len(stories):
+                        target_story = stories[s_idx]
+                except Exception:
+                    pass
+            if target_story:
+                if not hasattr(target_story, "metadata") or target_story.metadata is None:
+                    target_story.metadata = {}
+                wp_meta = target_story.metadata.setdefault("wordpress", {})
+                new_title = post.get("title", "")
+                wp_meta["title"] = new_title
+                wp_meta["excerpt"] = post.get("excerpt", "")
+                target_story.metadata["excerpt"] = post.get("excerpt", "")
+                if new_title:
+                    target_story.title = new_title
+
+                # Resolve and sync author name to Story.metadata["author"]
+                auth_names = []
+                auth_ids_set = set(int(x) for x in (post.get("author_ids") or []))
+                term_ids_set = set(int(x) for x in (post.get("author_term_ids") or []))
+                for a in getattr(self, "wp_cached_authors_data", []):
+                    if isinstance(a, dict):
+                        if not a.get("is_guest") and (a.get("user_id") in auth_ids_set or a.get("id") in auth_ids_set):
+                            auth_names.append(a.get("name", "User"))
+                        elif a.get("is_guest") and (a.get("term_id") in term_ids_set or a.get("id") in term_ids_set):
+                            auth_names.append(a.get("name", "Guest"))
+                if auth_names:
+                    target_story.metadata["author"] = ", ".join(auth_names)
+                elif post.get("manual_author"):
+                    target_story.metadata["author"] = post.get("manual_author", "")
+
+                wp_meta["author_ids"] = list(post.get("author_ids") or [])
+                wp_meta["author_term_ids"] = list(post.get("author_term_ids") or [])
+                wp_meta["category_ids"] = list(post.get("category_ids") or [])
+                wp_meta["featured_image"] = post.get("featured_image")
+                wp_meta["featured_image_mode"] = post.get("featured_image_mode", "none")
+                wp_meta["frame_pos"] = post.get("frame_pos")
+                wp_meta["status"] = post.get("status", "draft")
+                wp_meta["tags"] = list(post.get("tags") or [])
+
+                # Update main window story list display
+                if hasattr(self.main_window, "refresh_story_list"):
+                    self.main_window.refresh_story_list()
+
+                # If this target story is currently active in the main window, update its UI fields
+                selected_indices = getattr(self.main_window, "current_selected_story_indices", []) or []
+                is_selected = (target_story in stories and stories.index(target_story) in selected_indices)
+                if is_selected or getattr(self.main_window, "current_story", None) == target_story:
+                    if hasattr(self.main_window, "title_input") and self.main_window.title_input:
+                        self.main_window.title_input.setText(target_story.title or "")
+                    if hasattr(self.main_window, "excerpt_edit") and self.main_window.excerpt_edit:
+                        self.main_window.excerpt_edit.setText(target_story.metadata.get("excerpt", "") or "")
+                    if hasattr(self.main_window, "author_input") and self.main_window.author_input:
+                        self.main_window.author_input.setText(target_story.metadata.get("author", "") or "")
+
+        if hasattr(self.main_window, "mark_project_dirty"):
+            self.main_window.mark_project_dirty("Update WordPress Metadata")
+        elif hasattr(self.main_window, "set_unsaved_changes"):
+            self.main_window.set_unsaved_changes(True)
+
+    def save_all_posts_to_project(self):
+        """Persist all post metadata back into stories and project_metadata."""
+        for idx in range(len(self.wp_post_items)):
+            self._sync_post_to_project(idx)
+        if hasattr(self.main_window, "save_project"):
+            try:
+                self.main_window.save_project()
+            except Exception as e:
+                print(f"[WP METADATA] Error auto-saving project: {e}")
 
     def _update_post_list_item_label(self, idx: int):
         if not (0 <= idx < len(self.wp_post_items)) or not hasattr(self, "wp_posts_list") or idx >= self.wp_posts_list.count():
@@ -917,7 +1228,9 @@ class WordPressExportTabWidget(QWidget):
             self.wp_thumb_preview_label.setPixmap(pix)
 
     def rebuild_post_items(self, scope: Optional[str] = None):
-        if scope is None:
+        if self.metadata_editor_mode:
+            scope = "full_and_all_stories"
+        elif scope is None:
             dlg = self.window()
             if hasattr(dlg, "scope_combo"):
                 scope = dlg.scope_combo.currentData()
@@ -1329,3 +1642,53 @@ class WordPressExportDestination(ExportDestination):
                 f"Errors:\n{fail_summary}",
             )
         return len(created_posts) > 0
+
+
+class WordPressPostMetadataDialog(QDialog):
+    """Full-featured WordPress post & story metadata editor dialog."""
+
+    def __init__(self, parent: Optional[QWidget], main_window: Any, target_story_index: Optional[int] = None):
+        super().__init__(parent)
+        self.main_window = main_window
+        self.target_story_index = target_story_index
+        self.setObjectName("wordpress_post_metadata_dialog")
+        self.setWindowTitle("WordPress Post Metadata & Story Settings")
+        self.resize(920, 720)
+        self.setMinimumSize(720, 540)
+
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(12, 12, 12, 12)
+        layout.setSpacing(10)
+
+        self.tab_widget = WordPressExportTabWidget(self, self.main_window, metadata_editor_mode=True)
+        layout.addWidget(self.tab_widget, 1)
+
+        # Bottom buttons
+        btn_box = QHBoxLayout()
+        btn_box.setSpacing(8)
+
+        self.save_close_btn = QPushButton("Save & Close", self)
+        self.save_close_btn.setObjectName("wp_save_close_btn")
+        self.save_close_btn.setDefault(True)
+        self.save_close_btn.clicked.connect(self._on_save_and_close)
+
+        self.close_btn = QPushButton("Close", self)
+        self.close_btn.setObjectName("wp_close_btn")
+        self.close_btn.clicked.connect(self.reject)
+
+        btn_box.addStretch()
+        btn_box.addWidget(self.close_btn)
+        btn_box.addWidget(self.save_close_btn)
+        layout.addLayout(btn_box)
+
+        # Select target story if specified
+        if self.target_story_index is not None and hasattr(self.tab_widget, "wp_posts_list"):
+            # index 0 is Full Episode, index 1..N are stories
+            post_idx = self.target_story_index + 1
+            if 0 <= post_idx < self.tab_widget.wp_posts_list.count():
+                self.tab_widget.wp_posts_list.setCurrentRow(post_idx)
+
+    def _on_save_and_close(self):
+        self.tab_widget.save_all_posts_to_project()
+        self.accept()
+

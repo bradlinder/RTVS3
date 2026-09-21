@@ -1,5 +1,231 @@
 # Changelog
 
+## v3.5.31
+- **Fixed Symmetrical Language Swapping & Fallbacks in Document Exports (`project_export.py`)**:
+  - Resolved a bug where Spanish-source files with both English and Spanish checked produced swapped `.txt` and `.pdf` files. This occurred because `source_code` fallback logic hardcoded `"en"` when batch translation options were absent, mistakenly mapping translated blocks onto original filename suffixes.
+  - Dynamically resolved the correct `source_code` fallback as `src_code` (which identifies `"es"` for Spanish-source projects and `"en"` for English-source projects).
+  - Fixed a formatting bug in `.docx` exports where both English and Spanish Word files came out in Spanish. This occurred because the DOCX exporter dynamically retrieved word-level details from original Spanish segments (`source_segments`) even when formatting translated English text blocks, ignoring the translated strings.
+  - Dynamically disabled original word-level segment fallbacks for non-matching languages (`lang_code != src_code`), ensuring the correct translated text is printed for translated tracks.
+
+## v3.5.30
+- **Dynamic Language Selection & Custom Labeling in Export Options (`export/dialog.py`, `project_export.py`, `plugins/wordpress/export_destination.py`)**:
+  - Dynamically resolved and configured export options depending on whether the project's primary source language is English or Spanish.
+  - Re-labeled "Spanish (Translated)" to "English (Translated)" in Spanish-source projects, and vice versa in English-source projects.
+  - Correctly pre-checked the primary language checkbox ("Spanish" or "English") and only enabled the translation track checkbox if translation segments are generated.
+  - Pre-selected the primary language in the WordPress export panel according to the project's source language dynamically.
+  - Solved an issue where the export dialog failed to recognize translations, cleanly reading segment availability from the active project's translation dictionary structure instead of the non-existent `spanish_transcript` attribute.
+
+## v3.5.29
+- **Fixed Word-Level Display Bug in Translation-Only View (`transcript_story.py`)**:
+  - Solved a deep-seated bug where selecting "English (Translation)" in Spanish-source projects incorrectly displayed the original Spanish words.
+  - While whole translated segments contain the correct translated English string inside `segment["text"]`, deep-copied metadata from the original transcript segments included a legacy `"words"` array containing Spanish word timestamps.
+  - Introduced an `is_rendering_translation` flag to dynamically skip mapping original word arrays when displaying translated text. The view now cleanly splits the translated string by space (using `seg_text.split()`) while correctly preserving parent segment timestamps for interactive seeks.
+
+## v3.5.28
+- **Dynamic Translation Key Prioritization (`translation.py`)**:
+  - Refactored `get_spanish_translation_item` to dynamically prioritize translation key lookup based on `source_language_code()` (checking `es-en` first for Spanish-source projects, and `en-es` first for English-source projects).
+  - This ensures that if a project has legacy or stale translation keys (e.g. from the previous Spanish-to-Spanish translation bug), they do not override or mask the correct, newly generated translations.
+- **Automated Legacy Translation Key Purging (`translation.py`)**:
+  - Programmed the `_on_translation_finished` callback to automatically purge obsolete/conflicting translation directions (e.g., popping out `en-es` when an `es-en` translation finishes, and vice-versa) to prevent project state pollution on re-translation.
+
+## v3.5.27
+- **Fixed Translation Display in English View (`transcript_story.py`)**:
+  - Resolved a bug where Spanish-source projects rendered the original Spanish text when the "English (Translation)" view was selected in the transcript language dropdown.
+  - Symmetrically updated `render_transcript` to load the translated English segments (`es_segments`) instead of defaulting to the Spanish original (`segments`) when the project source language is Spanish.
+- **Symmetrical Translation Editing & State Management (`transcript_story.py`)**:
+  - Standardized edit synchronizations in `on_transcript_text_changed` so that edits to the English translation text properly update the translation dictionary segments, keeping the translation "ready" and marking other translation directions "stale" correctly.
+- **Dynamic Action Tooltips (`transcript_story.py`)**:
+  - Dynamically customized the Edit/View transcript toggle button's tooltips to represent either English or Spanish translation editing depending on the active project's source language.
+
+## v3.5.26
+- **Restored Change Speaker Dialog Ergonomics (`transcript_story.py`)**:
+  - Restored the streamlined three-button dialog layout for Change Speaker interactions: **All Instances**, **This Instance Only**, and **Cancel**.
+  - Renamed the previous "This Turn Only" option to **This Instance Only** for improved clarity and consistency.
+  - Eliminated the transitional "This & Subsequent" option from the layout to reduce clutter and align with user preferences.
+
+## v3.5.25
+- **Fixed Spanish-to-Spanish Translation Issue & Enhanced Language Detection (`translation.py`)**:
+  - Implemented high-frequency Spanish stopword heuristics in `source_language_code()` as a fail-safe language detection mechanism.
+  - When loading older project files or transcribing with engines that omit language metadata, the translation system now automatically detects Spanish transcripts from their text content.
+  - This guarantees that translating a Spanish transcript correctly routes to `es-en` (Spanish to English) translation instead of incorrectly defaulting to `en-es` (English to Spanish), which previously caused the engine to output original Spanish text verbatim.
+- **Dynamic Translation Labels in Split/Bilingual View (`transcript_story.py`)**:
+  - Upgraded the transcript viewer's rendering logic to dynamically inspect `source_language_code()`.
+  - The second line of translation in the split/bilingual view is now dynamically labeled as **`EN: `** for Spanish-to-English translations, and **`ES: `** for English-to-Spanish translations.
+
+## v3.5.24
+- **On-the-Fly Self-Healing & Robust Project Validation (`project_lifecycle.py`, `project_export.py`)**:
+  - Fixed a critical validation error (`Project validation failed: Transcript segments are missing or invalid`) that would occasionally block users from saving their projects upon editing transcripts, exiting, or translating.
+  - Implemented automatic real-time self-healing and structural normalization inside `validate_project_data()` across both the `project_lifecycle` and `project_export` modules.
+  - When the transcription data model is temporarily represented as a raw list or an empty dictionary, the validation engine now instantly heals and normalizes the structure into a standard dictionary container (`{"segments": ...}`), preventing blocking save validation alerts and guaranteeing zero data loss.
+
+## v3.5.23
+- **Eliminated PySide6/Qt Dependency in Background Worker (`radio_tv_story_segmenter_worker.py`)**:
+  - The background worker subprocess runs inside a lightweight python environment/virtual environment which purposefully does not have `PySide6` installed. 
+  - Previously, `radio_tv_story_segmenter_worker.py` made imports from `prs_shared` which imported `PySide6` at the module level. This caused hidden `ImportError: No module named 'PySide6'` failures during model searches and transcript cleaning, silently breaking the auto-fallback availability checks and causing Whisper local loading to skip cached/installed paths.
+  - Resolved this by creating zero-dependency, pure Python implementations of `get_app_data_dir_pure()` and `get_models_storage_dir_pure()` directly inside the worker.
+  - Redirected transcript cleaning imports to the pure Python `transcript_cleaner` module rather than `prs_shared`.
+- **Restored Fully Functional Model Availability Checks**:
+  - Because `is_onnx_model_available()` is now 100% free of Qt/PySide6 dependency, model existence and status checks succeed perfectly on every run, preventing unwanted Whisper Small downloads/fallbacks when Spanish FastConformer or Multilingual FastConformer are installed.
+
+## v3.5.22
+- **Preserved User-Selected Spanish FastConformer & Multilingual Models (`radio_tv_story_segmenter_worker.py`)**:
+  - Fixed model selection logic in `transcribe()` so that when `Spanish FastConformer ONNX` or `Multilingual FastConformer ONNX` is chosen as the default model in Preferences or the main UI, language probing preserves the selected ONNX model rather than overriding it or falling back to Whisper Small on Spanish audio.
+  - Multilingual FastConformer is now properly recognized as a multi-language ONNX model and remains active across all supported non-English speech detections.
+- **Enhanced Direct Model Search Paths (`radio_tv_story_segmenter_worker.py`)**:
+  - Expanded `search_dirs` in `is_onnx_model_available()` and `transcribe_parakeet_onnx()` to resolve direct model paths when `PRS_MODELS_DIR` points directly to the model folder.
+
+## v3.5.21
+- **Eliminated False Positive ONNX Model Detection (`radio_tv_story_segmenter_worker.py`)**:
+  - Removed parent directory search fallbacks from `is_onnx_model_available()`. Previously, searching bare parent directories like `PRS_MODELS_DIR` allowed `rglob("*")` to match files inside sibling model folders (such as `parakeet_onnx`), producing false positive availability reports for `fastconformer-es-onnx`.
+  - Directory searches now strictly target model-specific destination folders (`fastconformer_es_onnx`, `fastconformer_multilingual_onnx`, `parakeet_onnx`).
+- **sherpa-onnx Runtime Dependency Verification (`radio_tv_story_segmenter_worker.py`)**:
+  - Added explicit runtime import validation (`import sherpa_onnx`) to `is_onnx_model_available()`. If the ONNX runtime module is missing or cannot be initialized, `is_onnx_model_available()` immediately returns `False`, preventing invalid model switches and runtime worker crashes.
+- **Improved Auto-Switching Status Notifications (`radio_tv_story_segmenter_worker.py`)**:
+  - When Spanish speech is probed, status messages now cleanly report whether Spanish FastConformer is being used or if the app is continuing with Whisper when FastConformer model files or the sherpa-onnx runtime are unavailable.
+
+## v3.5.20
+- **Universal Spanish FastConformer Auto-Switching (`radio_tv_story_segmenter_worker.py`)**:
+  - Removed model-type restrictions on auto-language fallback probing in the background worker. Language inspection now runs whenever auto-fallback is enabled, regardless of whether `Whisper Small`, `Parakeet ONNX`, or another default model is selected.
+  - When Spanish speech is detected, the worker automatically switches to `Spanish FastConformer ONNX` (or `Multilingual FastConformer ONNX`) if installed, enabling up to 10x faster Spanish transcriptions for all default model choices.
+- **Recursive Multi-Subdirectory Model & Token Resolution (`radio_tv_story_segmenter_worker.py`)**:
+  - Upgraded ONNX model file resolution (`tokens.txt`, `model.int8.onnx`, `encoder.int8.onnx`, etc.) in `is_onnx_model_available` and `transcribe_parakeet_onnx` to use recursive pattern matching (`rglob("*")`).
+  - Ensures models downloaded into Hugging Face Hub subfolders or custom directory structures are detected and loaded flawlessly without falling back to Whisper.
+- **Progress Stage Detail Banner Parsing (`processing.py`)**:
+  - Fixed status message parsing in `processing.py` so that progress status updates containing fallback warning text accurately update `current_processing_stage_detail` to `Whisper Small` (or the active engine) instead of erroneously displaying `Spanish FastConformer ONNX`.
+
+## v3.5.19
+- **ONNX Model Availability Multi-Directory Search (`radio_tv_story_segmenter_worker.py`)**:
+  - Upgraded `is_onnx_model_available` in the background worker to scan all candidate model storage locations (`PRS_MODELS_DIR` environment variable, custom storage path, and default appdata `models` folder).
+  - Guarantees that when Spanish audio is probed, the worker reliably detects installed Spanish FastConformer ONNX models and auto-switches from Parakeet ONNX to Spanish FastConformer instead of falling back to Whisper.
+- **Paragraph Grouping & Flow Restoration (`transcript_story.py`)**:
+  - Removed an overly sensitive `time_gap >= 1.25` condition from the paragraph rendering logic that forced a paragraph break on short conversational breath pauses.
+  - Same-speaker speech turns now naturally flow together into cohesive 35-50 word paragraph blocks (or until a speaker change or major silence pause $\ge 2.5$s occurs) as established in the formatting guidelines.
+- **Speaker Separation Sensitivity Control (`playback_preferences.py`, `processing.py`, `radio_tv_story_segmenter_worker.py`)**:
+  - Added a 4-tier **Speaker Separation Sensitivity** setting (`Low (Loose)`, `Normal (Balanced)`, `High (Strict)`, `Very High (Aggressive)`) in **Preferences > Story & Speaker Detection**.
+  - Dynamically adjusts the Agglomerative Hierarchical Clustering (AHC) cosine distance threshold (from `0.78` down to `0.48`) in the `WeSpeaker ONNX` speaker diarization worker.
+  - Setting sensitivity to **High** or **Very High** prevents the acoustic engine from over-merging distinct speakers with similar vocal pitches into a single label.
+- **Spanish Download Prompt Fix (`processing.py`)**:
+  - Fixed an issue where the "Download Spanish Model" prompt dialog was incorrectly shown after Spanish transcription even when a Spanish FastConformer model was already installed and used.
+- **Language Probing & Dynamic Model Banner Fix (`radio_tv_story_segmenter_worker.py`, `processing.py`)**:
+  - **Fixed Language Probe Parameter**: Resolved `TypeError` in `probe_audio_language()` by removing invalid `duration` keyword argument from `faster_whisper.transcribe()`, restoring fast language detection on audio files.
+  - **Dynamic Model Stage Label**: Replaced hardcoded `Parakeet ONNX` string in worker chunk progress messages and updated `current_processing_stage_detail` in `processing.py` when auto-switching models. The activity bar now accurately displays `Spanish FastConformer ONNX` (or `Multilingual FastConformer ONNX`) when auto-switched.
+- **Preferences Dialog NameError Resolution (`playback_preferences.py`)**:
+  - Removed stale widget keys (`mod_expected_speakers_combo`, `mod_ask_speakers_chk`) from the preferences map, restoring normal launcher functionality for the Preferences dialog.
+
+## v3.5.17
+- **Smart "This & Subsequent" Speaker Reassignment (`transcript_story.py`)**:
+  - Added a new **"This & Subsequent"** option to `ChangeSpeakerDialog` when renaming or reassigning a speaker label in the transcript view.
+  - When two speakers are merged into a single cluster by speaker detection, clicking a speaker label and choosing **"This & Subsequent"** automatically updates that segment and all future occurrences of that speaker to the new name, eliminating the need to manually change each instance line by line.
+- **Preferences Visibility & Accessibility (`playback_preferences.py`)**:
+  - Added the **"Default Expected Speakers"** selector (`Auto-Detect`, `1 Speaker`, `2 Speakers`, `3+ Speakers`) and **"Speaker Estimate Prompt"** checkbox directly to the **Preferences > AI Models** tab.
+  - Bidirectionally synced preferences across both the **AI Models** and **Story & Speaker Detection** tabs so settings remain accessible wherever users look for speaker detection options.
+
+## v3.5.16
+- **Live Progress Stage Branding & Real-Time Spanish Language UI Updates (`processing.py`, `translation.py`, `model_management.py`, `radio_tv_story_segmenter_worker.py`)**:
+  - **Dynamic Stage Progress Branding**:
+    - Resolved issue where the top activity bar mislabeled ONNX engines (e.g. `Transcription (Whisper fastconformer-multilingual-onnx)`).
+    - Progress indicator now displays clean, accurate model branding based on the active engine (e.g. `Parakeet ONNX`, `Spanish FastConformer`, `Multilingual FastConformer`, or `Whisper {model}`).
+  - **Real-Time Live Transcript Language Dropdown Synchronization**:
+    - Resolved issue where the transcript view language selector defaulted to `English (Original)` during live transcription and only changed to `Español (Original)` upon job completion.
+    - Updated `source_language_code()` and initial transcription setup to inspect `ProjectMetadata.source_language` and `translation_display_mode` dynamically, immediately updating the transcript language dropdown to `Español (Original)` as soon as Spanish audio is probed or a Spanish model is initialized.
+  - **Strict Model Cache & Folder Validation**:
+    - Fixed model candidate lookup in `model_management.py` and `radio_tv_story_segmenter_worker.py` to prevent ONNX models from matching against files in parent storage directories or misreporting disk usage.
+
+## v3.5.15
+- **Next-Gen ONNX AI Model Suite & Smart Spanish FastConformer Integration (`model_management.py`, `radio_tv_story_segmenter_worker.py`, `processing.py`, `playback_preferences.py`, `transcript_story.py`, `prs_shared.py`)**:
+  - **New AI Model Options & Downloads**:
+    - Added download & install options for **Parakeet ONNX Fast TDT (English)**, **Spanish FastConformer (Spanish)**, and **Multilingual FastConformer (English & Spanish)** in the AI Model Manager and Preferences.
+    - Removed legacy `distil-medium.en` and `distil-large-v3` options from model choices and download lists.
+  - **Smart Spanish Model Preference & Download Prompting**:
+    - When non-English speech (`es`) is detected during pre-transcription probing, the app automatically checks for installed Spanish-compatible FastConformer models (`fastconformer-es-onnx` or `fastconformer-multilingual-onnx`).
+    - If a Spanish FastConformer model is installed, transcription seamlessly uses that ultra-fast ONNX model (~250MB, CTC architecture) instead of falling back to Whisper.
+    - If no Spanish-compatible FastConformer model is installed, the app falls back to Whisper Small and displays a prompt offering to open Manage AI Models to download one for up to 10x faster Spanish transcriptions.
+  - **Transcript Paragraph Break Calculation Fix**:
+    - Resolved issue where transcripts rendered as one giant block of text without paragraph breaks when using CTC models or continuous speech.
+    - Updated `MIN_WORDS_PER_PARAGRAPH` threshold (from 100 to 35) and added multi-factor break conditions based on speaker changes, pause/silence gaps (>= 1.25s), segment boundaries, and sentence boundaries.
+  - **Activity Meter ETA & Timer Cleanup**:
+    - Resolved issue where the activity meter continued showing time elapsed after transcription was completed by explicitly stopping the ETA progress timer (`set_processing_stage(None)`) upon transcription completion.
+
+## v3.5.14
+- **Smart Language Detection, Automatic Whisper Model Switching & Dynamic Translation Alignment (`radio_tv_story_segmenter_worker.py`, `processing.py`, `playback_preferences.py`, `translation.py`)**:
+  - **Pre-Transcription Language Prober & Auto-Fallback**:
+    - Implemented a lightweight 15-second pre-transcription speech prober (`probe_audio_language`) using `faster-whisper`.
+    - When `parakeet-onnx` (English-only) is selected and auto-language fallback is active, automatically detects non-English speech (such as Spanish) with confidence probability scoring.
+    - Seamlessly reroutes the transcription pass to `Whisper Small` (or configured multilingual model) with clear live activity log notifications, avoiding Parakeet ONNX character garbage or failure on non-English speech.
+  - **Dynamic Primary Language Assignment & Metadata Persistence**:
+    - Automatically updates `ProjectMetadata.source_language` and session state upon transcription completion to reflect the actual spoken language (e.g. `es`).
+  - **Dynamic Transcript Language Selector & Inverted Translation Alignment**:
+    - Updated the search bar transcript language dropdown to dynamically display the native original language (e.g., `"Español (Original)"` when Spanish is detected, instead of hardcoding `"English (Original)"`).
+    - Configured the OPUS-MT neural machine translation engine to translate from the detected non-English source language back to English (e.g., `es -> en`), offering `"Español (Original)"`, `"English (Translation)"`, and `"Bilingual (Split)"` display modes.
+  - **User Preferences Control**:
+    - Added `[x] Auto-detect non-English speech & fall back to Whisper Small for non-English audio` option in Preferences > AI Models, backed by `auto_detect_fallback_whisper` settings storage and `PRS_AUTO_LANGUAGE_FALLBACK` environment propagation.
+
+## v3.5.13
+- **Resolved Video Thumbnail Cache NameError (`prs_shared.py`, `media_batch.py`)**:
+  - Fixed `NameError: name 'read_video_thumbnail_cache' is not defined` when opening media files containing video tracks.
+  - Re-exported `get_video_thumbnail_cache_dir`, `read_video_thumbnail_cache`, and `invalidate_video_thumbnail_cache` from `background_workers.py` in `prs_shared.py`, and added explicit module imports in `media_batch.py`.
+  - Prevented media loading routines from crashing on video files, ensuring audio waveform and video thumbnail generation overlays resolve and clear properly.
+
+## v3.5.12 (including WordPress Plugin v3.5.12)
+- **Unified Story & Post Metadata Architecture (`story_metadata_dialog.py`, `story_widgets.py`, `ui_layout.py`, `transcript_story.py`, `plugins/wordpress/export_destination.py`)**:
+  - **Universal Core Story & Post Metadata Dialog**:
+    - Created `StoryMetadataDialog` as a dedicated, universal multi-pane metadata workspace accessible via the "🗗 Story Metadata..." button in the Stories sidebar and the story list right-click context menu.
+    - Features tabbed target switching between the Full Episode (🎬) and individual stories (📖 1, 📖 2...), with synchronized editing for Title, Authors, Categories/Tags, Excerpts, Editorial Notes, and Featured Video Frame captures.
+    - Integrated FFmpeg video frame grabber with stepper adjustments (`-1s`, `-1f`, `+1f`, `+1s`, `⟳ Playhead`) and live 160x90 image thumbnail previews.
+    - Integrated one-click transcript synopsis generator (~55-word auto-excerpt) directly into the dialog.
+  - **Dynamic WordPress Taxonomy Enrichment & Offline Flexibility**:
+    - When the WordPress plugin is active, automatically enriches the dialog with live author profiles (including Co-Authors Plus guest authors) and hierarchical categories with instant real-time search filtering.
+    - When WordPress is inactive or offline, provides clean local author and category/tag entry with autocompletion and manual input fields.
+  - **Instant Two-Way UI & Story List Synchronization**:
+    - Synchronizes all metadata edits directly to `ProjectMetadata` and `Story.metadata`, automatically updating the main story details panel (Title, Author, Excerpt).
+    - Immediately triggers `StoryListWidget.refresh_story_list()` so customized story titles update in real-time in the story list.
+    - Persists all configured metadata directly to `.rtvs` project files upon saving.
+  - **Streamlined Stories Sidebar Layout**:
+    - Replaced redundant plugin-specific group boxes with a clean "🗗 Story Metadata..." launcher alongside the Export button, maximizing vertical screen real estate for story list items and timeline editing.
+  - **Version Synchronization**:
+    - Synchronized application core and WordPress plugin to `v3.5.12` across `prs_shared.py`, `core_utils.py`, `updater.py`, `build_installer.py`, Inno Setup installer, plugin manifest, and documentation.
+
+## v3.5.11 (including WordPress Plugin v3.5.11)
+- **Dedicated WordPress Post Settings Dialog & Stories Launcher (`plugins/wordpress/export_destination.py`, `plugins/wordpress/plugin.py`, `plugins/wordpress/manifest.json`)**:
+  - **Multi-Pane & Tabbed WordPress Post Settings Modal**:
+    - Converted post metadata editing into a dedicated modal dialog (`WordPressPostMetadataDialog`) that mirrors the WordPress Export Center interface.
+    - Integrated side-by-side multi-pane layouts for Authors (with Co-Authors Plus guest author support and filtering) and Categories (hierarchical with filter search), alongside tabbed per-post navigation for Full Episode and all segmented stories.
+    - Added instant two-way synchronization between post metadata configurations and the project's active story UI fields (updating title, excerpt, and author in real-time) and persisting progress to the `.rtvs` project file whether users complete all tasks at once or incrementally.
+  - **Streamlined Stories Panel Integration**:
+    - Replaced the embedded form with a compact summary card and a prominent "🗗 WordPress Post Settings..." launcher in the Stories sidebar, displaying configured titles, authors, categories, featured image status, and post status at a glance with quick auto-excerpt and taxonomy refresh triggers.
+  - **Bug Fixes & Hardening**:
+    - Resolved `TypeError: format_time() got an unexpected keyword argument 'include_hours'` by aligning timestamp formatting with `prs_shared.format_time(include_millis=True)`.
+    - Resolved `AttributeError` for custom notice section in `WordPressExportTabWidget` by updating references to `wp_custom_section`.
+  - **Plugin Version Synchronization**:
+    - Synchronized WordPress plugin version to `v3.5.11` in `plugins/wordpress/manifest.json`.
+
+## v3.5.10 (including WordPress Plugin v3.5.10)
+- **Full-Window Stories Panel Maximization (`ui_layout.py`, `story_widgets.py`, `processing.py`, `transcript_story.py`)**:
+  - **Comprehensive Multi-Widget Minimization**:
+    - Enhanced the Stories Panel maximize toggle (`toggle_maximize_stories_panel`) to hide the timeline and transcript panels (`timeline.hide()`, `transcript_panel.hide()`, `activity_panel.hide()`) and set splitter ratios to `[0, 1000]` and `[1000, 0]`, enabling the Stories widget to expand across 100% of the main application window for focused metadata editing and story management.
+    - Full bidirectional restoration: toggling restore immediately un-hides the timeline, transcript panel, and activity log, returning splitters to their exact pre-maximized dimensions.
+  - **Dynamic Story List Height Adaptation**:
+    - Implemented `StoryListWidget.adjust_height_to_contents()` and `update_story_list_height()` in `ui_layout.py` and `transcript_story.py`.
+    - Automatically constrains the story list widget to only occupy the exact vertical space needed for its current items (capped at 220px when maximized), reserving all remaining vertical room for metadata editors, author checklists, excerpt boxes, and plugin extension panels.
+- **Persistent Story Authors, Excerpts & WordPress Publishing Metadata (`plugins/wordpress/plugin.py`, `ui_layout.py`, `transcript_story.py`, `processing.py`, `project_export.py`)**:
+  - **Core Story Author & Excerpt Editing**:
+    - Integrated native Author (`QLineEdit`) and Excerpt (`QTextEdit`) controls into the main story details panel, including an instant "Auto-Generate Excerpt" button that generates a clean ~55-word synopsis from the story's transcript range.
+    - Synchronized author and excerpt inputs with `Story.metadata["author"]` and `Story.metadata["excerpt"]`, ensuring full persistence in `.rtvs` project files for later export sessions.
+  - **WordPress Author & Taxonomy Checklist Extension & Full Post Settings Parity**:
+    - Upgraded `WordPressStoryMetadataWidget` in `plugins/wordpress/plugin.py` to achieve complete feature parity with the WordPress Export Dialog directly within the Stories editing workspace.
+    - Integrated Target Switcher dropdown supporting seamless switching between Full Episode post configuration and individual segmented stories.
+    - Added dedicated Post Title editor, Status selector, rich Excerpt editor with "Auto-Generate Excerpt", multi-author search with checkable list (supporting standard WP users and Co-Authors Plus guest authors), category search and checklists, manual overrides, and tag editors.
+    - Implemented interactive Video Scrubber and Featured Image frame grabber directly inside the Stories panel with stepper controls (`-1s`, `-1f`, `+1f`, `+1s`, `⟳ Playhead`) and instant live 160x90 thumbnail preview.
+    - Implemented Bulk Application tools across Authors, Categories, and Featured Image Thumbnails: "Apply to Selected Stories" (targeting multi-selected stories) and "Apply to All Stories" (applying settings globally across all stories and full episode).
+    - Added "⛶ Maximize Panel" and "🗗 Pop-out..." buttons in the Stories header, launching the full-screen `WordPressPostMetadataDialog` modal for comfortable batch management.
+    - Added instant two-way synchronization between the WordPress metadata widget, core story inputs, and the underlying `.rtvs` project file model.
+  - **Export Engine Inclusion**:
+    - Updated `project_export.py` text transcript story exports to format story-level Author and Excerpt metadata in the export headers.
+  - **Unified Export Center Window Maximization**:
+    - Verified `UnifiedExportDialog` window maximize/restore button in the dialog header, enabling full-screen expansion for comfortable batch configuration.
+  - **Plugin Version Catch-Up**:
+    - Synchronized WordPress plugin version to `v3.5.10` in `plugins/wordpress/manifest.json` per the lazy catch-up policy.
+
 ## v3.5.9 (including WordPress Plugin v3.5.9.1)
 - **WordPress Export Cross-Linking & Rich Text Hyperlink Formatting (`plugins/wordpress/client.py`, `plugins/wordpress/export_destination.py`, `plugins/wordpress/manifest.json`)**:
   - **Full Episode & Story Cross-Linking**:

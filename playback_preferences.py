@@ -1137,9 +1137,11 @@ class PlaybackPreferencesMixin:
             self.settings_store.setValue("lead_in_padding", 0.5)
             self.settings_store.setValue("default_expected_speakers", "auto")
             self.settings_store.setValue("ask_expected_speakers", True)
+            self.settings_store.setValue("diarization_sensitivity", "normal")
             self.silence_threshold = 3.0
             self.lead_in_padding = 0.5
             self.expected_speakers = "auto"
+            self.diarization_sensitivity = "normal"
             if "gap_spin" in lw and lw["gap_spin"]:
                 lw["gap_spin"].setValue(3.0)
             if "pad_spin" in lw and lw["pad_spin"]:
@@ -1148,6 +1150,10 @@ class PlaybackPreferencesMixin:
                 idx = lw["expected_speakers_combo"].findData("auto")
                 if idx >= 0:
                     lw["expected_speakers_combo"].setCurrentIndex(idx)
+            if "sensitivity_combo" in lw and lw["sensitivity_combo"]:
+                idx_s = lw["sensitivity_combo"].findData("normal")
+                if idx_s >= 0:
+                    lw["sensitivity_combo"].setCurrentIndex(idx_s)
             if "ask_speakers_chk" in lw and lw["ask_speakers_chk"]:
                 lw["ask_speakers_chk"].setChecked(True)
 
@@ -1548,14 +1554,14 @@ class PlaybackPreferencesMixin:
         # Transcription Model (Whisper) selector
         pref_whisper_combo = QComboBox()
         whisper_models = [
-            ("parakeet-onnx", "Parakeet ONNX (Ultra-Fast)"),
-            ("tiny", "Tiny"),
-            ("base", "Base"),
-            ("small", "Small"),
-            ("distil-medium.en", "Distil-Medium.en (4x Fast)"),
-            ("medium", "Medium"),
-            ("distil-large-v3", "Distil-Large-v3 (Fast Large)"),
-            ("large-v3", "Large (v3)"),
+            ("parakeet-onnx", "Parakeet ONNX Fast TDT (English)"),
+            ("fastconformer-es-onnx", "Spanish FastConformer (Spanish)"),
+            ("fastconformer-multilingual-onnx", "Multilingual FastConformer (English & Spanish)"),
+            ("tiny", "Whisper Tiny"),
+            ("base", "Whisper Base"),
+            ("small", "Whisper Small"),
+            ("medium", "Whisper Medium"),
+            ("large-v3", "Whisper Large v3"),
         ]
         for m_id, label in whisper_models:
             installed = self.is_whisper_model_available(m_id)
@@ -1567,6 +1573,13 @@ class PlaybackPreferencesMixin:
         if w_idx >= 0:
             pref_whisper_combo.setCurrentIndex(w_idx)
         mod_form.addRow("Transcription Model:", pref_whisper_combo)
+
+        # Auto-detect non-English speech fallback checkbox
+        pref_auto_lang_chk = QCheckBox("Auto-detect non-English speech & fall back to Whisper Small for non-English audio")
+        pref_auto_lang_chk.setToolTip("When Parakeet ONNX (English-only) is selected, inspects the initial audio. If non-English speech (such as Spanish) is detected, automatically switches to Whisper Small.")
+        curr_auto_lang = str(self.settings_store.value("auto_detect_fallback_whisper", "true")).lower() == "true"
+        pref_auto_lang_chk.setChecked(curr_auto_lang)
+        mod_form.addRow("Language Detection:", pref_auto_lang_chk)
 
         # Transcription Decoding Speed / Quality (beam_size) - only active for Whisper models
         pref_beam_combo = QComboBox()
@@ -1897,6 +1910,23 @@ class PlaybackPreferencesMixin:
         ask_speakers_chk.setChecked(str(self.settings_store.value("ask_expected_speakers", "true")).lower() in {"1", "true", "yes"})
         ask_speakers_chk.setToolTip("When enabled, Detect Speakers asks for an estimated speaker count before each non-batch detection job. Batch jobs always use their selected setting without prompting.")
         det_form.addRow("Speaker Estimate Prompt:", ask_speakers_chk)
+
+        sensitivity_combo = QComboBox()
+        sensitivity_combo.addItem("Low (Loose — Merges similar voices)", "low")
+        sensitivity_combo.addItem("Normal (Balanced default)", "normal")
+        sensitivity_combo.addItem("High (Strict — Keeps similar voices separate)", "high")
+        sensitivity_combo.addItem("Very High (Aggressive — Maximum separation)", "very_high")
+        current_sens = str(self.settings_store.value("diarization_sensitivity", getattr(self, "diarization_sensitivity", "normal")) or "normal")
+        idx_sens = sensitivity_combo.findData(current_sens)
+        sensitivity_combo.setCurrentIndex(idx_sens if idx_sens >= 0 else 1)
+        sensitivity_combo.setToolTip(
+            "Controls acoustic separation sensitivity when auto-detecting speakers.\n"
+            "• High / Very High: Prevents two distinct speakers with similar pitches from being merged into one label.\n"
+            "• Low: Merges looser voice clusters to avoid splitting one speaker across multiple labels."
+        )
+        det_form.addRow("Speaker Separation Sensitivity:", sensitivity_combo)
+
+
 
         det_layout.addLayout(det_form)
         _add_custom_defaults_btn(det_layout, "Story Detection & Diarization")
@@ -2401,6 +2431,7 @@ class PlaybackPreferencesMixin:
             "pad_spin": pad_spin,
             "expected_speakers_combo": expected_speakers_combo,
             "ask_speakers_chk": ask_speakers_chk,
+            "sensitivity_combo": sensitivity_combo,
             "batch_dir_edit": batch_dir_edit,
             "batch_transcribe_chk": batch_transcribe_chk,
             "batch_diarize_chk": batch_diarize_chk,
@@ -2520,6 +2551,11 @@ class PlaybackPreferencesMixin:
                 if hasattr(self, "refresh_whisper_model_chooser"):
                     self.refresh_whisper_model_chooser()
 
+            if hasattr(self, "_pref_auto_lang_chk") and self._pref_auto_lang_chk is not None:
+                self.settings_store.setValue("auto_detect_fallback_whisper", str(self._pref_auto_lang_chk.isChecked()).lower())
+            elif 'pref_auto_lang_chk' in locals():
+                self.settings_store.setValue("auto_detect_fallback_whisper", str(pref_auto_lang_chk.isChecked()).lower())
+
             new_beam = pref_beam_combo.currentData()
             if new_beam is not None:
                 self.whisper_beam_size = int(new_beam)
@@ -2587,6 +2623,7 @@ class PlaybackPreferencesMixin:
             self.silence_threshold = gap_spin.value()
             self.lead_in_padding = pad_spin.value()
             self.expected_speakers = str(expected_speakers_combo.currentData() or "auto")
+            self.diarization_sensitivity = str(sensitivity_combo.currentData() or "normal")
             self.settings_store.setValue("silence_threshold", self.silence_threshold)
             self.settings_store.setValue("lead_in_padding", self.lead_in_padding)
             self.settings_store.setValue("default_fade_in_duration", fade_in_spin.value())
@@ -2594,6 +2631,7 @@ class PlaybackPreferencesMixin:
             self.settings_store.setValue("default_fade_curve", fade_curve_combo.currentData() or "linear")
             self.settings_store.setValue("default_expected_speakers", self.expected_speakers)
             self.settings_store.setValue("ask_expected_speakers", ask_speakers_chk.isChecked())
+            self.settings_store.setValue("diarization_sensitivity", self.diarization_sensitivity)
 
             # Save Batch Processing
             self.settings_store.setValue("batch_custom_output_dir", batch_dir_edit.text().strip())
@@ -3540,6 +3578,18 @@ class PlaybackPreferencesMixin:
         self.mark_project_dirty()
         self.log_activity(f"[SETTINGS] Expected speakers set to '{new_value}'.")
         self.statusBar().showMessage(f"Expected speakers: {new_value}.")
+
+    def on_diarization_sensitivity_changed(self, value):
+        """Public hook for adjusting speaker separation sensitivity."""
+        new_value = str(value or "normal")
+        changed = new_value != getattr(self, "diarization_sensitivity", "normal")
+        self.diarization_sensitivity = new_value
+        if changed and self.diarization is not None:
+            self.processing_status["diarization"] = False
+            self.log_activity("[PROCESSING] Speaker separation sensitivity changed; existing speaker detection is marked for reprocessing.", mark_dirty=False)
+        self.mark_project_dirty()
+        self.log_activity(f"[SETTINGS] Speaker separation sensitivity set to '{new_value}'.")
+        self.statusBar().showMessage(f"Speaker separation sensitivity: {new_value}.")
 
     def update_auto_save_timer(self):
         if self.auto_save_minutes > 0:

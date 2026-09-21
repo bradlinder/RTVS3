@@ -103,14 +103,16 @@ class PluginManager:
         return Path(__file__).resolve().parent.parent / "plugins"
 
     def discover_plugins(self) -> Dict[str, PluginManifest]:
-        """Scans user plugin directory and loads manifests of installed plugins."""
+        """Scans plugin directories (bundled/repository and user folder) and loads manifests of available plugins."""
         self.manifests.clear()
         self.plugin_paths.clear()
 
-        # Only discover plugins installed in the user's plugin directory
-        user_dir = self.get_user_plugins_dir()
-        if user_dir.exists() and user_dir.is_dir():
-            for item in user_dir.iterdir():
+        is_frozen = getattr(sys, "frozen", False)
+
+        # 1. Scan bundled/repository plugins directory
+        bundled_dir = self.get_bundled_plugins_dir()
+        if bundled_dir.exists() and bundled_dir.is_dir():
+            for item in bundled_dir.iterdir():
                 if item.name.startswith("."):
                     continue
                 if item.is_dir():
@@ -121,7 +123,7 @@ class PluginManager:
                             self.manifests[manifest.id] = manifest
                             self.plugin_paths[manifest.id] = item
                         except Exception as exc:
-                            print(f"[PLUGINS] Failed to load manifest from {manifest_file}: {exc}")
+                            print(f"[PLUGINS] Failed to load bundled manifest from {manifest_file}: {exc}")
                 elif item.is_file() and item.name.endswith(".rtvs-addon"):
                     try:
                         with zipfile.ZipFile(item, "r") as zf:
@@ -129,6 +131,34 @@ class PluginManager:
                                 m_data = json.loads(zf.read("manifest.json").decode("utf-8"))
                                 manifest = PluginManifest.from_dict(m_data)
                                 if manifest.id not in self.manifests:
+                                    self.manifests[manifest.id] = manifest
+                                    self.plugin_paths[manifest.id] = item
+                    except Exception as exc:
+                        print(f"[PLUGINS] Failed to read bundled addon manifest from {item}: {exc}")
+
+        # 2. Scan user plugin directory (in frozen mode, installed plugins in user directory take precedence)
+        user_dir = self.get_user_plugins_dir()
+        if user_dir.exists() and user_dir.is_dir():
+            for item in user_dir.iterdir():
+                if item.name.startswith("."):
+                    continue
+                if item.is_dir():
+                    manifest_file = item / "manifest.json"
+                    if manifest_file.exists():
+                        try:
+                            manifest = PluginManifest.from_file(manifest_file)
+                            if is_frozen or manifest.id not in self.manifests:
+                                self.manifests[manifest.id] = manifest
+                                self.plugin_paths[manifest.id] = item
+                        except Exception as exc:
+                            print(f"[PLUGINS] Failed to load manifest from {manifest_file}: {exc}")
+                elif item.is_file() and item.name.endswith(".rtvs-addon"):
+                    try:
+                        with zipfile.ZipFile(item, "r") as zf:
+                            if "manifest.json" in zf.namelist():
+                                m_data = json.loads(zf.read("manifest.json").decode("utf-8"))
+                                manifest = PluginManifest.from_dict(m_data)
+                                if is_frozen or manifest.id not in self.manifests:
                                     self.manifests[manifest.id] = manifest
                                     self.plugin_paths[manifest.id] = item
                     except Exception as exc:
@@ -281,8 +311,16 @@ class PluginManager:
     def set_plugin_enabled(self, plugin_id: str, enabled: bool) -> None:
         self.settings.setValue(f"plugins/{plugin_id}/enabled", enabled)
         self.settings.sync()
-        if plugin_id in self.plugins:
-            self.plugins[plugin_id].set_enabled(enabled)
+        if enabled:
+            if plugin_id not in self.plugins:
+                self.load_plugin(plugin_id)
+            else:
+                self.plugins[plugin_id].set_enabled(True)
+        else:
+            if plugin_id in self.plugins:
+                self.plugins[plugin_id].set_enabled(False)
+        if self.app and hasattr(self.app, "refresh_plugin_menus"):
+            self.app.refresh_plugin_menus()
 
     def load_all_plugins(self) -> None:
         """Discovers and instantiates all enabled plugins."""

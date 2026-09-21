@@ -28,8 +28,10 @@ from PySide6.QtWidgets import (
     QMessageBox,
     QProgressBar,
     QPushButton,
+    QScrollArea,
     QSplitter,
     QStatusBar,
+    QTextEdit,
     QToolButton,
     QVBoxLayout,
     QWidget,
@@ -153,7 +155,9 @@ class UiLayoutMixin:
         # Center Panel: Splitter with Transcript View and Story Manager
         # -----------------------------------------------------------
         splitter = QSplitter(Qt.Orientation.Horizontal, self)
+        splitter.setObjectName("center_splitter")
         splitter.setChildrenCollapsible(False)
+        self.center_splitter = splitter
 
         # Left Container: Search Header + Interactive Transcript
         self.transcript_panel = QWidget(self)
@@ -429,11 +433,27 @@ class UiLayoutMixin:
         self.story_list = StoryListWidget(self)
         self.story_list.setObjectName("story_list")
         self.story_list.setSelectionMode(StoryListWidget.SelectionMode.ExtendedSelection)
-        stories_box_layout.addWidget(self.story_list, 1)
+        self.story_list.setMinimumHeight(65)
+        self.story_list.setMaximumHeight(180)
+        stories_box_layout.addWidget(self.story_list, 0)
+
+        # Story Details Scroll Area
+        self.story_details_scroll = QScrollArea(stories_box)
+        self.story_details_scroll.setObjectName("story_details_scroll")
+        self.story_details_scroll.setWidgetResizable(True)
+        self.story_details_scroll.setFrameShape(QFrame.Shape.NoFrame)
+        self.story_details_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.story_details_scroll.setStyleSheet("QScrollArea { background: transparent; border: none; }")
+
+        self.story_details_container = QWidget()
+        self.story_details_container.setObjectName("story_details_container")
+        details_layout = QVBoxLayout(self.story_details_container)
+        details_layout.setContentsMargins(0, 2, 0, 2)
+        details_layout.setSpacing(5)
 
         # Story Edit Inputs
         form_layout = QFormLayout()
-        form_layout.setContentsMargins(0, 4, 0, 4)
+        form_layout.setContentsMargins(0, 2, 0, 2)
         form_layout.setSpacing(4)
 
         self.title_input = QLineEdit(self)
@@ -455,7 +475,49 @@ class UiLayoutMixin:
         times_layout.addWidget(self.end_input)
 
         form_layout.addRow("Range:", times_layout)
-        stories_box_layout.addLayout(form_layout)
+
+        self.author_input = QLineEdit(self)
+        self.author_input.setPlaceholderText("Story author / reporter / contributor")
+        self.author_input.editingFinished.connect(self.update_selected_story)
+        form_layout.addRow("Author:", self.author_input)
+
+        details_layout.addLayout(form_layout)
+
+        # Excerpt Row & TextEdit
+        exc_hdr_row = QHBoxLayout()
+        exc_hdr_row.setContentsMargins(0, 2, 0, 0)
+        exc_lbl = QLabel("Excerpt:", self)
+        exc_lbl.setStyleSheet("font-size: 11px; font-weight: 500;")
+        exc_hdr_row.addWidget(exc_lbl)
+        exc_hdr_row.addStretch()
+
+        self.auto_gen_excerpt_btn = QPushButton("✨ Auto-Generate Excerpt", self)
+        self.auto_gen_excerpt_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #1e293b;
+                color: #38bdf8;
+                border: 1px solid #0284c7;
+                border-radius: 3px;
+                padding: 2px 6px;
+                font-size: 10px;
+                font-weight: 500;
+            }
+            QPushButton:hover {
+                background-color: #0284c7;
+                color: #ffffff;
+            }
+        """)
+        self.auto_gen_excerpt_btn.setToolTip("Auto-generate excerpt from story transcript words")
+        self.auto_gen_excerpt_btn.clicked.connect(self.auto_generate_selected_story_excerpt)
+        exc_hdr_row.addWidget(self.auto_gen_excerpt_btn)
+        details_layout.addLayout(exc_hdr_row)
+
+        self.excerpt_edit = QTextEdit(self)
+        self.excerpt_edit.setObjectName("story_excerpt_edit")
+        self.excerpt_edit.setPlaceholderText("Story excerpt / summary for export...")
+        self.excerpt_edit.setMaximumHeight(65)
+        self.excerpt_edit.textChanged.connect(self._on_story_excerpt_text_changed)
+        details_layout.addWidget(self.excerpt_edit)
 
         # Boundary Buttons Container (Visible only when exactly one story is selected)
         self.story_boundary_container = QWidget(self)
@@ -477,7 +539,7 @@ class UiLayoutMixin:
         boundary_layout.addWidget(self.set_story_end_btn)
 
         self.story_boundary_container.hide()
-        stories_box_layout.addWidget(self.story_boundary_container)
+        details_layout.addWidget(self.story_boundary_container)
 
         # Plugin Story Extensions Container (e.g. WordPress Story Metadata Widget)
         self.plugin_story_extensions_container = QWidget(self)
@@ -485,7 +547,10 @@ class UiLayoutMixin:
         self.plugin_story_extensions_layout = QVBoxLayout(self.plugin_story_extensions_container)
         self.plugin_story_extensions_layout.setContentsMargins(0, 2, 0, 2)
         self.plugin_story_extensions_layout.setSpacing(4)
-        stories_box_layout.addWidget(self.plugin_story_extensions_container)
+        details_layout.addWidget(self.plugin_story_extensions_container)
+
+        self.story_details_scroll.setWidget(self.story_details_container)
+        stories_box_layout.addWidget(self.story_details_scroll, 1)
 
         # Story action buttons
         story_btns_row = QHBoxLayout()
@@ -508,13 +573,23 @@ class UiLayoutMixin:
         self.delete_story_btn.clicked.connect(self.delete_selected_story)
         story_btns_row.addWidget(self.delete_story_btn)
 
+        story_action_row2 = QHBoxLayout()
+        story_action_row2.setSpacing(4)
+
+        self.story_metadata_btn = QPushButton("🗗 Story Metadata...", self)
+        self.story_metadata_btn.setObjectName("story_metadata_btn")
+        self.story_metadata_btn.setToolTip("Configure titles, authors, categories, excerpts, and featured images for all stories and full episode")
+        self.story_metadata_btn.clicked.connect(lambda: self.open_story_metadata_dialog())
+        story_action_row2.addWidget(self.story_metadata_btn, 1)
+
         self.export_stories_btn = QPushButton("Export...", self)
         self.export_stories_btn.setObjectName("export_stories_btn")
         self.export_stories_btn.setToolTip("Export full episode, selected stories, or external formats")
         self.export_stories_btn.clicked.connect(self.open_unified_export_dialog)
-        story_btns_row.addWidget(self.export_stories_btn)
+        story_action_row2.addWidget(self.export_stories_btn)
         
         stories_box_layout.addLayout(story_btns_row)
+        stories_box_layout.addLayout(story_action_row2)
         self.right_splitter.addWidget(stories_box)
 
         # Activity / History Box
@@ -1769,6 +1844,10 @@ class UiLayoutMixin:
         if hasattr(self, "tools_translate_action"):
             self.tools_translate_action.setVisible(is_translation_enabled)
 
+        # 4. Populate plugin-provided story extensions (e.g. WordPress Post Settings widget)
+        if hasattr(self, "setup_plugin_story_extensions"):
+            self.setup_plugin_story_extensions()
+
     def open_youtube_publish_dialog(self, story=None):
         """Open the YouTube video publishing dialog or export view from the YouTube plugin."""
         if hasattr(self, "plugin_manager") and self.plugin_manager.is_plugin_enabled("youtube"):
@@ -1812,29 +1891,125 @@ class UiLayoutMixin:
             "You can enable it under Settings > Manage Plugins & Add-ons.",
         )
 
+    def update_story_list_height(self):
+        """Size the story list to fit the current number of stories, leaving space for metadata and export fields."""
+        if not hasattr(self, "story_list") or self.story_list is None:
+            return
+        cnt = self.story_list.count()
+        row_h = self.story_list.sizeHintForRow(0) if cnt > 0 and self.story_list.sizeHintForRow(0) > 0 else 28
+        content_h = max(65, cnt * row_h + self.story_list.frameWidth() * 2 + 8)
+        if getattr(self, "_stories_panel_maximized", False):
+            # When maximized across the full window, only size the list as large as needed
+            # to show the stories (capping at 220px if there are dozens), reserving the rest for metadata
+            target_h = min(220, content_h)
+            self.story_list.setFixedHeight(target_h)
+        else:
+            target_h = min(180, content_h)
+            self.story_list.setMaximumHeight(target_h)
+            self.story_list.setMinimumHeight(65)
+
+    def auto_generate_selected_story_excerpt(self):
+        """Auto-generate an excerpt from the story transcript text for the currently selected story."""
+        if not getattr(self, "current_selected_story_indices", None) or len(self.current_selected_story_indices) != 1:
+            return
+        idx = self.current_selected_story_indices[0]
+        if not (0 <= idx < len(self.stories)):
+            return
+        st = self.stories[idx]
+        raw_text = ""
+        if hasattr(self, "_get_transcript_text_slice"):
+            raw_text = self._get_transcript_text_slice(st.start, st.end)
+        if not raw_text and hasattr(self, "transcript"):
+            words = []
+            for seg in getattr(self, "transcript", []) or []:
+                s_start = seg.get("start", 0.0)
+                s_end = seg.get("end", 0.0)
+                if (st.start is None or s_end >= st.start) and (st.end is None or s_start <= st.end):
+                    words.append(seg.get("text", ""))
+            raw_text = " ".join(words)
+        words = raw_text.split()
+        if len(words) <= 55:
+            excerpt = raw_text.strip()
+        else:
+            excerpt = " ".join(words[:55]).rstrip(".,;:!?") + "..."
+        if hasattr(self, "excerpt_edit"):
+            self.excerpt_edit.blockSignals(True)
+            self.excerpt_edit.setPlainText(excerpt)
+            self.excerpt_edit.blockSignals(False)
+        self._on_story_excerpt_text_changed()
+
+    def _on_story_excerpt_text_changed(self):
+        """Synchronize excerpt edits from the inline editor into story metadata."""
+        if getattr(self, "is_updating_selection", False):
+            return
+        if not getattr(self, "current_selected_story_indices", None) or len(self.current_selected_story_indices) != 1:
+            return
+        idx = self.current_selected_story_indices[0]
+        if 0 <= idx < len(self.stories):
+            st = self.stories[idx]
+            txt = self.excerpt_edit.toPlainText().strip()
+            if not hasattr(st, "metadata") or st.metadata is None:
+                st.metadata = {}
+            st.metadata["excerpt"] = txt
+            wp_meta = st.metadata.setdefault("wordpress", {})
+            wp_meta["excerpt"] = txt
+            if hasattr(self, "set_unsaved_changes"):
+                self.set_unsaved_changes(True)
+
     def toggle_maximize_stories_panel(self):
-        """Toggle maximize/restore of the stories panel in the right splitter."""
+        """Toggle maximize/restore of the stories panel across the full application window."""
         if not hasattr(self, "right_splitter") or not hasattr(self, "activity_panel"):
             return
         is_max = getattr(self, "_stories_panel_maximized", False)
         if not is_max:
+            # Save prior visibility and splitter proportions
+            self._saved_timeline_visible = self.timeline.isVisible() if hasattr(self, "timeline") else True
+            self._saved_transcript_visible = self.transcript_panel.isVisible() if hasattr(self, "transcript_panel") else True
+            self._saved_activity_visible = self.activity_panel.isVisible() if hasattr(self, "activity_panel") else True
+            if hasattr(self, "center_splitter"):
+                self._saved_center_splitter_sizes = self.center_splitter.sizes()
             self._saved_right_splitter_sizes = self.right_splitter.sizes()
+
+            # Minimize timeline and transcript widgets, and hide activity log
+            if hasattr(self, "timeline"):
+                self.timeline.hide()
+            if hasattr(self, "transcript_panel"):
+                self.transcript_panel.hide()
             self.activity_panel.hide()
+
+            # Expand splitters to give Stories panel 100% full application window space
+            if hasattr(self, "center_splitter"):
+                self.center_splitter.setSizes([0, 1000])
             self.right_splitter.setSizes([1000, 0])
             self._stories_panel_maximized = True
+
             if hasattr(self, "maximize_stories_btn"):
                 self.maximize_stories_btn.setText("❐")
-                self.maximize_stories_btn.setToolTip("Restore Activity History panel")
+                self.maximize_stories_btn.setToolTip("Restore normal application window layout")
+            self.update_story_list_height()
         else:
-            self.activity_panel.show()
+            # Restore timeline, transcript, and activity widgets
+            if hasattr(self, "timeline") and getattr(self, "_saved_timeline_visible", True):
+                self.timeline.show()
+            if hasattr(self, "transcript_panel") and getattr(self, "_saved_transcript_visible", True):
+                self.transcript_panel.show()
+            if getattr(self, "_saved_activity_visible", True):
+                self.activity_panel.show()
+
+            if hasattr(self, "center_splitter"):
+                c_sizes = getattr(self, "_saved_center_splitter_sizes", [600, 300])
+                if sum(c_sizes) > 0:
+                    self.center_splitter.setSizes(c_sizes)
             sizes = getattr(self, "_saved_right_splitter_sizes", [600, 250])
             if sum(sizes) <= 0:
                 sizes = [600, 250]
             self.right_splitter.setSizes(sizes)
             self._stories_panel_maximized = False
+
             if hasattr(self, "maximize_stories_btn"):
                 self.maximize_stories_btn.setText("⛶")
-                self.maximize_stories_btn.setToolTip("Toggle expand Stories panel across full height")
+                self.maximize_stories_btn.setToolTip("Maximize Stories panel across full application window")
+            self.update_story_list_height()
 
     def setup_plugin_story_extensions(self):
         """Populate plugin-provided widgets in the story panel."""

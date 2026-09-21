@@ -248,50 +248,129 @@ def get_optimal_transcription_threads() -> int:
     return 4
 
 
-def transcribe_parakeet_onnx(audio_file):
-    """Run the installed Parakeet TDT bundle through sherpa-onnx.
+def get_app_data_dir_pure():
+    """Return platform-specific app data directory in pure Python without PySide6."""
+    internal_app_id = "RadioTVStorySegmenter"
+    if sys.platform == "win32":
+        base = os.environ.get("LOCALAPPDATA")
+        if not base:
+            base = os.path.expanduser("~/AppData/Local")
+    elif sys.platform == "darwin":
+        base = os.path.expanduser("~/Library/Application Support")
+    else:
+        base = os.environ.get("XDG_DATA_HOME")
+        if not base:
+            base = os.path.expanduser("~/.local/share")
+    p = Path(base) / internal_app_id
+    try:
+        p.mkdir(parents=True, exist_ok=True)
+    except Exception:
+        pass
+    return p
 
-    The downloaded Parakeet model is a NeMo TDT transducer. Its encoder expects
-    acoustic features, not raw PCM, and it requires encoder/decoder/joiner
-    decoding. sherpa-onnx handles both the feature extraction and TDT decode.
-    """
-    emit("progress", percent=5, message="Loading Parakeet ONNX transcription engine...")
+
+def get_models_storage_dir_pure():
+    """Return models storage directory in pure Python without PySide6."""
+    env_dir = os.environ.get("PRS_MODELS_DIR")
+    if env_dir:
+        return Path(env_dir)
+    p = get_app_data_dir_pure() / "models"
+    try:
+        p.mkdir(parents=True, exist_ok=True)
+    except Exception:
+        pass
+    return p
+
+
+def is_onnx_model_available(model_name):
+    try:
+        import sherpa_onnx
+    except Exception:
+        sys.stderr.write("[ONNX CHECK] sherpa_onnx runtime is not installed or loadable\n")
+        return False
+
+    try:
+        from pathlib import Path
+
+        m_str = str(model_name).lower()
+        folder_name = "parakeet_onnx"
+        if ("fastconformer" in m_str and ("es" in m_str or "spanish" in m_str)) or "fastconformer_es" in m_str or "es-onnx" in m_str or "fastconformer-es" in m_str:
+            folder_name = "fastconformer_es_onnx"
+        elif "multilingual" in m_str:
+            folder_name = "fastconformer_multilingual_onnx"
+
+        search_dirs = []
+        env_mdir = os.environ.get("PRS_MODELS_DIR")
+        if env_mdir:
+            p_env = Path(env_mdir)
+            search_dirs.append(p_env / folder_name)
+            if p_env.name == folder_name or (p_env / "tokens.txt").is_file():
+                search_dirs.append(p_env)
+        try:
+            msd = get_models_storage_dir_pure()
+            search_dirs.append(msd / folder_name)
+            if msd.name == folder_name or (msd / "tokens.txt").is_file():
+                search_dirs.append(msd)
+            appd = get_app_data_dir_pure() / "models" / folder_name
+            search_dirs.append(appd)
+        except Exception:
+            pass
+        search_dirs.append(Path(__file__).resolve().parent / "models" / folder_name)
+
+        seen = set()
+        for raw in search_dirs:
+            try:
+                root = Path(raw).resolve()
+            except Exception:
+                continue
+            if str(root) in seen or not root.is_dir():
+                continue
+            seen.add(str(root))
+            candidates = [root] + [p for p in root.rglob("*") if p.is_dir()]
+            for candidate in candidates:
+                has_tokens = any(f.is_file() and f.name == "tokens.txt" for f in candidate.rglob("*"))
+                has_onnx = any(f.is_file() and f.stat().st_size > 1024 and f.name.endswith(".onnx") for f in candidate.rglob("*"))
+                if has_tokens and has_onnx:
+                    return True
+    except Exception:
+        pass
+    return False
+
+
+def transcribe_parakeet_onnx(audio_file, model_name="parakeet-onnx"):
+    """Run installed ONNX models (Parakeet TDT, Spanish FastConformer, Multilingual FastConformer) through sherpa-onnx."""
+    model_key = str(model_name).lower()
+    is_spanish = "es" in model_key or "spanish" in model_key or "multilingual" in model_key
+    model_lang = "es" if is_spanish else "en"
+
+    emit("progress", percent=5, message=f"Loading ONNX transcription engine ({model_name})...")
     try:
         import numpy as np
         import sherpa_onnx
     except Exception as exc:
-        emit("error", message=("Parakeet ONNX requires the sherpa-onnx runtime, "
+        emit("error", message=("ONNX transcription requires the sherpa-onnx runtime, "
                                f"which could not be loaded: {type(exc).__name__}: {exc}"))
         return 3
 
     models_dir = os.environ.get("PRS_MODELS_DIR")
     search_dirs = []
+    folder_name = "parakeet_onnx"
+    if ("fastconformer" in model_key and ("es" in model_key or "spanish" in model_key)) or "fastconformer_es" in model_key or "es-onnx" in model_key or "fastconformer-es" in model_key:
+        folder_name = "fastconformer_es_onnx"
+    elif "multilingual" in model_key:
+        folder_name = "fastconformer_multilingual_onnx"
+
     if models_dir:
-        search_dirs.extend([Path(models_dir) / "parakeet_onnx", Path(models_dir)])
+        search_dirs.append(Path(models_dir) / folder_name)
     try:
-        from prs_shared import get_models_storage_dir, get_app_data_dir
-        search_dirs.extend([get_models_storage_dir() / "parakeet_onnx", get_models_storage_dir(),
-                            get_app_data_dir() / "models" / "parakeet_onnx",
-                            get_app_data_dir() / "models"])
+        search_dirs.extend([
+            get_models_storage_dir_pure() / folder_name,
+            get_app_data_dir_pure() / "models" / folder_name,
+        ])
     except Exception:
         pass
-    if sys.platform == "win32":
-        for env_key in ("LOCALAPPDATA", "APPDATA"):
-            val = os.environ.get(env_key)
-            if val:
-                search_dirs.extend([Path(val) / "RadioTVStorySegmenter" / "models" / "parakeet_onnx",
-                                    Path(val) / "RadioTVSegmenter" / "models" / "parakeet_onnx",
-                                    Path(val) / "RadioTVStorySegmenter" / "models",
-                                    Path(val) / "RadioTVSegmenter" / "models"])
-    elif sys.platform == "darwin":
-        search_dirs.extend([Path.home() / "Library" / "Application Support" / "RadioTVStorySegmenter" / "models" / "parakeet_onnx",
-                            Path.home() / "Library" / "Application Support" / "RadioTVSegmenter" / "models" / "parakeet_onnx"])
-    else:
-        search_dirs.extend([Path.home() / ".local" / "share" / "RadioTVStorySegmenter" / "models" / "parakeet_onnx",
-                            Path.home() / ".local" / "share" / "RadioTVSegmenter" / "models" / "parakeet_onnx"])
-    search_dirs.append(Path(__file__).resolve().parent / "models" / "parakeet_onnx")
+    search_dirs.append(Path(__file__).resolve().parent / "models" / folder_name)
 
-    required = ("encoder.int8.onnx", "decoder.int8.onnx", "joiner.int8.onnx", "tokens.txt")
     model_dir = None
     seen = set()
     for raw in search_dirs:
@@ -301,20 +380,21 @@ def transcribe_parakeet_onnx(audio_file):
         seen.add(str(root))
         candidates = [root] + [p for p in root.rglob("*") if p.is_dir()]
         for candidate in candidates:
-            if all((candidate / name).is_file() for name in required):
+            has_tokens = any(f.is_file() and f.name == "tokens.txt" for f in candidate.rglob("*"))
+            has_onnx = any(f.is_file() and f.stat().st_size > 1024 and f.name.endswith(".onnx") for f in candidate.rglob("*"))
+            if has_tokens and has_onnx:
                 model_dir = candidate
                 break
         if model_dir: break
 
     if model_dir is None:
-        emit("error", message=("Parakeet ONNX model is incomplete. Expected encoder.int8.onnx, "
-                               "decoder.int8.onnx, joiner.int8.onnx, and tokens.txt. "
-                               "Please use Manage Models to repair/reinstall Parakeet ONNX."))
+        emit("error", message=(f"{model_name} model files are missing or incomplete in {folder_name}. "
+                               "Please use Manage Models to repair/reinstall the model."))
         return 4
 
     temp_dir = None
     try:
-        emit("progress", percent=10, message="Preparing 16 kHz mono audio for Parakeet ONNX...")
+        emit("progress", percent=10, message=f"Preparing 16 kHz mono audio for {model_name}...")
         norm_result = normalize_audio_for_diarization(audio_file)
         if isinstance(norm_result[0], tempfile.TemporaryDirectory):
             temp_dir, norm_wav = norm_result[0], norm_result[1]
@@ -326,35 +406,64 @@ def transcribe_parakeet_onnx(audio_file):
             audio_bytes = wf.readframes(nframes); channels = wf.getnchannels(); width = wf.getsampwidth()
             duration_sec = max(0.1, nframes / float(framerate))
         if framerate != 16000 or channels != 1 or width != 2:
-            raise RuntimeError(f"Normalized Parakeet audio has unexpected format: {framerate} Hz, {channels} channel(s), {width * 8}-bit.")
+            raise RuntimeError(f"Normalized audio has unexpected format: {framerate} Hz, {channels} channel(s), {width * 8}-bit.")
         samples = np.frombuffer(audio_bytes, dtype=np.int16).astype(np.float32) / 32768.0
 
-        threads = get_optimal_transcription_threads()
-        # Inspect the encoder contract rather than assuming a feature size.
-        # Different Parakeet ONNX exports use 80 or 128 mel bins.
-        feature_dim = 80
-        try:
-            import onnxruntime as ort
-            probe = ort.InferenceSession(str(model_dir / "encoder.int8.onnx"), providers=["CPUExecutionProvider"])
-            for meta in probe.get_inputs():
-                shape = getattr(meta, "shape", None) or []
-                if meta.name == "audio_signal" and len(shape) >= 2:
-                    candidate = shape[1]
-                    if isinstance(candidate, int) and candidate in (80, 128):
-                        feature_dim = candidate
-                    break
-        except Exception:
-            pass
-        emit("progress", percent=20, message=f"Initializing Parakeet ONNX engine ({threads} CPU threads, {feature_dim}-bin features)...")
-        recognizer = sherpa_onnx.OfflineRecognizer.from_transducer(
-            encoder=str(model_dir / "encoder.int8.onnx"),
-            decoder=str(model_dir / "decoder.int8.onnx"),
-            joiner=str(model_dir / "joiner.int8.onnx"),
-            tokens=str(model_dir / "tokens.txt"),
-            num_threads=threads, sample_rate=16000, feature_dim=feature_dim,
-            decoding_method="greedy_search", provider="cpu", model_type="nemo_transducer")
+        if "fastconformer-es" in str(model_name).lower():
+            display_model_name = "Spanish FastConformer ONNX"
+        elif "fastconformer-multilingual" in str(model_name).lower():
+            display_model_name = "Multilingual FastConformer ONNX"
+        elif "parakeet" in str(model_name).lower():
+            display_model_name = "Parakeet ONNX"
+        else:
+            display_model_name = str(model_name)
 
-        emit("progress", percent=35, message=f"Transcribing with Parakeet ONNX ({duration_sec:.1f}s of audio)...")
+        threads = get_optimal_transcription_threads()
+        token_matches = list(model_dir.rglob("tokens.txt"))
+        tokens_file = str(token_matches[0]) if token_matches else str(model_dir / "tokens.txt")
+
+        encoder_matches = [f for f in model_dir.rglob("encoder.int8.onnx") if f.is_file()]
+        if encoder_matches:
+            # NeMo Transducer (Parakeet)
+            encoder_file = str(encoder_matches[0])
+            decoder_matches = [f for f in model_dir.rglob("decoder.int8.onnx") if f.is_file()]
+            decoder_file = str(decoder_matches[0]) if decoder_matches else str(model_dir / "decoder.int8.onnx")
+            joiner_matches = [f for f in model_dir.rglob("joiner.int8.onnx") if f.is_file()]
+            joiner_file = str(joiner_matches[0]) if joiner_matches else str(model_dir / "joiner.int8.onnx")
+
+            feature_dim = 80
+            try:
+                import onnxruntime as ort
+                probe = ort.InferenceSession(encoder_file, providers=["CPUExecutionProvider"])
+                for meta in probe.get_inputs():
+                    shape = getattr(meta, "shape", None) or []
+                    if meta.name == "audio_signal" and len(shape) >= 2:
+                        candidate = shape[1]
+                        if isinstance(candidate, int) and candidate in (80, 128):
+                            feature_dim = candidate
+                        break
+            except Exception:
+                pass
+            emit("progress", percent=20, message=f"Initializing {display_model_name} engine ({threads} CPU threads, {feature_dim}-bin features)...")
+            recognizer = sherpa_onnx.OfflineRecognizer.from_transducer(
+                encoder=encoder_file,
+                decoder=decoder_file,
+                joiner=joiner_file,
+                tokens=tokens_file,
+                num_threads=threads, sample_rate=16000, feature_dim=feature_dim,
+                decoding_method="greedy_search", provider="cpu", model_type="nemo_transducer")
+        else:
+            # NeMo CTC (FastConformer Spanish / Multilingual)
+            onnx_files = [f for f in model_dir.rglob("*.onnx") if f.is_file() and f.stat().st_size > 1024]
+            onnx_model_path = str(onnx_files[0]) if onnx_files else str(model_dir / "model.int8.onnx")
+            emit("progress", percent=20, message=f"Initializing {display_model_name} engine ({threads} CPU threads)...")
+            recognizer = sherpa_onnx.OfflineRecognizer.from_nemo_ctc(
+                model=onnx_model_path,
+                tokens=tokens_file,
+                num_threads=threads, sample_rate=16000, feature_dim=80,
+                decoding_method="greedy_search", provider="cpu")
+
+        emit("progress", percent=35, message=f"Transcribing with {display_model_name} ({duration_sec:.1f}s of audio)...")
 
         # Slice audio into ~22s chunks at low-energy pause points to stay
         # well under the Conformer positional embedding cap (1,750 frames / ~70s).
@@ -403,7 +512,7 @@ def transcribe_parakeet_onnx(audio_file):
 
             pct = min(95, int(35 + (c_end / total_samples) * 55))
             emit("progress", percent=pct,
-                 message=f"Transcribing with Parakeet ONNX ({chunk_end_sec:.1f}s / {duration_sec:.1f}s)...")
+                 message=f"Transcribing with {display_model_name} ({chunk_end_sec:.1f}s / {duration_sec:.1f}s)...")
 
             stream = recognizer.create_stream()
             stream.accept_waveform(16000, chunk_samples)
@@ -522,11 +631,11 @@ def transcribe_parakeet_onnx(audio_file):
                 all_segments.append(seg_data)
                 emit("streaming_segment", segment=seg_data)
 
-        emit("progress", percent=100, message="Parakeet ONNX transcription complete.")
-        emit("finished", result={"text": text, "segments": all_segments, "language": "en"})
+        emit("progress", percent=100, message=f"{model_name} transcription complete.")
+        emit("finished", result={"text": text, "segments": all_segments, "language": model_lang})
         return 0
     except Exception as exc:
-        emit("error", message=f"Parakeet ONNX error: {type(exc).__name__}: {exc}\n\n{traceback.format_exc()}")
+        emit("error", message=f"{model_name} error: {type(exc).__name__}: {exc}\n\n{traceback.format_exc()}")
         return 5
     finally:
         try:
@@ -534,9 +643,72 @@ def transcribe_parakeet_onnx(audio_file):
         except Exception: pass
 
 
+def probe_audio_language(audio_file, sample_duration=15.0):
+    """Run a fast language detection probe using faster-whisper's mel feature extractor."""
+    try:
+        from faster_whisper import WhisperModel
+        download_root = os.environ.get("PRS_MODELS_DIR") or None
+        probe_model = WhisperModel("tiny", device="cpu", compute_type="int8", download_root=download_root)
+        _, info = probe_model.transcribe(str(audio_file), beam_size=1)
+        lang = getattr(info, "language", "en") or "en"
+        prob = getattr(info, "language_probability", 0.0) or 0.0
+        sys.stderr.write(f"[LANGUAGE PROBE] Probed language: {lang} (probability: {prob*100:.1f}%)\n")
+        sys.stderr.flush()
+        return lang, prob
+    except Exception as exc:
+        sys.stderr.write(f"[LANGUAGE PROBE] Warning: Language probing failed ({type(exc).__name__}: {exc}), defaulting to English\n")
+        sys.stderr.flush()
+        return "en", 0.0
+
+
 def transcribe(audio_file, model_name, initial_prompt="", beam_size=5):
-    if str(model_name).lower().startswith("parakeet"):
-        return transcribe_parakeet_onnx(audio_file)
+    m_lower = str(model_name).lower()
+    is_spanish_fastconformer = "fastconformer" in m_lower and ("es" in m_lower or "spanish" in m_lower or "es-onnx" in m_lower)
+    is_multilingual_fastconformer = "multilingual" in m_lower or ("fastconformer" in m_lower and "multi" in m_lower)
+    is_parakeet = "parakeet" in m_lower
+    is_onnx = is_parakeet or is_spanish_fastconformer or is_multilingual_fastconformer or m_lower.endswith("-onnx")
+
+    auto_fallback = os.environ.get("PRS_AUTO_LANGUAGE_FALLBACK", "1").strip().lower() != "0"
+    need_spanish_prompt = False
+
+    if auto_fallback:
+        emit("progress", percent=2, message="Inspecting audio language compatibility...")
+        probed_lang, prob = probe_audio_language(audio_file)
+
+        if is_spanish_fastconformer:
+            emit("progress", percent=4, message=f"Detected {probed_lang.upper()} speech ({prob*100:.0f}% confidence). Using Spanish FastConformer ONNX...")
+        elif is_multilingual_fastconformer:
+            emit("progress", percent=4, message=f"Detected {probed_lang.upper()} speech ({prob*100:.0f}% confidence). Using Multilingual FastConformer ONNX...")
+        elif probed_lang and probed_lang.lower() == "es" and prob > 0.35:
+            if is_onnx_model_available("fastconformer-es-onnx"):
+                emit("progress", percent=4, message=f"Detected Spanish speech ({prob*100:.0f}% confidence). Switching to Spanish FastConformer ONNX...")
+                model_name = "fastconformer-es-onnx"
+                is_onnx = True
+            elif is_onnx_model_available("fastconformer-multilingual-onnx"):
+                emit("progress", percent=4, message=f"Detected Spanish speech ({prob*100:.0f}% confidence). Switching to Multilingual FastConformer ONNX...")
+                model_name = "fastconformer-multilingual-onnx"
+                is_onnx = True
+            else:
+                if is_parakeet:
+                    emit("progress", percent=4, message=f"Detected Spanish speech ({prob*100:.0f}% confidence). English Parakeet TDT cannot transcribe Spanish; switching to Whisper Small...")
+                    model_name = "small"
+                    is_onnx = False
+                    need_spanish_prompt = True
+                else:
+                    emit("progress", percent=4, message=f"Detected Spanish speech ({prob*100:.0f}% confidence). Continuing with {model_name}...")
+        elif probed_lang and probed_lang.lower() != "en" and prob > 0.35:
+            if is_parakeet:
+                if is_onnx_model_available("fastconformer-multilingual-onnx"):
+                    emit("progress", percent=4, message=f"Detected non-English speech ({probed_lang.upper()}, {prob*100:.0f}% confidence). Switching to Multilingual FastConformer ONNX...")
+                    model_name = "fastconformer-multilingual-onnx"
+                    is_onnx = True
+                else:
+                    emit("progress", percent=4, message=f"Detected non-English speech ({probed_lang.upper()}, {prob*100:.0f}% confidence). Automatically switching to Whisper Small...")
+                    model_name = "small"
+                    is_onnx = False
+
+    if is_onnx:
+        return transcribe_parakeet_onnx(audio_file, model_name=model_name)
 
     emit("progress", percent=5, message=f"Loading local Whisper {model_name} model...")
     try:
@@ -559,8 +731,7 @@ def transcribe(audio_file, model_name, initial_prompt="", beam_size=5):
 
         model_to_load = resolved_model_name
         try:
-            from prs_shared import get_models_storage_dir
-            mdir = get_models_storage_dir()
+            mdir = get_models_storage_dir_pure()
             candidate_dirs = [
                 mdir / "huggingface" / "hub" / f"models--{resolved_model_name.replace('/', '--')}",
                 mdir / f"models--{resolved_model_name.replace('/', '--')}",
@@ -638,7 +809,7 @@ def transcribe(audio_file, model_name, initial_prompt="", beam_size=5):
 
         # Apply hallucination and loop scrubber to remove degenerate repetitions & artifacts
         try:
-            from prs_shared import scrub_transcript_segments
+            from transcript_cleaner import scrub_transcript_segments
             formatted_segments = scrub_transcript_segments(formatted_segments)
         except Exception:
             pass
@@ -646,7 +817,8 @@ def transcribe(audio_file, model_name, initial_prompt="", beam_size=5):
         output = {
             "text": " ".join([s["text"] for s in formatted_segments if s.get("text", "").strip()]),
             "segments": formatted_segments,
-            "language": getattr(info, "language", "en")
+            "language": getattr(info, "language", "en"),
+            "need_spanish_model_prompt": need_spanish_prompt,
         }
 
         emit("progress", percent=100, message="Transcription complete.")
@@ -847,28 +1019,58 @@ def _diarize_solo_fast_path(audio_file, transcript_file=None):
 SHORT_FRAGMENT_MERGE_THRESHOLD = 0.7
 
 
-def fast_cluster_ahc(embeddings, k):
+def fast_cluster_ahc(embeddings, k=None, distance_threshold=None):
     """Agglomerative Hierarchical Clustering with cosine metric and average linkage (O(N^2)).
-    Eliminates O(N^3) Spectral Clustering Laplacian eigenvalue scaling bottlenecks.
-    Groups speech vectors on unit hypersphere in seconds without accuracy loss.
+    Supports distance threshold sensitivity control for AHC on unit hypersphere.
     """
     import numpy as np
     n = len(embeddings)
     if n == 0:
         return np.array([], dtype=int)
-    k = max(1, min(int(k), n))
-    if k == 1:
-        return np.zeros(n, dtype=int)
 
     norms = np.linalg.norm(embeddings, axis=1, keepdims=True)
     norms[norms == 0] = 1.0
     norm_emb = embeddings / norms
 
     from sklearn.cluster import AgglomerativeClustering
-    try:
-        clusterer = AgglomerativeClustering(n_clusters=k, metric="cosine", linkage="average")
-    except TypeError:
-        clusterer = AgglomerativeClustering(n_clusters=k, affinity="cosine", linkage="average")
+
+    # Determine sensitivity distance threshold if not explicitly passed
+    if distance_threshold is None:
+        sens_env = os.environ.get("PRS_DIARIZATION_SENSITIVITY", "normal").strip().lower()
+        sens_map = {"low": 0.78, "normal": 0.68, "high": 0.58, "very_high": 0.48}
+        distance_threshold = sens_map.get(sens_env, 0.68)
+
+    use_fixed_k = False
+    if k is not None and not isinstance(k, str) and int(k) >= 1:
+        use_fixed_k = True
+        k_val = max(1, min(int(k), n))
+    elif isinstance(k, str) and k.isdigit() and int(k) >= 1:
+        use_fixed_k = True
+        k_val = max(1, min(int(k), n))
+
+    if use_fixed_k:
+        if k_val == 1:
+            return np.zeros(n, dtype=int)
+        try:
+            clusterer = AgglomerativeClustering(n_clusters=k_val, metric="cosine", linkage="average")
+        except TypeError:
+            clusterer = AgglomerativeClustering(n_clusters=k_val, affinity="cosine", linkage="average")
+    else:
+        try:
+            clusterer = AgglomerativeClustering(
+                n_clusters=None,
+                distance_threshold=float(distance_threshold),
+                metric="cosine",
+                linkage="average",
+            )
+        except TypeError:
+            clusterer = AgglomerativeClustering(
+                n_clusters=None,
+                distance_threshold=float(distance_threshold),
+                affinity="cosine",
+                linkage="average",
+            )
+
     labels = clusterer.fit_predict(norm_emb)
 
     try:
@@ -1225,6 +1427,7 @@ def run_transcript_guided_diarization(
     normalized_wav,
     transcript_file,
     expected_speakers="auto",
+    sensitivity="normal",
     progress_callback=None,
 ):
     """Execute transcript-guided speaker diarization:
@@ -1238,6 +1441,9 @@ def run_transcript_guided_diarization(
     from diarize.utils import SpeechSegment
     from diarize.clustering import cluster_speakers
     from diarize import _RawSegment, _merge_adjacent_segments, DiarizeResult
+
+    if sensitivity:
+        os.environ["PRS_DIARIZATION_SENSITIVITY"] = str(sensitivity)
 
     with open(transcript_file, "r", encoding="utf-8") as f:
         t_data = json.load(f)
@@ -1349,8 +1555,10 @@ def run_transcript_guided_diarization(
     )
 
 
-def diarize(audio_file, expected_speakers="auto", transcript_file=None):
+def diarize(audio_file, expected_speakers="auto", transcript_file=None, sensitivity="normal"):
     expected_speakers = _normalize_expected_speakers(expected_speakers)
+    if sensitivity:
+        os.environ["PRS_DIARIZATION_SENSITIVITY"] = str(sensitivity)
 
     if expected_speakers == "1":
         return _diarize_solo_fast_path(audio_file, transcript_file=transcript_file)
@@ -1678,11 +1886,15 @@ def main(argv=None):
         audio_path = argv[1]
         expected_speakers = "auto"
         transcript_file = None
+        sensitivity = "normal"
         i = 2
         while i < len(argv):
             arg = argv[i]
             if arg == "--expected-speakers" and i + 1 < len(argv):
                 expected_speakers = argv[i + 1]
+                i += 2
+            elif arg in ("--diarization-sensitivity", "--sensitivity") and i + 1 < len(argv):
+                sensitivity = argv[i + 1]
                 i += 2
             elif arg == "--transcript-file" and i + 1 < len(argv):
                 transcript_file = argv[i + 1]
@@ -1692,7 +1904,7 @@ def main(argv=None):
                 i += 1
             else:
                 i += 1
-        return diarize(audio_path, expected_speakers, transcript_file=transcript_file)
+        return diarize(audio_path, expected_speakers, transcript_file=transcript_file, sensitivity=sensitivity)
 
     emit("error", message=f"Unknown processing mode: {mode}")
     return 2

@@ -493,7 +493,25 @@ class ProjectExportMixin(ProjectLifecycleMixin):
 
         transcript = data.get("transcript")
         if transcript is not None:
-            segments = transcript.get("segments") if isinstance(transcript, dict) else None
+            if isinstance(transcript, list):
+                transcript = {"segments": transcript}
+                data["transcript"] = transcript
+                if hasattr(self, "transcript"):
+                    self.transcript = transcript
+            elif not isinstance(transcript, dict):
+                transcript = {"segments": []}
+                data["transcript"] = transcript
+                if hasattr(self, "transcript"):
+                    self.transcript = transcript
+
+            segments = transcript.get("segments")
+            if not isinstance(segments, list):
+                transcript["segments"] = []
+                data["transcript"] = transcript
+                if hasattr(self, "transcript"):
+                    self.transcript = transcript
+                segments = []
+
             if not isinstance(segments, list):
                 errors.append("Transcript segments are missing or invalid.")
             else:
@@ -831,7 +849,7 @@ class ProjectExportMixin(ProjectLifecycleMixin):
         self.skip_seconds = float(settings.get("skip_seconds", data.get("skip_seconds", 5)))
         # Transcription Model is a global user preference, not a project setting.
         saved_global_whisper = str(self.settings_store.value("whisper_model", getattr(self, "whisper_model", "parakeet-onnx")) or "parakeet-onnx")
-        allowed_whisper = {"parakeet-onnx", "tiny", "base", "small", "distil-medium.en", "medium", "distil-large-v3", "large-v3"}
+        allowed_whisper = {"parakeet-onnx", "fastconformer-es-onnx", "fastconformer-multilingual-onnx", "tiny", "base", "small", "medium", "large-v3"}
         self.whisper_model = saved_global_whisper if saved_global_whisper in allowed_whisper else "parakeet-onnx"
         self.settings_store.setValue("whisper_model", self.whisper_model)
         self.settings_store.sync()
@@ -1045,6 +1063,7 @@ class ProjectExportMixin(ProjectLifecycleMixin):
             media_out = out
 
         languages_to_export = []
+        src_code = self.source_language_code() if hasattr(self, "source_language_code") else "en"
         batch_direction = options.get("translation_direction")
         if batch_direction and options.get("include_spanish", False):
             source_code, target_code, target_suffix = self.translation_export_spec(options)
@@ -1052,14 +1071,22 @@ class ProjectExportMixin(ProjectLifecycleMixin):
             if self.get_translation_item(source_code, target_code):
                 languages_to_export.append((target_code, target_suffix))
         else:
-            if options.get("include_english", True):
-                languages_to_export.append(("en", ""))
-            if options.get("include_spanish", False):
-                has_es = self.has_spanish_translation() if hasattr(self, "has_spanish_translation") else (
-                    self.translation_is_current(self.translation_key("en", "es")) if hasattr(self, "translation_is_current") else False
-                )
-                if has_es:
-                    languages_to_export.append(("es", "_es"))
+            if src_code == "es":
+                if options.get("include_spanish", True):
+                    languages_to_export.append(("es", ""))
+                if options.get("include_english", False):
+                    has_trans = self.has_spanish_translation() if hasattr(self, "has_spanish_translation") else False
+                    if has_trans:
+                        languages_to_export.append(("en", "_en"))
+            else:
+                if options.get("include_english", True):
+                    languages_to_export.append(("en", ""))
+                if options.get("include_spanish", False):
+                    has_es = self.has_spanish_translation() if hasattr(self, "has_spanish_translation") else (
+                        self.translation_is_current(self.translation_key("en", "es")) if hasattr(self, "translation_is_current") else False
+                    )
+                    if has_es:
+                        languages_to_export.append(("es", "_es"))
 
         doc_base = base if base else (safe_filename(self.audio_file.stem) if self.audio_file else "Story")
         total_stories = total_batch if total_batch is not None else len(stories_with_indices)
@@ -1085,7 +1112,7 @@ class ProjectExportMixin(ProjectLifecycleMixin):
             for lang_code, suffix in languages_to_export:
                 file_base = f"{story_base}{suffix}"
                 batch_direction = options.get("translation_direction")
-                source_code = self.translation_export_spec(options)[0] if batch_direction else "en"
+                source_code = self.translation_export_spec(options)[0] if batch_direction else src_code
                 if lang_code == source_code:
                     blocks = self.build_story_blocks(segments) if segments else []
                 else:
@@ -1122,7 +1149,18 @@ class ProjectExportMixin(ProjectLifecycleMixin):
                     with open(txt_file, "w", encoding="utf-8") as f:
                         source_name = self.audio_file.name if self.audio_file else "Text-only project"
                         lang_label = " (Spanish)" if lang_code == "es" else (" (English)" if lang_code == "en" else "")
-                        f.write(f"{story_title}{lang_label}\n{source_name} ({format_time(story.start, False)} - {format_time(story.end, False)})\n" + "=" * 70 + "\n\n")
+                        f.write(f"{story_title}{lang_label}\n{source_name} ({format_time(story.start, False)} - {format_time(story.end, False)})\n")
+                        meta = getattr(story, "metadata", {}) or {}
+                        wp_meta = meta.get("wordpress", {}) if isinstance(meta.get("wordpress"), dict) else {}
+                        author_val = meta.get("author") or wp_meta.get("manual_author") or ""
+                        if not author_val and isinstance(wp_meta.get("author_names"), list):
+                            author_val = ", ".join(wp_meta["author_names"])
+                        if author_val:
+                            f.write(f"Author: {author_val}\n")
+                        excerpt_val = meta.get("excerpt") or wp_meta.get("excerpt") or ""
+                        if excerpt_val:
+                            f.write(f"Excerpt: {excerpt_val}\n")
+                        f.write("=" * 70 + "\n\n")
                         last_speaker = None
                         for block in blocks:
                             speaker = (block.get("speaker") or "").strip() if options.get("include_speakers", True) else ""
@@ -1165,7 +1203,7 @@ class ProjectExportMixin(ProjectLifecycleMixin):
                         include_comments=options.get("include_comments", options.get("include_notes", True)),
                         include_highlights=options.get("include_highlights", True),
                         lang_code=lang_code,
-                        source_segments=self.transcript.get("segments", []) if self.transcript else None,
+                        source_segments=(self.transcript.get("segments", []) if (self.transcript and lang_code == src_code) else None),
                     )
 
                 # Export PDF
@@ -1707,6 +1745,7 @@ class ProjectExportMixin(ProjectLifecycleMixin):
 
         try:
             languages_to_export = []
+            src_code = self.source_language_code() if hasattr(self, "source_language_code") else "en"
             batch_direction = options.get("translation_direction")
             if batch_direction and options.get("include_spanish", False):
                 source_code, target_code, target_suffix = self.translation_export_spec(options)
@@ -1714,14 +1753,22 @@ class ProjectExportMixin(ProjectLifecycleMixin):
                 if self.get_translation_item(source_code, target_code):
                     languages_to_export.append((target_code, target_suffix))
             else:
-                if options.get("include_english", True):
-                    languages_to_export.append(("en", ""))
-                if options.get("include_spanish", False):
-                    has_es = self.has_spanish_translation() if hasattr(self, "has_spanish_translation") else (
-                        self.translation_is_current(self.translation_key("en", "es")) if hasattr(self, "translation_is_current") else False
-                    )
-                    if has_es:
-                        languages_to_export.append(("es", "_es"))
+                if src_code == "es":
+                    if options.get("include_spanish", True):
+                        languages_to_export.append(("es", ""))
+                    if options.get("include_english", False):
+                        has_trans = self.has_spanish_translation() if hasattr(self, "has_spanish_translation") else False
+                        if has_trans:
+                            languages_to_export.append(("en", "_en"))
+                else:
+                    if options.get("include_english", True):
+                        languages_to_export.append(("en", ""))
+                    if options.get("include_spanish", False):
+                        has_es = self.has_spanish_translation() if hasattr(self, "has_spanish_translation") else (
+                            self.translation_is_current(self.translation_key("en", "es")) if hasattr(self, "translation_is_current") else False
+                        )
+                        if has_es:
+                            languages_to_export.append(("es", "_es"))
 
             doc_title = base if base else (safe_filename(self.audio_file.stem) if self.audio_file else "Transcript")
 
@@ -1737,7 +1784,7 @@ class ProjectExportMixin(ProjectLifecycleMixin):
                 file_base = f"{base}{suffix}"
 
                 batch_direction = options.get("translation_direction")
-                source_code = self.translation_export_spec(options)[0] if batch_direction else "en"
+                source_code = self.translation_export_spec(options)[0] if batch_direction else src_code
                 if lang_code == source_code:
                     segments = self.transcript.get("segments", []) if self.transcript else []
                     blocks = self.build_story_blocks(segments) if segments else []
@@ -1823,7 +1870,7 @@ class ProjectExportMixin(ProjectLifecycleMixin):
                         include_comments=options.get("include_comments", options.get("include_notes", True)),
                         include_highlights=options.get("include_highlights", True),
                         lang_code=lang_code,
-                        source_segments=self.transcript.get("segments", []) if self.transcript else None,
+                        source_segments=(self.transcript.get("segments", []) if (self.transcript and lang_code == src_code) else None),
                     )
 
                 # Export PDF to Transcripts subfolder
@@ -2034,21 +2081,33 @@ class ProjectExportMixin(ProjectLifecycleMixin):
         opt_layout.addSpacing(6)
         opt_layout.addWidget(QLabel("<b>Language Tracks:</b>"))
 
-        include_english_cb = QCheckBox("Include English Transcript")
-        include_english_cb.setChecked(True)
+        src_code = self.source_language_code() if hasattr(self, "source_language_code") else "en"
+        has_translation = False
+        if hasattr(self, "get_spanish_translation_item"):
+            trans_item = self.get_spanish_translation_item()
+            if trans_item and isinstance(trans_item, dict):
+                has_translation = bool(trans_item.get("segments"))
 
-        include_spanish_cb = QCheckBox("Include Spanish Transcript")
-
-        es_key = self.translation_key("en", "es")
-        has_spanish = self.translation_is_current(es_key)
-
-        if has_spanish:
+        if src_code == "es":
+            include_spanish_cb = QCheckBox("Include Spanish Transcript")
             include_spanish_cb.setChecked(True)
             include_spanish_cb.setEnabled(True)
+
+            include_english_cb = QCheckBox("Include English Transcript (Translated)")
+            include_english_cb.setChecked(has_translation)
+            include_english_cb.setEnabled(has_translation)
+            if not has_translation:
+                include_english_cb.setToolTip("English translation is not available or up to date for this project.")
         else:
-            include_spanish_cb.setChecked(False)
-            include_spanish_cb.setEnabled(False)
-            include_spanish_cb.setToolTip("Spanish translation is not available or up to date for this project.")
+            include_english_cb = QCheckBox("Include English Transcript")
+            include_english_cb.setChecked(True)
+            include_english_cb.setEnabled(True)
+
+            include_spanish_cb = QCheckBox("Include Spanish Transcript (Translated)")
+            include_spanish_cb.setChecked(has_translation)
+            include_spanish_cb.setEnabled(has_translation)
+            if not has_translation:
+                include_spanish_cb.setToolTip("Spanish translation is not available or up to date for this project.")
 
         opt_layout.addWidget(include_english_cb)
         opt_layout.addWidget(include_spanish_cb)

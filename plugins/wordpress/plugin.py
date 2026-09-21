@@ -7,6 +7,7 @@ custom excerpt, author assignment, categories, and custom featured image
 from __future__ import annotations
 
 import html
+import json
 import os
 import shutil
 import subprocess
@@ -15,7 +16,7 @@ import tempfile
 from pathlib import Path
 from typing import Any, Callable, List, Optional
 
-from PySide6.QtCore import Qt, QThread, Signal, QObject
+from PySide6.QtCore import Qt, QThread, Signal, QObject, QTimer
 from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import (
     QDialog,
@@ -23,11 +24,14 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
     QLabel,
     QLineEdit,
+    QListWidget,
+    QListWidgetItem,
     QPushButton,
     QMessageBox,
     QGroupBox,
     QFormLayout,
     QComboBox,
+    QScrollArea,
     QTextEdit,
     QFileDialog,
     QRadioButton,
@@ -35,12 +39,15 @@ from PySide6.QtWidgets import (
     QCheckBox,
     QProgressBar,
     QWidget,
+    QSlider,
+    QFrame,
 )
 
 from prs_shared import (
     INTERNAL_APP_ID,
     PROJECT_VERSION,
     QSettings,
+    CollapsibleSection,
     ffmpeg_path,
     format_time,
     safe_filename,
@@ -515,237 +522,295 @@ class WordPressPublishWorker(QThread):
 
 
 class WordPressStoryMetadataWidget(QGroupBox):
-    """Inline metadata editor for WordPress publishing options directly in the main Story Editor."""
+    """Clean, compact WordPress metadata launcher & inspector embedded in the Stories sidebar."""
 
-    def __init__(self, plugin: Plugin, parent: Any = None):
-        super().__init__("WordPress Publishing Options", parent)
+    def __init__(self, plugin: Any, parent: Any = None):
+        super().__init__("WordPress Post Configuration", parent)
         self.plugin = plugin
         self.app = plugin.app
         self.current_story = None
+        self.current_target_mode = "full"  # "full" or "story"
+        self._current_story_idx = -1
         self._updating_ui = False
         self.settings = QSettings(INTERNAL_APP_ID, INTERNAL_APP_ID)
 
         self.setup_ui()
+        self.refresh_targets_dropdown()
+        self._load_current_target_metadata()
 
     def setup_ui(self):
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(10, 10, 10, 10)
-        layout.setSpacing(8)
+        layout.setContentsMargins(10, 8, 10, 8)
+        layout.setSpacing(6)
 
-        # No story placeholder
-        self.placeholder_lbl = QLabel("<i>Select a single story to configure WordPress metadata.</i>")
-        self.placeholder_lbl.setStyleSheet("color: #64748b;")
-        layout.addWidget(self.placeholder_lbl)
-
-        # Content container
-        self.form_container = QWidget()
-        form_layout = QFormLayout(self.form_container)
-        form_layout.setContentsMargins(0, 0, 0, 0)
-        form_layout.setSpacing(6)
-
-        # Status
-        self.status_combo = QComboBox()
-        self.status_combo.addItem("Draft", "draft")
-        self.status_combo.addItem("Pending Review", "pending")
-        self.status_combo.addItem("Publish Immediately", "publish")
-        self.status_combo.addItem("Scheduled / Future", "future")
-        self.status_combo.currentIndexChanged.connect(self._on_metadata_changed)
-        form_layout.addRow("Status:", self.status_combo)
-
-        # Excerpt with auto-generate button
-        excerpt_box = QVBoxLayout()
-        self.excerpt_edit = QTextEdit()
-        self.excerpt_edit.setPlaceholderText("Custom post excerpt (optional)...")
-        self.excerpt_edit.setMaximumHeight(60)
-        self.excerpt_edit.textChanged.connect(self._on_metadata_changed)
-        excerpt_box.addWidget(self.excerpt_edit)
-
-        exc_btn_row = QHBoxLayout()
-        self.gen_excerpt_btn = QPushButton("✨ Auto-Generate Excerpt")
-        self.gen_excerpt_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #1e293b;
-                color: #38bdf8;
-                border: 1px solid #0284c7;
-                border-radius: 4px;
-                padding: 2px 8px;
-                font-size: 11px;
-                font-weight: 500;
-            }
-            QPushButton:hover {
+        # Primary Action Button: "WordPress Post Settings..."
+        self.open_dialog_btn = QPushButton("🗗 WordPress Post Settings...")
+        self.open_dialog_btn.setObjectName("wp_open_post_settings_btn")
+        self.open_dialog_btn.setToolTip("Open the multi-pane WordPress post editor to configure titles, excerpts, authors, categories, and featured images for all stories and the full episode.")
+        self.open_dialog_btn.setStyleSheet("""
+            QPushButton#wp_open_post_settings_btn {
                 background-color: #0284c7;
                 color: #ffffff;
+                border: 1px solid #0369a1;
+                border-radius: 4px;
+                padding: 6px 12px;
+                font-size: 11px;
+                font-weight: 600;
+            }
+            QPushButton#wp_open_post_settings_btn:hover {
+                background-color: #0ea5e9;
+                border-color: #38bdf8;
+            }
+            QPushButton#wp_open_post_settings_btn:pressed {
+                background-color: #0369a1;
             }
         """)
-        self.gen_excerpt_btn.clicked.connect(self._generate_excerpt)
-        exc_btn_row.addWidget(self.gen_excerpt_btn)
-        exc_btn_row.addStretch()
-        excerpt_box.addLayout(exc_btn_row)
-        form_layout.addRow("Excerpt:", excerpt_box)
+        self.open_dialog_btn.clicked.connect(self._open_post_settings_dialog)
+        layout.addWidget(self.open_dialog_btn)
 
-        # Categories
-        self.cats_edit = QLineEdit()
-        self.cats_edit.setPlaceholderText("Category IDs (comma-separated, e.g. 1, 5)")
-        self.cats_edit.textChanged.connect(self._on_metadata_changed)
-        form_layout.addRow("Categories:", self.cats_edit)
+        # Target Selector row
+        target_row = QHBoxLayout()
+        target_row.setSpacing(6)
+        target_lbl = QLabel("Target:")
+        target_lbl.setStyleSheet("font-weight: 500; font-size: 11px;")
+        target_row.addWidget(target_lbl)
 
-        # Tags
-        self.tags_edit = QLineEdit()
-        self.tags_edit.setPlaceholderText("Tags (comma-separated, e.g. news, radio)")
-        self.tags_edit.textChanged.connect(self._on_metadata_changed)
-        form_layout.addRow("Tags:", self.tags_edit)
+        self.target_combo = QComboBox()
+        self.target_combo.setToolTip("Inspect configured metadata for the Full Episode or a specific Story")
+        self.target_combo.currentIndexChanged.connect(self._on_target_changed)
+        target_row.addWidget(self.target_combo, 1)
+        layout.addLayout(target_row)
 
-        # Featured Image row
-        img_row = QHBoxLayout()
-        self.img_label = QLabel("None")
-        self.img_label.setStyleSheet("color: #94a3b8; font-size: 11px;")
-        self.browse_img_btn = QPushButton("Browse...")
-        self.browse_img_btn.setStyleSheet("font-size: 11px; padding: 2px 8px;")
-        self.browse_img_btn.clicked.connect(self._browse_image)
-        self.grab_frame_btn = QPushButton("Grab Frame")
-        self.grab_frame_btn.setStyleSheet("font-size: 11px; padding: 2px 8px;")
-        self.grab_frame_btn.clicked.connect(self._grab_video_frame)
-        self.clear_img_btn = QPushButton("Clear")
-        self.clear_img_btn.setStyleSheet("font-size: 11px; padding: 2px 6px;")
-        self.clear_img_btn.clicked.connect(self._clear_image)
+        # Summary Info Card
+        self.summary_box = QFrame()
+        self.summary_box.setStyleSheet("""
+            QFrame {
+                background-color: #0f172a;
+                border: 1px solid #1e293b;
+                border-radius: 4px;
+                padding: 6px 8px;
+            }
+            QLabel {
+                font-size: 11px;
+            }
+        """)
+        summary_layout = QVBoxLayout(self.summary_box)
+        summary_layout.setContentsMargins(4, 4, 4, 4)
+        summary_layout.setSpacing(3)
 
-        img_row.addWidget(self.img_label)
-        img_row.addStretch()
-        img_row.addWidget(self.browse_img_btn)
-        img_row.addWidget(self.grab_frame_btn)
-        img_row.addWidget(self.clear_img_btn)
-        form_layout.addRow("Featured Image:", img_row)
+        self.title_lbl = QLabel("<b>Title:</b> Full Episode")
+        self.title_lbl.setWordWrap(True)
+        summary_layout.addWidget(self.title_lbl)
 
-        layout.addWidget(self.form_container)
-        self.form_container.setVisible(False)
+        self.authors_lbl = QLabel("<b>Authors:</b> Default / None")
+        summary_layout.addWidget(self.authors_lbl)
+
+        self.cats_lbl = QLabel("<b>Categories:</b> Default / None")
+        summary_layout.addWidget(self.cats_lbl)
+
+        self.thumb_lbl = QLabel("<b>Featured Image:</b> None")
+        summary_layout.addWidget(self.thumb_lbl)
+
+        self.status_lbl = QLabel("<b>Status:</b> Draft")
+        summary_layout.addWidget(self.status_lbl)
+
+        layout.addWidget(self.summary_box)
+
+        # Secondary Quick Actions
+        actions_row = QHBoxLayout()
+        actions_row.setSpacing(6)
+
+        self.auto_excerpt_btn = QPushButton("✨ Auto-Excerpt")
+        self.auto_excerpt_btn.setToolTip("Auto-generate a 55-word excerpt from this story's transcript directly")
+        self.auto_excerpt_btn.setStyleSheet("font-size: 10px; padding: 2px 6px;")
+        self.auto_excerpt_btn.clicked.connect(self._on_quick_auto_excerpt)
+        actions_row.addWidget(self.auto_excerpt_btn)
+
+        self.refresh_btn = QPushButton("⟳ Refresh Taxonomy")
+        self.refresh_btn.setToolTip("Fetch fresh authors and categories from the connected WordPress site")
+        self.refresh_btn.setStyleSheet("font-size: 10px; padding: 2px 6px;")
+        self.refresh_btn.clicked.connect(self._on_refresh_taxonomy)
+        actions_row.addWidget(self.refresh_btn)
+
+        layout.addLayout(actions_row)
+
+    def refresh_targets_dropdown(self):
+        """Populate target_combo with Full Episode and all current project stories."""
+        self.target_combo.blockSignals(True)
+        prev_data = self.target_combo.currentData()
+        self.target_combo.clear()
+
+        self.target_combo.addItem("🎬 Full Episode", "full")
+        stories = getattr(self.app, "stories", []) or []
+        for idx, st in enumerate(stories):
+            title = st.title if getattr(st, "title", None) else f"Story {idx + 1}"
+            self.target_combo.addItem(f"📖 Story {idx + 1}: {title}", f"story_{idx}")
+
+        # Restore selection if possible
+        found_idx = -1
+        if prev_data:
+            for i in range(self.target_combo.count()):
+                if self.target_combo.itemData(i) == prev_data:
+                    found_idx = i
+                    break
+        if found_idx >= 0:
+            self.target_combo.setCurrentIndex(found_idx)
+        else:
+            self.target_combo.setCurrentIndex(0)
+        self.target_combo.blockSignals(False)
+
+    def _on_target_changed(self, index: int):
+        data = self.target_combo.itemData(index)
+        if data == "full":
+            self.current_target_mode = "full"
+            self.current_story = None
+            self._current_story_idx = -1
+        elif isinstance(data, str) and data.startswith("story_"):
+            try:
+                s_idx = int(data.split("_")[1])
+                stories = getattr(self.app, "stories", []) or []
+                if 0 <= s_idx < len(stories):
+                    self.current_target_mode = "story"
+                    self.current_story = stories[s_idx]
+                    self._current_story_idx = s_idx
+            except Exception:
+                self.current_target_mode = "full"
+                self.current_story = None
+                self._current_story_idx = -1
+        self._load_current_target_metadata()
 
     def set_story(self, story: Any):
-        self.current_story = story
-        if not story:
-            self.placeholder_lbl.setVisible(True)
-            self.form_container.setVisible(False)
-            return
+        """Called when user selects a story in the story list or timeline."""
+        self.refresh_targets_dropdown()
+        if story:
+            stories = getattr(self.app, "stories", []) or []
+            if story in stories:
+                idx = stories.index(story)
+                target_key = f"story_{idx}"
+                for i in range(self.target_combo.count()):
+                    if self.target_combo.itemData(i) == target_key:
+                        self.target_combo.setCurrentIndex(i)
+                        return
+        self._load_current_target_metadata()
 
-        self.placeholder_lbl.setVisible(False)
-        self.form_container.setVisible(True)
-
-        self._updating_ui = True
-        try:
-            wp_meta = getattr(story, "metadata", {}).get("wordpress", {}) if getattr(story, "metadata", None) else {}
-
-            status = wp_meta.get("status", "draft")
-            idx = self.status_combo.findData(status)
-            if idx >= 0:
-                self.status_combo.setCurrentIndex(idx)
-            else:
-                self.status_combo.setCurrentIndex(0)
-
-            self.excerpt_edit.setPlainText(wp_meta.get("excerpt", ""))
-
-            cats = wp_meta.get("category_ids", [])
-            self.cats_edit.setText(", ".join(str(c) for c in cats))
-
-            tags = wp_meta.get("tags", [])
-            self.tags_edit.setText(", ".join(str(t) for t in tags))
-
-            feat_img = wp_meta.get("featured_image")
-            if feat_img and Path(feat_img).exists():
-                self.img_label.setText(Path(feat_img).name)
-            else:
-                self.img_label.setText("None")
-        finally:
-            self._updating_ui = False
-
-    def _on_metadata_changed(self):
-        if self._updating_ui or not self.current_story:
-            return
-
-        if not hasattr(self.current_story, "metadata") or self.current_story.metadata is None:
-            self.current_story.metadata = {}
-
-        wp_meta = self.current_story.metadata.setdefault("wordpress", {})
-        wp_meta["status"] = self.status_combo.currentData()
-        wp_meta["excerpt"] = self.excerpt_edit.toPlainText().strip()
-
-        cat_ids = []
-        for part in self.cats_edit.text().split(","):
-            part = part.strip()
-            if part.isdigit():
-                cat_ids.append(int(part))
-        wp_meta["category_ids"] = cat_ids
-        wp_meta["tags"] = [t.strip() for t in self.tags_edit.text().split(",") if t.strip()]
-
-        if hasattr(self.app, "set_unsaved_changes"):
-            self.app.set_unsaved_changes(True)
-
-    def _generate_excerpt(self):
-        if not self.current_story:
-            return
-        st = self.current_story
-        raw_text = ""
-        if hasattr(self.app, "_get_transcript_text_slice"):
-            raw_text = self.app._get_transcript_text_slice(st.start, st.end)
-        elif hasattr(self.app, "transcript"):
-            full_t = getattr(self.app, "transcript", []) or []
-            words = []
-            for seg in full_t:
-                s_start = seg.get("start", 0.0)
-                s_end = seg.get("end", 0.0)
-                if (st.start is None or s_end >= st.start) and (st.end is None or s_start <= st.end):
-                    words.append(seg.get("text", ""))
-            raw_text = " ".join(words)
-
-        exc = generate_wp_excerpt(raw_text, max_words=55)
-        if exc:
-            self.excerpt_edit.setPlainText(exc)
-
-    def _browse_image(self):
-        if not self.current_story:
-            return
-        path, _ = QFileDialog.getOpenFileName(
-            self,
-            "Select Featured Image",
-            "",
-            "Image Files (*.jpg *.jpeg *.png *.webp);;All Files (*.*)"
-        )
-        if path:
-            wp_meta = self.current_story.metadata.setdefault("wordpress", {})
-            wp_meta["featured_image"] = path
-            wp_meta["featured_image_mode"] = "custom"
-            self.img_label.setText(Path(path).name)
-            if hasattr(self.app, "set_unsaved_changes"):
-                self.app.set_unsaved_changes(True)
-
-    def _grab_video_frame(self):
-        if not self.current_story:
-            return
-        video_path = getattr(self.app, "audio_file", None)
-        if not video_path or not getattr(self.app, "current_media_is_video", False):
-            QMessageBox.information(self, "No Video", "Active media file is not a video.")
-            return
-
-        ts = float(self.current_story.start or 0.0)
-        temp_dir = tempfile.mkdtemp(prefix="rtvs_wp_frame_")
-        frame_path = os.path.join(temp_dir, f"frame_{int(ts)}.jpg")
-        if capture_video_frame(str(video_path), ts, frame_path):
-            wp_meta = self.current_story.metadata.setdefault("wordpress", {})
-            wp_meta["featured_image"] = frame_path
-            wp_meta["featured_image_mode"] = "video_frame"
-            self.img_label.setText(Path(frame_path).name)
-            if hasattr(self.app, "set_unsaved_changes"):
-                self.app.set_unsaved_changes(True)
+    def _get_active_wp_metadata(self) -> dict:
+        if self.current_target_mode == "story" and self.current_story:
+            if not hasattr(self.current_story, "metadata") or self.current_story.metadata is None:
+                self.current_story.metadata = {}
+            return self.current_story.metadata.setdefault("wordpress", {})
         else:
-            QMessageBox.warning(self, "Capture Failed", "Failed to extract video frame using FFmpeg.")
+            proj_meta = getattr(self.app, "project_metadata", None)
+            if not isinstance(proj_meta, dict):
+                proj_meta = {}
+                self.app.project_metadata = proj_meta
+            return proj_meta.setdefault("wordpress", {})
 
-    def _clear_image(self):
-        if not self.current_story:
-            return
-        wp_meta = self.current_story.metadata.setdefault("wordpress", {})
-        wp_meta["featured_image"] = None
-        wp_meta["featured_image_mode"] = "none"
-        self.img_label.setText("None")
-        if hasattr(self.app, "set_unsaved_changes"):
-            self.app.set_unsaved_changes(True)
+    def _load_current_target_metadata(self):
+        wp_meta = self._get_active_wp_metadata()
+
+        # Title
+        if self.current_target_mode == "story" and self.current_story:
+            title = wp_meta.get("title") or getattr(self.current_story, "title", "") or f"Story {self._current_story_idx + 1}"
+        else:
+            audio_file = getattr(self.app, "audio_file", None)
+            default_title = Path(audio_file).stem if audio_file else "Full Episode"
+            title = wp_meta.get("title") or default_title
+        self.title_lbl.setText(f"<b>Title:</b> {html.escape(title)}")
+
+        # Authors
+        raw_auth = self.settings.value("wp_cached_authors", "")
+        auth_data = json.loads(raw_auth) if raw_auth else []
+        auth_ids = set(wp_meta.get("author_ids") or [])
+        term_ids = set(wp_meta.get("author_term_ids") or [])
+        matched_authors = []
+        for a in auth_data:
+            if isinstance(a, dict):
+                if not a.get("is_guest") and (a.get("user_id") in auth_ids or a.get("id") in auth_ids):
+                    matched_authors.append(a.get("name", "User"))
+                elif a.get("is_guest") and (a.get("term_id") in term_ids or a.get("id") in term_ids):
+                    matched_authors.append(a.get("name", "Guest"))
+        if not matched_authors and self.current_target_mode == "story" and self.current_story:
+            st_auth = self.current_story.metadata.get("author")
+            if st_auth:
+                matched_authors.append(st_auth)
+        auth_text = ", ".join(matched_authors) if matched_authors else "Default / None"
+        self.authors_lbl.setText(f"<b>Authors:</b> {html.escape(auth_text)}")
+
+        # Categories
+        raw_cat = self.settings.value("wp_cached_categories", "")
+        cat_data = json.loads(raw_cat) if raw_cat else []
+        cat_ids = set(wp_meta.get("category_ids") or [])
+        matched_cats = [c.get("name") for c in cat_data if isinstance(c, dict) and c.get("id") in cat_ids]
+        cat_text = ", ".join(matched_cats) if matched_cats else "Default / None"
+        self.cats_lbl.setText(f"<b>Categories:</b> {html.escape(cat_text)}")
+
+        # Featured Image
+        mode = wp_meta.get("featured_image_mode", "none")
+        img = wp_meta.get("featured_image")
+        pos = wp_meta.get("frame_pos")
+        if mode == "video_frame":
+            time_str = format_time(pos, include_millis=True) if pos is not None else ""
+            self.thumb_lbl.setText(f"<b>Featured Image:</b> Video Frame @ {time_str}")
+        elif mode == "file" and img:
+            self.thumb_lbl.setText(f"<b>Featured Image:</b> File ({Path(img).name})")
+        else:
+            self.thumb_lbl.setText("<b>Featured Image:</b> None")
+
+        # Status
+        status = wp_meta.get("status", "draft").capitalize()
+        self.status_lbl.setText(f"<b>Status:</b> {status}")
+
+    def _open_post_settings_dialog(self):
+        from plugins.wordpress.export_destination import WordPressPostMetadataDialog
+        target_idx = self._current_story_idx if self.current_target_mode == "story" else None
+        dlg = WordPressPostMetadataDialog(self, self.app, target_story_index=target_idx)
+        if dlg.exec():
+            self.refresh_targets_dropdown()
+            self._load_current_target_metadata()
+
+    def _on_quick_auto_excerpt(self):
+        if self.current_target_mode == "story" and self.current_story:
+            raw_text = self.app._get_transcript_text_slice(self.current_story.start, self.current_story.end) if hasattr(self.app, "_get_transcript_text_slice") else ""
+            exc = generate_wp_excerpt(raw_text, 55)
+            if not hasattr(self.current_story, "metadata") or self.current_story.metadata is None:
+                self.current_story.metadata = {}
+            self.current_story.metadata["excerpt"] = exc
+            wp_meta = self.current_story.metadata.setdefault("wordpress", {})
+            wp_meta["excerpt"] = exc
+            if hasattr(self.app, "excerpt_edit") and self.app.excerpt_edit:
+                if hasattr(self.app.excerpt_edit, "setText"):
+                    self.app.excerpt_edit.setText(exc)
+                elif hasattr(self.app.excerpt_edit, "setPlainText"):
+                    self.app.excerpt_edit.setPlainText(exc)
+            if hasattr(self.app, "mark_project_dirty"):
+                self.app.mark_project_dirty("Generate Auto-Excerpt")
+            elif hasattr(self.app, "set_unsaved_changes"):
+                self.app.set_unsaved_changes(True)
+            QMessageBox.information(self, "Auto-Excerpt", "Generated 55-word excerpt for current story from transcript.")
+        else:
+            raw_text = self.app._get_transcript_text_slice(None, None) if hasattr(self.app, "_get_transcript_text_slice") else ""
+            exc = generate_wp_excerpt(raw_text, 55)
+            wp_meta = self._get_active_wp_metadata()
+            wp_meta["excerpt"] = exc
+            if hasattr(self.app, "set_unsaved_changes"):
+                self.app.set_unsaved_changes(True)
+            QMessageBox.information(self, "Auto-Excerpt", "Generated 55-word excerpt for full episode from transcript.")
+
+    def _on_refresh_taxonomy(self):
+        try:
+            from plugins.wordpress.client import get_wp_client
+            client = get_wp_client()
+            if not client.is_configured():
+                QMessageBox.information(self, "WordPress Not Configured", "Please configure WordPress settings first under Settings > Manage Plugins.")
+                return
+            authors = client.get_authors()
+            cats = client.get_categories()
+            self.settings.setValue("wp_cached_authors", json.dumps(authors))
+            self.settings.setValue("wp_cached_categories", json.dumps(cats))
+            self._load_current_target_metadata()
+            QMessageBox.information(self, "Refreshed", f"Successfully loaded {len(authors)} authors and {len(cats)} categories from WordPress.")
+        except Exception as exc:
+            QMessageBox.warning(self, "Refresh Error", f"Failed to refresh from WordPress: {exc}")
 
 
 class Plugin(BasePlugin):
@@ -769,6 +834,7 @@ class Plugin(BasePlugin):
 
     def get_story_actions(self, story: Any = None) -> List[tuple[str, Callable]]:
         return [
+            ("WordPress Post & Story Settings...", lambda: self.open_post_metadata_dialog(parent=self.app, story=story)),
             ("Export Story to WordPress / CMS...", lambda: self.open_publish_dialog(parent=self.app, story=story)),
         ]
 
@@ -787,3 +853,18 @@ class Plugin(BasePlugin):
     def open_publish_dialog(self, parent: Any = None, story: Any = None):
         dlg = WordPressPublishDialog(self, parent=parent or self.app, story=story)
         dlg.exec()
+
+    def open_post_metadata_dialog(self, parent: Any = None, story: Any = None):
+        from plugins.wordpress.export_destination import WordPressPostMetadataDialog
+        target_idx = None
+        if story and hasattr(self.app, "stories"):
+            try:
+                target_idx = self.app.stories.index(story)
+            except Exception:
+                target_idx = None
+        dlg = WordPressPostMetadataDialog(parent=parent or self.app, main_window=self.app, target_story_index=target_idx)
+        dlg.exec()
+        if self._story_widget:
+            self._story_widget.refresh_targets_dropdown()
+            self._story_widget._load_current_target_metadata()
+

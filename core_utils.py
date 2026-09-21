@@ -21,6 +21,8 @@ except ImportError:
     QSettings = None
 
 INTERNAL_APP_ID = "RadioTVStorySegmenter"
+APP_DISPLAY_NAME = "Radio & TV Segmenter"
+PROJECT_VERSION = "3.5.19"
 DEFAULT_GITHUB_REPO = "bradlinder/RTVS3"
 
 
