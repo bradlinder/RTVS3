@@ -69,6 +69,11 @@ class RestoreSelectedSettingsDialog(QDialog):
         scroll_layout.setContentsMargins(8, 8, 8, 8)
 
         for cat_id, label_text, desc_text in self.CATEGORIES:
+            if cat_id == "wordpress_settings":
+                win = self.parent()
+                show_wp = hasattr(win, "plugin_manager") and win.plugin_manager and win.plugin_manager.is_plugin_enabled("wordpress")
+                if not show_wp:
+                    continue
             item_box = QWidget()
             item_layout = QVBoxLayout(item_box)
             item_layout.setContentsMargins(4, 4, 4, 4)
@@ -2216,121 +2221,15 @@ class PlaybackPreferencesMixin:
         cleanup_layout.addStretch()
         stack.addWidget(page_cleanup)
 
-        # 8. WordPress Page
-        from wordpress_export import _get_wp_password, _set_wp_password, WordPressClient
-
-        page_wp = QWidget()
-        wp_layout = QVBoxLayout(page_wp)
-        wp_desc = QLabel(
-            "Configure your WordPress site connection using an <b>Application Password</b>.<br>"
-            "To generate one in WordPress: go to <i>Users &gt; Profile &gt; Application Passwords</i>."
-        )
-        wp_desc.setWordWrap(True)
-        wp_layout.addWidget(wp_desc)
-
-        orig_wp_url = str(self.settings_store.value("wp_site_url", "") or "").strip()
-        orig_wp_user = str(self.settings_store.value("wp_username", "") or "").strip()
-        orig_wp_pwd = _get_wp_password(orig_wp_user) if orig_wp_user else ""
-
-        wp_cred_group = QGroupBox("WordPress Credentials")
-        wp_form = QFormLayout(wp_cred_group)
-        wp_url_edit = QLineEdit(orig_wp_url)
-        wp_url_edit.setPlaceholderText("https://yoursite.com")
-        wp_user_edit = QLineEdit(orig_wp_user)
-        wp_user_edit.setPlaceholderText("your_username")
-        wp_pass_edit = QLineEdit()
-        wp_pass_edit.setEchoMode(QLineEdit.EchoMode.Password)
-        wp_pass_edit.setPlaceholderText("xxxx xxxx xxxx xxxx")
-        if orig_wp_pwd:
-            wp_pass_edit.setText(orig_wp_pwd)
-
-        wp_form.addRow("Site URL:", wp_url_edit)
-        wp_form.addRow("Username:", wp_user_edit)
-        wp_form.addRow("App Password:", wp_pass_edit)
-        wp_layout.addWidget(wp_cred_group)
-
-        # Default Custom Header / Footer Text Group
-        wp_custom_group = QGroupBox("Default Custom Text / Disclaimer (Optional)")
-        wp_cg_layout = QVBoxLayout(wp_custom_group)
-
-        wp_custom_text_edit = QTextEdit()
-        wp_custom_text_edit.setPlaceholderText(
-            "e.g. Note: The following transcript was machine-generated and may contain some spelling errors or other inaccuracies."
-        )
-        wp_custom_text_edit.setMaximumHeight(65)
-        wp_custom_text_edit.setPlainText(str(self.settings_store.value("wp_custom_text", "") or ""))
-        wp_cg_layout.addWidget(wp_custom_text_edit)
-
-        wp_pos_row = QHBoxLayout()
-        wp_pos_button_group = QButtonGroup(dialog)
-        wp_rad_pos_top = QRadioButton("Place at top of post")
-        wp_rad_pos_bottom = QRadioButton("Place at bottom of post")
-        wp_pos_button_group.addButton(wp_rad_pos_top)
-        wp_pos_button_group.addButton(wp_rad_pos_bottom)
-        saved_wp_pos = str(self.settings_store.value("wp_custom_text_pos", "top") or "top").lower()
-        if saved_wp_pos == "bottom":
-            wp_rad_pos_bottom.setChecked(True)
-        else:
-            wp_rad_pos_top.setChecked(True)
-        wp_pos_row.addWidget(wp_rad_pos_top)
-        wp_pos_row.addWidget(wp_rad_pos_bottom)
-        wp_pos_row.addStretch()
-        wp_cg_layout.addLayout(wp_pos_row)
-
-        wp_opt_layout = QVBoxLayout()
-        wp_chk_no_snippet = QCheckBox("Hide from Google & search engine snippets (data-nosnippet)")
-        wp_chk_no_snippet.setToolTip(
-            "Wraps custom text in data-nosnippet and Google search engine directives so search engines index the story but exclude this notice from search result summaries."
-        )
-        wp_chk_no_excerpt = QCheckBox("Exclude this text from WordPress post excerpts")
-        wp_chk_no_excerpt.setToolTip(
-            "Prevents this notice from appearing in automated WordPress theme excerpts or post list teasers."
-        )
-        wp_chk_no_snippet.setChecked(
-            str(self.settings_store.value("wp_custom_text_no_snippet", "true")).lower() in ("true", "1", "yes")
-        )
-        wp_chk_no_excerpt.setChecked(
-            str(self.settings_store.value("wp_custom_text_no_excerpt", "true")).lower() in ("true", "1", "yes")
-        )
-        wp_opt_layout.addWidget(wp_chk_no_snippet)
-        wp_opt_layout.addWidget(wp_chk_no_excerpt)
-        wp_cg_layout.addLayout(wp_opt_layout)
-
-        wp_layout.addWidget(wp_custom_group)
-
-        wp_status_label = QLabel("")
-        wp_status_label.setWordWrap(True)
-        wp_layout.addWidget(wp_status_label)
-
-        wp_test_btn = QPushButton("Test Connection")
-
-        def _test_wp_connection():
-            url = wp_url_edit.text().strip()
-            user = wp_user_edit.text().strip()
-            pwd = wp_pass_edit.text().strip()
-            if not url or not user or not pwd:
-                QMessageBox.warning(dialog, "Incomplete Settings", "Please enter Site URL, Username, and Password first.")
-                return
-            wp_test_btn.setEnabled(False)
-            wp_status_label.setText("Testing connection...")
-            wp_status_label.setStyleSheet("color: #888888;")
-            wp_status_label.repaint()
-            client = WordPressClient(url, user, pwd)
-            ok, msg = client.test_connection()
-            wp_test_btn.setEnabled(True)
-            if ok:
-                wp_status_label.setText(f"✓ {msg}")
-                wp_status_label.setStyleSheet("color: #2ea44f; font-weight: bold;")
-            else:
-                wp_status_label.setText(f"✗ {msg}")
-                wp_status_label.setStyleSheet("color: #e06c75;")
-
-        wp_test_btn.clicked.connect(_test_wp_connection)
-        wp_layout.addWidget(wp_test_btn)
-        _add_custom_defaults_btn(wp_layout, "WordPress Connection")
-        wp_layout.addStretch()
-        if show_wp:
-            stack.addWidget(page_wp)
+        # 8. WordPress Page (Dynamically loaded from WordPress plugin when enabled)
+        page_wp = None
+        if show_wp and hasattr(self, "plugin_manager") and self.plugin_manager:
+            wp_plugin = self.plugin_manager.plugins.get("wordpress")
+            if wp_plugin and hasattr(wp_plugin, "get_preferences_widget"):
+                page_wp = wp_plugin.get_preferences_widget(dialog)
+                if page_wp and page_wp.layout():
+                    _add_custom_defaults_btn(page_wp.layout(), "WordPress Connection")
+                stack.addWidget(page_wp)
 
         # 9. YouTube Page
         yt_cat_combo = None
@@ -2718,37 +2617,9 @@ class PlaybackPreferencesMixin:
             self.settings_store.setValue("gpu_translation_enabled", "true" if gpu_translate_chk.isChecked() else "false")
             self.settings_store.setValue("gpu_diarization_enabled", "true" if gpu_diarize_chk.isChecked() else "false")
 
-            # Save WordPress only when values have been modified
-            wp_url = wp_url_edit.text().strip()
-            wp_user = wp_user_edit.text().strip()
-            wp_pwd = wp_pass_edit.text().strip()
-
-            if wp_url != orig_wp_url:
-                self.settings_store.setValue("wp_site_url", wp_url)
-            if wp_user != orig_wp_user:
-                self.settings_store.setValue("wp_username", wp_user)
-
-            self.settings_store.setValue("wp_custom_text", wp_custom_text_edit.toPlainText())
-            self.settings_store.setValue("wp_custom_text_pos", "bottom" if wp_rad_pos_bottom.isChecked() else "top")
-            self.settings_store.setValue("wp_custom_text_no_snippet", wp_chk_no_snippet.isChecked())
-            self.settings_store.setValue("wp_custom_text_no_excerpt", wp_chk_no_excerpt.isChecked())
-
-            # Only re-save the credential and trigger the keyring warning if username/password actually changed
-            if wp_user and wp_pwd and (wp_user != orig_wp_user or wp_pwd != orig_wp_pwd):
-                saved_in_keyring = _set_wp_password(wp_user, wp_pwd)
-                if not saved_in_keyring:
-                    QMessageBox.warning(
-                        dialog,
-                        "System Credential Storage Unavailable",
-                        "Your operating system's secure credential storage (keyring) is not "
-                        "available on this machine, so the WordPress application password has "
-                        "been saved locally instead, encrypted with a key derived from this "
-                        "machine.\n\n"
-                        "This is not as strong as a system keyring -- it primarily guards "
-                        "against the password being read in plain text from a settings file, "
-                        "registry export, or backup, not against someone with code-execution "
-                        "access to this machine.",
-                    )
+            # Save WordPress preferences if plugin page was loaded and active
+            if show_wp and page_wp and hasattr(page_wp, "save_preferences"):
+                page_wp.save_preferences(dialog)
             
 
             if show_yt and yt_cat_combo:

@@ -1,5 +1,46 @@
 # Changelog
 
+## v3.5.9
+- **WordPress Plugin Decoupling & Modular Architecture Migration (`plugins/wordpress/`, `RadioTVSegmenter.py`, `project_export.py`, `playback_preferences.py`)**:
+  - **Complete Core Decoupling**:
+    - Fully removed `wordpress_export.py` and decoupled `WordPressExportMixin` from `MainWindow`, guaranteeing core application modules never import from `plugins/` per architectural invariants.
+    - Updated export destination handling in `project_export.py` to route purely through dynamic plugin discovery via `plugin_manager.get_export_destinations()`.
+  - **Isolated Client & Preferences (`plugins/wordpress/client.py`, `plugins/wordpress/preferences_page.py`)**:
+    - Centralized all WordPress REST API interactions, secure keyring and DPAPI encrypted credential management, connection testing, and preferences page directly into `plugins/wordpress/`.
+    - Integrated dynamic plugin preference discovery in `playback_preferences.py`, ensuring WordPress settings only appear when the plugin is enabled.
+  - **Story Editor WordPress Metadata Widget (`plugins/wordpress/story_metadata_widget.py`, `ui_layout.py`, `story_widgets.py`)**:
+    - Implemented `WordPressStoryMetadataWidget` dynamically loaded into the main Story Editor sidebar. Allows authors to assign Author, Post Status, Categories, Tags, Excerpt, and Featured Image directly while editing stories.
+    - Persisted WordPress metadata cleanly within `.rtvs` project file schemas under `story.custom_metadata["wordpress"]` and pre-populated into the Export Center dialog.
+    - Guaranteed zero UI contamination: when the plugin is disabled or uninstalled, the story editor remains free of WordPress controls.
+  - **Self-Contained Export Destination (`plugins/wordpress/export_destination.py`)**:
+    - Migrated media file uploading and draft/published post creation workflows into `WordPressExportDestination.execute_export()`.
+- **Project Lifecycle & Broadcast Audio Export Modularization (`project_lifecycle.py`, `export/audio.py`, `project_export.py`)**:
+  - **Project Lifecycle Separation**:
+    - Extracted project file persistence (`close_project`, `save_project`, `save_project_as`, `open_project`, `_save_project_file`) from `project_export.py` into dedicated `ProjectLifecycleMixin` in `project_lifecycle.py`.
+  - **Broadcast Audio & Stem Rendering Separation**:
+    - Extracted broadcast audio rendering, fade curve processing, channel stem mixing, and normalization into `export/audio.py`.
+- **Workspace & Export Fullscreen Expansion Controls (`ui_layout.py`, `export/dialog.py`)**:
+  - **Story Workspace Maximization**:
+    - Added maximize and restore toggle buttons to the Stories Panel allowing users to expand the story list and metadata editor across the entire application workspace for focused editorial work, with seamless restoration to the standard split-view layout.
+  - **Export Center Dialog Maximization**:
+    - Added maximize and fullscreen controls to `UnifiedExportDialog` for comfortable batch story export review and configuration.
+
+## v3.5.8
+- **Audio Fades "Apply" Action & Live Auditioning (`transcript_story.py`)**:
+  - **Live Auditioning Without Closing Dialog**:
+    - Added an "Apply" button to `StoryFadesDialog` alongside "Save Fades" and "Cancel", allowing real-time timeline visualization and auditioning of fade envelopes without dismissing the dialog.
+    - Added snapshot tracking of pre-dialog fade states across all stories (`_initial_fades`), ensuring that clicking "Cancel" after applying changes seamlessly rolls back both the data model and timeline visualization.
+    - Synchronized `MainWindow.edit_story_fades` undo/redo stack commands (`StoryFadesChangeCommand` / `SetStoriesCommand`) with the pre-dialog baseline values, preserving clean undo history even when multiple live applications are performed.
+- **Timeline Navigation & Story Selection Performance Optimization (`timeline_widgets.py`, `transcript_story.py`)**:
+  - **High-Frequency Drag Event Throttling**:
+    - Implemented a 60 FPS (~16ms) rate limiter in `TimelineCanvas.mouseMoveEvent` during continuous drag operations (boundary edge dragging, fade handle adjustment, region selection, and scrub navigation) to eliminate UI thread event flooding.
+  - **Deferred Sidebar List Relayout**:
+    - Removed synchronous `QListWidgetItem` string reformatting and serialization from `handle_drag_story_region` in `transcript_story.py`, updating only start/end time inputs during the drag. Full list item widget updates and project saves are deferred to `handle_drag_finished`.
+  - **Precomputed Fade Curve Geometry & Vector Caching**:
+    - Precomputed 16-step lookup tables (`_FADE_IN_CURVE_TABLES`, `_FADE_OUT_CURVE_TABLES`) for all curve profiles (`linear`, `s_curve`, `logarithmic`, `exponential`), replacing dynamic mathematical evaluations on every frame.
+    - Pre-cached pens and brushes in `TimelineCanvas` for fade fills, ramp strokes, and tactile grab handles, avoiding repetitive color allocations during rapid canvas repaints.
+    - Cached story boundary snapping points in `set_stories` and during active drags to eliminate redundant boundary iteration overhead in `snap_time`.
+
 ## v3.5.7
 - **Detached Process Supervisor & UAC Elevation Synchronization (`updater.py`)**:
   - **Process Lifecycle Synchronization**:

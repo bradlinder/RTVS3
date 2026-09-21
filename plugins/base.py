@@ -136,6 +136,18 @@ class BasePlugin:
         """Return list of (Action Label, callback_function) for Tools menu."""
         return []
 
+    def get_story_actions(self, story: Any = None) -> List[tuple[str, Callable]]:
+        """Return list of (Action Label, callback_function) for story context menu."""
+        return []
+
+    def create_story_metadata_widget(self, parent: Any = None) -> Optional[Any]:
+        """Return a QWidget to be embedded into the Stories panel for metadata editing, or None."""
+        return None
+
+    def on_story_selected(self, story: Any = None) -> None:
+        """Called when active story selection changes in the main editor."""
+        pass
+
     def get_preferences_widget(self, parent: Any = None) -> Any:
         """Return a QWidget to be embedded into the Preferences dialog, or None."""
         return None

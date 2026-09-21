@@ -1,20 +1,21 @@
-"""Radio & TV Segmenter — WordPress Export & Settings module.
+"""WordPress Plugin — Client, Credential Storage, and Upload Engine.
 
-Provides WordPress REST API publishing capabilities, credential management via
-system keyring (with QSettings fallback), and WordPress configuration dialogs.
+Contains WordPress REST API communication, keyring storage with fallback encryption,
+settings dialog, and media/post upload execution.
 """
-
 from __future__ import annotations
 
 import html
 import json
+import mimetypes
 import os
 import re
 import shutil
+import subprocess
 import sys
 import tempfile
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from prs_shared import (
     INTERNAL_APP_ID,
@@ -27,19 +28,20 @@ from prs_shared import (
 
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
+    QButtonGroup,
+    QCheckBox,
     QDialog,
-    QVBoxLayout,
+    QFormLayout,
+    QGroupBox,
     QHBoxLayout,
     QLabel,
     QLineEdit,
-    QPushButton,
     QMessageBox,
-    QGroupBox,
-    QFormLayout,
-    QTextEdit,
+    QPushButton,
     QRadioButton,
-    QButtonGroup,
-    QCheckBox,
+    QTextEdit,
+    QVBoxLayout,
+    QWidget,
 )
 
 
@@ -54,15 +56,7 @@ def _get_keyring():
 
 def _get_wp_fallback_cipher():
     """Best-effort symmetric cipher bound to this machine, used only for
-    the QSettings fallback when no system keyring service is available
-    (e.g. a portable USB run, or Linux without Secret Service/KWallet).
-
-    This is NOT a substitute for a real OS keyring: deriving the key from
-    machine-identifying data means the stored value is only meaningfully
-    protected against someone reading the settings file/registry off this
-    machine without also having code-execution access to it (e.g. a casual
-    file scraper, an unencrypted backup, a registry export) -- not against
-    a determined local attacker with access to the running machine.
+    the QSettings fallback when no system keyring service is available.
     """
     try:
         import base64
@@ -109,8 +103,7 @@ def _set_wp_password(username: str, password: str) -> bool:
     """Store the WordPress application password securely.
 
     Returns True if it was saved to the system keyring, False if it fell
-    back to (encrypted, where possible) local storage -- callers can use
-    this to show an advisory notice when the fallback path is used.
+    back to (encrypted, where possible) local storage.
     """
     if not username:
         return False
@@ -147,13 +140,9 @@ def generate_wp_excerpt(text: str, max_words: int = 55) -> str:
     """Generate a clean WordPress-style post excerpt from text (standard 55 words)."""
     if not text:
         return ""
-    # Strip HTML tags
     cleaned = re.sub(r"<[^>]+>", " ", text)
-    # Strip speaker tags like [Speaker 1] or Speaker:
     cleaned = re.sub(r"\[[^\]]+\]", " ", cleaned)
-    # Strip timestamp annotations
     cleaned = re.sub(r"\b\d{1,2}:\d{2}(?::\d{2})?(?:\.\d+)?\b", " ", cleaned)
-    # Collapse multiple whitespace
     words = cleaned.split()
     if len(words) <= max_words:
         return " ".join(words)
@@ -237,8 +226,7 @@ class WordPressClient:
                 "is_guest": is_guest,
             })
 
-        # PublishPress Authors is the authoritative source. Its author profiles are
-        # taxonomy terms, so this includes guest authors with no WP user account.
+        # PublishPress Authors is the authoritative source.
         try:
             for page in range(1, 11):
                 resp = requests.get(
@@ -280,7 +268,7 @@ class WordPressClient:
                 except Exception:
                     continue
 
-        # Final fallback for sites without PublishPress Authors.
+        # Final fallback for standard sites without PublishPress Authors.
         if not authors:
             try:
                 resp = requests.get(
@@ -318,8 +306,6 @@ class WordPressClient:
         url = f"{self.api_base}/media"
         errors = []
 
-        # requests generates the required multipart Content-Disposition header,
-        # including name="file" and the actual filename.
         try:
             with open(path, "rb") as f:
                 resp = requests.post(
@@ -333,7 +319,7 @@ class WordPressClient:
         except Exception as exc:
             errors.append(f"multipart exception: {exc}")
 
-        # Raw upload fallback. This path requires Content-Disposition on the request.
+        # Raw upload fallback
         try:
             headers = {
                 "Accept": "application/json",
@@ -532,307 +518,384 @@ class WordPressSettingsDialog(QDialog):
                     "Your operating system's secure credential storage (keyring) is not "
                     "available on this machine, so the WordPress application password has "
                     "been saved locally instead, encrypted with a key derived from this "
-                    "machine.\n\n"
-                    "This is not as strong as a system keyring -- it primarily guards "
-                    "against the password being read in plain text from a settings file, "
-                    "registry export, or backup, not against someone with code-execution "
-                    "access to this machine.",
+                    "machine.",
                 )
 
         self.accept()
 
 
-class WordPressExportMixin:
-    """Mixin providing WordPress publishing capabilities to MainWindow."""
+def get_wp_client() -> WordPressClient | None:
+    """Instantiate WordPressClient from stored settings if configured."""
+    settings = QSettings(INTERNAL_APP_ID, INTERNAL_APP_ID)
+    url = str(settings.value("wp_site_url", "") or "").strip()
+    user = str(settings.value("wp_username", "") or "").strip()
+    pwd = _get_wp_password(user) if user else ""
+    if url and user and pwd:
+        return WordPressClient(url, user, pwd)
+    return None
 
-    def _get_wp_client(self) -> WordPressClient | None:
-        """Instantiate WordPressClient from stored settings if configured."""
-        settings = QSettings(INTERNAL_APP_ID, INTERNAL_APP_ID)
-        url = str(settings.value("wp_site_url", "") or "").strip()
-        user = str(settings.value("wp_username", "") or "").strip()
-        pwd = _get_wp_password(user) if user else ""
-        if url and user and pwd:
-            return WordPressClient(url, user, pwd)
-        return None
 
-    def _open_wp_settings(self):
-        """Open WordPress Settings configuration dialog."""
-        dialog = WordPressSettingsDialog(self)
-        dialog.exec()
+class WordPressPreferencesPage(QWidget):
+    """Preferences page widget for WordPress integration inside the application Preferences dialog."""
 
-    def _execute_wordpress_upload(
-        self,
-        client: WordPressClient,
-        post_title: str,
-        post_excerpt: str,
-        start: float | None,
-        end: float | None,
-        task_label: str,
-        include_english: bool,
-        include_spanish: bool,
-        spanish_presentation: str,
-        primary_language: str,
-        author_ids: list[int] | None = None,
-        author_term_ids: list[int] | None = None,
-        category_ids: list[int] | None = None,
-        show_completion_dialog: bool = False,
-        media_filename: str | None = None,
-        progress_callback=None,
-        featured_image_path: str | None = None,
-    ) -> dict:
-        """Extract media clip, upload to WordPress media library, and create draft post.
+    def __init__(self, parent: Any = None, app: Any = None):
+        super().__init__(parent)
+        self.app = app
+        self.settings = QSettings(INTERNAL_APP_ID, INTERNAL_APP_ID)
+        self.setup_ui()
 
-        progress_callback, when supplied, receives a human-readable step description
-        and a 1-based step number out of four.
-        """
-        def report_progress(step: int, description: str) -> None:
-            if progress_callback:
-                try:
-                    progress_callback(step, 4, description)
-                except Exception:
-                    pass
+    def setup_ui(self):
+        layout = QVBoxLayout(self)
+        desc = QLabel(
+            "Configure your WordPress site connection using an <b>Application Password</b>.<br>"
+            "To generate one in WordPress: go to <i>Users &gt; Profile &gt; Application Passwords</i>."
+        )
+        desc.setWordWrap(True)
+        layout.addWidget(desc)
 
-        audio_src = self.audio_file
-        if not audio_src or not Path(audio_src).exists():
-            raise RuntimeError("No media file is loaded in the active project to export.")
+        self.orig_url = str(self.settings.value("wp_site_url", "") or "").strip()
+        self.orig_user = str(self.settings.value("wp_username", "") or "").strip()
+        self.orig_pwd = _get_wp_password(self.orig_user) if self.orig_user else ""
 
-        media_url = ""
-        featured_media_id = None
+        cred_group = QGroupBox("WordPress Credentials")
+        form = QFormLayout(cred_group)
+        self.url_edit = QLineEdit(self.orig_url)
+        self.url_edit.setPlaceholderText("https://yoursite.com")
+        self.user_edit = QLineEdit(self.orig_user)
+        self.user_edit.setPlaceholderText("your_username")
+        self.pass_edit = QLineEdit()
+        self.pass_edit.setEchoMode(QLineEdit.EchoMode.Password)
+        self.pass_edit.setPlaceholderText("xxxx xxxx xxxx xxxx")
+        if self.orig_pwd:
+            self.pass_edit.setText(self.orig_pwd)
 
-        # Upload featured image / custom thumbnail if selected
-        if featured_image_path and Path(featured_image_path).is_file():
+        form.addRow("Site URL:", self.url_edit)
+        form.addRow("Username:", self.user_edit)
+        form.addRow("App Password:", self.pass_edit)
+        layout.addWidget(cred_group)
+
+        custom_group = QGroupBox("Default Custom Text / Disclaimer (Optional)")
+        cg_layout = QVBoxLayout(custom_group)
+        self.custom_text_edit = QTextEdit()
+        self.custom_text_edit.setPlaceholderText(
+            "e.g. Note: The following transcript was machine-generated and may contain some spelling errors or other inaccuracies."
+        )
+        self.custom_text_edit.setMaximumHeight(65)
+        self.custom_text_edit.setPlainText(str(self.settings.value("wp_custom_text", "") or ""))
+        cg_layout.addWidget(self.custom_text_edit)
+
+        pos_row = QHBoxLayout()
+        self.pos_button_group = QButtonGroup(self)
+        self.rad_pos_top = QRadioButton("Place at top of post")
+        self.rad_pos_bottom = QRadioButton("Place at bottom of post")
+        self.pos_button_group.addButton(self.rad_pos_top)
+        self.pos_button_group.addButton(self.rad_pos_bottom)
+        saved_pos = str(self.settings.value("wp_custom_text_pos", "top") or "top").lower()
+        if saved_pos == "bottom":
+            self.rad_pos_bottom.setChecked(True)
+        else:
+            self.rad_pos_top.setChecked(True)
+        pos_row.addWidget(self.rad_pos_top)
+        pos_row.addWidget(self.rad_pos_bottom)
+        pos_row.addStretch()
+        cg_layout.addLayout(pos_row)
+
+        opt_layout = QVBoxLayout()
+        self.chk_no_snippet = QCheckBox("Hide from Google & search engine snippets (data-nosnippet)")
+        self.chk_no_snippet.setToolTip(
+            "Wraps custom text in data-nosnippet and Google search engine directives so search engines index the story but exclude this notice from search result summaries."
+        )
+        self.chk_no_excerpt = QCheckBox("Exclude this text from WordPress post excerpts")
+        self.chk_no_excerpt.setToolTip(
+            "Prevents this notice from appearing in automated WordPress theme excerpts or post list teasers."
+        )
+        self.chk_no_snippet.setChecked(
+            str(self.settings.value("wp_custom_text_no_snippet", "true")).lower() in ("true", "1", "yes")
+        )
+        self.chk_no_excerpt.setChecked(
+            str(self.settings.value("wp_custom_text_no_excerpt", "true")).lower() in ("true", "1", "yes")
+        )
+        opt_layout.addWidget(self.chk_no_snippet)
+        opt_layout.addWidget(self.chk_no_excerpt)
+        cg_layout.addLayout(opt_layout)
+
+        layout.addWidget(custom_group)
+
+        self.status_label = QLabel("")
+        self.status_label.setWordWrap(True)
+        layout.addWidget(self.status_label)
+
+        self.test_btn = QPushButton("Test Connection")
+        self.test_btn.clicked.connect(self._test_connection)
+        layout.addWidget(self.test_btn)
+        layout.addStretch()
+
+    def _test_connection(self):
+        url = self.url_edit.text().strip()
+        user = self.user_edit.text().strip()
+        pwd = self.pass_edit.text().strip()
+        if not url or not user or not pwd:
+            QMessageBox.warning(self, "Incomplete Settings", "Please enter Site URL, Username, and Password first.")
+            return
+        self.test_btn.setEnabled(False)
+        self.status_label.setText("Testing connection...")
+        self.status_label.setStyleSheet("color: #888888;")
+        self.repaint()
+        client = WordPressClient(url, user, pwd)
+        ok, msg = client.test_connection()
+        self.test_btn.setEnabled(True)
+        if ok:
+            self.status_label.setText(f"✓ {msg}")
+            self.status_label.setStyleSheet("color: #2ea44f; font-weight: bold;")
+        else:
+            self.status_label.setText(f"✗ {msg}")
+            self.status_label.setStyleSheet("color: #e06c75;")
+
+    def save_preferences(self, dialog=None):
+        wp_url = self.url_edit.text().strip()
+        wp_user = self.user_edit.text().strip()
+        wp_pwd = self.pass_edit.text().strip()
+
+        if wp_url != self.orig_url:
+            self.settings.setValue("wp_site_url", wp_url)
+        if wp_user != self.orig_user:
+            self.settings.setValue("wp_username", wp_user)
+
+        self.settings.setValue("wp_custom_text", self.custom_text_edit.toPlainText())
+        self.settings.setValue("wp_custom_text_pos", "bottom" if self.rad_pos_bottom.isChecked() else "top")
+        self.settings.setValue("wp_custom_text_no_snippet", self.chk_no_snippet.isChecked())
+        self.settings.setValue("wp_custom_text_no_excerpt", self.chk_no_excerpt.isChecked())
+
+        if wp_user and wp_pwd and (wp_user != self.orig_user or wp_pwd != self.orig_pwd):
+            saved_in_keyring = _set_wp_password(wp_user, wp_pwd)
+            if not saved_in_keyring and dialog:
+                QMessageBox.warning(
+                    dialog,
+                    "System Credential Storage Unavailable",
+                    "Your operating system's secure credential storage (keyring) is not "
+                    "available on this machine, so the WordPress application password has "
+                    "been saved locally instead, encrypted with a key derived from this "
+                    "machine.",
+                )
+
+
+def execute_wordpress_upload(
+    main_window: Any,
+    client: WordPressClient,
+    post_title: str,
+    post_excerpt: str,
+    start: float | None,
+    end: float | None,
+    task_label: str,
+    include_english: bool,
+    include_spanish: bool,
+    spanish_presentation: str,
+    primary_language: str,
+    author_ids: list[int] | None = None,
+    author_term_ids: list[int] | None = None,
+    category_ids: list[int] | None = None,
+    show_completion_dialog: bool = False,
+    media_filename: str | None = None,
+    progress_callback=None,
+    featured_image_path: str | None = None,
+) -> dict:
+    """Extract media clip, upload to WordPress media library, and create draft post."""
+    def report_progress(step: int, description: str) -> None:
+        if progress_callback:
             try:
-                report_progress(1, "Uploading featured image…")
-                img_item = client.upload_media(featured_image_path, filename=Path(featured_image_path).name)
-                featured_media_id = img_item.get("id")
-            except Exception as exc:
-                self.log_activity(f"[WORDPRESS WARNING] Failed to upload featured image: {exc}")
+                progress_callback(step, 4, description)
+            except Exception:
+                pass
 
-        # 1. Prepare the media file. This can take a while for large WAV files.
-        report_progress(1, "Preparing audio for WordPress…")
-        temp_audio = None
-        temp_dir = None
+    audio_src = getattr(main_window, "audio_file", None)
+    if not audio_src or not Path(audio_src).exists():
+        raise RuntimeError("No media file is loaded in the active project to export.")
+
+    media_url = ""
+    featured_media_id = None
+
+    # Upload featured image if selected
+    if featured_image_path and Path(featured_image_path).is_file():
         try:
-            target_media = str(audio_src)
-            source_suffix = Path(audio_src).suffix.lower()
-            needs_clip = start is not None and end is not None and (start > 0 or end < self.duration)
-            needs_mp3 = source_suffix == ".wav"
+            report_progress(1, "Uploading featured image…")
+            img_item = client.upload_media(featured_image_path, filename=Path(featured_image_path).name)
+            featured_media_id = img_item.get("id")
+        except Exception as exc:
+            if hasattr(main_window, "log_activity"):
+                main_window.log_activity(f"[WORDPRESS WARNING] Failed to upload featured image: {exc}")
 
-            # Always convert WAV to MP3 for WordPress, including full-file exports.
-            # This keeps the actual bytes, extension, and MIME type consistent.
-            if needs_clip or needs_mp3:
-                report_progress(1, "Converting audio to MP3…")
-                # A unique per-job directory (not a fixed shared name) avoids
-                # permission conflicts with other users on shared/multi-user
-                # systems and prevents concurrent exports from overwriting
-                # each other's temp files; mkdtemp also creates it
-                # owner-only (0700 on POSIX).
-                temp_dir = Path(tempfile.mkdtemp(prefix="rtvs_wp_"))
-                base = Path(safe_filename(media_filename or post_title or "audio_clip")).stem
-                if needs_clip:
-                    temp_audio = temp_dir / f"{base}_{int(start or 0)}_{int(end or 0)}.mp3"
-                else:
-                    temp_audio = temp_dir / f"{base}.mp3"
-                ff = ffmpeg_path()
-                if not ff:
-                    raise RuntimeError("FFmpeg is required to convert WAV audio to MP3 for WordPress export, but FFmpeg was not found.")
-                import subprocess
-                cmd = [str(ff), "-y"]
-                if needs_clip:
-                    cmd += ["-ss", str(start), "-to", str(end)]
-                cmd += ["-i", str(audio_src), "-vn", "-c:a", "libmp3lame", "-b:a", "128k", str(temp_audio)]
-                creationflags = subprocess.CREATE_NO_WINDOW if sys.platform == 'win32' else 0
-                res = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, creationflags=creationflags)
-                if res.returncode != 0 or not temp_audio.is_file() or temp_audio.stat().st_size == 0:
-                    detail = res.stderr.decode("utf-8", errors="replace")[-1200:]
-                    raise RuntimeError(f"FFmpeg WAV-to-MP3 conversion failed: {detail}")
-                target_media = str(temp_audio)
+    # Prepare media file
+    report_progress(1, "Preparing audio for WordPress…")
+    temp_audio = None
+    temp_dir = None
+    try:
+        target_media = str(audio_src)
+        source_suffix = Path(audio_src).suffix.lower()
+        duration = getattr(main_window, "duration", 0)
+        needs_clip = start is not None and end is not None and (start > 0 or end < duration)
+        needs_mp3 = source_suffix == ".wav"
 
-            report_progress(2, "Uploading audio to WordPress…")
-            upload_name = media_filename
-            if Path(target_media).suffix.lower() == ".mp3":
-                upload_name = f"{Path(media_filename or post_title or Path(target_media).stem).stem}.mp3"
+        if needs_clip or needs_mp3:
+            report_progress(1, "Converting audio to MP3…")
+            temp_dir = Path(tempfile.mkdtemp(prefix="rtvs_wp_"))
+            base = Path(safe_filename(media_filename or post_title or "audio_clip")).stem
+            if needs_clip:
+                temp_audio = temp_dir / f"{base}_{int(start or 0)}_{int(end or 0)}.mp3"
+            else:
+                temp_audio = temp_dir / f"{base}.mp3"
+            ff = ffmpeg_path()
+            if not ff:
+                raise RuntimeError("FFmpeg is required to convert audio for WordPress export, but FFmpeg was not found.")
+            cmd = [str(ff), "-y"]
+            if needs_clip:
+                cmd.extend(["-ss", str(max(0.0, float(start or 0.0)))])
+            cmd.extend(["-i", str(audio_src)])
+            if needs_clip and end is not None:
+                clip_dur = max(0.0, float(end) - float(start or 0.0))
+                cmd.extend(["-t", str(clip_dur)])
+            cmd.extend(["-vn", "-c:a", "libmp3lame", "-b:a", "192k", str(temp_audio)])
+            flags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
+            res = subprocess.run(cmd, capture_output=True, text=True, creationflags=flags)
+            if res.returncode != 0 or not temp_audio.exists() or temp_audio.stat().st_size == 0:
+                raise RuntimeError(f"FFmpeg audio preparation failed: {res.stderr[:300]}")
+            target_media = str(temp_audio)
 
-            media_item = client.upload_media(target_media, filename=upload_name)
-            media_url = media_item.get("source_url", "")
-        finally:
-            if temp_audio and temp_audio.exists():
-                try:
-                    temp_audio.unlink()
-                except Exception:
-                    pass
-            if temp_dir and temp_dir.exists():
-                shutil.rmtree(temp_dir, ignore_errors=True)
+        # Upload Media to WordPress
+        report_progress(2, "Uploading audio to WordPress media library…")
+        upload_name = media_filename or f"{safe_filename(post_title or 'audio')}.mp3"
+        media_item = client.upload_media(target_media, filename=upload_name)
+        media_url = media_item.get("source_url") or media_item.get("guid", {}).get("rendered", "")
+        if not media_url:
+            raise RuntimeError("WordPress upload succeeded but media URL could not be resolved.")
+    finally:
+        if temp_dir and temp_dir.exists():
+            shutil.rmtree(temp_dir, ignore_errors=True)
 
-        # 3. Build post content HTML. WordPress should mirror the local transcript
-        # export style: speaker-labelled paragraphs when enabled, no timestamps,
-        # and no redundant "Transcript" heading.
-        report_progress(3, "Formatting transcript for WordPress…")
-        content_parts = []
-        if media_url:
+    # 3. Prepare Post Content
+    report_progress(3, "Preparing post content and formatting transcript…")
+    content_parts = []
+    is_video = bool(getattr(main_window, "current_media_is_video", False))
+    if media_url:
+        if is_video:
             content_parts.append(
-                f'<!-- wp:audio -->\n'
-                f'<figure class="wp-block-audio"><audio controls src="{html.escape(media_url, quote=True)}"></audio></figure>\n'
-                f'<!-- /wp:audio -->\n'
+                f'<!-- wp:video -->\n<figure class="wp-block-video"><video controls src="{media_url}"></video></figure>\n<!-- /wp:video -->'
+            )
+        else:
+            content_parts.append(
+                f'<!-- wp:audio -->\n<figure class="wp-block-audio"><audio controls src="{media_url}"></audio></figure>\n<!-- /wp:audio -->'
             )
 
-        def language_blocks(lang_code: str):
+    # Transcript extraction
+    full_transcript = getattr(main_window, "transcript", []) or []
+    clip_transcript = []
+    if start is not None and end is not None:
+        for seg in full_transcript:
+            seg_start = seg.get("start", 0.0)
+            seg_end = seg.get("end", 0.0)
+            if (seg_start >= start and seg_start <= end) or (seg_end >= start and seg_end <= end) or (seg_start <= start and seg_end >= end):
+                clip_transcript.append(seg)
+    else:
+        clip_transcript = full_transcript
+
+    def language_blocks(lang_code: str):
+        blocks = []
+        for seg in clip_transcript:
+            text = ""
             if lang_code == "en":
-                segments = self.transcript.get("segments", []) if self.transcript else []
-                if start is not None or end is not None:
-                    lo = float(start or 0.0)
-                    hi = float(end) if end is not None else None
-                    segments = [
-                        seg for seg in segments
-                        if (hi is None or float(seg.get("start", 0.0)) <= hi)
-                        and float(seg.get("end", seg.get("start", 0.0))) >= lo
-                    ]
-                return self.build_story_blocks(segments) if segments else []
+                text = seg.get("text", "").strip()
+            elif lang_code == "es":
+                text = seg.get("translations", {}).get("es", "").strip()
+            if not text:
+                continue
+            speaker = seg.get("speaker", "").strip()
+            speaker_prefix = f"<strong>{html.escape(speaker)}:</strong> " if speaker else ""
+            escaped_text = html.escape(text)
+            blocks.append(f"<!-- wp:paragraph -->\n<p>{speaker_prefix}{escaped_text}</p>\n<!-- /wp:paragraph -->")
+        return blocks
 
-            es_data = getattr(self, "translations", {}).get("en-es") or getattr(self, "translations", {}).get("en_es") or {}
-            es_segs = es_data.get("segments", []) if isinstance(es_data, dict) else []
-            source_segs = self.transcript.get("segments", []) if self.transcript else []
-            selected = []
-            lo = float(start or 0.0)
-            hi = float(end) if end is not None else None
-            for idx, t_seg in enumerate(es_segs):
-                source_seg = source_segs[idx] if idx < len(source_segs) else {}
-                t_start = float(t_seg.get("start", source_seg.get("start", 0.0)))
-                t_end = float(t_seg.get("end", source_seg.get("end", t_start + 1.0)))
-                if (hi is not None and t_start > hi) or t_end < lo:
-                    continue
-                selected.append({
-                    "speaker": self.get_effective_speaker_name(idx, source_seg) if source_seg else "",
-                    "text": t_seg.get("text", "").strip(),
-                    "start": t_start,
-                    "end": t_end,
-                    "_source_index": idx,
-                })
-            return self.build_story_blocks(selected) if selected else []
+    en_blocks = language_blocks("en") if include_english else []
+    es_blocks = language_blocks("es") if include_spanish else []
 
-        def append_blocks(blocks):
-            last_speaker = None
-            for block in blocks:
-                text = str(block.get("text", "") or "").strip()
-                if not text:
-                    continue
-                speaker = str(block.get("speaker", "") or "").strip()
-                is_speaker_change = block.get("is_speaker_change", (speaker != last_speaker))
-                if speaker and is_speaker_change and speaker != last_speaker:
-                    content_parts.append(
-                        f'<p><strong>{html.escape(speaker)}</strong>: {html.escape(text)}</p>'
-                    )
-                    last_speaker = speaker
-                else:
-                    content_parts.append(f'<p>{html.escape(text)}</p>')
+    def append_blocks(blocks):
+        content_parts.extend(blocks)
 
-        en_blocks = language_blocks("en") if include_english else []
-        es_blocks = language_blocks("es") if include_spanish else []
+    if en_blocks and es_blocks:
+        if spanish_presentation == "accordion":
+            if primary_language == "es":
+                primary_blocks = es_blocks
+                secondary_blocks = en_blocks
+                btn_text = "Read in English"
+            else:
+                primary_blocks = en_blocks
+                secondary_blocks = es_blocks
+                btn_text = "Leer en Español"
 
-        if en_blocks and es_blocks:
-            if spanish_presentation == "accordion":
-                # 1. Select primary vs secondary text and label
-                if primary_language == "es":
-                    primary_blocks = es_blocks
-                    secondary_blocks = en_blocks
-                    btn_text = "Read in English"
-                else:
-                    primary_blocks = en_blocks
-                    secondary_blocks = es_blocks
-                    btn_text = "Leer en Español"
-
-                # 2. Button styling on summary tag for the top toggle
-                summary_btn_style = (
-                    "display: inline-block; "
-                    "padding: 8px 18px; "
-                    "background-color: #0073aa; "
-                    "color: #ffffff; "
-                    "border-radius: 4px; "
-                    "font-weight: bold; "
-                    "cursor: pointer; "
-                    "margin-bottom: 16px; "
-                    "user-select: none; "
-                    "list-style: none; "
-                    "outline: none;"
-                )
-
-                # 3. Render the secondary language accordion at the top
-                content_parts.append(
-                    f'<details class="rtvs-language-accordion" style="margin-bottom: 24px;">'
-                    f'<summary role="button" style="{summary_btn_style}">{btn_text}</summary>'
-                    f'<div class="rtvs-secondary-transcript" style="margin-top: 12px;">'
-                )
-                append_blocks(secondary_blocks)
-                content_parts.append('</div></details>')
-
-                # 4. Render primary language directly below the toggle button
-                append_blocks(primary_blocks)
-            elif spanish_presentation == "es_first":
-                append_blocks(es_blocks)
-                content_parts.append('<h2>English</h2>')
-                append_blocks(en_blocks)
-            else:  # en_first
-                append_blocks(en_blocks)
-                content_parts.append('<h2>Español</h2>')
-                append_blocks(es_blocks)
-        elif en_blocks:
-            append_blocks(en_blocks)
-        elif es_blocks:
+            summary_btn_style = (
+                "display: inline-block; padding: 8px 18px; background-color: #0073aa; "
+                "color: #ffffff; border-radius: 4px; font-weight: bold; cursor: pointer; "
+                "margin-bottom: 16px; user-select: none; list-style: none; outline: none;"
+            )
+            content_parts.append(
+                f'<details class="rtvs-language-accordion" style="margin-bottom: 24px;">'
+                f'<summary role="button" style="{summary_btn_style}">{btn_text}</summary>'
+                f'<div class="rtvs-secondary-transcript" style="margin-top: 12px;">'
+            )
+            append_blocks(secondary_blocks)
+            content_parts.append('</div></details>')
+            append_blocks(primary_blocks)
+        elif spanish_presentation == "es_first":
             append_blocks(es_blocks)
+            content_parts.append('<h2>English</h2>')
+            append_blocks(en_blocks)
+        else:
+            append_blocks(en_blocks)
+            content_parts.append('<h2>Español</h2>')
+            append_blocks(es_blocks)
+    elif en_blocks:
+        append_blocks(en_blocks)
+    elif es_blocks:
+        append_blocks(es_blocks)
 
-        # 3b. Optional Custom Header / Footer Text
-        # If "top" is selected, place the custom notice directly below the media file
-        # (or at the top of the post if there is no media file).
-        settings = QSettings(INTERNAL_APP_ID, INTERNAL_APP_ID)
-        custom_text = str(settings.value("wp_custom_text", "") or "").strip()
-        custom_pos = str(settings.value("wp_custom_text_pos", "top") or "top").lower()
-        no_snippet = str(settings.value("wp_custom_text_no_snippet", "true")).lower() in ("true", "1", "yes")
-        no_excerpt = str(settings.value("wp_custom_text_no_excerpt", "true")).lower() in ("true", "1", "yes")
+    # Optional Custom Notice Text
+    settings = QSettings(INTERNAL_APP_ID, INTERNAL_APP_ID)
+    custom_text = str(settings.value("wp_custom_text", "") or "").strip()
+    custom_pos = str(settings.value("wp_custom_text_pos", "top") or "top").lower()
+    no_snippet = str(settings.value("wp_custom_text_no_snippet", "true")).lower() in ("true", "1", "yes")
 
-        if custom_text:
-            text_escaped = html.escape(custom_text).replace("\n\n", "</p><p>").replace("\n", "<br/>")
-            inner_html = f"<p>{text_escaped}</p>"
-            if no_snippet:
-                custom_html = (
-                    f'<!-- wp:paragraph -->\n'
-                    f'<div data-nosnippet="true" class="rtvs-custom-notice" style="font-style: italic; opacity: 0.85; margin: 16px 0;">\n'
-                    f'<!--googleoff: all-->\n'
-                    f'{inner_html}\n'
-                    f'<!--googleon: all-->\n'
-                    f'</div>\n'
-                    f'<!-- /wp:paragraph -->'
-                )
-            else:
-                custom_html = (
-                    f'<!-- wp:paragraph -->\n'
-                    f'<div class="rtvs-custom-notice" style="font-style: italic; opacity: 0.85; margin: 16px 0;">\n'
-                    f'{inner_html}\n'
-                    f'</div>\n'
-                    f'<!-- /wp:paragraph -->'
-                )
-
-            if custom_pos == "top":
-                # Insert immediately after media block (index 1) if media_url was added, else at index 0
-                insert_idx = 1 if media_url and len(content_parts) > 0 else 0
-                content_parts.insert(insert_idx, custom_html)
-            else:
-                content_parts.append(custom_html)
-
-        full_content = "\n".join(content_parts)
-
-        # 4. Create Post
-        report_progress(4, "Creating WordPress draft…")
-        post_data = client.create_post(
-            title=post_title,
-            content=full_content,
-            excerpt=post_excerpt,
-            status="draft",
-            category_ids=category_ids,
-            author_ids=author_ids,
-            author_term_ids=author_term_ids,
-            featured_media_id=featured_media_id,
+    if custom_text:
+        text_escaped = html.escape(custom_text).replace("\n\n", "</p><p>").replace("\n", "<br/>")
+        inner_html = f"<p>{text_escaped}</p>"
+        snippet_attr = ' data-nosnippet="true"' if no_snippet else ""
+        google_wrap_start = "<!--googleoff: all-->\n" if no_snippet else ""
+        google_wrap_end = "\n<!--googleon: all-->" if no_snippet else ""
+        custom_html = (
+            f'<!-- wp:paragraph -->\n'
+            f'<div{snippet_attr} class="rtvs-custom-notice" style="font-style: italic; opacity: 0.85; margin: 16px 0;">\n'
+            f'{google_wrap_start}{inner_html}{google_wrap_end}\n'
+            f'</div>\n<!-- /wp:paragraph -->'
         )
+        if custom_pos == "top":
+            insert_idx = 1 if media_url and len(content_parts) > 0 else 0
+            content_parts.insert(insert_idx, custom_html)
+        else:
+            content_parts.append(custom_html)
 
-        post_id = post_data.get("id")
-        self.log_activity(f"[WORDPRESS] Created Draft Post #{post_id}: '{post_title}'")
-        return post_data
+    full_content = "\n".join(content_parts)
+
+    # 4. Create Draft Post
+    report_progress(4, "Creating WordPress draft…")
+    post_data = client.create_post(
+        title=post_title,
+        content=full_content,
+        excerpt=post_excerpt,
+        status="draft",
+        category_ids=category_ids,
+        author_ids=author_ids,
+        author_term_ids=author_term_ids,
+        featured_media_id=featured_media_id,
+    )
+
+    post_id = post_data.get("id")
+    if hasattr(main_window, "log_activity"):
+        main_window.log_activity(f"[WORDPRESS] Created Draft Post #{post_id}: '{post_title}'")
+    return post_data

@@ -521,9 +521,22 @@ class StoryListWidget(QListWidget):
         export_act.triggered.connect(lambda: self.exportRequested.emit())
         menu.addAction(export_act)
 
-        wp_act = QAction("Export to WordPress / CMS...", self)
-        wp_act.triggered.connect(lambda: self.exportStoryWordPressRequested.emit())
-        menu.addAction(wp_act)
+        # Dynamic plugin story actions (e.g. WordPress publish)
+        if hasattr(parent, "plugin_manager") and parent.plugin_manager:
+            selected_story = None
+            if hasattr(parent, "stories") and hasattr(parent, "current_selected_story_indices"):
+                sel = parent.current_selected_story_indices
+                if len(sel) == 1 and 0 <= sel[0] < len(parent.stories):
+                    selected_story = parent.stories[sel[0]]
+            for plugin in parent.plugin_manager.plugins.values():
+                if getattr(plugin, "is_enabled", False) and hasattr(plugin, "get_story_actions"):
+                    try:
+                        for label, callback in plugin.get_story_actions(story=selected_story):
+                            action = QAction(label, self)
+                            action.triggered.connect(callback)
+                            menu.addAction(action)
+                    except Exception as exc:
+                        print(f"[PLUGINS] Error loading story actions from {getattr(plugin, 'id', 'unknown')}: {exc}")
 
         menu.addSeparator()
 

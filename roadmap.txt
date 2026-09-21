@@ -29,23 +29,25 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 --------------------------------------------------------------------------------
 TABLE OF CONTENTS & STATUS OVERVIEW
 --------------------------------------------------------------------------------
-1. Previous Release: WordPress Export Scope Routing & Filtering Fix (Completed in v3.5.6)
-   [x] 1.1 Resolved WordPress Export Scope Regression (`plugins/wordpress/export_destination.py`): Fixed parent widget hierarchy lookup in `rebuild_post_items()` so `scope_combo.currentData()` is accurately retrieved from `UnifiedExportDialog` rather than defaulting to `"full"`.
-   [x] 1.2 Synchronized Scope Signal Dispatch (`plugins/wordpress/export_destination.py`): Updated `on_scope_changed()` to explicitly pass the updated `scope` string parameter to `rebuild_post_items(scope=scope)` when users toggle dropdown options.
-   [x] 1.3 Diagnostic Test Bench Expansion (`test_runner.py`): Added automated unit test (`WordPress Export Scope Post Builder`) verifying post items rebuilding across all four export scope modes.
+1. Previous Release: Audio Fades "Apply" Action & Timeline Navigation Performance Optimization (Completed in v3.5.8)
+   [x] 1.1 Audio Fades Dialog "Apply" Action & Live Auditioning (`transcript_story.py`): Added an "Apply" button to `StoryFadesDialog` alongside "Save Fades" and "Cancel", enabling real-time timeline visualization and playback auditioning without closing the dialog. Supported full pre-dialog snapshot rollback on "Cancel" and clean undo/redo synchronization.
+   [x] 1.2 Timeline Navigation & Drag Performance Optimization (`timeline_widgets.py`, `transcript_story.py`): Throttled continuous drag events to 60 FPS (~16ms) in `TimelineCanvas.mouseMoveEvent`, deferred sidebar `QListWidgetItem` relayout until drag completion in `handle_drag_finished`, implemented 16-step precomputed fade curve lookup tables, and pre-cached painter brushes/pens and story snap points.
 
-2. Current Release: Detached Process Supervisor & Smooth UAC Installer Sequence (Completed in v3.5.7)
-   [x] 2.1 Process Lock & File Handle Release Supervisor (`updater.py`): Implemented a fully detached PowerShell/CMD supervisor that monitors current process PID (`curr_pid`) and process name (`RadioTVSegmenter.exe`) to ensure all processes and DLL handles terminate before triggering `Start-Process -Verb RunAs`.
-   [x] 2.2 Instant UI Teardown & Clean Application Shutdown (`updater.py`): Refactored `_install_and_restart()` to immediately hide top-level application windows and initiate exit within 800ms, preventing UAC elevation prompts over active app windows and eliminating installer auto-close file collisions.
+2. Current Release: WordPress Metadata Integration, Window Expansion & Project Export Modularization (Completed in v3.5.9)
+   [x] 2.1 Story Editor WordPress Metadata Assignment: Exposed all WordPress export options (Author, Excerpt, Categories, Tags, Featured Image, Post Status) directly within the main Stories widget/editor via dynamic plugin extension (`WordPressStoryMetadataWidget`).
+   [x] 2.2 Project Serialization & Export Pre-Population: Persisted assigned story WordPress metadata into `.rtvs` project files and automatically pre-populated `UnifiedExportDialog` fields during export while preserving full editability in the export window.
+   [x] 2.3 Export Window Fullscreen Expansion Controls: Added maximize/minimize buttons to `UnifiedExportDialog` allowing it to toggle into full screen mode and return to standard dialog size.
+   [x] 2.4 Story Widget Workspace Expansion Controls: Added maximize/minimize buttons to the main Story Editor widget allowing it to expand to fill the entire application workspace and return to standard split view layout.
+   [x] 2.5 Project Export & Lifecycle Modularization: Decoupled project file persistence (`close_project`, `save_project`, `open_project`) into `project_lifecycle.py` and broadcast audio rendering/stem processing into `export/audio.py`.
 
-3. Upcoming Milestone: Google Docs & Drive Export Plugin (`plugins/gdocs`) [PLANNED for v3.6.0]
+3. Active Feature Milestone: Google Docs & Drive Export Plugin (`plugins/gdocs`) [PLANNED for v3.6.0] [NOT STARTED]
    [ ] 3.1 Plugin Architecture & OAuth 2.0 Authentication Engine (`plugins/gdocs/auth.py`, keyring token storage, local loopback handler)
    [ ] 3.2 Google Docs Document Serializer & REST Exporter (Formatted text, speaker headers, word highlights, story metadata)
    [ ] 3.3 Native Margin Comments & Text Range Anchoring (`drive.comments.create` integration for story notes & transcript comments)
    [ ] 3.4 Unified Export Center & Menu Integration (Progress worker, batch export, zero core bundle overhead)
    [ ] 3.5 (Optional) One-Time Review & Comment Pull ("Import Reviews from Google Doc" diff dialog)
 
-4. Future Milestone: Video NLE & Avid Interchange [PLANNED for v3.7.0] [NOT STARTED]
+4. Upcoming Milestone: Video NLE & Avid Interchange [PLANNED for v3.7.0] [NOT STARTED]
    [ ] 4.1 Video NLE Interchange (FCPXML, Premiere / DaVinci Resolve xmeml XML)
    [ ] 4.2 Avid / Pro Tools AAF Composition
    [ ] 4.3 Rational Timecode & Audio Sample Rate Math
@@ -68,45 +70,45 @@ CORE ARCHITECTURAL INVARIANTS
 - 0 MB Default GPU Footprint: Base installer contains 0 MB of CUDA bloat; GPU features are purely optional and provisioned on demand.
 
 ================================================================================
-1. PREVIOUS RELEASE: PHASE 2 ARCHITECTURE MODULARIZATION (Completed in v3.5.0)
+1. PREVIOUS RELEASE: DETACHED PROCESS SUPERVISOR & UAC ELEVATION (Completed in v3.5.7)
 ================================================================================
 
-[x] 1.1 BACKGROUND WORKERS & WAVEFORM CACHE EXTRACTION (background_workers.py)
--------------------------------------------------------------------------------
-- Extracted `StoryAutoDetectWorker`, `WaveformWorker`, `VideoThumbnailWorker`, and binary peak cache helpers (~984 lines) into `background_workers.py`.
-- Preserved full concurrency guarantees, subprocess lifecycle locks, atomic peak cache file serialization (`RTVSPEAK`), and frame extraction density.
+[x] 1.1 DETACHED PROCESS LOCK & RELEASE SUPERVISOR (updater.py)
+---------------------------------------------------------------
+- Replaced synchronous installer elevation with a fully detached PowerShell/CMD supervisor script.
+- Monitored current process PID and any matching `RadioTVSegmenter.exe` processes until full exit before initiating `Start-Process -Verb RunAs`.
+- Enforced a 2-second kernel release delay to ensure all DLLs and file handles are fully closed before installer starts.
 
-[x] 1.2 BATCH PROCESSING CENTER MODULARIZATION (batch_dialog.py)
------------------------------------------------------------------
-- Extracted `BatchProcessingDialog` and `BatchFileListWidget` drag-and-drop orchestrator (~507 lines) into `batch_dialog.py`.
-- Maintained batch queueing, auto-detect profile presets, output folder resolution, and drag-and-drop file ingestion.
-
-[x] 1.3 CUMULATIVE MONOLITH FOOTPRINT REDUCTION
-------------------------------------------------
-- Reduced monolithic `prs_shared.py` from historic 6,719 lines down to 1,082 lines (an 84% reduction) while maintaining 100% backward-compatible re-export shims across all internal callers and plugins.
-
-[x] 1.4 STABLE RELEASE SNAPSHOT & GITHUB CHANNEL DEPLOYMENT
-------------------------------------------------------------
-- Tagged `v3.5.0-stable` on GitHub stable channel with snapshot archive in `.snapshots/v3.5.0-stable.tar.gz`.
+[x] 1.2 INSTANT UI TEARDOWN & HARD EXIT SAFEGUARDS (updater.py)
+---------------------------------------------------------------
+- Immediately hid all top-level application windows and flushed `QSettings` upon launching the updater.
+- Added a 0.8s hard exit timeout to eliminate file lock collisions and prevent UAC dialogs from covering the application.
 
 ================================================================================
-2. CURRENT RELEASE: DAW TIMELINE INTERCHANGE & CI HARDENING (Completed in v3.5.2)
+2. CURRENT RELEASE: AUDIO FADES "APPLY" & TIMELINE NAVIGATION OPTIMIZATION (Completed in v3.5.8)
 ================================================================================
 
-[x] 2.1 COCKOS REAPER PROJECT (.rpp) GENERATOR (export/daw.py)
---------------------------------------------------------------
-- Implemented multi-track REAPER project generator (`generate_reaper_project`) producing compliant S-expressions (`<REAPER_PROJECT`, `<TRACK`, `<ITEM`, `<SOURCE WAV>`).
-- Included source offset calculation (`SOFFS`), story titles (`NAME`), non-destructive fade-in/fade-out envelopes (`FADEIN`, `FADEOUT`), and color-coded project region markers (`MARKER`).
+[x] 2.1 AUDIO FADES DIALOG "APPLY" ACTION & LIVE AUDITIONING (transcript_story.py)
+-----------------------------------------------------------------------------------
+- Added an "Apply" button in `StoryFadesDialog` alongside "Save Fades" and "Cancel", allowing real-time timeline visualization and playback auditioning without closing the dialog.
+- Preserved a pre-dialog snapshot (`_initial_fades`) across all stories, ensuring clicking "Cancel" after applying reverts all modifications seamlessly.
+- Aligned `MainWindow.edit_story_fades` undo/redo stack commands with the pre-dialog baseline values, guaranteeing predictable single-step undo history.
 
-[x] 2.2 MAGIX SAMPLITUDE EDL (v1.5) EXPORT (export/daw.py)
-----------------------------------------------------------
-- Implemented Magix Samplitude and Sequoia compatible broadcast Edit Decision List v1.5 generator (`generate_samplitude_edl`).
-- Formatted timestamps using millisecond-precision `HH:MM:SS:mmm` timecode math (`format_edl_timestamp`).
+[x] 2.2 TIMELINE DRAG & SCRUB PERFORMANCE THROTTLING (timeline_widgets.py)
+---------------------------------------------------------------------------
+- Implemented a 60 FPS (~16ms) rate limiter in `TimelineCanvas.mouseMoveEvent` during dragging, scrubbing, fade handle adjustment, and region selection.
+- Prevented UI thread event loop starvation and eliminate mouse lag during rapid pointer gestures.
 
-[x] 2.3 ONE-CLICK YOUTUBE CHAPTER MARKER CLIPBOARD COPY
---------------------------------------------------------
-- Added direct clipboard integration (`copy_youtube_chapters_to_clipboard`) with global `Ctrl+Shift+Y` shortcut and dedicated button in `UnifiedExportDialog`.
-- Automatically guarantees initial `00:00 - <First Story>` introduction marker for YouTube compatibility.
+[x] 2.3 DEFERRED SIDEBAR LIST RELAYOUT (transcript_story.py)
+-------------------------------------------------------------
+- Removed continuous `QListWidgetItem` string reformatting and serialization from `handle_drag_story_region`.
+- Kept numerical start/end inputs responsive in real-time, deferring full sidebar item relayout to `handle_drag_finished`.
+
+[x] 2.4 PRECOMPUTED FADE CURVE LOOKUP TABLES & VECTOR CACHING (timeline_widgets.py)
+------------------------------------------------------------------------------------
+- Precomputed 16-step lookup tables for all fade curve profiles (`linear`, `s_curve`, `logarithmic`, `exponential`), eliminating repeated exponential/trigonometric function evaluations per story per frame.
+- Pre-cached QPen and QBrush objects in `TimelineCanvas` for fade fills, ramps, and grab handles.
+- Cached story boundary snapping points in `set_stories` and during active drag updates.
 
 [x] 2.4 UNIFIED EXPORT CENTER & MENU INTEGRATION
 -------------------------------------------------
@@ -123,31 +125,73 @@ CORE ARCHITECTURAL INVARIANTS
 - Added `continue-on-error: true` and direct GitHub Release asset publishing across Linux, Windows, macOS, and plugin build jobs.
 
 ================================================================================
-3. UPCOMING MILESTONE: GOOGLE DOCS & DRIVE EXPORT PLUGIN [PLANNED for v3.6.0]
+3. ACTIVE FEATURE MILESTONE: WORDPRESS METADATA & WINDOW EXPANSION CONTROLS [PLANNED for v3.6.0]
 ================================================================================
 
-[ ] 3.1 Plugin Scaffolding & OAuth 2.0 Auth Engine (plugins/gdocs/auth.py)
-[ ] 3.2 Google Docs Document Serializer & REST Exporter (plugins/gdocs/formatter.py, client.py)
-[ ] 3.3 Native Margin Comments & Text Range Anchoring (plugins/gdocs/comments.py)
-[ ] 3.4 Unified Export Center & Menu Integration (plugins/gdocs/plugin.py)
-[ ] 3.5 One-Time Review & Comment Pull Integration (plugins/gdocs/review.py)
+[ ] 3.1 Story Editor WordPress Metadata Assignment
+--------------------------------------------------
+- Expose all WordPress export options (Author, Excerpt, Categories, Tags, Featured Image, Post Status/Schedule) within the main Stories widget/editor view.
+- Allow users to assign and preview story-level WordPress post data directly while editing story boundaries and transcripts.
+
+[ ] 3.2 Project File Serialization & Export Pre-Population
+-----------------------------------------------------------
+- Store assigned WordPress metadata inside the `.rtvs` project file structure (`stories` JSON records).
+- Pre-populate these settings automatically into the `UnifiedExportDialog` WordPress tab during export, while retaining full editability at export time.
+
+[ ] 3.3 Export Window Fullscreen Expansion Controls
+----------------------------------------------------
+- Add dedicated Maximize / Fullscreen and Restore / Minimize window controls to `UnifiedExportDialog`.
+- Allows the export center to expand to true full screen for managing complex multi-story publishing tasks, with seamless toggle back to standard dialog dimensions.
+
+[ ] 3.4 Story Widget Workspace Expansion Controls
+--------------------------------------------------
+- Add dedicated Maximize / Expand and Restore / Minimize buttons to the Story Editor widget in the main application window.
+- Allows the story view to expand to fill the entire application window workspace for focused editing, and collapse back to its standard split layout once finished.
+
+[ ] 3.5 Audio Fades Dialog "Apply" Action & Live Auditioning
+-------------------------------------------------------------
+- Add an explicit "Apply" button to `StoryFadesDialog` alongside "Save Fades" and "Cancel".
+- Dispatches changes to the active story/project immediately so users can visually inspect fade shapes on the timeline and audition audio envelopes with real-time fade cues without closing the modal dialog.
+
+[ ] 3.6 Timeline Navigation & Boundary Drag Performance Optimization
+--------------------------------------------------------------------
+- Event Throttling: Implement a high-resolution time gate (~16ms / 60 FPS) in `TimelineCanvas.mouseMoveEvent` to prevent flooding the Qt event loop during rapid mouse movements.
+- Defer Intermediate List Item Layouts: In `handle_drag_story_region`, eliminate mid-drag `QListWidgetItem.setText` and item serialization calls; update only coordinate inputs (`start_input`, `end_input`) during drag and execute the full list item refresh only upon `mouseReleaseEvent`.
+- Precomputed Fade Curve Caching: Cache calculated `QPainterPath` vectors for each story's fade envelopes rather than dynamically evaluating 16 curve steps across all visible stories on every paint event.
+- Tooltip Debouncing: Suppress continuous `QToolTip.showText` repositioning calls while actively dragging handles or panning.
+
+[ ] 3.7 Project Export & Lifecycle Modularization
+-------------------------------------------------
+- Extract project open, save, close, dirty flag tracking, and undo stack resets from `project_export.py` into a standalone `project_lifecycle.py`.
+- Migrate audio rendering engines (broadcast WAV formatting, stem splitting, ID3v2 tag writing, MP3 encoding) into dedicated modules inside `export/audio.py`.
+- Retain `ProjectExportMixin` on `MainWindow` as a clean facade to guarantee 100% backward compatibility for all existing callers.
 
 ================================================================================
-4. FUTURE MILESTONE: EXPANDED NLE & DAW TIMELINE INTERCHANGE [PLANNED for v3.7]
+4. UPCOMING MILESTONE: GOOGLE DOCS & DRIVE EXPORT PLUGIN [PLANNED for v3.6.0]
 ================================================================================
 
-[ ] 4.1 Cockos Reaper Project (.rpp) Generator
-[ ] 4.2 Magix Samplitude EDL (v1.5) Export
-[ ] 4.3 Video NLE Interchange (FCPXML, Premiere / DaVinci Resolve xmeml XML)
-[ ] 4.4 Avid / Pro Tools AAF Composition
-[ ] 4.5 Rational Timecode & Audio Sample Rate Math
-[ ] 4.6 UI & Batch Export Integration
+[ ] 4.1 Plugin Scaffolding & OAuth 2.0 Auth Engine (plugins/gdocs/auth.py)
+[ ] 4.2 Google Docs Document Serializer & REST Exporter (plugins/gdocs/formatter.py, client.py)
+[ ] 4.3 Native Margin Comments & Text Range Anchoring (plugins/gdocs/comments.py)
+[ ] 4.4 Unified Export Center & Menu Integration (plugins/gdocs/plugin.py)
+[ ] 4.5 One-Time Review & Comment Pull Integration (plugins/gdocs/review.py)
 
 ================================================================================
-5. FUTURE MILESTONE: TEXT-DRIVEN AUDIO EDITING & PRECISION ALIGNMENT [PLANNED for v4.0]
+5. FUTURE MILESTONE: EXPANDED NLE & DAW TIMELINE INTERCHANGE [PLANNED for v3.7]
 ================================================================================
 
-[ ] 5.1 "Text-as-Timeline" Rough-Cut Editing Engine
-[ ] 5.2 Seamless Non-Destructive Playback Preview
-[ ] 5.3 CTC Word Boundary Refinement & Forced Alignment
-[ ] 5.4 Memory-Bounded Diarization & Chunked Streaming
+[ ] 5.1 Cockos Reaper Project (.rpp) Generator
+[ ] 5.2 Magix Samplitude EDL (v1.5) Export
+[ ] 5.3 Video NLE Interchange (FCPXML, Premiere / DaVinci Resolve xmeml XML)
+[ ] 5.4 Avid / Pro Tools AAF Composition
+[ ] 5.5 Rational Timecode & Audio Sample Rate Math
+[ ] 5.6 UI & Batch Export Integration
+
+================================================================================
+6. FUTURE MILESTONE: TEXT-DRIVEN AUDIO EDITING & PRECISION ALIGNMENT [PLANNED for v4.0]
+================================================================================
+
+[ ] 6.1 "Text-as-Timeline" Rough-Cut Editing Engine
+[ ] 6.2 Seamless Non-Destructive Playback Preview
+[ ] 6.3 CTC Word Boundary Refinement & Forced Alignment
+[ ] 6.4 Memory-Bounded Diarization & Chunked Streaming

@@ -125,7 +125,6 @@ from processing import ProcessingMixin
 from translation import TranslationMixin
 from transcript_story import TranscriptStoryMixin
 from project_export import ProjectExportMixin
-from wordpress_export import WordPressExportMixin
 from gpu_acceleration import GpuAccelerationMixin
 from theme_tokens import ThemeTokens
 from theme_qss import TARGETED_QSS
@@ -140,7 +139,6 @@ class MainWindow(
     TranslationMixin,
     TranscriptStoryMixin,
     ProjectExportMixin,
-    WordPressExportMixin,
     GpuAccelerationMixin,
     QMainWindow,
 ):

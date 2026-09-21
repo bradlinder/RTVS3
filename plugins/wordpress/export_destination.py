@@ -44,7 +44,13 @@ from prs_shared import (
     safe_filename,
 )
 from plugins.base import ExportDestination
-from wordpress_export import WordPressClient, generate_wp_excerpt, WordPressSettingsDialog
+from plugins.wordpress.client import (
+    WordPressClient,
+    generate_wp_excerpt,
+    WordPressSettingsDialog,
+    execute_wordpress_upload,
+    _get_wp_password,
+)
 
 
 def capture_video_frame(video_path: str, timestamp: float, output_path: str) -> bool:
@@ -876,96 +882,65 @@ class WordPressExportTabWidget(QWidget):
 
         new_items = []
 
-        if scope == "full":
+        def build_story_item(idx: int, st: Any) -> dict:
+            st_title = st.title if st.title else f"{base_name} - Story {idx + 1}"
+            raw_text = self.main_window._get_transcript_text_slice(st.start, st.end) if hasattr(self.main_window, "_get_transcript_text_slice") else ""
+            default_excerpt = generate_wp_excerpt(raw_text, 55)
+            wp_meta = getattr(st, "metadata", {}).get("wordpress", {}) if getattr(st, "metadata", None) else {}
+
+            return {
+                "task_label": f"Story {idx + 1}" + (f": {st.title}" if st.title else ""),
+                "title": wp_meta.get("title") or st_title,
+                "excerpt": wp_meta.get("excerpt") or default_excerpt,
+                "start": st.start,
+                "end": st.end,
+                "frame_pos": float(wp_meta.get("frame_pos") if wp_meta.get("frame_pos") is not None else (st.start if st.start is not None else (getattr(self.main_window, "current_position", 0.0) or 0.0))),
+                "author_ids": list(wp_meta.get("author_ids") or []),
+                "author_term_ids": list(wp_meta.get("author_term_ids") or []),
+                "category_ids": list(wp_meta.get("category_ids") or []),
+                "status": wp_meta.get("status", "draft"),
+                "tags": list(wp_meta.get("tags") or []),
+                "featured_image": wp_meta.get("featured_image", None),
+                "featured_image_mode": wp_meta.get("featured_image_mode", "none"),
+            }
+
+        def build_full_item() -> dict:
             raw_text = self.main_window._get_transcript_text_slice(0.0, None) if hasattr(self.main_window, "_get_transcript_text_slice") else ""
-            excerpt = generate_wp_excerpt(raw_text, 55)
-            new_items.append({
+            default_excerpt = generate_wp_excerpt(raw_text, 55)
+            proj_meta = getattr(self.main_window, "project_metadata", {}) or {}
+            wp_meta = proj_meta.get("wordpress", {}) if isinstance(proj_meta, dict) else {}
+            return {
                 "task_label": "Full Episode",
-                "title": base_name,
-                "excerpt": excerpt,
+                "title": wp_meta.get("title") or base_name,
+                "excerpt": wp_meta.get("excerpt") or default_excerpt,
                 "start": None,
                 "end": None,
-                "frame_pos": float(getattr(self.main_window, "current_position", 0.0) or 0.0),
-                "author_ids": [],
-                "author_term_ids": [],
-                "category_ids": [],
-                "featured_image": None,
-                "featured_image_mode": "none",
-            })
+                "frame_pos": float(wp_meta.get("frame_pos") if wp_meta.get("frame_pos") is not None else (getattr(self.main_window, "current_position", 0.0) or 0.0)),
+                "author_ids": list(wp_meta.get("author_ids") or []),
+                "author_term_ids": list(wp_meta.get("author_term_ids") or []),
+                "category_ids": list(wp_meta.get("category_ids") or []),
+                "status": wp_meta.get("status", "draft"),
+                "tags": list(wp_meta.get("tags") or []),
+                "featured_image": wp_meta.get("featured_image", None),
+                "featured_image_mode": wp_meta.get("featured_image_mode", "none"),
+            }
+
+        if scope == "full":
+            new_items.append(build_full_item())
         elif scope == "selected_stories":
             indices = getattr(self.main_window, "current_selected_story_indices", []) or []
             if not indices and stories:
                 indices = [0]
             for idx in indices:
                 if 0 <= idx < len(stories):
-                    st = stories[idx]
-                    st_title = st.title if st.title else f"{base_name} - Story {idx + 1}"
-                    raw_text = self.main_window._get_transcript_text_slice(st.start, st.end) if hasattr(self.main_window, "_get_transcript_text_slice") else ""
-                    excerpt = generate_wp_excerpt(raw_text, 55)
-                    new_items.append({
-                        "task_label": f"Story {idx + 1}" + (f": {st.title}" if st.title else ""),
-                        "title": st_title,
-                        "excerpt": excerpt,
-                        "start": st.start,
-                        "end": st.end,
-                        "frame_pos": float(st.start if st.start is not None else (getattr(self.main_window, "current_position", 0.0) or 0.0)),
-                        "author_ids": [],
-                        "author_term_ids": [],
-                        "category_ids": [],
-                        "featured_image": None,
-                        "featured_image_mode": "none",
-                    })
+                    new_items.append(build_story_item(idx, stories[idx]))
         elif scope == "all_stories":
             for idx, st in enumerate(stories):
-                st_title = st.title if st.title else f"{base_name} - Story {idx + 1}"
-                raw_text = self.main_window._get_transcript_text_slice(st.start, st.end) if hasattr(self.main_window, "_get_transcript_text_slice") else ""
-                excerpt = generate_wp_excerpt(raw_text, 55)
-                new_items.append({
-                    "task_label": f"Story {idx + 1}" + (f": {st.title}" if st.title else ""),
-                    "title": st_title,
-                    "excerpt": excerpt,
-                    "start": st.start,
-                    "end": st.end,
-                    "frame_pos": float(st.start if st.start is not None else (getattr(self.main_window, "current_position", 0.0) or 0.0)),
-                    "author_ids": [],
-                    "author_term_ids": [],
-                    "category_ids": [],
-                    "featured_image": None,
-                    "featured_image_mode": "none",
-                })
+                new_items.append(build_story_item(idx, st))
         elif scope == "full_and_all_stories":
-            raw_text = self.main_window._get_transcript_text_slice(0.0, None) if hasattr(self.main_window, "_get_transcript_text_slice") else ""
-            excerpt = generate_wp_excerpt(raw_text, 55)
-            new_items.append({
-                "task_label": "Full Episode",
-                "title": base_name,
-                "excerpt": excerpt,
-                "start": None,
-                "end": None,
-                "frame_pos": float(getattr(self.main_window, "current_position", 0.0) or 0.0),
-                "author_ids": [],
-                "author_term_ids": [],
-                "category_ids": [],
-                "featured_image": None,
-                "featured_image_mode": "none",
-            })
+            new_items.append(build_full_item())
             for idx, st in enumerate(stories):
-                st_title = st.title if st.title else f"{base_name} - Story {idx + 1}"
-                raw_text = self.main_window._get_transcript_text_slice(st.start, st.end) if hasattr(self.main_window, "_get_transcript_text_slice") else ""
-                st_excerpt = generate_wp_excerpt(raw_text, 55)
-                new_items.append({
-                    "task_label": f"Story {idx + 1}" + (f": {st.title}" if st.title else ""),
-                    "title": st_title,
-                    "excerpt": st_excerpt,
-                    "start": st.start,
-                    "end": st.end,
-                    "frame_pos": float(st.start if st.start is not None else (getattr(self.main_window, "current_position", 0.0) or 0.0)),
-                    "author_ids": [],
-                    "author_term_ids": [],
-                    "category_ids": [],
-                    "featured_image": None,
-                    "featured_image_mode": "none",
-                })
+                new_items.append(build_story_item(idx, st))
 
         if not new_items:
             new_items.append({
@@ -1015,7 +990,8 @@ class WordPressExportTabWidget(QWidget):
                     pass
 
         if not categories or not authors or force_refresh:
-            client = getattr(self.main_window, "_get_wp_client", lambda: None)()
+            from plugins.wordpress.client import get_wp_client
+            client = get_wp_client()
             if client:
                 try:
                     categories = client.get_categories() if hasattr(client, "get_categories") else []
@@ -1107,7 +1083,145 @@ class WordPressExportDestination(ExportDestination):
         }
 
     def execute_export(self, main_window: Any, export_data: Dict[str, Any], progress_dialog: Any = None) -> bool:
-        if hasattr(main_window, "_handle_wordpress_export_result"):
-            main_window._handle_wordpress_export_result(export_data)
-            return True
-        return False
+        settings = QSettings(INTERNAL_APP_ID, INTERNAL_APP_ID)
+        url = str(settings.value("wp_site_url", "") or "").strip()
+        user = str(settings.value("wp_username", "") or "").strip()
+        pwd = _get_wp_password(user) if user else ""
+        if not (url and user and pwd):
+            QMessageBox.warning(
+                main_window,
+                "WordPress Not Configured",
+                "Please configure your WordPress Site URL, Username, and Application Password in Settings before exporting.",
+            )
+            return False
+
+        client = WordPressClient(url, user, pwd)
+        wp_posts = export_data.get("wp_posts", [])
+        if not wp_posts:
+            QMessageBox.warning(main_window, "No Posts", "No posts were configured for export.")
+            return False
+
+        inc_en = export_data.get("include_english", True)
+        inc_es = export_data.get("include_spanish", False)
+        pres = export_data.get("spanish_presentation", "accordion")
+        primary = export_data.get("primary_language", "en")
+        total_posts = len(wp_posts)
+
+        main_window.export_cancelled = False
+        if hasattr(main_window, "cancel_button"):
+            main_window.cancel_button.show()
+
+        created_posts = []
+        failed_posts = []
+
+        try:
+            for idx, post in enumerate(wp_posts):
+                if getattr(main_window, "export_cancelled", False):
+                    if hasattr(main_window, "log_activity"):
+                        main_window.log_activity("[WORDPRESS] Export canceled by user.")
+                    break
+
+                post_title = post.get("title") or "Untitled Post"
+                task_label = post.get("task_label") or post_title
+                media_name = safe_filename(post_title) if post_title else "audio"
+                media_filename = f"{media_name}.mp3"
+
+                pct = int((idx / max(1, total_posts)) * 100)
+                if hasattr(main_window, "set_processing_stage"):
+                    main_window.set_processing_stage("WordPress Publishing", f"Post {idx + 1} of {total_posts}: '{post_title}'")
+                if hasattr(main_window, "update_processing_progress"):
+                    main_window.update_processing_progress(pct, f"Starting WordPress export for '{post_title}'…")
+                QApplication.processEvents()
+
+                def wp_progress(step, step_total, description, _idx=idx, _title=post_title):
+                    fraction = max(0.0, min(1.0, ((step - 1) / step_total)))
+                    overall = ((_idx + fraction) / max(1, total_posts)) * 100
+                    if hasattr(main_window, "update_processing_progress"):
+                        main_window.update_processing_progress(int(overall), description)
+                    QApplication.processEvents()
+
+                try:
+                    post_data = execute_wordpress_upload(
+                        main_window=main_window,
+                        client=client,
+                        post_title=post_title,
+                        post_excerpt=post.get("excerpt", ""),
+                        start=post.get("start"),
+                        end=post.get("end"),
+                        task_label=task_label,
+                        include_english=inc_en,
+                        include_spanish=inc_es,
+                        spanish_presentation=pres,
+                        primary_language=primary,
+                        author_ids=post.get("author_ids", []),
+                        author_term_ids=post.get("author_term_ids", []),
+                        category_ids=post.get("category_ids", []),
+                        show_completion_dialog=False,
+                        media_filename=media_filename,
+                        featured_image_path=post.get("featured_image"),
+                        progress_callback=wp_progress,
+                    )
+                    if post_data and isinstance(post_data, dict):
+                        if hasattr(main_window, "update_processing_progress"):
+                            main_window.update_processing_progress(int(((idx + 1) / max(1, total_posts)) * 100), f"Finished '{post_title}'.")
+                        QApplication.processEvents()
+                        post_id = post_data.get("id", "Draft")
+                        post_link = post_data.get("link") or f"{client.site_url}/?p={post_id}"
+                        created_posts.append({
+                            "title": post_title,
+                            "id": post_id,
+                            "link": post_link,
+                        })
+                except Exception as exc:
+                    if hasattr(main_window, "log_activity"):
+                        main_window.log_activity(f"[WORDPRESS ERROR] Failed to export '{post_title}': {exc}")
+                    failed_posts.append({
+                        "title": post_title,
+                        "error": str(exc),
+                    })
+        finally:
+            if hasattr(main_window, "set_processing_stage"):
+                main_window.set_processing_stage(None)
+            if hasattr(main_window, "cancel_button"):
+                main_window.cancel_button.hide()
+
+        # Final summaries
+        if created_posts and not failed_posts:
+            if len(created_posts) == 1:
+                p = created_posts[0]
+                QMessageBox.information(
+                    main_window,
+                    "WordPress Export Complete",
+                    f"Draft post created successfully on {client.site_url}!\n\n"
+                    f"Post Title: {p['title']}\n"
+                    f"Post ID: {p['id']}\n"
+                    f"Status: Draft\n"
+                    f"Preview Link: {p['link']}",
+                )
+            else:
+                posts_summary = "\n".join([f"  #{p['id']}: {p['title']}" for p in created_posts])
+                QMessageBox.information(
+                    main_window,
+                    "WordPress Export Complete",
+                    f"All {len(created_posts)} stories have been posted successfully as drafts to {client.site_url}!\n\n"
+                    f"Created Posts:\n{posts_summary}",
+                )
+        elif created_posts and failed_posts:
+            success_summary = "\n".join([f"  #{p['id']}: {p['title']}" for p in created_posts])
+            fail_summary = "\n".join([f"  {f['title']}: {f['error']}" for f in failed_posts])
+            QMessageBox.warning(
+                main_window,
+                "WordPress Export Finished with Errors",
+                f"Completed {len(created_posts)} of {total_posts} draft posts.\n\n"
+                f"Created Posts:\n{success_summary}\n\n"
+                f"Failed Posts:\n{fail_summary}",
+            )
+        elif failed_posts:
+            fail_summary = "\n".join([f"  {f['title']}: {f['error']}" for f in failed_posts])
+            QMessageBox.critical(
+                main_window,
+                "WordPress Export Failed",
+                f"None of the {len(failed_posts)} posts could be exported to WordPress.\n\n"
+                f"Errors:\n{fail_summary}",
+            )
+        return len(created_posts) > 0

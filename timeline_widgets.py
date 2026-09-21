@@ -34,6 +34,17 @@ from core_utils import INTERNAL_APP_ID, calculate_fade_curve_factor, calculate_f
 from theme_tokens import ThemeTokens
 from story_widgets import StoryFadesChangeCommand
 
+# Precomputed fade lookup tables for 60+ FPS curve rendering (16 segments per envelope)
+_FADE_STEPS = 16
+_FADE_IN_CURVE_TABLES = {
+    c: [calculate_fade_curve_factor(i / float(_FADE_STEPS), c) for i in range(1, _FADE_STEPS + 1)]
+    for c in ("linear", "s_curve", "logarithmic", "exponential")
+}
+_FADE_OUT_CURVE_TABLES = {
+    c: [calculate_fade_out_factor(i / float(_FADE_STEPS), c) for i in range(1, _FADE_STEPS + 1)]
+    for c in ("linear", "s_curve", "logarithmic", "exponential")
+}
+
 
 class WaveformEnvelope(list):
     """Subclass of list holding waveform peaks and precomputed multi-resolution pyramid levels."""
@@ -157,6 +168,24 @@ class TimelineCanvas(QWidget):
         self._last_rendered_height = 0
         self._last_rendered_scroll = None
         self._last_rendered_zoom = None
+
+        # Drag performance optimization caches & event rate limiter
+        self._last_drag_throttle_time = 0.0
+        self._cached_story_snap_points = []
+        self._fade_fill_brush_sel = QColor(0, 0, 0, 85)
+        self._fade_fill_brush_unsel = QColor(0, 0, 0, 55)
+        self._fade_in_ramp_pen_sel = QPen(QColor("#38bdf8"), 1.2)
+        self._fade_in_ramp_pen_unsel = QPen(QColor("#7dd3fc"), 1.2)
+        self._fade_out_ramp_pen_sel = QPen(QColor("#f43f5e"), 1.2)
+        self._fade_out_ramp_pen_unsel = QPen(QColor("#fb7185"), 1.2)
+        self._fade_in_handle_pen_sel = QPen(QColor("#38bdf8").darker(130), 1)
+        self._fade_in_handle_pen_unsel = QPen(QColor("#60a5fa").darker(130), 1)
+        self._fade_in_handle_brush_sel = QColor("#38bdf8")
+        self._fade_in_handle_brush_unsel = QColor("#60a5fa")
+        self._fade_out_handle_pen_sel = QPen(QColor("#f43f5e").darker(130), 1)
+        self._fade_out_handle_pen_unsel = QPen(QColor("#f87171").darker(130), 1)
+        self._fade_out_handle_brush_sel = QColor("#f43f5e")
+        self._fade_out_handle_brush_unsel = QColor("#f87171")
 
         # Background generation activity indicators
         self.active_background_tasks = set()
@@ -288,6 +317,7 @@ class TimelineCanvas(QWidget):
     def set_stories(self, stories, selected_indices=None):
         self.stories = stories
         self.selected_story_indices = selected_indices if selected_indices is not None else []
+        self._cached_story_snap_points = [(idx, float(s.start), float(s.end)) for idx, s in enumerate(self.stories or [])]
         self.update()
 
     def set_waveform_peaks(self, peaks, levels=None):
@@ -360,11 +390,19 @@ class TimelineCanvas(QWidget):
             snap_points.append(float(self.selection_end))
 
         # 3. Story boundaries
-        for idx, story in enumerate(getattr(self, "stories", [])):
-            if exclude_story_idx is not None and idx == exclude_story_idx:
-                continue
-            snap_points.append(float(story.start))
-            snap_points.append(float(story.end))
+        cached_points = getattr(self, "_cached_story_snap_points", None)
+        if cached_points is not None and len(cached_points) == len(getattr(self, "stories", [])):
+            for idx, s_start, s_end in cached_points:
+                if exclude_story_idx is not None and idx == exclude_story_idx:
+                    continue
+                snap_points.append(s_start)
+                snap_points.append(s_end)
+        else:
+            for idx, story in enumerate(getattr(self, "stories", [])):
+                if exclude_story_idx is not None and idx == exclude_story_idx:
+                    continue
+                snap_points.append(float(story.start))
+                snap_points.append(float(story.end))
 
         best_snap = raw_time
         min_diff = threshold_dt + 0.00001
@@ -608,6 +646,23 @@ class TimelineCanvas(QWidget):
         pos_x = event.position().x()
         width = self.width()
 
+        # Check if an active drag or pan operation is underway
+        is_active_drag = bool(
+            self.is_panning
+            or self.is_right_dragging
+            or (self.is_left_down and self.is_scrubbing)
+            or self.active_fade_target
+            or self.active_edge_target
+        )
+
+        if is_active_drag:
+            # 60 FPS (16ms) rate limiting for continuous drag & scrub calculations
+            now = time.perf_counter()
+            if now - self._last_drag_throttle_time < 0.016:
+                event.accept()
+                return
+            self._last_drag_throttle_time = now
+
         if self.is_panning:
             dx = pos_x - self.pan_start_x
             dt = (dx / max(1, width)) * self.visible_duration()
@@ -668,10 +723,16 @@ class TimelineCanvas(QWidget):
 
                 if edge_type == 'start':
                     new_start = min(curr_time, story.end - 0.1)
+                    story.start = new_start
                     self.storyRegionUpdated.emit(idx, new_start, story.end)
                 elif edge_type == 'end':
                     new_end = max(curr_time, story.start + 0.1)
+                    story.end = new_end
                     self.storyRegionUpdated.emit(idx, story.start, new_end)
+
+                if hasattr(self, "_cached_story_snap_points"):
+                    self._cached_story_snap_points = [(i, float(s.start), float(s.end)) for i, s in enumerate(self.stories)]
+                self.update()
 
             event.accept()
             return
@@ -1257,6 +1318,7 @@ class TimelineCanvas(QWidget):
                 fin = getattr(story, "fade_in", 0.0)
                 fout = getattr(story, "fade_out", 0.0)
                 fcurve = getattr(story, "fade_curve", "linear") or "linear"
+                fcurve = str(fcurve).lower()
                 story_dur = max(0.001, story.end - story.start)
                 fin = max(0.0, min(fin, story_dur))
                 fout = max(0.0, min(fout, max(0.0, story_dur - fin)))
@@ -1265,75 +1327,68 @@ class TimelineCanvas(QWidget):
                 bottom_y = float(height)
 
                 fin_apex_x = self.time_to_x(story.start + fin, width)
-                if fin > 0:
-                    if fin_apex_x >= 0 and start_x <= width:
-                        in_path = QPainterPath()
-                        in_path.moveTo(start_x, bottom_y)
-                        steps = 16
-                        for step_i in range(1, steps + 1):
-                            u = step_i / float(steps)
-                            px = start_x + u * (fin_apex_x - start_x)
-                            val = calculate_fade_curve_factor(u, fcurve)
-                            py = bottom_y - val * (bottom_y - top_y)
-                            in_path.lineTo(px, py)
+                if fin > 0 and fin_apex_x >= 0 and start_x <= width:
+                    in_table = _FADE_IN_CURVE_TABLES.get(fcurve, _FADE_IN_CURVE_TABLES["linear"])
+                    in_path = QPainterPath()
+                    in_path.moveTo(start_x, bottom_y)
+                    dx = fin_apex_x - start_x
+                    dy = bottom_y - top_y
+                    for step_i, val in enumerate(in_table, 1):
+                        px = start_x + (step_i / float(_FADE_STEPS)) * dx
+                        py = bottom_y - val * dy
+                        in_path.lineTo(px, py)
 
-                        # Fill shaded polygon area under curve
-                        fill_path = QPainterPath(in_path)
-                        fill_path.lineTo(start_x, top_y)
-                        fill_path.lineTo(start_x, bottom_y)
-                        fill_path.closeSubpath()
+                    # Fill shaded polygon area under curve
+                    fill_path = QPainterPath(in_path)
+                    fill_path.lineTo(start_x, top_y)
+                    fill_path.lineTo(start_x, bottom_y)
+                    fill_path.closeSubpath()
 
-                        painter.setBrush(QColor(0, 0, 0, 85 if is_selected else 55))
-                        painter.setPen(Qt.PenStyle.NoPen)
-                        painter.drawPath(fill_path)
+                    painter.setBrush(self._fade_fill_brush_sel if is_selected else self._fade_fill_brush_unsel)
+                    painter.setPen(Qt.PenStyle.NoPen)
+                    painter.drawPath(fill_path)
 
-                        # Smooth ramp stroke
-                        ramp_pen = QPen(QColor("#38bdf8" if is_selected else "#7dd3fc"), 1.2)
-                        painter.setPen(ramp_pen)
-                        painter.setBrush(Qt.BrushStyle.NoBrush)
-                        painter.drawPath(in_path)
+                    # Smooth ramp stroke
+                    painter.setPen(self._fade_in_ramp_pen_sel if is_selected else self._fade_in_ramp_pen_unsel)
+                    painter.setBrush(Qt.BrushStyle.NoBrush)
+                    painter.drawPath(in_path)
 
                 # Tactile Grab Handle for Fade-In at apex along top edge
                 if 0 <= fin_apex_x <= width:
-                    handle_color = QColor("#38bdf8" if is_selected else "#60a5fa")
-                    painter.setPen(QPen(handle_color.darker(130), 1))
-                    painter.setBrush(handle_color)
+                    painter.setPen(self._fade_in_handle_pen_sel if is_selected else self._fade_in_handle_pen_unsel)
+                    painter.setBrush(self._fade_in_handle_brush_sel if is_selected else self._fade_in_handle_brush_unsel)
                     painter.drawRoundedRect(QRectF(fin_apex_x - 4, top_y + 1, 8, 10), 2.0, 2.0)
 
                 fout_apex_x = self.time_to_x(story.end - fout, width)
-                if fout > 0:
-                    if end_x >= 0 and fout_apex_x <= width:
-                        out_path = QPainterPath()
-                        out_path.moveTo(fout_apex_x, top_y)
-                        steps = 16
-                        for step_i in range(1, steps + 1):
-                            u = step_i / float(steps)
-                            px = fout_apex_x + u * (end_x - fout_apex_x)
-                            # fade out volume factor goes from 1.0 down to 0.0 matching preview cues
-                            val = calculate_fade_out_factor(u, fcurve)
-                            py = bottom_y - val * (bottom_y - top_y)
-                            out_path.lineTo(px, py)
+                if fout > 0 and end_x >= 0 and fout_apex_x <= width:
+                    out_table = _FADE_OUT_CURVE_TABLES.get(fcurve, _FADE_OUT_CURVE_TABLES["linear"])
+                    out_path = QPainterPath()
+                    out_path.moveTo(fout_apex_x, top_y)
+                    dx = end_x - fout_apex_x
+                    dy = bottom_y - top_y
+                    for step_i, val in enumerate(out_table, 1):
+                        px = fout_apex_x + (step_i / float(_FADE_STEPS)) * dx
+                        py = bottom_y - val * dy
+                        out_path.lineTo(px, py)
 
-                        fill_path = QPainterPath(out_path)
-                        fill_path.lineTo(end_x, top_y)
-                        fill_path.lineTo(fout_apex_x, top_y)
-                        fill_path.closeSubpath()
+                    fill_path = QPainterPath(out_path)
+                    fill_path.lineTo(end_x, top_y)
+                    fill_path.lineTo(fout_apex_x, top_y)
+                    fill_path.closeSubpath()
 
-                        painter.setBrush(QColor(0, 0, 0, 85 if is_selected else 55))
-                        painter.setPen(Qt.PenStyle.NoPen)
-                        painter.drawPath(fill_path)
+                    painter.setBrush(self._fade_fill_brush_sel if is_selected else self._fade_fill_brush_unsel)
+                    painter.setPen(Qt.PenStyle.NoPen)
+                    painter.drawPath(fill_path)
 
-                        # Smooth ramp stroke
-                        ramp_pen = QPen(QColor("#f43f5e" if is_selected else "#fb7185"), 1.2)
-                        painter.setPen(ramp_pen)
-                        painter.setBrush(Qt.BrushStyle.NoBrush)
-                        painter.drawPath(out_path)
+                    # Smooth ramp stroke
+                    painter.setPen(self._fade_out_ramp_pen_sel if is_selected else self._fade_out_ramp_pen_unsel)
+                    painter.setBrush(Qt.BrushStyle.NoBrush)
+                    painter.drawPath(out_path)
 
                 # Tactile Grab Handle for Fade-Out at apex along top edge
                 if 0 <= fout_apex_x <= width:
-                    handle_color = QColor("#f43f5e" if is_selected else "#f87171")
-                    painter.setPen(QPen(handle_color.darker(130), 1))
-                    painter.setBrush(handle_color)
+                    painter.setPen(self._fade_out_handle_pen_sel if is_selected else self._fade_out_handle_pen_unsel)
+                    painter.setBrush(self._fade_out_handle_brush_sel if is_selected else self._fade_out_handle_brush_unsel)
                     painter.drawRoundedRect(QRectF(fout_apex_x - 4, top_y + 1, 8, 10), 2.0, 2.0)
 
             painter.setPen(self.tokens.story_segment_pen(index, is_selected=is_selected))

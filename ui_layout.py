@@ -408,9 +408,21 @@ class UiLayoutMixin:
         stories_box_layout = QVBoxLayout(stories_box)
         stories_box_layout.setContentsMargins(8, 8, 8, 8)
         stories_box_layout.setSpacing(6)
+        header_row = QHBoxLayout()
+        header_row.setContentsMargins(0, 0, 0, 0)
         self.stories_header = QLabel("Stories", stories_box)
         self.stories_header.setObjectName("stories_section_header")
-        stories_box_layout.addWidget(self.stories_header)
+        header_row.addWidget(self.stories_header)
+        header_row.addStretch()
+
+        self.maximize_stories_btn = QPushButton("⛶", stories_box)
+        self.maximize_stories_btn.setObjectName("maximize_stories_btn")
+        self.maximize_stories_btn.setToolTip("Toggle expand Stories panel across full height")
+        self.maximize_stories_btn.setFixedSize(24, 20)
+        self.maximize_stories_btn.setStyleSheet("QPushButton { font-size: 13px; padding: 0px; margin: 0px; border-radius: 3px; }")
+        self.maximize_stories_btn.clicked.connect(self.toggle_maximize_stories_panel)
+        header_row.addWidget(self.maximize_stories_btn)
+        stories_box_layout.addLayout(header_row)
         stories_box_layout.setContentsMargins(6, 8, 6, 6)
         stories_box_layout.setSpacing(4)
 
@@ -467,6 +479,14 @@ class UiLayoutMixin:
         self.story_boundary_container.hide()
         stories_box_layout.addWidget(self.story_boundary_container)
 
+        # Plugin Story Extensions Container (e.g. WordPress Story Metadata Widget)
+        self.plugin_story_extensions_container = QWidget(self)
+        self.plugin_story_extensions_container.setObjectName("plugin_story_extensions_container")
+        self.plugin_story_extensions_layout = QVBoxLayout(self.plugin_story_extensions_container)
+        self.plugin_story_extensions_layout.setContentsMargins(0, 2, 0, 2)
+        self.plugin_story_extensions_layout.setSpacing(4)
+        stories_box_layout.addWidget(self.plugin_story_extensions_container)
+
         # Story action buttons
         story_btns_row = QHBoxLayout()
         story_btns_row.setSpacing(4)
@@ -490,7 +510,7 @@ class UiLayoutMixin:
 
         self.export_stories_btn = QPushButton("Export...", self)
         self.export_stories_btn.setObjectName("export_stories_btn")
-        self.export_stories_btn.setToolTip("Export full episode, selected stories, or draft to WordPress")
+        self.export_stories_btn.setToolTip("Export full episode, selected stories, or external formats")
         self.export_stories_btn.clicked.connect(self.open_unified_export_dialog)
         story_btns_row.addWidget(self.export_stories_btn)
         
@@ -1778,14 +1798,12 @@ class UiLayoutMixin:
         """Open the WordPress direct publish dialog from the WordPress plugin."""
         if hasattr(self, "plugin_manager") and self.plugin_manager.is_plugin_enabled("wordpress"):
             plugin = self.plugin_manager.plugins.get("wordpress")
-            if plugin:
-                from plugins.wordpress.plugin import WordPressPublishDialog
+            if plugin and hasattr(plugin, "open_publish_dialog"):
                 if story is None and hasattr(self, "stories") and hasattr(self, "current_selected_story_indices"):
                     sel = getattr(self, "current_selected_story_indices", [])
                     if sel and 0 <= sel[0] < len(self.stories):
                         story = self.stories[sel[0]]
-                dlg = WordPressPublishDialog(plugin, parent=self, story=story)
-                dlg.exec()
+                plugin.open_publish_dialog(parent=self, story=story)
                 return
         QMessageBox.information(
             self,
@@ -1793,6 +1811,61 @@ class UiLayoutMixin:
             "The WordPress Publisher plugin is not enabled or not loaded.\n"
             "You can enable it under Settings > Manage Plugins & Add-ons.",
         )
+
+    def toggle_maximize_stories_panel(self):
+        """Toggle maximize/restore of the stories panel in the right splitter."""
+        if not hasattr(self, "right_splitter") or not hasattr(self, "activity_panel"):
+            return
+        is_max = getattr(self, "_stories_panel_maximized", False)
+        if not is_max:
+            self._saved_right_splitter_sizes = self.right_splitter.sizes()
+            self.activity_panel.hide()
+            self.right_splitter.setSizes([1000, 0])
+            self._stories_panel_maximized = True
+            if hasattr(self, "maximize_stories_btn"):
+                self.maximize_stories_btn.setText("❐")
+                self.maximize_stories_btn.setToolTip("Restore Activity History panel")
+        else:
+            self.activity_panel.show()
+            sizes = getattr(self, "_saved_right_splitter_sizes", [600, 250])
+            if sum(sizes) <= 0:
+                sizes = [600, 250]
+            self.right_splitter.setSizes(sizes)
+            self._stories_panel_maximized = False
+            if hasattr(self, "maximize_stories_btn"):
+                self.maximize_stories_btn.setText("⛶")
+                self.maximize_stories_btn.setToolTip("Toggle expand Stories panel across full height")
+
+    def setup_plugin_story_extensions(self):
+        """Populate plugin-provided widgets in the story panel."""
+        if not hasattr(self, "plugin_story_extensions_layout") or not self.plugin_story_extensions_layout:
+            return
+        # Clear existing child widgets
+        while self.plugin_story_extensions_layout.count():
+            child = self.plugin_story_extensions_layout.takeAt(0)
+            if child.widget():
+                child.widget().deleteLater()
+
+        if hasattr(self, "plugin_manager") and self.plugin_manager:
+            for plugin in self.plugin_manager.plugins.values():
+                if getattr(plugin, "is_enabled", False) and hasattr(plugin, "create_story_metadata_widget"):
+                    try:
+                        w = plugin.create_story_metadata_widget(parent=self.plugin_story_extensions_container)
+                        if w:
+                            self.plugin_story_extensions_layout.addWidget(w)
+                    except Exception as exc:
+                        print(f"[PLUGINS] Error creating story metadata widget: {exc}")
+
+    def notify_story_selection_to_plugins(self, selected_story=None):
+        """Notify all enabled plugins when the active story selection changes."""
+        if hasattr(self, "plugin_manager") and self.plugin_manager:
+            for plugin in self.plugin_manager.plugins.values():
+                if getattr(plugin, "is_enabled", False) and hasattr(plugin, "on_story_selected"):
+                    try:
+                        plugin.on_story_selected(selected_story)
+                    except Exception as exc:
+                        pass
+
 
 
 

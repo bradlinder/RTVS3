@@ -1,4 +1,4 @@
-"""Radio & TV Segmenter v3.5.7 — transcript story responsibilities.
+"""Radio & TV Segmenter v3.5.9 — transcript story responsibilities.
 
 
 Methods intentionally retain the MainWindow-facing API so behavior remains
@@ -1680,13 +1680,8 @@ class TranscriptStoryMixin:
             else:
                 self.start_input.setText(format_time(story.start))
                 self.end_input.setText(format_time(story.end))
-                # Optimize: Update only the target story item in-place during drag
-                # Full list rebuild is deferred to handle_drag_finished to maintain 60+ FPS
-                if hasattr(self, "story_list") and 0 <= index < self.story_list.count():
-                    item = self.story_list.item(index)
-                    if item:
-                        item.setText(f"{index + 1}. {format_time(story.start)} – {format_time(story.end)}  {story.title}")
-                        item.setData(Qt.ItemDataRole.UserRole, story.to_dict())
+                # High-performance drag: Defer sidebar story_list item relayout and serialization
+                # until handle_drag_finished to maintain silky smooth 60+ FPS interaction.
 
     def audition_story(self, index: int):
         """Audition playback for a specific story with real-time fade-in & fade-out envelopes."""
@@ -2228,12 +2223,21 @@ class TranscriptStoryMixin:
         dlg = StoryFadesDialog(self, story=story, story_index=story_index)
         if dlg.exec() == QDialog.DialogCode.Accepted:
             new_in, new_out, new_curve, apply_all = dlg.get_fades()
-            old_in = getattr(story, "fade_in", 0.0)
-            old_out = getattr(story, "fade_out", 0.0)
-            old_curve = getattr(story, "fade_curve", "linear") or "linear"
+            if dlg._initial_fades and 0 <= story_index < len(dlg._initial_fades):
+                old_in, old_out, old_curve = dlg._initial_fades[story_index]
+            else:
+                old_in = getattr(story, "fade_in", 0.0)
+                old_out = getattr(story, "fade_out", 0.0)
+                old_curve = getattr(story, "fade_curve", "linear") or "linear"
 
             if apply_all:
-                old_stories = [Story.from_dict(s.to_dict()) for s in self.stories]
+                old_stories = []
+                for idx, s in enumerate(self.stories):
+                    st_copy = Story.from_dict(s.to_dict())
+                    if dlg._initial_fades and idx < len(dlg._initial_fades):
+                        st_copy.fade_in, st_copy.fade_out, st_copy.fade_curve = dlg._initial_fades[idx]
+                    old_stories.append(st_copy)
+
                 new_stories = []
                 for s in self.stories:
                     st_copy = Story.from_dict(s.to_dict())
@@ -2241,6 +2245,7 @@ class TranscriptStoryMixin:
                     st_copy.fade_out = new_out
                     st_copy.fade_curve = new_curve
                     new_stories.append(st_copy)
+
                 if hasattr(self, "undo_stack"):
                     self.undo_stack.push(SetStoriesCommand(self, old_stories, new_stories, "Set Audio Fades on All Stories"))
                 else:
@@ -2338,9 +2343,16 @@ class StoryFadesDialog(QDialog):
         self.main_win = parent
         self.story = story
         self.story_index = story_index
+        self._initial_fades = []
+        if self.main_win and hasattr(self.main_win, "stories"):
+            self._initial_fades = [
+                (getattr(s, "fade_in", 0.0), getattr(s, "fade_out", 0.0), getattr(s, "fade_curve", "linear") or "linear")
+                for s in self.main_win.stories
+            ]
+        self._has_applied = False
         title = story.title if story and getattr(story, "title", None) else f"Story #{story_index + 1}"
         self.setWindowTitle(f"Audio Fades — {title}")
-        self.resize(440, 300)
+        self.resize(450, 310)
         self._init_ui()
 
     def _init_ui(self):
@@ -2406,6 +2418,12 @@ class StoryFadesDialog(QDialog):
 
         btn_box = QHBoxLayout()
         btn_box.addStretch()
+
+        apply_btn = QPushButton("Apply", self)
+        apply_btn.setToolTip("Apply current fade curve and durations to audition live on timeline without closing")
+        apply_btn.clicked.connect(self.apply_current)
+        btn_box.addWidget(apply_btn)
+
         cancel_btn = QPushButton("Cancel", self)
         cancel_btn.clicked.connect(self.reject)
         btn_box.addWidget(cancel_btn)
@@ -2416,6 +2434,50 @@ class StoryFadesDialog(QDialog):
         btn_box.addWidget(save_btn)
 
         layout.addLayout(btn_box)
+
+    def apply_current(self):
+        """Apply current settings in real-time without closing the dialog."""
+        new_in, new_out, new_curve, apply_all = self.get_fades()
+        if not self.main_win or not hasattr(self.main_win, "stories"):
+            return
+
+        if apply_all:
+            for s in self.main_win.stories:
+                s.fade_in = new_in
+                s.fade_out = new_out
+                s.fade_curve = new_curve
+        else:
+            if 0 <= self.story_index < len(self.main_win.stories):
+                st = self.main_win.stories[self.story_index]
+                st.fade_in = new_in
+                st.fade_out = new_out
+                st.fade_curve = new_curve
+
+        if hasattr(self.main_win, "refresh_story_list"):
+            self.main_win.refresh_story_list()
+        if hasattr(self.main_win, "timeline"):
+            self.main_win.timeline.set_stories(self.main_win.stories, getattr(self.main_win, "current_selected_story_indices", []))
+            self.main_win.timeline.update()
+        if hasattr(self.main_win, "log_activity"):
+            scope_desc = "all stories" if apply_all else f"Story #{self.story_index + 1}"
+            self.main_win.log_activity(f"[FADES] Applied fade-in: {new_in:.2f}s, fade-out: {new_out:.2f}s, curve: {new_curve} ({scope_desc})")
+        self._has_applied = True
+
+    def reject(self):
+        """Revert back to initial settings if applied prior to canceling."""
+        if self._has_applied and self.main_win and hasattr(self.main_win, "stories"):
+            for idx, (fin, fout, fcur) in enumerate(self._initial_fades):
+                if idx < len(self.main_win.stories):
+                    st = self.main_win.stories[idx]
+                    st.fade_in = fin
+                    st.fade_out = fout
+                    st.fade_curve = fcur
+            if hasattr(self.main_win, "refresh_story_list"):
+                self.main_win.refresh_story_list()
+            if hasattr(self.main_win, "timeline"):
+                self.main_win.timeline.set_stories(self.main_win.stories, getattr(self.main_win, "current_selected_story_indices", []))
+                self.main_win.timeline.update()
+        super().reject()
 
     def _restore_defaults(self):
         settings = QSettings(INTERNAL_APP_ID, INTERNAL_APP_ID)
