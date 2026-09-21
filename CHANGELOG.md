@@ -1,6 +1,16 @@
 # Changelog
 
-## v3.5.9
+## v3.5.9 (including WordPress Plugin v3.5.9.1)
+- **WordPress Export Cross-Linking & Rich Text Hyperlink Formatting (`plugins/wordpress/client.py`, `plugins/wordpress/export_destination.py`, `plugins/wordpress/manifest.json`)**:
+  - **Full Episode & Story Cross-Linking**:
+    - When exporting a full episode alongside individual stories, the publisher automatically captures the parent episode's post URL and injects an attribution link (e.g. *"This story was broadcast as part of Full Episode"*) into each published story post.
+    - Configurable notice positioning (top of post after player vs. bottom of post) and customizable template strings (supporting `{episode_title}` and `{episode_link}` placeholders).
+    - Added automated back-linking: once all individual stories are published, the plugin optionally updates the parent Full Episode post with a Gutenberg-compatible Table of Contents indexing all broadcast stories with clickable links.
+  - **Rich Text & Hyperlink Formatting**:
+    - Integrated comprehensive rich text and hyperlink parsing in `format_rich_text_to_html()` for transcript paragraphs and custom notice blocks.
+    - Automatically converts standard Markdown hyperlinks (`[text](url)`), auto-links raw URLs (`https://...`), and passes through safe HTML tags (`<a>`, `<strong>`, `<em>`, `<code>`) while sanitizing all other content.
+  - **Plugin Version Bump**:
+    - Incremented WordPress plugin release to `v3.5.9.1` in `manifest.json` following the selective plugin catch-up policy with zero impact on the core application footprint.
 - **WordPress Plugin Decoupling & Modular Architecture Migration (`plugins/wordpress/`, `RadioTVSegmenter.py`, `project_export.py`, `playback_preferences.py`)**:
   - **Complete Core Decoupling**:
     - Fully removed `wordpress_export.py` and decoupled `WordPressExportMixin` from `MainWindow`, guaranteeing core application modules never import from `plugins/` per architectural invariants.

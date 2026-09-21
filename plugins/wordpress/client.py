@@ -136,6 +136,154 @@ def _set_wp_password(username: str, password: str) -> bool:
     return saved_in_keyring
 
 
+def format_rich_text_to_html(text: str, auto_link_urls: bool = True) -> str:
+    """Format rich text, Markdown hyperlinks, and URLs into safe HTML for WordPress posts.
+
+    Supports:
+    - Markdown links: [Link text](https://example.com)
+    - Existing safe HTML links: <a href="...">...</a>
+    - Auto-linking bare URLs: https://... or http://...
+    - Basic Markdown emphasis: **bold** and *italic*
+    """
+    if not text:
+        return ""
+
+    tokens: list[str] = []
+
+    def save_token(tag_html: str) -> str:
+        idx = len(tokens)
+        tokens.append(tag_html)
+        return f"__RTVS_TOKEN_{idx}__"
+
+    # 1. Match and protect existing valid <a> tags
+    def replace_existing_a(match: re.Match) -> str:
+        raw_tag = match.group(0)
+        href_match = re.search(r'href=[\'"]([^\'"]+)[\'"]', raw_tag, re.IGNORECASE)
+        if href_match:
+            href = href_match.group(1).strip()
+            if not href.startswith(("http://", "https://", "mailto:", "/", "#")):
+                return html.escape(raw_tag)
+        return save_token(raw_tag)
+
+    processed = re.sub(r"<a\b[^>]*>.*?</a>", replace_existing_a, text, flags=re.IGNORECASE | re.DOTALL)
+
+    # 2. Match and convert Markdown links: [text](url)
+    def replace_md_link(match: re.Match) -> str:
+        link_text = match.group(1)
+        url = match.group(2).strip()
+        if not url.startswith(("http://", "https://", "mailto:", "/", "#")):
+            url = f"https://{url}"
+        safe_url = html.escape(url, quote=True)
+        safe_text = html.escape(link_text)
+        tag = f'<a href="{safe_url}" target="_blank" rel="noopener noreferrer">{safe_text}</a>'
+        return save_token(tag)
+
+    processed = re.sub(r'\[([^\]\n]+)\]\((https?://[^\s\)]+|[^\s\)]+)\)', replace_md_link, processed)
+
+    # 3. Escape general HTML in the remaining text
+    processed = html.escape(processed)
+
+    # 4. Convert basic markdown bold and italic
+    processed = re.sub(r"\*\*([^\*\n]+)\*\*", r"<strong>\1</strong>", processed)
+    processed = re.sub(r"\*([^\*\n]+)\*", r"<em>\1</em>", processed)
+
+    # 5. Auto-link bare URLs (not already tokenized)
+    if auto_link_urls:
+        def replace_bare_url(match: re.Match) -> str:
+            url = match.group(0)
+            trailing = ""
+            while url and url[-1] in ".,;:!?)'\"":
+                trailing = url[-1] + trailing
+                url = url[:-1]
+            if not url:
+                return trailing
+            safe_url = html.escape(url, quote=True)
+            tag = f'<a href="{safe_url}" target="_blank" rel="noopener noreferrer">{safe_url}</a>'
+            return save_token(tag) + trailing
+
+        processed = re.sub(r'https?://[^\s<>"\'`]+', replace_bare_url, processed)
+
+    # 6. Restore protected tokens
+    for idx, tok in enumerate(tokens):
+        processed = processed.replace(f"__RTVS_TOKEN_{idx}__", tok)
+
+    return processed
+
+
+def format_parent_episode_notice(
+    episode_title: str,
+    episode_url: str,
+    template: str = "",
+) -> str:
+    """Format the parent episode notice block to inject into a story post."""
+    if not episode_title and not episode_url:
+        return ""
+
+    clean_title = episode_title or "Full Episode"
+    clean_url = episode_url or "#"
+    link_html = f'<a href="{html.escape(clean_url, quote=True)}" target="_blank" rel="noopener noreferrer">{html.escape(clean_title)}</a>'
+
+    if template:
+        notice_text = template
+        notice_text = notice_text.replace("{episode_link}", link_html)
+        notice_text = notice_text.replace("{episode_title}", html.escape(clean_title))
+        notice_text = notice_text.replace("{episode_url}", html.escape(clean_url, quote=True))
+        notice_text = notice_text.replace("{title}", html.escape(clean_title))
+        notice_text = notice_text.replace("{url}", html.escape(clean_url, quote=True))
+
+        if "{episode_link}" not in template and "<a" not in notice_text:
+            notice_html = format_rich_text_to_html(notice_text)
+        else:
+            notice_html = notice_text
+    else:
+        notice_html = f"This story was broadcast as part of {link_html}."
+
+    return (
+        f'<!-- wp:paragraph -->\n'
+        f'<p class="rtvs-parent-episode-notice" style="font-size: 0.95em; opacity: 0.9; margin: 12px 0 16px 0;">\n'
+        f'  <em>{notice_html}</em>\n'
+        f'</p>\n<!-- /wp:paragraph -->'
+    )
+
+
+def build_episode_stories_toc(stories: list[dict]) -> str:
+    """Build a Gutenberg Table of Contents block listing all stories in the episode."""
+    if not stories:
+        return ""
+
+    items_html = []
+    for st in stories:
+        title = html.escape(st.get("title") or "Story")
+        link = st.get("link") or ""
+        start = st.get("start")
+        end = st.get("end")
+
+        time_str = ""
+        if start is not None and end is not None:
+            time_str = f" ({format_time(start)} – {format_time(end)})"
+        elif start is not None:
+            time_str = f" ({format_time(start)})"
+
+        if link:
+            safe_link = html.escape(link, quote=True)
+            link_item = f'<a href="{safe_link}"><strong>{title}</strong></a>{time_str}'
+        else:
+            link_item = f'<strong>{title}</strong>{time_str}'
+
+        items_html.append(f'  <li>{link_item}</li>')
+
+    list_content = "\n".join(items_html)
+    return (
+        f'<!-- wp:heading {{"level":3}} -->\n'
+        f'<h3 class="rtvs-episode-stories-heading" style="margin-top: 28px; margin-bottom: 12px;">Stories in this Episode</h3>\n'
+        f'<!-- /wp:heading -->\n'
+        f'<!-- wp:list -->\n'
+        f'<ul class="rtvs-episode-stories-list">\n'
+        f'{list_content}\n'
+        f'</ul>\n<!-- /wp:list -->'
+    )
+
+
 def generate_wp_excerpt(text: str, max_words: int = 55) -> str:
     """Generate a clean WordPress-style post excerpt from text (standard 55 words)."""
     if not text:
@@ -368,6 +516,38 @@ class WordPressClient:
         resp = requests.post(url, auth=self._get_auth(), json=payload, timeout=30)
         if resp.status_code not in (200, 201):
             raise RuntimeError(f"WordPress Post creation failed (HTTP {resp.status_code}): {resp.text[:300]}")
+        return resp.json()
+
+    def update_post(
+        self,
+        post_id: int,
+        content: str | None = None,
+        title: str | None = None,
+        excerpt: str | None = None,
+        status: str | None = None,
+        category_ids: list[int] | None = None,
+        featured_media_id: int | None = None,
+    ) -> dict:
+        """Update an existing post in WordPress."""
+        import requests
+        payload: dict[str, Any] = {}
+        if content is not None:
+            payload["content"] = content
+        if title is not None:
+            payload["title"] = title
+        if excerpt is not None:
+            payload["excerpt"] = excerpt
+        if status is not None:
+            payload["status"] = status
+        if category_ids is not None:
+            payload["categories"] = category_ids
+        if featured_media_id is not None:
+            payload["featured_media"] = int(featured_media_id)
+
+        url = f"{self.api_base}/posts/{int(post_id)}"
+        resp = requests.post(url, auth=self._get_auth(), json=payload, timeout=30)
+        if resp.status_code not in (200, 201):
+            raise RuntimeError(f"WordPress Post update failed (HTTP {resp.status_code}): {resp.text[:300]}")
         return resp.json()
 
 
@@ -698,6 +878,10 @@ def execute_wordpress_upload(
     media_filename: str | None = None,
     progress_callback=None,
     featured_image_path: str | None = None,
+    parent_episode_info: dict | None = None,
+    link_parent_episode: bool = True,
+    parent_episode_template: str = "",
+    parent_episode_pos: str = "top",
 ) -> dict:
     """Extract media clip, upload to WordPress media library, and create draft post."""
     def report_progress(step: int, description: str) -> None:
@@ -785,6 +969,17 @@ def execute_wordpress_upload(
                 f'<!-- wp:audio -->\n<figure class="wp-block-audio"><audio controls src="{media_url}"></audio></figure>\n<!-- /wp:audio -->'
             )
 
+    # Parent Episode Cross-Linking Notice (if provided and enabled)
+    parent_notice_html = ""
+    if parent_episode_info and link_parent_episode:
+        ep_title = parent_episode_info.get("title") or "Full Episode"
+        ep_url = parent_episode_info.get("link") or ""
+        parent_notice_html = format_parent_episode_notice(
+            episode_title=ep_title,
+            episode_url=ep_url,
+            template=parent_episode_template,
+        )
+
     # Transcript extraction
     full_transcript = getattr(main_window, "transcript", []) or []
     clip_transcript = []
@@ -809,8 +1004,8 @@ def execute_wordpress_upload(
                 continue
             speaker = seg.get("speaker", "").strip()
             speaker_prefix = f"<strong>{html.escape(speaker)}:</strong> " if speaker else ""
-            escaped_text = html.escape(text)
-            blocks.append(f"<!-- wp:paragraph -->\n<p>{speaker_prefix}{escaped_text}</p>\n<!-- /wp:paragraph -->")
+            formatted_text = format_rich_text_to_html(text)
+            blocks.append(f"<!-- wp:paragraph -->\n<p>{speaker_prefix}{formatted_text}</p>\n<!-- /wp:paragraph -->")
         return blocks
 
     en_blocks = language_blocks("en") if include_english else []
@@ -863,8 +1058,8 @@ def execute_wordpress_upload(
     no_snippet = str(settings.value("wp_custom_text_no_snippet", "true")).lower() in ("true", "1", "yes")
 
     if custom_text:
-        text_escaped = html.escape(custom_text).replace("\n\n", "</p><p>").replace("\n", "<br/>")
-        inner_html = f"<p>{text_escaped}</p>"
+        text_formatted = format_rich_text_to_html(custom_text).replace("\n\n", "</p><p>").replace("\n", "<br/>")
+        inner_html = f"<p>{text_formatted}</p>"
         snippet_attr = ' data-nosnippet="true"' if no_snippet else ""
         google_wrap_start = "<!--googleoff: all-->\n" if no_snippet else ""
         google_wrap_end = "\n<!--googleon: all-->" if no_snippet else ""
@@ -879,6 +1074,19 @@ def execute_wordpress_upload(
             content_parts.insert(insert_idx, custom_html)
         else:
             content_parts.append(custom_html)
+
+    # Insert Parent Episode Link Notice if top or bottom
+    if parent_notice_html:
+        if parent_episode_pos == "bottom":
+            content_parts.append(parent_notice_html)
+        else:
+            # Place right after media player (and custom top notice if any)
+            insert_idx = 0
+            if media_url and len(content_parts) > 0:
+                insert_idx += 1
+            if custom_text and custom_pos == "top" and len(content_parts) > insert_idx:
+                insert_idx += 1
+            content_parts.insert(insert_idx, parent_notice_html)
 
     full_content = "\n".join(content_parts)
 
@@ -895,7 +1103,10 @@ def execute_wordpress_upload(
         featured_media_id=featured_media_id,
     )
 
-    post_id = post_data.get("id")
+    if isinstance(post_data, dict):
+        post_data["_generated_content"] = full_content
+
+    post_id = post_data.get("id") if isinstance(post_data, dict) else "Draft"
     if hasattr(main_window, "log_activity"):
         main_window.log_activity(f"[WORDPRESS] Created Draft Post #{post_id}: '{post_title}'")
     return post_data

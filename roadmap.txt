@@ -33,30 +33,44 @@ TABLE OF CONTENTS & STATUS OVERVIEW
    [x] 1.1 Audio Fades Dialog "Apply" Action & Live Auditioning (`transcript_story.py`): Added an "Apply" button to `StoryFadesDialog` alongside "Save Fades" and "Cancel", enabling real-time timeline visualization and playback auditioning without closing the dialog. Supported full pre-dialog snapshot rollback on "Cancel" and clean undo/redo synchronization.
    [x] 1.2 Timeline Navigation & Drag Performance Optimization (`timeline_widgets.py`, `transcript_story.py`): Throttled continuous drag events to 60 FPS (~16ms) in `TimelineCanvas.mouseMoveEvent`, deferred sidebar `QListWidgetItem` relayout until drag completion in `handle_drag_finished`, implemented 16-step precomputed fade curve lookup tables, and pre-cached painter brushes/pens and story snap points.
 
-2. Current Release: WordPress Metadata Integration, Window Expansion & Project Export Modularization (Completed in v3.5.9)
+2. Current Release: WordPress Metadata Integration, Window Expansion & Project Export Modularization (Completed in v3.5.9 / Plugin v3.5.9.1)
    [x] 2.1 Story Editor WordPress Metadata Assignment: Exposed all WordPress export options (Author, Excerpt, Categories, Tags, Featured Image, Post Status) directly within the main Stories widget/editor via dynamic plugin extension (`WordPressStoryMetadataWidget`).
    [x] 2.2 Project Serialization & Export Pre-Population: Persisted assigned story WordPress metadata into `.rtvs` project files and automatically pre-populated `UnifiedExportDialog` fields during export while preserving full editability in the export window.
    [x] 2.3 Export Window Fullscreen Expansion Controls: Added maximize/minimize buttons to `UnifiedExportDialog` allowing it to toggle into full screen mode and return to standard dialog size.
    [x] 2.4 Story Widget Workspace Expansion Controls: Added maximize/minimize buttons to the main Story Editor widget allowing it to expand to fill the entire application workspace and return to standard split view layout.
    [x] 2.5 Project Export & Lifecycle Modularization: Decoupled project file persistence (`close_project`, `save_project`, `open_project`) into `project_lifecycle.py` and broadcast audio rendering/stem processing into `export/audio.py`.
+   [x] 2.6 WordPress Episode & Story Cross-Linking (v3.5.9.1): Automatically capture Full Episode post URLs and inject customizable attribution links into individual story posts. Optionally append a linked story Table of Contents block to the Full Episode post.
+   [x] 2.7 WordPress Rich Text & Markdown Hyperlinks (v3.5.9.1): Converted Markdown link syntax (`[text](url)`), auto-linked raw URLs, and enabled safe HTML tag passthrough in exported transcript bodies and custom notices.
 
-3. Active Feature Milestone: Google Docs & Drive Export Plugin (`plugins/gdocs`) [PLANNED for v3.6.0] [NOT STARTED]
-   [ ] 3.1 Plugin Architecture & OAuth 2.0 Authentication Engine (`plugins/gdocs/auth.py`, keyring token storage, local loopback handler)
-   [ ] 3.2 Google Docs Document Serializer & REST Exporter (Formatted text, speaker headers, word highlights, story metadata)
-   [ ] 3.3 Native Margin Comments & Text Range Anchoring (`drive.comments.create` integration for story notes & transcript comments)
-   [ ] 3.4 Unified Export Center & Menu Integration (Progress worker, batch export, zero core bundle overhead)
-   [ ] 3.5 (Optional) One-Time Review & Comment Pull ("Import Reviews from Google Doc" diff dialog)
+3. Active Feature Milestone: Dedicated Timeline & DAW Export Center (`export/daw.py`, `export/dialog.py`, `ui_layout.py`) [PLANNED for v3.6.0] [NOT STARTED]
+   [ ] 3.1 Migration to Unified Export Center Tab: Move timeline and DAW exports from the legacy File menu submenu into a dedicated "Timeline & DAW" tab in the Unified Export Center dialog, streamlining menu navigation and providing a unified UI for multi-format timeline exporting.
+   [ ] 3.2 Advanced DAW & NLE Export Controls:
+       - Multi-track layout modes (Single Track, Checkerboard A/B roll, or Split Tracks per Identified Speaker).
+       - Unselected audio handling (Omit/Ripple-delete, Include as Muted Items for sync preservation, or Route to separate B-Roll reference track).
+       - Marker & Region generation (Bounded DAW regions, chapter cue markers, speaker turn change markers).
+       - Embedded story metadata & notes (Inject synopsis, speaker labels, tags, and transcript excerpts into DAW item notes/takes).
+       - Non-destructive audio fades & volume automation handles (linear, equal-power, exponential).
+       - Source media linking mode (Absolute paths, Relative paths for portable sessions, or Auto-render and link isolated WAV clips).
+       - Timecode & frame rate standard selection (23.976, 24, 25 PAL, 29.97 NDF/DF, 30, 59.94 fps, Sample rate base, custom start timecode e.g. 01:00:00:00).
+   [ ] 3.3 Expanded Timeline Format Support: Direct support for Cockos REAPER (.rpp), Magix Samplitude EDL (.edl v1.5), Adobe Audition / Premiere / FCP7 XML (.xml), Final Cut Pro X (.fcpxml), Audacity Label Tracks (.txt), CUE Sheets (.cue), Universal DAW Marker CSV (.csv), and DaVinci Resolve marker EDL.
 
-4. Upcoming Milestone: Video NLE & Avid Interchange [PLANNED for v3.7.0] [NOT STARTED]
-   [ ] 4.1 Video NLE Interchange (FCPXML, Premiere / DaVinci Resolve xmeml XML)
-   [ ] 4.2 Avid / Pro Tools AAF Composition
-   [ ] 4.3 Rational Timecode & Audio Sample Rate Math
+4. Upcoming Milestone: Google Docs & Drive Export Plugin (`plugins/gdocs`) [PLANNED for v3.6.0] [NOT STARTED]
+   [ ] 4.1 Plugin Architecture & OAuth 2.0 Authentication Engine (`plugins/gdocs/auth.py`, keyring token storage, local loopback handler)
+   [ ] 4.2 Google Docs Document Serializer & REST Exporter (Formatted text, speaker headers, word highlights, story metadata)
+   [ ] 4.3 Native Margin Comments & Text Range Anchoring (`drive.comments.create` integration for story notes & transcript comments)
+   [ ] 4.4 Unified Export Center & Menu Integration (Progress worker, batch export, zero core bundle overhead)
+   [ ] 4.5 (Optional) One-Time Review & Comment Pull ("Import Reviews from Google Doc" diff dialog)
 
-5. Future Milestone: Text-Driven Audio Editing & Precision Alignment (Phase 5) [NOT STARTED]
-   [ ] 5.1 "Text-as-Timeline" Rough-Cut Editing Engine
-   [ ] 5.2 Seamless Non-Destructive Playback Preview
-   [ ] 5.3 CTC Word Boundary Refinement & Forced Alignment
-   [ ] 5.4 Memory-Bounded Diarization & Chunked Streaming
+5. Future Milestone: Video NLE & Avid Interchange [PLANNED for v3.7.0] [NOT STARTED]
+   [ ] 5.1 Video NLE Interchange (FCPXML, Premiere / DaVinci Resolve xmeml XML)
+   [ ] 5.2 Avid / Pro Tools AAF Composition
+   [ ] 5.3 Rational Timecode & Audio Sample Rate Math
+
+6. Future Milestone: Text-Driven Audio Editing & Precision Alignment (Phase 5) [NOT STARTED]
+   [ ] 6.1 "Text-as-Timeline" Rough-Cut Editing Engine
+   [ ] 6.2 Seamless Non-Destructive Playback Preview
+   [ ] 6.3 CTC Word Boundary Refinement & Forced Alignment
+   [ ] 6.4 Memory-Bounded Diarization & Chunked Streaming
 
 ================================================================================
 CORE ARCHITECTURAL INVARIANTS

@@ -47,6 +47,9 @@ from plugins.base import ExportDestination
 from plugins.wordpress.client import (
     WordPressClient,
     generate_wp_excerpt,
+    format_rich_text_to_html,
+    format_parent_episode_notice,
+    build_episode_stories_toc,
     WordPressSettingsDialog,
     execute_wordpress_upload,
     _get_wp_password,
@@ -436,6 +439,52 @@ class WordPressExportTabWidget(QWidget):
         wp_pos_row.addStretch()
         self.wp_custom_section.add_layout(wp_pos_row)
         wp_layout.addWidget(self.wp_custom_section)
+
+        # Cross-Linking Section (Full Episode & Stories)
+        self.wp_crosslink_section = CollapsibleSection("Episode & Story Cross-Linking (Full Episode & All Stories)", self, is_expanded=True)
+        crosslink_layout = QVBoxLayout()
+        crosslink_layout.setContentsMargins(4, 4, 4, 4)
+        crosslink_layout.setSpacing(6)
+
+        self.wp_cb_link_parent = QCheckBox("Add link to Full Episode post in individual story posts")
+        self.wp_cb_link_parent.setToolTip("When exporting a Full Episode along with stories, automatically adds a notice linking each story back to the parent episode post.")
+        saved_link_parent = str(self.settings.value("wp_link_parent_episode", "true")).lower() in ("true", "1", "yes")
+        self.wp_cb_link_parent.setChecked(saved_link_parent)
+        crosslink_layout.addWidget(self.wp_cb_link_parent)
+
+        parent_pos_row = QHBoxLayout()
+        self.wp_parent_pos_group = QButtonGroup(self)
+        self.wp_rad_parent_top = QRadioButton("Place at top of story post")
+        self.wp_rad_parent_bottom = QRadioButton("Place at bottom of story post")
+        self.wp_parent_pos_group.addButton(self.wp_rad_parent_top)
+        self.wp_parent_pos_group.addButton(self.wp_rad_parent_bottom)
+        saved_parent_pos = str(self.settings.value("wp_parent_episode_pos", "top") or "top").lower()
+        if saved_parent_pos == "bottom":
+            self.wp_rad_parent_bottom.setChecked(True)
+        else:
+            self.wp_rad_parent_top.setChecked(True)
+        parent_pos_row.addWidget(self.wp_rad_parent_top)
+        parent_pos_row.addWidget(self.wp_rad_parent_bottom)
+        parent_pos_row.addStretch()
+        crosslink_layout.addLayout(parent_pos_row)
+
+        template_row = QHBoxLayout()
+        template_row.addWidget(QLabel("Notice Text:"))
+        self.wp_parent_template_edit = QLineEdit()
+        self.wp_parent_template_edit.setPlaceholderText("This story was broadcast as part of {episode_link}.")
+        saved_template = str(self.settings.value("wp_parent_template", "This story was broadcast as part of {episode_link}.") or "")
+        self.wp_parent_template_edit.setText(saved_template)
+        template_row.addWidget(self.wp_parent_template_edit)
+        crosslink_layout.addLayout(template_row)
+
+        self.wp_cb_update_parent_toc = QCheckBox("Append story index (Table of Contents) with links to Full Episode post")
+        self.wp_cb_update_parent_toc.setToolTip("Once all individual stories are published, automatically updates the Full Episode post with a linked table of contents of all stories.")
+        saved_update_toc = str(self.settings.value("wp_update_parent_toc", "true")).lower() in ("true", "1", "yes")
+        self.wp_cb_update_parent_toc.setChecked(saved_update_toc)
+        crosslink_layout.addWidget(self.wp_cb_update_parent_toc)
+
+        self.wp_crosslink_section.add_layout(crosslink_layout)
+        wp_layout.addWidget(self.wp_crosslink_section)
 
         # Connection status footer
         wp_conn_layout = QHBoxLayout()
@@ -1080,6 +1129,10 @@ class WordPressExportDestination(ExportDestination):
             "primary_language": w.wp_primary_lang_combo.currentData(),
             "custom_notice": w.wp_custom_text_edit.toPlainText().strip(),
             "notice_placement": "top" if w.wp_rad_pos_top.isChecked() else "bottom",
+            "link_parent_episode": w.wp_cb_link_parent.isChecked(),
+            "parent_episode_pos": "bottom" if w.wp_rad_parent_bottom.isChecked() else "top",
+            "parent_episode_template": w.wp_parent_template_edit.text().strip(),
+            "update_parent_toc": w.wp_cb_update_parent_toc.isChecked(),
         }
 
     def execute_export(self, main_window: Any, export_data: Dict[str, Any], progress_dialog: Any = None) -> bool:
@@ -1101,10 +1154,20 @@ class WordPressExportDestination(ExportDestination):
             QMessageBox.warning(main_window, "No Posts", "No posts were configured for export.")
             return False
 
+        # Save user preferences
+        settings.setValue("wp_link_parent_episode", export_data.get("link_parent_episode", True))
+        settings.setValue("wp_parent_episode_pos", export_data.get("parent_episode_pos", "top"))
+        settings.setValue("wp_parent_template", export_data.get("parent_episode_template", "This story was broadcast as part of {episode_link}."))
+        settings.setValue("wp_update_parent_toc", export_data.get("update_parent_toc", True))
+
         inc_en = export_data.get("include_english", True)
         inc_es = export_data.get("include_spanish", False)
         pres = export_data.get("spanish_presentation", "accordion")
         primary = export_data.get("primary_language", "en")
+        link_parent = export_data.get("link_parent_episode", True)
+        parent_pos = export_data.get("parent_episode_pos", "top")
+        parent_template = export_data.get("parent_episode_template", "")
+        update_toc = export_data.get("update_parent_toc", True)
         total_posts = len(wp_posts)
 
         main_window.export_cancelled = False
@@ -1113,6 +1176,10 @@ class WordPressExportDestination(ExportDestination):
 
         created_posts = []
         failed_posts = []
+        parent_episode_info = None
+        parent_episode_post_id = None
+        parent_episode_content = None
+        story_posts = []
 
         try:
             for idx, post in enumerate(wp_posts):
@@ -1125,6 +1192,8 @@ class WordPressExportDestination(ExportDestination):
                 task_label = post.get("task_label") or post_title
                 media_name = safe_filename(post_title) if post_title else "audio"
                 media_filename = f"{media_name}.mp3"
+
+                is_parent_episode = (task_label == "Full Episode") or (post.get("start") is None and post.get("end") is None and len(wp_posts) > 1)
 
                 pct = int((idx / max(1, total_posts)) * 100)
                 if hasattr(main_window, "set_processing_stage"):
@@ -1160,6 +1229,10 @@ class WordPressExportDestination(ExportDestination):
                         media_filename=media_filename,
                         featured_image_path=post.get("featured_image"),
                         progress_callback=wp_progress,
+                        parent_episode_info=parent_episode_info if not is_parent_episode else None,
+                        link_parent_episode=link_parent if not is_parent_episode else False,
+                        parent_episode_template=parent_template,
+                        parent_episode_pos=parent_pos,
                     )
                     if post_data and isinstance(post_data, dict):
                         if hasattr(main_window, "update_processing_progress"):
@@ -1172,6 +1245,23 @@ class WordPressExportDestination(ExportDestination):
                             "id": post_id,
                             "link": post_link,
                         })
+
+                        if is_parent_episode and parent_episode_info is None:
+                            parent_episode_info = {
+                                "id": post_id,
+                                "title": post_title,
+                                "link": post_link,
+                            }
+                            parent_episode_post_id = post_id
+                            parent_episode_content = post_data.get("_generated_content", "")
+                        elif not is_parent_episode:
+                            story_posts.append({
+                                "id": post_id,
+                                "title": post_title,
+                                "link": post_link,
+                                "start": post.get("start"),
+                                "end": post.get("end"),
+                            })
                 except Exception as exc:
                     if hasattr(main_window, "log_activity"):
                         main_window.log_activity(f"[WORDPRESS ERROR] Failed to export '{post_title}': {exc}")
@@ -1179,6 +1269,20 @@ class WordPressExportDestination(ExportDestination):
                         "title": post_title,
                         "error": str(exc),
                     })
+
+            # Append Table of Contents to Full Episode post if requested
+            if parent_episode_post_id and story_posts and update_toc:
+                try:
+                    toc_html = build_episode_stories_toc(story_posts)
+                    if toc_html and parent_episode_content:
+                        updated_content = f"{parent_episode_content}\n\n{toc_html}"
+                        client.update_post(parent_episode_post_id, content=updated_content)
+                        if hasattr(main_window, "log_activity"):
+                            main_window.log_activity(f"[WORDPRESS] Appended story index table of contents to Full Episode Post #{parent_episode_post_id}.")
+                except Exception as toc_exc:
+                    if hasattr(main_window, "log_activity"):
+                        main_window.log_activity(f"[WORDPRESS WARNING] Failed to append story index to Full Episode post #{parent_episode_post_id}: {toc_exc}")
+
         finally:
             if hasattr(main_window, "set_processing_stage"):
                 main_window.set_processing_stage(None)
