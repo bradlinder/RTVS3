@@ -1,5 +1,31 @@
 # Changelog
  
+## v3.6.5-beta
+- **Google Drive & Docs Formatting Parity, Folder Management & Scopes (`plugins/gdocs/`)**:
+  - **Project & Media File Name as Default Document Title**: Updated the default document title to automatically inherit the current project file name or media file name, replacing generic placeholder titles.
+  - **Always-Bold Speaker Labels (`formatter.py`, `export_destination.py`)**: Speaker labels at the start of dialogue turns are now always bolded by default in Google Docs output with clean, dedicated textStyle styling, removing the need for a separate checkbox while guaranteeing consistent bold styling.
+  - **Optional Story Chapters as H2 Headers for Table of Contents**: Added an optional checkbox ("Include Story Chapters as Headers (Table of Contents)") unchecked by default. When checked, story chapter boundaries are inserted as Heading 2 (`HEADING_2`) styled headers, enabling users to jump between stories using the Google Docs outline and Table of Contents.
+  - **Language Selection & Dual Language Modes (`export_destination.py`, `formatter.py`)**: Added options to export transcripts in English, Spanish, or both. When both languages are selected, users can choose between generating separate Google Docs for each language or combining them into a single bilingual document with custom ordering (English first or Spanish first).
+  - **Local Docx & WordPress Layout Parity (`formatter.py`)**: Rewrote the document generation engine to use `build_coherent_blocks`, grouping words and segments into natural paragraph blocks with bracketed muted timestamps and clean paragraph breaks matching the local Word document and WordPress exporters.
+  - **Configurable Export Scopes**: Added scope selection controls supporting export of the full episode transcript, individual or selected stories, or full episode combined with selected/all stories.
+  - **Interactive Google Drive Folder Management (`drive_folders.py`)**: Integrated `DriveFolderPickerDialog` enabling users to browse Google Drive hierarchy, select a default target folder for exports, and create new folders directly from the dialog via Google Drive API v3.
+  - **Editorial Margin Comments Support**: Added optional toggle to anchor story editorial notes directly as native Google Docs margin comments.
+- **WordPress Export Scope Post Builder Test Resilience (`test_runner.py`, `plugins/wordpress/export_destination.py`)**:
+  - Added defensive `getattr(self, "metadata_editor_mode", False)` checks in `WordPressExportTabWidget` and ensured `MockWpWidget` provides `metadata_editor_mode`, resolving diagnostic test failures in headless runner environments.
+- **Selective Purge & Stage Pipeline Rerun Safeguards (`project_lifecycle.py`, `processing.py`)**:
+  - **Deep Purge State Cleanup**: Enhanced `purge_project_data` to reset all residual pipeline states (`transcription_result_received`, diarization caches, active queues, rerun confirmations, and speaker label sets) when clearing transcripts or diarization.
+  - **Diarization Existence Validation**: Updated `_confirm_pipeline_rerun_if_needed` and `_processing_choice` to require that valid transcript segments actually exist before considering speaker diarization complete, eliminating spurious "Speaker Detection has already been completed" prompts after clearing or purging transcripts.
+- **Customizable Export Destination Ordering (`export/dialog.py`, `playback_preferences.py`)**:
+  - Implemented customizable destination display ordering in the Unified Export Center.
+  - **Interactive Drag-and-Drop & Move Ordering (`ReorderExportDestinationsDialog`)**: Added interactive destination reordering dialog featuring smooth drag-and-drop list reordering and Move Up / Move Down buttons.
+  - **Quick Reorder Access**: Added a dedicated "⇅ Reorder…" button directly inside the Export window's Destination section as well as a "Customize Export Destinations Order…" button in `Preferences > Batch & Export`.
+  - **Default Destination Ordering**: Established clean default ordering prioritizing `Local Files (Media & Transcripts)`, `WordPress Draft Post`, `Google Docs`, and `YouTube Studio (Assisted Upload)`.
+- **Google OAuth Loopback UX, Non-Blocking Progress & Error Handling (`plugins/gdocs/`)**:
+  - **Non-Blocking Auth Progress Indicator**: Replaced blocking UI freezes with an asynchronous, parented progress dialog with a responsive Cancel button while awaiting browser authorization loopback callback.
+  - **Targeted Google Error 403 / Access Denied Guidance**: Added actionable detection and guidance for Google Cloud 403 `access_denied` errors, providing direct deep links to Google Cloud Console Audience & Test User registration.
+  - **Responsive Formatting Layout in Export Dialog**: Wrapped Google Docs export configuration in a dedicated scroll area and expanded default window dimensions (`860x700`) to guarantee all typography, paragraph styling, and comment anchoring controls fit comfortably without truncation.
+  - **Simplified Destination Title**: Renamed export tab label to "Google Docs" across the exporter interface.
+
 ## v3.6.4-beta
 - **Google Docs & Drive Export Plugin Architecture (`plugins/gdocs/`)**:
   - Implemented the complete Google Docs & Drive publishing plugin with modular zero-external-dependency REST architecture:

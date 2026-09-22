@@ -1442,6 +1442,11 @@ class PluginManagerDialog(QDialog):
         self.batch_export_btn.clicked.connect(self.export_selected_plugins)
         batch_bar.addWidget(self.batch_export_btn)
 
+        self.batch_configure_btn = QPushButton("Configure...")
+        self.batch_configure_btn.setToolTip("Open preferences for the selected plugin.")
+        self.batch_configure_btn.clicked.connect(self.configure_selected_plugin)
+        batch_bar.addWidget(self.batch_configure_btn)
+
         batch_bar.addSpacing(10)
 
         self.batch_check_updates_btn = QPushButton("Check for Updates...")
@@ -1623,6 +1628,30 @@ class PluginManagerDialog(QDialog):
                 f"<b>Location:</b> <span style='font-size: 11px;'>{folder}</span>"
             )
             self.desc_text.setHtml(desc)
+
+    def configure_selected_plugin(self):
+        selected_ids = self.get_selected_plugin_ids()
+        if not selected_ids:
+            QMessageBox.information(self, "Configure Plugin", "Please select a plugin from the list to configure.")
+            return
+        pid = selected_ids[0]
+        # Make sure plugin is enabled
+        if not self.manager.is_plugin_enabled(pid):
+            self.manager.set_plugin_enabled(pid, True)
+            self.manager.load_plugin(pid)
+            if self.manager.app and hasattr(self.manager.app, "refresh_plugin_menus"):
+                self.manager.app.refresh_plugin_menus()
+            self.refresh_list()
+
+        cat_map = {
+            "gdocs": "Google Docs",
+            "wordpress": "WordPress",
+            "youtube": "YouTube",
+        }
+        target_cat = cat_map.get(pid, pid)
+        if self.manager.app and hasattr(self.manager.app, "open_preferences_dialog"):
+            self.accept()
+            self.manager.app.open_preferences_dialog(initial_category=target_cat)
 
     def enable_selected_plugins(self):
         selected_ids = self.get_selected_plugin_ids()

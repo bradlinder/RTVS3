@@ -29,23 +29,22 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 --------------------------------------------------------------------------------
 TABLE OF CONTENTS & STATUS OVERVIEW
 --------------------------------------------------------------------------------
-1. Previous Release: Diagnostic Test Bench Coverage Extension (`test_runner.py`) (Completed in v3.6.3)
-   [x] 1.1 Translation Routing & Key Priority Unit Test: Assert that `source_language_code()` detects correct language and `get_spanish_translation_item()` selects correct translation keys (`es-en` vs `en-es`) without falling back to stale legacy data.
-   [x] 1.2 Symmetrical Translation Editing State Test: Validate that editing translation segments properly updates the core translation dictionary and marks other translation states as stale.
-   [x] 1.3 Interactive Change Speaker Dialogue Flow Test: Programmatically mock options (All Instances, This Instance Only, Cancel) to assert correct downstream reassignment outcomes.
-   [x] 1.4 Story Boundary Validation & Overlap Test: Assert that adding, moving, or resizing story timestamps enforces non-overlapping integrity constraints.
-   [x] 1.5 Audio / Subtitle Sync Drift Test: Ensure that SRT, WebVTT, and chapter markers maintain timestamp alignment across multi-format exports.
-   [x] 1.6 Interactive Transcript Editing & Split/Join Unit Tests: Assert text replacement, segment joining/splitting, word-level time interpolation, and correct propagation to Undo/Redo queues without desynchronizing paragraph elements.
-   [x] 1.7 Exporter Structure Invariant Tests: Verify formatted output structures (REAPER `.rpp` syntax trees, Samplitude `.edl` crossfades, Final Cut Pro XML elements) to ensure zero silent syntax errors during export generation.
-   [x] 1.8 Plugin Interface Sandbox Testing: Validate integration payloads for Google Docs exporting, verifying correct styling tags, author metadata headers, and localized comment-anchoring ranges.
-   [x] 1.9 Project File Integrity & Portable Path Resolution: Test loading damaged/corrupted `.rtvs` files, verifying automatic fallback defaults, and testing graceful user-prompts when the original source media has been moved on disk.
+1. Previous Release: Google Docs & Drive Export Plugin (`plugins/gdocs`) (Completed in v3.6.4-beta)
+   [x] 1.1 Plugin Architecture & OAuth 2.0 Loopback Auth Engine (`plugins/gdocs/auth.py`, OS keyring token storage, local loopback handler)
+   [x] 1.2 Google Docs Document Serializer & REST Exporter (`plugins/gdocs/formatter.py`, formatted text, speaker headers, word highlights, story metadata)
+   [x] 1.3 Native Margin Comments & Text Range Anchoring (`plugins/gdocs/comments.py`, Drive Comments API integration for story notes & transcript comments)
+   [x] 1.4 Unified Export Center & Menu Integration (`plugins/gdocs/export_destination.py`, `plugins/gdocs/plugin.py`, progress worker, zero core bundle overhead)
+   [x] 1.5 One-Time Review & Comment Pull Integration (`plugins/gdocs/review.py`, "Import Reviews from Google Doc" diff dialog)
 
-2. Current Release: Google Docs & Drive Export Plugin (`plugins/gdocs`) (Completed in v3.6.4-beta)
-   [x] 2.1 Plugin Architecture & OAuth 2.0 Loopback Auth Engine (`plugins/gdocs/auth.py`, OS keyring token storage, local loopback handler)
-   [x] 2.2 Google Docs Document Serializer & REST Exporter (`plugins/gdocs/formatter.py`, formatted text, speaker headers, word highlights, story metadata)
-   [x] 2.3 Native Margin Comments & Text Range Anchoring (`plugins/gdocs/comments.py`, Drive Comments API integration for story notes & transcript comments)
-   [x] 2.4 Unified Export Center & Menu Integration (`plugins/gdocs/export_destination.py`, `plugins/gdocs/plugin.py`, progress worker, zero core bundle overhead)
-   [x] 2.5 One-Time Review & Comment Pull Integration (`plugins/gdocs/review.py`, "Import Reviews from Google Doc" diff dialog)
+2. Current Release: Customizable Export Destinations & Google OAuth UX Hardening (`export/dialog.py`, `playback_preferences.py`, `plugins/gdocs/`) (Completed in v3.6.5-beta)
+   [x] 2.1 Drag-and-Drop & Move Destination Reordering (`export/dialog.py`, `ReorderExportDestinationsDialog`): Support drag-and-drop and Move Up / Down ordering of export destinations with persistence in QSettings.
+   [x] 2.2 Quick Reorder Action in Export Dialog & Preferences: Added "⇅ Reorder…" button directly in Destination section and "Customize Export Destinations Order…" button in `Preferences > Batch & Export`.
+   [x] 2.3 Non-Blocking OAuth Progress Feedback (`plugins/gdocs/auth.py`): Replaced UI freeze with an asynchronous parented progress dialog with a responsive Cancel button while awaiting browser callback.
+   [x] 2.4 Google Cloud 403 Error Handling & Test User Deep Links (`plugins/gdocs/auth.py`, `plugins/gdocs/plugin.py`): Detect `access_denied` / 403 errors and present direct console navigation instructions for Audience Test Users.
+   [x] 2.5 Responsive Export Layout & Form Factor: Wrapped Google Docs options in a dedicated scroll container, expanded default window height (`860x700`), and streamlined tab label to "Google Docs".
+   [x] 2.6 Google Drive & Docs Formatting Parity, Language Selection, Folder Management & Scopes (`plugins/gdocs/`): Default document title matching media/project file name, always-bold speaker labels without requiring a toggle, optional H2 story chapter headers for Table of Contents navigation, English/Spanish/Dual Language exports (separate docs or combined bilingual document), coherent paragraph blocks matching Word/WordPress exports, export scopes (full episode, individual/selected stories, or both), native margin comment anchoring, and interactive Drive folder browser/creator dialog (`drive_folders.py`).
+   [x] 2.7 Selective Purge & Pipeline Rerun Safeguards (`project_lifecycle.py`, `processing.py`): Thoroughly reset pipeline flags and diarization state on selective purge, and enforce transcript segment existence check before prompting to re-run speaker detection.
+   [x] 2.8 WordPress Export Scope Post Builder Test Resilience (`test_runner.py`, `plugins/wordpress/export_destination.py`): Added defensive `getattr(self, "metadata_editor_mode", False)` checks and `MockWpWidget.metadata_editor_mode` to guarantee clean diagnostic execution across headless and GUI test environments.
 
 3. Upcoming Milestone: Acoustic Voice Profile Matcher & On-Demand Re-Clustering (`transcript_story.py`, `radio_tv_story_segmenter_worker.py`) [PLANNED for v3.7.0] [NOT STARTED]
    [ ] 3.1 Voice Embedding Vector Storage & Persistence (`diarization["embeddings"]`): Preserve segment-level 256-dimensional WeSpeaker ONNX embedding vectors in project state.
@@ -86,71 +85,57 @@ DETAILED MILESTONE SPECIFICATIONS
 ================================================================================
 
 ================================================================================
-1. PREVIOUS RELEASE: DIAGNOSTIC TEST BENCH COVERAGE EXTENSION (Completed in v3.6.3)
+1. PREVIOUS RELEASE: GOOGLE DOCS & DRIVE EXPORT PLUGIN (Completed in v3.6.4-beta)
 ================================================================================
 
-[x] 1.1 Translation Routing & Key Priority Unit Test (`test_runner.py`)
-------------------------------------------------------------------------
-- Verifies `source_language_code()` and `target_language_code()` resolution and key preference priority under explicit and auto-detection modes.
-
-[x] 1.2 Symmetrical Translation Editing State Test (`test_runner.py`)
-----------------------------------------------------------------------
-- Validates translation dictionary segment updates and automatic marking of stale translation states upon transcript edits.
-
-[x] 1.3 Interactive Change Speaker Dialogue Flow Test (`test_runner.py`)
-------------------------------------------------------------------------
-- Programmatically tests speaker change dialogue choices (All Instances, Contiguous Single Turn, Subsequent Occurrences, Cancel).
-
-[x] 1.4 Story Boundary Validation & Overlap Test (`test_runner.py`)
--------------------------------------------------------------------
-- Enforces boundary normalization, monotonic bounds adjustment, fade curve serialization, and interval overlap detection.
-
-[x] 1.5 Audio / Subtitle Sync Drift Test (`test_runner.py`)
------------------------------------------------------------
-- Asserts 0ms timestamp alignment across SRT, WebVTT, YouTube chapters, and Red Book 75 fps CUE sheets.
-
-[x] 1.6 Interactive Transcript Editing & Split/Join Unit Tests (`test_runner.py`)
--------------------------------------------------------------------------------
-- Exercises segment splitting at arbitrary word timestamps, segment joining, word concatenation, and index shift adjustments.
-
-[x] 1.7 Exporter Structure Invariant Tests (`test_runner.py`)
---------------------------------------------------------------
-- Validates structural syntax invariants for Cockos REAPER (`.rpp`), Magix Samplitude EDL (`.edl`), and Adobe Audition XML (`xmeml`).
-
-[x] 1.8 Plugin Interface Sandbox Testing (`test_runner.py`)
-------------------------------------------------------------
-- Tests `PluginManifest` schema validation, lifecycle hooks, and Google Docs comment anchoring intervals.
-
-[x] 1.9 Project File Integrity & Portable Path Resolution (`test_runner.py`)
-----------------------------------------------------------------------------
-- Tests structural validation error catching on corrupted projects and portable media resolution.
-
-================================================================================
-2. CURRENT RELEASE: GOOGLE DOCS & DRIVE EXPORT PLUGIN (Completed in v3.6.4-beta)
-================================================================================
-
-[x] 2.1 Plugin Scaffolding & OAuth 2.0 Auth Engine (`plugins/gdocs/auth.py`)
+[x] 1.1 Plugin Scaffolding & OAuth 2.0 Auth Engine (`plugins/gdocs/auth.py`)
 ----------------------------------------------------------------------------
 - Implement OAuth 2.0 client credentials and secure token storage via OS keyring with local loopback callback listener on `127.0.0.1:8085/callback`.
 - Automatic refresh token exchange with Google OAuth token endpoint and encrypted machine-bound fallback for non-GUI environments.
 
-[x] 2.2 Google Docs Document Serializer & REST Exporter (`plugins/gdocs/formatter.py`)
+[x] 1.2 Google Docs Document Serializer & REST Exporter (`plugins/gdocs/formatter.py`)
 --------------------------------------------------------------------------------------
 - Structure formatted Google Docs documents containing Title styling, metadata headers, story chapter boundaries (`HEADING_2`), uppercase speaker turn headers, paragraph body text, and optional inline word timestamps.
 - Precise UTF-16 code unit offset calculations for Google Docs REST API `batchUpdate` insertion and text formatting requests.
 
-[x] 2.3 Native Margin Comments & Text Range Anchoring (`plugins/gdocs/comments.py`)
-----------------------------------------------------------------------------------
-- Integrate with Google Drive Comments API (`drive.comments.create` and `drive.comments.list`) to map story editorial notes, transcription corrections, and review tags directly into native margin comments anchored to document text snippets.
+[x] 1.3 Native Margin Comments & Text Range Anchoring (`plugins/gdocs/comments.py`)
+-----------------------------------------------------------------------------------
+- Connect to Google Drive Comments API (`drive.comments.create` and `drive.comments.list`) to attach story editorial notes, transcription correction suggestions, and speaker annotations directly into native margin comments anchored to document text snippets.
 
-[x] 2.4 Unified Export Center & Menu Integration (`plugins/gdocs/export_destination.py`, `plugins/gdocs/plugin.py`)
+[x] 1.4 Unified Export Center & Menu Integration (`plugins/gdocs/export_destination.py`, `plugins/gdocs/plugin.py`)
 ---------------------------------------------------------------------------------------------------------------------
-- Expose "Google Docs & Drive" destination inside `UnifiedExportDialog` and `File > Export` menu with background thread execution, custom folder destination, and direct browser launching.
+- Expose "Google Docs" destination inside `UnifiedExportDialog` and `File > Export` menu with background thread execution, custom folder destination, and direct browser launching.
 - Zero core bundle overhead: implemented as a clean `.rtvs-addon` with self-contained stdlib REST client.
 
-[x] 2.5 One-Time Review & Comment Pull Integration (`plugins/gdocs/review.py`)
-----------------------------------------------------------------------------
+[x] 1.5 One-Time Review & Comment Pull Integration (`plugins/gdocs/review.py`)
+------------------------------------------------------------------------------
 - Provide `GoogleDocsReviewDialog` accessible via `Tools > Google Docs: Review & Pull Corrections...` allowing editorial staff to inspect remote revisions in a Google Doc, view Drive margin comments, and pull verified transcript updates back into active project segments.
+
+================================================================================
+2. CURRENT RELEASE: CUSTOMIZABLE EXPORT DESTINATIONS & GOOGLE OAUTH UX (Completed in v3.6.5-beta)
+================================================================================
+
+[x] 2.1 Drag-and-Drop & Move Destination Reordering (`export/dialog.py`, `ReorderExportDestinationsDialog`)
+------------------------------------------------------------------------------------------------------------
+- Interactive reordering dialog with drag-and-drop list manipulation, Move Up / Move Down buttons, and Reset to Default.
+- User destination order persisted in `export_destinations_order` QSettings key.
+
+[x] 2.2 Quick Reorder Access in Export Dialog & Preferences (`export/dialog.py`, `playback_preferences.py`)
+-------------------------------------------------------------------------------------------------------------
+- Added "⇅ Reorder…" button directly in Destination section of Unified Export Center.
+- Added "Customize Export Destinations Order…" button in `Preferences > Batch & Export`.
+
+[x] 2.3 Non-Blocking OAuth Progress Indicator (`plugins/gdocs/auth.py`)
+-----------------------------------------------------------------------
+- Wrapped loopback HTTP authentication server wait loop in a parented `QProgressDialog` with Cancel button, preventing UI lockups.
+
+[x] 2.4 Google Cloud 403 / Access Denied Guidance (`plugins/gdocs/auth.py`, `plugins/gdocs/plugin.py`)
+-------------------------------------------------------------------------------------------------------
+- Detected 403 `access_denied` errors during OAuth handshake and provided direct instructions and deep links to Google Cloud Console Audience / Test Users configuration.
+
+[x] 2.5 Responsive Export Layout & Form Factor (`export/dialog.py`, `plugins/gdocs/export_destination.py`)
+-----------------------------------------------------------------------------------------------------------
+- Wrapped Google Docs options in a dedicated scroll container, expanded default window height (`860x700`), and streamlined destination title to "Google Docs".
 
 ================================================================================
 3. UPCOMING MILESTONE: ACOUSTIC VOICE PROFILE MATCHER & RE-CLUSTERING [PLANNED for v3.7.0]

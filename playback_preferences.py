@@ -1290,10 +1290,13 @@ class PlaybackPreferencesMixin:
         categories = ["General", "Keyboard Shortcuts", "Audio Hardware", "Updates & GitHub", "AI Models", "GPU Acceleration", "Playback & Timeline", "Detection", "Batch Processing", "Cleanup Data"]
         show_wp = hasattr(self, "plugin_manager") and self.plugin_manager.is_plugin_enabled("wordpress")
         show_yt = hasattr(self, "plugin_manager") and self.plugin_manager.is_plugin_enabled("youtube")
+        show_gd = hasattr(self, "plugin_manager") and self.plugin_manager.is_plugin_enabled("gdocs")
         if show_wp:
             categories.append("WordPress")
         if show_yt:
             categories.append("YouTube")
+        if show_gd:
+            categories.append("Google Docs")
 
         for cat in categories:
             cat_list.addItem(QListWidgetItem(cat))
@@ -2006,6 +2009,19 @@ class PlaybackPreferencesMixin:
         batch_time_chk.setChecked(str(self.settings_store.value("batch_opt_include_times", "false")).lower() in {"1", "true", "yes"})
         batch_form.addRow("Timestamps:", batch_time_chk)
 
+        # Export Destination Ordering
+        reorder_dest_btn = QPushButton("Customize Export Destinations Order…")
+        reorder_dest_btn.setToolTip("Customize the default display order of destinations in the Export dialog (Local Files, WordPress, Google Docs, YouTube Studio).")
+        def _on_reorder_dest_prefs():
+            try:
+                from export.dialog import ReorderExportDestinationsDialog
+                dlg = ReorderExportDestinationsDialog(dialog)
+                dlg.exec()
+            except Exception as exc:
+                QMessageBox.critical(dialog, "Error", f"Failed to open Destination Ordering dialog:\n\n{exc}")
+        reorder_dest_btn.clicked.connect(_on_reorder_dest_prefs)
+        batch_form.addRow("Destinations Order:", reorder_dest_btn)
+
         # Reset buttons
         batch_reset_btn = QPushButton("Reset Batch Add Files Location")
         batch_reset_btn.setToolTip("Forget the last directory used by Batch Processing > Add Files and return to the normal default location.")
@@ -2353,6 +2369,17 @@ class PlaybackPreferencesMixin:
             except Exception as exc:
                 print(f"[PREFERENCES] Failed to load YouTube settings page: {exc}")
 
+        # 10. Google Docs Page (Dynamically loaded from gdocs plugin when enabled)
+        page_gd = None
+        if show_gd and hasattr(self, "plugin_manager") and self.plugin_manager:
+            gd_plugin = self.plugin_manager.plugins.get("gdocs")
+            if gd_plugin and hasattr(gd_plugin, "get_preferences_widget"):
+                page_gd = gd_plugin.get_preferences_widget(dialog)
+                if page_gd:
+                    if page_gd.layout():
+                        _add_custom_defaults_btn(page_gd.layout(), "Google Docs & Drive")
+                    stack.addWidget(page_gd)
+
         content_layout.addWidget(stack, 1)
         main_layout.addLayout(content_layout)
 
@@ -2389,6 +2416,11 @@ class PlaybackPreferencesMixin:
             "cache": "cleanup data",
             "wordpress": "wordpress",
             "youtube": "youtube",
+            "gdocs": "google docs",
+            "google docs": "google docs",
+            "googledocs": "google docs",
+            "google": "google docs",
+            "drive": "google docs",
         }
         requested = str(initial_category).strip().lower() if initial_category else "general"
         target = aliases.get(requested, requested)
@@ -2659,6 +2691,14 @@ class PlaybackPreferencesMixin:
             # Save WordPress preferences if plugin page was loaded and active
             if show_wp and page_wp and hasattr(page_wp, "save_preferences"):
                 page_wp.save_preferences(dialog)
+
+            # Save Google Docs preferences if plugin page was loaded and active
+            if show_gd and page_gd and hasattr(page_gd, "save_preferences"):
+                page_gd.save_preferences(dialog)
+            elif show_gd and hasattr(self, "plugin_manager") and self.plugin_manager:
+                gd_plugin = self.plugin_manager.plugins.get("gdocs")
+                if gd_plugin and hasattr(gd_plugin, "save_preferences") and page_gd:
+                    gd_plugin.save_preferences(page_gd)
             
 
             if show_yt and yt_cat_combo:

@@ -59,7 +59,7 @@ try:
 except ImportError as e:
     print(f"[BUILD] Warning: Could not import prs_shared ({e}), using fallback values")
     APP_DISPLAY_NAME = "Radio & TV Segmenter"
-    PROJECT_VERSION = "3.6.4-beta"
+    PROJECT_VERSION = "3.6.5-beta"
 except Exception as e:
     print(f"[BUILD] Unexpected error importing prs_shared: {type(e).__name__}: {e}")
     raise
@@ -563,6 +563,12 @@ def parse_build_args():
         help="Include Language Translation plugin.",
     )
     parser.add_argument(
+        "--plugin-gdocs",
+        type=lambda x: str(x).lower() in ("true", "1", "yes"),
+        default=os.environ.get("BUILD_PLUGIN_GDOCS", "true").lower() in ("true", "1", "yes"),
+        help="Include Google Docs & Drive Exporter plugin.",
+    )
+    parser.add_argument(
         "--installer",
         action="store_true",
         help="Force compilation of Windows setup installer executable.",
@@ -585,18 +591,27 @@ def parse_build_args():
             args.plugin_wordpress = True
             args.plugin_youtube = False
             args.plugin_translation = False
+            args.plugin_gdocs = False
         elif p == "youtube":
             args.plugin_wordpress = False
             args.plugin_youtube = True
             args.plugin_translation = False
+            args.plugin_gdocs = False
         elif p == "translation":
             args.plugin_wordpress = False
             args.plugin_youtube = False
             args.plugin_translation = True
+            args.plugin_gdocs = False
+        elif p in ("gdocs", "google_docs", "googledocs"):
+            args.plugin_wordpress = False
+            args.plugin_youtube = False
+            args.plugin_translation = False
+            args.plugin_gdocs = True
         elif p in ("all", "plugins"):
             args.plugin_wordpress = True
             args.plugin_youtube = True
             args.plugin_translation = True
+            args.plugin_gdocs = True
         if str(args.target).strip().lower() == "all" and p not in ("all",):
             args.target = "plugins"
     return args
@@ -607,6 +622,7 @@ def package_plugins(
     include_wp: bool = True,
     include_yt: bool = True,
     include_tr: bool = True,
+    include_gd: bool = True,
 ) -> list[Path]:
     """Package plugins into standalone .zip release artifacts in dist/plugins/
     and optionally bundle them into app_root/plugins/.
@@ -620,6 +636,7 @@ def package_plugins(
         ("wordpress", include_wp),
         ("youtube", include_yt),
         ("translation", include_tr),
+        ("gdocs", include_gd),
     ]
 
     for plugin_id, enabled in plugin_configs:
@@ -699,6 +716,7 @@ def main() -> None:
             include_wp=args.plugin_wordpress,
             include_yt=args.plugin_youtube,
             include_tr=args.plugin_translation,
+            include_gd=args.plugin_gdocs,
         )
         print(f"\n[SUCCESS] Packaged {len(zips)} plugins into dist/plugins/:")
         for z in zips:
@@ -911,6 +929,7 @@ def main() -> None:
             include_wp=args.plugin_wordpress,
             include_yt=args.plugin_youtube,
             include_tr=args.plugin_translation,
+            include_gd=args.plugin_gdocs,
         )
     elif is_core_only:
         print("[BUILD] Target: 'Core App Only'. Omitting bundled plugins from installer.")

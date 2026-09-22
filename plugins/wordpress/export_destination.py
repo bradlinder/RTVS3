@@ -112,7 +112,7 @@ class WordPressExportTabWidget(QWidget):
         wp_layout.setSpacing(10)
 
         self.wp_info_section = CollapsibleSection("WordPress Post Configuration", self, is_expanded=True, subtitle="Title, Excerpt, Authors, Categories")
-        if self.metadata_editor_mode:
+        if getattr(self, "metadata_editor_mode", False):
             wp_notice = QLabel(
                 "Configure WordPress post titles, excerpts, authors, categories, and featured images "
                 "for the full episode and all stories. Changes are saved directly to your project."
@@ -552,7 +552,7 @@ class WordPressExportTabWidget(QWidget):
         self.wp_crosslink_section.add_layout(crosslink_layout)
         wp_layout.addWidget(self.wp_crosslink_section)
 
-        if self.metadata_editor_mode:
+        if getattr(self, "metadata_editor_mode", False):
             self.wp_lang_section.setVisible(False)
             self.wp_custom_section.setVisible(False)
             self.wp_crosslink_section.setVisible(False)
@@ -1228,7 +1228,7 @@ class WordPressExportTabWidget(QWidget):
             self.wp_thumb_preview_label.setPixmap(pix)
 
     def rebuild_post_items(self, scope: Optional[str] = None):
-        if self.metadata_editor_mode:
+        if getattr(self, "metadata_editor_mode", False):
             scope = "full_and_all_stories"
         elif scope is None:
             dlg = self.window()

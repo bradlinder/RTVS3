@@ -11,6 +11,7 @@ from typing import Any, Dict, List, Optional, Tuple
 try:
     from PySide6.QtCore import Qt, QSettings, QEvent
     from PySide6.QtWidgets import (
+        QAbstractItemView,
         QButtonGroup,
         QCheckBox,
         QComboBox,
@@ -20,6 +21,8 @@ try:
         QHBoxLayout,
         QLabel,
         QLineEdit,
+        QListWidget,
+        QListWidgetItem,
         QMessageBox,
         QPushButton,
         QRadioButton,
@@ -46,6 +49,181 @@ from prs_shared import (
 from plugins.base import ExportDestination
 
 
+DEFAULT_EXPORT_DESTINATIONS_ORDER = ["local", "wordpress", "gdocs", "youtube"]
+
+
+def get_export_destinations_order() -> List[str]:
+    """Retrieve user-configured export destination ordering."""
+    if not QSettings:
+        return list(DEFAULT_EXPORT_DESTINATIONS_ORDER)
+    settings = QSettings(INTERNAL_APP_ID, INTERNAL_APP_ID)
+    raw = settings.value("export_destinations_order", None)
+    if raw:
+        if isinstance(raw, list):
+            return [str(x) for x in raw]
+        elif isinstance(raw, str):
+            return [x.strip() for x in raw.split(",") if x.strip()]
+    return list(DEFAULT_EXPORT_DESTINATIONS_ORDER)
+
+
+def save_export_destinations_order(order: List[str]) -> None:
+    """Persist user-configured export destination ordering."""
+    if not QSettings:
+        return
+    settings = QSettings(INTERNAL_APP_ID, INTERNAL_APP_ID)
+    settings.setValue("export_destinations_order", order)
+
+
+class ReorderExportDestinationsDialog(QDialog):
+    """Dialog allowing the user to reorder export destinations via drag-and-drop or Move Up/Down."""
+
+    def __init__(self, parent: Optional[QWidget] = None, available_dests: Optional[List[Tuple[str, str]]] = None):
+        super().__init__(parent)
+        self.setWindowTitle("Customize Export Destinations Order")
+        self.resize(460, 360)
+        self.setMinimumSize(400, 300)
+
+        # available_dests is a list of (dest_id, dest_title)
+        self.available_dests = available_dests or [
+            ("local", "Local Files (Media & Transcripts)"),
+            ("wordpress", "WordPress Draft Post"),
+            ("gdocs", "Google Docs"),
+            ("youtube", "YouTube Studio (Assisted Upload)"),
+        ]
+
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(14, 14, 14, 14)
+        layout.setSpacing(10)
+
+        info_lbl = QLabel(
+            "Drag and drop destinations to customize their display order in the Export window, "
+            "or use the <b>Move Up</b> / <b>Move Down</b> buttons:"
+        )
+        info_lbl.setWordWrap(True)
+        info_lbl.setStyleSheet("color: #cbd5e1; font-size: 12px;")
+        layout.addWidget(info_lbl)
+
+        content_row = QHBoxLayout()
+        self.list_widget = QListWidget(self)
+        self.list_widget.setDragDropMode(QAbstractItemView.DragDropMode.InternalMove)
+        self.list_widget.setDefaultDropAction(Qt.DropAction.MoveAction)
+        self.list_widget.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
+        self.list_widget.setStyleSheet("""
+            QListWidget {
+                background-color: #1e293b;
+                border: 1px solid #334155;
+                border-radius: 6px;
+                padding: 4px;
+                color: #f8fafc;
+                font-size: 13px;
+            }
+            QListWidget::item {
+                padding: 8px 10px;
+                border-bottom: 1px solid #334155;
+                border-radius: 4px;
+                margin-bottom: 2px;
+            }
+            QListWidget::item:selected {
+                background-color: #0284c7;
+                color: #ffffff;
+                font-weight: bold;
+            }
+        """)
+
+        # Populate according to current saved order
+        current_order = get_export_destinations_order()
+        dest_map = {d_id: title for d_id, title in self.available_dests}
+
+        # First add items in current_order
+        added_ids = set()
+        for d_id in current_order:
+            if d_id in dest_map:
+                item = QListWidgetItem(f"☰  {dest_map[d_id]}")
+                item.setData(Qt.ItemDataRole.UserRole, d_id)
+                self.list_widget.addItem(item)
+                added_ids.add(d_id)
+
+        # Then add any missing available destinations
+        for d_id, title in self.available_dests:
+            if d_id not in added_ids:
+                item = QListWidgetItem(f"☰  {title}")
+                item.setData(Qt.ItemDataRole.UserRole, d_id)
+                self.list_widget.addItem(item)
+
+        content_row.addWidget(self.list_widget, 1)
+
+        # Buttons on the right: Move Up, Move Down, Reset
+        btn_col = QVBoxLayout()
+        btn_col.setSpacing(6)
+
+        self.up_btn = QPushButton("▲ Move Up")
+        self.up_btn.clicked.connect(self._move_up)
+        btn_col.addWidget(self.up_btn)
+
+        self.down_btn = QPushButton("▼ Move Down")
+        self.down_btn.clicked.connect(self._move_down)
+        btn_col.addWidget(self.down_btn)
+
+        btn_col.addSpacing(10)
+        self.reset_btn = QPushButton("Reset Default")
+        self.reset_btn.setToolTip("Reset order to: Local, WordPress, Google Docs, YouTube Studio")
+        self.reset_btn.clicked.connect(self._reset_default)
+        btn_col.addWidget(self.reset_btn)
+
+        btn_col.addStretch()
+        content_row.addLayout(btn_col)
+        layout.addLayout(content_row)
+
+        # Dialog buttons (Save Order, Cancel)
+        btn_box = QHBoxLayout()
+        btn_box.addStretch()
+        self.ok_btn = QPushButton("Save Order")
+        self.ok_btn.setDefault(True)
+        self.ok_btn.clicked.connect(self._save_and_accept)
+        self.cancel_btn = QPushButton("Cancel")
+        self.cancel_btn.clicked.connect(self.reject)
+        btn_box.addWidget(self.ok_btn)
+        btn_box.addWidget(self.cancel_btn)
+        layout.addLayout(btn_box)
+
+    def _move_up(self):
+        row = self.list_widget.currentRow()
+        if row > 0:
+            item = self.list_widget.takeItem(row)
+            self.list_widget.insertItem(row - 1, item)
+            self.list_widget.setCurrentRow(row - 1)
+
+    def _move_down(self):
+        row = self.list_widget.currentRow()
+        if row >= 0 and row < self.list_widget.count() - 1:
+            item = self.list_widget.takeItem(row)
+            self.list_widget.insertItem(row + 1, item)
+            self.list_widget.setCurrentRow(row + 1)
+
+    def _reset_default(self):
+        self.list_widget.clear()
+        dest_map = {d_id: title for d_id, title in self.available_dests}
+        for d_id in DEFAULT_EXPORT_DESTINATIONS_ORDER:
+            if d_id in dest_map:
+                item = QListWidgetItem(f"☰  {dest_map[d_id]}")
+                item.setData(Qt.ItemDataRole.UserRole, d_id)
+                self.list_widget.addItem(item)
+        for d_id, title in self.available_dests:
+            if d_id not in DEFAULT_EXPORT_DESTINATIONS_ORDER:
+                item = QListWidgetItem(f"☰  {title}")
+                item.setData(Qt.ItemDataRole.UserRole, d_id)
+                self.list_widget.addItem(item)
+
+    def _save_and_accept(self):
+        order = []
+        for i in range(self.list_widget.count()):
+            d_id = self.list_widget.item(i).data(Qt.ItemDataRole.UserRole)
+            if d_id:
+                order.append(str(d_id))
+        save_export_destinations_order(order)
+        self.accept()
+
+
 class UnifiedExportDialog(QDialog):
     """Unified Export Center supporting Local Files and dynamic plugin destinations."""
 
@@ -56,9 +234,10 @@ class UnifiedExportDialog(QDialog):
         self.setWindowFlags(self.windowFlags() | Qt.WindowType.WindowMaximizeButtonHint | Qt.WindowType.WindowMinimizeButtonHint)
         self.setSizeGripEnabled(True)
         self.setMinimumWidth(780)
-        self.setMinimumHeight(520)
-        self.resize(840, 620)
+        self.setMinimumHeight(560)
+        self.resize(860, 700)
 
+        self._dest_entries: List[Dict[str, Any]] = []
         self._plugin_destinations: List[Tuple[QRadioButton, ExportDestination, QWidget]] = []
         self._temp_preview_files = set()
 
@@ -119,13 +298,8 @@ class UnifiedExportDialog(QDialog):
 
         # Export Destination Selection
         self.dest_section = CollapsibleSection("Export Destination", self, is_expanded=True)
-        dest_content_layout = QHBoxLayout()
+        self.dest_content_layout = QHBoxLayout()
         self.dest_button_group = QButtonGroup(self)
-
-        self.radio_local = QRadioButton("Local Files (Media && Transcripts)")
-        self.radio_local.setChecked(True)
-        self.dest_button_group.addButton(self.radio_local)
-        dest_content_layout.addWidget(self.radio_local)
 
         # Scope Selection
         is_music = getattr(self.main_window, "story_detection_mode", "voice") == "music"
@@ -156,33 +330,164 @@ class UnifiedExportDialog(QDialog):
         # Stacked Widget for Destinations
         self.stacked_widget = QStackedWidget()
 
-        # Page 0: Local Files
-        local_page = self._create_local_page()
-        self.stacked_widget.addWidget(local_page)
+        # Bottom Buttons & Actions initialized early to prevent AttributeError during destination setup
+        self.export_btn = QPushButton("Export Files...")
+        self.export_btn.setDefault(True)
+        self.save_defaults_btn = QPushButton("Save Options as Default")
+        self.save_defaults_btn.setToolTip("Save the current export options as the default for future exports.")
+        self.cancel_btn = QPushButton("Cancel")
 
-        # Dynamically discover plugin destinations
+        # Build Destination Radio Buttons and Pages
+        self.radio_local = QRadioButton("Local Files (Media && Transcripts)")
+        self.local_page = self._create_local_page()
+        self.stacked_widget.addWidget(self.local_page)
+
+        self._build_destinations_layout()
+        self.dest_section.add_layout(self.dest_content_layout)
+
+        layout.addWidget(self.stacked_widget)
+
+        self.scope_combo.currentIndexChanged.connect(self._on_scope_changed)
+
+        # Bottom Buttons layout
+        btns = QHBoxLayout()
+        btns.addWidget(self.save_defaults_btn)
+        btns.addStretch()
+        btns.addWidget(self.export_btn)
+        btns.addWidget(self.cancel_btn)
+        layout.addLayout(btns)
+
+        self.save_defaults_btn.clicked.connect(lambda: self.save_options_to_settings(as_default=True))
+        self.cancel_btn.clicked.connect(self.reject)
+        self.export_btn.clicked.connect(self._handle_accept)
+
+        self._load_saved_options()
+
+        # Handle initial_dest routing
+        if initial_dest:
+            for entry in self._dest_entries:
+                if entry["id"] == initial_dest:
+                    entry["radio"].setChecked(True)
+                    break
+
+        self._on_dest_changed()
+
+    def _build_destinations_layout(self):
+        """Construct destination radio buttons in customized user order."""
+        # Clear existing buttons in dest_content_layout
+        while self.dest_content_layout.count():
+            item = self.dest_content_layout.takeAt(0)
+            if item.widget():
+                item.widget().setParent(None)
+
+        # Discover plugin destinations
         plugin_mgr = getattr(self.main_window, "plugin_manager", None)
         registered_dests: List[ExportDestination] = []
         if plugin_mgr and hasattr(plugin_mgr, "get_export_destinations"):
             registered_dests = plugin_mgr.get_export_destinations()
 
-        for dest in registered_dests:
-            radio = QRadioButton(dest.title)
-            self.dest_button_group.addButton(radio)
-            dest_content_layout.addWidget(radio)
+        # Prepare registry of all available destinations
+        # Format: {"id": str, "title": str, "radio": QRadioButton, "page": QWidget, "dest_obj": Optional[ExportDestination]}
+        raw_entries = []
+        
+        # Local
+        raw_entries.append({
+            "id": "local",
+            "title": "Local Files (Media && Transcripts)",
+            "clean_title": "Local Files (Media & Transcripts)",
+            "radio": self.radio_local,
+            "page": self.local_page,
+            "dest_obj": None,
+        })
 
-            page_widget = dest.create_widget(self.stacked_widget, self.main_window)
-            self.stacked_widget.addWidget(page_widget)
-            self._plugin_destinations.append((radio, dest, page_widget))
+        # Plugin destinations
+        self._plugin_destinations = []
+        for dest in registered_dests:
+            # Check if page already exists or create new
+            page = None
+            for entry in getattr(self, "_dest_entries", []):
+                if entry["id"] == dest.id and entry.get("page"):
+                    page = entry["page"]
+                    break
+            if page is None:
+                page = dest.create_widget(self.stacked_widget, self.main_window)
+                self.stacked_widget.addWidget(page)
+
+            clean_t = dest.title.replace("&&", "&")
+            radio = QRadioButton(clean_t)
+            raw_entries.append({
+                "id": dest.id,
+                "title": clean_t,
+                "clean_title": clean_t,
+                "radio": radio,
+                "page": page,
+                "dest_obj": dest,
+            })
+            self._plugin_destinations.append((radio, dest, page))
+
+        # Order entries according to user preferences
+        order = get_export_destinations_order()
+        order_index_map = {d_id: i for i, d_id in enumerate(order)}
+
+        def _sort_key(e):
+            return order_index_map.get(e["id"], 999)
+
+        sorted_entries = sorted(raw_entries, key=_sort_key)
+        self._dest_entries = sorted_entries
+
+        # Add to button group and layout
+        for entry in sorted_entries:
+            radio = entry["radio"]
+            self.dest_button_group.addButton(radio)
+            self.dest_content_layout.addWidget(radio)
             radio.toggled.connect(self._on_dest_changed)
 
-        self.dest_section.add_layout(dest_content_layout)
-        if not registered_dests:
-            self.dest_section.setVisible(False)
+        # Add Reorder Button
+        self.reorder_dests_btn = QPushButton("⇅ Reorder…")
+        self.reorder_dests_btn.setToolTip("Customize the display order of export destinations")
+        self.reorder_dests_btn.setStyleSheet("""
+            QPushButton {
+                background-color: transparent;
+                color: #0284c7;
+                border: 1px solid #0284c7;
+                border-radius: 4px;
+                padding: 2px 8px;
+                font-size: 11px;
+                font-weight: 500;
+            }
+            QPushButton:hover {
+                background-color: #0284c7;
+                color: #ffffff;
+            }
+        """)
+        self.reorder_dests_btn.clicked.connect(self._on_reorder_destinations)
+        self.dest_content_layout.addStretch()
+        self.dest_content_layout.addWidget(self.reorder_dests_btn)
 
-        layout.addWidget(self.stacked_widget)
+        # Select first destination if none selected
+        if not any(e["radio"].isChecked() for e in sorted_entries):
+            sorted_entries[0]["radio"].setChecked(True)
 
-        self.radio_local.toggled.connect(self._on_dest_changed)
+    def _on_reorder_destinations(self):
+        """Open reorder dialog and rebuild layout on change."""
+        available = [(e["id"], e["clean_title"]) for e in self._dest_entries]
+        dlg = ReorderExportDestinationsDialog(self, available_dests=available)
+        if dlg.exec() == QDialog.DialogCode.Accepted:
+            # Remember currently checked ID
+            current_id = "local"
+            for e in self._dest_entries:
+                if e["radio"].isChecked():
+                    current_id = e["id"]
+                    break
+
+            self._build_destinations_layout()
+
+            # Restore checked ID
+            for e in self._dest_entries:
+                if e["id"] == current_id:
+                    e["radio"].setChecked(True)
+                    break
+            self._on_dest_changed()
         self.scope_combo.currentIndexChanged.connect(self._on_scope_changed)
 
         # Bottom Buttons
@@ -482,16 +787,16 @@ class UnifiedExportDialog(QDialog):
         self.toggle_all_btn.setText("▾ Collapse All" if new_state else "▸ Expand All")
 
     def _on_dest_changed(self):
-        if self.radio_local.isChecked():
-            self.stacked_widget.setCurrentIndex(0)
-            self.export_btn.setText("Export Files...")
-            return
-
-        for radio, dest, widget in self._plugin_destinations:
-            if radio.isChecked():
-                self.stacked_widget.setCurrentWidget(widget)
-                btn_lbl = getattr(dest, "button_label", None) or f"Export {getattr(dest, 'title', 'Files')}..."
-                self.export_btn.setText(btn_lbl)
+        for entry in self._dest_entries:
+            if entry["radio"].isChecked():
+                self.stacked_widget.setCurrentWidget(entry["page"])
+                if hasattr(self, "export_btn") and self.export_btn:
+                    if entry["id"] == "local":
+                        self.export_btn.setText("Export Files...")
+                    else:
+                        dest = entry.get("dest_obj")
+                        btn_lbl = getattr(dest, "button_label", None) or f"Export to {getattr(dest, 'title', 'Destination')}..."
+                        self.export_btn.setText(btn_lbl)
                 break
 
     def _on_scope_changed(self):

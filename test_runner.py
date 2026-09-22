@@ -998,6 +998,7 @@ class DiagnosticEngine:
 
         # Instantiate a mock widget object to exercise rebuild_post_items
         mock_widget = type("MockWpWidget", (), {})()
+        mock_widget.metadata_editor_mode = False
         mock_widget.main_window = DummyMainWindow()
         mock_widget.wp_post_items = []
         mock_widget.wp_post_items_list = []
@@ -1694,9 +1695,20 @@ class DiagnosticEngine:
             document_title="Test News Broadcast",
             stories=[{"title": "Lead Story", "start": 0.0, "end": 10.0, "notes": "Fact check date"}],
             transcript_segments=[{"start": 0.0, "end": 10.0, "speaker": "HOST", "text": "Good evening."}],
+            bold_speakers=True,
+            secondary_segments=[{"start": 0.0, "end": 10.0, "speaker": "HOST", "text": "Buenas noches."}],
+            secondary_title="Spanish Translation",
         )
         if len(reqs) < 3 or len(anchors) != 1:
             raise AssertionError(f"GoogleDocsSerializer failed to produce expected batch update requests or anchors: reqs={len(reqs)}, anchors={len(anchors)}")
+
+        # Check that bold_speakers is set to True in text styles
+        has_bold_spk = any(
+            r.get("updateTextStyle", {}).get("textStyle", {}).get("bold") is True
+            for r in reqs
+        )
+        if not has_bold_spk:
+            raise AssertionError("GoogleDocsSerializer failed to apply bold text style to speaker labels")
 
         # Validate diff computation
         diffs = compute_segment_diffs([{"text": "Good evening."}], "Good evening everyone.")

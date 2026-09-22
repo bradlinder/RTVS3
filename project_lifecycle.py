@@ -644,24 +644,41 @@ class ProjectLifecycleMixin:
         if purge_transcript:
             self.transcript = None
             self.transcript_notes = ""
+            if hasattr(self, "transcription_result_received"):
+                self.transcription_result_received = False
+            if hasattr(self, "processing_status") and isinstance(self.processing_status, dict):
+                self.processing_status["transcription"] = False
             if hasattr(self, "transcript_view") and self.transcript_view:
                 self.transcript_view.clear()
                 self.transcript_view.set_char_timestamp_map([])
             if hasattr(self, "comments_panel") and self.comments_panel:
                 self.comments_panel.set_comments([])
+            self.pipeline_active = False
+            self.pipeline_queue = []
+            self.pipeline_rerun_confirmed = False
             purged_items.append("Transcripción y palabras" if is_es else "Transcript & Words")
 
         if purge_translations:
             self.translations = {}
             self.translation_display_mode = "en"
+            if hasattr(self, "processing_status") and isinstance(self.processing_status, dict):
+                self.processing_status["translation"] = False
             if hasattr(self, "update_translation_language_selector"):
                 self.update_translation_language_selector()
             purged_items.append("Traducciones" if is_es else "Translations")
 
         if purge_speakers:
             self.diarization = None
+            self.diarization_result = None
             self.speaker_names = {}
             self.segment_speaker_overrides = {}
+            self._diar_index_key = None
+            self._diar_sorted_segments = None
+            self._diar_speaker_labels = set()
+            self.pending_diarization = False
+            self.pipeline_speaker_detection_requested = False
+            if hasattr(self, "processing_status") and isinstance(self.processing_status, dict):
+                self.processing_status["diarization"] = False
             if hasattr(self, "speaker_status") and self.speaker_status:
                 self.speaker_status.setText("Speaker detection has not been run." if not is_es else "No se ha ejecutado la detección de hablantes.")
             # If transcript is kept, strip speaker annotations from segments
@@ -674,6 +691,8 @@ class ProjectLifecycleMixin:
         if purge_stories:
             self.stories = []
             self.current_selected_story_indices = []
+            if hasattr(self, "processing_status") and isinstance(self.processing_status, dict):
+                self.processing_status["stories"] = False
             if hasattr(self, "timeline") and self.timeline:
                 self.timeline.set_stories([])
             if hasattr(self, "refresh_story_list"):

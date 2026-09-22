@@ -713,16 +713,25 @@ class ProcessingMixin:
 
         completed = []
         for s in stages:
-            data = {
-                "transcription": self.transcript,
-                "diarization": self.diarization or getattr(self, "diarization_result", None),
-                "stories": self.stories,
-                "translation": getattr(self, "translations", {}),
-            }.get(s)
-            status = self.processing_status.get(s, False)
-            if data or status:
-                label = stage_labels.get(s, s.title())
-                completed.append((s, label))
+            has_data = False
+            if s == "transcription":
+                has_data = bool(self.transcript and (self.transcript.get("segments") if isinstance(self.transcript, dict) else self.transcript))
+            elif s == "diarization":
+                has_transcript_segs = bool(self.transcript and (self.transcript.get("segments") if isinstance(self.transcript, dict) else self.transcript))
+                has_diar_data = bool(self.diarization or getattr(self, "diarization_result", None))
+                has_data = bool(has_transcript_segs and has_diar_data)
+            elif s == "stories":
+                has_data = bool(self.stories)
+            elif s == "translation":
+                has_data = bool(getattr(self, "translations", {}))
+
+            if not has_data:
+                if hasattr(self, "processing_status") and isinstance(self.processing_status, dict):
+                    self.processing_status[s] = False
+                continue
+
+            label = stage_labels.get(s, s.title())
+            completed.append((s, label))
 
         if not completed:
             self.pipeline_rerun_confirmed = True
@@ -859,14 +868,22 @@ class ProcessingMixin:
 
     def _processing_choice(self, kind):
         """Return: run, continue, start_over, or cancel based on current state."""
-        status = self.processing_status.get(kind, False)
-        data = {
-            "transcription": self.transcript,
-            "diarization": self.diarization,
-            "translation": getattr(self, "translations", {}),
-        }.get(kind)
-        if not data:
+        has_data = False
+        if kind == "transcription":
+            has_data = bool(self.transcript and (self.transcript.get("segments") if isinstance(self.transcript, dict) else self.transcript))
+        elif kind == "diarization":
+            has_transcript_segs = bool(self.transcript and (self.transcript.get("segments") if isinstance(self.transcript, dict) else self.transcript))
+            has_diar_data = bool(self.diarization or getattr(self, "diarization_result", None))
+            has_data = bool(has_transcript_segs and has_diar_data)
+        elif kind == "translation":
+            has_data = bool(getattr(self, "translations", {}))
+
+        if not has_data:
+            if hasattr(self, "processing_status") and isinstance(self.processing_status, dict):
+                self.processing_status[kind] = False
             return "run"
+
+        status = self.processing_status.get(kind, False)
         complete = bool(status)
         if complete:
             answer = QMessageBox.question(

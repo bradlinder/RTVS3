@@ -30,6 +30,10 @@ on:
         description: 'Include Plugin: Language Translation'
         type: boolean
         default: true
+      plugin_gdocs:
+        description: 'Include Plugin: Google Docs & Drive Exporter'
+        type: boolean
+        default: true
       create_release:
         description: 'Publish as a GitHub Release'
         type: boolean
@@ -60,7 +64,8 @@ jobs:
       github.event_name == 'push' ||
       inputs.plugin_wordpress ||
       inputs.plugin_youtube ||
-      inputs.plugin_translation
+      inputs.plugin_translation ||
+      inputs.plugin_gdocs
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -99,6 +104,7 @@ jobs:
           BUILD_PLUGIN_WORDPRESS: ${{ inputs.plugin_wordpress != false }}
           BUILD_PLUGIN_YOUTUBE: ${{ inputs.plugin_youtube != false }}
           BUILD_PLUGIN_TRANSLATION: ${{ inputs.plugin_translation != false }}
+          BUILD_PLUGIN_GDOCS: ${{ inputs.plugin_gdocs != false }}
         run: python3 build_installer.py --target plugins
 
       - name: Stage Plugins Artifacts
@@ -217,6 +223,7 @@ jobs:
           BUILD_PLUGIN_WORDPRESS: ${{ inputs.plugin_wordpress != false }}
           BUILD_PLUGIN_YOUTUBE: ${{ inputs.plugin_youtube != false }}
           BUILD_PLUGIN_TRANSLATION: ${{ inputs.plugin_translation != false }}
+          BUILD_PLUGIN_GDOCS: ${{ inputs.plugin_gdocs != false }}
         run: python build_installer.py --no-installer
 
       - name: Compile Inno Setup Installer
@@ -358,6 +365,7 @@ jobs:
           BUILD_PLUGIN_WORDPRESS: ${{ inputs.plugin_wordpress != false }}
           BUILD_PLUGIN_YOUTUBE: ${{ inputs.plugin_youtube != false }}
           BUILD_PLUGIN_TRANSLATION: ${{ inputs.plugin_translation != false }}
+          BUILD_PLUGIN_GDOCS: ${{ inputs.plugin_gdocs != false }}
         run: python3 build_installer.py
 
       - name: Package .app into .dmg
@@ -447,6 +455,7 @@ jobs:
           BUILD_PLUGIN_WORDPRESS: ${{ inputs.plugin_wordpress != false }}
           BUILD_PLUGIN_YOUTUBE: ${{ inputs.plugin_youtube != false }}
           BUILD_PLUGIN_TRANSLATION: ${{ inputs.plugin_translation != false }}
+          BUILD_PLUGIN_GDOCS: ${{ inputs.plugin_gdocs != false }}
         run: python3 build_installer.py
 
       - name: Package Debian (.deb) & Distributable Tarball (.tar.gz)

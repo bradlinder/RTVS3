@@ -22,8 +22,11 @@ from pathlib import Path
 from typing import Any, Dict, Optional, Tuple
 
 try:
-    from PySide6.QtCore import QSettings
+    from PySide6.QtCore import QSettings, QCoreApplication, Qt
+    from PySide6.QtWidgets import QProgressDialog, QApplication, QMessageBox, QWidget
+    QT_AVAILABLE = True
 except ImportError:
+    QT_AVAILABLE = False
     # Minimal fallback for headless or test environments
     class QSettings:  # type: ignore
         def __init__(self, *args, **kwargs):
@@ -52,8 +55,27 @@ DEFAULT_SCOPES = [
 
 # Default desktop client ID for open-source broadcast news segmenter tooling
 # Users can also supply their own Google Cloud Console client credentials in Preferences
-DEFAULT_CLIENT_ID = "602371983794-rtvs-desktop-oauth.apps.googleusercontent.com"
+DEFAULT_CLIENT_ID = ""
 DEFAULT_CLIENT_SECRET = ""
+
+
+def parse_google_credentials_json(data_or_path: str) -> Tuple[Optional[str], Optional[str], Optional[str]]:
+    """Extract (client_id, client_secret, project_id) from Google credentials.json content or path."""
+    import json
+    from pathlib import Path
+    try:
+        raw_text = data_or_path.strip()
+        p = Path(raw_text)
+        if p.exists() and p.is_file():
+            raw_text = p.read_text(encoding="utf-8")
+        parsed = json.loads(raw_text)
+        client_info = parsed.get("installed") or parsed.get("web") or parsed
+        cid = client_info.get("client_id")
+        csec = client_info.get("client_secret")
+        proj_id = client_info.get("project_id")
+        return cid, csec, proj_id
+    except Exception:
+        return None, None, None
 
 
 def _get_keyring():
@@ -322,11 +344,18 @@ class GoogleDocsAuthManager:
 
         return False
 
-    def start_loopback_auth(self, port: int = 8085, timeout: int = 120) -> Tuple[bool, str]:
+    def start_loopback_auth(self, parent_widget: Optional[Any] = None, port: int = 8085, timeout: int = 120) -> Tuple[bool, str]:
         """Start local loopback server, launch system browser, and capture OAuth code."""
         client_id, client_secret = self.get_client_credentials()
-        if not client_id:
-            return False, "Google OAuth Client ID is missing. Please configure it in Preferences."
+        if not client_id or not client_id.strip() or "rtvs-desktop-oauth" in client_id:
+            return (
+                False,
+                "A Google OAuth Client ID is required.\n\n"
+                "To set this up (takes ~1 minute, free, no web hosting needed):\n"
+                "1. Go to Google Cloud Console (console.cloud.google.com)\n"
+                "2. Create an OAuth Client ID for 'Desktop app'\n"
+                "3. Click 'Import credentials.json...' in Preferences (or paste your Client ID)."
+            )
 
         # Find available port starting from requested port
         server_port = port
@@ -354,29 +383,76 @@ class GoogleDocsAuthManager:
             "response_type": "code",
             "scope": " ".join(DEFAULT_SCOPES),
             "access_type": "offline",
-            "prompt": "consent",
+            "prompt": "select_account consent",
         }
         auth_url = "https://accounts.google.com/o/oauth2/v2/auth?" + urllib.parse.urlencode(auth_params)
 
         # Open in default web browser
         webbrowser.open(auth_url)
 
-        # Wait for callback on loopback server
-        server.timeout = 1.0  # type: ignore
+        # Wait for callback on loopback server with non-blocking Qt UI handling
+        server.timeout = 0.2  # type: ignore
         start_time = time.time()
-        while time.time() - start_time < timeout:
-            server.handle_request()
-            if getattr(server, "auth_code", None) or getattr(server, "auth_error", None):
-                break
+
+        progress_dialog = None
+        if QT_AVAILABLE and QApplication.instance():
+            progress_dialog = QProgressDialog(
+                "Waiting for Google sign-in in your web browser...\n\n"
+                "1. Choose your Google Account in the browser window.\n"
+                "2. Click 'Continue' or 'Allow' to grant Google Docs access.\n\n"
+                f"Listening locally on: 127.0.0.1:{server_port}",
+                "Cancel",
+                0,
+                0,
+                parent_widget if isinstance(parent_widget, QWidget) else None,
+            )
+            progress_dialog.setWindowTitle("Signing in to Google...")
+            progress_dialog.setWindowModality(Qt.WindowModality.WindowModal)
+            progress_dialog.setMinimumDuration(0)
+            progress_dialog.setValue(0)
+            progress_dialog.show()
+
+        try:
+            while (time.time() - start_time) < timeout:
+                if progress_dialog:
+                    QCoreApplication.processEvents()
+                    if progress_dialog.wasCanceled():
+                        server.server_close()
+                        return False, "Google authorization was canceled by the user."
+                else:
+                    time.sleep(0.05)
+
+                server.handle_request()
+                if getattr(server, "auth_code", None) or getattr(server, "auth_error", None):
+                    break
+        finally:
+            if progress_dialog:
+                progress_dialog.close()
 
         auth_code = getattr(server, "auth_code", None)
         auth_error = getattr(server, "auth_error", None)
         server.server_close()
 
         if auth_error:
+            if "access_denied" in str(auth_error).lower():
+                return False, (
+                    "Google returned 'Error 403: access_denied' (Access blocked).\n\n"
+                    "Why this happens:\n"
+                    "Your Google Cloud OAuth consent screen is in 'Testing' mode.\n\n"
+                    "Quickest fix (Recommended):\n"
+                    "1. Open https://console.cloud.google.com/apis/credentials/consent\n"
+                    "2. Click the 'PUBLISH APP' button under 'Publishing status'.\n"
+                    "3. Click 'Sign in with Google...' again!\n\n"
+                    "When the Google warning screen appears, click 'Advanced' > 'Go to Radio & TV Segmenter' to complete authorization."
+                )
             return False, f"Authorization error: {auth_error}"
         if not auth_code:
-            return False, "Authorization timed out. Please try again."
+            return False, (
+                "Google authorization timed out.\n\n"
+                "If you saw 'Error 403: access_denied' (Access blocked) in your browser:\n"
+                "Please click 'PUBLISH APP' on the Google Cloud OAuth consent screen to enable access:\n"
+                "https://console.cloud.google.com/apis/credentials/consent"
+            )
 
         # Exchange auth code for tokens
         token_url = "https://oauth2.googleapis.com/token"
