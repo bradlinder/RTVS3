@@ -1676,8 +1676,35 @@ class DiagnosticEngine:
             if c["startIndex"] < 0 or c["endIndex"] > len(full_text) or c["startIndex"] >= c["endIndex"]:
                 raise AssertionError(f"Invalid comment anchoring range: [{c['startIndex']}, {c['endIndex']}] for text len {len(full_text)}")
 
+        # 4. Validate live plugins/gdocs package and serializer
+        from pathlib import Path
+        gdocs_manifest_file = Path("plugins/gdocs/manifest.json")
+        if gdocs_manifest_file.exists():
+            real_m = PluginManifest.from_file(gdocs_manifest_file)
+            if real_m.id != "gdocs" or real_m.category != "export":
+                raise AssertionError(f"Invalid gdocs manifest attributes: id={real_m.id}, cat={real_m.category}")
+
+        from plugins.gdocs.formatter import GoogleDocsSerializer, utf16_len
+        from plugins.gdocs.review import compute_segment_diffs
+        if utf16_len("Hello 🚀") != 8:
+            raise AssertionError("UTF-16 code unit length calculation failed for astral characters")
+
+        s = GoogleDocsSerializer()
+        _, reqs, anchors = s.serialize_document(
+            document_title="Test News Broadcast",
+            stories=[{"title": "Lead Story", "start": 0.0, "end": 10.0, "notes": "Fact check date"}],
+            transcript_segments=[{"start": 0.0, "end": 10.0, "speaker": "HOST", "text": "Good evening."}],
+        )
+        if len(reqs) < 3 or len(anchors) != 1:
+            raise AssertionError(f"GoogleDocsSerializer failed to produce expected batch update requests or anchors: reqs={len(reqs)}, anchors={len(anchors)}")
+
+        # Validate diff computation
+        diffs = compute_segment_diffs([{"text": "Good evening."}], "Good evening everyone.")
+        if not diffs or not diffs[0]["has_change"]:
+            raise AssertionError("compute_segment_diffs failed to detect editorial update")
+
         item.status = "PASS"
-        item.message = "Plugin manifest, lifecycle hooks, and export payload sandboxing validated"
+        item.message = "Plugin manifest, lifecycle hooks, and export payload sandboxing validated (gdocs verified)"
 
     def _test_project_file_integrity_and_portable_path_resolution(self, item: DiagnosticItem):
         try:

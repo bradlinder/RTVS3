@@ -1,5 +1,15 @@
 # Changelog
  
+## v3.6.4-beta
+- **Google Docs & Drive Export Plugin Architecture (`plugins/gdocs/`)**:
+  - Implemented the complete Google Docs & Drive publishing plugin with modular zero-external-dependency REST architecture:
+    - **OAuth 2.0 Loopback Authentication Engine (`plugins/gdocs/auth.py`)**: Built local loopback HTTP callback listener (`127.0.0.1:8085/callback`) for secure browser authorization, token exchange (`https://oauth2.googleapis.com/token`), OS keyring credential storage with encrypted machine-bound fallback, and automatic background access token refreshing.
+    - **Google Docs REST API Serializer & Formatter (`plugins/gdocs/formatter.py`)**: Generates structured Google Docs documents featuring Title typography, metadata summary headers, story chapter sections (`HEADING_2`), uppercase speaker turn headers, paragraph styling, and optional inline word timestamps, computed with exact UTF-16 code unit offset ranges for Google Docs `batchUpdate`.
+    - **Native Margin Comments & Drive Anchoring (`plugins/gdocs/comments.py`)**: Integrates with Google Drive Comments API (`drive.comments.create` and `drive.comments.list`) to attach story editorial notes, transcription corrections, and review tags directly into native margin comments anchored to document text snippets.
+    - **Unified Export Center & Menu Integration (`plugins/gdocs/export_destination.py`, `plugins/gdocs/plugin.py`, `plugins/gdocs/manifest.json`)**: Seamlessly exposes "Google Docs & Drive" destination inside `UnifiedExportDialog` and `File > Export` menu with non-blocking execution, document title/folder configuration, and direct browser launching.
+    - **One-Time Review & Comment Pull Integration (`plugins/gdocs/review.py`)**: Added `GoogleDocsReviewDialog` (via `Tools > Google Docs: Review & Pull Corrections...`) allowing editorial staff to inspect remote revisions in a Google Doc, view Drive margin comments, and pull verified transcript updates back into active project segments.
+    - **Diagnostic Regression Verification (`test_runner.py`)**: Extended test 34 to validate live `gdocs` manifest schema, UTF-16 character code unit counting, document serialization, and segment revision diff calculations.
+
 ## v3.6.3
 - **Diagnostic Test Bench Coverage Extension (`test_runner.py`)**:
   - Implemented 9 new zero-dependency and high-coverage automated diagnostic routines (tests 27 through 35) across the core system architecture:

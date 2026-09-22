@@ -29,44 +29,37 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 --------------------------------------------------------------------------------
 TABLE OF CONTENTS & STATUS OVERVIEW
 --------------------------------------------------------------------------------
-1. Previous Release: Selective Project Data Purge & Wipe Utility & Glossary Sync (Completed in v3.6.2)
-   [x] 1.1 Checkbox-Driven Modular Purge Dialog (`ui_layout.py`, `project_lifecycle.py`): Added secure modal dialog with separate options to wipe Transcript/Words, delete Saved Translations, reset Speaker Diarization, clear Stories & Metadata, or unlink Media.
-   [x] 1.2 Destructive State Guards & Warnings: Implemented visual validation/warning indicators and confirmation gates to prevent accidental clicks.
-   [x] 1.3 Modular Core Reset Methods (`project_lifecycle.py`): Integrated robust cleanup methods to wipe targeted properties and synchronize standard empty default structures safely.
-   [x] 1.4 Undo Stack Integration: Pushes the pre-purge project state onto the Undo stack before purging, enabling instant recovery via `Ctrl+Z`.
-   [x] 1.5 Glossary Import & Export Utility (`media_batch.py`, `terminology.py`): Added dedicated Import and Export buttons to the Glossary dialog for backing up and restoring term mapping rules as portable JSON/CSV files.
+1. Previous Release: Diagnostic Test Bench Coverage Extension (`test_runner.py`) (Completed in v3.6.3)
+   [x] 1.1 Translation Routing & Key Priority Unit Test: Assert that `source_language_code()` detects correct language and `get_spanish_translation_item()` selects correct translation keys (`es-en` vs `en-es`) without falling back to stale legacy data.
+   [x] 1.2 Symmetrical Translation Editing State Test: Validate that editing translation segments properly updates the core translation dictionary and marks other translation states as stale.
+   [x] 1.3 Interactive Change Speaker Dialogue Flow Test: Programmatically mock options (All Instances, This Instance Only, Cancel) to assert correct downstream reassignment outcomes.
+   [x] 1.4 Story Boundary Validation & Overlap Test: Assert that adding, moving, or resizing story timestamps enforces non-overlapping integrity constraints.
+   [x] 1.5 Audio / Subtitle Sync Drift Test: Ensure that SRT, WebVTT, and chapter markers maintain timestamp alignment across multi-format exports.
+   [x] 1.6 Interactive Transcript Editing & Split/Join Unit Tests: Assert text replacement, segment joining/splitting, word-level time interpolation, and correct propagation to Undo/Redo queues without desynchronizing paragraph elements.
+   [x] 1.7 Exporter Structure Invariant Tests: Verify formatted output structures (REAPER `.rpp` syntax trees, Samplitude `.edl` crossfades, Final Cut Pro XML elements) to ensure zero silent syntax errors during export generation.
+   [x] 1.8 Plugin Interface Sandbox Testing: Validate integration payloads for Google Docs exporting, verifying correct styling tags, author metadata headers, and localized comment-anchoring ranges.
+   [x] 1.9 Project File Integrity & Portable Path Resolution: Test loading damaged/corrupted `.rtvs` files, verifying automatic fallback defaults, and testing graceful user-prompts when the original source media has been moved on disk.
 
-2. Current Release: Diagnostic Test Bench Coverage Extension (`test_runner.py`) (Completed in v3.6.3)
-   [x] 2.1 Translation Routing & Key Priority Unit Test: Assert that `source_language_code()` detects correct language and `get_spanish_translation_item()` selects correct translation keys (`es-en` vs `en-es`) without falling back to stale legacy data.
-   [x] 2.2 Symmetrical Translation Editing State Test: Validate that editing translation segments properly updates the core translation dictionary and marks other translation states as stale.
-   [x] 2.3 Interactive Change Speaker Dialogue Flow Test: Programmatically mock options (All Instances, This Instance Only, Cancel) to assert correct downstream reassignment outcomes.
-   [x] 2.4 Story Boundary Validation & Overlap Test: Assert that adding, moving, or resizing story timestamps enforces non-overlapping integrity constraints.
-   [x] 2.5 Audio / Subtitle Sync Drift Test: Ensure that SRT, WebVTT, and chapter markers maintain timestamp alignment across multi-format exports.
-   [x] 2.6 Interactive Transcript Editing & Split/Join Unit Tests: Assert text replacement, segment joining/splitting, word-level time interpolation, and correct propagation to Undo/Redo queues without desynchronizing paragraph elements.
-   [x] 2.7 Exporter Structure Invariant Tests: Verify formatted output structures (REAPER `.rpp` syntax trees, Samplitude `.edl` crossfades, Final Cut Pro XML elements) to ensure zero silent syntax errors during export generation.
-   [x] 2.8 Plugin Interface Sandbox Testing: Validate integration payloads for Google Docs exporting, verifying correct styling tags, author metadata headers, and localized comment-anchoring ranges.
-   [x] 2.9 Project File Integrity & Portable Path Resolution: Test loading damaged/corrupted `.rtvs` files, verifying automatic fallback defaults, and testing graceful user-prompts when the original source media has been moved on disk.
+2. Current Release: Google Docs & Drive Export Plugin (`plugins/gdocs`) (Completed in v3.6.4-beta)
+   [x] 2.1 Plugin Architecture & OAuth 2.0 Loopback Auth Engine (`plugins/gdocs/auth.py`, OS keyring token storage, local loopback handler)
+   [x] 2.2 Google Docs Document Serializer & REST Exporter (`plugins/gdocs/formatter.py`, formatted text, speaker headers, word highlights, story metadata)
+   [x] 2.3 Native Margin Comments & Text Range Anchoring (`plugins/gdocs/comments.py`, Drive Comments API integration for story notes & transcript comments)
+   [x] 2.4 Unified Export Center & Menu Integration (`plugins/gdocs/export_destination.py`, `plugins/gdocs/plugin.py`, progress worker, zero core bundle overhead)
+   [x] 2.5 One-Time Review & Comment Pull Integration (`plugins/gdocs/review.py`, "Import Reviews from Google Doc" diff dialog)
 
 3. Upcoming Milestone: Acoustic Voice Profile Matcher & On-Demand Re-Clustering (`transcript_story.py`, `radio_tv_story_segmenter_worker.py`) [PLANNED for v3.7.0] [NOT STARTED]
    [ ] 3.1 Voice Embedding Vector Storage & Persistence (`diarization["embeddings"]`): Preserve segment-level 256-dimensional WeSpeaker ONNX embedding vectors in project state.
    [ ] 3.2 One-Sample Voice Profile Assignment ("Teach This Voice"): Add a "Set as Reference Profile for New Speaker" option to the speaker menu when user identifies an unseparated speaker.
    [ ] 3.3 On-Demand Cosine Similarity Re-Clustering Worker: Rapidly scan remaining segments in the same cluster, compute cosine similarities against the reference embedding, and automatically reassign matching turns to the new speaker label without re-running full timeline diarization.
 
-4. Future Milestone: Google Docs & Drive Export Plugin (`plugins/gdocs`) [PLANNED for v3.7.5] [NOT STARTED]
-   [ ] 4.1 Plugin Architecture & OAuth 2.0 Authentication Engine (`plugins/gdocs/auth.py`, keyring token storage, local loopback handler)
-   [ ] 4.2 Google Docs Document Serializer & REST Exporter (Formatted text, speaker headers, word highlights, story metadata)
-   [ ] 4.3 Native Margin Comments & Text Range Anchoring (`drive.comments.create` integration for story notes & transcript comments)
-   [ ] 4.4 Unified Export Center & Menu Integration (Progress worker, batch export, zero core bundle overhead)
-   [ ] 4.5 (Optional) One-Time Review & Comment Pull ("Import Reviews from Google Doc" diff dialog)
+4. Future Milestone: Comprehensive Cloud & Local Backup & Restore System (`project_lifecycle.py`, `plugins/gdocs/`) [PLANNED for v3.8.0] [NOT STARTED]
+   [ ] 4.1 Unified State Serialization (`project_lifecycle.py`): Export preferences, keyboard shortcuts, installed model inventories, glossary items, and user configurations into a cryptographically verified backup archive.
+   [ ] 4.2 Manual Local Backup & Restore: Download backup archives locally and restore previous settings and system state into RTVS.
+   [ ] 4.3 1-Click Google Drive Cloud Restore: Connect via Google Drive API to browse, verify via SHA-256 hash matching, and restore custom settings directly from cloud backups.
 
-5. Future Milestone: Comprehensive Cloud & Local Backup & Restore System (`project_lifecycle.py`, `plugins/gdocs/`) [PLANNED for v3.8.0] [NOT STARTED]
-   [ ] 5.1 Unified State Serialization (`project_lifecycle.py`): Export preferences, keyboard shortcuts, installed model inventories, glossary items, and user configurations into a cryptographically verified backup archive.
-   [ ] 5.2 Manual Local Backup & Restore: Download backup archives locally and restore previous settings and system state into RTVS.
-   [ ] 5.3 1-Click Google Drive Cloud Restore: Connect via Google Drive API to browse, verify via SHA-256 hash matching, and restore custom settings directly from cloud backups.
-
-6. Future Milestone: Multi-Platform Timeline & DAW Interchange Engine (`export/timeline.py`, `export/dialog.py`, `ui_layout.py`) [PLANNED for v3.8.5] [NOT STARTED]
-   [ ] 8.1 Migration to Unified Export Center Tab: Move timeline and DAW exports from the legacy File menu submenu into a dedicated "Timeline & DAW" tab in the Unified Export Center dialog, streamlining menu navigation and providing a unified UI for multi-format timeline exporting.
-   [ ] 8.2 Streamlined Multi-Platform Timeline Format Exporters (Zero Feature Loss):
+5. Future Milestone: Multi-Platform Timeline & DAW Interchange Engine (`export/timeline.py`, `export/dialog.py`, `ui_layout.py`) [PLANNED for v3.8.5] [NOT STARTED]
+   [ ] 5.1 Migration to Unified Export Center Tab: Move timeline and DAW exports from the legacy File menu submenu into a dedicated "Timeline & DAW" tab in the Unified Export Center dialog, streamlining menu navigation and providing a unified UI for multi-format timeline exporting.
+   [ ] 5.2 Streamlined Multi-Platform Timeline Format Exporters (Zero Feature Loss):
        - Final Cut Pro 7 XML Interchange (.xml / xmeml): Adobe Premiere Pro, Adobe Audition, DaVinci Resolve, Descript (Full multi-track sequences, cuts, clip positions, volume envelopes, crossfades, and marker tracks).
        - Final Cut Pro X XML (.fcpxml): Apple Final Cut Pro (FCPX), Apple Logic Pro (Native modern Apple timeline sequence with multi-channel audio components, retimed clips, markers, and volume automation without third-party converters).
        - Universal AAF Interchange (.aaf) & Session Text: Avid Pro Tools, Apple Logic Pro, Avid Media Composer, Cubase/Nuendo (Full broadcast timeline session interchange, multi-track stems, non-destructive clip gain, fades, and track markers via `pyaaf2`).
@@ -74,7 +67,7 @@ TABLE OF CONTENTS & STATUS OVERVIEW
        - Cockos REAPER Project (.rpp): Cockos REAPER (Complete non-destructive project files with item fades, volume envelopes, markers, regions, and take notes).
        - Magix Samplitude / Sequoia EDL (.edl v1.5): Magix Samplitude, Sequoia (Broadcast audio edit decision list with crossfades and track gain).
        - Audacity Labels & Podcast Cues (.txt / .cue): Audacity, Podcasting mastering tools, CD/playout automation (Standard label tracks and CUE sheets with chapter markers and boundary synchronization).
-   [ ] 8.3 Future-Proofed Non-Destructive Editing & Timeline Engine:
+   [ ] 5.3 Future-Proofed Non-Destructive Editing & Timeline Engine:
        - Multi-track routing layouts (Single track, Checkerboard A/B roll, Split tracks per identified speaker).
        - Unselected audio & rough cut handling (Omit/Ripple-delete, Include as Muted Items for sync preservation, or Route to separate B-Roll reference track).
        - Clip gain, volume automation curves, and non-destructive fade handles (linear, logarithmic, exponential, S-curve, equal-power).
@@ -82,86 +75,101 @@ TABLE OF CONTENTS & STATUS OVERVIEW
        - Source media linking flexibility (Absolute paths, Relative paths for portable session packages, or Auto-rendered isolated WAV stems).
        - Rational timecode & audio sample rate math (44.1, 48, 96 kHz; 23.976, 24, 25 PAL, 29.97 NDF/DF, 30, 59.94 fps, custom start timecode e.g. 01:00:00:00).
 
-9. Future Milestone: Text-Driven Audio Editing & Precision Alignment (Phase 5) [PLANNED for v4.0.0] [NOT STARTED]
-   [ ] 9.1 "Text-as-Timeline" Rough-Cut Editing Engine
-   [ ] 9.2 Seamless Non-Destructive Playback Preview
-   [ ] 9.3 CTC Word Boundary Refinement & Forced Alignment
-   [ ] 9.4 Memory-Bounded Diarization & Chunked Streaming
+6. Future Milestone: Text-Driven Audio Editing & Precision Alignment (Phase 5) [PLANNED for v4.0.0] [NOT STARTED]
+   [ ] 6.1 "Text-as-Timeline" Rough-Cut Editing Engine
+   [ ] 6.2 Seamless Non-Destructive Playback Preview
+   [ ] 6.3 CTC Word Boundary Refinement & Forced Alignment
+   [ ] 6.4 Memory-Bounded Diarization & Chunked Streaming
 
 ================================================================================
-CORE ARCHITECTURAL INVARIANTS
-================================================================================
-- Core modules must NEVER import from plugins/.
-- Heavy translation runtimes must remain isolated inside plugins/translation/.
-- Speaker diarization uses wespeakerruntime as the primary ONNX embedding engine.
-- Real-time progress updates with percentage, status messages, and estimated time.
-- Diagnostic logs written to OS standard logging locations.
-- Offline-first architecture: core processing functions locally without internet.
-- 0 MB Default GPU Footprint: Base installer contains 0 MB of CUDA bloat; GPU features are purely optional and provisioned on demand.
-
-================================================================================
-1. PREVIOUS RELEASE: COMPREHENSIVE GLOSSARY & PROTECTED TERMINOLOGY ARCHITECTURE (Completed in v3.6.0-stable)
+DETAILED MILESTONE SPECIFICATIONS
 ================================================================================
 
-[x] 1.1 Pre-Translation Terminology Protection (`terminology.py`, `plugins/translation/worker.py`)
----------------------------------------------------------------------------------------------------
-- Intercepts protected glossary terms and proper nouns before passing prompts to translation models.
+================================================================================
+1. PREVIOUS RELEASE: DIAGNOSTIC TEST BENCH COVERAGE EXTENSION (Completed in v3.6.3)
+================================================================================
 
-[x] 1.2 Isolated Process Glossary Serialization (`translation.py`, `runtime_entry.py`)
---------------------------------------------------------------------------------------
-- Explicitly serializes structured glossary rules across process boundaries, ensuring consistent child worker behavior.
+[x] 1.1 Translation Routing & Key Priority Unit Test (`test_runner.py`)
+------------------------------------------------------------------------
+- Verifies `source_language_code()` and `target_language_code()` resolution and key preference priority under explicit and auto-detection modes.
 
-[x] 1.3 Authoritative Post-ASR Normalization (`processing.py`)
+[x] 1.2 Symmetrical Translation Editing State Test (`test_runner.py`)
+----------------------------------------------------------------------
+- Validates translation dictionary segment updates and automatic marking of stale translation states upon transcript edits.
+
+[x] 1.3 Interactive Change Speaker Dialogue Flow Test (`test_runner.py`)
+------------------------------------------------------------------------
+- Programmatically tests speaker change dialogue choices (All Instances, Contiguous Single Turn, Subsequent Occurrences, Cancel).
+
+[x] 1.4 Story Boundary Validation & Overlap Test (`test_runner.py`)
+-------------------------------------------------------------------
+- Enforces boundary normalization, monotonic bounds adjustment, fade curve serialization, and interval overlap detection.
+
+[x] 1.5 Audio / Subtitle Sync Drift Test (`test_runner.py`)
+-----------------------------------------------------------
+- Asserts 0ms timestamp alignment across SRT, WebVTT, YouTube chapters, and Red Book 75 fps CUE sheets.
+
+[x] 1.6 Interactive Transcript Editing & Split/Join Unit Tests (`test_runner.py`)
+-------------------------------------------------------------------------------
+- Exercises segment splitting at arbitrary word timestamps, segment joining, word concatenation, and index shift adjustments.
+
+[x] 1.7 Exporter Structure Invariant Tests (`test_runner.py`)
 --------------------------------------------------------------
-- Applies normalized terminology casing and spelling across all transcription backends automatically.
+- Validates structural syntax invariants for Cockos REAPER (`.rpp`), Magix Samplitude EDL (`.edl`), and Adobe Audition XML (`xmeml`).
 
-[x] 1.4 Bilingual Custom Vocabulary UI (`media_batch.py`)
----------------------------------------------------------
-- Provides structured table editing with explicit "Don't translate" protection toggles.
+[x] 1.8 Plugin Interface Sandbox Testing (`test_runner.py`)
+------------------------------------------------------------
+- Tests `PluginManifest` schema validation, lifecycle hooks, and Google Docs comment anchoring intervals.
 
-================================================================================
-2. CURRENT RELEASE: ULTRA DIARIZATION SENSITIVITY & UNIFIED CLUSTERING THRESHOLDS (Completed in v3.6.1)
-================================================================================
-
-[x] 2.1 Ultra Sensitivity Preset (`playback_preferences.py`, `radio_tv_story_segmenter_worker.py`)
----------------------------------------------------------------------------------------------------
-- Added a 5th tier "Ultra (Studio — Extreme strictness for near-identical voices)" preset mapping to cosine distance threshold `0.38` (requiring $\ge 0.62$ cosine similarity).
-- Designed for pristine studio recordings, podcasts, and co-anchor broadcasts where voices with similar timbres risk over-merging.
-
-[x] 2.2 Unified Threshold Calculation (`radio_tv_story_segmenter_worker.py`)
+[x] 1.9 Project File Integrity & Portable Path Resolution (`test_runner.py`)
 ----------------------------------------------------------------------------
-- Standardized `_sensitivity_distance_threshold()` across both unconstrained auto-clustering and constrained Expected Speakers (`2` / `3+`) workflows.
-
-[x] 2.3 Defensive Clustering Kwarg Propagation
------------------------------------------------
-- Propagates `distance_threshold` to `cluster_speakers()` and `diarize_fn()` with `TypeError` fallbacks.
+- Tests structural validation error catching on corrupted projects and portable media resolution.
 
 ================================================================================
-3. UPCOMING MILESTONE: GOOGLE DOCS & DRIVE EXPORT PLUGIN [PLANNED for v3.6.0]
+2. CURRENT RELEASE: GOOGLE DOCS & DRIVE EXPORT PLUGIN (Completed in v3.6.4-beta)
 ================================================================================
 
-[ ] 3.1 Plugin Scaffolding & OAuth 2.0 Auth Engine (plugins/gdocs/auth.py)
--------------------------------------------------------------------------
-- Implement OAuth 2.0 client credentials and secure token storage via OS keyring with local loopback callback listener.
-
-[ ] 3.2 Google Docs Document Serializer & REST Exporter (plugins/gdocs/formatter.py, client.py)
------------------------------------------------------------------------------------------------
-- Structure formatted Google Docs containing speaker headers, transcript text, word timestamps, story boundaries, and metadata headers.
-
-[ ] 3.3 Native Margin Comments & Text Range Anchoring (plugins/gdocs/comments.py)
----------------------------------------------------------------------------------
-- Integrate with `drive.comments.create` to map story editorial notes, transcription corrections, and review tags directly into native margin comments.
-
-[ ] 3.4 Unified Export Center & Menu Integration (plugins/gdocs/plugin.py)
---------------------------------------------------------------------------
-- Expose Google Docs publishing destination inside `UnifiedExportDialog` and the File menu with background thread execution.
-
-[ ] 3.5 One-Time Review & Comment Pull Integration (plugins/gdocs/review.py)
+[x] 2.1 Plugin Scaffolding & OAuth 2.0 Auth Engine (`plugins/gdocs/auth.py`)
 ----------------------------------------------------------------------------
-- Provide an optional diff inspector dialog allowing editorial staff to pull reviewed transcript corrections back into the active project.
+- Implement OAuth 2.0 client credentials and secure token storage via OS keyring with local loopback callback listener on `127.0.0.1:8085/callback`.
+- Automatic refresh token exchange with Google OAuth token endpoint and encrypted machine-bound fallback for non-GUI environments.
+
+[x] 2.2 Google Docs Document Serializer & REST Exporter (`plugins/gdocs/formatter.py`)
+--------------------------------------------------------------------------------------
+- Structure formatted Google Docs documents containing Title styling, metadata headers, story chapter boundaries (`HEADING_2`), uppercase speaker turn headers, paragraph body text, and optional inline word timestamps.
+- Precise UTF-16 code unit offset calculations for Google Docs REST API `batchUpdate` insertion and text formatting requests.
+
+[x] 2.3 Native Margin Comments & Text Range Anchoring (`plugins/gdocs/comments.py`)
+----------------------------------------------------------------------------------
+- Integrate with Google Drive Comments API (`drive.comments.create` and `drive.comments.list`) to map story editorial notes, transcription corrections, and review tags directly into native margin comments anchored to document text snippets.
+
+[x] 2.4 Unified Export Center & Menu Integration (`plugins/gdocs/export_destination.py`, `plugins/gdocs/plugin.py`)
+---------------------------------------------------------------------------------------------------------------------
+- Expose "Google Docs & Drive" destination inside `UnifiedExportDialog` and `File > Export` menu with background thread execution, custom folder destination, and direct browser launching.
+- Zero core bundle overhead: implemented as a clean `.rtvs-addon` with self-contained stdlib REST client.
+
+[x] 2.5 One-Time Review & Comment Pull Integration (`plugins/gdocs/review.py`)
+----------------------------------------------------------------------------
+- Provide `GoogleDocsReviewDialog` accessible via `Tools > Google Docs: Review & Pull Corrections...` allowing editorial staff to inspect remote revisions in a Google Doc, view Drive margin comments, and pull verified transcript updates back into active project segments.
 
 ================================================================================
-4. FUTURE MILESTONE: COMPREHENSIVE CLOUD & LOCAL BACKUP & RESTORE SYSTEM [PLANNED for v3.7.5]
+3. UPCOMING MILESTONE: ACOUSTIC VOICE PROFILE MATCHER & RE-CLUSTERING [PLANNED for v3.7.0]
+================================================================================
+
+[ ] 3.1 Voice Embedding Vector Storage & Persistence (`diarization["embeddings"]`)
+----------------------------------------------------------------------------------
+- Preserve segment-level 256-dimensional WeSpeaker ONNX embedding vectors in project state.
+
+[ ] 3.2 One-Sample Voice Profile Assignment ("Teach This Voice")
+-----------------------------------------------------------------
+- Add a "Set as Reference Profile for New Speaker" option to the speaker menu when user identifies an unseparated speaker.
+
+[ ] 3.3 On-Demand Cosine Similarity Re-Clustering Worker
+--------------------------------------------------------
+- Rapidly scan remaining segments in the same cluster, compute cosine similarities against the reference embedding, and automatically reassign matching turns.
+
+================================================================================
+4. FUTURE MILESTONE: COMPREHENSIVE CLOUD & LOCAL BACKUP & RESTORE SYSTEM [PLANNED for v3.8.0]
 ================================================================================
 
 [ ] 4.1 Unified State Serialization & Archive Packaging (`project_lifecycle.py`)
@@ -177,23 +185,24 @@ CORE ARCHITECTURAL INVARIANTS
 - Integrate with Google Drive API to browse, download, and restore backups directly from cloud storage using custom filenames and SHA-256 integrity hash validation.
 
 ================================================================================
-5. FUTURE MILESTONE: MULTI-PLATFORM TIMELINE & DAW INTERCHANGE ENGINE [PLANNED for v3.8.0]
+5. FUTURE MILESTONE: MULTI-PLATFORM TIMELINE & DAW INTERCHANGE ENGINE [PLANNED for v3.8.5]
+================================================================================
 
-[ ] 4.1 Dedicated Timeline & DAW Export Center Tab (export/dialog.py)
---------------------------------------------------------------------
+[ ] 5.1 Dedicated Timeline & DAW Export Center Tab (`export/dialog.py`)
+------------------------------------------------------------------------
 - Consolidate all timeline, NLE, and DAW export actions into a dedicated "Timeline & DAW" tab in `UnifiedExportDialog`, retiring the legacy submenu.
 
-[ ] 4.2 Streamlined Multi-Platform Format Exporters (export/timeline.py)
+[ ] 5.2 Streamlined Multi-Platform Format Exporters (`export/timeline.py`)
 -------------------------------------------------------------------------
-- Final Cut Pro 7 XML Interchange (.xml / xmeml): Adobe Premiere Pro, Adobe Audition, DaVinci Resolve, Descript (Full multi-track sequences, cuts, clip positions, volume envelopes, crossfades, and marker tracks).
-- Final Cut Pro X XML (.fcpxml): Apple Final Cut Pro (FCPX), Apple Logic Pro (Native modern Apple timeline sequence with multi-channel audio components, retimed clips, markers, and volume automation without third-party converters).
-- Universal AAF Interchange (.aaf) & Session Text: Avid Pro Tools, Apple Logic Pro, Avid Media Composer, Cubase/Nuendo (Full broadcast timeline session interchange, multi-track stems, non-destructive clip gain, fades, and track markers via `pyaaf2`).
-- Hindenburg Broadcast Session (.nhx): Hindenburg Journalist, Hindenburg PRO (Voice-optimized radio/podcast tracks, non-destructive speech edits, voice level envelopes, and chapter markers).
-- Cockos REAPER Project (.rpp): Cockos REAPER (Complete non-destructive project files with item fades, volume envelopes, markers, regions, and take notes).
-- Magix Samplitude / Sequoia EDL (.edl v1.5): Magix Samplitude, Sequoia (Broadcast audio edit decision list with crossfades and track gain).
-- Audacity Labels & Podcast Cues (.txt / .cue): Audacity, Podcasting mastering tools, CD/playout automation (Standard label tracks and CUE sheets with chapter markers and boundary synchronization).
+- Final Cut Pro 7 XML Interchange (.xml / xmeml): Adobe Premiere Pro, Adobe Audition, DaVinci Resolve, Descript.
+- Final Cut Pro X XML (.fcpxml): Apple Final Cut Pro (FCPX), Apple Logic Pro.
+- Universal AAF Interchange (.aaf) & Session Text: Avid Pro Tools, Apple Logic Pro, Avid Media Composer, Cubase/Nuendo.
+- Hindenburg Broadcast Session (.nhx): Hindenburg Journalist, Hindenburg PRO.
+- Cockos REAPER Project (.rpp): Cockos REAPER.
+- Magix Samplitude / Sequoia EDL (.edl v1.5): Magix Samplitude, Sequoia.
+- Audacity Labels & Podcast Cues (.txt / .cue): Audacity, Podcasting mastering tools, CD/playout automation.
 
-[ ] 4.3 Future-Proofed Non-Destructive Editing & Timeline Engine
+[ ] 5.3 Future-Proofed Non-Destructive Editing & Timeline Engine
 ----------------------------------------------------------------
 - Multi-track routing layouts (Single track, Checkerboard A/B roll, Split tracks per identified speaker).
 - Non-destructive rough cuts & segment re-ordering (ripple deletes, muted sync preservation stems, B-roll reference tracks).
@@ -203,10 +212,21 @@ CORE ARCHITECTURAL INVARIANTS
 - Rational timecode & audio sample rate math (44.1, 48, 96 kHz; 23.976, 24, 25 PAL, 29.97 NDF/DF, 30, 59.94 fps, custom start timecode e.g. 01:00:00:00).
 
 ================================================================================
-5. FUTURE MILESTONE: TEXT-DRIVEN AUDIO EDITING & PRECISION ALIGNMENT [PLANNED for v4.0.0]
+6. FUTURE MILESTONE: TEXT-DRIVEN AUDIO EDITING & PRECISION ALIGNMENT [PLANNED for v4.0.0]
 ================================================================================
 
-[ ] 5.1 "Text-as-Timeline" Rough-Cut Editing Engine
-[ ] 5.2 Seamless Non-Destructive Playback Preview
-[ ] 5.3 CTC Word Boundary Refinement & Forced Alignment
-[ ] 5.4 Memory-Bounded Diarization & Chunked Streaming
+[ ] 6.1 "Text-as-Timeline" Rough-Cut Editing Engine
+[ ] 6.2 Seamless Non-Destructive Playback Preview
+[ ] 6.3 CTC Word Boundary Refinement & Forced Alignment
+[ ] 6.4 Memory-Bounded Diarization & Chunked Streaming
+
+================================================================================
+CORE ARCHITECTURAL INVARIANTS
+================================================================================
+- Core modules must NEVER import from plugins/.
+- Heavy translation runtimes must remain isolated inside plugins/translation/.
+- Speaker diarization uses wespeakerruntime as the primary ONNX embedding engine.
+- Real-time progress updates with percentage, status messages, and estimated time.
+- Diagnostic logs written to OS standard logging locations.
+- Offline-first architecture: core processing functions locally without internet.
+- 0 MB Default GPU Footprint: Base installer contains 0 MB of CUDA bloat; GPU features are purely optional and provisioned on demand.
