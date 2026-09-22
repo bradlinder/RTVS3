@@ -190,3 +190,86 @@ def split_protected_text(text: str, glossary=None) -> list[tuple[str, bool]]:
     if last < len(text):
         pieces.append((text[last:], False))
     return pieces or [(text, False)]
+
+
+def export_glossary_to_json(glossary: list[dict[str, Any]]) -> str:
+    """Serialize glossary entries to formatted JSON string."""
+    entries = parse_glossary(glossary)
+    return json.dumps(entries, indent=2, ensure_ascii=False)
+
+
+def export_glossary_to_csv(glossary: list[dict[str, Any]]) -> str:
+    """Serialize glossary entries to standard CSV string."""
+    import csv
+    import io
+
+    entries = parse_glossary(glossary)
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(["source", "preferred", "do_not_translate"])
+    for entry in entries:
+        writer.writerow([
+            entry.get("source", ""),
+            entry.get("preferred", ""),
+            "true" if entry.get("do_not_translate", True) else "false"
+        ])
+    return output.getvalue()
+
+
+def import_glossary_from_text(raw_text: str) -> list[dict[str, Any]]:
+    """Parse glossary entries from JSON, CSV, TSV, or plain text lines."""
+    import csv
+    import io
+
+    raw_text = str(raw_text or "").strip()
+    if not raw_text:
+        return []
+
+    # Attempt 1: Standard JSON parsing
+    if raw_text.startswith("[") or raw_text.startswith("{"):
+        try:
+            return parse_glossary(json.loads(raw_text))
+        except Exception:
+            pass
+
+    # Attempt 2: CSV / TSV with headers or delimiters
+    delimiter = "\t" if "\t" in raw_text.splitlines()[0] else ","
+    try:
+        reader = csv.reader(io.StringIO(raw_text), delimiter=delimiter)
+        rows = list(reader)
+        if rows:
+            first_row = [c.strip().lower() for c in rows[0]]
+            has_header = any(h in first_row for h in ("source", "preferred", "term", "translation", "do_not_translate"))
+            data_rows = rows[1:] if has_header else rows
+            entries: list[dict[str, Any]] = []
+            for row in data_rows:
+                if not row or not any(cell.strip() for cell in row):
+                    continue
+                if len(row) >= 3:
+                    src = row[0].strip()
+                    pref = row[1].strip() or src
+                    dnt = row[2].strip().lower() not in ("false", "0", "no", "n")
+                    if src:
+                        entries.append({"source": src, "preferred": pref, "do_not_translate": dnt})
+                elif len(row) == 2:
+                    src = row[0].strip()
+                    pref = row[1].strip() or src
+                    if src:
+                        entries.append({"source": src, "preferred": pref, "do_not_translate": True})
+                elif len(row) == 1:
+                    line = row[0].strip()
+                    if line:
+                        if "->" in line:
+                            s, p = (x.strip() for x in line.split("->", 1))
+                            entries.append({"source": s, "preferred": p, "do_not_translate": True})
+                        else:
+                            entries.append({"source": line, "preferred": line, "do_not_translate": True})
+            if entries:
+                return parse_glossary(entries)
+    except Exception:
+        pass
+
+    # Attempt 3: Line-by-line fallback
+    lines = [l.strip() for l in raw_text.splitlines() if l.strip()]
+    return parse_glossary(lines)
+

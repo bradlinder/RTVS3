@@ -937,11 +937,19 @@ class MediaBatchMixin:
             table.setItem(row, 2, check)
         layout.addWidget(table, 1)
 
+        import_text = "Importar..." if is_es else "Import..."
+        export_text = "Exportar..." if is_es else "Export..."
+
         row_buttons = QHBoxLayout()
         add = QPushButton(add_text)
         remove = QPushButton(remove_text)
+        import_btn = QPushButton(import_text)
+        export_btn = QPushButton(export_text)
         row_buttons.addWidget(add)
         row_buttons.addWidget(remove)
+        row_buttons.addSpacing(12)
+        row_buttons.addWidget(import_btn)
+        row_buttons.addWidget(export_btn)
         row_buttons.addStretch()
         layout.addLayout(row_buttons)
 
@@ -953,24 +961,25 @@ class MediaBatchMixin:
         buttons.addWidget(save)
         layout.addLayout(buttons)
 
-        def add_row():
+        def add_row(source_val="", preferred_val="", dnt_val=True):
             row = table.rowCount()
             table.insertRow(row)
-            table.setItem(row, 0, QTableWidgetItem(""))
-            table.setItem(row, 1, QTableWidgetItem(""))
+            table.setItem(row, 0, QTableWidgetItem(source_val))
+            table.setItem(row, 1, QTableWidgetItem(preferred_val))
             check = QTableWidgetItem()
             check.setFlags(check.flags() | Qt.ItemFlag.ItemIsUserCheckable)
-            check.setCheckState(Qt.CheckState.Checked)
+            check.setCheckState(Qt.CheckState.Checked if dnt_val else Qt.CheckState.Unchecked)
             table.setItem(row, 2, check)
             table.setCurrentCell(row, 0)
-            table.editItem(table.item(row, 0))
+            if not source_val and not preferred_val:
+                table.editItem(table.item(row, 0))
 
         def remove_rows():
             rows = sorted({index.row() for index in table.selectionModel().selectedRows()}, reverse=True)
             for row in rows:
                 table.removeRow(row)
 
-        def save_glossary():
+        def get_current_table_entries():
             entries_out = []
             seen = set()
             for row in range(table.rowCount()):
@@ -995,14 +1004,119 @@ class MediaBatchMixin:
                     "preferred": preferred,
                     "do_not_translate": protected,
                 })
+            return entries_out
+
+        def export_glossary_file():
+            from terminology import export_glossary_to_json, export_glossary_to_csv
+            entries = get_current_table_entries()
+            if not entries:
+                QMessageBox.information(
+                    dialog,
+                    "Export Glossary" if not is_es else "Exportar glosario",
+                    "There are no glossary entries to export." if not is_es else "No hay términos en el glosario para exportar."
+                )
+                return
+            file_path, selected_filter = QFileDialog.getSaveFileName(
+                dialog,
+                "Export Custom Vocabulary / Glossary" if not is_es else "Exportar vocabulario personalizado / glosario",
+                "glossary.json",
+                "JSON Files (*.json);;CSV Files (*.csv);;All Files (*)"
+            )
+            if not file_path:
+                return
+            try:
+                if file_path.lower().endswith(".csv"):
+                    content = export_glossary_to_csv(entries)
+                else:
+                    content = export_glossary_to_json(entries)
+                with open(file_path, "w", encoding="utf-8") as f:
+                    f.write(content)
+                QMessageBox.information(
+                    dialog,
+                    "Export Complete" if not is_es else "Exportación completada",
+                    f"Successfully exported {len(entries)} glossary entries to:\n{file_path}"
+                    if not is_es else
+                    f"Se exportaron con éxito {len(entries)} términos a:\n{file_path}"
+                )
+            except Exception as e:
+                QMessageBox.critical(
+                    dialog,
+                    "Export Error" if not is_es else "Error de exportación",
+                    f"Failed to export glossary:\n{e}"
+                )
+
+        def import_glossary_file():
+            from terminology import import_glossary_from_text
+            file_path, _ = QFileDialog.getOpenFileName(
+                dialog,
+                "Import Custom Vocabulary / Glossary" if not is_es else "Importar vocabulario personalizado / glosario",
+                "",
+                "Glossary Files (*.json *.csv *.tsv *.txt);;All Files (*)"
+            )
+            if not file_path:
+                return
+            try:
+                with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
+                    content = f.read()
+                imported = import_glossary_from_text(content)
+                if not imported:
+                    QMessageBox.warning(
+                        dialog,
+                        "Import Glossary" if not is_es else "Importar glosario",
+                        "No valid glossary entries found in the selected file." if not is_es else "No se encontraron términos válidos en el archivo seleccionado."
+                    )
+                    return
+                # Merge into table
+                existing_keys = set()
+                for r in range(table.rowCount()):
+                    s_item = table.item(r, 0)
+                    p_item = table.item(r, 1)
+                    s_txt = (s_item.text() if s_item else "").strip().casefold()
+                    p_txt = (p_item.text() if p_item else "").strip().casefold()
+                    existing_keys.add((s_txt, p_txt))
+
+                added_count = 0
+                for entry in imported:
+                    s = str(entry.get("source", "")).strip()
+                    p = str(entry.get("preferred", "")).strip()
+                    dnt = bool(entry.get("do_not_translate", True))
+                    if not s and not p:
+                        continue
+                    if not s:
+                        s = p
+                    if not p:
+                        p = s
+                    key = (s.casefold(), p.casefold())
+                    if key not in existing_keys:
+                        existing_keys.add(key)
+                        add_row(s, p, dnt)
+                        added_count += 1
+                QMessageBox.information(
+                    dialog,
+                    "Import Complete" if not is_es else "Importación completada",
+                    f"Imported {added_count} new entries from:\n{file_path}"
+                    if not is_es else
+                    f"Se importaron {added_count} nuevos términos de:\n{file_path}"
+                )
+            except Exception as e:
+                QMessageBox.critical(
+                    dialog,
+                    "Import Error" if not is_es else "Error de importación",
+                    f"Failed to import glossary:\n{e}"
+                )
+
+        def save_glossary():
+            entries_out = get_current_table_entries()
             self.glossary = entries_out
             self._save_glossary()
             self.apply_glossary_to_whisper_context()
             self.statusBar().showMessage("Glossary saved" if not is_es else "Glosario guardado")
             dialog.accept()
 
-        add.clicked.connect(add_row)
+        add.clicked.connect(lambda: add_row("", "", True))
         remove.clicked.connect(remove_rows)
+        import_btn.clicked.connect(import_glossary_file)
+        export_btn.clicked.connect(export_glossary_file)
         save.clicked.connect(save_glossary)
         cancel.clicked.connect(dialog.reject)
         dialog.exec()

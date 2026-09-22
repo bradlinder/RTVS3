@@ -871,6 +871,14 @@ class UiLayoutMixin:
         self.find_action = find_act
         edit_menu.addAction(find_act)
 
+        edit_menu.addSeparator()
+
+        purge_data_act = QAction("Clear / &Purge Project Data...", self)
+        purge_data_act.setToolTip("Selectively wipe transcript, translations, speakers, stories, or media")
+        purge_data_act.triggered.connect(lambda: getattr(self, "open_purge_project_data_dialog", lambda: None)())
+        self.purge_data_action = purge_data_act
+        edit_menu.addAction(purge_data_act)
+
         # ==========================================
         # View Menu
         # ==========================================

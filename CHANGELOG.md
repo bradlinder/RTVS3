@@ -1,5 +1,32 @@
 # Changelog
  
+## v3.6.3
+- **Diagnostic Test Bench Coverage Extension (`test_runner.py`)**:
+  - Implemented 9 new zero-dependency and high-coverage automated diagnostic routines (tests 27 through 35) across the core system architecture:
+    - **Translation Routing & Key Priority Unit Test**: Verifies `source_language_code()` and `target_language_code()` resolution under explicit (`es-en`, `en-es`) and auto-detection modes, ensuring proper directional precedence for bilingual projects.
+    - **Symmetrical Translation Editing State Test**: Validates translation dictionary segment edits, state propagation, and automatic marking of stale translation states (`mark_stale_translations`) upon transcript mutation.
+    - **Interactive Change Speaker Dialogue Flow Test**: Programmatically validates speaker change dialogue flows (All Instances, Contiguous Single Turn, Subsequent Occurrences, Cancel) to guarantee precision in downstream speaker reassignment.
+    - **Story Boundary Validation & Overlap Test**: Enforces boundary normalization, monotonic bounds adjustment, fade curve serialization (`to_dict` / `from_dict`), and interval overlap detection.
+    - **Audio / Subtitle Sync Drift Test**: Ensures 0ms timestamp alignment across SubRip (`.srt`), WebVTT (`.vtt`), YouTube chapter tracklists, and Red Book 75 fps CUE sheets.
+    - **Interactive Transcript Editing & Split/Join Unit Tests**: Exercises segment splitting at arbitrary word timestamps, segment joining, word list concatenation, and index shift adjustments for speaker override maps.
+    - **Exporter Structure Invariant Tests**: Validates structural syntax invariants for Cockos REAPER (`.rpp` S-expression tag balance), Magix Samplitude EDL (`.edl` v1.5 header & sample rate declarations), and Adobe Audition / FCP7 XML (`xmeml` sequence/media trees).
+    - **Plugin Interface Sandbox Testing**: Tests `PluginManifest` schema validation, `BasePlugin` lifecycle hooks (`on_load`, `on_enable`, `on_disable`), and Google Docs comment anchoring intervals.
+    - **Project File Integrity & Portable Path Resolution**: Tests structural validation error catching on corrupted/malformed project dictionaries and portable media file path resolution.
+
+## v3.6.2
+- **Selective Project Data Purge & Wipe Utility (`project_lifecycle.py`, `ui_layout.py`)**:
+  - Implemented `ProjectDataPurgeDialog` accessible via `Edit > Clear / Purge Project Data...` with selective checkboxes for:
+    - **Transcript & Timed Words**: Wipes transcribed segments, word-level timestamps, and character maps.
+    - **Saved Translations**: Clears translation dictionaries, bilingual alignments, and resets translation display mode.
+    - **Speaker Diarization**: Resets speaker clusters and custom names to an unassigned state.
+    - **Stories & Metadata**: Removes segmented story boundaries, custom titles, excerpts, and tags while leaving transcripts intact.
+    - **Audio/Video Media Link**: Unlinks active media file references and resets player/timeline state.
+  - **Undo Stack Integration & Safety Guards**: Captures a full project state snapshot prior to purging, enabling instant recovery via `Edit > Undo` (`Ctrl+Z`).
+  - Added visual warning indicators, checkbox tooltips, and "Select All" / "Deselect All" convenience toggles.
+- **Glossary Import & Export Utility (`media_batch.py`, `terminology.py`)**:
+  - Added dedicated **"Import..."** and **"Export..."** buttons to the Custom Vocabulary / Glossary dialog.
+  - Supports importing and exporting terminology in standard JSON, CSV, and TSV formats with automatic schema deduplication.
+
 ## v3.6.1
 - **Ultra Diarization Sensitivity Option & Unified Clustering Thresholds (`playback_preferences.py`, `radio_tv_story_segmenter_worker.py`)**:
   - Added a high-precision **Ultra (Studio — Extreme strictness for near-identical voices)** preset mapping to an acoustic cosine distance threshold of `0.38` (requiring $\ge 0.62$ cosine similarity).
