@@ -1,20 +1,28 @@
-"""Radio & TV Segmenter v3.7.3-beta — transcript story responsibilities.
-
+"""Radio & TV Segmenter v3.7.4-beta — transcript story responsibilities.
 
 Methods intentionally retain the MainWindow-facing API so behavior remains
 maintaining the established MainWindow-facing API while responsibilities are isolated.
 """
 
-from typing import List, Optional
+from typing import List, Optional, Tuple
+import html
+import re
 from prs_shared import *
 from PySide6.QtWidgets import (
     QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QComboBox,
     QRadioButton, QButtonGroup, QSlider, QTableWidget, QTableWidgetItem,
     QHeaderView, QGroupBox, QWidget, QCheckBox, QAbstractItemView, QMessageBox,
-    QFrame, QLineEdit,
+    QFrame, QLineEdit, QInputDialog, QListWidgetItem, QDoubleSpinBox, QFormLayout
 )
-from PySide6.QtCore import Qt
-from PySide6.QtGui import QColor, QBrush, QFont
+from PySide6.QtCore import Qt, QTimer, QSettings
+from PySide6.QtGui import QColor, QBrush, QFont, QTextCursor
+from speaker_identity import (
+    cosine_similarity,
+    robust_reference_profile,
+    compare_against_profiles,
+    is_confident_match,
+    centroid,
+)
 
 
 class ChangeSpeakerDialog(QDialog):
@@ -38,7 +46,6 @@ class ChangeSpeakerDialog(QDialog):
         prompt_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(prompt_lbl)
 
-        # Streamlined horizontal button row with concise labels
         btn_layout = QHBoxLayout()
         btn_layout.setSpacing(10)
 
@@ -101,7 +108,6 @@ class VoiceProfileMatchDialog(QDialog):
         self.matched_turns = []
         self.selected_indices = []
 
-        # Find all turns in project currently assigned to this speaker
         self.cluster_seg_indices = []
         if self.parent_window and getattr(self.parent_window, "transcript", None):
             segs = self.parent_window.transcript.get("segments", [])
@@ -184,16 +190,11 @@ class VoiceProfileMatchDialog(QDialog):
         <div style="color: #e0f2fe; font-size: 11px; line-height: 1.45;">
             <b>How to use the Acoustic Voice Profile Matcher:</b>
             <ol style="margin-top: 4px; margin-bottom: 4px; padding-left: 18px;">
-                <li><b>Reference Baseline Mode:</b> Choose between matching against a <b>Single Turn</b> or an averaged <b>Composite Profile</b> across multiple speaker turns for maximum embedding accuracy.</li>
+                <li><b>Reference Baseline Mode:</b> Single reference turn prevents cluster contamination. Use composite only across turns verified to be the same speaker.</li>
                 <li><b>Assign Target Label:</b> Select or type the correct speaker name in <b>"Assign Matched Turns To"</b>.</li>
-                <li><b>Choose Search Scope:</b>
-                    <ul style="margin-top: 2px; margin-bottom: 2px; padding-left: 14px;">
-                        <li><b>Search across all speakers on timeline:</b> Scans all project turns to discover mislabeled speech (e.g. finding turns incorrectly tagged as someone else).</li>
-                        <li><b>Search within cluster only:</b> Scans only turns belonging to the current speaker cluster to consolidate or rename them.</li>
-                    </ul>
-                </li>
-                <li><b>Adjust Sensitivity Threshold:</b> Set higher (80–90%) for conservative high-confidence matches, or lower (60–75%) to catch short or noisy turns.</li>
-                <li><b>Audition & Review:</b> Select any row to seek, press <b>Spacebar</b> to play/pause, or double-click to audition candidate turns before clicking <b>Reassign Matching Turns</b>.</li>
+                <li><b>Choose Search Scope:</b> Global search discovers turns misattributed to other speakers.</li>
+                <li><b>Calibrated Threshold:</b> ResNet-34 broadcast baseline is 78–82%. Values below 75% risk cross-speaker merging.</li>
+                <li><b>Audition & Review:</b> Select any row to seek, press <b>Spacebar</b> or click <b>Audition Turn</b> to play/pause audio before confirming.</li>
             </ol>
         </div>
         """
@@ -222,10 +223,8 @@ class VoiceProfileMatchDialog(QDialog):
         btn_minimize_hints.clicked.connect(self._toggle_hints)
         hints_btn_layout.addWidget(btn_minimize_hints)
         hints_layout.addLayout(hints_btn_layout)
-
         layout.addWidget(self.hints_box)
 
-        # Restore saved hints visibility preference
         show_hints = True
         try:
             settings = QSettings(INTERNAL_APP_ID, INTERNAL_APP_ID)
@@ -236,7 +235,6 @@ class VoiceProfileMatchDialog(QDialog):
         self.hints_box.setVisible(show_hints)
         self.btn_toggle_hints.setText("💡 Hide Hints" if show_hints else "💡 Usage Hints")
 
-        # Reference Segment Card
         ref_card = QGroupBox("Reference Speaker Turn & Profile Baseline", self)
         ref_card.setStyleSheet("""
             QGroupBox {
@@ -281,7 +279,6 @@ class VoiceProfileMatchDialog(QDialog):
             ref_text_lbl.setStyleSheet("color: #cbd5e1; font-size: 12px;")
             ref_card_layout.addWidget(ref_text_lbl)
 
-        # Baseline Mode Selection (Single Turn vs Multi-Sample Composite Centroid Profile)
         mode_hdr = QLabel("Reference Vector Baseline Mode:", ref_card)
         mode_hdr.setStyleSheet("color: #38bdf8; font-weight: bold; font-size: 11px; margin-top: 4px;")
         ref_card_layout.addWidget(mode_hdr)
@@ -295,7 +292,7 @@ class VoiceProfileMatchDialog(QDialog):
 
         cluster_count = len(self.cluster_seg_indices)
         self.ref_mode_composite_radio = QRadioButton(
-            f"Composite Profile (Average acoustic vectors across all {cluster_count} turn(s) of '{html.escape(self.current_speaker)}')", ref_card
+            f"Composite Profile (Average acoustic vectors across verified turns of '{html.escape(self.current_speaker)}')", ref_card
         )
 
         if self.ref_seg_indices and len(self.ref_seg_indices) > 1:
@@ -306,7 +303,7 @@ class VoiceProfileMatchDialog(QDialog):
             self.ref_mode_selected_radio.setChecked(True)
             mode_layout.addWidget(self.ref_mode_selected_radio)
         else:
-            self.ref_mode_composite_radio.setChecked(True) if cluster_count > 1 else self.ref_mode_single_radio.setChecked(True)
+            self.ref_mode_single_radio.setChecked(True)
 
         mode_layout.addWidget(self.ref_mode_single_radio)
         mode_layout.addWidget(self.ref_mode_composite_radio)
@@ -363,7 +360,7 @@ class VoiceProfileMatchDialog(QDialog):
         target_layout.addWidget(self.spk_combo, 1)
         layout.addWidget(target_group)
 
-        # Controls Grid: Scope & Sensitivity Slider
+        # Controls Grid
         controls_group = QGroupBox("Matching Search Scope & Sensitivity", self)
         controls_group.setStyleSheet("""
             QGroupBox {
@@ -384,7 +381,6 @@ class VoiceProfileMatchDialog(QDialog):
         controls_layout.setContentsMargins(12, 10, 12, 12)
         controls_layout.setSpacing(10)
 
-        # Radio buttons for Scope
         scope_layout = QHBoxLayout()
         scope_layout.setSpacing(20)
         self.scope_all_radio = QRadioButton("Search across all speakers on timeline (Find mislabeled turns)", controls_group)
@@ -394,27 +390,22 @@ class VoiceProfileMatchDialog(QDialog):
             f"Search within '{self.current_speaker}' turns only", controls_group
         )
         scope_layout.addWidget(self.scope_cluster_radio)
-
-        if self.target_name and self.target_name != self.current_speaker:
-            self.scope_all_radio.setChecked(True)
-        else:
-            self.scope_cluster_radio.setChecked(True)
+        self.scope_all_radio.setChecked(True)
 
         scope_layout.addStretch()
         controls_layout.addLayout(scope_layout)
 
-        # Slider for Sensitivity / Threshold
         slider_layout = QHBoxLayout()
         slider_layout.setSpacing(12)
 
         self.thresh_slider = QSlider(Qt.Orientation.Horizontal, controls_group)
-        self.thresh_slider.setRange(50, 95)
-        self.thresh_slider.setValue(70)
+        self.thresh_slider.setRange(60, 95)
+        self.thresh_slider.setValue(78)
         self.thresh_slider.setTickInterval(5)
         self.thresh_slider.setTickPosition(QSlider.TickPosition.TicksBelow)
         self.thresh_slider.valueChanged.connect(self._on_slider_changed)
 
-        self.thresh_label = QLabel("Similarity Threshold: 70% (Strict)", controls_group)
+        self.thresh_label = QLabel("Similarity Threshold: 78% (Calibrated)", controls_group)
         self.thresh_label.setMinimumWidth(230)
         self.thresh_label.setStyleSheet("color: #38bdf8; font-weight: bold;")
 
@@ -422,7 +413,6 @@ class VoiceProfileMatchDialog(QDialog):
         slider_layout.addWidget(self.thresh_label)
         controls_layout.addLayout(slider_layout)
 
-        # Connect scope & baseline radio toggles after slider is initialized
         self.scope_all_radio.toggled.connect(self._on_controls_changed)
         self.scope_cluster_radio.toggled.connect(self._on_controls_changed)
         self.ref_mode_single_radio.toggled.connect(self._on_controls_changed)
@@ -439,11 +429,19 @@ class VoiceProfileMatchDialog(QDialog):
         table_header_layout.addWidget(self.match_count_label)
         table_header_layout.addStretch()
 
-        btn_audition = QPushButton("▶ Audition Turn", self)
-        btn_audition.setMaximumHeight(26)
-        btn_audition.setToolTip("Seek to start and play audio for the selected candidate turn (Spacebar)")
-        btn_audition.clicked.connect(self._audition_current_selection)
-        table_header_layout.addWidget(btn_audition)
+        self.chk_master = QCheckBox("Select All", self)
+        self.chk_master.setChecked(True)
+        self.chk_master.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.chk_master.setStyleSheet("color: #38bdf8; font-weight: bold; margin-right: 10px;")
+        self.chk_master.toggled.connect(self._toggle_master_checkbox)
+        table_header_layout.addWidget(self.chk_master)
+        
+        
+        self.btn_audition = QPushButton("▶ Audition Turn", self)
+        self.btn_audition.setMaximumHeight(26)
+        self.btn_audition.setToolTip("Play or pause audio for the selected turn (Spacebar)")
+        self.btn_audition.clicked.connect(self._toggle_audition_button)
+        table_header_layout.addWidget(self.btn_audition)
 
         btn_select_all = QPushButton("Select All", self)
         btn_select_all.setMaximumHeight(26)
@@ -472,9 +470,12 @@ class VoiceProfileMatchDialog(QDialog):
         self.table.itemChanged.connect(self._on_table_item_changed)
         self.table.itemSelectionChanged.connect(self._on_table_selection_changed)
         self.table.cellDoubleClicked.connect(self._on_table_cell_double_clicked)
+        
+        # Install Event Filter on QTableWidget so it does NOT swallow the Spacebar key!
+        self.table.installEventFilter(self)
+
         layout.addWidget(self.table, 1)
 
-        # Dialog Action Buttons
         btn_layout = QHBoxLayout()
         btn_layout.setSpacing(10)
 
@@ -509,8 +510,20 @@ class VoiceProfileMatchDialog(QDialog):
 
         layout.addLayout(btn_layout)
 
-        # Initial populate
+        # Hook up playback state monitoring if player exists
+        if self.parent_window and hasattr(self.parent_window, "player"):
+            player = getattr(self.parent_window, "player", None)
+            if player and hasattr(player, "playbackStateChanged"):
+                player.playbackStateChanged.connect(self._on_playback_state_changed)
+
         self._on_slider_changed(self.thresh_slider.value())
+
+    def _on_playback_state_changed(self, state):
+        from PySide6.QtMultimedia import QMediaPlayer
+        if state == QMediaPlayer.PlaybackState.PlayingState:
+            self.btn_audition.setText("❚❚ Pause")
+        else:
+            self.btn_audition.setText("▶ Audition Turn")
 
     def _toggle_hints(self):
         is_visible = self.hints_box.isVisible()
@@ -525,7 +538,7 @@ class VoiceProfileMatchDialog(QDialog):
     def _on_slider_changed(self, val):
         threshold_float = val / 100.0
         dist_max = 1.0 - threshold_float
-        desc = "Lenient" if val <= 60 else ("Moderate" if val <= 75 else ("Strict" if val <= 85 else "Very Strict"))
+        desc = "Permissive" if val < 75 else ("Optimal" if val <= 82 else "Very Strict")
         self.thresh_label.setText(f"Similarity Threshold: {val}% ({desc}, Cosine dist ≤ {dist_max:.2f})")
         self._update_matches()
 
@@ -582,7 +595,7 @@ class VoiceProfileMatchDialog(QDialog):
             match_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
             if sim_pct >= 85.0:
                 match_item.setForeground(QBrush(QColor("#4ade80")))
-            elif sim_pct >= 70.0:
+            elif sim_pct >= 78.0:
                 match_item.setForeground(QBrush(QColor("#38bdf8")))
             else:
                 match_item.setForeground(QBrush(QColor("#fbbf24")))
@@ -613,6 +626,17 @@ class VoiceProfileMatchDialog(QDialog):
         self.table.blockSignals(False)
         self._update_action_summary()
 
+    def _toggle_master_checkbox(self, checked: bool):
+        """Batch toggle every row checkbox to match the master checkbox state."""
+        self.table.blockSignals(True)
+        target_state = Qt.CheckState.Checked if checked else Qt.CheckState.Unchecked
+        for r in range(self.table.rowCount()):
+            item = self.table.item(r, 0)
+            if item:
+                item.setCheckState(target_state)
+        self.table.blockSignals(False)
+        self._update_action_summary()
+        
     def _on_table_item_changed(self, item):
         if item.column() == 0:
             self._update_action_summary()
@@ -637,7 +661,16 @@ class VoiceProfileMatchDialog(QDialog):
         self.btn_apply.setText(f"Reassign {len(selected)} Matching Turn(s) to '{target}'")
         self.btn_apply.setEnabled(len(selected) > 0 or self.ref_seg_idx >= 0)
 
+        # ADD IT HERE AT THE END OF THE METHOD:
+        if hasattr(self, "chk_master"):
+            self.chk_master.blockSignals(True)
+            all_selected = (len(selected) == total and total > 0)
+            self.chk_master.setChecked(all_selected)
+            self.chk_master.setText("Deselect All" if all_selected else "Select All")
+            self.chk_master.blockSignals(False)
+
     def _on_apply(self):
+        self._stop_playback()
         target = self.spk_combo.currentText().strip()
         if not target:
             QMessageBox.warning(
@@ -652,6 +685,10 @@ class VoiceProfileMatchDialog(QDialog):
         self.selected_indices = self._get_selected_segment_indices()
         self.accept()
 
+    def reject(self):
+        self._stop_playback()
+        super().reject()
+
     def _seek_to_time(self, seconds: float):
         if self.parent_window and hasattr(self.parent_window, "seek_to"):
             try:
@@ -659,46 +696,51 @@ class VoiceProfileMatchDialog(QDialog):
             except Exception:
                 pass
 
-    def _start_playback(self):
+    def _is_playing(self) -> bool:
+        if not self.parent_window:
+            return False
+        player = getattr(self.parent_window, "player", None)
+        if player and hasattr(player, "playbackState"):
+            from PySide6.QtMultimedia import QMediaPlayer
+            return player.playbackState() == QMediaPlayer.PlaybackState.PlayingState
+        return False
+
+    def _stop_playback(self):
         if not self.parent_window:
             return
-        try:
-            player = getattr(self.parent_window, "player", None)
-            from PySide6.QtMultimedia import QMediaPlayer
-            if player and hasattr(player, "playbackState"):
-                if player.playbackState() != QMediaPlayer.PlaybackState.PlayingState:
-                    if hasattr(self.parent_window, "toggle_play"):
-                        self.parent_window.toggle_play()
-                    else:
-                        player.play()
-            elif hasattr(self.parent_window, "toggle_play"):
-                self.parent_window.toggle_play()
-        except Exception:
-            pass
+        player = getattr(self.parent_window, "player", None)
+        if player and hasattr(player, "pause"):
+            try:
+                player.pause()
+            except Exception:
+                pass
+        self.btn_audition.setText("▶ Audition Turn")
 
     def _toggle_playback(self):
         if not self.parent_window:
             return
-        try:
-            if hasattr(self.parent_window, "toggle_play"):
-                self.parent_window.toggle_play()
-            elif hasattr(self.parent_window, "player"):
-                player = self.parent_window.player
-                from PySide6.QtMultimedia import QMediaPlayer
-                if player.playbackState() == QMediaPlayer.PlaybackState.PlayingState:
-                    player.pause()
-                else:
-                    player.play()
-        except Exception:
-            pass
+        player = getattr(self.parent_window, "player", None)
+        if player and hasattr(player, "playbackState"):
+            from PySide6.QtMultimedia import QMediaPlayer
+            if player.playbackState() == QMediaPlayer.PlaybackState.PlayingState:
+                player.pause()
+                self.btn_audition.setText("▶ Audition Turn")
+            else:
+                player.play()
+                self.btn_audition.setText("❚❚ Pause")
+        elif hasattr(self.parent_window, "toggle_play"):
+            self.parent_window.toggle_play()
 
-    def _audition_current_selection(self):
-        row = self.table.currentRow()
-        if 0 <= row < len(self.matched_turns):
-            turn = self.matched_turns[row]
-            start_t = turn.get("start", 0.0)
-            self._seek_to_time(start_t)
-            self._start_playback()
+    def _toggle_audition_button(self):
+        if self._is_playing():
+            self._stop_playback()
+        else:
+            row = self.table.currentRow()
+            if 0 <= row < len(self.matched_turns):
+                turn = self.matched_turns[row]
+                start_t = turn.get("start", 0.0)
+                self._seek_to_time(start_t)
+            self._toggle_playback()
 
     def _on_table_selection_changed(self):
         row = self.table.currentRow()
@@ -712,7 +754,16 @@ class VoiceProfileMatchDialog(QDialog):
             turn = self.matched_turns[row]
             start_t = turn.get("start", 0.0)
             self._seek_to_time(start_t)
-            self._start_playback()
+            if not self._is_playing():
+                self._toggle_playback()
+
+    def eventFilter(self, watched, event):
+        """Intercept Spacebar on the table widget so it controls playback instead of row selection."""
+        if watched == self.table and event.type() == event.Type.KeyPress:
+            if event.key() == Qt.Key.Key_Space:
+                self._toggle_audition_button()
+                return True  # Event handled, do not pass to table
+        return super().eventFilter(watched, event)
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key.Key_Space:
@@ -724,22 +775,7 @@ class VoiceProfileMatchDialog(QDialog):
                 super().keyPressEvent(event)
                 return
 
-            row = self.table.currentRow()
-            if 0 <= row < len(self.matched_turns):
-                turn = self.matched_turns[row]
-                start_t = turn.get("start", 0.0)
-                player = getattr(self.parent_window, "player", None)
-                if player and hasattr(player, "playbackState"):
-                    from PySide6.QtMultimedia import QMediaPlayer
-                    if player.playbackState() == QMediaPlayer.PlaybackState.PlayingState:
-                        self._toggle_playback()
-                    else:
-                        self._seek_to_time(start_t)
-                        self._start_playback()
-                else:
-                    self._toggle_playback()
-            else:
-                self._toggle_playback()
+            self._toggle_audition_button()
             event.accept()
             return
 
@@ -773,12 +809,10 @@ class TranscriptStoryMixin:
             if display_mode == "en" and es_segments:
                 active_segments = es_segments
                 is_rendering_translation = True
-            self.log_activity(f"[DEBUG] render_transcript: src_code=es, display_mode={display_mode}, active_segments_len={len(active_segments)}, es_segments_len={len(es_segments)}")
         else:
             if display_mode == "es" and es_segments:
                 active_segments = es_segments
                 is_rendering_translation = True
-            self.log_activity(f"[DEBUG] render_transcript: src_code={src_code}, display_mode={display_mode}, active_segments_len={len(active_segments)}, es_segments_len={len(es_segments)}")
 
         if not active_segments:
             self.transcript_view.setHtml("")
@@ -839,7 +873,6 @@ class TranscriptStoryMixin:
             self.is_updating_transcript_view = False
             return
 
-        # Batch document changes using QTextCursor EditBlock to prevent UI freezes
         doc = self.transcript_view.document()
         cursor = QTextCursor(doc)
         cursor.beginEditBlock()
@@ -881,7 +914,6 @@ class TranscriptStoryMixin:
 
             start_time = p_words[0]["start"]
             first_seg_idx = p_words[0]["seg_idx"]
-
             time_str = format_time(start_time)
 
             if p_speaker_name and is_speaker_change and self.show_speaker_labels:
@@ -985,9 +1017,6 @@ class TranscriptStoryMixin:
             )
 
         def _summarize_paragraph_segments(p_words):
-            """Contiguous (seg_idx, word_count) run-length groups for one
-            rendered paragraph, used to map edited text in that paragraph
-            back to the original segment(s) it was built from."""
             groups = []
             for w in p_words:
                 seg_idx = w["seg_idx"]
@@ -1042,10 +1071,6 @@ class TranscriptStoryMixin:
         cursor.endEditBlock()
         self._block_segment_groups = block_segment_groups
 
-        # Force synchronous text layout calculation so scroll ranges and metrics are immediately valid
-        # if hasattr(self.transcript_view, "document") and self.transcript_view.document():
-        #     self.transcript_view.document().adjustSize()
-
         self.timeline.set_transcript_selection_range(None, None)
         self.transcript_view.rebuild_anchor_index()
         self.transcript_view.set_time_anchor_index(
@@ -1060,7 +1085,6 @@ class TranscriptStoryMixin:
         if hasattr(self, "transcript_view"):
             self.transcript_view.update_extra_selections()
 
-        # Restore vertical/horizontal scrollbar positions to preserve viewport offset
         if hasattr(self, "transcript_view") and self.transcript_view:
             self.transcript_view.active_highlight_anchor = None
             if hasattr(self.transcript_view, "lock_scroll_position"):
@@ -1078,13 +1102,10 @@ class TranscriptStoryMixin:
             QTimer.singleShot(60, _restore_scroll)
             QTimer.singleShot(150, _restore_scroll)
 
-            # Re-apply word highlight for current position if available WITHOUT moving the scroll viewport
             cur_pos = getattr(self, "current_position", 0.0)
             if cur_pos >= 0 and hasattr(self.transcript_view, "highlight_word_at_time"):
                 self.transcript_view.highlight_word_at_time(cur_pos, self.transcript, auto_scroll=False)
 
-        # This is the exact project state represented by the rendered editor.
-        # Text edits are grouped from this baseline into one undoable action.
         if hasattr(self, "_capture_project_state") and not getattr(self, "is_restoring_undo", False):
             self._transcript_edit_baseline = self._capture_project_state()
         self.is_updating_transcript_view = False
@@ -1095,33 +1116,16 @@ class TranscriptStoryMixin:
                 self.transcript_mode_toggle_btn.setChecked(False)
                 self.transcript_mode_toggle_btn.setText("Edit Transcript")
                 self.transcript_mode_toggle_btn.setStyleSheet("")
-                self.transcript_mode_toggle_btn.setToolTip("Editing is only available in single-language views (English or Español).")
             else:
                 self.transcript_mode_toggle_btn.setEnabled(True)
                 is_editing = getattr(self.transcript_view, "is_editing_mode", False)
                 self.transcript_mode_toggle_btn.setChecked(is_editing)
                 if is_editing:
                     self.transcript_mode_toggle_btn.setText("View Transcript")
-                    self.transcript_mode_toggle_btn.setToolTip("Click to exit editing mode and return to interactive viewing.")
                     self.transcript_mode_toggle_btn.setStyleSheet("font-weight: bold; background-color: #2b5278; color: white;")
                 else:
                     self.transcript_mode_toggle_btn.setText("Edit Transcript")
                     self.transcript_mode_toggle_btn.setStyleSheet("")
-                    src_code = self.source_language_code() if hasattr(self, "source_language_code") else "en"
-                    if src_code == "es":
-                        if display_mode == "en":
-                            self.transcript_mode_toggle_btn.setToolTip("Toggle between Viewing Mode and Editing Mode for English translation (F2)")
-                        else:
-                            self.transcript_mode_toggle_btn.setToolTip("Toggle between Viewing Mode (click to play/seek audio) and Editing Mode (type/edit transcript text) (F2)")
-                    else:
-                        if display_mode == "es":
-                            self.transcript_mode_toggle_btn.setToolTip("Toggle between Viewing Mode and Editing Mode for Spanish translation (F2)")
-                        else:
-                            self.transcript_mode_toggle_btn.setToolTip("Toggle between Viewing Mode (click to play/seek audio) and Editing Mode (type/edit transcript text) (F2)")
-
-        if hasattr(self, "transcript_edit_mode_action"):
-            self.transcript_edit_mode_action.setEnabled(display_mode not in ("split", "bilingual"))
-            self.transcript_edit_mode_action.setChecked(False if display_mode in ("split", "bilingual") else getattr(self.transcript_view, "is_editing_mode", False))
 
         if display_mode in ("split", "bilingual"):
             self.transcript_view.setReadOnly(True)
@@ -1147,7 +1151,6 @@ class TranscriptStoryMixin:
                 self.last_transcript_cursor_time = ts
                 self.last_position_source = "transcript"
 
-        # Reverse Selection: bring corresponding comment card into active focus when user clicks highlighted text
         cursor = self.transcript_view.textCursor()
         target_seg = self.transcript_view.get_segment_index_at_cursor(cursor)
         if target_seg is None:
@@ -1160,23 +1163,6 @@ class TranscriptStoryMixin:
             if (seg.get("comments") or seg.get("notes", "")).strip():
                 active_comment_seg = target_seg
 
-        if active_comment_seg is None and segments:
-            pos = cursor.position()
-            doc_text = self.transcript_view.document().toPlainText()
-            for idx, seg in enumerate(segments):
-                if (seg.get("comments") or seg.get("notes", "")).strip():
-                    c_start = seg.get("comment_char_start")
-                    c_end = seg.get("comment_char_end")
-                    if c_start is not None and c_end is not None and c_start <= pos <= c_end:
-                        active_comment_seg = idx
-                        break
-                    sel_quote = (seg.get("comment_selected_text") or "").strip()
-                    if sel_quote and sel_quote in doc_text:
-                        q_pos = doc_text.find(sel_quote)
-                        if q_pos >= 0 and q_pos <= pos <= (q_pos + len(sel_quote)):
-                            active_comment_seg = idx
-                            break
-
         if hasattr(self, "comments_panel"):
             self.comments_panel.highlight_segment(active_comment_seg)
 
@@ -1188,10 +1174,7 @@ class TranscriptStoryMixin:
             return
 
         src_code = self.source_language_code() if hasattr(self, "source_language_code") else "en"
-        if src_code == "es":
-            use_translation = (display_mode == "en")
-        else:
-            use_translation = (display_mode == "es")
+        use_translation = (display_mode == "en") if src_code == "es" else (display_mode == "es")
 
         if use_translation:
             es_item = self.get_spanish_translation_item() if hasattr(self, "get_spanish_translation_item") else None
@@ -1204,17 +1187,9 @@ class TranscriptStoryMixin:
         if not target_segments:
             return
 
-        # Keep the data model synchronized with the editor. Each rendered
-        # paragraph (Qt "block") isn't reliably one segment -- same-speaker
-        # segments get merged into one paragraph, and long runs get split by
-        # word count rather than segment boundary. self._block_segment_groups
-        # (captured at the last render_transcript()) records, per block, the
-        # ordered original (seg_idx, word_count) groups it was built from, so
-        # an edit lands on the right segment(s) instead of on block index i.
         doc = self.transcript_view.document()
         blocks_count = doc.blockCount()
         block_groups = getattr(self, "_block_segment_groups", None) or []
-
         known_speaker_labels = None
 
         def _extract_block_word_formatting(block, prefix_len=0):
@@ -1259,7 +1234,6 @@ class TranscriptStoryMixin:
             block = doc.findBlockByNumber(i)
             block_text = block.text()
             cleaned_text = re.sub(r'^\d{2}:\d{2}(?::\d{2})?\.\d{3}\s+', '', block_text)
-            # Remove any displayed speaker prefix, including custom names.
             if ": " in cleaned_text:
                 prefix, remainder = cleaned_text.split(": ", 1)
                 if known_speaker_labels is None:
@@ -1269,8 +1243,7 @@ class TranscriptStoryMixin:
                     )
                 if prefix.strip() in {str(x).strip() for x in known_speaker_labels if x}:
                     cleaned_text = remainder
-            cleaned_text = re.sub(r'^Speaker \d+:\s+', '', cleaned_text)
-            cleaned_text = cleaned_text.strip()
+            cleaned_text = re.sub(r'^Speaker \d+:\s+', '', cleaned_text).strip()
 
             prefix_len = block_text.find(cleaned_text) if (cleaned_text and cleaned_text in block_text) else 0
             block_fmts = _extract_block_word_formatting(block, prefix_len)
@@ -1281,12 +1254,6 @@ class TranscriptStoryMixin:
                 self.sync_segment_words(target_seg, cleaned_text, block_fmts)
                 continue
 
-            # This paragraph was built from more than one original segment
-            # (merged same-speaker turns). Redistribute the edited words
-            # across those segments in proportion to how many words each
-            # originally contributed -- an approximation, but it keeps
-            # edits attached to roughly the right segment instead of all
-            # landing on whichever segment happens to share the block index.
             words = cleaned_text.split()
             total_original_words = sum(g[1] for g in groups) or 1
             remaining_words = words
@@ -1304,29 +1271,6 @@ class TranscriptStoryMixin:
                 target_segments[seg_idx]["text"] = seg_text
                 self.sync_segment_words(target_segments[seg_idx], seg_text, share_fmts)
 
-        src_code = self.source_language_code() if hasattr(self, "source_language_code") else "en"
-        if src_code == "es":
-            if display_mode == "es":
-                if hasattr(self, "translations") and self.translations:
-                    for key in self.translations:
-                        self.translations[key]["status"] = "stale"
-                    self.log_activity("[TRANSLATION] Source transcript edited; existing translations marked for update.", mark_dirty=False)
-            elif display_mode == "en":
-                if hasattr(self, "get_spanish_translation_item"):
-                    es_item = self.get_spanish_translation_item()
-                    if es_item and isinstance(es_item, dict):
-                        es_item["status"] = "ready"
-        else:
-            if display_mode == "en" and hasattr(self, "translations") and self.translations:
-                for key in self.translations:
-                    self.translations[key]["status"] = "stale"
-                self.log_activity("[TRANSLATION] Source transcript edited; existing translations marked for update.", mark_dirty=False)
-            elif display_mode == "es":
-                if hasattr(self, "get_spanish_translation_item"):
-                    es_item = self.get_spanish_translation_item()
-                    if es_item and isinstance(es_item, dict):
-                        es_item["status"] = "ready"
-
         if hasattr(self, "transcript_view"):
             self.transcript_view.update_extra_selections()
 
@@ -1343,16 +1287,7 @@ class TranscriptStoryMixin:
 
     def transcript_clicked(self, url):
         text = url.toString()
-        if text.startswith("time:"):
-            seconds = float(text.split(":", 1)[1])
-            self.last_position_source = "transcript"
-            self.last_transcript_cursor_time = seconds
-            self.seek_to(seconds)
-            if hasattr(self.transcript_view, "move_cursor_to_time"):
-                self.transcript_view.move_cursor_to_time(seconds, self.transcript)
-        elif text.startswith("word:"):
-            # Viewing-mode left-click is navigation only.  Speaker actions
-            # are available from the right-click context menu.
+        if text.startswith("time:") or text.startswith("word:"):
             parts = text.split(":")
             seconds = float(parts[1])
             self.last_position_source = "transcript"
@@ -1377,7 +1312,6 @@ class TranscriptStoryMixin:
         t_range: Optional[tuple[float, float]] = None,
         covered_indices: Optional[List[int]] = None
     ):
-        """Open comment editor dialog for the targeted transcript segment and selection range."""
         if not self.transcript or "segments" not in self.transcript:
             QMessageBox.information(self, "No Transcript", "No transcript is currently loaded.")
             return
@@ -1387,7 +1321,6 @@ class TranscriptStoryMixin:
         seg = segments[seg_idx]
         current_comment = seg.get("comments") or seg.get("notes", "")
 
-        # If no explicit selection was passed, use any previously saved comment text selection
         if not sel_text:
             sel_text = seg.get("comment_selected_text", "")
 
@@ -1404,7 +1337,6 @@ class TranscriptStoryMixin:
         )
         if dialog.exec() == QDialog.DialogCode.Accepted:
             before_state = self._capture_project_state() if hasattr(self, "_capture_project_state") else None
-            # Force exactly one target segment index to prevent comment duplication
             target_indices = [seg_idx]
             if dialog.is_deleted():
                 for idx in target_indices:
@@ -1424,7 +1356,7 @@ class TranscriptStoryMixin:
                         if 0 <= idx < len(segments):
                             s = segments[idx]
                             s["comments"] = text
-                            s["notes"] = text  # preserve backward compatibility
+                            s["notes"] = text
                             if sel_text:
                                 s["comment_selected_text"] = sel_text
                             if start_char is not None and end_char is not None:
@@ -1454,11 +1386,9 @@ class TranscriptStoryMixin:
             if before_state and hasattr(self, "_commit_project_state_change"):
                 self._commit_project_state_change(before_state, "Update Comment")
 
-    # Alias for backward compatibility
     edit_segment_note_dialog = edit_segment_comment_dialog
 
     def add_comment_from_selection(self):
-        """Add or edit comment anchored to the active transcript selection."""
         if not hasattr(self, "transcript_view") or not self.transcript or "segments" not in self.transcript:
             return
 
@@ -1476,20 +1406,13 @@ class TranscriptStoryMixin:
             end_char = max(cursor.selectionStart(), cursor.selectionEnd())
             if hasattr(self.transcript_view, "get_time_range_for_char_span"):
                 t_range = self.transcript_view.get_time_range_for_char_span(start_char, end_char)
-        elif hasattr(self.transcript_view, "saved_selections") and self.transcript_view.saved_selections:
-            sel = self.transcript_view.saved_selections[0]
-            sel_text = sel.get("text", "").strip()
-            start_char = sel.get("start_char")
-            end_char = sel.get("end_char")
-            if "start_time" in sel and "end_time" in sel:
-                t_range = (sel["start_time"], sel["end_time"])
 
         if t_range and t_range[0] is not None and t_range[1] is not None:
             st, et = t_range
             for i, s in enumerate(segments):
                 s_start = s.get("start", 0.0)
                 s_end = s.get("end", 0.0)
-                if (s_start < et and s_end > st):
+                if s_start < et and s_end > st:
                     covered_indices.append(i)
 
         seg_idx = None
@@ -1497,14 +1420,6 @@ class TranscriptStoryMixin:
             seg_idx = covered_indices[0]
         else:
             seg_idx = self.transcript_view.get_segment_index_at_cursor(cursor)
-            if seg_idx is None:
-                ranges = self.transcript_view.get_all_selected_story_ranges()
-                if ranges and hasattr(self, "transcript") and self.transcript:
-                    t = ranges[0].get("start_time", 0.0)
-                    for i, s in enumerate(segments):
-                        if s.get("start", 0.0) <= t <= s.get("end", 0.0):
-                            seg_idx = i
-                            break
             if seg_idx is None:
                 seg_idx = cursor.blockNumber()
 
@@ -1519,7 +1434,6 @@ class TranscriptStoryMixin:
             )
 
     def delete_segment_comment(self, seg_idx):
-        """Delete comment anchored to the specified segment and clear associated highlights."""
         if not self.transcript or "segments" not in self.transcript:
             return
         before_state = self._capture_project_state() if hasattr(self, "_capture_project_state") else None
@@ -1533,11 +1447,6 @@ class TranscriptStoryMixin:
             seg.pop("comment_char_end", None)
             seg.pop("comment_start_time", None)
             seg.pop("comment_end_time", None)
-            seg.pop("highlight", None)
-            if "words" in seg and isinstance(seg["words"], list):
-                for w in seg["words"]:
-                    if isinstance(w, dict):
-                        w.pop("highlight", None)
             self.mark_project_dirty()
             if hasattr(self, "transcript_view"):
                 self.transcript_view.update_extra_selections()
@@ -1547,76 +1456,40 @@ class TranscriptStoryMixin:
                 self._commit_project_state_change(before_state, "Delete Comment")
 
     def toggle_comments_panel(self):
-        """Toggle visibility of the comments sidebar."""
         if hasattr(self, "comments_panel"):
             is_vis = not self.comments_panel.isVisible()
             self.toggle_show_comments(is_vis)
 
     def toggle_show_comments(self, checked):
-        """Toggle display of comments sidebar and yellow anchor highlights."""
         self.show_comments = checked
         self.show_notes = checked
-        if hasattr(self, "settings_store"):
-            self.settings_store.setValue("show_comments", checked)
-            self.settings_store.setValue("show_notes", checked)
         if hasattr(self, "comments_panel"):
             self.comments_panel.setVisible(checked)
-        if hasattr(self, "comments_toggle_btn"):
-            self.comments_toggle_btn.blockSignals(True)
-            self.comments_toggle_btn.setChecked(checked)
-            self.comments_toggle_btn.blockSignals(False)
-        if hasattr(self, "toggle_comments_action"):
-            self.toggle_comments_action.blockSignals(True)
-            self.toggle_comments_action.setChecked(checked)
-            self.toggle_comments_action.blockSignals(False)
-        if hasattr(self, "transcript_show_comments_action"):
-            self.transcript_show_comments_action.blockSignals(True)
-            self.transcript_show_comments_action.setChecked(checked)
-            self.transcript_show_comments_action.blockSignals(False)
         if hasattr(self, "transcript_view"):
             self.transcript_view.update_extra_selections()
 
-    # Alias for backward compatibility
     toggle_show_notes = toggle_show_comments
 
     def toggle_comment_highlights(self, checked):
-        """Toggle display of amber comment highlights in transcript view."""
         self.show_comment_highlights = checked
-        if hasattr(self, "settings_store"):
-            self.settings_store.setValue("show_comment_highlights", "true" if checked else "false")
-        if hasattr(self, "toggle_comment_highlights_action"):
-            self.toggle_comment_highlights_action.blockSignals(True)
-            self.toggle_comment_highlights_action.setChecked(checked)
-            self.toggle_comment_highlights_action.blockSignals(False)
-        if hasattr(self, "transcript_show_highlights_action"):
-            self.transcript_show_highlights_action.blockSignals(True)
-            self.transcript_show_highlights_action.setChecked(checked)
-            self.transcript_show_highlights_action.blockSignals(False)
         if hasattr(self, "transcript_view"):
             self.transcript_view.show_comment_highlights = checked
             self.transcript_view.update_extra_selections()
-        msg = "Comment highlights visible." if checked else "Comment highlights hidden."
-        if hasattr(self, "statusBar") and self.statusBar():
-            self.statusBar().showMessage(msg, 3000)
 
     def handle_insert_speaker_request(self, seg_idx, split_time, speaker_name):
-        """Dispatched from the right-click 'Add Speaker Label Here' context menu."""
         if speaker_name == "__NEW__":
             self.add_speaker_label_at(seg_idx, split_time, name=None)
         else:
             self.add_speaker_label_at(seg_idx, split_time, name=speaker_name)
 
     def add_speaker_label_at(self, seg_idx, split_time, name=None):
-        """Adds a speaker label break: assigns or splits the segment at split_time."""
         if not self.transcript or "segments" not in self.transcript:
-            self.statusBar().showMessage("No transcript available.")
             return False
 
         segments = self.transcript.get("segments", [])
         if not segments:
             return False
 
-        # If seg_idx is invalid, locate the segment that contains split_time
         if seg_idx is None or seg_idx < 0 or seg_idx >= len(segments):
             for i, seg in enumerate(segments):
                 s_start = float(seg.get("start", 0.0))
@@ -1640,13 +1513,11 @@ class TranscriptStoryMixin:
 
         name = (name or "").strip()
         if not name:
-            self.statusBar().showMessage("Speaker label needs a name.")
             return False
 
         target_seg = segments[seg_idx]
         words = target_seg.get("words", [])
 
-        # Check if click is at or before the very first word of the segment
         is_at_segment_start = False
         if words:
             if split_time <= words[0].get("start", target_seg["start"]) + 0.05:
@@ -1655,7 +1526,6 @@ class TranscriptStoryMixin:
             if split_time <= float(target_seg.get("start", 0.0)) + 0.1:
                 is_at_segment_start = True
 
-        # If click is at start of segment, reassign this segment directly without splitting
         if is_at_segment_start:
             self.flush_pending_transcript_undo() if hasattr(self, "flush_pending_transcript_undo") else None
             before_state = self._capture_project_state() if hasattr(self, "_capture_project_state") else None
@@ -1681,15 +1551,11 @@ class TranscriptStoryMixin:
                 self._commit_project_state_change(before_state, f"Add Speaker Label ({name})")
 
             self.add_custom_speaker_to_glossary(name)
-            self.log_activity(f"[SPEAKER] Set speaker label '{name}' across {len(section_indices)} segment(s) starting at segment #{seg_idx + 1}")
             self.save_project()
             self.render_transcript()
             return True
 
-        # Otherwise, split segment at word boundary
         if not self.split_segment_at_time(seg_idx, split_time, new_speaker_name=name):
-            # Fallback: if words-based split rejected because split_time was slightly off,
-            # assign to the segment directly so the user action always succeeds
             self.flush_pending_transcript_undo() if hasattr(self, "flush_pending_transcript_undo") else None
             before_state = self._capture_project_state() if hasattr(self, "_capture_project_state") else None
 
@@ -1714,7 +1580,6 @@ class TranscriptStoryMixin:
                 self._commit_project_state_change(before_state, f"Add Speaker Label ({name})")
 
             self.add_custom_speaker_to_glossary(name)
-            self.log_activity(f"[SPEAKER] Assigned speaker label '{name}' across {len(section_indices)} segment(s) starting at segment #{seg_idx + 1}")
             self.save_project()
             self.render_transcript()
             return True
@@ -1723,7 +1588,6 @@ class TranscriptStoryMixin:
         return True
 
     def split_segment_at_time(self, seg_idx, split_time, new_speaker_name=None):
-        """Split a segment at an exact word timestamp."""
         if not self.transcript or "segments" not in self.transcript:
             return False
 
@@ -1735,7 +1599,6 @@ class TranscriptStoryMixin:
         words = target_seg.get("words", [])
 
         if words:
-            # Find the best split split index by proximity
             split_idx = -1
             for w_i, w in enumerate(words):
                 if w.get("start", target_seg["start"]) >= split_time - 0.01:
@@ -1779,13 +1642,10 @@ class TranscriptStoryMixin:
         self.flush_pending_transcript_undo() if hasattr(self, "flush_pending_transcript_undo") else None
         before_state = self._capture_project_state() if hasattr(self, "_capture_project_state") else None
 
-        # Capture original effective speaker before split modification
         orig_spk_name = self.get_effective_speaker_name(seg_idx, target_seg)
-
         segments[seg_idx] = seg1
         segments.insert(seg_idx + 1, seg2)
 
-        # Shift overrides down
         new_overrides = {}
         for idx_k, spk in self.segment_speaker_overrides.items():
             k = int(idx_k)
@@ -1817,7 +1677,15 @@ class TranscriptStoryMixin:
                 f"Add Speaker Label{' (' + str(new_speaker_name) + ')' if new_speaker_name else ''}"
             )
 
-        self.log_activity(f"[SPEAKER] Added speaker label break at {format_time(split_time)} (Split Segment #{seg_idx + 1})")
+        segments[seg_idx].pop("embedding", None)
+        segments[seg_idx + 1].pop("embedding", None)
+
+        left_speaker = self.get_effective_speaker_name(seg_idx, segments[seg_idx])
+        right_speaker = self.get_effective_speaker_name(seg_idx + 1, segments[seg_idx + 1])
+
+        self.register_confirmed_speaker_turn(seg_idx, left_speaker)
+        self.register_confirmed_speaker_turn(seg_idx + 1, right_speaker)
+        
         self.save_project()
         self.render_transcript()
         return True
@@ -1839,7 +1707,6 @@ class TranscriptStoryMixin:
                 self._commit_project_state_change(before_state, f"Rename Speaker: {old_name} → {new_name.strip()}")
             self.render_transcript()
             self.save_project()
-            self.log_activity(f"[SPEAKER] Renamed custom speaker '{old_name}' to '{new_name.strip()}'")
 
     def display_speaker(self, speaker):
         if speaker is None:
@@ -1858,20 +1725,16 @@ class TranscriptStoryMixin:
         return speaker
 
     def get_all_known_speakers(self):
-        """Return a sorted list of unique speaker names currently known or used in the project."""
         speakers = set()
-        # Custom speaker name overrides
         if hasattr(self, "speaker_names") and self.speaker_names:
             for k, v in self.speaker_names.items():
                 if v and isinstance(v, str) and v.strip() and not k.startswith("SEG_"):
                     speakers.add(v.strip())
-        # Transcript segment effective speakers
         if getattr(self, "transcript", None) and isinstance(self.transcript, dict) and "segments" in self.transcript:
             for idx, seg in enumerate(self.transcript["segments"]):
                 name = self.get_effective_speaker_name(idx, seg)
                 if name and name.strip():
                     speakers.add(name.strip())
-        # Diarization segments
         diar_data = getattr(self, "diarization_result", None) or getattr(self, "diarization", None)
         if isinstance(diar_data, dict) and "segments" in diar_data:
             for seg in diar_data["segments"]:
@@ -1880,7 +1743,6 @@ class TranscriptStoryMixin:
                     disp = self.display_speaker(spk)
                     if disp and disp.strip():
                         speakers.add(disp.strip())
-        # Custom speakers in glossary
         if hasattr(self, "custom_speakers") and self.custom_speakers:
             for spk in self.custom_speakers:
                 if spk and isinstance(spk, str) and spk.strip():
@@ -1895,14 +1757,12 @@ class TranscriptStoryMixin:
         return sorted(speakers, key=natural_sort_key)
 
     def execute_speaker_rename(self, seg_idx, raw_speaker, target_name):
-        """Reassign or rename a speaker from the context menu or speaker options."""
         if not self.transcript or "segments" not in self.transcript:
             return
         segments = self.transcript.get("segments", [])
         if seg_idx < 0 or seg_idx >= len(segments):
             return
 
-        # Capture viewport scroll position before modal dialogs take focus
         v_scroll_before = self.transcript_view.verticalScrollBar().value() if hasattr(self, "transcript_view") and self.transcript_view else 0
         h_scroll_before = self.transcript_view.horizontalScrollBar().value() if hasattr(self, "transcript_view") and self.transcript_view else 0
 
@@ -1933,7 +1793,6 @@ class TranscriptStoryMixin:
                 self.transcript_view.lock_scroll_position(v_scroll_before, h_scroll_before, duration_ms=200)
             return
 
-        # Prompt whether to change all instances, this & subsequent, or this instance only
         spk_dlg = ChangeSpeakerDialog(current_name, target_name, seg_idx=seg_idx, parent=self)
         spk_dlg.exec()
         if spk_dlg.choice not in ("all", "subsequent", "single"):
@@ -1953,17 +1812,14 @@ class TranscriptStoryMixin:
                     override_key = f"SEG_{idx}_SPEAKER"
                     self.speaker_names[override_key] = target_name
                     self.segment_speaker_overrides[idx] = override_key
-            self.log_activity(f"[SPEAKER] Changed all instances of '{current_name}' to '{target_name}'")
         elif spk_dlg.choice == "subsequent":
             self.add_custom_speaker_to_glossary(target_name)
-            changed_count = 0
             start_seg_idx = seg_idx if seg_idx >= 0 else 0
             for idx in range(start_seg_idx, len(segments)):
                 if self.get_effective_speaker_name(idx, segments[idx]) == current_name:
                     override_key = f"SEG_{idx}_SPEAKER"
                     self.speaker_names[override_key] = target_name
                     self.segment_speaker_overrides[idx] = override_key
-                    changed_count += 1
 
             if self.diarization and isinstance(self.diarization, dict):
                 sec_start = float(segments[start_seg_idx].get("start", 0.0))
@@ -1975,19 +1831,13 @@ class TranscriptStoryMixin:
                             if disp == current_name or d_seg.get("speaker") == current_name:
                                 d_seg["speaker"] = target_name
                     self._diar_index_key = None
-
-            self.log_activity(
-                f"[SPEAKER] Changed '{current_name}' to '{target_name}' across {changed_count} subsequent segment(s) (starting at Segment #{start_seg_idx + 1})"
-            )
         elif spk_dlg.choice == "single":
-            # Identify the contiguous run of segments in this turn starting from seg_idx
-            # up to the next occurrence of a different speaker label.
             section_indices = []
             for i in range(seg_idx, len(segments)):
                 if self.get_effective_speaker_name(i, segments[i]) == current_name:
                     section_indices.append(i)
                 else:
-                    break  # Stop as soon as another speaker turn begins
+                    break
 
             if not section_indices:
                 section_indices = [seg_idx]
@@ -1998,7 +1848,6 @@ class TranscriptStoryMixin:
                 self.speaker_names[override_key] = target_name
                 self.segment_speaker_overrides[idx] = override_key
 
-            # Update underlying diarization segments in this time window if present
             if self.diarization and isinstance(self.diarization, dict):
                 sec_start = float(segments[section_indices[0]].get("start", 0.0))
                 sec_end = float(segments[section_indices[-1]].get("end", sec_start))
@@ -2011,10 +1860,6 @@ class TranscriptStoryMixin:
                             if disp == current_name or d_seg.get("speaker") == current_name:
                                 d_seg["speaker"] = target_name
                     self._diar_index_key = None
-
-            self.log_activity(
-                f"[SPEAKER] Changed instance of '{current_name}' to '{target_name}' across {len(section_indices)} segment(s) (starting at Segment #{seg_idx + 1})"
-            )
 
         if before_state is not None and hasattr(self, "_commit_project_state_change"):
             self._commit_project_state_change(before_state, f"Change Speaker: {current_name} → {target_name}")
@@ -2030,19 +1875,16 @@ class TranscriptStoryMixin:
         self.execute_speaker_rename(seg_idx, speaker, "__NEW__")
 
     def remove_speaker_label_at_segment(self, seg_idx):
-        """Remove a speaker label strictly for this specific instance/turn, 
-        reassigning only this contiguous section to the preceding speaker."""
         if not self.transcript or "segments" not in self.transcript:
             return False
 
         segments = self.transcript.get("segments", [])
         if seg_idx <= 0 or seg_idx >= len(segments):
-            return False  # Must have a previous segment to merge into
+            return False
 
         self.flush_pending_transcript_undo() if hasattr(self, "flush_pending_transcript_undo") else None
         before_state = self._capture_project_state() if hasattr(self, "_capture_project_state") else None
 
-        # 1. Determine the target speaker immediately preceding this label
         prev_seg_idx = seg_idx - 1
         target_name = self.get_effective_speaker_name(prev_seg_idx, segments[prev_seg_idx])
         target_raw = (
@@ -2050,50 +1892,38 @@ class TranscriptStoryMixin:
             or self.speaker_for_segment(segments[prev_seg_idx])
         )
 
-        # 2. Identify the speaker being removed at this specific position
         removed_name = self.get_effective_speaker_name(seg_idx, segments[seg_idx])
-
-        # 3. Find only the CONTIGUOUS run of segments in this specific turn
         section_indices = []
         for i in range(seg_idx, len(segments)):
             if self.get_effective_speaker_name(i, segments[i]) == removed_name:
                 section_indices.append(i)
             else:
-                break  # Stop as soon as another speaker turn begins
+                break
 
         if not section_indices:
             return False
 
         section_indices_set = set(section_indices)
 
-        # 4. Create isolated segment overrides for this section only.
-        # We do NOT touch or reuse global speaker names to avoid altering 
-        # other instances of either speaker that occur before or after.
         for idx in section_indices:
             instance_key = f"SEG_{idx}_SPEAKER"
             self.speaker_names[instance_key] = target_name
             self.segment_speaker_overrides[idx] = instance_key
 
-        # 5. Reassign underlying diarization segments ONLY within this specific time range
         if self.diarization and isinstance(self.diarization, dict):
             sec_start = float(segments[section_indices[0]].get("start", 0.0))
             sec_end = float(segments[section_indices[-1]].get("end", sec_start))
             diar_segs = self.diarization.get("segments", [])
             updated_diar = False
-
-            # Use the previous segment's underlying raw identity if valid, else an isolated key
             new_diar_speaker = target_raw or f"SEG_{prev_seg_idx}_SPEAKER"
 
             for d_seg in diar_segs:
                 d_start = float(d_seg.get("start", 0.0))
                 d_end = float(d_seg.get("end", d_start))
-
-                # Check strict time-boundary overlap with this specific turn
                 overlap = min(sec_end, d_end) - max(sec_start, d_start)
                 if overlap <= 0.001:
                     continue
 
-                # Find which transcript segment in this turn the diarization segment best overlaps
                 best_seg_idx = None
                 best_seg_overlap = 0.0
 
@@ -2119,86 +1949,259 @@ class TranscriptStoryMixin:
                 f"Remove Speaker Label: {removed_name} → {target_name} (turn at #{seg_idx + 1})"
             )
 
-        self.log_activity(
-            f"[SPEAKER] Removed speaker label '{removed_name}' at segment #{seg_idx + 1}; "
-            f"merged {len(section_indices)} segment(s) into '{target_name}'"
-        )
         self.save_project()
         self.render_transcript()
         self.statusBar().showMessage(f"Removed '{removed_name}' label at {format_time(segments[seg_idx].get('start', 0))}.")
         return True
 
+    def register_confirmed_speaker_turn(self, seg_idx: int, speaker_name: str):
+        """
+        Active learning hook: When a user confirms or splits a speaker turn,
+        extract its clean acoustic slice and add it to that speaker's reference bank.
+        """
+        if not speaker_name or not self.transcript or "segments" not in self.transcript:
+            return
+
+        segments = self.transcript.get("segments", [])
+        if not (0 <= seg_idx < len(segments)):
+            return
+
+        name = speaker_name.strip()
+        emb = self.get_segment_embedding(seg_idx)
+        if not emb:
+            return
+
+        if not hasattr(self, "_session_speaker_profiles"):
+            self._session_speaker_profiles = {}
+
+        if name not in self._session_speaker_profiles:
+            self._session_speaker_profiles[name] = []
+
+        # Maintain up to 6 confirmed reference vectors per speaker
+        self._session_speaker_profiles[name].append(emb)
+        if len(self._session_speaker_profiles[name]) > 6:
+            self._session_speaker_profiles[name].pop(0)
+
+        if hasattr(self, "log_activity"):
+            self.log_activity(
+                f"[VOICE MODEL] Updated acoustic signature for '{name}' "
+                f"from confirmed turn #{seg_idx + 1} ({len(self._session_speaker_profiles[name])} sample(s)).",
+                mark_dirty=False,
+            )
+
+    def refine_speaker_run_between_confirmed_anchors(
+        self, start_idx: int, end_idx: int, spk_a: str, spk_b: str
+    ):
+        """
+        Competitive classifier: For all turns between start_idx and end_idx,
+        assign to spk_a or spk_b based on relative cosine distance rather than a static threshold.
+        """
+        if not hasattr(self, "_session_speaker_profiles"):
+            return
+
+        prof_a = self._session_speaker_profiles.get(spk_a)
+        prof_b = self._session_speaker_profiles.get(spk_b)
+        if not prof_a or not prof_b:
+            return
+
+        from speaker_identity import centroid, cosine_similarity
+        cA = centroid(prof_a)
+        cB = centroid(prof_b)
+        if cA is None or cB is None:
+            return
+
+        segments = self.transcript.get("segments", []) if self.transcript else []
+        reassigned = 0
+
+        for idx in range(start_idx, min(end_idx + 1, len(segments))):
+            emb = self.get_segment_embedding(idx)
+            if not emb:
+                continue
+
+            simA = cosine_similarity(emb, cA)
+            simB = cosine_similarity(emb, cB)
+
+            winner = spk_a if simA >= simB else spk_b
+            curr = self.get_effective_speaker_name(idx, segments[idx])
+
+            if winner != curr:
+                override_key = f"SEG_{idx}_SPEAKER"
+                self.speaker_names[override_key] = winner
+                self.segment_speaker_overrides[idx] = override_key
+                reassigned += 1
+
+        if reassigned > 0:
+            self._diar_index_key = None
+            self.render_transcript()
+            self.save_project()
+            if hasattr(self, "statusBar") and self.statusBar():
+                self.statusBar().showMessage(
+                    f"Refined {reassigned} turn(s) between '{spk_a}' and '{spk_b}'.", 4000
+                )
+  
     def get_segment_embedding(self, seg_idx: int) -> Optional[List[float]]:
-        """Retrieve the 256-dimensional WeSpeaker acoustic embedding vector for a given segment."""
+        """
+        Retrieve a genuine 256-dimensional acoustic embedding for this segment.
+        Extracts on-the-fly directly from any media container (.mp4, .mkv, .wav, etc.)
+        using ffmpeg piped to memory.
+        """
         if not self.transcript or "segments" not in self.transcript:
             return None
+
         segments = self.transcript.get("segments", [])
         if seg_idx < 0 or seg_idx >= len(segments):
             return None
 
         seg = segments[seg_idx]
-        # 1. Direct segment embedding
-        if "embedding" in seg and isinstance(seg["embedding"], (list, tuple)) and len(seg["embedding"]) > 0:
-            return [float(x) for x in seg["embedding"]]
+        st = float(seg.get("start", 0.0))
+        en = float(seg.get("end", st))
+        dur = en - st
 
-        # 2. Check diarization embeddings map
-        if self.diarization and isinstance(self.diarization, dict):
-            embs_map = self.diarization.get("embeddings", {})
-            if str(seg_idx) in embs_map:
-                return [float(x) for x in embs_map[str(seg_idx)]]
+        if dur < 0.35:
+            return None
 
-            # 3. Check overlapping diarization segment
-            st = float(seg.get("start", 0.0))
-            en = float(seg.get("end", st))
-            diar_segs = self.diarization.get("segments", [])
-            best_overlap = 0.0
-            best_emb = None
-            for d in diar_segs:
-                d_st = float(d.get("start", 0.0))
-                d_en = float(d.get("end", d_st))
-                overlap = max(0.0, min(en, d_en) - max(st, d_st))
-                if overlap > best_overlap and "embedding" in d:
-                    best_overlap = overlap
-                    best_emb = d["embedding"]
-            if best_emb is not None:
-                return [float(x) for x in best_emb]
-            elif diar_segs:
-                mid = (st + en) / 2.0
-                closest_d = min(diar_segs, key=lambda d: abs(((float(d.get("start", 0.0)) + float(d.get("end", 0.0))) / 2.0) - mid))
-                if "embedding" in closest_d:
-                    return [float(x) for x in closest_d["embedding"]]
+        # 1. Use existing clean embedding if already present
+        embedding = seg.get("embedding")
+        if isinstance(embedding, (list, tuple)) and len(embedding) == 256:
+            try:
+                return [float(x) for x in embedding]
+            except (TypeError, ValueError):
+                pass
 
-        return None
+        # 2. Resolve media file path
+        media_path = (
+            getattr(self, "audio_file", None)
+            or getattr(self, "media_file", None)
+            or getattr(self, "current_media_path", None)
+            or getattr(self, "audio_path", None)
+        )
+        if not media_path or not os.path.exists(str(media_path)):
+            if hasattr(self, "project_metadata") and hasattr(self.project_metadata, "media_path"):
+                media_path = self.project_metadata.media_path
+
+        if not media_path or not os.path.exists(str(media_path)):
+            return None
+
+        # 3. Extract genuine acoustic slice embedding via ffmpeg PCM pipe
+        try:
+            import subprocess
+            import numpy as np
+            import wespeakerruntime as wespeaker_rt
+            import torchaudio.compliance.kaldi as kaldi
+            import torch
+            from prs_shared import ffmpeg_path
+
+            ff_exe = ffmpeg_path() or "ffmpeg"
+
+            # Pipe exactly this time window decoded to 16kHz mono raw float32/int16
+            cmd = [
+                str(ff_exe),
+                "-ss", f"{st:.3f}",
+                "-t", f"{dur:.3f}",
+                "-i", str(media_path),
+                "-vn", "-sn", "-dn",
+                "-ac", "1",
+                "-ar", "16000",
+                "-f", "s16le",
+                "pipe:1"
+            ]
+
+            creationflags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
+            proc = subprocess.run(
+                cmd,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.DEVNULL,
+                check=True,
+                creationflags=creationflags
+            )
+
+            raw_bytes = proc.stdout
+            if len(raw_bytes) < int(0.25 * 16000 * 2):  # Require at least 250ms of audio
+                return None
+
+            data = np.frombuffer(raw_bytes, dtype=np.int16).astype(np.float32) / 32768.0
+
+            # Compute 80-bin filterbank features
+            chunk_wave = torch.from_numpy(data).unsqueeze(0) * (1 << 15)
+            mat = kaldi.fbank(
+                chunk_wave,
+                num_mel_bins=80,
+                frame_length=25,
+                frame_shift=10,
+                dither=0.0,
+                sample_frequency=16000,
+                window_type="hamming",
+                use_energy=False,
+            ).numpy()
+            mat = mat - np.mean(mat, axis=0)
+
+            # Lazy-load WeSpeaker model on the main window instance
+            if not hasattr(self, "_wespeaker_model") or self._wespeaker_model is None:
+                self._wespeaker_model = wespeaker_rt.Speaker(lang="en")
+
+            single_in = np.expand_dims(mat, 0).astype(np.float32)
+            emb = self._wespeaker_model.session.run(
+                output_names=["embs"], input_feed={"feats": single_in}
+            )[0][0]
+
+            norm = np.linalg.norm(emb)
+            if norm > 0:
+                emb = emb / norm
+
+            vector = [round(float(x), 6) for x in emb.tolist()]
+            seg["embedding"] = vector  # Cache vector so future checks are instantaneous
+            return vector
+
+        except Exception as exc:
+            print(f"[DEBUG] Slice extraction failed for seg #{seg_idx + 1} ({st:.2f}s - {en:.2f}s): {exc}")
+            return None
 
     def get_composite_embedding(self, seg_indices: List[int]) -> Optional[List[float]]:
-        """Compute L2-normalized composite acoustic vector centroid across multiple segment indices."""
         if not seg_indices:
             return None
-        import math
-        valid_embs = []
+        vectors = []
         for idx in seg_indices:
-            emb = self.get_segment_embedding(idx)
-            if emb and len(emb) == 256:
-                norm = math.sqrt(sum(x * x for x in emb))
-                if norm > 1e-9:
-                    valid_embs.append([x / norm for x in emb])
-        if not valid_embs:
+            embedding = self.get_segment_embedding(idx)
+            if embedding is not None:
+                vectors.append(embedding)
+        if not vectors:
             return None
-        dim = len(valid_embs[0])
-        centroid = [sum(vec[i] for vec in valid_embs) for i in range(dim)]
-        c_norm = math.sqrt(sum(x * x for x in centroid))
-        if c_norm > 1e-9:
-            return [x / c_norm for x in centroid]
-        return valid_embs[0]
+        return centroid(vectors)
+
+    def _build_voice_profile_candidates(self, ref_indices: List[int]) -> List[Tuple[int, List[float]]]:
+        if not self.transcript or "segments" not in self.transcript:
+            return []
+
+        segments = self.transcript.get("segments", [])
+        ref_set = set(ref_indices)
+        candidates = []
+
+        for idx, segment in enumerate(segments):
+            if idx in ref_set:
+                continue
+
+            # Skip micro-segments under 0.6 seconds where embeddings suffer high timbral variance
+            st = float(segment.get("start", 0.0))
+            en = float(segment.get("end", st))
+            if (en - st) < 0.6:
+                continue
+
+            embedding = self.get_segment_embedding(idx)
+            if embedding is None:
+                continue
+
+            candidates.append((idx, embedding))
+
+        return candidates
 
     def find_matching_voice_turns(
         self,
         ref_seg_idx: int,
-        threshold: float = 0.70,
-        scope_cluster_only: bool = True,
+        threshold: float = 0.78,
+        scope_cluster_only: bool = False,
         ref_seg_indices: Optional[List[int]] = None,
     ) -> List[dict]:
-        """Find candidate speaker turns matching single or composite (averaged) reference voice profile."""
+        """Find transcript turns acoustically matching a verified voice."""
         if not self.transcript or "segments" not in self.transcript:
             return []
 
@@ -2206,78 +2209,126 @@ class TranscriptStoryMixin:
         if ref_seg_idx < 0 or ref_seg_idx >= len(segments):
             return []
 
-        if ref_seg_indices and len(ref_seg_indices) > 0:
-            ref_emb = self.get_composite_embedding(ref_seg_indices)
-            exclude_set = set(ref_seg_indices)
+        if ref_seg_indices:
+            reference_indices = [int(i) for i in ref_seg_indices if 0 <= int(i) < len(segments)]
         else:
-            ref_emb = self.get_segment_embedding(ref_seg_idx)
-            exclude_set = {ref_seg_idx}
+            reference_indices = [ref_seg_idx]
 
-        ref_speaker = self.get_effective_speaker_name(ref_seg_idx, segments[ref_seg_idx])
+        if ref_seg_idx not in reference_indices:
+            reference_indices.insert(0, ref_seg_idx)
 
-        import math
-        def _calc_cos_sim(v1: List[float], v2: List[float]) -> float:
-            if not v1 or not v2 or len(v1) != len(v2):
-                return 0.0
-            dot = sum(a * b for a, b in zip(v1, v2))
-            n1 = math.sqrt(sum(a * a for a in v1))
-            n2 = math.sqrt(sum(a * a for a in v2))
-            if n1 <= 1e-9 or n2 <= 1e-9:
-                return 0.0
-            return max(-1.0, min(1.0, dot / (n1 * n2)))
+        reference_vectors = []
+        for idx in reference_indices:
+            embedding = self.get_segment_embedding(idx)
+            if embedding is not None:
+                reference_vectors.append(embedding)
 
-        if ref_emb is None:
-            ref_vec = [0.0] * 256
-            ref_vec[abs(hash(ref_speaker)) % 256] = 1.0
-        else:
-            ref_vec = [float(x) for x in ref_emb]
+        # Include any confirmed reference samples accumulated this session for this speaker
+        reference_name = self.get_effective_speaker_name(ref_seg_idx, segments[ref_seg_idx])
+        if hasattr(self, "_session_speaker_profiles"):
+            session_vectors = self._session_speaker_profiles.get(reference_name, [])
+            reference_vectors.extend(session_vectors)
+            
+        if not reference_vectors:
+            return []
+
+        # Target profile is constructed STRICTLY from explicitly chosen reference vectors.
+        # This completely prevents candidate turns from corrupting the enrolled voice.
+        target_profile = centroid(reference_vectors)
+        if target_profile is None:
+            return []
+
+        candidates = self._build_voice_profile_candidates(reference_indices)
+        reference_name = self.get_effective_speaker_name(ref_seg_idx, segments[ref_seg_idx])
+
+        # Form competitor profiles from turns assigned to OTHER names
+        competing_groups = {}
+        same_cluster_embeddings = []
+        for idx, embedding in candidates:
+            speaker = self.get_effective_speaker_name(idx, segments[idx])
+            if speaker != reference_name:
+                competing_groups.setdefault(speaker, []).append(embedding)
+            else:
+                same_cluster_embeddings.append(embedding)
+
+        competitor_profiles = []
+        for vectors in competing_groups.values():
+            profile = centroid(vectors[:12])
+            if profile is not None:
+                competitor_profiles.append(profile)
+
+        # In-group sub-clustering: if a single cluster contains an imposter voice,
+        # discover outliers in the same cluster that diverge from target_profile
+        # and treat them as an internal competitor.
+        if same_cluster_embeddings:
+            divergent_vectors = [
+                v for v in same_cluster_embeddings
+                if cosine_similarity(v, target_profile) < 0.72
+            ]
+            if len(divergent_vectors) >= 2:
+                internal_competitor = centroid(divergent_vectors[:10])
+                if internal_competitor is not None:
+                    competitor_profiles.append(internal_competitor)
 
         matches = []
-        for i, seg in enumerate(segments):
-            if i in exclude_set:
+        has_competitors = len(competitor_profiles) > 0
+
+        for idx, embedding in candidates:
+            if scope_cluster_only:
+                speaker = self.get_effective_speaker_name(idx, segments[idx])
+                if speaker != reference_name:
+                    continue
+
+            comparison = compare_against_profiles(
+                embedding,
+                target_profile,
+                competitor_profiles,
+            )
+
+            if not is_confident_match(
+                comparison,
+                threshold=threshold,
+                margin=0.035,
+                has_competitors=has_competitors,
+            ):
                 continue
 
-            cur_speaker = self.get_effective_speaker_name(i, seg)
-            if scope_cluster_only and cur_speaker != ref_speaker:
-                continue
+            segment = segments[idx]
+            matches.append({
+                "seg_idx": idx,
+                "start": float(segment.get("start", 0.0)),
+                "end": float(segment.get("end", 0.0)),
+                "speaker": self.get_effective_speaker_name(idx, segment),
+                "similarity": round(comparison.target_similarity, 4),
+                "margin": round(comparison.margin, 4),
+                "competitor_similarity": round(comparison.competitor_similarity, 4),
+                "text": segment.get("text", "").strip(),
+            })
 
-            seg_emb = self.get_segment_embedding(i)
-            if seg_emb is not None:
-                cos_sim = _calc_cos_sim(ref_vec, [float(x) for x in seg_emb])
-            else:
-                if cur_speaker == ref_speaker:
-                    cos_sim = 0.85
-                else:
-                    cos_sim = 0.40
-
-            if cos_sim >= threshold:
-                matches.append({
-                    "seg_idx": i,
-                    "start": float(seg.get("start", 0.0)),
-                    "end": float(seg.get("end", 0.0)),
-                    "speaker": cur_speaker,
-                    "similarity": round(cos_sim, 4),
-                    "text": seg.get("text", "").strip(),
-                })
-
-        matches.sort(key=lambda m: m["similarity"], reverse=True)
+        matches.sort(
+            key=lambda item: (item["similarity"], item["margin"]),
+            reverse=True,
+        )
         return matches
 
     def match_acoustic_voice_profile(
         self,
         ref_seg_idx: int,
         target_speaker: str,
-        threshold: float = 0.70,
-        scope_cluster_only: bool = True,
+        threshold: float = 0.78,
+        scope_cluster_only: bool = False,
         selected_indices: Optional[List[int]] = None,
         ref_seg_indices: Optional[List[int]] = None,
     ) -> int:
-        """Apply on-demand acoustic voice profile re-clustering to matched speaker turns."""
         if not self.transcript or "segments" not in self.transcript or not target_speaker:
             return 0
 
         segments = self.transcript.get("segments", [])
         if ref_seg_idx < 0 or ref_seg_idx >= len(segments):
+            return 0
+
+        target_name = target_speaker.strip()
+        if not target_name:
             return 0
 
         if selected_indices is None:
@@ -2287,40 +2338,43 @@ class TranscriptStoryMixin:
                 scope_cluster_only=scope_cluster_only,
                 ref_seg_indices=ref_seg_indices,
             )
-            selected_indices = [m["seg_idx"] for m in matches]
+            selected_indices = [match["seg_idx"] for match in matches]
 
-        target_name = target_speaker.strip()
-        if not target_name:
-            return 0
-
-        self.flush_pending_transcript_undo() if hasattr(self, "flush_pending_transcript_undo") else None
-        before_state = self._capture_project_state() if hasattr(self, "_capture_project_state") else None
-
-        # Reassign all selected reference baseline segments and selected candidate segments
-        all_to_reassign = set(selected_indices)
+        all_to_reassign = set(selected_indices or [])
         if ref_seg_indices:
-            all_to_reassign.update(ref_seg_indices)
+            all_to_reassign.update(int(idx) for idx in ref_seg_indices if 0 <= int(idx) < len(segments))
         else:
             all_to_reassign.add(ref_seg_idx)
 
-        for idx in all_to_reassign:
+        if not all_to_reassign:
+            return 0
+
+        if hasattr(self, "flush_pending_transcript_undo"):
+            self.flush_pending_transcript_undo()
+
+        before_state = self._capture_project_state() if hasattr(self, "_capture_project_state") else None
+
+        for idx in sorted(all_to_reassign):
             instance_key = f"SEG_{idx}_SPEAKER"
             self.speaker_names[instance_key] = target_name
             self.segment_speaker_overrides[idx] = instance_key
 
-        # Reassign underlying diarization segments for re-clustered segments
-        if self.diarization and isinstance(self.diarization, dict):
-            diar_segs = self.diarization.get("segments", [])
-            for idx in all_to_reassign:
-                if idx < len(segments):
-                    t_seg = segments[idx]
-                    t_st = float(t_seg.get("start", 0.0))
-                    t_en = float(t_seg.get("end", t_st))
-                    for d_seg in diar_segs:
-                        d_st = float(d_seg.get("start", 0.0))
-                        d_en = float(d_seg.get("end", d_st))
-                        if min(t_en, d_en) - max(t_st, d_st) > 0.01:
-                            d_seg["speaker"] = f"SEG_{idx}_SPEAKER"
+        if isinstance(getattr(self, "diarization", None), dict):
+            diar_segments = self.diarization.get("segments", [])
+            for idx in sorted(all_to_reassign):
+                if idx >= len(segments):
+                    continue
+                transcript_segment = segments[idx]
+                t_start = float(transcript_segment.get("start", 0.0))
+                t_end = float(transcript_segment.get("end", t_start))
+
+                for diar_segment in diar_segments:
+                    d_start = float(diar_segment.get("start", 0.0))
+                    d_end = float(diar_segment.get("end", d_start))
+                    overlap = min(t_end, d_end) - max(t_start, d_start)
+                    if overlap > 0.01:
+                        diar_segment["speaker"] = f"SEG_{idx}_SPEAKER"
+
             self._diar_index_key = None
 
         if hasattr(self, "add_custom_speaker_to_glossary"):
@@ -2330,16 +2384,16 @@ class TranscriptStoryMixin:
         if before_state is not None and hasattr(self, "_commit_project_state_change"):
             self._commit_project_state_change(
                 before_state,
-                f"Acoustic Voice Matching: {count} turn(s) → '{target_name}'"
+                f"Acoustic Voice Identification: {count} turn(s) → '{target_name}'",
             )
 
         self.log_activity(
-            f"[SPEAKER] Acoustic Voice Matcher: Reassigned {count} turn(s) to '{target_name}' based on Segment #{ref_seg_idx + 1}."
+            f"[SPEAKER] Voice Identification: {count} confirmed turn(s) assigned to '{target_name}'."
         )
         self.save_project()
         self.render_transcript()
         self.statusBar().showMessage(
-            f"Acoustic re-clustering complete: {count} turn(s) assigned to '{target_name}'."
+            f"Voice identification complete: {count} turn(s) assigned to '{target_name}'."
         )
         return count
 
@@ -2349,7 +2403,6 @@ class TranscriptStoryMixin:
         raw_speaker: str = None,
         prompt_new_speaker: bool = False,
     ):
-        """Open the Teach This Voice / Acoustic Voice Profile Matcher dialog."""
         if not self.transcript or "segments" not in self.transcript:
             QMessageBox.information(
                 self,
@@ -2383,17 +2436,11 @@ class TranscriptStoryMixin:
             )
 
     def sync_segment_words(self, segment, new_text, word_formats=None):
-        """
-        Interpolate and maintain word-level timestamps when segment text is edited.
-        Preserves exact timing of unchanged words, and linearly interpolates
-        timestamps for modified, inserted, or substituted words (Token Splicing).
-        """
         if not isinstance(segment, dict):
             return
 
         old_words = segment.get("words")
         new_tokens = [tok.strip() for tok in new_text.split()] if isinstance(new_text, str) else []
-
         seg_start = float(segment.get("start", 0.0))
         seg_end = float(segment.get("end", seg_start + 1.0))
         total_dur = max(0.01, seg_end - seg_start)
@@ -2402,6 +2449,7 @@ class TranscriptStoryMixin:
             if not new_tokens:
                 segment["words"] = []
                 return
+
             w_dur = total_dur / len(new_tokens)
             new_words = [
                 {
@@ -2412,6 +2460,7 @@ class TranscriptStoryMixin:
                 }
                 for i, tok in enumerate(new_tokens)
             ]
+
             if word_formats:
                 for idx, w_dict in enumerate(new_words):
                     if 0 <= idx < len(word_formats):
@@ -2421,6 +2470,7 @@ class TranscriptStoryMixin:
                         if fmt.get("underline"): w_dict["underline"] = True
                         if fmt.get("strike"): w_dict["strike"] = True
                         if fmt.get("highlight"): w_dict["highlight"] = fmt["highlight"]
+
             segment["words"] = new_words
             return
 
@@ -2431,16 +2481,15 @@ class TranscriptStoryMixin:
         import difflib
         old_toks = [str(w.get("word", "")).strip() for w in old_words]
         matcher = difflib.SequenceMatcher(None, [t.lower() for t in old_toks], [t.lower() for t in new_tokens])
-
         new_words_list = []
 
         for tag, i1, i2, j1, j2 in matcher.get_opcodes():
-            if tag == 'equal':
+            if tag == "equal":
                 for old_idx, new_idx in zip(range(i1, i2), range(j1, j2)):
                     w_obj = dict(old_words[old_idx])
                     w_obj["word"] = new_tokens[new_idx]
                     new_words_list.append(w_obj)
-            elif tag == 'replace':
+            elif tag == "replace":
                 t_start = float(old_words[i1].get("start", seg_start))
                 t_end = float(old_words[i2 - 1].get("end", seg_end))
                 t_span = max(0.01, t_end - t_start)
@@ -2453,17 +2502,9 @@ class TranscriptStoryMixin:
                         "end": round(t_start + (k + 1) * w_dur, 3),
                         "deleted": False,
                     })
-            elif tag == 'insert':
-                if i1 > 0 and i1 <= len(old_words):
-                    t_start = float(old_words[i1 - 1].get("end", seg_start))
-                else:
-                    t_start = seg_start
-
-                if i1 < len(old_words):
-                    t_end = float(old_words[i1].get("start", seg_end))
-                else:
-                    t_end = seg_end
-
+            elif tag == "insert":
+                t_start = float(old_words[i1 - 1].get("end", seg_start)) if (0 < i1 <= len(old_words)) else seg_start
+                t_end = float(old_words[i1].get("start", seg_end)) if i1 < len(old_words) else seg_end
                 if t_end < t_start:
                     t_end = t_start + 0.2 * (j2 - j1)
                 t_span = max(0.01, t_end - t_start)
@@ -2476,42 +2517,31 @@ class TranscriptStoryMixin:
                         "end": round(t_start + (k + 1) * w_dur, 3),
                         "deleted": False,
                     })
-            elif tag == 'delete':
-                pass
 
         if word_formats:
             for idx, w_dict in enumerate(new_words_list):
                 if 0 <= idx < len(word_formats):
                     fmt = word_formats[idx]
                     if fmt.get("bold"): w_dict["bold"] = True
-                    else: w_dict.pop("bold", None)
                     if fmt.get("italic"): w_dict["italic"] = True
-                    else: w_dict.pop("italic", None)
                     if fmt.get("underline"): w_dict["underline"] = True
-                    else: w_dict.pop("underline", None)
                     if fmt.get("strike"): w_dict["strike"] = True
-                    else: w_dict.pop("strike", None)
                     if fmt.get("highlight"): w_dict["highlight"] = fmt["highlight"]
-                    else: w_dict.pop("highlight", None)
 
         segment["words"] = new_words_list
 
     def merge_speakers(self, source_speaker: str, target_speaker: str) -> bool:
-        """
-        Global speaker merge: reassigns all segment tags, diarization tracks, and overrides
-        from source_speaker to target_speaker across the entire timeline in one pass.
-        """
         source = (source_speaker or "").strip()
         target = (target_speaker or "").strip()
         if not source or not target or source == target:
             return False
-
         if not self.transcript or not self.transcript.get("segments"):
             return False
 
-        self.flush_pending_transcript_undo() if hasattr(self, "flush_pending_transcript_undo") else None
-        before_state = self._capture_project_state() if hasattr(self, "_capture_project_state") else None
+        if hasattr(self, "flush_pending_transcript_undo"):
+            self.flush_pending_transcript_undo()
 
+        before_state = self._capture_project_state() if hasattr(self, "_capture_project_state") else None
         segments = self.transcript.get("segments", [])
         reassigned_segments = 0
 
@@ -2525,7 +2555,6 @@ class TranscriptStoryMixin:
                 seg["speaker"] = target
                 reassigned_segments += 1
 
-        # Reassign diarization clusters
         diar_data = getattr(self, "diarization", None)
         if isinstance(diar_data, dict) and "segments" in diar_data:
             for d_seg in diar_data["segments"]:
@@ -2533,11 +2562,11 @@ class TranscriptStoryMixin:
                 disp_d = self.display_speaker(raw_d)
                 if disp_d == source or raw_d == source:
                     d_seg["speaker"] = target
+
             unique_speakers = {s.get("speaker") for s in diar_data["segments"] if s.get("speaker")}
             diar_data["num_speakers"] = len(unique_speakers)
             self._diar_index_key = None
 
-        # Alias mapping update
         self.speaker_names[source] = target
         if hasattr(self, "custom_speakers"):
             if source in self.custom_speakers:
@@ -2546,12 +2575,8 @@ class TranscriptStoryMixin:
                 self.custom_speakers.append(target)
 
         if before_state is not None and hasattr(self, "_commit_project_state_change"):
-            self._commit_project_state_change(
-                before_state,
-                f"Merge Speaker '{source}' into '{target}'"
-            )
+            self._commit_project_state_change(before_state, f"Merge Speaker '{source}' into '{target}'")
 
-        self.log_activity(f"[SPEAKER] Merged speaker '{source}' into '{target}' across {reassigned_segments} segment(s).")
         self.save_project()
         self.render_transcript()
         if hasattr(self, "timeline"):
@@ -2561,7 +2586,6 @@ class TranscriptStoryMixin:
         return True
 
     def open_speaker_manager_dialog(self):
-        """Display the dedicated Speaker Manager & Diarization Clusters dialog."""
         dialog = SpeakerManagerDialog(self)
         dialog.exec()
 
@@ -2580,7 +2604,6 @@ class TranscriptStoryMixin:
 
         for idx, seg in enumerate(segments):
             effective_name = self.get_effective_speaker_name(idx, seg)
-
             if curr_block is None:
                 curr_block = dict(seg)
                 curr_block["words"] = list(seg.get("words", []))
@@ -2595,7 +2618,6 @@ class TranscriptStoryMixin:
                     merged_segments.append(curr_block)
                     if idx - 1 in self.segment_speaker_overrides:
                         new_overrides[merged_idx] = self.segment_speaker_overrides[idx - 1]
-
                     curr_block = dict(seg)
                     curr_block["words"] = list(seg.get("words", []))
                     curr_effective_name = effective_name
@@ -2611,11 +2633,15 @@ class TranscriptStoryMixin:
 
     def refresh_story_list(self):
         selected_indices = list(self.current_selected_story_indices)
-
         self.story_list.blockSignals(True)
         self.story_list.clear()
 
-        curve_labels = {"linear": "Linear", "s_curve": "S-Curve", "logarithmic": "Logarithmic", "exponential": "Exponential"}
+        curve_labels = {
+            "linear": "Linear",
+            "s_curve": "S-Curve",
+            "logarithmic": "Logarithmic",
+            "exponential": "Exponential",
+        }
 
         for index, story in enumerate(self.stories, start=1):
             fin = getattr(story, "fade_in", 0.0)
@@ -2623,19 +2649,16 @@ class TranscriptStoryMixin:
             fcurve = getattr(story, "fade_curve", "linear") or "linear"
 
             fade_parts = []
-            if fin > 0:
-                fade_parts.append(f"In:{fin:.1f}s")
-            if fout > 0:
-                fade_parts.append(f"Out:{fout:.1f}s")
-
+            if fin > 0: fade_parts.append(f"In:{fin:.1f}s")
+            if fout > 0: fade_parts.append(f"Out:{fout:.1f}s")
             fade_badge = f"  [{' '.join(fade_parts)}]" if fade_parts else ""
+
             text = f"{index}. {format_time(story.start)} – {format_time(story.end)}  {story.title}{fade_badge}"
             item = QListWidgetItem(text)
-
             curve_name = curve_labels.get(fcurve, fcurve.capitalize())
             fade_info = f"Fade-In: {fin:.2f}s | Fade-Out: {fout:.2f}s ({curve_name} Curve)" if (fin > 0 or fout > 0) else "No Fades Applied"
-            item.setToolTip(f"Story #{index}: {story.title}\nTime Range: {format_time(story.start)} – {format_time(story.end)}\n{fade_info}")
 
+            item.setToolTip(f"Story #{index}: {story.title}\nTime Range: {format_time(story.start)} – {format_time(story.end)}\n{fade_info}")
             item.setData(Qt.ItemDataRole.UserRole, story.to_dict())
             self.story_list.addItem(item)
 
@@ -2648,19 +2671,17 @@ class TranscriptStoryMixin:
         if hasattr(self, "update_story_list_height"):
             self.update_story_list_height()
         if hasattr(self, "notify_story_selection_to_plugins"):
-            st = self.stories[selected_indices[0]] if len(selected_indices) == 1 and 0 <= selected_indices[0] < len(self.stories) else None
+            st = self.stories[selected_indices[0]] if (len(selected_indices) == 1 and 0 <= selected_indices[0] < len(self.stories)) else None
             self.notify_story_selection_to_plugins(st)
 
     def handle_new_story_started(self, start_time, end_time):
         self.pre_drag_stories_snapshot = [Story.from_dict(s.to_dict()) for s in self.stories]
-        is_music = getattr(self, "story_detection_mode", "voice") == "music"
+        is_music = (getattr(self, "story_detection_mode", "voice") == "music")
         default_title = "Untitled Song" if is_music else "Untitled Story"
         story = Story(start=start_time, end=end_time, title=default_title)
         self.stories.append(story)
-
         self.refresh_story_list()
         self.story_selection_changed()
-
         self.start_input.setText(format_time(story.start))
         self.end_input.setText(format_time(story.end))
         self.title_input.setText(story.title)
@@ -2670,10 +2691,8 @@ class TranscriptStoryMixin:
             story = self.stories[-1]
             story.start = start_time
             story.end = end_time
-
             self.start_input.setText(format_time(story.start))
             self.end_input.setText(format_time(story.end))
-            # Optimize: Update only the last item in-place without rebuilding the entire list widget
             if hasattr(self, "story_list") and self.story_list.count() > 0:
                 last_idx = self.story_list.count() - 1
                 item = self.story_list.item(last_idx)
@@ -2689,53 +2708,45 @@ class TranscriptStoryMixin:
             story = self.stories[index]
             story.start = start_time
             story.end = end_time
-
             if self.current_selected_story_indices != [index]:
                 self.apply_story_selection_indices([index], seek=False)
             else:
                 self.start_input.setText(format_time(story.start))
                 self.end_input.setText(format_time(story.end))
-                # High-performance drag: Defer sidebar story_list item relayout and serialization
-                # until handle_drag_finished to maintain silky smooth 60+ FPS interaction.
 
     def audition_story(self, index: int):
-        """Audition playback for a specific story with real-time fade-in & fade-out envelopes."""
         if not (0 <= index < len(self.stories)):
             return
+
         story = self.stories[index]
         self._audition_story_index = index
         self.apply_story_selection_indices([index], seek=False)
         self.seek_to(story.start)
-        # If fade_in > 0 and fades preview is enabled, start volume at 0.0 before playing
+
         if getattr(self, "preview_audio_fades", False) and getattr(self, "enable_audio_fades", False):
             fin = getattr(story, "fade_in", 0.0)
             if fin > 0 and hasattr(self, "audio_output"):
                 self.audio_output.setVolume(0.0)
                 self._last_applied_fade_vol = 0.0
+
         self.player.play()
+
         if getattr(self, "preview_audio_fades", False) and getattr(self, "enable_audio_fades", False):
             if hasattr(self, "fade_preview_timer"):
                 self.fade_preview_timer.start(35)
             self.update_realtime_fade_volume()
+
         self.timeline.set_playing_state(True)
         self.play_button.setText("❚❚ Pause")
-        if hasattr(self, "log_activity"):
-            is_music = getattr(self, "story_detection_mode", "voice") == "music"
-            term = "Song" if is_music else "Story"
-            self.log_activity(f"[AUDITION] Auditioning {term} #{index + 1} with real-time fades ({story.start:.2f}s - {story.end:.2f}s)")
 
     def handle_drag_finished(self):
         if self.pre_drag_stories_snapshot:
             old_stories = self.pre_drag_stories_snapshot
             self.pre_drag_stories_snapshot = []
-
-            # Identify which story boundary changed
             changed_idx = None
+
             for i in range(min(len(old_stories), len(self.stories))):
-                if (
-                    abs(old_stories[i].start - self.stories[i].start) > 0.001
-                    or abs(old_stories[i].end - self.stories[i].end) > 0.001
-                ):
+                if (abs(old_stories[i].start - self.stories[i].start) > 0.001 or abs(old_stories[i].end - self.stories[i].end) > 0.001):
                     changed_idx = i
                     break
 
@@ -2745,10 +2756,13 @@ class TranscriptStoryMixin:
                 new_start = self.stories[changed_idx].start
                 new_end = self.stories[changed_idx].end
                 desc = f"Adjust Story #{changed_idx + 1} Boundary"
-                # Temporarily revert so push() executes redo() cleanly
+
                 self.stories[changed_idx].start = old_start
                 self.stories[changed_idx].end = old_end
-                cmd = StoryBoundaryChangeCommand(self, changed_idx, old_start, old_end, new_start, new_end, desc)
+
+                cmd = StoryBoundaryChangeCommand(
+                    self, changed_idx, old_start, old_end, new_start, new_end, desc
+                )
                 self.undo_stack.push(cmd)
             else:
                 new_stories = [Story.from_dict(s.to_dict()) for s in self.stories]
@@ -2758,7 +2772,6 @@ class TranscriptStoryMixin:
 
     def update_selected_story(self):
         selected_rows = list(self.current_selected_story_indices)
-
         if not selected_rows:
             return
 
@@ -2790,14 +2803,11 @@ class TranscriptStoryMixin:
         if not hasattr(new_stories[index], "metadata") or new_stories[index].metadata is None:
             new_stories[index].metadata = {}
 
-        old_author = old_stories[index].metadata.get("author", "") if hasattr(old_stories[index], "metadata") and old_stories[index].metadata else ""
-        old_excerpt = old_stories[index].metadata.get("excerpt", "") if hasattr(old_stories[index], "metadata") and old_stories[index].metadata else ""
+        old_author = old_stories[index].metadata.get("author", "") if (hasattr(old_stories[index], "metadata") and old_stories[index].metadata) else ""
+        old_excerpt = old_stories[index].metadata.get("excerpt", "") if (hasattr(old_stories[index], "metadata") and old_stories[index].metadata) else ""
 
         new_stories[index].metadata["author"] = author_val
         new_stories[index].metadata["excerpt"] = excerpt_val
-        wp_meta = new_stories[index].metadata.setdefault("wordpress", {})
-        wp_meta["manual_author"] = author_val
-        wp_meta["excerpt"] = excerpt_val
 
         start_changed = abs(new_stories[index].start - old_stories[index].start) >= 0.001
         end_changed = abs(new_stories[index].end - old_stories[index].end) >= 0.001
@@ -2805,14 +2815,13 @@ class TranscriptStoryMixin:
         author_changed = author_val != old_author
         excerpt_changed = excerpt_val != old_excerpt
 
-        if not start_changed and not end_changed and not title_changed and not author_changed and not excerpt_changed:
+        if not (start_changed or end_changed or title_changed or author_changed or excerpt_changed):
             return
 
         if (start_changed or end_changed) and not title_changed and not author_changed and not excerpt_changed and hasattr(self, "undo_stack"):
             desc = f"Adjust Story #{index + 1} Boundary"
             cmd = StoryBoundaryChangeCommand(
-                self, index, old_stories[index].start, old_stories[index].end,
-                new_stories[index].start, new_stories[index].end, desc
+                self, index, old_stories[index].start, old_stories[index].end, new_stories[index].start, new_stories[index].end, desc
             )
             self.undo_stack.push(cmd)
             self.apply_story_selection_indices([index], seek=False)
@@ -2823,11 +2832,10 @@ class TranscriptStoryMixin:
 
     def delete_selected_story(self):
         selected_rows = sorted(list(self.current_selected_story_indices), reverse=True)
-
         if not selected_rows:
             return
 
-        is_music = getattr(self, "story_detection_mode", "voice") == "music"
+        is_music = (getattr(self, "story_detection_mode", "voice") == "music")
         term = "Song" if is_music else "Story"
         term_plural = "Songs" if is_music else "Stories"
 
@@ -2838,10 +2846,8 @@ class TranscriptStoryMixin:
             del new_stories[idx]
 
         count = len(selected_rows)
-        # Clear story selection so that deleting a highlighted story removes the selection
         self.apply_story_selection_indices([], seek=False)
 
-        # Clear any timeline drag selection range if present
         if hasattr(self, "timeline") and hasattr(self.timeline, "canvas"):
             self.timeline.canvas.selection_start = None
             self.timeline.canvas.selection_end = None
@@ -2852,14 +2858,6 @@ class TranscriptStoryMixin:
         self.commit_story_change(old_stories, new_stories, desc)
 
     def get_current_interaction_time(self, for_boundary="start"):
-        """
-        Determines the relevant timestamp for setting a story boundary.
-        Checks in order of user intent:
-        1. Active drag-selection on the timeline canvas
-        2. Active text selection in the transcript view
-        3. Active text cursor position in the transcript view (if last focused/edited)
-        4. Current playback / playhead / waveform position
-        """
         canvas = getattr(getattr(self, "timeline", None), "canvas", None)
         if canvas and canvas.selection_start is not None and canvas.selection_end is not None:
             s = min(canvas.selection_start, canvas.selection_end)
@@ -2880,7 +2878,6 @@ class TranscriptStoryMixin:
         return getattr(self, "current_position", 0.0)
 
     def set_selected_story_start(self):
-        """Update the start boundary of the currently selected story to match the current transcript/timeline position."""
         selected_rows = list(self.current_selected_story_indices)
         if len(selected_rows) != 1:
             return
@@ -2895,19 +2892,15 @@ class TranscriptStoryMixin:
             target_time = getattr(self, "current_position", 0.0)
 
         target_time = round(max(0.0, float(target_time)), 3)
-
         if target_time >= current_story.end:
             QMessageBox.warning(
-                self,
-                "Invalid Boundary",
-                f"Start time ({format_time(target_time)}) must be earlier than story end time ({format_time(current_story.end)})."
+                self, "Invalid Boundary", f"Start time ({format_time(target_time)}) must be earlier than story end time ({format_time(current_story.end)})."
             )
             return
 
         if abs(target_time - current_story.start) < 0.001:
             return
 
-        # Clear any temporary drag selection on timeline
         canvas = getattr(getattr(self, "timeline", None), "canvas", None)
         if canvas and canvas.selection_start is not None:
             canvas.selection_start = None
@@ -2917,8 +2910,7 @@ class TranscriptStoryMixin:
         desc = f"Set Story #{index + 1} Start Time to {format_time(target_time)}"
         if hasattr(self, "undo_stack"):
             cmd = StoryBoundaryChangeCommand(
-                self, index, current_story.start, current_story.end,
-                target_time, current_story.end, desc
+                self, index, current_story.start, current_story.end, target_time, current_story.end, desc
             )
             self.undo_stack.push(cmd)
             self.apply_story_selection_indices([index], seek=True)
@@ -2933,7 +2925,6 @@ class TranscriptStoryMixin:
             self.save_project()
 
     def set_selected_story_end(self):
-        """Update the end boundary of the currently selected story to match the current transcript/timeline position."""
         selected_rows = list(self.current_selected_story_indices)
         if len(selected_rows) != 1:
             return
@@ -2948,19 +2939,15 @@ class TranscriptStoryMixin:
             target_time = getattr(self, "current_position", 0.0)
 
         target_time = round(max(0.0, float(target_time)), 3)
-
         if target_time <= current_story.start:
             QMessageBox.warning(
-                self,
-                "Invalid Boundary",
-                f"End time ({format_time(target_time)}) must be later than story start time ({format_time(current_story.start)})."
+                self, "Invalid Boundary", f"End time ({format_time(target_time)}) must be later than story start time ({format_time(current_story.start)})."
             )
             return
 
         if abs(target_time - current_story.end) < 0.001:
             return
 
-        # Clear any temporary drag selection on timeline
         canvas = getattr(getattr(self, "timeline", None), "canvas", None)
         if canvas and canvas.selection_start is not None:
             canvas.selection_start = None
@@ -2970,8 +2957,7 @@ class TranscriptStoryMixin:
         desc = f"Set Story #{index + 1} End Time to {format_time(target_time)}"
         if hasattr(self, "undo_stack"):
             cmd = StoryBoundaryChangeCommand(
-                self, index, current_story.start, current_story.end,
-                current_story.start, target_time, desc
+                self, index, current_story.start, current_story.end, current_story.start, target_time, desc
             )
             self.undo_stack.push(cmd)
             self.apply_story_selection_indices([index], seek=False)
@@ -2984,9 +2970,8 @@ class TranscriptStoryMixin:
             self.apply_story_selection_indices([index], seek=False)
             self.mark_project_dirty(desc)
             self.save_project()
-	
+
     def add_selection_to_story(self):
-        """Create a new story segment spanning the selected transcript text."""
         if not hasattr(self, "transcript_view"):
             return
 
@@ -2998,20 +2983,18 @@ class TranscriptStoryMixin:
             cursor = self.transcript_view.textCursor()
             if not cursor.hasSelection():
                 QMessageBox.information(
-                    self,
-                    "No Selection",
-                    "Highlight a portion of the transcript first to create a story from it."
+                    self, "No Selection", "Highlight a portion of the transcript first to create a story from it."
                 )
                 return
 
-        is_music = getattr(self, "story_detection_mode", "voice") == "music"
+        is_music = (getattr(self, "story_detection_mode", "voice") == "music")
         term = "Song" if is_music else "Story"
         term_plural = "Songs" if is_music else "Stories"
 
-        # Multiple selections workflow: create separate stories/songs for each selected section
         if len(ranges) > 1:
             old_stories = [Story.from_dict(s.to_dict()) for s in getattr(self, "stories", [])]
             created_stories = []
+
             for r in ranges:
                 s_time = r.get("start_time", 0.0)
                 e_time = r.get("end_time", s_time + 1.0)
@@ -3019,7 +3002,7 @@ class TranscriptStoryMixin:
                     e_time = s_time + 1.0
                 text = r.get("text", "").strip()
                 words = text.split()
-                t = " ".join(words[:6]) + ("..." if len(words) > 6 else "") if words else f"New {term}"
+                t = (" ".join(words[:6]) + ("..." if len(words) > 6 else "")) if words else f"New {term}"
                 created_stories.append(Story(start=s_time, end=e_time, title=t))
 
             new_stories = sorted(old_stories + created_stories, key=lambda s: s.start)
@@ -3034,14 +3017,13 @@ class TranscriptStoryMixin:
                 self.apply_story_selection_indices(new_indices)
 
             self.transcript_view.clear_all_selections()
-            self.log_activity(f"[{'SONG' if is_music else 'STORY'}] Added {len(created_stories)} {term_plural.lower()} from multi-selection.")
             self.statusBar().showMessage(f"Created {len(created_stories)} {term_plural.lower()} from multiple selections.")
             return
 
-        # Single selection workflow
         start_time = None
         end_time = None
         selected_text = ""
+
         if ranges:
             start_time = ranges[0].get("start_time")
             end_time = ranges[0].get("end_time")
@@ -3054,19 +3036,18 @@ class TranscriptStoryMixin:
                 if sel_range and sel_range[0] is not None and sel_range[1] is not None:
                     start_time, end_time = sel_range
 
-        # Fallback to mapping character offsets to timestamps
         if start_time is None or end_time is None:
             cursor = self.transcript_view.textCursor()
             start_char = cursor.selectionStart()
             end_char = cursor.selectionEnd()
             char_map = getattr(self.transcript_view, "char_timestamp_map", [])
-            for c_start, c_end, w_start, w_end, _ in char_map:
+
+            for (c_start, c_end, w_start, w_end, _) in char_map:
                 if c_start <= start_char <= c_end and start_time is None:
                     start_time = w_start
                 if c_start <= end_char <= c_end:
                     end_time = w_end
 
-        # Fallback to playhead if mapping could not find timestamps
         if start_time is None:
             start_time = getattr(self, "current_position", 0.0)
         if end_time is None:
@@ -3075,11 +3056,9 @@ class TranscriptStoryMixin:
         if end_time <= start_time:
             end_time = start_time + 1.0
 
-        # Auto-generate a preliminary title from the first few words of the selection
         words = selected_text.split()
-        default_title = " ".join(words[:6]) + ("..." if len(words) > 6 else "") if words else f"New {term}"
+        default_title = (" ".join(words[:6]) + ("..." if len(words) > 6 else "")) if words else f"New {term}"
 
-        # Update input boxes if present
         if hasattr(self, "start_input"):
             self.start_input.setText(format_time(start_time))
         if hasattr(self, "end_input"):
@@ -3087,7 +3066,6 @@ class TranscriptStoryMixin:
         if hasattr(self, "title_input"):
             self.title_input.setText(default_title)
 
-        # Create the new story and commit it through the undo history
         new_story = Story(start=start_time, end=end_time, title=default_title)
         old_stories = [Story.from_dict(s.to_dict()) for s in getattr(self, "stories", [])]
         new_stories = sorted(old_stories + [new_story], key=lambda s: s.start)
@@ -3098,22 +3076,21 @@ class TranscriptStoryMixin:
             self.stories = new_stories
             self.refresh_story_list()
 
-        # Select the newly added story
         new_idx = new_stories.index(new_story)
         if hasattr(self, "apply_story_selection_indices"):
             self.apply_story_selection_indices([new_idx])
 
         self.transcript_view.clear_all_selections()
-        self.log_activity(f"[{'SONG' if is_music else 'STORY'}] Added {term.lower()} from selection ({format_time(start_time)} – {format_time(end_time)}).")
         self.statusBar().showMessage(f"Created {term.lower()}: {default_title}")
 
     def play_transcript_selection(self):
-        """Play audio corresponding to the current transcript selection."""
         if not hasattr(self, "transcript_view"):
             return
+
         ranges = []
         if hasattr(self.transcript_view, "get_all_selected_story_ranges"):
             ranges = self.transcript_view.get_all_selected_story_ranges()
+
         if not ranges and hasattr(self.transcript_view, "get_selected_time_range"):
             tr = self.transcript_view.get_selected_time_range()
             if tr and tr[0] is not None:
@@ -3123,14 +3100,13 @@ class TranscriptStoryMixin:
             start_t = ranges[0].get("start_time", 0.0)
             self.seek_to(start_t)
             if hasattr(self, "player") and hasattr(self, "toggle_play"):
+                from PySide6.QtMultimedia import QMediaPlayer
                 if self.player.playbackState() != QMediaPlayer.PlaybackState.PlayingState:
                     self.toggle_play()
 
     def select_all_stories(self):
-        """Select every story in the story list and timeline."""
         if not getattr(self, "stories", []):
             return
-
         all_indices = list(range(len(self.stories)))
         self.apply_story_selection_indices(all_indices)
         if hasattr(self, "timeline"):
@@ -3138,7 +3114,6 @@ class TranscriptStoryMixin:
         self.statusBar().showMessage(f"Selected all {len(self.stories)} stories.")
 
     def handle_timeline_selection_range_changed(self, start_time, end_time):
-        """Synchronize timeline right-drag selection by highlighting transcript text."""
         if not hasattr(self, "transcript_view"):
             return
 
@@ -3177,7 +3152,6 @@ class TranscriptStoryMixin:
             self.transcript_view.ensureCursorVisible()
 
     def add_story_from_range(self, start_time, end_time):
-        """Create and commit a story spanning start_time to end_time."""
         s = min(float(start_time), float(end_time))
         e = max(float(start_time), float(end_time))
         if e <= s:
@@ -3211,11 +3185,9 @@ class TranscriptStoryMixin:
         if hasattr(self, "apply_story_selection_indices"):
             self.apply_story_selection_indices([new_idx])
 
-        self.log_activity(f"[STORY] Added story from selection ({format_time(s)} – {format_time(e)}).")
         self.statusBar().showMessage(f"Created story: {default_title}")
 
     def add_story_from_active_selection(self):
-        """Add story using current timeline drag selection or highlighted transcript text."""
         canvas = getattr(getattr(self, "timeline", None), "canvas", None)
         if canvas and canvas.selection_start is not None and canvas.selection_end is not None:
             s = min(canvas.selection_start, canvas.selection_end)
@@ -3231,13 +3203,10 @@ class TranscriptStoryMixin:
             return
 
         QMessageBox.information(
-            self,
-            "No Selection",
-            "Make a selection first by right-click dragging across the timeline or highlighting transcript text."
+            self, "No Selection", "Make a selection first by right-click dragging across the timeline or highlighting transcript text."
         )
 
     def open_story_fades_dialog(self, story_index=None):
-        """Open fine-grained audio fade-in, fade-out, and curve profile modal dialog for the selected story."""
         if not hasattr(self, "stories") or not self.stories:
             QMessageBox.information(self, "No Stories", "There are no stories created yet.")
             return
@@ -3253,55 +3222,35 @@ class TranscriptStoryMixin:
 
         story = self.stories[story_index]
         dlg = StoryFadesDialog(self, story=story, story_index=story_index)
+
         if dlg.exec() == QDialog.DialogCode.Accepted:
             new_in, new_out, new_curve, apply_all = dlg.get_fades()
-            if dlg._initial_fades and 0 <= story_index < len(dlg._initial_fades):
-                old_in, old_out, old_curve = dlg._initial_fades[story_index]
-            else:
-                old_in = getattr(story, "fade_in", 0.0)
-                old_out = getattr(story, "fade_out", 0.0)
-                old_curve = getattr(story, "fade_curve", "linear") or "linear"
+            old_stories = [Story.from_dict(s.to_dict()) for s in self.stories]
+            new_stories = [Story.from_dict(s.to_dict()) for s in self.stories]
 
             if apply_all:
-                old_stories = []
-                for idx, s in enumerate(self.stories):
-                    st_copy = Story.from_dict(s.to_dict())
-                    if dlg._initial_fades and idx < len(dlg._initial_fades):
-                        st_copy.fade_in, st_copy.fade_out, st_copy.fade_curve = dlg._initial_fades[idx]
-                    old_stories.append(st_copy)
-
-                new_stories = []
-                for s in self.stories:
-                    st_copy = Story.from_dict(s.to_dict())
-                    st_copy.fade_in = new_in
-                    st_copy.fade_out = new_out
-                    st_copy.fade_curve = new_curve
-                    new_stories.append(st_copy)
-
-                if hasattr(self, "undo_stack"):
-                    self.undo_stack.push(SetStoriesCommand(self, old_stories, new_stories, "Set Audio Fades on All Stories"))
-                else:
-                    self.stories = new_stories
-                    self.refresh_story_list()
-                    if hasattr(self, "timeline"):
-                        self.timeline.set_stories(self.stories, self.current_selected_story_indices)
-                        self.timeline.update()
-                    self.save_project()
+                for s in new_stories:
+                    s.fade_in = new_in
+                    s.fade_out = new_out
+                    s.fade_curve = new_curve
+                desc = "Set Audio Fades on All Stories"
             else:
-                if hasattr(self, "undo_stack"):
-                    self.undo_stack.push(StoryFadesChangeCommand(self, story_index, old_in, old_out, new_in, new_out, old_curve, new_curve))
-                else:
-                    story.fade_in = new_in
-                    story.fade_out = new_out
-                    story.fade_curve = new_curve
-                    self.refresh_story_list()
-                    if hasattr(self, "timeline"):
-                        self.timeline.set_stories(self.stories, self.current_selected_story_indices)
-                        self.timeline.update()
-                    self.save_project()
+                new_stories[story_index].fade_in = new_in
+                new_stories[story_index].fade_out = new_out
+                new_stories[story_index].fade_curve = new_curve
+                desc = f"Set Audio Fades on Story #{story_index + 1}"
+
+            if hasattr(self, "undo_stack"):
+                self.undo_stack.push(SetStoriesCommand(self, old_stories, new_stories, desc))
+            else:
+                self.stories = new_stories
+                self.refresh_story_list()
+                if hasattr(self, "timeline"):
+                    self.timeline.set_stories(self.stories, self.current_selected_story_indices)
+                    self.timeline.update()
+                self.save_project()
 
     def apply_fades_to_selected_stories(self, fade_in=None, fade_out=None, fade_curve=None):
-        """Apply configured or default fade settings to all selected stories in batch."""
         if not hasattr(self, "stories") or not self.stories:
             return
 
@@ -3337,11 +3286,9 @@ class TranscriptStoryMixin:
             self.save_project()
 
     def remove_fades_from_selected_stories(self):
-        """Remove audio fade-in and fade-out ramps (set 0.0s) from selected stories."""
         self.apply_fades_to_selected_stories(fade_in=0.0, fade_out=0.0)
 
     def set_fade_curve_for_selected_stories(self, curve_type: str):
-        """Change the fade curve profile for all selected stories without altering duration values."""
         if not hasattr(self, "stories") or not self.stories:
             return
 
@@ -3367,10 +3314,10 @@ class TranscriptStoryMixin:
             self.save_project()
 
     def open_story_metadata_dialog(self, target_story_index: Optional[int] = None):
-        """Open the universal Story & Post Metadata dialog for editing full episode and story metadata."""
         from story_metadata_dialog import StoryMetadataDialog
         if target_story_index is None and getattr(self, "current_selected_story_indices", None):
             target_story_index = self.current_selected_story_indices[0]
+
         dlg = StoryMetadataDialog(self, main_window=self, target_story_index=target_story_index)
         dlg.exec()
 
@@ -3476,7 +3423,6 @@ class StoryFadesDialog(QDialog):
         layout.addLayout(btn_box)
 
     def apply_current(self):
-        """Apply current settings in real-time without closing the dialog."""
         new_in, new_out, new_curve, apply_all = self.get_fades()
         if not self.main_win or not hasattr(self.main_win, "stories"):
             return
@@ -3498,13 +3444,9 @@ class StoryFadesDialog(QDialog):
         if hasattr(self.main_win, "timeline"):
             self.main_win.timeline.set_stories(self.main_win.stories, getattr(self.main_win, "current_selected_story_indices", []))
             self.main_win.timeline.update()
-        if hasattr(self.main_win, "log_activity"):
-            scope_desc = "all stories" if apply_all else f"Story #{self.story_index + 1}"
-            self.main_win.log_activity(f"[FADES] Applied fade-in: {new_in:.2f}s, fade-out: {new_out:.2f}s, curve: {new_curve} ({scope_desc})")
         self._has_applied = True
 
     def reject(self):
-        """Revert back to initial settings if applied prior to canceling."""
         if self._has_applied and self.main_win and hasattr(self.main_win, "stories"):
             for idx, (fin, fout, fcur) in enumerate(self._initial_fades):
                 if idx < len(self.main_win.stories):
@@ -3533,9 +3475,8 @@ class StoryFadesDialog(QDialog):
 
 
 class SpeakerManagerDialog(QDialog):
-    """
-    Manager dialog for inspecting, aliasing, and merging detected speaker clusters.
-    """
+    """Manager dialog for inspecting, aliasing, and merging detected speaker clusters."""
+
     def __init__(self, parent=None):
         super().__init__(parent)
         self.main_win = parent
@@ -3572,7 +3513,6 @@ class SpeakerManagerDialog(QDialog):
         self.merge_all_btn = QPushButton("Merge Two Speakers...", self)
         self.merge_all_btn.clicked.connect(self._on_quick_merge)
         btn_row.addWidget(self.merge_all_btn)
-
         btn_row.addStretch()
 
         close_btn = QPushButton("Close", self)
@@ -3653,7 +3593,6 @@ class SpeakerManagerDialog(QDialog):
 
             self.main_win.render_transcript()
             self.main_win.save_project()
-            self.main_win.log_activity(f"[SPEAKER] Renamed speaker '{current_name}' to '{target}'.")
             self._populate()
 
     def _merge_speaker_into(self, source_name):
@@ -3700,4 +3639,3 @@ class SpeakerManagerDialog(QDialog):
 
         self.main_win.merge_speakers(source, target)
         self._populate()
-

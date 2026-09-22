@@ -29,15 +29,16 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 --------------------------------------------------------------------------------
 TABLE OF CONTENTS & STATUS OVERVIEW
 --------------------------------------------------------------------------------
-1. Previous Release: Multi-Sample Acoustic Voice Profile Centroids & Composite Baseline Matching (`transcript_story.py`) (Completed in v3.7.2-beta)
-   [x] 1.1 Multi-Sample Vector Centroid Synthesis (`get_composite_embedding`): Calculate L2-normalized 256-dimensional centroid vectors across multiple segment embeddings to average out vocal noise and improve speaker matching fidelity.
-   [x] 1.2 Reference Baseline Selection Modes (`VoiceProfileMatchDialog`): Interactive reference baseline selector allowing users to switch between Single Reference Turn mode and Composite Speaker Profile mode (averaging across all turns or selected turns of a speaker).
-   [x] 1.3 Exclusion & Reassignment Precision (`find_matching_voice_turns` & `match_acoustic_voice_profile`): Automatically excludes reference baseline turns from candidate match results while ensuring all baseline and candidate turns are reassigned together upon applying.
+1. Previous Release: Interactive Audio Auditioning & Direct Playback Navigation in Acoustic Voice Profile Matcher (`transcript_story.py`) (Completed in v3.7.3-beta)
+   [x] 1.1 Click-to-Seek Candidate Navigation (`VoiceProfileMatchDialog`): Connect table row selection changes (`itemSelectionChanged`) to `parent_window.seek_to(start_t)` for instant timeline playhead and transcript view jumping.
+   [x] 1.2 Spacebar Audition Play/Pause (`keyPressEvent`): Implement keyboard shortcut handling so Spacebar toggles playback from candidate turn start times while safely passing through text inputs.
+   [x] 1.3 Auto-Audition Header Action & Double-Click Playback (`_audition_current_selection` & `cellDoubleClicked`): Dedicated "▶ Audition Turn" button and double-click handlers to instantly audition candidate audio.
 
-2. Current Release: Interactive Audio Auditioning & Direct Playback Navigation in Acoustic Voice Profile Matcher (`transcript_story.py`) (Completed in v3.7.3-beta)
-   [x] 2.1 Click-to-Seek Candidate Navigation (`VoiceProfileMatchDialog`): Connect table row selection changes (`itemSelectionChanged`) to `parent_window.seek_to(start_t)` for instant timeline playhead and transcript view jumping.
-   [x] 2.2 Spacebar Audition Play/Pause (`keyPressEvent`): Implement keyboard shortcut handling so Spacebar toggles playback from candidate turn start times while safely passing through text inputs.
-   [x] 2.3 Auto-Audition Header Action & Double-Click Playback (`_audition_current_selection` & `cellDoubleClicked`): Dedicated "▶ Audition Turn" button and double-click handlers to instantly audition candidate audio.
+2. Current Release: Acoustic Voice Profile & Speaker Identity Engine Architecture Upgrade (`speaker_identity.py`, `processing.py`, `transcript_editor.py`, `transcript_story.py`) [-] [IN-PROGRESS & TESTING - v3.7.4-beta]
+   [-] 2.1 Standalone Voice Profile Math & Identity Engine (`speaker_identity.py`): Isolated vector math, similarity scoring, robust profile synthesis, centroid calculation, and confidence thresholding into a dedicated module.
+   [-] 2.2 Tight Overlap Embedding Filtering (`processing.py`): Prevented macro-blocks (> 8s or > 2.5x duration) from stamping pooled acoustic vectors onto shorter transcript turns and enforced minimum overlap thresholds.
+   [-] 2.3 Enhanced Transcript Copy Shortcuts (`transcript_editor.py`): Standard Ctrl+C / Cmd+C copy shortcuts across viewing/editing modes and context menu copy action.
+   [-] 2.4 Refined Voice Profile Matcher & Re-Clustering (`transcript_story.py`): Upgraded Voice Profile Matcher UI and re-clustering backend to leverage robust multi-sample profile synthesis and confidence-based matching.
 
 3. Upcoming Milestone: Comprehensive Cloud & Local Backup & Restore System (`project_lifecycle.py`, `plugins/gdocs/`) [PLANNED for v3.8.0] [NOT STARTED]
    [ ] 3.1 Unified State Serialization (`project_lifecycle.py`): Export preferences, keyboard shortcuts, installed model inventories, glossary items, and user configurations into a cryptographically verified backup archive.

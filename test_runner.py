@@ -1926,6 +1926,36 @@ class DiagnosticEngine:
         import math
         import random
 
+        # 0. Direct unit tests for speaker_identity module
+        from speaker_identity import (
+            cosine_similarity,
+            centroid,
+            robust_reference_profile,
+            compare_against_profiles,
+            is_confident_match,
+        )
+
+        v1 = [1.0 / math.sqrt(256)] * 256
+        v2 = [1.0 / math.sqrt(256)] * 256
+        v3 = [1.0] + [0.0] * 255
+        v4 = [0.0, 1.0] + [0.0] * 254
+
+        sim_same = cosine_similarity(v1, v2)
+        if abs(sim_same - 1.0) > 1e-5:
+            raise AssertionError(f"speaker_identity.cosine_similarity same vector test failed: {sim_same}")
+
+        sim_ortho = cosine_similarity(v3, v4)
+        if abs(sim_ortho - 0.0) > 1e-5:
+            raise AssertionError(f"speaker_identity.cosine_similarity orthogonal vector test failed: {sim_ortho}")
+
+        c_vec = centroid([v3, v4])
+        if c_vec is None or len(c_vec) != 256:
+            raise AssertionError(f"speaker_identity.centroid calculation failed: {c_vec}")
+
+        profile, _ = robust_reference_profile([v1, v2, v3])
+        if profile is None or len(profile) != 256:
+            raise AssertionError("speaker_identity.robust_reference_profile synthesis failed")
+
         try:
             from transcript_story import TranscriptStoryMixin
             BaseClass = TranscriptStoryMixin

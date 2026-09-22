@@ -1690,6 +1690,15 @@ class InteractiveTranscriptEdit(QTextEdit):
         self.ensureCursorVisible()
 
     def keyPressEvent(self, event):
+        # Allow standard Copy (Ctrl+C / Cmd+C) in both viewing and editing modes
+        if event.matches(QKeySequence.StandardKey.Copy) or (
+            event.modifiers() & (Qt.KeyboardModifier.ControlModifier | Qt.KeyboardModifier.MetaModifier)
+            and event.key() == Qt.Key.Key_C
+        ):
+            if self.textCursor().hasSelection():
+                self.copy()
+                event.accept()
+                return
         # The application owns undo/redo for project edits.  Do this before
         # QTextEdit's native undo stack so Ctrl+Z / Ctrl+Shift+Z is consistent
         # with speaker-label, story and other project-state operations.
@@ -1903,6 +1912,12 @@ class InteractiveTranscriptEdit(QTextEdit):
         main_win = self.window()
 
         if self.has_active_selection():
+            # Add Copy action to context menu when text is highlighted
+            copy_action = QAction("Copy", self)
+            copy_action.setShortcut(QKeySequence.StandardKey.Copy)
+            copy_action.triggered.connect(self.copy)
+            menu.addAction(copy_action)
+
             ranges = self.get_all_selected_story_ranges()
             count = len(ranges)
             title = f"Add Selected Sections to New Stories ({count})" if count > 1 else "Add Selected Text to New Story"

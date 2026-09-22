@@ -1,5 +1,11 @@
 # Changelog
  
+## v3.7.4-beta
+- **Acoustic Voice Profile & Speaker Identity Engine Architecture Upgrade (`speaker_identity.py`, `processing.py`, `transcript_editor.py`, `transcript_story.py`)**:
+  - **Isolated Voice Profile Math & Identity Module (`speaker_identity.py`)**: Extracted core vector mathematical operations, similarity scoring, robust profile synthesis, centroid calculation, and confidence thresholding into a clean standalone module.
+  - **Tight Overlap Embedding Filtering (`processing.py`)**: Prevented long macro-blocks (> 8s or > 2.5x segment duration) from stamping pooled acoustic vectors onto shorter transcript turns. Enforced minimum overlap thresholds (`best_overlap >= 0.5 * duration` or `>= 0.8s`) for accurate embedding attachment during diarization mapping.
+  - **Enhanced Transcript Selection & Copy Support (`transcript_editor.py`)**: Enabled standard `Ctrl+C` / `Cmd+C` shortcuts across both viewing and editing modes, and added explicit context menu "Copy" actions for highlighted transcript selections.
+  - **Refined Acoustic Profile Matcher & Re-Clustering (`transcript_story.py`)**: Upgraded `VoiceProfileMatchDialog` and acoustic voice turn matching logic with robust profile synthesis, multi-mode baseline comparisons, and high-confidence automatic re-clustering across timeline speaker turns.
 ## v3.7.3-beta
 - **Interactive Audio Auditioning & Direct Playback Navigation in Acoustic Voice Profile Matcher (`transcript_story.py`)**:
   - **Click-to-Seek Candidate Navigation (`VoiceProfileMatchDialog` in `transcript_story.py`)**: Connected table selection changes (`itemSelectionChanged`) to `parent_window.seek_to(start_t)`, allowing instant timeline playhead and transcript view jump to any candidate speaker turn's exact timestamp upon selection.
