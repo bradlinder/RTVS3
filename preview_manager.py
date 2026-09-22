@@ -276,7 +276,7 @@ export function App() {
                   Radio & TV Story Segmenter
                 </h1>
                 <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-cyan-950 text-cyan-400 border border-cyan-800/80">
-                  v2.9.6
+                  __VERSION_TAG__
                 </span>
               </div>
               <p className="text-xs text-slate-400">
@@ -376,8 +376,8 @@ export function App() {
             </div>
           ) : (
             filteredReleases.map(release => {
-              const isExpanded = expandedVersions[release.version] ?? (release.version === 'v2.9.6' || release.version === 'v2.9.5');
-              const isLatest = release.version === 'v2.9.6';
+              const isExpanded = expandedVersions[release.version] ?? (release.version === '__VERSION_TAG__' || release.version === 'v3.5.34');
+              const isLatest = release.version === '__VERSION_TAG__';
 
               return (
                 <article 
