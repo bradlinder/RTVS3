@@ -45,6 +45,7 @@ TABLE OF CONTENTS & STATUS OVERVIEW
    [ ] 3.2 Destructive State Guards & Warnings: Implement visual validation/warning indicators and confirmation gates to prevent accidental clicks.
    [ ] 3.3 Modular Core Reset Methods (`project_lifecycle.py`): Integrate robust cleanup methods to wipe targeted properties and synchronize standard empty default structures safely.
    [ ] 3.4 Undo Stack Integration: Push the pre-purge project state onto the Undo stack before purging, enabling instant recovery via `Ctrl+Z`.
+   [ ] 3.5 Glossary Import & Export Utility (`media_batch.py`, `terminology.py`): Add dedicated Import and Export buttons to the Glossary dialog for backing up and restoring term mapping rules as portable JSON/CSV files.
 
 4. Upcoming Milestone: Diagnostic Test Bench Coverage Extension (`test_runner.py`) [PLANNED for v3.5.40] [NOT STARTED]
    [ ] 4.1 Translation Routing & Key Priority Unit Test: Assert that `source_language_code()` detects correct language and `get_spanish_translation_item()` selects correct translation keys (`es-en` vs `en-es`) without falling back to stale legacy data.
@@ -57,23 +58,22 @@ TABLE OF CONTENTS & STATUS OVERVIEW
    [ ] 4.8 Plugin Interface Sandbox Testing: Validate integration payloads for Google Docs exporting, verifying correct styling tags, author metadata headers, and localized comment-anchoring ranges.
    [ ] 4.9 Project File Integrity & Portable Path Resolution: Test loading damaged/corrupted `.rtvs` files, verifying automatic fallback defaults, and testing graceful user-prompts when the original source media has been moved on disk.
 
-5. Future Milestone: Translation Model Selection & Preference Integration (`playback_preferences.py`, `plugins/translation/`) [PLANNED for v3.5.50] [NOT STARTED]
-   [ ] 5.1 Model Selection Interface: Add dropdown menus to Settings > Preferences for users to explicitly select their preferred NMT/translation engines for en->es and es->en pairs (e.g., NLLB, M2M100, or custom fine-tuned checkpoints).
-   [ ] 5.2 Dynamic Translation Pipeline Re-initialization: Programmatically reload translation workers upon model changes in Preferences without requiring a full project restart.
-   [ ] 5.3 Model Compatibility Validation: Add on-the-fly validation to ensure selected models are locally cached or downloadable, with clear UI error messages if a requested model is missing.
-   [ ] 5.4 Persistent User Preferences Serialization: Ensure model selections are serialized to `.rtvs` project states and global application preferences correctly.
+5. Future Milestone: Acoustic Voice Profile Matcher & On-Demand Re-Clustering (`transcript_story.py`, `radio_tv_story_segmenter_worker.py`) [PLANNED for v3.6.0] [NOT STARTED]
+   [ ] 5.1 Voice Embedding Vector Storage & Persistence (`diarization["embeddings"]`): Preserve segment-level 256-dimensional WeSpeaker ONNX embedding vectors in project state.
+   [ ] 5.2 One-Sample Voice Profile Assignment ("Teach This Voice"): Add a "Set as Reference Profile for New Speaker" option to the speaker menu when user identifies an unseparated speaker.
+   [ ] 5.3 On-Demand Cosine Similarity Re-Clustering Worker: Rapidly scan remaining segments in the same cluster, compute cosine similarities against the reference embedding, and automatically reassign matching turns to the new speaker label without re-running full timeline diarization.
 
-6. Future Milestone: Acoustic Voice Profile Matcher & On-Demand Re-Clustering (`transcript_story.py`, `radio_tv_story_segmenter_worker.py`) [PLANNED for v3.6.0] [NOT STARTED]
-   [ ] 6.1 Voice Embedding Vector Storage & Persistence (`diarization["embeddings"]`): Preserve segment-level 256-dimensional WeSpeaker ONNX embedding vectors in project state.
-   [ ] 6.2 One-Sample Voice Profile Assignment ("Teach This Voice"): Add a "Set as Reference Profile for New Speaker" option to the speaker menu when user identifies an unseparated speaker.
-   [ ] 6.3 On-Demand Cosine Similarity Re-Clustering Worker: Rapidly scan remaining segments in the same cluster, compute cosine similarities against the reference embedding, and automatically reassign matching turns to the new speaker label without re-running full timeline diarization.
+6. Future Milestone: Google Docs & Drive Export Plugin (`plugins/gdocs`) [PLANNED for v3.7.0] [NOT STARTED]
+   [ ] 6.1 Plugin Architecture & OAuth 2.0 Authentication Engine (`plugins/gdocs/auth.py`, keyring token storage, local loopback handler)
+   [ ] 6.2 Google Docs Document Serializer & REST Exporter (Formatted text, speaker headers, word highlights, story metadata)
+   [ ] 6.3 Native Margin Comments & Text Range Anchoring (`drive.comments.create` integration for story notes & transcript comments)
+   [ ] 6.4 Unified Export Center & Menu Integration (Progress worker, batch export, zero core bundle overhead)
+   [ ] 6.5 (Optional) One-Time Review & Comment Pull ("Import Reviews from Google Doc" diff dialog)
 
-7. Future Milestone: Google Docs & Drive Export Plugin (`plugins/gdocs`) [PLANNED for v3.7.0] [NOT STARTED]
-   [ ] 7.1 Plugin Architecture & OAuth 2.0 Authentication Engine (`plugins/gdocs/auth.py`, keyring token storage, local loopback handler)
-   [ ] 7.2 Google Docs Document Serializer & REST Exporter (Formatted text, speaker headers, word highlights, story metadata)
-   [ ] 7.3 Native Margin Comments & Text Range Anchoring (`drive.comments.create` integration for story notes & transcript comments)
-   [ ] 7.4 Unified Export Center & Menu Integration (Progress worker, batch export, zero core bundle overhead)
-   [ ] 7.5 (Optional) One-Time Review & Comment Pull ("Import Reviews from Google Doc" diff dialog)
+7. Future Milestone: Comprehensive Cloud & Local Backup & Restore System (`project_lifecycle.py`, `plugins/gdocs/`) [PLANNED for v3.7.5] [NOT STARTED]
+   [ ] 7.1 Unified State Serialization (`project_lifecycle.py`): Export preferences, keyboard shortcuts, installed model inventories, glossary items, and user configurations into a cryptographically verified backup archive.
+   [ ] 7.2 Manual Local Backup & Restore: Download backup archives locally and restore previous settings and system state into RTVS.
+   [ ] 7.3 1-Click Google Drive Cloud Restore: Connect via Google Drive API to browse, verify via SHA-256 hash matching, and restore custom settings directly from cloud backups.
 
 8. Future Milestone: Multi-Platform Timeline & DAW Interchange Engine (`export/timeline.py`, `export/dialog.py`, `ui_layout.py`) [PLANNED for v3.8.0] [NOT STARTED]
    [ ] 8.1 Migration to Unified Export Center Tab: Move timeline and DAW exports from the legacy File menu submenu into a dedicated "Timeline & DAW" tab in the Unified Export Center dialog, streamlining menu navigation and providing a unified UI for multi-format timeline exporting.
@@ -86,7 +86,7 @@ TABLE OF CONTENTS & STATUS OVERVIEW
        - Magix Samplitude / Sequoia EDL (.edl v1.5): Magix Samplitude, Sequoia (Broadcast audio edit decision list with crossfades and track gain).
        - Audacity Labels & Podcast Cues (.txt / .cue): Audacity, Podcasting mastering tools, CD/playout automation (Standard label tracks and CUE sheets with chapter markers and boundary synchronization).
    [ ] 8.3 Future-Proofed Non-Destructive Editing & Timeline Engine:
-       - Multi-track routing layouts (Single track, Checkerboard A/B roll, or Split tracks per identified speaker).
+       - Multi-track routing layouts (Single track, Checkerboard A/B roll, Split tracks per identified speaker).
        - Unselected audio & rough cut handling (Omit/Ripple-delete, Include as Muted Items for sync preservation, or Route to separate B-Roll reference track).
        - Clip gain, volume automation curves, and non-destructive fade handles (linear, logarithmic, exponential, S-curve, equal-power).
        - Embedded story metadata & notes (Inject synopsis, speaker labels, tags, and transcript excerpts into DAW item notes/takes).
@@ -183,8 +183,23 @@ CORE ARCHITECTURAL INVARIANTS
 - Provide an optional diff inspector dialog allowing editorial staff to pull reviewed transcript corrections back into the active project.
 
 ================================================================================
-4. FUTURE MILESTONE: MULTI-PLATFORM TIMELINE & DAW INTERCHANGE ENGINE [PLANNED for v3.7.0]
+4. FUTURE MILESTONE: COMPREHENSIVE CLOUD & LOCAL BACKUP & RESTORE SYSTEM [PLANNED for v3.7.5]
 ================================================================================
+
+[ ] 4.1 Unified State Serialization & Archive Packaging (`project_lifecycle.py`)
+---------------------------------------------------------------------------------
+- Serialize user preferences, keyboard shortcuts, installed model inventory, custom glossary items, and user configuration states into a single cryptographically verified backup archive.
+
+[ ] 4.2 Manual Local Backup & Restore Utility (`ui_layout.py`, `project_lifecycle.py`)
+-------------------------------------------------------------------------------------
+- Provide straightforward File menu actions to export complete system backup bundles locally and import/restore previous settings and system states into RTVS.
+
+[ ] 4.3 1-Click Google Drive Cloud Restore & SHA-256 Verification (`plugins/gdocs/`)
+-----------------------------------------------------------------------------------
+- Integrate with Google Drive API to browse, download, and restore backups directly from cloud storage using custom filenames and SHA-256 integrity hash validation.
+
+================================================================================
+5. FUTURE MILESTONE: MULTI-PLATFORM TIMELINE & DAW INTERCHANGE ENGINE [PLANNED for v3.8.0]
 
 [ ] 4.1 Dedicated Timeline & DAW Export Center Tab (export/dialog.py)
 --------------------------------------------------------------------
