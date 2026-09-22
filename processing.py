@@ -1446,6 +1446,17 @@ class ProcessingMixin:
         except Exception as scrub_err:
             logger.warning(f"Failed to scrub transcript payload: {scrub_err}")
 
+        # Apply the model-independent glossary after ASR. This is the
+        # authoritative spelling pass for every transcription backend; model
+        # prompts/hotwords are only optional recognition hints.
+        try:
+            from terminology import normalize_transcript, load_glossary
+            transcript = normalize_transcript(
+                transcript, load_glossary(getattr(self, "settings_store", None))
+            )
+        except Exception as glossary_err:
+            logger.warning(f"Failed to normalize transcript glossary: {glossary_err}")
+
         self.flush_pending_transcript_undo() if hasattr(self, "flush_pending_transcript_undo") else None
         before_state = self._capture_project_state() if hasattr(self, "_capture_project_state") else None
         self.progress.setValue(100)
@@ -1454,7 +1465,7 @@ class ProcessingMixin:
 
         # Sync detected spoken language
         detected_lang = str((transcript or {}).get("language", "en") or "en").lower()
-        if hasattr(self, "project_metadata") and isinstance(self.project_metadata, object):
+        if hasattr(self, "project_metadata") and self.project_metadata is not None:
             try:
                 setattr(self.project_metadata, "source_language", detected_lang)
             except Exception:

@@ -29,15 +29,18 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 --------------------------------------------------------------------------------
 TABLE OF CONTENTS & STATUS OVERVIEW
 --------------------------------------------------------------------------------
-1. Previous Release: Dynamic Language Selection & Custom Labeling in Export Options (Completed in v3.5.30)
-   [x] 1.1 Dynamic Language Suffixes & Symmetrical Exporter Configurations (`project_export.py`): Configured document export outputs to map translated suffix tags dynamically (`_en` or `_es`) according to the active translation directions of the project.
-   [x] 1.2 Symmetrical UI Labeling & Enablers (`export/dialog.py`, `plugins/wordpress/export_destination.py`): Dynamically re-labels track checkboxes depending on project source language, automatically checks and enables tracks only when translated segments exist, and selects the correct default primary language track.
+1. Previous Release: Bidirectional MT Glossary Override Resolution (Completed in v3.5.34)
+   [x] 1.1 Pre-Translating Source Terms inside Worker Thread: Pre-translates explicit source words (e.g. `atrévete`) into target language (e.g. `dare`) using the active model/tokenizer prior to matching.
+   [x] 1.2 Dual-Pattern Regex Replacements: Matches and replaces both original Spanish/source words and translated English counterparts with designated target terms (`Atrévete`) using secure word boundaries (`\b`).
 
-2. Current Release: Symmetrical Language Swapping & Fallbacks in Document Exports (Completed in v3.5.31)
-   [x] 2.1 Symmetrical Filename-to-Language Mapping (`project_export.py`): Corrected the fallback `source_code` logic to dynamically resolve to the active project's source language code (`src_code`) instead of hardcoding `"en"`, resolving swapped `.txt` and `.pdf` files in Spanish-source projects.
-   [x] 2.2 Symmetrical Word-Level DOCX Formatting Filters (`project_export.py`): Restricted word-level source segment passing to `create_story_docx` only for matching original languages (`lang_code == src_code`), preventing translation tracks from incorrectly falling back to original source language words in `.docx` files.
+2. Current Release: Comprehensive Glossary & Protected Terminology Architecture (Completed in v3.6.0-stable)
+   [x] 2.1 Pre-Translation Terminology Protection (`terminology.py`, `plugins/translation/worker.py`): Ensures protected terms and proper nouns are intercepted and protected before reaching translation models.
+   [x] 2.2 Isolated Process Glossary Serialization (`translation.py`, `runtime_entry.py`): Explicitly passes structured glossary rules across process boundaries, resolving QSettings context differences.
+   [x] 2.3 Authoritative Post-ASR Normalization (`processing.py`): Applies normalized terminology spelling across all transcription engines automatically.
+   [x] 2.4 Bilingual Custom Vocabulary UI (`media_batch.py`): Provides structured table editing with explicit "Don't translate" checkboxes.
+   [x] 2.5 Translation Model Detection & Variant Routing (Confirmed present & operational across all backends).
 
-3. Upcoming Milestone: Selective Project Data Purge & Wipe Utility (`project_lifecycle.py`, `ui_layout.py`) [PLANNED for v3.5.32] [NOT STARTED]
+3. Upcoming Milestone: Selective Project Data Purge & Wipe Utility (`project_lifecycle.py`, `ui_layout.py`) [PLANNED for v3.6.1] [NOT STARTED]
    [ ] 3.1 Checkbox-Driven Modular Purge Dialog (`ui_layout.py`): Add a secure modal dialog with separate options to wipe Transcript/Words, delete Saved Translations, reset Speaker Diarization, or clear Stories & Metadata.
    [ ] 3.2 Destructive State Guards & Warnings: Implement visual validation/warning indicators and confirmation gates to prevent accidental clicks.
    [ ] 3.3 Modular Core Reset Methods (`project_lifecycle.py`): Integrate robust cleanup methods to wipe targeted properties and synchronize standard empty default structures safely.

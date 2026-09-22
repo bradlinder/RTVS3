@@ -1,4 +1,40 @@
 # Changelog
+ 
+## v3.6.0-stable (Verified Stable Release)
+- **Comprehensive Glossary & Protected Terminology Architecture (`terminology.py`, `plugins/translation/worker.py`, `media_batch.py`, `processing.py`, `translation.py`)**:
+  - Implemented robust pre-translation protection for glossary terms and proper nouns, ensuring protected terms (such as `atrévete -> Atrévete` or protected brands/names) are never sent to the translation model destructively.
+  - Isolated subprocess translation requests now explicitly carry structured glossary rules across process boundaries, resolving QSettings registry view disparities in child worker processes.
+  - Added authoritative post-ASR glossary normalization (`normalize_transcript`) across all transcription backends.
+  - Upgraded the Custom Vocabulary dialog with a structured bilingual table, dedicated "Don't translate" checkboxes, and robust schema parsing.
+- **Milestone Confirmation & Verification**:
+  - Confirmed that translation model detection and variant routing are fully operational across all NMT and ASR pipelines, making separate future detection roadmap tasks redundant.
+
+## v3.5.34
+- **Bidirectional MT Glossary Override Resolution (`plugins/translation/worker.py`)**:
+  - Fixed an issue where explicit translation rules of the form `source -> translation` (such as `atrévete -> Atrévete`) were not recognized when translating Spanish to English (or vice versa), because the system searched the translated target text for the Spanish word `atrévete` instead of its translated counterpart.
+  - Solved this elegantly by pre-translating the source word/phrase (e.g., `atrévete`) using the loaded model and tokenizer inside the translation worker thread to discover the machine translation output (e.g., `dare`).
+  - Dynamically searches for both the original source word (to cover literal verbatim pass-throughs) and its translated counterpart (to cover translated outputs like `dare`) in the translated sentence, and replaces them with the designated target word (`Atrévete`) securely with full word boundaries (`\b`).
+  - Retained fallback support for target-text direct matching rules (such as `dare -> Atrévete`).
+
+## v3.5.33
+- **Custom Translation Glossary Rules & Capitalization Protection (`plugins/translation/worker.py`, `media_batch.py`)**:
+  - Implemented custom bidirectional translation glossary overrides and automatic proper noun protection.
+  - Allowed users to specify explicit translation mapping rules using standard syntax like `source -> translation` (e.g., `dare -> Atrévete` or `brave -> Atrévete`) to force exact terminology mappings during neural machine translation.
+  - Added automatic proper noun protection: if a word in the Glossary begins with a capital letter, the translator automatically detects its presence in the original source text and ensures its capitalization and spelling are preserved in the translated text.
+  - Dynamically filtered translation mapping expressions (containing `->`) out of the Whisper initial prompt in `apply_glossary_to_whisper_context()` to avoid polluting transcription cues.
+- **Dynamic Localization of Custom Vocabulary Dialog (`media_batch.py`)**:
+  - Fully localized the Glossary dialog into Spanish and English depending on the active interface language preferences.
+  - Added descriptive guides explaining the use of custom translation rules and automated proper noun casing.
+- **Robust Glossary Loading on Startup (`media_batch.py`)**:
+  - Fixed a startup issue where `_load_user_preferences()` was missing the loader routine for `self.glossary`, causing the custom vocabulary to remain empty until modified. Correctly loads and deserializes JSON glossary settings on boot.
+
+## v3.5.32
+- **Dynamic Language Routing for Multilingual ONNX Models (`radio_tv_story_segmenter_worker.py`)**:
+  - Resolved a core pipeline bug where transcripts produced with the Multilingual FastConformer ONNX model were unconditionally labeled as language `"es"`, regardless of the spoken language in the audio.
+  - Instead of discarding the real language-detection probe computed earlier (`probe_audio_language()`), wired the detected language (`detected_lang`) directly to the ONNX transcription generator to ensure proper translation directions and correct billing/export tracking downstream.
+  - Retained the Spanish-only fallback mapping specifically for the Spanish FastConformer model, which is Spanish-only by construction.
+- **Robust Project Metadata Null-Guard Check (`processing.py`)**:
+  - Refactored the broad, always-true check `isinstance(self.project_metadata, object)` to a strict and safe null-guard check `self.project_metadata is not None` before syncing the detected spoken language to prevent state issues with uninitialized project objects.
 
 ## v3.5.31
 - **Fixed Symmetrical Language Swapping & Fallbacks in Document Exports (`project_export.py`)**:

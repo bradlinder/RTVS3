@@ -6,6 +6,7 @@ so the core application does not import translation-only ML packages.
 from __future__ import annotations
 
 import copy
+import re
 import os
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 os.environ["HF_HUB_DISABLE_SYMLINKS_WARNING"] = "1"
@@ -100,6 +101,7 @@ class TranslationWorker(QObject):
         transcript=None,
         variant=None,
         device="cpu",
+        glossary=None,
         **kwargs,
     ):
         # Force parent to None so Qt doesn't bind this object to the GUI thread
@@ -119,6 +121,10 @@ class TranslationWorker(QObject):
         self.install_if_missing = install_if_missing
         self.installation_only = installation_only
         self.resume_results = resume_results or []
+        # The GUI process passes the glossary explicitly because translation
+        # runs in an isolated subprocess.  Do not rely on that subprocess
+        # having the same QSettings backend/registry view as the GUI.
+        self.glossary = glossary if glossary is not None else None
 
         eff_variant = variant or model_variant or "standard"
         if eff_variant == "opus-mt":
@@ -455,6 +461,89 @@ class TranslationWorker(QObject):
             ) from ct2_exc
 
     def _translate_batches(self, engine_type, tokenizer, model_or_translator):
+        # Protected terminology is handled *before* translation.  A protected
+        # glossary term is never sent to the translation model at all; this is
+        # intentionally stronger than translating the term and trying to find
+        # its translated spelling afterward.
+        try:
+            from terminology import load_glossary, translation_rules, split_protected_text
+            glossary = (
+                self.glossary
+                if self.glossary is not None
+                else load_glossary()
+            )
+            glossary_rules = translation_rules(glossary)
+        except Exception:
+            glossary = []
+            glossary_rules = []
+
+        def translate_plain(text):
+            """Translate one piece of text that contains no protected term."""
+            text = str(text or "")
+            if not text.strip():
+                return text
+
+            # Preserve whitespace around protected-term boundaries.  The
+            # translation tokenizer/decoder may normalize it, so translate
+            # only the non-whitespace core and put the original boundary
+            # whitespace back exactly where it was.
+            leading_match = re.match(r"\s*", text)
+            trailing_match = re.search(r"\s*$", text)
+            leading = leading_match.group(0) if leading_match else ""
+            trailing = trailing_match.group(0) if trailing_match else ""
+            end = len(text) - len(trailing) if trailing else len(text)
+            core = text[len(leading):end]
+            if not core:
+                return text
+
+            source_tokens = [
+                tokenizer.convert_ids_to_tokens(
+                    tokenizer.encode(core, truncation=True, max_length=512)
+                )
+            ]
+            translations = model_or_translator.translate_batch(
+                source_tokens,
+                beam_size=2,
+                patience=1.0,
+                max_batch_size=1,
+                batch_type="examples",
+                repetition_penalty=1.2,
+                no_repeat_ngram_size=3,
+                max_decoding_length=256,
+                replace_unknowns=True,
+            )
+            if not translations:
+                return ""
+            hyp_tokens = translations[0].hypotheses[0] if translations[0].hypotheses else []
+            token_ids = tokenizer.convert_tokens_to_ids(hyp_tokens)
+            try:
+                decoded = tokenizer.decode(token_ids, skip_special_tokens=True).strip()
+            except Exception:
+                decoded = tokenizer.convert_tokens_to_string(hyp_tokens).strip()
+            return leading + decoded + trailing
+
+        def translate_protected(text):
+            """Translate around protected terms and restore their exact spelling."""
+            if not glossary_rules:
+                return None
+            try:
+                from terminology import split_protected_text
+                pieces = split_protected_text(text, glossary)
+            except Exception:
+                return None
+            if not any(protected for _, protected in pieces):
+                return None
+
+            output = []
+            for piece, protected in pieces:
+                if protected:
+                    # The exact preferred spelling is inserted directly; it is
+                    # never passed through the translation model.
+                    output.append(piece)
+                else:
+                    output.append(translate_plain(piece))
+            return "".join(output).strip()
+
         results = list(self.resume_results)
         start_index = len(results)
         total = max(1, len(self.segments))
@@ -462,7 +551,6 @@ class TranslationWorker(QObject):
             results = []
             start_index = 0
 
-        # Process in macro-chunks to maintain sequential progress and allow cancellation
         batch_size = 32
 
         for batch_start in range(start_index, len(self.segments), batch_size):
@@ -478,13 +566,32 @@ class TranslationWorker(QObject):
                 f"Translating segments {batch_start + 1}–{min(batch_start + len(batch), len(self.segments))} of {total}…",
             )
 
-            nonempty_indices = [i for i, text in enumerate(texts) if text]
             translated_by_index = {i: "" for i in range(len(batch))}
+
+            # Segments containing protected terms are translated piece-by-piece.
+            # Other segments retain the existing efficient batched path.
+            protected_indices = set()
+            if glossary_rules:
+                try:
+                    from terminology import split_protected_text
+                    for i, text in enumerate(texts):
+                        if any(protected for _, protected in split_protected_text(text, glossary)):
+                            protected_indices.add(i)
+                except Exception:
+                    protected_indices = set()
+
+            for i in sorted(protected_indices):
+                if not texts[i]:
+                    continue
+                translated_by_index[i] = translate_protected(texts[i]) or texts[i]
+
+            nonempty_indices = [
+                i for i, text in enumerate(texts)
+                if text and i not in protected_indices
+            ]
 
             if nonempty_indices:
                 nonempty_texts = [texts[i] for i in nonempty_indices]
-
-                # Prepare input tokens using tokenizer associated with the converted model
                 source_tokens = [
                     tokenizer.convert_ids_to_tokens(
                         tokenizer.encode(text, truncation=True, max_length=512)
@@ -513,11 +620,11 @@ class TranslationWorker(QObject):
                         decoded_text = tokenizer.convert_tokens_to_string(hyp_tokens)
                     translated_by_index[idx] = decoded_text.strip()
 
-            # Reconstruct 1:1 segment mappings preserving all original metadata and timestamps
             for i, segment in enumerate(batch):
                 translated = translated_by_index[i]
+                orig_text = segment.get("text", "") if isinstance(segment, dict) else ""
                 new_seg = copy.deepcopy(segment) if isinstance(segment, dict) else {}
-                new_seg["text"] = translated if translated else segment.get("text", "")
+                new_seg["text"] = translated if translated else orig_text
                 new_seg["start"] = float(segment.get("start", 0))
                 new_seg["end"] = float(segment.get("end", 0))
                 results.append(new_seg)

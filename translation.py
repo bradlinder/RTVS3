@@ -773,6 +773,15 @@ class TranslationMixin:
             self.cancel_button.show(); self.cancel_button.setEnabled(True)
         self.set_tools_actions_enabled(False)
 
+        # Translation runs in an isolated subprocess. Pass the current
+        # structured glossary explicitly rather than expecting the child
+        # process to read the GUI process's QSettings store.
+        try:
+            from terminology import parse_glossary
+            request_glossary = parse_glossary(getattr(self, "glossary", []))
+        except Exception:
+            request_glossary = []
+
         request = {
             "segments": copy.deepcopy(raw_segments),
             "from_code": from_code, "to_code": to_code,
@@ -780,6 +789,7 @@ class TranslationMixin:
             "model_variant": variant, "variant": variant,
             "transcript": copy.deepcopy(self.transcript),
             "device": getattr(self, "translation_device", "cpu"),
+            "glossary": request_glossary,
         }
         self.log_activity(f"[TRANSLATION] Starting isolated {from_code}->{to_code} translation ({variant}).")
         if not self._start_translation_runtime_request(request):

@@ -36,6 +36,7 @@ def main():
         variant=req.get("variant"),
         device=req.get("device","cpu"),
         models_dir=req.get("models_dir"),
+        glossary=req.get("glossary"),
     )
     worker.progress.connect(lambda p,m: emit({"type":"progress","percent":p,"message":m}))
     worker.finished.connect(lambda result,key: emit({"type":"finished","result":result,"key":key}))

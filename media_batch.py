@@ -574,6 +574,16 @@ class MediaBatchMixin:
         if hasattr(self, "apply_audio_output_device"):
             self.apply_audio_output_device()
 
+        # Load custom vocabulary / glossary on startup.  The terminology
+        # layer accepts the older plain-string format as well as the newer
+        # structured entries used by the glossary editor.
+        try:
+            from terminology import parse_glossary
+            raw_glossary = self.settings_store.value("glossary", "")
+            self.glossary = parse_glossary(raw_glossary)
+        except Exception:
+            self.glossary = []
+
         self.apply_glossary_to_whisper_context()
         if self.language == "es":
             self.set_language("es", persist=False)
@@ -872,40 +882,163 @@ class MediaBatchMixin:
         dialog.exec()
 
     def open_glossary_dialog(self):
-        dialog=QDialog(self); dialog.setWindowTitle("Custom Vocabulary / Glossary"); dialog.resize(520,420)
-        layout=QVBoxLayout(dialog); layout.addWidget(QLabel("Words and proper nouns are retained as preferred spellings for future transcription."))
-        listw=QListWidget(); listw.addItems(sorted(self.glossary, key=str.casefold)); layout.addWidget(listw)
-        row=QHBoxLayout(); inp=QLineEdit(); inp.setPlaceholderText("Add a word or preferred spelling…")
-        add=QPushButton("Add"); remove=QPushButton("Remove Selected"); row.addWidget(inp,1); row.addWidget(add); row.addWidget(remove); layout.addLayout(row)
-        buttons=QHBoxLayout(); close=QPushButton("Close"); buttons.addStretch(); buttons.addWidget(close); layout.addLayout(buttons)
-        def add_word():
-            word=inp.text().strip()
-            if word and word.casefold() not in {x.casefold() for x in self.glossary}:
-                self.glossary.append(word); listw.addItem(word); inp.clear(); self._save_glossary(); self.apply_glossary_to_whisper_context()
-        def remove_word():
-            for item in listw.selectedItems():
-                self.glossary=[x for x in self.glossary if x != item.text()]; listw.takeItem(listw.row(item))
-            self._save_glossary(); self.apply_glossary_to_whisper_context()
-        add.clicked.connect(add_word); inp.returnPressed.connect(add_word); remove.clicked.connect(remove_word); close.clicked.connect(dialog.accept)
+        """Edit persistent terminology used by every ASR and translation backend."""
+        is_es = (getattr(self, "language", "en") == "es")
+
+        title = "Vocabulario personalizado / glosario" if is_es else "Custom Vocabulary / Glossary"
+        desc = (
+            "Defina la forma preferida de cada término. Marque 'No traducir' para nombres propios, programas o marcas que deben conservarse exactamente en las traducciones."
+            if is_es else
+            "Define the preferred spelling for each term. Check 'Don't translate' for proper nouns, program names, brands, or other terms that must remain unchanged in translations."
+        )
+        source_text = "Término de origen" if is_es else "Source term"
+        preferred_text = "Ortografía preferida" if is_es else "Preferred spelling"
+        dnt_text = "No traducir" if is_es else "Don't translate"
+        add_text = "Añadir término" if is_es else "Add Term"
+        remove_text = "Eliminar seleccionado" if is_es else "Remove Selected"
+        save_text = "Guardar" if is_es else "Save"
+        cancel_text = "Cancelar" if is_es else "Cancel"
+        example_text = (
+            "Ejemplo: atrévete → Atrévete" if is_es else
+            "Example: atrevete → Atrévete"
+        )
+
+        dialog = QDialog(self)
+        dialog.setWindowTitle(title)
+        dialog.resize(760, 500)
+        layout = QVBoxLayout(dialog)
+
+        help_label = QLabel(desc)
+        help_label.setWordWrap(True)
+        layout.addWidget(help_label)
+        example_label = QLabel(example_text)
+        example_label.setStyleSheet("color: palette(mid); font-style: italic;")
+        layout.addWidget(example_label)
+
+        table = QTableWidget(0, 3)
+        table.setHorizontalHeaderLabels([source_text, preferred_text, dnt_text])
+        table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+        table.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
+        table.setAlternatingRowColors(True)
+        table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
+        table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
+        table.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
+
+        from terminology import parse_glossary
+        entries = parse_glossary(getattr(self, "glossary", []))
+        for entry in entries:
+            row = table.rowCount()
+            table.insertRow(row)
+            table.setItem(row, 0, QTableWidgetItem(str(entry["source"])))
+            table.setItem(row, 1, QTableWidgetItem(str(entry["preferred"])))
+            check = QTableWidgetItem()
+            check.setFlags(check.flags() | Qt.ItemFlag.ItemIsUserCheckable)
+            check.setCheckState(Qt.CheckState.Checked if entry.get("do_not_translate", True) else Qt.CheckState.Unchecked)
+            table.setItem(row, 2, check)
+        layout.addWidget(table, 1)
+
+        row_buttons = QHBoxLayout()
+        add = QPushButton(add_text)
+        remove = QPushButton(remove_text)
+        row_buttons.addWidget(add)
+        row_buttons.addWidget(remove)
+        row_buttons.addStretch()
+        layout.addLayout(row_buttons)
+
+        buttons = QHBoxLayout()
+        buttons.addStretch()
+        cancel = QPushButton(cancel_text)
+        save = QPushButton(save_text)
+        buttons.addWidget(cancel)
+        buttons.addWidget(save)
+        layout.addLayout(buttons)
+
+        def add_row():
+            row = table.rowCount()
+            table.insertRow(row)
+            table.setItem(row, 0, QTableWidgetItem(""))
+            table.setItem(row, 1, QTableWidgetItem(""))
+            check = QTableWidgetItem()
+            check.setFlags(check.flags() | Qt.ItemFlag.ItemIsUserCheckable)
+            check.setCheckState(Qt.CheckState.Checked)
+            table.setItem(row, 2, check)
+            table.setCurrentCell(row, 0)
+            table.editItem(table.item(row, 0))
+
+        def remove_rows():
+            rows = sorted({index.row() for index in table.selectionModel().selectedRows()}, reverse=True)
+            for row in rows:
+                table.removeRow(row)
+
+        def save_glossary():
+            entries_out = []
+            seen = set()
+            for row in range(table.rowCount()):
+                source_item = table.item(row, 0)
+                preferred_item = table.item(row, 1)
+                source = (source_item.text() if source_item else "").strip()
+                preferred = (preferred_item.text() if preferred_item else "").strip()
+                if not source and not preferred:
+                    continue
+                if not source:
+                    source = preferred
+                if not preferred:
+                    preferred = source
+                key = (source.casefold(), preferred.casefold())
+                if key in seen:
+                    continue
+                seen.add(key)
+                check = table.item(row, 2)
+                protected = bool(check and check.checkState() == Qt.CheckState.Checked)
+                entries_out.append({
+                    "source": source,
+                    "preferred": preferred,
+                    "do_not_translate": protected,
+                })
+            self.glossary = entries_out
+            self._save_glossary()
+            self.apply_glossary_to_whisper_context()
+            self.statusBar().showMessage("Glossary saved" if not is_es else "Glosario guardado")
+            dialog.accept()
+
+        add.clicked.connect(add_row)
+        remove.clicked.connect(remove_rows)
+        save.clicked.connect(save_glossary)
+        cancel.clicked.connect(dialog.reject)
         dialog.exec()
 
     def _save_glossary(self):
         self.settings_store.setValue("glossary", json.dumps(self.glossary, ensure_ascii=False))
 
     def add_to_glossary(self, text):
-        text=str(text or "").strip().strip(".,!?;:()[]{}\"'“”‘’")
-        if not text: return
-        if text.casefold() not in {x.casefold() for x in self.glossary}:
-            self.glossary.append(text); self._save_glossary(); self.apply_glossary_to_whisper_context()
+        text = str(text or "").strip().strip(".,!?;:()[]{}\"'“”‘’")
+        if not text:
+            return
+        from terminology import parse_glossary
+        entries = parse_glossary(self.glossary)
+        if text.casefold() not in {str(x["source"]).casefold() for x in entries}:
+            entries.append({"source": text, "preferred": text, "do_not_translate": True})
+            self.glossary = entries
+            self._save_glossary()
+            self.apply_glossary_to_whisper_context()
             self.statusBar().showMessage(f"Added to glossary: {text}")
 
     def apply_glossary_to_whisper_context(self):
-        # faster-whisper does not accept a persistent custom dictionary directly;
-        # retain the vocabulary here so transcription can use it as an initial prompt.
-        self.whisper_initial_prompt = ", ".join(self.glossary[:200])
+        # Whisper can use the glossary as contextual vocabulary, but this is
+        # only an optional hint. Final spelling is normalized after every ASR
+        # backend (Whisper, Parakeet, FastConformer, and future models).
+        try:
+            from terminology import parse_glossary
+            entries = parse_glossary(self.glossary)
+            self.whisper_initial_prompt = ", ".join(
+                str(e["preferred"]) for e in entries[:200]
+            )
+        except Exception:
+            self.whisper_initial_prompt = ""
 
     def add_custom_speaker_to_glossary(self, name):
-        if name and name.strip(): self.add_to_glossary(name.strip())
+        if name and name.strip():
+            self.add_to_glossary(name.strip())
 
     def set_language(self, language, persist=True):
         self.language = "es" if language == "es" else "en"

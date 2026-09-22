@@ -337,11 +337,28 @@ def is_onnx_model_available(model_name):
     return False
 
 
-def transcribe_parakeet_onnx(audio_file, model_name="parakeet-onnx"):
+def transcribe_parakeet_onnx(audio_file, model_name="parakeet-onnx", detected_lang=None, detected_confidence=0.0):
     """Run installed ONNX models (Parakeet TDT, Spanish FastConformer, Multilingual FastConformer) through sherpa-onnx."""
     model_key = str(model_name).lower()
-    is_spanish = "es" in model_key or "spanish" in model_key or "multilingual" in model_key
-    model_lang = "es" if is_spanish else "en"
+    is_spanish_only_model = "fastconformer" in model_key and ("es" in model_key or "spanish" in model_key) and "multi" not in model_key
+    if is_spanish_only_model:
+        # This model only ever transcribes Spanish, so the label is always
+        # correct by construction -- no need for (and no reason to trust
+        # over this) the separate language probe.
+        model_lang = "es"
+    elif detected_lang:
+        # Parakeet (English-only) and Multilingual FastConformer don't
+        # report their own detected language, so use the real probe result
+        # already computed in transcribe() (faster-whisper language ID)
+        # instead of guessing from the model's name. Previously "multilingual"
+        # in the model name was (incorrectly) treated as meaning "es" here,
+        # mislabeling any non-Spanish audio transcribed with that model.
+        model_lang = detected_lang.lower()
+    else:
+        # No probe available (PRS_AUTO_LANGUAGE_FALLBACK=0) -- Parakeet is
+        # English-only, and Multilingual FastConformer has no other signal
+        # to go on, so default to English rather than assuming Spanish.
+        model_lang = "en"
 
     emit("progress", percent=5, message=f"Loading ONNX transcription engine ({model_name})...")
     try:
@@ -671,6 +688,7 @@ def transcribe(audio_file, model_name, initial_prompt="", beam_size=5):
     auto_fallback = os.environ.get("PRS_AUTO_LANGUAGE_FALLBACK", "1").strip().lower() != "0"
     need_spanish_prompt = False
 
+    probed_lang, prob = None, 0.0
     if auto_fallback:
         emit("progress", percent=2, message="Inspecting audio language compatibility...")
         probed_lang, prob = probe_audio_language(audio_file)
@@ -708,7 +726,7 @@ def transcribe(audio_file, model_name, initial_prompt="", beam_size=5):
                     is_onnx = False
 
     if is_onnx:
-        return transcribe_parakeet_onnx(audio_file, model_name=model_name)
+        return transcribe_parakeet_onnx(audio_file, model_name=model_name, detected_lang=probed_lang, detected_confidence=prob)
 
     emit("progress", percent=5, message=f"Loading local Whisper {model_name} model...")
     try:
