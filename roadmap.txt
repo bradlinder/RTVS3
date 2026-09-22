@@ -29,18 +29,19 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 --------------------------------------------------------------------------------
 TABLE OF CONTENTS & STATUS OVERVIEW
 --------------------------------------------------------------------------------
-1. Previous Release: Bidirectional MT Glossary Override Resolution (Completed in v3.5.34)
-   [x] 1.1 Pre-Translating Source Terms inside Worker Thread: Pre-translates explicit source words (e.g. `atrévete`) into target language (e.g. `dare`) using the active model/tokenizer prior to matching.
-   [x] 1.2 Dual-Pattern Regex Replacements: Matches and replaces both original Spanish/source words and translated English counterparts with designated target terms (`Atrévete`) using secure word boundaries (`\b`).
+1. Previous Release: Comprehensive Glossary & Protected Terminology Architecture (Completed in v3.6.0-stable)
+   [x] 1.1 Pre-Translation Terminology Protection (`terminology.py`, `plugins/translation/worker.py`): Ensures protected terms and proper nouns are intercepted and protected before reaching translation models.
+   [x] 1.2 Isolated Process Glossary Serialization (`translation.py`, `runtime_entry.py`): Explicitly passes structured glossary rules across process boundaries, resolving QSettings context differences.
+   [x] 1.3 Authoritative Post-ASR Normalization (`processing.py`): Applies normalized terminology spelling across all transcription engines automatically.
+   [x] 1.4 Bilingual Custom Vocabulary UI (`media_batch.py`): Provides structured table editing with explicit "Don't translate" checkboxes.
+   [x] 1.5 Translation Model Detection & Variant Routing: Confirmed operational across all backends.
 
-2. Current Release: Comprehensive Glossary & Protected Terminology Architecture (Completed in v3.6.0-stable)
-   [x] 2.1 Pre-Translation Terminology Protection (`terminology.py`, `plugins/translation/worker.py`): Ensures protected terms and proper nouns are intercepted and protected before reaching translation models.
-   [x] 2.2 Isolated Process Glossary Serialization (`translation.py`, `runtime_entry.py`): Explicitly passes structured glossary rules across process boundaries, resolving QSettings context differences.
-   [x] 2.3 Authoritative Post-ASR Normalization (`processing.py`): Applies normalized terminology spelling across all transcription engines automatically.
-   [x] 2.4 Bilingual Custom Vocabulary UI (`media_batch.py`): Provides structured table editing with explicit "Don't translate" checkboxes.
-   [x] 2.5 Translation Model Detection & Variant Routing (Confirmed present & operational across all backends).
+2. Current Release: Ultra Diarization Sensitivity & Unified Clustering Thresholds (Completed in v3.6.1)
+   [x] 2.1 Ultra Sensitivity Preset (`playback_preferences.py`, `radio_tv_story_segmenter_worker.py`): Added 5th tier "Ultra (Studio)" sensitivity mapping to cosine distance threshold 0.38 (>= 0.62 similarity).
+   [x] 2.2 Unified Threshold Calculation (`radio_tv_story_segmenter_worker.py`): Standardized `_sensitivity_distance_threshold()` across both unconstrained auto-clustering and constrained Expected Speakers (`2` / `3+`) workflows.
+   [x] 2.3 Defensive Clustering Kwarg Propagation: Added fallback handling so sensitivity applies to all AHC and fallback clustering routines without dropping parameters.
 
-3. Upcoming Milestone: Selective Project Data Purge & Wipe Utility (`project_lifecycle.py`, `ui_layout.py`) [PLANNED for v3.6.1] [NOT STARTED]
+3. Upcoming Milestone: Selective Project Data Purge & Wipe Utility (`project_lifecycle.py`, `ui_layout.py`) [PLANNED for v3.6.2] [NOT STARTED]
    [ ] 3.1 Checkbox-Driven Modular Purge Dialog (`ui_layout.py`): Add a secure modal dialog with separate options to wipe Transcript/Words, delete Saved Translations, reset Speaker Diarization, or clear Stories & Metadata.
    [ ] 3.2 Destructive State Guards & Warnings: Implement visual validation/warning indicators and confirmation gates to prevent accidental clicks.
    [ ] 3.3 Modular Core Reset Methods (`project_lifecycle.py`): Integrate robust cleanup methods to wipe targeted properties and synchronize standard empty default structures safely.
@@ -111,52 +112,41 @@ CORE ARCHITECTURAL INVARIANTS
 - 0 MB Default GPU Footprint: Base installer contains 0 MB of CUDA bloat; GPU features are purely optional and provisioned on demand.
 
 ================================================================================
-1. PREVIOUS RELEASE: DEDICATED WORDPRESS POST SETTINGS DIALOG & STORIES LAUNCHER (Completed in v3.5.11 / Plugin v3.5.11)
+1. PREVIOUS RELEASE: COMPREHENSIVE GLOSSARY & PROTECTED TERMINOLOGY ARCHITECTURE (Completed in v3.6.0-stable)
 ================================================================================
 
-[x] 1.1 Dedicated WordPress Post Settings Dialog (`plugins/wordpress/export_destination.py`)
---------------------------------------------------------------------------------------------
-- Implemented `WordPressPostMetadataDialog` wrapping `WordPressExportTabWidget` for spacious, tabbed, multi-pane configuration of all post metadata (authors, categories, excerpts, titles, featured images) for the full episode and all individual stories.
-- Integrated side-by-side multi-pane layouts for Authors (with Co-Authors Plus guest author support and filtering) and Categories (hierarchical with filter search).
-
-[x] 1.2 Compact Stories Panel Launcher & Summary Card (`plugins/wordpress/plugin.py`)
--------------------------------------------------------------------------------------
-- Replaced crowded sidebar forms with a clean summary card and primary action button ("🗗 WordPress Post Settings..."), displaying configured title, authors, categories, featured image, and status at a glance with quick excerpt generation and taxonomy refresh.
-
-[x] 1.3 Incremental & Batch Project Persistence (`plugins/wordpress/export_destination.py`)
--------------------------------------------------------------------------------------------
-- Added real-time two-way synchronization between the modal dialog and the active story UI inputs in the main window, saving progress directly to the `.rtvs` project file whether users configure one post or all posts.
-
-[x] 1.4 Bug Fixes & Hardening
------------------------------
-- Fixed `TypeError: format_time() got an unexpected keyword argument 'include_hours'` by aligning timestamp formatting with `format_time(include_millis=True)`.
-- Resolved `AttributeError` for custom notice section in `WordPressExportTabWidget`.
-
-================================================================================
-2. CURRENT RELEASE: UNIFIED STORY & POST METADATA ARCHITECTURE (In-Progress in v3.5.12 / Plugin v3.5.12)
-================================================================================
-
-[-] 2.1 Universal Core Story & Post Metadata Dialog (`story_widgets.py`, `ui_layout.py`)
-------------------------------------------------------------------------------------------
-- Create a dedicated modal dialog (`StoryMetadataDialog`) accessible via a standard "🗗 Story Metadata..." button in the Stories panel.
-- Provides tabbed navigation across the Full Episode and all segmented stories.
-- Multi-pane editor including side-by-side Authors and Categories/Tags panels, Title, Range, Excerpt (with auto-generate), Video Frame / Featured Image scrubber with live preview, and Editorial Notes.
-- Operates 100% offline without requiring any plugins to be active.
-
-[-] 2.2 Dynamic WordPress & Plugin Taxonomy Enrichment (`plugins/wordpress/`)
-------------------------------------------------------------------------------
-- When the WordPress plugin is enabled, the dialog dynamically populates Authors (users + Co-Authors Plus guest authors) and hierarchical Categories from the WP REST API, plus WordPress-specific options (post status, slug, cross-linking).
-- When WordPress is disabled, provides offline author and category/tag entry with tag cloud and autocompletion.
-
-[-] 2.3 Instant Two-Way UI & Story List Synchronization (`transcript_story.py`, `story_widgets.py`)
+[x] 1.1 Pre-Translation Terminology Protection (`terminology.py`, `plugins/translation/worker.py`)
 ---------------------------------------------------------------------------------------------------
-- Synchronize dialog edits immediately to the active story UI fields (Title, Author, Excerpt).
-- Trigger `update_story_list()` so story list item titles and timing ranges update instantly in the list view.
-- Persist all changes immediately into the `.rtvs` project file storage.
+- Intercepts protected glossary terms and proper nouns before passing prompts to translation models.
 
-[-] 2.4 Streamlined Stories Panel Layout (`ui_layout.py`)
-----------------------------------------------------------
-- Eliminate separate plugin-specific group boxes from the Stories sidebar in favor of the universal Story Metadata launcher and clean quick-edit fields.
+[x] 1.2 Isolated Process Glossary Serialization (`translation.py`, `runtime_entry.py`)
+--------------------------------------------------------------------------------------
+- Explicitly serializes structured glossary rules across process boundaries, ensuring consistent child worker behavior.
+
+[x] 1.3 Authoritative Post-ASR Normalization (`processing.py`)
+--------------------------------------------------------------
+- Applies normalized terminology casing and spelling across all transcription backends automatically.
+
+[x] 1.4 Bilingual Custom Vocabulary UI (`media_batch.py`)
+---------------------------------------------------------
+- Provides structured table editing with explicit "Don't translate" protection toggles.
+
+================================================================================
+2. CURRENT RELEASE: ULTRA DIARIZATION SENSITIVITY & UNIFIED CLUSTERING THRESHOLDS (Completed in v3.6.1)
+================================================================================
+
+[x] 2.1 Ultra Sensitivity Preset (`playback_preferences.py`, `radio_tv_story_segmenter_worker.py`)
+---------------------------------------------------------------------------------------------------
+- Added a 5th tier "Ultra (Studio — Extreme strictness for near-identical voices)" preset mapping to cosine distance threshold `0.38` (requiring $\ge 0.62$ cosine similarity).
+- Designed for pristine studio recordings, podcasts, and co-anchor broadcasts where voices with similar timbres risk over-merging.
+
+[x] 2.2 Unified Threshold Calculation (`radio_tv_story_segmenter_worker.py`)
+----------------------------------------------------------------------------
+- Standardized `_sensitivity_distance_threshold()` across both unconstrained auto-clustering and constrained Expected Speakers (`2` / `3+`) workflows.
+
+[x] 2.3 Defensive Clustering Kwarg Propagation
+-----------------------------------------------
+- Propagates `distance_threshold` to `cluster_speakers()` and `diarize_fn()` with `TypeError` fallbacks.
 
 ================================================================================
 3. UPCOMING MILESTONE: GOOGLE DOCS & DRIVE EXPORT PLUGIN [PLANNED for v3.6.0]

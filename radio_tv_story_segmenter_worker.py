@@ -1037,6 +1037,17 @@ def _diarize_solo_fast_path(audio_file, transcript_file=None):
 SHORT_FRAGMENT_MERGE_THRESHOLD = 0.7
 
 
+def _sensitivity_distance_threshold():
+    """Cosine-distance clustering threshold derived from PRS_DIARIZATION_SENSITIVITY.
+    Shared by fast_cluster_ahc() and diarize(), so the sensitivity setting means
+    the same thing regardless of which code path -- unconstrained auto-clustering
+    or a constrained Expected Speakers count -- actually runs the clustering.
+    """
+    sens_env = os.environ.get("PRS_DIARIZATION_SENSITIVITY", "normal").strip().lower()
+    sens_map = {"low": 0.78, "normal": 0.68, "high": 0.58, "very_high": 0.48, "ultra": 0.38}
+    return sens_map.get(sens_env, 0.68)
+
+
 def fast_cluster_ahc(embeddings, k=None, distance_threshold=None):
     """Agglomerative Hierarchical Clustering with cosine metric and average linkage (O(N^2)).
     Supports distance threshold sensitivity control for AHC on unit hypersphere.
@@ -1054,9 +1065,7 @@ def fast_cluster_ahc(embeddings, k=None, distance_threshold=None):
 
     # Determine sensitivity distance threshold if not explicitly passed
     if distance_threshold is None:
-        sens_env = os.environ.get("PRS_DIARIZATION_SENSITIVITY", "normal").strip().lower()
-        sens_map = {"low": 0.78, "normal": 0.68, "high": 0.58, "very_high": 0.48}
-        distance_threshold = sens_map.get(sens_env, 0.68)
+        distance_threshold = _sensitivity_distance_threshold()
 
     use_fixed_k = False
     if k is not None and not isinstance(k, str) and int(k) >= 1:
@@ -1531,7 +1540,20 @@ def run_transcript_guided_diarization(
     if progress_callback:
         progress_callback(78, "Grouping speaker signatures with fast AHC...")
 
-    labels, estimation_details = cluster_speakers(embeddings, **cluster_kwargs)
+    # The Sensitivity setting must apply here too, not just to the fully
+    # "auto" (unconstrained) path -- previously distance_threshold was never
+    # even computed once Expected Speakers was set to "2"/"3+", so raising
+    # Sensitivity had no effect at all for a constrained speaker count. The
+    # installed diarize package's exact clustering signature isn't
+    # introspectable from here, so this stays defensive: try including it,
+    # and fall back to the unconstrained call if the library rejects the
+    # keyword rather than silently dropping sensitivity again.
+    try:
+        labels, estimation_details = cluster_speakers(
+            embeddings, distance_threshold=_sensitivity_distance_threshold(), **cluster_kwargs
+        )
+    except TypeError:
+        labels, estimation_details = cluster_speakers(embeddings, **cluster_kwargs)
 
     unique_labels = sorted(np.unique(labels))
     centroids_list = []
@@ -1762,7 +1784,14 @@ def diarize(audio_file, expected_speakers="auto", transcript_file=None, sensitiv
                 elif expected_speakers == "3+":
                     kwargs["min_speakers"] = 3
 
-                result = diarize_fn(str(normalized_wav), **kwargs)
+                # Same reasoning as the primary cluster_speakers() call above:
+                # this is the transcript-guided-diarization fallback path, so
+                # be defensive about whether the package's top-level diarize()
+                # accepts a distance_threshold kwarg at all.
+                try:
+                    result = diarize_fn(str(normalized_wav), distance_threshold=_sensitivity_distance_threshold(), **kwargs)
+                except TypeError:
+                    result = diarize_fn(str(normalized_wav), **kwargs)
         finally:
             stop_ticker.set()
             ticker_thread.join(timeout=1.0)

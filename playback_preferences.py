@@ -1916,12 +1916,13 @@ class PlaybackPreferencesMixin:
         sensitivity_combo.addItem("Normal (Balanced default)", "normal")
         sensitivity_combo.addItem("High (Strict — Keeps similar voices separate)", "high")
         sensitivity_combo.addItem("Very High (Aggressive — Maximum separation)", "very_high")
+        sensitivity_combo.addItem("Ultra (Studio — Extreme strictness for near-identical voices)", "ultra")
         current_sens = str(self.settings_store.value("diarization_sensitivity", getattr(self, "diarization_sensitivity", "normal")) or "normal")
         idx_sens = sensitivity_combo.findData(current_sens)
         sensitivity_combo.setCurrentIndex(idx_sens if idx_sens >= 0 else 1)
         sensitivity_combo.setToolTip(
             "Controls acoustic separation sensitivity when auto-detecting speakers.\n"
-            "• High / Very High: Prevents two distinct speakers with similar pitches from being merged into one label.\n"
+            "• High / Very High / Ultra: Prevents distinct speakers with similar pitches from being merged into one label.\n"
             "• Low: Merges looser voice clusters to avoid splitting one speaker across multiple labels."
         )
         det_form.addRow("Speaker Separation Sensitivity:", sensitivity_combo)

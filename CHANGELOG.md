@@ -1,5 +1,12 @@
 # Changelog
  
+## v3.6.1
+- **Ultra Diarization Sensitivity Option & Unified Clustering Thresholds (`playback_preferences.py`, `radio_tv_story_segmenter_worker.py`)**:
+  - Added a high-precision **Ultra (Studio — Extreme strictness for near-identical voices)** preset mapping to an acoustic cosine distance threshold of `0.38` (requiring $\ge 0.62$ cosine similarity).
+  - Designed specifically for studio environments, podcasts, and co-anchor broadcasts where speakers of similar vocal timbres and acoustics risk being collapsed into a single speaker cluster.
+  - Standardized the distance threshold calculation across all execution paths—including unconstrained auto-clustering and constrained Expected Speakers (`2` / `3+`) workflows—ensuring that sensitivity settings take effect reliably across the entire pipeline.
+  - Updated the Preferences UI dropdown and descriptive tooltip under **Story Detection & Diarization**.
+
 ## v3.6.0-stable (Verified Stable Release)
 - **Comprehensive Glossary & Protected Terminology Architecture (`terminology.py`, `plugins/translation/worker.py`, `media_batch.py`, `processing.py`, `translation.py`)**:
   - Implemented robust pre-translation protection for glossary terms and proper nouns, ensuring protected terms (such as `atrévete -> Atrévete` or protected brands/names) are never sent to the translation model destructively.
