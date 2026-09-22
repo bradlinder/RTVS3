@@ -2018,6 +2018,29 @@ class ProcessingMixin:
         self.diarization = result
         self.processing_status["diarization"] = True
 
+        # Map acoustic embeddings to transcript segments for instant on-demand re-clustering
+        if isinstance(self.transcript, dict) and "segments" in self.transcript:
+            diar_segs = result.get("segments", []) if isinstance(result, dict) else []
+            for t_idx, t_seg in enumerate(self.transcript["segments"]):
+                t_st = float(t_seg.get("start", 0.0))
+                t_en = float(t_seg.get("end", t_st))
+                best_emb = None
+                best_overlap = 0.0
+                for d_seg in diar_segs:
+                    d_st = float(d_seg.get("start", 0.0))
+                    d_en = float(d_seg.get("end", d_st))
+                    overlap = max(0.0, min(t_en, d_en) - max(t_st, d_st))
+                    if overlap > best_overlap and "embedding" in d_seg:
+                        best_overlap = overlap
+                        best_emb = d_seg["embedding"]
+                if best_emb is None and diar_segs:
+                    t_mid = (t_st + t_en) / 2.0
+                    closest_d = min(diar_segs, key=lambda d: abs(((float(d.get("start", 0.0)) + float(d.get("end", 0.0))) / 2.0) - t_mid))
+                    if "embedding" in closest_d:
+                        best_emb = closest_d["embedding"]
+                if best_emb is not None:
+                    t_seg["embedding"] = best_emb
+
         number = result.get("num_speakers", 0)
         self.speaker_status.setText(
             f"Speaker detection complete: {number} speaker(s) detected."

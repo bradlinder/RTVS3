@@ -1946,6 +1946,21 @@ class InteractiveTranscriptEdit(QTextEdit):
                 lambda _, i=seg_idx: main_win.remove_speaker_label_at_segment(i)
             )
             menu.addAction(remove_action)
+
+            teach_action = QAction("Teach This Voice: Match Similar Turns...", self)
+            teach_action.setToolTip("Use this speaker turn as a reference voice profile to find and reassign matching turns across the timeline")
+            teach_action.triggered.connect(
+                lambda _, i=seg_idx, s=raw_speaker: main_win.teach_voice_profile_dialog(i, s)
+            )
+            menu.addAction(teach_action)
+
+            ref_action = QAction("Set as Reference Profile for New Speaker...", self)
+            ref_action.setToolTip("Prompt for a new speaker name and immediately match similar turns using this acoustic profile")
+            ref_action.triggered.connect(
+                lambda _, i=seg_idx, s=raw_speaker: main_win.teach_voice_profile_dialog(i, s, prompt_new_speaker=True)
+            )
+            menu.addAction(ref_action)
+
             menu.addSeparator()
 
         insert_menu = menu.addMenu("Add Speaker Label Here")

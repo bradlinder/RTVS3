@@ -1,5 +1,43 @@
 # Changelog
  
+## v3.7.3-beta
+- **Interactive Audio Auditioning & Direct Playback Navigation in Acoustic Voice Profile Matcher (`transcript_story.py`)**:
+  - **Click-to-Seek Candidate Navigation (`VoiceProfileMatchDialog` in `transcript_story.py`)**: Connected table selection changes (`itemSelectionChanged`) to `parent_window.seek_to(start_t)`, allowing instant timeline playhead and transcript view jump to any candidate speaker turn's exact timestamp upon selection.
+  - **Spacebar Audition Play/Pause (`keyPressEvent` in `VoiceProfileMatchDialog`)**: Implemented keyboard event handling so pressing Spacebar while browsing candidate turns immediately plays or pauses audio from that turn's start time (smartly bypassing text inputs like editable speaker combo box).
+  - **Auto-Audition Header Action & Double-Click Playback**: Added a dedicated **"▶ Audition Turn"** button in the candidate header bar alongside `cellDoubleClicked` event handlers to instantly trigger playback for candidate verification before reassigning speaker labels.
+
+## v3.7.2-beta
+- **Multi-Sample Acoustic Voice Profile Centroids & Composite Baseline Matching (`transcript_story.py`)**:
+  - **Multi-Sample Vector Centroid Synthesis (`get_composite_embedding` in `transcript_story.py`)**: Implemented L2-normalized element-wise averaging across multiple segment embedding vectors. Allows building composite voice profile baselines that average out single-turn noise, microphone variations, or background interference for significantly improved speaker matching accuracy.
+  - **Reference Baseline Selection Modes (`VoiceProfileMatchDialog` in `transcript_story.py`)**: Added interactive reference vector baseline mode controls directly in the Reference Speaker Turn Card:
+    - *Single Reference Turn*: Matches candidate speech turns strictly against the single selected segment's 256-dimensional acoustic vector.
+    - *Composite Speaker Profile*: Dynamically calculates an L2-normalized acoustic centroid averaged across all existing turns currently assigned to that speaker cluster in the project.
+    - *Multi-Selection Profile*: Averages acoustic vectors across a custom multi-segment selection.
+  - **Exclusion & Reassignment Precision (`find_matching_voice_turns` and `match_acoustic_voice_profile`)**: Updated candidate match search and re-clustering logic to exclude all reference profile turns from candidate list while automatically reassigning both candidate matches and reference profile turns synchronously when applying re-clustering.
+
+## v3.7.1-beta
+- **Acoustic Voice Profile Matcher Interactive Guidance & Initialization Stability (`transcript_story.py`, `radio_tv_story_segmenter_worker.py`)**:
+  - **Collapsible Usage Hints & Feature Guide (`VoiceProfileMatchDialog` in `transcript_story.py`)**: Added an interactive, toggleable quick-start usage guide directly within the Acoustic Voice Profile Matcher window. Outlines reference turn selection, target speaker assignment, global vs. cluster search scope strategies, sensitivity threshold tuning, and candidate verification. Features a one-click `[Minimize / Hide Hints]` button and remembers visibility preferences in QSettings.
+  - **Initialization Signal Race Condition Fix (`VoiceProfileMatchDialog` in `transcript_story.py`)**: Resolved an `AttributeError: 'VoiceProfileMatchDialog' object has no attribute 'thresh_slider'` caused by radio button `setChecked` signals firing during `__init__` before slider allocation. Deferred radio signal connections until after all controls are constructed and added defensive attribute guards to `_update_matches()`.
+  - **Pydantic Model Freeze Exception Resolution (`radio_tv_story_segmenter_worker.py`)**: Resolved a `pydantic.ValidationError` when attaching acoustic vector embeddings to frozen diarization segment objects by calculating and serializing embeddings directly into dictionary representations without in-place mutation.
+
+## v3.7.0-beta
+- **Acoustic Voice Profile Matcher & On-Demand Re-Clustering (`transcript_story.py`, `radio_tv_story_segmenter_worker.py`)**:
+  - **Voice Embedding Vector Persistence (`radio_tv_story_segmenter_worker.py`, `processing.py`)**: Preserved segment-level 256-dimensional WeSpeaker ONNX embedding vectors across diarization runs, worker results, project serialization dictionaries, and transcript segment metadata.
+  - **"Teach This Voice" Interactive Match Dialog (`VoiceProfileMatchDialog` in `transcript_story.py`)**:
+    - Added an intuitive dialog accessible directly from transcript speaker context actions.
+    - Allows users to select a reference speech turn to "teach" an unseparated speaker's vocal characteristics.
+    - Interactive Cosine Similarity threshold slider (0.50 – 0.95, default 0.70) with dynamic live candidate count and match highlighting.
+    - Scope toggle to search either within the current speaker cluster only or across all timeline speaker turns.
+    - Candidate match table displaying timestamps, similarity percentages (e.g., `94.2% match`), current speaker labels, and searchable text snippets with context.
+    - Target speaker label selector supporting existing speaker names or instant creation of new speaker identities.
+  - **On-Demand Cosine Similarity Re-Clustering Engine (`transcript_story.py`)**:
+    - High-speed pure Python vector similarity engine evaluating unit-normalized acoustic embeddings without requiring full timeline re-diarization or heavy ML runtime re-execution.
+    - Robust fallback for non-embedding runs and zero external runtime dependencies.
+    - Seamless project state snapshot and full undo stack (`Ctrl+Z`) integration.
+  - **Diagnostic Test Bench Coverage Extension (`test_runner.py`)**:
+    - Added comprehensive automated diagnostic test 37 (`_test_acoustic_voice_profile_matcher`) validating 256-dimensional embedding retrieval, cosine similarity threshold filtering, timeline re-clustering, and state rollback fidelity.
+ 
 ## v3.6.5-beta
 - **Google Drive & Docs Formatting Parity, Folder Management & Scopes (`plugins/gdocs/`)**:
   - **Project & Media File Name as Default Document Title**: Updated the default document title to automatically inherit the current project file name or media file name, replacing generic placeholder titles.

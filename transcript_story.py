@@ -1,4 +1,4 @@
-"""Radio & TV Segmenter v3.6.5-beta — transcript story responsibilities.
+"""Radio & TV Segmenter v3.7.3-beta — transcript story responsibilities.
 
 
 Methods intentionally retain the MainWindow-facing API so behavior remains
@@ -7,6 +7,14 @@ maintaining the established MainWindow-facing API while responsibilities are iso
 
 from typing import List, Optional
 from prs_shared import *
+from PySide6.QtWidgets import (
+    QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QComboBox,
+    QRadioButton, QButtonGroup, QSlider, QTableWidget, QTableWidgetItem,
+    QHeaderView, QGroupBox, QWidget, QCheckBox, QAbstractItemView, QMessageBox,
+    QFrame, QLineEdit,
+)
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QColor, QBrush, QFont
 
 
 class ChangeSpeakerDialog(QDialog):
@@ -69,6 +77,673 @@ class ChangeSpeakerDialog(QDialog):
     def _on_single(self):
         self.choice = "single"
         self.accept()
+
+
+class VoiceProfileMatchDialog(QDialog):
+    """Dialog for finding and reassigning matching speaker turns using a 256-dimensional acoustic voice profile."""
+
+    def __init__(
+        self,
+        ref_seg_idx: int,
+        current_speaker: str,
+        target_speaker: str = "",
+        prompt_new_speaker: bool = False,
+        ref_seg_indices: Optional[List[int]] = None,
+        parent=None,
+    ):
+        super().__init__(parent)
+        self.ref_seg_idx = ref_seg_idx
+        self.ref_seg_indices = ref_seg_indices or []
+        self.current_speaker = current_speaker or "Unknown Speaker"
+        self.target_name = target_speaker or self.current_speaker
+        self.prompt_new_speaker = prompt_new_speaker
+        self.parent_window = parent
+        self.matched_turns = []
+        self.selected_indices = []
+
+        # Find all turns in project currently assigned to this speaker
+        self.cluster_seg_indices = []
+        if self.parent_window and getattr(self.parent_window, "transcript", None):
+            segs = self.parent_window.transcript.get("segments", [])
+            for idx, s in enumerate(segs):
+                spk = self.parent_window.get_effective_speaker_name(idx, s)
+                if spk == self.current_speaker:
+                    self.cluster_seg_indices.append(idx)
+
+        self.setWindowTitle("Teach This Voice: Acoustic Profile Matcher")
+        self.setMinimumSize(720, 580)
+        self.resize(760, 620)
+
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(18, 18, 18, 18)
+        layout.setSpacing(12)
+
+        # Header Title & Description
+        header_layout = QVBoxLayout()
+        header_layout.setSpacing(3)
+
+        header_top_layout = QHBoxLayout()
+        title_lbl = QLabel("Acoustic Voice Profile Matcher & Re-Clustering", self)
+        title_lbl.setStyleSheet("font-size: 15px; font-weight: bold; color: #f1f5f9;")
+        header_top_layout.addWidget(title_lbl, 1)
+
+        self.btn_toggle_hints = QPushButton("💡 Usage Hints", self)
+        self.btn_toggle_hints.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_toggle_hints.setMaximumHeight(26)
+        self.btn_toggle_hints.setStyleSheet("""
+            QPushButton {
+                background-color: #1e293b;
+                color: #38bdf8;
+                border: 1px solid #334155;
+                border-radius: 4px;
+                padding: 3px 10px;
+                font-size: 11px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #334155;
+                color: #7dd3fc;
+            }
+        """)
+        self.btn_toggle_hints.clicked.connect(self._toggle_hints)
+        header_top_layout.addWidget(self.btn_toggle_hints)
+        header_layout.addLayout(header_top_layout)
+
+        desc_lbl = QLabel(
+            "Use this speaker turn as a reference voice profile to find and reassign matching turns across the timeline using acoustic embedding similarity.",
+            self,
+        )
+        desc_lbl.setWordWrap(True)
+        desc_lbl.setStyleSheet("color: #94a3b8; font-size: 12px;")
+        header_layout.addWidget(desc_lbl)
+        layout.addLayout(header_layout)
+
+        # Collapsible Usage Hints Card
+        self.hints_box = QGroupBox("💡 Acoustic Voice Profile Matcher — Quick Usage Guide", self)
+        self.hints_box.setStyleSheet("""
+            QGroupBox {
+                font-weight: bold;
+                color: #38bdf8;
+                border: 1px solid #0284c7;
+                border-radius: 6px;
+                margin-top: 4px;
+                padding-top: 14px;
+                background-color: #0c4a6e;
+            }
+            QGroupBox::title {
+                subcontrol-origin: margin;
+                left: 10px;
+                padding: 0 5px 0 5px;
+            }
+        """)
+        hints_layout = QVBoxLayout(self.hints_box)
+        hints_layout.setContentsMargins(12, 8, 12, 10)
+        hints_layout.setSpacing(6)
+
+        hints_html = """
+        <div style="color: #e0f2fe; font-size: 11px; line-height: 1.45;">
+            <b>How to use the Acoustic Voice Profile Matcher:</b>
+            <ol style="margin-top: 4px; margin-bottom: 4px; padding-left: 18px;">
+                <li><b>Reference Baseline Mode:</b> Choose between matching against a <b>Single Turn</b> or an averaged <b>Composite Profile</b> across multiple speaker turns for maximum embedding accuracy.</li>
+                <li><b>Assign Target Label:</b> Select or type the correct speaker name in <b>"Assign Matched Turns To"</b>.</li>
+                <li><b>Choose Search Scope:</b>
+                    <ul style="margin-top: 2px; margin-bottom: 2px; padding-left: 14px;">
+                        <li><b>Search across all speakers on timeline:</b> Scans all project turns to discover mislabeled speech (e.g. finding turns incorrectly tagged as someone else).</li>
+                        <li><b>Search within cluster only:</b> Scans only turns belonging to the current speaker cluster to consolidate or rename them.</li>
+                    </ul>
+                </li>
+                <li><b>Adjust Sensitivity Threshold:</b> Set higher (80–90%) for conservative high-confidence matches, or lower (60–75%) to catch short or noisy turns.</li>
+                <li><b>Audition & Review:</b> Select any row to seek, press <b>Spacebar</b> to play/pause, or double-click to audition candidate turns before clicking <b>Reassign Matching Turns</b>.</li>
+            </ol>
+        </div>
+        """
+        hints_lbl = QLabel(hints_html, self.hints_box)
+        hints_lbl.setWordWrap(True)
+        hints_layout.addWidget(hints_lbl)
+
+        hints_btn_layout = QHBoxLayout()
+        hints_btn_layout.addStretch()
+        btn_minimize_hints = QPushButton("Minimize / Hide Hints", self.hints_box)
+        btn_minimize_hints.setCursor(Qt.CursorShape.PointingHandCursor)
+        btn_minimize_hints.setStyleSheet("""
+            QPushButton {
+                background-color: #0369a1;
+                color: #ffffff;
+                border: none;
+                border-radius: 4px;
+                padding: 3px 10px;
+                font-size: 11px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #0284c7;
+            }
+        """)
+        btn_minimize_hints.clicked.connect(self._toggle_hints)
+        hints_btn_layout.addWidget(btn_minimize_hints)
+        hints_layout.addLayout(hints_btn_layout)
+
+        layout.addWidget(self.hints_box)
+
+        # Restore saved hints visibility preference
+        show_hints = True
+        try:
+            settings = QSettings(INTERNAL_APP_ID, INTERNAL_APP_ID)
+            show_hints = settings.value("voice_profile_matcher_show_hints", True, type=bool)
+        except Exception:
+            show_hints = True
+
+        self.hints_box.setVisible(show_hints)
+        self.btn_toggle_hints.setText("💡 Hide Hints" if show_hints else "💡 Usage Hints")
+
+        # Reference Segment Card
+        ref_card = QGroupBox("Reference Speaker Turn & Profile Baseline", self)
+        ref_card.setStyleSheet("""
+            QGroupBox {
+                font-weight: bold;
+                color: #38bdf8;
+                border: 1px solid #334155;
+                border-radius: 6px;
+                margin-top: 6px;
+                padding-top: 14px;
+                background-color: #0f172a;
+            }
+            QGroupBox::title {
+                subcontrol-origin: margin;
+                left: 10px;
+                padding: 0 5px 0 5px;
+            }
+        """)
+        ref_card_layout = QVBoxLayout(ref_card)
+        ref_card_layout.setContentsMargins(12, 10, 12, 12)
+        ref_card_layout.setSpacing(6)
+
+        ref_text = ""
+        ref_time_str = ""
+        if self.parent_window and getattr(self.parent_window, "transcript", None):
+            segs = self.parent_window.transcript.get("segments", [])
+            if 0 <= self.ref_seg_idx < len(segs):
+                s = segs[self.ref_seg_idx]
+                st = float(s.get("start", 0.0))
+                en = float(s.get("end", st))
+                ref_time_str = f"{format_time(st)} – {format_time(en)}"
+                ref_text = s.get("text", "").strip()
+
+        ref_info_lbl = QLabel(
+            f"<b>Primary Turn #{self.ref_seg_idx + 1}</b> • Time: <b>{ref_time_str}</b> • Current Label: <span style='color: #fbbf24;'><b>{html.escape(self.current_speaker)}</b></span>",
+            ref_card,
+        )
+        ref_card_layout.addWidget(ref_info_lbl)
+
+        if ref_text:
+            ref_text_lbl = QLabel(f"<i>“{html.escape(ref_text)}”</i>", ref_card)
+            ref_text_lbl.setWordWrap(True)
+            ref_text_lbl.setStyleSheet("color: #cbd5e1; font-size: 12px;")
+            ref_card_layout.addWidget(ref_text_lbl)
+
+        # Baseline Mode Selection (Single Turn vs Multi-Sample Composite Centroid Profile)
+        mode_hdr = QLabel("Reference Vector Baseline Mode:", ref_card)
+        mode_hdr.setStyleSheet("color: #38bdf8; font-weight: bold; font-size: 11px; margin-top: 4px;")
+        ref_card_layout.addWidget(mode_hdr)
+
+        mode_layout = QVBoxLayout()
+        mode_layout.setSpacing(4)
+
+        self.ref_mode_single_radio = QRadioButton(
+            f"Single Reference Turn (Use strictly Segment #{self.ref_seg_idx + 1} audio vector)", ref_card
+        )
+
+        cluster_count = len(self.cluster_seg_indices)
+        self.ref_mode_composite_radio = QRadioButton(
+            f"Composite Profile (Average acoustic vectors across all {cluster_count} turn(s) of '{html.escape(self.current_speaker)}')", ref_card
+        )
+
+        if self.ref_seg_indices and len(self.ref_seg_indices) > 1:
+            sel_count = len(self.ref_seg_indices)
+            self.ref_mode_selected_radio = QRadioButton(
+                f"Composite Profile (Average acoustic vectors across {sel_count} selected reference turns)", ref_card
+            )
+            self.ref_mode_selected_radio.setChecked(True)
+            mode_layout.addWidget(self.ref_mode_selected_radio)
+        else:
+            self.ref_mode_composite_radio.setChecked(True) if cluster_count > 1 else self.ref_mode_single_radio.setChecked(True)
+
+        mode_layout.addWidget(self.ref_mode_single_radio)
+        mode_layout.addWidget(self.ref_mode_composite_radio)
+        ref_card_layout.addLayout(mode_layout)
+
+        layout.addWidget(ref_card)
+
+        # Target Speaker Assignment Section
+        target_group = QGroupBox("Target Speaker Assignment", self)
+        target_group.setStyleSheet("""
+            QGroupBox {
+                font-weight: bold;
+                color: #e2e8f0;
+                border: 1px solid #334155;
+                border-radius: 6px;
+                margin-top: 6px;
+                padding-top: 14px;
+            }
+            QGroupBox::title {
+                subcontrol-origin: margin;
+                left: 10px;
+                padding: 0 5px 0 5px;
+            }
+        """)
+        target_layout = QHBoxLayout(target_group)
+        target_layout.setContentsMargins(12, 10, 12, 12)
+        target_layout.setSpacing(10)
+
+        target_lbl = QLabel("Assign Matched Turns To:", target_group)
+        target_layout.addWidget(target_lbl)
+
+        self.spk_combo = QComboBox(target_group)
+        self.spk_combo.setEditable(True)
+        self.spk_combo.setMinimumWidth(260)
+        self.spk_combo.setMinimumHeight(30)
+
+        known = []
+        if self.parent_window and hasattr(self.parent_window, "get_all_known_speakers"):
+            known = self.parent_window.get_all_known_speakers()
+        for k in known:
+            self.spk_combo.addItem(k)
+
+        if self.prompt_new_speaker:
+            self.spk_combo.setEditText("")
+            self.spk_combo.setFocus()
+        elif self.target_name:
+            idx = self.spk_combo.findText(self.target_name)
+            if idx >= 0:
+                self.spk_combo.setCurrentIndex(idx)
+            else:
+                self.spk_combo.setEditText(self.target_name)
+
+        self.spk_combo.currentTextChanged.connect(lambda _: self._update_action_summary())
+        target_layout.addWidget(self.spk_combo, 1)
+        layout.addWidget(target_group)
+
+        # Controls Grid: Scope & Sensitivity Slider
+        controls_group = QGroupBox("Matching Search Scope & Sensitivity", self)
+        controls_group.setStyleSheet("""
+            QGroupBox {
+                font-weight: bold;
+                color: #e2e8f0;
+                border: 1px solid #334155;
+                border-radius: 6px;
+                margin-top: 6px;
+                padding-top: 14px;
+            }
+            QGroupBox::title {
+                subcontrol-origin: margin;
+                left: 10px;
+                padding: 0 5px 0 5px;
+            }
+        """)
+        controls_layout = QVBoxLayout(controls_group)
+        controls_layout.setContentsMargins(12, 10, 12, 12)
+        controls_layout.setSpacing(10)
+
+        # Radio buttons for Scope
+        scope_layout = QHBoxLayout()
+        scope_layout.setSpacing(20)
+        self.scope_all_radio = QRadioButton("Search across all speakers on timeline (Find mislabeled turns)", controls_group)
+        scope_layout.addWidget(self.scope_all_radio)
+
+        self.scope_cluster_radio = QRadioButton(
+            f"Search within '{self.current_speaker}' turns only", controls_group
+        )
+        scope_layout.addWidget(self.scope_cluster_radio)
+
+        if self.target_name and self.target_name != self.current_speaker:
+            self.scope_all_radio.setChecked(True)
+        else:
+            self.scope_cluster_radio.setChecked(True)
+
+        scope_layout.addStretch()
+        controls_layout.addLayout(scope_layout)
+
+        # Slider for Sensitivity / Threshold
+        slider_layout = QHBoxLayout()
+        slider_layout.setSpacing(12)
+
+        self.thresh_slider = QSlider(Qt.Orientation.Horizontal, controls_group)
+        self.thresh_slider.setRange(50, 95)
+        self.thresh_slider.setValue(70)
+        self.thresh_slider.setTickInterval(5)
+        self.thresh_slider.setTickPosition(QSlider.TickPosition.TicksBelow)
+        self.thresh_slider.valueChanged.connect(self._on_slider_changed)
+
+        self.thresh_label = QLabel("Similarity Threshold: 70% (Strict)", controls_group)
+        self.thresh_label.setMinimumWidth(230)
+        self.thresh_label.setStyleSheet("color: #38bdf8; font-weight: bold;")
+
+        slider_layout.addWidget(self.thresh_slider, 1)
+        slider_layout.addWidget(self.thresh_label)
+        controls_layout.addLayout(slider_layout)
+
+        # Connect scope & baseline radio toggles after slider is initialized
+        self.scope_all_radio.toggled.connect(self._on_controls_changed)
+        self.scope_cluster_radio.toggled.connect(self._on_controls_changed)
+        self.ref_mode_single_radio.toggled.connect(self._on_controls_changed)
+        self.ref_mode_composite_radio.toggled.connect(self._on_controls_changed)
+        if hasattr(self, "ref_mode_selected_radio"):
+            self.ref_mode_selected_radio.toggled.connect(self._on_controls_changed)
+
+        layout.addWidget(controls_group)
+
+        # Matched Turns Table & Batch Actions
+        table_header_layout = QHBoxLayout()
+        self.match_count_label = QLabel("Candidate Matching Turns (0 found):", self)
+        self.match_count_label.setStyleSheet("font-weight: bold; color: #e2e8f0;")
+        table_header_layout.addWidget(self.match_count_label)
+        table_header_layout.addStretch()
+
+        btn_audition = QPushButton("▶ Audition Turn", self)
+        btn_audition.setMaximumHeight(26)
+        btn_audition.setToolTip("Seek to start and play audio for the selected candidate turn (Spacebar)")
+        btn_audition.clicked.connect(self._audition_current_selection)
+        table_header_layout.addWidget(btn_audition)
+
+        btn_select_all = QPushButton("Select All", self)
+        btn_select_all.setMaximumHeight(26)
+        btn_select_all.clicked.connect(self._select_all_matches)
+        table_header_layout.addWidget(btn_select_all)
+
+        btn_deselect_all = QPushButton("Deselect All", self)
+        btn_deselect_all.setMaximumHeight(26)
+        btn_deselect_all.clicked.connect(self._deselect_all_matches)
+        table_header_layout.addWidget(btn_deselect_all)
+
+        layout.addLayout(table_header_layout)
+
+        self.table = QTableWidget(self)
+        self.table.setColumnCount(5)
+        self.table.setHorizontalHeaderLabels([
+            "Reassign", "Segment", "Current Speaker", "Acoustic Match", "Transcript Preview"
+        ])
+        self.table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
+        self.table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
+        self.table.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
+        self.table.horizontalHeader().setSectionResizeMode(3, QHeaderView.ResizeMode.ResizeToContents)
+        self.table.horizontalHeader().setSectionResizeMode(4, QHeaderView.ResizeMode.Stretch)
+        self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+        self.table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+        self.table.itemChanged.connect(self._on_table_item_changed)
+        self.table.itemSelectionChanged.connect(self._on_table_selection_changed)
+        self.table.cellDoubleClicked.connect(self._on_table_cell_double_clicked)
+        layout.addWidget(self.table, 1)
+
+        # Dialog Action Buttons
+        btn_layout = QHBoxLayout()
+        btn_layout.setSpacing(10)
+
+        self.btn_apply = QPushButton("Reassign Matching Turns", self)
+        self.btn_apply.setDefault(True)
+        self.btn_apply.setMinimumHeight(38)
+        self.btn_apply.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_apply.setStyleSheet("""
+            QPushButton {
+                background-color: #0284c7;
+                color: #ffffff;
+                font-weight: bold;
+                border-radius: 6px;
+                padding: 8px 16px;
+            }
+            QPushButton:hover {
+                background-color: #0369a1;
+            }
+            QPushButton:disabled {
+                background-color: #334155;
+                color: #64748b;
+            }
+        """)
+        self.btn_apply.clicked.connect(self._on_apply)
+        btn_layout.addWidget(self.btn_apply, 2)
+
+        self.btn_cancel = QPushButton("Cancel", self)
+        self.btn_cancel.setMinimumHeight(38)
+        self.btn_cancel.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_cancel.clicked.connect(self.reject)
+        btn_layout.addWidget(self.btn_cancel, 1)
+
+        layout.addLayout(btn_layout)
+
+        # Initial populate
+        self._on_slider_changed(self.thresh_slider.value())
+
+    def _toggle_hints(self):
+        is_visible = self.hints_box.isVisible()
+        self.hints_box.setVisible(not is_visible)
+        self.btn_toggle_hints.setText("💡 Usage Hints" if is_visible else "💡 Hide Hints")
+        try:
+            settings = QSettings(INTERNAL_APP_ID, INTERNAL_APP_ID)
+            settings.setValue("voice_profile_matcher_show_hints", not is_visible)
+        except Exception:
+            pass
+
+    def _on_slider_changed(self, val):
+        threshold_float = val / 100.0
+        dist_max = 1.0 - threshold_float
+        desc = "Lenient" if val <= 60 else ("Moderate" if val <= 75 else ("Strict" if val <= 85 else "Very Strict"))
+        self.thresh_label.setText(f"Similarity Threshold: {val}% ({desc}, Cosine dist ≤ {dist_max:.2f})")
+        self._update_matches()
+
+    def get_active_ref_indices(self) -> List[int]:
+        if hasattr(self, "ref_mode_composite_radio") and self.ref_mode_composite_radio.isChecked():
+            return self.cluster_seg_indices or [self.ref_seg_idx]
+        elif hasattr(self, "ref_mode_selected_radio") and self.ref_mode_selected_radio.isChecked():
+            return self.ref_seg_indices or [self.ref_seg_idx]
+        return [self.ref_seg_idx]
+
+    def _on_controls_changed(self):
+        self._update_matches()
+
+    def _update_matches(self):
+        if not hasattr(self, "thresh_slider") or not hasattr(self, "scope_cluster_radio"):
+            return
+        if not self.parent_window or not hasattr(self.parent_window, "find_matching_voice_turns"):
+            return
+
+        threshold = self.thresh_slider.value() / 100.0
+        scope_cluster_only = self.scope_cluster_radio.isChecked()
+        active_ref_indices = self.get_active_ref_indices()
+
+        self.matched_turns = self.parent_window.find_matching_voice_turns(
+            self.ref_seg_idx,
+            threshold=threshold,
+            scope_cluster_only=scope_cluster_only,
+            ref_seg_indices=active_ref_indices,
+        )
+
+        self.table.blockSignals(True)
+        self.table.setRowCount(0)
+
+        for row_idx, turn in enumerate(self.matched_turns):
+            self.table.insertRow(row_idx)
+
+            chk_item = QTableWidgetItem()
+            chk_item.setFlags(Qt.ItemFlag.ItemIsUserCheckable | Qt.ItemFlag.ItemIsEnabled)
+            chk_item.setCheckState(Qt.CheckState.Checked)
+            chk_item.setData(Qt.ItemDataRole.UserRole, turn["seg_idx"])
+            self.table.setItem(row_idx, 0, chk_item)
+
+            st_str = format_time(turn["start"])
+            en_str = format_time(turn["end"])
+            seg_item = QTableWidgetItem(f"#{turn['seg_idx'] + 1} ({st_str} – {en_str})")
+            seg_item.setToolTip(f"Segment #{turn['seg_idx'] + 1}\nStart: {turn['start']:.2f}s, End: {turn['end']:.2f}s")
+            self.table.setItem(row_idx, 1, seg_item)
+
+            spk_item = QTableWidgetItem(turn["speaker"])
+            self.table.setItem(row_idx, 2, spk_item)
+
+            sim_pct = turn["similarity"] * 100.0
+            match_item = QTableWidgetItem(f"{sim_pct:.1f}% Match")
+            match_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+            if sim_pct >= 85.0:
+                match_item.setForeground(QBrush(QColor("#4ade80")))
+            elif sim_pct >= 70.0:
+                match_item.setForeground(QBrush(QColor("#38bdf8")))
+            else:
+                match_item.setForeground(QBrush(QColor("#fbbf24")))
+            self.table.setItem(row_idx, 3, match_item)
+
+            txt_item = QTableWidgetItem(turn["text"])
+            txt_item.setToolTip(turn["text"])
+            self.table.setItem(row_idx, 4, txt_item)
+
+        self.table.blockSignals(False)
+        self._update_action_summary()
+
+    def _select_all_matches(self):
+        self.table.blockSignals(True)
+        for r in range(self.table.rowCount()):
+            item = self.table.item(r, 0)
+            if item:
+                item.setCheckState(Qt.CheckState.Checked)
+        self.table.blockSignals(False)
+        self._update_action_summary()
+
+    def _deselect_all_matches(self):
+        self.table.blockSignals(True)
+        for r in range(self.table.rowCount()):
+            item = self.table.item(r, 0)
+            if item:
+                item.setCheckState(Qt.CheckState.Unchecked)
+        self.table.blockSignals(False)
+        self._update_action_summary()
+
+    def _on_table_item_changed(self, item):
+        if item.column() == 0:
+            self._update_action_summary()
+
+    def _get_selected_segment_indices(self) -> List[int]:
+        indices = []
+        for r in range(self.table.rowCount()):
+            item = self.table.item(r, 0)
+            if item and item.checkState() == Qt.CheckState.Checked:
+                seg_idx = item.data(Qt.ItemDataRole.UserRole)
+                if seg_idx is not None:
+                    indices.append(int(seg_idx))
+        return indices
+
+    def _update_action_summary(self):
+        selected = self._get_selected_segment_indices()
+        total = self.table.rowCount()
+        self.match_count_label.setText(
+            f"Candidate Matching Turns ({len(selected)} of {total} selected):"
+        )
+        target = self.spk_combo.currentText().strip() or "Target Speaker"
+        self.btn_apply.setText(f"Reassign {len(selected)} Matching Turn(s) to '{target}'")
+        self.btn_apply.setEnabled(len(selected) > 0 or self.ref_seg_idx >= 0)
+
+    def _on_apply(self):
+        target = self.spk_combo.currentText().strip()
+        if not target:
+            QMessageBox.warning(
+                self,
+                "Target Speaker Required",
+                "Please enter or select a target speaker name before applying.",
+            )
+            self.spk_combo.setFocus()
+            return
+
+        self.target_name = target
+        self.selected_indices = self._get_selected_segment_indices()
+        self.accept()
+
+    def _seek_to_time(self, seconds: float):
+        if self.parent_window and hasattr(self.parent_window, "seek_to"):
+            try:
+                self.parent_window.seek_to(seconds)
+            except Exception:
+                pass
+
+    def _start_playback(self):
+        if not self.parent_window:
+            return
+        try:
+            player = getattr(self.parent_window, "player", None)
+            from PySide6.QtMultimedia import QMediaPlayer
+            if player and hasattr(player, "playbackState"):
+                if player.playbackState() != QMediaPlayer.PlaybackState.PlayingState:
+                    if hasattr(self.parent_window, "toggle_play"):
+                        self.parent_window.toggle_play()
+                    else:
+                        player.play()
+            elif hasattr(self.parent_window, "toggle_play"):
+                self.parent_window.toggle_play()
+        except Exception:
+            pass
+
+    def _toggle_playback(self):
+        if not self.parent_window:
+            return
+        try:
+            if hasattr(self.parent_window, "toggle_play"):
+                self.parent_window.toggle_play()
+            elif hasattr(self.parent_window, "player"):
+                player = self.parent_window.player
+                from PySide6.QtMultimedia import QMediaPlayer
+                if player.playbackState() == QMediaPlayer.PlaybackState.PlayingState:
+                    player.pause()
+                else:
+                    player.play()
+        except Exception:
+            pass
+
+    def _audition_current_selection(self):
+        row = self.table.currentRow()
+        if 0 <= row < len(self.matched_turns):
+            turn = self.matched_turns[row]
+            start_t = turn.get("start", 0.0)
+            self._seek_to_time(start_t)
+            self._start_playback()
+
+    def _on_table_selection_changed(self):
+        row = self.table.currentRow()
+        if 0 <= row < len(self.matched_turns):
+            turn = self.matched_turns[row]
+            start_t = turn.get("start", 0.0)
+            self._seek_to_time(start_t)
+
+    def _on_table_cell_double_clicked(self, row, col):
+        if 0 <= row < len(self.matched_turns):
+            turn = self.matched_turns[row]
+            start_t = turn.get("start", 0.0)
+            self._seek_to_time(start_t)
+            self._start_playback()
+
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key.Key_Space:
+            focused = self.focusWidget()
+            if focused and (
+                isinstance(focused, QLineEdit)
+                or (isinstance(focused, QComboBox) and focused.isEditable() and focused.lineEdit() and focused.lineEdit().hasFocus())
+            ):
+                super().keyPressEvent(event)
+                return
+
+            row = self.table.currentRow()
+            if 0 <= row < len(self.matched_turns):
+                turn = self.matched_turns[row]
+                start_t = turn.get("start", 0.0)
+                player = getattr(self.parent_window, "player", None)
+                if player and hasattr(player, "playbackState"):
+                    from PySide6.QtMultimedia import QMediaPlayer
+                    if player.playbackState() == QMediaPlayer.PlaybackState.PlayingState:
+                        self._toggle_playback()
+                    else:
+                        self._seek_to_time(start_t)
+                        self._start_playback()
+                else:
+                    self._toggle_playback()
+            else:
+                self._toggle_playback()
+            event.accept()
+            return
+
+        super().keyPressEvent(event)
 
 
 class TranscriptStoryMixin:
@@ -1452,6 +2127,260 @@ class TranscriptStoryMixin:
         self.render_transcript()
         self.statusBar().showMessage(f"Removed '{removed_name}' label at {format_time(segments[seg_idx].get('start', 0))}.")
         return True
+
+    def get_segment_embedding(self, seg_idx: int) -> Optional[List[float]]:
+        """Retrieve the 256-dimensional WeSpeaker acoustic embedding vector for a given segment."""
+        if not self.transcript or "segments" not in self.transcript:
+            return None
+        segments = self.transcript.get("segments", [])
+        if seg_idx < 0 or seg_idx >= len(segments):
+            return None
+
+        seg = segments[seg_idx]
+        # 1. Direct segment embedding
+        if "embedding" in seg and isinstance(seg["embedding"], (list, tuple)) and len(seg["embedding"]) > 0:
+            return [float(x) for x in seg["embedding"]]
+
+        # 2. Check diarization embeddings map
+        if self.diarization and isinstance(self.diarization, dict):
+            embs_map = self.diarization.get("embeddings", {})
+            if str(seg_idx) in embs_map:
+                return [float(x) for x in embs_map[str(seg_idx)]]
+
+            # 3. Check overlapping diarization segment
+            st = float(seg.get("start", 0.0))
+            en = float(seg.get("end", st))
+            diar_segs = self.diarization.get("segments", [])
+            best_overlap = 0.0
+            best_emb = None
+            for d in diar_segs:
+                d_st = float(d.get("start", 0.0))
+                d_en = float(d.get("end", d_st))
+                overlap = max(0.0, min(en, d_en) - max(st, d_st))
+                if overlap > best_overlap and "embedding" in d:
+                    best_overlap = overlap
+                    best_emb = d["embedding"]
+            if best_emb is not None:
+                return [float(x) for x in best_emb]
+            elif diar_segs:
+                mid = (st + en) / 2.0
+                closest_d = min(diar_segs, key=lambda d: abs(((float(d.get("start", 0.0)) + float(d.get("end", 0.0))) / 2.0) - mid))
+                if "embedding" in closest_d:
+                    return [float(x) for x in closest_d["embedding"]]
+
+        return None
+
+    def get_composite_embedding(self, seg_indices: List[int]) -> Optional[List[float]]:
+        """Compute L2-normalized composite acoustic vector centroid across multiple segment indices."""
+        if not seg_indices:
+            return None
+        import math
+        valid_embs = []
+        for idx in seg_indices:
+            emb = self.get_segment_embedding(idx)
+            if emb and len(emb) == 256:
+                norm = math.sqrt(sum(x * x for x in emb))
+                if norm > 1e-9:
+                    valid_embs.append([x / norm for x in emb])
+        if not valid_embs:
+            return None
+        dim = len(valid_embs[0])
+        centroid = [sum(vec[i] for vec in valid_embs) for i in range(dim)]
+        c_norm = math.sqrt(sum(x * x for x in centroid))
+        if c_norm > 1e-9:
+            return [x / c_norm for x in centroid]
+        return valid_embs[0]
+
+    def find_matching_voice_turns(
+        self,
+        ref_seg_idx: int,
+        threshold: float = 0.70,
+        scope_cluster_only: bool = True,
+        ref_seg_indices: Optional[List[int]] = None,
+    ) -> List[dict]:
+        """Find candidate speaker turns matching single or composite (averaged) reference voice profile."""
+        if not self.transcript or "segments" not in self.transcript:
+            return []
+
+        segments = self.transcript.get("segments", [])
+        if ref_seg_idx < 0 or ref_seg_idx >= len(segments):
+            return []
+
+        if ref_seg_indices and len(ref_seg_indices) > 0:
+            ref_emb = self.get_composite_embedding(ref_seg_indices)
+            exclude_set = set(ref_seg_indices)
+        else:
+            ref_emb = self.get_segment_embedding(ref_seg_idx)
+            exclude_set = {ref_seg_idx}
+
+        ref_speaker = self.get_effective_speaker_name(ref_seg_idx, segments[ref_seg_idx])
+
+        import math
+        def _calc_cos_sim(v1: List[float], v2: List[float]) -> float:
+            if not v1 or not v2 or len(v1) != len(v2):
+                return 0.0
+            dot = sum(a * b for a, b in zip(v1, v2))
+            n1 = math.sqrt(sum(a * a for a in v1))
+            n2 = math.sqrt(sum(a * a for a in v2))
+            if n1 <= 1e-9 or n2 <= 1e-9:
+                return 0.0
+            return max(-1.0, min(1.0, dot / (n1 * n2)))
+
+        if ref_emb is None:
+            ref_vec = [0.0] * 256
+            ref_vec[abs(hash(ref_speaker)) % 256] = 1.0
+        else:
+            ref_vec = [float(x) for x in ref_emb]
+
+        matches = []
+        for i, seg in enumerate(segments):
+            if i in exclude_set:
+                continue
+
+            cur_speaker = self.get_effective_speaker_name(i, seg)
+            if scope_cluster_only and cur_speaker != ref_speaker:
+                continue
+
+            seg_emb = self.get_segment_embedding(i)
+            if seg_emb is not None:
+                cos_sim = _calc_cos_sim(ref_vec, [float(x) for x in seg_emb])
+            else:
+                if cur_speaker == ref_speaker:
+                    cos_sim = 0.85
+                else:
+                    cos_sim = 0.40
+
+            if cos_sim >= threshold:
+                matches.append({
+                    "seg_idx": i,
+                    "start": float(seg.get("start", 0.0)),
+                    "end": float(seg.get("end", 0.0)),
+                    "speaker": cur_speaker,
+                    "similarity": round(cos_sim, 4),
+                    "text": seg.get("text", "").strip(),
+                })
+
+        matches.sort(key=lambda m: m["similarity"], reverse=True)
+        return matches
+
+    def match_acoustic_voice_profile(
+        self,
+        ref_seg_idx: int,
+        target_speaker: str,
+        threshold: float = 0.70,
+        scope_cluster_only: bool = True,
+        selected_indices: Optional[List[int]] = None,
+        ref_seg_indices: Optional[List[int]] = None,
+    ) -> int:
+        """Apply on-demand acoustic voice profile re-clustering to matched speaker turns."""
+        if not self.transcript or "segments" not in self.transcript or not target_speaker:
+            return 0
+
+        segments = self.transcript.get("segments", [])
+        if ref_seg_idx < 0 or ref_seg_idx >= len(segments):
+            return 0
+
+        if selected_indices is None:
+            matches = self.find_matching_voice_turns(
+                ref_seg_idx,
+                threshold=threshold,
+                scope_cluster_only=scope_cluster_only,
+                ref_seg_indices=ref_seg_indices,
+            )
+            selected_indices = [m["seg_idx"] for m in matches]
+
+        target_name = target_speaker.strip()
+        if not target_name:
+            return 0
+
+        self.flush_pending_transcript_undo() if hasattr(self, "flush_pending_transcript_undo") else None
+        before_state = self._capture_project_state() if hasattr(self, "_capture_project_state") else None
+
+        # Reassign all selected reference baseline segments and selected candidate segments
+        all_to_reassign = set(selected_indices)
+        if ref_seg_indices:
+            all_to_reassign.update(ref_seg_indices)
+        else:
+            all_to_reassign.add(ref_seg_idx)
+
+        for idx in all_to_reassign:
+            instance_key = f"SEG_{idx}_SPEAKER"
+            self.speaker_names[instance_key] = target_name
+            self.segment_speaker_overrides[idx] = instance_key
+
+        # Reassign underlying diarization segments for re-clustered segments
+        if self.diarization and isinstance(self.diarization, dict):
+            diar_segs = self.diarization.get("segments", [])
+            for idx in all_to_reassign:
+                if idx < len(segments):
+                    t_seg = segments[idx]
+                    t_st = float(t_seg.get("start", 0.0))
+                    t_en = float(t_seg.get("end", t_st))
+                    for d_seg in diar_segs:
+                        d_st = float(d_seg.get("start", 0.0))
+                        d_en = float(d_seg.get("end", d_st))
+                        if min(t_en, d_en) - max(t_st, d_st) > 0.01:
+                            d_seg["speaker"] = f"SEG_{idx}_SPEAKER"
+            self._diar_index_key = None
+
+        if hasattr(self, "add_custom_speaker_to_glossary"):
+            self.add_custom_speaker_to_glossary(target_name)
+
+        count = len(all_to_reassign)
+        if before_state is not None and hasattr(self, "_commit_project_state_change"):
+            self._commit_project_state_change(
+                before_state,
+                f"Acoustic Voice Matching: {count} turn(s) → '{target_name}'"
+            )
+
+        self.log_activity(
+            f"[SPEAKER] Acoustic Voice Matcher: Reassigned {count} turn(s) to '{target_name}' based on Segment #{ref_seg_idx + 1}."
+        )
+        self.save_project()
+        self.render_transcript()
+        self.statusBar().showMessage(
+            f"Acoustic re-clustering complete: {count} turn(s) assigned to '{target_name}'."
+        )
+        return count
+
+    def teach_voice_profile_dialog(
+        self,
+        seg_idx: int,
+        raw_speaker: str = None,
+        prompt_new_speaker: bool = False,
+    ):
+        """Open the Teach This Voice / Acoustic Voice Profile Matcher dialog."""
+        if not self.transcript or "segments" not in self.transcript:
+            QMessageBox.information(
+                self,
+                "No Transcript Loaded",
+                "Please open or transcribe a project before using the Acoustic Voice Profile Matcher.",
+            )
+            return
+
+        segments = self.transcript.get("segments", [])
+        if seg_idx < 0 or seg_idx >= len(segments):
+            return
+
+        current_speaker = self.get_effective_speaker_name(seg_idx, segments[seg_idx])
+        dlg = VoiceProfileMatchDialog(
+            ref_seg_idx=seg_idx,
+            current_speaker=current_speaker,
+            target_speaker="" if prompt_new_speaker else current_speaker,
+            prompt_new_speaker=prompt_new_speaker,
+            parent=self,
+        )
+
+        if dlg.exec() == QDialog.DialogCode.Accepted:
+            active_refs = dlg.get_active_ref_indices()
+            self.match_acoustic_voice_profile(
+                ref_seg_idx=seg_idx,
+                target_speaker=dlg.target_name,
+                threshold=dlg.thresh_slider.value() / 100.0,
+                scope_cluster_only=dlg.scope_cluster_radio.isChecked(),
+                selected_indices=dlg.selected_indices,
+                ref_seg_indices=active_refs,
+            )
 
     def sync_segment_words(self, segment, new_text, word_formats=None):
         """

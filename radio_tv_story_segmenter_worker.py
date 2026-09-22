@@ -1108,6 +1108,9 @@ def fast_cluster_ahc(embeddings, k=None, distance_threshold=None):
     return labels
 
 
+_LAST_EXTRACTED_EMBEDDINGS = None
+
+
 def apply_clustering_patches():
     """Globally monkey-patch SpectralClustering and diarize.clustering to use O(N^2) AHC."""
     try:
@@ -1266,6 +1269,8 @@ def extract_embeddings_batched(
             progress_callback(len(embeddings), total_feats)
 
     X = np.stack(embeddings)
+    global _LAST_EXTRACTED_EMBEDDINGS
+    _LAST_EXTRACTED_EMBEDDINGS = (valid_subsegments, X)
     return X, valid_subsegments
 
 
@@ -1445,9 +1450,38 @@ def assign_short_segments_to_centroids(
             chosen_speaker = f"SPEAKER_{label_values[0]:02d}" if len(label_values) > 0 else "SPEAKER_00"
 
         from diarize import _RawSegment
-        assigned.append(_RawSegment(start=start_sec, end=end_sec, speaker=chosen_speaker))
+        seg_obj = _RawSegment(start=start_sec, end=end_sec, speaker=chosen_speaker)
+        assigned.append(seg_obj)
 
     return assigned
+
+
+def _calculate_embedding_for_interval(start, end, subsegments, embeddings):
+    """Compute unit-normalized 256-dimensional embedding vector for an interval [start, end]."""
+    if embeddings is None or len(embeddings) == 0 or not subsegments:
+        return None
+    try:
+        import numpy as np
+        sub_starts = np.array([float(s.start) for s in subsegments])
+        sub_ends = np.array([float(s.end) for s in subsegments])
+        s_st = float(start)
+        s_en = float(end)
+        overlap_mask = (sub_ends >= s_st - 0.05) & (sub_starts <= s_en + 0.05)
+        if np.any(overlap_mask):
+            matched = embeddings[overlap_mask]
+            mean_emb = np.mean(matched, axis=0)
+        else:
+            sub_mids = (sub_starts + sub_ends) / 2.0
+            seg_mid = (s_st + s_en) / 2.0
+            closest_idx = int(np.argmin(np.abs(sub_mids - seg_mid)))
+            mean_emb = embeddings[closest_idx]
+
+        norm = np.linalg.norm(mean_emb)
+        if norm > 0:
+            mean_emb = mean_emb / norm
+        return [round(float(x), 6) for x in mean_emb.tolist()]
+    except Exception:
+        return None
 
 
 def run_transcript_guided_diarization(
@@ -1798,13 +1832,23 @@ def diarize(audio_file, expected_speakers="auto", transcript_file=None, sensitiv
 
         emit("progress", percent=89, message="Post-processing and smoothing speaker transitions...")
 
+        global _LAST_EXTRACTED_EMBEDDINGS
+        last_subsegs, last_embs = (None, None)
+        if _LAST_EXTRACTED_EMBEDDINGS is not None:
+            last_subsegs, last_embs = _LAST_EXTRACTED_EMBEDDINGS
+
         segments = []
         for segment in result.segments:
-            segments.append({
+            seg_dict = {
                 "start": float(segment.start),
                 "end": float(segment.end),
                 "speaker": str(segment.speaker),
-            })
+            }
+            if last_subsegs is not None and last_embs is not None and len(last_embs) > 0:
+                calc_emb = _calculate_embedding_for_interval(segment.start, segment.end, last_subsegs, last_embs)
+                if calc_emb is not None:
+                    seg_dict["embedding"] = calc_emb
+            segments.append(seg_dict)
 
         merged_count = 0
         if len(segments) > 2:
@@ -1832,6 +1876,23 @@ def diarize(audio_file, expected_speakers="auto", transcript_file=None, sensitiv
                 and segment["start"] <= merged_segments[-1]["end"] + 0.05
             ):
                 merged_segments[-1]["end"] = max(merged_segments[-1]["end"], segment["end"])
+                # Merge embeddings if both segments possess them
+                e1 = merged_segments[-1].get("embedding")
+                e2 = segment.get("embedding")
+                if e1 is not None and e2 is not None:
+                    try:
+                        import numpy as np
+                        v1 = np.array(e1, dtype=np.float32)
+                        v2 = np.array(e2, dtype=np.float32)
+                        v_mean = (v1 + v2) / 2.0
+                        norm = np.linalg.norm(v_mean)
+                        if norm > 0:
+                            v_mean = v_mean / norm
+                        merged_segments[-1]["embedding"] = [round(float(x), 6) for x in v_mean.tolist()]
+                    except Exception:
+                        pass
+                elif e2 is not None and e1 is None:
+                    merged_segments[-1]["embedding"] = e2
             else:
                 merged_segments.append(segment)
         segments = merged_segments
@@ -1849,6 +1910,11 @@ def diarize(audio_file, expected_speakers="auto", transcript_file=None, sensitiv
             "speakers": speakers,
             "audio_duration": float(result.audio_duration),
             "segments": segments,
+            "embeddings": {
+                str(i): seg["embedding"]
+                for i, seg in enumerate(segments)
+                if "embedding" in seg
+            },
         }
         emit("progress", percent=97, message="Aligning speaker boundaries with timeline...")
         emit("finished", result=output)
