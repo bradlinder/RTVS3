@@ -344,6 +344,7 @@ class ID3TagEditorDialog(QDialog):
         self.setWindowTitle("ID3 Tag Editor (MP3) — Radio & TV Segmenter")
         self.setMinimumWidth(560)
         self.resize(620, 640)
+        make_dialog_maximizable(self)
 
         self._build_ui()
 

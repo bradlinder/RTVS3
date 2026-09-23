@@ -877,6 +877,7 @@ class GitHubPluginsDialog(QDialog):
         self.setWindowTitle("Download Plugins & Extensions from GitHub")
         self.setMinimumSize(860, 600)
         self.resize(900, 640)
+        self.setWindowFlags(self.windowFlags() | Qt.WindowType.WindowMaximizeButtonHint)
         self.setup_ui()
         self.fetch_plugins()
 
@@ -1398,6 +1399,7 @@ class PluginManagerDialog(QDialog):
         self.setWindowTitle("Manage Plugins & Add-ons")
         self.setMinimumSize(840, 580)
         self.resize(880, 620)
+        self.setWindowFlags(self.windowFlags() | Qt.WindowType.WindowMaximizeButtonHint)
         self.setup_ui()
         self.refresh_list()
 

@@ -31,6 +31,7 @@ class RestoreSelectedSettingsDialog(QDialog):
         super().__init__(parent)
         self.setWindowTitle("Restore System Defaults")
         self.resize(540, 560)
+        make_dialog_maximizable(self)
         self.on_restore_selected = on_restore_selected
         self.checkboxes = {}
 
@@ -1276,6 +1277,7 @@ class PlaybackPreferencesMixin:
         dialog = QDialog(self)
         dialog.setWindowTitle(f"Preferences — {APP_DISPLAY_NAME}")
         dialog.resize(700, 500)
+        make_dialog_maximizable(dialog)
 
         main_layout = QVBoxLayout(dialog)
         main_layout.setContentsMargins(14, 14, 14, 14)

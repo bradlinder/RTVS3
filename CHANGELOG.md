@@ -1,5 +1,21 @@
 # Changelog
  
+## v3.7.5-beta
+- **Acoustic Voice Profiling & Speaker Correction Engine Refinements (`speaker_identity.py`, `transcript_story.py`, `transcript_editor.py`)**:
+  - **Candidate Vector Pre-Caching (`VoiceProfileMatchDialog` & `find_matching_voice_turns`)**: Implemented upfront candidate vector pre-caching (`_ensure_candidate_cache`), completely eliminating redundant WeSpeaker ONNX feature extractions and audio slice decodes during threshold slider scrubbing for instantaneous, stutter-free threshold adjustments.
+  - **Robust Profile Synthesis & Competitor Target Separation**: Target speaker profiles are synthesized via robust multi-sample centroid aggregation (`robust_reference_profile`), and candidate turns assigned to the target speaker name are automatically excluded from competing acoustic profile sets.
+  - **Detailed Acoustic Margin Tooltips**: Match table rows now display informative tooltips detailing target acoustic similarity, closest competitor similarity, and separation margin (e.g. `Similarity: 88.4% | Nearest competitor: 72.1% (separation: +16.3%)`).
+  - **In-Place Rapid Keyboard Shortcuts for Candidate Toggling**: Added `Return`, `Enter`, and `X` shortcuts to immediately toggle candidate inclusion checkboxes directly while navigating the candidate table with keyboard arrow keys.
+  - **Rapid Dialog Turns Competitive Classifier (`transcript_story.py`, `transcript_editor.py`)**: Added interactive `prompt_refine_speaker_run` dialog and transcript editor context menu action ("Refine Rapid Dialog Turns (Competitive Classifier)...") allowing users to competitively classify rapid, alternating dialogue turns between two confirmed anchor speakers using relative cosine distance, with automatic sample enrollment.
+  - **Session-Wide Voice Profile Auto-Enrollment (`match_acoustic_voice_profile`)**: Automatically enrolls verified speaker turn embeddings into the active session voice profile cache (`_session_speaker_profiles`) upon applying acoustic voice identification.
+- **Diagnostic Test Bench Subtitle/Speaker Alignment Synchronizations (`test_runner.py`)**:
+  - Synchronized `DiagnosticEngine` unit tests (`_test_audio_subtitle_sync`, `_test_transcription_subtitle_export_parity`) with updated speaker detection logic, strict timestamp bounds, and modern formatting standards.
+  - All 27 diagnostic test suites pass cleanly with 100% test suite fidelity.
+- **Universal Window Maximize & Restore Flag Enforcement - Milestone 4.1 (`prs_shared.py`, all dialog modules)**:
+  - Enforced `Qt.WindowMaximizeButtonHint` and maximized capability via standardized `make_dialog_maximizable` helper across all resizable modal and non-modal dialogs:
+    - Core: `VoiceProfileMatchDialog`, `ChangeSpeakerDialog`, `StoryFadesDialog`, `SpeakerManagerDialog`, `StoryMetadataDialog`, `CommentEditorDialog`, `ClearCacheDialog`, `ProjectDataPurgeDialog`, `DiagnosticDialog`, `BenchmarkDialog`, `CheckUpdateDialog`, `UnifiedExportDialog`, `ReorderExportDestinationsDialog`, `RestoreSelectedSettingsDialog`, `BatchProcessingDialog`, and `PreferencesDialog`.
+    - Plugins: `DriveFolderPickerDialog`, `GoogleDocsReviewDialog`, `GoogleOAuthSetupGuideDialog`, `PluginManagerDialog`, `GitHubPluginsDialog`, `WordPressSettingsDialog`, `WordPressPostMetadataDialog`, `WordPressPublishDialog`, `YouTubeSettingsDialog`, and `YouTubeAssistedUploadGuideDialog`.
+
 ## v3.7.4-beta
 - **Acoustic Voice Profile & Speaker Identity Engine Architecture Upgrade (`speaker_identity.py`, `processing.py`, `transcript_editor.py`, `transcript_story.py`)**:
   - **Isolated Voice Profile Math & Identity Module (`speaker_identity.py`)**: Extracted core vector mathematical operations, similarity scoring, robust profile synthesis, centroid calculation, and confidence thresholding into a clean standalone module.

@@ -82,6 +82,7 @@ class ReorderExportDestinationsDialog(QDialog):
         self.setWindowTitle("Customize Export Destinations Order")
         self.resize(460, 360)
         self.setMinimumSize(400, 300)
+        make_dialog_maximizable(self)
 
         # available_dests is a list of (dest_id, dest_title)
         self.available_dests = available_dests or [

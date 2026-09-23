@@ -1,4 +1,4 @@
-"""Radio & TV Segmenter v3.7.4-beta — transcript story responsibilities.
+"""Radio & TV Segmenter v3.7.5-beta — transcript story responsibilities.
 
 Methods intentionally retain the MainWindow-facing API so behavior remains
 maintaining the established MainWindow-facing API while responsibilities are isolated.
@@ -32,6 +32,7 @@ class ChangeSpeakerDialog(QDialog):
         super().__init__(parent)
         self.setWindowTitle("Change Speaker")
         self.setMinimumWidth(520)
+        make_dialog_maximizable(self)
         self.choice = None  # 'all', 'single', or None
 
         layout = QVBoxLayout(self)
@@ -119,6 +120,14 @@ class VoiceProfileMatchDialog(QDialog):
         self.setWindowTitle("Teach This Voice: Acoustic Profile Matcher")
         self.setMinimumSize(720, 580)
         self.resize(760, 620)
+        make_dialog_maximizable(self)
+
+        # Precompute candidate acoustic embeddings once upon launch so threshold slider drags are instantaneous
+        self.cached_candidates = []
+        if self.parent_window and hasattr(self.parent_window, "_build_voice_profile_candidates"):
+            self.cached_candidates = self.parent_window._build_voice_profile_candidates(
+                [self.ref_seg_idx] + self.ref_seg_indices
+            )
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(18, 18, 18, 18)
@@ -432,26 +441,15 @@ class VoiceProfileMatchDialog(QDialog):
         self.chk_master = QCheckBox("Select All", self)
         self.chk_master.setChecked(True)
         self.chk_master.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.chk_master.setStyleSheet("color: #38bdf8; font-weight: bold; margin-right: 10px;")
+        self.chk_master.setStyleSheet("color: #38bdf8; font-weight: bold; margin-right: 14px;")
         self.chk_master.toggled.connect(self._toggle_master_checkbox)
         table_header_layout.addWidget(self.chk_master)
-        
-        
+
         self.btn_audition = QPushButton("▶ Audition Turn", self)
         self.btn_audition.setMaximumHeight(26)
         self.btn_audition.setToolTip("Play or pause audio for the selected turn (Spacebar)")
         self.btn_audition.clicked.connect(self._toggle_audition_button)
         table_header_layout.addWidget(self.btn_audition)
-
-        btn_select_all = QPushButton("Select All", self)
-        btn_select_all.setMaximumHeight(26)
-        btn_select_all.clicked.connect(self._select_all_matches)
-        table_header_layout.addWidget(btn_select_all)
-
-        btn_deselect_all = QPushButton("Deselect All", self)
-        btn_deselect_all.setMaximumHeight(26)
-        btn_deselect_all.clicked.connect(self._deselect_all_matches)
-        table_header_layout.addWidget(btn_deselect_all)
 
         layout.addLayout(table_header_layout)
 
@@ -561,12 +559,15 @@ class VoiceProfileMatchDialog(QDialog):
         threshold = self.thresh_slider.value() / 100.0
         scope_cluster_only = self.scope_cluster_radio.isChecked()
         active_ref_indices = self.get_active_ref_indices()
+        target_name = self.spk_combo.currentText().strip() or None
 
         self.matched_turns = self.parent_window.find_matching_voice_turns(
             self.ref_seg_idx,
             threshold=threshold,
             scope_cluster_only=scope_cluster_only,
             ref_seg_indices=active_ref_indices,
+            target_name=target_name,
+            cached_candidates=getattr(self, "cached_candidates", None),
         )
 
         self.table.blockSignals(True)
@@ -591,8 +592,16 @@ class VoiceProfileMatchDialog(QDialog):
             self.table.setItem(row_idx, 2, spk_item)
 
             sim_pct = turn["similarity"] * 100.0
+            margin_pct = turn.get("margin", 0.0) * 100.0
+            comp_sim_pct = turn.get("competitor_similarity", 0.0) * 100.0
             match_item = QTableWidgetItem(f"{sim_pct:.1f}% Match")
             match_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+            match_item.setToolTip(
+                f"Acoustic Similarity: {sim_pct:.1f}%\n"
+                f"Nearest Competitor: {comp_sim_pct:.1f}%\n"
+                f"Separation Margin: +{margin_pct:.1f}%\n"
+                f"Status: Confident match exceeding sensitivity threshold"
+            )
             if sim_pct >= 85.0:
                 match_item.setForeground(QBrush(QColor("#4ade80")))
             elif sim_pct >= 78.0:
@@ -658,10 +667,24 @@ class VoiceProfileMatchDialog(QDialog):
             f"Candidate Matching Turns ({len(selected)} of {total} selected):"
         )
         target = self.spk_combo.currentText().strip() or "Target Speaker"
-        self.btn_apply.setText(f"Reassign {len(selected)} Matching Turn(s) to '{target}'")
-        self.btn_apply.setEnabled(len(selected) > 0 or self.ref_seg_idx >= 0)
+        if len(selected) > 0:
+            self.btn_apply.setText(f"Reassign {len(selected)} Matching Turn(s) to '{target}'")
+            self.btn_apply.setEnabled(True)
+        elif self.ref_seg_idx >= 0:
+            segs = getattr(self.parent_window, "transcript", {}).get("segments", []) if self.parent_window else []
+            curr_ref_spk = ""
+            if 0 <= self.ref_seg_idx < len(segs):
+                curr_ref_spk = self.parent_window.get_effective_speaker_name(self.ref_seg_idx, segs[self.ref_seg_idx])
+            if target and target != curr_ref_spk:
+                self.btn_apply.setText(f"Reassign Reference Turn #{self.ref_seg_idx + 1} Only to '{target}'")
+                self.btn_apply.setEnabled(True)
+            else:
+                self.btn_apply.setText(f"No Turns Selected (Reference already '{target}')")
+                self.btn_apply.setEnabled(False)
+        else:
+            self.btn_apply.setText("No Matching Turns Selected")
+            self.btn_apply.setEnabled(False)
 
-        # ADD IT HERE AT THE END OF THE METHOD:
         if hasattr(self, "chk_master"):
             self.chk_master.blockSignals(True)
             all_selected = (len(selected) == total and total > 0)
@@ -758,11 +781,23 @@ class VoiceProfileMatchDialog(QDialog):
                 self._toggle_playback()
 
     def eventFilter(self, watched, event):
-        """Intercept Spacebar on the table widget so it controls playback instead of row selection."""
+        """Intercept Spacebar on the table widget for playback and Return/Enter/X for checkbox toggling."""
         if watched == self.table and event.type() == event.Type.KeyPress:
             if event.key() == Qt.Key.Key_Space:
                 self._toggle_audition_button()
                 return True  # Event handled, do not pass to table
+            elif event.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter, Qt.Key.Key_X):
+                row = self.table.currentRow()
+                if 0 <= row < self.table.rowCount():
+                    item = self.table.item(row, 0)
+                    if item:
+                        new_state = (
+                            Qt.CheckState.Unchecked
+                            if item.checkState() == Qt.CheckState.Checked
+                            else Qt.CheckState.Checked
+                        )
+                        item.setCheckState(new_state)
+                        return True
         return super().eventFilter(watched, event)
 
     def keyPressEvent(self, event):
@@ -1997,11 +2032,43 @@ class TranscriptStoryMixin:
         assign to spk_a or spk_b based on relative cosine distance rather than a static threshold.
         """
         if not hasattr(self, "_session_speaker_profiles"):
+            self._session_speaker_profiles = {}
+
+        segments = self.transcript.get("segments", []) if self.transcript else []
+        if not segments:
             return
 
         prof_a = self._session_speaker_profiles.get(spk_a)
+        if not prof_a:
+            prof_a = []
+            for idx, seg in enumerate(segments):
+                if self.get_effective_speaker_name(idx, seg) == spk_a:
+                    emb = self.get_segment_embedding(idx)
+                    if emb:
+                        prof_a.append(emb)
+                        if len(prof_a) >= 4:
+                            break
+            if prof_a:
+                self._session_speaker_profiles[spk_a] = prof_a
+
         prof_b = self._session_speaker_profiles.get(spk_b)
+        if not prof_b:
+            prof_b = []
+            for idx, seg in enumerate(segments):
+                if self.get_effective_speaker_name(idx, seg) == spk_b:
+                    emb = self.get_segment_embedding(idx)
+                    if emb:
+                        prof_b.append(emb)
+                        if len(prof_b) >= 4:
+                            break
+            if prof_b:
+                self._session_speaker_profiles[spk_b] = prof_b
+
         if not prof_a or not prof_b:
+            if hasattr(self, "statusBar") and self.statusBar():
+                self.statusBar().showMessage(
+                    f"Competitive refinement requires acoustic samples for both '{spk_a}' and '{spk_b}'.", 4000
+                )
             return
 
         from speaker_identity import centroid, cosine_similarity
@@ -2010,7 +2077,6 @@ class TranscriptStoryMixin:
         if cA is None or cB is None:
             return
 
-        segments = self.transcript.get("segments", []) if self.transcript else []
         reassigned = 0
 
         for idx in range(start_idx, min(end_idx + 1, len(segments))):
@@ -2038,6 +2104,87 @@ class TranscriptStoryMixin:
                 self.statusBar().showMessage(
                     f"Refined {reassigned} turn(s) between '{spk_a}' and '{spk_b}'.", 4000
                 )
+
+    def prompt_refine_speaker_run(self, start_idx: int = -1, end_idx: int = -1):
+        """Prompt user to competitively re-classify rapid dialog turns between two confirmed voices."""
+        if not self.transcript or "segments" not in self.transcript:
+            QMessageBox.information(self, "No Transcript", "Project has no transcript segments.")
+            return
+
+        segments = self.transcript.get("segments", [])
+        if not segments:
+            return
+
+        known = self.get_all_known_speakers() if hasattr(self, "get_all_known_speakers") else []
+        if len(known) < 2:
+            QMessageBox.information(
+                self,
+                "Multiple Speakers Required",
+                "Competitive re-classification requires at least two distinct speaker profiles in the project.",
+            )
+            return
+
+        dlg = QDialog(self)
+        dlg.setWindowTitle("Refine Rapid Dialog Turns (Competitive Classifier)")
+        dlg.resize(500, 280)
+        make_dialog_maximizable(dlg)
+
+        layout = QVBoxLayout(dlg)
+        layout.setContentsMargins(16, 16, 16, 16)
+        layout.setSpacing(12)
+
+        info = QLabel(
+            "<b>Competitive Voice Separation & Cross-Talk Resolver</b><br>"
+            "Classify every turn within the selected range by relative acoustic distance between "
+            "two confirmed speaker signatures rather than a fixed global threshold. "
+            "Ideal for rapid-fire dialog, interviews, and alternating banter."
+        )
+        info.setWordWrap(True)
+        info.setStyleSheet("color: #cbd5e1; font-size: 12px;")
+        layout.addWidget(info)
+
+        form = QFormLayout()
+        form.setSpacing(10)
+
+        spk_a_combo = QComboBox()
+        spk_a_combo.addItems(known)
+        form.addRow("Speaker A (Confirmed):", spk_a_combo)
+
+        spk_b_combo = QComboBox()
+        spk_b_combo.addItems(known)
+        if len(known) > 1:
+            spk_b_combo.setCurrentIndex(1)
+        form.addRow("Speaker B (Confirmed):", spk_b_combo)
+
+        from PySide6.QtWidgets import QSpinBox, QDialogButtonBox
+        s_spin = QSpinBox()
+        s_spin.setRange(1, len(segments))
+        s_spin.setValue((start_idx + 1) if (0 <= start_idx < len(segments)) else 1)
+        form.addRow("Start Segment #:", s_spin)
+
+        e_spin = QSpinBox()
+        e_spin.setRange(1, len(segments))
+        e_spin.setValue((end_idx + 1) if (0 <= end_idx < len(segments)) else len(segments))
+        form.addRow("End Segment #:", e_spin)
+
+        layout.addLayout(form)
+
+        btns = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
+        btns.accepted.connect(dlg.accept)
+        btns.rejected.connect(dlg.reject)
+        layout.addWidget(btns)
+
+        if dlg.exec() == QDialog.DialogCode.Accepted:
+            a_name = spk_a_combo.currentText().strip()
+            b_name = spk_b_combo.currentText().strip()
+            if a_name == b_name:
+                QMessageBox.warning(self, "Invalid Selection", "Speaker A and Speaker B must be different speakers.")
+                return
+            s_i = s_spin.value() - 1
+            e_i = e_spin.value() - 1
+            if s_i > e_i:
+                s_i, e_i = e_i, s_i
+            self.refine_speaker_run_between_confirmed_anchors(s_i, e_i, a_name, b_name)
   
     def get_segment_embedding(self, seg_idx: int) -> Optional[List[float]]:
         """
@@ -2200,6 +2347,8 @@ class TranscriptStoryMixin:
         threshold: float = 0.78,
         scope_cluster_only: bool = False,
         ref_seg_indices: Optional[List[int]] = None,
+        target_name: Optional[str] = None,
+        cached_candidates: Optional[List[Tuple[int, List[float]]]] = None,
     ) -> List[dict]:
         """Find transcript turns acoustically matching a verified voice."""
         if not self.transcript or "segments" not in self.transcript:
@@ -2225,30 +2374,49 @@ class TranscriptStoryMixin:
 
         # Include any confirmed reference samples accumulated this session for this speaker
         reference_name = self.get_effective_speaker_name(ref_seg_idx, segments[ref_seg_idx])
+        session_vectors = []
         if hasattr(self, "_session_speaker_profiles"):
-            session_vectors = self._session_speaker_profiles.get(reference_name, [])
-            reference_vectors.extend(session_vectors)
-            
-        if not reference_vectors:
+            session_vectors = list(self._session_speaker_profiles.get(reference_name, []))
+            if target_name and target_name != reference_name:
+                session_vectors.extend(self._session_speaker_profiles.get(target_name, []))
+
+        all_candidate_refs = reference_vectors + session_vectors
+        if not all_candidate_refs:
             return []
 
-        # Target profile is constructed STRICTLY from explicitly chosen reference vectors.
-        # This completely prevents candidate turns from corrupting the enrolled voice.
-        target_profile = centroid(reference_vectors)
+        # Target profile is constructed via robust reference profile synthesis
+        seed_vectors = reference_vectors[:1] if reference_vectors else all_candidate_refs[:1]
+        secondary_refs = all_candidate_refs[1:]
+        if secondary_refs:
+            target_profile, _ = robust_reference_profile(
+                seed_vectors, secondary_refs, seed_similarity=0.78
+            )
+            if target_profile is None:
+                target_profile = centroid(all_candidate_refs)
+        else:
+            target_profile = seed_vectors[0]
+
         if target_profile is None:
             return []
 
-        candidates = self._build_voice_profile_candidates(reference_indices)
-        reference_name = self.get_effective_speaker_name(ref_seg_idx, segments[ref_seg_idx])
+        ref_set = set(reference_indices)
+        if cached_candidates is not None:
+            candidates = [(i, v) for i, v in cached_candidates if i not in ref_set]
+        else:
+            candidates = self._build_voice_profile_candidates(reference_indices)
 
         # Form competitor profiles from turns assigned to OTHER names
         competing_groups = {}
         same_cluster_embeddings = []
+        excluded_names = {reference_name}
+        if target_name:
+            excluded_names.add(target_name)
+
         for idx, embedding in candidates:
             speaker = self.get_effective_speaker_name(idx, segments[idx])
-            if speaker != reference_name:
+            if speaker not in excluded_names:
                 competing_groups.setdefault(speaker, []).append((idx, embedding))
-            else:
+            elif speaker == reference_name:
                 same_cluster_embeddings.append((idx, embedding))
 
         # In-group sub-clustering: if a single cluster contains an imposter voice,
@@ -2345,6 +2513,7 @@ class TranscriptStoryMixin:
                 threshold=threshold,
                 scope_cluster_only=scope_cluster_only,
                 ref_seg_indices=ref_seg_indices,
+                target_name=target_name,
             )
             selected_indices = [match["seg_idx"] for match in matches]
 
@@ -2387,6 +2556,11 @@ class TranscriptStoryMixin:
 
         if hasattr(self, "add_custom_speaker_to_glossary"):
             self.add_custom_speaker_to_glossary(target_name)
+
+        # Register confirmed speaker samples into session voice profiles
+        if hasattr(self, "register_confirmed_speaker_sample"):
+            for idx in sorted(all_to_reassign):
+                self.register_confirmed_speaker_sample(idx, target_name)
 
         count = len(all_to_reassign)
         if before_state is not None and hasattr(self, "_commit_project_state_change"):
@@ -3348,6 +3522,7 @@ class StoryFadesDialog(QDialog):
         title = story.title if story and getattr(story, "title", None) else f"Story #{story_index + 1}"
         self.setWindowTitle(f"Audio Fades — {title}")
         self.resize(450, 310)
+        make_dialog_maximizable(self)
         self._init_ui()
 
     def _init_ui(self):
@@ -3490,6 +3665,7 @@ class SpeakerManagerDialog(QDialog):
         self.main_win = parent
         self.setWindowTitle("Manage Speakers & Detection Clusters")
         self.resize(720, 460)
+        make_dialog_maximizable(self)
         self._init_ui()
         self._populate()
 

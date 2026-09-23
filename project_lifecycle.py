@@ -762,6 +762,7 @@ class ProjectDataPurgeDialog(QDialog):
         self.is_es = is_es
         self.setWindowTitle("Limpiar / Purgar datos del proyecto" if is_es else "Clear / Purge Project Data")
         self.resize(540, 440)
+        make_dialog_maximizable(self)
         self.setModal(True)
         self._init_ui()
 

@@ -376,6 +376,7 @@ class ClearCacheDialog(QDialog):
         self.project_dirs = project_dirs or []
         self.setWindowTitle("Limpiar caché temporal" if self.is_es else "Clear Temporary Cache")
         self.setMinimumWidth(500)
+        make_dialog_maximizable(self)
         self.setModal(True)
 
         self._init_ui()

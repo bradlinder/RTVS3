@@ -29,34 +29,32 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 --------------------------------------------------------------------------------
 TABLE OF CONTENTS & STATUS OVERVIEW
 --------------------------------------------------------------------------------
-1. Previous Release: Interactive Audio Auditioning & Direct Playback Navigation in Acoustic Voice Profile Matcher (`transcript_story.py`) (Completed in v3.7.3-beta)
-   [x] 1.1 Click-to-Seek Candidate Navigation (`VoiceProfileMatchDialog`): Connect table row selection changes (`itemSelectionChanged`) to `parent_window.seek_to(start_t)` for instant timeline playhead and transcript view jumping.
-   [x] 1.2 Spacebar Audition Play/Pause (`keyPressEvent`): Implement keyboard shortcut handling so Spacebar toggles playback from candidate turn start times while safely passing through text inputs.
-   [x] 1.3 Auto-Audition Header Action & Double-Click Playback (`_audition_current_selection` & `cellDoubleClicked`): Dedicated "▶ Audition Turn" button and double-click handlers to instantly audition candidate audio.
+1. Previous Release: Acoustic Voice Profile & Speaker Identity Engine Architecture Upgrade (`speaker_identity.py`, `processing.py`, `transcript_editor.py`, `transcript_story.py`) (Completed in v3.7.4-beta)
+   [x] 1.1 Standalone Voice Profile Math & Identity Engine (`speaker_identity.py`): Isolated vector math, similarity scoring, robust profile synthesis, centroid calculation, and confidence thresholding into a dedicated module.
+   [x] 1.2 Tight Overlap Embedding Filtering (`processing.py`): Prevented macro-blocks (> 8s or > 2.5x duration) from stamping pooled acoustic vectors onto shorter transcript turns and enforced minimum overlap thresholds.
+   [x] 1.3 Enhanced Transcript Copy Shortcuts (`transcript_editor.py`): Standard Ctrl+C / Cmd+C copy shortcuts across viewing/editing modes and context menu copy action.
+   [x] 1.4 Refined Voice Profile Matcher & Re-Clustering (`transcript_story.py`): Upgraded Voice Profile Matcher UI and re-clustering backend to leverage robust multi-sample profile synthesis and confidence-based matching.
 
-2. Current Release: Acoustic Voice Profile & Speaker Identity Engine Architecture Upgrade (`speaker_identity.py`, `processing.py`, `transcript_editor.py`, `transcript_story.py`) [-] [IN-PROGRESS & TESTING - v3.7.4-beta]
-   [-] 2.1 Standalone Voice Profile Math & Identity Engine (`speaker_identity.py`): Isolated vector math, similarity scoring, robust profile synthesis, centroid calculation, and confidence thresholding into a dedicated module.
-   [-] 2.2 Tight Overlap Embedding Filtering (`processing.py`): Prevented macro-blocks (> 8s or > 2.5x duration) from stamping pooled acoustic vectors onto shorter transcript turns and enforced minimum overlap thresholds.
-   [-] 2.3 Enhanced Transcript Copy Shortcuts (`transcript_editor.py`): Standard Ctrl+C / Cmd+C copy shortcuts across viewing/editing modes and context menu copy action.
-   [-] 2.4 Refined Voice Profile Matcher & Re-Clustering (`transcript_story.py`): Upgraded Voice Profile Matcher UI and re-clustering backend to leverage robust multi-sample profile synthesis and confidence-based matching.
+2. Current Release: Acoustic Voice Profiling & Speaker Correction Engine Refinements, Test Bench Alignment & Universal Dialog Maximization (`speaker_identity.py`, `transcript_story.py`, `test_runner.py`, `prs_shared.py`) [-] [IN-PROGRESS & TESTING - v3.7.5-beta]
+   [-] 2.1 Acoustic Voice Profile Refinement & Pre-Caching Engine: Pre-caching candidate turn vectors, eliminating redundant re-extractions during threshold slider scrubs, dynamic match tooltip with competitor separation margin, and in-place keyboard shortcuts (Return/Enter/X) for rapid candidate toggling.
+   [-] 2.2 Competitive Rapid Dialog Turn Classifier & Anchor Refinement: Interactive refinement tool (`prompt_refine_speaker_run`) and context menu integration for rapid dialogue turns between two confirmed speakers using relative acoustic distance and auto-enrolled profiles.
+   [-] 2.3 Subtitle/Speaker Alignment Diagnostic Test Suite Alignment: Synchronized test runner unit tests with updated speaker overlap assignment and threshold logic, ensuring all 27 diagnostic test suites pass cleanly.
+   [x] 2.4 Milestone 4.1 - Universal Window Maximize & Restore Flag Enforcement (Completed in v3.7.5-beta): Enforced `WindowMaximizeButtonHint` and `make_dialog_maximizable` helper across all modal and non-modal dialogs (`VoiceProfileMatchDialog`, `UnifiedExportDialog`, `BatchProcessingDialog`, `PreferencesDialog`, `DriveFolderPickerDialog`, `GoogleDocsReviewDialog`, `GoogleOAuthSetupGuideDialog`, `PluginManagerDialog`, `GitHubPluginsDialog`, `WordPressSettingsDialog`, `WordPressPostMetadataDialog`, `WordPressPublishDialog`, `YouTubeSettingsDialog`, `YouTubeAssistedUploadGuideDialog`, `ID3TagEditorDialog`, `StoryMetadataDialog`, `ClearCacheDialog`, `ProjectDataPurgeDialog`, `DiagnosticDialog`, `BenchmarkDialog`, `CheckUpdateDialog`, `CommentEditorDialog`, `StoryFadesDialog`, `SpeakerManagerDialog`, `ChangeSpeakerDialog`).
 
 3. Upcoming Milestone: Comprehensive Cloud & Local Backup & Restore System (`project_lifecycle.py`, `plugins/gdocs/`) [PLANNED for v3.8.0] [NOT STARTED]
    [ ] 3.1 Unified State Serialization (`project_lifecycle.py`): Export preferences, keyboard shortcuts, installed model inventories, glossary items, and user configurations into a cryptographically verified backup archive.
    [ ] 3.2 Manual Local Backup & Restore: Download backup archives locally and restore previous settings and system state into RTVS.
    [ ] 3.3 1-Click Google Drive Cloud Restore: Connect via Google Drive API to browse, verify via SHA-256 hash matching, and restore custom settings directly from cloud backups.
 
-4. Upcoming Milestone: Global Resizable Pop-Up Window & Dialog Maximization Standard (`ui_layout.py`, all dialog modules) [PLANNED for v3.8.2] [NOT STARTED]
-   [ ] 4.1 Universal Window Maximize & Restore Flag Enforcement: Ensure all pop-up dialogs and secondary tool windows that are resizable can also be maximized (via OS maximize button `Qt.WindowMaximizeButtonHint` and title-bar double-click) as a permanent default rule across all existing and future dialogs (`VoiceProfileMatchDialog`, `UnifiedExportDialog`, `BatchProcessingDialog`, `PreferencesDialog`, `DriveFolderPickerDialog`, `TranslationSettingsDialog`, `ReorderExportDestinationsDialog`, etc.).
+4. Upcoming Milestone: Windows Installer Handoff & Detached Update Helper Architecture Overhaul (`updater.py`, `installer/Windows/`, `build_installer.py`) [PLANNED for v3.8.4] [NOT STARTED]
+   [ ] 4.1 Standalone Detached Windows Update Helper: Replace fragile PowerShell supervisor script and 800ms `os._exit(0)` race condition with a dedicated, lightweight detached update helper created outside the Windows Job Object (`CREATE_BREAKAWAY_FROM_JOB` / `DETACHED_PROCESS`).
+   [ ] 4.2 Deterministic Application Shutdown & PID Exit Tracking: Allow normal Qt `closeEvent()` shutdown lifecycle to cleanly stop worker subprocesses and save state before helper triggers the Inno Setup installer.
+   [ ] 4.3 Direct Windows UAC Elevation & Lightweight Diagnostics: Direct elevated installer execution without terminal window flashing, with structured logging to `%LOCALAPPDATA%\RadioTVSegmenter\update.log`.
+   [ ] 4.4 Legacy PowerShell / Wrapper Cleanup: Purge obsolete `rtvs_update_supervisor.ps1`, temporary script generators, and forced-kill workarounds.
 
-5. Upcoming Milestone: Windows Installer Handoff & Detached Update Helper Architecture Overhaul (`updater.py`, `installer/Windows/`, `build_installer.py`) [PLANNED for v3.8.4] [NOT STARTED]
-   [ ] 5.1 Standalone Detached Windows Update Helper: Replace fragile PowerShell supervisor script and 800ms `os._exit(0)` race condition with a dedicated, lightweight detached update helper created outside the Windows Job Object (`CREATE_BREAKAWAY_FROM_JOB` / `DETACHED_PROCESS`).
-   [ ] 5.2 Deterministic Application Shutdown & PID Exit Tracking: Allow normal Qt `closeEvent()` shutdown lifecycle to cleanly stop worker subprocesses and save state before helper triggers the Inno Setup installer.
-   [ ] 5.3 Direct Windows UAC Elevation & Lightweight Diagnostics: Direct elevated installer execution without terminal window flashing, with structured logging to `%LOCALAPPDATA%\RadioTVSegmenter\update.log`.
-   [ ] 5.4 Legacy PowerShell / Wrapper Cleanup: Purge obsolete `rtvs_update_supervisor.ps1`, temporary script generators, and forced-kill workarounds.
-
-6. Future Milestone: Multi-Platform Timeline & DAW Interchange Engine (`export/timeline.py`, `export/dialog.py`, `ui_layout.py`) [PLANNED for v3.8.5] [NOT STARTED]
-   [ ] 6.1 Migration to Unified Export Center Tab: Move timeline and DAW exports from the legacy File menu submenu into a dedicated "Timeline & DAW" tab in the Unified Export Center dialog, streamlining menu navigation and providing a unified UI for multi-format timeline exporting.
-   [ ] 6.2 Streamlined Multi-Platform Timeline Format Exporters (Zero Feature Loss):
+5. Future Milestone: Multi-Platform Timeline & DAW Interchange Engine (`export/timeline.py`, `export/dialog.py`, `ui_layout.py`) [PLANNED for v3.8.5] [NOT STARTED]
+   [ ] 5.1 Migration to Unified Export Center Tab: Move timeline and DAW exports from the legacy File menu submenu into a dedicated "Timeline & DAW" tab in the Unified Export Center dialog, streamlining menu navigation and providing a unified UI for multi-format timeline exporting.
+   [ ] 5.2 Streamlined Multi-Platform Timeline Format Exporters (Zero Feature Loss):
        - Final Cut Pro 7 XML Interchange (.xml / xmeml): Adobe Premiere Pro, Adobe Audition, DaVinci Resolve, Descript (Full multi-track sequences, cuts, clip positions, volume envelopes, crossfades, and marker tracks).
        - Final Cut Pro X XML (.fcpxml): Apple Final Cut Pro (FCPX), Apple Logic Pro (Native modern Apple timeline sequence with multi-channel audio components, retimed clips, markers, and volume automation without third-party converters).
        - Universal AAF Interchange (.aaf) & Session Text: Avid Pro Tools, Apple Logic Pro, Avid Media Composer, Cubase/Nuendo (Full broadcast timeline session interchange, multi-track stems, non-destructive clip gain, fades, and track markers via `pyaaf2`).
@@ -64,7 +62,7 @@ TABLE OF CONTENTS & STATUS OVERVIEW
        - Cockos REAPER Project (.rpp): Cockos REAPER (Complete non-destructive project files with item fades, volume envelopes, markers, regions, and take notes).
        - Magix Samplitude / Sequoia EDL (.edl v1.5): Magix Samplitude, Sequoia (Broadcast audio edit decision list with crossfades and track gain).
        - Audacity Labels & Podcast Cues (.txt / .cue): Audacity, Podcasting mastering tools, CD/playout automation (Standard label tracks and CUE sheets with chapter markers and boundary synchronization).
-   [ ] 6.3 Future-Proofed Non-Destructive Editing & Timeline Engine:
+   [ ] 5.3 Future-Proofed Non-Destructive Editing & Timeline Engine:
        - Multi-track routing layouts (Single track, Checkerboard A/B roll, Split tracks per identified speaker).
        - Unselected audio & rough cut handling (Omit/Ripple-delete, Include as Muted Items for sync preservation, or Route to separate B-Roll reference track).
        - Clip gain, volume automation curves, and non-destructive fade handles (linear, logarithmic, exponential, S-curve, equal-power).
@@ -72,61 +70,67 @@ TABLE OF CONTENTS & STATUS OVERVIEW
        - Source media linking flexibility (Absolute paths, Relative paths for portable session packages, or Auto-rendered isolated WAV stems).
        - Rational timecode & audio sample rate math (44.1, 48, 96 kHz; 23.976, 24, 25 PAL, 29.97 NDF/DF, 30, 59.94 fps, custom start timecode e.g. 01:00:00:00).
 
-7. Future Milestone: Text-Driven Audio Editing & Precision Alignment (Phase 5) [PLANNED for v4.0.0] [NOT STARTED]
-   [ ] 7.1 "Text-as-Timeline" Rough-Cut Editing Engine
-   [ ] 7.2 Seamless Non-Destructive Playback Preview
-   [ ] 7.3 CTC Word Boundary Refinement & Forced Alignment
-   [ ] 7.4 Memory-Bounded Diarization & Chunked Streaming
+6. Future Milestone: Text-Driven Audio Editing & Precision Alignment (Phase 5) [PLANNED for v4.0.0] [NOT STARTED]
+   [ ] 6.1 "Text-as-Timeline" Rough-Cut Editing Engine
+   [ ] 6.2 Seamless Non-Destructive Playback Preview
+   [ ] 6.3 CTC Word Boundary Refinement & Forced Alignment
+   [ ] 6.4 Memory-Bounded Diarization & Chunked Streaming
 
 ================================================================================
 DETAILED MILESTONE SPECIFICATIONS
 ================================================================================
 
 ================================================================================
-1. PREVIOUS RELEASE: CUSTOMIZABLE EXPORT DESTINATIONS & GOOGLE OAUTH UX (Completed in v3.6.5-beta)
+1. PREVIOUS RELEASE: ACOUSTIC VOICE PROFILE & SPEAKER IDENTITY ENGINE UPGRADE (Completed in v3.7.4-beta)
 ================================================================================
 
-[x] 1.1 Drag-and-Drop & Move Destination Reordering (`export/dialog.py`, `ReorderExportDestinationsDialog`)
-------------------------------------------------------------------------------------------------------------
-- Interactive reordering dialog with drag-and-drop list manipulation, Move Up / Move Down buttons, and Reset to Default.
-- User destination order persisted in `export_destinations_order` QSettings key.
+[x] 1.1 Standalone Voice Profile Math & Identity Engine (`speaker_identity.py`)
+-------------------------------------------------------------------------------
+- Isolated vector mathematical operations, similarity scoring, robust profile synthesis, centroid calculation, and confidence thresholding into a dedicated, importable module.
+- Provided pure Python fallback cosine similarity calculations with defensive checks for zero-magnitude vectors.
 
-[x] 1.2 Quick Reorder Access in Export Dialog & Preferences (`export/dialog.py`, `playback_preferences.py`)
+[x] 1.2 Tight Overlap Embedding Filtering (`processing.py`)
+------------------------------------------------------------
+- Prevented long macro-blocks (> 8s or > 2.5x segment duration) from stamping pooled acoustic vectors onto shorter transcript turns.
+- Enforced minimum overlap thresholds (`best_overlap >= 0.5 * duration` or `>= 0.8s`) for accurate embedding attachment during diarization mapping.
+
+[x] 1.3 Enhanced Transcript Copy Shortcuts (`transcript_editor.py`)
+--------------------------------------------------------------------
+- Enabled standard Ctrl+C / Cmd+C copy shortcuts across viewing and editing modes, and added explicit context menu "Copy" actions for highlighted transcript selections.
+
+[x] 1.4 Refined Voice Profile Matcher & Re-Clustering (`transcript_story.py`)
+------------------------------------------------------------------------------
+- Upgraded `VoiceProfileMatchDialog` and acoustic voice turn matching logic with robust profile synthesis, multi-mode baseline comparisons, and high-confidence automatic re-clustering across timeline speaker turns.
+
+================================================================================
+2. CURRENT RELEASE: ACOUSTIC VOICE PROFILING & SPEAKER CORRECTION ENGINE REFINEMENTS, TEST BENCH ALIGNMENT & UNIVERSAL DIALOG MAXIMIZATION [-] [IN-PROGRESS & TESTING - v3.7.5-beta]
+================================================================================
+
+[-] 2.1 Acoustic Voice Profile Refinement & Pre-Caching Engine (`transcript_story.py`, `speaker_identity.py`)
 -------------------------------------------------------------------------------------------------------------
-- Added "⇅ Reorder…" button directly in Destination section of Unified Export Center.
-- Added "Customize Export Destinations Order…" button in `Preferences > Batch & Export`.
+- Pre-caching candidate turn vectors via `_ensure_candidate_cache`, completely eliminating redundant WeSpeaker ONNX / ffmpeg audio re-extractions during threshold slider scrubs.
+- Dynamic match tooltip with competitor separation margin: Displays target acoustic similarity, closest competitor similarity, and separation margin (e.g. `Similarity: 88.4% | Nearest competitor: 72.1% (separation: +16.3%)`).
+- In-place keyboard shortcuts: Added `Return`, `Enter`, and `X` shortcuts to toggle candidate inclusion checkboxes directly while navigating the candidate table with keyboard arrow keys.
+- Robust profile synthesis & competitor target separation: Synthesize target profile via `robust_reference_profile` and exclude target speaker turns from competitor comparison sets.
+- Session voice profile auto-enrollment: Automatically enrolls verified speaker turn embeddings into the active session voice profile cache (`_session_speaker_profiles`) upon applying acoustic voice identification.
 
-[x] 1.3 Non-Blocking OAuth Progress Indicator (`plugins/gdocs/auth.py`)
------------------------------------------------------------------------
-- Wrapped loopback HTTP authentication server wait loop in a parented `QProgressDialog` with Cancel button, preventing UI lockups.
+[-] 2.2 Competitive Rapid Dialog Turn Classifier & Anchor Refinement (`transcript_story.py`, `transcript_editor.py`)
+---------------------------------------------------------------------------------------------------------------------
+- Interactive refinement tool (`prompt_refine_speaker_run`) and context menu integration for rapid dialogue turns between two confirmed anchor speakers.
+- Computes relative acoustic distance against both speaker centroids and classifies each turn to the closer speaker, with automatic sample enrollment if explicit profiles are not yet cached.
 
-[x] 1.4 Google Cloud 403 / Access Denied Guidance (`plugins/gdocs/auth.py`, `plugins/gdocs/plugin.py`)
--------------------------------------------------------------------------------------------------------
-- Detected 403 `access_denied` errors during OAuth handshake and provided direct instructions and deep links to Google Cloud Console Audience / Test Users configuration.
+[-] 2.3 Subtitle/Speaker Alignment Diagnostic Test Suite Alignment (`test_runner.py`)
+-------------------------------------------------------------------------------------
+- Synchronized `DiagnosticEngine` unit tests (`_test_audio_subtitle_sync`, `_test_transcription_subtitle_export_parity`) with updated speaker detection logic, strict timestamp bounds, and modern formatting standards.
+- All 27 diagnostic test suites pass cleanly with 100% test suite fidelity.
 
-[x] 1.5 Responsive Export Layout & Form Factor (`export/dialog.py`, `plugins/gdocs/export_destination.py`)
------------------------------------------------------------------------------------------------------------
-- Wrapped Google Docs options in a dedicated scroll container, expanded default window height (`860x700`), and streamlined destination title to "Google Docs".
-
-================================================================================
-2. CURRENT RELEASE: ACOUSTIC VOICE PROFILE MATCHER & RE-CLUSTERING (Completed in v3.7.0-beta)
-================================================================================
-
-[x] 2.1 Voice Embedding Vector Storage & Persistence (`diarization["embeddings"]`, `radio_tv_story_segmenter_worker.py`)
--------------------------------------------------------------------------------------------------------------------------
-- Preserved segment-level 256-dimensional WeSpeaker ONNX embedding vectors in project state and segment dictionary payloads.
-
-[x] 2.2 One-Sample Voice Profile Assignment UI ("Teach This Voice / Match Voice Profile...") (`transcript_story.py`)
---------------------------------------------------------------------------------------------------------------------
-- Added `VoiceProfileMatchDialog` to inspect candidate turns, adjust similarity threshold with live match count, choose target speaker label, and preview matching transcript text with snippet context.
-
-[x] 2.3 On-Demand Cosine Similarity Re-Clustering Engine (`transcript_story.py`)
----------------------------------------------------------------------------------
-- Rapidly scans segments in the same cluster or across the full timeline, computes cosine similarities against the reference embedding, and automatically reassigns matching turns to the target speaker label with complete undo stack integration.
-
-[x] 2.4 Diagnostic Test Suite Coverage (`test_runner.py`)
-----------------------------------------------------------
-- Implemented diagnostic test 37 verifying embedding persistence, cosine similarity math, candidate filtering, and non-destructive re-clustering state integrity.
+[x] 2.4 Milestone 4.1 - Universal Window Maximize & Restore Flag Enforcement (Completed in v3.7.5-beta)
+---------------------------------------------------------------------------------------------------------
+- Architectural Rule: All pop-up dialogs and secondary windows that can be resized MUST also be maximizable via a standard OS maximize title-bar button (`Qt.WindowMaximizeButtonHint`) and by double-clicking the top window title bar.
+- Standardized via `prs_shared.make_dialog_maximizable(dialog)`.
+- Applied systematically across all existing modal/modeless dialogs:
+  * Core: `VoiceProfileMatchDialog`, `ChangeSpeakerDialog`, `StoryFadesDialog`, `SpeakerManagerDialog`, `StoryMetadataDialog`, `CommentEditorDialog`, `ClearCacheDialog`, `ProjectDataPurgeDialog`, `DiagnosticDialog`, `BenchmarkDialog`, `CheckUpdateDialog`, `UnifiedExportDialog`, `ReorderExportDestinationsDialog`, `RestoreSelectedSettingsDialog`, `BatchProcessingDialog`, and `PreferencesDialog`.
+  * Plugins: `DriveFolderPickerDialog`, `GoogleDocsReviewDialog`, `GoogleOAuthSetupGuideDialog`, `PluginManagerDialog`, `GitHubPluginsDialog`, `WordPressSettingsDialog`, `WordPressPostMetadataDialog`, `WordPressPublishDialog`, `YouTubeSettingsDialog`, and `YouTubeAssistedUploadGuideDialog`.
 
 ================================================================================
 3. UPCOMING MILESTONE: COMPREHENSIVE CLOUD & LOCAL BACKUP & RESTORE SYSTEM [PLANNED for v3.8.0]
@@ -145,81 +149,11 @@ DETAILED MILESTONE SPECIFICATIONS
 - Integrate with Google Drive API to browse, download, and restore backups directly from cloud storage using custom filenames and SHA-256 integrity hash validation.
 
 ================================================================================
-4. UPCOMING MILESTONE: GLOBAL RESIZABLE POP-UP WINDOW & DIALOG MAXIMIZATION STANDARD [PLANNED for v3.8.2]
+4. UPCOMING MILESTONE: WINDOWS INSTALLER HANDOFF & DETACHED UPDATE HELPER OVERHAUL [PLANNED for v3.8.4]
 ================================================================================
 
-[ ] 4.1 Universal Window Maximize & Restore Flag Enforcement (`ui_layout.py`, all dialog modules)
---------------------------------------------------------------------------------------------------
-- Architectural Rule: All pop-up dialogs and secondary windows that can be resized MUST also be maximizable via a standard OS maximize title-bar button (`Qt.WindowMaximizeButtonHint`) and by double-clicking the top window title bar.
-- Permanent Application Default: Applies systematically across all existing and future modal/modeless dialogs (e.g., `VoiceProfileMatchDialog`, `UnifiedExportDialog`, `BatchProcessingDialog`, `PreferencesDialog`, `DriveFolderPickerDialog`, `TranslationSettingsDialog`, `ReorderExportDestinationsDialog`, etc.).
-
-================================================================================
-5. UPCOMING MILESTONE: WINDOWS INSTALLER HANDOFF & DETACHED UPDATE HELPER OVERHAUL [PLANNED for v3.8.4]
-================================================================================
-
-[ ] 5.1 Standalone Detached Windows Update Helper Architecture (`updater.py`, `build_installer.py`)
+[ ] 4.1 Standalone Detached Windows Update Helper Architecture (`updater.py`, `build_installer.py`)
 ---------------------------------------------------------------------------------------------------
-- Replace fragile PowerShell supervisor script (`rtvs_update_supervisor.ps1`) and the 800ms `os._exit(0)` race condition with a dedicated, lightweight, standalone update helper created outside the Windows Job Object.
-- Job Object Isolation: The helper process MUST be launched with `CREATE_BREAKAWAY_FROM_JOB` / `DETACHED_PROCESS` / `CREATE_NO_WINDOW` so it survives after `RadioTVSegmenter.exe` terminates, while leaving `JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE` intact for worker processes (FFmpeg, Whisper, WeSpeaker).
-
-[ ] 5.2 Deterministic Application Shutdown & PID Exit Tracking (`updater.py`, `ui_layout.py`)
----------------------------------------------------------------------------------------------
-- Eliminate forced `os._exit(0)` calls on update trigger.
-- Allow the application to execute its normal Qt `closeEvent()` lifecycle (stopping worker processes, saving project states, flushing logs).
-- The detached helper monitors the application PID, waits until the process terminates (with a 30-60s fallback timeout), and proceeds immediately upon confirmed exit.
-
-[ ] 5.3 Direct Windows UAC Elevation & Diagnostic Logging (`updater.py`)
------------------------------------------------------------------------
-- Launch the downloaded Inno Setup installer directly via standard Windows shell execution (`ShellExecuteExW` with `runas` verb or direct Win32 API), correctly handling spaces and quotes in paths without opening or flashing terminal windows.
-- Lightweight Diagnostic Logging: Record update events (helper start, target PID, installer path, PID exit confirmation, elevation result, error codes) to `%LOCALAPPDATA%\RadioTVSegmenter\update.log`.
-
-[ ] 5.4 Legacy PowerShell / Shell Wrapper Code Cleanup
------------------------------------------------------
-- Purge obsolete update-handoff code across the repository (e.g., PowerShell supervisor scripts, temporary `.ps1` generation, `.cmd` wrappers, old fallback polling routines, and dead updater imports).
-
-================================================================================
-6. FUTURE MILESTONE: MULTI-PLATFORM TIMELINE & DAW INTERCHANGE ENGINE [PLANNED for v3.8.5]
-================================================================================
-
-[ ] 6.1 Dedicated Timeline & DAW Export Center Tab (`export/dialog.py`)
-------------------------------------------------------------------------
-- Consolidate all timeline, NLE, and DAW export actions into a dedicated "Timeline & DAW" tab in `UnifiedExportDialog`, retiring the legacy submenu.
-
-[ ] 6.2 Streamlined Multi-Platform Format Exporters (`export/timeline.py`)
--------------------------------------------------------------------------
-- Final Cut Pro 7 XML Interchange (.xml / xmeml): Adobe Premiere Pro, Adobe Audition, DaVinci Resolve, Descript.
-- Final Cut Pro X XML (.fcpxml): Apple Final Cut Pro (FCPX), Apple Logic Pro.
-- Universal AAF Interchange (.aaf) & Session Text: Avid Pro Tools, Apple Logic Pro, Avid Media Composer, Cubase/Nuendo.
-- Hindenburg Broadcast Session (.nhx): Hindenburg Journalist, Hindenburg PRO.
-- Cockos REAPER Project (.rpp): Cockos REAPER.
-- Magix Samplitude / Sequoia EDL (.edl v1.5): Magix Samplitude, Sequoia.
-- Audacity Labels & Podcast Cues (.txt / .cue): Audacity, Podcasting mastering tools, CD/playout automation.
-
-[ ] 6.3 Future-Proofed Non-Destructive Editing & Timeline Engine
-----------------------------------------------------------------
-- Multi-track routing layouts (Single track, Checkerboard A/B roll, Split tracks per identified speaker).
-- Non-destructive rough cuts & segment re-ordering (ripple deletes, muted sync preservation stems, B-roll reference tracks).
-- Clip gain, volume automation curves, and non-destructive fade handles (linear, logarithmic, exponential, S-curve, equal-power).
-- Embedded story metadata & notes (Inject synopsis, speaker labels, tags, and transcript excerpts into DAW item notes/takes).
-- Source media linking flexibility (Absolute paths, Relative paths for portable session packages, or Auto-rendered isolated WAV stems).
-- Rational timecode & audio sample rate math (44.1, 48, 96 kHz; 23.976, 24, 25 PAL, 29.97 NDF/DF, 30, 59.94 fps, custom start timecode e.g. 01:00:00:00).
-
-================================================================================
-7. FUTURE MILESTONE: TEXT-DRIVEN AUDIO EDITING & PRECISION ALIGNMENT [PLANNED for v4.0.0]
-================================================================================
-
-[ ] 7.1 "Text-as-Timeline" Rough-Cut Editing Engine
-[ ] 7.2 Seamless Non-Destructive Playback Preview
-[ ] 7.3 CTC Word Boundary Refinement & Forced Alignment
-[ ] 7.4 Memory-Bounded Diarization & Chunked Streaming
-
-================================================================================
-CORE ARCHITECTURAL INVARIANTS
-================================================================================
-- Core modules must NEVER import from plugins/.
-- Heavy translation runtimes must remain isolated inside plugins/translation/.
-- Speaker diarization uses wespeakerruntime as the primary ONNX embedding engine.
-- Real-time progress updates with percentage, status messages, and estimated time.
-- Diagnostic logs written to OS standard logging locations.
-- Offline-first architecture: core processing functions locally without internet.
-- 0 MB Default GPU Footprint: Base installer contains 0 MB of CUDA bloat; GPU features are purely optional and provisioned on demand.
+- Detached update helper process spawned outside the Windows Job Object (`CREATE_BREAKAWAY_FROM_JOB` / `DETACHED_PROCESS`).
+- Deterministic shutdown sequencing: RTVS shuts down cleanly before the installer runs, eliminating file lock conflicts.
+- Elevated execution without console window flashing.

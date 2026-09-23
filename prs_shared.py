@@ -50,8 +50,17 @@ _ensure_runtime_bin_on_path()
 
 INTERNAL_APP_ID = "RadioTVStorySegmenter"
 APP_DISPLAY_NAME = "Radio & TV Segmenter"
-PROJECT_VERSION = "3.7.4-beta"
+PROJECT_VERSION = "3.7.5-beta"
 DEFAULT_GITHUB_REPO = "bradlinder/RTVS3"
+
+
+def make_dialog_maximizable(dialog) -> None:
+    """Enforce standard OS window maximize and restore title bar controls for resizable dialogs."""
+    try:
+        from PySide6.QtCore import Qt
+        dialog.setWindowFlags(dialog.windowFlags() | Qt.WindowType.WindowMaximizeButtonHint)
+    except Exception:
+        pass
 
 # Re-exports from Phase 1 modularization (core_utils, transcript_cleaner, project_serialization, process_lifecycle)
 from core_utils import (
@@ -593,6 +602,7 @@ class ExportDialog(QDialog):
         self.default_name = default_name
         self.setWindowTitle("Export Options")
         self.setMinimumWidth(380)
+        make_dialog_maximizable(self)
 
         self.init_ui()
 

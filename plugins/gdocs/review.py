@@ -149,6 +149,8 @@ class GoogleDocsReviewDialog(QDialog):
         self.main_window = main_window
         self.setWindowTitle("Google Docs: Review & Pull Editorial Corrections")
         self.setMinimumSize(820, 560)
+        from PySide6.QtCore import Qt
+        self.setWindowFlags(self.windowFlags() | Qt.WindowType.WindowMaximizeButtonHint)
         self.diff_data: List[Dict[str, Any]] = []
         self.setup_ui()
 

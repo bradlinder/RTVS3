@@ -234,6 +234,7 @@ if PYSIDE_AVAILABLE:
 
             self.setWindowTitle("Select Google Drive Folder")
             self.resize(520, 480)
+            self.setWindowFlags(self.windowFlags() | Qt.WindowType.WindowMaximizeButtonHint)
             self._setup_ui()
             self._load_folders()
 

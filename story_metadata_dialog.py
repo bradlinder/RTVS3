@@ -92,6 +92,7 @@ class StoryMetadataDialog(QDialog):
         self.setWindowTitle("Story & Post Metadata Editor")
         self.resize(960, 720)
         self.setMinimumSize(780, 560)
+        make_dialog_maximizable(self)
         self.setObjectName("story_metadata_dialog")
 
         # Media & state flags

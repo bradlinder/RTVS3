@@ -60,7 +60,7 @@ try:
     )
 except Exception:
     APP_DISPLAY_NAME = "Radio & TV Segmenter"
-    PROJECT_VERSION = "3.7.4-beta"
+    PROJECT_VERSION = "3.7.5-beta"
     DEFAULT_GITHUB_REPO = "bradlinder/RTVS3"
 
     INTERNAL_APP_ID = "RadioTVStorySegmenter"
@@ -796,6 +796,8 @@ class CheckUpdateDialog(QDialog):
         self.setMinimumWidth(580)
         self.setMinimumHeight(480)
         self.resize(600, 500)
+        from PySide6.QtCore import Qt
+        self.setWindowFlags(self.windowFlags() | Qt.WindowType.WindowMaximizeButtonHint)
 
         # Proactively prune older installer downloads to prevent storage bloat while retaining recent packages
         cleanup_old_installers(max_to_keep=2)

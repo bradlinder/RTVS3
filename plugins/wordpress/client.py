@@ -558,6 +558,8 @@ class WordPressSettingsDialog(QDialog):
         super().__init__(parent)
         self.setWindowTitle("WordPress Connection Settings")
         self.setMinimumWidth(480)
+        from PySide6.QtCore import Qt
+        self.setWindowFlags(self.windowFlags() | Qt.WindowType.WindowMaximizeButtonHint)
         self.settings = QSettings(INTERNAL_APP_ID, INTERNAL_APP_ID)
 
         layout = QVBoxLayout(self)

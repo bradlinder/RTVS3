@@ -68,6 +68,8 @@ class YouTubeSettingsDialog(QDialog):
         self.settings = QSettings(INTERNAL_APP_ID, INTERNAL_APP_ID)
         self.setWindowTitle("YouTube Studio Assisted Upload Preferences")
         self.setMinimumSize(560, 420)
+        from PySide6.QtCore import Qt
+        self.setWindowFlags(self.windowFlags() | Qt.WindowType.WindowMaximizeButtonHint)
         self.setup_ui()
 
     def setup_ui(self):

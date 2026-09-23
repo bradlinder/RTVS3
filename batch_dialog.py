@@ -61,6 +61,7 @@ class BatchProcessingDialog(QDialog):
         super().__init__(parent)
         self.setWindowTitle("Batch Processing")
         self.resize(700, 670)
+        make_dialog_maximizable(self)
         self.setAcceptDrops(True)
         
         layout = QVBoxLayout(self)

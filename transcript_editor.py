@@ -1976,6 +1976,14 @@ class InteractiveTranscriptEdit(QTextEdit):
             )
             menu.addAction(ref_action)
 
+            if hasattr(main_win, "prompt_refine_speaker_run"):
+                refine_action = QAction("Refine Rapid Dialog Turns (Competitive Classifier)...", self)
+                refine_action.setToolTip("Competitively assign turns in a range between two confirmed speakers by relative acoustic distance")
+                refine_action.triggered.connect(
+                    lambda _, i=seg_idx: main_win.prompt_refine_speaker_run(i, i + 10)
+                )
+                menu.addAction(refine_action)
+
             menu.addSeparator()
 
         insert_menu = menu.addMenu("Add Speaker Label Here")

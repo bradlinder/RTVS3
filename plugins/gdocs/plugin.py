@@ -40,6 +40,8 @@ class GoogleOAuthSetupGuideDialog(QDialog):
         self.on_import_callback = on_import_callback
         self.setWindowTitle("Google Docs — OAuth Setup Guide (No Hosting Required)")
         self.resize(740, 600)
+        from PySide6.QtCore import Qt
+        self.setWindowFlags(self.windowFlags() | Qt.WindowType.WindowMaximizeButtonHint)
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(16, 16, 16, 16)

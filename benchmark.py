@@ -1354,6 +1354,7 @@ def create_benchmark_dialog(parent=None):
         def __init__(self, parent=None):
             super().__init__(parent)
             self.setWindowTitle("System Performance & Speed Benchmark")
+            self.setWindowFlags(self.windowFlags() | Qt.WindowType.WindowMaximizeButtonHint)
             # Responsive default dialog size suitable for standard laptops and monitors (prevents oversized window on first launch)
             self.setMinimumSize(640, 420)
             default_w, default_h = 780, 540

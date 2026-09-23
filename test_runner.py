@@ -2209,6 +2209,7 @@ def create_diagnostic_dialog(parent=None):
             super().__init__(parent)
             self.setWindowTitle("System Diagnostic Test Bench & Hardware Health")
             self.resize(880, 620)
+            self.setWindowFlags(self.windowFlags() | Qt.WindowType.WindowMaximizeButtonHint)
             self.engine = DiagnosticEngine()
             self.worker_thread: Optional[QThread] = None
             self.worker: Optional[TestRunnerWorker] = None

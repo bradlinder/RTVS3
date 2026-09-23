@@ -94,6 +94,8 @@ class WordPressPublishDialog(QDialog):
 
         self.setWindowTitle("Publish Story to WordPress")
         self.setMinimumSize(660, 680)
+        from PySide6.QtCore import Qt
+        self.setWindowFlags(self.windowFlags() | Qt.WindowType.WindowMaximizeButtonHint)
         self.setup_ui()
         self.load_metadata()
 

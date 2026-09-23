@@ -1,7 +1,7 @@
 {
   "id": "gdocs",
   "name": "Google Docs & Drive Exporter",
-  "version": "3.6.5-beta",
+  "version": "3.7.5-beta",
   "description": "Exports transcripts, speaker turns, stories, and editorial notes directly to formatted Google Docs via Google Drive REST API with OAuth 2.0 loopback authentication and native margin comment anchoring.",
   "author": "Radio & TV Segmenter Team",
   "website": "https://github.com/bradlinder/RTVS3",

@@ -1655,6 +1655,8 @@ class WordPressPostMetadataDialog(QDialog):
         self.setWindowTitle("WordPress Post Metadata & Story Settings")
         self.resize(920, 720)
         self.setMinimumSize(720, 540)
+        from PySide6.QtCore import Qt
+        self.setWindowFlags(self.windowFlags() | Qt.WindowType.WindowMaximizeButtonHint)
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(12, 12, 12, 12)

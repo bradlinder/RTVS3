@@ -35,6 +35,7 @@ class YouTubeAssistedUploadGuideDialog(QDialog):
         self.setWindowTitle("YouTube Studio Assisted Upload - Ready to Upload")
         self.setMinimumWidth(640)
         self.resize(700, 520)
+        self.setWindowFlags(self.windowFlags() | Qt.WindowType.WindowMaximizeButtonHint)
 
         layout = QVBoxLayout(self)
         layout.setSpacing(12)
