@@ -1,4 +1,4 @@
-"""Radio & TV Segmenter v3.7.8-beta — transcript story responsibilities.
+"""Radio & TV Segmenter v3.7.10-beta — transcript story responsibilities.
 
 Methods intentionally retain the MainWindow-facing API so behavior remains
 maintaining the established MainWindow-facing API while responsibilities are isolated.
@@ -134,6 +134,13 @@ class VoiceProfileMatchDialog(QDialog):
                 self.cached_candidates = res[0]
             else:
                 self.cached_candidates = res
+
+        # High-performance debounce timer & state guards for 60+ FPS slider responsiveness
+        self._slider_timer = QTimer(self)
+        self._slider_timer.setSingleShot(True)
+        self._slider_timer.timeout.connect(self._update_matches)
+        self._user_deselected_ids = set()
+        self._is_updating_table = False
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(18, 18, 18, 18)
@@ -544,7 +551,11 @@ class VoiceProfileMatchDialog(QDialog):
         dist_max = 1.0 - threshold_float
         desc = "Permissive" if val < 75 else ("Optimal" if val <= 82 else "Very Strict")
         self.thresh_label.setText(f"Similarity Threshold: {val}% ({desc}, Cosine dist ≤ {dist_max:.2f})")
-        self._update_matches()
+        # Debounce the heavy table repopulation so rapid slider dragging is completely smooth (60+ FPS)
+        if hasattr(self, "_slider_timer"):
+            self._slider_timer.start(60)
+        else:
+            self._update_matches()
 
     def get_active_ref_indices(self) -> List[int]:
         if hasattr(self, "ref_mode_composite_radio") and self.ref_mode_composite_radio.isChecked():
@@ -554,6 +565,8 @@ class VoiceProfileMatchDialog(QDialog):
         return [self.ref_seg_idx]
 
     def _on_controls_changed(self):
+        if hasattr(self, "_slider_timer"):
+            self._slider_timer.stop()
         self._update_matches()
 
     def _update_matches(self):
@@ -562,98 +575,128 @@ class VoiceProfileMatchDialog(QDialog):
         if not self.parent_window or not hasattr(self.parent_window, "find_matching_voice_turns"):
             return
 
-        threshold = self.thresh_slider.value() / 100.0
-        scope_cluster_only = self.scope_cluster_radio.isChecked()
-        active_ref_indices = self.get_active_ref_indices()
-        target_name = self.spk_combo.currentText().strip() or None
+        self._is_updating_table = True
+        try:
+            threshold = self.thresh_slider.value() / 100.0
+            scope_cluster_only = self.scope_cluster_radio.isChecked()
+            active_ref_indices = self.get_active_ref_indices()
+            target_name = self.spk_combo.currentText().strip() or None
 
-        self.matched_turns = self.parent_window.find_matching_voice_turns(
-            self.ref_seg_idx,
-            threshold=threshold,
-            scope_cluster_only=scope_cluster_only,
-            ref_seg_indices=active_ref_indices,
-            target_name=target_name,
-            cached_candidates=getattr(self, "cached_candidates", None),
-        )
-
-        self.table.blockSignals(True)
-        self.table.setRowCount(0)
-
-        for row_idx, turn in enumerate(self.matched_turns):
-            self.table.insertRow(row_idx)
-
-            chk_item = QTableWidgetItem()
-            chk_item.setFlags(Qt.ItemFlag.ItemIsUserCheckable | Qt.ItemFlag.ItemIsEnabled)
-            chk_item.setCheckState(Qt.CheckState.Checked)
-            chk_item.setData(Qt.ItemDataRole.UserRole, turn["seg_idx"])
-            self.table.setItem(row_idx, 0, chk_item)
-
-            st_str = format_time(turn["start"])
-            en_str = format_time(turn["end"])
-            seg_item = QTableWidgetItem(f"#{turn['seg_idx'] + 1} ({st_str} – {en_str})")
-            seg_item.setToolTip(f"Segment #{turn['seg_idx'] + 1}\nStart: {turn['start']:.2f}s, End: {turn['end']:.2f}s")
-            self.table.setItem(row_idx, 1, seg_item)
-
-            spk_item = QTableWidgetItem(turn["speaker"])
-            self.table.setItem(row_idx, 2, spk_item)
-
-            sim_pct = turn["similarity"] * 100.0
-            margin_pct = turn.get("margin", 0.0) * 100.0
-            comp_sim_pct = turn.get("competitor_similarity", 0.0) * 100.0
-            match_item = QTableWidgetItem(f"{sim_pct:.1f}% Match")
-            match_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-            match_item.setToolTip(
-                f"Acoustic Similarity: {sim_pct:.1f}%\n"
-                f"Nearest Competitor: {comp_sim_pct:.1f}%\n"
-                f"Separation Margin: +{margin_pct:.1f}%\n"
-                f"Status: Confident match exceeding sensitivity threshold"
+            self.matched_turns = self.parent_window.find_matching_voice_turns(
+                self.ref_seg_idx,
+                threshold=threshold,
+                scope_cluster_only=scope_cluster_only,
+                ref_seg_indices=active_ref_indices,
+                target_name=target_name,
+                cached_candidates=getattr(self, "cached_candidates", None),
             )
-            if sim_pct >= 85.0:
-                match_item.setForeground(QBrush(QColor("#4ade80")))
-            elif sim_pct >= 78.0:
-                match_item.setForeground(QBrush(QColor("#38bdf8")))
-            else:
-                match_item.setForeground(QBrush(QColor("#fbbf24")))
-            self.table.setItem(row_idx, 3, match_item)
 
-            txt_item = QTableWidgetItem(turn["text"])
-            txt_item.setToolTip(turn["text"])
-            self.table.setItem(row_idx, 4, txt_item)
+            self.table.blockSignals(True)
+            self.table.setUpdatesEnabled(False)
+            self.table.setRowCount(len(self.matched_turns))
 
-        self.table.blockSignals(False)
+            for row_idx, turn in enumerate(self.matched_turns):
+                seg_id = turn["seg_idx"]
+                chk_item = QTableWidgetItem()
+                chk_item.setFlags(Qt.ItemFlag.ItemIsUserCheckable | Qt.ItemFlag.ItemIsEnabled)
+                is_checked = (seg_id not in self._user_deselected_ids)
+                chk_item.setCheckState(Qt.CheckState.Checked if is_checked else Qt.CheckState.Unchecked)
+                chk_item.setData(Qt.ItemDataRole.UserRole, seg_id)
+                self.table.setItem(row_idx, 0, chk_item)
+
+                st_str = format_time(turn["start"])
+                en_str = format_time(turn["end"])
+                seg_item = QTableWidgetItem(f"#{seg_id + 1} ({st_str} – {en_str})")
+                seg_item.setToolTip(f"Segment #{seg_id + 1}\nStart: {turn['start']:.2f}s, End: {turn['end']:.2f}s")
+                self.table.setItem(row_idx, 1, seg_item)
+
+                spk_item = QTableWidgetItem(turn["speaker"])
+                self.table.setItem(row_idx, 2, spk_item)
+
+                sim_pct = turn["similarity"] * 100.0
+                margin_pct = turn.get("margin", 0.0) * 100.0
+                comp_sim_pct = turn.get("competitor_similarity", 0.0) * 100.0
+                match_item = QTableWidgetItem(f"{sim_pct:.1f}% Match")
+                match_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+                match_item.setToolTip(
+                    f"Acoustic Similarity: {sim_pct:.1f}%\n"
+                    f"Nearest Competitor: {comp_sim_pct:.1f}%\n"
+                    f"Separation Margin: +{margin_pct:.1f}%\n"
+                    f"Status: Confident match exceeding sensitivity threshold"
+                )
+                if sim_pct >= 85.0:
+                    match_item.setForeground(QBrush(QColor("#4ade80")))
+                elif sim_pct >= 78.0:
+                    match_item.setForeground(QBrush(QColor("#38bdf8")))
+                else:
+                    match_item.setForeground(QBrush(QColor("#fbbf24")))
+                self.table.setItem(row_idx, 3, match_item)
+
+                txt_item = QTableWidgetItem(turn["text"])
+                txt_item.setToolTip(turn["text"])
+                self.table.setItem(row_idx, 4, txt_item)
+        finally:
+            self.table.setUpdatesEnabled(True)
+            self.table.blockSignals(False)
+            self._is_updating_table = False
+
         self._update_action_summary()
 
     def _select_all_matches(self):
         self.table.blockSignals(True)
+        self.table.setUpdatesEnabled(False)
         for r in range(self.table.rowCount()):
             item = self.table.item(r, 0)
             if item:
                 item.setCheckState(Qt.CheckState.Checked)
+                seg_id = item.data(Qt.ItemDataRole.UserRole)
+                if seg_id is not None:
+                    self._user_deselected_ids.discard(seg_id)
+        self.table.setUpdatesEnabled(True)
         self.table.blockSignals(False)
         self._update_action_summary()
 
     def _deselect_all_matches(self):
         self.table.blockSignals(True)
+        self.table.setUpdatesEnabled(False)
         for r in range(self.table.rowCount()):
             item = self.table.item(r, 0)
             if item:
                 item.setCheckState(Qt.CheckState.Unchecked)
+                seg_id = item.data(Qt.ItemDataRole.UserRole)
+                if seg_id is not None:
+                    self._user_deselected_ids.add(seg_id)
+        self.table.setUpdatesEnabled(True)
         self.table.blockSignals(False)
         self._update_action_summary()
 
     def _toggle_master_checkbox(self, checked: bool):
         """Batch toggle every row checkbox to match the master checkbox state."""
         self.table.blockSignals(True)
+        self.table.setUpdatesEnabled(False)
         target_state = Qt.CheckState.Checked if checked else Qt.CheckState.Unchecked
         for r in range(self.table.rowCount()):
             item = self.table.item(r, 0)
             if item:
                 item.setCheckState(target_state)
+                seg_id = item.data(Qt.ItemDataRole.UserRole)
+                if seg_id is not None:
+                    if checked:
+                        self._user_deselected_ids.discard(seg_id)
+                    else:
+                        self._user_deselected_ids.add(seg_id)
+        self.table.setUpdatesEnabled(True)
         self.table.blockSignals(False)
         self._update_action_summary()
         
     def _on_table_item_changed(self, item):
-        if item.column() == 0:
+        if item.column() == 0 and not getattr(self, "_is_updating_table", False):
+            seg_id = item.data(Qt.ItemDataRole.UserRole)
+            if seg_id is not None:
+                if item.checkState() == Qt.CheckState.Unchecked:
+                    self._user_deselected_ids.add(seg_id)
+                else:
+                    self._user_deselected_ids.discard(seg_id)
             self._update_action_summary()
 
     def _get_selected_segment_indices(self) -> List[int]:
@@ -772,6 +815,8 @@ class VoiceProfileMatchDialog(QDialog):
             self._toggle_playback()
 
     def _on_table_selection_changed(self):
+        if getattr(self, "_is_updating_table", False):
+            return
         row = self.table.currentRow()
         if 0 <= row < len(self.matched_turns):
             turn = self.matched_turns[row]
@@ -2136,7 +2181,8 @@ class TranscriptStoryMixin:
 
         dlg = QDialog(self)
         dlg.setWindowTitle("Refine Rapid Dialog Turns (Competitive Classifier)")
-        dlg.resize(500, 280)
+        dlg.resize(640, 480)
+        dlg.setMinimumSize(580, 420)
         make_dialog_maximizable(dlg)
 
         layout = QVBoxLayout(dlg)
@@ -2156,28 +2202,121 @@ class TranscriptStoryMixin:
         form = QFormLayout()
         form.setSpacing(10)
 
-        spk_a_combo = QComboBox()
+        spk_a_combo = QComboBox(dlg)
         spk_a_combo.addItems(known)
         form.addRow("Speaker A (Confirmed):", spk_a_combo)
 
-        spk_b_combo = QComboBox()
+        spk_b_combo = QComboBox(dlg)
         spk_b_combo.addItems(known)
         if len(known) > 1:
             spk_b_combo.setCurrentIndex(1)
         form.addRow("Speaker B (Confirmed):", spk_b_combo)
 
-        from PySide6.QtWidgets import QSpinBox, QDialogButtonBox
-        s_spin = QSpinBox()
-        s_spin.setRange(1, len(segments))
-        s_spin.setValue((start_idx + 1) if (0 <= start_idx < len(segments)) else 1)
-        form.addRow("Start Segment #:", s_spin)
+        def _format_seg_label(idx, seg):
+            st = float(seg.get("start", 0.0))
+            t_str = format_time(st)
+            spk = self.get_effective_speaker_name(idx, seg) or "Speaker"
+            raw_text = seg.get("text", "").strip()
+            snippet = (raw_text[:38] + "…") if len(raw_text) > 38 else (raw_text or "(no speech)")
+            return f"[{t_str}] Turn #{idx + 1} ({spk}): “{snippet}”"
 
-        e_spin = QSpinBox()
-        e_spin.setRange(1, len(segments))
-        e_spin.setValue((end_idx + 1) if (0 <= end_idx < len(segments)) else len(segments))
-        form.addRow("End Segment #:", e_spin)
+        start_combo = QComboBox(dlg)
+        start_combo.setMaxVisibleItems(15)
+        start_combo.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon)
+        start_combo.setMinimumContentsLength(40)
+
+        end_combo = QComboBox(dlg)
+        end_combo.setMaxVisibleItems(15)
+        end_combo.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon)
+        end_combo.setMinimumContentsLength(40)
+
+        for i, seg in enumerate(segments):
+            label = _format_seg_label(i, seg)
+            start_combo.addItem(label, i)
+            end_combo.addItem(label, i)
+
+        init_s = max(0, min(start_idx, len(segments) - 1)) if start_idx >= 0 else 0
+        init_e = max(0, min(end_idx, len(segments) - 1)) if end_idx >= 0 else (len(segments) - 1)
+        start_combo.setCurrentIndex(init_s)
+        end_combo.setCurrentIndex(init_e)
+
+        form.addRow("Start Turn (Timestamp & Words):", start_combo)
+        form.addRow("End Turn (Timestamp & Words):", end_combo)
 
         layout.addLayout(form)
+
+        # Interactive Range & Context Preview Card
+        from PySide6.QtWidgets import QGroupBox, QDialogButtonBox
+        preview_box = QGroupBox("Selected Dialog Range & Context Preview", dlg)
+        preview_box.setStyleSheet("""
+            QGroupBox {
+                font-weight: bold;
+                color: #38bdf8;
+                border: 1px solid #334155;
+                border-radius: 6px;
+                margin-top: 8px;
+                padding-top: 14px;
+                background-color: #0f172a;
+            }
+            QGroupBox::title {
+                subcontrol-origin: margin;
+                left: 10px;
+                padding: 0 5px 0 5px;
+            }
+        """)
+        preview_layout = QVBoxLayout(preview_box)
+        preview_layout.setContentsMargins(12, 10, 12, 10)
+        preview_layout.setSpacing(6)
+
+        range_summary_lbl = QLabel(preview_box)
+        range_summary_lbl.setStyleSheet("color: #f1f5f9; font-weight: bold; font-size: 12px;")
+        preview_layout.addWidget(range_summary_lbl)
+
+        start_preview_lbl = QLabel(preview_box)
+        start_preview_lbl.setWordWrap(True)
+        start_preview_lbl.setStyleSheet("color: #cbd5e1; font-size: 11px;")
+        preview_layout.addWidget(start_preview_lbl)
+
+        end_preview_lbl = QLabel(preview_box)
+        end_preview_lbl.setWordWrap(True)
+        end_preview_lbl.setStyleSheet("color: #cbd5e1; font-size: 11px;")
+        preview_layout.addWidget(end_preview_lbl)
+
+        def _update_preview():
+            s_idx = start_combo.currentData()
+            e_idx = end_combo.currentData()
+            if s_idx is None or e_idx is None:
+                return
+            lo, hi = min(s_idx, e_idx), max(s_idx, e_idx)
+            count = hi - lo + 1
+            s_seg = segments[lo]
+            e_seg = segments[hi]
+            st = float(s_seg.get("start", 0.0))
+            en = float(e_seg.get("end", 0.0))
+            dur = max(0.0, en - st)
+
+            range_summary_lbl.setText(
+                f"Range: Turns #{lo + 1} to #{hi + 1} ({count} turn{'s' if count != 1 else ''})  •  "
+                f"Time: {format_time(st)} – {format_time(en)} ({dur:.2f}s)"
+            )
+            s_spk = self.get_effective_speaker_name(lo, s_seg) or "Speaker"
+            s_txt = s_seg.get("text", "").strip() or "(no speech)"
+            start_preview_lbl.setText(
+                f"<b>Start Turn #{lo + 1}</b> [{format_time(st)}] <span style='color: #fbbf24;'>{html.escape(s_spk)}</span>: "
+                f"<i>“{html.escape(s_txt)}”</i>"
+            )
+            e_spk = self.get_effective_speaker_name(hi, e_seg) or "Speaker"
+            e_txt = e_seg.get("text", "").strip() or "(no speech)"
+            end_preview_lbl.setText(
+                f"<b>End Turn #{hi + 1}</b> [{format_time(en)}] <span style='color: #fbbf24;'>{html.escape(e_spk)}</span>: "
+                f"<i>“{html.escape(e_txt)}”</i>"
+            )
+
+        start_combo.currentIndexChanged.connect(lambda _: _update_preview())
+        end_combo.currentIndexChanged.connect(lambda _: _update_preview())
+        _update_preview()
+
+        layout.addWidget(preview_box)
 
         btns = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
         btns.accepted.connect(dlg.accept)
@@ -2190,8 +2329,10 @@ class TranscriptStoryMixin:
             if a_name == b_name:
                 QMessageBox.warning(self, "Invalid Selection", "Speaker A and Speaker B must be different speakers.")
                 return
-            s_i = s_spin.value() - 1
-            e_i = e_spin.value() - 1
+            s_val = start_combo.currentData()
+            e_val = end_combo.currentData()
+            s_i = int(s_val) if s_val is not None else 0
+            e_i = int(e_val) if e_val is not None else (len(segments) - 1)
             if s_i > e_i:
                 s_i, e_i = e_i, s_i
             self.refine_speaker_run_between_confirmed_anchors(s_i, e_i, a_name, b_name)
@@ -2494,6 +2635,16 @@ class TranscriptStoryMixin:
                 internal_competitor = centroid([v for _, v in divergent_items[:10]])
                 divergent_indices = {i for i, _ in divergent_items}
 
+        # Precompute base competitor centroids once outside candidate loop so the matching loop
+        # avoids recalculating centroids for identical competitor speaker turns
+        base_competitor_centroids = {}
+        for spk_name, items in competing_groups.items():
+            if items:
+                top_items = items[:12]
+                c_prof = centroid([v for _, v in top_items])
+                if c_prof is not None:
+                    base_competitor_centroids[spk_name] = (c_prof, {i for i, _ in top_items})
+
         matches = []
 
         for idx, embedding in candidates:
@@ -2502,14 +2653,19 @@ class TranscriptStoryMixin:
                 if speaker != reference_name:
                     continue
 
-            # Build competitor profiles for THIS candidate turn (excluding candidate's own embedding)
+            # Build competitor profiles for THIS candidate turn (using precomputed base centroids)
             item_competitor_profiles = []
-            for spk_name, items in competing_groups.items():
-                other_vecs = [v for (i, v) in items if i != idx]
-                if other_vecs:
-                    c_prof = centroid(other_vecs[:12])
-                    if c_prof is not None:
-                        item_competitor_profiles.append(c_prof)
+            for spk_name, (c_prof, top_ids) in base_competitor_centroids.items():
+                if idx not in top_ids:
+                    item_competitor_profiles.append(c_prof)
+                else:
+                    # Candidate's own embedding was part of this speaker's top-12; recalculate excluding it
+                    items = competing_groups[spk_name]
+                    other_vecs = [v for (i, v) in items if i != idx]
+                    if other_vecs:
+                        c_ex = centroid(other_vecs[:12])
+                        if c_ex is not None:
+                            item_competitor_profiles.append(c_ex)
 
             if internal_competitor is not None and idx not in divergent_indices:
                 item_competitor_profiles.append(internal_competitor)
@@ -3725,7 +3881,8 @@ class SpeakerManagerDialog(QDialog):
         super().__init__(parent)
         self.main_win = parent
         self.setWindowTitle("Manage Speakers & Detection Clusters")
-        self.resize(720, 460)
+        self.resize(800, 500)
+        self.setMinimumSize(760, 460)
         make_dialog_maximizable(self)
         self._init_ui()
         self._populate()
@@ -3749,7 +3906,9 @@ class SpeakerManagerDialog(QDialog):
         self.table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
         self.table.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
         self.table.horizontalHeader().setSectionResizeMode(3, QHeaderView.ResizeMode.ResizeToContents)
-        self.table.horizontalHeader().setSectionResizeMode(4, QHeaderView.ResizeMode.ResizeToContents)
+        self.table.horizontalHeader().setSectionResizeMode(4, QHeaderView.ResizeMode.Fixed)
+        self.table.setColumnWidth(4, 240)
+        self.table.verticalHeader().setDefaultSectionSize(46)
         self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         layout.addWidget(self.table)
@@ -3787,6 +3946,8 @@ class SpeakerManagerDialog(QDialog):
 
         self.table.setRowCount(len(speaker_stats))
         for row, (name, info) in enumerate(sorted(speaker_stats.items(), key=lambda x: -x[1]["duration"])):
+            self.table.setRowHeight(row, 46)
+
             name_item = QTableWidgetItem(name)
             self.table.setItem(row, 0, name_item)
 
@@ -3804,14 +3965,39 @@ class SpeakerManagerDialog(QDialog):
 
             action_widget = QWidget(self)
             action_layout = QHBoxLayout(action_widget)
-            action_layout.setContentsMargins(4, 2, 4, 2)
-            action_layout.setSpacing(6)
+            action_layout.setContentsMargins(6, 4, 6, 4)
+            action_layout.setSpacing(8)
+
+            btn_style = """
+                QPushButton {
+                    background-color: #1e293b;
+                    color: #f1f5f9;
+                    border: 1px solid #475569;
+                    border-radius: 4px;
+                    padding: 4px 10px;
+                    font-size: 11px;
+                    font-weight: 600;
+                    min-height: 26px;
+                }
+                QPushButton:hover {
+                    background-color: #334155;
+                    border-color: #38bdf8;
+                    color: #38bdf8;
+                }
+                QPushButton:pressed {
+                    background-color: #0f172a;
+                }
+            """
 
             rename_btn = QPushButton("Rename / Alias", action_widget)
+            rename_btn.setStyleSheet(btn_style)
+            rename_btn.setCursor(Qt.CursorShape.PointingHandCursor)
             rename_btn.clicked.connect(lambda _, n=name, r=info["raw"]: self._rename_speaker(n, r))
             action_layout.addWidget(rename_btn)
 
             merge_btn = QPushButton("Merge Into...", action_widget)
+            merge_btn.setStyleSheet(btn_style)
+            merge_btn.setCursor(Qt.CursorShape.PointingHandCursor)
             merge_btn.clicked.connect(lambda _, n=name: self._merge_speaker_into(n))
             action_layout.addWidget(merge_btn)
 

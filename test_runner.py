@@ -109,6 +109,60 @@ class DiagnosticItem:
 
 
 # ---------------------------------------------------------------------------
+# Dynamic Export Module Resolvers (Environment & Frozen-Path Resilient)
+# ---------------------------------------------------------------------------
+
+def _resolve_export_subtitles_module():
+    """Resolves export.subtitles whether running from source, package, or frozen binary."""
+    try:
+        import export.subtitles as mod
+        return mod
+    except ImportError:
+        pass
+    import importlib.util
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    candidates = [
+        os.path.join(base_dir, "export", "subtitles.py"),
+        os.path.join(os.getcwd(), "export", "subtitles.py"),
+        os.path.join(getattr(sys, "_MEIPASS", ""), "export", "subtitles.py"),
+        os.path.join(base_dir, "_internal", "export", "subtitles.py"),
+    ]
+    for cand in candidates:
+        if cand and os.path.exists(cand):
+            spec = importlib.util.spec_from_file_location("export_subtitles", cand)
+            if spec and spec.loader:
+                mod = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(mod)
+                return mod
+    raise ImportError("Could not locate or import export.subtitles module")
+
+
+def _resolve_export_daw_module():
+    """Resolves export.daw whether running from source, package, or frozen binary."""
+    try:
+        import export.daw as mod
+        return mod
+    except ImportError:
+        pass
+    import importlib.util
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    candidates = [
+        os.path.join(base_dir, "export", "daw.py"),
+        os.path.join(os.getcwd(), "export", "daw.py"),
+        os.path.join(getattr(sys, "_MEIPASS", ""), "export", "daw.py"),
+        os.path.join(base_dir, "_internal", "export", "daw.py"),
+    ]
+    for cand in candidates:
+        if cand and os.path.exists(cand):
+            spec = importlib.util.spec_from_file_location("export_daw", cand)
+            if spec and spec.loader:
+                mod = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(mod)
+                return mod
+    raise ImportError("Could not locate or import export.daw module")
+
+
+# ---------------------------------------------------------------------------
 # Core Diagnostic Test Bench Engine
 # ---------------------------------------------------------------------------
 
@@ -503,16 +557,8 @@ class DiagnosticEngine:
         item.message = f"_SUBPROCESS_LOCK verified; tracking {len(current_procs)} active child processes"
 
     def _test_subrip_srt_timestamp_formatting(self, item: DiagnosticItem):
-        try:
-            from export.subtitles import format_srt_timestamp
-        except ImportError:
-            import importlib.util
-            spec = importlib.util.spec_from_file_location("export_subtitles", "export/subtitles.py")
-            if not spec or not spec.loader:
-                raise ImportError("Could not locate export.subtitles module")
-            mod = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(mod)
-            format_srt_timestamp = mod.format_srt_timestamp
+        mod = _resolve_export_subtitles_module()
+        format_srt_timestamp = mod.format_srt_timestamp
 
         res = format_srt_timestamp(3665.123)
         if res != "01:01:05,123":
@@ -523,16 +569,8 @@ class DiagnosticEngine:
         item.message = "SRT comma-delimited milliseconds formatted correctly"
 
     def _test_webvtt_vtt_formatting(self, item: DiagnosticItem):
-        try:
-            from export.subtitles import format_vtt_timestamp
-        except ImportError:
-            import importlib.util
-            spec = importlib.util.spec_from_file_location("export_subtitles", "export/subtitles.py")
-            if not spec or not spec.loader:
-                raise ImportError("Could not locate export.subtitles module")
-            mod = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(mod)
-            format_vtt_timestamp = mod.format_vtt_timestamp
+        mod = _resolve_export_subtitles_module()
+        format_vtt_timestamp = mod.format_vtt_timestamp
 
         res = format_vtt_timestamp(3665.123)
         if res != "01:01:05.123":
@@ -541,16 +579,8 @@ class DiagnosticEngine:
         item.message = "WebVTT period-delimited timestamps verified"
 
     def _test_red_book_cue_sheet_generation(self, item: DiagnosticItem):
-        try:
-            from export.subtitles import generate_cue_sheet
-        except ImportError:
-            import importlib.util
-            spec = importlib.util.spec_from_file_location("export_subtitles", "export/subtitles.py")
-            if not spec or not spec.loader:
-                raise ImportError("Could not locate export.subtitles module")
-            mod = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(mod)
-            generate_cue_sheet = mod.generate_cue_sheet
+        mod = _resolve_export_subtitles_module()
+        generate_cue_sheet = mod.generate_cue_sheet
 
         class DummyStory:
             def __init__(self, start, title):
@@ -567,16 +597,8 @@ class DiagnosticEngine:
         item.message = "75 fps red-book CUE frame calculations verified"
 
     def _test_youtube_chapter_markers(self, item: DiagnosticItem):
-        try:
-            from export.subtitles import generate_youtube_chapters
-        except ImportError:
-            import importlib.util
-            spec = importlib.util.spec_from_file_location("export_subtitles", "export/subtitles.py")
-            if not spec or not spec.loader:
-                raise ImportError("Could not locate export.subtitles module")
-            mod = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(mod)
-            generate_youtube_chapters = mod.generate_youtube_chapters
+        mod = _resolve_export_subtitles_module()
+        generate_youtube_chapters = mod.generate_youtube_chapters
 
         class DummyStory:
             def __init__(self, start, title):
@@ -593,16 +615,8 @@ class DiagnosticEngine:
         item.message = "YouTube chapter timestamps and 00:00 start verified"
 
     def _test_cockos_reaper_project_rpp_generator(self, item: DiagnosticItem):
-        try:
-            from export.daw import generate_reaper_project
-        except ImportError:
-            import importlib.util
-            spec = importlib.util.spec_from_file_location("export_daw", "export/daw.py")
-            if not spec or not spec.loader:
-                raise ImportError("Could not locate export.daw module")
-            mod = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(mod)
-            generate_reaper_project = mod.generate_reaper_project
+        mod = _resolve_export_daw_module()
+        generate_reaper_project = mod.generate_reaper_project
 
         class DummyStory:
             def __init__(self, start, end, title, fade_in=0.0, fade_out=0.0):
@@ -631,17 +645,9 @@ class DiagnosticEngine:
         item.message = "REAPER .rpp timeline S-expressions, item blocks, and region markers verified"
 
     def _test_magix_samplitude_edl_v1_5_export(self, item: DiagnosticItem):
-        try:
-            from export.daw import generate_samplitude_edl, format_edl_timestamp
-        except ImportError:
-            import importlib.util
-            spec = importlib.util.spec_from_file_location("export_daw", "export/daw.py")
-            if not spec or not spec.loader:
-                raise ImportError("Could not locate export.daw module")
-            mod = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(mod)
-            generate_samplitude_edl = mod.generate_samplitude_edl
-            format_edl_timestamp = mod.format_edl_timestamp
+        mod = _resolve_export_daw_module()
+        generate_samplitude_edl = mod.generate_samplitude_edl
+        format_edl_timestamp = mod.format_edl_timestamp
 
         tc = format_edl_timestamp(3665.123)
         if tc != "01:01:05:123":
@@ -1486,16 +1492,8 @@ class DiagnosticEngine:
         item.message = "Story bounds normalization, fade curve serialization, and overlap detection verified"
 
     def _test_audio_subtitle_sync_drift_test(self, item: DiagnosticItem):
-        import importlib.util
         import types
-        import os
-        base_dir = os.path.dirname(os.path.abspath(__file__))
-        subtitles_path = os.path.join(base_dir, "export", "subtitles.py")
-        if not os.path.exists(subtitles_path):
-            subtitles_path = "export/subtitles.py"
-        spec = importlib.util.spec_from_file_location("export_subtitles", subtitles_path)
-        mod = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(mod)
+        mod = _resolve_export_subtitles_module()
 
         format_srt_timestamp = mod.format_srt_timestamp
         format_vtt_timestamp = mod.format_vtt_timestamp
@@ -1600,7 +1598,10 @@ class DiagnosticEngine:
 
     def _test_exporter_structure_invariant_tests(self, item: DiagnosticItem):
         import xml.etree.ElementTree as ET
-        from export.daw import generate_reaper_project, generate_samplitude_edl, generate_audition_xml
+        mod = _resolve_export_daw_module()
+        generate_reaper_project = mod.generate_reaper_project
+        generate_samplitude_edl = mod.generate_samplitude_edl
+        generate_audition_xml = mod.generate_audition_xml
 
         stories = [
             {"start": 0.0, "end": 15.0, "title": "Opening Segment", "speaker": "Alice"},
@@ -2094,7 +2095,7 @@ class DiagnosticEngine:
                 raw = seg.get("speaker", "SPEAKER_00")
                 return self.speaker_names.get(raw, raw)
 
-            def log_activity(self, msg):
+            def log_activity(self, msg, *args, **kwargs):
                 self.activity_logs.append(msg)
 
             def _capture_project_state(self):

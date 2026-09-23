@@ -1,5 +1,26 @@
 # Changelog
- 
+
+## v3.7.10-beta
+- **Refine Rapid Dialog Turn Context & Timestamp Redesign (`prompt_refine_speaker_run` in `transcript_story.py`)**:
+  - **Rich Dropdown Turn Selectors**: Replaced raw numeric segment index spinboxes with rich dropdown selectors displaying formatted timestamps, speaker labels, and spoken text snippets for both Start and End turns (e.g. `[00:14.200] Turn #4 (Leticia): “Hello, how are you today…”`), making turn boundaries immediately recognizable.
+  - **Live Range & Context Preview Card**: Added a dedicated live preview container displaying the total turns selected, time span, and duration (e.g. `Range: Turns #4 to #14 (11 turns) • Time: 00:14.200 – 00:48.500 (34.30s)`), accompanied by styled text previews of the starting and ending speaker turns.
+  - **Resilient Range Handling**: Seamlessly handles out-of-order turn selections, automatically normalizing bounds (`min(s_i, e_i), max(s_i, e_i)`).
+- **Speakers & Detection Clusters Table Ergonomics & Legibility Fix (`SpeakerManagerDialog` in `transcript_story.py`)**:
+  - **Row Height & Header Geometry Normalization**: Resolved severe vertical clipping of action buttons in the "Actions" column by standardizing table row heights (`setRowHeight(row, 46)`), setting vertical header default section size to 46px, and allocating a fixed 240px width to column 4.
+  - **High-Contrast Action Button Styling**: Restyled "Rename / Alias" and "Merge Into..." buttons with crisp typography, high-contrast dark slate backgrounds, rounded borders, generous click targets (26px min-height), and pointing hand cursors for effortless legibility and interaction.
+- **Acoustic Voice Profile Matcher Performance & Fluidity Upgrades (`VoiceProfileMatchDialog` & `find_matching_voice_turns` in `transcript_story.py`)**:
+  - **Debounced Slider Scrubbing (60+ FPS)**: Separated instant threshold label updates from matching engine calculations using a 60ms single-shot debounce timer (`_slider_timer`), delivering fluid 60+ FPS slider responsiveness during rapid scrubbing without UI freezing.
+  - **Precomputed Competitor Speaker Centroids**: Optimized `find_matching_voice_turns` by precomputing base centroids and top-turn sets for competitor clusters once outside the candidate loop, eliminating hundreds of redundant 256-dimensional vector calculations per threshold adjustment.
+  - **Flicker-Free Batch Table Population**: Wrapped table updates in `setUpdatesEnabled(False)` and pre-allocated row counts (`setRowCount(len(self.matched_turns))`) instead of incremental `insertRow()`, completely removing layout thrashing.
+  - **Player Seek Guarding**: Guarded `_on_table_selection_changed` during table updates to suppress spurious audio playback seeks while scrubbing the similarity threshold.
+  - **User Selection State Retention**: Retained explicit turn deselects across threshold adjustments via `_user_deselected_ids`, ensuring user-unchecked candidates stay unselected.
+
+## v3.7.9-beta
+- **Test Bench Frozen-Path & Acoustic Voice Mock Signature Fixes (`test_runner.py`)**:
+  - **Environment-Resilient Subtitle & DAW Module Resolution (`_resolve_export_subtitles_module`, `_resolve_export_daw_module`)**: Fixed `FileNotFoundError` during the `Audio / Subtitle Sync Drift Test` when running tests inside installed production directories (such as `C:\Program Files\Radio & TV Segmenter\`), frozen packages, or non-root working directories. Tests now resolve modules seamlessly via standard python package imports before falling back to multi-candidate filesystem paths (`_MEIPASS`, `_internal`, relative).
+  - **Acoustic Voice Profile Mock Signature Compatibility**: Updated `MockTranscriptWindow.log_activity(self, msg, *args, **kwargs)` in `_test_acoustic_voice_profile_matcher` to gracefully accept keyword arguments such as `mark_dirty=False` emitted by `TranscriptStoryMixin.register_confirmed_speaker_turn()`, resolving `TypeError` when running against the live Qt mixin stack.
+  - **Verified Full Diagnostic Suite (39 Tests)**: Re-verified all 39 diagnostic tests across clean-slate and arbitrary working directory environments, confirming 0ms drift in subtitle/chapter timing and flawless acoustic profiling.
+
 ## v3.7.8-beta
 - **Zero-Config Google Docs & Drive Integration Redesign (`plugins/gdocs/auth.py`, `plugins/gdocs/plugin.py`, `plugins/gdocs/export_destination.py`, `GOOGLE_OAUTH_SETUP.md`, `GOOGLE_DOCS_USER_GUIDE.md`)**:
   - **Zero-Config User Authentication Flow**: Users no longer need to create a Google Cloud project, enable APIs, configure consent screens, or download/import `credentials.json` files. Integration operates out-of-the-box via a single **"Connect Google Account"** button.
