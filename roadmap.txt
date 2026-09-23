@@ -29,17 +29,19 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 --------------------------------------------------------------------------------
 TABLE OF CONTENTS & STATUS OVERVIEW
 --------------------------------------------------------------------------------
-1. Previous Release: Rapid Dialog Turn Context Redesign, Speaker Manager Ergonomics & Voice Matcher Performance (`transcript_story.py`) [x] [COMPLETED in v3.7.10-beta]
-   [x] 1.1 Refine Rapid Dialog Turn Context & Timestamp Redesign: Replaced raw numeric segment index spinboxes with rich dropdown selectors showing timestamps, speaker labels, and spoken word snippets for both Start and End turns, alongside an interactive live preview card displaying turn counts, time spans, durations, and boundary quote snippets.
-   [x] 1.2 Speakers & Detection Clusters Table Ergonomics & Legibility: Normalized table row heights (`setRowHeight(row, 46)`), set vertical header default section size to 46px, allocated a fixed 240px width to column 4, and restyled action buttons with crisp contrast, rounded borders, and pointing hand cursors to eliminate button clipping.
-   [x] 1.3 Acoustic Voice Profile Matcher Performance & Fluidity: Implemented 60ms debounced slider scrubbing for 60+ FPS responsiveness, precomputed base competitor speaker centroids in `find_matching_voice_turns` to eliminate redundant vector math, added flicker-free batch table updates, guarded against spurious audio player seeks during updates, and retained explicit user unchecks across sensitivity adjustments.
+1. Previous Release: Unified Voice Profile Tools Submenu & Multi-Entrypoint Integration (`transcript_editor.py`, `ui_layout.py`, `transcript_story.py`, `processing.py`) [x] [COMPLETED in v3.7.11-beta]
+   [x] 1.1 Unified Editor Context Submenu: Grouped all acoustic voice profiling, reference profile creation, rapid dialog turn refinement, and cluster inspection actions into a single organized `Voice Profile Tools` submenu in the transcript editor context menu.
+   [x] 1.2 Standardized Action Descriptors & Tooltips: Unified labels for `Teach / Match This Voice Across Project...`, `Set as Reference Profile for New Speaker...`, `Refine Rapid Dialog Turns (A/B Classifier)...`, and `Manage Speakers & Detection Clusters...`.
+   [x] 1.3 Top Menu Bar Integration (`Tools -> Voice Profile Tools`): Added the dedicated `Voice Profile Tools` submenu to the main application Tools menu in `ui_layout.py` with keyboard accessibility.
+   [x] 1.4 Context-Aware Active Turn Inference: Added robust fallback in `teach_voice_profile_dialog` to infer active turn from the transcript text cursor or playback head when invoked directly from the top menu bar.
+   [x] 1.5 Pipeline State & Action Synchronization: Integrated `voice_tools_menu` and child actions into `set_tools_actions_enabled` in `processing.py`.
 
-2. Current Release: Unified Voice Profile Tools Submenu & Multi-Entrypoint Integration (`transcript_editor.py`, `ui_layout.py`, `transcript_story.py`, `processing.py`) [x] [COMPLETED in v3.7.11-beta]
-   [x] 2.1 Unified Editor Context Submenu: Grouped all acoustic voice profiling, reference profile creation, rapid dialog turn refinement, and cluster inspection actions into a single organized `🎙️ Voice Profile Tools` submenu in the transcript editor context menu.
-   [x] 2.2 Standardized Action Descriptors & Tooltips: Unified labels for `Teach / Match This Voice Across Project...`, `Set as Reference Profile for New Speaker...`, `Refine Rapid Dialog Turns (A/B Classifier)...`, and `Manage Speakers & Detection Clusters...`.
-   [x] 2.3 Top Menu Bar Integration (`Tools -> Voice Profile Tools`): Added the dedicated `🎙️ Voice Profile Tools` submenu to the main application Tools menu in `ui_layout.py` with keyboard accessibility.
-   [x] 2.4 Context-Aware Active Turn Inference: Added robust fallback in `teach_voice_profile_dialog` to infer active turn from the transcript text cursor or playback head when invoked directly from the top menu bar.
-   [x] 2.5 Pipeline State & Action Synchronization: Integrated `voice_tools_menu` and child actions into `set_tools_actions_enabled` in `processing.py`.
+2. Current Release: UI & Context Menu Icon Harmonization & Cache Manager Fix (`ui_layout.py`, `transcript_editor.py`, `cache_manager.py`, `playback_preferences.py`) [x] [COMPLETED in v3.7.12-stable]
+   [x] 2.1 Menu Bar & Context Menu De-Cluttering: Removed decorative icons from top menu and right-click context menus (`Voice Profile Tools`, `Highlight Text`, `Change Highlight Color`, `Remove Highlight`) while preserving functional highlight color swatches and comment management icons.
+   [x] 2.2 Story Widget & Action Button Cleanup: Removed icons from `Story Metadata...` and `Auto-Generate Excerpt` buttons in the stories sidebar.
+   [x] 2.3 Transcript Formatting Toolbar Polish: Cleaned leading symbols from `Split Speaker`, `Highlight ▾`, and the `Editing Mode` helper label.
+   [x] 2.4 Story Metadata Dialog Polish: Removed icons from `Refresh WP Taxonomies`, `Sync to Playhead`, and episode/story task labels while keeping transport controls and status badges intact.
+   [x] 2.5 Cache Manager & Interactive Preview Fix: Resolved unresponsive Settings > Clear Temporary Cache menu action due to a missing utility import, enabled interactive disk usage and item previews in Preferences > Cleanup Data, and refined multi-folder cache scanning.
 
 3. Upcoming Milestone: Comprehensive Cloud & Local Backup & Restore System (`project_lifecycle.py`, `plugins/gdocs/`) [PLANNED for v3.8.0] [NOT STARTED]
    [ ] 3.1 Unified State Serialization (`project_lifecycle.py`): Export preferences, keyboard shortcuts, installed model inventories, glossary items, and user configurations into a cryptographically verified backup archive.

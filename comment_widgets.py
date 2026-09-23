@@ -30,7 +30,6 @@ from PySide6.QtWidgets import (
 )
 
 from core_utils import format_time
-from prs_shared import make_dialog_maximizable
 
 
 class CommentEditorDialog(QDialog):
@@ -40,7 +39,6 @@ class CommentEditorDialog(QDialog):
         self.setWindowTitle(title)
         self.setMinimumWidth(500)
         self.setMinimumHeight(300)
-        make_dialog_maximizable(self)
         layout = QVBoxLayout(self)
         layout.setSpacing(10)
 

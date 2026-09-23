@@ -119,7 +119,6 @@ def get_cache_disk_usage(project_dirs=None) -> dict:
     thumb_locations = [
         Path(tempfile.gettempdir()) / "radio_tv_story_segmenter_thumbnails",
         get_app_data_dir() / "cache" / "thumbnails",
-        get_app_data_dir() / "cache",
     ]
     for pd in search_dirs:
         t_cand = pd / ".cache" / "thumbnails"
@@ -153,7 +152,6 @@ def get_cache_disk_usage(project_dirs=None) -> dict:
     peaks_files = 0
     peak_locations = [
         get_app_data_dir() / "cache" / "peaks",
-        get_app_data_dir() / "cache",
     ]
     for pd in search_dirs:
         p_cand = pd / ".cache" / "peaks"
@@ -175,7 +173,21 @@ def get_cache_disk_usage(project_dirs=None) -> dict:
             except Exception:
                 pass
 
-    # Scan any legacy adjacent .peaks files in active project folders
+    # Scan any legacy .peaks directly in app cache root or active project folders
+    cache_root = get_app_data_dir() / "cache"
+    if cache_root.exists() and cache_root.is_dir():
+        try:
+            for p in cache_root.glob("*.peaks"):
+                if p.is_file() and str(p.resolve()) not in seen_peak_files:
+                    seen_peak_files.add(str(p.resolve()))
+                    peaks_files += 1
+                    try:
+                        peaks_bytes += p.stat().st_size
+                    except Exception:
+                        pass
+        except Exception:
+            pass
+
     for pd in search_dirs:
         try:
             for p in pd.glob("*.peaks"):
@@ -204,6 +216,10 @@ def get_cache_disk_usage(project_dirs=None) -> dict:
         get_app_data_dir() / "cache" / "audio",
         get_app_data_dir() / "cache" / "temp",
     ]
+    for pd in search_dirs:
+        a_cand = pd / ".cache" / "audio"
+        if a_cand not in audio_locations:
+            audio_locations.append(a_cand)
     for audio_dir in audio_locations:
         if audio_dir.exists() and audio_dir.is_dir():
             try:
@@ -376,7 +392,6 @@ class ClearCacheDialog(QDialog):
         self.project_dirs = project_dirs or []
         self.setWindowTitle("Limpiar caché temporal" if self.is_es else "Clear Temporary Cache")
         self.setMinimumWidth(500)
-        make_dialog_maximizable(self)
         self.setModal(True)
 
         self._init_ui()

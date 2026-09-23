@@ -1,5 +1,16 @@
 # Changelog
 
+## v3.7.12-stable
+- **Temporary Cache Manager & Preview Fix (`cache_manager.py`, `core_utils.py`, `prs_shared.py`, `media_batch.py`, `playback_preferences.py`)**:
+  - **Resolved Unresponsive "Clear Temporary Cache" Action**: Fixed a missing `make_dialog_maximizable` import in `cache_manager.py` that caused `ClearCacheDialog` to raise a runtime exception and fail silently when invoked from **Settings > Clear Temporary Cache...**.
+  - **Unified Interactive Cache Preview in Preferences**: Updated the **Preferences > Cleanup Data** page to open the interactive `ClearCacheDialog` instead of a blind confirmation prompt, allowing users to preview exact file counts and byte sizes across Video Thumbnails, Waveform Peaks, and Temporary Audio Extracts before purging.
+  - **Multi-Directory Cache Scanning**: Enhanced `get_cache_disk_usage` and `purge_caches` to accurately scan and clean project-specific `.cache/` directories alongside system application data and temp folders without cross-directory directory collisions.
+- **UI & Context Menu Icon Harmonization (`ui_layout.py`, `transcript_editor.py`, `story_metadata_dialog.py`)**:
+  - **Menu & Action Bar De-Cluttering**: Removed decorative icons from the top menu bar (`Voice Profile Tools`) and right-click context menus (`Voice Profile Tools`, `Highlight Text`, `Change Highlight Color`, `Remove Highlight`), presenting a clean, consistent typography-first menu hierarchy while preserving functional color swatches for text highlighting.
+  - **Stories Panel & Metadata Button Cleanups**: Removed emoji icons from `Story Metadata...` and `Auto-Generate Excerpt` buttons in the stories widget sidebar, aligning button styling with native desktop conventions.
+  - **Transcript Toolbar & Formatting Refinements**: Removed leading symbols from `Split Speaker`, `Highlight ▾`, and the `Editing Mode` helper label in the transcript formatting toolbar.
+  - **Story & Post Metadata Dialog Polish**: Streamlined actions in the metadata editor by removing icons from `Refresh WP Taxonomies`, `Sync to Playhead`, `Full Episode`, and individual `Story #N` task tabs while retaining core transport and status badges across the application.
+
 ## v3.7.11-beta
 - **Unified Voice Profile Tools Submenu & Multi-Entrypoint Integration (`transcript_editor.py`, `ui_layout.py`, `transcript_story.py`, `processing.py`)**:
   - **Single Cohesive Context Submenu**: Grouped all acoustic voice profiling, reference assignment, A/B dialog classification, and cluster inspection actions into a dedicated `🎙️ Voice Profile Tools` submenu within the transcript editor context menu, eliminating menu sprawl and elevating feature discoverability.

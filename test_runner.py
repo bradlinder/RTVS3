@@ -404,6 +404,11 @@ class DiagnosticEngine:
                 "Plugin Architecture & Sandboxing",
                 "Validates PKCE pair generation, cryptographic state tokens, zero-config public client credentials, and callback state verification",
             ),
+            DiagnosticItem(
+                "Temporary Cache Management and Storage Inspection",
+                "Project & Filesystem Lifecycle",
+                "Validates disk cache statistics calculation, preview inspection data, and temporary cache purging",
+            ),
         ]
 
     def run_all(self, stop_requested_fn: Optional[Callable[[], bool]] = None) -> List[DiagnosticItem]:
@@ -2319,6 +2324,67 @@ class DiagnosticEngine:
 
         item.status = "PASS"
         item.message = "RFC 7636 PKCE pairs, cryptographic state tokens, zero-config credentials, and least-privilege scopes verified"
+
+    def _test_temporary_cache_management_and_storage_inspection(self, item: DiagnosticItem):
+        """Validates cache usage stats calculation, preview categorization, and cache purging."""
+        from cache_manager import (
+            format_byte_size,
+            get_cache_disk_usage,
+            purge_caches,
+            ClearCacheDialog,
+        )
+
+        # 1. Byte formatting checks
+        if format_byte_size(0) != "0 B":
+            raise AssertionError(f"format_byte_size(0) returned '{format_byte_size(0)}'")
+        if "1.5 MB" not in format_byte_size(int(1.5 * 1024 * 1024)):
+            raise AssertionError("format_byte_size failed on MB calculation")
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            proj_dir = Path(tmp_dir) / "test_project"
+            proj_dir.mkdir(parents=True, exist_ok=True)
+            cache_peaks = proj_dir / ".cache" / "peaks"
+            cache_peaks.mkdir(parents=True, exist_ok=True)
+            (cache_peaks / "audio.peaks").write_bytes(b"PEAKS_DATA_" * 100)
+
+            cache_thumbs = proj_dir / ".cache" / "thumbnails"
+            cache_thumbs.mkdir(parents=True, exist_ok=True)
+            (cache_thumbs / "thumb_01.jpg").write_bytes(b"THUMB_DATA_" * 50)
+
+            # 2. Test get_cache_disk_usage with project_dirs
+            stats = get_cache_disk_usage(project_dirs=[proj_dir])
+            if stats["waveforms"]["count"] < 1:
+                raise AssertionError("get_cache_disk_usage did not find waveform peak file")
+            if stats["thumbnails"]["count"] < 1:
+                raise AssertionError("get_cache_disk_usage did not find video thumbnail file")
+            if stats["total_bytes"] <= 0:
+                raise AssertionError("Total bytes reported as 0")
+
+            # 3. Test selective purge
+            files_del, bytes_freed = purge_caches(
+                clear_thumbnails=True,
+                clear_waveforms=False,
+                clear_audio_extracts=False,
+                project_dirs=[proj_dir],
+            )
+            if files_del < 1 or bytes_freed <= 0:
+                raise AssertionError(f"purge_caches failed to clear thumbnails: {files_del} files, {bytes_freed} bytes")
+            if not (cache_peaks / "audio.peaks").exists():
+                raise AssertionError("Waveform peak file was unexpectedly deleted during thumbnails-only purge")
+
+            # 4. Test remaining purge
+            files_del2, bytes_freed2 = purge_caches(
+                clear_thumbnails=False,
+                clear_waveforms=True,
+                clear_audio_extracts=True,
+                project_dirs=[proj_dir],
+            )
+            if files_del2 < 1:
+                raise AssertionError(f"purge_caches failed to clear remaining peaks: {files_del2} files")
+
+        item.status = "PASS"
+        item.message = "Cache disk usage calculation, preview breakdown, and granular purging verified"
+
 
 
 

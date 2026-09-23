@@ -141,7 +141,7 @@ class StoryMetadataDialog(QDialog):
         header_layout.addWidget(info_label, 1)
 
         # Taxonomy Refresh Button (if WP or CMS available)
-        self.refresh_tax_btn = QPushButton("🔄 Refresh WP Taxonomies", self)
+        self.refresh_tax_btn = QPushButton("Refresh WP Taxonomies", self)
         self.refresh_tax_btn.setToolTip("Fetch latest Authors and Categories from WordPress REST API")
         self.refresh_tax_btn.setStyleSheet("""
             QPushButton {
@@ -293,7 +293,7 @@ class StoryMetadataDialog(QDialog):
         exc_btn_row.addWidget(QLabel("Short summary for web/feeds:", excerpt_group))
         exc_btn_row.addStretch()
 
-        self.auto_excerpt_btn = QPushButton("✨ Auto-Generate Excerpt (55 Words)", excerpt_group)
+        self.auto_excerpt_btn = QPushButton("Auto-Generate Excerpt (55 Words)", excerpt_group)
         self.auto_excerpt_btn.setStyleSheet("""
             QPushButton {
                 background-color: #1e293b;
@@ -413,7 +413,7 @@ class StoryMetadataDialog(QDialog):
         btn_p1s.clicked.connect(lambda: self._on_step_frame(1.0))
         stepper_row.addWidget(btn_p1s)
 
-        btn_sync = QPushButton("📍 Sync to Playhead", self.video_scrub_widget)
+        btn_sync = QPushButton("Sync to Playhead", self.video_scrub_widget)
         btn_sync.setToolTip("Set frame capture time to current main window player position")
         btn_sync.clicked.connect(self._on_sync_playhead_clicked)
         stepper_row.addWidget(btn_sync)
@@ -632,7 +632,7 @@ class StoryMetadataDialog(QDialog):
         full_item = {
             "type": "full",
             "index": -1,
-            "task_label": "🎬 Full Episode",
+            "task_label": "Full Episode",
             "title": proj_meta.get("title") or wp_proj.get("title") or base_name,
             "author": proj_meta.get("author", "") or wp_proj.get("manual_author", ""),
             "author_ids": list(wp_proj.get("author_ids") or []),
@@ -666,7 +666,7 @@ class StoryMetadataDialog(QDialog):
                 "type": "story",
                 "index": idx,
                 "story_ref": story,
-                "task_label": f"📖 Story #{idx + 1}",
+                "task_label": f"Story #{idx + 1}",
                 "title": story.title or wp_meta.get("title") or f"Story #{idx + 1}",
                 "author": meta.get("author", "") or wp_meta.get("manual_author", ""),
                 "author_ids": list(wp_meta.get("author_ids") or []),

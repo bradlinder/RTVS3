@@ -26,6 +26,15 @@ PROJECT_VERSION = "3.5.19"
 DEFAULT_GITHUB_REPO = "bradlinder/RTVS3"
 
 
+def make_dialog_maximizable(dialog) -> None:
+    """Enforce standard OS window maximize and restore title bar controls for resizable dialogs."""
+    try:
+        from PySide6.QtCore import Qt
+        dialog.setWindowFlags(dialog.windowFlags() | Qt.WindowType.WindowMaximizeButtonHint)
+    except Exception:
+        pass
+
+
 def _ensure_runtime_bin_on_path():
     """Ensure bundled runtime/bin (ffmpeg/ffprobe) is on PATH in frozen builds."""
     if getattr(sys, "frozen", False):

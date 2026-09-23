@@ -2104,29 +2104,23 @@ class PlaybackPreferencesMixin:
         cleanup_form.addWidget(open_mgr_btn)
 
         # 3. Clear All Temporary Caches
-        clear_cache_btn = QPushButton("Clear All Temporary Caches (Waveforms, Audio Extracts, & Thumbnails)…")
-        clear_cache_btn.setToolTip("Delete generated waveform peak files, temporary audio segment extracts, and video thumbnails to free disk space.")
+        clear_cache_btn = QPushButton("Clear Temporary Caches (Waveforms, Audio Extracts, & Thumbnails)…")
+        clear_cache_btn.setToolTip("Inspect disk space usage and clear generated waveform peak files, temporary audio segment extracts, and video thumbnails.")
         def _on_clear_cache():
-            ans = QMessageBox.question(
-                dialog, "Clear All Temporary Caches",
-                "Are you sure you want to delete all temporary audio extracts, waveform peak files, and video thumbnail caches?",
-                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
-                QMessageBox.StandardButton.No
-            )
-            if ans == QMessageBox.StandardButton.Yes:
+            project_dirs = []
+            if hasattr(self, "project_file") and self.project_file:
                 try:
-                    from prs_shared import purge_caches
-                    files_deleted, bytes_freed = purge_caches(clear_thumbnails=True, clear_waveforms=True, clear_audio_extracts=True)
-                    from updater import format_byte_size
-                    freed_str = format_byte_size(bytes_freed)
-                    QMessageBox.information(
-                        dialog, "Cache Cleared",
-                        f"Successfully cleared temporary caches:\n\n"
-                        f"• Files deleted: {files_deleted}\n"
-                        f"• Storage reclaimed: {freed_str}"
-                    )
-                except Exception as exc:
-                    QMessageBox.warning(dialog, "Clear Cache Error", f"Failed to clear cache: {exc}")
+                    project_dirs.append(Path(self.project_file).parent)
+                except Exception:
+                    pass
+            if hasattr(self, "audio_file") and self.audio_file:
+                try:
+                    project_dirs.append(Path(self.audio_file).parent)
+                except Exception:
+                    pass
+            from cache_manager import ClearCacheDialog
+            dlg_cc = ClearCacheDialog(dialog, language=getattr(self, "language", "en"), project_dirs=project_dirs)
+            dlg_cc.exec()
         clear_cache_btn.clicked.connect(_on_clear_cache)
         cleanup_form.addWidget(clear_cache_btn)
 

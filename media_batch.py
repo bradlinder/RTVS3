@@ -878,7 +878,18 @@ class MediaBatchMixin:
         return True
 
     def open_clear_cache_dialog(self):
-        dialog = ClearCacheDialog(self, language=getattr(self, "language", "en"))
+        project_dirs = []
+        if getattr(self, "project_file", None):
+            try:
+                project_dirs.append(Path(self.project_file).parent)
+            except Exception:
+                pass
+        if getattr(self, "audio_file", None):
+            try:
+                project_dirs.append(Path(self.audio_file).parent)
+            except Exception:
+                pass
+        dialog = ClearCacheDialog(self, language=getattr(self, "language", "en"), project_dirs=project_dirs)
         dialog.exec()
 
     def open_glossary_dialog(self):

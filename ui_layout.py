@@ -196,7 +196,7 @@ class UiLayoutMixin:
         self.current_highlight_color = "#fef08a"
         self.transcript_highlight_btn = QToolButton(self)
         self.transcript_highlight_btn.setObjectName("transcript_highlight_btn")
-        self.transcript_highlight_btn.setText("🖊️ Highlight ▾")
+        self.transcript_highlight_btn.setText("Highlight ▾")
         self.transcript_highlight_btn.setPopupMode(QToolButton.ToolButtonPopupMode.MenuButtonPopup)
         self.transcript_highlight_btn.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.transcript_highlight_btn.setToolTip("Highlight selected text (Yellow) (Ctrl+Shift+H)")
@@ -225,7 +225,7 @@ class UiLayoutMixin:
             act.triggered.connect(_make_hdr_hl_handler(hex_code, label))
 
         hdr_highlight_menu.addSeparator()
-        clear_hl_act = hdr_highlight_menu.addAction("⚪ Remove Highlight")
+        clear_hl_act = hdr_highlight_menu.addAction("Remove Highlight")
         clear_hl_act.triggered.connect(
             lambda: getattr(self.transcript_view, "remove_highlight", lambda: None)()
         )
@@ -354,7 +354,7 @@ class UiLayoutMixin:
         fmt_layout.addWidget(fmt_sep2)
 
         self.fmt_split_btn = QToolButton(self.transcript_format_toolbar)
-        self.fmt_split_btn.setText("↵ Split Speaker")
+        self.fmt_split_btn.setText("Split Speaker")
         self.fmt_split_btn.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.fmt_split_btn.setToolTip("Split speaker segment at cursor (Shift+Enter)")
         self.fmt_split_btn.setStyleSheet("padding: 2px 6px;")
@@ -363,7 +363,7 @@ class UiLayoutMixin:
 
         fmt_layout.addStretch()
 
-        self.fmt_hint_lbl = QLabel("✏️ Editing Mode • Ctrl+B: Bold • Ctrl+I: Italic • Ctrl+U: Underline • Ctrl+K: Strike", self.transcript_format_toolbar)
+        self.fmt_hint_lbl = QLabel("Editing Mode • Ctrl+B: Bold • Ctrl+I: Italic • Ctrl+U: Underline • Ctrl+K: Strike", self.transcript_format_toolbar)
         self.fmt_hint_lbl.setStyleSheet("color: #94a3b8; font-size: 11px;")
         fmt_layout.addWidget(self.fmt_hint_lbl)
 
@@ -491,7 +491,7 @@ class UiLayoutMixin:
         exc_hdr_row.addWidget(exc_lbl)
         exc_hdr_row.addStretch()
 
-        self.auto_gen_excerpt_btn = QPushButton("✨ Auto-Generate Excerpt", self)
+        self.auto_gen_excerpt_btn = QPushButton("Auto-Generate Excerpt", self)
         self.auto_gen_excerpt_btn.setStyleSheet("""
             QPushButton {
                 background-color: #1e293b;
@@ -576,7 +576,7 @@ class UiLayoutMixin:
         story_action_row2 = QHBoxLayout()
         story_action_row2.setSpacing(4)
 
-        self.story_metadata_btn = QPushButton("🗗 Story Metadata...", self)
+        self.story_metadata_btn = QPushButton("Story Metadata...", self)
         self.story_metadata_btn.setObjectName("story_metadata_btn")
         self.story_metadata_btn.setToolTip("Configure titles, authors, categories, excerpts, and featured images for all stories and full episode")
         self.story_metadata_btn.clicked.connect(lambda: self.open_story_metadata_dialog())
@@ -1073,7 +1073,7 @@ class UiLayoutMixin:
         # ==========================================
         # Voice Profile Tools Submenu
         # ==========================================
-        self.voice_tools_menu = tools_menu.addMenu("🎙️ &Voice Profile Tools")
+        self.voice_tools_menu = tools_menu.addMenu("&Voice Profile Tools")
 
         self.teach_voice_action = QAction("&Teach / Match Voice Across Project...", self)
         self.teach_voice_action.setToolTip("Use active speaker turn as a reference voice profile to find and reassign matching turns across the timeline")

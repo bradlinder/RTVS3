@@ -1963,7 +1963,7 @@ class InteractiveTranscriptEdit(QTextEdit):
             menu.addAction(remove_action)
 
         # Grouped Acoustic Voice Profile Tools Submenu
-        voice_tools_menu = menu.addMenu("🎙️ Voice Profile Tools")
+        voice_tools_menu = menu.addMenu("Voice Profile Tools")
 
         target_cursor = hit_cursor
         target_seg_idx = self.get_segment_index_at_cursor(target_cursor)
@@ -2101,7 +2101,7 @@ class InteractiveTranscriptEdit(QTextEdit):
                     if s_hl and s_hl not in (False, "false", "False", 0, None):
                         active_hl_hex = "#fef08a" if isinstance(s_hl, bool) else str(s_hl).lower()
 
-            hl_title = "🎨 Change Highlight Color" if active_hl_hex else "🖊️ Highlight Text"
+            hl_title = "Change Highlight Color" if active_hl_hex else "Highlight Text"
 
             hl_colors = [
                 ("🟡 Yellow", "#fef08a"),
@@ -2120,7 +2120,7 @@ class InteractiveTranscriptEdit(QTextEdit):
                 act = hl_menu.addAction(lbl_text)
                 act.triggered.connect(lambda _, c=hex_code: self.toggle_highlight(c, force_apply=True))
             hl_menu.addSeparator()
-            act_rem_hl = hl_menu.addAction("⚪ Remove Highlight")
+            act_rem_hl = hl_menu.addAction("Remove Highlight")
             act_rem_hl.triggered.connect(self.remove_highlight)
 
             toggle_comments_act = QAction("💬 Toggle Comments Sidebar\tCtrl+Alt+C", menu)
@@ -2167,7 +2167,7 @@ class InteractiveTranscriptEdit(QTextEdit):
                     if s_hl and s_hl not in (False, "false", "False", 0, None):
                         active_hl_hex = "#fef08a" if isinstance(s_hl, bool) else str(s_hl).lower()
 
-            hl_title = "🎨 Change Highlight Color" if active_hl_hex else "🖊️ Highlight Text"
+            hl_title = "Change Highlight Color" if active_hl_hex else "Highlight Text"
 
             hl_menu = fmt_menu.addMenu(hl_title)
             for label, hex_code in hl_colors:
@@ -2177,7 +2177,7 @@ class InteractiveTranscriptEdit(QTextEdit):
                 act = hl_menu.addAction(lbl_text)
                 act.triggered.connect(lambda _, c=hex_code: self.toggle_highlight(c, force_apply=True))
             hl_menu.addSeparator()
-            act_rem_hl = hl_menu.addAction("⚪ Remove Highlight")
+            act_rem_hl = hl_menu.addAction("Remove Highlight")
             act_rem_hl.triggered.connect(self.remove_highlight)
 
             act_clear = fmt_menu.addAction("Clear Formatting\tCtrl+\\")
@@ -2202,7 +2202,7 @@ class InteractiveTranscriptEdit(QTextEdit):
                 )
                 menu.addAction(del_comment_act)
 
-            rem_hl_act = QAction("🎨 Remove Highlight", menu)
+            rem_hl_act = QAction("Remove Highlight", menu)
             rem_hl_act.triggered.connect(self.remove_highlight)
             menu.addAction(rem_hl_act)
 
