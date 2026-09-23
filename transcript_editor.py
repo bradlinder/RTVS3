@@ -1962,37 +1962,73 @@ class InteractiveTranscriptEdit(QTextEdit):
             )
             menu.addAction(remove_action)
 
-            teach_action = QAction("Teach This Voice: Match Similar Turns...", self)
-            teach_action.setToolTip("Use this speaker turn as a reference voice profile to find and reassign matching turns across the timeline")
-            teach_action.triggered.connect(
-                lambda _, i=seg_idx, s=raw_speaker: main_win.teach_voice_profile_dialog(i, s)
-            )
-            menu.addAction(teach_action)
+        # Grouped Acoustic Voice Profile Tools Submenu
+        voice_tools_menu = menu.addMenu("🎙️ Voice Profile Tools")
 
-            ref_action = QAction("Set as Reference Profile for New Speaker...", self)
-            ref_action.setToolTip("Prompt for a new speaker name and immediately match similar turns using this acoustic profile")
-            ref_action.triggered.connect(
-                lambda _, i=seg_idx, s=raw_speaker: main_win.teach_voice_profile_dialog(i, s, prompt_new_speaker=True)
-            )
-            menu.addAction(ref_action)
-
-            if hasattr(main_win, "prompt_refine_speaker_run"):
-                refine_action = QAction("Refine Rapid Dialog Turns (Competitive Classifier)...", self)
-                refine_action.setToolTip("Competitively assign turns in a range between two confirmed speakers by relative acoustic distance")
-                refine_action.triggered.connect(
-                    lambda _, i=seg_idx: main_win.prompt_refine_speaker_run(i, i + 10)
-                )
-                menu.addAction(refine_action)
-
-            menu.addSeparator()
-
-        insert_menu = menu.addMenu("Add Speaker Label Here")
         target_cursor = hit_cursor
         target_seg_idx = self.get_segment_index_at_cursor(target_cursor)
         if target_seg_idx is None:
             target_seg_idx = target_cursor.blockNumber()
         target_time = self.get_timestamp_at_cursor(target_cursor)
 
+        if speaker_target:
+            seg_idx, raw_speaker = speaker_target
+            teach_action = QAction("Teach / Match This Voice Across Project...", self)
+            teach_action.setToolTip("Use this speaker turn as a reference voice profile to find and reassign matching turns across the timeline")
+            teach_action.triggered.connect(
+                lambda _, i=seg_idx, s=raw_speaker: main_win.teach_voice_profile_dialog(i, s)
+            )
+            voice_tools_menu.addAction(teach_action)
+
+            ref_action = QAction("Set as Reference Profile for New Speaker...", self)
+            ref_action.setToolTip("Prompt for a new speaker name and immediately match similar turns using this acoustic profile")
+            ref_action.triggered.connect(
+                lambda _, i=seg_idx, s=raw_speaker: main_win.teach_voice_profile_dialog(i, s, prompt_new_speaker=True)
+            )
+            voice_tools_menu.addAction(ref_action)
+
+            if hasattr(main_win, "prompt_refine_speaker_run"):
+                refine_action = QAction("Refine Rapid Dialog Turns (A/B Classifier)...", self)
+                refine_action.setToolTip("Competitively classify turns in a conversational range between two confirmed speakers")
+                refine_action.triggered.connect(
+                    lambda _, i=seg_idx: main_win.prompt_refine_speaker_run(i, i + 10)
+                )
+                voice_tools_menu.addAction(refine_action)
+        else:
+            fallback_idx = target_seg_idx if target_seg_idx is not None else 0
+            teach_action = QAction("Teach / Match Voice Across Project...", self)
+            teach_action.setToolTip("Use active speaker turn as a reference voice profile to find and reassign matching turns across the timeline")
+            teach_action.triggered.connect(
+                lambda _, i=fallback_idx: main_win.teach_voice_profile_dialog(i)
+            )
+            voice_tools_menu.addAction(teach_action)
+
+            ref_action = QAction("Set as Reference Profile for New Speaker...", self)
+            ref_action.setToolTip("Prompt for a new speaker name and match similar turns using active acoustic profile")
+            ref_action.triggered.connect(
+                lambda _, i=fallback_idx: main_win.teach_voice_profile_dialog(i, prompt_new_speaker=True)
+            )
+            voice_tools_menu.addAction(ref_action)
+
+            if hasattr(main_win, "prompt_refine_speaker_run"):
+                refine_action = QAction("Refine Rapid Dialog Turns (A/B Classifier)...", self)
+                refine_action.setToolTip("Competitively classify turns in a conversational range between two confirmed speakers")
+                refine_action.triggered.connect(
+                    lambda _, i=fallback_idx: main_win.prompt_refine_speaker_run(i, i + 10)
+                )
+                voice_tools_menu.addAction(refine_action)
+
+        voice_tools_menu.addSeparator()
+
+        if hasattr(main_win, "open_speaker_manager_dialog"):
+            manage_spk_act = QAction("Manage Speakers & Detection Clusters...", self)
+            manage_spk_act.setToolTip("Inspect speaker durations, rename or assign aliases, and merge duplicate acoustic clusters")
+            manage_spk_act.triggered.connect(main_win.open_speaker_manager_dialog)
+            voice_tools_menu.addAction(manage_spk_act)
+
+        menu.addSeparator()
+
+        insert_menu = menu.addMenu("Add Speaker Label Here")
         known_speakers = []
         if hasattr(main_win, "get_all_known_speakers"):
             known_speakers = main_win.get_all_known_speakers()
@@ -2006,12 +2042,6 @@ class InteractiveTranscriptEdit(QTextEdit):
         new_spk_action.triggered.connect(
             lambda _, s=target_seg_idx, t=target_time: self.requestInsertSpeaker.emit(s, t, "__NEW__")
         )
-
-        if hasattr(main_win, "open_speaker_manager_dialog"):
-            manage_spk_act = QAction("Manage Speakers & Detection Clusters...", self)
-            manage_spk_act.triggered.connect(main_win.open_speaker_manager_dialog)
-            menu.addAction(manage_spk_act)
-            menu.addSeparator()
 
         target_seg = self.get_segment_index_at_cursor(hit_cursor)
         if target_seg is None:

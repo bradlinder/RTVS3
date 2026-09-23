@@ -1,5 +1,17 @@
 # Changelog
 
+## v3.7.11-beta
+- **Unified Voice Profile Tools Submenu & Multi-Entrypoint Integration (`transcript_editor.py`, `ui_layout.py`, `transcript_story.py`, `processing.py`)**:
+  - **Single Cohesive Context Submenu**: Grouped all acoustic voice profiling, reference assignment, A/B dialog classification, and cluster inspection actions into a dedicated `🎙️ Voice Profile Tools` submenu within the transcript editor context menu, eliminating menu sprawl and elevating feature discoverability.
+  - **Clear, Action-Oriented Tool Labeling**: Standardized submenu action titles with crystal-clear descriptors and tooltips:
+    * `Teach / Match This Voice Across Project...` (uses reference voice profile to find and reassign matching turns)
+    * `Set as Reference Profile for New Speaker...` (prompts for a new speaker name and immediately matches similar turns)
+    * `Refine Rapid Dialog Turns (A/B Classifier)...` (competitively classifies turns in a conversational range between two confirmed speakers)
+    * `Manage Speakers & Detection Clusters...` (inspects durations, renames/aliases, and merges duplicate clusters)
+  - **Top Menu Bar Integration (`Tools -> Voice Profile Tools`)**: Added the full `🎙️ Voice Profile Tools` suite under the top-level **Tools** menu in `ui_layout.py`, enabling complete keyboard and menu bar access to voice profiling and clustering without requiring a prior right-click on the transcript canvas.
+  - **Context-Aware Turn Inference Fallback**: Updated `teach_voice_profile_dialog` in `transcript_story.py` to smartly infer active turns from the transcript editor text cursor or current audio player position when launched without explicit segment coordinates, ensuring robust 1-click execution from the top menu bar.
+  - **Pipeline State & Action Synchronization**: Integrated `voice_tools_menu` and all child actions into `set_tools_actions_enabled` within `processing.py`, ensuring actions are enabled/disabled gracefully with project transcript availability.
+
 ## v3.7.10-beta
 - **Refine Rapid Dialog Turn Context & Timestamp Redesign (`prompt_refine_speaker_run` in `transcript_story.py`)**:
   - **Rich Dropdown Turn Selectors**: Replaced raw numeric segment index spinboxes with rich dropdown selectors displaying formatted timestamps, speaker labels, and spoken text snippets for both Start and End turns (e.g. `[00:14.200] Turn #4 (Leticia): “Hello, how are you today…”`), making turn boundaries immediately recognizable.

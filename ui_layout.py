@@ -1070,6 +1070,39 @@ class UiLayoutMixin:
 
         tools_menu.addSeparator()
 
+        # ==========================================
+        # Voice Profile Tools Submenu
+        # ==========================================
+        self.voice_tools_menu = tools_menu.addMenu("🎙️ &Voice Profile Tools")
+
+        self.teach_voice_action = QAction("&Teach / Match Voice Across Project...", self)
+        self.teach_voice_action.setToolTip("Use active speaker turn as a reference voice profile to find and reassign matching turns across the timeline")
+        self.teach_voice_action.setEnabled(False)
+        self.teach_voice_action.triggered.connect(lambda: getattr(self, "teach_voice_profile_dialog", lambda *a, **k: None)(-1))
+        self.voice_tools_menu.addAction(self.teach_voice_action)
+
+        self.ref_profile_new_spk_action = QAction("&Set as Reference Profile for New Speaker...", self)
+        self.ref_profile_new_spk_action.setToolTip("Prompt for a new speaker name and immediately match similar turns using active acoustic profile")
+        self.ref_profile_new_spk_action.setEnabled(False)
+        self.ref_profile_new_spk_action.triggered.connect(lambda: getattr(self, "teach_voice_profile_dialog", lambda *a, **k: None)(-1, prompt_new_speaker=True))
+        self.voice_tools_menu.addAction(self.ref_profile_new_spk_action)
+
+        self.refine_dialog_action = QAction("&Refine Rapid Dialog Turns (A/B Classifier)...", self)
+        self.refine_dialog_action.setToolTip("Competitively classify turns in a conversational range between two confirmed speakers")
+        self.refine_dialog_action.setEnabled(False)
+        self.refine_dialog_action.triggered.connect(lambda: getattr(self, "prompt_refine_speaker_run", lambda *a, **k: None)())
+        self.voice_tools_menu.addAction(self.refine_dialog_action)
+
+        self.voice_tools_menu.addSeparator()
+
+        self.manage_speakers_action = QAction("&Manage Speakers && Detection Clusters...", self)
+        self.manage_speakers_action.setToolTip("Inspect speaker durations, rename or assign aliases, and merge duplicate acoustic clusters")
+        self.manage_speakers_action.setEnabled(False)
+        self.manage_speakers_action.triggered.connect(lambda: getattr(self, "open_speaker_manager_dialog", lambda: None)())
+        self.voice_tools_menu.addAction(self.manage_speakers_action)
+
+        tools_menu.addSeparator()
+
         self.batch_processing_action = self.batch_file_action
         tools_menu.addAction(self.batch_processing_action)
 

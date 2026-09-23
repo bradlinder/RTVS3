@@ -2798,7 +2798,7 @@ class TranscriptStoryMixin:
 
     def teach_voice_profile_dialog(
         self,
-        seg_idx: int,
+        seg_idx: int = -1,
         raw_speaker: str = None,
         prompt_new_speaker: bool = False,
     ):
@@ -2811,8 +2811,29 @@ class TranscriptStoryMixin:
             return
 
         segments = self.transcript.get("segments", [])
-        if seg_idx < 0 or seg_idx >= len(segments):
+        if not segments:
+            QMessageBox.information(
+                self,
+                "Empty Transcript",
+                "Project has no speech segments to match voice profiles against.",
+            )
             return
+
+        if seg_idx < 0 or seg_idx >= len(segments):
+            # Attempt to infer active segment from transcript cursor or audio playback position
+            inferred = -1
+            if hasattr(self, "transcript_view"):
+                cursor = self.transcript_view.textCursor()
+                inferred = self.transcript_view.get_segment_index_at_cursor(cursor)
+                if inferred is None or inferred < 0:
+                    inferred = cursor.blockNumber()
+            if (inferred is None or inferred < 0 or inferred >= len(segments)) and hasattr(self, "player"):
+                curr_t = (self.player.position() / 1000.0) if hasattr(self.player, "position") else 0.0
+                for i, s in enumerate(segments):
+                    if s.get("start", 0.0) <= curr_t <= s.get("end", 0.0):
+                        inferred = i
+                        break
+            seg_idx = inferred if (inferred is not None and 0 <= inferred < len(segments)) else 0
 
         current_speaker = self.get_effective_speaker_name(seg_idx, segments[seg_idx])
         dlg = VoiceProfileMatchDialog(

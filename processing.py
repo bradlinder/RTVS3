@@ -447,13 +447,24 @@ class ProcessingMixin:
 
     def set_tools_actions_enabled(self, enabled):
         has_audio = bool(self.audio_file) and enabled
+        has_transcript = bool(self.transcript) and enabled
         self.transcribe_action.setEnabled(has_audio)
         self.diarize_action.setEnabled(has_audio)
         self.auto_detect_action.setEnabled(has_audio)
         self.transcribe_diarize_action.setEnabled(has_audio)
         self.transcribe_diarize_detect_action.setEnabled(has_audio)
-        self.translate_action.setEnabled(bool(self.transcript) and enabled)
+        self.translate_action.setEnabled(has_transcript)
         self.translation_model_action.setEnabled(True)
+        if hasattr(self, "voice_tools_menu"):
+            self.voice_tools_menu.setEnabled(has_transcript)
+        if hasattr(self, "teach_voice_action"):
+            self.teach_voice_action.setEnabled(has_transcript)
+        if hasattr(self, "ref_profile_new_spk_action"):
+            self.ref_profile_new_spk_action.setEnabled(has_transcript)
+        if hasattr(self, "refine_dialog_action"):
+            self.refine_dialog_action.setEnabled(has_transcript)
+        if hasattr(self, "manage_speakers_action"):
+            self.manage_speakers_action.setEnabled(has_transcript)
         if hasattr(self, "export_translation_action"):
             self.export_translation_action.setEnabled(
                 has_audio
