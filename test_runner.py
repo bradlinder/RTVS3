@@ -1478,7 +1478,12 @@ class DiagnosticEngine:
     def _test_audio_subtitle_sync_drift_test(self, item: DiagnosticItem):
         import importlib.util
         import types
-        spec = importlib.util.spec_from_file_location("export_subtitles", "export/subtitles.py")
+        import os
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        subtitles_path = os.path.join(base_dir, "export", "subtitles.py")
+        if not os.path.exists(subtitles_path):
+            subtitles_path = "export/subtitles.py"
+        spec = importlib.util.spec_from_file_location("export_subtitles", subtitles_path)
         mod = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(mod)
 

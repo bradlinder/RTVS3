@@ -2247,31 +2247,25 @@ class TranscriptStoryMixin:
         for idx, embedding in candidates:
             speaker = self.get_effective_speaker_name(idx, segments[idx])
             if speaker != reference_name:
-                competing_groups.setdefault(speaker, []).append(embedding)
+                competing_groups.setdefault(speaker, []).append((idx, embedding))
             else:
-                same_cluster_embeddings.append(embedding)
-
-        competitor_profiles = []
-        for vectors in competing_groups.values():
-            profile = centroid(vectors[:12])
-            if profile is not None:
-                competitor_profiles.append(profile)
+                same_cluster_embeddings.append((idx, embedding))
 
         # In-group sub-clustering: if a single cluster contains an imposter voice,
         # discover outliers in the same cluster that diverge from target_profile
         # and treat them as an internal competitor.
+        internal_competitor = None
+        divergent_indices = set()
         if same_cluster_embeddings:
-            divergent_vectors = [
-                v for v in same_cluster_embeddings
+            divergent_items = [
+                (i, v) for i, v in same_cluster_embeddings
                 if cosine_similarity(v, target_profile) < 0.72
             ]
-            if len(divergent_vectors) >= 2:
-                internal_competitor = centroid(divergent_vectors[:10])
-                if internal_competitor is not None:
-                    competitor_profiles.append(internal_competitor)
+            if len(divergent_items) >= 2:
+                internal_competitor = centroid([v for _, v in divergent_items[:10]])
+                divergent_indices = {i for i, _ in divergent_items}
 
         matches = []
-        has_competitors = len(competitor_profiles) > 0
 
         for idx, embedding in candidates:
             if scope_cluster_only:
@@ -2279,10 +2273,24 @@ class TranscriptStoryMixin:
                 if speaker != reference_name:
                     continue
 
+            # Build competitor profiles for THIS candidate turn (excluding candidate's own embedding)
+            item_competitor_profiles = []
+            for spk_name, items in competing_groups.items():
+                other_vecs = [v for (i, v) in items if i != idx]
+                if other_vecs:
+                    c_prof = centroid(other_vecs[:12])
+                    if c_prof is not None:
+                        item_competitor_profiles.append(c_prof)
+
+            if internal_competitor is not None and idx not in divergent_indices:
+                item_competitor_profiles.append(internal_competitor)
+
+            has_competitors = len(item_competitor_profiles) > 0
+
             comparison = compare_against_profiles(
                 embedding,
                 target_profile,
-                competitor_profiles,
+                item_competitor_profiles,
             )
 
             if not is_confident_match(
