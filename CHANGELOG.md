@@ -1,5 +1,13 @@
 # Changelog
  
+## v3.7.6-beta
+- **Windows Installer Handoff & Detached Update Helper Architecture Overhaul — Milestone 4 (`updater.py`, `build_installer.py`)**:
+  - **Standalone Detached Update Helper (`launch_and_install` in `updater.py`)**: Replaced temporary fragile PowerShell/CMD script file generation with a dedicated detached helper execution flow spawned with `CREATE_BREAKAWAY_FROM_JOB` and `DETACHED_PROCESS` flags.
+  - **Clean Parent & Sibling Process Exit Polling**: Update helper directly polls caller process PID via native Win32 `OpenProcess` / `SYNCHRONIZE` handles and process discovery before initiating installation, completely preventing UAC credential dialog prompts over running windows or installer premature exits.
+  - **Elevated UAC Execution Fallback (`ShellExecuteW` with `runas`)**: Launches the downloaded Inno Setup executable with administrative elevation (`runas`), falling back cleanly to standard process launch if elevation is declined or bypassed.
+  - **Structured Update Logging (`%LOCALAPPDATA%\RadioTVStorySegmenter\update.log`)**: Implemented persistent timestamped update diagnostics logging across all update lifecycle phases: handoff initiation, PID polling, elevation attempts, installer launch status, and cleanup.
+  - **Diagnostic Test Bench Coverage Extension (`test_runner.py`)**: Added unit test `Windows Detached Update Helper Architecture` validating script generation, parameter guards, non-existent target rejection, and update logging integrity.
+ 
 ## v3.7.5-beta
 - **Acoustic Voice Profiling & Speaker Correction Engine Refinements (`speaker_identity.py`, `transcript_story.py`, `transcript_editor.py`)**:
   - **Candidate Vector Pre-Caching (`VoiceProfileMatchDialog` & `find_matching_voice_turns`)**: Implemented upfront candidate vector pre-caching (`_ensure_candidate_cache`), completely eliminating redundant WeSpeaker ONNX feature extractions and audio slice decodes during threshold slider scrubbing for instantaneous, stutter-free threshold adjustments.

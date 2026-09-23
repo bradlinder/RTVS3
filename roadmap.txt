@@ -29,30 +29,24 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 --------------------------------------------------------------------------------
 TABLE OF CONTENTS & STATUS OVERVIEW
 --------------------------------------------------------------------------------
-1. Previous Release: Acoustic Voice Profile & Speaker Identity Engine Architecture Upgrade (`speaker_identity.py`, `processing.py`, `transcript_editor.py`, `transcript_story.py`) (Completed in v3.7.4-beta)
-   [x] 1.1 Standalone Voice Profile Math & Identity Engine (`speaker_identity.py`): Isolated vector math, similarity scoring, robust profile synthesis, centroid calculation, and confidence thresholding into a dedicated module.
-   [x] 1.2 Tight Overlap Embedding Filtering (`processing.py`): Prevented macro-blocks (> 8s or > 2.5x duration) from stamping pooled acoustic vectors onto shorter transcript turns and enforced minimum overlap thresholds.
-   [x] 1.3 Enhanced Transcript Copy Shortcuts (`transcript_editor.py`): Standard Ctrl+C / Cmd+C copy shortcuts across viewing/editing modes and context menu copy action.
-   [x] 1.4 Refined Voice Profile Matcher & Re-Clustering (`transcript_story.py`): Upgraded Voice Profile Matcher UI and re-clustering backend to leverage robust multi-sample profile synthesis and confidence-based matching.
+1. Previous Release: Acoustic Voice Profiling & Speaker Correction Engine Refinements, Test Bench Alignment & Universal Dialog Maximization (`speaker_identity.py`, `transcript_story.py`, `test_runner.py`, `prs_shared.py`) (Completed in v3.7.5-beta)
+   [x] 1.1 Acoustic Voice Profile Refinement & Pre-Caching Engine: Pre-caching candidate turn vectors, eliminating redundant re-extractions during threshold slider scrubs, dynamic match tooltip with competitor separation margin, and in-place keyboard shortcuts (Return/Enter/X) for rapid candidate toggling.
+   [x] 1.2 Competitive Rapid Dialog Turn Classifier & Anchor Refinement: Interactive refinement tool (`prompt_refine_speaker_run`) and context menu integration for rapid dialogue turns between two confirmed speakers using relative acoustic distance and auto-enrolled profiles.
+   [x] 1.3 Subtitle/Speaker Alignment Diagnostic Test Suite Alignment: Synchronized test runner unit tests with updated speaker overlap assignment and threshold logic, ensuring all 27 diagnostic test suites pass cleanly.
+   [x] 1.4 Milestone 4.1 - Universal Window Maximize & Restore Flag Enforcement: Enforced `WindowMaximizeButtonHint` and `make_dialog_maximizable` helper across all modal and non-modal dialogs.
 
-2. Current Release: Acoustic Voice Profiling & Speaker Correction Engine Refinements, Test Bench Alignment & Universal Dialog Maximization (`speaker_identity.py`, `transcript_story.py`, `test_runner.py`, `prs_shared.py`) [-] [IN-PROGRESS & TESTING - v3.7.5-beta]
-   [-] 2.1 Acoustic Voice Profile Refinement & Pre-Caching Engine: Pre-caching candidate turn vectors, eliminating redundant re-extractions during threshold slider scrubs, dynamic match tooltip with competitor separation margin, and in-place keyboard shortcuts (Return/Enter/X) for rapid candidate toggling.
-   [-] 2.2 Competitive Rapid Dialog Turn Classifier & Anchor Refinement: Interactive refinement tool (`prompt_refine_speaker_run`) and context menu integration for rapid dialogue turns between two confirmed speakers using relative acoustic distance and auto-enrolled profiles.
-   [-] 2.3 Subtitle/Speaker Alignment Diagnostic Test Suite Alignment: Synchronized test runner unit tests with updated speaker overlap assignment and threshold logic, ensuring all 27 diagnostic test suites pass cleanly.
-   [x] 2.4 Milestone 4.1 - Universal Window Maximize & Restore Flag Enforcement (Completed in v3.7.5-beta): Enforced `WindowMaximizeButtonHint` and `make_dialog_maximizable` helper across all modal and non-modal dialogs (`VoiceProfileMatchDialog`, `UnifiedExportDialog`, `BatchProcessingDialog`, `PreferencesDialog`, `DriveFolderPickerDialog`, `GoogleDocsReviewDialog`, `GoogleOAuthSetupGuideDialog`, `PluginManagerDialog`, `GitHubPluginsDialog`, `WordPressSettingsDialog`, `WordPressPostMetadataDialog`, `WordPressPublishDialog`, `YouTubeSettingsDialog`, `YouTubeAssistedUploadGuideDialog`, `ID3TagEditorDialog`, `StoryMetadataDialog`, `ClearCacheDialog`, `ProjectDataPurgeDialog`, `DiagnosticDialog`, `BenchmarkDialog`, `CheckUpdateDialog`, `CommentEditorDialog`, `StoryFadesDialog`, `SpeakerManagerDialog`, `ChangeSpeakerDialog`).
+2. Current Release: Windows Installer Handoff & Detached Update Helper Architecture Overhaul (`updater.py`, `installer/Windows/`, `build_installer.py`) [x] [COMPLETED in v3.7.6-beta]
+   [x] 2.1 Standalone Detached Windows Update Helper: Replaced temporary fragile PowerShell/CMD supervisor scripts with a dedicated, lightweight detached update helper created outside the Windows Job Object (`CREATE_BREAKAWAY_FROM_JOB` / `DETACHED_PROCESS`).
+   [x] 2.2 Deterministic Application Shutdown & PID Exit Tracking: Polling of caller PID via native Win32 `OpenProcess` / `SYNCHRONIZE` handles before launching installer, preventing premature exits and locked files.
+   [x] 2.3 Direct Windows UAC Elevation & Lightweight Diagnostics: Elevated installer execution with administrative permissions (`runas`), silent fallback handling, and structured diagnostic logging to `%LOCALAPPDATA%\RadioTVStorySegmenter\update.log`.
+   [x] 2.4 Diagnostic Test Bench Coverage Extension: Added unit test `Windows Detached Update Helper Architecture` to validate parameter validation, missing-installer checks, and log writing.
 
 3. Upcoming Milestone: Comprehensive Cloud & Local Backup & Restore System (`project_lifecycle.py`, `plugins/gdocs/`) [PLANNED for v3.8.0] [NOT STARTED]
    [ ] 3.1 Unified State Serialization (`project_lifecycle.py`): Export preferences, keyboard shortcuts, installed model inventories, glossary items, and user configurations into a cryptographically verified backup archive.
    [ ] 3.2 Manual Local Backup & Restore: Download backup archives locally and restore previous settings and system state into RTVS.
    [ ] 3.3 1-Click Google Drive Cloud Restore: Connect via Google Drive API to browse, verify via SHA-256 hash matching, and restore custom settings directly from cloud backups.
 
-4. Upcoming Milestone: Windows Installer Handoff & Detached Update Helper Architecture Overhaul (`updater.py`, `installer/Windows/`, `build_installer.py`) [PLANNED for v3.8.4] [NOT STARTED]
-   [ ] 4.1 Standalone Detached Windows Update Helper: Replace fragile PowerShell supervisor script and 800ms `os._exit(0)` race condition with a dedicated, lightweight detached update helper created outside the Windows Job Object (`CREATE_BREAKAWAY_FROM_JOB` / `DETACHED_PROCESS`).
-   [ ] 4.2 Deterministic Application Shutdown & PID Exit Tracking: Allow normal Qt `closeEvent()` shutdown lifecycle to cleanly stop worker subprocesses and save state before helper triggers the Inno Setup installer.
-   [ ] 4.3 Direct Windows UAC Elevation & Lightweight Diagnostics: Direct elevated installer execution without terminal window flashing, with structured logging to `%LOCALAPPDATA%\RadioTVSegmenter\update.log`.
-   [ ] 4.4 Legacy PowerShell / Wrapper Cleanup: Purge obsolete `rtvs_update_supervisor.ps1`, temporary script generators, and forced-kill workarounds.
-
-5. Future Milestone: Multi-Platform Timeline & DAW Interchange Engine (`export/timeline.py`, `export/dialog.py`, `ui_layout.py`) [PLANNED for v3.8.5] [NOT STARTED]
+4. Future Milestone: Multi-Platform Timeline & DAW Interchange Engine (`export/timeline.py`, `export/dialog.py`, `ui_layout.py`) [PLANNED for v3.8.5] [NOT STARTED]
    [ ] 5.1 Migration to Unified Export Center Tab: Move timeline and DAW exports from the legacy File menu submenu into a dedicated "Timeline & DAW" tab in the Unified Export Center dialog, streamlining menu navigation and providing a unified UI for multi-format timeline exporting.
    [ ] 5.2 Streamlined Multi-Platform Timeline Format Exporters (Zero Feature Loss):
        - Final Cut Pro 7 XML Interchange (.xml / xmeml): Adobe Premiere Pro, Adobe Audition, DaVinci Resolve, Descript (Full multi-track sequences, cuts, clip positions, volume envelopes, crossfades, and marker tracks).
@@ -81,32 +75,10 @@ DETAILED MILESTONE SPECIFICATIONS
 ================================================================================
 
 ================================================================================
-1. PREVIOUS RELEASE: ACOUSTIC VOICE PROFILE & SPEAKER IDENTITY ENGINE UPGRADE (Completed in v3.7.4-beta)
+1. PREVIOUS RELEASE: ACOUSTIC VOICE PROFILING, TEST BENCH ALIGNMENT & UNIVERSAL DIALOG MAXIMIZATION (Completed in v3.7.5-beta)
 ================================================================================
 
-[x] 1.1 Standalone Voice Profile Math & Identity Engine (`speaker_identity.py`)
--------------------------------------------------------------------------------
-- Isolated vector mathematical operations, similarity scoring, robust profile synthesis, centroid calculation, and confidence thresholding into a dedicated, importable module.
-- Provided pure Python fallback cosine similarity calculations with defensive checks for zero-magnitude vectors.
-
-[x] 1.2 Tight Overlap Embedding Filtering (`processing.py`)
-------------------------------------------------------------
-- Prevented long macro-blocks (> 8s or > 2.5x segment duration) from stamping pooled acoustic vectors onto shorter transcript turns.
-- Enforced minimum overlap thresholds (`best_overlap >= 0.5 * duration` or `>= 0.8s`) for accurate embedding attachment during diarization mapping.
-
-[x] 1.3 Enhanced Transcript Copy Shortcuts (`transcript_editor.py`)
---------------------------------------------------------------------
-- Enabled standard Ctrl+C / Cmd+C copy shortcuts across viewing and editing modes, and added explicit context menu "Copy" actions for highlighted transcript selections.
-
-[x] 1.4 Refined Voice Profile Matcher & Re-Clustering (`transcript_story.py`)
-------------------------------------------------------------------------------
-- Upgraded `VoiceProfileMatchDialog` and acoustic voice turn matching logic with robust profile synthesis, multi-mode baseline comparisons, and high-confidence automatic re-clustering across timeline speaker turns.
-
-================================================================================
-2. CURRENT RELEASE: ACOUSTIC VOICE PROFILING & SPEAKER CORRECTION ENGINE REFINEMENTS, TEST BENCH ALIGNMENT & UNIVERSAL DIALOG MAXIMIZATION [-] [IN-PROGRESS & TESTING - v3.7.5-beta]
-================================================================================
-
-[-] 2.1 Acoustic Voice Profile Refinement & Pre-Caching Engine (`transcript_story.py`, `speaker_identity.py`)
+[x] 1.1 Acoustic Voice Profile Refinement & Pre-Caching Engine (`transcript_story.py`, `speaker_identity.py`)
 -------------------------------------------------------------------------------------------------------------
 - Pre-caching candidate turn vectors via `_ensure_candidate_cache`, completely eliminating redundant WeSpeaker ONNX / ffmpeg audio re-extractions during threshold slider scrubs.
 - Dynamic match tooltip with competitor separation margin: Displays target acoustic similarity, closest competitor similarity, and separation margin (e.g. `Similarity: 88.4% | Nearest competitor: 72.1% (separation: +16.3%)`).
@@ -114,23 +86,35 @@ DETAILED MILESTONE SPECIFICATIONS
 - Robust profile synthesis & competitor target separation: Synthesize target profile via `robust_reference_profile` and exclude target speaker turns from competitor comparison sets.
 - Session voice profile auto-enrollment: Automatically enrolls verified speaker turn embeddings into the active session voice profile cache (`_session_speaker_profiles`) upon applying acoustic voice identification.
 
-[-] 2.2 Competitive Rapid Dialog Turn Classifier & Anchor Refinement (`transcript_story.py`, `transcript_editor.py`)
+[x] 1.2 Competitive Rapid Dialog Turn Classifier & Anchor Refinement (`transcript_story.py`, `transcript_editor.py`)
 ---------------------------------------------------------------------------------------------------------------------
 - Interactive refinement tool (`prompt_refine_speaker_run`) and context menu integration for rapid dialogue turns between two confirmed anchor speakers.
 - Computes relative acoustic distance against both speaker centroids and classifies each turn to the closer speaker, with automatic sample enrollment if explicit profiles are not yet cached.
 
-[-] 2.3 Subtitle/Speaker Alignment Diagnostic Test Suite Alignment (`test_runner.py`)
+[x] 1.3 Subtitle/Speaker Alignment Diagnostic Test Suite Alignment (`test_runner.py`)
 -------------------------------------------------------------------------------------
 - Synchronized `DiagnosticEngine` unit tests (`_test_audio_subtitle_sync`, `_test_transcription_subtitle_export_parity`) with updated speaker detection logic, strict timestamp bounds, and modern formatting standards.
 - All 27 diagnostic test suites pass cleanly with 100% test suite fidelity.
 
-[x] 2.4 Milestone 4.1 - Universal Window Maximize & Restore Flag Enforcement (Completed in v3.7.5-beta)
+[x] 1.4 Milestone 4.1 - Universal Window Maximize & Restore Flag Enforcement (Completed in v3.7.5-beta)
 ---------------------------------------------------------------------------------------------------------
 - Architectural Rule: All pop-up dialogs and secondary windows that can be resized MUST also be maximizable via a standard OS maximize title-bar button (`Qt.WindowMaximizeButtonHint`) and by double-clicking the top window title bar.
 - Standardized via `prs_shared.make_dialog_maximizable(dialog)`.
 - Applied systematically across all existing modal/modeless dialogs:
   * Core: `VoiceProfileMatchDialog`, `ChangeSpeakerDialog`, `StoryFadesDialog`, `SpeakerManagerDialog`, `StoryMetadataDialog`, `CommentEditorDialog`, `ClearCacheDialog`, `ProjectDataPurgeDialog`, `DiagnosticDialog`, `BenchmarkDialog`, `CheckUpdateDialog`, `UnifiedExportDialog`, `ReorderExportDestinationsDialog`, `RestoreSelectedSettingsDialog`, `BatchProcessingDialog`, and `PreferencesDialog`.
   * Plugins: `DriveFolderPickerDialog`, `GoogleDocsReviewDialog`, `GoogleOAuthSetupGuideDialog`, `PluginManagerDialog`, `GitHubPluginsDialog`, `WordPressSettingsDialog`, `WordPressPostMetadataDialog`, `WordPressPublishDialog`, `YouTubeSettingsDialog`, and `YouTubeAssistedUploadGuideDialog`.
+
+================================================================================
+2. CURRENT RELEASE: WINDOWS INSTALLER HANDOFF & DETACHED UPDATE HELPER OVERHAUL [x] [COMPLETED in v3.7.6-beta]
+================================================================================
+
+[x] 2.1 Standalone Detached Windows Update Helper Architecture (`updater.py`, `build_installer.py`)
+---------------------------------------------------------------------------------------------------
+- Detached update helper process spawned outside the Windows Job Object (`CREATE_BREAKAWAY_FROM_JOB` / `DETACHED_PROCESS`).
+- Deterministic shutdown sequencing: Helper polls caller process PID until termination, eliminating file lock conflicts and active UI blocking.
+- Direct elevated installer execution (`runas`) with graceful fallbacks and structured timestamped logging to `%LOCALAPPDATA%\RadioTVStorySegmenter\update.log`.
+- Replaced fragile temporary PowerShell and CMD supervisor scripts.
+- Added comprehensive unit test to `test_runner.py` validating update helper generation, log outputs, and version comparators.
 
 ================================================================================
 3. UPCOMING MILESTONE: COMPREHENSIVE CLOUD & LOCAL BACKUP & RESTORE SYSTEM [PLANNED for v3.8.0]
@@ -148,12 +132,3 @@ DETAILED MILESTONE SPECIFICATIONS
 -----------------------------------------------------------------------------------
 - Integrate with Google Drive API to browse, download, and restore backups directly from cloud storage using custom filenames and SHA-256 integrity hash validation.
 
-================================================================================
-4. UPCOMING MILESTONE: WINDOWS INSTALLER HANDOFF & DETACHED UPDATE HELPER OVERHAUL [PLANNED for v3.8.4]
-================================================================================
-
-[ ] 4.1 Standalone Detached Windows Update Helper Architecture (`updater.py`, `build_installer.py`)
----------------------------------------------------------------------------------------------------
-- Detached update helper process spawned outside the Windows Job Object (`CREATE_BREAKAWAY_FROM_JOB` / `DETACHED_PROCESS`).
-- Deterministic shutdown sequencing: RTVS shuts down cleanly before the installer runs, eliminating file lock conflicts.
-- Elevated execution without console window flashing.

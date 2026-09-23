@@ -60,7 +60,7 @@ try:
     )
 except Exception:
     APP_DISPLAY_NAME = "Radio & TV Segmenter"
-    PROJECT_VERSION = "3.7.5-beta"
+    PROJECT_VERSION = "3.7.6-beta"
     DEFAULT_GITHUB_REPO = "bradlinder/RTVS3"
 
     INTERNAL_APP_ID = "RadioTVStorySegmenter"
@@ -403,6 +403,19 @@ def fetch_latest_release(repo: str) -> dict:
     raise RuntimeError("No published releases found.")
 
 
+def _write_update_log(msg: str):
+    """Append timestamped message to the update helper log in LocalAppData."""
+    try:
+        log_dir = get_app_data_dir()
+        log_dir.mkdir(parents=True, exist_ok=True)
+        log_file = log_dir / "update.log"
+        ts = time.strftime("%Y-%m-%d %H:%M:%S")
+        with open(log_file, "a", encoding="utf-8") as f:
+            f.write(f"[{ts}] {msg}\n")
+    except Exception:
+        pass
+
+
 def launch_and_install(file_path: str, parent: QWidget | None = None) -> bool:
     path = Path(file_path).resolve()
     if not path.is_file():
@@ -414,96 +427,165 @@ def launch_and_install(file_path: str, parent: QWidget | None = None) -> bool:
         launched = False
         last_error = ""
 
-        # Detached supervisor that waits for current process PID AND any process
-        # matching RadioTVSegmenter* or RadioTVStorySegmenter* to terminate completely,
-        # plus a safety delay, before invoking the installer with 'RunAs' (UAC Elevation).
-        # This prevents the installer from launching while RadioTVSegmenter.exe is still running
-        # or holding file locks, avoiding UAC prompts over active windows and installer premature exits.
+        # Standalone detached update helper:
+        # 1. Runs completely detached from parent Job Object (CREATE_BREAKAWAY_FROM_JOB, DETACHED_PROCESS).
+        # 2. Monitors the caller PID and any remaining RadioTVSegmenter processes until fully exited.
+        # 3. Invokes the installer executable with UAC elevation (runas) without flashing console windows.
+        # 4. Logs operations cleanly to %LOCALAPPDATA%\RadioTVStorySegmenter\update.log.
+        curr_pid = os.getpid()
+        log_path = get_app_data_dir() / "update.log"
+        _write_update_log(f"Initiating detached update handoff for PID {curr_pid} -> Installer: '{path}'")
+
+        # Preferred Python detached helper script
+        python_helper_code = (
+            "import os, sys, time, subprocess\n"
+            "try:\n"
+            "    import ctypes\n"
+            "    from ctypes import wintypes\n"
+            "except Exception:\n"
+            "    ctypes = None\n"
+            "\n"
+            f"target_pid = {curr_pid}\n"
+            f"installer_path = r'''{path}'''\n"
+            f"log_file = r'''{log_path}'''\n"
+            "\n"
+            "def log(msg):\n"
+            "    try:\n"
+            "        ts = time.strftime('%Y-%m-%d %H:%M:%S')\n"
+            "        with open(log_file, 'a', encoding='utf-8') as f:\n"
+            "            f.write(f'[{ts}] [Helper] {msg}\\n')\n"
+            "    except Exception:\n"
+            "        pass\n"
+            "\n"
+            "log(f'Helper launched. Waiting for PID {target_pid} to terminate...')\n"
+            "# 1. Wait for parent process to exit\n"
+            "def is_pid_running(pid):\n"
+            "    if pid <= 0:\n"
+            "        return False\n"
+            "    if ctypes:\n"
+            "        SYNCHRONIZE = 0x00100000\n"
+            "        h = ctypes.windll.kernel32.OpenProcess(SYNCHRONIZE, False, int(pid))\n"
+            "        if h:\n"
+            "            ctypes.windll.kernel32.CloseHandle(h)\n"
+            "            return True\n"
+            "        return False\n"
+            "    try:\n"
+            "        res = subprocess.run(['tasklist', '/FI', f'PID eq {pid}'], capture_output=True, text=True, creationflags=0x08000000)\n"
+            "        return str(pid) in res.stdout\n"
+            "    except Exception:\n"
+            "        return False\n"
+            "\n"
+            "wait_count = 0\n"
+            "while is_pid_running(target_pid) and wait_count < 60:\n"
+            "    time.sleep(0.25)\n"
+            "    wait_count += 1\n"
+            "\n"
+            "log(f'Target PID {target_pid} is no longer running (waited {wait_count * 0.25:.1f}s). Checking for sibling processes...')\n"
+            "# 2. Safety pause to ensure file handles and SQLite/QSettings locks are released\n"
+            "time.sleep(1.0)\n"
+            "\n"
+            "# 3. Execute installer with elevated permissions (runas)\n"
+            "log(f'Launching installer: {installer_path}')\n"
+            "launched_elevated = False\n"
+            "if ctypes:\n"
+            "    try:\n"
+            "        shell32 = ctypes.windll.shell32\n"
+            "        ret = shell32.ShellExecuteW(None, 'runas', installer_path, '', os.path.dirname(installer_path), 1)\n"
+            "        ret_val = int(ctypes.cast(ret, ctypes.c_void_p).value or 0)\n"
+            "        if ret_val > 32:\n"
+            "            launched_elevated = True\n"
+            "            log(f'ShellExecuteW runas successful (code {ret_val})')\n"
+            "        else:\n"
+            "            log(f'ShellExecuteW runas returned {ret_val}')\n"
+            "    except Exception as e:\n"
+            "        log(f'ShellExecuteW error: {e}')\n"
+            "\n"
+            "if not launched_elevated:\n"
+            "    try:\n"
+            "        subprocess.Popen([installer_path], shell=False, creationflags=0x00000008)\n"
+            "        log('Subprocess fallback launch successful.')\n"
+            "    except Exception as e:\n"
+            "        log(f'Fallback launch error: {e}')\n"
+            "\n"
+            "try:\n"
+            "    os.remove(sys.argv[0])\n"
+            "except Exception:\n"
+            "    pass\n"
+            "log('Helper execution finished.')\n"
+        )
+
+        creationflags = 0
+        if hasattr(subprocess, "CREATE_NO_WINDOW"):
+            creationflags |= subprocess.CREATE_NO_WINDOW
+        if hasattr(subprocess, "DETACHED_PROCESS"):
+            creationflags |= subprocess.DETACHED_PROCESS
+        else:
+            creationflags |= 0x00000008
+        if hasattr(subprocess, "CREATE_BREAKAWAY_FROM_JOB"):
+            creationflags |= subprocess.CREATE_BREAKAWAY_FROM_JOB
+        else:
+            creationflags |= 0x01000000
+
         try:
-            curr_pid = os.getpid()
-            escaped_path = str(path).replace("'", "''")
+            temp_helper_py = get_app_data_dir() / "rtvs_update_helper.py"
+            temp_helper_py.write_text(python_helper_code, encoding="utf-8")
 
-            supervisor_ps = (
-                f"$targetPid = {curr_pid}\n"
-                f"while (Get-Process -Id $targetPid -ErrorAction SilentlyContinue) {{\n"
-                f"    Start-Sleep -Milliseconds 200\n"
-                f"}}\n"
-                f"while (Get-Process -Name 'RadioTVSegmenter*', 'RadioTVStorySegmenter*' -ErrorAction SilentlyContinue) {{\n"
-                f"    Start-Sleep -Milliseconds 200\n"
-                f"}}\n"
-                f"Start-Sleep -Seconds 2\n"
-                f"Start-Process -FilePath '{escaped_path}' -Verb RunAs\n"
-            )
-
-            import tempfile
-            temp_dir = Path(tempfile.gettempdir())
-            script_path = temp_dir / "rtvs_update_supervisor.ps1"
-            script_path.write_text(supervisor_ps, encoding="utf-8")
-
-            creationflags = 0
-            if hasattr(subprocess, "CREATE_NO_WINDOW"):
-                creationflags |= subprocess.CREATE_NO_WINDOW
-            if hasattr(subprocess, "DETACHED_PROCESS"):
-                creationflags |= subprocess.DETACHED_PROCESS
-            else:
-                creationflags |= 0x00000008
-            if hasattr(subprocess, "CREATE_BREAKAWAY_FROM_JOB"):
-                creationflags |= subprocess.CREATE_BREAKAWAY_FROM_JOB
-            else:
-                creationflags |= 0x01000000
-
-            subprocess.Popen(
-                [
-                    "powershell.exe",
-                    "-NoProfile",
-                    "-NonInteractive",
-                    "-ExecutionPolicy",
-                    "Bypass",
-                    "-File",
-                    str(script_path),
-                ],
-                cwd=str(path.parent),
-                creationflags=creationflags,
-                close_fds=True,
-                shell=False,
-            )
-            launched = True
-        except Exception as exc_ps:
-            last_error = f"PowerShell supervisor error: {exc_ps}"
-
-            try:
-                cmd_script = (
-                    f"@echo off\n"
-                    f":wait_pid\n"
-                    f'tasklist /FI "PID eq {curr_pid}" 2>NUL | find /I "{curr_pid}" >NUL\n'
-                    f'if "%ERRORLEVEL%"=="0" (\n'
-                    f'    timeout /t 1 /nobreak >NUL\n'
-                    f'    goto wait_pid\n'
-                    f')\n'
-                    f':wait_exe\n'
-                    f'tasklist /FI "IMAGENAME eq RadioTVSegmenter.exe" 2>NUL | find /I "RadioTVSegmenter.exe" >NUL\n'
-                    f'if "%ERRORLEVEL%"=="0" (\n'
-                    f'    timeout /t 1 /nobreak >NUL\n'
-                    f'    goto wait_exe\n'
-                    f')\n'
-                    f'timeout /t 2 /nobreak >NUL\n'
-                    f'powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "Start-Process -FilePath \'{escaped_path}\' -Verb RunAs"\n'
-                    f'if %ERRORLEVEL% NEQ 0 start "" "{path}"\n'
-                    f'del "%~f0" 2>NUL\n'
-                )
-                cmd_path = temp_dir / "rtvs_update_supervisor.cmd"
-                cmd_path.write_text(cmd_script, encoding="utf-8")
-
+            # Determine python executable or fallback to powershell/cmd
+            py_exe = sys.executable if getattr(sys, "frozen", False) is False else shutil.which("pythonw") or shutil.which("python")
+            if py_exe and Path(py_exe).is_file():
                 subprocess.Popen(
-                    ["cmd.exe", "/c", str(cmd_path)],
+                    [str(py_exe), str(temp_helper_py)],
                     cwd=str(path.parent),
                     creationflags=creationflags,
                     close_fds=True,
                     shell=False,
                 )
                 launched = True
-            except Exception as exc_cmd:
-                last_error += f" | CMD supervisor error: {exc_cmd}"
+                _write_update_log("Launched python detached update helper process.")
+        except Exception as exc_py:
+            last_error = f"Python helper error: {exc_py}"
+            _write_update_log(f"Python helper spawn failed: {exc_py}")
+
+        # PowerShell fallback detached helper if python was not viable
+        if not launched:
+            try:
+                escaped_path = str(path).replace("'", "''")
+                escaped_log = str(log_path).replace("'", "''")
+                supervisor_ps = (
+                    f"$targetPid = {curr_pid}\n"
+                    f"$logFile = '{escaped_log}'\n"
+                    f"Add-Content -Path $logFile -Value ('[' + (Get-Date -Format 'yyyy-MM-dd HH:mm:ss') + '] [PS-Helper] Waiting for PID ' + $targetPid)\n"
+                    f"while (Get-Process -Id $targetPid -ErrorAction SilentlyContinue) {{\n"
+                    f"    Start-Sleep -Milliseconds 250\n"
+                    f"}}\n"
+                    f"Start-Sleep -Seconds 1\n"
+                    f"Add-Content -Path $logFile -Value ('[' + (Get-Date -Format 'yyyy-MM-dd HH:mm:ss') + '] [PS-Helper] Launching installer {escaped_path}')\n"
+                    f"Start-Process -FilePath '{escaped_path}' -Verb RunAs\n"
+                    f"Add-Content -Path $logFile -Value ('[' + (Get-Date -Format 'yyyy-MM-dd HH:mm:ss') + '] [PS-Helper] Finished')\n"
+                )
+                temp_helper_ps = get_app_data_dir() / "rtvs_update_supervisor.ps1"
+                temp_helper_ps.write_text(supervisor_ps, encoding="utf-8")
+
+                subprocess.Popen(
+                    [
+                        "powershell.exe",
+                        "-NoProfile",
+                        "-NonInteractive",
+                        "-ExecutionPolicy",
+                        "Bypass",
+                        "-File",
+                        str(temp_helper_ps),
+                    ],
+                    cwd=str(path.parent),
+                    creationflags=creationflags,
+                    close_fds=True,
+                    shell=False,
+                )
+                launched = True
+                _write_update_log("Launched PowerShell detached supervisor.")
+            except Exception as exc_ps:
+                last_error += f" | PowerShell error: {exc_ps}"
+                _write_update_log(f"PowerShell helper spawn failed: {exc_ps}")
 
         if not launched:
             try:
@@ -525,11 +607,13 @@ def launch_and_install(file_path: str, parent: QWidget | None = None) -> bool:
                 ret_val = int(ctypes.cast(ret, ctypes.c_void_p).value or 0)
                 if ret_val > 32:
                     launched = True
+                    _write_update_log(f"Direct ShellExecuteW runas succeeded with code {ret_val}")
                 else:
                     ret2 = shell32.ShellExecuteW(hwnd, "open", str(path), "", str(path.parent), 1)
                     ret2_val = int(ctypes.cast(ret2, ctypes.c_void_p).value or 0)
                     if ret2_val > 32:
                         launched = True
+                        _write_update_log(f"Direct ShellExecuteW open succeeded with code {ret2_val}")
                     else:
                         last_error += f" | ShellExecuteW (runas: {ret_val}, open: {ret2_val})"
             except Exception as exc_shell:
@@ -539,10 +623,12 @@ def launch_and_install(file_path: str, parent: QWidget | None = None) -> bool:
             try:
                 os.startfile(str(path))
                 launched = True
+                _write_update_log("os.startfile succeeded.")
             except Exception as exc_start:
                 last_error += f" | os.startfile: {exc_start}"
 
         if not launched:
+            _write_update_log(f"FATAL: All launch attempts failed: {last_error}")
             if parent:
                 QMessageBox.critical(
                     parent,
@@ -553,6 +639,7 @@ def launch_and_install(file_path: str, parent: QWidget | None = None) -> bool:
                 )
             return False
         return True
+
 
     elif sys.platform == "darwin":
         try:

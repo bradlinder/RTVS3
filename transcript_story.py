@@ -1,4 +1,4 @@
-"""Radio & TV Segmenter v3.7.5-beta — transcript story responsibilities.
+"""Radio & TV Segmenter v3.7.6-beta — transcript story responsibilities.
 
 Methods intentionally retain the MainWindow-facing API so behavior remains
 maintaining the established MainWindow-facing API while responsibilities are isolated.
@@ -2023,6 +2023,10 @@ class TranscriptStoryMixin:
                 f"from confirmed turn #{seg_idx + 1} ({len(self._session_speaker_profiles[name])} sample(s)).",
                 mark_dirty=False,
             )
+
+    def register_confirmed_speaker_sample(self, seg_idx: int, speaker_name: str):
+        """Alias for register_confirmed_speaker_turn."""
+        self.register_confirmed_speaker_turn(seg_idx, speaker_name)
 
     def refine_speaker_run_between_confirmed_anchors(
         self, start_idx: int, end_idx: int, spk_a: str, spk_b: str

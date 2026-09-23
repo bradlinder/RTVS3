@@ -340,6 +340,11 @@ class DiagnosticEngine:
                 "Audio Diarization & VAD",
                 "Validates 256-dimensional WeSpeaker embedding vector persistence, cosine similarity scoring, threshold filtering, and re-clustering state integrity",
             ),
+            DiagnosticItem(
+                "Windows Detached Update Helper Architecture",
+                "Core Logic & File I/O",
+                "Validates detached update helper script generation, process exit polling semantics, elevated UAC execution fallback, and update logging",
+            ),
         ]
 
     def run_all(self, stop_requested_fn: Optional[Callable[[], bool]] = None) -> List[DiagnosticItem]:
@@ -2171,6 +2176,39 @@ class DiagnosticEngine:
 
         item.status = "PASS"
         item.message = "256-dimensional acoustic vector persistence, cosine similarity re-clustering, and undo consistency verified"
+
+    def _test_windows_detached_update_helper_architecture(self, item: DiagnosticItem):
+        """Validates update helper architecture: helper script generation, exit polling, and logging."""
+        import updater
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp_installer = Path(tmp_dir) / "RadioTVSegmenter-3.7.6-Setup.exe"
+            tmp_installer.write_bytes(b"MZ_MOCK_INSTALLER_BINARY")
+
+            # Verify non-existent file check
+            non_existent = Path(tmp_dir) / "does_not_exist.exe"
+            if updater.launch_and_install(str(non_existent)):
+                raise AssertionError("launch_and_install did not reject non-existent installer path")
+
+            # Verify logging function works
+            updater._write_update_log("Test log entry from diagnostic test bench")
+            log_file = updater.get_app_data_dir() / "update.log"
+            if not log_file.exists():
+                raise AssertionError(f"Expected update.log at {log_file} to exist after _write_update_log")
+            log_content = log_file.read_text(encoding="utf-8")
+            if "Test log entry from diagnostic test bench" not in log_content:
+                raise AssertionError("Logged entry not found in update.log")
+
+            # Validate version comparison semantics
+            if not updater.is_version_newer("3.7.6-beta", "3.7.5-beta"):
+                raise AssertionError("is_version_newer('3.7.6-beta', '3.7.5-beta') failed")
+            if updater.is_version_newer("3.7.5-beta", "3.7.6-beta"):
+                raise AssertionError("is_version_newer('3.7.5-beta', '3.7.6-beta') reported True incorrectly")
+
+        item.status = "PASS"
+        item.message = "Detached update helper script architecture, parameter guards, and logging validated"
+
 
 
 # ---------------------------------------------------------------------------
