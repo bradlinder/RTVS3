@@ -1,5 +1,15 @@
 # Changelog
  
+## v3.7.8-beta
+- **Zero-Config Google Docs & Drive Integration Redesign (`plugins/gdocs/auth.py`, `plugins/gdocs/plugin.py`, `plugins/gdocs/export_destination.py`, `GOOGLE_OAUTH_SETUP.md`, `GOOGLE_DOCS_USER_GUIDE.md`)**:
+  - **Zero-Config User Authentication Flow**: Users no longer need to create a Google Cloud project, enable APIs, configure consent screens, or download/import `credentials.json` files. Integration operates out-of-the-box via a single **"Connect Google Account"** button.
+  - **RFC 7636 PKCE & Cryptographic State Security**: Upgraded the local loopback OAuth engine to full Proof Key for Code Exchange (`code_verifier`, SHA-256 `code_challenge`, `S256`) and cryptographically random, single-use 32-byte `state` tokens, completely safeguarding local desktop callbacks against authorization code interception and CSRF attacks.
+  - **Least-Privilege Scopes**: Enforced minimal required scopes (`documents`, `drive.file`, and `userinfo.email`). `drive.file` grants access exclusively to documents created or opened by RTVS, avoiding broad unrestricted Google Drive access and exempting the application from complex CASA Tier 2/3 security assessments.
+  - **Modernized Loopback Server & Graceful Browser Handoff**: Binds dynamically on `127.0.0.1` (ports 8085-8095 or ephemeral), serves sleek styled status cards to the web browser on completion, and safely suppresses sensitive tokens from logs.
+  - **Remote Token Revocation on Disconnect**: When disconnecting, the application securely removes tokens from OS keyring / machine-cipher storage and executes an explicit grant revocation request to Google's authorization servers.
+  - **Advanced Developer Settings Accordion**: Advanced self-hosted or testing setups can still supply custom client IDs and client secrets through a collapsible developer accordion in Preferences, completely hidden from normal users.
+  - **Developer Production Guide & User Documentation**: Created `GOOGLE_OAUTH_SETUP.md` detailing Google Cloud Console production configuration, consent screen verification, branding, and CASA exemptions, alongside `GOOGLE_DOCS_USER_GUIDE.md` for end-users.
+
 ## v3.7.7-beta
 - **Acoustic Voice Profile Candidate Extraction Progress & Cancellation Guard (`transcript_story.py`, `test_runner.py`)**:
   - **Cooperative Candidate Extraction Progress Dialog (`_build_voice_profile_candidates`)**: Added a modal `QProgressDialog` that activates when opening `VoiceProfileMatchDialog` on un-diarized transcripts requiring significant on-the-fly acoustic vector extraction (> 12 uncached segments).

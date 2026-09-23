@@ -345,6 +345,11 @@ class DiagnosticEngine:
                 "Core Logic & File I/O",
                 "Validates detached update helper script generation, process exit polling semantics, elevated UAC execution fallback, and update logging",
             ),
+            DiagnosticItem(
+                "Google Docs OAuth and PKCE Security",
+                "Plugin Architecture & Sandboxing",
+                "Validates PKCE pair generation, cryptographic state tokens, zero-config public client credentials, and callback state verification",
+            ),
         ]
 
     def run_all(self, stop_requested_fn: Optional[Callable[[], bool]] = None) -> List[DiagnosticItem]:
@@ -2227,6 +2232,92 @@ class DiagnosticEngine:
 
         item.status = "PASS"
         item.message = "Detached update helper script architecture, parameter guards, and logging validated"
+
+    def _test_google_docs_oauth_and_pkce_security(self, item: DiagnosticItem):
+        """Validates OAuth 2.0 PKCE, CSRF state protection, and zero-config public client architecture."""
+        import base64
+        import hashlib
+        import json
+        from plugins.gdocs.auth import (
+            generate_pkce_pair,
+            generate_oauth_state,
+            GoogleDocsAuthManager,
+            parse_google_credentials_json,
+            _encrypt_str,
+            _decrypt_str,
+            DEFAULT_CLIENT_ID,
+            DEFAULT_SCOPES,
+        )
+
+        # 1. Test PKCE pair generation (RFC 7636)
+        verifier, challenge = generate_pkce_pair()
+        if not verifier or len(verifier) < 43:
+            raise AssertionError(f"PKCE code_verifier too short: {len(verifier)} chars")
+        if not challenge or len(challenge) < 43:
+            raise AssertionError(f"PKCE code_challenge too short: {len(challenge)} chars")
+
+        # Verify challenge matches SHA-256 of verifier base64url encoded
+        expected_digest = hashlib.sha256(verifier.encode("ascii")).digest()
+        expected_challenge = base64.urlsafe_b64encode(expected_digest).decode("ascii").rstrip("=")
+        if challenge != expected_challenge:
+            raise AssertionError("PKCE code_challenge does not match S256(code_verifier)")
+
+        # Verify successive pairs are unique (cryptographic entropy)
+        v2, c2 = generate_pkce_pair()
+        if verifier == v2 or challenge == c2:
+            raise AssertionError("PKCE pairs generated duplicate values (entropy failure)")
+
+        # 2. Test Cryptographic OAuth State generation (CSRF protection)
+        state1 = generate_oauth_state()
+        state2 = generate_oauth_state()
+        if not state1 or len(state1) < 32:
+            raise AssertionError("OAuth state token does not meet minimum length requirement")
+        if state1 == state2:
+            raise AssertionError("OAuth state tokens collided")
+
+        # 3. Test Machine-Bound String Encryption Fallback
+        test_secret = "test-secret-12345-!@#$%^"
+        enc = _encrypt_str(test_secret)
+        if not enc or enc == test_secret:
+            raise AssertionError("Encryption returned unencrypted or empty payload")
+        dec = _decrypt_str(enc)
+        if dec != test_secret:
+            raise AssertionError(f"Decrypted string '{dec}' did not match original '{test_secret}'")
+
+        # 4. Test Zero-Config Credentials Architecture
+        mgr = GoogleDocsAuthManager()
+        cid, csec = mgr.get_client_credentials()
+        if not cid:
+            raise AssertionError("Default Client ID is missing or empty")
+        if not DEFAULT_CLIENT_ID:
+            raise AssertionError("DEFAULT_CLIENT_ID constant is empty")
+
+        # Scopes verification: must be least-privilege
+        if "https://www.googleapis.com/auth/drive" in DEFAULT_SCOPES:
+            raise AssertionError("Over-privileged unrestricted 'drive' scope requested! Must use 'drive.file'")
+        if "https://www.googleapis.com/auth/drive.file" not in DEFAULT_SCOPES:
+            raise AssertionError("Missing required 'drive.file' scope")
+        if "https://www.googleapis.com/auth/documents" not in DEFAULT_SCOPES:
+            raise AssertionError("Missing required 'documents' scope")
+
+        # 5. Test Credentials JSON Parser
+        sample_installed_json = json.dumps({
+            "installed": {
+                "client_id": "test-client-id.apps.googleusercontent.com",
+                "client_secret": "test-secret-value",
+                "project_id": "test-project-123",
+                "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                "token_uri": "https://oauth2.googleapis.com/token",
+            }
+        })
+        p_cid, p_csec, p_proj = parse_google_credentials_json(sample_installed_json)
+        if p_cid != "test-client-id.apps.googleusercontent.com":
+            raise AssertionError(f"parse_google_credentials_json parsed client_id '{p_cid}' incorrectly")
+        if p_csec != "test-secret-value":
+            raise AssertionError(f"parse_google_credentials_json parsed client_secret '{p_csec}' incorrectly")
+
+        item.status = "PASS"
+        item.message = "RFC 7636 PKCE pairs, cryptographic state tokens, zero-config credentials, and least-privilege scopes verified"
 
 
 

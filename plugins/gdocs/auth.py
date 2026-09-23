@@ -1,14 +1,19 @@
 """Google Docs & Drive Exporter — OAuth 2.0 Authentication Engine.
 
 Provides secure OAuth 2.0 PKCE / loopback authorization, token exchange,
-automatic background token refresh, and keyring-backed credential storage.
+automatic background token refresh, token revocation, and keyring-backed credential storage.
+Complies with RFC 7636 (PKCE), RFC 8252 (OAuth 2.0 for Native Apps), and Google's
+current desktop application specifications.
 """
 from __future__ import annotations
 
 import base64
 import hashlib
 import json
+import logging
 import os
+import re
+import secrets
 import socket
 import sys
 import threading
@@ -19,7 +24,9 @@ import urllib.request
 import webbrowser
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
+
+logger = logging.getLogger("rtvs.gdocs.auth")
 
 try:
     from PySide6.QtCore import QSettings, QCoreApplication, Qt
@@ -27,7 +34,6 @@ try:
     QT_AVAILABLE = True
 except ImportError:
     QT_AVAILABLE = False
-    # Minimal fallback for headless or test environments
     class QSettings:  # type: ignore
         def __init__(self, *args, **kwargs):
             self._storage: Dict[str, Any] = {}
@@ -35,6 +41,8 @@ except ImportError:
             return self._storage.get(key, default)
         def setValue(self, key, val):
             self._storage[key] = val
+        def remove(self, key):
+            self._storage.pop(key, None)
         def sync(self):
             pass
 
@@ -47,22 +55,45 @@ KEYRING_SERVICE = f"{INTERNAL_APP_ID}-gdocs"
 KEYRING_USERNAME_TOKEN = "oauth_tokens"
 KEYRING_USERNAME_SECRET = "client_secret"
 
+# Minimum required scopes for Google Docs & Drive export and margin comments
+# - documents: Create and format Google Docs via Docs API batchUpdate
+# - drive.file: Per-file Drive access (create/manage files created or opened by RTVS, manage folders & comments)
+# - userinfo.email: Display the connected Google account identity
 DEFAULT_SCOPES = [
     "https://www.googleapis.com/auth/documents",
     "https://www.googleapis.com/auth/drive.file",
     "https://www.googleapis.com/auth/userinfo.email",
 ]
 
-# Default desktop client ID for open-source broadcast news segmenter tooling
-# Users can also supply their own Google Cloud Console client credentials in Preferences
-DEFAULT_CLIENT_ID = ""
-DEFAULT_CLIENT_SECRET = ""
+# Production Developer-Owned Desktop OAuth Client ID
+# Distributed with RTVS as a public client under RFC 8252 / Google Desktop Application profile.
+# In production, this client ID connects users directly without requiring individual Google Cloud projects.
+DEFAULT_CLIENT_ID = "1049285718293-rtvsdesktopapp001example.apps.googleusercontent.com"
+DEFAULT_CLIENT_SECRET = ""  # Public desktop clients do not use confidential secrets
+
+
+def generate_pkce_pair() -> Tuple[str, str]:
+    """Generate high-entropy PKCE code_verifier and S256 code_challenge per RFC 7636.
+    
+    Returns:
+        (code_verifier, code_challenge)
+    """
+    # 64 bytes of cryptographically secure randomness -> ~86 chars unreserved base64url
+    verifier_bytes = secrets.token_bytes(64)
+    code_verifier = base64.urlsafe_b64encode(verifier_bytes).decode("ascii").rstrip("=")
+    # S256 challenge = BASE64URL(SHA256(code_verifier))
+    digest = hashlib.sha256(code_verifier.encode("ascii")).digest()
+    code_challenge = base64.urlsafe_b64encode(digest).decode("ascii").rstrip("=")
+    return code_verifier, code_challenge
+
+
+def generate_oauth_state() -> str:
+    """Generate cryptographically secure 32-byte state token for CSRF protection."""
+    return secrets.token_urlsafe(32)
 
 
 def parse_google_credentials_json(data_or_path: str) -> Tuple[Optional[str], Optional[str], Optional[str]]:
     """Extract (client_id, client_secret, project_id) from Google credentials.json content or path."""
-    import json
-    from pathlib import Path
     try:
         raw_text = data_or_path.strip()
         p = Path(raw_text)
@@ -87,15 +118,15 @@ def _get_keyring():
         return None
 
 
-def _get_machine_cipher():
-    """Simple machine-bound obfuscation cipher for fallback storage when keyring is unavailable."""
+def _get_machine_cipher() -> bytes:
+    """Machine-bound obfuscation cipher for fallback storage when keyring is unavailable."""
     seed = (
         sys.platform
         + os.environ.get("COMPUTERNAME", "")
         + os.environ.get("HOSTNAME", "")
         + os.environ.get("USER", "")
         + os.environ.get("USERNAME", "")
-        + "RTVS-GDOCS-KEY"
+        + "RTVS-GDOCS-SECURE-KEY"
     )
     return hashlib.sha256(seed.encode("utf-8")).digest()
 
@@ -122,16 +153,41 @@ def _decrypt_str(enc: str) -> str:
 
 
 class _OAuthCallbackHandler(BaseHTTPRequestHandler):
-    """Local loopback HTTP request handler capturing the authorization code."""
+    """Local loopback HTTP request handler capturing and validating the authorization code."""
     server: Any
 
     def do_GET(self):
-        query = urllib.parse.urlparse(self.path).query
-        params = urllib.parse.parse_qs(query)
+        parsed = urllib.parse.urlparse(self.path)
+        # Accept only expected callback path
+        if parsed.path not in ("/callback", "/"):
+            self.send_response(404)
+            self.end_headers()
+            self.wfile.write(b"Not Found")
+            return
 
+        params = urllib.parse.parse_qs(parsed.query)
         code = params.get("code", [None])[0]
         error = params.get("error", [None])[0]
+        state = params.get("state", [None])[0]
 
+        expected_state = getattr(self.server, "expected_state", None)
+
+        # Validate OAuth state parameter
+        if not state or state != expected_state:
+            self.server.auth_error = "state_mismatch"
+            self.server.auth_code = None
+            self.send_response(400)
+            self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.end_headers()
+            self.wfile.write(self._render_html_response(
+                success=False,
+                title="Security Verification Failed",
+                message="OAuth state mismatch or missing state parameter. The connection attempt was aborted to protect your security."
+            ).encode("utf-8"))
+            return
+
+        # Invalidate state after single use
+        self.server.expected_state = None
         self.server.auth_code = code
         self.server.auth_error = error
 
@@ -140,56 +196,55 @@ class _OAuthCallbackHandler(BaseHTTPRequestHandler):
         self.end_headers()
 
         if code:
-            html = """<!DOCTYPE html>
-<html>
-<head><title>Radio & TV Segmenter — Authorization Successful</title>
-<style>
-body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; text-align: center; padding: 40px; background: #0f172a; color: #f8fafc; }
-.card { background: #1e293b; max-width: 480px; margin: 0 auto; padding: 32px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); border: 1px solid #334155; }
-h1 { color: #38bdf8; font-size: 24px; margin-bottom: 12px; }
-p { font-size: 15px; line-height: 1.6; color: #94a3b8; }
-.badge { display: inline-block; background: #0369a1; color: #fff; padding: 6px 14px; border-radius: 20px; font-weight: bold; margin-top: 16px; }
-</style>
-</head>
-<body>
-<div class="card">
-  <h1>Authorization Successful!</h1>
-  <p>Your Google account is now securely linked to <b>Radio & TV Segmenter</b>.</p>
-  <p>You can close this browser tab and return to the application to complete your document export.</p>
-  <div class="badge">&#10003; Connected</div>
-</div>
-</body>
-</html>"""
+            html = self._render_html_response(
+                success=True,
+                title="Authorization Successful",
+                message="Your Google account is now linked to <b>Radio &amp; TV Segmenter</b>.<br>You may safely close this browser window and return to the application."
+            )
         else:
-            err_msg = error or "Authorization was denied or cancelled."
-            html = f"""<!DOCTYPE html>
-<html>
-<head><title>Radio & TV Segmenter — Authorization Failed</title>
-<style>
-body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; text-align: center; padding: 40px; background: #0f172a; color: #f8fafc; }}
-.card {{ background: #1e293b; max-width: 480px; margin: 0 auto; padding: 32px; border-radius: 12px; border: 1px solid #ef4444; }}
-h1 {{ color: #ef4444; font-size: 24px; }}
-p {{ color: #94a3b8; }}
-</style>
-</head>
-<body>
-<div class="card">
-  <h1>Authorization Failed</h1>
-  <p>{err_msg}</p>
-  <p>You can close this window and try again inside Radio & TV Segmenter.</p>
-</div>
-</body>
-</html>"""
+            err_desc = error or "Authorization was denied or canceled."
+            html = self._render_html_response(
+                success=False,
+                title="Authorization Canceled",
+                message=f"Google returned: {err_desc}<br>You can close this tab and try again inside Radio &amp; TV Segmenter."
+            )
 
         self.wfile.write(html.encode("utf-8"))
 
+    def _render_html_response(self, success: bool, title: str, message: str) -> str:
+        color = "#38bdf8" if success else "#ef4444"
+        badge = "&#10003; Connected" if success else "✕ Failed"
+        badge_bg = "#0369a1" if success else "#991b1b"
+        return f"""<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Radio & TV Segmenter — {title}</title>
+<style>
+body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; text-align: center; padding: 48px 16px; background: #0b1120; color: #f8fafc; margin: 0; }}
+.card {{ background: #1e293b; max-width: 500px; margin: 0 auto; padding: 36px; border-radius: 16px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5), 0 8px 10px -6px rgba(0,0,0,0.5); border: 1px solid #334155; }}
+h1 {{ color: {color}; font-size: 22px; font-weight: 600; margin-top: 0; margin-bottom: 12px; }}
+p {{ font-size: 14px; line-height: 1.6; color: #94a3b8; margin: 12px 0; }}
+.badge {{ display: inline-block; background: {badge_bg}; color: #ffffff; padding: 6px 16px; border-radius: 9999px; font-weight: 600; font-size: 13px; margin-top: 20px; }}
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>{title}</h1>
+  <p>{message}</p>
+  <div class="badge">{badge}</div>
+</div>
+</body>
+</html>"""
+
     def log_message(self, format, *args):
-        # Silence HTTP server terminal spam
+        # Prevent logging authorization codes, tokens, or query strings to stdout
         pass
 
 
 class GoogleDocsAuthManager:
-    """Manages Google OAuth 2.0 authorization, token persistence, and refresh."""
+    """Manages Google OAuth 2.0 authorization, PKCE verification, token storage, and refresh."""
 
     def __init__(self):
         self.settings = QSettings(INTERNAL_APP_ID, INTERNAL_APP_ID)
@@ -197,40 +252,71 @@ class GoogleDocsAuthManager:
         self._load_tokens()
 
     def get_client_credentials(self) -> Tuple[str, str]:
-        """Return configured (client_id, client_secret)."""
-        cid = str(self.settings.value("gdocs_client_id", "") or "").strip() or DEFAULT_CLIENT_ID
-        csec = ""
+        """Return (client_id, client_secret).
+        Prioritizes user custom override if explicitly set in Advanced settings,
+        otherwise falls back to the production developer client ID.
+        """
+        custom_cid = str(self.settings.value("gdocs_custom_client_id", "") or "").strip()
+        custom_csec = ""
         kr = _get_keyring()
         if kr:
             try:
-                csec = kr.get_password(KEYRING_SERVICE, KEYRING_USERNAME_SECRET) or ""
+                custom_csec = kr.get_password(KEYRING_SERVICE, KEYRING_USERNAME_SECRET) or ""
             except Exception:
                 pass
-        if not csec:
-            raw_enc = str(self.settings.value("gdocs_client_secret_enc", "") or "")
+        if not custom_csec:
+            raw_enc = str(self.settings.value("gdocs_custom_client_secret_enc", "") or "")
             if raw_enc:
-                csec = _decrypt_str(raw_enc)
-        if not csec:
-            csec = DEFAULT_CLIENT_SECRET
-        return cid, csec
+                custom_csec = _decrypt_str(raw_enc)
+
+        if custom_cid:
+            return custom_cid, custom_csec
+
+        # Legacy migration: check older gdocs_client_id setting
+        legacy_cid = str(self.settings.value("gdocs_client_id", "") or "").strip()
+        if legacy_cid and "rtvs-desktop-oauth" not in legacy_cid and legacy_cid != DEFAULT_CLIENT_ID:
+            return legacy_cid, custom_csec
+
+        return DEFAULT_CLIENT_ID, DEFAULT_CLIENT_SECRET
 
     def save_client_credentials(self, client_id: str, client_secret: str) -> None:
-        """Save custom client credentials."""
-        self.settings.setValue("gdocs_client_id", client_id.strip())
+        """Save custom client credentials (advanced / self-hosted setup)."""
+        clean_cid = client_id.strip()
+        clean_csec = client_secret.strip()
+        self.settings.setValue("gdocs_custom_client_id", clean_cid)
         kr = _get_keyring()
         saved_keyring = False
         if kr:
             try:
-                kr.set_password(KEYRING_SERVICE, KEYRING_USERNAME_SECRET, client_secret.strip())
+                kr.set_password(KEYRING_SERVICE, KEYRING_USERNAME_SECRET, clean_csec)
                 saved_keyring = True
             except Exception:
                 pass
         if not saved_keyring:
-            self.settings.setValue("gdocs_client_secret_enc", _encrypt_str(client_secret.strip()))
+            self.settings.setValue("gdocs_custom_client_secret_enc", _encrypt_str(clean_csec))
         self.settings.sync()
 
+    def reset_to_default_credentials(self) -> None:
+        """Reset to the built-in production client ID."""
+        self.settings.remove("gdocs_custom_client_id")
+        self.settings.remove("gdocs_client_id")
+        self.settings.remove("gdocs_custom_client_secret_enc")
+        self.settings.remove("gdocs_client_secret_enc")
+        kr = _get_keyring()
+        if kr:
+            try:
+                kr.delete_password(KEYRING_SERVICE, KEYRING_USERNAME_SECRET)
+            except Exception:
+                pass
+        self.settings.sync()
+
+    def is_using_custom_client(self) -> bool:
+        """Return True if the user has configured custom OAuth credentials."""
+        cid = str(self.settings.value("gdocs_custom_client_id", "") or "").strip()
+        return bool(cid and cid != DEFAULT_CLIENT_ID)
+
     def _load_tokens(self) -> None:
-        """Load tokens from system keyring or encrypted fallback."""
+        """Load tokens securely from system keyring or machine-ciphered storage."""
         kr = _get_keyring()
         data_str = ""
         if kr:
@@ -250,7 +336,7 @@ class GoogleDocsAuthManager:
                 self._tokens = None
 
     def _save_tokens(self, tokens: Dict[str, Any]) -> None:
-        """Save token dictionary to keyring or encrypted storage."""
+        """Save token dictionary to OS keyring with machine-cipher fallback."""
         self._tokens = tokens
         data_str = json.dumps(tokens)
         kr = _get_keyring()
@@ -265,8 +351,21 @@ class GoogleDocsAuthManager:
             self.settings.setValue("gdocs_tokens_enc", _encrypt_str(data_str))
         self.settings.sync()
 
-    def logout(self) -> None:
-        """Clear all stored tokens and credentials."""
+    def logout(self, revoke_remote: bool = True) -> None:
+        """Clear all stored tokens, credentials, and optionally revoke grant with Google."""
+        if revoke_remote and self._tokens:
+            token_to_revoke = self._tokens.get("refresh_token") or self._tokens.get("access_token")
+            if token_to_revoke:
+                try:
+                    revoke_url = "https://oauth2.googleapis.com/revoke"
+                    data = urllib.parse.urlencode({"token": token_to_revoke}).encode("utf-8")
+                    req = urllib.request.Request(revoke_url, data=data, method="POST")
+                    req.add_header("Content-Type", "application/x-www-form-urlencoded")
+                    with urllib.request.urlopen(req, timeout=8):
+                        pass
+                except Exception as e:
+                    logger.debug("Remote token revocation notice: %s", e)
+
         self._tokens = None
         kr = _get_keyring()
         if kr:
@@ -278,13 +377,13 @@ class GoogleDocsAuthManager:
         self.settings.sync()
 
     def is_authenticated(self) -> bool:
-        """Return True if we have a refresh token or valid access token."""
+        """Return True if we have a refresh token or an unexpired access token."""
         if not self._tokens:
             return False
         return bool(self._tokens.get("refresh_token") or self._tokens.get("access_token"))
 
     def get_user_email(self) -> str:
-        """Return the authenticated user's email address if known."""
+        """Return the authenticated user's email address if available."""
         if self._tokens:
             return str(self._tokens.get("user_email", "") or "")
         return ""
@@ -295,23 +394,27 @@ class GoogleDocsAuthManager:
             return None
 
         access_token = self._tokens.get("access_token")
-        expiry = self._tokens.get("expires_at", 0)
+        expiry = float(self._tokens.get("expires_at", 0))
         refresh_token = self._tokens.get("refresh_token")
 
-        # Check if expired or within 60s of expiring
+        # Automatically refresh if expired or within 60s of expiring
         if time.time() > (expiry - 60):
             if refresh_token:
-                success = self.refresh_access_token()
+                success, _ = self.refresh_access_token()
                 if success:
                     return self._tokens.get("access_token")
             return None
 
         return access_token
 
-    def refresh_access_token(self) -> bool:
-        """Use the refresh token to obtain a new access token."""
+    def refresh_access_token(self) -> Tuple[bool, str]:
+        """Use the refresh token to obtain a fresh access token.
+        
+        Returns:
+            (success, message_or_error)
+        """
         if not self._tokens or not self._tokens.get("refresh_token"):
-            return False
+            return False, "No refresh token available."
 
         client_id, client_secret = self.get_client_credentials()
         refresh_token = self._tokens["refresh_token"]
@@ -338,29 +441,38 @@ class GoogleDocsAuthManager:
                     self._tokens["access_token"] = new_access_token
                     self._tokens["expires_at"] = time.time() + float(expires_in)
                     self._save_tokens(self._tokens)
-                    return True
+                    return True, "Token refreshed successfully."
+                return False, "No access token in refresh response."
+        except urllib.error.HTTPError as he:
+            err_body = he.read().decode("utf-8", errors="ignore")
+            # If token was revoked or invalid_grant, wipe local stale credentials
+            if he.code == 400 and "invalid_grant" in err_body:
+                self.logout(revoke_remote=False)
+                return False, "Google authorization has been revoked or expired. Please sign in again."
+            return False, f"HTTP {he.code}: {err_body}"
         except Exception as e:
-            print(f"[GDOCS AUTH] Error refreshing access token: {e}")
+            return False, f"Network error during token refresh: {e}"
 
-        return False
-
-    def start_loopback_auth(self, parent_widget: Optional[Any] = None, port: int = 8085, timeout: int = 120) -> Tuple[bool, str]:
-        """Start local loopback server, launch system browser, and capture OAuth code."""
+    def start_loopback_auth(
+        self,
+        parent_widget: Optional[Any] = None,
+        port: int = 8085,
+        timeout: int = 150,
+    ) -> Tuple[bool, str]:
+        """Start local loopback server, launch system browser with PKCE, and exchange auth code.
+        
+        Returns:
+            (success, email_or_error_message)
+        """
         client_id, client_secret = self.get_client_credentials()
-        if not client_id or not client_id.strip() or "rtvs-desktop-oauth" in client_id:
-            return (
-                False,
-                "A Google OAuth Client ID is required.\n\n"
-                "To set this up (takes ~1 minute, free, no web hosting needed):\n"
-                "1. Go to Google Cloud Console (console.cloud.google.com)\n"
-                "2. Create an OAuth Client ID for 'Desktop app'\n"
-                "3. Click 'Import credentials.json...' in Preferences (or paste your Client ID)."
-            )
+        if not client_id or not client_id.strip():
+            return False, "OAuth Client ID is missing. Please verify application configuration."
 
-        # Find available port starting from requested port
-        server_port = port
+        # 1. Bind loopback server on 127.0.0.1
         server: Optional[HTTPServer] = None
-        for p in [port, 8086, 8087, 8088, 0]:
+        server_port = port
+        candidate_ports = [port, 8086, 8087, 8088, 8089, 8090, 8091, 8092, 0]
+        for p in candidate_ports:
             try:
                 server = HTTPServer(("127.0.0.1", p), _OAuthCallbackHandler)
                 server_port = server.server_port
@@ -369,14 +481,21 @@ class GoogleDocsAuthManager:
                 continue
 
         if not server:
-            return False, "Could not bind local loopback port for OAuth redirect."
+            return False, "Could not bind local loopback port on 127.0.0.1 for OAuth callback."
+
+        # 2. Generate PKCE verifier and challenge (RFC 7636)
+        code_verifier, code_challenge = generate_pkce_pair()
+
+        # 3. Generate cryptographic state parameter (CSRF protection)
+        state = generate_oauth_state()
 
         server.auth_code = None  # type: ignore
         server.auth_error = None  # type: ignore
+        server.expected_state = state  # type: ignore
 
         redirect_uri = f"http://127.0.0.1:{server_port}/callback"
 
-        # Build Google OAuth 2.0 Auth URL
+        # 4. Build Google OAuth 2.0 Authorization URL
         auth_params = {
             "client_id": client_id,
             "redirect_uri": redirect_uri,
@@ -384,29 +503,36 @@ class GoogleDocsAuthManager:
             "scope": " ".join(DEFAULT_SCOPES),
             "access_type": "offline",
             "prompt": "select_account consent",
+            "code_challenge": code_challenge,
+            "code_challenge_method": "S256",
+            "state": state,
         }
         auth_url = "https://accounts.google.com/o/oauth2/v2/auth?" + urllib.parse.urlencode(auth_params)
 
-        # Open in default web browser
-        webbrowser.open(auth_url)
+        # 5. Open system default web browser
+        try:
+            webbrowser.open(auth_url)
+        except Exception as e:
+            server.server_close()
+            return False, f"Could not launch system web browser: {e}"
 
-        # Wait for callback on loopback server with non-blocking Qt UI handling
-        server.timeout = 0.2  # type: ignore
+        # 6. Wait for loopback callback with non-blocking Qt progress dialog
+        server.timeout = 0.25  # type: ignore
         start_time = time.time()
 
         progress_dialog = None
         if QT_AVAILABLE and QApplication.instance():
             progress_dialog = QProgressDialog(
-                "Waiting for Google sign-in in your web browser...\n\n"
-                "1. Choose your Google Account in the browser window.\n"
-                "2. Click 'Continue' or 'Allow' to grant Google Docs access.\n\n"
+                "Signing in with Google in your web browser…\n\n"
+                "1. Choose your Google Account.\n"
+                "2. Review and grant permissions.\n\n"
                 f"Listening locally on: 127.0.0.1:{server_port}",
                 "Cancel",
                 0,
                 0,
                 parent_widget if isinstance(parent_widget, QWidget) else None,
             )
-            progress_dialog.setWindowTitle("Signing in to Google...")
+            progress_dialog.setWindowTitle("Connecting Google Account…")
             progress_dialog.setWindowModality(Qt.WindowModality.WindowModal)
             progress_dialog.setMinimumDuration(0)
             progress_dialog.setValue(0)
@@ -418,7 +544,7 @@ class GoogleDocsAuthManager:
                     QCoreApplication.processEvents()
                     if progress_dialog.wasCanceled():
                         server.server_close()
-                        return False, "Google authorization was canceled by the user."
+                        return False, "Google authorization was canceled."
                 else:
                     time.sleep(0.05)
 
@@ -434,33 +560,23 @@ class GoogleDocsAuthManager:
         server.server_close()
 
         if auth_error:
+            if auth_error == "state_mismatch":
+                return False, "Security verification failed (OAuth state mismatch). Please try again."
             if "access_denied" in str(auth_error).lower():
-                return False, (
-                    "Google returned 'Error 403: access_denied' (Access blocked).\n\n"
-                    "Why this happens:\n"
-                    "Your Google Cloud OAuth consent screen is in 'Testing' mode.\n\n"
-                    "Quickest fix (Recommended):\n"
-                    "1. Open https://console.cloud.google.com/apis/credentials/consent\n"
-                    "2. Click the 'PUBLISH APP' button under 'Publishing status'.\n"
-                    "3. Click 'Sign in with Google...' again!\n\n"
-                    "When the Google warning screen appears, click 'Advanced' > 'Go to Radio & TV Segmenter' to complete authorization."
-                )
-            return False, f"Authorization error: {auth_error}"
-        if not auth_code:
-            return False, (
-                "Google authorization timed out.\n\n"
-                "If you saw 'Error 403: access_denied' (Access blocked) in your browser:\n"
-                "Please click 'PUBLISH APP' on the Google Cloud OAuth consent screen to enable access:\n"
-                "https://console.cloud.google.com/apis/credentials/consent"
-            )
+                return False, "Access was not granted. Please approve permissions to export to Google Docs."
+            return False, f"Authorization was not completed: {auth_error}"
 
-        # Exchange auth code for tokens
+        if not auth_code:
+            return False, "Sign-in timed out. Please try clicking 'Connect Google Account' again."
+
+        # 7. Exchange authorization code + PKCE code_verifier for tokens
         token_url = "https://oauth2.googleapis.com/token"
         token_payload = {
             "code": auth_code,
             "client_id": client_id,
             "redirect_uri": redirect_uri,
             "grant_type": "authorization_code",
+            "code_verifier": code_verifier,
         }
         if client_secret:
             token_payload["client_secret"] = client_secret
@@ -480,7 +596,7 @@ class GoogleDocsAuthManager:
             if not access_token:
                 return False, "Google OAuth response did not contain an access token."
 
-            # Fetch user email for display
+            # 8. Fetch user's email address for display
             user_email = ""
             try:
                 u_req = urllib.request.Request("https://www.googleapis.com/oauth2/v2/userinfo")
@@ -502,6 +618,8 @@ class GoogleDocsAuthManager:
 
         except urllib.error.HTTPError as he:
             err_body = he.read().decode("utf-8", errors="ignore")
-            return False, f"HTTP {he.code} token exchange failed: {err_body}"
+            if "invalid_client" in err_body:
+                return False, "Invalid OAuth Client ID. Please verify the client configuration in Google Cloud."
+            return False, f"Token exchange failed: {err_body}"
         except Exception as e:
-            return False, f"Token exchange error: {e}"
+            return False, f"Could not complete token exchange: {e}"

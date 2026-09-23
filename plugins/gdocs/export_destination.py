@@ -106,11 +106,12 @@ class GoogleDocsExportDestination(ExportDestination):
         a_layout.addWidget(self.account_status_lbl)
 
         btn_row = QHBoxLayout()
-        self.auth_btn = QPushButton("Sign in with Google…")
+        self.auth_btn = QPushButton("Connect Google Account")
+        self.auth_btn.setStyleSheet("font-weight: 600; padding: 5px 12px;")
         self.auth_btn.clicked.connect(self._on_auth_button_clicked)
         btn_row.addWidget(self.auth_btn)
 
-        self.disconnect_btn = QPushButton("Disconnect")
+        self.disconnect_btn = QPushButton("Disconnect Google Account")
         self.disconnect_btn.clicked.connect(self._on_disconnect_clicked)
         btn_row.addWidget(self.disconnect_btn)
         btn_row.addStretch()
@@ -497,11 +498,11 @@ class GoogleDocsExportDestination(ExportDestination):
             return
         if self.auth_manager.is_authenticated():
             email = self.auth_manager.get_user_email() or "Google Account"
-            self.account_status_lbl.setText(f"✓ <b>Connected:</b> {email}")
-            self.account_status_lbl.setStyleSheet("color: #16a34a; font-size: 12px;")
+            self.account_status_lbl.setText(f"<span style='color: #16a34a; font-weight: bold;'>✓ Connected</span> — <b>{email}</b>")
+            self.account_status_lbl.setStyleSheet("font-size: 12px;")
         else:
-            self.account_status_lbl.setText("⚠ <b>Not connected</b> — Sign in to export documents to Google Docs.")
-            self.account_status_lbl.setStyleSheet("color: #dc2626; font-size: 12px;")
+            self.account_status_lbl.setText("<span style='color: #64748b;'>Not connected</span><br><span style='color: #94a3b8; font-size: 11px;'>Connect your Google account to create and work with Google Docs from RTVS.</span>")
+            self.account_status_lbl.setStyleSheet("font-size: 12px;")
 
     def _update_auth_ui_state(self):
         self._update_auth_status_label()
@@ -512,38 +513,25 @@ class GoogleDocsExportDestination(ExportDestination):
             self.disconnect_btn.setVisible(is_auth)
 
     def _on_auth_button_clicked(self):
-        cid, _ = self.auth_manager.get_client_credentials()
-        if not cid or not cid.strip() or "rtvs-desktop-oauth" in cid:
-            from plugins.gdocs.plugin import GoogleOAuthSetupGuideDialog
-            def _import_cb():
-                from PySide6.QtWidgets import QFileDialog
-                from plugins.gdocs.auth import parse_google_credentials_json
-                fp, _ = QFileDialog.getOpenFileName(
-                    self.widget,
-                    "Select Google OAuth credentials.json",
-                    "",
-                    "JSON Files (*.json);;All Files (*.*)",
-                )
-                if fp:
-                    c_id, c_sec, _ = parse_google_credentials_json(fp)
-                    if c_id:
-                        self.auth_manager.save_client_credentials(c_id, c_sec or "")
-                        QMessageBox.information(self.widget, "Credentials Loaded", "Google OAuth credentials loaded successfully! You can now sign in.")
-            guide = GoogleOAuthSetupGuideDialog(self.widget, on_import_callback=_import_cb)
-            guide.exec()
-            return
-
         ok, msg = self.auth_manager.start_loopback_auth(parent_widget=self.widget)
         if ok:
-            QMessageBox.information(self.widget, "Connected", f"Successfully linked account: {msg}")
+            QMessageBox.information(self.widget, "Connected", f"Successfully linked Google account:\n{msg}")
         else:
             QMessageBox.critical(self.widget, "Authentication Failed", f"Could not link Google account:\n\n{msg}")
         self._update_auth_ui_state()
 
     def _on_disconnect_clicked(self):
-        self.auth_manager.logout()
-        QMessageBox.information(self.widget, "Disconnected", "Google Account credentials cleared.")
-        self._update_auth_ui_state()
+        reply = QMessageBox.question(
+            self.widget,
+            "Disconnect Google Account",
+            "Are you sure you want to disconnect your Google account from Radio & TV Segmenter?",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No,
+        )
+        if reply == QMessageBox.StandardButton.Yes:
+            self.auth_manager.logout(revoke_remote=True)
+            QMessageBox.information(self.widget, "Disconnected", "Google Account credentials cleared.")
+            self._update_auth_ui_state()
 
     def validate(self) -> Tuple[bool, str]:
         if not self.auth_manager.is_authenticated():
