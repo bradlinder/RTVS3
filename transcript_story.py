@@ -12,7 +12,8 @@ from PySide6.QtWidgets import (
     QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QComboBox,
     QRadioButton, QButtonGroup, QSlider, QTableWidget, QTableWidgetItem,
     QHeaderView, QGroupBox, QWidget, QCheckBox, QAbstractItemView, QMessageBox,
-    QFrame, QLineEdit, QInputDialog, QListWidgetItem, QDoubleSpinBox, QFormLayout
+    QFrame, QLineEdit, QInputDialog, QListWidgetItem, QDoubleSpinBox, QFormLayout,
+    QProgressDialog, QApplication
 )
 from PySide6.QtCore import Qt, QTimer, QSettings
 from PySide6.QtGui import QColor, QBrush, QFont, QTextCursor
@@ -125,9 +126,14 @@ class VoiceProfileMatchDialog(QDialog):
         # Precompute candidate acoustic embeddings once upon launch so threshold slider drags are instantaneous
         self.cached_candidates = []
         if self.parent_window and hasattr(self.parent_window, "_build_voice_profile_candidates"):
-            self.cached_candidates = self.parent_window._build_voice_profile_candidates(
-                [self.ref_seg_idx] + self.ref_seg_indices
+            res = self.parent_window._build_voice_profile_candidates(
+                [self.ref_seg_idx] + self.ref_seg_indices,
+                parent_widget=self.parent_window,
             )
+            if isinstance(res, tuple):
+                self.cached_candidates = res[0]
+            else:
+                self.cached_candidates = res
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(18, 18, 18, 18)
@@ -2319,31 +2325,81 @@ class TranscriptStoryMixin:
             return None
         return centroid(vectors)
 
-    def _build_voice_profile_candidates(self, ref_indices: List[int]) -> List[Tuple[int, List[float]]]:
+    def _build_voice_profile_candidates(
+        self,
+        ref_indices: List[int],
+        parent_widget: Optional[QWidget] = None,
+    ) -> Tuple[List[Tuple[int, List[float]]], bool]:
+        """
+        Precompute candidate acoustic vectors across transcript segments.
+        If more than 12 uncached segments require extraction, displays a cooperative
+        QProgressDialog with a Cancel button. Returns (candidates, was_canceled).
+        """
         if not self.transcript or "segments" not in self.transcript:
-            return []
+            return [], False
 
         segments = self.transcript.get("segments", [])
         ref_set = set(ref_indices)
-        candidates = []
 
+        # Identify candidate segments needing evaluation and count those needing extraction
+        eligible_indices = []
+        uncached_count = 0
         for idx, segment in enumerate(segments):
             if idx in ref_set:
                 continue
-
-            # Skip micro-segments under 0.6 seconds where embeddings suffer high timbral variance
             st = float(segment.get("start", 0.0))
             en = float(segment.get("end", st))
             if (en - st) < 0.6:
                 continue
+            eligible_indices.append(idx)
+            emb = segment.get("embedding")
+            if not (isinstance(emb, (list, tuple)) and len(emb) == 256):
+                uncached_count += 1
 
-            embedding = self.get_segment_embedding(idx)
-            if embedding is None:
-                continue
+        candidates = []
+        progress_dlg = None
+        was_canceled = False
 
-            candidates.append((idx, embedding))
+        # Only present progress dialog when substantial uncached extraction is needed and UI parent exists
+        if uncached_count > 12 and parent_widget is not None:
+            try:
+                progress_dlg = QProgressDialog(
+                    "Extracting acoustic voice signatures...",
+                    "Cancel",
+                    0,
+                    len(eligible_indices),
+                    parent_widget,
+                )
+                progress_dlg.setWindowTitle("Analyzing Voices")
+                progress_dlg.setWindowModality(Qt.WindowModality.WindowModal)
+                progress_dlg.setMinimumDuration(250)
+                progress_dlg.setValue(0)
+            except Exception:
+                progress_dlg = None
 
-        return candidates
+        try:
+            for step, idx in enumerate(eligible_indices):
+                if progress_dlg is not None:
+                    if progress_dlg.wasCanceled():
+                        was_canceled = True
+                        break
+                    progress_dlg.setValue(step)
+                    progress_dlg.setLabelText(
+                        f"Extracting acoustic voice signatures (turn {step + 1} of {len(eligible_indices)})..."
+                    )
+                    QApplication.processEvents()
+
+                embedding = self.get_segment_embedding(idx)
+                if embedding is not None:
+                    candidates.append((idx, embedding))
+
+            if progress_dlg is not None:
+                progress_dlg.setValue(len(eligible_indices))
+        finally:
+            if progress_dlg is not None:
+                progress_dlg.close()
+
+        return candidates, was_canceled
 
     def find_matching_voice_turns(
         self,
@@ -2407,7 +2463,8 @@ class TranscriptStoryMixin:
         if cached_candidates is not None:
             candidates = [(i, v) for i, v in cached_candidates if i not in ref_set]
         else:
-            candidates = self._build_voice_profile_candidates(reference_indices)
+            raw_c = self._build_voice_profile_candidates(reference_indices)
+            candidates = raw_c[0] if isinstance(raw_c, tuple) else raw_c
 
         # Form competitor profiles from turns assigned to OTHER names
         competing_groups = {}

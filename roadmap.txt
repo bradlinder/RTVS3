@@ -29,17 +29,16 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 --------------------------------------------------------------------------------
 TABLE OF CONTENTS & STATUS OVERVIEW
 --------------------------------------------------------------------------------
-1. Previous Release: Acoustic Voice Profiling & Speaker Correction Engine Refinements, Test Bench Alignment & Universal Dialog Maximization (`speaker_identity.py`, `transcript_story.py`, `test_runner.py`, `prs_shared.py`) (Completed in v3.7.5-beta)
-   [x] 1.1 Acoustic Voice Profile Refinement & Pre-Caching Engine: Pre-caching candidate turn vectors, eliminating redundant re-extractions during threshold slider scrubs, dynamic match tooltip with competitor separation margin, and in-place keyboard shortcuts (Return/Enter/X) for rapid candidate toggling.
-   [x] 1.2 Competitive Rapid Dialog Turn Classifier & Anchor Refinement: Interactive refinement tool (`prompt_refine_speaker_run`) and context menu integration for rapid dialogue turns between two confirmed speakers using relative acoustic distance and auto-enrolled profiles.
-   [x] 1.3 Subtitle/Speaker Alignment Diagnostic Test Suite Alignment: Synchronized test runner unit tests with updated speaker overlap assignment and threshold logic, ensuring all 27 diagnostic test suites pass cleanly.
-   [x] 1.4 Milestone 4.1 - Universal Window Maximize & Restore Flag Enforcement: Enforced `WindowMaximizeButtonHint` and `make_dialog_maximizable` helper across all modal and non-modal dialogs.
+1. Previous Release: Windows Installer Handoff & Detached Update Helper Architecture Overhaul (`updater.py`, `installer/Windows/`, `build_installer.py`) (Completed in v3.7.6-beta)
+   [x] 1.1 Standalone Detached Windows Update Helper: Replaced temporary fragile PowerShell/CMD supervisor scripts with a dedicated, lightweight detached update helper created outside the Windows Job Object (`CREATE_BREAKAWAY_FROM_JOB` / `DETACHED_PROCESS`).
+   [x] 1.2 Deterministic Application Shutdown & PID Exit Tracking: Polling of caller PID via native Win32 `OpenProcess` / `SYNCHRONIZE` handles before launching installer, preventing premature exits and locked files.
+   [x] 1.3 Direct Windows UAC Elevation & Lightweight Diagnostics: Elevated installer execution with administrative permissions (`runas`), silent fallback handling, and structured diagnostic logging to `%LOCALAPPDATA%\RadioTVStorySegmenter\update.log`.
+   [x] 1.4 Diagnostic Test Bench Coverage Extension: Added unit test `Windows Detached Update Helper Architecture` to validate parameter validation, missing-installer checks, and log writing.
 
-2. Current Release: Windows Installer Handoff & Detached Update Helper Architecture Overhaul (`updater.py`, `installer/Windows/`, `build_installer.py`) [x] [COMPLETED in v3.7.6-beta]
-   [x] 2.1 Standalone Detached Windows Update Helper: Replaced temporary fragile PowerShell/CMD supervisor scripts with a dedicated, lightweight detached update helper created outside the Windows Job Object (`CREATE_BREAKAWAY_FROM_JOB` / `DETACHED_PROCESS`).
-   [x] 2.2 Deterministic Application Shutdown & PID Exit Tracking: Polling of caller PID via native Win32 `OpenProcess` / `SYNCHRONIZE` handles before launching installer, preventing premature exits and locked files.
-   [x] 2.3 Direct Windows UAC Elevation & Lightweight Diagnostics: Elevated installer execution with administrative permissions (`runas`), silent fallback handling, and structured diagnostic logging to `%LOCALAPPDATA%\RadioTVStorySegmenter\update.log`.
-   [x] 2.4 Diagnostic Test Bench Coverage Extension: Added unit test `Windows Detached Update Helper Architecture` to validate parameter validation, missing-installer checks, and log writing.
+2. Current Release: Acoustic Voice Profile Candidate Extraction Progress & Cancellation Guard (`transcript_story.py`, `test_runner.py`) [x] [COMPLETED in v3.7.7-beta]
+   [x] 2.1 Cooperative Candidate Extraction Progress Dialog: Interactive modal `QProgressDialog` activated when opening `VoiceProfileMatchDialog` with > 12 uncached segments, showing real-time turn extraction progress.
+   [x] 2.2 Immediate Cancellation Escape Hatch: Integrated `wasCanceled()` check and event pump, preserving all partially computed segment vectors in cache while immediately restoring GUI control.
+   [x] 2.3 Diagnostic Test Bench Coverage Extension: Extended `_test_acoustic_voice_profile_reclustering` to assert candidate extraction progress safety and cancellation status guards.
 
 3. Upcoming Milestone: Comprehensive Cloud & Local Backup & Restore System (`project_lifecycle.py`, `plugins/gdocs/`) [PLANNED for v3.8.0] [NOT STARTED]
    [ ] 3.1 Unified State Serialization (`project_lifecycle.py`): Export preferences, keyboard shortcuts, installed model inventories, glossary items, and user configurations into a cryptographically verified backup archive.

@@ -1983,6 +1983,18 @@ class DiagnosticEngine:
                         return [float(x) for x in seg["embedding"]]
                     return None
 
+                def _build_voice_profile_candidates(self, ref_indices, parent_widget=None):
+                    segments = self.transcript.get("segments", [])
+                    ref_set = set(ref_indices)
+                    candidates = []
+                    for idx, seg in enumerate(segments):
+                        if idx in ref_set:
+                            continue
+                        emb = self.get_segment_embedding(idx)
+                        if emb is not None:
+                            candidates.append((idx, emb))
+                    return candidates, False
+
                 def find_matching_voice_turns(self, ref_seg_idx: int, threshold: float = 0.70, scope_cluster_only: bool = True):
                     segments = self.transcript.get("segments", [])
                     if ref_seg_idx < 0 or ref_seg_idx >= len(segments):
@@ -2174,8 +2186,15 @@ class DiagnosticEngine:
         if not win._project_state_committed:
             raise AssertionError("Acoustic voice matching did not commit undo state change")
 
+        # 5. Test _build_voice_profile_candidates caching and cancellation guard
+        candidates, was_canceled = win._build_voice_profile_candidates([0])
+        if was_canceled:
+            raise AssertionError("_build_voice_profile_candidates falsely reported cancellation")
+        if len(candidates) < 3:
+            raise AssertionError(f"Expected at least 3 candidates (excluding ref 0), got {len(candidates)}")
+
         item.status = "PASS"
-        item.message = "256-dimensional acoustic vector persistence, cosine similarity re-clustering, and undo consistency verified"
+        item.message = "256-dimensional acoustic vector persistence, candidate pre-caching progress guard, and undo consistency verified"
 
     def _test_windows_detached_update_helper_architecture(self, item: DiagnosticItem):
         """Validates update helper architecture: helper script generation, exit polling, and logging."""

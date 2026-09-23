@@ -1,5 +1,11 @@
 # Changelog
  
+## v3.7.7-beta
+- **Acoustic Voice Profile Candidate Extraction Progress & Cancellation Guard (`transcript_story.py`, `test_runner.py`)**:
+  - **Cooperative Candidate Extraction Progress Dialog (`_build_voice_profile_candidates`)**: Added a modal `QProgressDialog` that activates when opening `VoiceProfileMatchDialog` on un-diarized transcripts requiring significant on-the-fly acoustic vector extraction (> 12 uncached segments).
+  - **Immediate Cancellation Escape Hatch**: Provides a responsive **Cancel** button with cooperative loop termination (`progress_dlg.wasCanceled()`) and `QApplication.processEvents()` pumping, preventing GUI freezes while preserving all partially computed vectors directly in segment cache (`seg["embedding"]`).
+  - **Diagnostic Test Bench Coverage Extension (`test_runner.py`)**: Enhanced `_test_acoustic_voice_profile_reclustering` to validate candidate pre-caching progress extraction and cancellation state handling.
+
 ## v3.7.6-beta
 - **Windows Installer Handoff & Detached Update Helper Architecture Overhaul — Milestone 4 (`updater.py`, `build_installer.py`)**:
   - **Standalone Detached Update Helper (`launch_and_install` in `updater.py`)**: Replaced temporary fragile PowerShell/CMD script file generation with a dedicated detached helper execution flow spawned with `CREATE_BREAKAWAY_FROM_JOB` and `DETACHED_PROCESS` flags.
