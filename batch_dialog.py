@@ -32,6 +32,8 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from core_utils import make_dialog_maximizable
+
 
 class BatchFileListWidget(QListWidget):
     filesDropped = Signal(list)

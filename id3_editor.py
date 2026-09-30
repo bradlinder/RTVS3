@@ -32,6 +32,8 @@ from PySide6.QtWidgets import (
     QApplication,
 )
 
+from core_utils import make_dialog_maximizable
+
 # Optional mutagen import
 try:
     import mutagen

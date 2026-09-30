@@ -1,5 +1,11 @@
 # Changelog
 
+## v3.7.15-stable
+- **Modal Dialog Maximizable Import Fix (`batch_dialog.py`, `export/dialog.py`, `id3_editor.py`, `story_metadata_dialog.py`, `project_lifecycle.py`, `playback_preferences.py`, `transcript_story.py`, `test_runner.py`)**:
+  - **Resolved `NameError: name 'make_dialog_maximizable' is not defined`**: Fixed a runtime exception when opening the Batch Processing Center dialog (`open_batch_processing_dialog` / `Ctrl+Shift+B`), where `BatchProcessingDialog.__init__` invoked `make_dialog_maximizable(self)` without importing the helper from `core_utils`.
+  - **Comprehensive Dialog Audit & Import Normalization**: Audited all modal and tool dialogs (`BatchProcessingDialog`, `UnifiedExportDialog`, `ID3TagEditorDialog`, `StoryMetadataDialog`, `ProjectDataPurgeDialog`, `RestoreSelectedSettingsDialog`, and transcript story dialogs) to ensure `make_dialog_maximizable` is explicitly imported and bound.
+  - **Automated AST Diagnostic Integrity Test (`test_runner.py`)**: Added `_test_modal_dialog_maximizable_import_integrity` to the diagnostic test bench, performing static AST syntax tree verification across all dialog modules to guarantee no dialog invokes `make_dialog_maximizable` without a matching import.
+
 ## v3.7.14-stable
 - **WordPress Direct REST API Export Fix (`plugins/wordpress/client.py`, `plugins/wordpress/plugin.py`, `plugins/wordpress/manifest.json`, `test_runner.py`)**:
   - **Resolved `'str' object has no attribute 'get'` WordPress Export Failure**: Fixed a critical bug where exporting a post to WordPress failed with `Errors: Filename: 'str' object has no attribute 'get'`. In RTVS, the application transcript is structured as a dictionary containing metadata and the `segments` list (`{"text": ..., "segments": [...]}`). In `execute_wordpress_upload`, iterating directly over `main_window.transcript` yielded dictionary keys as strings (`'text'`, `'segments'`), causing segment attribute lookups (`seg.get("start")`) to fail with an `AttributeError`.

@@ -45,6 +45,7 @@ from prs_shared import (
     CollapsibleSection,
     format_time,
     safe_filename,
+    make_dialog_maximizable,
 )
 from plugins.base import ExportDestination
 

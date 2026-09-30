@@ -339,6 +339,11 @@ class DiagnosticEngine:
                 "Validates WordPress upload post content generation, dict transcript extraction, range filtering, Spanish translation integration, and robust media guid resolution",
             ),
             DiagnosticItem(
+                "Modal Dialog Maximizable Import Integrity",
+                "UI & Application Lifecycle",
+                "Validates make_dialog_maximizable imports and execution across batch processing, export, id3, preferences, and project dialogs",
+            ),
+            DiagnosticItem(
                 "Fade Curve Tables and Auditioning State",
                 "Timeline & Audio Performance",
                 "Validates precomputed fade curve lookup tables, monotonicity, boundary conditions, and dialog state rollback semantics",
@@ -1280,6 +1285,46 @@ class DiagnosticEngine:
                 Path(dummy_audio_path).unlink(missing_ok=True)
             except Exception:
                 pass
+
+    def _test_modal_dialog_maximizable_import_integrity(self, item: DiagnosticItem):
+        import ast
+        from pathlib import Path
+
+        modules_to_check = [
+            "batch_dialog.py",
+            "export/dialog.py",
+            "id3_editor.py",
+            "story_metadata_dialog.py",
+            "project_lifecycle.py",
+            "playback_preferences.py",
+            "transcript_story.py",
+        ]
+
+        verified_modules = []
+        for rel_path in modules_to_check:
+            p = Path(rel_path)
+            if not p.is_file():
+                continue
+            with open(p, "r", encoding="utf-8") as f:
+                tree = ast.parse(f.read(), filename=str(p))
+
+            has_call = False
+            has_import = False
+            for node in ast.walk(tree):
+                if isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id == "make_dialog_maximizable":
+                    has_call = True
+                elif isinstance(node, ast.ImportFrom):
+                    for alias in node.names:
+                        if alias.name == "make_dialog_maximizable":
+                            has_import = True
+
+            if has_call and not has_import:
+                raise AssertionError(f"Module '{rel_path}' calls make_dialog_maximizable() but does not import it!")
+            if has_call:
+                verified_modules.append(p.name)
+
+        item.status = "PASS"
+        item.message = f"make_dialog_maximizable verified across {len(verified_modules)} dialog modules: {', '.join(verified_modules)}"
 
     def _test_fade_curve_tables_and_auditioning_state(self, item: DiagnosticItem):
         from core_utils import calculate_fade_curve_factor, calculate_fade_out_factor

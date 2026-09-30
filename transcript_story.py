@@ -1,4 +1,4 @@
-"""Radio & TV Segmenter v3.7.14-stable — transcript story responsibilities.
+"""Radio & TV Segmenter v3.7.15-stable — transcript story responsibilities.
 
 Methods intentionally retain the MainWindow-facing API so behavior remains
 maintaining the established MainWindow-facing API while responsibilities are isolated.
@@ -8,6 +8,7 @@ from typing import List, Optional, Tuple
 import html
 import re
 from prs_shared import *
+from core_utils import make_dialog_maximizable
 from PySide6.QtWidgets import (
     QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QComboBox,
     QRadioButton, QButtonGroup, QSlider, QTableWidget, QTableWidgetItem,

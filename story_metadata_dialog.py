@@ -58,7 +58,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from core_utils import ffmpeg_path, format_time, parse_time, INTERNAL_APP_ID
+from core_utils import ffmpeg_path, format_time, parse_time, INTERNAL_APP_ID, make_dialog_maximizable
 
 
 def generate_story_excerpt(text: str, max_words: int = 55) -> str:

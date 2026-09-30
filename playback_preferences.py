@@ -5,6 +5,7 @@ maintaining the established MainWindow-facing API while responsibilities are iso
 """
 
 from prs_shared import *
+from core_utils import make_dialog_maximizable
 
 
 class RestoreSelectedSettingsDialog(QDialog):
