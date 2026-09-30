@@ -1,5 +1,12 @@
 # Changelog
 
+## v3.7.13-stable
+- **macOS Multiprocessing & PyInstaller Resource Tracker Intercept (`RadioTVSegmenter.py`, `radio_tv_story_segmenter_worker.py`, `test_runner.py`)**:
+  - **Resolved "Unknown Processing Mode: from multiprocessing.resource_tracker import main;main(9)" Crash**: Fixed a critical crash on macOS when running multi-stage processing (transcription with parakeet-onnx or whisper, speaker detection, and story segmentation). In packaged PyInstaller builds on macOS/POSIX, `sys.executable` points to the compiled frozen binary (`RadioTVStorySegmenter` or `prs_worker`). When ML runtimes (WeSpeaker, sherpa-onnx, PyTorch, faster-whisper) spawn resource-tracking or child processes via `multiprocessing.spawn`, Python executes `sys.executable -c "from multiprocessing.resource_tracker import main;main(fd)"`.
+  - **PyInstaller `freeze_support()` Initialization**: Added top-level `multiprocessing.freeze_support()` calls at the very entry points of both `RadioTVSegmenter.py` and `radio_tv_story_segmenter_worker.py`, ensuring all multiprocessing spawn protocols (`--multiprocessing-fork`) are caught before GUI or ML pipeline initialization.
+  - **Direct `-c` Spawn Interception**: Implemented early command-line interception in both executables to directly execute `-c` code strings inside the frozen environment, allowing `resource_tracker` and spawn workers to initialize and exit gracefully instead of being rejected as unknown CLI flags.
+  - **Diagnostic Test Bench Coverage**: Added `Multiprocessing Freeze Support and Spawn Intercept` diagnostic item in `test_runner.py` to ensure process spawning and `-c` dispatch remain verified across platforms.
+
 ## v3.7.12-stable
 - **Temporary Cache Manager & Preview Fix (`cache_manager.py`, `core_utils.py`, `prs_shared.py`, `media_batch.py`, `playback_preferences.py`)**:
   - **Resolved Unresponsive "Clear Temporary Cache" Action**: Fixed a missing `make_dialog_maximizable` import in `cache_manager.py` that caused `ClearCacheDialog` to raise a runtime exception and fail silently when invoked from **Settings > Clear Temporary Cache...**.
@@ -10,6 +17,15 @@
   - **Stories Panel & Metadata Button Cleanups**: Removed emoji icons from `Story Metadata...` and `Auto-Generate Excerpt` buttons in the stories widget sidebar, aligning button styling with native desktop conventions.
   - **Transcript Toolbar & Formatting Refinements**: Removed leading symbols from `Split Speaker`, `Highlight ▾`, and the `Editing Mode` helper label in the transcript formatting toolbar.
   - **Story & Post Metadata Dialog Polish**: Streamlined actions in the metadata editor by removing icons from `Refresh WP Taxonomies`, `Sync to Playhead`, `Full Episode`, and individual `Story #N` task tabs while retaining core transport and status badges across the application.
+  - **Dialog Ergonomics & Maximize Button Policy**: Audited `make_dialog_maximizable` across compact dialogs (Cache, Comment, Speaker Rename, Find/Replace, Update) to remove redundant maximize buttons and prevent awkward empty spacing, while preserving full maximize capabilities for data-intensive views.
+- **Direct YouTube API Video Upload & Dual-Mode Publishing (`plugins/youtube/api.py`, `plugins/youtube/export_destination.py`, `plugins/youtube/plugin.py`, `plugins/youtube/manifest.json`)**:
+  - **YouTube Data API v3 Client Engine**: Built full OAuth 2.0 PKCE client supporting scopes `youtube.upload` and `youtube`, featuring resumable video uploads with streaming 2MB chunks, real-time byte counters, throughput speed calculation, and remaining ETA.
+  - **Automated Thumbnail & Caption Track Publishing**: Integrated automated custom video thumbnail uploading via `thumbnails.set` and closed caption (.srt) track insertion via `captions.insert`.
+  - **Dual-Mode Publishing Workflow Selector**: Added a mode selector to easily toggle between **Direct 1-Click API Upload** (background API upload with direct link generation) and **Zero-API Assisted Upload** (browser launch and clipboard copying).
+- **Google Sheets Tabular Export & Analytics Backend (`plugins/google_sheets.py`, `test_runner.py`)**:
+  - **Production-Ready Google Sheets API v4 Client**: Created backend client supporting spreadsheet creation, A1 range appending, and data batch updates under scope `https://www.googleapis.com/auth/spreadsheets`.
+  - **Rundown & Speaker Analytics Formatters**: Included domain transformers `format_story_rundown_table` and `format_speaker_analytics_table` for converting broadcast segment metadata and speaker talk-time airtime balance into spreadsheet rows.
+  - **Dormant UI Architecture**: The backend engine is fully tested and ready in the codebase, with user-facing export UI deferred until scheduled in future rundown workflow milestones.
 
 ## v3.7.11-beta
 - **Unified Voice Profile Tools Submenu & Multi-Entrypoint Integration (`transcript_editor.py`, `ui_layout.py`, `transcript_story.py`, `processing.py`)**:

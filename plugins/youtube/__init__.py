@@ -1,6 +1,9 @@
 """YouTube Video Publisher Plugin for Radio & TV Segmenter."""
 from __future__ import annotations
 
-from plugins.youtube.plugin import Plugin
+try:
+    from plugins.youtube.plugin import Plugin
+    __all__ = ["Plugin"]
+except ImportError:
+    __all__ = []
 
-__all__ = ["Plugin"]

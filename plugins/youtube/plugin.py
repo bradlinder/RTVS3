@@ -61,13 +61,13 @@ def capture_video_frame(video_path: str, timestamp: float, output_path: str) -> 
 
 
 class YouTubeSettingsDialog(QDialog):
-    """Preferences dialog for YouTube Studio Zero-API Assisted Upload defaults."""
+    """Preferences dialog for YouTube Publishing (Direct API & Assisted Upload defaults)."""
 
     def __init__(self, parent=None):
         super().__init__(parent)
         self.settings = QSettings(INTERNAL_APP_ID, INTERNAL_APP_ID)
-        self.setWindowTitle("YouTube Studio Assisted Upload Preferences")
-        self.setMinimumSize(560, 420)
+        self.setWindowTitle("YouTube Publishing Preferences")
+        self.setMinimumSize(580, 480)
         from PySide6.QtCore import Qt
         self.setWindowFlags(self.windowFlags() | Qt.WindowType.WindowMaximizeButtonHint)
         self.setup_ui()
@@ -78,14 +78,13 @@ class YouTubeSettingsDialog(QDialog):
         layout.setSpacing(12)
 
         # Header Info
-        header_group = QGroupBox("Zero-API Assisted Upload")
+        header_group = QGroupBox("Publishing Workflow")
         h_layout = QVBoxLayout(header_group)
-        title_lbl = QLabel("<b>YouTube Studio Assisted Publishing (Zero-API)</b>")
+        title_lbl = QLabel("<b>YouTube Video Publisher (Dual-Mode)</b>")
         info_lbl = QLabel(
-            "Radio & TV Segmenter prepares ready-to-upload video clips, extracts custom thumbnails, "
-            "formats your description with interactive chapter timestamps from story boundaries, and generates .srt subtitles. "
-            "When you export, YouTube Studio opens directly in your default browser with your metadata pre-copied "
-            "to the clipboard for quick, hassle-free uploading without requiring Google Cloud projects, API keys, or OAuth login."
+            "Radio & TV Segmenter supports both <b>Direct 1-Click API Upload</b> via YouTube Data API v3 "
+            "(streams video, custom thumbnail, and captions directly to your channel in the background) and "
+            "<b>Zero-API Assisted Upload</b> (packages local assets, copies chapter descriptions, and launches YouTube Studio in your browser)."
         )
         info_lbl.setWordWrap(True)
         info_lbl.setStyleSheet("color: #64748b; font-size: 11px;")
@@ -97,6 +96,15 @@ class YouTubeSettingsDialog(QDialog):
         meta_group = QGroupBox("Default Video Settings")
         form = QFormLayout(meta_group)
         form.setSpacing(8)
+
+        self.mode_combo = QComboBox()
+        self.mode_combo.addItem("Direct 1-Click API Upload", "api")
+        self.mode_combo.addItem("Zero-API Assisted Upload (Browser)", "assisted")
+        saved_mode = str(self.settings.value("export_yt_mode", "api"))
+        midx = self.mode_combo.findData(saved_mode)
+        if midx >= 0:
+            self.mode_combo.setCurrentIndex(midx)
+        form.addRow("Default Publishing Mode:", self.mode_combo)
 
         self.category_combo = QComboBox()
         yt_categories = [
@@ -146,7 +154,7 @@ class YouTubeSettingsDialog(QDialog):
         self.cb_copy.setChecked(self.settings.value("export_yt_copy_clipboard", True, type=bool))
         opts_layout.addWidget(self.cb_copy)
 
-        self.cb_browser = QCheckBox("Automatically launch YouTube Studio upload page in browser")
+        self.cb_browser = QCheckBox("Automatically launch YouTube Studio upload page in browser (Assisted mode)")
         self.cb_browser.setChecked(self.settings.value("export_yt_open_browser", True, type=bool))
         opts_layout.addWidget(self.cb_browser)
 
@@ -154,7 +162,7 @@ class YouTubeSettingsDialog(QDialog):
         self.cb_subtitles.setChecked(self.settings.value("export_yt_subtitles", True, type=bool))
         opts_layout.addWidget(self.cb_subtitles)
 
-        self.cb_folder = QCheckBox("Open export directory in file explorer after packaging")
+        self.cb_folder = QCheckBox("Open export directory in file explorer after packaging (Assisted mode)")
         self.cb_folder.setChecked(self.settings.value("export_yt_open_folder", True, type=bool))
         opts_layout.addWidget(self.cb_folder)
 
@@ -176,6 +184,7 @@ class YouTubeSettingsDialog(QDialog):
         layout.addLayout(btn_layout)
 
     def on_save(self):
+        self.settings.setValue("export_yt_mode", self.mode_combo.currentData())
         self.settings.setValue("export_yt_category", self.category_combo.currentData())
         self.settings.setValue("export_yt_privacy", self.privacy_combo.currentData())
         self.settings.setValue("export_yt_tags", self.tags_edit.text().strip())
@@ -199,23 +208,23 @@ class Plugin(BasePlugin):
 
     def get_export_actions(self) -> List[tuple[str, Callable]]:
         return [
-            ("Publish to YouTube Studio (Assisted)...", self.open_publish_dialog),
+            ("Publish to YouTube...", self.open_publish_dialog),
         ]
 
     def get_preferences_widget(self, parent=None) -> Any:
         box = QGroupBox("YouTube Video Publishing", parent)
         layout = QVBoxLayout(box)
         lbl = QLabel(
-            "<b>YouTube Studio Assisted Upload (Zero-API)</b><br>"
-            "Radio & TV Segmenter formats video clips with interactive chapter markers, generates thumbnails, "
-            "and exports subtitles (.srt), then opens YouTube Studio in your web browser with metadata pre-copied "
-            "to the clipboard for immediate manual upload. No Google Cloud project or API credentials needed."
+            "<b>YouTube Video Publisher (Dual-Mode)</b><br>"
+            "Publish broadcast videos with interactive chapter markers, custom video thumbnails, "
+            "and closed caption (.srt) tracks directly via <b>YouTube Data API v3</b> or through "
+            "the <b>Zero-API Assisted Upload</b> workflow."
         )
         lbl.setWordWrap(True)
         lbl.setStyleSheet("color: #64748b; font-size: 11px;")
         layout.addWidget(lbl)
 
-        btn = QPushButton("Configure YouTube Studio Assisted Defaults...")
+        btn = QPushButton("Configure YouTube Defaults & Credentials...")
         btn.clicked.connect(lambda: YouTubeSettingsDialog(parent or self.app).exec())
         layout.addWidget(btn)
         return box

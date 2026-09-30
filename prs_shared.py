@@ -50,7 +50,7 @@ _ensure_runtime_bin_on_path()
 
 INTERNAL_APP_ID = "RadioTVStorySegmenter"
 APP_DISPLAY_NAME = "Radio & TV Segmenter"
-PROJECT_VERSION = "3.7.12-stable"
+PROJECT_VERSION = "3.7.13-stable"
 DEFAULT_GITHUB_REPO = "bradlinder/RTVS3"
 
 

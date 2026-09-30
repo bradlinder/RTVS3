@@ -15,18 +15,22 @@ import threading
 import time
 from pathlib import Path
 
-from PySide6.QtCore import QSettings
-from PySide6.QtWidgets import (
-    QCheckBox,
-    QDialog,
-    QFrame,
-    QGroupBox,
-    QHBoxLayout,
-    QLabel,
-    QMessageBox,
-    QPushButton,
-    QVBoxLayout,
-)
+try:
+    from PySide6.QtCore import QSettings
+    from PySide6.QtWidgets import (
+        QCheckBox,
+        QDialog,
+        QFrame,
+        QGroupBox,
+        QHBoxLayout,
+        QLabel,
+        QMessageBox,
+        QPushButton,
+        QVBoxLayout,
+    )
+except ImportError:
+    QDialog = object
+    QSettings = None
 
 from core_utils import get_app_data_dir
 

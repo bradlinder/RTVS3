@@ -6,6 +6,28 @@ import shutil
 import tempfile
 import traceback
 import subprocess
+import multiprocessing
+
+# Initialize multiprocessing freeze support before anything else.
+# On macOS and Windows, frozen applications or subprocesses spawned via multiprocessing
+# re-execute sys.executable. freeze_support handles '--multiprocessing-fork'.
+multiprocessing.freeze_support()
+
+# In PyInstaller frozen executables on POSIX (macOS/Linux), multiprocessing and resource_tracker
+# spawn helper subprocesses using: sys.executable -c "from multiprocessing.resource_tracker import main;main(fd)"
+# or multiprocessing.spawn: sys.executable -c "from multiprocessing.spawn import spawn_main;..."
+# Since sys.executable is the compiled standalone executable rather than python, intercept -c here.
+if len(sys.argv) > 1 and "-c" in sys.argv:
+    try:
+        c_idx = sys.argv.index("-c")
+        if c_idx + 1 < len(sys.argv):
+            code_str = sys.argv[c_idx + 1]
+            exec(code_str, {"__name__": "__main__"})
+            sys.exit(0)
+    except Exception as _e:
+        sys.stderr.write(f"[MULTIPROCESSING] Error executing -c in worker: {_e}\n")
+        sys.exit(1)
+
 try:
     import numpy as np
 except ImportError:
@@ -1930,6 +1952,18 @@ def diarize(audio_file, expected_speakers="auto", transcript_file=None, sensitiv
 def main(argv=None):
     if argv is None:
         argv = sys.argv[1:]
+
+    # Handle multiprocessing -c or freeze support invocations in case main() is invoked with custom argv
+    if "-c" in argv:
+        try:
+            c_idx = argv.index("-c")
+            if c_idx + 1 < len(argv):
+                code_str = argv[c_idx + 1]
+                exec(code_str, {"__name__": "__main__"})
+                return 0
+        except Exception as _e:
+            sys.stderr.write(f"[MULTIPROCESSING] Error executing -c in main(): {_e}\n")
+            return 1
 
     # Strip any leading Python interpreter or wrapper arguments (e.g. -B, -u, --prs-worker, --worker)
     valid_modes = {"--transcribe", "--diarize", "--self-test"}

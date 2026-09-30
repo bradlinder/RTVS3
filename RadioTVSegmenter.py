@@ -1,12 +1,33 @@
-"""Radio & TV Segmenter — v3.4.17
+"""Radio & TV Segmenter — v3.7.13-stable
 
 This is the thin application composition root. UI/processing responsibilities
 are implemented in focused mixins so future changes can target smaller files
 without changing the MainWindow-facing API.
 """
 import sys
+import multiprocessing
 from pathlib import Path
 from bootstrap import configure_runtime_environment, ensure_sherpa_onnx_runtime, ensure_keyring_runtime
+
+# Initialize multiprocessing freeze support before anything else.
+# On macOS and Windows, frozen applications or subprocesses spawned via multiprocessing
+# re-execute sys.executable. freeze_support handles '--multiprocessing-fork'.
+multiprocessing.freeze_support()
+
+# In frozen PyInstaller apps on POSIX (macOS/Linux), multiprocessing and resource_tracker
+# spawn helper subprocesses using: sys.executable -c "from multiprocessing.resource_tracker import main;main(fd)"
+# or multiprocessing.spawn: sys.executable -c "from multiprocessing.spawn import spawn_main;..."
+# Since sys.executable is the compiled standalone executable rather than python, intercept -c here.
+if len(sys.argv) > 1 and "-c" in sys.argv:
+    try:
+        c_idx = sys.argv.index("-c")
+        if c_idx + 1 < len(sys.argv):
+            code_str = sys.argv[c_idx + 1]
+            exec(code_str, {"__name__": "__main__"})
+            sys.exit(0)
+    except Exception as _e:
+        sys.stderr.write(f"[MULTIPROCESSING] Error executing -c in main executable: {_e}\n")
+        sys.exit(1)
 
 # Bootstrap writable model/cache locations and verify required runtimes before
 # importing the rest of the application. Source builds can install them automatically;
