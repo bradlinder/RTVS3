@@ -41,7 +41,8 @@ TABLE OF CONTENTS & STATUS OVERVIEW
    [x] 2.1 PyInstaller Freeze Support & Spawn Intercept: Added top-level `multiprocessing.freeze_support()` across `RadioTVSegmenter.py` and `radio_tv_story_segmenter_worker.py` to prevent child process re-import recursion on macOS and Windows.
    [x] 2.2 Command-Line `-c` Intercept for Resource Tracker: Intercepted Python `-c` execution in frozen binary entry points so `from multiprocessing.resource_tracker import main;main(fd)` runs seamlessly instead of being misidentified as an unknown processing mode.
    [x] 2.3 Parakeet & Multi-Stage Processing Stability on macOS: Validated that transcription (Parakeet ONNX / Whisper), speaker diarization, and story detection run cleanly without spawning failures.
-   [x] 2.4 Diagnostic Engine Verification: Added `Multiprocessing Freeze Support and Spawn Intercept` diagnostic test item to `test_runner.py` (all 43 tests passing with 0 failures).
+   [x] 2.4 Diagnostic Engine & Out-of-Process Worker Verification: Added `AI Worker Subprocess Execution and IPC Handshake` and `Frozen Subprocess Multiprocessing Spawn Protocol` diagnostic tests to `test_runner.py`.
+   [x] 2.5 Comprehensive System & Troubleshooting Report: Built `generate_diagnostic_report` with environment inspection (OS, arch, Python, frozen status, model dirs), test results, actionable remediation guidance, and GUI "Save Report to File..." export.
 
 3. Upcoming Milestone: Comprehensive Cloud & Local Backup & Restore System (`project_lifecycle.py`, `plugins/gdocs/`) [PLANNED for v3.8.0] [NOT STARTED]
    [ ] 3.1 Unified State Serialization (`project_lifecycle.py`): Export preferences, keyboard shortcuts, installed model inventories, glossary items, and user configurations into a cryptographically verified backup archive.

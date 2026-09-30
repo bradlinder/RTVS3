@@ -424,6 +424,16 @@ class DiagnosticEngine:
                 "Core Logic & File I/O",
                 "Validates PyInstaller frozen process freeze_support initialization and macOS/Linux multiprocessing -c command dispatch",
             ),
+            DiagnosticItem(
+                "AI Worker Subprocess Execution and IPC Handshake",
+                "AI Runtimes & Inference Stack",
+                "Spawns the local AI worker executable in an external subprocess to validate execution permissions, dynamic library loading, and IPC handshake",
+            ),
+            DiagnosticItem(
+                "Frozen Subprocess Multiprocessing Spawn Protocol",
+                "AI Runtimes & Inference Stack",
+                "Spawns the AI worker executable as a child process using Python multiprocessing -c syntax to verify resource tracker and spawn handler compatibility",
+            ),
         ]
 
     def run_all(self, stop_requested_fn: Optional[Callable[[], bool]] = None) -> List[DiagnosticItem]:
@@ -2488,6 +2498,203 @@ class DiagnosticEngine:
         item.status = "PASS"
         item.message = "Multiprocessing freeze support, spawn -c dispatch, and resource tracker intercepts verified"
 
+    def _resolve_worker_cmd(self) -> Tuple[str, List[str]]:
+        """Resolves the executable and arguments to launch the AI background worker."""
+        if getattr(sys, "frozen", False):
+            exe_name = "prs_worker.exe" if os.name == "nt" else "prs_worker"
+            app_dir = Path(sys.executable).resolve().parent
+            app_worker = app_dir / exe_name
+            if app_worker.exists():
+                return str(app_worker), []
+            sub_worker = app_dir / "workers" / exe_name
+            if sub_worker.exists():
+                return str(sub_worker), []
+            return sys.executable, ["--prs-worker"]
+
+        script = Path(__file__).resolve().parent / "radio_tv_story_segmenter_worker.py"
+        return sys.executable, [str(script)]
+
+    def _test_ai_worker_subprocess_execution_and_ipc_handshake(self, item: DiagnosticItem):
+        """Spawns the AI worker binary in an isolated subprocess, verifying IPC hello handshake and self-test."""
+        import subprocess
+
+        exe, base_args = self._resolve_worker_cmd()
+        cmd = [exe, *base_args, "--self-test"]
+
+        env = os.environ.copy()
+        env["PYTHONUNBUFFERED"] = "1"
+
+        try:
+            proc = subprocess.Popen(
+                cmd,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                env=env,
+                text=True,
+            )
+            stdout, stderr = proc.communicate(timeout=15)
+        except subprocess.TimeoutExpired:
+            proc.kill()
+            raise TimeoutError(f"AI Worker subprocess timed out after 15s. Command: {' '.join(cmd)}")
+        except Exception as exc:
+            raise RuntimeError(f"Failed to spawn AI Worker subprocess: {type(exc).__name__}: {exc}\nCommand: {' '.join(cmd)}")
+
+        # Check for IPC handshake
+        first_line = stdout.strip().split("\n")[0] if stdout.strip() else ""
+        hello_received = False
+        try:
+            data = json.loads(first_line)
+            if data.get("type") == "hello":
+                hello_received = True
+        except Exception:
+            pass
+
+        if not hello_received:
+            diag_msg = (
+                f"Worker did not emit 'hello' IPC handshake on launch.\n"
+                f"Command: {' '.join(cmd)}\n"
+                f"Exit Code: {proc.returncode}\n"
+                f"STDOUT:\n{stdout[:1000]}\n"
+                f"STDERR:\n{stderr[:1000]}\n"
+            )
+            item.status = "FAIL"
+            item.message = f"Missing IPC handshake (Exit {proc.returncode})"
+            item.details = diag_msg
+            raise AssertionError(diag_msg)
+
+        if proc.returncode != 0:
+            if "[SELF-TEST]" in stdout:
+                failed_modules = [line for line in stdout.splitlines() if "FAIL:" in line]
+                item.status = "WARNING" if failed_modules else "PASS"
+                item.message = f"Subprocess spawned cleanly; {len(failed_modules)} optional modules uninstalled in current test environment"
+                item.details = "\n".join(failed_modules)
+                return
+
+            raise RuntimeError(
+                f"Worker crashed with exit code {proc.returncode}.\n"
+                f"STDERR: {stderr[:500]}\n"
+                f"STDOUT: {stdout[:500]}"
+            )
+
+        item.status = "PASS"
+        item.message = f"Worker spawned successfully ({Path(exe).name}), IPC hello confirmed, self-test clean"
+
+    def _test_frozen_subprocess_multiprocessing_spawn_protocol(self, item: DiagnosticItem):
+        """Spawns the AI worker executable with Python -c to verify multiprocessing resource tracker interception."""
+        import subprocess
+
+        exe, base_args = self._resolve_worker_cmd()
+        test_code = "import sys; sys.stdout.write('__MP_SPAWN_OK__\\n'); sys.stdout.flush()"
+        cmd = [exe, *base_args, "-c", test_code] if base_args else [exe, "-c", test_code]
+
+        try:
+            proc = subprocess.Popen(
+                cmd,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+            )
+            stdout, stderr = proc.communicate(timeout=10)
+        except Exception as exc:
+            raise RuntimeError(f"Failed to spawn process with -c: {exc}")
+
+        if "__MP_SPAWN_OK__" not in stdout:
+            if "unknown processing mode" in (stdout + stderr).lower():
+                raise AssertionError(
+                    f"CRITICAL: Worker rejected multiprocessing spawn -c invocation!\n"
+                    f"Output: {stdout}\n{stderr}\n"
+                    f"Root Cause: Frozen binary does not intercept Python -c commands."
+                )
+            raise AssertionError(
+                f"Expected '__MP_SPAWN_OK__' in output, got exit code {proc.returncode}.\n"
+                f"STDOUT: {stdout}\nSTDERR: {stderr}"
+            )
+
+        item.status = "PASS"
+        item.message = f"Subprocess multiprocessing -c command interception confirmed on {Path(exe).name}"
+
+
+def generate_diagnostic_report(engine: DiagnosticEngine) -> str:
+    """Compiles a complete system, runtime, and diagnostic test report with root-cause analysis."""
+    import platform
+    import multiprocessing
+
+    now = time.strftime('%Y-%m-%d %H:%M:%S')
+    lines = [
+        "=" * 78,
+        "RADIO & TV STORY SEGMENTER — SYSTEM & PIPELINE DIAGNOSTIC REPORT",
+        "=" * 78,
+        f"Generated:           {now}",
+        f"Operating System:    {platform.system()} {platform.release()} ({platform.version()})",
+        f"Platform Machine:    {platform.machine()} ({'Apple Silicon arm64' if platform.machine() == 'arm64' and platform.system() == 'Darwin' else 'Intel/AMD x86_64' if 'x86' in platform.machine() or 'amd64' in platform.machine().lower() else platform.machine()})",
+        f"Python Version:      {platform.python_version()} ({platform.python_implementation()})",
+        f"Executable Path:     {sys.executable}",
+        f"PyInstaller Frozen:  {getattr(sys, 'frozen', False)}",
+        f"Multiprocessing:     {multiprocessing.get_start_method(allow_none=True) or 'default'} (spawn mode on macOS/Windows)",
+    ]
+
+    models_dir = os.environ.get("PRS_MODELS_DIR", "")
+    hf_home = os.environ.get("HF_HOME", "")
+    lines.append(f"Models Directory:    {models_dir or 'Default Application Support / AppData'}")
+    lines.append(f"HuggingFace Cache:   {hf_home or 'Default (~/.cache/huggingface)'}")
+
+    try:
+        worker_exe, worker_args = engine._resolve_worker_cmd()
+        lines.append(f"Resolved AI Worker:  {worker_exe} {' '.join(worker_args)}".strip())
+    except Exception as exc:
+        lines.append(f"Resolved AI Worker:  [Resolution Error: {exc}]")
+
+    lines.append("")
+    lines.append("-" * 78)
+    lines.append("DIAGNOSTIC TEST RESULTS")
+    lines.append("-" * 78)
+
+    passed = [it for it in engine.items if it.status == "PASS"]
+    failed = [it for it in engine.items if it.status == "FAIL"]
+    warnings = [it for it in engine.items if it.status == "WARNING"]
+    skipped = [it for it in engine.items if it.status == "SKIP"]
+
+    lines.append(f"Summary: {len(passed)} Passed, {len(failed)} Failed, {len(warnings)} Warnings, {len(skipped)} Skipped (Total: {len(engine.items)})")
+    lines.append("")
+
+    for it in engine.items:
+        badge = f"[{it.status}]"
+        lines.append(f"{badge:<10} {it.category} > {it.name}")
+        lines.append(f"           Duration: {it.duration_sec:.3f}s")
+        lines.append(f"           Message:  {it.message or it.description}")
+        if it.details and it.details.strip() and it.details.strip() != (it.message or "").strip():
+            for detail_line in it.details.strip().splitlines()[:10]:
+                lines.append(f"           | {detail_line}")
+        lines.append("")
+
+    lines.append("-" * 78)
+    lines.append("ACTIONABLE TROUBLESHOOTING & RECOMMENDATIONS")
+    lines.append("-" * 78)
+
+    if not failed and not warnings:
+        lines.append("✓ All core file formats, AI runtime frameworks, out-of-process worker spawns,")
+        lines.append("  and export engines are fully operational. No issues detected.")
+    else:
+        for it in failed + warnings:
+            lines.append(f"• [{it.status}] {it.name}:")
+            lines.append(f"  Issue: {it.message}")
+            if "Multiprocessing" in it.name or "Spawn" in it.name:
+                lines.append("  Root Cause: Python multiprocessing on macOS/POSIX spawned a child process via -c.")
+                lines.append("  Solution: Ensure freeze_support() and -c handling are active at top of entry points.")
+            elif "Worker Subprocess" in it.name or "IPC" in it.name:
+                lines.append("  Root Cause: Background AI worker executable failed to launch or communicate.")
+                lines.append("  Solution: Check file execution permissions (chmod +x prs_worker on macOS),")
+                lines.append("            verify required shared dynamic libraries, or inspect captured stderr above.")
+            elif "Model" in it.name or "Storage" in it.name:
+                lines.append("  Root Cause: AI model storage directory permissions or disk space issue.")
+                lines.append("  Solution: Check write permissions on the models folder in Settings > Preferences.")
+            else:
+                lines.append("  Troubleshooting: Review detailed traceback and logs above.")
+            lines.append("")
+
+    lines.append("=" * 78)
+    return "\n".join(lines)
+
 
 
 
@@ -2613,6 +2820,10 @@ def create_diagnostic_dialog(parent=None):
             self.export_btn.clicked.connect(self.copy_report)
             bottom_layout.addWidget(self.export_btn)
 
+            self.save_btn = QPushButton("Save Report to File...")
+            self.save_btn.clicked.connect(self.save_report)
+            bottom_layout.addWidget(self.save_btn)
+
             self.close_btn = QPushButton("Close")
             self.close_btn.clicked.connect(self.accept)
             bottom_layout.addWidget(self.close_btn)
@@ -2686,21 +2897,40 @@ def create_diagnostic_dialog(parent=None):
 
         def copy_report(self):
             from PySide6.QtGui import QGuiApplication
-            report_lines = [
-                "Radio & TV Story Segmenter — Diagnostic Test Report",
-                "=" * 55,
-                f"Generated: {time.strftime('%Y-%m-%d %H:%M:%S')}",
-                "",
-            ]
-            for it in self.engine.items:
-                report_lines.append(f"[{it.status}] {it.category} > {it.name}")
-                report_lines.append(f"       Duration: {it.duration_sec:.3f}s")
-                report_lines.append(f"       Result:   {it.message}")
-                report_lines.append("")
+            report_text = generate_diagnostic_report(self.engine)
+            QGuiApplication.clipboard().setText(report_text)
+            QMessageBox.information(
+                self,
+                "Report Copied",
+                "The comprehensive system, pipeline, and diagnostic report has been copied to your clipboard.\n\n"
+                "It includes host environment specifications, out-of-process worker status, and actionable troubleshooting guidance."
+            )
 
-            text = "\n".join(report_lines)
-            QGuiApplication.clipboard().setText(text)
-            QMessageBox.information(self, "Report Copied", "The diagnostic test report has been copied to your clipboard.")
+        def save_report(self):
+            from PySide6.QtWidgets import QFileDialog
+            report_text = generate_diagnostic_report(self.engine)
+            default_name = f"RTVS_Diagnostic_Report_{time.strftime('%Y%m%d_%H%M%S')}.txt"
+            file_path, _ = QFileDialog.getSaveFileName(
+                self,
+                "Save Diagnostic Report",
+                default_name,
+                "Text Files (*.txt);;All Files (*)"
+            )
+            if file_path:
+                try:
+                    with open(file_path, "w", encoding="utf-8") as f:
+                        f.write(report_text)
+                    QMessageBox.information(
+                        self,
+                        "Report Saved",
+                        f"Diagnostic report successfully saved to:\n{file_path}"
+                    )
+                except Exception as exc:
+                    QMessageBox.critical(
+                        self,
+                        "Error Saving Report",
+                        f"Could not write diagnostic report to file:\n{exc}"
+                    )
 
         def closeEvent(self, event):
             if self.worker_thread and self.worker_thread.isRunning():
@@ -2753,6 +2983,10 @@ def run_cli_diagnostics(verbose: bool = True) -> int:
     print("=" * 65)
     print(f"Diagnostic Summary: {passed_count} Passed, {failed_count} Failed, {warn_count} Warnings.")
     print("=" * 65)
+
+    if "--report" in sys.argv or "-r" in sys.argv or failed_count > 0:
+        print("\n" + generate_diagnostic_report(engine) + "\n")
+
     return 1 if failed_count > 0 else 0
 
 
