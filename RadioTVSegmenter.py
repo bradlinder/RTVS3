@@ -1,4 +1,4 @@
-"""Radio & TV Segmenter — v3.7.13-stable
+"""Radio & TV Segmenter — v3.7.14-stable
 
 This is the thin application composition root. UI/processing responsibilities
 are implemented in focused mixins so future changes can target smaller files

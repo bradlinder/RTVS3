@@ -334,6 +334,11 @@ class DiagnosticEngine:
                 "Validates WordPress export post items rebuilding across selected stories, all stories, full episode, and full episode + all stories scope modes",
             ),
             DiagnosticItem(
+                "WordPress Export Content & Transcript Formatter",
+                "Subtitles & Export Formats",
+                "Validates WordPress upload post content generation, dict transcript extraction, range filtering, Spanish translation integration, and robust media guid resolution",
+            ),
+            DiagnosticItem(
                 "Fade Curve Tables and Auditioning State",
                 "Timeline & Audio Performance",
                 "Validates precomputed fade curve lookup tables, monotonicity, boundary conditions, and dialog state rollback semantics",
@@ -1097,6 +1102,184 @@ class DiagnosticEngine:
 
         item.status = "PASS"
         item.message = "WordPress export post items rebuilding across all scope modes fully verified"
+
+    def _test_wordpress_export_content_and_transcript_formatter(self, item: DiagnosticItem):
+        try:
+            from PySide6.QtWidgets import QApplication
+        except ImportError:
+            item.status = "WARNING"
+            item.message = "PySide6 Qt GUI framework not present in current environment"
+            return
+
+        try:
+            from plugins.wordpress.client import execute_wordpress_upload, WordPressClient
+        except ImportError:
+            import importlib.util
+            spec = importlib.util.spec_from_file_location("wp_client", "plugins/wordpress/client.py")
+            if not spec or not spec.loader:
+                raise ImportError("Could not locate plugins/wordpress/client.py module")
+            mod = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(mod)
+            execute_wordpress_upload = mod.execute_wordpress_upload
+            WordPressClient = mod.WordPressClient
+
+        import tempfile
+        from pathlib import Path
+
+        # Create temporary dummy audio file so execute_wordpress_upload validates media existence
+        with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as tmp:
+            tmp.write(b"ID3" + b"\x00" * 200)
+            dummy_audio_path = tmp.name
+
+        try:
+            class DummyMainWindow:
+                def __init__(self):
+                    self.audio_file = dummy_audio_path
+                    self.duration = 60.0
+                    self.current_media_is_video = False
+                    # Standard RTVS transcript dictionary
+                    self.transcript = {
+                        "text": "Hello world. Welcome to the broadcast.",
+                        "segments": [
+                            {"start": 0.0, "end": 2.5, "text": "Hello world.", "speaker": "SPEAKER_00"},
+                            {"start": 2.5, "end": 5.0, "text": "Welcome to the broadcast.", "speaker": "SPEAKER_01"},
+                        ],
+                        "language": "en",
+                    }
+                    self.translations = {
+                        "en-es": {
+                            "segments": [
+                                {"start": 0.0, "end": 2.5, "text": "Hola mundo."},
+                                {"start": 2.5, "end": 5.0, "text": "Bienvenidos a la emisión."},
+                            ]
+                        }
+                    }
+
+                def transcript_for_range(self, start, end):
+                    res = []
+                    for idx, seg in enumerate(self.transcript["segments"]):
+                        s = seg["start"]
+                        e = seg["end"]
+                        if start is not None and e <= start:
+                            continue
+                        if end is not None and s >= end:
+                            continue
+                        c = dict(seg)
+                        c["_source_index"] = idx
+                        res.append(c)
+                    return res
+
+                def get_effective_speaker_name(self, idx, seg):
+                    return "Host" if seg.get("speaker") == "SPEAKER_00" else "Guest"
+
+                def get_spanish_translation_item(self):
+                    return self.translations.get("en-es")
+
+            captured_posts = []
+
+            class MockClient:
+                site_url = "https://example.com"
+                api_base = "https://example.com/wp-json/wp/v2"
+
+                def upload_media(self, file_path, filename=None):
+                    # Test guid both as dict and as plain string
+                    return {
+                        "id": 1234,
+                        "source_url": "https://example.com/wp-content/uploads/audio.mp3",
+                        "guid": "https://example.com/wp-content/uploads/audio.mp3",  # string format
+                    }
+
+                def create_post(self, title, content, excerpt="", status="draft", **kwargs):
+                    post_data = {
+                        "id": 5678,
+                        "title": {"rendered": title},
+                        "link": f"https://example.com/?p=5678",
+                        "content": {"rendered": content},
+                    }
+                    captured_posts.append((title, content, kwargs))
+                    return post_data
+
+            win = DummyMainWindow()
+            client = MockClient()
+
+            # 1. Test standard Full Episode export with bilingual accordion
+            res = execute_wordpress_upload(
+                main_window=win,
+                client=client,
+                post_title="Full Episode Test",
+                post_excerpt="Episode excerpt",
+                start=None,
+                end=None,
+                task_label="Full Episode",
+                include_english=True,
+                include_spanish=True,
+                spanish_presentation="accordion",
+                primary_language="en",
+            )
+
+            if not res or res.get("id") != 5678:
+                raise AssertionError(f"Expected post ID 5678, got {res}")
+            _, content_html, _ = captured_posts[0]
+            if "<strong>Host:</strong> Hello world." not in content_html:
+                raise AssertionError(f"Expected speaker-formatted English block, got: {content_html}")
+            if "Hola mundo." not in content_html or "Leer en Español" not in content_html:
+                raise AssertionError(f"Expected Spanish accordion block, got: {content_html}")
+
+            # 2. Test Story Slice export
+            captured_posts.clear()
+            res_slice = execute_wordpress_upload(
+                main_window=win,
+                client=client,
+                post_title="Segment 1 Test",
+                post_excerpt="Story excerpt",
+                start=0.0,
+                end=2.5,
+                task_label="Story 1",
+                include_english=True,
+                include_spanish=False,
+                spanish_presentation="accordion",
+                primary_language="en",
+            )
+            if not res_slice or res_slice.get("id") != 5678:
+                raise AssertionError(f"Expected post ID 5678 for slice, got {res_slice}")
+            _, slice_content, _ = captured_posts[0]
+            if "Hello world." not in slice_content or "Welcome to the broadcast." in slice_content:
+                raise AssertionError(f"Slice range filtering failed: {slice_content}")
+
+            # 3. Test list transcript format and dict guid handling
+            captured_posts.clear()
+            win.transcript = [
+                {"start": 0.0, "end": 2.5, "text": "Raw list segment.", "speaker": "Host"}
+            ]
+            del win.transcript_for_range  # force fallback to raw list iteration
+            client.upload_media = lambda f, filename=None: {
+                "id": 999,
+                "source_url": "",
+                "guid": {"rendered": "https://example.com/wp-content/uploads/dict_guid.mp3"}
+            }
+            res_list = execute_wordpress_upload(
+                main_window=win,
+                client=client,
+                post_title="Raw List Test",
+                post_excerpt="",
+                start=0.0,
+                end=2.5,
+                task_label="List Story",
+                include_english=True,
+                include_spanish=False,
+                spanish_presentation="accordion",
+                primary_language="en",
+            )
+            if not res_list:
+                raise AssertionError("Failed to export with raw list transcript and dict guid")
+
+            item.status = "PASS"
+            item.message = "WordPress export post content, dict transcript slicing, and media URL resolution verified"
+        finally:
+            try:
+                Path(dummy_audio_path).unlink(missing_ok=True)
+            except Exception:
+                pass
 
     def _test_fade_curve_tables_and_auditioning_state(self, item: DiagnosticItem):
         from core_utils import calculate_fade_curve_factor, calculate_fade_out_factor

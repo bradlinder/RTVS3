@@ -905,7 +905,8 @@ def execute_wordpress_upload(
         try:
             report_progress(1, "Uploading featured image…")
             img_item = client.upload_media(featured_image_path, filename=Path(featured_image_path).name)
-            featured_media_id = img_item.get("id")
+            if isinstance(img_item, dict):
+                featured_media_id = img_item.get("id")
         except Exception as exc:
             if hasattr(main_window, "log_activity"):
                 main_window.log_activity(f"[WORDPRESS WARNING] Failed to upload featured image: {exc}")
@@ -950,7 +951,15 @@ def execute_wordpress_upload(
         report_progress(2, "Uploading audio to WordPress media library…")
         upload_name = media_filename or f"{safe_filename(post_title or 'audio')}.mp3"
         media_item = client.upload_media(target_media, filename=upload_name)
-        media_url = media_item.get("source_url") or media_item.get("guid", {}).get("rendered", "")
+        media_url = ""
+        if isinstance(media_item, dict):
+            guid_data = media_item.get("guid")
+            guid_url = ""
+            if isinstance(guid_data, dict):
+                guid_url = guid_data.get("rendered", "")
+            elif isinstance(guid_data, str):
+                guid_url = guid_data
+            media_url = media_item.get("source_url") or guid_url
         if not media_url:
             raise RuntimeError("WordPress upload succeeded but media URL could not be resolved.")
     finally:
@@ -983,31 +992,103 @@ def execute_wordpress_upload(
         )
 
     # Transcript extraction
-    full_transcript = getattr(main_window, "transcript", []) or []
-    clip_transcript = []
-    if start is not None and end is not None:
-        for seg in full_transcript:
-            seg_start = seg.get("start", 0.0)
-            seg_end = seg.get("end", 0.0)
-            if (seg_start >= start and seg_start <= end) or (seg_end >= start and seg_end <= end) or (seg_start <= start and seg_end >= end):
-                clip_transcript.append(seg)
+    raw_transcript = getattr(main_window, "transcript", None)
+    if isinstance(raw_transcript, dict):
+        full_transcript = raw_transcript.get("segments", []) or []
+    elif isinstance(raw_transcript, list):
+        full_transcript = raw_transcript
     else:
-        clip_transcript = full_transcript
+        full_transcript = []
+
+    clip_transcript = []
+    if hasattr(main_window, "transcript_for_range") and callable(main_window.transcript_for_range):
+        try:
+            clip_transcript = main_window.transcript_for_range(start, end)
+        except Exception:
+            clip_transcript = []
+
+    if not clip_transcript and full_transcript:
+        for idx, seg in enumerate(full_transcript):
+            if not isinstance(seg, dict):
+                continue
+            seg_start = float(seg.get("start", 0.0))
+            seg_end = float(seg.get("end", seg_start))
+            if start is not None and end is not None:
+                if seg_end <= start or seg_start >= end:
+                    continue
+                c_seg = dict(seg)
+                c_seg["_source_index"] = idx
+                clip_transcript.append(c_seg)
+            else:
+                c_seg = dict(seg)
+                c_seg["_source_index"] = idx
+                clip_transcript.append(c_seg)
+
+    # Optional plain text fallback when no segments are available
+    plain_text = ""
+    if not clip_transcript:
+        if isinstance(raw_transcript, dict) and raw_transcript.get("text"):
+            plain_text = str(raw_transcript.get("text", "")).strip()
+        elif isinstance(raw_transcript, str):
+            plain_text = raw_transcript.strip()
+        elif hasattr(main_window, "_get_transcript_text_slice") and callable(main_window._get_transcript_text_slice):
+            try:
+                plain_text = str(main_window._get_transcript_text_slice(start, end) or "").strip()
+            except Exception:
+                plain_text = ""
+        elif hasattr(main_window, "transcript_view") and hasattr(main_window.transcript_view, "toPlainText"):
+            plain_text = str(main_window.transcript_view.toPlainText() or "").strip()
+
+    # Spanish translation source if requested
+    spanish_segments = []
+    if include_spanish:
+        spanish_item = None
+        if hasattr(main_window, "get_spanish_translation_item") and callable(main_window.get_spanish_translation_item):
+            spanish_item = main_window.get_spanish_translation_item()
+        elif hasattr(main_window, "translations") and isinstance(getattr(main_window, "translations", None), dict):
+            spanish_item = (
+                main_window.translations.get("en-es")
+                or main_window.translations.get("en_es")
+                or main_window.translations.get("es-en")
+                or main_window.translations.get("es_en")
+            )
+        if isinstance(spanish_item, dict):
+            spanish_segments = spanish_item.get("segments", []) or []
 
     def language_blocks(lang_code: str):
         blocks = []
-        for seg in clip_transcript:
-            text = ""
-            if lang_code == "en":
-                text = seg.get("text", "").strip()
-            elif lang_code == "es":
-                text = seg.get("translations", {}).get("es", "").strip()
-            if not text:
-                continue
-            speaker = seg.get("speaker", "").strip()
-            speaker_prefix = f"<strong>{html.escape(speaker)}:</strong> " if speaker else ""
-            formatted_text = format_rich_text_to_html(text)
-            blocks.append(f"<!-- wp:paragraph -->\n<p>{speaker_prefix}{formatted_text}</p>\n<!-- /wp:paragraph -->")
+        if clip_transcript:
+            for idx, seg in enumerate(clip_transcript):
+                if not isinstance(seg, dict):
+                    continue
+                text = ""
+                s_idx = seg.get("_source_index", idx)
+                if lang_code == "en":
+                    text = str(seg.get("text", "") or "").strip()
+                elif lang_code == "es":
+                    if isinstance(seg.get("translations"), dict):
+                        text = str(seg.get("translations", {}).get("es", "") or "").strip()
+                    if not text and spanish_segments and 0 <= s_idx < len(spanish_segments):
+                        t_seg = spanish_segments[s_idx]
+                        if isinstance(t_seg, dict):
+                            text = str(t_seg.get("text", "") or "").strip()
+                if not text:
+                    continue
+
+                speaker = ""
+                if hasattr(main_window, "get_effective_speaker_name") and callable(main_window.get_effective_speaker_name):
+                    speaker = main_window.get_effective_speaker_name(s_idx, seg)
+                elif hasattr(main_window, "speaker_for_segment") and callable(main_window.speaker_for_segment):
+                    speaker = main_window.speaker_for_segment(seg)
+                if not speaker:
+                    speaker = str(seg.get("speaker", "") or "").strip()
+
+                speaker_prefix = f"<strong>{html.escape(speaker)}:</strong> " if speaker else ""
+                formatted_text = format_rich_text_to_html(text)
+                blocks.append(f"<!-- wp:paragraph -->\n<p>{speaker_prefix}{formatted_text}</p>\n<!-- /wp:paragraph -->")
+        elif plain_text and lang_code == "en":
+            formatted_text = format_rich_text_to_html(plain_text).replace("\n\n", "</p>\n<!-- /wp:paragraph -->\n<!-- wp:paragraph -->\n<p>").replace("\n", "<br/>")
+            blocks.append(f"<!-- wp:paragraph -->\n<p>{formatted_text}</p>\n<!-- /wp:paragraph -->")
         return blocks
 
     en_blocks = language_blocks("en") if include_english else []

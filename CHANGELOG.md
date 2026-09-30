@@ -1,5 +1,15 @@
 # Changelog
 
+## v3.7.14-stable
+- **WordPress Direct REST API Export Fix (`plugins/wordpress/client.py`, `plugins/wordpress/plugin.py`, `plugins/wordpress/manifest.json`, `test_runner.py`)**:
+  - **Resolved `'str' object has no attribute 'get'` WordPress Export Failure**: Fixed a critical bug where exporting a post to WordPress failed with `Errors: Filename: 'str' object has no attribute 'get'`. In RTVS, the application transcript is structured as a dictionary containing metadata and the `segments` list (`{"text": ..., "segments": [...]}`). In `execute_wordpress_upload`, iterating directly over `main_window.transcript` yielded dictionary keys as strings (`'text'`, `'segments'`), causing segment attribute lookups (`seg.get("start")`) to fail with an `AttributeError`.
+  - **Resilient Multi-Format Transcript Slicing**: Updated transcript parsing to cleanly support dictionary structures (`raw_transcript.get("segments")`), raw segment lists, and plain text fallbacks (`_get_transcript_text_slice`), utilizing `main_window.transcript_for_range` for accurate story clipping.
+  - **Robust Media GUID & URL Resolution**: Guarded WordPress media upload responses so that media `guid` values returned as either raw string URLs or nested objects (`{"rendered": "..."}`) are safely unwrapped without raising attribute errors.
+  - **Integrated Spanish Translation Mapping**: Properly mapped project-level translation segments (`get_spanish_translation_item()` / `translations["en-es"]`) to source segments via `_source_index`, ensuring bilingual accordion and dual-language post presentations format accurately.
+  - **Acoustic Speaker Name Propagation**: Integrated `get_effective_speaker_name` and `speaker_for_segment` into WordPress paragraph generation so user-customized speaker names and merged diarization clusters display in published post transcripts.
+  - **WordPress Export Content & Formatting Diagnostic Test**: Added a dedicated verification test (`_test_wordpress_export_content_and_transcript_formatter`) in `test_runner.py` asserting dictionary transcript slicing, range extraction, bilingual formatting, and media GUID resolution.
+  - **Plugin Catch-Up Synchronization**: Synchronized WordPress plugin version to `3.7.14-stable` in `plugins/wordpress/manifest.json`.
+
 ## v3.7.13-stable
 - **macOS Multiprocessing & PyInstaller Resource Tracker Intercept (`RadioTVSegmenter.py`, `radio_tv_story_segmenter_worker.py`, `test_runner.py`)**:
   - **Resolved "Unknown Processing Mode: from multiprocessing.resource_tracker import main;main(9)" Crash**: Fixed a critical crash on macOS when running multi-stage processing (transcription with parakeet-onnx or whisper, speaker detection, and story segmentation). In packaged PyInstaller builds on macOS/POSIX, `sys.executable` points to the compiled frozen binary (`RadioTVStorySegmenter` or `prs_worker`). When ML runtimes (WeSpeaker, sherpa-onnx, PyTorch, faster-whisper) spawn resource-tracking or child processes via `multiprocessing.spawn`, Python executes `sys.executable -c "from multiprocessing.resource_tracker import main;main(fd)"`.

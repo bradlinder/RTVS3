@@ -287,10 +287,16 @@ class WordPressPublishDialog(QDialog):
             start = getattr(self.story, "start", 0.0)
             end = getattr(self.story, "end", 0.0)
             timestamp = start
-            if hasattr(self.app, "get_story_transcript"):
+            if hasattr(self.app, "_get_transcript_text_slice"):
+                content = self.app._get_transcript_text_slice(start, end)
+            elif hasattr(self.app, "get_story_transcript"):
                 content = self.app.get_story_transcript(self.story)
             elif hasattr(self.app, "transcript"):
-                content = str(self.app.transcript)
+                raw_t = self.app.transcript
+                if isinstance(raw_t, dict):
+                    content = raw_t.get("text", "")
+                elif isinstance(raw_t, str):
+                    content = raw_t
         elif hasattr(self.app, "stories") and self.app.stories:
             sel_indices = getattr(self.app, "current_selected_story_indices", [])
             idx = sel_indices[0] if sel_indices else 0
@@ -298,7 +304,9 @@ class WordPressPublishDialog(QDialog):
                 st = self.app.stories[idx]
                 title = st.title
                 timestamp = st.start
-                if hasattr(self.app, "get_story_transcript"):
+                if hasattr(self.app, "_get_transcript_text_slice"):
+                    content = self.app._get_transcript_text_slice(st.start, st.end)
+                elif hasattr(self.app, "get_story_transcript"):
                     content = self.app.get_story_transcript(st)
 
         if not title and hasattr(self.app, "audio_file") and self.app.audio_file:
@@ -395,8 +403,11 @@ class WordPressPublishDialog(QDialog):
 
         # Content
         content = ""
-        if self.story and hasattr(self.app, "get_story_transcript"):
-            content = self.app.get_story_transcript(self.story)
+        if self.story:
+            if hasattr(self.app, "_get_transcript_text_slice"):
+                content = self.app._get_transcript_text_slice(getattr(self.story, "start", None), getattr(self.story, "end", None))
+            elif hasattr(self.app, "get_story_transcript"):
+                content = self.app.get_story_transcript(self.story)
         elif hasattr(self.app, "transcript_view") and hasattr(self.app.transcript_view, "toPlainText"):
             content = self.app.transcript_view.toPlainText()
 
