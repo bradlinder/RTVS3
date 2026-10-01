@@ -1,5 +1,13 @@
 # Changelog
 
+## v3.7.22-stable
+- **Diagnostic Test Bench Frozen PyInstaller Binary Hardening (`test_runner.py`)**:
+  - **Resolved `AssertionError: batch_dialog.py file not found`**: Fixed test harness in `_test_batch_unified_transcripts_directory_export`. When running from compiled PyInstaller frozen executables (`RadioTVSegmenter.exe`), python source `.py` files are bundled into bytecode archives rather than loose files on disk. The test now conditionally runs AST verification when `batch_dialog.py` is present on disk, and seamlessly falls back to module reflection and runtime widget validation in compiled frozen binary environments.
+  - **Resolved `AssertionError: export/dialog.py missing`**: Updated `_test_unified_export_destinations_and_youtube_auth_integrity` to make `export/dialog.py` and `plugins/wordpress/plugin.py` file checks frozen-aware, using live module reflection when executed from packaged PyInstaller binaries.
+  - **Clean Status Messaging**: Refined `_test_modal_dialog_maximizable_import_integrity` to report `"(compiled frozen binary mode)"` when executed in frozen environments rather than reporting zero modules.
+- **Plugin Catch-Up Synchronization**:
+  - Synchronized `manifest.json` versions for modified plugins: `plugins/youtube` (`v3.7.22-stable`), `plugins/wordpress` (`v3.7.22-stable`), and `plugins/gdocs` (`v3.7.22-stable`).
+
 ## v3.7.21-stable
 - **Diagnostic Test Bench Hardening & Attribute Lifecycle Resolution (`test_runner.py`, `plugins/base.py`)**:
   - **Resolved `AttributeError: 'DummyMainWindow' object has no attribute 'transcript_for_range'`**: Fixed an attribute deletion error in `_test_wordpress_export_content_and_transcript_formatter`. In Python, attempting `del win.transcript_for_range` on an instance when the method is defined on the class raises an `AttributeError`. Replaced direct instance deletion with safe class-level `delattr` and fallback assignment (`win.transcript_for_range = None`), ensuring test execution proceeds smoothly on all environments with PySide6 installed.

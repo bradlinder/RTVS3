@@ -29,18 +29,18 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 --------------------------------------------------------------------------------
 TABLE OF CONTENTS & STATUS OVERVIEW
 --------------------------------------------------------------------------------
-1. Previous Release: Diagnostic Test Bench Hardening & Resilient Test Harness (`test_runner.py`, `plugins/wordpress/client.py`) [x] [COMPLETED in v3.7.20-stable]
-   [x] 1.1 Pre-Existing Authentication Token Support in Auth Integrity Test: Fixed `_test_unified_export_destinations_and_youtube_auth_integrity` in `test_runner.py` to support user environments with existing credentials while using isolated instances for deterministic unauthenticated and authenticated unit testing.
-   [x] 1.2 Valid Waveform Audio Generation in WordPress Diagnostic Test: Replaced dummy non-audio data (`b"ID3" + b"\x00" * 200`) in `_test_wordpress_export_content_and_transcript_formatter` with standard Python `wave` module 16kHz PCM audio, preventing FFmpeg decoding errors on systems with FFmpeg installed.
-   [x] 1.3 Resilient Subprocess Test Harness Wrapper: Added safe subprocess interception around FFmpeg preparation in the WordPress formatter test to guarantee deterministic execution across all CI and desktop environments.
-   [x] 1.4 Compact FFmpeg Error Diagnostics: Enhanced `execute_wordpress_upload` in `plugins/wordpress/client.py` to extract and report trailing FFmpeg error messages rather than the compiler configuration banner.
+1. Previous Release: Test Bench Attribute Lifecycle Resolution & Media Path Hardening (`test_runner.py`, `plugins/base.py`, `export/dialog.py`, `plugins/youtube/export_destination.py`) [x] [COMPLETED in v3.7.21-stable]
+   [x] 1.1 Resolved DummyMainWindow transcript_for_range AttributeError: Fixed `_test_wordpress_export_content_and_transcript_formatter` in `test_runner.py` by replacing instance-level `del win.transcript_for_range` with safe class-level `delattr(DummyMainWindow, "transcript_for_range")` and fallback null assignment.
+   [x] 1.2 Resolved PluginManifest __init__ Unexpected Keyword Argument 'enabled': Added canonical `enabled: bool = False` dataclass field and parsing to `PluginManifest` in `plugins/base.py`, and updated test instantiation to pass `enabled_by_default` and `enabled` aligned with `PROJECT_VERSION`.
+   [x] 1.3 Safe String & Path Type Coercion in Export Dialog: Coerced `audio_file` and `project_file` references through `Path(...)` in `export/dialog.py` and `plugins/youtube/export_destination.py` to protect against `AttributeError: 'str' object has no attribute 'suffix'/'stem'`.
+   [x] 1.4 Export Destination Discovery Guards: Enforced `page is not None` checks during plugin destination discovery in `UnifiedExportDialog._build_destinations_layout`.
+   [x] 1.5 Plugin Catch-Up Synchronization: Synchronized version fields across `plugins/youtube/manifest.json`, `plugins/wordpress/manifest.json`, and `plugins/gdocs/manifest.json` to `3.7.21-stable`.
 
-2. Current Release: Test Bench Attribute Lifecycle Resolution & Media Path Hardening (`test_runner.py`, `plugins/base.py`, `export/dialog.py`, `plugins/youtube/export_destination.py`) [x] [COMPLETED in v3.7.21-stable]
-   [x] 2.1 Resolved DummyMainWindow transcript_for_range AttributeError: Fixed `_test_wordpress_export_content_and_transcript_formatter` in `test_runner.py` by replacing instance-level `del win.transcript_for_range` with safe class-level `delattr(DummyMainWindow, "transcript_for_range")` and fallback null assignment.
-   [x] 2.2 Resolved PluginManifest __init__ Unexpected Keyword Argument 'enabled': Added canonical `enabled: bool = False` dataclass field and parsing to `PluginManifest` in `plugins/base.py`, and updated test instantiation to pass `enabled_by_default` and `enabled` aligned with `PROJECT_VERSION`.
-   [x] 2.3 Safe String & Path Type Coercion in Export Dialog: Coerced `audio_file` and `project_file` references through `Path(...)` in `export/dialog.py` and `plugins/youtube/export_destination.py` to protect against `AttributeError: 'str' object has no attribute 'suffix'/'stem'`.
-   [x] 2.4 Export Destination Discovery Guards: Enforced `page is not None` checks during plugin destination discovery in `UnifiedExportDialog._build_destinations_layout`.
-   [x] 2.5 Plugin Catch-Up Synchronization: Synchronized version fields across `plugins/youtube/manifest.json`, `plugins/wordpress/manifest.json`, and `plugins/gdocs/manifest.json` to `3.7.21-stable`.
+2. Current Release: Frozen PyInstaller Binary Test Harness Hardening (`test_runner.py`) [x] [COMPLETED in v3.7.22-stable]
+   [x] 2.1 Frozen-Aware batch_dialog.py Verification: Upgraded `_test_batch_unified_transcripts_directory_export` in `test_runner.py` to conditionally perform static AST verification when source files are present and seamlessly verify runtime class attributes via reflection when executing from compiled PyInstaller frozen binaries (`RadioTVSegmenter.exe`).
+   [x] 2.2 Frozen-Aware export/dialog.py & Plugin Source Integrity: Updated `_test_unified_export_destinations_and_youtube_auth_integrity` in `test_runner.py` to inspect runtime classes and modules directly when loose source files are omitted from frozen application directories.
+   [x] 2.3 Informative Frozen Binary Modal Status: Refined `_test_modal_dialog_maximizable_import_integrity` reporting to clarify compiled frozen binary verification status.
+   [x] 2.4 Plugin Catch-Up Synchronization: Synchronized version fields across `plugins/youtube/manifest.json`, `plugins/wordpress/manifest.json`, and `plugins/gdocs/manifest.json` to `3.7.22-stable`.
 
 3. Upcoming Milestone: Comprehensive Cloud & Local Backup & Restore System (`project_lifecycle.py`, `plugins/gdocs/`) [PLANNED for v3.8.0] [NOT STARTED]
    [ ] 3.1 Unified State Serialization (`project_lifecycle.py`): Export preferences, keyboard shortcuts, installed model inventories, glossary items, and user configurations into a cryptographically verified backup archive.
@@ -61,50 +61,50 @@ DETAILED MILESTONE SPECIFICATIONS
 ================================================================================
 
 ================================================================================
-1. PREVIOUS RELEASE: DIAGNOSTIC TEST BENCH HARDENING & RESILIENT TEST HARNESS [x] [COMPLETED in v3.7.20-stable]
+1. PREVIOUS RELEASE: TEST BENCH ATTRIBUTE LIFECYCLE & MEDIA PATH HARDENING [x] [COMPLETED in v3.7.21-stable]
 ================================================================================
 
-[x] 1.1 Pre-Existing Authentication Token Support in Auth Integrity Test (`test_runner.py`)
---------------------------------------------------------------------------------
-- Updated `_test_unified_export_destinations_and_youtube_auth_integrity` to verify consistent email return values when credentials already exist on user machines, testing unauthenticated and authenticated branches via isolated token test instances.
-
-[x] 1.2 Valid Waveform Audio Generation in WordPress Diagnostic Test (`test_runner.py`)
---------------------------------------------------------------------------------
-- Generated standard 16kHz PCM WAV audio files using Python's built-in `wave` module in `_test_wordpress_export_content_and_transcript_formatter`, resolving FFmpeg parsing errors during story slice conversion.
-
-[x] 1.3 Resilient Subprocess Test Harness Wrapper (`test_runner.py`)
---------------------------------------------------------------------------------
-- Added safe subprocess interception around FFmpeg preparation in the WordPress formatter test to guarantee deterministic execution across all CI and desktop environments.
-
-[x] 1.4 Compact FFmpeg Error Diagnostics (`plugins/wordpress/client.py`)
---------------------------------------------------------------------------------
-- Enhanced `execute_wordpress_upload` in `plugins/wordpress/client.py` to extract and report trailing FFmpeg error messages rather than the compiler configuration banner.
-
-
-================================================================================
-2. CURRENT RELEASE: TEST BENCH ATTRIBUTE LIFECYCLE & MEDIA PATH HARDENING [x] [COMPLETED in v3.7.21-stable]
-================================================================================
-
-[x] 2.1 Resolved DummyMainWindow transcript_for_range AttributeError (`test_runner.py`)
+[x] 1.1 Resolved DummyMainWindow transcript_for_range AttributeError (`test_runner.py`)
 --------------------------------------------------------------------------------
 - Replaced instance `del win.transcript_for_range` with safe class-level `delattr(DummyMainWindow, "transcript_for_range")` and fallback null assignment in `_test_wordpress_export_content_and_transcript_formatter`, resolving `AttributeError` on environments with PySide6 installed.
 
-[x] 2.2 Resolved PluginManifest Unexpected Keyword Argument 'enabled' (`plugins/base.py`, `test_runner.py`)
+[x] 1.2 Resolved PluginManifest Unexpected Keyword Argument 'enabled' (`plugins/base.py`, `test_runner.py`)
 --------------------------------------------------------------------------------
 - Added `enabled: bool = False` attribute to the `PluginManifest` dataclass and `from_dict` constructor in `plugins/base.py`.
 - Updated `_test_unified_export_destinations_and_youtube_auth_integrity` in `test_runner.py` to instantiate `PluginManifest` with `enabled_by_default=True, enabled=True` synchronized with `PROJECT_VERSION`.
 
-[x] 2.3 Safe Media Path & Extension Type Coercion (`export/dialog.py`, `plugins/youtube/export_destination.py`)
+[x] 1.3 Safe Media Path & Extension Type Coercion (`export/dialog.py`, `plugins/youtube/export_destination.py`)
 --------------------------------------------------------------------------------
 - Coerced `audio_file` and `project_file` references with `Path(...)` prior to calling `.suffix` or `.stem`, ensuring both string and Path instances are safely handled.
 
-[x] 2.4 Export Destination Discovery Guards (`export/dialog.py`)
+[x] 1.4 Export Destination Discovery Guards (`export/dialog.py`)
 --------------------------------------------------------------------------------
 - Enforced `if page is not None:` guards in `UnifiedExportDialog._build_destinations_layout` before appending discovered plugin destination widgets.
 
-[x] 2.5 Plugin Catch-Up Synchronization (`plugins/*/manifest.json`)
+[x] 1.5 Plugin Catch-Up Synchronization (`plugins/*/manifest.json`)
 --------------------------------------------------------------------------------
 - Synchronized version fields across `plugins/youtube/manifest.json`, `plugins/wordpress/manifest.json`, and `plugins/gdocs/manifest.json` to `3.7.21-stable`.
+
+
+================================================================================
+2. CURRENT RELEASE: FROZEN PYINSTALLER BINARY TEST HARNESS HARDENING [x] [COMPLETED in v3.7.22-stable]
+================================================================================
+
+[x] 2.1 Frozen-Aware batch_dialog.py Verification (`test_runner.py`)
+--------------------------------------------------------------------------------
+- Upgraded `_test_batch_unified_transcripts_directory_export` in `test_runner.py` to conditionally perform static AST verification when source files are present and seamlessly verify runtime class attributes via reflection when executing from compiled PyInstaller frozen binaries (`RadioTVSegmenter.exe`).
+
+[x] 2.2 Frozen-Aware export/dialog.py & Plugin Source Integrity (`test_runner.py`)
+--------------------------------------------------------------------------------
+- Updated `_test_unified_export_destinations_and_youtube_auth_integrity` in `test_runner.py` to inspect runtime classes and modules directly when loose source files are omitted from frozen application directories.
+
+[x] 2.3 Informative Frozen Binary Modal Status (`test_runner.py`)
+--------------------------------------------------------------------------------
+- Refined `_test_modal_dialog_maximizable_import_integrity` reporting to clarify compiled frozen binary verification status.
+
+[x] 2.4 Plugin Catch-Up Synchronization (`plugins/*/manifest.json`)
+--------------------------------------------------------------------------------
+- Synchronized version fields across `plugins/youtube/manifest.json`, `plugins/wordpress/manifest.json`, and `plugins/gdocs/manifest.json` to `3.7.22-stable`.
 
 
 ================================================================================
