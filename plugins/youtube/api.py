@@ -58,13 +58,36 @@ YOUTUBE_CATEGORIES = [
 ]
 
 
-class YouTubeAuthManager(GoogleDocsAuthManager):
+class YouTubeAuthManager(GoogleDocsAuthManager or object):
     """Specialized OAuth 2.0 PKCE manager for YouTube Data API v3 permissions."""
 
     def __init__(self):
-        super().__init__()
+        if GoogleDocsAuthManager:
+            super().__init__()
+        else:
+            self._tokens = {}
         # In multi-service mode, we request YouTube upload scopes
         self.scopes = YOUTUBE_SCOPES
+
+    def is_authenticated(self) -> bool:
+        """Return True if an access or refresh token is stored."""
+        if hasattr(super(), "is_authenticated"):
+            return super().is_authenticated()
+        if hasattr(self, "_tokens") and isinstance(self._tokens, dict):
+            return bool(self._tokens.get("refresh_token") or self._tokens.get("access_token"))
+        return False
+
+    def get_user_email(self) -> str:
+        """Return the authenticated user's email address if available."""
+        if hasattr(super(), "get_user_email"):
+            return super().get_user_email()
+        if hasattr(self, "_tokens") and isinstance(self._tokens, dict):
+            return str(self._tokens.get("user_email", "") or "")
+        return ""
+
+    def get_authenticated_email(self) -> str:
+        """Return the authenticated user's email address if available."""
+        return self.get_user_email()
 
     def get_authorization_url(self, port: int, state: str, code_challenge: str) -> str:
         client_id, _ = self.get_client_credentials()

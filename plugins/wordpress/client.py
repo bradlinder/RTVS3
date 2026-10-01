@@ -944,7 +944,10 @@ def execute_wordpress_upload(
             flags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
             res = subprocess.run(cmd, capture_output=True, text=True, creationflags=flags)
             if res.returncode != 0 or not temp_audio.exists() or temp_audio.stat().st_size == 0:
-                raise RuntimeError(f"FFmpeg audio preparation failed: {res.stderr[:300]}")
+                raw_err = res.stderr.strip() if res.stderr else "Unknown error"
+                err_lines = [ln.strip() for ln in raw_err.splitlines() if ln.strip()]
+                compact_err = " | ".join(err_lines[-3:]) if err_lines else raw_err[:300]
+                raise RuntimeError(f"FFmpeg audio preparation failed: {compact_err}")
             target_media = str(temp_audio)
 
         # Upload Media to WordPress

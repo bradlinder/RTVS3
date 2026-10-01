@@ -1,7 +1,7 @@
 {
   "id": "youtube",
   "name": "YouTube Video Publisher",
-  "version": "3.7.12-stable",
+  "version": "3.7.21-stable",
   "description": "Publishes broadcast video stories to YouTube (Direct 1-Click API upload or Zero-API Assisted upload) with automated chapter timestamps, custom thumbnails, captions (.srt), and tags.",
 
   "author": "Radio & TV Segmenter Team",

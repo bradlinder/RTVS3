@@ -1023,8 +1023,6 @@ class ProjectExportMixin(ProjectLifecycleMixin):
                 self.export_all_stories(custom_formats=formats, custom_base=chosen_name, custom_options=options, directory=str(project_dir), is_custom_location=is_custom)
             elif scope == "full_and_all_stories":
                 self.export_full_and_all_stories(custom_formats=formats, custom_base=chosen_name, custom_options=options, directory=str(project_dir), is_custom_location=is_custom)
-        elif dest == "youtube":
-            self._handle_youtube_export_result(result)
         else:
             handled = False
             if hasattr(self, "plugin_manager") and self.plugin_manager:
@@ -1033,7 +1031,10 @@ class ProjectExportMixin(ProjectLifecycleMixin):
                         d.execute_export(self, result)
                         handled = True
                         break
-            if not handled and getattr(self, "log_activity", None):
+            if not handled and dest == "youtube":
+                self._handle_youtube_export_result(result)
+                handled = True
+            elif not handled and getattr(self, "log_activity", None):
                 self.log_activity(f"[EXPORT] No handler available for export destination '{dest}'")
 
     def cancel_export(self):

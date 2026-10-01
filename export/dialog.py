@@ -412,8 +412,15 @@ class UnifiedExportDialog(QDialog):
                     page = entry["page"]
                     break
             if page is None:
-                page = dest.create_widget(self.stacked_widget, self.main_window)
-                self.stacked_widget.addWidget(page)
+                try:
+                    page = dest.create_widget(self.stacked_widget, self.main_window)
+                    if page is not None:
+                        self.stacked_widget.addWidget(page)
+                    else:
+                        continue
+                except Exception as exc:
+                    print(f"[EXPORT] Warning: Failed to initialize export destination '{getattr(dest, 'id', 'unknown')}': {exc}")
+                    continue
 
             clean_t = dest.title.replace("&&", "&")
             radio = QRadioButton(clean_t)
@@ -490,35 +497,6 @@ class UnifiedExportDialog(QDialog):
                     e["radio"].setChecked(True)
                     break
             self._on_dest_changed()
-        self.scope_combo.currentIndexChanged.connect(self._on_scope_changed)
-
-        # Bottom Buttons
-        btns = QHBoxLayout()
-        self.save_defaults_btn = QPushButton("Save Options as Default")
-        self.save_defaults_btn.setToolTip("Save the current export options as the default for future exports.")
-        btns.addWidget(self.save_defaults_btn)
-        btns.addStretch()
-        self.export_btn = QPushButton("Export Files...")
-        self.export_btn.setDefault(True)
-        self.cancel_btn = QPushButton("Cancel")
-        btns.addWidget(self.export_btn)
-        btns.addWidget(self.cancel_btn)
-        layout.addLayout(btns)
-
-        self.save_defaults_btn.clicked.connect(lambda: self.save_options_to_settings(as_default=True))
-        self.cancel_btn.clicked.connect(self.reject)
-        self.export_btn.clicked.connect(self._handle_accept)
-
-        self._load_saved_options()
-
-        # Handle initial_dest routing
-        if initial_dest:
-            for r, d, _ in self._plugin_destinations:
-                if d.id == initial_dest:
-                    r.setChecked(True)
-                    break
-
-        self._on_dest_changed()
 
     def _create_local_page(self) -> QWidget:
         local_page = QWidget()
@@ -551,7 +529,7 @@ class UnifiedExportDialog(QDialog):
         self.cb_daw_csv = QCheckBox("Universal DAW marker list (.csv)")
 
         audio_file = getattr(self.main_window, "audio_file", None)
-        media_ext = audio_file.suffix.lower() if audio_file else "media"
+        media_ext = Path(audio_file).suffix.lower() if audio_file else "media"
         self.cb_media = QCheckBox(f"Media clip ({media_ext})")
 
         self.cb_apply_fades = QCheckBox("Apply audio fade-in & fade-out")
@@ -805,7 +783,10 @@ class UnifiedExportDialog(QDialog):
         scope = self.scope_combo.currentData()
         stories = getattr(self.main_window, "stories", []) or []
         for _, dest, _ in self._plugin_destinations:
-            dest.on_scope_changed(scope, stories)
+            try:
+                dest.on_scope_changed(scope, stories)
+            except Exception as exc:
+                print(f"[EXPORT] Warning: Plugin destination on_scope_changed failed for '{getattr(dest, 'id', 'unknown')}': {exc}")
 
     def _open_id3_editor(self):
         """Open the ID3 Tag Editor for MP3 files."""
@@ -948,7 +929,10 @@ class UnifiedExportDialog(QDialog):
         else:
             for radio, dest, _ in self._plugin_destinations:
                 if radio.isChecked():
-                    valid, err = dest.validate()
+                    try:
+                        valid, err = dest.validate()
+                    except Exception as exc:
+                        valid, err = False, f"Destination validation failed: {exc}"
                     if not valid:
                         QMessageBox.warning(self, "Export", err or "Export validation failed.")
                         return
@@ -1006,7 +990,11 @@ class UnifiedExportDialog(QDialog):
 
         for radio, dest, _ in self._plugin_destinations:
             if radio.isChecked():
-                data = dest.get_export_data()
+                try:
+                    data = dest.get_export_data()
+                except Exception as exc:
+                    print(f"[EXPORT] Warning: get_export_data failed for '{getattr(dest, 'id', 'unknown')}': {exc}")
+                    data = {}
                 return {
                     "destination": dest.id,
                     "scope": scope,

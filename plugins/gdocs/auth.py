@@ -388,6 +388,10 @@ class GoogleDocsAuthManager:
             return str(self._tokens.get("user_email", "") or "")
         return ""
 
+    def get_authenticated_email(self) -> str:
+        """Alias for get_user_email() ensuring compatibility across export destinations."""
+        return self.get_user_email()
+
     def get_valid_access_token(self) -> Optional[str]:
         """Return a valid access token, automatically refreshing if expired."""
         if not self._tokens:

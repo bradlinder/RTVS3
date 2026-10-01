@@ -852,12 +852,11 @@ class Plugin(BasePlugin):
         ]
 
     def create_story_metadata_widget(self, parent: Any = None) -> Any:
-        self._story_widget = WordPressStoryMetadataWidget(self, parent=parent)
-        return self._story_widget
+        # WordPress post configuration is managed via Preferences and Export destinations, not in the Stories panel
+        return None
 
     def on_story_selected(self, story: Any = None) -> None:
-        if self._story_widget:
-            self._story_widget.set_story(story)
+        pass
 
     def get_preferences_widget(self, parent: Any = None) -> Any:
         from plugins.wordpress.client import WordPressPreferencesPage

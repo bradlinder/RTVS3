@@ -366,8 +366,20 @@ class YouTubeExportTabWidget(QWidget):
         self.settings.sync()
 
     def _update_auth_status_ui(self):
-        if self.auth_manager.is_authenticated():
-            email = self.auth_manager.get_authenticated_email() or "Connected"
+        is_auth = False
+        try:
+            is_auth = bool(self.auth_manager.is_authenticated())
+        except Exception:
+            is_auth = False
+
+        if is_auth:
+            email_getter = getattr(self.auth_manager, "get_authenticated_email", getattr(self.auth_manager, "get_user_email", lambda: ""))
+            email = ""
+            try:
+                email = email_getter()
+            except Exception:
+                email = ""
+            email = email or "Connected"
             self.auth_status_lbl.setText(f"YouTube Account: <b style='color: #38bdf8;'>{email}</b>")
             self.auth_action_btn.setText("Disconnect Account")
         else:
@@ -511,9 +523,9 @@ class YouTubeExportTabWidget(QWidget):
         """Builds default title, description, and chapter timestamps from current stories."""
         proj_title = ""
         if getattr(self.main_window, "project_file", None):
-            proj_title = self.main_window.project_file.stem
+            proj_title = Path(self.main_window.project_file).stem
         elif getattr(self.main_window, "audio_file", None):
-            proj_title = self.main_window.audio_file.stem
+            proj_title = Path(self.main_window.audio_file).stem
         else:
             proj_title = "Broadcast Segment"
 

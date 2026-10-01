@@ -1424,6 +1424,12 @@ class WordPressExportDestination(ExportDestination):
         if not self.tab_widget:
             return False, "WordPress tab not initialized."
         w = self.tab_widget
+        settings = QSettings(INTERNAL_APP_ID, INTERNAL_APP_ID)
+        url = str(settings.value("wp_site_url", "") or "").strip()
+        user = str(settings.value("wp_username", "") or "").strip()
+        pwd = _get_wp_password(user) if user else ""
+        if not (url and user and pwd):
+            return False, "WordPress is not configured. Please enter your Site URL, Username, and Application Password in Settings before exporting."
         if not w.wp_cb_en.isChecked() and not w.wp_cb_es.isChecked():
             return False, "Please select at least one language for WordPress export (English or Spanish)."
         if not w.wp_post_items:

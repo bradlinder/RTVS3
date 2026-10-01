@@ -9,10 +9,14 @@ Provides:
 
 from __future__ import annotations
 
+import os
+import sys
+from urllib.parse import unquote
 from pathlib import Path
 from typing import Optional, List, Dict, Any
 
-from PySide6.QtCore import Qt, Signal, QSettings
+from PySide6.QtCore import Qt, Signal, QSettings, QUrl, QEvent
+from PySide6.QtGui import QPainter, QColor, QPen
 from PySide6.QtWidgets import (
     QAbstractItemView,
     QCheckBox,
@@ -32,31 +36,115 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from core_utils import make_dialog_maximizable
+from core_utils import make_dialog_maximizable, extract_dropped_file_paths
+from theme_tokens import ThemeTokens
 
 
 class BatchFileListWidget(QListWidget):
     filesDropped = Signal(list)
+
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setAcceptDrops(True)
+        if self.viewport():
+            self.viewport().setAcceptDrops(True)
+        self.setDragDropMode(QAbstractItemView.DragDropMode.DropOnly)
+        self.setDefaultDropAction(Qt.DropAction.CopyAction)
+        self._is_drag_active = False
+
     def dragEnterEvent(self, event):
-        if event.mimeData().hasUrls():
+        paths = extract_dropped_file_paths(event.mimeData())
+        if paths or event.mimeData().hasUrls() or event.mimeData().hasText():
+            self._is_drag_active = True
+            event.setDropAction(Qt.DropAction.CopyAction)
             event.acceptProposedAction()
+            event.accept()
+            self.viewport().update()
         else:
             event.ignore()
+
     def dragMoveEvent(self, event):
-        if event.mimeData().hasUrls():
+        paths = extract_dropped_file_paths(event.mimeData())
+        if paths or event.mimeData().hasUrls() or event.mimeData().hasText():
+            self._is_drag_active = True
+            event.setDropAction(Qt.DropAction.CopyAction)
             event.acceptProposedAction()
+            event.accept()
         else:
             event.ignore()
+
+    def dragLeaveEvent(self, event):
+        self._is_drag_active = False
+        self.viewport().update()
+        event.accept()
+
     def dropEvent(self, event):
-        paths = [u.toLocalFile() for u in event.mimeData().urls() if u.isLocalFile()]
+        self._is_drag_active = False
+        paths = extract_dropped_file_paths(event.mimeData())
         if paths:
             self.filesDropped.emit(paths)
+            event.setDropAction(Qt.DropAction.CopyAction)
             event.acceptProposedAction()
+            event.accept()
         else:
             event.ignore()
+        self.viewport().update()
+
+    def paintEvent(self, event):
+        super().paintEvent(event)
+        tokens = ThemeTokens()
+        accent_color = QColor(getattr(tokens, "accent_primary", "#38bdf8"))
+        
+        # Display an empty-state drag & drop guide when list is empty
+        if self.count() == 0:
+            painter = QPainter(self.viewport())
+            painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+            rect = self.viewport().rect().adjusted(16, 16, -16, -16)
+
+            if self._is_drag_active:
+                pen = QPen(accent_color)
+                pen.setStyle(Qt.PenStyle.DashLine)
+                pen.setWidth(2)
+                painter.setPen(pen)
+                painter.setBrush(QColor(56, 189, 248, 25))
+                painter.drawRoundedRect(rect, 8, 8)
+
+                painter.setPen(QColor(getattr(tokens, "text_primary", "#ffffff")))
+                font = painter.font()
+                font.setPointSize(11)
+                font.setBold(True)
+                painter.setFont(font)
+                painter.drawText(rect, Qt.AlignmentFlag.AlignCenter, "Drop files or folders here to add to batch queue")
+            else:
+                pen = QPen(QColor(getattr(tokens, "border_subtle", "#282c35")))
+                pen.setStyle(Qt.PenStyle.DashLine)
+                pen.setWidth(1)
+                painter.setPen(pen)
+                painter.setBrush(Qt.BrushStyle.NoBrush)
+                painter.drawRoundedRect(rect, 8, 8)
+
+                painter.setPen(QColor(getattr(tokens, "text_muted", "#888888")))
+                font = painter.font()
+                font.setPointSize(10)
+                painter.setFont(font)
+                painter.drawText(
+                    rect,
+                    Qt.AlignmentFlag.AlignCenter,
+                    "Drag & drop audio/video files or folders here\nor click 'Add Files…' below"
+                )
+            painter.end()
+        elif self._is_drag_active:
+            # Active drag overlay border when items already exist in the list
+            painter = QPainter(self.viewport())
+            painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+            rect = self.viewport().rect().adjusted(4, 4, -4, -4)
+            pen = QPen(accent_color)
+            pen.setStyle(Qt.PenStyle.DashLine)
+            pen.setWidth(2)
+            painter.setPen(pen)
+            painter.setBrush(Qt.BrushStyle.NoBrush)
+            painter.drawRoundedRect(rect, 6, 6)
+            painter.end()
 
 class BatchProcessingDialog(QDialog):
     def __init__(self, parent=None):
@@ -325,6 +413,30 @@ class BatchProcessingDialog(QDialog):
         self.files.model().rowsInserted.connect(self.auto_detect_options)
         self.files.model().rowsRemoved.connect(self.auto_detect_options)
 
+        # Install drag and drop event filter on dialog child widgets
+        for child in self.findChildren(QWidget):
+            if child is not self.files and child is not self.files.viewport() and not isinstance(child, QLineEdit):
+                child.setAcceptDrops(True)
+                child.installEventFilter(self)
+
+    def eventFilter(self, watched, event):
+        if event.type() in (QEvent.Type.DragEnter, QEvent.Type.DragMove):
+            paths = extract_dropped_file_paths(event.mimeData())
+            if paths or event.mimeData().hasUrls() or event.mimeData().hasText():
+                event.setDropAction(Qt.DropAction.CopyAction)
+                event.acceptProposedAction()
+                event.accept()
+                return True
+        elif event.type() == QEvent.Type.Drop:
+            paths = extract_dropped_file_paths(event.mimeData())
+            if paths:
+                self.add_paths(paths)
+                event.setDropAction(Qt.DropAction.CopyAction)
+                event.acceptProposedAction()
+                event.accept()
+                return True
+        return super().eventFilter(watched, event)
+
     def _load_saved_options(self):
         parent = self.parent()
         settings = getattr(parent, "settings_store", None)
@@ -465,28 +577,41 @@ class BatchProcessingDialog(QDialog):
         self.accept()
 
     def dragEnterEvent(self, event):
-        if event.mimeData().hasUrls():
+        paths = extract_dropped_file_paths(event.mimeData())
+        if paths or event.mimeData().hasUrls() or event.mimeData().hasText():
+            event.setDropAction(Qt.DropAction.CopyAction)
             event.acceptProposedAction()
+            event.accept()
         else:
             event.ignore()
 
     def dragMoveEvent(self, event):
-        if event.mimeData().hasUrls():
+        paths = extract_dropped_file_paths(event.mimeData())
+        if paths or event.mimeData().hasUrls() or event.mimeData().hasText():
+            event.setDropAction(Qt.DropAction.CopyAction)
             event.acceptProposedAction()
+            event.accept()
         else:
             event.ignore()
 
     def dropEvent(self, event):
-        paths = [u.toLocalFile() for u in event.mimeData().urls() if u.isLocalFile()]
+        paths = extract_dropped_file_paths(event.mimeData())
         if paths:
             self.add_paths(paths)
+            event.setDropAction(Qt.DropAction.CopyAction)
             event.acceptProposedAction()
+            event.accept()
         else:
             event.ignore()
 
     def add_paths(self, paths):
         for f in paths:
-            p = Path(f)
+            if not f:
+                continue
+            cleaned_str = str(f).strip().strip('"').strip("'")
+            if not cleaned_str:
+                continue
+            p = Path(cleaned_str)
             if p.is_file() and not any(self.files.item(i).text() == str(p) for i in range(self.files.count())):
                 self.files.addItem(str(p))
             elif p.is_dir():

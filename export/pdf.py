@@ -106,34 +106,107 @@ class TranscriptPdfWriter:
             lines.append(' '.join(cur_line))
         return lines
 
+    def _wrap_paragraph_text(
+        self,
+        text: str,
+        first_line_width: float,
+        rest_line_width: float,
+        font_name: str,
+        size: float,
+        has_prefix: bool = False,
+    ):
+        char_w = self._approx_char_width(font_name, size)
+        first_max_chars = max(5, int(first_line_width / char_w))
+        rest_max_chars = max(10, int(rest_line_width / char_w))
+        words = text.split()
+        if not words:
+            return []
+        lines = []
+        cur_line = []
+        cur_len = 0
+        max_chars = first_max_chars
+        for w in words:
+            w_len = len(w)
+            needed = (1 if cur_line else 0) + w_len
+            if cur_len + needed <= max_chars:
+                cur_line.append(w)
+                cur_len += needed
+            else:
+                if cur_line:
+                    lines.append(' '.join(cur_line))
+                    cur_line = [w]
+                    cur_len = w_len
+                elif has_prefix and not lines:
+                    lines.append('')
+                    cur_line = [w]
+                    cur_len = w_len
+                else:
+                    cur_line = [w]
+                    cur_len = w_len
+                max_chars = rest_max_chars
+        if cur_line:
+            lines.append(' '.join(cur_line))
+        return lines
+
     def add_paragraph(self, text: str, speaker: str = '', timestamp: str = '', comment: str = '', highlight: bool = False):
         font_size = 10.0
         line_height = 14.0
-        prefix_parts = []
-        if timestamp:
-            prefix_parts.append(timestamp)
-        if speaker:
-            prefix_parts.append(f'{speaker}:')
-        prefix_str = ' '.join(prefix_parts) + (' ' if prefix_parts else '')
 
-        full_text = prefix_str + text
-        lines = self._wrap_text(full_text, self.content_width, 'Helvetica', font_size)
+        ts_str = f"{timestamp} " if timestamp else ""
+        spk_str = f"{speaker}: " if speaker else ""
+        has_prefix = bool(ts_str or spk_str)
 
-        needed_height = (len(lines) * line_height) + 8
+        prefix_width = 0.0
+        if ts_str:
+            prefix_width += len(ts_str) * self._approx_char_width('Helvetica', 9.5)
+        if spk_str:
+            prefix_width += len(spk_str) * self._approx_char_width('Helvetica-Bold', font_size)
+
+        first_line_width = max(self.content_width - prefix_width, 40.0)
+        lines = self._wrap_paragraph_text(
+            text,
+            first_line_width,
+            self.content_width,
+            'Helvetica',
+            font_size,
+            has_prefix=has_prefix,
+        )
+
+        if not lines and has_prefix:
+            lines = ['']
+
+        needed_height = (max(len(lines), 1) * line_height) + 8
         self.check_space(min(needed_height, 50))
 
         if highlight:
-            hl_h = (len(lines) * line_height) + 4
+            hl_h = (max(len(lines), 1) * line_height) + 4
             hl_y = self.y - hl_h + 10
             hl_cmd = f'1.0 0.96 0.78 rg\n{self.margin - 2} {hl_y} {self.content_width + 4} {hl_h} re f\n'
             self.cur_stream.write(hl_cmd.encode('latin1', errors='replace'))
 
-        for line in lines:
+        if lines:
             self.check_space(line_height)
-            line_esc = self._escape_pdf(line)
-            cmd = f'BT /F1 {font_size} Tf 0.15 0.15 0.15 rg {self.margin} {self.y} Td ({line_esc}) Tj ET\n'
-            self.cur_stream.write(cmd.encode('latin1', errors='replace'))
+            cmd_parts = ["BT", f"{self.margin} {self.y} Td"]
+            if ts_str:
+                ts_esc = self._escape_pdf(ts_str)
+                cmd_parts.append(f"/F1 9.5 Tf 0.45 0.5 0.55 rg ({ts_esc}) Tj")
+            if spk_str:
+                spk_esc = self._escape_pdf(spk_str)
+                cmd_parts.append(f"/F2 {font_size} Tf 0.1 0.1 0.15 rg ({spk_esc}) Tj")
+            if lines[0]:
+                l0_esc = self._escape_pdf(lines[0])
+                cmd_parts.append(f"/F1 {font_size} Tf 0.15 0.15 0.15 rg ({l0_esc}) Tj")
+            cmd_parts.append("ET\n")
+            line0_cmd = " ".join(cmd_parts)
+            self.cur_stream.write(line0_cmd.encode('latin1', errors='replace'))
             self.y -= line_height
+
+            for line in lines[1:]:
+                self.check_space(line_height)
+                line_esc = self._escape_pdf(line)
+                cmd = f'BT /F1 {font_size} Tf 0.15 0.15 0.15 rg {self.margin} {self.y} Td ({line_esc}) Tj ET\n'
+                self.cur_stream.write(cmd.encode('latin1', errors='replace'))
+                self.y -= line_height
 
         self.y -= 4
 

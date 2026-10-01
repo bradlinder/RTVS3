@@ -35,6 +35,60 @@ def make_dialog_maximizable(dialog) -> None:
         pass
 
 
+def extract_dropped_file_paths(mime_data) -> List[str]:
+    """Robustly extracts local filesystem paths from QMimeData supporting URLs, URIs, and raw text."""
+    from urllib.parse import unquote
+    paths: List[str] = []
+    if not mime_data:
+        return paths
+
+    def _clean_path_candidate(candidate: str) -> str:
+        if not candidate:
+            return ""
+        cand = str(candidate).strip().strip('"').strip("'")
+        if cand.startswith("file://"):
+            cand = unquote(cand[7:])
+        if cand.startswith("localhost/"):
+            cand = "/" + cand[10:]
+        elif cand.startswith("localhost\\"):
+            cand = "\\" + cand[10:]
+        # Windows drive letters with leading slash e.g. /C:/path or /c:\path
+        if cand.startswith("/") and len(cand) > 2 and cand[1] == ":" and cand[2] in "\\/":
+            cand = cand[1:]
+        return cand
+
+    # 1. Inspect mimeData URLs
+    if hasattr(mime_data, "hasUrls") and mime_data.hasUrls():
+        for url in mime_data.urls():
+            if hasattr(url, "isLocalFile") and url.isLocalFile():
+                f_path = url.toLocalFile()
+                if f_path:
+                    cleaned = _clean_path_candidate(f_path)
+                    if cleaned and cleaned not in paths:
+                        paths.append(cleaned)
+            elif hasattr(url, "toString"):
+                raw_str = url.toString()
+                cleaned = _clean_path_candidate(raw_str)
+                if cleaned and cleaned not in paths:
+                    if Path(cleaned).exists() or not cleaned.startswith("http"):
+                        paths.append(cleaned)
+            elif isinstance(url, str):
+                cleaned = _clean_path_candidate(url)
+                if cleaned and cleaned not in paths:
+                    if Path(cleaned).exists() or not cleaned.startswith("http"):
+                        paths.append(cleaned)
+
+    # 2. Inspect text/uri-list or raw text lines if URLs didn't yield paths
+    if not paths and hasattr(mime_data, "hasText") and mime_data.hasText():
+        for line in mime_data.text().splitlines():
+            cleaned = _clean_path_candidate(line)
+            if cleaned and cleaned not in paths:
+                if Path(cleaned).exists() or not cleaned.startswith("http"):
+                    paths.append(cleaned)
+
+    return paths
+
+
 def _ensure_runtime_bin_on_path():
     """Ensure bundled runtime/bin (ffmpeg/ffprobe) is on PATH in frozen builds."""
     if getattr(sys, "frozen", False):

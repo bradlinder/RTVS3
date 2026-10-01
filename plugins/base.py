@@ -22,6 +22,7 @@ class PluginManifest:
     dependencies: List[str] = field(default_factory=list)
     icon: Optional[str] = None
     enabled_by_default: bool = False
+    enabled: bool = False
     runtime_type: str = "core"
     runtime_name: str = ""
     runtime_entry_point: str = ""
@@ -43,6 +44,7 @@ class PluginManifest:
             dependencies=list(data.get("dependencies", [])),
             icon=data.get("icon"),
             enabled_by_default=bool(data.get("enabled_by_default", False)),
+            enabled=bool(data.get("enabled", data.get("enabled_by_default", False))),
             runtime_type=str(data.get("runtime", {}).get("type", data.get("runtime_type", "core"))),
             runtime_name=str(data.get("runtime", {}).get("name", data.get("runtime_name", ""))),
             runtime_entry_point=str(data.get("runtime", {}).get("entry_point", "")),

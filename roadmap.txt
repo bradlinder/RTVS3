@@ -29,18 +29,18 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 --------------------------------------------------------------------------------
 TABLE OF CONTENTS & STATUS OVERVIEW
 --------------------------------------------------------------------------------
-1. Previous Release: Modal Dialog Maximizable Import Fix & AST Verification (`batch_dialog.py`, `export/dialog.py`, `id3_editor.py`, `story_metadata_dialog.py`, `project_lifecycle.py`, `playback_preferences.py`, `transcript_story.py`, `test_runner.py`) [x] [COMPLETED in v3.7.15-stable]
-   [x] 1.1 Resolved `NameError: name 'make_dialog_maximizable' is not defined`: Fixed missing imports in `batch_dialog.py` that caused `BatchProcessingDialog` (`Ctrl+Shift+B`) to crash upon initialization.
-   [x] 1.2 Comprehensive Dialog Audit & Import Normalization: Explicitly imported and bound `make_dialog_maximizable` across `BatchProcessingDialog`, `UnifiedExportDialog`, `ID3TagEditorDialog`, `StoryMetadataDialog`, `ProjectDataPurgeDialog`, `RestoreSelectedSettingsDialog`, and transcript story dialogs.
-   [x] 1.3 Automated AST Diagnostic Verification: Added `_test_modal_dialog_maximizable_import_integrity` to `test_runner.py` verifying that all dialog modules calling `make_dialog_maximizable()` properly import it.
+1. Previous Release: Diagnostic Test Bench Hardening & Resilient Test Harness (`test_runner.py`, `plugins/wordpress/client.py`) [x] [COMPLETED in v3.7.20-stable]
+   [x] 1.1 Pre-Existing Authentication Token Support in Auth Integrity Test: Fixed `_test_unified_export_destinations_and_youtube_auth_integrity` in `test_runner.py` to support user environments with existing credentials while using isolated instances for deterministic unauthenticated and authenticated unit testing.
+   [x] 1.2 Valid Waveform Audio Generation in WordPress Diagnostic Test: Replaced dummy non-audio data (`b"ID3" + b"\x00" * 200`) in `_test_wordpress_export_content_and_transcript_formatter` with standard Python `wave` module 16kHz PCM audio, preventing FFmpeg decoding errors on systems with FFmpeg installed.
+   [x] 1.3 Resilient Subprocess Test Harness Wrapper: Added safe subprocess interception around FFmpeg preparation in the WordPress formatter test to guarantee deterministic execution across all CI and desktop environments.
+   [x] 1.4 Compact FFmpeg Error Diagnostics: Enhanced `execute_wordpress_upload` in `plugins/wordpress/client.py` to extract and report trailing FFmpeg error messages rather than the compiler configuration banner.
 
-2. Current Release: Batch Processing Unified Transcripts Directory Option (`batch_dialog.py`, `media_batch.py`, `project_export.py`, `test_runner.py`) [x] [COMPLETED in v3.7.16-stable]
-   [x] 2.1 Single Transcripts Directory Mode: Added a dedicated `[x] Save all transcripts to a single directory` option in the Batch Processing Center (`BatchProcessingDialog`). When enabled, transcripts, documents, and subtitle files (`.txt`, `.docx`, `.srt`, `.vtt`) for all processed files are exported directly into a single consolidated folder rather than isolated per-file subdirectories.
-   [x] 2.2 Preserved Project Session Organization: Kept non-destructive `.rtvs` project sessions organized in `<Target Location>/Projects/<base_name>.rtvs`, allowing users to quickly collect all output documents while preserving session markers, speaker diarization, waveforms, and timestamped editing data.
-   [x] 2.3 Dedicated Transcripts Directory Picker: Added a companion folder input and "Browse Transcripts Folder…" selector, allowing users to direct batch transcripts to cloud storage, shared network locations, or custom local folders with automatic fallback to `<Target Location>/Transcripts`.
-   [x] 2.4 Enhanced Skip-Existing Verification: Upgraded batch skip-existing check to detect whether outputs exist directly in the unified transcripts folder, preventing redundant AI pipeline runs when documents are already present.
-   [x] 2.5 Custom Location Propagation in Story Exports: Updated `perform_stories_export` in `project_export.py` to accept and forward `is_custom_location=True`, ensuring story exports write cleanly to the target transcripts folder without creating redundant nested subfolders.
-   [x] 2.6 Automated Diagnostic Test (`test_runner.py`): Added `_test_batch_unified_transcripts_directory_export` verifying AST configuration, Qt widget states, settings persistence, project session isolation, transcript routing, and skip-existing checks.
+2. Current Release: Test Bench Attribute Lifecycle Resolution & Media Path Hardening (`test_runner.py`, `plugins/base.py`, `export/dialog.py`, `plugins/youtube/export_destination.py`) [x] [COMPLETED in v3.7.21-stable]
+   [x] 2.1 Resolved DummyMainWindow transcript_for_range AttributeError: Fixed `_test_wordpress_export_content_and_transcript_formatter` in `test_runner.py` by replacing instance-level `del win.transcript_for_range` with safe class-level `delattr(DummyMainWindow, "transcript_for_range")` and fallback null assignment.
+   [x] 2.2 Resolved PluginManifest __init__ Unexpected Keyword Argument 'enabled': Added canonical `enabled: bool = False` dataclass field and parsing to `PluginManifest` in `plugins/base.py`, and updated test instantiation to pass `enabled_by_default` and `enabled` aligned with `PROJECT_VERSION`.
+   [x] 2.3 Safe String & Path Type Coercion in Export Dialog: Coerced `audio_file` and `project_file` references through `Path(...)` in `export/dialog.py` and `plugins/youtube/export_destination.py` to protect against `AttributeError: 'str' object has no attribute 'suffix'/'stem'`.
+   [x] 2.4 Export Destination Discovery Guards: Enforced `page is not None` checks during plugin destination discovery in `UnifiedExportDialog._build_destinations_layout`.
+   [x] 2.5 Plugin Catch-Up Synchronization: Synchronized version fields across `plugins/youtube/manifest.json`, `plugins/wordpress/manifest.json`, and `plugins/gdocs/manifest.json` to `3.7.21-stable`.
 
 3. Upcoming Milestone: Comprehensive Cloud & Local Backup & Restore System (`project_lifecycle.py`, `plugins/gdocs/`) [PLANNED for v3.8.0] [NOT STARTED]
    [ ] 3.1 Unified State Serialization (`project_lifecycle.py`): Export preferences, keyboard shortcuts, installed model inventories, glossary items, and user configurations into a cryptographically verified backup archive.
@@ -61,51 +61,50 @@ DETAILED MILESTONE SPECIFICATIONS
 ================================================================================
 
 ================================================================================
-1. PREVIOUS RELEASE: MODAL DIALOG MAXIMIZABLE IMPORT FIX & AST VERIFICATION [x] [COMPLETED in v3.7.15-stable]
+1. PREVIOUS RELEASE: DIAGNOSTIC TEST BENCH HARDENING & RESILIENT TEST HARNESS [x] [COMPLETED in v3.7.20-stable]
 ================================================================================
 
-[x] 1.1 Resolved `NameError: name 'make_dialog_maximizable' is not defined` (`batch_dialog.py`)
+[x] 1.1 Pre-Existing Authentication Token Support in Auth Integrity Test (`test_runner.py`)
 --------------------------------------------------------------------------------
-- Imported `make_dialog_maximizable` from `core_utils` into `batch_dialog.py`, restoring opening the Batch Processing Center dialog.
+- Updated `_test_unified_export_destinations_and_youtube_auth_integrity` to verify consistent email return values when credentials already exist on user machines, testing unauthenticated and authenticated branches via isolated token test instances.
 
-[x] 1.2 Comprehensive Dialog Module Import Normalization (`export/dialog.py`, `id3_editor.py`, `story_metadata_dialog.py`, `project_lifecycle.py`, `playback_preferences.py`, `transcript_story.py`)
+[x] 1.2 Valid Waveform Audio Generation in WordPress Diagnostic Test (`test_runner.py`)
 --------------------------------------------------------------------------------
-- Imported `make_dialog_maximizable` across all modal dialog modules (`UnifiedExportDialog`, `ID3TagEditorDialog`, `StoryMetadataDialog`, `ProjectDataPurgeDialog`, `RestoreSelectedSettingsDialog`, etc.).
+- Generated standard 16kHz PCM WAV audio files using Python's built-in `wave` module in `_test_wordpress_export_content_and_transcript_formatter`, resolving FFmpeg parsing errors during story slice conversion.
 
-[x] 1.3 Diagnostic AST Import Verification Suite (`test_runner.py`)
+[x] 1.3 Resilient Subprocess Test Harness Wrapper (`test_runner.py`)
 --------------------------------------------------------------------------------
-- Added `_test_modal_dialog_maximizable_import_integrity` to statically parse AST syntax trees across all dialog files, ensuring zero unimported dialog helper calls.
+- Added safe subprocess interception around FFmpeg preparation in the WordPress formatter test to guarantee deterministic execution across all CI and desktop environments.
+
+[x] 1.4 Compact FFmpeg Error Diagnostics (`plugins/wordpress/client.py`)
+--------------------------------------------------------------------------------
+- Enhanced `execute_wordpress_upload` in `plugins/wordpress/client.py` to extract and report trailing FFmpeg error messages rather than the compiler configuration banner.
+
 
 ================================================================================
-2. CURRENT RELEASE: BATCH PROCESSING UNIFIED TRANSCRIPTS DIRECTORY OPTION [x] [COMPLETED in v3.7.16-stable]
+2. CURRENT RELEASE: TEST BENCH ATTRIBUTE LIFECYCLE & MEDIA PATH HARDENING [x] [COMPLETED in v3.7.21-stable]
 ================================================================================
 
-[x] 2.1 Single Transcripts Directory Mode (`batch_dialog.py`)
+[x] 2.1 Resolved DummyMainWindow transcript_for_range AttributeError (`test_runner.py`)
 --------------------------------------------------------------------------------
-- Added `self.unified_transcripts_check` ("Save all transcripts to a single directory") with clean tooltip and toggle state handling.
-- When enabled, directs all transcript outputs (`.txt`, `.docx`, `.srt`, `.vtt`) for the entire batch into one consolidated directory.
+- Replaced instance `del win.transcript_for_range` with safe class-level `delattr(DummyMainWindow, "transcript_for_range")` and fallback null assignment in `_test_wordpress_export_content_and_transcript_formatter`, resolving `AttributeError` on environments with PySide6 installed.
 
-[x] 2.2 Dedicated Transcripts Directory Selector (`batch_dialog.py`)
+[x] 2.2 Resolved PluginManifest Unexpected Keyword Argument 'enabled' (`plugins/base.py`, `test_runner.py`)
 --------------------------------------------------------------------------------
-- Added `self.transcripts_output` QLineEdit and "Browse Transcripts Folder…" QPushButton.
-- Automatically enables/disables with the checkbox and save-project-only toggle.
-- Automatically defaults to `<Target Location>/Transcripts/` when left empty, with support for arbitrary custom directories.
-- Added settings persistence (`batch_opt_unified_transcripts`, `batch_opt_transcripts_output`) with Default and Reset support.
+- Added `enabled: bool = False` attribute to the `PluginManifest` dataclass and `from_dict` constructor in `plugins/base.py`.
+- Updated `_test_unified_export_destinations_and_youtube_auth_integrity` in `test_runner.py` to instantiate `PluginManifest` with `enabled_by_default=True, enabled=True` synchronized with `PROJECT_VERSION`.
 
-[x] 2.3 Isolated Projects Directory Session Preservation (`media_batch.py`)
+[x] 2.3 Safe Media Path & Extension Type Coercion (`export/dialog.py`, `plugins/youtube/export_destination.py`)
 --------------------------------------------------------------------------------
-- Updated `_batch_save_project_file` to save `.rtvs` project sessions into `<Target Location>/Projects/<base_name>.rtvs` when unified transcripts mode is active.
-- Preserves full project state, audio waveforms, speaker labels, and story definitions while keeping the root and transcript directories clean.
+- Coerced `audio_file` and `project_file` references with `Path(...)` prior to calling `.suffix` or `.stem`, ensuring both string and Path instances are safely handled.
 
-[x] 2.4 Resilient Unified Export Execution & Story Support (`media_batch.py`, `project_export.py`)
+[x] 2.4 Export Destination Discovery Guards (`export/dialog.py`)
 --------------------------------------------------------------------------------
-- Updated `_batch_export_current` to pass `is_custom_location=True` and target the unified transcripts directory.
-- Updated `perform_stories_export` in `project_export.py` to forward `is_custom_location`, ensuring individual story files write directly to the transcripts directory without creating nested subfolders.
-- Upgraded `skip_existing` check in `media_batch.py` to test the unified transcripts directory directly.
+- Enforced `if page is not None:` guards in `UnifiedExportDialog._build_destinations_layout` before appending discovered plugin destination widgets.
 
-[x] 2.5 Automated Diagnostic Verification Suite (`test_runner.py`)
+[x] 2.5 Plugin Catch-Up Synchronization (`plugins/*/manifest.json`)
 --------------------------------------------------------------------------------
-- Added `_test_batch_unified_transcripts_directory_export` verifying AST dialog attributes, Qt widget states, settings persistence, project session isolation, transcript routing, and skip-existing detection.
+- Synchronized version fields across `plugins/youtube/manifest.json`, `plugins/wordpress/manifest.json`, and `plugins/gdocs/manifest.json` to `3.7.21-stable`.
 
 
 ================================================================================

@@ -541,12 +541,13 @@ class UiLayoutMixin:
         self.story_boundary_container.hide()
         details_layout.addWidget(self.story_boundary_container)
 
-        # Plugin Story Extensions Container (e.g. WordPress Story Metadata Widget)
+        # Plugin Story Extensions Container (for plugin-provided story widgets)
         self.plugin_story_extensions_container = QWidget(self)
         self.plugin_story_extensions_container.setObjectName("plugin_story_extensions_container")
         self.plugin_story_extensions_layout = QVBoxLayout(self.plugin_story_extensions_container)
-        self.plugin_story_extensions_layout.setContentsMargins(0, 2, 0, 2)
+        self.plugin_story_extensions_layout.setContentsMargins(0, 0, 0, 0)
         self.plugin_story_extensions_layout.setSpacing(4)
+        self.plugin_story_extensions_container.hide()
         details_layout.addWidget(self.plugin_story_extensions_container)
 
         self.story_details_scroll.setWidget(self.story_details_container)
@@ -719,7 +720,7 @@ class UiLayoutMixin:
         self.story_list.itemSelectionChanged.connect(self.story_selection_changed)
         self.story_list.deleteRequested.connect(self.delete_selected_story)
         self.story_list.exportRequested.connect(self.export_selected_stories)
-        self.story_list.exportStoryWordPressRequested.connect(self.open_unified_export_dialog)
+        self.story_list.exportStoryWordPressRequested.connect(lambda: self.open_unified_export_dialog(initial_dest="wordpress"))
         self.story_list.filesDropped.connect(lambda paths: getattr(self, "open_media_file", lambda p: None)(paths[0]) if paths else None)
 
         # Initialize status bar
@@ -2062,6 +2063,7 @@ class UiLayoutMixin:
             if child.widget():
                 child.widget().deleteLater()
 
+        count = 0
         if hasattr(self, "plugin_manager") and self.plugin_manager:
             for plugin in self.plugin_manager.plugins.values():
                 if getattr(plugin, "is_enabled", False) and hasattr(plugin, "create_story_metadata_widget"):
@@ -2069,8 +2071,11 @@ class UiLayoutMixin:
                         w = plugin.create_story_metadata_widget(parent=self.plugin_story_extensions_container)
                         if w:
                             self.plugin_story_extensions_layout.addWidget(w)
+                            count += 1
                     except Exception as exc:
                         print(f"[PLUGINS] Error creating story metadata widget: {exc}")
+        if hasattr(self, "plugin_story_extensions_container") and self.plugin_story_extensions_container:
+            self.plugin_story_extensions_container.setVisible(count > 0)
 
     def notify_story_selection_to_plugins(self, selected_story=None):
         """Notify all enabled plugins when the active story selection changes."""
