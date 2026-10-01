@@ -29,18 +29,18 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 --------------------------------------------------------------------------------
 TABLE OF CONTENTS & STATUS OVERVIEW
 --------------------------------------------------------------------------------
-1. Previous Release: WordPress REST API Multi-Format Transcript & Slicing Fix (`plugins/wordpress/client.py`, `plugins/wordpress/plugin.py`, `plugins/wordpress/manifest.json`, `test_runner.py`) [x] [COMPLETED in v3.7.14-stable]
-   [x] 1.1 Resolved `'str' object has no attribute 'get'` WordPress Export Bug: Fixed critical failure caused by dictionary key string iteration when accessing `main_window.transcript` dict segments, properly extracting `segments` list and falling back gracefully.
-   [x] 1.2 Resilient Multi-Format Transcript Slicing: Integrated `main_window.transcript_for_range(start, end)` with fallback to raw segment dictionary lists and plain document text slices.
-   [x] 1.3 Robust WordPress Media GUID & URL Resolution: Guarded media upload response parsing so media `guid` values formatted as either plain string URLs or nested objects (`{"rendered": "..."}`) are unwrapped cleanly without attribute errors.
-   [x] 1.4 Bilingual Spanish Translation & Speaker Attribution: Connected project-level translation segments (`get_spanish_translation_item()`) via `_source_index` for Spanish accordion rendering, and applied `get_effective_speaker_name` to post transcript paragraphs.
-   [x] 1.5 Dedicated WordPress Content Formatting Test: Added `_test_wordpress_export_content_and_transcript_formatter` to `test_runner.py` verifying dictionary transcript handling, range slicing, and media GUID resolution.
-   [x] 1.6 Plugin Catch-Up Synchronization: Synchronized WordPress plugin manifest to `v3.7.14-stable`.
+1. Previous Release: Modal Dialog Maximizable Import Fix & AST Verification (`batch_dialog.py`, `export/dialog.py`, `id3_editor.py`, `story_metadata_dialog.py`, `project_lifecycle.py`, `playback_preferences.py`, `transcript_story.py`, `test_runner.py`) [x] [COMPLETED in v3.7.15-stable]
+   [x] 1.1 Resolved `NameError: name 'make_dialog_maximizable' is not defined`: Fixed missing imports in `batch_dialog.py` that caused `BatchProcessingDialog` (`Ctrl+Shift+B`) to crash upon initialization.
+   [x] 1.2 Comprehensive Dialog Audit & Import Normalization: Explicitly imported and bound `make_dialog_maximizable` across `BatchProcessingDialog`, `UnifiedExportDialog`, `ID3TagEditorDialog`, `StoryMetadataDialog`, `ProjectDataPurgeDialog`, `RestoreSelectedSettingsDialog`, and transcript story dialogs.
+   [x] 1.3 Automated AST Diagnostic Verification: Added `_test_modal_dialog_maximizable_import_integrity` to `test_runner.py` verifying that all dialog modules calling `make_dialog_maximizable()` properly import it.
 
-2. Current Release: Modal Dialog Maximizable Import Fix & AST Verification (`batch_dialog.py`, `export/dialog.py`, `id3_editor.py`, `story_metadata_dialog.py`, `project_lifecycle.py`, `playback_preferences.py`, `transcript_story.py`, `test_runner.py`) [x] [COMPLETED in v3.7.15-stable]
-   [x] 2.1 Resolved `NameError: name 'make_dialog_maximizable' is not defined`: Fixed missing imports in `batch_dialog.py` that caused `BatchProcessingDialog` (`Ctrl+Shift+B`) to crash upon initialization.
-   [x] 2.2 Comprehensive Dialog Audit & Import Normalization: Explicitly imported and bound `make_dialog_maximizable` across `BatchProcessingDialog`, `UnifiedExportDialog`, `ID3TagEditorDialog`, `StoryMetadataDialog`, `ProjectDataPurgeDialog`, `RestoreSelectedSettingsDialog`, and transcript story dialogs.
-   [x] 2.3 Automated AST Diagnostic Verification: Added `_test_modal_dialog_maximizable_import_integrity` to `test_runner.py` verifying that all dialog modules calling `make_dialog_maximizable()` properly import it.
+2. Current Release: Batch Processing Unified Transcripts Directory Option (`batch_dialog.py`, `media_batch.py`, `project_export.py`, `test_runner.py`) [x] [COMPLETED in v3.7.16-stable]
+   [x] 2.1 Single Transcripts Directory Mode: Added a dedicated `[x] Save all transcripts to a single directory` option in the Batch Processing Center (`BatchProcessingDialog`). When enabled, transcripts, documents, and subtitle files (`.txt`, `.docx`, `.srt`, `.vtt`) for all processed files are exported directly into a single consolidated folder rather than isolated per-file subdirectories.
+   [x] 2.2 Preserved Project Session Organization: Kept non-destructive `.rtvs` project sessions organized in `<Target Location>/Projects/<base_name>.rtvs`, allowing users to quickly collect all output documents while preserving session markers, speaker diarization, waveforms, and timestamped editing data.
+   [x] 2.3 Dedicated Transcripts Directory Picker: Added a companion folder input and "Browse Transcripts Folder…" selector, allowing users to direct batch transcripts to cloud storage, shared network locations, or custom local folders with automatic fallback to `<Target Location>/Transcripts`.
+   [x] 2.4 Enhanced Skip-Existing Verification: Upgraded batch skip-existing check to detect whether outputs exist directly in the unified transcripts folder, preventing redundant AI pipeline runs when documents are already present.
+   [x] 2.5 Custom Location Propagation in Story Exports: Updated `perform_stories_export` in `project_export.py` to accept and forward `is_custom_location=True`, ensuring story exports write cleanly to the target transcripts folder without creating redundant nested subfolders.
+   [x] 2.6 Automated Diagnostic Test (`test_runner.py`): Added `_test_batch_unified_transcripts_directory_export` verifying AST configuration, Qt widget states, settings persistence, project session isolation, transcript routing, and skip-existing checks.
 
 3. Upcoming Milestone: Comprehensive Cloud & Local Backup & Restore System (`project_lifecycle.py`, `plugins/gdocs/`) [PLANNED for v3.8.0] [NOT STARTED]
    [ ] 3.1 Unified State Serialization (`project_lifecycle.py`): Export preferences, keyboard shortcuts, installed model inventories, glossary items, and user configurations into a cryptographically verified backup archive.
@@ -61,44 +61,51 @@ DETAILED MILESTONE SPECIFICATIONS
 ================================================================================
 
 ================================================================================
-1. PREVIOUS RELEASE: WORDPRESS MULTI-FORMAT TRANSCRIPT & SLICING FIX [x] [COMPLETED in v3.7.14-stable]
+1. PREVIOUS RELEASE: MODAL DIALOG MAXIMIZABLE IMPORT FIX & AST VERIFICATION [x] [COMPLETED in v3.7.15-stable]
 ================================================================================
 
-[x] 1.1 Multi-Format Transcript Slicing & Resolution (`plugins/wordpress/client.py`)
---------------------------------------------------------------------------------
-- Resolved `'str' object has no attribute 'get'` error by safely querying `.get("segments")` when `main_window.transcript` is a dictionary or list, eliminating key string iteration crashes.
-- Sliced story ranges via `main_window.transcript_for_range(start, end)` with resilient segment fallback.
-- Added plain text document fallback (`_get_transcript_text_slice`) when exporting text-only projects.
-
-[x] 1.2 WordPress Media GUID & URL Robustness (`plugins/wordpress/client.py`)
---------------------------------------------------------------------------------
-- Handled WordPress REST API `/media` responses flexibly, supporting `guid` values formatted as either direct strings or nested `{"rendered": "..."}` dictionaries.
-
-[x] 1.3 Spanish Translation Mapping & Speaker Attribution (`plugins/wordpress/client.py`)
---------------------------------------------------------------------------------
-- Linked Spanish translation segments via `_source_index` for bilingual accordion rendering.
-- Propagated resolved speaker names and merged diarization labels into published post paragraphs.
-
-[x] 1.4 Diagnostic Coverage & Plugin Synchronization (`test_runner.py`, `plugins/wordpress/manifest.json`)
---------------------------------------------------------------------------------
-- Created `_test_wordpress_export_content_and_transcript_formatter` unit test validating transcript dict slicing and guid resolution.
-- Synchronized WordPress plugin version to `3.7.14-stable`.
-
-================================================================================
-2. CURRENT RELEASE: MODAL DIALOG MAXIMIZABLE IMPORT FIX & AST VERIFICATION [x] [COMPLETED in v3.7.15-stable]
-================================================================================
-
-[x] 2.1 Resolved `NameError: name 'make_dialog_maximizable' is not defined` (`batch_dialog.py`)
+[x] 1.1 Resolved `NameError: name 'make_dialog_maximizable' is not defined` (`batch_dialog.py`)
 --------------------------------------------------------------------------------
 - Imported `make_dialog_maximizable` from `core_utils` into `batch_dialog.py`, restoring opening the Batch Processing Center dialog.
 
-[x] 2.2 Comprehensive Dialog Module Import Normalization (`export/dialog.py`, `id3_editor.py`, `story_metadata_dialog.py`, `project_lifecycle.py`, `playback_preferences.py`, `transcript_story.py`)
+[x] 1.2 Comprehensive Dialog Module Import Normalization (`export/dialog.py`, `id3_editor.py`, `story_metadata_dialog.py`, `project_lifecycle.py`, `playback_preferences.py`, `transcript_story.py`)
 --------------------------------------------------------------------------------
 - Imported `make_dialog_maximizable` across all modal dialog modules (`UnifiedExportDialog`, `ID3TagEditorDialog`, `StoryMetadataDialog`, `ProjectDataPurgeDialog`, `RestoreSelectedSettingsDialog`, etc.).
 
-[x] 2.3 Diagnostic AST Import Verification Suite (`test_runner.py`)
+[x] 1.3 Diagnostic AST Import Verification Suite (`test_runner.py`)
 --------------------------------------------------------------------------------
 - Added `_test_modal_dialog_maximizable_import_integrity` to statically parse AST syntax trees across all dialog files, ensuring zero unimported dialog helper calls.
+
+================================================================================
+2. CURRENT RELEASE: BATCH PROCESSING UNIFIED TRANSCRIPTS DIRECTORY OPTION [x] [COMPLETED in v3.7.16-stable]
+================================================================================
+
+[x] 2.1 Single Transcripts Directory Mode (`batch_dialog.py`)
+--------------------------------------------------------------------------------
+- Added `self.unified_transcripts_check` ("Save all transcripts to a single directory") with clean tooltip and toggle state handling.
+- When enabled, directs all transcript outputs (`.txt`, `.docx`, `.srt`, `.vtt`) for the entire batch into one consolidated directory.
+
+[x] 2.2 Dedicated Transcripts Directory Selector (`batch_dialog.py`)
+--------------------------------------------------------------------------------
+- Added `self.transcripts_output` QLineEdit and "Browse Transcripts Folder…" QPushButton.
+- Automatically enables/disables with the checkbox and save-project-only toggle.
+- Automatically defaults to `<Target Location>/Transcripts/` when left empty, with support for arbitrary custom directories.
+- Added settings persistence (`batch_opt_unified_transcripts`, `batch_opt_transcripts_output`) with Default and Reset support.
+
+[x] 2.3 Isolated Projects Directory Session Preservation (`media_batch.py`)
+--------------------------------------------------------------------------------
+- Updated `_batch_save_project_file` to save `.rtvs` project sessions into `<Target Location>/Projects/<base_name>.rtvs` when unified transcripts mode is active.
+- Preserves full project state, audio waveforms, speaker labels, and story definitions while keeping the root and transcript directories clean.
+
+[x] 2.4 Resilient Unified Export Execution & Story Support (`media_batch.py`, `project_export.py`)
+--------------------------------------------------------------------------------
+- Updated `_batch_export_current` to pass `is_custom_location=True` and target the unified transcripts directory.
+- Updated `perform_stories_export` in `project_export.py` to forward `is_custom_location`, ensuring individual story files write directly to the transcripts directory without creating nested subfolders.
+- Upgraded `skip_existing` check in `media_batch.py` to test the unified transcripts directory directly.
+
+[x] 2.5 Automated Diagnostic Verification Suite (`test_runner.py`)
+--------------------------------------------------------------------------------
+- Added `_test_batch_unified_transcripts_directory_export` verifying AST dialog attributes, Qt widget states, settings persistence, project session isolation, transcript routing, and skip-existing detection.
 
 
 ================================================================================

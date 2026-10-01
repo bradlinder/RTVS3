@@ -2753,6 +2753,7 @@ class ProjectExportMixin(ProjectLifecycleMixin):
         custom_options=None,
         directory=None,
         show_completion=False,
+        is_custom_location=False,
     ):
         stories = target_stories if target_stories is not None else getattr(self, "stories", [])
         if not stories:
@@ -2761,7 +2762,7 @@ class ProjectExportMixin(ProjectLifecycleMixin):
         formats = custom_formats or {"txt": True, "docx": True, "pdf": True, "srt": False, "vtt": False, "media": False}
         options = custom_options or {"include_speakers": True, "include_timestamps": False, "include_english": True, "include_spanish": False}
         stories_to_export = list(enumerate(stories))
-        success = self._export_story_files(stories_to_export, formats, base, options, directory)
+        success = self._export_story_files(stories_to_export, formats, base, options, directory, is_custom_location=is_custom_location)
         if show_completion and success:
             show_export_completion_dialog(self, "Export Complete", f"Exported {len(stories_to_export)} stories to {directory}", directory)
         return success

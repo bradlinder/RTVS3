@@ -84,12 +84,34 @@ class BatchProcessingDialog(QDialog):
 
         # Output / Project Directory Selector
         dir_group = QGroupBox("Target Save Location")
-        dir_layout = QHBoxLayout(dir_group)
+        dir_vbox = QVBoxLayout(dir_group)
+        dir_layout = QHBoxLayout()
         self.output = QLineEdit()
         self.output.setPlaceholderText("Default (project folder or media file directory if empty)")
         browse = QPushButton("Browse Folder…")
         dir_layout.addWidget(self.output, 1)
         dir_layout.addWidget(browse)
+        dir_vbox.addLayout(dir_layout)
+
+        # Dedicated Transcripts Directory option (Option 1)
+        self.unified_transcripts_check = QCheckBox("Save all transcripts to a single directory")
+        self.unified_transcripts_check.setToolTip(
+            "Consolidate transcripts, documents, and subtitle files for all batch items into a single folder\n"
+            "instead of separate per-project subdirectories. Project sessions (.rtvs) will be saved in Projects/."
+        )
+        dir_vbox.addWidget(self.unified_transcripts_check)
+
+        self.transcripts_dir_widget = QWidget()
+        transcripts_dir_layout = QHBoxLayout(self.transcripts_dir_widget)
+        transcripts_dir_layout.setContentsMargins(20, 0, 0, 0)
+        self.transcripts_output = QLineEdit()
+        self.transcripts_output.setPlaceholderText("Default (<Target Save Location>/Transcripts)")
+        browse_transcripts = QPushButton("Browse Transcripts Folder…")
+        transcripts_dir_layout.addWidget(self.transcripts_output, 1)
+        transcripts_dir_layout.addWidget(browse_transcripts)
+        dir_vbox.addWidget(self.transcripts_dir_widget)
+        self.transcripts_dir_widget.setEnabled(False)
+
         layout.addWidget(dir_group)
 
         # --- Section 1: Pipeline & Process Selection ---
@@ -254,8 +276,13 @@ class BatchProcessingDialog(QDialog):
             self.include_times.setEnabled(not checked)
             self.translate_check.setEnabled(not checked)
             self.batch_export_translate_direction_combo.setEnabled((not checked) and self.translate_check.isChecked())
+            self.unified_transcripts_check.setEnabled(not checked)
+            self.transcripts_dir_widget.setEnabled((not checked) and self.unified_transcripts_check.isChecked())
 
         self.save_project_only_check.toggled.connect(_on_save_project_only_toggled)
+        self.unified_transcripts_check.toggled.connect(
+            lambda checked: self.transcripts_dir_widget.setEnabled(checked and not self.save_project_only_check.isChecked())
+        )
         self.translate_check.toggled.connect(self.batch_export_translate_direction_combo.setEnabled)
         self.batch_export_translate_direction_combo.setEnabled(self.translate_check.isChecked())
         self.batch_translate_direction_combo.currentIndexChanged.connect(
@@ -288,6 +315,7 @@ class BatchProcessingDialog(QDialog):
         add.clicked.connect(self.add_files)
         rem.clicked.connect(lambda: [self.files.takeItem(self.files.row(i)) for i in self.files.selectedItems()])
         browse.clicked.connect(self.choose_output)
+        browse_transcripts.clicked.connect(self.choose_transcripts_output)
         self.save_defaults_btn.clicked.connect(lambda: self.save_options_to_settings(as_default=True))
         self.reset_defaults_btn.clicked.connect(self.reset_options_to_defaults)
         cancel.clicked.connect(self.reject)
@@ -351,6 +379,12 @@ class BatchProcessingDialog(QDialog):
         self.include_times.setChecked(_to_bool(settings.value("batch_opt_include_times"), False))
         self.translate_check.setChecked(_to_bool(settings.value("batch_opt_translate_check"), False))
 
+        self.unified_transcripts_check.setChecked(_to_bool(settings.value("batch_opt_unified_transcripts"), False))
+        self.transcripts_output.setText(str(settings.value("batch_opt_transcripts_output", "") or ""))
+        self.transcripts_dir_widget.setEnabled(
+            self.unified_transcripts_check.isChecked() and not self.save_project_only_check.isChecked()
+        )
+
     def save_options_to_settings(self, as_default=False):
         parent = self.parent()
         settings = getattr(parent, "settings_store", None)
@@ -380,6 +414,9 @@ class BatchProcessingDialog(QDialog):
         settings.setValue("batch_opt_include_speakers", self.include_speakers.isChecked())
         settings.setValue("batch_opt_include_times", self.include_times.isChecked())
         settings.setValue("batch_opt_translate_check", self.translate_check.isChecked())
+
+        settings.setValue("batch_opt_unified_transcripts", self.unified_transcripts_check.isChecked())
+        settings.setValue("batch_opt_transcripts_output", self.transcripts_output.text().strip())
         if as_default:
             QMessageBox.information(self, "Batch Options", "Current batch export options saved as defaults.")
 
@@ -415,6 +452,10 @@ class BatchProcessingDialog(QDialog):
         self.include_speakers.setChecked(True)
         self.include_times.setChecked(False)
         self.translate_check.setChecked(False)
+
+        self.unified_transcripts_check.setChecked(False)
+        self.transcripts_output.clear()
+        self.transcripts_dir_widget.setEnabled(False)
        
         self.save_options_to_settings()
         QMessageBox.information(self, "Batch Options", "Batch export options reset to factory defaults.")
@@ -474,6 +515,18 @@ class BatchProcessingDialog(QDialog):
         )
         if d:
             self.output.setText(d)
+
+    def choose_transcripts_output(self):
+        curr = self.transcripts_output.text().strip()
+        if not curr or not os.path.exists(curr):
+            base = self.output.text().strip()
+            if base and os.path.exists(base):
+                curr = base
+            else:
+                curr = getattr(self.parent(), "_dialog_directory", lambda: "")()
+        d = QFileDialog.getExistingDirectory(self, "Choose Transcripts Folder", curr)
+        if d:
+            self.transcripts_output.setText(d)
 
     def auto_detect_options(self):
         """Auto-detect available options based on imported file extensions."""

@@ -312,6 +312,11 @@ class MediaBatchMixin:
         save_project_only = dialog.save_project_only_check.isChecked()
         save_project = dialog.save_project_check.isChecked() or save_project_only
 
+        unified_transcripts = dialog.unified_transcripts_check.isChecked() and not save_project_only
+        transcripts_output = dialog.transcripts_output.text().strip() if unified_transcripts else ""
+        if unified_transcripts and not transcripts_output and output:
+            transcripts_output = str(Path(output) / "Transcripts")
+
         do_transcribe = dialog.proc_transcribe.isChecked() if pipeline_mode == "custom" else True
         do_diarize = dialog.proc_diarize.isChecked() if pipeline_mode == "custom" else True
         do_stories = dialog.proc_stories.isChecked() if pipeline_mode == "custom" else True
@@ -319,6 +324,8 @@ class MediaBatchMixin:
 
         self.batch_settings = {
             "output": output,
+            "unified_transcripts": unified_transcripts,
+            "transcripts_output": transcripts_output,
             "pipeline_mode": pipeline_mode,
             "save_project_only": save_project_only,
             "save_project": save_project,
@@ -404,8 +411,19 @@ class MediaBatchMixin:
 
             # Check if all target output files already exist on disk
             all_exist = False
-            if skip_existing and output_dir.exists() and required_exts:
-                all_exist = all((output_dir / f"{base_name}{ext}").exists() for ext in required_exts)
+            if skip_existing and required_exts:
+                if self.batch_settings.get("unified_transcripts", False):
+                    custom_trans_dir = self.batch_settings.get("transcripts_output", "").strip()
+                    trans_dir = Path(custom_trans_dir) if custom_trans_dir else (output_dir / "Transcripts")
+                    all_exist = trans_dir.exists() and all((trans_dir / f"{base_name}{ext}").exists() for ext in required_exts)
+                else:
+                    sub_trans_dir = output_dir / base_name / "Transcripts"
+                    legacy_dir = output_dir / base_name
+                    all_exist = (
+                        (output_dir.exists() and all((output_dir / f"{base_name}{ext}").exists() for ext in required_exts)) or
+                        (sub_trans_dir.exists() and all((sub_trans_dir / f"{base_name}{ext}").exists() for ext in required_exts)) or
+                        (legacy_dir.exists() and all((legacy_dir / f"{base_name}{ext}").exists() for ext in required_exts))
+                    )
 
             # Silence auto-save prompts before switching contexts
             if self.project_dirty and self.audio_file:
@@ -1445,10 +1463,15 @@ class MediaBatchMixin:
         base_name = safe_filename(Path(self.audio_file).stem)
 
         try:
-            project_dir, trans_dir, media_dir, _ = self.prepare_export_directories(
-                base_dir, default_name=base_name, prompt_user=False
-            )
-            target_path = str(project_dir / f"{base_name}.rtvs")
+            if self.batch_settings.get("unified_transcripts", False):
+                projects_dir = Path(base_dir) / "Projects"
+                projects_dir.mkdir(parents=True, exist_ok=True)
+                target_path = str(projects_dir / f"{base_name}.rtvs")
+            else:
+                project_dir, trans_dir, media_dir, _ = self.prepare_export_directories(
+                    base_dir, default_name=base_name, prompt_user=False
+                )
+                target_path = str(project_dir / f"{base_name}.rtvs")
             self._write_project_file(target_path)
             self.log_activity(f"[BATCH] Auto-saved project file to {target_path}")
         except Exception as e:
@@ -1478,7 +1501,21 @@ class MediaBatchMixin:
             return
 
         base_name = safe_filename(Path(self.audio_file).stem if self.audio_file else "batch_output")
-        project_dir, _, _, _ = self.prepare_export_directories(base_dir, default_name=base_name, prompt_user=False)
+        unified_transcripts = self.batch_settings.get("unified_transcripts", False)
+
+        if unified_transcripts:
+            custom_trans = self.batch_settings.get("transcripts_output", "").strip()
+            if custom_trans:
+                export_target_dir = Path(custom_trans)
+            else:
+                export_target_dir = Path(base_dir) / "Transcripts"
+            export_target_dir.mkdir(parents=True, exist_ok=True)
+            export_directory = str(export_target_dir)
+            is_custom = True
+        else:
+            project_dir, _, _, _ = self.prepare_export_directories(base_dir, default_name=base_name, prompt_user=False)
+            export_directory = str(project_dir)
+            is_custom = False
 
         formats = {
             "txt": self.batch_settings.get("full_txt", True) or self.batch_settings.get("story_txt", False),
@@ -1504,8 +1541,9 @@ class MediaBatchMixin:
                     custom_formats=formats,
                     custom_base=base_name,
                     custom_options=options,
-                    directory=str(project_dir),
-                    show_completion=False
+                    directory=export_directory,
+                    show_completion=False,
+                    is_custom_location=is_custom,
                 )
 
             if scope in ("stories", "both") and self.stories:
@@ -1514,11 +1552,12 @@ class MediaBatchMixin:
                     custom_formats=formats,
                     custom_base=base_name,
                     custom_options=options,
-                    directory=str(project_dir),
-                    show_completion=False
+                    directory=export_directory,
+                    show_completion=False,
+                    is_custom_location=is_custom,
                 )
 
-            self.log_activity(f"[BATCH] Successfully exported files for {base_name} to {project_dir}")
+            self.log_activity(f"[BATCH] Successfully exported files for {base_name} to {export_directory}")
         except Exception as e:
             self.log_activity(f"[BATCH ERROR] Export failed for {base_name}: {e}")
 

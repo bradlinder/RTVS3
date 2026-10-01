@@ -1,5 +1,14 @@
 # Changelog
 
+## v3.7.16-stable
+- **Batch Processing Unified Transcripts Directory Option (`batch_dialog.py`, `media_batch.py`, `project_export.py`, `test_runner.py`)**:
+  - **Single Transcripts Directory Mode**: Added a dedicated `[x] Save all transcripts to a single directory` option in the Batch Processing Center (`BatchProcessingDialog`). When enabled, transcripts, documents, and subtitle files (`.txt`, `.docx`, `.srt`, `.vtt`) for all processed files are exported directly into a single consolidated folder (defaulting to `<Target Location>/Transcripts/` or any user-selected custom directory) rather than isolated per-file subdirectories.
+  - **Preserved Project Session Organization**: Kept non-destructive `.rtvs` project sessions organized in `<Target Location>/Projects/<base_name>.rtvs`, allowing users to quickly collect all output documents while preserving session markers, speaker diarization, waveforms, and timestamped editing data.
+  - **Dedicated Transcripts Directory Picker**: Added a companion folder input and "Browse Transcripts Folder…" selector, allowing users to direct batch transcripts to cloud storage, shared network locations, or custom local folders with automatic fallback to `<Target Location>/Transcripts`.
+  - **Enhanced Skip-Existing Verification**: Upgraded batch skip-existing check to detect whether outputs exist directly in the unified transcripts folder, preventing redundant AI pipeline runs when documents are already present.
+  - **Custom Location Propagation in Story Exports**: Updated `perform_stories_export` in `project_export.py` to accept and forward `is_custom_location=True`, ensuring story exports write cleanly to the target transcripts folder without creating redundant nested subfolders.
+  - **Automated Diagnostic Test (`test_runner.py`)**: Added `_test_batch_unified_transcripts_directory_export` verifying AST configuration, Qt widget states, settings persistence, project session isolation, transcript routing, and skip-existing checks.
+
 ## v3.7.15-stable
 - **Modal Dialog Maximizable Import Fix (`batch_dialog.py`, `export/dialog.py`, `id3_editor.py`, `story_metadata_dialog.py`, `project_lifecycle.py`, `playback_preferences.py`, `transcript_story.py`, `test_runner.py`)**:
   - **Resolved `NameError: name 'make_dialog_maximizable' is not defined`**: Fixed a runtime exception when opening the Batch Processing Center dialog (`open_batch_processing_dialog` / `Ctrl+Shift+B`), where `BatchProcessingDialog.__init__` invoked `make_dialog_maximizable(self)` without importing the helper from `core_utils`.
