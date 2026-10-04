@@ -51,6 +51,32 @@ from prs_shared import (
 )
 
 
+class PersistentMenu(QMenu):
+    """A QMenu subclass that stays open when checkable toggle options are activated,
+    allowing users to toggle multiple items without the menu immediately closing."""
+
+    def addMenu(self, *args, **kwargs):
+        if len(args) == 1 and isinstance(args[0], str):
+            menu = PersistentMenu(args[0], self)
+            super().addMenu(menu)
+            return menu
+        return super().addMenu(*args, **kwargs)
+
+    def mouseReleaseEvent(self, event):
+        is_left = True
+        if hasattr(event, "button"):
+            btn = event.button()
+            is_left = (btn == Qt.MouseButton.LeftButton if hasattr(Qt, "MouseButton") else btn == Qt.LeftButton)
+        if is_left:
+            pos = event.position().toPoint() if hasattr(event, "position") else event.pos()
+            action = self.actionAt(pos)
+            if action and action.isCheckable() and not action.menu():
+                action.trigger()
+                self.update()
+                return
+        super().mouseReleaseEvent(event)
+
+
 class UiLayoutMixin:
     """Mixin class providing UI construction, menu assembly, and UI event binding."""
 
@@ -834,6 +860,12 @@ class UiLayoutMixin:
 
         self.plugins_export_menu = file_menu.addMenu("Publishing & Plugins")
 
+        backup_act = QAction("&Backup & Restore...", self)
+        backup_act.setShortcut(platform_seq("Ctrl+Shift+U"))
+        backup_act.triggered.connect(getattr(self, "open_backup_restore_dialog", lambda: None))
+        self.backup_restore_action = backup_act
+        file_menu.addAction(backup_act)
+
         file_menu.addSeparator()
 
         # 5. Application Exit
@@ -883,7 +915,8 @@ class UiLayoutMixin:
         # ==========================================
         # View Menu
         # ==========================================
-        view_menu = menubar.addMenu("&View")
+        view_menu = PersistentMenu("&View", self)
+        menubar.addMenu(view_menu)
 
         # Main Panel Visibility Toggles (Alt+1-5 on Win/Linux, Ctrl+Alt+1-5 on Mac)
         panel_mod = "Ctrl+Alt" if sys.platform == "darwin" else "Alt"
@@ -966,6 +999,11 @@ class UiLayoutMixin:
         self.show_timestamps_action.setChecked(getattr(self, "show_timestamps", True))
         self.show_timestamps_action.toggled.connect(self.toggle_timestamps)
         transcript_menu.addAction(self.show_timestamps_action)
+
+        self.show_milliseconds_action = QAction("Show &Milliseconds in Timestamps", self, checkable=True)
+        self.show_milliseconds_action.setChecked(getattr(self, "show_milliseconds", False))
+        self.show_milliseconds_action.toggled.connect(getattr(self, "toggle_milliseconds", lambda c: None))
+        transcript_menu.addAction(self.show_milliseconds_action)
 
         transcript_menu.addSeparator()
 
@@ -1178,6 +1216,16 @@ class UiLayoutMixin:
         glossary_act.triggered.connect(self.open_glossary_dialog)
         self.glossary_action = glossary_act
         settings_menu.addAction(glossary_act)
+
+        backup_settings_act = QAction("&Backup & Restore Settings...", self)
+        backup_settings_act.triggered.connect(getattr(self, "open_backup_restore_dialog", lambda: None))
+        self.backup_settings_action = backup_settings_act
+        settings_menu.addAction(backup_settings_act)
+
+        restore_defaults_act = QAction("&Restore System Defaults...", self)
+        restore_defaults_act.triggered.connect(getattr(self, "open_restore_system_defaults_dialog", lambda: None))
+        self.restore_defaults_action = restore_defaults_act
+        settings_menu.addAction(restore_defaults_act)
 
         # Language submenu in Settings menu
         self.language_menu = settings_menu.addMenu("&Language / Idioma")

@@ -21,7 +21,8 @@ class RestoreSelectedSettingsDialog(QDialog):
         ("ai_models", "AI Models & Storage Directory", "Whisper speech recognition model (small, beam size 5), translation model (tiny), and models storage folder."),
         ("gpu_acceleration", "Hardware / GPU Acceleration", "GPU and DirectML hardware acceleration settings."),
         ("playback_timeline", "Playback & Timeline Display", "Skip duration (5s), waveform visibility, thumbnail strip, and transcript selection mode."),
-        ("detection_diarization", "Story Detection & Diarization Defaults", "Silence threshold (3.0s), lead-in padding (0.5s), default expected speakers (auto), and speaker prompts."),
+        ("audio_fades", "Audio Fades & Fade Curve Defaults", "Enable audio fades (disabled), fade audio preview (disabled), default fade-in duration (0.0s), default fade-out duration (1.0s), and default fade curve (linear)."),
+        ("detection_diarization", "Story Detection & Diarization Defaults", "Detection basis/mode (Voice), silence gap threshold / speech detection length (3.0s), lead-in padding (0.5s), default expected speakers (auto), speaker estimate prompt (enabled), and separation sensitivity (normal)."),
         ("batch_processing", "Batch Processing Tool Options", "Batch tasks (transcribe, diarize, detect stories), output formats, and batch custom directory."),
         ("export_options", "Export Window: Formats & Content Options", "Export formats (TXT, DOCX, Media enabled; SRT, VTT disabled) and content options (speakers, timestamps, languages)."),
         ("export_directory", "Export Window: Custom Location", "Clear saved custom export location and restore default project folder export routing."),
@@ -930,6 +931,17 @@ class PlaybackPreferencesMixin:
         if "general_appearance" in selected_set:
             self.settings_store.setValue("theme_mode", "dark")
             self.settings_store.setValue("startup_project_mode", "last")
+            self.settings_store.setValue("single_instance_mode", "single")
+            self.settings_store.setValue("show_floating_selection_toolbar", "true")
+            self.settings_store.setValue("open_comments_on_launch", "false")
+            self.settings_store.setValue("show_comment_highlights", "true")
+            self.settings_store.setValue("show_timestamps", "true")
+            self.settings_store.setValue("show_milliseconds", "false")
+            self.show_floating_selection_toolbar = True
+            self.show_comment_highlights = True
+            self.show_timestamps = True
+            self.show_milliseconds = False
+            self.startup_project_mode = "last"
             if hasattr(self, "set_theme"):
                 try:
                     self.set_theme("dark")
@@ -940,8 +952,20 @@ class PlaybackPreferencesMixin:
                     self.set_startup_project_mode("last")
                 except Exception:
                     pass
-            else:
-                self.startup_project_mode = "last"
+            if hasattr(self, "show_timestamps_action"):
+                self.show_timestamps_action.setChecked(True)
+            if hasattr(self, "show_milliseconds_action"):
+                self.show_milliseconds_action.setChecked(False)
+            if hasattr(self, "toggle_comment_highlights"):
+                try:
+                    self.toggle_comment_highlights(True)
+                except Exception:
+                    pass
+            if hasattr(self, "render_transcript"):
+                try:
+                    self.render_transcript()
+                except Exception:
+                    pass
             if "theme_combo" in lw and lw["theme_combo"]:
                 idx = lw["theme_combo"].findText("dark")
                 if idx >= 0:
@@ -950,12 +974,28 @@ class PlaybackPreferencesMixin:
                 idx = lw["startup_combo"].findData("last")
                 if idx >= 0:
                     lw["startup_combo"].setCurrentIndex(idx)
+            if "single_instance_combo" in lw and lw["single_instance_combo"]:
+                idx_si = lw["single_instance_combo"].findData("single")
+                if idx_si >= 0:
+                    lw["single_instance_combo"].setCurrentIndex(idx_si)
+            if "floating_toolbar_chk" in lw and lw["floating_toolbar_chk"]:
+                lw["floating_toolbar_chk"].setChecked(True)
+            if "open_comments_chk" in lw and lw["open_comments_chk"]:
+                lw["open_comments_chk"].setChecked(False)
+            if "show_highlights_chk" in lw and lw["show_highlights_chk"]:
+                lw["show_highlights_chk"].setChecked(True)
+            if "show_timestamps_chk" in lw and lw["show_timestamps_chk"]:
+                lw["show_timestamps_chk"].setChecked(True)
+            if "show_millis_chk" in lw and lw["show_millis_chk"]:
+                lw["show_millis_chk"].setChecked(False)
+                lw["show_millis_chk"].setEnabled(True)
 
         # 2. General Project Directories & Bundling
         if "general_project_dirs" in selected_set:
             self.settings_store.setValue("default_project_directory", "")
             self.settings_store.setValue("save_project_with_media", "false")
             self.settings_store.setValue("create_project_subfolders", "true")
+            self.settings_store.setValue("media_ingest_mode", "reference")
             self.settings_store.setValue("copy_media_to_project_folder", "false")
             self.settings_store.setValue("last_directory", "")
             self.settings_store.setValue("last_open_directory", "")
@@ -997,12 +1037,19 @@ class PlaybackPreferencesMixin:
                 except Exception:
                     pass
             if "page_shortcuts" in lw and lw["page_shortcuts"]:
-                lw["page_shortcuts"].revert_changes()
+                if hasattr(lw["page_shortcuts"], "_populate_table"):
+                    try:
+                        lw["page_shortcuts"]._populate_table()
+                    except Exception:
+                        pass
+                elif hasattr(lw["page_shortcuts"], "revert_changes"):
+                    lw["page_shortcuts"].revert_changes()
 
         # 4. Audio Hardware
         if "audio_hardware" in selected_set:
             self.settings_store.setValue("audio_output_device", "System Default")
             self.settings_store.setValue("audio_output_volume", 100)
+            self.master_volume = 1.0
             if hasattr(self, "apply_audio_output_device"):
                 try:
                     self.apply_audio_output_device("System Default", 1.0)
@@ -1037,6 +1084,7 @@ class PlaybackPreferencesMixin:
             self.settings_store.setValue("whisper_model", "parakeet-onnx")
             self.settings_store.setValue("whisper_beam_size", 5)
             self.settings_store.setValue("translation_model_variant", "tiny")
+            self.settings_store.setValue("auto_detect_fallback_whisper", "true")
             self.whisper_model = "parakeet-onnx"
             self.whisper_beam_size = 5
             self.translation_model_variant = "tiny"
@@ -1064,6 +1112,8 @@ class PlaybackPreferencesMixin:
                 idx = lw["pref_trans_combo"].findData("tiny")
                 if idx >= 0:
                     lw["pref_trans_combo"].setCurrentIndex(idx)
+            if "pref_auto_lang_chk" in lw and lw["pref_auto_lang_chk"]:
+                lw["pref_auto_lang_chk"].setChecked(True)
 
         # 7. Hardware / GPU Acceleration
         if "gpu_acceleration" in selected_set:
@@ -1073,6 +1123,17 @@ class PlaybackPreferencesMixin:
                 except Exception:
                     pass
             self.settings_store.setValue("gpu_acceleration_enabled", "false")
+            self.settings_store.setValue("gpu_transcription_enabled", "true")
+            self.settings_store.setValue("gpu_translation_enabled", "true")
+            self.settings_store.setValue("gpu_diarization_enabled", "true")
+            if "global_gpu_chk" in lw and lw["global_gpu_chk"]:
+                lw["global_gpu_chk"].setChecked(False)
+            if "gpu_trans_chk" in lw and lw["gpu_trans_chk"]:
+                lw["gpu_trans_chk"].setChecked(True)
+            if "gpu_translate_chk" in lw and lw["gpu_translate_chk"]:
+                lw["gpu_translate_chk"].setChecked(True)
+            if "gpu_diarize_chk" in lw and lw["gpu_diarize_chk"]:
+                lw["gpu_diarize_chk"].setChecked(True)
 
         # 8. Playback & Timeline
         if "playback_timeline" in selected_set:
@@ -1081,13 +1142,17 @@ class PlaybackPreferencesMixin:
             self.settings_store.setValue("timeline_show_thumbnails", "true")
             self.settings_store.setValue("timeline_thumbnail_position", "below")
             self.settings_store.setValue("transcript_selection_mode", "replace")
-            self.settings_store.setValue("show_speaker_labels", True)
-            self.settings_store.setValue("show_timestamps", True)
+            self.settings_store.setValue("transcript_font_scale", 1.0)
+            self.settings_store.setValue("show_speaker_labels", "true")
             self.skip_seconds = 5
             self.timeline_show_waveform = True
             self.timeline_show_thumbnails = True
             self.timeline_thumbnail_position = "below"
             self.transcript_selection_mode = "replace"
+            self.transcript_font_scale = 1.0
+            self.show_speaker_labels = True
+            if hasattr(self, "show_speaker_labels_action"):
+                self.show_speaker_labels_action.setChecked(True)
             if hasattr(self, "timeline"):
                 try:
                     self.timeline.set_skip_seconds(5)
@@ -1099,6 +1164,11 @@ class PlaybackPreferencesMixin:
             if hasattr(self, "transcript_view") and hasattr(self.transcript_view, "set_selection_mode"):
                 try:
                     self.transcript_view.set_selection_mode("replace")
+                except Exception:
+                    pass
+            if hasattr(self, "skip_display"):
+                try:
+                    self.skip_display.setValue(5)
                 except Exception:
                     pass
             if "skip_spin" in lw and lw["skip_spin"]:
@@ -1115,6 +1185,21 @@ class PlaybackPreferencesMixin:
                 idx = lw["sel_mode_combo"].findData("replace")
                 if idx >= 0:
                     lw["sel_mode_combo"].setCurrentIndex(idx)
+
+        # 8b. Audio Fades & Defaults
+        if "audio_fades" in selected_set or "playback_timeline" in selected_set:
+            self.settings_store.setValue("enable_audio_fades", "false")
+            self.settings_store.setValue("preview_audio_fades", "false")
+            self.settings_store.setValue("default_fade_in_duration", 0.0)
+            self.settings_store.setValue("default_fade_out_duration", 1.0)
+            self.settings_store.setValue("default_fade_curve", "linear")
+            self.enable_audio_fades = False
+            self.preview_audio_fades = False
+            if hasattr(self, "timeline") and hasattr(self.timeline, "canvas"):
+                self.timeline.canvas.show_audio_fades = False
+                self.timeline.canvas.update()
+            if hasattr(self, "story_list"):
+                self.story_list.viewport().update()
             if "enable_fades_chk" in lw and lw["enable_fades_chk"]:
                 lw["enable_fades_chk"].setChecked(False)
             if "preview_fades_chk" in lw and lw["preview_fades_chk"]:
@@ -1125,25 +1210,29 @@ class PlaybackPreferencesMixin:
                 lw["fade_out_spin"].setValue(1.0)
             if "fade_curve_combo" in lw and lw["fade_curve_combo"]:
                 lw["fade_curve_combo"].setCurrentData("linear")
-            self.enable_audio_fades = False
-            self.preview_audio_fades = False
-            self.settings_store.setValue("enable_audio_fades", "false")
-            self.settings_store.setValue("preview_audio_fades", "false")
-            self.settings_store.setValue("default_fade_in_duration", 0.0)
-            self.settings_store.setValue("default_fade_out_duration", 1.0)
-            self.settings_store.setValue("default_fade_curve", "linear")
 
         # 9. Story Detection & Diarization
         if "detection_diarization" in selected_set:
+            self.settings_store.setValue("story_detection_mode", "voice")
             self.settings_store.setValue("silence_threshold", 3.0)
             self.settings_store.setValue("lead_in_padding", 0.5)
             self.settings_store.setValue("default_expected_speakers", "auto")
             self.settings_store.setValue("ask_expected_speakers", True)
             self.settings_store.setValue("diarization_sensitivity", "normal")
+            self.story_detection_mode = "voice"
             self.silence_threshold = 3.0
             self.lead_in_padding = 0.5
             self.expected_speakers = "auto"
             self.diarization_sensitivity = "normal"
+            if hasattr(self, "update_story_segment_terminology"):
+                try:
+                    self.update_story_segment_terminology()
+                except Exception:
+                    pass
+            if "det_mode_combo" in lw and lw["det_mode_combo"]:
+                idx_m = lw["det_mode_combo"].findData("voice")
+                if idx_m >= 0:
+                    lw["det_mode_combo"].setCurrentIndex(idx_m)
             if "gap_spin" in lw and lw["gap_spin"]:
                 lw["gap_spin"].setValue(3.0)
             if "pad_spin" in lw and lw["pad_spin"]:
@@ -1255,6 +1344,9 @@ class PlaybackPreferencesMixin:
             except Exception:
                 pass
 
+        if hasattr(self, "load_persistent_settings"):
+            self.load_persistent_settings()
+
         try:
             self.settings_store.sync()
         except Exception:
@@ -1308,14 +1400,28 @@ class PlaybackPreferencesMixin:
         # Right stacked pages
         stack = QStackedWidget(dialog)
 
-        def _add_custom_defaults_btn(layout, cat_title):
+        def _add_custom_defaults_btn(layout, cat_title, cat_ids=None):
+            row = QHBoxLayout()
             btn = QPushButton("Save as Custom Defaults")
             btn.setToolTip(f"Save current {cat_title} settings as your custom defaults.")
             def _save_custom():
                 _save_preferences(close_dialog=False)
                 QMessageBox.information(dialog, "Custom Defaults Saved", f"Current {cat_title} settings have been saved as your custom defaults.")
             btn.clicked.connect(_save_custom)
-            layout.addWidget(btn)
+            row.addWidget(btn)
+
+            if cat_ids:
+                rst_btn = QPushButton("Restore Category Defaults")
+                rst_btn.setToolTip(f"Reset {cat_title} settings back to system factory defaults.")
+                def _restore_cat():
+                    self.apply_settings_reset(cat_ids, live_widgets=live_widgets)
+                    self.settings_store.sync()
+                    QMessageBox.information(dialog, "Category Defaults Restored", f"Default settings for {cat_title} have been restored.")
+                rst_btn.clicked.connect(_restore_cat)
+                row.addWidget(rst_btn)
+
+            row.addStretch()
+            layout.addLayout(row)
 
         # 1. General Page
         page_general = QWidget()
@@ -1423,6 +1529,18 @@ class PlaybackPreferencesMixin:
         show_highlights_chk.setChecked(str(self.settings_store.value("show_comment_highlights", "true")).lower() in {"1", "true", "yes"})
         gen_form.addRow("Transcript Highlights:", show_highlights_chk)
 
+        show_timestamps_chk = QCheckBox("Show timestamps in transcript viewer")
+        show_timestamps_chk.setToolTip("Displays timecodes at speaker turns in the transcript window.")
+        show_timestamps_chk.setChecked(str(self.settings_store.value("show_timestamps", "true")).lower() in {"1", "true", "yes"})
+        gen_form.addRow("Timestamps:", show_timestamps_chk)
+
+        show_millis_chk = QCheckBox("Show milliseconds in timestamps (MM:SS.mmm)")
+        show_millis_chk.setToolTip("When unchecked (default), displays clean human-readable timestamps (MM:SS) in transcript viewer and text exports. Subtitle/DAW exports always retain millisecond precision.")
+        show_millis_chk.setChecked(str(self.settings_store.value("show_milliseconds", "false")).lower() in {"1", "true", "yes"})
+        show_millis_chk.setEnabled(show_timestamps_chk.isChecked())
+        show_timestamps_chk.toggled.connect(lambda checked: show_millis_chk.setEnabled(checked))
+        gen_form.addRow("Timecode Precision:", show_millis_chk)
+
         autosave_spin = QSpinBox()
         autosave_spin.setRange(0, 120)
         autosave_spin.setValue(self.auto_save_minutes)
@@ -1430,7 +1548,7 @@ class PlaybackPreferencesMixin:
         gen_form.addRow("Auto-save Interval:", autosave_spin)
 
         gen_layout.addLayout(gen_form)
-        _add_custom_defaults_btn(gen_layout, "General")
+        _add_custom_defaults_btn(gen_layout, "General", ["general_appearance", "general_project_dirs", "general_autosave"])
         gen_layout.addStretch()
         stack.addWidget(page_general)
 
@@ -1495,7 +1613,7 @@ class PlaybackPreferencesMixin:
         audio_form.addRow("Device Test:", test_btn)
 
         audio_layout.addLayout(audio_form)
-        _add_custom_defaults_btn(audio_layout, "Audio Hardware")
+        _add_custom_defaults_btn(audio_layout, "Audio Hardware", ["audio_hardware"])
         audio_layout.addStretch()
         stack.addWidget(page_audio)
 
@@ -1533,7 +1651,7 @@ class PlaybackPreferencesMixin:
         )
         up_info.setStyleSheet("color: #666; font-size: 12px; margin-top: 10px;")
         up_layout.addWidget(up_info)
-        _add_custom_defaults_btn(up_layout, "Updates & GitHub")
+        _add_custom_defaults_btn(up_layout, "Updates & GitHub", ["software_updates"])
         up_layout.addStretch()
         stack.addWidget(page_updates)
 
@@ -1660,7 +1778,7 @@ class PlaybackPreferencesMixin:
         manage_models_btn.clicked.connect(_open_mgr)
         mod_layout.addWidget(manage_models_btn)
 
-        _add_custom_defaults_btn(mod_layout, "AI Models")
+        _add_custom_defaults_btn(mod_layout, "AI Models", ["ai_models"])
         mod_layout.addStretch()
         stack.addWidget(page_models)
 
@@ -1766,7 +1884,7 @@ class PlaybackPreferencesMixin:
         action_layout.addWidget(uninstall_gpu_btn)
 
         gpu_layout.addLayout(action_layout)
-        _add_custom_defaults_btn(gpu_layout, "GPU Acceleration")
+        _add_custom_defaults_btn(gpu_layout, "GPU Acceleration", ["gpu_acceleration"])
         gpu_layout.addStretch()
         stack.addWidget(page_gpu)
 
@@ -1859,7 +1977,7 @@ class PlaybackPreferencesMixin:
         _update_fades_options_visibility(enable_fades_chk.isChecked())
 
         play_layout.addLayout(play_form)
-        _add_custom_defaults_btn(play_layout, "Playback & Timeline")
+        _add_custom_defaults_btn(play_layout, "Playback & Timeline", ["playback_timeline", "audio_fades"])
         play_layout.addStretch()
         stack.addWidget(page_play)
 
@@ -1936,7 +2054,7 @@ class PlaybackPreferencesMixin:
 
 
         det_layout.addLayout(det_form)
-        _add_custom_defaults_btn(det_layout, "Story Detection & Diarization")
+        _add_custom_defaults_btn(det_layout, "Story Detection & Diarization", ["detection_diarization"])
         det_layout.addStretch()
         stack.addWidget(page_detect)
 
@@ -2053,7 +2171,7 @@ class PlaybackPreferencesMixin:
         batch_form.addRow("Factory Defaults:", batch_options_reset_btn)
 
         batch_layout.addLayout(batch_form)
-        _add_custom_defaults_btn(batch_layout, "Batch Processing")
+        _add_custom_defaults_btn(batch_layout, "Batch Processing", ["batch_processing"])
         batch_layout.addStretch()
         stack.addWidget(page_batch)
 
@@ -2137,10 +2255,12 @@ class PlaybackPreferencesMixin:
             )
             if ans == QMessageBox.StandardButton.Yes:
                 self.settings_store.clear()
+                all_cats = [c[0] for c in RestoreSelectedSettingsDialog.CATEGORIES]
+                self.apply_settings_reset(all_cats, live_widgets=live_widgets)
                 self.settings_store.sync()
                 QMessageBox.information(
                     dialog, "Preferences Reset",
-                    "All user preferences have been reset to factory defaults."
+                    "All user preferences and settings have been restored to factory defaults."
                 )
                 dialog.accept()
                 self.open_preferences_dialog(initial_category="Cleanup Data")
@@ -2432,11 +2552,18 @@ class PlaybackPreferencesMixin:
         live_widgets = {
             "page_shortcuts": page_shortcuts,
             "theme_combo": theme_combo,
+            "lang_combo": lang_combo,
             "startup_combo": startup_combo,
             "proj_dir_edit": proj_dir_edit,
             "save_with_media_chk": save_with_media_chk,
             "bundle_folder_chk": bundle_folder_chk,
             "ingest_mode_combo": ingest_mode_combo,
+            "single_instance_combo": single_instance_combo,
+            "floating_toolbar_chk": floating_toolbar_chk,
+            "open_comments_chk": open_comments_chk,
+            "show_highlights_chk": show_highlights_chk,
+            "show_timestamps_chk": show_timestamps_chk,
+            "show_millis_chk": show_millis_chk,
             "autosave_spin": autosave_spin,
             "audio_dev_combo": audio_dev_combo,
             "vol_slider": vol_slider,
@@ -2445,6 +2572,7 @@ class PlaybackPreferencesMixin:
             "repo_edit": repo_edit,
             "model_dir_edit": model_dir_edit,
             "pref_whisper_combo": pref_whisper_combo,
+            "pref_auto_lang_chk": pref_auto_lang_chk,
             "pref_beam_combo": pref_beam_combo,
             "pref_trans_combo": pref_trans_combo,
             "skip_spin": skip_spin,
@@ -2459,6 +2587,7 @@ class PlaybackPreferencesMixin:
             "fade_curve_combo": fade_curve_combo,
             "gap_spin": gap_spin,
             "pad_spin": pad_spin,
+            "det_mode_combo": det_mode_combo,
             "expected_speakers_combo": expected_speakers_combo,
             "ask_speakers_chk": ask_speakers_chk,
             "sensitivity_combo": sensitivity_combo,
@@ -2502,7 +2631,7 @@ class PlaybackPreferencesMixin:
                 parent=dialog,
                 on_restore_selected=lambda chosen_ids: (
                     self.apply_settings_reset(chosen_ids, live_widgets=live_widgets),
-                    _save_preferences(close_dialog=False)
+                    self.settings_store.sync()
                 )
             )
             sel_dlg.exec()
@@ -2550,6 +2679,21 @@ class PlaybackPreferencesMixin:
             self.settings_store.setValue("show_comment_highlights", "true" if new_show_hl else "false")
             if hasattr(self, "toggle_comment_highlights"):
                 self.toggle_comment_highlights(new_show_hl)
+
+            new_show_ts = show_timestamps_chk.isChecked()
+            self.settings_store.setValue("show_timestamps", "true" if new_show_ts else "false")
+            self.show_timestamps = new_show_ts
+            if hasattr(self, "show_timestamps_action"):
+                self.show_timestamps_action.setChecked(new_show_ts)
+
+            new_show_ms = show_millis_chk.isChecked()
+            self.settings_store.setValue("show_milliseconds", "true" if new_show_ms else "false")
+            self.show_milliseconds = new_show_ms
+            if hasattr(self, "show_milliseconds_action"):
+                self.show_milliseconds_action.setChecked(new_show_ms)
+
+            if hasattr(self, "render_transcript"):
+                self.render_transcript()
 
             # Save Audio Hardware
             new_dev = audio_dev_combo.currentText()
@@ -2639,6 +2783,9 @@ class PlaybackPreferencesMixin:
             self.settings_store.setValue("enable_audio_fades", "true" if self.enable_audio_fades else "false")
             self.preview_audio_fades = preview_fades_chk.isChecked()
             self.settings_store.setValue("preview_audio_fades", "true" if self.preview_audio_fades else "false")
+            self.settings_store.setValue("default_fade_in_duration", fade_in_spin.value())
+            self.settings_store.setValue("default_fade_out_duration", fade_out_spin.value())
+            self.settings_store.setValue("default_fade_curve", fade_curve_combo.currentData() or "linear")
             if hasattr(self, "timeline") and hasattr(self.timeline, "canvas"):
                 self.timeline.canvas.show_audio_fades = self.enable_audio_fades
                 self.timeline.canvas.update()
@@ -2656,9 +2803,6 @@ class PlaybackPreferencesMixin:
             self.diarization_sensitivity = str(sensitivity_combo.currentData() or "normal")
             self.settings_store.setValue("silence_threshold", self.silence_threshold)
             self.settings_store.setValue("lead_in_padding", self.lead_in_padding)
-            self.settings_store.setValue("default_fade_in_duration", fade_in_spin.value())
-            self.settings_store.setValue("default_fade_out_duration", fade_out_spin.value())
-            self.settings_store.setValue("default_fade_curve", fade_curve_combo.currentData() or "linear")
             self.settings_store.setValue("default_expected_speakers", self.expected_speakers)
             self.settings_store.setValue("ask_expected_speakers", ask_speakers_chk.isChecked())
             self.settings_store.setValue("diarization_sensitivity", self.diarization_sensitivity)
@@ -2736,6 +2880,17 @@ class PlaybackPreferencesMixin:
         apply_btn.clicked.connect(lambda: _save_preferences(close_dialog=False))
 
         dialog.exec()
+
+    def open_restore_system_defaults_dialog(self):
+        """Open the Restore System Defaults dialog directly from Settings menu or Backup & Restore Center."""
+        dlg = RestoreSelectedSettingsDialog(
+            parent=self,
+            on_restore_selected=lambda chosen_ids: (
+                self.apply_settings_reset(chosen_ids),
+                self.settings_store.sync()
+            )
+        )
+        dlg.exec()
 
     def apply_audio_output_device(self, device_name=None, volume=None):
         """Apply selected audio output device and volume to the active player."""
@@ -3693,6 +3848,18 @@ class PlaybackPreferencesMixin:
         layout.addLayout(form)
 
         btn_box = QHBoxLayout()
+        reset_defaults_btn = QPushButton("Restore Defaults")
+        reset_defaults_btn.setToolTip("Reset speech detection thresholds to system defaults (Voice mode, 3.0s gap, 0.5s padding)")
+        def _on_restore_detect_defaults():
+            thresh_box.setValue(3.0)
+            pad_box.setValue(0.5)
+            idx_v = mode_box.findData("voice")
+            if idx_v >= 0:
+                mode_box.setCurrentIndex(idx_v)
+        reset_defaults_btn.clicked.connect(_on_restore_detect_defaults)
+        btn_box.addWidget(reset_defaults_btn)
+        btn_box.addStretch()
+
         ok_btn = QPushButton("Save")
         cancel_btn = QPushButton("Cancel")
         btn_box.addWidget(ok_btn)

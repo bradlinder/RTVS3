@@ -1145,12 +1145,13 @@ class ProjectExportMixin(ProjectLifecycleMixin):
                     blocks = self.build_story_blocks(curr_spk_blocks) if curr_spk_blocks else []
 
                 # Export TXT
+                include_millis = bool(options.get("include_milliseconds", options.get("show_milliseconds", getattr(self, "show_milliseconds", False))))
                 if formats.get("txt"):
                     txt_file = transcripts_out / f"{file_base}.txt"
                     with open(txt_file, "w", encoding="utf-8") as f:
                         source_name = self.audio_file.name if self.audio_file else "Text-only project"
                         lang_label = " (Spanish)" if lang_code == "es" else (" (English)" if lang_code == "en" else "")
-                        f.write(f"{story_title}{lang_label}\n{source_name} ({format_time(story.start, False)} - {format_time(story.end, False)})\n")
+                        f.write(f"{story_title}{lang_label}\n{source_name} ({format_time(story.start, include_millis)} - {format_time(story.end, include_millis)})\n")
                         meta = getattr(story, "metadata", {}) or {}
                         wp_meta = meta.get("wordpress", {}) if isinstance(meta.get("wordpress"), dict) else {}
                         author_val = meta.get("author") or wp_meta.get("manual_author") or ""
@@ -1170,7 +1171,7 @@ class ProjectExportMixin(ProjectLifecycleMixin):
                                 continue
                             prefix = ""
                             if options.get("include_timestamps") and block.get("start") is not None:
-                                prefix = f"[{format_time(block['start'], False)}] "
+                                prefix = f"[{format_time(block['start'], include_millis)}] "
                             is_speaker_change = block.get("is_speaker_change", (speaker != last_speaker))
                             if speaker and is_speaker_change and speaker != last_speaker:
                                 prefix += f"{speaker}: "
@@ -1201,6 +1202,7 @@ class ProjectExportMixin(ProjectLifecycleMixin):
                         end_time=story.end,
                         include_speakers=options.get("include_speakers", True),
                         include_timestamps=options.get("include_timestamps", True),
+                        include_milliseconds=include_millis,
                         include_comments=options.get("include_comments", options.get("include_notes", True)),
                         include_highlights=options.get("include_highlights", True),
                         lang_code=lang_code,
@@ -1212,7 +1214,7 @@ class ProjectExportMixin(ProjectLifecycleMixin):
                     pdf_file = transcripts_out / f"{file_base}.pdf"
                     lang_label = " (Spanish)" if lang_code == "es" else (" (English)" if lang_code == "en" else "")
                     header_title = f"{story_title}{lang_label}"
-                    rec_info = f"Recording: {self.audio_file.name} ({format_time(story.start, False)} - {format_time(story.end, False)})" if self.audio_file else None
+                    rec_info = f"Recording: {self.audio_file.name} ({format_time(story.start, include_millis)} - {format_time(story.end, include_millis)})" if self.audio_file else None
                     pdf_writer = TranscriptPdfWriter(doc_title=header_title)
                     pdf_writer.add_header(header_title, rec_info)
 
@@ -1224,7 +1226,7 @@ class ProjectExportMixin(ProjectLifecycleMixin):
                             continue
                         t_stamp = ""
                         if options.get("include_timestamps") and "start" in block and block["start"] is not None:
-                            t_stamp = f"[{format_time(block['start'], False)}]"
+                            t_stamp = f"[{format_time(block['start'], include_millis)}]"
                         is_speaker_change = block.get("is_speaker_change", (speaker != last_speaker))
                         effective_speaker = speaker if (speaker and is_speaker_change and speaker != last_speaker) else ""
                         if effective_speaker:
@@ -1827,6 +1829,7 @@ class ProjectExportMixin(ProjectLifecycleMixin):
                             number = self.diarization.get("num_speakers", 0)
                             f.write(f"Speaker detection: {number} speaker(s) detected.\n\n")
 
+                        include_millis = bool(options.get("include_milliseconds", options.get("show_milliseconds", getattr(self, "show_milliseconds", False))))
                         last_speaker = None
                         for block in blocks:
                             speaker = (block.get("speaker") or "").strip() if options.get("include_speakers", True) else ""
@@ -1836,7 +1839,7 @@ class ProjectExportMixin(ProjectLifecycleMixin):
 
                             prefix = ""
                             if options.get("include_timestamps") and block.get("start") is not None:
-                                prefix = f"[{format_time(block['start'], False)}] "
+                                prefix = f"[{format_time(block['start'], include_millis)}] "
                             is_speaker_change = block.get("is_speaker_change", (speaker != last_speaker))
                             if speaker and is_speaker_change and speaker != last_speaker:
                                 prefix += f"{speaker}: "
@@ -1868,6 +1871,7 @@ class ProjectExportMixin(ProjectLifecycleMixin):
                         end_time=0.0,
                         include_speakers=options.get("include_speakers", True),
                         include_timestamps=options.get("include_timestamps", True),
+                        include_milliseconds=include_millis,
                         include_comments=options.get("include_comments", options.get("include_notes", True)),
                         include_highlights=options.get("include_highlights", True),
                         lang_code=lang_code,
@@ -1893,7 +1897,7 @@ class ProjectExportMixin(ProjectLifecycleMixin):
 
                             t_stamp = ""
                             if options.get("include_timestamps") and "start" in block and block["start"] is not None:
-                                t_stamp = f"[{format_time(block['start'], False)}]"
+                                t_stamp = f"[{format_time(block['start'], include_millis)}]"
 
                             is_speaker_change = block.get("is_speaker_change", (speaker != last_speaker))
                             effective_speaker = speaker if (speaker and is_speaker_change and speaker != last_speaker) else ""

@@ -295,25 +295,7 @@ class MainWindow(
         self.settings_store = QSettings(INTERNAL_APP_ID, INTERNAL_APP_ID)
         from shortcuts_manager import ShortcutsManager
         self.shortcuts_manager = ShortcutsManager(self.settings_store)
-        self.default_project_directory = str(self.settings_store.value("default_project_directory", "") or "")
-        self.timeline_show_waveform = str(self.settings_store.value("timeline_show_waveform", "true")).lower() in {"1", "true", "yes"}
-        self.timeline_show_thumbnails = str(self.settings_store.value("timeline_show_thumbnails", "true")).lower() in {"1", "true", "yes"}
-        self.timeline_thumbnail_position = str(self.settings_store.value("timeline_thumbnail_position", "below")).lower()
-        if self.timeline_thumbnail_position not in ("above", "below"):
-            self.timeline_thumbnail_position = "below"
-        self.transcript_selection_mode = str(self.settings_store.value("transcript_selection_mode", "replace") or "replace")
-        self.show_floating_selection_toolbar = str(self.settings_store.value("show_floating_selection_toolbar", "true")).lower() in {"1", "true", "yes"}
-        try:
-            self.transcript_font_scale = max(0.80, min(1.80, float(self.settings_store.value("transcript_font_scale", 1.0))))
-        except (TypeError, ValueError):
-            self.transcript_font_scale = 1.0
-
-        self.enable_audio_fades = str(self.settings_store.value("enable_audio_fades", "false")).lower() in {"1", "true", "yes"}
-        self.preview_audio_fades = str(self.settings_store.value("preview_audio_fades", "false")).lower() in {"1", "true", "yes"}
-        try:
-            self.master_volume = float(self.settings_store.value("audio_output_volume", 100) or 100) / 100.0
-        except Exception:
-            self.master_volume = 1.0
+        self.load_persistent_settings()
         self._audition_story_index = None
 
         self.audio_output = QAudioOutput()
@@ -338,8 +320,6 @@ class MainWindow(
         self.video_thumbnail_worker = None
         self.video_thumbnail_dir = None
         self._active_worker_threads = set()
-        self.show_speaker_labels = True
-        self.show_timestamps = True
         self.glossary = []
         self.language = "en"
         self.batch_active = False
@@ -399,6 +379,54 @@ class MainWindow(
             self.load_project_file(str(p))
         else:
             self.open_media_file(str(p))
+
+    def load_persistent_settings(self):
+        """Loads all persistent user preferences from QSettings into MainWindow attributes."""
+        s = getattr(self, "settings_store", None)
+        if s is None:
+            return
+        self.default_project_directory = str(s.value("default_project_directory", "") or "")
+        self.timeline_show_waveform = str(s.value("timeline_show_waveform", "true")).lower() in {"1", "true", "yes"}
+        self.timeline_show_thumbnails = str(s.value("timeline_show_thumbnails", "true")).lower() in {"1", "true", "yes"}
+        self.timeline_thumbnail_position = str(s.value("timeline_thumbnail_position", "below")).lower()
+        if self.timeline_thumbnail_position not in ("above", "below"):
+            self.timeline_thumbnail_position = "below"
+        self.transcript_selection_mode = str(s.value("transcript_selection_mode", "replace") or "replace")
+        self.show_floating_selection_toolbar = str(s.value("show_floating_selection_toolbar", "true")).lower() in {"1", "true", "yes"}
+        try:
+            self.transcript_font_scale = max(0.80, min(1.80, float(s.value("transcript_font_scale", 1.0))))
+        except (TypeError, ValueError):
+            self.transcript_font_scale = 1.0
+        self.enable_audio_fades = str(s.value("enable_audio_fades", "false")).lower() in {"1", "true", "yes"}
+        self.preview_audio_fades = str(s.value("preview_audio_fades", "false")).lower() in {"1", "true", "yes"}
+        try:
+            self.master_volume = float(s.value("audio_output_volume", 100) or 100) / 100.0
+        except Exception:
+            self.master_volume = 1.0
+        self.silence_threshold = float(s.value("silence_threshold", 3.0) or 3.0)
+        self.lead_in_padding = float(s.value("lead_in_padding", 0.5) or 0.5)
+        self.story_detection_mode = str(s.value("story_detection_mode", "voice") or "voice")
+        self.expected_speakers = str(s.value("default_expected_speakers", "auto") or "auto")
+        self.diarization_sensitivity = str(s.value("diarization_sensitivity", "normal") or "normal")
+        try:
+            self.skip_seconds = int(float(s.value("skip_seconds", 5) or 5))
+        except Exception:
+            self.skip_seconds = 5
+        try:
+            self.auto_save_minutes = int(float(s.value("auto_save_minutes", 5) or 5))
+        except Exception:
+            self.auto_save_minutes = 5
+        self.whisper_model = str(s.value("whisper_model", "parakeet-onnx") or "parakeet-onnx")
+        try:
+            self.whisper_beam_size = int(s.value("whisper_beam_size", 5) or 5)
+        except Exception:
+            self.whisper_beam_size = 5
+        self.translation_model_variant = str(s.value("translation_model_variant", "tiny") or "tiny")
+        self.show_timestamps = str(s.value("show_timestamps", "true")).lower() in {"1", "true", "yes"}
+        self.show_milliseconds = str(s.value("show_milliseconds", "false")).lower() in {"1", "true", "yes"}
+        self.show_speaker_labels = str(s.value("show_speaker_labels", "true")).lower() in {"1", "true", "yes"}
+        self.show_comment_highlights = str(s.value("show_comment_highlights", "true")).lower() in {"1", "true", "yes"}
+        self.startup_project_mode = str(s.value("startup_project_mode", "last") or "last")
 
     def changeEvent(self, event):
         """Handle window state changes (e.g. maximize, restore, minimize) safely."""

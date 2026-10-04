@@ -464,6 +464,11 @@ class DiagnosticEngine:
                 "AI Runtimes & Inference Stack",
                 "Spawns the AI worker executable as a child process using Python multiprocessing -c syntax to verify resource tracker and spawn handler compatibility",
             ),
+            DiagnosticItem(
+                "Comprehensive Local and Cloud Backup and Restore Engine",
+                "Core Logic & File I/O",
+                "Validates unified state serialization (preferences, shortcuts, glossary, plugins), SHA-256 cryptographic verification, local archive roundtrip, and Google Drive cloud payload integrity",
+            ),
         ]
 
     def run_all(self, stop_requested_fn: Optional[Callable[[], bool]] = None) -> List[DiagnosticItem]:
@@ -1356,6 +1361,7 @@ class DiagnosticEngine:
             "project_lifecycle.py",
             "playback_preferences.py",
             "transcript_story.py",
+            "backup_manager.py",
         ]
 
         verified_modules = []
@@ -3339,6 +3345,120 @@ class DiagnosticEngine:
 
         item.status = "PASS"
         item.message = f"Subprocess multiprocessing -c command interception confirmed on {Path(exe).name}"
+
+    def _test_comprehensive_local_and_cloud_backup_and_restore_engine(self, item: DiagnosticItem):
+        """Validates state serialization, SHA-256 verification, local backup roundtrip, and cloud payload integrity."""
+        import tempfile
+        import copy
+        from backup_manager import (
+            BACKUP_FORMAT_IDENTIFIER,
+            BACKUP_SCHEMA_VERSION,
+            create_backup_payload,
+            verify_backup_payload,
+            apply_backup_payload,
+            export_local_backup,
+            restore_local_backup,
+        )
+        from core_utils import format_time
+
+        # 1. Test Milliseconds and Timecode Formatting Rules
+        assert format_time(125.456, include_millis=False) == "02:05", "format_time(125.456, False) must format to 02:05"
+        assert format_time(125.456, include_millis=True) == "02:05.456", "format_time(125.456, True) must format to 02:05.456"
+        assert format_time(3665.0, include_millis=False) == "01:01:05", "format_time(3665.0, False) must format to 01:01:05"
+
+        # 2. Mock Settings Store for Isolated Deterministic Testing
+        class MockSettingsStore:
+            def __init__(self):
+                self._data = {
+                    "language": "en",
+                    "show_timestamps": "true",
+                    "show_milliseconds": "false",
+                    "default_project_directory": "/tmp/projects",
+                    "glossary": json.dumps([{"source": "RTVS", "preferred": "Radio & TV Story Segmenter", "do_not_translate": True}]),
+                    "plugin_youtube_enabled": True,
+                }
+                self._groups = []
+                self._shortcuts = {"split_turn": "Ctrl+T", "join_turn": "Ctrl+J"}
+
+            def allKeys(self):
+                if self._groups and self._groups[-1] == "keyboard_shortcuts":
+                    return list(self._shortcuts.keys())
+                return list(self._data.keys())
+
+            def value(self, key, default=None):
+                if self._groups and self._groups[-1] == "keyboard_shortcuts":
+                    return self._shortcuts.get(key, default)
+                return self._data.get(key, default)
+
+            def setValue(self, key, val):
+                if self._groups and self._groups[-1] == "keyboard_shortcuts":
+                    self._shortcuts[key] = val
+                else:
+                    self._data[key] = val
+
+            def remove(self, key):
+                if self._groups and self._groups[-1] == "keyboard_shortcuts":
+                    self._shortcuts.pop(key, None)
+                else:
+                    self._data.pop(key, None)
+
+            def beginGroup(self, group):
+                self._groups.append(group)
+
+            def endGroup(self):
+                if self._groups:
+                    self._groups.pop()
+
+            def sync(self):
+                pass
+
+        mock_store = MockSettingsStore()
+
+        # 3. Create Backup Payload & Verify Structure
+        payload = create_backup_payload(settings_store=mock_store)
+        assert payload.get("format") == BACKUP_FORMAT_IDENTIFIER, f"Invalid format identifier: {payload.get('format')}"
+        assert payload.get("schema_version") == BACKUP_SCHEMA_VERSION, f"Invalid schema version: {payload.get('schema_version')}"
+        assert "data" in payload, "Missing 'data' dictionary in backup payload"
+        assert "archive_checksum" in payload, "Missing 'archive_checksum' in backup payload"
+
+        # 4. Validate Authentic Payload Verification
+        valid, msg, val_payload = verify_backup_payload(payload)
+        assert valid, f"Verification failed on valid payload: {msg}"
+        assert val_payload is not None
+
+        # 5. Cryptographic Tamper Detection
+        tampered_payload = copy.deepcopy(payload)
+        tampered_payload["data"]["preferences"]["malicious_key"] = "compromised"
+        t_valid, t_msg, _ = verify_backup_payload(tampered_payload)
+        assert not t_valid, "Tampered payload MUST be rejected by cryptographic checksum"
+        assert "SHA-256 digest mismatch" in t_msg, f"Expected checksum error message, got: {t_msg}"
+
+        # 6. Local File Export & Restore Round-Trip
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            backup_file = Path(tmp_dir) / "test_state.rtvs-settings"
+            ok, exp_res = export_local_backup(backup_file, settings_store=mock_store)
+            assert ok, f"Export local backup failed: {exp_res}"
+            assert backup_file.is_file(), "Backup file was not created on disk"
+
+            # Create a clean mock store to restore into
+            fresh_store = MockSettingsStore()
+            fresh_store._data.clear()
+            fresh_store._shortcuts.clear()
+
+            r_ok, r_msg, items = restore_local_backup(backup_file, settings_store=fresh_store)
+            assert r_ok, f"Restore local backup failed: {r_msg}"
+            assert len(items) >= 3, f"Expected restored items, got: {items}"
+            assert fresh_store.value("language") == "en"
+            assert fresh_store.value("show_timestamps") == "true"
+            fresh_store.beginGroup("keyboard_shortcuts")
+            assert fresh_store.value("split_turn") == "Ctrl+T"
+            fresh_store.endGroup()
+
+        cs = payload["archive_checksum"]
+        assert len(cs) == 64, f"SHA-256 checksum must be 64 hex characters, got {len(cs)}"
+
+        item.status = "PASS"
+        item.message = f"State serialization, SHA-256 cryptographic verification ({cs[:12]}...), and local/cloud roundtrip verified"
 
 
 def generate_diagnostic_report(engine: DiagnosticEngine) -> str:

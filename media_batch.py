@@ -526,6 +526,7 @@ class MediaBatchMixin:
         self.language = str(self.settings_store.value("language", "en") or "en")
         self.show_speaker_labels = str(self.settings_store.value("show_speaker_labels", "true")).lower() in {"1", "true", "yes"}
         self.show_timestamps = str(self.settings_store.value("show_timestamps", "true")).lower() in {"1", "true", "yes"}
+        self.show_milliseconds = str(self.settings_store.value("show_milliseconds", "false")).lower() in {"1", "true", "yes"}
         self.default_project_directory = str(self.settings_store.value("default_project_directory", "") or "")
         self.startup_project_mode = str(self.settings_store.value("startup_project_mode", "last") or "last")
         if self.startup_project_mode not in {"new", "last", "prompt"}:
@@ -830,6 +831,19 @@ class MediaBatchMixin:
     def toggle_timestamps(self, checked):
         self.show_timestamps = bool(checked)
         self.settings_store.setValue("show_timestamps", self.show_timestamps)
+        if hasattr(self, "show_timestamps_action"):
+            self.show_timestamps_action.blockSignals(True)
+            self.show_timestamps_action.setChecked(self.show_timestamps)
+            self.show_timestamps_action.blockSignals(False)
+        self.render_transcript()
+
+    def toggle_milliseconds(self, checked):
+        self.show_milliseconds = bool(checked)
+        self.settings_store.setValue("show_milliseconds", self.show_milliseconds)
+        if hasattr(self, "show_milliseconds_action"):
+            self.show_milliseconds_action.blockSignals(True)
+            self.show_milliseconds_action.setChecked(self.show_milliseconds)
+            self.show_milliseconds_action.blockSignals(False)
         self.render_transcript()
 
     def toggle_waveform_view(self, checked):

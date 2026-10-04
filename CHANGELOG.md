@@ -1,5 +1,59 @@
 # Changelog
 
+## v3.8.1-stable
+- **Backup & Restore Center Bug Fix (`backup_manager.py`)**:
+  - Fixed a blocking `ValueError: not enough values to unpack (expected 3, got 2)` during local settings restoration. `apply_backup_payload` returns a 2-tuple `(success, items)` while the caller unpacked 3 variables, throwing an error message modal on every restore attempt.
+  - Enhanced `apply_backup_payload` live state update to refresh all runtime attributes (`silence_threshold`, `lead_in_padding`, `story_detection_mode`, `enable_audio_fades`, `preview_audio_fades`, `skip_seconds`) and canvas visual indicators immediately in-memory without requiring application restart.
+  - Added direct **"Restore System Defaults…"** button inside the Backup & Restore Center dialog (Local Archive tab) allowing instant factory reset from the backup center.
+- **Universal System Defaults Restoration & Persistent In-Memory Synchronization (`RadioTVSegmenter.py`, `playback_preferences.py`, `transcript_story.py`, `ui_layout.py`)**:
+  - **Comprehensive 15-Category Reset Engine (`playback_preferences.py`)**:
+    - Re-engineered `apply_settings_reset` to ensure 100% comprehensive defaults restoration across all 15 categories (General Appearance, Project Dirs & Bundling, Autosave, Keyboard Shortcuts, Audio Hardware, Updates & GitHub, AI Models, GPU Acceleration, Playback & Timeline, Audio Fades, Story Detection & Diarization, Batch Processing, Export Options, Export Custom Location, and WordPress Settings).
+    - Included all previously omitted settings: `single_instance_mode`, `show_floating_selection_toolbar`, `open_comments_on_launch`, `show_comment_highlights`, `show_timestamps`, `show_milliseconds`, `auto_detect_fallback_whisper`, `gpu_acceleration_enabled`, and individual GPU workflow switches.
+    - Updated all live form widgets (`single_instance_combo`, `floating_toolbar_chk`, `open_comments_chk`, `show_highlights_chk`, `show_timestamps_chk`, `show_millis_chk`, `pref_auto_lang_chk`, `global_gpu_chk`, `gpu_trans_chk`, `gpu_translate_chk`, `gpu_diarize_chk`, `theme_combo`, `startup_combo`, `proj_dir_edit`, `autosave_spin`, `audio_dev_combo`, `vol_slider`, `auto_update_chk`, `repo_edit`, `pref_whisper_combo`, `pref_beam_combo`, `pref_trans_combo`, `skip_spin`, `wave_chk`, `thumb_chk`, `thumb_pos_combo`, `sel_mode_combo`, `enable_fades_chk`, `preview_fades_chk`, `fade_in_spin`, `fade_out_spin`, `fade_curve_combo`, `det_mode_combo`, `gap_spin`, `pad_spin`, `expected_speakers_combo`, `sensitivity_combo`, `ask_speakers_chk`, and all batch widgets) synchronously.
+  - **Startup & Post-Reset Attribute Lifecycle (`RadioTVSegmenter.py`)**:
+    - Implemented `load_persistent_settings()` on `MainWindow` to load all persistent preferences from `QSettings` into memory at startup, and re-read them after any settings reset or restore operation.
+  - **"Clear All User Preferences" Deep Factory Reset (`playback_preferences.py`)**:
+    - Fixed the "Clear All User Preferences (Reset Settings to Defaults)…" action in the Cleanup Data preferences page so it properly resets all in-memory attributes on `MainWindow` and all live form widgets before flushing disk storage.
+  - **Top-Level Settings Menu Integration (`ui_layout.py`)**:
+    - Added **"Restore System Defaults..."** directly to the top-level **Settings** menu bar, opening the category selection dialog with 1 click.
+  - **Per-Page "Restore Category Defaults" Across All Preferences Tabs**:
+    - Added inline "Restore Category Defaults" buttons to all Preferences pages (General, Audio Hardware, Updates & GitHub, AI Models, GPU Acceleration, Playback & Timeline, Detection, and Batch Processing).
+  - **Dedicated Dialog Resets**:
+    - Added "Restore Defaults" button in "Story Detection Settings" dialog (`prompt_set_auto_detect_thresholds`) and updated Story Fades dialog (`transcript_story.py`) `_restore_defaults` to restore initial factory system defaults (0.0s in, 1.0s out, linear curve).
+- **Settings Menu Cleanliness (`ui_layout.py`)**:
+  - Removed "Show Timestamps" and "Show Milliseconds in Timestamps" from the top-level **Settings** menu bar, strictly retaining their canonical locations in **View > Transcript**, **Preferences > General**, and **Export > Content Options**.
+
+## v3.8.0-stable
+- **Comprehensive Cloud & Local Backup & Restore System (`backup_manager.py`, `project_lifecycle.py`, `ui_layout.py`)**:
+  - **Milestone 3.1: Unified State Serialization & Cryptographic Verification**:
+    - Centralized serialization engine packaging application preferences (`QSettings`), custom keyboard shortcut reassignments (`shortcuts_manager.py`), glossary / terminology entries (`terminology.py`), installed AI model metadata (`runtime_manager.py`), and plugin toggle states into a portable settings archive (`.rtvs-settings` and `.rtvs-preferences` JSON format).
+    - Cryptographic verification via deterministic SHA-256 checksums calculated over canonical serialized state to guarantee zero tampering or bit-rot.
+  - **Milestone 3.2: Manual Local Backup & Restore Center**:
+    - Dedicated modal dialog with `make_dialog_maximizable` support accessible via **File > Backup & Restore...** (`Ctrl+Shift+U`) and **Settings > Backup & Restore Settings...**.
+    - Local Archive Tab featuring live state summaries, "Create Local Settings File (.rtvs-settings)..." file export, and "Restore from Settings File..." with pre-flight inspection and confirmation prompts.
+    - Live reload of preferences, keyboard shortcuts, terminology dictionaries, and transcript views upon restoration without requiring an application restart.
+    - Clean native desktop UI discipline: eliminated all unrequested emoji icons (e.g. folder, cloud, checkmarks) in favor of standard, professional desktop styling.
+  - **Milestone 3.3: 1-Click Google Drive Cloud Backup & Restore**:
+    - Integrated with existing Google Drive OAuth (`drive.file` scope) from `plugins/gdocs`.
+    - Direct cloud backup uploads via Google Drive API multipart protocol (`rtvs_settings_*.rtvs-settings`), cloud backup enumeration, and 1-click cloud restoration with SHA-256 verification.
+- **Persistent View Menu (`ui_layout.py`)**:
+  - Implemented `PersistentMenu` (`QMenu` subclass): toggling any checkable options in the **View** menu (e.g. Timeline Panel, Transcript Panel, Stories Panel, Activity History, Comments Sidebar, Comment Highlights) or submenus (Timeline, Transcript) no longer abruptly closes the menu.
+  - The menu stays open allowing users to quickly toggle multiple options in a single pass until clicking elsewhere on the screen or pressing `Esc`. Actions execute immediately upon each click.
+- **Tri-Location Clean Transcript Milliseconds Display Toggle**:
+  - Configurable toggle controlling whether timestamps display sub-second millisecond precision (`MM:SS.mmm`) or clean human-readable formatting (`MM:SS` / `HH:MM:SS`), accessible across all three primary workflow locations:
+    1. **View Menu**: Under **View > Transcript > Show Milliseconds in Timestamps**.
+    2. **Export Window**: Under **Export > Content & Language Options > Show Milliseconds in Timestamps** (TXT, DOCX, and PDF text exports honor this preference).
+    3. **Preferences Dialog**: Inside **Settings > Preferences > General > Timecode Precision**.
+  - All three locations remain bidirectionally synchronized in real time.
+  - Subtitle exports (SRT, VTT) and DAW sessions (REAPER, EDL) strictly preserve millisecond and frame precision regardless of this setting.
+- **UI Design Discipline Enforced (`AGENTS.md`, `GEMINI.md`)**:
+  - Enforced strict prohibition on adding unrequested icons or emoji symbols (folders, clouds, disks, checkmarks, warning signs) to tabs, buttons, dialog titles, menus, or cards.
+- **Automated Diagnostic Test (`test_runner.py`)**:
+  - Added `_test_comprehensive_local_and_cloud_backup_and_restore_engine` to the test suite, validating state serialization, SHA-256 cryptographic verification, tamper detection, `.rtvs-settings` local archive roundtrip, and cloud payload integrity.
+  - Added `backup_manager.py` to `_test_modal_dialog_maximizable_import_integrity` verification audit.
+- **Plugin Catch-Up Synchronization**:
+  - Synchronized versions across `plugins/gdocs`, `plugins/wordpress`, and `plugins/youtube` to `v3.8.0-stable`.
+
 ## v3.7.22-stable
 - **Diagnostic Test Bench Frozen PyInstaller Binary Hardening (`test_runner.py`)**:
   - **Resolved `AssertionError: batch_dialog.py file not found`**: Fixed test harness in `_test_batch_unified_transcripts_directory_export`. When running from compiled PyInstaller frozen executables (`RadioTVSegmenter.exe`), python source `.py` files are bundled into bytecode archives rather than loose files on disk. The test now conditionally runs AST verification when `batch_dialog.py` is present on disk, and seamlessly falls back to module reflection and runtime widget validation in compiled frozen binary environments.

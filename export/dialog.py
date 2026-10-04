@@ -562,7 +562,7 @@ class UnifiedExportDialog(QDialog):
 
         tracklist_row = QHBoxLayout()
         tracklist_row.addWidget(self.cb_tracklist)
-        self.copy_yt_btn = QPushButton("📋 Copy Chapters")
+        self.copy_yt_btn = QPushButton("Copy Chapters")
         self.copy_yt_btn.setToolTip("Copy formatted YouTube chapter markers to clipboard immediately")
         self.copy_yt_btn.setStyleSheet("""
             QPushButton {
@@ -624,7 +624,7 @@ class UnifiedExportDialog(QDialog):
         media_row.addWidget(self.cb_media)
         media_row.addWidget(self.cb_apply_fades)
 
-        self.edit_id3_btn = QPushButton("🏷️ Edit ID3 Tags")
+        self.edit_id3_btn = QPushButton("Edit ID3 Tags")
         self.edit_id3_btn.setToolTip("Open MP3 ID3 Tag Editor dialog")
         self.edit_id3_btn.setStyleSheet("""
             QPushButton {
@@ -654,6 +654,11 @@ class UnifiedExportDialog(QDialog):
         self.cb_speakers.setChecked(True)
         self.cb_timestamps = QCheckBox("Include Timestamps")
         self.cb_timestamps.setChecked(False)
+        self.cb_milliseconds = QCheckBox("Show Milliseconds in Timestamps")
+        self.cb_milliseconds.setToolTip("Include millisecond precision (.xxx) in text document timestamps (TXT, DOCX, PDF). Uncheck for clean MM:SS formatting.")
+        self.cb_milliseconds.setChecked(getattr(self.main_window, "show_milliseconds", False))
+        self.cb_milliseconds.setEnabled(self.cb_timestamps.isChecked())
+        self.cb_timestamps.toggled.connect(lambda checked: self.cb_milliseconds.setEnabled(checked))
         self.cb_notes = QCheckBox("Include Comments")
         self.cb_notes.setToolTip("Include transcript comments in exported DOCX and PDF documents")
         self.cb_notes.setChecked(True)
@@ -691,6 +696,7 @@ class UnifiedExportDialog(QDialog):
 
         self.content_section.add_widget(self.cb_speakers)
         self.content_section.add_widget(self.cb_timestamps)
+        self.content_section.add_widget(self.cb_milliseconds)
         self.content_section.add_widget(self.cb_notes)
         self.content_section.add_widget(self.cb_highlights)
 
@@ -843,6 +849,8 @@ class UnifiedExportDialog(QDialog):
 
         self.cb_speakers.setChecked(str(settings.value("export_opt_include_speakers", "true")).lower() in {"1", "true", "yes"})
         self.cb_timestamps.setChecked(str(settings.value("export_opt_include_timestamps", "false")).lower() in {"1", "true", "yes"})
+        self.cb_milliseconds.setChecked(str(settings.value("export_opt_include_milliseconds", str(getattr(self.main_window, "show_milliseconds", False)))).lower() in {"1", "true", "yes"})
+        self.cb_milliseconds.setEnabled(self.cb_timestamps.isChecked())
         self.cb_notes.setChecked(str(settings.value("export_opt_include_notes", "true")).lower() in {"1", "true", "yes"})
         src_code = self.main_window.source_language_code() if hasattr(self.main_window, "source_language_code") else "en"
         if src_code == "es":
@@ -883,6 +891,7 @@ class UnifiedExportDialog(QDialog):
 
         settings.setValue("export_opt_include_speakers", self.cb_speakers.isChecked())
         settings.setValue("export_opt_include_timestamps", self.cb_timestamps.isChecked())
+        settings.setValue("export_opt_include_milliseconds", self.cb_milliseconds.isChecked())
         settings.setValue("export_opt_include_notes", self.cb_notes.isChecked())
         settings.setValue("export_opt_include_en", self.cb_en.isChecked())
         settings.setValue("export_opt_include_es", self.cb_es.isChecked())
@@ -967,6 +976,8 @@ class UnifiedExportDialog(QDialog):
             options = {
                 "include_speakers": self.cb_speakers.isChecked(),
                 "include_timestamps": self.cb_timestamps.isChecked(),
+                "include_milliseconds": self.cb_milliseconds.isChecked(),
+                "show_milliseconds": self.cb_milliseconds.isChecked(),
                 "include_comments": self.cb_notes.isChecked(),
                 "include_notes": self.cb_notes.isChecked(),
                 "include_highlights": self.cb_highlights.isChecked(),

@@ -1,4 +1,4 @@
-"""Radio & TV Segmenter v3.7.22-stable — transcript story responsibilities.
+"""Radio & TV Segmenter v3.8.1-stable — transcript story responsibilities.
 
 Methods intentionally retain the MainWindow-facing API so behavior remains
 maintaining the established MainWindow-facing API while responsibilities are isolated.
@@ -1001,7 +1001,7 @@ class TranscriptStoryMixin:
 
             start_time = p_words[0]["start"]
             first_seg_idx = p_words[0]["seg_idx"]
-            time_str = format_time(start_time)
+            time_str = format_time(start_time, include_millis=getattr(self, "show_milliseconds", False))
 
             if p_speaker_name and is_speaker_change and self.show_speaker_labels:
                 esc_spk = html.escape(p_speaker_name)
@@ -2215,7 +2215,7 @@ class TranscriptStoryMixin:
 
         def _format_seg_label(idx, seg):
             st = float(seg.get("start", 0.0))
-            t_str = format_time(st)
+            t_str = format_time(st, include_millis=getattr(self, "show_milliseconds", False))
             spk = self.get_effective_speaker_name(idx, seg) or "Speaker"
             raw_text = seg.get("text", "").strip()
             snippet = (raw_text[:38] + "…") if len(raw_text) > 38 else (raw_text or "(no speech)")
@@ -3884,13 +3884,9 @@ class StoryFadesDialog(QDialog):
         super().reject()
 
     def _restore_defaults(self):
-        settings = QSettings(INTERNAL_APP_ID, INTERNAL_APP_ID)
-        def_in = float(settings.value("default_fade_in_duration", 0.0))
-        def_out = float(settings.value("default_fade_out_duration", 1.0))
-        def_curve = str(settings.value("default_fade_curve", "linear") or "linear")
-        self.fade_in_spin.setValue(def_in)
-        self.fade_out_spin.setValue(def_out)
-        self.fade_curve_combo.setCurrentData(def_curve)
+        self.fade_in_spin.setValue(0.0)
+        self.fade_out_spin.setValue(1.0)
+        self.fade_curve_combo.setCurrentData("linear")
 
     def get_fades(self):
         return self.fade_in_spin.value(), self.fade_out_spin.value(), self.fade_curve_combo.currentData(), self.apply_all_cb.isChecked()

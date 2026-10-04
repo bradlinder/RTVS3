@@ -369,6 +369,7 @@ def create_story_docx(
     end_time: float = 0.0,
     include_speakers: bool = True,
     include_timestamps: bool = True,
+    include_milliseconds: bool = False,
     include_comments: bool = True,
     include_highlights: bool = True,
     lang_code: str = "en",
@@ -389,7 +390,7 @@ def create_story_docx(
     # 0 = heading paragraph
     body_para_idx = 1
     if media_name:
-        time_range = f" ({format_time(start_time, False)} - {format_time(end_time, False)})" if end_time > 0 else ""
+        time_range = f" ({format_time(start_time, include_millis=include_milliseconds)} - {format_time(end_time, include_millis=include_milliseconds)})" if end_time > 0 else ""
         document.add_paragraph(f"Recording: {media_name}{time_range}")
         body_para_idx += 1
 
@@ -405,7 +406,7 @@ def create_story_docx(
 
         p = document.add_paragraph()
         if include_timestamps and "start" in block and block["start"] is not None:
-            r_time = p.add_run(f"[{format_time(block['start'], False)}] ")
+            r_time = p.add_run(f"[{format_time(block['start'], include_millis=include_milliseconds)}] ")
             r_time.font.color.rgb = RGBColor(120, 120, 120)
 
         is_speaker_change = block.get("is_speaker_change", (speaker != last_speaker))

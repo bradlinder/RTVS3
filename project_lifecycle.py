@@ -504,6 +504,15 @@ class ProjectLifecycleMixin:
         finally:
             self.save_in_progress = False
 
+    def open_backup_restore_dialog(self):
+        """Opens the unified Backup & Restore Center dialog."""
+        try:
+            from backup_manager import BackupRestoreDialog
+            dlg = BackupRestoreDialog(parent=self)
+            dlg.exec()
+        except Exception as exc:
+            QMessageBox.critical(self, "Backup & Restore Error", f"Could not open Backup & Restore Center: {exc}")
+
     def load_project_file(self, filename, prompt=True, preserve_media=False):
         project_path = Path(filename).expanduser().resolve()
         if not project_path.exists():

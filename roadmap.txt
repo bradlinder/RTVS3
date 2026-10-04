@@ -29,97 +29,87 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 --------------------------------------------------------------------------------
 TABLE OF CONTENTS & STATUS OVERVIEW
 --------------------------------------------------------------------------------
-1. Previous Release: Test Bench Attribute Lifecycle Resolution & Media Path Hardening (`test_runner.py`, `plugins/base.py`, `export/dialog.py`, `plugins/youtube/export_destination.py`) [x] [COMPLETED in v3.7.21-stable]
-   [x] 1.1 Resolved DummyMainWindow transcript_for_range AttributeError: Fixed `_test_wordpress_export_content_and_transcript_formatter` in `test_runner.py` by replacing instance-level `del win.transcript_for_range` with safe class-level `delattr(DummyMainWindow, "transcript_for_range")` and fallback null assignment.
-   [x] 1.2 Resolved PluginManifest __init__ Unexpected Keyword Argument 'enabled': Added canonical `enabled: bool = False` dataclass field and parsing to `PluginManifest` in `plugins/base.py`, and updated test instantiation to pass `enabled_by_default` and `enabled` aligned with `PROJECT_VERSION`.
-   [x] 1.3 Safe String & Path Type Coercion in Export Dialog: Coerced `audio_file` and `project_file` references through `Path(...)` in `export/dialog.py` and `plugins/youtube/export_destination.py` to protect against `AttributeError: 'str' object has no attribute 'suffix'/'stem'`.
-   [x] 1.4 Export Destination Discovery Guards: Enforced `page is not None` checks during plugin destination discovery in `UnifiedExportDialog._build_destinations_layout`.
-   [x] 1.5 Plugin Catch-Up Synchronization: Synchronized version fields across `plugins/youtube/manifest.json`, `plugins/wordpress/manifest.json`, and `plugins/gdocs/manifest.json` to `3.7.21-stable`.
+1. Previous Release: Comprehensive Cloud & Local Backup & Restore System (`backup_manager.py`, `project_lifecycle.py`, `ui_layout.py`, `test_runner.py`) [x] [COMPLETED in v3.8.0-stable]
+   [x] 1.1 Unified State Serialization (`backup_manager.py`): Export preferences, keyboard shortcuts, installed model inventories, glossary items, and user configurations into a cryptographically verified settings archive (.rtvs-settings / .rtvs-preferences, SHA-256 integrity verification).
+   [x] 1.2 Manual Local Backup & Restore (`backup_manager.py`, `project_lifecycle.py`, `ui_layout.py`): Dedicated modal center with local archive export (.rtvs-settings) and live state restoration without requiring application restart. Clean native desktop UI without unrequested emojis or icons.
+   [x] 1.3 1-Click Google Drive Cloud Restore & Backup (`backup_manager.py`, `plugins/gdocs/auth.py`): Connect via Google Drive API to browse, upload, download, and verify via SHA-256 hash matching to restore configurations directly from cloud backups.
+   [x] 1.4 Tri-Location Transcript Milliseconds Toggle & Persistent View Menu (`ui_layout.py`, `export/dialog.py`, `playback_preferences.py`, `media_batch.py`, `transcript_story.py`): Configurable millisecond precision toggle accessible in View menu, Unified Export window, and Preferences dialog. Implemented PersistentMenu so checking/unchecking options in the View menu keeps the menu open until clicking outside.
+   [x] 1.5 UI Design Discipline Enforced (`AGENTS.md`, `GEMINI.md`): Strict rule preventing addition of unrequested icons, emoji symbols, or decorative glyphs in desktop UI elements.
+   [x] 1.6 Automated Diagnostic Tests (`test_runner.py`): Added `_test_comprehensive_local_and_cloud_backup_and_restore_engine` verifying state serialization, SHA-256 verification, tamper detection, and local/cloud roundtrips.
 
-2. Current Release: Frozen PyInstaller Binary Test Harness Hardening (`test_runner.py`) [x] [COMPLETED in v3.7.22-stable]
-   [x] 2.1 Frozen-Aware batch_dialog.py Verification: Upgraded `_test_batch_unified_transcripts_directory_export` in `test_runner.py` to conditionally perform static AST verification when source files are present and seamlessly verify runtime class attributes via reflection when executing from compiled PyInstaller frozen binaries (`RadioTVSegmenter.exe`).
-   [x] 2.2 Frozen-Aware export/dialog.py & Plugin Source Integrity: Updated `_test_unified_export_destinations_and_youtube_auth_integrity` in `test_runner.py` to inspect runtime classes and modules directly when loose source files are omitted from frozen application directories.
-   [x] 2.3 Informative Frozen Binary Modal Status: Refined `_test_modal_dialog_maximizable_import_integrity` reporting to clarify compiled frozen binary verification status.
-   [x] 2.4 Plugin Catch-Up Synchronization: Synchronized version fields across `plugins/youtube/manifest.json`, `plugins/wordpress/manifest.json`, and `plugins/gdocs/manifest.json` to `3.7.22-stable`.
+2. Current Release: Backup Restore Fix, System Defaults Restoration Reliability & Settings Menu Cleanup (`RadioTVSegmenter.py`, `backup_manager.py`, `playback_preferences.py`, `transcript_story.py`, `ui_layout.py`) [x] [COMPLETED in v3.8.1-stable]
+   [x] 2.1 Backup Restore Unpack Bug Fix & Restore Defaults Action (`backup_manager.py`): Resolved `ValueError: not enough values to unpack (expected 3, got 2)` in `_on_restore_local` when reading `.rtvs-settings` backup archives. Added direct "Restore System Defaults…" button in Backup & Restore Center. Live UI refresh now synchronously applies restored attributes (`silence_threshold`, `lead_in_padding`, `story_detection_mode`, `enable_audio_fades`, `preview_audio_fades`, `skip_seconds`) and canvas visual indicators in-memory without restart.
+   [x] 2.2 Dedicated Audio Fades Reset & Category Isolation (`playback_preferences.py`): Added explicit `audio_fades` category ("Audio Fades & Fade Curve Defaults") in `RestoreSelectedSettingsDialog` and separated default fade persistence from Story Detection so selective defaults reset never clobbers unrelated settings.
+   [x] 2.3 Comprehensive 15-Category Defaults Synchronization (`playback_preferences.py`): Updated `apply_settings_reset` to ensure 100% comprehensive defaults restoration across all 15 categories, synchronizing all form widgets (`single_instance_combo`, `floating_toolbar_chk`, `open_comments_chk`, `show_highlights_chk`, `show_timestamps_chk`, `show_millis_chk`, `pref_auto_lang_chk`, `global_gpu_chk`, `gpu_trans_chk`, `gpu_translate_chk`, `gpu_diarize_chk`, `det_mode_combo`, `gap_spin`, `pad_spin`, `expected_speakers_combo`, `sensitivity_combo`, `ask_speakers_chk`, `fade_in_spin`, `fade_out_spin`, and `fade_curve_combo`) with both QSettings and in-memory attributes, flushing immediately via `settings_store.sync()`.
+   [x] 2.4 In-Memory Persistent Attribute Lifecycle (`RadioTVSegmenter.py`): Added `load_persistent_settings()` to load all stored settings from `QSettings` into `MainWindow` at startup, and re-read them after any settings reset or restore operation.
+   [x] 2.5 "Clear All User Preferences" Deep Factory Reset (`playback_preferences.py`): Re-engineered "Clear All User Preferences (Reset Settings to Defaults)…" in Cleanup Data to reset all in-memory `MainWindow` attributes and live form widgets.
+   [x] 2.6 Inline Category Defaults Across All Preferences Tabs (`playback_preferences.py`): Added direct "Restore Category Defaults" buttons to all Preferences pages (General, Audio Hardware, Updates & GitHub, AI Models, GPU Acceleration, Playback & Timeline, Detection, Batch Processing) for instant reset without modal navigation.
+   [x] 2.7 Top-Level Settings Menu Integration & Cleanliness (`ui_layout.py`): Added "Restore System Defaults..." directly to the top-level Settings menu bar. Removed duplicate timestamp/millisecond menu toggles to preserve clean canonical locations in View > Transcript, Preferences > General, and Export > Content Options.
+   [x] 2.8 Dedicated Dialog Resets (`playback_preferences.py`, `transcript_story.py`): Added "Restore Defaults" button in Story Detection Settings (`prompt_set_auto_detect_thresholds`) and updated Story Fades dialog (`transcript_story.py`) `_restore_defaults` to restore factory system defaults (0.0s in, 1.0s out, linear).
 
-3. Upcoming Milestone: Comprehensive Cloud & Local Backup & Restore System (`project_lifecycle.py`, `plugins/gdocs/`) [PLANNED for v3.8.0] [NOT STARTED]
-   [ ] 3.1 Unified State Serialization (`project_lifecycle.py`): Export preferences, keyboard shortcuts, installed model inventories, glossary items, and user configurations into a cryptographically verified backup archive.
-   [ ] 3.2 Manual Local Backup & Restore: Download backup archives locally and restore previous settings and system state into RTVS.
-   [ ] 3.3 1-Click Google Drive Cloud Restore: Connect via Google Drive API to browse, verify via SHA-256 hash matching, and restore custom settings directly from cloud backups.
+3. Upcoming Milestone: Multi-Platform Timeline & DAW Interchange Engine (`export/timeline.py`, `export/dialog.py`, `ui_layout.py`) [PLANNED for v3.8.5] [NOT STARTED]
+   [ ] 3.1 Migration to Unified Export Center Tab: Move timeline and DAW exports from the legacy File menu submenu into a dedicated "Timeline & DAW" tab in the Unified Export Center dialog.
+   [ ] 3.2 Streamlined Multi-Platform Timeline Format Exporters: Final Cut Pro 7 XML, Final Cut Pro X XML (.fcpxml), Universal AAF Interchange (.aaf), Hindenburg Broadcast Session (.nhx), Cockos REAPER (.rpp), Samplitude EDL (.edl), Audacity Labels & CUE.
 
-4. Future Milestone: Multi-Platform Timeline & DAW Interchange Engine (`export/timeline.py`, `export/dialog.py`, `ui_layout.py`) [PLANNED for v3.8.5] [NOT STARTED]
-   [ ] 4.1 Migration to Unified Export Center Tab: Move timeline and DAW exports from the legacy File menu submenu into a dedicated "Timeline & DAW" tab in the Unified Export Center dialog.
-   [ ] 4.2 Streamlined Multi-Platform Timeline Format Exporters: Final Cut Pro 7 XML, Final Cut Pro X XML (.fcpxml), Universal AAF Interchange (.aaf), Hindenburg Broadcast Session (.nhx), Cockos REAPER (.rpp), Samplitude EDL (.edl), Audacity Labels & CUE.
-
-5. Future Milestone: Interactive Text-Based Media & Ripple Editing Engine (`transcript_editor.py`, `transcript_story.py`, `media_batch.py`) [PLANNED for v3.9.0] [NOT STARTED]
-   [ ] 5.1 Text-Driven Audio/Video Ripple Cut Engine: Enable option for deletions or edits in the transcript editor to perform non-destructive ripple edits on corresponding underlying audio/video timecodes.
-   [ ] 5.2 Paper-Cut Story Assembly Workflow: Select or drag transcript paragraphs directly into story segment playlists to construct rough audio/video story cuts driven entirely by transcript text.
-   [ ] 5.3 Word-Level Timecode Sync & NLE Markers: Align word-level timestamps with exported timeline markers to preserve text edit points in NLE exports.
+4. Future Milestone: Interactive Text-Based Media & Ripple Editing Engine (`transcript_editor.py`, `transcript_story.py`, `media_batch.py`) [PLANNED for v3.9.0] [NOT STARTED]
+   [ ] 4.1 Text-Driven Audio/Video Ripple Cut Engine: Enable option for deletions or edits in the transcript editor to perform non-destructive ripple edits on corresponding underlying audio/video timecodes.
+   [ ] 4.2 Paper-Cut Story Assembly Workflow: Select or drag transcript paragraphs directly into story segment playlists to construct rough audio/video story cuts driven entirely by transcript text.
+   [ ] 4.3 Word-Level Timecode Sync & NLE Markers: Align word-level timestamps with exported timeline markers to preserve text edit points in NLE exports.
 
 ================================================================================
 DETAILED MILESTONE SPECIFICATIONS
 ================================================================================
 
 ================================================================================
-1. PREVIOUS RELEASE: TEST BENCH ATTRIBUTE LIFECYCLE & MEDIA PATH HARDENING [x] [COMPLETED in v3.7.21-stable]
+1. PREVIOUS RELEASE: COMPREHENSIVE CLOUD & LOCAL BACKUP & RESTORE SYSTEM [x] [COMPLETED in v3.8.0-stable]
 ================================================================================
 
-[x] 1.1 Resolved DummyMainWindow transcript_for_range AttributeError (`test_runner.py`)
+[x] 1.1 Unified State Serialization (`backup_manager.py`)
 --------------------------------------------------------------------------------
-- Replaced instance `del win.transcript_for_range` with safe class-level `delattr(DummyMainWindow, "transcript_for_range")` and fallback null assignment in `_test_wordpress_export_content_and_transcript_formatter`, resolving `AttributeError` on environments with PySide6 installed.
+- Developed `create_backup_payload` bundling persistent preferences (`QSettings`), custom keyboard shortcut reassignments (`shortcuts_manager.py`), glossary / terminology entries (`terminology.py`), installed AI model metadata (`runtime_manager.py`), and plugin toggle states into a portable `.rtvs-settings` payload.
+- Integrated deterministic SHA-256 cryptographic checksum calculation over canonical JSON representation to guarantee complete data fidelity and prevent tamper/corruption errors.
 
-[x] 1.2 Resolved PluginManifest Unexpected Keyword Argument 'enabled' (`plugins/base.py`, `test_runner.py`)
+[x] 1.2 Manual Local Backup & Restore Center (`backup_manager.py`, `project_lifecycle.py`, `ui_layout.py`)
 --------------------------------------------------------------------------------
-- Added `enabled: bool = False` attribute to the `PluginManifest` dataclass and `from_dict` constructor in `plugins/base.py`.
-- Updated `_test_unified_export_destinations_and_youtube_auth_integrity` in `test_runner.py` to instantiate `PluginManifest` with `enabled_by_default=True, enabled=True` synchronized with `PROJECT_VERSION`.
+- Built `BackupRestoreDialog` modal window equipped with `make_dialog_maximizable(self)` and clean desktop styling.
+- Bound to **File > Backup & Restore...** (`Ctrl+Shift+U`) and **Settings > Backup & Restore Settings...**.
+- Local Archive tab provides active configuration metrics (key counts, shortcuts, glossary entries), 1-click `.rtvs-settings` creation, and guided archive restoration with pre-flight summary confirmation and live in-memory reload.
 
-[x] 1.3 Safe Media Path & Extension Type Coercion (`export/dialog.py`, `plugins/youtube/export_destination.py`)
+[x] 1.3 1-Click Google Drive Cloud Restore & Backup (`backup_manager.py`, `plugins/gdocs/auth.py`)
 --------------------------------------------------------------------------------
-- Coerced `audio_file` and `project_file` references with `Path(...)` prior to calling `.suffix` or `.stem`, ensuring both string and Path instances are safely handled.
+- Reused `GoogleDocsAuthManager` with existing `https://www.googleapis.com/auth/drive.file` OAuth scope without requiring redundant authentication setup.
+- Implemented `upload_cloud_backup` utilizing Drive API v3 multipart upload protocol with timestamped backup archives and SHA-256 metadata descriptions.
+- Implemented `list_cloud_backups` and `restore_cloud_backup` with automated SHA-256 validation prior to applying restored states.
 
-[x] 1.4 Export Destination Discovery Guards (`export/dialog.py`)
+[x] 1.4 Tri-Location Transcript Milliseconds Toggle & Persistent View Menu (`ui_layout.py`, `export/dialog.py`, `playback_preferences.py`)
 --------------------------------------------------------------------------------
-- Enforced `if page is not None:` guards in `UnifiedExportDialog._build_destinations_layout` before appending discovered plugin destination widgets.
-
-[x] 1.5 Plugin Catch-Up Synchronization (`plugins/*/manifest.json`)
---------------------------------------------------------------------------------
-- Synchronized version fields across `plugins/youtube/manifest.json`, `plugins/wordpress/manifest.json`, and `plugins/gdocs/manifest.json` to `3.7.21-stable`.
-
-
-================================================================================
-2. CURRENT RELEASE: FROZEN PYINSTALLER BINARY TEST HARNESS HARDENING [x] [COMPLETED in v3.7.22-stable]
-================================================================================
-
-[x] 2.1 Frozen-Aware batch_dialog.py Verification (`test_runner.py`)
---------------------------------------------------------------------------------
-- Upgraded `_test_batch_unified_transcripts_directory_export` in `test_runner.py` to conditionally perform static AST verification when source files are present and seamlessly verify runtime class attributes via reflection when executing from compiled PyInstaller frozen binaries (`RadioTVSegmenter.exe`).
-
-[x] 2.2 Frozen-Aware export/dialog.py & Plugin Source Integrity (`test_runner.py`)
---------------------------------------------------------------------------------
-- Updated `_test_unified_export_destinations_and_youtube_auth_integrity` in `test_runner.py` to inspect runtime classes and modules directly when loose source files are omitted from frozen application directories.
-
-[x] 2.3 Informative Frozen Binary Modal Status (`test_runner.py`)
---------------------------------------------------------------------------------
-- Refined `_test_modal_dialog_maximizable_import_integrity` reporting to clarify compiled frozen binary verification status.
-
-[x] 2.4 Plugin Catch-Up Synchronization (`plugins/*/manifest.json`)
---------------------------------------------------------------------------------
-- Synchronized version fields across `plugins/youtube/manifest.json`, `plugins/wordpress/manifest.json`, and `plugins/gdocs/manifest.json` to `3.7.22-stable`.
+- Sub-second millisecond precision toggle accessible in View menu, Unified Export window, and Preferences dialog.
+- PersistentMenu subclass keeps View menu open during toggle operations for seamless multi-selection.
 
 
 ================================================================================
-5. FUTURE MILESTONE: INTERACTIVE TEXT-BASED MEDIA & RIPPLE EDITING ENGINE [PLANNED for v3.9.0] [NOT STARTED]
+2. CURRENT RELEASE: BACKUP RESTORE FIX, SYSTEM DEFAULTS RESTORATION RELIABILITY & SETTINGS MENU CLEANUP [x] [COMPLETED in v3.8.1-stable]
 ================================================================================
 
-[ ] 5.1 Text-Driven Audio/Video Ripple Cut Engine (`transcript_editor.py`, `media_batch.py`)
+[x] 2.1 Backup Restore Unpack Bug Fix (`backup_manager.py`)
 --------------------------------------------------------------------------------
-- Enable opt-in ripple editing where deleting word/phrase ranges in the transcript editor automatically slices and joins the underlying media file or creates virtual non-destructive cut region masks.
+- Resolved `ValueError: not enough values to unpack (expected 3, got 2)` in `_on_restore_local` when reading `.rtvs-settings` backup archives.
+- Live UI refresh now synchronously applies restored attributes (`silence_threshold`, `lead_in_padding`, `story_detection_mode`, `enable_audio_fades`, `preview_audio_fades`, `skip_seconds`) and canvas visual indicators in-memory without restart.
 
-[ ] 5.2 Paper-Cut Story Assembly Workflow (`transcript_story.py`)
+[x] 2.2 Dedicated Audio Fades Reset & Category Isolation (`playback_preferences.py`)
 --------------------------------------------------------------------------------
-- Allow users to highlight transcript segments across full episode interviews and drag/assign them into story segment playlists to compile rough audio/video cuts directly from spoken text.
+- Added explicit `audio_fades` category ("Audio Fades & Fade Curve Defaults") in `RestoreSelectedSettingsDialog`.
+- Separated default fade persistence (`default_fade_in_duration`, `default_fade_out_duration`, `default_fade_curve`) from Story Detection in `_save_preferences` so selective defaults reset never clobbers unrelated settings.
 
-[ ] 5.3 Word-Level Timecode Sync & NLE Markers (`export/timeline.py`)
+[x] 2.3 Comprehensive Preferences Defaults Synchronization (`playback_preferences.py`)
 --------------------------------------------------------------------------------
-- Pass word-level edit points and deleted region markers into exported FCPXML, AAF, and REAPER timeline sessions.
+- Updated `apply_settings_reset` to synchronize `det_mode_combo`, `gap_spin`, `pad_spin`, `expected_speakers_combo`, `sensitivity_combo`, `ask_speakers_chk`, `fade_in_spin`, `fade_out_spin`, and `fade_curve_combo` with both QSettings and live widgets, flushing immediately to disk via `settings_store.sync()`.
 
+[x] 2.4 Inline Category Defaults & Story Detection Reset (`playback_preferences.py`, `transcript_story.py`)
+--------------------------------------------------------------------------------
+- Added direct "Restore Category Defaults" buttons on Preferences pages (General, Detection, Playback & Timeline) for instant reset without modal navigation.
+- Added "Restore Defaults" button in Story Detection Settings (`prompt_set_auto_detect_thresholds`) and updated Story Fades dialog (`transcript_story.py`) `_restore_defaults` to restore factory system defaults (0.0s in, 1.0s out, linear).
+
+[x] 2.5 Settings Menu Cleanliness (`ui_layout.py`)
+--------------------------------------------------------------------------------
+- Removed timestamps and milliseconds items from top-level Settings menu bar, preserving their canonical locations in View > Transcript, Preferences > General, and Export > Content Options.

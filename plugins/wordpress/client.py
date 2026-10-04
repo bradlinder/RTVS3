@@ -260,9 +260,9 @@ def build_episode_stories_toc(stories: list[dict]) -> str:
 
         time_str = ""
         if start is not None and end is not None:
-            time_str = f" ({format_time(start)} – {format_time(end)})"
+            time_str = f" ({format_time(start, include_millis=False)} – {format_time(end, include_millis=False)})"
         elif start is not None:
-            time_str = f" ({format_time(start)})"
+            time_str = f" ({format_time(start, include_millis=False)})"
 
         if link:
             safe_link = html.escape(link, quote=True)

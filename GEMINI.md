@@ -72,3 +72,7 @@ Always adhere strictly to the invariants defined in `ARCHITECTURE.md`:
   - Whenever the user asks to mark a build or release as stable, the agent MUST explicitly ask: *"Would you like to mark this as 'verified-stable' to set it apart from automatic designations?"*
   - Ensure manually user-tested stable builds are explicitly tagged and recorded as `verified-stable` in snapshot metadata (`snapshot_manager.py`).
 
+## 7. UI Design Discipline: Strict Prohibition on Unrequested Icons / Emojis
+- **No Unrequested Icons or Emojis**:
+  Do NOT add icons or emoji symbols (such as folders, clouds, disks, checkmarks, warning signs, labels, or decorative unicode glyphs) to tabs, buttons, dialog titles, menus, table headers, group boxes, or cards unless explicitly requested by the user. Maintain clean, professional, native desktop typography without decorative emoji clutter.
+
