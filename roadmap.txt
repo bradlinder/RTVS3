@@ -29,22 +29,19 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 --------------------------------------------------------------------------------
 TABLE OF CONTENTS & STATUS OVERVIEW
 --------------------------------------------------------------------------------
-1. Previous Release: Backup Restore Fix, System Defaults Restoration Reliability & Settings Menu Cleanup (`RadioTVSegmenter.py`, `backup_manager.py`, `playback_preferences.py`, `transcript_story.py`, `ui_layout.py`) [x] [COMPLETED in v3.8.1-stable]
-   [x] 1.1 Backup Restore Unpack Bug Fix & Restore Defaults Action (`backup_manager.py`): Resolved `ValueError: not enough values to unpack (expected 3, got 2)` in `_on_restore_local` when reading `.rtvs-settings` backup archives. Added direct "Restore System Defaults…" button in Backup & Restore Center. Live UI refresh now synchronously applies restored attributes (`silence_threshold`, `lead_in_padding`, `story_detection_mode`, `enable_audio_fades`, `preview_audio_fades`, `skip_seconds`) and canvas visual indicators in-memory without restart.
-   [x] 1.2 Dedicated Audio Fades Reset & Category Isolation (`playback_preferences.py`): Added explicit `audio_fades` category ("Audio Fades & Fade Curve Defaults") in `RestoreSelectedSettingsDialog` and separated default fade persistence from Story Detection so selective defaults reset never clobbers unrelated settings.
-   [x] 1.3 Comprehensive 15-Category Defaults Synchronization (`playback_preferences.py`): Updated `apply_settings_reset` to ensure 100% comprehensive defaults restoration across all 15 categories, synchronizing all form widgets (`single_instance_combo`, `floating_toolbar_chk`, `open_comments_chk`, `show_highlights_chk`, `show_timestamps_chk`, `show_millis_chk`, `pref_auto_lang_chk`, `global_gpu_chk`, `gpu_trans_chk`, `gpu_translate_chk`, `gpu_diarize_chk`, `det_mode_combo`, `gap_spin`, `pad_spin`, `expected_speakers_combo`, `sensitivity_combo`, `ask_speakers_chk`, `fade_in_spin`, `fade_out_spin`, and `fade_curve_combo`) with both QSettings and in-memory attributes, flushing immediately via `settings_store.sync()`.
-   [x] 1.4 In-Memory Persistent Attribute Lifecycle (`RadioTVSegmenter.py`): Added `load_persistent_settings()` to load all stored settings from `QSettings` into `MainWindow` at startup, and re-read them after any settings reset or restore operation.
-   [x] 1.5 "Clear All User Preferences" Deep Factory Reset (`playback_preferences.py`): Re-engineered "Clear All User Preferences (Reset Settings to Defaults)…" in Cleanup Data to reset all in-memory `MainWindow` attributes and live form widgets.
-   [x] 1.6 Inline Category Defaults Across All Preferences Tabs (`playback_preferences.py`): Added direct "Restore Category Defaults" buttons to all Preferences pages (General, Audio Hardware, Updates & GitHub, AI Models, GPU Acceleration, Playback & Timeline, Detection, Batch Processing) for instant reset without modal navigation.
-   [x] 1.7 Top-Level Settings Menu Integration & Cleanliness (`ui_layout.py`): Added "Restore System Defaults..." directly to the top-level Settings menu bar. Removed duplicate timestamp/millisecond menu toggles to preserve clean canonical locations in View > Transcript, Preferences > General, and Export > Content Options.
-   [x] 1.8 Dedicated Dialog Resets (`playback_preferences.py`, `transcript_story.py`): Added "Restore Defaults" button in Story Detection Settings (`prompt_set_auto_detect_thresholds`) and updated Story Fades dialog (`transcript_story.py`) `_restore_defaults` to restore factory system defaults (0.0s in, 1.0s out, linear).
+1. Previous Release: Light Mode Option B ("Warm Newsprint & Reading Tone") & Dark-Mode Rich Clipboard Plain Text Normalization (`playback_preferences.py`, `theme_tokens.py`, `transcript_editor.py`, `transcript_story.py`, `test_runner.py`) [x] [COMPLETED in v3.8.3-stable]
+   [x] 1.1 Option B Warm Newsprint Light Theme Palette (`playback_preferences.py`, `theme_tokens.py`, `transcript_editor.py`, `transcript_story.py`): Replaced stark near-white surfaces with warm paper tone (`#f2eee5`), soft warm window surfaces (`#ede8df`), subdued borders (`#c8c0ae`), and refined broadcast slate-blue accents (`#316498`). Primary text uses deep warm charcoal ink (`#2b2723`), speaker labels use rich sapphire blue (`#245892`), and text selections use soft pastel blue (`#c8ddf5`).
+   [x] 1.2 Synchronized Theme Drawing Tokens (`theme_tokens.py`): Updated `_LIGHT_TOKEN_OVERRIDES` keeping timeline waveform fills (`#3b75af`), playheads (`#c53030`), rulers, badges, and story overlays in lockstep with Qt stylesheet rendering.
+   [x] 1.3 Dark-Mode Rich Clipboard Plain Text Normalization (`transcript_editor.py`): Implemented `clean_dark_mode_clipboard_html` in `createMimeDataFromSelection`. When copying from dark mode (or high contrast), white plain text words (`#ffffff`, `#f0f3f6`) are normalized to `#000000` (black) for seamless pasting into Word, Google Docs, Apple Notes, and email without invisible white-on-white text against white pages.
+   [x] 1.4 Strict Rich Formatting & Lookbehind Preservation (`transcript_editor.py`): Utilized negative lookbehind regex `(?<![-a-zA-Z])color\s*:` so `background-color:` attributes are strictly untouched. Speaker label blue (`#58a6ff` / `#245892`), highlight backgrounds (`#fef08a`) and dark text (`#0f172a`), timestamps (`#8b949e`), bold, italic, underline, and strikethrough remain completely intact.
+   [x] 1.5 Automated Diagnostic Tests (`test_runner.py`): Added `_test_option_b_warm_paper_light_theme_and_dark_mode_clipboard_formatting` validating Option B light tokens, transcript stylesheet generation, white-to-black normalization, and rich formatting preservation across speaker labels, highlights, and timestamps.
 
-2. Current Release: Light Mode Option B ("Warm Newsprint & Reading Tone") & Dark-Mode Rich Clipboard Plain Text Normalization (`playback_preferences.py`, `theme_tokens.py`, `transcript_editor.py`, `transcript_story.py`, `test_runner.py`) [x] [COMPLETED in v3.8.3-stable]
-   [x] 2.1 Option B Warm Newsprint Light Theme Palette (`playback_preferences.py`, `theme_tokens.py`, `transcript_editor.py`, `transcript_story.py`): Replaced jarring high-glare near-white surfaces (`#faf8f5`, `#fcfbfa`) across transcripts, text edits, lists, inputs, and buttons with a soothing, low-glare warm paper tone (`#f2eee5`), soft warm window surfaces (`#ede8df`), subdued borders (`#c8c0ae`), and refined broadcast slate-blue accents (`#316498`). Primary text uses deep warm charcoal ink (`#2b2723`), speaker labels use rich sapphire blue (`#245892`), and text selections use soft pastel blue (`#c8ddf5` with `#1b3b5e` text).
-   [x] 2.2 Synchronized Theme Drawing Tokens (`theme_tokens.py`): Updated `_LIGHT_TOKEN_OVERRIDES` keeping timeline waveform fills (`#3b75af`), playheads (`#c53030`), rulers, badges, and story overlays in lockstep with Qt stylesheet rendering.
-   [x] 2.3 Dark-Mode Rich Clipboard Plain Text Normalization (`transcript_editor.py`): Implemented `clean_dark_mode_clipboard_html` in `createMimeDataFromSelection`. When copying from dark mode (or high contrast), white plain text words (`#ffffff`, `#f0f3f6`) are normalized to `#000000` (black) for seamless pasting into Microsoft Word, Google Docs, Apple Notes, and email clients without invisible white-on-white text against white pages.
-   [x] 2.4 Strict Rich Formatting & Lookbehind Preservation (`transcript_editor.py`): Utilized negative lookbehind regex `(?<![-a-zA-Z])color\s*:` so `background-color:` attributes are strictly untouched. Speaker label blue (`#58a6ff` / `#245892`), highlight backgrounds (`#fef08a`) and dark text (`#0f172a`), timestamps (`#8b949e`), bold, italic, underline, and strikethrough remain completely intact.
-   [x] 2.5 Automated Diagnostic Tests (`test_runner.py`): Added `_test_option_b_warm_paper_light_theme_and_dark_mode_clipboard_formatting` validating Option B light tokens, transcript stylesheet generation, white-to-black normalization, and rich formatting preservation across speaker labels, highlights, and timestamps.
+2. Current Release: Light Mode Option C ("Muted Low-Contrast Silver & Fog Palette") & Plain Text Clipboard Normalization (`playback_preferences.py`, `theme_tokens.py`, `transcript_editor.py`, `transcript_story.py`, `test_runner.py`) [x] [COMPLETED in v3.8.4-stable]
+   [x] 2.1 Option C Muted Silver & Fog Light Theme Palette (`playback_preferences.py`, `theme_tokens.py`, `transcript_editor.py`, `transcript_story.py`): Replaced high-glare surfaces with a balanced, modern low-contrast silver/fog theme designed specifically to eliminate glare during prolonged editing sessions. Implemented light-fog window backgrounds (`#dcdfe3`), soft slate-fog container surfaces (`#e3e6ea`), card panels (`#d6dae0`), and muted silver-slate borders (`#b6bcc4`). Configured transcript text edits, tables, lists, and dialog inputs to use a matte light-fog background (`#eaedf0`) with deep graphite ink typography (`#22262c`).
+   [x] 2.2 Subdued Broadcast Accents & Speaker Identity (`playback_preferences.py`, `transcript_story.py`): Employed refined broadcast cornflower/slate blue (`#2e74b5`) for interactive controls, focus rings, sliders, and progress bars; deep slate blue (`#205493`) for speaker labels; muted slate gray (`#545b66`) for timestamps and rulers; and soft cornflower highlight (`#b8d1ea` with `#132c44` text) for selections.
+   [x] 2.3 Synchronized Theme Drawing Tokens (`theme_tokens.py`): Updated `_LIGHT_TOKEN_OVERRIDES` keeping timeline waveform fills (`#4178a8`), waveform stroke (`#6b7e94`), playhead (`#b91c1c`), speaker tags (`#d0d4d9`), status banners (`#e3e6ea`), and story track overlays in lockstep with Qt stylesheet rendering.
+   [x] 2.4 Clipboard Plain Text Color Normalization (`transcript_editor.py`): Ensures dark-mode copying converts only plain text colors (`#ffffff`, `#f0f3f6`) to black (`#000000`) for pasting into external documents, while strictly retaining all rich formatting, including blue speaker labels (`#58a6ff` / `#205493`), comment/search highlight backgrounds (`#fef08a`) and dark text (`#0f172a`), timestamps (`#8b949e`), bold, italic, and underline styling.
+   [x] 2.5 Automated Diagnostic Tests (`test_runner.py`): Added `_test_option_c_muted_silver_fog_light_theme_and_dark_mode_clipboard_formatting` validating Option C tokens, transcript stylesheet generation, plain-text white-to-black normalization, and rich formatting preservation across speaker labels, highlights, and timestamps.
 
 3. Upcoming Milestone: Multi-Platform Timeline & DAW Interchange Engine (`export/timeline.py`, `export/dialog.py`, `ui_layout.py`) [PLANNED for v3.8.5] [CORE] [NOT STARTED]
    [ ] 3.1 Migration to Unified Export Center Tab: Move timeline and DAW exports from the legacy File menu submenu into a dedicated "Timeline & DAW" tab in the Unified Export Center dialog.
@@ -72,58 +69,59 @@ DETAILED MILESTONE SPECIFICATIONS
 ================================================================================
 
 ================================================================================
-1. PREVIOUS RELEASE: BACKUP RESTORE FIX, SYSTEM DEFAULTS RESTORATION RELIABILITY & SETTINGS MENU CLEANUP [x] [COMPLETED in v3.8.1-stable]
+1. PREVIOUS RELEASE: LIGHT MODE OPTION B ("WARM NEWSPRINT & READING TONE") & DARK-MODE RICH CLIPBOARD PLAIN TEXT NORMALIZATION [x] [COMPLETED in v3.8.3-stable]
 ================================================================================
 
-[x] 1.1 Backup Restore Unpack Bug Fix (`backup_manager.py`)
---------------------------------------------------------------------------------
-- Resolved `ValueError: not enough values to unpack (expected 3, got 2)` in `_on_restore_local` when reading `.rtvs-settings` backup archives.
-- Live UI refresh now synchronously applies restored attributes (`silence_threshold`, `lead_in_padding`, `story_detection_mode`, `enable_audio_fades`, `preview_audio_fades`, `skip_seconds`) and canvas visual indicators in-memory without restart.
-
-[x] 1.2 Dedicated Audio Fades Reset & Category Isolation (`playback_preferences.py`)
---------------------------------------------------------------------------------
-- Added explicit `audio_fades` category ("Audio Fades & Fade Curve Defaults") in `RestoreSelectedSettingsDialog`.
-- Separated default fade persistence (`default_fade_in_duration`, `default_fade_out_duration`, `default_fade_curve`) from Story Detection in `_save_preferences` so selective defaults reset never clobbers unrelated settings.
-
-[x] 1.3 Comprehensive Preferences Defaults Synchronization (`playback_preferences.py`)
---------------------------------------------------------------------------------
-- Updated `apply_settings_reset` to synchronize `det_mode_combo`, `gap_spin`, `pad_spin`, `expected_speakers_combo`, `sensitivity_combo`, `ask_speakers_chk`, `fade_in_spin`, `fade_out_spin`, and `fade_curve_combo` with both QSettings and live widgets, flushing immediately to disk via `settings_store.sync()`.
-
-[x] 1.4 Inline Category Defaults & Story Detection Reset (`playback_preferences.py`, `transcript_story.py`)
---------------------------------------------------------------------------------
-- Added direct "Restore Category Defaults" buttons on Preferences pages (General, Detection, Playback & Timeline) for instant reset without modal navigation.
-- Added "Restore Defaults" button in Story Detection Settings (`prompt_set_auto_detect_thresholds`) and updated Story Fades dialog (`transcript_story.py`) `_restore_defaults` to restore factory system defaults (0.0s in, 1.0s out, linear).
-
-[x] 1.5 Settings Menu Cleanliness (`ui_layout.py`)
---------------------------------------------------------------------------------
-- Removed timestamps and milliseconds items from top-level Settings menu bar, preserving their canonical locations in View > Transcript, Preferences > General, and Export > Content Options.
-
-
-================================================================================
-2. CURRENT RELEASE: LIGHT MODE OPTION B ("WARM NEWSPRINT & READING TONE") & DARK-MODE RICH CLIPBOARD PLAIN TEXT NORMALIZATION [x] [COMPLETED in v3.8.3-stable]
-================================================================================
-
-[x] 2.1 Option B Warm Newsprint Light Theme Palette (`playback_preferences.py`, `theme_tokens.py`, `transcript_editor.py`, `transcript_story.py`)
+[x] 1.1 Option B Warm Newsprint Light Theme Palette (`playback_preferences.py`, `theme_tokens.py`, `transcript_editor.py`, `transcript_story.py`)
 --------------------------------------------------------------------------------
 - Replaced jarring high-glare near-white surfaces (`#faf8f5`, `#fcfbfa`) across transcripts, text edits, lists, inputs, and buttons with a soothing, low-glare warm paper tone (`#f2eee5`), soft warm window surfaces (`#ede8df`), subdued borders (`#c8c0ae`), and refined broadcast slate-blue accents (`#316498`).
 - Primary text uses deep warm charcoal ink (`#2b2723`), speaker labels use rich sapphire blue (`#245892`), and text selections use soft pastel blue (`#c8ddf5` with `#1b3b5e` text).
 
-[x] 2.2 Synchronized Theme Drawing Tokens (`theme_tokens.py`)
+[x] 1.2 Synchronized Theme Drawing Tokens (`theme_tokens.py`)
 --------------------------------------------------------------------------------
 - Updated `_LIGHT_TOKEN_OVERRIDES` keeping timeline waveform fills (`#3b75af`), playheads (`#c53030`), rulers, badges, and story overlays in lockstep with Qt stylesheet rendering.
 
-[x] 2.3 Dark-Mode Rich Clipboard Plain Text Normalization (`transcript_editor.py`)
+[x] 1.3 Dark-Mode Rich Clipboard Plain Text Normalization (`transcript_editor.py`)
 --------------------------------------------------------------------------------
 - Implemented `clean_dark_mode_clipboard_html` in `createMimeDataFromSelection`. When copying from dark mode (or high contrast), white plain text words (`#ffffff`, `#f0f3f6`) are normalized to `#000000` (black) for seamless pasting into Microsoft Word, Google Docs, Apple Notes, and email clients without invisible white-on-white text against white pages.
 
-[x] 2.4 Strict Rich Formatting & Lookbehind Preservation (`transcript_editor.py`)
+[x] 1.4 Strict Rich Formatting & Lookbehind Preservation (`transcript_editor.py`)
 --------------------------------------------------------------------------------
 - Utilized negative lookbehind regex `(?<![-a-zA-Z])color\s*:` so `background-color:` attributes are strictly untouched.
 - Speaker label blue (`#58a6ff` in dark mode, `#245892` in light mode), highlight backgrounds (`#fef08a`) and dark text (`#0f172a`), timestamps (`#8b949e`), bold, italic, underline, and strikethrough remain completely intact.
 
-[x] 2.5 Automated Diagnostic Tests (`test_runner.py`)
+[x] 1.5 Automated Diagnostic Tests (`test_runner.py`)
 --------------------------------------------------------------------------------
 - Added `_test_option_b_warm_paper_light_theme_and_dark_mode_clipboard_formatting` validating Option B light tokens, transcript stylesheet generation, white-to-black normalization, and rich formatting preservation across speaker labels, highlights, and timestamps.
+
+
+================================================================================
+2. CURRENT RELEASE: LIGHT MODE OPTION C ("MUTED LOW-CONTRAST SILVER & FOG PALETTE") & PLAIN TEXT CLIPBOARD NORMALIZATION [x] [COMPLETED in v3.8.4-stable]
+================================================================================
+
+[x] 2.1 Option C Muted Silver & Fog Light Theme Palette (`playback_preferences.py`, `theme_tokens.py`, `transcript_editor.py`, `transcript_story.py`)
+--------------------------------------------------------------------------------
+- Replaced high-glare surfaces with a balanced, modern low-contrast silver/fog theme designed specifically to eliminate glare during prolonged editing sessions.
+- Implemented light-fog window backgrounds (`#dcdfe3`), soft slate-fog container surfaces (`#e3e6ea`), card panels (`#d6dae0`), and muted silver-slate borders (`#b6bcc4`).
+- Configured transcript text edits, tables, lists, and dialog inputs to use a matte light-fog background (`#eaedf0`) with deep graphite ink typography (`#22262c`).
+
+[x] 2.2 Subdued Broadcast Accents & Speaker Identity (`playback_preferences.py`, `transcript_story.py`)
+--------------------------------------------------------------------------------
+- Employed refined broadcast cornflower/slate blue (`#2e74b5`) for interactive controls, focus rings, sliders, and progress bars.
+- Deep slate blue (`#205493`) for speaker labels and muted slate gray (`#545b66`) for timestamps and rulers.
+- Soft cornflower highlight (`#b8d1ea` with `#132c44` text) for selections.
+
+[x] 2.3 Synchronized Theme Drawing Tokens (`theme_tokens.py`)
+--------------------------------------------------------------------------------
+- Updated `_LIGHT_TOKEN_OVERRIDES` keeping timeline waveform fills (`#4178a8`), waveform stroke (`#6b7e94`), playhead (`#b91c1c`), speaker tags (`#d0d4d9`), status banners (`#e3e6ea`), and story track overlays in lockstep with Qt stylesheet rendering.
+
+[x] 2.4 Clipboard Plain Text Color Normalization (`transcript_editor.py`)
+--------------------------------------------------------------------------------
+- Ensures dark-mode copying converts only plain text colors (`#ffffff`, `#f0f3f6`) to black (`#000000`) for pasting into external documents, while strictly retaining all rich formatting, including blue speaker labels (`#58a6ff` / `#205493`), comment/search highlight backgrounds (`#fef08a`) and dark text (`#0f172a`), timestamps (`#8b949e`), bold, italic, and underline styling.
+
+[x] 2.5 Automated Diagnostic Tests (`test_runner.py`)
+--------------------------------------------------------------------------------
+- Added `_test_option_c_muted_silver_fog_light_theme_and_dark_mode_clipboard_formatting` validating Option C tokens, transcript stylesheet generation, plain-text white-to-black normalization, and rich formatting preservation across speaker labels, highlights, and timestamps.
 
 
 ================================================================================

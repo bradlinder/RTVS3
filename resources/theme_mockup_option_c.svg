@@ -1,0 +1,184 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" width="960" height="540" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif">
+  <defs>
+    <filter id="shadowC" x="-2%" y="-2%" width="104%" height="106%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000000" flood-opacity="0.06" />
+    </filter>
+  </defs>
+
+  <!-- Background / Window Canvas (Option C: Muted Low-Contrast Silver/Fog #dcdfe3) -->
+  <rect width="960" height="540" fill="#dcdfe3" />
+
+  <!-- Window Header / Title Bar -->
+  <rect x="0" y="0" width="960" height="34" fill="#dcdfe3" />
+  <line x1="0" y1="34" x2="960" y2="34" stroke="#b6bcc4" stroke-width="1" />
+  <text x="16" y="22" font-size="13" font-weight="700" fill="#22262c">Radio &amp; TV Story Segmenter v3.8.3</text>
+  <text x="260" y="22" font-size="12" fill="#545b66">Morning_News_Block_2026-10-05.wav — [Option C: Muted Low-Contrast Silver/Fog Preview]</text>
+
+  <!-- Menu Bar -->
+  <g transform="translate(16, 54)">
+    <rect x="-8" y="-16" width="928" height="26" rx="4" fill="transparent" />
+    <text x="0" y="0" font-size="12" font-weight="500" fill="#22262c">File</text>
+    <text x="40" y="0" font-size="12" font-weight="500" fill="#22262c">Edit</text>
+    <text x="80" y="0" font-size="12" font-weight="500" fill="#22262c">View</text>
+    <text x="125" y="0" font-size="12" font-weight="500" fill="#22262c">Settings</text>
+    <text x="185" y="0" font-size="12" font-weight="500" fill="#22262c">Plugins</text>
+    <text x="245" y="0" font-size="12" font-weight="500" fill="#22262c">Help</text>
+  </g>
+
+  <!-- Transport & Action Bar -->
+  <g transform="translate(16, 72)">
+    <rect x="0" y="0" width="928" height="44" rx="6" fill="#e3e6ea" stroke="#b6bcc4" stroke-width="1" filter="url(#shadowC)" />
+
+    <!-- Play Button -->
+    <rect x="12" y="7" width="76" height="30" rx="15" fill="#2e74b5" />
+    <polygon points="44,16 44,28 54,22" fill="#ffffff" />
+
+    <!-- Control Buttons -->
+    <rect x="98" y="8" width="86" height="28" rx="4" fill="#d0d4d9" stroke="#b2b8c0" stroke-width="1" />
+    <text x="110" y="26" font-size="11" font-weight="600" fill="#22262c">+ New Story</text>
+
+    <rect x="192" y="8" width="82" height="28" rx="4" fill="#d0d4d9" stroke="#b2b8c0" stroke-width="1" />
+    <text x="204" y="26" font-size="11" font-weight="600" fill="#22262c">Auto-Split</text>
+
+    <rect x="282" y="8" width="82" height="28" rx="4" fill="#d0d4d9" stroke="#b2b8c0" stroke-width="1" />
+    <text x="296" y="26" font-size="11" font-weight="600" fill="#22262c">Diarize</text>
+
+    <!-- Timecode Display Badge -->
+    <rect x="376" y="8" width="134" height="28" rx="4" fill="#eaedf0" stroke="#b6bcc4" stroke-width="1" />
+    <text x="390" y="26" font-family="'SF Mono', 'Courier New', monospace" font-size="12" font-weight="700" fill="#205493">00:01:24.350</text>
+
+    <text x="522" y="25" font-size="11" fill="#545b66">/ 00:28:45.000</text>
+
+    <!-- Export Button -->
+    <rect x="816" y="8" width="98" height="28" rx="4" fill="#2e74b5" />
+    <text x="836" y="26" font-size="11" font-weight="600" fill="#ffffff">Export...</text>
+  </g>
+
+  <!-- Upper Section: Waveform & Timeline Panel -->
+  <g transform="translate(16, 126)">
+    <rect x="0" y="0" width="928" height="130" rx="6" fill="#eaedf0" stroke="#b6bcc4" stroke-width="1" filter="url(#shadowC)" />
+
+    <!-- Ruler Strip -->
+    <rect x="0" y="0" width="928" height="22" rx="5" fill="#d6dae0" />
+    <line x1="0" y1="22" x2="928" y2="22" stroke="#b6bcc4" stroke-width="1" />
+
+    <!-- Time Ticks & Labels -->
+    <g font-size="9" fill="#545b66" font-family="monospace">
+      <line x1="40" y1="16" x2="40" y2="22" stroke="#545b66" stroke-width="1" />
+      <text x="30" y="13">00:00</text>
+      <line x1="160" y1="16" x2="160" y2="22" stroke="#545b66" stroke-width="1" />
+      <text x="150" y="13">00:30</text>
+      <line x1="280" y1="16" x2="280" y2="22" stroke="#545b66" stroke-width="1" />
+      <text x="270" y="13">01:00</text>
+      <line x1="400" y1="16" x2="400" y2="22" stroke="#545b66" stroke-width="1" />
+      <text x="390" y="13">01:30</text>
+      <line x1="520" y1="16" x2="520" y2="22" stroke="#545b66" stroke-width="1" />
+      <text x="510" y="13">02:00</text>
+      <line x1="640" y1="16" x2="640" y2="22" stroke="#545b66" stroke-width="1" />
+      <text x="630" y="13">02:30</text>
+      <line x1="760" y1="16" x2="760" y2="22" stroke="#545b66" stroke-width="1" />
+      <text x="750" y="13">03:00</text>
+      <line x1="880" y1="16" x2="880" y2="22" stroke="#545b66" stroke-width="1" />
+      <text x="870" y="13">03:30</text>
+    </g>
+
+    <!-- Story Segment Region Bands -->
+    <rect x="40" y="23" width="280" height="106" fill="#205493" fill-opacity="0.10" stroke="#205493" stroke-width="1" stroke-dasharray="3 3" />
+    <rect x="42" y="25" width="130" height="16" rx="3" fill="#205493" fill-opacity="0.80" />
+    <text x="48" y="37" font-size="9" font-weight="700" fill="#ffffff">Story 1: Transit Opening</text>
+
+    <rect x="340" y="23" width="310" height="106" fill="#c05621" fill-opacity="0.10" stroke="#c05621" stroke-width="1" stroke-dasharray="3 3" />
+    <rect x="342" y="25" width="136" height="16" rx="3" fill="#c05621" fill-opacity="0.80" />
+    <text x="348" y="37" font-size="9" font-weight="700" fill="#ffffff">Story 2: Budget Debate</text>
+
+    <!-- Waveform Representation (Matte Steel Blue #4178a8) -->
+    <path d="M 40 75 Q 50 45, 60 75 T 80 75 T 100 35 T 120 75 T 140 50 T 160 75 T 180 30 T 200 75 T 220 55 T 240 75 T 260 40 T 280 75 T 300 60 T 320 75 T 340 75 T 360 30 T 380 75 T 400 45 T 420 75 T 440 35 T 460 75 T 480 50 T 500 75 T 520 28 T 540 75 T 560 52 T 580 75 T 600 38 T 620 75 T 640 65 T 660 75 T 680 75 T 700 42 T 720 75 T 740 58 T 760 75 T 780 32 T 800 75 T 820 54 T 840 75 T 860 44 T 880 75 L 880 75 L 40 75 Z" fill="#4178a8" fill-opacity="0.80" />
+    <path d="M 40 75 Q 50 105, 60 75 T 80 75 T 100 115 T 120 75 T 140 100 T 160 75 T 180 120 T 200 75 T 220 95 T 240 75 T 260 110 T 280 75 T 300 90 T 320 75 T 340 75 T 360 120 T 380 75 T 400 105 T 420 75 T 440 115 T 460 75 T 480 100 T 500 75 T 520 122 T 540 75 T 560 98 T 580 75 T 600 112 T 620 75 T 640 85 T 660 75 T 680 75 T 700 108 T 720 75 T 740 92 T 760 75 T 780 118 T 800 75 T 820 96 T 840 75 T 860 106 T 880 75 L 880 75 L 40 75 Z" fill="#4178a8" fill-opacity="0.80" />
+
+    <!-- Playhead (Deep Brick Red #b91c1c) -->
+    <line x1="276" y1="22" x2="276" y2="129" stroke="#b91c1c" stroke-width="2" />
+    <polygon points="271,22 281,22 276,28" fill="#b91c1c" />
+  </g>
+
+  <!-- Lower Section: Split View (Transcript on Left 65%, Stories on Right 35%) -->
+  <g transform="translate(16, 266)">
+    <!-- LEFT: Transcript Editor Panel -->
+    <g>
+      <rect x="0" y="0" width="596" height="258" rx="6" fill="#eaedf0" stroke="#b6bcc4" stroke-width="1" filter="url(#shadowC)" />
+
+      <!-- Panel Title Bar -->
+      <rect x="0" y="0" width="596" height="28" rx="5" fill="#d6dae0" />
+      <line x1="0" y1="28" x2="596" y2="28" stroke="#b6bcc4" stroke-width="1" />
+      <text x="14" y="19" font-size="11" font-weight="700" fill="#22262c">TRANSCRIPT &amp; PROOFREADING</text>
+      <text x="490" y="19" font-size="10" fill="#545b66">Auto-Scroll: ON</text>
+
+      <!-- Transcript Paragraph 1 -->
+      <g transform="translate(16, 52)">
+        <text x="0" y="0" font-family="monospace" font-size="11" font-weight="600" fill="#545b66">00:00:04</text>
+        <text x="65" y="0" font-size="12" font-weight="700" fill="#205493">Jane Doe (Host):</text>
+        <text x="180" y="0" font-size="12" fill="#22262c">Good morning. Today the city council opens hearings on</text>
+        <text x="0" y="20" font-size="12" fill="#22262c">the proposed</text>
+        <!-- Highlighted Selection Example (Muted Denim #b8d1ea) -->
+        <rect x="74" y="8" width="138" height="15" rx="2" fill="#b8d1ea" />
+        <text x="76" y="20" font-size="12" font-weight="500" fill="#132c44">municipal transit budget</text>
+        <text x="216" y="20" font-size="12" fill="#22262c">for the upcoming fiscal year.</text>
+      </g>
+
+      <!-- Transcript Paragraph 2 -->
+      <g transform="translate(16, 106)">
+        <text x="0" y="0" font-family="monospace" font-size="11" font-weight="600" fill="#545b66">00:00:18</text>
+        <text x="65" y="0" font-size="12" font-weight="700" fill="#205493">Council President:</text>
+        <text x="195" y="0" font-size="12" fill="#22262c">Thank you Jane. As we examine the line items,</text>
+        <!-- Yellow Highlight Annotation -->
+        <rect x="0" y="8" width="168" height="15" rx="2" fill="#fef08a" />
+        <text x="2" y="20" font-size="12" font-weight="500" fill="#0f172a">capital investments in rail</text>
+        <text x="172" y="20" font-size="12" fill="#22262c">will take top priority over road expansions</text>
+        <text x="0" y="38" font-size="12" fill="#22262c">following commuter feedback gathered across the county.</text>
+      </g>
+
+      <!-- Transcript Paragraph 3 -->
+      <g transform="translate(16, 172)">
+        <text x="0" y="0" font-family="monospace" font-size="11" font-weight="600" fill="#545b66">00:00:42</text>
+        <text x="65" y="0" font-size="12" font-weight="700" fill="#205493">Reporter Mark:</text>
+        <text x="175" y="0" font-size="12" fill="#22262c">Several community members have already signed up to</text>
+        <text x="0" y="20" font-size="12" fill="#22262c">testify during public comment starting at ten o'clock.</text>
+      </g>
+    </g>
+
+    <!-- RIGHT: Stories & Metadata Panel -->
+    <g transform="translate(612, 0)">
+      <rect x="0" y="0" width="316" height="258" rx="6" fill="#e3e6ea" stroke="#b6bcc4" stroke-width="1" filter="url(#shadowC)" />
+
+      <!-- Panel Title Bar -->
+      <rect x="0" y="0" width="316" height="28" rx="5" fill="#d0d4d9" />
+      <line x1="0" y1="28" x2="316" y2="28" stroke="#b6bcc4" stroke-width="1" />
+      <text x="14" y="19" font-size="11" font-weight="700" fill="#22262c">STORY SEGMENTS (2)</text>
+
+      <!-- Story Item 1 (Selected) -->
+      <g transform="translate(12, 38)">
+        <rect x="0" y="0" width="292" height="66" rx="5" fill="#eaedf0" stroke="#2e74b5" stroke-width="2" />
+        <rect x="8" y="8" width="8" height="50" rx="2" fill="#205493" />
+        <text x="24" y="24" font-size="12" font-weight="700" fill="#22262c">Story 1: Transit Opening</text>
+        <text x="24" y="42" font-size="10" fill="#545b66">00:00:04 - 00:01:18  (01:14)</text>
+        <rect x="238" y="10" width="46" height="18" rx="3" fill="#b8d1ea" />
+        <text x="244" y="23" font-size="9" font-weight="700" fill="#132c44">ACTIVE</text>
+      </g>
+
+      <!-- Story Item 2 -->
+      <g transform="translate(12, 114)">
+        <rect x="0" y="0" width="292" height="66" rx="5" fill="#eaedf0" stroke="#b6bcc4" stroke-width="1" />
+        <rect x="8" y="8" width="8" height="50" rx="2" fill="#c05621" />
+        <text x="24" y="24" font-size="12" font-weight="700" fill="#22262c">Story 2: Budget Debate</text>
+        <text x="24" y="42" font-size="10" fill="#545b66">00:01:18 - 00:03:45  (02:27)</text>
+      </g>
+
+      <!-- Metadata summary badge -->
+      <g transform="translate(12, 192)">
+        <rect x="0" y="0" width="292" height="54" rx="4" fill="#d0d4d9" stroke="#b2b8c0" stroke-width="1" />
+        <text x="12" y="18" font-size="10" font-weight="700" fill="#22262c">Option C Palette Key:</text>
+        <text x="12" y="32" font-size="9" fill="#545b66">Window: #dcdfe3  |  Editor: #eaedf0  |  Text: #22262c</text>
+        <text x="12" y="45" font-size="9" fill="#545b66">Accent: #2e74b5  |  Speaker: #205493 (Matte Low-Glare)</text>
+      </g>
+    </g>
+  </g>
+</svg>

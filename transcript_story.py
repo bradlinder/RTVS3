@@ -1,4 +1,4 @@
-"""Radio & TV Segmenter v3.8.3-stable — transcript story responsibilities.
+"""Radio & TV Segmenter v3.8.4-stable — transcript story responsibilities.
 
 Methods intentionally retain the MainWindow-facing API so behavior remains
 maintaining the established MainWindow-facing API while responsibilities are isolated.
@@ -971,11 +971,11 @@ class TranscriptStoryMixin:
 
         curr_theme = getattr(self.transcript_view, "current_theme", "dark")
         if curr_theme == "light":
-            word_color = "#2b2723"
-            speaker_color = "#245892"
-            time_color = "#6b6458"
+            word_color = "#22262c"
+            speaker_color = "#205493"
+            time_color = "#545b66"
             spanish_color = "#15803d"
-            spanish_tag_color = "#6b6458"
+            spanish_tag_color = "#545b66"
         elif curr_theme == "high_contrast":
             word_color = "#ffffff"
             speaker_color = "#00ffff"

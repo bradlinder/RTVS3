@@ -470,9 +470,9 @@ class DiagnosticEngine:
                 "Validates unified state serialization (preferences, shortcuts, glossary, plugins), SHA-256 cryptographic verification, local archive roundtrip, and Google Drive cloud payload integrity",
             ),
             DiagnosticItem(
-                "Option B Warm Paper Light Theme and Dark Mode Clipboard Formatting",
+                "Option C Muted Silver Fog Light Theme and Dark Mode Clipboard Formatting",
                 "Core Logic & File I/O",
-                "Validates Option B warm muted paper palette and dark-mode clipboard rich styling (black plain text, blue speaker labels, highlight backgrounds and text)",
+                "Validates Option C muted low-contrast silver/fog palette and dark-mode clipboard rich styling (black plain text, blue speaker labels, highlight backgrounds and text)",
             ),
         ]
 
@@ -3465,22 +3465,24 @@ class DiagnosticEngine:
         item.status = "PASS"
         item.message = f"State serialization, SHA-256 cryptographic verification ({cs[:12]}...), and local/cloud roundtrip verified"
 
-    def _test_option_b_warm_paper_light_theme_and_dark_mode_clipboard_formatting(self, item: DiagnosticItem):
-        """Validates Option B warm muted paper palette and dark-mode clipboard rich styling."""
+    def _test_option_c_muted_silver_fog_light_theme_and_dark_mode_clipboard_formatting(self, item: DiagnosticItem):
+        """Validates Option C muted low-contrast silver/fog palette and dark-mode clipboard rich styling."""
         from theme_tokens import _LIGHT_TOKEN_OVERRIDES
         from transcript_editor import clean_dark_mode_clipboard_html, transcript_text_view_stylesheet
 
-        # 1. Option B Theme Token Verification
-        assert _LIGHT_TOKEN_OVERRIDES["bg_window"] == "#ede8df", f"Expected #ede8df for bg_window, got {_LIGHT_TOKEN_OVERRIDES.get('bg_window')}"
-        assert _LIGHT_TOKEN_OVERRIDES["bg_surface"] == "#e4ded3", f"Expected #e4ded3 for bg_surface, got {_LIGHT_TOKEN_OVERRIDES.get('bg_surface')}"
-        assert _LIGHT_TOKEN_OVERRIDES["text_primary"] == "#2b2723", f"Expected #2b2723 for text_primary, got {_LIGHT_TOKEN_OVERRIDES.get('text_primary')}"
-        assert _LIGHT_TOKEN_OVERRIDES["accent_primary"] == "#316498", f"Expected #316498 for accent_primary, got {_LIGHT_TOKEN_OVERRIDES.get('accent_primary')}"
+        # 1. Option C Theme Token Verification
+        assert _LIGHT_TOKEN_OVERRIDES["bg_window"] == "#dcdfe3", f"Expected #dcdfe3 for bg_window, got {_LIGHT_TOKEN_OVERRIDES.get('bg_window')}"
+        assert _LIGHT_TOKEN_OVERRIDES["bg_surface"] == "#e3e6ea", f"Expected #e3e6ea for bg_surface, got {_LIGHT_TOKEN_OVERRIDES.get('bg_surface')}"
+        assert _LIGHT_TOKEN_OVERRIDES["text_primary"] == "#22262c", f"Expected #22262c for text_primary, got {_LIGHT_TOKEN_OVERRIDES.get('text_primary')}"
+        assert _LIGHT_TOKEN_OVERRIDES["accent_primary"] == "#2e74b5", f"Expected #2e74b5 for accent_primary, got {_LIGHT_TOKEN_OVERRIDES.get('accent_primary')}"
+        assert _LIGHT_TOKEN_OVERRIDES["waveform_fill"] == "#4178a8", f"Expected #4178a8 for waveform_fill, got {_LIGHT_TOKEN_OVERRIDES.get('waveform_fill')}"
 
-        # 2. Option B Transcript View Stylesheet
+        # 2. Option C Transcript View Stylesheet
         light_css = transcript_text_view_stylesheet("light")
-        assert "#f2eee5" in light_css, f"Expected warm paper #f2eee5 in light stylesheet, got:\n{light_css}"
-        assert "#2b2723" in light_css, f"Expected dark ink #2b2723 in light stylesheet, got:\n{light_css}"
-        assert "#c8c0ae" in light_css, f"Expected border #c8c0ae in light stylesheet, got:\n{light_css}"
+        assert "#eaedf0" in light_css, f"Expected matte light-fog #eaedf0 in light stylesheet, got:\n{light_css}"
+        assert "#22262c" in light_css, f"Expected graphite #22262c in light stylesheet, got:\n{light_css}"
+        assert "#b6bcc4" in light_css, f"Expected border #b6bcc4 in light stylesheet, got:\n{light_css}"
+        assert "#b8d1ea" in light_css, f"Expected selection #b8d1ea in light stylesheet, got:\n{light_css}"
 
         # 3. Dark Mode Clipboard Plain Text Normalization
         sample_html = (
@@ -3513,7 +3515,7 @@ class DiagnosticEngine:
         assert "color:#000000;" in cleaned, "Default body text color must be explicitly defined as black"
 
         item.status = "PASS"
-        item.message = "Option B warm muted paper palette and dark-mode rich clipboard normalization validated"
+        item.message = "Option C muted low-contrast silver/fog palette and dark-mode rich clipboard normalization validated"
 
 
 def generate_diagnostic_report(engine: DiagnosticEngine) -> str:

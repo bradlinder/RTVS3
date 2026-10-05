@@ -191,15 +191,15 @@ def transcript_text_view_stylesheet(mode, font_size=16):
     if mode == "light":
         return f"""
             QTextEdit, QTextBrowser {{
-                background-color: #f2eee5;
-                color: #2b2723;
-                border: 1px solid #c8c0ae;
+                background-color: #eaedf0;
+                color: #22262c;
+                border: 1px solid #b6bcc4;
                 border-radius: 8px;
                 padding: 12px;
                 font-size: {font_size:.1f}px;
                 line-height: 1.7;
-                selection-background-color: #c8ddf5;
-                selection-color: #1b3b5e;
+                selection-background-color: #b8d1ea;
+                selection-color: #132c44;
             }}
         """
     elif mode == "high_contrast":

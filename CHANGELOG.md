@@ -1,5 +1,24 @@
 # Changelog
 
+## v3.8.4-stable
+- **Light Mode Option C: Muted Low-Contrast Silver & Fog Palette (`playback_preferences.py`, `theme_tokens.py`, `transcript_editor.py`, `transcript_story.py`)**:
+  - **Eliminated Eye-Straining Stark Whites**: Replaced blinding bright surfaces with a balanced, modern low-contrast silver/fog theme designed specifically to eliminate glare during prolonged editing sessions.
+  - **Balanced Cool Surfaces**: Implemented smooth light-fog window backgrounds (`#dcdfe3`), soft slate-fog container surfaces (`#e3e6ea`), card panels (`#d6dae0`), and muted silver-slate borders (`#b6bcc4`).
+  - **Matte Transcript & Editor Viewport**: Configured transcript text edits, tables, lists, and dialog inputs to use a matte light-fog background (`#eaedf0`) with deep graphite ink typography (`#22262c`) providing optimal readability without harsh contrast spikes.
+  - **Subdued Accents & Speaker Identity**: Employed refined broadcast cornflower/slate blue (`#2e74b5`) for interactive controls, focus rings, sliders, and progress bars; deep slate blue (`#205493`) for speaker labels; muted slate gray (`#545b66`) for timestamps and rulers; and soft cornflower highlight (`#b8d1ea` with `#132c44` text) for selections.
+  - **Theme Drawing Token Synchronization**: Updated `_LIGHT_TOKEN_OVERRIDES` in `theme_tokens.py` to synchronize waveform fills (`#4178a8`), waveform stroke (`#6b7e94`), playhead (`#b91c1c`), speaker tags (`#d0d4d9`), status banners (`#e3e6ea`), and story track overlays.
+- **Dark-Mode Clipboard Plain Text Color Normalization with Rich Formatting Preservation (`transcript_editor.py`, `test_runner.py`)**:
+  - **Plain Text Color Conversion (`clean_dark_mode_clipboard_html`)**: When copying transcript selections in dark mode (or high contrast), plain text words (rendered on screen in white `#ffffff` or `#f0f3f6`) are normalized to `#000000` (black) in the HTML clipboard payload.
+  - **External Document Fidelity**: Pasting into Word, Google Docs, Apple Notes, or email renders clean, readable black text without invisible white-on-white text against white pages.
+  - **Strict Rich Formatting Preservation**: Plain text color normalization strictly targets unformatted/plain word spans while preserving all other rich formatting:
+    - Speaker labels remain in distinct blue (`#58a6ff` in dark mode, `#205493` in light mode).
+    - Comment and search highlights strictly retain their background colors (`#fef08a`) and dark text styling (`#0f172a`).
+    - Timestamps remain in distinct muted gray (`#8b949e`).
+    - Bold (`font-weight:700`), italic (`font-style:italic`), underline, and strikethrough styling are completely preserved.
+  - **Regex Lookbehind Safety**: Utilized negative lookbehind `(?<![-a-zA-Z])color\s*:` to ensure `background-color:` attributes are never modified.
+- **Automated Diagnostic Suite Integration (`test_runner.py`)**:
+  - Added `_test_option_c_muted_silver_fog_light_theme_and_dark_mode_clipboard_formatting` validating Option C light tokens, transcript stylesheet generation, plain-text white-to-black normalization, and rich formatting preservation across speaker labels, highlights, and timestamps.
+
 ## v3.8.3-stable
 - **Light Mode Option B: Warm Newsprint & Reading Tone Palette (`playback_preferences.py`, `theme_tokens.py`, `transcript_editor.py`, `transcript_story.py`)**:
   - **Eliminated Harsh Glare & Blinding White Surfaces**: Replaced stark white backgrounds (`#faf8f5`, `#fcfbfa`) across transcripts, text editors, list widgets, tables, inputs, and buttons with a soothing, low-glare warm paper tone (`#f2eee5`).
