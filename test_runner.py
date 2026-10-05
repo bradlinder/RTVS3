@@ -469,6 +469,11 @@ class DiagnosticEngine:
                 "Core Logic & File I/O",
                 "Validates unified state serialization (preferences, shortcuts, glossary, plugins), SHA-256 cryptographic verification, local archive roundtrip, and Google Drive cloud payload integrity",
             ),
+            DiagnosticItem(
+                "Option B Warm Paper Light Theme and Dark Mode Clipboard Formatting",
+                "Core Logic & File I/O",
+                "Validates Option B warm muted paper palette and dark-mode clipboard rich styling (black plain text, blue speaker labels, highlight backgrounds and text)",
+            ),
         ]
 
     def run_all(self, stop_requested_fn: Optional[Callable[[], bool]] = None) -> List[DiagnosticItem]:
@@ -3459,6 +3464,56 @@ class DiagnosticEngine:
 
         item.status = "PASS"
         item.message = f"State serialization, SHA-256 cryptographic verification ({cs[:12]}...), and local/cloud roundtrip verified"
+
+    def _test_option_b_warm_paper_light_theme_and_dark_mode_clipboard_formatting(self, item: DiagnosticItem):
+        """Validates Option B warm muted paper palette and dark-mode clipboard rich styling."""
+        from theme_tokens import _LIGHT_TOKEN_OVERRIDES
+        from transcript_editor import clean_dark_mode_clipboard_html, transcript_text_view_stylesheet
+
+        # 1. Option B Theme Token Verification
+        assert _LIGHT_TOKEN_OVERRIDES["bg_window"] == "#ede8df", f"Expected #ede8df for bg_window, got {_LIGHT_TOKEN_OVERRIDES.get('bg_window')}"
+        assert _LIGHT_TOKEN_OVERRIDES["bg_surface"] == "#e4ded3", f"Expected #e4ded3 for bg_surface, got {_LIGHT_TOKEN_OVERRIDES.get('bg_surface')}"
+        assert _LIGHT_TOKEN_OVERRIDES["text_primary"] == "#2b2723", f"Expected #2b2723 for text_primary, got {_LIGHT_TOKEN_OVERRIDES.get('text_primary')}"
+        assert _LIGHT_TOKEN_OVERRIDES["accent_primary"] == "#316498", f"Expected #316498 for accent_primary, got {_LIGHT_TOKEN_OVERRIDES.get('accent_primary')}"
+
+        # 2. Option B Transcript View Stylesheet
+        light_css = transcript_text_view_stylesheet("light")
+        assert "#f2eee5" in light_css, f"Expected warm paper #f2eee5 in light stylesheet, got:\n{light_css}"
+        assert "#2b2723" in light_css, f"Expected dark ink #2b2723 in light stylesheet, got:\n{light_css}"
+        assert "#c8c0ae" in light_css, f"Expected border #c8c0ae in light stylesheet, got:\n{light_css}"
+
+        # 3. Dark Mode Clipboard Plain Text Normalization
+        sample_html = (
+            '<!DOCTYPE HTML><html><head></head><body style=" font-family:\'Segoe UI\'; font-size:16pt;">'
+            '<p>'
+            '<a href="time:0.0"><span style=" font-weight:700; color:#8b949e;">00:00</span></a> '
+            '<a href="speaker:0:"><span style=" font-weight:700; color:#58a6ff;">SPEAKER 1:</span></a> '
+            '<a href="word:0.0:0"><span style=" color:#ffffff;">Here</span></a> '
+            '<a href="word:0.3:0"><span style=" color:#f0f3f6;">is</span></a> '
+            '<a href="word:0.5:0"><span style=" background-color:#fef08a; color:#0f172a;">highlighted text</span></a> '
+            '<a href="word:0.7:0"><span style=" color:#ffffff; font-style:italic;">italic white</span></a>'
+            '</p>'
+            '</body></html>'
+        )
+
+        cleaned = clean_dark_mode_clipboard_html(sample_html)
+
+        # Plain text white must become black #000000
+        assert "color:#000000" in cleaned, "White plain text must be normalized to #000000 black"
+        assert "color:#ffffff" not in cleaned.lower(), "White plain text colors must not remain in output"
+        assert "color:#f0f3f6" not in cleaned.lower(), "Near-white plain text colors must not remain in output"
+
+        # Rich styling must be strictly preserved
+        assert "color:#58a6ff" in cleaned, "Speaker label blue (#58a6ff) must remain intact"
+        assert "background-color:#fef08a" in cleaned, "Highlight background (#fef08a) must remain intact"
+        assert "color:#0f172a" in cleaned, "Highlight text color (#0f172a) must remain intact"
+        assert "color:#8b949e" in cleaned, "Timestamp color (#8b949e) must remain intact"
+        assert "font-weight:700" in cleaned, "Bold weight must remain intact"
+        assert "font-style:italic" in cleaned, "Italic style must remain intact"
+        assert "color:#000000;" in cleaned, "Default body text color must be explicitly defined as black"
+
+        item.status = "PASS"
+        item.message = "Option B warm muted paper palette and dark-mode rich clipboard normalization validated"
 
 
 def generate_diagnostic_report(engine: DiagnosticEngine) -> str:

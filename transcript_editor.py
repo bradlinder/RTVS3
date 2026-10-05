@@ -19,55 +19,75 @@ from bisect import bisect_right
 from pathlib import Path
 from typing import Optional, List, Dict, Any, Tuple
 
-from PySide6.QtCore import (
-    Qt,
-    Signal,
-    QTimer,
-    QSettings,
-    QPointF,
-    QRectF,
-    QUrl,
-    QEvent,
-    QMimeData,
-)
-from PySide6.QtGui import (
-    QPainter,
-    QPainterPath,
-    QPen,
-    QColor,
-    QFont,
-    QTextCursor,
-    QTextCharFormat,
-    QAction,
-    QCursor,
-    QKeySequence,
-    QShortcut,
-    QBrush,
-    QTextDocument,
-    QKeyEvent,
-    QMouseEvent,
-    QWheelEvent,
-    QDragEnterEvent,
-    QDropEvent,
-)
-from PySide6.QtWidgets import (
-    QWidget,
-    QVBoxLayout,
-    QHBoxLayout,
-    QFormLayout,
-    QMenu,
-    QToolTip,
-    QDialog,
-    QFrame,
-    QToolButton,
-    QTextEdit,
-    QLineEdit,
-    QCheckBox,
-    QPushButton,
-    QMessageBox,
-    QScrollBar,
-    QApplication,
-)
+try:
+    from PySide6.QtCore import (
+        Qt,
+        Signal,
+        QTimer,
+        QSettings,
+        QPointF,
+        QRectF,
+        QUrl,
+        QEvent,
+        QMimeData,
+    )
+    from PySide6.QtGui import (
+        QPainter,
+        QPainterPath,
+        QPen,
+        QColor,
+        QFont,
+        QTextCursor,
+        QTextCharFormat,
+        QAction,
+        QCursor,
+        QKeySequence,
+        QShortcut,
+        QBrush,
+        QTextDocument,
+        QKeyEvent,
+        QMouseEvent,
+        QWheelEvent,
+        QDragEnterEvent,
+        QDropEvent,
+    )
+    from PySide6.QtWidgets import (
+        QWidget,
+        QVBoxLayout,
+        QHBoxLayout,
+        QFormLayout,
+        QMenu,
+        QToolTip,
+        QDialog,
+        QFrame,
+        QToolButton,
+        QTextEdit,
+        QLineEdit,
+        QCheckBox,
+        QPushButton,
+        QMessageBox,
+        QScrollBar,
+        QApplication,
+    )
+except ImportError:
+    # Headless CLI fallback when PySide6 is unavailable in test environment
+    class _DummyQtMeta(type):
+        def __getattr__(cls, name):
+            return cls
+
+    class _DummyQt(metaclass=_DummyQtMeta):
+        def __init__(self, *args, **kwargs):
+            pass
+
+    Qt = _DummyQt
+    Signal = lambda *args, **kwargs: None
+    QTimer = QSettings = QPointF = QRectF = QUrl = QEvent = QMimeData = _DummyQt
+    QPainter = QPainterPath = QPen = QColor = QFont = QTextCursor = QTextCharFormat = _DummyQt
+    QAction = QCursor = QKeySequence = QShortcut = QBrush = QTextDocument = _DummyQt
+    QKeyEvent = QMouseEvent = QWheelEvent = QDragEnterEvent = QDropEvent = _DummyQt
+    QWidget = QVBoxLayout = QHBoxLayout = QFormLayout = QMenu = QToolTip = _DummyQt
+    QDialog = QFrame = QToolButton = QTextEdit = QLineEdit = QCheckBox = QPushButton = _DummyQt
+    QMessageBox = QScrollBar = QApplication = _DummyQt
 
 from core_utils import format_time
 
@@ -171,11 +191,15 @@ def transcript_text_view_stylesheet(mode, font_size=16):
     if mode == "light":
         return f"""
             QTextEdit, QTextBrowser {{
-                background-color: #ffffff;
-                color: #111111;
-                border: 1px solid #c5c5cb;
+                background-color: #f2eee5;
+                color: #2b2723;
+                border: 1px solid #c8c0ae;
+                border-radius: 8px;
+                padding: 12px;
                 font-size: {font_size:.1f}px;
                 line-height: 1.7;
+                selection-background-color: #c8ddf5;
+                selection-color: #1b3b5e;
             }}
         """
     elif mode == "high_contrast":
@@ -285,6 +309,57 @@ class TranscriptSelectionBubble(QFrame):
         self.commentRequested.emit()
         self.noteRequested.emit()
         self.hide()
+
+
+_CLIPBOARD_WHITE_COLORS = {
+    "#ffffff", "#f0f3f6", "#f0f0f0", "#e0e0e0", "#ffffff", "#fff", "white",
+    "rgb(255,255,255)", "rgb(255, 255, 255)",
+    "rgb(240,243,246)", "rgb(240, 243, 246)",
+    "rgb(240,240,240)", "rgb(240, 240, 240)",
+    "rgb(224,224,224)", "rgb(224, 224, 224)",
+}
+
+
+def clean_dark_mode_clipboard_html(raw_html: str) -> str:
+    """Normalize plain text font colors to black (#000000) for external pasting.
+
+    Preserves rich styling such as blue speaker labels, highlight backgrounds and text,
+    bold, italic, underline, strikethrough, and timestamps so pasting into Microsoft Word,
+    Google Docs, Apple Notes, or email renders clean, readable black text without
+    invisible white-on-white text or broken highlight/label styling.
+    """
+    if not raw_html:
+        return raw_html
+
+    def _replace_white_color(match):
+        prefix = match.group(1)
+        color = match.group(2).lower().strip()
+        suffix = match.group(3)
+        if color in _CLIPBOARD_WHITE_COLORS:
+            return f"{prefix}#000000{suffix}"
+        return match.group(0)
+
+    # Use negative lookbehind (?<![-a-zA-Z]) so that 'background-color:' is strictly untouched
+    cleaned = re.sub(
+        r'((?<![-a-zA-Z])color\s*:\s*)(#[0-9a-fA-F]{3,6}|rgb\([^)]+\)|white)(\s*[;\"\'])',
+        _replace_white_color,
+        raw_html,
+        flags=re.IGNORECASE,
+    )
+
+    # If body style does not explicitly define a text color, inject color:#000000 so any
+    # unadorned text defaults to black when pasted into external document editors
+    if '<body' in cleaned.lower():
+        if not re.search(r'body[^{>]*style=[\"\'][^\"\']*(?<![-a-zA-Z])color\s*:', cleaned, re.IGNORECASE):
+            cleaned = re.sub(
+                r'(<body[^\>]*style=[\"\'])([^\"]*)([\"\'])',
+                r'\g<1>color:#000000; \g<2>\g<3>',
+                cleaned,
+                count=1,
+                flags=re.IGNORECASE,
+            )
+
+    return cleaned
 
 
 class InteractiveTranscriptEdit(QTextEdit):
@@ -414,6 +489,22 @@ class InteractiveTranscriptEdit(QTextEdit):
             v_bar.setValue(target_v)
         if h_bar and h_bar.value() != target_h and not getattr(self, "_user_scrolled_recently", False):
             h_bar.setValue(target_h)
+
+    def createMimeDataFromSelection(self):
+        """Clean dark-mode white/light plain text colors to black (#000000) when copying.
+
+        Preserves rich styling such as blue speaker labels, highlight backgrounds and text,
+        bold, italic, underline, and timestamps so pasting into Word, Google Docs, or email
+        pastes as clean, readable black text rather than invisible white-on-white text.
+        """
+        mime_data = super().createMimeDataFromSelection()
+        if mime_data is not None and mime_data.hasHtml():
+            theme = getattr(self, "current_theme", "dark")
+            if theme in ("dark", "high_contrast"):
+                raw_html = mime_data.html()
+                cleaned_html = clean_dark_mode_clipboard_html(raw_html)
+                mime_data.setHtml(cleaned_html)
+        return mime_data
 
     def wheelEvent(self, event):
         # Manual user scroll cancels any active scroll lock

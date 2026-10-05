@@ -29,87 +29,184 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 --------------------------------------------------------------------------------
 TABLE OF CONTENTS & STATUS OVERVIEW
 --------------------------------------------------------------------------------
-1. Previous Release: Comprehensive Cloud & Local Backup & Restore System (`backup_manager.py`, `project_lifecycle.py`, `ui_layout.py`, `test_runner.py`) [x] [COMPLETED in v3.8.0-stable]
-   [x] 1.1 Unified State Serialization (`backup_manager.py`): Export preferences, keyboard shortcuts, installed model inventories, glossary items, and user configurations into a cryptographically verified settings archive (.rtvs-settings / .rtvs-preferences, SHA-256 integrity verification).
-   [x] 1.2 Manual Local Backup & Restore (`backup_manager.py`, `project_lifecycle.py`, `ui_layout.py`): Dedicated modal center with local archive export (.rtvs-settings) and live state restoration without requiring application restart. Clean native desktop UI without unrequested emojis or icons.
-   [x] 1.3 1-Click Google Drive Cloud Restore & Backup (`backup_manager.py`, `plugins/gdocs/auth.py`): Connect via Google Drive API to browse, upload, download, and verify via SHA-256 hash matching to restore configurations directly from cloud backups.
-   [x] 1.4 Tri-Location Transcript Milliseconds Toggle & Persistent View Menu (`ui_layout.py`, `export/dialog.py`, `playback_preferences.py`, `media_batch.py`, `transcript_story.py`): Configurable millisecond precision toggle accessible in View menu, Unified Export window, and Preferences dialog. Implemented PersistentMenu so checking/unchecking options in the View menu keeps the menu open until clicking outside.
-   [x] 1.5 UI Design Discipline Enforced (`AGENTS.md`, `GEMINI.md`): Strict rule preventing addition of unrequested icons, emoji symbols, or decorative glyphs in desktop UI elements.
-   [x] 1.6 Automated Diagnostic Tests (`test_runner.py`): Added `_test_comprehensive_local_and_cloud_backup_and_restore_engine` verifying state serialization, SHA-256 verification, tamper detection, and local/cloud roundtrips.
+1. Previous Release: Backup Restore Fix, System Defaults Restoration Reliability & Settings Menu Cleanup (`RadioTVSegmenter.py`, `backup_manager.py`, `playback_preferences.py`, `transcript_story.py`, `ui_layout.py`) [x] [COMPLETED in v3.8.1-stable]
+   [x] 1.1 Backup Restore Unpack Bug Fix & Restore Defaults Action (`backup_manager.py`): Resolved `ValueError: not enough values to unpack (expected 3, got 2)` in `_on_restore_local` when reading `.rtvs-settings` backup archives. Added direct "Restore System Defaults…" button in Backup & Restore Center. Live UI refresh now synchronously applies restored attributes (`silence_threshold`, `lead_in_padding`, `story_detection_mode`, `enable_audio_fades`, `preview_audio_fades`, `skip_seconds`) and canvas visual indicators in-memory without restart.
+   [x] 1.2 Dedicated Audio Fades Reset & Category Isolation (`playback_preferences.py`): Added explicit `audio_fades` category ("Audio Fades & Fade Curve Defaults") in `RestoreSelectedSettingsDialog` and separated default fade persistence from Story Detection so selective defaults reset never clobbers unrelated settings.
+   [x] 1.3 Comprehensive 15-Category Defaults Synchronization (`playback_preferences.py`): Updated `apply_settings_reset` to ensure 100% comprehensive defaults restoration across all 15 categories, synchronizing all form widgets (`single_instance_combo`, `floating_toolbar_chk`, `open_comments_chk`, `show_highlights_chk`, `show_timestamps_chk`, `show_millis_chk`, `pref_auto_lang_chk`, `global_gpu_chk`, `gpu_trans_chk`, `gpu_translate_chk`, `gpu_diarize_chk`, `det_mode_combo`, `gap_spin`, `pad_spin`, `expected_speakers_combo`, `sensitivity_combo`, `ask_speakers_chk`, `fade_in_spin`, `fade_out_spin`, and `fade_curve_combo`) with both QSettings and in-memory attributes, flushing immediately via `settings_store.sync()`.
+   [x] 1.4 In-Memory Persistent Attribute Lifecycle (`RadioTVSegmenter.py`): Added `load_persistent_settings()` to load all stored settings from `QSettings` into `MainWindow` at startup, and re-read them after any settings reset or restore operation.
+   [x] 1.5 "Clear All User Preferences" Deep Factory Reset (`playback_preferences.py`): Re-engineered "Clear All User Preferences (Reset Settings to Defaults)…" in Cleanup Data to reset all in-memory `MainWindow` attributes and live form widgets.
+   [x] 1.6 Inline Category Defaults Across All Preferences Tabs (`playback_preferences.py`): Added direct "Restore Category Defaults" buttons to all Preferences pages (General, Audio Hardware, Updates & GitHub, AI Models, GPU Acceleration, Playback & Timeline, Detection, Batch Processing) for instant reset without modal navigation.
+   [x] 1.7 Top-Level Settings Menu Integration & Cleanliness (`ui_layout.py`): Added "Restore System Defaults..." directly to the top-level Settings menu bar. Removed duplicate timestamp/millisecond menu toggles to preserve clean canonical locations in View > Transcript, Preferences > General, and Export > Content Options.
+   [x] 1.8 Dedicated Dialog Resets (`playback_preferences.py`, `transcript_story.py`): Added "Restore Defaults" button in Story Detection Settings (`prompt_set_auto_detect_thresholds`) and updated Story Fades dialog (`transcript_story.py`) `_restore_defaults` to restore factory system defaults (0.0s in, 1.0s out, linear).
 
-2. Current Release: Backup Restore Fix, System Defaults Restoration Reliability & Settings Menu Cleanup (`RadioTVSegmenter.py`, `backup_manager.py`, `playback_preferences.py`, `transcript_story.py`, `ui_layout.py`) [x] [COMPLETED in v3.8.1-stable]
-   [x] 2.1 Backup Restore Unpack Bug Fix & Restore Defaults Action (`backup_manager.py`): Resolved `ValueError: not enough values to unpack (expected 3, got 2)` in `_on_restore_local` when reading `.rtvs-settings` backup archives. Added direct "Restore System Defaults…" button in Backup & Restore Center. Live UI refresh now synchronously applies restored attributes (`silence_threshold`, `lead_in_padding`, `story_detection_mode`, `enable_audio_fades`, `preview_audio_fades`, `skip_seconds`) and canvas visual indicators in-memory without restart.
-   [x] 2.2 Dedicated Audio Fades Reset & Category Isolation (`playback_preferences.py`): Added explicit `audio_fades` category ("Audio Fades & Fade Curve Defaults") in `RestoreSelectedSettingsDialog` and separated default fade persistence from Story Detection so selective defaults reset never clobbers unrelated settings.
-   [x] 2.3 Comprehensive 15-Category Defaults Synchronization (`playback_preferences.py`): Updated `apply_settings_reset` to ensure 100% comprehensive defaults restoration across all 15 categories, synchronizing all form widgets (`single_instance_combo`, `floating_toolbar_chk`, `open_comments_chk`, `show_highlights_chk`, `show_timestamps_chk`, `show_millis_chk`, `pref_auto_lang_chk`, `global_gpu_chk`, `gpu_trans_chk`, `gpu_translate_chk`, `gpu_diarize_chk`, `det_mode_combo`, `gap_spin`, `pad_spin`, `expected_speakers_combo`, `sensitivity_combo`, `ask_speakers_chk`, `fade_in_spin`, `fade_out_spin`, and `fade_curve_combo`) with both QSettings and in-memory attributes, flushing immediately via `settings_store.sync()`.
-   [x] 2.4 In-Memory Persistent Attribute Lifecycle (`RadioTVSegmenter.py`): Added `load_persistent_settings()` to load all stored settings from `QSettings` into `MainWindow` at startup, and re-read them after any settings reset or restore operation.
-   [x] 2.5 "Clear All User Preferences" Deep Factory Reset (`playback_preferences.py`): Re-engineered "Clear All User Preferences (Reset Settings to Defaults)…" in Cleanup Data to reset all in-memory `MainWindow` attributes and live form widgets.
-   [x] 2.6 Inline Category Defaults Across All Preferences Tabs (`playback_preferences.py`): Added direct "Restore Category Defaults" buttons to all Preferences pages (General, Audio Hardware, Updates & GitHub, AI Models, GPU Acceleration, Playback & Timeline, Detection, Batch Processing) for instant reset without modal navigation.
-   [x] 2.7 Top-Level Settings Menu Integration & Cleanliness (`ui_layout.py`): Added "Restore System Defaults..." directly to the top-level Settings menu bar. Removed duplicate timestamp/millisecond menu toggles to preserve clean canonical locations in View > Transcript, Preferences > General, and Export > Content Options.
-   [x] 2.8 Dedicated Dialog Resets (`playback_preferences.py`, `transcript_story.py`): Added "Restore Defaults" button in Story Detection Settings (`prompt_set_auto_detect_thresholds`) and updated Story Fades dialog (`transcript_story.py`) `_restore_defaults` to restore factory system defaults (0.0s in, 1.0s out, linear).
+2. Current Release: Light Mode Option B ("Warm Newsprint & Reading Tone") & Dark-Mode Rich Clipboard Plain Text Normalization (`playback_preferences.py`, `theme_tokens.py`, `transcript_editor.py`, `transcript_story.py`, `test_runner.py`) [x] [COMPLETED in v3.8.3-stable]
+   [x] 2.1 Option B Warm Newsprint Light Theme Palette (`playback_preferences.py`, `theme_tokens.py`, `transcript_editor.py`, `transcript_story.py`): Replaced jarring high-glare near-white surfaces (`#faf8f5`, `#fcfbfa`) across transcripts, text edits, lists, inputs, and buttons with a soothing, low-glare warm paper tone (`#f2eee5`), soft warm window surfaces (`#ede8df`), subdued borders (`#c8c0ae`), and refined broadcast slate-blue accents (`#316498`). Primary text uses deep warm charcoal ink (`#2b2723`), speaker labels use rich sapphire blue (`#245892`), and text selections use soft pastel blue (`#c8ddf5` with `#1b3b5e` text).
+   [x] 2.2 Synchronized Theme Drawing Tokens (`theme_tokens.py`): Updated `_LIGHT_TOKEN_OVERRIDES` keeping timeline waveform fills (`#3b75af`), playheads (`#c53030`), rulers, badges, and story overlays in lockstep with Qt stylesheet rendering.
+   [x] 2.3 Dark-Mode Rich Clipboard Plain Text Normalization (`transcript_editor.py`): Implemented `clean_dark_mode_clipboard_html` in `createMimeDataFromSelection`. When copying from dark mode (or high contrast), white plain text words (`#ffffff`, `#f0f3f6`) are normalized to `#000000` (black) for seamless pasting into Microsoft Word, Google Docs, Apple Notes, and email clients without invisible white-on-white text against white pages.
+   [x] 2.4 Strict Rich Formatting & Lookbehind Preservation (`transcript_editor.py`): Utilized negative lookbehind regex `(?<![-a-zA-Z])color\s*:` so `background-color:` attributes are strictly untouched. Speaker label blue (`#58a6ff` / `#245892`), highlight backgrounds (`#fef08a`) and dark text (`#0f172a`), timestamps (`#8b949e`), bold, italic, underline, and strikethrough remain completely intact.
+   [x] 2.5 Automated Diagnostic Tests (`test_runner.py`): Added `_test_option_b_warm_paper_light_theme_and_dark_mode_clipboard_formatting` validating Option B light tokens, transcript stylesheet generation, white-to-black normalization, and rich formatting preservation across speaker labels, highlights, and timestamps.
 
-3. Upcoming Milestone: Multi-Platform Timeline & DAW Interchange Engine (`export/timeline.py`, `export/dialog.py`, `ui_layout.py`) [PLANNED for v3.8.5] [NOT STARTED]
+3. Upcoming Milestone: Multi-Platform Timeline & DAW Interchange Engine (`export/timeline.py`, `export/dialog.py`, `ui_layout.py`) [PLANNED for v3.8.5] [CORE] [NOT STARTED]
    [ ] 3.1 Migration to Unified Export Center Tab: Move timeline and DAW exports from the legacy File menu submenu into a dedicated "Timeline & DAW" tab in the Unified Export Center dialog.
    [ ] 3.2 Streamlined Multi-Platform Timeline Format Exporters: Final Cut Pro 7 XML, Final Cut Pro X XML (.fcpxml), Universal AAF Interchange (.aaf), Hindenburg Broadcast Session (.nhx), Cockos REAPER (.rpp), Samplitude EDL (.edl), Audacity Labels & CUE.
 
-4. Future Milestone: Interactive Text-Based Media & Ripple Editing Engine (`transcript_editor.py`, `transcript_story.py`, `media_batch.py`) [PLANNED for v3.9.0] [NOT STARTED]
-   [ ] 4.1 Text-Driven Audio/Video Ripple Cut Engine: Enable option for deletions or edits in the transcript editor to perform non-destructive ripple edits on corresponding underlying audio/video timecodes.
-   [ ] 4.2 Paper-Cut Story Assembly Workflow: Select or drag transcript paragraphs directly into story segment playlists to construct rough audio/video story cuts driven entirely by transcript text.
-   [ ] 4.3 Word-Level Timecode Sync & NLE Markers: Align word-level timestamps with exported timeline markers to preserve text edit points in NLE exports.
+4. Future Milestone: Core Broadcast Voicebook, Peak LOD Cache & Speed-Listening Engine (`speaker_identity.py`, `processing.py`, `transcript_editor.py`) [PLANNED for v3.9.0] [CORE] [NOT STARTED]
+   [ ] 4.1 Feature 1B — Persistent "Station Voicebook" (Cross-Show Speaker Library) (`speaker_identity.py`, `processing.py`): Global Host & Anchor Voicebook saving acoustic embeddings/signatures for regular station hosts (e.g. "Jane Doe (Host)", "John Smith (News Anchor)") across recordings; automatically matches and names known voices with confidence percentages upon diarization without manual re-tagging.
+   [ ] 4.2 Feature 2A — Multi-Resolution Mipmapped Waveform Peak Cache (LOD Rendering) (`processing.py`, `background_workers.py`, `timeline_widgets.py`): Expand existing in-memory waveform pyramid (`build_waveform_pyramid`) into a persistent multi-tier mipmapped `.peaks` disk cache (1x, 4x, 16x, 64x downsampled peak tiers) with level-of-detail (LOD) painting in `TimelineCanvas`, guaranteeing locked 60fps scrubbing and instantaneous loading on 2-to-4-hour broadcast files.
+   [ ] 4.3 Feature 3A — Speed-Listening "Type-to-Correct" Proofreading Workflow (`transcript_editor.py`, `RadioTVSegmenter.py`): Dedicated proofreading mode playing audio at 1.25x or 1.5x speed while highlighting each spoken word in real-time; pressing `Tab` pauses audio and places the text cursor directly on the current word for instantaneous typing/correction; pressing `Tab` again auto-resumes playback.
+
+5. Optional Future Milestone: Interactive Text-Based Media Assembly & Multi-Asset Ripple Editing Engine (`project_lifecycle.py`, `transcript_editor.py`, `transcript_story.py`, `RadioTVSegmenter.py`, `export/timeline.py`) [PLANNED for v3.9.5] [OPTIONAL] [NOT STARTED]
+   - *Workflow Design Note*: Marked as an optional workflow extension for users requesting text-driven paper cuts. The core single-file story segmenter, voicebook, and DAW exports remain default and lightweight.
+   [ ] 5.1 Multi-Asset Project Container & Media Bin Model (`project_lifecycle.py`): Expand `.rtvs` project schema with a `sources` pool (relative media paths, transcripts, word timings, waveform caches, speaker profiles) and a `sequences` array (ordered assembly playlists referencing source clips).
+   [ ] 5.2 Dynamic Uncapped Tabbed Document Workspace (`transcript_editor.py`, `ui_layout.py`): Dynamic `QTabWidget` supporting unlimited tabs, tab reordering, close buttons/shortcuts (`Ctrl+W`), visual distinction between Source Tabs (verbatim transcripts) and Assembly Tabs (story cuts), and tab overflow dropdown.
+   [ ] 5.3 Rich Media Clipboard Engine (`application/x-rtvs-clip+json`): Dual-format clipboard payload (`text/plain` + structured clip metadata: source media path, millisecond in/out points, word offsets, speaker tags, fade parameters) to copy/paste text across tabs or external documents while seamlessly splicing underlying audio/video media.
+   [ ] 5.4 Non-Destructive Multi-Source Playout Engine (`RadioTVSegmenter.py`): Real-time playback buffer engine chaining consecutive sub-clips from disparate audio files in memory without pre-rendering intermediate files to disk.
+   [ ] 5.5 Text-Driven Audio/Video Ripple Cut Engine (`transcript_editor.py`): Non-destructive ripple deletion where text cuts dynamically adjust timeline playout offsets and waveform visualizations.
+   [ ] 5.6 Paper-Cut Story Assembly Workflow (`transcript_story.py`): Drag/paste soundbites from source transcript tabs into story sequence playlists to construct rough radio/TV cuts from text.
+   [ ] 5.7 Document Revisions & Snapshot Version History (`project_lifecycle.py`, `transcript_editor.py`): Named revision snapshots ("Raw ASR", "Rough Cut v1", "Final Radio Edit") with side-by-side visual diffs and 1-click restoration in `.rtvs` project metadata.
+   [ ] 5.8 Word-Level Timecode Sync, NLE Markers & Multi-Track DAW Timeline Export (`export/timeline.py`): Multi-asset sequence cuts exported directly to Final Cut Pro XML, REAPER `.rpp`, and Samplitude EDL.
+   [ ] 5.9 Automated Diagnostic Test Suite (`test_runner.py`): Comprehensive test coverage in `test_runner.py` for multi-asset project serialization, rich clipboard MIME parsing, ripple timecode calculations, and cross-file sequence playback roundtrips.
 
 ================================================================================
 DETAILED MILESTONE SPECIFICATIONS
 ================================================================================
 
 ================================================================================
-1. PREVIOUS RELEASE: COMPREHENSIVE CLOUD & LOCAL BACKUP & RESTORE SYSTEM [x] [COMPLETED in v3.8.0-stable]
+1. PREVIOUS RELEASE: BACKUP RESTORE FIX, SYSTEM DEFAULTS RESTORATION RELIABILITY & SETTINGS MENU CLEANUP [x] [COMPLETED in v3.8.1-stable]
 ================================================================================
 
-[x] 1.1 Unified State Serialization (`backup_manager.py`)
---------------------------------------------------------------------------------
-- Developed `create_backup_payload` bundling persistent preferences (`QSettings`), custom keyboard shortcut reassignments (`shortcuts_manager.py`), glossary / terminology entries (`terminology.py`), installed AI model metadata (`runtime_manager.py`), and plugin toggle states into a portable `.rtvs-settings` payload.
-- Integrated deterministic SHA-256 cryptographic checksum calculation over canonical JSON representation to guarantee complete data fidelity and prevent tamper/corruption errors.
-
-[x] 1.2 Manual Local Backup & Restore Center (`backup_manager.py`, `project_lifecycle.py`, `ui_layout.py`)
---------------------------------------------------------------------------------
-- Built `BackupRestoreDialog` modal window equipped with `make_dialog_maximizable(self)` and clean desktop styling.
-- Bound to **File > Backup & Restore...** (`Ctrl+Shift+U`) and **Settings > Backup & Restore Settings...**.
-- Local Archive tab provides active configuration metrics (key counts, shortcuts, glossary entries), 1-click `.rtvs-settings` creation, and guided archive restoration with pre-flight summary confirmation and live in-memory reload.
-
-[x] 1.3 1-Click Google Drive Cloud Restore & Backup (`backup_manager.py`, `plugins/gdocs/auth.py`)
---------------------------------------------------------------------------------
-- Reused `GoogleDocsAuthManager` with existing `https://www.googleapis.com/auth/drive.file` OAuth scope without requiring redundant authentication setup.
-- Implemented `upload_cloud_backup` utilizing Drive API v3 multipart upload protocol with timestamped backup archives and SHA-256 metadata descriptions.
-- Implemented `list_cloud_backups` and `restore_cloud_backup` with automated SHA-256 validation prior to applying restored states.
-
-[x] 1.4 Tri-Location Transcript Milliseconds Toggle & Persistent View Menu (`ui_layout.py`, `export/dialog.py`, `playback_preferences.py`)
---------------------------------------------------------------------------------
-- Sub-second millisecond precision toggle accessible in View menu, Unified Export window, and Preferences dialog.
-- PersistentMenu subclass keeps View menu open during toggle operations for seamless multi-selection.
-
-
-================================================================================
-2. CURRENT RELEASE: BACKUP RESTORE FIX, SYSTEM DEFAULTS RESTORATION RELIABILITY & SETTINGS MENU CLEANUP [x] [COMPLETED in v3.8.1-stable]
-================================================================================
-
-[x] 2.1 Backup Restore Unpack Bug Fix (`backup_manager.py`)
+[x] 1.1 Backup Restore Unpack Bug Fix (`backup_manager.py`)
 --------------------------------------------------------------------------------
 - Resolved `ValueError: not enough values to unpack (expected 3, got 2)` in `_on_restore_local` when reading `.rtvs-settings` backup archives.
 - Live UI refresh now synchronously applies restored attributes (`silence_threshold`, `lead_in_padding`, `story_detection_mode`, `enable_audio_fades`, `preview_audio_fades`, `skip_seconds`) and canvas visual indicators in-memory without restart.
 
-[x] 2.2 Dedicated Audio Fades Reset & Category Isolation (`playback_preferences.py`)
+[x] 1.2 Dedicated Audio Fades Reset & Category Isolation (`playback_preferences.py`)
 --------------------------------------------------------------------------------
 - Added explicit `audio_fades` category ("Audio Fades & Fade Curve Defaults") in `RestoreSelectedSettingsDialog`.
 - Separated default fade persistence (`default_fade_in_duration`, `default_fade_out_duration`, `default_fade_curve`) from Story Detection in `_save_preferences` so selective defaults reset never clobbers unrelated settings.
 
-[x] 2.3 Comprehensive Preferences Defaults Synchronization (`playback_preferences.py`)
+[x] 1.3 Comprehensive Preferences Defaults Synchronization (`playback_preferences.py`)
 --------------------------------------------------------------------------------
 - Updated `apply_settings_reset` to synchronize `det_mode_combo`, `gap_spin`, `pad_spin`, `expected_speakers_combo`, `sensitivity_combo`, `ask_speakers_chk`, `fade_in_spin`, `fade_out_spin`, and `fade_curve_combo` with both QSettings and live widgets, flushing immediately to disk via `settings_store.sync()`.
 
-[x] 2.4 Inline Category Defaults & Story Detection Reset (`playback_preferences.py`, `transcript_story.py`)
+[x] 1.4 Inline Category Defaults & Story Detection Reset (`playback_preferences.py`, `transcript_story.py`)
 --------------------------------------------------------------------------------
 - Added direct "Restore Category Defaults" buttons on Preferences pages (General, Detection, Playback & Timeline) for instant reset without modal navigation.
 - Added "Restore Defaults" button in Story Detection Settings (`prompt_set_auto_detect_thresholds`) and updated Story Fades dialog (`transcript_story.py`) `_restore_defaults` to restore factory system defaults (0.0s in, 1.0s out, linear).
 
-[x] 2.5 Settings Menu Cleanliness (`ui_layout.py`)
+[x] 1.5 Settings Menu Cleanliness (`ui_layout.py`)
 --------------------------------------------------------------------------------
 - Removed timestamps and milliseconds items from top-level Settings menu bar, preserving their canonical locations in View > Transcript, Preferences > General, and Export > Content Options.
+
+
+================================================================================
+2. CURRENT RELEASE: LIGHT MODE OPTION B ("WARM NEWSPRINT & READING TONE") & DARK-MODE RICH CLIPBOARD PLAIN TEXT NORMALIZATION [x] [COMPLETED in v3.8.3-stable]
+================================================================================
+
+[x] 2.1 Option B Warm Newsprint Light Theme Palette (`playback_preferences.py`, `theme_tokens.py`, `transcript_editor.py`, `transcript_story.py`)
+--------------------------------------------------------------------------------
+- Replaced jarring high-glare near-white surfaces (`#faf8f5`, `#fcfbfa`) across transcripts, text edits, lists, inputs, and buttons with a soothing, low-glare warm paper tone (`#f2eee5`), soft warm window surfaces (`#ede8df`), subdued borders (`#c8c0ae`), and refined broadcast slate-blue accents (`#316498`).
+- Primary text uses deep warm charcoal ink (`#2b2723`), speaker labels use rich sapphire blue (`#245892`), and text selections use soft pastel blue (`#c8ddf5` with `#1b3b5e` text).
+
+[x] 2.2 Synchronized Theme Drawing Tokens (`theme_tokens.py`)
+--------------------------------------------------------------------------------
+- Updated `_LIGHT_TOKEN_OVERRIDES` keeping timeline waveform fills (`#3b75af`), playheads (`#c53030`), rulers, badges, and story overlays in lockstep with Qt stylesheet rendering.
+
+[x] 2.3 Dark-Mode Rich Clipboard Plain Text Normalization (`transcript_editor.py`)
+--------------------------------------------------------------------------------
+- Implemented `clean_dark_mode_clipboard_html` in `createMimeDataFromSelection`. When copying from dark mode (or high contrast), white plain text words (`#ffffff`, `#f0f3f6`) are normalized to `#000000` (black) for seamless pasting into Microsoft Word, Google Docs, Apple Notes, and email clients without invisible white-on-white text against white pages.
+
+[x] 2.4 Strict Rich Formatting & Lookbehind Preservation (`transcript_editor.py`)
+--------------------------------------------------------------------------------
+- Utilized negative lookbehind regex `(?<![-a-zA-Z])color\s*:` so `background-color:` attributes are strictly untouched.
+- Speaker label blue (`#58a6ff` in dark mode, `#245892` in light mode), highlight backgrounds (`#fef08a`) and dark text (`#0f172a`), timestamps (`#8b949e`), bold, italic, underline, and strikethrough remain completely intact.
+
+[x] 2.5 Automated Diagnostic Tests (`test_runner.py`)
+--------------------------------------------------------------------------------
+- Added `_test_option_b_warm_paper_light_theme_and_dark_mode_clipboard_formatting` validating Option B light tokens, transcript stylesheet generation, white-to-black normalization, and rich formatting preservation across speaker labels, highlights, and timestamps.
+
+
+================================================================================
+3. UPCOMING MILESTONE: MULTI-PLATFORM TIMELINE & DAW INTERCHANGE ENGINE [PLANNED for v3.8.5] [CORE] [NOT STARTED]
+================================================================================
+
+[ ] 3.1 Migration to Unified Export Center Tab (`export/dialog.py`, `ui_layout.py`)
+--------------------------------------------------------------------------------
+- Move DAW and timeline project exports from legacy File menu submenus into a dedicated "Timeline & DAW" tab in the Unified Export Center dialog.
+- Centralize track selectors, unselected gap handling modes, sampling rates, and output directory selection into a unified export flow.
+
+[ ] 3.2 Streamlined Multi-Platform Timeline Format Exporters (`export/timeline.py`)
+--------------------------------------------------------------------------------
+- Extend `export/timeline.py` with standalone XML and interchange format generators for:
+  * Final Cut Pro 7 XML & Final Cut Pro X XML (.fcpxml)
+  * Universal AAF Interchange (.aaf)
+  * Hindenburg Broadcast Session (.nhx)
+  * Cockos REAPER (.rpp)
+  * Samplitude EDL (.edl)
+  * Audacity Labels & Red Book CUE Sheet
+
+
+================================================================================
+4. FUTURE MILESTONE: CORE BROADCAST VOICEBOOK, PEAK LOD CACHE & SPEED-LISTENING ENGINE [PLANNED for v3.9.0] [CORE] [NOT STARTED]
+================================================================================
+
+[ ] 4.1 Feature 1B — Persistent "Station Voicebook" (Cross-Show Speaker Library) (`speaker_identity.py`, `processing.py`)
+--------------------------------------------------------------------------------
+- The Problem: WeSpeaker diarization tags speakers as Speaker 1, Speaker 2. While the app has acoustic profile matching, users often have to re-identify their regular show hosts and anchors on every new recording.
+- The Feature: A global Host & Anchor Voicebook. Save acoustic signatures for regular station hosts (e.g. "Jane Doe (Host)", "John Smith (News Anchor)"). Whenever a new recording is imported and diarized, the engine automatically matches and names known voices with a confidence percentage.
+- Implementation: Extend `speaker_identity.py` to support persistent global acoustic voice profiles stored in user application data (`voicebook.json` / embeddings cache) and wire into `processing.py` diarization result parser.
+
+[ ] 4.2 Feature 2A — Multi-Resolution Mipmapped Waveform Peak Cache (LOD Rendering) (`processing.py`, `background_workers.py`, `timeline_widgets.py`)
+--------------------------------------------------------------------------------
+- The Problem: When loading 2-to-4-hour broadcast files (e.g. morning radio blocks or city council meetings), zooming and rapid timeline scrubbing can stutter because the painter traverses millions of raw peak samples.
+- The Feature: Implement Level-of-Detail (LOD) downsampled peak tiers (1x, 4x, 16x, 64x zoom levels) in `background_workers.py` and `processing.py`. When zoomed out, the timeline paints from the highest-downsampled tier; as you zoom in, it dynamically switches to the high-resolution tier.
+- Status & Architecture: The in-memory pyramid generator (`build_waveform_pyramid`) currently exists in `timeline_widgets.py`, but peaks are not persisted with multi-resolution tiers to the `.peaks` binary cache on disk. Persisting precomputed mipmapped tiers directly into `.peaks` files will deliver instantaneous file loading and locked 60fps scrubbing on hours-long recordings.
+
+[ ] 4.3 Feature 3A — Speed-Listening "Type-to-Correct" Proofreading Workflow (`transcript_editor.py`, `RadioTVSegmenter.py`)
+--------------------------------------------------------------------------------
+- The Problem: Proofreading transcripts at 1.0x speed is slow.
+- The Feature: A dedicated proofreading mode: audio plays back at 1.25x or 1.5x speed while highlighting each word in real-time. Hitting `Tab` pauses audio and places the cursor on the current word for instant editing; pressing `Tab` again auto-resumes playback.
+
+
+================================================================================
+5. OPTIONAL FUTURE MILESTONE: INTERACTIVE TEXT-BASED MEDIA ASSEMBLY & MULTI-ASSET RIPPLE EDITING ENGINE [PLANNED for v3.9.5] [OPTIONAL] [NOT STARTED]
+================================================================================
+*Workflow Design Note*: Marked as an optional workflow extension for users requesting text-driven paper cuts. The core single-file story segmenter, voicebook, and DAW exports remain default and lightweight.
+
+[ ] 5.1 Multi-Asset Project Container & Media Bin Model (`project_lifecycle.py`)
+--------------------------------------------------------------------------------
+- Expand `.rtvs` project schema with a `sources` pool (relative media paths, transcripts, word timings, waveform caches, speaker profiles) and a `sequences` array (ordered assembly playlists referencing source clips).
+
+[ ] 5.2 Dynamic Uncapped Tabbed Document Workspace (`transcript_editor.py`, `ui_layout.py`)
+--------------------------------------------------------------------------------
+- Dynamic `QTabWidget` supporting unlimited tabs, tab reordering, close buttons/shortcuts (`Ctrl+W`), visual distinction between Source Tabs (verbatim transcripts) and Assembly Tabs (story cuts), and tab overflow dropdown.
+
+[ ] 5.3 Rich Media Clipboard Engine (`application/x-rtvs-clip+json`)
+--------------------------------------------------------------------------------
+- Dual-format clipboard payload (`text/plain` + structured clip metadata: source media path, millisecond in/out points, word offsets, speaker tags, fade parameters) to copy/paste text across tabs or external documents while seamlessly splicing underlying audio/video media.
+
+[ ] 5.4 Non-Destructive Multi-Source Playout Engine (`RadioTVSegmenter.py`)
+--------------------------------------------------------------------------------
+- Real-time playback buffer engine chaining consecutive sub-clips from disparate audio files in memory without pre-rendering intermediate files to disk.
+
+[ ] 5.5 Text-Driven Audio/Video Ripple Cut Engine (`transcript_editor.py`)
+--------------------------------------------------------------------------------
+- Non-destructive ripple deletion where text cuts dynamically adjust timeline playout offsets and waveform visualizations.
+
+[ ] 5.6 Paper-Cut Story Assembly Workflow (`transcript_story.py`)
+--------------------------------------------------------------------------------
+- Drag/paste soundbites from source transcript tabs into story sequence playlists to construct rough radio/TV cuts from text.
+
+[ ] 5.7 Document Revisions & Snapshot Version History (`project_lifecycle.py`, `transcript_editor.py`)
+--------------------------------------------------------------------------------
+- Named revision snapshots ("Raw ASR", "Rough Cut v1", "Final Radio Edit") with side-by-side visual diffs and 1-click restoration in `.rtvs` project metadata.
+
+[ ] 5.8 Word-Level Timecode Sync, NLE Markers & Multi-Track DAW Timeline Export (`export/timeline.py`)
+--------------------------------------------------------------------------------
+- Multi-asset sequence cuts exported directly to Final Cut Pro XML, REAPER `.rpp`, and Samplitude EDL.
+
+[ ] 5.9 Automated Diagnostic Test Suite (`test_runner.py`)
+--------------------------------------------------------------------------------
+- Comprehensive test coverage in `test_runner.py` for multi-asset project serialization, rich clipboard MIME parsing, ripple timecode calculations, and cross-file sequence playback roundtrips.
+
+

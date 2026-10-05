@@ -1,5 +1,24 @@
 # Changelog
 
+## v3.8.3-stable
+- **Light Mode Option B: Warm Newsprint & Reading Tone Palette (`playback_preferences.py`, `theme_tokens.py`, `transcript_editor.py`, `transcript_story.py`)**:
+  - **Eliminated Harsh Glare & Blinding White Surfaces**: Replaced stark white backgrounds (`#faf8f5`, `#fcfbfa`) across transcripts, text editors, list widgets, tables, inputs, and buttons with a soothing, low-glare warm paper tone (`#f2eee5`).
+  - **Gentle Surface Harmonies**: Replaced glaring window surfaces (`#f4f1ea`) with gentle warm linen/parchment (`#ede8df`), card containers with `#ded7ca`, and subtle borders with `#c8c0ae`.
+  - **Subdued Accent & Typography**: Replaced harsh electric blue (`#2563eb`) with refined broadcast slate-blue (`#316498`), deep sapphire blue (`#245892`) for speaker labels, and warm deep charcoal ink (`#2b2723`) for primary text.
+  - **Comfortable Reading Selection**: Replaced high-glare cyan selections with soft reading pastel blue (`#c8ddf5` with `#1b3b5e` text).
+  - **Synchronized Drawing Tokens**: Updated `_LIGHT_TOKEN_OVERRIDES` in `theme_tokens.py` to keep waveform envelopes (`#3b75af`), playhead (`#c53030`), rulers, and overlays in lockstep with Qt stylesheet rendering.
+- **Dark-Mode Clipboard Plain Text Color Normalization (`transcript_editor.py`, `test_runner.py`)**:
+  - **Intelligent Rich Text Clipboard Export (`clean_dark_mode_clipboard_html`)**: When copying transcript selections in dark mode (or high contrast), plain text words (rendered on screen in white `#ffffff` or `#f0f3f6`) are normalized to `#000000` (black) in the HTML clipboard payload.
+  - **External Document Fidelity**: Pasting copied transcripts into Microsoft Word, Google Docs, Apple Notes, LibreOffice, or email clients now renders clean, readable black text instead of invisible white-on-white text against light document pages.
+  - **Strict Rich Formatting Preservation**: Plain text color conversion strictly targets unformatted/plain word spans while preserving all rich formatting:
+    - Speaker labels remain in distinct blue (`#58a6ff` in dark mode, `#245892` in light mode).
+    - Comment and search highlights strictly retain their background colors (`#fef08a`) and dark text styling (`#0f172a`).
+    - Timestamps remain in distinct muted gray (`#8b949e`).
+    - Bold (`font-weight:700`), italic (`font-style:italic`), underline, and strikethrough styling are completely preserved.
+  - **Regex Lookbehind Safety**: Utilized negative lookbehind `(?<![-a-zA-Z])color\s*:` to ensure `background-color:` attributes are never modified.
+- **Automated Diagnostic Test (`test_runner.py`)**:
+  - Added `_test_option_b_warm_paper_light_theme_and_dark_mode_clipboard_formatting` validating Option B light tokens, transcript stylesheet generation, white-to-black normalization, and rich formatting preservation across speaker labels, highlights, and timestamps.
+
 ## v3.8.1-stable
 - **Backup & Restore Center Bug Fix (`backup_manager.py`)**:
   - Fixed a blocking `ValueError: not enough values to unpack (expected 3, got 2)` during local settings restoration. `apply_backup_payload` returns a 2-tuple `(success, items)` while the caller unpacked 3 variables, throwing an error message modal on every restore attempt.
