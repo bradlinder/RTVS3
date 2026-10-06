@@ -3755,6 +3755,14 @@ class PlaybackPreferencesMixin:
                 self.timeline.canvas.pixmap_dirty = True
                 self.timeline.canvas.update()
 
+        # Update OS title bar caption attributes across all open windows and dialogs
+        from core_utils import apply_window_titlebar_theme
+        try:
+            for w in app.topLevelWidgets():
+                apply_window_titlebar_theme(w, mode)
+        except Exception:
+            pass
+
     def on_expected_speakers_changed(self, value):
         """Kept as a public hook (mirrors the removed on_sensitivity_changed)
         in case a future toolbar control adjusts the expected-speakers hint

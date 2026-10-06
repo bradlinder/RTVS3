@@ -174,20 +174,8 @@ class MainWindow(
         
         self.tokens = ThemeTokens()
 
-        if sys.platform == "win32":
-            try:
-                import ctypes
-                hwnd = int(self.winId())
-                c_true = ctypes.c_int(1)
-                for attr in (20, 19):
-                    try:
-                        ctypes.windll.dwmapi.DwmSetWindowAttribute(
-                            hwnd, attr, ctypes.byref(c_true), ctypes.sizeof(c_true)
-                        )
-                    except Exception:
-                        pass
-            except Exception:
-                pass
+        from core_utils import apply_window_titlebar_theme
+        apply_window_titlebar_theme(self)
 
         self.runtime_mgr = RuntimeManager()
         self.audio_file = None

@@ -26,11 +26,89 @@ PROJECT_VERSION = "3.5.19"
 DEFAULT_GITHUB_REPO = "bradlinder/RTVS3"
 
 
+def apply_window_titlebar_theme(widget, theme_mode: Optional[str] = None) -> None:
+    """Configures Windows DWM title bar caption colors matching active theme mode.
+
+    In Option 4 Light Mode, applies a medium steel slate (#3c4450) title bar with
+    crisp white text (#f8fafc) and subtle border (#4e5765) across main windows and modal dialogs.
+    """
+    if sys.platform != "win32" or widget is None:
+        return
+    try:
+        import ctypes
+        hwnd = int(widget.winId())
+        if not hwnd:
+            return
+
+        # Determine theme mode if not provided
+        if not theme_mode:
+            try:
+                from PySide6.QtCore import QSettings
+                settings = QSettings("RadioTVStorySegmenter", "Preferences")
+                theme_mode = settings.value("theme", "dark")
+            except Exception:
+                theme_mode = "dark"
+
+        theme_mode = str(theme_mode).lower().strip()
+
+        # DWM Constants
+        DWMWA_USE_IMMERSIVE_DARK_MODE = 20
+        DWMWA_USE_IMMERSIVE_DARK_MODE_OLD = 19
+        DWMWA_BORDER_COLOR = 34
+        DWMWA_CAPTION_COLOR = 35
+        DWMWA_TEXT_COLOR = 36
+
+        # Helper to convert hex #RRGGBB to COLORREF 0x00BBGGRR integer
+        def _hex_to_colorref(hex_str: str) -> int:
+            h = hex_str.lstrip("#")
+            if len(h) == 3:
+                h = "".join(c * 2 for c in h)
+            r = int(h[0:2], 16)
+            g = int(h[2:4], 16)
+            b = int(h[4:6], 16)
+            return (b << 16) | (g << 8) | r
+
+        # Enable immersive dark mode caption rendering
+        c_true = ctypes.c_int(1)
+        for attr in (DWMWA_USE_IMMERSIVE_DARK_MODE, DWMWA_USE_IMMERSIVE_DARK_MODE_OLD):
+            try:
+                ctypes.windll.dwmapi.DwmSetWindowAttribute(
+                    hwnd, attr, ctypes.byref(c_true), ctypes.sizeof(c_true)
+                )
+            except Exception:
+                pass
+
+        if theme_mode == "light":
+            # Option 4: Medium Steel Slate (#3c4450), White text (#f8fafc), Border (#4e5765)
+            cap_col = ctypes.c_int(_hex_to_colorref("#3c4450"))
+            txt_col = ctypes.c_int(_hex_to_colorref("#f8fafc"))
+            bor_col = ctypes.c_int(_hex_to_colorref("#4e5765"))
+        elif theme_mode == "high_contrast":
+            cap_col = ctypes.c_int(_hex_to_colorref("#000000"))
+            txt_col = ctypes.c_int(_hex_to_colorref("#ffffff"))
+            bor_col = ctypes.c_int(_hex_to_colorref("#ffffff"))
+        else:  # dark
+            cap_col = ctypes.c_int(_hex_to_colorref("#121417"))
+            txt_col = ctypes.c_int(_hex_to_colorref("#f0f3f6"))
+            bor_col = ctypes.c_int(_hex_to_colorref("#282c35"))
+
+        for attr, val in ((DWMWA_CAPTION_COLOR, cap_col), (DWMWA_TEXT_COLOR, txt_col), (DWMWA_BORDER_COLOR, bor_col)):
+            try:
+                ctypes.windll.dwmapi.DwmSetWindowAttribute(
+                    hwnd, attr, ctypes.byref(val), ctypes.sizeof(val)
+                )
+            except Exception:
+                pass
+    except Exception:
+        pass
+
+
 def make_dialog_maximizable(dialog) -> None:
     """Enforce standard OS window maximize and restore title bar controls for resizable dialogs."""
     try:
         from PySide6.QtCore import Qt
         dialog.setWindowFlags(dialog.windowFlags() | Qt.WindowType.WindowMaximizeButtonHint)
+        apply_window_titlebar_theme(dialog)
     except Exception:
         pass
 

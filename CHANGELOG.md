@@ -1,5 +1,16 @@
 # Changelog
 
+## v3.8.5-stable
+- **Darker Title Bar Option 4 (Medium Steel Slate) for Light Mode (`core_utils.py`, `RadioTVSegmenter.py`, `playback_preferences.py`, `theme_tokens.py`, `test_runner.py`)**:
+  - **Option 4 Medium Steel Slate Title Bars (`#3c4450`)**: Configured native Windows DWM window title bars and modal dialog title bars to render in a refined, medium-dark steel slate tone (`#3c4450`) with crisp white title text (`#f8fafc`) and subtle frame border (`#4e5765`) when running in Light Mode (Option C).
+  - **Eliminated Glaring Bright Window Frames**: Solved the default stark-white OS caption bar glare in Light Mode across both the main application window and modal dialogs (such as Preferences, Story Metadata, Export Center, Manage Models, Batch Processing, and Audio Fades).
+  - **Dynamic DWM Window Chrome Synchronization (`core_utils.py`, `playback_preferences.py`)**:
+    - Implemented `apply_window_titlebar_theme(widget, theme_mode)` in `core_utils.py` leveraging Windows DWM APIs (`DWMWA_USE_IMMERSIVE_DARK_MODE`, `DWMWA_CAPTION_COLOR`, `DWMWA_TEXT_COLOR`, and `DWMWA_BORDER_COLOR`).
+    - Integrated with `make_dialog_maximizable(dialog)` so newly opened dialogs automatically inherit dark title bar attributes.
+    - Updated `set_theme` in `playback_preferences.py` to synchronously refresh title bar caption attributes across all open `QApplication.topLevelWidgets()` immediately upon theme switching without requiring application restart.
+  - **Theme Drawing Token Integration (`theme_tokens.py`)**: Added `titlebar_bg` (`#3c4450`), `titlebar_text` (`#f8fafc`), and `titlebar_border` (`#4e5765`) to `ThemeTokens` and `_LIGHT_TOKEN_OVERRIDES`.
+  - **Automated Diagnostic Test Suite (`test_runner.py`)**: Updated `_test_option_c_muted_silver_fog_light_theme_and_dark_mode_clipboard_formatting` validating Option 4 title bar color tokens and theme synchronization.
+
 ## v3.8.4-stable
 - **Light Mode Option C: Muted Low-Contrast Silver & Fog Palette (`playback_preferences.py`, `theme_tokens.py`, `transcript_editor.py`, `transcript_story.py`)**:
   - **Eliminated Eye-Straining Stark Whites**: Replaced blinding bright surfaces with a balanced, modern low-contrast silver/fog theme designed specifically to eliminate glare during prolonged editing sessions.

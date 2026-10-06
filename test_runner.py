@@ -3476,6 +3476,9 @@ class DiagnosticEngine:
         assert _LIGHT_TOKEN_OVERRIDES["text_primary"] == "#22262c", f"Expected #22262c for text_primary, got {_LIGHT_TOKEN_OVERRIDES.get('text_primary')}"
         assert _LIGHT_TOKEN_OVERRIDES["accent_primary"] == "#2e74b5", f"Expected #2e74b5 for accent_primary, got {_LIGHT_TOKEN_OVERRIDES.get('accent_primary')}"
         assert _LIGHT_TOKEN_OVERRIDES["waveform_fill"] == "#4178a8", f"Expected #4178a8 for waveform_fill, got {_LIGHT_TOKEN_OVERRIDES.get('waveform_fill')}"
+        assert _LIGHT_TOKEN_OVERRIDES["titlebar_bg"] == "#3c4450", f"Expected #3c4450 for titlebar_bg, got {_LIGHT_TOKEN_OVERRIDES.get('titlebar_bg')}"
+        assert _LIGHT_TOKEN_OVERRIDES["titlebar_text"] == "#f8fafc", f"Expected #f8fafc for titlebar_text, got {_LIGHT_TOKEN_OVERRIDES.get('titlebar_text')}"
+        assert _LIGHT_TOKEN_OVERRIDES["titlebar_border"] == "#4e5765", f"Expected #4e5765 for titlebar_border, got {_LIGHT_TOKEN_OVERRIDES.get('titlebar_border')}"
 
         # 2. Option C Transcript View Stylesheet
         light_css = transcript_text_view_stylesheet("light")
