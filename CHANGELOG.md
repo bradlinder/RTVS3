@@ -1,6 +1,6 @@
 # Changelog
 
-## v3.8.9-beta.1
+## v3.8.9-beta.2
 - **Supported Media Format Clarifications & UI Tooltip Refinements (`transcript_editor.py`, `benchmark.py`, `ui_layout.py`, `batch_dialog.py`)**:
   - **Drop Card Dynamic Bounding Box & Multi-Line Word Wrap**: Resolved horizontal text clipping on the empty-state media ingestion card by adding `Qt.TextFlag.TextWordWrap` to `QPainter.drawText` overlay routines, expanding maximum card width (from 460px to 520px), and dynamically spacing subtitle and action button bounds. Applied responsive word-wrapping across `batch_dialog.py` empty queues as well.
   - **Comprehensive Format Support Messaging**: Updated the empty-state drag-and-drop card in `transcript_editor.py` to state *"Supports all standard audio & video formats (WAV, MP3, MP4, MOV, MKV, FLAC, etc.)"*, accurately communicating full FFmpeg compatibility without implying an artificial restriction to only 7 containers.

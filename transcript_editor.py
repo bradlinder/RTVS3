@@ -614,8 +614,8 @@ class InteractiveTranscriptEdit(QTextEdit):
             painter.setRenderHint(QPainter.RenderHint.Antialiasing, True)
             rect = self.viewport().rect()
 
-            card_w = min(520, rect.width() - 40)
-            card_h = min(230, rect.height() - 40)
+            card_w = min(540, rect.width() - 40)
+            card_h = min(240, rect.height() - 40)
             if card_w > 140 and card_h > 90:
                 card_x = rect.x() + (rect.width() - card_w) // 2
                 card_y = rect.y() + (rect.height() - card_h) // 2
@@ -642,7 +642,7 @@ class InteractiveTranscriptEdit(QTextEdit):
                 sub_font.setPointSize(9)
                 painter.setFont(sub_font)
                 painter.setPen(QColor("#94a3b8" if is_dark else "#64748b"))
-                s_rect = QRectF(card_x + 16, card_y + 48, card_w - 32, 58)
+                s_rect = QRectF(card_x + 16, card_y + 48, card_w - 32, 60)
                 painter.drawText(
                     s_rect,
                     wrap_flags,
@@ -654,7 +654,7 @@ class InteractiveTranscriptEdit(QTextEdit):
                 btn_font.setBold(True)
                 painter.setFont(btn_font)
                 btn_w = min(220, card_w - 40)
-                btn_rect = QRectF(card_x + (card_w - btn_w) // 2, card_y + 114, btn_w, 32)
+                btn_rect = QRectF(card_x + (card_w - btn_w) // 2, card_y + 120, btn_w, 32)
                 painter.fillRect(btn_rect, QColor("#2563eb"))
                 painter.setPen(QColor("#ffffff"))
                 painter.drawRoundedRect(btn_rect, 5.0, 5.0)
@@ -664,7 +664,7 @@ class InteractiveTranscriptEdit(QTextEdit):
                 hint_font.setPointSize(8)
                 painter.setFont(hint_font)
                 painter.setPen(QColor("#64748b"))
-                h_rect = QRectF(card_x + 16, card_y + 158, card_w - 32, 24)
+                h_rect = QRectF(card_x + 16, card_y + 166, card_w - 32, 24)
                 painter.drawText(h_rect, wrap_flags, "Or click File > Open Media in the menu bar")
             painter.end()
 
