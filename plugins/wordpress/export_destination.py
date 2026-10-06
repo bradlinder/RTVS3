@@ -43,6 +43,7 @@ from prs_shared import (
     ffmpeg_path,
     format_time,
     safe_filename,
+    get_active_theme_mode,
 )
 from plugins.base import ExportDestination
 from plugins.wordpress.client import (
@@ -321,13 +322,7 @@ class WordPressExportTabWidget(QWidget):
 
         wp_thumb_layout.addLayout(wp_thumb_controls, stretch=2)
 
-        wp_mode = "dark"
-        try:
-            from PySide6.QtCore import QSettings
-            settings = QSettings("RadioTVStorySegmenter", "Preferences")
-            wp_mode = str(settings.value("theme", "dark")).lower().strip()
-        except Exception:
-            wp_mode = "dark"
+        wp_mode = get_active_theme_mode("dark")
 
         self.wp_thumb_preview_label = QLabel("No Thumbnail")
         self.wp_thumb_preview_label.setFixedSize(160, 90)

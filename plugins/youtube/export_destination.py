@@ -47,6 +47,7 @@ from prs_shared import (
     ffmpeg_path,
     format_time,
     safe_filename,
+    get_active_theme_mode,
 )
 from plugins.base import ExportDestination
 from plugins.youtube.guide_dialog import YouTubeAssistedUploadGuideDialog
@@ -108,13 +109,7 @@ class YouTubeExportTabWidget(QWidget):
         yt_layout.setSpacing(12)
 
         # Overview banner with Mode Selector
-        yt_theme_mode = "dark"
-        try:
-            from PySide6.QtCore import QSettings
-            _sett = QSettings("RadioTVStorySegmenter", "Preferences")
-            yt_theme_mode = str(_sett.value("theme", "dark")).lower().strip()
-        except Exception:
-            yt_theme_mode = "dark"
+        yt_theme_mode = get_active_theme_mode("dark")
 
         yt_banner = QWidget()
         yt_b_layout = QVBoxLayout(yt_banner)

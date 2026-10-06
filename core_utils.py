@@ -26,6 +26,43 @@ PROJECT_VERSION = "3.8.6-stable"
 DEFAULT_GITHUB_REPO = "bradlinder/RTVS3"
 
 
+def get_active_theme_mode(default: str = "dark") -> str:
+    """Retrieve active theme mode ('light', 'dark', or 'high_contrast') with universal multi-scope resolution."""
+    # 1. Check active QApplication top-level widgets or main window
+    try:
+        from PySide6.QtWidgets import QApplication
+        app = QApplication.instance()
+        if app:
+            for w in app.topLevelWidgets():
+                if hasattr(w, "theme_mode") and w.theme_mode:
+                    return str(w.theme_mode).lower().strip()
+    except Exception:
+        pass
+
+    # 2. Check QSettings under INTERNAL_APP_ID ("RadioTVStorySegmenter", "RadioTVStorySegmenter")
+    try:
+        from PySide6.QtCore import QSettings
+        settings = QSettings(INTERNAL_APP_ID, INTERNAL_APP_ID)
+        val = settings.value("theme", None)
+        if val:
+            return str(val).lower().strip()
+    except Exception:
+        pass
+
+    # 3. Check legacy or fallback organization/app names
+    try:
+        from PySide6.QtCore import QSettings
+        for app_name in ("RadioTVStorySegmenter", "Preferences", "RTVS"):
+            s = QSettings("RadioTVStorySegmenter", app_name)
+            val = s.value("theme", None)
+            if val:
+                return str(val).lower().strip()
+    except Exception:
+        pass
+
+    return str(default).lower().strip()
+
+
 def _apply_dwm_titlebar_hwnd(hwnd: int, theme_mode: str) -> None:
     """Low-level Windows DWM call applying caption and text colors to a window HWND."""
     if sys.platform != "win32" or not hwnd:
@@ -94,12 +131,7 @@ def apply_window_titlebar_theme(widget, theme_mode: Optional[str] = None) -> Non
     try:
         # Determine theme mode if not provided
         if not theme_mode:
-            try:
-                from PySide6.QtCore import QSettings
-                settings = QSettings("RadioTVStorySegmenter", "Preferences")
-                theme_mode = settings.value("theme", "dark")
-            except Exception:
-                theme_mode = "dark"
+            theme_mode = get_active_theme_mode("dark")
 
         theme_mode = str(theme_mode).lower().strip()
 

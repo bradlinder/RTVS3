@@ -8,7 +8,7 @@ from typing import List, Optional, Tuple
 import html
 import re
 from prs_shared import *
-from core_utils import make_dialog_maximizable, apply_window_titlebar_theme
+from core_utils import make_dialog_maximizable, apply_window_titlebar_theme, get_active_theme_mode
 from PySide6.QtWidgets import (
     QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QComboBox,
     QRadioButton, QButtonGroup, QSlider, QTableWidget, QTableWidgetItem,
@@ -125,13 +125,7 @@ class VoiceProfileMatchDialog(QDialog):
         make_dialog_maximizable(self)
         apply_window_titlebar_theme(self)
 
-        vp_mode = "dark"
-        try:
-            from PySide6.QtCore import QSettings
-            _s = QSettings("RadioTVStorySegmenter", "Preferences")
-            vp_mode = str(_s.value("theme", "dark")).lower().strip()
-        except Exception:
-            vp_mode = "dark"
+        vp_mode = get_active_theme_mode("dark")
 
         # Precompute candidate acoustic embeddings once upon launch so threshold slider drags are instantaneous
         self.cached_candidates = []

@@ -47,7 +47,7 @@ from prs_shared import (
     safe_filename,
     make_dialog_maximizable,
 )
-from core_utils import apply_window_titlebar_theme
+from core_utils import apply_window_titlebar_theme, get_active_theme_mode
 from plugins.base import ExportDestination
 
 
@@ -56,13 +56,7 @@ DEFAULT_EXPORT_DESTINATIONS_ORDER = ["local", "wordpress", "gdocs", "youtube"]
 
 def _get_export_theme_mode() -> str:
     """Retrieve active theme mode ('light', 'dark', or 'high_contrast')."""
-    if not QSettings:
-        return "dark"
-    try:
-        settings = QSettings("RadioTVStorySegmenter", "Preferences")
-        return str(settings.value("theme", "dark")).lower().strip()
-    except Exception:
-        return "dark"
+    return get_active_theme_mode("dark")
 
 
 def get_export_destinations_order() -> List[str]:

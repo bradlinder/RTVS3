@@ -32,16 +32,13 @@ class ShortcutDef:
     is_custom_event: bool = False
 
 
+from core_utils import get_active_theme_mode
+
+
 # Comprehensive registry of all application functions that have keyboard shortcuts assigned.
 def _get_shortcuts_theme_mode() -> str:
     """Retrieve active theme mode ('light', 'dark', or 'high_contrast')."""
-    if not QSettings:
-        return "dark"
-    try:
-        settings = QSettings("RadioTVStorySegmenter", "Preferences")
-        return str(settings.value("theme", "dark")).lower().strip()
-    except Exception:
-        return "dark"
+    return get_active_theme_mode("dark")
 
 
 SHORTCUT_DEFINITIONS: List[ShortcutDef] = [

@@ -57,6 +57,7 @@ DEFAULT_GITHUB_REPO = "bradlinder/RTVS3"
 # Re-exports from Phase 1 modularization (core_utils, transcript_cleaner, project_serialization, process_lifecycle)
 from core_utils import (
     make_dialog_maximizable,
+    get_active_theme_mode,
     extract_dropped_file_paths,
     compute_file_sha256,
     verify_file_sha256,
@@ -421,13 +422,7 @@ class CollapsibleSection(QWidget):
         sub = f"  ({self._subtitle})" if self._subtitle else ""
         self.toggle_btn.setText(f" {arrow}  {self._title}{sub}")
 
-        theme_mode = "dark"
-        try:
-            from PySide6.QtCore import QSettings
-            settings = QSettings("RadioTVStorySegmenter", "Preferences")
-            theme_mode = str(settings.value("theme", "dark")).lower().strip()
-        except Exception:
-            theme_mode = "dark"
+        theme_mode = get_active_theme_mode("dark")
 
         radius = "6px 6px 0px 0px" if self._is_expanded else "6px"
 

@@ -58,18 +58,12 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from core_utils import ffmpeg_path, format_time, parse_time, INTERNAL_APP_ID, make_dialog_maximizable, apply_window_titlebar_theme
+from core_utils import ffmpeg_path, format_time, parse_time, INTERNAL_APP_ID, make_dialog_maximizable, apply_window_titlebar_theme, get_active_theme_mode
 
 
 def _get_metadata_theme_mode() -> str:
     """Retrieve active theme mode ('light', 'dark', or 'high_contrast')."""
-    if not QSettings:
-        return "dark"
-    try:
-        settings = QSettings("RadioTVStorySegmenter", "Preferences")
-        return str(settings.value("theme", "dark")).lower().strip()
-    except Exception:
-        return "dark"
+    return get_active_theme_mode("dark")
 
 
 def generate_story_excerpt(text: str, max_words: int = 55) -> str:
