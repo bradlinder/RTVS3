@@ -633,13 +633,7 @@ class WordPressStoryMetadataWidget(QGroupBox):
         actions_row = QHBoxLayout()
         actions_row.setSpacing(6)
 
-        self.auto_excerpt_btn = QPushButton("✨ Auto-Excerpt")
-        self.auto_excerpt_btn.setToolTip("Auto-generate a 55-word excerpt from this story's transcript directly")
-        self.auto_excerpt_btn.setStyleSheet("font-size: 10px; padding: 2px 6px;")
-        self.auto_excerpt_btn.clicked.connect(self._on_quick_auto_excerpt)
-        actions_row.addWidget(self.auto_excerpt_btn)
-
-        self.refresh_btn = QPushButton("⟳ Refresh Taxonomy")
+        self.refresh_btn = QPushButton("Refresh Taxonomy")
         self.refresh_btn.setToolTip("Fetch fresh authors and categories from the connected WordPress site")
         self.refresh_btn.setStyleSheet("font-size: 10px; padding: 2px 6px;")
         self.refresh_btn.clicked.connect(self._on_refresh_taxonomy)
@@ -653,11 +647,11 @@ class WordPressStoryMetadataWidget(QGroupBox):
         prev_data = self.target_combo.currentData()
         self.target_combo.clear()
 
-        self.target_combo.addItem("🎬 Full Episode", "full")
+        self.target_combo.addItem("Full Episode", "full")
         stories = getattr(self.app, "stories", []) or []
         for idx, st in enumerate(stories):
             title = st.title if getattr(st, "title", None) else f"Story {idx + 1}"
-            self.target_combo.addItem(f"📖 Story {idx + 1}: {title}", f"story_{idx}")
+            self.target_combo.addItem(f"Story {idx + 1}: {title}", f"story_{idx}")
 
         # Restore selection if possible
         found_idx = -1
@@ -780,34 +774,6 @@ class WordPressStoryMetadataWidget(QGroupBox):
         if dlg.exec():
             self.refresh_targets_dropdown()
             self._load_current_target_metadata()
-
-    def _on_quick_auto_excerpt(self):
-        if self.current_target_mode == "story" and self.current_story:
-            raw_text = self.app._get_transcript_text_slice(self.current_story.start, self.current_story.end) if hasattr(self.app, "_get_transcript_text_slice") else ""
-            exc = generate_wp_excerpt(raw_text, 55)
-            if not hasattr(self.current_story, "metadata") or self.current_story.metadata is None:
-                self.current_story.metadata = {}
-            self.current_story.metadata["excerpt"] = exc
-            wp_meta = self.current_story.metadata.setdefault("wordpress", {})
-            wp_meta["excerpt"] = exc
-            if hasattr(self.app, "excerpt_edit") and self.app.excerpt_edit:
-                if hasattr(self.app.excerpt_edit, "setText"):
-                    self.app.excerpt_edit.setText(exc)
-                elif hasattr(self.app.excerpt_edit, "setPlainText"):
-                    self.app.excerpt_edit.setPlainText(exc)
-            if hasattr(self.app, "mark_project_dirty"):
-                self.app.mark_project_dirty("Generate Auto-Excerpt")
-            elif hasattr(self.app, "set_unsaved_changes"):
-                self.app.set_unsaved_changes(True)
-            QMessageBox.information(self, "Auto-Excerpt", "Generated 55-word excerpt for current story from transcript.")
-        else:
-            raw_text = self.app._get_transcript_text_slice(None, None) if hasattr(self.app, "_get_transcript_text_slice") else ""
-            exc = generate_wp_excerpt(raw_text, 55)
-            wp_meta = self._get_active_wp_metadata()
-            wp_meta["excerpt"] = exc
-            if hasattr(self.app, "set_unsaved_changes"):
-                self.app.set_unsaved_changes(True)
-            QMessageBox.information(self, "Auto-Excerpt", "Generated 55-word excerpt for full episode from transcript.")
 
     def _on_refresh_taxonomy(self):
         try:

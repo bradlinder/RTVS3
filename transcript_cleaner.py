@@ -142,6 +142,9 @@ def scrub_transcript_segments(segments: list[dict], collapse_loops: bool = True)
         start = max(0.0, float(seg.get("start", 0.0)))
         end = max(start, float(seg.get("end", start)))
         raw_text = str(seg.get("text", "")).strip()
+        # Strip accidental baked-in timestamp or speaker prefix (e.g. from previous edit corruptions)
+        raw_text = re.sub(r'^\s*\[?(?:\d{1,2}:)?\d{1,2}:\d{2}(?:\.\d{1,3})?\]?\s+', '', raw_text)
+        raw_text = re.sub(r'^(?:Speaker\s+\d+|[A-Z][a-zA-Z0-9_\s]{1,30}):\s*', '', raw_text)
         
         scrubbed_text = strip_hallucination_phrases(raw_text)
         if collapse_loops and scrubbed_text:
@@ -183,6 +186,11 @@ def scrub_transcript_segments(segments: list[dict], collapse_loops: bool = True)
         new_seg["end"] = end
         new_seg["text"] = scrubbed_text
         if clean_words:
+            scrubbed_tokens = scrubbed_text.split()
+            if len(clean_words) > len(scrubbed_tokens) and scrubbed_tokens:
+                diff = len(clean_words) - len(scrubbed_tokens)
+                if [w["word"].strip().lower() for w in clean_words[diff:]] == [t.strip().lower() for t in scrubbed_tokens]:
+                    clean_words = clean_words[diff:]
             new_seg["words"] = clean_words
         elif "words" in new_seg:
             new_seg["words"] = []

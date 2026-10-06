@@ -223,6 +223,7 @@ class MainWindow(
         self.lead_in_padding = 0.5
         self.expected_speakers = "auto"
         self.translation_direction = "auto"
+        self.min_words_per_paragraph = 65
 
         self.pending_diarization = False
         self.pending_auto_detect_stories = False
@@ -414,6 +415,10 @@ class MainWindow(
         self.show_milliseconds = str(s.value("show_milliseconds", "false")).lower() in {"1", "true", "yes"}
         self.show_speaker_labels = str(s.value("show_speaker_labels", "true")).lower() in {"1", "true", "yes"}
         self.show_comment_highlights = str(s.value("show_comment_highlights", "true")).lower() in {"1", "true", "yes"}
+        try:
+            self.min_words_per_paragraph = int(s.value("min_words_per_paragraph", 65) or 65)
+        except Exception:
+            self.min_words_per_paragraph = 65
         self.startup_project_mode = str(s.value("startup_project_mode", "last") or "last")
 
     def changeEvent(self, event):

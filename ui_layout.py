@@ -509,42 +509,6 @@ class UiLayoutMixin:
 
         details_layout.addLayout(form_layout)
 
-        # Excerpt Row & TextEdit
-        exc_hdr_row = QHBoxLayout()
-        exc_hdr_row.setContentsMargins(0, 2, 0, 0)
-        exc_lbl = QLabel("Excerpt:", self)
-        exc_lbl.setStyleSheet("font-size: 11px; font-weight: 500;")
-        exc_hdr_row.addWidget(exc_lbl)
-        exc_hdr_row.addStretch()
-
-        self.auto_gen_excerpt_btn = QPushButton("Auto-Generate Excerpt", self)
-        self.auto_gen_excerpt_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #1e293b;
-                color: #38bdf8;
-                border: 1px solid #0284c7;
-                border-radius: 3px;
-                padding: 2px 6px;
-                font-size: 10px;
-                font-weight: 500;
-            }
-            QPushButton:hover {
-                background-color: #0284c7;
-                color: #ffffff;
-            }
-        """)
-        self.auto_gen_excerpt_btn.setToolTip("Auto-generate excerpt from story transcript words")
-        self.auto_gen_excerpt_btn.clicked.connect(self.auto_generate_selected_story_excerpt)
-        exc_hdr_row.addWidget(self.auto_gen_excerpt_btn)
-        details_layout.addLayout(exc_hdr_row)
-
-        self.excerpt_edit = QTextEdit(self)
-        self.excerpt_edit.setObjectName("story_excerpt_edit")
-        self.excerpt_edit.setPlaceholderText("Story excerpt / summary for export...")
-        self.excerpt_edit.setMaximumHeight(65)
-        self.excerpt_edit.textChanged.connect(self._on_story_excerpt_text_changed)
-        details_layout.addWidget(self.excerpt_edit)
-
         # Boundary Buttons Container (Visible only when exactly one story is selected)
         self.story_boundary_container = QWidget(self)
         self.story_boundary_container.setObjectName("story_boundary_container")

@@ -1,4 +1,4 @@
-"""Radio & TV Segmenter v3.8.7-stable — transcript story responsibilities.
+"""Radio & TV Segmenter v3.8.8-stable — transcript story responsibilities.
 
 Methods intentionally retain the MainWindow-facing API so behavior remains
 maintaining the established MainWindow-facing API while responsibilities are isolated.
@@ -27,1040 +27,17 @@ from speaker_identity import (
 )
 
 
-class ChangeSpeakerDialog(QDialog):
-    """Dialog prompting whether to apply a speaker name change to all instances or a single turn."""
-
-    def __init__(self, current_name: str, target_name: str, seg_idx: int = -1, parent=None):
-        super().__init__(parent)
-        self.setWindowTitle("Change Speaker")
-        self.setMinimumWidth(520)
-        make_dialog_maximizable(self)
-        self.choice = None  # 'all', 'single', or None
-
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(20, 20, 20, 20)
-        layout.setSpacing(16)
-
-        prompt_lbl = QLabel(
-            f"Change <b>'{html.escape(current_name)}'</b> to <b>'{html.escape(target_name)}'</b> for:",
-            self,
-        )
-        prompt_lbl.setWordWrap(True)
-        prompt_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        layout.addWidget(prompt_lbl)
-
-        btn_layout = QHBoxLayout()
-        btn_layout.setSpacing(10)
-
-        self.btn_all = QPushButton("All Instances", self)
-        self.btn_all.setDefault(True)
-        self.btn_all.setMinimumHeight(36)
-        self.btn_all.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.btn_all.setToolTip("Apply this name change to every occurrence of this speaker across the entire project")
-        self.btn_all.clicked.connect(self._on_all)
-        btn_layout.addWidget(self.btn_all, 1)
-
-        self.btn_single = QPushButton("This Instance Only", self)
-        self.btn_single.setMinimumHeight(36)
-        self.btn_single.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.btn_single.setToolTip("Apply this name change strictly to this instance (contiguous speaker turn)")
-        self.btn_single.clicked.connect(self._on_single)
-        btn_layout.addWidget(self.btn_single, 1)
-
-        self.btn_cancel = QPushButton("Cancel", self)
-        self.btn_cancel.setMinimumHeight(36)
-        self.btn_cancel.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.btn_cancel.clicked.connect(self.reject)
-        btn_layout.addWidget(self.btn_cancel, 1)
-
-        layout.addLayout(btn_layout)
-        self.adjustSize()
-
-    def _on_all(self):
-        self.choice = "all"
-        self.accept()
-
-    def _on_subsequent(self):
-        self.choice = "subsequent"
-        self.accept()
-
-    def _on_single(self):
-        self.choice = "single"
-        self.accept()
-
-
-class VoiceProfileMatchDialog(QDialog):
-    """Dialog for finding and reassigning matching speaker turns using a 256-dimensional acoustic voice profile."""
-
-    def __init__(
-        self,
-        ref_seg_idx: int,
-        current_speaker: str,
-        target_speaker: str = "",
-        prompt_new_speaker: bool = False,
-        ref_seg_indices: Optional[List[int]] = None,
-        parent=None,
-    ):
-        super().__init__(parent)
-        self.ref_seg_idx = ref_seg_idx
-        self.ref_seg_indices = ref_seg_indices or []
-        self.current_speaker = current_speaker or "Unknown Speaker"
-        self.target_name = target_speaker or self.current_speaker
-        self.prompt_new_speaker = prompt_new_speaker
-        self.parent_window = parent
-        self.matched_turns = []
-        self.selected_indices = []
-
-        self.cluster_seg_indices = []
-        if self.parent_window and getattr(self.parent_window, "transcript", None):
-            segs = self.parent_window.transcript.get("segments", [])
-            for idx, s in enumerate(segs):
-                spk = self.parent_window.get_effective_speaker_name(idx, s)
-                if spk == self.current_speaker:
-                    self.cluster_seg_indices.append(idx)
-
-        self.setWindowTitle("Teach This Voice: Acoustic Profile Matcher")
-        self.setMinimumSize(720, 580)
-        self.resize(760, 620)
-        make_dialog_maximizable(self)
-        apply_window_titlebar_theme(self)
-
-        vp_mode = get_active_theme_mode("dark")
-
-        # Precompute candidate acoustic embeddings once upon launch so threshold slider drags are instantaneous
-        self.cached_candidates = []
-        if self.parent_window and hasattr(self.parent_window, "_build_voice_profile_candidates"):
-            res = self.parent_window._build_voice_profile_candidates(
-                [self.ref_seg_idx] + self.ref_seg_indices,
-                parent_widget=self.parent_window,
-            )
-            if isinstance(res, tuple):
-                self.cached_candidates = res[0]
-            else:
-                self.cached_candidates = res
-
-        # High-performance debounce timer & state guards for 60+ FPS slider responsiveness
-        self._slider_timer = QTimer(self)
-        self._slider_timer.setSingleShot(True)
-        self._slider_timer.timeout.connect(self._update_matches)
-        self._user_deselected_ids = set()
-        self._is_updating_table = False
-
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(18, 18, 18, 18)
-        layout.setSpacing(12)
-
-        # Header Title & Description
-        header_layout = QVBoxLayout()
-        header_layout.setSpacing(3)
-
-        header_top_layout = QHBoxLayout()
-        title_lbl = QLabel("Acoustic Voice Profile Matcher & Re-Clustering", self)
-        if vp_mode == "light":
-            title_lbl.setStyleSheet("font-size: 15px; font-weight: bold; color: #22262c;")
-        elif vp_mode == "high_contrast":
-            title_lbl.setStyleSheet("font-size: 15px; font-weight: bold; color: #ffffff;")
-        else:
-            title_lbl.setStyleSheet("font-size: 15px; font-weight: bold; color: #f1f5f9;")
-        header_top_layout.addWidget(title_lbl, 1)
-
-        self.btn_toggle_hints = QPushButton("💡 Usage Hints", self)
-        self.btn_toggle_hints.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.btn_toggle_hints.setMaximumHeight(26)
-        if vp_mode == "light":
-            self.btn_toggle_hints.setStyleSheet("""
-                QPushButton {
-                    background-color: #e3e6ea;
-                    color: #2e74b5;
-                    border: 1px solid #b6bcc4;
-                    border-radius: 4px;
-                    padding: 3px 10px;
-                    font-size: 11px;
-                    font-weight: bold;
-                }
-                QPushButton:hover {
-                    background-color: #d0d4d9;
-                    color: #205493;
-                }
-            """)
-        elif vp_mode == "high_contrast":
-            self.btn_toggle_hints.setStyleSheet("""
-                QPushButton {
-                    background-color: #000000;
-                    color: #ffff00;
-                    border: 1px solid #ffff00;
-                    border-radius: 4px;
-                    padding: 3px 10px;
-                    font-size: 11px;
-                    font-weight: bold;
-                }
-                QPushButton:hover {
-                    background-color: #ffff00;
-                    color: #000000;
-                }
-            """)
-        else:
-            self.btn_toggle_hints.setStyleSheet("""
-                QPushButton {
-                    background-color: #1e293b;
-                    color: #38bdf8;
-                    border: 1px solid #334155;
-                    border-radius: 4px;
-                    padding: 3px 10px;
-                    font-size: 11px;
-                    font-weight: bold;
-                }
-                QPushButton:hover {
-                    background-color: #334155;
-                    color: #7dd3fc;
-                }
-            """)
-        self.btn_toggle_hints.clicked.connect(self._toggle_hints)
-        header_top_layout.addWidget(self.btn_toggle_hints)
-        header_layout.addLayout(header_top_layout)
-
-        desc_lbl = QLabel(
-            "Use this speaker turn as a reference voice profile to find and reassign matching turns across the timeline using acoustic embedding similarity.",
-            self,
-        )
-        desc_lbl.setWordWrap(True)
-        if vp_mode == "light":
-            desc_lbl.setStyleSheet("color: #545b66; font-size: 12px;")
-        elif vp_mode == "high_contrast":
-            desc_lbl.setStyleSheet("color: #ffffff; font-size: 12px;")
-        else:
-            desc_lbl.setStyleSheet("color: #94a3b8; font-size: 12px;")
-        header_layout.addWidget(desc_lbl)
-        layout.addLayout(header_layout)
-
-        # Collapsible Usage Hints Card
-        self.hints_box = QGroupBox("💡 Acoustic Voice Profile Matcher — Quick Usage Guide", self)
-        if vp_mode == "light":
-            self.hints_box.setStyleSheet("""
-                QGroupBox {
-                    font-weight: bold;
-                    color: #0369a1;
-                    border: 1px solid #7dd3fc;
-                    border-radius: 6px;
-                    margin-top: 4px;
-                    padding-top: 14px;
-                    background-color: #f0f9ff;
-                }
-                QGroupBox::title {
-                    subcontrol-origin: margin;
-                    left: 10px;
-                    padding: 0 5px 0 5px;
-                }
-            """)
-        elif vp_mode == "high_contrast":
-            self.hints_box.setStyleSheet("""
-                QGroupBox {
-                    font-weight: bold;
-                    color: #ffff00;
-                    border: 1px solid #ffffff;
-                    border-radius: 6px;
-                    margin-top: 4px;
-                    padding-top: 14px;
-                    background-color: #000000;
-                }
-                QGroupBox::title {
-                    subcontrol-origin: margin;
-                    left: 10px;
-                    padding: 0 5px 0 5px;
-                }
-            """)
-        else:
-            self.hints_box.setStyleSheet("""
-                QGroupBox {
-                    font-weight: bold;
-                    color: #38bdf8;
-                    border: 1px solid #0284c7;
-                    border-radius: 6px;
-                    margin-top: 4px;
-                    padding-top: 14px;
-                    background-color: #0c4a6e;
-                }
-                QGroupBox::title {
-                    subcontrol-origin: margin;
-                    left: 10px;
-                    padding: 0 5px 0 5px;
-                }
-            """)
-        hints_layout = QVBoxLayout(self.hints_box)
-        hints_layout.setContentsMargins(12, 8, 12, 10)
-        hints_layout.setSpacing(6)
-
-        hints_color = "#0c4a6e" if vp_mode == "light" else ("#ffffff" if vp_mode == "high_contrast" else "#e0f2fe")
-        hints_html = f"""
-        <div style="color: {hints_color}; font-size: 11px; line-height: 1.45;">
-            <b>How to use the Acoustic Voice Profile Matcher:</b>
-            <ol style="margin-top: 4px; margin-bottom: 4px; padding-left: 18px;">
-                <li><b>Reference Baseline Mode:</b> Single reference turn prevents cluster contamination. Use composite only across turns verified to be the same speaker.</li>
-                <li><b>Assign Target Label:</b> Select or type the correct speaker name in <b>"Assign Matched Turns To"</b>.</li>
-                <li><b>Choose Search Scope:</b> Global search discovers turns misattributed to other speakers.</li>
-                <li><b>Calibrated Threshold:</b> ResNet-34 broadcast baseline is 78–82%. Values below 75% risk cross-speaker merging.</li>
-                <li><b>Audition & Review:</b> Select any row to seek, press <b>Spacebar</b> or click <b>Audition Turn</b> to play/pause audio before confirming.</li>
-            </ol>
-        </div>
-        """
-        hints_lbl = QLabel(hints_html, self.hints_box)
-        hints_lbl.setWordWrap(True)
-        hints_layout.addWidget(hints_lbl)
-
-        hints_btn_layout = QHBoxLayout()
-        hints_btn_layout.addStretch()
-        btn_minimize_hints = QPushButton("Minimize / Hide Hints", self.hints_box)
-        btn_minimize_hints.setCursor(Qt.CursorShape.PointingHandCursor)
-        if vp_mode == "light":
-            btn_minimize_hints.setStyleSheet("""
-                QPushButton {
-                    background-color: #2e74b5;
-                    color: #ffffff;
-                    border: none;
-                    border-radius: 4px;
-                    padding: 3px 10px;
-                    font-size: 11px;
-                    font-weight: bold;
-                }
-                QPushButton:hover {
-                    background-color: #205493;
-                }
-            """)
-        elif vp_mode == "high_contrast":
-            btn_minimize_hints.setStyleSheet("""
-                QPushButton {
-                    background-color: #ffff00;
-                    color: #000000;
-                    border: none;
-                    border-radius: 4px;
-                    padding: 3px 10px;
-                    font-size: 11px;
-                    font-weight: bold;
-                }
-                QPushButton:hover {
-                    background-color: #ffffff;
-                }
-            """)
-        else:
-            btn_minimize_hints.setStyleSheet("""
-                QPushButton {
-                    background-color: #0369a1;
-                    color: #ffffff;
-                    border: none;
-                    border-radius: 4px;
-                    padding: 3px 10px;
-                    font-size: 11px;
-                    font-weight: bold;
-                }
-                QPushButton:hover {
-                    background-color: #0284c7;
-                }
-            """)
-        btn_minimize_hints.clicked.connect(self._toggle_hints)
-        hints_btn_layout.addWidget(btn_minimize_hints)
-        hints_layout.addLayout(hints_btn_layout)
-        layout.addWidget(self.hints_box)
-
-        show_hints = True
-        try:
-            settings = QSettings(INTERNAL_APP_ID, INTERNAL_APP_ID)
-            show_hints = settings.value("voice_profile_matcher_show_hints", True, type=bool)
-        except Exception:
-            show_hints = True
-
-        self.hints_box.setVisible(show_hints)
-        self.btn_toggle_hints.setText("💡 Hide Hints" if show_hints else "💡 Usage Hints")
-
-        ref_card = QGroupBox("Reference Speaker Turn & Profile Baseline", self)
-        if vp_mode == "light":
-            ref_card.setStyleSheet("""
-                QGroupBox {
-                    font-weight: bold;
-                    color: #22262c;
-                    border: 1px solid #b6bcc4;
-                    border-radius: 6px;
-                    margin-top: 6px;
-                    padding-top: 14px;
-                    background-color: #eaedf0;
-                }
-                QGroupBox::title {
-                    subcontrol-origin: margin;
-                    left: 10px;
-                    padding: 0 5px 0 5px;
-                }
-            """)
-        elif vp_mode == "high_contrast":
-            ref_card.setStyleSheet("""
-                QGroupBox {
-                    font-weight: bold;
-                    color: #ffffff;
-                    border: 1px solid #ffffff;
-                    border-radius: 6px;
-                    margin-top: 6px;
-                    padding-top: 14px;
-                    background-color: #000000;
-                }
-                QGroupBox::title {
-                    subcontrol-origin: margin;
-                    left: 10px;
-                    padding: 0 5px 0 5px;
-                }
-            """)
-        else:
-            ref_card.setStyleSheet("""
-                QGroupBox {
-                    font-weight: bold;
-                    color: #38bdf8;
-                    border: 1px solid #334155;
-                    border-radius: 6px;
-                    margin-top: 6px;
-                    padding-top: 14px;
-                    background-color: #0f172a;
-                }
-                QGroupBox::title {
-                    subcontrol-origin: margin;
-                    left: 10px;
-                    padding: 0 5px 0 5px;
-                }
-            """)
-        ref_card_layout = QVBoxLayout(ref_card)
-        ref_card_layout.setContentsMargins(12, 10, 12, 12)
-        ref_card_layout.setSpacing(6)
-
-        ref_text = ""
-        ref_time_str = ""
-        if self.parent_window and getattr(self.parent_window, "transcript", None):
-            segs = self.parent_window.transcript.get("segments", [])
-            if 0 <= self.ref_seg_idx < len(segs):
-                s = segs[self.ref_seg_idx]
-                st = float(s.get("start", 0.0))
-                en = float(s.get("end", st))
-                ref_time_str = f"{format_time(st)} – {format_time(en)}"
-                ref_text = s.get("text", "").strip()
-
-        ref_info_lbl = QLabel(
-            f"<b>Primary Turn #{self.ref_seg_idx + 1}</b> • Time: <b>{ref_time_str}</b> • Current Label: <span style='color: {'#b45309' if vp_mode == 'light' else '#fbbf24'};'><b>{html.escape(self.current_speaker)}</b></span>",
-            ref_card,
-        )
-        ref_card_layout.addWidget(ref_info_lbl)
-
-        if ref_text:
-            ref_text_lbl = QLabel(f"<i>“{html.escape(ref_text)}”</i>", ref_card)
-            ref_text_lbl.setWordWrap(True)
-            if vp_mode == "light":
-                ref_text_lbl.setStyleSheet("color: #545b66; font-size: 12px;")
-            elif vp_mode == "high_contrast":
-                ref_text_lbl.setStyleSheet("color: #ffffff; font-size: 12px;")
-            else:
-                ref_text_lbl.setStyleSheet("color: #cbd5e1; font-size: 12px;")
-            ref_card_layout.addWidget(ref_text_lbl)
-
-        mode_hdr = QLabel("Reference Vector Baseline Mode:", ref_card)
-        if vp_mode == "light":
-            mode_hdr.setStyleSheet("color: #2e74b5; font-weight: bold; font-size: 11px; margin-top: 4px;")
-        elif vp_mode == "high_contrast":
-            mode_hdr.setStyleSheet("color: #ffff00; font-weight: bold; font-size: 11px; margin-top: 4px;")
-        else:
-            mode_hdr.setStyleSheet("color: #38bdf8; font-weight: bold; font-size: 11px; margin-top: 4px;")
-        ref_card_layout.addWidget(mode_hdr)
-
-        mode_layout = QVBoxLayout()
-        mode_layout.setSpacing(4)
-
-        self.ref_mode_single_radio = QRadioButton(
-            f"Single Reference Turn (Use strictly Segment #{self.ref_seg_idx + 1} audio vector)", ref_card
-        )
-
-        cluster_count = len(self.cluster_seg_indices)
-        self.ref_mode_composite_radio = QRadioButton(
-            f"Composite Profile (Average acoustic vectors across verified turns of '{html.escape(self.current_speaker)}')", ref_card
-        )
-
-        if self.ref_seg_indices and len(self.ref_seg_indices) > 1:
-            sel_count = len(self.ref_seg_indices)
-            self.ref_mode_selected_radio = QRadioButton(
-                f"Composite Profile (Average acoustic vectors across {sel_count} selected reference turns)", ref_card
-            )
-            self.ref_mode_selected_radio.setChecked(True)
-            mode_layout.addWidget(self.ref_mode_selected_radio)
-        else:
-            self.ref_mode_single_radio.setChecked(True)
-
-        mode_layout.addWidget(self.ref_mode_single_radio)
-        mode_layout.addWidget(self.ref_mode_composite_radio)
-        ref_card_layout.addLayout(mode_layout)
-
-        layout.addWidget(ref_card)
-
-        # Target Speaker Assignment Section
-        target_group = QGroupBox("Target Speaker Assignment", self)
-        if vp_mode == "light":
-            target_group.setStyleSheet("""
-                QGroupBox {
-                    font-weight: bold;
-                    color: #22262c;
-                    border: 1px solid #b6bcc4;
-                    border-radius: 6px;
-                    margin-top: 6px;
-                    padding-top: 14px;
-                    background-color: #eaedf0;
-                }
-                QGroupBox::title {
-                    subcontrol-origin: margin;
-                    left: 10px;
-                    padding: 0 5px 0 5px;
-                }
-            """)
-        elif vp_mode == "high_contrast":
-            target_group.setStyleSheet("""
-                QGroupBox {
-                    font-weight: bold;
-                    color: #ffffff;
-                    border: 1px solid #ffffff;
-                    border-radius: 6px;
-                    margin-top: 6px;
-                    padding-top: 14px;
-                    background-color: #000000;
-                }
-                QGroupBox::title {
-                    subcontrol-origin: margin;
-                    left: 10px;
-                    padding: 0 5px 0 5px;
-                }
-            """)
-        else:
-            target_group.setStyleSheet("""
-                QGroupBox {
-                    font-weight: bold;
-                    color: #e2e8f0;
-                    border: 1px solid #334155;
-                    border-radius: 6px;
-                    margin-top: 6px;
-                    padding-top: 14px;
-                }
-                QGroupBox::title {
-                    subcontrol-origin: margin;
-                    left: 10px;
-                    padding: 0 5px 0 5px;
-                }
-            """)
-        target_layout = QHBoxLayout(target_group)
-        target_layout.setContentsMargins(12, 10, 12, 12)
-        target_layout.setSpacing(10)
-
-        target_lbl = QLabel("Assign Matched Turns To:", target_group)
-        target_layout.addWidget(target_lbl)
-
-        self.spk_combo = QComboBox(target_group)
-        self.spk_combo.setEditable(True)
-        self.spk_combo.setMinimumWidth(260)
-        self.spk_combo.setMinimumHeight(30)
-
-        known = []
-        if self.parent_window and hasattr(self.parent_window, "get_all_known_speakers"):
-            known = self.parent_window.get_all_known_speakers()
-        for k in known:
-            self.spk_combo.addItem(k)
-
-        if self.prompt_new_speaker:
-            self.spk_combo.setEditText("")
-            self.spk_combo.setFocus()
-        elif self.target_name:
-            idx = self.spk_combo.findText(self.target_name)
-            if idx >= 0:
-                self.spk_combo.setCurrentIndex(idx)
-            else:
-                self.spk_combo.setEditText(self.target_name)
-
-        self.spk_combo.currentTextChanged.connect(lambda _: self._update_action_summary())
-        target_layout.addWidget(self.spk_combo, 1)
-        layout.addWidget(target_group)
-
-        # Controls Grid
-        controls_group = QGroupBox("Matching Search Scope & Sensitivity", self)
-        controls_group.setStyleSheet("""
-            QGroupBox {
-                font-weight: bold;
-                color: #e2e8f0;
-                border: 1px solid #334155;
-                border-radius: 6px;
-                margin-top: 6px;
-                padding-top: 14px;
-            }
-            QGroupBox::title {
-                subcontrol-origin: margin;
-                left: 10px;
-                padding: 0 5px 0 5px;
-            }
-        """)
-        controls_layout = QVBoxLayout(controls_group)
-        controls_layout.setContentsMargins(12, 10, 12, 12)
-        controls_layout.setSpacing(10)
-
-        scope_layout = QHBoxLayout()
-        scope_layout.setSpacing(20)
-        self.scope_all_radio = QRadioButton("Search across all speakers on timeline (Find mislabeled turns)", controls_group)
-        scope_layout.addWidget(self.scope_all_radio)
-
-        self.scope_cluster_radio = QRadioButton(
-            f"Search within '{self.current_speaker}' turns only", controls_group
-        )
-        scope_layout.addWidget(self.scope_cluster_radio)
-        self.scope_all_radio.setChecked(True)
-
-        scope_layout.addStretch()
-        controls_layout.addLayout(scope_layout)
-
-        slider_layout = QHBoxLayout()
-        slider_layout.setSpacing(12)
-
-        self.thresh_slider = QSlider(Qt.Orientation.Horizontal, controls_group)
-        self.thresh_slider.setRange(60, 95)
-        self.thresh_slider.setValue(78)
-        self.thresh_slider.setTickInterval(5)
-        self.thresh_slider.setTickPosition(QSlider.TickPosition.TicksBelow)
-        self.thresh_slider.valueChanged.connect(self._on_slider_changed)
-
-        self.thresh_label = QLabel("Similarity Threshold: 78% (Calibrated)", controls_group)
-        self.thresh_label.setMinimumWidth(230)
-        self.thresh_label.setStyleSheet("color: #38bdf8; font-weight: bold;")
-
-        slider_layout.addWidget(self.thresh_slider, 1)
-        slider_layout.addWidget(self.thresh_label)
-        controls_layout.addLayout(slider_layout)
-
-        self.scope_all_radio.toggled.connect(self._on_controls_changed)
-        self.scope_cluster_radio.toggled.connect(self._on_controls_changed)
-        self.ref_mode_single_radio.toggled.connect(self._on_controls_changed)
-        self.ref_mode_composite_radio.toggled.connect(self._on_controls_changed)
-        if hasattr(self, "ref_mode_selected_radio"):
-            self.ref_mode_selected_radio.toggled.connect(self._on_controls_changed)
-
-        layout.addWidget(controls_group)
-
-        # Matched Turns Table & Batch Actions
-        table_header_layout = QHBoxLayout()
-        self.match_count_label = QLabel("Candidate Matching Turns (0 found):", self)
-        self.match_count_label.setStyleSheet("font-weight: bold; color: #e2e8f0;")
-        table_header_layout.addWidget(self.match_count_label)
-        table_header_layout.addStretch()
-
-        self.chk_master = QCheckBox("Select All", self)
-        self.chk_master.setChecked(True)
-        self.chk_master.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.chk_master.setStyleSheet("color: #38bdf8; font-weight: bold; margin-right: 14px;")
-        self.chk_master.toggled.connect(self._toggle_master_checkbox)
-        table_header_layout.addWidget(self.chk_master)
-
-        self.btn_audition = QPushButton("▶ Audition Turn", self)
-        self.btn_audition.setMaximumHeight(26)
-        self.btn_audition.setToolTip("Play or pause audio for the selected turn (Spacebar)")
-        self.btn_audition.clicked.connect(self._toggle_audition_button)
-        table_header_layout.addWidget(self.btn_audition)
-
-        layout.addLayout(table_header_layout)
-
-        self.table = QTableWidget(self)
-        self.table.setColumnCount(5)
-        self.table.setHorizontalHeaderLabels([
-            "Reassign", "Segment", "Current Speaker", "Acoustic Match", "Transcript Preview"
-        ])
-        self.table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
-        self.table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
-        self.table.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
-        self.table.horizontalHeader().setSectionResizeMode(3, QHeaderView.ResizeMode.ResizeToContents)
-        self.table.horizontalHeader().setSectionResizeMode(4, QHeaderView.ResizeMode.Stretch)
-        self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
-        self.table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
-        self.table.itemChanged.connect(self._on_table_item_changed)
-        self.table.itemSelectionChanged.connect(self._on_table_selection_changed)
-        self.table.cellDoubleClicked.connect(self._on_table_cell_double_clicked)
-        
-        # Install Event Filter on QTableWidget so it does NOT swallow the Spacebar key!
-        self.table.installEventFilter(self)
-
-        layout.addWidget(self.table, 1)
-
-        btn_layout = QHBoxLayout()
-        btn_layout.setSpacing(10)
-
-        self.btn_apply = QPushButton("Reassign Matching Turns", self)
-        self.btn_apply.setDefault(True)
-        self.btn_apply.setMinimumHeight(38)
-        self.btn_apply.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.btn_apply.setStyleSheet("""
-            QPushButton {
-                background-color: #0284c7;
-                color: #ffffff;
-                font-weight: bold;
-                border-radius: 6px;
-                padding: 8px 16px;
-            }
-            QPushButton:hover {
-                background-color: #0369a1;
-            }
-            QPushButton:disabled {
-                background-color: #334155;
-                color: #64748b;
-            }
-        """)
-        self.btn_apply.clicked.connect(self._on_apply)
-        btn_layout.addWidget(self.btn_apply, 2)
-
-        self.btn_cancel = QPushButton("Cancel", self)
-        self.btn_cancel.setMinimumHeight(38)
-        self.btn_cancel.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.btn_cancel.clicked.connect(self.reject)
-        btn_layout.addWidget(self.btn_cancel, 1)
-
-        layout.addLayout(btn_layout)
-
-        # Hook up playback state monitoring if player exists
-        if self.parent_window and hasattr(self.parent_window, "player"):
-            player = getattr(self.parent_window, "player", None)
-            if player and hasattr(player, "playbackStateChanged"):
-                player.playbackStateChanged.connect(self._on_playback_state_changed)
-
-        self._on_slider_changed(self.thresh_slider.value())
-
-    def _on_playback_state_changed(self, state):
-        from PySide6.QtMultimedia import QMediaPlayer
-        if state == QMediaPlayer.PlaybackState.PlayingState:
-            self.btn_audition.setText("❚❚ Pause")
-        else:
-            self.btn_audition.setText("▶ Audition Turn")
-
-    def _toggle_hints(self):
-        is_visible = self.hints_box.isVisible()
-        self.hints_box.setVisible(not is_visible)
-        self.btn_toggle_hints.setText("💡 Usage Hints" if is_visible else "💡 Hide Hints")
-        try:
-            settings = QSettings(INTERNAL_APP_ID, INTERNAL_APP_ID)
-            settings.setValue("voice_profile_matcher_show_hints", not is_visible)
-        except Exception:
-            pass
-
-    def _on_slider_changed(self, val):
-        threshold_float = val / 100.0
-        dist_max = 1.0 - threshold_float
-        desc = "Permissive" if val < 75 else ("Optimal" if val <= 82 else "Very Strict")
-        self.thresh_label.setText(f"Similarity Threshold: {val}% ({desc}, Cosine dist ≤ {dist_max:.2f})")
-        # Debounce the heavy table repopulation so rapid slider dragging is completely smooth (60+ FPS)
-        if hasattr(self, "_slider_timer"):
-            self._slider_timer.start(60)
-        else:
-            self._update_matches()
-
-    def get_active_ref_indices(self) -> List[int]:
-        if hasattr(self, "ref_mode_composite_radio") and self.ref_mode_composite_radio.isChecked():
-            return self.cluster_seg_indices or [self.ref_seg_idx]
-        elif hasattr(self, "ref_mode_selected_radio") and self.ref_mode_selected_radio.isChecked():
-            return self.ref_seg_indices or [self.ref_seg_idx]
-        return [self.ref_seg_idx]
-
-    def _on_controls_changed(self):
-        if hasattr(self, "_slider_timer"):
-            self._slider_timer.stop()
-        self._update_matches()
-
-    def _update_matches(self):
-        if not hasattr(self, "thresh_slider") or not hasattr(self, "scope_cluster_radio"):
-            return
-        if not self.parent_window or not hasattr(self.parent_window, "find_matching_voice_turns"):
-            return
-
-        self._is_updating_table = True
-        try:
-            threshold = self.thresh_slider.value() / 100.0
-            scope_cluster_only = self.scope_cluster_radio.isChecked()
-            active_ref_indices = self.get_active_ref_indices()
-            target_name = self.spk_combo.currentText().strip() or None
-
-            self.matched_turns = self.parent_window.find_matching_voice_turns(
-                self.ref_seg_idx,
-                threshold=threshold,
-                scope_cluster_only=scope_cluster_only,
-                ref_seg_indices=active_ref_indices,
-                target_name=target_name,
-                cached_candidates=getattr(self, "cached_candidates", None),
-            )
-
-            self.table.blockSignals(True)
-            self.table.setUpdatesEnabled(False)
-            self.table.setRowCount(len(self.matched_turns))
-
-            for row_idx, turn in enumerate(self.matched_turns):
-                seg_id = turn["seg_idx"]
-                chk_item = QTableWidgetItem()
-                chk_item.setFlags(Qt.ItemFlag.ItemIsUserCheckable | Qt.ItemFlag.ItemIsEnabled)
-                is_checked = (seg_id not in self._user_deselected_ids)
-                chk_item.setCheckState(Qt.CheckState.Checked if is_checked else Qt.CheckState.Unchecked)
-                chk_item.setData(Qt.ItemDataRole.UserRole, seg_id)
-                self.table.setItem(row_idx, 0, chk_item)
-
-                st_str = format_time(turn["start"])
-                en_str = format_time(turn["end"])
-                seg_item = QTableWidgetItem(f"#{seg_id + 1} ({st_str} – {en_str})")
-                seg_item.setToolTip(f"Segment #{seg_id + 1}\nStart: {turn['start']:.2f}s, End: {turn['end']:.2f}s")
-                self.table.setItem(row_idx, 1, seg_item)
-
-                spk_item = QTableWidgetItem(turn["speaker"])
-                self.table.setItem(row_idx, 2, spk_item)
-
-                sim_pct = turn["similarity"] * 100.0
-                margin_pct = turn.get("margin", 0.0) * 100.0
-                comp_sim_pct = turn.get("competitor_similarity", 0.0) * 100.0
-                match_item = QTableWidgetItem(f"{sim_pct:.1f}% Match")
-                match_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-                match_item.setToolTip(
-                    f"Acoustic Similarity: {sim_pct:.1f}%\n"
-                    f"Nearest Competitor: {comp_sim_pct:.1f}%\n"
-                    f"Separation Margin: +{margin_pct:.1f}%\n"
-                    f"Status: Confident match exceeding sensitivity threshold"
-                )
-                if sim_pct >= 85.0:
-                    match_item.setForeground(QBrush(QColor("#4ade80")))
-                elif sim_pct >= 78.0:
-                    match_item.setForeground(QBrush(QColor("#38bdf8")))
-                else:
-                    match_item.setForeground(QBrush(QColor("#fbbf24")))
-                self.table.setItem(row_idx, 3, match_item)
-
-                txt_item = QTableWidgetItem(turn["text"])
-                txt_item.setToolTip(turn["text"])
-                self.table.setItem(row_idx, 4, txt_item)
-        finally:
-            self.table.setUpdatesEnabled(True)
-            self.table.blockSignals(False)
-            self._is_updating_table = False
-
-        self._update_action_summary()
-
-    def _select_all_matches(self):
-        self.table.blockSignals(True)
-        self.table.setUpdatesEnabled(False)
-        for r in range(self.table.rowCount()):
-            item = self.table.item(r, 0)
-            if item:
-                item.setCheckState(Qt.CheckState.Checked)
-                seg_id = item.data(Qt.ItemDataRole.UserRole)
-                if seg_id is not None:
-                    self._user_deselected_ids.discard(seg_id)
-        self.table.setUpdatesEnabled(True)
-        self.table.blockSignals(False)
-        self._update_action_summary()
-
-    def _deselect_all_matches(self):
-        self.table.blockSignals(True)
-        self.table.setUpdatesEnabled(False)
-        for r in range(self.table.rowCount()):
-            item = self.table.item(r, 0)
-            if item:
-                item.setCheckState(Qt.CheckState.Unchecked)
-                seg_id = item.data(Qt.ItemDataRole.UserRole)
-                if seg_id is not None:
-                    self._user_deselected_ids.add(seg_id)
-        self.table.setUpdatesEnabled(True)
-        self.table.blockSignals(False)
-        self._update_action_summary()
-
-    def _toggle_master_checkbox(self, checked: bool):
-        """Batch toggle every row checkbox to match the master checkbox state."""
-        self.table.blockSignals(True)
-        self.table.setUpdatesEnabled(False)
-        target_state = Qt.CheckState.Checked if checked else Qt.CheckState.Unchecked
-        for r in range(self.table.rowCount()):
-            item = self.table.item(r, 0)
-            if item:
-                item.setCheckState(target_state)
-                seg_id = item.data(Qt.ItemDataRole.UserRole)
-                if seg_id is not None:
-                    if checked:
-                        self._user_deselected_ids.discard(seg_id)
-                    else:
-                        self._user_deselected_ids.add(seg_id)
-        self.table.setUpdatesEnabled(True)
-        self.table.blockSignals(False)
-        self._update_action_summary()
-        
-    def _on_table_item_changed(self, item):
-        if item.column() == 0 and not getattr(self, "_is_updating_table", False):
-            seg_id = item.data(Qt.ItemDataRole.UserRole)
-            if seg_id is not None:
-                if item.checkState() == Qt.CheckState.Unchecked:
-                    self._user_deselected_ids.add(seg_id)
-                else:
-                    self._user_deselected_ids.discard(seg_id)
-            self._update_action_summary()
-
-    def _get_selected_segment_indices(self) -> List[int]:
-        indices = []
-        for r in range(self.table.rowCount()):
-            item = self.table.item(r, 0)
-            if item and item.checkState() == Qt.CheckState.Checked:
-                seg_idx = item.data(Qt.ItemDataRole.UserRole)
-                if seg_idx is not None:
-                    indices.append(int(seg_idx))
-        return indices
-
-    def _update_action_summary(self):
-        selected = self._get_selected_segment_indices()
-        total = self.table.rowCount()
-        self.match_count_label.setText(
-            f"Candidate Matching Turns ({len(selected)} of {total} selected):"
-        )
-        target = self.spk_combo.currentText().strip() or "Target Speaker"
-        if len(selected) > 0:
-            self.btn_apply.setText(f"Reassign {len(selected)} Matching Turn(s) to '{target}'")
-            self.btn_apply.setEnabled(True)
-        elif self.ref_seg_idx >= 0:
-            segs = getattr(self.parent_window, "transcript", {}).get("segments", []) if self.parent_window else []
-            curr_ref_spk = ""
-            if 0 <= self.ref_seg_idx < len(segs):
-                curr_ref_spk = self.parent_window.get_effective_speaker_name(self.ref_seg_idx, segs[self.ref_seg_idx])
-            if target and target != curr_ref_spk:
-                self.btn_apply.setText(f"Reassign Reference Turn #{self.ref_seg_idx + 1} Only to '{target}'")
-                self.btn_apply.setEnabled(True)
-            else:
-                self.btn_apply.setText(f"No Turns Selected (Reference already '{target}')")
-                self.btn_apply.setEnabled(False)
-        else:
-            self.btn_apply.setText("No Matching Turns Selected")
-            self.btn_apply.setEnabled(False)
-
-        if hasattr(self, "chk_master"):
-            self.chk_master.blockSignals(True)
-            all_selected = (len(selected) == total and total > 0)
-            self.chk_master.setChecked(all_selected)
-            self.chk_master.setText("Deselect All" if all_selected else "Select All")
-            self.chk_master.blockSignals(False)
-
-    def _on_apply(self):
-        self._stop_playback()
-        target = self.spk_combo.currentText().strip()
-        if not target:
-            QMessageBox.warning(
-                self,
-                "Target Speaker Required",
-                "Please enter or select a target speaker name before applying.",
-            )
-            self.spk_combo.setFocus()
-            return
-
-        self.target_name = target
-        self.selected_indices = self._get_selected_segment_indices()
-        self.accept()
-
-    def reject(self):
-        self._stop_playback()
-        super().reject()
-
-    def _seek_to_time(self, seconds: float):
-        if self.parent_window and hasattr(self.parent_window, "seek_to"):
-            try:
-                self.parent_window.seek_to(seconds)
-            except Exception:
-                pass
-
-    def _is_playing(self) -> bool:
-        if not self.parent_window:
-            return False
-        player = getattr(self.parent_window, "player", None)
-        if player and hasattr(player, "playbackState"):
-            from PySide6.QtMultimedia import QMediaPlayer
-            return player.playbackState() == QMediaPlayer.PlaybackState.PlayingState
-        return False
-
-    def _stop_playback(self):
-        if not self.parent_window:
-            return
-        player = getattr(self.parent_window, "player", None)
-        if player and hasattr(player, "pause"):
-            try:
-                player.pause()
-            except Exception:
-                pass
-        self.btn_audition.setText("▶ Audition Turn")
-
-    def _toggle_playback(self):
-        if not self.parent_window:
-            return
-        player = getattr(self.parent_window, "player", None)
-        if player and hasattr(player, "playbackState"):
-            from PySide6.QtMultimedia import QMediaPlayer
-            if player.playbackState() == QMediaPlayer.PlaybackState.PlayingState:
-                player.pause()
-                self.btn_audition.setText("▶ Audition Turn")
-            else:
-                player.play()
-                self.btn_audition.setText("❚❚ Pause")
-        elif hasattr(self.parent_window, "toggle_play"):
-            self.parent_window.toggle_play()
-
-    def _toggle_audition_button(self):
-        if self._is_playing():
-            self._stop_playback()
-        else:
-            row = self.table.currentRow()
-            if 0 <= row < len(self.matched_turns):
-                turn = self.matched_turns[row]
-                start_t = turn.get("start", 0.0)
-                self._seek_to_time(start_t)
-            self._toggle_playback()
-
-    def _on_table_selection_changed(self):
-        if getattr(self, "_is_updating_table", False):
-            return
-        row = self.table.currentRow()
-        if 0 <= row < len(self.matched_turns):
-            turn = self.matched_turns[row]
-            start_t = turn.get("start", 0.0)
-            self._seek_to_time(start_t)
-
-    def _on_table_cell_double_clicked(self, row, col):
-        if 0 <= row < len(self.matched_turns):
-            turn = self.matched_turns[row]
-            start_t = turn.get("start", 0.0)
-            self._seek_to_time(start_t)
-            if not self._is_playing():
-                self._toggle_playback()
-
-    def eventFilter(self, watched, event):
-        """Intercept Spacebar on the table widget for playback and Return/Enter/X for checkbox toggling."""
-        if watched == self.table and event.type() == event.Type.KeyPress:
-            if event.key() == Qt.Key.Key_Space:
-                self._toggle_audition_button()
-                return True  # Event handled, do not pass to table
-            elif event.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter, Qt.Key.Key_X):
-                row = self.table.currentRow()
-                if 0 <= row < self.table.rowCount():
-                    item = self.table.item(row, 0)
-                    if item:
-                        new_state = (
-                            Qt.CheckState.Unchecked
-                            if item.checkState() == Qt.CheckState.Checked
-                            else Qt.CheckState.Checked
-                        )
-                        item.setCheckState(new_state)
-                        return True
-        return super().eventFilter(watched, event)
-
-    def keyPressEvent(self, event):
-        if event.key() == Qt.Key.Key_Space:
-            focused = self.focusWidget()
-            if focused and (
-                isinstance(focused, QLineEdit)
-                or (isinstance(focused, QComboBox) and focused.isEditable() and focused.lineEdit() and focused.lineEdit().hasFocus())
-            ):
-                super().keyPressEvent(event)
-                return
-
-            self._toggle_audition_button()
-            event.accept()
-            return
-
-        super().keyPressEvent(event)
-
+from voice_profile_dialog import VoiceProfileMatchDialog
+from speaker_dialogs import ChangeSpeakerDialog, SpeakerManagerDialog
+from story_fades_dialog import StoryFadesDialog
+
+__all__ = [
+    "TranscriptStoryMixin",
+    "ChangeSpeakerDialog",
+    "VoiceProfileMatchDialog",
+    "StoryFadesDialog",
+    "SpeakerManagerDialog",
+]
 
 class TranscriptStoryMixin:
     def render_transcript(self):
@@ -1113,12 +90,13 @@ class TranscriptStoryMixin:
 
             words = [] if is_rendering_translation else segment.get("words", [])
             if words:
-                for w in words:
+                for w_idx, w in enumerate(words):
                     token = {
                         "word": w.get("word", ""),
                         "start": w.get("start", start),
                         "end": w.get("end", end),
                         "seg_idx": seg_idx,
+                        "word_idx": w_idx,
                         "speaker_name": spk_name,
                         "raw_speaker": raw_spk,
                         "deleted": bool(w.get("deleted", False)),
@@ -1130,19 +108,27 @@ class TranscriptStoryMixin:
                     if w.get("highlight"):
                         hl = w.get("highlight")
                         token["highlight"] = "#fef08a" if isinstance(hl, bool) or hl in ("True", "true", 1) else str(hl)
+                    elif segment.get("highlight"):
+                        hl = segment.get("highlight")
+                        token["highlight"] = "#fef08a" if isinstance(hl, bool) or hl in ("True", "true", 1) else str(hl)
                     word_tokens.append(token)
             else:
                 seg_text = segment.get("text", "")
-                for word in seg_text.split():
-                    word_tokens.append({
+                seg_hl = segment.get("highlight")
+                for w_idx, word in enumerate(seg_text.split()):
+                    token = {
                         "word": word,
                         "start": start,
                         "end": end,
                         "seg_idx": seg_idx,
+                        "word_idx": w_idx,
                         "speaker_name": spk_name,
                         "raw_speaker": raw_spk,
                         "deleted": False,
-                    })
+                    }
+                    if seg_hl:
+                        token["highlight"] = "#fef08a" if isinstance(seg_hl, bool) or seg_hl in ("True", "true", 1) else str(seg_hl)
+                    word_tokens.append(token)
 
         if not word_tokens:
             self.transcript_view.setHtml("")
@@ -1228,14 +214,15 @@ class TranscriptStoryMixin:
                     word_html_list.append(joined_html)
                 current_hl_words = []
 
-            for item in p_words:
+            for i_idx, item in enumerate(p_words):
                 w_text = item["word"]
                 w_start = item["start"]
                 w_seg = item["seg_idx"]
+                w_idx = item.get("word_idx", i_idx)
 
-                w_len = len(w_text) + 1
-                char_timestamp_map.append((current_char_pos, current_char_pos + w_len, w_start, item.get("end", w_start), w_seg))
-                current_char_pos += w_len
+                w_len = len(w_text)
+                char_timestamp_map.append((current_char_pos, current_char_pos + w_len, w_start, item.get("end", w_start), w_seg, w_idx))
+                current_char_pos += w_len + (1 if i_idx < len(p_words) - 1 else 0)
 
                 esc_w = html.escape(w_text)
                 w_style = f"color:{word_color}; text-decoration:none;"
@@ -1260,10 +247,10 @@ class TranscriptStoryMixin:
                     _flush_hl_group()
                     current_hl_color = item_hl_color
 
-                current_hl_words.append(f'<a href="word:{w_start}:{w_seg}" style="{w_style}">{esc_w}</a>')
+                current_hl_words.append(f'<a href="word:{w_start}:{w_seg}:{w_idx}" style="{w_style}">{esc_w}</a>')
 
             _flush_hl_group()
-            current_char_pos += 2
+            current_char_pos += 1
 
             body_content = " ".join(word_html_list)
 
@@ -1306,13 +293,25 @@ class TranscriptStoryMixin:
                     groups.append((seg_idx, 1))
             return groups
 
-        for token in word_tokens:
+        min_words = int(
+            getattr(self, "min_words_per_paragraph", None)
+            or getattr(getattr(self, "transcript_view", None), "min_words_per_paragraph", None)
+            or (self.settings_store.value("min_words_per_paragraph", MIN_WORDS_PER_PARAGRAPH) if hasattr(self, "settings_store") else MIN_WORDS_PER_PARAGRAPH)
+            or MIN_WORDS_PER_PARAGRAPH
+        )
+
+        for token_idx, token in enumerate(word_tokens):
             spk_name = token["speaker_name"]
             raw_spk = token["raw_speaker"]
 
             if curr_speaker_name is None:
                 curr_speaker_name = spk_name
                 curr_raw_speaker = raw_spk
+
+            # Inherit current speaker over short unassigned or unknown speaker gaps
+            if not spk_name and curr_speaker_name:
+                spk_name = curr_speaker_name
+                raw_spk = curr_raw_speaker
 
             speaker_changed = (spk_name != curr_speaker_name)
             prev_token = curr_para_words[-1] if curr_para_words else None
@@ -1323,11 +322,27 @@ class TranscriptStoryMixin:
             silence_thresh = float(getattr(self, "silence_threshold", 3.0) or 3.0)
             major_silence = (time_gap >= max(2.5, silence_thresh))
 
+            # Prevent orphan sentences: If breaking now would leave an isolated, short sentence fragment
+            # (< 25 words) before the current speaker's turn ends, keep the remaining words in the current
+            # paragraph instead of creating an unnatural single-sentence paragraph.
+            leave_orphan = False
+            if word_count >= min_words and prev_word_ended_sentence and not speaker_changed:
+                rem_speaker_words = 0
+                for nxt in word_tokens[token_idx:]:
+                    nxt_spk = nxt["speaker_name"] or curr_speaker_name
+                    if nxt_spk != curr_speaker_name:
+                        break
+                    rem_speaker_words += 1
+                if 0 < rem_speaker_words < 25 and word_count < (min_words * 2):
+                    leave_orphan = True
+
+            # Within the same speaker turn, paragraph breaks must only occur at
+            # natural sentence boundaries to prevent mid-sentence fragments with
+            # stray timecode markers.
             should_break = (
                 speaker_changed
-                or major_silence
-                or (word_count >= MIN_WORDS_PER_PARAGRAPH and prev_word_ended_sentence)
-                or (word_count >= 50)
+                or (major_silence and prev_word_ended_sentence)
+                or (word_count >= min_words and prev_word_ended_sentence and not leave_orphan)
             )
 
             if curr_para_words and should_break:
@@ -1355,7 +370,7 @@ class TranscriptStoryMixin:
         self.transcript_view.rebuild_anchor_index()
         self.transcript_view.set_time_anchor_index(
             [
-                (item["start"], item["end"], f"word:{item['start']}:{item['seg_idx']}")
+                (item["start"], item["end"], f"word:{item['start']}:{item['seg_idx']}:{item.get('word_idx', 0)}")
                 for item in word_tokens
             ]
         )
@@ -1449,6 +464,8 @@ class TranscriptStoryMixin:
     def on_transcript_text_changed(self):
         if self.is_updating_transcript_view or getattr(self, "is_restoring_undo", False) or not self.transcript:
             return
+        if hasattr(self, "transcript_view") and not getattr(self.transcript_view, "is_editing_mode", False):
+            return
         display_mode = getattr(self, "translation_display_mode", "en")
         if display_mode in ("split", "bilingual"):
             return
@@ -1513,17 +530,18 @@ class TranscriptStoryMixin:
 
             block = doc.findBlockByNumber(i)
             block_text = block.text()
-            cleaned_text = re.sub(r'^\d{2}:\d{2}(?::\d{2})?\.\d{3}\s+', '', block_text)
+            # Strip optional leading bracketed or bare timestamp e.g. "0:27", "00:27", "01:02:30.500", "[00:27]"
+            cleaned_text = re.sub(r'^\s*\[?(?:\d{1,2}:)?\d{1,2}:\d{2}(?:\.\d{1,3})?\]?\s+', '', block_text)
             if ": " in cleaned_text:
                 prefix, remainder = cleaned_text.split(": ", 1)
                 if known_speaker_labels is None:
-                    known_speaker_labels = set(self.speaker_names.values())
+                    known_speaker_labels = set(str(x).strip() for x in self.speaker_names.values() if x)
                     known_speaker_labels.update(
-                        self.get_all_known_speakers() if hasattr(self, "get_all_known_speakers") else []
+                        str(x).strip() for x in (self.get_all_known_speakers() if hasattr(self, "get_all_known_speakers") else []) if x
                     )
-                if prefix.strip() in {str(x).strip() for x in known_speaker_labels if x}:
+                if prefix.strip() in known_speaker_labels or re.match(r'^Speaker\s+\d+$', prefix.strip(), re.IGNORECASE):
                     cleaned_text = remainder
-            cleaned_text = re.sub(r'^Speaker \d+:\s+', '', cleaned_text).strip()
+            cleaned_text = re.sub(r'^Speaker\s+\d+:\s*', '', cleaned_text, flags=re.IGNORECASE).strip()
 
             prefix_len = block_text.find(cleaned_text) if (cleaned_text and cleaned_text in block_text) else 0
             block_fmts = _extract_block_word_formatting(block, prefix_len)
@@ -3656,7 +2674,8 @@ class TranscriptStoryMixin:
             end_char = cursor.selectionEnd()
             char_map = getattr(self.transcript_view, "char_timestamp_map", [])
 
-            for (c_start, c_end, w_start, w_end, _) in char_map:
+            for entry in char_map:
+                c_start, c_end, w_start, w_end = entry[0], entry[1], entry[2], entry[3]
                 if c_start <= start_char <= c_end and start_time is None:
                     start_time = w_start
                 if c_start <= end_char <= c_end:
@@ -3936,348 +2955,3 @@ class TranscriptStoryMixin:
         dlg.exec()
 
 
-class StoryFadesDialog(QDialog):
-    """Dialog for fine-grained numerical adjustment of audio fade-in and fade-out durations."""
-
-    def __init__(self, parent=None, story=None, story_index=0):
-        super().__init__(parent)
-        self.main_win = parent
-        self.story = story
-        self.story_index = story_index
-        self._initial_fades = []
-        if self.main_win and hasattr(self.main_win, "stories"):
-            self._initial_fades = [
-                (getattr(s, "fade_in", 0.0), getattr(s, "fade_out", 0.0), getattr(s, "fade_curve", "linear") or "linear")
-                for s in self.main_win.stories
-            ]
-        self._has_applied = False
-        title = story.title if story and getattr(story, "title", None) else f"Story #{story_index + 1}"
-        self.setWindowTitle(f"Audio Fades — {title}")
-        self.resize(450, 310)
-        make_dialog_maximizable(self)
-        self._init_ui()
-
-    def _init_ui(self):
-        layout = QVBoxLayout(self)
-        layout.setSpacing(14)
-
-        story_dur = max(0.01, (self.story.end - self.story.start)) if self.story else 10.0
-        header_text = (
-            f"<b>Story #{self.story_index + 1}: {html.escape(self.story.title if self.story else '')}</b><br>"
-            f"<span style='color: #8b949e;'>Duration: {format_time(story_dur, include_millis=True)} ({story_dur:.2f}s)</span>"
-        )
-        header_label = QLabel(header_text, self)
-        header_label.setWordWrap(True)
-        layout.addWidget(header_label)
-
-        form_group = QGroupBox("Audio Fade Durations & Profile", self)
-        form_layout = QFormLayout(form_group)
-        form_layout.setContentsMargins(14, 14, 14, 14)
-        form_layout.setSpacing(10)
-
-        self.fade_in_spin = QDoubleSpinBox(self)
-        self.fade_in_spin.setRange(0.0, story_dur)
-        self.fade_in_spin.setSingleStep(0.1)
-        self.fade_in_spin.setDecimals(2)
-        self.fade_in_spin.setSuffix(" s")
-        curr_in = getattr(self.story, "fade_in", 0.0) if self.story else 0.0
-        self.fade_in_spin.setValue(curr_in)
-        form_layout.addRow("Fade In Duration:", self.fade_in_spin)
-
-        self.fade_out_spin = QDoubleSpinBox(self)
-        self.fade_out_spin.setRange(0.0, story_dur)
-        self.fade_out_spin.setSingleStep(0.1)
-        self.fade_out_spin.setDecimals(2)
-        self.fade_out_spin.setSuffix(" s")
-        curr_out = getattr(self.story, "fade_out", 0.0) if self.story else 0.0
-        self.fade_out_spin.setValue(curr_out)
-        form_layout.addRow("Fade Out Duration:", self.fade_out_spin)
-
-        from prs_shared import FadeCurveVisualSelector
-        self.fade_curve_combo = FadeCurveVisualSelector(self, button_width=86, button_height=56)
-        curr_curve = getattr(self.story, "fade_curve", "linear") if self.story else "linear"
-        self.fade_curve_combo.setCurrentData(curr_curve)
-        form_layout.addRow("Fade Curve Profile:", self.fade_curve_combo)
-
-        layout.addWidget(form_group)
-
-        preset_layout = QHBoxLayout()
-        preset_label = QLabel("Presets:", self)
-        preset_layout.addWidget(preset_label)
-
-        btn_none = QPushButton("No Fades (0s)", self)
-        btn_none.clicked.connect(lambda: (self.fade_in_spin.setValue(0.0), self.fade_out_spin.setValue(0.0)))
-        preset_layout.addWidget(btn_none)
-
-        btn_default = QPushButton("Restore Defaults", self)
-        btn_default.clicked.connect(self._restore_defaults)
-        preset_layout.addWidget(btn_default)
-        preset_layout.addStretch()
-        layout.addLayout(preset_layout)
-
-        self.apply_all_cb = QCheckBox("Apply these fade settings to all stories in project", self)
-        layout.addWidget(self.apply_all_cb)
-
-        btn_box = QHBoxLayout()
-        btn_box.addStretch()
-
-        apply_btn = QPushButton("Apply", self)
-        apply_btn.setToolTip("Apply current fade curve and durations to audition live on timeline without closing")
-        apply_btn.clicked.connect(self.apply_current)
-        btn_box.addWidget(apply_btn)
-
-        cancel_btn = QPushButton("Cancel", self)
-        cancel_btn.clicked.connect(self.reject)
-        btn_box.addWidget(cancel_btn)
-
-        save_btn = QPushButton("Save Fades", self)
-        save_btn.setDefault(True)
-        save_btn.clicked.connect(self.accept)
-        btn_box.addWidget(save_btn)
-
-        layout.addLayout(btn_box)
-
-    def apply_current(self):
-        new_in, new_out, new_curve, apply_all = self.get_fades()
-        if not self.main_win or not hasattr(self.main_win, "stories"):
-            return
-
-        if apply_all:
-            for s in self.main_win.stories:
-                s.fade_in = new_in
-                s.fade_out = new_out
-                s.fade_curve = new_curve
-        else:
-            if 0 <= self.story_index < len(self.main_win.stories):
-                st = self.main_win.stories[self.story_index]
-                st.fade_in = new_in
-                st.fade_out = new_out
-                st.fade_curve = new_curve
-
-        if hasattr(self.main_win, "refresh_story_list"):
-            self.main_win.refresh_story_list()
-        if hasattr(self.main_win, "timeline"):
-            self.main_win.timeline.set_stories(self.main_win.stories, getattr(self.main_win, "current_selected_story_indices", []))
-            self.main_win.timeline.update()
-        self._has_applied = True
-
-    def reject(self):
-        if self._has_applied and self.main_win and hasattr(self.main_win, "stories"):
-            for idx, (fin, fout, fcur) in enumerate(self._initial_fades):
-                if idx < len(self.main_win.stories):
-                    st = self.main_win.stories[idx]
-                    st.fade_in = fin
-                    st.fade_out = fout
-                    st.fade_curve = fcur
-            if hasattr(self.main_win, "refresh_story_list"):
-                self.main_win.refresh_story_list()
-            if hasattr(self.main_win, "timeline"):
-                self.main_win.timeline.set_stories(self.main_win.stories, getattr(self.main_win, "current_selected_story_indices", []))
-                self.main_win.timeline.update()
-        super().reject()
-
-    def _restore_defaults(self):
-        self.fade_in_spin.setValue(0.0)
-        self.fade_out_spin.setValue(1.0)
-        self.fade_curve_combo.setCurrentData("linear")
-
-    def get_fades(self):
-        return self.fade_in_spin.value(), self.fade_out_spin.value(), self.fade_curve_combo.currentData(), self.apply_all_cb.isChecked()
-
-
-class SpeakerManagerDialog(QDialog):
-    """Manager dialog for inspecting, aliasing, and merging detected speaker clusters."""
-
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.main_win = parent
-        self.setWindowTitle("Manage Speakers & Detection Clusters")
-        self.resize(800, 500)
-        self.setMinimumSize(760, 460)
-        make_dialog_maximizable(self)
-        self._init_ui()
-        self._populate()
-
-    def _init_ui(self):
-        layout = QVBoxLayout(self)
-
-        desc = QLabel(
-            "<b>Speakers & Detection Clusters</b><br>"
-            "Inspect all detected speaker clusters, rename / assign global aliases, or merge redundant clusters."
-        )
-        desc.setWordWrap(True)
-        layout.addWidget(desc)
-
-        self.table = QTableWidget(self)
-        self.table.setColumnCount(5)
-        self.table.setHorizontalHeaderLabels([
-            "Speaker Name / Alias", "Cluster / Raw ID", "Turns", "Total Duration", "Actions"
-        ])
-        self.table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
-        self.table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
-        self.table.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
-        self.table.horizontalHeader().setSectionResizeMode(3, QHeaderView.ResizeMode.ResizeToContents)
-        self.table.horizontalHeader().setSectionResizeMode(4, QHeaderView.ResizeMode.Fixed)
-        self.table.setColumnWidth(4, 240)
-        self.table.verticalHeader().setDefaultSectionSize(46)
-        self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
-        self.table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
-        layout.addWidget(self.table)
-
-        btn_row = QHBoxLayout()
-        self.merge_all_btn = QPushButton("Merge Two Speakers...", self)
-        self.merge_all_btn.clicked.connect(self._on_quick_merge)
-        btn_row.addWidget(self.merge_all_btn)
-        btn_row.addStretch()
-
-        close_btn = QPushButton("Close", self)
-        close_btn.clicked.connect(self.accept)
-        btn_row.addWidget(close_btn)
-        layout.addLayout(btn_row)
-
-    def _populate(self):
-        self.table.setRowCount(0)
-        if not self.main_win or not getattr(self.main_win, "transcript", None):
-            return
-
-        segments = self.main_win.transcript.get("segments", [])
-        speaker_stats = {}
-
-        for idx, seg in enumerate(segments):
-            name = self.main_win.get_effective_speaker_name(idx, seg) or "Unknown Speaker"
-            raw = str(self.main_win.segment_speaker_overrides.get(idx) or seg.get("speaker") or name)
-            start = float(seg.get("start", 0.0))
-            end = float(seg.get("end", start))
-            dur = max(0.0, end - start)
-
-            if name not in speaker_stats:
-                speaker_stats[name] = {"raw": raw, "turns": 0, "duration": 0.0}
-            speaker_stats[name]["turns"] += 1
-            speaker_stats[name]["duration"] += dur
-
-        self.table.setRowCount(len(speaker_stats))
-        for row, (name, info) in enumerate(sorted(speaker_stats.items(), key=lambda x: -x[1]["duration"])):
-            self.table.setRowHeight(row, 46)
-
-            name_item = QTableWidgetItem(name)
-            self.table.setItem(row, 0, name_item)
-
-            raw_item = QTableWidgetItem(info["raw"])
-            raw_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-            self.table.setItem(row, 1, raw_item)
-
-            turns_item = QTableWidgetItem(str(info["turns"]))
-            turns_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-            self.table.setItem(row, 2, turns_item)
-
-            dur_item = QTableWidgetItem(format_time(info["duration"]))
-            dur_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-            self.table.setItem(row, 3, dur_item)
-
-            action_widget = QWidget(self)
-            action_layout = QHBoxLayout(action_widget)
-            action_layout.setContentsMargins(6, 4, 6, 4)
-            action_layout.setSpacing(8)
-
-            btn_style = """
-                QPushButton {
-                    background-color: #1e293b;
-                    color: #f1f5f9;
-                    border: 1px solid #475569;
-                    border-radius: 4px;
-                    padding: 4px 10px;
-                    font-size: 11px;
-                    font-weight: 600;
-                    min-height: 26px;
-                }
-                QPushButton:hover {
-                    background-color: #334155;
-                    border-color: #38bdf8;
-                    color: #38bdf8;
-                }
-                QPushButton:pressed {
-                    background-color: #0f172a;
-                }
-            """
-
-            rename_btn = QPushButton("Rename / Alias", action_widget)
-            rename_btn.setStyleSheet(btn_style)
-            rename_btn.setCursor(Qt.CursorShape.PointingHandCursor)
-            rename_btn.clicked.connect(lambda _, n=name, r=info["raw"]: self._rename_speaker(n, r))
-            action_layout.addWidget(rename_btn)
-
-            merge_btn = QPushButton("Merge Into...", action_widget)
-            merge_btn.setStyleSheet(btn_style)
-            merge_btn.setCursor(Qt.CursorShape.PointingHandCursor)
-            merge_btn.clicked.connect(lambda _, n=name: self._merge_speaker_into(n))
-            action_layout.addWidget(merge_btn)
-
-            self.table.setCellWidget(row, 4, action_widget)
-
-    def _rename_speaker(self, current_name, raw_id):
-        new_name, accepted = QInputDialog.getText(
-            self, "Rename Speaker Alias",
-            f"Enter new display alias for '{current_name}':",
-            QLineEdit.EchoMode.Normal, current_name
-        )
-        if accepted and new_name.strip() and new_name.strip() != current_name:
-            target = new_name.strip()
-            self.main_win.speaker_names[str(raw_id)] = target
-            self.main_win.speaker_names[current_name] = target
-            self.main_win.add_custom_speaker_to_glossary(target)
-
-            segments = self.main_win.transcript.get("segments", [])
-            for idx, seg in enumerate(segments):
-                if self.main_win.get_effective_speaker_name(idx, seg) == current_name:
-                    override_key = f"SEG_{idx}_SPEAKER"
-                    self.main_win.speaker_names[override_key] = target
-                    self.main_win.segment_speaker_overrides[idx] = override_key
-
-            self.main_win.render_transcript()
-            self.main_win.save_project()
-            self._populate()
-
-    def _merge_speaker_into(self, source_name):
-        known = [s for s in self.main_win.get_all_known_speakers() if s != source_name]
-        if not known:
-            QMessageBox.information(self, "Merge Speakers", "No other speakers available to merge into.")
-            return
-
-        target, accepted = QInputDialog.getItem(
-            self, "Merge Speaker",
-            f"Merge all turns from '{source_name}' into which speaker?",
-            known, 0, False
-        )
-        if accepted and target:
-            confirm = QMessageBox.question(
-                self, "Confirm Merge",
-                f"Are you sure you want to merge all occurrences of '{source_name}' into '{target}'?\n\n"
-                f"This will reassign all segments and diarization tracks across the entire timeline.",
-                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
-                QMessageBox.StandardButton.Yes
-            )
-            if confirm == QMessageBox.StandardButton.Yes:
-                self.main_win.merge_speakers(source_name, target)
-                self._populate()
-
-    def _on_quick_merge(self):
-        known = self.main_win.get_all_known_speakers()
-        if len(known) < 2:
-            QMessageBox.information(self, "Merge Speakers", "At least two distinct speakers are required to merge.")
-            return
-
-        source, ok1 = QInputDialog.getItem(
-            self, "Merge Speakers", "Select Source Speaker to merge (will be replaced):", known, 0, False
-        )
-        if not ok1 or not source:
-            return
-
-        candidates = [s for s in known if s != source]
-        target, ok2 = QInputDialog.getItem(
-            self, "Merge Speakers", f"Select Target Speaker (to receive '{source}'):", candidates, 0, False
-        )
-        if not ok2 or not target:
-            return
-
-        self.main_win.merge_speakers(source, target)
-        self._populate()

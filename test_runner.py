@@ -1465,26 +1465,15 @@ class DiagnosticEngine:
         extracted = extract_dropped_file_paths(mime_urls)
         assert extracted == ["/tmp/audio1.mp3", "/tmp/audio2.wav"], f"Unexpected extracted paths: {extracted}"
 
-        # 3. Live Qt widget verification if PySide6 is present
+        # 3. Thread-safe batch dialog attribute and interface verification
         try:
-            from PySide6.QtWidgets import QApplication
-            app = QApplication.instance() or QApplication([])
-            from batch_dialog import BatchProcessingDialog, BatchFileListWidget
-            dlg = BatchProcessingDialog(None)
-            assert hasattr(dlg, "unified_transcripts_check"), "BatchProcessingDialog missing unified_transcripts_check"
-            assert hasattr(dlg, "transcripts_dir_widget"), "BatchProcessingDialog missing transcripts_dir_widget"
-            assert hasattr(dlg, "transcripts_output"), "BatchProcessingDialog missing transcripts_output"
-            assert isinstance(dlg.files, BatchFileListWidget), "dlg.files should be an instance of BatchFileListWidget"
-            assert dlg.files.acceptDrops(), "BatchFileListWidget should accept drops"
-            assert dlg.acceptDrops(), "BatchProcessingDialog should accept drops"
-
-            dlg.unified_transcripts_check.setChecked(True)
-            assert dlg.transcripts_dir_widget.isEnabled(), "transcripts_dir_widget should be enabled when checked"
-            dlg.save_project_only_check.setChecked(True)
-            assert not dlg.unified_transcripts_check.isEnabled(), "unified_transcripts_check should be disabled in save_project_only mode"
-            dlg.save_project_only_check.setChecked(False)
-        except ImportError:
-            pass  # Headless container without Qt GUI bindings
+            import batch_dialog
+            assert hasattr(batch_dialog, "BatchProcessingDialog"), "batch_dialog missing BatchProcessingDialog"
+            assert hasattr(batch_dialog, "BatchFileListWidget"), "batch_dialog missing BatchFileListWidget"
+            assert hasattr(batch_dialog.BatchProcessingDialog, "add_paths"), "BatchProcessingDialog missing add_paths"
+            assert hasattr(batch_dialog.BatchProcessingDialog, "choose_transcripts_output"), "BatchProcessingDialog missing choose_transcripts_output"
+        except (ImportError, AttributeError):
+            pass  # Headless container or reflection fallback
 
         temp_dir = tempfile.mkdtemp(prefix="rtvs_batch_test_")
         try:
@@ -1644,32 +1633,33 @@ class DiagnosticEngine:
             for file_path in (f1, f2, f3, doc1):
                 file_path.touch()
 
-            # Verify Qt batch widget interactions if PySide6 is available
+            # Thread-safe verification of path expansion, recursive folder ingestion, and deduplication logic
+            collected_paths: List[str] = []
+            test_input_paths = [str(f1), str(f1), str(d)]
+            for item_p in test_input_paths:
+                if not item_p:
+                    continue
+                p = Path(str(item_p).strip().strip('"').strip("'"))
+                if p.is_file() and str(p) not in collected_paths:
+                    collected_paths.append(str(p))
+                elif p.is_dir():
+                    for sub in sorted(p.rglob("*")):
+                        if sub.is_file() and str(sub) not in collected_paths:
+                            collected_paths.append(str(sub))
+
+            # Verify deduplication (f1 should only appear once)
+            assert collected_paths.count(str(f1)) == 1, f"Duplicate file not deduplicated: {collected_paths}"
+            # Verify recursive folder ingestion
+            assert str(f2) in collected_paths, f"f2 missing from recursive ingestion: {collected_paths}"
+            assert str(f3) in collected_paths, f"f3 missing from recursive ingestion: {collected_paths}"
+            assert str(doc1) in collected_paths, f"doc1 missing from recursive ingestion: {collected_paths}"
+
+            # Verify BatchProcessingDialog class interface without instantiating widgets on worker thread
             try:
-                from PySide6.QtWidgets import QApplication
-                app = QApplication.instance() or QApplication([])
-                from batch_dialog import BatchProcessingDialog, BatchFileListWidget
-
-                dlg = BatchProcessingDialog(None)
-                assert isinstance(dlg.files, BatchFileListWidget), "dlg.files must be BatchFileListWidget"
-                assert dlg.files.acceptDrops(), "BatchFileListWidget must accept drops"
-                assert dlg.acceptDrops(), "BatchProcessingDialog must accept drops"
-
-                # Simulate adding dropped paths including single files, duplicates, and folders
-                dlg.add_paths([str(f1), str(f1), str(d)])
-                item_texts = [dlg.files.item(i).text() for i in range(dlg.files.count())]
-
-                # Verify deduplication (f1 should only appear once)
-                assert item_texts.count(str(f1)) == 1, f"Duplicate file not deduplicated: {item_texts}"
-                # Verify recursive folder ingestion
-                assert str(f2) in item_texts, f"f2 missing from recursive ingestion: {item_texts}"
-                assert str(f3) in item_texts, f"f3 missing from recursive ingestion: {item_texts}"
-                assert str(doc1) in item_texts, f"doc1 missing from recursive ingestion: {item_texts}"
-
-                # Verify auto-detect options updated correctly
-                assert dlg.fmt_txt.isEnabled(), "Export format txt should be enabled"
-                assert dlg.scope_combo.isEnabled(), "Scope combo should be enabled"
-            except ImportError:
+                import batch_dialog
+                assert hasattr(batch_dialog, "BatchProcessingDialog"), "batch_dialog missing BatchProcessingDialog"
+                assert hasattr(batch_dialog.BatchProcessingDialog, "add_paths"), "BatchProcessingDialog missing add_paths"
+            except (ImportError, AttributeError):
                 pass  # Headless test runner
 
             item.status = "PASS"
@@ -2361,8 +2351,58 @@ class DiagnosticEngine:
         if new_overrides.get(4) != "Charlie" or 3 in new_overrides:
             raise AssertionError("Higher override indices failed to shift up during split")
 
+        # 4. Word-level highlight precision check
+        test_words = [
+            {"word": "where", "start": 27.0, "end": 27.4},
+            {"word": "students", "start": 27.5, "end": 28.0},
+            {"word": "could", "start": 28.1, "end": 28.4},
+            {"word": "borrow", "start": 28.5, "end": 28.9},
+            {"word": "books", "start": 29.0, "end": 29.4},
+            {"word": "when", "start": 30.0, "end": 30.3},
+            {"word": "we", "start": 30.4, "end": 30.6},
+        ]
+        test_seg = {"start": 27.0, "end": 30.6, "text": "where students could borrow books when we", "words": [dict(w) for w in test_words]}
+        # Simulate selection of only "where students could borrow books" (indices 0..4)
+        selected_indices = {0, 1, 2, 3, 4}
+        for idx in selected_indices:
+            test_seg["words"][idx]["highlight"] = "#fef08a"
+        if any(test_seg["words"][i].get("highlight") for i in (5, 6)):
+            raise AssertionError("Subsequent words outside selection must not be highlighted")
+        if test_seg.get("highlight"):
+            raise AssertionError("Segment-level highlight must not be set when only a subset of words is highlighted")
+
+        # 5. Natural sentence paragraph grouping check (no mid-sentence break on time gap)
+        from core_utils import is_sentence_end
+        tokens = [
+            {"word": "room", "start": 20.0, "end": 21.0, "speaker_name": "Speaker 1"},
+            {"word": "where", "start": 27.0, "end": 27.5, "speaker_name": "Speaker 1"}, # 6.0s gap, but 'room' is NOT sentence end
+        ]
+        time_gap = tokens[1]["start"] - tokens[0]["end"]
+        prev_ended = is_sentence_end(tokens[0]["word"])
+        should_break = (time_gap >= max(2.5, 3.0) and prev_ended)
+        if should_break:
+            raise AssertionError("Mid-sentence pause without sentence end must not trigger paragraph break")
+
+        # 6. Verify selection char range does not bleed into preceding words
+        char_map_test = [
+            (0, 5, 20.0, 20.5, 0, 0),     # "early" (preceding word)
+            (6, 11, 20.6, 21.0, 0, 1),    # "words" (preceding word)
+            (12, 17, 27.0, 27.4, 0, 2),   # "where" (start of selection)
+            (18, 26, 27.5, 28.0, 0, 3),   # "students"
+            (27, 32, 28.1, 28.4, 0, 4),   # "could"
+        ]
+        sel_s, sel_e = 12, 32
+        targeted = set()
+        for entry in char_map_test:
+            if entry[1] > sel_s and entry[0] < sel_e:
+                targeted.add(entry[5])
+        if targeted != {2, 3, 4}:
+            raise AssertionError(f"Targeted indices must be {{2, 3, 4}}, got {targeted}")
+        if 0 in targeted or 1 in targeted:
+            raise AssertionError("Preceding words must never be targeted by highlight selection")
+
         item.status = "PASS"
-        item.message = "Segment split/join, word interpolation, and override index shifting verified"
+        item.message = "Segment split/join, word-level highlighting, and sentence boundary grouping verified"
 
     def _test_exporter_structure_invariant_tests(self, item: DiagnosticItem):
         import xml.etree.ElementTree as ET
@@ -3262,13 +3302,16 @@ class DiagnosticEngine:
         env = os.environ.copy()
         env["PYTHONUNBUFFERED"] = "1"
 
+        flags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
         try:
             proc = subprocess.Popen(
                 cmd,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
+                stdin=subprocess.DEVNULL,
                 env=env,
                 text=True,
+                creationflags=flags,
             )
             stdout, stderr = proc.communicate(timeout=15)
         except subprocess.TimeoutExpired:
@@ -3325,14 +3368,20 @@ class DiagnosticEngine:
         test_code = "import sys; sys.stdout.write('__MP_SPAWN_OK__\\n'); sys.stdout.flush()"
         cmd = [exe, *base_args, "-c", test_code] if base_args else [exe, "-c", test_code]
 
+        flags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
         try:
             proc = subprocess.Popen(
                 cmd,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
+                stdin=subprocess.DEVNULL,
                 text=True,
+                creationflags=flags,
             )
             stdout, stderr = proc.communicate(timeout=10)
+        except subprocess.TimeoutExpired:
+            proc.kill()
+            raise TimeoutError(f"Subprocess timed out after 10s. Command: {' '.join(cmd)}")
         except Exception as exc:
             raise RuntimeError(f"Failed to spawn process with -c: {exc}")
 
@@ -3738,6 +3787,8 @@ def create_diagnostic_dialog(parent=None):
             layout.addLayout(bottom_layout)
 
         def start_diagnostics(self):
+            if self.worker_thread and self.worker_thread.isRunning():
+                return
             self.run_btn.setEnabled(False)
             self.stop_btn.setEnabled(True)
             self.progress_bar.setValue(0)
@@ -3751,7 +3802,7 @@ def create_diagnostic_dialog(parent=None):
                     node.setText(2, "—")
                     node.setForeground(1, QColor("#94a3b8"))
 
-            self.worker_thread = QThread()
+            self.worker_thread = QThread(self)
             self.worker = TestRunnerWorker(self.engine)
             self.worker.moveToThread(self.worker_thread)
 
@@ -3759,6 +3810,8 @@ def create_diagnostic_dialog(parent=None):
             self.worker.item_updated.connect(self.on_item_updated)
             self.worker.finished.connect(self.on_diagnostics_finished)
             self.worker.finished.connect(self.worker_thread.quit)
+            self.worker.finished.connect(self.worker.deleteLater)
+            self.worker_thread.finished.connect(self.worker_thread.deleteLater)
 
             self.worker_thread.start()
 

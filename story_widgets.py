@@ -480,41 +480,9 @@ class StoryListWidget(QListWidget):
 
         menu.addSeparator()
 
-        fade_menu = menu.addMenu("Audio Fades")
-
-        adjust_fades_act = QAction("Adjust Fades for Selected Story...", self)
-        adjust_fades_act.triggered.connect(lambda: parent.open_story_fades_dialog())
-        fade_menu.addAction(adjust_fades_act)
-
-        apply_default_fades_act = QAction("Apply Default Fades to Selected Stories", self)
-        apply_default_fades_act.triggered.connect(lambda: parent.apply_fades_to_selected_stories())
-        fade_menu.addAction(apply_default_fades_act)
-
-        remove_fades_act = QAction("Remove Fades from Selected Stories", self)
-        remove_fades_act.triggered.connect(lambda: parent.remove_fades_from_selected_stories())
-        fade_menu.addAction(remove_fades_act)
-
-        fade_menu.addSeparator()
-        curve_menu = fade_menu.addMenu("Set Fade Curve Profile")
-
-        # Determine current curve from selected story if available
-        curr_curve = "linear"
-        if hasattr(parent, "stories") and parent.stories:
-            curr_row = self.currentRow()
-            if 0 <= curr_row < len(parent.stories):
-                curr_curve = getattr(parent.stories[curr_row], "fade_curve", "linear") or "linear"
-
-        profiles = _get_fade_curve_profiles()
-        for profile in profiles:
-            cid = profile["id"]
-            icon = _get_fade_curve_icon(cid, width=44, height=22)
-            act = QAction(icon, f"{profile['symbol']}  {profile['full_name']}", self)
-            act.setIconVisibleInMenu(True)
-            act.setCheckable(True)
-            act.setChecked(cid == curr_curve)
-            act.setToolTip(profile["desc"])
-            act.triggered.connect(lambda checked=False, ck=cid: parent.set_fade_curve_for_selected_stories(ck))
-            curve_menu.addAction(act)
+        fades_act = QAction("Audio Fades...", self)
+        fades_act.triggered.connect(lambda: parent.open_story_fades_dialog())
+        menu.addAction(fades_act)
 
         menu.addSeparator()
 

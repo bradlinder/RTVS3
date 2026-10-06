@@ -1103,8 +1103,165 @@ class InteractiveTranscriptEdit(QTextEdit):
         self.setFocus()
         self.formatChanged.emit()
 
+    def _get_target_word_indices_for_selection_or_cursor(self, flat_words):
+        """Identify exact word indices in flat_words matching active text selection or cursor position."""
+        cursor = self.textCursor()
+        total_words = len(flat_words)
+        if total_words == 0:
+            return set()
+
+        targeted_indices = set()
+
+        # Build fast lookup map: (seg_idx, word_idx) -> f_i
+        seg_word_to_fi = {}
+        for f_i, fw in enumerate(flat_words):
+            seg_word_to_fi[(fw["seg_idx"], fw["word_idx"])] = f_i
+
+        # Gather active selection spans (supporting single selection and multi-selection mode)
+        selection_spans = []
+        if cursor.hasSelection():
+            sel_start = min(cursor.selectionStart(), cursor.selectionEnd())
+            sel_end = max(cursor.selectionStart(), cursor.selectionEnd())
+            if sel_end > sel_start:
+                selection_spans.append((sel_start, sel_end))
+        elif getattr(self, "saved_selections", None):
+            for s in self.saved_selections:
+                s_start = min(s.get("start_char", 0), s.get("end_char", 0))
+                s_end = max(s.get("start_char", 0), s.get("end_char", 0))
+                if s_end > s_start:
+                    selection_spans.append((s_start, s_end))
+
+        if selection_spans:
+            # Strategy 1: Direct QTextDocument fragment inspection across selection spans
+            doc = self.document()
+            for sel_start, sel_end in selection_spans:
+                start_block = doc.findBlock(sel_start)
+                end_block = doc.findBlock(sel_end)
+                curr_block = start_block
+                while curr_block.isValid():
+                    it = curr_block.begin()
+                    while not it.atEnd():
+                        frag = it.fragment()
+                        if frag.isValid():
+                            f_pos = frag.position()
+                            f_end = f_pos + frag.length()
+                            if f_end > sel_start and f_pos < sel_end:
+                                href = frag.charFormat().anchorHref()
+                                if href and href.startswith("word:"):
+                                    parts = href.split(":")
+                                    if len(parts) >= 3:
+                                        try:
+                                            w_ts = float(parts[1])
+                                            w_seg = int(parts[2])
+                                            w_idx = int(parts[3]) if len(parts) >= 4 and parts[3].isdigit() else None
+                                            if (w_seg, w_idx) in seg_word_to_fi:
+                                                targeted_indices.add(seg_word_to_fi[(w_seg, w_idx)])
+                                            else:
+                                                for f_i, fw in enumerate(flat_words):
+                                                    if fw["seg_idx"] == w_seg and abs(fw.get("start", 0.0) - w_ts) < 0.05:
+                                                        targeted_indices.add(f_i)
+                                                        break
+                                        except (ValueError, IndexError):
+                                            pass
+                        it += 1
+                    if curr_block == end_block:
+                        break
+                    curr_block = curr_block.next()
+
+            # Strategy 2: Fallback to char_timestamp_map if document fragment scan returned nothing
+            if not targeted_indices:
+                char_map = getattr(self, "char_timestamp_map", [])
+                for sel_start, sel_end in selection_spans:
+                    for k, entry in enumerate(char_map):
+                        c_start, c_end = entry[0], entry[1]
+                        if c_end > sel_start and c_start < sel_end:
+                            w_seg = entry[4] if len(entry) >= 5 else None
+                            w_idx = entry[5] if len(entry) >= 6 else None
+                            w_ts = entry[2] if len(entry) >= 3 else None
+                            if (w_seg, w_idx) in seg_word_to_fi:
+                                targeted_indices.add(seg_word_to_fi[(w_seg, w_idx)])
+                            elif w_seg is not None and w_ts is not None:
+                                for f_i, fw in enumerate(flat_words):
+                                    if fw["seg_idx"] == w_seg and abs(fw.get("start", 0.0) - w_ts) < 0.05:
+                                        targeted_indices.add(f_i)
+                                        break
+                            elif k < total_words:
+                                targeted_indices.add(k)
+
+        else:
+            # Cursor click on a word without selection
+            pos = cursor.position()
+            hit_fi = None
+            doc = self.document()
+            curr_block = doc.findBlock(pos)
+            if curr_block.isValid():
+                it = curr_block.begin()
+                while not it.atEnd():
+                    frag = it.fragment()
+                    if frag.isValid() and frag.position() <= pos <= frag.position() + frag.length():
+                        href = frag.charFormat().anchorHref()
+                        if href and href.startswith("word:"):
+                            parts = href.split(":")
+                            if len(parts) >= 3:
+                                try:
+                                    w_ts = float(parts[1])
+                                    w_seg = int(parts[2])
+                                    w_idx = int(parts[3]) if len(parts) >= 4 and parts[3].isdigit() else None
+                                    if (w_seg, w_idx) in seg_word_to_fi:
+                                        hit_fi = seg_word_to_fi[(w_seg, w_idx)]
+                                    else:
+                                        for f_i, fw in enumerate(flat_words):
+                                            if fw["seg_idx"] == w_seg and abs(fw.get("start", 0.0) - w_ts) < 0.05:
+                                                hit_fi = f_i
+                                                break
+                                    if hit_fi is not None:
+                                        break
+                                except (ValueError, IndexError):
+                                    pass
+                    it += 1
+
+            if hit_fi is None:
+                char_map = getattr(self, "char_timestamp_map", [])
+                for k, entry in enumerate(char_map):
+                    if entry[0] <= pos <= entry[1]:
+                        w_seg = entry[4] if len(entry) >= 5 else None
+                        w_idx = entry[5] if len(entry) >= 6 else None
+                        w_ts = entry[2] if len(entry) >= 3 else None
+                        if (w_seg, w_idx) in seg_word_to_fi:
+                            hit_fi = seg_word_to_fi[(w_seg, w_idx)]
+                        elif w_seg is not None and w_ts is not None:
+                            for f_i, fw in enumerate(flat_words):
+                                if fw["seg_idx"] == w_seg and abs(fw.get("start", 0.0) - w_ts) < 0.05:
+                                    hit_fi = f_i
+                                    break
+                        elif k < total_words:
+                            hit_fi = k
+                        break
+
+            if hit_fi is not None and hit_fi < total_words:
+                if flat_words[hit_fi]["is_hl"]:
+                    active_hl = flat_words[hit_fi].get("color")
+                    start_i = hit_fi
+                    while start_i > 0 and flat_words[start_i - 1]["is_hl"] and flat_words[start_i - 1].get("color") == active_hl:
+                        start_i -= 1
+                    end_i = hit_fi
+                    while end_i < total_words - 1 and flat_words[end_i + 1]["is_hl"] and flat_words[end_i + 1].get("color") == active_hl:
+                        end_i += 1
+                    for k in range(start_i, end_i + 1):
+                        targeted_indices.add(k)
+                else:
+                    targeted_indices.add(hit_fi)
+            elif total_words > 0:
+                c_seg = self.get_segment_index_at_cursor(cursor)
+                if c_seg is not None:
+                    for f_i, fw in enumerate(flat_words):
+                        if fw["seg_idx"] == c_seg:
+                            targeted_indices.add(f_i)
+
+        return targeted_indices
+
     def toggle_highlight(self, color_name="#fef08a", force_apply=False):
-        """Toggle or change color of rich highlighting on active text selection or contiguous highlighted region."""
+        """Toggle or change color of rich highlighting on exact active word selection or contiguous highlighted region."""
         cursor = self.textCursor()
         main_win = self.window()
         before_state = main_win._capture_project_state() if hasattr(main_win, "_capture_project_state") else None
@@ -1126,33 +1283,10 @@ class InteractiveTranscriptEdit(QTextEdit):
             self.remove_highlight()
             return
 
-        # 1. Update underlying transcript data model (for both View and Edit modes)
         segs = main_win.transcript.get("segments", []) if (hasattr(main_win, "transcript") and main_win.transcript) else []
+        if not segs:
+            return
 
-        target_segs = set()
-        if cursor.hasSelection():
-            sel_start = min(cursor.selectionStart(), cursor.selectionEnd())
-            sel_end = max(cursor.selectionStart(), cursor.selectionEnd())
-            if hasattr(self, "get_time_range_for_char_span"):
-                t_range = self.get_time_range_for_char_span(sel_start, sel_end)
-                if t_range and t_range[0] is not None and t_range[1] is not None:
-                    st, et = t_range
-                    for i, s in enumerate(segs):
-                        s_st = s.get("start", 0.0)
-                        s_et = s.get("end", 0.0)
-                        if s_st <= et and s_et >= st:
-                            target_segs.add(i)
-
-        if not target_segs:
-            c_seg = self.get_segment_index_at_cursor(cursor)
-            if c_seg is not None and 0 <= c_seg < len(segs):
-                target_segs.add(c_seg)
-            else:
-                blk = cursor.blockNumber()
-                if 0 <= blk < len(segs):
-                    target_segs.add(blk)
-
-        # Build flattened word list to identify contiguous highlighted regions
         flat_words = []
         for s_idx, seg in enumerate(segs):
             if not isinstance(seg, dict):
@@ -1162,106 +1296,90 @@ class InteractiveTranscriptEdit(QTextEdit):
             if isinstance(words, list) and words:
                 for w_idx, w in enumerate(words):
                     if isinstance(w, dict):
-                        w_hl = w.get("highlight") or seg_hl
+                        w_hl = w.get("highlight")
                         is_hl = bool(w_hl and w_hl not in (False, "false", "False", 0, None))
                         flat_words.append({
                             "seg_idx": s_idx,
                             "word_idx": w_idx,
                             "word_dict": w,
                             "seg_dict": seg,
-                            "is_hl": is_hl
+                            "is_hl": is_hl,
+                            "color": str(w_hl).lower() if is_hl else None,
+                            "start": float(w.get("start", seg.get("start", 0.0))),
+                            "end": float(w.get("end", seg.get("end", 0.0))),
                         })
             else:
                 text = seg.get("text", "")
+                is_hl = bool(seg_hl and seg_hl not in (False, "false", "False", 0, None))
                 for w_idx, word_str in enumerate(text.split()):
-                    is_hl = bool(seg_hl and seg_hl not in (False, "false", "False", 0, None))
                     flat_words.append({
                         "seg_idx": s_idx,
                         "word_idx": w_idx,
                         "word_dict": None,
                         "seg_dict": seg,
-                        "is_hl": is_hl
+                        "is_hl": is_hl,
+                        "color": str(seg_hl).lower() if is_hl else None,
+                        "start": float(seg.get("start", 0.0)),
+                        "end": float(seg.get("end", 0.0)),
                     })
 
-        total_words = len(flat_words)
-        targeted_flat_indices = set()
-        for idx, fw in enumerate(flat_words):
-            if fw["seg_idx"] in target_segs:
-                targeted_flat_indices.add(idx)
+        targeted_indices = self._get_target_word_indices_for_selection_or_cursor(flat_words)
+        if not targeted_indices:
+            return
 
-        # Expand backwards and forwards across contiguous highlighted word blocks to recolor full region
-        indices_to_recolor = set()
-        for t_idx in targeted_flat_indices:
-            if 0 <= t_idx < total_words:
-                if flat_words[t_idx]["is_hl"]:
-                    start_i = t_idx
-                    while start_i > 0 and flat_words[start_i - 1]["is_hl"]:
-                        start_i -= 1
-                    end_i = t_idx
-                    while end_i < total_words - 1 and flat_words[end_i + 1]["is_hl"]:
-                        end_i += 1
-                    for k in range(start_i, end_i + 1):
-                        indices_to_recolor.add(k)
-                elif cursor.hasSelection():
-                    indices_to_recolor.add(t_idx)
+        # If not forcing application and all targeted words already have this exact color, remove it
+        if not force_apply and all(flat_words[k].get("color") == target_hex for k in targeted_indices):
+            self.remove_highlight()
+            return
 
-        # If user clicked near a highlighted region (e.g. adjacent word boundary)
-        if not indices_to_recolor and targeted_flat_indices:
-            for t_idx in targeted_flat_indices:
-                for offset in (-1, 1, -2, 2):
-                    adj = t_idx + offset
-                    if 0 <= adj < total_words and flat_words[adj]["is_hl"]:
-                        start_i = adj
-                        while start_i > 0 and flat_words[start_i - 1]["is_hl"]:
-                            start_i -= 1
-                        end_i = adj
-                        while end_i < total_words - 1 and flat_words[end_i + 1]["is_hl"]:
-                            end_i += 1
-                        for k in range(start_i, end_i + 1):
-                            indices_to_recolor.add(k)
-
-        # Apply new highlight color to targeted data words & segments
         affected_segs = set()
-        if indices_to_recolor:
-            for k in indices_to_recolor:
-                fw = flat_words[k]
-                if fw["word_dict"]:
-                    fw["word_dict"]["highlight"] = target_hex
-                affected_segs.add(fw["seg_idx"])
-            for s_idx in affected_segs:
-                seg = segs[s_idx]
+        for k in targeted_indices:
+            fw = flat_words[k]
+            if fw["word_dict"]:
+                fw["word_dict"]["highlight"] = target_hex
+            else:
+                seg = fw["seg_dict"]
+                if "words" not in seg or not seg["words"]:
+                    tokens = seg.get("text", "").split()
+                    seg_st = float(seg.get("start", 0.0))
+                    seg_et = float(seg.get("end", seg_st + 1.0))
+                    dur = max(0.01, seg_et - seg_st) / max(1, len(tokens))
+                    target_wi = {flat_words[ti]["word_idx"] for ti in targeted_indices if flat_words[ti]["seg_idx"] == fw["seg_idx"]}
+                    seg["words"] = [
+                        {
+                            "word": tok,
+                            "start": round(seg_st + i * dur, 3),
+                            "end": round(seg_st + (i + 1) * dur, 3),
+                            "deleted": False,
+                            "highlight": target_hex if i in target_wi else None,
+                        }
+                        for i, tok in enumerate(tokens)
+                    ]
+                else:
+                    target_wi = {flat_words[ti]["word_idx"] for ti in targeted_indices if flat_words[ti]["seg_idx"] == fw["seg_idx"]}
+                    for i, w in enumerate(seg["words"]):
+                        if i in target_wi and isinstance(w, dict):
+                            w["highlight"] = target_hex
+            affected_segs.add(fw["seg_idx"])
+
+        for s_idx in affected_segs:
+            seg = segs[s_idx]
+            w_list = seg.get("words", [])
+            if w_list and all(isinstance(w, dict) and bool(w.get("highlight")) for w in w_list):
                 seg["highlight"] = target_hex
-        else:
-            for s_idx in target_segs:
-                if 0 <= s_idx < len(segs):
-                    seg = segs[s_idx]
-                    seg["highlight"] = target_hex
-                    if "words" in seg and isinstance(seg["words"], list):
-                        for w in seg["words"]:
-                            if isinstance(w, dict):
-                                w["highlight"] = target_hex
+            else:
+                seg.pop("highlight", None)
 
-        # 2. Update QTextCharFormat on editor / view
-        fmt = QTextCharFormat()
-        fmt.setBackground(QBrush(target_color))
-        fmt.setForeground(QBrush(QColor("#0f172a")))
-
-        if cursor.hasSelection():
-            sel_start = cursor.selectionStart()
-            sel_end = cursor.selectionEnd()
-            cursor.mergeCharFormat(fmt)
-            cursor.setPosition(sel_start)
-            cursor.setPosition(sel_end, QTextCursor.MoveMode.KeepAnchor)
-            self.setTextCursor(cursor)
-        else:
-            self.mergeCurrentCharFormat(fmt)
-
-        if hasattr(main_win, "mark_project_dirty"):
-            main_win.mark_project_dirty()
-
-        # Re-render transcript view so HTML reflects updated colors in both View and Edit modes
-        if hasattr(main_win, "render_transcript"):
-            main_win.render_transcript()
+        if hasattr(main_win, "is_updating_transcript_view"):
+            main_win.is_updating_transcript_view = True
+        try:
+            if hasattr(main_win, "mark_project_dirty"):
+                main_win.mark_project_dirty()
+            if hasattr(main_win, "render_transcript"):
+                main_win.render_transcript()
+        finally:
+            if hasattr(main_win, "is_updating_transcript_view"):
+                main_win.is_updating_transcript_view = False
 
         if before_state and hasattr(main_win, "_commit_project_state_change"):
             main_win._commit_project_state_change(before_state, "Change Highlight Color")
@@ -1271,39 +1389,15 @@ class InteractiveTranscriptEdit(QTextEdit):
         self.update_extra_selections()
 
     def remove_highlight(self):
-        """Removes background highlighting for the entire contiguous highlighted section(s) intersecting active selection or cursor."""
+        """Removes background highlighting for the exact active word selection or contiguous highlighted region."""
         cursor = self.textCursor()
         main_win = self.window()
-
-        # Capture baseline for universal undo / redo history
         before_state = main_win._capture_project_state() if hasattr(main_win, "_capture_project_state") else None
+
         segs = main_win.transcript.get("segments", []) if (hasattr(main_win, "transcript") and main_win.transcript) else []
+        if not segs:
+            return
 
-        # 1. Determine target segment index/indices from selection or cursor position
-        target_segs = set()
-        if cursor.hasSelection():
-            sel_start = min(cursor.selectionStart(), cursor.selectionEnd())
-            sel_end = max(cursor.selectionStart(), cursor.selectionEnd())
-            if hasattr(self, "get_time_range_for_char_span"):
-                t_range = self.get_time_range_for_char_span(sel_start, sel_end)
-                if t_range and t_range[0] is not None and t_range[1] is not None:
-                    st, et = t_range
-                    for i, s in enumerate(segs):
-                        s_st = s.get("start", 0.0)
-                        s_et = s.get("end", 0.0)
-                        if s_st <= et and s_et >= st:
-                            target_segs.add(i)
-
-        if not target_segs:
-            c_seg = self.get_segment_index_at_cursor(cursor)
-            if c_seg is not None and 0 <= c_seg < len(segs):
-                target_segs.add(c_seg)
-            else:
-                blk = cursor.blockNumber()
-                if 0 <= blk < len(segs):
-                    target_segs.add(blk)
-
-        # 2. Build flattened word list to identify contiguous highlighted regions
         flat_words = []
         for s_idx, seg in enumerate(segs):
             if not isinstance(seg, dict):
@@ -1313,111 +1407,72 @@ class InteractiveTranscriptEdit(QTextEdit):
             if isinstance(words, list) and words:
                 for w_idx, w in enumerate(words):
                     if isinstance(w, dict):
-                        w_hl = w.get("highlight") or seg_hl
+                        w_hl = w.get("highlight")
                         is_hl = bool(w_hl and w_hl not in (False, "false", "False", 0, None))
                         flat_words.append({
                             "seg_idx": s_idx,
                             "word_idx": w_idx,
                             "word_dict": w,
                             "seg_dict": seg,
-                            "is_hl": is_hl
+                            "is_hl": is_hl,
+                            "color": str(w_hl).lower() if is_hl else None,
+                            "start": float(w.get("start", seg.get("start", 0.0))),
+                            "end": float(w.get("end", seg.get("end", 0.0))),
                         })
             else:
                 text = seg.get("text", "")
+                is_hl = bool(seg_hl and seg_hl not in (False, "false", "False", 0, None))
                 for w_idx, word_str in enumerate(text.split()):
-                    is_hl = bool(seg_hl and seg_hl not in (False, "false", "False", 0, None))
                     flat_words.append({
                         "seg_idx": s_idx,
                         "word_idx": w_idx,
                         "word_dict": None,
                         "seg_dict": seg,
-                        "is_hl": is_hl
+                        "is_hl": is_hl,
+                        "color": str(seg_hl).lower() if is_hl else None,
+                        "start": float(seg.get("start", 0.0)),
+                        "end": float(seg.get("end", 0.0)),
                     })
 
-        total_words = len(flat_words)
-        targeted_flat_indices = set()
-        for idx, fw in enumerate(flat_words):
-            if fw["seg_idx"] in target_segs:
-                targeted_flat_indices.add(idx)
+        targeted_indices = self._get_target_word_indices_for_selection_or_cursor(flat_words)
+        if not targeted_indices:
+            return
 
-        # 3. Expand backwards and forwards across contiguous highlighted word blocks
-        indices_to_clear = set()
-        for t_idx in targeted_flat_indices:
-            if 0 <= t_idx < total_words and flat_words[t_idx]["is_hl"]:
-                start_i = t_idx
-                while start_i > 0 and flat_words[start_i - 1]["is_hl"]:
-                    start_i -= 1
-                end_i = t_idx
-                while end_i < total_words - 1 and flat_words[end_i + 1]["is_hl"]:
-                    end_i += 1
-                for k in range(start_i, end_i + 1):
-                    indices_to_clear.add(k)
+        affected_segs = set()
+        for k in targeted_indices:
+            fw = flat_words[k]
+            if fw["word_dict"]:
+                fw["word_dict"].pop("highlight", None)
+            else:
+                seg = fw["seg_dict"]
+                if "words" in seg and isinstance(seg["words"], list):
+                    target_wi = {flat_words[ti]["word_idx"] for ti in targeted_indices if flat_words[ti]["seg_idx"] == fw["seg_idx"]}
+                    for i, w in enumerate(seg["words"]):
+                        if i in target_wi and isinstance(w, dict):
+                            w.pop("highlight", None)
+            affected_segs.add(fw["seg_idx"])
 
-        # If user clicked near a highlighted region (e.g. adjacent space or word boundary)
-        if not indices_to_clear and targeted_flat_indices:
-            for t_idx in targeted_flat_indices:
-                for offset in (-1, 1, -2, 2):
-                    adj = t_idx + offset
-                    if 0 <= adj < total_words and flat_words[adj]["is_hl"]:
-                        start_i = adj
-                        while start_i > 0 and flat_words[start_i - 1]["is_hl"]:
-                            start_i -= 1
-                        end_i = adj
-                        while end_i < total_words - 1 and flat_words[end_i + 1]["is_hl"]:
-                            end_i += 1
-                        for k in range(start_i, end_i + 1):
-                            indices_to_clear.add(k)
+        for s_idx in affected_segs:
+            seg = segs[s_idx]
+            w_list = seg.get("words", [])
+            if not any(isinstance(w, dict) and bool(w.get("highlight")) for w in w_list):
+                seg.pop("highlight", None)
 
-        # 4. Clear highlight on all contiguous words and clean up segment metadata
-        if not indices_to_clear:
-            for s_idx in target_segs:
-                if 0 <= s_idx < len(segs):
-                    seg = segs[s_idx]
-                    seg.pop("highlight", None)
-                    if "words" in seg and isinstance(seg["words"], list):
-                        for w in seg["words"]:
-                            if isinstance(w, dict):
-                                w.pop("highlight", None)
-        else:
-            affected_segs = set()
-            for k in indices_to_clear:
-                fw = flat_words[k]
-                if fw["word_dict"]:
-                    fw["word_dict"].pop("highlight", None)
-                affected_segs.add(fw["seg_idx"])
+        if hasattr(main_win, "is_updating_transcript_view"):
+            main_win.is_updating_transcript_view = True
+        try:
+            if hasattr(main_win, "mark_project_dirty"):
+                main_win.mark_project_dirty()
+            if hasattr(main_win, "render_transcript"):
+                main_win.render_transcript()
+        finally:
+            if hasattr(main_win, "is_updating_transcript_view"):
+                main_win.is_updating_transcript_view = False
 
-            for s_idx in affected_segs:
-                seg = segs[s_idx]
-                words = seg.get("words", [])
-                if isinstance(words, list):
-                    has_remaining_hl = any(
-                        isinstance(w, dict) and bool(w.get("highlight"))
-                        for w in words
-                    )
-                    if not has_remaining_hl:
-                        seg.pop("highlight", None)
-                else:
-                    seg.pop("highlight", None)
-
-        # Clear character format background brush on cursor
-        fmt = QTextCharFormat()
-        fmt.setBackground(QBrush(Qt.BrushStyle.NoBrush))
-        if cursor.hasSelection():
-            cursor.mergeCharFormat(fmt)
-        else:
-            self.setCurrentCharFormat(fmt)
-
-        if hasattr(main_win, "mark_project_dirty"):
-            main_win.mark_project_dirty()
-
-        # Re-render transcript to reflect exact updated state
-        if hasattr(main_win, "render_transcript"):
-            main_win.render_transcript()
-
-        # Commit project state change for undo stack
         if before_state and hasattr(main_win, "_commit_project_state_change"):
             main_win._commit_project_state_change(before_state, "Remove Highlight")
 
+        self.setFocus()
         self.formatChanged.emit()
         self.update_extra_selections()
 
@@ -1883,8 +1938,10 @@ class InteractiveTranscriptEdit(QTextEdit):
                 event.accept()
                 return
 
+            main_win = self.window()
             ts = self.get_timestamp_at_cursor(cursor)
-            time_str = format_time(ts)
+            show_ms = getattr(main_win, "show_milliseconds", False)
+            time_str = format_time(ts, include_millis=show_ms)
 
             cursor.insertBlock()
 
@@ -2314,10 +2371,20 @@ class InteractiveTranscriptEdit(QTextEdit):
         menu.exec(self.mapToGlobal(position))
 
     def rebuild_anchor_index(self):
-        """Index transcript anchors once so playback highlighting is O(1) lookup."""
+        """Index transcript anchors once so playback highlighting is O(1) lookup,
+        and build 100% document-accurate char_timestamp_map from the live QTextDocument."""
         self.anchor_ranges = {}
+        exact_char_map = []
         doc = self.document()
         block = doc.begin()
+        main_win = self.window()
+        segs = (
+            main_win.transcript.get("segments", [])
+            if hasattr(main_win, "transcript") and main_win.transcript
+            else getattr(self, "transcript_data", {}).get("segments", [])
+            if isinstance(getattr(self, "transcript_data", None), dict)
+            else []
+        )
         while block.isValid():
             it = block.begin()
             while not it.atEnd():
@@ -2325,12 +2392,32 @@ class InteractiveTranscriptEdit(QTextEdit):
                 if fragment.isValid():
                     href = fragment.charFormat().anchorHref()
                     if href:
-                        self.anchor_ranges[href] = (
-                            fragment.position(),
-                            fragment.position() + fragment.length(),
-                        )
+                        f_pos = fragment.position()
+                        f_len = fragment.length()
+                        f_end = f_pos + f_len
+                        self.anchor_ranges[href] = (f_pos, f_end)
+                        if href.startswith("word:"):
+                            parts = href.split(":")
+                            if len(parts) >= 3:
+                                try:
+                                    w_start = float(parts[1])
+                                    w_seg = int(parts[2])
+                                    w_idx = int(parts[3]) if len(parts) >= 4 and parts[3].isdigit() else None
+                                    w_end = w_start
+                                    if 0 <= w_seg < len(segs):
+                                        seg = segs[w_seg]
+                                        s_words = seg.get("words", [])
+                                        if w_idx is not None and 0 <= w_idx < len(s_words) and isinstance(s_words[w_idx], dict):
+                                            w_end = float(s_words[w_idx].get("end", seg.get("end", w_start)))
+                                        else:
+                                            w_end = float(seg.get("end", w_start))
+                                    exact_char_map.append((f_pos, f_end, w_start, w_end, w_seg, w_idx))
+                                except (ValueError, IndexError):
+                                    pass
                 it += 1
             block = block.next()
+        if exact_char_map:
+            self.char_timestamp_map = exact_char_map
 
     def set_time_anchor_index(self, entries):
         self.time_anchor_index = sorted(entries, key=lambda item: item[0])

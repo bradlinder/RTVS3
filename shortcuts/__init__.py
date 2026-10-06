@@ -1,21 +1,17 @@
-"""Shortcuts Manager for Radio & TV Story Segmenter (Compatibility Façade).
-
-This module re-exports all components from the modular `shortcuts` package,
-maintaining 100% backward compatibility for all existing callers and tests.
-"""
+"""shortcuts package — Modular Keyboard Shortcuts Management Subsystem."""
 from __future__ import annotations
 
-from shortcuts import (
+from shortcuts.schema import (
     ShortcutDef,
     SHORTCUT_DEFINITIONS,
     get_platform_default,
     format_sequence_display,
     normalize_sequence_string,
     _get_shortcuts_theme_mode,
-    ShortcutsManager,
-    KeySequenceRecorderEdit,
-    KeyboardShortcutsPage,
 )
+from shortcuts.manager import ShortcutsManager
+from shortcuts.widgets import KeySequenceRecorderEdit
+from shortcuts.dialogs import KeyboardShortcutsPage
 
 __all__ = [
     "ShortcutDef",

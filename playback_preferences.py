@@ -12,7 +12,7 @@ class RestoreSelectedSettingsDialog(QDialog):
     """Presents users with a list of customizable settings that can be restored to defaults."""
 
     CATEGORIES = [
-        ("general_appearance", "Theme & Startup Mode", "Theme mode (Dark) and startup project behavior (Open last project)."),
+        ("general_appearance", "Theme & Startup Mode", "Theme mode (Dark), paragraph word count (65 words), and startup project behavior (Open last project)."),
         ("general_project_dirs", "Default Project Directory & Bundling", "Default projects folder, project subfolders (Transcripts/Media), and media copy settings."),
         ("general_autosave", "Auto-save Interval", "Automatic project save interval (5 minutes)."),
         ("keyboard_shortcuts", "Keyboard Shortcuts", "Custom keyboard shortcut assignments for all menu actions, tools, navigation, and editing commands."),
@@ -937,10 +937,12 @@ class PlaybackPreferencesMixin:
             self.settings_store.setValue("show_comment_highlights", "true")
             self.settings_store.setValue("show_timestamps", "true")
             self.settings_store.setValue("show_milliseconds", "false")
+            self.settings_store.setValue("min_words_per_paragraph", 65)
             self.show_floating_selection_toolbar = True
             self.show_comment_highlights = True
             self.show_timestamps = True
             self.show_milliseconds = False
+            self.min_words_per_paragraph = 65
             self.startup_project_mode = "last"
             if hasattr(self, "set_theme"):
                 try:
@@ -989,6 +991,8 @@ class PlaybackPreferencesMixin:
             if "show_millis_chk" in lw and lw["show_millis_chk"]:
                 lw["show_millis_chk"].setChecked(False)
                 lw["show_millis_chk"].setEnabled(True)
+            if "min_words_spin" in lw and lw["min_words_spin"]:
+                lw["min_words_spin"].setValue(65)
 
         # 2. General Project Directories & Bundling
         if "general_project_dirs" in selected_set:
@@ -1540,6 +1544,13 @@ class PlaybackPreferencesMixin:
         show_millis_chk.setEnabled(show_timestamps_chk.isChecked())
         show_timestamps_chk.toggled.connect(lambda checked: show_millis_chk.setEnabled(checked))
         gen_form.addRow("Timecode Precision:", show_millis_chk)
+
+        min_words_spin = QSpinBox()
+        min_words_spin.setRange(20, 250)
+        min_words_spin.setValue(int(getattr(self, "min_words_per_paragraph", 65) or 65))
+        min_words_spin.setSuffix(" words")
+        min_words_spin.setToolTip("Target minimum word count before starting a new paragraph at a natural sentence boundary within the same speaker turn. (Default: 65 words).")
+        gen_form.addRow("Paragraph Length:", min_words_spin)
 
         autosave_spin = QSpinBox()
         autosave_spin.setRange(0, 120)
@@ -2564,6 +2575,7 @@ class PlaybackPreferencesMixin:
             "show_highlights_chk": show_highlights_chk,
             "show_timestamps_chk": show_timestamps_chk,
             "show_millis_chk": show_millis_chk,
+            "min_words_spin": min_words_spin,
             "autosave_spin": autosave_spin,
             "audio_dev_combo": audio_dev_combo,
             "vol_slider": vol_slider,
@@ -2691,6 +2703,10 @@ class PlaybackPreferencesMixin:
             self.show_milliseconds = new_show_ms
             if hasattr(self, "show_milliseconds_action"):
                 self.show_milliseconds_action.setChecked(new_show_ms)
+
+            new_min_words = min_words_spin.value()
+            self.settings_store.setValue("min_words_per_paragraph", new_min_words)
+            self.min_words_per_paragraph = new_min_words
 
             if hasattr(self, "render_transcript"):
                 self.render_transcript()
