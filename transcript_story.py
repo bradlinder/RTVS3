@@ -1,4 +1,4 @@
-"""Radio & TV Segmenter v3.8.5-stable — transcript story responsibilities.
+"""Radio & TV Segmenter v3.8.6-stable — transcript story responsibilities.
 
 Methods intentionally retain the MainWindow-facing API so behavior remains
 maintaining the established MainWindow-facing API while responsibilities are isolated.
@@ -8,7 +8,7 @@ from typing import List, Optional, Tuple
 import html
 import re
 from prs_shared import *
-from core_utils import make_dialog_maximizable
+from core_utils import make_dialog_maximizable, apply_window_titlebar_theme
 from PySide6.QtWidgets import (
     QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QComboBox,
     QRadioButton, QButtonGroup, QSlider, QTableWidget, QTableWidgetItem,
@@ -123,6 +123,15 @@ class VoiceProfileMatchDialog(QDialog):
         self.setMinimumSize(720, 580)
         self.resize(760, 620)
         make_dialog_maximizable(self)
+        apply_window_titlebar_theme(self)
+
+        vp_mode = "dark"
+        try:
+            from PySide6.QtCore import QSettings
+            _s = QSettings("RadioTVStorySegmenter", "Preferences")
+            vp_mode = str(_s.value("theme", "dark")).lower().strip()
+        except Exception:
+            vp_mode = "dark"
 
         # Precompute candidate acoustic embeddings once upon launch so threshold slider drags are instantaneous
         self.cached_candidates = []
@@ -153,27 +162,65 @@ class VoiceProfileMatchDialog(QDialog):
 
         header_top_layout = QHBoxLayout()
         title_lbl = QLabel("Acoustic Voice Profile Matcher & Re-Clustering", self)
-        title_lbl.setStyleSheet("font-size: 15px; font-weight: bold; color: #f1f5f9;")
+        if vp_mode == "light":
+            title_lbl.setStyleSheet("font-size: 15px; font-weight: bold; color: #22262c;")
+        elif vp_mode == "high_contrast":
+            title_lbl.setStyleSheet("font-size: 15px; font-weight: bold; color: #ffffff;")
+        else:
+            title_lbl.setStyleSheet("font-size: 15px; font-weight: bold; color: #f1f5f9;")
         header_top_layout.addWidget(title_lbl, 1)
 
         self.btn_toggle_hints = QPushButton("💡 Usage Hints", self)
         self.btn_toggle_hints.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_toggle_hints.setMaximumHeight(26)
-        self.btn_toggle_hints.setStyleSheet("""
-            QPushButton {
-                background-color: #1e293b;
-                color: #38bdf8;
-                border: 1px solid #334155;
-                border-radius: 4px;
-                padding: 3px 10px;
-                font-size: 11px;
-                font-weight: bold;
-            }
-            QPushButton:hover {
-                background-color: #334155;
-                color: #7dd3fc;
-            }
-        """)
+        if vp_mode == "light":
+            self.btn_toggle_hints.setStyleSheet("""
+                QPushButton {
+                    background-color: #e3e6ea;
+                    color: #2e74b5;
+                    border: 1px solid #b6bcc4;
+                    border-radius: 4px;
+                    padding: 3px 10px;
+                    font-size: 11px;
+                    font-weight: bold;
+                }
+                QPushButton:hover {
+                    background-color: #d0d4d9;
+                    color: #205493;
+                }
+            """)
+        elif vp_mode == "high_contrast":
+            self.btn_toggle_hints.setStyleSheet("""
+                QPushButton {
+                    background-color: #000000;
+                    color: #ffff00;
+                    border: 1px solid #ffff00;
+                    border-radius: 4px;
+                    padding: 3px 10px;
+                    font-size: 11px;
+                    font-weight: bold;
+                }
+                QPushButton:hover {
+                    background-color: #ffff00;
+                    color: #000000;
+                }
+            """)
+        else:
+            self.btn_toggle_hints.setStyleSheet("""
+                QPushButton {
+                    background-color: #1e293b;
+                    color: #38bdf8;
+                    border: 1px solid #334155;
+                    border-radius: 4px;
+                    padding: 3px 10px;
+                    font-size: 11px;
+                    font-weight: bold;
+                }
+                QPushButton:hover {
+                    background-color: #334155;
+                    color: #7dd3fc;
+                }
+            """)
         self.btn_toggle_hints.clicked.connect(self._toggle_hints)
         header_top_layout.addWidget(self.btn_toggle_hints)
         header_layout.addLayout(header_top_layout)
@@ -183,34 +230,75 @@ class VoiceProfileMatchDialog(QDialog):
             self,
         )
         desc_lbl.setWordWrap(True)
-        desc_lbl.setStyleSheet("color: #94a3b8; font-size: 12px;")
+        if vp_mode == "light":
+            desc_lbl.setStyleSheet("color: #545b66; font-size: 12px;")
+        elif vp_mode == "high_contrast":
+            desc_lbl.setStyleSheet("color: #ffffff; font-size: 12px;")
+        else:
+            desc_lbl.setStyleSheet("color: #94a3b8; font-size: 12px;")
         header_layout.addWidget(desc_lbl)
         layout.addLayout(header_layout)
 
         # Collapsible Usage Hints Card
         self.hints_box = QGroupBox("💡 Acoustic Voice Profile Matcher — Quick Usage Guide", self)
-        self.hints_box.setStyleSheet("""
-            QGroupBox {
-                font-weight: bold;
-                color: #38bdf8;
-                border: 1px solid #0284c7;
-                border-radius: 6px;
-                margin-top: 4px;
-                padding-top: 14px;
-                background-color: #0c4a6e;
-            }
-            QGroupBox::title {
-                subcontrol-origin: margin;
-                left: 10px;
-                padding: 0 5px 0 5px;
-            }
-        """)
+        if vp_mode == "light":
+            self.hints_box.setStyleSheet("""
+                QGroupBox {
+                    font-weight: bold;
+                    color: #0369a1;
+                    border: 1px solid #7dd3fc;
+                    border-radius: 6px;
+                    margin-top: 4px;
+                    padding-top: 14px;
+                    background-color: #f0f9ff;
+                }
+                QGroupBox::title {
+                    subcontrol-origin: margin;
+                    left: 10px;
+                    padding: 0 5px 0 5px;
+                }
+            """)
+        elif vp_mode == "high_contrast":
+            self.hints_box.setStyleSheet("""
+                QGroupBox {
+                    font-weight: bold;
+                    color: #ffff00;
+                    border: 1px solid #ffffff;
+                    border-radius: 6px;
+                    margin-top: 4px;
+                    padding-top: 14px;
+                    background-color: #000000;
+                }
+                QGroupBox::title {
+                    subcontrol-origin: margin;
+                    left: 10px;
+                    padding: 0 5px 0 5px;
+                }
+            """)
+        else:
+            self.hints_box.setStyleSheet("""
+                QGroupBox {
+                    font-weight: bold;
+                    color: #38bdf8;
+                    border: 1px solid #0284c7;
+                    border-radius: 6px;
+                    margin-top: 4px;
+                    padding-top: 14px;
+                    background-color: #0c4a6e;
+                }
+                QGroupBox::title {
+                    subcontrol-origin: margin;
+                    left: 10px;
+                    padding: 0 5px 0 5px;
+                }
+            """)
         hints_layout = QVBoxLayout(self.hints_box)
         hints_layout.setContentsMargins(12, 8, 12, 10)
         hints_layout.setSpacing(6)
 
-        hints_html = """
-        <div style="color: #e0f2fe; font-size: 11px; line-height: 1.45;">
+        hints_color = "#0c4a6e" if vp_mode == "light" else ("#ffffff" if vp_mode == "high_contrast" else "#e0f2fe")
+        hints_html = f"""
+        <div style="color: {hints_color}; font-size: 11px; line-height: 1.45;">
             <b>How to use the Acoustic Voice Profile Matcher:</b>
             <ol style="margin-top: 4px; margin-bottom: 4px; padding-left: 18px;">
                 <li><b>Reference Baseline Mode:</b> Single reference turn prevents cluster contamination. Use composite only across turns verified to be the same speaker.</li>
@@ -229,20 +317,51 @@ class VoiceProfileMatchDialog(QDialog):
         hints_btn_layout.addStretch()
         btn_minimize_hints = QPushButton("Minimize / Hide Hints", self.hints_box)
         btn_minimize_hints.setCursor(Qt.CursorShape.PointingHandCursor)
-        btn_minimize_hints.setStyleSheet("""
-            QPushButton {
-                background-color: #0369a1;
-                color: #ffffff;
-                border: none;
-                border-radius: 4px;
-                padding: 3px 10px;
-                font-size: 11px;
-                font-weight: bold;
-            }
-            QPushButton:hover {
-                background-color: #0284c7;
-            }
-        """)
+        if vp_mode == "light":
+            btn_minimize_hints.setStyleSheet("""
+                QPushButton {
+                    background-color: #2e74b5;
+                    color: #ffffff;
+                    border: none;
+                    border-radius: 4px;
+                    padding: 3px 10px;
+                    font-size: 11px;
+                    font-weight: bold;
+                }
+                QPushButton:hover {
+                    background-color: #205493;
+                }
+            """)
+        elif vp_mode == "high_contrast":
+            btn_minimize_hints.setStyleSheet("""
+                QPushButton {
+                    background-color: #ffff00;
+                    color: #000000;
+                    border: none;
+                    border-radius: 4px;
+                    padding: 3px 10px;
+                    font-size: 11px;
+                    font-weight: bold;
+                }
+                QPushButton:hover {
+                    background-color: #ffffff;
+                }
+            """)
+        else:
+            btn_minimize_hints.setStyleSheet("""
+                QPushButton {
+                    background-color: #0369a1;
+                    color: #ffffff;
+                    border: none;
+                    border-radius: 4px;
+                    padding: 3px 10px;
+                    font-size: 11px;
+                    font-weight: bold;
+                }
+                QPushButton:hover {
+                    background-color: #0284c7;
+                }
+            """)
         btn_minimize_hints.clicked.connect(self._toggle_hints)
         hints_btn_layout.addWidget(btn_minimize_hints)
         hints_layout.addLayout(hints_btn_layout)
@@ -259,22 +378,57 @@ class VoiceProfileMatchDialog(QDialog):
         self.btn_toggle_hints.setText("💡 Hide Hints" if show_hints else "💡 Usage Hints")
 
         ref_card = QGroupBox("Reference Speaker Turn & Profile Baseline", self)
-        ref_card.setStyleSheet("""
-            QGroupBox {
-                font-weight: bold;
-                color: #38bdf8;
-                border: 1px solid #334155;
-                border-radius: 6px;
-                margin-top: 6px;
-                padding-top: 14px;
-                background-color: #0f172a;
-            }
-            QGroupBox::title {
-                subcontrol-origin: margin;
-                left: 10px;
-                padding: 0 5px 0 5px;
-            }
-        """)
+        if vp_mode == "light":
+            ref_card.setStyleSheet("""
+                QGroupBox {
+                    font-weight: bold;
+                    color: #22262c;
+                    border: 1px solid #b6bcc4;
+                    border-radius: 6px;
+                    margin-top: 6px;
+                    padding-top: 14px;
+                    background-color: #eaedf0;
+                }
+                QGroupBox::title {
+                    subcontrol-origin: margin;
+                    left: 10px;
+                    padding: 0 5px 0 5px;
+                }
+            """)
+        elif vp_mode == "high_contrast":
+            ref_card.setStyleSheet("""
+                QGroupBox {
+                    font-weight: bold;
+                    color: #ffffff;
+                    border: 1px solid #ffffff;
+                    border-radius: 6px;
+                    margin-top: 6px;
+                    padding-top: 14px;
+                    background-color: #000000;
+                }
+                QGroupBox::title {
+                    subcontrol-origin: margin;
+                    left: 10px;
+                    padding: 0 5px 0 5px;
+                }
+            """)
+        else:
+            ref_card.setStyleSheet("""
+                QGroupBox {
+                    font-weight: bold;
+                    color: #38bdf8;
+                    border: 1px solid #334155;
+                    border-radius: 6px;
+                    margin-top: 6px;
+                    padding-top: 14px;
+                    background-color: #0f172a;
+                }
+                QGroupBox::title {
+                    subcontrol-origin: margin;
+                    left: 10px;
+                    padding: 0 5px 0 5px;
+                }
+            """)
         ref_card_layout = QVBoxLayout(ref_card)
         ref_card_layout.setContentsMargins(12, 10, 12, 12)
         ref_card_layout.setSpacing(6)
@@ -291,7 +445,7 @@ class VoiceProfileMatchDialog(QDialog):
                 ref_text = s.get("text", "").strip()
 
         ref_info_lbl = QLabel(
-            f"<b>Primary Turn #{self.ref_seg_idx + 1}</b> • Time: <b>{ref_time_str}</b> • Current Label: <span style='color: #fbbf24;'><b>{html.escape(self.current_speaker)}</b></span>",
+            f"<b>Primary Turn #{self.ref_seg_idx + 1}</b> • Time: <b>{ref_time_str}</b> • Current Label: <span style='color: {'#b45309' if vp_mode == 'light' else '#fbbf24'};'><b>{html.escape(self.current_speaker)}</b></span>",
             ref_card,
         )
         ref_card_layout.addWidget(ref_info_lbl)
@@ -299,11 +453,21 @@ class VoiceProfileMatchDialog(QDialog):
         if ref_text:
             ref_text_lbl = QLabel(f"<i>“{html.escape(ref_text)}”</i>", ref_card)
             ref_text_lbl.setWordWrap(True)
-            ref_text_lbl.setStyleSheet("color: #cbd5e1; font-size: 12px;")
+            if vp_mode == "light":
+                ref_text_lbl.setStyleSheet("color: #545b66; font-size: 12px;")
+            elif vp_mode == "high_contrast":
+                ref_text_lbl.setStyleSheet("color: #ffffff; font-size: 12px;")
+            else:
+                ref_text_lbl.setStyleSheet("color: #cbd5e1; font-size: 12px;")
             ref_card_layout.addWidget(ref_text_lbl)
 
         mode_hdr = QLabel("Reference Vector Baseline Mode:", ref_card)
-        mode_hdr.setStyleSheet("color: #38bdf8; font-weight: bold; font-size: 11px; margin-top: 4px;")
+        if vp_mode == "light":
+            mode_hdr.setStyleSheet("color: #2e74b5; font-weight: bold; font-size: 11px; margin-top: 4px;")
+        elif vp_mode == "high_contrast":
+            mode_hdr.setStyleSheet("color: #ffff00; font-weight: bold; font-size: 11px; margin-top: 4px;")
+        else:
+            mode_hdr.setStyleSheet("color: #38bdf8; font-weight: bold; font-size: 11px; margin-top: 4px;")
         ref_card_layout.addWidget(mode_hdr)
 
         mode_layout = QVBoxLayout()
@@ -336,21 +500,56 @@ class VoiceProfileMatchDialog(QDialog):
 
         # Target Speaker Assignment Section
         target_group = QGroupBox("Target Speaker Assignment", self)
-        target_group.setStyleSheet("""
-            QGroupBox {
-                font-weight: bold;
-                color: #e2e8f0;
-                border: 1px solid #334155;
-                border-radius: 6px;
-                margin-top: 6px;
-                padding-top: 14px;
-            }
-            QGroupBox::title {
-                subcontrol-origin: margin;
-                left: 10px;
-                padding: 0 5px 0 5px;
-            }
-        """)
+        if vp_mode == "light":
+            target_group.setStyleSheet("""
+                QGroupBox {
+                    font-weight: bold;
+                    color: #22262c;
+                    border: 1px solid #b6bcc4;
+                    border-radius: 6px;
+                    margin-top: 6px;
+                    padding-top: 14px;
+                    background-color: #eaedf0;
+                }
+                QGroupBox::title {
+                    subcontrol-origin: margin;
+                    left: 10px;
+                    padding: 0 5px 0 5px;
+                }
+            """)
+        elif vp_mode == "high_contrast":
+            target_group.setStyleSheet("""
+                QGroupBox {
+                    font-weight: bold;
+                    color: #ffffff;
+                    border: 1px solid #ffffff;
+                    border-radius: 6px;
+                    margin-top: 6px;
+                    padding-top: 14px;
+                    background-color: #000000;
+                }
+                QGroupBox::title {
+                    subcontrol-origin: margin;
+                    left: 10px;
+                    padding: 0 5px 0 5px;
+                }
+            """)
+        else:
+            target_group.setStyleSheet("""
+                QGroupBox {
+                    font-weight: bold;
+                    color: #e2e8f0;
+                    border: 1px solid #334155;
+                    border-radius: 6px;
+                    margin-top: 6px;
+                    padding-top: 14px;
+                }
+                QGroupBox::title {
+                    subcontrol-origin: margin;
+                    left: 10px;
+                    padding: 0 5px 0 5px;
+                }
+            """)
         target_layout = QHBoxLayout(target_group)
         target_layout.setContentsMargins(12, 10, 12, 12)
         target_layout.setSpacing(10)

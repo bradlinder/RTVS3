@@ -50,7 +50,7 @@ _ensure_runtime_bin_on_path()
 
 INTERNAL_APP_ID = "RadioTVStorySegmenter"
 APP_DISPLAY_NAME = "Radio & TV Segmenter"
-PROJECT_VERSION = "3.8.5-stable"
+PROJECT_VERSION = "3.8.6-stable"
 DEFAULT_GITHUB_REPO = "bradlinder/RTVS3"
 
 
@@ -421,38 +421,110 @@ class CollapsibleSection(QWidget):
         sub = f"  ({self._subtitle})" if self._subtitle else ""
         self.toggle_btn.setText(f" {arrow}  {self._title}{sub}")
 
+        theme_mode = "dark"
+        try:
+            from PySide6.QtCore import QSettings
+            settings = QSettings("RadioTVStorySegmenter", "Preferences")
+            theme_mode = str(settings.value("theme", "dark")).lower().strip()
+        except Exception:
+            theme_mode = "dark"
+
         radius = "6px 6px 0px 0px" if self._is_expanded else "6px"
-        border_bottom = "none" if self._is_expanded else "1px solid #334155"
 
-        self.toggle_btn.setStyleSheet(f"""
-            QToolButton {{
-                background-color: #1e293b;
-                color: #f1f5f9;
-                font-weight: bold;
-                font-size: 12px;
-                border: 1px solid #334155;
-                border-bottom: {border_bottom};
-                border-radius: {radius};
-                padding: 7px 12px;
-                text-align: left;
-            }}
-            QToolButton:hover {{
-                background-color: #283548;
-                border-color: #475569;
-            }}
-            QToolButton:pressed {{
-                background-color: #0f172a;
-            }}
-        """)
+        if theme_mode == "light":
+            border_bottom = "none" if self._is_expanded else "1px solid #b6bcc4"
+            self.toggle_btn.setStyleSheet(f"""
+                QToolButton {{
+                    background-color: #e3e6ea;
+                    color: #22262c;
+                    font-weight: bold;
+                    font-size: 12px;
+                    border: 1px solid #b6bcc4;
+                    border-bottom: {border_bottom};
+                    border-radius: {radius};
+                    padding: 7px 12px;
+                    text-align: left;
+                }}
+                QToolButton:hover {{
+                    background-color: #d0d4d9;
+                    border-color: #9ea6b0;
+                }}
+                QToolButton:pressed {{
+                    background-color: #c4cad2;
+                }}
+            """)
+            self.content_widget.setStyleSheet("""
+                QWidget#CollapsibleContent {
+                    background-color: #eaedf0;
+                    border: 1px solid #b6bcc4;
+                    border-top: none;
+                    border-radius: 0px 0px 6px 6px;
+                }
+            """)
+        elif theme_mode == "high_contrast":
+            border_bottom = "none" if self._is_expanded else "1px solid #ffffff"
+            self.toggle_btn.setStyleSheet(f"""
+                QToolButton {{
+                    background-color: #000000;
+                    color: #ffffff;
+                    font-weight: bold;
+                    font-size: 12px;
+                    border: 1px solid #ffffff;
+                    border-bottom: {border_bottom};
+                    border-radius: {radius};
+                    padding: 7px 12px;
+                    text-align: left;
+                }}
+                QToolButton:hover {{
+                    background-color: #1a1a1a;
+                    color: #ffff00;
+                }}
+                QToolButton:pressed {{
+                    background-color: #333333;
+                }}
+            """)
+            self.content_widget.setStyleSheet("""
+                QWidget#CollapsibleContent {
+                    background-color: #000000;
+                    border: 1px solid #ffffff;
+                    border-top: none;
+                    border-radius: 0px 0px 6px 6px;
+                }
+            """)
+        else:  # dark
+            border_bottom = "none" if self._is_expanded else "1px solid #334155"
+            self.toggle_btn.setStyleSheet(f"""
+                QToolButton {{
+                    background-color: #1e293b;
+                    color: #f1f5f9;
+                    font-weight: bold;
+                    font-size: 12px;
+                    border: 1px solid #334155;
+                    border-bottom: {border_bottom};
+                    border-radius: {radius};
+                    padding: 7px 12px;
+                    text-align: left;
+                }}
+                QToolButton:hover {{
+                    background-color: #283548;
+                    border-color: #475569;
+                }}
+                QToolButton:pressed {{
+                    background-color: #0f172a;
+                }}
+            """)
+            self.content_widget.setStyleSheet("""
+                QWidget#CollapsibleContent {
+                    background-color: rgba(15, 23, 42, 0.35);
+                    border: 1px solid #334155;
+                    border-top: none;
+                    border-radius: 0px 0px 6px 6px;
+                }
+            """)
 
-        self.content_widget.setStyleSheet("""
-            QWidget#CollapsibleContent {
-                background-color: rgba(15, 23, 42, 0.35);
-                border: 1px solid #334155;
-                border-top: none;
-                border-radius: 0px 0px 6px 6px;
-            }
-        """)
+    def refresh_theme(self):
+        """Re-render header and container styling when application theme changes."""
+        self._update_ui()
 
     def _on_btn_clicked(self):
         self.set_expanded(self.toggle_btn.isChecked())

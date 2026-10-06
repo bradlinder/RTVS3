@@ -1,5 +1,17 @@
 # Changelog
 
+## v3.8.6-stable
+- **Universal Window & Dialog Title Bar Synchronization with Option 4 Steel Slate (`core_utils.py`, `playback_preferences.py`)**:
+  - **Identical Title Bar Palette Across All Windows**: Enforced Option 4 Medium Steel Slate (`#3c4450`) with crisp white text (`#f8fafc`) and subtle frame border (`#4e5765`) across BOTH the main application window AND all pop-up/modal windows (Export Center, Preferences, Story Metadata Editor, Voice Profile Matcher, Keyboard Shortcuts, Batch Processing, ID3 Editor, Model Management).
+  - **Global Window Activation & Show Interception (`playback_preferences.py`, `core_utils.py`)**: Enhanced global `eventFilter` to intercept `QEvent.Type.Show`, `ShowToParent`, `WindowActivate`, and `Polish` events across all `topLevelWidgets()`, executing both immediate and deferred Windows DWM attribute application (`_apply_dwm_titlebar_hwnd`) so newly spawned dialogs never revert to white/unstyled caption chrome.
+- **Complete Light Mode Visual Consistency across Dialogs & Export Center (`prs_shared.py`, `export/dialog.py`, `story_metadata_dialog.py`, `shortcuts_manager.py`, `transcript_story.py`, `plugins/wordpress/export_destination.py`, `plugins/youtube/export_destination.py`)**:
+  - **Light Theme Normalization for `CollapsibleSection` (`prs_shared.py`)**: Refactored `CollapsibleSection` to dynamically query active theme mode. In Light Mode (Option C), section header strips render in clean silver fog (`#e3e6ea`, hover `#d0d4d9`, border `#b6bcc4`) with dark ink text (`#22262c`), and section body containers use soft light-fog surfaces (`#eaedf0`) instead of hardcoded dark navy (`#1e293b` / `rgba(15, 23, 42, 0.35)`).
+  - **Export Center Light Mode Alignment (`export/dialog.py`)**: Synchronized header labels, "Collapse All" button, maximize button, format checkboxes, destination radio buttons, unselected audio combo box, ID3 tag button, and reorder destination list items to use light mode token palettes matching Preferences, Batch Processing, and Multi-Stage Processing.
+  - **Story Metadata & Post Editor (`story_metadata_dialog.py`)**: Replaced hardcoded dark background and border styles with theme-aware styling for taxonomy refresh, auto-excerpt generation, and video thumbnail preview cards.
+  - **Keyboard Shortcuts & Voice Profile Matcher (`shortcuts_manager.py`, `transcript_story.py`)**: Normalized shortcut recording inputs, lookup result cards, table rows, and acoustic re-clustering dialogs to respect the active Light Mode palette.
+- **Visual Inspection Mockups (`generate_corrected_visual_mockup.py`, `resources/light_mode_consistency_comparison.png`)**:
+  - Generated high-resolution side-by-side comparison board verifying exact visual harmony between the Main Window and the Export Dialog in Light Mode Option 4.
+
 ## v3.8.5-stable
 - **Darker Title Bar Option 4 (Medium Steel Slate) for Light Mode (`core_utils.py`, `RadioTVSegmenter.py`, `playback_preferences.py`, `theme_tokens.py`, `test_runner.py`)**:
   - **Option 4 Medium Steel Slate Title Bars (`#3c4450`)**: Configured native Windows DWM window title bars and modal dialog title bars to render in a refined, medium-dark steel slate tone (`#3c4450`) with crisp white title text (`#f8fafc`) and subtle frame border (`#4e5765`) when running in Light Mode (Option C).

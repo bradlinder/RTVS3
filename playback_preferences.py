@@ -2960,6 +2960,15 @@ class PlaybackPreferencesMixin:
         dialog.exec()
 
     def eventFilter(self, watched, event):
+        # Automatically synchronize OS title bar theme across all windows and pop-up dialogs on show/activate
+        if event.type() in (QEvent.Type.Show, QEvent.Type.ShowToParent, QEvent.Type.WindowActivate, QEvent.Type.Polish):
+            try:
+                if hasattr(watched, "isWindow") and watched.isWindow():
+                    from core_utils import apply_window_titlebar_theme
+                    apply_window_titlebar_theme(watched, getattr(self, "theme_mode", None))
+            except Exception:
+                pass
+
         if event.type() == QEvent.Type.KeyPress:
             key = event.key()
 
@@ -3755,11 +3764,14 @@ class PlaybackPreferencesMixin:
                 self.timeline.canvas.pixmap_dirty = True
                 self.timeline.canvas.update()
 
-        # Update OS title bar caption attributes across all open windows and dialogs
+        # Update OS title bar caption attributes and collapsible section styling across all open windows and dialogs
         from core_utils import apply_window_titlebar_theme
         try:
             for w in app.topLevelWidgets():
                 apply_window_titlebar_theme(w, mode)
+                from prs_shared import CollapsibleSection
+                for cs in w.findChildren(CollapsibleSection):
+                    cs._update_ui()
         except Exception:
             pass
 

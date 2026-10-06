@@ -108,19 +108,42 @@ class YouTubeExportTabWidget(QWidget):
         yt_layout.setSpacing(12)
 
         # Overview banner with Mode Selector
+        yt_theme_mode = "dark"
+        try:
+            from PySide6.QtCore import QSettings
+            _sett = QSettings("RadioTVStorySegmenter", "Preferences")
+            yt_theme_mode = str(_sett.value("theme", "dark")).lower().strip()
+        except Exception:
+            yt_theme_mode = "dark"
+
         yt_banner = QWidget()
         yt_b_layout = QVBoxLayout(yt_banner)
         yt_b_layout.setContentsMargins(12, 10, 12, 10)
-        yt_banner.setStyleSheet("background-color: #1e293b; border-radius: 6px; border: 1px solid #334155;")
+        if yt_theme_mode == "light":
+            yt_banner.setStyleSheet("background-color: #eaedf0; border-radius: 6px; border: 1px solid #b6bcc4;")
+        elif yt_theme_mode == "high_contrast":
+            yt_banner.setStyleSheet("background-color: #000000; border-radius: 6px; border: 1px solid #ffffff;")
+        else:
+            yt_banner.setStyleSheet("background-color: #1e293b; border-radius: 6px; border: 1px solid #334155;")
         
         mode_header_layout = QHBoxLayout()
         yt_banner_title = QLabel("<b>YouTube Video Publisher</b>")
-        yt_banner_title.setStyleSheet("color: #f87171; font-size: 13px;")
+        if yt_theme_mode == "light":
+            yt_banner_title.setStyleSheet("color: #b91c1c; font-size: 13px;")
+        elif yt_theme_mode == "high_contrast":
+            yt_banner_title.setStyleSheet("color: #ff0000; font-size: 13px;")
+        else:
+            yt_banner_title.setStyleSheet("color: #f87171; font-size: 13px;")
         mode_header_layout.addWidget(yt_banner_title)
         mode_header_layout.addStretch()
 
         mode_lbl = QLabel("Publishing Method:")
-        mode_lbl.setStyleSheet("font-size: 11px; color: #94a3b8;")
+        if yt_theme_mode == "light":
+            mode_lbl.setStyleSheet("font-size: 11px; color: #545b66;")
+        elif yt_theme_mode == "high_contrast":
+            mode_lbl.setStyleSheet("font-size: 11px; color: #ffffff;")
+        else:
+            mode_lbl.setStyleSheet("font-size: 11px; color: #94a3b8;")
         mode_header_layout.addWidget(mode_lbl)
 
         self.yt_mode_combo = QComboBox()
@@ -260,7 +283,12 @@ class YouTubeExportTabWidget(QWidget):
         self.yt_thumb_preview_label = QLabel("No Preview")
         self.yt_thumb_preview_label.setFixedSize(160, 90)
         self.yt_thumb_preview_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.yt_thumb_preview_label.setStyleSheet("background-color: #0f172a; border: 1px solid #334155; border-radius: 4px; color: #64748b; font-size: 10px;")
+        if yt_theme_mode == "light":
+            self.yt_thumb_preview_label.setStyleSheet("background-color: #eaedf0; border: 1px solid #b6bcc4; border-radius: 4px; color: #78808d; font-size: 10px;")
+        elif yt_theme_mode == "high_contrast":
+            self.yt_thumb_preview_label.setStyleSheet("background-color: #000000; border: 1px solid #ffffff; border-radius: 4px; color: #ffffff; font-size: 10px;")
+        else:
+            self.yt_thumb_preview_label.setStyleSheet("background-color: #0f172a; border: 1px solid #334155; border-radius: 4px; color: #64748b; font-size: 10px;")
         thumb_sub_layout.addWidget(self.yt_thumb_preview_label)
 
         yt_extras_layout.addWidget(thumb_subgroup)

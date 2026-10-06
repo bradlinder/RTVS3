@@ -33,6 +33,17 @@ class ShortcutDef:
 
 
 # Comprehensive registry of all application functions that have keyboard shortcuts assigned.
+def _get_shortcuts_theme_mode() -> str:
+    """Retrieve active theme mode ('light', 'dark', or 'high_contrast')."""
+    if not QSettings:
+        return "dark"
+    try:
+        settings = QSettings("RadioTVStorySegmenter", "Preferences")
+        return str(settings.value("theme", "dark")).lower().strip()
+    except Exception:
+        return "dark"
+
+
 SHORTCUT_DEFINITIONS: List[ShortcutDef] = [
     # -------------------------------------------------------------
     # File & Project
@@ -1052,17 +1063,39 @@ class KeySequenceRecorderEdit(QLineEdit):
     def start_recording(self):
         self.is_recording = True
         self.setText("Press desired key combination (or Esc to cancel)...")
-        self.setStyleSheet(
-            "QLineEdit { font-weight: bold; padding: 5px 8px; border-radius: 4px; "
-            "border: 2px solid #3b82f6; background-color: #1e293b; color: #60a5fa; }"
-        )
+        tm = _get_shortcuts_theme_mode()
+        if tm == "light":
+            self.setStyleSheet(
+                "QLineEdit { font-weight: bold; padding: 5px 8px; border-radius: 4px; "
+                "border: 2px solid #2e74b5; background-color: #eaedf0; color: #205493; }"
+            )
+        elif tm == "high_contrast":
+            self.setStyleSheet(
+                "QLineEdit { font-weight: bold; padding: 5px 8px; border-radius: 4px; "
+                "border: 2px solid #ffff00; background-color: #000000; color: #ffff00; }"
+            )
+        else:
+            self.setStyleSheet(
+                "QLineEdit { font-weight: bold; padding: 5px 8px; border-radius: 4px; "
+                "border: 2px solid #3b82f6; background-color: #1e293b; color: #60a5fa; }"
+            )
         self.setFocus()
 
     def stop_recording(self):
         self.is_recording = False
-        self.setStyleSheet(
-            "QLineEdit { font-weight: bold; padding: 5px 8px; border-radius: 4px; border: 1px solid #475569; }"
-        )
+        tm = _get_shortcuts_theme_mode()
+        if tm == "light":
+            self.setStyleSheet(
+                "QLineEdit { font-weight: bold; padding: 5px 8px; border-radius: 4px; border: 1px solid #b6bcc4; }"
+            )
+        elif tm == "high_contrast":
+            self.setStyleSheet(
+                "QLineEdit { font-weight: bold; padding: 5px 8px; border-radius: 4px; border: 1px solid #ffffff; }"
+            )
+        else:
+            self.setStyleSheet(
+                "QLineEdit { font-weight: bold; padding: 5px 8px; border-radius: 4px; border: 1px solid #475569; }"
+            )
         self.setText(format_sequence_display(self.current_seq))
 
     def mousePressEvent(self, event):
@@ -1249,14 +1282,29 @@ class KeyboardShortcutsPage(QWidget):
 
         # Lookup Result Card
         self.lookup_result_card = QFrame()
-        self.lookup_result_card.setStyleSheet(
-            "QFrame { background-color: #1e293b; border: 1px solid #334155; border-radius: 4px; padding: 6px 10px; }"
-        )
+        tm = _get_shortcuts_theme_mode()
+        if tm == "light":
+            self.lookup_result_card.setStyleSheet(
+                "QFrame { background-color: #eaedf0; border: 1px solid #b6bcc4; border-radius: 4px; padding: 6px 10px; }"
+            )
+        elif tm == "high_contrast":
+            self.lookup_result_card.setStyleSheet(
+                "QFrame { background-color: #000000; border: 1px solid #ffffff; border-radius: 4px; padding: 6px 10px; }"
+            )
+        else:
+            self.lookup_result_card.setStyleSheet(
+                "QFrame { background-color: #1e293b; border: 1px solid #334155; border-radius: 4px; padding: 6px 10px; }"
+            )
         lookup_res_layout = QHBoxLayout(self.lookup_result_card)
         lookup_res_layout.setContentsMargins(6, 4, 6, 4)
 
-        self.lookup_result_lbl = QLabel("💡 Click the box above and press any key combination to look up its assigned function.")
-        self.lookup_result_lbl.setStyleSheet("color: #cbd5e1; font-size: 12px;")
+        self.lookup_result_lbl = QLabel("Click the box above and press any key combination to look up its assigned function.")
+        if tm == "light":
+            self.lookup_result_lbl.setStyleSheet("color: #545b66; font-size: 12px;")
+        elif tm == "high_contrast":
+            self.lookup_result_lbl.setStyleSheet("color: #ffffff; font-size: 12px;")
+        else:
+            self.lookup_result_lbl.setStyleSheet("color: #cbd5e1; font-size: 12px;")
         self.lookup_result_lbl.setWordWrap(True)
         lookup_res_layout.addWidget(self.lookup_result_lbl, 1)
 

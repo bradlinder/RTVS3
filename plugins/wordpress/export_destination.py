@@ -321,10 +321,23 @@ class WordPressExportTabWidget(QWidget):
 
         wp_thumb_layout.addLayout(wp_thumb_controls, stretch=2)
 
+        wp_mode = "dark"
+        try:
+            from PySide6.QtCore import QSettings
+            settings = QSettings("RadioTVStorySegmenter", "Preferences")
+            wp_mode = str(settings.value("theme", "dark")).lower().strip()
+        except Exception:
+            wp_mode = "dark"
+
         self.wp_thumb_preview_label = QLabel("No Thumbnail")
         self.wp_thumb_preview_label.setFixedSize(160, 90)
         self.wp_thumb_preview_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.wp_thumb_preview_label.setStyleSheet("border: 1px dashed #475569; border-radius: 4px; background-color: #0f172a; color: #64748b; font-size: 10px;")
+        if wp_mode == "light":
+            self.wp_thumb_preview_label.setStyleSheet("border: 1px dashed #b6bcc4; border-radius: 4px; background-color: #eaedf0; color: #78808d; font-size: 10px;")
+        elif wp_mode == "high_contrast":
+            self.wp_thumb_preview_label.setStyleSheet("border: 1px dashed #ffffff; border-radius: 4px; background-color: #000000; color: #ffffff; font-size: 10px;")
+        else:
+            self.wp_thumb_preview_label.setStyleSheet("border: 1px dashed #475569; border-radius: 4px; background-color: #0f172a; color: #64748b; font-size: 10px;")
         wp_thumb_layout.addWidget(self.wp_thumb_preview_label, stretch=1)
 
         self.wp_thumb_section.add_layout(wp_thumb_layout)
@@ -341,7 +354,12 @@ class WordPressExportTabWidget(QWidget):
         bulk_vbox.setSpacing(4)
 
         bulk_hdr = QLabel("<b>Bulk Apply to Other Posts / Stories:</b>")
-        bulk_hdr.setStyleSheet("color: #94a3b8; font-size: 11px;")
+        if wp_mode == "light":
+            bulk_hdr.setStyleSheet("color: #545b66; font-size: 11px;")
+        elif wp_mode == "high_contrast":
+            bulk_hdr.setStyleSheet("color: #ffffff; font-size: 11px;")
+        else:
+            bulk_hdr.setStyleSheet("color: #94a3b8; font-size: 11px;")
         bulk_vbox.addWidget(bulk_hdr)
 
         bulk_row1 = QHBoxLayout()

@@ -58,7 +58,18 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from core_utils import ffmpeg_path, format_time, parse_time, INTERNAL_APP_ID, make_dialog_maximizable
+from core_utils import ffmpeg_path, format_time, parse_time, INTERNAL_APP_ID, make_dialog_maximizable, apply_window_titlebar_theme
+
+
+def _get_metadata_theme_mode() -> str:
+    """Retrieve active theme mode ('light', 'dark', or 'high_contrast')."""
+    if not QSettings:
+        return "dark"
+    try:
+        settings = QSettings("RadioTVStorySegmenter", "Preferences")
+        return str(settings.value("theme", "dark")).lower().strip()
+    except Exception:
+        return "dark"
 
 
 def generate_story_excerpt(text: str, max_words: int = 55) -> str:
@@ -93,6 +104,7 @@ class StoryMetadataDialog(QDialog):
         self.resize(960, 720)
         self.setMinimumSize(780, 560)
         make_dialog_maximizable(self)
+        apply_window_titlebar_theme(self)
         self.setObjectName("story_metadata_dialog")
 
         # Media & state flags
@@ -140,24 +152,59 @@ class StoryMetadataDialog(QDialog):
         info_label.setWordWrap(True)
         header_layout.addWidget(info_label, 1)
 
+        theme_mode = _get_metadata_theme_mode()
+
         # Taxonomy Refresh Button (if WP or CMS available)
         self.refresh_tax_btn = QPushButton("Refresh WP Taxonomies", self)
         self.refresh_tax_btn.setToolTip("Fetch latest Authors and Categories from WordPress REST API")
-        self.refresh_tax_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #1e293b;
-                color: #38bdf8;
-                border: 1px solid #0284c7;
-                border-radius: 4px;
-                padding: 4px 10px;
-                font-size: 11px;
-                font-weight: 500;
-            }
-            QPushButton:hover {
-                background-color: #0284c7;
-                color: #ffffff;
-            }
-        """)
+        if theme_mode == "light":
+            self.refresh_tax_btn.setStyleSheet("""
+                QPushButton {
+                    background-color: #e3e6ea;
+                    color: #2e74b5;
+                    border: 1px solid #2e74b5;
+                    border-radius: 4px;
+                    padding: 4px 10px;
+                    font-size: 11px;
+                    font-weight: 500;
+                }
+                QPushButton:hover {
+                    background-color: #2e74b5;
+                    color: #ffffff;
+                }
+            """)
+        elif theme_mode == "high_contrast":
+            self.refresh_tax_btn.setStyleSheet("""
+                QPushButton {
+                    background-color: #000000;
+                    color: #ffff00;
+                    border: 1px solid #ffff00;
+                    border-radius: 4px;
+                    padding: 4px 10px;
+                    font-size: 11px;
+                    font-weight: 500;
+                }
+                QPushButton:hover {
+                    background-color: #ffff00;
+                    color: #000000;
+                }
+            """)
+        else:
+            self.refresh_tax_btn.setStyleSheet("""
+                QPushButton {
+                    background-color: #1e293b;
+                    color: #38bdf8;
+                    border: 1px solid #0284c7;
+                    border-radius: 4px;
+                    padding: 4px 10px;
+                    font-size: 11px;
+                    font-weight: 500;
+                }
+                QPushButton:hover {
+                    background-color: #0284c7;
+                    color: #ffffff;
+                }
+            """)
         self.refresh_tax_btn.clicked.connect(self._on_refresh_taxonomy_clicked)
         header_layout.addWidget(self.refresh_tax_btn)
 
@@ -294,21 +341,54 @@ class StoryMetadataDialog(QDialog):
         exc_btn_row.addStretch()
 
         self.auto_excerpt_btn = QPushButton("Auto-Generate Excerpt (55 Words)", excerpt_group)
-        self.auto_excerpt_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #1e293b;
-                color: #38bdf8;
-                border: 1px solid #0284c7;
-                border-radius: 3px;
-                padding: 2px 8px;
-                font-size: 11px;
-                font-weight: 500;
-            }
-            QPushButton:hover {
-                background-color: #0284c7;
-                color: #ffffff;
-            }
-        """)
+        if theme_mode == "light":
+            self.auto_excerpt_btn.setStyleSheet("""
+                QPushButton {
+                    background-color: #e3e6ea;
+                    color: #2e74b5;
+                    border: 1px solid #2e74b5;
+                    border-radius: 3px;
+                    padding: 2px 8px;
+                    font-size: 11px;
+                    font-weight: 500;
+                }
+                QPushButton:hover {
+                    background-color: #2e74b5;
+                    color: #ffffff;
+                }
+            """)
+        elif theme_mode == "high_contrast":
+            self.auto_excerpt_btn.setStyleSheet("""
+                QPushButton {
+                    background-color: #000000;
+                    color: #ffff00;
+                    border: 1px solid #ffff00;
+                    border-radius: 3px;
+                    padding: 2px 8px;
+                    font-size: 11px;
+                    font-weight: 500;
+                }
+                QPushButton:hover {
+                    background-color: #ffff00;
+                    color: #000000;
+                }
+            """)
+        else:
+            self.auto_excerpt_btn.setStyleSheet("""
+                QPushButton {
+                    background-color: #1e293b;
+                    color: #38bdf8;
+                    border: 1px solid #0284c7;
+                    border-radius: 3px;
+                    padding: 2px 8px;
+                    font-size: 11px;
+                    font-weight: 500;
+                }
+                QPushButton:hover {
+                    background-color: #0284c7;
+                    color: #ffffff;
+                }
+            """)
         self.auto_excerpt_btn.clicked.connect(self._on_auto_generate_excerpt)
         exc_btn_row.addWidget(self.auto_excerpt_btn)
         excerpt_layout.addLayout(exc_btn_row)
@@ -359,15 +439,36 @@ class StoryMetadataDialog(QDialog):
         self.thumb_preview_label = QLabel(thumb_group)
         self.thumb_preview_label.setFixedSize(160, 90)
         self.thumb_preview_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.thumb_preview_label.setStyleSheet("""
-            QLabel {
-                background-color: #0f172a;
-                border: 1px solid #334155;
-                border-radius: 4px;
-                color: #64748b;
-                font-size: 11px;
-            }
-        """)
+        if theme_mode == "light":
+            self.thumb_preview_label.setStyleSheet("""
+                QLabel {
+                    background-color: #eaedf0;
+                    border: 1px solid #b6bcc4;
+                    border-radius: 4px;
+                    color: #78808d;
+                    font-size: 11px;
+                }
+            """)
+        elif theme_mode == "high_contrast":
+            self.thumb_preview_label.setStyleSheet("""
+                QLabel {
+                    background-color: #000000;
+                    border: 1px solid #ffffff;
+                    border-radius: 4px;
+                    color: #ffffff;
+                    font-size: 11px;
+                }
+            """)
+        else:
+            self.thumb_preview_label.setStyleSheet("""
+                QLabel {
+                    background-color: #0f172a;
+                    border: 1px solid #334155;
+                    border-radius: 4px;
+                    color: #64748b;
+                    font-size: 11px;
+                }
+            """)
         self.thumb_preview_label.setText("No Thumbnail")
         thumb_content_row.addWidget(self.thumb_preview_label)
 

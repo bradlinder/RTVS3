@@ -47,10 +47,22 @@ from prs_shared import (
     safe_filename,
     make_dialog_maximizable,
 )
+from core_utils import apply_window_titlebar_theme
 from plugins.base import ExportDestination
 
 
 DEFAULT_EXPORT_DESTINATIONS_ORDER = ["local", "wordpress", "gdocs", "youtube"]
+
+
+def _get_export_theme_mode() -> str:
+    """Retrieve active theme mode ('light', 'dark', or 'high_contrast')."""
+    if not QSettings:
+        return "dark"
+    try:
+        settings = QSettings("RadioTVStorySegmenter", "Preferences")
+        return str(settings.value("theme", "dark")).lower().strip()
+    except Exception:
+        return "dark"
 
 
 def get_export_destinations_order() -> List[str]:
@@ -84,6 +96,7 @@ class ReorderExportDestinationsDialog(QDialog):
         self.resize(460, 360)
         self.setMinimumSize(400, 300)
         make_dialog_maximizable(self)
+        apply_window_titlebar_theme(self)
 
         # available_dests is a list of (dest_id, dest_title)
         self.available_dests = available_dests or [
@@ -97,12 +110,19 @@ class ReorderExportDestinationsDialog(QDialog):
         layout.setContentsMargins(14, 14, 14, 14)
         layout.setSpacing(10)
 
+        theme_mode = _get_export_theme_mode()
+
         info_lbl = QLabel(
             "Drag and drop destinations to customize their display order in the Export window, "
             "or use the <b>Move Up</b> / <b>Move Down</b> buttons:"
         )
         info_lbl.setWordWrap(True)
-        info_lbl.setStyleSheet("color: #cbd5e1; font-size: 12px;")
+        if theme_mode == "light":
+            info_lbl.setStyleSheet("color: #545b66; font-size: 12px;")
+        elif theme_mode == "high_contrast":
+            info_lbl.setStyleSheet("color: #ffffff; font-size: 12px;")
+        else:
+            info_lbl.setStyleSheet("color: #cbd5e1; font-size: 12px;")
         layout.addWidget(info_lbl)
 
         content_row = QHBoxLayout()
@@ -110,27 +130,74 @@ class ReorderExportDestinationsDialog(QDialog):
         self.list_widget.setDragDropMode(QAbstractItemView.DragDropMode.InternalMove)
         self.list_widget.setDefaultDropAction(Qt.DropAction.MoveAction)
         self.list_widget.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
-        self.list_widget.setStyleSheet("""
-            QListWidget {
-                background-color: #1e293b;
-                border: 1px solid #334155;
-                border-radius: 6px;
-                padding: 4px;
-                color: #f8fafc;
-                font-size: 13px;
-            }
-            QListWidget::item {
-                padding: 8px 10px;
-                border-bottom: 1px solid #334155;
-                border-radius: 4px;
-                margin-bottom: 2px;
-            }
-            QListWidget::item:selected {
-                background-color: #0284c7;
-                color: #ffffff;
-                font-weight: bold;
-            }
-        """)
+        if theme_mode == "light":
+            self.list_widget.setStyleSheet("""
+                QListWidget {
+                    background-color: #eaedf0;
+                    border: 1px solid #b6bcc4;
+                    border-radius: 6px;
+                    padding: 4px;
+                    color: #22262c;
+                    font-size: 13px;
+                }
+                QListWidget::item {
+                    padding: 8px 10px;
+                    border-bottom: 1px solid #d0d4d9;
+                    border-radius: 4px;
+                    margin-bottom: 2px;
+                    color: #22262c;
+                }
+                QListWidget::item:selected {
+                    background-color: #2e74b5;
+                    color: #ffffff;
+                    font-weight: bold;
+                }
+            """)
+        elif theme_mode == "high_contrast":
+            self.list_widget.setStyleSheet("""
+                QListWidget {
+                    background-color: #000000;
+                    border: 1px solid #ffffff;
+                    border-radius: 6px;
+                    padding: 4px;
+                    color: #ffffff;
+                    font-size: 13px;
+                }
+                QListWidget::item {
+                    padding: 8px 10px;
+                    border-bottom: 1px solid #ffffff;
+                    border-radius: 4px;
+                    margin-bottom: 2px;
+                    color: #ffffff;
+                }
+                QListWidget::item:selected {
+                    background-color: #ffffff;
+                    color: #000000;
+                    font-weight: bold;
+                }
+            """)
+        else:
+            self.list_widget.setStyleSheet("""
+                QListWidget {
+                    background-color: #1e293b;
+                    border: 1px solid #334155;
+                    border-radius: 6px;
+                    padding: 4px;
+                    color: #f8fafc;
+                    font-size: 13px;
+                }
+                QListWidget::item {
+                    padding: 8px 10px;
+                    border-bottom: 1px solid #334155;
+                    border-radius: 4px;
+                    margin-bottom: 2px;
+                }
+                QListWidget::item:selected {
+                    background-color: #0284c7;
+                    color: #ffffff;
+                    font-weight: bold;
+                }
+            """)
 
         # Populate according to current saved order
         current_order = get_export_destinations_order()
@@ -238,10 +305,13 @@ class UnifiedExportDialog(QDialog):
         self.setMinimumWidth(780)
         self.setMinimumHeight(560)
         self.resize(860, 700)
+        apply_window_titlebar_theme(self)
 
         self._dest_entries: List[Dict[str, Any]] = []
         self._plugin_destinations: List[Tuple[QRadioButton, ExportDestination, QWidget]] = []
         self._temp_preview_files = set()
+
+        theme_mode = _get_export_theme_mode()
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(12, 10, 12, 10)
@@ -252,44 +322,116 @@ class UnifiedExportDialog(QDialog):
         hdr_row.setContentsMargins(2, 0, 2, 0)
         hdr_row.setSpacing(6)
         hdr_label = QLabel("<b>Unified Export Center</b>")
-        hdr_label.setStyleSheet("font-size: 13px; color: #f1f5f9;")
+        if theme_mode == "light":
+            hdr_label.setStyleSheet("font-size: 13px; font-weight: bold; color: #22262c;")
+        elif theme_mode == "high_contrast":
+            hdr_label.setStyleSheet("font-size: 13px; font-weight: bold; color: #ffffff;")
+        else:
+            hdr_label.setStyleSheet("font-size: 13px; font-weight: bold; color: #f1f5f9;")
+
         self.toggle_all_btn = QPushButton("▾ Collapse All")
         self.toggle_all_btn.setToolTip("Toggle expand/collapse for all sections on the current page")
-        self.toggle_all_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #1e293b;
-                color: #94a3b8;
-                border: 1px solid #334155;
-                border-radius: 4px;
-                padding: 3px 10px;
-                font-size: 11px;
-                font-weight: 500;
-            }
-            QPushButton:hover {
-                background-color: #334155;
-                color: #f1f5f9;
-            }
-        """)
+        if theme_mode == "light":
+            self.toggle_all_btn.setStyleSheet("""
+                QPushButton {
+                    background-color: #e3e6ea;
+                    color: #22262c;
+                    border: 1px solid #b6bcc4;
+                    border-radius: 4px;
+                    padding: 3px 10px;
+                    font-size: 11px;
+                    font-weight: 500;
+                }
+                QPushButton:hover {
+                    background-color: #d0d4d9;
+                    color: #22262c;
+                }
+            """)
+        elif theme_mode == "high_contrast":
+            self.toggle_all_btn.setStyleSheet("""
+                QPushButton {
+                    background-color: #000000;
+                    color: #ffffff;
+                    border: 1px solid #ffffff;
+                    border-radius: 4px;
+                    padding: 3px 10px;
+                    font-size: 11px;
+                    font-weight: 500;
+                }
+                QPushButton:hover {
+                    background-color: #1a1a1a;
+                    color: #ffff00;
+                }
+            """)
+        else:
+            self.toggle_all_btn.setStyleSheet("""
+                QPushButton {
+                    background-color: #1e293b;
+                    color: #94a3b8;
+                    border: 1px solid #334155;
+                    border-radius: 4px;
+                    padding: 3px 10px;
+                    font-size: 11px;
+                    font-weight: 500;
+                }
+                QPushButton:hover {
+                    background-color: #334155;
+                    color: #f1f5f9;
+                }
+            """)
         self.toggle_all_btn.clicked.connect(self._toggle_all_sections)
 
         self.maximize_btn = QPushButton("⛶", self)
         self.maximize_btn.setToolTip("Maximize Export window")
         self.maximize_btn.setFixedSize(28, 24)
-        self.maximize_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #1e293b;
-                color: #94a3b8;
-                border: 1px solid #334155;
-                border-radius: 4px;
-                padding: 0px;
-                font-size: 13px;
-                font-weight: bold;
-            }
-            QPushButton:hover {
-                background-color: #334155;
-                color: #f1f5f9;
-            }
-        """)
+        if theme_mode == "light":
+            self.maximize_btn.setStyleSheet("""
+                QPushButton {
+                    background-color: #e3e6ea;
+                    color: #22262c;
+                    border: 1px solid #b6bcc4;
+                    border-radius: 4px;
+                    padding: 0px;
+                    font-size: 13px;
+                    font-weight: bold;
+                }
+                QPushButton:hover {
+                    background-color: #d0d4d9;
+                    color: #22262c;
+                }
+            """)
+        elif theme_mode == "high_contrast":
+            self.maximize_btn.setStyleSheet("""
+                QPushButton {
+                    background-color: #000000;
+                    color: #ffffff;
+                    border: 1px solid #ffffff;
+                    border-radius: 4px;
+                    padding: 0px;
+                    font-size: 13px;
+                    font-weight: bold;
+                }
+                QPushButton:hover {
+                    background-color: #1a1a1a;
+                    color: #ffff00;
+                }
+            """)
+        else:
+            self.maximize_btn.setStyleSheet("""
+                QPushButton {
+                    background-color: #1e293b;
+                    color: #94a3b8;
+                    border: 1px solid #334155;
+                    border-radius: 4px;
+                    padding: 0px;
+                    font-size: 13px;
+                    font-weight: bold;
+                }
+                QPushButton:hover {
+                    background-color: #334155;
+                    color: #f1f5f9;
+                }
+            """)
         self.maximize_btn.clicked.connect(self._toggle_maximize)
 
         hdr_row.addWidget(hdr_label)
@@ -374,6 +516,10 @@ class UnifiedExportDialog(QDialog):
 
         self._on_dest_changed()
 
+    def showEvent(self, event):
+        super().showEvent(event)
+        apply_window_titlebar_theme(self)
+
     def _build_destinations_layout(self):
         """Construct destination radio buttons in customized user order."""
         # Clear existing buttons in dest_content_layout
@@ -454,21 +600,55 @@ class UnifiedExportDialog(QDialog):
         # Add Reorder Button
         self.reorder_dests_btn = QPushButton("⇅ Reorder…")
         self.reorder_dests_btn.setToolTip("Customize the display order of export destinations")
-        self.reorder_dests_btn.setStyleSheet("""
-            QPushButton {
-                background-color: transparent;
-                color: #0284c7;
-                border: 1px solid #0284c7;
-                border-radius: 4px;
-                padding: 2px 8px;
-                font-size: 11px;
-                font-weight: 500;
-            }
-            QPushButton:hover {
-                background-color: #0284c7;
-                color: #ffffff;
-            }
-        """)
+        dest_theme_mode = _get_export_theme_mode()
+        if dest_theme_mode == "light":
+            self.reorder_dests_btn.setStyleSheet("""
+                QPushButton {
+                    background-color: transparent;
+                    color: #2e74b5;
+                    border: 1px solid #2e74b5;
+                    border-radius: 4px;
+                    padding: 2px 8px;
+                    font-size: 11px;
+                    font-weight: 500;
+                }
+                QPushButton:hover {
+                    background-color: #2e74b5;
+                    color: #ffffff;
+                }
+            """)
+        elif dest_theme_mode == "high_contrast":
+            self.reorder_dests_btn.setStyleSheet("""
+                QPushButton {
+                    background-color: transparent;
+                    color: #ffff00;
+                    border: 1px solid #ffff00;
+                    border-radius: 4px;
+                    padding: 2px 8px;
+                    font-size: 11px;
+                    font-weight: 500;
+                }
+                QPushButton:hover {
+                    background-color: #ffff00;
+                    color: #000000;
+                }
+            """)
+        else:
+            self.reorder_dests_btn.setStyleSheet("""
+                QPushButton {
+                    background-color: transparent;
+                    color: #0284c7;
+                    border: 1px solid #0284c7;
+                    border-radius: 4px;
+                    padding: 2px 8px;
+                    font-size: 11px;
+                    font-weight: 500;
+                }
+                QPushButton:hover {
+                    background-color: #0284c7;
+                    color: #ffffff;
+                }
+            """)
         self.reorder_dests_btn.clicked.connect(self._on_reorder_destinations)
         self.dest_content_layout.addStretch()
         self.dest_content_layout.addWidget(self.reorder_dests_btn)
@@ -560,25 +740,60 @@ class UnifiedExportDialog(QDialog):
         self.formats_section.add_widget(self.cb_vtt)
         self.formats_section.add_widget(self.cb_cue)
 
+        local_theme_mode = _get_export_theme_mode()
+
         tracklist_row = QHBoxLayout()
         tracklist_row.addWidget(self.cb_tracklist)
         self.copy_yt_btn = QPushButton("Copy Chapters")
         self.copy_yt_btn.setToolTip("Copy formatted YouTube chapter markers to clipboard immediately")
-        self.copy_yt_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #1e293b;
-                color: #38bdf8;
-                border: 1px solid #0284c7;
-                border-radius: 4px;
-                padding: 2px 8px;
-                font-size: 11px;
-                font-weight: 500;
-            }
-            QPushButton:hover {
-                background-color: #0369a1;
-                color: #ffffff;
-            }
-        """)
+        if local_theme_mode == "light":
+            self.copy_yt_btn.setStyleSheet("""
+                QPushButton {
+                    background-color: #e3e6ea;
+                    color: #2e74b5;
+                    border: 1px solid #2e74b5;
+                    border-radius: 4px;
+                    padding: 2px 8px;
+                    font-size: 11px;
+                    font-weight: 500;
+                }
+                QPushButton:hover {
+                    background-color: #2e74b5;
+                    color: #ffffff;
+                }
+            """)
+        elif local_theme_mode == "high_contrast":
+            self.copy_yt_btn.setStyleSheet("""
+                QPushButton {
+                    background-color: #000000;
+                    color: #ffff00;
+                    border: 1px solid #ffff00;
+                    border-radius: 4px;
+                    padding: 2px 8px;
+                    font-size: 11px;
+                    font-weight: 500;
+                }
+                QPushButton:hover {
+                    background-color: #ffff00;
+                    color: #000000;
+                }
+            """)
+        else:
+            self.copy_yt_btn.setStyleSheet("""
+                QPushButton {
+                    background-color: #1e293b;
+                    color: #38bdf8;
+                    border: 1px solid #0284c7;
+                    border-radius: 4px;
+                    padding: 2px 8px;
+                    font-size: 11px;
+                    font-weight: 500;
+                }
+                QPushButton:hover {
+                    background-color: #0369a1;
+                    color: #ffffff;
+                }
+            """)
         self.copy_yt_btn.clicked.connect(self._copy_youtube_chapters)
         tracklist_row.addWidget(self.copy_yt_btn)
         tracklist_row.addStretch()
@@ -593,28 +808,68 @@ class UnifiedExportDialog(QDialog):
         unselected_row = QHBoxLayout()
         unselected_row.setSpacing(8)
         lbl_unsel = QLabel("Unselected Audio Mode:")
-        lbl_unsel.setStyleSheet("color: #94a3b8; font-size: 12px; font-weight: 500;")
+        if local_theme_mode == "light":
+            lbl_unsel.setStyleSheet("color: #545b66; font-size: 12px; font-weight: 500;")
+        elif local_theme_mode == "high_contrast":
+            lbl_unsel.setStyleSheet("color: #ffffff; font-size: 12px; font-weight: 500;")
+        else:
+            lbl_unsel.setStyleSheet("color: #94a3b8; font-size: 12px; font-weight: 500;")
         unselected_row.addWidget(lbl_unsel)
         self.unselected_audio_combo = QComboBox()
         self.unselected_audio_combo.addItem("Exclude unselected audio", "exclude")
         self.unselected_audio_combo.addItem("Include unselected audio (Split Clips)", "split")
         self.unselected_audio_combo.addItem("Include unselected audio (Muted Clips)", "muted")
         self.unselected_audio_combo.setToolTip("Controls how unselected audio gaps between story segments are handled in DAW timeline exports.")
-        self.unselected_audio_combo.setStyleSheet("""
-            QComboBox {
-                background-color: #0f172a;
-                color: #e2e8f0;
-                border: 1px solid #334155;
-                border-radius: 4px;
-                padding: 3px 8px;
-                font-size: 12px;
-            }
-            QComboBox QAbstractItemView {
-                background-color: #1e293b;
-                color: #e2e8f0;
-                selection-background-color: #0284c7;
-            }
-        """)
+        if local_theme_mode == "light":
+            self.unselected_audio_combo.setStyleSheet("""
+                QComboBox {
+                    background-color: #eaedf0;
+                    color: #22262c;
+                    border: 1px solid #b6bcc4;
+                    border-radius: 4px;
+                    padding: 3px 8px;
+                    font-size: 12px;
+                }
+                QComboBox QAbstractItemView {
+                    background-color: #ffffff;
+                    color: #22262c;
+                    selection-background-color: #2e74b5;
+                    selection-color: #ffffff;
+                }
+            """)
+        elif local_theme_mode == "high_contrast":
+            self.unselected_audio_combo.setStyleSheet("""
+                QComboBox {
+                    background-color: #000000;
+                    color: #ffffff;
+                    border: 1px solid #ffffff;
+                    border-radius: 4px;
+                    padding: 3px 8px;
+                    font-size: 12px;
+                }
+                QComboBox QAbstractItemView {
+                    background-color: #000000;
+                    color: #ffffff;
+                    selection-background-color: #ffffff;
+                    selection-color: #000000;
+                }
+            """)
+        else:
+            self.unselected_audio_combo.setStyleSheet("""
+                QComboBox {
+                    background-color: #0f172a;
+                    color: #e2e8f0;
+                    border: 1px solid #334155;
+                    border-radius: 4px;
+                    padding: 3px 8px;
+                    font-size: 12px;
+                }
+                QComboBox QAbstractItemView {
+                    background-color: #1e293b;
+                    color: #e2e8f0;
+                    selection-background-color: #0284c7;
+                }
+            """)
         unselected_row.addWidget(self.unselected_audio_combo)
         unselected_row.addStretch()
         self.formats_section.add_layout(unselected_row)
@@ -626,21 +881,54 @@ class UnifiedExportDialog(QDialog):
 
         self.edit_id3_btn = QPushButton("Edit ID3 Tags")
         self.edit_id3_btn.setToolTip("Open MP3 ID3 Tag Editor dialog")
-        self.edit_id3_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #1e293b;
-                color: #38bdf8;
-                border: 1px solid #0284c7;
-                border-radius: 4px;
-                padding: 2px 8px;
-                font-size: 11px;
-                font-weight: 500;
-            }
-            QPushButton:hover {
-                background-color: #0369a1;
-                color: #ffffff;
-            }
-        """)
+        if local_theme_mode == "light":
+            self.edit_id3_btn.setStyleSheet("""
+                QPushButton {
+                    background-color: #e3e6ea;
+                    color: #2e74b5;
+                    border: 1px solid #2e74b5;
+                    border-radius: 4px;
+                    padding: 2px 8px;
+                    font-size: 11px;
+                    font-weight: 500;
+                }
+                QPushButton:hover {
+                    background-color: #2e74b5;
+                    color: #ffffff;
+                }
+            """)
+        elif local_theme_mode == "high_contrast":
+            self.edit_id3_btn.setStyleSheet("""
+                QPushButton {
+                    background-color: #000000;
+                    color: #ffff00;
+                    border: 1px solid #ffff00;
+                    border-radius: 4px;
+                    padding: 2px 8px;
+                    font-size: 11px;
+                    font-weight: 500;
+                }
+                QPushButton:hover {
+                    background-color: #ffff00;
+                    color: #000000;
+                }
+            """)
+        else:
+            self.edit_id3_btn.setStyleSheet("""
+                QPushButton {
+                    background-color: #1e293b;
+                    color: #38bdf8;
+                    border: 1px solid #0284c7;
+                    border-radius: 4px;
+                    padding: 2px 8px;
+                    font-size: 11px;
+                    font-weight: 500;
+                }
+                QPushButton:hover {
+                    background-color: #0369a1;
+                    color: #ffffff;
+                }
+            """)
         self.edit_id3_btn.clicked.connect(self._open_id3_editor)
         media_row.addWidget(self.edit_id3_btn)
         media_row.addStretch()

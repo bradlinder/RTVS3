@@ -22,43 +22,23 @@ except ImportError:
 
 INTERNAL_APP_ID = "RadioTVStorySegmenter"
 APP_DISPLAY_NAME = "Radio & TV Segmenter"
-PROJECT_VERSION = "3.5.19"
+PROJECT_VERSION = "3.8.6-stable"
 DEFAULT_GITHUB_REPO = "bradlinder/RTVS3"
 
 
-def apply_window_titlebar_theme(widget, theme_mode: Optional[str] = None) -> None:
-    """Configures Windows DWM title bar caption colors matching active theme mode.
-
-    In Option 4 Light Mode, applies a medium steel slate (#3c4450) title bar with
-    crisp white text (#f8fafc) and subtle border (#4e5765) across main windows and modal dialogs.
-    """
-    if sys.platform != "win32" or widget is None:
+def _apply_dwm_titlebar_hwnd(hwnd: int, theme_mode: str) -> None:
+    """Low-level Windows DWM call applying caption and text colors to a window HWND."""
+    if sys.platform != "win32" or not hwnd:
         return
     try:
         import ctypes
-        hwnd = int(widget.winId())
-        if not hwnd:
-            return
 
-        # Determine theme mode if not provided
-        if not theme_mode:
-            try:
-                from PySide6.QtCore import QSettings
-                settings = QSettings("RadioTVStorySegmenter", "Preferences")
-                theme_mode = settings.value("theme", "dark")
-            except Exception:
-                theme_mode = "dark"
-
-        theme_mode = str(theme_mode).lower().strip()
-
-        # DWM Constants
         DWMWA_USE_IMMERSIVE_DARK_MODE = 20
         DWMWA_USE_IMMERSIVE_DARK_MODE_OLD = 19
         DWMWA_BORDER_COLOR = 34
         DWMWA_CAPTION_COLOR = 35
         DWMWA_TEXT_COLOR = 36
 
-        # Helper to convert hex #RRGGBB to COLORREF 0x00BBGGRR integer
         def _hex_to_colorref(hex_str: str) -> int:
             h = hex_str.lstrip("#")
             if len(h) == 3:
@@ -68,7 +48,6 @@ def apply_window_titlebar_theme(widget, theme_mode: Optional[str] = None) -> Non
             b = int(h[4:6], 16)
             return (b << 16) | (g << 8) | r
 
-        # Enable immersive dark mode caption rendering
         c_true = ctypes.c_int(1)
         for attr in (DWMWA_USE_IMMERSIVE_DARK_MODE, DWMWA_USE_IMMERSIVE_DARK_MODE_OLD):
             try:
@@ -99,6 +78,56 @@ def apply_window_titlebar_theme(widget, theme_mode: Optional[str] = None) -> Non
                 )
             except Exception:
                 pass
+    except Exception:
+        pass
+
+
+def apply_window_titlebar_theme(widget, theme_mode: Optional[str] = None) -> None:
+    """Configures Windows DWM title bar caption colors matching active theme mode.
+
+    In Option 4 Light Mode, applies an identical medium steel slate (#3c4450) title bar with
+    crisp white text (#f8fafc) and subtle border (#4e5765) across ALL windows:
+    the main application window, popup dialogs, preferences, batch windows, export, and utility dialogs.
+    """
+    if sys.platform != "win32" or widget is None:
+        return
+    try:
+        # Determine theme mode if not provided
+        if not theme_mode:
+            try:
+                from PySide6.QtCore import QSettings
+                settings = QSettings("RadioTVStorySegmenter", "Preferences")
+                theme_mode = settings.value("theme", "dark")
+            except Exception:
+                theme_mode = "dark"
+
+        theme_mode = str(theme_mode).lower().strip()
+
+        # Immediate application
+        try:
+            hwnd = int(widget.winId())
+            if hwnd:
+                _apply_dwm_titlebar_hwnd(hwnd, theme_mode)
+        except Exception:
+            pass
+
+        # Deferred re-affirmation once window is fully shown/mapped by OS
+        try:
+            from PySide6.QtCore import QTimer
+            QTimer.singleShot(30, lambda w=widget, tm=theme_mode: _deferred_titlebar_theme(w, tm))
+        except Exception:
+            pass
+    except Exception:
+        pass
+
+
+def _deferred_titlebar_theme(widget, theme_mode: str) -> None:
+    """Deferred callback ensuring DWM attributes persist after Qt window frame initialization."""
+    try:
+        if widget and hasattr(widget, "winId"):
+            hwnd = int(widget.winId())
+            if hwnd:
+                _apply_dwm_titlebar_hwnd(hwnd, theme_mode)
     except Exception:
         pass
 
