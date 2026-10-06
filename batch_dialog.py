@@ -114,7 +114,8 @@ class BatchFileListWidget(QListWidget):
                 font.setPointSize(11)
                 font.setBold(True)
                 painter.setFont(font)
-                painter.drawText(rect, Qt.AlignmentFlag.AlignCenter, "Drop files or folders here to add to batch queue")
+                wrap_flags = int(Qt.AlignmentFlag.AlignCenter | Qt.TextFlag.TextWordWrap)
+                painter.drawText(rect, wrap_flags, "Drop files or folders here to add to batch queue")
             else:
                 pen = QPen(QColor(getattr(tokens, "border_subtle", "#282c35")))
                 pen.setStyle(Qt.PenStyle.DashLine)
@@ -127,9 +128,10 @@ class BatchFileListWidget(QListWidget):
                 font = painter.font()
                 font.setPointSize(10)
                 painter.setFont(font)
+                wrap_flags = int(Qt.AlignmentFlag.AlignCenter | Qt.TextFlag.TextWordWrap)
                 painter.drawText(
                     rect,
-                    Qt.AlignmentFlag.AlignCenter,
+                    wrap_flags,
                     "Drag & drop audio/video files or folders here\nor click 'Add Files…' below"
                 )
             painter.end()

@@ -614,9 +614,9 @@ class InteractiveTranscriptEdit(QTextEdit):
             painter.setRenderHint(QPainter.RenderHint.Antialiasing, True)
             rect = self.viewport().rect()
 
-            card_w = min(460, rect.width() - 40)
-            card_h = min(220, rect.height() - 40)
-            if card_w > 120 and card_h > 80:
+            card_w = min(520, rect.width() - 40)
+            card_h = min(230, rect.height() - 40)
+            if card_w > 140 and card_h > 90:
                 card_x = rect.x() + (rect.width() - card_w) // 2
                 card_y = rect.y() + (rect.height() - card_h) // 2
                 card_rect = QRectF(card_x, card_y, card_w, card_h)
@@ -628,26 +628,33 @@ class InteractiveTranscriptEdit(QTextEdit):
                 painter.setBrush(fill_color)
                 painter.drawRoundedRect(card_rect, 10.0, 10.0)
 
+                wrap_flags = int(Qt.AlignmentFlag.AlignCenter | Qt.TextFlag.TextWordWrap)
+
                 title_font = QFont(self.font())
                 title_font.setPointSize(12)
                 title_font.setBold(True)
                 painter.setFont(title_font)
                 painter.setPen(QColor("#f8fafc" if is_dark else "#0f172a"))
-                t_rect = QRectF(card_x + 16, card_y + 24, card_w - 32, 28)
-                painter.drawText(t_rect, Qt.AlignmentFlag.AlignCenter, "Drop an Audio or Video File Here to Begin")
+                t_rect = QRectF(card_x + 16, card_y + 18, card_w - 32, 28)
+                painter.drawText(t_rect, wrap_flags, "Drop an Audio or Video File Here to Begin")
 
                 sub_font = QFont(self.font())
                 sub_font.setPointSize(9)
                 painter.setFont(sub_font)
                 painter.setPen(QColor("#94a3b8" if is_dark else "#64748b"))
-                s_rect = QRectF(card_x + 16, card_y + 58, card_w - 32, 42)
-                painter.drawText(s_rect, Qt.AlignmentFlag.AlignCenter, "Supports all standard audio and video formats (WAV, MP3, MP4, MOV, MKV, FLAC, etc.)\nAuto-generates synchronized word-level transcription")
+                s_rect = QRectF(card_x + 16, card_y + 48, card_w - 32, 58)
+                painter.drawText(
+                    s_rect,
+                    wrap_flags,
+                    "Supports all standard audio & video formats (WAV, MP3, MP4, MOV, MKV, FLAC, etc.)\nAuto-generates synchronized word-level transcription",
+                )
 
                 btn_font = QFont(self.font())
                 btn_font.setPointSize(9)
                 btn_font.setBold(True)
                 painter.setFont(btn_font)
-                btn_rect = QRectF(card_x + (card_w - 200) // 2, card_y + 115, 200, 32)
+                btn_w = min(220, card_w - 40)
+                btn_rect = QRectF(card_x + (card_w - btn_w) // 2, card_y + 114, btn_w, 32)
                 painter.fillRect(btn_rect, QColor("#2563eb"))
                 painter.setPen(QColor("#ffffff"))
                 painter.drawRoundedRect(btn_rect, 5.0, 5.0)
@@ -657,8 +664,8 @@ class InteractiveTranscriptEdit(QTextEdit):
                 hint_font.setPointSize(8)
                 painter.setFont(hint_font)
                 painter.setPen(QColor("#64748b"))
-                h_rect = QRectF(card_x + 16, card_y + 155, card_w - 32, 24)
-                painter.drawText(h_rect, Qt.AlignmentFlag.AlignCenter, "Or click File > Open Media in the menu bar")
+                h_rect = QRectF(card_x + 16, card_y + 158, card_w - 32, 24)
+                painter.drawText(h_rect, wrap_flags, "Or click File > Open Media in the menu bar")
             painter.end()
 
     def dragEnterEvent(self, event):
