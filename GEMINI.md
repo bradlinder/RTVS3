@@ -76,3 +76,14 @@ Always adhere strictly to the invariants defined in `ARCHITECTURE.md`:
 - **No Unrequested Icons or Emojis**:
   Do NOT add icons or emoji symbols (such as folders, clouds, disks, checkmarks, warning signs, labels, or decorative unicode glyphs) to tabs, buttons, dialog titles, menus, table headers, group boxes, or cards unless explicitly requested by the user. Maintain clean, professional, native desktop typography without decorative emoji clutter.
 
+## 8. Ephemeral Scripts & Artifact Lifecycle Directive
+- **Prompt for Deletion vs. Archival**:
+  Whenever one-off or ephemeral scripts (such as visual mockup generators, test scratch scripts, one-time data patches, or benchmark inspectors) are created and utilized during a task, the agent MUST explicitly ask the user upon completion whether they would like to **delete** or **archive** them.
+- **Archive Location & Git Exclusion (`.archive/`)**:
+  - If the user chooses to archive, move the scripts into `.archive/` (e.g. `.archive/scripts/`).
+  - `.archive/` is registered in `.gitignore` to prevent repository bloat, git status noise, or inclusion in frozen installer distributions.
+  - The agent must know where to find archived scripts in `.archive/` if ever needed for historical context or reuse, but must safely exclude them from standard build, lint, and test runs.
+- **Immediate Deletion**:
+  - If the user chooses to delete, permanently remove the scripts and their temporary outputs.
+
+

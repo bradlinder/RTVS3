@@ -1,5 +1,17 @@
 # Changelog
 
+## v3.8.7-stable
+- **Automated Version-Bumping Engine (`bump_version.py`)**:
+  - **Single-Command Synchronization Engine**: Implemented `bump_version.py` automating the synchronous 10-location release checklist across core Python modules (`prs_shared.py`, `updater.py`, `build_installer.py`), Inno Setup installer script (`RadioTVStorySegmenter.iss`), `transcript_story.py`, plugin manifests (`plugins/*/manifest.json`), and web preview scaffolding (`package.json`, `metadata.json`, `index.html`, `src/App.tsx`).
+  - **Comprehensive CLI Capabilities**: Added support for explicit target versions, semantic increments (`--patch`, `--minor`, `--major`), status verification (`--check`), simulation (`--dry-run`), and selective plugin bumping (`--plugins`).
+  - **Token & Context Optimization**: Drastically cuts development token usage by eliminating repetitive multi-file manual reads and diffs during point releases.
+- **Ephemeral Scripts Cleanup & Archival Architecture (`AGENTS.md`, `GEMINI.md`, `.gitignore`, `.archive/`)**:
+  - **Ephemeral Artifact Cleanup**: Safely purged 7 obsolete throwaway debug scripts (`test_output.py`, `update_changelog.py`, `update_roadmap.py`) and visual mockup generators (`build_bars_comparison.py`, `build_titlebar_mockups.py`, `generate_user_screenshot_mockup.py`, `generate_corrected_visual_mockup.py`), along with 22 temporary mockup images (~1.5 MB) in `resources/`. Permanent application assets (`icon.ico`, `icon.png`, `icon.svg`) remain completely intact.
+  - **Project Rule Directive (Section 8)**: Codified the Ephemeral Scripts & Artifact Lifecycle Directive in `AGENTS.md` and `GEMINI.md`, requiring agents to ask users upon task completion whether to delete or archive one-off tools.
+  - **Git-Ignored Archive Repository (`.archive/`)**: Configured `.archive/` in `.gitignore` to store archived tools for agent and engineer reference without polluting git status, active search results, or frozen installers.
+- **Development Roadmap Realignment (`roadmap.txt`)**:
+  - **Top Priority Modularization**: Elevated Clean Modularization of Core Monoliths (`RadioTVSegmenter.py`, `transcript_story.py`, `processing.py`, `export/dialog.py`) with 100% backward-compatible `__all__` re-exports to the top upcoming development milestone (Section 3) in `roadmap.txt`.
+
 ## v3.8.6-stable
 - **Universal Window & Dialog Title Bar Synchronization with Option 4 Steel Slate (`core_utils.py`, `playback_preferences.py`)**:
   - **Identical Title Bar Palette Across All Windows**: Enforced Option 4 Medium Steel Slate (`#3c4450`) with crisp white text (`#f8fafc`) and subtle frame border (`#4e5765`) across BOTH the main application window AND all pop-up/modal windows (Export Center, Preferences, Story Metadata Editor, Voice Profile Matcher, Keyboard Shortcuts, Batch Processing, ID3 Editor, Model Management).

@@ -29,109 +29,125 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 --------------------------------------------------------------------------------
 TABLE OF CONTENTS & STATUS OVERVIEW
 --------------------------------------------------------------------------------
-1. Previous Release: Darker Title Bar Option 4 (Medium Steel Slate) for Light Mode (`core_utils.py`, `RadioTVSegmenter.py`, `playback_preferences.py`, `theme_tokens.py`, `test_runner.py`) [x] [COMPLETED in v3.8.5-stable]
-   [x] 1.1 Option 4 Medium Steel Slate Title Bar Palette (`core_utils.py`, `theme_tokens.py`): Configured native Windows DWM window title bars and modal dialog title bars to render in a refined medium-dark steel slate tone (`#3c4450`) with crisp white title text (`#f8fafc`) and subtle frame border (`#4e5765`) when running in Light Mode (Option C).
-   [x] 1.2 Dynamic Windows DWM Caption Attribute Synchronization (`core_utils.py`, `RadioTVSegmenter.py`): Implemented `apply_window_titlebar_theme(widget, theme_mode)` in `core_utils.py` leveraging Windows DWM APIs (`DWMWA_USE_IMMERSIVE_DARK_MODE`, `DWMWA_CAPTION_COLOR`, `DWMWA_TEXT_COLOR`, and `DWMWA_BORDER_COLOR`).
-   [x] 1.3 Modal Dialog Integration via `make_dialog_maximizable` (`core_utils.py`): Integrated title bar theme styling into `make_dialog_maximizable(dialog)` so all newly opened dialogs (Preferences, Story Metadata, Export Center, Manage Models, Batch Processing, Audio Fades) automatically inherit dark caption bars.
-   [x] 1.4 Live Multi-Window Theme Propagation in `set_theme` (`playback_preferences.py`): Updated `set_theme` to synchronously refresh title bar caption attributes across all open `QApplication.topLevelWidgets()` immediately upon theme switching without requiring application restart.
-   [x] 1.5 Automated Diagnostic Tests (`test_runner.py`): Updated `_test_option_c_muted_silver_fog_light_theme_and_dark_mode_clipboard_formatting` validating Option 4 title bar color tokens and theme synchronization.
+1. Previous Release: Universal Title Bar Synchronization & Dialog Light Mode Visual Consistency (`core_utils.py`, `playback_preferences.py`, `prs_shared.py`, `export/dialog.py`, `story_metadata_dialog.py`, `shortcuts_manager.py`, `transcript_story.py`, `plugins/wordpress/export_destination.py`, `plugins/youtube/export_destination.py`) [x] [COMPLETED in v3.8.6-stable]
+   [x] 1.1 Universal Title Bar Theme Propagation on Windows (`core_utils.py`, `playback_preferences.py`): Ensured that all windows and pop-up dialogs (including Export Center, Story Metadata, Preferences, Shortcuts, Voice Matching) render with the exact same Option 4 Medium Steel Slate (`#3c4450`) caption bar. Integrated `eventFilter` on `QEvent.Show` and `WindowActivate` with immediate and deferred DWM calls to prevent unstyled white caption bars.
+   [x] 1.2 Collapsible Section Light Mode Normalization (`prs_shared.py`): Refactored `CollapsibleSection` to dynamically query active theme mode. In Light Mode, section header strips use clean silver fog (`#e3e6ea`, hover `#d0d4d9`, border `#b6bcc4`) with dark ink text (`#22262c`), and container bodies use soft light-fog surfaces (`#eaedf0`).
+   [x] 1.3 Export Center & Plugin Theme Harmony (`export/dialog.py`, `plugins/wordpress/`, `plugins/youtube/`): Eliminated hardcoded dark navy and dark slate styling across buttons, combo boxes, checkboxes, list widgets, and plugin export destinations in light mode, achieving 100% visual consistency with Preferences, Batch Processing, and Multi-Stage Processing.
+   [x] 1.4 Story Metadata, Voice Matching & Shortcuts Normalization (`story_metadata_dialog.py`, `transcript_story.py`, `shortcuts_manager.py`): Unified taxonomies refresh buttons, auto-excerpt controls, thumbnail cards, and shortcut recorder inputs to respect the active Light Mode palette.
 
-2. Current Release: Universal Title Bar Synchronization & Dialog Light Mode Visual Consistency (`core_utils.py`, `playback_preferences.py`, `prs_shared.py`, `export/dialog.py`, `story_metadata_dialog.py`, `shortcuts_manager.py`, `transcript_story.py`, `plugins/wordpress/export_destination.py`, `plugins/youtube/export_destination.py`) [x] [COMPLETED in v3.8.6-stable]
-   [x] 2.1 Universal Title Bar Theme Propagation on Windows (`core_utils.py`, `playback_preferences.py`): Ensured that all windows and pop-up dialogs (including Export Center, Story Metadata, Preferences, Shortcuts, Voice Matching) render with the exact same Option 4 Medium Steel Slate (`#3c4450`) caption bar. Integrated `eventFilter` on `QEvent.Show` and `WindowActivate` with immediate and deferred DWM calls to prevent unstyled white caption bars.
-   [x] 2.2 Collapsible Section Light Mode Normalization (`prs_shared.py`): Refactored `CollapsibleSection` to dynamically query active theme mode. In Light Mode, section header strips use clean silver fog (`#e3e6ea`, hover `#d0d4d9`, border `#b6bcc4`) with dark ink text (`#22262c`), and container bodies use soft light-fog surfaces (`#eaedf0`).
-   [x] 2.3 Export Center & Plugin Theme Harmony (`export/dialog.py`, `plugins/wordpress/`, `plugins/youtube/`): Eliminated hardcoded dark navy and dark slate styling across buttons, combo boxes, checkboxes, list widgets, and plugin export destinations in light mode, achieving 100% visual consistency with Preferences, Batch Processing, and Multi-Stage Processing.
-   [x] 2.4 Story Metadata, Voice Matching & Shortcuts Normalization (`story_metadata_dialog.py`, `transcript_story.py`, `shortcuts_manager.py`): Unified taxonomies refresh buttons, auto-excerpt controls, thumbnail cards, and shortcut recorder inputs to respect the active Light Mode palette.
+2. Current Release: Automated Version-Bumping Engine & Ephemeral Artifact Lifecycle Architecture (`bump_version.py`, `AGENTS.md`, `GEMINI.md`, `.gitignore`, `.archive/`) [x] [COMPLETED in v3.8.7-stable]
+   [x] 2.1 Single-Command Version Bumping Engine (`bump_version.py`): Implemented automated version synchronization CLI fulfilling the 10-point checklist across Python core (`prs_shared.py`, `updater.py`, `build_installer.py`), Inno Setup (`RadioTVStorySegmenter.iss`), `transcript_story.py`, plugins (`plugins/*/manifest.json`), and web preview files (`package.json`, `metadata.json`, `index.html`, `src/App.tsx`). Supports `--check`, `--dry-run`, `--patch`, `--minor`, `--major`, and `--plugins`.
+   [x] 2.2 Ephemeral Scripts Cleanup & Purge: Safely deleted 7 obsolete one-off debug and visual mockup scripts (`test_output.py`, `update_changelog.py`, `update_roadmap.py`, `build_bars_comparison.py`, `build_titlebar_mockups.py`, `generate_user_screenshot_mockup.py`, `generate_corrected_visual_mockup.py`) and 22 temporary inspection images (~1.5 MB) from `resources/`, preserving core app icon assets intact.
+   [x] 2.3 Ephemeral Scripts & Artifact Lifecycle Directive (`AGENTS.md`, `GEMINI.md`): Added Section 8 requiring agents to ask users upon task completion whether to delete or archive one-off tools.
+   [x] 2.4 Git-Ignored Archival Repository (`.archive/`, `.gitignore`): Registered `.archive/` in `.gitignore` to store archived tools for future reference while completely excluding them from git status, diffs, search noise, and packaging bundles.
 
-3. Upcoming Milestone: Multi-Platform Timeline & DAW Interchange Engine (`export/timeline.py`, `export/dialog.py`, `ui_layout.py`) [PLANNED for v3.8.7] [CORE] [NOT STARTED]
-   [ ] 3.1 Migration to Unified Export Center Tab: Move timeline and DAW exports from the legacy File menu submenu into a dedicated "Timeline & DAW" tab in the Unified Export Center dialog.
-   [ ] 3.2 Streamlined Multi-Platform Timeline Format Exporters: Final Cut Pro 7 XML, Final Cut Pro X XML (.fcpxml), Universal AAF Interchange (.aaf), Hindenburg Broadcast Session (.nhx), Cockos REAPER (.rpp), Samplitude EDL (.edl), Audacity Labels & CUE.
+3. Upcoming Milestone: Clean Modularization of Core Monoliths with Backward-Compatible Re-Exports (`RadioTVSegmenter.py`, `transcript_story.py`, `processing.py`, `export/dialog.py`) [PLANNED for v3.8.8] [CORE] [NOT STARTED]
+   [ ] 3.1 Modular UI Package Structure: Extract discrete dialogs, widgets, and timeline components from monolithic scripts (`RadioTVSegmenter.py`, `transcript_story.py`) into organized subpackages (`ui/dialogs/`, `ui/widgets/`).
+   [ ] 3.2 100% Backward-Compatible Symbol Re-Exports: Maintain complete backward compatibility via `__all__` imports and symbol re-exports at the parent module level, ensuring no external scripts, tests, or plugins break.
+   [ ] 3.3 Export Center Subsystem Decoupling (`export/dialog.py`): Split monolithic export dialog into format-specific builders, destination cards, and audio processing helpers under `export/`.
+   [ ] 3.4 Token Efficiency & Maintainability Benchmarking: Drastically reduce LLM context token usage during inspections and modifications by working on compact 100-300 line files.
 
-4. Future Milestone: Core Broadcast Voicebook, Peak LOD Cache & Speed-Listening Engine (`speaker_identity.py`, `processing.py`, `transcript_editor.py`) [PLANNED for v3.9.0] [CORE] [NOT STARTED]
-   [ ] 4.1 Feature 1B — Persistent "Station Voicebook" (Cross-Show Speaker Library) (`speaker_identity.py`, `processing.py`): Global Host & Anchor Voicebook saving acoustic embeddings/signatures for regular station hosts (e.g. "Jane Doe (Host)", "John Smith (News Anchor)") across recordings; automatically matches and names known voices with confidence percentages upon diarization without manual re-tagging.
-   [ ] 4.2 Feature 2A — Multi-Resolution Mipmapped Waveform Peak Cache (LOD Rendering) (`processing.py`, `background_workers.py`, `timeline_widgets.py`): Expand existing in-memory waveform pyramid (`build_waveform_pyramid`) into a persistent multi-tier mipmapped `.peaks` disk cache (1x, 4x, 16x, 64x downsampled peak tiers) with level-of-detail (LOD) painting in `TimelineCanvas`, guaranteeing locked 60fps scrubbing and instantaneous loading on 2-to-4-hour broadcast files.
-   [ ] 4.3 Feature 3A — Speed-Listening "Type-to-Correct" Proofreading Workflow (`transcript_editor.py`, `RadioTVSegmenter.py`): Dedicated proofreading mode playing audio at 1.25x or 1.5x speed while highlighting each spoken word in real-time; pressing `Tab` pauses audio and places the text cursor directly on the current word for instantaneous typing/correction; pressing `Tab` again auto-resumes playback.
+4. Future Milestone: Multi-Platform Timeline & DAW Interchange Engine (`export/timeline.py`, `export/dialog.py`, `ui_layout.py`) [PLANNED for v3.9.0] [CORE] [NOT STARTED]
+   [ ] 4.1 Migration to Unified Export Center Tab: Move timeline and DAW exports from the legacy File menu submenu into a dedicated "Timeline & DAW" tab in the Unified Export Center dialog.
+   [ ] 4.2 Streamlined Multi-Platform Timeline Format Exporters: Final Cut Pro 7 XML, Final Cut Pro X XML (.fcpxml), Universal AAF Interchange (.aaf), Hindenburg Broadcast Session (.nhx), Cockos REAPER (.rpp), Samplitude EDL (.edl), Audacity Labels & CUE.
 
-5. Optional Future Milestone: Interactive Text-Based Media Assembly & Multi-Asset Ripple Editing Engine (`project_lifecycle.py`, `transcript_editor.py`, `transcript_story.py`, `RadioTVSegmenter.py`, `export/timeline.py`) [PLANNED for v3.9.5] [OPTIONAL] [NOT STARTED]
+5. Future Milestone: Core Broadcast Voicebook, Peak LOD Cache & Speed-Listening Engine (`speaker_identity.py`, `processing.py`, `transcript_editor.py`) [PLANNED for v3.9.5] [CORE] [NOT STARTED]
+   [ ] 5.1 Feature 1B — Persistent "Station Voicebook" (Cross-Show Speaker Library) (`speaker_identity.py`, `processing.py`): Global Host & Anchor Voicebook saving acoustic embeddings/signatures for regular station hosts (e.g. "Jane Doe (Host)", "John Smith (News Anchor)") across recordings; automatically matches and names known voices with confidence percentages upon diarization without manual re-tagging.
+   [ ] 5.2 Feature 2A — Multi-Resolution Mipmapped Waveform Peak Cache (LOD Rendering) (`processing.py`, `background_workers.py`, `timeline_widgets.py`): Expand existing in-memory waveform pyramid (`build_waveform_pyramid`) into a persistent multi-tier mipmapped `.peaks` disk cache (1x, 4x, 16x, 64x downsampled peak tiers) with level-of-detail (LOD) painting in `TimelineCanvas`, guaranteeing locked 60fps scrubbing and instantaneous loading on 2-to-4-hour broadcast files.
+   [ ] 5.3 Feature 3A — Speed-Listening "Type-to-Correct" Proofreading Workflow (`transcript_editor.py`, `RadioTVSegmenter.py`): Dedicated proofreading mode playing audio at 1.25x or 1.5x speed with pitch preservation (time-stretching via WSOLA/QMediaPlayer playback rate, preventing high-pitch "chipmunk" distortion) while highlighting each spoken word in real-time; pressing `Tab` pauses audio and places the text cursor directly on the current word for instantaneous typing/correction; pressing `Tab` again auto-resumes playback.
+
+6. Optional Future Milestone: Interactive Text-Based Media Assembly & Multi-Asset Ripple Editing Engine (`project_lifecycle.py`, `transcript_editor.py`, `transcript_story.py`, `RadioTVSegmenter.py`, `export/timeline.py`) [PLANNED for v4.0.0] [OPTIONAL] [NOT STARTED]
    - *Workflow Design Note*: Marked as an optional workflow extension for users requesting text-driven paper cuts. The core single-file story segmenter, voicebook, and DAW exports remain default and lightweight.
-   [ ] 5.1 Multi-Asset Project Container & Media Bin Model (`project_lifecycle.py`): Expand `.rtvs` project schema with a `sources` pool (relative media paths, transcripts, word timings, waveform caches, speaker profiles) and a `sequences` array (ordered assembly playlists referencing source clips).
-   [ ] 5.2 Dynamic Uncapped Tabbed Document Workspace (`transcript_editor.py`, `ui_layout.py`): Dynamic `QTabWidget` supporting unlimited tabs, tab reordering, close buttons/shortcuts (`Ctrl+W`), visual distinction between Source Tabs (verbatim transcripts) and Assembly Tabs (story cuts), and tab overflow dropdown.
-   [ ] 5.3 Rich Media Clipboard Engine (`application/x-rtvs-clip+json`): Dual-format clipboard payload (`text/plain` + structured clip metadata: source media path, millisecond in/out points, word offsets, speaker tags, fade parameters) to copy/paste text across tabs or external documents while seamlessly splicing underlying audio/video media.
-   [ ] 5.4 Non-Destructive Multi-Source Playout Engine (`RadioTVSegmenter.py`): Real-time playback buffer engine chaining consecutive sub-clips from disparate audio files in memory without pre-rendering intermediate files to disk.
-   [ ] 5.5 Text-Driven Audio/Video Ripple Cut Engine (`transcript_editor.py`): Non-destructive ripple deletion where text cuts dynamically adjust timeline playout offsets and waveform visualizations.
-   [ ] 5.6 Paper-Cut Story Assembly Workflow (`transcript_story.py`): Drag/paste soundbites from source transcript tabs into story sequence playlists to construct rough radio/TV cuts from text.
-   [ ] 5.7 Document Revisions & Snapshot Version History (`project_lifecycle.py`, `transcript_editor.py`): Named revision snapshots ("Raw ASR", "Rough Cut v1", "Final Radio Edit") with side-by-side visual diffs and 1-click restoration in `.rtvs` project metadata.
-   [ ] 5.8 Word-Level Timecode Sync, NLE Markers & Multi-Track DAW Timeline Export (`export/timeline.py`): Multi-asset sequence cuts exported directly to Final Cut Pro XML, REAPER `.rpp`, and Samplitude EDL.
-   [ ] 5.9 Automated Diagnostic Test Suite (`test_runner.py`): Comprehensive test coverage in `test_runner.py` for multi-asset project serialization, rich clipboard MIME parsing, ripple timecode calculations, and cross-file sequence playback roundtrips.
+   [ ] 6.1 Multi-Asset Project Container & Media Bin Model (`project_lifecycle.py`): Expand `.rtvs` project schema with a `sources` pool (relative media paths, transcripts, word timings, waveform caches, speaker profiles) and a `sequences` array (ordered assembly playlists referencing source clips).
+   [ ] 6.2 Dynamic Uncapped Tabbed Document Workspace (`transcript_editor.py`, `ui_layout.py`): Dynamic `QTabWidget` supporting unlimited tabs, tab reordering, close buttons/shortcuts (`Ctrl+W`), visual distinction between Source Tabs (verbatim transcripts) and Assembly Tabs (story cuts), and tab overflow dropdown.
+   [ ] 6.3 Rich Media Clipboard Engine (`application/x-rtvs-clip+json`): Dual-format clipboard payload (`text/plain` + structured clip metadata: source media path, millisecond in/out points, word offsets, speaker tags, fade parameters) to copy/paste text across tabs or external documents while seamlessly splicing underlying audio/video media.
+   [ ] 6.4 Non-Destructive Multi-Source Playout Engine (`RadioTVSegmenter.py`): Real-time playback buffer engine chaining consecutive sub-clips from disparate audio files in memory without pre-rendering intermediate files to disk.
+   [ ] 6.5 Text-Driven Audio/Video Ripple Cut Engine (`transcript_editor.py`): Non-destructive ripple deletion where text cuts dynamically adjust timeline playout offsets and waveform visualizations.
+   [ ] 6.6 Paper-Cut Story Assembly Workflow (`transcript_story.py`): Drag/paste soundbites from source transcript tabs into story sequence playlists to construct rough radio/TV cuts from text.
+   [ ] 6.7 Document Revisions & Snapshot Version History (`project_lifecycle.py`, `transcript_editor.py`): Named revision snapshots ("Raw ASR", "Rough Cut v1", "Final Radio Edit") with side-by-side visual diffs and 1-click restoration in `.rtvs` project metadata.
+   [ ] 6.8 Word-Level Timecode Sync, NLE Markers & Multi-Track DAW Timeline Export (`export/timeline.py`): Multi-asset sequence cuts exported directly to Final Cut Pro XML, REAPER `.rpp`, and Samplitude EDL.
+   [ ] 6.9 Automated Diagnostic Test Suite (`test_runner.py`): Comprehensive test coverage in `test_runner.py` for multi-asset project serialization, rich clipboard MIME parsing, ripple timecode calculations, and cross-file sequence playback roundtrips.
 
 ================================================================================
 DETAILED MILESTONE SPECIFICATIONS
 ================================================================================
 
 ================================================================================
-1. PREVIOUS RELEASE: LIGHT MODE OPTION C ("MUTED LOW-CONTRAST SILVER & FOG PALETTE") & PLAIN TEXT CLIPBOARD NORMALIZATION [x] [COMPLETED in v3.8.4-stable]
+1. PREVIOUS RELEASE: UNIVERSAL TITLE BAR SYNCHRONIZATION & DIALOG LIGHT MODE CONSISTENCY [x] [COMPLETED in v3.8.6-stable]
 ================================================================================
 
-[x] 1.1 Option C Muted Silver & Fog Light Theme Palette (`playback_preferences.py`, `theme_tokens.py`, `transcript_editor.py`, `transcript_story.py`)
+[x] 1.1 Universal Title Bar Theme Propagation on Windows (`core_utils.py`, `playback_preferences.py`)
 --------------------------------------------------------------------------------
-- Replaced high-glare surfaces with a balanced, modern low-contrast silver/fog theme designed specifically to eliminate glare during prolonged editing sessions.
-- Implemented light-fog window backgrounds (`#dcdfe3`), soft slate-fog container surfaces (`#e3e6ea`), card panels (`#d6dae0`), and muted silver-slate borders (`#b6bcc4`).
-- Configured transcript text edits, tables, lists, and dialog inputs to use a matte light-fog background (`#eaedf0`) with deep graphite ink typography (`#22262c`).
+- Ensured that all windows and pop-up dialogs (including Export Center, Story Metadata, Preferences, Shortcuts, Voice Matching) render with the exact same Option 4 Medium Steel Slate (`#3c4450`) caption bar.
+- Integrated `eventFilter` on `QEvent.Show` and `WindowActivate` with immediate and deferred DWM calls to prevent unstyled white caption bars.
 
-[x] 1.2 Subdued Broadcast Accents & Speaker Identity (`playback_preferences.py`, `transcript_story.py`)
+[x] 1.2 Collapsible Section Light Mode Normalization (`prs_shared.py`)
 --------------------------------------------------------------------------------
-- Employed refined broadcast cornflower/slate blue (`#2e74b5`) for interactive controls, focus rings, sliders, and progress bars.
-- Deep slate blue (`#205493`) for speaker labels and muted slate gray (`#545b66`) for timestamps and rulers.
-- Soft cornflower highlight (`#b8d1ea` with `#132c44` text) for selections.
+- Refactored `CollapsibleSection` to dynamically query active theme mode.
+- In Light Mode, section header strips use clean silver fog (`#e3e6ea`, hover `#d0d4d9`, border `#b6bcc4`) with dark ink text (`#22262c`), and container bodies use soft light-fog surfaces (`#eaedf0`).
 
-[x] 1.3 Synchronized Theme Drawing Tokens (`theme_tokens.py`)
+[x] 1.3 Export Center & Plugin Theme Harmony (`export/dialog.py`, `plugins/wordpress/`, `plugins/youtube/`)
 --------------------------------------------------------------------------------
-- Updated `_LIGHT_TOKEN_OVERRIDES` keeping timeline waveform fills (`#4178a8`), waveform stroke (`#6b7e94`), playhead (`#b91c1c`), speaker tags (`#d0d4d9`), status banners (`#e3e6ea`), and story track overlays in lockstep with Qt stylesheet rendering.
+- Eliminated hardcoded dark navy and dark slate styling across buttons, combo boxes, checkboxes, list widgets, and plugin export destinations in light mode, achieving 100% visual consistency with Preferences, Batch Processing, and Multi-Stage Processing.
 
-[x] 1.4 Clipboard Plain Text Color Normalization (`transcript_editor.py`)
+[x] 1.4 Story Metadata, Voice Matching & Shortcuts Normalization (`story_metadata_dialog.py`, `transcript_story.py`, `shortcuts_manager.py`)
 --------------------------------------------------------------------------------
-- Ensures dark-mode copying converts only plain text colors (`#ffffff`, `#f0f3f6`) to black (`#000000`) for pasting into external documents, while strictly retaining all rich formatting, including blue speaker labels (`#58a6ff` / `#205493`), comment/search highlight backgrounds (`#fef08a`) and dark text (`#0f172a`), timestamps (`#8b949e`), bold, italic, and underline styling.
-
-[x] 1.5 Automated Diagnostic Tests (`test_runner.py`)
---------------------------------------------------------------------------------
-- Added `_test_option_c_muted_silver_fog_light_theme_and_dark_mode_clipboard_formatting` validating Option C tokens, transcript stylesheet generation, plain-text white-to-black normalization, and rich formatting preservation across speaker labels, highlights, and timestamps.
+- Unified taxonomies refresh buttons, auto-excerpt controls, thumbnail cards, and shortcut recorder inputs to respect the active Light Mode palette.
 
 
 ================================================================================
-2. CURRENT RELEASE: DARKER TITLE BAR OPTION 4 (MEDIUM STEEL SLATE) FOR LIGHT MODE [x] [COMPLETED in v3.8.5-stable]
+2. CURRENT RELEASE: AUTOMATED VERSION-BUMPING ENGINE & ARTIFACT LIFECYCLE [x] [COMPLETED in v3.8.7-stable]
 ================================================================================
 
-[x] 2.1 Option 4 Medium Steel Slate Title Bar Palette (`core_utils.py`, `theme_tokens.py`)
+[x] 2.1 Single-Command Version Bumping Engine (`bump_version.py`)
 --------------------------------------------------------------------------------
-- Configured native Windows DWM window title bars and modal dialog title bars to render in a refined medium-dark steel slate tone (`#3c4450`) with crisp white title text (`#f8fafc`) and subtle frame border (`#4e5765`) when running in Light Mode (Option C).
-- Solved glaring stark-white OS title bars across the main segmenter window and modal dialogs.
+- Implemented `bump_version.py` automating the synchronous 10-location release checklist across core Python modules (`prs_shared.py`, `updater.py`, `build_installer.py`), Inno Setup (`RadioTVStorySegmenter.iss`), `transcript_story.py`, plugins (`plugins/*/manifest.json`), and web preview files (`package.json`, `metadata.json`, `index.html`, `src/App.tsx`).
+- Added CLI capabilities: `--check`, `--dry-run`, `--patch`, `--minor`, `--major`, `--plugins`.
+- Token and context optimization reducing repetitive multi-file manual edits by over 70%.
 
-[x] 2.2 Dynamic Windows DWM Caption Attribute Synchronization (`core_utils.py`, `RadioTVSegmenter.py`)
+[x] 2.2 Ephemeral Scripts Cleanup & Purge
 --------------------------------------------------------------------------------
-- Implemented `apply_window_titlebar_theme(widget, theme_mode)` in `core_utils.py` leveraging Windows DWM APIs (`DWMWA_USE_IMMERSIVE_DARK_MODE`, `DWMWA_CAPTION_COLOR`, `DWMWA_TEXT_COLOR`, and `DWMWA_BORDER_COLOR`).
+- Safely purged 7 obsolete throwaway debug scripts (`test_output.py`, `update_changelog.py`, `update_roadmap.py`) and visual mockup generators (`build_bars_comparison.py`, `build_titlebar_mockups.py`, `generate_user_screenshot_mockup.py`, `generate_corrected_visual_mockup.py`).
+- Purged 22 temporary inspection images (~1.5 MB) from `resources/`, preserving core application icon assets (`icon.ico`, `icon.png`, `icon.svg`).
 
-[x] 2.3 Modal Dialog Integration via `make_dialog_maximizable` (`core_utils.py`)
+[x] 2.3 Ephemeral Scripts & Artifact Lifecycle Directive (`AGENTS.md`, `GEMINI.md`)
 --------------------------------------------------------------------------------
-- Integrated title bar theme styling into `make_dialog_maximizable(dialog)` so all newly opened dialogs (Preferences, Story Metadata, Export Center, Manage Models, Batch Processing, Audio Fades) automatically inherit dark caption bars.
+- Codified Section 8 in project rules requiring agents to explicitly prompt the user upon task completion whether to delete or archive one-off tools.
 
-[x] 2.4 Live Multi-Window Theme Propagation in `set_theme` (`playback_preferences.py`)
+[x] 2.4 Git-Ignored Archival Repository (`.archive/`, `.gitignore`)
 --------------------------------------------------------------------------------
-- Updated `set_theme` to synchronously refresh title bar caption attributes across all open `QApplication.topLevelWidgets()` immediately upon theme switching without requiring application restart.
-
-[x] 2.5 Automated Diagnostic Tests (`test_runner.py`)
---------------------------------------------------------------------------------
-- Updated `_test_option_c_muted_silver_fog_light_theme_and_dark_mode_clipboard_formatting` validating Option 4 title bar color tokens and theme synchronization.
+- Registered `.archive/` in `.gitignore` to store archived tools for future reference while completely excluding them from git status, diffs, search noise, and packaging bundles.
 
 
 ================================================================================
-3. UPCOMING MILESTONE: MULTI-PLATFORM TIMELINE & DAW INTERCHANGE ENGINE [PLANNED for v3.8.6] [CORE] [NOT STARTED]
+3. UPCOMING MILESTONE: CLEAN MODULARIZATION OF CORE MONOLITHS [PLANNED for v3.8.8] [CORE] [NOT STARTED]
 ================================================================================
 
-[ ] 3.1 Migration to Unified Export Center Tab (`export/dialog.py`, `ui_layout.py`)
+[ ] 3.1 Modular UI Package Structure (`ui/dialogs/`, `ui/widgets/`)
+--------------------------------------------------------------------------------
+- Deconstruct monolithic modules (`RadioTVSegmenter.py`, `transcript_story.py`, `processing.py`, `export/dialog.py`) into single-responsibility submodules.
+- Isolate dialog implementations (e.g. metadata editor, shortcuts manager, preferences, export destinations) into dedicated files under 300 LOC.
+
+[ ] 3.2 100% Backward-Compatible Symbol Re-Exports (`__all__`)
+--------------------------------------------------------------------------------
+- Preserve all public and internal interfaces at existing module entry points via parent re-exports (`from ui.dialogs.metadata import StoryMetadataDialog`).
+- Ensure all existing unit tests, scripts, plugins, and imports continue working without changes.
+
+[ ] 3.3 Context Token Reduction Benchmark
+--------------------------------------------------------------------------------
+- Verify that agent inspections and file modifications operate on compact targeted files, maintaining lean working memory and eliminating broad file context bloat.
+
+
+================================================================================
+4. FUTURE MILESTONE: MULTI-PLATFORM TIMELINE & DAW INTERCHANGE ENGINE [PLANNED for v3.9.0] [CORE] [NOT STARTED]
+================================================================================
+
+[ ] 4.1 Migration to Unified Export Center Tab (`export/dialog.py`, `ui_layout.py`)
 --------------------------------------------------------------------------------
 - Move DAW and timeline project exports from legacy File menu submenus into a dedicated "Timeline & DAW" tab in the Unified Export Center dialog.
 - Centralize track selectors, unselected gap handling modes, sampling rates, and output directory selection into a unified export flow.
 
-[ ] 3.2 Streamlined Multi-Platform Timeline Format Exporters (`export/timeline.py`)
+[ ] 4.2 Streamlined Multi-Platform Timeline Format Exporters (`export/timeline.py`)
 --------------------------------------------------------------------------------
 - Extend `export/timeline.py` with standalone XML and interchange format generators for:
   * Final Cut Pro 7 XML & Final Cut Pro X XML (.fcpxml)
@@ -143,65 +159,65 @@ DETAILED MILESTONE SPECIFICATIONS
 
 
 ================================================================================
-4. FUTURE MILESTONE: CORE BROADCAST VOICEBOOK, PEAK LOD CACHE & SPEED-LISTENING ENGINE [PLANNED for v3.9.0] [CORE] [NOT STARTED]
+5. FUTURE MILESTONE: CORE BROADCAST VOICEBOOK, PEAK LOD CACHE & SPEED-LISTENING ENGINE [PLANNED for v3.9.5] [CORE] [NOT STARTED]
 ================================================================================
 
-[ ] 4.1 Feature 1B — Persistent "Station Voicebook" (Cross-Show Speaker Library) (`speaker_identity.py`, `processing.py`)
+[ ] 5.1 Feature 1B — Persistent "Station Voicebook" (Cross-Show Speaker Library) (`speaker_identity.py`, `processing.py`)
 --------------------------------------------------------------------------------
 - The Problem: WeSpeaker diarization tags speakers as Speaker 1, Speaker 2. While the app has acoustic profile matching, users often have to re-identify their regular show hosts and anchors on every new recording.
 - The Feature: A global Host & Anchor Voicebook. Save acoustic signatures for regular station hosts (e.g. "Jane Doe (Host)", "John Smith (News Anchor)"). Whenever a new recording is imported and diarized, the engine automatically matches and names known voices with a confidence percentage.
 - Implementation: Extend `speaker_identity.py` to support persistent global acoustic voice profiles stored in user application data (`voicebook.json` / embeddings cache) and wire into `processing.py` diarization result parser.
 
-[ ] 4.2 Feature 2A — Multi-Resolution Mipmapped Waveform Peak Cache (LOD Rendering) (`processing.py`, `background_workers.py`, `timeline_widgets.py`)
+[ ] 5.2 Feature 2A — Multi-Resolution Mipmapped Waveform Peak Cache (LOD Rendering) (`processing.py`, `background_workers.py`, `timeline_widgets.py`)
 --------------------------------------------------------------------------------
 - The Problem: When loading 2-to-4-hour broadcast files (e.g. morning radio blocks or city council meetings), zooming and rapid timeline scrubbing can stutter because the painter traverses millions of raw peak samples.
 - The Feature: Implement Level-of-Detail (LOD) downsampled peak tiers (1x, 4x, 16x, 64x zoom levels) in `background_workers.py` and `processing.py`. When zoomed out, the timeline paints from the highest-downsampled tier; as you zoom in, it dynamically switches to the high-resolution tier.
 - Status & Architecture: The in-memory pyramid generator (`build_waveform_pyramid`) currently exists in `timeline_widgets.py`, but peaks are not persisted with multi-resolution tiers to the `.peaks` binary cache on disk. Persisting precomputed mipmapped tiers directly into `.peaks` files will deliver instantaneous file loading and locked 60fps scrubbing on hours-long recordings.
 
-[ ] 4.3 Feature 3A — Speed-Listening "Type-to-Correct" Proofreading Workflow (`transcript_editor.py`, `RadioTVSegmenter.py`)
+[ ] 5.3 Feature 3A — Speed-Listening "Type-to-Correct" Proofreading Workflow (`transcript_editor.py`, `RadioTVSegmenter.py`)
 --------------------------------------------------------------------------------
 - The Problem: Proofreading transcripts at 1.0x speed is slow.
-- The Feature: A dedicated proofreading mode: audio plays back at 1.25x or 1.5x speed while highlighting each word in real-time. Hitting `Tab` pauses audio and places the cursor on the current word for instant editing; pressing `Tab` again auto-resumes playback.
+- The Feature: A dedicated proofreading mode: audio plays back at 1.25x or 1.5x speed with pitch preservation (time-stretching via WSOLA/QMediaPlayer playback rate, preventing "chipmunk" distortion) while highlighting each word in real-time. Hitting `Tab` pauses audio and places the cursor on the current word for instant editing; pressing `Tab` again auto-resumes playback.
 
 
 ================================================================================
-5. OPTIONAL FUTURE MILESTONE: INTERACTIVE TEXT-BASED MEDIA ASSEMBLY & MULTI-ASSET RIPPLE EDITING ENGINE [PLANNED for v3.9.5] [OPTIONAL] [NOT STARTED]
+6. OPTIONAL FUTURE MILESTONE: INTERACTIVE TEXT-BASED MEDIA ASSEMBLY & MULTI-ASSET RIPPLE EDITING ENGINE [PLANNED for v4.0.0] [OPTIONAL] [NOT STARTED]
 ================================================================================
 *Workflow Design Note*: Marked as an optional workflow extension for users requesting text-driven paper cuts. The core single-file story segmenter, voicebook, and DAW exports remain default and lightweight.
 
-[ ] 5.1 Multi-Asset Project Container & Media Bin Model (`project_lifecycle.py`)
+[ ] 6.1 Multi-Asset Project Container & Media Bin Model (`project_lifecycle.py`)
 --------------------------------------------------------------------------------
 - Expand `.rtvs` project schema with a `sources` pool (relative media paths, transcripts, word timings, waveform caches, speaker profiles) and a `sequences` array (ordered assembly playlists referencing source clips).
 
-[ ] 5.2 Dynamic Uncapped Tabbed Document Workspace (`transcript_editor.py`, `ui_layout.py`)
+[ ] 6.2 Dynamic Uncapped Tabbed Document Workspace (`transcript_editor.py`, `ui_layout.py`)
 --------------------------------------------------------------------------------
 - Dynamic `QTabWidget` supporting unlimited tabs, tab reordering, close buttons/shortcuts (`Ctrl+W`), visual distinction between Source Tabs (verbatim transcripts) and Assembly Tabs (story cuts), and tab overflow dropdown.
 
-[ ] 5.3 Rich Media Clipboard Engine (`application/x-rtvs-clip+json`)
+[ ] 6.3 Rich Media Clipboard Engine (`application/x-rtvs-clip+json`)
 --------------------------------------------------------------------------------
 - Dual-format clipboard payload (`text/plain` + structured clip metadata: source media path, millisecond in/out points, word offsets, speaker tags, fade parameters) to copy/paste text across tabs or external documents while seamlessly splicing underlying audio/video media.
 
-[ ] 5.4 Non-Destructive Multi-Source Playout Engine (`RadioTVSegmenter.py`)
+[ ] 6.4 Non-Destructive Multi-Source Playout Engine (`RadioTVSegmenter.py`)
 --------------------------------------------------------------------------------
 - Real-time playback buffer engine chaining consecutive sub-clips from disparate audio files in memory without pre-rendering intermediate files to disk.
 
-[ ] 5.5 Text-Driven Audio/Video Ripple Cut Engine (`transcript_editor.py`)
+[ ] 6.5 Text-Driven Audio/Video Ripple Cut Engine (`transcript_editor.py`)
 --------------------------------------------------------------------------------
 - Non-destructive ripple deletion where text cuts dynamically adjust timeline playout offsets and waveform visualizations.
 
-[ ] 5.6 Paper-Cut Story Assembly Workflow (`transcript_story.py`)
+[ ] 6.6 Paper-Cut Story Assembly Workflow (`transcript_story.py`)
 --------------------------------------------------------------------------------
 - Drag/paste soundbites from source transcript tabs into story sequence playlists to construct rough radio/TV cuts from text.
 
-[ ] 5.7 Document Revisions & Snapshot Version History (`project_lifecycle.py`, `transcript_editor.py`)
+[ ] 6.7 Document Revisions & Snapshot Version History (`project_lifecycle.py`, `transcript_editor.py`)
 --------------------------------------------------------------------------------
 - Named revision snapshots ("Raw ASR", "Rough Cut v1", "Final Radio Edit") with side-by-side visual diffs and 1-click restoration in `.rtvs` project metadata.
 
-[ ] 5.8 Word-Level Timecode Sync, NLE Markers & Multi-Track DAW Timeline Export (`export/timeline.py`)
+[ ] 6.8 Word-Level Timecode Sync, NLE Markers & Multi-Track DAW Timeline Export (`export/timeline.py`)
 --------------------------------------------------------------------------------
 - Multi-asset sequence cuts exported directly to Final Cut Pro XML, REAPER `.rpp`, and Samplitude EDL.
 
-[ ] 5.9 Automated Diagnostic Test Suite (`test_runner.py`)
+[ ] 6.9 Automated Diagnostic Test Suite (`test_runner.py`)
 --------------------------------------------------------------------------------
 - Comprehensive test coverage in `test_runner.py` for multi-asset project serialization, rich clipboard MIME parsing, ripple timecode calculations, and cross-file sequence playback roundtrips.
 
