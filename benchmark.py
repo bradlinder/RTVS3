@@ -1723,7 +1723,7 @@ def create_benchmark_dialog(parent=None):
                 self,
                 "Select Audio or Video File for Benchmark",
                 "",
-                "Media Files (*.mp3 *.wav *.mp4 *.m4a *.aac *.flac *.ogg *.mkv *.avi);;All Files (*)",
+                "All Supported Media Files (*.*);;Common Audio & Video (*.mp3 *.wav *.mp4 *.m4a *.aac *.flac *.ogg *.mkv *.avi *.mov *.webm *.aiff *.opus *.wmv *.ts);;All Files (*)",
             )
             if file_path:
                 self.custom_selected_path = file_path

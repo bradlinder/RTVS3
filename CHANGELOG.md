@@ -1,5 +1,11 @@
 # Changelog
 
+## v3.8.9-beta.1
+- **Supported Media Format Clarifications & UI Tooltip Refinements (`transcript_editor.py`, `benchmark.py`, `ui_layout.py`)**:
+  - **Comprehensive Format Support Messaging**: Updated the empty-state drag-and-drop card in `transcript_editor.py` to state *"Supports all standard audio and video formats (WAV, MP3, MP4, MOV, MKV, FLAC, etc.)"*, accurately communicating full FFmpeg compatibility without implying an artificial restriction to only 7 containers.
+  - **Benchmark Tool Media Picker Normalization**: Expanded the custom file picker filter in `benchmark.py` to `"All Supported Media Files (*.*)"`, ensuring `.mov`, `.webm`, `.aiff`, `.opus`, and other supported media containers are not masked in the operating system browser.
+  - **Descriptive Text Document Tooltips**: Added explicit tooltips and status-bar hints to `File > Open Document...` (`open_doc_act`) and `File > Open Media...` (`open_media_act`) in `ui_layout.py`, clarifying that Open Document imports external text documents (`.txt`, `.docx`, `.pdf`, `.html`, `.md`) directly into the transcript workspace.
+
 ## v3.8.8-stable
 - **Configurable Paragraph Word Count & Natural Sentence Boundary Grouping (`playback_preferences.py`, `transcript_story.py`, `RadioTVSegmenter.py`)**:
   - **User-Configurable Paragraph Length**: Added a dedicated "Paragraph Length" spinbox under Settings > Preferences > General (ranging from 20 to 250 words, default 65 words). Allows users to tailor paragraph density to their broadcast formatting needs, instantly updating open transcripts upon saving preferences.

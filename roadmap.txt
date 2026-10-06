@@ -29,20 +29,18 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 --------------------------------------------------------------------------------
 TABLE OF CONTENTS & STATUS OVERVIEW
 --------------------------------------------------------------------------------
-1. Previous Release: Core Architecture Modularization & Test Bench Hardening (`transcript_story.py`, `shortcuts/`, `shortcuts_manager.py`, `export/reorder_dialog.py`, `voice_profile_dialog.py`, `speaker_dialogs.py`, `story_fades_dialog.py`, `test_runner.py`, `story_widgets.py`, `plugins/wordpress/plugin.py`, `build_installer.py`) [x] [COMPLETED in v3.8.8-beta.1]
-   [x] 1.1 `shortcuts/` Modular Subsystem: Decomposed 1,795-line `shortcuts_manager.py` into single-responsibility submodules (`shortcuts/schema.py`, `shortcuts/manager.py`, `shortcuts/widgets.py`, `shortcuts/dialogs.py`). Retained `shortcuts_manager.py` as a 100% backward-compatible re-export facade.
-   [x] 1.2 Export Center Dialog Decoupling (`export/reorder_dialog.py`, `export/dialog.py`): Extracted `ReorderExportDestinationsDialog` and export destination ordering logic into `export/reorder_dialog.py` with seamless facade re-exports in `export/dialog.py`.
-   [x] 1.3 Transcript Story Dialog Extraction (`voice_profile_dialog.py`, `speaker_dialogs.py`, `story_fades_dialog.py`, `transcript_story.py`): Extracted ~1,380 lines of modal dialog implementations (`VoiceProfileMatchDialog`, `SpeakerManagerDialog`, `ChangeSpeakerDialog`, and `StoryFadesDialog`) into standalone files with complete `__all__` re-exports in `transcript_story.py`, shrinking `transcript_story.py` from 4,284 to 2,915 lines.
-   [x] 1.4 Frozen Packaging Bundles & Invariant Safeguards (`build_installer.py`): Registered hidden imports for all new modular subpackages and dialog modules to ensure zero build regressions across PyInstaller bundles.
-   [x] 1.5 System Diagnostic Test Bench Thread-Safety & Hardening (`test_runner.py`): Eliminated GUI freeze during in-app diagnostics execution by removing secondary worker thread widget instantiations in batch directory and drag-and-drop tests; added subprocess timeout protection, `CREATE_NO_WINDOW` flags, and `stdin=subprocess.DEVNULL` to worker IPC self-test probes.
-   [x] 1.6 Audio Fades Dialog & Context Menu Streamlining (`story_fades_dialog.py`, `story_widgets.py`, `timeline_widgets.py`, `plugins/wordpress/plugin.py`): Added permanent "Enable audio fades (timeline envelope handles and playback auditioning)" check-box directly onto the Audio Fades configuration dialog with live sync to Preferences; streamlined right-click context menus on both timeline canvas (`Set Audio Fades...`) and sidebar story list (`Audio Fades...`) to a clean single action opening the dialog; removed redundant auto-excerpt button from stories sidebar widget and pruned decorative emojis.
+1. Previous Release: Configurable Paragraph Word Count & Word-Level Highlighting Precision (`playback_preferences.py`, `transcript_story.py`, `transcript_editor.py`, `RadioTVSegmenter.py`, `test_runner.py`) [x] [COMPLETED in v3.8.8-stable]
+   [x] 1.1 User-Configurable Paragraph Length Preference (`playback_preferences.py`, `transcript_story.py`, `RadioTVSegmenter.py`): Added dedicated "Paragraph Length" spinbox under Settings > Preferences > General (20 to 250 words, default 65 words) with instant re-rendering of open transcripts, persistent storage across sessions, and Category Defaults Reset integration.
+   [x] 1.2 Sentence Boundary Grouping & Trailing Orphan Elimination (`transcript_story.py`): Clarified natural sentence break rules within speaker turns; added lookahead protection preventing trailing short sentences (< 25 words) from breaking into lonely standalone paragraphs before speaker changes.
+   [x] 1.3 Precise Word-Level Highlighting & Preceding Word Bleed Fix (`transcript_editor.py`, `transcript_story.py`, `test_runner.py`): Resolved issue where highlighting selected words mistakenly highlighted preceding words; implemented live `QTextDocument` fragment queries directly matching exact selection boundaries and canonical `(seg_idx, word_idx)` token mapping.
+   [x] 1.4 Sub-Second Millisecond Invariant Preservation (`transcript_editor.py`, `transcript_story.py`, `test_runner.py`): Preserved full floating-point millisecond precision across all internal data models, anchor links, and export engines even when milliseconds display is toggled off in the UI.
+   [x] 1.5 Synchronous Version Bump (`bump_version.py`): Synchronized all 10 project locations to v3.8.8-stable with 100% test bench validation.
 
-2. Current Release: Configurable Paragraph Word Count & Word-Level Highlighting Precision (`playback_preferences.py`, `transcript_story.py`, `transcript_editor.py`, `RadioTVSegmenter.py`, `test_runner.py`) [x] [COMPLETED in v3.8.8-stable]
-   [x] 2.1 User-Configurable Paragraph Length Preference (`playback_preferences.py`, `transcript_story.py`, `RadioTVSegmenter.py`): Added dedicated "Paragraph Length" spinbox under Settings > Preferences > General (20 to 250 words, default 65 words) with instant re-rendering of open transcripts, persistent storage across sessions, and Category Defaults Reset integration.
-   [x] 2.2 Sentence Boundary Grouping & Trailing Orphan Elimination (`transcript_story.py`): Clarified natural sentence break rules within speaker turns; added lookahead protection preventing trailing short sentences (< 25 words) from breaking into lonely standalone paragraphs before speaker changes.
-   [x] 2.3 Precise Word-Level Highlighting & Preceding Word Bleed Fix (`transcript_editor.py`, `transcript_story.py`, `test_runner.py`): Resolved issue where highlighting selected words mistakenly highlighted preceding words; implemented live `QTextDocument` fragment queries directly matching exact selection boundaries and canonical `(seg_idx, word_idx)` token mapping.
-   [x] 2.4 Sub-Second Millisecond Invariant Preservation (`transcript_editor.py`, `transcript_story.py`, `test_runner.py`): Preserved full floating-point millisecond precision across all internal data models, anchor links, and export engines even when milliseconds display is toggled off in the UI.
-   [x] 2.5 Synchronous Version Bump (`bump_version.py`): Synchronized all 10 project locations to v3.8.8-stable with 100% test bench validation.
+2. Current Release: Supported Media Format Clarifications & UI Tooltip Refinements (`transcript_editor.py`, `benchmark.py`, `ui_layout.py`, `bump_version.py`) [x] [COMPLETED in v3.8.9-beta.1]
+   [x] 2.1 Comprehensive Format Support Messaging (`transcript_editor.py`): Updated empty-state drag-and-drop card to state "Supports all standard audio and video formats (WAV, MP3, MP4, MOV, MKV, FLAC, etc.)", communicating full FFmpeg compatibility without implying an artificial 7-container restriction.
+   [x] 2.2 Benchmark Tool Media Picker Normalization (`benchmark.py`): Expanded custom file picker filter in the Benchmark suite to "All Supported Media Files (*.*)" so MOV, WebM, AIFF, Opus, and broadcast transport streams are not masked in OS file browsers.
+   [x] 2.3 Descriptive Text Document Tooltips (`ui_layout.py`): Added explicit tooltips and status-bar hints to `File > Open Document...` and `File > Open Media...`, clarifying that Open Document imports external text files (.txt, .docx, .pdf, .html, .md) directly into the transcript workspace.
+   [x] 2.4 Synchronous Version Bump (`bump_version.py`): Synchronized all 10 project locations to v3.8.9-beta.1.
 
 3. Upcoming Milestone: Multi-Platform Timeline & DAW Interchange Engine (`export/timeline.py`, `export/dialog.py`, `ui_layout.py`) [PLANNED for v3.8.9] [CORE] [NOT STARTED]
    [ ] 3.1 Migration to Unified Export Center Tab: Move timeline and DAW exports from the legacy File menu submenu into a dedicated "Timeline & DAW" tab in the Unified Export Center dialog.
@@ -70,73 +68,52 @@ DETAILED MILESTONE SPECIFICATIONS
 ================================================================================
 
 ================================================================================
-1. PREVIOUS RELEASE: CORE ARCHITECTURE MODULARIZATION & DIALOG DECOUPLING [x] [COMPLETED in v3.8.8-beta.1]
+1. PREVIOUS RELEASE: CONFIGURABLE PARAGRAPH WORD COUNT & WORD-LEVEL HIGHLIGHTING [x] [COMPLETED in v3.8.8-stable]
 ================================================================================
 
-[x] 1.1 `shortcuts/` Modular Subsystem (`shortcuts/`, `shortcuts_manager.py`)
---------------------------------------------------------------------------------
-- Decomposed monolithic 1,795-line `shortcuts_manager.py` into:
-  * `shortcuts/schema.py`: static shortcut definitions, `ShortcutDef` dataclass, sequence formatting, and normalization.
-  * `shortcuts/manager.py`: QObject manager coordinating shortcut bindings, QSettings persistence, and MainWindow application.
-  * `shortcuts/widgets.py`: `KeySequenceRecorderEdit` interactive key capture input widget.
-  * `shortcuts/dialogs.py`: `KeyboardShortcutsPage` preferences configuration page and lookup search card.
-- `shortcuts_manager.py` converted to a clean facade re-exporting all symbols for 100% backward compatibility.
-
-[x] 1.2 Export Center Dialog Decoupling (`export/reorder_dialog.py`, `export/dialog.py`)
---------------------------------------------------------------------------------
-- Extracted `ReorderExportDestinationsDialog` and export destination ordering logic into `export/reorder_dialog.py`.
-- Re-exported symbols in `export/dialog.py` ensuring zero regressions for existing callers.
-
-[x] 1.3 Transcript Story Dialog Extraction (`voice_profile_dialog.py`, `speaker_dialogs.py`, `story_fades_dialog.py`, `transcript_story.py`)
---------------------------------------------------------------------------------
-- Extracted ~1,380 lines of dialog implementations from `transcript_story.py`:
-  * `voice_profile_dialog.py`: `VoiceProfileMatchDialog` (~970 lines)
-  * `speaker_dialogs.py`: `ChangeSpeakerDialog` (~60 lines) and `SpeakerManagerDialog` (~200 lines)
-  * `story_fades_dialog.py`: `StoryFadesDialog` (~150 lines)
-- Reduced `transcript_story.py` from 4,284 to 2,915 lines while retaining 100% backward-compatible symbol re-exports.
-
-[x] 1.4 Frozen Packaging Bundles & Invariant Safeguards (`build_installer.py`)
---------------------------------------------------------------------------------
-- Registered hidden imports for all new modular subpackages and dialog modules in PyInstaller build pipeline.
-
-[x] 1.5 System Diagnostic Test Bench Thread-Safety & Hardening (`test_runner.py`)
---------------------------------------------------------------------------------
-- Eliminated GUI freeze during in-app diagnostics execution by removing secondary worker thread widget instantiations in batch directory and drag-and-drop tests.
-- Added subprocess timeout protection, `CREATE_NO_WINDOW` flags, and `stdin=subprocess.DEVNULL` to worker IPC self-test probes.
-
-[x] 1.6 Audio Fades Dialog & Context Menu Streamlining (`story_fades_dialog.py`, `story_widgets.py`, `timeline_widgets.py`, `plugins/wordpress/plugin.py`)
---------------------------------------------------------------------------------
-- Added permanent "Enable audio fades (timeline envelope handles and playback auditioning)" check-box directly onto the Audio Fades configuration dialog with live sync to Preferences.
-- Streamlined right-click context menus on both timeline canvas (`Set Audio Fades...`) and sidebar story list (`Audio Fades...`) to a clean single action opening the dialog.
-- Removed redundant auto-excerpt button from stories sidebar widget and pruned decorative emojis.
-
-
-================================================================================
-2. CURRENT RELEASE: CONFIGURABLE PARAGRAPH WORD COUNT & WORD-LEVEL HIGHLIGHTING [x] [COMPLETED in v3.8.8-stable]
-================================================================================
-
-[x] 2.1 User-Configurable Paragraph Length Preference (`playback_preferences.py`, `transcript_story.py`, `RadioTVSegmenter.py`)
+[x] 1.1 User-Configurable Paragraph Length Preference (`playback_preferences.py`, `transcript_story.py`, `RadioTVSegmenter.py`)
 --------------------------------------------------------------------------------
 - Added configurable "Paragraph Length" spinbox under Settings > Preferences > General (20 to 250 words, default 65 words).
 - Transcripts dynamically re-render on preference change; saved across sessions in QSettings with Reset Defaults support.
 
-[x] 2.2 Sentence Boundary Grouping & Trailing Orphan Elimination (`transcript_story.py`)
+[x] 1.2 Sentence Boundary Grouping & Trailing Orphan Elimination (`transcript_story.py`)
 --------------------------------------------------------------------------------
 - Clarified sentence boundary grouping rules within speaker turns; paragraph breaks only occur on natural sentence terminations.
 - Implemented trailing lookahead protection preventing short trailing fragments (< 25 words) from forming lonely single-sentence paragraphs before speaker changes.
 
-[x] 2.3 Precise Word-Level Highlighting & Preceding Word Bleed Fix (`transcript_editor.py`, `transcript_story.py`, `test_runner.py`)
+[x] 1.3 Precise Word-Level Highlighting & Preceding Word Bleed Fix (`transcript_editor.py`, `transcript_story.py`, `test_runner.py`)
 --------------------------------------------------------------------------------
 - Eliminated preceding-word highlight bleed by querying live `QTextDocument` fragment anchors (`href="word:..."`) matching selection boundaries.
 - Replaced cumulative character offset approximations with canonical `(seg_idx, word_idx)` token mapping.
 
-[x] 2.4 Sub-Second Millisecond Invariant Preservation (`transcript_editor.py`, `transcript_story.py`, `test_runner.py`)
+[x] 1.4 Sub-Second Millisecond Invariant Preservation (`transcript_editor.py`, `transcript_story.py`, `test_runner.py`)
 --------------------------------------------------------------------------------
 - Preserved sub-second float precision across internal data models, anchor links, and export engines even when milliseconds display is toggled off in the UI.
 
-[x] 2.5 Synchronous Version Bump (`bump_version.py`)
+[x] 1.5 Synchronous Version Bump (`bump_version.py`)
 --------------------------------------------------------------------------------
 - Synchronized all 10 project locations to v3.8.8-stable with 100% test bench validation.
+
+
+================================================================================
+2. CURRENT RELEASE: SUPPORTED MEDIA FORMAT CLARIFICATIONS & UI TOOLTIPS [x] [COMPLETED in v3.8.9-beta.1]
+================================================================================
+
+[x] 2.1 Comprehensive Format Support Messaging (`transcript_editor.py`)
+--------------------------------------------------------------------------------
+- Updated the empty-state drag-and-drop card in `transcript_editor.py` to state "Supports all standard audio and video formats (WAV, MP3, MP4, MOV, MKV, FLAC, etc.)", accurately communicating full FFmpeg compatibility without implying an artificial restriction to only 7 containers.
+
+[x] 2.2 Benchmark Tool Media Picker Normalization (`benchmark.py`)
+--------------------------------------------------------------------------------
+- Expanded the custom file picker filter in `benchmark.py` to "All Supported Media Files (*.*)", ensuring MOV, WebM, AIFF, Opus, and broadcast transport streams are not masked in OS file browsers.
+
+[x] 2.3 Descriptive Text Document Tooltips (`ui_layout.py`)
+--------------------------------------------------------------------------------
+- Added explicit tooltips and status-bar hints to `File > Open Document...` and `File > Open Media...` in `ui_layout.py`, clarifying that Open Document imports external text documents (.txt, .docx, .pdf, .html, .md) directly into the transcript workspace.
+
+[x] 2.4 Synchronous Version Bump (`bump_version.py`)
+--------------------------------------------------------------------------------
+- Synchronized all 10 project locations to v3.8.9-beta.1 with 100% test bench validation.
 
 
 ================================================================================

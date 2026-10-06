@@ -736,12 +736,16 @@ class UiLayoutMixin:
         # 1. Media Input
         open_media_act = QAction("&Open Media...", self)
         open_media_act.setShortcut(QKeySequence.Open)
+        open_media_act.setToolTip("Open an audio or video file (WAV, MP3, MP4, MOV, MKV, FLAC, AIFF, etc.).")
+        open_media_act.setStatusTip("Open an audio or video file (WAV, MP3, MP4, MOV, MKV, FLAC, AIFF, etc.).")
         open_media_act.triggered.connect(self.open_media)
         self.open_media_action = open_media_act
         file_menu.addAction(open_media_act)
 
         open_doc_act = QAction("Open &Document...", self)
         open_doc_act.setShortcut(platform_seq("Ctrl+Alt+O"))
+        open_doc_act.setToolTip("Import an external text document (.txt, .docx, .pdf, .html, .md) directly into the transcript workspace.")
+        open_doc_act.setStatusTip("Import an external text document (.txt, .docx, .pdf, .html, .md) directly into the transcript workspace.")
         open_doc_act.triggered.connect(self.open_document)
         self.open_doc_action = open_doc_act
         file_menu.addAction(open_doc_act)

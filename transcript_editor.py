@@ -641,7 +641,7 @@ class InteractiveTranscriptEdit(QTextEdit):
                 painter.setFont(sub_font)
                 painter.setPen(QColor("#94a3b8" if is_dark else "#64748b"))
                 s_rect = QRectF(card_x + 16, card_y + 58, card_w - 32, 42)
-                painter.drawText(s_rect, Qt.AlignmentFlag.AlignCenter, "Supports WAV, MP3, MP4, M4A, MKV, FLAC, and OGG\nAuto-generates synchronized word-level transcription")
+                painter.drawText(s_rect, Qt.AlignmentFlag.AlignCenter, "Supports all standard audio and video formats (WAV, MP3, MP4, MOV, MKV, FLAC, etc.)\nAuto-generates synchronized word-level transcription")
 
                 btn_font = QFont(self.font())
                 btn_font.setPointSize(9)
