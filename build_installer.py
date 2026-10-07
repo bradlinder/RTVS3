@@ -59,7 +59,7 @@ try:
 except ImportError as e:
     print(f"[BUILD] Warning: Could not import prs_shared ({e}), using fallback values")
     APP_DISPLAY_NAME = "Radio & TV Segmenter"
-    PROJECT_VERSION = "3.8.9-beta.3"
+    PROJECT_VERSION = "3.8.9-beta.5"
 except Exception as e:
     print(f"[BUILD] Unexpected error importing prs_shared: {type(e).__name__}: {e}")
     raise
@@ -771,7 +771,7 @@ def main() -> None:
     collect_all_packages = [
         "faster_whisper", "ctranslate2", "huggingface_hub", "soundfile",
         "diarize", "silero_vad", "wespeakerruntime", "onnxruntime", "sherpa_onnx",
-        "keyring", "docx", "pypdf", "numpy", "scipy", "sklearn", "torchaudio",
+        "keyring", "docx", "pypdf", "numpy", "scipy", "sklearn", "torchaudio", "certifi",
     ]
     collect_flags = []
     import importlib.util

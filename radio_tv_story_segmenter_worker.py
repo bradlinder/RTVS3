@@ -682,12 +682,38 @@ def transcribe_parakeet_onnx(audio_file, model_name="parakeet-onnx", detected_la
         except Exception: pass
 
 
-def probe_audio_language(audio_file, sample_duration=15.0):
-    """Run a fast language detection probe using faster-whisper's mel feature extractor."""
+def probe_audio_language(audio_file, sample_duration=15.0, preferred_model=None):
+    """Run a fast language detection probe using faster-whisper's mel feature extractor.
+    
+    CRITICAL: Never trigger a synchronous model download in the background worker during probing.
+    Only probe if a local model is already present on disk (via local_files_only=True).
+    """
     try:
         from faster_whisper import WhisperModel
         download_root = os.environ.get("PRS_MODELS_DIR") or None
-        probe_model = WhisperModel("tiny", device="cpu", compute_type="int8", download_root=download_root)
+        probe_model = None
+        candidates = ["tiny"]
+        if preferred_model and str(preferred_model).strip() and not str(preferred_model).endswith("-onnx"):
+            candidates.append(str(preferred_model).strip())
+
+        for candidate in candidates:
+            try:
+                probe_model = WhisperModel(
+                    candidate,
+                    device="cpu",
+                    compute_type="int8",
+                    download_root=download_root,
+                    local_files_only=True,
+                )
+                break
+            except Exception:
+                continue
+
+        if probe_model is None:
+            sys.stderr.write("[LANGUAGE PROBE] Notice: No local Whisper model available for offline language probing; skipping probe and defaulting to English.\n")
+            sys.stderr.flush()
+            return "en", 0.0
+
         _, info = probe_model.transcribe(str(audio_file), beam_size=1)
         lang = getattr(info, "language", "en") or "en"
         prob = getattr(info, "language_probability", 0.0) or 0.0
@@ -713,7 +739,7 @@ def transcribe(audio_file, model_name, initial_prompt="", beam_size=5):
     probed_lang, prob = None, 0.0
     if auto_fallback:
         emit("progress", percent=2, message="Inspecting audio language compatibility...")
-        probed_lang, prob = probe_audio_language(audio_file)
+        probed_lang, prob = probe_audio_language(audio_file, preferred_model=model_name)
 
         if is_spanish_fastconformer:
             emit("progress", percent=4, message=f"Detected {probed_lang.upper()} speech ({prob*100:.0f}% confidence). Using Spanish FastConformer ONNX...")
@@ -786,6 +812,8 @@ def transcribe(audio_file, model_name, initial_prompt="", beam_size=5):
 
         preferred_device = os.environ.get("PRS_WHISPER_DEVICE", "cpu").strip().lower() or "cpu"
         preferred_compute = os.environ.get("PRS_WHISPER_COMPUTE_TYPE", "int8").strip() or "int8"
+        if model_to_load == resolved_model_name:
+            emit("progress", percent=6, message=f"Downloading/loading Whisper {model_name} model from Hugging Face...")
         try:
             model = WhisperModel(
                 model_to_load,

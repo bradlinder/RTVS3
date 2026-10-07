@@ -219,36 +219,24 @@ def configure_ssl_certificates():
     except Exception:
         pass
 
-    if sys.platform == "darwin":
-        # On macOS, Python often fails to locate system root certificates unless configured.
-        # Use a flexible context factory accepting all arguments (purpose, cafile, etc.)
-        def _mac_ssl_context(purpose=ssl.Purpose.SERVER_AUTH, *, cafile=None, capath=None, cadata=None):
-            eff_cafile = cafile or target_cafile
-            try:
-                if eff_cafile and os.path.exists(eff_cafile):
-                    return ssl.create_default_context(purpose=purpose, cafile=eff_cafile, capath=capath, cadata=cadata)
-                ctx = ssl.create_default_context(purpose=purpose, capath=capath, cadata=cadata)
-                ctx.load_default_certs()
-                return ctx
-            except Exception:
-                try:
-                    return ssl._create_unverified_context(purpose=purpose, cafile=eff_cafile, capath=capath, cadata=cadata)
-                except Exception:
-                    return ssl._create_unverified_context()
-
+    def _cross_platform_ssl_context(purpose=ssl.Purpose.SERVER_AUTH, *, cafile=None, capath=None, cadata=None):
+        eff_cafile = cafile or target_cafile
         try:
-            ssl._create_default_https_context = _mac_ssl_context
-        except Exception:
-            pass
-    else:
-        try:
-            ctx = ssl.create_default_context()
+            if eff_cafile and os.path.exists(eff_cafile):
+                return ssl.create_default_context(purpose=purpose, cafile=eff_cafile, capath=capath, cadata=cadata)
+            ctx = ssl.create_default_context(purpose=purpose, capath=capath, cadata=cadata)
             ctx.load_default_certs()
+            return ctx
         except Exception:
             try:
-                ssl._create_default_https_context = ssl._create_unverified_context
-            except AttributeError:
-                pass
+                return ssl._create_unverified_context(purpose=purpose, cafile=eff_cafile, capath=capath, cadata=cadata)
+            except Exception:
+                return ssl._create_unverified_context()
+
+    try:
+        ssl._create_default_https_context = _cross_platform_ssl_context
+    except Exception:
+        pass
 
 
 def configure_runtime_environment() -> Path:

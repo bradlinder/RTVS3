@@ -78,6 +78,51 @@ def kill_all_subprocesses():
         _ACTIVE_SUBPROCESSES.clear()
 
 
+def _robust_urlretrieve(url: str, destination: Path, timeout: float = 45.0) -> None:
+    """Download url to destination with explicit timeout, SSL certificate verification, and atomic write."""
+    import urllib.request
+    import socket
+    import ssl
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    temp = destination.with_name(destination.name + ".part")
+    ssl_ctx = None
+    try:
+        import certifi
+        ca = certifi.where()
+        if os.path.exists(ca):
+            ssl_ctx = ssl.create_default_context(cafile=ca)
+    except Exception:
+        pass
+    if ssl_ctx is None:
+        try:
+            ssl_ctx = ssl.create_default_context()
+        except Exception:
+            ssl_ctx = ssl._create_unverified_context()
+
+    req = urllib.request.Request(url, headers={"User-Agent": "Radio-TV-Story-Segmenter-RuntimeManager"})
+    old_timeout = socket.getdefaulttimeout()
+    socket.setdefaulttimeout(timeout)
+    try:
+        with urllib.request.urlopen(req, timeout=timeout, context=ssl_ctx) as resp, temp.open("wb") as out:
+            while True:
+                chunk = resp.read(256 * 1024)
+                if not chunk:
+                    break
+                out.write(chunk)
+            out.flush()
+        if not temp.exists() or temp.stat().st_size == 0:
+            raise RuntimeError(f"Downloaded file '{destination.name}' is empty.")
+        if destination.exists():
+            destination.unlink(missing_ok=True)
+        temp.replace(destination)
+    finally:
+        socket.setdefaulttimeout(old_timeout)
+        try:
+            temp.unlink(missing_ok=True)
+        except Exception:
+            pass
+
+
 def _emit_progress(progress_cb, percent: float, message: str):
     """Safely emit progress supporting both 1-argument (message) and 2-argument (percent, message) callbacks."""
     if not progress_cb:
@@ -459,7 +504,7 @@ class RuntimeManager:
         try:
             if progress_cb:
                 progress_cb(f"Downloading isolated runtime manager (uv {UV_VERSION})…")
-            urllib.request.urlretrieve(url, archive_path)
+            _robust_urlretrieve(url, archive_path, timeout=30.0)
             if archive_ext == ".zip":
                 with zipfile.ZipFile(archive_path) as zf:
                     member = next((n for n in zf.namelist() if n.lower().endswith("/" + binary_name) or n.lower() == binary_name), None)
@@ -562,7 +607,7 @@ class RuntimeManager:
 
         try:
             _emit_progress(progress_cb, 8.0, f"Downloading standalone Python {target_version}…")
-            urllib.request.urlretrieve(url, archive_path)
+            _robust_urlretrieve(url, archive_path, timeout=60.0)
             _emit_progress(progress_cb, 14.0, f"Extracting standalone Python {target_version}…")
             from prs_shared import safe_extract_tar
             with tarfile.open(archive_path, "r:*") as tar:

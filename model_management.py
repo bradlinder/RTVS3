@@ -61,69 +61,147 @@ class WhisperModelInstallWorker(QObject):
         super().__init__()
         self.model_name = str(model_name)
         self._cancelled = False
+        self._active_response = None
 
     def cancel(self):
         self._cancelled = True
+        resp = getattr(self, "_active_response", None)
+        if resp is not None:
+            try:
+                resp.close()
+            except Exception:
+                pass
 
     def _download_http_file(self, url: str, destination: Path, progress_start: int, progress_end: int, label: str):
         import urllib.request
         import urllib.error
+        import ssl
+        import time
 
         destination.parent.mkdir(parents=True, exist_ok=True)
         temp = destination.with_name(destination.name + ".download")
-        req = urllib.request.Request(
-            url,
-            headers={
-                "User-Agent": "Radio-TV-Story-Segmenter/1.0 (Whisper Downloader)",
-                "Accept-Encoding": "identity",
-            }
-        )
-        try:
-            with urllib.request.urlopen(req, timeout=45) as response, temp.open("wb") as out:
-                total_str = response.headers.get("Content-Length")
-                total = int(total_str) if total_str and total_str.isdigit() else 0
-                downloaded = 0
-                last_emit = 0
-                while True:
-                    if self._cancelled:
-                        raise InterruptedError("Download cancelled.")
-                    chunk = response.read(256 * 1024)
-                    if not chunk:
-                        break
-                    out.write(chunk)
-                    downloaded += len(chunk)
-                    if total > 0:
-                        fraction = min(1.0, downloaded / total)
-                        pct = int(progress_start + (progress_end - progress_start) * fraction)
-                        if pct != last_emit or downloaded == total:
-                            last_emit = pct
-                            mb_down = downloaded / (1024 * 1024)
-                            mb_tot = total / (1024 * 1024)
-                            self.progress.emit(pct, f"{label}: {mb_down:.1f}/{mb_tot:.1f} MB ({pct}%)")
-                    else:
-                        mb_down = downloaded / (1024 * 1024)
-                        self.progress.emit(progress_start, f"{label}: {mb_down:.1f} MB")
-                out.flush()
-                os.fsync(out.fileno())
 
-            if not temp.exists() or temp.stat().st_size == 0:
-                raise RuntimeError(f"Downloaded file '{destination.name}' is empty.")
-            safe_replace(temp, destination)
-        except Exception as exc:
+        ssl_ctx = None
+        try:
+            import certifi
+            cpath = certifi.where()
+            if os.path.exists(cpath):
+                ssl_ctx = ssl.create_default_context(cafile=cpath)
+        except Exception:
+            pass
+        if ssl_ctx is None:
+            try:
+                ssl_ctx = ssl.create_default_context()
+            except Exception:
+                ssl_ctx = ssl._create_unverified_context()
+
+        max_attempts = 3
+        last_exc = None
+
+        try:
+            for attempt in range(max_attempts):
+                if self._cancelled:
+                    raise InterruptedError("Download cancelled.")
+                try:
+                    req = urllib.request.Request(
+                        url,
+                        headers={
+                            "User-Agent": "Radio-TV-Story-Segmenter/1.0 (Whisper Downloader)",
+                            "Accept-Encoding": "identity",
+                        }
+                    )
+                    with urllib.request.urlopen(req, timeout=30, context=ssl_ctx) as response:
+                        self._active_response = response
+                        total_str = response.headers.get("Content-Length")
+                        total = int(total_str) if total_str and total_str.isdigit() else 0
+
+                        # Check if destination file is already present with identical byte size
+                        if total > 0 and destination.is_file() and destination.stat().st_size == total:
+                            self.progress.emit(progress_end, f"{label}: verified ({total / (1024*1024):.1f} MB)")
+                            return
+
+                        with temp.open("wb") as out:
+                            downloaded = 0
+                            last_emit_time = 0.0
+                            last_emit_pct = -1
+
+                            while True:
+                                if self._cancelled:
+                                    raise InterruptedError("Download cancelled.")
+                                chunk = response.read(256 * 1024)
+                                if not chunk:
+                                    break
+                                out.write(chunk)
+                                downloaded += len(chunk)
+
+                                now = time.monotonic()
+                                if total > 0:
+                                    fraction = min(1.0, downloaded / total)
+                                    pct = int(progress_start + (progress_end - progress_start) * fraction)
+                                    if pct != last_emit_pct and (now - last_emit_time >= 0.12 or downloaded == total):
+                                        last_emit_pct = pct
+                                        last_emit_time = now
+                                        mb_down = downloaded / (1024 * 1024)
+                                        mb_tot = total / (1024 * 1024)
+                                        self.progress.emit(pct, f"{label}: {mb_down:.1f}/{mb_tot:.1f} MB ({pct}%)")
+                                else:
+                                    if now - last_emit_time >= 0.2:
+                                        last_emit_time = now
+                                        mb_down = downloaded / (1024 * 1024)
+                                        self.progress.emit(progress_start, f"{label}: {mb_down:.1f} MB")
+
+                            out.flush()
+                            os.fsync(out.fileno())
+
+                    if not temp.exists() or temp.stat().st_size == 0:
+                        raise RuntimeError(f"Downloaded file '{destination.name}' is empty.")
+                    safe_replace(temp, destination)
+                    return
+                except InterruptedError:
+                    raise
+                except urllib.error.HTTPError as http_err:
+                    if http_err.code == 404:
+                        raise http_err
+                    last_exc = http_err
+                    if attempt < max_attempts - 1 and not self._cancelled:
+                        time.sleep(1.0 * (attempt + 1))
+                        continue
+                    raise http_err
+                except Exception as exc:
+                    last_exc = exc
+                    if attempt < max_attempts - 1 and not self._cancelled:
+                        time.sleep(1.0 * (attempt + 1))
+                        continue
+                    raise exc
+                finally:
+                    self._active_response = None
+            if last_exc:
+                raise last_exc
+        finally:
             try:
                 temp.unlink(missing_ok=True)
             except Exception:
                 pass
-            raise exc
 
     def _download_file_with_fallback(self, repo_id: str, filename: str, destination: Path, progress_start: int, progress_end: int, label: str):
         url = f"https://huggingface.co/{repo_id}/resolve/main/{filename}?download=true"
         try:
             self._download_http_file(url, destination, progress_start, progress_end, label)
+        except InterruptedError:
+            raise
         except Exception as http_err:
+            import urllib.error
+            if isinstance(http_err, urllib.error.HTTPError) and http_err.code == 404:
+                raise FileNotFoundError(f"File '{filename}' not found in repository '{repo_id}' (HTTP 404).") from http_err
+
+            if self._cancelled:
+                raise InterruptedError("Download cancelled.")
+
             try:
+                os.environ["HF_HUB_DISABLE_SYMLINKS_WARNING"] = "1"
+                os.environ["HF_HUB_ENABLE_HF_TRANSFER"] = "0"
                 from huggingface_hub import hf_hub_download
-                self.progress.emit(progress_start, f"{label} (Hub API)...")
+                self.progress.emit(progress_start, f"{label} (retrying via Hub API)...")
                 try:
                     hf_hub_download(
                         repo_id=repo_id,
@@ -137,6 +215,8 @@ class WhisperModelInstallWorker(QObject):
                         local_dir=str(destination.parent),
                     )
                 self.progress.emit(progress_end, f"{label} completed.")
+            except InterruptedError:
+                raise
             except Exception as hf_err:
                 raise RuntimeError(f"Could not download {filename} from {repo_id}: {http_err}") from hf_err
 
@@ -314,9 +394,16 @@ class DiarizationModelInstallWorker(QObject):
     def __init__(self):
         super().__init__()
         self._cancelled = False
+        self._proc = None
 
     def cancel(self):
         self._cancelled = True
+        proc = getattr(self, "_proc", None)
+        if proc is not None:
+            try:
+                proc.kill()
+            except Exception:
+                pass
 
     def run(self):
         error = None
@@ -327,26 +414,51 @@ class DiarizationModelInstallWorker(QObject):
                 import wespeakerruntime as wespeaker_rt
                 if self._cancelled:
                     raise InterruptedError("Installation cancelled.")
-                self.progress.emit(40, "Downloading WeSpeaker ResNet34 ONNX voice embedding model…")
-                _speaker = wespeaker_rt.Speaker(lang="en")
-                loaded = True
-                self.progress.emit(100, "Speaker Diarization model installed successfully.")
+                self.progress.emit(35, "Checking local Speaker Diarization model…")
+                if is_diarization_model_available():
+                    loaded = True
+                    self.progress.emit(100, "Speaker Diarization model verified.")
+                else:
+                    self.progress.emit(50, "Downloading WeSpeaker ResNet34 ONNX voice embedding model…")
+                    _speaker = wespeaker_rt.Speaker(lang="en")
+                    loaded = True
+                    self.progress.emit(100, "Speaker Diarization model installed successfully.")
             except ImportError:
+                pass
+            except Exception:
                 pass
 
             if not loaded and not self._cancelled:
                 self.progress.emit(30, "Downloading WeSpeaker model via background worker…")
-                worker_script = Path(__file__).resolve().parent / "radio_tv_story_segmenter_worker.py"
-                if worker_script.exists():
-                    proc = subprocess.run(
-                        [sys.executable, str(worker_script), "--self-test"],
-                        capture_output=True,
+                cmd = None
+                if getattr(sys, "frozen", False):
+                    app_dir = Path(sys.executable).resolve().parent
+                    worker_exe = app_dir / ("prs_worker.exe" if os.name == "nt" else "prs_worker")
+                    if worker_exe.exists():
+                        cmd = [str(worker_exe), "--self-test"]
+                    else:
+                        cmd = [sys.executable, "--self-test"]
+                else:
+                    worker_script = Path(__file__).resolve().parent / "radio_tv_story_segmenter_worker.py"
+                    if worker_script.exists():
+                        cmd = [sys.executable, str(worker_script), "--self-test"]
+
+                if cmd:
+                    creationflags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
+                    self._proc = subprocess.Popen(
+                        cmd,
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE,
                         text=True,
-                        timeout=120,
+                        creationflags=creationflags,
                     )
-                    if proc.returncode != 0 and "error" in proc.stderr.lower():
-                        raise RuntimeError(proc.stderr.strip() or "Failed to download WeSpeaker model.")
-                    self.progress.emit(100, "Speaker Diarization model ready.")
+                    try:
+                        stdout, stderr = self._proc.communicate(timeout=60)
+                        if self._proc.returncode != 0 and "error" in stderr.lower():
+                            raise RuntimeError(stderr.strip() or "Failed to download WeSpeaker model.")
+                        self.progress.emit(100, "Speaker Diarization model ready.")
+                    finally:
+                        self._proc = None
                 else:
                     self.progress.emit(100, "Speaker Diarization runtime ready.")
         except Exception as exc:
@@ -714,6 +826,30 @@ class ModelManagementMixin:
         scroll_area.setWidget(scroll_content)
         layout.addWidget(scroll_area, 1)
 
+        # In-dialog progress panel for model downloads
+        progress_panel = QFrame()
+        progress_panel.setFrameShape(QFrame.Shape.StyledPanel)
+        progress_panel_layout = QVBoxLayout(progress_panel)
+        progress_panel_layout.setContentsMargins(10, 8, 10, 8)
+        progress_panel_layout.setSpacing(6)
+
+        prog_header_row = QHBoxLayout()
+        prog_status_label = QLabel("Preparing download…")
+        prog_cancel_btn = QPushButton("Cancel Download")
+        prog_cancel_btn.setMinimumHeight(24)
+        prog_header_row.addWidget(prog_status_label, 1)
+        prog_header_row.addWidget(prog_cancel_btn)
+        progress_panel_layout.addLayout(prog_header_row)
+
+        dlg_progress_bar = QProgressBar()
+        dlg_progress_bar.setRange(0, 100)
+        dlg_progress_bar.setValue(0)
+        dlg_progress_bar.setTextVisible(True)
+        progress_panel_layout.addWidget(dlg_progress_bar)
+
+        progress_panel.setVisible(False)
+        layout.addWidget(progress_panel)
+
         layout.addSpacing(4)
         layout.addWidget(QLabel("Select <b>Remove</b> beside any installed model you no longer need, or click <b>Purge All Models & Cache</b> to free up disk space."))
         buttons = QHBoxLayout()
@@ -725,6 +861,18 @@ class ModelManagementMixin:
         buttons.addStretch(); buttons.addWidget(remove_btn); buttons.addWidget(close_btn)
         layout.addLayout(buttons)
         close_btn.clicked.connect(dialog.reject)
+
+        def _update_dl_progress(pct: int, msg: str):
+            progress_panel.setVisible(True)
+            dlg_progress_bar.setValue(pct)
+            prog_status_label.setText(msg)
+
+        def _hide_dl_progress():
+            progress_panel.setVisible(False)
+
+        prog_cancel_btn.clicked.connect(self.cancel_model_installation)
+        dialog.update_install_progress = _update_dl_progress
+        dialog.hide_install_progress = _hide_dl_progress
 
         def refresh_rows():
             busy = getattr(self, "translation_process", None) is not None or getattr(self, "_model_install_process", None) is not None or getattr(self, "_model_install_thread", None) is not None
@@ -965,7 +1113,20 @@ class ModelManagementMixin:
         self._model_install_qthread.start()
         dialog.refresh_models()
 
+    def cancel_model_installation(self):
+        worker = getattr(self, "_model_install_worker", None)
+        if worker is not None and hasattr(worker, "cancel"):
+            worker.cancel()
+        if hasattr(self, "log_activity"):
+            self.log_activity("[MODELS] Model download cancellation requested by user.", mark_dirty=False)
+
     def _on_model_install_progress(self, percent: int, message: str):
+        dialog = getattr(self, "_model_install_dialog", None)
+        if dialog is not None and hasattr(dialog, "update_install_progress"):
+            try:
+                dialog.update_install_progress(percent, message)
+            except Exception:
+                pass
         if hasattr(self, "update_processing_progress"):
             self.update_processing_progress(percent, message)
         elif hasattr(self, "progress"):
@@ -1032,10 +1193,25 @@ class ModelManagementMixin:
         self._model_install_model = None
         self._model_install_kind = None
 
+        if dialog is not None and hasattr(dialog, "hide_install_progress"):
+            try:
+                dialog.hide_install_progress()
+            except Exception:
+                pass
+
+        dialog_is_active = dialog is not None and getattr(dialog, "isVisible", lambda: False)()
+        parent_w = dialog if dialog_is_active else getattr(self, "main_window", self)
+
         if error:
-            self.log_activity(f"[MODELS] {model_name} installation failed: {error}", mark_dirty=False)
-            if dialog is not None:
-                QMessageBox.critical(dialog, "Model Installation Error", f"Could not install {model_name}:\n\n{error}")
+            is_cancelled = "cancelled" in str(error).lower() or "interrupted" in str(error).lower()
+            if is_cancelled:
+                self.log_activity(f"[MODELS] {model_name} download was cancelled.", mark_dirty=False)
+            else:
+                self.log_activity(f"[MODELS] {model_name} installation failed: {error}", mark_dirty=False)
+                try:
+                    QMessageBox.critical(parent_w, "Model Installation Error", f"Could not install {model_name}:\n\n{error}")
+                except Exception:
+                    pass
         else:
             self.log_activity(f"[MODELS] {model_name} installed and verified.", mark_dirty=False)
             self.refresh_whisper_model_chooser()
@@ -1044,11 +1220,16 @@ class ModelManagementMixin:
                     self.refresh_translation_model_chooser()
                 except Exception:
                     pass
-            if dialog is not None:
-                QMessageBox.information(dialog, "Model Ready", f"Model '{model_name}' is installed and ready for offline use.")
+            try:
+                QMessageBox.information(parent_w, "Model Ready", f"Model '{model_name}' is installed and ready for offline use.")
+            except Exception:
+                pass
 
-        if dialog is not None:
-            dialog.refresh_models()
+        if dialog is not None and hasattr(dialog, "refresh_models"):
+            try:
+                dialog.refresh_models()
+            except Exception:
+                pass
 
     def _poll_model_install(self, dialog):
         # Compatibility no-op; model installation completion is signal-driven.

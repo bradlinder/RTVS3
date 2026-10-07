@@ -1027,6 +1027,111 @@ class ProcessingMixin:
                 process_env.insert(key, str(value))
         process.setProcessEnvironment(process_env)
 
+    def _download_model_and_continue_transcription(self, model_name: str, label: str):
+        """Asynchronously download a missing model with responsive in-dialog progress and auto-resume."""
+        if getattr(self, "_transcription_dl_thread", None) is not None:
+            return
+
+        progress_box = QProgressDialog(f"Downloading Whisper {label} model...", "Cancel", 0, 100, self)
+        progress_box.setWindowTitle("Downloading Model")
+        progress_box.setWindowModality(Qt.WindowModality.WindowModal)
+        progress_box.setMinimumDuration(0)
+        progress_box.setAutoClose(False)
+        progress_box.setAutoReset(False)
+        progress_box.setValue(0)
+
+        dl_worker = WhisperModelInstallWorker(model_name)
+        dl_thread = QThread(self)
+        dl_worker.moveToThread(dl_thread)
+
+        self._transcription_dl_worker = dl_worker
+        self._transcription_dl_thread = dl_thread
+        self._transcription_dl_dialog = progress_box
+        self._transcription_dl_model = model_name
+        self._transcription_dl_label = label
+        self._transcription_dl_cancelled = False
+
+        # Safe QueuedConnections: slots on self (QMainWindow) execute strictly on the GUI main thread
+        dl_worker.progress.connect(self._on_transcription_dl_progress)
+        dl_worker.finished.connect(self._on_transcription_dl_finished)
+        dl_worker.finished.connect(dl_thread.quit)
+        dl_thread.finished.connect(self._on_transcription_dl_thread_cleanup)
+        progress_box.canceled.connect(self._on_transcription_dl_cancel)
+
+        dl_thread.started.connect(dl_worker.run)
+        dl_thread.start()
+        progress_box.show()
+
+    def _on_transcription_dl_progress(self, pct: int, msg: str):
+        if getattr(self, "_transcription_dl_cancelled", False):
+            return
+        box = getattr(self, "_transcription_dl_dialog", None)
+        if box is not None:
+            box.setValue(pct)
+            box.setLabelText(msg)
+        if hasattr(self, "update_processing_progress"):
+            self.update_processing_progress(pct, msg)
+        elif hasattr(self, "progress"):
+            self.progress.setValue(pct)
+
+    def _on_transcription_dl_cancel(self):
+        self._transcription_dl_cancelled = True
+        worker = getattr(self, "_transcription_dl_worker", None)
+        if worker is not None and hasattr(worker, "cancel"):
+            worker.cancel()
+        box = getattr(self, "_transcription_dl_dialog", None)
+        if box is not None:
+            box.setLabelText("Cancelling download…")
+
+    def _on_transcription_dl_finished(self, err):
+        box = getattr(self, "_transcription_dl_dialog", None)
+        if box is not None:
+            box.close()
+
+        was_cancelled = getattr(self, "_transcription_dl_cancelled", False)
+        model_name = getattr(self, "_transcription_dl_model", "")
+        label = getattr(self, "_transcription_dl_label", "")
+
+        if was_cancelled or (err and ("cancelled" in str(err).lower() or "interrupted" in str(err).lower())):
+            self.log_activity(f"[MODELS] Whisper {label} download cancelled by user.", mark_dirty=False)
+            self.pipeline_active = False
+            self.pipeline_queue = []
+            self.progress.hide()
+            self.cancel_button.hide()
+            self.set_tools_actions_enabled(True)
+            return
+
+        if err:
+            self.log_activity(f"[MODELS] Whisper {label} download failed: {err}", mark_dirty=False)
+            QMessageBox.critical(self, "Download Failed", f"Could not download Whisper '{model_name}':\n\n{err}")
+            self.pipeline_active = False
+            self.pipeline_queue = []
+            self.progress.hide()
+            self.cancel_button.hide()
+            self.set_tools_actions_enabled(True)
+            return
+
+        self.log_activity(f"[MODELS] Whisper {label} downloaded successfully. Starting transcription...")
+        if hasattr(self, "refresh_whisper_model_chooser"):
+            self.refresh_whisper_model_chooser()
+
+        # Seamless auto-resume of transcription on the next event loop tick
+        QTimer.singleShot(50, self.start_transcription)
+
+    def _on_transcription_dl_thread_cleanup(self):
+        thread = getattr(self, "_transcription_dl_thread", None)
+        if thread is not None:
+            thread.deleteLater()
+        worker = getattr(self, "_transcription_dl_worker", None)
+        if worker is not None:
+            worker.deleteLater()
+        self._transcription_dl_thread = None
+        self._transcription_dl_worker = None
+        self._transcription_dl_dialog = None
+        self._transcription_dl_model = None
+        self._transcription_dl_label = None
+        self._transcription_dl_cancelled = False
+
     def start_transcription(self):
         if not self.audio_file:
             self.log_activity("[TRANSCRIPTION] Aborted: no media file is loaded.")
@@ -1085,73 +1190,8 @@ class ProcessingMixin:
                     self.set_tools_actions_enabled(True)
                     return
 
-                # Responsive threaded download with progress and cancel support
-                progress_box = QProgressDialog(f"Downloading Whisper {label} model...", "Cancel", 0, 100, self)
-                progress_box.setWindowTitle("Downloading Model")
-                progress_box.setWindowModality(Qt.WindowModality.WindowModal)
-                progress_box.setMinimumDuration(0)
-                progress_box.setAutoClose(True)
-                progress_box.setAutoReset(True)
-
-                dl_worker = WhisperModelInstallWorker(model_name)
-                dl_thread = QThread(self)
-                dl_worker.moveToThread(dl_thread)
-
-                dl_res = {"err": None, "cancelled": False}
-
-                def _on_dl_progress(pct, msg):
-                    progress_box.setValue(pct)
-                    progress_box.setLabelText(msg)
-
-                def _on_dl_finished(err):
-                    dl_res["err"] = err
-                    dl_thread.quit()
-
-                def _on_dl_cancel():
-                    dl_res["cancelled"] = True
-                    dl_worker.cancel()
-                    dl_thread.quit()
-
-                dl_worker.progress.connect(_on_dl_progress)
-                dl_worker.finished.connect(_on_dl_finished)
-                progress_box.canceled.connect(_on_dl_cancel)
-                dl_thread.started.connect(dl_worker.run)
-
-                dl_loop = QEventLoop(self)
-                dl_thread.finished.connect(dl_loop.quit)
-
-                dl_thread.start()
-                progress_box.show()
-                dl_loop.exec()
-                progress_box.close()
-
-                if dl_thread.isRunning():
-                    dl_thread.wait(2000)
-                dl_worker.deleteLater()
-                dl_thread.deleteLater()
-
-                if dl_res["cancelled"]:
-                    self.log_activity(f"[MODELS] Whisper {label} download cancelled by user.")
-                    self.pipeline_active = False
-                    self.pipeline_queue = []
-                    self.progress.hide()
-                    self.cancel_button.hide()
-                    self.set_tools_actions_enabled(True)
-                    return
-
-                err = dl_res["err"]
-                if err:
-                    QMessageBox.critical(self, "Download Failed", f"Could not download Whisper '{model_name}':\n\n{err}")
-                    self.pipeline_active = False
-                    self.pipeline_queue = []
-                    self.progress.hide()
-                    self.cancel_button.hide()
-                    self.set_tools_actions_enabled(True)
-                    return
-
-                self.log_activity(f"[MODELS] Whisper {label} downloaded successfully. Starting transcription...")
-                if hasattr(self, "refresh_whisper_model_chooser"):
-                    self.refresh_whisper_model_chooser()
+                self._download_model_and_continue_transcription(model_name, label)
+                return
         except Exception as exc:
             self.set_tools_actions_enabled(True)
             self.progress.hide()
