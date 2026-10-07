@@ -59,7 +59,7 @@ try:
 except ImportError as e:
     print(f"[BUILD] Warning: Could not import prs_shared ({e}), using fallback values")
     APP_DISPLAY_NAME = "Radio & TV Segmenter"
-    PROJECT_VERSION = "3.8.9-beta.2"
+    PROJECT_VERSION = "3.8.9-beta.3"
 except Exception as e:
     print(f"[BUILD] Unexpected error importing prs_shared: {type(e).__name__}: {e}")
     raise
@@ -428,6 +428,19 @@ def prune_unneeded_bundled_files(app_root: Path) -> None:
     if pruned_files:
         print(f"[BUILD] Pruned {pruned_files} debug/stub/source files from bundle.")
 
+    # Prune software OpenGL rasterizer (~30MB) not needed by QtWidgets / Direct3D 11
+    opengl_purged = 0
+    for base in internal_dirs:
+        if not base.exists():
+            continue
+        for opengl_dll in base.glob("**/opengl32sw.dll"):
+            if opengl_dll.is_file():
+                print(f"[BUILD] Pruning software OpenGL rasterizer: {opengl_dll}")
+                opengl_dll.unlink(missing_ok=True)
+                opengl_purged += 1
+    if opengl_purged:
+        print(f"[BUILD] Pruned {opengl_purged} opengl32sw.dll binaries from bundle.")
+
     # Binary symbol stripping for Linux and macOS
     if sys.platform.startswith("linux") and shutil.which("strip"):
         stripped_count = 0
@@ -577,6 +590,12 @@ def parse_build_args():
         "--no-installer",
         action="store_true",
         help="Skip automatic compilation of Windows installer (useful when CI compiles in a separate step).",
+    )
+    parser.add_argument(
+        "--bundle-uv",
+        action="store_true",
+        default=os.environ.get("BUILD_BUNDLE_UV", "false").lower() in ("true", "1", "yes"),
+        help="Pre-bundle standalone uv binary in optional_runtime/ (default False to save ~50MB; runtime_manager fetches on-demand if optional runtimes are requested).",
     )
     parser.add_argument(
         "--version",
@@ -1003,7 +1022,11 @@ def main() -> None:
     print("\n" + "="*70, flush=True)
     print("[BUILD STAGE 4/5] Provisioning optional runtime tools & pruning asset bloat...", flush=True)
     print("="*70 + "\n", flush=True)
-    provision_optional_runtime_tools(app_root)
+    if getattr(args, "bundle_uv", False):
+        provision_optional_runtime_tools(app_root)
+    else:
+        print("[BUILD] Skipping pre-bundled uv binary (saves ~50MB; runtime_manager fetches on-demand when optional GPU/translation runtimes are requested).")
+        shutil.rmtree(app_root / "optional_runtime", ignore_errors=True)
     prune_unneeded_bundled_files(app_root)
 
     print("\n" + "="*70, flush=True)

@@ -1,5 +1,11 @@
 # Changelog
 
+## v3.8.9-beta.3
+- **Installed Footprint & Installer Size Optimization (`build_installer.py`, `installer/Windows/RadioTVStorySegmenter.iss`)**:
+  - **Pruned Software OpenGL Rasterizer (`opengl32sw.dll`)**: Stripped Mesa llvmpipe software OpenGL binary (~30 MB) from packaged bundles; standard `QtWidgets` native GDI/DirectWrite rendering and `QtMultimediaWidgets` Direct3D 11 video presentation run natively with zero reliance on software OpenGL.
+  - **On-Demand Runtime Tool Provisioning (`uv.exe`)**: Omitted pre-bundled `uv.exe` from the default installer payload (saving ~50 MB on installed disk footprint), relying on `runtime_manager.py`'s existing on-demand download mechanism when users explicitly choose to install optional GPU acceleration or Translation plugin runtimes. Added `--bundle-uv` CLI flag to `build_installer.py` for optional manual pre-bundling.
+  - **Inno Setup Ultra Solid Compression**: Upgraded Windows setup installer script from `Compression=lzma2/fast` to `Compression=lzma2/ultra64` with `SolidCompression=yes`, significantly shrinking the downloaded setup executable size.
+
 ## v3.8.9-beta.2
 - **Supported Media Format Clarifications & UI Tooltip Refinements (`transcript_editor.py`, `benchmark.py`, `ui_layout.py`, `batch_dialog.py`)**:
   - **Drop Card Dynamic Bounding Box & Multi-Line Word Wrap**: Resolved horizontal text clipping on the empty-state media ingestion card by adding `Qt.TextFlag.TextWordWrap` to `QPainter.drawText` overlay routines, expanding maximum card width (from 460px to 520px), and dynamically spacing subtitle and action button bounds. Applied responsive word-wrapping across `batch_dialog.py` empty queues as well.

@@ -29,19 +29,18 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 --------------------------------------------------------------------------------
 TABLE OF CONTENTS & STATUS OVERVIEW
 --------------------------------------------------------------------------------
-1. Previous Release: Configurable Paragraph Word Count & Word-Level Highlighting Precision (`playback_preferences.py`, `transcript_story.py`, `transcript_editor.py`, `RadioTVSegmenter.py`, `test_runner.py`) [x] [COMPLETED in v3.8.8-stable]
-   [x] 1.1 User-Configurable Paragraph Length Preference (`playback_preferences.py`, `transcript_story.py`, `RadioTVSegmenter.py`): Added dedicated "Paragraph Length" spinbox under Settings > Preferences > General (20 to 250 words, default 65 words) with instant re-rendering of open transcripts, persistent storage across sessions, and Category Defaults Reset integration.
-   [x] 1.2 Sentence Boundary Grouping & Trailing Orphan Elimination (`transcript_story.py`): Clarified natural sentence break rules within speaker turns; added lookahead protection preventing trailing short sentences (< 25 words) from breaking into lonely standalone paragraphs before speaker changes.
-   [x] 1.3 Precise Word-Level Highlighting & Preceding Word Bleed Fix (`transcript_editor.py`, `transcript_story.py`, `test_runner.py`): Resolved issue where highlighting selected words mistakenly highlighted preceding words; implemented live `QTextDocument` fragment queries directly matching exact selection boundaries and canonical `(seg_idx, word_idx)` token mapping.
-   [x] 1.4 Sub-Second Millisecond Invariant Preservation (`transcript_editor.py`, `transcript_story.py`, `test_runner.py`): Preserved full floating-point millisecond precision across all internal data models, anchor links, and export engines even when milliseconds display is toggled off in the UI.
-   [x] 1.5 Synchronous Version Bump (`bump_version.py`): Synchronized all 10 project locations to v3.8.8-stable with 100% test bench validation.
+1. Previous Release: Supported Media Format Clarifications & UI Tooltip Refinements (`transcript_editor.py`, `benchmark.py`, `ui_layout.py`, `batch_dialog.py`, `bump_version.py`) [x] [COMPLETED in v3.8.9-beta.2]
+   [x] 1.1 Drop Card Dynamic Bounding Box & Multi-Line Word Wrap (`transcript_editor.py`, `batch_dialog.py`): Resolved horizontal text clipping on the empty-state media ingestion card by adding `Qt.TextFlag.TextWordWrap` to `QPainter.drawText` overlay routines, expanding maximum card width (from 460px to 540px), and dynamically spacing subtitle and action button bounds. Applied responsive word-wrapping across `batch_dialog.py` empty queues as well.
+   [x] 1.2 Comprehensive Format Support Messaging (`transcript_editor.py`): Updated empty-state drag-and-drop card to state "Supports all standard audio & video formats (WAV, MP3, MP4, MOV, MKV, FLAC, etc.)", communicating full FFmpeg compatibility without implying an artificial 7-container restriction.
+   [x] 1.3 Benchmark Tool Media Picker Normalization (`benchmark.py`): Expanded custom file picker filter in the Benchmark suite to "All Supported Media Files (*.*)" so MOV, WebM, AIFF, Opus, and broadcast transport streams are not masked in OS file browsers.
+   [x] 1.4 Descriptive Text Document Tooltips (`ui_layout.py`): Added explicit tooltips and status-bar hints to `File > Open Document...` and `File > Open Media...`, clarifying that Open Document imports external text files (.txt, .docx, .pdf, .html, .md) directly into the transcript workspace.
+   [x] 1.5 Synchronous Version Bump (`bump_version.py`): Synchronized all 10 project locations to v3.8.9-beta.2.
 
-2. Current Release: Supported Media Format Clarifications & UI Tooltip Refinements (`transcript_editor.py`, `benchmark.py`, `ui_layout.py`, `batch_dialog.py`, `bump_version.py`) [x] [COMPLETED in v3.8.9-beta.2]
-   [x] 2.1 Drop Card Dynamic Bounding Box & Multi-Line Word Wrap (`transcript_editor.py`, `batch_dialog.py`): Resolved horizontal text clipping on the empty-state media ingestion card by adding `Qt.TextFlag.TextWordWrap` to `QPainter.drawText` overlay routines, expanding maximum card width (from 460px to 540px), and dynamically spacing subtitle and action button bounds. Applied responsive word-wrapping across `batch_dialog.py` empty queues as well.
-   [x] 2.2 Comprehensive Format Support Messaging (`transcript_editor.py`): Updated empty-state drag-and-drop card to state "Supports all standard audio & video formats (WAV, MP3, MP4, MOV, MKV, FLAC, etc.)", communicating full FFmpeg compatibility without implying an artificial 7-container restriction.
-   [x] 2.3 Benchmark Tool Media Picker Normalization (`benchmark.py`): Expanded custom file picker filter in the Benchmark suite to "All Supported Media Files (*.*)" so MOV, WebM, AIFF, Opus, and broadcast transport streams are not masked in OS file browsers.
-   [x] 2.4 Descriptive Text Document Tooltips (`ui_layout.py`): Added explicit tooltips and status-bar hints to `File > Open Document...` and `File > Open Media...`, clarifying that Open Document imports external text files (.txt, .docx, .pdf, .html, .md) directly into the transcript workspace.
-   [x] 2.5 Synchronous Version Bump (`bump_version.py`): Synchronized all 10 project locations to v3.8.9-beta.2.
+2. Current Release: Installed Footprint & Distribution Optimization (`build_installer.py`, `installer/Windows/RadioTVStorySegmenter.iss`, `bump_version.py`) [x] [COMPLETED in v3.8.9-beta.3]
+   [x] 2.1 Pruned Software OpenGL Rasterizer (`opengl32sw.dll`) (`build_installer.py`): Stripped Mesa llvmpipe software OpenGL binary (~30 MB) from packaged bundles; standard `QtWidgets` native GDI/DirectWrite rendering and `QtMultimediaWidgets` Direct3D 11 video presentation run natively with zero reliance on software OpenGL.
+   [x] 2.2 On-Demand Runtime Tool Provisioning (`uv.exe`) (`build_installer.py`): Omitted pre-bundled `uv.exe` from default installer payload (saving ~50 MB on installed disk footprint), relying on `runtime_manager.py`'s existing on-demand download mechanism when users explicitly choose to install optional GPU acceleration or Translation plugin runtimes. Added `--bundle-uv` CLI flag to `build_installer.py` for optional manual pre-bundling.
+   [x] 2.3 Inno Setup Ultra Solid Compression (`installer/Windows/RadioTVStorySegmenter.iss`): Upgraded Windows setup installer script from `Compression=lzma2/fast` to `Compression=lzma2/ultra64` with `SolidCompression=yes`, significantly shrinking the downloaded setup executable size.
+   [x] 2.4 Synchronous Version Bump (`bump_version.py`): Synchronized all 10 project locations to v3.8.9-beta.3.
 
 3. Upcoming Milestone: Multi-Platform Timeline & DAW Interchange Engine (`export/timeline.py`, `export/dialog.py`, `ui_layout.py`) [PLANNED for v3.8.9] [CORE] [NOT STARTED]
    [ ] 3.1 Migration to Unified Export Center Tab: Move timeline and DAW exports from the legacy File menu submenu into a dedicated "Timeline & DAW" tab in the Unified Export Center dialog.
@@ -69,52 +68,50 @@ DETAILED MILESTONE SPECIFICATIONS
 ================================================================================
 
 ================================================================================
-1. PREVIOUS RELEASE: CONFIGURABLE PARAGRAPH WORD COUNT & WORD-LEVEL HIGHLIGHTING [x] [COMPLETED in v3.8.8-stable]
+1. PREVIOUS RELEASE: SUPPORTED MEDIA FORMAT CLARIFICATIONS & UI TOOLTIPS [x] [COMPLETED in v3.8.9-beta.2]
 ================================================================================
 
-[x] 1.1 User-Configurable Paragraph Length Preference (`playback_preferences.py`, `transcript_story.py`, `RadioTVSegmenter.py`)
+[x] 1.1 Drop Card Dynamic Bounding Box & Multi-Line Word Wrap (`transcript_editor.py`, `batch_dialog.py`)
 --------------------------------------------------------------------------------
-- Added configurable "Paragraph Length" spinbox under Settings > Preferences > General (20 to 250 words, default 65 words).
-- Transcripts dynamically re-render on preference change; saved across sessions in QSettings with Reset Defaults support.
+- Resolved horizontal text clipping on the empty-state media ingestion card by adding `Qt.TextFlag.TextWordWrap` to `QPainter.drawText` overlay routines.
+- Expanded maximum card width (from 460px to 540px) and dynamically spaced subtitle and action button bounds; applied word-wrapping across `batch_dialog.py` empty queues as well.
 
-[x] 1.2 Sentence Boundary Grouping & Trailing Orphan Elimination (`transcript_story.py`)
+[x] 1.2 Comprehensive Format Support Messaging (`transcript_editor.py`)
 --------------------------------------------------------------------------------
-- Clarified sentence boundary grouping rules within speaker turns; paragraph breaks only occur on natural sentence terminations.
-- Implemented trailing lookahead protection preventing short trailing fragments (< 25 words) from forming lonely single-sentence paragraphs before speaker changes.
+- Updated the empty-state drag-and-drop card in `transcript_editor.py` to state "Supports all standard audio & video formats (WAV, MP3, MP4, MOV, MKV, FLAC, etc.)", communicating full FFmpeg compatibility without implying an artificial 7-container restriction.
 
-[x] 1.3 Precise Word-Level Highlighting & Preceding Word Bleed Fix (`transcript_editor.py`, `transcript_story.py`, `test_runner.py`)
---------------------------------------------------------------------------------
-- Eliminated preceding-word highlight bleed by querying live `QTextDocument` fragment anchors (`href="word:..."`) matching selection boundaries.
-- Replaced cumulative character offset approximations with canonical `(seg_idx, word_idx)` token mapping.
-
-[x] 1.4 Sub-Second Millisecond Invariant Preservation (`transcript_editor.py`, `transcript_story.py`, `test_runner.py`)
---------------------------------------------------------------------------------
-- Preserved sub-second float precision across internal data models, anchor links, and export engines even when milliseconds display is toggled off in the UI.
-
-[x] 1.5 Synchronous Version Bump (`bump_version.py`)
---------------------------------------------------------------------------------
-- Synchronized all 10 project locations to v3.8.8-stable with 100% test bench validation.
-
-
-================================================================================
-2. CURRENT RELEASE: SUPPORTED MEDIA FORMAT CLARIFICATIONS & UI TOOLTIPS [x] [COMPLETED in v3.8.9-beta.1]
-================================================================================
-
-[x] 2.1 Comprehensive Format Support Messaging (`transcript_editor.py`)
---------------------------------------------------------------------------------
-- Updated the empty-state drag-and-drop card in `transcript_editor.py` to state "Supports all standard audio and video formats (WAV, MP3, MP4, MOV, MKV, FLAC, etc.)", accurately communicating full FFmpeg compatibility without implying an artificial restriction to only 7 containers.
-
-[x] 2.2 Benchmark Tool Media Picker Normalization (`benchmark.py`)
+[x] 1.3 Benchmark Tool Media Picker Normalization (`benchmark.py`)
 --------------------------------------------------------------------------------
 - Expanded the custom file picker filter in `benchmark.py` to "All Supported Media Files (*.*)", ensuring MOV, WebM, AIFF, Opus, and broadcast transport streams are not masked in OS file browsers.
 
-[x] 2.3 Descriptive Text Document Tooltips (`ui_layout.py`)
+[x] 1.4 Descriptive Text Document Tooltips (`ui_layout.py`)
 --------------------------------------------------------------------------------
 - Added explicit tooltips and status-bar hints to `File > Open Document...` and `File > Open Media...` in `ui_layout.py`, clarifying that Open Document imports external text documents (.txt, .docx, .pdf, .html, .md) directly into the transcript workspace.
 
+[x] 1.5 Synchronous Version Bump (`bump_version.py`)
+--------------------------------------------------------------------------------
+- Synchronized all 10 project locations to v3.8.9-beta.2 with 100% test bench validation.
+
+
+===============================================================================
+2. CURRENT RELEASE: INSTALLED FOOTPRINT & DISTRIBUTION OPTIMIZATION [x] [COMPLETED in v3.8.9-beta.3]
+================================================================================
+
+[x] 2.1 Pruned Software OpenGL Rasterizer (`opengl32sw.dll`) (`build_installer.py`)
+--------------------------------------------------------------------------------
+- Stripped Mesa llvmpipe software OpenGL binary (~30 MB) from packaged bundles; standard `QtWidgets` native GDI/DirectWrite rendering and `QtMultimediaWidgets` Direct3D 11 video presentation run natively with zero reliance on software OpenGL.
+
+[x] 2.2 On-Demand Runtime Tool Provisioning (`uv.exe`) (`build_installer.py`)
+--------------------------------------------------------------------------------
+- Omitted pre-bundled `uv.exe` from default installer payload (saving ~50 MB on installed disk footprint), relying on `runtime_manager.py`'s existing on-demand download mechanism when users explicitly choose to install optional GPU acceleration or Translation plugin runtimes. Added `--bundle-uv` CLI flag to `build_installer.py` for optional manual pre-bundling.
+
+[x] 2.3 Inno Setup Ultra Solid Compression (`installer/Windows/RadioTVStorySegmenter.iss`)
+--------------------------------------------------------------------------------
+- Upgraded Windows setup installer script from `Compression=lzma2/fast` to `Compression=lzma2/ultra64` with `SolidCompression=yes`, significantly shrinking the downloaded setup executable size.
+
 [x] 2.4 Synchronous Version Bump (`bump_version.py`)
 --------------------------------------------------------------------------------
-- Synchronized all 10 project locations to v3.8.9-beta.1 with 100% test bench validation.
+- Synchronized all 10 project locations to v3.8.9-beta.3 with 100% test bench validation.
 
 
 ================================================================================
