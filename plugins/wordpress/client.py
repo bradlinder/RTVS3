@@ -861,7 +861,7 @@ class WordPressPreferencesPage(QWidget):
                 )
 
 
-def _group_segments_into_paragraphs(segments: list, min_words: int = 55) -> list:
+def _group_segments_into_paragraphs(segments: list, min_words: int = 65) -> list:
     """Group consecutive segments with same speaker into natural paragraph blocks."""
     if not segments:
         return []
@@ -887,8 +887,15 @@ def _group_segments_into_paragraphs(segments: list, min_words: int = 55) -> list
         curr_words = []
 
     for seg in segments:
-        spk = seg.get("speaker", "") or ""
-        text = seg.get("text", "") or ""
+        spk = (seg.get("speaker") or "").strip()
+        # Inherit current speaker over short unassigned gaps
+        if not spk and curr_speaker:
+            spk = curr_speaker
+
+        text = (seg.get("text") or "").strip()
+        if not text:
+            continue
+
         if curr_speaker is None:
             curr_speaker = spk
         if spk != curr_speaker:
@@ -1093,6 +1100,10 @@ def execute_wordpress_upload(
     # Robust detection of whether the source audio/transcript is Spanish vs English
     source_is_spanish = (src_code == "es")
 
+    translations_dict = getattr(main_window, "translations", {}) or {}
+    if not isinstance(translations_dict, dict):
+        translations_dict = {}
+
     # Spanish translation source (when source audio/transcript is English)
     spanish_segments = []
     if include_spanish and not source_is_spanish:
@@ -1287,7 +1298,7 @@ def execute_wordpress_upload(
                 insert_idx += 1
             content_parts.insert(insert_idx, parent_notice_html)
 
-    full_content = "\n\n".join(part.strip() for part in content_parts if part and str(part).strip())
+    full_content = "\n".join(part.strip() for part in content_parts if part and str(part).strip())
 
     # Fallback: if post excerpt is empty, generate from primary language blocks
     if not post_excerpt:

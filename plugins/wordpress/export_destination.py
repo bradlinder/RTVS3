@@ -1439,6 +1439,12 @@ class WordPressExportTabWidget(QWidget):
             self.wp_posts_list.setCurrentRow(0)
         self._load_post_editor_state(0)
 
+        dlg = self.window()
+        if hasattr(dlg, "_update_export_button_label") and callable(dlg._update_export_button_label):
+            dlg._update_export_button_label()
+        elif hasattr(self.parent(), "_update_export_button_label") and callable(self.parent()._update_export_button_label):
+            self.parent()._update_export_button_label()
+
     def _populate_wp_export_metadata(self, force_refresh: bool = False):
         categories = []
         authors = []
@@ -1513,6 +1519,18 @@ class WordPressExportDestination(ExportDestination):
         )
         self.plugin = plugin
         self.tab_widget: Optional[WordPressExportTabWidget] = None
+
+    @property
+    def button_label(self) -> str:
+        tab = getattr(self, "tab_widget", None)
+        if tab and hasattr(tab, "wp_post_items") and tab.wp_post_items:
+            count = len(tab.wp_post_items)
+            return "Export to WordPress Draft Posts..." if count > 1 else "Export to WordPress Draft Post..."
+        return "Export to WordPress Draft Post..."
+
+    @button_label.setter
+    def button_label(self, val: Any) -> None:
+        self._button_label_override = val
 
     def create_widget(self, parent: Any, main_window: Any) -> Any:
         self.tab_widget = WordPressExportTabWidget(parent, main_window)
@@ -1612,9 +1630,11 @@ class WordPressExportDestination(ExportDestination):
                 post_title = post.get("title") or "Untitled Post"
                 task_label = post.get("task_label") or post_title
                 media_name = safe_filename(post_title) if post_title else "audio"
-                media_filename = f"{media_name}.mp3"
-
-                is_parent_episode = (task_label == "Full Episode") or (post.get("start") is None and post.get("end") is None and len(wp_posts) > 1)
+                is_parent_episode = (task_label == "Full Episode") or (idx == 0 and post.get("start") is None and post.get("end") is None and len(wp_posts) > 1)
+                if not is_parent_episode and len(wp_posts) > 1:
+                    media_filename = f"{media_name}_{idx + 1}.mp3"
+                else:
+                    media_filename = f"{media_name}.mp3"
 
                 pct = int((idx / max(1, total_posts)) * 100)
                 if hasattr(main_window, "set_processing_stage"):
@@ -1674,7 +1694,7 @@ class WordPressExportDestination(ExportDestination):
                                 "link": post_link,
                             }
                             parent_episode_post_id = post_id
-                            parent_episode_content = post_data.get("_generated_content", "")
+                            parent_episode_content = post_data.get("_generated_content") or (post_data.get("content", {}).get("raw", "") if isinstance(post_data.get("content"), dict) else "")
                         elif not is_parent_episode:
                             story_posts.append({
                                 "id": post_id,

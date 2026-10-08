@@ -32,6 +32,8 @@ try:
 except ImportError:
     DOCX_AVAILABLE = False
     WD_COLOR_INDEX = None
+    Document = None
+    Inches = Pt = RGBColor = None
 
 
 W_NS = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
@@ -47,7 +49,19 @@ def _add_formatted_text_to_paragraph(
     include_highlights: bool = True,
 ):
     """Applies word-level or block-level rich text formatting (bold, italic, underline, strike, highlight) to DOCX runs."""
+    # Check if words match the actual paragraph text before using word-level runs
+    words_match = False
     if words and len(words) > 0:
+        words_clean = "".join(c for c in "".join(
+            (w.get("word", "") if isinstance(w, dict) else str(w)) for w in words
+        ).lower() if c.isalnum())
+        text_clean = "".join(c for c in (text or "").lower() if c.isalnum())
+        if words_clean and text_clean:
+            prefix_len = min(15, len(words_clean), len(text_clean))
+            if words_clean in text_clean or text_clean in words_clean or words_clean[:prefix_len] == text_clean[:prefix_len]:
+                words_match = True
+
+    if words_match and words:
         for idx, w_item in enumerate(words):
             if isinstance(w_item, dict):
                 w_str = w_item.get("word", "")
@@ -391,110 +405,110 @@ def create_story_docx(
         # 0 = heading paragraph
         body_para_idx = 1
         if media_name:
-            time_range = f" ({format_time(start_time, include_millis=include_milliseconds)} - {format_time(end_time, include_millis=include_milliseconds)})" if end_time > 0 else ""
+            time_range = f" ({format_time(start_time, include_millis=include_milliseconds)} - {format_time(end_time, include_millis=include_milliseconds)})" if (end_time is not None and end_time > 0) else ""
             document.add_paragraph(f"Recording: {media_name}{time_range}")
             body_para_idx += 1
 
-    comments_map: Dict[int, List[Dict[str, Any]]] = {}
-    last_speaker = None
-    processed_seg_comments = set()
+        comments_map: Dict[int, List[Dict[str, Any]]] = {}
+        last_speaker = None
+        processed_seg_comments = set()
 
-    for block in blocks:
-        speaker = (block.get("speaker") or "").strip() if include_speakers else ""
-        p_text = block.get("text", "").strip()
-        if not p_text:
-            continue
+        for block in blocks:
+            speaker = (block.get("speaker") or "").strip() if include_speakers else ""
+            p_text = block.get("text", "").strip()
+            if not p_text:
+                continue
 
-        p = document.add_paragraph()
-        if include_timestamps and "start" in block and block["start"] is not None:
-            r_time = p.add_run(f"[{format_time(block['start'], include_millis=include_milliseconds)}] ")
-            r_time.font.color.rgb = RGBColor(120, 120, 120)
+            p = document.add_paragraph()
+            if include_timestamps and "start" in block and block["start"] is not None:
+                r_time = p.add_run(f"[{format_time(block['start'], include_millis=include_milliseconds)}] ")
+                r_time.font.color.rgb = RGBColor(120, 120, 120)
 
-        is_speaker_change = block.get("is_speaker_change", (speaker != last_speaker))
-        if speaker and is_speaker_change and speaker != last_speaker:
-            r_spk = p.add_run(f"{speaker}: ")
-            r_spk.bold = True
-            last_speaker = speaker
+            is_speaker_change = block.get("is_speaker_change", (speaker != last_speaker))
+            if speaker and is_speaker_change and speaker != last_speaker:
+                r_spk = p.add_run(f"{speaker}: ")
+                r_spk.bold = True
+                last_speaker = speaker
 
-        words = block.get("words")
-        if not words and source_segments:
-            src_indices = block.get("source_indices")
-            if src_indices is None and block.get("_source_index") is not None:
-                src_indices = [block["_source_index"]]
-            if src_indices:
-                words = []
-                for s_idx in src_indices:
-                    if 0 <= s_idx < len(source_segments):
-                        seg_words = source_segments[s_idx].get("words")
-                        if seg_words and isinstance(seg_words, list):
-                            words.extend(seg_words)
+            words = block.get("words")
+            if not words and source_segments:
+                src_indices = block.get("source_indices")
+                if src_indices is None and block.get("_source_index") is not None:
+                    src_indices = [block["_source_index"]]
+                if src_indices:
+                    words = []
+                    for s_idx in src_indices:
+                        if 0 <= s_idx < len(source_segments):
+                            seg_words = source_segments[s_idx].get("words")
+                            if seg_words and isinstance(seg_words, list):
+                                words.extend(seg_words)
 
-        _add_formatted_text_to_paragraph(p, p_text, words=words, block_fmt=block, include_highlights=include_highlights)
-        p.paragraph_format.space_after = Pt(6)
+            _add_formatted_text_to_paragraph(p, p_text, words=words, block_fmt=block, include_highlights=include_highlights)
+            p.paragraph_format.space_after = Pt(6)
 
-        if include_comments:
-            c_items = []
-            # 1. Inspect block comments_data or comments
-            if block.get("comments_data"):
-                cd = block["comments_data"]
-                if isinstance(cd, list):
-                    c_items.extend(cd)
-                elif isinstance(cd, dict):
-                    c_items.append(cd)
+            if include_comments:
+                c_items = []
+                # 1. Inspect block comments_data or comments
+                if block.get("comments_data"):
+                    cd = block["comments_data"]
+                    if isinstance(cd, list):
+                        c_items.extend(cd)
+                    elif isinstance(cd, dict):
+                        c_items.append(cd)
 
-            # 2. Inspect source_indices
-            src_indices = block.get("source_indices")
-            if src_indices is None and block.get("_source_index") is not None:
-                src_indices = [block["_source_index"]]
+                # 2. Inspect source_indices
+                src_indices = block.get("source_indices")
+                if src_indices is None and block.get("_source_index") is not None:
+                    src_indices = [block["_source_index"]]
 
-            if src_indices and source_segments:
-                for s_idx in src_indices:
-                    if 0 <= s_idx < len(source_segments):
-                        seg = source_segments[s_idx]
-                        c_text = (seg.get("comments") or seg.get("notes", "")).strip()
-                        if c_text:
-                            processed_seg_comments.add((s_idx, c_text))
-                            sel_q = (seg.get("comment_selected_text") or "").strip()
-                            if not any(ci.get("text") == c_text and ci.get("selected_text") == sel_q for ci in c_items):
-                                c_items.append({
-                                    "text": c_text,
-                                    "selected_text": sel_q,
-                                })
+                if src_indices and source_segments:
+                    for s_idx in src_indices:
+                        if 0 <= s_idx < len(source_segments):
+                            seg = source_segments[s_idx]
+                            c_text = (seg.get("comments") or seg.get("notes", "")).strip()
+                            if c_text:
+                                processed_seg_comments.add((s_idx, c_text))
+                                sel_q = (seg.get("comment_selected_text") or "").strip()
+                                if not any(ci.get("text") == c_text and ci.get("selected_text") == sel_q for ci in c_items):
+                                    c_items.append({
+                                        "text": c_text,
+                                        "selected_text": sel_q,
+                                    })
 
-            # 3. Fallback to block.get("comments")
-            if not c_items:
-                raw_c = str(block.get("comments") or block.get("notes", "")).strip()
-                if raw_c:
-                    c_items.append({
-                        "text": raw_c,
-                        "selected_text": str(block.get("comment_selected_text") or "").strip()
-                    })
+                # 3. Fallback to block.get("comments")
+                if not c_items:
+                    raw_c = str(block.get("comments") or block.get("notes", "")).strip()
+                    if raw_c:
+                        c_items.append({
+                            "text": raw_c,
+                            "selected_text": str(block.get("comment_selected_text") or "").strip()
+                        })
 
-            if c_items:
-                comments_map[body_para_idx] = c_items
+                if c_items:
+                    comments_map[body_para_idx] = c_items
 
-        body_para_idx += 1
+            body_para_idx += 1
 
-    # Ensure any remaining unprocessed comments in source_segments are exported
-    if include_comments and source_segments:
-        unprocessed = []
-        for idx, seg in enumerate(source_segments):
-            c_text = (seg.get("comments") or seg.get("notes", "")).strip()
-            if c_text and (idx, c_text) not in processed_seg_comments:
-                unprocessed.append((idx, seg, c_text))
+        # Ensure any remaining unprocessed comments in source_segments are exported
+        if include_comments and source_segments:
+            unprocessed = []
+            for idx, seg in enumerate(source_segments):
+                c_text = (seg.get("comments") or seg.get("notes", "")).strip()
+                if c_text and (idx, c_text) not in processed_seg_comments:
+                    unprocessed.append((idx, seg, c_text))
 
-        if unprocessed:
-            for idx, seg, c_text in unprocessed:
-                p = document.add_paragraph()
-                p.paragraph_format.space_before = Pt(4)
-                p.paragraph_format.space_after = Pt(4)
-                r = p.add_run(f"[{format_time(seg.get('start', 0.0))}] {seg.get('speaker', '')}: {seg.get('text', '')}")
-                r.font.size = Pt(10)
-                comments_map[body_para_idx] = [{
-                    "text": c_text,
-                    "selected_text": (seg.get("comment_selected_text") or "").strip(),
-                }]
-                body_para_idx += 1
+            if unprocessed:
+                for idx, seg, c_text in unprocessed:
+                    p = document.add_paragraph()
+                    p.paragraph_format.space_before = Pt(4)
+                    p.paragraph_format.space_after = Pt(4)
+                    r = p.add_run(f"[{format_time(seg.get('start', 0.0))}] {seg.get('speaker', '')}: {seg.get('text', '')}")
+                    r.font.size = Pt(10)
+                    comments_map[body_para_idx] = [{
+                        "text": c_text,
+                        "selected_text": (seg.get("comment_selected_text") or "").strip(),
+                    }]
+                    body_para_idx += 1
 
         # Save to memory buffer
         mem_buf = io.BytesIO()

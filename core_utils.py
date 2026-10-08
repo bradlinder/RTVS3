@@ -506,7 +506,10 @@ def ffprobe_path() -> str | None:
 
 
 def format_time(seconds, include_millis=True):
-    seconds = max(0, float(seconds if seconds is not None else 0.0))
+    try:
+        seconds = max(0.0, float(seconds if seconds is not None else 0.0))
+    except (ValueError, TypeError):
+        seconds = 0.0
     hours = int(seconds // 3600)
     minutes = int((seconds % 3600) // 60)
     secs = int(seconds % 60)

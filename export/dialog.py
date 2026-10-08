@@ -825,17 +825,24 @@ class UnifiedExportDialog(QDialog):
             s.set_expanded(new_state)
         self.toggle_all_btn.setText("▾ Collapse All" if new_state else "▸ Expand All")
 
+    def _update_export_button_label(self):
+        if not hasattr(self, "export_btn") or not self.export_btn:
+            return
+        for entry in self._dest_entries:
+            if entry["radio"].isChecked():
+                if entry["id"] == "local":
+                    self.export_btn.setText("Export Files...")
+                else:
+                    dest = entry.get("dest_obj")
+                    btn_lbl = getattr(dest, "button_label", None) or f"Export to {getattr(dest, 'title', 'Destination')}..."
+                    self.export_btn.setText(btn_lbl)
+                break
+
     def _on_dest_changed(self):
         for entry in self._dest_entries:
             if entry["radio"].isChecked():
                 self.stacked_widget.setCurrentWidget(entry["page"])
-                if hasattr(self, "export_btn") and self.export_btn:
-                    if entry["id"] == "local":
-                        self.export_btn.setText("Export Files...")
-                    else:
-                        dest = entry.get("dest_obj")
-                        btn_lbl = getattr(dest, "button_label", None) or f"Export to {getattr(dest, 'title', 'Destination')}..."
-                        self.export_btn.setText(btn_lbl)
+                self._update_export_button_label()
                 break
 
     def _on_scope_changed(self):
@@ -846,6 +853,7 @@ class UnifiedExportDialog(QDialog):
                 dest.on_scope_changed(scope, stories)
             except Exception as exc:
                 print(f"[EXPORT] Warning: Plugin destination on_scope_changed failed for '{getattr(dest, 'id', 'unknown')}': {exc}")
+        self._update_export_button_label()
 
     def _open_id3_editor(self):
         """Open the ID3 Tag Editor for MP3 files."""
