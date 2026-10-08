@@ -1,5 +1,13 @@
 # Changelog
 
+## v3.8.9-beta.11
+- **WordPress Multi-Story Upload & Summary Dialog Resilience (`plugins/wordpress/export_destination.py`, `plugins/wordpress/manifest.json`)**:
+  - **QWidget Parent Type Validation**: Resolved a `TypeError` in `QMessageBox.information`, `QMessageBox.warning`, and `QMessageBox.critical` calls where non-widget host instances (such as test runners or headless harnesses) could trigger runtime exceptions when showing completion dialogs. Enforced typed `parent_widget: Optional[QWidget]` validation across all message box invocations.
+  - **Headless & Batch Dialog Suppression**: Connected `show_summary_dialog` checks ensuring automated batch export workflows and test executions proceed cleanly without blocking modal dialog prompts.
+  - **Manifest Catch-Up Synchronization**: Updated `plugins/wordpress/manifest.json` to version `3.8.9-beta.11`.
+- **Diagnostic Suite & Multi-Story Pipeline Hardening (`test_runner.py`)**:
+  - **WordPress Multi-Story Upload Verification**: Configured headless test runs to suppress completion dialogs while thoroughly validating pluralized button labels, draft post generation, and audio toggle resilience across the test suite.
+
 ## v3.8.9-beta.10
 - **WordPress Translation Accordion Placement Toggle (`plugins/wordpress/export_destination.py`, `plugins/wordpress/client.py`, `plugins/wordpress/manifest.json`)**:
   - **User-Configurable Accordion Placement**: Added an "Accordion Position" configuration control (`wp_rad_acc_top` / `wp_rad_acc_bottom`) in the WordPress export panel allowing users to choose whether the interactive bilingual translation toggle accordion appears at the top (before the transcript) or at the bottom (after the transcript).
