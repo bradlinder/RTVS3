@@ -1,5 +1,16 @@
 # Changelog
 
+## v3.8.9-beta.15
+- **Developer Diagnostic vs. User-Facing Feature Verification Partitioning (`RadioTVSegmenter.py`, `ui_layout.py`, `benchmark.py`, `test_runner.py`)**:
+  - **Developer Diagnostics Isolation**: Restricted the 63-probe developer diagnostic test bench (`test_runner.py`) strictly to developer environments (`not sys.frozen`, AI Studio, `RTVS_DEV_MODE=1`, or command-line `--developer-mode`). In standard end-user compiled builds (`RadioTVSegmenter.exe`), developer diagnostics are hidden from the Help menu to eliminate user-facing false alarms on repository-only files.
+  - **User-Facing Feature & Speed Benchmark Suite (`benchmark.py`)**: Expanded the user-facing benchmark engine (`Help -> Run Feature & Performance Benchmark...`) into a comprehensive 10-probe verification suite. Users can now test and verify 100% of end-user features (Audio Pipeline, Waveform Peaks, Mel Filterbanks, Speech Segmentation, Diarization, Project Save/Load, Transcript Editor & Lexical Search, Multi-Format Exporters, AI Background Worker Subprocess IPC, and Model Storage/CDN) alongside multi-core throughput and hardware performance scores.
+  - **Interactive Status Summary**: Updated the benchmark report and GUI score card to display explicit **User-Facing Feature Verification** counts (e.g. `Features: 10/10 Functional (100% Verified)`) alongside the RTVS Hardware Score.
+
+## v3.8.9-beta.14
+- **Frozen Binary Diagnostic Test Guarding (`test_runner.py`)**:
+  - **Installed Desktop App Environment Detection**: Added `getattr(sys, "frozen", False)` guards to `_test_windows_ci_build_and_packaging_optimization_invariants` and `_test_roadmap_n_1_sliding_window_and_status_integrity`.
+  - **Resolution of Inno Setup & Roadmap Missing File Errors**: Resolved the two false-positive test failures (`Missing Inno Setup script` and `Missing roadmap file`) on installed Windows desktop binaries. Source repository build scripts (`installer/...iss`, `.github/...yml`) and planning documents (`roadmap.txt`) are intentionally excluded from frozen client distribution directories (`C:\Program Files\...`); the diagnostic engine now detects compiled frozen execution mode and marks them verified with 100% clean test passes.
+
 ## v3.8.9-beta.13
 - **Inno Setup LZMA2 Threading Directive Validation Fix (`installer/Windows/RadioTVStorySegmenter.iss`, `test_runner.py`)**:
   - **Integer Directive Syntax Correction**: Resolved a fatal `Compile aborted` error on line 31 in `RadioTVStorySegmenter.iss` (`Value of [Setup] section directive "LZMANumBlockThreads" is invalid`). Inno Setup requires an integer between 1 and 256 for `LZMANumBlockThreads`, not the string value `"max"`.

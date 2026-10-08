@@ -1246,13 +1246,15 @@ class UiLayoutMixin:
         self.log_action = log_act
         help_menu.addAction(log_act)
 
-        test_bench_act = QAction("&Run Diagnostic Test Bench...", self)
-        test_bench_act.setShortcut(platform_seq("Ctrl+Shift+T"))
-        test_bench_act.triggered.connect(self.show_diagnostic_test_bench)
-        self.test_bench_action = test_bench_act
-        help_menu.addAction(test_bench_act)
+        _is_dev_env = not getattr(sys, "frozen", False) or os.environ.get("RTVS_DEV_MODE") == "1" or "--developer-mode" in sys.argv or "--dev" in sys.argv
+        if _is_dev_env:
+            test_bench_act = QAction("Run &Developer Diagnostic Test Bench...", self)
+            test_bench_act.setShortcut(platform_seq("Ctrl+Shift+T"))
+            test_bench_act.triggered.connect(self.show_diagnostic_test_bench)
+            self.test_bench_action = test_bench_act
+            help_menu.addAction(test_bench_act)
 
-        benchmark_act = QAction("Run &Performance Benchmark...", self)
+        benchmark_act = QAction("Run &Feature & Performance Benchmark...", self)
         benchmark_act.setShortcut(platform_seq("Ctrl+Shift+B"))
         benchmark_act.triggered.connect(self.show_performance_benchmark)
         self.benchmark_action = benchmark_act
@@ -1803,7 +1805,20 @@ class UiLayoutMixin:
         dialog.exec()
 
     def show_diagnostic_test_bench(self):
-        """Open the interactive System Diagnostic Test Bench dialog."""
+        """Open the interactive Developer Diagnostic Test Bench dialog."""
+        _is_dev_env = not getattr(sys, "frozen", False) or os.environ.get("RTVS_DEV_MODE") == "1" or "--developer-mode" in sys.argv or "--dev" in sys.argv
+        if not _is_dev_env:
+            from PySide6.QtWidgets import QMessageBox
+            QMessageBox.information(
+                self,
+                "Developer Diagnostics Restricted",
+                "Developer & build diagnostics are restricted to development mode.\n\n"
+                "To verify user-facing features and hardware performance, please use:\n"
+                "Help -> Run Feature & Performance Benchmark... (Ctrl+Shift+B)\n\n"
+                "To enable developer mode in compiled builds, launch the application with the '--developer-mode' command-line flag."
+            )
+            return
+
         try:
             from test_runner import create_diagnostic_dialog
             dlg = create_diagnostic_dialog(parent=self)
