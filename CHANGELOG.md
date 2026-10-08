@@ -1,6 +1,12 @@
 # Changelog
 
 ## v3.8.9-beta.5
+- **WordPress REST API Export & Presentation Refinement (`plugins/wordpress/client.py`, `plugins/wordpress/manifest.json`)**:
+  - **Source Language Detection Fix (`plugins/wordpress/client.py`)**: Fixed `source_is_spanish` evaluation in the WordPress export client to reliably evaluate the project's source audio language (`main_window.source_language_code()`), preventing English audio projects with translation entries from being misclassified as Spanish source audio.
+  - **Manifest Version Synchronization (`plugins/wordpress/manifest.json`)**: Updated the WordPress plugin manifest version to match the current application release.
+- **Full Episode & Story Word (.docx) Export Optimization (`project_export.py`, `core_utils.py`)**:
+  - **Safe Time Formatting (`core_utils.py`)**: Enforced robust `None` value handling in `format_time` to prevent `TypeError` exceptions during export time calculations.
+  - **Source Segment Comment Preservation (`project_export.py`)**: Preserved source segment mapping (`source_segments`) across primary and translated DOCX document builds, ensuring user comments and notes are attached to exported paragraphs regardless of language selection.
 - **Clean Install Model Download Deadlock & UI Freeze Resolution (`processing.py`, `model_management.py`, `radio_tv_story_segmenter_worker.py`, `build_installer.py`, `requirements.txt`)**:
   - **Asynchronous Main-Thread Signal Dispatch & Auto-Resume (`processing.py`)**: Completely eliminated the nested modal event loop (`dl_loop.exec()`) and illegal cross-thread widget invocations that caused the application to freeze when downloading a missing AI model on a clean install. Download progress signals now dispatch strictly across Qt QueuedConnections to dedicated main-thread slots on `MainWindow`, preventing GUI thread deadlocks. When the download reaches 100%, transcription automatically resumes seamlessly without blocking the UI.
   - **Instant Cancellation & Socket Abort (`model_management.py`)**: Added active response socket tracking (`_active_response.close()`) in `WhisperModelInstallWorker.cancel()`, allowing users to cancel in-flight model downloads in milliseconds without stalling on synchronous socket reads.

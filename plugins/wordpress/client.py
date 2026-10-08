@@ -861,6 +861,50 @@ class WordPressPreferencesPage(QWidget):
                 )
 
 
+def _group_segments_into_paragraphs(segments: list, min_words: int = 55) -> list:
+    """Group consecutive segments with same speaker into natural paragraph blocks."""
+    if not segments:
+        return []
+    blocks = []
+    curr_words = []
+    curr_speaker = None
+
+    def is_sentence_end(w: str) -> bool:
+        clean = w.strip().rstrip("\"'’”»)")
+        return bool(clean and clean[-1] in ".?!")
+
+    def flush():
+        nonlocal curr_words, curr_speaker
+        if not curr_words:
+            return
+        p_text = " ".join(curr_words).strip()
+        if p_text:
+            blocks.append({
+                "speaker": curr_speaker or "",
+                "text": p_text,
+                "is_speaker_change": True,
+            })
+        curr_words = []
+
+    for seg in segments:
+        spk = seg.get("speaker", "") or ""
+        text = seg.get("text", "") or ""
+        if curr_speaker is None:
+            curr_speaker = spk
+        if spk != curr_speaker:
+            flush()
+            curr_speaker = spk
+
+        words = text.split()
+        for w in words:
+            curr_words.append(w)
+            if len(curr_words) >= min_words and is_sentence_end(w):
+                flush()
+
+    flush()
+    return blocks
+
+
 def execute_wordpress_upload(
     main_window: Any,
     client: WordPressClient,
@@ -918,8 +962,7 @@ def execute_wordpress_upload(
     try:
         target_media = str(audio_src)
         source_suffix = Path(audio_src).suffix.lower()
-        duration = getattr(main_window, "duration", 0)
-        needs_clip = start is not None and end is not None and (start > 0 or end < duration)
+        needs_clip = (start is not None and end is not None)
         needs_mp3 = source_suffix == ".wav"
 
         if needs_clip or needs_mp3:
@@ -953,18 +996,21 @@ def execute_wordpress_upload(
         # Upload Media to WordPress
         report_progress(2, "Uploading audio to WordPress media library…")
         upload_name = media_filename or f"{safe_filename(post_title or 'audio')}.mp3"
-        media_item = client.upload_media(target_media, filename=upload_name)
-        media_url = ""
-        if isinstance(media_item, dict):
-            guid_data = media_item.get("guid")
-            guid_url = ""
-            if isinstance(guid_data, dict):
-                guid_url = guid_data.get("rendered", "")
-            elif isinstance(guid_data, str):
-                guid_url = guid_data
-            media_url = media_item.get("source_url") or guid_url
-        if not media_url:
-            raise RuntimeError("WordPress upload succeeded but media URL could not be resolved.")
+        try:
+            media_item = client.upload_media(target_media, filename=upload_name)
+            media_url = ""
+            if isinstance(media_item, dict):
+                guid_data = media_item.get("guid")
+                guid_url = ""
+                if isinstance(guid_data, dict):
+                    guid_url = guid_data.get("rendered", "")
+                elif isinstance(guid_data, str):
+                    guid_url = guid_data
+                media_url = media_item.get("source_url") or guid_url
+        except Exception as media_exc:
+            if hasattr(main_window, "log_activity"):
+                main_window.log_activity(f"[WORDPRESS WARNING] Audio upload failed for '{post_title}': {media_exc}", "warning")
+            media_url = ""
     finally:
         if temp_dir and temp_dir.exists():
             shutil.rmtree(temp_dir, ignore_errors=True)
@@ -1042,39 +1088,62 @@ def execute_wordpress_upload(
         elif hasattr(main_window, "transcript_view") and hasattr(main_window.transcript_view, "toPlainText"):
             plain_text = str(main_window.transcript_view.toPlainText() or "").strip()
 
-    # Spanish translation source if requested
+    src_code = main_window.source_language_code() if hasattr(main_window, "source_language_code") else "en"
+
+    # Robust detection of whether the source audio/transcript is Spanish vs English
+    source_is_spanish = (src_code == "es")
+
+    # Spanish translation source (when source audio/transcript is English)
     spanish_segments = []
-    if include_spanish:
-        spanish_item = None
-        if hasattr(main_window, "get_spanish_translation_item") and callable(main_window.get_spanish_translation_item):
-            spanish_item = main_window.get_spanish_translation_item()
-        elif hasattr(main_window, "translations") and isinstance(getattr(main_window, "translations", None), dict):
-            spanish_item = (
-                main_window.translations.get("en-es")
-                or main_window.translations.get("en_es")
-                or main_window.translations.get("es-en")
-                or main_window.translations.get("es_en")
-            )
-        if isinstance(spanish_item, dict):
-            spanish_segments = spanish_item.get("segments", []) or []
+    if include_spanish and not source_is_spanish:
+        es_item = translations_dict.get("en-es") or translations_dict.get("en_es")
+        if not es_item and hasattr(main_window, "get_translation_item") and callable(main_window.get_translation_item):
+            es_item = main_window.get_translation_item("en", "es")
+        if isinstance(es_item, dict):
+            spanish_segments = es_item.get("segments", []) or []
+
+    # English translation source (when source audio/transcript is Spanish)
+    english_segments = []
+    if include_english and source_is_spanish:
+        en_item = translations_dict.get("es-en") or translations_dict.get("es_en")
+        if not en_item and hasattr(main_window, "get_translation_item") and callable(main_window.get_translation_item):
+            en_item = main_window.get_translation_item("es", "en")
+        if isinstance(en_item, dict):
+            english_segments = en_item.get("segments", []) or []
 
     def language_blocks(lang_code: str):
         blocks = []
         if clip_transcript:
+            lang_segs = []
             for idx, seg in enumerate(clip_transcript):
                 if not isinstance(seg, dict):
                     continue
                 text = ""
                 s_idx = seg.get("_source_index", idx)
                 if lang_code == "en":
-                    text = str(seg.get("text", "") or "").strip()
+                    if source_is_spanish:
+                        # Original is Spanish; English is in the translation
+                        if isinstance(seg.get("translations"), dict):
+                            text = str(seg.get("translations", {}).get("en", "") or "").strip()
+                        if not text and english_segments and 0 <= s_idx < len(english_segments):
+                            t_seg = english_segments[s_idx]
+                            if isinstance(t_seg, dict):
+                                text = str(t_seg.get("text", "") or "").strip()
+                    else:
+                        # Original is English
+                        text = str(seg.get("text", "") or "").strip()
                 elif lang_code == "es":
-                    if isinstance(seg.get("translations"), dict):
-                        text = str(seg.get("translations", {}).get("es", "") or "").strip()
-                    if not text and spanish_segments and 0 <= s_idx < len(spanish_segments):
-                        t_seg = spanish_segments[s_idx]
-                        if isinstance(t_seg, dict):
-                            text = str(t_seg.get("text", "") or "").strip()
+                    if source_is_spanish:
+                        # Original is Spanish
+                        text = str(seg.get("text", "") or "").strip()
+                    else:
+                        # Original is English; Spanish is in the translation
+                        if isinstance(seg.get("translations"), dict):
+                            text = str(seg.get("translations", {}).get("es", "") or "").strip()
+                        if not text and spanish_segments and 0 <= s_idx < len(spanish_segments):
+                            t_seg = spanish_segments[s_idx]
+                            if isinstance(t_seg, dict):
+                                text = str(t_seg.get("text", "") or "").strip()
                 if not text:
                     continue
 
@@ -1086,56 +1155,100 @@ def execute_wordpress_upload(
                 if not speaker:
                     speaker = str(seg.get("speaker", "") or "").strip()
 
-                speaker_prefix = f"<strong>{html.escape(speaker)}:</strong> " if speaker else ""
-                formatted_text = format_rich_text_to_html(text)
-                blocks.append(f"<!-- wp:paragraph -->\n<p>{speaker_prefix}{formatted_text}</p>\n<!-- /wp:paragraph -->")
-        elif plain_text and lang_code == "en":
-            formatted_text = format_rich_text_to_html(plain_text).replace("\n\n", "</p>\n<!-- /wp:paragraph -->\n<!-- wp:paragraph -->\n<p>").replace("\n", "<br/>")
-            blocks.append(f"<!-- wp:paragraph -->\n<p>{formatted_text}</p>\n<!-- /wp:paragraph -->")
+                is_source_lang = (lang_code == ("es" if source_is_spanish else "en"))
+                lang_segs.append({
+                    "speaker": speaker,
+                    "text": text,
+                    "start": seg.get("start"),
+                    "end": seg.get("end"),
+                    "_source_index": s_idx,
+                    "words": seg.get("words", []) if is_source_lang else [],
+                })
+
+            if lang_segs:
+                if hasattr(main_window, "build_story_blocks") and callable(main_window.build_story_blocks):
+                    para_blocks = main_window.build_story_blocks(lang_segs)
+                else:
+                    para_blocks = _group_segments_into_paragraphs(lang_segs)
+
+                last_speaker = None
+                for block in para_blocks:
+                    spk = (block.get("speaker") or "").strip()
+                    raw_p = (block.get("text") or "").strip()
+                    if not raw_p:
+                        continue
+                    # Clean internal newlines to prevent wpautop from injecting stray line breaks
+                    clean_p = " ".join(raw_p.split())
+                    if not clean_p:
+                        continue
+                    is_change = block.get("is_speaker_change", (spk != last_speaker))
+                    prefix = f"<strong>{html.escape(spk)}:</strong> " if (spk and is_change and spk != last_speaker) else ""
+                    if spk:
+                        last_speaker = spk
+                    formatted_text = format_rich_text_to_html(clean_p)
+                    blocks.append(f"<!-- wp:paragraph -->\n<p>{prefix}{formatted_text}</p>\n<!-- /wp:paragraph -->")
+        elif plain_text and lang_code == ("es" if source_is_spanish else "en"):
+            clean_plain = [p.strip() for p in plain_text.split("\n\n") if p.strip()]
+            for p_chunk in clean_plain:
+                clean_chunk = " ".join(p_chunk.split())
+                if clean_chunk:
+                    formatted_text = format_rich_text_to_html(clean_chunk)
+                    blocks.append(f"<!-- wp:paragraph -->\n<p>{formatted_text}</p>\n<!-- /wp:paragraph -->")
         return blocks
 
     en_blocks = language_blocks("en") if include_english else []
     es_blocks = language_blocks("es") if include_spanish else []
 
-    def append_blocks(blocks):
-        content_parts.extend(blocks)
-
     if en_blocks and es_blocks:
+        # Determine primary vs secondary blocks based on user-selected primary_language
+        if primary_language == "es":
+            primary_blocks = es_blocks
+            secondary_blocks = en_blocks
+            btn_text = "Read in English"
+            secondary_heading = "English"
+        else:
+            primary_blocks = en_blocks
+            secondary_blocks = es_blocks
+            btn_text = "Leer en Español"
+            secondary_heading = "Español"
+
         if spanish_presentation == "accordion":
-            if primary_language == "es":
-                primary_blocks = es_blocks
-                secondary_blocks = en_blocks
-                btn_text = "Read in English"
-            else:
-                primary_blocks = en_blocks
-                secondary_blocks = es_blocks
-                btn_text = "Leer en Español"
+            # Primary story blocks placed first so the primary story is prominent in the compose window
+            content_parts.extend(primary_blocks)
 
             summary_btn_style = (
                 "display: inline-block; padding: 8px 18px; background-color: #0073aa; "
                 "color: #ffffff; border-radius: 4px; font-weight: bold; cursor: pointer; "
                 "margin-bottom: 16px; user-select: none; list-style: none; outline: none;"
             )
-            content_parts.append(
-                f'<details class="rtvs-language-accordion" style="margin-bottom: 24px;">'
+            # Valid Gutenberg Details block container with direct child paragraph blocks
+            details_opening = (
+                f'<!-- wp:details {{"showContent":false}} -->\n'
+                f'<details class="wp-block-details rtvs-language-accordion" style="margin-top: 24px; margin-bottom: 24px;">\n'
                 f'<summary role="button" style="{summary_btn_style}">{btn_text}</summary>'
-                f'<div class="rtvs-secondary-transcript" style="margin-top: 12px;">'
             )
-            append_blocks(secondary_blocks)
-            content_parts.append('</div></details>')
-            append_blocks(primary_blocks)
+            content_parts.append(details_opening)
+            content_parts.extend(secondary_blocks)
+            content_parts.append('</details>\n<!-- /wp:details -->')
         elif spanish_presentation == "es_first":
-            append_blocks(es_blocks)
-            content_parts.append('<h2>English</h2>')
-            append_blocks(en_blocks)
+            # User explicitly chose Spanish first
+            content_parts.extend(es_blocks)
+            content_parts.append('<!-- wp:heading -->\n<h2>English</h2>\n<!-- /wp:heading -->')
+            content_parts.extend(en_blocks)
+        elif spanish_presentation == "en_first":
+            # User explicitly chose English first
+            content_parts.extend(en_blocks)
+            content_parts.append('<!-- wp:heading -->\n<h2>Español</h2>\n<!-- /wp:heading -->')
+            content_parts.extend(es_blocks)
         else:
-            append_blocks(en_blocks)
-            content_parts.append('<h2>Español</h2>')
-            append_blocks(es_blocks)
+            # Default to primary language first
+            content_parts.extend(primary_blocks)
+            content_parts.append(f'<!-- wp:heading -->\n<h2>{secondary_heading}</h2>\n<!-- /wp:heading -->')
+            content_parts.extend(secondary_blocks)
     elif en_blocks:
-        append_blocks(en_blocks)
+        content_parts.extend(en_blocks)
     elif es_blocks:
-        append_blocks(es_blocks)
+        content_parts.extend(es_blocks)
 
     # Optional Custom Notice Text
     settings = QSettings(INTERNAL_APP_ID, INTERNAL_APP_ID)
@@ -1174,7 +1287,19 @@ def execute_wordpress_upload(
                 insert_idx += 1
             content_parts.insert(insert_idx, parent_notice_html)
 
-    full_content = "\n".join(content_parts)
+    full_content = "\n\n".join(part.strip() for part in content_parts if part and str(part).strip())
+
+    # Fallback: if post excerpt is empty, generate from primary language blocks
+    if not post_excerpt:
+        clean_para_texts = []
+        for b in (primary_blocks if (en_blocks and es_blocks) else (en_blocks or es_blocks)):
+            m = re.search(r"<p>(?:<strong>.*?</strong>\s*)?(.*?)</p>", b, re.DOTALL)
+            if m:
+                raw_b = re.sub(r"<[^>]+>", "", m.group(1)).strip()
+                if raw_b:
+                    clean_para_texts.append(raw_b)
+        if clean_para_texts:
+            post_excerpt = generate_wp_excerpt(" ".join(clean_para_texts), 55)
 
     # 4. Create Draft Post
     report_progress(4, "Creating WordPress draft…")

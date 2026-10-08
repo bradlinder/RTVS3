@@ -1206,7 +1206,7 @@ class ProjectExportMixin(ProjectLifecycleMixin):
                         include_comments=options.get("include_comments", options.get("include_notes", True)),
                         include_highlights=options.get("include_highlights", True),
                         lang_code=lang_code,
-                        source_segments=(self.transcript.get("segments", []) if (self.transcript and lang_code == src_code) else None),
+                        source_segments=(self.transcript.get("segments", []) if self.transcript else None),
                     )
 
                 # Export PDF
@@ -1817,6 +1817,8 @@ class ProjectExportMixin(ProjectLifecycleMixin):
                         })
                     blocks = self.build_story_blocks(curr_spk_blocks) if curr_spk_blocks else []
 
+                include_millis = bool(options.get("include_milliseconds", options.get("show_milliseconds", getattr(self, "show_milliseconds", False))))
+
                 # Export TXT to Transcripts subfolder
                 if formats.get("txt"):
                     txt_file = transcripts_out / f"{file_base}.txt"
@@ -1829,7 +1831,6 @@ class ProjectExportMixin(ProjectLifecycleMixin):
                             number = self.diarization.get("num_speakers", 0)
                             f.write(f"Speaker detection: {number} speaker(s) detected.\n\n")
 
-                        include_millis = bool(options.get("include_milliseconds", options.get("show_milliseconds", getattr(self, "show_milliseconds", False))))
                         last_speaker = None
                         for block in blocks:
                             speaker = (block.get("speaker") or "").strip() if options.get("include_speakers", True) else ""
@@ -1862,21 +1863,25 @@ class ProjectExportMixin(ProjectLifecycleMixin):
                 # Export DOCX to Transcripts subfolder
                 if formats.get("docx"):
                     docx_file = transcripts_out / f"{file_base}.docx"
-                    create_story_docx(
-                        title=doc_title,
-                        blocks=blocks,
-                        output_path=docx_file,
-                        media_name=self.audio_file.name if self.audio_file else "",
-                        start_time=0.0,
-                        end_time=0.0,
-                        include_speakers=options.get("include_speakers", True),
-                        include_timestamps=options.get("include_timestamps", True),
-                        include_milliseconds=include_millis,
-                        include_comments=options.get("include_comments", options.get("include_notes", True)),
-                        include_highlights=options.get("include_highlights", True),
-                        lang_code=lang_code,
-                        source_segments=(self.transcript.get("segments", []) if (self.transcript and lang_code == src_code) else None),
-                    )
+                    tot_dur = float(getattr(self, "duration", 0.0) or getattr(self, "audio_duration", 0.0) or 0.0)
+                    try:
+                        create_story_docx(
+                            title=doc_title,
+                            blocks=blocks,
+                            output_path=docx_file,
+                            media_name=self.audio_file.name if self.audio_file else "",
+                            start_time=0.0,
+                            end_time=tot_dur,
+                            include_speakers=options.get("include_speakers", True),
+                            include_timestamps=options.get("include_timestamps", True),
+                            include_milliseconds=include_millis,
+                            include_comments=options.get("include_comments", options.get("include_notes", True)),
+                            include_highlights=options.get("include_highlights", True),
+                            lang_code=lang_code,
+                            source_segments=(self.transcript.get("segments", []) if self.transcript else None),
+                        )
+                    except Exception as docx_exc:
+                        self.log_activity(f"[ERROR] Failed to export DOCX for full episode ({lang_code}): {docx_exc}")
 
                 # Export PDF to Transcripts subfolder
                 if formats.get("pdf"):

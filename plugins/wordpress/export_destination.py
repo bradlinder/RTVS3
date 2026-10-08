@@ -470,6 +470,8 @@ class WordPressExportTabWidget(QWidget):
         idx = self.wp_primary_lang_combo.findData(src_code)
         if idx >= 0:
             self.wp_primary_lang_combo.setCurrentIndex(idx)
+        else:
+            self.wp_primary_lang_combo.setCurrentIndex(0)
         prim_row.addWidget(prim_label)
         prim_row.addWidget(self.wp_primary_lang_combo)
         prim_row.addStretch()
@@ -479,12 +481,34 @@ class WordPressExportTabWidget(QWidget):
         pres_label = QLabel("Placement:")
         self.wp_pres_combo = QComboBox()
         self.wp_pres_combo.addItem("Interactive language toggle (Accordion)", "accordion")
-        self.wp_pres_combo.addItem("English first, Spanish below", "en_first")
-        self.wp_pres_combo.addItem("Spanish first, English below", "es_first")
+        if src_code == "es":
+            self.wp_pres_combo.addItem("Spanish first, English below", "es_first")
+            self.wp_pres_combo.addItem("English first, Spanish below", "en_first")
+        else:
+            self.wp_pres_combo.addItem("English first, Spanish below", "en_first")
+            self.wp_pres_combo.addItem("Spanish first, English below", "es_first")
         pres_row.addWidget(pres_label)
         pres_row.addWidget(self.wp_pres_combo)
         pres_row.addStretch()
         pres_layout.addLayout(pres_row)
+
+        def on_wp_primary_lang_changed():
+            p_code = self.wp_primary_lang_combo.currentData()
+            prev_pres = self.wp_pres_combo.currentData()
+            self.wp_pres_combo.blockSignals(True)
+            self.wp_pres_combo.clear()
+            self.wp_pres_combo.addItem("Interactive language toggle (Accordion)", "accordion")
+            if p_code == "es":
+                self.wp_pres_combo.addItem("Spanish first, English below", "es_first")
+                self.wp_pres_combo.addItem("English first, Spanish below", "en_first")
+            else:
+                self.wp_pres_combo.addItem("English first, Spanish below", "en_first")
+                self.wp_pres_combo.addItem("Spanish first, English below", "es_first")
+            match_idx = self.wp_pres_combo.findData(prev_pres)
+            self.wp_pres_combo.setCurrentIndex(match_idx if match_idx >= 0 else 0)
+            self.wp_pres_combo.blockSignals(False)
+
+        self.wp_primary_lang_combo.currentIndexChanged.connect(on_wp_primary_lang_changed)
 
         self.wp_lang_section.add_widget(self.wp_pres_container)
 
@@ -1255,15 +1279,58 @@ class WordPressExportTabWidget(QWidget):
         base_name = Path(audio_file).stem if audio_file else "Draft Story"
         stories = getattr(self.main_window, "stories", []) or []
 
+        # Retain existing post edits across scope adjustments so user work is never discarded
+        existing_by_start = {}
+        for old_item in getattr(self, "wp_post_items", []):
+            st_key = old_item.get("start")
+            task_lbl = old_item.get("task_label", "")
+            existing_by_start[(task_lbl, st_key)] = old_item
+            if st_key is not None:
+                existing_by_start[st_key] = old_item
+            if task_lbl == "Full Episode" or st_key is None:
+                existing_by_start["full"] = old_item
+
         new_items = []
+
+        src_code = self.main_window.source_language_code() if hasattr(self.main_window, "source_language_code") else "en"
+
+        def _get_primary_text_slice(st_start: float | None, st_end: float | None = None) -> str:
+            prim_lang = self.wp_primary_lang_combo.currentData() if hasattr(self, "wp_primary_lang_combo") and self.wp_primary_lang_combo else "en"
+            trans_dict = getattr(self.main_window, "translations", {}) if isinstance(getattr(self.main_window, "translations", None), dict) else {}
+            has_es_en = bool(trans_dict.get("es-en") or trans_dict.get("es_en"))
+            has_en_es = bool(trans_dict.get("en-es") or trans_dict.get("en_es"))
+            source_is_es = (has_es_en and not has_en_es) or (src_code == "es")
+
+            if prim_lang == "en" and source_is_es:
+                en_item = trans_dict.get("es-en") or trans_dict.get("es_en")
+                if isinstance(en_item, dict):
+                    segs = en_item.get("segments", [])
+                    st_val = float(st_start) if st_start is not None else 0.0
+                    et_val = float(st_end) if st_end is not None else float("inf")
+                    parts = [s.get("text", "").strip() for s in segs if float(s.get("end", 0.0)) > st_val and float(s.get("start", 0.0)) < et_val and s.get("text")]
+                    if parts:
+                        return " ".join(parts)
+            elif prim_lang == "es" and not source_is_es:
+                es_item = trans_dict.get("en-es") or trans_dict.get("en_es")
+                if isinstance(es_item, dict):
+                    segs = es_item.get("segments", [])
+                    st_val = float(st_start) if st_start is not None else 0.0
+                    et_val = float(st_end) if st_end is not None else float("inf")
+                    parts = [s.get("text", "").strip() for s in segs if float(s.get("end", 0.0)) > st_val and float(s.get("start", 0.0)) < et_val and s.get("text")]
+                    if parts:
+                        return " ".join(parts)
+
+            if hasattr(self.main_window, "_get_transcript_text_slice"):
+                return self.main_window._get_transcript_text_slice(st_start, st_end)
+            return ""
 
         def build_story_item(idx: int, st: Any) -> dict:
             st_title = st.title if st.title else f"{base_name} - Story {idx + 1}"
-            raw_text = self.main_window._get_transcript_text_slice(st.start, st.end) if hasattr(self.main_window, "_get_transcript_text_slice") else ""
+            raw_text = _get_primary_text_slice(st.start, st.end)
             default_excerpt = generate_wp_excerpt(raw_text, 55)
             wp_meta = getattr(st, "metadata", {}).get("wordpress", {}) if getattr(st, "metadata", None) else {}
 
-            return {
+            item = {
                 "task_label": f"Story {idx + 1}" + (f": {st.title}" if st.title else ""),
                 "title": wp_meta.get("title") or st_title,
                 "excerpt": wp_meta.get("excerpt") or default_excerpt,
@@ -1278,13 +1345,24 @@ class WordPressExportTabWidget(QWidget):
                 "featured_image": wp_meta.get("featured_image", None),
                 "featured_image_mode": wp_meta.get("featured_image_mode", "none"),
             }
+            existing = existing_by_start.get((item["task_label"], st.start)) or existing_by_start.get(st.start)
+            if existing:
+                item["title"] = existing.get("title") or item["title"]
+                item["excerpt"] = existing.get("excerpt") or item["excerpt"]
+                item["author_ids"] = list(existing.get("author_ids", item["author_ids"]))
+                item["author_term_ids"] = list(existing.get("author_term_ids", item["author_term_ids"]))
+                item["category_ids"] = list(existing.get("category_ids", item["category_ids"]))
+                item["featured_image"] = existing.get("featured_image", item["featured_image"])
+                item["featured_image_mode"] = existing.get("featured_image_mode", item["featured_image_mode"])
+                item["frame_pos"] = existing.get("frame_pos", item["frame_pos"])
+            return item
 
         def build_full_item() -> dict:
             raw_text = self.main_window._get_transcript_text_slice(0.0, None) if hasattr(self.main_window, "_get_transcript_text_slice") else ""
             default_excerpt = generate_wp_excerpt(raw_text, 55)
             proj_meta = getattr(self.main_window, "project_metadata", {}) or {}
             wp_meta = proj_meta.get("wordpress", {}) if isinstance(proj_meta, dict) else {}
-            return {
+            item = {
                 "task_label": "Full Episode",
                 "title": wp_meta.get("title") or base_name,
                 "excerpt": wp_meta.get("excerpt") or default_excerpt,
@@ -1299,6 +1377,17 @@ class WordPressExportTabWidget(QWidget):
                 "featured_image": wp_meta.get("featured_image", None),
                 "featured_image_mode": wp_meta.get("featured_image_mode", "none"),
             }
+            existing = existing_by_start.get("full")
+            if existing:
+                item["title"] = existing.get("title") or item["title"]
+                item["excerpt"] = existing.get("excerpt") or item["excerpt"]
+                item["author_ids"] = list(existing.get("author_ids", item["author_ids"]))
+                item["author_term_ids"] = list(existing.get("author_term_ids", item["author_term_ids"]))
+                item["category_ids"] = list(existing.get("category_ids", item["category_ids"]))
+                item["featured_image"] = existing.get("featured_image", item["featured_image"])
+                item["featured_image_mode"] = existing.get("featured_image_mode", item["featured_image_mode"])
+                item["frame_pos"] = existing.get("frame_pos", item["frame_pos"])
+            return item
 
         if scope == "full":
             new_items.append(build_full_item())

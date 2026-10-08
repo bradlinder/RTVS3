@@ -379,20 +379,21 @@ def create_story_docx(
     if not DOCX_AVAILABLE:
         return False
 
-    document = Document()
-    document.styles["Normal"].font.name = "Arial"
-    document.styles["Normal"].font.size = Pt(11)
+    try:
+        document = Document()
+        document.styles["Normal"].font.name = "Arial"
+        document.styles["Normal"].font.size = Pt(11)
 
-    lang_label = " (Spanish)" if lang_code == "es" else (" (English)" if lang_code == "en" else "")
-    document.add_heading(f"{title}{lang_label}", 0)
+        lang_label = " (Spanish)" if lang_code == "es" else (" (English)" if lang_code == "en" else "")
+        document.add_heading(f"{title}{lang_label}", 0)
 
-    # Paragraph index tracking for native OpenXML comments
-    # 0 = heading paragraph
-    body_para_idx = 1
-    if media_name:
-        time_range = f" ({format_time(start_time, include_millis=include_milliseconds)} - {format_time(end_time, include_millis=include_milliseconds)})" if end_time > 0 else ""
-        document.add_paragraph(f"Recording: {media_name}{time_range}")
-        body_para_idx += 1
+        # Paragraph index tracking for native OpenXML comments
+        # 0 = heading paragraph
+        body_para_idx = 1
+        if media_name:
+            time_range = f" ({format_time(start_time, include_millis=include_milliseconds)} - {format_time(end_time, include_millis=include_milliseconds)})" if end_time > 0 else ""
+            document.add_paragraph(f"Recording: {media_name}{time_range}")
+            body_para_idx += 1
 
     comments_map: Dict[int, List[Dict[str, Any]]] = {}
     last_speaker = None
@@ -495,17 +496,25 @@ def create_story_docx(
                 }]
                 body_para_idx += 1
 
-    # Save to memory buffer
-    mem_buf = io.BytesIO()
-    document.save(mem_buf)
-    docx_bytes = mem_buf.getvalue()
+        # Save to memory buffer
+        mem_buf = io.BytesIO()
+        document.save(mem_buf)
+        docx_bytes = mem_buf.getvalue()
 
-    # If comments exist, inject native OpenXML annotations
-    if include_comments and comments_map:
-        docx_bytes = inject_native_comments_to_docx(docx_bytes, comments_map)
+        # If comments exist, inject native OpenXML annotations
+        if include_comments and comments_map:
+            docx_bytes = inject_native_comments_to_docx(docx_bytes, comments_map)
 
-    out_file = Path(output_path)
-    out_file.parent.mkdir(parents=True, exist_ok=True)
-    out_file.write_bytes(docx_bytes)
-    return True
+        out_file = Path(output_path)
+        out_file.parent.mkdir(parents=True, exist_ok=True)
+        try:
+            out_file.write_bytes(docx_bytes)
+        except PermissionError:
+            # File is locked by another process (e.g., open in Microsoft Word). Save to alternative name.
+            alt_file = out_file.parent / f"{out_file.stem}_new{out_file.suffix}"
+            alt_file.write_bytes(docx_bytes)
+        return True
+    except Exception as exc:
+        print(f"[DOCX_EXPORT] Error generating DOCX for '{title}': {exc}")
+        return False
 

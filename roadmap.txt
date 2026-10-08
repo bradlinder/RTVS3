@@ -40,97 +40,161 @@ TABLE OF CONTENTS & STATUS OVERVIEW
    [x] 1.8 Safe URL Retrieval (`runtime_manager.py`): Replaced un-timed `urllib.request.urlretrieve` calls in `ensure_uv` and `_download_standalone_python` with `_robust_urlretrieve` enforcing atomic chunked writes, timeout boundaries, and CA verification.
    [x] 1.9 Synchronous Version Bump (`bump_version.py`): Synchronized all project locations to v3.8.9-beta.4.
 
-2. Current Release: Clean Install Model Download Deadlock & UI Freeze Resolution (`processing.py`, `model_management.py`, `radio_tv_story_segmenter_worker.py`, `build_installer.py`, `requirements.txt`, `bump_version.py`) [x] [COMPLETED in v3.8.9-beta.5]
-   [x] 2.1 Asynchronous Main-Thread Signal Dispatch & Auto-Resume (`processing.py`): Completely eliminated the nested modal event loop (`dl_loop.exec()`) and illegal cross-thread widget invocations that caused the application to freeze when downloading a missing AI model on a clean install. Download progress signals now dispatch strictly across Qt QueuedConnections to dedicated main-thread slots on `MainWindow`, preventing GUI thread deadlocks. When the download reaches 100%, transcription automatically resumes seamlessly without blocking the UI.
-   [x] 2.2 Instant Cancellation & Socket Abort (`model_management.py`): Added active response socket tracking (`_active_response.close()`) in `WhisperModelInstallWorker.cancel()`, allowing users to cancel in-flight model downloads in milliseconds without stalling on synchronous socket reads.
-   [x] 2.3 Existing Byte-Size Verification (`model_management.py`): Implemented pre-download destination file verification matching incoming `Content-Length`, ensuring intact files from prior sessions are verified and skipped rather than re-downloaded from scratch.
-   [x] 2.4 Subprocess Tracking & Availability Guard in Diarization Worker (`model_management.py`): Hardened `DiarizationModelInstallWorker` with pre-flight model availability verification and tracked `subprocess.Popen` execution with instant cancellation kill support, preventing 120-second subprocess hangs.
-   [x] 2.5 Clear Worker Download Announcements (`radio_tv_story_segmenter_worker.py`): Added explicit progress notification (`"Downloading/loading Whisper {model_name} model from Hugging Face..."`) when model weights must be resolved over the network, preventing silent 5% progress bar stalls.
-   [x] 2.6 Bundled CA Certificates Guarantee (`build_installer.py`, `requirements.txt`): Added `certifi>=2024.2.2` to `requirements.txt` and `collect_all_packages` in `build_installer.py`, guaranteeing that frozen Windows bundles include valid root CA certificate stores for Hugging Face and CDN downloads.
-   [x] 2.7 Synchronous Version Bump (`bump_version.py`): Synchronized all 10 project locations to v3.8.9-beta.5.
+2. Current Release: Clean Install Model Download Deadlock, WordPress Export & DOCX Formatting (`plugins/wordpress/client.py`, `project_export.py`, `core_utils.py`, `processing.py`, `model_management.py`, `radio_tv_story_segmenter_worker.py`, `build_installer.py`, `requirements.txt`, `bump_version.py`) [x] [COMPLETED in v3.8.9-beta.5]
+   [x] 2.1 WordPress Source Language Detection Fix (`plugins/wordpress/client.py`): Fixed `source_is_spanish` evaluation in the WordPress export client to reliably evaluate the project's source audio language (`main_window.source_language_code()`), preventing English audio projects with translation entries from being misclassified as Spanish source audio.
+   [x] 2.2 Full Episode & Story DOCX Export Optimization (`project_export.py`, `core_utils.py`): Added safe `None` value handling in `format_time` and preserved `source_segments` comment mapping across both original and translated DOCX exports.
+   [x] 2.3 Asynchronous Main-Thread Signal Dispatch & Auto-Resume (`processing.py`): Completely eliminated the nested modal event loop (`dl_loop.exec()`) and illegal cross-thread widget invocations that caused the application to freeze when downloading a missing AI model on a clean install. Download progress signals now dispatch strictly across Qt QueuedConnections to dedicated main-thread slots on `MainWindow`, preventing GUI thread deadlocks. When the download reaches 100%, transcription automatically resumes seamlessly without blocking the UI.
+   [x] 2.4 Instant Cancellation & Socket Abort (`model_management.py`): Added active response socket tracking (`_active_response.close()`) in `WhisperModelInstallWorker.cancel()`, allowing users to cancel in-flight model downloads in milliseconds without stalling on synchronous socket reads.
+   [x] 2.5 Existing Byte-Size Verification (`model_management.py`): Implemented pre-download destination file verification matching incoming `Content-Length`, ensuring intact files from prior sessions are verified and skipped rather than re-downloaded from scratch.
+   [x] 2.6 Subprocess Tracking & Availability Guard in Diarization Worker (`model_management.py`): Hardened `DiarizationModelInstallWorker` with pre-flight model availability verification and tracked `subprocess.Popen` execution with instant cancellation kill support, preventing 120-second subprocess hangs.
+   [x] 2.7 Clear Worker Download Announcements (`radio_tv_story_segmenter_worker.py`): Added explicit progress notification (`"Downloading/loading Whisper {model_name} model from Hugging Face..."`) when model weights must be resolved over the network, preventing silent 5% progress bar stalls.
+   [x] 2.8 Bundled CA Certificates Guarantee (`build_installer.py`, `requirements.txt`): Added `certifi>=2024.2.2` to `requirements.txt` and `collect_all_packages` in `build_installer.py`, guaranteeing that frozen Windows bundles include valid root CA certificate stores for Hugging Face and CDN downloads.
+   [x] 2.9 Synchronous Version Bump (`bump_version.py`): Synchronized all 10 project locations to v3.8.9-beta.5.
 
-3. Upcoming Milestone: Multi-Platform Timeline & DAW Interchange Engine (`export/timeline.py`, `export/dialog.py`, `ui_layout.py`) [PLANNED for v3.8.9] [CORE] [NOT STARTED]
-   [ ] 3.1 Migration to Unified Export Center Tab: Move timeline and DAW exports from the legacy File menu submenu into a dedicated "Timeline & DAW" tab in the Unified Export Center dialog.
-   [ ] 3.2 Streamlined Multi-Platform Timeline Format Exporters: Final Cut Pro 7 XML, Final Cut Pro X XML (.fcpxml), Universal AAF Interchange (.aaf), Hindenburg Broadcast Session (.nhx), Cockos REAPER (.rpp), Samplitude EDL (.edl), Audacity Labels & CUE.
+3. Upcoming Milestone: Windows CI Build Speed & PyInstaller Packaging Optimization (`build_installer.py`, `installer/Windows/RadioTVStorySegmenter.iss`, `.github/workflows/build.yml`) [PLANNED for v3.8.9] [CI/BUILD] [NOT STARTED]
+   [ ] 3.1 Unified Single-Pass Multi-Target PyInstaller Spec Build (`build_installer.py`): Replace dual sequential PyInstaller invocations (`RadioTVSegmenter.exe` and `prs_worker.exe`) with a unified multi-target `.spec` build file. Shared runtime libraries (PySide6, onnxruntime, torch, etc.) and dependency graphs are analyzed once rather than twice, eliminating 4–5 minutes of duplicate module discovery and file copying.
+   [ ] 3.2 Inno Setup Multithreaded LZMA2 Compression & Parallel Worker Mode (`installer/Windows/RadioTVStorySegmenter.iss`): Retain `Compression=lzma2/ultra64` with `SolidCompression=yes` for maximum size reduction while enabling `LZMANumBlockThreads=max` (or `LZMANumBlockThreads=4`) and `LZMAUseSeparateProcess=yes` to leverage all available GitHub Actions CPU cores in parallel, cutting 3–4 minutes off setup compilation without increasing installer file size.
+   [ ] 3.3 Bytecode Optimization & Pruned AST Collection (`build_installer.py`): Pass `--optimize 1` to PyInstaller to strip docstrings and accelerate bytecode compilation; explicitly exclude unneeded test suites, doc trees, and typing stub subpackages from PyInstaller module graphs.
+   [ ] 3.4 GitHub Actions Workflow Download & Tool Caching Acceleration (`.github/workflows/build.yml`): Replace PowerShell `Invoke-WebRequest` with native `curl.exe -fSL --retry 3` for robust and faster tool downloads; cache Inno Setup binaries via `actions/cache` to eliminate redundant Chocolatey installations on warm CI runs.
 
-4. Future Milestone: Core Broadcast Voicebook, Peak LOD Cache & Speed-Listening Engine (`speaker_identity.py`, `processing.py`, `transcript_editor.py`) [PLANNED for v3.9.0] [CORE] [NOT STARTED]
-   [ ] 4.1 Feature 1B — Persistent "Station Voicebook" (Cross-Show Speaker Library) (`speaker_identity.py`, `processing.py`): Global Host & Anchor Voicebook saving acoustic embeddings/signatures for regular station hosts (e.g. "Jane Doe (Host)", "John Smith (News Anchor)") across recordings; automatically matches and names known voices with confidence percentages upon diarization without manual re-tagging.
-   [ ] 4.2 Feature 2A — Multi-Resolution Mipmapped Waveform Peak Cache (LOD Rendering) (`processing.py`, `background_workers.py`, `timeline_widgets.py`): Expand existing in-memory waveform pyramid (`build_waveform_pyramid`) into a persistent multi-tier mipmapped `.peaks` disk cache (1x, 4x, 16x, 64x downsampled peak tiers) with level-of-detail (LOD) painting in `TimelineCanvas`, guaranteeing locked 60fps scrubbing and instantaneous loading on 2-to-4-hour broadcast files.
-   [ ] 4.3 Feature 3A — Speed-Listening "Type-to-Correct" Proofreading Workflow (`transcript_editor.py`, `RadioTVSegmenter.py`): Dedicated proofreading mode playing audio at 1.25x or 1.5x speed with pitch preservation (time-stretching via WSOLA/QMediaPlayer playback rate, preventing high-pitch "chipmunk" distortion) while highlighting each spoken word in real-time; pressing `Tab` pauses audio and places the text cursor directly on the current word for instantaneous typing/correction; pressing `Tab` again auto-resumes playback.
+4. Upcoming Milestone: Multi-Platform Timeline & DAW Interchange Engine (`export/timeline.py`, `export/dialog.py`, `ui_layout.py`) [PLANNED for v3.8.9] [CORE] [NOT STARTED]
+   [ ] 4.1 Migration to Unified Export Center Tab: Move timeline and DAW exports from the legacy File menu submenu into a dedicated "Timeline & DAW" tab in the Unified Export Center dialog.
+   [ ] 4.2 Streamlined Multi-Platform Timeline Format Exporters: Final Cut Pro 7 XML, Final Cut Pro X XML (.fcpxml), Universal AAF Interchange (.aaf), Hindenburg Broadcast Session (.nhx), Cockos REAPER (.rpp), Samplitude EDL (.edl), Audacity Labels & CUE.
 
-5. Optional Future Milestone: Interactive Text-Based Media Assembly & Multi-Asset Ripple Editing Engine (`project_lifecycle.py`, `transcript_editor.py`, `transcript_story.py`, `RadioTVSegmenter.py`, `export/timeline.py`) [PLANNED for v4.0.0] [OPTIONAL] [NOT STARTED]
+5. Future Milestone: Core Broadcast Voicebook, Peak LOD Cache & Speed-Listening Engine (`speaker_identity.py`, `processing.py`, `transcript_editor.py`) [PLANNED for v3.9.0] [CORE] [NOT STARTED]
+   [ ] 5.1 Feature 1B — Persistent "Station Voicebook" (Cross-Show Speaker Library) (`speaker_identity.py`, `processing.py`): Global Host & Anchor Voicebook saving acoustic embeddings/signatures for regular station hosts (e.g. "Jane Doe (Host)", "John Smith (News Anchor)") across recordings; automatically matches and names known voices with confidence percentages upon diarization without manual re-tagging.
+   [ ] 5.2 Feature 2A — Multi-Resolution Mipmapped Waveform Peak Cache (LOD Rendering) (`processing.py`, `background_workers.py`, `timeline_widgets.py`): Expand existing in-memory waveform pyramid (`build_waveform_pyramid`) into a persistent multi-tier mipmapped `.peaks` disk cache (1x, 4x, 16x, 64x downsampled peak tiers) with level-of-detail (LOD) painting in `TimelineCanvas`, guaranteeing locked 60fps scrubbing and instantaneous loading on 2-to-4-hour broadcast files.
+   [ ] 5.3 Feature 3A — Speed-Listening "Type-to-Correct" Proofreading Workflow (`transcript_editor.py`, `RadioTVSegmenter.py`): Dedicated proofreading mode playing audio at 1.25x or 1.5x speed with pitch preservation (time-stretching via WSOLA/QMediaPlayer playback rate, preventing high-pitch "chipmunk" distortion) while highlighting each spoken word in real-time; pressing `Tab` pauses audio and places the text cursor directly on the current word for instantaneous typing/correction; pressing `Tab` again auto-resumes playback.
+
+6. Optional Future Milestone: Interactive Text-Based Media Assembly & Multi-Asset Ripple Editing Engine (`project_lifecycle.py`, `transcript_editor.py`, `transcript_story.py`, `RadioTVSegmenter.py`, `export/timeline.py`) [PLANNED for v4.0.0] [OPTIONAL] [NOT STARTED]
    - *Workflow Design Note*: Marked as an optional workflow extension for users requesting text-driven paper cuts. The core single-file story segmenter, voicebook, and DAW exports remain default and lightweight.
-   [ ] 5.1 Multi-Asset Project Container & Media Bin Model (`project_lifecycle.py`): Expand `.rtvs` project schema with a `sources` pool (relative media paths, transcripts, word timings, waveform caches, speaker profiles) and a `sequences` array (ordered assembly playlists referencing source clips).
-   [ ] 5.2 Dynamic Uncapped Tabbed Document Workspace (`transcript_editor.py`, `ui_layout.py`): Dynamic `QTabWidget` supporting unlimited tabs, tab reordering, close buttons/shortcuts (`Ctrl+W`), visual distinction between Source Tabs (verbatim transcripts) and Assembly Tabs (story cuts), and tab overflow dropdown.
-   [ ] 5.3 Rich Media Clipboard Engine (`application/x-rtvs-clip+json`): Dual-format clipboard payload (`text/plain` + structured clip metadata: source media path, millisecond in/out points, word offsets, speaker tags, fade parameters) to copy/paste text across tabs or external documents while seamlessly splicing underlying audio/video media.
-   [ ] 5.4 Non-Destructive Multi-Source Playout Engine (`RadioTVSegmenter.py`): Real-time playback buffer engine chaining consecutive sub-clips from disparate audio files in memory without pre-rendering intermediate files to disk.
-   [ ] 5.5 Text-Driven Audio/Video Ripple Cut Engine (`transcript_editor.py`): Non-destructive ripple deletion where text cuts dynamically adjust timeline playout offsets and waveform visualizations.
-   [ ] 5.6 Paper-Cut Story Assembly Workflow (`transcript_story.py`): Drag/paste soundbites from source transcript tabs into story sequence playlists to construct rough radio/TV cuts from text.
-   [ ] 5.7 Document Revisions & Snapshot Version History (`project_lifecycle.py`, `transcript_editor.py`): Named revision snapshots ("Raw ASR", "Rough Cut v1", "Final Radio Edit") with side-by-side visual diffs and 1-click restoration in `.rtvs` project metadata.
-   [ ] 5.8 Word-Level Timecode Sync, NLE Markers & Multi-Track DAW Timeline Export (`export/timeline.py`): Multi-asset sequence cuts exported directly to Final Cut Pro XML, REAPER `.rpp`, and Samplitude EDL.
-   [ ] 5.9 Automated Diagnostic Test Suite (`test_runner.py`): Comprehensive test coverage in `test_runner.py` for multi-asset project serialization, rich clipboard MIME parsing, ripple timecode calculations, and cross-file sequence playback roundtrips.
+   [ ] 6.1 Multi-Asset Project Container & Media Bin Model (`project_lifecycle.py`): Expand `.rtvs` project schema with a `sources` pool (relative media paths, transcripts, word timings, waveform caches, speaker profiles) and a `sequences` array (ordered assembly playlists referencing source clips).
+   [ ] 6.2 Dynamic Uncapped Tabbed Document Workspace (`transcript_editor.py`, `ui_layout.py`): Dynamic `QTabWidget` supporting unlimited tabs, tab reordering, close buttons/shortcuts (`Ctrl+W`), visual distinction between Source Tabs (verbatim transcripts) and Assembly Tabs (story cuts), and tab overflow dropdown.
+   [ ] 6.3 Rich Media Clipboard Engine (`application/x-rtvs-clip+json`): Dual-format clipboard payload (`text/plain` + structured clip metadata: source media path, millisecond in/out points, word offsets, speaker tags, fade parameters) to copy/paste text across tabs or external documents while seamlessly splicing underlying audio/video media.
+   [ ] 6.4 Non-Destructive Multi-Source Playout Engine (`RadioTVSegmenter.py`): Real-time playback buffer engine chaining consecutive sub-clips from disparate audio files in memory without pre-rendering intermediate files to disk.
+   [ ] 6.5 Text-Driven Audio/Video Ripple Cut Engine (`transcript_editor.py`): Non-destructive ripple deletion where text cuts dynamically adjust timeline playout offsets and waveform visualizations.
+   [ ] 6.6 Paper-Cut Story Assembly Workflow (`transcript_story.py`): Drag/paste soundbites from source transcript tabs into story sequence playlists to construct rough radio/TV cuts from text.
+   [ ] 6.7 Document Revisions & Snapshot Version History (`project_lifecycle.py`, `transcript_editor.py`): Named revision snapshots ("Raw ASR", "Rough Cut v1", "Final Radio Edit") with side-by-side visual diffs and 1-click restoration in `.rtvs` project metadata.
+   [ ] 6.8 Word-Level Timecode Sync, NLE Markers & Multi-Track DAW Timeline Export (`export/timeline.py`): Multi-asset sequence cuts exported directly to Final Cut Pro XML, REAPER `.rpp`, and Samplitude EDL.
+   [ ] 6.9 Automated Diagnostic Test Suite (`test_runner.py`): Comprehensive test coverage in `test_runner.py` for multi-asset project serialization, rich clipboard MIME parsing, ripple timecode calculations, and cross-file sequence playback roundtrips.
 
 ================================================================================
 DETAILED MILESTONE SPECIFICATIONS
 ================================================================================
 
 ================================================================================
-1. PREVIOUS RELEASE: SUPPORTED MEDIA FORMAT CLARIFICATIONS & UI TOOLTIPS [x] [COMPLETED in v3.8.9-beta.2]
+1. PREVIOUS RELEASE: AI MODEL DOWNLOAD RELIABILITY & UI RESPONSIVENESS HARDENING [x] [COMPLETED in v3.8.9-beta.4]
 ================================================================================
 
-[x] 1.1 Drop Card Dynamic Bounding Box & Multi-Line Word Wrap (`transcript_editor.py`, `batch_dialog.py`)
+[x] 1.1 Offline Language Probing (`radio_tv_story_segmenter_worker.py`)
 --------------------------------------------------------------------------------
-- Resolved horizontal text clipping on the empty-state media ingestion card by adding `Qt.TextFlag.TextWordWrap` to `QPainter.drawText` overlay routines.
-- Expanded maximum card width (from 460px to 540px) and dynamically spaced subtitle and action button bounds; applied word-wrapping across `batch_dialog.py` empty queues as well.
+- Resolved an issue where starting transcription on a clean install froze at 2% (*"Inspecting audio language compatibility..."*) because `probe_audio_language` was instantiating `WhisperModel("tiny")` without checking if it existed locally, triggering an unprompted, synchronous background download of Whisper Tiny.
+- Added `local_files_only=True` and fallback logic so language detection only probes models already present on disk and immediately defaults to English if uninstalled without blocking execution.
 
-[x] 1.2 Comprehensive Format Support Messaging (`transcript_editor.py`)
+[x] 1.2 In-Dialog Model Download Progress & Cancellation (`model_management.py`)
 --------------------------------------------------------------------------------
-- Updated the empty-state drag-and-drop card in `transcript_editor.py` to state "Supports all standard audio & video formats (WAV, MP3, MP4, MOV, MKV, FLAC, etc.)", communicating full FFmpeg compatibility without implying an artificial 7-container restriction.
+- Resolved an issue where clicking "Download / Install" in the Manage Models dialog disabled all buttons without displaying an in-dialog progress bar (making the application appear frozen while the background thread downloaded weights).
+- Added a dedicated progress panel with real-time transfer size/percentage counters and an active "Cancel Download" button directly inside the dialog.
 
-[x] 1.3 Benchmark Tool Media Picker Normalization (`benchmark.py`)
+[x] 1.3 SSL Certificate Verification & Socket Timeout Hardening (`model_management.py`, `bootstrap.py`, `plugins/translation/support.py`)
 --------------------------------------------------------------------------------
-- Expanded the custom file picker filter in `benchmark.py` to "All Supported Media Files (*.*)", ensuring MOV, WebM, AIFF, Opus, and broadcast transport streams are not masked in OS file browsers.
+- Configured `certifi.where()` CA certificate bundles across `_download_http_file`, `bootstrap.py`, and `plugins/translation/support.py` on Windows and Linux to resolve silent SSL certificate verification failures during downloads from Hugging Face and CDN endpoints.
+- Enforced 30-second socket timeouts and 3x retry loops with exponential backoff, preventing infinite socket hangs if a CDN connection drops mid-transfer.
 
-[x] 1.4 Descriptive Text Document Tooltips (`ui_layout.py`)
+[x] 1.4 Progress Event Throttling (`model_management.py`)
 --------------------------------------------------------------------------------
-- Added explicit tooltips and status-bar hints to `File > Open Document...` and `File > Open Media...` in `ui_layout.py`, clarifying that Open Document imports external text documents (.txt, .docx, .pdf, .html, .md) directly into the transcript workspace.
+- Throttled download progress signals to a maximum rate of 10 Hz (every 100–150 ms) during chunked streaming, eliminating Qt cross-thread event queue saturation that previously caused UI micro-freezes during high-speed downloads.
 
-[x] 1.5 Synchronous Version Bump (`bump_version.py`)
+[x] 1.5 404 Fast-Path Bypass for Optional Vocabulary Files (`model_management.py`)
 --------------------------------------------------------------------------------
-- Synchronized all 10 project locations to v3.8.9-beta.2 with 100% test bench validation.
+- When optional files (like `vocabulary.json`) return HTTP 404, the downloader immediately skips to `vocabulary.txt` instead of stalling inside `huggingface_hub` API fallbacks.
 
-
-===============================================================================
-2. CURRENT RELEASE: INSTALLED FOOTPRINT & DISTRIBUTION OPTIMIZATION [x] [COMPLETED in v3.8.9-beta.3]
-================================================================================
-
-[x] 2.1 Pruned Software OpenGL Rasterizer (`opengl32sw.dll`) (`build_installer.py`)
+[x] 1.6 Clean Install Download Loop Protection (`processing.py`)
 --------------------------------------------------------------------------------
-- Stripped Mesa llvmpipe software OpenGL binary (~30 MB) from packaged bundles; standard `QtWidgets` native GDI/DirectWrite rendering and `QtMultimediaWidgets` Direct3D 11 video presentation run natively with zero reliance on software OpenGL.
+- Configured `progress_box.setAutoReset(False)` and `progress_box.setAutoClose(False)` in `start_transcription` to prevent Qt's progress dialog from spuriously firing cancellation events upon reaching 100% completion.
 
-[x] 2.2 On-Demand Runtime Tool Provisioning (`uv.exe`) (`build_installer.py`)
+[x] 1.7 Frozen Worker Subprocess Invocation (`model_management.py`)
 --------------------------------------------------------------------------------
-- Omitted pre-bundled `uv.exe` from default installer payload (saving ~50 MB on installed disk footprint), relying on `runtime_manager.py`'s existing on-demand download mechanism when users explicitly choose to install optional GPU acceleration or Translation plugin runtimes. Added `--bundle-uv` CLI flag to `build_installer.py` for optional manual pre-bundling.
+- Fixed `DiarizationModelInstallWorker` to invoke `prs_worker.exe` rather than `sys.executable` (the GUI binary) when packaged under PyInstaller.
 
-[x] 2.3 Inno Setup Ultra Solid Compression (`installer/Windows/RadioTVStorySegmenter.iss`)
+[x] 1.8 Safe URL Retrieval (`runtime_manager.py`)
 --------------------------------------------------------------------------------
-- Upgraded Windows setup installer script from `Compression=lzma2/fast` to `Compression=lzma2/ultra64` with `SolidCompression=yes`, significantly shrinking the downloaded setup executable size.
+- Replaced un-timed `urllib.request.urlretrieve` calls in `ensure_uv` and `_download_standalone_python` with `_robust_urlretrieve` enforcing atomic chunked writes, timeout boundaries, and CA verification.
 
-[x] 2.4 Synchronous Version Bump (`bump_version.py`)
+[x] 1.9 Synchronous Version Bump (`bump_version.py`)
 --------------------------------------------------------------------------------
-- Synchronized all 10 project locations to v3.8.9-beta.3 with 100% test bench validation.
+- Synchronized all 10 project locations to v3.8.9-beta.4.
 
 
 ================================================================================
-3. UPCOMING MILESTONE: MULTI-PLATFORM TIMELINE & DAW INTERCHANGE ENGINE [PLANNED for v3.8.9] [CORE] [NOT STARTED]
+2. CURRENT RELEASE: CLEAN INSTALL MODEL DOWNLOAD DEADLOCK & UI FREEZE RESOLUTION [x] [COMPLETED in v3.8.9-beta.5]
 ================================================================================
 
-[ ] 3.1 Migration to Unified Export Center Tab (`export/dialog.py`, `ui_layout.py`)
+[x] 2.1 Asynchronous Main-Thread Signal Dispatch & Auto-Resume (`processing.py`)
+--------------------------------------------------------------------------------
+- Completely eliminated the nested modal event loop (`dl_loop.exec()`) and illegal cross-thread widget invocations that caused the application to freeze when downloading a missing AI model on a clean install.
+- Download progress signals now dispatch strictly across Qt QueuedConnections to dedicated main-thread slots on `MainWindow`, preventing GUI thread deadlocks. When the download reaches 100%, transcription automatically resumes seamlessly without blocking the UI.
+
+[x] 2.2 Instant Cancellation & Socket Abort (`model_management.py`)
+--------------------------------------------------------------------------------
+- Added active response socket tracking (`_active_response.close()`) in `WhisperModelInstallWorker.cancel()`, allowing users to cancel in-flight model downloads in milliseconds without stalling on synchronous socket reads.
+
+[x] 2.3 Existing Byte-Size Verification (`model_management.py`)
+--------------------------------------------------------------------------------
+- Implemented pre-download destination file verification matching incoming `Content-Length`, ensuring intact files from prior sessions are verified and skipped rather than re-downloaded from scratch.
+
+[x] 2.4 Subprocess Tracking & Availability Guard in Diarization Worker (`model_management.py`)
+--------------------------------------------------------------------------------
+- Hardened `DiarizationModelInstallWorker` with pre-flight model availability verification and tracked `subprocess.Popen` execution with instant cancellation kill support, preventing 120-second subprocess hangs.
+
+[x] 2.5 Clear Worker Download Announcements (`radio_tv_story_segmenter_worker.py`)
+--------------------------------------------------------------------------------
+- Added explicit progress notification (`"Downloading/loading Whisper {model_name} model from Hugging Face..."`) when model weights must be resolved over the network, preventing silent 5% progress bar stalls.
+
+[x] 2.6 Bundled CA Certificates Guarantee (`build_installer.py`, `requirements.txt`)
+--------------------------------------------------------------------------------
+- Added `certifi>=2024.2.2` to `requirements.txt` and `collect_all_packages` in `build_installer.py`, guaranteeing that frozen Windows bundles include valid root CA certificate stores for Hugging Face and CDN downloads.
+
+[x] 2.7 Synchronous Version Bump (`bump_version.py`)
+--------------------------------------------------------------------------------
+- Synchronized all 10 project locations to v3.8.9-beta.5.
+
+
+================================================================================
+3. UPCOMING MILESTONE: WINDOWS CI BUILD SPEED & PACKAGING OPTIMIZATION [PLANNED for v3.8.9] [CI/BUILD] [NOT STARTED]
+================================================================================
+
+[ ] 3.1 Unified Single-Pass Multi-Target PyInstaller Spec Build (`build_installer.py`)
+--------------------------------------------------------------------------------
+- The Problem: Currently, PyInstaller runs twice in sequence — once for `RadioTVSegmenter.exe` and once for `prs_worker.exe`. Both runs perform heavy module dependency analysis and package collection for shared libraries (`PySide6`, `onnxruntime`, `torch`, `whisper`, etc.), taking ~8 to 10 minutes total.
+- The Solution: Generate a unified multi-target `.spec` file that performs single-pass analysis on shared dependencies and emits both `RadioTVSegmenter.exe` and `prs_worker.exe` in one compilation run, cutting ~4 to 5 minutes off build times.
+
+[ ] 3.2 Inno Setup Multithreaded LZMA2 Compression & Parallel Worker Mode (`installer/Windows/RadioTVStorySegmenter.iss`)
+--------------------------------------------------------------------------------
+- The Problem: `Compression=lzma2/ultra64` with `SolidCompression=yes` achieves maximum installer compression, but runs single-threaded by default, spending 3 to 5 minutes compressing the staged distribution on 4-core GitHub Actions runners.
+- The Solution: Configure `LZMANumBlockThreads=max` (or `4`) and `LZMAUseSeparateProcess=yes` in the Inno Setup script to parallelize LZMA2 block compression across all available vCPUs, reducing Inno Setup build time from ~5 minutes to ~1.5 minutes with identical output file size.
+
+[ ] 3.3 Bytecode Optimization & Pruned AST Collection (`build_installer.py`)
+--------------------------------------------------------------------------------
+- Pass `--optimize 1` to PyInstaller to strip docstrings and accelerate Python bytecode compilation.
+- Exclude unnecessary test packages, documentation trees, and typing stubs from PyInstaller analysis graphs.
+
+[ ] 3.4 GitHub Actions Workflow Download & Tool Caching Acceleration (`.github/workflows/build.yml`)
+--------------------------------------------------------------------------------
+- Replace PowerShell `Invoke-WebRequest` with native `curl.exe -fSL --retry 3` for robust, parallel downloads of external tools (FFmpeg, etc.).
+- Add GitHub Actions caching (`actions/cache`) for Inno Setup compiler installations to bypass Chocolatey install overhead on warm CI runs.
+
+
+================================================================================
+4. UPCOMING MILESTONE: MULTI-PLATFORM TIMELINE & DAW INTERCHANGE ENGINE [PLANNED for v3.8.9] [CORE] [NOT STARTED]
+================================================================================
+
+[ ] 4.1 Migration to Unified Export Center Tab (`export/dialog.py`, `ui_layout.py`)
 --------------------------------------------------------------------------------
 - Move DAW and timeline project exports from legacy File menu submenus into a dedicated "Timeline & DAW" tab in the Unified Export Center dialog.
 - Centralize track selectors, unselected gap handling modes, sampling rates, and output directory selection into a unified export flow.
 
-[ ] 3.2 Streamlined Multi-Platform Timeline Format Exporters (`export/timeline.py`)
+[ ] 4.2 Streamlined Multi-Platform Timeline Format Exporters (`export/timeline.py`)
 --------------------------------------------------------------------------------
 - Extend `export/timeline.py` with standalone XML and interchange format generators for:
   * Final Cut Pro 7 XML & Final Cut Pro X XML (.fcpxml)
@@ -142,65 +206,65 @@ DETAILED MILESTONE SPECIFICATIONS
 
 
 ================================================================================
-4. FUTURE MILESTONE: CORE BROADCAST VOICEBOOK, PEAK LOD CACHE & SPEED-LISTENING ENGINE [PLANNED for v3.9.0] [CORE] [NOT STARTED]
+5. FUTURE MILESTONE: CORE BROADCAST VOICEBOOK, PEAK LOD CACHE & SPEED-LISTENING ENGINE [PLANNED for v3.9.0] [CORE] [NOT STARTED]
 ================================================================================
 
-[ ] 4.1 Feature 1B — Persistent "Station Voicebook" (Cross-Show Speaker Library) (`speaker_identity.py`, `processing.py`)
+[ ] 5.1 Feature 1B — Persistent "Station Voicebook" (Cross-Show Speaker Library) (`speaker_identity.py`, `processing.py`)
 --------------------------------------------------------------------------------
 - The Problem: WeSpeaker diarization tags speakers as Speaker 1, Speaker 2. While the app has acoustic profile matching, users often have to re-identify their regular show hosts and anchors on every new recording.
 - The Feature: A global Host & Anchor Voicebook. Save acoustic signatures for regular station hosts (e.g. "Jane Doe (Host)", "John Smith (News Anchor)"). Whenever a new recording is imported and diarized, the engine automatically matches and names known voices with a confidence percentage.
 - Implementation: Extend `speaker_identity.py` to support persistent global acoustic voice profiles stored in user application data (`voicebook.json` / embeddings cache) and wire into `processing.py` diarization result parser.
 
-[ ] 4.2 Feature 2A — Multi-Resolution Mipmapped Waveform Peak Cache (LOD Rendering) (`processing.py`, `background_workers.py`, `timeline_widgets.py`)
+[ ] 5.2 Feature 2A — Multi-Resolution Mipmapped Waveform Peak Cache (LOD Rendering) (`processing.py`, `background_workers.py`, `timeline_widgets.py`)
 --------------------------------------------------------------------------------
 - The Problem: When loading 2-to-4-hour broadcast files (e.g. morning radio blocks or city council meetings), zooming and rapid timeline scrubbing can stutter because the painter traverses millions of raw peak samples.
 - The Feature: Implement Level-of-Detail (LOD) downsampled peak tiers (1x, 4x, 16x, 64x zoom levels) in `background_workers.py` and `processing.py`. When zoomed out, the timeline paints from the highest-downsampled tier; as you zoom in, it dynamically switches to the high-resolution tier.
 - Status & Architecture: The in-memory pyramid generator (`build_waveform_pyramid`) currently exists in `timeline_widgets.py`, but peaks are not persisted with multi-resolution tiers to the `.peaks` binary cache on disk. Persisting precomputed mipmapped tiers directly into `.peaks` files will deliver instantaneous file loading and locked 60fps scrubbing on hours-long recordings.
 
-[ ] 4.3 Feature 3A — Speed-Listening "Type-to-Correct" Proofreading Workflow (`transcript_editor.py`, `RadioTVSegmenter.py`)
+[ ] 5.3 Feature 3A — Speed-Listening "Type-to-Correct" Proofreading Workflow (`transcript_editor.py`, `RadioTVSegmenter.py`)
 --------------------------------------------------------------------------------
 - The Problem: Proofreading transcripts at 1.0x speed is slow.
 - The Feature: A dedicated proofreading mode: audio plays back at 1.25x or 1.5x speed with pitch preservation (time-stretching via WSOLA/QMediaPlayer playback rate, preventing "chipmunk" distortion) while highlighting each word in real-time. Hitting `Tab` pauses audio and places the cursor on the current word for instant editing; pressing `Tab` again auto-resumes playback.
 
 
 ================================================================================
-5. OPTIONAL FUTURE MILESTONE: INTERACTIVE TEXT-BASED MEDIA ASSEMBLY & MULTI-ASSET RIPPLE EDITING ENGINE [PLANNED for v4.0.0] [OPTIONAL] [NOT STARTED]
+6. OPTIONAL FUTURE MILESTONE: INTERACTIVE TEXT-BASED MEDIA ASSEMBLY & MULTI-ASSET RIPPLE EDITING ENGINE [PLANNED for v4.0.0] [OPTIONAL] [NOT STARTED]
 ================================================================================
 *Workflow Design Note*: Marked as an optional workflow extension for users requesting text-driven paper cuts. The core single-file story segmenter, voicebook, and DAW exports remain default and lightweight.
 
-[ ] 5.1 Multi-Asset Project Container & Media Bin Model (`project_lifecycle.py`)
+[ ] 6.1 Multi-Asset Project Container & Media Bin Model (`project_lifecycle.py`)
 --------------------------------------------------------------------------------
 - Expand `.rtvs` project schema with a `sources` pool (relative media paths, transcripts, word timings, waveform caches, speaker profiles) and a `sequences` array (ordered assembly playlists referencing source clips).
 
-[ ] 5.2 Dynamic Uncapped Tabbed Document Workspace (`transcript_editor.py`, `ui_layout.py`)
+[ ] 6.2 Dynamic Uncapped Tabbed Document Workspace (`transcript_editor.py`, `ui_layout.py`)
 --------------------------------------------------------------------------------
 - Dynamic `QTabWidget` supporting unlimited tabs, tab reordering, close buttons/shortcuts (`Ctrl+W`), visual distinction between Source Tabs (verbatim transcripts) and Assembly Tabs (story cuts), and tab overflow dropdown.
 
-[ ] 5.3 Rich Media Clipboard Engine (`application/x-rtvs-clip+json`)
+[ ] 6.3 Rich Media Clipboard Engine (`application/x-rtvs-clip+json`)
 --------------------------------------------------------------------------------
 - Dual-format clipboard payload (`text/plain` + structured clip metadata: source media path, millisecond in/out points, word offsets, speaker tags, fade parameters) to copy/paste text across tabs or external documents while seamlessly splicing underlying audio/video media.
 
-[ ] 5.4 Non-Destructive Multi-Source Playout Engine (`RadioTVSegmenter.py`)
+[ ] 6.4 Non-Destructive Multi-Source Playout Engine (`RadioTVSegmenter.py`)
 --------------------------------------------------------------------------------
 - Real-time playback buffer engine chaining consecutive sub-clips from disparate audio files in memory without pre-rendering intermediate files to disk.
 
-[ ] 5.5 Text-Driven Audio/Video Ripple Cut Engine (`transcript_editor.py`)
+[ ] 6.5 Text-Driven Audio/Video Ripple Cut Engine (`transcript_editor.py`)
 --------------------------------------------------------------------------------
 - Non-destructive ripple deletion where text cuts dynamically adjust timeline playout offsets and waveform visualizations.
 
-[ ] 5.6 Paper-Cut Story Assembly Workflow (`transcript_story.py`)
+[ ] 6.6 Paper-Cut Story Assembly Workflow (`transcript_story.py`)
 --------------------------------------------------------------------------------
 - Drag/paste soundbites from source transcript tabs into story sequence playlists to construct rough radio/TV cuts from text.
 
-[ ] 5.7 Document Revisions & Snapshot Version History (`project_lifecycle.py`, `transcript_editor.py`)
+[ ] 6.7 Document Revisions & Snapshot Version History (`project_lifecycle.py`, `transcript_editor.py`)
 --------------------------------------------------------------------------------
 - Named revision snapshots ("Raw ASR", "Rough Cut v1", "Final Radio Edit") with side-by-side visual diffs and 1-click restoration in `.rtvs` project metadata.
 
-[ ] 5.8 Word-Level Timecode Sync, NLE Markers & Multi-Track DAW Timeline Export (`export/timeline.py`)
+[ ] 6.8 Word-Level Timecode Sync, NLE Markers & Multi-Track DAW Timeline Export (`export/timeline.py`)
 --------------------------------------------------------------------------------
 - Multi-asset sequence cuts exported directly to Final Cut Pro XML, REAPER `.rpp`, and Samplitude EDL.
 
-[ ] 5.9 Automated Diagnostic Test Suite (`test_runner.py`)
+[ ] 6.9 Automated Diagnostic Test Suite (`test_runner.py`)
 --------------------------------------------------------------------------------
 - Comprehensive test coverage in `test_runner.py` for multi-asset project serialization, rich clipboard MIME parsing, ripple timecode calculations, and cross-file sequence playback roundtrips.
 
