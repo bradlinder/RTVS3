@@ -136,17 +136,46 @@ def _set_wp_password(username: str, password: str) -> bool:
     return saved_in_keyring
 
 
-def format_rich_text_to_html(text: str, auto_link_urls: bool = True) -> str:
+def format_rich_text_to_html(
+    text: str | list,
+    auto_link_urls: bool = True,
+    main_window: Any = None,
+) -> str:
     """Format rich text, Markdown hyperlinks, and URLs into safe HTML for WordPress posts.
 
-    Supports:
-    - Markdown links: [Link text](https://example.com)
-    - Existing safe HTML links: <a href="...">...</a>
-    - Auto-linking bare URLs: https://... or http://...
-    - Basic Markdown emphasis: **bold** and *italic*
+    If a list of segment dictionaries is passed, formats the segments into standard
+    Gutenberg paragraph blocks (<!-- wp:paragraph -->...<!-- /wp:paragraph -->) with
+    speaker turn prefixes.
     """
     if not text:
         return ""
+
+    if isinstance(text, list):
+        segments = text
+        if not segments:
+            return ""
+        if main_window and hasattr(main_window, "build_story_blocks") and callable(main_window.build_story_blocks):
+            blocks = main_window.build_story_blocks(segments)
+        else:
+            blocks = _group_segments_into_paragraphs(segments)
+
+        html_blocks = []
+        last_speaker = None
+        for block in blocks:
+            spk = (block.get("speaker") or "").strip()
+            raw_p = (block.get("text") or "").strip()
+            if not raw_p:
+                continue
+            clean_p = " ".join(raw_p.split())
+            if not clean_p:
+                continue
+            is_change = block.get("is_speaker_change", (spk != last_speaker))
+            prefix = f"<strong>{html.escape(spk)}:</strong> " if (spk and is_change and spk != last_speaker) else ""
+            if spk:
+                last_speaker = spk
+            formatted_text = format_rich_text_to_html(clean_p, auto_link_urls=auto_link_urls)
+            html_blocks.append(f"<!-- wp:paragraph -->\n<p>{prefix}{formatted_text}</p>\n<!-- /wp:paragraph -->")
+        return "\n\n".join(html_blocks)
 
     tokens: list[str] = []
 
@@ -935,6 +964,7 @@ def execute_wordpress_upload(
     link_parent_episode: bool = True,
     parent_episode_template: str = "",
     parent_episode_pos: str = "top",
+    include_audio: bool = True,
 ) -> dict:
     """Extract media clip, upload to WordPress media library, and create draft post."""
     def report_progress(step: int, description: str) -> None:
@@ -945,7 +975,7 @@ def execute_wordpress_upload(
                 pass
 
     audio_src = getattr(main_window, "audio_file", None)
-    if not audio_src or not Path(audio_src).exists():
+    if include_audio and (not audio_src or not Path(audio_src).exists()):
         raise RuntimeError("No media file is loaded in the active project to export.")
 
     media_url = ""
@@ -962,65 +992,68 @@ def execute_wordpress_upload(
             if hasattr(main_window, "log_activity"):
                 main_window.log_activity(f"[WORDPRESS WARNING] Failed to upload featured image: {exc}")
 
-    # Prepare media file
-    report_progress(1, "Preparing audio for WordPress…")
-    temp_audio = None
-    temp_dir = None
-    try:
-        target_media = str(audio_src)
-        source_suffix = Path(audio_src).suffix.lower()
-        needs_clip = (start is not None and end is not None)
-        needs_mp3 = source_suffix == ".wav"
-
-        if needs_clip or needs_mp3:
-            report_progress(1, "Converting audio to MP3…")
-            temp_dir = Path(tempfile.mkdtemp(prefix="rtvs_wp_"))
-            base = Path(safe_filename(media_filename or post_title or "audio_clip")).stem
-            if needs_clip:
-                temp_audio = temp_dir / f"{base}_{int(start or 0)}_{int(end or 0)}.mp3"
-            else:
-                temp_audio = temp_dir / f"{base}.mp3"
-            ff = ffmpeg_path()
-            if not ff:
-                raise RuntimeError("FFmpeg is required to convert audio for WordPress export, but FFmpeg was not found.")
-            cmd = [str(ff), "-y"]
-            if needs_clip:
-                cmd.extend(["-ss", str(max(0.0, float(start or 0.0)))])
-            cmd.extend(["-i", str(audio_src)])
-            if needs_clip and end is not None:
-                clip_dur = max(0.0, float(end) - float(start or 0.0))
-                cmd.extend(["-t", str(clip_dur)])
-            cmd.extend(["-vn", "-c:a", "libmp3lame", "-b:a", "192k", str(temp_audio)])
-            flags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
-            res = subprocess.run(cmd, capture_output=True, text=True, creationflags=flags)
-            if res.returncode != 0 or not temp_audio.exists() or temp_audio.stat().st_size == 0:
-                raw_err = res.stderr.strip() if res.stderr else "Unknown error"
-                err_lines = [ln.strip() for ln in raw_err.splitlines() if ln.strip()]
-                compact_err = " | ".join(err_lines[-3:]) if err_lines else raw_err[:300]
-                raise RuntimeError(f"FFmpeg audio preparation failed: {compact_err}")
-            target_media = str(temp_audio)
-
-        # Upload Media to WordPress
-        report_progress(2, "Uploading audio to WordPress media library…")
-        upload_name = media_filename or f"{safe_filename(post_title or 'audio')}.mp3"
+    # Prepare media file (if include_audio enabled and audio exists)
+    if include_audio and audio_src and Path(audio_src).exists():
+        report_progress(1, "Preparing audio for WordPress…")
+        temp_audio = None
+        temp_dir = None
         try:
-            media_item = client.upload_media(target_media, filename=upload_name)
-            media_url = ""
-            if isinstance(media_item, dict):
-                guid_data = media_item.get("guid")
-                guid_url = ""
-                if isinstance(guid_data, dict):
-                    guid_url = guid_data.get("rendered", "")
-                elif isinstance(guid_data, str):
-                    guid_url = guid_data
-                media_url = media_item.get("source_url") or guid_url
-        except Exception as media_exc:
-            if hasattr(main_window, "log_activity"):
-                main_window.log_activity(f"[WORDPRESS WARNING] Audio upload failed for '{post_title}': {media_exc}", "warning")
-            media_url = ""
-    finally:
-        if temp_dir and temp_dir.exists():
-            shutil.rmtree(temp_dir, ignore_errors=True)
+            target_media = str(audio_src)
+            source_suffix = Path(audio_src).suffix.lower()
+            needs_clip = (start is not None and end is not None)
+            needs_mp3 = source_suffix == ".wav"
+
+            if needs_clip or needs_mp3:
+                report_progress(1, "Converting audio to MP3…")
+                temp_dir = Path(tempfile.mkdtemp(prefix="rtvs_wp_"))
+                base = Path(safe_filename(media_filename or post_title or "audio_clip")).stem
+                if needs_clip:
+                    temp_audio = temp_dir / f"{base}_{int(start or 0)}_{int(end or 0)}.mp3"
+                else:
+                    temp_audio = temp_dir / f"{base}.mp3"
+                ff = ffmpeg_path()
+                if not ff:
+                    raise RuntimeError("FFmpeg is required to convert audio for WordPress export, but FFmpeg was not found.")
+                cmd = [str(ff), "-y"]
+                if needs_clip:
+                    cmd.extend(["-ss", str(max(0.0, float(start or 0.0)))])
+                cmd.extend(["-i", str(audio_src)])
+                if needs_clip and end is not None:
+                    clip_dur = max(0.0, float(end) - float(start or 0.0))
+                    cmd.extend(["-t", str(clip_dur)])
+                cmd.extend(["-vn", "-c:a", "libmp3lame", "-b:a", "192k", str(temp_audio)])
+                flags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
+                res = subprocess.run(cmd, capture_output=True, text=True, creationflags=flags)
+                if res.returncode != 0 or not temp_audio.exists() or temp_audio.stat().st_size == 0:
+                    raw_err = res.stderr.strip() if res.stderr else "Unknown error"
+                    err_lines = [ln.strip() for ln in raw_err.splitlines() if ln.strip()]
+                    compact_err = " | ".join(err_lines[-3:]) if err_lines else raw_err[:300]
+                    raise RuntimeError(f"FFmpeg audio preparation failed: {compact_err}")
+                target_media = str(temp_audio)
+
+            # Upload Media to WordPress
+            report_progress(2, "Uploading audio to WordPress media library…")
+            upload_name = media_filename or f"{safe_filename(post_title or 'audio')}.mp3"
+            try:
+                media_item = client.upload_media(target_media, filename=upload_name)
+                media_url = ""
+                if isinstance(media_item, dict):
+                    guid_data = media_item.get("guid")
+                    guid_url = ""
+                    if isinstance(guid_data, dict):
+                        guid_url = guid_data.get("rendered", "")
+                    elif isinstance(guid_data, str):
+                        guid_url = guid_data
+                    media_url = media_item.get("source_url") or guid_url
+            except Exception as media_exc:
+                if hasattr(main_window, "log_activity"):
+                    main_window.log_activity(f"[WORDPRESS WARNING] Audio upload failed for '{post_title}': {media_exc}", "warning")
+                media_url = ""
+        finally:
+            if temp_dir and temp_dir.exists():
+                shutil.rmtree(temp_dir, ignore_errors=True)
+    else:
+        report_progress(1, "Text and image export mode (audio upload skipped)…")
 
     # 3. Prepare Post Content
     report_progress(3, "Preparing post content and formatting transcript…")

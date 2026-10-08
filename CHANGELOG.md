@@ -1,5 +1,32 @@
 # Changelog
 
+## v3.8.9-beta.9
+- **WordPress Export Audio Inclusion Toggle (`plugins/wordpress/export_destination.py`, `plugins/wordpress/client.py`, `plugins/wordpress/manifest.json`)**:
+  - **Optional Audio Upload & Player Embedding Control**: Added a dedicated "Audio & Media Attachments" control section with the `Include audio files in WordPress export (upload audio and embed player)` checkbox (`wp_cb_include_audio`) directly in the WordPress export window (`WordPressExportTabWidget`).
+  - **Text & Image Only Export Mode**: When unchecked, the export engine completely bypasses local FFmpeg audio clip extraction and WordPress Media Library audio uploads. It creates draft posts containing rich Gutenberg-formatted transcript text (and optional featured images when selected) without embedding an audio player figure block (`<!-- wp:audio -->`), eliminating unnecessary audio file storage on user WordPress sites.
+  - **Persistent User Settings**: Saved the `wp_include_audio` preference to `QSettings` so user choices persist across application restarts.
+  - **Manifest Catch-Up Synchronization**: Updated `plugins/wordpress/manifest.json` to version `3.8.9-beta.9`.
+- **In-App Benchmarks & Performance Engine (`benchmark.py`)**:
+  - **Multi-Format Export Generation Throughput Benchmark (`benchmark.py`)**: Added a dedicated throughput benchmark metric (`_bench_multi_format_export_generation_throughput`) measuring raw processing speed (words/second, MB/s) across Plain Text (.txt), Vector PDF (.pdf), and WordPress Gutenberg HTML exports with real `ProjectExportMixin` story block structures.
+  - **Real Codebase Transcript Formatting Benchmark (`benchmark.py`)**: Upgraded `_bench_transcript_formatting_and_search` to benchmark the real `build_story_blocks` logic from `project_export.py` alongside inverted index searching.
+  - **Headless PySide6 Fallback Engine (`benchmark.py`)**: Added a zero-dependency headless PySide6 fallback shim allowing the benchmark engine to execute in headless or continuous integration environments.
+- **Diagnostic Test Bench & Multi-Format Parity Suite (`test_runner.py`)**:
+  - **Multi-Format Line Break & Paragraph Parity Expansion (`test_runner.py`)**: Expanded `_test_multi_format_line_break_and_paragraph_parity` to verify strict 1:1 paragraph and line break parity across in-app transcript view, Plain Text (.txt), Word (.docx), Vector PDF (.pdf), WordPress Gutenberg HTML, and Google Docs REST API batchUpdate requests.
+  - **Multi-Story Text-Only & Audio Export Verification (`test_runner.py`)**: Updated `_test_wordpress_multi_story_upload_and_ui_pluralization` to thoroughly validate both text-only (`include_audio=False`) and audio-included (`include_audio=True`) multi-story export flows and button label pluralization.
+
+## v3.8.9-beta.8
+- **Expanded Export & Multi-Story Diagnostic Benchmark Suite (`test_runner.py`)**:
+  - **Gutenberg HTML Structural Hygiene Audit (`test_runner.py`)**: Added `_test_gutenberg_html_structural_hygiene_audit` verifying balanced `<!-- wp:paragraph -->` tags, escaping, and preventing double-nested `<p>` tags.
+  - **Export Scope Delta & Gap Integrity Audit (`test_runner.py`)**: Added `_test_export_scope_delta_and_gap_integrity_audit` validating range slicing and speaker block grouping across unselected timeline gaps and multi-story bounds.
+  - **Export Destination Interface Contract Verification (`test_runner.py`)**: Added `_test_export_destination_interface_contract_verification` auditing export destination plugin base class contracts (`create_widget`, `validate`, `get_export_data`, `execute_export`).
+  - **Multi-Story Media Payload Disambiguation Test (`test_runner.py`)**: Added `_test_multi_story_media_payload_disambiguation_test` verifying unique audio/video file naming across concurrent story uploads to prevent WordPress media library overwrites.
+
+## v3.8.9-beta.7
+- **Diagnostic Test Bench & Multi-Format Parity Audit Suite (`test_runner.py`)**:
+  - **Multi-Format Line Break & Paragraph Parity Audit (`test_runner.py`)**: Added automated diagnostic test `_test_multi_format_line_break_and_paragraph_parity` comparing paragraph counts and line break density across the in-app transcript view, WordPress Gutenberg HTML, Word (.docx), Plain Text (.txt), and Subtitles. Verifies that WordPress Gutenberg HTML and exported formats maintain strict paragraph parity without introducing unwanted double line breaks (`\n\n`) inside paragraph tags.
+  - **WordPress Multi-Story Upload Execution & UI Pluralization Test (`test_runner.py`)**: Added automated diagnostic test `_test_wordpress_multi_story_upload_and_ui_pluralization` verifying multi-story upload execution loops and dynamic button label pluralization (`"Export to WordPress Draft"` vs `"Export to WordPress Drafts..."`).
+  - **Web Preview Server & Dependencies Restoration (`preview_manager.py`, `package.json`)**: Restored Vite/TypeScript web preview environment and Node dependencies.
+
 ## v3.8.9-beta.6
 - **WordPress REST API Export, Paragraph Formatting & Multi-Story Publishing (`plugins/wordpress/export_destination.py`, `plugins/wordpress/client.py`, `export/dialog.py`, `plugins/wordpress/manifest.json`)**:
   - **Dynamic Plural/Singular Export Button Language (`export/dialog.py`, `plugins/wordpress/export_destination.py`)**: Updated the export action button in `UnifiedExportDialog` and `WordPressExportDestination` to dynamically adjust between singular and plural language based on the number of items configured for export. The button now dynamically displays `"Export to WordPress Draft Posts..."` whenever multiple stories or the Full Episode and multiple stories are queued, and strictly uses singular language (`"Export to WordPress Draft Post..."`) when a single post or episode is selected. Implemented real-time synchronization between the scope dropdown, post item list changes, and the dialog action button.

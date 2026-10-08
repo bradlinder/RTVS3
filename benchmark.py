@@ -47,6 +47,77 @@ from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 
 # ---------------------------------------------------------------------------
+# Headless PySide6 Fallback Engine (Zero-Dependency Mock for pure business logic)
+# ---------------------------------------------------------------------------
+
+def _ensure_pyside6_fallback():
+    """Provides a lightweight PySide6 mock shim in headless environments so
+    pure formatting and export benchmarks can run without requiring an X11/Wayland display."""
+    try:
+        import PySide6
+        return
+    except ImportError:
+        pass
+
+    from types import ModuleType
+
+    class MockModule(ModuleType):
+        def __init__(self, name):
+            super().__init__(name)
+            self.__path__ = []
+        def __getattr__(self, name):
+            cls = type(name, (object,), {})
+            setattr(self, name, cls)
+            return cls
+
+    pyside6_mod = MockModule("PySide6")
+    for sub in ["QtCore", "QtWidgets", "QtGui", "QtNetwork", "QtMultimedia", "QtMultimediaWidgets"]:
+        mod = MockModule(f"PySide6.{sub}")
+        setattr(pyside6_mod, sub, mod)
+        sys.modules[f"PySide6.{sub}"] = mod
+
+    sys.modules["PySide6"] = pyside6_mod
+
+    class DummyQt:
+        WindowType = type("WindowType", (), {"WindowMaximizeButtonHint": 0x00020000, "Window": 0x00000001})
+        AlignmentFlag = type("AlignmentFlag", (), {"AlignCenter": 0x0004, "AlignLeft": 0x0001, "AlignRight": 0x0002})
+        Orientation = type("Orientation", (), {"Horizontal": 1, "Vertical": 2})
+        CheckState = type("CheckState", (), {"Checked": 2, "Unchecked": 0})
+        ItemDataRole = type("ItemDataRole", (), {"UserRole": 256, "DisplayRole": 0})
+
+    class DummyQSettings:
+        _store = {}
+        def __init__(self, *a, **k): pass
+        def value(self, k, d=None): return self._store.get(k, d)
+        def setValue(self, k, v): self._store[k] = v
+
+    class DummyQMessageBox:
+        StandardButton = type("StandardButton", (), {"Yes": 1, "No": 2, "Ok": 1, "Cancel": 0})
+        @staticmethod
+        def information(*args, **kwargs): return 1
+        @staticmethod
+        def warning(*args, **kwargs): return 1
+        @staticmethod
+        def critical(*args, **kwargs): return 1
+        @staticmethod
+        def question(*args, **kwargs): return 1
+
+    class DummyQApplication:
+        @staticmethod
+        def processEvents(): pass
+        @staticmethod
+        def instance(): return None
+
+    pyside6_mod.QtCore.Qt = DummyQt
+    pyside6_mod.QtCore.QSettings = DummyQSettings
+    pyside6_mod.QtCore.Signal = lambda *a: type("Sig", (), {"connect": lambda s, f: None, "emit": lambda s, *a: None})()
+    pyside6_mod.QtWidgets.QMessageBox = DummyQMessageBox
+    pyside6_mod.QtWidgets.QApplication = DummyQApplication
+
+_ensure_pyside6_fallback()
+
+
+# ---------------------------------------------------------------------------
 # Sample Audio Asset Constants & Management
 # ---------------------------------------------------------------------------
 
@@ -602,6 +673,11 @@ class BenchmarkEngine:
                 notes="Word tokenization, HTML span tagging & lexical lookup",
             ),
             BenchmarkMetric(
+                name="Multi-Format Export Generation Throughput",
+                category="UI & Text Engine",
+                notes="Throughput benchmarking across TXT, PDF, and Gutenberg HTML export engines",
+            ),
+            BenchmarkMetric(
                 name="Transformer Self-Attention Kernel",
                 category="AI & Diarization",
                 notes="Multi-head attention matrix GEMM simulation",
@@ -1137,6 +1213,28 @@ class BenchmarkEngine:
         search_terms = ["broadcast", "waveform", "speaker", "transcription"]
         hit_count = sum(len(inverted_index.get(term, [])) for term in search_terms)
 
+        # Real transcript paragraph formatting pass via project_export
+        try:
+            import project_export
+
+            class DummyBenchmarkExporter(project_export.ProjectExportMixin):
+                def __init__(self):
+                    self.audio_file = "benchmark_audio.mp3"
+                def get_effective_speaker_name(self, idx, seg):
+                    return seg.get("speaker", "Speaker")
+                def clean_export_text(self, text, current_speaker=""):
+                    return text
+
+            bench_exporter = DummyBenchmarkExporter()
+            dummy_segments = []
+            for i in range(min(num_sentences, 500)):
+                spk = f"SPEAKER_{i % 3:02d}"
+                text = " ".join(words_vocab[(i * 3 + j) % len(words_vocab)] for j in range(12)) + "."
+                dummy_segments.append({"start": i * 2.0, "end": (i + 1) * 2.0, "text": text, "speaker": spk})
+            bench_exporter.build_story_blocks(dummy_segments)
+        except Exception:
+            pass
+
         calc_time = max(0.0001, time.perf_counter() - t0)
         words_per_sec = len(transcript_words) / calc_time
 
@@ -1145,7 +1243,84 @@ class BenchmarkEngine:
         metric.score_points = int(round((words_per_sec / 260000.0) * 1000))
         metric.notes = f"{words_per_sec:,.0f} words/sec formatted ({len(full_html):,} chars, {len(transcript_words):,} tokens, index built)"
 
-    # 7. Transformer Multi-Head Self-Attention GEMM Kernel
+    # 7. Multi-Format Export Generation Throughput
+    def _bench_multi_format_export_generation_throughput(self, metric: BenchmarkMetric):
+        if self.duration_mode == "quick":
+            num_segments = 300
+        elif self.duration_mode == "sustained":
+            num_segments = 3000
+        elif self.duration_mode == "full":
+            num_segments = 7000
+        else:
+            num_segments = 1000
+
+        words_pool = [
+            "broadcast", "investigation", "reporter", "correspondent", "testimony",
+            "parliament", "congress", "senate", "evidence", "segment", "transcription",
+            "interview", "anchorman", "studio", "headline", "breaking", "update"
+        ]
+
+        sample_segments = []
+        total_words = 0
+        for i in range(num_segments):
+            spk = f"SPEAKER_{i % 4:02d}"
+            w_count = 10 + (i % 15)
+            seg_text = " ".join(words_pool[(i * 7 + j) % len(words_pool)] for j in range(w_count)) + "."
+            sample_segments.append({
+                "start": round(i * 3.5, 2),
+                "end": round((i + 1) * 3.5, 2),
+                "text": seg_text,
+                "speaker": spk,
+            })
+            total_words += w_count
+
+        t0 = time.perf_counter()
+
+        import project_export
+
+        class DummyBenchmarkExporter(project_export.ProjectExportMixin):
+            def __init__(self):
+                self.audio_file = "benchmark_audio.mp3"
+            def get_effective_speaker_name(self, idx, seg):
+                return seg.get("speaker", "Speaker")
+            def clean_export_text(self, text, current_speaker=""):
+                return text
+
+        exporter = DummyBenchmarkExporter()
+        blocks = exporter.build_story_blocks(sample_segments)
+        txt_output = exporter.story_text(sample_segments)
+
+        from export.pdf import TranscriptPdfWriter
+        pdf_writer = TranscriptPdfWriter(doc_title="Benchmark Multi-Story Export")
+        pdf_writer.add_header("Full Episode Broadcast", "Recording: benchmark_session.mp3")
+        for b in blocks:
+            pdf_writer.add_paragraph(
+                text=b.get("text", ""),
+                speaker=b.get("speaker", ""),
+                timestamp=f"[{int(b.get('start', 0))}s]"
+            )
+        pdf_bytes = pdf_writer.get_pdf_bytes()
+
+        html_blocks = []
+        for b in blocks:
+            spk = b.get("speaker", "")
+            t = b.get("text", "")
+            spk_label = f"<strong>{spk}:</strong> " if spk else ""
+            html_blocks.append(f"<!-- wp:paragraph -->\n<p>{spk_label}{t}</p>\n<!-- /wp:paragraph -->")
+        full_gutenberg_html = "\n\n".join(html_blocks)
+
+        calc_time = max(0.0001, time.perf_counter() - t0)
+        words_per_sec = total_words / calc_time
+        total_data_bytes = len(txt_output.encode("utf-8")) + len(pdf_bytes) + len(full_gutenberg_html.encode("utf-8"))
+        throughput_mb = (total_data_bytes / (1024 * 1024)) / calc_time
+
+        metric.throughput_mb_s = round(throughput_mb, 2)
+        metric.operations_per_sec = round(words_per_sec, 0)
+        # Baseline reference: 80,000 words/sec across formats = 1,000 pts
+        metric.score_points = int(round((words_per_sec / 80000.0) * 1000))
+        metric.notes = f"{words_per_sec:,.0f} words/sec exported ({throughput_mb:.2f} MB/s across TXT, PDF & Gutenberg HTML, {len(blocks):,} paragraphs)"
+
+    # 8. Transformer Multi-Head Self-Attention GEMM Kernel
     def _bench_transformer_self_attention_kernel(self, metric: BenchmarkMetric):
         if self.duration_mode == "quick":
             seq_len = 120

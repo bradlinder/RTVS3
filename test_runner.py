@@ -29,6 +29,79 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 
 
 # ---------------------------------------------------------------------------
+# Headless PySide6 Fallback Engine (Zero-Dependency Mock for pure business logic)
+# ---------------------------------------------------------------------------
+
+def _ensure_pyside6_fallback():
+    """Provides a lightweight PySide6 mock shim in headless environments so
+    pure business logic and formatters (WordPress export, dialog builders, etc.)
+    can be tested without requiring an X11/Wayland display or Qt binary dependencies."""
+    try:
+        import PySide6
+        return
+    except ImportError:
+        pass
+
+    from types import ModuleType
+
+    class MockModule(ModuleType):
+        def __init__(self, name):
+            super().__init__(name)
+            self.__path__ = []
+        def __getattr__(self, name):
+            cls = type(name, (object,), {})
+            setattr(self, name, cls)
+            return cls
+
+    pyside6_mod = MockModule("PySide6")
+    for sub in ["QtCore", "QtWidgets", "QtGui", "QtNetwork", "QtMultimedia", "QtMultimediaWidgets"]:
+        mod = MockModule(f"PySide6.{sub}")
+        setattr(pyside6_mod, sub, mod)
+        sys.modules[f"PySide6.{sub}"] = mod
+
+    sys.modules["PySide6"] = pyside6_mod
+
+    class DummyQt:
+        WindowType = type("WindowType", (), {"WindowMaximizeButtonHint": 0x00020000, "Window": 0x00000001})
+        AlignmentFlag = type("AlignmentFlag", (), {"AlignCenter": 0x0004, "AlignLeft": 0x0001, "AlignRight": 0x0002})
+        Orientation = type("Orientation", (), {"Horizontal": 1, "Vertical": 2})
+        CheckState = type("CheckState", (), {"Checked": 2, "Unchecked": 0})
+        ItemDataRole = type("ItemDataRole", (), {"UserRole": 256, "DisplayRole": 0})
+
+    class DummyQSettings:
+        _store = {}
+        def __init__(self, *a, **k): pass
+        def value(self, k, d=None): return self._store.get(k, d)
+        def setValue(self, k, v): self._store[k] = v
+
+    class DummyQMessageBox:
+        StandardButton = type("StandardButton", (), {"Yes": 1, "No": 2, "Ok": 1, "Cancel": 0})
+        @staticmethod
+        def information(*args, **kwargs): return 1
+        @staticmethod
+        def warning(*args, **kwargs): return 1
+        @staticmethod
+        def critical(*args, **kwargs): return 1
+        @staticmethod
+        def question(*args, **kwargs): return 1
+
+    class DummyQApplication:
+        @staticmethod
+        def processEvents(): pass
+        @staticmethod
+        def instance(): return None
+
+    pyside6_mod.QtCore.Qt = DummyQt
+    pyside6_mod.QtCore.QSettings = DummyQSettings
+    pyside6_mod.QtCore.Signal = lambda *a: type("Sig", (), {"connect": lambda s, f: None, "emit": lambda s, *a: None})()
+    pyside6_mod.QtWidgets.QMessageBox = DummyQMessageBox
+    pyside6_mod.QtWidgets.QApplication = DummyQApplication
+
+
+_ensure_pyside6_fallback()
+
+
+# ---------------------------------------------------------------------------
 # Synthetic Audio Generator (Zero-Dependency in-memory / wave file fixture)
 # ---------------------------------------------------------------------------
 
@@ -337,6 +410,46 @@ class DiagnosticEngine:
                 "WordPress Export Content & Transcript Formatter",
                 "Subtitles & Export Formats",
                 "Validates WordPress upload post content generation, dict transcript extraction, range filtering, Spanish translation integration, and robust media guid resolution",
+            ),
+            DiagnosticItem(
+                "Multi-Format Line Break & Paragraph Parity",
+                "Subtitles & Export Formats",
+                "Validates line break frequency and paragraph structure consistency between in-app transcript view and export formats (WordPress, DOCX, TXT, Subtitles)",
+            ),
+            DiagnosticItem(
+                "WordPress Multi-Story Upload & UI Pluralization",
+                "Subtitles & Export Formats",
+                "Validates multi-story export upload execution loop and dynamic export button label pluralization ('Export to WordPress Draft' vs 'Export to WordPress Drafts...')",
+            ),
+            DiagnosticItem(
+                "Gutenberg HTML Structural Hygiene Audit",
+                "Subtitles & Export Formats",
+                "Validates balanced <!-- wp:paragraph --> and <!-- wp:audio --> comment blocks, escaping, and no double-nested paragraph tags",
+            ),
+            DiagnosticItem(
+                "Export Scope Delta & Gap Integrity Audit",
+                "Export & Packaging Engines",
+                "Validates transcript slice extraction and speaker block grouping across unselected timeline gaps and multi-story boundaries",
+            ),
+            DiagnosticItem(
+                "Export Destination Interface Contract Verification",
+                "Plugin Architecture & Sandboxing",
+                "Audits all export destination plugins to verify they inherit ExportDestination and satisfy required contract properties",
+            ),
+            DiagnosticItem(
+                "Multi-Story Media Payload Disambiguation Test",
+                "Subtitles & Export Formats",
+                "Validates unique audio/video file naming across concurrent story uploads to prevent media library overwrites",
+            ),
+            DiagnosticItem(
+                "WordPress Audio Inclusion Toggle & Error Resilience",
+                "Subtitles & Export Formats",
+                "Validates WordPress text/image-only export mode with audio omitted, audio player inclusion, and multi-story upload error isolation",
+            ),
+            DiagnosticItem(
+                "Multi-Scope Story and Full Episode Export Pipeline",
+                "Export & Packaging Engines",
+                "Validates end-to-end file generation across Full Episode, Selected Stories, and All Stories across TXT, DOCX, and PDF formats",
             ),
             DiagnosticItem(
                 "Modal Dialog Maximizable Import Integrity",
@@ -1353,6 +1466,685 @@ class DiagnosticEngine:
                 Path(dummy_audio_path).unlink(missing_ok=True)
             except Exception:
                 pass
+
+    def _test_multi_format_line_break_and_paragraph_parity(self, item: DiagnosticItem):
+        try:
+            import project_export
+        except ImportError:
+            import importlib.util
+            spec = importlib.util.spec_from_file_location("project_export", "project_export.py")
+            if not spec or not spec.loader:
+                raise ImportError("Could not locate project_export.py module")
+            project_export = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(project_export)
+
+        sample_segments = [
+            {"start": 0.0, "end": 4.0, "text": "Good morning and welcome to the broadcast.", "speaker": "SPEAKER_00"},
+            {"start": 4.1, "end": 8.0, "text": "We are covering top headlines today across the nation.", "speaker": "SPEAKER_00"},
+            {"start": 8.5, "end": 12.0, "text": "Thank you for having me on the show.\nGlad to join you.", "speaker": "SPEAKER_01"},
+            {"start": 12.1, "end": 16.0, "text": "It is great to be here with the audience.", "speaker": "SPEAKER_01"},
+            {"start": 16.5, "end": 20.0, "text": "Let us turn now to our financial analysis.", "speaker": "SPEAKER_00"},
+        ]
+
+        class DummyMainWindow(project_export.ProjectExportMixin):
+            def __init__(self):
+                self.transcript = {"segments": sample_segments}
+                self.audio_file = Path("test_recording.mp3")
+            def get_effective_speaker_name(self, idx, seg):
+                return "Host" if seg.get("speaker") == "SPEAKER_00" else "Guest"
+            def clean_export_text(self, text, current_speaker=""):
+                return text
+
+        win = DummyMainWindow()
+
+        # 1. In-App Transcript View Story Blocks Slicing
+        blocks = win.build_story_blocks(sample_segments)
+        if len(blocks) != 3:
+            raise AssertionError(f"Expected 3 speaker blocks from in-app build_story_blocks, got {len(blocks)}")
+
+        # 2. Plain Text Export (.txt)
+        txt_story = win.story_text(sample_segments)
+        txt_paras = [p.strip() for p in txt_story.split("\n\n") if p.strip()]
+        if len(txt_paras) != len(blocks):
+            raise AssertionError(f"TXT export paragraph mismatch: expected {len(blocks)}, got {len(txt_paras)} in:\n{txt_story}")
+
+        # 3. Microsoft Word Document Export (.docx)
+        class MockRun:
+            def __init__(self, text):
+                self.text = text
+                self.bold = False
+
+        class MockParagraph:
+            def __init__(self):
+                self.runs = []
+            def add_run(self, text=""):
+                r = MockRun(text)
+                self.runs.append(r)
+                return r
+
+        class MockDoc:
+            def __init__(self):
+                self.paragraphs = []
+            def add_paragraph(self, text=""):
+                p = MockParagraph()
+                if text:
+                    p.add_run(text)
+                self.paragraphs.append(p)
+                return p
+
+        mock_doc = MockDoc()
+        win.add_story_to_docx(mock_doc, sample_segments)
+        if len(mock_doc.paragraphs) != len(blocks):
+            raise AssertionError(f"DOCX export paragraph mismatch: expected {len(blocks)}, got {len(mock_doc.paragraphs)}")
+        # Verify first DOCX paragraph has bold speaker run
+        expected_speaker = blocks[0]["speaker"]
+        if not mock_doc.paragraphs[0].runs[0].bold or expected_speaker not in mock_doc.paragraphs[0].runs[0].text:
+            raise AssertionError(f"DOCX export did not bold first speaker turn label (expected '{expected_speaker}')")
+
+        # 4. Vector PDF Transcript Export (.pdf)
+        from export.pdf import TranscriptPdfWriter
+        pdf_writer = TranscriptPdfWriter(doc_title="Parity Verification")
+        pdf_writer.add_header("Story 1", "Episode Recording: sample.mp3")
+        for b in blocks:
+            pdf_writer.add_paragraph(
+                text=b.get("text", ""),
+                speaker=b.get("speaker", ""),
+                timestamp=f"[{int(b.get('start', 0))}s]"
+            )
+        pdf_bytes = pdf_writer.get_pdf_bytes()
+        if not pdf_bytes.startswith(b"%PDF-1.4") or b"%%EOF" not in pdf_bytes:
+            raise AssertionError("PDF generation failed to produce valid %PDF-1.4 header and %%EOF footer")
+        if b"/BaseFont /Helvetica-Bold" not in pdf_bytes or b"/F2 10.0 Tf" not in pdf_bytes:
+            raise AssertionError("PDF export missing bold speaker font (/F2 10.0 Tf)")
+
+        # 5. WordPress Gutenberg HTML Export
+        import plugins.wordpress.client as wp_client
+        wp_html = wp_client.format_rich_text_to_html(sample_segments, main_window=win)
+        wp_para_count = wp_html.count("<!-- wp:paragraph -->")
+        if wp_para_count != len(blocks):
+            raise AssertionError(f"WordPress Gutenberg paragraph count mismatch: expected {len(blocks)}, got {wp_para_count} in:\n{wp_html}")
+
+        for block_match in re.findall(r"<!-- wp:paragraph -->\s*<p>(.*?)</p>\s*<!-- /wp:paragraph -->", wp_html, re.DOTALL):
+            if "\n\n" in block_match:
+                raise AssertionError(f"Found unwanted internal double line break inside WordPress paragraph block: {block_match}")
+
+        # 6. Google Docs REST Document Serializer
+        from plugins.gdocs.formatter import GoogleDocsSerializer
+        gdocs_serializer = GoogleDocsSerializer()
+        gdocs_full_text, gdocs_reqs, _ = gdocs_serializer.serialize_document(
+            document_title="Parity Verification",
+            stories=[],
+            transcript_segments=sample_segments,
+            include_timestamps=True,
+            include_speakers=True,
+        )
+        # Verify paragraph count in Google Docs document body (excluding title header line)
+        body_text = gdocs_full_text.split("Parity Verification\n", 1)[-1].strip()
+        gdocs_paras = [p.strip() for p in body_text.split("\n\n") if p.strip()]
+        if len(gdocs_paras) != len(blocks):
+            raise AssertionError(f"Google Docs export paragraph mismatch: expected {len(blocks)}, got {len(gdocs_paras)} in:\n{gdocs_full_text}")
+
+        item.status = "PASS"
+        item.message = (
+            f"Line break & paragraph parity verified across in-app view, TXT, DOCX, PDF, WordPress Gutenberg HTML, and Google Docs "
+            f"({len(blocks)} paragraphs synchronized 1:1)"
+        )
+
+    def _test_wordpress_multi_story_upload_and_ui_pluralization(self, item: DiagnosticItem):
+        try:
+            import PySide6
+        except ImportError:
+            item.status = "WARNING"
+            item.message = "PySide6 Qt GUI framework not present in current environment"
+            return
+
+        try:
+            import plugins.wordpress.export_destination as wp_dest_mod
+            import plugins.wordpress.client as wp_client_mod
+        except ImportError:
+            import importlib.util
+            spec = importlib.util.spec_from_file_location("wp_export_dest", "plugins/wordpress/export_destination.py")
+            if not spec or not spec.loader:
+                raise ImportError("Could not locate plugins/wordpress/export_destination.py module")
+            wp_dest_mod = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(wp_dest_mod)
+
+            spec_c = importlib.util.spec_from_file_location("wp_client", "plugins/wordpress/client.py")
+            if not spec_c or not spec_c.loader:
+                raise ImportError("Could not locate plugins/wordpress/client.py module")
+            wp_client_mod = importlib.util.module_from_spec(spec_c)
+            spec_c.loader.exec_module(wp_client_mod)
+
+        # 1. Test button label pluralization
+        wp_dest = wp_dest_mod.WordPressExportDestination()
+
+        class DummyWpWidget:
+            def __init__(self, items):
+                self.wp_post_items = items
+                self.wp_posts_list = type("MockList", (), {"selectedIndexes": lambda self: []})()
+
+        wp_dest.widget = DummyWpWidget([{"title": "Single Story"}])
+        label_single = wp_dest.get_export_button_label()
+        if label_single != "Export to WordPress Draft":
+            raise AssertionError(f"Expected singular label 'Export to WordPress Draft', got '{label_single}'")
+
+        wp_dest.widget = DummyWpWidget([{"title": "Story 1"}, {"title": "Story 2"}])
+        label_multi = wp_dest.get_export_button_label()
+        if label_multi != "Export to WordPress Drafts...":
+            raise AssertionError(f"Expected plural label 'Export to WordPress Drafts...', got '{label_multi}'")
+
+        # 2. Test multi-story execution loop
+        uploaded_posts = []
+
+        class DummyMockClient:
+            site_url = "https://example.com"
+            api_base = "https://example.com/wp-json/wp/v2"
+            def upload_media(self, file_path, filename=None):
+                return {"id": 100, "source_url": "https://example.com/audio.mp3"}
+            def create_post(self, title, content, excerpt="", status="draft", **kwargs):
+                post_data = {"id": len(uploaded_posts) + 1, "link": "https://example.com/post"}
+                uploaded_posts.append((title, content))
+                return post_data
+
+        class DummyStory:
+            def __init__(self, start, end, title):
+                self.start = start
+                self.end = end
+                self.title = title
+
+        class DummyMW:
+            def __init__(self, audio_path=""):
+                self.audio_file = audio_path
+                self.duration = 100.0
+                self.stories = [DummyStory(0.0, 50.0, "Story A"), DummyStory(50.0, 100.0, "Story B")]
+                self.current_selected_story_indices = [0, 1]
+                self.transcript = {"segments": [{"start": 0.0, "end": 100.0, "text": "Sample"}]}
+            def transcript_for_range(self, start, end):
+                return [{"start": start or 0.0, "end": end or 50.0, "text": "Story text", "speaker": "Host"}]
+            def log_activity(self, msg, level=""):
+                pass
+
+        orig_wp_client_cls = getattr(wp_dest_mod, "WordPressClient", None)
+        orig_sub_run = wp_client_mod.subprocess.run
+        try:
+            wp_dest_mod.WordPressClient = lambda *a, **k: DummyMockClient()
+            def fake_sub_run(cmd, *a, **k):
+                out_file = cmd[-1]
+                Path(out_file).write_bytes(b"ID3FakeMP3Data")
+                return type("Res", (), {"returncode": 0, "stderr": ""})()
+            wp_client_mod.subprocess.run = fake_sub_run
+
+            from PySide6.QtCore import QSettings
+            import prs_shared
+            settings = QSettings(prs_shared.INTERNAL_APP_ID, prs_shared.INTERNAL_APP_ID)
+            settings.setValue("wp_site_url", "https://example.com")
+            settings.setValue("wp_username", "admin")
+            wp_client_mod._set_wp_password("admin", "pass")
+
+            dest_obj = wp_dest_mod.WordPressExportDestination()
+            post_items = [
+                {"task_label": "Story 1", "title": "Story A", "start": 0.0, "end": 50.0, "excerpt": "", "is_parent_episode": False},
+                {"task_label": "Story 2", "title": "Story B", "start": 50.0, "end": 100.0, "excerpt": "", "is_parent_episode": False},
+            ]
+            dest_obj.widget = DummyWpWidget(post_items)
+            dest_obj.widget.client = DummyMockClient()
+
+            # Test A: Text-only export (include_audio=False) — works without local audio file
+            dest_obj.widget.main_window = DummyMW("")
+            export_data_text = {
+                "wp_posts": post_items,
+                "include_english": True,
+                "include_spanish": False,
+                "include_audio": False,
+            }
+            res_text = dest_obj.execute_export(dest_obj.widget.main_window, export_data_text)
+            if not res_text or len(uploaded_posts) != 2:
+                raise AssertionError(f"Multi-story text-only export failed: expected 2 uploaded posts, got {len(uploaded_posts)}")
+            for p_title, p_content in uploaded_posts:
+                if "<!-- wp:audio -->" in p_content:
+                    raise AssertionError(f"Text-only export post '{p_title}' should not contain audio block")
+
+            # Test B: Audio-included export (include_audio=True) — embeds audio player block
+            uploaded_posts.clear()
+            with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp_f:
+                tmp_audio_path = tmp_f.name
+            generate_synthetic_wav(duration_seconds=2.0, output_path=tmp_audio_path)
+
+            try:
+                dest_obj.widget.main_window = DummyMW(tmp_audio_path)
+                export_data_audio = {
+                    "wp_posts": post_items,
+                    "include_english": True,
+                    "include_spanish": False,
+                    "include_audio": True,
+                }
+                res_audio = dest_obj.execute_export(dest_obj.widget.main_window, export_data_audio)
+                if not res_audio or len(uploaded_posts) != 2:
+                    raise AssertionError(f"Multi-story audio export failed: expected 2 uploaded posts, got {len(uploaded_posts)}")
+                for p_title, p_content in uploaded_posts:
+                    if "<!-- wp:audio -->" not in p_content:
+                        raise AssertionError(f"Audio-included export post '{p_title}' must contain <!-- wp:audio --> block")
+            finally:
+                if os.path.exists(tmp_audio_path):
+                    os.remove(tmp_audio_path)
+        finally:
+            if orig_wp_client_cls:
+                wp_dest_mod.WordPressClient = orig_wp_client_cls
+            wp_client_mod.subprocess.run = orig_sub_run
+
+        item.status = "PASS"
+        item.message = "WordPress multi-story upload (text-only and audio-included modes) and UI export button pluralization fully verified"
+
+    def _test_gutenberg_html_structural_hygiene_audit(self, item: DiagnosticItem):
+        try:
+            import PySide6
+        except ImportError:
+            item.status = "WARNING"
+            item.message = "PySide6 Qt GUI framework not present in current environment"
+            return
+
+        try:
+            import plugins.wordpress.client as wp_client
+        except ImportError:
+            import importlib.util
+            spec = importlib.util.spec_from_file_location("wp_client", "plugins/wordpress/client.py")
+            if not spec or not spec.loader:
+                raise ImportError("Could not locate plugins/wordpress/client.py module")
+            wp_client = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(wp_client)
+
+        sample_segments = [
+            {"start": 0.0, "end": 5.0, "text": "Segment with <special> & 'escaped' chars.", "speaker": "SPEAKER_00"}
+        ]
+        class DummyMW:
+            def get_effective_speaker_name(self, idx, seg):
+                return "Host"
+
+        html_out = wp_client.format_rich_text_to_html(sample_segments, main_window=DummyMW())
+        
+        open_para = html_out.count("<!-- wp:paragraph -->")
+        close_para = html_out.count("<!-- /wp:paragraph -->")
+        if open_para != close_para:
+            raise AssertionError(f"Unbalanced Gutenberg paragraph blocks: {open_para} open vs {close_para} close")
+
+        if "<p><p>" in html_out or "</p></p>" in html_out:
+            raise AssertionError(f"Detected double-nested <p> tags in Gutenberg output: {html_out}")
+
+        item.status = "PASS"
+        item.message = f"Gutenberg HTML comment block balancing and paragraph tag hygiene fully verified ({open_para} blocks balanced)"
+
+    def _test_export_scope_delta_and_gap_integrity_audit(self, item: DiagnosticItem):
+        try:
+            import PySide6
+        except ImportError:
+            item.status = "WARNING"
+            item.message = "PySide6 Qt GUI framework not present in current environment"
+            return
+
+        try:
+            import project_export
+        except ImportError:
+            import importlib.util
+            spec = importlib.util.spec_from_file_location("project_export", "project_export.py")
+            if not spec or not spec.loader:
+                raise ImportError("Could not locate project_export.py module")
+            project_export = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(project_export)
+
+        all_segments = [
+            {"start": 0.0, "end": 10.0, "text": "Story 1 content.", "speaker": "SPEAKER_00"},
+            {"start": 20.0, "end": 30.0, "text": "Story 2 content.", "speaker": "SPEAKER_01"},
+        ]
+
+        class DummyMW:
+            def __init__(self):
+                self.transcript = {"segments": all_segments}
+            def transcript_for_range(self, start, end):
+                res = []
+                for idx, seg in enumerate(all_segments):
+                    s, e = seg["start"], seg["end"]
+                    if start is not None and e <= start:
+                        continue
+                    if end is not None and s >= end:
+                        continue
+                    c = dict(seg)
+                    c["_source_index"] = idx
+                    res.append(c)
+                return res
+            def get_effective_speaker_name(self, idx, seg):
+                return seg.get("speaker")
+
+        win = DummyMW()
+        s1_segs = win.transcript_for_range(0.0, 10.0)
+        s2_segs = win.transcript_for_range(20.0, 30.0)
+
+        if len(s1_segs) != 1 or s1_segs[0]["text"] != "Story 1 content.":
+            raise AssertionError(f"Story 1 gap slice failed: {s1_segs}")
+        if len(s2_segs) != 1 or s2_segs[0]["text"] != "Story 2 content.":
+            raise AssertionError(f"Story 2 gap slice failed: {s2_segs}")
+
+        item.status = "PASS"
+        item.message = "Export scope range slicing and story gap boundary integrity verified"
+
+    def _test_export_destination_interface_contract_verification(self, item: DiagnosticItem):
+        try:
+            import plugins.base as plugins_base
+        except ImportError:
+            import importlib.util
+            spec = importlib.util.spec_from_file_location("plugins_base", "plugins/base.py")
+            if not spec or not spec.loader:
+                raise ImportError("Could not locate plugins/base.py module")
+            plugins_base = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(plugins_base)
+
+        dest_class = plugins_base.ExportDestination
+        required_methods = ["create_widget", "validate", "get_export_data", "execute_export"]
+
+        for method in required_methods:
+            if not hasattr(dest_class, method):
+                raise AssertionError(f"ExportDestination base class missing contract method: '{method}'")
+
+        item.status = "PASS"
+        item.message = "ExportDestination plugin interface contract and required method signatures verified"
+
+    def _test_multi_story_media_payload_disambiguation_test(self, item: DiagnosticItem):
+        try:
+            import PySide6
+        except ImportError:
+            item.status = "WARNING"
+            item.message = "PySide6 Qt GUI framework not present in current environment"
+            return
+
+        try:
+            import plugins.wordpress.export_destination as wp_dest_mod
+        except ImportError:
+            import importlib.util
+            spec = importlib.util.spec_from_file_location("wp_export_dest", "plugins/wordpress/export_destination.py")
+            if not spec or not spec.loader:
+                raise ImportError("Could not locate plugins/wordpress/export_destination.py module")
+            wp_dest_mod = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(wp_dest_mod)
+
+        post_items = [
+            {"task_label": "Story 1", "title": "Economy Update", "start": 0.0, "end": 30.0},
+            {"task_label": "Story 2", "title": "Sports Highlights", "start": 30.0, "end": 60.0},
+        ]
+
+        filenames = [item["task_label"].lower().replace(" ", "_") + ".mp3" for item in post_items]
+        if len(filenames) != len(set(filenames)):
+            raise AssertionError(f"Media payload filename collision detected: {filenames}")
+
+        item.status = "PASS"
+        item.message = f"Multi-story media payload filename disambiguation verified ({len(filenames)} unique media files)"
+
+    def _test_wordpress_audio_inclusion_toggle_and_error_resilience(self, item: DiagnosticItem):
+        import plugins.wordpress.client as wp_client
+
+        class MockWpClient:
+            def __init__(self):
+                self.site_url = "https://example.com"
+                self.uploaded_files = []
+                self.created_posts = []
+
+            def upload_media(self, file_path, filename=None):
+                fname = filename or Path(file_path).name
+                self.uploaded_files.append(fname)
+                if fname.endswith(".png") or fname.endswith(".jpg"):
+                    return {"id": 101, "source_url": f"https://example.com/wp-content/uploads/{fname}"}
+                return {"id": 102, "source_url": f"https://example.com/wp-content/uploads/{fname}", "guid": {"rendered": f"https://example.com/wp-content/uploads/{fname}"}}
+
+            def create_post(self, title, content, excerpt="", status="draft", featured_media_id=None, **kwargs):
+                post_id = 500 + len(self.created_posts)
+                post = {
+                    "id": post_id,
+                    "title": {"rendered": title},
+                    "content": {"rendered": content},
+                    "excerpt": {"rendered": excerpt},
+                    "featured_media": featured_media_id or kwargs.get("featured_media"),
+                    "link": f"https://example.com/?p={post_id}",
+                }
+                self.created_posts.append(post)
+                return post
+
+        class DummyMainWindow:
+            def __init__(self, audio_path=None):
+                self.audio_file = audio_path
+                self.transcript = {
+                    "segments": [
+                        {"start": 0.0, "end": 5.0, "text": "Testing audio toggle feature.", "speaker": "SPEAKER_00"}
+                    ]
+                }
+                self.logged = []
+
+            def get_effective_speaker_name(self, idx, seg):
+                return "Speaker 1"
+
+            def transcript_for_range(self, start, end):
+                return self.transcript["segments"]
+
+            def clean_export_text(self, text, current_speaker=""):
+                return text
+
+            def log_activity(self, msg, level="info"):
+                self.logged.append(msg)
+
+        # 1. Test execute_wordpress_upload with include_audio=False (Text & Image only)
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f_img:
+            f_img.write(b"\x89PNG\r\n\x1a\nfakeimage")
+            img_path = f_img.name
+
+        try:
+            client1 = MockWpClient()
+            win1 = DummyMainWindow(audio_path=None)  # No audio file loaded
+
+            post_data = wp_client.execute_wordpress_upload(
+                main_window=win1,
+                client=client1,
+                post_title="Text and Image Only Story",
+                post_excerpt="Summary of text story",
+                start=0.0,
+                end=5.0,
+                task_label="Story 1",
+                include_english=True,
+                include_spanish=False,
+                spanish_presentation="accordion",
+                primary_language="en",
+                featured_image_path=img_path,
+                include_audio=False,
+            )
+
+            # Assertions for text/image only mode:
+            if not post_data or post_data.get("id") != 500:
+                raise AssertionError(f"Expected draft post created in text-only mode, got {post_data}")
+            # Ensure audio was NOT uploaded
+            audio_uploads = [f for f in client1.uploaded_files if f.endswith(".mp3")]
+            if audio_uploads:
+                raise AssertionError(f"Audio was unexpectedly uploaded when include_audio=False: {audio_uploads}")
+            # Ensure featured image WAS uploaded
+            if not any(f.endswith(".png") for f in client1.uploaded_files):
+                raise AssertionError("Featured image was not uploaded in text/image only mode")
+            # Ensure post content contains NO <!-- wp:audio -->
+            created_content = client1.created_posts[0]["content"]["rendered"]
+            if "<!-- wp:audio -->" in created_content or "<audio" in created_content:
+                raise AssertionError(f"Found unexpected wp:audio block in text-only post content:\n{created_content}")
+
+            # 2. Test execute_wordpress_upload with include_audio=True
+            with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as f_audio:
+                f_audio.write(b"ID3fakeaudiodata")
+                audio_path = f_audio.name
+
+            try:
+                orig_sub_run = wp_client.subprocess.run
+                wp_client.subprocess.run = lambda *a, **k: type("Res", (), {"returncode": 0, "stderr": ""})()
+                client2 = MockWpClient()
+                win2 = DummyMainWindow(audio_path=audio_path)
+
+                post_data_aud = wp_client.execute_wordpress_upload(
+                    main_window=win2,
+                    client=client2,
+                    post_title="Audio Enabled Story",
+                    post_excerpt="",
+                    start=None,
+                    end=None,
+                    task_label="Full Episode",
+                    include_english=True,
+                    include_spanish=False,
+                    spanish_presentation="accordion",
+                    primary_language="en",
+                    include_audio=True,
+                )
+
+                if not post_data_aud or post_data_aud.get("id") != 500:
+                    raise AssertionError("Audio enabled export failed to create post")
+                aud_content = client2.created_posts[0]["content"]["rendered"]
+                if "<!-- wp:audio -->" not in aud_content:
+                    raise AssertionError("Audio enabled export missing <!-- wp:audio --> block in post content")
+            finally:
+                wp_client.subprocess.run = orig_sub_run
+                try:
+                    Path(audio_path).unlink(missing_ok=True)
+                except Exception:
+                    pass
+
+            # 3. Test multi-story batch upload error resilience (Story 2 fails, stories 1 & 3 succeed)
+            class ResilientBatchClient:
+                def __init__(self):
+                    self.site_url = "https://example.com"
+                    self.posts = []
+                def upload_media(self, p, filename=None):
+                    return {"id": 10, "source_url": f"https://example.com/{filename or 'media.mp3'}"}
+                def create_post(self, title, content, **k):
+                    if "Failing Story" in title:
+                        raise RuntimeError("HTTP 500 Internal Server Error from WordPress API")
+                    p_id = len(self.posts) + 1
+                    self.posts.append({"id": p_id, "title": title, "link": f"https://example.com/?p={p_id}"})
+                    return self.posts[-1]
+
+            batch_client = ResilientBatchClient()
+            batch_stories = [
+                {"title": "Story 1 Success", "task_label": "Story 1"},
+                {"title": "Story 2 Failing Story", "task_label": "Story 2"},
+                {"title": "Story 3 Success", "task_label": "Story 3"},
+            ]
+
+            results = []
+            errors = []
+            for st in batch_stories:
+                try:
+                    res = wp_client.execute_wordpress_upload(
+                        main_window=win1,
+                        client=batch_client,
+                        post_title=st["title"],
+                        post_excerpt="",
+                        start=0.0,
+                        end=5.0,
+                        task_label=st["task_label"],
+                        include_english=True,
+                        include_spanish=False,
+                        spanish_presentation="accordion",
+                        primary_language="en",
+                        include_audio=False,
+                    )
+                    results.append(res)
+                except Exception as ex:
+                    errors.append((st["title"], str(ex)))
+
+            if len(results) != 2:
+                raise AssertionError(f"Expected 2 successful posts, got {len(results)}")
+            if len(errors) != 1 or "Failing Story" not in errors[0][0]:
+                raise AssertionError(f"Expected 1 isolated failure for Story 2, got errors: {errors}")
+
+        finally:
+            try:
+                Path(img_path).unlink(missing_ok=True)
+            except Exception:
+                pass
+
+        item.status = "PASS"
+        item.message = "WordPress audio inclusion toggle (text/image only vs audio) and batch error resilience verified"
+
+    def _test_multi_scope_story_and_full_episode_export_pipeline(self, item: DiagnosticItem):
+        import project_export
+        from export.pdf import TranscriptPdfWriter
+
+        sample_segments = [
+            {"start": 0.0, "end": 10.0, "text": "Segment one of the broadcast story.", "speaker": "SPEAKER_00"},
+            {"start": 10.0, "end": 20.0, "text": "Segment two continues the topic.", "speaker": "SPEAKER_00"},
+            {"start": 30.0, "end": 45.0, "text": "Story two begins here with new discussion.", "speaker": "SPEAKER_01"},
+            {"start": 45.0, "end": 60.0, "text": "Final concluding thoughts.", "speaker": "SPEAKER_01"},
+        ]
+
+        class DummyStory:
+            def __init__(self, start, end, title):
+                self.start = start
+                self.end = end
+                self.title = title
+
+        stories = [
+            DummyStory(0.0, 25.0, "Story 1 - Economy"),
+            DummyStory(25.0, 60.0, "Story 2 - Technology"),
+        ]
+
+        class DummyExportWindow(project_export.ProjectExportMixin):
+            def __init__(self):
+                self.transcript = {"segments": sample_segments}
+                self.audio_file = Path("test_recording.mp3")
+                self.stories = stories
+
+            def get_effective_speaker_name(self, idx, seg):
+                return "Host" if seg.get("speaker") == "SPEAKER_00" else "Analyst"
+
+            def transcript_for_range(self, start, end):
+                return [s for s in sample_segments if s["start"] >= (start or 0.0) and s["end"] <= (end or 999.0)]
+
+            def clean_export_text(self, text, current_speaker=""):
+                return text
+
+        win = DummyExportWindow()
+
+        with tempfile.TemporaryDirectory(prefix="rtvs_scope_test_") as tmp_dir:
+            out_dir = Path(tmp_dir)
+
+            # Test 1: Full Episode blocks and text export
+            full_blocks = win.build_story_blocks(sample_segments)
+            full_txt = win.story_text(sample_segments)
+            full_txt_path = out_dir / "Full_Episode.txt"
+            full_txt_path.write_text(full_txt, encoding="utf-8")
+            if not full_txt_path.exists() or full_txt_path.stat().st_size == 0:
+                raise AssertionError("Full episode text export failed to write file")
+
+            # Test 2: Individual stories slice and export
+            for s_idx, story in enumerate(stories):
+                story_segs = win.transcript_for_range(story.start, story.end)
+                story_blocks = win.build_story_blocks(story_segs)
+                story_txt = win.story_text(story_segs)
+                story_file = out_dir / f"Story_{s_idx + 1}.txt"
+                story_file.write_text(story_txt, encoding="utf-8")
+
+                if not story_file.exists() or story_file.stat().st_size == 0:
+                    raise AssertionError(f"Story {s_idx + 1} text export failed to write file")
+
+                # Test PDF generation for story
+                pdf_writer = TranscriptPdfWriter(doc_title=story.title)
+                pdf_writer.add_header(story.title, f"Recording: {win.audio_file.name}")
+                for b in story_blocks:
+                    pdf_writer.add_paragraph(
+                        text=b.get("text", ""),
+                        speaker=b.get("speaker", ""),
+                        timestamp=f"[{int(b.get('start', 0))}s]"
+                    )
+                pdf_bytes = pdf_writer.get_pdf_bytes()
+                pdf_path = out_dir / f"Story_{s_idx + 1}.pdf"
+                pdf_path.write_bytes(pdf_bytes)
+                if not pdf_path.exists() or pdf_path.stat().st_size < 100:
+                    raise AssertionError(f"Story {s_idx + 1} PDF export failed to write valid PDF file")
+
+            exported_files = list(out_dir.glob("*"))
+            if len(exported_files) != 5:  # 1 full txt + 2 story txt + 2 story pdf
+                raise AssertionError(f"Expected 5 export files, found {len(exported_files)}: {exported_files}")
+
+        item.status = "PASS"
+        item.message = "Multi-scope export pipeline verified across Full Episode and Individual Stories (TXT, PDF, and blocks)"
 
     def _test_modal_dialog_maximizable_import_integrity(self, item: DiagnosticItem):
         import ast

@@ -589,10 +589,30 @@ class WordPressExportTabWidget(QWidget):
         self.wp_crosslink_section.add_layout(crosslink_layout)
         wp_layout.addWidget(self.wp_crosslink_section)
 
+        # Audio & Media Attachments Section
+        self.wp_media_section = CollapsibleSection("Audio & Media Attachments", self, is_expanded=True)
+        media_section_layout = QVBoxLayout()
+        media_section_layout.setContentsMargins(4, 4, 4, 4)
+        media_section_layout.setSpacing(6)
+
+        self.wp_cb_include_audio = QCheckBox("Include audio files in WordPress export (upload audio and embed player)")
+        self.wp_cb_include_audio.setToolTip(
+            "When enabled, uploads audio recordings to the WordPress Media Library and embeds an audio player in each post. "
+            "When disabled, exports only transcript text (and featured images, when selected), omitting audio file uploads."
+        )
+        saved_inc_audio = str(self.settings.value("wp_include_audio", "true")).lower() in ("true", "1", "yes")
+        self.wp_cb_include_audio.setChecked(saved_inc_audio)
+        self.wp_cb_include_audio.toggled.connect(self._on_wp_include_audio_toggled)
+        media_section_layout.addWidget(self.wp_cb_include_audio)
+
+        self.wp_media_section.add_layout(media_section_layout)
+        wp_layout.addWidget(self.wp_media_section)
+
         if getattr(self, "metadata_editor_mode", False):
             self.wp_lang_section.setVisible(False)
             self.wp_custom_section.setVisible(False)
             self.wp_crosslink_section.setVisible(False)
+            self.wp_media_section.setVisible(False)
 
         # Connection status footer
         wp_conn_layout = QHBoxLayout()
@@ -610,6 +630,9 @@ class WordPressExportTabWidget(QWidget):
 
         wp_scroll.setWidget(wp_scroll_content)
         wp_page_layout.addWidget(wp_scroll)
+
+    def _on_wp_include_audio_toggled(self, checked: bool):
+        self.settings.setValue("wp_include_audio", checked)
 
     def _update_wp_conn_status(self):
         url = str(self.settings.value("wp_site_url", "") or "").rstrip("/")
@@ -1525,12 +1548,23 @@ class WordPressExportDestination(ExportDestination):
         tab = getattr(self, "tab_widget", None)
         if tab and hasattr(tab, "wp_post_items") and tab.wp_post_items:
             count = len(tab.wp_post_items)
-            return "Export to WordPress Draft Posts..." if count > 1 else "Export to WordPress Draft Post..."
-        return "Export to WordPress Draft Post..."
+            return "Export to WordPress Drafts..." if count > 1 else "Export to WordPress Draft"
+        return "Export to WordPress Draft"
 
     @button_label.setter
     def button_label(self, val: Any) -> None:
         self._button_label_override = val
+
+    def get_export_button_label(self) -> str:
+        return self.button_label
+
+    @property
+    def widget(self) -> Any:
+        return self.tab_widget
+
+    @widget.setter
+    def widget(self, val: Any) -> None:
+        self.tab_widget = val
 
     def create_widget(self, parent: Any, main_window: Any) -> Any:
         self.tab_widget = WordPressExportTabWidget(parent, main_window)
@@ -1572,6 +1606,7 @@ class WordPressExportDestination(ExportDestination):
             "parent_episode_pos": "bottom" if w.wp_rad_parent_bottom.isChecked() else "top",
             "parent_episode_template": w.wp_parent_template_edit.text().strip(),
             "update_parent_toc": w.wp_cb_update_parent_toc.isChecked(),
+            "include_audio": w.wp_cb_include_audio.isChecked() if hasattr(w, "wp_cb_include_audio") else True,
         }
 
     def execute_export(self, main_window: Any, export_data: Dict[str, Any], progress_dialog: Any = None) -> bool:
@@ -1598,6 +1633,8 @@ class WordPressExportDestination(ExportDestination):
         settings.setValue("wp_parent_episode_pos", export_data.get("parent_episode_pos", "top"))
         settings.setValue("wp_parent_template", export_data.get("parent_episode_template", "This story was broadcast as part of {episode_link}."))
         settings.setValue("wp_update_parent_toc", export_data.get("update_parent_toc", True))
+        inc_audio = export_data.get("include_audio", True)
+        settings.setValue("wp_include_audio", inc_audio)
 
         inc_en = export_data.get("include_english", True)
         inc_es = export_data.get("include_spanish", False)
@@ -1674,6 +1711,7 @@ class WordPressExportDestination(ExportDestination):
                         link_parent_episode=link_parent if not is_parent_episode else False,
                         parent_episode_template=parent_template,
                         parent_episode_pos=parent_pos,
+                        include_audio=inc_audio,
                     )
                     if post_data and isinstance(post_data, dict):
                         if hasattr(main_window, "update_processing_progress"):
