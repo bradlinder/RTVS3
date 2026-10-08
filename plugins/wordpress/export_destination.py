@@ -1675,18 +1675,22 @@ class WordPressExportDestination(ExportDestination):
         url = str(settings.value("wp_site_url", "") or "").strip()
         user = str(settings.value("wp_username", "") or "").strip()
         pwd = _get_wp_password(user) if user else ""
+        parent_widget = main_window if isinstance(main_window, QWidget) else (self.tab_widget if isinstance(getattr(self, "tab_widget", None), QWidget) else None)
+        show_summary_dialog = bool(export_data.get("show_completion_dialog", True))
         if not (url and user and pwd):
-            QMessageBox.warning(
-                main_window,
-                "WordPress Not Configured",
-                "Please configure your WordPress Site URL, Username, and Application Password in Settings before exporting.",
-            )
+            if show_summary_dialog:
+                QMessageBox.warning(
+                    parent_widget,
+                    "WordPress Not Configured",
+                    "Please configure your WordPress Site URL, Username, and Application Password in Settings before exporting.",
+                )
             return False
 
         client = WordPressClient(url, user, pwd)
         wp_posts = export_data.get("wp_posts", [])
         if not wp_posts:
-            QMessageBox.warning(main_window, "No Posts", "No posts were configured for export.")
+            if show_summary_dialog:
+                QMessageBox.warning(parent_widget, "No Posts", "No posts were configured for export.")
             return False
 
         # Save user preferences
@@ -1860,44 +1864,45 @@ class WordPressExportDestination(ExportDestination):
                 main_window.cancel_button.hide()
 
         # Final summaries
-        if created_posts and not failed_posts:
-            if len(created_posts) == 1:
-                p = created_posts[0]
-                QMessageBox.information(
-                    main_window,
-                    "WordPress Export Complete",
-                    f"Draft post created successfully on {client.site_url}!\n\n"
-                    f"Post Title: {p['title']}\n"
-                    f"Post ID: {p['id']}\n"
-                    f"Status: Draft\n"
-                    f"Preview Link: {p['link']}",
+        if show_summary_dialog and parent_widget is not None:
+            if created_posts and not failed_posts:
+                if len(created_posts) == 1:
+                    p = created_posts[0]
+                    QMessageBox.information(
+                        parent_widget,
+                        "WordPress Export Complete",
+                        f"Draft post created successfully on {client.site_url}!\n\n"
+                        f"Post Title: {p['title']}\n"
+                        f"Post ID: {p['id']}\n"
+                        f"Status: Draft\n"
+                        f"Preview Link: {p['link']}",
+                    )
+                else:
+                    posts_summary = "\n".join([f"  #{p['id']}: {p['title']}" for p in created_posts])
+                    QMessageBox.information(
+                        parent_widget,
+                        "WordPress Export Complete",
+                        f"All {len(created_posts)} stories have been posted successfully as drafts to {client.site_url}!\n\n"
+                        f"Created Posts:\n{posts_summary}",
+                    )
+            elif created_posts and failed_posts:
+                success_summary = "\n".join([f"  #{p['id']}: {p['title']}" for p in created_posts])
+                fail_summary = "\n".join([f"  {f['title']}: {f['error']}" for f in failed_posts])
+                QMessageBox.warning(
+                    parent_widget,
+                    "WordPress Export Finished with Errors",
+                    f"Completed {len(created_posts)} of {total_posts} draft posts.\n\n"
+                    f"Created Posts:\n{success_summary}\n\n"
+                    f"Failed Posts:\n{fail_summary}",
                 )
-            else:
-                posts_summary = "\n".join([f"  #{p['id']}: {p['title']}" for p in created_posts])
-                QMessageBox.information(
-                    main_window,
-                    "WordPress Export Complete",
-                    f"All {len(created_posts)} stories have been posted successfully as drafts to {client.site_url}!\n\n"
-                    f"Created Posts:\n{posts_summary}",
+            elif failed_posts:
+                fail_summary = "\n".join([f"  {f['title']}: {f['error']}" for f in failed_posts])
+                QMessageBox.critical(
+                    parent_widget,
+                    "WordPress Export Failed",
+                    f"None of the {len(failed_posts)} posts could be exported to WordPress.\n\n"
+                    f"Errors:\n{fail_summary}",
                 )
-        elif created_posts and failed_posts:
-            success_summary = "\n".join([f"  #{p['id']}: {p['title']}" for p in created_posts])
-            fail_summary = "\n".join([f"  {f['title']}: {f['error']}" for f in failed_posts])
-            QMessageBox.warning(
-                main_window,
-                "WordPress Export Finished with Errors",
-                f"Completed {len(created_posts)} of {total_posts} draft posts.\n\n"
-                f"Created Posts:\n{success_summary}\n\n"
-                f"Failed Posts:\n{fail_summary}",
-            )
-        elif failed_posts:
-            fail_summary = "\n".join([f"  {f['title']}: {f['error']}" for f in failed_posts])
-            QMessageBox.critical(
-                main_window,
-                "WordPress Export Failed",
-                f"None of the {len(failed_posts)} posts could be exported to WordPress.\n\n"
-                f"Errors:\n{fail_summary}",
-            )
         return len(created_posts) > 0
 
 

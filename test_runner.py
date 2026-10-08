@@ -1698,6 +1698,7 @@ class DiagnosticEngine:
                 "include_english": True,
                 "include_spanish": False,
                 "include_audio": False,
+                "show_completion_dialog": False,
             }
             res_text = dest_obj.execute_export(dest_obj.widget.main_window, export_data_text)
             if not res_text or len(uploaded_posts) != 2:
@@ -1721,6 +1722,7 @@ class DiagnosticEngine:
                     "include_spanish": False,
                     "include_audio": True,
                     "apply_audio_fades": True,
+                    "show_completion_dialog": False,
                 }
                 res_audio = dest_obj.execute_export(dest_obj.widget.main_window, export_data_audio)
                 if not res_audio or len(uploaded_posts) != 2:
