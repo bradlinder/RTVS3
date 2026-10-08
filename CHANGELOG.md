@@ -1,5 +1,19 @@
 # Changelog
 
+## v3.8.9-beta.10
+- **WordPress Translation Accordion Placement Toggle (`plugins/wordpress/export_destination.py`, `plugins/wordpress/client.py`, `plugins/wordpress/manifest.json`)**:
+  - **User-Configurable Accordion Placement**: Added an "Accordion Position" configuration control (`wp_rad_acc_top` / `wp_rad_acc_bottom`) in the WordPress export panel allowing users to choose whether the interactive bilingual translation toggle accordion appears at the top (before the transcript) or at the bottom (after the transcript).
+  - **Template Generation Alignment**: Updated `execute_wordpress_upload` in `client.py` to evaluate `accordion_pos` so the Gutenberg Details block (`<details class="wp-block-details rtvs-language-accordion">`) is prepended before primary transcript blocks or appended after them based on user preference.
+  - **Persistent User Settings**: Saved the `wp_accordion_pos` selection to `QSettings` so the chosen layout persists across sessions.
+- **Story Audio Fades MP3 Rendering & WordPress Upload (`plugins/wordpress/export_destination.py`, `plugins/wordpress/client.py`)**:
+  - **Restored Audio Fade Rendering**: Resolved an issue where timeline story fades were ignored during WordPress exports. Connected timeline and story fade durations (`fade_in`, `fade_out`, `fade_curve`) through `build_story_item` and `execute_export` into `execute_wordpress_upload`.
+  - **Dedicated Audio Fades Option**: Added the `Apply audio fades to story clips (fade-in & fade-out)` option (`wp_cb_apply_fades`) in the WordPress export panel's "Audio & Media Attachments" section, persisting to `QSettings` under `wp_apply_audio_fades`.
+  - **Transcoded Faded MP3 Upload & Verification**: Verified that when audio fades are applied to stories, FFmpeg renders new MP3 files with volume envelope filters (`-af afade=t=in:...` and `-af afade=t=out:...`), verifies the transcoded files exist and are non-empty, and uploads the newly rendered MP3 clips to the WordPress Media Library with embedded player figure blocks (`<!-- wp:audio -->`).
+  - **Manifest Catch-Up Synchronization**: Updated `plugins/wordpress/manifest.json` to version `3.8.9-beta.10`.
+- **Diagnostic Test Bench & Integration Verification (`test_runner.py`)**:
+  - **Accordion Top vs Bottom Placement Verification**: Added automated tests verifying relative position indices of the bilingual accordion block versus the transcript content blocks in exported Gutenberg HTML.
+  - **FFmpeg Fade Filter Inspection & Upload Verification**: Added tests asserting FFmpeg command arguments receive `-af afade` filters when story fades are applied and confirming proper upload dispatch to the WordPress client.
+
 ## v3.8.9-beta.9
 - **WordPress Export Audio Inclusion Toggle (`plugins/wordpress/export_destination.py`, `plugins/wordpress/client.py`, `plugins/wordpress/manifest.json`)**:
   - **Optional Audio Upload & Player Embedding Control**: Added a dedicated "Audio & Media Attachments" control section with the `Include audio files in WordPress export (upload audio and embed player)` checkbox (`wp_cb_include_audio`) directly in the WordPress export window (`WordPressExportTabWidget`).

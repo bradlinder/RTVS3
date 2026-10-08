@@ -492,6 +492,34 @@ class WordPressExportTabWidget(QWidget):
         pres_row.addStretch()
         pres_layout.addLayout(pres_row)
 
+        self.wp_accordion_pos_container = QWidget()
+        acc_pos_layout = QHBoxLayout(self.wp_accordion_pos_container)
+        acc_pos_layout.setContentsMargins(0, 4, 0, 4)
+        acc_pos_label = QLabel("Accordion Position:")
+        self.wp_accordion_pos_group = QButtonGroup(self)
+        self.wp_rad_acc_top = QRadioButton("Place at top (before transcript)")
+        self.wp_rad_acc_bottom = QRadioButton("Place at bottom (after transcript)")
+        self.wp_accordion_pos_group.addButton(self.wp_rad_acc_top)
+        self.wp_accordion_pos_group.addButton(self.wp_rad_acc_bottom)
+
+        saved_acc_pos = str(self.settings.value("wp_accordion_pos", "top") or "top").lower()
+        if saved_acc_pos == "bottom":
+            self.wp_rad_acc_bottom.setChecked(True)
+        else:
+            self.wp_rad_acc_top.setChecked(True)
+
+        acc_pos_layout.addWidget(acc_pos_label)
+        acc_pos_layout.addWidget(self.wp_rad_acc_top)
+        acc_pos_layout.addWidget(self.wp_rad_acc_bottom)
+        acc_pos_layout.addStretch()
+        pres_layout.addWidget(self.wp_accordion_pos_container)
+
+        def update_wp_accordion_pos_visibility():
+            is_acc = self.wp_pres_combo.currentData() == "accordion"
+            self.wp_accordion_pos_container.setVisible(is_acc)
+
+        self.wp_pres_combo.currentIndexChanged.connect(update_wp_accordion_pos_visibility)
+
         def on_wp_primary_lang_changed():
             p_code = self.wp_primary_lang_combo.currentData()
             prev_pres = self.wp_pres_combo.currentData()
@@ -507,6 +535,7 @@ class WordPressExportTabWidget(QWidget):
             match_idx = self.wp_pres_combo.findData(prev_pres)
             self.wp_pres_combo.setCurrentIndex(match_idx if match_idx >= 0 else 0)
             self.wp_pres_combo.blockSignals(False)
+            update_wp_accordion_pos_visibility()
 
         self.wp_primary_lang_combo.currentIndexChanged.connect(on_wp_primary_lang_changed)
 
@@ -515,10 +544,13 @@ class WordPressExportTabWidget(QWidget):
         def update_wp_pres_visibility():
             both = self.wp_cb_en.isChecked() and self.wp_cb_es.isChecked()
             self.wp_pres_container.setVisible(both)
+            if both:
+                update_wp_accordion_pos_visibility()
 
         self.wp_cb_en.toggled.connect(update_wp_pres_visibility)
         self.wp_cb_es.toggled.connect(update_wp_pres_visibility)
         update_wp_pres_visibility()
+        update_wp_accordion_pos_visibility()
         wp_layout.addWidget(self.wp_lang_section)
 
         # Custom Notice Section
@@ -604,6 +636,18 @@ class WordPressExportTabWidget(QWidget):
         self.wp_cb_include_audio.setChecked(saved_inc_audio)
         self.wp_cb_include_audio.toggled.connect(self._on_wp_include_audio_toggled)
         media_section_layout.addWidget(self.wp_cb_include_audio)
+
+        self.wp_cb_apply_fades = QCheckBox("Apply audio fades to story clips (fade-in & fade-out)")
+        self.wp_cb_apply_fades.setToolTip(
+            "When enabled, renders volume fade-in and fade-out ramps into new MP3 files before uploading them to WordPress. "
+            "When disabled, exports story clips without fade envelope modifications."
+        )
+        saved_apply_fades = str(self.settings.value("wp_apply_audio_fades", "true")).lower() in ("true", "1", "yes")
+        self.wp_cb_apply_fades.setChecked(saved_apply_fades)
+        self.wp_cb_apply_fades.toggled.connect(lambda chk: self.settings.setValue("wp_apply_audio_fades", chk))
+        self.wp_cb_include_audio.toggled.connect(self.wp_cb_apply_fades.setEnabled)
+        self.wp_cb_apply_fades.setEnabled(self.wp_cb_include_audio.isChecked())
+        media_section_layout.addWidget(self.wp_cb_apply_fades)
 
         self.wp_media_section.add_layout(media_section_layout)
         wp_layout.addWidget(self.wp_media_section)
@@ -1359,6 +1403,10 @@ class WordPressExportTabWidget(QWidget):
                 "excerpt": wp_meta.get("excerpt") or default_excerpt,
                 "start": st.start,
                 "end": st.end,
+                "story_index": idx,
+                "fade_in": float(getattr(st, "fade_in", 0.0) or 0.0),
+                "fade_out": float(getattr(st, "fade_out", 0.0) or 0.0),
+                "fade_curve": str(getattr(st, "fade_curve", "linear") or "linear"),
                 "frame_pos": float(wp_meta.get("frame_pos") if wp_meta.get("frame_pos") is not None else (st.start if st.start is not None else (getattr(self.main_window, "current_position", 0.0) or 0.0))),
                 "author_ids": list(wp_meta.get("author_ids") or []),
                 "author_term_ids": list(wp_meta.get("author_term_ids") or []),
@@ -1378,6 +1426,13 @@ class WordPressExportTabWidget(QWidget):
                 item["featured_image"] = existing.get("featured_image", item["featured_image"])
                 item["featured_image_mode"] = existing.get("featured_image_mode", item["featured_image_mode"])
                 item["frame_pos"] = existing.get("frame_pos", item["frame_pos"])
+                item["story_index"] = idx
+                if "fade_in" in existing and existing["fade_in"] is not None:
+                    item["fade_in"] = float(existing["fade_in"])
+                if "fade_out" in existing and existing["fade_out"] is not None:
+                    item["fade_out"] = float(existing["fade_out"])
+                if "fade_curve" in existing and existing["fade_curve"]:
+                    item["fade_curve"] = str(existing["fade_curve"])
             return item
 
         def build_full_item() -> dict:
@@ -1391,6 +1446,10 @@ class WordPressExportTabWidget(QWidget):
                 "excerpt": wp_meta.get("excerpt") or default_excerpt,
                 "start": None,
                 "end": None,
+                "story_index": None,
+                "fade_in": 0.0,
+                "fade_out": 0.0,
+                "fade_curve": "linear",
                 "frame_pos": float(wp_meta.get("frame_pos") if wp_meta.get("frame_pos") is not None else (getattr(self.main_window, "current_position", 0.0) or 0.0)),
                 "author_ids": list(wp_meta.get("author_ids") or []),
                 "author_term_ids": list(wp_meta.get("author_term_ids") or []),
@@ -1599,6 +1658,7 @@ class WordPressExportDestination(ExportDestination):
             "include_english": w.wp_cb_en.isChecked(),
             "include_spanish": w.wp_cb_es.isChecked(),
             "spanish_presentation": w.wp_pres_combo.currentData(),
+            "accordion_pos": "bottom" if (hasattr(w, "wp_rad_acc_bottom") and w.wp_rad_acc_bottom.isChecked()) else "top",
             "primary_language": w.wp_primary_lang_combo.currentData(),
             "custom_notice": w.wp_custom_text_edit.toPlainText().strip(),
             "notice_placement": "top" if w.wp_rad_pos_top.isChecked() else "bottom",
@@ -1607,6 +1667,7 @@ class WordPressExportDestination(ExportDestination):
             "parent_episode_template": w.wp_parent_template_edit.text().strip(),
             "update_parent_toc": w.wp_cb_update_parent_toc.isChecked(),
             "include_audio": w.wp_cb_include_audio.isChecked() if hasattr(w, "wp_cb_include_audio") else True,
+            "apply_audio_fades": w.wp_cb_apply_fades.isChecked() if hasattr(w, "wp_cb_apply_fades") else True,
         }
 
     def execute_export(self, main_window: Any, export_data: Dict[str, Any], progress_dialog: Any = None) -> bool:
@@ -1635,6 +1696,10 @@ class WordPressExportDestination(ExportDestination):
         settings.setValue("wp_update_parent_toc", export_data.get("update_parent_toc", True))
         inc_audio = export_data.get("include_audio", True)
         settings.setValue("wp_include_audio", inc_audio)
+        apply_audio_fades = export_data.get("apply_audio_fades", True)
+        settings.setValue("wp_apply_audio_fades", apply_audio_fades)
+        acc_pos = export_data.get("accordion_pos", "top")
+        settings.setValue("wp_accordion_pos", acc_pos)
 
         inc_en = export_data.get("include_english", True)
         inc_es = export_data.get("include_spanish", False)
@@ -1687,6 +1752,27 @@ class WordPressExportDestination(ExportDestination):
                         main_window.update_processing_progress(int(overall), description)
                     QApplication.processEvents()
 
+                # Resolve story fades
+                st_fade_in = float(post.get("fade_in", 0.0) or 0.0)
+                st_fade_out = float(post.get("fade_out", 0.0) or 0.0)
+                st_fade_curve = str(post.get("fade_curve", "linear") or "linear")
+                if st_fade_in == 0.0 and st_fade_out == 0.0 and hasattr(main_window, "stories") and main_window.stories:
+                    st_idx = post.get("story_index")
+                    matching_st = None
+                    if st_idx is not None and isinstance(st_idx, int) and 0 <= st_idx < len(main_window.stories):
+                        matching_st = main_window.stories[st_idx]
+                    elif post.get("start") is not None and post.get("end") is not None:
+                        p_start = float(post.get("start"))
+                        p_end = float(post.get("end"))
+                        for candidate in main_window.stories:
+                            if abs(float(getattr(candidate, "start", -999)) - p_start) < 0.05 and abs(float(getattr(candidate, "end", -999)) - p_end) < 0.05:
+                                matching_st = candidate
+                                break
+                    if matching_st:
+                        st_fade_in = float(getattr(matching_st, "fade_in", 0.0) or 0.0)
+                        st_fade_out = float(getattr(matching_st, "fade_out", 0.0) or 0.0)
+                        st_fade_curve = str(getattr(matching_st, "fade_curve", "linear") or "linear")
+
                 try:
                     post_data = execute_wordpress_upload(
                         main_window=main_window,
@@ -1712,6 +1798,11 @@ class WordPressExportDestination(ExportDestination):
                         parent_episode_template=parent_template,
                         parent_episode_pos=parent_pos,
                         include_audio=inc_audio,
+                        fade_in=st_fade_in,
+                        fade_out=st_fade_out,
+                        fade_curve=st_fade_curve,
+                        apply_fades=bool(apply_audio_fades),
+                        accordion_pos=acc_pos,
                     )
                     if post_data and isinstance(post_data, dict):
                         if hasattr(main_window, "update_processing_progress"):

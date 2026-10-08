@@ -941,18 +941,49 @@ def _group_segments_into_paragraphs(segments: list, min_words: int = 65) -> list
     return blocks
 
 
+def _build_audio_fade_filter(
+    duration: float,
+    fade_in: float = 0.0,
+    fade_out: float = 0.0,
+    fade_curve: str = "linear",
+) -> list[str]:
+    """Construct FFmpeg afade audio filter chain for story clips."""
+    try:
+        from export.audio import build_audio_fade_filter
+        return build_audio_fade_filter(duration, fade_in, fade_out, fade_curve)
+    except Exception:
+        pass
+    filters = []
+    dur = max(0.0, float(duration))
+    fin = max(0.0, min(float(fade_in or 0.0), dur))
+    fout = max(0.0, min(float(fade_out or 0.0), max(0.0, dur - fin)))
+    curve_map = {
+        "linear": "tri",
+        "exponential": "log",
+        "logarithmic": "log",
+        "s_curve": "qsin",
+    }
+    c_param = curve_map.get(str(fade_curve).lower(), "tri")
+    if fin > 0:
+        filters.append(f"afade=t=in:ss=0:d={fin:.3f}:curve={c_param}")
+    if fout > 0:
+        fout_start = max(0.0, dur - fout)
+        filters.append(f"afade=t=out:st={fout_start:.3f}:d={fout:.3f}:curve={c_param}")
+    return filters
+
+
 def execute_wordpress_upload(
     main_window: Any,
     client: WordPressClient,
-    post_title: str,
-    post_excerpt: str,
-    start: float | None,
-    end: float | None,
-    task_label: str,
-    include_english: bool,
-    include_spanish: bool,
-    spanish_presentation: str,
-    primary_language: str,
+    post_title: str = "Draft Story",
+    post_excerpt: str = "",
+    start: float | None = None,
+    end: float | None = None,
+    task_label: str = "Draft Story",
+    include_english: bool = True,
+    include_spanish: bool = False,
+    spanish_presentation: str = "accordion",
+    primary_language: str = "en",
     author_ids: list[int] | None = None,
     author_term_ids: list[int] | None = None,
     category_ids: list[int] | None = None,
@@ -965,6 +996,11 @@ def execute_wordpress_upload(
     parent_episode_template: str = "",
     parent_episode_pos: str = "top",
     include_audio: bool = True,
+    fade_in: float = 0.0,
+    fade_out: float = 0.0,
+    fade_curve: str = "linear",
+    apply_fades: bool = True,
+    accordion_pos: str = "top",
 ) -> dict:
     """Extract media clip, upload to WordPress media library, and create draft post."""
     def report_progress(step: int, description: str) -> None:
@@ -1002,9 +1038,16 @@ def execute_wordpress_upload(
             source_suffix = Path(audio_src).suffix.lower()
             needs_clip = (start is not None and end is not None)
             needs_mp3 = source_suffix == ".wav"
+            clip_dur = max(0.0, float(end) - float(start or 0.0)) if needs_clip else (
+                float(getattr(main_window, "duration", 0.0) or 0.0)
+            )
+            fin = float(fade_in or 0.0) if apply_fades else 0.0
+            fout = float(fade_out or 0.0) if apply_fades else 0.0
+            has_fades = bool(apply_fades and (fin > 0.0 or fout > 0.0) and clip_dur > 0.0)
 
-            if needs_clip or needs_mp3:
-                report_progress(1, "Converting audio to MP3…")
+            if needs_clip or needs_mp3 or has_fades:
+                status_desc = "Rendering audio clip with fades for WordPress…" if has_fades else "Converting audio to MP3…"
+                report_progress(1, status_desc)
                 temp_dir = Path(tempfile.mkdtemp(prefix="rtvs_wp_"))
                 base = Path(safe_filename(media_filename or post_title or "audio_clip")).stem
                 if needs_clip:
@@ -1019,8 +1062,13 @@ def execute_wordpress_upload(
                     cmd.extend(["-ss", str(max(0.0, float(start or 0.0)))])
                 cmd.extend(["-i", str(audio_src)])
                 if needs_clip and end is not None:
-                    clip_dur = max(0.0, float(end) - float(start or 0.0))
                     cmd.extend(["-t", str(clip_dur)])
+
+                if has_fades:
+                    af_chain = _build_audio_fade_filter(clip_dur, fin, fout, fade_curve)
+                    if af_chain:
+                        cmd.extend(["-af", ",".join(af_chain)])
+
                 cmd.extend(["-vn", "-c:a", "libmp3lame", "-b:a", "192k", str(temp_audio)])
                 flags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
                 res = subprocess.run(cmd, capture_output=True, text=True, creationflags=flags)
@@ -1257,9 +1305,6 @@ def execute_wordpress_upload(
             secondary_heading = "Español"
 
         if spanish_presentation == "accordion":
-            # Primary story blocks placed first so the primary story is prominent in the compose window
-            content_parts.extend(primary_blocks)
-
             summary_btn_style = (
                 "display: inline-block; padding: 8px 18px; background-color: #0073aa; "
                 "color: #ffffff; border-radius: 4px; font-weight: bold; cursor: pointer; "
@@ -1271,9 +1316,21 @@ def execute_wordpress_upload(
                 f'<details class="wp-block-details rtvs-language-accordion" style="margin-top: 24px; margin-bottom: 24px;">\n'
                 f'<summary role="button" style="{summary_btn_style}">{btn_text}</summary>'
             )
-            content_parts.append(details_opening)
-            content_parts.extend(secondary_blocks)
-            content_parts.append('</details>\n<!-- /wp:details -->')
+            accordion_blocks = [
+                details_opening,
+                *secondary_blocks,
+                '</details>\n<!-- /wp:details -->',
+            ]
+
+            pos_choice = str(accordion_pos or "top").strip().lower()
+            if pos_choice == "bottom":
+                # Primary story blocks placed first, accordion toggle below transcript
+                content_parts.extend(primary_blocks)
+                content_parts.extend(accordion_blocks)
+            else:
+                # Accordion toggle placed at top before the transcript blocks
+                content_parts.extend(accordion_blocks)
+                content_parts.extend(primary_blocks)
         elif spanish_presentation == "es_first":
             # User explicitly chose Spanish first
             content_parts.extend(es_blocks)

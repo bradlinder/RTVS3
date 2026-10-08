@@ -1666,9 +1666,11 @@ class DiagnosticEngine:
 
         orig_wp_client_cls = getattr(wp_dest_mod, "WordPressClient", None)
         orig_sub_run = wp_client_mod.subprocess.run
+        captured_cmds = []
         try:
             wp_dest_mod.WordPressClient = lambda *a, **k: DummyMockClient()
             def fake_sub_run(cmd, *a, **k):
+                captured_cmds.append(list(cmd))
                 out_file = cmd[-1]
                 Path(out_file).write_bytes(b"ID3FakeMP3Data")
                 return type("Res", (), {"returncode": 0, "stderr": ""})()
@@ -1683,8 +1685,8 @@ class DiagnosticEngine:
 
             dest_obj = wp_dest_mod.WordPressExportDestination()
             post_items = [
-                {"task_label": "Story 1", "title": "Story A", "start": 0.0, "end": 50.0, "excerpt": "", "is_parent_episode": False},
-                {"task_label": "Story 2", "title": "Story B", "start": 50.0, "end": 100.0, "excerpt": "", "is_parent_episode": False},
+                {"task_label": "Story 1", "title": "Story A", "start": 0.0, "end": 50.0, "excerpt": "", "is_parent_episode": False, "fade_in": 1.5, "fade_out": 2.0, "fade_curve": "linear"},
+                {"task_label": "Story 2", "title": "Story B", "start": 50.0, "end": 100.0, "excerpt": "", "is_parent_episode": False, "fade_in": 0.5, "fade_out": 1.0, "fade_curve": "linear"},
             ]
             dest_obj.widget = DummyWpWidget(post_items)
             dest_obj.widget.client = DummyMockClient()
@@ -1704,8 +1706,9 @@ class DiagnosticEngine:
                 if "<!-- wp:audio -->" in p_content:
                     raise AssertionError(f"Text-only export post '{p_title}' should not contain audio block")
 
-            # Test B: Audio-included export (include_audio=True) — embeds audio player block
+            # Test B: Audio-included export (include_audio=True) — embeds audio player block and applies fades
             uploaded_posts.clear()
+            captured_cmds.clear()
             with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp_f:
                 tmp_audio_path = tmp_f.name
             generate_synthetic_wav(duration_seconds=2.0, output_path=tmp_audio_path)
@@ -1717,6 +1720,7 @@ class DiagnosticEngine:
                     "include_english": True,
                     "include_spanish": False,
                     "include_audio": True,
+                    "apply_audio_fades": True,
                 }
                 res_audio = dest_obj.execute_export(dest_obj.widget.main_window, export_data_audio)
                 if not res_audio or len(uploaded_posts) != 2:
@@ -1724,6 +1728,9 @@ class DiagnosticEngine:
                 for p_title, p_content in uploaded_posts:
                     if "<!-- wp:audio -->" not in p_content:
                         raise AssertionError(f"Audio-included export post '{p_title}' must contain <!-- wp:audio --> block")
+                # Verify that fades were applied in ffmpeg invocation
+                if not captured_cmds or not any("-af" in cmd for cmd in captured_cmds):
+                    raise AssertionError(f"Fades were not passed to FFmpeg during execute_export: {captured_cmds}")
             finally:
                 if os.path.exists(tmp_audio_path):
                     os.remove(tmp_audio_path)
@@ -2053,6 +2060,145 @@ class DiagnosticEngine:
                 raise AssertionError(f"Expected 2 successful posts, got {len(results)}")
             if len(errors) != 1 or "Failing Story" not in errors[0][0]:
                 raise AssertionError(f"Expected 1 isolated failure for Story 2, got errors: {errors}")
+
+            # 4. Test bilingual translation accordion placement (top vs bottom)
+            bilingual_win = DummyMainWindow()
+            bilingual_win.translations = {
+                "en-es": {
+                    "segments": [{"start": 0.0, "end": 5.0, "text": "Prueba de función de audio en español.", "speaker": "SPEAKER_00"}]
+                }
+            }
+            client_acc = MockWpClient()
+
+            # 4a. Accordion at TOP (before transcript)
+            wp_client.execute_wordpress_upload(
+                main_window=bilingual_win,
+                client=client_acc,
+                post_title="Accordion Top Story",
+                post_excerpt="",
+                start=0.0,
+                end=5.0,
+                task_label="Story 1",
+                include_english=True,
+                include_spanish=True,
+                spanish_presentation="accordion",
+                accordion_pos="top",
+                primary_language="en",
+                include_audio=False,
+            )
+            top_content = client_acc.created_posts[-1]["content"]["rendered"]
+            acc_top_idx = top_content.find("rtvs-language-accordion")
+            en_top_idx = top_content.find("Testing audio toggle feature")
+            if acc_top_idx == -1 or en_top_idx == -1:
+                raise AssertionError(f"Missing accordion or transcript in top placement post: {top_content}")
+            if acc_top_idx > en_top_idx:
+                raise AssertionError(f"Accordion was not placed at top (before transcript). acc_pos={acc_top_idx}, text_pos={en_top_idx}")
+
+            # 4b. Accordion at BOTTOM (after transcript)
+            wp_client.execute_wordpress_upload(
+                main_window=bilingual_win,
+                client=client_acc,
+                post_title="Accordion Bottom Story",
+                post_excerpt="",
+                start=0.0,
+                end=5.0,
+                task_label="Story 1",
+                include_english=True,
+                include_spanish=True,
+                spanish_presentation="accordion",
+                accordion_pos="bottom",
+                primary_language="en",
+                include_audio=False,
+            )
+            bot_content = client_acc.created_posts[-1]["content"]["rendered"]
+            acc_bot_idx = bot_content.find("rtvs-language-accordion")
+            en_bot_idx = bot_content.find("Testing audio toggle feature")
+            if acc_bot_idx == -1 or en_bot_idx == -1:
+                raise AssertionError(f"Missing accordion or transcript in bottom placement post: {bot_content}")
+            if acc_bot_idx < en_bot_idx:
+                raise AssertionError(f"Accordion was not placed at bottom (after transcript). acc_pos={acc_bot_idx}, text_pos={en_bot_idx}")
+
+            # 5. Test audio fades rendering as new MP3 and upload to WordPress
+            captured_ffmpeg_cmds = []
+            def fade_sub_run(cmd, *a, **k):
+                captured_ffmpeg_cmds.append(list(cmd))
+                out_f = Path(cmd[-1])
+                out_f.write_bytes(b"ID3FadedMP3Bytes" + b"\x00" * 64)
+                return type("Res", (), {"returncode": 0, "stderr": ""})()
+
+            orig_wp_sub = wp_client.subprocess.run
+            try:
+                wp_client.subprocess.run = fade_sub_run
+                client_fades = MockWpClient()
+                with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as f_src:
+                    f_src.write(b"ID3FakeSourceAudio")
+                    src_audio = f_src.name
+
+                win_fade = DummyMainWindow(audio_path=src_audio)
+
+                # 5a. With fades enabled: fade_in=1.0s, fade_out=1.5s
+                res_fade = wp_client.execute_wordpress_upload(
+                    main_window=win_fade,
+                    client=client_fades,
+                    post_title="Story With Fades",
+                    post_excerpt="",
+                    start=0.0,
+                    end=5.0,
+                    task_label="Story 1",
+                    include_english=True,
+                    include_spanish=False,
+                    include_audio=True,
+                    fade_in=1.0,
+                    fade_out=1.5,
+                    fade_curve="linear",
+                    apply_fades=True,
+                )
+                if not res_fade or not captured_ffmpeg_cmds:
+                    raise AssertionError("FFmpeg was not called to render new MP3 with fades")
+                last_cmd = captured_ffmpeg_cmds[-1]
+                af_args = [last_cmd[i+1] for i, arg in enumerate(last_cmd) if arg == "-af"]
+                if not af_args or "afade=t=in" not in af_args[0] or "afade=t=out" not in af_args[0]:
+                    raise AssertionError(f"Expected afade filters in FFmpeg command, got: {last_cmd}")
+                if "afade=t=in:ss=0:d=1.000:curve=tri" not in af_args[0]:
+                    raise AssertionError(f"Expected linear 1.000s fade-in filter, got: {af_args[0]}")
+                if "afade=t=out:st=3.500:d=1.500:curve=tri" not in af_args[0]:
+                    raise AssertionError(f"Expected linear 1.500s fade-out filter starting at 3.500s, got: {af_args[0]}")
+
+                # Ensure rendered file was uploaded to media library
+                if not any("Story_With_Fades" in f or "audio" in f for f in client_fades.uploaded_files):
+                    raise AssertionError(f"Rendered faded MP3 was not uploaded: {client_fades.uploaded_files}")
+                fade_post_content = client_fades.created_posts[-1]["content"]["rendered"]
+                if "<!-- wp:audio -->" not in fade_post_content:
+                    raise AssertionError("Audio figure block missing from faded post content")
+
+                # 5b. With fades disabled: apply_fades=False
+                captured_ffmpeg_cmds.clear()
+                wp_client.execute_wordpress_upload(
+                    main_window=win_fade,
+                    client=client_fades,
+                    post_title="Story Without Fades",
+                    post_excerpt="",
+                    start=0.0,
+                    end=5.0,
+                    task_label="Story 1",
+                    include_english=True,
+                    include_spanish=False,
+                    include_audio=True,
+                    fade_in=1.0,
+                    fade_out=1.5,
+                    fade_curve="linear",
+                    apply_fades=False,
+                )
+                if captured_ffmpeg_cmds:
+                    last_cmd_nofade = captured_ffmpeg_cmds[-1]
+                    if "-af" in last_cmd_nofade:
+                        raise AssertionError(f"Unexpected -af filter present when apply_fades=False: {last_cmd_nofade}")
+            finally:
+                wp_client.subprocess.run = orig_wp_sub
+                try:
+                    Path(src_audio).unlink(missing_ok=True)
+                except Exception:
+                    pass
 
         finally:
             try:
