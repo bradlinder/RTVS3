@@ -1,7 +1,7 @@
 #define MyAppName "Radio & TV Segmenter"
 
 #ifndef MyAppVersion
-#define MyAppVersion "3.8.9-beta.12"
+#define MyAppVersion "3.8.9-beta.13"
 #endif
 
 
@@ -28,7 +28,7 @@ SetupIconFile=..\..\resources\icon.ico
 Compression=lzma2/max
 SolidCompression=yes
 LZMAUseSeparateProcess=yes
-LZMANumBlockThreads=max
+LZMANumBlockThreads=2
 ArchitecturesInstallIn64BitMode=x64compatible
 WizardStyle=modern
 Uninstallable=yes

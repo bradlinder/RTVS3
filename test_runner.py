@@ -4528,7 +4528,7 @@ class DiagnosticEngine:
         assert iss_path.is_file(), f"Missing Inno Setup script at {iss_path}"
         iss_content = iss_path.read_text(encoding="utf-8")
         assert "Compression=lzma2/max" in iss_content, "Inno Setup must specify Compression=lzma2/max"
-        assert "LZMANumBlockThreads=max" in iss_content, "Inno Setup must specify LZMANumBlockThreads=max"
+        assert "LZMANumBlockThreads=2" in iss_content, "Inno Setup must specify LZMANumBlockThreads=2"
         assert "SolidCompression=yes" in iss_content, "Inno Setup must retain SolidCompression=yes"
 
         # 2. build_installer.py Stage 3 PyInstaller worker flags verification

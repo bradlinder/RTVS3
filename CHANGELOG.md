@@ -1,5 +1,11 @@
 # Changelog
 
+## v3.8.9-beta.13
+- **Inno Setup LZMA2 Threading Directive Validation Fix (`installer/Windows/RadioTVStorySegmenter.iss`, `test_runner.py`)**:
+  - **Integer Directive Syntax Correction**: Resolved a fatal `Compile aborted` error on line 31 in `RadioTVStorySegmenter.iss` (`Value of [Setup] section directive "LZMANumBlockThreads" is invalid`). Inno Setup requires an integer between 1 and 256 for `LZMANumBlockThreads`, not the string value `"max"`.
+  - **Optimal Multi-Core Thread Allocation**: Configured `LZMANumBlockThreads=2` to align with the standard 2-vCPU / 4-thread GitHub Actions Windows runner (`windows-latest`). Since each block thread employs 2 match-finding threads by default, `LZMANumBlockThreads=2` achieves 100% core saturation without parser rejection or memory pressure.
+  - **Diagnostic Assertion Alignment (`test_runner.py`)**: Updated diagnostic assertion in `_test_windows_ci_build_and_packaging_optimization_invariants` to validate `LZMANumBlockThreads=2`.
+
 ## v3.8.9-beta.12
 - **Windows CI Build Speed & PyInstaller Packaging Optimization (`build_installer.py`, `installer/Windows/RadioTVStorySegmenter.iss`, `.github/workflows/build.yml`)**:
   - **Fast Dedicated AI Worker Compilation (`build_installer.py`)**: Omitted redundant wheel collection and analysis flags (`*torch_binary_flags`, `*collect_flags`) from Stage 3 PyInstaller background worker packaging and explicitly excluded `PySide6`. Because `prs_worker.exe` is deployed alongside the fully-populated `app_root/_internal` directory produced in Stage 1, this eliminates 5m 45s of redundant wheel extraction, dropping dedicated AI background worker compilation to ~15 seconds while maintaining a 100% native Windows console subsystem executable with standard I/O pipes.

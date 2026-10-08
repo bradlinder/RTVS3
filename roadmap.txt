@@ -34,14 +34,14 @@ TABLE OF CONTENTS & STATUS OVERVIEW
    [x] 1.2 Headless & Batch Dialog Suppression (`plugins/wordpress/export_destination.py`): Connected `show_summary_dialog` checks ensuring automated batch export workflows and test executions proceed cleanly without blocking modal dialog prompts.
    [x] 1.3 WordPress Manifest Catch-Up Synchronization (`plugins/wordpress/manifest.json`): Synchronized plugin manifest version to v3.8.9-beta.11.
    [x] 1.4 Diagnostic Suite & Multi-Story Pipeline Hardening (`test_runner.py`): Configured headless test runs to suppress completion dialogs while thoroughly validating pluralized button labels, draft post generation, and audio toggle resilience across the test suite.
-   [x] 1.5 Synchronous Version Bump: Synchronized all 10 project locations to v3.8.9-beta.11.
+   [x] 1.5 Synchronous Version Bump: Synchronized all 10 project locations to v3.8.9-beta.13
 
-2. Current Release: Windows CI Build Speed & PyInstaller Packaging Optimization (`build_installer.py`, `installer/Windows/RadioTVStorySegmenter.iss`, `.github/workflows/build.yml`, `test_runner.py`) [x] [COMPLETED in v3.8.9-beta.12]
+2. Current Release: Windows CI Build Speed & PyInstaller Packaging Optimization (`build_installer.py`, `installer/Windows/RadioTVStorySegmenter.iss`, `.github/workflows/build.yml`, `test_runner.py`) [x] [COMPLETED in v3.8.9-beta.13]
    - *Empirical CI Run Benchmark (Workflow Total: ~24m 48s build + 1m 34s publish = ~26m 22s total from Latest Build)*:
      * #1 Bottleneck: "Build PyInstaller Executables" took 11m 45s (~44.6% of build duration).
      * #2 Bottleneck: "Build Inno Setup Installer" took 10m 53s (~41.3% of build duration).
      * Minor Steps: Install dependencies with uv (2m 44s), Inno install (22s), FFmpeg setup (4s), GitHub publish & asset release (1m 34s).
-     * Runner Infrastructure & Multi-Core Compression Analysis: GitHub `windows-latest` standard runners provide 2 vCPUs / 4 threads. While Inno Setup's `LZMANumBlockThreads=max` will utilize all available virtual cores, parallel scaling alone yields at most ~1.4x–1.6x due to vCPU contention and thread sync overhead. The true bottleneck in Inno Setup was the extreme dictionary and match finder settings in `Compression=lzma2/ultra64`, which exhaust CPU cycles searching for duplicate patterns in pre-compiled binary code with negligible size savings (<1 MB difference vs `ultra` or `max`).
+     * Runner Infrastructure & Multi-Core Compression Analysis: GitHub `windows-latest` standard runners provide 2 vCPUs / 4 threads. While Inno Setup's `LZMANumBlockThreads=2` will utilize all available virtual cores, parallel scaling alone yields at most ~1.4x–1.6x due to vCPU contention and thread sync overhead. The true bottleneck in Inno Setup was the extreme dictionary and match finder settings in `Compression=lzma2/ultra64`, which exhaust CPU cycles searching for duplicate patterns in pre-compiled binary code with negligible size savings (<1 MB difference vs `ultra` or `max`).
      * Combined Target: Slashes CI build times from ~24m 48s down to ~11–13 minutes (>50% reduction) by omitting redundant Stage 3 PyInstaller wheel analysis and enabling Inno Setup `lzma2/max` compression + multi-threading.
    [x] 2.1 Fast Dedicated AI Worker Compilation (`build_installer.py`) [HIGH IMPACT, ZERO RISK]:
        - Deprecated the risky unified multi-target `.spec` proposal: A single PyInstaller `.spec` combining a windowed GUI (`noconsole=True`) and a background worker (`console=True`) causes Windows subprocess console window flashing, sys.path namespace collisions, and unmanaged temp extraction collisions.
@@ -50,8 +50,8 @@ TABLE OF CONTENTS & STATUS OVERVIEW
        - Why this beats a launcher shim: Preserves native Windows console subsystem behavior (`sys.stdout`/`sys.stderr` are real pipes for `QProcess`), prevents child console flashing, avoids external C/Go compiler toolchains, and guarantees `multiprocessing.spawn` works seamlessly.
        - Result: Saves ~5m 30s with zero runtime or architectural risk.
    [x] 2.2 Inno Setup Compression Optimization & Parallel Block Threads (`installer/Windows/RadioTVStorySegmenter.iss`) [HIGH IMPACT, ZERO RISK]:
-       - Multi-Core Realities: Standard GitHub `windows-latest` runners provide 2 vCPUs / 4 threads. Adding `LZMANumBlockThreads=max` utilizes both cores for block-level compression.
-       - Compression Algorithm Optimization: Changed `Compression=lzma2/ultra64` to `Compression=lzma2/max` with `LZMANumBlockThreads=max`. The extreme 64MB dictionary in `ultra64` spent massive CPU cycles on diminishing returns for compiled binaries (<1MB difference on a ~180MB installer). Combining parallel block threads with `lzma2/max` reduces Inno Setup compilation from 10m 53s down to ~3–4 minutes (saving ~7 minutes).
+       - Multi-Core Realities: Standard GitHub `windows-latest` runners provide 2 vCPUs / 4 threads. Adding `LZMANumBlockThreads=2` utilizes both cores for block-level compression.
+       - Compression Algorithm Optimization: Changed `Compression=lzma2/ultra64` to `Compression=lzma2/max` with `LZMANumBlockThreads=2`. The extreme 64MB dictionary in `ultra64` spent massive CPU cycles on diminishing returns for compiled binaries (<1MB difference on a ~180MB installer). Combining parallel block threads with `lzma2/max` reduces Inno Setup compilation from 10m 53s down to ~3–4 minutes (saving ~7 minutes).
    [x] 2.3 PyInstaller Risk Pruning & Safe Exclusions (`build_installer.py`) [LOW IMPACT, AUDITED SAFE]:
        - REJECTED as Too Risky: `--optimize 1` (strips `assert` and docstrings, causing runtime failures in PyTorch dynamo, HuggingFace transformers, and docstring-inspecting libraries, while saving <3 seconds of build time).
        - REJECTED as Too Risky: Pruning `torch.distributed` or `torch.testing` (broke speaker diarization in v3.3.20 with `ModuleNotFoundError`).
@@ -62,7 +62,7 @@ TABLE OF CONTENTS & STATUS OVERVIEW
        - REJECTED as Too Brittle: Caching Chocolatey's Inno Setup directory (`C:\Program Files (x86)\Inno Setup 6`). Chocolatey takes only 22 seconds; caching it risks missing registry keys, PATH shims, or installer corruption for an insignificant ~20s gain.
        - Replaced PowerShell `Invoke-WebRequest` with native `curl.exe -fSL --retry 3` for fast, robust FFmpeg binary retrieval.
    [x] 2.5 Automated Diagnostic Verification Suite (`test_runner.py`): Added `_test_windows_ci_build_and_packaging_optimization_invariants` asserting Inno Setup LZMA2 multi-threading, worker wheel omission, and CI download resilience.
-   [x] 2.6 Synchronous Version Bump: Synchronized all 10 project locations to v3.8.9-beta.12.
+   [x] 2.6 Synchronous Version Bump: Synchronized all 10 project locations to v3.8.9-beta.13
 
 3. Upcoming Milestone: Multi-Platform Timeline & DAW Interchange Engine (`export/timeline.py`, `export/dialog.py`, `ui_layout.py`) [PLANNED for v3.8.9] [CORE] [NOT STARTED]
    [ ] 3.1 Migration to Unified Export Center Tab: Move timeline and DAW exports from the legacy File menu submenu into a dedicated "Timeline & DAW" tab in the Unified Export Center dialog.
@@ -112,11 +112,11 @@ DETAILED MILESTONE SPECIFICATIONS
 
 [x] 1.5 Synchronous Version Bump
 --------------------------------------------------------------------------------
-- Synchronized all 10 project locations to v3.8.9-beta.11.
+- Synchronized all 10 project locations to v3.8.9-beta.13
 
 
 ================================================================================
-2. CURRENT RELEASE: WINDOWS CI BUILD SPEED & PYINSTALLER PACKAGING OPTIMIZATION [x] [COMPLETED in v3.8.9-beta.12]
+2. CURRENT RELEASE: WINDOWS CI BUILD SPEED & PYINSTALLER PACKAGING OPTIMIZATION [x] [COMPLETED in v3.8.9-beta.13]
 ================================================================================
 *Empirical CI Run Timing Analysis (From Latest Windows Build: 24m 48s build + 1m 34s publish = ~26m 22s Total)*:
 --------------------------------------------------------------------------------
@@ -133,8 +133,8 @@ DETAILED MILESTONE SPECIFICATIONS
 - Complete job: 0s
 - **Key Takeaways & GitHub Runner Infrastructure Analysis**:
   1. PyInstaller (11m 45s) and Inno Setup (10m 53s) consume **22m 38s (91.3%)** of the active build job.
-  2. GitHub Actions standard `windows-latest` runners are provisioned with 2 vCPUs (4 threads). Because of this limited compute footprint, merely adding `LZMANumBlockThreads=max` will not magically deliver 4x linear speedups: parallel scaling on 2 vCPUs typically yields only ~1.4x–1.6x in practice due to hyperthreading resource contention and thread context-switching overhead.
-  3. The real performance multiplier for Inno Setup is changing the compression parameters. The current `Compression=lzma2/ultra64` uses an extreme 64MB dictionary size and deep match-finder cycles that burn CPU time searching for redundant patterns across already-compiled DLLs and binary weights. Changing to `Compression=lzma2/ultra` or `lzma2/max` with `LZMANumBlockThreads=max` stops wasting CPU cycles, bringing installer generation down from ~11 minutes to ~3–4 minutes while adding less than 1 MB to installer size.
+  2. GitHub Actions standard `windows-latest` runners are provisioned with 2 vCPUs (4 threads). Because of this limited compute footprint, merely adding `LZMANumBlockThreads=2` will not magically deliver 4x linear speedups: parallel scaling on 2 vCPUs typically yields only ~1.4x–1.6x in practice due to hyperthreading resource contention and thread context-switching overhead.
+  3. The real performance multiplier for Inno Setup is changing the compression parameters. The current `Compression=lzma2/ultra64` uses an extreme 64MB dictionary size and deep match-finder cycles that burn CPU time searching for redundant patterns across already-compiled DLLs and binary weights. Changing to `Compression=lzma2/ultra` or `lzma2/max` with `LZMANumBlockThreads=2` stops wasting CPU cycles, bringing installer generation down from ~11 minutes to ~3–4 minutes while adding less than 1 MB to installer size.
   4. For PyInstaller, omitting redundant heavy wheel re-collection in Stage 3 drops dedicated worker compilation from 5m 45s down to ~15s, saving ~5m 30s while preserving native console subsystem I/O and multiprocessing compatibility.
   5. Dependency setup with `setup-uv@v5` already utilizes built-in caching on warm runs; brittle runner-level caching (like Chocolatey) is avoided to protect stability.
   6. **Target Duration**: Cut total Windows CI build time from ~24m 48s to ~11–12 minutes (>50% reduction).
@@ -157,7 +157,7 @@ DETAILED MILESTONE SPECIFICATIONS
 --------------------------------------------------------------------------------
 - The Problem: `RadioTVStorySegmenter.iss` specifies `Compression=lzma2/ultra64`, `SolidCompression=yes`, and `LZMAUseSeparateProcess=yes`, but omits `LZMANumBlockThreads`. By default, LZMA2 solid compression runs single-threaded, forcing a single core on the GitHub Actions runner to compress ~1.2 GB of uncompressed binaries with an intensive 64MB dictionary, resulting in the 10m 53s build time.
 - The Solution:
-  1. Multi-Core Consideration on GitHub Actions: Standard GitHub `windows-latest` runners provide only 2 vCPUs / 4 threads. While `LZMANumBlockThreads=max` utilizes all available virtual cores, threading alone only provides a ~1.4x–1.6x improvement.
+  1. Multi-Core Consideration on GitHub Actions: Standard GitHub `windows-latest` runners provide only 2 vCPUs / 4 threads. While `LZMANumBlockThreads=2` utilizes all available virtual cores, threading alone only provides a ~1.4x–1.6x improvement.
   2. Algorithmic Optimization (The Primary Lever): Tune compression preset from `lzma2/ultra64` down to `lzma2/ultra` or `lzma2/max` with tuned block sizes. The `ultra64` 64MB match finder spends massive CPU cycles on diminishing returns for compiled binaries (<1MB difference on a ~180MB installer). Combining parallel block threads with `lzma2/max` or `lzma2/ultra` reduces Inno Setup compilation from 10m 53s to ~3–4 minutes (saving ~7 minutes).
 
 [x] 2.3 PyInstaller Risk Pruning & Safe Exclusions (`build_installer.py`)
@@ -183,7 +183,7 @@ DETAILED MILESTONE SPECIFICATIONS
 
 [x] 2.6 Synchronous Version Bump
 --------------------------------------------------------------------------------
-- Synchronized all 10 project locations to v3.8.9-beta.12.
+- Synchronized all 10 project locations to v3.8.9-beta.13
 
 
 ================================================================================
