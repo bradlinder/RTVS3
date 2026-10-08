@@ -133,7 +133,17 @@ def check_all_versions() -> dict[str, str]:
         m = re.search(r'expandedVersions.*?{\s*[\'"]v([^\'"]+)[\'"]', app_path.read_text(encoding="utf-8"))
         report["src/App.tsx"] = m.group(1) if m else "NOT FOUND"
 
-    # 10. Plugins
+    # 10. roadmap.txt (N-1 Sliding Window: Section 2)
+    roadmap_path = ROOT_DIR / "roadmap.txt"
+    if roadmap_path.is_file():
+        try:
+            from roadmap_manager import RoadmapManager
+            info = RoadmapManager(roadmap_path).get_sections_info()
+            report["roadmap.txt (Section 2)"] = info.get("current_version", "NOT FOUND")
+        except Exception:
+            report["roadmap.txt (Section 2)"] = "ERROR"
+
+    # 11. Plugins
     for p in sorted((ROOT_DIR / "plugins").glob("*/manifest.json")):
         try:
             d = json.loads(p.read_text(encoding="utf-8"))
@@ -297,6 +307,17 @@ def bump_all(new_version: str, dry_run: bool = False, plugins: list[str] | None 
 
     for path, new_content in modifications:
         path.write_text(new_content, encoding="utf-8")
+
+    # Synchronize roadmap.txt Section 2
+    roadmap_path = ROOT_DIR / "roadmap.txt"
+    if roadmap_path.is_file():
+        try:
+            from roadmap_manager import RoadmapManager
+            rm = RoadmapManager(roadmap_path)
+            rm.sync_current_version(clean_ver)
+            print(f"  [x] roadmap.txt (Section 2) -> v{clean_ver}")
+        except Exception as e:
+            print(f"  [!] Failed to sync roadmap.txt: {e}")
 
     print(f"[BUMP] Successfully updated {len(modifications)} files to v{clean_ver}.")
     return True

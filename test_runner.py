@@ -592,6 +592,11 @@ class DiagnosticEngine:
                 "CI & Packaging",
                 "Validates Inno Setup LZMA2 multi-threading and compression parameters, PyInstaller Stage 3 dedicated worker wheel omission and PySide6 exclusion, and CI curl download resilience",
             ),
+            DiagnosticItem(
+                "Roadmap N-1 Sliding Window and Status Integrity",
+                "Release Engineering & Documentation",
+                "Validates roadmap.txt N-1 sliding window retention, social digest status indicator compliance ([x], [-], [ ]), and synchronization with prs_shared.py PROJECT_VERSION via roadmap_manager",
+            ),
         ]
 
     def run_all(self, stop_requested_fn: Optional[Callable[[], bool]] = None) -> List[DiagnosticItem]:
@@ -4542,6 +4547,22 @@ class DiagnosticEngine:
 
         item.status = "PASS"
         item.message = "Inno Setup LZMA2 multi-threading, worker wheel omission, and CI download resilience verified"
+
+    def _test_roadmap_n_1_sliding_window_and_status_integrity(self, item: DiagnosticItem):
+        """Validates roadmap.txt N-1 sliding window retention, status indicator syntax, and version sync."""
+        from roadmap_manager import RoadmapManager
+        rm = RoadmapManager()
+        passed, issues = rm.audit()
+        assert passed, f"Roadmap audit failed: {'; '.join(issues)}"
+        counts = rm.count_item_statuses()
+        assert counts["completed"] > 0, "Roadmap must contain completed items"
+        info = rm.get_sections_info()
+        assert info.get("current_version"), "Roadmap must have a current release version"
+        item.status = "PASS"
+        item.message = (
+            f"Roadmap N-1 sliding window verified: N=v{info.get('current_version')}, "
+            f"N-1=v{info.get('prev_version')}; [x]={counts['completed']}, [-]={counts['in_progress']}, [ ]={counts['planned']}"
+        )
 
 
 def generate_diagnostic_report(engine: DiagnosticEngine) -> str:
