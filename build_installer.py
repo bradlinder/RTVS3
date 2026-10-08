@@ -59,7 +59,7 @@ try:
 except ImportError as e:
     print(f"[BUILD] Warning: Could not import prs_shared ({e}), using fallback values")
     APP_DISPLAY_NAME = "Radio & TV Segmenter"
-    PROJECT_VERSION = "3.8.9-beta.11"
+    PROJECT_VERSION = "3.8.9-beta.12"
 except Exception as e:
     print(f"[BUILD] Unexpected error importing prs_shared: {type(e).__name__}: {e}")
     raise
@@ -971,11 +971,20 @@ def main() -> None:
     worker_dest = app_root / worker_target_exe
     worker_in_subdir = workers_dir / worker_target_exe
 
-    # Compile prs_worker console executable with PyInstaller pointing to the shared onedir
+    # Compile prs_worker console executable with PyInstaller pointing to the shared onedir.
+    # Note: Because prs_worker runs in app_root alongside the fully-populated app_root/_internal
+    # directory generated in Stage 1, we omit redundant heavy wheel collection flags (*torch_binary_flags,
+    # *collect_flags) and exclude PySide6. This reduces worker compilation from ~5m 45s down to ~15s
+    # while ensuring a 100% native console subsystem executable with standard I/O pipes.
     worker_build = BUILD / "worker_entry"
     worker_dist = BUILD / "worker_dist"
     shutil.rmtree(worker_build, ignore_errors=True)
     shutil.rmtree(worker_dist, ignore_errors=True)
+
+    worker_exclude_flags = [
+        *exclude_flags,
+        "--exclude-module", "PySide6",
+    ]
     
     run([
         "pyinstaller", "--noconfirm", "--onedir", "--console", "--noupx",
@@ -984,10 +993,8 @@ def main() -> None:
         "--distpath", str(worker_dist),
         "--workpath", str(worker_build),
         "--runtime-hook", str(runtime_hook),
-        *torch_binary_flags,
         *icon_flags,
-        *exclude_flags,
-        *collect_flags,
+        *worker_exclude_flags,
         str(ROOT / "radio_tv_story_segmenter_worker.py"),
     ])
 

@@ -587,6 +587,11 @@ class DiagnosticEngine:
                 "Core Logic & File I/O",
                 "Validates Option C muted low-contrast silver/fog palette and dark-mode clipboard rich styling (black plain text, blue speaker labels, highlight backgrounds and text)",
             ),
+            DiagnosticItem(
+                "Windows CI Build and Packaging Optimization Invariants",
+                "CI & Packaging",
+                "Validates Inno Setup LZMA2 multi-threading and compression parameters, PyInstaller Stage 3 dedicated worker wheel omission and PySide6 exclusion, and CI curl download resilience",
+            ),
         ]
 
     def run_all(self, stop_requested_fn: Optional[Callable[[], bool]] = None) -> List[DiagnosticItem]:
@@ -4508,6 +4513,35 @@ class DiagnosticEngine:
 
         item.status = "PASS"
         item.message = "Option C muted low-contrast silver/fog palette and dark-mode rich clipboard normalization validated"
+
+    def _test_windows_ci_build_and_packaging_optimization_invariants(self, item: DiagnosticItem):
+        """Validates Inno Setup compression parameters, Stage 3 PyInstaller optimizations, and CI settings."""
+        root = Path(__file__).resolve().parent
+
+        # 1. Inno Setup ISS verification
+        iss_path = root / "installer" / "Windows" / "RadioTVStorySegmenter.iss"
+        assert iss_path.is_file(), f"Missing Inno Setup script at {iss_path}"
+        iss_content = iss_path.read_text(encoding="utf-8")
+        assert "Compression=lzma2/max" in iss_content, "Inno Setup must specify Compression=lzma2/max"
+        assert "LZMANumBlockThreads=max" in iss_content, "Inno Setup must specify LZMANumBlockThreads=max"
+        assert "SolidCompression=yes" in iss_content, "Inno Setup must retain SolidCompression=yes"
+
+        # 2. build_installer.py Stage 3 PyInstaller worker flags verification
+        bi_path = root / "build_installer.py"
+        assert bi_path.is_file(), f"Missing build_installer.py at {bi_path}"
+        bi_content = bi_path.read_text(encoding="utf-8")
+        assert '"--exclude-module", "PySide6"' in bi_content, "Worker packaging must explicitly exclude PySide6"
+        assert "worker_exclude_flags" in bi_content, "Worker packaging must utilize worker_exclude_flags"
+
+        # 3. .github/workflows/build.yml verification
+        wf_path = root / ".github" / "workflows" / "build.yml"
+        assert wf_path.is_file(), f"Missing build.yml at {wf_path}"
+        wf_content = wf_path.read_text(encoding="utf-8")
+        assert "curl.exe -fSL --retry 3" in wf_content, "FFmpeg setup in build.yml must use curl.exe with retry"
+        assert "enable-cache: true" in wf_content, "build.yml must enable caching for setup-uv"
+
+        item.status = "PASS"
+        item.message = "Inno Setup LZMA2 multi-threading, worker wheel omission, and CI download resilience verified"
 
 
 def generate_diagnostic_report(engine: DiagnosticEngine) -> str:

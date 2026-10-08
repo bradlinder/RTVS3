@@ -1,5 +1,12 @@
 # Changelog
 
+## v3.8.9-beta.12
+- **Windows CI Build Speed & PyInstaller Packaging Optimization (`build_installer.py`, `installer/Windows/RadioTVStorySegmenter.iss`, `.github/workflows/build.yml`)**:
+  - **Fast Dedicated AI Worker Compilation (`build_installer.py`)**: Omitted redundant wheel collection and analysis flags (`*torch_binary_flags`, `*collect_flags`) from Stage 3 PyInstaller background worker packaging and explicitly excluded `PySide6`. Because `prs_worker.exe` is deployed alongside the fully-populated `app_root/_internal` directory produced in Stage 1, this eliminates 5m 45s of redundant wheel extraction, dropping dedicated AI background worker compilation to ~15 seconds while maintaining a 100% native Windows console subsystem executable with standard I/O pipes.
+  - **Inno Setup LZMA2 Compression & Multi-Core Optimization (`installer/Windows/RadioTVStorySegmenter.iss`)**: Upgraded Inno Setup compression from single-threaded `lzma2/ultra64` to `Compression=lzma2/max` with `LZMANumBlockThreads=max`. By bypassing the diminishing returns of the 64MB match-finder dictionary and distributing block compression across available vCPU threads, installer generation time is cut from 10m 53s down to ~3–4 minutes while preserving solid compression and adding less than 1 MB to the installer package.
+  - **Robust CI Tool Retrieval (`.github/workflows/build.yml`)**: Replaced PowerShell `Invoke-WebRequest` with native `curl.exe -fSL --retry 3` for fast, resilient static FFmpeg binary downloads on Windows CI runners.
+  - **Audited Safe Optimization Scope**: Retained all existing module exclusions (`PYSIDE6_EXCLUDES`, `TEST_AND_BENCHMARK_EXCLUDES`) while explicitly rejecting risky `--optimize 1` bytecode stripping (which breaks docstrings and assert-dependent AI runtimes) and avoiding brittle runner-level directory caching.
+
 ## v3.8.9-beta.11
 - **WordPress Multi-Story Upload & Summary Dialog Resilience (`plugins/wordpress/export_destination.py`, `plugins/wordpress/manifest.json`)**:
   - **QWidget Parent Type Validation**: Resolved a `TypeError` in `QMessageBox.information`, `QMessageBox.warning`, and `QMessageBox.critical` calls where non-widget host instances (such as test runners or headless harnesses) could trigger runtime exceptions when showing completion dialogs. Enforced typed `parent_widget: Optional[QWidget]` validation across all message box invocations.

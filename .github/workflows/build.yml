@@ -163,7 +163,7 @@ jobs:
           $zipFile = "$env:TEMP\ffmpeg.zip"
           
           Write-Host "Downloading static FFmpeg from $zipUrl..."
-          Invoke-WebRequest -Uri $zipUrl -OutFile $zipFile -UseBasicParsing
+          curl.exe -fSL --retry 3 $zipUrl -o $zipFile
           
           Expand-Archive -Path $zipFile -DestinationPath $binDir -Force
           Remove-Item -Force $zipFile
