@@ -160,10 +160,11 @@ def generate_synthetic_wav(
 class DiagnosticItem:
     """Represents the execution outcome of an individual test or diagnostic probe."""
 
-    def __init__(self, name: str, category: str, description: str):
+    def __init__(self, name: str, category: str, description: str, dev_only: bool = False):
         self.name = name
         self.category = category
         self.description = description
+        self.dev_only = dev_only
         self.status: str = "PENDING"  # PENDING, RUNNING, PASS, FAIL, SKIP, WARNING
         self.message: str = ""
         self.duration_sec: float = 0.0
@@ -174,6 +175,7 @@ class DiagnosticItem:
             "name": self.name,
             "category": self.category,
             "description": self.description,
+            "dev_only": self.dev_only,
             "status": self.status,
             "message": self.message,
             "duration_sec": round(self.duration_sec, 3),
@@ -263,10 +265,28 @@ class DiagnosticEngine:
         re.IGNORECASE
     )
 
-    def __init__(self, on_update_callback: Optional[Callable[[DiagnosticItem], None]] = None):
+    def __init__(
+        self,
+        on_update_callback: Optional[Callable[[DiagnosticItem], None]] = None,
+        include_dev_tests: Optional[bool] = None,
+    ):
         self.on_update = on_update_callback
+        if include_dev_tests is None:
+            is_frozen = getattr(sys, "frozen", False)
+            has_dev_flag = (
+                os.environ.get("RTVS_DEV_MODE") == "1"
+                or "--developer-mode" in sys.argv
+                or "--dev" in sys.argv
+                or "--all" in sys.argv
+            )
+            self.include_dev_tests = (not is_frozen) or has_dev_flag
+        else:
+            self.include_dev_tests = include_dev_tests
+
         self.items: List[DiagnosticItem] = []
         self._init_item_registry()
+        if not self.include_dev_tests:
+            self.items = [it for it in self.items if not it.dev_only]
 
     def _init_item_registry(self):
         self.items = [
@@ -591,11 +611,13 @@ class DiagnosticEngine:
                 "Windows CI Build and Packaging Optimization Invariants",
                 "CI & Packaging",
                 "Validates Inno Setup LZMA2 multi-threading and compression parameters, PyInstaller Stage 3 dedicated worker wheel omission and PySide6 exclusion, and CI curl download resilience",
+                dev_only=True,
             ),
             DiagnosticItem(
                 "Roadmap N-1 Sliding Window and Status Integrity",
                 "Release Engineering & Documentation",
                 "Validates roadmap.txt N-1 sliding window retention, social digest status indicator compliance ([x], [-], [ ]), and synchronization with prs_shared.py PROJECT_VERSION via roadmap_manager",
+                dev_only=True,
             ),
         ]
 
@@ -4665,7 +4687,7 @@ def generate_diagnostic_report(engine: DiagnosticEngine) -> str:
 # Standalone PySide6 Graphical Test Bench Dialog
 # ---------------------------------------------------------------------------
 
-def create_diagnostic_dialog(parent=None):
+def create_diagnostic_dialog(parent=None, include_dev_tests: Optional[bool] = None):
     """Builds the Diagnostic Test Bench Qt Dialog."""
     from PySide6.QtCore import Qt, QThread, Signal, QObject
     from PySide6.QtWidgets import (
@@ -4693,12 +4715,12 @@ def create_diagnostic_dialog(parent=None):
             self.finished.emit()
 
     class DiagnosticDialog(QDialog):
-        def __init__(self, parent=None):
+        def __init__(self, parent=None, include_dev_tests: Optional[bool] = None):
             super().__init__(parent)
             self.setWindowTitle("System Diagnostic Test Bench & Hardware Health")
             self.resize(880, 620)
             self.setWindowFlags(self.windowFlags() | Qt.WindowType.WindowMaximizeButtonHint)
-            self.engine = DiagnosticEngine()
+            self.engine = DiagnosticEngine(include_dev_tests=include_dev_tests)
             self.worker_thread: Optional[QThread] = None
             self.worker: Optional[TestRunnerWorker] = None
 
@@ -4904,20 +4926,20 @@ def create_diagnostic_dialog(parent=None):
                 self.worker_thread.wait(1000)
             event.accept()
 
-    return DiagnosticDialog(parent)
+    return DiagnosticDialog(parent, include_dev_tests=include_dev_tests)
 
 
 # ---------------------------------------------------------------------------
 # CLI Test Runner Entrypoint
 # ---------------------------------------------------------------------------
 
-def run_cli_diagnostics(verbose: bool = True) -> int:
+def run_cli_diagnostics(verbose: bool = True, include_dev_tests: Optional[bool] = None) -> int:
     """Executes the diagnostic engine in headless console mode with human-readable output."""
     print("=" * 65)
     print(" Radio & TV Story Segmenter — System Diagnostic Test Bench")
     print("=" * 65)
 
-    engine = DiagnosticEngine()
+    engine = DiagnosticEngine(include_dev_tests=include_dev_tests)
     total_tests = len(engine.items)
     passed_count = 0
     failed_count = 0

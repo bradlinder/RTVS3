@@ -1,5 +1,11 @@
 # Changelog
 
+## v3.8.9-beta.16
+- **Diagnostic Test Bench End-User Accessibility & Surgical Dev-Test Filtering (`test_runner.py`, `ui_layout.py`, `RadioTVSegmenter.py`)**:
+  - **Restored Diagnostic Test Bench Menu Action**: Re-enabled `Help -> Run Diagnostic Test Bench...` (and `--run-diagnostics` CLI) for all users in both installed frozen binaries and source development environments, ensuring users can freely test and verify all application engines and runtimes.
+  - **Surgical Developer-Only Test Tagging (`dev_only=True`)**: Added `dev_only` parameter to `DiagnosticItem`. Tagged repository/build-only tests (`Windows CI Build and Packaging Optimization Invariants` and `Roadmap N-1 Sliding Window and Status Integrity`) as `dev_only=True`.
+  - **Clean End-User Test Execution**: The Diagnostic Test Bench now automatically executes all 61 user-facing feature and runtime verification probes in installed end-user builds while omitting internal developer/build checks, eliminating false failures on repository files (`.github/workflows`, `roadmap.txt`, Inno Setup script) with 100% clean passes. In development environments and CI, all 63 probes execute.
+
 ## v3.8.9-beta.15
 - **Developer Diagnostic vs. User-Facing Feature Verification Partitioning (`RadioTVSegmenter.py`, `ui_layout.py`, `benchmark.py`, `test_runner.py`)**:
   - **Developer Diagnostics Isolation**: Restricted the 63-probe developer diagnostic test bench (`test_runner.py`) strictly to developer environments (`not sys.frozen`, AI Studio, `RTVS_DEV_MODE=1`, or command-line `--developer-mode`). In standard end-user compiled builds (`RadioTVSegmenter.exe`), developer diagnostics are hidden from the Help menu to eliminate user-facing false alarms on repository-only files.

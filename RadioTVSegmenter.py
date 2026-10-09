@@ -41,15 +41,8 @@ if len(sys.argv) > 1 and sys.argv[1] in ("--prs-worker", "--worker"):
     import radio_tv_story_segmenter_worker
     raise SystemExit(radio_tv_story_segmenter_worker.main(sys.argv[2:]))
 
-# If invoked to run the developer diagnostic test bench (CLI mode or standalone GUI dialog)
+# If invoked to run the diagnostic test bench (CLI mode or standalone GUI dialog)
 if len(sys.argv) > 1 and sys.argv[1] in ("--run-diagnostics", "--test-bench", "--test-runner"):
-    _is_dev = not getattr(sys, "frozen", False) or os.environ.get("RTVS_DEV_MODE") == "1" or "--developer-mode" in sys.argv or "--dev" in sys.argv
-    if not _is_dev:
-        print("[NOTICE] Developer & build diagnostics are restricted to developer mode.", flush=True)
-        print("         To run developer diagnostics, execute: RadioTVSegmenter.exe --developer-mode --run-diagnostics", flush=True)
-        print("         To run user-facing feature & performance verification, execute: RadioTVSegmenter.exe --benchmark", flush=True)
-        raise SystemExit(0)
-
     import test_runner
     if "--gui" in sys.argv:
         from PySide6.QtWidgets import QApplication
