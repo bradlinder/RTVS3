@@ -1,5 +1,17 @@
 # Changelog
 
+## v3.8.9-beta.18
+- **REAPER RPP Clean Header, Native Fade Recognition & Scope-Aware Splits (`export/timeline.py`, `project_export.py`, `ui_layout.py`, `test_runner.py`)**:
+  - **Eliminated REAPER Project Load Warnings**: Stripped obsolete tokens (`MIXERSLIDERS` and `PLAYREC`) from the Cockos REAPER `.rpp` generator, ensuring exported projects open with 100% clean loads and no warning popups across all REAPER versions.
+  - **Native REAPER Fades & Curve Shape Mapping**: Connected story `fade_in`, `fade_out`, and `fade_curve` parameters directly to REAPER's `<ITEM` chunk with second-precision durations and native curve shape index mapping (`linear` -> 0, `exponential` -> 1, `logarithmic` -> 2, `s_curve` -> 3). Manually adjusted RTVS fades now render exact visual fade ramps and interactive handles on media items in REAPER.
+  - **True Scope-Aware Timeline Generation & Pre-Splits**:
+    - **Full Episode**: Generates continuous timeline coverage spanning 0:00 to the total episode duration with pre-splits separating stories and interstitials (Intro / Pre-Story, Story 1, Interstitial Gaps, Story 2, Outro). The full episode is 100% intact, divided into individually editable segments.
+    - **All Stories / Selected Stories**: Generates isolated story cuts on a dedicated track with non-story audio excluded.
+    - **Full Episode & All Stories**: Generates a multi-track DAW layout with Track 1 ("Full Episode (Splits)") and Track 2 ("Story Cuts"), accompanied by REAPER colored region markers across the timeline ruler.
+  - **Multi-DAW Scope & Split Parity**: Extended the continuous full-episode split generation and scope routing across Apple Final Cut Pro / Adobe Premiere XML (`.xml`), DaVinci Resolve (`.fcpxml`), Avid Media Composer (`.aaf`), Hindenburg (`.nhx`), and Samplitude (`.edl`).
+  - **File Menu Redundancy Cleanup**: Removed the redundant `Export Timeline / DAW...` action from the File menu in `ui_layout.py`, directing timeline export workflows cleanly into the Unified Export Center dialog.
+  - **Diagnostic Suite Coverage**: Added test assertions in `test_runner.py` verifying header hygiene (no `MIXERSLIDERS` or `PLAYREC`), Full Episode split continuity, multi-track dual-rail generation, and curve fade mapping.
+
 ## v3.8.9-beta.17
 - **Multi-Platform Timeline & DAW Interchange Engine (`export/timeline.py`, `export/dialog.py`, `ui_layout.py`, `project_export.py`, `test_runner.py`)**:
   - **Migration to Unified Export Center Tab**: Migrated timeline and DAW project exports from separate scattered File submenus into a first-class, dedicated "Timeline & DAW Interchange" tab inside the Unified Export Center dialog (`export/dialog.py`).

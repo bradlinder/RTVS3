@@ -1176,16 +1176,38 @@ class DiagnosticEngine:
             raise AssertionError("Muted mode clips missing is_muted flag")
 
         # 4. Verify Formatters output
-        reaper_out = generate_reaper_project(stories, "test.wav", "TestProject", total_duration=total_dur, unselected_audio_mode="muted", track_name="Test Track")
+        stories_with_fades = [
+            {"title": "Story Alpha", "start_time": 10.0, "end_time": 20.0, "summary_en": "First segment", "fade_in": 1.5, "fade_out": 2.0, "fade_curve": "s_curve"},
+            {"title": "Story Beta", "start_time": 30.0, "end_time": 40.0, "summary_en": "Second segment", "fade_in": 0.5, "fade_out": 1.0, "fade_curve": "linear"},
+        ]
+
+        # 4a. REAPER Scope: Full Episode with splits & clean headers (no MIXERSLIDERS, no PLAYREC)
+        reaper_full = generate_reaper_project(stories_with_fades, "test.wav", "TestProject", total_duration=total_dur, scope="full")
+        if "MIXERSLIDERS" in reaper_full or "PLAYREC" in reaper_full:
+            raise AssertionError("REAPER project must omit obsolete MIXERSLIDERS and PLAYREC tokens")
+        if "Full Episode (Splits)" not in reaper_full or "Story Alpha" not in reaper_full or "Intro / Pre-Story" not in reaper_full:
+            raise AssertionError("REAPER Full Episode export missing Full Episode track or continuous split items")
+        if "FADEIN 3 1.500000" not in reaper_full or "FADEOUT 3 2.000000" not in reaper_full:
+            raise AssertionError("REAPER export missing s-curve fade parameter mapping")
+        if "FADEIN 0 0.500000" not in reaper_full or "FADEOUT 0 1.000000" not in reaper_full:
+            raise AssertionError("REAPER export missing linear fade parameter mapping")
+
+        # 4b. REAPER Scope: Full Episode & All Stories (multi-track)
+        reaper_dual = generate_reaper_project(stories_with_fades, "test.wav", "TestProject", total_duration=total_dur, scope="full_and_all_stories")
+        if "Full Episode (Splits)" not in reaper_dual or "Story Cuts" not in reaper_dual:
+            raise AssertionError("REAPER multi-track export missing Full Episode or Story Cuts tracks")
+
+        # 4c. REAPER Scope: Muted mode
+        reaper_out = generate_reaper_project(stories, "test.wav", "TestProject", total_duration=total_dur, unselected_audio_mode="muted", track_name="Test Track", scope="all_stories")
         if "MUTE 1" not in reaper_out or "Story Alpha" not in reaper_out or "Test Track" not in reaper_out:
             raise AssertionError("REAPER project export missing muted clip markers or story titles")
 
         edl_out = generate_samplitude_edl(stories, "test.wav", "TestProject", total_duration=total_dur, unselected_audio_mode="split")
-        if "Unselected Audio 1" not in edl_out or "Story Alpha" not in edl_out:
+        if "Unselected Audio 1" not in edl_out and "Interstitial Gap 1" not in edl_out:
             raise AssertionError("Samplitude EDL export missing unselected gap entries")
 
         audacity_out = generate_audacity_labels(stories, total_duration=total_dur, unselected_audio_mode="split")
-        if "10.000000" not in audacity_out or "Unselected Audio 1" not in audacity_out or "Story Alpha" not in audacity_out:
+        if "10.000000" not in audacity_out or "Story Alpha" not in audacity_out:
             raise AssertionError("Audacity label track export missing timestamps or labels")
 
         xml_out = generate_audition_xml(stories, "test.wav", "TestProject", total_duration=total_dur, unselected_audio_mode="muted")

@@ -801,12 +801,6 @@ class UiLayoutMixin:
         self.export_action = export_act
         file_menu.addAction(export_act)
 
-        export_timeline_act = QAction("Export &Timeline / DAW...", self)
-        export_timeline_act.setToolTip("Open Unified Export Center on the Timeline & DAW Interchange tab")
-        export_timeline_act.triggered.connect(lambda: self.open_unified_export_dialog(initial_dest="timeline") if hasattr(self, "open_unified_export_dialog") else None)
-        self.export_timeline_action = export_timeline_act
-        file_menu.addAction(export_timeline_act)
-
         copy_yt_act = QAction("Copy &YouTube Chapters to Clipboard", self)
         copy_yt_act.setShortcut(platform_seq("Ctrl+Shift+Y"))
         copy_yt_act.triggered.connect(lambda: self.copy_youtube_chapters_to_clipboard() if hasattr(self, "copy_youtube_chapters_to_clipboard") else None)
