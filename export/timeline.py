@@ -35,6 +35,33 @@ def _xml_escape(text: str) -> str:
     )
 
 
+# Harmonized accessible 8-color palette used for story segments in RTVS (theme_tokens.py)
+RTVS_STORY_PALETTE: tuple[str, ...] = (
+    "#2563eb",  # Cerulean
+    "#d97706",  # Amber
+    "#059669",  # Emerald
+    "#7c3aed",  # Violet
+    "#e11d48",  # Coral/Rose
+    "#0d9488",  # Teal
+    "#4f46e5",  # Indigo
+    "#db2777",  # Berry/Pink
+)
+
+
+def reaper_color_from_hex(hex_str: str) -> int:
+    """Convert #RRGGBB hex color to Cockos REAPER custom color integer (0x1000000 | 0x1RRGGBB)."""
+    h = str(hex_str or "").lstrip("#")
+    if len(h) != 6:
+        return 0
+    try:
+        r = int(h[0:2], 16)
+        g = int(h[2:4], 16)
+        b = int(h[4:6], 16)
+        return 0x1000000 | (r << 16) | (g << 8) | b
+    except Exception:
+        return 0
+
+
 def _reaper_fade_curve_index(curve_name: str) -> int:
     """Map RTVS fade curve name to Cockos REAPER native curve shape index."""
     c = str(curve_name or "").lower().strip()
@@ -88,16 +115,22 @@ def build_timeline_clips(
     unselected_audio_mode: str = "exclude",
     apply_fades: bool = True,
     scope: str = "all_stories",
+    all_stories: Optional[list] = None,
 ) -> List[Dict[str, Any]]:
     """Build an ordered list of timeline clips, supporting Full Episode continuous splits and story cuts."""
-    sorted_stories = sorted(
-        stories or [],
-        key=lambda s: _get_story_start(s)
-    )
-
     norm_scope = str(scope or "all_stories").lower().strip()
     is_full_episode_scope = norm_scope in ("full", "full_and_all_stories")
     mode = str(unselected_audio_mode or "exclude").lower().strip()
+
+    # Determine reference story list for indexing & palette colors
+    ref_list = all_stories if all_stories else (stories or [])
+    story_to_idx = {id(s): i for i, s in enumerate(ref_list)}
+
+    # Target stories to place on timeline
+    target_stories = all_stories if (is_full_episode_scope and all_stories) else (stories or [])
+    sorted_stories = sorted(target_stories, key=lambda s: _get_story_start(s))
+
+    selected_ids = {id(s) for s in (stories or [])}
 
     # For Full Episode scope, the entire episode from 0:00 to total_duration must be continuous with splits.
     include_gaps = is_full_episode_scope or (mode in ("split", "muted"))
@@ -111,6 +144,9 @@ def build_timeline_clips(
             f_in = float(getattr(s, "fade_in", 0.0) if not isinstance(s, dict) else s.get("fade_in", 0.0)) if apply_fades else 0.0
             f_out = float(getattr(s, "fade_out", 0.0) if not isinstance(s, dict) else s.get("fade_out", 0.0)) if apply_fades else 0.0
             f_curve = str(getattr(s, "fade_curve", "linear") if not isinstance(s, dict) else s.get("fade_curve", "linear")) or "linear"
+            idx = story_to_idx.get(id(s), 0)
+            c_hex = RTVS_STORY_PALETTE[idx % len(RTVS_STORY_PALETTE)]
+            c_val = reaper_color_from_hex(c_hex)
             clips.append({
                 "start": start,
                 "end": end,
@@ -121,13 +157,16 @@ def build_timeline_clips(
                 "fade_in": f_in,
                 "fade_out": f_out,
                 "fade_curve": f_curve,
+                "is_story": True,
+                "color_hex": c_hex,
+                "color_val": c_val,
+                "story_index": idx + 1,
             })
         return clips
 
     clips = []
     current_time = 0.0
     is_muted = (mode == "muted")
-    gap_counter = 1
 
     for s in sorted_stories:
         start = _get_story_start(s)
@@ -137,52 +176,64 @@ def build_timeline_clips(
         f_out = float(getattr(s, "fade_out", 0.0) if not isinstance(s, dict) else s.get("fade_out", 0.0)) if apply_fades else 0.0
         f_curve = str(getattr(s, "fade_curve", "linear") if not isinstance(s, dict) else s.get("fade_curve", "linear")) or "linear"
 
-        # Pre-story or interstitial gap segment
+        # Audio section before this story (not associated with any story: no label)
         if start > current_time + 0.005:
-            if current_time < 0.005:
-                gap_label = "Intro / Pre-Story" + (" (Muted)" if is_muted else "")
-            else:
-                gap_label = f"Interstitial Gap {gap_counter}" + (" (Muted)" if is_muted else "")
-                gap_counter += 1
-
             clips.append({
                 "start": current_time,
                 "end": start,
                 "duration": max(0.0, start - current_time),
-                "title": gap_label,
+                "title": "",  # Sections not associated with a story are not labeled
                 "is_unselected": True,
                 "is_muted": is_muted,
                 "fade_in": 0.0,
                 "fade_out": 0.0,
                 "fade_curve": "linear",
+                "is_story": False,
+                "color_hex": "",
+                "color_val": 0,
+                "story_index": 0,
             })
+
+        idx = story_to_idx.get(id(s), 0)
+        c_hex = RTVS_STORY_PALETTE[idx % len(RTVS_STORY_PALETTE)]
+        c_val = reaper_color_from_hex(c_hex)
+        is_unselected_story = (id(s) not in selected_ids) and (not is_full_episode_scope)
+        story_is_muted = is_muted if is_unselected_story else False
 
         clips.append({
             "start": start,
             "end": end,
             "duration": max(0.0, end - start),
             "title": title,
-            "is_unselected": False,
-            "is_muted": False,
+            "is_unselected": is_unselected_story,
+            "is_muted": story_is_muted,
             "fade_in": f_in,
             "fade_out": f_out,
             "fade_curve": f_curve,
+            "is_story": True,
+            "color_hex": c_hex,
+            "color_val": c_val,
+            "story_index": idx + 1,
         })
         current_time = max(current_time, end)
 
     eff_total = max(float(total_duration or 0.0), current_time)
     if eff_total > current_time + 0.005:
-        gap_label = "Outro / Post-Story" + (" (Muted)" if is_muted else "")
+        # Audio section after last story (not associated with any story: no label)
         clips.append({
             "start": current_time,
             "end": eff_total,
             "duration": max(0.0, eff_total - current_time),
-            "title": gap_label,
+            "title": "",  # Sections not associated with a story are not labeled
             "is_unselected": True,
             "is_muted": is_muted,
             "fade_in": 0.0,
             "fade_out": 0.0,
             "fade_curve": "linear",
+            "is_story": False,
+            "color_hex": "",
+            "color_val": 0,
+            "story_index": 0,
         })
 
     return clips
@@ -194,7 +245,7 @@ def _build_reaper_track_block(
     source_type: str,
     media_name_only: str,
 ) -> List[str]:
-    """Generate a clean Cockos REAPER <TRACK block with media items, fades, and source offsets."""
+    """Generate a clean Cockos REAPER <TRACK block with media items, fades, colors, and source offsets."""
     track_guid = f"{{{str(uuid.uuid4()).upper()}}}"
     clean_track_name = track_name.replace('"', "'")
 
@@ -219,14 +270,19 @@ def _build_reaper_track_block(
         f_out = clip.get("fade_out", 0.0)
         c_in = _reaper_fade_curve_index(clip.get("fade_curve", "linear"))
         c_out = _reaper_fade_curve_index(clip.get("fade_curve", "linear"))
+        color_val = clip.get("color_val", 0)
 
-        lines.extend([
+        item_lines = [
             '    <ITEM',
             f'      POSITION {start:.6f}',
             '      SNAPOFFS 0.000000',
             f'      LENGTH {length:.6f}',
             '      LOOP 0',
             '      ALLTAKES 0',
+        ]
+        if color_val > 0:
+            item_lines.append(f'      COLOR {color_val} B')
+        item_lines.extend([
             f'      FADEIN {c_in} {f_in:.6f} 0.000000 1 0 0 0',
             f'      FADEOUT {c_out} {f_out:.6f} 0.000000 1 0 0 0',
             f'      MUTE {mute_val}',
@@ -239,6 +295,7 @@ def _build_reaper_track_block(
             '      >',
             '    >',
         ])
+        lines.extend(item_lines)
 
     lines.append('  >')  # Close TRACK
     return lines
@@ -254,6 +311,7 @@ def generate_reaper_project(
     unselected_audio_mode: str = "exclude",
     track_name: str = "Segmented Stories",
     scope: str = "all_stories",
+    all_stories: Optional[list] = None,
 ) -> str:
     """Generate a clean, warning-free Cockos REAPER project file (.rpp) with scope-aware tracks, fades, and regions."""
     norm_scope = str(scope or "all_stories").lower().strip()
@@ -288,37 +346,42 @@ def generate_reaper_project(
     if norm_scope == "full_and_all_stories":
         # Two tracks: Track 1 = Full Episode with story splits; Track 2 = Story Cuts
         full_clips = build_timeline_clips(
-            stories, total_duration, unselected_audio_mode, apply_fades, scope="full"
+            stories, total_duration, unselected_audio_mode, apply_fades, scope="full", all_stories=all_stories
         )
         lines.extend(_build_reaper_track_block("Full Episode (Splits)", full_clips, source_type, media_name_only))
 
         story_clips = build_timeline_clips(
-            stories, total_duration, unselected_audio_mode="exclude", apply_fades=apply_fades, scope="all_stories"
+            stories, total_duration, unselected_audio_mode="exclude", apply_fades=apply_fades, scope="all_stories", all_stories=all_stories
         )
         lines.extend(_build_reaper_track_block("Story Cuts", story_clips, source_type, media_name_only))
 
     elif norm_scope == "full":
         # One track: Full Episode with story splits spanning 0:00 to total_duration
         full_clips = build_timeline_clips(
-            stories, total_duration, unselected_audio_mode, apply_fades, scope="full"
+            stories, total_duration, unselected_audio_mode, apply_fades, scope="full", all_stories=all_stories
         )
         lines.extend(_build_reaper_track_block("Full Episode (Splits)", full_clips, source_type, media_name_only))
 
     else:
         # One track: Isolated story clips
         story_clips = build_timeline_clips(
-            stories, total_duration, unselected_audio_mode, apply_fades, scope="all_stories"
+            stories, total_duration, unselected_audio_mode, apply_fades, scope="all_stories", all_stories=all_stories
         )
         t_name = track_name or "Segmented Stories"
         lines.extend(_build_reaper_track_block(t_name, story_clips, source_type, media_name_only))
 
-    # Generate REAPER Regions for each story across the timeline
-    for i, s in enumerate(stories or [], 1):
+    # Generate paired color-coded REAPER Regions for each story across the timeline matching RTVS story selection colors
+    stories_for_regions = all_stories if (norm_scope in ("full", "full_and_all_stories") and all_stories) else (stories or [])
+    for i, s in enumerate(stories_for_regions, 1):
         s_start = _get_story_start(s)
         s_end = _get_story_end(s, s_start)
         s_title = str(getattr(s, "title", "") if not isinstance(s, dict) else s.get("title", "")).strip() or f"Story {i}"
         clean_s_title = s_title.replace('"', "'")
-        lines.append(f'  MARKER {i} {s_start:.6f} "{clean_s_title}" 1 {s_end:.6f} 1 0')
+        c_hex = RTVS_STORY_PALETTE[(i - 1) % len(RTVS_STORY_PALETTE)]
+        c_val = reaper_color_from_hex(c_hex)
+        region_guid = f"{{{str(uuid.uuid4()).upper()}}}"
+        lines.append(f'  MARKER {i} {s_start:.6f} "{clean_s_title}" 1 {c_val} 1 B {region_guid} 0')
+        lines.append(f'  MARKER {i} {s_end:.6f} "" 1')
 
     lines.append('>')  # Close REAPER_PROJECT
     return "\n".join(lines) + "\n"
@@ -334,9 +397,10 @@ def generate_samplitude_edl(
     unselected_audio_mode: str = "exclude",
     track_name: str = "Segmented Stories",
     scope: str = "all_stories",
+    all_stories: Optional[list] = None,
 ) -> str:
     """Generate a standard Magix Samplitude EDL (v1.5) broadcast edit decision list."""
-    clips = build_timeline_clips(stories, total_duration, unselected_audio_mode, apply_fades, scope=scope)
+    clips = build_timeline_clips(stories, total_duration, unselected_audio_mode, apply_fades, scope=scope, all_stories=all_stories)
     clean_proj_title = (project_title or "Segmented Project").replace('"', "'")
     media_name_only = Path(media_filename or "audio.wav").name
 
@@ -378,6 +442,7 @@ def generate_fcp7_xml(
     unselected_audio_mode: str = "exclude",
     track_name: str = "Segmented Stories",
     scope: str = "all_stories",
+    all_stories: Optional[list] = None,
 ) -> str:
     """Generate Final Cut Pro 7 XML (xmeml v5) interchange format for Premiere Pro and Audition."""
     clean_title = _xml_escape(project_title or "Segmented Project")
@@ -388,16 +453,16 @@ def generate_fcp7_xml(
     norm_scope = str(scope or "all_stories").lower().strip()
     if norm_scope == "full_and_all_stories":
         track_configs = [
-            ("Full Episode (Splits)", build_timeline_clips(stories, total_duration, unselected_audio_mode, scope="full")),
-            ("Story Cuts", build_timeline_clips(stories, total_duration, unselected_audio_mode="exclude", scope="all_stories")),
+            ("Full Episode (Splits)", build_timeline_clips(stories, total_duration, unselected_audio_mode, scope="full", all_stories=all_stories)),
+            ("Story Cuts", build_timeline_clips(stories, total_duration, unselected_audio_mode="exclude", scope="all_stories", all_stories=all_stories)),
         ]
     elif norm_scope == "full":
         track_configs = [
-            ("Full Episode (Splits)", build_timeline_clips(stories, total_duration, unselected_audio_mode, scope="full")),
+            ("Full Episode (Splits)", build_timeline_clips(stories, total_duration, unselected_audio_mode, scope="full", all_stories=all_stories)),
         ]
     else:
         track_configs = [
-            (clean_track, build_timeline_clips(stories, total_duration, unselected_audio_mode, scope="all_stories")),
+            (clean_track, build_timeline_clips(stories, total_duration, unselected_audio_mode, scope="all_stories", all_stories=all_stories)),
         ]
 
     lines: List[str] = [
@@ -471,9 +536,10 @@ def generate_fcpxml(
     unselected_audio_mode: str = "exclude",
     track_name: str = "Segmented Stories",
     scope: str = "all_stories",
+    all_stories: Optional[list] = None,
 ) -> str:
     """Generate Apple Final Cut Pro X XML (.fcpxml) format for FCPX, DaVinci Resolve, and Logic Pro."""
-    clips = build_timeline_clips(stories, total_duration, unselected_audio_mode, scope=scope)
+    clips = build_timeline_clips(stories, total_duration, unselected_audio_mode, scope=scope, all_stories=all_stories)
     clean_title = _xml_escape(project_title or "Segmented Project")
     media_name = _xml_escape(Path(media_filename or "audio.wav").name)
     eff_total = max(float(total_duration or 0.0), max((c["end"] for c in clips), default=0.0))
@@ -529,9 +595,10 @@ def generate_aaf_interchange(
     unselected_audio_mode: str = "exclude",
     track_name: str = "Segmented Stories",
     scope: str = "all_stories",
+    all_stories: Optional[list] = None,
 ) -> str:
     """Generate Universal AAF XML Interchange format (.aaf) for Avid Media Composer and Pro Tools."""
-    clips = build_timeline_clips(stories, total_duration, unselected_audio_mode, scope=scope)
+    clips = build_timeline_clips(stories, total_duration, unselected_audio_mode, scope=scope, all_stories=all_stories)
     clean_title = _xml_escape(project_title or "Segmented Project")
     clean_track = _xml_escape(track_name or "Segmented Stories")
     media_name = _xml_escape(Path(media_filename or "audio.wav").name)
@@ -602,6 +669,7 @@ def generate_hindenburg_session(
     track_name: str = "Segmented Stories",
     apply_fades: bool = True,
     scope: str = "all_stories",
+    all_stories: Optional[list] = None,
 ) -> str:
     """Generate a Hindenburg Broadcast Session (.nhx) for Hindenburg Journalist and Broadcaster."""
     clean_title = _xml_escape(project_title or "Segmented Project")
@@ -611,16 +679,16 @@ def generate_hindenburg_session(
     norm_scope = str(scope or "all_stories").lower().strip()
     if norm_scope == "full_and_all_stories":
         track_configs = [
-            ("Full Episode (Splits)", build_timeline_clips(stories, total_duration, unselected_audio_mode, apply_fades=apply_fades, scope="full")),
-            ("Story Cuts", build_timeline_clips(stories, total_duration, unselected_audio_mode="exclude", apply_fades=apply_fades, scope="all_stories")),
+            ("Full Episode (Splits)", build_timeline_clips(stories, total_duration, unselected_audio_mode, apply_fades=apply_fades, scope="full", all_stories=all_stories)),
+            ("Story Cuts", build_timeline_clips(stories, total_duration, unselected_audio_mode="exclude", apply_fades=apply_fades, scope="all_stories", all_stories=all_stories)),
         ]
     elif norm_scope == "full":
         track_configs = [
-            ("Full Episode (Splits)", build_timeline_clips(stories, total_duration, unselected_audio_mode, apply_fades=apply_fades, scope="full")),
+            ("Full Episode (Splits)", build_timeline_clips(stories, total_duration, unselected_audio_mode, apply_fades=apply_fades, scope="full", all_stories=all_stories)),
         ]
     else:
         track_configs = [
-            (clean_track, build_timeline_clips(stories, total_duration, unselected_audio_mode, apply_fades=apply_fades, scope="all_stories")),
+            (clean_track, build_timeline_clips(stories, total_duration, unselected_audio_mode, apply_fades=apply_fades, scope="all_stories", all_stories=all_stories)),
         ]
 
     lines: List[str] = [
@@ -651,7 +719,8 @@ def generate_hindenburg_session(
     ])
 
     # Markers for stories
-    for i, s in enumerate(stories or [], 1):
+    stories_for_markers = all_stories if (norm_scope in ("full", "full_and_all_stories") and all_stories) else (stories or [])
+    for i, s in enumerate(stories_for_markers, 1):
         s_start = _get_story_start(s)
         s_end = _get_story_end(s, s_start)
         s_dur = max(0.0, s_end - s_start)
@@ -675,9 +744,10 @@ def generate_audacity_labels(
     total_duration: float = 0.0,
     unselected_audio_mode: str = "exclude",
     scope: str = "all_stories",
+    all_stories: Optional[list] = None,
 ) -> str:
     """Generate an Audacity Label Track (.txt) import file."""
-    clips = build_timeline_clips(stories, total_duration, unselected_audio_mode, scope=scope)
+    clips = build_timeline_clips(stories, total_duration, unselected_audio_mode, scope=scope, all_stories=all_stories)
     lines: List[str] = []
     for clip in clips:
         lines.append(f"{clip['start']:.6f}\t{clip['end']:.6f}\t{clip['title']}")
@@ -703,9 +773,10 @@ def generate_daw_marker_csv(
     total_duration: float = 0.0,
     unselected_audio_mode: str = "exclude",
     scope: str = "all_stories",
+    all_stories: Optional[list] = None,
 ) -> str:
     """Generate a Universal DAW & NLE Marker List (.csv) format."""
-    clips = build_timeline_clips(stories, total_duration, unselected_audio_mode, scope=scope)
+    clips = build_timeline_clips(stories, total_duration, unselected_audio_mode, scope=scope, all_stories=all_stories)
     lines: List[str] = [
         '"Marker Name","Start Time (s)","End Time (s)","Duration (s)","Type","Status"',
     ]

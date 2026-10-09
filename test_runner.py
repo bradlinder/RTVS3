@@ -1185,8 +1185,12 @@ class DiagnosticEngine:
         reaper_full = generate_reaper_project(stories_with_fades, "test.wav", "TestProject", total_duration=total_dur, scope="full")
         if "MIXERSLIDERS" in reaper_full or "PLAYREC" in reaper_full:
             raise AssertionError("REAPER project must omit obsolete MIXERSLIDERS and PLAYREC tokens")
-        if "Full Episode (Splits)" not in reaper_full or "Story Alpha" not in reaper_full or "Intro / Pre-Story" not in reaper_full:
+        if "Full Episode (Splits)" not in reaper_full or "Story Alpha" not in reaper_full:
             raise AssertionError("REAPER Full Episode export missing Full Episode track or continuous split items")
+        if 'NAME ""' not in reaper_full:
+            raise AssertionError("REAPER Full Episode export missing unlabelled split items for non-story audio")
+        if "COLOR" not in reaper_full or "1 B" not in reaper_full:
+            raise AssertionError("REAPER export missing RTVS story palette color coding or paired region markers")
         if "FADEIN 3 1.500000" not in reaper_full or "FADEOUT 3 2.000000" not in reaper_full:
             raise AssertionError("REAPER export missing s-curve fade parameter mapping")
         if "FADEIN 0 0.500000" not in reaper_full or "FADEOUT 0 1.000000" not in reaper_full:
@@ -1203,8 +1207,8 @@ class DiagnosticEngine:
             raise AssertionError("REAPER project export missing muted clip markers or story titles")
 
         edl_out = generate_samplitude_edl(stories, "test.wav", "TestProject", total_duration=total_dur, unselected_audio_mode="split")
-        if "Unselected Audio 1" not in edl_out and "Interstitial Gap 1" not in edl_out:
-            raise AssertionError("Samplitude EDL export missing unselected gap entries")
+        if "Story Alpha" not in edl_out or '""' not in edl_out:
+            raise AssertionError("Samplitude EDL export missing story or unlabelled gap entries")
 
         audacity_out = generate_audacity_labels(stories, total_duration=total_dur, unselected_audio_mode="split")
         if "10.000000" not in audacity_out or "Story Alpha" not in audacity_out:

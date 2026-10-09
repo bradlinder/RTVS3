@@ -2847,6 +2847,7 @@ class ProjectExportMixin(ProjectLifecycleMixin):
                 unselected_audio_mode=unselected_mode,
                 track_name=track_name,
                 scope=scope,
+                all_stories=all_stories,
             )
             with open(rpp_file, "w", encoding="utf-8") as f:
                 f.write(content)
@@ -2864,6 +2865,7 @@ class ProjectExportMixin(ProjectLifecycleMixin):
                 unselected_audio_mode=unselected_mode,
                 track_name=track_name,
                 scope=scope,
+                all_stories=all_stories,
             )
             with open(edl_file, "w", encoding="utf-8") as f:
                 f.write(content)
@@ -2880,6 +2882,7 @@ class ProjectExportMixin(ProjectLifecycleMixin):
                 unselected_audio_mode=unselected_mode,
                 track_name=track_name,
                 scope=scope,
+                all_stories=all_stories,
             )
             with open(xml_file, "w", encoding="utf-8") as f:
                 f.write(content)
@@ -2896,6 +2899,7 @@ class ProjectExportMixin(ProjectLifecycleMixin):
                 unselected_audio_mode=unselected_mode,
                 track_name=track_name,
                 scope=scope,
+                all_stories=all_stories,
             )
             with open(fcpxml_file, "w", encoding="utf-8") as f:
                 f.write(content)
@@ -2912,6 +2916,7 @@ class ProjectExportMixin(ProjectLifecycleMixin):
                 unselected_audio_mode=unselected_mode,
                 track_name=track_name,
                 scope=scope,
+                all_stories=all_stories,
             )
             with open(aaf_file, "w", encoding="utf-8") as f:
                 f.write(content)
@@ -2929,6 +2934,7 @@ class ProjectExportMixin(ProjectLifecycleMixin):
                 track_name=track_name,
                 apply_fades=apply_fades,
                 scope=scope,
+                all_stories=all_stories,
             )
             with open(nhx_file, "w", encoding="utf-8") as f:
                 f.write(content)
@@ -2941,6 +2947,7 @@ class ProjectExportMixin(ProjectLifecycleMixin):
                 total_duration=tot_dur,
                 unselected_audio_mode=unselected_mode,
                 scope=scope,
+                all_stories=all_stories,
             )
             with open(aud_file, "w", encoding="utf-8") as f:
                 f.write(content)
@@ -2965,6 +2972,7 @@ class ProjectExportMixin(ProjectLifecycleMixin):
                 total_duration=tot_dur,
                 unselected_audio_mode=unselected_mode,
                 scope=scope,
+                all_stories=all_stories,
             )
             with open(csv_file, "w", encoding="utf-8") as f:
                 f.write(content)
