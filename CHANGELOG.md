@@ -1,5 +1,22 @@
 # Changelog
 
+## v3.8.9-beta.17
+- **Multi-Platform Timeline & DAW Interchange Engine (`export/timeline.py`, `export/dialog.py`, `ui_layout.py`, `project_export.py`, `test_runner.py`)**:
+  - **Migration to Unified Export Center Tab**: Migrated timeline and DAW project exports from separate scattered File submenus into a first-class, dedicated "Timeline & DAW Interchange" tab inside the Unified Export Center dialog (`export/dialog.py`).
+  - **Centralized Parameter Controls**: Centralized primary track naming, unselected audio gap handling (Exclude, Split Clips, Muted Clips), project sequence sampling rate selection (44.1 kHz, 48 kHz, 96 kHz, 192 kHz), audio fade embedding, and destination directory routing into a unified workflow.
+  - **Streamlined Multi-Platform Format Exporters (`export/timeline.py`)**: Implemented production-grade XML and interchange sequence generators for:
+    - Final Cut Pro 7 XML (`.xml`) for Adobe Premiere Pro and Adobe Audition
+    - Final Cut Pro X XML (`.fcpxml`) for Apple Final Cut Pro and Blackmagic DaVinci Resolve
+    - Universal AAF Interchange (`.aaf`) for Avid Media Composer
+    - Hindenburg Broadcast Session (`.nhx`) for Hindenburg Journalist / PRO
+    - Cockos REAPER Project (`.rpp`) with embedded media items, track fades, and region markers
+    - Magix Samplitude EDL v1.5 (`.edl`)
+    - Audacity Label Track (`.txt`)
+    - Red Book Audio CD CUE Sheet (`.cue`)
+    - Universal DAW Marker List (`.csv`)
+  - **Direct Menu Accessibility**: Added `File -> Export Timeline / DAW...` in `ui_layout.py` which directly opens the Unified Export Center on the Timeline & DAW Interchange tab with shortcut integration.
+  - **Automated Diagnostic Suite Coverage**: Added comprehensive test assertions in `test_runner.py` verifying all 9 timeline format generators, track headers, and gap clip structures with 100% test pass rate.
+
 ## v3.8.9-beta.16
 - **Diagnostic Test Bench End-User Accessibility & Surgical Dev-Test Filtering (`test_runner.py`, `ui_layout.py`, `RadioTVSegmenter.py`)**:
   - **Restored Diagnostic Test Bench Menu Action**: Re-enabled `Help -> Run Diagnostic Test Bench...` (and `--run-diagnostics` CLI) for all users in both installed frozen binaries and source development environments, ensuring users can freely test and verify all application engines and runtimes.

@@ -801,18 +801,11 @@ class UiLayoutMixin:
         self.export_action = export_act
         file_menu.addAction(export_act)
 
-        export_timeline_menu = file_menu.addMenu("Export &Timeline / DAW")
-        export_reaper_act = QAction("Cockos &REAPER Project (.rpp)...", self)
-        export_reaper_act.triggered.connect(lambda: self.export_reaper_project() if hasattr(self, "export_reaper_project") else None)
-        export_timeline_menu.addAction(export_reaper_act)
-
-        export_samplitude_act = QAction("Magix Samplitude &EDL v1.5 (.edl)...", self)
-        export_samplitude_act.triggered.connect(lambda: self.export_samplitude_edl() if hasattr(self, "export_samplitude_edl") else None)
-        export_timeline_menu.addAction(export_samplitude_act)
-
-        export_cue_act = QAction("&CUE Sheet (.cue)...", self)
-        export_cue_act.triggered.connect(lambda: self.export_cue_sheet() if hasattr(self, "export_cue_sheet") else None)
-        export_timeline_menu.addAction(export_cue_act)
+        export_timeline_act = QAction("Export &Timeline / DAW...", self)
+        export_timeline_act.setToolTip("Open Unified Export Center on the Timeline & DAW Interchange tab")
+        export_timeline_act.triggered.connect(lambda: self.open_unified_export_dialog(initial_dest="timeline") if hasattr(self, "open_unified_export_dialog") else None)
+        self.export_timeline_action = export_timeline_act
+        file_menu.addAction(export_timeline_act)
 
         copy_yt_act = QAction("Copy &YouTube Chapters to Clipboard", self)
         copy_yt_act.setShortcut(platform_seq("Ctrl+Shift+Y"))

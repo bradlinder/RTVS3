@@ -19,7 +19,7 @@ from PySide6.QtWidgets import (
 from prs_shared import INTERNAL_APP_ID
 from core_utils import apply_window_titlebar_theme, get_active_theme_mode, make_dialog_maximizable
 
-DEFAULT_EXPORT_DESTINATIONS_ORDER = ["local", "wordpress", "gdocs", "youtube"]
+DEFAULT_EXPORT_DESTINATIONS_ORDER = ["local", "timeline", "wordpress", "gdocs", "youtube"]
 
 
 def _get_export_theme_mode() -> str:

@@ -19,11 +19,16 @@ from export.subtitles import (
     generate_vtt_content,
     generate_cue_content,
 )
-from export.daw import (
+from export.timeline import (
     generate_reaper_project,
     generate_samplitude_edl,
+    generate_fcp7_xml,
+    generate_fcpxml,
+    generate_aaf_interchange,
+    generate_hindenburg_session,
     generate_audacity_labels,
     generate_audition_xml,
+    generate_cue_sheet,
     generate_daw_marker_csv,
 )
 from export.docx import create_story_docx
@@ -1023,6 +1028,37 @@ class ProjectExportMixin(ProjectLifecycleMixin):
                 self.export_all_stories(custom_formats=formats, custom_base=chosen_name, custom_options=options, directory=str(project_dir), is_custom_location=is_custom)
             elif scope == "full_and_all_stories":
                 self.export_full_and_all_stories(custom_formats=formats, custom_base=chosen_name, custom_options=options, directory=str(project_dir), is_custom_location=is_custom)
+        elif dest == "timeline":
+            formats = result.get("formats", {})
+            base = result.get("base", "")
+            options = result.get("options", {})
+            export_dir = result.get("export_dir")
+            is_custom = bool(export_dir and os.path.isdir(export_dir))
+
+            if is_custom:
+                project_dir = Path(export_dir)
+                chosen_name = base
+            elif self.project_file and ((self.project_file.parent / "Transcripts").is_dir() or (self.project_file.parent / "Media").is_dir()):
+                project_dir, trans_dir, media_dir, chosen_name = self.prepare_export_directories()
+            else:
+                parent_dir = QFileDialog.getExistingDirectory(self, "Choose Export Location", self._dialog_directory())
+                if not parent_dir:
+                    return
+                project_dir, trans_dir, media_dir, chosen_name = self.prepare_export_directories(
+                    parent_dir, default_name=base, prompt_user=True
+                )
+
+            if not project_dir:
+                return
+
+            self.export_timeline_interchange(
+                formats=formats,
+                base=chosen_name or base,
+                options=options,
+                directory=str(project_dir),
+                scope=scope,
+                is_custom_location=is_custom,
+            )
         else:
             handled = False
             if hasattr(self, "plugin_manager") and self.plugin_manager:
@@ -2754,6 +2790,186 @@ class ProjectExportMixin(ProjectLifecycleMixin):
             self.log_activity(f"[EXPORT] {msg}")
             return True
         return False
+
+    def export_timeline_interchange(
+        self,
+        formats: dict,
+        base: str,
+        options: dict,
+        directory: str,
+        scope: str = "full",
+        is_custom_location: bool = False,
+    ) -> bool:
+        """Export multi-platform timeline and DAW interchange project files."""
+        is_music = getattr(self, "story_detection_mode", "voice") == "music"
+        term_plural = "Songs" if is_music else "Stories"
+
+        all_stories = getattr(self, "stories", []) or []
+        if scope == "selected_stories":
+            sel_idx = getattr(self, "current_selected_story_indices", [])
+            stories = [all_stories[i] for i in sel_idx if 0 <= i < len(all_stories)]
+            if not stories:
+                QMessageBox.warning(self, f"No {term_plural} Selected", f"Please select one or more {term_plural.lower()} to export.")
+                return False
+        else:
+            stories = all_stories
+
+        if not stories and not getattr(self, "audio_file", None):
+            QMessageBox.warning(self, "Nothing to Export", f"There are no {term_plural.lower()} or audio media loaded to export.")
+            return False
+
+        out = Path(directory)
+        create_bundle = str(self.settings_store.value("create_project_subfolders", "true")).lower() in {"1", "true", "yes"}
+        if create_bundle and not is_custom_location:
+            transcripts_out = out / "Transcripts"
+            transcripts_out.mkdir(parents=True, exist_ok=True)
+        else:
+            transcripts_out = out
+
+        media_name = self.audio_file.name if getattr(self, "audio_file", None) else "audio.wav"
+        tot_dur = float(getattr(self, "duration", 0.0) or getattr(self, "audio_duration", 0.0) or 0.0)
+        sample_rate = int(options.get("sample_rate", 48000))
+        apply_fades = bool(options.get("apply_audio_fades", True))
+        unselected_mode = options.get("unselected_audio_mode", "exclude")
+        track_name = options.get("track_name", "Segmented Stories")
+
+        exported_files: List[str] = []
+
+        if formats.get("rpp"):
+            rpp_file = transcripts_out / f"{base}.rpp"
+            content = generate_reaper_project(
+                stories,
+                media_name,
+                base,
+                apply_fades=apply_fades,
+                sample_rate=sample_rate,
+                total_duration=tot_dur,
+                unselected_audio_mode=unselected_mode,
+                track_name=track_name,
+            )
+            with open(rpp_file, "w", encoding="utf-8") as f:
+                f.write(content)
+            exported_files.append(str(rpp_file))
+
+        if formats.get("edl"):
+            edl_file = transcripts_out / f"{base}.edl"
+            content = generate_samplitude_edl(
+                stories,
+                media_name,
+                base,
+                sample_rate=sample_rate,
+                apply_fades=apply_fades,
+                total_duration=tot_dur,
+                unselected_audio_mode=unselected_mode,
+                track_name=track_name,
+            )
+            with open(edl_file, "w", encoding="utf-8") as f:
+                f.write(content)
+            exported_files.append(str(edl_file))
+
+        if formats.get("fcp7_xml") or formats.get("audition_xml"):
+            xml_file = transcripts_out / f"{base}.xml"
+            content = generate_fcp7_xml(
+                stories,
+                media_name,
+                base,
+                sample_rate=sample_rate,
+                total_duration=tot_dur,
+                unselected_audio_mode=unselected_mode,
+                track_name=track_name,
+            )
+            with open(xml_file, "w", encoding="utf-8") as f:
+                f.write(content)
+            exported_files.append(str(xml_file))
+
+        if formats.get("fcpxml"):
+            fcpxml_file = transcripts_out / f"{base}.fcpxml"
+            content = generate_fcpxml(
+                stories,
+                media_name,
+                base,
+                sample_rate=sample_rate,
+                total_duration=tot_dur,
+                unselected_audio_mode=unselected_mode,
+                track_name=track_name,
+            )
+            with open(fcpxml_file, "w", encoding="utf-8") as f:
+                f.write(content)
+            exported_files.append(str(fcpxml_file))
+
+        if formats.get("aaf"):
+            aaf_file = transcripts_out / f"{base}.aaf"
+            content = generate_aaf_interchange(
+                stories,
+                media_name,
+                base,
+                sample_rate=sample_rate,
+                total_duration=tot_dur,
+                unselected_audio_mode=unselected_mode,
+                track_name=track_name,
+            )
+            with open(aaf_file, "w", encoding="utf-8") as f:
+                f.write(content)
+            exported_files.append(str(aaf_file))
+
+        if formats.get("hindenburg"):
+            nhx_file = transcripts_out / f"{base}.nhx"
+            content = generate_hindenburg_session(
+                stories,
+                media_name,
+                base,
+                sample_rate=sample_rate,
+                total_duration=tot_dur,
+                unselected_audio_mode=unselected_mode,
+                track_name=track_name,
+                apply_fades=apply_fades,
+            )
+            with open(nhx_file, "w", encoding="utf-8") as f:
+                f.write(content)
+            exported_files.append(str(nhx_file))
+
+        if formats.get("audacity"):
+            aud_file = transcripts_out / f"{base}_labels.txt"
+            content = generate_audacity_labels(
+                stories,
+                total_duration=tot_dur,
+                unselected_audio_mode=unselected_mode,
+            )
+            with open(aud_file, "w", encoding="utf-8") as f:
+                f.write(content)
+            exported_files.append(str(aud_file))
+
+        if formats.get("cue"):
+            cue_file = transcripts_out / f"{base}.cue"
+            content = generate_cue_sheet(
+                stories,
+                media_filename=media_name,
+                project_title=base,
+                total_duration=tot_dur,
+            )
+            with open(cue_file, "w", encoding="utf-8") as f:
+                f.write(content)
+            exported_files.append(str(cue_file))
+
+        if formats.get("daw_csv"):
+            csv_file = transcripts_out / f"{base}_markers.csv"
+            content = generate_daw_marker_csv(
+                stories,
+                total_duration=tot_dur,
+                unselected_audio_mode=unselected_mode,
+            )
+            with open(csv_file, "w", encoding="utf-8") as f:
+                f.write(content)
+            exported_files.append(str(csv_file))
+
+        self.log_activity(f"[EXPORT] Exported {len(exported_files)} Timeline / DAW file(s) to {transcripts_out}")
+        show_export_completion_dialog(
+            self,
+            "Timeline Export Complete",
+            f"Exported {len(exported_files)} timeline file(s) to:\n{transcripts_out}",
+            str(transcripts_out),
+        )
+        return True
 
     def perform_stories_export(
         self,

@@ -34,9 +34,9 @@ TABLE OF CONTENTS & STATUS OVERVIEW
    [x] 1.2 Headless & Batch Dialog Suppression (`plugins/wordpress/export_destination.py`): Connected `show_summary_dialog` checks ensuring automated batch export workflows and test executions proceed cleanly without blocking modal dialog prompts.
    [x] 1.3 WordPress Manifest Catch-Up Synchronization (`plugins/wordpress/manifest.json`): Synchronized plugin manifest version to v3.8.9-beta.11.
    [x] 1.4 Diagnostic Suite & Multi-Story Pipeline Hardening (`test_runner.py`): Configured headless test runs to suppress completion dialogs while thoroughly validating pluralized button labels, draft post generation, and audio toggle resilience across the test suite.
-   [x] 1.5 Synchronous Version Bump: Synchronized all 10 project locations to v3.8.9-beta.16
+   [x] 1.5 Synchronous Version Bump: Synchronized all 10 project locations to v3.8.9-beta.17
 
-2. Current Release: Windows CI Build Speed & PyInstaller Packaging Optimization (`build_installer.py`, `installer/Windows/RadioTVStorySegmenter.iss`, `.github/workflows/build.yml`, `test_runner.py`) [x] [COMPLETED in v3.8.9-beta.16]
+2. Current Release: Windows CI Build Speed & PyInstaller Packaging Optimization (`build_installer.py`, `installer/Windows/RadioTVStorySegmenter.iss`, `.github/workflows/build.yml`, `test_runner.py`) [x] [COMPLETED in v3.8.9-beta.17]
    - *Empirical CI Run Benchmark (Workflow Total: ~24m 48s build + 1m 34s publish = ~26m 22s total from Latest Build)*:
      * #1 Bottleneck: "Build PyInstaller Executables" took 11m 45s (~44.6% of build duration).
      * #2 Bottleneck: "Build Inno Setup Installer" took 10m 53s (~41.3% of build duration).
@@ -62,11 +62,11 @@ TABLE OF CONTENTS & STATUS OVERVIEW
        - REJECTED as Too Brittle: Caching Chocolatey's Inno Setup directory (`C:\Program Files (x86)\Inno Setup 6`). Chocolatey takes only 22 seconds; caching it risks missing registry keys, PATH shims, or installer corruption for an insignificant ~20s gain.
        - Replaced PowerShell `Invoke-WebRequest` with native `curl.exe -fSL --retry 3` for fast, robust FFmpeg binary retrieval.
    [x] 2.5 Automated Diagnostic Verification Suite (`test_runner.py`): Added `_test_windows_ci_build_and_packaging_optimization_invariants` asserting Inno Setup LZMA2 multi-threading, worker wheel omission, and CI download resilience.
-   [x] 2.6 Synchronous Version Bump: Synchronized all 10 project locations to v3.8.9-beta.16
+   [x] 2.6 Synchronous Version Bump: Synchronized all 10 project locations to v3.8.9-beta.17
 
-3. Upcoming Milestone: Multi-Platform Timeline & DAW Interchange Engine (`export/timeline.py`, `export/dialog.py`, `ui_layout.py`) [PLANNED for v3.8.9] [CORE] [NOT STARTED]
-   [ ] 3.1 Migration to Unified Export Center Tab: Move timeline and DAW exports from the legacy File menu submenu into a dedicated "Timeline & DAW" tab in the Unified Export Center dialog.
-   [ ] 3.2 Streamlined Multi-Platform Timeline Format Exporters: Final Cut Pro 7 XML, Final Cut Pro X XML (.fcpxml), Universal AAF Interchange (.aaf), Hindenburg Broadcast Session (.nhx), Cockos REAPER (.rpp), Samplitude EDL (.edl), Audacity Labels & CUE.
+3. Upcoming Milestone: Multi-Platform Timeline & DAW Interchange Engine (`export/timeline.py`, `export/dialog.py`, `ui_layout.py`) [PLANNED for v3.8.9] [CORE] [x] [COMPLETED]
+   [x] 3.1 Migration to Unified Export Center Tab: Move timeline and DAW exports from the legacy File menu submenu into a dedicated "Timeline & DAW" tab in the Unified Export Center dialog.
+   [x] 3.2 Streamlined Multi-Platform Timeline Format Exporters: Final Cut Pro 7 XML, Final Cut Pro X XML (.fcpxml), Universal AAF Interchange (.aaf), Hindenburg Broadcast Session (.nhx), Cockos REAPER (.rpp), Samplitude EDL (.edl), Audacity Labels & CUE.
 
 4. Future Milestone: Core Broadcast Voicebook, Peak LOD Cache & Speed-Listening Engine (`speaker_identity.py`, `processing.py`, `transcript_editor.py`) [PLANNED for v3.9.0] [CORE] [NOT STARTED]
    [ ] 4.1 Feature 1B — Persistent "Station Voicebook" (Cross-Show Speaker Library) (`speaker_identity.py`, `processing.py`): Global Host & Anchor Voicebook saving acoustic embeddings/signatures for regular station hosts (e.g. "Jane Doe (Host)", "John Smith (News Anchor)") across recordings; automatically matches and names known voices with confidence percentages upon diarization without manual re-tagging.
@@ -112,11 +112,11 @@ DETAILED MILESTONE SPECIFICATIONS
 
 [x] 1.5 Synchronous Version Bump
 --------------------------------------------------------------------------------
-- Synchronized all 10 project locations to v3.8.9-beta.16
+- Synchronized all 10 project locations to v3.8.9-beta.17
 
 
 ================================================================================
-2. CURRENT RELEASE: WINDOWS CI BUILD SPEED & PYINSTALLER PACKAGING OPTIMIZATION [x] [COMPLETED in v3.8.9-beta.16]
+2. CURRENT RELEASE: WINDOWS CI BUILD SPEED & PYINSTALLER PACKAGING OPTIMIZATION [x] [COMPLETED in v3.8.9-beta.17]
 ================================================================================
 *Empirical CI Run Timing Analysis (From Latest Windows Build: 24m 48s build + 1m 34s publish = ~26m 22s Total)*:
 --------------------------------------------------------------------------------
@@ -183,7 +183,7 @@ DETAILED MILESTONE SPECIFICATIONS
 
 [x] 2.6 Synchronous Version Bump
 --------------------------------------------------------------------------------
-- Synchronized all 10 project locations to v3.8.9-beta.16
+- Synchronized all 10 project locations to v3.8.9-beta.17
 
 
 [x] 2.7 Developer Diagnostic vs. User-Facing Feature Verification Partitioning (`RadioTVSegmenter.py`, `ui_layout.py`, `benchmark.py`, `test_runner.py`)
@@ -194,15 +194,15 @@ DETAILED MILESTONE SPECIFICATIONS
 
 
 ================================================================================
-3. UPCOMING MILESTONE: MULTI-PLATFORM TIMELINE & DAW INTERCHANGE ENGINE [PLANNED for v3.8.9] [CORE] [NOT STARTED]
+3. UPCOMING MILESTONE: MULTI-PLATFORM TIMELINE & DAW INTERCHANGE ENGINE [PLANNED for v3.8.9] [CORE] [x] [COMPLETED]
 ================================================================================
 
-[ ] 3.1 Migration to Unified Export Center Tab (`export/dialog.py`, `ui_layout.py`)
+[x] 3.1 Migration to Unified Export Center Tab (`export/dialog.py`, `ui_layout.py`)
 --------------------------------------------------------------------------------
 - Move DAW and timeline project exports from legacy File menu submenus into a dedicated "Timeline & DAW" tab in the Unified Export Center dialog.
 - Centralize track selectors, unselected gap handling modes, sampling rates, and output directory selection into a unified export flow.
 
-[ ] 3.2 Streamlined Multi-Platform Timeline Format Exporters (`export/timeline.py`)
+[x] 3.2 Streamlined Multi-Platform Timeline Format Exporters (`export/timeline.py`)
 --------------------------------------------------------------------------------
 - Extend `export/timeline.py` with standalone XML and interchange format generators for:
   * Final Cut Pro 7 XML & Final Cut Pro X XML (.fcpxml)

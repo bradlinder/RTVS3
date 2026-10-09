@@ -68,10 +68,17 @@ def seconds_to_cue_time(seconds: float) -> str:
     return f"{minutes:02d}:{secs:02d}:{frames:02d}"
 
 
-def generate_cue_sheet(stories: list, media_filename: str = "", album_title: str = "Album") -> str:
+def generate_cue_sheet(
+    stories: list,
+    media_filename: str = "",
+    album_title: str = "Album",
+    project_title: Optional[str] = None,
+    total_duration: float = 0.0,
+) -> str:
     """Generate a standard red-book compatible .cue sheet from story segments."""
     lines = []
-    clean_title = album_title.replace('"', "'")
+    title_to_use = project_title if project_title is not None else album_title
+    clean_title = (title_to_use or "Album").replace('"', "'")
     lines.append(f'TITLE "{clean_title}"')
     if media_filename:
         ext = Path(media_filename).suffix.lower()
@@ -80,19 +87,43 @@ def generate_cue_sheet(stories: list, media_filename: str = "", album_title: str
     else:
         lines.append('FILE "audio.wav" WAVE')
 
-    sorted_stories = sorted(stories, key=lambda s: getattr(s, "start", 0.0))
+    def _story_start(s):
+        if isinstance(s, dict):
+            return float(s.get("start", s.get("start_time", 0.0)) or 0.0)
+        return float(getattr(s, "start", getattr(s, "start_time", 0.0)) or 0.0)
+
+    def _story_title(s, default_lbl):
+        if isinstance(s, dict):
+            val = s.get("title", default_lbl)
+        else:
+            val = getattr(s, "title", default_lbl)
+        return (str(val).strip() if val else default_lbl).replace('"', "'")
+
+    sorted_stories = sorted(stories or [], key=_story_start)
     for i, story in enumerate(sorted_stories, 1):
-        title = (getattr(story, "title", "") or f"Track {i}").strip().replace('"', "'")
-        cue_time = seconds_to_cue_time(getattr(story, "start", 0.0))
+        title = _story_title(story, f"Track {i}")
+        cue_time = seconds_to_cue_time(_story_start(story))
         lines.append(f'  TRACK {i:02d} AUDIO')
         lines.append(f'    TITLE "{title}"')
         lines.append(f'    INDEX 01 {cue_time}')
     return "\n".join(lines) + "\n"
 
 
-def generate_cue_content(stories: list, media_filename: str = "", album_title: str = "Album") -> str:
+def generate_cue_content(
+    stories: list,
+    media_filename: str = "",
+    album_title: str = "Album",
+    project_title: Optional[str] = None,
+    total_duration: float = 0.0,
+) -> str:
     """Generate CUE sheet content from story segments (alias for generate_cue_sheet)."""
-    return generate_cue_sheet(stories, media_filename=media_filename, album_title=album_title)
+    return generate_cue_sheet(
+        stories,
+        media_filename=media_filename,
+        album_title=album_title,
+        project_title=project_title,
+        total_duration=total_duration,
+    )
 
 
 def generate_youtube_chapters(stories: list, ensure_zero_start: bool = True) -> str:

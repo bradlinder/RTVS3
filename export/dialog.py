@@ -251,6 +251,10 @@ class UnifiedExportDialog(QDialog):
         self.local_page = self._create_local_page()
         self.stacked_widget.addWidget(self.local_page)
 
+        self.radio_timeline = QRadioButton("Timeline && DAW Interchange")
+        self.timeline_page = self._create_timeline_page()
+        self.stacked_widget.addWidget(self.timeline_page)
+
         self._build_destinations_layout()
         self.dest_section.add_layout(self.dest_content_layout)
 
@@ -310,6 +314,16 @@ class UnifiedExportDialog(QDialog):
             "clean_title": "Local Files (Media & Transcripts)",
             "radio": self.radio_local,
             "page": self.local_page,
+            "dest_obj": None,
+        })
+
+        # Timeline & DAW Interchange
+        raw_entries.append({
+            "id": "timeline",
+            "title": "Timeline && DAW Interchange",
+            "clean_title": "Timeline & DAW Interchange",
+            "radio": self.radio_timeline,
+            "page": self.timeline_page,
             "dest_obj": None,
         })
 
@@ -809,6 +823,182 @@ class UnifiedExportDialog(QDialog):
             self.loc_custom_path_edit.setText(folder)
             self.loc_radio_custom.setChecked(True)
 
+    def _create_timeline_page(self) -> QWidget:
+        timeline_page = QWidget()
+        timeline_page_layout = QVBoxLayout(timeline_page)
+        timeline_page_layout.setContentsMargins(0, 0, 0, 0)
+
+        tl_scroll = QScrollArea()
+        tl_scroll.setWidgetResizable(True)
+        tl_scroll.setFrameShape(QFrame.Shape.NoFrame)
+        tl_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        tl_scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+
+        tl_scroll_content = QWidget()
+        tl_layout = QVBoxLayout(tl_scroll_content)
+        tl_layout.setContentsMargins(2, 2, 2, 2)
+        tl_layout.setSpacing(10)
+
+        tl_theme_mode = _get_export_theme_mode()
+
+        # 1. Timeline Formats Section
+        self.tl_formats_section = CollapsibleSection(
+            "Timeline & DAW Formats",
+            self,
+            is_expanded=True,
+            subtitle="RPP, EDL, FCPXML, AAF, NHX, Audacity, CUE, CSV",
+        )
+        self.tl_cb_rpp = QCheckBox("Cockos REAPER project (.rpp)")
+        self.tl_cb_edl = QCheckBox("Magix Samplitude EDL v1.5 (.edl)")
+        self.tl_cb_fcp7_xml = QCheckBox("Final Cut Pro 7 XML (.xml) / Adobe Premiere & Audition")
+        self.tl_cb_fcpxml = QCheckBox("Final Cut Pro X XML (.fcpxml) / DaVinci Resolve")
+        self.tl_cb_aaf = QCheckBox("Universal AAF Interchange (.aaf) / Avid Media Composer")
+        self.tl_cb_hindenburg = QCheckBox("Hindenburg Broadcast Session (.nhx)")
+        self.tl_cb_audacity = QCheckBox("Audacity label track (.txt)")
+        self.tl_cb_cue = QCheckBox("Red Book Audio CD CUE sheet (.cue)")
+        self.tl_cb_daw_csv = QCheckBox("Universal DAW marker list (.csv)")
+
+        self.tl_cb_rpp.setChecked(True)
+        self.tl_cb_edl.setChecked(True)
+        self.tl_cb_fcp7_xml.setChecked(True)
+        self.tl_cb_fcpxml.setChecked(False)
+        self.tl_cb_aaf.setChecked(False)
+        self.tl_cb_hindenburg.setChecked(False)
+        self.tl_cb_audacity.setChecked(False)
+        self.tl_cb_cue.setChecked(False)
+        self.tl_cb_daw_csv.setChecked(False)
+
+        self.tl_formats_section.add_widget(self.tl_cb_rpp)
+        self.tl_formats_section.add_widget(self.tl_cb_edl)
+        self.tl_formats_section.add_widget(self.tl_cb_fcp7_xml)
+        self.tl_formats_section.add_widget(self.tl_cb_fcpxml)
+        self.tl_formats_section.add_widget(self.tl_cb_aaf)
+        self.tl_formats_section.add_widget(self.tl_cb_hindenburg)
+        self.tl_formats_section.add_widget(self.tl_cb_audacity)
+        self.tl_formats_section.add_widget(self.tl_cb_cue)
+        self.tl_formats_section.add_widget(self.tl_cb_daw_csv)
+
+        tl_layout.addWidget(self.tl_formats_section)
+
+        # 2. Track & Session Parameters Section
+        self.tl_params_section = CollapsibleSection(
+            "Track & Session Parameters",
+            self,
+            is_expanded=True,
+            subtitle="Track Label, Sampling Rate, Gaps, Fades",
+        )
+
+        track_row = QHBoxLayout()
+        track_row.setSpacing(8)
+        lbl_track = QLabel("Primary Track Name:")
+        if tl_theme_mode == "light":
+            lbl_track.setStyleSheet("color: #545b66; font-size: 12px; font-weight: 500;")
+        elif tl_theme_mode == "high_contrast":
+            lbl_track.setStyleSheet("color: #ffffff; font-size: 12px; font-weight: 500;")
+        else:
+            lbl_track.setStyleSheet("color: #94a3b8; font-size: 12px; font-weight: 500;")
+        track_row.addWidget(lbl_track)
+        self.tl_track_name_edit = QLineEdit("Segmented Stories")
+        self.tl_track_name_edit.setToolTip("Name assigned to the audio timeline track in exported project files.")
+        track_row.addWidget(self.tl_track_name_edit)
+        self.tl_params_section.add_layout(track_row)
+
+        sr_row = QHBoxLayout()
+        sr_row.setSpacing(8)
+        lbl_sr = QLabel("Timeline Sampling Rate:")
+        if tl_theme_mode == "light":
+            lbl_sr.setStyleSheet("color: #545b66; font-size: 12px; font-weight: 500;")
+        elif tl_theme_mode == "high_contrast":
+            lbl_sr.setStyleSheet("color: #ffffff; font-size: 12px; font-weight: 500;")
+        else:
+            lbl_sr.setStyleSheet("color: #94a3b8; font-size: 12px; font-weight: 500;")
+        sr_row.addWidget(lbl_sr)
+        self.tl_sample_rate_combo = QComboBox()
+        self.tl_sample_rate_combo.addItem("48,000 Hz (Broadcast / TV Standard - 48 kHz)", 48000)
+        self.tl_sample_rate_combo.addItem("44,100 Hz (CD Audio Standard - 44.1 kHz)", 44100)
+        self.tl_sample_rate_combo.addItem("96,000 Hz (High-Resolution Studio - 96 kHz)", 96000)
+        self.tl_sample_rate_combo.addItem("192,000 Hz (Mastering - 192 kHz)", 192000)
+        self.tl_sample_rate_combo.setToolTip("Target audio sampling rate written into project sequence headers.")
+        sr_row.addWidget(self.tl_sample_rate_combo)
+        sr_row.addStretch()
+        self.tl_params_section.add_layout(sr_row)
+
+        unsel_row = QHBoxLayout()
+        unsel_row.setSpacing(8)
+        lbl_unsel = QLabel("Unselected Audio Mode:")
+        if tl_theme_mode == "light":
+            lbl_unsel.setStyleSheet("color: #545b66; font-size: 12px; font-weight: 500;")
+        elif tl_theme_mode == "high_contrast":
+            lbl_unsel.setStyleSheet("color: #ffffff; font-size: 12px; font-weight: 500;")
+        else:
+            lbl_unsel.setStyleSheet("color: #94a3b8; font-size: 12px; font-weight: 500;")
+        unsel_row.addWidget(lbl_unsel)
+        self.tl_unselected_combo = QComboBox()
+        self.tl_unselected_combo.addItem("Exclude unselected audio", "exclude")
+        self.tl_unselected_combo.addItem("Include unselected audio (Split Clips)", "split")
+        self.tl_unselected_combo.addItem("Include unselected audio (Muted Clips)", "muted")
+        self.tl_unselected_combo.setToolTip("Controls how unselected audio gaps between story segments are placed on the DAW timeline.")
+        unsel_row.addWidget(self.tl_unselected_combo)
+        unsel_row.addStretch()
+        self.tl_params_section.add_layout(unsel_row)
+
+        self.tl_cb_apply_fades = QCheckBox("Apply audio fade-in & fade-out to timeline clips")
+        self.tl_cb_apply_fades.setToolTip("Embeds fade ramp parameters directly into clip items across supported DAW projects.")
+        self.tl_cb_apply_fades.setChecked(True)
+        self.tl_params_section.add_widget(self.tl_cb_apply_fades)
+
+        tl_layout.addWidget(self.tl_params_section)
+
+        # 3. Location & Filename Section
+        self.tl_loc_section = CollapsibleSection("Export Location & Base Filename", self, is_expanded=True)
+        fn_row = QHBoxLayout()
+        fn_row.addWidget(QLabel("Base Filename:"))
+        audio_file = getattr(self.main_window, "audio_file", None)
+        default_name = Path(audio_file).stem if audio_file else "timeline_export"
+        self.tl_filename_edit = QLineEdit(default_name)
+        fn_row.addWidget(self.tl_filename_edit)
+        self.tl_loc_section.add_layout(fn_row)
+
+        self.tl_loc_group = QButtonGroup(self)
+        self.tl_loc_radio_default = QRadioButton("Project Folder (or prompt on export)")
+        self.tl_loc_radio_custom = QRadioButton("Custom Folder:")
+        self.tl_loc_radio_default.setChecked(True)
+        self.tl_loc_group.addButton(self.tl_loc_radio_default)
+        self.tl_loc_group.addButton(self.tl_loc_radio_custom)
+        self.tl_loc_section.add_widget(self.tl_loc_radio_default)
+
+        custom_row = QHBoxLayout()
+        custom_row.addWidget(self.tl_loc_radio_custom)
+        self.tl_custom_path_edit = QLineEdit()
+        self.tl_custom_path_edit.setEnabled(False)
+        custom_row.addWidget(self.tl_custom_path_edit, 1)
+        self.tl_browse_btn = QPushButton("Browse...")
+        self.tl_browse_btn.setEnabled(False)
+        self.tl_browse_btn.clicked.connect(self._browse_custom_timeline_location)
+        custom_row.addWidget(self.tl_browse_btn)
+        self.tl_loc_section.add_layout(custom_row)
+
+        self.tl_loc_radio_default.toggled.connect(self._on_timeline_location_radio_toggled)
+        self.tl_loc_radio_custom.toggled.connect(self._on_timeline_location_radio_toggled)
+        tl_layout.addWidget(self.tl_loc_section)
+
+        tl_layout.addStretch()
+        tl_scroll.setWidget(tl_scroll_content)
+        timeline_page_layout.addWidget(tl_scroll)
+        return timeline_page
+
+    def _on_timeline_location_radio_toggled(self):
+        use_custom = self.tl_loc_radio_custom.isChecked()
+        self.tl_custom_path_edit.setEnabled(use_custom)
+        self.tl_browse_btn.setEnabled(use_custom)
+
+    def _browse_custom_timeline_location(self):
+        initial = self.tl_custom_path_edit.text().strip() or str(Path.home())
+        folder = QFileDialog.getExistingDirectory(self, "Select Export Location", initial)
+        if folder:
+            self.tl_custom_path_edit.setText(folder)
+            self.tl_loc_radio_custom.setChecked(True)
+
     def _toggle_all_sections(self):
         all_sections = [self.dest_section, self.scope_section]
         curr_widget = self.stacked_widget.currentWidget()
@@ -832,6 +1022,8 @@ class UnifiedExportDialog(QDialog):
             if entry["radio"].isChecked():
                 if entry["id"] == "local":
                     self.export_btn.setText("Export Files...")
+                elif entry["id"] == "timeline":
+                    self.export_btn.setText("Export Timeline / DAW...")
                 else:
                     dest = entry.get("dest_obj")
                     btn_lbl = getattr(dest, "button_label", None) or f"Export to {getattr(dest, 'title', 'Destination')}..."
@@ -933,6 +1125,38 @@ class UnifiedExportDialog(QDialog):
                 self.loc_radio_custom.setChecked(True)
         self._on_location_radio_toggled()
 
+        # Timeline & DAW Options
+        self.tl_cb_rpp.setChecked(str(settings.value("export_opt_tl_rpp", "true")).lower() in {"1", "true", "yes"})
+        self.tl_cb_edl.setChecked(str(settings.value("export_opt_tl_edl", "true")).lower() in {"1", "true", "yes"})
+        self.tl_cb_fcp7_xml.setChecked(str(settings.value("export_opt_tl_fcp7_xml", "true")).lower() in {"1", "true", "yes"})
+        self.tl_cb_fcpxml.setChecked(str(settings.value("export_opt_tl_fcpxml", "false")).lower() in {"1", "true", "yes"})
+        self.tl_cb_aaf.setChecked(str(settings.value("export_opt_tl_aaf", "false")).lower() in {"1", "true", "yes"})
+        self.tl_cb_hindenburg.setChecked(str(settings.value("export_opt_tl_hindenburg", "false")).lower() in {"1", "true", "yes"})
+        self.tl_cb_audacity.setChecked(str(settings.value("export_opt_tl_audacity", "false")).lower() in {"1", "true", "yes"})
+        self.tl_cb_cue.setChecked(str(settings.value("export_opt_tl_cue", "false")).lower() in {"1", "true", "yes"})
+        self.tl_cb_daw_csv.setChecked(str(settings.value("export_opt_tl_daw_csv", "false")).lower() in {"1", "true", "yes"})
+        self.tl_track_name_edit.setText(str(settings.value("export_opt_tl_track_name", "Segmented Stories")))
+
+        tl_sr = int(settings.value("export_opt_tl_sample_rate", 48000))
+        idx_sr = self.tl_sample_rate_combo.findData(tl_sr)
+        if idx_sr >= 0:
+            self.tl_sample_rate_combo.setCurrentIndex(idx_sr)
+
+        tl_unsel = str(settings.value("export_opt_tl_unselected_mode", "exclude")).lower().strip()
+        idx_unsel = self.tl_unselected_combo.findData(tl_unsel)
+        if idx_unsel >= 0:
+            self.tl_unselected_combo.setCurrentIndex(idx_unsel)
+
+        self.tl_cb_apply_fades.setChecked(str(settings.value("export_opt_tl_apply_fades", "true")).lower() in {"1", "true", "yes"})
+
+        use_tl_custom = str(settings.value("export_opt_tl_custom_loc_enabled", "false")).lower() in {"1", "true", "yes"}
+        saved_tl_custom_dir = str(settings.value("export_opt_tl_custom_dir", "") or "").strip()
+        if saved_tl_custom_dir and os.path.isdir(saved_tl_custom_dir):
+            self.tl_custom_path_edit.setText(saved_tl_custom_dir)
+            if use_tl_custom:
+                self.tl_loc_radio_custom.setChecked(True)
+        self._on_timeline_location_radio_toggled()
+
     def save_options_to_settings(self, as_default: bool = False):
         settings = QSettings(INTERNAL_APP_ID, INTERNAL_APP_ID)
         settings.setValue("export_opt_fmt_txt", self.cb_txt.isChecked())
@@ -961,6 +1185,25 @@ class UnifiedExportDialog(QDialog):
         custom_dir = self.loc_custom_path_edit.text().strip()
         if custom_dir:
             settings.setValue("export_opt_custom_dir", custom_dir)
+
+        # Timeline options
+        settings.setValue("export_opt_tl_rpp", self.tl_cb_rpp.isChecked())
+        settings.setValue("export_opt_tl_edl", self.tl_cb_edl.isChecked())
+        settings.setValue("export_opt_tl_fcp7_xml", self.tl_cb_fcp7_xml.isChecked())
+        settings.setValue("export_opt_tl_fcpxml", self.tl_cb_fcpxml.isChecked())
+        settings.setValue("export_opt_tl_aaf", self.tl_cb_aaf.isChecked())
+        settings.setValue("export_opt_tl_hindenburg", self.tl_cb_hindenburg.isChecked())
+        settings.setValue("export_opt_tl_audacity", self.tl_cb_audacity.isChecked())
+        settings.setValue("export_opt_tl_cue", self.tl_cb_cue.isChecked())
+        settings.setValue("export_opt_tl_daw_csv", self.tl_cb_daw_csv.isChecked())
+        settings.setValue("export_opt_tl_track_name", self.tl_track_name_edit.text().strip())
+        settings.setValue("export_opt_tl_sample_rate", self.tl_sample_rate_combo.currentData())
+        settings.setValue("export_opt_tl_unselected_mode", self.tl_unselected_combo.currentData())
+        settings.setValue("export_opt_tl_apply_fades", self.tl_cb_apply_fades.isChecked())
+        settings.setValue("export_opt_tl_custom_loc_enabled", self.tl_loc_radio_custom.isChecked())
+        tl_custom_dir = self.tl_custom_path_edit.text().strip()
+        if tl_custom_dir:
+            settings.setValue("export_opt_tl_custom_dir", tl_custom_dir)
 
         settings.sync()
         if as_default:
@@ -995,6 +1238,27 @@ class UnifiedExportDialog(QDialog):
 
             if (formats["txt"] or formats["docx"] or formats["pdf"]) and not self.cb_en.isChecked() and not self.cb_es.isChecked():
                 QMessageBox.warning(self, "Export", "Please select at least one language track (English or Spanish).")
+                return
+        elif self.radio_timeline.isChecked():
+            if self.tl_loc_radio_custom.isChecked():
+                custom_path = self.tl_custom_path_edit.text().strip()
+                if not custom_path or not os.path.isdir(custom_path):
+                    QMessageBox.warning(self, "Export Location", "Please select a valid directory for the custom export location.")
+                    return
+
+            tl_formats = {
+                "rpp": self.tl_cb_rpp.isChecked(),
+                "edl": self.tl_cb_edl.isChecked(),
+                "fcp7_xml": self.tl_cb_fcp7_xml.isChecked(),
+                "fcpxml": self.tl_cb_fcpxml.isChecked(),
+                "aaf": self.tl_cb_aaf.isChecked(),
+                "hindenburg": self.tl_cb_hindenburg.isChecked(),
+                "audacity": self.tl_cb_audacity.isChecked(),
+                "cue": self.tl_cb_cue.isChecked(),
+                "daw_csv": self.tl_cb_daw_csv.isChecked(),
+            }
+            if not any(tl_formats.values()):
+                QMessageBox.warning(self, "Export", "Please select at least one Timeline / DAW format to export.")
                 return
         else:
             for radio, dest, _ in self._plugin_destinations:
@@ -1053,6 +1317,43 @@ class UnifiedExportDialog(QDialog):
                 export_dir = self.loc_custom_path_edit.text().strip()
             return {
                 "destination": "local",
+                "scope": scope,
+                "formats": formats,
+                "options": options,
+                "base": base,
+                "export_dir": export_dir,
+            }
+
+        elif self.radio_timeline.isChecked():
+            formats = {
+                "rpp": self.tl_cb_rpp.isChecked(),
+                "edl": self.tl_cb_edl.isChecked(),
+                "fcp7_xml": self.tl_cb_fcp7_xml.isChecked(),
+                "audition_xml": self.tl_cb_fcp7_xml.isChecked(),
+                "fcpxml": self.tl_cb_fcpxml.isChecked(),
+                "aaf": self.tl_cb_aaf.isChecked(),
+                "hindenburg": self.tl_cb_hindenburg.isChecked(),
+                "audacity": self.tl_cb_audacity.isChecked(),
+                "cue": self.tl_cb_cue.isChecked(),
+                "daw_csv": self.tl_cb_daw_csv.isChecked(),
+            }
+            apply_fades = self.tl_cb_apply_fades.isChecked()
+            unsel_mode = self.tl_unselected_combo.currentData() or "exclude"
+            sample_rate = int(self.tl_sample_rate_combo.currentData() or 48000)
+            track_name = self.tl_track_name_edit.text().strip() or "Segmented Stories"
+
+            options = {
+                "track_name": track_name,
+                "sample_rate": sample_rate,
+                "apply_audio_fades": apply_fades,
+                "unselected_audio_mode": unsel_mode,
+            }
+            base = safe_filename(self.tl_filename_edit.text().strip() or "timeline_export")
+            export_dir = None
+            if self.tl_loc_radio_custom.isChecked() and self.tl_custom_path_edit.text().strip():
+                export_dir = self.tl_custom_path_edit.text().strip()
+            return {
+                "destination": "timeline",
                 "scope": scope,
                 "formats": formats,
                 "options": options,

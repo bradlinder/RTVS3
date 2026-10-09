@@ -1176,8 +1176,8 @@ class DiagnosticEngine:
             raise AssertionError("Muted mode clips missing is_muted flag")
 
         # 4. Verify Formatters output
-        reaper_out = generate_reaper_project(stories, "test.wav", "TestProject", total_duration=total_dur, unselected_audio_mode="muted")
-        if "MUTE 1" not in reaper_out or "Story Alpha" not in reaper_out:
+        reaper_out = generate_reaper_project(stories, "test.wav", "TestProject", total_duration=total_dur, unselected_audio_mode="muted", track_name="Test Track")
+        if "MUTE 1" not in reaper_out or "Story Alpha" not in reaper_out or "Test Track" not in reaper_out:
             raise AssertionError("REAPER project export missing muted clip markers or story titles")
 
         edl_out = generate_samplitude_edl(stories, "test.wav", "TestProject", total_duration=total_dur, unselected_audio_mode="split")
@@ -1196,8 +1196,37 @@ class DiagnosticEngine:
         if "Marker Name" not in csv_out or "Story Alpha" not in csv_out:
             raise AssertionError("DAW Marker CSV export missing header or story markers")
 
+        # 5. Verify Streamlined Multi-Platform Timeline Exporters from export.timeline
+        from export.timeline import (
+            generate_fcpxml,
+            generate_aaf_interchange,
+            generate_hindenburg_session,
+            generate_cue_sheet,
+            generate_fcp7_xml,
+        )
+
+        fcpxml_out = generate_fcpxml(stories, "test.wav", "TestProject", total_duration=total_dur, unselected_audio_mode="split", sample_rate=48000)
+        if "<fcpxml" not in fcpxml_out or "Story Alpha" not in fcpxml_out or 'audioRate="48000"' not in fcpxml_out:
+            raise AssertionError("FCPXML export missing fcpxml structure, story clips, or 48kHz audioRate")
+
+        aaf_out = generate_aaf_interchange(stories, "test.wav", "TestProject", total_duration=total_dur, unselected_audio_mode="split", sample_rate=48000, track_name="Dialog Track")
+        if "<AAF" not in aaf_out or "Story Alpha" not in aaf_out or "Dialog Track" not in aaf_out:
+            raise AssertionError("Universal AAF export missing AAF XML structure, track name, or story clips")
+
+        nhx_out = generate_hindenburg_session(stories, "test.wav", "TestProject", total_duration=total_dur, unselected_audio_mode="split", sample_rate=44100, track_name="Radio Broadcast")
+        if "<Session" not in nhx_out or "Story Alpha" not in nhx_out or "Radio Broadcast" not in nhx_out or "<Clip" not in nhx_out:
+            raise AssertionError("Hindenburg session export missing Session XML structure, track name, or clips")
+
+        cue_out = generate_cue_sheet(stories, "test.wav", "TestProject", total_duration=total_dur)
+        if "FILE" not in cue_out or "TRACK 01 AUDIO" not in cue_out or "Story Alpha" not in cue_out:
+            raise AssertionError("Red Book CUE sheet export missing track or file header")
+
+        fcp7_out = generate_fcp7_xml(stories, "test.wav", "TestProject", total_duration=total_dur, track_name="Broadcast Audio")
+        if "<xmeml" not in fcp7_out or "Broadcast Audio" not in fcp7_out:
+            raise AssertionError("FCP7 XML export missing xmeml structure or custom track name")
+
         item.status = "PASS"
-        item.message = "Multi-format DAW timeline clip generation & unselected gap modes fully verified"
+        item.message = "Multi-platform timeline interchange formatters (REAPER, EDL, FCPXML, AAF, NHX, Audacity, CUE, CSV) fully verified"
 
     def _test_wordpress_export_scope_post_builder(self, item: DiagnosticItem):
         try:
@@ -2731,6 +2760,8 @@ class DiagnosticEngine:
                 code = f.read()
             assert "dest.create_widget" in code, "UnifiedExportDialog must create widgets for destinations"
             assert "except Exception as exc:" in code, "UnifiedExportDialog destination creation must be guarded"
+            assert "_create_timeline_page" in code, "UnifiedExportDialog must provide dedicated _create_timeline_page"
+            assert "radio_timeline" in code, "UnifiedExportDialog must provide radio_timeline destination"
         else:
             try:
                 import export.dialog as exp_dialog_mod
