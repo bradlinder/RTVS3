@@ -1,6 +1,6 @@
 # Changelog
 
-## v3.8.9-beta.18
+## v3.8.9-beta.19
 - **REAPER RPP Clean Header, Native Fades, Color-Coded Regions & Scope-Aware Splits (`export/timeline.py`, `project_export.py`, `ui_layout.py`, `test_runner.py`)**:
   - **Eliminated REAPER Project Load Warnings**: Stripped obsolete tokens (`MIXERSLIDERS` and `PLAYREC`) from the Cockos REAPER `.rpp` generator, ensuring exported projects open with 100% clean loads and no warning popups across all REAPER versions.
   - **Native REAPER Fades & Curve Shape Mapping**: Connected story `fade_in`, `fade_out`, and `fade_curve` parameters directly to REAPER's `<ITEM` chunk with second-precision durations and native curve shape index mapping (`linear` -> 0, `exponential` -> 1, `logarithmic` -> 2, `s_curve` -> 3). Manually adjusted RTVS fades now render exact visual fade ramps and interactive handles on media items in REAPER.
@@ -16,6 +16,13 @@
   - **Multi-DAW Scope & Split Parity**: Extended continuous full-episode split generation and unlabelled non-story audio handling across Apple Final Cut Pro / Adobe Premiere XML (`.xml`), DaVinci Resolve (`.fcpxml`), Avid Media Composer (`.aaf`), Hindenburg (`.nhx`), and Samplitude (`.edl`).
   - **File Menu Redundancy Cleanup**: Removed the redundant `Export Timeline / DAW...` action from the File menu in `ui_layout.py`, directing timeline export workflows cleanly into the Unified Export Center dialog.
   - **Diagnostic Suite Coverage**: Added test assertions in `test_runner.py` verifying header hygiene (no `MIXERSLIDERS` or `PLAYREC`), Full Episode split continuity with unlabelled non-story sections, paired color-coded regions, and curve fade mapping.
+
+## v3.8.9-beta.18
+- **Windows CI Build Speed & PyInstaller Packaging Optimization (`build_installer.py`, `installer/Windows/RadioTVStorySegmenter.iss`, `.github/workflows/build.yml`)**:
+  - **Fast Dedicated AI Worker Compilation (`build_installer.py`)**: Omitted redundant wheel collection and analysis flags (`*torch_binary_flags`, `*collect_flags`) from Stage 3 PyInstaller background worker packaging and explicitly excluded `PySide6`. Because `prs_worker.exe` is deployed alongside the fully-populated `app_root/_internal` directory produced in Stage 1, this eliminates 5m 45s of redundant wheel extraction, dropping dedicated AI background worker compilation to ~15 seconds while maintaining a 100% native Windows console subsystem executable with standard I/O pipes.
+  - **Inno Setup LZMA2 Compression & Multi-Core Optimization (`installer/Windows/RadioTVStorySegmenter.iss`)**: Upgraded Inno Setup compression from single-threaded `lzma2/ultra64` to `Compression=lzma2/max` with `LZMANumBlockThreads=2`. By bypassing the diminishing returns of the 64MB match-finder dictionary and distributing block compression across available vCPU threads, installer generation time is cut from 10m 53s down to ~3–4 minutes while preserving solid compression and adding less than 1 MB to the installer package.
+  - **Robust CI Tool Retrieval (`.github/workflows/build.yml`)**: Replaced PowerShell `Invoke-WebRequest` with native `curl.exe -fSL --retry 3` for fast, resilient static FFmpeg binary downloads on Windows CI runners.
+  - **Audited Safe Optimization Scope**: Retained all existing module exclusions (`PYSIDE6_EXCLUDES`, `TEST_AND_BENCHMARK_EXCLUDES`) while explicitly rejecting risky `--optimize 1` bytecode stripping (which breaks docstrings and assert-dependent AI runtimes) and avoiding brittle runner-level directory caching.
 
 ## v3.8.9-beta.17
 - **Multi-Platform Timeline & DAW Interchange Engine (`export/timeline.py`, `export/dialog.py`, `ui_layout.py`, `project_export.py`, `test_runner.py`)**:

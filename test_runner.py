@@ -852,10 +852,10 @@ class DiagnosticEngine:
             raise AssertionError("Missing TRACK container in RPP")
         if "<ITEM" not in rpp:
             raise AssertionError("Missing ITEM blocks in RPP")
-        if 'MARKER 1 0.000000 "Segment A" 1 95.500000 1 0' not in rpp:
-            raise AssertionError("Missing REAPER Region 1 definition")
-        if 'MARKER 2 95.500000 "Segment B" 1 230.000000 1 0' not in rpp:
-            raise AssertionError("Missing REAPER Region 2 definition")
+        if 'MARKER 1 0.000000 "Segment A" 1' not in rpp or 'MARKER 1 95.500000 "" 1' not in rpp:
+            raise AssertionError("Missing REAPER Region 1 paired definition")
+        if 'MARKER 2 95.500000 "Segment B" 1' not in rpp or 'MARKER 2 230.000000 "" 1' not in rpp:
+            raise AssertionError("Missing REAPER Region 2 paired definition")
         item.status = "PASS"
         item.message = "REAPER .rpp timeline S-expressions, item blocks, and region markers verified"
 

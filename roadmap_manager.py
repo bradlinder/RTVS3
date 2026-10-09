@@ -70,8 +70,8 @@ class RoadmapManager:
                 "type": entry_type.strip(),
                 "title": title_rest.strip()
             }
-            # Extract version if present
-            v_match = re.search(r'v([0-9a-zA-Z_.-]+)', title_rest)
+            # Extract version if present (ensure it starts with 'v' followed by digit)
+            v_match = re.search(r'\bv([0-9][0-9a-zA-Z_.-]*)', title_rest)
             ver = v_match.group(1) if v_match else None
             entry["version"] = ver
 
