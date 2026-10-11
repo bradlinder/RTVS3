@@ -1904,6 +1904,38 @@ class InteractiveTranscriptEdit(QTextEdit):
                 event.accept()
                 return
 
+        # Speed-Listening / Proofreading Tab Shortcut
+        # Pressing Tab in viewing mode pauses audio, enters edit mode, and positions the cursor
+        # directly at the active spoken word for instantaneous correction.
+        # Pressing Tab in editing mode exits editing mode and resumes playback (with optional pre-roll).
+        if key == Qt.Key.Key_Tab and not is_ctrl and not is_alt:
+            main_win = self.window()
+            if not self.is_editing_mode:
+                last_anchor = getattr(self, "last_active_highlight_anchor", None) or getattr(self, "active_highlight_anchor", None)
+                if hasattr(main_win, "player") and main_win.player.playbackState() == main_win.player.PlaybackState.PlayingState:
+                    main_win.toggle_play()
+                self.set_editing_mode(True)
+                if last_anchor:
+                    positions = self.anchor_ranges.get(last_anchor)
+                    if positions:
+                        cur = QTextCursor(self.document())
+                        cur.setPosition(positions[0])
+                        cur.setPosition(positions[1], QTextCursor.MoveMode.KeepAnchor)
+                        self.setTextCursor(cur)
+                        self.ensureCursorVisible()
+                event.accept()
+                return
+            else:
+                self.set_editing_mode(False)
+                if hasattr(main_win, "toggle_play"):
+                    preroll = float(getattr(main_win, "speed_listening_preroll_seconds", 0.5) or 0.5)
+                    if preroll > 0.0 and hasattr(main_win, "seek_relative"):
+                        main_win.seek_relative(-preroll)
+                    if hasattr(main_win, "player") and main_win.player.playbackState() != main_win.player.PlaybackState.PlayingState:
+                        main_win.toggle_play()
+                event.accept()
+                return
+
         if self.is_editing_mode:
             if is_ctrl and not is_shift and not is_alt:
                 if key == Qt.Key.Key_B:
@@ -2489,5 +2521,6 @@ class InteractiveTranscriptEdit(QTextEdit):
         extra.cursor = target_cursor
 
         self.active_highlight_anchor = target_anchor
+        self.last_active_highlight_anchor = target_anchor
         self._playback_highlight_selection = extra
         self.update_extra_selections()

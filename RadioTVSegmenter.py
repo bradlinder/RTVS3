@@ -420,6 +420,22 @@ class MainWindow(
         except Exception:
             self.min_words_per_paragraph = 65
         self.startup_project_mode = str(s.value("startup_project_mode", "last") or "last")
+        self.enable_voice_profiles = str(s.value("enable_voice_profiles", "true")).lower() in {"1", "true", "yes"}
+        try:
+            self.voice_profile_auto_match_threshold = max(0.50, min(0.99, float(s.value("voice_profile_auto_match_threshold", 0.78))))
+        except Exception:
+            self.voice_profile_auto_match_threshold = 0.78
+        try:
+            self.playback_rate = max(0.5, min(3.0, float(s.value("playback_rate", 1.0))))
+        except Exception:
+            self.playback_rate = 1.0
+        try:
+            self.speed_listening_preroll_seconds = max(0.0, min(5.0, float(s.value("speed_listening_preroll_seconds", 0.5))))
+        except Exception:
+            self.speed_listening_preroll_seconds = 0.5
+
+        from speaker_profiles import StationVoiceProfileStore
+        self.voice_profile_store = StationVoiceProfileStore()
 
     def changeEvent(self, event):
         """Handle window state changes (e.g. maximize, restore, minimize) safely."""

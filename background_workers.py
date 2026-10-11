@@ -478,7 +478,7 @@ class StoryAutoDetectWorker(QObject):
 # ============================================================
 
 PEAKS_MAGIC = b"RTVSPEAK"
-PEAKS_VERSION = 1
+PEAKS_VERSION = 2
 
 def get_waveform_peak_cache_path(audio_file, project_file=None):
     """
@@ -578,25 +578,49 @@ def read_waveform_peak_cache(audio_file, points_per_second=WAVEFORM_POINTS_PER_S
                 if len(header_bytes) < 10:
                     continue
                 version, pps, count = struct.unpack("<HfI", header_bytes)
-                if version != PEAKS_VERSION or count == 0:
+                if version not in (1, 2) or count == 0:
                     continue
                 raw_data = f.read(count * 4)
                 if len(raw_data) != count * 4:
                     continue
                 peaks = list(struct.unpack(f"<{count}f", raw_data))
-                levels = build_waveform_pyramid(peaks)
+                levels = [peaks]
+                if version >= 2:
+                    num_levels_bytes = f.read(2)
+                    if len(num_levels_bytes) == 2:
+                        (num_sublevels,) = struct.unpack("<H", num_levels_bytes)
+                        for _ in range(num_sublevels):
+                            sub_hdr = f.read(4)
+                            if len(sub_hdr) < 4:
+                                break
+                            (sub_count,) = struct.unpack("<I", sub_hdr)
+                            sub_raw = f.read(sub_count * 4)
+                            if len(sub_raw) != sub_count * 4:
+                                break
+                            sub_peaks = list(struct.unpack(f"<{sub_count}f", sub_raw))
+                            levels.append(sub_peaks)
+                if len(levels) <= 1:
+                    levels = build_waveform_pyramid(peaks)
                 envelope = WaveformEnvelope(peaks, levels=levels)
-                # If read from legacy path, migrate to project .cache/peaks/ atomically
-                if is_legacy and cache_path and not cache_path.exists():
-                    write_waveform_peak_cache(audio_file, peaks, points_per_second=pps, project_file=project_file)
+                # If read from legacy path or version 1, migrate to project .cache/peaks/ atomically
+                if (is_legacy or version == 1) and cache_path:
+                    write_waveform_peak_cache(audio_file, peaks, points_per_second=pps, project_file=project_file, levels=levels)
                 return envelope
         except Exception:
             continue
     return None
 
-def write_waveform_peak_cache(audio_file, peaks, points_per_second=WAVEFORM_POINTS_PER_SECOND, project_file=None):
+def write_waveform_peak_cache(audio_file, peaks, points_per_second=WAVEFORM_POINTS_PER_SECOND, project_file=None, levels=None):
     """
-    Write waveform peak envelope to binary cache with atomic rename.
+    Write waveform peak envelope and multi-resolution mipmapped levels to binary cache with atomic rename.
+    Format (Version 2):
+      [8B Magic: 'RTVSPEAK']
+      [2B Version: 2] [4B float pps] [4B uint count (level 0)]
+      [count * 4B float level 0 peaks]
+      [2B uint num_sublevels]
+      For each sublevel:
+        [4B uint sub_count]
+        [sub_count * 4B float sublevel peaks]
     """
     if not audio_file or not peaks:
         return
@@ -607,10 +631,19 @@ def write_waveform_peak_cache(audio_file, peaks, points_per_second=WAVEFORM_POIN
         cache_path.parent.mkdir(parents=True, exist_ok=True)
         tmp_path = cache_path.with_name(cache_path.name + ".tmp")
         count = len(peaks)
+        if levels is None:
+            levels = build_waveform_pyramid(peaks)
+        sublevels = levels[1:] if (levels and len(levels) > 1) else []
         with open(tmp_path, "wb") as f:
             f.write(PEAKS_MAGIC)
             f.write(struct.pack("<HfI", PEAKS_VERSION, float(points_per_second), count))
             f.write(struct.pack(f"<{count}f", *peaks))
+            # Write mipmapped levels
+            f.write(struct.pack("<H", len(sublevels)))
+            for sub in sublevels:
+                sub_list = sub.tolist() if hasattr(sub, "tolist") else list(sub)
+                f.write(struct.pack("<I", len(sub_list)))
+                f.write(struct.pack(f"<{len(sub_list)}f", *sub_list))
             f.flush()
             os.fsync(f.fileno())
         safe_replace(tmp_path, cache_path)
@@ -769,13 +802,13 @@ class WaveformWorker(QObject):
             elif samples_in_peak:
                 peaks.append(peak_value / max_possible_val)
 
+            levels = build_waveform_pyramid(peaks)
             if peaks:
                 try:
-                    write_waveform_peak_cache(self.audio_file, peaks, effective_pps, project_file=self.project_file)
+                    write_waveform_peak_cache(self.audio_file, peaks, effective_pps, project_file=self.project_file, levels=levels)
                 except Exception:
                     pass
 
-            levels = build_waveform_pyramid(peaks)
             envelope = WaveformEnvelope(peaks, levels=levels)
             self.finished.emit(envelope, False)
         except Exception:

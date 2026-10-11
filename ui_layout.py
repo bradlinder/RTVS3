@@ -106,6 +106,26 @@ class UiLayoutMixin:
         self.play_button.clicked.connect(self.toggle_play)
         controls_row.addWidget(self.play_button)
 
+        self.speed_combo = QComboBox(self)
+        self.speed_combo.setObjectName("speed_combo")
+        self.speed_combo.setToolTip("Playback Speed & Pitch-Preserving Audio Rate (WSOLA)")
+        for rate_label, rate_val in [
+            ("0.75x", 0.75),
+            ("1.0x", 1.0),
+            ("1.25x", 1.25),
+            ("1.5x", 1.5),
+            ("1.75x", 1.75),
+            ("2.0x", 2.0),
+        ]:
+            self.speed_combo.addItem(rate_label, rate_val)
+        curr_rate = float(getattr(self, "playback_rate", 1.0) or 1.0)
+        idx_rate = self.speed_combo.findData(curr_rate)
+        self.speed_combo.setCurrentIndex(idx_rate if idx_rate >= 0 else 1)
+        self.speed_combo.currentIndexChanged.connect(
+            lambda: getattr(self, "set_playback_rate", lambda v: None)(float(self.speed_combo.currentData() or 1.0))
+        )
+        controls_row.addWidget(self.speed_combo)
+
         self.time_label = QLabel("00:00:00 / 00:00:00", self)
         self.time_label.setObjectName("time_label")
         self.time_label.setMinimumWidth(160)
@@ -1094,6 +1114,12 @@ class UiLayoutMixin:
         self.manage_speakers_action.setEnabled(False)
         self.manage_speakers_action.triggered.connect(lambda: getattr(self, "open_speaker_manager_dialog", lambda: None)())
         self.voice_tools_menu.addAction(self.manage_speakers_action)
+
+        self.manage_voice_profiles_action = QAction("&Manage Voice Profiles...", self)
+        self.manage_voice_profiles_action.setToolTip("Inspect, edit, import, or delete persistent station voice profiles across recordings")
+        self.manage_voice_profiles_action.setEnabled(True)
+        self.manage_voice_profiles_action.triggered.connect(lambda: getattr(self, "open_manage_voice_profiles_dialog", lambda: None)())
+        self.voice_tools_menu.addAction(self.manage_voice_profiles_action)
 
         tools_menu.addSeparator()
 

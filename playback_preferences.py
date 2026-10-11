@@ -1910,6 +1910,23 @@ class PlaybackPreferencesMixin:
         skip_spin.setSuffix(" sec")
         play_form.addRow("Arrow Key Skip Length:", skip_spin)
 
+        play_rate_combo = QComboBox()
+        for r_lbl, r_val in [("0.75x", 0.75), ("1.0x (Normal)", 1.0), ("1.25x (Speed-Listen)", 1.25), ("1.5x (Fast)", 1.5), ("1.75x", 1.75), ("2.0x", 2.0)]:
+            play_rate_combo.addItem(r_lbl, r_val)
+        curr_rate = float(getattr(self, "playback_rate", 1.0) or 1.0)
+        r_idx = play_rate_combo.findData(curr_rate)
+        play_rate_combo.setCurrentIndex(r_idx if r_idx >= 0 else 1)
+        play_form.addRow("Default Playback Speed:", play_rate_combo)
+
+        preroll_spin = QDoubleSpinBox()
+        preroll_spin.setRange(0.0, 5.0)
+        preroll_spin.setSingleStep(0.1)
+        preroll_spin.setDecimals(1)
+        preroll_spin.setValue(float(getattr(self, "speed_listening_preroll_seconds", 0.5) or 0.5))
+        preroll_spin.setSuffix(" sec")
+        preroll_spin.setToolTip("Pre-roll rewind jump applied when resuming playback with Tab in speed-listening proofreading mode.")
+        play_form.addRow("Speed-Listening Tab Pre-Roll:", preroll_spin)
+
         wave_chk = QCheckBox("Show audio waveform on timeline")
         wave_chk.setChecked(self.timeline_show_waveform)
         play_form.addRow("Timeline Waveform:", wave_chk)
@@ -2061,6 +2078,18 @@ class PlaybackPreferencesMixin:
             "• Low: Merges looser voice clusters to avoid splitting one speaker across multiple labels."
         )
         det_form.addRow("Speaker Separation Sensitivity:", sensitivity_combo)
+
+        voice_profiles_chk = QCheckBox("Enable persistent Voice Profiles library and cross-show matching")
+        voice_profiles_chk.setChecked(str(self.settings_store.value("enable_voice_profiles", "true")).lower() in {"1", "true", "yes"})
+        voice_profiles_chk.setToolTip("When enabled, RTVS automatically matches recurring speaker voices against the persistent station voice profiles library across recordings.")
+        det_form.addRow("Voice Profiles:", voice_profiles_chk)
+
+        voice_match_thresh_spin = QSpinBox()
+        voice_match_thresh_spin.setRange(50, 99)
+        voice_match_thresh_spin.setValue(int(float(self.settings_store.value("voice_profile_auto_match_threshold", 78) or 78)))
+        voice_match_thresh_spin.setSuffix("%")
+        voice_match_thresh_spin.setToolTip("Minimum acoustic similarity score (75-85% optimal) required to automatically associate a detected speaker cluster with a known voice profile.")
+        det_form.addRow("Voice Profile Auto-Match Threshold:", voice_match_thresh_spin)
 
 
 
@@ -2764,6 +2793,15 @@ class PlaybackPreferencesMixin:
             if hasattr(self, "timeline"):
                 self.timeline.set_skip_seconds(self.skip_seconds)
 
+            new_rate = float(play_rate_combo.currentData() or 1.0)
+            self.playback_rate = new_rate
+            self.settings_store.setValue("playback_rate", new_rate)
+            if hasattr(self, "set_playback_rate"):
+                self.set_playback_rate(new_rate)
+
+            self.speed_listening_preroll_seconds = preroll_spin.value()
+            self.settings_store.setValue("speed_listening_preroll_seconds", self.speed_listening_preroll_seconds)
+
             self.timeline_show_waveform = wave_chk.isChecked()
             self.settings_store.setValue("timeline_show_waveform", str(self.timeline_show_waveform).lower())
 
@@ -2822,6 +2860,10 @@ class PlaybackPreferencesMixin:
             self.settings_store.setValue("default_expected_speakers", self.expected_speakers)
             self.settings_store.setValue("ask_expected_speakers", ask_speakers_chk.isChecked())
             self.settings_store.setValue("diarization_sensitivity", self.diarization_sensitivity)
+            self.enable_voice_profiles = voice_profiles_chk.isChecked()
+            self.settings_store.setValue("enable_voice_profiles", "true" if self.enable_voice_profiles else "false")
+            self.voice_profile_auto_match_threshold = voice_match_thresh_spin.value() / 100.0
+            self.settings_store.setValue("voice_profile_auto_match_threshold", voice_match_thresh_spin.value())
 
             # Save Batch Processing
             self.settings_store.setValue("batch_custom_output_dir", batch_dir_edit.text().strip())
@@ -3071,6 +3113,20 @@ class PlaybackPreferencesMixin:
         self.project_dirty = True
         self.update_window_title()
 
+    def set_playback_rate(self, rate: float):
+        self.playback_rate = max(0.5, min(3.0, float(rate)))
+        if hasattr(self, "player") and self.player:
+            try:
+                self.player.setPlaybackRate(self.playback_rate)
+            except Exception:
+                pass
+        if hasattr(self, "speed_combo") and self.speed_combo:
+            idx = self.speed_combo.findData(self.playback_rate)
+            if idx >= 0 and self.speed_combo.currentIndex() != idx:
+                self.speed_combo.blockSignals(True)
+                self.speed_combo.setCurrentIndex(idx)
+                self.speed_combo.blockSignals(False)
+
     def toggle_play(self):
         if self.player.playbackState() == QMediaPlayer.PlaybackState.PlayingState:
             self.player.pause()
@@ -3082,6 +3138,11 @@ class PlaybackPreferencesMixin:
             self.timeline.set_playing_state(False)
             self.play_button.setText("▶ Play")
         else:
+            rate = float(getattr(self, "playback_rate", 1.0) or 1.0)
+            try:
+                self.player.setPlaybackRate(rate)
+            except Exception:
+                pass
             self.player.play()
             if getattr(self, "enable_audio_fades", False) and getattr(self, "preview_audio_fades", False):
                 if hasattr(self, "fade_preview_timer"):

@@ -2102,6 +2102,36 @@ class ProcessingMixin:
                     # it needs a fresh slice instead of reusing a contaminated cluster
                     t_seg.pop("embedding", None)
 
+            # Auto-match known station voice profiles across detected turns if enabled in preferences
+            if getattr(self, "enable_voice_profiles", True):
+                try:
+                    from speaker_profiles import StationVoiceProfileStore
+                    vp_store = getattr(self, "voice_profile_store", None)
+                    if vp_store is None:
+                        vp_store = StationVoiceProfileStore()
+                        self.voice_profile_store = vp_store
+                    
+                    profiles = vp_store.list_profiles()
+                    if profiles:
+                        thresh = float(getattr(self, "voice_profile_auto_match_threshold", 0.78) or 0.78)
+                        matched_counts = {}
+                        for t_idx, t_seg in enumerate(self.transcript["segments"]):
+                            emb = t_seg.get("embedding")
+                            if not emb:
+                                continue
+                            match_res = vp_store.match_vector(emb, threshold=thresh)
+                            if match_res:
+                                prof, sim, margin = match_res
+                                override_key = f"SEG_{t_idx}_SPEAKER"
+                                self.speaker_names[override_key] = prof.name
+                                self.segment_speaker_overrides[t_idx] = override_key
+                                matched_counts[prof.name] = matched_counts.get(prof.name, 0) + 1
+                        if matched_counts:
+                            summary_str = ", ".join(f"{name} ({count} turns)" for name, count in matched_counts.items())
+                            self.log_activity(f"[VOICE PROFILES] Auto-matched recurring station voices: {summary_str}")
+                except Exception as vp_err:
+                    self.log_activity(f"[VOICE PROFILES] Notice during auto-match: {vp_err}", mark_dirty=False)
+
         number = result.get("num_speakers", 0)
         self.speaker_status.setText(
             f"Speaker detection complete: {number} speaker(s) detected."

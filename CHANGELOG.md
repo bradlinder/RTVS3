@@ -1,5 +1,22 @@
 # Changelog
 
+## v3.9.0-beta.1
+- **Station Voice Profiles Library, Multi-Tier Mipmapped Peak Cache & Speed-Listening Proofreading Engine (`speaker_profiles.py`, `background_workers.py`, `transcript_editor.py`, `playback_preferences.py`, `ui_layout.py`, `processing.py`, `transcript_story.py`, `speaker_dialogs.py`)**:
+  - **Persistent Station Voice Profiles ("Manage Voice Profiles...") (`speaker_profiles.py`, `transcript_story.py`, `speaker_dialogs.py`, `ui_layout.py`)**:
+    - **Standalone Persistent Library**: Implemented `StationVoiceProfileStore` saving normalized 256-dimensional acoustic embedding vectors, sample turn counts, creation/update timestamps, and notes into persistent application data (`voice_profiles.json`).
+    - **Manage Voice Profiles Dialog**: Introduced `ManageVoiceProfilesDialog` accessible via `Tools -> Voice Profile Tools -> Manage Voice Profiles...` and from the Speaker Manager dialog. Allows reviewing stored profiles, renaming speaker aliases, scanning the active recording to match segments above a configurable threshold, adding the active turn directly as a persistent profile, and importing/exporting profiles in standard JSON format.
+    - **Automatic Diarization Matching**: Connected diarization completion in `processing.py` to auto-match newly detected speaker clusters against known voice profiles above a calibrated similarity threshold (default 78%), logging automatic speaker assignments directly to activity history.
+    - **Global Preference Toggle**: Added configurable options in Preferences under *Story Detection & Diarization* allowing users to enable or disable persistent voice profiles entirely and tune the auto-match similarity threshold (50% to 99%).
+  - **Multi-Tier Mipmapped Waveform Peak Cache (LOD Rendering) (`background_workers.py`, `timeline_widgets.py`)**:
+    - **Persistent Multi-Resolution Cache**: Upgraded `.peaks` binary file format to Version 2, storing the base 1x peak envelope alongside precomputed 4x, 16x, and 64x mipmapped downsampled levels directly on disk in project-local `.cache/peaks/` (with global appdata fallback).
+    - **Locked 60fps Scrubbing & Zero Loading Lag**: Allows `TimelineCanvas` level-of-detail (LOD) painting to render multi-hour broadcast files instantaneously upon launch without requiring expensive pyramid re-generation.
+    - **Full Backward Compatibility**: Automatically parses legacy Version 1 `.peaks` files and transparently upgrades them to Version 2 on load.
+  - **Speed-Listening "Type-to-Correct" Proofreading Engine (`transcript_editor.py`, `playback_preferences.py`, `ui_layout.py`)**:
+    - **Pitch-Preserving Playback Rate**: Added audio playback speed selector (0.75x, 1.0x, 1.25x, 1.5x, 1.75x, 2.0x) directly into the primary transport controls row and Preferences using Qt Multimedia's native WSOLA time-stretching with pitch preservation, preventing high-pitch "chipmunk" distortion.
+    - **Instant Proofreading Tab Toggle**: Pressing `Tab` during playback instantly pauses audio, switches from viewing mode to editing mode, and places the text cursor directly on the current spoken word for immediate correction. Pressing `Tab` again cleanly exits editing mode and resumes playback.
+    - **Configurable Pre-Roll Context**: Added a customizable pre-roll rewind setting (default 0.5 seconds, configurable in Preferences under *Playback & Timeline*) so resuming playback provides immediate acoustic context.
+  - **Synchronous Version Bump**: Synchronized all 10 project locations to `v3.9.0-beta.1`.
+
 ## v3.8.9-beta.19
 - **REAPER RPP Clean Header, Native Fades, Color-Coded Regions & Scope-Aware Splits (`export/timeline.py`, `project_export.py`, `ui_layout.py`, `test_runner.py`)**:
   - **Eliminated REAPER Project Load Warnings**: Stripped obsolete tokens (`MIXERSLIDERS` and `PLAYREC`) from the Cockos REAPER `.rpp` generator, ensuring exported projects open with 100% clean loads and no warning popups across all REAPER versions.

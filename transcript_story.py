@@ -1,4 +1,4 @@
-"""Radio & TV Segmenter v3.8.9-beta.19 — transcript story responsibilities.
+"""Radio & TV Segmenter v3.9.0-beta.1 — transcript story responsibilities.
 
 Methods intentionally retain the MainWindow-facing API so behavior remains
 maintaining the established MainWindow-facing API while responsibilities are isolated.
@@ -2066,6 +2066,29 @@ class TranscriptStoryMixin:
                 selected_indices=dlg.selected_indices,
                 ref_seg_indices=active_refs,
             )
+            if getattr(dlg, "chk_save_persistent", None) and dlg.chk_save_persistent.isChecked():
+                try:
+                    from speaker_profiles import StationVoiceProfileStore
+                    store = getattr(self, "voice_profile_store", None)
+                    if store is None:
+                        store = StationVoiceProfileStore()
+                        self.voice_profile_store = store
+                    # Compute vector from reference indices
+                    candidates = []
+                    if hasattr(self, "_build_voice_profile_candidates"):
+                        res = self._build_voice_profile_candidates([seg_idx] + active_refs, parent_widget=self)
+                        candidates = res[0] if isinstance(res, tuple) else res
+                    vec = candidates[0].get("vector") if candidates else None
+                    if vec:
+                        src = Path(self.audio_file).name if getattr(self, "audio_file", None) else ""
+                        store.add_or_update_profile(
+                            name=dlg.target_name,
+                            vector=vec,
+                            sample_count=len(active_refs) + 1,
+                            source_media=src,
+                        )
+                except Exception:
+                    pass
 
     def sync_segment_words(self, segment, new_text, word_formats=None):
         if not isinstance(segment, dict):
@@ -2219,6 +2242,15 @@ class TranscriptStoryMixin:
 
     def open_speaker_manager_dialog(self):
         dialog = SpeakerManagerDialog(self)
+        dialog.exec()
+
+    def open_manage_voice_profiles_dialog(self):
+        from speaker_profiles import ManageVoiceProfilesDialog, StationVoiceProfileStore
+        store = getattr(self, "voice_profile_store", None)
+        if store is None:
+            store = StationVoiceProfileStore()
+            self.voice_profile_store = store
+        dialog = ManageVoiceProfilesDialog(parent=self, store=store)
         dialog.exec()
 
     def merge_contiguous_speaker_segments(self):

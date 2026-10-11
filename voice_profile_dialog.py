@@ -511,6 +511,11 @@ class VoiceProfileMatchDialog(QDialog):
 
         self.spk_combo.currentTextChanged.connect(lambda _: self._update_action_summary())
         target_layout.addWidget(self.spk_combo, 1)
+
+        self.chk_save_persistent = QCheckBox("Save to Voice Profiles Library", target_group)
+        self.chk_save_persistent.setToolTip("Save this speaker's acoustic profile to persistent library for auto-matching in future recordings")
+        target_layout.addWidget(self.chk_save_persistent)
+
         layout.addWidget(target_group)
 
         # Controls Grid

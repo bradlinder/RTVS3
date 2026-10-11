@@ -125,6 +125,12 @@ class SpeakerManagerDialog(QDialog):
         self.merge_all_btn = QPushButton("Merge Two Speakers...", self)
         self.merge_all_btn.clicked.connect(self._on_quick_merge)
         btn_row.addWidget(self.merge_all_btn)
+
+        self.btn_voice_profiles = QPushButton("Manage Voice Profiles...", self)
+        self.btn_voice_profiles.setToolTip("Open the persistent station voice profiles library")
+        self.btn_voice_profiles.clicked.connect(self._on_open_voice_profiles)
+        btn_row.addWidget(self.btn_voice_profiles)
+
         btn_row.addStretch()
 
         close_btn = QPushButton("Close", self)
@@ -278,3 +284,8 @@ class SpeakerManagerDialog(QDialog):
 
         self.main_win.merge_speakers(source, target)
         self._populate()
+
+    def _on_open_voice_profiles(self):
+        if hasattr(self.main_win, "open_manage_voice_profiles_dialog"):
+            self.main_win.open_manage_voice_profiles_dialog()
+            self._populate()
