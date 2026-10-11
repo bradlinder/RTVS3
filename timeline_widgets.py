@@ -143,7 +143,7 @@ class TimelineCanvas(QWidget):
 
         self.zoom_level = 1.0
         self.min_zoom = 1.0
-        self.max_zoom = 80.0
+        self.max_zoom = 300.0
         self.scroll_offset = 0.0
 
         self.is_panning = False
@@ -1237,7 +1237,7 @@ class TimelineCanvas(QWidget):
         target_ticks = max(2, width // 100)
         base_interval = visible_dur / target_ticks
 
-        nice_intervals = [1, 2, 5, 10, 15, 30, 60, 120, 300, 600, 900, 1800, 3600]
+        nice_intervals = [0.1, 0.25, 0.5, 1, 2, 5, 10, 15, 30, 60, 120, 300, 600, 900, 1800, 3600]
         chosen_interval = nice_intervals[-1]
         for step in nice_intervals:
             if base_interval <= step:
@@ -1247,21 +1247,30 @@ class TimelineCanvas(QWidget):
         painter.setFont(self.font())
         painter.setPen(self.tokens.ruler_tick_pen())
 
-        start_tick = (self.scroll_offset // chosen_interval) * chosen_interval
+        start_tick = math.floor(self.scroll_offset / chosen_interval) * chosen_interval
         t = start_tick
 
-        while t <= self.scroll_offset + visible_dur:
-            x = self.time_to_x(t, width)
+        while t <= self.scroll_offset + visible_dur + (chosen_interval * 0.1):
+            t_rounded = round(t, 4)
+            x = self.time_to_x(t_rounded, width)
             if 0 <= x <= width:
                 painter.drawLine(QPointF(x, self.RULER_HEIGHT - 6), QPointF(x, self.RULER_HEIGHT))
 
-                mins = int(t // 60)
-                secs = int(t % 60)
-                hrs = int(mins // 60)
-                mins = mins % 60
+                if chosen_interval < 1.0:
+                    total_sec = abs(t_rounded)
+                    hrs = int(total_sec // 3600)
+                    mins = int((total_sec % 3600) // 60)
+                    secs = total_sec % 60
+                    sec_str = f"{secs:04.1f}" if chosen_interval >= 0.2 else f"{secs:05.2f}"
+                    label = f"{hrs}:{mins:02d}:{sec_str}" if hrs > 0 else f"{mins:02d}:{sec_str}"
+                else:
+                    mins = int(t_rounded // 60)
+                    secs = int(t_rounded % 60)
+                    hrs = int(mins // 60)
+                    mins = mins % 60
+                    label = f"{hrs}:{mins:02d}:{secs:02d}" if hrs > 0 else f"{mins:02d}:{secs:02d}"
 
-                label = f"{hrs}:{mins:02d}:{secs:02d}" if hrs > 0 else f"{mins:02d}:{secs:02d}"
-                text_rect = QRectF(x + 3, 2, 60, self.RULER_HEIGHT - 4)
+                text_rect = QRectF(x + 3, 2, 70 if chosen_interval < 1.0 else 60, self.RULER_HEIGHT - 4)
                 painter.drawText(text_rect, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter, label)
 
             t += chosen_interval

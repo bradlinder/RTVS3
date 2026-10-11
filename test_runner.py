@@ -4784,10 +4784,8 @@ class DiagnosticEngine:
                     return Bar()
 
             mock_win = MockWin()
-            from speaker_profiles import ManageVoiceProfilesDialog
 
             # 1. Test extraction & save from active turn
-            dialog = ManageVoiceProfilesDialog(parent=None, store=store2, main_win=mock_win)
             # Verify turn 0 embedding extraction
             emb0 = mock_win.get_segment_embedding(0)
             assert emb0 == vec_a, "Segment 0 embedding must match vec_a"

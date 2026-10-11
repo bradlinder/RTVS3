@@ -7,6 +7,7 @@ from PySide6.QtCore import QObject, QSettings, Qt, Signal
 from PySide6.QtGui import QKeySequence
 
 from shortcuts.schema import (
+    ACTION_ALIASES,
     SHORTCUT_DEFINITIONS,
     ShortcutDef,
     format_sequence_display,
@@ -45,45 +46,57 @@ class ShortcutsManager(QObject):
         return SHORTCUT_DEFINITIONS
 
     def get_definition(self, action_id: str) -> Optional[ShortcutDef]:
+        target_id = ACTION_ALIASES.get(action_id, action_id)
         for defn in SHORTCUT_DEFINITIONS:
-            if defn.action_id == action_id:
+            if defn.action_id == target_id:
                 return defn
         return None
 
     def get_default_shortcut(self, action_id: str) -> str:
-        defn = self.get_definition(action_id)
+        target_id = ACTION_ALIASES.get(action_id, action_id)
+        defn = self.get_definition(target_id)
         if defn:
             return get_platform_default(defn)
         return ""
 
     def get_current_shortcut(self, action_id: str) -> str:
+        target_id = ACTION_ALIASES.get(action_id, action_id)
+        if target_id in self._overrides:
+            return self._overrides[target_id]
         if action_id in self._overrides:
             return self._overrides[action_id]
-        return self.get_default_shortcut(action_id)
+        return self.get_default_shortcut(target_id)
 
     def is_customized(self, action_id: str) -> bool:
-        if action_id not in self._overrides:
+        target_id = ACTION_ALIASES.get(action_id, action_id)
+        if target_id not in self._overrides and action_id not in self._overrides:
             return False
-        default_seq = normalize_sequence_string(self.get_default_shortcut(action_id))
-        cur_seq = normalize_sequence_string(self._overrides[action_id])
+        default_seq = normalize_sequence_string(self.get_default_shortcut(target_id))
+        cur_seq = normalize_sequence_string(self.get_current_shortcut(target_id))
         return cur_seq != default_seq
 
     def set_shortcut(self, action_id: str, new_seq: str):
         """Set a shortcut override for action_id. Passing empty string or None sets to None."""
+        target_id = ACTION_ALIASES.get(action_id, action_id)
         if not new_seq or new_seq.strip() in ("", "None", "<none>"):
-            self._overrides[action_id] = "None"
+            self._overrides[target_id] = "None"
             return
 
         normalized = normalize_sequence_string(new_seq)
-        default_seq = normalize_sequence_string(self.get_default_shortcut(action_id))
+        default_seq = normalize_sequence_string(self.get_default_shortcut(target_id))
         if normalized == default_seq:
+            if target_id in self._overrides:
+                del self._overrides[target_id]
             if action_id in self._overrides:
                 del self._overrides[action_id]
         else:
-            self._overrides[action_id] = normalized
+            self._overrides[target_id] = normalized
 
     def reset_shortcut(self, action_id: str):
         """Reset a single shortcut back to its platform default."""
+        target_id = ACTION_ALIASES.get(action_id, action_id)
+        if target_id in self._overrides:
+            del self._overrides[target_id]
         if action_id in self._overrides:
             del self._overrides[action_id]
 

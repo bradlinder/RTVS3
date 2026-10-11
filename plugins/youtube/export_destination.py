@@ -15,6 +15,8 @@ import webbrowser
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
+from prs_shared import safe_process_events
+
 from PySide6.QtCore import Qt, QTimer, QSettings
 from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import (
@@ -699,7 +701,7 @@ class YouTubeExportDestination(ExportDestination):
         progress.setMinimumDuration(0)
         progress.setValue(0)
         progress.show()
-        QApplication.processEvents()
+        safe_process_events()
 
         cancel_event = threading.Event()
         upload_result = {}
@@ -713,7 +715,7 @@ class YouTubeExportDestination(ExportDestination):
             msg = f"Uploading Video: {mb_sent:.1f} / {mb_total:.1f} MB ({pct}%)\nSpeed: {speed_mb:.2f} MB/s — ETA: {eta:.0f}s"
             progress.setLabelText(msg)
             progress.setValue(pct)
-            QApplication.processEvents()
+            safe_process_events()
 
         def upload_worker():
             try:
@@ -735,7 +737,7 @@ class YouTubeExportDestination(ExportDestination):
         thread.start()
 
         while thread.is_alive():
-            QApplication.processEvents()
+            safe_process_events()
             if progress.wasCanceled():
                 cancel_event.set()
                 break

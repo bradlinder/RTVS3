@@ -1140,7 +1140,7 @@ class ProjectExportMixin(ProjectLifecycleMixin):
             # Update inline top-of-window header indicators
             self.set_processing_stage("Exporting Stories", f"{current_count} of {total_stories}: '{story_title}'")
             self.update_processing_progress(pct, f"Exporting {story_title}...")
-            QApplication.processEvents()
+            safe_process_events()
 
             story_slug = safe_filename(story.title) if story.title else f"Story_{idx + 1:02d}"
             story_base = f"{doc_base}_{idx + 1:02d}_{story_slug}" if story.title else f"{doc_base}_{idx + 1:02d}"
@@ -1506,7 +1506,7 @@ class ProjectExportMixin(ProjectLifecycleMixin):
         try:
             self.set_processing_stage(f"Exporting Full & {term_plural}", f"1 of {total_items}: Full Episode")
             self.update_processing_progress(0, "Exporting full episode...")
-            QApplication.processEvents()
+            safe_process_events()
 
             ok = self.export_full_episode(
                 custom_formats=formats,
@@ -1779,7 +1779,7 @@ class ProjectExportMixin(ProjectLifecycleMixin):
             progress_dialog.setMinimumDuration(0)
             progress_dialog.setValue(0)
             progress_dialog.show()
-            QApplication.processEvents()
+            safe_process_events()
             created_local_dialog = True
 
         try:
@@ -1817,7 +1817,7 @@ class ProjectExportMixin(ProjectLifecycleMixin):
                     return False
                 progress_dialog.setLabelText(f"Exporting Full Episode: '{doc_title}'...")
                 progress_dialog.setValue(progress_value)
-                QApplication.processEvents()
+                safe_process_events()
 
             for lang_code, suffix in languages_to_export:
                 file_base = f"{base}{suffix}"
@@ -2032,7 +2032,7 @@ class ProjectExportMixin(ProjectLifecycleMixin):
 
             if progress_dialog is not None and created_local_dialog:
                 progress_dialog.setValue(1)
-                QApplication.processEvents()
+                safe_process_events()
 
             self.log_activity(f"[EXPORT] Exported full episode to {out}")
             if show_completion and not (progress_dialog and progress_dialog.wasCanceled()):

@@ -26,6 +26,18 @@ PROJECT_VERSION = "3.8.6-stable"
 DEFAULT_GITHUB_REPO = "bradlinder/RTVS3"
 
 
+def safe_process_events():
+    """Safely process pending Qt GUI events only when called from the main GUI thread."""
+    try:
+        from PySide6.QtCore import QThread
+        from PySide6.QtWidgets import QApplication
+        app = QApplication.instance()
+        if app and QThread.currentThread() == app.thread():
+            app.processEvents()
+    except Exception:
+        pass
+
+
 def get_active_theme_mode(default: str = "dark") -> str:
     """Retrieve active theme mode ('light', 'dark', or 'high_contrast') with universal multi-scope resolution."""
     # 1. Check active QApplication top-level widgets or main window

@@ -10,6 +10,8 @@ import tempfile
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
+from prs_shared import safe_process_events
+
 from PySide6.QtCore import Qt, QTimer, QSettings
 from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import (
@@ -1747,14 +1749,14 @@ class WordPressExportDestination(ExportDestination):
                     main_window.set_processing_stage("WordPress Publishing", f"Post {idx + 1} of {total_posts}: '{post_title}'")
                 if hasattr(main_window, "update_processing_progress"):
                     main_window.update_processing_progress(pct, f"Starting WordPress export for '{post_title}'…")
-                QApplication.processEvents()
+                safe_process_events()
 
                 def wp_progress(step, step_total, description, _idx=idx, _title=post_title):
                     fraction = max(0.0, min(1.0, ((step - 1) / step_total)))
                     overall = ((_idx + fraction) / max(1, total_posts)) * 100
                     if hasattr(main_window, "update_processing_progress"):
                         main_window.update_processing_progress(int(overall), description)
-                    QApplication.processEvents()
+                    safe_process_events()
 
                 # Resolve story fades
                 st_fade_in = float(post.get("fade_in", 0.0) or 0.0)
@@ -1811,7 +1813,7 @@ class WordPressExportDestination(ExportDestination):
                     if post_data and isinstance(post_data, dict):
                         if hasattr(main_window, "update_processing_progress"):
                             main_window.update_processing_progress(int(((idx + 1) / max(1, total_posts)) * 100), f"Finished '{post_title}'.")
-                        QApplication.processEvents()
+                        safe_process_events()
                         post_id = post_data.get("id", "Draft")
                         post_link = post_data.get("link") or f"{client.site_url}/?p={post_id}"
                         created_posts.append({

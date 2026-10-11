@@ -26,6 +26,8 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
+from prs_shared import safe_process_events
+
 logger = logging.getLogger("rtvs.gdocs.auth")
 
 try:
@@ -545,7 +547,7 @@ class GoogleDocsAuthManager:
         try:
             while (time.time() - start_time) < timeout:
                 if progress_dialog:
-                    QCoreApplication.processEvents()
+                    safe_process_events()
                     if progress_dialog.wasCanceled():
                         server.server_close()
                         return False, "Google authorization was canceled."

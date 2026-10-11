@@ -1,5 +1,29 @@
 # Changelog
 
+## v3.9.0-beta.5
+- **High-Resolution Timeline Waveform Canvas & Sub-Second Precision Ruler (`timeline_widgets.py`, `shortcuts/schema.py`, `shortcuts/manager.py`)**:
+  - **High-Resolution 300x Max Zoom Scaling (`timeline_widgets.py`)**: Expanded `TimelineCanvas.max_zoom` from 80.0x to 300.0x, providing sub-word and millisecond-level precision for placing story boundaries (`[` and `]`), audio fade envelopes, and split cuts (`Ctrl+K`). Retained $O(\text{viewport\_width})$ constant-time viewport rendering and precomputed pyramid sampling to guarantee zero performance or memory overhead during scrubbing, zooming, and playback.
+  - **Sub-Second Timeline Ruler Tick Formatting (`timeline_widgets.py`)**: Extended ruler tick intervals to support sub-second steps (`0.1s`, `0.25s`, `0.5s`) with dynamic fractional timestamp formatting (`MM:SS.s` and `MM:SS.ss`), delivering clean visual timestamp markers at high zoom levels without tick overlap or floating-point drift.
+  - **Universal Shortcut Schema Alias Resolution & F2 Default Toggle (`shortcuts/schema.py`, `shortcuts/manager.py`)**: Replaced bare `Tab` with `F2` as the primary default sequence for `toggle_edit_mode` (preventing text edit focus trapping in `QTextEdit`), and added `ACTION_ALIASES` in `ShortcutsManager` to ensure 100% synchronization between Preferences custom keybindings and the F1 Reference cheat sheet.
+  - **Synchronous Version Bump**: Synchronized all 10 project locations to `v3.9.0-beta.5`.
+
+## v3.9.0-beta.4
+- **Speed Proofreading Shortcuts Audit & Universal Schema Registry Cataloging (`shortcuts/schema.py`, `ui_layout.py`, `transcript_editor.py`, `src/App.tsx`)**:
+  - **Speed Proofreading Shortcuts Registration (`shortcuts/schema.py`)**:
+    - Cataloged `toggle_edit_mode` ("Toggle Proofreading / Edit Mode", `Tab` / `F2` / `Ctrl+T`), `split_speaker` ("Split Speaker Segment", `Shift+Enter`), `help_shortcuts` ("Keyboard Shortcuts Reference", `F1`), and `about` ("About Application", `Shift+F1`) in master schema `SHORTCUT_DEFINITIONS`.
+    - Added transport seek alias definitions (`seek_backward`, `seek_forward`, `seek_start`, `seek_end`) ensuring 100% of shortcuts used across the application are fully customizable in **Preferences -> Keyboard Shortcuts** and rendered in the **F1 Keyboard Shortcuts Reference** table.
+  - **Synchronous Version Bump**: Synchronized all 10 project locations to `v3.9.0-beta.4`.
+
+## v3.9.0-beta.3
+- **Diagnostic Test Bench Worker Threading & Multi-Thread Event Loop Hardening (`test_runner.py`, `core_utils.py`, `prs_shared.py`, `transcript_story.py`, `project_export.py`, `plugins/wordpress/export_destination.py`, `plugins/youtube/export_destination.py`, `plugins/gdocs/auth.py`)**:
+  - **Diagnostic Bench Worker Threading Fix (`test_runner.py`)**:
+    - Resolved application freeze when executing the interactive Diagnostic Test Bench dialog (`Help -> Run Diagnostic Test Bench...`): removed unnecessary `ManageVoiceProfilesDialog` (PySide6 `QDialog`) instantiation from background worker test 64 (`_test_station_voice_profiles_store_and_matching_engine`). Creating Qt GUI widgets on secondary `QThread` workers violates Qt's single-thread GUI constraint and caused Qt event loop lockups.
+  - **Thread-Safe Event Loop Processing Guard (`core_utils.py`, `prs_shared.py`)**:
+    - Introduced `safe_process_events()` helper in `core_utils.py` (and re-exported in `prs_shared.py`) that verifies `QThread.currentThread() == app.thread()` before invoking `QApplication.processEvents()`.
+  - **Core & Plugin Event Dispatch Hardening (`transcript_story.py`, `project_export.py`, `plugins/wordpress/export_destination.py`, `plugins/youtube/export_destination.py`, `plugins/gdocs/auth.py`)**:
+    - Replaced raw `QApplication.processEvents()` calls across transcript extraction, multi-story batch exports, WordPress draft publishing, YouTube video uploads, and Google Docs OAuth authorization with `safe_process_events()`, ensuring thread safety whether invoked from main GUI loops or background diagnostic workers.
+  - **Synchronous Version Bump**: Synchronized all 10 project locations to `v3.9.0-beta.3`.
+
 ## v3.9.0-beta.2
 - **Comprehensive Functional Audit, Edge-Case Traps & Cross-Module Plumbing Hardening (`GEMINI.md`, `AGENTS.md`, `speaker_profiles.py`, `transcript_story.py`, `speaker_dialogs.py`, `RadioTVSegmenter.py`, `project_lifecycle.py`, `ui_layout.py`, `test_runner.py`)**:
   - **Comprehensive Codebase Audit Directive Upgrade (`GEMINI.md`, `AGENTS.md`)**:

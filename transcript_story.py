@@ -1,4 +1,4 @@
-"""Radio & TV Segmenter v3.9.0-beta.2 — transcript story responsibilities.
+"""Radio & TV Segmenter v3.9.0-beta.5 — transcript story responsibilities.
 
 Methods intentionally retain the MainWindow-facing API so behavior remains
 maintaining the established MainWindow-facing API while responsibilities are isolated.
@@ -1743,7 +1743,7 @@ class TranscriptStoryMixin:
                     progress_dlg.setLabelText(
                         f"Extracting acoustic voice signatures (turn {step + 1} of {len(eligible_indices)})..."
                     )
-                    QApplication.processEvents()
+                    safe_process_events()
 
                 embedding = self.get_segment_embedding(idx)
                 if embedding is not None:

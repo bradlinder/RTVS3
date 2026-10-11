@@ -59,6 +59,18 @@ def normalize_sequence_string(seq_str: str) -> str:
     return seq.toString(QKeySequence.SequenceFormat.PortableText)
 
 
+# Alias dictionary mapping legacy/UI action IDs to primary schema action IDs
+ACTION_ALIASES = {
+    "export": "export_unified",
+    "batch_processing": "batch_transcribe",
+    "run_pipeline": "multi_stage_pipeline",
+    "save_project": "save_document",
+    "save_project_as": "save_document_as",
+    "exit_app": "quit_app",
+    "find_replace": "find_text",
+    "glossary": "manage_terminology",
+}
+
 # Comprehensive registry of all application functions that have keyboard shortcuts assigned.
 SHORTCUT_DEFINITIONS: List[ShortcutDef] = [
     # -------------------------------------------------------------
@@ -186,12 +198,30 @@ SHORTCUT_DEFINITIONS: List[ShortcutDef] = [
         is_qshortcut=True,
     ),
     ShortcutDef(
+        action_id="seek_backward",
+        name="Skip Backward",
+        category="Playback & Transport",
+        default_seq="Left",
+        default_mac="Left",
+        description="Rewind audio playhead by configured jump distance",
+        is_qshortcut=True,
+    ),
+    ShortcutDef(
         action_id="jump_forward_short",
         name="Jump Forward (Short / 5s)",
         category="Playback & Transport",
         default_seq="Right",
         default_mac="Right",
         description="Advance audio playhead by configured short jump distance (default 5s)",
+        is_qshortcut=True,
+    ),
+    ShortcutDef(
+        action_id="seek_forward",
+        name="Skip Forward",
+        category="Playback & Transport",
+        default_seq="Right",
+        default_mac="Right",
+        description="Advance audio playhead by configured jump distance",
         is_qshortcut=True,
     ),
     ShortcutDef(
@@ -240,8 +270,26 @@ SHORTCUT_DEFINITIONS: List[ShortcutDef] = [
         is_qshortcut=True,
     ),
     ShortcutDef(
+        action_id="seek_start",
+        name="Seek to Start",
+        category="Playback & Transport",
+        default_seq="Home",
+        default_mac="Home",
+        description="Seek playhead to 00:00:00",
+        is_qshortcut=True,
+    ),
+    ShortcutDef(
         action_id="jump_to_end",
         name="Jump to End of Recording",
+        category="Playback & Transport",
+        default_seq="End",
+        default_mac="End",
+        description="Seek playhead to the end of the loaded media",
+        is_qshortcut=True,
+    ),
+    ShortcutDef(
+        action_id="seek_end",
+        name="Seek to End",
         category="Playback & Transport",
         default_seq="End",
         default_mac="End",
@@ -332,6 +380,24 @@ SHORTCUT_DEFINITIONS: List[ShortcutDef] = [
         default_mac="Meta+R",
         description="Open speaker rename and identity manager for current segment",
         attr_name="rename_speaker_action",
+    ),
+    ShortcutDef(
+        action_id="toggle_edit_mode",
+        name="Toggle Proofreading / Edit Mode",
+        category="Story & Segment Editing",
+        default_seq="F2",
+        default_mac="F2",
+        description="Toggle between viewing and proofreading edit mode; in edit mode, pauses audio and places cursor on spoken word; in viewing mode, resumes playback with pre-roll",
+        is_qshortcut=True,
+    ),
+    ShortcutDef(
+        action_id="split_speaker",
+        name="Split Speaker Segment",
+        category="Story & Segment Editing",
+        default_seq="Shift+Return",
+        default_mac="Shift+Return",
+        description="Split current segment at cursor position and insert a new speaker turn",
+        is_qshortcut=True,
     ),
     ShortcutDef(
         action_id="split_segment",
@@ -461,5 +527,23 @@ SHORTCUT_DEFINITIONS: List[ShortcutDef] = [
         default_mac="Meta+U",
         description="Check GitHub releases for new versions and patches",
         attr_name="update_action",
+    ),
+    ShortcutDef(
+        action_id="help_shortcuts",
+        name="Keyboard Shortcuts Reference",
+        category="Help & Diagnostics",
+        default_seq="F1",
+        default_mac="Meta+?",
+        description="Open interactive keyboard shortcuts reference table",
+        attr_name="help_shortcuts_action",
+    ),
+    ShortcutDef(
+        action_id="about",
+        name="About Application",
+        category="Help & Diagnostics",
+        default_seq="Shift+F1",
+        default_mac="Shift+F1",
+        description="Display version, build, and system diagnostic overview",
+        attr_name="about_action",
     ),
 ]
