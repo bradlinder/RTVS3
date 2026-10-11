@@ -272,6 +272,9 @@ class TimelineCanvas(QWidget):
 
     def set_duration(self, duration):
         self.duration = max(1, duration)
+        # Upper limit on zoom level: clamp minimum visible window to 0.25s across all file lengths
+        min_visible_seconds = 0.25
+        self.max_zoom = max(1.0, float(self.duration) / min_visible_seconds)
         self.clamp_scroll_offset()
         self.zoomChanged.emit()
         self.pixmap_dirty = True

@@ -1,5 +1,12 @@
 # Changelog
 
+## v3.9.0-beta.6
+- **Universal Minimum Visible Window Zoom Ceiling (`timeline_widgets.py`)**:
+  - **Dynamic Zoom Ceiling Scaling (`timeline_widgets.py`)**: Updated `TimelineCanvas.set_duration()` so `max_zoom` is dynamically calculated based on audio length ($\text{max\_zoom} = \max(1.0, \text{duration} / 0.25\text{s})$), enforcing a universal minimum visible window ceiling of **0.25 seconds** across media files of any duration (up to 240+ minutes).
+  - **DAW-Grade Precision Without Disorientation (`timeline_widgets.py`)**: Delivers sub-millisecond cursor placement precision for placing story boundaries, audio crossfades, and split cuts cleanly before breaths, syllables, or transient attacks, while preventing UI disorientation, waveform alias flattening, or overview handle collapse.
+  - **Overview Pill & Drag Handle Bounds (`timeline_widgets.py`)**: Ensured overview bar drag handles (`TimelineOverviewPill`) dynamically respect the `0.25s` visible window boundary (`dur / max_zoom`), keeping scrollbar and overview handle physics stable and fluid.
+  - **Synchronous Version Bump**: Synchronized all 10 project locations to `v3.9.0-beta.6`.
+
 ## v3.9.0-beta.5
 - **High-Resolution Timeline Waveform Canvas & Sub-Second Precision Ruler (`timeline_widgets.py`, `shortcuts/schema.py`, `shortcuts/manager.py`)**:
   - **High-Resolution 300x Max Zoom Scaling (`timeline_widgets.py`)**: Expanded `TimelineCanvas.max_zoom` from 80.0x to 300.0x, providing sub-word and millisecond-level precision for placing story boundaries (`[` and `]`), audio fade envelopes, and split cuts (`Ctrl+K`). Retained $O(\text{viewport\_width})$ constant-time viewport rendering and precomputed pyramid sampling to guarantee zero performance or memory overhead during scrubbing, zooming, and playback.
