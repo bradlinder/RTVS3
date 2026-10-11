@@ -1,5 +1,25 @@
 # Changelog
 
+## v3.9.0-beta.2
+- **Comprehensive Functional Audit, Edge-Case Traps & Cross-Module Plumbing Hardening (`GEMINI.md`, `AGENTS.md`, `speaker_profiles.py`, `transcript_story.py`, `speaker_dialogs.py`, `RadioTVSegmenter.py`, `project_lifecycle.py`, `ui_layout.py`, `test_runner.py`)**:
+  - **Comprehensive Codebase Audit Directive Upgrade (`GEMINI.md`, `AGENTS.md`)**:
+    - Upgraded Section 9 in agent instructions to enforce active, adversarial code-level inspection covering 7 pillars on every audit request without requiring micromanagement: Functional Operability Verification, Edge-Case Robustness & Desktop Environmental Traps, Security & Data Safety, Performance & Resource Usage, Qt/PySide6 Stability, Code Bloat / Dead Code Hygiene, and Architectural Invariants.
+    - Prohibited relying solely on pre-existing diagnostic unit test suites, mandating feature-by-feature execution tracing, data contract checks, and silent exception auditing.
+  - **Voice Profile Plumbing & Embedding Extraction Integrity (`speaker_profiles.py`, `transcript_story.py`)**:
+    - Fixed inverted candidate reference exclusion in `ManageVoiceProfilesDialog._on_add_from_active_turn()`: now extracts the acoustic embedding directly from `get_segment_embedding(seg_idx)` rather than passing `[seg_idx]` to candidate exclusions.
+    - Resolved tuple vs dict return shape mismatch in `teach_voice_profile_dialog`: synthesizes the persistent profile vector from the true centroid of reference turn embeddings.
+    - Added atomic replacement (`safe_replace`) with `flush()` and `os.fsync()` for JSON voice profile exports.
+  - **Undo/Redo State Mutation Integrity Across Speaker Handlers (`speaker_dialogs.py`, `transcript_story.py`, `speaker_profiles.py`)**:
+    - Plugged missing undo stack snapshots in `SpeakerManagerDialog._rename_speaker()`, `refine_speaker_run_between_confirmed_anchors()`, `merge_contiguous_speaker_segments()`, and `ManageVoiceProfilesDialog._on_match_project()`. All speaker renames, multi-turn merges, competitive refinements, and profile assignments now capture `before_state`, push to `_commit_project_state_change()`, re-render the transcript, and persist state.
+  - **Desktop Runtime & Lifecycle Plumbing Hardening (`RadioTVSegmenter.py`, `project_lifecycle.py`, `ui_layout.py`)**:
+    - Fixed broken startup media loading in `handle_startup_path()` (`RadioTVSegmenter.py`), replacing undefined `open_media_file` with `self.load_media_file(str(p), source="command line / file association")`.
+    - Removed obsolete stub `update_media_dependent_ui()` on project load (`project_lifecycle.py`), directing preview updates cleanly to `update_video_preview_state()`.
+    - Corrected story panel excerpt editing (`ui_layout.py`) to update `self.project_dirty = True` and trigger `update_window_title()`.
+  - **Automated Diagnostic Suite Extension (`test_runner.py`)**:
+    - Enhanced `_test_station_voice_profiles_store_and_matching_engine` with end-to-end UI dialog extraction simulation, active turn embedding assignment, and full undo/redo rollback verification.
+    - Augmented headless `MockModule` in `test_runner.py` with dynamic signal methods (`connect`, `disconnect`, `emit`) and standard Qt widget role constants.
+  - **Synchronous Version Bump**: Synchronized all 10 project locations to `v3.9.0-beta.2`.
+
 ## v3.9.0-beta.1
 - **Station Voice Profiles Library, Multi-Tier Mipmapped Peak Cache & Speed-Listening Proofreading Engine (`speaker_profiles.py`, `background_workers.py`, `transcript_editor.py`, `playback_preferences.py`, `ui_layout.py`, `processing.py`, `transcript_story.py`, `speaker_dialogs.py`)**:
   - **Persistent Station Voice Profiles ("Manage Voice Profiles...") (`speaker_profiles.py`, `transcript_story.py`, `speaker_dialogs.py`, `ui_layout.py`)**:

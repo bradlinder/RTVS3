@@ -2024,8 +2024,9 @@ class UiLayoutMixin:
             st.metadata["excerpt"] = txt
             wp_meta = st.metadata.setdefault("wordpress", {})
             wp_meta["excerpt"] = txt
-            if hasattr(self, "set_unsaved_changes"):
-                self.set_unsaved_changes(True)
+            self.project_dirty = True
+            if hasattr(self, "update_window_title"):
+                self.update_window_title()
 
     def toggle_maximize_stories_panel(self):
         """Toggle maximize/restore of the stories panel across the full application window."""

@@ -1,4 +1,4 @@
-"""Radio & TV Segmenter v3.9.0-beta.1 — transcript story responsibilities.
+"""Radio & TV Segmenter v3.9.0-beta.2 — transcript story responsibilities.
 
 Methods intentionally retain the MainWindow-facing API so behavior remains
 maintaining the established MainWindow-facing API while responsibilities are isolated.
@@ -1344,6 +1344,7 @@ class TranscriptStoryMixin:
         if cA is None or cB is None:
             return
 
+        before_state = self.get_project_state() if hasattr(self, "get_project_state") else None
         reassigned = 0
 
         for idx in range(start_idx, min(end_idx + 1, len(segments))):
@@ -1364,6 +1365,8 @@ class TranscriptStoryMixin:
                 reassigned += 1
 
         if reassigned > 0:
+            if before_state is not None and hasattr(self, "_commit_project_state_change"):
+                self._commit_project_state_change(before_state, f"Refine Dialog: {spk_a} vs {spk_b}")
             self._diar_index_key = None
             self.render_transcript()
             self.save_project()
@@ -2073,18 +2076,21 @@ class TranscriptStoryMixin:
                     if store is None:
                         store = StationVoiceProfileStore()
                         self.voice_profile_store = store
-                    # Compute vector from reference indices
-                    candidates = []
-                    if hasattr(self, "_build_voice_profile_candidates"):
-                        res = self._build_voice_profile_candidates([seg_idx] + active_refs, parent_widget=self)
-                        candidates = res[0] if isinstance(res, tuple) else res
-                    vec = candidates[0].get("vector") if candidates else None
+                    # Compute reference vector from reference indices
+                    ref_vectors = []
+                    all_refs = [seg_idx] + [r for r in active_refs if r != seg_idx]
+                    for r_idx in all_refs:
+                        emb = self.get_segment_embedding(r_idx)
+                        if emb:
+                            ref_vectors.append(emb)
+                    from speaker_identity import centroid
+                    vec = centroid(ref_vectors) if ref_vectors else None
                     if vec:
                         src = Path(self.audio_file).name if getattr(self, "audio_file", None) else ""
                         store.add_or_update_profile(
                             name=dlg.target_name,
                             vector=vec,
-                            sample_count=len(active_refs) + 1,
+                            sample_count=len(ref_vectors),
                             source_media=src,
                         )
                 except Exception:
@@ -2261,6 +2267,7 @@ class TranscriptStoryMixin:
         if not segments:
             return
 
+        before_state = self.get_project_state() if hasattr(self, "get_project_state") else None
         merged_segments = []
         new_overrides = {}
         curr_block = None
@@ -2294,6 +2301,14 @@ class TranscriptStoryMixin:
 
         self.transcript["segments"] = merged_segments
         self.segment_speaker_overrides = new_overrides
+
+        if before_state is not None and hasattr(self, "_commit_project_state_change"):
+            self._commit_project_state_change(before_state, "Merge Contiguous Turns")
+
+        self.render_transcript()
+        self.save_project()
+        if hasattr(self, "statusBar") and self.statusBar():
+            self.statusBar().showMessage("Merged contiguous speaker turns.")
 
     def refresh_story_list(self):
         selected_indices = list(self.current_selected_story_indices)

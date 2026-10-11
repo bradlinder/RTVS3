@@ -86,4 +86,55 @@ Always adhere strictly to the invariants defined in `ARCHITECTURE.md`:
 - **Immediate Deletion**:
   - If the user chooses to delete, permanently remove the scripts and their temporary outputs.
 
+## 9. Comprehensive Codebase Audit Directive
+When instructed to audit the codebase (e.g. "audit the code", "run a code audit", "check for bloat/security/performance", "audit the full app"), the agent MUST NOT rely solely on running pre-existing diagnostic unit test suites (`test_runner.py`). Pre-existing unit tests only test what was previously conceived and often test isolated model components rather than full UI wiring.
+
+Instead, the agent MUST actively perform deep, adversarial code-level inspection across the actual execution paths, UI plumbing, data structures, and lifecycle handlers covering ALL of the following pillars:
+
+1. **Functional Operability Verification (Does Every Feature Actually Work as Expected?)**:
+   - **Feature-by-Feature Execution Tracing**: Walk the actual call stack for every major app feature (transcription, diarization, translation, story segmentation, timeline scrub/zoom, audio playback/speed, ID3 tagging, batch processing, and each export format: TXT, DOCX, PDF, REAPER RPP, EDL, XML, AAF, Google Docs, Sheets, YouTube, WordPress). Confirm there are no broken imports, missing methods on target objects, unhandled None types, or disconnected callbacks that would prevent the feature from completing successfully.
+   - **Data Shape & Contract Verification**: Inspect caller/callee boundaries between UI dialogs, background workers, and business logic. Ensure objects, dictionary keys, and return types match actual function signatures (e.g., verifying whether a function returns `[(idx, vector)]` vs `[{"vector": ...}]` or dict vs tuple).
+   - **Silent Exception Swallowing**: Audit `try: ... except:` blocks in newly added or modified methods. Ensure that broad `except Exception:` blocks do not silently mask `AttributeError`, `TypeError`, or logic failures during critical user operations (such as saving voice profiles, applying edits, or exporting files).
+   - **Undo/Redo State Mutation Integrity**: Inspect every function that mutates project state (segments, transcript words, speakers, overrides, stories, or timeline markers). Verify that `_commit_project_state_change()` or `undo_stack.push()` is explicitly called before mutation, and that `render_transcript()` / `save_project()` / `update_window_title()` are triggered.
+   - **UI Action & Callback End-to-End Tracing**: Verify that every dialog button, checkbox, and context-menu action is properly connected to a live handler, that argument names in method calls match the signature, and that methods invoked on `self.main_win` or `self.parent()` actually exist and behave as expected.
+
+2. **Edge-Case Robustness & Desktop Environmental Traps**:
+   - **Cross-Platform Filesystem & Path Traps**:
+     * Case sensitivity: Ensure extensions (`.lower().endswith(...)`) and path comparisons handle uppercase extensions (`.MP3`, `.WAV`) on Linux.
+     * Cross-drive paths on Windows: Ensure `os.path.relpath()` across different mount drives (e.g., `D:\` media vs `C:\` project) is wrapped in `try: ... except ValueError:` to prevent crashes.
+     * Non-ASCII & Unicode paths: Verify file open routines and subprocess argument vectors handle paths with spaces, apostrophes, ampersands, or Unicode characters.
+   - **Media Duration & Asynchrony Traps**:
+     * Zero-duration and VBR MP3 guards: Ensure duration math guards against zero (`dur = max(0.001, float(duration))`) to prevent `ZeroDivisionError` or `NaN` timeline coordinates.
+     * Stale worker signal completion: Verify background worker callbacks check whether the active project/media has changed before mutating state (`if self.audio_file != worker.source_audio: return`).
+     * Re-entrancy guards: Ensure long-running action triggers disable their buttons during processing to prevent rapid double-click race conditions.
+   - **Display & High-DPI Traps**:
+     * Geometry restoration: Ensure saved window/dialog coordinates in `QSettings` validate against available screen geometry (`QGuiApplication.screens()`) so windows never restore off-screen when monitors are disconnected.
+
+3. **Security & Data Safety**:
+   - Path traversal guards (`Path.resolve()`, `os.path.commonpath`) on all file imports, project loads, and archive extractions (`.zip`, `.tar.gz`).
+   - Shell injection avoidance (safe `subprocess.run` with list arguments, `shell=False`, and `CREATE_NO_WINDOW` flags on Windows).
+   - Credential & OAuth token hygiene (client-side only, no hardcoded secrets or leaked keys).
+   - Atomic disk writes (`safe_replace` / `.tmp` rename with `flush()` and `os.fsync()`) for all projects, audio caches, and settings.
+
+4. **Performance & Resource Usage**:
+   - Memory efficiency on multi-hour media (bounded peak envelopes, chunked audio decoding, streaming FFmpeg pipes).
+   - Viewport-scaled LOD rendering (mipmapped waveform pyramids, bounded redraws, dirty canvas pixmaps).
+   - Responsive worker threading (dedicated background QThreads/subprocesses; no heavy compute or file I/O blocking the Qt main GUI loop).
+
+5. **Qt / PySide6 Stability & Reliability**:
+   - Thread affinity: No background workers directly touching GUI widgets (signals/slots only).
+   - Object parentage & lifecycle: Proper widget hierarchy to prevent memory leaks and `Internal C++ object already deleted` crashes.
+   - Clean timer and worker termination: `QTimer.stop()` and worker `.cancel()` / `.kill()` handlers on close events.
+
+6. **Code Bloat, Dead Code & Asset Hygiene**:
+   - Identification of unused imports, orphaned functions/classes, and dead legacy code.
+   - Elimination of redundant or duplicated business logic across modules.
+   - Asset auditing: Ensure unreferenced icons, test media, or scratch scripts are not packaged into distribution builds (`build_installer.py`, `.iss`).
+
+7. **Architectural Invariants & Packaging**:
+   - Strict module boundaries: Core modules (`RadioTVSegmenter.py`, `processing.py`, `ui_layout.py`) must NEVER import from `plugins/`.
+   - Heavy AI/translation runtimes isolated to background worker subroutines.
+   - Installer exclusion compliance: `.archive/`, `.snapshots/`, `.git/`, and dev tests excluded from PyInstaller and Inno Setup bundles.
+   - Version coherence: Synchronous alignment across all 10 project locations with valid $N-1$ sliding-window roadmap tracking.
+
 

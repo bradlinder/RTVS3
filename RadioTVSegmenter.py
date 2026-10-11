@@ -367,7 +367,7 @@ class MainWindow(
         if p.suffix.lower() in {".rtvs", ".json", ".zip"}:
             self.load_project_file(str(p))
         else:
-            self.open_media_file(str(p))
+            self.load_media_file(str(p), source="command line / file association")
 
     def load_persistent_settings(self):
         """Loads all persistent user preferences from QSettings into MainWindow attributes."""

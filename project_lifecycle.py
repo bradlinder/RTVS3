@@ -560,7 +560,8 @@ class ProjectLifecycleMixin:
                 self.current_media_is_video = str(resolved_audio.suffix).lower() in {".mp4", ".mov", ".mkv", ".webm", ".avi"}
                 self.player.setSource(QUrl.fromLocalFile(str(self.audio_file)))
                 self.timeline.set_audio_filename(self.audio_file.name)
-                self.update_media_dependent_ui()
+                if hasattr(self, "update_video_preview_state"):
+                    self.update_video_preview_state()
 
         self.project_file = project_path
         self.duration = float(data.get("duration", 0.0) or 0.0)
@@ -573,7 +574,6 @@ class ProjectLifecycleMixin:
         }
         self.translations = data.get("translations", {})
         self.translation_display_mode = data.get("translation_display_mode", "off")
-
         self.stories = []
         for s in data.get("stories", []):
             try:
@@ -586,7 +586,8 @@ class ProjectLifecycleMixin:
         self.timeline.set_duration(self.duration)
         self.timeline.set_stories(self.stories)
         self.refresh_story_list()
-        self.refresh_transcript_view()
+        if hasattr(self, "render_transcript"):
+            self.render_transcript()
 
         session = data.get("session", {})
         pos = float(session.get("position", 0.0) or 0.0)

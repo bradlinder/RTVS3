@@ -277,9 +277,9 @@ class StationVoiceProfileStore:
 class ManageVoiceProfilesDialog(QDialog):
     """Management dialog for inspecting, auditing, adding, or deleting persistent station voice profiles."""
 
-    def __init__(self, parent=None, store: Optional[StationVoiceProfileStore] = None):
+    def __init__(self, parent=None, store: Optional[StationVoiceProfileStore] = None, main_win=None):
         super().__init__(parent)
-        self.main_win = parent
+        self.main_win = main_win or parent
         self.store = store or StationVoiceProfileStore()
         self.setWindowTitle("Manage Voice Profiles")
         self.resize(840, 520)
@@ -480,12 +480,17 @@ class ManageVoiceProfilesDialog(QDialog):
         )
         if res == QMessageBox.StandardButton.Yes:
             matched_indices = [m[0] for m in matches]
+            before_state = self.main_win.get_project_state() if hasattr(self.main_win, "get_project_state") else None
             for idx in matched_indices:
                 override_key = f"SEG_{idx}_SPEAKER"
                 self.main_win.speaker_names[override_key] = prof.name
                 self.main_win.segment_speaker_overrides[idx] = override_key
+            if before_state is not None and hasattr(self.main_win, "_commit_project_state_change"):
+                self.main_win._commit_project_state_change(before_state, f"Match Voice Profile: {prof.name}")
             if hasattr(self.main_win, "render_transcript"):
                 self.main_win.render_transcript()
+            if hasattr(self.main_win, "save_project"):
+                self.main_win.save_project()
             if hasattr(self.main_win, "statusBar"):
                 self.main_win.statusBar().showMessage(f"Assigned '{prof.name}' to {len(matched_indices)} segment(s).")
             QMessageBox.information(self, "Assigned", f"Successfully assigned '{prof.name}' to {len(matched_indices)} segment(s).")
@@ -515,17 +520,20 @@ class ManageVoiceProfilesDialog(QDialog):
                     break
         seg_idx = inferred if (inferred is not None and 0 <= inferred < len(segments)) else 0
 
-        # Extract embedding
-        candidates = []
-        if hasattr(self.main_win, "_build_voice_profile_candidates"):
-            res = self.main_win._build_voice_profile_candidates([seg_idx], parent_widget=self)
-            candidates = res[0] if isinstance(res, tuple) else res
-        
+        # Extract embedding for selected reference turn
         vec = None
-        if candidates and candidates[0].get("vector"):
-            vec = candidates[0]["vector"]
+        if hasattr(self.main_win, "get_segment_embedding"):
+            vec = self.main_win.get_segment_embedding(seg_idx)
         elif segments[seg_idx].get("embedding"):
             vec = segments[seg_idx]["embedding"]
+
+        if vec is None and hasattr(self.main_win, "_build_voice_profile_candidates"):
+            res = self.main_win._build_voice_profile_candidates([], parent_widget=self)
+            candidates = res[0] if isinstance(res, tuple) else res
+            for c_idx, c_emb in candidates:
+                if c_idx == seg_idx:
+                    vec = c_emb
+                    break
 
         if vec is None:
             QMessageBox.warning(
@@ -568,13 +576,18 @@ class ManageVoiceProfilesDialog(QDialog):
         )
         if file_path:
             try:
+                dest_p = Path(file_path)
+                tmp_p = dest_p.with_name(dest_p.name + ".tmp")
                 payload = {
                     "version": 1,
                     "count": len(profiles),
                     "profiles": [p.to_dict() for p in profiles],
                 }
-                with open(file_path, "w", encoding="utf-8") as f:
+                with open(tmp_p, "w", encoding="utf-8") as f:
                     json.dump(payload, f, indent=2)
+                    f.flush()
+                    os.fsync(f.fileno())
+                safe_replace(tmp_p, dest_p)
                 QMessageBox.information(self, "Export Complete", f"Exported {len(profiles)} voice profiles to:\n{file_path}")
             except Exception as e:
                 QMessageBox.critical(self, "Export Error", f"Failed to export voice profiles:\n{e}")

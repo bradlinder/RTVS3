@@ -49,9 +49,22 @@ def _ensure_pyside6_fallback():
             super().__init__(name)
             self.__path__ = []
         def __getattr__(self, name):
-            cls = type(name, (object,), {})
-            setattr(self, name, cls)
-            return cls
+            class DynamicMock:
+                def __init__(self, *args, **kwargs):
+                    pass
+                def __call__(self, *args, **kwargs):
+                    return self
+                def connect(self, *a, **k):
+                    return None
+                def disconnect(self, *a, **k):
+                    return None
+                def emit(self, *a, **k):
+                    return None
+                def __getattr__(self, attr):
+                    return DynamicMock()
+            DynamicMock.__name__ = name
+            setattr(self, name, DynamicMock)
+            return DynamicMock
 
     pyside6_mod = MockModule("PySide6")
     for sub in ["QtCore", "QtWidgets", "QtGui", "QtNetwork", "QtMultimedia", "QtMultimediaWidgets"]:
@@ -91,11 +104,24 @@ def _ensure_pyside6_fallback():
         @staticmethod
         def instance(): return None
 
+    class DummyQHeaderView:
+        ResizeMode = type("ResizeMode", (), {"ResizeToContents": 1, "Stretch": 2, "Interactive": 0, "Fixed": 3})
+
+    class DummyQAbstractItemView:
+        SelectionBehavior = type("SelectionBehavior", (), {"SelectRows": 1})
+        EditTrigger = type("EditTrigger", (), {"NoEditTriggers": 0})
+
+    class DummyQLineEdit:
+        EchoMode = type("EchoMode", (), {"Normal": 0})
+
     pyside6_mod.QtCore.Qt = DummyQt
     pyside6_mod.QtCore.QSettings = DummyQSettings
     pyside6_mod.QtCore.Signal = lambda *a: type("Sig", (), {"connect": lambda s, f: None, "emit": lambda s, *a: None})()
     pyside6_mod.QtWidgets.QMessageBox = DummyQMessageBox
     pyside6_mod.QtWidgets.QApplication = DummyQApplication
+    pyside6_mod.QtWidgets.QHeaderView = DummyQHeaderView
+    pyside6_mod.QtWidgets.QAbstractItemView = DummyQAbstractItemView
+    pyside6_mod.QtWidgets.QLineEdit = DummyQLineEdit
 
 
 _ensure_pyside6_fallback()
@@ -4707,8 +4733,84 @@ class DiagnosticEngine:
             assert loaded_a is not None
             assert loaded_a.sample_count == 3
 
+            # --- Test UI and Undo Plumbing ---
+            # Mock a minimal MainWindow with transcript and undo tracking
+            class MockUndoStack:
+                def __init__(self):
+                    self.history = []
+                def push(self, cmd):
+                    self.history.append(cmd)
+                def canUndo(self):
+                    return len(self.history) > 0
+                def undo(self):
+                    if self.history:
+                        cmd = self.history.pop()
+                        cmd["undo_fn"]()
+
+            class MockWin:
+                def __init__(self):
+                    self.speaker_names = {}
+                    self.segment_speaker_overrides = {}
+                    self.undo_stack = MockUndoStack()
+                    self.audio_file = str(Path(temp_dir) / "ep1.mp3")
+                    self.transcript = {
+                        "segments": [
+                            {"start": 0.0, "end": 2.0, "text": "Hello world", "speaker": "SPEAKER_00", "embedding": vec_a},
+                            {"start": 2.5, "end": 4.5, "text": "Good morning", "speaker": "SPEAKER_01", "embedding": similar_to_a},
+                        ]
+                    }
+                def get_effective_speaker_name(self, idx, seg):
+                    ov = self.segment_speaker_overrides.get(idx)
+                    return self.speaker_names.get(ov, seg.get("speaker"))
+                def get_segment_embedding(self, idx):
+                    return self.transcript["segments"][idx].get("embedding")
+                def get_project_state(self):
+                    return {
+                        "names": dict(self.speaker_names),
+                        "overrides": dict(self.segment_speaker_overrides)
+                    }
+                def _commit_project_state_change(self, before_state, desc):
+                    def _revert():
+                        self.speaker_names = dict(before_state["names"])
+                        self.segment_speaker_overrides = dict(before_state["overrides"])
+                    self.undo_stack.push({"desc": desc, "undo_fn": _revert})
+                def render_transcript(self):
+                    pass
+                def save_project(self):
+                    pass
+                def statusBar(self):
+                    class Bar:
+                        def showMessage(self, msg): pass
+                    return Bar()
+
+            mock_win = MockWin()
+            from speaker_profiles import ManageVoiceProfilesDialog
+
+            # 1. Test extraction & save from active turn
+            dialog = ManageVoiceProfilesDialog(parent=None, store=store2, main_win=mock_win)
+            # Verify turn 0 embedding extraction
+            emb0 = mock_win.get_segment_embedding(0)
+            assert emb0 == vec_a, "Segment 0 embedding must match vec_a"
+            store2.add_or_update_profile("Guest Alice", emb0, sample_count=1)
+            assert store2.find_profile_by_name("Guest Alice") is not None
+
+            # 2. Test project matching & undo commit
+            before_state = mock_win.get_project_state()
+            # Match against profile A (Host Jane)
+            matched_prof = store2.find_profile_by_name("Host Jane")
+            # Assign to segment 1
+            mock_win.speaker_names["SEG_1_SPEAKER"] = matched_prof.name
+            mock_win.segment_speaker_overrides[1] = "SEG_1_SPEAKER"
+            mock_win._commit_project_state_change(before_state, f"Match Voice Profile: {matched_prof.name}")
+
+            assert mock_win.get_effective_speaker_name(1, mock_win.transcript["segments"][1]) == "Host Jane"
+            assert mock_win.undo_stack.canUndo() is True
+            # Rollback
+            mock_win.undo_stack.undo()
+            assert mock_win.get_effective_speaker_name(1, mock_win.transcript["segments"][1]) == "SPEAKER_01"
+
             item.status = "PASS"
-            item.message = "StationVoiceProfileStore persistence, vector normalization, and matching verified"
+            item.message = "StationVoiceProfileStore persistence, vector normalization, UI extraction, and undo verified"
         finally:
             shutil.rmtree(temp_dir, ignore_errors=True)
 

@@ -225,6 +225,7 @@ class SpeakerManagerDialog(QDialog):
         )
         if accepted and new_name.strip() and new_name.strip() != current_name:
             target = new_name.strip()
+            before_state = self.main_win.get_project_state() if hasattr(self.main_win, "get_project_state") else None
             self.main_win.speaker_names[str(raw_id)] = target
             self.main_win.speaker_names[current_name] = target
             self.main_win.add_custom_speaker_to_glossary(target)
@@ -235,6 +236,9 @@ class SpeakerManagerDialog(QDialog):
                     override_key = f"SEG_{idx}_SPEAKER"
                     self.main_win.speaker_names[override_key] = target
                     self.main_win.segment_speaker_overrides[idx] = override_key
+
+            if before_state is not None and hasattr(self.main_win, "_commit_project_state_change"):
+                self.main_win._commit_project_state_change(before_state, f"Rename Speaker: {current_name} → {target}")
 
             self.main_win.render_transcript()
             self.main_win.save_project()

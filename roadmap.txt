@@ -39,13 +39,13 @@ TABLE OF CONTENTS & STATUS OVERVIEW
    [x] 1.7 Diagnostic Suite Coverage (`test_runner.py`): Added test assertions in `test_runner.py` verifying header hygiene, Full Episode split continuity with unlabelled non-story sections, paired color-coded regions, and curve fade mapping.
    [x] 1.8 Synchronous Version Bump: Synchronized all 10 project locations to v3.8.9-beta.19
 
-2. Current Release: Station Voice Profiles Library, Multi-Tier Mipmapped Peak Cache & Speed-Listening Proofreading Engine (`speaker_profiles.py`, `background_workers.py`, `transcript_editor.py`, `playback_preferences.py`, `ui_layout.py`, `processing.py`, `transcript_story.py`, `speaker_dialogs.py`) [x] [COMPLETED in v3.9.0-beta.1]
+2. Current Release: Station Voice Profiles Library, Multi-Tier Mipmapped Peak Cache & Speed-Listening Proofreading Engine (`speaker_profiles.py`, `background_workers.py`, `transcript_editor.py`, `playback_preferences.py`, `ui_layout.py`, `processing.py`, `transcript_story.py`, `speaker_dialogs.py`) [x] [COMPLETED in v3.9.0-beta.2]
    [x] 2.1 Persistent Station Voice Profiles Library ("Manage Voice Profiles...") (`speaker_profiles.py`, `transcript_story.py`, `speaker_dialogs.py`, `ui_layout.py`): Implemented `StationVoiceProfileStore` saving normalized 256-dimensional acoustic embedding vectors, sample turn counts, creation/update timestamps, and notes into persistent application data (`voice_profiles.json`). Accessible via `Tools -> Voice Profile Tools -> Manage Voice Profiles...` and from the Speaker Manager dialog for browsing, renaming, auditing, manually adding, importing, exporting, and deleting recurring voice profiles.
    [x] 2.2 Automatic Diarization Matching & Preference Configuration (`processing.py`, `playback_preferences.py`, `RadioTVSegmenter.py`): Auto-matches newly detected speaker clusters against known voice profiles above a calibrated similarity threshold (default 78%). Added Preferences options under *Story Detection & Diarization* to enable/disable persistent voice profiles entirely and tune the auto-match threshold (50% to 99%).
    [x] 2.3 Multi-Tier Mipmapped Waveform Peak Cache (LOD Rendering) (`background_workers.py`, `timeline_widgets.py`): Upgraded binary `.peaks` cache format to Version 2, persisting base 1x peaks and precomputed 4x, 16x, and 64x mipmapped downsampled levels directly on disk in project `.cache/peaks/` (and appdata fallback). Delivers locked 60fps scrubbing and instantaneous loading on multi-hour recordings while preserving full backward compatibility with Version 1 `.peaks` files.
    [x] 2.4 Speed-Listening "Type-to-Correct" Proofreading Engine (`transcript_editor.py`, `playback_preferences.py`, `ui_layout.py`): Added pitch-preserving playback speed selector (0.75x, 1.0x, 1.25x, 1.5x, 1.75x, 2.0x) to primary transport controls and Preferences via native WSOLA. Implemented `Tab` key shortcut to pause playback, switch to editing mode, and position cursor directly on active word for typing, with `Tab` resuming playback and configurable pre-roll rewind (default 0.5s).
    [x] 2.5 Diagnostic Verification Suite (`test_runner.py`): Added assertions for StationVoiceProfileStore persistence, Version 2 mipmapped `.peaks` cache serialization/upgrading, playback speed rates, and proofreading pre-roll configuration.
-   [x] 2.6 Synchronous Version Bump: Synchronized all 10 project locations to v3.9.0-beta.1
+   [x] 2.6 Synchronous Version Bump: Synchronized all 10 project locations to v3.9.0-beta.2
 
 3. Optional Future Milestone: Interactive Text-Based Media Assembly & Multi-Asset Ripple Editing Engine (`project_lifecycle.py`, `transcript_editor.py`, `transcript_story.py`, `RadioTVSegmenter.py`, `export/timeline.py`) [PLANNED for v4.0.0] [OPTIONAL] [NOT STARTED]
    - *Workflow Design Note*: Marked as an optional workflow extension for users requesting text-driven paper cuts. The core single-file story segmenter, voicebook, and DAW exports remain default and lightweight.
@@ -106,7 +106,7 @@ DETAILED MILESTONE SPECIFICATIONS
 - Synchronized all 10 project locations to v3.8.9-beta.19
 
 ================================================================================
-2. CURRENT RELEASE: STATION VOICE PROFILES LIBRARY, MULTI-TIER MIPMAPPED PEAK CACHE & SPEED-LISTENING PROOFREADING ENGINE [x] [COMPLETED in v3.9.0-beta.1]
+2. CURRENT RELEASE: STATION VOICE PROFILES LIBRARY, MULTI-TIER MIPMAPPED PEAK CACHE & SPEED-LISTENING PROOFREADING ENGINE [x] [COMPLETED in v3.9.0-beta.2]
 ================================================================================
 
 [x] 2.1 Persistent Station Voice Profiles Library ("Manage Voice Profiles...") (`speaker_profiles.py`, `transcript_story.py`, `speaker_dialogs.py`, `ui_layout.py`)
@@ -136,7 +136,7 @@ DETAILED MILESTONE SPECIFICATIONS
 
 [x] 2.6 Synchronous Version Bump
 --------------------------------------------------------------------------------
-- Synchronized all 10 project locations to v3.9.0-beta.1
+- Synchronized all 10 project locations to v3.9.0-beta.2
 
 ================================================================================
 3. OPTIONAL FUTURE MILESTONE: INTERACTIVE TEXT-BASED MEDIA ASSEMBLY & MULTI-ASSET RIPPLE EDITING ENGINE [PLANNED for v4.0.0] [OPTIONAL] [NOT STARTED]
