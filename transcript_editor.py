@@ -909,6 +909,25 @@ class InteractiveTranscriptEdit(QTextEdit):
                             extra.cursor = comment_cursor
                             extras.append(extra)
 
+        # Section / Timeline Selection Overlay (Rendered BEFORE playback word so active word stays visible on top)
+        if getattr(self, "timeline_selection_span", None) is not None:
+            s_char, e_char = self.timeline_selection_span
+            fmt = QTextCharFormat()
+            if getattr(self, "current_theme", "dark") == "light":
+                fmt.setBackground(QColor(186, 215, 255, 170))
+                fmt.setForeground(QColor(15, 23, 42))
+            else:
+                fmt.setBackground(QColor(40, 105, 215, 170))
+                fmt.setForeground(QColor(255, 255, 255))
+
+            extra = QTextEdit.ExtraSelection()
+            extra.format = fmt
+            cursor = QTextCursor(self.document())
+            cursor.setPosition(s_char)
+            cursor.setPosition(e_char, QTextCursor.MoveMode.KeepAnchor)
+            extra.cursor = cursor
+            extras.append(extra)
+
         if hasattr(self, "saved_selections") and self.saved_selections:
             fmt = QTextCharFormat()
             if getattr(self, "current_theme", "dark") == "light":
@@ -931,6 +950,13 @@ class InteractiveTranscriptEdit(QTextEdit):
             extras.append(self._playback_highlight_selection)
 
         self.setExtraSelections(extras)
+
+    def set_timeline_selection_span(self, start_char, end_char):
+        if start_char is not None and end_char is not None and end_char > start_char:
+            self.timeline_selection_span = (start_char, end_char)
+        else:
+            self.timeline_selection_span = None
+        self.update_extra_selections()
 
     def _on_selection_completed(self, cursor):
         if not cursor.hasSelection():
@@ -2517,14 +2543,20 @@ class InteractiveTranscriptEdit(QTextEdit):
         # Prevents document mutations and expensive text reflows during playback
         highlight_fmt = QTextCharFormat()
         if self.current_theme == "light":
-            highlight_fmt.setForeground(QColor("#0056b3"))
-            highlight_fmt.setBackground(QColor(186, 215, 255, 120))
+            highlight_fmt.setForeground(QColor("#0f172a"))  # Sharp dark text for high contrast
+            highlight_fmt.setBackground(QColor(250, 204, 21, 230))  # Vibrant gold/yellow background (#facc15)
+            highlight_fmt.setFontUnderline(True)
+            highlight_fmt.setUnderlineColor(QColor(217, 119, 6))
         elif self.current_theme == "high_contrast":
-            highlight_fmt.setForeground(QColor("#ffff00"))
-            highlight_fmt.setBackground(QColor(255, 255, 0, 80))
+            highlight_fmt.setForeground(QColor("#000000"))  # Pure black text
+            highlight_fmt.setBackground(QColor(255, 255, 0, 255))  # Pure yellow background
+            highlight_fmt.setFontUnderline(True)
+            highlight_fmt.setUnderlineColor(QColor(255, 255, 255))
         else:
-            highlight_fmt.setForeground(QColor("#58a6ff"))
-            highlight_fmt.setBackground(QColor(88, 166, 255, 75))
+            highlight_fmt.setForeground(QColor("#000000"))  # Sharp black text on gold background
+            highlight_fmt.setBackground(QColor(251, 191, 36, 230))  # Vibrant amber/gold (#fbbf24)
+            highlight_fmt.setFontUnderline(True)
+            highlight_fmt.setUnderlineColor(QColor(245, 158, 11))
         highlight_fmt.setFontWeight(QFont.Weight.Bold)
 
         extra = QTextEdit.ExtraSelection()

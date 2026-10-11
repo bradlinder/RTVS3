@@ -137,4 +137,16 @@ Instead, the agent MUST actively perform deep, adversarial code-level inspection
    - Installer exclusion compliance: `.archive/`, `.snapshots/`, `.git/`, and dev tests excluded from PyInstaller and Inno Setup bundles.
    - Version coherence: Synchronous alignment across all 10 project locations with valid $N-1$ sliding-window roadmap tracking.
 
+## 10. Modular Architecture & Monolithic File Size Discipline Directive
+- **File Length Target Thresholds**:
+  - Python files SHOULD be kept under **800 lines** of code and MUST NOT exceed **1,000 lines**.
+  - Any file approaching or exceeding 1,000 lines is flagged for modular decomposition into a dedicated sub-package.
+- **Prefer Submodule Creation Over Code Appending**:
+  - When implementing new feature logic, UI dialogs, processing engines, or export formats, **create dedicated submodules** in appropriate sub-packages (e.g. `export/formats/`, `processing/engine/`, `ui/dialogs/`) and import them, rather than appending code to existing large files.
+- **Zero-Breakage Facade Pattern Re-exports**:
+  - When decomposing a monolithic file into submodules, preserve the original module filename as a lightweight facade that imports and re-exports public classes/functions (`from .submodule import ClassName`).
+  - This guarantees 100% backward compatibility for external callers, plugins, and the automated diagnostic suite (`test_runner.py`).
+- **Single Responsibility Discipline**:
+  - Enforce strict single-responsibility boundaries: separate UI layout construction from event handling, audio decoding from AI model execution, and data serialization from presentation logic.
+
 

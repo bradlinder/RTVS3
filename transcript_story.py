@@ -1,4 +1,4 @@
-"""Radio & TV Segmenter v3.9.0-beta.6 — transcript story responsibilities.
+"""Radio & TV Segmenter v3.9.0-beta.8 — transcript story responsibilities.
 
 Methods intentionally retain the MainWindow-facing API so behavior remains
 maintaining the established MainWindow-facing API while responsibilities are isolated.
@@ -2798,6 +2798,8 @@ class TranscriptStoryMixin:
             return
 
         if start_time is None or end_time is None:
+            if hasattr(self.transcript_view, "set_timeline_selection_span"):
+                self.transcript_view.set_timeline_selection_span(None, None)
             cursor = self.transcript_view.textCursor()
             if cursor.hasSelection():
                 cursor.clearSelection()
@@ -2825,11 +2827,16 @@ class TranscriptStoryMixin:
                 last_char = c_end
 
         if first_char is not None and last_char is not None and last_char > first_char:
+            if hasattr(self.transcript_view, "set_timeline_selection_span"):
+                self.transcript_view.set_timeline_selection_span(first_char, last_char)
             cursor = self.transcript_view.textCursor()
+            cursor.clearSelection()
             cursor.setPosition(first_char)
-            cursor.setPosition(last_char, QTextCursor.MoveMode.KeepAnchor)
             self.transcript_view.setTextCursor(cursor)
             self.transcript_view.ensureCursorVisible()
+        else:
+            if hasattr(self.transcript_view, "set_timeline_selection_span"):
+                self.transcript_view.set_timeline_selection_span(None, None)
 
     def add_story_from_range(self, start_time, end_time):
         s = min(float(start_time), float(end_time))

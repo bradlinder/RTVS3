@@ -1,5 +1,18 @@
 # Changelog
 
+## v3.9.0-beta.8
+- **Vibrant Active Word Highlighting & Layered Section Selection (`transcript_editor.py`, `transcript_story.py`)**:
+  - **High-Contrast Gold Active Word Highlighting (`transcript_editor.py`)**: Replaced blue-on-blue active word formatting with a vibrant, high-contrast gold/amber background (`#fbbf24` in dark mode, `#facc15` in light mode), bold black text, and amber underline formatting. The active playing word is now sharp and instantly readable across all themes.
+  - **Layered ExtraSelections Rendering (`transcript_editor.py`)**: Introduced `set_timeline_selection_span()` to render section and timeline range highlights as an extra selection layer beneath the active playback word.
+  - **Unobscured Playback Word During Section Selection (`transcript_story.py`)**: Updated timeline selection handlers to clear native cursor selection masking and utilize the extra selections layer, guaranteeing that the exact word currently playing remains 100% visible, distinct, and vibrant when scrubbing or playing audio inside a highlighted section.
+  - **Synchronous Version Bump**: Synchronized all 10 project locations to `v3.9.0-beta.8`.
+
+## v3.9.0-beta.7
+- **High-Precision Un-Snapped Timeline Selection & Dual Overlay Separation (`timeline_widgets.py`, `transcript_story.py`)**:
+  - **Eliminated Dual Line Visual Artifacts (`timeline_widgets.py`)**: Resolved an issue where right-clicking and dragging on the timeline canvas displayed two superimposed sets of vertical boundary lines (thicker drag handles and thinner word-boundary lines). Suppressed transcript word range rendering (`transcript_selection_range`) during active right-click timeline drags so only the clean, precise selection rectangle is drawn.
+  - **Sub-Millisecond Precise Drag Placement (`timeline_widgets.py`)**: Prevented live drag selections from visually jumping or snapping to transcript word boundaries during high-zoom editing, ensuring users can zoom in to 300x ($0.25\text{s}$ visible window) and place story start/end points down to the fraction of a millisecond directly before breaths, syllables, or sounds.
+  - **Synchronous Version Bump**: Synchronized all 10 project locations to `v3.9.0-beta.7`.
+
 ## v3.9.0-beta.6
 - **Universal Minimum Visible Window Zoom Ceiling (`timeline_widgets.py`)**:
   - **Dynamic Zoom Ceiling Scaling (`timeline_widgets.py`)**: Updated `TimelineCanvas.set_duration()` so `max_zoom` is dynamically calculated based on audio length ($\text{max\_zoom} = \max(1.0, \text{duration} / 0.25\text{s})$), enforcing a universal minimum visible window ceiling of **0.25 seconds** across media files of any duration (up to 240+ minutes).

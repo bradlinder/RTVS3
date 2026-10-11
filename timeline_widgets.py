@@ -1284,7 +1284,7 @@ class TimelineCanvas(QWidget):
             filename_rect = QRectF(8, self.RULER_HEIGHT + 4, 300, 18)
             painter.drawText(filename_rect, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter, f"Audio: {audio_name}")
 
-        if self.transcript_selection_range:
+        if self.transcript_selection_range and not self.is_right_dragging and (self.selection_start is None or self.selection_end is None):
             sel_start, sel_end = self.transcript_selection_range
             sx = self.time_to_x(sel_start, width)
             ex = self.time_to_x(sel_end, width)
