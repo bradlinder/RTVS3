@@ -86,6 +86,8 @@ class ProjectLifecycleMixin:
         self.speaker_names = {}
         self.segment_speaker_overrides = {}
         self.stories = []
+        self.project_metadata = ProjectMetadataDict()
+        self.custom_speakers = []
         self.current_selected_story_indices = []
         self.duration = 0
         self.current_position = 0
@@ -178,6 +180,8 @@ class ProjectLifecycleMixin:
             "translations": getattr(self, "translations", {}),
             "translation_display_mode": getattr(self, "translation_display_mode", "off"),
             "stories": [story.to_dict() for story in getattr(self, "stories", [])],
+            "project_metadata": dict(getattr(self, "project_metadata", {}) or {}),
+            "custom_speakers": list(getattr(self, "custom_speakers", []) or []),
             "plugins_data": getattr(self, "plugins_project_data", {}),
             "settings": {
                 "auto_save_minutes": getattr(self, "auto_save_minutes", 5),
@@ -581,6 +585,8 @@ class ProjectLifecycleMixin:
             except Exception:
                 pass
 
+        self.project_metadata = ProjectMetadataDict(data.get("project_metadata", {}) if isinstance(data.get("project_metadata"), dict) else {})
+        self.custom_speakers = [str(s).strip() for s in data.get("custom_speakers", []) if str(s).strip()]
         self.plugins_project_data = data.get("plugins_data", {})
 
         self.timeline.set_duration(self.duration)

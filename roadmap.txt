@@ -29,16 +29,18 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 --------------------------------------------------------------------------------
 TABLE OF CONTENTS & STATUS OVERVIEW
 --------------------------------------------------------------------------------
-1. Previous Release: High-Precision Un-Snapped Timeline Selection & Dual Overlay Separation (`timeline_widgets.py`, `transcript_story.py`) [x] [COMPLETED in v3.9.0-beta.7]
-   [x] 1.1 Eliminated Dual Line Visual Artifacts (`timeline_widgets.py`): Resolved an issue where right-clicking and dragging on the timeline canvas displayed two superimposed sets of vertical boundary lines (thicker drag handles and thinner word-boundary lines). Suppressed transcript word range rendering (`transcript_selection_range`) during active right-click timeline drags so only the clean, precise selection rectangle is drawn.
-   [x] 1.2 Sub-Millisecond Precise Drag Placement (`timeline_widgets.py`): Prevented live drag selections from visually jumping or snapping to transcript word boundaries during high-zoom editing, ensuring users can zoom in to 300x (0.25s visible window) and place story start/end points down to the fraction of a millisecond directly before breaths, syllables, or sounds.
-   [x] 1.3 Synchronous Version Bump: Synchronized all 10 project locations to v3.9.0-beta.7
+1. Previous Release: Vibrant High-Contrast Active Word Highlighting & Layered Section Selection (`transcript_editor.py`, `transcript_story.py`) [x] [COMPLETED in v3.9.0-beta.8]
+   [x] 1.1 High-Contrast Gold Active Word Highlighting (`transcript_editor.py`): Replaced blue-on-blue active word formatting with a vibrant, high-contrast gold/amber background (`#fbbf24` in dark mode, `#facc15` in light mode), bold black text, and amber underline formatting.
+   [x] 1.2 Layered ExtraSelections Rendering (`transcript_editor.py`): Introduced `set_timeline_selection_span()` to render section and timeline range highlights as an extra selection layer beneath the active playback word.
+   [x] 1.3 Unobscured Playback Word During Section Selection (`transcript_story.py`): Updated timeline selection handlers to clear native cursor selection masking and utilize the extra selections layer, guaranteeing that the exact word currently playing remains 100% visible, distinct, and vibrant when scrubbing or playing audio inside a highlighted section.
+   [x] 1.4 Synchronous Version Bump: Synchronized all 10 project locations to v3.9.0-beta.8
 
-2. Current Release: Vibrant High-Contrast Active Word Highlighting & Layered Section Selection (`transcript_editor.py`, `transcript_story.py`) [x] [COMPLETED in v3.9.0-beta.8]
-   [x] 2.1 High-Contrast Gold Active Word Highlighting (`transcript_editor.py`): Replaced blue-on-blue active word formatting with a vibrant, high-contrast gold/amber background (`#fbbf24` in dark mode, `#facc15` in light mode), bold black text, and amber underline formatting.
-   [x] 2.2 Layered ExtraSelections Rendering (`transcript_editor.py`): Introduced `set_timeline_selection_span()` to render section and timeline range highlights as an extra selection layer beneath the active playback word.
-   [x] 2.3 Unobscured Playback Word During Section Selection (`transcript_story.py`): Updated timeline selection handlers to clear native cursor selection masking and utilize the extra selections layer, guaranteeing that the exact word currently playing remains 100% visible, distinct, and vibrant when scrubbing or playing audio inside a highlighted section.
-   [x] 2.4 Synchronous Version Bump: Synchronized all 10 project locations to v3.9.0-beta.8
+2. Current Release: Hardware-Accelerated AMD Ryzen AI Local Development & AI Model Provisioning Suite Specification (`roadmap.txt`, `CHANGELOG.md`) [x] [COMPLETED in v3.9.0-beta.9]
+   [x] 2.1 Hardware-Aware Local AI Setup Specification (`roadmap.txt`): Defined detailed architectural specifications for an automated installer/configuration script (`scripts/setup_local_ai.py` or `setup_local_dev.sh`) detecting AMD Ryzen AI 9 HX 370 + NPU and 64GB RAM with hardware acceleration (ROCm/Vulkan/DirectML/UMA).
+   [x] 2.2 Local Coding Model Tier Provisioning Specification: Cataloged optimized 64GB memory tier models: Qwen2.5-Coder-32B-Instruct (heavy refactoring), Qwen2.5-Coder-7B/14B-Instruct (fast bug fixes), and Qwen2.5-Coder-1.5B (sub-50ms Continue.dev inline autocomplete).
+   [x] 2.3 Local Runtime & IDE Integration Specification: Configured Ollama / LM Studio server bindings (`http://localhost:11434`), Continue.dev `config.json`, Cline/Roo Code settings, and auto-linking `.clinerules` to `AGENTS.md` & `GEMINI.md`.
+   [x] 2.4 Interactive Model Usage Matrix & GitHub Actions CI/CD Integration Specification: Designed interactive model selection guide matching tasks to model speeds/contexts, and automated GitHub Actions workflow (`.github/workflows/build.yml`) for cross-platform PyInstaller/Inno Setup releases.
+   [x] 2.5 Synchronous Version Bump: Synchronized all 10 project locations to v3.9.0-beta.9
 
 3. Codebase Modularization & Monolithic File Decomposition Strategy (`RadioTVSegmenter.py`, `processing.py`, `transcript_editor.py`, `project_export.py`, `export/timeline.py`, `project_lifecycle.py`, `ui_layout.py`, `dialogs.py`, `radio_tv_story_segmenter_worker.py`, `plugins/manager.py`, `timeline_widgets.py`, `media_batch.py`, `updater.py`) [PLANNED for v4.0.0] [IN-PROGRESS / PLANNED]
    - *Architecture Note*: Refactors all 15 source files exceeding 1,000 lines into domain-driven sub-packages while preserving 100% backward compatibility via zero-breaking module facade re-exports.
@@ -54,7 +56,23 @@ TABLE OF CONTENTS & STATUS OVERVIEW
    [ ] 3.5 Zero-Breakage Facade Pattern Verification: Retain original filenames as lightweight public facades re-exporting symbols (`from .submodule import ClassName`) to guarantee external callers, plugins, and `test_runner.py` suite run without breakage.
    [ ] 3.6 Enforcement of Modular Development Directives in Agent Rules (`AGENTS.md` & `GEMINI.md`): Update `AGENTS.md` and `GEMINI.md` with strict file length caps (~800-1,000 line limit) and mandatory submodule creation directives for future feature development.
 
-4. Optional Future Milestone: Interactive Text-Based Media Assembly & Multi-Asset Ripple Editing Engine (`project_lifecycle.py`, `transcript_editor.py`, `transcript_story.py`, `RadioTVSegmenter.py`, `export/timeline.py`) [PLANNED for v4.0.0] [OPTIONAL] [NOT STARTED]
+4. Automated AMD Ryzen AI Local Development Platform & Model Provisioning Suite (`scripts/setup_local_ai.py`, `.vscode/settings.json`, `.clinerules`, `.github/workflows/build.yml`) [PLANNED for v4.0.0] [OPTIONAL / PLANNED] [NOT STARTED]
+   - *Purpose*: One-command setup script and auto-configuration suite enabling full offline development, AI-assisted bug fixing, and automated cross-platform builds on AMD Ryzen AI 9 HX 370 (64GB RAM) systems.
+   [ ] 4.1 Hardware Detection & Acceleration Probe (`scripts/setup_local_ai.py`): Probe host CPU/GPU/NPU, available RAM (64GB system detection), BIOS UMA VRAM allocation (16GB-32GB target), and GPU runtime support (AMD ROCm / Vulkan / DirectML).
+   [ ] 4.2 Automated Local AI Model Downloader & Quantization Selector (`scripts/setup_local_ai.py`):
+       - Fetch and register optimized quantized models via Ollama / LM Studio:
+         * Heavy Coding & Architecture: `Qwen2.5-Coder-32B-Instruct` (Q4_K_M / Q5_K_M, 32k context)
+         * Fast Edits & Bug Fixes: `Qwen2.5-Coder-7B-Instruct` or `14B-Instruct`
+         * Real-Time Autocomplete: `Qwen2.5-Coder-1.5B` or `DeepSeek-Coder-1.5B`
+   [ ] 4.3 Runtime Server Setup & Local Endpoint Binding: Provision and auto-start Ollama or LM Studio background service bound to `http://localhost:11434` with ROCm/Vulkan acceleration enabled.
+   [ ] 4.4 IDE Extensions & Configuration Generator: Auto-generate configuration files:
+       - `.vscode/settings.json` & Continue.dev `config.json` for inline tab-completion pointing to `localhost:11434` (sub-50ms latency).
+       - Cline / Roo Code settings pointing to local Ollama endpoints for agentic chat and multi-file editing.
+       - Auto-symlink `.clinerules` / `.cursorrules` to `AGENTS.md` and `GEMINI.md` to enforce version bump checklists, unit testing, and architectural invariants.
+   [ ] 4.5 Interactive Model Usage Matrix & Job Guide: Provide CLI interactive utility and markdown guide mapping development tasks (refactoring vs bug fix vs inline edit) to recommended models with RAM, speed, and context window metrics.
+   [ ] 4.6 Automated GitHub Actions Build Pipeline (`.github/workflows/build.yml`): Generate GitHub Actions workflow for cross-platform PyInstaller & Inno Setup release builds triggered on git tag push (`v*`).
+
+5. Optional Future Milestone: Interactive Text-Based Media Assembly & Multi-Asset Ripple Editing Engine (`project_lifecycle.py`, `transcript_editor.py`, `transcript_story.py`, `RadioTVSegmenter.py`, `export/timeline.py`) [PLANNED for v4.0.0] [OPTIONAL] [NOT STARTED]
    - *Workflow Design Note*: Marked as an optional workflow extension for users requesting text-driven paper cuts. The core single-file story segmenter, voicebook, and DAW exports remain default and lightweight.
    [ ] 4.1 Multi-Asset Project Container & Media Bin Model (`project_lifecycle.py`): Expand `.rtvs` project schema with a `sources` pool (relative media paths, transcripts, word timings, waveform caches, speaker profiles) and a `sequences` array (ordered assembly playlists referencing source clips).
    [ ] 4.2 Dynamic Uncapped Tabbed Document Workspace (`transcript_editor.py`, `ui_layout.py`): Dynamic `QTabWidget` supporting unlimited tabs, tab reordering, close buttons/shortcuts (`Ctrl+W`), visual distinction between Source Tabs (verbatim transcripts) and Assembly Tabs (story cuts), and tab overflow dropdown.
@@ -71,82 +89,41 @@ DETAILED MILESTONE SPECIFICATIONS
 ===============================================================================
 
 ================================================================================
-1. PREVIOUS RELEASE: REAPER RPP CLEAN HEADER, NATIVE FADES, COLOR-CODED REGIONS & SCOPE-AWARE SPLITS [x] [COMPLETED in v3.8.9-beta.19]
+1. PREVIOUS RELEASE: VIBRANT HIGH-CONTRAST ACTIVE WORD HIGHLIGHTING & LAYERED SECTION SELECTION [x] [COMPLETED in v3.9.0-beta.8]
 ================================================================================
 
-[x] 1.1 Eliminated REAPER Project Load Warnings (`export/timeline.py`)
---------------------------------------------------------------------------------
-- Stripped obsolete and problematic tokens (`MIXERSLIDERS` and `PLAYREC`) from the Cockos REAPER `.rpp` generator, ensuring exported projects open cleanly without warning dialogs or token load errors across REAPER installations.
-
-[x] 1.2 Native REAPER Fades & Curve Shape Mapping (`export/timeline.py`)
---------------------------------------------------------------------------------
-- Connected story `fade_in`, `fade_out`, and `fade_curve` parameters directly to REAPER's `<ITEM` chunk with second-precision durations and native curve shape index mapping (`linear` -> 0, `exponential` -> 1, `logarithmic` -> 2, `s_curve` -> 3).
-- Manually adjusted RTVS fades now render exact visual fade ramps and interactive handles on media items in REAPER.
-
-[x] 1.3 Color-Coded Story Regions & Track Items Matching RTVS Palette (`export/timeline.py`)
---------------------------------------------------------------------------------
-- Generates Cockos REAPER paired region markers (`MARKER <id> <start> "<title>" 1 <color> 1 B {GUID} 0` and `MARKER <id> <end> "" 1`) across the project ruler, accurately marking each story boundary.
-- Regions and track media items are color-coded using REAPER's `0x1000000 | 0x1RRGGBB` format (`COLOR <color> B`) using the exact harmonized accessible 8-color story palette from RTVS (`#2563eb`, `#d97706`, `#059669`, `#7c3aed`, `#e11d48`, `#0d9488`, `#4f46e5`, `#db2777`).
-
-[x] 1.4 Clean Split Division with Unlabelled Non-Story Audio (`export/timeline.py`, `project_export.py`)
---------------------------------------------------------------------------------
-- Non-story sections (audio before, between, or after stories) are cleanly split without artificial placeholder labels like "Interstitial Gap" or "Intro / Pre-Story" (`NAME ""`), keeping the episode continuous without cluttering item names.
-- Story sections and unselected stories always retain their authentic story titles and segment identity.
-- Full Episode: Generates continuous timeline coverage spanning 0:00 to the total episode duration with pre-splits separating stories and unlabelled non-story audio.
-- All Stories / Selected Stories: Generates isolated story cuts on a dedicated track with non-story audio excluded.
-- Full Episode & All Stories: Generates a multi-track DAW layout with Track 1 ("Full Episode (Splits)") and Track 2 ("Story Cuts"), accompanied by REAPER color-coded region markers.
-
-[x] 1.5 Multi-DAW Scope & Split Parity (`export/timeline.py`)
---------------------------------------------------------------------------------
-- Extended continuous full-episode split generation and unlabelled non-story audio handling across Final Cut Pro XML, DaVinci Resolve, AAF, Hindenburg, and Samplitude EDL.
-
-[x] 1.6 File Menu Redundancy Cleanup (`ui_layout.py`)
---------------------------------------------------------------------------------
-- Removed the redundant `Export Timeline / DAW...` action from the File menu, directing timeline export workflows cleanly into the Unified Export Center dialog.
-
-[x] 1.7 Diagnostic Suite Coverage (`test_runner.py`)
---------------------------------------------------------------------------------
-- Added test assertions in `test_runner.py` verifying header hygiene, Full Episode split continuity with unlabelled non-story sections, paired color-coded regions, and curve fade mapping.
-
-[x] 1.8 Synchronous Version Bump
---------------------------------------------------------------------------------
-- Synchronized all 10 project locations to v3.8.9-beta.19
+[x] 1.1 High-Contrast Gold Active Word Highlighting (`transcript_editor.py`): Replaced blue-on-blue active word formatting with a vibrant, high-contrast gold/amber background (`#fbbf24` in dark mode, `#facc15` in light mode), bold black text, and amber underline formatting.
+[x] 1.2 Layered ExtraSelections Rendering (`transcript_editor.py`): Introduced `set_timeline_selection_span()` to render section and timeline range highlights as an extra selection layer beneath the active playback word.
+[x] 1.3 Unobscured Playback Word During Section Selection (`transcript_story.py`): Updated timeline selection handlers to clear native cursor selection masking and utilize the extra selections layer, guaranteeing that the exact word currently playing remains 100% visible, distinct, and vibrant when scrubbing or playing audio inside a highlighted section.
+[x] 1.4 Synchronous Version Bump: Synchronized all 10 project locations to v3.9.0-beta.8
 
 ================================================================================
-2. CURRENT RELEASE: STATION VOICE PROFILES LIBRARY, MULTI-TIER MIPMAPPED PEAK CACHE & SPEED-LISTENING PROOFREADING ENGINE [x] [COMPLETED in v3.9.0-beta.2]
+2. CURRENT RELEASE: HARDWARE-ACCELERATED AMD RYZEN AI LOCAL DEVELOPMENT & AI MODEL PROVISIONING SUITE SPECIFICATION [x] [COMPLETED in v3.9.0-beta.9]
 ================================================================================
 
-[x] 2.1 Persistent Station Voice Profiles Library ("Manage Voice Profiles...") (`speaker_profiles.py`, `transcript_story.py`, `speaker_dialogs.py`, `ui_layout.py`)
---------------------------------------------------------------------------------
-- Standalone persistent library: `StationVoiceProfileStore` saving normalized 256-dimensional acoustic embedding vectors, sample counts, timestamps, and notes in `voice_profiles.json`.
-- Manage Voice Profiles Dialog: `ManageVoiceProfilesDialog` for browsing, renaming, auditing, matching against active project segments, creating profiles from active turns, and importing/exporting profiles.
-- Integrated into `Tools -> Voice Profile Tools -> Manage Voice Profiles...` and the Speaker Manager dialog.
-
-[x] 2.2 Automatic Diarization Matching & Preference Configuration (`processing.py`, `playback_preferences.py`, `RadioTVSegmenter.py`)
---------------------------------------------------------------------------------
-- Automatically matches newly detected speaker clusters against stored voice profiles above a configurable cosine similarity threshold (default 78%).
-- Added options in Preferences (*Story Detection & Diarization*) allowing users to enable or disable voice profiles entirely and adjust the auto-match similarity threshold (50% to 99%).
-
-[x] 2.3 Multi-Tier Mipmapped Waveform Peak Cache (LOD Rendering) (`background_workers.py`, `timeline_widgets.py`)
---------------------------------------------------------------------------------
-- Upgraded `.peaks` binary file format to Version 2, storing base 1x peaks and precomputed 4x, 16x, 64x mipmapped downsampled levels directly on disk in `.cache/peaks/` and appdata.
-- Delivers locked 60fps scrubbing and instantaneous loading on multi-hour recordings while preserving transparent backward compatibility with Version 1 caches.
-
-[x] 2.4 Speed-Listening "Type-to-Correct" Proofreading Engine (`transcript_editor.py`, `playback_preferences.py`, `ui_layout.py`)
---------------------------------------------------------------------------------
-- Added pitch-preserving playback speed selector (0.75x, 1.0x, 1.25x, 1.5x, 1.75x, 2.0x) to transport controls and Preferences via native WSOLA.
-- Implemented `Tab` key shortcut to pause playback, switch to editing mode, and place cursor directly on active word for typing. Pressing `Tab` again cleanly resumes playback with configurable pre-roll rewind (default 0.5s).
-
-[x] 2.5 Diagnostic Verification Suite (`test_runner.py`)
---------------------------------------------------------------------------------
-- Test assertions in `test_runner.py` verifying voice profile store serialization, Version 2 mipmapped `.peaks` cache reading/writing, speed-listening rate changes, and pre-roll context settings.
-
-[x] 2.6 Synchronous Version Bump
---------------------------------------------------------------------------------
-- Synchronized all 10 project locations to v3.9.0-beta.2
+[x] 2.1 Hardware-Aware Local AI Setup Specification (`roadmap.txt`): Defined detailed architectural specifications for an automated installer/configuration script (`scripts/setup_local_ai.py` or `setup_local_dev.sh`) detecting AMD Ryzen AI 9 HX 370 + NPU and 64GB RAM with hardware acceleration (ROCm/Vulkan/DirectML/UMA).
+[x] 2.2 Local Coding Model Tier Provisioning Specification: Cataloged optimized 64GB memory tier models: Qwen2.5-Coder-32B-Instruct (heavy refactoring), Qwen2.5-Coder-7B/14B-Instruct (fast bug fixes), and Qwen2.5-Coder-1.5B (sub-50ms Continue.dev inline autocomplete).
+[x] 2.3 Local Runtime & IDE Integration Specification: Configured Ollama / LM Studio server bindings (`http://localhost:11434`), Continue.dev `config.json`, Cline/Roo Code settings, and auto-linking `.clinerules` to `AGENTS.md` & `GEMINI.md`.
+[x] 2.4 Interactive Model Usage Matrix & GitHub Actions CI/CD Integration Specification: Designed interactive model selection guide matching tasks to model speeds/contexts, and automated GitHub Actions workflow (`.github/workflows/build.yml`) for cross-platform PyInstaller/Inno Setup releases.
+[x] 2.5 Synchronous Version Bump: Synchronized all 10 project locations to v3.9.0-beta.9
 
 ================================================================================
-3. OPTIONAL FUTURE MILESTONE: INTERACTIVE TEXT-BASED MEDIA ASSEMBLY & MULTI-ASSET RIPPLE EDITING ENGINE [PLANNED for v4.0.0] [OPTIONAL] [NOT STARTED]
+3. CODEBASE MODULARIZATION & MONOLITHIC FILE DECOMPOSITION STRATEGY [PLANNED for v4.0.0] [IN-PROGRESS / PLANNED]
+================================================================================
+
+[-] 3.1 Codebase Audit & Dependency Graph Analysis: Analyze call stack dependencies and import graphs across all 15 files exceeding 1,000 lines to establish clear domain boundaries.
+[ ] 3.2 Phase 1 - Core Engine & Main Window Decomposition (`RadioTVSegmenter.py`, `processing.py`, `radio_tv_story_segmenter_worker.py`)
+[ ] 3.3 Phase 2 - Heavy Subsystem Controllers & Exporters (`transcript_editor.py`, `project_export.py`, `export/timeline.py`, `project_lifecycle.py`, `ui_layout.py`)
+[ ] 3.4 Phase 3 - Dialogs, Timeline Canvas & Infrastructure (`dialogs.py`, `plugins/manager.py`, `timeline_widgets.py`, `media_batch.py`, `updater.py`)
+[ ] 3.5 Zero-Breakage Facade Pattern Verification
+[ ] 3.6 Enforcement of Modular Development Directives in Agent Rules (`AGENTS.md` & `GEMINI.md`)
+
+================================================================================
+4. AUTOMATED AMD RYZEN AI LOCAL DEVELOPMENT PLATFORM & MODEL PROVISIONING SUITE [PLANNED for v4.0.0] [OPTIONAL / PLANNED] [NOT STARTED]
+================================================================================
+
+================================================================================
+5. OPTIONAL FUTURE MILESTONE: INTERACTIVE TEXT-BASED MEDIA ASSEMBLY & MULTI-ASSET RIPPLE EDITING ENGINE [PLANNED for v4.0.0] [OPTIONAL] [NOT STARTED]
 ================================================================================
 *Workflow Design Note*: Marked as an optional workflow extension for users requesting text-driven paper cuts. The core single-file story segmenter, voicebook, and DAW exports remain default and lightweight.
 

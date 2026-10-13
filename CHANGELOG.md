@@ -1,5 +1,13 @@
 # Changelog
 
+## v3.9.0-beta.9
+- **Hardware-Accelerated AMD Ryzen AI Local Development & AI Model Provisioning Suite Roadmap Specification (`roadmap.txt`, `CHANGELOG.md`)**:
+  - **Hardware-Aware Local AI Setup Specification (`roadmap.txt`)**: Formulated detailed architectural specifications for an automated installer/configuration script (`scripts/setup_local_ai.py` / `setup_local_dev.sh`) tailored for AMD Ryzen AI 9 HX 370 processors and 64GB RAM systems, incorporating hardware acceleration detection (ROCm, Vulkan, DirectML, and UMA memory allocation).
+  - **Local Coding Model Tier Selection**: Cataloged a tiered model strategy optimized for 64GB memory bounds: `Qwen2.5-Coder-32B-Instruct` (heavy architecture refactoring & audits), `Qwen2.5-Coder-7B/14B-Instruct` (fast single-file edits & bug fixes), and `Qwen2.5-Coder-1.5B` (sub-50ms latency for Continue.dev inline code completion).
+  - **Local Runtime & IDE Auto-Configuration Specification**: Defined automated provisioning for Ollama / LM Studio background runtimes (`http://localhost:11434`), Continue.dev inline completion configs, VS Code / Cursor / Cline / Roo Code extension settings, and automatic linking of `.clinerules` / `.cursorrules` to `AGENTS.md` and `GEMINI.md`.
+  - **Interactive Model Usage Matrix & GitHub Actions CI/CD Integration**: Outlined an interactive task-to-model selection guide and automated GitHub Actions workflow (`.github/workflows/build.yml`) for triggering fast cross-platform PyInstaller & Inno Setup builds on release tags.
+  - **Synchronous Version Bump**: Synchronized all 10 project locations to `v3.9.0-beta.9`.
+
 ## v3.9.0-beta.8
 - **Vibrant Active Word Highlighting & Layered Section Selection (`transcript_editor.py`, `transcript_story.py`)**:
   - **High-Contrast Gold Active Word Highlighting (`transcript_editor.py`)**: Replaced blue-on-blue active word formatting with a vibrant, high-contrast gold/amber background (`#fbbf24` in dark mode, `#facc15` in light mode), bold black text, and amber underline formatting. The active playing word is now sharp and instantly readable across all themes.

@@ -4,8 +4,11 @@ Methods intentionally retain the MainWindow-facing API so behavior remains
 maintaining the established MainWindow-facing API while responsibilities are isolated.
 """
 
+import logging
 from prs_shared import *
 from core_utils import make_dialog_maximizable
+
+logger = logging.getLogger(__name__)
 
 
 class RestoreSelectedSettingsDialog(QDialog):
@@ -735,6 +738,10 @@ class PlaybackPreferencesMixin:
             "translation_display_mode": getattr(self, "translation_display_mode", "en"),
             "selected_indices": list(getattr(self, "current_selected_story_indices", [])),
         }
+
+    def get_project_state(self):
+        """Public alias for _capture_project_state for undo history capture."""
+        return self._capture_project_state()
 
     def _restore_project_state_for_undo(self, state):
         """Restore a complete editable project state without creating another undo entry."""

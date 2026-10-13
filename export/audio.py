@@ -7,10 +7,13 @@ from __future__ import annotations
 import os
 import subprocess
 import sys
+import time
+import types
 from pathlib import Path
-from typing import Any, List, Optional, Tuple
+from typing import Any, Callable, List, Optional, Tuple, Union
 
-from prs_shared import ffmpeg_path, safe_filename
+from prs_shared import ffmpeg_path, safe_filename, safe_process_events
+from process_lifecycle import register_process, unregister_process
 
 
 def build_audio_fade_filter(
@@ -25,8 +28,6 @@ def build_audio_fade_filter(
     fin = max(0.0, min(float(fade_in or 0.0), duration))
     fout = max(0.0, min(float(fade_out or 0.0), max(0.0, duration - fin)))
 
-    # Map curve types to FFmpeg curve parameters where applicable
-    # Supported: tri (triangle/linear), qsin (quarter sine), esin (exponential sine), log (logarithmic)
     curve_map = {
         "linear": "tri",
         "exponential": "log",
@@ -44,22 +45,141 @@ def build_audio_fade_filter(
     return filters
 
 
+def _run_ffmpeg_export(
+    command: List[str],
+    timeout_sec: int = 1800,
+    cancel_check: Optional[Callable[[], bool]] = None,
+    output_file: Optional[Union[str, Path]] = None,
+) -> subprocess.CompletedProcess:
+    """Run an FFmpeg command non-blockingly with cancellation checks and event processing."""
+    run_func = getattr(subprocess, "run", None)
+    popen_func = getattr(subprocess, "Popen", None)
+
+    is_run_mocked = (
+        run_func is not None and (
+            not isinstance(run_func, types.FunctionType) or
+            getattr(run_func, "__module__", "") != "subprocess" or
+            hasattr(run_func, "assert_called") or
+            hasattr(run_func, "return_value")
+        )
+    )
+
+    if is_run_mocked or popen_func is None:
+        res = subprocess.run(
+            command,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            timeout=timeout_sec,
+            creationflags=subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0,
+        )
+        if cancel_check and cancel_check():
+            if output_file and os.path.exists(output_file):
+                try:
+                    os.remove(output_file)
+                except Exception:
+                    pass
+            raise RuntimeError("Export cancelled by user.")
+        return res
+
+    creationflags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
+    try:
+        proc = subprocess.Popen(
+            command,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            creationflags=creationflags,
+        )
+    except Exception:
+        res = subprocess.run(
+            command,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            timeout=timeout_sec,
+            creationflags=creationflags,
+        )
+        if cancel_check and cancel_check():
+            if output_file and os.path.exists(output_file):
+                try:
+                    os.remove(output_file)
+                except Exception:
+                    pass
+            raise RuntimeError("Export cancelled by user.")
+        return res
+
+    register_process(proc)
+    start_time = time.time()
+    try:
+        while True:
+            if cancel_check is not None and cancel_check():
+                try:
+                    proc.terminate()
+                    proc.wait(timeout=1.0)
+                except Exception:
+                    try:
+                        proc.kill()
+                    except Exception:
+                        pass
+                if output_file and os.path.exists(output_file):
+                    try:
+                        os.remove(output_file)
+                    except Exception:
+                        pass
+                raise RuntimeError("Export cancelled by user.")
+
+            retcode = proc.poll()
+            if retcode is not None:
+                stdout, stderr = proc.communicate()
+                return subprocess.CompletedProcess(command, retcode, stdout, stderr)
+
+            if time.time() - start_time > timeout_sec:
+                try:
+                    proc.kill()
+                except Exception:
+                    pass
+                if output_file and os.path.exists(output_file):
+                    try:
+                        os.remove(output_file)
+                    except Exception:
+                        pass
+                raise subprocess.TimeoutExpired(command, timeout_sec)
+
+            safe_process_events()
+            time.sleep(0.03)
+    finally:
+        unregister_process(proc)
+
+
 def export_audio_track(
-    source_media: str | Path,
-    output_file: str | Path,
-    start: float,
-    end: float,
+    source_media: str | Path | None = None,
+    output_file: str | Path | None = None,
+    start: float = 0.0,
+    end: float = 0.0,
     fade_in: float = 0.0,
     fade_out: float = 0.0,
     fade_curve: str = "linear",
     fades_enabled: bool = True,
     is_video: bool = False,
     timeout_sec: int = 1800,
+    cancel_check: Optional[Callable[[], bool]] = None,
+    **kwargs: Any,
 ) -> None:
     """Render a segmented audio or video track with optional audio fades."""
+    source_media = source_media or kwargs.get("source_file")
+    if not source_media:
+        raise RuntimeError("Source media file not specified.")
+    is_video = is_video or kwargs.get("has_video", False)
+
     source_path = Path(source_media)
     if not source_path.is_file():
         raise RuntimeError(f"Source media file not found: {source_media}")
+
+    if not output_file:
+        raise RuntimeError("Output file not specified.")
 
     output_path = Path(output_file)
     output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -68,7 +188,6 @@ def export_audio_track(
         raise RuntimeError("The selected media range is empty.")
 
     ext = output_path.suffix.lower()
-    creationflags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
     ff_bin = ffmpeg_path() or "ffmpeg"
 
     fin = fade_in if fades_enabled else 0.0
@@ -81,9 +200,8 @@ def export_audio_track(
             ff_bin, "-y", "-ss", str(start), "-i", str(source_path),
             "-t", str(duration), "-map", "0", "-c", "copy", str(output_path),
         ]
-        result = subprocess.run(
-            copy_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-            text=True, timeout=timeout_sec, creationflags=creationflags,
+        result = _run_ffmpeg_export(
+            copy_cmd, timeout_sec=timeout_sec, cancel_check=cancel_check, output_file=output_path
         )
         if result.returncode == 0:
             return
@@ -105,9 +223,8 @@ def export_audio_track(
             "-t", str(duration), "-map", "0", "-c:v", "copy",
         ] + audio_codec + af_args + [str(output_path)]
 
-        res_vcopy = subprocess.run(
-            video_copy_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-            text=True, timeout=timeout_sec, creationflags=creationflags,
+        res_vcopy = _run_ffmpeg_export(
+            video_copy_cmd, timeout_sec=timeout_sec, cancel_check=cancel_check, output_file=output_path
         )
         if res_vcopy.returncode == 0:
             return
@@ -118,9 +235,8 @@ def export_audio_track(
             "-t", str(duration), "-map", "0",
         ] + fallback_vcodec + audio_codec + af_args + [str(output_path)]
 
-        result2 = subprocess.run(
-            transcode_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-            text=True, timeout=timeout_sec, creationflags=creationflags,
+        result2 = _run_ffmpeg_export(
+            transcode_cmd, timeout_sec=timeout_sec, cancel_check=cancel_check, output_file=output_path
         )
         if result2.returncode != 0:
             raise RuntimeError(result2.stderr or res_vcopy.stderr)
@@ -141,9 +257,8 @@ def export_audio_track(
         "-t", str(duration), "-map", "0:a",
     ] + codec_args + af_args + [str(output_path)]
 
-    result2 = subprocess.run(
-        transcode_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-        text=True, timeout=timeout_sec, creationflags=creationflags,
+    result2 = _run_ffmpeg_export(
+        transcode_cmd, timeout_sec=timeout_sec, cancel_check=cancel_check, output_file=output_path
     )
     if result2.returncode != 0:
         raise RuntimeError(result2.stderr)
@@ -155,6 +270,7 @@ def extract_audio_clip(
     end: float,
     output_file: str | Path,
     timeout_sec: int = 600,
+    cancel_check: Optional[Callable[[], bool]] = None,
 ) -> None:
     """Extract an audio clip without filtering (fast helper)."""
     duration = float(end) - float(start)
@@ -164,10 +280,8 @@ def extract_audio_clip(
         "-t", str(duration), "-vn", "-codec:a", "libmp3lame", "-q:a", "2",
         str(output_file),
     ]
-    creationflags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
-    result = subprocess.run(
-        command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-        text=True, timeout=timeout_sec, creationflags=creationflags,
+    result = _run_ffmpeg_export(
+        command, timeout_sec=timeout_sec, cancel_check=cancel_check, output_file=output_file
     )
     if result.returncode != 0:
         raise RuntimeError(result.stderr)

@@ -4,6 +4,7 @@ import sys
 import json
 import shutil
 import tempfile
+import threading
 import traceback
 import subprocess
 import multiprocessing
@@ -688,6 +689,8 @@ def probe_audio_language(audio_file, sample_duration=15.0, preferred_model=None)
     CRITICAL: Never trigger a synchronous model download in the background worker during probing.
     Only probe if a local model is already present on disk (via local_files_only=True).
     """
+    temp_probe_file = None
+    target_file = str(audio_file)
     try:
         from faster_whisper import WhisperModel
         download_root = os.environ.get("PRS_MODELS_DIR") or None
@@ -714,7 +717,40 @@ def probe_audio_language(audio_file, sample_duration=15.0, preferred_model=None)
             sys.stderr.flush()
             return "en", 0.0
 
-        _, info = probe_model.transcribe(str(audio_file), beam_size=1)
+        if sample_duration and sample_duration > 0:
+            try:
+                ffmpeg_bin = None
+                filename = "ffmpeg.exe" if os.name == "nt" else "ffmpeg"
+                for candidate_path in [
+                    Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parent)) / "runtime" / "bin" / filename,
+                    Path(sys.executable).resolve().parent / "runtime" / "bin" / filename,
+                    Path(__file__).resolve().parent / "runtime" / "bin" / filename,
+                ]:
+                    if candidate_path.is_file():
+                        ffmpeg_bin = str(candidate_path)
+                        break
+                if not ffmpeg_bin:
+                    ffmpeg_bin = shutil.which("ffmpeg")
+
+                if ffmpeg_bin:
+                    tf = tempfile.NamedTemporaryFile(suffix="_probe.wav", delete=False)
+                    temp_probe_file = tf.name
+                    tf.close()
+                    cmd = [
+                        ffmpeg_bin, "-y", "-v", "error",
+                        "-ss", "0", "-i", str(audio_file),
+                        "-t", str(float(sample_duration)),
+                        "-vn", "-sn", "-dn",
+                        "-ar", "16000", "-ac", "1",
+                        temp_probe_file
+                    ]
+                    res = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=10)
+                    if res.returncode == 0 and os.path.exists(temp_probe_file) and os.path.getsize(temp_probe_file) > 1000:
+                        target_file = temp_probe_file
+            except Exception:
+                pass
+
+        _, info = probe_model.transcribe(target_file, beam_size=1)
         lang = getattr(info, "language", "en") or "en"
         prob = getattr(info, "language_probability", 0.0) or 0.0
         sys.stderr.write(f"[LANGUAGE PROBE] Probed language: {lang} (probability: {prob*100:.1f}%)\n")
@@ -724,6 +760,12 @@ def probe_audio_language(audio_file, sample_duration=15.0, preferred_model=None)
         sys.stderr.write(f"[LANGUAGE PROBE] Warning: Language probing failed ({type(exc).__name__}: {exc}), defaulting to English\n")
         sys.stderr.flush()
         return "en", 0.0
+    finally:
+        if temp_probe_file and os.path.exists(temp_probe_file):
+            try:
+                os.remove(temp_probe_file)
+            except Exception:
+                pass
 
 
 def transcribe(audio_file, model_name, initial_prompt="", beam_size=5):
@@ -1197,6 +1239,20 @@ def apply_clustering_patches():
         pass
 
 
+_WESPEAKER_MODEL_SINGLETON = None
+_WESPEAKER_MODEL_LOCK = threading.Lock()
+
+def _get_wespeaker_model():
+    """Retrieve or initialize the cached WeSpeaker ONNX model instance."""
+    global _WESPEAKER_MODEL_SINGLETON
+    if _WESPEAKER_MODEL_SINGLETON is None:
+        with _WESPEAKER_MODEL_LOCK:
+            if _WESPEAKER_MODEL_SINGLETON is None:
+                import wespeakerruntime as wespeaker_rt
+                _WESPEAKER_MODEL_SINGLETON = wespeaker_rt.Speaker(lang="en")
+    return _WESPEAKER_MODEL_SINGLETON
+
+
 def extract_embeddings_batched(
     audio_path,
     speech_segments,
@@ -1218,9 +1274,8 @@ def extract_embeddings_batched(
     import torch
     import torchaudio.compliance.kaldi as kaldi
     from diarize.utils import SubSegment
-    import wespeakerruntime as wespeaker_rt
 
-    model = wespeaker_rt.Speaker(lang="en")
+    model = _get_wespeaker_model()
     session = model.session
 
     audio_data, sr = sf.read(str(audio_path), dtype="float32")
@@ -1422,7 +1477,7 @@ def assign_short_segments_to_centroids(
     if len(centroids) == 0:
         return []
 
-    model = wespeaker_rt.Speaker(lang="en")
+    model = _get_wespeaker_model()
     session = model.session
 
     audio_data, sr = sf.read(str(audio_path), dtype="float32")
@@ -1955,11 +2010,29 @@ def diarize(audio_file, expected_speakers="auto", transcript_file=None, sensitiv
             message=f"Detected {len(speakers)} speaker(s); merged {merged_count} short fragment(s).",
         )
 
+        window_embeddings = []
+        if last_subsegs is not None and last_embs is not None and len(last_embs) > 0:
+            try:
+                import numpy as np
+                for s_item, e_vec in zip(last_subsegs, last_embs):
+                    norm_v = np.array(e_vec, dtype=np.float32)
+                    norm_val = np.linalg.norm(norm_v)
+                    if norm_val > 0:
+                        norm_v = norm_v / norm_val
+                    window_embeddings.append({
+                        "start": float(s_item.start),
+                        "end": float(s_item.end),
+                        "embedding": [round(float(x), 6) for x in norm_v.tolist()],
+                    })
+            except Exception:
+                window_embeddings = []
+
         output = {
             "num_speakers": len(speakers),
             "speakers": speakers,
             "audio_duration": float(result.audio_duration),
             "segments": segments,
+            "window_embeddings": window_embeddings,
             "embeddings": {
                 str(i): seg["embedding"]
                 for i, seg in enumerate(segments)

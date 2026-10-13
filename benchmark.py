@@ -22,7 +22,7 @@ Pipeline Subsystem Benchmarks:
 Callable via:
   1. CLI: python benchmark.py [--quick] [--json] [--sample] [--file PATH] [--download-sample] [--delete-sample]
   2. RadioTVSegmenter CLI: RadioTVSegmenter.exe --benchmark [--quick] [--json]
-  3. Integrated GUI: Help -> Run Performance Benchmark... (Ctrl+Shift+B)
+  3. Integrated GUI: Help -> Run Performance Benchmark... (Ctrl+Alt+B)
 """
 
 from __future__ import annotations

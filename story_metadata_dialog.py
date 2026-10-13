@@ -27,6 +27,8 @@ import tempfile
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Tuple
 
+from prs_shared import ProjectMetadataDict
+
 from PySide6.QtCore import QSettings, QSize, Qt, QTimer
 from PySide6.QtGui import QColor, QFont, QIcon, QPixmap
 from PySide6.QtWidgets import (
@@ -1191,8 +1193,8 @@ class StoryMetadataDialog(QDialog):
         """Commit all configured metadata into Project/Story data structures and sync UI."""
         stories = getattr(self.main_window, "stories", []) or []
         proj_meta = getattr(self.main_window, "project_metadata", None)
-        if not isinstance(proj_meta, dict):
-            proj_meta = {}
+        if not isinstance(proj_meta, ProjectMetadataDict):
+            proj_meta = ProjectMetadataDict(proj_meta if isinstance(proj_meta, dict) else {})
             self.main_window.project_metadata = proj_meta
 
         for target in self.target_items:

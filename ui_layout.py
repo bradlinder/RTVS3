@@ -831,12 +831,12 @@ class UiLayoutMixin:
         batch_act.setShortcut(platform_seq("Ctrl+Shift+B"))
         batch_act.triggered.connect(self.open_batch_processing_dialog)
         self.batch_file_action = batch_act
+        self.batch_process_action = batch_act
         file_menu.addAction(batch_act)
 
         self.plugins_export_menu = file_menu.addMenu("Publishing & Plugins")
 
         backup_act = QAction("&Backup & Restore...", self)
-        backup_act.setShortcut(platform_seq("Ctrl+Shift+U"))
         backup_act.triggered.connect(getattr(self, "open_backup_restore_dialog", lambda: None))
         self.backup_restore_action = backup_act
         file_menu.addAction(backup_act)
@@ -1210,25 +1210,25 @@ class UiLayoutMixin:
 
         # Language submenu in Settings menu
         self.language_menu = settings_menu.addMenu("&Language / Idioma")
-        self.lang_action_group = QActionGroup(self)
-        self.lang_action_group.setExclusive(True)
+        self.ui_lang_action_group = QActionGroup(self)
+        self.ui_lang_action_group.setExclusive(True)
 
-        self.lang_en_action = QAction("English", self, checkable=True)
-        self.lang_en_action.setChecked(getattr(self, "language", "en") != "es")
-        self.lang_en_action.triggered.connect(lambda: self.set_language("en"))
-        self.lang_action_group.addAction(self.lang_en_action)
-        self.language_menu.addAction(self.lang_en_action)
+        self.ui_lang_en_action = QAction("English", self, checkable=True)
+        self.ui_lang_en_action.setChecked(getattr(self, "language", "en") != "es")
+        self.ui_lang_en_action.triggered.connect(lambda: self.set_language("en"))
+        self.ui_lang_action_group.addAction(self.ui_lang_en_action)
+        self.language_menu.addAction(self.ui_lang_en_action)
 
-        self.lang_es_action = QAction("Español (Spanish)", self, checkable=True)
-        self.lang_es_action.setChecked(getattr(self, "language", "en") == "es")
-        self.lang_es_action.triggered.connect(lambda: self.set_language("es"))
-        self.lang_action_group.addAction(self.lang_es_action)
-        self.language_menu.addAction(self.lang_es_action)
+        self.ui_lang_es_action = QAction("Español (Spanish)", self, checkable=True)
+        self.ui_lang_es_action.setChecked(getattr(self, "language", "en") == "es")
+        self.ui_lang_es_action.triggered.connect(lambda: self.set_language("es"))
+        self.ui_lang_action_group.addAction(self.ui_lang_es_action)
+        self.language_menu.addAction(self.ui_lang_es_action)
 
         settings_menu.addSeparator()
 
         update_act = QAction("Check for &Updates...", self)
-        update_act.setShortcut(platform_seq("Ctrl+Shift+U"))
+        update_act.setShortcut(platform_seq("Ctrl+Alt+U"))
         update_act.triggered.connect(self.check_for_updates)
         self.update_action = update_act
         settings_menu.addAction(update_act)
@@ -1260,13 +1260,13 @@ class UiLayoutMixin:
         help_menu.addAction(log_act)
 
         test_bench_act = QAction("&Run Diagnostic Test Bench...", self)
-        test_bench_act.setShortcut(platform_seq("Ctrl+Shift+T"))
+        test_bench_act.setShortcut(platform_seq("Ctrl+Shift+D"))
         test_bench_act.triggered.connect(self.show_diagnostic_test_bench)
         self.test_bench_action = test_bench_act
         help_menu.addAction(test_bench_act)
 
         benchmark_act = QAction("Run &Feature & Performance Benchmark...", self)
-        benchmark_act.setShortcut(platform_seq("Ctrl+Shift+B"))
+        benchmark_act.setShortcut(platform_seq("Ctrl+Alt+B"))
         benchmark_act.triggered.connect(self.show_performance_benchmark)
         self.benchmark_action = benchmark_act
         help_menu.addAction(benchmark_act)
@@ -1710,107 +1710,6 @@ class UiLayoutMixin:
 
         customize_btn.clicked.connect(_open_customize)
         close_btn.clicked.connect(dialog.accept)
-        layout.addWidget(button_box)
-
-        dialog.exec()
-
-    def show_about_dialog(self):
-        """Display dialog with application version, description, and attribution."""
-        from PySide6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushButton
-        from PySide6.QtCore import Qt
-
-        dialog = QDialog(self)
-        dialog.setWindowTitle("About Radio & TV Segmenter")
-        dialog.setFixedWidth(520)
-
-        layout = QVBoxLayout(dialog)
-        layout.setContentsMargins(20, 20, 20, 20)
-        layout.setSpacing(14)
-
-        # Main content (header, version, description, open-source attribution)
-        content_label = QLabel(
-            f"<h2 style='margin: 0 0 6px 0;'>{APP_DISPLAY_NAME}</h2>"
-            f"<p style='margin: 0 0 10px 0;'><b>Version {PROJECT_VERSION}</b></p>"
-            "<p style='margin: 0 0 14px 0; color: #b0b0b0;'>"
-            "An automated broadcast audio segmentation, transcription, and speaker detection platform built for radio production."
-            "</p>"
-            "<hr style='border: 0; border-top: 1px solid #444; margin-bottom: 12px;'/>"
-            "<p style='margin: 0 0 8px 0;'><b>Open-Source Licensing &amp; Attribution:</b></p>"
-            "<ul style='margin: 0 0 12px 18px; padding: 0; color: #8c8c8c; line-height: 1.5;'>"
-            "<li><b>Application Icon:</b> 'Electronic Media' by Fatam Organa from "
-            "<a href='https://thenounproject.com' style='color: #ff8c42;'>Noun Project</a> (licensed under CC BY 3.0).</li>"
-            "<li><b>PySide6 / Qt 6:</b> The Qt Company (LGPLv3). Dynamically linked.</li>"
-            "<li><b>FFmpeg:</b> FFmpeg developers (LGPLv2.1+ / GPLv2+). Invoked as separate binary.</li>"
-            "<li><b>AI &amp; Speech:</b> OpenAI Whisper (MIT), faster-whisper &amp; CTranslate2 (MIT), PyTorch (BSD-3), Hugging Face Transformers &amp; Hub (Apache 2.0).</li>"
-            "</ul>"
-            "<p style='margin: 0; color: #888; font-size: 11px;'>"
-            "Click 'View Licenses' to review full license texts, compliance disclosures, and copyright notices."
-            "</p>",
-            dialog,
-        )
-        content_label.setTextFormat(Qt.TextFormat.RichText)
-        content_label.setOpenExternalLinks(True)
-        content_label.setWordWrap(True)
-        layout.addWidget(content_label)
-
-        # Standard button row
-        btn_layout = QHBoxLayout()
-        btn_layout.setContentsMargins(0, 8, 0, 0)
-        btn_layout.setSpacing(10)
-        btn_layout.addStretch()
-
-        ok_btn = QPushButton("OK", dialog)
-        ok_btn.setMinimumWidth(70)
-        ok_btn.clicked.connect(dialog.accept)
-        btn_layout.addWidget(ok_btn)
-
-        updates_btn = QPushButton("Check for Updates...", dialog)
-        updates_btn.clicked.connect(lambda: (dialog.accept(), self.check_for_updates()))
-        btn_layout.addWidget(updates_btn)
-
-        licenses_btn = QPushButton("View Licenses", dialog)
-        licenses_btn.clicked.connect(lambda: (dialog.accept(), self.show_licenses_dialog()))
-        btn_layout.addWidget(licenses_btn)
-
-        layout.addLayout(btn_layout)
-
-        dialog.exec()
-
-    def show_licenses_dialog(self):
-        """Display bundled third-party open source notices and licenses."""
-        from PySide6.QtWidgets import QDialog, QVBoxLayout, QTextBrowser, QDialogButtonBox
-
-        dialog = QDialog(self)
-        dialog.setWindowTitle("Third-Party Licenses & Notices")
-        dialog.resize(720, 560)
-
-        layout = QVBoxLayout(dialog)
-        layout.setContentsMargins(12, 12, 12, 12)
-        layout.setSpacing(8)
-
-        browser = QTextBrowser(dialog)
-        browser.setOpenExternalLinks(True)
-
-        notices_candidates = [
-            Path(__file__).resolve().parent / "NOTICES.txt",
-            Path(getattr(sys, "_MEIPASS", "")) / "NOTICES.txt",
-            Path.cwd() / "NOTICES.txt",
-        ]
-
-        notices_text = "Third-party notices file (NOTICES.txt) was not found."
-        for p in notices_candidates:
-            if p.is_file():
-                try:
-                    notices_text = p.read_text(encoding="utf-8", errors="replace")
-                    break
-                except Exception:
-                    continue
-
-        browser.setPlainText(notices_text)
-        layout.addWidget(browser)
-
-        button_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Close, dialog)
-        button_box.rejected.connect(dialog.accept)
         layout.addWidget(button_box)
 
         dialog.exec()

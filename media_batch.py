@@ -1201,11 +1201,20 @@ class MediaBatchMixin:
         self.language = "es" if language == "es" else "en"
         if persist:
             self.settings_store.setValue("language", self.language)
-        if hasattr(self, "lang_en_action"):
+        if hasattr(self, "ui_lang_en_action"):
+            self.ui_lang_en_action.blockSignals(True)
+            self.ui_lang_en_action.setChecked(self.language != "es")
+            self.ui_lang_en_action.blockSignals(False)
+        elif hasattr(self, "lang_en_action"):
             self.lang_en_action.blockSignals(True)
             self.lang_en_action.setChecked(self.language != "es")
             self.lang_en_action.blockSignals(False)
-        if hasattr(self, "lang_es_action"):
+
+        if hasattr(self, "ui_lang_es_action"):
+            self.ui_lang_es_action.blockSignals(True)
+            self.ui_lang_es_action.setChecked(self.language == "es")
+            self.ui_lang_es_action.blockSignals(False)
+        elif hasattr(self, "lang_es_action"):
             self.lang_es_action.blockSignals(True)
             self.lang_es_action.setChecked(self.language == "es")
             self.lang_es_action.blockSignals(False)

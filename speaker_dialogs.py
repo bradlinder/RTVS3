@@ -225,7 +225,14 @@ class SpeakerManagerDialog(QDialog):
         )
         if accepted and new_name.strip() and new_name.strip() != current_name:
             target = new_name.strip()
-            before_state = self.main_win.get_project_state() if hasattr(self.main_win, "get_project_state") else None
+            if hasattr(self.main_win, "flush_pending_transcript_undo"):
+                self.main_win.flush_pending_transcript_undo()
+            if hasattr(self.main_win, "_capture_project_state"):
+                before_state = self.main_win._capture_project_state()
+            elif hasattr(self.main_win, "get_project_state"):
+                before_state = self.main_win.get_project_state()
+            else:
+                before_state = None
             self.main_win.speaker_names[str(raw_id)] = target
             self.main_win.speaker_names[current_name] = target
             self.main_win.add_custom_speaker_to_glossary(target)

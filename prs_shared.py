@@ -1,3 +1,4 @@
+import logging
 import html
 from bisect import bisect_left, bisect_right
 import copy
@@ -22,6 +23,26 @@ from pathlib import Path
 
 from theme_tokens import ThemeTokens
 from bootstrap import setup_windows_dll_directories
+
+logger = logging.getLogger(__name__)
+
+
+class ProjectMetadataDict(dict):
+    """Dictionary subclass supporting both dict key access and attribute access for project metadata."""
+    def __getattr__(self, name: str):
+        try:
+            return self[name]
+        except KeyError:
+            return ""
+
+    def __setattr__(self, name: str, value):
+        self[name] = value
+
+    def __delattr__(self, name: str):
+        try:
+            del self[name]
+        except KeyError:
+            raise AttributeError(f"'ProjectMetadataDict' object has no attribute '{name}'")
 
 setup_windows_dll_directories()
 
@@ -50,7 +71,7 @@ _ensure_runtime_bin_on_path()
 
 INTERNAL_APP_ID = "RadioTVStorySegmenter"
 APP_DISPLAY_NAME = "Radio & TV Segmenter"
-PROJECT_VERSION = "3.9.0-beta.8"
+PROJECT_VERSION = "3.9.0-beta.9"
 DEFAULT_GITHUB_REPO = "bradlinder/RTVS3"
 
 

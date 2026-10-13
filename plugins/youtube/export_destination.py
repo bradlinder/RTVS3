@@ -6,6 +6,7 @@ Supports:
 """
 from __future__ import annotations
 
+import logging
 import os
 import subprocess
 import sys
@@ -16,6 +17,8 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 from prs_shared import safe_process_events
+
+logger = logging.getLogger("rtvs.youtube.export")
 
 from PySide6.QtCore import Qt, QTimer, QSettings
 from PySide6.QtGui import QPixmap

@@ -1,4 +1,4 @@
-"""Radio & TV Segmenter v3.9.0-beta.8 — transcript story responsibilities.
+"""Radio & TV Segmenter v3.9.0-beta.9 — transcript story responsibilities.
 
 Methods intentionally retain the MainWindow-facing API so behavior remains
 maintaining the established MainWindow-facing API while responsibilities are isolated.
@@ -365,6 +365,10 @@ class TranscriptStoryMixin:
         self.transcript_view.setHtml("".join(html_parts))
         cursor.endEditBlock()
         self._block_segment_groups = block_segment_groups
+        self._block_text_cache = {
+            i: (doc.findBlockByNumber(i).text(), doc.findBlockByNumber(i).revision())
+            for i in range(doc.blockCount())
+        }
 
         self.timeline.set_transcript_selection_range(None, None)
         self.transcript_view.rebuild_anchor_index()
@@ -523,54 +527,90 @@ class TranscriptStoryMixin:
                 it += 1
             return word_formats
 
+        cache = getattr(self, "_block_text_cache", None)
+        if not isinstance(cache, dict):
+            cache = {}
+
+        cursor_block_num = -1
+        if hasattr(self.transcript_view, "textCursor"):
+            tc = self.transcript_view.textCursor()
+            if tc and not tc.isNull():
+                cursor_block_num = tc.blockNumber()
+
+        any_block_changed = False
+        new_cache = {}
+
         for i in range(min(blocks_count, len(block_groups))):
             groups = [g for g in block_groups[i] if 0 <= g[0] < len(target_segments)]
             if not groups:
                 continue
 
             block = doc.findBlockByNumber(i)
-            block_text = block.text()
-            # Strip optional leading bracketed or bare timestamp e.g. "0:27", "00:27", "01:02:30.500", "[00:27]"
-            cleaned_text = re.sub(r'^\s*\[?(?:\d{1,2}:)?\d{1,2}:\d{2}(?:\.\d{1,3})?\]?\s+', '', block_text)
-            if ": " in cleaned_text:
-                prefix, remainder = cleaned_text.split(": ", 1)
-                if known_speaker_labels is None:
-                    known_speaker_labels = set(str(x).strip() for x in self.speaker_names.values() if x)
-                    known_speaker_labels.update(
-                        str(x).strip() for x in (self.get_all_known_speakers() if hasattr(self, "get_all_known_speakers") else []) if x
-                    )
-                if prefix.strip() in known_speaker_labels or re.match(r'^Speaker\s+\d+$', prefix.strip(), re.IGNORECASE):
-                    cleaned_text = remainder
-            cleaned_text = re.sub(r'^Speaker\s+\d+:\s*', '', cleaned_text, flags=re.IGNORECASE).strip()
+            b_text = block.text()
+            b_rev = block.revision()
 
-            prefix_len = block_text.find(cleaned_text) if (cleaned_text and cleaned_text in block_text) else 0
-            block_fmts = _extract_block_word_formatting(block, prefix_len)
+            cached = cache.get(i)
+            is_active_cursor = (i == cursor_block_num)
 
-            if len(groups) == 1:
-                target_seg = target_segments[groups[0][0]]
-                target_seg["text"] = cleaned_text
-                self.sync_segment_words(target_seg, cleaned_text, block_fmts)
-                continue
+            if (blocks_count != len(block_groups)) or (cached is None) or (cached[0] != b_text) or (cached[1] != b_rev) or is_active_cursor:
+                block_text = b_text
+                # Strip optional leading bracketed or bare timestamp e.g. "0:27", "00:27", "01:02:30.500", "[00:27]"
+                cleaned_text = re.sub(r'^\s*\[?(?:\d{1,2}:)?\d{1,2}:\d{2}(?:\.\d{1,3})?\]?\s+', '', block_text)
+                if ": " in cleaned_text:
+                    prefix, remainder = cleaned_text.split(": ", 1)
+                    if known_speaker_labels is None:
+                        known_speaker_labels = set(str(x).strip() for x in self.speaker_names.values() if x)
+                        known_speaker_labels.update(
+                            str(x).strip() for x in (self.get_all_known_speakers() if hasattr(self, "get_all_known_speakers") else []) if x
+                        )
+                    if prefix.strip() in known_speaker_labels or re.match(r'^Speaker\s+\d+$', prefix.strip(), re.IGNORECASE):
+                        cleaned_text = remainder
+                cleaned_text = re.sub(r'^Speaker\s+\d+:\s*', '', cleaned_text, flags=re.IGNORECASE).strip()
 
-            words = cleaned_text.split()
-            total_original_words = sum(g[1] for g in groups) or 1
-            remaining_words = words
-            remaining_fmts = block_fmts
-            for gi, (seg_idx, orig_count) in enumerate(groups):
-                if gi == len(groups) - 1:
-                    share, remaining_words = remaining_words, []
-                    share_fmts, remaining_fmts = remaining_fmts, []
+                prefix_len = block_text.find(cleaned_text) if (cleaned_text and cleaned_text in block_text) else 0
+                block_fmts = _extract_block_word_formatting(block, prefix_len)
+
+                if len(groups) == 1:
+                    target_seg = target_segments[groups[0][0]]
+                    target_seg["text"] = cleaned_text
+                    self.sync_segment_words(target_seg, cleaned_text, block_fmts)
                 else:
-                    n = round(len(words) * (orig_count / total_original_words))
-                    n = max(0, min(n, len(remaining_words)))
-                    share, remaining_words = remaining_words[:n], remaining_words[n:]
-                    share_fmts, remaining_fmts = remaining_fmts[:n], remaining_fmts[n:]
-                seg_text = " ".join(share)
-                target_segments[seg_idx]["text"] = seg_text
-                self.sync_segment_words(target_segments[seg_idx], seg_text, share_fmts)
+                    words = cleaned_text.split()
+                    total_original_words = sum(g[1] for g in groups) or 1
+                    remaining_words = words
+                    remaining_fmts = block_fmts
+                    for gi, (seg_idx, orig_count) in enumerate(groups):
+                        if gi == len(groups) - 1:
+                            share, remaining_words = remaining_words, []
+                            share_fmts, remaining_fmts = remaining_fmts, []
+                        else:
+                            n = round(len(words) * (orig_count / total_original_words))
+                            n = max(0, min(n, len(remaining_words)))
+                            share, remaining_words = remaining_words[:n], remaining_words[n:]
+                            share_fmts, remaining_fmts = remaining_fmts[:n], remaining_fmts[n:]
+                        seg_text = " ".join(share)
+                        target_segments[seg_idx]["text"] = seg_text
+                        self.sync_segment_words(target_segments[seg_idx], seg_text, share_fmts)
+
+                if cached is None or cached[0] != b_text or cached[1] != b_rev:
+                    any_block_changed = True
+
+            new_cache[i] = (b_text, b_rev)
+
+        self._block_text_cache = new_cache
+
+        if not use_translation and any_block_changed and hasattr(self, "mark_stale_translations"):
+            self.mark_stale_translations()
 
         if hasattr(self, "transcript_view"):
-            self.transcript_view.update_extra_selections()
+            timer = getattr(self, "_extra_selections_timer", None)
+            if timer is None:
+                timer = QTimer(self) if isinstance(self, QObject) else QTimer()
+                timer.setSingleShot(True)
+                timer.setInterval(150)
+                timer.timeout.connect(lambda: hasattr(self, "transcript_view") and self.transcript_view and self.transcript_view.update_extra_selections())
+                self._extra_selections_timer = timer
+            timer.start()
 
         if getattr(self, "_pending_transcript_edit_before", None) is None:
             baseline = getattr(self, "_transcript_edit_baseline", None)
@@ -1344,7 +1384,9 @@ class TranscriptStoryMixin:
         if cA is None or cB is None:
             return
 
-        before_state = self.get_project_state() if hasattr(self, "get_project_state") else None
+        if hasattr(self, "flush_pending_transcript_undo"):
+            self.flush_pending_transcript_undo()
+        before_state = self._capture_project_state() if hasattr(self, "_capture_project_state") else None
         reassigned = 0
 
         for idx in range(start_idx, min(end_idx + 1, len(segments))):
@@ -2267,7 +2309,9 @@ class TranscriptStoryMixin:
         if not segments:
             return
 
-        before_state = self.get_project_state() if hasattr(self, "get_project_state") else None
+        if hasattr(self, "flush_pending_transcript_undo"):
+            self.flush_pending_transcript_undo()
+        before_state = self._capture_project_state() if hasattr(self, "_capture_project_state") else None
         merged_segments = []
         new_overrides = {}
         curr_block = None

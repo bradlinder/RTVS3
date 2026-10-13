@@ -89,6 +89,8 @@ class ProjectExportMixin(ProjectLifecycleMixin):
         self.speaker_names = {}
         self.segment_speaker_overrides = {}
         self.stories = []
+        self.project_metadata = ProjectMetadataDict()
+        self.custom_speakers = []
         self.current_selected_story_indices = []
         self.duration = 0
         self.current_position = 0
@@ -164,6 +166,8 @@ class ProjectExportMixin(ProjectLifecycleMixin):
             "translations": self.translations,
             "translation_display_mode": self.translation_display_mode,
             "stories": [story.to_dict() for story in self.stories],
+            "project_metadata": dict(getattr(self, "project_metadata", {}) or {}),
+            "custom_speakers": list(getattr(self, "custom_speakers", []) or []),
             "plugins_data": getattr(self, "plugins_project_data", {}),
             "settings": {
                 "auto_save_minutes": self.auto_save_minutes,
@@ -739,35 +743,84 @@ class ProjectExportMixin(ProjectLifecycleMixin):
                     QMessageBox.critical(self, "Archive Error", f"Failed to extract project archive:\n{z_exc}")
                 return False
 
-        try:
-            data = read_rtvs_project_file(project_path)
-        except Exception as exc:
-            backup_path = project_path.with_name(project_path.name + ".backup")
-            if backup_path.exists():
-                answer = QMessageBox.question(
-                    self, "Project Recovery",
-                    f"The project file could not be read:\n\n{project_path.name}\n\n"
-                    f"A recovery backup was found ({backup_path.name}). Would you like to open the backup instead?",
-                    QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
-                )
-                if answer == QMessageBox.StandardButton.Yes:
+        recovered_from_snapshot = False
+        data = None
+
+        if project_path.exists():
+            autosave_candidate = project_path.with_suffix(project_path.suffix + ".autosave")
+            crash_candidate = project_path.with_suffix(".crash_recovery.rtvs")
+
+            candidates = []
+            for cand in (autosave_candidate, crash_candidate):
+                if cand.exists():
                     try:
-                        data = read_rtvs_project_file(backup_path)
-                        self.log_activity(f"[PROJECT] Recovered project from backup: {backup_path.name}", mark_dirty=False)
-                    except Exception as backup_exc:
-                        self.log_activity(f"[ERROR] Project recovery backup could not be read: {backup_exc}", mark_dirty=False)
+                        c_mtime = cand.stat().st_mtime
+                        p_mtime = project_path.stat().st_mtime
+                        if c_mtime > p_mtime + 1.0:
+                            candidates.append((c_mtime, cand))
+                    except Exception:
+                        pass
+
+            if candidates:
+                candidates.sort(key=lambda x: x[0], reverse=True)
+                newest_mtime, newest_cand = candidates[0]
+
+                recover_snapshot = False
+                if prompt and not getattr(self, "batch_active", False):
+                    dt_str = datetime.fromtimestamp(newest_mtime).strftime("%Y-%m-%d %H:%M:%S")
+                    answer = QMessageBox.question(
+                        self,
+                        "Unsaved Recovery Snapshot Found",
+                        f"A newer unsaved recovery snapshot was found for this project (from {dt_str}).\n\n"
+                        "Would you like to recover the unsaved changes?",
+                        QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                    )
+                    recover_snapshot = (answer == QMessageBox.StandardButton.Yes)
+
+                if recover_snapshot:
+                    try:
+                        data = read_rtvs_project_file(newest_cand)
+                        recovered_from_snapshot = True
+                    except Exception as r_exc:
+                        self.log_activity(f"[ERROR] Could not read recovery snapshot '{newest_cand.name}': {r_exc}", mark_dirty=False)
+                        recovered_from_snapshot = False
+                else:
+                    for _, cand_file in candidates:
+                        try:
+                            cand_file.unlink()
+                        except Exception:
+                            pass
+
+        if data is None:
+            try:
+                data = read_rtvs_project_file(project_path)
+            except Exception as exc:
+                backup_path = project_path.with_name(project_path.name + ".backup")
+                if backup_path.exists():
+                    answer = QMessageBox.question(
+                        self, "Project Recovery",
+                        f"The project file could not be read:\n\n{project_path.name}\n\n"
+                        f"A recovery backup was found ({backup_path.name}). Would you like to open the backup instead?",
+                        QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                    )
+                    if answer == QMessageBox.StandardButton.Yes:
+                        try:
+                            data = read_rtvs_project_file(backup_path)
+                            self.log_activity(f"[PROJECT] Recovered project from backup: {backup_path.name}", mark_dirty=False)
+                        except Exception as backup_exc:
+                            self.log_activity(f"[ERROR] Project recovery backup could not be read: {backup_exc}", mark_dirty=False)
+                            if not preserve_media:
+                                QMessageBox.critical(self, "Load Error", str(backup_exc))
+                            return False
+                    else:
                         if not preserve_media:
-                            QMessageBox.critical(self, "Load Error", str(backup_exc))
+                            QMessageBox.critical(self, "Load Error", str(exc))
                         return False
                 else:
+                    self.log_activity(f"[ERROR] Could not read project file '{project_path.name}': {exc}", mark_dirty=False)
                     if not preserve_media:
                         QMessageBox.critical(self, "Load Error", str(exc))
                     return False
-            else:
-                self.log_activity(f"[ERROR] Could not read project file '{project_path.name}': {exc}", mark_dirty=False)
-                if not preserve_media:
-                    QMessageBox.critical(self, "Load Error", str(exc))
-                return False
 
         if data.get("format") not in (None, "Radio & TV Story Segmenter Project"):
             QMessageBox.warning(self, "Load Project", "This file is not a Radio & TV Story Segmenter project.")
@@ -834,6 +887,8 @@ class ProjectExportMixin(ProjectLifecycleMixin):
         self.speaker_names = {str(k): str(v) for k, v in data.get("speaker_names", {}).items() if str(v).strip()}
         self.segment_speaker_overrides = {int(k): str(v) for k, v in data.get("segment_speaker_overrides", {}).items()}
         self.stories = [Story.from_dict(item) for item in data.get("stories", [])]
+        self.project_metadata = ProjectMetadataDict(data.get("project_metadata", {}) if isinstance(data.get("project_metadata"), dict) else {})
+        self.custom_speakers = [str(s).strip() for s in data.get("custom_speakers", []) if str(s).strip()]
         self.plugins_project_data = dict(data.get("plugins_data", {})) if isinstance(data.get("plugins_data"), dict) else {}
         self.translations = data.get("translations", {}) if isinstance(data.get("translations", {}), dict) else {}
         self.translation_display_mode = str(data.get("translation_display_mode", "en"))
@@ -2213,6 +2268,7 @@ class ProjectExportMixin(ProjectLifecycleMixin):
         if not self.audio_file:
             raise RuntimeError("No source media is loaded.")
         fades_enabled = getattr(self, "enable_audio_fades", False)
+        cancel_chk = lambda: bool(getattr(self, "export_cancelled", False))
         return render_audio_track(
             source_file=self.audio_file,
             start=start,
@@ -2222,13 +2278,15 @@ class ProjectExportMixin(ProjectLifecycleMixin):
             fade_out=fade_out,
             has_video=bool(getattr(self, "current_media_is_video", False)),
             fades_enabled=fades_enabled,
+            cancel_check=cancel_chk,
         )
 
     def extract_audio(self, start, end, output_file):
         # Backward-compatible helper for older project/export code.
         if not self.audio_file:
             raise RuntimeError("No source media is loaded.")
-        return extract_audio_clip(self.audio_file, start, end, output_file)
+        cancel_chk = lambda: bool(getattr(self, "export_cancelled", False))
+        return extract_audio_clip(self.audio_file, start, end, output_file, cancel_check=cancel_chk)
 
     def transcript_for_range(self, start, end):
         if not self.transcript:
@@ -2446,6 +2504,7 @@ class ProjectExportMixin(ProjectLifecycleMixin):
             doc_paragraph.add_run(paragraph)
 
     def closeEvent(self, event):
+        self._is_closing = True
         self.log_activity("[SYSTEM] Application shutdown requested.")
         self.statusBar().showMessage("Shutting down...")
 
@@ -2459,6 +2518,22 @@ class ProjectExportMixin(ProjectLifecycleMixin):
             )
             event.ignore()
             return
+
+        if getattr(self, "project_dirty", False) and not getattr(self, "batch_active", False):
+            reply = QMessageBox.question(
+                self,
+                "Unsaved Changes",
+                "You have unsaved changes in the current project. Would you like to save before exiting?",
+                QMessageBox.StandardButton.Save | QMessageBox.StandardButton.Discard | QMessageBox.StandardButton.Cancel,
+                QMessageBox.StandardButton.Save,
+            )
+            if reply == QMessageBox.StandardButton.Cancel:
+                event.ignore()
+                return
+            elif reply == QMessageBox.StandardButton.Save:
+                if not self.save_project():
+                    event.ignore()
+                    return
 
         try:
             self.cleanup_transcription_process()
@@ -2558,6 +2633,13 @@ class ProjectExportMixin(ProjectLifecycleMixin):
                 self.settings_store.sync()
         except Exception as exc:
             self.log_activity(f"[WARNING] Settings sync failed: {exc}", mark_dirty=False)
+
+        if hasattr(self, "ipc_server") and self.ipc_server:
+            try:
+                self.ipc_server.close()
+                QLocalServer.removeServer("RadioTVStorySegmenter_IPC_Server")
+            except Exception:
+                pass
 
         self.log_activity("[SYSTEM] Application shutdown cleanup complete.")
         event.accept()

@@ -8,8 +8,11 @@ import sys
 import os
 import json
 import html
+import logging
 import threading
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 from PySide6.QtCore import QProcess, QProcessEnvironment, QThread, Qt, QTimer, QEventLoop, Signal
 from PySide6.QtGui import QTextCursor
 from PySide6.QtWidgets import (
@@ -2071,31 +2074,63 @@ class ProcessingMixin:
 
         # Map acoustic embeddings to transcript segments
         if isinstance(self.transcript, dict) and "segments" in self.transcript:
+            window_segs = result.get("window_embeddings", []) if isinstance(result, dict) else []
             diar_segs = result.get("segments", []) if isinstance(result, dict) else []
             for t_idx, t_seg in enumerate(self.transcript["segments"]):
                 t_st = float(t_seg.get("start", 0.0))
                 t_en = float(t_seg.get("end", t_st))
-                t_dur = t_en - t_st
+                t_dur = max(0.001, t_en - t_st)
 
                 best_emb = None
-                best_overlap = 0.0
-                for d_seg in diar_segs:
-                    d_st = float(d_seg.get("start", 0.0))
-                    d_en = float(d_seg.get("end", d_st))
-                    d_dur = d_en - d_st
 
-                    # DO NOT allow a macro-block (longer than 8s or 3x the segment)
-                    # to stamp its pooled embedding onto this segment!
-                    if d_dur > 8.0 and d_dur > (t_dur * 2.5):
-                        continue
+                # First, try matching against fine-grained window embeddings
+                if window_segs:
+                    try:
+                        import numpy as np
+                        overlapping_embs = []
+                        weights = []
+                        for w_item in window_segs:
+                            w_st = float(w_item.get("start", 0.0))
+                            w_en = float(w_item.get("end", w_st))
+                            ov = max(0.0, min(t_en, w_en) - max(t_st, w_st))
+                            if ov > 0 and "embedding" in w_item:
+                                overlapping_embs.append(np.array(w_item["embedding"], dtype=np.float32))
+                                weights.append(ov)
 
-                    overlap = max(0.0, min(t_en, d_en) - max(t_st, d_st))
-                    if overlap > best_overlap and "embedding" in d_seg:
-                        best_overlap = overlap
-                        best_emb = d_seg["embedding"]
+                        if overlapping_embs:
+                            weights = np.array(weights, dtype=np.float32)
+                            sum_w = np.sum(weights)
+                            if sum_w > 0:
+                                weighted_emb = np.sum([e * w for e, w in zip(overlapping_embs, weights)], axis=0) / sum_w
+                                norm = np.linalg.norm(weighted_emb)
+                                if norm > 0:
+                                    weighted_emb = weighted_emb / norm
+                                best_emb = [round(float(x), 6) for x in weighted_emb.tolist()]
+                    except Exception:
+                        best_emb = None
 
-                # Only assign if the match was a genuine, tight overlap
-                if best_emb is not None and (best_overlap >= 0.5 * t_dur or best_overlap >= 0.8):
+                # Fallback to diarization segments if window embeddings were absent or didn't overlap
+                if best_emb is None and diar_segs:
+                    best_overlap = 0.0
+                    for d_seg in diar_segs:
+                        d_st = float(d_seg.get("start", 0.0))
+                        d_en = float(d_seg.get("end", d_st))
+                        d_dur = d_en - d_st
+
+                        # DO NOT allow a macro-block (longer than 8s or 3x the segment)
+                        # to stamp its pooled embedding onto this segment!
+                        if d_dur > 8.0 and d_dur > (t_dur * 2.5):
+                            continue
+
+                        overlap = max(0.0, min(t_en, d_en) - max(t_st, d_st))
+                        if overlap > best_overlap and "embedding" in d_seg:
+                            best_overlap = overlap
+                            best_emb = d_seg["embedding"]
+
+                    if best_emb is not None and not (best_overlap >= 0.5 * t_dur or best_overlap >= 0.8):
+                        best_emb = None
+
+                if best_emb is not None:
                     t_seg["embedding"] = best_emb
                 else:
                     # Remove any old poisoned shared embedding so the app knows 

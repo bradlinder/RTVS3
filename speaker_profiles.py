@@ -480,7 +480,14 @@ class ManageVoiceProfilesDialog(QDialog):
         )
         if res == QMessageBox.StandardButton.Yes:
             matched_indices = [m[0] for m in matches]
-            before_state = self.main_win.get_project_state() if hasattr(self.main_win, "get_project_state") else None
+            if hasattr(self.main_win, "flush_pending_transcript_undo"):
+                self.main_win.flush_pending_transcript_undo()
+            if hasattr(self.main_win, "_capture_project_state"):
+                before_state = self.main_win._capture_project_state()
+            elif hasattr(self.main_win, "get_project_state"):
+                before_state = self.main_win.get_project_state()
+            else:
+                before_state = None
             for idx in matched_indices:
                 override_key = f"SEG_{idx}_SPEAKER"
                 self.main_win.speaker_names[override_key] = prof.name

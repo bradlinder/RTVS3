@@ -212,6 +212,8 @@ class MainWindow(
         self.current_operation = None
 
         self.stories = []
+        self.project_metadata = ProjectMetadataDict()
+        self.custom_speakers = []
         self.current_selected_story_indices = []
         self.pre_drag_stories_snapshot = []
 
@@ -445,46 +447,6 @@ class MainWindow(
                 if hasattr(self, "timeline") and hasattr(self.timeline, "canvas"):
                     self.timeline.canvas.pixmap_dirty = True
                     self.timeline.canvas.update()
-
-    def closeEvent(self, event):
-        """Cleanly handle application window closing to prevent process lingering,
-        stray IPC reactivation, or double-open behavior upon exit."""
-        self._is_closing = True
-
-        if hasattr(self, "ipc_server") and self.ipc_server:
-            try:
-                self.ipc_server.close()
-                QLocalServer.removeServer("RadioTVStorySegmenter_IPC_Server")
-            except Exception:
-                pass
-
-        for stop_fn in (
-            "stop_waveform_worker",
-            "stop_video_thumbnail_worker",
-            "stop_transcription_worker",
-            "stop_diarization_worker",
-            "stop_translation_worker",
-        ):
-            if hasattr(self, stop_fn):
-                try:
-                    getattr(self, stop_fn)()
-                except Exception:
-                    pass
-
-        if getattr(self, "project_dirty", False) and getattr(self, "project_file", None):
-            try:
-                self.save_project()
-            except Exception:
-                pass
-
-        if hasattr(self, "settings_store") and self.settings_store:
-            try:
-                self.settings_store.sync()
-            except Exception:
-                pass
-
-        event.accept()
-        QCoreApplication.quit()
 
 
 def main():
