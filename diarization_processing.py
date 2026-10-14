@@ -31,6 +31,10 @@ class DiarizationProcessingMixin:
             self.cleanup_diarization_process()
             return
 
+        if self.diarization_process is None:
+            self.cleanup_diarization_process()
+            return
+
         error_descriptions = {
             QProcess.ProcessError.FailedToStart: "The diarization helper process failed to start. Ensure Python and dependencies are correctly installed.",
             QProcess.ProcessError.Crashed: "The diarization helper process crashed unexpectedly (segmentation fault or unhandled native/Python exception).",
@@ -417,6 +421,8 @@ class DiarizationProcessingMixin:
 
     def cleanup_diarization_process(self):
         process = self.diarization_process
+        if process is not None and not getattr(self, "diarization_result_received", False):
+            self._diarization_canceled_by_user = True
         self.diarization_process = None
         self.diarization_output_buffer = ""
         self.diarization_helper_ready = False

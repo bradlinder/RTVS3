@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Snapshot Manager for Radio & TV Story Segmenter
+"""Snapshot Manager for Radio & TV Story Segmenter
 ------------------------------------------------
 Provides automated snapshotting and zero-friction restoration for stable and beta
 releases, with dual redundancy across local git tags and standalone filesystem archives.

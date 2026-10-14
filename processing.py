@@ -535,15 +535,18 @@ class ProcessingMixin(
         return ok
 
     def confirm_stop_processing_for_media_change(self):
+        if getattr(self, "pipeline_active", False) and not getattr(self, "pipeline_queue", []):
+            self.pipeline_active = False
+
         active = (
-            self.transcription_process is not None
-            or self.diarization_process is not None
-            or self.thread is not None
-            or getattr(self, "translation_thread", None) is not None
-            or getattr(self, "translation_process", None) is not None
-            or getattr(self, "_translation_env_thread", None) is not None
-            or getattr(self, "_translation_env_worker", None) is not None
-            or self.pipeline_active
+            (self.transcription_process is not None and self.transcription_process.state() != QProcess.ProcessState.NotRunning)
+            or (self.diarization_process is not None and self.diarization_process.state() != QProcess.ProcessState.NotRunning)
+            or (self.thread is not None and self.thread.isRunning())
+            or (getattr(self, "translation_thread", None) is not None and self.translation_thread.isRunning())
+            or (getattr(self, "translation_process", None) is not None and self.translation_process.state() != QProcess.ProcessState.NotRunning)
+            or (getattr(self, "_translation_env_thread", None) is not None and self._translation_env_thread.isRunning())
+            or (getattr(self, "_translation_env_worker", None) is not None and getattr(getattr(self, "_translation_env_thread", None), "isRunning", lambda: False)())
+            or getattr(self, "pipeline_active", False)
         )
         if not active:
             return True

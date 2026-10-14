@@ -1,5 +1,13 @@
 # Changelog
 
+## v3.9.8-beta
+- **Lingering Processing Warning Fix (`processing.py`)**:
+  - **Actual Process/Thread State Validation**: Updated `confirm_stop_processing_for_media_change()` to verify actual running states (`isRunning()` for QThreads and `state() != QProcess.ProcessState.NotRunning` for QProcesses) instead of checking for non-None lingering object references. Prevents false-alarm "Processing is currently running" warnings when trying to load new media files or projects after processing has successfully completed.
+
+## v3.9.7-beta
+- **Speaker Detection Cancellation Crash Fix (`diarization_processing.py`, `processing.py`)**:
+  - **Graceful Cancellation & Error Suppression**: Updated `on_diarization_process_error()`, `on_diarization_process_finished()`, and `cleanup_diarization_process()` to robustly mark `_diarization_canceled_by_user = True` and suppress false-alarm critical error dialogs ("The diarization helper process crashed unexpectedly") when canceling or terminating speaker detection processes.
+
 ## v3.9.6-beta
 - **GitHub Actions Build Workflow Fix (`.github/workflows/build.yml`)**:
   - **Removed Deprecated `merge-multiple` Input**: Removed `merge-multiple: true` from `actions/download-artifact@v4` in `publish-release`, resolving CI workflow build failures caused by invalid input parameters in artifact download v4.

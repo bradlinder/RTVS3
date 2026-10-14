@@ -29,29 +29,34 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 --------------------------------------------------------------------------------
 TABLE OF CONTENTS & STATUS OVERVIEW
 --------------------------------------------------------------------------------
-1. Previous Release: Hardware-Accelerated AMD Ryzen AI Local Development & AI Model Provisioning Suite (`roadmap.txt`, `CHANGELOG.md`) [x] [COMPLETED in v3.9.5-beta]
-   [x] 1.1 Hardware-Aware Local AI Setup Specification (`roadmap.txt`): Defined detailed architectural specifications for automated installer/configuration scripts detecting AMD Ryzen AI 9 HX 370 + NPU and 64GB RAM with hardware acceleration.
-   [x] 1.2 Local Coding Model Tier Provisioning Specification: Cataloged optimized 64GB memory tier models (Qwen2.5-Coder-32B/7B/1.5B).
-   [x] 1.3 Local Runtime & IDE Integration Specification: Configured Ollama/LM Studio and Continue.dev bindings.
-   [x] 1.4 Synchronous Version Bump: Synchronized all 10 project locations to v3.9.5-beta
+1. Previous Release: Speaker Detection Cancellation Crash Fix (`diarization_processing.py`, `processing.py`) [x] [COMPLETED in v3.9.7-beta]
+   [x] 1.1 Graceful Speaker Detection Cancellation & Error Suppression (`diarization_processing.py`, `processing.py`): Updated `on_diarization_process_error()`, `on_diarization_process_finished()`, and `cleanup_diarization_process()` to robustly mark `_diarization_canceled_by_user = True` and suppress false-alarm critical error dialogs ("The diarization helper process crashed unexpectedly") when canceling or terminating speaker detection processes.
+   [x] 1.2 Synchronous Version Bump: Synchronized all 10 project locations to v3.9.7-beta
 
-2. Current Release: GitHub Actions Build Workflow Fix & Artifact Download Resilience (`.github/workflows/build.yml`) [x] [COMPLETED in v3.9.6-beta]
-   [x] 2.1 Removed Deprecated `merge-multiple` Input (`.github/workflows/build.yml`): Removed `merge-multiple: true` from `actions/download-artifact@v4` in `publish-release`, resolving CI workflow build failures caused by invalid input parameters in artifact download v4.
-   [x] 2.2 Synchronous Version Bump: Synchronized all 10 project locations to v3.9.6-beta
+2. Current Release: Lingering Processing Warning Fix (`processing.py`) [x] [COMPLETED in v3.9.8-beta]
+   [x] 2.1 Actual Process/Thread State Validation (`processing.py`): Updated `confirm_stop_processing_for_media_change()` to verify actual running states (`isRunning()` for QThreads and `state() != QProcess.ProcessState.NotRunning` for QProcesses) instead of checking for non-None lingering object references. Prevents false-alarm "Processing is currently running" warnings when trying to load new media files or projects after processing has successfully completed.
+   [x] 2.2 Synchronous Version Bump: Synchronized all 10 project locations to v3.9.8-beta
 
-3. Codebase Modularization & Monolithic File Decomposition Strategy (`RadioTVSegmenter.py`, `processing.py`, `transcript_editor.py`, `project_export.py`, `export/timeline.py`, `project_lifecycle.py`, `ui_layout.py`, `dialogs.py`, `radio_tv_story_segmenter_worker.py`, `plugins/manager.py`, `timeline_widgets.py`, `media_batch.py`, `updater.py`) [PLANNED for v4.0.0] [IN-PROGRESS / PLANNED]
+3. Smart Hybrid Audio Loudness Normalization & Auto-Boost Suite (`audio_processing.py`, `playback_preferences.py`, `dialogs.py`) [PLANNED for v4.1.0] [NOT STARTED]
+   - *Purpose*: Automatically or manually boost quiet audio files to improve speech-to-text transcription and speaker diarization accuracy without introducing unnecessary re-encoding or amplifying pristine audio.
+   - [ ] 3.1 Fast FFmpeg Loudness & Peak Probing (`audio_processing.py`): Implement fast stream probing on import to measure integrated LUFS and peak dBFS of imported audio files.
+   - [ ] 3.2 Conditional Hybrid Normalization Pipeline (`audio_processing.py`): Automatically apply single-pass FFmpeg normalization if imported audio falls below user-configured LUFS/dBFS thresholds, while bypassing files that are already at acceptable levels.
+   - [ ] 3.3 Preferences Integration (`playback_preferences.py`, `dialogs.py`): Add UI controls in Preferences to enable/disable automatic loudness normalization on import, select target standard (LUFS default vs. dBFS option), and configure target loudness thresholds.
+   - [ ] 3.4 Tools Menu Manual Normalization Action (`RadioTVSegmenter.py`): Add a manual normalization action in the Tools menu allowing users to normalize project audio on-demand.
+
+4. Codebase Modularization & Monolithic File Decomposition Strategy (`RadioTVSegmenter.py`, `processing.py`, `transcript_editor.py`, `project_export.py`, `export/timeline.py`, `project_lifecycle.py`, `ui_layout.py`, `dialogs.py`, `radio_tv_story_segmenter_worker.py`, `plugins/manager.py`, `timeline_widgets.py`, `media_batch.py`, `updater.py`) [PLANNED for v4.0.0] [IN-PROGRESS / PLANNED]
    - *Architecture Note*: Refactors all 15 source files exceeding 1,000 lines into domain-driven sub-packages while preserving 100% backward compatibility via zero-breaking module facade re-exports.
-   [x] 3.1 Codebase Audit & Dependency Graph Analysis: Analyze call stack dependencies and import graphs across all 15 files exceeding 1,000 lines to establish clear domain boundaries.
-   [ ] 3.2 Phase 1 - Core Engine & Main Window Decomposition (`RadioTVSegmenter.py`, `processing.py`, `radio_tv_story_segmenter_worker.py`):
+   [x] 4.1 Codebase Audit & Dependency Graph Analysis: Analyze call stack dependencies and import graphs across all 15 files exceeding 1,000 lines to establish clear domain boundaries.
+   [ ] 4.2 Phase 1 - Core Engine & Main Window Decomposition (`RadioTVSegmenter.py`, `processing.py`, `radio_tv_story_segmenter_worker.py`):
        - Split `RadioTVSegmenter.py` (6,761 lines) into `ui/main_window/` submodules (menu actions, toolbars, event wiring, state handlers).
        - Split `processing.py` (3,896 lines) into `processing/` submodules (whisper engine, diarization, alignment, VAD, audio normalization).
        - Split `radio_tv_story_segmenter_worker.py` (2,089 lines) into pipeline stage task runners.
-   [ ] 3.3 Phase 2 - Heavy Subsystem Controllers & Exporters (`transcript_editor.py`, `project_export.py`, `export/timeline.py`, `project_lifecycle.py`, `ui_layout.py`):
+   [ ] 4.3 Phase 2 - Heavy Subsystem Controllers & Exporters (`transcript_editor.py`, `project_export.py`, `export/timeline.py`, `project_lifecycle.py`, `ui_layout.py`):
        - Split transcript editor, document exporters (TXT/DOCX/PDF), DAW timeline exporters (REAPER RPP, FCP XML, AAF, EDL), project lifecycle, and UI dock layouts into modular sub-packages.
-   [ ] 3.4 Phase 3 - Dialogs, Timeline Canvas & Infrastructure (`dialogs.py`, `plugins/manager.py`, `timeline_widgets.py`, `media_batch.py`, `updater.py`):
+   [ ] 4.4 Phase 3 - Dialogs, Timeline Canvas & Infrastructure (`dialogs.py`, `plugins/manager.py`, `timeline_widgets.py`, `media_batch.py`, `updater.py`):
        - Split preferences/settings dialogs, plugin host manager, timeline canvas/ruler rendering, batch runner, and auto-updater into focused submodules.
-   [x] 3.5 Zero-Breakage Facade Pattern Verification: Retain original filenames as lightweight public facades re-exporting symbols (`from .submodule import ClassName`) to guarantee external callers, plugins, and `test_runner.py` suite run without breakage.
-   [ ] 3.6 Enforcement of Modular Development Directives in Agent Rules (`AGENTS.md` & `GEMINI.md`): Update `AGENTS.md` and `GEMINI.md` with strict file length caps (~800-1,000 line limit) and mandatory submodule creation directives for future feature development.
+   [x] 4.5 Zero-Breakage Facade Pattern Verification: Retain original filenames as lightweight public facades re-exporting symbols (`from .submodule import ClassName`) to guarantee external callers, plugins, and `test_runner.py` suite run without breakage.
+   [ ] 4.6 Enforcement of Modular Development Directives in Agent Rules (`AGENTS.md` & `GEMINI.md`): Update `AGENTS.md` and `GEMINI.md` with strict file length caps (~800-1,000 line limit) and mandatory submodule creation directives for future feature development.
 
 4. Automated AMD Ryzen AI Local Development Platform & Model Provisioning Suite (`scripts/setup_local_ai.py`, `.vscode/settings.json`, `.clinerules`, `.github/workflows/build.yml`) [PLANNED for v4.0.0] [OPTIONAL / PLANNED] [NOT STARTED]
    - *Purpose*: One-command setup script and auto-configuration suite enabling full offline development, AI-assisted bug fixing, and automated cross-platform builds on AMD Ryzen AI 9 HX 370 (64GB RAM) systems.
