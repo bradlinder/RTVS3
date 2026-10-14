@@ -61,6 +61,28 @@ except Exception:
             pass
 
 
+def _patch_av_open():
+    """Monkey-patch PyAV's av.open to strip 'metadata_errors' if passed.
+    PyAV >= 13 removed the 'metadata_errors' parameter from av.open(), causing
+    faster-whisper's decode_audio to fail with:
+    TypeError: open() got an unexpected keyword argument 'metadata_errors'.
+    """
+    try:
+        import av
+        if hasattr(av, "open") and not getattr(av.open, "_is_patched", False):
+            orig_open = av.open
+            def patched_open(*args, **kwargs):
+                kwargs.pop("metadata_errors", None)
+                return orig_open(*args, **kwargs)
+            patched_open._is_patched = True
+            av.open = patched_open
+    except Exception:
+        pass
+
+
+_patch_av_open()
+
+
 def _clamp_diarization_thread_env():
     """Cap OMP/ONNX Runtime/BLAS thread pools before onnxruntime, torch, or the
     diarize package are ever imported anywhere in this process (including
@@ -309,8 +331,14 @@ def is_onnx_model_available(model_name):
     try:
         import sherpa_onnx
     except Exception:
-        sys.stderr.write("[ONNX CHECK] sherpa_onnx runtime is not installed or loadable\n")
-        return False
+        try:
+            from bootstrap import ensure_sherpa_onnx_runtime
+            if not ensure_sherpa_onnx_runtime():
+                return False
+            import sherpa_onnx
+        except Exception:
+            sys.stderr.write("[ONNX CHECK] sherpa_onnx runtime is not installed or loadable\n")
+            return False
 
     try:
         from pathlib import Path
@@ -360,7 +388,7 @@ def is_onnx_model_available(model_name):
     return False
 
 
-def transcribe_parakeet_onnx(audio_file, model_name="parakeet-onnx", detected_lang=None, detected_confidence=0.0):
+def transcribe_parakeet_onnx(audio_file, model_name="parakeet-onnx", detected_lang=None, detected_confidence=0.0, initial_prompt="", beam_size=5):
     """Run installed ONNX models (Parakeet TDT, Spanish FastConformer, Multilingual FastConformer) through sherpa-onnx."""
     model_key = str(model_name).lower()
     is_spanish_only_model = "fastconformer" in model_key and ("es" in model_key or "spanish" in model_key) and "multi" not in model_key
@@ -388,9 +416,16 @@ def transcribe_parakeet_onnx(audio_file, model_name="parakeet-onnx", detected_la
         import numpy as np
         import sherpa_onnx
     except Exception as exc:
-        emit("error", message=("ONNX transcription requires the sherpa-onnx runtime, "
-                               f"which could not be loaded: {type(exc).__name__}: {exc}"))
-        return 3
+        try:
+            from bootstrap import ensure_sherpa_onnx_runtime
+            if ensure_sherpa_onnx_runtime():
+                import numpy as np
+                import sherpa_onnx
+            else:
+                raise exc
+        except Exception:
+            emit("progress", percent=5, message=f"ONNX runtime (sherpa-onnx) is not available ({exc}). Falling back to Whisper Small...")
+            return transcribe(audio_file, model_name="small", initial_prompt=initial_prompt, beam_size=beam_size)
 
     models_dir = os.environ.get("PRS_MODELS_DIR")
     search_dirs = []
@@ -462,14 +497,24 @@ def transcribe_parakeet_onnx(audio_file, model_name="parakeet-onnx", detected_la
         token_matches = list(model_dir.rglob("tokens.txt"))
         tokens_file = str(token_matches[0]) if token_matches else str(model_dir / "tokens.txt")
 
-        encoder_matches = [f for f in model_dir.rglob("encoder.int8.onnx") if f.is_file()]
+        encoder_matches = [
+            f for f in model_dir.rglob("*.onnx")
+            if f.is_file() and f.stat().st_size > 1024 and ("encoder" in f.name.lower() or "parakeet" in f.name.lower())
+        ]
         if encoder_matches:
-            # NeMo Transducer (Parakeet)
+            # NeMo Transducer (Parakeet TDT)
             encoder_file = str(encoder_matches[0])
-            decoder_matches = [f for f in model_dir.rglob("decoder.int8.onnx") if f.is_file()]
-            decoder_file = str(decoder_matches[0]) if decoder_matches else str(model_dir / "decoder.int8.onnx")
-            joiner_matches = [f for f in model_dir.rglob("joiner.int8.onnx") if f.is_file()]
-            joiner_file = str(joiner_matches[0]) if joiner_matches else str(model_dir / "joiner.int8.onnx")
+            parent_dir = encoder_matches[0].parent
+
+            decoder_matches = [f for f in parent_dir.rglob("*.onnx") if f.is_file() and "decoder" in f.name.lower()]
+            if not decoder_matches:
+                decoder_matches = [f for f in model_dir.rglob("*.onnx") if f.is_file() and "decoder" in f.name.lower()]
+            decoder_file = str(decoder_matches[0]) if decoder_matches else str(parent_dir / "decoder.int8.onnx")
+
+            joiner_matches = [f for f in parent_dir.rglob("*.onnx") if f.is_file() and "joiner" in f.name.lower()]
+            if not joiner_matches:
+                joiner_matches = [f for f in model_dir.rglob("*.onnx") if f.is_file() and "joiner" in f.name.lower()]
+            joiner_file = str(joiner_matches[0]) if joiner_matches else str(parent_dir / "joiner.int8.onnx")
 
             feature_dim = 80
             try:
@@ -692,6 +737,7 @@ def probe_audio_language(audio_file, sample_duration=15.0, preferred_model=None)
     temp_probe_file = None
     target_file = str(audio_file)
     try:
+        _patch_av_open()
         from faster_whisper import WhisperModel
         download_root = os.environ.get("PRS_MODELS_DIR") or None
         probe_model = None
@@ -816,10 +862,16 @@ def transcribe(audio_file, model_name, initial_prompt="", beam_size=5):
                     is_onnx = False
 
     if is_onnx:
-        return transcribe_parakeet_onnx(audio_file, model_name=model_name, detected_lang=probed_lang, detected_confidence=prob)
+        if is_onnx_model_available(model_name):
+            return transcribe_parakeet_onnx(audio_file, model_name=model_name, detected_lang=probed_lang, detected_confidence=prob, initial_prompt=initial_prompt, beam_size=beam_size)
+        else:
+            emit("progress", percent=4, message=f"ONNX model '{model_name}' or sherpa-onnx runtime is unavailable. Falling back to Whisper Small...")
+            model_name = "small"
+            is_onnx = False
 
     emit("progress", percent=5, message=f"Loading local Whisper {model_name} model...")
     try:
+        _patch_av_open()
         from faster_whisper import WhisperModel
     except Exception as exc:
         emit("error", message=f"Could not load faster-whisper locally: {type(exc).__name__}: {exc}")
@@ -839,15 +891,65 @@ def transcribe(audio_file, model_name, initial_prompt="", beam_size=5):
 
         model_to_load = resolved_model_name
         try:
-            mdir = get_models_storage_dir_pure()
-            candidate_dirs = [
-                mdir / "huggingface" / "hub" / f"models--{resolved_model_name.replace('/', '--')}",
-                mdir / f"models--{resolved_model_name.replace('/', '--')}",
-                mdir / model_name,
-            ]
-            for cd in candidate_dirs:
-                if cd.exists() and ((cd / "model.bin").is_file() or any(cd.rglob("model.bin"))):
-                    model_to_load = str(cd)
+            env_dir = os.environ.get("PRS_MODELS_DIR")
+            env_path = Path(env_dir) if env_dir else None
+
+            slugs = []
+            if model_name == "distil-large-v3":
+                slugs.extend([
+                    "models--Systran--faster-distil-whisper-large-v3",
+                    "models--Systran--faster-whisper-distil-large-v3",
+                    "models--distil-large-v3",
+                ])
+            elif model_name in ("distil-medium.en", "distil-medium"):
+                slugs.extend([
+                    "models--Systran--faster-distil-whisper-medium.en",
+                    "models--Systran--faster-whisper-distil-medium.en",
+                    "models--distil-medium.en",
+                ])
+            elif model_name.startswith("distil-"):
+                slugs.extend([
+                    f"models--Systran--faster-{model_name}",
+                    f"models--{model_name}",
+                ])
+            else:
+                slugs.extend([
+                    f"models--guillaumekcln--faster-whisper-{model_name}",
+                    f"models--Systran--faster-whisper-{model_name}",
+                    f"models--openai--whisper-{model_name}",
+                    f"models--faster-whisper-{model_name}",
+                    f"models--{model_name}",
+                    f"models--{resolved_model_name.replace('/', '--')}",
+                ])
+
+            cache_roots = []
+            if env_path:
+                cache_roots.extend([env_path / "huggingface" / "hub", env_path / "hub", env_path])
+            try:
+                mdir = get_models_storage_dir_pure()
+                cache_roots.extend([mdir / "huggingface" / "hub", mdir / "hub", mdir])
+            except Exception:
+                pass
+            try:
+                appd = get_app_data_dir_pure() / "models"
+                cache_roots.extend([appd / "huggingface" / "hub", appd / "hub", appd])
+            except Exception:
+                pass
+            cache_roots.extend([
+                Path.home() / ".cache" / "huggingface" / "hub",
+                Path(__file__).resolve().parent / "models",
+            ])
+
+            for cr in cache_roots:
+                for slug in slugs:
+                    cd = cr / slug
+                    if cd.exists():
+                        bin_files = list(cd.rglob("model.bin")) or list(cd.rglob("*.bin")) or list(cd.rglob("*.safetensors"))
+                        if bin_files:
+                            snap_dir = bin_files[0].parent
+                            model_to_load = str(snap_dir)
+                            break
+                if model_to_load != resolved_model_name:
                     break
         except Exception:
             pass

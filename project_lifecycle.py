@@ -138,6 +138,11 @@ class ProjectLifecycleMixin:
             self.timeline.set_audio_filename(None)
             if hasattr(self.timeline, "set_video_thumbnails"):
                 self.timeline.set_video_thumbnails([])
+        try:
+            from cache_manager import unregister_active_thumbnail_dir
+            unregister_active_thumbnail_dir(self.video_thumbnail_dir)
+        except Exception:
+            pass
         self.video_thumbnail_dir = None
 
         if hasattr(self, "update_window_title"):

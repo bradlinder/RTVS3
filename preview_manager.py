@@ -505,16 +505,15 @@ export function App() {
 
 
 def get_project_version() -> str:
-    """Read PROJECT_VERSION from prs_shared.py."""
-    prs_path = ROOT_DIR / "prs_shared.py"
-    if prs_path.is_file():
-        content = prs_path.read_text(encoding="utf-8")
-        match = re.search(r'PROJECT_VERSION\s*=\s*["\']([^"\']+)["\']', content)
-        if match:
-            v = match.group(1).strip()
-            # Collapse any duplicate dots
-            return re.sub(r"\.+", ".", v)
-    return "2.9.6"
+    """Read PROJECT_VERSION from core_utils.py or prs_shared.py."""
+    for file_path in [ROOT_DIR / "core_utils.py", ROOT_DIR / "prs_shared.py"]:
+        if file_path.is_file():
+            content = file_path.read_text(encoding="utf-8")
+            match = re.search(r'PROJECT_VERSION\s*=\s*["\']([^"\']+)["\']', content)
+            if match:
+                v = match.group(1).strip()
+                return re.sub(r"\.+", ".", v)
+    return "3.8.6-stable"
 
 
 def restore_preview(force: bool = False) -> int:

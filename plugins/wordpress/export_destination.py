@@ -60,7 +60,7 @@ from plugins.wordpress.client import (
 )
 
 
-def capture_video_frame(video_path: str, timestamp: float, output_path: str) -> bool:
+def capture_video_frame(video_path: str, timestamp: float, output_path: str, timeout: float = 10.0) -> bool:
     ff = ffmpeg_path() or "ffmpeg"
     cmd = [
         ff, "-hide_banner", "-loglevel", "error", "-y",
@@ -71,8 +71,17 @@ def capture_video_frame(video_path: str, timestamp: float, output_path: str) -> 
         str(output_path),
     ]
     flags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
-    res = subprocess.run(cmd, capture_output=True, creationflags=flags)
-    return res.returncode == 0 and Path(output_path).exists() and Path(output_path).stat().st_size > 0
+    try:
+        res = subprocess.run(
+            cmd,
+            stdin=subprocess.DEVNULL,
+            capture_output=True,
+            timeout=timeout,
+            creationflags=flags,
+        )
+        return res.returncode == 0 and Path(output_path).exists() and Path(output_path).stat().st_size > 0
+    except (subprocess.TimeoutExpired, Exception):
+        return False
 
 
 class WordPressExportTabWidget(QWidget):
@@ -1297,7 +1306,7 @@ class WordPressExportTabWidget(QWidget):
         ]
         flags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
         try:
-            res = subprocess.run(cmd, capture_output=True, timeout=5, creationflags=flags)
+            res = subprocess.run(cmd, stdin=subprocess.DEVNULL, capture_output=True, timeout=5, creationflags=flags)
             if res.returncode == 0 and out_path.exists() and out_path.stat().st_size > 0:
                 post["featured_image"] = str(out_path)
                 post["featured_image_mode"] = "grab"
@@ -1332,6 +1341,22 @@ class WordPressExportTabWidget(QWidget):
             self.wp_thumb_path_label.setText(Path(fn).name)
             pix = QPixmap(fn).scaled(160, 90, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
             self.wp_thumb_preview_label.setPixmap(pix)
+
+    def _cleanup_temp_files(self) -> None:
+        """Purge temporary frame grabs and preview images."""
+        if hasattr(self, "_temp_preview_files") and self._temp_preview_files:
+            for temp_f in list(self._temp_preview_files):
+                try:
+                    if temp_f and Path(temp_f).exists():
+                        Path(temp_f).unlink(missing_ok=True)
+                except Exception as exc:
+                    logger.debug(f"Failed to remove temp file {temp_f}: {exc}")
+            self._temp_preview_files.clear()
+
+    def closeEvent(self, event: Any) -> None:
+        """Clean up temp files on widget/dialog closure."""
+        self._cleanup_temp_files()
+        super().closeEvent(event)
 
     def rebuild_post_items(self, scope: Optional[str] = None):
         if getattr(self, "metadata_editor_mode", False):
@@ -1645,6 +1670,8 @@ class WordPressExportDestination(ExportDestination):
         pwd = _get_wp_password(user) if user else ""
         if not (url and user and pwd):
             return False, "WordPress is not configured. Please enter your Site URL, Username, and Application Password in Settings before exporting."
+        if url in ("https://example.com", "http://example.com", "example.com") and not os.environ.get("RTVS_TEST_MODE"):
+            return False, f"WordPress Site URL '{url}' is set to the default example.com placeholder. Please enter your actual website URL in WordPress Settings."
         if not w.wp_cb_en.isChecked() and not w.wp_cb_es.isChecked():
             return False, "Please select at least one language for WordPress export (English or Spanish)."
         if not w.wp_post_items:
@@ -1685,6 +1712,14 @@ class WordPressExportDestination(ExportDestination):
                     parent_widget,
                     "WordPress Not Configured",
                     "Please configure your WordPress Site URL, Username, and Application Password in Settings before exporting.",
+                )
+            return False
+        if url in ("https://example.com", "http://example.com", "example.com") and not os.environ.get("RTVS_TEST_MODE"):
+            if show_summary_dialog:
+                QMessageBox.warning(
+                    parent_widget,
+                    "Invalid WordPress Site URL",
+                    f"The WordPress Site URL in your settings ('{url}') is set to 'example.com'.\n\nPlease open WordPress Settings and enter your actual website URL (e.g. https://mystation.org).",
                 )
             return False
 

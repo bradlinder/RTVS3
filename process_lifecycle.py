@@ -149,6 +149,14 @@ def unregister_process(proc):
     _REGISTERED_PROCESSES.discard(proc)
 
 
+def get_registered_processes():
+    """Return a snapshot list of currently registered processes."""
+    return list(_REGISTERED_PROCESSES)
+
+
+get_all_processes = get_registered_processes
+
+
 def terminate_all_registered_processes():
     """Terminate and wait on all active child processes upon application close."""
     for proc in list(_REGISTERED_PROCESSES):

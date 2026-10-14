@@ -394,8 +394,8 @@ class GoogleDocsAuthManager:
         """Alias for get_user_email() ensuring compatibility across export destinations."""
         return self.get_user_email()
 
-    def get_valid_access_token(self) -> Optional[str]:
-        """Return a valid access token, automatically refreshing if expired."""
+    def get_valid_access_token(self, force_refresh: bool = False) -> Optional[str]:
+        """Return a valid access token, automatically refreshing if expired or forced."""
         if not self._tokens:
             return None
 
@@ -403,13 +403,13 @@ class GoogleDocsAuthManager:
         expiry = float(self._tokens.get("expires_at", 0))
         refresh_token = self._tokens.get("refresh_token")
 
-        # Automatically refresh if expired or within 60s of expiring
-        if time.time() > (expiry - 60):
+        # Automatically refresh if expired, within 60s of expiring, or explicitly forced
+        if force_refresh or time.time() > (expiry - 60):
             if refresh_token:
                 success, _ = self.refresh_access_token()
                 if success:
                     return self._tokens.get("access_token")
-            return None
+            return None if force_refresh else access_token
 
         return access_token
 

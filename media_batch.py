@@ -4,6 +4,10 @@ Methods intentionally retain the MainWindow-facing API so behavior remains
 maintaining the established MainWindow-facing API while responsibilities are isolated.
 """
 
+from PySide6.QtCore import Qt, QThread, QTimer
+from PySide6.QtWidgets import (
+    QApplication, QDialog, QFileDialog, QLabel, QMessageBox, QPushButton, QWidget
+)
 from prs_shared import *
 from background_workers import (
     get_video_thumbnail_cache_dir,
@@ -20,6 +24,7 @@ class MediaBatchMixin:
             result = subprocess.run(
                 [ffprobe_path() or "ffprobe", "-v", "error", "-show_entries", "format=duration",
                  "-of", "default=noprint_wrappers=1:nokey=1", str(path)],
+                stdin=subprocess.DEVNULL,
                 stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, timeout=5, check=True,
                 creationflags=creationflags,
             )
@@ -85,6 +90,8 @@ class MediaBatchMixin:
             cached_thumbs = read_video_thumbnail_cache(self.audio_file, self.duration)
             if cached_thumbs:
                 self.video_thumbnail_dir = get_video_thumbnail_cache_dir(self.audio_file)
+                if self.video_thumbnail_dir:
+                    register_active_thumbnail_dir(self.video_thumbnail_dir)
                 if hasattr(self, "timeline"):
                     try:
                         self.timeline.set_background_generation_active("thumbnails", False)
@@ -108,6 +115,7 @@ class MediaBatchMixin:
                 shutil.rmtree(job, ignore_errors=True)
             job.mkdir(parents=True, exist_ok=True)
             self.video_thumbnail_dir = job
+            register_active_thumbnail_dir(self.video_thumbnail_dir)
             thread = QThread(self)
             worker = VideoThumbnailWorker(self.audio_file, self.duration, job)
             worker.moveToThread(thread)
@@ -197,6 +205,7 @@ class MediaBatchMixin:
         if hasattr(self, "timeline"):
             self.timeline.set_video_thumbnails([])
         invalidate_video_thumbnail_cache(self.audio_file)
+        unregister_active_thumbnail_dir(self.video_thumbnail_dir)
         self.video_thumbnail_dir = None
         self.log_activity("[MEDIA] Manually regenerating video thumbnails...")
         is_es = getattr(self, "language", "en") == "es"

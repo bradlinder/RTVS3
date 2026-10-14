@@ -33,18 +33,18 @@ TABLE OF CONTENTS & STATUS OVERVIEW
    [x] 1.1 High-Contrast Gold Active Word Highlighting (`transcript_editor.py`): Replaced blue-on-blue active word formatting with a vibrant, high-contrast gold/amber background (`#fbbf24` in dark mode, `#facc15` in light mode), bold black text, and amber underline formatting.
    [x] 1.2 Layered ExtraSelections Rendering (`transcript_editor.py`): Introduced `set_timeline_selection_span()` to render section and timeline range highlights as an extra selection layer beneath the active playback word.
    [x] 1.3 Unobscured Playback Word During Section Selection (`transcript_story.py`): Updated timeline selection handlers to clear native cursor selection masking and utilize the extra selections layer, guaranteeing that the exact word currently playing remains 100% visible, distinct, and vibrant when scrubbing or playing audio inside a highlighted section.
-   [x] 1.4 Synchronous Version Bump: Synchronized all 10 project locations to v3.9.0-beta.8
+   [x] 1.4 Synchronous Version Bump: Synchronized all 10 project locations to v3.9.4-beta
 
-2. Current Release: Hardware-Accelerated AMD Ryzen AI Local Development & AI Model Provisioning Suite Specification (`roadmap.txt`, `CHANGELOG.md`) [x] [COMPLETED in v3.9.0-beta.9]
+2. Current Release: Hardware-Accelerated AMD Ryzen AI Local Development & AI Model Provisioning Suite Specification (`roadmap.txt`, `CHANGELOG.md`) [x] [COMPLETED in v3.9.4-beta]
    [x] 2.1 Hardware-Aware Local AI Setup Specification (`roadmap.txt`): Defined detailed architectural specifications for an automated installer/configuration script (`scripts/setup_local_ai.py` or `setup_local_dev.sh`) detecting AMD Ryzen AI 9 HX 370 + NPU and 64GB RAM with hardware acceleration (ROCm/Vulkan/DirectML/UMA).
    [x] 2.2 Local Coding Model Tier Provisioning Specification: Cataloged optimized 64GB memory tier models: Qwen2.5-Coder-32B-Instruct (heavy refactoring), Qwen2.5-Coder-7B/14B-Instruct (fast bug fixes), and Qwen2.5-Coder-1.5B (sub-50ms Continue.dev inline autocomplete).
    [x] 2.3 Local Runtime & IDE Integration Specification: Configured Ollama / LM Studio server bindings (`http://localhost:11434`), Continue.dev `config.json`, Cline/Roo Code settings, and auto-linking `.clinerules` to `AGENTS.md` & `GEMINI.md`.
    [x] 2.4 Interactive Model Usage Matrix & GitHub Actions CI/CD Integration Specification: Designed interactive model selection guide matching tasks to model speeds/contexts, and automated GitHub Actions workflow (`.github/workflows/build.yml`) for cross-platform PyInstaller/Inno Setup releases.
-   [x] 2.5 Synchronous Version Bump: Synchronized all 10 project locations to v3.9.0-beta.9
+   [x] 2.5 Synchronous Version Bump: Synchronized all 10 project locations to v3.9.4-beta
 
 3. Codebase Modularization & Monolithic File Decomposition Strategy (`RadioTVSegmenter.py`, `processing.py`, `transcript_editor.py`, `project_export.py`, `export/timeline.py`, `project_lifecycle.py`, `ui_layout.py`, `dialogs.py`, `radio_tv_story_segmenter_worker.py`, `plugins/manager.py`, `timeline_widgets.py`, `media_batch.py`, `updater.py`) [PLANNED for v4.0.0] [IN-PROGRESS / PLANNED]
    - *Architecture Note*: Refactors all 15 source files exceeding 1,000 lines into domain-driven sub-packages while preserving 100% backward compatibility via zero-breaking module facade re-exports.
-   [-] 3.1 Codebase Audit & Dependency Graph Analysis: Analyze call stack dependencies and import graphs across all 15 files exceeding 1,000 lines to establish clear domain boundaries.
+   [x] 3.1 Codebase Audit & Dependency Graph Analysis: Analyze call stack dependencies and import graphs across all 15 files exceeding 1,000 lines to establish clear domain boundaries.
    [ ] 3.2 Phase 1 - Core Engine & Main Window Decomposition (`RadioTVSegmenter.py`, `processing.py`, `radio_tv_story_segmenter_worker.py`):
        - Split `RadioTVSegmenter.py` (6,761 lines) into `ui/main_window/` submodules (menu actions, toolbars, event wiring, state handlers).
        - Split `processing.py` (3,896 lines) into `processing/` submodules (whisper engine, diarization, alignment, VAD, audio normalization).
@@ -53,7 +53,7 @@ TABLE OF CONTENTS & STATUS OVERVIEW
        - Split transcript editor, document exporters (TXT/DOCX/PDF), DAW timeline exporters (REAPER RPP, FCP XML, AAF, EDL), project lifecycle, and UI dock layouts into modular sub-packages.
    [ ] 3.4 Phase 3 - Dialogs, Timeline Canvas & Infrastructure (`dialogs.py`, `plugins/manager.py`, `timeline_widgets.py`, `media_batch.py`, `updater.py`):
        - Split preferences/settings dialogs, plugin host manager, timeline canvas/ruler rendering, batch runner, and auto-updater into focused submodules.
-   [ ] 3.5 Zero-Breakage Facade Pattern Verification: Retain original filenames as lightweight public facades re-exporting symbols (`from .submodule import ClassName`) to guarantee external callers, plugins, and `test_runner.py` suite run without breakage.
+   [x] 3.5 Zero-Breakage Facade Pattern Verification: Retain original filenames as lightweight public facades re-exporting symbols (`from .submodule import ClassName`) to guarantee external callers, plugins, and `test_runner.py` suite run without breakage.
    [ ] 3.6 Enforcement of Modular Development Directives in Agent Rules (`AGENTS.md` & `GEMINI.md`): Update `AGENTS.md` and `GEMINI.md` with strict file length caps (~800-1,000 line limit) and mandatory submodule creation directives for future feature development.
 
 4. Automated AMD Ryzen AI Local Development Platform & Model Provisioning Suite (`scripts/setup_local_ai.py`, `.vscode/settings.json`, `.clinerules`, `.github/workflows/build.yml`) [PLANNED for v4.0.0] [OPTIONAL / PLANNED] [NOT STARTED]
@@ -95,17 +95,17 @@ DETAILED MILESTONE SPECIFICATIONS
 [x] 1.1 High-Contrast Gold Active Word Highlighting (`transcript_editor.py`): Replaced blue-on-blue active word formatting with a vibrant, high-contrast gold/amber background (`#fbbf24` in dark mode, `#facc15` in light mode), bold black text, and amber underline formatting.
 [x] 1.2 Layered ExtraSelections Rendering (`transcript_editor.py`): Introduced `set_timeline_selection_span()` to render section and timeline range highlights as an extra selection layer beneath the active playback word.
 [x] 1.3 Unobscured Playback Word During Section Selection (`transcript_story.py`): Updated timeline selection handlers to clear native cursor selection masking and utilize the extra selections layer, guaranteeing that the exact word currently playing remains 100% visible, distinct, and vibrant when scrubbing or playing audio inside a highlighted section.
-[x] 1.4 Synchronous Version Bump: Synchronized all 10 project locations to v3.9.0-beta.8
+[x] 1.4 Synchronous Version Bump: Synchronized all 10 project locations to v3.9.4-beta
 
 ================================================================================
-2. CURRENT RELEASE: HARDWARE-ACCELERATED AMD RYZEN AI LOCAL DEVELOPMENT & AI MODEL PROVISIONING SUITE SPECIFICATION [x] [COMPLETED in v3.9.0-beta.9]
+2. CURRENT RELEASE: HARDWARE-ACCELERATED AMD RYZEN AI LOCAL DEVELOPMENT & AI MODEL PROVISIONING SUITE SPECIFICATION [x] [COMPLETED in v3.9.4-beta]
 ================================================================================
 
 [x] 2.1 Hardware-Aware Local AI Setup Specification (`roadmap.txt`): Defined detailed architectural specifications for an automated installer/configuration script (`scripts/setup_local_ai.py` or `setup_local_dev.sh`) detecting AMD Ryzen AI 9 HX 370 + NPU and 64GB RAM with hardware acceleration (ROCm/Vulkan/DirectML/UMA).
 [x] 2.2 Local Coding Model Tier Provisioning Specification: Cataloged optimized 64GB memory tier models: Qwen2.5-Coder-32B-Instruct (heavy refactoring), Qwen2.5-Coder-7B/14B-Instruct (fast bug fixes), and Qwen2.5-Coder-1.5B (sub-50ms Continue.dev inline autocomplete).
 [x] 2.3 Local Runtime & IDE Integration Specification: Configured Ollama / LM Studio server bindings (`http://localhost:11434`), Continue.dev `config.json`, Cline/Roo Code settings, and auto-linking `.clinerules` to `AGENTS.md` & `GEMINI.md`.
 [x] 2.4 Interactive Model Usage Matrix & GitHub Actions CI/CD Integration Specification: Designed interactive model selection guide matching tasks to model speeds/contexts, and automated GitHub Actions workflow (`.github/workflows/build.yml`) for cross-platform PyInstaller/Inno Setup releases.
-[x] 2.5 Synchronous Version Bump: Synchronized all 10 project locations to v3.9.0-beta.9
+[x] 2.5 Synchronous Version Bump: Synchronized all 10 project locations to v3.9.4-beta
 
 ================================================================================
 3. CODEBASE MODULARIZATION & MONOLITHIC FILE DECOMPOSITION STRATEGY [PLANNED for v4.0.0] [IN-PROGRESS / PLANNED]

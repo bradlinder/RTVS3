@@ -4,6 +4,13 @@ Methods intentionally retain the MainWindow-facing API so behavior remains
 maintaining the established MainWindow-facing API while responsibilities are isolated.
 """
 
+from PySide6.QtCore import QSettings, Qt, QTimer, QUrl
+from PySide6.QtGui import QDesktopServices
+from PySide6.QtNetwork import QLocalServer
+from PySide6.QtWidgets import (
+    QApplication, QCheckBox, QDialog, QFileDialog, QFormLayout, QHBoxLayout,
+    QLabel, QLineEdit, QMessageBox, QProgressDialog, QPushButton, QVBoxLayout
+)
 from prs_shared import *
 import webbrowser
 import zipfile
@@ -126,6 +133,11 @@ class ProjectExportMixin(ProjectLifecycleMixin):
         self.timeline.set_audio_filename(None)
         if hasattr(self.timeline, "set_video_thumbnails"):
             self.timeline.set_video_thumbnails([])
+        try:
+            from cache_manager import unregister_active_thumbnail_dir
+            unregister_active_thumbnail_dir(self.video_thumbnail_dir)
+        except Exception:
+            pass
         self.video_thumbnail_dir = None
 
         self.update_window_title()
@@ -1138,6 +1150,11 @@ class ProjectExportMixin(ProjectLifecycleMixin):
         self.is_exporting = True
         try:
             return self._do_export_story_files(stories_with_indices, formats, base, options, directory, start_idx=start_idx, total_batch=total_batch, is_custom_location=is_custom_location)
+        except Exception as exc:
+            if "Export cancelled by user" in str(exc) or getattr(self, "export_cancelled", False):
+                self.log_activity("[EXPORT] Export operation stopped by user.")
+                return False
+            raise
         finally:
             self.is_exporting = False
 
@@ -1353,8 +1370,13 @@ class ProjectExportMixin(ProjectLifecycleMixin):
                 media_file = media_out / f"{story_base}{self.audio_file.suffix.lower()}"
                 apply_fades = bool(options.get("apply_audio_fades", True))
                 f_in = getattr(story, "fade_in", 0.0) if apply_fades else 0.0
-                f_out = getattr(story, "fade_out", 0.0) if apply_fades else 0.0
-                self.extract_media(story.start, story.end, media_file, fade_in=f_in, fade_out=f_out)
+                try:
+                    self.extract_media(story.start, story.end, media_file, fade_in=f_in, fade_out=f_out)
+                except RuntimeError as exc:
+                    if "Export cancelled by user" in str(exc) or getattr(self, "export_cancelled", False):
+                        self.log_activity("[EXPORT] Export operation stopped by user.")
+                        return False
+                    raise
 
                 # Embed ID3 tags if exported media is MP3
                 if media_file.suffix.lower() == ".mp3" and media_file.is_file():
@@ -1480,6 +1502,9 @@ class ProjectExportMixin(ProjectLifecycleMixin):
                 self.log_activity(f"[EXPORT] Exported {len(stories_to_export)} selected {term.lower()}(s) to {directory}")
                 show_export_completion_dialog(self, "Export Complete", f"Exported {len(stories_to_export)} {term.lower()}(s) to:\n{directory}", directory)
         except Exception as exc:
+            if "Export cancelled by user" in str(exc) or getattr(self, "export_cancelled", False):
+                self.log_activity("[EXPORT] Export operation stopped by user.")
+                return
             self.log_activity(f"[ERROR] Selected stories export failed: {exc}")
             QMessageBox.critical(self, "Export Error", str(exc))
         finally:
@@ -1524,6 +1549,9 @@ class ProjectExportMixin(ProjectLifecycleMixin):
                 self.log_activity(f"[EXPORT] Exported all {len(stories_to_export)} {term_plural.lower()} to {directory}")
                 show_export_completion_dialog(self, "Export Complete", f"Exported all {len(stories_to_export)} {term_plural.lower()} to:\n{directory}", directory)
         except Exception as exc:
+            if "Export cancelled by user" in str(exc) or getattr(self, "export_cancelled", False):
+                self.log_activity("[EXPORT] Export operation stopped by user.")
+                return
             self.log_activity(f"[ERROR] All stories export failed: {exc}")
             QMessageBox.critical(self, "Export Error", str(exc))
         finally:
@@ -1589,6 +1617,9 @@ class ProjectExportMixin(ProjectLifecycleMixin):
                 self.log_activity(f"[EXPORT] Exported full episode and all {term_plural.lower()} to {directory}")
                 show_export_completion_dialog(self, "Export Complete", f"Exported full episode and {term_plural.lower()} to:\n{directory}", directory)
         except Exception as exc:
+            if "Export cancelled by user" in str(exc) or getattr(self, "export_cancelled", False):
+                self.log_activity("[EXPORT] Export operation stopped by user.")
+                return
             self.log_activity(f"[ERROR] Full & story export failed: {exc}")
             QMessageBox.critical(self, "Export Error", str(exc))
         finally:
@@ -1833,6 +1864,8 @@ class ProjectExportMixin(ProjectLifecycleMixin):
             progress_dialog.setWindowModality(Qt.WindowModality.WindowModal)
             progress_dialog.setMinimumDuration(0)
             progress_dialog.setValue(0)
+            if hasattr(progress_dialog, "canceled"):
+                progress_dialog.canceled.connect(self.cancel_export)
             progress_dialog.show()
             safe_process_events()
             created_local_dialog = True
@@ -2030,7 +2063,14 @@ class ProjectExportMixin(ProjectLifecycleMixin):
                 if not self.audio_file:
                     raise RuntimeError("Media export is unavailable because this project has no imported media file.")
                 media_file = media_out / f"{base}{self.audio_file.suffix.lower()}"
-                self.extract_media(0, self.duration, media_file)
+                cancel_chk = lambda: bool(getattr(self, "export_cancelled", False) or (progress_dialog and progress_dialog.wasCanceled()))
+                try:
+                    self.extract_media(0, self.duration, media_file, cancel_check=cancel_chk)
+                except RuntimeError as exc:
+                    if "Export cancelled by user" in str(exc) or getattr(self, "export_cancelled", False) or (progress_dialog and progress_dialog.wasCanceled()):
+                        self.log_activity("[EXPORT] Export operation stopped by user.")
+                        return False
+                    raise
 
             # Export CUE sheet and Tracklist/Chapters if requested
             if formats.get("cue") and getattr(self, "stories", None):
@@ -2094,6 +2134,9 @@ class ProjectExportMixin(ProjectLifecycleMixin):
                 show_export_completion_dialog(self, "Export Complete", f"Exported to:\n{out}", out)
             return True
         except Exception as exc:
+            if "Export cancelled by user" in str(exc) or getattr(self, "export_cancelled", False) or (progress_dialog and progress_dialog.wasCanceled()):
+                self.log_activity("[EXPORT] Export operation stopped by user.")
+                return False
             self.log_activity(f"[ERROR] Full episode export failed: {exc}")
             QMessageBox.critical(self, "Export Error", str(exc))
             return False
@@ -2261,14 +2304,14 @@ class ProjectExportMixin(ProjectLifecycleMixin):
                 lines.extend([f"{self._subtitle_timestamp(start, True)} --> {self._subtitle_timestamp(end, True)}", text, ""])
         Path(path).write_text("\n".join(lines), encoding="utf-8")
 
-    def extract_media(self, start, end, output_file, fade_in=0.0, fade_out=0.0):
+    def extract_media(self, start, end, output_file, fade_in=0.0, fade_out=0.0, cancel_check=None):
         """Export a media range using the same container/format as the imported file,
         optionally applying audio fade-in and fade-out filters.
         """
         if not self.audio_file:
             raise RuntimeError("No source media is loaded.")
         fades_enabled = getattr(self, "enable_audio_fades", False)
-        cancel_chk = lambda: bool(getattr(self, "export_cancelled", False))
+        cancel_chk = cancel_check or (lambda: bool(getattr(self, "export_cancelled", False)))
         return render_audio_track(
             source_file=self.audio_file,
             start=start,

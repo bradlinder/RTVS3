@@ -70,24 +70,21 @@ try:
         QApplication,
     )
 except ImportError:
-    # Headless CLI fallback when PySide6 is unavailable in test environment
-    class _DummyQtMeta(type):
-        def __getattr__(cls, name):
-            return cls
-
-    class _DummyQt(metaclass=_DummyQtMeta):
-        def __init__(self, *args, **kwargs):
-            pass
-
-    Qt = _DummyQt
-    Signal = lambda *args, **kwargs: None
-    QTimer = QSettings = QPointF = QRectF = QUrl = QEvent = QMimeData = _DummyQt
-    QPainter = QPainterPath = QPen = QColor = QFont = QTextCursor = QTextCharFormat = _DummyQt
-    QAction = QCursor = QKeySequence = QShortcut = QBrush = QTextDocument = _DummyQt
-    QKeyEvent = QMouseEvent = QWheelEvent = QDragEnterEvent = QDropEvent = _DummyQt
-    QWidget = QVBoxLayout = QHBoxLayout = QFormLayout = QMenu = QToolTip = _DummyQt
-    QDialog = QFrame = QToolButton = QTextEdit = QLineEdit = QCheckBox = QPushButton = _DummyQt
-    QMessageBox = QScrollBar = QApplication = _DummyQt
+    from qt_compat import _ensure_pyside6_fallback
+    _ensure_pyside6_fallback()
+    from PySide6.QtCore import (
+        Qt, QTimer, Signal, QSettings, QPointF, QRectF, QUrl, QEvent, QMimeData
+    )
+    from PySide6.QtGui import (
+        QPainter, QPainterPath, QPen, QColor, QFont, QTextCursor, QTextCharFormat,
+        QAction, QCursor, QKeySequence, QShortcut, QBrush, QTextDocument,
+        QKeyEvent, QMouseEvent, QWheelEvent, QDragEnterEvent, QDropEvent
+    )
+    from PySide6.QtWidgets import (
+        QWidget, QVBoxLayout, QHBoxLayout, QFormLayout, QMenu, QToolTip,
+        QDialog, QFrame, QToolButton, QTextEdit, QLineEdit, QCheckBox, QPushButton,
+        QMessageBox, QScrollBar, QApplication,
+    )
 
 from core_utils import format_time
 

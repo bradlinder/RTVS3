@@ -988,7 +988,7 @@ class StoryMetadataDialog(QDialog):
         ]
         flags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
         try:
-            res = subprocess.run(cmd, capture_output=True, timeout=5, creationflags=flags)
+            res = subprocess.run(cmd, stdin=subprocess.DEVNULL, capture_output=True, timeout=5, creationflags=flags)
             if res.returncode == 0 and out_path.exists() and out_path.stat().st_size > 0:
                 target["featured_image"] = str(out_path)
                 target["featured_image_mode"] = "grab"

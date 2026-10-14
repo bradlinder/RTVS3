@@ -30,15 +30,20 @@ def normalize_version(ver: str) -> str:
     return cleaned
 
 def get_current_version() -> str:
-    """Extract active version from prs_shared.py."""
+    """Extract active version from core_utils.py or prs_shared.py."""
+    core_path = ROOT_DIR / "core_utils.py"
+    if core_path.is_file():
+        content = core_path.read_text(encoding="utf-8")
+        m = re.search(r'PROJECT_VERSION\s*=\s*["\']([^"\']+)["\']', content)
+        if m:
+            return normalize_version(m.group(1))
     prs_path = ROOT_DIR / "prs_shared.py"
-    if not prs_path.is_file():
-        raise FileNotFoundError(f"Missing {prs_path}")
-    content = prs_path.read_text(encoding="utf-8")
-    m = re.search(r'PROJECT_VERSION\s*=\s*["\']([^"\']+)["\']', content)
-    if not m:
-        raise ValueError("Could not find PROJECT_VERSION in prs_shared.py")
-    return normalize_version(m.group(1))
+    if prs_path.is_file():
+        content = prs_path.read_text(encoding="utf-8")
+        m = re.search(r'PROJECT_VERSION\s*=\s*["\']([^"\']+)["\']', content)
+        if m:
+            return normalize_version(m.group(1))
+    raise ValueError("Could not find PROJECT_VERSION in core_utils.py or prs_shared.py")
 
 def compute_bump(current_version: str, bump_type: str) -> str:
     """Calculate next semantic version (patch, minor, major) preserving suffix."""
@@ -71,31 +76,49 @@ def check_all_versions() -> dict[str, str]:
     """Inspect and report the version strings currently set across all files."""
     report = {}
 
-    # 1. prs_shared.py
+    # 1. core_utils.py
+    core_path = ROOT_DIR / "core_utils.py"
+    if core_path.is_file():
+        m = re.search(r'PROJECT_VERSION\s*=\s*["\']([^"\']+)["\']', core_path.read_text(encoding="utf-8"))
+        report["core_utils.py"] = m.group(1) if m else "NOT FOUND"
+
+    # 2. prs_shared.py
     prs_path = ROOT_DIR / "prs_shared.py"
     if prs_path.is_file():
         m = re.search(r'PROJECT_VERSION\s*=\s*["\']([^"\']+)["\']', prs_path.read_text(encoding="utf-8"))
-        report["prs_shared.py"] = m.group(1) if m else "NOT FOUND"
+        report["prs_shared.py"] = m.group(1) if m else report.get("core_utils.py", "OK")
 
-    # 2. updater.py
+    # 3. CHANGELOG.md
+    changelog_path = ROOT_DIR / "CHANGELOG.md"
+    if changelog_path.is_file():
+        m = re.search(r'^##\s+v([^\s\n]+)', changelog_path.read_text(encoding="utf-8"), re.MULTILINE)
+        report["CHANGELOG.md"] = m.group(1) if m else "NOT FOUND"
+
+    # 3. RadioTVSegmenter.py docstring
+    main_path = ROOT_DIR / "RadioTVSegmenter.py"
+    if main_path.is_file():
+        m = re.search(r'Radio & TV Segmenter — v([^\s\n]+)', main_path.read_text(encoding="utf-8"))
+        report["RadioTVSegmenter.py"] = m.group(1) if m else "NOT FOUND"
+
+    # 4. updater.py
     updater_path = ROOT_DIR / "updater.py"
     if updater_path.is_file():
         m = re.search(r'^\s*PROJECT_VERSION\s*=\s*["\']([^"\']+)["\']', updater_path.read_text(encoding="utf-8"), re.MULTILINE)
         report["updater.py"] = m.group(1) if m else "NOT FOUND"
 
-    # 3. build_installer.py
+    # 5. build_installer.py
     bi_path = ROOT_DIR / "build_installer.py"
     if bi_path.is_file():
         m = re.search(r'^\s*PROJECT_VERSION\s*=\s*["\']([^"\']+)["\']', bi_path.read_text(encoding="utf-8"), re.MULTILINE)
         report["build_installer.py"] = m.group(1) if m else "NOT FOUND"
 
-    # 4. Inno Setup ISS
+    # 6. Inno Setup ISS
     iss_path = ROOT_DIR / "installer" / "Windows" / "RadioTVStorySegmenter.iss"
     if iss_path.is_file():
         m = re.search(r'#define\s+MyAppVersion\s+["\']([^"\']+)["\']', iss_path.read_text(encoding="utf-8"))
         report["installer/...iss"] = m.group(1) if m else "NOT FOUND"
 
-    # 5. transcript_story.py
+    # 7. transcript_story.py
     ts_path = ROOT_DIR / "transcript_story.py"
     if ts_path.is_file():
         m = re.search(r'Radio & TV Segmenter v([^\s—]+)', ts_path.read_text(encoding="utf-8"))
@@ -160,10 +183,10 @@ def bump_all(new_version: str, dry_run: bool = False, plugins: list[str] | None 
     print(f"[BUMP] Synchronizing application version to: {clean_ver}")
     modifications = []
 
-    # 1. prs_shared.py
-    prs_path = ROOT_DIR / "prs_shared.py"
-    if prs_path.is_file():
-        content = prs_path.read_text(encoding="utf-8")
+    # 1. core_utils.py
+    core_path = ROOT_DIR / "core_utils.py"
+    if core_path.is_file():
+        content = core_path.read_text(encoding="utf-8")
         new_content, count = re.subn(
             r'(PROJECT_VERSION\s*=\s*)["\'][^"\']+["\']',
             f'\\g<1>"{clean_ver}"',
@@ -171,12 +194,43 @@ def bump_all(new_version: str, dry_run: bool = False, plugins: list[str] | None 
             count=1
         )
         if count:
-            modifications.append((prs_path, new_content))
-            print(f"  [x] prs_shared.py -> {clean_ver}")
+            modifications.append((core_path, new_content))
+            print(f"  [x] core_utils.py -> {clean_ver}")
         else:
-            print("  [!] Failed to match PROJECT_VERSION in prs_shared.py")
+            print("  [!] Failed to match PROJECT_VERSION in core_utils.py")
 
-    # 2. updater.py
+    # 2. prs_shared.py
+    prs_path = ROOT_DIR / "prs_shared.py"
+    if prs_path.is_file():
+        content = prs_path.read_text(encoding="utf-8")
+        if "PROJECT_VERSION =" in content or "PROJECT_VERSION=" in content:
+            new_content, count = re.subn(
+                r'(PROJECT_VERSION\s*=\s*)["\'][^"\']+["\']',
+                f'\\g<1>"{clean_ver}"',
+                content,
+                count=1
+            )
+            if count:
+                modifications.append((prs_path, new_content))
+                print(f"  [x] prs_shared.py -> {clean_ver}")
+        else:
+            print(f"  [x] prs_shared.py -> re-exports core_utils.py ({clean_ver})")
+
+    # 3. RadioTVSegmenter.py
+    main_path = ROOT_DIR / "RadioTVSegmenter.py"
+    if main_path.is_file():
+        content = main_path.read_text(encoding="utf-8")
+        new_content, count = re.subn(
+            r'("""Radio & TV Segmenter — v)[^\s\n"]+',
+            f'\\g<1>{clean_ver}',
+            content,
+            count=1
+        )
+        if count:
+            modifications.append((main_path, new_content))
+            print(f"  [x] RadioTVSegmenter.py -> {clean_ver}")
+
+    # 4. updater.py
     updater_path = ROOT_DIR / "updater.py"
     if updater_path.is_file():
         content = updater_path.read_text(encoding="utf-8")
@@ -286,7 +340,24 @@ def bump_all(new_version: str, dry_run: bool = False, plugins: list[str] | None 
         modifications.append((app_path, c2))
         print(f"  [x] src/App.tsx -> v{clean_ver}")
 
-    # 10. Plugins (Selective / Lazy Catch-Up Policy)
+    # 10. CHANGELOG.md (Ensure section header exists)
+    changelog_path = ROOT_DIR / "CHANGELOG.md"
+    if changelog_path.is_file():
+        content = changelog_path.read_text(encoding="utf-8")
+        if f"## v{clean_ver}" not in content:
+            stub = f"## v{clean_ver}\n- Release updates and performance enhancements for v{clean_ver}.\n\n"
+            if content.startswith("# "):
+                first_double_newline = content.find("\n\n")
+                if first_double_newline != -1:
+                    new_content = content[:first_double_newline+2] + stub + content[first_double_newline+2:]
+                else:
+                    new_content = stub + content
+            else:
+                new_content = stub + content
+            modifications.append((changelog_path, new_content))
+            print(f"  [x] CHANGELOG.md -> added header ## v{clean_ver}")
+
+    # 11. Plugins (Selective / Lazy Catch-Up Policy)
     if plugins:
         plugin_targets = [p.strip().lower() for p in plugins]
         for manifest in (ROOT_DIR / "plugins").glob("*/manifest.json"):
@@ -318,6 +389,14 @@ def bump_all(new_version: str, dry_run: bool = False, plugins: list[str] | None 
             print(f"  [x] roadmap.txt (Section 2) -> v{clean_ver}")
         except Exception as e:
             print(f"  [!] Failed to sync roadmap.txt: {e}")
+
+    # Synchronize preview scaffolding via preview_manager
+    try:
+        from preview_manager import sync_version as sync_preview_version
+        sync_preview_version(clean_ver)
+        print(f"  [x] preview_manager.py -> synchronized web preview to v{clean_ver}")
+    except Exception as e:
+        print(f"  [!] Failed to sync preview_manager: {e}")
 
     print(f"[BUMP] Successfully updated {len(modifications)} files to v{clean_ver}.")
     return True

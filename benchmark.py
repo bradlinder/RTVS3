@@ -50,69 +50,7 @@ from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 # Headless PySide6 Fallback Engine (Zero-Dependency Mock for pure business logic)
 # ---------------------------------------------------------------------------
 
-def _ensure_pyside6_fallback():
-    """Provides a lightweight PySide6 mock shim in headless environments so
-    pure formatting and export benchmarks can run without requiring an X11/Wayland display."""
-    try:
-        import PySide6
-        return
-    except ImportError:
-        pass
-
-    from types import ModuleType
-
-    class MockModule(ModuleType):
-        def __init__(self, name):
-            super().__init__(name)
-            self.__path__ = []
-        def __getattr__(self, name):
-            cls = type(name, (object,), {})
-            setattr(self, name, cls)
-            return cls
-
-    pyside6_mod = MockModule("PySide6")
-    for sub in ["QtCore", "QtWidgets", "QtGui", "QtNetwork", "QtMultimedia", "QtMultimediaWidgets"]:
-        mod = MockModule(f"PySide6.{sub}")
-        setattr(pyside6_mod, sub, mod)
-        sys.modules[f"PySide6.{sub}"] = mod
-
-    sys.modules["PySide6"] = pyside6_mod
-
-    class DummyQt:
-        WindowType = type("WindowType", (), {"WindowMaximizeButtonHint": 0x00020000, "Window": 0x00000001})
-        AlignmentFlag = type("AlignmentFlag", (), {"AlignCenter": 0x0004, "AlignLeft": 0x0001, "AlignRight": 0x0002})
-        Orientation = type("Orientation", (), {"Horizontal": 1, "Vertical": 2})
-        CheckState = type("CheckState", (), {"Checked": 2, "Unchecked": 0})
-        ItemDataRole = type("ItemDataRole", (), {"UserRole": 256, "DisplayRole": 0})
-
-    class DummyQSettings:
-        _store = {}
-        def __init__(self, *a, **k): pass
-        def value(self, k, d=None): return self._store.get(k, d)
-        def setValue(self, k, v): self._store[k] = v
-
-    class DummyQMessageBox:
-        StandardButton = type("StandardButton", (), {"Yes": 1, "No": 2, "Ok": 1, "Cancel": 0})
-        @staticmethod
-        def information(*args, **kwargs): return 1
-        @staticmethod
-        def warning(*args, **kwargs): return 1
-        @staticmethod
-        def critical(*args, **kwargs): return 1
-        @staticmethod
-        def question(*args, **kwargs): return 1
-
-    class DummyQApplication:
-        @staticmethod
-        def processEvents(): pass
-        @staticmethod
-        def instance(): return None
-
-    pyside6_mod.QtCore.Qt = DummyQt
-    pyside6_mod.QtCore.QSettings = DummyQSettings
-    pyside6_mod.QtCore.Signal = lambda *a: type("Sig", (), {"connect": lambda s, f: None, "emit": lambda s, *a: None})()
-    pyside6_mod.QtWidgets.QMessageBox = DummyQMessageBox
-    pyside6_mod.QtWidgets.QApplication = DummyQApplication
+from qt_compat import _ensure_pyside6_fallback
 
 _ensure_pyside6_fallback()
 

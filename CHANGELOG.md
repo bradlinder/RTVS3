@@ -1,5 +1,28 @@
 # Changelog
 
+## v3.9.4-beta
+- **WordPress REST API 405 Method Not Allowed Fix & HTTP Redirect Resilience (`plugins/wordpress/client.py`, `plugins/wordpress/export_destination.py`, `plugins/wordpress/manifest.json`)**:
+  - **Redirect Preservation for POST Requests**: Updated `create_post`, `update_post`, and `upload_media` to set `allow_redirects=False` and manually follow 301/302 redirects with `requests.post` to target `Location` headers. Prevents `requests` from converting POST calls into GET calls (which raised `HTTP 405 Method Not Allowed`).
+  - **Multi-Endpoint Routing & Non-Pretty Permalinks**: Added fallback route probes (`/wp-json/wp/v2/posts/`, `/wp-json/wp/v2/posts`, and `/?rest_route=/wp/v2/posts`) for installations with custom permalinks or required trailing slashes.
+  - **Protocol & URL Scheme Normalization**: Automatically prepends `https://` when scheme is omitted and cleans `/wp-json` suffixes if accidentally pasted into Site URL fields.
+  - **Placeholder `example.com` Validation Alert**: Added explicit setting validation in `validate()` and `execute_export()` to catch placeholder `example.com` domain configurations with an actionable dialog prompt.
+  - **Catch-Up Plugin Version Sync**: Synchronized `plugins/wordpress/manifest.json` version to `3.9.4-beta`.
+
+## v3.9.3-beta
+- **PySide6 Explicit Import Audit & `QTimer` Unbound Fix (`diarization_processing.py`, `media_batch.py`, `gpu_acceleration.py`, `model_management.py`, `project_export.py`, `transcript_story.py`, `playback_preferences.py`, `RadioTVSegmenter.py`)**:
+  - **`diarization_processing.py` `QTimer` Fix**: Added explicit `QTimer` import to `diarization_processing.py`, resolving `NameError: name 'QTimer' is not defined` when `on_diarization_process_finished` schedules downstream story detection or batch processing.
+  - **Comprehensive Qt Import Audit**: Added explicit PySide6 imports (`QTimer`, `QThread`, `QProcess`, `QObject`, `QEvent`, `QMessageBox`, `QFileDialog`, `QDialog`, `QLabel`, `QPushButton`, `QUndoStack`, `QSettings`, `QMediaPlayer`, `QAudioOutput`) across all mixin modules (`media_batch.py`, `gpu_acceleration.py`, `model_management.py`, `project_export.py`, `transcript_story.py`, `playback_preferences.py`, `RadioTVSegmenter.py`) to eliminate runtime reliance on implicit wildcard imports.
+
+## v3.9.2-beta
+- **PyAV 13+ Keyword Compatibility Patch (`bootstrap.py`, `radio_tv_story_segmenter_worker.py`)**: Added an automated monkey-patch (`patch_av_open`) for PyAV's `av.open` function that strips the legacy `metadata_errors` keyword parameter before passing arguments to `av.open()`. Fixes `TypeError: open() got an unexpected keyword argument 'metadata_errors'` when using newer PyAV versions with `faster-whisper` during audio probing and transcription.
+
+## v3.9.1-beta
+- **Complete `core_utils` Re-Exports & Deterministic Version Manager Architecture (`prs_shared.py`, `RadioTVSegmenter.py`, `bump_version.py`, `preview_manager.py`, `core_utils.py`)**:
+  - **`prs_shared.py` Core Re-Exports**: Explicitly imported and re-exported `INTERNAL_APP_ID`, `APP_DISPLAY_NAME`, `PROJECT_VERSION`, `DEFAULT_GITHUB_REPO`, and `apply_window_titlebar_theme` from `core_utils.py`.
+  - **`RadioTVSegmenter.py` Multiprocessing Safety**: Deferred `bootstrap` runtime module imports until after `multiprocessing.freeze_support()` and the resource tracker intercept block.
+  - **Version Source of Truth Alignment**: Updated `bump_version.py`, `preview_manager.py`, `roadmap_manager.py`, and `snapshot_manager.py` to inspect `core_utils.py` first for `PROJECT_VERSION`, fixed unescaped dot regex patterns (`r"\.+"`), and centralized `format_byte_size`.
+  - **Synchronous Version Bump**: Synchronized all 10 project locations to `v3.9.1-beta`.
+
 ## v3.9.0-beta.9
 - **Hardware-Accelerated AMD Ryzen AI Local Development & AI Model Provisioning Suite Roadmap Specification (`roadmap.txt`, `CHANGELOG.md`)**:
   - **Hardware-Aware Local AI Setup Specification (`roadmap.txt`)**: Formulated detailed architectural specifications for an automated installer/configuration script (`scripts/setup_local_ai.py` / `setup_local_dev.sh`) tailored for AMD Ryzen AI 9 HX 370 processors and 64GB RAM systems, incorporating hardware acceleration detection (ROCm, Vulkan, DirectML, and UMA memory allocation).

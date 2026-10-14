@@ -18,14 +18,29 @@ import sys
 ROOT_DIR = Path(__file__).resolve().parent
 ROADMAP_FILE = ROOT_DIR / "roadmap.txt"
 PRS_SHARED_FILE = ROOT_DIR / "prs_shared.py"
+CORE_UTILS_FILE = ROOT_DIR / "core_utils.py"
 
 def get_current_app_version() -> str:
-    """Extract PROJECT_VERSION from prs_shared.py."""
-    if not PRS_SHARED_FILE.is_file():
+    """Extract PROJECT_VERSION from core_utils.py or prs_shared.py."""
+    for file_path in [CORE_UTILS_FILE, PRS_SHARED_FILE]:
+        if file_path.is_file():
+            try:
+                content = file_path.read_text(encoding="utf-8")
+                m = re.search(r'PROJECT_VERSION\s*=\s*["\']([^"\']+)["\']', content)
+                if m:
+                    return m.group(1).strip()
+            except Exception:
+                pass
+    try:
+        from core_utils import PROJECT_VERSION
+        return str(PROJECT_VERSION).strip()
+    except Exception:
+        pass
+    try:
+        from prs_shared import PROJECT_VERSION
+        return str(PROJECT_VERSION).strip()
+    except Exception:
         return ""
-    content = PRS_SHARED_FILE.read_text(encoding="utf-8")
-    m = re.search(r'PROJECT_VERSION\s*=\s*["\']([^"\']+)["\']', content)
-    return m.group(1).strip() if m else ""
 
 class RoadmapManager:
     def __init__(self, roadmap_path: Path = ROADMAP_FILE):

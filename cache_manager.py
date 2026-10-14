@@ -9,6 +9,7 @@ Provides utilities for:
 """
 
 import json
+import os
 import shutil
 import tempfile
 import threading
@@ -32,45 +33,174 @@ except ImportError:
     QDialog = object
     QSettings = None
 
-from core_utils import get_app_data_dir
+from core_utils import get_app_data_dir, format_byte_size
 
 
 INTERNAL_APP_ID = "RadioTVStorySegmenter"
 
-
-def format_byte_size(size_bytes: int) -> str:
-    """Format byte count to human-readable string (e.g. 1.2 MB, 450 KB)."""
-    if size_bytes <= 0:
-        return "0 B"
-    num = float(size_bytes)
-    for unit in ["B", "KB", "MB", "GB", "TB"]:
-        if num < 1024.0:
-            return f"{num:.1f} {unit}" if unit in ["MB", "GB", "TB"] else f"{int(num)} {unit}"
-        num /= 1024.0
-    return f"{num:.1f} PB"
+_ACTIVE_THUMBNAIL_DIRS: set[str] = set()
+_ACTIVE_DIRS_LOCK = threading.Lock()
 
 
-def cleanup_old_thumbnail_cache(max_age_hours: int = 168):
-    """Purge temporary thumbnail directories older than max_age_hours in a background thread."""
+def register_active_thumbnail_dir(path: Path | str | None) -> None:
+    """Register an active thumbnail directory so cache cleanup routines will never touch it."""
+    if not path:
+        return
+    try:
+        resolved = str(Path(path).resolve())
+        with _ACTIVE_DIRS_LOCK:
+            _ACTIVE_THUMBNAIL_DIRS.add(resolved)
+    except Exception:
+        pass
+
+
+def unregister_active_thumbnail_dir(path: Path | str | None) -> None:
+    """Unregister an active thumbnail directory when the project or session closes."""
+    if not path:
+        return
+    try:
+        resolved = str(Path(path).resolve())
+        with _ACTIVE_DIRS_LOCK:
+            _ACTIVE_THUMBNAIL_DIRS.discard(resolved)
+    except Exception:
+        pass
+
+
+def get_active_thumbnail_dirs() -> set[str]:
+    """Return a copy of currently registered active thumbnail directories."""
+    with _ACTIVE_DIRS_LOCK:
+        return set(_ACTIVE_THUMBNAIL_DIRS)
+
+
+
+def cleanup_old_thumbnail_cache(
+    max_age_hours: int = 168,
+    active_dir: Path | str | None = None,
+    exclude_dirs: list | set | None = None,
+    blocking: bool = False,
+) -> threading.Thread | None:
+    """Purge temporary thumbnail directories older than max_age_hours in a background thread.
+    
+    Guards against race conditions and ensures active session thumbnail directories
+    are never deleted while a project is open.
+    """
     def _worker():
         try:
             base = Path(tempfile.gettempdir()) / "radio_tv_story_segmenter_thumbnails"
             if not base.exists():
                 return
-            cutoff = time.time() - (max_age_hours * 3600)
-            for sub in base.iterdir():
-                if sub.is_dir():
+            cutoff = time.time() - (max(0.001, float(max_age_hours)) * 3600)
+
+            # Collect all active thumbnail directories that must be preserved
+            active_set: set[str] = set()
+            with _ACTIVE_DIRS_LOCK:
+                active_set.update(_ACTIVE_THUMBNAIL_DIRS)
+            if active_dir:
+                try:
+                    active_set.add(str(Path(active_dir).resolve()))
+                except Exception:
+                    pass
+            if exclude_dirs:
+                for ed in exclude_dirs:
+                    if ed:
+                        try:
+                            active_set.add(str(Path(ed).resolve()))
+                        except Exception:
+                            pass
+
+            # Inspect active Qt application main window and open projects if present
+            try:
+                from PySide6.QtWidgets import QApplication
+                app = QApplication.instance()
+                if app:
+                    for widget in app.topLevelWidgets():
+                        vtd = getattr(widget, "video_thumbnail_dir", None)
+                        if vtd:
+                            try:
+                                active_set.add(str(Path(vtd).resolve()))
+                            except Exception:
+                                pass
+                        af = getattr(widget, "audio_file", None)
+                        if af:
+                            try:
+                                from background_workers import get_video_thumbnail_cache_dir
+                                cache_d = get_video_thumbnail_cache_dir(af)
+                                if cache_d:
+                                    active_set.add(str(Path(cache_d).resolve()))
+                            except Exception:
+                                pass
+            except Exception:
+                pass
+
+            try:
+                subdirs = list(base.iterdir())
+            except (FileNotFoundError, OSError):
+                return
+
+            for sub in subdirs:
+                try:
+                    if not sub.is_dir():
+                        continue
+
+                    # Guard: Check if directory is in active set or is a subpath of an active directory
+                    try:
+                        resolved_sub = str(sub.resolve())
+                    except (FileNotFoundError, OSError):
+                        continue
+
+                    is_active = False
+                    for active_p in active_set:
+                        if resolved_sub == active_p or active_p.startswith(resolved_sub) or resolved_sub.startswith(active_p):
+                            is_active = True
+                            break
+                    if is_active:
+                        continue
+
+                    # Check modification time of the directory and any contained files
                     try:
                         mtime = sub.stat().st_mtime
-                        if mtime < cutoff:
-                            shutil.rmtree(sub, ignore_errors=True)
-                    except Exception:
-                        pass
+                    except (FileNotFoundError, OSError):
+                        continue
+
+                    if mtime >= cutoff:
+                        continue
+
+                    # Deep check: ensure no recently generated thumbnails exist inside
+                    has_recent_file = False
+                    try:
+                        for child in sub.iterdir():
+                            try:
+                                if child.stat().st_mtime >= cutoff:
+                                    has_recent_file = True
+                                    break
+                            except (FileNotFoundError, OSError):
+                                pass
+                    except (FileNotFoundError, OSError):
+                        continue
+
+                    if has_recent_file:
+                        continue
+
+                    # Atomic rename before rmtree to eliminate race conditions with concurrent access
+                    tombstone = sub.with_name(f"{sub.name}.deleting_{os.getpid()}_{time.time_ns()}")
+                    try:
+                        sub.rename(tombstone)
+                        target_to_delete = tombstone
+                    except (FileNotFoundError, PermissionError, OSError):
+                        target_to_delete = sub
+
+                    shutil.rmtree(target_to_delete, ignore_errors=True)
+                except Exception:
+                    pass
         except Exception:
             pass
 
+    if blocking:
+        _worker()
+        return None
     t = threading.Thread(target=_worker, daemon=True)
     t.start()
+    return t
 
 
 def get_cache_disk_usage(project_dirs=None) -> dict:

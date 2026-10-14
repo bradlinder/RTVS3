@@ -25,16 +25,41 @@ class NullWriter:
         return False
 
 
-if sys.stdout is None:
-    sys.stdout = NullWriter()
-if sys.stderr is None:
-    sys.stderr = NullWriter()
+def init_null_streams_and_hf_env():
+    """Ensure sys.stdout/sys.stderr are not None and suppress HF/tqdm console noise."""
+    if getattr(sys, "stdout", None) is None:
+        sys.stdout = NullWriter()
+    if getattr(sys, "stderr", None) is None:
+        sys.stderr = NullWriter()
 
-# Prevent tqdm and huggingface_hub from attempting to write progress bars to non-existent console streams
-os.environ.setdefault("HF_HUB_DISABLE_PROGRESS_BARS", "1")
-os.environ.setdefault("HF_HUB_DISABLE_TELEMETRY", "1")
-os.environ.setdefault("HF_HUB_DISABLE_SYMLINKS_WARNING", "1")
-os.environ.setdefault("TQDM_DISABLE", "1")
+    # Prevent tqdm and huggingface_hub from attempting to write progress bars to non-existent console streams
+    os.environ.setdefault("HF_HUB_DISABLE_PROGRESS_BARS", "1")
+    os.environ.setdefault("HF_HUB_DISABLE_TELEMETRY", "1")
+    os.environ.setdefault("HF_HUB_DISABLE_SYMLINKS_WARNING", "1")
+    os.environ.setdefault("TQDM_DISABLE", "1")
+
+
+def patch_av_open():
+    """Monkey-patch PyAV's av.open to strip 'metadata_errors' if passed.
+    PyAV >= 13 removed the 'metadata_errors' parameter from av.open(), causing
+    faster-whisper's decode_audio to fail with:
+    TypeError: open() got an unexpected keyword argument 'metadata_errors'.
+    """
+    try:
+        import av
+        if hasattr(av, "open") and not getattr(av.open, "_is_patched", False):
+            orig_open = av.open
+            def patched_open(*args, **kwargs):
+                kwargs.pop("metadata_errors", None)
+                return orig_open(*args, **kwargs)
+            patched_open._is_patched = True
+            av.open = patched_open
+    except Exception:
+        pass
+
+
+init_null_streams_and_hf_env()
+patch_av_open()
 
 APP_NAME = "RadioTVStorySegmenter"
 

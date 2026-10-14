@@ -76,7 +76,7 @@ def capture_video_frame(video_path: str, timestamp: float, output_path: str) -> 
     ]
     flags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
     try:
-        res = subprocess.run(cmd, capture_output=True, timeout=30, creationflags=flags)
+        res = subprocess.run(cmd, stdin=subprocess.DEVNULL, capture_output=True, timeout=30, creationflags=flags)
         return res.returncode == 0 and Path(output_path).exists() and Path(output_path).stat().st_size > 0
     except (subprocess.TimeoutExpired, Exception):
         return False
@@ -546,6 +546,22 @@ class YouTubeExportTabWidget(QWidget):
             pix = QPixmap(path)
             if not pix.isNull():
                 self.yt_thumb_preview_label.setPixmap(pix.scaled(160, 90, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation))
+
+    def _cleanup_temp_files(self) -> None:
+        """Purge temporary thumbnail frame grabs."""
+        if hasattr(self, "_temp_preview_files") and self._temp_preview_files:
+            for temp_f in list(self._temp_preview_files):
+                try:
+                    if temp_f and Path(temp_f).exists():
+                        Path(temp_f).unlink(missing_ok=True)
+                except Exception as exc:
+                    logger.debug(f"Failed to remove temp file {temp_f}: {exc}")
+            self._temp_preview_files.clear()
+
+    def closeEvent(self, event: Any) -> None:
+        """Clean up temporary thumbnail files on closure."""
+        self._cleanup_temp_files()
+        super().closeEvent(event)
 
     def populate_metadata(self):
         """Builds default title, description, and chapter timestamps from current stories."""

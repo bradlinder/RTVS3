@@ -65,15 +65,20 @@ def save_manifest(data: dict):
 
 
 def get_current_project_version() -> str:
-    prs_file = ROOT_DIR / "prs_shared.py"
-    if prs_file.exists():
-        try:
-            content = prs_file.read_text(encoding="utf-8")
-            match = re.search(r'PROJECT_VERSION\s*=\s*["\']([^"\']+)["\']', content)
-            if match:
-                return match.group(1).strip()
-        except Exception:
-            pass
+    for file_path in [ROOT_DIR / "core_utils.py", ROOT_DIR / "prs_shared.py"]:
+        if file_path.exists():
+            try:
+                content = file_path.read_text(encoding="utf-8")
+                match = re.search(r'PROJECT_VERSION\s*=\s*["\']([^"\']+)["\']', content)
+                if match:
+                    return match.group(1).strip()
+            except Exception:
+                pass
+    try:
+        from core_utils import PROJECT_VERSION
+        return str(PROJECT_VERSION).strip()
+    except Exception:
+        pass
     try:
         from prs_shared import PROJECT_VERSION
         return str(PROJECT_VERSION).strip()

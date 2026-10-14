@@ -5,6 +5,14 @@ maintaining the established MainWindow-facing API while responsibilities are iso
 """
 
 import logging
+from PySide6.QtCore import Qt, QTimer, QSettings, QTime, QUrl, QEvent
+from PySide6.QtGui import QColor, QPalette, QKeySequence
+from PySide6.QtWidgets import (
+    QApplication, QCheckBox, QComboBox, QDialog, QDoubleSpinBox, QFormLayout,
+    QFrame, QGroupBox, QHBoxLayout, QInputDialog, QLabel, QLineEdit, QListWidget,
+    QListWidgetItem, QMessageBox, QPushButton, QRadioButton, QScrollArea, QSlider,
+    QSpinBox, QSplitter, QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget
+)
 from prs_shared import *
 from core_utils import make_dialog_maximizable
 
@@ -195,9 +203,13 @@ class PlaybackPreferencesMixin:
         write_diag("SYSTEM", "Diagnostic logging initialized.")
         try:
             write_diag("SYSTEM", f"Python={sys.version.split()[0]} | executable={sys.executable}")
-            write_diag("SYSTEM", f"Model root={TranslationWorker.model_root()}")
-            for _f, _t in (("en", "es"), ("es", "en")):
-                write_diag("SYSTEM", f"Model {_f}->{_t} installed={TranslationWorker.model_is_installed(_f, _t)} path={TranslationWorker.model_dir(_f, _t)}")
+            try:
+                from plugins.translation.worker import TranslationWorker
+                write_diag("SYSTEM", f"Model root={TranslationWorker.model_root()}")
+                for _f, _t in (("en", "es"), ("es", "en")):
+                    write_diag("SYSTEM", f"Model {_f}->{_t} installed={TranslationWorker.model_is_installed(_f, _t)} path={TranslationWorker.model_dir(_f, _t)}")
+            except Exception as _tw_err:
+                write_diag("SYSTEM", f"TranslationWorker diagnostics unavailable: {_tw_err}")
         except Exception as exc:
             write_diag("WARNING", f"Startup model diagnostic failed: {exc}")
 

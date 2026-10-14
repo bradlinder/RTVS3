@@ -8,6 +8,10 @@ bundled into every install. It reuses the same isolated-environment machinery
 environments, just for one more feature: "gpu_transcribe".
 """
 
+from PySide6.QtCore import QObject, QThread, Signal
+from PySide6.QtWidgets import (
+    QCheckBox, QDialog, QHBoxLayout, QLabel, QMessageBox, QPushButton, QVBoxLayout
+)
 from prs_shared import *
 from runtime_manager import RuntimeManager, detect_nvidia_gpu
 

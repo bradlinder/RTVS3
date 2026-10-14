@@ -4,6 +4,11 @@ Methods intentionally retain the MainWindow-facing API so behavior remains
 maintaining the established MainWindow-facing API while responsibilities are isolated.
 """
 
+from PySide6.QtCore import Qt, QThread, QTimer
+from PySide6.QtWidgets import (
+    QApplication, QCheckBox, QDialog, QFrame, QHBoxLayout, QInputDialog,
+    QLabel, QMessageBox, QProgressBar, QPushButton, QScrollArea, QVBoxLayout, QWidget
+)
 from prs_shared import *
 try:
     from bootstrap import configure_ssl_certificates
@@ -12,25 +17,8 @@ except Exception:
     pass
 
 
-class NullWriter:
-    """Safe no-op stream object for windowed GUI executables where stdout/stderr are None."""
-    def write(self, *args, **kwargs):
-        pass
-    def flush(self, *args, **kwargs):
-        pass
-    def isatty(self):
-        return False
-
-
-if getattr(sys, "stdout", None) is None:
-    sys.stdout = NullWriter()
-if getattr(sys, "stderr", None) is None:
-    sys.stderr = NullWriter()
-
-os.environ.setdefault("HF_HUB_DISABLE_PROGRESS_BARS", "1")
-os.environ.setdefault("HF_HUB_DISABLE_TELEMETRY", "1")
-os.environ.setdefault("HF_HUB_DISABLE_SYMLINKS_WARNING", "1")
-os.environ.setdefault("TQDM_DISABLE", "1")
+from bootstrap import NullWriter, init_null_streams_and_hf_env
+init_null_streams_and_hf_env()
 
 try:
     from huggingface_hub.utils import disable_progress_bars
@@ -53,463 +41,99 @@ def _translation_plugin_installed(self) -> bool:
     )
 
 
-class WhisperModelInstallWorker(QObject):
-    progress = Signal(int, str)
-    finished = Signal(object)
-
-    def __init__(self, model_name):
-        super().__init__()
-        self.model_name = str(model_name)
-        self._cancelled = False
-        self._active_response = None
-
-    def cancel(self):
-        self._cancelled = True
-        resp = getattr(self, "_active_response", None)
-        if resp is not None:
-            try:
-                resp.close()
-            except Exception:
-                pass
-
-    def _download_http_file(self, url: str, destination: Path, progress_start: int, progress_end: int, label: str):
-        import urllib.request
-        import urllib.error
-        import ssl
-        import time
-
-        destination.parent.mkdir(parents=True, exist_ok=True)
-        temp = destination.with_name(destination.name + ".download")
-
-        ssl_ctx = None
-        try:
-            import certifi
-            cpath = certifi.where()
-            if os.path.exists(cpath):
-                ssl_ctx = ssl.create_default_context(cafile=cpath)
-        except Exception:
-            pass
-        if ssl_ctx is None:
-            try:
-                ssl_ctx = ssl.create_default_context()
-            except Exception:
-                ssl_ctx = ssl._create_unverified_context()
-
-        max_attempts = 3
-        last_exc = None
-
-        try:
-            for attempt in range(max_attempts):
-                if self._cancelled:
-                    raise InterruptedError("Download cancelled.")
-                try:
-                    req = urllib.request.Request(
-                        url,
-                        headers={
-                            "User-Agent": "Radio-TV-Story-Segmenter/1.0 (Whisper Downloader)",
-                            "Accept-Encoding": "identity",
-                        }
-                    )
-                    with urllib.request.urlopen(req, timeout=30, context=ssl_ctx) as response:
-                        self._active_response = response
-                        total_str = response.headers.get("Content-Length")
-                        total = int(total_str) if total_str and total_str.isdigit() else 0
-
-                        # Check if destination file is already present with identical byte size
-                        if total > 0 and destination.is_file() and destination.stat().st_size == total:
-                            self.progress.emit(progress_end, f"{label}: verified ({total / (1024*1024):.1f} MB)")
-                            return
-
-                        with temp.open("wb") as out:
-                            downloaded = 0
-                            last_emit_time = 0.0
-                            last_emit_pct = -1
-
-                            while True:
-                                if self._cancelled:
-                                    raise InterruptedError("Download cancelled.")
-                                chunk = response.read(256 * 1024)
-                                if not chunk:
-                                    break
-                                out.write(chunk)
-                                downloaded += len(chunk)
-
-                                now = time.monotonic()
-                                if total > 0:
-                                    fraction = min(1.0, downloaded / total)
-                                    pct = int(progress_start + (progress_end - progress_start) * fraction)
-                                    if pct != last_emit_pct and (now - last_emit_time >= 0.12 or downloaded == total):
-                                        last_emit_pct = pct
-                                        last_emit_time = now
-                                        mb_down = downloaded / (1024 * 1024)
-                                        mb_tot = total / (1024 * 1024)
-                                        self.progress.emit(pct, f"{label}: {mb_down:.1f}/{mb_tot:.1f} MB ({pct}%)")
-                                else:
-                                    if now - last_emit_time >= 0.2:
-                                        last_emit_time = now
-                                        mb_down = downloaded / (1024 * 1024)
-                                        self.progress.emit(progress_start, f"{label}: {mb_down:.1f} MB")
-
-                            out.flush()
-                            os.fsync(out.fileno())
-
-                    if not temp.exists() or temp.stat().st_size == 0:
-                        raise RuntimeError(f"Downloaded file '{destination.name}' is empty.")
-                    safe_replace(temp, destination)
-                    return
-                except InterruptedError:
-                    raise
-                except urllib.error.HTTPError as http_err:
-                    if http_err.code == 404:
-                        raise http_err
-                    last_exc = http_err
-                    if attempt < max_attempts - 1 and not self._cancelled:
-                        time.sleep(1.0 * (attempt + 1))
-                        continue
-                    raise http_err
-                except Exception as exc:
-                    last_exc = exc
-                    if attempt < max_attempts - 1 and not self._cancelled:
-                        time.sleep(1.0 * (attempt + 1))
-                        continue
-                    raise exc
-                finally:
-                    self._active_response = None
-            if last_exc:
-                raise last_exc
-        finally:
-            try:
-                temp.unlink(missing_ok=True)
-            except Exception:
-                pass
-
-    def _download_file_with_fallback(self, repo_id: str, filename: str, destination: Path, progress_start: int, progress_end: int, label: str):
-        url = f"https://huggingface.co/{repo_id}/resolve/main/{filename}?download=true"
-        try:
-            self._download_http_file(url, destination, progress_start, progress_end, label)
-        except InterruptedError:
-            raise
-        except Exception as http_err:
-            import urllib.error
-            if isinstance(http_err, urllib.error.HTTPError) and http_err.code == 404:
-                raise FileNotFoundError(f"File '{filename}' not found in repository '{repo_id}' (HTTP 404).") from http_err
-
-            if self._cancelled:
-                raise InterruptedError("Download cancelled.")
-
-            try:
-                os.environ["HF_HUB_DISABLE_SYMLINKS_WARNING"] = "1"
-                os.environ["HF_HUB_ENABLE_HF_TRANSFER"] = "0"
-                from huggingface_hub import hf_hub_download
-                self.progress.emit(progress_start, f"{label} (retrying via Hub API)...")
-                try:
-                    hf_hub_download(
-                        repo_id=repo_id,
-                        filename=filename,
-                        local_dir=str(destination.parent),
-                    )
-                except TypeError:
-                    hf_hub_download(
-                        repo_id=repo_id,
-                        filename=filename,
-                        local_dir=str(destination.parent),
-                    )
-                self.progress.emit(progress_end, f"{label} completed.")
-            except InterruptedError:
-                raise
-            except Exception as hf_err:
-                raise RuntimeError(f"Could not download {filename} from {repo_id}: {http_err}") from hf_err
-
-    def run(self):
-        error = None
-        try:
-            target_model = self.model_name
-            if target_model.startswith("parakeet"):
-                target_dir = get_models_storage_dir() / "parakeet_onnx"
-                target_dir.mkdir(parents=True, exist_ok=True)
-                repo_id = "csukuangfj/sherpa-onnx-nemo-parakeet-tdt-0.6b-v2-int8"
-
-                self.progress.emit(2, "Downloading Parakeet ONNX tokens...")
-                self._download_file_with_fallback(repo_id, "tokens.txt", target_dir / "tokens.txt", 2, 5, "tokens.txt")
-
-                self.progress.emit(5, "Downloading Parakeet ONNX decoder...")
-                self._download_file_with_fallback(repo_id, "decoder.int8.onnx", target_dir / "decoder.int8.onnx", 5, 10, "decoder.int8.onnx")
-
-                self.progress.emit(10, "Downloading Parakeet ONNX joiner...")
-                self._download_file_with_fallback(repo_id, "joiner.int8.onnx", target_dir / "joiner.int8.onnx", 10, 15, "joiner.int8.onnx")
-
-                self.progress.emit(15, "Downloading Parakeet ONNX encoder...")
-                self._download_file_with_fallback(repo_id, "encoder.int8.onnx", target_dir / "encoder.int8.onnx", 15, 95, "encoder.int8.onnx")
-
-                marker = target_dir / ".complete"
-                marker.write_text(f"{repo_id}\n{datetime.now().isoformat()}\n", encoding="utf-8")
-                self.progress.emit(100, "Parakeet ONNX model verified.")
-
-            elif target_model == "fastconformer-es-onnx":
-                target_dir = get_models_storage_dir() / "fastconformer_es_onnx"
-                target_dir.mkdir(parents=True, exist_ok=True)
-                repo_id = "csukuangfj/sherpa-onnx-nemo-fast-conformer-ctc-es-1424-int8"
-
-                self.progress.emit(2, "Downloading Spanish FastConformer tokens...")
-                self._download_file_with_fallback(repo_id, "tokens.txt", target_dir / "tokens.txt", 2, 10, "tokens.txt")
-
-                self.progress.emit(10, "Downloading Spanish FastConformer CTC model weights...")
-                self._download_file_with_fallback(repo_id, "model.int8.onnx", target_dir / "model.int8.onnx", 10, 95, "model.int8.onnx")
-
-                marker = target_dir / ".complete"
-                marker.write_text(f"{repo_id}\n{datetime.now().isoformat()}\n", encoding="utf-8")
-                self.progress.emit(100, "Spanish FastConformer ONNX model verified.")
-
-            elif target_model == "fastconformer-multilingual-onnx":
-                target_dir = get_models_storage_dir() / "fastconformer_multilingual_onnx"
-                target_dir.mkdir(parents=True, exist_ok=True)
-                repo_id = "csukuangfj/sherpa-onnx-nemo-fast-conformer-ctc-be-de-en-es-fr-hr-it-pl-ru-uk-20k"
-
-                self.progress.emit(2, "Downloading Multilingual FastConformer tokens...")
-                self._download_file_with_fallback(repo_id, "tokens.txt", target_dir / "tokens.txt", 2, 10, "tokens.txt")
-
-                self.progress.emit(10, "Downloading Multilingual FastConformer CTC model weights...")
-                self._download_file_with_fallback(repo_id, "model.onnx", target_dir / "model.onnx", 10, 95, "model.onnx")
-
-                marker = target_dir / ".complete"
-                marker.write_text(f"{repo_id}\n{datetime.now().isoformat()}\n", encoding="utf-8")
-                self.progress.emit(100, "Multilingual FastConformer ONNX model verified.")
-
-            elif target_model in ("tiny", "base", "small", "medium", "large-v3"):
-                if target_model == "distil-medium.en":
-                    resolved = "Systran/faster-distil-whisper-medium.en"
-                elif target_model == "distil-large-v3":
-                    resolved = "Systran/faster-distil-whisper-large-v3"
-                elif target_model.startswith("distil-"):
-                    clean = target_model[7:]
-                    resolved = f"Systran/faster-distil-whisper-{clean}"
-                elif "/" in target_model:
-                    resolved = target_model
-                else:
-                    resolved = f"Systran/faster-whisper-{target_model}"
-
-                target_dir = get_models_storage_dir() / "huggingface" / "hub" / f"models--{resolved.replace('/', '--')}"
-                target_dir.mkdir(parents=True, exist_ok=True)
-
-                self.progress.emit(2, f"Downloading Whisper {self.model_name} configuration...")
-                self._download_file_with_fallback(resolved, "config.json", target_dir / "config.json", 2, 5, "config.json")
-
-                self.progress.emit(5, f"Downloading Whisper {self.model_name} tokenizer...")
-                self._download_file_with_fallback(resolved, "tokenizer.json", target_dir / "tokenizer.json", 5, 10, "tokenizer.json")
-
-                # Try vocabulary.json or vocabulary.txt
-                try:
-                    self._download_file_with_fallback(resolved, "vocabulary.json", target_dir / "vocabulary.json", 10, 15, "vocabulary.json")
-                except Exception:
-                    try:
-                        self._download_file_with_fallback(resolved, "vocabulary.txt", target_dir / "vocabulary.txt", 10, 15, "vocabulary.txt")
-                    except Exception:
-                        pass
-
-                self.progress.emit(15, f"Downloading Whisper {self.model_name} model weights...")
-                self._download_file_with_fallback(resolved, "model.bin", target_dir / "model.bin", 15, 95, f"Whisper {self.model_name} weights")
-
-                # Try optional auxiliary files
-                for opt_file in ["preprocessor_config.json", "special_tokens_map.json"]:
-                    try:
-                        self._download_file_with_fallback(resolved, opt_file, target_dir / opt_file, 95, 98, opt_file)
-                    except Exception:
-                        pass
-
-                marker = target_dir / ".complete"
-                marker.write_text(f"{resolved}\n{datetime.now().isoformat()}\n", encoding="utf-8")
-                self.progress.emit(100, f"Whisper {self.model_name} verified.")
-            else:
-                resolved = self.model_name
-                target_dir = get_models_storage_dir() / "huggingface" / "hub" / f"models--{resolved.replace('/', '--')}"
-                target_dir.mkdir(parents=True, exist_ok=True)
-
-                self.progress.emit(2, f"Downloading {self.model_name} config...")
-                self._download_file_with_fallback(resolved, "config.json", target_dir / "config.json", 2, 8, "config.json")
-
-                self.progress.emit(8, f"Downloading {self.model_name} tokenizer...")
-                self._download_file_with_fallback(resolved, "tokenizer.json", target_dir / "tokenizer.json", 8, 15, "tokenizer.json")
-
-                self.progress.emit(15, f"Downloading {self.model_name} weights...")
-                self._download_file_with_fallback(resolved, "model.bin", target_dir / "model.bin", 15, 95, f"{self.model_name} weights")
-
-                marker = target_dir / ".complete"
-                marker.write_text(f"{resolved}\n{datetime.now().isoformat()}\n", encoding="utf-8")
-                self.progress.emit(100, f"{self.model_name} verified.")
-        except Exception as exc:
-            error = f"{type(exc).__name__}: {exc}"
-        self.finished.emit(error)
-
-
-def get_diarization_model_dir() -> Path:
-    candidates = [
-        get_models_storage_dir() / "wespeaker",
-        Path.home() / ".wespeaker",
-    ]
-    for c in candidates:
-        if c.exists():
-            try:
-                if any(c.iterdir()):
-                    return c
-            except Exception:
-                pass
-    try:
-        from runtime_manager import RuntimeManager
-        _rm = RuntimeManager()
-        _dir = _rm.get_env_dir("diarize")
-        if _dir.exists() and any(_dir.iterdir()):
-            return _dir
-    except Exception:
-        pass
-    return Path.home() / ".wespeaker"
-
-
-def is_diarization_model_available() -> bool:
-    candidates = [
-        get_models_storage_dir() / "wespeaker",
-        Path.home() / ".wespeaker",
-    ]
-    for c in candidates:
-        if c.exists():
-            try:
-                if any(c.iterdir()):
-                    return True
-            except Exception:
-                pass
-    try:
-        from runtime_manager import RuntimeManager
-        _rm = RuntimeManager()
-        _dir = _rm.get_env_dir("diarize")
-        if _dir.exists() and _rm._get_raw_executable("diarize").exists():
-            return True
-    except Exception:
-        pass
-    return False
-
-
-class DiarizationModelInstallWorker(QObject):
-    progress = Signal(int, str)
-    finished = Signal(object)
-
-    def __init__(self):
-        super().__init__()
-        self._cancelled = False
-        self._proc = None
-
-    def cancel(self):
-        self._cancelled = True
-        proc = getattr(self, "_proc", None)
-        if proc is not None:
-            try:
-                proc.kill()
-            except Exception:
-                pass
-
-    def run(self):
-        error = None
-        try:
-            self.progress.emit(10, "Initializing Speaker Diarization runtime…")
-            loaded = False
-            try:
-                import wespeakerruntime as wespeaker_rt
-                if self._cancelled:
-                    raise InterruptedError("Installation cancelled.")
-                self.progress.emit(35, "Checking local Speaker Diarization model…")
-                if is_diarization_model_available():
-                    loaded = True
-                    self.progress.emit(100, "Speaker Diarization model verified.")
-                else:
-                    self.progress.emit(50, "Downloading WeSpeaker ResNet34 ONNX voice embedding model…")
-                    _speaker = wespeaker_rt.Speaker(lang="en")
-                    loaded = True
-                    self.progress.emit(100, "Speaker Diarization model installed successfully.")
-            except ImportError:
-                pass
-            except Exception:
-                pass
-
-            if not loaded and not self._cancelled:
-                self.progress.emit(30, "Downloading WeSpeaker model via background worker…")
-                cmd = None
-                if getattr(sys, "frozen", False):
-                    app_dir = Path(sys.executable).resolve().parent
-                    worker_exe = app_dir / ("prs_worker.exe" if os.name == "nt" else "prs_worker")
-                    if worker_exe.exists():
-                        cmd = [str(worker_exe), "--self-test"]
-                    else:
-                        cmd = [sys.executable, "--self-test"]
-                else:
-                    worker_script = Path(__file__).resolve().parent / "radio_tv_story_segmenter_worker.py"
-                    if worker_script.exists():
-                        cmd = [sys.executable, str(worker_script), "--self-test"]
-
-                if cmd:
-                    creationflags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
-                    self._proc = subprocess.Popen(
-                        cmd,
-                        stdout=subprocess.PIPE,
-                        stderr=subprocess.PIPE,
-                        text=True,
-                        creationflags=creationflags,
-                    )
-                    try:
-                        stdout, stderr = self._proc.communicate(timeout=60)
-                        if self._proc.returncode != 0 and "error" in stderr.lower():
-                            raise RuntimeError(stderr.strip() or "Failed to download WeSpeaker model.")
-                        self.progress.emit(100, "Speaker Diarization model ready.")
-                    finally:
-                        self._proc = None
-                else:
-                    self.progress.emit(100, "Speaker Diarization runtime ready.")
-        except Exception as exc:
-            error = f"{type(exc).__name__}: {exc}"
-        self.finished.emit(error)
+from model_install_workers import (
+    WhisperModelInstallWorker,
+    DiarizationModelInstallWorker,
+    get_diarization_model_dir,
+    is_diarization_model_available,
+)
 
 
 class ModelManagementMixin:
     def model_cache_candidates(self, model_name):
         """Return all potential candidate directories where model weights might be stored."""
         models_dir = get_models_storage_dir()
+        env_dir = os.environ.get("PRS_MODELS_DIR")
+        env_path = Path(env_dir) if env_dir else None
+
         if model_name.startswith("parakeet"):
-            return [
+            res = []
+            if env_path:
+                res.extend([env_path / "parakeet_onnx", env_path])
+            res.extend([
                 models_dir / "parakeet_onnx",
                 get_app_data_dir() / "models" / "parakeet_onnx",
                 Path(__file__).resolve().parent / "models" / "parakeet_onnx",
-            ]
+            ])
+            return res
         elif model_name == "fastconformer-es-onnx":
-            return [
+            res = []
+            if env_path:
+                res.extend([env_path / "fastconformer_es_onnx", env_path])
+            res.extend([
                 models_dir / "fastconformer_es_onnx",
                 get_app_data_dir() / "models" / "fastconformer_es_onnx",
                 Path(__file__).resolve().parent / "models" / "fastconformer_es_onnx",
-            ]
+            ])
+            return res
         elif model_name == "fastconformer-multilingual-onnx":
-            return [
+            res = []
+            if env_path:
+                res.extend([env_path / "fastconformer_multilingual_onnx", env_path])
+            res.extend([
                 models_dir / "fastconformer_multilingual_onnx",
                 get_app_data_dir() / "models" / "fastconformer_multilingual_onnx",
                 Path(__file__).resolve().parent / "models" / "fastconformer_multilingual_onnx",
-            ]
+            ])
+            return res
 
-        # Determine the canonical Hugging Face hub folder slug
-        slugs = [
-            f"models--Systran--faster-whisper-{model_name}",
-            f"models--openai--whisper-{model_name}",
-        ]
+        # Determine the canonical Hugging Face hub folder slugs
+        slugs = []
+        if model_name == "distil-large-v3":
+            slugs.extend([
+                "models--Systran--faster-distil-whisper-large-v3",
+                "models--Systran--faster-whisper-distil-large-v3",
+                "models--distil-large-v3",
+            ])
+        elif model_name in ("distil-medium.en", "distil-medium"):
+            slugs.extend([
+                "models--Systran--faster-distil-whisper-medium.en",
+                "models--Systran--faster-whisper-distil-medium.en",
+                "models--distil-medium.en",
+            ])
+        elif model_name.startswith("distil-"):
+            slugs.extend([
+                f"models--Systran--faster-{model_name}",
+                f"models--{model_name}",
+            ])
+        else:
+            slugs.extend([
+                f"models--guillaumekcln--faster-whisper-{model_name}",
+                f"models--Systran--faster-whisper-{model_name}",
+                f"models--openai--whisper-{model_name}",
+                f"models--faster-whisper-{model_name}",
+                f"models--{model_name}",
+            ])
 
-        cache_roots = [
+        cache_roots = []
+        if env_path:
+            cache_roots.extend([env_path / "huggingface" / "hub", env_path / "hub", env_path])
+        cache_roots.extend([
             models_dir / "huggingface" / "hub",
             models_dir / "hub",
             models_dir,
             get_app_data_dir() / "models" / "huggingface" / "hub",
+            get_app_data_dir() / "models",
             Path.home() / ".cache" / "huggingface" / "hub",
             Path(__file__).resolve().parent / "models",
-        ]
+        ])
 
         candidates = []
         for cr in cache_roots:
             for slug in slugs:
                 candidates.append(cr / slug)
         for slug in slugs:
-            clean_dir_name = slug.replace("models--Systran--", "").replace("models--openai--", "")
+            clean_dir_name = slug.replace("models--guillaumekcln--", "").replace("models--Systran--", "").replace("models--openai--", "")
             for cr in cache_roots:
                 candidates.append(cr / clean_dir_name)
         candidates.append(models_dir / model_name)
@@ -530,24 +154,34 @@ class ModelManagementMixin:
         return candidates[0]
 
     def is_whisper_model_available(self, model_name):
-        path = self.model_cache_path(model_name)
-        if not path.exists():
+        candidates = self.model_cache_candidates(model_name)
+        if model_name.startswith("parakeet") or model_name in ("fastconformer-es-onnx", "fastconformer-multilingual-onnx") or model_name.endswith("-onnx"):
+            try:
+                import sherpa_onnx
+            except Exception:
+                try:
+                    from bootstrap import ensure_sherpa_onnx_runtime
+                    if not ensure_sherpa_onnx_runtime():
+                        return False
+                    import sherpa_onnx
+                except Exception:
+                    return False
+            for p in candidates:
+                if not p.exists():
+                    continue
+                has_tokens = any(f.is_file() and f.name == "tokens.txt" for f in p.rglob("*"))
+                has_onnx = any(f.is_file() and f.stat().st_size > 1024 and f.name.endswith(".onnx") for f in p.rglob("*"))
+                if has_tokens and has_onnx:
+                    return True
             return False
-        if model_name.startswith("parakeet"):
-            required = ("encoder.int8.onnx", "decoder.int8.onnx", "joiner.int8.onnx", "tokens.txt")
-            return all(any(p.is_file() and p.stat().st_size > 0 for p in path.rglob(name)) for name in required)
-        elif model_name in ("fastconformer-es-onnx", "fastconformer-multilingual-onnx"):
-            expected_folder = "fastconformer_es_onnx" if model_name == "fastconformer-es-onnx" else "fastconformer_multilingual_onnx"
-            if path.name != expected_folder and not (path / expected_folder).is_dir():
-                return False
-            actual_path = path if path.name == expected_folder else (path / expected_folder)
-            has_onnx = any(p.is_file() and p.stat().st_size > 1024 and p.name.endswith(".onnx") for p in actual_path.rglob("*"))
-            has_tokens = any(p.is_file() and p.name == "tokens.txt" for p in actual_path.rglob("*"))
-            return has_onnx and has_tokens
-        if path.is_dir():
-            has_bin = any(p.is_file() and p.stat().st_size > 1024 for p in path.rglob("*.bin"))
-            has_safetensors = any(p.is_file() and p.stat().st_size > 1024 for p in path.rglob("*.safetensors"))
-            return has_bin or has_safetensors
+
+        for p in candidates:
+            if not p.exists():
+                continue
+            has_bin = any(f.is_file() and f.stat().st_size > 1024 and f.name.endswith(".bin") for f in p.rglob("*"))
+            has_safetensors = any(f.is_file() and f.stat().st_size > 1024 and f.name.endswith(".safetensors") for f in p.rglob("*"))
+            if has_bin or has_safetensors:
+                return True
         return False
 
     def refresh_whisper_model_chooser(self):

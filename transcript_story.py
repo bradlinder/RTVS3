@@ -1,4 +1,4 @@
-"""Radio & TV Segmenter v3.9.0-beta.9 — transcript story responsibilities.
+"""Radio & TV Segmenter v3.9.4-beta — transcript story responsibilities.
 
 Methods intentionally retain the MainWindow-facing API so behavior remains
 maintaining the established MainWindow-facing API while responsibilities are isolated.
@@ -16,7 +16,7 @@ from PySide6.QtWidgets import (
     QFrame, QLineEdit, QInputDialog, QListWidgetItem, QDoubleSpinBox, QFormLayout,
     QProgressDialog, QApplication
 )
-from PySide6.QtCore import Qt, QTimer, QSettings
+from PySide6.QtCore import Qt, QTimer, QSettings, QObject
 from PySide6.QtGui import QColor, QBrush, QFont, QTextCursor
 from speaker_identity import (
     cosine_similarity,

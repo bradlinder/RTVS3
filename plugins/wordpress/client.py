@@ -330,42 +330,127 @@ class WordPressClient:
     """Client for WordPress REST API using Application Passwords."""
 
     def __init__(self, site_url: str, username: str, password: str):
-        self.site_url = site_url.rstrip("/")
+        url = (site_url or "").strip().rstrip("/")
+        if url and not url.startswith(("http://", "https://")):
+            url = f"https://{url}"
+        if url.endswith("/wp-json/wp/v2"):
+            url = url[:-14]
+        elif url.endswith("/wp-json"):
+            url = url[:-8]
+        self.site_url = url.rstrip("/")
         self.username = username
         self.password = password.strip()
         self.api_base = f"{self.site_url}/wp-json/wp/v2"
+        self._discover_canonical_base()
 
     def _get_auth(self):
         return (self.username, self.password)
 
+    def _discover_canonical_base(self) -> None:
+        """Pre-detect canonical site URL and REST base to prevent redirect failures."""
+        import requests
+        try:
+            resp = requests.get(f"{self.site_url}/wp-json/wp/v2/", auth=self._get_auth(), timeout=5, allow_redirects=True)
+            if resp.status_code == 200 and resp.url:
+                base = resp.url.rstrip("/")
+                if base.endswith("/wp-json/wp/v2"):
+                    self.api_base = base
+                    self.site_url = base[:-14].rstrip("/")
+        except Exception:
+            pass
+
+    def _post_request(self, url: str, json_data: dict | None = None, headers: dict | None = None, timeout: int = 30) -> Any:
+        """Issue an HTTP POST with manual redirect protection to keep POST method & Auth header."""
+        import requests
+        import urllib.parse
+        current_url = url
+        req_headers = dict(headers or {})
+        req_headers["Accept"] = "application/json"
+        
+        for _ in range(5):
+            resp = requests.post(
+                current_url,
+                auth=self._get_auth(),
+                json=json_data,
+                headers=req_headers,
+                timeout=timeout,
+                allow_redirects=False,
+            )
+            if resp.status_code in (301, 302, 303, 307, 308) and "Location" in resp.headers:
+                next_url = resp.headers["Location"]
+                if not next_url.startswith(("http://", "https://")):
+                    next_url = urllib.parse.urljoin(current_url, next_url)
+                current_url = next_url
+                continue
+            return resp
+        return resp
+
+    def _post_multipart(self, url: str, path: Path, upload_filename: str, mime_type: str, timeout: int = 180) -> Any:
+        """Issue a multipart file POST with manual redirect protection."""
+        import requests
+        import urllib.parse
+        current_url = url
+        
+        for _ in range(5):
+            with open(path, "rb") as f:
+                resp = requests.post(
+                    current_url,
+                    auth=self._get_auth(),
+                    files={"file": (upload_filename, f, mime_type)},
+                    headers={"Accept": "application/json"},
+                    timeout=timeout,
+                    allow_redirects=False,
+                )
+            if resp.status_code in (301, 302, 303, 307, 308) and "Location" in resp.headers:
+                next_url = resp.headers["Location"]
+                if not next_url.startswith(("http://", "https://")):
+                    next_url = urllib.parse.urljoin(current_url, next_url)
+                current_url = next_url
+                continue
+            return resp
+        return resp
+
     def test_connection(self) -> tuple[bool, str]:
         """Test credentials against /wp/v2/users/me or /wp/v2/posts."""
         import requests
-        try:
-            url = f"{self.api_base}/users/me"
-            resp = requests.get(url, auth=self._get_auth(), timeout=12)
-            if resp.status_code == 200:
-                user_data = resp.json()
-                name = user_data.get("name", self.username)
-                return True, f"Connected successfully as '{name}'."
-            elif resp.status_code in (401, 403):
-                return False, f"Authentication failed (HTTP {resp.status_code}): Invalid username or application password."
-            else:
-                return False, f"WordPress server returned HTTP {resp.status_code}: {resp.text[:200]}"
-        except Exception as exc:
-            return False, f"Connection failed: {exc}"
+        endpoints = [
+            f"{self.api_base}/users/me",
+            f"{self.api_base}/users/me/",
+            f"{self.site_url}/?rest_route=/wp/v2/users/me",
+        ]
+        last_status = 0
+        last_text = ""
+        for url in endpoints:
+            try:
+                resp = requests.get(url, auth=self._get_auth(), timeout=12)
+                if resp.status_code == 200:
+                    user_data = resp.json()
+                    name = user_data.get("name", self.username)
+                    return True, f"Connected successfully as '{name}'."
+                elif resp.status_code in (401, 403):
+                    return False, f"Authentication failed (HTTP {resp.status_code}): Invalid username or application password."
+                last_status = resp.status_code
+                last_text = resp.text[:200]
+            except Exception as exc:
+                last_text = str(exc)
+        return False, f"WordPress server returned HTTP {last_status}: {last_text}"
 
     def get_categories(self) -> list[dict]:
         """Fetch post categories from WordPress."""
         import requests
-        try:
-            url = f"{self.api_base}/categories"
-            params = {"per_page": 100, "_fields": "id,name,slug,parent"}
-            resp = requests.get(url, auth=self._get_auth(), params=params, timeout=15)
-            if resp.status_code == 200:
-                return resp.json()
-        except Exception:
-            pass
+        endpoints = [
+            f"{self.api_base}/categories",
+            f"{self.api_base}/categories/",
+            f"{self.site_url}/?rest_route=/wp/v2/categories",
+        ]
+        params = {"per_page": 100, "_fields": "id,name,slug,parent"}
+        for url in endpoints:
+            try:
+                resp = requests.get(url, auth=self._get_auth(), params=params, timeout=15)
+                if resp.status_code == 200:
+                    return resp.json()
+            except Exception:
+                pass
         return []
 
     def get_authors(self) -> list[dict]:
@@ -474,43 +559,45 @@ class WordPressClient:
         path = Path(file_path)
         if not path.is_file():
             raise FileNotFoundError(f"Media file not found: {file_path}")
+
         upload_filename = filename or path.name
         mime_type = mimetypes.guess_type(upload_filename)[0] or mimetypes.guess_type(path.name)[0] or "application/octet-stream"
         if path.suffix.lower() == ".mp3":
             mime_type = "audio/mpeg"
         elif path.suffix.lower() == ".wav":
             mime_type = "audio/wav"
-        url = f"{self.api_base}/media"
+
+        endpoints = [
+            f"{self.api_base}/media/",
+            f"{self.api_base}/media",
+            f"{self.site_url}/?rest_route=/wp/v2/media",
+        ]
+
         errors = []
+        for url in endpoints:
+            # Multipart upload with redirect protection
+            try:
+                resp = self._post_multipart(url, path, upload_filename, mime_type, timeout=180)
+                if resp.status_code in (200, 201):
+                    return resp.json()
+                errors.append(f"multipart {url} HTTP {resp.status_code}: {resp.text[:300]}")
+            except Exception as exc:
+                errors.append(f"multipart {url} exception: {exc}")
 
-        try:
-            with open(path, "rb") as f:
-                resp = requests.post(
-                    url, auth=self._get_auth(),
-                    files={"file": (upload_filename, f, mime_type)},
-                    headers={"Accept": "application/json"}, timeout=180,
-                )
-            if resp.status_code in (200, 201):
-                return resp.json()
-            errors.append(f"multipart HTTP {resp.status_code}: {resp.text[:500]}")
-        except Exception as exc:
-            errors.append(f"multipart exception: {exc}")
+            # Raw upload fallback
+            try:
+                headers = {
+                    "Content-Disposition": f'attachment; filename="{upload_filename}"',
+                    "Content-Type": mime_type,
+                    "Content-Length": str(path.stat().st_size),
+                }
+                resp = self._post_request(url, headers=headers, timeout=180)
+                if resp.status_code in (200, 201):
+                    return resp.json()
+                errors.append(f"raw {url} HTTP {resp.status_code}: {resp.text[:300]}")
+            except Exception as exc:
+                errors.append(f"raw {url} exception: {exc}")
 
-        # Raw upload fallback
-        try:
-            headers = {
-                "Accept": "application/json",
-                "Content-Disposition": f'attachment; filename="{upload_filename}"',
-                "Content-Type": mime_type,
-                "Content-Length": str(path.stat().st_size),
-            }
-            with open(path, "rb") as f:
-                resp = requests.post(url, auth=self._get_auth(), headers=headers, data=f, timeout=180)
-            if resp.status_code in (200, 201):
-                return resp.json()
-            errors.append(f"raw HTTP {resp.status_code}: {resp.text[:500]}")
-        except Exception as exc:
-            errors.append(f"raw exception: {exc}")
         raise RuntimeError("WordPress Media upload failed (" + "; ".join(errors) + ")")
 
     def create_post(
@@ -525,7 +612,6 @@ class WordPressClient:
         featured_media_id: int | None = None,
     ) -> dict:
         """Create a post in WordPress."""
-        import requests
         payload: dict[str, Any] = {
             "title": title,
             "content": content,
@@ -541,11 +627,23 @@ class WordPressClient:
         if featured_media_id:
             payload["featured_media"] = int(featured_media_id)
 
-        url = f"{self.api_base}/posts"
-        resp = requests.post(url, auth=self._get_auth(), json=payload, timeout=30)
-        if resp.status_code not in (200, 201):
-            raise RuntimeError(f"WordPress Post creation failed (HTTP {resp.status_code}): {resp.text[:300]}")
-        return resp.json()
+        endpoints = [
+            f"{self.api_base}/posts/",
+            f"{self.api_base}/posts",
+            f"{self.site_url}/?rest_route=/wp/v2/posts",
+        ]
+
+        last_error = ""
+        for url in endpoints:
+            try:
+                resp = self._post_request(url, json_data=payload, timeout=30)
+                if resp.status_code in (200, 201):
+                    return resp.json()
+                last_error = f"HTTP {resp.status_code}: {resp.text[:300]}"
+            except Exception as exc:
+                last_error = str(exc)
+
+        raise RuntimeError(f"WordPress Post creation failed ({last_error})")
 
     def update_post(
         self,
@@ -558,7 +656,6 @@ class WordPressClient:
         featured_media_id: int | None = None,
     ) -> dict:
         """Update an existing post in WordPress."""
-        import requests
         payload: dict[str, Any] = {}
         if content is not None:
             payload["content"] = content
@@ -573,11 +670,24 @@ class WordPressClient:
         if featured_media_id is not None:
             payload["featured_media"] = int(featured_media_id)
 
-        url = f"{self.api_base}/posts/{int(post_id)}"
-        resp = requests.post(url, auth=self._get_auth(), json=payload, timeout=30)
-        if resp.status_code not in (200, 201):
-            raise RuntimeError(f"WordPress Post update failed (HTTP {resp.status_code}): {resp.text[:300]}")
-        return resp.json()
+        pid = int(post_id)
+        endpoints = [
+            f"{self.api_base}/posts/{pid}/",
+            f"{self.api_base}/posts/{pid}",
+            f"{self.site_url}/?rest_route=/wp/v2/posts/{pid}",
+        ]
+
+        last_error = ""
+        for url in endpoints:
+            try:
+                resp = self._post_request(url, json_data=payload, timeout=30)
+                if resp.status_code in (200, 201):
+                    return resp.json()
+                last_error = f"HTTP {resp.status_code}: {resp.text[:300]}"
+            except Exception as exc:
+                last_error = str(exc)
+
+        raise RuntimeError(f"WordPress Post update failed ({last_error})")
 
 
 class WordPressSettingsDialog(QDialog):
@@ -1071,7 +1181,14 @@ def execute_wordpress_upload(
 
                 cmd.extend(["-vn", "-c:a", "libmp3lame", "-b:a", "192k", str(temp_audio)])
                 flags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
-                res = subprocess.run(cmd, capture_output=True, text=True, creationflags=flags)
+                res = subprocess.run(
+                    cmd,
+                    stdin=subprocess.DEVNULL,
+                    capture_output=True,
+                    text=True,
+                    timeout=120,
+                    creationflags=flags,
+                )
                 if res.returncode != 0 or not temp_audio.exists() or temp_audio.stat().st_size == 0:
                     raw_err = res.stderr.strip() if res.stderr else "Unknown error"
                     err_lines = [ln.strip() for ln in raw_err.splitlines() if ln.strip()]

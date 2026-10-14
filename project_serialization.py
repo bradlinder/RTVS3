@@ -38,7 +38,9 @@ def sanitize_project_data_for_storage(data, parent_key: str = ""):
         if math.isnan(data) or math.isinf(data):
             return 0.0
         k_lower = parent_key.lower()
-        if any(ts_key in k_lower for ts_key in ("start", "end", "duration", "position", "time", "offset", "padding", "threshold")):
+        if any(k in k_lower for k in ("embedding", "embeddings", "centroid", "voiceprint", "vector", "profile")):
+            r = round(data, 6)
+        elif any(ts_key in k_lower for ts_key in ("start", "end", "duration", "position", "time", "offset", "padding", "threshold")):
             r = round(data, 3)
         elif any(prob_key in k_lower for prob_key in ("prob", "confidence", "logprob", "temperature", "ratio", "score")):
             r = round(data, 3)
@@ -99,8 +101,15 @@ def deserialize_rtvs_project(raw_bytes: bytes) -> dict:
 def read_rtvs_project_file(file_path) -> dict:
     """Transparently read an .rtvs or .json project file from disk (compressed or uncompressed)."""
     p = Path(file_path)
+    st_size = p.stat().st_size
+    if st_size > MAX_DECOMPRESSED_PROJECT_BYTES:
+        raise ValueError(
+            f"Project file exceeds maximum allowed size ({st_size} bytes > {MAX_DECOMPRESSED_PROJECT_BYTES} bytes)."
+        )
     with open(p, "rb") as f:
-        raw = f.read()
+        raw = f.read(MAX_DECOMPRESSED_PROJECT_BYTES + 1)
+    if len(raw) > MAX_DECOMPRESSED_PROJECT_BYTES:
+        raise ValueError("Project file exceeds maximum allowed size.")
     return deserialize_rtvs_project(raw)
 
 

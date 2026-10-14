@@ -61,7 +61,7 @@ from core_utils import (
     ffprobe_path,
 )
 from bootstrap import setup_windows_dll_directories
-from runtime_manager import (
+from process_lifecycle import (
     register_process,
     unregister_process,
 )

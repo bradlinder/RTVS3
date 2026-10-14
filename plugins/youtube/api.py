@@ -89,6 +89,22 @@ class YouTubeAuthManager(GoogleDocsAuthManager or object):
         """Return the authenticated user's email address if available."""
         return self.get_user_email()
 
+    def get_valid_access_token(self, force_refresh: bool = False) -> Optional[str]:
+        """Return a valid access token, automatically refreshing if expired or forced."""
+        if hasattr(super(), "get_valid_access_token"):
+            return super().get_valid_access_token(force_refresh=force_refresh)
+        if hasattr(self, "_tokens") and isinstance(self._tokens, dict):
+            refresh_token = self._tokens.get("refresh_token")
+            expiry = float(self._tokens.get("expires_at", 0))
+            if force_refresh or time.time() > (expiry - 60):
+                if refresh_token and hasattr(self, "refresh_access_token"):
+                    success, _ = self.refresh_access_token()
+                    if success:
+                        return self._tokens.get("access_token")
+                return None if force_refresh else self._tokens.get("access_token")
+            return self._tokens.get("access_token")
+        return None
+
     def get_authorization_url(self, port: int, state: str, code_challenge: str) -> str:
         client_id, _ = self.get_client_credentials()
         redirect_uri = f"http://127.0.0.1:{port}/callback"
@@ -113,8 +129,8 @@ class YouTubeApiClient:
     def __init__(self, auth_manager: Optional[YouTubeAuthManager] = None):
         self.auth = auth_manager or YouTubeAuthManager()
 
-    def _get_headers(self, content_type: str = "application/json") -> Dict[str, str]:
-        token = self.auth.get_valid_access_token()
+    def _get_headers(self, content_type: str = "application/json", force_refresh: bool = False) -> Dict[str, str]:
+        token = self.auth.get_valid_access_token(force_refresh=force_refresh)
         if not token:
             raise PermissionError("Not authenticated with YouTube. Please connect your Google / YouTube account.")
         return {

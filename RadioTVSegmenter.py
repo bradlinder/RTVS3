@@ -1,13 +1,12 @@
-"""Radio & TV Segmenter — v3.7.20-stable
+"""Radio & TV Segmenter — v3.9.4-beta
 
 This is the thin application composition root. UI/processing responsibilities
 are implemented in focused mixins so future changes can target smaller files
 without changing the MainWindow-facing API.
 """
+
 import sys
 import multiprocessing
-from pathlib import Path
-from bootstrap import configure_runtime_environment, ensure_sherpa_onnx_runtime, ensure_keyring_runtime
 
 # Initialize multiprocessing freeze support before anything else.
 # On macOS and Windows, frozen applications or subprocesses spawned via multiprocessing
@@ -18,16 +17,19 @@ multiprocessing.freeze_support()
 # spawn helper subprocesses using: sys.executable -c "from multiprocessing.resource_tracker import main;main(fd)"
 # or multiprocessing.spawn: sys.executable -c "from multiprocessing.spawn import spawn_main;..."
 # Since sys.executable is the compiled standalone executable rather than python, intercept -c here.
-if len(sys.argv) > 1 and "-c" in sys.argv:
+if len(sys.argv) > 2 and sys.argv[1] == "-c":
     try:
-        c_idx = sys.argv.index("-c")
-        if c_idx + 1 < len(sys.argv):
-            code_str = sys.argv[c_idx + 1]
+        code_str = sys.argv[2]
+        if code_str.lstrip().startswith("from multiprocessing."):
             exec(code_str, {"__name__": "__main__"})
             sys.exit(0)
     except Exception as _e:
         sys.stderr.write(f"[MULTIPROCESSING] Error executing -c in main executable: {_e}\n")
         sys.exit(1)
+
+import os
+from pathlib import Path
+from bootstrap import configure_runtime_environment, ensure_sherpa_onnx_runtime, ensure_keyring_runtime
 
 # Bootstrap writable model/cache locations and verify required runtimes before
 # importing the rest of the application. Source builds can install them automatically;
@@ -137,6 +139,10 @@ if len(sys.argv) > 1 and sys.argv[1] == "--self-test":
     raise SystemExit(1 if failures else 0)
 
 from prs_shared import *
+from PySide6.QtCore import Qt, QTimer, QSettings, QEvent, QUrl
+from PySide6.QtGui import QShortcut, QKeySequence, QUndoStack
+from PySide6.QtWidgets import QApplication, QMainWindow, QMessageBox
+from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput
 from runtime_manager import RuntimeManager
 from model_management import ModelManagementMixin
 from media_batch import MediaBatchMixin

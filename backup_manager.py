@@ -17,12 +17,15 @@ import urllib.request
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
-from core_utils import INTERNAL_APP_ID, make_dialog_maximizable
-
 try:
-    from prs_shared import PROJECT_VERSION
-except Exception:
-    PROJECT_VERSION = "3.8.0-stable"
+    from core_utils import INTERNAL_APP_ID, make_dialog_maximizable, PROJECT_VERSION
+except ImportError:
+    try:
+        from prs_shared import INTERNAL_APP_ID, make_dialog_maximizable, PROJECT_VERSION
+    except Exception:
+        INTERNAL_APP_ID = "RadioTVStorySegmenter"
+        PROJECT_VERSION = "3.9.0-beta.9"
+        def make_dialog_maximizable(dlg): pass
 
 logger = logging.getLogger(__name__)
 
@@ -103,9 +106,21 @@ def serialize_models_inventory() -> List[Dict[str, Any]]:
     """Extracts installed local model metadata."""
     models: List[Dict[str, Any]] = []
     try:
-        from prs_shared import models_dir
-        md = models_dir()
-        if os.path.exists(md):
+        md = None
+        try:
+            from core_utils import get_models_storage_dir
+            md = str(get_models_storage_dir())
+        except (ImportError, AttributeError):
+            pass
+
+        if not md:
+            try:
+                from prs_shared import models_dir
+                md = str(models_dir())
+            except Exception:
+                pass
+
+        if md and os.path.exists(md):
             for entry in sorted(os.listdir(md)):
                 entry_path = os.path.join(md, entry)
                 if os.path.isdir(entry_path):

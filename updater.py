@@ -26,114 +26,92 @@ from pathlib import Path
 logger = logging.getLogger(__name__)
 
 try:
-    from prs_shared import (
+    from core_utils import (
         APP_DISPLAY_NAME,
         DEFAULT_GITHUB_REPO,
         INTERNAL_APP_ID,
         PROJECT_VERSION,
         get_app_data_dir,
-        get_app_icon,
         get_github_repo,
         get_update_channel,
+    )
+except ImportError:
+    try:
+        from prs_shared import (
+            APP_DISPLAY_NAME,
+            DEFAULT_GITHUB_REPO,
+            INTERNAL_APP_ID,
+            PROJECT_VERSION,
+            get_app_data_dir,
+            get_github_repo,
+            get_update_channel,
+        )
+    except Exception:
+        APP_DISPLAY_NAME = "Radio & TV Segmenter"
+        PROJECT_VERSION = "3.9.4-beta"
+        DEFAULT_GITHUB_REPO = "bradlinder/RTVS3"
+        INTERNAL_APP_ID = "RadioTVStorySegmenter"
+
+        def get_github_repo() -> str:
+            return os.environ.get("GITHUB_REPO", "").strip() or DEFAULT_GITHUB_REPO
+
+        def get_update_channel() -> str:
+            return os.environ.get("RTVS_UPDATE_CHANNEL", "stable").strip().lower()
+
+        def get_app_data_dir() -> Path:
+            if sys.platform == "win32":
+                root = os.environ.get("LOCALAPPDATA") or os.environ.get("APPDATA")
+                base = Path(root) if root else Path.home() / "AppData" / "Local"
+            elif sys.platform == "darwin":
+                base = Path.home() / "Library" / "Application Support"
+            else:
+                base = Path(os.environ.get("XDG_DATA_HOME", Path.home() / ".local" / "share"))
+            path = base / INTERNAL_APP_ID
+            path.mkdir(parents=True, exist_ok=True)
+            return path
+
+try:
+    from prs_shared import get_app_icon
+except Exception:
+    def get_app_icon():
+        return None
+
+try:
+    from PySide6.QtCore import Qt, QUrl, Signal, QObject, QThread, QSettings, QSize
+    from PySide6.QtGui import QColor, QCursor, QDesktopServices, QIcon
+    from PySide6.QtWidgets import (
         QApplication,
-        QColor,
         QComboBox,
-        QCursor,
-        QDesktopServices,
         QDialog,
         QFrame,
         QHBoxLayout,
-        QIcon,
         QLabel,
         QMessageBox,
         QProgressBar,
         QPushButton,
-        QSettings,
-        QSize,
         QTextBrowser,
-        QThread,
-        QUrl,
         QVBoxLayout,
         QWidget,
-        Signal,
-        Qt,
     )
 except Exception:
-    APP_DISPLAY_NAME = "Radio & TV Segmenter"
-    PROJECT_VERSION = "3.9.0-beta.9"
-    DEFAULT_GITHUB_REPO = "bradlinder/RTVS3"
-
-    INTERNAL_APP_ID = "RadioTVStorySegmenter"
-
-    def get_github_repo() -> str:
-        return os.environ.get("GITHUB_REPO", "").strip() or DEFAULT_GITHUB_REPO
-
-    def get_update_channel() -> str:
-        return os.environ.get("RTVS_UPDATE_CHANNEL", "stable").strip().lower()
-
-    def get_app_data_dir() -> Path:
-        p = Path.home() / f".{INTERNAL_APP_ID.lower()}"
-        p.mkdir(parents=True, exist_ok=True)
-        return p
-
-    def get_app_icon():
-        return None
-
-    try:
-        from PySide6.QtCore import Qt, QUrl, Signal, QObject, QThread, QSettings, QSize
-        from PySide6.QtGui import QColor, QCursor, QDesktopServices, QIcon
-        from PySide6.QtWidgets import (
-            QApplication,
-            QComboBox,
-            QDialog,
-            QFrame,
-            QHBoxLayout,
-            QLabel,
-            QMessageBox,
-            QProgressBar,
-            QPushButton,
-            QTextBrowser,
-            QVBoxLayout,
-            QWidget,
-        )
-    except Exception:
-        class QObject: pass
-        class QThread:
-            def __init__(self, parent=None): pass
-            def start(self): pass
-        class Signal:
-            def __init__(self, *args): pass
-            def emit(self, *args): pass
-            def connect(self, *args): pass
-        class QWidget: pass
-        class QDialog(QWidget): pass
-        class QComboBox(QWidget):
-            def __init__(self, parent=None): pass
-            def addItem(self, *args): pass
-            def clear(self): pass
-            def count(self): return 0
-            def currentData(self): return None
-            def currentIndex(self): return -1
-            def setCurrentIndex(self, i): pass
-        class QSettings:
-            def __init__(self, *args): pass
-            def value(self, key, default=None): return default
-        Qt = type("Qt", (), {"CursorShape": type("CS", (), {"PointingHandCursor": None})})
-        QApplication = None
-        QDesktopServices = None
-        QUrl = None
-        QColor = None
-        QCursor = None
-        QIcon = None
-        QFrame = None
-        QHBoxLayout = None
-        QLabel = None
-        QMessageBox = None
-        QProgressBar = None
-        QPushButton = None
-        QTextBrowser = None
-        QVBoxLayout = None
-        QSize = None
+    from qt_compat import _ensure_pyside6_fallback
+    _ensure_pyside6_fallback()
+    from PySide6.QtCore import Qt, QUrl, Signal, QObject, QThread, QSettings, QSize
+    from PySide6.QtGui import QColor, QCursor, QDesktopServices, QIcon
+    from PySide6.QtWidgets import (
+        QApplication,
+        QComboBox,
+        QDialog,
+        QFrame,
+        QHBoxLayout,
+        QLabel,
+        QMessageBox,
+        QProgressBar,
+        QPushButton,
+        QTextBrowser,
+        QVBoxLayout,
+        QWidget,
+    )
 
 
 def parse_version_tuple(version_str: str) -> tuple[tuple[int, ...], tuple[int, int]]:

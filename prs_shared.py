@@ -69,15 +69,14 @@ def _ensure_runtime_bin_on_path():
 
 _ensure_runtime_bin_on_path()
 
-INTERNAL_APP_ID = "RadioTVStorySegmenter"
-APP_DISPLAY_NAME = "Radio & TV Segmenter"
-PROJECT_VERSION = "3.9.0-beta.9"
-DEFAULT_GITHUB_REPO = "bradlinder/RTVS3"
-
-
 # Re-exports from Phase 1 modularization (core_utils, transcript_cleaner, project_serialization, process_lifecycle)
 from core_utils import (
+    INTERNAL_APP_ID,
+    APP_DISPLAY_NAME,
+    PROJECT_VERSION,
+    DEFAULT_GITHUB_REPO,
     make_dialog_maximizable,
+    apply_window_titlebar_theme,
     safe_process_events,
     get_active_theme_mode,
     extract_dropped_file_paths,
@@ -99,8 +98,10 @@ from core_utils import (
     parse_time,
     safe_filename,
     is_sentence_end,
+    format_byte_size,
 )
 get_app_storage_dir = get_app_data_dir
+models_dir = get_models_storage_dir
 from transcript_cleaner import (
     HALLUCINATION_PHRASES,
     HALLUCINATION_PATTERNS,
@@ -131,6 +132,12 @@ from process_lifecycle import (
     register_process,
     unregister_process,
     terminate_all_registered_processes,
+)
+from model_install_workers import (
+    WhisperModelInstallWorker,
+    DiarizationModelInstallWorker,
+    get_diarization_model_dir,
+    is_diarization_model_available,
 )
 
 try:
@@ -576,7 +583,7 @@ class CollapsibleSection(QWidget):
 # ============================================================
 
 # Display branding shown to the user (title bar, About box, installers).
-# APP_DISPLAY_NAME, PROJECT_VERSION, and DEFAULT_GITHUB_REPO are defined at the top of prs_shared.py.
+# INTERNAL_APP_ID, APP_DISPLAY_NAME, PROJECT_VERSION, and DEFAULT_GITHUB_REPO are imported and re-exported from core_utils.py.
 
 
 # Internal identifiers are intentionally left as "RadioTVStorySegmenter" (the
@@ -1232,5 +1239,8 @@ from cache_manager import (
     format_byte_size,
     get_cache_disk_usage,
     purge_caches,
+    register_active_thumbnail_dir,
+    unregister_active_thumbnail_dir,
+    get_active_thumbnail_dirs,
 )
 

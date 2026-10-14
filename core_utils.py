@@ -22,7 +22,7 @@ except ImportError:
 
 INTERNAL_APP_ID = "RadioTVStorySegmenter"
 APP_DISPLAY_NAME = "Radio & TV Segmenter"
-PROJECT_VERSION = "3.8.6-stable"
+PROJECT_VERSION = "3.9.4-beta"
 DEFAULT_GITHUB_REPO = "bradlinder/RTVS3"
 
 
@@ -515,6 +515,32 @@ def ffmpeg_path() -> str | None:
 
 def ffprobe_path() -> str | None:
     return find_bundled_executable("ffprobe")
+
+
+def format_byte_size(num_bytes: int | float) -> str:
+    """Format byte quantities into human-readable strings.
+
+    - "0 B" for <= 0 or invalid inputs.
+    - Integer "X B" for bytes < 1024.
+    - "X.X KB", "X.X MB", "X.X GB", "X.X TB" for larger sizes.
+    """
+    try:
+        val = float(num_bytes)
+        if math.isnan(val) or math.isinf(val) or val <= 0:
+            return "0 B"
+    except (ValueError, TypeError):
+        return "0 B"
+
+    if val < 1024:
+        return f"{int(val)} B"
+    elif val < 1024 * 1024:
+        return f"{val / 1024:.1f} KB"
+    elif val < 1024 * 1024 * 1024:
+        return f"{val / (1024 * 1024):.1f} MB"
+    elif val < 1024 * 1024 * 1024 * 1024:
+        return f"{val / (1024 * 1024 * 1024):.1f} GB"
+    else:
+        return f"{val / (1024 * 1024 * 1024 * 1024):.1f} TB"
 
 
 def format_time(seconds, include_millis=True):
