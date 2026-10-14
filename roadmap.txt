@@ -29,18 +29,15 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 --------------------------------------------------------------------------------
 TABLE OF CONTENTS & STATUS OVERVIEW
 --------------------------------------------------------------------------------
-1. Previous Release: Vibrant High-Contrast Active Word Highlighting & Layered Section Selection (`transcript_editor.py`, `transcript_story.py`) [x] [COMPLETED in v3.9.0-beta.8]
-   [x] 1.1 High-Contrast Gold Active Word Highlighting (`transcript_editor.py`): Replaced blue-on-blue active word formatting with a vibrant, high-contrast gold/amber background (`#fbbf24` in dark mode, `#facc15` in light mode), bold black text, and amber underline formatting.
-   [x] 1.2 Layered ExtraSelections Rendering (`transcript_editor.py`): Introduced `set_timeline_selection_span()` to render section and timeline range highlights as an extra selection layer beneath the active playback word.
-   [x] 1.3 Unobscured Playback Word During Section Selection (`transcript_story.py`): Updated timeline selection handlers to clear native cursor selection masking and utilize the extra selections layer, guaranteeing that the exact word currently playing remains 100% visible, distinct, and vibrant when scrubbing or playing audio inside a highlighted section.
+1. Previous Release: Hardware-Accelerated AMD Ryzen AI Local Development & AI Model Provisioning Suite (`roadmap.txt`, `CHANGELOG.md`) [x] [COMPLETED in v3.9.5-beta]
+   [x] 1.1 Hardware-Aware Local AI Setup Specification (`roadmap.txt`): Defined detailed architectural specifications for automated installer/configuration scripts detecting AMD Ryzen AI 9 HX 370 + NPU and 64GB RAM with hardware acceleration.
+   [x] 1.2 Local Coding Model Tier Provisioning Specification: Cataloged optimized 64GB memory tier models (Qwen2.5-Coder-32B/7B/1.5B).
+   [x] 1.3 Local Runtime & IDE Integration Specification: Configured Ollama/LM Studio and Continue.dev bindings.
    [x] 1.4 Synchronous Version Bump: Synchronized all 10 project locations to v3.9.5-beta
 
-2. Current Release: Hardware-Accelerated AMD Ryzen AI Local Development & AI Model Provisioning Suite Specification (`roadmap.txt`, `CHANGELOG.md`) [x] [COMPLETED in v3.9.5-beta]
-   [x] 2.1 Hardware-Aware Local AI Setup Specification (`roadmap.txt`): Defined detailed architectural specifications for an automated installer/configuration script (`scripts/setup_local_ai.py` or `setup_local_dev.sh`) detecting AMD Ryzen AI 9 HX 370 + NPU and 64GB RAM with hardware acceleration (ROCm/Vulkan/DirectML/UMA).
-   [x] 2.2 Local Coding Model Tier Provisioning Specification: Cataloged optimized 64GB memory tier models: Qwen2.5-Coder-32B-Instruct (heavy refactoring), Qwen2.5-Coder-7B/14B-Instruct (fast bug fixes), and Qwen2.5-Coder-1.5B (sub-50ms Continue.dev inline autocomplete).
-   [x] 2.3 Local Runtime & IDE Integration Specification: Configured Ollama / LM Studio server bindings (`http://localhost:11434`), Continue.dev `config.json`, Cline/Roo Code settings, and auto-linking `.clinerules` to `AGENTS.md` & `GEMINI.md`.
-   [x] 2.4 Interactive Model Usage Matrix & GitHub Actions CI/CD Integration Specification: Designed interactive model selection guide matching tasks to model speeds/contexts, and automated GitHub Actions workflow (`.github/workflows/build.yml`) for cross-platform PyInstaller/Inno Setup releases.
-   [x] 2.5 Synchronous Version Bump: Synchronized all 10 project locations to v3.9.5-beta
+2. Current Release: GitHub Actions Build Workflow Fix & Artifact Download Resilience (`.github/workflows/build.yml`) [x] [COMPLETED in v3.9.6-beta]
+   [x] 2.1 Removed Deprecated `merge-multiple` Input (`.github/workflows/build.yml`): Removed `merge-multiple: true` from `actions/download-artifact@v4` in `publish-release`, resolving CI workflow build failures caused by invalid input parameters in artifact download v4.
+   [x] 2.2 Synchronous Version Bump: Synchronized all 10 project locations to v3.9.6-beta
 
 3. Codebase Modularization & Monolithic File Decomposition Strategy (`RadioTVSegmenter.py`, `processing.py`, `transcript_editor.py`, `project_export.py`, `export/timeline.py`, `project_lifecycle.py`, `ui_layout.py`, `dialogs.py`, `radio_tv_story_segmenter_worker.py`, `plugins/manager.py`, `timeline_widgets.py`, `media_batch.py`, `updater.py`) [PLANNED for v4.0.0] [IN-PROGRESS / PLANNED]
    - *Architecture Note*: Refactors all 15 source files exceeding 1,000 lines into domain-driven sub-packages while preserving 100% backward compatibility via zero-breaking module facade re-exports.

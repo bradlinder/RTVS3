@@ -521,7 +521,6 @@ jobs:
         continue-on-error: true
         with:
           path: release_assets/
-          merge-multiple: true
 
       - name: Flatten release assets & Generate SHA-256 checksums
         run: |

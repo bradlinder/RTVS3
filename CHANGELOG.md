@@ -1,5 +1,9 @@
 # Changelog
 
+## v3.9.6-beta
+- **GitHub Actions Build Workflow Fix (`.github/workflows/build.yml`)**:
+  - **Removed Deprecated `merge-multiple` Input**: Removed `merge-multiple: true` from `actions/download-artifact@v4` in `publish-release`, resolving CI workflow build failures caused by invalid input parameters in artifact download v4.
+
 ## v3.9.5-beta
 - **Full Application-Wide Audit & Resilience Hardening (`backup_manager.py`, `plugins/google_sheets.py`, `plugins/manager.py`, `plugins/youtube/api.py`, `plugins/youtube/export_destination.py`, `plugins/gdocs/export_destination.py`, `plugins/wordpress/client.py`, `plugins/wordpress/export_destination.py`)**:
   - **Google Drive Cloud Backup OAuth Auto-Refresh (`backup_manager.py`)**: Added automatic HTTP 401/403 expired token detection and forced token refresh retry logic to `list_cloud_backups()`, `upload_cloud_backup()`, and `download_cloud_backup()`, preventing cloud backup/restore failures during long-running desktop sessions.
