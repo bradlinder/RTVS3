@@ -578,7 +578,7 @@ jobs:
           echo "Prerelease status: ${IS_PRERELEASE}"
           echo "prerelease=${IS_PRERELEASE}" >> $GITHUB_OUTPUT
 
-      - name: Create GitHub Release & Upload Binaries
+      - name: Create GitHub Release & Upload Checksums/Plugins
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.vars.outputs.tag }}
@@ -587,4 +587,33 @@ jobs:
           prerelease: ${{ steps.vars.outputs.prerelease == 'true' }}
           make_latest: ${{ steps.vars.outputs.prerelease != 'true' }}
           generate_release_notes: true
-          files: release_assets/*
+          files: |
+            release_assets/SHA256SUMS
+            release_assets/*.rtvs-addon
+            release_assets/*.zip
+            release_assets/*.sha256
+          overwrite_files: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Large Installer Binaries Sequentially with Retry
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.vars.outputs.tag }}
+        run: |
+          set -e
+          for installer in release_assets/RadioTVSegmenter-*; do
+            [ -f "$installer" ] || continue
+            case "$installer" in
+              *.sha256) continue ;;
+            esac
+            echo "Uploading $installer to release $TAG..."
+            for attempt in 1 2 3; do
+              if gh release upload "$TAG" "$installer" --clobber; then
+                echo "Successfully uploaded $installer"
+                break
+              fi
+              echo "Attempt $attempt failed for $installer; retrying in 5s..."
+              sleep 5
+            done
+          done
