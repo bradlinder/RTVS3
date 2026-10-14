@@ -1,5 +1,14 @@
 # Changelog
 
+## v3.9.5-beta
+- **Full Application-Wide Audit & Resilience Hardening (`backup_manager.py`, `plugins/google_sheets.py`, `plugins/manager.py`, `plugins/youtube/api.py`, `plugins/youtube/export_destination.py`, `plugins/gdocs/export_destination.py`, `plugins/wordpress/client.py`, `plugins/wordpress/export_destination.py`)**:
+  - **Google Drive Cloud Backup OAuth Auto-Refresh (`backup_manager.py`)**: Added automatic HTTP 401/403 expired token detection and forced token refresh retry logic to `list_cloud_backups()`, `upload_cloud_backup()`, and `download_cloud_backup()`, preventing cloud backup/restore failures during long-running desktop sessions.
+  - **Google Sheets API Token Auto-Refresh (`plugins/google_sheets.py`)**: Updated `GoogleSheetsApiClient` with a retry wrapper (`_execute_with_retry`) that automatically executes `get_valid_access_token(force_refresh=True)` upon encountering 401 Unauthorized or 403 Forbidden HTTP errors during spreadsheet creation, row appending, or sheet table updates.
+  - **Plugin Installer Temp Download Leak Cleanup (`plugins/manager.py`)**: Added explicit cleanup (`dest_file.unlink(missing_ok=True)` / `Path(file_path).unlink(missing_ok=True)`) in `BatchPluginDownloadWorker` and `on_download_finished()`, ensuring downloaded `.rtvs-addon` package archives in `tempfile.gettempdir()` are immediately removed after extraction and installation.
+  - **YouTube & Google Docs Temp Preview & Thumbnail Cleanup (`plugins/youtube/export_destination.py`, `plugins/gdocs/export_destination.py`)**: Tracked temporary frame capture thumbnails in `self._temp_preview_files` and added `reject()` and `done()` dialog lifecycle overrides to guarantee temporary preview assets and FFmpeg audio extracts are unlinked upon dialog cancellation or completion.
+  - **YouTube Video Publisher OAuth Token Auto-Refresh (`plugins/youtube/api.py`)**: Added automatic token refresh retry logic to `upload_video_resumable()` during resumable upload initialization requests.
+  - **WordPress REST API Redirect Preservation & Permalinks (`plugins/wordpress/client.py`)**: Updated `create_post`, `update_post`, and `upload_media` to preserve POST method payloads during 301/302 redirects and added non-pretty permalink fallback route probes.
+
 ## v3.9.4-beta
 - **WordPress REST API 405 Method Not Allowed Fix & HTTP Redirect Resilience (`plugins/wordpress/client.py`, `plugins/wordpress/export_destination.py`, `plugins/wordpress/manifest.json`)**:
   - **Redirect Preservation for POST Requests**: Updated `create_post`, `update_post`, and `upload_media` to set `allow_redirects=False` and manually follow 301/302 redirects with `requests.post` to target `Location` headers. Prevents `requests` from converting POST calls into GET calls (which raised `HTTP 405 Method Not Allowed`).

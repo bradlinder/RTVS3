@@ -22,7 +22,7 @@ except ImportError:
 
 INTERNAL_APP_ID = "RadioTVStorySegmenter"
 APP_DISPLAY_NAME = "Radio & TV Segmenter"
-PROJECT_VERSION = "3.9.4-beta"
+PROJECT_VERSION = "3.9.5-beta"
 DEFAULT_GITHUB_REPO = "bradlinder/RTVS3"
 
 

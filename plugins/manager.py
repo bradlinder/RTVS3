@@ -853,6 +853,11 @@ class GitHubBatchDownloadWorker(QThread):
                 except Exception as inst_exc:
                     failed += 1
                     errors.append(f"{plugin_name}: {inst_exc}")
+                finally:
+                    try:
+                        dest_file.unlink(missing_ok=True)
+                    except Exception:
+                        pass
             else:
                 failed += 1
                 errors.append(f"{plugin_name}: {last_error or 'Network download error'}")
@@ -1364,6 +1369,11 @@ class GitHubPluginsDialog(QDialog):
                 QMessageBox.warning(self, "Installation Failed", f"Downloaded package for {plugin_name} was invalid or missing manifest.")
         except Exception as exc:
             QMessageBox.critical(self, "Installation Error", f"Failed to install {plugin_name}:\n{exc}")
+        finally:
+            try:
+                Path(file_path).unlink(missing_ok=True)
+            except Exception:
+                pass
 
     def toggle_plugin(self, plugin_id: str, enable: bool):
         self.manager.set_plugin_enabled(plugin_id, enable)

@@ -592,8 +592,36 @@ class GoogleDocsExportDestination(ExportDestination):
             "open_browser": self.cb_browser.isChecked() if hasattr(self, "cb_browser") else True,
         }
 
+    def _cleanup_temp_files(self) -> None:
+        """Clean up any temporary preview or export files if present."""
+        if hasattr(self, "_temp_preview_files") and self._temp_preview_files:
+            for temp_f in list(self._temp_preview_files):
+                try:
+                    if temp_f and Path(temp_f).exists():
+                        Path(temp_f).unlink(missing_ok=True)
+                except Exception as exc:
+                    print(f"[GDOCS EXPORT] Cleanup warning: {exc}")
+            self._temp_preview_files.clear()
+
+    def closeEvent(self, event: Any) -> None:
+        """Clean up temporary resources on dialog closure."""
+        self._cleanup_temp_files()
+        super().closeEvent(event)
+
+    def reject(self) -> None:
+        """Purge temp resources on dialog rejection."""
+        self._cleanup_temp_files()
+        super().reject()
+
+    def done(self, r: int) -> None:
+        """Purge temp resources on dialog completion."""
+        self._cleanup_temp_files()
+        super().done(r)
+
     def execute_export(self, main_window: Any, export_data: Dict[str, Any], progress_dialog: Any = None) -> bool:
         token = self.auth_manager.get_valid_access_token()
+        if not token:
+            token = self.auth_manager.get_valid_access_token(force_refresh=True)
         if not token:
             if progress_dialog:
                 progress_dialog.close()

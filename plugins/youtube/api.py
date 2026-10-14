@@ -219,8 +219,23 @@ class YouTubeApiClient:
                 if not upload_url:
                     raise RuntimeError("YouTube API did not return a resumable upload location URL.")
         except urllib.error.HTTPError as err:
-            err_body = err.read().decode("utf-8", errors="ignore")
-            raise RuntimeError(f"YouTube Upload Initialization failed (HTTP {err.code}): {err_body}")
+            if err.code in (401, 403):
+                logger.info("YouTube upload token expired or unauthorized (HTTP %s). Retrying with forced token refresh...", err.code)
+                init_headers = self._get_headers(content_type="application/json; charset=UTF-8", force_refresh=True)
+                init_headers["X-Upload-Content-Type"] = mime_type
+                init_headers["X-Upload-Content-Length"] = str(total_bytes)
+                init_req = urllib.request.Request(init_url, data=init_data, headers=init_headers, method="POST")
+                try:
+                    with urllib.request.urlopen(init_req, timeout=30) as resp:
+                        upload_url = resp.headers.get("Location")
+                        if not upload_url:
+                            raise RuntimeError("YouTube API did not return a resumable upload location URL.")
+                except urllib.error.HTTPError as retry_err:
+                    err_body = retry_err.read().decode("utf-8", errors="ignore")
+                    raise RuntimeError(f"YouTube Upload Initialization failed (HTTP {retry_err.code}): {err_body}")
+            else:
+                err_body = err.read().decode("utf-8", errors="ignore")
+                raise RuntimeError(f"YouTube Upload Initialization failed (HTTP {err.code}): {err_body}")
 
         # 2. Stream File in Chunks
         bytes_uploaded = 0

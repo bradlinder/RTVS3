@@ -442,6 +442,19 @@ def list_cloud_backups(auth_manager=None) -> Tuple[bool, List[Dict[str, Any]], s
             data = json.loads(resp.read().decode("utf-8"))
             files = data.get("files", [])
             return True, files, ""
+    except urllib.error.HTTPError as http_err:
+        if http_err.code in (401, 403) and hasattr(auth_manager, "get_valid_access_token"):
+            token = auth_manager.get_valid_access_token(force_refresh=True)
+            if token:
+                req = urllib.request.Request(url, headers={"Authorization": f"Bearer {token}"})
+                try:
+                    with urllib.request.urlopen(req, timeout=15) as resp:
+                        data = json.loads(resp.read().decode("utf-8"))
+                        files = data.get("files", [])
+                        return True, files, ""
+                except Exception as retry_exc:
+                    return False, [], f"Google Drive API query failed on retry: {retry_exc}"
+        return False, [], f"Google Drive API query failed: {http_err}"
     except Exception as exc:
         return False, [], f"Google Drive API query failed: {exc}"
 
@@ -486,16 +499,33 @@ def upload_cloud_backup(
     ).encode("utf-8") + payload_bytes + f"\r\n--{boundary}--\r\n".encode("utf-8")
 
     url = "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart"
-    req = urllib.request.Request(url, data=body, method="POST")
-    req.add_header("Authorization", f"Bearer {token}")
-    req.add_header("Content-Type", f"multipart/related; boundary={boundary}")
-    req.add_header("Content-Length", str(len(body)))
+
+    def _do_upload(tok: str):
+        r = urllib.request.Request(url, data=body, method="POST")
+        r.add_header("Authorization", f"Bearer {tok}")
+        r.add_header("Content-Type", f"multipart/related; boundary={boundary}")
+        r.add_header("Content-Length", str(len(body)))
+        return r
 
     try:
+        req = _do_upload(token)
         with urllib.request.urlopen(req, timeout=30) as resp:
             res_data = json.loads(resp.read().decode("utf-8"))
             file_id = res_data.get("id", "")
             return True, file_id, ""
+    except urllib.error.HTTPError as http_err:
+        if http_err.code in (401, 403) and hasattr(auth_manager, "get_valid_access_token"):
+            token = auth_manager.get_valid_access_token(force_refresh=True)
+            if token:
+                try:
+                    req = _do_upload(token)
+                    with urllib.request.urlopen(req, timeout=30) as resp:
+                        res_data = json.loads(resp.read().decode("utf-8"))
+                        file_id = res_data.get("id", "")
+                        return True, file_id, ""
+                except Exception as retry_exc:
+                    return False, "", f"Drive upload failed on retry: {retry_exc}"
+        return False, "", f"Drive upload failed: {http_err}"
     except Exception as exc:
         return False, "", f"Drive upload failed: {exc}"
 
@@ -512,14 +542,33 @@ def download_cloud_backup(file_id: str, auth_manager=None) -> Tuple[bool, Dict[s
         return False, {}, "Missing valid access token."
 
     url = f"https://www.googleapis.com/drive/v3/files/{urllib.parse.quote(file_id)}?alt=media"
-    req = urllib.request.Request(url, headers={"Authorization": f"Bearer {token}"})
+
+    def _do_download(tok: str):
+        return urllib.request.Request(url, headers={"Authorization": f"Bearer {tok}"})
+
     try:
+        req = _do_download(token)
         with urllib.request.urlopen(req, timeout=30) as resp:
             content_bytes = resp.read()
             valid, msg, payload = verify_backup_payload(content_bytes)
             if not valid or not payload:
                 return False, {}, f"Cloud backup integrity check failed: {msg}"
             return True, payload, ""
+    except urllib.error.HTTPError as http_err:
+        if http_err.code in (401, 403) and hasattr(auth_manager, "get_valid_access_token"):
+            token = auth_manager.get_valid_access_token(force_refresh=True)
+            if token:
+                try:
+                    req = _do_download(token)
+                    with urllib.request.urlopen(req, timeout=30) as resp:
+                        content_bytes = resp.read()
+                        valid, msg, payload = verify_backup_payload(content_bytes)
+                        if not valid or not payload:
+                            return False, {}, f"Cloud backup integrity check failed: {msg}"
+                        return True, payload, ""
+                except Exception as retry_exc:
+                    return False, {}, f"Drive download failed on retry: {retry_exc}"
+        return False, {}, f"Drive download failed: {http_err}"
     except Exception as exc:
         return False, {}, f"Drive download failed: {exc}"
 

@@ -51,10 +51,10 @@ class GoogleSheetsApiClient:
         else:
             self.auth = None
 
-    def _get_headers(self, content_type: str = "application/json") -> Dict[str, str]:
+    def _get_headers(self, content_type: str = "application/json", force_refresh: bool = False) -> Dict[str, str]:
         if not self.auth:
             raise RuntimeError("Google Sheets Auth Manager is not configured")
-        token = self.auth.get_valid_access_token()
+        token = self.auth.get_valid_access_token(force_refresh=force_refresh) if hasattr(self.auth, "get_valid_access_token") else getattr(self.auth, "access_token", None)
         if not token:
             raise PermissionError("Not authenticated with Google Sheets. Please link your Google account.")
         return {
@@ -63,6 +63,20 @@ class GoogleSheetsApiClient:
             "Accept": "application/json",
         }
 
+    def _execute_with_retry(self, req_builder, max_retries: int = 1) -> Dict[str, Any]:
+        """Executes HTTP request, attempting automatic token refresh on 401/403."""
+        try:
+            req = req_builder(self._get_headers())
+            with urllib.request.urlopen(req, timeout=30) as resp:
+                return json.loads(resp.read().decode("utf-8"))
+        except urllib.error.HTTPError as http_err:
+            if http_err.code in (401, 403) and max_retries > 0:
+                headers = self._get_headers(force_refresh=True)
+                req = req_builder(headers)
+                with urllib.request.urlopen(req, timeout=30) as resp:
+                    return json.loads(resp.read().decode("utf-8"))
+            raise
+
     def create_spreadsheet(self, title: str, sheet_names: Optional[List[str]] = None) -> Dict[str, Any]:
         """Create a new Google Spreadsheet with optional initial sheet tab names.
         
@@ -70,7 +84,6 @@ class GoogleSheetsApiClient:
             Dict response with 'spreadsheetId', 'spreadsheetUrl', etc.
         """
         url = SHEETS_API_BASE
-        headers = self._get_headers()
         sheets_def = []
         if sheet_names:
             for sname in sheet_names:
@@ -82,11 +95,8 @@ class GoogleSheetsApiClient:
             "properties": {"title": title},
             "sheets": sheets_def,
         }
-
         data_bytes = json.dumps(payload).encode("utf-8")
-        req = urllib.request.Request(url, data=data_bytes, headers=headers, method="POST")
-        with urllib.request.urlopen(req, timeout=30) as resp:
-            return json.loads(resp.read().decode("utf-8"))
+        return self._execute_with_retry(lambda h: urllib.request.Request(url, data=data_bytes, headers=h, method="POST"))
 
     def append_rows(self, spreadsheet_id: str, range_name: str, rows: List[List[Any]]) -> Dict[str, Any]:
         """Append one or more rows of tabular data to the specified sheet range.
@@ -98,31 +108,25 @@ class GoogleSheetsApiClient:
         """
         encoded_range = urllib.parse.quote(range_name)
         url = f"{SHEETS_API_BASE}/{spreadsheet_id}/values/{encoded_range}:append?valueInputOption=USER_ENTERED"
-        headers = self._get_headers()
         payload = {
             "range": range_name,
             "majorDimension": "ROWS",
             "values": rows,
         }
         data_bytes = json.dumps(payload).encode("utf-8")
-        req = urllib.request.Request(url, data=data_bytes, headers=headers, method="POST")
-        with urllib.request.urlopen(req, timeout=30) as resp:
-            return json.loads(resp.read().decode("utf-8"))
+        return self._execute_with_retry(lambda h: urllib.request.Request(url, data=data_bytes, headers=h, method="POST"))
 
     def write_table(self, spreadsheet_id: str, range_name: str, rows: List[List[Any]]) -> Dict[str, Any]:
         """Overwrite/write tabular data to the specified sheet range using PUT."""
         encoded_range = urllib.parse.quote(range_name)
         url = f"{SHEETS_API_BASE}/{spreadsheet_id}/values/{encoded_range}?valueInputOption=USER_ENTERED"
-        headers = self._get_headers()
         payload = {
             "range": range_name,
             "majorDimension": "ROWS",
             "values": rows,
         }
         data_bytes = json.dumps(payload).encode("utf-8")
-        req = urllib.request.Request(url, data=data_bytes, headers=headers, method="PUT")
-        with urllib.request.urlopen(req, timeout=30) as resp:
-            return json.loads(resp.read().decode("utf-8"))
+        return self._execute_with_retry(lambda h: urllib.request.Request(url, data=data_bytes, headers=h, method="PUT"))
 
     def get_spreadsheet_url(self, spreadsheet_id: str) -> str:
         """Return canonical Google Sheets browser URL."""

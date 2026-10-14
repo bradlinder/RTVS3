@@ -563,6 +563,16 @@ class YouTubeExportTabWidget(QWidget):
         self._cleanup_temp_files()
         super().closeEvent(event)
 
+    def reject(self) -> None:
+        """Ensure temp preview files are purged on dialog rejection."""
+        self._cleanup_temp_files()
+        super().reject()
+
+    def done(self, r: int) -> None:
+        """Ensure temp preview files are purged on dialog completion."""
+        self._cleanup_temp_files()
+        super().done(r)
+
     def populate_metadata(self):
         """Builds default title, description, and chapter timestamps from current stories."""
         proj_title = ""
@@ -701,6 +711,7 @@ class YouTubeExportDestination(ExportDestination):
             import tempfile
             tmp_t = tempfile.NamedTemporaryFile(suffix=".jpg", delete=False)
             tmp_t.close()
+            self._temp_preview_files.add(tmp_t.name)
             fpos = float(export_data.get("thumb_frame_pos", 0.0))
             if capture_video_frame(str(media_path), fpos, tmp_t.name):
                 thumb_path = tmp_t.name
