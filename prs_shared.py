@@ -70,7 +70,7 @@ def _ensure_runtime_bin_on_path():
 _ensure_runtime_bin_on_path()
 
 # Re-exports from Phase 1 modularization (core_utils, transcript_cleaner, project_serialization, process_lifecycle)
-PROJECT_VERSION = "3.9.8-beta"
+PROJECT_VERSION = "3.9.9-beta"
 from core_utils import (
     INTERNAL_APP_ID,
     APP_DISPLAY_NAME,
@@ -138,6 +138,17 @@ from model_install_workers import (
     DiarizationModelInstallWorker,
     get_diarization_model_dir,
     is_diarization_model_available,
+)
+from audio_normalization import (
+    DEFAULT_TARGET_LUFS,
+    DEFAULT_TARGET_DBFS,
+    DEFAULT_QUIET_THRESHOLD_LUFS,
+    DEFAULT_QUIET_THRESHOLD_DBFS,
+    LoudnessReport,
+    parse_ebur128_summary,
+    probe_media_duration_seconds,
+    probe_media_loudness,
+    AudioLoudnessProbeWorker,
 )
 
 try:

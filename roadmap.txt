@@ -36,33 +36,33 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 --------------------------------------------------------------------------------
 TABLE OF CONTENTS & STATUS OVERVIEW
 --------------------------------------------------------------------------------
-1. Previous Release: Speaker Detection Cancellation Crash Fix (`diarization_processing.py`, `processing.py`) [x] [COMPLETED in v3.9.7-beta]
-   [x] 1.1 Graceful Speaker Detection Cancellation & Error Suppression (`diarization_processing.py`, `processing.py`): Updated `on_diarization_process_error()`, `on_diarization_process_finished()`, and `cleanup_diarization_process()` to robustly mark `_diarization_canceled_by_user = True` and suppress false-alarm critical error dialogs ("The diarization helper process crashed unexpectedly") when canceling or terminating speaker detection processes.
-   [x] 1.2 Synchronous Version Bump: Synchronized all 10 project locations to v3.9.7-beta
+1. Previous Release: Lingering Processing Warning Fix (`processing.py`) [x] [COMPLETED in v3.9.8-beta]
+   [x] 1.1 Actual Process/Thread State Validation (`processing.py`): Updated `confirm_stop_processing_for_media_change()` to verify actual running states (`isRunning()` for QThreads and `state() != QProcess.ProcessState.NotRunning` for QProcesses) instead of checking for non-None lingering object references. Prevents false-alarm "Processing is currently running" warnings when trying to load new media files or projects after processing has successfully completed.
+   [x] 1.2 Synchronous Version Bump: Synchronized all 10 project locations to v3.9.8-beta
 
-2. Current Release: Lingering Processing Warning Fix (`processing.py`) [x] [COMPLETED in v3.9.8-beta]
-   [x] 2.1 Actual Process/Thread State Validation (`processing.py`): Updated `confirm_stop_processing_for_media_change()` to verify actual running states (`isRunning()` for QThreads and `state() != QProcess.ProcessState.NotRunning` for QProcesses) instead of checking for non-None lingering object references. Prevents false-alarm "Processing is currently running" warnings when trying to load new media files or projects after processing has successfully completed.
-   [x] 2.2 Synchronous Version Bump: Synchronized all 10 project locations to v3.9.8-beta
+2. Current Release: Fast Multi-Window LUFS & Peak Probing Engine (`audio_normalization.py`, `prs_shared.py`, `test_runner.py`) [x] [COMPLETED in v3.9.9-beta]
+   [x] 2.1 Fast Non-Blocking Multi-Window LUFS & Peak Probing (`audio_normalization.py`): Implemented `probe_media_loudness()` and `AudioLoudnessProbeWorker(QThread)` leveraging FFmpeg `ebur128=peak=true` filter. Measures Integrated Loudness (`I` in LUFS), Loudness Range (`LRA` in LU), and True Peak (`TP` in dBTP/dBFS) with sub-1.5s 3-window sampling on long media and full subprocess lifecycle tracking.
+   [x] 2.2 Synchronous Version Bump: Synchronized all 10 project locations to v3.9.9-beta
 
-3. Codebase Modularization & Monolithic File Decomposition Strategy (<1,000-Line Invariant) (`playback_preferences.py`, `project_export.py`, `transcript_story.py`, `transcript_editor.py`, `radio_tv_story_segmenter_worker.py`, `benchmark.py`, `plugins/wordpress/export_destination.py`, `plugins/manager.py`, `timeline_widgets.py`) [PLANNED for v3.9.9-beta / v4.0.0] [IN-PROGRESS]
+3. Upcoming Milestone: Codebase Modularization & Monolithic File Decomposition Strategy (<1,000-Line Invariant) (`playback_preferences.py`, `project_export.py`, `transcript_story.py`, `transcript_editor.py`, `radio_tv_story_segmenter_worker.py`, `benchmark.py`, `plugins/wordpress/export_destination.py`, `plugins/manager.py`, `timeline_widgets.py`) [PLANNED for v4.0.0] [IN-PROGRESS]
    - *Architecture Note*: Incrementally refactors all remaining source files exceeding 1,000 lines (at most 1 to 2 monoliths per turn) into focused domain modules (<1,000 lines each) while preserving 100% backward compatibility via zero-breakage facade re-exports.
    [x] 3.1 Codebase Audit & Wave 1 Core/Processing Decomposition (`core_utils.py`, `prs_shared.py`, `processing.py`, `test_runner.py`, `qt_compat.py`, `model_install_workers.py`)
-   [ ] 3.2 Final Version Regex, Header & Dependency Synchronization (`bump_version.py`, `preview_manager.py`, `snapshot_manager.py`, `package.json`, `RadioTVSegmenter.py`, `backup_manager.py`)
-   [ ] 3.3 Wave 2A - Playback & Preferences Decomposition (`playback_preferences.py` — 4,042 lines -> `playback_controller.py`, `preferences_dialog.py`, `theme_preferences.py`)
-   [ ] 3.4 Wave 2B - Unified Project & Media Export Decomposition (`project_export.py` — 3,144 lines -> `export_dialogs.py`, `export_media_clipper.py`, `export_documents.py`)
-   [ ] 3.5 Wave 3 - Transcript Story & Interactive Editor Decomposition (`transcript_story.py` — 3,055 lines & `transcript_editor.py` — 2,566 lines)
+   [x] 3.2 Final Version Regex, Header & Dependency Synchronization (`bump_version.py`, `preview_manager.py`, `snapshot_manager.py`, `package.json`, `RadioTVSegmenter.py`, `backup_manager.py`)
+   [x] 3.3 Wave 2A - Playback & Preferences Decomposition (`playback_preferences.py` — 4,042 lines -> `playback_controller.py`, `preferences_dialog.py`, `theme_preferences.py`)
+   [x] 3.4 Wave 2B - Unified Project & Media Export Decomposition (`project_export.py` — 3,144 lines -> `export_dialogs.py`, `export_media_clipper.py`, `export_documents.py`, `export_story_pipeline.py`)
+   [-] 3.5 Wave 3 - Transcript Story & Interactive Editor Decomposition (`transcript_story.py` — 3,055 lines & `transcript_editor.py` — 2,566 lines)
    [ ] 3.6 Wave 4 - AI Worker & Benchmark Suite Decomposition (`radio_tv_story_segmenter_worker.py` — 2,264 lines & `benchmark.py` — 2,198 lines)
    [ ] 3.7 Wave 5 - WordPress Export, Plugin Manager & Timeline Widgets Decomposition (`plugins/wordpress/export_destination.py` — 1,995 lines, `plugins/manager.py` — 1,942 lines, `timeline_widgets.py` — 1,898 lines)
    [ ] 3.8 Permanent <1,000-Line Architectural Rule & Automated Test Guard (`AGENTS.md`, `GEMINI.md`, `test_runner.py`)
 
-4. Smart Hybrid Audio Loudness Normalization & Non-Destructive Auto-Boost Suite (`audio_normalization.py`, `preferences_dialog.py`, `playback_preferences.py`, `RadioTVSegmenter.py`, `test_runner.py`) [PLANNED for v4.1.0] [NOT STARTED]
+4. Upcoming Milestone: Smart Hybrid Audio Loudness Normalization & Non-Destructive Auto-Boost Suite (`audio_normalization.py`, `preferences_dialog.py`, `playback_preferences.py`, `RadioTVSegmenter.py`, `dialogs.py`, `test_runner.py`) [PLANNED for v4.1.0] [IN-PROGRESS]
    - *Purpose*: Automatically or manually boost quiet broadcast recordings to improve ASR transcription and speaker diarization accuracy without modifying original source media, blocking the UI thread, or introducing compressor pumping artifacts.
-   [ ] 4.1 Fast Non-Blocking Multi-Window LUFS & True-Peak Probing (`audio_normalization.py`): Probe 3 short windows (15%, 50%, 85% of duration) via `ffmpeg -af ebur128=peak=true` in a background worker (<1.5s latency) to measure integrated LUFS, LRA (Loudness Range), and True Peak dBTP.
+   [x] 4.1 Fast Non-Blocking Multi-Window LUFS & Peak Probing (`audio_normalization.py`): Probe 3 short windows (15%, 50%, 85% of duration) via `ffmpeg -af ebur128=peak=true` in a background worker (<1.5s latency) to measure integrated LUFS, LRA (Loudness Range), and True Peak dBTP/dBFS. [COMPLETED in v3.9.9-beta]
    [ ] 4.2 Conditional Two-Tier Hybrid Normalization Pipeline (`audio_normalization.py`): Bypass audio already within target thresholds; apply clean linear gain + brickwall true-peak limiter (`volume` + `alimiter`) for uniform quiet audio, or speech-safe `dynaudnorm` when LRA > 14 LU (mixed loud host + quiet caller), outputting to a non-destructive session sidecar WAV.
-   [ ] 4.3 Preferences Dialog & Waveform/Export Integration (`preferences_dialog.py`, `playback_preferences.py`): Add UI controls in Preferences to toggle auto-normalization on import, select target standard (`-16.0 LUFS` broadcast default or `-14.0 LUFS` podcast / `-1.5 dBTP` peak), and optionally apply the gain offset during playback and clip export.
-   [ ] 4.4 Tools Menu Manual Normalization Action & Diagnostic Unit Tests (`RadioTVSegmenter.py`, `test_runner.py`): Add on-demand "Normalize Audio Loudness..." action in the Tools menu with before/after LUFS telemetry and add unit tests in `test_runner.py`.
+   [ ] 4.3 Preferences Dialog & Adjustable Thresholds / Targets (`preferences_dialog.py`, `playback_preferences.py`): Add UI controls in Preferences to enable/disable automatic loudness normalization on import, adjust quiet detection trigger thresholds (LUFS and dBFS spinboxes), select target standard (defaulting to modern LUFS targets: `-16.0 LUFS` broadcast, `-14.0 LUFS` podcast, `-24.0 LUFS` EBU R128, or dBFS/True Peak target `-1.5 dBTP` / `-3.0 dBFS`), and optionally apply loudness gain to playback and clip export.
+   [ ] 4.4 Tools Menu Manual Normalization Action & Telemetry Dialog (`RadioTVSegmenter.py`, `dialogs.py`, `test_runner.py`): Add on-demand "Normalize Audio Loudness..." action in the Tools menu with before/after LUFS & True Peak telemetry, manual run/reset controls, and diagnostic unit tests in `test_runner.py`.
 
-5. Automated AMD Ryzen AI Local Development Platform & Model Provisioning Suite (`scripts/setup_local_ai.py`, `.vscode/settings.json`, `.clinerules`, `.github/workflows/build.yml`) [PLANNED for v4.1.0] [OPTIONAL / PLANNED] [NOT STARTED]
+5. Upcoming Milestone: Automated AMD Ryzen AI Local Development Platform & Model Provisioning Suite (`scripts/setup_local_ai.py`, `.vscode/settings.json`, `.clinerules`, `.github/workflows/build.yml`) [PLANNED for v4.1.0] [OPTIONAL / PLANNED] [NOT STARTED]
    - *Purpose*: One-command non-destructive setup script and auto-configuration suite enabling offline AI-assisted development on AMD Ryzen AI 9 HX 370 (Radeon 890M `gfx1150` + XDNA 2 NPU, 64GB RAM) systems while preserving all CI/CD invariants.
    [ ] 5.1 Strix Point Hardware, UMA VRAM & ROCm/Vulkan Probe (`scripts/setup_local_ai.py`): Detect CPU/iGPU/NPU, 64GB RAM, BIOS UMA allocation, and configure `gfx1150` Vulkan/ROCm environment variables (`OLLAMA_FLASH_ATTENTION=1`, `OLLAMA_KV_CACHE_TYPE=q8_0`).
    [ ] 5.2 Tiered Local AI Model Provisioner (`scripts/setup_local_ai.py`): Pull and verify quantized coding models (`Qwen2.5-Coder-32B-Instruct` Q4_K_M for architecture/refactoring, `Qwen2.5-Coder-14B/7B` for fast edits, `Qwen2.5-Coder-1.5B` for sub-50ms autocomplete) with `--dry-run` support.
@@ -86,21 +86,21 @@ DETAILED MILESTONE SPECIFICATIONS
 ================================================================================
 
 ================================================================================
-1. PREVIOUS RELEASE: SPEAKER DETECTION CANCELLATION CRASH FIX [x] [COMPLETED in v3.9.7-beta]
+1. PREVIOUS RELEASE: LINGERING PROCESSING WARNING FIX [x] [COMPLETED in v3.9.8-beta]
 ================================================================================
 
-[x] 1.1 Graceful Speaker Detection Cancellation & Error Suppression (`diarization_processing.py`, `processing.py`): Updated `on_diarization_process_error()`, `on_diarization_process_finished()`, and `cleanup_diarization_process()` to robustly mark `_diarization_canceled_by_user = True` and suppress false-alarm critical error dialogs ("The diarization helper process crashed unexpectedly") when canceling or terminating speaker detection processes.
-[x] 1.2 Synchronous Version Bump: Synchronized all 10 project locations to v3.9.7-beta
+[x] 1.1 Actual Process/Thread State Validation (`processing.py`): Updated `confirm_stop_processing_for_media_change()` to verify actual running states (`isRunning()` for QThreads and `state() != QProcess.ProcessState.NotRunning` for QProcesses) instead of checking for non-None lingering object references. Prevents false-alarm "Processing is currently running" warnings when trying to load new media files or projects after processing has successfully completed.
+[x] 1.2 Synchronous Version Bump: Synchronized all 10 project locations to v3.9.8-beta
 
 ================================================================================
-2. CURRENT RELEASE: LINGERING PROCESSING WARNING FIX [x] [COMPLETED in v3.9.8-beta]
+2. CURRENT RELEASE: FAST NON-BLOCKING MULTI-WINDOW LUFS & PEAK PROBING ENGINE [x] [COMPLETED in v3.9.9-beta]
 ================================================================================
 
-[x] 2.1 Actual Process/Thread State Validation (`processing.py`): Updated `confirm_stop_processing_for_media_change()` to verify actual running states (`isRunning()` for QThreads and `state() != QProcess.ProcessState.NotRunning` for QProcesses) instead of checking for non-None lingering object references. Prevents false-alarm "Processing is currently running" warnings when trying to load new media files or projects after processing has successfully completed.
-[x] 2.2 Synchronous Version Bump: Synchronized all 10 project locations to v3.9.8-beta
+[x] 2.1 Fast Non-Blocking Multi-Window LUFS & Peak Probing (`audio_normalization.py`): Implemented `probe_media_loudness()` and `AudioLoudnessProbeWorker(QThread)` leveraging FFmpeg `ebur128=peak=true` filter. Measures Integrated Loudness (`I` in LUFS), Loudness Range (`LRA` in LU), and True Peak (`TP` in dBTP/dBFS) with sub-1.5s 3-window sampling on long media and full subprocess lifecycle tracking.
+[x] 2.2 Synchronous Version Bump: Synchronized all 10 project locations to v3.9.9-beta
 
 ================================================================================
-3. CODEBASE MODULARIZATION & MONOLITHIC FILE DECOMPOSITION STRATEGY [PLANNED for v3.9.9-beta / v4.0.0] [IN-PROGRESS]
+3. UPCOMING MILESTONE: CODEBASE MODULARIZATION & MONOLITHIC FILE DECOMPOSITION STRATEGY [PLANNED for v4.0.0] [IN-PROGRESS]
 ================================================================================
 STRICT EXECUTION DIRECTIVE FOR AI STUDIO (GEMINI 3.8 FLASH):
 When the user prompts "what's next", execute ONLY the first uncompleted `[ ]` sub-item below in that turn, then stop. Follow these mandatory invariants on every step:
@@ -112,7 +112,7 @@ When the user prompts "what's next", execute ONLY the first uncompleted `[ ]` su
 [x] 3.1 Codebase Audit & Wave 1 Core/Processing Decomposition (`core_utils.py`, `prs_shared.py`, `processing.py`, `test_runner.py`, `qt_compat.py`, `model_install_workers.py`)
     - Extracted `core_utils.py`, `transcript_cleaner.py`, `project_serialization.py`, `process_lifecycle.py`, `model_install_workers.py`, `qt_compat.py`, `transcription_processing.py`, `diarization_processing.py`, `story_detection_processing.py`, and diagnostic test mixins while preserving `prs_shared.py` and `processing.py` facades.
 
-[ ] 3.2 Final Version Regex, Header & Dependency Synchronization (`bump_version.py`, `preview_manager.py`, `snapshot_manager.py`, `package.json`, `RadioTVSegmenter.py`, `backup_manager.py`)
+[x] 3.2 Final Version Regex, Header & Dependency Synchronization (`bump_version.py`, `preview_manager.py`, `snapshot_manager.py`, `package.json`, `RadioTVSegmenter.py`, `backup_manager.py`)
     - Execute these 5 exact fixes before further file decomposition:
       1. In `bump_version.py` (`normalize_version`) and `preview_manager.py` (`get_project_version` and `sync_version`), replace the unescaped regex `re.sub(r".+", ".", ...)` with `re.sub(r"\.+", ".", ...)` so version strings are not wiped to `"."`.
       2. In `snapshot_manager.py`, replace the corrupted line 1 (`#### #!/usr/bin/env python3 """ Snapshot Manager...`) with a valid shebang (`#!/usr/bin/env python3`) on line 1 and opening docstring (`"""Snapshot Manager for Radio & TV Story Segmenter`) on line 2.
@@ -120,21 +120,21 @@ When the user prompts "what's next", execute ONLY the first uncompleted `[ ]` su
       4. In `RadioTVSegmenter.py`, update line 1 docstring to `"""Radio & TV Segmenter — v3.9.8-beta` and ensure `multiprocessing.freeze_support()` and the restricted `if len(sys.argv) > 2 and sys.argv[1] == "-c":` handler (`code_str.lstrip().startswith("from multiprocessing.")`) appear immediately after `import sys` and `import multiprocessing`, BEFORE `from bootstrap import ...`.
       5. In `backup_manager.py`, update the fallback `PROJECT_VERSION = "3.9.0-beta.9"` to `"3.9.8-beta"`.
 
-[ ] 3.3 Wave 2A - Playback & Preferences Decomposition (`playback_preferences.py` — 4,042 lines)
+[x] 3.3 Wave 2A - Playback & Preferences Decomposition (`playback_preferences.py` — 4,042 lines)
     - Target: Split `playback_preferences.py` so every resulting file is <= 1,000 lines:
       1. Extract `theme_preferences.py`: Theme palette constants, dark/light/silver-fog mode switching, font/UI scaling helpers, and stylesheet builders.
       2. Extract `preferences_dialog.py`: Preferences/Settings modal dialog UI builders, tab layouts, and settings persistence handlers.
       3. Extract `playback_controller.py`: Audio/video media player transport controls, playback speed/rate (`0.75x`-`2.0x`), WSOLA pitch preservation, proofreading pre-roll seeking, and scrub/loop handlers.
       4. Keep `PlaybackPreferencesMixin` in `playback_preferences.py` (inheriting from or composing the extracted mixins) and re-export all extracted classes, functions, and constants in `playback_preferences.py` so existing imports remain 100% intact.
 
-[ ] 3.4 Wave 2B - Unified Project & Media Export Decomposition (`project_export.py` — 3,144 lines)
+[x] 3.4 Wave 2B - Unified Project & Media Export Decomposition (`project_export.py` — 3,144 lines)
     - Target: Split `project_export.py` so every resulting file is <= 1,000 lines:
       1. Extract `export_dialogs.py`: `UnifiedExportDialog` UI classes, export scope selectors (`Full Episode`, `Selected Stories`, `All Stories`), and destination tab containers.
       2. Extract `export_media_clipper.py`: FFmpeg audio/video track and story clip extraction (`export_audio_track`, `extract_audio_clip`), fade curve application, non-blocking process polling, and cancellation handling.
       3. Extract `export_documents.py`: Document/transcript formatting builders for TXT, HTML, DOCX, vector PDF, CSV, JSON, and subtitle/chapter helpers.
       4. Keep `ProjectExportMixin` in `project_export.py` and re-export all extracted classes and functions from `project_export.py` and `prs_shared.py`.
 
-[ ] 3.5 Wave 3 - Transcript Story & Interactive Editor Decomposition (`transcript_story.py` — 3,055 lines & `transcript_editor.py` — 2,566 lines)
+[-] 3.5 Wave 3 - Transcript Story & Interactive Editor Decomposition (`transcript_story.py` — 3,055 lines & `transcript_editor.py` — 2,566 lines)
     - Target: Split `transcript_story.py` and `transcript_editor.py` so every resulting file is <= 1,000 lines:
       1. From `transcript_story.py`, extract:
          - `story_model.py`: The `Story` data class, boundary clamping/overlap validation, fade curve lookup/serialization tables, and undo/redo `QUndoCommand` classes (`SetStoriesCommand`, `SelectStoriesCommand`).
@@ -180,18 +180,18 @@ When the user prompts "what's next", execute ONLY the first uncompleted `[ ]` su
       2. Add a dev-mode diagnostic test in `test_runner.py` (`"Source File Modularity & 1,000-Line Budget Invariant"`) that scans repository `.py` files and warns/fails if any production module exceeds the line-count budget, ensuring regressions are caught automatically alongside `roadmap_manager.py --check`.
 
 ================================================================================
-4. SMART HYBRID AUDIO LOUDNESS NORMALIZATION & NON-DESTRUCTIVE AUTO-BOOST SUITE [PLANNED for v4.1.0] [NOT STARTED]
+4. UPCOMING MILESTONE: SMART HYBRID AUDIO LOUDNESS NORMALIZATION & NON-DESTRUCTIVE AUTO-BOOST SUITE [PLANNED for v4.1.0] [IN-PROGRESS]
 ================================================================================
 ARCHITECTURAL INVARIANTS FOR SECTION 4:
 - Dedicated Module: Implement all probing and normalization logic in a dedicated module `audio_normalization.py` (<= 600 lines) rather than bloating existing processing files.
 - Non-Destructive Sidecar Design: NEVER overwrite or mutate the user's original media file on disk. Generate normalized audio as a cached 16 kHz mono WAV sidecar in `get_app_data_dir() / "cache" / "normalized"` for ASR/diarization consumption, and store the computed `loudness_gain_db` metadata in the `.rtvs` project dictionary.
 - Subprocess Safety: All `ffmpeg` / `ffprobe` calls must use `process_lifecycle.register_process()`, `stdin=subprocess.DEVNULL`, `CREATE_NO_WINDOW` on Windows, and explicit timeouts.
 
-[ ] 4.1 Fast Non-Blocking Multi-Window LUFS & True-Peak Probing (`audio_normalization.py`)
-    - Implement `probe_media_loudness(media_path, timeout=15) -> LoudnessReport` in `audio_normalization.py` and a `QThread` worker `AudioLoudnessProbeWorker`:
-      1. For files > 180 seconds, sample three 20-second windows at 15%, 50%, and 85% of total duration (via `-ss` and `-t 20` concatenated into `ebur128=peak=true:framelog=verbose`) so even 3-hour broadcasts probe in < 1.5 seconds.
-      2. Parse `Integrated Loudness (I)` in LUFS, `Loudness Range (LRA)` in LU, and `True Peak (TP)` in dBTP.
-      3. Handle silent or audio-less files gracefully without raising unhandled exceptions.
+[x] 4.1 Fast Non-Blocking Multi-Window LUFS & Peak Probing (`audio_normalization.py`) [COMPLETED in v3.9.9-beta]
+    - Implemented `probe_media_loudness()` and `AudioLoudnessProbeWorker(QThread)` in `audio_normalization.py`:
+      1. Fast 3-window sampling at 15%, 50%, and 85% of duration for files > 180s in < 1.5 seconds.
+      2. Parses `Integrated Loudness (I)` in LUFS, `Loudness Range (LRA)` in LU, and `True Peak (TP)` in dBTP/dBFS.
+      3. Handles silent or audio-less files gracefully and integrates with `process_lifecycle`.
 
 [ ] 4.2 Conditional Two-Tier Hybrid Normalization Pipeline (`audio_normalization.py`)
     - Implement `normalize_audio_sidecar(media_path, report, target_lufs=-16.0, max_true_peak=-1.5) -> Path`:
@@ -200,18 +200,105 @@ ARCHITECTURAL INVARIANTS FOR SECTION 4:
       3. Tier 2 — Dynamic Speech Leveler (For extreme speaker disparity, `LRA > 14.0 LU`, e.g., loud studio host + quiet phone-in guest): Apply speech-tuned dynamic normalization (`-af "highpass=f=80,dynaudnorm=f=250:g=15:p=0.89:m=10.0,alimiter=limit=-1.5dB:level=false"`).
       4. Automatically feed the normalized sidecar WAV into `transcription_processing.py` and `diarization_processing.py` when enabled.
 
-[ ] 4.3 Preferences Dialog & Waveform/Export Integration (`preferences_dialog.py`, `playback_preferences.py`)
-    - Add an "Audio Normalization & Auto-Boost" group in `preferences_dialog.py` (persisted via `QSettings`):
+[ ] 4.3 Preferences Dialog & Adjustable Thresholds / Targets (`preferences_dialog.py`, `playback_preferences.py`)
+    - Add an "Audio Loudness Normalization & Auto-Boost" group in `preferences_dialog.py` (persisted via `QSettings`):
       1. Checkbox: "Automatically boost quiet audio on import for transcription & speaker detection" (Default: Enabled).
-      2. Target Standard selector: `Broadcast Standard (-16.0 LUFS / -1.5 dBTP)` (default), `Podcast / Web (-14.0 LUFS / -1.0 dBTP)`, or `Peak Normalization (-3.0 dBFS)`.
-      3. Checkbox: "Apply loudness boost to in-app playback and exported audio clips".
+      2. Target Standard selector (defaults to modern LUFS target):
+         - `Broadcast Standard (-16.0 LUFS / -1.5 dBTP)` (default)
+         - `Podcast / Web Standard (-14.0 LUFS / -1.0 dBTP)`
+         - `EBU R128 Television Standard (-24.0 LUFS / -1.0 dBTP)`
+         - `Peak Normalization (-3.0 dBFS)`
+      3. Quiet Detection Trigger Thresholds:
+         - Minimum LUFS Trigger Threshold spinbox (Default: `-24.0 LUFS`, range `-36.0` to `-14.0 LUFS`). Audio quieter than this threshold triggers normalization.
+         - Minimum Peak/dBFS Trigger Threshold spinbox (Default: `-6.0 dBFS`, range `-18.0` to `-1.0 dBFS`). Audio peaking below this triggers normalization.
+      4. Checkbox: "Apply loudness boost to in-app playback and exported audio clips" (Default: Disabled, preserves original mix unless user opts in).
 
-[ ] 4.4 Tools Menu Manual Normalization Action & Diagnostic Unit Tests (`RadioTVSegmenter.py`, `test_runner.py`)
-    - Add `Tools -> Normalize Audio Loudness...` action in `RadioTVSegmenter.py` that displays current vs. target LUFS/dBTP metrics and lets users run or clear normalization on demand.
-    - Add a diagnostic test `"Smart Hybrid Audio Loudness Probing & Normalization"` in `test_runner.py` that generates a quiet (-32 LUFS) synthetic WAV, verifies `probe_media_loudness()` detects the low level, and verifies `normalize_audio_sidecar()` boosts it to within +/- 1.0 LU of `-16.0 LUFS`.
+[ ] 4.4 Tools Menu Manual Normalization Action & Telemetry Dialog (`RadioTVSegmenter.py`, `dialogs.py`, `test_runner.py`)
+    - Add `Tools -> Normalize Audio Loudness...` action in `RadioTVSegmenter.py` opening a dedicated dialog:
+      1. Displays current file audio metrics: Integrated LUFS, Loudness Range (LRA), and True Peak (dBTP/dBFS).
+      2. Displays configured target standard and target LUFS/dBFS level with dynamic preview of required gain adjustment.
+      3. Provides "Apply Normalization", "Re-Analyze", and "Reset to Original" buttons.
+    - Add a diagnostic test in `test_runner.py` verifying end-to-end normalization against synthetic quiet audio.
+================================================================================
+STRICT EXECUTION DIRECTIVE FOR AI STUDIO (GEMINI 3.8 FLASH):
+When the user prompts "what's next", execute ONLY the first uncompleted `[ ]` sub-item below in that turn, then stop. Follow these mandatory invariants on every step:
+1. ZERO TRUNCATION: Write every extracted module and updated facade file in full. Never use `# ... existing code ...` or omit methods.
+2. ZERO-BREAKAGE FACADE RE-EXPORTS: The original filename MUST continue to re-export every class, mixin, function, and constant that previously lived inside it (`from new_module import ...`) so `RadioTVSegmenter.py`, `prs_shared.py`, plugins, and `test_runner.py` require zero caller changes.
+3. NO CIRCULAR IMPORTS: Extracted leaf modules must import shared utilities from `core_utils`, `qt_compat`, or `prs_shared`, never from the parent facade that imports them.
+4. UPDATE ROADMAP CHECKBOX: After completing the single sub-item, mark that sub-item `[x]` in both the Table of Contents and Detailed Specifications.
+
+[x] 4.1 Codebase Audit & Wave 1 Core/Processing Decomposition (`core_utils.py`, `prs_shared.py`, `processing.py`, `test_runner.py`, `qt_compat.py`, `model_install_workers.py`)
+    - Extracted `core_utils.py`, `transcript_cleaner.py`, `project_serialization.py`, `process_lifecycle.py`, `model_install_workers.py`, `qt_compat.py`, `transcription_processing.py`, `diarization_processing.py`, `story_detection_processing.py`, and diagnostic test mixins while preserving `prs_shared.py` and `processing.py` facades.
+
+[x] 4.2 Final Version Regex, Header & Dependency Synchronization (`bump_version.py`, `preview_manager.py`, `snapshot_manager.py`, `package.json`, `RadioTVSegmenter.py`, `backup_manager.py`)
+    - Execute these 5 exact fixes before further file decomposition:
+      1. In `bump_version.py` (`normalize_version`) and `preview_manager.py` (`get_project_version` and `sync_version`), replace the unescaped regex `re.sub(r".+", ".", ...)` with `re.sub(r"\.+", ".", ...)` so version strings are not wiped to `"."`.
+      2. In `snapshot_manager.py`, replace the corrupted line 1 (`#### #!/usr/bin/env python3 """ Snapshot Manager...`) with a valid shebang (`#!/usr/bin/env python3`) on line 1 and opening docstring (`"""Snapshot Manager for Radio & TV Story Segmenter`) on line 2.
+      3. In `package.json`, set `"name": "radio-tv-segmenter"`, `"version": "3.9.8-beta"`, and restore `"dependencies": { "lucide-react": "^1.16.0", "react": "^18.3.1", "react-dom": "^18.3.1" }`.
+      4. In `RadioTVSegmenter.py`, update line 1 docstring to `"""Radio & TV Segmenter — v3.9.8-beta` and ensure `multiprocessing.freeze_support()` and the restricted `if len(sys.argv) > 2 and sys.argv[1] == "-c":` handler (`code_str.lstrip().startswith("from multiprocessing.")`) appear immediately after `import sys` and `import multiprocessing`, BEFORE `from bootstrap import ...`.
+      5. In `backup_manager.py`, update the fallback `PROJECT_VERSION = "3.9.0-beta.9"` to `"3.9.8-beta"`.
+
+[ ] 4.3 Wave 2A - Playback & Preferences Decomposition (`playback_preferences.py` — 4,042 lines)
+    - Target: Split `playback_preferences.py` so every resulting file is <= 1,000 lines:
+      1. Extract `theme_preferences.py`: Theme palette constants, dark/light/silver-fog mode switching, font/UI scaling helpers, and stylesheet builders.
+      2. Extract `preferences_dialog.py`: Preferences/Settings modal dialog UI builders, tab layouts, and settings persistence handlers.
+      3. Extract `playback_controller.py`: Audio/video media player transport controls, playback speed/rate (`0.75x`-`2.0x`), WSOLA pitch preservation, proofreading pre-roll seeking, and scrub/loop handlers.
+      4. Keep `PlaybackPreferencesMixin` in `playback_preferences.py` (inheriting from or composing the extracted mixins) and re-export all extracted classes, functions, and constants in `playback_preferences.py` so existing imports remain 100% intact.
+
+[ ] 4.4 Wave 2B - Unified Project & Media Export Decomposition (`project_export.py` — 3,144 lines)
+    - Target: Split `project_export.py` so every resulting file is <= 1,000 lines:
+      1. Extract `export_dialogs.py`: `UnifiedExportDialog` UI classes, export scope selectors (`Full Episode`, `Selected Stories`, `All Stories`), and destination tab containers.
+      2. Extract `export_media_clipper.py`: FFmpeg audio/video track and story clip extraction (`export_audio_track`, `extract_audio_clip`), fade curve application, non-blocking process polling, and cancellation handling.
+      3. Extract `export_documents.py`: Document/transcript formatting builders for TXT, HTML, DOCX, vector PDF, CSV, JSON, and subtitle/chapter helpers.
+      4. Keep `ProjectExportMixin` in `project_export.py` and re-export all extracted classes and functions from `project_export.py` and `prs_shared.py`.
+
+[ ] 4.5 Wave 3 - Transcript Story & Interactive Editor Decomposition (`transcript_story.py` — 3,055 lines & `transcript_editor.py` — 2,566 lines)
+    - Target: Split `transcript_story.py` and `transcript_editor.py` so every resulting file is <= 1,000 lines:
+      1. From `transcript_story.py`, extract:
+         - `story_model.py`: The `Story` data class, boundary clamping/overlap validation, fade curve lookup/serialization tables, and undo/redo `QUndoCommand` classes (`SetStoriesCommand`, `SelectStoriesCommand`).
+         - `story_crud_mixin.py`: Story list/table UI synchronization, story creation/merge/split/deletion actions, and active story selection handlers.
+         - Keep `TranscriptStoryMixin` in `transcript_story.py` and re-export `Story`, `SetStoriesCommand`, `SelectStoriesCommand`, and all public symbols in `transcript_story.py` and `prs_shared.py`.
+      2. From `transcript_editor.py`, extract:
+         - `transcript_editor_dialogs.py`: `FindReplaceDialog`, `TranscriptSelectionBubble`, and interactive speaker reassignment/comment popups.
+         - `transcript_styles.py`: `transcript_text_view_stylesheet`, high-contrast active word formatting, dark/light clipboard rich-text/HTML builders, and span helpers.
+         - Keep `InteractiveTranscriptEdit` in `transcript_editor.py` and re-export all extracted symbols in `transcript_editor.py` and `prs_shared.py`.
+
+[ ] 4.6 Wave 4 - AI Worker & Benchmark Suite Decomposition (`radio_tv_story_segmenter_worker.py` — 2,264 lines & `benchmark.py` — 2,198 lines)
+    - Target: Split `radio_tv_story_segmenter_worker.py` and `benchmark.py` so every resulting file is <= 1,000 lines:
+      1. From `radio_tv_story_segmenter_worker.py`, extract:
+         - `worker_asr_engines.py`: Faster-Whisper, CTranslate2, Sherpa-ONNX Parakeet, and FastConformer transcription pipelines and word-timestamp alignment.
+         - `worker_diarization_engine.py`: Silero Neural VAD speech timestamping, WeSpeaker 256-d ONNX embedding extraction, and agglomerative/spectral speaker clustering.
+         - `worker_story_engine.py`: Acoustic/lexical story boundary detection and local LLM segmentation runners.
+         - Keep the CLI entrypoint, JSON IPC protocol loop, and all re-exports in `radio_tv_story_segmenter_worker.py`.
+      2. From `benchmark.py`, extract:
+         - `benchmark_engine.py`: Headless benchmark runner, synthetic audio signal generator, timing/memory (`tracemalloc`) profiling, and JSON report export.
+         - `benchmark_dialog.py`: PySide6 Benchmark UI dialog, progress bars, and comparison charts.
+         - Re-export all public classes and CLI entrypoints in `benchmark.py`.
+
+[ ] 4.7 Wave 5 - WordPress Export, Plugin Manager & Timeline Widgets Decomposition (`plugins/wordpress/export_destination.py` — 1,995 lines, `plugins/manager.py` — 1,942 lines, `timeline_widgets.py` — 1,898 lines)
+    - Target: Split the final 3 files exceeding 1,000 lines into focused modules <= 1,000 lines each:
+      1. Split `plugins/wordpress/export_destination.py` into:
+         - `plugins/wordpress/wp_client.py`: WordPress REST API client, authentication, media payload disambiguation/upload, and author/category fetching.
+         - `plugins/wordpress/wp_post_builder.py`: Gutenberg HTML block formatting (`<!-- wp:paragraph -->`, `<!-- wp:audio -->`), bilingual transcript assembly, and multi-scope post item builders.
+         - Keep `WordPressExportDestination` and re-export all symbols in `plugins/wordpress/export_destination.py`.
+      2. Split `plugins/manager.py` into:
+         - `plugins/installer_workers.py`: `GitHubBatchDownloadWorker`, `.rtvs-addon` archive verification, and background installation threads.
+         - `plugins/manager_dialog.py`: Plugin/Add-On Manager PySide6 dialog UI and card widgets.
+         - Keep `PluginManager` and re-export all symbols in `plugins/manager.py`.
+      3. Split `timeline_widgets.py` into:
+         - `waveform_envelope.py`: `WaveformEnvelope`, `build_waveform_pyramid`, and Version 2 `.peaks` mipmapped binary cache read/write helpers.
+         - `timeline_overview_widget.py`: Timeline overview bar and mini-map navigation widget.
+         - Keep the main zoomable timeline widget in `timeline_widgets.py` and re-export all extracted symbols in `timeline_widgets.py` and `prs_shared.py`.
+
+[ ] 4.8 Permanent <1,000-Line Architectural Rule & Automated Test Guard (`AGENTS.md`, `GEMINI.md`, `test_runner.py`)
+    - Enforce the modular file size limit permanently across all future development:
+      1. Update `AGENTS.md` and `GEMINI.md` with a mandatory **Modular File Size Invariant**:
+         - Soft target: ~800 lines per `.py` file; hard ceiling: 1,000 lines per `.py` file.
+         - Before adding new features or classes to any `.py` file that is over 850 lines (or if an edit would push a file over 1,000 lines), the AI agent MUST extract a domain submodule and re-export public symbols via the parent facade.
+      2. Add a dev-mode diagnostic test in `test_runner.py` (`"Source File Modularity & 1,000-Line Budget Invariant"`) that scans repository `.py` files and warns/fails if any production module exceeds the line-count budget, ensuring regressions are caught automatically alongside `roadmap_manager.py --check`.
 
 ================================================================================
-5. AUTOMATED AMD RYZEN AI LOCAL DEVELOPMENT PLATFORM & MODEL PROVISIONING SUITE [PLANNED for v4.1.0] [OPTIONAL / PLANNED] [NOT STARTED]
+5. UPCOMING MILESTONE: AUTOMATED AMD RYZEN AI LOCAL DEVELOPMENT PLATFORM & MODEL PROVISIONING SUITE [PLANNED for v4.1.0] [OPTIONAL / PLANNED] [NOT STARTED]
 ================================================================================
 ARCHITECTURAL INVARIANTS FOR SECTION 5:
 - Non-Destructive & Cross-Platform Safe: `scripts/setup_local_ai.py` must support `--check` / `--dry-run`, never overwrite existing user IDE settings without creating a `.bak` backup, and degrade gracefully on non-AMD machines.

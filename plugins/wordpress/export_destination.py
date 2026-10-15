@@ -57,6 +57,7 @@ from plugins.wordpress.client import (
     WordPressSettingsDialog,
     execute_wordpress_upload,
     _get_wp_password,
+    is_wp_auth_error,
 )
 
 
@@ -1610,6 +1611,34 @@ class WordPressExportTabWidget(QWidget):
         self.wp_category_list.blockSignals(False)
 
     def _refresh_wp_metadata(self):
+        from plugins.wordpress.client import get_wp_client
+        client = get_wp_client()
+        if not client or not client.is_configured():
+            reply = QMessageBox.question(
+                self,
+                "WordPress Credentials Required",
+                "WordPress site connection is not configured or missing login credentials.\n\nWould you like to enter or correct your website URL and login details now?",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                QMessageBox.StandardButton.Yes,
+            )
+            if reply == QMessageBox.StandardButton.Yes:
+                self._open_wp_settings()
+            return
+
+        if not os.environ.get("RTVS_TEST_MODE"):
+            ok, test_msg = client.test_connection()
+            if not ok:
+                reply = QMessageBox.question(
+                    self,
+                    "WordPress Connection Failed",
+                    f"Could not connect to WordPress:\n{test_msg}\n\nWould you like to enter or correct your website URL and login details now?",
+                    QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                    QMessageBox.StandardButton.Yes,
+                )
+                if reply == QMessageBox.StandardButton.Yes:
+                    self._open_wp_settings()
+                return
+
         self._populate_wp_export_metadata(force_refresh=True)
         if 0 <= self._current_post_index < len(self.wp_post_items):
             self._load_post_editor_state(self._current_post_index)
@@ -1706,24 +1735,64 @@ class WordPressExportDestination(ExportDestination):
         pwd = _get_wp_password(user) if user else ""
         parent_widget = main_window if isinstance(main_window, QWidget) else (self.tab_widget if isinstance(getattr(self, "tab_widget", None), QWidget) else None)
         show_summary_dialog = bool(export_data.get("show_completion_dialog", True))
-        if not (url and user and pwd):
-            if show_summary_dialog:
-                QMessageBox.warning(
-                    parent_widget,
-                    "WordPress Not Configured",
-                    "Please configure your WordPress Site URL, Username, and Application Password in Settings before exporting.",
-                )
-            return False
-        if url in ("https://example.com", "http://example.com", "example.com") and not os.environ.get("RTVS_TEST_MODE"):
-            if show_summary_dialog:
-                QMessageBox.warning(
-                    parent_widget,
-                    "Invalid WordPress Site URL",
-                    f"The WordPress Site URL in your settings ('{url}') is set to 'example.com'.\n\nPlease open WordPress Settings and enter your actual website URL (e.g. https://mystation.org).",
-                )
+
+        def prompt_configure_credentials(reason_text: str) -> bool:
+            reply = QMessageBox.question(
+                parent_widget,
+                "WordPress Credentials Required",
+                f"{reason_text}\n\nWould you like to enter or correct your website URL and login details now?",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                QMessageBox.StandardButton.Yes,
+            )
+            if reply == QMessageBox.StandardButton.Yes:
+                dlg = WordPressSettingsDialog(parent=parent_widget)
+                if dlg.exec():
+                    if self.tab_widget:
+                        self.tab_widget._update_wp_conn_status()
+                        self.tab_widget._populate_wp_export_metadata(force_refresh=True)
+                    return True
             return False
 
+        if not (url and user and pwd):
+            if show_summary_dialog:
+                if prompt_configure_credentials("WordPress site connection is not configured or missing login credentials."):
+                    url = str(settings.value("wp_site_url", "") or "").strip()
+                    user = str(settings.value("wp_username", "") or "").strip()
+                    pwd = _get_wp_password(user) if user else ""
+            if not (url and user and pwd):
+                return False
+
+        if url in ("https://example.com", "http://example.com", "example.com") and not os.environ.get("RTVS_TEST_MODE"):
+            if show_summary_dialog:
+                if prompt_configure_credentials(f"The WordPress Site URL in your settings ('{url}') is set to 'example.com'."):
+                    url = str(settings.value("wp_site_url", "") or "").strip()
+                    user = str(settings.value("wp_username", "") or "").strip()
+                    pwd = _get_wp_password(user) if user else ""
+            if url in ("https://example.com", "http://example.com", "example.com") and not os.environ.get("RTVS_TEST_MODE"):
+                return False
+
         client = WordPressClient(url, user, pwd)
+
+        if not os.environ.get("RTVS_TEST_MODE"):
+            ok, conn_msg = client.test_connection()
+            if not ok:
+                if show_summary_dialog:
+                    if prompt_configure_credentials(f"Could not connect to WordPress site:\n{conn_msg}"):
+                        url = str(settings.value("wp_site_url", "") or "").strip()
+                        user = str(settings.value("wp_username", "") or "").strip()
+                        pwd = _get_wp_password(user) if user else ""
+                        if not (url and user and pwd):
+                            return False
+                        client = WordPressClient(url, user, pwd)
+                        ok, conn_msg = client.test_connection()
+                        if not ok:
+                            QMessageBox.critical(parent_widget, "Connection Failed", conn_msg)
+                            return False
+                    else:
+                        return False
+                else:
+                    return False
+
         wp_posts = export_data.get("wp_posts", [])
         if not wp_posts:
             if show_summary_dialog:
@@ -1934,12 +2003,28 @@ class WordPressExportDestination(ExportDestination):
                 )
             elif failed_posts:
                 fail_summary = "\n".join([f"  {f['title']}: {f['error']}" for f in failed_posts])
-                QMessageBox.critical(
-                    parent_widget,
-                    "WordPress Export Failed",
-                    f"None of the {len(failed_posts)} posts could be exported to WordPress.\n\n"
-                    f"Errors:\n{fail_summary}",
-                )
+                has_auth_err = any(is_wp_auth_error(f.get("error", "")) for f in failed_posts)
+                if has_auth_err:
+                    reply = QMessageBox.question(
+                        parent_widget,
+                        "WordPress Credentials Required",
+                        f"WordPress export failed due to invalid or expired credentials:\n\n{fail_summary}\n\nWould you like to enter or correct your website URL and login details now?",
+                        QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                        QMessageBox.StandardButton.Yes,
+                    )
+                    if reply == QMessageBox.StandardButton.Yes:
+                        dlg = WordPressSettingsDialog(parent=parent_widget)
+                        if dlg.exec():
+                            if self.tab_widget:
+                                self.tab_widget._update_wp_conn_status()
+                                self.tab_widget._populate_wp_export_metadata(force_refresh=True)
+                else:
+                    QMessageBox.critical(
+                        parent_widget,
+                        "WordPress Export Failed",
+                        f"None of the {len(failed_posts)} posts could be exported to WordPress.\n\n"
+                        f"Errors:\n{fail_summary}",
+                    )
         return len(created_posts) > 0
 
 

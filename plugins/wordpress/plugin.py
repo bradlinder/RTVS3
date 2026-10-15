@@ -384,13 +384,16 @@ class WordPressPublishDialog(QDialog):
         username = str(self.settings.value("wp_username", "") or "")
         password = _get_wp_password(username)
 
-        if not site_url or not username or not password:
-            QMessageBox.warning(
+        if not site_url or not username or not password or site_url in ("https://example.com", "http://example.com", "example.com"):
+            reply = QMessageBox.question(
                 self,
-                "WordPress Not Configured",
-                "Please configure your WordPress Site URL, Username, and Application Password first.",
+                "WordPress Credentials Required",
+                "WordPress site connection settings are missing or incomplete.\n\nWould you like to enter your website URL and login details now?",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                QMessageBox.StandardButton.Yes,
             )
-            self.on_configure_credentials()
+            if reply == QMessageBox.StandardButton.Yes:
+                self.on_configure_credentials()
             return
 
         client = WordPressClient(site_url, username, password)
@@ -493,7 +496,19 @@ class WordPressPublishDialog(QDialog):
             QMessageBox.information(self, "Published Successfully", info)
             self.accept()
         else:
-            QMessageBox.critical(self, "Publishing Error", f"Failed to publish to WordPress:\n\n{msg}")
+            from plugins.wordpress.client import is_wp_auth_error
+            if is_wp_auth_error(msg):
+                reply = QMessageBox.question(
+                    self,
+                    "WordPress Credentials Required",
+                    f"Failed to publish to WordPress due to invalid or expired credentials:\n\n{msg}\n\nWould you like to enter or correct your website URL and login details now?",
+                    QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                    QMessageBox.StandardButton.Yes,
+                )
+                if reply == QMessageBox.StandardButton.Yes:
+                    self.on_configure_credentials()
+            else:
+                QMessageBox.critical(self, "Publishing Error", f"Failed to publish to WordPress:\n\n{msg}")
 
     def closeEvent(self, event):
         try:
@@ -786,10 +801,18 @@ class WordPressStoryMetadataWidget(QGroupBox):
 
     def _on_refresh_taxonomy(self):
         try:
-            from plugins.wordpress.client import get_wp_client
+            from plugins.wordpress.client import get_wp_client, is_wp_auth_error
             client = get_wp_client()
-            if not client.is_configured():
-                QMessageBox.information(self, "WordPress Not Configured", "Please configure WordPress settings first under Settings > Manage Plugins.")
+            if not client or not client.is_configured():
+                reply = QMessageBox.question(
+                    self,
+                    "WordPress Credentials Required",
+                    "WordPress site connection settings are missing or incomplete.\n\nWould you like to enter your website URL and login details now?",
+                    QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                    QMessageBox.StandardButton.Yes,
+                )
+                if reply == QMessageBox.StandardButton.Yes:
+                    self.on_configure_credentials()
                 return
             authors = client.get_authors()
             cats = client.get_categories()
@@ -798,7 +821,20 @@ class WordPressStoryMetadataWidget(QGroupBox):
             self._load_current_target_metadata()
             QMessageBox.information(self, "Refreshed", f"Successfully loaded {len(authors)} authors and {len(cats)} categories from WordPress.")
         except Exception as exc:
-            QMessageBox.warning(self, "Refresh Error", f"Failed to refresh from WordPress: {exc}")
+            err_msg = str(exc)
+            from plugins.wordpress.client import is_wp_auth_error
+            if is_wp_auth_error(err_msg):
+                reply = QMessageBox.question(
+                    self,
+                    "WordPress Credentials Required",
+                    f"Failed to refresh from WordPress due to invalid credentials:\n\n{err_msg}\n\nWould you like to enter or correct your website URL and login details now?",
+                    QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                    QMessageBox.StandardButton.Yes,
+                )
+                if reply == QMessageBox.StandardButton.Yes:
+                    self.on_configure_credentials()
+            else:
+                QMessageBox.warning(self, "Refresh Error", f"Failed to refresh from WordPress: {exc}")
 
 
 class Plugin(BasePlugin):

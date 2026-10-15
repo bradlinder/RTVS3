@@ -52,6 +52,7 @@ from diagnostic_core_tests import DiagnosticCoreTestsMixin
 from diagnostic_export_tests import DiagnosticExportTestsMixin
 from diagnostic_batch_tests import DiagnosticBatchTestsMixin
 from diagnostic_cloud_and_system_tests import DiagnosticCloudAndSystemTestsMixin
+from diagnostic_loudness_tests import DiagnosticLoudnessTestsMixin
 
 
 # ---------------------------------------------------------------------------
@@ -63,6 +64,7 @@ class DiagnosticEngine(
     DiagnosticExportTestsMixin,
     DiagnosticBatchTestsMixin,
     DiagnosticCloudAndSystemTestsMixin,
+    DiagnosticLoudnessTestsMixin,
 ):
     """Executes tests across Core File Formats, Subtitle Generators, AI Runtimes,
     and Download Pipelines with optional progress reporting.
@@ -462,6 +464,12 @@ class DiagnosticEngine(
                 "Timeline & Audio Performance",
                 "Validates playback speed rates (0.75x to 2.0x), WSOLA pitch preservation parameters, and proofreading pre-roll configuration",
             ),
+            # Milestone 4 / Smart Hybrid Audio Normalization Suite
+            DiagnosticItem(
+                "Smart Hybrid Audio Loudness Probing",
+                "Timeline & Audio Performance",
+                "Validates fast multi-window EBU R128 loudness and peak probing across synthetic test media",
+            ),
         ]
 
     def run_all(self, stop_requested_fn: Optional[Callable[[], bool]] = None) -> List[DiagnosticItem]:
@@ -731,8 +739,13 @@ def create_diagnostic_dialog(parent=None, include_dev_tests: Optional[bool] = No
             layout.addLayout(bottom_layout)
 
         def start_diagnostics(self):
-            if self.worker_thread and self.worker_thread.isRunning():
-                return
+            if self.worker_thread is not None:
+                try:
+                    if self.worker_thread.isRunning():
+                        return
+                except RuntimeError:
+                    self.worker_thread = None
+
             self.run_btn.setEnabled(False)
             self.stop_btn.setEnabled(True)
             self.progress_bar.setValue(0)
@@ -760,8 +773,11 @@ def create_diagnostic_dialog(parent=None, include_dev_tests: Optional[bool] = No
             self.worker_thread.start()
 
         def stop_diagnostics(self):
-            if self.worker:
-                self.worker.stop()
+            if self.worker is not None:
+                try:
+                    self.worker.stop()
+                except RuntimeError:
+                    self.worker = None
                 self.status_lbl.setText("Stopping tests...")
                 self.stop_btn.setEnabled(False)
 
@@ -798,6 +814,8 @@ def create_diagnostic_dialog(parent=None, include_dev_tests: Optional[bool] = No
             failed = sum(1 for it in self.engine.items if it.status == "FAIL")
             warn = sum(1 for it in self.engine.items if it.status == "WARNING")
             self.status_lbl.setText(f"Diagnostics complete: {passed} passed, {failed} failed, {warn} warnings.")
+            self.worker = None
+            self.worker_thread = None
 
         def copy_report(self):
             from PySide6.QtGui import QGuiApplication
@@ -837,11 +855,28 @@ def create_diagnostic_dialog(parent=None, include_dev_tests: Optional[bool] = No
                     )
 
         def closeEvent(self, event):
-            if self.worker_thread and self.worker_thread.isRunning():
-                self.worker.stop()
-                self.worker_thread.quit()
-                self.worker_thread.wait(1000)
-            event.accept()
+            try:
+                if self.worker_thread is not None:
+                    is_running = False
+                    try:
+                        is_running = self.worker_thread.isRunning()
+                    except RuntimeError:
+                        is_running = False
+
+                    if is_running:
+                        if self.worker is not None:
+                            try:
+                                self.worker.stop()
+                            except RuntimeError:
+                                pass
+                        self.worker_thread.quit()
+                        self.worker_thread.wait(1000)
+            except Exception:
+                pass
+            finally:
+                self.worker = None
+                self.worker_thread = None
+                event.accept()
 
     return DiagnosticDialog(parent, include_dev_tests=include_dev_tests)
 

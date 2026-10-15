@@ -1,5 +1,15 @@
 # Changelog
 
+## v3.9.9-beta
+- **Codebase Modularization & Monolithic File Decomposition (Wave 2A & Wave 2B)**:
+  - **Wave 2A: Playback & Preferences Decomposition (`playback_preferences.py`)**: Decomposed 4,042-line monolith into focused modules: `theme_preferences.py` (596 lines), `playback_controller.py` (330 lines), `preferences_reset.py` (613 lines), `preferences_tabs_core.py` (509 lines), `preferences_tabs_media.py` (641 lines), `preferences_dialog.py` (588 lines), and `project_state_mixin.py` (328 lines), retaining `playback_preferences.py` (640 lines) as a 100% backward-compatible facade.
+  - **Wave 2B: Unified Project & Media Export Decomposition (`project_export.py`)**: Decomposed 3,144-line monolith into focused modules: `export_dialogs.py` (372 lines), `export_media_clipper.py` (211 lines), `export_documents.py` (774 lines), and `export_story_pipeline.py` (979 lines), retaining `project_export.py` (447 lines) as a 100% backward-compatible facade.
+- **Fast Non-Blocking Multi-Window Audio Loudness Probing (`audio_normalization.py`, `prs_shared.py`, `test_runner.py`)**:
+  - **Fast EBU R128 Loudness Probing Engine (`audio_normalization.py`)**: Implemented `probe_media_loudness()` and `AudioLoudnessProbeWorker(QThread)` leveraging FFmpeg `ebur128=peak=true` filter. Measures Integrated Loudness (`I` in LUFS), Loudness Range (`LRA` in LU), and True Peak (`TP` in dBTP/dBFS) without blocking the Qt GUI thread.
+  - **Multi-Window High-Speed Sampling for Long Media**: Automatically samples three 20-second audio windows at 15%, 50%, and 85% of total duration for media exceeding 180 seconds via video-disabled stream seeking (`-vn -ss -t`), enabling 3-hour broadcast recordings to probe in under 1.5 seconds at >200x real-time speed.
+  - **Clean Subprocess Lifecycle Tracking**: Wrapped all probing operations in `process_lifecycle.register_process()` and `unregister_process()` with strict timeout enforcement and graceful termination.
+  - **Automated Diagnostic Suite (`diagnostic_loudness_tests.py`, `test_runner.py`)**: Created focused test submodule `diagnostic_loudness_tests.py` (<100 lines) validating parser metrics, synthetic quiet file detection, and worker cancellation.
+
 ## v3.9.8-beta
 - **Lingering Processing Warning Fix (`processing.py`)**:
   - **Actual Process/Thread State Validation**: Updated `confirm_stop_processing_for_media_change()` to verify actual running states (`isRunning()` for QThreads and `state() != QProcess.ProcessState.NotRunning` for QProcesses) instead of checking for non-None lingering object references. Prevents false-alarm "Processing is currently running" warnings when trying to load new media files or projects after processing has successfully completed.

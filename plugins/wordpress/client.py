@@ -343,8 +343,29 @@ class WordPressClient:
         self.api_base = f"{self.site_url}/wp-json/wp/v2"
         self._discover_canonical_base()
 
+    def is_configured(self) -> bool:
+        """Return True if site_url, username, and password are all non-empty and non-placeholder."""
+        return bool(
+            self.site_url
+            and self.username
+            and self.password
+            and self.site_url.lower() not in ("https://example.com", "http://example.com", "example.com")
+        )
+
     def _get_auth(self):
         return (self.username, self.password)
+
+
+def is_wp_auth_error(err: Any) -> bool:
+    """Check if an error string or exception indicates an authentication or credential failure."""
+    err_str = str(err or "").lower()
+    auth_keywords = [
+        "401", "403", "unauthorized", "forbidden", "authentication failed",
+        "invalid username", "application password", "rest_cannot_access",
+        "rest_forbidden", "incorrect password", "invalid site url", "invalid_username",
+        "credentials",
+    ]
+    return any(k in err_str for k in auth_keywords)
 
     def _discover_canonical_base(self) -> None:
         """Pre-detect canonical site URL and REST base to prevent redirect failures."""
