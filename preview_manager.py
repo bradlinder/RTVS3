@@ -185,6 +185,11 @@ declare module '*.md?raw' {
   const content: string;
   export default content;
 }
+
+declare module '*.txt?raw' {
+  const content: string;
+  export default content;
+}
 """
 
 SRC_APP_TSX = """import React, { useState, useMemo } from 'react';

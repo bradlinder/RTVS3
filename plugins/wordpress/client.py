@@ -326,6 +326,18 @@ def generate_wp_excerpt(text: str, max_words: int = 55) -> str:
     return " ".join(words[:max_words]) + "..."
 
 
+def is_wp_auth_error(err: Any) -> bool:
+    """Check if an error string or exception indicates an authentication or credential failure."""
+    err_str = str(err or "").lower()
+    auth_keywords = [
+        "401", "403", "unauthorized", "forbidden", "authentication failed",
+        "invalid username", "application password", "rest_cannot_access",
+        "rest_forbidden", "incorrect password", "invalid site url", "invalid_username",
+        "credentials",
+    ]
+    return any(k in err_str for k in auth_keywords)
+
+
 class WordPressClient:
     """Client for WordPress REST API using Application Passwords."""
 
@@ -354,18 +366,6 @@ class WordPressClient:
 
     def _get_auth(self):
         return (self.username, self.password)
-
-
-def is_wp_auth_error(err: Any) -> bool:
-    """Check if an error string or exception indicates an authentication or credential failure."""
-    err_str = str(err or "").lower()
-    auth_keywords = [
-        "401", "403", "unauthorized", "forbidden", "authentication failed",
-        "invalid username", "application password", "rest_cannot_access",
-        "rest_forbidden", "incorrect password", "invalid site url", "invalid_username",
-        "credentials",
-    ]
-    return any(k in err_str for k in auth_keywords)
 
     def _discover_canonical_base(self) -> None:
         """Pre-detect canonical site URL and REST base to prevent redirect failures."""

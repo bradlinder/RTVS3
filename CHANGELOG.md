@@ -1,7 +1,32 @@
 # Changelog
 
+## v3.9.11-beta
+- **"Save Project As..." Native File Dialog Restoration (`project_lifecycle.py`)**:
+  - Restored standard `QFileDialog.getSaveFileName` modal dialog prompt when triggering "Save Project As..." (`Ctrl+Shift+S`) or saving a new untitled project.
+  - Resolves issue where saving a project with "Save Project As..." bypassed user confirmation and automatically saved to an existing or default location without prompting for a destination path or project name.
+  - Automatically initializes the file dialog in the active project directory or media folder and ensures dedicated `Transcripts/` and `Media/` subfolders are created when project bundles are enabled.
+- **WordPress REST API Export Scoping Fix (`plugins/wordpress/client.py`, `plugins/wordpress/manifest.json`)**:
+  - Resolved `AttributeError: 'WordPressClient' object has no attribute '_discover_canonical_base'` by placing `is_wp_auth_error` at module scope rather than splitting the `WordPressClient` class definition.
+  - Restored full client functionality (`_discover_canonical_base`, `_post_request`, `_post_multipart`, `test_connection`, `get_categories`, `get_authors`, `create_post`, `update_post`, `upload_media`).
+  - Synchronized WordPress plugin manifest version to `3.9.11-beta`.
+- **Synchronous Version Bump**: Synchronized all 13 core project files and web preview scaffolding to `v3.9.11-beta`.
+
+## v3.9.10-beta
+- **Codebase Modularization & Monolithic File Decomposition (Wave 3)**:
+  - **Interactive Transcript Editor Decomposition (`transcript_editor.py`)**: Decomposed 2,566-line `transcript_editor.py` into focused submodules: `transcript_editor_dialogs.py` (215 lines), `transcript_styles.py` (105 lines), `transcript_context_menu_mixin.py` (416 lines), `transcript_formatting_mixin.py` (351 lines), and `transcript_timeline_sync_mixin.py` (567 lines), reducing `transcript_editor.py` down to 862 lines (under the <1,000-line invariant) while preserving 100% backward-compatible zero-breakage facade re-exports.
+  - **Transcript Story Decomposition (`transcript_story.py`)**: Decomposed 3,055-line `transcript_story.py` into focused submodules: `story_model.py` (228 lines), `story_crud_mixin.py` (724 lines), and `story_detection_processing.py` (143 lines), reducing `transcript_story.py` down to 836 lines.
+  - **Synchronous Version Bump**: Synchronized all 12 core project files and web preview scaffolding to `v3.9.10-beta`.
+
 ## v3.9.9-beta
-- **Codebase Modularization & Monolithic File Decomposition (Wave 2A & Wave 2B)**:
+- **Roadmap Update: Android Transcriber & Speaker Diarization Mobile Companion (`roadmap.txt`)**:
+  - Added optional lower-priority future milestone (`v4.3.0`) for an offline mobile companion app.
+  - Features **dual ASR engine options** (Whisper `base.en` `q8_0` via `whisper.cpp` vs. Zipformer via `sherpa-onnx`) allowing users to choose between maximum accuracy/punctuation (Whisper) or blazing-fast speed/low memory (Zipformer).
+  - Includes an **on-demand model download and removal manager** enabling users to download, inspect storage, test both engines, and delete models on demand.
+  - Added standalone AI Studio starter prompt specification (Option A launcher in Section 7.6) so the companion app can be spun off into a dedicated Android workspace with turnkey dual Whisper/Zipformer runtimes whenever ready.
+- **Codebase Modularization & Monolithic File Decomposition (Wave 2A, Wave 2B & Wave 3)**:
+  - **Wave 3: Transcript Story & Interactive Editor Decomposition (`transcript_story.py` & `transcript_editor.py`)**:
+    - Decomposed 3,055-line `transcript_story.py` into focused submodules: `story_model.py` (228 lines), `story_crud_mixin.py` (724 lines), and `story_detection_processing.py` (143 lines), reducing `transcript_story.py` to 836 lines.
+    - Decomposed 2,566-line `transcript_editor.py` into focused submodules: `transcript_editor_dialogs.py` (215 lines), `transcript_styles.py` (105 lines), `transcript_context_menu_mixin.py` (416 lines), `transcript_formatting_mixin.py` (351 lines), and `transcript_timeline_sync_mixin.py` (567 lines), reducing `transcript_editor.py` to 862 lines while preserving 100% backward-compatible zero-breakage facade re-exports.
   - **Wave 2A: Playback & Preferences Decomposition (`playback_preferences.py`)**: Decomposed 4,042-line monolith into focused modules: `theme_preferences.py` (596 lines), `playback_controller.py` (330 lines), `preferences_reset.py` (613 lines), `preferences_tabs_core.py` (509 lines), `preferences_tabs_media.py` (641 lines), `preferences_dialog.py` (588 lines), and `project_state_mixin.py` (328 lines), retaining `playback_preferences.py` (640 lines) as a 100% backward-compatible facade.
   - **Wave 2B: Unified Project & Media Export Decomposition (`project_export.py`)**: Decomposed 3,144-line monolith into focused modules: `export_dialogs.py` (372 lines), `export_media_clipper.py` (211 lines), `export_documents.py` (774 lines), and `export_story_pipeline.py` (979 lines), retaining `project_export.py` (447 lines) as a 100% backward-compatible facade.
 - **Fast Non-Blocking Multi-Window Audio Loudness Probing (`audio_normalization.py`, `prs_shared.py`, `test_runner.py`)**:

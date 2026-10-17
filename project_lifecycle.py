@@ -416,22 +416,50 @@ class ProjectLifecycleMixin:
         if not self.audio_file and not self.transcript:
             return False
 
-        base_name = safe_filename(
-            Path(self.audio_file).stem if self.audio_file else "project"
+        # Determine starting folder for the file dialog
+        if self.project_file and self.project_file.parent.exists():
+            default_dir = str(self.project_file.parent)
+        elif self.audio_file and Path(self.audio_file).parent.exists():
+            default_dir = str(Path(self.audio_file).parent)
+        else:
+            default_dir = self.get_default_save_directory()
+
+        # Determine default file name
+        if self.project_file:
+            default_name = self.project_file.name
+            if not default_name.lower().endswith(".rtvs"):
+                default_name = f"{self.project_file.stem}.rtvs"
+        elif self.audio_file:
+            default_name = f"{safe_filename(Path(self.audio_file).stem)}.rtvs"
+        else:
+            default_name = "project.rtvs"
+
+        initial_path = str(Path(default_dir) / default_name)
+
+        filename, _ = QFileDialog.getSaveFileName(
+            self,
+            "Save Project As",
+            initial_path,
+            "Radio & TV Story Segmenter Project (*.rtvs);;All Files (*)",
         )
-        chosen_folder, transcripts_dir, media_dir, folder_name = self.prepare_export_directories(default_name=base_name, prompt_user=True)
-        if not chosen_folder:
+        if not filename:
             return False
 
-        filename = str(chosen_folder / f"{folder_name}.rtvs")
+        target_path = Path(filename).expanduser().resolve()
+        if target_path.suffix.lower() != ".rtvs":
+            target_path = target_path.with_suffix(".rtvs")
 
-        self.project_file = Path(filename).expanduser().resolve()
-        self.project_file.parent.mkdir(parents=True, exist_ok=True)
-        self.save_project(force=True)
-        return True
+        create_bundle = str(self.settings_store.value("create_project_subfolders", "true")).lower() in {"1", "true", "yes"}
+        if create_bundle:
+            (target_path.parent / "Transcripts").mkdir(parents=True, exist_ok=True)
+            (target_path.parent / "Media").mkdir(parents=True, exist_ok=True)
+
+        target_path.parent.mkdir(parents=True, exist_ok=True)
+        self.project_file = target_path
+        return bool(self.save_project(force=True))
 
     def save_project(self, force=True):
-        if not self.audio_file:
+        if not self.audio_file and not self.transcript:
             return False
         if not self.project_file:
             return self.save_project_as()

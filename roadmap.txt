@@ -36,13 +36,14 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 --------------------------------------------------------------------------------
 TABLE OF CONTENTS & STATUS OVERVIEW
 --------------------------------------------------------------------------------
-1. Previous Release: Lingering Processing Warning Fix (`processing.py`) [x] [COMPLETED in v3.9.8-beta]
-   [x] 1.1 Actual Process/Thread State Validation (`processing.py`): Updated `confirm_stop_processing_for_media_change()` to verify actual running states (`isRunning()` for QThreads and `state() != QProcess.ProcessState.NotRunning` for QProcesses) instead of checking for non-None lingering object references. Prevents false-alarm "Processing is currently running" warnings when trying to load new media files or projects after processing has successfully completed.
-   [x] 1.2 Synchronous Version Bump: Synchronized all 10 project locations to v3.9.8-beta
+1. Previous Release: Codebase Modularization — Wave 3 Transcript Story & Interactive Editor Decomposition (`transcript_story.py`, `transcript_editor.py`) [x] [COMPLETED in v3.9.10-beta]
+   [x] 1.1 Wave 3 Monolithic Decomposition: Decomposed 3,055-line `transcript_story.py` down to 836 lines and 2,566-line `transcript_editor.py` down to 862 lines into dedicated domain submodules (`story_model.py`, `story_crud_mixin.py`, `transcript_editor_dialogs.py`, `transcript_styles.py`, `transcript_context_menu_mixin.py`, `transcript_formatting_mixin.py`, `transcript_timeline_sync_mixin.py`) while preserving 100% backward-compatible zero-breakage facade re-exports.
+   [x] 1.2 Synchronous Version Bump: Synchronized all 12 project locations to v3.9.10-beta
 
-2. Current Release: Fast Multi-Window LUFS & Peak Probing Engine (`audio_normalization.py`, `prs_shared.py`, `test_runner.py`) [x] [COMPLETED in v3.9.9-beta]
-   [x] 2.1 Fast Non-Blocking Multi-Window LUFS & Peak Probing (`audio_normalization.py`): Implemented `probe_media_loudness()` and `AudioLoudnessProbeWorker(QThread)` leveraging FFmpeg `ebur128=peak=true` filter. Measures Integrated Loudness (`I` in LUFS), Loudness Range (`LRA` in LU), and True Peak (`TP` in dBTP/dBFS) with sub-1.5s 3-window sampling on long media and full subprocess lifecycle tracking.
-   [x] 2.2 Synchronous Version Bump: Synchronized all 10 project locations to v3.9.9-beta
+2. Current Release: Save Project As Dialog Restoration & WordPress Client Method Scoping Fix (`project_lifecycle.py`, `plugins/wordpress/client.py`) [x] [COMPLETED in v3.9.11-beta]
+   [x] 2.1 Save Project As Dialog Restoration (`project_lifecycle.py`): Restored standard `QFileDialog.getSaveFileName` modal dialog prompt when triggering "Save Project As..." (`Ctrl+Shift+S`) or saving a new untitled project, ensuring users can explicitly choose destination folder and filename rather than silently auto-saving into default directories.
+   [x] 2.2 WordPress Client Method Scoping Fix (`plugins/wordpress/client.py`): Resolved `AttributeError: 'WordPressClient' object has no attribute '_discover_canonical_base'` by placing `is_wp_auth_error` at module scope rather than splitting the `WordPressClient` class definition. Synchronized WordPress plugin manifest to v3.9.11-beta.
+   [x] 2.3 Synchronous Version Bump: Synchronized all 13 project locations to v3.9.11-beta
 
 3. Upcoming Milestone: Codebase Modularization & Monolithic File Decomposition Strategy (<1,000-Line Invariant) (`playback_preferences.py`, `project_export.py`, `transcript_story.py`, `transcript_editor.py`, `radio_tv_story_segmenter_worker.py`, `benchmark.py`, `plugins/wordpress/export_destination.py`, `plugins/manager.py`, `timeline_widgets.py`) [PLANNED for v4.0.0] [IN-PROGRESS]
    - *Architecture Note*: Incrementally refactors all remaining source files exceeding 1,000 lines (at most 1 to 2 monoliths per turn) into focused domain modules (<1,000 lines each) while preserving 100% backward compatibility via zero-breakage facade re-exports.
@@ -50,8 +51,8 @@ TABLE OF CONTENTS & STATUS OVERVIEW
    [x] 3.2 Final Version Regex, Header & Dependency Synchronization (`bump_version.py`, `preview_manager.py`, `snapshot_manager.py`, `package.json`, `RadioTVSegmenter.py`, `backup_manager.py`)
    [x] 3.3 Wave 2A - Playback & Preferences Decomposition (`playback_preferences.py` — 4,042 lines -> `playback_controller.py`, `preferences_dialog.py`, `theme_preferences.py`)
    [x] 3.4 Wave 2B - Unified Project & Media Export Decomposition (`project_export.py` — 3,144 lines -> `export_dialogs.py`, `export_media_clipper.py`, `export_documents.py`, `export_story_pipeline.py`)
-   [-] 3.5 Wave 3 - Transcript Story & Interactive Editor Decomposition (`transcript_story.py` — 3,055 lines & `transcript_editor.py` — 2,566 lines)
-   [ ] 3.6 Wave 4 - AI Worker & Benchmark Suite Decomposition (`radio_tv_story_segmenter_worker.py` — 2,264 lines & `benchmark.py` — 2,198 lines)
+   [x] 3.5 Wave 3 - Transcript Story & Interactive Editor Decomposition (`transcript_story.py` — 3,055 lines -> 836 lines & `transcript_editor.py` — 2,566 lines -> 862 lines)
+   [-] 3.6 Wave 4 - AI Worker & Benchmark Suite Decomposition (`radio_tv_story_segmenter_worker.py` — 2,264 lines & `benchmark.py` — 2,198 lines)
    [ ] 3.7 Wave 5 - WordPress Export, Plugin Manager & Timeline Widgets Decomposition (`plugins/wordpress/export_destination.py` — 1,995 lines, `plugins/manager.py` — 1,942 lines, `timeline_widgets.py` — 1,898 lines)
    [ ] 3.8 Permanent <1,000-Line Architectural Rule & Automated Test Guard (`AGENTS.md`, `GEMINI.md`, `test_runner.py`)
 
@@ -81,23 +82,33 @@ TABLE OF CONTENTS & STATUS OVERVIEW
    [ ] 6.8 Word-Level Timecode Sync, NLE Markers & Multi-Track DAW Timeline Export (`export/timeline.py`)
    [ ] 6.9 Automated Diagnostic Test Suite (`test_runner.py`)
 
+7. Optional Future Milestone: Android Transcriber & Speaker Diarization Companion App (`android/`, Kotlin, Jetpack Compose, `whisper.cpp`, `sherpa-onnx`, WeSpeaker) [PLANNED for v4.3.0] [OPTIONAL / LOWER PRIORITY] [NOT STARTED]
+   - *Workflow Design Note*: Offline mobile companion app for Android (e.g. Google Pixel series with NPU acceleration) providing dual ASR engines (Whisper `base.en` q8_0 vs. Zipformer via `sherpa-onnx`) and an on-demand model download and removal manager. Can be spun off into a dedicated AI Studio Android project (Option A) using the provided starter prompt.
+   [ ] 7.1 Android Project Scaffolding & Audio Foreground Service (`android/` Kotlin / Jetpack Compose)
+   [ ] 7.2 Dual On-Device ASR Runtimes (`whisper.cpp` JNI for Whisper `base.en` & `onnxruntime-android` for Zipformer)
+   [ ] 7.3 On-Demand Model Download & Removal Manager (UI dialog to download, verify, inspect storage, and delete models on demand)
+   [ ] 7.4 On-Device Speaker Diarization Engine (`onnxruntime-android` WeSpeaker embedding extraction + clustering)
+   [ ] 7.5 Mobile Export & Session Sync with Desktop RTVS3 Projects (`.json` project container sync)
+   [ ] 7.6 Standalone AI Studio Starter Prompt Specification & Project Blueprint (Option A Launcher)
+
 ================================================================================
 DETAILED MILESTONE SPECIFICATIONS
 ================================================================================
 
 ================================================================================
-1. PREVIOUS RELEASE: LINGERING PROCESSING WARNING FIX [x] [COMPLETED in v3.9.8-beta]
+1. PREVIOUS RELEASE: CODEBASE MODULARIZATION — WAVE 3 TRANSCRIPT STORY & INTERACTIVE EDITOR DECOMPOSITION [x] [COMPLETED in v3.9.10-beta]
 ================================================================================
 
-[x] 1.1 Actual Process/Thread State Validation (`processing.py`): Updated `confirm_stop_processing_for_media_change()` to verify actual running states (`isRunning()` for QThreads and `state() != QProcess.ProcessState.NotRunning` for QProcesses) instead of checking for non-None lingering object references. Prevents false-alarm "Processing is currently running" warnings when trying to load new media files or projects after processing has successfully completed.
-[x] 1.2 Synchronous Version Bump: Synchronized all 10 project locations to v3.9.8-beta
+[x] 1.1 Wave 3 Monolithic Decomposition: Decomposed 3,055-line `transcript_story.py` down to 836 lines and 2,566-line `transcript_editor.py` down to 862 lines into dedicated domain submodules (`story_model.py`, `story_crud_mixin.py`, `transcript_editor_dialogs.py`, `transcript_styles.py`, `transcript_context_menu_mixin.py`, `transcript_formatting_mixin.py`, `transcript_timeline_sync_mixin.py`) while preserving 100% backward-compatible zero-breakage facade re-exports.
+[x] 1.2 Synchronous Version Bump: Synchronized all 12 project locations to v3.9.10-beta
 
 ================================================================================
-2. CURRENT RELEASE: FAST NON-BLOCKING MULTI-WINDOW LUFS & PEAK PROBING ENGINE [x] [COMPLETED in v3.9.9-beta]
+2. CURRENT RELEASE: SAVE PROJECT AS DIALOG RESTORATION & WORDPRESS CLIENT METHOD SCOPING FIX [x] [COMPLETED in v3.9.11-beta]
 ================================================================================
 
-[x] 2.1 Fast Non-Blocking Multi-Window LUFS & Peak Probing (`audio_normalization.py`): Implemented `probe_media_loudness()` and `AudioLoudnessProbeWorker(QThread)` leveraging FFmpeg `ebur128=peak=true` filter. Measures Integrated Loudness (`I` in LUFS), Loudness Range (`LRA` in LU), and True Peak (`TP` in dBTP/dBFS) with sub-1.5s 3-window sampling on long media and full subprocess lifecycle tracking.
-[x] 2.2 Synchronous Version Bump: Synchronized all 10 project locations to v3.9.9-beta
+[x] 2.1 Save Project As Dialog Restoration (`project_lifecycle.py`): Restored standard `QFileDialog.getSaveFileName` modal dialog prompt when triggering "Save Project As..." (`Ctrl+Shift+S`) or saving a new untitled project, ensuring users can explicitly choose destination folder and filename rather than silently auto-saving into default directories.
+[x] 2.2 WordPress Client Method Scoping Fix (`plugins/wordpress/client.py`): Resolved `AttributeError: 'WordPressClient' object has no attribute '_discover_canonical_base'` by placing `is_wp_auth_error` at module scope rather than splitting the `WordPressClient` class definition. Synchronized WordPress plugin manifest to v3.9.11-beta.
+[x] 2.3 Synchronous Version Bump: Synchronized all 13 project locations to v3.9.11-beta
 
 ================================================================================
 3. UPCOMING MILESTONE: CODEBASE MODULARIZATION & MONOLITHIC FILE DECOMPOSITION STRATEGY [PLANNED for v4.0.0] [IN-PROGRESS]
@@ -134,7 +145,7 @@ When the user prompts "what's next", execute ONLY the first uncompleted `[ ]` su
       3. Extract `export_documents.py`: Document/transcript formatting builders for TXT, HTML, DOCX, vector PDF, CSV, JSON, and subtitle/chapter helpers.
       4. Keep `ProjectExportMixin` in `project_export.py` and re-export all extracted classes and functions from `project_export.py` and `prs_shared.py`.
 
-[-] 3.5 Wave 3 - Transcript Story & Interactive Editor Decomposition (`transcript_story.py` — 3,055 lines & `transcript_editor.py` — 2,566 lines)
+[x] 3.5 Wave 3 - Transcript Story & Interactive Editor Decomposition (`transcript_story.py` — 3,055 lines -> 836 lines & `transcript_editor.py` — 2,566 lines -> 862 lines)
     - Target: Split `transcript_story.py` and `transcript_editor.py` so every resulting file is <= 1,000 lines:
       1. From `transcript_story.py`, extract:
          - `story_model.py`: The `Story` data class, boundary clamping/overlap validation, fade curve lookup/serialization tables, and undo/redo `QUndoCommand` classes (`SetStoriesCommand`, `SelectStoriesCommand`).
@@ -145,7 +156,7 @@ When the user prompts "what's next", execute ONLY the first uncompleted `[ ]` su
          - `transcript_styles.py`: `transcript_text_view_stylesheet`, high-contrast active word formatting, dark/light clipboard rich-text/HTML builders, and span helpers.
          - Keep `InteractiveTranscriptEdit` in `transcript_editor.py` and re-export all extracted symbols in `transcript_editor.py` and `prs_shared.py`.
 
-[ ] 3.6 Wave 4 - AI Worker & Benchmark Suite Decomposition (`radio_tv_story_segmenter_worker.py` — 2,264 lines & `benchmark.py` — 2,198 lines)
+[-] 3.6 Wave 4 - AI Worker & Benchmark Suite Decomposition (`radio_tv_story_segmenter_worker.py` — 2,264 lines & `benchmark.py` — 2,198 lines)
     - Target: Split `radio_tv_story_segmenter_worker.py` and `benchmark.py` so every resulting file is <= 1,000 lines:
       1. From `radio_tv_story_segmenter_worker.py`, extract:
          - `worker_asr_engines.py`: Faster-Whisper, CTranslate2, Sherpa-ONNX Parakeet, and FastConformer transcription pipelines and word-timestamp alignment.
@@ -340,3 +351,54 @@ ARCHITECTURAL INVARIANTS FOR SECTION 5:
 [ ] 6.7 Document Revisions & Snapshot Version History (`assembly/revision_history.py`)
 [ ] 6.8 Word-Level Timecode Sync, NLE Markers & Multi-Track DAW Timeline Export (`export/timeline.py`)
 [ ] 6.9 Automated Diagnostic Test Suite (`test_runner.py`)
+
+================================================================================
+7. OPTIONAL FUTURE MILESTONE: ANDROID TRANSCRIBER & SPEAKER DIARIZATION COMPANION APP [PLANNED for v4.3.0] [OPTIONAL / LOWER PRIORITY] [NOT STARTED]
+================================================================================
+*Workflow Design Note*: Lower priority offline mobile companion app focused on core transcription and speaker diarization subset running on Android (e.g. Google Pixel series with NPU hardware acceleration). Includes dual ASR engine options (Whisper `base.en` q8_0 vs. Zipformer via `sherpa-onnx`) with an on-demand model download and removal manager so users can test both engines and choose the ideal balance of accuracy and speed.
+
+[ ] 7.1 Android Project Scaffolding & Audio Foreground Service (`android/` Kotlin / Jetpack Compose)
+[ ] 7.2 Dual On-Device ASR Runtimes (`whisper.cpp` JNI for Whisper `base.en` & `onnxruntime-android` for Zipformer)
+[ ] 7.3 On-Demand Model Download & Removal Manager (UI dialog to download, verify, inspect storage, and delete models on demand)
+[ ] 7.4 On-Device Speaker Diarization Engine (`onnxruntime-android` WeSpeaker embedding extraction + clustering)
+[ ] 7.5 Mobile Export & Session Sync with Desktop RTVS3 Projects (`.json` project container sync)
+
+[ ] 7.6 Standalone AI Studio Starter Prompt Specification & Project Blueprint (Option A Launcher)
+    - When ready to spin off this companion app into a dedicated Android AI Studio project, create a new Android/Kotlin project in AI Studio and submit the following initial architectural prompt:
+
+--------------------------------------------------------------------------------
+STANDALONE AI STUDIO STARTER PROMPT (FOR OPTION A):
+--------------------------------------------------------------------------------
+Build a high-performance, 100% offline Android transcription and speaker diarization mobile companion app called "RTVS Mobile Transcriber" targeting modern 64-bit Android (arm64-v8a, API 34+ / Android 14/15, optimized for Google Pixel series).
+
+Key Architectural Requirements:
+1. Native Architecture & Modern UI:
+   - Kotlin with Jetpack Compose, Material 3 dark-mode-first aesthetic, MVVM architecture, Coroutines/Flow, and strict 64-bit native libraries (arm64-v8a only; no deprecated 32-bit binaries).
+   - Audio Foreground Service with ongoing notification and wake-lock to record and transcribe multi-hour interviews without getting killed when the screen turns off.
+
+2. Dual On-Device ASR Engine Architecture:
+   - Engine 1: Whisper base.en (8-bit quantized q8_0 ~78 MB via whisper.cpp JNI bindings) for highest transcription accuracy, punctuation, capitalization, and robust handling of accents and noisy room environments.
+   - Engine 2: Zipformer (~50 MB via sherpa-onnx / onnxruntime-android) for ultra-fast, low-power real-time streaming dictation with sub-50ms latency.
+   - Provide a Settings toggle allowing the user to select the active transcription engine per recording or batch job.
+
+3. On-Demand Model Download & Storage Management:
+   - Clean Model Manager screen displaying installed vs. downloadable models.
+   - Show model file sizes, checksum verification, device storage indicators, and one-tap download / remove buttons so users only keep models they actually use on their phone.
+
+4. On-Device Speaker Diarization:
+   - Voice embedding extraction via WeSpeaker ONNX runtime with cosine distance agglomerative clustering to automatically identify distinct speakers (Speaker 1, Speaker 2, etc.) in recorded sessions.
+
+5. File Import & Batch Transcription:
+   - Support live microphone recording (16kHz mono 16-bit WAV) as well as importing pre-existing audio files (.wav, .mp3, .m4a) from the device storage.
+
+6. RTVS3 Desktop Cross-Compatibility:
+   - Export transcripts to the standard RTVS3 project container format (.rtvs.json):
+     {
+       "app_version": "3.9.9",
+       "media_filename": "interview.wav",
+       "segments": [
+         { "start": 0.0, "end": 4.5, "speaker": "Speaker 1", "text": "..." }
+       ]
+     }
+   - Also support plain text (.txt) and SRT subtitle export.
+--------------------------------------------------------------------------------
