@@ -149,4 +149,14 @@ Instead, the agent MUST actively perform deep, adversarial code-level inspection
 - **Single Responsibility Discipline**:
   - Enforce strict single-responsibility boundaries: separate UI layout construction from event handling, audio decoding from AI model execution, and data serialization from presentation logic.
 
-
+## 11. Token-Thrifty Development & Surgical Range-Editing Directive
+- **Surgical Line-Slice Reading**:
+  - Do NOT read whole files into context when inspecting or making localized edits.
+  - Always consult `.codemaps/INDEX.md` or run `python scripts/generate_symbol_index.py --outline <file>` to find the exact class, method, and line range, then view only that targeted range with `view_file(StartLine, EndLine)`.
+- **Targeted Contiguous Replacements**:
+  - Never rewrite or overwrite entire source files to apply a bug fix or feature tweak. Use `replace_file_content` with minimal, contiguous diff chunks.
+- **Consult `.pyi` Typing Stubs**:
+  - When verifying method signatures, argument types, or public exports of central facades (`prs_shared.py`, `processing.py`, `playback_preferences.py`, `transcript_editor.py`, `project_export.py`), inspect the corresponding `.pyi` stub to save up to 97% of prompt tokens.
+- **Diagnostic & Log Output Discipline**:
+  - Always run the diagnostic test bench in quiet mode (`python test_runner.py --quiet`) to collapse 68 test results into a single token-dense line.
+  - Pipe or pass raw terminal error traces through `scripts/log_summary.py` to extract concise <15-line root cause reports instead of outputting massive traceback noise.

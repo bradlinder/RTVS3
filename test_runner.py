@@ -885,18 +885,21 @@ def create_diagnostic_dialog(parent=None, include_dev_tests: Optional[bool] = No
 # CLI Test Runner Entrypoint
 # ---------------------------------------------------------------------------
 
-def run_cli_diagnostics(verbose: bool = True, include_dev_tests: Optional[bool] = None) -> int:
-    """Executes the diagnostic engine in headless console mode with human-readable output."""
-    print("=" * 65)
-    print(" Radio & TV Story Segmenter — System Diagnostic Test Bench")
-    print("=" * 65)
-
+def run_cli_diagnostics(verbose: bool = True, quiet: bool = False, include_dev_tests: Optional[bool] = None) -> int:
+    """Executes the diagnostic engine in headless console mode with human-readable or quiet output."""
     engine = DiagnosticEngine(include_dev_tests=include_dev_tests)
     total_tests = len(engine.items)
     passed_count = 0
     failed_count = 0
     warn_count = 0
+    failed_items = []
 
+    if not quiet:
+        print("=" * 65)
+        print(" Radio & TV Story Segmenter — System Diagnostic Test Bench")
+        print("=" * 65)
+
+    suite_start = time.perf_counter()
     for i, item in enumerate(engine.items, 1):
         start_t = time.perf_counter()
         try:
@@ -912,16 +915,33 @@ def run_cli_diagnostics(verbose: bool = True, include_dev_tests: Optional[bool] 
             passed_count += 1
         elif item.status == "FAIL":
             failed_count += 1
+            failed_items.append((i, item))
         elif item.status == "WARNING":
             warn_count += 1
 
-        print(f"{i:02d}/{total_tests:02d} {badge:<9} {item.name:<38} ({item.duration_sec:.2f}s)")
-        if verbose and item.message:
-            print(f"       -> {item.message}")
+        if not quiet:
+            print(f"{i:02d}/{total_tests:02d} {badge:<9} {item.name:<38} ({item.duration_sec:.2f}s)")
+            if verbose and item.message:
+                print(f"       -> {item.message}")
 
-    print("=" * 65)
-    print(f"Diagnostic Summary: {passed_count} Passed, {failed_count} Failed, {warn_count} Warnings.")
-    print("=" * 65)
+    total_duration = time.perf_counter() - suite_start
+
+    if quiet:
+        if failed_count == 0:
+            print(f"[PASS] {passed_count}/{total_tests} diagnostic tests passed in {total_duration:.2f}s ({warn_count} warnings).")
+        else:
+            print("=" * 65)
+            print(f"[FAIL] Diagnostic Test Failures ({failed_count}/{total_tests} failed in {total_duration:.2f}s):")
+            print("=" * 65)
+            for i, item in failed_items:
+                print(f"{i:02d}/{total_tests:02d} [{item.status}] {item.name} ({item.duration_sec:.2f}s)")
+                if item.message:
+                    print(f"       -> {item.message}")
+            print("=" * 65)
+    else:
+        print("=" * 65)
+        print(f"Diagnostic Summary: {passed_count} Passed, {failed_count} Failed, {warn_count} Warnings in {total_duration:.2f}s.")
+        print("=" * 65)
 
     if "--report" in sys.argv or "-r" in sys.argv or failed_count > 0:
         print("\n" + generate_diagnostic_report(engine) + "\n")
@@ -937,7 +957,9 @@ def main():
         dlg.exec()
         return 0
     else:
-        return run_cli_diagnostics(verbose=True)
+        quiet = "--quiet" in sys.argv or "-q" in sys.argv
+        verbose = "-v" in sys.argv or "--verbose" in sys.argv or not quiet
+        return run_cli_diagnostics(verbose=verbose, quiet=quiet)
 
 
 if __name__ == "__main__":

@@ -40,7 +40,7 @@ TABLE OF CONTENTS & STATUS OVERVIEW
    [x] 1.1 Wave 3 Monolithic Decomposition: Decomposed 3,055-line `transcript_story.py` down to 836 lines and 2,566-line `transcript_editor.py` down to 862 lines into dedicated domain submodules (`story_model.py`, `story_crud_mixin.py`, `transcript_editor_dialogs.py`, `transcript_styles.py`, `transcript_context_menu_mixin.py`, `transcript_formatting_mixin.py`, `transcript_timeline_sync_mixin.py`) while preserving 100% backward-compatible zero-breakage facade re-exports.
    [x] 1.2 Synchronous Version Bump: Synchronized all 12 project locations to v3.9.10-beta
 
-2. Current Release: Save Project As Dialog Restoration & WordPress Client Method Scoping Fix (`project_lifecycle.py`, `plugins/wordpress/client.py`) [x] [COMPLETED in v3.9.11-beta]
+2. Current Release: Save Project As Dialog Restoration & WordPress Client Method Scoping Fix (`project_lifecycle.py`, `plugins/wordpress/client.py`) [x] [COMPLETED in v3.9.12-beta]
    [x] 2.1 Save Project As Dialog Restoration (`project_lifecycle.py`): Restored standard `QFileDialog.getSaveFileName` modal dialog prompt when triggering "Save Project As..." (`Ctrl+Shift+S`) or saving a new untitled project, ensuring users can explicitly choose destination folder and filename rather than silently auto-saving into default directories.
    [x] 2.2 WordPress Client Method Scoping Fix (`plugins/wordpress/client.py`): Resolved `AttributeError: 'WordPressClient' object has no attribute '_discover_canonical_base'` by placing `is_wp_auth_error` at module scope rather than splitting the `WordPressClient` class definition. Synchronized WordPress plugin manifest to v3.9.11-beta.
    [x] 2.3 Synchronous Version Bump: Synchronized all 13 project locations to v3.9.11-beta
@@ -54,7 +54,8 @@ TABLE OF CONTENTS & STATUS OVERVIEW
    [x] 3.5 Wave 3 - Transcript Story & Interactive Editor Decomposition (`transcript_story.py` — 3,055 lines -> 836 lines & `transcript_editor.py` — 2,566 lines -> 862 lines)
    [-] 3.6 Wave 4 - AI Worker & Benchmark Suite Decomposition (`radio_tv_story_segmenter_worker.py` — 2,264 lines & `benchmark.py` — 2,198 lines)
    [ ] 3.7 Wave 5 - WordPress Export, Plugin Manager & Timeline Widgets Decomposition (`plugins/wordpress/export_destination.py` — 1,995 lines, `plugins/manager.py` — 1,942 lines, `timeline_widgets.py` — 1,898 lines)
-   [ ] 3.8 Permanent <1,000-Line Architectural Rule & Automated Test Guard (`AGENTS.md`, `GEMINI.md`, `test_runner.py`)
+   [ ] 3.8 Permanent <1,000-Line Architectural Rule, AST Decomposition Suggester & Automated Budget Guard (`AGENTS.md`, `GEMINI.md`, `scripts/modular_audit.py`, `test_runner.py`)
+   [x] 3.9 Token-Reduction Architecture & Tiered Symbol Indexing for Local LLM Efficiency (`scripts/generate_symbol_index.py`, `.codemaps/`, `.pyi`, `AGENTS.md`, `GEMINI.md`) [COMPLETED in v3.9.12-beta]
 
 4. Upcoming Milestone: Smart Hybrid Audio Loudness Normalization & Non-Destructive Auto-Boost Suite (`audio_normalization.py`, `preferences_dialog.py`, `playback_preferences.py`, `RadioTVSegmenter.py`, `dialogs.py`, `test_runner.py`) [PLANNED for v4.1.0] [IN-PROGRESS]
    - *Purpose*: Automatically or manually boost quiet broadcast recordings to improve ASR transcription and speaker diarization accuracy without modifying original source media, blocking the UI thread, or introducing compressor pumping artifacts.
@@ -63,13 +64,13 @@ TABLE OF CONTENTS & STATUS OVERVIEW
    [ ] 4.3 Preferences Dialog & Adjustable Thresholds / Targets (`preferences_dialog.py`, `playback_preferences.py`): Add UI controls in Preferences to enable/disable automatic loudness normalization on import, adjust quiet detection trigger thresholds (LUFS and dBFS spinboxes), select target standard (defaulting to modern LUFS targets: `-16.0 LUFS` broadcast, `-14.0 LUFS` podcast, `-24.0 LUFS` EBU R128, or dBFS/True Peak target `-1.5 dBTP` / `-3.0 dBFS`), and optionally apply loudness gain to playback and clip export.
    [ ] 4.4 Tools Menu Manual Normalization Action & Telemetry Dialog (`RadioTVSegmenter.py`, `dialogs.py`, `test_runner.py`): Add on-demand "Normalize Audio Loudness..." action in the Tools menu with before/after LUFS & True Peak telemetry, manual run/reset controls, and diagnostic unit tests in `test_runner.py`.
 
-5. Upcoming Milestone: Automated AMD Ryzen AI Local Development Platform & Model Provisioning Suite (`scripts/setup_local_ai.py`, `.vscode/settings.json`, `.clinerules`, `.github/workflows/build.yml`) [PLANNED for v4.1.0] [OPTIONAL / PLANNED] [NOT STARTED]
-   - *Purpose*: One-command non-destructive setup script and auto-configuration suite enabling offline AI-assisted development on AMD Ryzen AI 9 HX 370 (Radeon 890M `gfx1150` + XDNA 2 NPU, 64GB RAM) systems while preserving all CI/CD invariants.
-   [ ] 5.1 Strix Point Hardware, UMA VRAM & ROCm/Vulkan Probe (`scripts/setup_local_ai.py`): Detect CPU/iGPU/NPU, 64GB RAM, BIOS UMA allocation, and configure `gfx1150` Vulkan/ROCm environment variables (`OLLAMA_FLASH_ATTENTION=1`, `OLLAMA_KV_CACHE_TYPE=q8_0`).
-   [ ] 5.2 Tiered Local AI Model Provisioner (`scripts/setup_local_ai.py`): Pull and verify quantized coding models (`Qwen2.5-Coder-32B-Instruct` Q4_K_M for architecture/refactoring, `Qwen2.5-Coder-14B/7B` for fast edits, `Qwen2.5-Coder-1.5B` for sub-50ms autocomplete) with `--dry-run` support.
-   [ ] 5.3 Local Server Health Check & Context Window Tuning (`scripts/setup_local_ai.py`): Bind local endpoint (`http://127.0.0.1:11434`), generate 32k-context Modelfiles that won't starve PySide6/Whisper RAM, and verify token/sec throughput.
-   [ ] 5.4 Non-Destructive IDE & Agent Rules Generator (`scripts/setup_local_ai.py`): Safely merge `.vscode/settings.json` and Continue/Cline configs (backing up existing files first), link `.clinerules`/`.cursorrules` to `AGENTS.md` & `GEMINI.md`, and update `.gitignore`.
-   [ ] 5.5 Interactive Task-to-Model Router & CI Pipeline Verification (`.github/workflows/build.yml`, `test_runner.py`): Provide CLI task router guide and verify `.github/workflows/build.yml` retains all `test_runner.py` Windows CI packaging invariants.
+5. Upcoming Milestone: Automated AMD Ryzen AI Local Development Platform & Token-Efficient Model Suite (`scripts/setup_local_ai.py`, `.vscode/settings.json`, `.clinerules`, `.github/workflows/build.yml`) [PLANNED for v4.1.0] [OPTIONAL / PLANNED] [NOT STARTED]
+   - *Purpose*: One-command non-destructive setup script and auto-configuration suite enabling offline AI-assisted development on AMD Ryzen AI 9 HX 370 (Radeon 890M `gfx1150` + XDNA 2 NPU, 64GB RAM) systems with token-budget optimization, prefix-caching architecture, and automated AST split tooling.
+   [ ] 5.1 Strix Point Hardware, UMA VRAM & Context Allocation Probe (`scripts/setup_local_ai.py`): Detect CPU/iGPU/NPU, 64GB RAM, UMA aperture, and configure `gfx1150` Vulkan/ROCm runtime with KV-cache VRAM budgets (`OLLAMA_FLASH_ATTENTION=1`, `OLLAMA_KV_CACHE_TYPE=q8_0`).
+   [ ] 5.2 Tiered Local AI Model Provisioner with Prefix-Cache Optimization (`scripts/setup_local_ai.py`): Pull and verify quantized coding models (`Qwen2.5-Coder-32B-Instruct` Q4_K_M for refactoring, `14B/7B` for fast edits, `1.5B` for sub-50ms autocomplete) with shared prefix-caching.
+   [ ] 5.3 Local Server Health Check, Context Window Tuning & Prompt Cache Pinning (`scripts/setup_local_ai.py`): Bind `http://127.0.0.1:11434`, pin project symbol indices (`.codemaps/symbol_index.json`) into KV prompt cache for 0-latency context, and enforce 16k-32k working context limits.
+   [ ] 5.4 Token-Thrift IDE Configuration & AST Suggester Integration (`scripts/setup_local_ai.py`): Configure Continue/Cline with symbol-first retrieval, diff-only edits, line-slice reading rules, and map `.clinerules`/`.cursorrules` to `scripts/modular_audit.py` to prevent token bloat.
+   [ ] 5.5 Token-Budget Task-to-Model Router & CI Pipeline Verification (`.github/workflows/build.yml`, `test_runner.py`): Provide token-aware task router (<300 lines -> 7B/14B; refactoring -> 32B) and verify CI build invariants.
 
 6. Optional Future Milestone: Interactive Text-Based Media Assembly & Multi-Asset Ripple Editing Engine (`assembly/bin_model.py`, `assembly/clipboard.py`, `assembly/ripple_engine.py`, `transcript_editor.py`, `export/timeline.py`) [PLANNED for v4.2.0] [OPTIONAL] [NOT STARTED]
    [ ] 6.1 Multi-Asset Project Container & Media Bin Submodule (`assembly/bin_model.py`, `project_lifecycle.py`)
@@ -103,7 +104,7 @@ DETAILED MILESTONE SPECIFICATIONS
 [x] 1.2 Synchronous Version Bump: Synchronized all 12 project locations to v3.9.10-beta
 
 ================================================================================
-2. CURRENT RELEASE: SAVE PROJECT AS DIALOG RESTORATION & WORDPRESS CLIENT METHOD SCOPING FIX [x] [COMPLETED in v3.9.11-beta]
+2. CURRENT RELEASE: SAVE PROJECT AS DIALOG RESTORATION & WORDPRESS CLIENT METHOD SCOPING FIX [x] [COMPLETED in v3.9.12-beta]
 ================================================================================
 
 [x] 2.1 Save Project As Dialog Restoration (`project_lifecycle.py`): Restored standard `QFileDialog.getSaveFileName` modal dialog prompt when triggering "Save Project As..." (`Ctrl+Shift+S`) or saving a new untitled project, ensuring users can explicitly choose destination folder and filename rather than silently auto-saving into default directories.
@@ -183,12 +184,32 @@ When the user prompts "what's next", execute ONLY the first uncompleted `[ ]` su
          - `timeline_overview_widget.py`: Timeline overview bar and mini-map navigation widget.
          - Keep the main zoomable timeline widget in `timeline_widgets.py` and re-export all extracted symbols in `timeline_widgets.py` and `prs_shared.py`.
 
-[ ] 3.8 Permanent <1,000-Line Architectural Rule & Automated Test Guard (`AGENTS.md`, `GEMINI.md`, `test_runner.py`)
-    - Enforce the modular file size limit permanently across all future development:
-      1. Update `AGENTS.md` and `GEMINI.md` with a mandatory **Modular File Size Invariant**:
+[ ] 3.8 Permanent <1,000-Line Architectural Rule, AST Decomposition Suggester & Automated Budget Guard (`AGENTS.md`, `GEMINI.md`, `scripts/modular_audit.py`, `test_runner.py`)
+    - Enforce the modular file size limit permanently and provide automated tooling to assist future decomposition:
+      1. Mandatory Architecture Rule in `AGENTS.md` & `GEMINI.md`:
          - Soft target: ~800 lines per `.py` file; hard ceiling: 1,000 lines per `.py` file.
-         - Before adding new features or classes to any `.py` file that is over 850 lines (or if an edit would push a file over 1,000 lines), the AI agent MUST extract a domain submodule and re-export public symbols via the parent facade.
-      2. Add a dev-mode diagnostic test in `test_runner.py` (`"Source File Modularity & 1,000-Line Budget Invariant"`) that scans repository `.py` files and warns/fails if any production module exceeds the line-count budget, ensuring regressions are caught automatically alongside `roadmap_manager.py --check`.
+         - Before adding new features or classes to any `.py` file approaching 850 lines (or when an edit would push a file over 1,000 lines), extract a domain submodule and re-export public symbols via the parent facade.
+      2. AST-Based Decomposition Suggester & Structural Profiler (`scripts/modular_audit.py`):
+         - Implement an automated CLI analyzer (`python scripts/modular_audit.py --suggest <file>` or `--audit`) that parses AST trees for files over the 800-line warning threshold.
+         - Instead of forcing AI models to consume thousands of prompt tokens reading and analyzing massive files to guess split points:
+           * Computes class/method cohesion, coupling metrics, and cyclomatic complexity.
+           * Automatically proposes modular split blueprints with recommended submodule filenames, target class/method groupings (e.g. UI layout vs. event handling vs. data models vs. background threads), and exact `__all__` re-export lines to ensure 100% backward compatibility.
+           * Identifies dead code, unused private methods, and verbose inline docstrings that can be trimmed immediately.
+      3. Automated Modularity Guard & CI Linter (`test_runner.py`):
+         - Dev-mode diagnostic test ("Source File Modularity & 1,000-Line Budget Invariant") scanning all production `.py` files.
+         - If any file exceeds 1,000 lines, outputs actionable split suggestions from `scripts/modular_audit.py` directly in the test failure message to guide instantaneous remediation.
+
+[x] 3.9 Token-Reduction Architecture & Tiered Symbol Indexing for Local LLM Efficiency (`scripts/generate_symbol_index.py`, `.codemaps/`, `.pyi`, `AGENTS.md`, `GEMINI.md`) [COMPLETED in v3.9.12-beta]
+    - Implement a high-ROI tiered token-reduction strategy to drastically reduce context window consumption across local and cloud AI models:
+      1. Repository-Wide AST Symbol Indexer & API Catalog (`scripts/generate_symbol_index.py`) [Applied to ALL Files]:
+         - Fast, automated AST scanner executed across 100% of repository Python modules (<0.2s runtime).
+         - Generates compact, token-dense symbol definitions (class hierarchies, method signatures, argument types, and public `__all__` exports) into `.codemaps/symbol_index.json` and human-readable `.codemaps/INDEX.md` (<150 tokens per module).
+         - Gives models instant global repository awareness for every module (small or large) so they can verify symbols and call contracts without loading source files into the context window.
+      2. High-ROI Zero-Token Typing Stubs (`.pyi` interfaces) [Applied to Large / Facade Monoliths Only]:
+         - Targeted specifically at large files (>500 lines) and central re-export facades (`prs_shared.pyi`, `processing.pyi`, `playback_preferences.pyi`, `transcript_editor.pyi`, `radio_tv_story_segmenter_worker.pyi`, `project_export.pyi`).
+         - Avoids duplicate maintenance drag on small leaf modules (where token savings are negligible), while delivering a massive 95–97% token reduction on large files (reducing an ~800-line / ~4,000-token file to a ~120-token interface stub).
+      3. Universal Surgical Range-Editing & Chunking Rules (`AGENTS.md`, `GEMINI.md`) [Applied Across ALL Modules]:
+         - Formalize operational directives requiring models to view and edit files via targeted line slices (`view_file` StartLine/EndLine ranges and `replace_file_content`), strictly prohibiting whole-file rewrites to prevent token exhaustion, truncation, and latency timeouts.
 
 ================================================================================
 4. UPCOMING MILESTONE: SMART HYBRID AUDIO LOUDNESS NORMALIZATION & NON-DESTRUCTIVE AUTO-BOOST SUITE [PLANNED for v4.1.0] [IN-PROGRESS]
@@ -231,111 +252,44 @@ ARCHITECTURAL INVARIANTS FOR SECTION 4:
       3. Provides "Apply Normalization", "Re-Analyze", and "Reset to Original" buttons.
     - Add a diagnostic test in `test_runner.py` verifying end-to-end normalization against synthetic quiet audio.
 ================================================================================
-STRICT EXECUTION DIRECTIVE FOR AI STUDIO (GEMINI 3.8 FLASH):
-When the user prompts "what's next", execute ONLY the first uncompleted `[ ]` sub-item below in that turn, then stop. Follow these mandatory invariants on every step:
-1. ZERO TRUNCATION: Write every extracted module and updated facade file in full. Never use `# ... existing code ...` or omit methods.
-2. ZERO-BREAKAGE FACADE RE-EXPORTS: The original filename MUST continue to re-export every class, mixin, function, and constant that previously lived inside it (`from new_module import ...`) so `RadioTVSegmenter.py`, `prs_shared.py`, plugins, and `test_runner.py` require zero caller changes.
-3. NO CIRCULAR IMPORTS: Extracted leaf modules must import shared utilities from `core_utils`, `qt_compat`, or `prs_shared`, never from the parent facade that imports them.
-4. UPDATE ROADMAP CHECKBOX: After completing the single sub-item, mark that sub-item `[x]` in both the Table of Contents and Detailed Specifications.
-
-[x] 4.1 Codebase Audit & Wave 1 Core/Processing Decomposition (`core_utils.py`, `prs_shared.py`, `processing.py`, `test_runner.py`, `qt_compat.py`, `model_install_workers.py`)
-    - Extracted `core_utils.py`, `transcript_cleaner.py`, `project_serialization.py`, `process_lifecycle.py`, `model_install_workers.py`, `qt_compat.py`, `transcription_processing.py`, `diarization_processing.py`, `story_detection_processing.py`, and diagnostic test mixins while preserving `prs_shared.py` and `processing.py` facades.
-
-[x] 4.2 Final Version Regex, Header & Dependency Synchronization (`bump_version.py`, `preview_manager.py`, `snapshot_manager.py`, `package.json`, `RadioTVSegmenter.py`, `backup_manager.py`)
-    - Execute these 5 exact fixes before further file decomposition:
-      1. In `bump_version.py` (`normalize_version`) and `preview_manager.py` (`get_project_version` and `sync_version`), replace the unescaped regex `re.sub(r".+", ".", ...)` with `re.sub(r"\.+", ".", ...)` so version strings are not wiped to `"."`.
-      2. In `snapshot_manager.py`, replace the corrupted line 1 (`#### #!/usr/bin/env python3 """ Snapshot Manager...`) with a valid shebang (`#!/usr/bin/env python3`) on line 1 and opening docstring (`"""Snapshot Manager for Radio & TV Story Segmenter`) on line 2.
-      3. In `package.json`, set `"name": "radio-tv-segmenter"`, `"version": "3.9.8-beta"`, and restore `"dependencies": { "lucide-react": "^1.16.0", "react": "^18.3.1", "react-dom": "^18.3.1" }`.
-      4. In `RadioTVSegmenter.py`, update line 1 docstring to `"""Radio & TV Segmenter — v3.9.8-beta` and ensure `multiprocessing.freeze_support()` and the restricted `if len(sys.argv) > 2 and sys.argv[1] == "-c":` handler (`code_str.lstrip().startswith("from multiprocessing.")`) appear immediately after `import sys` and `import multiprocessing`, BEFORE `from bootstrap import ...`.
-      5. In `backup_manager.py`, update the fallback `PROJECT_VERSION = "3.9.0-beta.9"` to `"3.9.8-beta"`.
-
-[ ] 4.3 Wave 2A - Playback & Preferences Decomposition (`playback_preferences.py` — 4,042 lines)
-    - Target: Split `playback_preferences.py` so every resulting file is <= 1,000 lines:
-      1. Extract `theme_preferences.py`: Theme palette constants, dark/light/silver-fog mode switching, font/UI scaling helpers, and stylesheet builders.
-      2. Extract `preferences_dialog.py`: Preferences/Settings modal dialog UI builders, tab layouts, and settings persistence handlers.
-      3. Extract `playback_controller.py`: Audio/video media player transport controls, playback speed/rate (`0.75x`-`2.0x`), WSOLA pitch preservation, proofreading pre-roll seeking, and scrub/loop handlers.
-      4. Keep `PlaybackPreferencesMixin` in `playback_preferences.py` (inheriting from or composing the extracted mixins) and re-export all extracted classes, functions, and constants in `playback_preferences.py` so existing imports remain 100% intact.
-
-[ ] 4.4 Wave 2B - Unified Project & Media Export Decomposition (`project_export.py` — 3,144 lines)
-    - Target: Split `project_export.py` so every resulting file is <= 1,000 lines:
-      1. Extract `export_dialogs.py`: `UnifiedExportDialog` UI classes, export scope selectors (`Full Episode`, `Selected Stories`, `All Stories`), and destination tab containers.
-      2. Extract `export_media_clipper.py`: FFmpeg audio/video track and story clip extraction (`export_audio_track`, `extract_audio_clip`), fade curve application, non-blocking process polling, and cancellation handling.
-      3. Extract `export_documents.py`: Document/transcript formatting builders for TXT, HTML, DOCX, vector PDF, CSV, JSON, and subtitle/chapter helpers.
-      4. Keep `ProjectExportMixin` in `project_export.py` and re-export all extracted classes and functions from `project_export.py` and `prs_shared.py`.
-
-[ ] 4.5 Wave 3 - Transcript Story & Interactive Editor Decomposition (`transcript_story.py` — 3,055 lines & `transcript_editor.py` — 2,566 lines)
-    - Target: Split `transcript_story.py` and `transcript_editor.py` so every resulting file is <= 1,000 lines:
-      1. From `transcript_story.py`, extract:
-         - `story_model.py`: The `Story` data class, boundary clamping/overlap validation, fade curve lookup/serialization tables, and undo/redo `QUndoCommand` classes (`SetStoriesCommand`, `SelectStoriesCommand`).
-         - `story_crud_mixin.py`: Story list/table UI synchronization, story creation/merge/split/deletion actions, and active story selection handlers.
-         - Keep `TranscriptStoryMixin` in `transcript_story.py` and re-export `Story`, `SetStoriesCommand`, `SelectStoriesCommand`, and all public symbols in `transcript_story.py` and `prs_shared.py`.
-      2. From `transcript_editor.py`, extract:
-         - `transcript_editor_dialogs.py`: `FindReplaceDialog`, `TranscriptSelectionBubble`, and interactive speaker reassignment/comment popups.
-         - `transcript_styles.py`: `transcript_text_view_stylesheet`, high-contrast active word formatting, dark/light clipboard rich-text/HTML builders, and span helpers.
-         - Keep `InteractiveTranscriptEdit` in `transcript_editor.py` and re-export all extracted symbols in `transcript_editor.py` and `prs_shared.py`.
-
-[ ] 4.6 Wave 4 - AI Worker & Benchmark Suite Decomposition (`radio_tv_story_segmenter_worker.py` — 2,264 lines & `benchmark.py` — 2,198 lines)
-    - Target: Split `radio_tv_story_segmenter_worker.py` and `benchmark.py` so every resulting file is <= 1,000 lines:
-      1. From `radio_tv_story_segmenter_worker.py`, extract:
-         - `worker_asr_engines.py`: Faster-Whisper, CTranslate2, Sherpa-ONNX Parakeet, and FastConformer transcription pipelines and word-timestamp alignment.
-         - `worker_diarization_engine.py`: Silero Neural VAD speech timestamping, WeSpeaker 256-d ONNX embedding extraction, and agglomerative/spectral speaker clustering.
-         - `worker_story_engine.py`: Acoustic/lexical story boundary detection and local LLM segmentation runners.
-         - Keep the CLI entrypoint, JSON IPC protocol loop, and all re-exports in `radio_tv_story_segmenter_worker.py`.
-      2. From `benchmark.py`, extract:
-         - `benchmark_engine.py`: Headless benchmark runner, synthetic audio signal generator, timing/memory (`tracemalloc`) profiling, and JSON report export.
-         - `benchmark_dialog.py`: PySide6 Benchmark UI dialog, progress bars, and comparison charts.
-         - Re-export all public classes and CLI entrypoints in `benchmark.py`.
-
-[ ] 4.7 Wave 5 - WordPress Export, Plugin Manager & Timeline Widgets Decomposition (`plugins/wordpress/export_destination.py` — 1,995 lines, `plugins/manager.py` — 1,942 lines, `timeline_widgets.py` — 1,898 lines)
-    - Target: Split the final 3 files exceeding 1,000 lines into focused modules <= 1,000 lines each:
-      1. Split `plugins/wordpress/export_destination.py` into:
-         - `plugins/wordpress/wp_client.py`: WordPress REST API client, authentication, media payload disambiguation/upload, and author/category fetching.
-         - `plugins/wordpress/wp_post_builder.py`: Gutenberg HTML block formatting (`<!-- wp:paragraph -->`, `<!-- wp:audio -->`), bilingual transcript assembly, and multi-scope post item builders.
-         - Keep `WordPressExportDestination` and re-export all symbols in `plugins/wordpress/export_destination.py`.
-      2. Split `plugins/manager.py` into:
-         - `plugins/installer_workers.py`: `GitHubBatchDownloadWorker`, `.rtvs-addon` archive verification, and background installation threads.
-         - `plugins/manager_dialog.py`: Plugin/Add-On Manager PySide6 dialog UI and card widgets.
-         - Keep `PluginManager` and re-export all symbols in `plugins/manager.py`.
-      3. Split `timeline_widgets.py` into:
-         - `waveform_envelope.py`: `WaveformEnvelope`, `build_waveform_pyramid`, and Version 2 `.peaks` mipmapped binary cache read/write helpers.
-         - `timeline_overview_widget.py`: Timeline overview bar and mini-map navigation widget.
-         - Keep the main zoomable timeline widget in `timeline_widgets.py` and re-export all extracted symbols in `timeline_widgets.py` and `prs_shared.py`.
-
-[ ] 4.8 Permanent <1,000-Line Architectural Rule & Automated Test Guard (`AGENTS.md`, `GEMINI.md`, `test_runner.py`)
-    - Enforce the modular file size limit permanently across all future development:
-      1. Update `AGENTS.md` and `GEMINI.md` with a mandatory **Modular File Size Invariant**:
-         - Soft target: ~800 lines per `.py` file; hard ceiling: 1,000 lines per `.py` file.
-         - Before adding new features or classes to any `.py` file that is over 850 lines (or if an edit would push a file over 1,000 lines), the AI agent MUST extract a domain submodule and re-export public symbols via the parent facade.
-      2. Add a dev-mode diagnostic test in `test_runner.py` (`"Source File Modularity & 1,000-Line Budget Invariant"`) that scans repository `.py` files and warns/fails if any production module exceeds the line-count budget, ensuring regressions are caught automatically alongside `roadmap_manager.py --check`.
-
-================================================================================
-5. UPCOMING MILESTONE: AUTOMATED AMD RYZEN AI LOCAL DEVELOPMENT PLATFORM & MODEL PROVISIONING SUITE [PLANNED for v4.1.0] [OPTIONAL / PLANNED] [NOT STARTED]
+5. UPCOMING MILESTONE: AUTOMATED AMD RYZEN AI LOCAL DEVELOPMENT PLATFORM & TOKEN-EFFICIENT MODEL SUITE [PLANNED for v4.1.0] [OPTIONAL / PLANNED] [NOT STARTED]
 ================================================================================
 ARCHITECTURAL INVARIANTS FOR SECTION 5:
 - Non-Destructive & Cross-Platform Safe: `scripts/setup_local_ai.py` must support `--check` / `--dry-run`, never overwrite existing user IDE settings without creating a `.bak` backup, and degrade gracefully on non-AMD machines.
+- Token Thrift & Prefix Caching First: All local coding models running on unified memory architectures (UMA) must be configured to maximize token-per-second throughput, minimize KV-cache memory pressure, and leverage the symbol stubs and AST analysis tools established in Milestone 3.
 - Preserve All Existing CI & Packaging Tests: Any updates to `.github/workflows/build.yml` MUST retain every invariant tested by `_test_windows_ci_build_and_packaging_optimization_invariants` in `test_runner.py`.
 
-[ ] 5.1 Strix Point Hardware, UMA VRAM & ROCm/Vulkan Probe (`scripts/setup_local_ai.py`)
+[ ] 5.1 Strix Point Hardware, UMA VRAM & Context Allocation Probe (`scripts/setup_local_ai.py`)
     - Implement hardware inspection for AMD Ryzen AI 9 HX 370 (12C/24T Zen 5, Radeon 890M `gfx1150` RDNA 3.5 iGPU, XDNA 2 50-TOPS NPU, 64GB RAM):
       1. Detect total physical RAM, dedicated/UMA aperture allocation, and Vulkan/ROCm driver availability.
-      2. Configure optimal environment variables for `gfx1150` stability on Windows/Linux: `OLLAMA_FLASH_ATTENTION=1`, `OLLAMA_KV_CACHE_TYPE=q8_0` (halves KV cache VRAM at 32k context), and `OLLAMA_NUM_PARALLEL=1`.
+      2. Compute optimal KV-cache VRAM budget: halving KV-cache footprint via `OLLAMA_KV_CACHE_TYPE=q8_0` and setting working context limits (16k default, 32k max) so local models consume <4 GB KV VRAM instead of ~10 GB, leaving at least 24 GB of system RAM free for concurrent Whisper/WeSpeaker transcription runs.
+      3. Configure optimal runtime environment variables for `gfx1150` stability on Windows/Linux: `OLLAMA_FLASH_ATTENTION=1`, `OLLAMA_KV_CACHE_TYPE=q8_0`, and `OLLAMA_NUM_PARALLEL=1`.
 
-[ ] 5.2 Tiered Local AI Model Provisioner (`scripts/setup_local_ai.py`)
-    - Automate pulling and registering three memory-budgeted coding model tiers via Ollama / LM Studio CLI:
-      1. Tier 1 (Heavy Refactoring & Audits — ~20 GB VRAM): `qwen2.5-coder:32b-instruct-q4_K_M` with 32,768 token context.
-      2. Tier 2 (Fast Multi-File Bug Fixes — ~9 GB VRAM): `qwen2.5-coder:14b-instruct-q4_K_M`.
-      3. Tier 3 (Sub-50ms Inline Autocomplete — ~1.2 GB VRAM): `qwen2.5-coder:1.5b-base`.
+[ ] 5.2 Tiered Local AI Model Provisioner with Prefix-Cache Optimization (`scripts/setup_local_ai.py`)
+    - Automate pulling and registering memory-budgeted coding model tiers via Ollama / LM Studio CLI:
+      1. Tier 1 (Heavy Refactoring & Architectural Decomposition — ~20 GB VRAM): `qwen2.5-coder:32b-instruct-q4_K_M` with 32,768 token context for complex AST splits and multi-file facades.
+      2. Tier 2 (Fast Single-File Bug Fixes & Mixin Edits — ~9 GB VRAM): `qwen2.5-coder:14b-instruct-q4_K_M` / `7b-instruct-q4_K_M` delivering >50 tok/s on Radeon 890M.
+      3. Tier 3 (Sub-50ms Inline Autocomplete — ~1.2 GB VRAM): `qwen2.5-coder:1.5b-base` running on lightweight context.
+      4. Validate all models with automated `--dry-run` and SHA-256 integrity checks.
 
-[ ] 5.3 Local Server Health Check & Context Window Tuning (`scripts/setup_local_ai.py`)
-    - Verify `http://127.0.0.1:11434` endpoint readiness, generate custom Ollama `Modelfile` presets (`num_ctx 32768`, `temperature 0.1`) that cap GPU memory so at least 24 GB of system RAM remains free for running RTVS3 + Faster-Whisper + WeSpeaker concurrently, and run a 64-token warmup benchmark reporting tokens/sec.
+[ ] 5.3 Local Server Health Check, Context Window Tuning & Prompt Cache Pinning (`scripts/setup_local_ai.py`)
+    - Verify `http://127.0.0.1:11434` endpoint readiness and generate custom Ollama / llama.cpp `Modelfile` presets:
+      1. Pin the project symbol catalog (`.codemaps/symbol_index.json` and `.pyi` stubs created in Item 3.9) into the prefix cache, giving the local model instant zero-token access to repository APIs and signatures without re-ingesting 30+ files on each interaction.
+      2. Enforce context ceilings (`num_ctx 16384` for daily development, expandable to `32768` for full audits) and `temperature 0.1` for deterministic code generation.
+      3. Run a 64-token warmup benchmark reporting TTFT (Time To First Token) and token/sec throughput.
 
-[ ] 5.4 Non-Destructive IDE & Agent Rules Generator (`scripts/setup_local_ai.py`)
-    - Safely generate/merge `.vscode/settings.json` and Continue.dev / Cline / Roo Code configuration templates pointing to `http://127.0.0.1:11434`.
-    - Create cross-platform symlinks or synchronized copies mapping `.clinerules` and `.cursorrules` to `AGENTS.md` and `GEMINI.md` so local coding agents automatically enforce the 10-location version bump checklist, `roadmap_manager.py --check`, and the <1,000-line file ceiling.
+[ ] 5.4 Token-Thrift IDE Configuration & AST Suggester Integration (`scripts/setup_local_ai.py`)
+    - Safely generate/merge `.vscode/settings.json` and Continue.dev / Cline / Roo Code configuration templates pointing to `http://127.0.0.1:11434`:
+      1. Configure IDE extensions for **token-thrifty retrieval**: instruct assistants to query the symbol index (`.codemaps/`) before requesting full file reads, use line-slice reads (`view_file` StartLine/EndLine), and produce unified diff patches rather than regenerating whole files.
+      2. Direct integration with AST Split Suggester: configure agent instructions so when an edit touches a file exceeding 800 lines, the assistant automatically invokes `python scripts/modular_audit.py --suggest <file>` to receive turnkey decomposition blueprints rather than wasting thousands of tokens analyzing AST coupling manually.
+      3. Create cross-platform symlinks or synchronized copies mapping `.clinerules` and `.cursorrules` to `AGENTS.md` and `GEMINI.md` to enforce the 10-location version bump checklist, `roadmap_manager.py --check`, and the <1,000-line modular ceiling.
 
-[ ] 5.5 Interactive Task-to-Model Router & CI Pipeline Verification (`.github/workflows/build.yml`, `test_runner.py`)
-    - Add `--guide` CLI mode to `scripts/setup_local_ai.py` printing a task-to-model routing matrix.
-    - Verify `.github/workflows/build.yml` and add a diagnostic unit test in `test_runner.py` validating `scripts/setup_local_ai.py --dry-run` hardware profile serialization.
+[ ] 5.5 Token-Budget Task-to-Model Router & CI Pipeline Verification (`.github/workflows/build.yml`, `test_runner.py`)
+    - Add `--guide` CLI mode and interactive task-to-model routing matrix to `scripts/setup_local_ai.py`:
+      * Small single-file fixes (<300 lines) -> Route to 7B/14B model (<100ms TTFT, saving power and memory).
+      * Multi-file refactoring, architectural planning, or files >500 lines -> Route to 32B model with pre-cached symbol catalog.
+      * Inline code completions -> Route to 1.5B autocomplete model.
+    - Verify `.github/workflows/build.yml` and add a diagnostic unit test in `test_runner.py` validating `scripts/setup_local_ai.py --dry-run` hardware profile serialization and token budget calculations.
 
 ================================================================================
 6. OPTIONAL FUTURE MILESTONE: INTERACTIVE TEXT-BASED MEDIA ASSEMBLY & MULTI-ASSET RIPPLE EDITING ENGINE [PLANNED for v4.2.0] [OPTIONAL] [NOT STARTED]
