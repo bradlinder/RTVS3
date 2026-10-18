@@ -16,6 +16,10 @@ import os
 import sys
 from typing import Any, List, Optional
 
+os.environ["RTVS_WORKER_MODE"] = "1"
+from qt_compat import _ensure_pyside6_fallback
+_ensure_pyside6_fallback()
+
 # Re-exports from worker_ipc
 from worker_ipc import (
     emit,

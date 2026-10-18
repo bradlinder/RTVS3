@@ -11,15 +11,21 @@ from __future__ import annotations
 import math
 from typing import Any, Dict, List, Optional, Tuple
 
-try:
-    from PySide6.QtCore import QSettings
-    from PySide6.QtGui import QUndoCommand
-except (ImportError, Exception, BaseException):
-    from qt_compat import _ensure_pyside6_fallback
+import os, sys
+from qt_compat import _ensure_pyside6_fallback
+
+if os.environ.get("RTVS_WORKER_MODE") == "1" or (getattr(sys, "frozen", False) and not hasattr(sys, "_MEIPASS_GUI")):
     _ensure_pyside6_fallback()
-    import sys
     QSettings = getattr(sys.modules["PySide6.QtCore"], "QSettings")
     QUndoCommand = getattr(sys.modules["PySide6.QtGui"], "QUndoCommand")
+else:
+    try:
+        from PySide6.QtCore import QSettings
+        from PySide6.QtGui import QUndoCommand
+    except (ImportError, Exception, BaseException):
+        _ensure_pyside6_fallback()
+        QSettings = getattr(sys.modules["PySide6.QtCore"], "QSettings")
+        QUndoCommand = getattr(sys.modules["PySide6.QtGui"], "QUndoCommand")
 
 from core_utils import INTERNAL_APP_ID, format_time
 

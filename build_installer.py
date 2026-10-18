@@ -59,7 +59,7 @@ try:
 except ImportError as e:
     print(f"[BUILD] Warning: Could not import prs_shared ({e}), using fallback values")
     APP_DISPLAY_NAME = "Radio & TV Segmenter"
-    PROJECT_VERSION = "3.9.19-beta"
+    PROJECT_VERSION = "3.9.20-beta"
 except Exception as e:
     print(f"[BUILD] Unexpected error importing prs_shared: {type(e).__name__}: {e}")
     raise
@@ -984,6 +984,12 @@ def main() -> None:
     worker_exclude_flags = [
         *exclude_flags,
         "--exclude-module", "PySide6",
+        "--exclude-module", "PySide6.QtCore",
+        "--exclude-module", "PySide6.QtGui",
+        "--exclude-module", "PySide6.QtWidgets",
+        "--exclude-module", "PySide6.QtNetwork",
+        "--exclude-module", "PySide6.QtMultimedia",
+        "--exclude-module", "PySide6.QtMultimediaWidgets",
     ]
     
     run([

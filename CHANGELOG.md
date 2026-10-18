@@ -1,5 +1,13 @@
 # Changelog
 
+## v3.9.20-beta
+- **Worker Process Environment Bypass & PyInstaller Exclusion Alignment (`build_installer.py`, `radio_tv_story_segmenter_worker.py`, `story_model.py`, `core_utils.py`, `prs_shared.py`)**:
+  - Resolved persistent macOS and Linux Stage 3/5 PyInstaller worker build failures where `PySide6.QtCore` was collected into Extension Modules without its backing `libQt6Core` dynamic libraries.
+  - Added explicit `--exclude-module` flags in `build_installer.py` for all PySide6 submodules (`PySide6.QtCore`, `PySide6.QtGui`, `PySide6.QtWidgets`, `PySide6.QtNetwork`, `PySide6.QtMultimedia`, `PySide6.QtMultimediaWidgets`).
+  - Added early worker mode environment detection (`RTVS_WORKER_MODE=1` set at worker entry point) in `story_model.py`, `core_utils.py`, and `prs_shared.py`: directly activates `_ensure_pyside6_fallback()` and retrieves symbols from `sys.modules`, completely avoiding any `from PySide6... import` statements.
+  - Guarantees zero C-extension `dlopen` calls occur in the background AI worker binary across macOS, Linux, and Windows.
+- **Synchronous Version Bump**: Synchronized all 13 core project files and web preview scaffolding to `v3.9.20-beta`.
+
 ## v3.9.19-beta
 - **PyInstaller Excluded Submodule Retrieval via `sys.modules` (`prs_shared.py`, `story_model.py`, `core_utils.py`)**:
   - Resolved macOS and Linux PyInstaller frozen build worker self-test failures during Stage 3/5 compilation (`prs_worker`).

@@ -70,7 +70,7 @@ def _ensure_runtime_bin_on_path():
 _ensure_runtime_bin_on_path()
 
 # Re-exports from Phase 1 modularization (core_utils, transcript_cleaner, project_serialization, process_lifecycle)
-PROJECT_VERSION = "3.9.19-beta"
+PROJECT_VERSION = "3.9.20-beta"
 from core_utils import (
     INTERNAL_APP_ID,
     APP_DISPLAY_NAME,
@@ -163,108 +163,11 @@ except ImportError:
 
 from html.parser import HTMLParser
 
-try:
-    from PySide6.QtCore import (
-        Qt,
-        QUrl,
-        Signal,
-        QObject,
-        QThread,
-        QRect,
-        QRectF,
-        QLineF,
-        QPointF,
-        QEvent,
-        QTimer,
-        QTime,
-        QProcess,
-        QProcessEnvironment,
-        QSettings,
-        QSize,
-        QCoreApplication,
-    )
-    from PySide6.QtNetwork import QLocalServer, QLocalSocket
+import os, sys
+from qt_compat import _ensure_pyside6_fallback
 
-    from PySide6.QtGui import (
-        QBrush,
-        QColor,
-        QPainter,
-        QPainterPath,
-        QPen,
-        QPolygonF,
-        QFont,
-        QAction,
-        QActionGroup,
-        QUndoStack,
-        QUndoCommand,
-        QKeySequence,
-        QPalette,
-        QTextCursor,
-        QTextCharFormat,
-        QTextDocument,
-        QShortcut,
-        QPixmap,
-        QIcon,
-        QCursor,
-        QDesktopServices,
-    )
-
-    from PySide6.QtWidgets import (
-        QApplication,
-        QMainWindow,
-        QWidget,
-        QFileDialog,
-        QMessageBox,
-        QPushButton,
-        QRadioButton,
-        QButtonGroup,
-        QLabel,
-        QListWidget,
-        QListWidgetItem,
-        QTableWidget,
-        QTableWidgetItem,
-        QHeaderView,
-        QAbstractItemView,
-        QAbstractSpinBox,
-        QTextEdit,
-        QPlainTextEdit,
-        QTextBrowser,
-        QLineEdit,
-        QHBoxLayout,
-        QVBoxLayout,
-        QGridLayout,
-        QSplitter,
-        QGroupBox,
-        QFormLayout,
-        QProgressBar,
-        QInputDialog,
-        QSpinBox,
-        QSlider,
-        QComboBox,
-        QCompleter,
-        QToolTip,
-        QMenu,
-        QDialog,
-        QCheckBox,
-        QDoubleSpinBox,
-        QScrollBar,
-        QFrame,
-        QStackedWidget,
-        QProgressDialog,
-        QScrollArea,
-        QSizePolicy,
-        QStyledItemDelegate,
-        QStyle,
-        QToolButton,
-        QLayout,
-    )
-
-    from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput
-    from PySide6.QtMultimediaWidgets import QVideoWidget
-except (ImportError, Exception, BaseException):
-    from qt_compat import _ensure_pyside6_fallback
+if os.environ.get("RTVS_WORKER_MODE") == "1" or (getattr(sys, "frozen", False) and not hasattr(sys, "_MEIPASS_GUI")):
     _ensure_pyside6_fallback()
-    import sys
     _qt_core = sys.modules["PySide6.QtCore"]
     _qt_net = sys.modules["PySide6.QtNetwork"]
     _qt_gui = sys.modules["PySide6.QtGui"]
@@ -366,6 +269,210 @@ except (ImportError, Exception, BaseException):
     QMediaPlayer = getattr(_qt_media, "QMediaPlayer")
     QAudioOutput = getattr(_qt_media, "QAudioOutput")
     QVideoWidget = getattr(_qt_media_widgets, "QVideoWidget")
+else:
+    try:
+        from PySide6.QtCore import (
+            Qt,
+            QUrl,
+            Signal,
+            QObject,
+            QThread,
+            QRect,
+            QRectF,
+            QLineF,
+            QPointF,
+            QEvent,
+            QTimer,
+            QTime,
+            QProcess,
+            QProcessEnvironment,
+            QSettings,
+            QSize,
+            QCoreApplication,
+        )
+        from PySide6.QtNetwork import QLocalServer, QLocalSocket
+
+        from PySide6.QtGui import (
+            QBrush,
+            QColor,
+            QPainter,
+            QPainterPath,
+            QPen,
+            QPolygonF,
+            QFont,
+            QAction,
+            QActionGroup,
+            QUndoStack,
+            QUndoCommand,
+            QKeySequence,
+            QPalette,
+            QTextCursor,
+            QTextCharFormat,
+            QTextDocument,
+            QShortcut,
+            QPixmap,
+            QIcon,
+            QCursor,
+            QDesktopServices,
+        )
+
+        from PySide6.QtWidgets import (
+            QApplication,
+            QMainWindow,
+            QWidget,
+            QFileDialog,
+            QMessageBox,
+            QPushButton,
+            QRadioButton,
+            QButtonGroup,
+            QLabel,
+            QListWidget,
+            QListWidgetItem,
+            QTableWidget,
+            QTableWidgetItem,
+            QHeaderView,
+            QAbstractItemView,
+            QAbstractSpinBox,
+            QTextEdit,
+            QPlainTextEdit,
+            QTextBrowser,
+            QLineEdit,
+            QHBoxLayout,
+            QVBoxLayout,
+            QGridLayout,
+            QSplitter,
+            QGroupBox,
+            QFormLayout,
+            QProgressBar,
+            QInputDialog,
+            QSpinBox,
+            QSlider,
+            QComboBox,
+            QCompleter,
+            QToolTip,
+            QMenu,
+            QDialog,
+            QCheckBox,
+            QDoubleSpinBox,
+            QScrollBar,
+            QFrame,
+            QStackedWidget,
+            QProgressDialog,
+            QScrollArea,
+            QSizePolicy,
+            QStyledItemDelegate,
+            QStyle,
+            QToolButton,
+            QLayout,
+        )
+
+        from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput
+        from PySide6.QtMultimediaWidgets import QVideoWidget
+    except (ImportError, Exception, BaseException):
+        from qt_compat import _ensure_pyside6_fallback
+        _ensure_pyside6_fallback()
+        import sys
+        _qt_core = sys.modules["PySide6.QtCore"]
+        _qt_net = sys.modules["PySide6.QtNetwork"]
+        _qt_gui = sys.modules["PySide6.QtGui"]
+        _qt_widgets = sys.modules["PySide6.QtWidgets"]
+        _qt_media = sys.modules["PySide6.QtMultimedia"]
+        _qt_media_widgets = sys.modules["PySide6.QtMultimediaWidgets"]
+
+        Qt = getattr(_qt_core, "Qt")
+        QUrl = getattr(_qt_core, "QUrl")
+        Signal = getattr(_qt_core, "Signal")
+        QObject = getattr(_qt_core, "QObject")
+        QThread = getattr(_qt_core, "QThread")
+        QRect = getattr(_qt_core, "QRect")
+        QRectF = getattr(_qt_core, "QRectF")
+        QLineF = getattr(_qt_core, "QLineF")
+        QPointF = getattr(_qt_core, "QPointF")
+        QEvent = getattr(_qt_core, "QEvent")
+        QTimer = getattr(_qt_core, "QTimer")
+        QTime = getattr(_qt_core, "QTime")
+        QProcess = getattr(_qt_core, "QProcess")
+        QProcessEnvironment = getattr(_qt_core, "QProcessEnvironment")
+        QSettings = getattr(_qt_core, "QSettings")
+        QSize = getattr(_qt_core, "QSize")
+        QCoreApplication = getattr(_qt_core, "QCoreApplication")
+
+        QLocalServer = getattr(_qt_net, "QLocalServer")
+        QLocalSocket = getattr(_qt_net, "QLocalSocket")
+
+        QBrush = getattr(_qt_gui, "QBrush")
+        QColor = getattr(_qt_gui, "QColor")
+        QPainter = getattr(_qt_gui, "QPainter")
+        QPainterPath = getattr(_qt_gui, "QPainterPath")
+        QPen = getattr(_qt_gui, "QPen")
+        QPolygonF = getattr(_qt_gui, "QPolygonF")
+        QFont = getattr(_qt_gui, "QFont")
+        QAction = getattr(_qt_gui, "QAction")
+        QActionGroup = getattr(_qt_gui, "QActionGroup")
+        QUndoStack = getattr(_qt_gui, "QUndoStack")
+        QUndoCommand = getattr(_qt_gui, "QUndoCommand")
+        QKeySequence = getattr(_qt_gui, "QKeySequence")
+        QPalette = getattr(_qt_gui, "QPalette")
+        QTextCursor = getattr(_qt_gui, "QTextCursor")
+        QTextCharFormat = getattr(_qt_gui, "QTextCharFormat")
+        QTextDocument = getattr(_qt_gui, "QTextDocument")
+        QShortcut = getattr(_qt_gui, "QShortcut")
+        QPixmap = getattr(_qt_gui, "QPixmap")
+        QIcon = getattr(_qt_gui, "QIcon")
+        QCursor = getattr(_qt_gui, "QCursor")
+        QDesktopServices = getattr(_qt_gui, "QDesktopServices")
+
+        QApplication = getattr(_qt_widgets, "QApplication")
+        QMainWindow = getattr(_qt_widgets, "QMainWindow")
+        QWidget = getattr(_qt_widgets, "QWidget")
+        QFileDialog = getattr(_qt_widgets, "QFileDialog")
+        QMessageBox = getattr(_qt_widgets, "QMessageBox")
+        QPushButton = getattr(_qt_widgets, "QPushButton")
+        QRadioButton = getattr(_qt_widgets, "QRadioButton")
+        QButtonGroup = getattr(_qt_widgets, "QButtonGroup")
+        QLabel = getattr(_qt_widgets, "QLabel")
+        QListWidget = getattr(_qt_widgets, "QListWidget")
+        QListWidgetItem = getattr(_qt_widgets, "QListWidgetItem")
+        QTableWidget = getattr(_qt_widgets, "QTableWidget")
+        QTableWidgetItem = getattr(_qt_widgets, "QTableWidgetItem")
+        QHeaderView = getattr(_qt_widgets, "QHeaderView")
+        QAbstractItemView = getattr(_qt_widgets, "QAbstractItemView")
+        QAbstractSpinBox = getattr(_qt_widgets, "QAbstractSpinBox")
+        QTextEdit = getattr(_qt_widgets, "QTextEdit")
+        QPlainTextEdit = getattr(_qt_widgets, "QPlainTextEdit")
+        QTextBrowser = getattr(_qt_widgets, "QTextBrowser")
+        QLineEdit = getattr(_qt_widgets, "QLineEdit")
+        QHBoxLayout = getattr(_qt_widgets, "QHBoxLayout")
+        QVBoxLayout = getattr(_qt_widgets, "QVBoxLayout")
+        QGridLayout = getattr(_qt_widgets, "QGridLayout")
+        QSplitter = getattr(_qt_widgets, "QSplitter")
+        QGroupBox = getattr(_qt_widgets, "QGroupBox")
+        QFormLayout = getattr(_qt_widgets, "QFormLayout")
+        QProgressBar = getattr(_qt_widgets, "QProgressBar")
+        QInputDialog = getattr(_qt_widgets, "QInputDialog")
+        QSpinBox = getattr(_qt_widgets, "QSpinBox")
+        QSlider = getattr(_qt_widgets, "QSlider")
+        QComboBox = getattr(_qt_widgets, "QComboBox")
+        QCompleter = getattr(_qt_widgets, "QCompleter")
+        QToolTip = getattr(_qt_widgets, "QToolTip")
+        QMenu = getattr(_qt_widgets, "QMenu")
+        QDialog = getattr(_qt_widgets, "QDialog")
+        QCheckBox = getattr(_qt_widgets, "QCheckBox")
+        QDoubleSpinBox = getattr(_qt_widgets, "QDoubleSpinBox")
+        QScrollBar = getattr(_qt_widgets, "QScrollBar")
+        QFrame = getattr(_qt_widgets, "QFrame")
+        QStackedWidget = getattr(_qt_widgets, "QStackedWidget")
+        QProgressDialog = getattr(_qt_widgets, "QProgressDialog")
+        QScrollArea = getattr(_qt_widgets, "QScrollArea")
+        QSizePolicy = getattr(_qt_widgets, "QSizePolicy")
+        QStyledItemDelegate = getattr(_qt_widgets, "QStyledItemDelegate")
+        QStyle = getattr(_qt_widgets, "QStyle")
+        QToolButton = getattr(_qt_widgets, "QToolButton")
+        QLayout = getattr(_qt_widgets, "QLayout")
+
+        QMediaPlayer = getattr(_qt_media, "QMediaPlayer")
+        QAudioOutput = getattr(_qt_media, "QAudioOutput")
+        QVideoWidget = getattr(_qt_media_widgets, "QVideoWidget")
 
 try:
     import numpy as np
