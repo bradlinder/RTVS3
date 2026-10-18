@@ -1,5 +1,13 @@
 # Changelog
 
+## v3.9.17-beta
+- **PyInstaller Frozen Worker Qt Fallback Engine (`qt_compat.py`, `prs_shared.py`, `story_model.py`, `core_utils.py`)**:
+  - Resolved GitHub Actions CI build failures (`ImportError: DLL load failed while importing QtCore: The specified module could not be found`) across Windows, macOS, and Linux when freezing the standalone background AI worker executable (`radio_tv_story_segmenter_worker`).
+  - Enhanced `_ensure_pyside6_fallback()` in `qt_compat.py` to test submodules (`PySide6.QtCore`, `PySide6.QtWidgets`, `PySide6.QtGui`) instead of top-level `import PySide6`.
+  - Wrapped `PySide6` imports in `prs_shared.py`, `story_model.py`, and `core_utils.py` in `try...except Exception:` blocks with automatic `_ensure_pyside6_fallback()` mock module injection.
+  - Guarantees the frozen AI worker executable initializes its JSON IPC protocol and executes its `--self-test` cleanly without requiring PySide6 C-extensions to be bundled in the background worker package.
+- **Synchronous Version Bump**: Synchronized all 13 core project files and web preview scaffolding to `v3.9.17-beta`.
+
 ## v3.9.16-beta
 - **Background Thread Affinity & Qt GUI Object Isolation (`plugins/manager.py`, `plugins/installer_workers.py`, `plugins/github_dialog.py`)**:
   - Fixed `QObject: Cannot create children for a parent that is in a different thread` console warnings during batch plugin downloads and updates.

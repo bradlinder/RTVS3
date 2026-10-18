@@ -143,9 +143,11 @@ class DummyQFont:
 def _ensure_pyside6_fallback() -> bool:
     """Ensures PySide6 modules are importable, installing the zero-dependency mock shim if unavailable."""
     try:
-        import PySide6
+        import PySide6.QtCore
+        import PySide6.QtWidgets
+        import PySide6.QtGui
         return True
-    except ImportError:
+    except Exception:
         pass
 
     pyside6_mod = MockModule("PySide6")

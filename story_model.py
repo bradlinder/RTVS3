@@ -14,7 +14,7 @@ from typing import Any, Dict, List, Optional, Tuple
 try:
     from PySide6.QtCore import QSettings
     from PySide6.QtGui import QUndoCommand
-except ImportError:
+except Exception:
     from qt_compat import _ensure_pyside6_fallback
     _ensure_pyside6_fallback()
     from PySide6.QtCore import QSettings

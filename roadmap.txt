@@ -36,18 +36,17 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 --------------------------------------------------------------------------------
 TABLE OF CONTENTS & STATUS OVERVIEW
 --------------------------------------------------------------------------------
-1. Previous Release: Manage Plugins Space Optimization, Complete Add-on Uninstallation & GitHub Downloader Reliability (`plugins/manager_dialog.py`, `plugins/manager.py`, `plugins/github_dialog.py`, `plugins/installer_workers.py`, `diagnostic_cloud_and_system_tests.py`) [x] [COMPLETED in v3.9.15-beta]
-   [x] 1.1 Manage Plugins Toolbar Optimization & Space Recovery (`plugins/manager_dialog.py`): Removed unneeded "Export Selected..." button to reclaim horizontal toolbar space; streamlined button labels and expanded default geometry to 920x620.
-   [x] 1.2 True Plugin Uninstallation & Multi-Tier Purge Engine (`plugins/manager.py`): Resolved issue where uninstalling an add-on merely disabled it; implemented complete directory and `.rtvs-addon` purge across both user data and application bundled directories.
-   [x] 1.3 GitHub Plugins Downloader Reliability & Immediate Catalog Rendering (`plugins/github_dialog.py`, `plugins/installer_workers.py`): Pre-populated `GitHubPluginsDialog` with the official plugin catalog for instant display; added missing `gdocs` exporter to catalog.
-   [x] 1.4 Diagnostic Benchmark Suite Resilience (`diagnostic_cloud_and_system_tests.py`): Extended subprocess execution timeout from 15s to 45s in `_test_ai_worker_subprocess_execution_and_ipc_handshake`.
-   [x] 1.5 Synchronous Version Bump: Synchronized all project locations to v3.9.15-beta.
+1. Previous Release: Background Thread Affinity & Qt GUI Object Isolation (`plugins/manager.py`, `plugins/installer_workers.py`, `plugins/github_dialog.py`) [x] [COMPLETED in v3.9.16-beta]
+   [x] 1.1 Background Thread Affinity & GUI Isolation (`plugins/manager.py`, `plugins/installer_workers.py`): Added `load_ui: bool = True` parameter to `install_addon()`. Background thread `GitHubBatchDownloadWorker` extracts plugin files to disk and updates settings without instantiating GUI widgets or `QMenu` actions across thread boundaries.
+   [x] 1.2 Main Thread Safe Loading (`plugins/github_dialog.py`): Deferred plugin instantiation and menu reconstruction to `on_batch_download_finished()` on the main GUI thread after worker thread completion.
+   [x] 1.3 Batch Update Signal Repair (`plugins/github_dialog.py`): Corrected missing signal connection for batch updates (`on_batch_download_finished`).
+   [x] 1.4 Synchronous Version Bump: Synchronized all project locations to v3.9.16-beta.
 
-2. Current Release: Background Thread Affinity & Qt GUI Object Isolation (`plugins/manager.py`, `plugins/installer_workers.py`, `plugins/github_dialog.py`) [x] [COMPLETED in v3.9.16-beta]
-   [x] 2.1 Background Thread Affinity & GUI Isolation (`plugins/manager.py`, `plugins/installer_workers.py`): Added `load_ui: bool = True` parameter to `install_addon()`. Background thread `GitHubBatchDownloadWorker` extracts plugin files to disk and updates settings without instantiating GUI widgets or `QMenu` actions across thread boundaries.
-   [x] 2.2 Main Thread Safe Loading (`plugins/github_dialog.py`): Deferred plugin instantiation and menu reconstruction to `on_batch_download_finished()` on the main GUI thread after worker thread completion.
-   [x] 2.3 Batch Update Signal Repair (`plugins/github_dialog.py`): Corrected missing signal connection for batch updates (`on_batch_download_finished`).
-   [x] 2.4 Synchronous Version Bump: Synchronized all 13 core project files and web preview scaffolding to v3.9.16-beta.
+2. Current Release: PyInstaller Frozen Worker Qt Fallback Engine (`qt_compat.py`, `prs_shared.py`, `story_model.py`, `core_utils.py`) [x] [COMPLETED in v3.9.17-beta]
+   [x] 2.1 Submodule Fallback Inspection (`qt_compat.py`): Enhanced `_ensure_pyside6_fallback()` to test submodules (`PySide6.QtCore`, `PySide6.QtWidgets`, `PySide6.QtGui`) instead of top-level `import PySide6`.
+   [x] 2.2 Global Exception Catching for Frozen Worker Imports (`prs_shared.py`, `story_model.py`, `core_utils.py`): Wrapped `PySide6` imports in `prs_shared.py`, `story_model.py`, and `core_utils.py` in `try...except Exception:` blocks with automatic `_ensure_pyside6_fallback()` mock module injection.
+   [x] 2.3 Standalone Worker Binary Resilience (`radio_tv_story_segmenter_worker.py`): Resolved GitHub Actions CI build failures (`ImportError: DLL load failed while importing QtCore: The specified module could not be found`) across Windows, macOS, and Linux when freezing the standalone background AI worker executable.
+   [x] 2.4 Synchronous Version Bump: Synchronized all 13 core project files and web preview scaffolding to v3.9.17-beta.
 
 3. Upcoming Milestone: Codebase Modularization & Monolithic File Decomposition Strategy (<1,000-Line Invariant) (`playback_preferences.py`, `project_export.py`, `transcript_story.py`, `transcript_editor.py`, `radio_tv_story_segmenter_worker.py`, `benchmark.py`, `plugins/wordpress/export_destination.py`, `plugins/manager.py`, `timeline_widgets.py`) [PLANNED for v4.0.0] [IN-PROGRESS]
    - *Architecture Note*: Incrementally refactors all remaining source files exceeding 1,000 lines (at most 1 to 2 monoliths per turn) into focused domain modules (<1,000 lines each) while preserving 100% backward compatibility via zero-breakage facade re-exports.
