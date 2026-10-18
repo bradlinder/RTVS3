@@ -14,11 +14,12 @@ from typing import Any, Dict, List, Optional, Tuple
 try:
     from PySide6.QtCore import QSettings
     from PySide6.QtGui import QUndoCommand
-except Exception:
+except (ImportError, Exception, BaseException):
     from qt_compat import _ensure_pyside6_fallback
     _ensure_pyside6_fallback()
-    from PySide6.QtCore import QSettings
-    from PySide6.QtGui import QUndoCommand
+    import sys
+    QSettings = getattr(sys.modules["PySide6.QtCore"], "QSettings")
+    QUndoCommand = getattr(sys.modules["PySide6.QtGui"], "QUndoCommand")
 
 from core_utils import INTERNAL_APP_ID, format_time
 

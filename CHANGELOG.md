@@ -1,5 +1,13 @@
 # Changelog
 
+## v3.9.19-beta
+- **PyInstaller Excluded Submodule Retrieval via `sys.modules` (`prs_shared.py`, `story_model.py`, `core_utils.py`)**:
+  - Resolved macOS and Linux PyInstaller frozen build worker self-test failures during Stage 3/5 compilation (`prs_worker`).
+  - When `--exclude-module PySide6` is passed to PyInstaller, PyInstaller's C import hook (`pyimod02_importers.py`) intercepts any nested `from PySide6.QtCore import ...` statement and raises `ModuleNotFoundError` or `BaseException` regardless of `sys.modules` state.
+  - Refactored `prs_shared.py`, `story_model.py`, and `core_utils.py` fallback handlers: calls `_ensure_pyside6_fallback()` and retrieves symbols directly from `sys.modules["PySide6.*"]` using `getattr()`.
+  - Bypasses PyInstaller's bytecode importer check entirely, guaranteeing that `prs_worker` (`radio_tv_story_segmenter_worker`) initializes its JSON IPC protocol and passes `--self-test` across macOS, Linux, and Windows.
+- **Synchronous Version Bump**: Synchronized all 13 core project files and web preview scaffolding to `v3.9.19-beta`.
+
 ## v3.9.18-beta
 - **MockModule Metadata Conformance for PyTorch Custom Ops & Inspect (`qt_compat.py`)**:
   - Resolved Linux and macOS CI build failures (`AttributeError: type object '__file__' has no attribute 'endswith'`) during `torch` custom operator factory registration.

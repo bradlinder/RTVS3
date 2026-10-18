@@ -17,13 +17,15 @@ from pathlib import Path
 
 try:
     from PySide6.QtCore import QSettings
-except Exception:
-    from qt_compat import DummyQSettings
-    QSettings = DummyQSettings
+except (ImportError, Exception, BaseException):
+    from qt_compat import _ensure_pyside6_fallback
+    _ensure_pyside6_fallback()
+    import sys
+    QSettings = getattr(sys.modules["PySide6.QtCore"], "QSettings")
 
 INTERNAL_APP_ID = "RadioTVStorySegmenter"
 APP_DISPLAY_NAME = "Radio & TV Segmenter"
-PROJECT_VERSION = "3.9.18-beta"
+PROJECT_VERSION = "3.9.19-beta"
 DEFAULT_GITHUB_REPO = "bradlinder/RTVS3"
 
 
