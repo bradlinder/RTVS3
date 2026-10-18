@@ -7,6 +7,7 @@ requiring an X11/Wayland display server or installed Qt binary packages.
 
 from __future__ import annotations
 
+import os
 import sys
 from types import ModuleType
 from typing import Any
@@ -150,15 +151,19 @@ class DummyQFont:
         pass
 
 
-def _ensure_pyside6_fallback() -> bool:
+def _ensure_pyside6_fallback(force: bool = False) -> bool:
     """Ensures PySide6 modules are importable, installing the zero-dependency mock shim if unavailable."""
-    try:
-        import PySide6.QtCore
-        import PySide6.QtWidgets
-        import PySide6.QtGui
-        return True
-    except Exception:
-        pass
+    # When explicitly in worker mode or forced, NEVER attempt to import PySide6.
+    # In frozen PyInstaller bundles, attempting to import PySide6 when excluded triggers
+    # a native libshiboken fatal error (Py_FatalError) that cannot be caught by try/except.
+    if not force and os.environ.get("RTVS_WORKER_MODE") != "1":
+        try:
+            import PySide6.QtCore
+            import PySide6.QtWidgets
+            import PySide6.QtGui
+            return True
+        except Exception:
+            pass
 
     pyside6_mod = MockModule("PySide6")
     for sub in ["QtCore", "QtWidgets", "QtGui", "QtNetwork", "QtMultimedia", "QtMultimediaWidgets"]:
@@ -172,6 +177,7 @@ def _ensure_pyside6_fallback() -> bool:
     pyside6_mod.QtCore.QSettings = DummyQSettings
     pyside6_mod.QtCore.Signal = lambda *a: type("Sig", (), {"connect": lambda s, f: None, "emit": lambda s, *a: None, "disconnect": lambda s, f=None: None})()
     pyside6_mod.QtGui.QFont = DummyQFont
+    pyside6_mod.QtGui.QUndoCommand = type("QUndoCommand", (), {"__init__": lambda self, *a, **k: None, "redo": lambda self: None, "undo": lambda self: None})
     pyside6_mod.QtWidgets.QMessageBox = DummyQMessageBox
     pyside6_mod.QtWidgets.QApplication = DummyQApplication
     pyside6_mod.QtWidgets.QHeaderView = DummyQHeaderView

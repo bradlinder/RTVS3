@@ -1,5 +1,13 @@
 # Changelog
 
+## v3.9.22-beta
+- **Headless AI Worker Shiboken C-Extension Bypass (`qt_compat.py`)**:
+  - Resolved fatal Python error (`Fatal Python error: libshiboken/signature: could not initialize part 2`, `TypeError: argument should be a str or an os.PathLike object where __fspath__ returns a str, not 'NoneType'`) during Stage 5/5 frozen AI worker self-test execution (`prs_worker`) across macOS and Linux CI builds.
+  - Inverted fallback evaluation in `_ensure_pyside6_fallback()`: when running in worker mode (`RTVS_WORKER_MODE=1`) or forced (`force=True`), immediately injects the zero-dependency mock shims directly into `sys.modules` without ever attempting `import PySide6.QtCore`.
+  - Completely avoids dynamic library initialization of Shiboken C-extensions (`QtCore.abi3.so` / `QtCore.dylib`) in frozen bundles where PySide6 is excluded from the worker specification, preventing `signature_bootstrap.py` crashes.
+  - Added `QUndoCommand` dummy type to the mock `PySide6.QtGui` module to cleanly support command subclassing in headless environments.
+- **Synchronous Version Bump**: Synchronized all project locations and web preview scaffolding to `v3.9.22-beta`.
+
 ## v3.9.21-beta
 - **UV Package Index Strategy Resolution (`.github/workflows/build.yml`)**:
   - Resolved `uv pip install` dependency conflict error (`error: No solution found when resolving dependencies: Because only certifi==2022.12.7 is available and you require certifi==2024.2.2...`) during Windows and Linux CI workflow execution.
