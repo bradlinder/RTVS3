@@ -18,7 +18,7 @@ from pathlib import Path
 import os, sys
 from qt_compat import _ensure_pyside6_fallback
 
-if os.environ.get("RTVS_WORKER_MODE") == "1" or (getattr(sys, "frozen", False) and not hasattr(sys, "_MEIPASS_GUI")):
+if os.environ.get("RTVS_WORKER_MODE") == "1" or "worker" in Path(sys.executable or "").stem.lower():
     _ensure_pyside6_fallback()
     QSettings = getattr(sys.modules["PySide6.QtCore"], "QSettings")
 else:
@@ -30,7 +30,7 @@ else:
 
 INTERNAL_APP_ID = "RadioTVStorySegmenter"
 APP_DISPLAY_NAME = "Radio & TV Segmenter"
-PROJECT_VERSION = "3.9.22-beta"
+PROJECT_VERSION = "3.9.23-beta"
 DEFAULT_GITHUB_REPO = "bradlinder/RTVS3"
 
 

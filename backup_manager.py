@@ -24,7 +24,7 @@ except ImportError:
         from prs_shared import INTERNAL_APP_ID, make_dialog_maximizable, PROJECT_VERSION
     except Exception:
         INTERNAL_APP_ID = "RadioTVStorySegmenter"
-        PROJECT_VERSION = "3.9.22-beta"
+        PROJECT_VERSION = "3.9.23-beta"
         def make_dialog_maximizable(dlg): pass
 
 logger = logging.getLogger(__name__)

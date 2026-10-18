@@ -36,17 +36,17 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 --------------------------------------------------------------------------------
 TABLE OF CONTENTS & STATUS OVERVIEW
 --------------------------------------------------------------------------------
-1. Previous Release: UV Package Index Strategy Resolution (`.github/workflows/build.yml`) [x] [COMPLETED in v3.9.21-beta]
-   [x] 1.1 UV Index Strategy Flag (`.github/workflows/build.yml`): Added `--index-strategy unsafe-best-match` to `uv pip install` steps for Windows and Linux CI jobs.
-   [x] 1.2 Dependency Resolution Fix: Resolved `uv` index strictness error preventing package version matching across PyTorch wheel index and PyPI.
-   [x] 1.3 Cross-Platform Pipeline Validation: Verified clean package resolution across Windows, macOS, and Linux runner environments.
-   [x] 1.4 Synchronous Version Bump: Synchronized all 13 core project files and web preview scaffolding to v3.9.21-beta.
+1. Previous Release: Headless AI Worker Shiboken C-Extension Bypass (`qt_compat.py`) [x] [COMPLETED in v3.9.22-beta]
+   [x] 1.1 Non-Probing Worker Fallback (`qt_compat.py`): Inverted fallback logic so that when `RTVS_WORKER_MODE=1` (or `force=True`), `_ensure_pyside6_fallback` installs the mock shim immediately without ever importing `PySide6.QtCore`, preventing native `libshiboken` signature bootstrap crashes in frozen onedir bundles.
+   [x] 1.2 Complete Worker Mock Namespace (`qt_compat.py`): Added `QUndoCommand` dummy type to `QtGui` mock shim to support subclassing in headless environments.
+   [x] 1.3 Cross-Platform Frozen Worker Smoke Test Validation: Verified clean headless worker startup on macOS and Linux frozen builds.
+   [x] 1.4 Synchronous Version Bump: Synchronized all project locations and web preview scaffolding to v3.9.22-beta.
 
-2. Current Release: Headless AI Worker Shiboken C-Extension Bypass (`qt_compat.py`) [x] [COMPLETED in v3.9.22-beta]
-   [x] 2.1 Non-Probing Worker Fallback (`qt_compat.py`): Inverted fallback logic so that when `RTVS_WORKER_MODE=1` (or `force=True`), `_ensure_pyside6_fallback` installs the mock shim immediately without ever importing `PySide6.QtCore`, preventing native `libshiboken` signature bootstrap crashes in frozen onedir bundles.
-   [x] 2.2 Complete Worker Mock Namespace (`qt_compat.py`): Added `QUndoCommand` dummy type to `QtGui` mock shim to support subclassing in headless environments.
-   [x] 2.3 Cross-Platform Frozen Worker Smoke Test Validation: Verified clean headless worker startup on macOS and Linux frozen builds.
-   [x] 2.4 Synchronous Version Bump: Synchronized all project locations and web preview scaffolding to v3.9.22-beta.
+2. Current Release: Frozen GUI Application PySide6 Submodule Resolution (`qt_compat.py`, `prs_shared.py`, `core_utils.py`, `story_model.py`) [x] [COMPLETED in v3.9.23-beta]
+   [x] 2.1 Explicit Worker Identification (`prs_shared.py`, `core_utils.py`, `story_model.py`): Replaced erroneous `not hasattr(sys, "_MEIPASS_GUI")` check with explicit worker detection (`RTVS_WORKER_MODE=1` or `"worker" in Path(sys.executable).stem.lower()`), ensuring the main desktop application natively imports bundled PySide6 submodules.
+   [x] 2.2 Complete Submodule Fallback Population (`qt_compat.py`): Enhanced `_ensure_pyside6_fallback` to import and populate all 6 required PySide6 submodules (`QtCore`, `QtNetwork`, `QtGui`, `QtWidgets`, `QtMultimedia`, `QtMultimediaWidgets`), ensuring zero `KeyError` crashes occur.
+   [x] 2.3 Cross-Platform Desktop GUI Launch Validation: Verified clean application startup across frozen bundles.
+   [x] 2.4 Synchronous Version Bump: Synchronized all 13 core project files and web preview scaffolding to v3.9.23-beta.
 
 3. Upcoming Milestone: Codebase Modularization & Monolithic File Decomposition Strategy (<1,000-Line Invariant) (`playback_preferences.py`, `project_export.py`, `transcript_story.py`, `transcript_editor.py`, `radio_tv_story_segmenter_worker.py`, `benchmark.py`, `plugins/wordpress/export_destination.py`, `plugins/manager.py`, `timeline_widgets.py`) [PLANNED for v4.0.0] [IN-PROGRESS]
    - *Architecture Note*: Incrementally refactors all remaining source files exceeding 1,000 lines (at most 1 to 2 monoliths per turn) into focused domain modules (<1,000 lines each) while preserving 100% backward compatibility via zero-breakage facade re-exports.
@@ -100,22 +100,22 @@ DETAILED MILESTONE SPECIFICATIONS
 ================================================================================
 
 ================================================================================
-1. PREVIOUS RELEASE: UV PACKAGE INDEX STRATEGY RESOLUTION [x] [COMPLETED in v3.9.21-beta]
+1. PREVIOUS RELEASE: HEADLESS AI WORKER SHIBOKEN C-EXTENSION BYPASS [x] [COMPLETED in v3.9.22-beta]
 ================================================================================
 
-[x] 1.1 UV Index Strategy Flag (`.github/workflows/build.yml`): Added `--index-strategy unsafe-best-match` to `uv pip install` steps for Windows and Linux CI jobs.
-[x] 1.2 Dependency Resolution Fix: Resolved `uv` index strictness error preventing package version matching across PyTorch wheel index and PyPI.
-[x] 1.3 Cross-Platform Pipeline Validation: Verified clean package resolution across Windows, macOS, and Linux runner environments.
-[x] 1.4 Synchronous Version Bump: Synchronized all 13 core project files and web preview scaffolding to v3.9.21-beta.
+[x] 1.1 Non-Probing Worker Fallback (`qt_compat.py`): Inverted fallback logic so that when `RTVS_WORKER_MODE=1` (or `force=True`), `_ensure_pyside6_fallback` installs the mock shim immediately without ever importing `PySide6.QtCore`, preventing native `libshiboken` signature bootstrap crashes in frozen onedir bundles.
+[x] 1.2 Complete Worker Mock Namespace (`qt_compat.py`): Added `QUndoCommand` dummy type to `QtGui` mock shim to support subclassing in headless environments.
+[x] 1.3 Cross-Platform Frozen Worker Smoke Test Validation: Verified clean headless worker startup on macOS and Linux frozen builds.
+[x] 1.4 Synchronous Version Bump: Synchronized all project locations and web preview scaffolding to v3.9.22-beta.
 
 ================================================================================
-2. CURRENT RELEASE: HEADLESS AI WORKER SHIBOKEN C-EXTENSION BYPASS [x] [COMPLETED in v3.9.22-beta]
+2. CURRENT RELEASE: FROZEN GUI APPLICATION PYSIDE6 SUBMODULE RESOLUTION [x] [COMPLETED in v3.9.23-beta]
 ================================================================================
 
-[x] 2.1 Non-Probing Worker Fallback (`qt_compat.py`): Inverted fallback logic so that when `RTVS_WORKER_MODE=1` (or `force=True`), `_ensure_pyside6_fallback` installs the mock shim immediately without ever importing `PySide6.QtCore`, preventing native `libshiboken` signature bootstrap crashes in frozen onedir bundles.
-[x] 2.2 Complete Worker Mock Namespace (`qt_compat.py`): Added `QUndoCommand` dummy type to `QtGui` mock shim to support subclassing in headless environments.
-[x] 2.3 Cross-Platform Frozen Worker Smoke Test Validation: Verified clean headless worker startup on macOS and Linux frozen builds.
-[x] 2.4 Synchronous Version Bump: Synchronized all project locations and web preview scaffolding to v3.9.22-beta.
+[x] 2.1 Explicit Worker Identification (`prs_shared.py`, `core_utils.py`, `story_model.py`): Replaced erroneous `not hasattr(sys, "_MEIPASS_GUI")` check with explicit worker detection (`RTVS_WORKER_MODE=1` or `"worker" in Path(sys.executable).stem.lower()`), ensuring the main desktop application natively imports bundled PySide6 submodules.
+[x] 2.2 Complete Submodule Fallback Population (`qt_compat.py`): Enhanced `_ensure_pyside6_fallback` to import and populate all 6 required PySide6 submodules (`QtCore`, `QtNetwork`, `QtGui`, `QtWidgets`, `QtMultimedia`, `QtMultimediaWidgets`), ensuring zero `KeyError` crashes occur.
+[x] 2.3 Cross-Platform Desktop GUI Launch Validation: Verified clean application startup across frozen bundles.
+[x] 2.4 Synchronous Version Bump: Synchronized all 13 core project files and web preview scaffolding to v3.9.23-beta.
 
 ================================================================================
 3. UPCOMING MILESTONE: CODEBASE MODULARIZATION & MONOLITHIC FILE DECOMPOSITION STRATEGY [PLANNED for v4.0.0] [IN-PROGRESS]

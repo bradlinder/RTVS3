@@ -12,9 +12,10 @@ import math
 from typing import Any, Dict, List, Optional, Tuple
 
 import os, sys
+from pathlib import Path
 from qt_compat import _ensure_pyside6_fallback
 
-if os.environ.get("RTVS_WORKER_MODE") == "1" or (getattr(sys, "frozen", False) and not hasattr(sys, "_MEIPASS_GUI")):
+if os.environ.get("RTVS_WORKER_MODE") == "1" or "worker" in Path(sys.executable or "").stem.lower():
     _ensure_pyside6_fallback()
     QSettings = getattr(sys.modules["PySide6.QtCore"], "QSettings")
     QUndoCommand = getattr(sys.modules["PySide6.QtGui"], "QUndoCommand")

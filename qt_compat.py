@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import os
 import sys
+from pathlib import Path
 from types import ModuleType
 from typing import Any
 
@@ -156,22 +157,34 @@ def _ensure_pyside6_fallback(force: bool = False) -> bool:
     # When explicitly in worker mode or forced, NEVER attempt to import PySide6.
     # In frozen PyInstaller bundles, attempting to import PySide6 when excluded triggers
     # a native libshiboken fatal error (Py_FatalError) that cannot be caught by try/except.
-    if not force and os.environ.get("RTVS_WORKER_MODE") != "1":
+    is_worker = (
+        force
+        or os.environ.get("RTVS_WORKER_MODE") == "1"
+        or "worker" in Path(sys.executable or "").stem.lower()
+    )
+    if not is_worker:
         try:
             import PySide6.QtCore
-            import PySide6.QtWidgets
+            import PySide6.QtNetwork
             import PySide6.QtGui
+            import PySide6.QtWidgets
+            import PySide6.QtMultimedia
+            import PySide6.QtMultimediaWidgets
             return True
         except Exception:
             pass
 
-    pyside6_mod = MockModule("PySide6")
-    for sub in ["QtCore", "QtWidgets", "QtGui", "QtNetwork", "QtMultimedia", "QtMultimediaWidgets"]:
-        mod = MockModule(f"PySide6.{sub}")
-        setattr(pyside6_mod, sub, mod)
-        sys.modules[f"PySide6.{sub}"] = mod
+    pyside6_mod = sys.modules.get("PySide6")
+    if not isinstance(pyside6_mod, ModuleType):
+        pyside6_mod = MockModule("PySide6")
+        sys.modules["PySide6"] = pyside6_mod
 
-    sys.modules["PySide6"] = pyside6_mod
+    for sub in ["QtCore", "QtWidgets", "QtGui", "QtNetwork", "QtMultimedia", "QtMultimediaWidgets"]:
+        full_name = f"PySide6.{sub}"
+        if full_name not in sys.modules:
+            mod = MockModule(full_name)
+            setattr(pyside6_mod, sub, mod)
+            sys.modules[full_name] = mod
 
     pyside6_mod.QtCore.Qt = DummyQt
     pyside6_mod.QtCore.QSettings = DummyQSettings

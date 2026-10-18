@@ -1,5 +1,12 @@
 # Changelog
 
+## v3.9.23-beta
+- **Frozen GUI Application PySide6 Submodule Resolution (`qt_compat.py`, `prs_shared.py`, `core_utils.py`, `story_model.py`)**:
+  - Resolved `KeyError: 'PySide6.QtNetwork'` and startup failures when launching the frozen desktop GUI application (`RadioTVSegmenter.exe` / `.app`).
+  - Corrected worker mode detection: replaced erroneous `not hasattr(sys, "_MEIPASS_GUI")` check in `prs_shared.py`, `core_utils.py`, and `story_model.py` with explicit worker identification (`RTVS_WORKER_MODE=1` or `"worker" in Path(sys.executable).stem.lower()`), ensuring the main GUI application natively imports bundled PySide6 submodules.
+  - Enhanced `_ensure_pyside6_fallback()` in `qt_compat.py`: imports all 6 application submodules (`QtCore`, `QtNetwork`, `QtGui`, `QtWidgets`, `QtMultimedia`, `QtMultimediaWidgets`) and guarantees any missing submodule is populated with a `MockModule` in `sys.modules`, completely preventing `KeyError` exceptions across both GUI and headless environments.
+- **Synchronous Version Bump**: Synchronized all project locations and web preview scaffolding to `v3.9.23-beta`.
+
 ## v3.9.22-beta
 - **Headless AI Worker Shiboken C-Extension Bypass (`qt_compat.py`)**:
   - Resolved fatal Python error (`Fatal Python error: libshiboken/signature: could not initialize part 2`, `TypeError: argument should be a str or an os.PathLike object where __fspath__ returns a str, not 'NoneType'`) during Stage 5/5 frozen AI worker self-test execution (`prs_worker`) across macOS and Linux CI builds.

@@ -24,7 +24,7 @@ export function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedVersion, setSelectedVersion] = useState('all');
   const [copiedVersion, setCopiedVersion] = useState<string | null>(null);
-  const [expandedVersions, setExpandedVersions] = useState<Record<string, boolean>>({ 'v3.9.22-beta': true });
+  const [expandedVersions, setExpandedVersions] = useState<Record<string, boolean>>({ 'v3.9.23-beta': true });
 
   const releases: ReleaseSection[] = useMemo(() => {
     const rawSections = CHANGELOG_MARKDOWN.split(/\n(?=## )/);
