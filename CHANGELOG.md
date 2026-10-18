@@ -1,5 +1,11 @@
 # Changelog
 
+## v3.9.21-beta
+- **UV Package Index Strategy Resolution (`.github/workflows/build.yml`)**:
+  - Resolved `uv pip install` dependency conflict error (`error: No solution found when resolving dependencies: Because only certifi==2022.12.7 is available and you require certifi==2024.2.2...`) during Windows and Linux CI workflow execution.
+  - Added `--index-strategy unsafe-best-match` to `uv pip install` invocations in `build.yml` so `uv` correctly considers packages across both the CPU PyTorch wheel index and PyPI.
+- **Synchronous Version Bump**: Synchronized all 13 core project files and web preview scaffolding to `v3.9.21-beta`.
+
 ## v3.9.20-beta
 - **Worker Process Environment Bypass & PyInstaller Exclusion Alignment (`build_installer.py`, `radio_tv_story_segmenter_worker.py`, `story_model.py`, `core_utils.py`, `prs_shared.py`)**:
   - Resolved persistent macOS and Linux Stage 3/5 PyInstaller worker build failures where `PySide6.QtCore` was collected into Extension Modules without its backing `libQt6Core` dynamic libraries.
