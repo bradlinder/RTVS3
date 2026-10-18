@@ -17,9 +17,19 @@ class MockModule(ModuleType):
 
     def __init__(self, name: str):
         super().__init__(name)
+        self.__file__ = f"<mock_{name}>"
+        self.__spec__ = None
+        self.__cached__ = None
         self.__path__ = []
 
     def __getattr__(self, name: str) -> Any:
+        if name == "__file__":
+            return f"<mock_{self.__name__}>"
+        if name in ("__cached__", "__spec__", "__loader__"):
+            return None
+        if name == "__path__":
+            return []
+
         class DynamicMock:
             def __init__(self, *args, **kwargs):
                 pass

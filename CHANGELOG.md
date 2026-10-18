@@ -1,5 +1,12 @@
 # Changelog
 
+## v3.9.18-beta
+- **MockModule Metadata Conformance for PyTorch Custom Ops & Inspect (`qt_compat.py`)**:
+  - Resolved Linux and macOS CI build failures (`AttributeError: type object '__file__' has no attribute 'endswith'`) during `torch` custom operator factory registration.
+  - Fixed `MockModule.__getattr__` in `qt_compat.py`: explicit string values are returned for `__file__` (`"<mock_module_name>"`) and `None` / `[]` for `__cached__`, `__spec__`, `__loader__`, and `__path__`.
+  - Prevents Python's `inspect.getsourcefile()` from receiving dynamic mock classes instead of filename strings when inspecting dynamic modules.
+- **Synchronous Version Bump**: Synchronized all 13 core project files and web preview scaffolding to `v3.9.18-beta`.
+
 ## v3.9.17-beta
 - **PyInstaller Frozen Worker Qt Fallback Engine (`qt_compat.py`, `prs_shared.py`, `story_model.py`, `core_utils.py`)**:
   - Resolved GitHub Actions CI build failures (`ImportError: DLL load failed while importing QtCore: The specified module could not be found`) across Windows, macOS, and Linux when freezing the standalone background AI worker executable (`radio_tv_story_segmenter_worker`).

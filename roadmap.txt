@@ -36,17 +36,17 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 --------------------------------------------------------------------------------
 TABLE OF CONTENTS & STATUS OVERVIEW
 --------------------------------------------------------------------------------
-1. Previous Release: Background Thread Affinity & Qt GUI Object Isolation (`plugins/manager.py`, `plugins/installer_workers.py`, `plugins/github_dialog.py`) [x] [COMPLETED in v3.9.16-beta]
-   [x] 1.1 Background Thread Affinity & GUI Isolation (`plugins/manager.py`, `plugins/installer_workers.py`): Added `load_ui: bool = True` parameter to `install_addon()`. Background thread `GitHubBatchDownloadWorker` extracts plugin files to disk and updates settings without instantiating GUI widgets or `QMenu` actions across thread boundaries.
-   [x] 1.2 Main Thread Safe Loading (`plugins/github_dialog.py`): Deferred plugin instantiation and menu reconstruction to `on_batch_download_finished()` on the main GUI thread after worker thread completion.
-   [x] 1.3 Batch Update Signal Repair (`plugins/github_dialog.py`): Corrected missing signal connection for batch updates (`on_batch_download_finished`).
-   [x] 1.4 Synchronous Version Bump: Synchronized all project locations to v3.9.16-beta.
+1. Previous Release: PyInstaller Frozen Worker Qt Fallback Engine (`qt_compat.py`, `prs_shared.py`, `story_model.py`, `core_utils.py`) [x] [COMPLETED in v3.9.17-beta]
+   [x] 1.1 Submodule Fallback Inspection (`qt_compat.py`): Enhanced `_ensure_pyside6_fallback()` to test submodules (`PySide6.QtCore`, `PySide6.QtWidgets`, `PySide6.QtGui`) instead of top-level `import PySide6`.
+   [x] 1.2 Global Exception Catching for Frozen Worker Imports (`prs_shared.py`, `story_model.py`, `core_utils.py`): Wrapped `PySide6` imports in `prs_shared.py`, `story_model.py`, and `core_utils.py` in `try...except Exception:` blocks with automatic `_ensure_pyside6_fallback()` mock module injection.
+   [x] 1.3 Standalone Worker Binary Resilience (`radio_tv_story_segmenter_worker.py`): Resolved GitHub Actions CI build failures across Windows, macOS, and Linux when freezing the standalone background AI worker executable.
+   [x] 1.4 Synchronous Version Bump: Synchronized all project locations to v3.9.17-beta.
 
-2. Current Release: PyInstaller Frozen Worker Qt Fallback Engine (`qt_compat.py`, `prs_shared.py`, `story_model.py`, `core_utils.py`) [x] [COMPLETED in v3.9.17-beta]
-   [x] 2.1 Submodule Fallback Inspection (`qt_compat.py`): Enhanced `_ensure_pyside6_fallback()` to test submodules (`PySide6.QtCore`, `PySide6.QtWidgets`, `PySide6.QtGui`) instead of top-level `import PySide6`.
-   [x] 2.2 Global Exception Catching for Frozen Worker Imports (`prs_shared.py`, `story_model.py`, `core_utils.py`): Wrapped `PySide6` imports in `prs_shared.py`, `story_model.py`, and `core_utils.py` in `try...except Exception:` blocks with automatic `_ensure_pyside6_fallback()` mock module injection.
-   [x] 2.3 Standalone Worker Binary Resilience (`radio_tv_story_segmenter_worker.py`): Resolved GitHub Actions CI build failures (`ImportError: DLL load failed while importing QtCore: The specified module could not be found`) across Windows, macOS, and Linux when freezing the standalone background AI worker executable.
-   [x] 2.4 Synchronous Version Bump: Synchronized all 13 core project files and web preview scaffolding to v3.9.17-beta.
+2. Current Release: MockModule Metadata Conformance for PyTorch Custom Ops & Inspect (`qt_compat.py`) [x] [COMPLETED in v3.9.18-beta]
+   [x] 2.1 MockModule String Metadata Attributes (`qt_compat.py`): Configured `MockModule.__init__` and `__getattr__` to return explicit filename strings (`"<mock_module_name>"`) for `__file__`, and `None` / `[]` for `__cached__`, `__spec__`, `__loader__`, and `__path__`.
+   [x] 2.2 PyTorch Custom Operator Registration & Inspect Fix (`qt_compat.py`): Resolved Linux CI build failure (`AttributeError: type object '__file__' has no attribute 'endswith'`) during PyTorch `@load_tensor.impl_factory()` frame inspection.
+   [x] 2.3 Cross-Platform Build Pipeline Verification (`build_installer.py`): Validated PyInstaller builds and worker `--self-test` protocols across Linux, macOS, and Windows CI runner environments.
+   [x] 2.4 Synchronous Version Bump: Synchronized all 13 core project files and web preview scaffolding to v3.9.18-beta.
 
 3. Upcoming Milestone: Codebase Modularization & Monolithic File Decomposition Strategy (<1,000-Line Invariant) (`playback_preferences.py`, `project_export.py`, `transcript_story.py`, `transcript_editor.py`, `radio_tv_story_segmenter_worker.py`, `benchmark.py`, `plugins/wordpress/export_destination.py`, `plugins/manager.py`, `timeline_widgets.py`) [PLANNED for v4.0.0] [IN-PROGRESS]
    - *Architecture Note*: Incrementally refactors all remaining source files exceeding 1,000 lines (at most 1 to 2 monoliths per turn) into focused domain modules (<1,000 lines each) while preserving 100% backward compatibility via zero-breakage facade re-exports.
