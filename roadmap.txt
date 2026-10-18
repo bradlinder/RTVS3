@@ -36,14 +36,18 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 --------------------------------------------------------------------------------
 TABLE OF CONTENTS & STATUS OVERVIEW
 --------------------------------------------------------------------------------
-1. Previous Release: Codebase Modularization — Wave 3 Transcript Story & Interactive Editor Decomposition (`transcript_story.py`, `transcript_editor.py`) [x] [COMPLETED in v3.9.10-beta]
-   [x] 1.1 Wave 3 Monolithic Decomposition: Decomposed 3,055-line `transcript_story.py` down to 836 lines and 2,566-line `transcript_editor.py` down to 862 lines into dedicated domain submodules (`story_model.py`, `story_crud_mixin.py`, `transcript_editor_dialogs.py`, `transcript_styles.py`, `transcript_context_menu_mixin.py`, `transcript_formatting_mixin.py`, `transcript_timeline_sync_mixin.py`) while preserving 100% backward-compatible zero-breakage facade re-exports.
-   [x] 1.2 Synchronous Version Bump: Synchronized all 12 project locations to v3.9.10-beta
+1. Previous Release: Manage Plugins Space Optimization, Complete Add-on Uninstallation & GitHub Downloader Reliability (`plugins/manager_dialog.py`, `plugins/manager.py`, `plugins/github_dialog.py`, `plugins/installer_workers.py`, `diagnostic_cloud_and_system_tests.py`) [x] [COMPLETED in v3.9.15-beta]
+   [x] 1.1 Manage Plugins Toolbar Optimization & Space Recovery (`plugins/manager_dialog.py`): Removed unneeded "Export Selected..." button to reclaim horizontal toolbar space; streamlined button labels and expanded default geometry to 920x620.
+   [x] 1.2 True Plugin Uninstallation & Multi-Tier Purge Engine (`plugins/manager.py`): Resolved issue where uninstalling an add-on merely disabled it; implemented complete directory and `.rtvs-addon` purge across both user data and application bundled directories.
+   [x] 1.3 GitHub Plugins Downloader Reliability & Immediate Catalog Rendering (`plugins/github_dialog.py`, `plugins/installer_workers.py`): Pre-populated `GitHubPluginsDialog` with the official plugin catalog for instant display; added missing `gdocs` exporter to catalog.
+   [x] 1.4 Diagnostic Benchmark Suite Resilience (`diagnostic_cloud_and_system_tests.py`): Extended subprocess execution timeout from 15s to 45s in `_test_ai_worker_subprocess_execution_and_ipc_handshake`.
+   [x] 1.5 Synchronous Version Bump: Synchronized all project locations to v3.9.15-beta.
 
-2. Current Release: Save Project As Dialog Restoration & WordPress Client Method Scoping Fix (`project_lifecycle.py`, `plugins/wordpress/client.py`) [x] [COMPLETED in v3.9.12-beta]
-   [x] 2.1 Save Project As Dialog Restoration (`project_lifecycle.py`): Restored standard `QFileDialog.getSaveFileName` modal dialog prompt when triggering "Save Project As..." (`Ctrl+Shift+S`) or saving a new untitled project, ensuring users can explicitly choose destination folder and filename rather than silently auto-saving into default directories.
-   [x] 2.2 WordPress Client Method Scoping Fix (`plugins/wordpress/client.py`): Resolved `AttributeError: 'WordPressClient' object has no attribute '_discover_canonical_base'` by placing `is_wp_auth_error` at module scope rather than splitting the `WordPressClient` class definition. Synchronized WordPress plugin manifest to v3.9.11-beta.
-   [x] 2.3 Synchronous Version Bump: Synchronized all 13 project locations to v3.9.11-beta
+2. Current Release: Background Thread Affinity & Qt GUI Object Isolation (`plugins/manager.py`, `plugins/installer_workers.py`, `plugins/github_dialog.py`) [x] [COMPLETED in v3.9.16-beta]
+   [x] 2.1 Background Thread Affinity & GUI Isolation (`plugins/manager.py`, `plugins/installer_workers.py`): Added `load_ui: bool = True` parameter to `install_addon()`. Background thread `GitHubBatchDownloadWorker` extracts plugin files to disk and updates settings without instantiating GUI widgets or `QMenu` actions across thread boundaries.
+   [x] 2.2 Main Thread Safe Loading (`plugins/github_dialog.py`): Deferred plugin instantiation and menu reconstruction to `on_batch_download_finished()` on the main GUI thread after worker thread completion.
+   [x] 2.3 Batch Update Signal Repair (`plugins/github_dialog.py`): Corrected missing signal connection for batch updates (`on_batch_download_finished`).
+   [x] 2.4 Synchronous Version Bump: Synchronized all 13 core project files and web preview scaffolding to v3.9.16-beta.
 
 3. Upcoming Milestone: Codebase Modularization & Monolithic File Decomposition Strategy (<1,000-Line Invariant) (`playback_preferences.py`, `project_export.py`, `transcript_story.py`, `transcript_editor.py`, `radio_tv_story_segmenter_worker.py`, `benchmark.py`, `plugins/wordpress/export_destination.py`, `plugins/manager.py`, `timeline_widgets.py`) [PLANNED for v4.0.0] [IN-PROGRESS]
    - *Architecture Note*: Incrementally refactors all remaining source files exceeding 1,000 lines (at most 1 to 2 monoliths per turn) into focused domain modules (<1,000 lines each) while preserving 100% backward compatibility via zero-breakage facade re-exports.
@@ -52,8 +56,8 @@ TABLE OF CONTENTS & STATUS OVERVIEW
    [x] 3.3 Wave 2A - Playback & Preferences Decomposition (`playback_preferences.py` — 4,042 lines -> `playback_controller.py`, `preferences_dialog.py`, `theme_preferences.py`)
    [x] 3.4 Wave 2B - Unified Project & Media Export Decomposition (`project_export.py` — 3,144 lines -> `export_dialogs.py`, `export_media_clipper.py`, `export_documents.py`, `export_story_pipeline.py`)
    [x] 3.5 Wave 3 - Transcript Story & Interactive Editor Decomposition (`transcript_story.py` — 3,055 lines -> 836 lines & `transcript_editor.py` — 2,566 lines -> 862 lines)
-   [-] 3.6 Wave 4 - AI Worker & Benchmark Suite Decomposition (`radio_tv_story_segmenter_worker.py` — 2,264 lines & `benchmark.py` — 2,198 lines)
-   [ ] 3.7 Wave 5 - WordPress Export, Plugin Manager & Timeline Widgets Decomposition (`plugins/wordpress/export_destination.py` — 1,995 lines, `plugins/manager.py` — 1,942 lines, `timeline_widgets.py` — 1,898 lines)
+   [x] 3.6 Wave 4 - AI Worker & Benchmark Suite Decomposition (`radio_tv_story_segmenter_worker.py` — 2,264 -> 219 lines & `benchmark.py` — 2,198 -> 216 lines) [COMPLETED in v3.9.13-beta]
+   [x] 3.7 Wave 5 - WordPress Export, Plugin Manager & Timeline Widgets Decomposition (`plugins/wordpress/export_destination.py` — 2,080 -> 474 lines, `plugins/manager.py` — 1,942 -> 586 lines, `timeline_widgets.py` — 1,898 -> 934 lines) [COMPLETED in v3.9.14-beta]
    [ ] 3.8 Permanent <1,000-Line Architectural Rule, AST Decomposition Suggester & Automated Budget Guard (`AGENTS.md`, `GEMINI.md`, `scripts/modular_audit.py`, `test_runner.py`)
    [x] 3.9 Token-Reduction Architecture & Tiered Symbol Indexing for Local LLM Efficiency (`scripts/generate_symbol_index.py`, `.codemaps/`, `.pyi`, `AGENTS.md`, `GEMINI.md`) [COMPLETED in v3.9.12-beta]
 
@@ -97,19 +101,23 @@ DETAILED MILESTONE SPECIFICATIONS
 ================================================================================
 
 ================================================================================
-1. PREVIOUS RELEASE: CODEBASE MODULARIZATION — WAVE 3 TRANSCRIPT STORY & INTERACTIVE EDITOR DECOMPOSITION [x] [COMPLETED in v3.9.10-beta]
+1. PREVIOUS RELEASE: CODEBASE MODULARIZATION — WAVE 5 WORDPRESS EXPORT, PLUGIN MANAGER & TIMELINE WIDGETS DECOMPOSITION [x] [COMPLETED in v3.9.14-beta]
 ================================================================================
 
-[x] 1.1 Wave 3 Monolithic Decomposition: Decomposed 3,055-line `transcript_story.py` down to 836 lines and 2,566-line `transcript_editor.py` down to 862 lines into dedicated domain submodules (`story_model.py`, `story_crud_mixin.py`, `transcript_editor_dialogs.py`, `transcript_styles.py`, `transcript_context_menu_mixin.py`, `transcript_formatting_mixin.py`, `transcript_timeline_sync_mixin.py`) while preserving 100% backward-compatible zero-breakage facade re-exports.
-[x] 1.2 Synchronous Version Bump: Synchronized all 12 project locations to v3.9.10-beta
+[x] 1.1 Timeline Widgets Decomposition (`timeline_widgets.py`): Decomposed 1,898-line timeline monolith into `waveform_envelope.py` (55 lines), `timeline_overview_widget.py` (339 lines), `timeline_painter.py` (419 lines), `timeline_context_menus.py` (108 lines), and `timeline_snap.py` (119 lines), reducing `timeline_widgets.py` to 934 lines with 100% backward-compatible facade re-exports.
+[x] 1.2 Plugin Management & GitHub Catalog Decomposition (`plugins/manager.py`): Decomposed 1,942-line plugin manager into `plugins/installer_workers.py` (260 lines), `plugins/github_dialog.py` (566 lines), `plugins/manager_dialog.py` (579 lines), and `plugins/version_utils.py` (32 lines), reducing `plugins/manager.py` to 586 lines with full re-exports.
+[x] 1.3 WordPress Export Destination Decomposition (`plugins/wordpress/export_destination.py`): Decomposed 2,080-line WordPress export destination into `plugins/wordpress/wp_post_builder.py` (199 lines), `plugins/wordpress/wp_ui_builder.py` (610 lines), and `plugins/wordpress/wp_tab_widget.py` (861 lines), reducing `plugins/wordpress/export_destination.py` to 474 lines. Synchronized WordPress plugin manifest to v3.9.14-beta.
+[x] 1.4 Synchronous Version Bump: Synchronized all 13 project locations to v3.9.14-beta.
 
 ================================================================================
-2. CURRENT RELEASE: SAVE PROJECT AS DIALOG RESTORATION & WORDPRESS CLIENT METHOD SCOPING FIX [x] [COMPLETED in v3.9.12-beta]
+2. CURRENT RELEASE: MANAGE PLUGINS SPACE OPTIMIZATION, COMPLETE ADD-ON UNINSTALLATION & GITHUB DOWNLOADER RELIABILITY [x] [COMPLETED in v3.9.15-beta]
 ================================================================================
 
-[x] 2.1 Save Project As Dialog Restoration (`project_lifecycle.py`): Restored standard `QFileDialog.getSaveFileName` modal dialog prompt when triggering "Save Project As..." (`Ctrl+Shift+S`) or saving a new untitled project, ensuring users can explicitly choose destination folder and filename rather than silently auto-saving into default directories.
-[x] 2.2 WordPress Client Method Scoping Fix (`plugins/wordpress/client.py`): Resolved `AttributeError: 'WordPressClient' object has no attribute '_discover_canonical_base'` by placing `is_wp_auth_error` at module scope rather than splitting the `WordPressClient` class definition. Synchronized WordPress plugin manifest to v3.9.11-beta.
-[x] 2.3 Synchronous Version Bump: Synchronized all 13 project locations to v3.9.11-beta
+[x] 2.1 Manage Plugins Toolbar Optimization & Space Recovery (`plugins/manager_dialog.py`): Removed unneeded "Export Selected..." button to reclaim horizontal toolbar space and eliminate text truncation on Windows / High-DPI screens ("Enable Selectec", "Disable Selectec", "ninstall Selectec", "eck for Update"). Streamlined button labels and expanded default dialog geometry to 920x620.
+[x] 2.2 True Plugin Uninstallation & Multi-Tier Purge Engine (`plugins/manager.py`): Resolved issue where uninstalling an add-on merely disabled it; implemented complete directory and `.rtvs-addon` purge across both user data and application bundled directories, coupled with persistent `QSettings` uninstalled state tracking so uninstalled plugins are omitted on discovery and disappear from the installed list.
+[x] 2.3 GitHub Plugins Downloader Reliability & Immediate Catalog Rendering (`plugins/github_dialog.py`, `plugins/installer_workers.py`): Pre-populated `GitHubPluginsDialog` with the official plugin catalog for instant 0-latency display; added missing Google Docs & Drive Exporter (`gdocs`) to catalog; fixed Windows modal dialog parenting/activation (`setWindowFlag`, `show`, `raise_`, `activateWindow`).
+[x] 2.4 Diagnostic Benchmark Suite Resilience (`diagnostic_cloud_and_system_tests.py`): Extended subprocess execution timeout from 15s to 45s in `_test_ai_worker_subprocess_execution_and_ipc_handshake` to prevent false-negative timeouts during cold starts on Windows with Python 3.14 when loading heavy dynamic C-extensions (PyTorch, WeSpeaker ONNX, CTranslate2, SciPy, Scikit-learn).
+[x] 2.5 Synchronous Version Bump: Synchronized all 13 project locations to v3.9.15-beta.
 
 ================================================================================
 3. UPCOMING MILESTONE: CODEBASE MODULARIZATION & MONOLITHIC FILE DECOMPOSITION STRATEGY [PLANNED for v4.0.0] [IN-PROGRESS]
@@ -157,7 +165,7 @@ When the user prompts "what's next", execute ONLY the first uncompleted `[ ]` su
          - `transcript_styles.py`: `transcript_text_view_stylesheet`, high-contrast active word formatting, dark/light clipboard rich-text/HTML builders, and span helpers.
          - Keep `InteractiveTranscriptEdit` in `transcript_editor.py` and re-export all extracted symbols in `transcript_editor.py` and `prs_shared.py`.
 
-[-] 3.6 Wave 4 - AI Worker & Benchmark Suite Decomposition (`radio_tv_story_segmenter_worker.py` — 2,264 lines & `benchmark.py` — 2,198 lines)
+[x] 3.6 Wave 4 - AI Worker & Benchmark Suite Decomposition (`radio_tv_story_segmenter_worker.py` — 2,264 -> 219 lines & `benchmark.py` — 2,198 -> 216 lines) [COMPLETED in v3.9.13-beta]
     - Target: Split `radio_tv_story_segmenter_worker.py` and `benchmark.py` so every resulting file is <= 1,000 lines:
       1. From `radio_tv_story_segmenter_worker.py`, extract:
          - `worker_asr_engines.py`: Faster-Whisper, CTranslate2, Sherpa-ONNX Parakeet, and FastConformer transcription pipelines and word-timestamp alignment.
@@ -169,7 +177,7 @@ When the user prompts "what's next", execute ONLY the first uncompleted `[ ]` su
          - `benchmark_dialog.py`: PySide6 Benchmark UI dialog, progress bars, and comparison charts.
          - Re-export all public classes and CLI entrypoints in `benchmark.py`.
 
-[ ] 3.7 Wave 5 - WordPress Export, Plugin Manager & Timeline Widgets Decomposition (`plugins/wordpress/export_destination.py` — 1,995 lines, `plugins/manager.py` — 1,942 lines, `timeline_widgets.py` — 1,898 lines)
+[x] 3.7 Wave 5 - WordPress Export, Plugin Manager & Timeline Widgets Decomposition (`plugins/wordpress/export_destination.py` — 2,080 -> 474 lines, `plugins/manager.py` — 1,942 -> 586 lines, `timeline_widgets.py` — 1,898 -> 934 lines) [COMPLETED in v3.9.14-beta]
     - Target: Split the final 3 files exceeding 1,000 lines into focused modules <= 1,000 lines each:
       1. Split `plugins/wordpress/export_destination.py` into:
          - `plugins/wordpress/wp_client.py`: WordPress REST API client, authentication, media payload disambiguation/upload, and author/category fetching.

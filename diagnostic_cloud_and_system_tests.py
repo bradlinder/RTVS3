@@ -202,11 +202,18 @@ class DiagnosticCloudAndSystemTestsMixin:
 
     def _test_google_docs_export_integrity(self, item: DiagnosticItem):
         import sys
-        plugins_dir = Path(__file__).resolve().parent / "plugins"
+        from pathlib import Path
+        root_dir = Path(__file__).resolve().parent
+        if str(root_dir) not in sys.path:
+            sys.path.insert(0, str(root_dir))
+        plugins_dir = root_dir / "plugins"
         if str(plugins_dir) not in sys.path:
             sys.path.insert(0, str(plugins_dir))
 
-        from gdocs.formatter import GoogleDocsSerializer
+        try:
+            from plugins.gdocs.formatter import GoogleDocsSerializer
+        except ImportError:
+            from gdocs.formatter import GoogleDocsSerializer
 
         # 1. Test Title Fallback Resolution Logic
         class MockMainWindow:
@@ -807,12 +814,29 @@ class DiagnosticCloudAndSystemTestsMixin:
 
     def _test_youtube_data_api_and_direct_video_upload_engine(self, item: DiagnosticItem):
         """Validates YouTube API client, categories, headers, and export destination validation."""
-        from plugins.youtube.api import (
-            YouTubeApiClient,
-            YouTubeAuthManager,
-            YOUTUBE_CATEGORIES,
-            YOUTUBE_SCOPES,
-        )
+        import sys
+        from pathlib import Path
+        root_dir = Path(__file__).resolve().parent
+        if str(root_dir) not in sys.path:
+            sys.path.insert(0, str(root_dir))
+        plugins_dir = root_dir / "plugins"
+        if str(plugins_dir) not in sys.path:
+            sys.path.insert(0, str(plugins_dir))
+
+        try:
+            from plugins.youtube.api import (
+                YouTubeApiClient,
+                YouTubeAuthManager,
+                YOUTUBE_CATEGORIES,
+                YOUTUBE_SCOPES,
+            )
+        except ImportError:
+            from youtube.api import (
+                YouTubeApiClient,
+                YouTubeAuthManager,
+                YOUTUBE_CATEGORIES,
+                YOUTUBE_SCOPES,
+            )
 
         if "https://www.googleapis.com/auth/youtube.upload" not in YOUTUBE_SCOPES:
             raise AssertionError("YouTube upload scope missing from YOUTUBE_SCOPES")
@@ -930,10 +954,10 @@ class DiagnosticCloudAndSystemTestsMixin:
                 text=True,
                 creationflags=flags,
             )
-            stdout, stderr = proc.communicate(timeout=15)
+            stdout, stderr = proc.communicate(timeout=45)
         except subprocess.TimeoutExpired:
             proc.kill()
-            raise TimeoutError(f"AI Worker subprocess timed out after 15s. Command: {' '.join(cmd)}")
+            raise TimeoutError(f"AI Worker subprocess timed out after 45s. Command: {' '.join(cmd)}")
         except Exception as exc:
             raise RuntimeError(f"Failed to spawn AI Worker subprocess: {type(exc).__name__}: {exc}\nCommand: {' '.join(cmd)}")
 

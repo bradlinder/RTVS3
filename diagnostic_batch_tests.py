@@ -294,10 +294,25 @@ class DiagnosticBatchTestsMixin:
             shutil.rmtree(temp_dir, ignore_errors=True)
 
     def _test_unified_export_destinations_and_youtube_auth_integrity(self, item: DiagnosticItem):
-        import ast
+        import sys
         from pathlib import Path
-        from plugins.youtube.api import YouTubeAuthManager
-        from plugins.gdocs.auth import GoogleDocsAuthManager
+        root_dir = Path(__file__).resolve().parent
+        if str(root_dir) not in sys.path:
+            sys.path.insert(0, str(root_dir))
+        plugins_dir = root_dir / "plugins"
+        if str(plugins_dir) not in sys.path:
+            sys.path.insert(0, str(plugins_dir))
+
+        import ast
+        try:
+            from plugins.youtube.api import YouTubeAuthManager
+        except ImportError:
+            from youtube.api import YouTubeAuthManager
+
+        try:
+            from plugins.gdocs.auth import GoogleDocsAuthManager
+        except ImportError:
+            from gdocs.auth import GoogleDocsAuthManager
 
         # 1. Test YouTubeAuthManager email methods & attributes
         yt_auth = YouTubeAuthManager()
@@ -541,8 +556,10 @@ class DiagnosticBatchTestsMixin:
         try:
             import PySide6
             import translation
-            BaseClass = translation.TranslationMixin
-        except ImportError:
+            BaseClass = getattr(translation, "TranslationMixin", None)
+            if BaseClass is None:
+                raise AttributeError
+        except (ImportError, AttributeError):
             class BaseClass:
                 def source_language_code(self) -> str:
                     direction = str(getattr(self, "translation_direction", "auto") or "auto")
@@ -654,8 +671,10 @@ class DiagnosticBatchTestsMixin:
         try:
             import PySide6
             import translation
-            BaseClass = translation.TranslationMixin
-        except ImportError:
+            BaseClass = getattr(translation, "TranslationMixin", None)
+            if BaseClass is None:
+                raise AttributeError
+        except (ImportError, AttributeError):
             class BaseClass:
                 def translation_key(self, from_code: str = "en", to_code: str = "es") -> str:
                     return f"{from_code}-{to_code}"

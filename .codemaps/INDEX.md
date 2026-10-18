@@ -1,18 +1,18 @@
 # Repository Symbol Index & API Map
 
-> Generated: 2026-10-17 16:44:32 | Total Files: 147
+> Generated: 2026-10-18 11:06:33 | Total Files: 159
 > Use `python scripts/generate_symbol_index.py --outline <file>` for exact line numbers.
 
 ## Modules Overview
 
 | Module | Lines | Summary | Primary Classes / Functions |
 | :--- | :---: | :--- | :--- |
-| `RadioTVSegmenter.py` | 558 | Radio & TV Segmenter — v3.9.11-beta | `MainWindow`, `main()` |
+| `RadioTVSegmenter.py` | 558 | Radio & TV Segmenter — v3.9.14-beta | `MainWindow`, `main()` |
 | `audio_normalization.py` | 331 | Radio & TV Story Segmenter — Audio Loudness Probing & Nor... | `LoudnessReport`, `AudioLoudnessProbeWorker`, `parse_ebur128_summary()`, `probe_media_duration_seconds()` *(+1 more)* |
 | `background_workers.py` | 1014 | Radio & TV Story Segmenter — Background Worker Threads & ... | `StoryAutoDetectWorker`, `WaveformWorker`, `VideoThumbnailWorker`, `get_waveform_peak_cache_path()` *(+6 more)* |
 | `backup_manager.py` | 953 | Unified State Serialization, Local, and Google Drive Clou... | `compute_data_checksum()`, `serialize_preferences()`, `serialize_keyboard_shortcuts()`, `serialize_glossary()` *(+11 more)* |
 | `batch_dialog.py` | 690 | Radio & TV Story Segmenter — Batch Processing Dialog & Dr... | `BatchFileListWidget`, `BatchProcessingDialog` |
-| `benchmark.py` | 2198 | Radio & TV Story Segmenter — Performance & Speed Benchmar... | `BenchmarkMetric`, `ProcessingEstimates`, `BenchmarkEngine`, `get_app_data_dir()` *(+12 more)* |
+| `benchmark.py` | 216 | Radio & TV Story Segmenter — Performance & Speed Benchmar... | `run_cli_benchmark()`, `main()` |
 | `benchmark_dialog.py` | 674 | benchmark_dialog.py - PySide6 Graphical Benchmark Dialog ... | `create_benchmark_dialog()` |
 | `benchmark_engine.py` | 903 | benchmark_engine.py - Core High-Precision Performance Ben... | `BenchmarkEngine` |
 | `benchmark_models.py` | 457 | benchmark_models.py - Benchmark Data Models, Audio Genera... | `BenchmarkMetric`, `ProcessingEstimates`, `get_app_data_dir()`, `get_candidate_sample_audio_paths()` *(+9 more)* |
@@ -61,18 +61,25 @@
 | `plugins/gdocs/formatter.py` | 874 | Google Docs Document Serializer and Formatting Engine. | `GoogleDocsSerializer`, `format_time()`, `utf16_len()`, `is_sentence_end()` *(+4 more)* |
 | `plugins/gdocs/plugin.py` | 232 | Google Docs & Drive Exporter Plugin implementation for Ra... | `Plugin` |
 | `plugins/gdocs/review.py` | 329 | Google Docs Review and Comment Pull Integration. | `GoogleDocsReviewDialog`, `extract_doc_id_from_url()`, `fetch_google_doc_content()`, `compute_segment_diffs()` |
+| `plugins/github_dialog.py` | 566 | GitHub plugins browser and installer dialog with multi-se... | `GitHubPluginsDialog` |
 | `plugins/google_sheets.py` | 206 | Google Sheets Integration Engine for Radio & TV Segmenter. | `GoogleSheetsApiClient`, `format_story_rundown_table()`, `format_speaker_analytics_table()` |
-| `plugins/manager.py` | 1942 | Radio & TV Segmenter — Plugin Manager and Discovery Engine. | `PluginManager`, `GitHubPluginsWorker`, `GitHubDownloadWorker`, `GitHubBatchDownloadWorker` *(+4 more)* |
+| `plugins/installer_workers.py` | 288 | Background QThread workers for querying, downloading, and... | `GitHubPluginsWorker`, `GitHubDownloadWorker`, `GitHubBatchDownloadWorker` |
+| `plugins/manager.py` | 586 | Radio & TV Segmenter — Plugin Manager and Discovery Engine. | `PluginManager`, `parse_plugin_version_tuple()`, `is_newer_plugin_version()` |
+| `plugins/manager_dialog.py` | 579 | Plugin and Add-On Manager Dialog for inspecting, enabling... | `PluginManagerDialog` |
 | `plugins/translation/__init__.py` | 9 | Language Translation Plugin for Radio & TV Segmenter. | - |
 | `plugins/translation/plugin.py` | 58 | Language Translation Plugin for Radio & TV Segmenter. | `Plugin` |
 | `plugins/translation/runtime_entry.py` | 49 | CLI entry point for the isolated translation runtime. | `emit()`, `main()` |
 | `plugins/translation/support.py` | 176 | Small dependency-light helpers shared by the translation ... | `configure_ssl_certificates()`, `get_app_data_dir()`, `get_legacy_models_storage_dirs()`, `get_models_storage_dir()` *(+2 more)* |
 | `plugins/translation/worker.py` | 678 | Translation plugin worker. | `TranslationWorker` |
+| `plugins/version_utils.py` | 30 | Version parsing and semantic comparison utilities for the... | `parse_plugin_version_tuple()`, `is_newer_plugin_version()` |
 | `plugins/wordpress/__init__.py` | 6 | WordPress Publisher Plugin for Radio & TV Segmenter. | - |
 | `plugins/wordpress/client.py` | 1562 | WordPress Plugin — Client, Credential Storage, and Upload... | `WordPressClient`, `WordPressSettingsDialog`, `WordPressPreferencesPage`, `format_rich_text_to_html()` *(+6 more)* |
-| `plugins/wordpress/export_destination.py` | 2080 | WordPress Export Destination for UnifiedExportDialog. | `WordPressExportTabWidget`, `WordPressExportDestination`, `WordPressPostMetadataDialog`, `capture_video_frame()` |
+| `plugins/wordpress/export_destination.py` | 474 | WordPress Export Destination for UnifiedExportDialog. | `WordPressExportDestination`, `WordPressPostMetadataDialog` |
 | `plugins/wordpress/plugin.py` | 893 | WordPress Publisher Plugin for Radio & TV Segmenter. | `WordPressPublishDialog`, `WordPressPublishWorker`, `WordPressStoryMetadataWidget`, `Plugin` *(+1 more)* |
 | `plugins/wordpress/wordpress_dialog.py` | 884 | WordPress Export Tab Widget and Post Metadata Dialog. | `WordPressExportTabWidget`, `WordPressPostMetadataDialog`, `generate_wp_excerpt()`, `capture_video_frame()` |
+| `plugins/wordpress/wp_post_builder.py` | 205 | Post item builder, transcript slicing, and video frame ex... | `capture_video_frame()`, `get_primary_text_slice()`, `build_wp_post_items()` |
+| `plugins/wordpress/wp_tab_widget.py` | 861 | WordPress export tab configuration widget and preview con... | `WordPressExportTabWidget` |
+| `plugins/wordpress/wp_ui_builder.py` | 609 | UI layout construction and widget setup for WordPressExpo... | `setup_wp_tab_ui()` |
 | `plugins/youtube/__init__.py` | 9 | YouTube Video Publisher Plugin for Radio & TV Segmenter. | - |
 | `plugins/youtube/api.py` | 368 | YouTube Data API v3 Client & Direct Video Upload Engine. | `YouTubeAuthManager`, `YouTubeApiClient` |
 | `plugins/youtube/export_destination.py` | 834 | YouTube Export Destination for UnifiedExportDialog with D... | `YouTubeExportTabWidget`, `YouTubeExportDestination`, `capture_video_frame()` |
@@ -93,7 +100,7 @@
 | `project_state_mixin.py` | 328 | Radio & TV Story Segmenter — Project State, Undo/Redo & P... | `ProjectStateMixin` |
 | `prs_shared.py` | 1257 |  | `ProjectMetadataDict`, `ResizableTextEdit`, `CollapsibleSection`, `ExportDialog` *(+8 more)* |
 | `qt_compat.py` | 173 | Radio & TV Segmenter — Headless Qt / PySide6 Compatibilit... | `MockModule`, `DummyQt`, `DummyQSettings`, `DummyQMessageBox` *(+4 more)* |
-| `radio_tv_story_segmenter_worker.py` | 2264 |  | `emit()`, `emit_hello()`, `get_optimal_transcription_threads()`, `get_app_data_dir_pure()` *(+15 more)* |
+| `radio_tv_story_segmenter_worker.py` | 219 | Radio & TV Story Segmenter — AI Background Subprocess Wor... | `main()` |
 | `roadmap_manager.py` | 262 | roadmap_manager.py — Automated Roadmap & N-1 Sliding-Wind... | `RoadmapManager`, `get_current_app_version()`, `main()` |
 | `runtime_manager.py` | 1035 |  | `RuntimeManager`, `register_process()`, `unregister_process()`, `kill_all_subprocesses()` *(+1 more)* |
 | `scripts/generate_symbol_index.py` | 380 | generate_symbol_index.py — Fast AST Symbol Indexer & Repo... | `parse_function_signature()`, `analyze_file()`, `scan_repository()`, `generate_index_markdown()` *(+4 more)* |
@@ -122,9 +129,13 @@
 | `theme_qss.py` | 325 | Targeted QSS for the Radio & TV Segmenter visual design s... | - |
 | `theme_tokens.py` | 307 | Theme Tokens for Radio & TV Story Segmenter. | `ThemeTokens`, `theme_tokens_for_mode()` |
 | `timeline_canvas.py` | 1329 | TimelineCanvas: Interactive timeline widget rendering tim... | `TimelineCanvas` |
+| `timeline_context_menus.py` | 108 | Context menu builders and event handlers for the timeline... | `show_timeline_context_menu()`, `show_selection_context_menu()` |
 | `timeline_envelope.py` | 51 | Waveform envelope data structure and multi-resolution pyr... | `WaveformEnvelope`, `build_waveform_pyramid()` |
 | `timeline_overview.py` | 351 | Timeline Resize Handle and Overview Navigation Bar widgets. | `TimelineResizeHandle`, `TimelineOverviewBar` |
-| `timeline_widgets.py` | 1898 | Radio & TV Story Segmenter — Timeline Ruler, Track Views,... | `WaveformEnvelope`, `TimelineCanvas`, `TimelineResizeHandle`, `TimelineOverviewBar` *(+2 more)* |
+| `timeline_overview_widget.py` | 339 | Timeline overview bar, mini-map navigator, and resize han... | `TimelineResizeHandle`, `TimelineOverviewBar` |
+| `timeline_painter.py` | 419 | Timeline canvas rendering engine, waveform drawing, and p... | `render_waveform_buffer()`, `paint_timeline_canvas()` |
+| `timeline_snap.py` | 119 | Timeline snapping algorithms, edge detection, and collisi... | `snap_time()`, `find_edge_at_pos()`, `find_fade_handle_at_pos()`, `find_story_at_time()` *(+1 more)* |
+| `timeline_widgets.py` | 934 | Radio & TV Story Segmenter — Timeline Ruler, Track Views,... | `TimelineCanvas`, `TimelineWidget` |
 | `transcript_cleaner.py` | 216 | Radio & TV Segmenter — Transcript cleaning, loop collapsi... | `collapse_repeating_ngrams()`, `strip_hallucination_phrases()`, `trim_trailing_degenerate_tail()`, `scrub_transcript_segments()` *(+1 more)* |
 | `transcript_context_menu_mixin.py` | 415 | Radio & TV Story Segmenter — Interactive Transcript Conte... | `TranscriptContextMenuMixin` |
 | `transcript_editor.py` | 862 | transcript_editor.py - Interactive Transcript Editor & Vi... | `InteractiveTranscriptEdit` |
@@ -133,7 +144,7 @@
 | `transcript_navigation_mixin.py` | 299 | transcript_navigation_mixin.py - Timestamp discovery, car... | `TranscriptNavigationMixin` |
 | `transcript_playback_highlight_mixin.py` | 276 | Radio & TV Story Segmenter — Interactive Transcript Playb... | `TranscriptPlaybackHighlightMixin` |
 | `transcript_selection_mixin.py` | 420 | transcript_selection_mixin.py - Multi-selection, timeline... | `TranscriptSelectionMixin` |
-| `transcript_story.py` | 836 | Radio & TV Segmenter v3.9.11-beta — transcript story resp... | `TranscriptStoryMixin` |
+| `transcript_story.py` | 836 | Radio & TV Segmenter v3.9.14-beta — transcript story resp... | `TranscriptStoryMixin` |
 | `transcript_styles.py` | 104 | transcript_styles.py - Transcript view stylesheets and da... | `transcript_text_view_stylesheet()`, `clean_dark_mode_clipboard_html()` |
 | `transcript_timeline_sync_mixin.py` | 566 | Radio & TV Story Segmenter — Transcript Timeline & Playba... | `TranscriptTimelineSyncMixin` |
 | `transcription_processing.py` | 524 | Transcription background process management for Radio & T... | `TranscriptionProcessingMixin` |
@@ -148,6 +159,7 @@
 | `voice_profile_dialog.py` | 1006 | voice_profile_dialog.py — Dialog for finding and reassign... | `VoiceProfileMatchDialog` |
 | `voice_profile_matcher_mixin.py` | 577 | Radio & TV Story Segmenter — Acoustic Voice Profile Match... | `VoiceProfileMatcherMixin` |
 | `voice_profile_ops_mixin.py` | 585 | Radio & TV Story Segmenter — Voice Profile Matching & Emb... | `VoiceProfileOpsMixin` |
+| `waveform_envelope.py` | 55 | Waveform envelope data structures, downsampling pyramids,... | `WaveformEnvelope`, `build_waveform_pyramid()` |
 | `worker_asr_engines.py` | 816 | worker_asr_engines.py - Faster-Whisper, CTranslate2 & She... | `set_emit_callback()`, `get_optimal_transcription_threads()`, `get_app_data_dir_pure()`, `get_models_storage_dir_pure()` *(+4 more)* |
 | `worker_clustering.py` | 448 | worker_clustering.py - Acoustic clustering, VAD pause bri... | `normalize_audio_for_diarization()`, `configure_optimal_pytorch_threads()`, `fast_cluster_ahc()`, `apply_clustering_patches()` *(+2 more)* |
 | `worker_diarization_clustering.py` | 297 | worker_diarization_clustering.py - Speaker Clustering, Ce... | `fast_cluster_ahc()`, `apply_clustering_patches()`, `assign_short_segments_to_centroids()` |
@@ -158,7 +170,7 @@
 ## Detailed Symbol Catalog
 
 ### `RadioTVSegmenter.py` (558 lines)
-*Radio & TV Segmenter — v3.9.11-beta*
+*Radio & TV Segmenter — v3.9.14-beta*
 - **class `MainWindow(ModelManagementMixin, MediaBatchMixin, PlaybackPreferencesMixin, UiLayoutMixin, ProcessingMixin, TranslationMixin, TranscriptStoryMixin, ProjectExportMixin, GpuAccelerationMixin, QMainWindow)`** (lines 160–455):
   *Main application window for Radio & TV Segmenter.*
   - `__init__(self)` [L178-L351]
@@ -254,44 +266,12 @@
   - `choose_transcripts_output(self)` [L646-L656]
   - `auto_detect_options(self)` [L658-L678] — *Auto-detect available options based on imported file extensions.*
 
-### `benchmark.py` (2198 lines)
+### `benchmark.py` (216 lines)
 *Radio & TV Story Segmenter — Performance & Speed Benchmark Engine.*
-- **class `BenchmarkMetric`** (lines 415–427):
-- **class `ProcessingEstimates`** (lines 431–453):
-  *Estimated processing times for a standard 30-minute broadcast file.*
-- **class `BenchmarkEngine`** (lines 505–1397):
-  *Executes high-precision performance throughput benchmarks.*
-  - `__init__(self, quick, duration_mode, audio_source_mode, custom_audio_path)` [L551-L639]
-  - `_get_target_audio_seconds(self)` [L641-L644] — *Returns the target audio window in seconds based on active duration mode.*
-  - `_prepare_audio_source(self)` [L646-L686] — *Loads and prepares the configured audio stream (synthetic or real file).*
-  - `run_all(self, stop_requested_fn)` [L688-L731]
-  - `_compute_composite_score(self)` [L733-L769] — *Computes aggregate RTVS Hardware Performance Score normalized to baseline reference.*
-  - `compute_processing_estimates(self, audio_duration_minutes)` [L771-L864] — *Computes realistic estimated execution times for a standard broadcast file.*
-  - `_bench_waveform_peak_extraction(self, metric)` [L867-L914]
-  - `_bench_audio_stft_and_mel_filterbank(self, metric)` [L917-L968]
-  - `_bench_multi_core_speech_segmentation(self, metric)` [L971-L1017]
-  - `_bench_speaker_diarization_vector_search(self, metric)` [L1020-L1065]
-  - `_bench_project_serialization_and_indexing(self, metric)` [L1068-L1128]
-  - `_bench_transcript_formatting_and_search(self, metric)` [L1131-L1192]
-  - `_bench_multi_format_export_generation_throughput(self, metric)` [L1195-L1269]
-  - `_bench_transformer_self_attention_kernel(self, metric)` [L1272-L1327]
-  - `_bench_ai_background_worker_and_ipc_handshake(self, metric)` [L1330-L1368]
-  - `_bench_model_cache_storage_and_cdn_connectivity(self, metric)` [L1371-L1397]
+- **Public Exports (`__all__`)**: BenchmarkMetric, ProcessingEstimates, get_app_data_dir, get_candidate_sample_audio_paths, find_available_sample_audio, get_sample_audio_target_path, delete_sample_audio_files, download_sample_audio, decode_audio_file_pcm, _get_seed_speech_pcm, generate_benchmark_audio, get_system_hardware_profile, is_translation_plugin_installed, format_duration_estimate, BenchmarkEngine, create_benchmark_dialog, run_cli_benchmark, main
 - **Functions**:
-  - `get_app_data_dir()` [L70-L82] — *Returns application data directory consistent across platforms.*
-  - `get_candidate_sample_audio_paths()` [L85-L108] — *Returns ordered list of file paths where sample audio may reside.*
-  - `find_available_sample_audio()` [L111-L119] — *Finds the first existing valid sample audio file on disk.*
-  - `get_sample_audio_target_path()` [L122-L135] — *Returns the primary target path for downloading the sample audio file.*
-  - `delete_sample_audio_files()` [L138-L161] — *Deletes all sample audio files across candidate locations to free disk space.*
-  - `download_sample_audio(progress_callback, cancel_check)` [L164-L223] — *Downloads the benchmark sample audio file with progress notifications.*
-  - `decode_audio_file_pcm(file_path, max_duration_seconds)` [L230-L281] — *Decodes media file to 16kHz mono 16-bit PCM using FFmpeg.*
-  - `_get_seed_speech_pcm(sample_rate)` [L291-L313] — *Generates a 5-second realistic speech-modulated PCM audio seed in memory.*
-  - `generate_benchmark_audio(duration_seconds, sample_rate)` [L316-L338] — *Generates mono 16-bit 16kHz speech-like PCM WAV audio in memory via seed tiling.*
-  - `get_system_hardware_profile()` [L345-L407] — *Inspects CPU, RAM, OS, and GPU environment.*
-  - `is_translation_plugin_installed()` [L456-L486] — *Checks if the local neural translation plugin/runtime is installed and available.*
-  - `format_duration_estimate(seconds)` [L489-L498] — *Formats seconds into a clear human-readable duration.*
-  - `run_cli_benchmark(quick, duration_mode, as_json, use_sample, custom_file)` [L1404-L1490] — *Run performance benchmarks and print formatted terminal report.*
-  - `create_benchmark_dialog(parent)` [L1497-L2145] — *Factory creating the native PySide6 Benchmark Dialog.*
+  - `run_cli_benchmark(quick, duration_mode, as_json, use_sample, custom_file)` [L70-L156] — *Run performance benchmarks and print formatted terminal report.*
+  - `main(argv)` [L159-L212]
 
 ### `benchmark_dialog.py` (674 lines)
 *benchmark_dialog.py - PySide6 Graphical Benchmark Dialog & Workers.*
@@ -1147,6 +1127,31 @@
   - `fetch_google_doc_content(access_token, doc_id)` [L57-L82] — *Retrieve Google Doc JSON structure and extract plain text.*
   - `compute_segment_diffs(local_segments, remote_text)` [L85-L140] — *Compare local transcript segments with paragraphs from the remote Google Doc.*
 
+### `plugins/github_dialog.py` (566 lines)
+*GitHub plugins browser and installer dialog with multi-selection.*
+- **class `GitHubPluginsDialog(QDialog)`** (lines 34–565):
+  *Browses, downloads, installs, and manages add-ons directly from GitHub releases with multi-selection.*
+  - `__init__(self, manager, parent)` [L37-L52]
+  - `setup_ui(self)` [L54-L157]
+  - `fetch_plugins(self)` [L159-L166]
+  - `on_plugins_fetched(self, success, catalog, note)` [L168-L175]
+  - `render_table(self)` [L177-L275]
+  - `update_all_available_plugins(self)` [L277-L310] — *Finds all installed plugins with available updates and updates them in batch.*
+  - `select_all_plugins(self)` [L312-L315]
+  - `deselect_all_plugins(self)` [L317-L320]
+  - `get_selected_items(self)` [L322-L340] — *Returns list of plugin items that are either checked or part of extended row selection.*
+  - `on_selection_changed(self)` [L342-L366]
+  - `download_and_install_plugin(self, item)` [L368-L387]
+  - `download_selected_plugins(self)` [L389-L419]
+  - `on_batch_download_finished(self, succeeded, failed, errors)` [L421-L441]
+  - `enable_selected_plugins(self)` [L443-L460]
+  - `disable_selected_plugins(self)` [L462-L479]
+  - `uninstall_selected_plugins(self)` [L481-L501]
+  - `on_download_progress(self, percent, msg)` [L503-L505]
+  - `on_download_finished(self, success, file_path, error_msg, plugin_name, plugin_id)` [L507-L541]
+  - `toggle_plugin(self, plugin_id, enable)` [L543-L551]
+  - `uninstall_plugin(self, plugin_id, plugin_name)` [L553-L565]
+
 ### `plugins/google_sheets.py` (206 lines)
 *Google Sheets Integration Engine for Radio & TV Segmenter.*
 - **class `GoogleSheetsApiClient`** (lines 43–133):
@@ -1162,8 +1167,26 @@
   - `format_story_rundown_table(stories, format_time_fn)` [L140-L166] — *Convert story segment metadata into standard broadcast rundown rows.*
   - `format_speaker_analytics_table(transcript_segments, format_time_fn)` [L169-L206] — *Calculate and format per-speaker talk-time metrics and percentages into tabular rows.*
 
-### `plugins/manager.py` (1942 lines)
+### `plugins/installer_workers.py` (288 lines)
+*Background QThread workers for querying, downloading, and batch installing official plugins.*
+- **class `GitHubPluginsWorker(QThread)`** (lines 20–115):
+  *Fetches list of available plugins from GitHub release assets and official catalog.*
+  - `__init__(self, repo, parent)` [L24-L26]
+  - `run(self)` [L28-L115]
+- **class `GitHubDownloadWorker(QThread)`** (lines 118–180):
+  *Downloads an add-on package in background with progress updates.*
+  - `__init__(self, download_url, local_dest, fallback_local_addon, parent)` [L123-L128]
+  - `cancel(self)` [L130-L131]
+  - `run(self)` [L133-L180]
+- **class `GitHubBatchDownloadWorker(QThread)`** (lines 183–288):
+  *Downloads and installs a batch of add-on packages in sequence with progress updates.*
+  - `__init__(self, items, manager, enable_after, parent)` [L188-L193]
+  - `cancel(self)` [L195-L196]
+  - `run(self)` [L198-L288]
+
+### `plugins/manager.py` (586 lines)
 *Radio & TV Segmenter — Plugin Manager and Discovery Engine.*
+- **Public Exports (`__all__`)**: PluginManager, PluginManagerDialog, GitHubPluginsDialog, GitHubPluginsWorker, GitHubDownloadWorker, GitHubBatchDownloadWorker, parse_plugin_version_tuple, is_newer_plugin_version
 - **class `PluginManager`** (lines 68–567):
   *Manages discovery, lifecycle, settings, and GUI injection of plugins.*
   - `__init__(self, app)` [L71-L76]
@@ -1184,65 +1207,32 @@
   - `uninstall_plugin(self, plugin_id)` [L408-L489] — *Uninstalls and removes a plugin completely from the system.*
   - `install_addon(self, package_path, enable, expected_sha256)` [L491-L543] — *Installs a .rtvs-addon or .zip package into the user plugins directory.*
   - `package_addon(cls, plugin_folder, output_zip)` [L546-L567] — *Zips a plugin directory into an .rtvs-addon file.*
-- **class `GitHubPluginsWorker(QThread)`** (lines 570–693):
-  *Fetches list of available plugins from GitHub release assets and official catalog.*
-  - `__init__(self, repo, parent)` [L574-L576]
-  - `run(self)` [L578-L693]
-- **class `GitHubDownloadWorker(QThread)`** (lines 696–758):
-  *Downloads an add-on package in background with progress updates.*
-  - `__init__(self, download_url, local_dest, fallback_local_addon, parent)` [L701-L706]
-  - `cancel(self)` [L708-L709]
-  - `run(self)` [L711-L758]
-- **class `GitHubBatchDownloadWorker(QThread)`** (lines 761–866):
-  *Downloads and installs a batch of add-on packages in sequence with progress updates.*
-  - `__init__(self, items, manager, enable_after, parent)` [L766-L771]
-  - `cancel(self)` [L773-L774]
-  - `run(self)` [L776-L866]
-- **class `GitHubPluginsDialog(QDialog)`** (lines 869–1400):
-  *Browses, downloads, installs, and manages add-ons directly from GitHub releases with multi-selection.*
-  - `__init__(self, manager, parent)` [L872-L887]
-  - `setup_ui(self)` [L889-L992]
-  - `fetch_plugins(self)` [L994-L1001]
-  - `on_plugins_fetched(self, success, catalog, note)` [L1003-L1010]
-  - `render_table(self)` [L1012-L1110]
-  - `update_all_available_plugins(self)` [L1112-L1145] — *Finds all installed plugins with available updates and updates them in batch.*
-  - `select_all_plugins(self)` [L1147-L1150]
-  - `deselect_all_plugins(self)` [L1152-L1155]
-  - `get_selected_items(self)` [L1157-L1175] — *Returns list of plugin items that are either checked or part of extended row selection.*
-  - `on_selection_changed(self)` [L1177-L1201]
-  - `download_and_install_plugin(self, item)` [L1203-L1222]
-  - `download_selected_plugins(self)` [L1224-L1254]
-  - `on_batch_download_finished(self, succeeded, failed, errors)` [L1256-L1276]
-  - `enable_selected_plugins(self)` [L1278-L1295]
-  - `disable_selected_plugins(self)` [L1297-L1314]
-  - `uninstall_selected_plugins(self)` [L1316-L1336]
-  - `on_download_progress(self, percent, msg)` [L1338-L1340]
-  - `on_download_finished(self, success, file_path, error_msg, plugin_name, plugin_id)` [L1342-L1376]
-  - `toggle_plugin(self, plugin_id, enable)` [L1378-L1386]
-  - `uninstall_plugin(self, plugin_id, plugin_name)` [L1388-L1400]
-- **class `PluginManagerDialog(QDialog)`** (lines 1403–1942):
-  *GUI Dialog for viewing, managing, enabling, installing, and removing plugins with multi-selection.*
-  - `__init__(self, manager, parent)` [L1406-L1414]
-  - `setup_ui(self)` [L1416-L1530]
-  - `on_download_github(self)` [L1532-L1535]
-  - `select_all_plugins(self)` [L1537-L1538]
-  - `deselect_all_plugins(self)` [L1540-L1541]
-  - `get_selected_plugin_ids(self)` [L1543-L1556] — *Returns the list of plugin_ids selected via multi-row selection.*
-  - `refresh_list(self)` [L1558-L1604]
-  - `on_toggle_plugin(self, plugin_id, state)` [L1606-L1614]
-  - `on_selection_changed(self)` [L1616-L1642]
-  - `configure_selected_plugin(self)` [L1644-L1666]
-  - `enable_selected_plugins(self)` [L1668-L1681]
-  - `disable_selected_plugins(self)` [L1683-L1696]
-  - `uninstall_selected_plugins(self)` [L1698-L1722]
-  - `export_selected_plugins(self)` [L1724-L1774]
-  - `on_install_addon(self)` [L1776-L1813]
-  - `check_for_plugin_updates(self)` [L1815-L1894] — *Checks GitHub for newer versions of installed plugins without updating the core app.*
-  - `run_batch_plugin_updates(self, update_items)` [L1896-L1930] — *Downloads and installs a batch of plugin updates.*
-  - `on_open_folder(self)` [L1932-L1942]
 - **Functions**:
   - `parse_plugin_version_tuple(version_str)` [L22-L37] — *Parse plugin version string into comparable numerical components and a stability weight.*
   - `is_newer_plugin_version(new_version, current_version)` [L40-L44] — *Returns True if new_version is strictly newer than current_version.*
+
+### `plugins/manager_dialog.py` (579 lines)
+*Plugin and Add-On Manager Dialog for inspecting, enabling, and installing add-ons.*
+- **class `PluginManagerDialog(QDialog)`** (lines 40–579):
+  *GUI Dialog for viewing, managing, enabling, installing, and removing plugins with multi-selection.*
+  - `__init__(self, manager, parent)` [L43-L51]
+  - `setup_ui(self)` [L53-L167]
+  - `on_download_github(self)` [L169-L172]
+  - `select_all_plugins(self)` [L174-L175]
+  - `deselect_all_plugins(self)` [L177-L178]
+  - `get_selected_plugin_ids(self)` [L180-L193] — *Returns the list of plugin_ids selected via multi-row selection.*
+  - `refresh_list(self)` [L195-L241]
+  - `on_toggle_plugin(self, plugin_id, state)` [L243-L251]
+  - `on_selection_changed(self)` [L253-L279]
+  - `configure_selected_plugin(self)` [L281-L303]
+  - `enable_selected_plugins(self)` [L305-L318]
+  - `disable_selected_plugins(self)` [L320-L333]
+  - `uninstall_selected_plugins(self)` [L335-L359]
+  - `export_selected_plugins(self)` [L361-L411]
+  - `on_install_addon(self)` [L413-L450]
+  - `check_for_plugin_updates(self)` [L452-L531] — *Checks GitHub for newer versions of installed plugins without updating the core app.*
+  - `run_batch_plugin_updates(self, update_items)` [L533-L567] — *Downloads and installs a batch of plugin updates.*
+  - `on_open_folder(self)` [L569-L579]
 
 ### `plugins/translation/__init__.py` (9 lines)
 *Language Translation Plugin for Radio & TV Segmenter.*
@@ -1294,6 +1284,12 @@
   - `_translate_batches(self, engine_type, tokenizer, model_or_translator)` [L463-L637]
   - `run(self)` [L639-L678]
 
+### `plugins/version_utils.py` (30 lines)
+*Version parsing and semantic comparison utilities for the plugin system.*
+- **Functions**:
+  - `parse_plugin_version_tuple(version_str)` [L8-L23] — *Parse plugin version string into comparable numerical components and a stability weight.*
+  - `is_newer_plugin_version(new_version, current_version)` [L26-L30] — *Returns True if new_version is strictly newer than current_version.*
+
 ### `plugins/wordpress/__init__.py` (6 lines)
 *WordPress Publisher Plugin for Radio & TV Segmenter.*
 - **Public Exports (`__all__`)**: Plugin
@@ -1340,74 +1336,26 @@
   - `_build_audio_fade_filter(duration, fade_in, fade_out, fade_curve)` [L1075-L1103] — *Construct FFmpeg afade audio filter chain for story clips.*
   - `execute_wordpress_upload(main_window, client, post_title, post_excerpt, start, end, task_label, include_english, include_spanish, spanish_presentation, primary_language, author_ids, author_term_ids, category_ids, show_completion_dialog, media_filename, progress_callback, featured_image_path, parent_episode_info, link_parent_episode, parent_episode_template, parent_episode_pos, include_audio, fade_in, fade_out, fade_curve, apply_fades, accordion_pos)` [L1106-L1562] — *Extract media clip, upload to WordPress media library, and create draft post.*
 
-### `plugins/wordpress/export_destination.py` (2080 lines)
+### `plugins/wordpress/export_destination.py` (474 lines)
 *WordPress Export Destination for UnifiedExportDialog.*
-- **class `WordPressExportTabWidget(QWidget)`** (lines 88–1645):
-  *Configuration and preview panel for WordPress Draft Posts.*
-  - `__init__(self, parent, main_window, metadata_editor_mode)` [L91-L110]
-  - `_setup_ui(self)` [L112-L688]
-  - `_on_wp_include_audio_toggled(self, checked)` [L690-L691]
-  - `_update_wp_conn_status(self)` [L693-L701]
-  - `_open_wp_settings(self)` [L703-L707]
-  - `_filter_authors_list(self, text)` [L709-L713]
-  - `_filter_categories_list(self, text)` [L715-L719]
-  - `_on_title_edited(self, text)` [L721-L725]
-  - `_on_excerpt_edited(self)` [L727-L730]
-  - `_auto_generate_current_excerpt(self)` [L732-L739]
-  - `_autofill_all_excerpts(self)` [L741-L747]
-  - `_on_author_item_changed(self, item)` [L749-L756]
-  - `_on_category_item_changed(self, item)` [L758-L764]
-  - `_clear_current_authors(self)` [L766-L771]
-  - `_clear_current_categories(self)` [L773-L777]
-  - `_get_selected_story_indices(self)` [L779-L783]
-  - `_apply_authors_to_selected_stories(self)` [L785-L818]
-  - `_apply_categories_to_selected_stories(self)` [L820-L850]
-  - `_apply_thumbnails_to_selected_stories(self)` [L852-L885]
-  - `_apply_authors_to_all_posts(self)` [L887-L906]
-  - `_apply_categories_to_all_posts(self)` [L908-L924]
-  - `_apply_thumbnails_to_all_posts(self)` [L926-L946]
-  - `_sync_post_to_project(self, idx)` [L948-L1039]
-  - `save_all_posts_to_project(self)` [L1041-L1049] — *Persist all post metadata back into stories and project_metadata.*
-  - `_update_post_list_item_label(self, idx)` [L1051-L1064]
-  - `_on_wp_post_selection_changed(self, row)` [L1066-L1069]
-  - `_get_editor_checked_authors(self)` [L1071-L1087]
-  - `_set_editor_checked_authors(self, author_ids, author_term_ids)` [L1089-L1107]
-  - `_get_editor_checked_categories(self)` [L1109-L1117]
-  - `_set_editor_checked_categories(self, cat_ids)` [L1119-L1127]
-  - `_get_wp_post_bounds(self, post_index)` [L1129-L1138]
-  - `_sync_wp_slider_to_pos(self, pos)` [L1140-L1150]
-  - `_on_wp_slider_value_changed(self, val)` [L1152-L1160]
-  - `_on_wp_scrub_timer_timeout(self)` [L1162-L1166]
-  - `_on_wp_step(self, delta_secs)` [L1168-L1176]
-  - `_on_wp_sync_playhead(self)` [L1178-L1185]
-  - `_load_post_editor_state(self, index)` [L1187-L1241]
-  - `_on_wp_thumb_mode_changed(self)` [L1243-L1274]
-  - `_capture_wp_frame(self, pos)` [L1276-L1326]
-  - `_on_wp_browse_thumb(self)` [L1328-L1344]
-  - `_cleanup_temp_files(self)` [L1346-L1355] — *Purge temporary frame grabs and preview images.*
-  - `closeEvent(self, event)` [L1357-L1360] — *Clean up temp files on widget/dialog closure.*
-  - `rebuild_post_items(self, scope)` [L1362-L1556]
-  - `_populate_wp_export_metadata(self, force_refresh)` [L1558-L1611]
-  - `_refresh_wp_metadata(self)` [L1613-L1645]
-- **class `WordPressExportDestination(ExportDestination)`** (lines 1648–2028):
+- **Public Exports (`__all__`)**: WordPressExportDestination, WordPressExportTabWidget, WordPressPostMetadataDialog, capture_video_frame, build_wp_post_items
+- **class `WordPressExportDestination(ExportDestination)`** (lines 33–413):
   *Export destination handler for WordPress REST API Draft Posts.*
-  - `__init__(self, plugin)` [L1651-L1659]
-  - `button_label(self)` [L1662-L1667]
-  - `button_label(self, val)` [L1670-L1671]
-  - `get_export_button_label(self)` [L1673-L1674]
-  - `widget(self)` [L1677-L1678]
-  - `widget(self, val)` [L1681-L1682]
-  - `create_widget(self, parent, main_window)` [L1684-L1686]
-  - `on_scope_changed(self, scope, stories)` [L1688-L1690]
-  - `validate(self)` [L1692-L1708]
-  - `get_export_data(self)` [L1710-L1729]
-  - `execute_export(self, main_window, export_data, progress_dialog)` [L1731-L2028]
-- **class `WordPressPostMetadataDialog(QDialog)`** (lines 2031–2079):
+  - `__init__(self, plugin)` [L36-L44]
+  - `button_label(self)` [L47-L52]
+  - `button_label(self, val)` [L55-L56]
+  - `get_export_button_label(self)` [L58-L59]
+  - `widget(self)` [L62-L63]
+  - `widget(self, val)` [L66-L67]
+  - `create_widget(self, parent, main_window)` [L69-L71]
+  - `on_scope_changed(self, scope, stories)` [L73-L75]
+  - `validate(self)` [L77-L93]
+  - `get_export_data(self)` [L95-L114]
+  - `execute_export(self, main_window, export_data, progress_dialog)` [L116-L413]
+- **class `WordPressPostMetadataDialog(QDialog)`** (lines 416–464):
   *Full-featured WordPress post & story metadata editor dialog.*
-  - `__init__(self, parent, main_window, target_story_index)` [L2034-L2075]
-  - `_on_save_and_close(self)` [L2077-L2079]
-- **Functions**:
-  - `capture_video_frame(video_path, timestamp, output_path, timeout)` [L64-L85]
+  - `__init__(self, parent, main_window, target_story_index)` [L419-L460]
+  - `_on_save_and_close(self)` [L462-L464]
 
 ### `plugins/wordpress/plugin.py` (893 lines)
 *WordPress Publisher Plugin for Radio & TV Segmenter.*
@@ -1508,6 +1456,68 @@
 - **Functions**:
   - `generate_wp_excerpt(transcript_words, start_t, end_t)` [L59-L61]
   - `capture_video_frame(video_path, timestamp, output_path)` [L64-L76]
+
+### `plugins/wordpress/wp_post_builder.py` (205 lines)
+*Post item builder, transcript slicing, and video frame extraction for WordPress export.*
+- **Functions**:
+  - `capture_video_frame(video_path, timestamp, output_path, timeout)` [L13-L35] — *Capture a single frame from video at timestamp using ffmpeg.*
+  - `get_primary_text_slice(main_window, primary_lang, st_start, st_end)` [L38-L67] — *Extract transcript or translated text for the specified time slice.*
+  - `build_wp_post_items(main_window, scope, primary_lang, existing_items)` [L70-L205] — *Build the list of WordPress post definitions according to the export scope.*
+
+### `plugins/wordpress/wp_tab_widget.py` (861 lines)
+*WordPress export tab configuration widget and preview controller.*
+- **class `WordPressExportTabWidget(QWidget)`** (lines 37–860):
+  *Configuration and preview panel for WordPress Draft Posts.*
+  - `__init__(self, parent, main_window, metadata_editor_mode)` [L40-L59]
+  - `_setup_ui(self)` [L61-L62]
+  - `_on_wp_include_audio_toggled(self, checked)` [L64-L65]
+  - `_update_wp_conn_status(self)` [L67-L75]
+  - `_open_wp_settings(self)` [L77-L81]
+  - `_filter_authors_list(self, text)` [L83-L87]
+  - `_filter_categories_list(self, text)` [L89-L93]
+  - `_on_title_edited(self, text)` [L95-L99]
+  - `_on_excerpt_edited(self)` [L101-L104]
+  - `_auto_generate_current_excerpt(self)` [L106-L113]
+  - `_autofill_all_excerpts(self)` [L115-L121]
+  - `_on_author_item_changed(self, item)` [L123-L130]
+  - `_on_category_item_changed(self, item)` [L132-L138]
+  - `_clear_current_authors(self)` [L140-L145]
+  - `_clear_current_categories(self)` [L147-L151]
+  - `_get_selected_story_indices(self)` [L153-L157]
+  - `_apply_authors_to_selected_stories(self)` [L159-L192]
+  - `_apply_categories_to_selected_stories(self)` [L194-L224]
+  - `_apply_thumbnails_to_selected_stories(self)` [L226-L259]
+  - `_apply_authors_to_all_posts(self)` [L261-L280]
+  - `_apply_categories_to_all_posts(self)` [L282-L298]
+  - `_apply_thumbnails_to_all_posts(self)` [L300-L320]
+  - `_sync_post_to_project(self, idx)` [L322-L413]
+  - `save_all_posts_to_project(self)` [L415-L423] — *Persist all post metadata back into stories and project_metadata.*
+  - `_update_post_list_item_label(self, idx)` [L425-L438]
+  - `_on_wp_post_selection_changed(self, row)` [L440-L443]
+  - `_get_editor_checked_authors(self)` [L445-L461]
+  - `_set_editor_checked_authors(self, author_ids, author_term_ids)` [L463-L481]
+  - `_get_editor_checked_categories(self)` [L483-L491]
+  - `_set_editor_checked_categories(self, cat_ids)` [L493-L501]
+  - `_get_wp_post_bounds(self, post_index)` [L503-L512]
+  - `_sync_wp_slider_to_pos(self, pos)` [L514-L524]
+  - `_on_wp_slider_value_changed(self, val)` [L526-L534]
+  - `_on_wp_scrub_timer_timeout(self)` [L536-L540]
+  - `_on_wp_step(self, delta_secs)` [L542-L550]
+  - `_on_wp_sync_playhead(self)` [L552-L559]
+  - `_load_post_editor_state(self, index)` [L561-L615]
+  - `_on_wp_thumb_mode_changed(self)` [L617-L648]
+  - `_capture_wp_frame(self, pos)` [L650-L700]
+  - `_on_wp_browse_thumb(self)` [L702-L718]
+  - `_cleanup_temp_files(self)` [L720-L729] — *Purge temporary frame grabs and preview images.*
+  - `closeEvent(self, event)` [L731-L734] — *Clean up temp files on widget/dialog closure.*
+  - `rebuild_post_items(self, scope)` [L736-L770]
+  - `_populate_wp_export_metadata(self, force_refresh)` [L773-L826]
+  - `_refresh_wp_metadata(self)` [L828-L860]
+
+### `plugins/wordpress/wp_ui_builder.py` (609 lines)
+*UI layout construction and widget setup for WordPressExportTabWidget.*
+- **Functions**:
+  - `setup_wp_tab_ui(self)` [L32-L609] — *Construct all controls, forms, sliders, list widgets, and collapsible panels for the WordPress export tab.*
 
 ### `plugins/youtube/__init__.py` (9 lines)
 *YouTube Video Publisher Plugin for Radio & TV Segmenter.*
@@ -1884,37 +1894,11 @@
 - **Functions**:
   - `_ensure_pyside6_fallback()` [L135-L160] — *Ensures PySide6 modules are importable, installing the zero-dependency mock shim if unavailable.*
 
-### `radio_tv_story_segmenter_worker.py` (2264 lines)
+### `radio_tv_story_segmenter_worker.py` (219 lines)
+*Radio & TV Story Segmenter — AI Background Subprocess Worker Facade.*
+- **Public Exports (`__all__`)**: emit, emit_hello, _patch_av_open, _clamp_diarization_thread_env, _setup_windows_dll_directories, _safe_tensor_from_numpy, get_optimal_transcription_threads, get_app_data_dir_pure, get_models_storage_dir_pure, is_onnx_model_available, transcribe_parakeet_onnx, probe_audio_language, transcribe, normalize_audio_for_diarization, configure_optimal_pytorch_threads, _normalize_expected_speakers, _normalize_speaker_labels, _sensitivity_distance_threshold, fast_cluster_ahc, apply_clustering_patches, run_vad_two_pass, assign_short_segments_to_centroids, _calculate_embedding_for_interval, _diarize_solo_fast_path, _get_wespeaker_model, extract_embeddings_batched, run_transcript_guided_diarization, diarize, is_real_speech, detect_story_boundaries, main
 - **Functions**:
-  - `_patch_av_open()` [L64-L80] — *Monkey-patch PyAV's av.open to strip 'metadata_errors' if passed.*
-  - `_clamp_diarization_thread_env()` [L86-L115] — *Cap OMP/ONNX Runtime/BLAS thread pools before onnxruntime, torch, or the*
-  - `_setup_windows_dll_directories()` [L122-L232] — *Register native DLL directories (PyTorch, CTranslate2, ONNX Runtime, etc.)*
-  - `_safe_tensor_from_numpy(arr)` [L239-L257] — *Safely convert a numpy float32 array into a PyTorch tensor.*
-  - `emit(message_type, **payload)` [L264-L267]
-  - `emit_hello()` [L270-L271]
-  - `get_optimal_transcription_threads()` [L274-L293] — *Calculate optimal CPU threads for faster-whisper / CTranslate2 / ONNX.*
-  - `get_app_data_dir_pure()` [L296-L314] — *Return platform-specific app data directory in pure Python without PySide6.*
-  - `get_models_storage_dir_pure()` [L317-L327] — *Return models storage directory in pure Python without PySide6.*
-  - `is_onnx_model_available(model_name)` [L330-L388]
-  - `transcribe_parakeet_onnx(audio_file, model_name, detected_lang, detected_confidence, initial_prompt, beam_size)` [L391-L728] — *Run installed ONNX models (Parakeet TDT, Spanish FastConformer, Multilingual FastConformer) through sherpa-onnx.*
-  - `probe_audio_language(audio_file, sample_duration, preferred_model)` [L731-L814] — *Run a fast language detection probe using faster-whisper's mel feature extractor.*
-  - `transcribe(audio_file, model_name, initial_prompt, beam_size)` [L817-L1042]
-  - `normalize_audio_for_diarization(source_path)` [L1045-L1105] — *Extract a normalized 16 kHz mono WAV using the local FFmpeg binary.*
-  - `configure_optimal_pytorch_threads()` [L1108-L1123] — *Clamp torch's intra-op/inter-op thread pools to match the*
-  - `_normalize_expected_speakers(value)` [L1126-L1135] — *Map a CLI/UI expected-speakers hint to one of 'auto', '1', '2', '3+'.*
-  - `_normalize_speaker_labels(segments)` [L1138-L1151] — *Relabel raw diarize-package speaker ids to 'Speaker 1', 'Speaker 2',*
-  - `_diarize_solo_fast_path(audio_file, transcript_file)` [L1154-L1228] — *Solo fast-path: a single expected speaker means there is nothing to*
-  - `_sensitivity_distance_threshold()` [L1234-L1242] — *Cosine-distance clustering threshold derived from PRS_DIARIZATION_SENSITIVITY.*
-  - `fast_cluster_ahc(embeddings, k, distance_threshold)` [L1245-L1302] — *Agglomerative Hierarchical Clustering with cosine metric and average linkage (O(N^2)).*
-  - `apply_clustering_patches()` [L1308-L1341] — *Globally monkey-patch SpectralClustering and diarize.clustering to use O(N^2) AHC.*
-  - `_get_wespeaker_model()` [L1347-L1355] — *Retrieve or initialize the cached WeSpeaker ONNX model instance.*
-  - `extract_embeddings_batched(audio_path, speech_segments, batch_size, min_segment_duration, embedding_window, embedding_step, progress_callback)` [L1358-L1481] — *Extract 256-dim speaker embeddings using WeSpeaker ResNet34-LM (ONNX)*
-  - `run_vad_two_pass(audio_path, threshold, min_speech_duration_ms, min_silence_duration_ms, speech_pad_ms, bridge_pause_threshold_sec)` [L1484-L1557] — *Silero VAD with Pass 1 Pause Bridging (< 100ms).*
-  - `assign_short_segments_to_centroids(short_segments, audio_path, centroids, label_values, raw_segments, min_confidence)` [L1560-L1663] — *Extract acoustic embeddings for short segments (< 0.8s, e.g. quick interjections*
-  - `_calculate_embedding_for_interval(start, end, subsegments, embeddings)` [L1666-L1691] — *Compute unit-normalized 256-dimensional embedding vector for an interval [start, end].*
-  - `run_transcript_guided_diarization(normalized_wav, transcript_file, expected_speakers, sensitivity, progress_callback)` [L1694-L1836] — *Execute transcript-guided speaker diarization:*
-  - `diarize(audio_file, expected_speakers, transcript_file, sensitivity)` [L1839-L2152]
-  - `main(argv)` [L2155-L2260]
+  - `main(argv)` [L110-L215]
 
 ### `roadmap_manager.py` (262 lines)
 *roadmap_manager.py — Automated Roadmap & N-1 Sliding-Window Management Engine*
@@ -2427,6 +2411,12 @@
   - `render_waveform_buffer(self, width, height)` [L941-L1103]
   - `paintEvent(self, event)` [L1105-L1329]
 
+### `timeline_context_menus.py` (108 lines)
+*Context menu builders and event handlers for the timeline canvas.*
+- **Functions**:
+  - `show_timeline_context_menu(canvas, global_pos, pos_x)` [L10-L64] — *Display the primary right-click context menu on the timeline canvas.*
+  - `show_selection_context_menu(canvas, global_pos)` [L67-L108] — *Display the range selection context menu on the timeline canvas.*
+
 ### `timeline_envelope.py` (51 lines)
 *Waveform envelope data structure and multi-resolution pyramid downsampling.*
 - **class `WaveformEnvelope(list)`** (lines 12–16):
@@ -2459,84 +2449,97 @@
   - `setSingleStep(self, step)` [L347-L348]
   - `setValue(self, val)` [L350-L351]
 
-### `timeline_widgets.py` (1898 lines)
-*Radio & TV Story Segmenter — Timeline Ruler, Track Views, Playhead, Overview & Canvas Widgets.*
-- **class `WaveformEnvelope(list)`** (lines 49–53):
-  *Subclass of list holding waveform peaks and precomputed multi-resolution pyramid levels.*
-  - `__init__(self, iterable, levels)` [L51-L53]
-- **class `TimelineCanvas(QWidget)`** (lines 92–1440):
-  - `__init__(self, parent, tokens)` [L112-L202]
-  - `set_is_video(self, is_video)` [L204-L207]
-  - `set_background_generation_active(self, task_name, active)` [L209-L228] — *Set generation state for 'waveform' or 'thumbnails'.*
-  - `_activate_background_banner(self)` [L230-L235]
-  - `_update_background_status_text(self)` [L237-L250]
-  - `dragEnterEvent(self, event)` [L252-L258]
-  - `dropEvent(self, event)` [L260-L266]
-  - `set_audio_filename(self, filename)` [L268-L271]
-  - `set_duration(self, duration)` [L273-L281]
-  - `set_position(self, position)` [L283-L286]
-  - `set_playing_state(self, is_playing)` [L288-L289]
-  - `ensure_position_visible(self, target_time)` [L291-L311]
-  - `set_transcript_selection_range(self, start, end)` [L313-L318]
-  - `set_stories(self, stories, selected_indices)` [L320-L324]
-  - `set_waveform_peaks(self, peaks, levels)` [L326-L337]
-  - `set_timeline_views(self, show_waveform, show_thumbnails)` [L339-L343]
-  - `set_video_thumbnails(self, thumbnails)` [L345-L352]
-  - `set_skip_seconds(self, seconds)` [L354-L355]
-  - `visible_duration(self)` [L357-L358]
-  - `clamp_scroll_offset(self)` [L360-L363]
-  - `time_to_x(self, time_val, width)` [L365-L368]
-  - `x_to_time(self, x_val, width)` [L370-L372]
-  - `snap_time(self, raw_time, exclude_story_idx, width, pixel_threshold)` [L374-L419] — *Snap raw_time to nearby story boundaries, playhead, or selection anchors if within pixel_threshold pixels.*
-  - `find_edge_at_pos(self, pos_x, width)` [L421-L430]
-  - `find_fade_handle_at_pos(self, pos_x, pos_y, width)` [L434-L461] — *Hit-test tactile fade-in and fade-out envelope handles near the top edge of story blocks.*
-  - `find_story_at_time(self, time)` [L463-L472] — *Return the index of the story enclosing `time`, picking the most specific (shortest) if overlapping.*
-  - `is_near_playhead(self, pos_x, width)` [L474-L476]
-  - `set_zoom(self, new_zoom, center_x, focus_time)` [L478-L504]
-  - `resizeEvent(self, event)` [L506-L508]
-  - `wheelEvent(self, event)` [L510-L560]
-  - `mousePressEvent(self, event)` [L562-L646]
-  - `mouseMoveEvent(self, event)` [L648-L774]
-  - `mouseReleaseEvent(self, event)` [L776-L846]
-  - `_show_timeline_context_menu(self, global_pos, pos_x)` [L848-L901]
-  - `_show_selection_context_menu(self, global_pos)` [L903-L943]
-  - `keyPressEvent(self, event)` [L945-L1026]
-  - `set_thumbnail_position(self, position)` [L1028-L1032]
-  - `render_waveform_buffer(self, width, height)` [L1034-L1205]
-  - `paintEvent(self, event)` [L1207-L1440]
-- **class `TimelineResizeHandle(QWidget)`** (lines 1443–1504):
+### `timeline_overview_widget.py` (339 lines)
+*Timeline overview bar, mini-map navigator, and resize handle widgets.*
+- **class `TimelineResizeHandle(QWidget)`** (lines 13–73):
   *Visual drag-handle at the bottom of the timeline allowing vertical resizing.*
-  - `__init__(self, target_widget, parent)` [L1445-L1453]
-  - `paintEvent(self, event)` [L1455-L1471]
-  - `mousePressEvent(self, event)` [L1473-L1480]
-  - `mouseMoveEvent(self, event)` [L1482-L1491]
-  - `mouseReleaseEvent(self, event)` [L1493-L1504]
-- **class `TimelineOverviewBar(QWidget)`** (lines 1507–1795):
+  - `__init__(self, target_widget, parent)` [L16-L24]
+  - `paintEvent(self, event)` [L26-L40]
+  - `mousePressEvent(self, event)` [L42-L49]
+  - `mouseMoveEvent(self, event)` [L51-L60]
+  - `mouseReleaseEvent(self, event)` [L62-L73]
+- **class `TimelineOverviewBar(QWidget)`** (lines 76–339):
   *Interactive navigation overview pill below the timeline with drag-to-zoom edge handles.*
-  - `__init__(self, canvas, parent, tokens)` [L1514-L1532]
-  - `get_pill_rect(self)` [L1534-L1545]
-  - `_hit_test(self, pos_x)` [L1547-L1559]
-  - `paintEvent(self, event)` [L1561-L1640]
-  - `mousePressEvent(self, event)` [L1642-L1694]
-  - `mouseMoveEvent(self, event)` [L1696-L1762]
-  - `mouseReleaseEvent(self, event)` [L1764-L1778]
-  - `leaveEvent(self, event)` [L1780-L1783]
-  - `setRange(self, min_val, max_val)` [L1785-L1786]
-  - `setPageStep(self, step)` [L1788-L1789]
-  - `setSingleStep(self, step)` [L1791-L1792]
-  - `setValue(self, val)` [L1794-L1795]
-- **class `TimelineWidget(QWidget)`** (lines 1798–1896):
-  - `__init__(self, parent, tokens)` [L1801-L1838]
-  - `set_is_video(self, is_video)` [L1840-L1842]
-  - `set_background_generation_active(self, task_name, active)` [L1844-L1846]
-  - `dragEnterEvent(self, event)` [L1848-L1852]
-  - `dropEvent(self, event)` [L1854-L1860]
-  - `update_scrollbar_range(self)` [L1862-L1871]
-  - `update_scrollbar_from_canvas(self, offset)` [L1873-L1881]
-  - `update_canvas_from_scrollbar(self, val)` [L1883-L1893]
-  - `__getattr__(self, name)` [L1895-L1896]
+  - `__init__(self, canvas, parent, tokens)` [L83-L100]
+  - `get_pill_rect(self)` [L102-L110]
+  - `_hit_test(self, pos_x)` [L112-L123]
+  - `paintEvent(self, event)` [L125-L194]
+  - `mousePressEvent(self, event)` [L196-L242]
+  - `mouseMoveEvent(self, event)` [L244-L306]
+  - `mouseReleaseEvent(self, event)` [L308-L322]
+  - `leaveEvent(self, event)` [L324-L327]
+  - `setRange(self, min_val, max_val)` [L329-L330]
+  - `setPageStep(self, step)` [L332-L333]
+  - `setSingleStep(self, step)` [L335-L336]
+  - `setValue(self, val)` [L338-L339]
+
+### `timeline_painter.py` (419 lines)
+*Timeline canvas rendering engine, waveform drawing, and paint pipeline.*
 - **Functions**:
-  - `build_waveform_pyramid(peaks)` [L56-L88] — *Generate a multi-resolution downsampling pyramid for peaks using vectorized operations.*
+  - `render_waveform_buffer(canvas, width, height)` [L32-L195] — *Render background waveform peaks and video thumbnail strip onto an offscreen QPixmap.*
+  - `paint_timeline_canvas(canvas, painter, event)` [L198-L419] — *Execute full timeline paint pipeline onto the canvas QPainter.*
+
+### `timeline_snap.py` (119 lines)
+*Timeline snapping algorithms, edge detection, and collision hit-testing.*
+- **Functions**:
+  - `snap_time(canvas, raw_time, exclude_story_idx, width, pixel_threshold)` [L7-L58] — *Snap raw_time to nearby story boundaries, playhead, or selection anchors if within pixel_threshold pixels.*
+  - `find_edge_at_pos(canvas, pos_x, width)` [L61-L71] — *Determine if pos_x is hovering over a story segment start or end boundary edge.*
+  - `find_fade_handle_at_pos(canvas, pos_x, pos_y, width)` [L74-L101] — *Hit-test tactile fade-in and fade-out envelope handles near the top edge of story blocks.*
+  - `find_story_at_time(canvas, time)` [L104-L113] — *Return the index of the story enclosing `time`, picking the most specific (shortest) if overlapping.*
+  - `is_near_playhead(canvas, pos_x, width)` [L116-L119] — *Check if pos_x is within grab distance of the active playhead cursor.*
+
+### `timeline_widgets.py` (934 lines)
+*Radio & TV Story Segmenter — Timeline Ruler, Track Views, Playhead, Overview & Canvas Widgets.*
+- **class `TimelineCanvas(QWidget)`** (lines 55–831):
+  - `__init__(self, parent, tokens)` [L75-L165]
+  - `set_is_video(self, is_video)` [L167-L170]
+  - `set_background_generation_active(self, task_name, active)` [L172-L191] — *Set generation state for 'waveform' or 'thumbnails'.*
+  - `_activate_background_banner(self)` [L193-L198]
+  - `_update_background_status_text(self)` [L200-L213]
+  - `dragEnterEvent(self, event)` [L215-L221]
+  - `dropEvent(self, event)` [L223-L229]
+  - `set_audio_filename(self, filename)` [L231-L234]
+  - `set_duration(self, duration)` [L236-L244]
+  - `set_position(self, position)` [L246-L249]
+  - `set_playing_state(self, is_playing)` [L251-L252]
+  - `ensure_position_visible(self, target_time)` [L254-L274]
+  - `set_transcript_selection_range(self, start, end)` [L276-L281]
+  - `set_stories(self, stories, selected_indices)` [L283-L287]
+  - `set_waveform_peaks(self, peaks, levels)` [L289-L300]
+  - `set_timeline_views(self, show_waveform, show_thumbnails)` [L302-L306]
+  - `set_video_thumbnails(self, thumbnails)` [L308-L315]
+  - `set_skip_seconds(self, seconds)` [L317-L318]
+  - `visible_duration(self)` [L320-L321]
+  - `clamp_scroll_offset(self)` [L323-L326]
+  - `time_to_x(self, time_val, width)` [L328-L331]
+  - `x_to_time(self, x_val, width)` [L333-L335]
+  - `snap_time(self, raw_time, exclude_story_idx, width, pixel_threshold)` [L337-L338]
+  - `find_edge_at_pos(self, pos_x, width)` [L340-L341]
+  - `find_fade_handle_at_pos(self, pos_x, pos_y, width)` [L345-L346]
+  - `find_story_at_time(self, time)` [L348-L349]
+  - `is_near_playhead(self, pos_x, width)` [L351-L352]
+  - `set_zoom(self, new_zoom, center_x, focus_time)` [L354-L380]
+  - `resizeEvent(self, event)` [L382-L384]
+  - `wheelEvent(self, event)` [L386-L436]
+  - `mousePressEvent(self, event)` [L438-L522]
+  - `mouseMoveEvent(self, event)` [L524-L650]
+  - `mouseReleaseEvent(self, event)` [L652-L722]
+  - `_show_timeline_context_menu(self, global_pos, pos_x)` [L724-L725]
+  - `_show_selection_context_menu(self, global_pos)` [L727-L728]
+  - `keyPressEvent(self, event)` [L730-L811]
+  - `set_thumbnail_position(self, position)` [L813-L817]
+  - `render_waveform_buffer(self, width, height)` [L819-L820]
+  - `paintEvent(self, event)` [L823-L831]
+- **class `TimelineWidget(QWidget)`** (lines 834–932):
+  - `__init__(self, parent, tokens)` [L837-L874]
+  - `set_is_video(self, is_video)` [L876-L878]
+  - `set_background_generation_active(self, task_name, active)` [L880-L882]
+  - `dragEnterEvent(self, event)` [L884-L888]
+  - `dropEvent(self, event)` [L890-L896]
+  - `update_scrollbar_range(self)` [L898-L907]
+  - `update_scrollbar_from_canvas(self, offset)` [L909-L917]
+  - `update_canvas_from_scrollbar(self, val)` [L919-L929]
+  - `__getattr__(self, name)` [L931-L932]
 
 ### `transcript_cleaner.py` (216 lines)
 *Radio & TV Segmenter — Transcript cleaning, loop collapsing, and hallucination scrubbing.*
@@ -2664,7 +2667,7 @@
   - `_on_bubble_export(self)` [L415-L420]
 
 ### `transcript_story.py` (836 lines)
-*Radio & TV Segmenter v3.9.11-beta — transcript story responsibilities.*
+*Radio & TV Segmenter v3.9.14-beta — transcript story responsibilities.*
 - **Public Exports (`__all__`)**: TranscriptStoryMixin, Story, SetStoriesCommand, SelectStoriesCommand, StoryBoundaryChangeCommand, StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin, ChangeSpeakerDialog, VoiceProfileMatchDialog, StoryFadesDialog, SpeakerManagerDialog, FADE_CURVE_TABLES, get_fade_curve_factors
 - **class `TranscriptStoryMixin(StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin)`** (lines 62–835):
   - `render_transcript(self)` [L63-L452]
@@ -2926,6 +2929,14 @@
   - `match_acoustic_voice_profile(self, ref_seg_idx, target_speaker, threshold, scope_cluster_only, selected_indices, ref_seg_indices)` [L403-L494]
   - `teach_voice_profile_dialog(self, seg_idx, raw_speaker, prompt_new_speaker)` [L496-L576]
   - `open_manage_voice_profiles_dialog(self)` [L578-L585]
+
+### `waveform_envelope.py` (55 lines)
+*Waveform envelope data structures, downsampling pyramids, and cache helpers.*
+- **class `WaveformEnvelope(list)`** (lines 14–19):
+  *Subclass of list holding waveform peaks and precomputed multi-resolution pyramid levels.*
+  - `__init__(self, iterable, levels)` [L17-L19]
+- **Functions**:
+  - `build_waveform_pyramid(peaks)` [L22-L55] — *Generate a multi-resolution downsampling pyramid for peaks using vectorized operations.*
 
 ### `worker_asr_engines.py` (816 lines)
 *worker_asr_engines.py - Faster-Whisper, CTranslate2 & Sherpa-ONNX ASR Engines.*

@@ -125,11 +125,19 @@ class DummyQHeaderView:
 
 class DummyQAbstractItemView:
     SelectionBehavior = type("SelectionBehavior", (), {"SelectRows": 1})
+    SelectionMode = type("SelectionMode", (), {"ExtendedSelection": 3, "SingleSelection": 1, "MultiSelection": 2, "NoSelection": 0})
     EditTrigger = type("EditTrigger", (), {"NoEditTriggers": 0})
 
 
 class DummyQLineEdit:
     EchoMode = type("EchoMode", (), {"Normal": 0, "Password": 2})
+
+
+class DummyQFont:
+    Weight = type("Weight", (), {"Bold": 75, "Normal": 50})
+
+    def __init__(self, *args, **kwargs):
+        pass
 
 
 def _ensure_pyside6_fallback() -> bool:
@@ -151,6 +159,7 @@ def _ensure_pyside6_fallback() -> bool:
     pyside6_mod.QtCore.Qt = DummyQt
     pyside6_mod.QtCore.QSettings = DummyQSettings
     pyside6_mod.QtCore.Signal = lambda *a: type("Sig", (), {"connect": lambda s, f: None, "emit": lambda s, *a: None, "disconnect": lambda s, f=None: None})()
+    pyside6_mod.QtGui.QFont = DummyQFont
     pyside6_mod.QtWidgets.QMessageBox = DummyQMessageBox
     pyside6_mod.QtWidgets.QApplication = DummyQApplication
     pyside6_mod.QtWidgets.QHeaderView = DummyQHeaderView

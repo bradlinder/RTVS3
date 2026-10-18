@@ -32,13 +32,24 @@ class DiagnosticExportTestsMixin:
             item.message = "PySide6 Qt GUI framework not present in current environment"
             return
 
+        import sys
+        from pathlib import Path
+        root_dir = Path(__file__).resolve().parent
+        if str(root_dir) not in sys.path:
+            sys.path.insert(0, str(root_dir))
+        plugins_dir = root_dir / "plugins"
+        if str(plugins_dir) not in sys.path:
+            sys.path.insert(0, str(plugins_dir))
+
         try:
-            from plugins.wordpress.export_destination import WordPressExportTabWidget
+            import plugins.wordpress.export_destination as wp_dest_mod
+            WordPressExportTabWidget = wp_dest_mod.WordPressExportTabWidget
         except ImportError:
             import importlib.util
-            spec = importlib.util.spec_from_file_location("wp_export_dest", "plugins/wordpress/export_destination.py")
+            wp_path = plugins_dir / "wordpress" / "export_destination.py"
+            spec = importlib.util.spec_from_file_location("wp_export_dest", str(wp_path))
             if not spec or not spec.loader:
-                raise ImportError("Could not locate plugins/wordpress/export_destination.py module")
+                raise ImportError(f"Could not locate {wp_path}")
             mod = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(mod)
             WordPressExportTabWidget = mod.WordPressExportTabWidget
@@ -455,20 +466,31 @@ class DiagnosticExportTestsMixin:
             item.message = "PySide6 Qt GUI framework not present in current environment"
             return
 
+        import sys
+        from pathlib import Path
+        root_dir = Path(__file__).resolve().parent
+        if str(root_dir) not in sys.path:
+            sys.path.insert(0, str(root_dir))
+        plugins_dir = root_dir / "plugins"
+        if str(plugins_dir) not in sys.path:
+            sys.path.insert(0, str(plugins_dir))
+
         try:
             import plugins.wordpress.export_destination as wp_dest_mod
             import plugins.wordpress.client as wp_client_mod
         except ImportError:
             import importlib.util
-            spec = importlib.util.spec_from_file_location("wp_export_dest", "plugins/wordpress/export_destination.py")
+            wp_path = plugins_dir / "wordpress" / "export_destination.py"
+            spec = importlib.util.spec_from_file_location("wp_export_dest", str(wp_path))
             if not spec or not spec.loader:
-                raise ImportError("Could not locate plugins/wordpress/export_destination.py module")
+                raise ImportError(f"Could not locate {wp_path}")
             wp_dest_mod = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(wp_dest_mod)
 
-            spec_c = importlib.util.spec_from_file_location("wp_client", "plugins/wordpress/client.py")
+            client_path = plugins_dir / "wordpress" / "client.py"
+            spec_c = importlib.util.spec_from_file_location("wp_client", str(client_path))
             if not spec_c or not spec_c.loader:
-                raise ImportError("Could not locate plugins/wordpress/client.py module")
+                raise ImportError(f"Could not locate {client_path}")
             wp_client_mod = importlib.util.module_from_spec(spec_c)
             spec_c.loader.exec_module(wp_client_mod)
 
@@ -721,13 +743,23 @@ class DiagnosticExportTestsMixin:
             item.message = "PySide6 Qt GUI framework not present in current environment"
             return
 
+        import sys
+        from pathlib import Path
+        root_dir = Path(__file__).resolve().parent
+        if str(root_dir) not in sys.path:
+            sys.path.insert(0, str(root_dir))
+        plugins_dir = root_dir / "plugins"
+        if str(plugins_dir) not in sys.path:
+            sys.path.insert(0, str(plugins_dir))
+
         try:
             import plugins.wordpress.export_destination as wp_dest_mod
         except ImportError:
             import importlib.util
-            spec = importlib.util.spec_from_file_location("wp_export_dest", "plugins/wordpress/export_destination.py")
+            wp_path = plugins_dir / "wordpress" / "export_destination.py"
+            spec = importlib.util.spec_from_file_location("wp_export_dest", str(wp_path))
             if not spec or not spec.loader:
-                raise ImportError("Could not locate plugins/wordpress/export_destination.py module")
+                raise ImportError(f"Could not locate {wp_path}")
             wp_dest_mod = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(wp_dest_mod)
 

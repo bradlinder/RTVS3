@@ -1,5 +1,64 @@
 # Changelog
 
+## v3.9.16-beta
+- **Background Thread Affinity & Qt GUI Object Isolation (`plugins/manager.py`, `plugins/installer_workers.py`, `plugins/github_dialog.py`)**:
+  - Fixed `QObject: Cannot create children for a parent that is in a different thread` console warnings during batch plugin downloads and updates.
+  - Added `load_ui: bool = True` parameter to `PluginManager.install_addon()`: background thread `GitHubBatchDownloadWorker` extracts plugin files to disk and updates settings without instantiating GUI widgets or `QMenu` actions across thread boundaries.
+  - Defer plugin instantiation and menu reconstruction to `on_batch_download_finished()` on the main GUI thread after worker thread completion.
+  - Fixed missing signal connection for batch updates in `GitHubPluginsDialog`.
+- **Synchronous Version Bump**: Synchronized all 13 core project files and web preview scaffolding to `v3.9.16-beta`.
+
+## v3.9.15-beta
+- **Manage Plugins Toolbar Optimization & Space Recovery (`plugins/manager_dialog.py`)**:
+  - Removed redundant "Export Selected..." button, reclaiming horizontal toolbar width and preventing button text clipping.
+  - Eliminated label truncation on Windows and High-DPI screens ("Enable Selectec", "Disable Selectec", "ninstall Selectec", "eck for Update").
+  - Streamlined button labels ("Uninstall Selected", "Check for Updates") and adjusted toolbar spacing from 8px to 6px.
+  - Expanded dialog default geometry to 920x620 (minimum 880x580) to provide comfortable breathing room across all desktop font scaling environments.
+- **True Plugin Uninstallation & Multi-Tier Purge Engine (`plugins/manager.py`)**:
+  - Resolved issue where uninstalling a plugin only disabled it instead of removing it from disk.
+  - Implemented multi-tier filesystem purge in `PluginManager.uninstall_plugin`: completely deletes plugin directories and packaged `.rtvs-addon` archives across both user application data directories and application bundled plugin paths.
+  - Added persistent `uninstalled` state tracking via `QSettings` (`_is_uninstalled`): safely handles read-only installations (e.g. frozen in Program Files) so uninstalled add-ons are strictly excluded during discovery and immediately disappear from the installed list.
+  - Installing or downloading an add-on automatically clears the uninstalled setting and re-enables full discovery.
+- **GitHub Plugins Downloader Reliability & Immediate Catalog Rendering (`plugins/github_dialog.py`, `plugins/installer_workers.py`)**:
+  - Eliminated dialog launch delay: pre-populates `GitHubPluginsDialog` with the official plugin catalog immediately on initialization so the catalog table renders instantly with zero network wait time.
+  - Added missing Google Docs & Drive Exporter (`gdocs`) entry to `get_official_plugins_catalog`.
+  - Fixed Windows modal dialog parenting and focus activation by switching to `setWindowFlag(Qt.WindowType.WindowMaximizeButtonHint, True)` and issuing `show()`, `raise_()`, and `activateWindow()`.
+  - Added robust exception handling with user-facing error dialogs in `on_download_github`.
+- **Diagnostic Benchmark Suite Resilience (`diagnostic_cloud_and_system_tests.py`)**:
+  - Resolved `TimeoutError` in `AI Worker Subprocess Execution and IPC Handshake` benchmark test by extending subprocess execution timeout from 15s to 45s.
+  - Prevents false-negative benchmark timeouts during cold starts on Windows with Python 3.14 when loading heavy dynamic C-extensions (PyTorch, WeSpeaker ONNX, CTranslate2, SciPy, Scikit-learn).
+- **Synchronous Version Bump**: Synchronized all 13 core project files and web preview scaffolding to `v3.9.15-beta`.
+
+## v3.9.14-beta
+- **Codebase Modularization & Monolithic File Decomposition (Wave 5 — Milestone 3.7 Completed)**:
+  - **Timeline Widgets Decomposition (`timeline_widgets.py`)**:
+    - Decomposed 1,898-line `timeline_widgets.py` into dedicated submodules: `waveform_envelope.py` (55 lines), `timeline_overview_widget.py` (339 lines), `timeline_painter.py` (419 lines), `timeline_context_menus.py` (108 lines), and `timeline_snap.py` (119 lines).
+    - Reduced `timeline_widgets.py` from 1,898 lines down to 934 lines while preserving 100% backward-compatible zero-breakage facade re-exports for `WaveformEnvelope`, `TimelineResizeHandle`, `TimelineOverviewBar`, `TimelineCanvas`, and `TimelineWidget`.
+  - **Plugin Management & GitHub Catalog Decomposition (`plugins/manager.py`)**:
+    - Decomposed 1,942-line `plugins/manager.py` into focused submodules: `plugins/installer_workers.py` (260 lines) for background QThreads, `plugins/github_dialog.py` (566 lines) for browsing and batch downloading add-ons from GitHub releases, `plugins/manager_dialog.py` (579 lines) for the main plugin manager dialog, and `plugins/version_utils.py` (32 lines) for semantic version comparison.
+    - Reduced `plugins/manager.py` from 1,942 lines down to 586 lines (a 70% reduction) while preserving full re-exports of all dialogs and worker classes.
+  - **WordPress Export Destination Decomposition (`plugins/wordpress/export_destination.py`)**:
+    - Decomposed 2,080-line `plugins/wordpress/export_destination.py` into focused submodules: `plugins/wordpress/wp_post_builder.py` (199 lines) for post assembly, transcript slicing, and video frame extraction, `plugins/wordpress/wp_ui_builder.py` (610 lines) for UI tab layout construction, and `plugins/wordpress/wp_tab_widget.py` (861 lines) for post editing and preview scrubbing.
+    - Reduced `plugins/wordpress/export_destination.py` from 2,080 lines down to 474 lines (a 77% reduction) while maintaining `WordPressExportDestination` and `WordPressPostMetadataDialog` with 100% backward compatibility.
+    - Updated `plugins/wordpress/manifest.json` to version `3.9.14-beta` under the lazy catch-up policy.
+  - **Milestone 3 Item 3.7 Completion (`roadmap.txt`)**:
+    - Finalized Item 3.7 in `roadmap.txt`.
+- **Synchronous Version Bump**: Synchronized all 13 core project files and web preview scaffolding to `v3.9.14-beta`.
+
+## v3.9.13-beta
+- **Codebase Modularization & Monolithic File Decomposition (Wave 4)**:
+  - **AI Background Worker Decomposition (`radio_tv_story_segmenter_worker.py`)**:
+    - Decomposed 2,264-line AI background worker into focused domain submodules: `worker_ipc.py` (216 lines), `worker_asr_engines.py` (816 lines), `worker_diarization_engine.py` (902 lines), `worker_clustering.py` (448 lines), and `worker_story_engine.py` (388 lines).
+    - Reduced `radio_tv_story_segmenter_worker.py` from 2,264 lines down to 219 lines (a 90% reduction) while preserving 100% backward-compatible zero-breakage facade re-exports and CLI/IPC protocol handlers.
+  - **Performance Benchmark Suite Decomposition (`benchmark.py`)**:
+    - Decomposed 2,198-line performance benchmark suite into focused domain submodules: `benchmark_models.py` (457 lines), `benchmark_engine.py` (903 lines), and `benchmark_dialog.py` (674 lines).
+    - Reduced `benchmark.py` from 2,198 lines down to 216 lines (a 90% reduction) while preserving 100% backward-compatible zero-breakage facade re-exports and CLI runners.
+  - **Milestone 3 Item 3.6 Completion (`roadmap.txt`)**:
+    - Finalized Item 3.6 in `roadmap.txt`.
+- **Consultative "What's Next" Roadmap Review Directive (`roadmap.txt`)**:
+  - Replaced the automatic single-step execution rule with a consultative review directive: queries asking "what's next" now present a comprehensive summary of proposed roadmap options, scopes, and target files for user evaluation before initiating code modifications.
+- **Synchronous Version Bump**: Synchronized all 13 core project files and web preview scaffolding to `v3.9.13-beta`.
+
 ## v3.9.12-beta
 - **Automated AST Symbol Indexer & Repository Map (`scripts/generate_symbol_index.py`, `.codemaps/`)**:
   - Implemented `scripts/generate_symbol_index.py` scanning 100% of Python modules in the repository (<1.0s runtime) using standard `ast` parsing.
