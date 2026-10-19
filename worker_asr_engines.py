@@ -506,8 +506,12 @@ def transcribe_parakeet_onnx(audio_file, model_name="parakeet-onnx", detected_la
             pass
 
 
-def probe_audio_language(audio_file, sample_duration=15.0, preferred_model=None):
-    """Run a fast language detection probe using faster-whisper's mel feature extractor."""
+def probe_audio_language(audio_file, sample_duration=30.0, preferred_model=None):
+    """Run a fast language detection probe using faster-whisper's mel feature extractor.
+
+    Samples 30 seconds of audio starting 10 seconds into the file (when possible)
+    to avoid intro music, jingles, or initial silence that cause false language tags.
+    """
     temp_probe_file = None
     target_file = str(audio_file)
     try:
@@ -553,12 +557,16 @@ def probe_audio_language(audio_file, sample_duration=15.0, preferred_model=None)
                     ffmpeg_bin = shutil.which("ffmpeg")
 
                 if ffmpeg_bin:
+                    # Skip initial 10s intro music/silence for files > 1MB; sample 30 seconds
+                    file_size = os.path.getsize(str(audio_file)) if os.path.exists(str(audio_file)) else 0
+                    start_offset = "10" if file_size > 1000000 else "0"
+
                     tf = tempfile.NamedTemporaryFile(suffix="_probe.wav", delete=False)
                     temp_probe_file = tf.name
                     tf.close()
                     cmd = [
                         ffmpeg_bin, "-y", "-v", "error",
-                        "-ss", "0", "-i", str(audio_file),
+                        "-ss", start_offset, "-i", str(audio_file),
                         "-t", str(float(sample_duration)),
                         "-vn", "-sn", "-dn",
                         "-ar", "16000", "-ac", "1",
@@ -573,6 +581,19 @@ def probe_audio_language(audio_file, sample_duration=15.0, preferred_model=None)
         _, info = probe_model.transcribe(target_file, beam_size=1)
         lang = getattr(info, "language", "en") or "en"
         prob = getattr(info, "language_probability", 0.0) or 0.0
+
+        # Check if English is close in probability
+        all_probs = getattr(info, "all_language_probs", None) or []
+        prob_dict = dict(all_probs) if all_probs else {}
+        en_prob = prob_dict.get("en", 0.0)
+
+        # If detected non-English but English probability is close or non-English is low-confidence, prefer English
+        if lang != "en":
+            if en_prob > 0.25 or prob < 0.65:
+                sys.stderr.write(f"[LANGUAGE PROBE] Non-English detection ({lang}, {prob*100:.1f}%) overridden by English probability/threshold ({en_prob*100:.1f}% en)\n")
+                sys.stderr.flush()
+                return "en", en_prob
+
         sys.stderr.write(f"[LANGUAGE PROBE] Probed language: {lang} (probability: {prob*100:.1f}%)\n")
         sys.stderr.flush()
         return lang, prob
@@ -608,7 +629,7 @@ def transcribe(audio_file, model_name, initial_prompt="", beam_size=5):
             _emit("progress", percent=4, message=f"Detected {probed_lang.upper()} speech ({prob*100:.0f}% confidence). Using Spanish FastConformer ONNX...")
         elif is_multilingual_fastconformer:
             _emit("progress", percent=4, message=f"Detected {probed_lang.upper()} speech ({prob*100:.0f}% confidence). Using Multilingual FastConformer ONNX...")
-        elif probed_lang and probed_lang.lower() == "es" and prob > 0.35:
+        elif probed_lang and probed_lang.lower() == "es" and prob >= 0.60:
             if is_onnx_model_available("fastconformer-es-onnx"):
                 _emit("progress", percent=4, message=f"Detected Spanish speech ({prob*100:.0f}% confidence). Switching to Spanish FastConformer ONNX...")
                 model_name = "fastconformer-es-onnx"
@@ -625,7 +646,7 @@ def transcribe(audio_file, model_name, initial_prompt="", beam_size=5):
                     need_spanish_prompt = True
                 else:
                     _emit("progress", percent=4, message=f"Detected Spanish speech ({prob*100:.0f}% confidence). Continuing with {model_name}...")
-        elif probed_lang and probed_lang.lower() != "en" and prob > 0.35:
+        elif probed_lang and probed_lang.lower() != "en" and prob >= 0.65:
             if is_parakeet:
                 if is_onnx_model_available("fastconformer-multilingual-onnx"):
                     _emit("progress", percent=4, message=f"Detected non-English speech ({probed_lang.upper()}, {prob*100:.0f}% confidence). Switching to Multilingual FastConformer ONNX...")
@@ -635,6 +656,8 @@ def transcribe(audio_file, model_name, initial_prompt="", beam_size=5):
                     _emit("progress", percent=4, message=f"Detected non-English speech ({probed_lang.upper()}, {prob*100:.0f}% confidence). Automatically switching to Whisper Small...")
                     model_name = "small"
                     is_onnx = False
+        elif is_parakeet and probed_lang and probed_lang.lower() != "en":
+            _emit("progress", percent=4, message=f"Probed language {probed_lang.upper()} below confidence threshold ({prob*100:.0f}% < 65%); retaining default Parakeet ONNX model...")
 
     if is_onnx:
         if is_onnx_model_available(model_name):

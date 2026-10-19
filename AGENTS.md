@@ -148,6 +148,9 @@ Instead, the agent MUST actively perform deep, adversarial code-level inspection
   - This guarantees 100% backward compatibility for external callers, plugins, and the automated diagnostic suite (`test_runner.py`).
 - **Single Responsibility Discipline**:
   - Enforce strict single-responsibility boundaries: separate UI layout construction from event handling, audio decoding from AI model execution, and data serialization from presentation logic.
+- **AST Decomposition Suggester & Automated Budget Guard (`scripts/modular_audit.py`)**:
+  - Run `python scripts/modular_audit.py --suggest <file>` on any file approaching 850 lines to automatically generate an AST-driven decomposition blueprint with recommended submodules, method groupings, and backward-compatible re-exports.
+  - Run `python scripts/modular_audit.py --audit` to inspect repository-wide line counts, or `python scripts/modular_audit.py --budget-guard` to verify compliance.
 
 ## 11. Token-Thrifty Development & Surgical Range-Editing Directive
 - **Surgical Line-Slice Reading**:

@@ -448,6 +448,12 @@ class DiagnosticEngine(
                 "Validates roadmap.txt N-1 sliding window retention, social digest status indicator compliance ([x], [-], [ ]), and synchronization with prs_shared.py PROJECT_VERSION via roadmap_manager",
                 dev_only=True,
             ),
+            DiagnosticItem(
+                "Source File Modularity and 1000-Line Budget Invariant",
+                "Release Engineering & Documentation",
+                "Scans production source modules against modularity thresholds (target <=800 lines, ceiling <=1,000 lines) using scripts/modular_audit.py AST analyzer",
+                dev_only=True,
+            ),
             # Milestone 3 & v3.9.0-beta.1 Verification
             DiagnosticItem(
                 "Station Voice Profiles Store and Matching Engine",

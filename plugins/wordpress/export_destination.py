@@ -26,6 +26,9 @@ from plugins.wordpress.client import (
     WordPressSettingsDialog,
     execute_wordpress_upload,
     _get_wp_password,
+    build_episode_stories_toc,
+    format_parent_episode_notice,
+    is_wp_auth_error,
 )
 from plugins.wordpress.wp_post_builder import capture_video_frame, build_wp_post_items
 from plugins.wordpress.wp_tab_widget import WordPressExportTabWidget
@@ -105,10 +108,10 @@ class WordPressExportDestination(ExportDestination):
             "primary_language": w.wp_primary_lang_combo.currentData(),
             "custom_notice": w.wp_custom_text_edit.toPlainText().strip(),
             "notice_placement": "top" if w.wp_rad_pos_top.isChecked() else "bottom",
-            "link_parent_episode": w.wp_cb_link_parent.isChecked(),
-            "parent_episode_pos": "bottom" if w.wp_rad_parent_bottom.isChecked() else "top",
-            "parent_episode_template": w.wp_parent_template_edit.text().strip(),
-            "update_parent_toc": w.wp_cb_update_parent_toc.isChecked(),
+            "link_parent_episode": w.wp_cb_link_parent.isChecked() if hasattr(w, "wp_cb_link_parent") else True,
+            "parent_episode_pos": ("bottom" if w.wp_rad_parent_bottom.isChecked() else "top") if hasattr(w, "wp_rad_parent_bottom") else "bottom",
+            "parent_episode_template": w.wp_parent_template_edit.text().strip() if hasattr(w, "wp_parent_template_edit") else "",
+            "update_parent_toc": w.wp_cb_update_parent_toc.isChecked() if hasattr(w, "wp_cb_update_parent_toc") else True,
             "include_audio": w.wp_cb_include_audio.isChecked() if hasattr(w, "wp_cb_include_audio") else True,
             "apply_audio_fades": w.wp_cb_apply_fades.isChecked() if hasattr(w, "wp_cb_apply_fades") else True,
         }
@@ -186,7 +189,7 @@ class WordPressExportDestination(ExportDestination):
 
         # Save user preferences
         settings.setValue("wp_link_parent_episode", export_data.get("link_parent_episode", True))
-        settings.setValue("wp_parent_episode_pos", export_data.get("parent_episode_pos", "top"))
+        settings.setValue("wp_parent_episode_pos", export_data.get("parent_episode_pos", "bottom"))
         settings.setValue("wp_parent_template", export_data.get("parent_episode_template", "This story was broadcast as part of {episode_link}."))
         settings.setValue("wp_update_parent_toc", export_data.get("update_parent_toc", True))
         inc_audio = export_data.get("include_audio", True)
@@ -201,10 +204,9 @@ class WordPressExportDestination(ExportDestination):
         pres = export_data.get("spanish_presentation", "accordion")
         primary = export_data.get("primary_language", "en")
         link_parent = export_data.get("link_parent_episode", True)
-        parent_pos = export_data.get("parent_episode_pos", "top")
+        parent_pos = export_data.get("parent_episode_pos", "bottom")
         parent_template = export_data.get("parent_episode_template", "")
         update_toc = export_data.get("update_parent_toc", True)
-        total_posts = len(wp_posts)
 
         main_window.export_cancelled = False
         if hasattr(main_window, "cancel_button"):
@@ -212,13 +214,42 @@ class WordPressExportDestination(ExportDestination):
 
         created_posts = []
         failed_posts = []
-        parent_episode_info = None
-        parent_episode_post_id = None
+        parent_episode_info = export_data.get("parent_episode_info")
+        parent_episode_post_id = parent_episode_info.get("id") if isinstance(parent_episode_info, dict) else None
         parent_episode_content = None
         story_posts = []
 
+        # Check if project metadata already contains a previously exported full episode post info
+        proj_meta = getattr(main_window, "project_metadata", {}) or {}
+        wp_meta = proj_meta.get("wordpress", {}) if isinstance(proj_meta, dict) else {}
+        if not parent_episode_info and (wp_meta.get("parent_episode") or wp_meta.get("full_episode_link") or wp_meta.get("link")):
+            existing_parent = wp_meta.get("parent_episode")
+            if isinstance(existing_parent, dict) and (existing_parent.get("link") or existing_parent.get("url")):
+                parent_episode_info = dict(existing_parent)
+                parent_episode_post_id = existing_parent.get("id")
+            elif wp_meta.get("full_episode_link") or wp_meta.get("link"):
+                parent_episode_info = {
+                    "id": wp_meta.get("full_episode_post_id") or wp_meta.get("id"),
+                    "title": wp_meta.get("full_episode_title") or wp_meta.get("title") or "Full Episode",
+                    "link": wp_meta.get("full_episode_link") or wp_meta.get("link"),
+                }
+                parent_episode_post_id = parent_episode_info.get("id")
+
+        # Function to determine if a post is the parent Full Episode
+        def _is_parent(p: Dict[str, Any], p_idx: int) -> bool:
+            if p.get("is_parent_episode") is not None:
+                return bool(p.get("is_parent_episode"))
+            t_lbl = p.get("task_label") or p.get("title") or ""
+            return (t_lbl == "Full Episode") or (p_idx == 0 and p.get("start") is None and p.get("end") is None and len(wp_posts) > 1)
+
+        # Sort posts so that any parent full episode is uploaded first, capturing its live URL for story footer correspondence notices
+        parent_posts = [p for i, p in enumerate(wp_posts) if _is_parent(p, i)]
+        child_posts = [p for i, p in enumerate(wp_posts) if not _is_parent(p, i)]
+        ordered_wp_posts = parent_posts + child_posts
+        total_posts = len(ordered_wp_posts)
+
         try:
-            for idx, post in enumerate(wp_posts):
+            for idx, post in enumerate(ordered_wp_posts):
                 if getattr(main_window, "export_cancelled", False):
                     if hasattr(main_window, "log_activity"):
                         main_window.log_activity("[WORDPRESS] Export canceled by user.")
@@ -227,8 +258,8 @@ class WordPressExportDestination(ExportDestination):
                 post_title = post.get("title") or "Untitled Post"
                 task_label = post.get("task_label") or post_title
                 media_name = safe_filename(post_title) if post_title else "audio"
-                is_parent_episode = (task_label == "Full Episode") or (idx == 0 and post.get("start") is None and post.get("end") is None and len(wp_posts) > 1)
-                if not is_parent_episode and len(wp_posts) > 1:
+                is_parent_episode = (post in parent_posts) if parent_posts else _is_parent(post, idx)
+                if not is_parent_episode and len(ordered_wp_posts) > 1:
                     media_filename = f"{media_name}_{idx + 1}.mp3"
                 else:
                     media_filename = f"{media_name}.mp3"
@@ -311,7 +342,7 @@ class WordPressExportDestination(ExportDestination):
                             "link": post_link,
                         })
 
-                        if is_parent_episode and parent_episode_info is None:
+                        if is_parent_episode and (parent_episode_info is None or not parent_episode_info.get("link")):
                             parent_episode_info = {
                                 "id": post_id,
                                 "title": post_title,
@@ -319,6 +350,11 @@ class WordPressExportDestination(ExportDestination):
                             }
                             parent_episode_post_id = post_id
                             parent_episode_content = post_data.get("_generated_content") or (post_data.get("content", {}).get("raw", "") if isinstance(post_data.get("content"), dict) else "")
+                            if hasattr(main_window, "project_metadata") and isinstance(getattr(main_window, "project_metadata", None), dict):
+                                main_window.project_metadata.setdefault("wordpress", {})["parent_episode"] = dict(parent_episode_info)
+                                main_window.project_metadata["wordpress"]["full_episode_link"] = post_link
+                                main_window.project_metadata["wordpress"]["full_episode_post_id"] = post_id
+                                main_window.project_metadata["wordpress"]["full_episode_title"] = post_title
                         elif not is_parent_episode:
                             story_posts.append({
                                 "id": post_id,
@@ -471,4 +507,7 @@ __all__ = [
     "WordPressPostMetadataDialog",
     "capture_video_frame",
     "build_wp_post_items",
+    "build_episode_stories_toc",
+    "format_parent_episode_notice",
+    "is_wp_auth_error",
 ]

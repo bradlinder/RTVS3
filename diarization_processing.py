@@ -8,7 +8,7 @@ import sys
 from pathlib import Path
 
 from PySide6.QtCore import QProcess, QProcessEnvironment, Qt, QTimer
-from PySide6.QtWidgets import QApplication, QMessageBox
+from PySide6.QtWidgets import QApplication, QMessageBox, QInputDialog
 
 from prs_shared import (
     HELPER_PROTOCOL_VERSION,

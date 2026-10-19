@@ -526,11 +526,11 @@ def setup_wp_tab_ui(self: Any):
     self.wp_rad_parent_bottom = QRadioButton("Place at bottom of story post")
     self.wp_parent_pos_group.addButton(self.wp_rad_parent_top)
     self.wp_parent_pos_group.addButton(self.wp_rad_parent_bottom)
-    saved_parent_pos = str(self.settings.value("wp_parent_episode_pos", "top") or "top").lower()
-    if saved_parent_pos == "bottom":
-        self.wp_rad_parent_bottom.setChecked(True)
-    else:
+    saved_parent_pos = str(self.settings.value("wp_parent_episode_pos", "bottom") or "bottom").lower()
+    if saved_parent_pos == "top":
         self.wp_rad_parent_top.setChecked(True)
+    else:
+        self.wp_rad_parent_bottom.setChecked(True)
     parent_pos_row.addWidget(self.wp_rad_parent_top)
     parent_pos_row.addWidget(self.wp_rad_parent_bottom)
     parent_pos_row.addStretch()

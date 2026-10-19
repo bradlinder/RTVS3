@@ -285,11 +285,28 @@ class DiagnosticBatchTestsMixin:
                 import batch_dialog
                 assert hasattr(batch_dialog, "BatchProcessingDialog"), "batch_dialog missing BatchProcessingDialog"
                 assert hasattr(batch_dialog.BatchProcessingDialog, "add_paths"), "BatchProcessingDialog missing add_paths"
+
+                # Verify Timeline and MainWindow drag-and-drop handlers
+                import timeline_widgets
+                import timeline_overview_widget
+                from RadioTVSegmenter import MainWindow
+                assert hasattr(timeline_widgets.TimelineCanvas, "dragEnterEvent"), "TimelineCanvas missing dragEnterEvent"
+                assert hasattr(timeline_widgets.TimelineCanvas, "dragMoveEvent"), "TimelineCanvas missing dragMoveEvent"
+                assert hasattr(timeline_widgets.TimelineCanvas, "dropEvent"), "TimelineCanvas missing dropEvent"
+                assert hasattr(timeline_widgets.TimelineWidget, "dragEnterEvent"), "TimelineWidget missing dragEnterEvent"
+                assert hasattr(timeline_widgets.TimelineWidget, "dragMoveEvent"), "TimelineWidget missing dragMoveEvent"
+                assert hasattr(timeline_widgets.TimelineWidget, "dropEvent"), "TimelineWidget missing dropEvent"
+                assert hasattr(timeline_overview_widget.TimelineOverviewBar, "dragEnterEvent"), "TimelineOverviewBar missing dragEnterEvent"
+                assert hasattr(timeline_overview_widget.TimelineOverviewBar, "dragMoveEvent"), "TimelineOverviewBar missing dragMoveEvent"
+                assert hasattr(timeline_overview_widget.TimelineOverviewBar, "dropEvent"), "TimelineOverviewBar missing dropEvent"
+                assert hasattr(MainWindow, "dragEnterEvent"), "MainWindow missing dragEnterEvent"
+                assert hasattr(MainWindow, "dragMoveEvent"), "MainWindow missing dragMoveEvent"
+                assert hasattr(MainWindow, "dropEvent"), "MainWindow missing dropEvent"
             except (ImportError, AttributeError):
                 pass  # Headless test runner
 
             item.status = "PASS"
-            item.message = "Batch drag and drop ingestion, URI decoding, recursive folder scanning, and deduplication verified"
+            item.message = "Batch and timeline drag-and-drop ingestion, URI decoding, and event filters verified"
         finally:
             shutil.rmtree(temp_dir, ignore_errors=True)
 

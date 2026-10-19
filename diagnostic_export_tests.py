@@ -514,6 +514,7 @@ class DiagnosticExportTestsMixin:
 
         # 2. Test multi-story execution loop
         uploaded_posts = []
+        updated_posts = []
 
         class DummyMockClient:
             site_url = "https://example.com"
@@ -521,9 +522,13 @@ class DiagnosticExportTestsMixin:
             def upload_media(self, file_path, filename=None):
                 return {"id": 100, "source_url": "https://example.com/audio.mp3"}
             def create_post(self, title, content, excerpt="", status="draft", **kwargs):
-                post_data = {"id": len(uploaded_posts) + 1, "link": "https://example.com/post"}
+                post_id = len(uploaded_posts) + 1
+                post_data = {"id": post_id, "link": f"https://example.com/post/{post_id}"}
                 uploaded_posts.append((title, content))
                 return post_data
+            def update_post(self, post_id, content=None, **kwargs):
+                updated_posts.append((post_id, content))
+                return {"id": post_id, "content": content}
 
         class DummyStory:
             def __init__(self, start, end, title):
@@ -538,6 +543,7 @@ class DiagnosticExportTestsMixin:
                 self.stories = [DummyStory(0.0, 50.0, "Story A"), DummyStory(50.0, 100.0, "Story B")]
                 self.current_selected_story_indices = [0, 1]
                 self.transcript = {"segments": [{"start": 0.0, "end": 100.0, "text": "Sample"}]}
+                self.project_metadata = {}
             def transcript_for_range(self, start, end):
                 return [{"start": start or 0.0, "end": end or 50.0, "text": "Story text", "speaker": "Host"}]
             def log_activity(self, msg, level=""):
@@ -615,6 +621,51 @@ class DiagnosticExportTestsMixin:
             finally:
                 if os.path.exists(tmp_audio_path):
                     os.remove(tmp_audio_path)
+
+            # Test C: Full Episode + Stories cross-linking footer correspondence and TOC audit
+            uploaded_posts.clear()
+            updated_posts.clear()
+            mw_c = DummyMW("")
+            dest_obj.widget.main_window = mw_c
+            post_items_c = [
+                {"task_label": "Story 1", "title": "Story A", "start": 0.0, "end": 50.0, "excerpt": "", "is_parent_episode": False},
+                {"task_label": "Full Episode", "title": "Full Episode 101", "start": None, "end": None, "excerpt": "", "is_parent_episode": True},
+                {"task_label": "Story 2", "title": "Story B", "start": 50.0, "end": 100.0, "excerpt": "", "is_parent_episode": False},
+            ]
+            export_data_crosslink = {
+                "wp_posts": post_items_c,
+                "include_english": True,
+                "include_spanish": False,
+                "include_audio": False,
+                "link_parent_episode": True,
+                "parent_episode_pos": "bottom",
+                "update_parent_toc": True,
+                "show_completion_dialog": False,
+            }
+            res_crosslink = dest_obj.execute_export(dest_obj.widget.main_window, export_data_crosslink)
+            if not res_crosslink or len(uploaded_posts) != 3:
+                raise AssertionError(f"Cross-linking export failed: expected 3 posts, got {len(uploaded_posts)}")
+            # Full episode must have been published first
+            if uploaded_posts[0][0] != "Full Episode 101":
+                raise AssertionError(f"Expected Full Episode to be exported first, got '{uploaded_posts[0][0]}'")
+            # Stories must have parent episode notice appended at the bottom
+            for p_title, p_content in uploaded_posts[1:]:
+                if "rtvs-parent-episode-notice" not in p_content:
+                    raise AssertionError(f"Story post '{p_title}' missing parent episode correspondence notice: {p_content}")
+                if "https://example.com/post/1" not in p_content:
+                    raise AssertionError(f"Story post '{p_title}' notice did not link to parent episode URL: {p_content}")
+                notice_idx = p_content.rfind("rtvs-parent-episode-notice")
+                para_idx = p_content.find("<!-- wp:paragraph -->")
+                if notice_idx <= para_idx:
+                    raise AssertionError(f"Parent episode notice not placed at bottom of story post '{p_title}'")
+            # Verify Full Episode TOC update was called
+            if not updated_posts:
+                raise AssertionError("Full Episode TOC update was not called via update_post")
+            if "rtvs-episode-stories-list" not in updated_posts[0][1]:
+                raise AssertionError("Updated Full Episode content missing Table of Contents HTML")
+            # Verify project_metadata stored the parent episode info
+            if not mw_c.project_metadata.get("wordpress", {}).get("parent_episode"):
+                raise AssertionError("project_metadata['wordpress']['parent_episode'] was not set")
         finally:
             if orig_wp_client_cls:
                 wp_dest_mod.WordPressClient = orig_wp_client_cls

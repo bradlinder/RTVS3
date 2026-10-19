@@ -1,5 +1,34 @@
 # Changelog
 
+## v3.9.24-beta
+- **Project Close & Last Project Restore `ProjectMetadataDict` NameError Resolution (`project_lifecycle.py`)**:
+  - Resolved `NameError: name 'ProjectMetadataDict' is not defined` triggered in `close_project()` and `load_project_file()` / `restore_last_project()`.
+  - Added explicit `ProjectMetadataDict` import from `prs_shared` in `project_lifecycle.py`, ensuring project state resets cleanly without unhandled runtime exceptions.
+- **Timeline & Main Window Media Drag-and-Drop Restoration (`timeline_widgets.py`, `timeline_overview_widget.py`, `timeline_canvas.py`, `RadioTVSegmenter.py`, `playback_controller.py`)**:
+  - Restored external media file drag-and-drop ingestion directly into the timeline canvas, overview navigation bar, and main application window.
+  - Implemented missing `dragMoveEvent` and `dragLeaveEvent` handlers across `TimelineCanvas`, `TimelineOverviewBar`, and `TimelineWidget`; in Qt, omitting `dragMoveEvent` causes `QWidget::dragMoveEvent` to default to `event.ignore()` during cursor motion, preventing `dropEvent` from executing.
+  - Standardized MIME data extraction on `extract_dropped_file_paths(event.mimeData())`, seamlessly supporting local files, `file://` URLs, Windows drive paths, URI lists, and raw text drops.
+  - Fixed PySide6 `TypeError: 'isAncestorOf' called with wrong argument types: PySide6.QtWidgets.QWidget.isAncestorOf(QWindow)` in `playback_controller.py` by adding explicit `isinstance(watched, QWidget)` type verification and exception safety guards.
+- **WordPress Publisher Automated Full-Episode Footer Links & TOC Synchronization (`plugins/wordpress/export_destination.py`, `plugins/wordpress/wp_ui_builder.py`)**:
+  - Resolved `NameError: name 'build_episode_stories_toc' is not defined` and `NameError: name 'is_wp_auth_error' is not defined` in `plugins/wordpress/export_destination.py` by importing missing helper functions from `plugins.wordpress.client`.
+  - Prioritized publishing Full Episode items before individual story posts during multi-post WordPress uploads so that the newly generated Full Episode URL/ID is immediately captured and available for story cross-linking.
+  - Added support for retrieving existing Full Episode metadata from project metadata or export data when publishing individual stories.
+  - Ensured automated correspondence notices (`rtvs-parent-episode-notice`) linking back to the parent episode are cleanly appended to the footer/bottom of each story page, and persisted Full Episode metadata into `project_metadata`.
+  - Defaulted `wp_parent_episode_pos` in `wp_ui_builder.py` and `export_destination.py` to `bottom` so correspondence links naturally position as footer notices.
+  - Added comprehensive automated diagnostic test in `diagnostic_export_tests.py` covering multi-post cross-linking footer correspondence notices, TOC appending, and project metadata persistence.
+- **ASR Language Probing & Parakeet ONNX Fallback Refinement (`worker_asr_engines.py`)**:
+  - Resolved false non-English language detections on English audio files that caused automatic fallback from user-preferred Parakeet ONNX to Whisper Small.
+  - Updated `probe_audio_language()` to sample 30 seconds starting 10 seconds into the media file (`-ss 10 -t 30`), skipping intro music, station jingles, and initial silence that previously distorted mel spectrographic feature extraction.
+  - Raised the confidence threshold for overriding user-selected Parakeet ONNX to $\ge 65\%$ and added fallback override logic when English language probability remains significant ($>25\%$).
+- **Sherpa-ONNX Runtime Environment Package Inclusion (`runtime_manager.py`, `bootstrap.py`)**:
+  - Resolved `sherpa-onnx` runtime missing error in isolated worker environments (`transcribe_env` / `gpu_transcribe_env`) by explicitly adding `sherpa-onnx>=1.13,<2` to `ENV_CONFIGS["transcribe"]` and `ENV_CONFIGS["gpu_transcribe"]` package manifests in `runtime_manager.py`.
+  - Bumped environment manifest versions (`1.1.0` / `1.2.0`), triggering automated runtime updates on next launch to automatically provision `sherpa-onnx`.
+  - Guarded `bootstrap.py` `ensure_sherpa_onnx_runtime()` against executing invalid `--user` pip flags when running inside virtual environments (`sys.prefix != sys.base_prefix`), preventing pip command failures on Windows.
+- **Speaker Detection `QInputDialog` NameError & Repository-Wide AST Import Verification (`diarization_processing.py`, `media_batch.py`)**:
+  - Resolved `NameError: name 'QInputDialog' is not defined` when launching Speaker Detection by adding `QInputDialog` to `from PySide6.QtWidgets import ...` in `diarization_processing.py`.
+  - Executed a repository-wide AST scanner across all Python modules to audit PySide6 widget references, fixing missing layout/table imports in `media_batch.py` (`QVBoxLayout`, `QHBoxLayout`, `QTableWidget`, `QAction`).
+- **Synchronous Version Bump**: Synchronized all project locations and web preview scaffolding to `v3.9.24-beta`.
+
 ## v3.9.23-beta
 - **Frozen GUI Application PySide6 Submodule Resolution (`qt_compat.py`, `prs_shared.py`, `core_utils.py`, `story_model.py`)**:
   - Resolved `KeyError: 'PySide6.QtNetwork'` and startup failures when launching the frozen desktop GUI application (`RadioTVSegmenter.exe` / `.app`).

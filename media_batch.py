@@ -5,8 +5,10 @@ maintaining the established MainWindow-facing API while responsibilities are iso
 """
 
 from PySide6.QtCore import Qt, QThread, QTimer
+from PySide6.QtGui import QAction
 from PySide6.QtWidgets import (
-    QApplication, QDialog, QFileDialog, QGroupBox, QLabel, QMessageBox, QPushButton, QWidget
+    QApplication, QDialog, QFileDialog, QGroupBox, QLabel, QMessageBox, QPushButton, QWidget,
+    QVBoxLayout, QHBoxLayout, QTableWidget, QHeaderView, QAbstractItemView
 )
 from prs_shared import *
 from background_workers import (

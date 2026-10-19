@@ -23,7 +23,7 @@ from timeline_envelope import build_waveform_pyramid
 
 # Precomputed fade lookup tables for 60+ FPS curve rendering (16 segments per envelope)
 _FADE_STEPS = 16
-from core_utils import calculate_fade_curve_factor, calculate_fade_out_factor
+from core_utils import calculate_fade_curve_factor, calculate_fade_out_factor, extract_dropped_file_paths
 _FADE_IN_CURVE_TABLES = {
     c: [calculate_fade_curve_factor(i / float(_FADE_STEPS), c) for i in range(1, _FADE_STEPS + 1)]
     for c in ("linear", "s_curve", "logarithmic", "exponential")
@@ -192,19 +192,34 @@ class TimelineCanvas(QWidget):
             self.background_status_text = ""
 
     def dragEnterEvent(self, event):
-        if event.mimeData().hasUrls():
-            local_files = [u.toLocalFile() for u in event.mimeData().urls() if u.isLocalFile()]
-            if local_files:
-                event.acceptProposedAction()
-                return
+        paths = extract_dropped_file_paths(event.mimeData())
+        if paths:
+            event.setDropAction(Qt.DropAction.CopyAction)
+            event.acceptProposedAction()
+            event.accept()
+            return
         event.ignore()
 
+    def dragMoveEvent(self, event):
+        paths = extract_dropped_file_paths(event.mimeData())
+        if paths:
+            event.setDropAction(Qt.DropAction.CopyAction)
+            event.acceptProposedAction()
+            event.accept()
+            return
+        event.ignore()
+
+    def dragLeaveEvent(self, event):
+        event.accept()
+
     def dropEvent(self, event):
-        for url in event.mimeData().urls():
-            if url.isLocalFile():
-                self.mediaDropped.emit(url.toLocalFile())
-                event.acceptProposedAction()
-                return
+        paths = extract_dropped_file_paths(event.mimeData())
+        if paths:
+            self.mediaDropped.emit(paths[0])
+            event.setDropAction(Qt.DropAction.CopyAction)
+            event.acceptProposedAction()
+            event.accept()
+            return
         event.ignore()
 
     def set_audio_filename(self, filename):

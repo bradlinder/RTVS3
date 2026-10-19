@@ -30,7 +30,12 @@ from PySide6.QtCore import QLineF, QPointF, QRectF, QSettings, Qt, QTimer, Signa
 from PySide6.QtGui import QColor, QKeySequence, QPainter, QPainterPath, QPen, QPixmap
 from PySide6.QtWidgets import QMenu, QToolTip, QVBoxLayout, QWidget
 
-from core_utils import INTERNAL_APP_ID, calculate_fade_curve_factor, calculate_fade_out_factor
+from core_utils import (
+    INTERNAL_APP_ID,
+    calculate_fade_curve_factor,
+    calculate_fade_out_factor,
+    extract_dropped_file_paths,
+)
 from theme_tokens import ThemeTokens
 from story_widgets import StoryFadesChangeCommand
 
@@ -213,19 +218,34 @@ class TimelineCanvas(QWidget):
             self.background_status_text = ""
 
     def dragEnterEvent(self, event):
-        if event.mimeData().hasUrls():
-            local_files = [u.toLocalFile() for u in event.mimeData().urls() if u.isLocalFile()]
-            if local_files:
-                event.acceptProposedAction()
-                return
+        paths = extract_dropped_file_paths(event.mimeData())
+        if paths:
+            event.setDropAction(Qt.DropAction.CopyAction)
+            event.acceptProposedAction()
+            event.accept()
+            return
         event.ignore()
 
+    def dragMoveEvent(self, event):
+        paths = extract_dropped_file_paths(event.mimeData())
+        if paths:
+            event.setDropAction(Qt.DropAction.CopyAction)
+            event.acceptProposedAction()
+            event.accept()
+            return
+        event.ignore()
+
+    def dragLeaveEvent(self, event):
+        event.accept()
+
     def dropEvent(self, event):
-        for url in event.mimeData().urls():
-            if url.isLocalFile():
-                self.mediaDropped.emit(url.toLocalFile())
-                event.acceptProposedAction()
-                return
+        paths = extract_dropped_file_paths(event.mimeData())
+        if paths:
+            self.mediaDropped.emit(paths[0])
+            event.setDropAction(Qt.DropAction.CopyAction)
+            event.acceptProposedAction()
+            event.accept()
+            return
         event.ignore()
 
     def set_audio_filename(self, filename):
@@ -882,17 +902,34 @@ class TimelineWidget(QWidget):
             self.canvas.set_background_generation_active(task_name, active)
 
     def dragEnterEvent(self, event):
-        if event.mimeData().hasUrls() and any(url.isLocalFile() for url in event.mimeData().urls()):
+        paths = extract_dropped_file_paths(event.mimeData())
+        if paths:
+            event.setDropAction(Qt.DropAction.CopyAction)
             event.acceptProposedAction()
+            event.accept()
             return
         event.ignore()
 
+    def dragMoveEvent(self, event):
+        paths = extract_dropped_file_paths(event.mimeData())
+        if paths:
+            event.setDropAction(Qt.DropAction.CopyAction)
+            event.acceptProposedAction()
+            event.accept()
+            return
+        event.ignore()
+
+    def dragLeaveEvent(self, event):
+        event.accept()
+
     def dropEvent(self, event):
-        for url in event.mimeData().urls():
-            if url.isLocalFile():
-                self.mediaDropped.emit(url.toLocalFile())
-                event.acceptProposedAction()
-                return
+        paths = extract_dropped_file_paths(event.mimeData())
+        if paths:
+            self.mediaDropped.emit(paths[0])
+            event.setDropAction(Qt.DropAction.CopyAction)
+            event.acceptProposedAction()
+            event.accept()
+            return
         event.ignore()
 
     def update_scrollbar_range(self):

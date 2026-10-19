@@ -275,12 +275,13 @@ ENV_CONFIGS = {
         ]
     },
     "transcribe": {
-        "version": "1.0.0",
+        "version": "1.1.0",
         "python_version": "3.12",
         "packages": [
             "faster-whisper",
             "ctranslate2",
-            "onnxruntime"
+            "onnxruntime",
+            "sherpa-onnx>=1.13,<2"
         ]
     },
     "translate": {
@@ -304,7 +305,7 @@ ENV_CONFIGS = {
         # installer -- this is the whole point of keeping the base install
         # CPU-only and small (0 MB when not enabled). Built from CUDA wheels
         # on demand for transcription, translation, and speaker diarization.
-        "version": "1.1.0",
+        "version": "1.2.0",
         "python_version": "3.12",
         "extra_index_url": "https://download.pytorch.org/whl/cu121",
         "packages": [
@@ -319,6 +320,7 @@ ENV_CONFIGS = {
             "ctranslate2",
             "wespeakerruntime>=1.0.0,<2.0.0",
             "onnxruntime-gpu",
+            "sherpa-onnx>=1.13,<2"
         ]
     }
 }

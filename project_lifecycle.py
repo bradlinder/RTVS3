@@ -35,6 +35,7 @@ from prs_shared import (
     write_rtvs_project_file,
     write_waveform_peak_cache,
     make_dialog_maximizable,
+    ProjectMetadataDict,
 )
 from transcript_story import Story
 

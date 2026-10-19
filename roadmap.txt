@@ -19,15 +19,16 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
   * When work commences on an item, mark it immediately as [-] [IN-PROGRESS].
   * Mark an item as [x] [COMPLETED] when implementation is finalized, upon user
     confirmation, or inferred when development transitions to another part of the roadmap.
-- "WHAT'S NEXT" SINGLE-STEP EXECUTION RULE FOR AI STUDIO (GEMINI 3.8 FLASH):
-  * Whenever the user asks "what's next" (or asks to continue the roadmap), execute
-    ONLY the single next uncompleted `[ ]` or in-progress `[-]` sub-item (e.g., 3.2,
-    then stop and wait for the next prompt before doing 3.3).
-  * NEVER combine multiple sub-items in a single response.
-  * NEVER truncate any file with placeholders (`# ... existing code ...`).
-  * ALWAYS preserve 100% backward compatibility by re-exporting all extracted classes,
-    functions, and constants in the original facade module and `prs_shared.py`.
-  * ALWAYS keep every new or modified `.py` file under the 1,000-line ceiling (~800 lines target).
+- "WHAT'S NEXT" PROTOCOL FOR AI STUDIO:
+  * Whenever the user asks "what's next" (or asks for an update on the roadmap), DO NOT immediately modify code or take action.
+  * State what is next on the roadmap, outline the issue or feature, and suggest possible next steps.
+  * STOP and wait for the user to confirm whether they would like to proceed before making any changes.
+  * When implementing confirmed tasks:
+    - NEVER combine multiple sub-items in a single response unless requested.
+    - NEVER truncate any file with placeholders (`# ... existing code ...`).
+    - ALWAYS preserve 100% backward compatibility by re-exporting all extracted classes,
+      functions, and constants in the original facade module and `prs_shared.py`.
+    - ALWAYS keep every new or modified `.py` file under the 1,000-line ceiling (~800 lines target).
 - Whenever any code change, bug fix, packaging adjustment, or feature refinement is
   made during a release cycle, it MUST be recorded immediately in the current release
   section of roadmap.txt and CHANGELOG.md (even if it occurs after the initial version
@@ -36,17 +37,17 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 --------------------------------------------------------------------------------
 TABLE OF CONTENTS & STATUS OVERVIEW
 --------------------------------------------------------------------------------
-1. Previous Release: Headless AI Worker Shiboken C-Extension Bypass (`qt_compat.py`) [x] [COMPLETED in v3.9.22-beta]
-   [x] 1.1 Non-Probing Worker Fallback (`qt_compat.py`): Inverted fallback logic so that when `RTVS_WORKER_MODE=1` (or `force=True`), `_ensure_pyside6_fallback` installs the mock shim immediately without ever importing `PySide6.QtCore`, preventing native `libshiboken` signature bootstrap crashes in frozen onedir bundles.
-   [x] 1.2 Complete Worker Mock Namespace (`qt_compat.py`): Added `QUndoCommand` dummy type to `QtGui` mock shim to support subclassing in headless environments.
-   [x] 1.3 Cross-Platform Frozen Worker Smoke Test Validation: Verified clean headless worker startup on macOS and Linux frozen builds.
-   [x] 1.4 Synchronous Version Bump: Synchronized all project locations and web preview scaffolding to v3.9.22-beta.
+1. Previous Release: Frozen GUI Application PySide6 Submodule Resolution (`qt_compat.py`, `prs_shared.py`, `core_utils.py`, `story_model.py`) [x] [COMPLETED in v3.9.23-beta]
+   [x] 1.1 Explicit Worker Identification (`prs_shared.py`, `core_utils.py`, `story_model.py`): Replaced erroneous `not hasattr(sys, "_MEIPASS_GUI")` check with explicit worker detection (`RTVS_WORKER_MODE=1` or `"worker" in Path(sys.executable).stem.lower()`), ensuring the main desktop application natively imports bundled PySide6 submodules.
+   [x] 1.2 Complete Submodule Fallback Population (`qt_compat.py`): Enhanced `_ensure_pyside6_fallback` to import and populate all 6 required PySide6 submodules (`QtCore`, `QtNetwork`, `QtGui`, `QtWidgets`, `QtMultimedia`, `QtMultimediaWidgets`), ensuring zero `KeyError` crashes occur.
+   [x] 1.3 Cross-Platform Desktop GUI Launch Validation: Verified clean application startup across frozen bundles.
+   [x] 1.4 Synchronous Version Bump: Synchronized all 13 core project files and web preview scaffolding to v3.9.23-beta.
 
-2. Current Release: Frozen GUI Application PySide6 Submodule Resolution (`qt_compat.py`, `prs_shared.py`, `core_utils.py`, `story_model.py`) [x] [COMPLETED in v3.9.23-beta]
-   [x] 2.1 Explicit Worker Identification (`prs_shared.py`, `core_utils.py`, `story_model.py`): Replaced erroneous `not hasattr(sys, "_MEIPASS_GUI")` check with explicit worker detection (`RTVS_WORKER_MODE=1` or `"worker" in Path(sys.executable).stem.lower()`), ensuring the main desktop application natively imports bundled PySide6 submodules.
-   [x] 2.2 Complete Submodule Fallback Population (`qt_compat.py`): Enhanced `_ensure_pyside6_fallback` to import and populate all 6 required PySide6 submodules (`QtCore`, `QtNetwork`, `QtGui`, `QtWidgets`, `QtMultimedia`, `QtMultimediaWidgets`), ensuring zero `KeyError` crashes occur.
-   [x] 2.3 Cross-Platform Desktop GUI Launch Validation: Verified clean application startup across frozen bundles.
-   [x] 2.4 Synchronous Version Bump: Synchronized all 13 core project files and web preview scaffolding to v3.9.23-beta.
+2. Current Release: Critical Bugfixes: Project Close `NameError`, Media Drag-and-Drop & WordPress Full-Episode Footer Links (`project_lifecycle.py`, `RadioTVSegmenter.py`, `plugins/wordpress/export_destination.py`) [x] [COMPLETED in v3.9.24-beta]
+   [x] 2.1 Project Close `NameError: name 'ProjectMetadataDict' is not defined` Fix (`project_lifecycle.py`): Resolve missing type annotation or undefined reference in project close / last project restoration handling.
+   [x] 2.2 Timeline Media Drag-and-Drop Fix (`RadioTVSegmenter.py` / timeline widgets): Restore event filtering and drop handlers (`dragEnterEvent`, `dropEvent`) for dragging external media files directly into the timeline.
+   [x] 2.3 WordPress Full-Episode Footer Link Fix (`plugins/wordpress/export_destination.py`): Ensure automated full-episode correspondence links are correctly appended to the bottom of story pages during WordPress publisher uploads.
+   [x] 2.4 Synchronous Version Bump: Synchronized all project locations and web preview scaffolding to v3.9.24-beta.
 
 3. Upcoming Milestone: Codebase Modularization & Monolithic File Decomposition Strategy (<1,000-Line Invariant) (`playback_preferences.py`, `project_export.py`, `transcript_story.py`, `transcript_editor.py`, `radio_tv_story_segmenter_worker.py`, `benchmark.py`, `plugins/wordpress/export_destination.py`, `plugins/manager.py`, `timeline_widgets.py`) [PLANNED for v4.0.0] [IN-PROGRESS]
    - *Architecture Note*: Incrementally refactors all remaining source files exceeding 1,000 lines (at most 1 to 2 monoliths per turn) into focused domain modules (<1,000 lines each) while preserving 100% backward compatibility via zero-breakage facade re-exports.
@@ -57,7 +58,7 @@ TABLE OF CONTENTS & STATUS OVERVIEW
    [x] 3.5 Wave 3 - Transcript Story & Interactive Editor Decomposition (`transcript_story.py` — 3,055 lines -> 836 lines & `transcript_editor.py` — 2,566 lines -> 862 lines)
    [x] 3.6 Wave 4 - AI Worker & Benchmark Suite Decomposition (`radio_tv_story_segmenter_worker.py` — 2,264 -> 219 lines & `benchmark.py` — 2,198 -> 216 lines) [COMPLETED in v3.9.13-beta]
    [x] 3.7 Wave 5 - WordPress Export, Plugin Manager & Timeline Widgets Decomposition (`plugins/wordpress/export_destination.py` — 2,080 -> 474 lines, `plugins/manager.py` — 1,942 -> 586 lines, `timeline_widgets.py` — 1,898 -> 934 lines) [COMPLETED in v3.9.14-beta]
-   [ ] 3.8 Permanent <1,000-Line Architectural Rule, AST Decomposition Suggester & Automated Budget Guard (`AGENTS.md`, `GEMINI.md`, `scripts/modular_audit.py`, `test_runner.py`)
+   [x] 3.8 Permanent <1,000-Line Architectural Rule, AST Decomposition Suggester & Automated Budget Guard (`AGENTS.md`, `GEMINI.md`, `scripts/modular_audit.py`, `test_runner.py`)
    [x] 3.9 Token-Reduction Architecture & Tiered Symbol Indexing for Local LLM Efficiency (`scripts/generate_symbol_index.py`, `.codemaps/`, `.pyi`, `AGENTS.md`, `GEMINI.md`) [COMPLETED in v3.9.12-beta]
 
 4. Upcoming Milestone: Smart Hybrid Audio Loudness Normalization & Non-Destructive Auto-Boost Suite (`audio_normalization.py`, `preferences_dialog.py`, `playback_preferences.py`, `RadioTVSegmenter.py`, `dialogs.py`, `test_runner.py`) [PLANNED for v4.1.0] [IN-PROGRESS]
@@ -67,55 +68,68 @@ TABLE OF CONTENTS & STATUS OVERVIEW
    [ ] 4.3 Preferences Dialog & Adjustable Thresholds / Targets (`preferences_dialog.py`, `playback_preferences.py`): Add UI controls in Preferences to enable/disable automatic loudness normalization on import, adjust quiet detection trigger thresholds (LUFS and dBFS spinboxes), select target standard (defaulting to modern LUFS targets: `-16.0 LUFS` broadcast, `-14.0 LUFS` podcast, `-24.0 LUFS` EBU R128, or dBFS/True Peak target `-1.5 dBTP` / `-3.0 dBFS`), and optionally apply loudness gain to playback and clip export.
    [ ] 4.4 Tools Menu Manual Normalization Action & Telemetry Dialog (`RadioTVSegmenter.py`, `dialogs.py`, `test_runner.py`): Add on-demand "Normalize Audio Loudness..." action in the Tools menu with before/after LUFS & True Peak telemetry, manual run/reset controls, and diagnostic unit tests in `test_runner.py`.
 
-5. Upcoming Milestone: Automated AMD Ryzen AI Local Development Platform & Token-Efficient Model Suite (`scripts/setup_local_ai.py`, `.vscode/settings.json`, `.clinerules`, `.github/workflows/build.yml`) [PLANNED for v4.1.0] [OPTIONAL / PLANNED] [NOT STARTED]
+5. Upcoming Milestone: Seriously Simple Podcasting (Castos) WordPress Plugin Integration (`plugins/wordpress/export_destination.py`) [PLANNED for v4.2.0] [NOT STARTED]
+   - *Purpose*: Integrate Castos' Seriously Simple Podcasting plugin into WordPress full-episode draft exports, allowing users to designate posts as podcast episodes within the export dialog, dynamically show Castos options, and map media files to the selected podcast feed via WordPress REST API application passwords and post meta (`ss_podcast_audio_file`, `ss_podcast_feed`, etc.).
+   - *Confirmed User Specifications*:
+     1. **Dynamic Podcast Designation UI**: When a user designates a post as a podcast episode in the export dialog, Castos options (podcast feed selection, episode meta) appear dynamically.
+     2. **Authentication**: Uses standard WordPress REST API application passwords.
+     3. **Media Binding & RSS Feed**: Automatically uploads full-episode audio to WordPress Media Library, assigning audio file and excerpt to the podcast RSS feed via Castos post meta.
+     4. **Conditional Player Embedding**:
+        - *Podcast Episode*: Displays the embedded Castos player on the website page (omitting standard `<!-- wp:audio -->` block to prevent duplicate players).
+        - *Standard Export (Non-Podcast)*: Embeds the audio file at the top of the page using standard WordPress audio block (`<!-- wp:audio -->`), preserving default behavior.
+   [ ] 5.1 WordPress Media Library Upload & Attachment ID Binding (`plugins/wordpress/export_destination.py`): Implement automated media file upload via REST API to obtain media attachment ID.
+   [ ] 5.2 Dynamic Podcast Options UI & Feed Picker (`plugins/wordpress/export_destination.py`, `plugins/wordpress/wp_ui_builder.py`): Show Castos options when a post is designated as a podcast episode and dynamically fetch available podcast feeds.
+   [ ] 5.3 Castos Post Meta Mapping, Conditional Player Embedding & Draft Publishing (`plugins/wordpress/export_destination.py`): Inject Castos post meta (`ss_podcast_audio_file`, `ss_podcast_feed`) and RSS excerpt for podcast posts while omitting standard `<!-- wp:audio -->` blocks in favor of the Castos web player; embed standard `<!-- wp:audio -->` blocks at top of page for non-podcast exports.
+
+6. Upcoming Milestone: Automated AMD Ryzen AI Local Development Platform & Token-Efficient Model Suite (`scripts/setup_local_ai.py`, `.vscode/settings.json`, `.clinerules`, `.github/workflows/build.yml`) [PLANNED for v4.1.0] [OPTIONAL / PLANNED] [NOT STARTED]
    - *Purpose*: One-command non-destructive setup script and auto-configuration suite enabling offline AI-assisted development on AMD Ryzen AI 9 HX 370 (Radeon 890M `gfx1150` + XDNA 2 NPU, 64GB RAM) systems with token-budget optimization, prefix-caching architecture, and automated AST split tooling.
-   [ ] 5.1 Strix Point Hardware, UMA VRAM & Context Allocation Probe (`scripts/setup_local_ai.py`): Detect CPU/iGPU/NPU, 64GB RAM, UMA aperture, and configure `gfx1150` Vulkan/ROCm runtime with KV-cache VRAM budgets (`OLLAMA_FLASH_ATTENTION=1`, `OLLAMA_KV_CACHE_TYPE=q8_0`).
-   [ ] 5.2 Tiered Local AI Model Provisioner with Prefix-Cache Optimization (`scripts/setup_local_ai.py`): Pull and verify quantized coding models (`Qwen2.5-Coder-32B-Instruct` Q4_K_M for refactoring, `14B/7B` for fast edits, `1.5B` for sub-50ms autocomplete) with shared prefix-caching.
-   [ ] 5.3 Local Server Health Check, Context Window Tuning & Prompt Cache Pinning (`scripts/setup_local_ai.py`): Bind `http://127.0.0.1:11434`, pin project symbol indices (`.codemaps/symbol_index.json`) into KV prompt cache for 0-latency context, and enforce 16k-32k working context limits.
-   [ ] 5.4 Token-Thrift IDE Configuration & AST Suggester Integration (`scripts/setup_local_ai.py`): Configure Continue/Cline with symbol-first retrieval, diff-only edits, line-slice reading rules, and map `.clinerules`/`.cursorrules` to `scripts/modular_audit.py` to prevent token bloat.
-   [ ] 5.5 Token-Budget Task-to-Model Router & CI Pipeline Verification (`.github/workflows/build.yml`, `test_runner.py`): Provide token-aware task router (<300 lines -> 7B/14B; refactoring -> 32B) and verify CI build invariants.
+   [ ] 6.1 Strix Point Hardware, UMA VRAM & Context Allocation Probe (`scripts/setup_local_ai.py`): Detect CPU/iGPU/NPU, 64GB RAM, UMA aperture, and configure `gfx1150` Vulkan/ROCm runtime with KV-cache VRAM budgets (`OLLAMA_FLASH_ATTENTION=1`, `OLLAMA_KV_CACHE_TYPE=q8_0`).
+   [ ] 6.2 Tiered Local AI Model Provisioner with Prefix-Cache Optimization (`scripts/setup_local_ai.py`): Pull and verify quantized coding models (`Qwen2.5-Coder-32B-Instruct` Q4_K_M for refactoring, `14B/7B` for fast edits, `1.5B` for sub-50ms autocomplete) with shared prefix-caching.
+   [ ] 6.3 Local Server Health Check, Context Window Tuning & Prompt Cache Pinning (`scripts/setup_local_ai.py`): Bind `http://127.0.0.1:11434`, pin project symbol indices (`.codemaps/symbol_index.json`) into KV prompt cache for 0-latency context, and enforce 16k-32k working context limits.
+   [ ] 6.4 Token-Thrift IDE Configuration & AST Suggester Integration (`scripts/setup_local_ai.py`): Configure Continue/Cline with symbol-first retrieval, diff-only edits, line-slice reading rules, and map `.clinerules`/`.cursorrules` to `scripts/modular_audit.py` to prevent token bloat.
+   [ ] 6.5 Token-Budget Task-to-Model Router & CI Pipeline Verification (`.github/workflows/build.yml`, `test_runner.py`): Provide token-aware task router (<300 lines -> 7B/14B; refactoring -> 32B) and verify CI build invariants.
 
-6. Optional Future Milestone: Interactive Text-Based Media Assembly & Multi-Asset Ripple Editing Engine (`assembly/bin_model.py`, `assembly/clipboard.py`, `assembly/ripple_engine.py`, `transcript_editor.py`, `export/timeline.py`) [PLANNED for v4.2.0] [OPTIONAL] [NOT STARTED]
-   [ ] 6.1 Multi-Asset Project Container & Media Bin Submodule (`assembly/bin_model.py`, `project_lifecycle.py`)
-   [ ] 6.2 Dynamic Uncapped Tabbed Document Workspace (`assembly/tab_workspace.py`, `ui_layout.py`)
-   [ ] 6.3 Rich Media Clipboard Engine (`assembly/clipboard.py` — `application/x-rtvs-clip+json`)
-   [ ] 6.4 Non-Destructive Multi-Source Playout Engine (`assembly/playout_engine.py`)
-   [ ] 6.5 Text-Driven Audio/Video Ripple Cut Engine (`assembly/ripple_engine.py`)
-   [ ] 6.6 Paper-Cut Story Assembly Workflow (`assembly/paper_cut_mixin.py`)
-   [ ] 6.7 Document Revisions & Snapshot Version History (`assembly/revision_history.py`)
-   [ ] 6.8 Word-Level Timecode Sync, NLE Markers & Multi-Track DAW Timeline Export (`export/timeline.py`)
-   [ ] 6.9 Automated Diagnostic Test Suite (`test_runner.py`)
+7. Optional Future Milestone: Interactive Text-Based Media Assembly & Multi-Asset Ripple Editing Engine (`assembly/bin_model.py`, `assembly/clipboard.py`, `assembly/ripple_engine.py`, `transcript_editor.py`, `export/timeline.py`) [PLANNED for v4.2.0] [OPTIONAL] [NOT STARTED]
+   [ ] 7.1 Multi-Asset Project Container & Media Bin Submodule (`assembly/bin_model.py`, `project_lifecycle.py`)
+   [ ] 7.2 Dynamic Uncapped Tabbed Document Workspace (`assembly/tab_workspace.py`, `ui_layout.py`)
+   [ ] 7.3 Rich Media Clipboard Engine (`assembly/clipboard.py` — `application/x-rtvs-clip+json`)
+   [ ] 7.4 Non-Destructive Multi-Source Playout Engine (`assembly/playout_engine.py`)
+   [ ] 7.5 Text-Driven Audio/Video Ripple Cut Engine (`assembly/ripple_engine.py`)
+   [ ] 7.6 Paper-Cut Story Assembly Workflow (`assembly/paper_cut_mixin.py`)
+   [ ] 7.7 Document Revisions & Snapshot Version History (`assembly/revision_history.py`)
+   [ ] 7.8 Word-Level Timecode Sync, NLE Markers & Multi-Track DAW Timeline Export (`export/timeline.py`)
+   [ ] 7.9 Automated Diagnostic Test Suite (`test_runner.py`)
 
-7. Optional Future Milestone: Android Transcriber & Speaker Diarization Companion App (`android/`, Kotlin, Jetpack Compose, `whisper.cpp`, `sherpa-onnx`, WeSpeaker) [PLANNED for v4.3.0] [OPTIONAL / LOWER PRIORITY] [NOT STARTED]
+8. Optional Future Milestone: Android Transcriber & Speaker Diarization Companion App (`android/`, Kotlin, Jetpack Compose, `whisper.cpp`, `sherpa-onnx`, WeSpeaker) [PLANNED for v4.3.0] [OPTIONAL / LOWER PRIORITY] [NOT STARTED]
    - *Workflow Design Note*: Offline mobile companion app for Android (e.g. Google Pixel series with NPU acceleration) providing dual ASR engines (Whisper `base.en` q8_0 vs. Zipformer via `sherpa-onnx`) and an on-demand model download and removal manager. Can be spun off into a dedicated AI Studio Android project (Option A) using the provided starter prompt.
-   [ ] 7.1 Android Project Scaffolding & Audio Foreground Service (`android/` Kotlin / Jetpack Compose)
-   [ ] 7.2 Dual On-Device ASR Runtimes (`whisper.cpp` JNI for Whisper `base.en` & `onnxruntime-android` for Zipformer)
-   [ ] 7.3 On-Demand Model Download & Removal Manager (UI dialog to download, verify, inspect storage, and delete models on demand)
-   [ ] 7.4 On-Device Speaker Diarization Engine (`onnxruntime-android` WeSpeaker embedding extraction + clustering)
-   [ ] 7.5 Mobile Export & Session Sync with Desktop RTVS3 Projects (`.json` project container sync)
-   [ ] 7.6 Standalone AI Studio Starter Prompt Specification & Project Blueprint (Option A Launcher)
+   [ ] 8.1 Android Project Scaffolding & Audio Foreground Service (`android/` Kotlin / Jetpack Compose)
+   [ ] 8.2 Dual On-Device ASR Runtimes (`whisper.cpp` JNI for Whisper `base.en` & `onnxruntime-android` for Zipformer)
+   [ ] 8.3 On-Demand Model Download & Removal Manager (UI dialog to download, verify, inspect storage, and delete models on demand)
+   [ ] 8.4 On-Device Speaker Diarization Engine (`onnxruntime-android` WeSpeaker embedding extraction + clustering)
+   [ ] 8.5 Mobile Export & Session Sync with Desktop RTVS3 Projects (`.json` project container sync)
+   [ ] 8.6 Standalone AI Studio Starter Prompt Specification & Project Blueprint (Option A Launcher)
 
 ================================================================================
 DETAILED MILESTONE SPECIFICATIONS
 ================================================================================
 
 ================================================================================
-1. PREVIOUS RELEASE: HEADLESS AI WORKER SHIBOKEN C-EXTENSION BYPASS [x] [COMPLETED in v3.9.22-beta]
+1. PREVIOUS RELEASE: FROZEN GUI APPLICATION PYSIDE6 SUBMODULE RESOLUTION [x] [COMPLETED in v3.9.23-beta]
 ================================================================================
 
-[x] 1.1 Non-Probing Worker Fallback (`qt_compat.py`): Inverted fallback logic so that when `RTVS_WORKER_MODE=1` (or `force=True`), `_ensure_pyside6_fallback` installs the mock shim immediately without ever importing `PySide6.QtCore`, preventing native `libshiboken` signature bootstrap crashes in frozen onedir bundles.
-[x] 1.2 Complete Worker Mock Namespace (`qt_compat.py`): Added `QUndoCommand` dummy type to `QtGui` mock shim to support subclassing in headless environments.
-[x] 1.3 Cross-Platform Frozen Worker Smoke Test Validation: Verified clean headless worker startup on macOS and Linux frozen builds.
-[x] 1.4 Synchronous Version Bump: Synchronized all project locations and web preview scaffolding to v3.9.22-beta.
+[x] 1.1 Explicit Worker Identification (`prs_shared.py`, `core_utils.py`, `story_model.py`): Replaced erroneous `not hasattr(sys, "_MEIPASS_GUI")` check with explicit worker detection (`RTVS_WORKER_MODE=1` or `"worker" in Path(sys.executable).stem.lower()`), ensuring the main desktop application natively imports bundled PySide6 submodules.
+[x] 1.2 Complete Submodule Fallback Population (`qt_compat.py`): Enhanced `_ensure_pyside6_fallback` to import and populate all 6 required PySide6 submodules (`QtCore`, `QtNetwork`, `QtGui`, `QtWidgets`, `QtMultimedia`, `QtMultimediaWidgets`), ensuring zero `KeyError` crashes occur.
+[x] 1.3 Cross-Platform Desktop GUI Launch Validation: Verified clean application startup across frozen bundles.
+[x] 1.4 Synchronous Version Bump: Synchronized all 13 core project files and web preview scaffolding to v3.9.23-beta.
 
 ================================================================================
-2. CURRENT RELEASE: FROZEN GUI APPLICATION PYSIDE6 SUBMODULE RESOLUTION [x] [COMPLETED in v3.9.23-beta]
+2. CURRENT RELEASE: CRITICAL BUGFIXES: PROJECT CLOSE NAMEERROR, MEDIA DRAG-AND-DROP & WORDPRESS FULL-EPISODE FOOTER LINKS [x] [COMPLETED in v3.9.24-beta]
 ================================================================================
 
-[x] 2.1 Explicit Worker Identification (`prs_shared.py`, `core_utils.py`, `story_model.py`): Replaced erroneous `not hasattr(sys, "_MEIPASS_GUI")` check with explicit worker detection (`RTVS_WORKER_MODE=1` or `"worker" in Path(sys.executable).stem.lower()`), ensuring the main desktop application natively imports bundled PySide6 submodules.
-[x] 2.2 Complete Submodule Fallback Population (`qt_compat.py`): Enhanced `_ensure_pyside6_fallback` to import and populate all 6 required PySide6 submodules (`QtCore`, `QtNetwork`, `QtGui`, `QtWidgets`, `QtMultimedia`, `QtMultimediaWidgets`), ensuring zero `KeyError` crashes occur.
-[x] 2.3 Cross-Platform Desktop GUI Launch Validation: Verified clean application startup across frozen bundles.
-[x] 2.4 Synchronous Version Bump: Synchronized all 13 core project files and web preview scaffolding to v3.9.23-beta.
+[x] 2.1 Project Close `NameError: name 'ProjectMetadataDict' is not defined` Fix (`project_lifecycle.py`): Resolve missing type annotation or undefined reference in project close / last project restoration handling.
+[x] 2.2 Timeline Media Drag-and-Drop Fix (`RadioTVSegmenter.py` / timeline widgets): Restore event filtering and drop handlers (`dragEnterEvent`, `dropEvent`) for dragging external media files directly into the timeline.
+[x] 2.3 WordPress Full-Episode Footer Link Fix (`plugins/wordpress/export_destination.py`): Ensure automated full-episode correspondence links are correctly appended to the bottom of story pages during WordPress publisher uploads.
+[x] 2.4 Synchronous Version Bump: Synchronized all project locations and web preview scaffolding to v3.9.24-beta.
 
 ================================================================================
 3. UPCOMING MILESTONE: CODEBASE MODULARIZATION & MONOLITHIC FILE DECOMPOSITION STRATEGY [PLANNED for v4.0.0] [IN-PROGRESS]
@@ -190,7 +204,7 @@ When the user prompts "what's next", execute ONLY the first uncompleted `[ ]` su
          - `timeline_overview_widget.py`: Timeline overview bar and mini-map navigation widget.
          - Keep the main zoomable timeline widget in `timeline_widgets.py` and re-export all extracted symbols in `timeline_widgets.py` and `prs_shared.py`.
 
-[ ] 3.8 Permanent <1,000-Line Architectural Rule, AST Decomposition Suggester & Automated Budget Guard (`AGENTS.md`, `GEMINI.md`, `scripts/modular_audit.py`, `test_runner.py`)
+[x] 3.8 Permanent <1,000-Line Architectural Rule, AST Decomposition Suggester & Automated Budget Guard (`AGENTS.md`, `GEMINI.md`, `scripts/modular_audit.py`, `test_runner.py`)
     - Enforce the modular file size limit permanently and provide automated tooling to assist future decomposition:
       1. Mandatory Architecture Rule in `AGENTS.md` & `GEMINI.md`:
          - Soft target: ~800 lines per `.py` file; hard ceiling: 1,000 lines per `.py` file.
@@ -258,39 +272,55 @@ ARCHITECTURAL INVARIANTS FOR SECTION 4:
       3. Provides "Apply Normalization", "Re-Analyze", and "Reset to Original" buttons.
     - Add a diagnostic test in `test_runner.py` verifying end-to-end normalization against synthetic quiet audio.
 ================================================================================
-5. UPCOMING MILESTONE: AUTOMATED AMD RYZEN AI LOCAL DEVELOPMENT PLATFORM & TOKEN-EFFICIENT MODEL SUITE [PLANNED for v4.1.0] [OPTIONAL / PLANNED] [NOT STARTED]
+5. UPCOMING MILESTONE: SERIOUSLY SIMPLE PODCASTING (CASTOS) WORDPRESS PLUGIN INTEGRATION [PLANNED for v4.2.0] [NOT STARTED]
 ================================================================================
-ARCHITECTURAL INVARIANTS FOR SECTION 5:
+- Purpose: Integrate Castos' Seriously Simple Podcasting plugin into WordPress full-episode draft exports, allowing users to designate posts as podcast episodes within the export dialog, dynamically show Castos options, and map media files to the selected podcast feed via WordPress REST API application passwords and post meta (`ss_podcast_audio_file`, `ss_podcast_feed`, etc.).
+- Confirmed User Specifications:
+  1. Dynamic Podcast Designation UI: When a user designates a post as a podcast episode in the export dialog, Castos options (podcast feed selection, episode meta) appear dynamically.
+  2. Authentication: Uses standard WordPress REST API application passwords.
+  3. Media Binding & RSS Feed: Automatically uploads full-episode audio to WordPress Media Library, assigning audio file and excerpt to the podcast RSS feed via Castos post meta.
+  4. Conditional Player Embedding:
+     - Podcast Episode: Displays the embedded Castos player on the website page (omitting standard `<!-- wp:audio -->` block to prevent duplicate players).
+     - Standard Export (Non-Podcast): Embeds the audio file at the top of the page using standard WordPress audio block (`<!-- wp:audio -->`), preserving default behavior.
+
+[ ] 5.1 WordPress Media Library Upload & Attachment ID Binding (`plugins/wordpress/export_destination.py`): Implement automated media file upload via REST API to obtain media attachment ID.
+[ ] 5.2 Dynamic Podcast Options UI & Feed Picker (`plugins/wordpress/export_destination.py`, `plugins/wordpress/wp_ui_builder.py`): Show Castos options when a post is designated as a podcast episode and dynamically fetch available podcast feeds.
+[ ] 5.3 Castos Post Meta Mapping, Conditional Player Embedding & Draft Publishing (`plugins/wordpress/export_destination.py`): Inject Castos post meta (`ss_podcast_audio_file`, `ss_podcast_feed`) and RSS excerpt for podcast posts while omitting standard `<!-- wp:audio -->` blocks in favor of the Castos web player; embed standard `<!-- wp:audio -->` blocks at top of page for non-podcast exports.
+
+================================================================================
+6. UPCOMING MILESTONE: AUTOMATED AMD RYZEN AI LOCAL DEVELOPMENT PLATFORM & TOKEN-EFFICIENT MODEL SUITE [PLANNED for v4.1.0] [OPTIONAL / PLANNED] [NOT STARTED]
+================================================================================
+ARCHITECTURAL INVARIANTS FOR SECTION 6:
 - Non-Destructive & Cross-Platform Safe: `scripts/setup_local_ai.py` must support `--check` / `--dry-run`, never overwrite existing user IDE settings without creating a `.bak` backup, and degrade gracefully on non-AMD machines.
 - Token Thrift & Prefix Caching First: All local coding models running on unified memory architectures (UMA) must be configured to maximize token-per-second throughput, minimize KV-cache memory pressure, and leverage the symbol stubs and AST analysis tools established in Milestone 3.
 - Preserve All Existing CI & Packaging Tests: Any updates to `.github/workflows/build.yml` MUST retain every invariant tested by `_test_windows_ci_build_and_packaging_optimization_invariants` in `test_runner.py`.
 
-[ ] 5.1 Strix Point Hardware, UMA VRAM & Context Allocation Probe (`scripts/setup_local_ai.py`)
+[ ] 6.1 Strix Point Hardware, UMA VRAM & Context Allocation Probe (`scripts/setup_local_ai.py`)
     - Implement hardware inspection for AMD Ryzen AI 9 HX 370 (12C/24T Zen 5, Radeon 890M `gfx1150` RDNA 3.5 iGPU, XDNA 2 50-TOPS NPU, 64GB RAM):
       1. Detect total physical RAM, dedicated/UMA aperture allocation, and Vulkan/ROCm driver availability.
       2. Compute optimal KV-cache VRAM budget: halving KV-cache footprint via `OLLAMA_KV_CACHE_TYPE=q8_0` and setting working context limits (16k default, 32k max) so local models consume <4 GB KV VRAM instead of ~10 GB, leaving at least 24 GB of system RAM free for concurrent Whisper/WeSpeaker transcription runs.
       3. Configure optimal runtime environment variables for `gfx1150` stability on Windows/Linux: `OLLAMA_FLASH_ATTENTION=1`, `OLLAMA_KV_CACHE_TYPE=q8_0`, and `OLLAMA_NUM_PARALLEL=1`.
 
-[ ] 5.2 Tiered Local AI Model Provisioner with Prefix-Cache Optimization (`scripts/setup_local_ai.py`)
+[ ] 6.2 Tiered Local AI Model Provisioner with Prefix-Cache Optimization (`scripts/setup_local_ai.py`)
     - Automate pulling and registering memory-budgeted coding model tiers via Ollama / LM Studio CLI:
       1. Tier 1 (Heavy Refactoring & Architectural Decomposition — ~20 GB VRAM): `qwen2.5-coder:32b-instruct-q4_K_M` with 32,768 token context for complex AST splits and multi-file facades.
       2. Tier 2 (Fast Single-File Bug Fixes & Mixin Edits — ~9 GB VRAM): `qwen2.5-coder:14b-instruct-q4_K_M` / `7b-instruct-q4_K_M` delivering >50 tok/s on Radeon 890M.
       3. Tier 3 (Sub-50ms Inline Autocomplete — ~1.2 GB VRAM): `qwen2.5-coder:1.5b-base` running on lightweight context.
       4. Validate all models with automated `--dry-run` and SHA-256 integrity checks.
 
-[ ] 5.3 Local Server Health Check, Context Window Tuning & Prompt Cache Pinning (`scripts/setup_local_ai.py`)
+[ ] 6.3 Local Server Health Check, Context Window Tuning & Prompt Cache Pinning (`scripts/setup_local_ai.py`)
     - Verify `http://127.0.0.1:11434` endpoint readiness and generate custom Ollama / llama.cpp `Modelfile` presets:
       1. Pin the project symbol catalog (`.codemaps/symbol_index.json` and `.pyi` stubs created in Item 3.9) into the prefix cache, giving the local model instant zero-token access to repository APIs and signatures without re-ingesting 30+ files on each interaction.
       2. Enforce context ceilings (`num_ctx 16384` for daily development, expandable to `32768` for full audits) and `temperature 0.1` for deterministic code generation.
       3. Run a 64-token warmup benchmark reporting TTFT (Time To First Token) and token/sec throughput.
 
-[ ] 5.4 Token-Thrift IDE Configuration & AST Suggester Integration (`scripts/setup_local_ai.py`)
+[ ] 6.4 Token-Thrift IDE Configuration & AST Suggester Integration (`scripts/setup_local_ai.py`)
     - Safely generate/merge `.vscode/settings.json` and Continue.dev / Cline / Roo Code configuration templates pointing to `http://127.0.0.1:11434`:
       1. Configure IDE extensions for **token-thrifty retrieval**: instruct assistants to query the symbol index (`.codemaps/`) before requesting full file reads, use line-slice reads (`view_file` StartLine/EndLine), and produce unified diff patches rather than regenerating whole files.
       2. Direct integration with AST Split Suggester: configure agent instructions so when an edit touches a file exceeding 800 lines, the assistant automatically invokes `python scripts/modular_audit.py --suggest <file>` to receive turnkey decomposition blueprints rather than wasting thousands of tokens analyzing AST coupling manually.
       3. Create cross-platform symlinks or synchronized copies mapping `.clinerules` and `.cursorrules` to `AGENTS.md` and `GEMINI.md` to enforce the 10-location version bump checklist, `roadmap_manager.py --check`, and the <1,000-line modular ceiling.
 
-[ ] 5.5 Token-Budget Task-to-Model Router & CI Pipeline Verification (`.github/workflows/build.yml`, `test_runner.py`)
+[ ] 6.5 Token-Budget Task-to-Model Router & CI Pipeline Verification (`.github/workflows/build.yml`, `test_runner.py`)
     - Add `--guide` CLI mode and interactive task-to-model routing matrix to `scripts/setup_local_ai.py`:
       * Small single-file fixes (<300 lines) -> Route to 7B/14B model (<100ms TTFT, saving power and memory).
       * Multi-file refactoring, architectural planning, or files >500 lines -> Route to 32B model with pre-cached symbol catalog.
@@ -298,30 +328,30 @@ ARCHITECTURAL INVARIANTS FOR SECTION 5:
     - Verify `.github/workflows/build.yml` and add a diagnostic unit test in `test_runner.py` validating `scripts/setup_local_ai.py --dry-run` hardware profile serialization and token budget calculations.
 
 ================================================================================
-6. OPTIONAL FUTURE MILESTONE: INTERACTIVE TEXT-BASED MEDIA ASSEMBLY & MULTI-ASSET RIPPLE EDITING ENGINE [PLANNED for v4.2.0] [OPTIONAL] [NOT STARTED]
+7. OPTIONAL FUTURE MILESTONE: INTERACTIVE TEXT-BASED MEDIA ASSEMBLY & MULTI-ASSET RIPPLE EDITING ENGINE [PLANNED for v4.2.0] [OPTIONAL] [NOT STARTED]
 ================================================================================
 *Workflow Design Note*: Marked as an optional workflow extension for users requesting text-driven paper cuts. The core single-file story segmenter, voicebook, and DAW exports remain default and lightweight. All new modules in this milestone MUST reside in a dedicated `assembly/` package with every file kept strictly under 1,000 lines.
 
-[ ] 6.1 Multi-Asset Project Container & Media Bin Submodule (`assembly/bin_model.py`, `project_lifecycle.py`)
-[ ] 6.2 Dynamic Uncapped Tabbed Document Workspace (`assembly/tab_workspace.py`, `ui_layout.py`)
-[ ] 6.3 Rich Media Clipboard Engine (`assembly/clipboard.py` — `application/x-rtvs-clip+json`)
-[ ] 6.4 Non-Destructive Multi-Source Playout Engine (`assembly/playout_engine.py`)
-[ ] 6.5 Text-Driven Audio/Video Ripple Cut Engine (`assembly/ripple_engine.py`)
-[ ] 6.6 Paper-Cut Story Assembly Workflow (`assembly/paper_cut_mixin.py`)
-[ ] 6.7 Document Revisions & Snapshot Version History (`assembly/revision_history.py`)
-[ ] 6.8 Word-Level Timecode Sync, NLE Markers & Multi-Track DAW Timeline Export (`export/timeline.py`)
-[ ] 6.9 Automated Diagnostic Test Suite (`test_runner.py`)
+[ ] 7.1 Multi-Asset Project Container & Media Bin Submodule (`assembly/bin_model.py`, `project_lifecycle.py`)
+[ ] 7.2 Dynamic Uncapped Tabbed Document Workspace (`assembly/tab_workspace.py`, `ui_layout.py`)
+[ ] 7.3 Rich Media Clipboard Engine (`assembly/clipboard.py` — `application/x-rtvs-clip+json`)
+[ ] 7.4 Non-Destructive Multi-Source Playout Engine (`assembly/playout_engine.py`)
+[ ] 7.5 Text-Driven Audio/Video Ripple Cut Engine (`assembly/ripple_engine.py`)
+[ ] 7.6 Paper-Cut Story Assembly Workflow (`assembly/paper_cut_mixin.py`)
+[ ] 7.7 Document Revisions & Snapshot Version History (`assembly/revision_history.py`)
+[ ] 7.8 Word-Level Timecode Sync, NLE Markers & Multi-Track DAW Timeline Export (`export/timeline.py`)
+[ ] 7.9 Automated Diagnostic Test Suite (`test_runner.py`)
 
 ================================================================================
-7. OPTIONAL FUTURE MILESTONE: ANDROID TRANSCRIBER & SPEAKER DIARIZATION COMPANION APP [PLANNED for v4.3.0] [OPTIONAL / LOWER PRIORITY] [NOT STARTED]
+8. OPTIONAL FUTURE MILESTONE: ANDROID TRANSCRIBER & SPEAKER DIARIZATION COMPANION APP [PLANNED for v4.3.0] [OPTIONAL / LOWER PRIORITY] [NOT STARTED]
 ================================================================================
 *Workflow Design Note*: Lower priority offline mobile companion app focused on core transcription and speaker diarization subset running on Android (e.g. Google Pixel series with NPU hardware acceleration). Includes dual ASR engine options (Whisper `base.en` q8_0 vs. Zipformer via `sherpa-onnx`) with an on-demand model download and removal manager so users can test both engines and choose the ideal balance of accuracy and speed.
 
-[ ] 7.1 Android Project Scaffolding & Audio Foreground Service (`android/` Kotlin / Jetpack Compose)
-[ ] 7.2 Dual On-Device ASR Runtimes (`whisper.cpp` JNI for Whisper `base.en` & `onnxruntime-android` for Zipformer)
-[ ] 7.3 On-Demand Model Download & Removal Manager (UI dialog to download, verify, inspect storage, and delete models on demand)
-[ ] 7.4 On-Device Speaker Diarization Engine (`onnxruntime-android` WeSpeaker embedding extraction + clustering)
-[ ] 7.5 Mobile Export & Session Sync with Desktop RTVS3 Projects (`.json` project container sync)
+[ ] 8.1 Android Project Scaffolding & Audio Foreground Service (`android/` Kotlin / Jetpack Compose)
+[ ] 8.2 Dual On-Device ASR Runtimes (`whisper.cpp` JNI for Whisper `base.en` & `onnxruntime-android` for Zipformer)
+[ ] 8.3 On-Demand Model Download & Removal Manager (UI dialog to download, verify, inspect storage, and delete models on demand)
+[ ] 8.4 On-Device Speaker Diarization Engine (`onnxruntime-android` WeSpeaker embedding extraction + clustering)
+[ ] 8.5 Mobile Export & Session Sync with Desktop RTVS3 Projects (`.json` project container sync)
 
 [ ] 7.6 Standalone AI Studio Starter Prompt Specification & Project Blueprint (Option A Launcher)
     - When ready to spin off this companion app into a dedicated Android AI Studio project, create a new Android/Kotlin project in AI Studio and submit the following initial architectural prompt:

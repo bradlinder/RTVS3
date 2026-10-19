@@ -7,7 +7,7 @@ from PySide6.QtCore import QPointF, QRectF, QSettings, Qt, Signal
 from PySide6.QtGui import QColor, QPainter, QPen
 from PySide6.QtWidgets import QWidget
 
-from prs_shared import INTERNAL_APP_ID, ThemeTokens
+from prs_shared import INTERNAL_APP_ID, ThemeTokens, extract_dropped_file_paths
 
 
 class TimelineResizeHandle(QWidget):
@@ -87,6 +87,7 @@ class TimelineOverviewBar(QWidget):
         self.setFixedHeight(self.BAR_HEIGHT)
         self.setMouseTracking(True)
         self.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.setAcceptDrops(True)
         self._dragging = None  # None, 'pan', 'left_handle', 'right_handle'
         self._drag_start_x = 0
         self._drag_start_offset = 0.0
@@ -325,6 +326,38 @@ class TimelineOverviewBar(QWidget):
         self._hover_handle = None
         self.update()
         super().leaveEvent(event)
+
+    def dragEnterEvent(self, event: Any):
+        paths = extract_dropped_file_paths(event.mimeData())
+        if paths:
+            event.setDropAction(Qt.DropAction.CopyAction)
+            event.acceptProposedAction()
+            event.accept()
+            return
+        event.ignore()
+
+    def dragMoveEvent(self, event: Any):
+        paths = extract_dropped_file_paths(event.mimeData())
+        if paths:
+            event.setDropAction(Qt.DropAction.CopyAction)
+            event.acceptProposedAction()
+            event.accept()
+            return
+        event.ignore()
+
+    def dragLeaveEvent(self, event: Any):
+        event.accept()
+
+    def dropEvent(self, event: Any):
+        paths = extract_dropped_file_paths(event.mimeData())
+        if paths:
+            if hasattr(self, "canvas") and hasattr(self.canvas, "mediaDropped"):
+                self.canvas.mediaDropped.emit(paths[0])
+            event.setDropAction(Qt.DropAction.CopyAction)
+            event.acceptProposedAction()
+            event.accept()
+            return
+        event.ignore()
 
     def setRange(self, min_val: int, max_val: int):
         self.update()

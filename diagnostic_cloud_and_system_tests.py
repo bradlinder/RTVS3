@@ -1265,6 +1265,77 @@ class DiagnosticCloudAndSystemTestsMixin:
             f"N-1=v{info.get('prev_version')}; [x]={counts['completed']}, [-]={counts['in_progress']}, [ ]={counts['planned']}"
         )
 
+    def _test_source_file_modularity_and_1000_line_budget_invariant(self, item: DiagnosticItem):
+        """Validates that recently decomposed modules adhere to the 1,000-line modular budget,
+
+        and verifies that scripts/modular_audit.py AST decomposition analyzer generates actionable split blueprints.
+        """
+        import sys
+        from pathlib import Path
+
+        scripts_dir = Path(__file__).resolve().parent / "scripts"
+        if str(scripts_dir) not in sys.path:
+            sys.path.insert(0, str(scripts_dir))
+
+        try:
+            from modular_audit import scan_repository, check_budget_guard, DecompositionPlan, ModuleStructure
+        except ImportError as exc:
+            raise AssertionError(f"Failed to import modular_audit analyzer: {exc}")
+
+        # 1. Test AST decomposition suggester on a sample file
+        test_file = Path(__file__).resolve().parent / "RadioTVSegmenter.py"
+        struct = ModuleStructure(test_file)
+        assert struct.parse_error is None, f"AST parsing failed on {test_file}: {struct.parse_error}"
+        plan = DecompositionPlan(struct)
+        blueprint = plan.render_markdown_blueprint()
+        assert len(blueprint) > 50, "DecompositionPlan generated empty blueprint"
+        assert "Submodule Allocations" in blueprint, "Blueprint missing allocations section"
+
+        # 2. Verify all files explicitly refactored in Waves 1-5 strictly adhere to the <= 1,000-line ceiling
+        decomposed_targets = [
+            "RadioTVSegmenter.py",
+            "playback_controller.py",
+            "preferences_dialog.py",
+            "theme_preferences.py",
+            "export_dialogs.py",
+            "export_media_clipper.py",
+            "export_documents.py",
+            "export_story_pipeline.py",
+            "transcript_story.py",
+            "transcript_editor.py",
+            "radio_tv_story_segmenter_worker.py",
+            "benchmark.py",
+            "plugins/wordpress/export_destination.py",
+            "plugins/manager.py",
+            "timeline_widgets.py",
+        ]
+
+        violations = []
+        for rel in decomposed_targets:
+            p = Path(__file__).resolve().parent / rel
+            if p.exists():
+                s = ModuleStructure(p)
+                if s.total_lines > 1000:
+                    violations.append(f"{rel} ({s.total_lines} lines)")
+
+        assert not violations, f"Decomposed module(s) exceed 1,000-line ceiling: {', '.join(violations)}"
+
+        # 3. Scan all repository modules to identify legacy modules pending future wave decomposition
+        all_structs = scan_repository(Path(__file__).resolve().parent)
+        guard_result = check_budget_guard(all_structs, hard_ceiling=1000, warn_threshold=800)
+
+        legacy_exceeding = [v["path"] for v in guard_result["violations"] if v["path"] not in decomposed_targets]
+
+        if legacy_exceeding:
+            item.status = "WARNING"
+            item.message = (
+                f"Modularity guard active: all Wave 1-5 refactored modules <=1,000 lines; "
+                f"{len(legacy_exceeding)} legacy module(s) queued for future decomposition waves"
+            )
+        else:
+            item.status = "PASS"
+            item.message = f"All {guard_result['total_scanned']} modules comply with the 1,000-line ceiling."
+
     def _test_station_voice_profiles_store_and_matching_engine(self, item: DiagnosticItem):
         """Validates StationVoiceProfileStore persistence, vector normalization, profile addition, matching logic, and JSON export/import."""
         from speaker_profiles import StationVoiceProfile, StationVoiceProfileStore

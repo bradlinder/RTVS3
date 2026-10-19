@@ -293,9 +293,9 @@ def configure_runtime_environment() -> Path:
 def ensure_sherpa_onnx_runtime():
     """Make sure the Parakeet runtime is importable before the GUI starts.
 
-    Source/portable Python runs may not have installed requirements yet.  In
+    Source/portable Python runs may not have installed requirements yet. In
     that case install the same constrained sherpa-onnx package used by the
-    application.  A frozen build should already contain the package; the
+    application. A frozen build should already contain the package; the
     build script explicitly collects it so this check is also a useful
     diagnostic rather than attempting to pip-install into a PyInstaller EXE.
     """
@@ -310,17 +310,43 @@ def ensure_sherpa_onnx_runtime():
         return False
 
     print("[STARTUP] sherpa-onnx is not installed; installing it now...", flush=True)
+    in_venv = (sys.prefix != sys.base_prefix) or hasattr(sys, "real_prefix")
+    creationflags = subprocess.CREATE_NO_WINDOW if sys.platform == 'win32' else 0
+    cmd_base = [sys.executable, "-m", "pip", "install", "--upgrade", "--prefer-binary"]
+
     try:
-        creationflags = subprocess.CREATE_NO_WINDOW if sys.platform == 'win32' else 0
-        subprocess.run(
-            [sys.executable, "-m", "pip", "install", "--upgrade", package_spec],
+        res = subprocess.run(
+            [*cmd_base, package_spec],
             check=True,
             creationflags=creationflags,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
         )
-        return importlib.util.find_spec(module_name) is not None
-    except Exception as exc:
-        print(f"[STARTUP] Could not install sherpa-onnx automatically: {exc}", file=sys.stderr)
-        return False
+        if importlib.util.find_spec(module_name) is not None:
+            return True
+    except Exception as exc1:
+        if not in_venv:
+            try:
+                print("[STARTUP] Standard pip install failed; retrying with --user...", flush=True)
+                subprocess.run(
+                    [*cmd_base, "--user", package_spec],
+                    check=True,
+                    creationflags=creationflags,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    text=True,
+                )
+                if importlib.util.find_spec(module_name) is not None:
+                    return True
+            except Exception as exc2:
+                print(f"[STARTUP] Could not install sherpa-onnx automatically: {exc2}", file=sys.stderr)
+                return False
+        else:
+            print(f"[STARTUP] Could not install sherpa-onnx in venv automatically: {exc1}", file=sys.stderr)
+            return False
+
+    return importlib.util.find_spec(module_name) is not None
 
 def ensure_keyring_runtime():
     """Ensure keyring (and pywin32-ctypes on Windows) is installed for secure credential storage."""
