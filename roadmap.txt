@@ -43,7 +43,7 @@ TABLE OF CONTENTS & STATUS OVERVIEW
    [x] 1.3 Unified Export Dialog Menu Action Routing (`plugins/wordpress/plugin.py`): Updated "Publish to WordPress..." in the Publishing & Plugins menu to route directly to `self.app.open_unified_export_dialog(initial_dest="wordpress")`, aligning with the YouTube and Google Docs plugin integrations.
    [x] 1.4 Synchronous Version Bump: Synchronized all 10 project locations and web preview scaffolding to `v3.9.30-beta`.
 
-2. Current Release: Seriously Simple Podcasting Duplicate Post Elimination, String Metadata Serialization & Title Preservation (`plugins/wordpress/client.py`, `plugins/wordpress/castos.py`, `plugins/wordpress/wp_post_builder.py`, `plugins/wordpress/export_destination.py`, `diagnostic_export_tests.py`) [x] [COMPLETED in v3.9.31-beta]
+2. Current Release: Seriously Simple Podcasting Duplicate Post Elimination, String Metadata Serialization & Title Preservation (`plugins/wordpress/client.py`, `plugins/wordpress/castos.py`, `plugins/wordpress/wp_post_builder.py`, `plugins/wordpress/export_destination.py`, `diagnostic_export_tests.py`) [x] [COMPLETED in v3.9.32-beta]
    [x] 2.1 Seriously Simple Podcasting String Metadata Serialization (`plugins/wordpress/castos.py`, `plugins/wordpress/client.py`): Formatted `filesize`, `duration`, `season`, and `episode_number` as strings for WordPress REST API compliance, eliminating the `HTTP 400 Bad Request` (`rest_invalid_type: meta.filesize`) validation failure that previously caused duplicate posts.
    [x] 2.2 Defensive Partial Commit Detection & Duplicate Post Prevention (`plugins/wordpress/client.py`): Added detection in `create_post` to catch cases where WordPress commits a post before throwing metadata validation errors, preventing fallback logic from generating orphan duplicate draft posts.
    [x] 2.3 Export Scope Title Preservation & De-Consolidation (`plugins/wordpress/wp_post_builder.py`, `plugins/wordpress/export_destination.py`): Removed destructive single-story consolidation code that previously replaced the Full Episode title ("LYB Narration") with story snippet titles, and ensured `build_full_item()` never inherits child story titles across scope switches.
@@ -124,7 +124,7 @@ DETAILED MILESTONE SPECIFICATIONS
 [x] 1.4 Media Player Source Reloading & Stream Reset (`media_batch.py`): Safe player stop and stream reset for immediate normalized audio playback.
 
 ================================================================================
-2. CURRENT RELEASE: DIAGNOSTIC BENCH COMPLETION, SERIOUSLY SIMPLE PODCASTING (CASTOS) EPISODE FILE ASSOCIATION & FEED AUTO-DISCOVERY FIXES [x] [COMPLETED in v3.9.31-beta]
+2. CURRENT RELEASE: DIAGNOSTIC BENCH COMPLETION, SERIOUSLY SIMPLE PODCASTING (CASTOS) EPISODE FILE ASSOCIATION & FEED AUTO-DISCOVERY FIXES [x] [COMPLETED in v3.9.32-beta]
 ================================================================================
 
 [x] 2.1 System Diagnostic Test Bench Completion Fix (`diagnostic_export_tests.py`): Linked `_test_wordpress_castos_podcast_integration` within `_test_wordpress_audio_inclusion_toggle_and_error_resilience`, explicitly setting `item.status = "PASS"` so Test #33 completes and all 71 diagnostics finish cleanly without hanging in `RUNNING`.

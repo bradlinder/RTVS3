@@ -967,7 +967,8 @@ class VideoThumbnailWorker(QObject):
     def run(self):
         try:
             self.output_dir.mkdir(parents=True, exist_ok=True)
-            fps = self.count / self.duration
+            dur = max(0.001, float(self.duration or 0.0))
+            fps = max(0.001, float(self.count or 1)) / dur
             vf = f"fps={fps:.8f},scale=320:-2:force_original_aspect_ratio=decrease"
             pattern = str(self.output_dir / "thumb_%03d.jpg")
             cmd = [ffmpeg_path() or "ffmpeg", "-hide_banner", "-loglevel", "error", "-y", "-i", str(self.media_path), "-map", "0:v:0", "-vf", vf, "-q:v", "4", pattern]

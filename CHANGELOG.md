@@ -1,5 +1,23 @@
 # Changelog
 
+## v3.9.32-beta
+- **Circular Import Elimination & Core Facade Decoupling (`prs_shared.py`, `story_widgets.py`, `background_workers.py`)**:
+  - Replaced tight top-level UI and background worker imports in `prs_shared.py` (`FadeCurveVisualSelector`, `StoryFadesChangeCommand`, `TimelineCanvas`, `StoryAutoDetectWorker`, etc.) with Python 3.7+ module-level `__getattr__` and `globals()` caching.
+  - Resolved circular import deadlock between core utilities and worker modules, allowing `background_workers.py` to be cleanly imported and executed in isolation without circular dependency errors.
+- **Video Thumbnail Worker Zero-Division Guard (`background_workers.py`)**:
+  - Protected frame rate calculation (`fps = max(0.001, float(self.count or 1)) / max(0.001, float(self.duration or 0.0))`) against zero-duration or corrupt video streams, preventing `ZeroDivisionError` crashes during background thumbnail generation.
+- **WordPress Media Binary Streaming & Canonical Endpoint Resolution (`plugins/wordpress/client.py`)**:
+  - Fixed inoperable raw binary upload fallback in `upload_media()`: replaced invalid JSON payload call with direct streaming binary upload (`requests.post(url, data=f, headers=headers)`) using file handle references.
+  - Prioritized canonical non-trailing `/media` endpoint before trailing slash fallback `/media/` to eliminate HTTP 301 Moved Permanently redirects across standard WordPress REST configurations.
+- **Podcast Scope Default Isolation & UI Decoupling (`plugins/wordpress/wp_post_builder.py`, `plugins/wordpress/castos.py`, `plugins/wordpress/export_destination.py`)**:
+  - Updated default podcast designation across export scopes: `Full Episode` posts now default to `is_podcast = True`, while child story posts default to `is_podcast = False`.
+  - When exporting `full` or `full_and_all_stories`, only the Full Episode is designated as a podcast episode by default.
+  - When exporting `all_stories` or `selected_stories`, child story items remain standard WordPress posts with podcast toggles unchecked by default.
+  - Removed aggressive 2-post synchronization coupling in `setup_castos_ui` (`castos.py`) so checking or unchecking a podcast box for one queue item never forces or overrides the state of any other queue item.
+  - Eliminated podcast metadata leakage in `export_destination.py` that previously forced podcast taxonomy onto child story scopes.
+- **Roadmap Invariant Tracking & Monolithic Module Cataloging (`roadmap.txt`)**:
+  - Added Section 9 to roadmap detailing Wave 6 Monolithic File Decomposition for all 17 remaining source files exceeding 1,000 lines under the single-responsibility invariant.
+
 ## v3.9.31-beta
 - **Seriously Simple Podcasting Duplicate Post Elimination & String Metadata Serialization (`plugins/wordpress/client.py`, `plugins/wordpress/castos.py`)**:
   - Identified and resolved the root cause of duplicate draft posts in WordPress: Seriously Simple Podcasting (SSP) registers `filesize` as `type: string` in its REST schema. When sent as an integer, WordPress returns `HTTP 400 Bad Request` (`rest_invalid_type: meta.filesize`).
