@@ -25,7 +25,7 @@ class RestoreSelectedSettingsDialog(QDialog):
         ("general_project_dirs", "Default Project Directory & Bundling", "Default projects folder, project subfolders (Transcripts/Media), and media copy settings."),
         ("general_autosave", "Auto-save Interval", "Automatic project save interval (5 minutes)."),
         ("keyboard_shortcuts", "Keyboard Shortcuts", "Custom keyboard shortcut assignments for all menu actions, tools, navigation, and editing commands."),
-        ("audio_hardware", "Audio Hardware & Volume", "Audio output device (System Default) and default volume (100%)."),
+        ("audio_hardware", "Audio Settings & Volume", "Audio output device (System Default), default volume (100%), and automatic loudness normalization settings."),
         ("software_updates", "Software Updates & Repository", "Automatic update checks (Enabled), release channel (Stable), and official GitHub repository."),
         ("ai_models", "AI Models & Storage Directory", "Whisper speech recognition model (small, beam size 5), translation model (tiny), and models storage folder."),
         ("gpu_acceleration", "Hardware / GPU Acceleration", "GPU and DirectML hardware acceleration settings."),

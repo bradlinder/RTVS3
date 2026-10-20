@@ -481,6 +481,14 @@ class UiMenusMixin:
         self.clear_cache_action.triggered.connect(self.open_clear_cache_dialog)
         tools_menu.addAction(self.clear_cache_action)
 
+        self.normalize_loudness_action = QAction("&Normalize Audio Loudness...", self)
+        self.normalize_loudness_action.setShortcut(platform_seq("Ctrl+Alt+N"))
+        self.normalize_loudness_action.setToolTip("Inspect and normalize audio loudness metrics (LUFS, LRA, True Peak) with live gain preview.")
+        self.normalize_loudness_action.setStatusTip("Inspect and normalize audio loudness metrics (LUFS, LRA, True Peak) with live gain preview.")
+        self.normalize_loudness_action.setEnabled(False)
+        self.normalize_loudness_action.triggered.connect(self.open_loudness_normalization_dialog)
+        tools_menu.addAction(self.normalize_loudness_action)
+
         tools_menu.addSeparator()
 
         self.manage_models_action = QAction("&Manage AI Models...", self)

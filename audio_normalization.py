@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import dataclasses
 from dataclasses import dataclass
+import hashlib
 import math
 import os
 from pathlib import Path
@@ -16,7 +17,7 @@ import re
 import subprocess
 import sys
 
-from core_utils import ffmpeg_path, ffprobe_path
+from core_utils import ffmpeg_path, ffprobe_path, get_app_data_dir
 from process_lifecycle import register_process, unregister_process
 
 try:
@@ -64,6 +65,7 @@ class LoudnessReport:
     loudness_range_lu: float = 0.0
     true_peak_dbtp: float = -70.0
     is_quiet: bool = False
+    needs_boost: bool = False
     sampled: bool = False
     error: str | None = None
 
@@ -214,6 +216,10 @@ def probe_media_loudness(
             if "Summary:" in stderr_text:
                 integrated, lra, peak = parse_ebur128_summary(stderr_text)
                 is_quiet = (integrated < quiet_threshold_lufs) or (peak < quiet_threshold_dbfs)
+                if integrated >= (target_lufs - 2.0) and peak <= -0.5:
+                    needs_boost = False
+                else:
+                    needs_boost = is_quiet or (integrated < (target_lufs - 2.0))
                 return LoudnessReport(
                     media_path=str(path_obj),
                     duration=duration,
@@ -221,6 +227,7 @@ def probe_media_loudness(
                     loudness_range_lu=lra,
                     true_peak_dbtp=peak,
                     is_quiet=is_quiet,
+                    needs_boost=needs_boost,
                     sampled=True,
                 )
 
@@ -254,6 +261,10 @@ def probe_media_loudness(
 
         integrated, lra, peak = parse_ebur128_summary(stderr_text)
         is_quiet = (integrated < quiet_threshold_lufs) or (peak < quiet_threshold_dbfs)
+        if integrated >= (target_lufs - 2.0) and peak <= -0.5:
+            needs_boost = False
+        else:
+            needs_boost = is_quiet or (integrated < (target_lufs - 2.0))
         return LoudnessReport(
             media_path=str(path_obj),
             duration=duration,
@@ -261,6 +272,7 @@ def probe_media_loudness(
             loudness_range_lu=lra,
             true_peak_dbtp=peak,
             is_quiet=is_quiet,
+            needs_boost=needs_boost,
             sampled=sampled,
         )
 
@@ -329,3 +341,201 @@ class AudioLoudnessProbeWorker(QThread):
         if report.error:
             self.error.emit(report.error)
         self.probed.emit(report)
+
+
+def normalize_audio_sidecar(
+    media_path: str | Path,
+    report: LoudnessReport | None = None,
+    target_lufs: float = DEFAULT_TARGET_LUFS,
+    max_true_peak: float = DEFAULT_TARGET_DBFS,
+    quiet_threshold_lufs: float = DEFAULT_QUIET_THRESHOLD_LUFS,
+    quiet_threshold_dbfs: float = DEFAULT_QUIET_THRESHOLD_DBFS,
+    timeout: float = 300.0,
+) -> Path:
+    """Non-destructively generate a normalized 16 kHz mono WAV sidecar.
+
+    Applies a conditional two-tier hybrid normalization pipeline:
+    1. Bypass Condition: If report.integrated_lufs >= (target_lufs - 2.0) and
+       report.true_peak_dbtp <= -0.5, skips normalization and returns original media_path
+       to avoid unnecessary disk I/O.
+    2. Tier 1 — Linear Gain + True-Peak Limiter (Default for uniform quiet audio,
+       LRA <= 14.0 LU): Applies exact linear gain delta_db = min(target_lufs - report.integrated_lufs, 24.0)
+       followed by transparent brickwall limiter (-af "volume={delta_db}dB,alimiter=limit=-1.5dB:level=false")
+       so speech dynamics remain 100% natural without single-pass loudnorm pumping artifacts.
+    3. Tier 2 — Dynamic Speech Leveler (For extreme speaker disparity, LRA > 14.0 LU,
+       e.g. loud studio host + quiet caller): Applies speech-tuned dynamic normalization
+       (-af "highpass=f=80,dynaudnorm=f=250:g=15:p=0.89:m=10.0,alimiter=limit=-1.5dB:level=false").
+
+    Outputs to get_app_data_dir() / "cache" / "normalized" / <stem>_<hash>_norm16k.wav.
+    """
+    path_obj = Path(media_path)
+    if not path_obj.is_file():
+        return path_obj
+
+    if report is None:
+        report = probe_media_loudness(
+            path_obj,
+            target_lufs=target_lufs,
+            quiet_threshold_lufs=quiet_threshold_lufs,
+            quiet_threshold_dbfs=quiet_threshold_dbfs,
+            timeout=min(20.0, timeout / 2),
+        )
+
+    if report.error:
+        return path_obj
+
+    # 1. Bypass Condition: audio is already within target thresholds
+    if report.integrated_lufs >= (target_lufs - 2.0) and report.true_peak_dbtp <= -0.5:
+        return path_obj
+
+    delta_db = min(target_lufs - report.integrated_lufs, 24.0)
+    if delta_db <= 0.0 and report.integrated_lufs >= (target_lufs - 3.0):
+        return path_obj
+
+    cache_dir = get_app_data_dir() / "cache" / "normalized"
+    cache_dir.mkdir(parents=True, exist_ok=True)
+
+    tier = 2 if report.loudness_range_lu > 14.0 else 1
+    mtime = path_obj.stat().st_mtime if path_obj.exists() else 0
+    size = path_obj.stat().st_size if path_obj.exists() else 0
+    cache_key = f"{path_obj.resolve()}_{mtime}_{size}_{target_lufs:.1f}_{max_true_peak:.1f}_tier{tier}"
+    hash_key = hashlib.sha256(cache_key.encode("utf-8")).hexdigest()[:16]
+    sidecar_name = f"{path_obj.stem}_{hash_key}_norm16k.wav"
+    sidecar_path = cache_dir / sidecar_name
+
+    if sidecar_path.is_file() and sidecar_path.stat().st_size > 1024:
+        return sidecar_path
+
+    # Construct two-tier filter graph
+    if tier == 1:
+        # Tier 1: Linear gain + True-Peak brickwall limiter
+        gain_val = max(0.5, delta_db)
+        af_filter = f"volume={gain_val:.2f}dB,alimiter=limit={max_true_peak:.1f}dB:level=false"
+    else:
+        # Tier 2: Dynamic speech leveler for high LRA
+        af_filter = f"highpass=f=80,dynaudnorm=f=250:g=15:p=0.89:m=10.0,alimiter=limit={max_true_peak:.1f}dB:level=false"
+
+    ffmpeg_bin = ffmpeg_path() or "ffmpeg"
+    tmp_path = cache_dir / f"{sidecar_name}.{os.getpid()}.tmp.wav"
+    creationflags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
+
+    cmd = [
+        ffmpeg_bin,
+        "-nostdin",
+        "-y",
+        "-v", "error",
+        "-i", str(path_obj),
+        "-vn", "-sn", "-dn",
+        "-af", af_filter,
+        "-ar", "16000",
+        "-ac", "1",
+        "-c:a", "pcm_s16le",
+        str(tmp_path),
+    ]
+
+    proc = None
+    try:
+        proc = subprocess.Popen(
+            cmd,
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.PIPE,
+            text=True,
+            creationflags=creationflags,
+        )
+        register_process(proc)
+        _, _ = proc.communicate(timeout=timeout)
+        if proc.returncode == 0 and tmp_path.is_file() and tmp_path.stat().st_size > 1024:
+            tmp_path.replace(sidecar_path)
+            return sidecar_path
+        return path_obj
+    except Exception:
+        return path_obj
+    finally:
+        if proc is not None:
+            unregister_process(proc)
+        if tmp_path.exists():
+            try:
+                tmp_path.unlink()
+            except Exception:
+                pass
+
+
+def get_effective_audio_for_processing(
+    media_path: str | Path | None,
+    settings_store=None,
+    project_metadata: dict | None = None,
+) -> Path:
+    """Return the audio path to feed into ASR or diarization.
+
+    If automatic loudness normalization is enabled (default: true), generates or
+    retrieves the cached normalized 16 kHz mono WAV sidecar and populates
+    loudness telemetry into project_metadata.
+    """
+    if not media_path:
+        return Path(media_path or "")
+
+    path_obj = Path(media_path).resolve()
+    if not path_obj.is_file():
+        return path_obj
+
+    # First check if project_metadata already contains an active, valid normalized sidecar for THIS media file
+    if project_metadata is not None and isinstance(project_metadata, dict):
+        norm_info = project_metadata.get("audio_normalization", {})
+        if isinstance(norm_info, dict) and norm_info.get("normalized_sidecar"):
+            sidecar_path = Path(norm_info["normalized_sidecar"]).resolve()
+            source_media = norm_info.get("source_media")
+            if sidecar_path.is_file():
+                if not source_media or Path(source_media).resolve() == path_obj or path_obj.stem in sidecar_path.name:
+                    return sidecar_path
+
+    # Check preferences / settings store
+    enabled = True
+    target_lufs = DEFAULT_TARGET_LUFS
+    max_true_peak = DEFAULT_TARGET_DBFS
+    quiet_threshold_lufs = DEFAULT_QUIET_THRESHOLD_LUFS
+    quiet_threshold_dbfs = DEFAULT_QUIET_THRESHOLD_DBFS
+
+    if settings_store is not None:
+        try:
+            val = settings_store.value("auto_loudness_normalization", "true")
+            enabled = str(val).lower() in ("true", "1", "yes")
+            target_lufs = float(settings_store.value("target_lufs", DEFAULT_TARGET_LUFS))
+            max_true_peak = float(settings_store.value("max_true_peak", DEFAULT_TARGET_DBFS))
+            quiet_threshold_lufs = float(settings_store.value("quiet_threshold_lufs", DEFAULT_QUIET_THRESHOLD_LUFS))
+            quiet_threshold_dbfs = float(settings_store.value("quiet_threshold_dbfs", DEFAULT_QUIET_THRESHOLD_DBFS))
+        except Exception:
+            pass
+
+    if not enabled:
+        return path_obj
+
+    report = probe_media_loudness(
+        path_obj,
+        target_lufs=target_lufs,
+        quiet_threshold_lufs=quiet_threshold_lufs,
+        quiet_threshold_dbfs=quiet_threshold_dbfs,
+    )
+
+    sidecar = normalize_audio_sidecar(
+        path_obj,
+        report=report,
+        target_lufs=target_lufs,
+        max_true_peak=max_true_peak,
+        quiet_threshold_lufs=quiet_threshold_lufs,
+        quiet_threshold_dbfs=quiet_threshold_dbfs,
+    )
+
+    if project_metadata is not None and isinstance(project_metadata, dict):
+        norm_info = project_metadata.setdefault("audio_normalization", {})
+        norm_info["probed_integrated_lufs"] = round(report.integrated_lufs, 2)
+        norm_info["probed_lra_lu"] = round(report.loudness_range_lu, 2)
+        norm_info["probed_true_peak_dbtp"] = round(report.true_peak_dbtp, 2)
+        norm_info["is_quiet"] = report.is_quiet
+        if sidecar != path_obj:
+            delta_db = min(target_lufs - report.integrated_lufs, 24.0)
+            norm_info["loudness_gain_db"] = round(delta_db, 2)
+            norm_info["normalized_sidecar"] = str(sidecar)
+            norm_info["tier"] = 2 if report.loudness_range_lu > 14.0 else 1
+
+    return sidecar

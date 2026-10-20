@@ -242,11 +242,68 @@ class WordPressExportDestination(ExportDestination):
             t_lbl = p.get("task_label") or p.get("title") or ""
             return (t_lbl == "Full Episode") or (p_idx == 0 and p.get("start") is None and p.get("end") is None and len(wp_posts) > 1)
 
-        # Sort posts so that any parent full episode is uploaded first, capturing its live URL for story footer correspondence notices
+        # Sort posts into parent and child posts
         parent_posts = [p for i, p in enumerate(wp_posts) if _is_parent(p, i)]
         child_posts = [p for i, p in enumerate(wp_posts) if not _is_parent(p, i)]
-        ordered_wp_posts = parent_posts + child_posts
+
+        # Strict scope enforcement: Ensure ordered_wp_posts strictly honors the export scope
+        raw_scope = export_data.get("scope")
+        scope = str(raw_scope).lower() if raw_scope else None
+        if scope == "full":
+            chosen = dict(parent_posts[0] if parent_posts else wp_posts[0])
+            if not chosen.get("is_podcast"):
+                for p in wp_posts:
+                    if p.get("is_podcast"):
+                        for k in ("is_podcast", "podcast_feed_ids", "podcast_feeds", "podcast_feed", "podcast_feed_id", "podcast_episode_type", "podcast_season", "podcast_episode_number"):
+                            chosen[k] = p.get(k)
+                        break
+            ordered_wp_posts = [chosen]
+            parent_posts = [chosen]
+            child_posts = []
+        elif scope in ("all_stories", "selected_stories"):
+            ordered_wp_posts = [p for p in child_posts if p]
+            if not ordered_wp_posts and wp_posts:
+                ordered_wp_posts = [wp_posts[0]]
+            if len(ordered_wp_posts) == 1 and parent_posts and not ordered_wp_posts[0].get("is_podcast") and parent_posts[0].get("is_podcast"):
+                for k in ("is_podcast", "podcast_feed_ids", "podcast_feeds", "podcast_feed", "podcast_feed_id", "podcast_episode_type", "podcast_season", "podcast_episode_number"):
+                    ordered_wp_posts[0][k] = parent_posts[0].get(k)
+            parent_posts = []
+            child_posts = list(ordered_wp_posts)
+        else:
+            ordered_wp_posts = parent_posts + child_posts
+
+        # Deduplication safeguard: drop any duplicate posts sharing identical boundaries and title
+        deduped = []
+        seen_keys = set()
+        for p in ordered_wp_posts:
+            norm_title = str(p.get("title", "")).strip().lower()
+            p_start = p.get("start")
+            p_end = p.get("end")
+            post_key = (norm_title, p_start, p_end)
+            if post_key in seen_keys:
+                continue
+            seen_keys.add(post_key)
+            deduped.append(p)
+        ordered_wp_posts = deduped
         total_posts = len(ordered_wp_posts)
+
+        # Check if any post is designated as a podcast episode while audio inclusion is disabled
+        has_podcast_posts = any(p.get("is_podcast") for p in ordered_wp_posts)
+        if has_podcast_posts and not inc_audio:
+            reply = QMessageBox.question(
+                parent_widget or main_window,
+                "Podcast Audio File Required",
+                "One or more posts are designated as Podcast Episodes, but 'Include audio files in WordPress export' is currently unchecked.\n\n"
+                "Seriously Simple Podcasting requires an audio file upload to populate the episode file field and RSS feed.\n\n"
+                "Would you like to automatically enable audio file uploads for this export?",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                QMessageBox.StandardButton.Yes,
+            )
+            if reply == QMessageBox.StandardButton.Yes:
+                inc_audio = True
+                settings.setValue("wp_include_audio", True)
+                if hasattr(getattr(self, "tab_widget", None), "wp_cb_include_audio"):
+                    self.tab_widget.wp_cb_include_audio.setChecked(True)
 
         try:
             for idx, post in enumerate(ordered_wp_posts):
@@ -329,6 +386,14 @@ class WordPressExportDestination(ExportDestination):
                         fade_curve=st_fade_curve,
                         apply_fades=bool(apply_audio_fades),
                         accordion_pos=acc_pos,
+                        is_podcast=bool(post.get("is_podcast", False)),
+                        podcast_feed=str(post.get("podcast_feed") or "default"),
+                        podcast_feed_id=post.get("podcast_feed_id"),
+                        podcast_feed_ids=post.get("podcast_feed_ids"),
+                        podcast_feeds=post.get("podcast_feeds"),
+                        podcast_episode_type=str(post.get("podcast_episode_type") or "full"),
+                        podcast_season=post.get("podcast_season"),
+                        podcast_episode_number=post.get("podcast_episode_number"),
                     )
                     if post_data and isinstance(post_data, dict):
                         if hasattr(main_window, "update_processing_progress"):
@@ -340,6 +405,7 @@ class WordPressExportDestination(ExportDestination):
                             "title": post_title,
                             "id": post_id,
                             "link": post_link,
+                            "is_podcast": bool(post.get("is_podcast", False)),
                         })
 
                         if is_parent_episode and (parent_episode_info is None or not parent_episode_info.get("link")):
@@ -355,6 +421,10 @@ class WordPressExportDestination(ExportDestination):
                                 main_window.project_metadata["wordpress"]["full_episode_link"] = post_link
                                 main_window.project_metadata["wordpress"]["full_episode_post_id"] = post_id
                                 main_window.project_metadata["wordpress"]["full_episode_title"] = post_title
+                                if post.get("is_podcast"):
+                                    main_window.project_metadata["wordpress"]["is_podcast"] = True
+                                    main_window.project_metadata["wordpress"]["podcast_feed"] = post.get("podcast_feed", "default")
+                                    main_window.project_metadata["wordpress"]["podcast_episode_type"] = post.get("podcast_episode_type", "full")
                         elif not is_parent_episode:
                             story_posts.append({
                                 "id": post_id,
@@ -500,6 +570,20 @@ class WordPressPostMetadataDialog(QDialog):
         self.accept()
 
 
+from plugins.wordpress.castos import (
+    SS_PODCAST_AUDIO_FILE,
+    SS_PODCAST_AUDIO_FILE_ID,
+    SS_PODCAST_DURATION,
+    SS_PODCAST_FILESIZE,
+    SS_PODCAST_FEED,
+    SS_PODCAST_EPISODE_TYPE,
+    CASTOS_SHORTCODE,
+    CASTOS_PLAYER_BLOCK,
+    build_castos_post_meta,
+    format_castos_duration,
+    fetch_castos_feeds,
+)
+
 
 __all__ = [
     "WordPressExportDestination",
@@ -510,4 +594,15 @@ __all__ = [
     "build_episode_stories_toc",
     "format_parent_episode_notice",
     "is_wp_auth_error",
+    "SS_PODCAST_AUDIO_FILE",
+    "SS_PODCAST_AUDIO_FILE_ID",
+    "SS_PODCAST_DURATION",
+    "SS_PODCAST_FILESIZE",
+    "SS_PODCAST_FEED",
+    "SS_PODCAST_EPISODE_TYPE",
+    "CASTOS_SHORTCODE",
+    "CASTOS_PLAYER_BLOCK",
+    "build_castos_post_meta",
+    "format_castos_duration",
+    "fetch_castos_feeds",
 ]

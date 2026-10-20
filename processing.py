@@ -491,6 +491,8 @@ class ProcessingMixin(
             self.regen_thumbnails_action.setEnabled(
                 has_audio and bool(getattr(self, "current_media_is_video", False))
             )
+        if hasattr(self, "normalize_loudness_action"):
+            self.normalize_loudness_action.setEnabled(has_audio)
 
     def stop_story_detection_worker(self, timeout_ms=5000):
         """Cancel Story Detection and wait for its QThread to finish."""

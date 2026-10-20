@@ -338,6 +338,14 @@ class PlaybackControllerMixin:
             return
 
         master_vol = getattr(self, "master_volume", 1.0)
+        if hasattr(self, "settings_store") and str(self.settings_store.value("apply_boost_playback", "false")).lower() in {"1", "true", "yes"}:
+            proj_meta = getattr(self, "project_metadata", None)
+            if isinstance(proj_meta, dict):
+                norm_info = proj_meta.get("audio_normalization", {})
+                gain_db = float(norm_info.get("loudness_gain_db", 0.0) or 0.0)
+                if gain_db > 0.0:
+                    gain_scale = min(2.0, 10.0 ** (gain_db / 20.0))
+                    master_vol = min(1.0, master_vol * gain_scale)
 
         # Check if auditioning reached end of story
         audition_idx = getattr(self, "_audition_story_index", None)

@@ -172,6 +172,7 @@ class UiDialogLaunchersMixin:
             <tr><td><b>Regenerate Waveform</b></td><td><kbd>{get_sc("regen_waveform", f"{cmd}+Shift+W")}</kbd></td></tr>
             <tr><td><b>Regenerate Video Thumbnails</b></td><td><kbd>{get_sc("regen_thumbnails", f"{cmd}+Shift+T")}</kbd></td></tr>
             <tr><td><b>Clear Temporary Cache</b></td><td><kbd>{get_sc("clear_cache", f"{cmd}+{opt}+C")}</kbd></td></tr>
+            <tr><td><b>Normalize Audio Loudness</b></td><td><kbd>{get_sc("normalize_loudness", f"{cmd}+{opt}+N")}</kbd></td></tr>
             <tr><td><b>Manage AI Models</b></td><td><kbd>{get_sc("manage_models", f"{cmd}+M")}</kbd></td></tr>
             <tr><td><b>Manage Plugins & Add-ons</b></td><td><kbd>{get_sc("manage_plugins", f"{cmd}+Shift+X")}</kbd></td></tr>
         </table>
@@ -301,4 +302,11 @@ class UiDialogLaunchersMixin:
             "The WordPress Publisher plugin is not enabled or not loaded.\n"
             "You can enable it under Settings > Manage Plugins & Add-ons.",
         )
+
+    def open_loudness_normalization_dialog(self):
+        """Open the Audio Loudness Normalization & Telemetry modal dialog."""
+        from dialogs import AudioLoudnessNormalizationDialog
+        dlg = AudioLoudnessNormalizationDialog(self)
+        dlg.exec()
+
 

@@ -10,7 +10,7 @@ from pathlib import Path
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QFormLayout, QGroupBox, QLabel,
-    QLineEdit, QSpinBox, QComboBox, QCheckBox, QPushButton,
+    QLineEdit, QSpinBox, QDoubleSpinBox, QComboBox, QCheckBox, QPushButton,
     QFileDialog, QSlider, QMessageBox
 )
 
@@ -225,7 +225,98 @@ def build_audio_hardware_tab(win, dialog, live_widgets, add_custom_defaults_btn)
     audio_form.addRow("Device Test:", test_btn)
 
     audio_layout.addLayout(audio_form)
-    add_custom_defaults_btn(audio_layout, "Audio Hardware", ["audio_hardware"])
+
+    # --- Audio Loudness Normalization & Auto-Boost Group ---
+    norm_group = QGroupBox("Audio Loudness Normalization & Auto-Boost")
+    norm_layout = QVBoxLayout(norm_group)
+    norm_form = QFormLayout()
+
+    auto_norm_chk = QCheckBox("Automatically boost quiet audio on import for transcription & speaker detection")
+    curr_auto_norm = str(win.settings_store.value("auto_loudness_normalization", "true")).lower() in {"1", "true", "yes"}
+    auto_norm_chk.setChecked(curr_auto_norm)
+    norm_form.addRow("Auto-Boost on Import:", auto_norm_chk)
+    live_widgets["auto_norm_chk"] = auto_norm_chk
+
+    target_standard_combo = QComboBox()
+    standards_data = [
+        ("Broadcast Standard (-16.0 LUFS / -1.5 dBTP)", "broadcast", -16.0, -1.5, -24.0, -6.0),
+        ("Podcast / Web Standard (-14.0 LUFS / -1.0 dBTP)", "podcast", -14.0, -1.0, -20.0, -5.0),
+        ("EBU R128 Television Standard (-24.0 LUFS / -1.0 dBTP)", "ebur128", -24.0, -1.0, -30.0, -6.0),
+        ("Peak Normalization (-3.0 dBFS)", "peak", -18.0, -3.0, -24.0, -6.0),
+    ]
+    for label, code, t_lufs, t_tp, q_lufs, q_tp in standards_data:
+        target_standard_combo.addItem(label, {"code": code, "target_lufs": t_lufs, "max_true_peak": t_tp, "quiet_lufs": q_lufs, "quiet_dbfs": q_tp})
+
+    saved_std = str(win.settings_store.value("target_standard", "broadcast") or "broadcast").lower()
+    sel_idx = 0
+    for idx in range(target_standard_combo.count()):
+        d = target_standard_combo.itemData(idx)
+        if d and d.get("code") == saved_std:
+            sel_idx = idx
+            break
+    target_standard_combo.setCurrentIndex(sel_idx)
+    norm_form.addRow("Target Standard:", target_standard_combo)
+    live_widgets["target_standard_combo"] = target_standard_combo
+
+    target_lufs_spin = QDoubleSpinBox()
+    target_lufs_spin.setRange(-36.0, -10.0)
+    target_lufs_spin.setSingleStep(0.5)
+    target_lufs_spin.setDecimals(1)
+    target_lufs_spin.setSuffix(" LUFS")
+    target_lufs_spin.setValue(float(win.settings_store.value("target_lufs", -16.0) or -16.0))
+    norm_form.addRow("Target Integrated Loudness:", target_lufs_spin)
+    live_widgets["target_lufs_spin"] = target_lufs_spin
+
+    max_true_peak_spin = QDoubleSpinBox()
+    max_true_peak_spin.setRange(-12.0, 0.0)
+    max_true_peak_spin.setSingleStep(0.5)
+    max_true_peak_spin.setDecimals(1)
+    max_true_peak_spin.setSuffix(" dBTP")
+    max_true_peak_spin.setValue(float(win.settings_store.value("max_true_peak", -1.5) or -1.5))
+    norm_form.addRow("Maximum True Peak:", max_true_peak_spin)
+    live_widgets["max_true_peak_spin"] = max_true_peak_spin
+
+    quiet_lufs_spin = QDoubleSpinBox()
+    quiet_lufs_spin.setRange(-36.0, -14.0)
+    quiet_lufs_spin.setSingleStep(0.5)
+    quiet_lufs_spin.setDecimals(1)
+    quiet_lufs_spin.setSuffix(" LUFS")
+    quiet_lufs_spin.setValue(float(win.settings_store.value("quiet_threshold_lufs", -24.0) or -24.0))
+    quiet_lufs_spin.setToolTip("Audio quieter than this threshold triggers automatic normalization.")
+    norm_form.addRow("Quiet LUFS Threshold:", quiet_lufs_spin)
+    live_widgets["quiet_threshold_lufs_spin"] = quiet_lufs_spin
+
+    quiet_dbfs_spin = QDoubleSpinBox()
+    quiet_dbfs_spin.setRange(-18.0, -1.0)
+    quiet_dbfs_spin.setSingleStep(0.5)
+    quiet_dbfs_spin.setDecimals(1)
+    quiet_dbfs_spin.setSuffix(" dBFS")
+    quiet_dbfs_spin.setValue(float(win.settings_store.value("quiet_threshold_dbfs", -6.0) or -6.0))
+    quiet_dbfs_spin.setToolTip("Audio with true-peak below this threshold triggers automatic normalization.")
+    norm_form.addRow("Quiet Peak/dBFS Threshold:", quiet_dbfs_spin)
+    live_widgets["quiet_threshold_dbfs_spin"] = quiet_dbfs_spin
+
+    def _on_standard_changed(index):
+        data = target_standard_combo.itemData(index)
+        if data:
+            target_lufs_spin.setValue(data["target_lufs"])
+            max_true_peak_spin.setValue(data["max_true_peak"])
+            quiet_lufs_spin.setValue(data["quiet_lufs"])
+            quiet_dbfs_spin.setValue(data["quiet_dbfs"])
+
+    target_standard_combo.currentIndexChanged.connect(_on_standard_changed)
+
+    apply_boost_playback_chk = QCheckBox("Apply loudness boost to in-app playback and exported audio clips")
+    apply_boost_playback_chk.setToolTip("When enabled, applies the calculated loudness gain during playback and exported story clips. Default is disabled to preserve original broadcast dynamics unless requested.")
+    curr_boost_play = str(win.settings_store.value("apply_boost_playback", "false")).lower() in {"1", "true", "yes"}
+    apply_boost_playback_chk.setChecked(curr_boost_play)
+    norm_form.addRow("Playback & Export Boost:", apply_boost_playback_chk)
+    live_widgets["apply_boost_playback_chk"] = apply_boost_playback_chk
+
+    norm_layout.addLayout(norm_form)
+    audio_layout.addWidget(norm_group)
+
+    add_custom_defaults_btn(audio_layout, "Audio Settings", ["audio_hardware", "audio_normalization"])
     audio_layout.addStretch()
     return page_audio
 

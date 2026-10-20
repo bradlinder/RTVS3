@@ -380,6 +380,36 @@ class WordPressClient:
         except Exception:
             pass
 
+    def _get_request(self, url: str, params: dict | None = None, headers: dict | None = None, timeout: int = 30) -> Any:
+        """Issue an HTTP GET with manual redirect protection and authentication."""
+        import requests
+        import urllib.parse
+        current_url = url
+        req_headers = dict(headers or {})
+        req_headers["Accept"] = "application/json"
+        current_params = params
+
+        for _ in range(5):
+            resp = requests.get(
+                current_url,
+                auth=self._get_auth(),
+                params=current_params,
+                headers=req_headers,
+                timeout=timeout,
+                allow_redirects=False,
+            )
+            if resp.status_code in (301, 302, 303, 307, 308) and "Location" in resp.headers:
+                next_url = resp.headers["Location"]
+                if not next_url.startswith(("http://", "https://")):
+                    next_url = urllib.parse.urljoin(current_url, next_url)
+                parsed_next = urllib.parse.urlparse(next_url)
+                if parsed_next.query:
+                    current_params = None
+                current_url = next_url
+                continue
+            return resp
+        return resp
+
     def _post_request(self, url: str, json_data: dict | None = None, headers: dict | None = None, timeout: int = 30) -> Any:
         """Issue an HTTP POST with manual redirect protection to keep POST method & Auth header."""
         import requests
@@ -621,6 +651,11 @@ class WordPressClient:
 
         raise RuntimeError("WordPress Media upload failed (" + "; ".join(errors) + ")")
 
+    def get_podcast_feeds(self) -> list[dict]:
+        """Fetch Seriously Simple Podcasting feeds/series or return default feed."""
+        from plugins.wordpress.castos import fetch_castos_feeds
+        return fetch_castos_feeds(self)
+
     def create_post(
         self,
         title: str,
@@ -631,6 +666,8 @@ class WordPressClient:
         author_ids: list[int] | None = None,
         author_term_ids: list[int] | None = None,
         featured_media_id: int | None = None,
+        meta: dict[str, Any] | None = None,
+        podcast_series: list[int] | None = None,
     ) -> dict:
         """Create a post in WordPress."""
         payload: dict[str, Any] = {
@@ -647,9 +684,20 @@ class WordPressClient:
             payload["ppma_author"] = [int(term_id) for term_id in author_term_ids]
         if featured_media_id:
             payload["featured_media"] = int(featured_media_id)
+        if meta:
+            # Ensure string types for known string schema fields in WordPress REST
+            sanitized_meta = dict(meta)
+            for s_key in ("filesize", "ss_podcast_filesize", "season", "ss_podcast_season", "episode_number", "ss_podcast_episode_number"):
+                if s_key in sanitized_meta and sanitized_meta[s_key] is not None:
+                    sanitized_meta[s_key] = str(sanitized_meta[s_key])
+            payload["meta"] = sanitized_meta
+        series_ids = []
+        if podcast_series:
+            series_ids = [int(x) for x in podcast_series if int(x) > 0]
+            if series_ids:
+                payload["series"] = series_ids
 
         endpoints = [
-            f"{self.api_base}/posts/",
             f"{self.api_base}/posts",
             f"{self.site_url}/?rest_route=/wp/v2/posts",
         ]
@@ -659,7 +707,123 @@ class WordPressClient:
             try:
                 resp = self._post_request(url, json_data=payload, timeout=30)
                 if resp.status_code in (200, 201):
-                    return resp.json()
+                    post_json = resp.json()
+                    created_id = post_json.get("id")
+                    if created_id and meta:
+                        att_id = meta.get("audio_file_id") or meta.get("ss_podcast_audio_file_id")
+                        if att_id:
+                            try:
+                                self._post_request(f"{self.api_base}/media/{att_id}", json_data={"post": created_id}, timeout=10)
+                            except Exception:
+                                pass
+                    return post_json
+                if resp.status_code in (400, 403, 404):
+                    # Guard against duplicate post creation:
+                    # WordPress WP_REST_Posts_Controller inserts the post into the DB BEFORE
+                    # validating meta schema. When meta validation fails with 400 Bad Request,
+                    # the draft post ALREADY EXISTS in MySQL!
+                    # Check if a post with this exact title was committed in the last 15 seconds.
+                    committed_post = None
+                    try:
+                        recent_resp = self._get_request(f"{self.api_base}/posts?status=draft&per_page=3", timeout=10)
+                        if recent_resp.status_code == 200 and recent_resp.json():
+                            for candidate in recent_resp.json():
+                                c_title = (candidate.get("title", {}).get("raw") or candidate.get("title", {}).get("rendered") or "").strip()
+                                t_title = title.strip()
+                                if c_title == t_title or c_title == t_title.replace("&", "&amp;"):
+                                    committed_post = candidate
+                                    break
+                    except Exception:
+                        committed_post = None
+
+                    if committed_post:
+                        created_id = committed_post.get("id")
+                        # The post was already created in the DB!
+                        # Do NOT issue another POST /posts which creates an orphaned duplicate.
+                        update_payload: dict[str, Any] = {}
+                        if series_ids:
+                            update_payload["series"] = series_ids
+                        if category_ids:
+                            update_payload["categories"] = category_ids
+                        if author_ids:
+                            update_payload["author"] = author_ids[0]
+                        if author_term_ids:
+                            update_payload["ppma_author"] = [int(x) for x in author_term_ids]
+                        if update_payload:
+                            try:
+                                self.update_post(created_id, **update_payload)
+                            except Exception:
+                                pass
+                        if meta:
+                            att_id = meta.get("audio_file_id") or meta.get("ss_podcast_audio_file_id")
+                            if att_id:
+                                try:
+                                    self._post_request(f"{self.api_base}/media/{att_id}", json_data={"post": created_id}, timeout=10)
+                                except Exception:
+                                    pass
+                        return committed_post
+
+                    fallback_payload = dict(payload)
+                    fallback_payload.pop("meta", None)
+                    fallback_resp = self._post_request(url, json_data=fallback_payload, timeout=30)
+                    if fallback_resp.status_code in (200, 201):
+                        post_json = fallback_resp.json()
+                        try:
+                            created_id = post_json.get("id")
+                            if created_id and meta:
+                                for m_key, m_val in meta.items():
+                                    try:
+                                        self._post_request(f"{self.api_base}/posts/{created_id}", json_data={"meta": {m_key: m_val}}, timeout=10)
+                                    except Exception:
+                                        pass
+                                att_id = meta.get("audio_file_id") or meta.get("ss_podcast_audio_file_id")
+                                if att_id:
+                                    try:
+                                        self._post_request(f"{self.api_base}/media/{att_id}", json_data={"post": created_id}, timeout=10)
+                                    except Exception:
+                                        pass
+                        except Exception:
+                            pass
+                        return post_json
+                    elif fallback_resp.status_code in (400, 403, 404) and ("series" in fallback_payload or "ppma_author" in fallback_payload):
+                        minimal_payload = dict(fallback_payload)
+                        minimal_payload.pop("series", None)
+                        minimal_payload.pop("podcast_series", None)
+                        minimal_payload.pop("ppma_author", None)
+                        min_resp = self._post_request(url, json_data=minimal_payload, timeout=30)
+                        if min_resp.status_code in (200, 201):
+                            post_json = min_resp.json()
+                            try:
+                                created_id = post_json.get("id")
+                                if created_id:
+                                    if series_ids:
+                                        for s_key in ("series", "podcast_series"):
+                                            try:
+                                                r = self._post_request(f"{self.api_base}/posts/{created_id}", json_data={s_key: series_ids}, timeout=10)
+                                                if r.status_code in (200, 201):
+                                                    break
+                                            except Exception:
+                                                pass
+                                    if author_term_ids:
+                                        try:
+                                            self._post_request(f"{self.api_base}/posts/{created_id}", json_data={"ppma_author": author_term_ids}, timeout=10)
+                                        except Exception:
+                                            pass
+                                    if meta:
+                                        for m_key, m_val in meta.items():
+                                            try:
+                                                self._post_request(f"{self.api_base}/posts/{created_id}", json_data={"meta": {m_key: m_val}}, timeout=10)
+                                            except Exception:
+                                                pass
+                                        att_id = meta.get("audio_file_id") or meta.get("ss_podcast_audio_file_id")
+                                        if att_id:
+                                            try:
+                                                self._post_request(f"{self.api_base}/media/{att_id}", json_data={"post": created_id}, timeout=10)
+                                            except Exception:
+                                                pass
+                            except Exception:
+                                pass
+                            return post_json
                 last_error = f"HTTP {resp.status_code}: {resp.text[:300]}"
             except Exception as exc:
                 last_error = str(exc)
@@ -675,6 +839,8 @@ class WordPressClient:
         status: str | None = None,
         category_ids: list[int] | None = None,
         featured_media_id: int | None = None,
+        meta: dict[str, Any] | None = None,
+        podcast_series: list[int] | None = None,
     ) -> dict:
         """Update an existing post in WordPress."""
         payload: dict[str, Any] = {}
@@ -690,6 +856,13 @@ class WordPressClient:
             payload["categories"] = category_ids
         if featured_media_id is not None:
             payload["featured_media"] = int(featured_media_id)
+        if meta is not None:
+            payload["meta"] = meta
+        if podcast_series is not None:
+            series_ids = [int(x) for x in podcast_series if int(x) > 0]
+            if series_ids:
+                payload["series"] = series_ids
+                payload["podcast_series"] = series_ids
 
         pid = int(post_id)
         endpoints = [
@@ -1132,6 +1305,14 @@ def execute_wordpress_upload(
     fade_curve: str = "linear",
     apply_fades: bool = True,
     accordion_pos: str = "top",
+    is_podcast: bool = False,
+    podcast_feed: str = "default",
+    podcast_feed_id: int | None = None,
+    podcast_feed_ids: list[int] | None = None,
+    podcast_feeds: list[str] | None = None,
+    podcast_episode_type: str = "full",
+    podcast_season: str | int | None = None,
+    podcast_episode_number: str | int | None = None,
 ) -> dict:
     """Extract media clip, upload to WordPress media library, and create draft post."""
     def report_progress(step: int, description: str) -> None:
@@ -1147,6 +1328,8 @@ def execute_wordpress_upload(
 
     media_url = ""
     featured_media_id = None
+    media_attachment_id = None
+    media_filesize = None
 
     # Upload featured image if selected
     if featured_image_path and Path(featured_image_path).is_file():
@@ -1220,10 +1403,18 @@ def execute_wordpress_upload(
             # Upload Media to WordPress
             report_progress(2, "Uploading audio to WordPress media library…")
             upload_name = media_filename or f"{safe_filename(post_title or 'audio')}.mp3"
+            media_attachment_id = None
+            media_filesize = None
             try:
                 media_item = client.upload_media(target_media, filename=upload_name)
                 media_url = ""
                 if isinstance(media_item, dict):
+                    media_attachment_id = media_item.get("id")
+                    media_details = media_item.get("media_details")
+                    if isinstance(media_details, dict):
+                        media_filesize = media_details.get("filesize")
+                    if not media_filesize and Path(target_media).exists():
+                        media_filesize = Path(target_media).stat().st_size
                     guid_data = media_item.get("guid")
                     guid_url = ""
                     if isinstance(guid_data, dict):
@@ -1246,7 +1437,12 @@ def execute_wordpress_upload(
     content_parts = []
     is_video = bool(getattr(main_window, "current_media_is_video", False))
     if media_url:
-        if is_video:
+        if is_podcast:
+            # Podcast Episode: Display embedded Castos player; omit standard <!-- wp:audio --> block
+            content_parts.append(
+                '<!-- wp:shortcode -->\n[ss_player]\n<!-- /wp:shortcode -->'
+            )
+        elif is_video:
             content_parts.append(
                 f'<!-- wp:video -->\n<figure class="wp-block-video"><video controls src="{media_url}"></video></figure>\n<!-- /wp:video -->'
             )
@@ -1542,21 +1738,67 @@ def execute_wordpress_upload(
 
     # 4. Create Draft Post
     report_progress(4, "Creating WordPress draft…")
-    post_data = client.create_post(
-        title=post_title,
-        content=full_content,
-        excerpt=post_excerpt,
-        status="draft",
-        category_ids=category_ids,
-        author_ids=author_ids,
-        author_term_ids=author_term_ids,
-        featured_media_id=featured_media_id,
-    )
+    castos_meta = None
+    if is_podcast and media_url:
+        from plugins.wordpress.castos import build_castos_post_meta
+        clip_duration = clip_dur if "clip_dur" in locals() else float(getattr(main_window, "duration", 0.0) or 0.0)
+        castos_meta = build_castos_post_meta(
+            audio_url=media_url,
+            attachment_id=media_attachment_id,
+            duration_seconds=clip_duration,
+            filesize_bytes=media_filesize,
+            feed_slug=podcast_feed,
+            episode_type=podcast_episode_type,
+            season=podcast_season,
+            episode_number=podcast_episode_number,
+        )
+
+    # Resolve podcast_series_ids (supports multiple series selection)
+    podcast_series_ids: list[int] = []
+    if podcast_feed_ids:
+        podcast_series_ids = [int(x) for x in podcast_feed_ids if int(x) > 0]
+    elif podcast_feed_id and int(podcast_feed_id) > 0:
+        podcast_series_ids = [int(podcast_feed_id)]
+
+    if is_podcast and not podcast_series_ids and podcast_feed:
+        try:
+            from plugins.wordpress.castos import fetch_castos_feeds
+            feeds = fetch_castos_feeds(client)
+            for f in feeds:
+                if isinstance(f, dict) and f.get("slug") == podcast_feed and f.get("id"):
+                    podcast_series_ids = [int(f["id"])]
+                    break
+        except Exception:
+            pass
+
+    create_kwargs: dict[str, Any] = {
+        "title": post_title,
+        "content": full_content,
+        "excerpt": post_excerpt,
+        "status": "draft",
+        "category_ids": category_ids,
+        "author_ids": author_ids,
+        "author_term_ids": author_term_ids,
+        "featured_media_id": featured_media_id,
+    }
+    if castos_meta:
+        create_kwargs["meta"] = castos_meta
+    if podcast_series_ids:
+        create_kwargs["podcast_series"] = podcast_series_ids
+
+    post_data = client.create_post(**create_kwargs)
 
     if isinstance(post_data, dict):
         post_data["_generated_content"] = full_content
+        post_data["_is_podcast"] = is_podcast
+        post_data["_podcast_feed"] = podcast_feed
+        post_data["_media_attachment_id"] = media_attachment_id
+        post_data["_media_url"] = media_url
+        if castos_meta:
+            post_data["_castos_meta"] = castos_meta
 
     post_id = post_data.get("id") if isinstance(post_data, dict) else "Draft"
     if hasattr(main_window, "log_activity"):
-        main_window.log_activity(f"[WORDPRESS] Created Draft Post #{post_id}: '{post_title}'")
+        pod_note = f" [Podcast: {podcast_feed}]" if is_podcast else ""
+        main_window.log_activity(f"[WORDPRESS] Created Draft Post #{post_id}{pod_note}: '{post_title}'")
     return post_data

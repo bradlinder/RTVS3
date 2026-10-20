@@ -476,6 +476,16 @@ class DiagnosticEngine(
                 "Timeline & Audio Performance",
                 "Validates fast multi-window EBU R128 loudness and peak probing across synthetic test media",
             ),
+            DiagnosticItem(
+                "Two-Tier Hybrid Audio Loudness Normalization",
+                "Timeline & Audio Performance",
+                "Validates conditional bypass, linear gain + true-peak limiter (Tier 1), dynamic leveler (Tier 2), and processing integration",
+            ),
+            DiagnosticItem(
+                "Audio Loudness Preferences and Manual Normalization Dialog",
+                "Timeline & Audio Performance",
+                "Validates loudness settings persistence, target standard presets, and manual normalization dialog telemetry",
+            ),
         ]
 
     def run_all(self, stop_requested_fn: Optional[Callable[[], bool]] = None) -> List[DiagnosticItem]:

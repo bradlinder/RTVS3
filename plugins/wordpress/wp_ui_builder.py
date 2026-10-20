@@ -275,6 +275,10 @@ def setup_wp_tab_ui(self: Any):
     self.wp_rad_thumb_grab.toggled.connect(self._on_wp_thumb_mode_changed)
     self.wp_rad_thumb_file.toggled.connect(self._on_wp_thumb_mode_changed)
 
+    # Seriously Simple Podcasting (Castos) Section
+    from plugins.wordpress.castos import setup_castos_ui
+    setup_castos_ui(self, editor_layout)
+
     # Bulk Actions Rows
     self.wp_bulk_box = QWidget()
     bulk_vbox = QVBoxLayout(self.wp_bulk_box)
@@ -331,6 +335,20 @@ def setup_wp_tab_ui(self: Any):
     bulk_row3.addWidget(self.wp_apply_thumb_all_btn)
     bulk_row3.addStretch()
     bulk_vbox.addLayout(bulk_row3)
+
+    bulk_row4 = QHBoxLayout()
+    bulk_row4.setSpacing(6)
+    self.wp_apply_podcast_selected_btn = QPushButton("Apply Podcast Settings to Selected Stories")
+    self.wp_apply_podcast_selected_btn.setToolTip("Copy this post's podcast settings (feed, type) to currently selected stories")
+    self.wp_apply_podcast_selected_btn.clicked.connect(self._apply_podcast_to_selected_stories)
+
+    self.wp_apply_podcast_all_btn = QPushButton("Apply Podcast Settings to All Posts")
+    self.wp_apply_podcast_all_btn.setToolTip("Copy this post's podcast settings to all other posts in the queue")
+    self.wp_apply_podcast_all_btn.clicked.connect(self._apply_podcast_to_all_posts)
+    bulk_row4.addWidget(self.wp_apply_podcast_selected_btn)
+    bulk_row4.addWidget(self.wp_apply_podcast_all_btn)
+    bulk_row4.addStretch()
+    bulk_vbox.addLayout(bulk_row4)
 
     editor_layout.addWidget(self.wp_bulk_box)
 

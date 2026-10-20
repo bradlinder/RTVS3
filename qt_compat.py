@@ -51,6 +51,51 @@ class MockModule(ModuleType):
             def __getattr__(self, attr):
                 return DynamicMock()
 
+            def isEnabled(self):
+                return getattr(self, "_enabled", True)
+
+            def setEnabled(self, val):
+                self._enabled = bool(val)
+
+            def isChecked(self):
+                return getattr(self, "_checked", False)
+
+            def setChecked(self, val):
+                self._checked = bool(val)
+
+            def isVisible(self):
+                return getattr(self, "_visible", True)
+
+            def setVisible(self, val):
+                self._visible = bool(val)
+
+            def show(self):
+                self._visible = True
+
+            def hide(self):
+                self._visible = False
+
+            def accept(self):
+                pass
+
+            def reject(self):
+                pass
+
+            def exec_(self):
+                return 1
+
+            def exec(self):
+                return 1
+
+            def __int__(self):
+                return 0
+
+            def __index__(self):
+                return 0
+
+            def __float__(self):
+                return 0.0
+
         DynamicMock.__name__ = name
         setattr(self, name, DynamicMock)
         return DynamicMock
@@ -83,6 +128,9 @@ class DummyQSettings:
 
     def remove(self, k: str) -> None:
         self._store.pop(k, None)
+
+    def clear(self) -> None:
+        self._store.clear()
 
     def sync(self) -> None:
         pass
@@ -118,6 +166,9 @@ class DummyQMessageBox:
 class DummyQApplication:
     """Headless QApplication stub."""
 
+    def __init__(self, *args, **kwargs):
+        pass
+
     @staticmethod
     def processEvents() -> None:
         pass
@@ -149,6 +200,145 @@ class DummyQFont:
     Weight = type("Weight", (), {"Bold": 75, "Normal": 50})
 
     def __init__(self, *args, **kwargs):
+        pass
+
+
+class DummySignal:
+    def __init__(self, *args, **kwargs):
+        self._callbacks = []
+
+    def connect(self, callback):
+        if callback not in self._callbacks:
+            self._callbacks.append(callback)
+
+    def disconnect(self, callback=None):
+        if callback is None:
+            self._callbacks.clear()
+        elif callback in self._callbacks:
+            self._callbacks.remove(callback)
+
+    def emit(self, *args, **kwargs):
+        for cb in list(self._callbacks):
+            try:
+                cb(*args, **kwargs)
+            except Exception:
+                pass
+
+
+class DummyQComboBox:
+    def __init__(self, *args, **kwargs):
+        self._items = []
+        self._current_index = 0
+        self.currentIndexChanged = DummySignal()
+
+    def addItem(self, text: str, userData: Any = None):
+        self._items.append((text, userData))
+
+    def addItems(self, texts):
+        for t in texts:
+            self._items.append((t, None))
+
+    def count(self) -> int:
+        return len(self._items)
+
+    def itemData(self, index: int, role: Any = None) -> Any:
+        if 0 <= index < len(self._items):
+            return self._items[index][1]
+        return None
+
+    def itemText(self, index: int) -> str:
+        if 0 <= index < len(self._items):
+            return str(self._items[index][0])
+        return ""
+
+    def currentIndex(self) -> int:
+        return self._current_index if self._items else -1
+
+    def setCurrentIndex(self, index: int):
+        self._current_index = index
+        self.currentIndexChanged.emit(index)
+
+    def currentText(self) -> str:
+        idx = self.currentIndex()
+        return self.itemText(idx) if idx >= 0 else ""
+
+    def currentData(self, role: Any = None) -> Any:
+        idx = self.currentIndex()
+        return self.itemData(idx) if idx >= 0 else None
+
+    def clear(self):
+        self._items.clear()
+        self._current_index = 0
+
+    def setEnabled(self, val):
+        pass
+
+    def isEnabled(self) -> bool:
+        return True
+
+    def setStyleSheet(self, val):
+        pass
+
+
+class DummyQDoubleSpinBox:
+    def __init__(self, *args, **kwargs):
+        self._val = 0.0
+        self.valueChanged = DummySignal()
+
+    def value(self) -> float:
+        return float(self._val)
+
+    def setValue(self, v: float):
+        self._val = float(v)
+        self.valueChanged.emit(self._val)
+
+    def setRange(self, mn: float, mx: float):
+        pass
+
+    def setSingleStep(self, s: float):
+        pass
+
+    def setSuffix(self, s: str):
+        pass
+
+    def setEnabled(self, val):
+        pass
+
+    def isEnabled(self) -> bool:
+        return True
+
+    def setStyleSheet(self, val):
+        pass
+
+
+class DummyQSpinBox:
+    def __init__(self, *args, **kwargs):
+        self._val = 0
+        self.valueChanged = DummySignal()
+
+    def value(self) -> int:
+        return int(self._val)
+
+    def setValue(self, v: int):
+        self._val = int(v)
+        self.valueChanged.emit(self._val)
+
+    def setRange(self, mn: int, mx: int):
+        pass
+
+    def setSingleStep(self, s: int):
+        pass
+
+    def setSuffix(self, s: str):
+        pass
+
+    def setEnabled(self, val):
+        pass
+
+    def isEnabled(self) -> bool:
+        return True
+
+    def setStyleSheet(self, val):
         pass
 
 
@@ -196,6 +386,9 @@ def _ensure_pyside6_fallback(force: bool = False) -> bool:
     pyside6_mod.QtWidgets.QHeaderView = DummyQHeaderView
     pyside6_mod.QtWidgets.QAbstractItemView = DummyQAbstractItemView
     pyside6_mod.QtWidgets.QLineEdit = DummyQLineEdit
+    pyside6_mod.QtWidgets.QComboBox = DummyQComboBox
+    pyside6_mod.QtWidgets.QDoubleSpinBox = DummyQDoubleSpinBox
+    pyside6_mod.QtWidgets.QSpinBox = DummyQSpinBox
 
     return False
 
@@ -209,5 +402,8 @@ __all__ = [
     "DummyQHeaderView",
     "DummyQAbstractItemView",
     "DummyQLineEdit",
+    "DummyQComboBox",
+    "DummyQDoubleSpinBox",
+    "DummyQSpinBox",
     "_ensure_pyside6_fallback",
 ]

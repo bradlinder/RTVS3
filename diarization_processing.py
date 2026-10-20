@@ -15,6 +15,7 @@ from prs_shared import (
     format_time,
     register_process,
     unregister_process,
+    get_effective_audio_for_processing,
 )
 
 logger = logging.getLogger(__name__)
@@ -211,9 +212,25 @@ class DiarizationProcessingMixin:
 
         self.diarization_process = process
 
+        audio_for_diarization = str(self.audio_file)
+        try:
+            effective_audio = get_effective_audio_for_processing(
+                self.audio_file,
+                settings_store=getattr(self, "settings_store", None),
+                project_metadata=getattr(self, "project_metadata", None),
+            )
+            if effective_audio and Path(effective_audio).is_file():
+                if Path(effective_audio).resolve() != Path(self.audio_file).resolve():
+                    self.log_activity(
+                        f"[SPEAKER DETECT] Auto-loudness normalization active: feeding normalized sidecar ({Path(effective_audio).name}) to diarization engine."
+                    )
+                audio_for_diarization = str(effective_audio)
+        except Exception as exc:
+            self.log_activity(f"[SPEAKER DETECT] Note: audio normalization check skipped: {exc}")
+
         sens = str(self.settings_store.value("diarization_sensitivity", getattr(self, "diarization_sensitivity", "normal")) or "normal")
         worker_cmd = [
-            "--diarize", str(self.audio_file),
+            "--diarize", str(audio_for_diarization),
             "--expected-speakers", str(expected_speakers),
             "--diarization-sensitivity", str(sens)
         ]

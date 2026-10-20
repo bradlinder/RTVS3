@@ -37,18 +37,19 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 --------------------------------------------------------------------------------
 TABLE OF CONTENTS & STATUS OVERVIEW
 --------------------------------------------------------------------------------
-1. Previous Release: Frozen GUI Application PySide6 Submodule Resolution (`qt_compat.py`, `prs_shared.py`, `core_utils.py`, `story_model.py`) [x] [COMPLETED in v3.9.23-beta]
-   [x] 1.1 Explicit Worker Identification (`prs_shared.py`, `core_utils.py`, `story_model.py`): Replaced erroneous `not hasattr(sys, "_MEIPASS_GUI")` check with explicit worker detection (`RTVS_WORKER_MODE=1` or `"worker" in Path(sys.executable).stem.lower()`), ensuring the main desktop application natively imports bundled PySide6 submodules.
-   [x] 1.2 Complete Submodule Fallback Population (`qt_compat.py`): Enhanced `_ensure_pyside6_fallback` to import and populate all 6 required PySide6 submodules (`QtCore`, `QtNetwork`, `QtGui`, `QtWidgets`, `QtMultimedia`, `QtMultimediaWidgets`), ensuring zero `KeyError` crashes occur.
-   [x] 1.3 Cross-Platform Desktop GUI Launch Validation: Verified clean application startup across frozen bundles.
-   [x] 1.4 Synchronous Version Bump: Synchronized all 13 core project files and web preview scaffolding to v3.9.23-beta.
+1. Previous Release: Complete WordPress Duplicate Draft Post Elimination, Scope Synchronization & Unified Export Action Routing (`export/dialog.py`, `plugins/wordpress/export_destination.py`, `plugins/wordpress/wp_post_builder.py`, `plugins/wordpress/castos.py`, `plugins/wordpress/plugin.py`) [x] [COMPLETED in v3.9.30-beta]
+   [x] 1.1 Complete Duplicate Post Elimination Across All Export Scopes (`plugins/wordpress/export_destination.py`): Enforced strict single-post resolution under `full` and single-story scopes with bi-directional podcast metadata inheritance, ensuring podcast feeds, episode numbers, and series taxonomy IDs are never lost.
+   [x] 1.2 Unified Scope Selection Signal Initialization (`export/dialog.py`): Added synchronous `self._on_scope_changed()` trigger upon dialog initialization so that all registered destination panels (including WordPress) immediately sync their queue definitions with the active scope dropdown.
+   [x] 1.3 Unified Export Dialog Menu Action Routing (`plugins/wordpress/plugin.py`): Updated "Publish to WordPress..." in the Publishing & Plugins menu to route directly to `self.app.open_unified_export_dialog(initial_dest="wordpress")`, aligning with the YouTube and Google Docs plugin integrations.
+   [x] 1.4 Synchronous Version Bump: Synchronized all 10 project locations and web preview scaffolding to `v3.9.30-beta`.
 
-2. Current Release: Critical Bugfixes: Project Close `NameError`, Media Drag-and-Drop & WordPress Full-Episode Footer Links (`project_lifecycle.py`, `RadioTVSegmenter.py`, `plugins/wordpress/export_destination.py`) [x] [COMPLETED in v3.9.24-beta]
-   [x] 2.1 Project Close `NameError: name 'ProjectMetadataDict' is not defined` Fix (`project_lifecycle.py`): Resolve missing type annotation or undefined reference in project close / last project restoration handling.
-   [x] 2.2 Timeline Media Drag-and-Drop Fix (`RadioTVSegmenter.py` / timeline widgets): Restore event filtering and drop handlers (`dragEnterEvent`, `dropEvent`) for dragging external media files directly into the timeline.
-   [x] 2.3 WordPress Full-Episode Footer Link Fix (`plugins/wordpress/export_destination.py`): Ensure automated full-episode correspondence links are correctly appended to the bottom of story pages during WordPress publisher uploads.
-   [x] 2.4 Synchronous Version Bump: Synchronized all project locations and web preview scaffolding to v3.9.24-beta.
-
+2. Current Release: Seriously Simple Podcasting Duplicate Post Elimination, String Metadata Serialization & Title Preservation (`plugins/wordpress/client.py`, `plugins/wordpress/castos.py`, `plugins/wordpress/wp_post_builder.py`, `plugins/wordpress/export_destination.py`, `diagnostic_export_tests.py`) [x] [COMPLETED in v3.9.31-beta]
+   [x] 2.1 Seriously Simple Podcasting String Metadata Serialization (`plugins/wordpress/castos.py`, `plugins/wordpress/client.py`): Formatted `filesize`, `duration`, `season`, and `episode_number` as strings for WordPress REST API compliance, eliminating the `HTTP 400 Bad Request` (`rest_invalid_type: meta.filesize`) validation failure that previously caused duplicate posts.
+   [x] 2.2 Defensive Partial Commit Detection & Duplicate Post Prevention (`plugins/wordpress/client.py`): Added detection in `create_post` to catch cases where WordPress commits a post before throwing metadata validation errors, preventing fallback logic from generating orphan duplicate draft posts.
+   [x] 2.3 Export Scope Title Preservation & De-Consolidation (`plugins/wordpress/wp_post_builder.py`, `plugins/wordpress/export_destination.py`): Removed destructive single-story consolidation code that previously replaced the Full Episode title ("LYB Narration") with story snippet titles, and ensured `build_full_item()` never inherits child story titles across scope switches.
+   [x] 2.4 Test Bench User Settings Isolation (`diagnostic_export_tests.py`): Wrapped test execution in a `finally` block in `diagnostic_export_tests.py` to preserve and restore the user's active `wp_site_url` and `wp_username` settings, preventing test placeholder credentials from altering live configuration.
+   [x] 2.5 Multi-Select Podcast Feeds Support: Maintained checkable list widget allowing publishers to check multiple podcast feeds/series simultaneously on sites with multiple feeds.
+   [x] 2.6 Synchronous Version Bump: Synchronized all 10 project locations and web preview scaffolding to `v3.9.31-beta`.
 3. Upcoming Milestone: Codebase Modularization & Monolithic File Decomposition Strategy (<1,000-Line Invariant) (`playback_preferences.py`, `project_export.py`, `transcript_story.py`, `transcript_editor.py`, `radio_tv_story_segmenter_worker.py`, `benchmark.py`, `plugins/wordpress/export_destination.py`, `plugins/manager.py`, `timeline_widgets.py`) [PLANNED for v4.0.0] [IN-PROGRESS]
    - *Architecture Note*: Incrementally refactors all remaining source files exceeding 1,000 lines (at most 1 to 2 monoliths per turn) into focused domain modules (<1,000 lines each) while preserving 100% backward compatibility via zero-breakage facade re-exports.
    [x] 3.1 Codebase Audit & Wave 1 Core/Processing Decomposition (`core_utils.py`, `prs_shared.py`, `processing.py`, `test_runner.py`, `qt_compat.py`, `model_install_workers.py`)
@@ -61,14 +62,14 @@ TABLE OF CONTENTS & STATUS OVERVIEW
    [x] 3.8 Permanent <1,000-Line Architectural Rule, AST Decomposition Suggester & Automated Budget Guard (`AGENTS.md`, `GEMINI.md`, `scripts/modular_audit.py`, `test_runner.py`)
    [x] 3.9 Token-Reduction Architecture & Tiered Symbol Indexing for Local LLM Efficiency (`scripts/generate_symbol_index.py`, `.codemaps/`, `.pyi`, `AGENTS.md`, `GEMINI.md`) [COMPLETED in v3.9.12-beta]
 
-4. Upcoming Milestone: Smart Hybrid Audio Loudness Normalization & Non-Destructive Auto-Boost Suite (`audio_normalization.py`, `preferences_dialog.py`, `playback_preferences.py`, `RadioTVSegmenter.py`, `dialogs.py`, `test_runner.py`) [PLANNED for v4.1.0] [IN-PROGRESS]
+4. Upcoming Milestone: Smart Hybrid Audio Loudness Normalization & Non-Destructive Auto-Boost Suite (`audio_normalization.py`, `preferences_dialog.py`, `playback_preferences.py`, `RadioTVSegmenter.py`, `dialogs.py`, `test_runner.py`) [x] [COMPLETED in v3.9.25-beta]
    - *Purpose*: Automatically or manually boost quiet broadcast recordings to improve ASR transcription and speaker diarization accuracy without modifying original source media, blocking the UI thread, or introducing compressor pumping artifacts.
    [x] 4.1 Fast Non-Blocking Multi-Window LUFS & Peak Probing (`audio_normalization.py`): Probe 3 short windows (15%, 50%, 85% of duration) via `ffmpeg -af ebur128=peak=true` in a background worker (<1.5s latency) to measure integrated LUFS, LRA (Loudness Range), and True Peak dBTP/dBFS. [COMPLETED in v3.9.9-beta]
-   [ ] 4.2 Conditional Two-Tier Hybrid Normalization Pipeline (`audio_normalization.py`): Bypass audio already within target thresholds; apply clean linear gain + brickwall true-peak limiter (`volume` + `alimiter`) for uniform quiet audio, or speech-safe `dynaudnorm` when LRA > 14 LU (mixed loud host + quiet caller), outputting to a non-destructive session sidecar WAV.
-   [ ] 4.3 Preferences Dialog & Adjustable Thresholds / Targets (`preferences_dialog.py`, `playback_preferences.py`): Add UI controls in Preferences to enable/disable automatic loudness normalization on import, adjust quiet detection trigger thresholds (LUFS and dBFS spinboxes), select target standard (defaulting to modern LUFS targets: `-16.0 LUFS` broadcast, `-14.0 LUFS` podcast, `-24.0 LUFS` EBU R128, or dBFS/True Peak target `-1.5 dBTP` / `-3.0 dBFS`), and optionally apply loudness gain to playback and clip export.
-   [ ] 4.4 Tools Menu Manual Normalization Action & Telemetry Dialog (`RadioTVSegmenter.py`, `dialogs.py`, `test_runner.py`): Add on-demand "Normalize Audio Loudness..." action in the Tools menu with before/after LUFS & True Peak telemetry, manual run/reset controls, and diagnostic unit tests in `test_runner.py`.
+   [x] 4.2 Conditional Two-Tier Hybrid Normalization Pipeline (`audio_normalization.py`): Bypass audio already within target thresholds; apply clean linear gain + brickwall true-peak limiter (`volume` + `alimiter`) for uniform quiet audio, or speech-safe `dynaudnorm` when LRA > 14 LU (mixed loud host + quiet caller), outputting to a non-destructive session sidecar WAV. Automatically fed into `transcription_processing.py` and `diarization_processing.py`. [COMPLETED in v3.9.24-beta]
+   [x] 4.3 Preferences Dialog & Adjustable Thresholds / Targets (`preferences_dialog.py`, `playback_preferences.py`): Add UI controls in Preferences to enable/disable automatic loudness normalization on import, adjust quiet detection trigger thresholds (LUFS and dBFS spinboxes), select target standard (defaulting to modern LUFS targets: `-16.0 LUFS` broadcast, `-14.0 LUFS` podcast, `-24.0 LUFS` EBU R128, or dBFS/True Peak target `-1.5 dBTP` / `-3.0 dBFS`), and optionally apply loudness gain to playback and clip export. [COMPLETED in v3.9.25-beta]
+   [x] 4.4 Tools Menu Manual Normalization Action & Telemetry Dialog (`RadioTVSegmenter.py`, `dialogs.py`, `test_runner.py`): Add on-demand "Normalize Audio Loudness..." action in the Tools menu with before/after LUFS & True Peak telemetry, manual run/reset controls, and diagnostic unit tests in `test_runner.py`. [COMPLETED in v3.9.25-beta]
 
-5. Upcoming Milestone: Seriously Simple Podcasting (Castos) WordPress Plugin Integration (`plugins/wordpress/export_destination.py`) [PLANNED for v4.2.0] [NOT STARTED]
+5. Upcoming Milestone: Seriously Simple Podcasting (Castos) WordPress Plugin Integration (`plugins/wordpress/castos.py`, `plugins/wordpress/client.py`, `plugins/wordpress/export_destination.py`, `plugins/wordpress/wp_post_builder.py`, `plugins/wordpress/wp_ui_builder.py`, `plugins/wordpress/wp_tab_widget.py`) [x] [COMPLETED in v3.9.26-beta]
    - *Purpose*: Integrate Castos' Seriously Simple Podcasting plugin into WordPress full-episode draft exports, allowing users to designate posts as podcast episodes within the export dialog, dynamically show Castos options, and map media files to the selected podcast feed via WordPress REST API application passwords and post meta (`ss_podcast_audio_file`, `ss_podcast_feed`, etc.).
    - *Confirmed User Specifications*:
      1. **Dynamic Podcast Designation UI**: When a user designates a post as a podcast episode in the export dialog, Castos options (podcast feed selection, episode meta) appear dynamically.
@@ -77,9 +78,9 @@ TABLE OF CONTENTS & STATUS OVERVIEW
      4. **Conditional Player Embedding**:
         - *Podcast Episode*: Displays the embedded Castos player on the website page (omitting standard `<!-- wp:audio -->` block to prevent duplicate players).
         - *Standard Export (Non-Podcast)*: Embeds the audio file at the top of the page using standard WordPress audio block (`<!-- wp:audio -->`), preserving default behavior.
-   [ ] 5.1 WordPress Media Library Upload & Attachment ID Binding (`plugins/wordpress/export_destination.py`): Implement automated media file upload via REST API to obtain media attachment ID.
-   [ ] 5.2 Dynamic Podcast Options UI & Feed Picker (`plugins/wordpress/export_destination.py`, `plugins/wordpress/wp_ui_builder.py`): Show Castos options when a post is designated as a podcast episode and dynamically fetch available podcast feeds.
-   [ ] 5.3 Castos Post Meta Mapping, Conditional Player Embedding & Draft Publishing (`plugins/wordpress/export_destination.py`): Inject Castos post meta (`ss_podcast_audio_file`, `ss_podcast_feed`) and RSS excerpt for podcast posts while omitting standard `<!-- wp:audio -->` blocks in favor of the Castos web player; embed standard `<!-- wp:audio -->` blocks at top of page for non-podcast exports.
+   [x] 5.1 WordPress Media Library Upload & Attachment ID Binding (`plugins/wordpress/export_destination.py`, `plugins/wordpress/client.py`): Implement automated media file upload via REST API to obtain media attachment ID and filesize (`ss_podcast_audio_file` and `ss_podcast_filesize`). [COMPLETED in v3.9.26-beta]
+   [x] 5.2 Dynamic Podcast Options UI & Feed Picker (`plugins/wordpress/wp_ui_builder.py`, `plugins/wordpress/wp_tab_widget.py`, `plugins/wordpress/castos.py`): Show Castos options when a post is designated as a podcast episode, dynamically fetch available podcast feeds via REST API, and provide episode type and season/episode controls. [COMPLETED in v3.9.26-beta]
+   [x] 5.3 Castos Post Meta Mapping, Conditional Player Embedding & Draft Publishing (`plugins/wordpress/client.py`, `plugins/wordpress/export_destination.py`): Inject Castos post meta (`ss_podcast_audio_file`, `ss_podcast_feed`) and RSS excerpt for podcast posts while omitting standard `<!-- wp:audio -->` blocks in favor of the Castos web player; embed standard `<!-- wp:audio -->` blocks at top of page for non-podcast exports. [COMPLETED in v3.9.26-beta]
 
 6. Upcoming Milestone: Automated AMD Ryzen AI Local Development Platform & Token-Efficient Model Suite (`scripts/setup_local_ai.py`, `.vscode/settings.json`, `.clinerules`, `.github/workflows/build.yml`) [PLANNED for v4.1.0] [OPTIONAL / PLANNED] [NOT STARTED]
    - *Purpose*: One-command non-destructive setup script and auto-configuration suite enabling offline AI-assisted development on AMD Ryzen AI 9 HX 370 (Radeon 890M `gfx1150` + XDNA 2 NPU, 64GB RAM) systems with token-budget optimization, prefix-caching architecture, and automated AST split tooling.
@@ -114,22 +115,22 @@ DETAILED MILESTONE SPECIFICATIONS
 ================================================================================
 
 ================================================================================
-1. PREVIOUS RELEASE: FROZEN GUI APPLICATION PYSIDE6 SUBMODULE RESOLUTION [x] [COMPLETED in v3.9.23-beta]
+1. PREVIOUS RELEASE: AUDIO LOUDNESS NORMALIZATION DIALOG ROBUSTNESS & ACTIVE MEDIA SOURCE REFRESH FIX [x] [COMPLETED in v3.9.28-beta]
 ================================================================================
 
-[x] 1.1 Explicit Worker Identification (`prs_shared.py`, `core_utils.py`, `story_model.py`): Replaced erroneous `not hasattr(sys, "_MEIPASS_GUI")` check with explicit worker detection (`RTVS_WORKER_MODE=1` or `"worker" in Path(sys.executable).stem.lower()`), ensuring the main desktop application natively imports bundled PySide6 submodules.
-[x] 1.2 Complete Submodule Fallback Population (`qt_compat.py`): Enhanced `_ensure_pyside6_fallback` to import and populate all 6 required PySide6 submodules (`QtCore`, `QtNetwork`, `QtGui`, `QtWidgets`, `QtMultimedia`, `QtMultimediaWidgets`), ensuring zero `KeyError` crashes occur.
-[x] 1.3 Cross-Platform Desktop GUI Launch Validation: Verified clean application startup across frozen bundles.
-[x] 1.4 Synchronous Version Bump: Synchronized all 13 core project files and web preview scaffolding to v3.9.23-beta.
+[x] 1.1 Audio Loudness Normalization Dialog Robustness & Defensive Parentage (`dialogs.py`): Duck-typing parent validation preventing PySide6 `TypeError` on headless test callers and presenter wrappers.
+[x] 1.2 Sidecar Media Path Verification & Absolute Path Persistence (`audio_normalization.py`, `dialogs.py`): Resolved absolute paths and source media ownership validation to isolate normalized sidecar WAVs.
+[x] 1.3 Media Batch Metadata Reset & Peak Cache Path Alignment (`media_batch.py`): Clean `ProjectMetadataDict()` reset and peak cache invalidation upon manual normalization.
+[x] 1.4 Media Player Source Reloading & Stream Reset (`media_batch.py`): Safe player stop and stream reset for immediate normalized audio playback.
 
 ================================================================================
-2. CURRENT RELEASE: CRITICAL BUGFIXES: PROJECT CLOSE NAMEERROR, MEDIA DRAG-AND-DROP & WORDPRESS FULL-EPISODE FOOTER LINKS [x] [COMPLETED in v3.9.24-beta]
+2. CURRENT RELEASE: DIAGNOSTIC BENCH COMPLETION, SERIOUSLY SIMPLE PODCASTING (CASTOS) EPISODE FILE ASSOCIATION & FEED AUTO-DISCOVERY FIXES [x] [COMPLETED in v3.9.31-beta]
 ================================================================================
 
-[x] 2.1 Project Close `NameError: name 'ProjectMetadataDict' is not defined` Fix (`project_lifecycle.py`): Resolve missing type annotation or undefined reference in project close / last project restoration handling.
-[x] 2.2 Timeline Media Drag-and-Drop Fix (`RadioTVSegmenter.py` / timeline widgets): Restore event filtering and drop handlers (`dragEnterEvent`, `dropEvent`) for dragging external media files directly into the timeline.
-[x] 2.3 WordPress Full-Episode Footer Link Fix (`plugins/wordpress/export_destination.py`): Ensure automated full-episode correspondence links are correctly appended to the bottom of story pages during WordPress publisher uploads.
-[x] 2.4 Synchronous Version Bump: Synchronized all project locations and web preview scaffolding to v3.9.24-beta.
+[x] 2.1 System Diagnostic Test Bench Completion Fix (`diagnostic_export_tests.py`): Linked `_test_wordpress_castos_podcast_integration` within `_test_wordpress_audio_inclusion_toggle_and_error_resilience`, explicitly setting `item.status = "PASS"` so Test #33 completes and all 71 diagnostics finish cleanly without hanging in `RUNNING`.
+[x] 2.2 Seriously Simple Podcasting (Castos) Episode File & Meta Association Fix (`plugins/wordpress/castos.py`, `plugins/wordpress/client.py`): Configured native Seriously Simple Podcasting metadata fields (`audio_file`, `duration`, `filesize`, `episode_type`, `season`, `episode_number`) alongside legacy compatibility aliases, eliminated leading-underscore keys from REST payloads to prevent HTTP 400 Bad Request errors, and associated uploaded audio attachments with created posts via `/media/{att_id}`.
+[x] 2.3 Podcast Series / Feed Auto-Discovery & Taxonomy Assignment Fix (`plugins/wordpress/castos.py`, `plugins/wordpress/client.py`, `plugins/wordpress/wp_tab_widget.py`): Updated series assignment to target the native `series` taxonomy (with `podcast_series` fallback) to ensure sidebar feed selection; implemented dynamic REST API taxonomy auto-discovery from `/wp-json/wp/v2/taxonomies` to reliably surface all custom and secondary podcast feeds in the export feed selector; added user credentials prompt in `_refresh_castos_feeds`.
+[x] 2.4 Synchronous Version Bump: Synchronized all 10 project locations and web preview scaffolding to `v3.9.29-beta`.
 
 ================================================================================
 3. UPCOMING MILESTONE: CODEBASE MODULARIZATION & MONOLITHIC FILE DECOMPOSITION STRATEGY [PLANNED for v4.0.0] [IN-PROGRESS]
@@ -232,7 +233,7 @@ When the user prompts "what's next", execute ONLY the first uncompleted `[ ]` su
          - Formalize operational directives requiring models to view and edit files via targeted line slices (`view_file` StartLine/EndLine ranges and `replace_file_content`), strictly prohibiting whole-file rewrites to prevent token exhaustion, truncation, and latency timeouts.
 
 ================================================================================
-4. UPCOMING MILESTONE: SMART HYBRID AUDIO LOUDNESS NORMALIZATION & NON-DESTRUCTIVE AUTO-BOOST SUITE [PLANNED for v4.1.0] [IN-PROGRESS]
+4. UPCOMING MILESTONE: SMART HYBRID AUDIO LOUDNESS NORMALIZATION & NON-DESTRUCTIVE AUTO-BOOST SUITE [x] [COMPLETED in v3.9.25-beta]
 ================================================================================
 ARCHITECTURAL INVARIANTS FOR SECTION 4:
 - Dedicated Module: Implement all probing and normalization logic in a dedicated module `audio_normalization.py` (<= 600 lines) rather than bloating existing processing files.
@@ -245,14 +246,14 @@ ARCHITECTURAL INVARIANTS FOR SECTION 4:
       2. Parses `Integrated Loudness (I)` in LUFS, `Loudness Range (LRA)` in LU, and `True Peak (TP)` in dBTP/dBFS.
       3. Handles silent or audio-less files gracefully and integrates with `process_lifecycle`.
 
-[ ] 4.2 Conditional Two-Tier Hybrid Normalization Pipeline (`audio_normalization.py`)
+[x] 4.2 Conditional Two-Tier Hybrid Normalization Pipeline (`audio_normalization.py`) [COMPLETED in v3.9.24-beta]
     - Implement `normalize_audio_sidecar(media_path, report, target_lufs=-16.0, max_true_peak=-1.5) -> Path`:
       1. Bypass Condition: If `report.integrated_lufs >= (target_lufs - 2.0)` and `report.true_peak_dbtp <= -0.5`, skip normalization and return the original path (`needs_boost = False`) to avoid unnecessary disk I/O.
       2. Tier 1 — Linear Gain + True-Peak Limiter (Default for uniform quiet audio, `LRA <= 14.0 LU`): Apply exact linear gain `delta_db = min(target_lufs - report.integrated_lufs, 24.0)` followed by a transparent brickwall limiter (`-af "volume={delta_db}dB,alimiter=limit=-1.5dB:level=false"`) so speech dynamics remain 100% natural without single-pass `loudnorm` pumping artifacts.
       3. Tier 2 — Dynamic Speech Leveler (For extreme speaker disparity, `LRA > 14.0 LU`, e.g., loud studio host + quiet phone-in guest): Apply speech-tuned dynamic normalization (`-af "highpass=f=80,dynaudnorm=f=250:g=15:p=0.89:m=10.0,alimiter=limit=-1.5dB:level=false"`).
       4. Automatically feed the normalized sidecar WAV into `transcription_processing.py` and `diarization_processing.py` when enabled.
 
-[ ] 4.3 Preferences Dialog & Adjustable Thresholds / Targets (`preferences_dialog.py`, `playback_preferences.py`)
+[x] 4.3 Preferences Dialog & Adjustable Thresholds / Targets (`preferences_dialog.py`, `playback_preferences.py`, `preferences_tabs_core.py`, `preferences_reset.py`) [COMPLETED in v3.9.25-beta]
     - Add an "Audio Loudness Normalization & Auto-Boost" group in `preferences_dialog.py` (persisted via `QSettings`):
       1. Checkbox: "Automatically boost quiet audio on import for transcription & speaker detection" (Default: Enabled).
       2. Target Standard selector (defaults to modern LUFS target):
@@ -265,14 +266,14 @@ ARCHITECTURAL INVARIANTS FOR SECTION 4:
          - Minimum Peak/dBFS Trigger Threshold spinbox (Default: `-6.0 dBFS`, range `-18.0` to `-1.0 dBFS`). Audio peaking below this triggers normalization.
       4. Checkbox: "Apply loudness boost to in-app playback and exported audio clips" (Default: Disabled, preserves original mix unless user opts in).
 
-[ ] 4.4 Tools Menu Manual Normalization Action & Telemetry Dialog (`RadioTVSegmenter.py`, `dialogs.py`, `test_runner.py`)
+[x] 4.4 Tools Menu Manual Normalization Action & Telemetry Dialog (`RadioTVSegmenter.py`, `dialogs.py`, `test_runner.py`) [COMPLETED in v3.9.25-beta]
     - Add `Tools -> Normalize Audio Loudness...` action in `RadioTVSegmenter.py` opening a dedicated dialog:
       1. Displays current file audio metrics: Integrated LUFS, Loudness Range (LRA), and True Peak (dBTP/dBFS).
       2. Displays configured target standard and target LUFS/dBFS level with dynamic preview of required gain adjustment.
       3. Provides "Apply Normalization", "Re-Analyze", and "Reset to Original" buttons.
     - Add a diagnostic test in `test_runner.py` verifying end-to-end normalization against synthetic quiet audio.
 ================================================================================
-5. UPCOMING MILESTONE: SERIOUSLY SIMPLE PODCASTING (CASTOS) WORDPRESS PLUGIN INTEGRATION [PLANNED for v4.2.0] [NOT STARTED]
+5. UPCOMING MILESTONE: SERIOUSLY SIMPLE PODCASTING (CASTOS) WORDPRESS PLUGIN INTEGRATION [x] [COMPLETED in v3.9.26-beta]
 ================================================================================
 - Purpose: Integrate Castos' Seriously Simple Podcasting plugin into WordPress full-episode draft exports, allowing users to designate posts as podcast episodes within the export dialog, dynamically show Castos options, and map media files to the selected podcast feed via WordPress REST API application passwords and post meta (`ss_podcast_audio_file`, `ss_podcast_feed`, etc.).
 - Confirmed User Specifications:
@@ -283,9 +284,9 @@ ARCHITECTURAL INVARIANTS FOR SECTION 4:
      - Podcast Episode: Displays the embedded Castos player on the website page (omitting standard `<!-- wp:audio -->` block to prevent duplicate players).
      - Standard Export (Non-Podcast): Embeds the audio file at the top of the page using standard WordPress audio block (`<!-- wp:audio -->`), preserving default behavior.
 
-[ ] 5.1 WordPress Media Library Upload & Attachment ID Binding (`plugins/wordpress/export_destination.py`): Implement automated media file upload via REST API to obtain media attachment ID.
-[ ] 5.2 Dynamic Podcast Options UI & Feed Picker (`plugins/wordpress/export_destination.py`, `plugins/wordpress/wp_ui_builder.py`): Show Castos options when a post is designated as a podcast episode and dynamically fetch available podcast feeds.
-[ ] 5.3 Castos Post Meta Mapping, Conditional Player Embedding & Draft Publishing (`plugins/wordpress/export_destination.py`): Inject Castos post meta (`ss_podcast_audio_file`, `ss_podcast_feed`) and RSS excerpt for podcast posts while omitting standard `<!-- wp:audio -->` blocks in favor of the Castos web player; embed standard `<!-- wp:audio -->` blocks at top of page for non-podcast exports.
+[x] 5.1 WordPress Media Library Upload & Attachment ID Binding (`plugins/wordpress/export_destination.py`, `plugins/wordpress/client.py`): Implement automated media file upload via REST API to obtain media attachment ID and filesize (`ss_podcast_audio_file` and `ss_podcast_filesize`). [COMPLETED in v3.9.26-beta]
+[x] 5.2 Dynamic Podcast Options UI & Feed Picker (`plugins/wordpress/wp_ui_builder.py`, `plugins/wordpress/wp_tab_widget.py`, `plugins/wordpress/castos.py`): Show Castos options when a post is designated as a podcast episode, dynamically fetch available podcast feeds via REST API, and provide episode type and season/episode controls. [COMPLETED in v3.9.26-beta]
+[x] 5.3 Castos Post Meta Mapping, Conditional Player Embedding & Draft Publishing (`plugins/wordpress/client.py`, `plugins/wordpress/export_destination.py`): Inject Castos post meta (`ss_podcast_audio_file`, `ss_podcast_feed`) and RSS excerpt for podcast posts while omitting standard `<!-- wp:audio -->` blocks in favor of the Castos web player; embed standard `<!-- wp:audio -->` blocks at top of page for non-podcast exports. [COMPLETED in v3.9.26-beta]
 
 ================================================================================
 6. UPCOMING MILESTONE: AUTOMATED AMD RYZEN AI LOCAL DEVELOPMENT PLATFORM & TOKEN-EFFICIENT MODEL SUITE [PLANNED for v4.1.0] [OPTIONAL / PLANNED] [NOT STARTED]
@@ -352,8 +353,7 @@ ARCHITECTURAL INVARIANTS FOR SECTION 6:
 [ ] 8.3 On-Demand Model Download & Removal Manager (UI dialog to download, verify, inspect storage, and delete models on demand)
 [ ] 8.4 On-Device Speaker Diarization Engine (`onnxruntime-android` WeSpeaker embedding extraction + clustering)
 [ ] 8.5 Mobile Export & Session Sync with Desktop RTVS3 Projects (`.json` project container sync)
-
-[ ] 7.6 Standalone AI Studio Starter Prompt Specification & Project Blueprint (Option A Launcher)
+[ ] 8.6 Standalone AI Studio Starter Prompt Specification & Project Blueprint (Option A Launcher)
     - When ready to spin off this companion app into a dedicated Android AI Studio project, create a new Android/Kotlin project in AI Studio and submit the following initial architectural prompt:
 
 --------------------------------------------------------------------------------

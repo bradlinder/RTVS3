@@ -564,6 +564,8 @@ class DiagnosticExportTestsMixin:
             from PySide6.QtCore import QSettings
             import prs_shared
             settings = QSettings(prs_shared.INTERNAL_APP_ID, prs_shared.INTERNAL_APP_ID)
+            old_wp_url = settings.value("wp_site_url")
+            old_wp_user = settings.value("wp_username")
             settings.setValue("wp_site_url", "https://example.com")
             settings.setValue("wp_username", "admin")
             wp_client_mod._set_wp_password("admin", "pass")
@@ -670,6 +672,14 @@ class DiagnosticExportTestsMixin:
             if orig_wp_client_cls:
                 wp_dest_mod.WordPressClient = orig_wp_client_cls
             wp_client_mod.subprocess.run = orig_sub_run
+            if old_wp_url is not None:
+                settings.setValue("wp_site_url", old_wp_url)
+            else:
+                settings.remove("wp_site_url")
+            if old_wp_user is not None:
+                settings.setValue("wp_username", old_wp_user)
+            else:
+                settings.remove("wp_username")
 
         item.status = "PASS"
         item.message = "WordPress multi-story upload (text-only and audio-included modes) and UI export button pluralization fully verified"
@@ -1148,8 +1158,241 @@ class DiagnosticExportTestsMixin:
             except Exception:
                 pass
 
+        # Execute Castos podcast integration check
+        self._test_wordpress_castos_podcast_integration(item)
+
         item.status = "PASS"
-        item.message = "WordPress audio inclusion toggle (text/image only vs audio) and batch error resilience verified"
+        item.message = "WordPress audio inclusion toggle, error resilience, and Castos podcast integration verified"
+
+    def _test_wordpress_castos_podcast_integration(self, item: DiagnosticItem):
+        import plugins.wordpress.client as wp_client
+        from plugins.wordpress.castos import (
+            format_castos_duration,
+            build_castos_post_meta,
+            fetch_castos_feeds,
+            SS_PODCAST_AUDIO_FILE,
+            SS_PODCAST_AUDIO_FILE_ID,
+            SS_PODCAST_DURATION,
+            SS_PODCAST_FILESIZE,
+            SS_PODCAST_FEED,
+            SS_PODCAST_EPISODE_TYPE,
+            CASTOS_META_AUDIO_FILE,
+            CASTOS_META_DURATION,
+            CASTOS_META_FILESIZE,
+            CASTOS_META_EPISODE_TYPE,
+        )
+
+        # 1. Test Duration Formatting
+        if format_castos_duration(0) != "00:00:00":
+            raise AssertionError(f"Expected '00:00:00', got {format_castos_duration(0)}")
+        if format_castos_duration(930) != "00:15:30":
+            raise AssertionError(f"Expected '00:15:30', got {format_castos_duration(930)}")
+        if format_castos_duration(3661) != "01:01:01":
+            raise AssertionError(f"Expected '01:01:01', got {format_castos_duration(3661)}")
+
+        # 2. Test Castos Post Meta Construction
+        meta = build_castos_post_meta(
+            audio_url="https://example.com/podcast.mp3",
+            attachment_id=888,
+            duration_seconds=930.0,
+            filesize_bytes=1234567,
+            feed_slug="daily-news",
+            episode_type="full",
+            season=1,
+            episode_number=5,
+        )
+        if meta.get(SS_PODCAST_AUDIO_FILE) != "https://example.com/podcast.mp3":
+            raise AssertionError(f"Incorrect ss_podcast_audio_file meta: {meta}")
+        if meta.get(SS_PODCAST_AUDIO_FILE_ID) != 888:
+            raise AssertionError(f"Incorrect ss_podcast_audio_file_id meta: {meta}")
+        if meta.get(SS_PODCAST_DURATION) != "00:15:30":
+            raise AssertionError(f"Incorrect ss_podcast_duration meta: {meta}")
+        if meta.get(SS_PODCAST_FILESIZE) not in (1234567, "1234567"):
+            raise AssertionError(f"Incorrect ss_podcast_filesize meta: {meta}")
+        if meta.get(SS_PODCAST_FEED) != "daily-news":
+            raise AssertionError(f"Incorrect ss_podcast_feed meta: {meta}")
+        if meta.get(SS_PODCAST_EPISODE_TYPE) != "full":
+            raise AssertionError(f"Incorrect ss_podcast_episode_type meta: {meta}")
+        if meta.get(CASTOS_META_AUDIO_FILE) != "https://example.com/podcast.mp3":
+            raise AssertionError(f"Incorrect native Castos audio_file meta: {meta}")
+        if meta.get(CASTOS_META_DURATION) != "00:15:30":
+            raise AssertionError(f"Incorrect native Castos duration meta: {meta}")
+        if meta.get(CASTOS_META_FILESIZE) not in (1234567, "1234567"):
+            raise AssertionError(f"Incorrect native Castos filesize meta: {meta}")
+        if meta.get(CASTOS_META_EPISODE_TYPE) != "full":
+            raise AssertionError(f"Incorrect native Castos episode_type meta: {meta}")
+        for k in meta:
+            if k.startswith("_"):
+                raise AssertionError(f"Protected leading-underscore meta key found: {k}")
+
+        # 3. Test Castos Feed Discovery & Author Exclusion
+        class MockFeedDiscoveryClient:
+            def __init__(self):
+                self.site_url = "https://example.com"
+                self.api_base = "https://example.com/wp-json/wp/v2"
+
+            def is_configured(self):
+                return True
+
+            def _get_request(self, url, params=None, headers=None, timeout=30):
+                if "/series" in url:
+                    return type("Resp", (), {
+                        "status_code": 200,
+                        "json": lambda *args, **kwargs: [
+                            {"id": 12, "name": "Block by Block (default)", "slug": "block-by-block"},
+                            {"id": 15, "name": "Around the Block", "slug": "around-the-block"},
+                        ],
+                    })()
+                if "/taxonomies" in url:
+                    return type("Resp", (), {
+                        "status_code": 200,
+                        "json": lambda *args, **kwargs: {
+                            "series": {"name": "Podcast Series", "slug": "series", "rest_base": "series"},
+                            "author": {"name": "Authors", "slug": "author", "rest_base": "author", "types": ["post", "podcast"]},
+                        },
+                    })()
+                if "/author" in url:
+                    return type("Resp", (), {
+                        "status_code": 200,
+                        "json": lambda *args, **kwargs: [{"id": 1, "name": "brad linder", "slug": "brad-linder"}],
+                    })()
+                return type("Resp", (), {"status_code": 404, "json": lambda *args, **kwargs: []})()
+
+        disc_client = MockFeedDiscoveryClient()
+        disc_feeds = fetch_castos_feeds(disc_client)
+        if len(disc_feeds) != 2:
+            raise AssertionError(f"Expected exactly 2 discovered podcast feeds, got {disc_feeds}")
+        if disc_feeds[0]["name"] != "Block by Block (default)" or disc_feeds[0]["id"] != 12:
+            raise AssertionError(f"Expected 'Block by Block (default)' first with id 12, got {disc_feeds[0]}")
+        if disc_feeds[1]["name"] != "Around the Block" or disc_feeds[1]["id"] != 15:
+            raise AssertionError(f"Expected 'Around the Block' second with id 15, got {disc_feeds[1]}")
+        if any("brad" in f["name"].lower() or "author" in f.get("slug", "").lower() for f in disc_feeds):
+            raise AssertionError(f"Author unexpectedly included in podcast feeds: {disc_feeds}")
+
+        # 4. Test Podcast Upload Execution (is_podcast=True vs False)
+        class MockCastosClient:
+            def __init__(self):
+                self.site_url = "https://example.com"
+                self.api_base = "https://example.com/wp-json/wp/v2"
+                self.uploaded_files = []
+                self.created_posts = []
+
+            def is_configured(self):
+                return True
+
+            def _post_request(self, url, json_data=None, headers=None, timeout=30):
+                return type("Resp", (), {"status_code": 404, "json": lambda *args, **kwargs: []})()
+
+            def upload_media(self, file_path, filename=None):
+                fname = filename or Path(file_path).name
+                self.uploaded_files.append(fname)
+                return {
+                    "id": 888,
+                    "source_url": f"https://example.com/wp-content/uploads/{fname}",
+                    "media_details": {"filesize": 50000},
+                }
+
+            def create_post(self, title, content, excerpt="", status="draft", **kwargs):
+                post_id = 900 + len(self.created_posts)
+                post = {
+                    "id": post_id,
+                    "title": {"rendered": title},
+                    "content": {"rendered": content},
+                    "excerpt": {"rendered": excerpt},
+                    "link": f"https://example.com/?p={post_id}",
+                    "kwargs": kwargs,
+                }
+                self.created_posts.append(post)
+                return post
+
+        class DummyPodcastWin:
+            def __init__(self, audio_path):
+                self.audio_file = audio_path
+                self.duration = 300.0
+                self.transcript = {"segments": [{"start": 0.0, "end": 5.0, "text": "Podcast intro."}]}
+                self.logged = []
+
+            def transcript_for_range(self, start, end):
+                return self.transcript["segments"]
+
+            def clean_export_text(self, text, current_speaker=""):
+                return text
+
+            def log_activity(self, msg, level="info"):
+                self.logged.append(msg)
+
+        # Create audio file
+        with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as f_aud:
+            f_aud.write(b"ID3mockaudiodata" + b"\x00" * 100)
+            aud_path = f_aud.name
+
+        try:
+            orig_sub_run = wp_client.subprocess.run
+            wp_client.subprocess.run = lambda *a, **k: type("Res", (), {"returncode": 0, "stderr": ""})()
+            
+            client_pod = MockCastosClient()
+            win_pod = DummyPodcastWin(aud_path)
+
+            # 3a. Podcast Episode Export (is_podcast=True)
+            post_pod = wp_client.execute_wordpress_upload(
+                main_window=win_pod,
+                client=client_pod,
+                post_title="Daily News Episode 1",
+                post_excerpt="Today's headlines.",
+                include_audio=True,
+                is_podcast=True,
+                podcast_feed="daily-news",
+                podcast_episode_type="full",
+                podcast_season=1,
+                podcast_episode_number=1,
+            )
+
+            if not post_pod or post_pod.get("id") != 900:
+                raise AssertionError(f"Expected podcast post id 900, got {post_pod}")
+
+            pod_content = client_pod.created_posts[0]["content"]["rendered"]
+            if "<!-- wp:audio -->" in pod_content or "<audio" in pod_content:
+                raise AssertionError(f"Standard wp:audio block unexpectedly present in podcast post:\n{pod_content}")
+            if "[ss_player]" not in pod_content:
+                raise AssertionError(f"Castos player shortcode [ss_player] missing from podcast post:\n{pod_content}")
+
+            sent_kwargs = client_pod.created_posts[0]["kwargs"]
+            sent_meta = sent_kwargs.get("meta")
+            if not sent_meta or sent_meta.get(SS_PODCAST_FEED) != "daily-news":
+                raise AssertionError(f"Podcast meta missing or incorrect in create_post kwargs: {sent_kwargs}")
+            if sent_meta.get(SS_PODCAST_AUDIO_FILE_ID) != 888:
+                raise AssertionError(f"Podcast attachment ID missing from meta: {sent_meta}")
+
+            # 3b. Standard Non-Podcast Export (is_podcast=False)
+            client_std = MockCastosClient()
+            post_std = wp_client.execute_wordpress_upload(
+                main_window=win_pod,
+                client=client_std,
+                post_title="Standard Blog Post",
+                post_excerpt="Standard blog excerpt.",
+                include_audio=True,
+                is_podcast=False,
+            )
+
+            std_content = client_std.created_posts[0]["content"]["rendered"]
+            if "<!-- wp:audio -->" not in std_content:
+                raise AssertionError("Standard wp:audio block missing from non-podcast export")
+            if "[ss_player]" in std_content:
+                raise AssertionError("Castos [ss_player] shortcode unexpectedly present in standard export")
+
+            std_kwargs = client_std.created_posts[0]["kwargs"]
+            if std_kwargs.get("meta"):
+                raise AssertionError(f"Castos podcast meta unexpectedly present in standard export: {std_kwargs}")
+
+        finally:
+            wp_client.subprocess.run = orig_sub_run
+            try:
+                Path(aud_path).unlink(missing_ok=True)
+            except Exception:
+                pass
+
+        item.status = "PASS"
+        item.message = "WordPress Seriously Simple Podcasting (Castos) integration verified"
 
     def _test_multi_scope_story_and_full_episode_export_pipeline(self, item: DiagnosticItem):
         import project_export

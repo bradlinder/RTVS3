@@ -227,7 +227,7 @@ def build_audio_hardware_tab(win, dialog, live_widgets, add_custom_defaults_btn)
     audio_form.addRow("Device Test:", test_btn)
 
     audio_layout.addLayout(audio_form)
-    add_custom_defaults_btn(audio_layout, "Audio Hardware", ["audio_hardware"])
+    add_custom_defaults_btn(audio_layout, "Audio Settings", ["audio_hardware"])
     audio_layout.addStretch()
     return page_audio
 

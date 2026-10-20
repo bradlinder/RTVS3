@@ -192,9 +192,20 @@ class MediaBatchMixin:
         if not getattr(self, "audio_file", None):
             return
         invalidate_waveform_peak_cache(self.audio_file)
+        try:
+            from audio_normalization import get_effective_audio_for_processing
+            eff = get_effective_audio_for_processing(
+                self.audio_file,
+                settings_store=getattr(self, "settings_store", None),
+                project_metadata=getattr(self, "project_metadata", None),
+            )
+            if eff and Path(eff).is_file():
+                invalidate_waveform_peak_cache(eff)
+        except Exception:
+            pass
         if hasattr(self, "timeline"):
             self.timeline.set_waveform_peaks([])
-        self.log_activity("[WAVEFORM] Manually regenerating waveform from audio source...")
+        self.log_activity("[WAVEFORM] Manually regenerating waveform from active audio source...")
         is_es = getattr(self, "language", "en") == "es"
         self.statusBar().showMessage("Regenerando forma de onda..." if is_es else "Regenerating waveform...")
         self.load_waveform_async(force_regenerate=True)
@@ -218,8 +229,26 @@ class MediaBatchMixin:
         if not self.audio_file:
             return
 
+        proj_file = getattr(self, "project_file", None)
+        target_audio = str(Path(self.audio_file).resolve())
+        try:
+            from audio_normalization import get_effective_audio_for_processing
+            eff = get_effective_audio_for_processing(
+                self.audio_file,
+                settings_store=getattr(self, "settings_store", None),
+                project_metadata=getattr(self, "project_metadata", None),
+            )
+            if eff and Path(eff).is_file():
+                target_audio = str(Path(eff).resolve())
+        except Exception:
+            pass
+
+        if force_regenerate:
+            invalidate_waveform_peak_cache(target_audio, project_file=proj_file)
+            invalidate_waveform_peak_cache(self.audio_file, project_file=proj_file)
+
         if not force_regenerate:
-            cached_peaks = read_waveform_peak_cache(self.audio_file)
+            cached_peaks = read_waveform_peak_cache(target_audio, project_file=proj_file)
             if cached_peaks:
                 if hasattr(self, "timeline"):
                     try:
@@ -237,7 +266,7 @@ class MediaBatchMixin:
             return
 
         thread = QThread(self)
-        worker = WaveformWorker(self.audio_file)
+        worker = WaveformWorker(target_audio, project_file=proj_file)
         worker.moveToThread(thread)
         self.wf_thread = thread
         self.wf_worker = worker
@@ -1620,6 +1649,8 @@ class MediaBatchMixin:
             self.translations = {}
             self.segment_speaker_overrides = {}
             self.speaker_names = {}
+            from prs_shared import ProjectMetadataDict
+            self.project_metadata = ProjectMetadataDict()
             if hasattr(self, "transcript_view"):
                 self.transcript_view.clear()
             if hasattr(self, "story_list"):
@@ -1627,9 +1658,32 @@ class MediaBatchMixin:
 
             self.audio_file = path
 
-            probed_duration = self.probe_media_duration(path)
+            # Perform automatic loudness probing & sidecar normalization on import
+            eff_media = path
             try:
-                self.player.setSource(QUrl.fromLocalFile(str(path)))
+                from audio_normalization import get_effective_audio_for_processing
+                eff = get_effective_audio_for_processing(
+                    path,
+                    settings_store=getattr(self, "settings_store", None),
+                    project_metadata=getattr(self, "project_metadata", None),
+                )
+                if eff and Path(eff).is_file():
+                    eff_media = eff
+                norm_info = (getattr(self, "project_metadata", {}) or {}).get("audio_normalization", {})
+                if norm_info and "probed_integrated_lufs" in norm_info:
+                    lufs = norm_info.get("probed_integrated_lufs")
+                    gain = norm_info.get("loudness_gain_db", 0.0)
+                    is_q = norm_info.get("is_quiet", False)
+                    if is_q:
+                        self.log_activity(f"[LOUDNESS] Audio probing complete: Quiet media detected ({lufs:.1f} LUFS, Auto-Boost Gain: +{gain:.1f} dB).", mark_dirty=False)
+                    else:
+                        self.log_activity(f"[LOUDNESS] Audio probing complete: Compliant media ({lufs:.1f} LUFS).", mark_dirty=False)
+            except Exception as norm_err:
+                pass
+
+            probed_duration = self.probe_media_duration(eff_media)
+            try:
+                self.player.setSource(QUrl.fromLocalFile(str(eff_media)))
             except Exception as player_err:
                 self.log_activity(f"[MEDIA] Media player initialization notice: {player_err}", mark_dirty=False)
             self.current_media_is_video = self.is_video_file(path)
@@ -1650,6 +1704,8 @@ class MediaBatchMixin:
                 self.regen_waveform_action.setEnabled(True)
             if hasattr(self, "regen_thumbnails_action"):
                 self.regen_thumbnails_action.setEnabled(bool(self.current_media_is_video))
+            if hasattr(self, "normalize_loudness_action"):
+                self.normalize_loudness_action.setEnabled(True)
             self.save_action.setEnabled(True)
             if hasattr(self, "quick_save_button"):
                 self.quick_save_button.setEnabled(True)
@@ -1693,6 +1749,41 @@ class MediaBatchMixin:
             self.log_activity(f"[ERROR] Failed to open media '{path.name}': {exc}")
             QMessageBox.critical(self, "Open Media Error", str(exc))
             return False
+
+    def update_active_media_source(self):
+        """Update media player source and refresh waveform when normalization state changes."""
+        if not getattr(self, "audio_file", None):
+            return
+        eff_path = Path(self.audio_file).resolve()
+        try:
+            from audio_normalization import get_effective_audio_for_processing
+            eff = get_effective_audio_for_processing(
+                self.audio_file,
+                settings_store=getattr(self, "settings_store", None),
+                project_metadata=getattr(self, "project_metadata", None),
+            )
+            if eff and Path(eff).is_file():
+                eff_path = Path(eff).resolve()
+        except Exception:
+            pass
+
+        if hasattr(self, "player") and self.player:
+            try:
+                is_playing = (self.player.playbackState() == QMediaPlayer.PlaybackState.PlayingState)
+                pos = self.player.position()
+                self.player.stop()
+                self.player.setSource(QUrl.fromLocalFile(str(eff_path)))
+                if pos > 0:
+                    self.player.setPosition(pos)
+                if is_playing:
+                    self.player.play()
+            except Exception as err:
+                self.log_activity(f"[MEDIA] Player source update notice: {err}", mark_dirty=False)
+
+        proj_file = getattr(self, "project_file", None)
+        invalidate_waveform_peak_cache(self.audio_file, project_file=proj_file)
+        invalidate_waveform_peak_cache(eff_path, project_file=proj_file)
+        self.load_waveform_async(force_regenerate=True)
 
     def open_audio(self):
         self.open_media()

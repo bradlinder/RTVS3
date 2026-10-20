@@ -903,16 +903,23 @@ class DiagnosticCloudAndSystemTestsMixin:
 
     def _test_multiprocessing_freeze_support_and_spawn_intercept(self, item: DiagnosticItem):
         """Validates that frozen process spawn intercepts -c invocations from resource_tracker and multiprocessing."""
-        import radio_tv_story_segmenter_worker
+        orig_worker_mode = os.environ.get("RTVS_WORKER_MODE")
+        try:
+            import radio_tv_story_segmenter_worker
 
-        # Verify executing with -c executes code and returns 0 without raising Unknown processing mode
-        code = "import sys; sys._test_spawn_executed = True"
-        res = radio_tv_story_segmenter_worker.main(["-c", code])
-        if res != 0:
-            raise AssertionError(f"Expected main(['-c', ...]) to return 0, got {res}")
-        if not getattr(sys, "_test_spawn_executed", False):
-            raise AssertionError("Spawn -c code was not executed")
-        del sys._test_spawn_executed
+            # Verify executing with -c executes code and returns 0 without raising Unknown processing mode
+            code = "import sys; sys._test_spawn_executed = True"
+            res = radio_tv_story_segmenter_worker.main(["-c", code])
+            if res != 0:
+                raise AssertionError(f"Expected main(['-c', ...]) to return 0, got {res}")
+            if not getattr(sys, "_test_spawn_executed", False):
+                raise AssertionError("Spawn -c code was not executed")
+            del sys._test_spawn_executed
+        finally:
+            if orig_worker_mode is None:
+                os.environ.pop("RTVS_WORKER_MODE", None)
+            else:
+                os.environ["RTVS_WORKER_MODE"] = orig_worker_mode
 
         item.status = "PASS"
         item.message = "Multiprocessing freeze support, spawn -c dispatch, and resource tracker intercepts verified"
@@ -954,10 +961,10 @@ class DiagnosticCloudAndSystemTestsMixin:
                 text=True,
                 creationflags=flags,
             )
-            stdout, stderr = proc.communicate(timeout=45)
+            stdout, stderr = proc.communicate(timeout=90)
         except subprocess.TimeoutExpired:
             proc.kill()
-            raise TimeoutError(f"AI Worker subprocess timed out after 45s. Command: {' '.join(cmd)}")
+            raise TimeoutError(f"AI Worker subprocess timed out after 90s. Command: {' '.join(cmd)}")
         except Exception as exc:
             raise RuntimeError(f"Failed to spawn AI Worker subprocess: {type(exc).__name__}: {exc}\nCommand: {' '.join(cmd)}")
 

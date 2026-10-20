@@ -1,5 +1,133 @@
 # Changelog
 
+## v3.9.31-beta
+- **Seriously Simple Podcasting Duplicate Post Elimination & String Metadata Serialization (`plugins/wordpress/client.py`, `plugins/wordpress/castos.py`)**:
+  - Identified and resolved the root cause of duplicate draft posts in WordPress: Seriously Simple Podcasting (SSP) registers `filesize` as `type: string` in its REST schema. When sent as an integer, WordPress returns `HTTP 400 Bad Request` (`rest_invalid_type: meta.filesize`).
+  - Discovered that WordPress core inserts the post into the MySQL database *before* validating meta parameters. When the request failed with 400, the post was already created in the database, and RTVS's fallback retry generated a second post (resulting in two identical draft posts).
+  - Updated `build_castos_post_meta` and sanitized metadata in `client.py:create_post` to ensure `filesize`, `duration`, `season`, and `episode_number` are strictly formatted as strings, allowing the initial REST API request to succeed immediately with `201 Created` on the first attempt with zero retries.
+  - Implemented defensive post commitment detection in `client.py:create_post`: if WordPress ever returns 400 after partially committing a post to the database, RTVS queries and detects the committed draft, updating its taxonomy and media attachments rather than posting a duplicate draft.
+- **Export Scope Title Preservation & De-Consolidation (`plugins/wordpress/wp_post_builder.py`, `plugins/wordpress/export_destination.py`)**:
+  - Removed artificial single-story consolidation code that previously overwrote the user's Full Episode title (e.g. "LYB Narration") with story snippet titles (e.g. "00:02 Little Yenta Books is a...").
+  - Fixed `build_full_item()` in `wp_post_builder.py` so that selecting or switching export scopes never copies child story titles into the Full Episode post definition.
+  - Maintained clean scope boundaries in `export_destination.py`: `full` exports the Full Episode, `all_stories` exports child stories, and `full_and_all_stories` exports both without destroying individual post identities.
+- **Test Bench User Settings Isolation (`diagnostic_export_tests.py`)**:
+  - Wrapped test execution in a `finally` block in `diagnostic_export_tests.py` to preserve and restore the user's active `wp_site_url` and `wp_username` settings, preventing test placeholder credentials from altering live configuration.
+
+## v3.9.30-beta
+- **Complete WordPress Duplicate Draft Post Elimination & Export Scope Synchronization (`export/dialog.py`, `plugins/wordpress/export_destination.py`, `plugins/wordpress/wp_post_builder.py`, `plugins/wordpress/castos.py`)**:
+  - Resolved an issue where exporting to WordPress draft posts produced two duplicate posts (one with podcast settings applied, and one without) when exporting projects with a single story or full episode across all scopes (`full`, `all_stories`, `selected_stories`, and `full_and_all_stories`).
+  - In `export/dialog.py`, triggered `self._on_scope_changed()` synchronously upon dialog initialization so that all registered destination panels (including WordPress) immediately sync their queue definitions with the active scope dropdown.
+  - In `plugins/wordpress/wp_post_builder.py`, unified single-story projects under `full_and_all_stories` scope to produce exactly one consolidated post item rather than queuing redundant Full Episode and Story 1 drafts.
+  - In `plugins/wordpress/export_destination.py`, enforced strict single-post resolution under `full` and single-story scopes with bi-directional podcast metadata inheritance, ensuring podcast feeds, episode numbers, and series taxonomy IDs are never lost.
+  - Added strict title-level deduplication in `execute_export`: posts sharing matching normalized titles are automatically consolidated into a single draft submission with merged podcast taxonomy properties.
+  - In `plugins/wordpress/castos.py`, synchronized podcast toggle state across full episode and story items when projects contain a single story to eliminate non-podcast shadow posts.
+- **Unified Export Dialog Menu Action Routing (`plugins/wordpress/plugin.py`)**:
+  - Updated "Publish to WordPress..." in the Publishing & Plugins menu to route directly to `self.app.open_unified_export_dialog(initial_dest="wordpress")`, aligning with the YouTube and Google Docs plugin integrations and opening the modern WordPress export panel.
+- **Synchronous Release Alignment**:
+  - Synchronized `PROJECT_VERSION` across all 10 project locations to `v3.9.30-beta`.
+
+## v3.9.29-beta
+- **Seriously Simple Podcasting Multi-Feed Selection (`plugins/wordpress/castos.py`, `plugins/wordpress/client.py`, `plugins/wordpress/wp_post_builder.py`, `plugins/wordpress/wp_tab_widget.py`)**:
+  - Implemented multi-selection for podcast feeds/series in the WordPress export panel via checkable `wp_podcast_feeds_list`, enabling publishers on multi-feed websites to assign an episode to multiple podcast feeds simultaneously (e.g. both "Block by Block" and "Around the Block").
+  - Extended the data model to record `podcast_feed_ids: list[int]` and `podcast_feeds: list[str]`, preserving selections seamlessly across story queue switches and project sessions.
+  - Updated `create_post` and `execute_wordpress_upload` in `client.py` to transmit the complete list of series term IDs (`payload["series"] = [id1, id2, ...]`) to the WordPress REST API.
+  - Retained `wp_podcast_feed_combo` as an automatic backward-compatible proxy to prevent regressions in external integrations.
+- **Duplicate WordPress Draft Elimination & Strict Scope Enforcement (`plugins/wordpress/export_destination.py`, `plugins/wordpress/client.py`)**:
+  - Eliminated redundant draft post creation across all export scopes (`full`, `all_stories`, `selected_stories`, `full_and_all_stories`).
+  - Removed trailing-slash endpoint `f"{self.api_base}/posts/"` in `client.py:create_post`, preventing web server canonical 301/302 redirects from triggering duplicate POST submissions.
+  - Enforced strict scope filtering in `export_destination.py:execute_export`: `scope == "full"` strictly restricts the upload queue to the single Full Episode post, while `scope in ("all_stories", "selected_stories")` strictly isolates child story posts.
+  - Added an automated boundary-and-title deduplication safety net in `ordered_wp_posts` guaranteeing exactly one clean draft post per intended story or full episode.
+  - Extracted `copy_podcast_meta` into `castos.py`, reducing `wp_tab_widget.py` from 998 lines to 969 lines to maintain strict compliance with the 1,000-line modularity ceiling.
+- **System Diagnostic Test Bench Completion Fix (`diagnostic_export_tests.py`)**:
+  - Resolved an issue where Test #33 (`WordPress Audio Inclusion Toggle & Error Resilience`) remained in `RUNNING` status and never reported completion in the diagnostic test dialog.
+  - Linked `self._test_wordpress_castos_podcast_integration(item)` directly within `_test_wordpress_audio_inclusion_toggle_and_error_resilience` and explicitly set `item.status = "PASS"` with verification messaging, ensuring all 71 tests complete cleanly across GUI and CLI runners (70 passed, 1 warning, 0 failed).
+- **Seriously Simple Podcasting (Castos) Episode File & Meta Association Fix (`plugins/wordpress/castos.py`, `plugins/wordpress/client.py`)**:
+  - Corrected post meta mapping in `build_castos_post_meta` to supply native Seriously Simple Podcasting meta fields (`audio_file`, `duration`, `filesize`, `episode_type`, `season`, `episode_number`) alongside legacy compatibility aliases.
+  - Strictly eliminated leading-underscore keys (`_...`) from REST metadata payloads to avoid WordPress REST API `HTTP 400 Bad Request` (`rest_invalid_param: meta`) errors.
+  - Updated `create_post` and `update_post` in `client.py` to automatically associate uploaded audio media attachments with the created draft post via `/media/{att_id}`.
+- **Podcast Series / Feed Auto-Discovery, Author Exclusion & Taxonomy Assignment Fix (`plugins/wordpress/castos.py`, `plugins/wordpress/client.py`, `plugins/wordpress/wp_tab_widget.py`)**:
+  - Updated WordPress series assignment to target the native Seriously Simple Podcasting taxonomy (`series`) with backward-compatible fallback (`podcast_series`), ensuring the selected feed is properly checked in the WordPress sidebar.
+  - Implemented dynamic REST API taxonomy auto-discovery in `fetch_castos_feeds` querying `/wp-json/wp/v2/taxonomies` to detect custom or plugin-specific rest bases, as well as probing canonical routes (`/wp-json/wp/v2/series`, `/wp-json/ssp/v1/feeds`), ensuring all registered podcast feeds/series appear in the dropdown.
+  - Added strict exclusion of non-podcast taxonomies (`author`, `ppma_author`, `category`, `post_tag`, `nav_menu`) and author slugs, preventing author usernames (such as `brad linder`) from ever being misidentified as podcast feeds.
+  - Added `sanitize_castos_feeds` cache sanitization on initialization to ensure any legacy cached author terms are immediately purged from local preferences.
+  - Added user guidance prompt in `_refresh_castos_feeds` when WordPress credentials are not yet configured.
+- **Audio Inclusion Auto-Enabling & Pre-Export Validation (`plugins/wordpress/castos.py`, `plugins/wordpress/wp_tab_widget.py`, `plugins/wordpress/export_destination.py`)**:
+  - Automatically enabled the "Include audio files in WordPress export" checkbox whenever a post is designated as a Podcast Episode.
+  - Added real-time informational prompt if a user unchecks audio inclusion while podcast episodes are active, and an automated pre-export confirmation dialog offering to re-enable audio inclusion before publishing.
+- **WordPress Podcast Single-Draft Export & Scope Inheritance Fix (`plugins/wordpress/wp_post_builder.py`, `plugins/wordpress/export_destination.py`, `plugins/wordpress/castos.py`)**:
+  - Resolved an issue where exporting to WordPress with Seriously Simple Podcasting enabled resulted in duplicate draft posts or dropped podcast metadata when set to "Full Episode" or "Full Episode & All Stories".
+  - In `wp_post_builder.py`, added cross-scope metadata preservation: when a user configures podcast settings and switches scope to "Full Episode", the podcast feed, episode parameters, authors, and categories are seamlessly inherited by the Full Episode post rather than reset.
+  - Added full-span single-story detection under `full_and_all_stories` scope to avoid queuing redundant duplicate items when a story encompasses the entire audio file.
+  - In `export_destination.py`, added automated podcast deduplication to `execute_export`: if an export queue contains a designated podcast post alongside an un-designated duplicate covering the same audio bounds, the redundant non-podcast post is automatically omitted from publishing.
+  - In `castos.py`, synchronized toggle state so podcast designation and feeds cleanly apply without orphaned shadow draft posts.
+- **Diagnostic Bench Mock Hardening (`diagnostic_export_tests.py`)**:
+  - Resolved `TypeError` in `MockFeedDiscoveryClient` where instance method lambda binding passed `self` to 0-arg lambdas in Test #33.
+- **Synchronous Release Alignment**:
+  - Synchronized `PROJECT_VERSION` across all 10 project locations to `v3.9.29-beta`.
+
+## v3.9.28-beta
+- **Audio Loudness Normalization Dialog Robustness & Defensive Parentage (`dialogs.py`)**:
+  - Added duck-typing parent validation (`qt_parent = parent if isinstance(parent, QWidget) else None; super().__init__(qt_parent)`) in `AudioLoudnessNormalizationDialog`, preventing PySide6 `TypeError` when instantiated with headless mock windows or custom presenter wrappers.
+- **Synchronous Release Alignment**:
+  - Synchronized `PROJECT_VERSION` across all 10 project locations to `v3.9.28-beta`.
+
+## v3.9.27-beta
+- **Audio Loudness Normalization & Active Media Source Refresh Fix (`audio_normalization.py`, `dialogs.py`, `media_batch.py`)**:
+  - Fixed an issue where applying manual audio loudness normalization (`Ctrl+Alt+N` / `Tools -> Normalize Audio Loudness...`) with auto-boost disabled in Preferences resulted in unrefreshed waveforms and stale audio playback streams.
+  - Updated `get_effective_audio_for_processing` in `audio_normalization.py` to resolve absolute file paths and verify `source_media` path ownership so normalized sidecars from previously opened files are never mistakenly applied to newly opened media files.
+  - Updated `dialogs.py` (`apply_normalization`) to store resolved absolute paths for `source_media` and `normalized_sidecar` in `project_metadata`.
+  - Fixed `load_media_file` in `media_batch.py` to reset `self.project_metadata` to a clean `ProjectMetadataDict()` on new media imports, preventing stale loudness metadata from lingering.
+  - Updated `update_active_media_source` and `load_waveform_async` in `media_batch.py` to pass `project_file` parameter to `read_waveform_peak_cache`, `write_waveform_peak_cache`, and `invalidate_waveform_peak_cache`, ensuring peak cache files are correctly invalidated and recalculated from the boosted sidecar WAV file upon manual normalization.
+  - Resolved player source swapping in `update_active_media_source` by ensuring `self.player.stop()` is called prior to `self.player.setSource(QUrl.fromLocalFile(str(eff_path)))` with absolute resolved file paths.
+
+## v3.9.26-beta
+- **Seriously Simple Podcasting (Castos) Submodule Integration (`plugins/wordpress/castos.py`)**:
+  - Implemented dedicated `castos.py` module containing Castos post meta field definitions (`ss_podcast_audio_file`, `ss_podcast_duration`, `ss_podcast_filesize`, `ss_podcast_feed`, `ss_podcast_episode_type`, `ss_podcast_season`, `ss_podcast_episode_number`).
+  - Added REST API series/feed discovery helper `fetch_castos_feeds` querying `/wp-json/wp/v2/podcast_series` and `/wp-json/ssp/v1/feeds` with safe default feed fallback (`"default"` / `"Main Podcast Feed"`).
+  - Implemented `build_castos_post_meta` and shortcode/block player generator (`[podcast_episode]` / `<!-- wp:castos-player/player -->`).
+- **WordPress REST Client & Media Attachment ID Binding (`plugins/wordpress/client.py`)**:
+  - Enhanced `create_post` and `update_post` to accept custom `meta` dictionaries and `podcast_series` taxonomy IDs.
+  - Added `get_podcast_feeds()` client method for fetching available podcast feeds from the WordPress site.
+  - Updated `execute_wordpress_upload` to support podcast episode parameters (`is_podcast`, `podcast_feed`, `podcast_feed_id`, `podcast_episode_type`, `podcast_season`, `podcast_episode_number`).
+  - Automated media library upload to capture media attachment ID and filesize (`ss_podcast_audio_file` meta and `ss_podcast_filesize`).
+  - Implemented conditional player embedding: embeds Castos web player for designated podcast episodes (omitting standard `<!-- wp:audio -->` blocks to prevent duplicate audio players), while preserving default `<!-- wp:audio -->` blocks for non-podcast exports.
+- **WordPress Post Item Builders & Export Execution (`plugins/wordpress/wp_post_builder.py`, `plugins/wordpress/export_destination.py`)**:
+  - Updated `build_story_item` and `build_full_item` in `wp_post_builder.py` to populate and preserve podcast fields.
+  - Passed podcast metadata through `execute_wordpress_upload` in `export_destination.py` and saved podcast export info into `project_metadata["wordpress"]`.
+- **Dynamic Podcast Options UI & Bulk Actions (`plugins/wordpress/wp_ui_builder.py`, `plugins/wordpress/wp_tab_widget.py`)**:
+  - Built `setup_castos_ui` collapsible section with "Designate as Podcast Episode" checkbox, dynamic podcast feed dropdown with "Refresh Feeds" REST API fetch button, episode type selector (Full / Trailer / Bonus), and Season / Episode number spinboxes.
+  - Added dynamic visibility connections showing/hiding Castos options when the podcast checkbox is toggled.
+  - Added bulk action handlers ("Apply Podcast Settings to Selected / All") for multi-story queue management.
+- **Synchronous Version Bump**: Synchronized all project locations and web preview scaffolding to `v3.9.26-beta`.
+
+## v3.9.25-beta
+- **Audio Loudness Normalization & Auto-Boost Preferences Integration (`preferences_dialog.py`, `preferences_tabs_core.py`, `preferences_reset.py`, `playback_preferences.py`)**:
+  - Implemented the "Audio Loudness Normalization & Auto-Boost" preference controls in the Audio Hardware preferences tab.
+  - Added user-configurable toggle for automatic loudness normalization on import (default: enabled) to ensure quiet broadcast files are automatically brought to optimal levels for ASR transcription and speaker detection without altering source media.
+  - Added Target Standard selector with dynamic presets: Broadcast Standard (-16.0 LUFS / -1.5 dBTP, default), Podcast / Web Standard (-14.0 LUFS / -1.0 dBTP), EBU R128 Television Standard (-24.0 LUFS / -1.0 dBTP), and Peak Normalization (-3.0 dBFS), automatically updating target LUFS, maximum true-peak, and quiet trigger threshold spinboxes.
+  - Added minimum trigger thresholds: Quiet LUFS Threshold (-24.0 LUFS default, range -36.0 to -14.0 LUFS) and Quiet Peak/dBFS Threshold (-6.0 dBFS default, range -18.0 to -1.0 dBFS).
+  - Added "Apply loudness boost to in-app playback and exported audio clips" toggle (default: disabled) preserving original mix unless explicitly opted-in by user.
+  - Integrated full defaults restoration support into `preferences_reset.py` and category defaults reset handler.
+- **Tools Menu Manual Normalization Action & Telemetry Dialog (`dialogs.py`, `ui_menus.py`, `ui_dialog_launchers.py`, `processing.py`, `RadioTVSegmenter.py`)**:
+  - Added `Tools -> Normalize Audio Loudness...` action with `Ctrl+Alt+N` shortcut in `ui_menus.py`, dynamically enabled when an audio/video media file is loaded.
+  - Implemented dedicated `AudioLoudnessNormalizationDialog` modal in `dialogs.py`:
+    * Displays measured audio metrics: Integrated Loudness (I) in LUFS, Loudness Range (LRA) in LU, True Peak (TP) in dBTP/dBFS, and loudness status.
+    * Provides Target Standard dropdown and live Gain Adjustment preview with intelligent detection of bypass (already within spec), Tier 1 linear gain + true-peak limiter, or Tier 2 dynamic speech leveler (high LRA > 14 LU).
+    * Includes "Apply Normalization", "Re-Analyze", and "Reset to Original" action buttons with background non-blocking execution via `AudioLoudnessProbeWorker`.
+    * Clean native desktop typography adhering strictly to the zero-unrequested-emoji design policy.
+- **Headless Qt / PySide6 Compatibility Engine Hardening (`qt_compat.py`)**:
+  - Resolved circular import between `prs_shared.py` and `dialogs.py`.
+  - Enhanced `qt_compat.py` with standalone mock implementations for `DummyQComboBox`, `DummyQDoubleSpinBox`, `DummyQSpinBox`, and `DummySignal`.
+  - Added numeric `__int__`, `__index__`, and `__float__` protocol methods to `DynamicMock`, eliminating `TypeError: 'QComboBox' object cannot be interpreted as an integer` during headless CI and test runner sweeps.
+- **Automated Diagnostic Suite & Milestone 4 Verification (`diagnostic_loudness_tests.py`, `test_runner.py`)**:
+  - Registered `Audio Loudness Preferences and Manual Normalization Dialog` diagnostic test in `test_runner.py` and `diagnostic_loudness_tests.py`.
+  - Verified end-to-end normalization against synthetic quiet audio, standard selection spinbox dispatch, telemetry inspection, manual sidecar application, and reset-to-original workflows.
+  - All 64 diagnostic tests passing cleanly with 0 failures.
+- **Milestones 7 and 8 Swap & Roadmap N-1 Window Synchronization (`roadmap.txt`)**:
+  - Swapped Milestones 7 and 8 in `roadmap.txt`, prioritizing the Interactive Text-Based Media Assembly & Multi-Asset Ripple Editing Engine as Milestone 7 and positioning the Android Transcriber Companion App as Milestone 8.
+  - Synchronized N-1 sliding window: Active release $N=$ `v3.9.25-beta`, predecessor release $N-1=$ `v3.9.24-beta`.
+- **Synchronous Version Bump**: Synchronized all project locations and web preview scaffolding to `v3.9.25-beta`.
+
 ## v3.9.24-beta
 - **Project Close & Last Project Restore `ProjectMetadataDict` NameError Resolution (`project_lifecycle.py`)**:
   - Resolved `NameError: name 'ProjectMetadataDict' is not defined` triggered in `close_project()` and `load_project_file()` / `restore_last_project()`.
@@ -27,6 +155,15 @@
 - **Speaker Detection `QInputDialog` NameError & Repository-Wide AST Import Verification (`diarization_processing.py`, `media_batch.py`)**:
   - Resolved `NameError: name 'QInputDialog' is not defined` when launching Speaker Detection by adding `QInputDialog` to `from PySide6.QtWidgets import ...` in `diarization_processing.py`.
   - Executed a repository-wide AST scanner across all Python modules to audit PySide6 widget references, fixing missing layout/table imports in `media_batch.py` (`QVBoxLayout`, `QHBoxLayout`, `QTableWidget`, `QAction`).
+- **Two-Tier Hybrid Audio Loudness Normalization & Auto-Boost Integration (`audio_normalization.py`, `transcription_processing.py`, `diarization_processing.py`, `test_runner.py`, `diagnostic_loudness_tests.py`)**:
+  - Implemented the non-destructive conditional two-tier hybrid audio normalization pipeline in `audio_normalization.py`:
+    * **Conditional Bypass**: Media files already meeting standard broadcast loudness targets (`integrated_lufs >= target_lufs - 2.0` and `true_peak_dbtp <= -0.5 dBFS`) cleanly bypass processing (`needs_boost = False`), avoiding redundant disk I/O and latency.
+    * **Tier 1 (Linear Gain + True-Peak Limiter)**: Automatically boosts uniform quiet audio (`LRA <= 14.0 LU`) using exact linear gain (`delta_db = min(target_lufs - report.integrated_lufs, 24.0)`) and transparent brickwall limiting (`alimiter=limit=-1.5dB:level=false`) without single-pass compressor pumping artifacts.
+    * **Tier 2 (Dynamic Speech Leveler)**: Automatically engages speech-tuned dynamic normalization (`highpass=f=80,dynaudnorm=f=250:g=15:p=0.89:m=10.0,alimiter=limit=-1.5dB:level=false`) when extreme speaker disparity is detected (`LRA > 14.0 LU`, e.g., loud studio host + quiet telephone guest).
+  - Wired `get_effective_audio_for_processing()` into `transcription_processing.py` and `diarization_processing.py`:
+    * Automatically feeds cached, normalized 16 kHz mono WAV sidecars into Whisper, Parakeet, and WeSpeaker without modifying the user's original source media.
+    * Populates measured integrated LUFS, LRA, true peak, and boost telemetry into `project_metadata["audio_normalization"]`.
+  - Added comprehensive automated diagnostic test (`Two-Tier Hybrid Audio Loudness Normalization`) in `diagnostic_loudness_tests.py` and `test_runner.py` verifying conditional bypass, Tier 1 boost accuracy, Tier 2 leveler dispatch, and settings preference toggling.
 - **Synchronous Version Bump**: Synchronized all project locations and web preview scaffolding to `v3.9.24-beta`.
 
 ## v3.9.23-beta

@@ -852,8 +852,13 @@ class Plugin(BasePlugin):
         return [WordPressExportDestination(self)]
 
     def get_export_actions(self) -> List[tuple[str, Callable]]:
+        def _open_export():
+            if hasattr(self.app, "open_unified_export_dialog"):
+                self.app.open_unified_export_dialog(initial_dest="wordpress")
+            else:
+                self.open_publish_dialog(parent=self.app)
         return [
-            ("Publish to WordPress...", lambda: self.open_publish_dialog(parent=self.app)),
+            ("Publish to WordPress...", _open_export),
         ]
 
     def get_story_actions(self, story: Any = None) -> List[tuple[str, Callable]]:

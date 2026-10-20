@@ -26,7 +26,7 @@ class RestoreSelectedSettingsDialog(QDialog):
         ("general_project_dirs", "Default Project Directory & Bundling", "Default projects folder, project subfolders (Transcripts/Media), and media copy settings."),
         ("general_autosave", "Auto-save Interval", "Automatic project save interval (5 minutes)."),
         ("keyboard_shortcuts", "Keyboard Shortcuts", "Custom keyboard shortcut assignments for all menu actions, tools, navigation, and editing commands."),
-        ("audio_hardware", "Audio Hardware & Volume", "Audio output device (System Default) and default volume (100%)."),
+        ("audio_hardware", "Audio Settings & Volume", "Audio output device (System Default), default volume (100%), and automatic loudness normalization settings."),
         ("software_updates", "Software Updates & Repository", "Automatic update checks (Enabled), release channel (Stable), and official GitHub repository."),
         ("ai_models", "AI Models & Storage Directory", "Whisper speech recognition model (small, beam size 5), translation model (tiny), and models storage folder."),
         ("gpu_acceleration", "Hardware / GPU Acceleration", "GPU and DirectML hardware acceleration settings."),
@@ -295,10 +295,17 @@ class PreferencesResetMixin:
                 elif hasattr(lw["page_shortcuts"], "revert_changes"):
                     lw["page_shortcuts"].revert_changes()
 
-        # 4. Audio Hardware
-        if "audio_hardware" in selected_set:
+        # 4. Audio Hardware & Normalization
+        if "audio_hardware" in selected_set or "audio_normalization" in selected_set:
             self.settings_store.setValue("audio_output_device", "System Default")
             self.settings_store.setValue("audio_output_volume", 100)
+            self.settings_store.setValue("auto_loudness_normalization", "true")
+            self.settings_store.setValue("target_standard", "broadcast")
+            self.settings_store.setValue("target_lufs", -16.0)
+            self.settings_store.setValue("max_true_peak", -1.5)
+            self.settings_store.setValue("quiet_threshold_lufs", -24.0)
+            self.settings_store.setValue("quiet_threshold_dbfs", -6.0)
+            self.settings_store.setValue("apply_boost_playback", "false")
             self.master_volume = 1.0
             if hasattr(self, "apply_audio_output_device"):
                 try:
@@ -309,6 +316,20 @@ class PreferencesResetMixin:
                 lw["audio_dev_combo"].setCurrentIndex(0)
             if "vol_slider" in lw and lw["vol_slider"]:
                 lw["vol_slider"].setValue(100)
+            if "auto_norm_chk" in lw and lw["auto_norm_chk"]:
+                lw["auto_norm_chk"].setChecked(True)
+            if "target_standard_combo" in lw and lw["target_standard_combo"]:
+                lw["target_standard_combo"].setCurrentIndex(0)
+            if "target_lufs_spin" in lw and lw["target_lufs_spin"]:
+                lw["target_lufs_spin"].setValue(-16.0)
+            if "max_true_peak_spin" in lw and lw["max_true_peak_spin"]:
+                lw["max_true_peak_spin"].setValue(-1.5)
+            if "quiet_threshold_lufs_spin" in lw and lw["quiet_threshold_lufs_spin"]:
+                lw["quiet_threshold_lufs_spin"].setValue(-24.0)
+            if "quiet_threshold_dbfs_spin" in lw and lw["quiet_threshold_dbfs_spin"]:
+                lw["quiet_threshold_dbfs_spin"].setValue(-6.0)
+            if "apply_boost_playback_chk" in lw and lw["apply_boost_playback_chk"]:
+                lw["apply_boost_playback_chk"].setChecked(False)
 
         # 5. Software Updates
         if "software_updates" in selected_set:

@@ -63,6 +63,16 @@ class WordPressExportTabWidget(QWidget):
 
     def _on_wp_include_audio_toggled(self, checked: bool):
         self.settings.setValue("wp_include_audio", checked)
+        if not checked:
+            has_pod = any(p.get("is_podcast") for p in getattr(self, "wp_post_items", []))
+            if hasattr(self, "wp_cb_is_podcast") and self.wp_cb_is_podcast.isChecked():
+                has_pod = True
+            if has_pod:
+                QMessageBox.information(
+                    self,
+                    "Podcast Audio File Required",
+                    "One or more posts are designated as a Podcast Episode. Seriously Simple Podcasting (Castos) requires an audio file upload to populate the episode file field and RSS feed.",
+                )
 
     def _update_wp_conn_status(self):
         url = str(self.settings.value("wp_site_url", "") or "").rstrip("/")
@@ -319,6 +329,55 @@ class WordPressExportTabWidget(QWidget):
             self.main_window.set_unsaved_changes(True)
         QMessageBox.information(self, "Applied Thumbnails", f"Applied thumbnail settings to all {len(self.wp_post_items)} posts.")
 
+    def _apply_podcast_to_selected_stories(self):
+        if not (0 <= self._current_post_index < len(self.wp_post_items)):
+            return
+        from plugins.wordpress.castos import copy_podcast_meta
+        cur_post = self.wp_post_items[self._current_post_index]
+        selected_indices = self._get_selected_story_indices()
+        stories = getattr(self.main_window, "stories", []) or []
+        if not selected_indices:
+            QMessageBox.information(self, "No Stories Selected", "Please select one or more stories in the story list.")
+            return
+
+        applied = 0
+        for idx in selected_indices:
+            if 0 <= idx < len(stories):
+                st = stories[idx]
+                if not hasattr(st, "metadata") or st.metadata is None:
+                    st.metadata = {}
+                copy_podcast_meta(st.metadata.setdefault("wordpress", {}), cur_post)
+                applied += 1
+
+        for post in self.wp_post_items:
+            for idx in selected_indices:
+                if 0 <= idx < len(stories) and post.get("start") == stories[idx].start:
+                    copy_podcast_meta(post, cur_post)
+
+        for i in range(len(self.wp_post_items)):
+            self._update_post_list_item_label(i)
+
+        if hasattr(self.main_window, "set_unsaved_changes"):
+            self.main_window.set_unsaved_changes(True)
+        QMessageBox.information(self, "Applied Podcast Settings", f"Applied podcast settings to {applied} selected stories.")
+
+    def _apply_podcast_to_all_posts(self):
+        if not (0 <= self._current_post_index < len(self.wp_post_items)):
+            return
+        from plugins.wordpress.castos import copy_podcast_meta
+        cur_post = self.wp_post_items[self._current_post_index]
+        for post in self.wp_post_items:
+            copy_podcast_meta(post, cur_post)
+        for st in (getattr(self.main_window, "stories", []) or []):
+            if not hasattr(st, "metadata") or st.metadata is None:
+                st.metadata = {}
+            copy_podcast_meta(st.metadata.setdefault("wordpress", {}), cur_post)
+        for idx in range(len(self.wp_post_items)):
+            self._update_post_list_item_label(idx)
+        if hasattr(self.main_window, "set_unsaved_changes"):
+            self.main_window.set_unsaved_changes(True)
+        QMessageBox.information(self, "Applied Podcast Settings", f"Assigned podcast settings to all {len(self.wp_post_items)} posts.")
+
     def _sync_post_to_project(self, idx: int):
         if not (0 <= idx < len(self.wp_post_items)):
             return
@@ -341,6 +400,8 @@ class WordPressExportTabWidget(QWidget):
             wp_meta["frame_pos"] = post.get("frame_pos")
             wp_meta["status"] = post.get("status", "draft")
             wp_meta["tags"] = list(post.get("tags") or [])
+            from plugins.wordpress.castos import copy_podcast_meta
+            copy_podcast_meta(wp_meta, post)
         else:
             stories = getattr(self.main_window, "stories", []) or []
             target_story = None
@@ -391,6 +452,8 @@ class WordPressExportTabWidget(QWidget):
                 wp_meta["frame_pos"] = post.get("frame_pos")
                 wp_meta["status"] = post.get("status", "draft")
                 wp_meta["tags"] = list(post.get("tags") or [])
+                from plugins.wordpress.castos import copy_podcast_meta
+                copy_podcast_meta(wp_meta, post)
 
                 # Update main window story list display
                 if hasattr(self.main_window, "refresh_story_list"):
@@ -434,6 +497,8 @@ class WordPressExportTabWidget(QWidget):
             meta_sub.append(f"{n_auths} author" + ("s" if n_auths > 1 else ""))
         if n_cats:
             meta_sub.append(f"{n_cats} cat" + ("s" if n_cats > 1 else ""))
+        if post.get("is_podcast"):
+            meta_sub.append("Podcast")
         meta_str = f" ({', '.join(meta_sub)})" if meta_sub else ""
         self.wp_posts_list.item(idx).setText(f"{post.get('task_label', 'Post')}: {title}{meta_str}")
 
@@ -614,6 +679,9 @@ class WordPressExportTabWidget(QWidget):
         self._set_editor_checked_authors(post.get("author_ids", []), post.get("author_term_ids", []))
         self._set_editor_checked_categories(post.get("category_ids", []))
 
+        from plugins.wordpress.castos import load_castos_from_post
+        load_castos_from_post(self, post)
+
     def _on_wp_thumb_mode_changed(self):
         if self._syncing_post_editor or not (0 <= self._current_post_index < len(self.wp_post_items)):
             return
@@ -769,35 +837,48 @@ class WordPressExportTabWidget(QWidget):
         elif hasattr(self.parent(), "_update_export_button_label") and callable(self.parent()._update_export_button_label):
             self.parent()._update_export_button_label()
 
-
     def _populate_wp_export_metadata(self, force_refresh: bool = False):
         categories = []
         authors = []
+        podcast_feeds = []
 
         if not force_refresh:
             cached_cats = self.settings.value("wp_cached_categories", "")
             cached_auths = self.settings.value("wp_cached_authors", "")
+            cached_feeds = self.settings.value("wp_cached_podcast_feeds", "")
             if cached_cats and cached_auths:
                 try:
                     categories = json.loads(cached_cats)
                     authors = json.loads(cached_auths)
                 except Exception:
                     pass
+            if cached_feeds:
+                try:
+                    from plugins.wordpress.castos import sanitize_castos_feeds
+                    podcast_feeds = sanitize_castos_feeds(json.loads(cached_feeds))
+                except Exception:
+                    pass
 
-        if not categories or not authors or force_refresh:
+        if not categories or not authors or not podcast_feeds or len(podcast_feeds) <= 1 or force_refresh:
             from plugins.wordpress.client import get_wp_client
             client = get_wp_client()
             if client:
                 try:
                     categories = client.get_categories() if hasattr(client, "get_categories") else []
                     authors = client.get_authors() if hasattr(client, "get_authors") else []
+                    podcast_feeds = client.get_podcast_feeds() if hasattr(client, "get_podcast_feeds") else []
                     self.settings.setValue("wp_cached_categories", json.dumps(categories))
                     self.settings.setValue("wp_cached_authors", json.dumps(authors))
+                    self.settings.setValue("wp_cached_podcast_feeds", json.dumps(podcast_feeds))
                 except Exception as exc:
                     print(f"[WORDPRESS EXPORT UI] Failed to fetch metadata: {exc}")
 
         self.wp_cached_authors_data = authors or []
         self.wp_cached_categories_data = categories or []
+        self.wp_cached_podcast_feeds = podcast_feeds or [{"id": 0, "name": "Default Podcast Feed", "slug": "default"}]
+
+        from plugins.wordpress.castos import populate_castos_feeds_combo
+        populate_castos_feeds_combo(self, self.wp_cached_podcast_feeds)
 
         self.wp_author_list.blockSignals(True)
         self.wp_author_list.clear()
@@ -824,6 +905,33 @@ class WordPressExportTabWidget(QWidget):
                 item.setCheckState(Qt.CheckState.Unchecked)
                 self.wp_category_list.addItem(item)
         self.wp_category_list.blockSignals(False)
+
+    def _refresh_castos_feeds(self):
+        from plugins.wordpress.client import get_wp_client
+        from plugins.wordpress.castos import populate_castos_feeds_combo
+        client = get_wp_client()
+        if not client or not client.is_configured():
+            reply = QMessageBox.question(
+                self,
+                "WordPress Credentials Required",
+                "WordPress site connection is not configured or missing login credentials.\n\nWould you like to enter or correct your website URL and login details now?",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                QMessageBox.StandardButton.Yes,
+            )
+            if reply == QMessageBox.StandardButton.Yes:
+                self._open_wp_settings()
+            return
+
+        feeds = []
+        if hasattr(client, "get_podcast_feeds"):
+            try:
+                feeds = client.get_podcast_feeds()
+                self.settings.setValue("wp_cached_podcast_feeds", json.dumps(feeds))
+            except Exception as exc:
+                print(f"[CASTOS] Error refreshing feeds: {exc}")
+        self.wp_cached_podcast_feeds = feeds or [{"id": 0, "name": "Default Podcast Feed", "slug": "default"}]
+        populate_castos_feeds_combo(self, self.wp_cached_podcast_feeds)
+        QMessageBox.information(self, "Podcast Feeds", f"Refreshed podcast feeds ({len(self.wp_cached_podcast_feeds)} available).")
 
     def _refresh_wp_metadata(self):
         from plugins.wordpress.client import get_wp_client
@@ -857,5 +965,5 @@ class WordPressExportTabWidget(QWidget):
         self._populate_wp_export_metadata(force_refresh=True)
         if 0 <= self._current_post_index < len(self.wp_post_items):
             self._load_post_editor_state(self._current_post_index)
-        QMessageBox.information(self, "WordPress Metadata", "Author and Category lists refreshed successfully.")
+        QMessageBox.information(self, "WordPress Metadata", "Author, Category, and Podcast Feed lists refreshed successfully.")
 

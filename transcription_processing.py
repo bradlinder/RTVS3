@@ -23,6 +23,7 @@ from prs_shared import (
     trim_trailing_degenerate_tail,
     scrub_transcript_segments,
     scrub_transcript,
+    get_effective_audio_for_processing,
 )
 
 logger = logging.getLogger(__name__)
@@ -161,10 +162,26 @@ class TranscriptionProcessingMixin:
             except Exception:
                 beam_size = 5
 
+        audio_for_transcription = str(self.audio_file)
+        try:
+            effective_audio = get_effective_audio_for_processing(
+                self.audio_file,
+                settings_store=getattr(self, "settings_store", None),
+                project_metadata=getattr(self, "project_metadata", None),
+            )
+            if effective_audio and Path(effective_audio).is_file():
+                if Path(effective_audio).resolve() != Path(self.audio_file).resolve():
+                    self.log_activity(
+                        f"[TRANSCRIPTION] Auto-loudness normalization active: feeding normalized sidecar ({Path(effective_audio).name}) to ASR engine."
+                    )
+                audio_for_transcription = str(effective_audio)
+        except Exception as exc:
+            self.log_activity(f"[TRANSCRIPTION] Note: audio normalization check skipped: {exc}")
+
         try:
             worker_executable, worker_args, env_overrides = self._worker_command([
                 "--transcribe",
-                str(self.audio_file),
+                audio_for_transcription,
                 model_name,
                 getattr(self, "whisper_initial_prompt", ""),
                 str(beam_size),

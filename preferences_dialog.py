@@ -50,7 +50,7 @@ class PreferencesDialogMixin(PreferencesResetMixin):
         cat_list = QListWidget(dialog)
         cat_list.setFixedWidth(160)
         categories = [
-            "General", "Keyboard Shortcuts", "Audio Hardware", "Updates & GitHub",
+            "General", "Keyboard Shortcuts", "Audio Settings", "Updates & GitHub",
             "AI Models", "GPU Acceleration", "Playback & Timeline", "Detection",
             "Batch Processing", "Cleanup Data"
         ]
@@ -314,6 +314,31 @@ class PreferencesDialogMixin(PreferencesResetMixin):
                 self.settings_store.setValue("audio_output_volume", new_vol)
                 if hasattr(self, "apply_audio_output_device"):
                     self.apply_audio_output_device(new_dev, new_vol / 100.0)
+
+            # Save Audio Loudness Normalization & Auto-Boost
+            auto_norm_chk = live_widgets.get("auto_norm_chk")
+            if auto_norm_chk is not None:
+                self.settings_store.setValue("auto_loudness_normalization", "true" if auto_norm_chk.isChecked() else "false")
+            target_standard_combo = live_widgets.get("target_standard_combo")
+            if target_standard_combo is not None:
+                data = target_standard_combo.currentData()
+                if isinstance(data, dict):
+                    self.settings_store.setValue("target_standard", data.get("code", "broadcast"))
+            target_lufs_spin = live_widgets.get("target_lufs_spin")
+            if target_lufs_spin is not None:
+                self.settings_store.setValue("target_lufs", float(target_lufs_spin.value()))
+            max_true_peak_spin = live_widgets.get("max_true_peak_spin")
+            if max_true_peak_spin is not None:
+                self.settings_store.setValue("max_true_peak", float(max_true_peak_spin.value()))
+            quiet_threshold_lufs_spin = live_widgets.get("quiet_threshold_lufs_spin")
+            if quiet_threshold_lufs_spin is not None:
+                self.settings_store.setValue("quiet_threshold_lufs", float(quiet_threshold_lufs_spin.value()))
+            quiet_threshold_dbfs_spin = live_widgets.get("quiet_threshold_dbfs_spin")
+            if quiet_threshold_dbfs_spin is not None:
+                self.settings_store.setValue("quiet_threshold_dbfs", float(quiet_threshold_dbfs_spin.value()))
+            apply_boost_playback_chk = live_widgets.get("apply_boost_playback_chk")
+            if apply_boost_playback_chk is not None:
+                self.settings_store.setValue("apply_boost_playback", "true" if apply_boost_playback_chk.isChecked() else "false")
 
             # Save Updates
             auto_update_chk = live_widgets.get("auto_update_chk")
