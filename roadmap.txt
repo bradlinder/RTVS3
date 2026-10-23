@@ -84,7 +84,14 @@ TABLE OF CONTENTS & STATUS OVERVIEW
    [x] 5.2 Dynamic Podcast Options UI & Feed Picker (`plugins/wordpress/wp_ui_builder.py`, `plugins/wordpress/wp_tab_widget.py`, `plugins/wordpress/castos.py`): Show Castos options when a post is designated as a podcast episode, dynamically fetch available podcast feeds via REST API, and provide episode type and season/episode controls. [COMPLETED in v3.9.26-beta]
    [x] 5.3 Castos Post Meta Mapping, Conditional Player Embedding & Draft Publishing (`plugins/wordpress/client.py`, `plugins/wordpress/export_destination.py`): Inject Castos post meta (`ss_podcast_audio_file`, `ss_podcast_feed`) and RSS excerpt for podcast posts while omitting standard `<!-- wp:audio -->` blocks in favor of the Castos web player; embed standard `<!-- wp:audio -->` blocks at top of page for non-podcast exports. [COMPLETED in v3.9.26-beta]
 
-6. Upcoming Milestone: Automated AMD Ryzen AI Local Development Platform & Token-Efficient Model Suite (`scripts/setup_local_ai.py`, `.vscode/settings.json`, `.clinerules`, `.github/workflows/build.yml`) [PLANNED for v4.1.0] [OPTIONAL / PLANNED] [NOT STARTED]
+6. Upcoming Milestone: WordPress Publishing Ergonomics, Shared Story Metadata & Non-Modal Dialog Architecture (`plugins/wordpress/wp_ui_builder.py`, `plugins/wordpress/wp_tab_widget.py`, `plugins/wordpress/export_destination.py`, `story_metadata_dialog.py`, `export/dialog.py`, `preferences_dialog.py`) [PLANNED for v3.9.34-beta] [NOT STARTED]
+   - *Purpose*: Eliminate export friction by establishing `story.metadata["wordpress"]` and `project_metadata["wordpress"]` as a permanent single source of truth, modernizing the dense vertical accordion into a spacious tabbed/split layout with a configurable Preferences toggle, and introducing non-modal floating window support so users can draft WordPress posts and edit transcripts side-by-side without modal lockout.
+   [ ] 6.1 Shared Story & Project WordPress Metadata Persistence (`story_metadata_dialog.py`, `plugins/wordpress/export_destination.py`, `plugins/wordpress/wp_post_builder.py`, `story_model.py`): Persist WordPress publishing metadata (`title`, `excerpt`, `author_ids`, `category_ids`, `featured_image`, `is_podcast`, `podcast_feed_ids`, `season`, `episode_number`) directly in `story.metadata["wordpress"]` and `project_metadata["wordpress"]`. Both the Story Metadata dialog and Unified Export dialog read and write to this single canonical model, ensuring post drafts and excerpts are never discarded when closing the export dialog to make transcript corrections.
+   [ ] 6.2 Tabbed Export View Layout & User-Configurable Preference Switcher (`plugins/wordpress/wp_ui_builder.py`, `plugins/wordpress/wp_tab_widget.py`, `preferences_dialog.py`): Replace the cramped vertical accordion with 3 spacious tabs (`Post Content`, `Authors & Taxonomy`, `Podcast & Media`), tripling typing room for excerpts and expanding author/category lists. Add a user preference in Settings (`Tabs (Recommended) | Split Two-Column | Classic Accordion`) persisted via `QSettings`.
+   [ ] 6.3 Non-Modal Floating Window & Modeless Transcript Co-Editing (`export/dialog.py`, `story_metadata_dialog.py`, `RadioTVSegmenter.py`): Add a "Float / Pop Out" capability and transition `UnifiedExportDialog` and `StoryMetadataDialog` to non-modal window presentation (`Qt.WindowModality.NonModal`), allowing publishers to keep metadata or export panels open on a second monitor or side-by-side while scrubbing audio, labeling speakers, and editing transcripts in the main window.
+   [ ] 6.4 Diagnostic Tests & Version Synchronization (`test_runner.py`, `diagnostic_export_tests.py`, `bump_version.py`): Add unit tests verifying shared metadata round-tripping across story models and export dialogs, tab layout switching, modeless window lifecycle handling, and synchronize all project locations to `v3.9.34-beta`.
+
+7. Upcoming Milestone: Automated AMD Ryzen AI Local Development Platform & Token-Efficient Model Suite (`scripts/setup_local_ai.py`, `.vscode/settings.json`, `.clinerules`, `.github/workflows/build.yml`) [PLANNED for v4.1.0] [OPTIONAL / PLANNED] [NOT STARTED]
    - *Purpose*: One-command non-destructive setup script and auto-configuration suite enabling offline AI-assisted development on AMD Ryzen AI 9 HX 370 (Radeon 890M `gfx1150` + XDNA 2 NPU, 64GB RAM) systems with token-budget optimization, prefix-caching architecture, and automated AST split tooling.
    [ ] 6.1 Strix Point Hardware, UMA VRAM & Context Allocation Probe (`scripts/setup_local_ai.py`): Detect CPU/iGPU/NPU, 64GB RAM, UMA aperture, and configure `gfx1150` Vulkan/ROCm runtime with KV-cache VRAM budgets (`OLLAMA_FLASH_ATTENTION=1`, `OLLAMA_KV_CACHE_TYPE=q8_0`).
    [ ] 6.2 Tiered Local AI Model Provisioner with Prefix-Cache Optimization (`scripts/setup_local_ai.py`): Pull and verify quantized coding models (`Qwen2.5-Coder-32B-Instruct` Q4_K_M for refactoring, `14B/7B` for fast edits, `1.5B` for sub-50ms autocomplete) with shared prefix-caching.
@@ -92,7 +99,7 @@ TABLE OF CONTENTS & STATUS OVERVIEW
    [ ] 6.4 Token-Thrift IDE Configuration & AST Suggester Integration (`scripts/setup_local_ai.py`): Configure Continue/Cline with symbol-first retrieval, diff-only edits, line-slice reading rules, and map `.clinerules`/`.cursorrules` to `scripts/modular_audit.py` to prevent token bloat.
    [ ] 6.5 Token-Budget Task-to-Model Router & CI Pipeline Verification (`.github/workflows/build.yml`, `test_runner.py`): Provide token-aware task router (<300 lines -> 7B/14B; refactoring -> 32B) and verify CI build invariants.
 
-7. Optional Future Milestone: Interactive Text-Based Media Assembly & Multi-Asset Ripple Editing Engine (`assembly/bin_model.py`, `assembly/clipboard.py`, `assembly/ripple_engine.py`, `transcript_editor.py`, `export/timeline.py`) [PLANNED for v4.2.0] [OPTIONAL] [NOT STARTED]
+8. Optional Future Milestone: Interactive Text-Based Media Assembly & Multi-Asset Ripple Editing Engine (`assembly/bin_model.py`, `assembly/clipboard.py`, `assembly/ripple_engine.py`, `transcript_editor.py`, `export/timeline.py`) [PLANNED for v4.2.0] [OPTIONAL] [NOT STARTED]
    [ ] 7.1 Multi-Asset Project Container & Media Bin Submodule (`assembly/bin_model.py`, `project_lifecycle.py`)
    [ ] 7.2 Dynamic Uncapped Tabbed Document Workspace (`assembly/tab_workspace.py`, `ui_layout.py`)
    [ ] 7.3 Rich Media Clipboard Engine (`assembly/clipboard.py` — `application/x-rtvs-clip+json`)
@@ -103,7 +110,7 @@ TABLE OF CONTENTS & STATUS OVERVIEW
    [ ] 7.8 Word-Level Timecode Sync, NLE Markers & Multi-Track DAW Timeline Export (`export/timeline.py`)
    [ ] 7.9 Automated Diagnostic Test Suite (`test_runner.py`)
 
-8. Optional Future Milestone: Android Transcriber & Speaker Diarization Companion App (`android/`, Kotlin, Jetpack Compose, `whisper.cpp`, `sherpa-onnx`, WeSpeaker) [PLANNED for v4.3.0] [OPTIONAL / LOWER PRIORITY] [NOT STARTED]
+9. Optional Future Milestone: Android Transcriber & Speaker Diarization Companion App (`android/`, Kotlin, Jetpack Compose, `whisper.cpp`, `sherpa-onnx`, WeSpeaker) [PLANNED for v4.3.0] [OPTIONAL / LOWER PRIORITY] [NOT STARTED]
    - *Workflow Design Note*: Offline mobile companion app for Android (e.g. Google Pixel series with NPU acceleration) providing dual ASR engines (Whisper `base.en` q8_0 vs. Zipformer via `sherpa-onnx`) and an on-demand model download and removal manager. Can be spun off into a dedicated AI Studio Android project (Option A) using the provided starter prompt.
    [ ] 8.1 Android Project Scaffolding & Audio Foreground Service (`android/` Kotlin / Jetpack Compose)
    [ ] 8.2 Dual On-Device ASR Runtimes (`whisper.cpp` JNI for Whisper `base.en` & `onnxruntime-android` for Zipformer)
@@ -112,7 +119,7 @@ TABLE OF CONTENTS & STATUS OVERVIEW
    [ ] 8.5 Mobile Export & Session Sync with Desktop RTVS3 Projects (`.json` project container sync)
    [ ] 8.6 Standalone AI Studio Starter Prompt Specification & Project Blueprint (Option A Launcher)
 
-9. REAPER DAW Companion Bridge & ReaScript Transcript Integration (`reaper_bridge.py`, `transcript_editor_dialogs.py`, `transcript_context_menu_mixin.py`, `scripts/reaper/rtvs_reaper_companion.lua`, `scripts/reaper/rtvs_reaper_dock.lua`, `test_runner.py`) [PLANNED for v4.2.0] [OPTIONAL / PLANNED] [NOT STARTED]
+10. REAPER DAW Companion Bridge & ReaScript Transcript Integration (`reaper_bridge.py`, `transcript_editor_dialogs.py`, `transcript_context_menu_mixin.py`, `scripts/reaper/rtvs_reaper_companion.lua`, `scripts/reaper/rtvs_reaper_dock.lua`, `test_runner.py`) [PLANNED for v4.2.0] [OPTIONAL / PLANNED] [NOT STARTED]
    - *Purpose*: Enable seamless text-to-timeline audio editing in Cockos REAPER without building a full multi-track DAW inside RTVS3. Allows users to copy or send selected transcript quotes from RTVS3 directly to a REAPER track at the edit cursor with automatic source slicing (`D_STARTOFFS` / `D_LENGTH`), speaker/quote take labeling (`P_NAME`), and full item notes (`P_NOTES`), plus an optional ReaImGui dockable `.rtvs` transcript viewer inside REAPER.
    [ ] 9.1 RTVS3 Clip Cue Payload & Sidecar/IPC Emitter (`reaper_bridge.py`)
    [ ] 9.2 Interactive Transcript Quick-Action & Shortcut Integration (`transcript_editor_dialogs.py`, `transcript_context_menu_mixin.py`, `shortcuts_manager.py`)
@@ -317,7 +324,38 @@ ARCHITECTURAL INVARIANTS FOR SECTION 4:
 [x] 5.3 Castos Post Meta Mapping, Conditional Player Embedding & Draft Publishing (`plugins/wordpress/client.py`, `plugins/wordpress/export_destination.py`): Inject Castos post meta (`ss_podcast_audio_file`, `ss_podcast_feed`) and RSS excerpt for podcast posts while omitting standard `<!-- wp:audio -->` blocks in favor of the Castos web player; embed standard `<!-- wp:audio -->` blocks at top of page for non-podcast exports. [COMPLETED in v3.9.26-beta]
 
 ================================================================================
-6. UPCOMING MILESTONE: AUTOMATED AMD RYZEN AI LOCAL DEVELOPMENT PLATFORM & TOKEN-EFFICIENT MODEL SUITE [PLANNED for v4.1.0] [OPTIONAL / PLANNED] [NOT STARTED]
+6. UPCOMING MILESTONE: WORDPRESS PUBLISHING ERGONOMICS, SHARED STORY METADATA & NON-MODAL DIALOG ARCHITECTURE [PLANNED for v3.9.34-beta] [NOT STARTED]
+================================================================================
+ARCHITECTURAL INVARIANTS FOR SECTION 6:
+- Canonical Single Source of Truth: Never keep isolated publishing metadata trapped inside transient UI dialog fields. Store WordPress attributes directly under `story.metadata["wordpress"]` (for story scopes) and `project_metadata["wordpress"]` (for full episode/podcast scopes), auto-saving to `.rtvs` project containers.
+- Reusable Widget Architecture (<1,000-Line Ceiling): All input controls (title, excerpt, authors, categories, featured image, Castos feeds) remain singletons managed by `plugins/wordpress/wp_ui_builder.py`. The Tabbed vs. Split Two-Column presentation is purely an outer container layout adapter, avoiding duplicated business or networking logic.
+- Non-Modal / Modeless Integrity: Modeless tool windows must handle project close/reload cleanly, unsubscribing from change events when media changes to prevent stale UI state or crashes.
+
+[ ] 6.1 Shared Story & Project WordPress Metadata Persistence (`story_metadata_dialog.py`, `plugins/wordpress/export_destination.py`, `plugins/wordpress/wp_post_builder.py`, `story_model.py`)
+    - Implement unified two-way binding between the project model and UI:
+      1. Define standard `story.metadata["wordpress"]` dictionary schema (`title`, `excerpt`, `author_ids`, `category_ids`, `featured_image`, `is_podcast`, `podcast_feed_ids`, `season`, `episode_number`).
+      2. When `StoryMetadataDialog` loads or saves, populate and commit WordPress attributes to `story.metadata["wordpress"]` (only active when the WordPress plugin is enabled).
+      3. When `UnifiedExportDialog` opens, pre-populate all WordPress fields directly from `story.metadata["wordpress"]` (or `project_metadata["wordpress"]` for full episode).
+      4. Any edit made inside the Export dialog immediately updates the underlying story/project metadata and in-session cache so closing the dialog never discards typed data.
+
+[ ] 6.2 Tabbed Export View Layout & User-Configurable Preference Switcher (`plugins/wordpress/wp_ui_builder.py`, `plugins/wordpress/wp_tab_widget.py`, `preferences_dialog.py`)
+    - Restructure the WordPress export configuration view from a single vertical accordion into a clean tabbed panel:
+      1. Tab 1: **Post Content** — Full-width post title, generous 8-line tall excerpt box with word count badge and "Generate from Story" action, and transcript language toggles.
+      2. Tab 2: **Authors & Taxonomy** — Spacious side-by-side author and category checklist columns displaying 10–12 items simultaneously with filter inputs.
+      3. Tab 3: **Podcast & Media** — Featured thumbnail frame grabber/file selector, Castos podcast feed selector, and episode/season metadata.
+      4. Add a user setting in `preferences_dialog.py` (`Export View Layout: [Tabs (Recommended) | Split Two-Column | Classic Accordion]`) persisted in `QSettings("wordpress_layout_style", "tabs")`.
+
+[ ] 6.3 Non-Modal Floating Window & Modeless Transcript Co-Editing (`export/dialog.py`, `story_metadata_dialog.py`, `RadioTVSegmenter.py`)
+    - Add floating non-modal capability to export and metadata editors:
+      1. Add a "Float / Pop Out" toggle button to `UnifiedExportDialog` and `StoryMetadataDialog` window titlebars/headers.
+      2. Configure `Qt.WindowModality.NonModal` presentation so users can interact with the transcript, scrub audio, and re-label speakers while keeping the export or metadata panel visible on a second monitor or side-by-side.
+      3. Connect transcript edit signals to refresh story word counts and excerpt references live without closing the dialog.
+
+[ ] 6.4 Diagnostic Tests & Version Synchronization (`test_runner.py`, `diagnostic_export_tests.py`, `bump_version.py`)
+    - Add diagnostic unit tests verifying shared metadata persistence across story models, tab layout instantiation, preference switching, and synchronize project version to `v3.9.34-beta`.
+
+================================================================================
+7. UPCOMING MILESTONE: AUTOMATED AMD RYZEN AI LOCAL DEVELOPMENT PLATFORM & TOKEN-EFFICIENT MODEL SUITE [PLANNED for v4.1.0] [OPTIONAL / PLANNED] [NOT STARTED]
 ================================================================================
 ARCHITECTURAL INVARIANTS FOR SECTION 6:
 - Non-Destructive & Cross-Platform Safe: `scripts/setup_local_ai.py` must support `--check` / `--dry-run`, never overwrite existing user IDE settings without creating a `.bak` backup, and degrade gracefully on non-AMD machines.
@@ -357,7 +395,7 @@ ARCHITECTURAL INVARIANTS FOR SECTION 6:
     - Verify `.github/workflows/build.yml` and add a diagnostic unit test in `test_runner.py` validating `scripts/setup_local_ai.py --dry-run` hardware profile serialization and token budget calculations.
 
 ================================================================================
-7. OPTIONAL FUTURE MILESTONE: INTERACTIVE TEXT-BASED MEDIA ASSEMBLY & MULTI-ASSET RIPPLE EDITING ENGINE [PLANNED for v4.2.0] [OPTIONAL] [NOT STARTED]
+8. OPTIONAL FUTURE MILESTONE: INTERACTIVE TEXT-BASED MEDIA ASSEMBLY & MULTI-ASSET RIPPLE EDITING ENGINE [PLANNED for v4.2.0] [OPTIONAL] [NOT STARTED]
 ================================================================================
 *Workflow Design Note*: Marked as an optional workflow extension for users requesting text-driven paper cuts. The core single-file story segmenter, voicebook, and DAW exports remain default and lightweight. All new modules in this milestone MUST reside in a dedicated `assembly/` package with every file kept strictly under 1,000 lines.
 
@@ -372,7 +410,7 @@ ARCHITECTURAL INVARIANTS FOR SECTION 6:
 [ ] 7.9 Automated Diagnostic Test Suite (`test_runner.py`)
 
 ================================================================================
-8. OPTIONAL FUTURE MILESTONE: ANDROID TRANSCRIBER & SPEAKER DIARIZATION COMPANION APP [PLANNED for v4.3.0] [OPTIONAL / LOWER PRIORITY] [NOT STARTED]
+9. OPTIONAL FUTURE MILESTONE: ANDROID TRANSCRIBER & SPEAKER DIARIZATION COMPANION APP [PLANNED for v4.3.0] [OPTIONAL / LOWER PRIORITY] [NOT STARTED]
 ================================================================================
 *Workflow Design Note*: Lower priority offline mobile companion app focused on core transcription and speaker diarization subset running on Android (e.g. Google Pixel series with NPU hardware acceleration). Includes dual ASR engine options (Whisper `base.en` q8_0 vs. Zipformer via `sherpa-onnx`) with an on-demand model download and removal manager so users can test both engines and choose the ideal balance of accuracy and speed.
 
@@ -422,7 +460,7 @@ Key Architectural Requirements:
 --------------------------------------------------------------------------------
 
 ================================================================================
-9. REAPER DAW COMPANION BRIDGE & REASCRIPT TRANSCRIPT INTEGRATION [PLANNED for v4.2.0] [OPTIONAL / PLANNED] [NOT STARTED]
+10. REAPER DAW COMPANION BRIDGE & REASCRIPT TRANSCRIPT INTEGRATION [PLANNED for v4.2.0] [OPTIONAL / PLANNED] [NOT STARTED]
 ================================================================================
 ARCHITECTURAL INVARIANTS FOR REAPER INTEGRATION:
 - Modular <1,000-Line Invariant: Keep all Python bridge logic in a dedicated module `reaper_bridge.py` (<= 500 lines) and companion Lua ReaScripts in `scripts/reaper/` so existing transcript editor modules remain well under the 1,000-line ceiling.

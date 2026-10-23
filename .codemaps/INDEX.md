@@ -1,6 +1,6 @@
 # Repository Symbol Index & API Map
 
-> Generated: 2026-10-23 13:01:44 | Total Files: 154
+> Generated: 2026-10-23 13:26:44 | Total Files: 154
 > Use `python scripts/generate_symbol_index.py --outline <file>` for exact line numbers.
 
 ## Modules Overview
