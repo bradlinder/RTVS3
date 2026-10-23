@@ -432,16 +432,6 @@ def setup_castos_ui(tab_widget: Any, editor_layout: QVBoxLayout) -> None:
                 post["is_podcast"] = checked
                 if hasattr(tab_widget, "_update_post_list_item_label"):
                     tab_widget._update_post_list_item_label(tab_widget._current_post_index)
-                if len(tab_widget.wp_post_items) == 2:
-                    p0 = tab_widget.wp_post_items[0]
-                    p1 = tab_widget.wp_post_items[1]
-                    stories = getattr(tab_widget.main_window, "stories", []) or []
-                    if p0.get("title", "").strip().lower() == p1.get("title", "").strip().lower() or len(stories) <= 1:
-                        p0["is_podcast"] = checked
-                        p1["is_podcast"] = checked
-                        if hasattr(tab_widget, "_update_post_list_item_label"):
-                            tab_widget._update_post_list_item_label(0)
-                            tab_widget._update_post_list_item_label(1)
 
     tab_widget.wp_cb_is_podcast.toggled.connect(_on_podcast_toggled)
 

@@ -19,7 +19,7 @@ from PySide6.QtWidgets import (
 from prs_shared import INTERNAL_APP_ID
 from core_utils import apply_window_titlebar_theme, get_active_theme_mode, make_dialog_maximizable
 
-DEFAULT_EXPORT_DESTINATIONS_ORDER = ["local", "timeline", "wordpress", "gdocs", "youtube"]
+DEFAULT_EXPORT_DESTINATIONS_ORDER = ["local", "timeline", "wordpress", "youtube"]
 
 
 def _get_export_theme_mode() -> str:
@@ -35,9 +35,9 @@ def get_export_destinations_order() -> List[str]:
     raw = settings.value("export_destinations_order", None)
     if raw:
         if isinstance(raw, list):
-            return [str(x) for x in raw]
+            return [str(x) for x in raw if str(x) != "gdocs"]
         elif isinstance(raw, str):
-            return [x.strip() for x in raw.split(",") if x.strip()]
+            return [x.strip() for x in raw.split(",") if x.strip() and x.strip() != "gdocs"]
     return list(DEFAULT_EXPORT_DESTINATIONS_ORDER)
 
 
@@ -64,7 +64,6 @@ class ReorderExportDestinationsDialog(QDialog):
         self.available_dests = available_dests or [
             ("local", "Local Files (Media & Transcripts)"),
             ("wordpress", "WordPress Draft Post"),
-            ("gdocs", "Google Docs"),
             ("youtube", "YouTube Studio (Assisted Upload)"),
         ]
 

@@ -322,66 +322,19 @@ class DiagnosticBatchTestsMixin:
 
         import ast
         try:
-            from plugins.youtube.api import YouTubeAuthManager
+            from plugins.youtube.export_destination import YouTubeExportDestination, YOUTUBE_CATEGORIES
         except ImportError:
-            from youtube.api import YouTubeAuthManager
+            from youtube.export_destination import YouTubeExportDestination, YOUTUBE_CATEGORIES
 
-        try:
-            from plugins.gdocs.auth import GoogleDocsAuthManager
-        except ImportError:
-            from gdocs.auth import GoogleDocsAuthManager
+        # 1. Test YouTubeExportDestination zero-auth registration & categories
+        yt_dest = YouTubeExportDestination()
+        assert yt_dest.id == "youtube", "YouTubeExportDestination id must be 'youtube'"
+        assert isinstance(YOUTUBE_CATEGORIES, list) and len(YOUTUBE_CATEGORIES) >= 5, "YOUTUBE_CATEGORIES must be populated"
+        assert ("25", "News & Politics") in YOUTUBE_CATEGORIES, "News & Politics category must be defined"
 
-        # 1. Test YouTubeAuthManager email methods & attributes
-        yt_auth = YouTubeAuthManager()
-        assert hasattr(yt_auth, "get_authenticated_email"), "YouTubeAuthManager must define get_authenticated_email"
-        assert hasattr(yt_auth, "get_user_email"), "YouTubeAuthManager must define get_user_email"
-        assert callable(yt_auth.get_authenticated_email), "get_authenticated_email must be callable"
-        assert callable(yt_auth.get_user_email), "get_user_email must be callable"
-        if yt_auth.is_authenticated():
-            assert isinstance(yt_auth.get_authenticated_email(), str)
-            assert yt_auth.get_authenticated_email() == yt_auth.get_user_email(), "Authenticated email methods must match"
-        else:
-            assert yt_auth.get_authenticated_email() == "", "Unauthenticated email should return empty string"
-            assert yt_auth.get_user_email() == "", "Unauthenticated user email should return empty string"
-
-        # Deterministic isolated testing of both unauthenticated and authenticated branches
-        class IsolatedYTAuth(YouTubeAuthManager):
-            def __init__(self):
-                super().__init__()
-                self._tokens = {}
-            def is_authenticated(self):
-                return False
-        iso_yt = IsolatedYTAuth()
-        assert iso_yt.get_authenticated_email() == "", "Isolated unauthenticated email must be empty"
-        assert iso_yt.get_user_email() == "", "Isolated unauthenticated user email must be empty"
-        iso_yt._tokens = {"user_email": "test@example.com", "access_token": "token123"}
-        assert iso_yt.get_authenticated_email() == "test@example.com", "Isolated authenticated email must match tokens"
-        assert iso_yt.get_user_email() == "test@example.com", "Isolated authenticated user email must match tokens"
-
-        # 2. Test GoogleDocsAuthManager email methods & attributes
-        gdocs_auth = GoogleDocsAuthManager()
-        assert hasattr(gdocs_auth, "get_authenticated_email"), "GoogleDocsAuthManager must define get_authenticated_email"
-        assert hasattr(gdocs_auth, "get_user_email"), "GoogleDocsAuthManager must define get_user_email"
-        assert callable(gdocs_auth.get_authenticated_email), "get_authenticated_email must be callable"
-        assert callable(gdocs_auth.get_user_email), "get_user_email must be callable"
-        if gdocs_auth.is_authenticated():
-            assert isinstance(gdocs_auth.get_authenticated_email(), str)
-            assert gdocs_auth.get_authenticated_email() == gdocs_auth.get_user_email(), "Authenticated email methods must match"
-        else:
-            assert gdocs_auth.get_authenticated_email() == "", "Unauthenticated email should return empty string"
-            assert gdocs_auth.get_user_email() == "", "Unauthenticated user email should return empty string"
-
-        class IsolatedGDocsAuth(GoogleDocsAuthManager):
-            def __init__(self):
-                super().__init__()
-                self._tokens = {}
-            def is_authenticated(self):
-                return False
-        iso_gdocs = IsolatedGDocsAuth()
-        assert iso_gdocs.get_authenticated_email() == "", "Isolated unauthenticated email must be empty"
-        iso_gdocs._tokens = {"user_email": "gdocs@example.com", "access_token": "token456"}
-        assert iso_gdocs.get_authenticated_email() == "gdocs@example.com", "Isolated authenticated email must match tokens"
-        assert iso_gdocs.get_user_email() == "gdocs@example.com", "Isolated authenticated user email must match tokens"
+        # 2. Verify Google Docs plugin and YouTube API OAuth have been removed (Milestone 3.10 & 3.11)
+        assert not (root_dir / "plugins" / "gdocs").exists(), "plugins/gdocs must be removed"
+        assert not (root_dir / "plugins" / "youtube" / "api.py").exists(), "plugins/youtube/api.py must be removed"
 
         # 3. Test WordPress story metadata widget separation (AST in source mode, live test in frozen mode)
         wp_plugin_file = Path("plugins/wordpress/plugin.py")

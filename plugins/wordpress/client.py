@@ -619,8 +619,8 @@ class WordPressClient:
             mime_type = "audio/wav"
 
         endpoints = [
-            f"{self.api_base}/media/",
             f"{self.api_base}/media",
+            f"{self.api_base}/media/",
             f"{self.site_url}/?rest_route=/wp/v2/media",
         ]
 
@@ -641,8 +641,16 @@ class WordPressClient:
                     "Content-Disposition": f'attachment; filename="{upload_filename}"',
                     "Content-Type": mime_type,
                     "Content-Length": str(path.stat().st_size),
+                    "Accept": "application/json",
                 }
-                resp = self._post_request(url, headers=headers, timeout=180)
+                with open(path, "rb") as f:
+                    resp = requests.post(
+                        url,
+                        auth=self._get_auth(),
+                        data=f,
+                        headers=headers,
+                        timeout=180,
+                    )
                 if resp.status_code in (200, 201):
                     return resp.json()
                 errors.append(f"raw {url} HTTP {resp.status_code}: {resp.text[:300]}")

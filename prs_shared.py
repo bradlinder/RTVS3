@@ -70,7 +70,7 @@ def _ensure_runtime_bin_on_path():
 _ensure_runtime_bin_on_path()
 
 # Re-exports from Phase 1 modularization (core_utils, transcript_cleaner, project_serialization, process_lifecycle)
-PROJECT_VERSION = "3.9.32-beta"
+PROJECT_VERSION = "3.9.33-beta"
 from core_utils import (
     INTERNAL_APP_ID,
     APP_DISPLAY_NAME,
@@ -1157,8 +1157,7 @@ def create_fade_curve_icon(curve_type: str, width: int = 56, height: int = 30) -
     return icon
 
 
-# FadeCurveVisualSelector (Extracted to story_widgets.py)
-from story_widgets import FadeCurveVisualSelector
+# FadeCurveVisualSelector is resolved via module __getattr__ below to break circular import with story_widgets
 
 
 
@@ -1247,13 +1246,7 @@ class Story:
 # Undo / Redo Commands
 # ============================================================
 
-# Story Undo / Redo Commands (Extracted to story_widgets.py)
-from story_widgets import (
-    StoryFadesChangeCommand,
-    SetStoriesCommand,
-    StoryBoundaryChangeCommand,
-    SelectStoriesCommand,
-)
+# Story Undo / Redo Commands (Extracted to story_widgets.py, resolved via __getattr__)
 
 
 class ProjectStateCommand(QUndoCommand):
@@ -1288,8 +1281,7 @@ class ProjectStateCommand(QUndoCommand):
 # Custom Story Card Delegate (Milestones 3.10 & 3.14)
 # ============================================================
 
-# Custom Story Card Delegate (Extracted to story_widgets.py)
-from story_widgets import StoryCardDelegate
+# Custom Story Card Delegate (Extracted to story_widgets.py, resolved via __getattr__)
 
 
 # ============================================================
@@ -1388,25 +1380,7 @@ def read_document_text(path: Path) -> str:
                 return path.read_text(encoding="latin-1", errors="replace")
 
 
-# ============================================================
-# Background Workers & Waveform Peak Cache (Extracted to background_workers.py)
-# ============================================================
-from background_workers import (
-    StoryAutoDetectWorker,
-    get_waveform_peak_cache_path,
-    read_waveform_peak_cache,
-    write_waveform_peak_cache,
-    invalidate_waveform_peak_cache,
-    WaveformWorker,
-    VideoThumbnailWorker,
-    get_video_thumbnail_cache_dir,
-    read_video_thumbnail_cache,
-    invalidate_video_thumbnail_cache,
-    PEAKS_MAGIC,
-    PEAKS_VERSION,
-    WAVEFORM_ANALYSIS_RATE,
-    WAVEFORM_POINTS_PER_SECOND,
-)
+# Background Workers & Waveform Peak Cache (Extracted to background_workers.py, resolved via __getattr__)
 
 # ============================================================
 # Batch Processing Dialog (Extracted to batch_dialog.py)
@@ -1416,25 +1390,7 @@ from batch_dialog import (
     BatchProcessingDialog,
 )
 
-# ============================================================
-# Story Widgets (Extracted to story_widgets.py)
-# ============================================================
-from story_widgets import (
-    StoryListWidget,
-)
-
-# ============================================================
-# Timeline & Waveform Widgets (Extracted to timeline_widgets.py)
-# ============================================================
-from timeline_widgets import (
-    TimelineCanvas,
-    TimelineOverviewBar,
-    TimelineResizeHandle,
-    TimelineWidget,
-    WaveformEnvelope,
-    build_waveform_pyramid,
-    StoryFadesChangeCommand,
-)
+# Story and Timeline Widgets are resolved via module __getattr__ below to break circular imports
 
 # ============================================================
 # Transcript Editor & Selection (Extracted to transcript_editor.py)
@@ -1469,4 +1425,67 @@ from cache_manager import (
     unregister_active_thumbnail_dir,
     get_active_thumbnail_dirs,
 )
+
+
+_STORY_WIDGET_EXPORTS = {
+    "FadeCurveVisualSelector",
+    "StoryFadesChangeCommand",
+    "SetStoriesCommand",
+    "StoryBoundaryChangeCommand",
+    "SelectStoriesCommand",
+    "StoryCardDelegate",
+    "StoryListWidget",
+}
+
+_TIMELINE_WIDGET_EXPORTS = {
+    "TimelineCanvas",
+    "TimelineOverviewBar",
+    "TimelineResizeHandle",
+    "TimelineWidget",
+    "WaveformEnvelope",
+    "build_waveform_pyramid",
+}
+
+_BACKGROUND_WORKER_EXPORTS = {
+    "StoryAutoDetectWorker",
+    "get_waveform_peak_cache_path",
+    "read_waveform_peak_cache",
+    "write_waveform_peak_cache",
+    "invalidate_waveform_peak_cache",
+    "WaveformWorker",
+    "VideoThumbnailWorker",
+    "get_video_thumbnail_cache_dir",
+    "read_video_thumbnail_cache",
+    "invalidate_video_thumbnail_cache",
+    "PEAKS_MAGIC",
+    "PEAKS_VERSION",
+    "WAVEFORM_ANALYSIS_RATE",
+    "WAVEFORM_POINTS_PER_SECOND",
+}
+
+
+def __getattr__(name: str):
+    """Lazy resolver for extracted UI and worker components to eliminate circular import chains."""
+    if name in _STORY_WIDGET_EXPORTS:
+        import story_widgets
+        val = getattr(story_widgets, name)
+        globals()[name] = val
+        return val
+    if name in _TIMELINE_WIDGET_EXPORTS:
+        import timeline_widgets
+        val = getattr(timeline_widgets, name)
+        globals()[name] = val
+        return val
+    if name in _BACKGROUND_WORKER_EXPORTS:
+        import background_workers
+        val = getattr(background_workers, name)
+        globals()[name] = val
+        return val
+    raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
+
+
+__all__ = [
+    k for k in list(globals().keys()) if not k.startswith("_")
+] + sorted(_STORY_WIDGET_EXPORTS | _TIMELINE_WIDGET_EXPORTS | _BACKGROUND_WORKER_EXPORTS)
+
 

@@ -24,7 +24,7 @@ except ImportError:
         from prs_shared import INTERNAL_APP_ID, make_dialog_maximizable, PROJECT_VERSION
     except Exception:
         INTERNAL_APP_ID = "RadioTVStorySegmenter"
-        PROJECT_VERSION = "3.9.23-beta"
+        PROJECT_VERSION = "3.9.33-beta"
         def make_dialog_maximizable(dlg): pass
 
 logger = logging.getLogger(__name__)
@@ -146,7 +146,7 @@ def serialize_models_inventory() -> List[Dict[str, Any]]:
 def serialize_plugin_states(settings_store=None) -> Dict[str, Any]:
     """Extracts enabled states for installed plugins."""
     plugins_state: Dict[str, Any] = {}
-    known_plugins = ["youtube", "wordpress", "gdocs", "translation"]
+    known_plugins = ["youtube", "wordpress", "translation"]
     if settings_store is None:
         try:
             from PySide6.QtCore import QSettings
@@ -406,193 +406,6 @@ def restore_local_backup(
         return False, str(exc), []
 
 
-# --- Google Drive Cloud Backup & Restore Integration ---
-
-def _get_gdocs_auth_manager():
-    """Dynamically resolves GoogleDocsAuthManager for Google Drive API operations."""
-    try:
-        from plugins.gdocs.auth import GoogleDocsAuthManager
-        return GoogleDocsAuthManager()
-    except Exception:
-        return None
-
-
-def list_cloud_backups(auth_manager=None) -> Tuple[bool, List[Dict[str, Any]], str]:
-    """Queries Google Drive API v3 for RTVS backup archives."""
-    if auth_manager is None:
-        auth_manager = _get_gdocs_auth_manager()
-    if not auth_manager or not auth_manager.is_authenticated():
-        return False, [], "Google account not authenticated. Please sign in via the Google Docs plugin."
-
-    token = auth_manager.get_valid_access_token()
-    if not token:
-        return False, [], "Failed to acquire valid Google Drive access token."
-
-    query = "(name contains 'rtvs_settings_' or name contains 'rtvs_backup_') and trashed = false"
-    params = urllib.parse.urlencode({
-        "q": query,
-        "fields": "files(id, name, size, createdTime, modifiedTime, description)",
-        "orderBy": "createdTime desc",
-        "pageSize": "50",
-    })
-    url = f"https://www.googleapis.com/drive/v3/files?{params}"
-    req = urllib.request.Request(url, headers={"Authorization": f"Bearer {token}"})
-    try:
-        with urllib.request.urlopen(req, timeout=15) as resp:
-            data = json.loads(resp.read().decode("utf-8"))
-            files = data.get("files", [])
-            return True, files, ""
-    except urllib.error.HTTPError as http_err:
-        if http_err.code in (401, 403) and hasattr(auth_manager, "get_valid_access_token"):
-            token = auth_manager.get_valid_access_token(force_refresh=True)
-            if token:
-                req = urllib.request.Request(url, headers={"Authorization": f"Bearer {token}"})
-                try:
-                    with urllib.request.urlopen(req, timeout=15) as resp:
-                        data = json.loads(resp.read().decode("utf-8"))
-                        files = data.get("files", [])
-                        return True, files, ""
-                except Exception as retry_exc:
-                    return False, [], f"Google Drive API query failed on retry: {retry_exc}"
-        return False, [], f"Google Drive API query failed: {http_err}"
-    except Exception as exc:
-        return False, [], f"Google Drive API query failed: {exc}"
-
-
-def upload_cloud_backup(
-    payload: Dict[str, Any],
-    auth_manager=None,
-    custom_name: str = "",
-) -> Tuple[bool, str, str]:
-    """Uploads a settings payload directly to Google Drive via multipart API."""
-    if auth_manager is None:
-        auth_manager = _get_gdocs_auth_manager()
-    if not auth_manager or not auth_manager.is_authenticated():
-        return False, "", "Google account not authenticated."
-
-    token = auth_manager.get_valid_access_token()
-    if not token:
-        return False, "", "Failed to obtain valid Google Drive access token."
-
-    checksum = payload.get("archive_checksum", "")
-    app_ver = payload.get("app_version", PROJECT_VERSION)
-    ts = datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S")
-    filename = custom_name.strip() or f"rtvs_settings_{ts}.rtvs-settings"
-    if not any(filename.endswith(ext) for ext in (".rtvs-settings", ".rtvs-preferences", ".rtvs-backup")):
-        filename += ".rtvs-settings"
-
-    description = f"RTVS System Settings v{app_ver} | SHA-256: {checksum}"
-    metadata = {
-        "name": filename,
-        "mimeType": "application/json",
-        "description": description,
-    }
-
-    payload_bytes = json.dumps(payload, indent=2, ensure_ascii=False).encode("utf-8")
-    boundary = f"=====RTVS_BACKUP_BOUNDARY_{int(time.time())}====="
-    body = (
-        f"--{boundary}\r\n"
-        f"Content-Type: application/json; charset=UTF-8\r\n\r\n"
-        f"{json.dumps(metadata)}\r\n"
-        f"--{boundary}\r\n"
-        f"Content-Type: application/json\r\n\r\n"
-    ).encode("utf-8") + payload_bytes + f"\r\n--{boundary}--\r\n".encode("utf-8")
-
-    url = "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart"
-
-    def _do_upload(tok: str):
-        r = urllib.request.Request(url, data=body, method="POST")
-        r.add_header("Authorization", f"Bearer {tok}")
-        r.add_header("Content-Type", f"multipart/related; boundary={boundary}")
-        r.add_header("Content-Length", str(len(body)))
-        return r
-
-    try:
-        req = _do_upload(token)
-        with urllib.request.urlopen(req, timeout=30) as resp:
-            res_data = json.loads(resp.read().decode("utf-8"))
-            file_id = res_data.get("id", "")
-            return True, file_id, ""
-    except urllib.error.HTTPError as http_err:
-        if http_err.code in (401, 403) and hasattr(auth_manager, "get_valid_access_token"):
-            token = auth_manager.get_valid_access_token(force_refresh=True)
-            if token:
-                try:
-                    req = _do_upload(token)
-                    with urllib.request.urlopen(req, timeout=30) as resp:
-                        res_data = json.loads(resp.read().decode("utf-8"))
-                        file_id = res_data.get("id", "")
-                        return True, file_id, ""
-                except Exception as retry_exc:
-                    return False, "", f"Drive upload failed on retry: {retry_exc}"
-        return False, "", f"Drive upload failed: {http_err}"
-    except Exception as exc:
-        return False, "", f"Drive upload failed: {exc}"
-
-
-def download_cloud_backup(file_id: str, auth_manager=None) -> Tuple[bool, Dict[str, Any], str]:
-    """Downloads and verifies an RTVS backup from Google Drive."""
-    if auth_manager is None:
-        auth_manager = _get_gdocs_auth_manager()
-    if not auth_manager or not auth_manager.is_authenticated():
-        return False, {}, "Google account not authenticated."
-
-    token = auth_manager.get_valid_access_token()
-    if not token:
-        return False, {}, "Missing valid access token."
-
-    url = f"https://www.googleapis.com/drive/v3/files/{urllib.parse.quote(file_id)}?alt=media"
-
-    def _do_download(tok: str):
-        return urllib.request.Request(url, headers={"Authorization": f"Bearer {tok}"})
-
-    try:
-        req = _do_download(token)
-        with urllib.request.urlopen(req, timeout=30) as resp:
-            content_bytes = resp.read()
-            valid, msg, payload = verify_backup_payload(content_bytes)
-            if not valid or not payload:
-                return False, {}, f"Cloud backup integrity check failed: {msg}"
-            return True, payload, ""
-    except urllib.error.HTTPError as http_err:
-        if http_err.code in (401, 403) and hasattr(auth_manager, "get_valid_access_token"):
-            token = auth_manager.get_valid_access_token(force_refresh=True)
-            if token:
-                try:
-                    req = _do_download(token)
-                    with urllib.request.urlopen(req, timeout=30) as resp:
-                        content_bytes = resp.read()
-                        valid, msg, payload = verify_backup_payload(content_bytes)
-                        if not valid or not payload:
-                            return False, {}, f"Cloud backup integrity check failed: {msg}"
-                        return True, payload, ""
-                except Exception as retry_exc:
-                    return False, {}, f"Drive download failed on retry: {retry_exc}"
-        return False, {}, f"Drive download failed: {http_err}"
-    except Exception as exc:
-        return False, {}, f"Drive download failed: {exc}"
-
-
-def restore_cloud_backup(
-    file_id: str,
-    auth_manager=None,
-    main_window=None,
-    settings_store=None,
-) -> Tuple[bool, str, List[str]]:
-    """Restores system configuration directly from a Google Drive cloud backup."""
-    ok, payload, err = download_cloud_backup(file_id, auth_manager=auth_manager)
-    if not ok:
-        return False, err, []
-    success, restored_items = apply_backup_payload(
-        payload,
-        main_window=main_window,
-        settings_store=settings_store,
-    )
-    if not success:
-        return False, f"Failed applying restored state: {', '.join(restored_items)}", []
-    return True, f"Successfully restored {len(restored_items)} configuration groups from cloud backup", restored_items
-
-
 # --- PySide6 Backup & Restore Center Dialog ---
 
 try:
@@ -607,9 +420,6 @@ try:
         QWidget,
         QFileDialog,
         QMessageBox,
-        QTableWidget,
-        QTableWidgetItem,
-        QHeaderView,
         QGroupBox,
         QTextEdit,
     )
@@ -620,12 +430,11 @@ except ImportError:
 
 if HAS_QT:
     class BackupRestoreDialog(QDialog):
-        """Unified Modal Dialog for Local and Google Drive Cloud Backup & Restore."""
+        """Modal Dialog for Local System Settings Backup & Restore."""
 
         def __init__(self, parent=None):
             super().__init__(parent)
             self.main_window = parent
-            self.auth_manager = _get_gdocs_auth_manager()
             self.setWindowTitle("Backup & Restore Center")
             self.setMinimumSize(720, 520)
             self.resize(780, 580)
@@ -645,7 +454,7 @@ if HAS_QT:
 
             desc_lbl = QLabel(
                 "Export, preserve, and restore all application configurations, custom keyboard shortcuts, "
-                "glossary dictionaries, and plugin states locally or seamlessly through Google Drive cloud backups."
+                "glossary dictionaries, and plugin states using cryptographically verified local archive files."
             )
             desc_lbl.setWordWrap(True)
             desc_lbl.setStyleSheet("color: #94a3b8; font-size: 13px; margin-bottom: 8px;")
@@ -654,13 +463,10 @@ if HAS_QT:
             # Tabs
             self.tabs = QTabWidget(self)
             self.local_tab = QWidget()
-            self.cloud_tab = QWidget()
             self.tabs.addTab(self.local_tab, "Local Archive")
-            self.tabs.addTab(self.cloud_tab, "Google Drive")
             layout.addWidget(self.tabs)
 
             self._build_local_tab()
-            self._build_cloud_tab()
 
             # Close button
             btn_row = QHBoxLayout()
@@ -717,48 +523,6 @@ if HAS_QT:
             self.log_text.setStyleSheet("background-color: #0f172a; color: #cbd5e1; font-family: monospace; font-size: 11px;")
             layout.addWidget(self.log_text)
 
-        def _build_cloud_tab(self):
-            layout = QVBoxLayout(self.cloud_tab)
-            layout.setContentsMargins(12, 12, 12, 12)
-            layout.setSpacing(12)
-
-            # Auth Status Card
-            auth_box = QGroupBox("Google Account Connection")
-            auth_layout = QHBoxLayout(auth_box)
-            self.cloud_auth_label = QLabel("Checking Google authentication...")
-            self.cloud_auth_label.setStyleSheet("color: #cbd5e1; font-size: 13px;")
-            auth_layout.addWidget(self.cloud_auth_label)
-
-            self.btn_cloud_refresh = QPushButton("Refresh Cloud List")
-            self.btn_cloud_refresh.clicked.connect(self._refresh_cloud_list)
-            auth_layout.addWidget(self.btn_cloud_refresh)
-            layout.addWidget(auth_box)
-
-            # Cloud Actions Row
-            act_row = QHBoxLayout()
-            self.btn_upload_cloud = QPushButton("Backup to Google Drive...")
-            self.btn_upload_cloud.setStyleSheet("background-color: #059669; color: white; font-weight: bold; padding: 8px 14px;")
-            self.btn_upload_cloud.clicked.connect(self._on_upload_cloud)
-            act_row.addWidget(self.btn_upload_cloud)
-
-            self.btn_restore_cloud = QPushButton("Restore Selected Cloud Backup")
-            self.btn_restore_cloud.setStyleSheet("background-color: #475569; color: white; font-weight: bold; padding: 8px 14px;")
-            self.btn_restore_cloud.clicked.connect(self._on_restore_cloud)
-            act_row.addWidget(self.btn_restore_cloud)
-            act_row.addStretch()
-            layout.addLayout(act_row)
-
-            # Cloud Backups Table
-            self.cloud_table = QTableWidget(0, 4)
-            self.cloud_table.setHorizontalHeaderLabels(["Backup Filename", "Created Date", "Size", "SHA-256 Digest"])
-            self.cloud_table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
-            self.cloud_table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
-            self.cloud_table.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
-            self.cloud_table.horizontalHeader().setSectionResizeMode(3, QHeaderView.ResizeMode.ResizeToContents)
-            self.cloud_table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
-            self.cloud_table.setSelectionMode(QTableWidget.SelectionMode.SingleSelection)
-            layout.addWidget(self.cloud_table)
-
         def _refresh_local_summary(self):
             prefs = serialize_preferences()
             shortcuts = serialize_keyboard_shortcuts()
@@ -774,18 +538,6 @@ if HAS_QT:
                 f"• Active Plugins: <b>{len(plugins)}</b> extensions"
             )
             self.summary_label.setText(summary)
-            self._update_cloud_auth_status()
-
-        def _update_cloud_auth_status(self):
-            if self.auth_manager and self.auth_manager.is_authenticated():
-                email = self.auth_manager.get_authenticated_email() or "Connected Account"
-                self.cloud_auth_label.setText(f"Connected to Google Drive: <b>{email}</b>")
-                self.btn_upload_cloud.setEnabled(True)
-                self.btn_cloud_refresh.setEnabled(True)
-            else:
-                self.cloud_auth_label.setText("Not signed into Google. Connect via Google Docs / Drive plugin.")
-                self.btn_upload_cloud.setEnabled(False)
-                self.btn_restore_cloud.setEnabled(False)
 
         def _on_export_local(self):
             now_str = datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S")
@@ -868,86 +620,3 @@ if HAS_QT:
                     QMessageBox.critical(self, "Restore Failed", f"Restore error:\n{err_msg}")
             except Exception as exc:
                 QMessageBox.critical(self, "Restore Error", f"Unexpected error reading backup:\n{exc}")
-
-        def _refresh_cloud_list(self):
-            self._update_cloud_auth_status()
-            if not self.auth_manager or not self.auth_manager.is_authenticated():
-                return
-
-            self.cloud_table.setRowCount(0)
-            ok, files, err = list_cloud_backups(self.auth_manager)
-            if not ok:
-                QMessageBox.warning(self, "Cloud Query Failed", f"Could not list Google Drive backups:\n{err}")
-                return
-
-            self.cloud_table.setRowCount(len(files))
-            for row, f in enumerate(files):
-                fid = f.get("id", "")
-                name = f.get("name", "")
-                created = f.get("createdTime", "")[:19].replace("T", " ")
-                size_str = f"{int(f.get('size', 0)) / 1024:.1f} KB" if f.get("size") else "N/A"
-                desc = f.get("description", "")
-                cs = desc.split("SHA-256:")[-1].strip()[:16] if "SHA-256:" in desc else "Verified"
-
-                name_item = QTableWidgetItem(name)
-                name_item.setData(Qt.ItemDataRole.UserRole, fid)
-                self.cloud_table.setItem(row, 0, name_item)
-                self.cloud_table.setItem(row, 1, QTableWidgetItem(created))
-                self.cloud_table.setItem(row, 2, QTableWidgetItem(size_str))
-                self.cloud_table.setItem(row, 3, QTableWidgetItem(cs))
-
-            self.btn_restore_cloud.setEnabled(len(files) > 0)
-
-        def _on_upload_cloud(self):
-            if not self.auth_manager or not self.auth_manager.is_authenticated():
-                QMessageBox.warning(self, "Authentication Required", "Please connect to Google first.")
-                return
-
-            payload = create_backup_payload(main_window=self.main_window)
-            ok, fid, err = upload_cloud_backup(payload, auth_manager=self.auth_manager)
-            if ok:
-                cs = payload.get("archive_checksum", "")[:16]
-                QMessageBox.information(
-                    self,
-                    "Cloud Backup Uploaded",
-                    f"Successfully uploaded verified backup to Google Drive!\n\nFile ID: {fid}\nSHA-256: {cs}...",
-                )
-                self._refresh_cloud_list()
-            else:
-                QMessageBox.critical(self, "Cloud Upload Failed", f"Failed uploading backup to Google Drive:\n{err}")
-
-        def _on_restore_cloud(self):
-            row = self.cloud_table.currentRow()
-            if row < 0:
-                QMessageBox.information(self, "Selection Required", "Please select a cloud backup from the table.")
-                return
-
-            name_item = self.cloud_table.item(row, 0)
-            if not name_item:
-                return
-            file_id = name_item.data(Qt.ItemDataRole.UserRole)
-            backup_name = name_item.text()
-
-            confirm = QMessageBox.question(
-                self,
-                "Restore Cloud Backup",
-                f"Are you sure you want to download and restore configuration from Google Drive backup:\n\n{backup_name}?",
-                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
-            )
-            if confirm != QMessageBox.StandardButton.Yes:
-                return
-
-            ok, status_msg, items = restore_cloud_backup(
-                file_id,
-                auth_manager=self.auth_manager,
-                main_window=self.main_window,
-            )
-            if ok:
-                self._refresh_local_summary()
-                QMessageBox.information(
-                    self,
-                    "Cloud Restore Successful",
-                    f"Cloud configuration restored successfully:\n\n• " + "\n• ".join(items),
-                )
-            else:
-                QMessageBox.critical(self, "Cloud Restore Failed", f"Restore error:\n{status_msg}")

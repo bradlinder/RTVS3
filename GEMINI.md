@@ -161,5 +161,7 @@ Instead, the agent MUST actively perform deep, adversarial code-level inspection
 - **Consult `.pyi` Typing Stubs**:
   - When verifying method signatures, argument types, or public exports of central facades (`prs_shared.py`, `processing.py`, `playback_preferences.py`, `transcript_editor.py`, `project_export.py`), inspect the corresponding `.pyi` stub to save up to 97% of prompt tokens.
 - **Diagnostic & Log Output Discipline**:
-  - Always run the diagnostic test bench in quiet mode (`python test_runner.py --quiet`) to collapse 68 test results into a single token-dense line.
+  - When verifying localized changes, run `python test_runner.py --quiet --changed` (auto-selects tests matching `git status` / modified modules via `diagnostic_selector.py`) or `python test_runner.py --quiet --filter <keyword>` to execute only the relevant subset of tests in ~1–2s instead of running all 68 tests repeatedly.
+  - Always use quiet mode (`--quiet`) to collapse passing test results into a single token-dense line.
+  - Use `python bump_version.py --patch` (or `python bump_version.py <version>`) to update all version locations, modified plugin manifests/addons, and web preview files in a single command rather than editing 10 files individually.
   - Pipe or pass raw terminal error traces through `scripts/log_summary.py` to extract concise <15-line root cause reports instead of outputting massive traceback noise.

@@ -181,7 +181,7 @@ def build_wp_post_items(
             "tags": list(wp_meta.get("tags") or []),
             "featured_image": wp_meta.get("featured_image", None),
             "featured_image_mode": wp_meta.get("featured_image_mode", "none"),
-            "is_podcast": bool(wp_meta.get("is_podcast", False)),
+            "is_podcast": bool(wp_meta.get("is_podcast", True)),
             "podcast_feed": str(wp_meta.get("podcast_feed") or "default"),
             "podcast_feed_id": wp_meta.get("podcast_feed_id"),
             "podcast_feed_ids": list(wp_meta.get("podcast_feed_ids") or ([int(wp_meta.get("podcast_feed_id"))] if wp_meta.get("podcast_feed_id") else [])),
@@ -195,44 +195,34 @@ def build_wp_post_items(
         if not existing and existing_items and len(existing_items) == 1:
             existing = existing_items[0]
             is_full_existing = bool(existing.get("task_label") == "Full Episode" or existing.get("start") is None)
-        elif not existing and existing_items:
-            for old_it in existing_items:
-                if old_it.get("is_podcast"):
-                    item["is_podcast"] = True
-                    item["podcast_feed"] = old_it.get("podcast_feed", "default")
-                    item["podcast_feed_id"] = old_it.get("podcast_feed_id")
-                    item["podcast_episode_type"] = old_it.get("podcast_episode_type", "full")
-                    item["podcast_season"] = old_it.get("podcast_season")
-                    item["podcast_episode_number"] = old_it.get("podcast_episode_number")
-                    break
         if existing:
-            # Only copy title and excerpt if the existing item was actually a Full Episode post,
-            # never overwrite the Full Episode title with a story snippet title!
+            # Only copy title, excerpt, and podcast settings if the existing item was actually a Full Episode post,
+            # never overwrite the Full Episode with child story properties!
             if is_full_existing:
                 item["title"] = existing.get("title") or item["title"]
                 item["excerpt"] = existing.get("excerpt") or item["excerpt"]
+                if "is_podcast" in existing:
+                    item["is_podcast"] = bool(existing["is_podcast"])
+                if "podcast_feed" in existing:
+                    item["podcast_feed"] = existing["podcast_feed"]
+                if "podcast_feed_id" in existing:
+                    item["podcast_feed_id"] = existing["podcast_feed_id"]
+                if "podcast_feed_ids" in existing:
+                    item["podcast_feed_ids"] = list(existing["podcast_feed_ids"] or [])
+                if "podcast_feeds" in existing:
+                    item["podcast_feeds"] = list(existing["podcast_feeds"] or [])
+                if "podcast_episode_type" in existing:
+                    item["podcast_episode_type"] = existing["podcast_episode_type"]
+                if "podcast_season" in existing:
+                    item["podcast_season"] = existing["podcast_season"]
+                if "podcast_episode_number" in existing:
+                    item["podcast_episode_number"] = existing["podcast_episode_number"]
             item["author_ids"] = list(existing.get("author_ids", item["author_ids"]))
             item["author_term_ids"] = list(existing.get("author_term_ids", item["author_term_ids"]))
             item["category_ids"] = list(existing.get("category_ids", item["category_ids"]))
             item["featured_image"] = existing.get("featured_image", item["featured_image"])
             item["featured_image_mode"] = existing.get("featured_image_mode", item["featured_image_mode"])
             item["frame_pos"] = existing.get("frame_pos", item["frame_pos"])
-            if "is_podcast" in existing:
-                item["is_podcast"] = bool(existing["is_podcast"])
-            if "podcast_feed" in existing:
-                item["podcast_feed"] = existing["podcast_feed"]
-            if "podcast_feed_id" in existing:
-                item["podcast_feed_id"] = existing["podcast_feed_id"]
-            if "podcast_feed_ids" in existing:
-                item["podcast_feed_ids"] = list(existing["podcast_feed_ids"] or [])
-            if "podcast_feeds" in existing:
-                item["podcast_feeds"] = list(existing["podcast_feeds"] or [])
-            if "podcast_episode_type" in existing:
-                item["podcast_episode_type"] = existing["podcast_episode_type"]
-            if "podcast_season" in existing:
-                item["podcast_season"] = existing["podcast_season"]
-            if "podcast_episode_number" in existing:
-                item["podcast_episode_number"] = existing["podcast_episode_number"]
         return item
 
     if scope == "full":

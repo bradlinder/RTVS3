@@ -296,7 +296,6 @@ class PluginManagerDialog(QDialog):
             self.refresh_list()
 
         cat_map = {
-            "gdocs": "Google Docs",
             "wordpress": "WordPress",
             "youtube": "YouTube",
         }

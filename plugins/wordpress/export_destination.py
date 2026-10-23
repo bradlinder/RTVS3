@@ -251,12 +251,6 @@ class WordPressExportDestination(ExportDestination):
         scope = str(raw_scope).lower() if raw_scope else None
         if scope == "full":
             chosen = dict(parent_posts[0] if parent_posts else wp_posts[0])
-            if not chosen.get("is_podcast"):
-                for p in wp_posts:
-                    if p.get("is_podcast"):
-                        for k in ("is_podcast", "podcast_feed_ids", "podcast_feeds", "podcast_feed", "podcast_feed_id", "podcast_episode_type", "podcast_season", "podcast_episode_number"):
-                            chosen[k] = p.get(k)
-                        break
             ordered_wp_posts = [chosen]
             parent_posts = [chosen]
             child_posts = []
@@ -264,9 +258,6 @@ class WordPressExportDestination(ExportDestination):
             ordered_wp_posts = [p for p in child_posts if p]
             if not ordered_wp_posts and wp_posts:
                 ordered_wp_posts = [wp_posts[0]]
-            if len(ordered_wp_posts) == 1 and parent_posts and not ordered_wp_posts[0].get("is_podcast") and parent_posts[0].get("is_podcast"):
-                for k in ("is_podcast", "podcast_feed_ids", "podcast_feeds", "podcast_feed", "podcast_feed_id", "podcast_episode_type", "podcast_season", "podcast_episode_number"):
-                    ordered_wp_posts[0][k] = parent_posts[0].get(k)
             parent_posts = []
             child_posts = list(ordered_wp_posts)
         else:

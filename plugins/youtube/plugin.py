@@ -61,13 +61,13 @@ def capture_video_frame(video_path: str, timestamp: float, output_path: str) -> 
 
 
 class YouTubeSettingsDialog(QDialog):
-    """Preferences dialog for YouTube Publishing (Direct API & Assisted Upload defaults)."""
+    """Preferences dialog for YouTube Publishing (Zero-Auth Assisted Upload defaults)."""
 
     def __init__(self, parent=None):
         super().__init__(parent)
         self.settings = QSettings(INTERNAL_APP_ID, INTERNAL_APP_ID)
         self.setWindowTitle("YouTube Publishing Preferences")
-        self.setMinimumSize(580, 480)
+        self.setMinimumSize(580, 440)
         from PySide6.QtCore import Qt
         self.setWindowFlags(self.windowFlags() | Qt.WindowType.WindowMaximizeButtonHint)
         self.setup_ui()
@@ -80,11 +80,11 @@ class YouTubeSettingsDialog(QDialog):
         # Header Info
         header_group = QGroupBox("Publishing Workflow")
         h_layout = QVBoxLayout(header_group)
-        title_lbl = QLabel("<b>YouTube Video Publisher (Dual-Mode)</b>")
+        title_lbl = QLabel("<b>YouTube Video Publisher (Zero-Auth Assisted Upload)</b>")
         info_lbl = QLabel(
-            "Radio & TV Segmenter supports both <b>Direct 1-Click API Upload</b> via YouTube Data API v3 "
-            "(streams video, custom thumbnail, and captions directly to your channel in the background) and "
-            "<b>Zero-API Assisted Upload</b> (packages local assets, copies chapter descriptions, and launches YouTube Studio in your browser)."
+            "Radio & TV Segmenter packages your video file, companion thumbnail, and closed captions (.srt) "
+            "locally, formats interactive chapter timestamps and metadata into a sidecar text file and clipboard, "
+            "and opens YouTube Studio in your browser for immediate manual upload—without requiring any Google Cloud login."
         )
         info_lbl.setWordWrap(True)
         info_lbl.setStyleSheet("color: #64748b; font-size: 11px;")
@@ -96,15 +96,6 @@ class YouTubeSettingsDialog(QDialog):
         meta_group = QGroupBox("Default Video Settings")
         form = QFormLayout(meta_group)
         form.setSpacing(8)
-
-        self.mode_combo = QComboBox()
-        self.mode_combo.addItem("Direct 1-Click API Upload", "api")
-        self.mode_combo.addItem("Zero-API Assisted Upload (Browser)", "assisted")
-        saved_mode = str(self.settings.value("export_yt_mode", "api"))
-        midx = self.mode_combo.findData(saved_mode)
-        if midx >= 0:
-            self.mode_combo.setCurrentIndex(midx)
-        form.addRow("Default Publishing Mode:", self.mode_combo)
 
         self.category_combo = QComboBox()
         yt_categories = [
@@ -154,7 +145,7 @@ class YouTubeSettingsDialog(QDialog):
         self.cb_copy.setChecked(self.settings.value("export_yt_copy_clipboard", True, type=bool))
         opts_layout.addWidget(self.cb_copy)
 
-        self.cb_browser = QCheckBox("Automatically launch YouTube Studio upload page in browser (Assisted mode)")
+        self.cb_browser = QCheckBox("Automatically launch YouTube Studio upload page in browser")
         self.cb_browser.setChecked(self.settings.value("export_yt_open_browser", True, type=bool))
         opts_layout.addWidget(self.cb_browser)
 
@@ -162,7 +153,7 @@ class YouTubeSettingsDialog(QDialog):
         self.cb_subtitles.setChecked(self.settings.value("export_yt_subtitles", True, type=bool))
         opts_layout.addWidget(self.cb_subtitles)
 
-        self.cb_folder = QCheckBox("Open export directory in file explorer after packaging (Assisted mode)")
+        self.cb_folder = QCheckBox("Open export directory in file explorer after packaging")
         self.cb_folder.setChecked(self.settings.value("export_yt_open_folder", True, type=bool))
         opts_layout.addWidget(self.cb_folder)
 
@@ -184,7 +175,7 @@ class YouTubeSettingsDialog(QDialog):
         layout.addLayout(btn_layout)
 
     def on_save(self):
-        self.settings.setValue("export_yt_mode", self.mode_combo.currentData())
+        self.settings.setValue("export_yt_mode", "assisted")
         self.settings.setValue("export_yt_category", self.category_combo.currentData())
         self.settings.setValue("export_yt_privacy", self.privacy_combo.currentData())
         self.settings.setValue("export_yt_tags", self.tags_edit.text().strip())
@@ -215,16 +206,15 @@ class Plugin(BasePlugin):
         box = QGroupBox("YouTube Video Publishing", parent)
         layout = QVBoxLayout(box)
         lbl = QLabel(
-            "<b>YouTube Video Publisher (Dual-Mode)</b><br>"
-            "Publish broadcast videos with interactive chapter markers, custom video thumbnails, "
-            "and closed caption (.srt) tracks directly via <b>YouTube Data API v3</b> or through "
-            "the <b>Zero-API Assisted Upload</b> workflow."
+            "<b>YouTube Video Publisher (Zero-Auth Manual Package)</b><br>"
+            "Packages broadcast videos (or renders audio broadcasts to MP4), custom video thumbnails, "
+            "closed caption (.srt) tracks, and interactive chapter markers for immediate manual upload in YouTube Studio."
         )
         lbl.setWordWrap(True)
         lbl.setStyleSheet("color: #64748b; font-size: 11px;")
         layout.addWidget(lbl)
 
-        btn = QPushButton("Configure YouTube Defaults & Credentials...")
+        btn = QPushButton("Configure YouTube Publishing Defaults...")
         btn.clicked.connect(lambda: YouTubeSettingsDialog(parent or self.app).exec())
         layout.addWidget(btn)
         return box

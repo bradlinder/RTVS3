@@ -261,6 +261,7 @@ class UnifiedExportDialog(QDialog):
         layout.addWidget(self.stacked_widget)
 
         self.scope_combo.currentIndexChanged.connect(self._on_scope_changed)
+        self._on_scope_changed()
 
         # Bottom Buttons layout
         btns = QHBoxLayout()

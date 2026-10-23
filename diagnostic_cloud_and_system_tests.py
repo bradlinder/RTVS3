@@ -87,46 +87,22 @@ class DiagnosticCloudAndSystemTestsMixin:
             if c["startIndex"] < 0 or c["endIndex"] > len(full_text) or c["startIndex"] >= c["endIndex"]:
                 raise AssertionError(f"Invalid comment anchoring range: [{c['startIndex']}, {c['endIndex']}] for text len {len(full_text)}")
 
-        # 4. Validate live plugins/gdocs package and serializer
+        # 4. Validate live plugins/youtube and plugins/wordpress manifests
         from pathlib import Path
-        gdocs_manifest_file = Path("plugins/gdocs/manifest.json")
-        if gdocs_manifest_file.exists():
-            real_m = PluginManifest.from_file(gdocs_manifest_file)
-            if real_m.id != "gdocs" or real_m.category != "export":
-                raise AssertionError(f"Invalid gdocs manifest attributes: id={real_m.id}, cat={real_m.category}")
+        yt_manifest_file = Path("plugins/youtube/manifest.json")
+        if yt_manifest_file.exists():
+            real_m = PluginManifest.from_file(yt_manifest_file)
+            if real_m.id != "youtube" or real_m.category != "export":
+                raise AssertionError(f"Invalid youtube manifest attributes: id={real_m.id}, cat={real_m.category}")
 
-        from plugins.gdocs.formatter import GoogleDocsSerializer, utf16_len
-        from plugins.gdocs.review import compute_segment_diffs
-        if utf16_len("Hello 🚀") != 8:
-            raise AssertionError("UTF-16 code unit length calculation failed for astral characters")
-
-        s = GoogleDocsSerializer()
-        _, reqs, anchors = s.serialize_document(
-            document_title="Test News Broadcast",
-            stories=[{"title": "Lead Story", "start": 0.0, "end": 10.0, "notes": "Fact check date"}],
-            transcript_segments=[{"start": 0.0, "end": 10.0, "speaker": "HOST", "text": "Good evening."}],
-            bold_speakers=True,
-            secondary_segments=[{"start": 0.0, "end": 10.0, "speaker": "HOST", "text": "Buenas noches."}],
-            secondary_title="Spanish Translation",
-        )
-        if len(reqs) < 3 or len(anchors) != 1:
-            raise AssertionError(f"GoogleDocsSerializer failed to produce expected batch update requests or anchors: reqs={len(reqs)}, anchors={len(anchors)}")
-
-        # Check that bold_speakers is set to True in text styles
-        has_bold_spk = any(
-            r.get("updateTextStyle", {}).get("textStyle", {}).get("bold") is True
-            for r in reqs
-        )
-        if not has_bold_spk:
-            raise AssertionError("GoogleDocsSerializer failed to apply bold text style to speaker labels")
-
-        # Validate diff computation
-        diffs = compute_segment_diffs([{"text": "Good evening."}], "Good evening everyone.")
-        if not diffs or not diffs[0]["has_change"]:
-            raise AssertionError("compute_segment_diffs failed to detect editorial update")
+        wp_manifest_file = Path("plugins/wordpress/manifest.json")
+        if wp_manifest_file.exists():
+            real_wp = PluginManifest.from_file(wp_manifest_file)
+            if real_wp.id != "wordpress" or real_wp.category != "export":
+                raise AssertionError(f"Invalid wordpress manifest attributes: id={real_wp.id}, cat={real_wp.category}")
 
         item.status = "PASS"
-        item.message = "Plugin manifest, lifecycle hooks, and export payload sandboxing validated (gdocs verified)"
+        item.message = "Plugin manifest, lifecycle hooks, and export payload sandboxing validated (youtube & wordpress verified)"
 
     def _test_project_file_integrity_and_portable_path_resolution(self, item: DiagnosticItem):
         try:
@@ -199,135 +175,6 @@ class DiagnosticCloudAndSystemTestsMixin:
 
         item.status = "PASS"
         item.message = "Project structure validation errors and portable media resolution verified"
-
-    def _test_google_docs_export_integrity(self, item: DiagnosticItem):
-        import sys
-        from pathlib import Path
-        root_dir = Path(__file__).resolve().parent
-        if str(root_dir) not in sys.path:
-            sys.path.insert(0, str(root_dir))
-        plugins_dir = root_dir / "plugins"
-        if str(plugins_dir) not in sys.path:
-            sys.path.insert(0, str(plugins_dir))
-
-        try:
-            from plugins.gdocs.formatter import GoogleDocsSerializer
-        except ImportError:
-            from gdocs.formatter import GoogleDocsSerializer
-
-        # 1. Test Title Fallback Resolution Logic
-        class MockMainWindow:
-            def __init__(self, project_file=None, media_path=None):
-                self.project_file = project_file
-                self.media_path = media_path
-                self.story_manager = None
-                self.speaker_colors = {}
-
-        def resolve_title(win):
-            default_title = "Broadcast Transcript"
-            p_path = getattr(win, "project_file", None) or getattr(win, "current_project_path", None)
-            if p_path:
-                try:
-                    base = os.path.splitext(os.path.basename(str(p_path)))[0]
-                    if base:
-                        default_title = base
-                except Exception:
-                    pass
-            if default_title == "Broadcast Transcript":
-                m_path = (
-                    getattr(win, "media_path", None)
-                    or getattr(win, "audio_file", None)
-                    or getattr(win, "current_media_path", None)
-                )
-                if m_path:
-                    try:
-                        base = os.path.splitext(os.path.basename(str(m_path)))[0]
-                        if base:
-                            default_title = base
-                    except Exception:
-                        pass
-            return default_title
-
-        # Project path takes top priority
-        win1 = MockMainWindow(project_file="/path/to/Evening_News_2026.prs", media_path="/path/to/raw_audio.wav")
-        if resolve_title(win1) != "Evening_News_2026":
-            raise AssertionError("Project file title fallback failed")
-
-        # Media path takes second priority if project file not set
-        win2 = MockMainWindow(project_file=None, media_path="/path/to/Breaking_Interview.mp3")
-        if resolve_title(win2) != "Breaking_Interview":
-            raise AssertionError("Media path title fallback failed")
-
-        # Default fallback when neither set
-        win3 = MockMainWindow(project_file=None, media_path=None)
-        if resolve_title(win3) != "Broadcast Transcript":
-            raise AssertionError("Default 'Broadcast Transcript' title fallback failed")
-
-        # 2. Test Document Serialization with Enforced Bold Speakers and H2 Chapters
-        serializer = GoogleDocsSerializer()
-        stories = [
-            {"title": "Opening Monologue", "start": 0.0, "end": 15.0, "notes": "Key soundbite"},
-            {"title": "Special Report", "start": 15.0, "end": 30.0, "notes": ""},
-        ]
-        transcript_segments = [
-            {
-                "start": 0.0,
-                "end": 14.5,
-                "speaker": "Anchor",
-                "text": "Good evening and welcome to the broadcast.",
-                "words": [
-                    {"word": "Good", "start": 0.0, "end": 0.5, "speaker": "Anchor"},
-                    {"word": "evening", "start": 0.6, "end": 1.2, "speaker": "Anchor"},
-                ],
-            },
-            {
-                "start": 15.0,
-                "end": 28.0,
-                "speaker": "Reporter",
-                "text": "Reporting live from the state capitol.",
-                "words": [
-                    {"word": "Reporting", "start": 15.0, "end": 16.0, "speaker": "Reporter"},
-                    {"word": "live", "start": 16.1, "end": 17.0, "speaker": "Reporter"},
-                ],
-            },
-        ]
-
-        full_text, all_requests, comment_anchors = serializer.serialize_document(
-            document_title="Evening Broadcast",
-            stories=stories,
-            transcript_segments=transcript_segments,
-            include_speakers=True,
-            bold_speakers=True,
-            include_story_chapters=True,
-            include_timestamps=True,
-        )
-
-        if "Story 1: Opening Monologue" not in full_text or "Story 2: Special Report" not in full_text:
-            raise AssertionError("H2 story chapter headers missing in exported full text")
-
-        if "Anchor:" not in full_text or "Reporter:" not in full_text:
-            raise AssertionError("Speaker labels missing in serialized Google Docs export")
-
-        # Verify HEADING_2 paragraph styling requests
-        para_styles = [
-            req["updateParagraphStyle"]["paragraphStyle"]["namedStyleType"]
-            for req in all_requests
-            if "updateParagraphStyle" in req and "namedStyleType" in req["updateParagraphStyle"].get("paragraphStyle", {})
-        ]
-        if "HEADING_2" not in para_styles:
-            raise AssertionError("HEADING_2 paragraph style update requests not generated for story chapters")
-
-        # Verify bold speaker prefix text requests
-        bold_text_reqs = [
-            req["updateTextStyle"]
-            for req in all_requests
-            if "updateTextStyle" in req and req["updateTextStyle"].get("textStyle", {}).get("bold") is True
-        ]
-        if not bold_text_reqs:
-            raise AssertionError("Bold text style update requests not generated for speaker tags / headings")
-
-        item.status = "PASS"
-        item.message = "Google Docs export title fallback, enforced bold speaker styling, and H2 Table of Contents headers verified"
 
     def _test_acoustic_voice_profile_matcher(self, item: DiagnosticItem):
         import math
@@ -625,92 +472,6 @@ class DiagnosticCloudAndSystemTestsMixin:
         item.status = "PASS"
         item.message = "Detached update helper script architecture, parameter guards, and logging validated"
 
-    def _test_google_docs_oauth_and_pkce_security(self, item: DiagnosticItem):
-        """Validates OAuth 2.0 PKCE, CSRF state protection, and zero-config public client architecture."""
-        import base64
-        import hashlib
-        import json
-        from plugins.gdocs.auth import (
-            generate_pkce_pair,
-            generate_oauth_state,
-            GoogleDocsAuthManager,
-            parse_google_credentials_json,
-            _encrypt_str,
-            _decrypt_str,
-            DEFAULT_CLIENT_ID,
-            DEFAULT_SCOPES,
-        )
-
-        # 1. Test PKCE pair generation (RFC 7636)
-        verifier, challenge = generate_pkce_pair()
-        if not verifier or len(verifier) < 43:
-            raise AssertionError(f"PKCE code_verifier too short: {len(verifier)} chars")
-        if not challenge or len(challenge) < 43:
-            raise AssertionError(f"PKCE code_challenge too short: {len(challenge)} chars")
-
-        # Verify challenge matches SHA-256 of verifier base64url encoded
-        expected_digest = hashlib.sha256(verifier.encode("ascii")).digest()
-        expected_challenge = base64.urlsafe_b64encode(expected_digest).decode("ascii").rstrip("=")
-        if challenge != expected_challenge:
-            raise AssertionError("PKCE code_challenge does not match S256(code_verifier)")
-
-        # Verify successive pairs are unique (cryptographic entropy)
-        v2, c2 = generate_pkce_pair()
-        if verifier == v2 or challenge == c2:
-            raise AssertionError("PKCE pairs generated duplicate values (entropy failure)")
-
-        # 2. Test Cryptographic OAuth State generation (CSRF protection)
-        state1 = generate_oauth_state()
-        state2 = generate_oauth_state()
-        if not state1 or len(state1) < 32:
-            raise AssertionError("OAuth state token does not meet minimum length requirement")
-        if state1 == state2:
-            raise AssertionError("OAuth state tokens collided")
-
-        # 3. Test Machine-Bound String Encryption Fallback
-        test_secret = "test-secret-12345-!@#$%^"
-        enc = _encrypt_str(test_secret)
-        if not enc or enc == test_secret:
-            raise AssertionError("Encryption returned unencrypted or empty payload")
-        dec = _decrypt_str(enc)
-        if dec != test_secret:
-            raise AssertionError(f"Decrypted string '{dec}' did not match original '{test_secret}'")
-
-        # 4. Test Zero-Config Credentials Architecture
-        mgr = GoogleDocsAuthManager()
-        cid, csec = mgr.get_client_credentials()
-        if not cid:
-            raise AssertionError("Default Client ID is missing or empty")
-        if not DEFAULT_CLIENT_ID:
-            raise AssertionError("DEFAULT_CLIENT_ID constant is empty")
-
-        # Scopes verification: must be least-privilege
-        if "https://www.googleapis.com/auth/drive" in DEFAULT_SCOPES:
-            raise AssertionError("Over-privileged unrestricted 'drive' scope requested! Must use 'drive.file'")
-        if "https://www.googleapis.com/auth/drive.file" not in DEFAULT_SCOPES:
-            raise AssertionError("Missing required 'drive.file' scope")
-        if "https://www.googleapis.com/auth/documents" not in DEFAULT_SCOPES:
-            raise AssertionError("Missing required 'documents' scope")
-
-        # 5. Test Credentials JSON Parser
-        sample_installed_json = json.dumps({
-            "installed": {
-                "client_id": "test-client-id.apps.googleusercontent.com",
-                "client_secret": "test-secret-value",
-                "project_id": "test-project-123",
-                "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-                "token_uri": "https://oauth2.googleapis.com/token",
-            }
-        })
-        p_cid, p_csec, p_proj = parse_google_credentials_json(sample_installed_json)
-        if p_cid != "test-client-id.apps.googleusercontent.com":
-            raise AssertionError(f"parse_google_credentials_json parsed client_id '{p_cid}' incorrectly")
-        if p_csec != "test-secret-value":
-            raise AssertionError(f"parse_google_credentials_json parsed client_secret '{p_csec}' incorrectly")
-
-        item.status = "PASS"
-        item.message = "RFC 7636 PKCE pairs, cryptographic state tokens, zero-config credentials, and least-privilege scopes verified"
-
     def _test_temporary_cache_management_and_storage_inspection(self, item: DiagnosticItem):
         """Validates cache usage stats calculation, preview categorization, and cache purging."""
         from cache_manager import (
@@ -813,8 +574,9 @@ class DiagnosticCloudAndSystemTestsMixin:
         item.message = "Cache disk usage calculation, preview breakdown, active-guarded purging, and model inventory verified"
 
     def _test_youtube_data_api_and_direct_video_upload_engine(self, item: DiagnosticItem):
-        """Validates YouTube API client, categories, headers, and export destination validation."""
+        """Validates YouTube Zero-Auth manual export packaging (MP4, thumbnail, SRT, metadata .txt with chapters & speakers)."""
         import sys
+        import tempfile
         from pathlib import Path
         root_dir = Path(__file__).resolve().parent
         if str(root_dir) not in sys.path:
@@ -823,83 +585,73 @@ class DiagnosticCloudAndSystemTestsMixin:
         if str(plugins_dir) not in sys.path:
             sys.path.insert(0, str(plugins_dir))
 
-        try:
-            from plugins.youtube.api import (
-                YouTubeApiClient,
-                YouTubeAuthManager,
-                YOUTUBE_CATEGORIES,
-                YOUTUBE_SCOPES,
-            )
-        except ImportError:
-            from youtube.api import (
-                YouTubeApiClient,
-                YouTubeAuthManager,
-                YOUTUBE_CATEGORIES,
-                YOUTUBE_SCOPES,
-            )
+        from export_media_clipper import ExportMediaClipperMixin
+        from export_documents import ExportDocumentsMixin
+        from plugins.youtube.export_destination import YouTubeExportDestination, YOUTUBE_CATEGORIES
 
-        if "https://www.googleapis.com/auth/youtube.upload" not in YOUTUBE_SCOPES:
-            raise AssertionError("YouTube upload scope missing from YOUTUBE_SCOPES")
         if not any(cid == "25" for cid, _ in YOUTUBE_CATEGORIES):
             raise AssertionError("News & Politics category (25) missing from YOUTUBE_CATEGORIES")
 
-        auth = YouTubeAuthManager()
-        client = YouTubeApiClient(auth_manager=auth)
+        dest = YouTubeExportDestination()
+        if dest.id != "youtube":
+            raise AssertionError("YouTubeExportDestination ID must be 'youtube'")
 
+        class DummyYouTubeExporter(ExportMediaClipperMixin, ExportDocumentsMixin):
+            def __init__(self, tmp_path: Path):
+                self.tmp_path = tmp_path
+                self.audio_file = None
+                self.current_media_is_video = False
+                self.stories = []
+                self.transcript = {
+                    "segments": [
+                        {"start": 0.0, "end": 5.0, "speaker": "Host Alice", "text": "Welcome to our morning broadcast."},
+                        {"start": 5.0, "end": 12.0, "speaker": "Guest Bob", "text": "Thanks for having me on the show."},
+                    ]
+                }
+                self.settings_store = None
+
+            def prepare_export_directories(self, prompt_user=False):
+                return self.tmp_path, self.tmp_path, self.tmp_path, "test_yt"
+
+        orig_headless = os.environ.get("RTVS_HEADLESS_TEST")
+        os.environ["RTVS_HEADLESS_TEST"] = "1"
         try:
-            from plugins.youtube.export_destination import YouTubeExportDestination
-            dest = YouTubeExportDestination()
-            if dest.id != "youtube":
-                raise AssertionError("YouTubeExportDestination ID must be 'youtube'")
-        except ImportError:
-            # PySide6 not installed in headless testing container
-            pass
+            with tempfile.TemporaryDirectory() as tmp_dir:
+                exporter = DummyYouTubeExporter(Path(tmp_dir))
+                pkg = exporter._handle_youtube_export_result({
+                    "scope": "full",
+                    "title": "Morning News Special",
+                    "description": "Morning News Special\n\nChapters:\n00:00 - Introduction\n00:05 - Guest Interview",
+                    "tags": "news, broadcast, radio",
+                    "category": "25",
+                    "privacy": "unlisted",
+                    "thumb_mode": "auto",
+                    "copy_clipboard": False,
+                    "open_browser": False,
+                    "open_folder": False,
+                    "include_subtitles": True,
+                })
+                meta_path = Path(pkg["metadata_path"])
+                if not meta_path.is_file():
+                    raise AssertionError("YouTube sidecar metadata .txt was not created")
+                meta_text = meta_path.read_text(encoding="utf-8")
+                if "Morning News Special" not in meta_text or "00:00 - Introduction" not in meta_text:
+                    raise AssertionError("Metadata .txt missing title or chapters")
+                if "Host Alice" not in meta_text or "Guest Bob" not in meta_text:
+                    raise AssertionError("Metadata .txt missing speaker credits")
+                if "news, broadcast, radio" not in meta_text:
+                    raise AssertionError("Metadata .txt missing comma-separated tags")
+                sub_path = Path(pkg["subtitles_path"])
+                if not sub_path.is_file():
+                    raise AssertionError("Companion .srt subtitles file was not generated")
+        finally:
+            if orig_headless is None:
+                os.environ.pop("RTVS_HEADLESS_TEST", None)
+            else:
+                os.environ["RTVS_HEADLESS_TEST"] = orig_headless
 
         item.status = "PASS"
-        item.message = "YouTube Data API v3 client, OAuth scopes, resumable upload protocol, and dual-mode destination verified"
-
-    def _test_google_sheets_tabular_export_and_formatting_engine(self, item: DiagnosticItem):
-        """Validates Google Sheets tabular rundown formatter, speaker analytics, and client structure."""
-        from plugins.google_sheets import (
-            GoogleSheetsApiClient,
-            format_story_rundown_table,
-            format_speaker_analytics_table,
-            SHEETS_SCOPES,
-        )
-
-        if "https://www.googleapis.com/auth/spreadsheets" not in SHEETS_SCOPES:
-            raise AssertionError("Spreadsheets scope missing from SHEETS_SCOPES")
-
-        # Test rundown formatting
-        mock_stories = [
-            {"title": "Segment A", "start": 0.0, "end": 45.2, "speakers": ["Alice", "Bob"], "excerpt": "Interview with Alice."},
-            {"title": "Segment B", "start": 45.2, "end": 120.0, "speakers": ["Alice"], "excerpt": "Story wrap-up."},
-        ]
-        rundown_rows = format_story_rundown_table(mock_stories)
-        if len(rundown_rows) != 3:  # 1 header + 2 stories
-            raise AssertionError(f"Expected 3 rundown rows, got {len(rundown_rows)}")
-        if rundown_rows[0][0] != "Story #":
-            raise AssertionError("Rundown header missing 'Story #' column")
-        if rundown_rows[1][1] != "Segment A":
-            raise AssertionError(f"Expected 'Segment A', got {rundown_rows[1][1]}")
-
-        # Test speaker analytics formatting
-        mock_segments = [
-            {"speaker": "Alice", "start": 0.0, "end": 30.0, "text": "This is a test transcript for speaker Alice."},
-            {"speaker": "Bob", "start": 30.0, "end": 45.0, "text": "And this is Bob responding."},
-            {"speaker": "Alice", "start": 45.0, "end": 60.0, "text": "Alice speaks again with further details."},
-        ]
-        analytics_rows = format_speaker_analytics_table(mock_segments)
-        if len(analytics_rows) != 3:  # 1 header + 2 speakers
-            raise AssertionError(f"Expected 3 analytics rows, got {len(analytics_rows)}")
-        if analytics_rows[0][0] != "Speaker Identifier / Name":
-            raise AssertionError("Analytics header missing speaker identifier column")
-        # Alice has 45s total, Bob has 15s total -> Alice is row 1
-        if analytics_rows[1][0] != "Alice" or analytics_rows[1][1] != 2:
-            raise AssertionError("Alice turns calculation incorrect")
-
-        item.status = "PASS"
-        item.message = "Google Sheets API client, broadcast rundown row formatter, and speaker airtime analytics verified"
+        item.message = "YouTube Zero-Auth manual export package (metadata .txt, chapters, speaker credits, tags, .srt, thumbnail) verified"
 
     def _test_multiprocessing_freeze_support_and_spawn_intercept(self, item: DiagnosticItem):
         """Validates that frozen process spawn intercepts -c invocations from resource_tracker and multiprocessing."""

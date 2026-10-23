@@ -977,3 +977,9 @@ class ExportStoryPipelineMixin:
         if show_completion and success:
             show_export_completion_dialog(self, "Export Complete", f"Exported {len(stories_to_export)} stories to {directory}", directory)
         return success
+
+    def export_youtube_manual_package(self, export_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Render and package zero-auth manual YouTube export (MP4, thumbnail, SRT, metadata .txt)."""
+        if hasattr(self, "_handle_youtube_export_result"):
+            return self._handle_youtube_export_result(export_data)
+        return {}

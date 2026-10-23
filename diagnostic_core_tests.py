@@ -113,8 +113,13 @@ class DiagnosticCoreTestsMixin:
             if not read_bytes.startswith(peaks_magic):
                 raise AssertionError("Invalid peak cache magic header")
 
+            import media_batch
+            for sym in ("read_waveform_peak_cache", "write_waveform_peak_cache", "WaveformWorker", "VideoThumbnailWorker"):
+                if not hasattr(media_batch, sym):
+                    raise AssertionError(f"media_batch is missing prs_shared re-export: {sym}")
+
         item.status = "PASS"
-        item.message = "Peak cache binary format structure validated"
+        item.message = "Peak cache binary format structure and media_batch bindings validated"
 
     def _test_process_lifecycle_and_subprocess_lock(self, item: DiagnosticItem):
         import runtime_manager

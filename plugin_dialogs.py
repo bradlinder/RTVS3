@@ -71,17 +71,6 @@ class GitHubPluginsWorker(QThread):
                 "download_url": f"https://github.com/{self.repo}/releases/download/v{PROJECT_VERSION}/rtvs-plugin-wordpress-v{PROJECT_VERSION}.rtvs-addon",
                 "fallback_url": f"https://raw.githubusercontent.com/{self.repo}/main/plugins/wordpress.rtvs-addon",
             },
-            {
-                "id": "gdocs",
-                "name": "Google Docs & Sheets Exporter",
-                "category": "export",
-                "version": PROJECT_VERSION,
-                "description": "Exports rich segmented transcripts directly to Google Docs with H2 chapter headings, and generates professional radio/TV rundown spreadsheets in Google Sheets.",
-                "author": "Radio & TV Segmenter Team",
-                "asset_name": f"rtvs-plugin-gdocs-v{PROJECT_VERSION}.rtvs-addon",
-                "download_url": f"https://github.com/{self.repo}/releases/download/v{PROJECT_VERSION}/rtvs-plugin-gdocs-v{PROJECT_VERSION}.rtvs-addon",
-                "fallback_url": f"https://raw.githubusercontent.com/{self.repo}/main/plugins/gdocs.rtvs-addon",
-            }
         ]
         try:
             api_url = f"https://api.github.com/repos/{self.repo}/releases/latest"

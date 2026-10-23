@@ -37,20 +37,20 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 --------------------------------------------------------------------------------
 TABLE OF CONTENTS & STATUS OVERVIEW
 --------------------------------------------------------------------------------
-1. Previous Release: Complete WordPress Duplicate Draft Post Elimination, Scope Synchronization & Unified Export Action Routing (`export/dialog.py`, `plugins/wordpress/export_destination.py`, `plugins/wordpress/wp_post_builder.py`, `plugins/wordpress/castos.py`, `plugins/wordpress/plugin.py`) [x] [COMPLETED in v3.9.30-beta]
-   [x] 1.1 Complete Duplicate Post Elimination Across All Export Scopes (`plugins/wordpress/export_destination.py`): Enforced strict single-post resolution under `full` and single-story scopes with bi-directional podcast metadata inheritance, ensuring podcast feeds, episode numbers, and series taxonomy IDs are never lost.
-   [x] 1.2 Unified Scope Selection Signal Initialization (`export/dialog.py`): Added synchronous `self._on_scope_changed()` trigger upon dialog initialization so that all registered destination panels (including WordPress) immediately sync their queue definitions with the active scope dropdown.
-   [x] 1.3 Unified Export Dialog Menu Action Routing (`plugins/wordpress/plugin.py`): Updated "Publish to WordPress..." in the Publishing & Plugins menu to route directly to `self.app.open_unified_export_dialog(initial_dest="wordpress")`, aligning with the YouTube and Google Docs plugin integrations.
-   [x] 1.4 Synchronous Version Bump: Synchronized all 10 project locations and web preview scaffolding to `v3.9.30-beta`.
+1. Previous Release: Core Circular Import Elimination, Video Thumbnail Zero-Division Guard, Binary Upload Streaming & Podcast Toggle Scope Isolation (`prs_shared.py`, `background_workers.py`, `plugins/wordpress/client.py`, `plugins/wordpress/wp_post_builder.py`, `plugins/wordpress/castos.py`, `plugins/wordpress/export_destination.py`) [x] [COMPLETED in v3.9.32-beta]
+   [x] 1.1 Core Utility Circular Import Elimination (`prs_shared.py`, `story_widgets.py`, `background_workers.py`): Replaced tight top-level UI and background worker imports in `prs_shared.py` with lazy module-level `__getattr__` and `globals()` caching, enabling clean standalone imports across workers and tests.
+   [x] 1.2 Video Thumbnail Worker Zero-Division Guard (`background_workers.py`): Protected `fps` calculation against zero-duration or corrupt media streams.
+   [x] 1.3 WordPress Media Upload Binary Streaming & Canonical Route (`plugins/wordpress/client.py`): Resolved raw media upload fallback by streaming file bytes directly (`data=f`) via `requests.post()`; prioritized canonical non-trailing `/media` endpoint before trailing slash fallback `/media/` to eliminate 301 redirects.
+   [x] 1.4 Podcast Scope Default Isolation & UI Decoupling (`plugins/wordpress/wp_post_builder.py`, `plugins/wordpress/castos.py`, `plugins/wordpress/export_destination.py`): Configured `Full Episode` posts to default to `is_podcast = True`, while child story posts default to `is_podcast = False`; removed cross-item coupling in `setup_castos_ui` and prevented podcast metadata leakage into child story scopes.
+   [x] 1.5 Synchronous Version Bump: Synchronized all 10 project locations and web preview scaffolding to `v3.9.32-beta`.
 
-2. Current Release: Seriously Simple Podcasting Duplicate Post Elimination, String Metadata Serialization & Title Preservation (`plugins/wordpress/client.py`, `plugins/wordpress/castos.py`, `plugins/wordpress/wp_post_builder.py`, `plugins/wordpress/export_destination.py`, `diagnostic_export_tests.py`) [x] [COMPLETED in v3.9.32-beta]
-   [x] 2.1 Seriously Simple Podcasting String Metadata Serialization (`plugins/wordpress/castos.py`, `plugins/wordpress/client.py`): Formatted `filesize`, `duration`, `season`, and `episode_number` as strings for WordPress REST API compliance, eliminating the `HTTP 400 Bad Request` (`rest_invalid_type: meta.filesize`) validation failure that previously caused duplicate posts.
-   [x] 2.2 Defensive Partial Commit Detection & Duplicate Post Prevention (`plugins/wordpress/client.py`): Added detection in `create_post` to catch cases where WordPress commits a post before throwing metadata validation errors, preventing fallback logic from generating orphan duplicate draft posts.
-   [x] 2.3 Export Scope Title Preservation & De-Consolidation (`plugins/wordpress/wp_post_builder.py`, `plugins/wordpress/export_destination.py`): Removed destructive single-story consolidation code that previously replaced the Full Episode title ("LYB Narration") with story snippet titles, and ensured `build_full_item()` never inherits child story titles across scope switches.
-   [x] 2.4 Test Bench User Settings Isolation (`diagnostic_export_tests.py`): Wrapped test execution in a `finally` block in `diagnostic_export_tests.py` to preserve and restore the user's active `wp_site_url` and `wp_username` settings, preventing test placeholder credentials from altering live configuration.
-   [x] 2.5 Multi-Select Podcast Feeds Support: Maintained checkable list widget allowing publishers to check multiple podcast feeds/series simultaneously on sites with multiple feeds.
-   [x] 2.6 Synchronous Version Bump: Synchronized all 10 project locations and web preview scaffolding to `v3.9.31-beta`.
-3. Upcoming Milestone: Codebase Modularization & Monolithic File Decomposition Strategy (<1,000-Line Invariant) (`playback_preferences.py`, `project_export.py`, `transcript_story.py`, `transcript_editor.py`, `radio_tv_story_segmenter_worker.py`, `benchmark.py`, `plugins/wordpress/export_destination.py`, `plugins/manager.py`, `timeline_widgets.py`) [PLANNED for v4.0.0] [IN-PROGRESS]
+2. Current Release: Google Drive/Docs Cloud Removal & YouTube Zero-Auth Manual Export Streamlining (`backup_manager.py`, `plugins/youtube/`, `export_media_clipper.py`, `export_story_pipeline.py`, `plugins/installer_workers.py`, `build_installer.py`) [x] [COMPLETED in v3.9.33-beta]
+   [x] 2.1 Google Drive/Docs & Sheets Plugin & OAuth Runtime Removal (`plugins/gdocs/`, `plugins/google_sheets.py`, `backup_manager.py`, `plugins/installer_workers.py`, `plugins/manager_dialog.py`, `plugin_dialogs.py`, `export/reorder_dialog.py`, `preferences_dialog.py`, `build_installer.py`): Removed Google Docs/Drive and Sheets cloud plugins, OAuth 2.0 PKCE loopback flows, Google Drive Cloud Backup tab, and setup documentation while preserving all local offline document exports (`export_documents.py`).
+   [x] 2.2 YouTube Zero-Auth Manual Export Streamlining (`plugins/youtube/plugin.py`, `plugins/youtube/export_destination.py`, `export_media_clipper.py`, `export_story_pipeline.py`): Removed `plugins/youtube/api.py` and Google OAuth login from the YouTube plugin; streamlined around a zero-auth local upload package (`.mp4` video, audio-to-video 1280x720 broadcast slate conversion for audio-only files, companion thumbnail, `.srt` captions, and sidecar/clipboard metadata with chapters and speaker credits) plus an "Open YouTube Studio" button.
+   [x] 2.3 Lazy Facade Wildcard Export Fix & Diagnostic Test Bench Synchronization (`prs_shared.py`, `diagnostic_core_tests.py`, `diagnostic_selector.py`, `test_runner.py`, `diagnostic_batch_tests.py`, `diagnostic_export_tests.py`, `diagnostic_cloud_and_system_tests.py`): Added `__all__` in `prs_shared.py` so `from prs_shared import *` resolves lazy `_BACKGROUND_WORKER_EXPORTS` (`read_waveform_peak_cache`, `WaveformWorker`, `VideoThumbnailWorker`) in `media_batch.py`; updated diagnostic tests and added `--changed` / `--filter` smart test selection.
+   [x] 2.4 Synchronous Version Bump: Synchronized all 10 project locations, `plugins/youtube/manifest.json`, and web preview scaffolding to `v3.9.33-beta`.
+
+3. Upcoming Milestone: Codebase Modularization & Monolithic File Decomposition Strategy (<1,000-Line Invariant) (`playback_preferences.py`, `project_export.py`, `transcript_story.py`, `transcript_editor.py`, `radio_tv_story_segmenter_worker.py`, `benchmark.py`, `plugins/wordpress/export_destination.py`, `plugins/manager.py`, `timeline_widgets.py`) [x] [COMPLETED in v3.9.33-beta]
    - *Architecture Note*: Incrementally refactors all remaining source files exceeding 1,000 lines (at most 1 to 2 monoliths per turn) into focused domain modules (<1,000 lines each) while preserving 100% backward compatibility via zero-breakage facade re-exports.
    [x] 3.1 Codebase Audit & Wave 1 Core/Processing Decomposition (`core_utils.py`, `prs_shared.py`, `processing.py`, `test_runner.py`, `qt_compat.py`, `model_install_workers.py`)
    [x] 3.2 Final Version Regex, Header & Dependency Synchronization (`bump_version.py`, `preview_manager.py`, `snapshot_manager.py`, `package.json`, `RadioTVSegmenter.py`, `backup_manager.py`)
@@ -61,6 +61,8 @@ TABLE OF CONTENTS & STATUS OVERVIEW
    [x] 3.7 Wave 5 - WordPress Export, Plugin Manager & Timeline Widgets Decomposition (`plugins/wordpress/export_destination.py` — 2,080 -> 474 lines, `plugins/manager.py` — 1,942 -> 586 lines, `timeline_widgets.py` — 1,898 -> 934 lines) [COMPLETED in v3.9.14-beta]
    [x] 3.8 Permanent <1,000-Line Architectural Rule, AST Decomposition Suggester & Automated Budget Guard (`AGENTS.md`, `GEMINI.md`, `scripts/modular_audit.py`, `test_runner.py`)
    [x] 3.9 Token-Reduction Architecture & Tiered Symbol Indexing for Local LLM Efficiency (`scripts/generate_symbol_index.py`, `.codemaps/`, `.pyi`, `AGENTS.md`, `GEMINI.md`) [COMPLETED in v3.9.12-beta]
+   [x] 3.10 Google Drive/Docs Plugin & OAuth Runtime Removal (`plugins/gdocs/`, `export_documents.py`, `plugins/manager.py`, `plugin_dialogs.py`, `GOOGLE_OAUTH_SETUP.md`, `GOOGLE_DOCS_USER_GUIDE.md`) [COMPLETED in v3.9.33-beta]
+   [x] 3.11 YouTube Zero-Auth Manual Export Streamlining (`plugins/youtube/`, `export_dialogs.py`, `export_story_pipeline.py`) [COMPLETED in v3.9.33-beta]
 
 4. Upcoming Milestone: Smart Hybrid Audio Loudness Normalization & Non-Destructive Auto-Boost Suite (`audio_normalization.py`, `preferences_dialog.py`, `playback_preferences.py`, `RadioTVSegmenter.py`, `dialogs.py`, `test_runner.py`) [x] [COMPLETED in v3.9.25-beta]
    - *Purpose*: Automatically or manually boost quiet broadcast recordings to improve ASR transcription and speaker diarization accuracy without modifying original source media, blocking the UI thread, or introducing compressor pumping artifacts.
@@ -110,30 +112,40 @@ TABLE OF CONTENTS & STATUS OVERVIEW
    [ ] 8.5 Mobile Export & Session Sync with Desktop RTVS3 Projects (`.json` project container sync)
    [ ] 8.6 Standalone AI Studio Starter Prompt Specification & Project Blueprint (Option A Launcher)
 
+9. REAPER DAW Companion Bridge & ReaScript Transcript Integration (`reaper_bridge.py`, `transcript_editor_dialogs.py`, `transcript_context_menu_mixin.py`, `scripts/reaper/rtvs_reaper_companion.lua`, `scripts/reaper/rtvs_reaper_dock.lua`, `test_runner.py`) [PLANNED for v4.2.0] [OPTIONAL / PLANNED] [NOT STARTED]
+   - *Purpose*: Enable seamless text-to-timeline audio editing in Cockos REAPER without building a full multi-track DAW inside RTVS3. Allows users to copy or send selected transcript quotes from RTVS3 directly to a REAPER track at the edit cursor with automatic source slicing (`D_STARTOFFS` / `D_LENGTH`), speaker/quote take labeling (`P_NAME`), and full item notes (`P_NOTES`), plus an optional ReaImGui dockable `.rtvs` transcript viewer inside REAPER.
+   [ ] 9.1 RTVS3 Clip Cue Payload & Sidecar/IPC Emitter (`reaper_bridge.py`)
+   [ ] 9.2 Interactive Transcript Quick-Action & Shortcut Integration (`transcript_editor_dialogs.py`, `transcript_context_menu_mixin.py`, `shortcuts_manager.py`)
+   [ ] 9.3 Companion ReaScript Timeline Paste & Take Labeling Action (`scripts/reaper/rtvs_reaper_companion.lua`)
+   [ ] 9.4 Optional Dockable ReaImGui Transcript Viewer for REAPER (`scripts/reaper/rtvs_reaper_dock.lua`)
+   [ ] 9.5 Preferences Integration, One-Click Script Installer & Diagnostic Tests (`preferences_dialog.py`, `reaper_bridge.py`, `test_runner.py`)
+   [ ] 9.6 Universal Text-to-WAV Clipboard & Drag-and-Drop Fallback for Other DAWs (`reaper_bridge.py`, `export_media_clipper.py`, `transcript_context_menu_mixin.py`)
+
 ================================================================================
 DETAILED MILESTONE SPECIFICATIONS
 ================================================================================
 
 ================================================================================
-1. PREVIOUS RELEASE: AUDIO LOUDNESS NORMALIZATION DIALOG ROBUSTNESS & ACTIVE MEDIA SOURCE REFRESH FIX [x] [COMPLETED in v3.9.28-beta]
+1. PREVIOUS RELEASE: CORE CIRCULAR IMPORT ELIMINATION, VIDEO THUMBNAIL ZERO-DIVISION GUARD, BINARY UPLOAD STREAMING & PODCAST TOGGLE SCOPE ISOLATION [x] [COMPLETED in v3.9.32-beta]
 ================================================================================
 
-[x] 1.1 Audio Loudness Normalization Dialog Robustness & Defensive Parentage (`dialogs.py`): Duck-typing parent validation preventing PySide6 `TypeError` on headless test callers and presenter wrappers.
-[x] 1.2 Sidecar Media Path Verification & Absolute Path Persistence (`audio_normalization.py`, `dialogs.py`): Resolved absolute paths and source media ownership validation to isolate normalized sidecar WAVs.
-[x] 1.3 Media Batch Metadata Reset & Peak Cache Path Alignment (`media_batch.py`): Clean `ProjectMetadataDict()` reset and peak cache invalidation upon manual normalization.
-[x] 1.4 Media Player Source Reloading & Stream Reset (`media_batch.py`): Safe player stop and stream reset for immediate normalized audio playback.
+[x] 1.1 Core Utility Circular Import Elimination (`prs_shared.py`, `story_widgets.py`, `background_workers.py`): Replaced tight top-level UI and background worker imports in `prs_shared.py` with lazy module-level `__getattr__` and `globals()` caching, enabling clean standalone imports across workers and tests.
+[x] 1.2 Video Thumbnail Worker Zero-Division Guard (`background_workers.py`): Protected `fps` calculation against zero-duration or corrupt media streams.
+[x] 1.3 WordPress Media Upload Binary Streaming & Canonical Route (`plugins/wordpress/client.py`): Resolved raw media upload fallback by streaming file bytes directly (`data=f`) via `requests.post()`; prioritized canonical non-trailing `/media` endpoint before trailing slash fallback `/media/` to eliminate 301 redirects.
+[x] 1.4 Podcast Scope Default Isolation & UI Decoupling (`plugins/wordpress/wp_post_builder.py`, `plugins/wordpress/castos.py`, `plugins/wordpress/export_destination.py`): Configured `Full Episode` posts to default to `is_podcast = True`, while child story posts default to `is_podcast = False`; removed cross-item coupling in `setup_castos_ui` and prevented podcast metadata leakage into child story scopes.
+[x] 1.5 Synchronous Version Bump: Synchronized all 10 project locations and web preview scaffolding to `v3.9.32-beta`.
 
 ================================================================================
-2. CURRENT RELEASE: DIAGNOSTIC BENCH COMPLETION, SERIOUSLY SIMPLE PODCASTING (CASTOS) EPISODE FILE ASSOCIATION & FEED AUTO-DISCOVERY FIXES [x] [COMPLETED in v3.9.32-beta]
+2. CURRENT RELEASE: GOOGLE DRIVE/DOCS CLOUD REMOVAL & YOUTUBE ZERO-AUTH MANUAL EXPORT STREAMLINING [x] [COMPLETED in v3.9.33-beta]
 ================================================================================
 
-[x] 2.1 System Diagnostic Test Bench Completion Fix (`diagnostic_export_tests.py`): Linked `_test_wordpress_castos_podcast_integration` within `_test_wordpress_audio_inclusion_toggle_and_error_resilience`, explicitly setting `item.status = "PASS"` so Test #33 completes and all 71 diagnostics finish cleanly without hanging in `RUNNING`.
-[x] 2.2 Seriously Simple Podcasting (Castos) Episode File & Meta Association Fix (`plugins/wordpress/castos.py`, `plugins/wordpress/client.py`): Configured native Seriously Simple Podcasting metadata fields (`audio_file`, `duration`, `filesize`, `episode_type`, `season`, `episode_number`) alongside legacy compatibility aliases, eliminated leading-underscore keys from REST payloads to prevent HTTP 400 Bad Request errors, and associated uploaded audio attachments with created posts via `/media/{att_id}`.
-[x] 2.3 Podcast Series / Feed Auto-Discovery & Taxonomy Assignment Fix (`plugins/wordpress/castos.py`, `plugins/wordpress/client.py`, `plugins/wordpress/wp_tab_widget.py`): Updated series assignment to target the native `series` taxonomy (with `podcast_series` fallback) to ensure sidebar feed selection; implemented dynamic REST API taxonomy auto-discovery from `/wp-json/wp/v2/taxonomies` to reliably surface all custom and secondary podcast feeds in the export feed selector; added user credentials prompt in `_refresh_castos_feeds`.
-[x] 2.4 Synchronous Version Bump: Synchronized all 10 project locations and web preview scaffolding to `v3.9.29-beta`.
+[x] 2.1 Google Drive/Docs & Sheets Plugin & OAuth Runtime Removal (`plugins/gdocs/`, `plugins/google_sheets.py`, `backup_manager.py`, `plugins/installer_workers.py`, `plugins/manager_dialog.py`, `plugin_dialogs.py`, `export/reorder_dialog.py`, `preferences_dialog.py`, `build_installer.py`): Removed Google Docs/Drive and Sheets cloud plugins, OAuth 2.0 PKCE loopback flows, Google Drive Cloud Backup tab, and setup documentation while preserving all local offline document exports (`export_documents.py`).
+[x] 2.2 YouTube Zero-Auth Manual Export Streamlining (`plugins/youtube/plugin.py`, `plugins/youtube/export_destination.py`, `export_media_clipper.py`, `export_story_pipeline.py`): Removed `plugins/youtube/api.py` and Google OAuth login from the YouTube plugin; streamlined around a zero-auth local upload package (`.mp4` video, audio-to-video 1280x720 broadcast slate conversion for audio-only files, companion thumbnail, `.srt` captions, and sidecar/clipboard metadata with chapters and speaker credits) plus an "Open YouTube Studio" button.
+[x] 2.3 Lazy Facade Wildcard Export Fix & Diagnostic Test Bench Synchronization (`prs_shared.py`, `diagnostic_core_tests.py`, `diagnostic_selector.py`, `test_runner.py`, `diagnostic_batch_tests.py`, `diagnostic_export_tests.py`, `diagnostic_cloud_and_system_tests.py`): Added `__all__` in `prs_shared.py` so `from prs_shared import *` resolves lazy `_BACKGROUND_WORKER_EXPORTS` (`read_waveform_peak_cache`, `WaveformWorker`, `VideoThumbnailWorker`) in `media_batch.py`; updated diagnostic tests and added `--changed` / `--filter` smart test selection.
+[x] 2.4 Synchronous Version Bump: Synchronized all 10 project locations, `plugins/youtube/manifest.json`, and web preview scaffolding to `v3.9.33-beta`.
 
 ================================================================================
-3. UPCOMING MILESTONE: CODEBASE MODULARIZATION & MONOLITHIC FILE DECOMPOSITION STRATEGY [PLANNED for v4.0.0] [IN-PROGRESS]
+3. UPCOMING MILESTONE: CODEBASE MODULARIZATION & MONOLITHIC FILE DECOMPOSITION STRATEGY [x] [COMPLETED in v3.9.33-beta]
 ================================================================================
 STRICT EXECUTION DIRECTIVE FOR AI STUDIO (GEMINI 3.8 FLASH):
 When the user prompts "what's next", execute ONLY the first uncompleted `[ ]` sub-item below in that turn, then stop. Follow these mandatory invariants on every step:
@@ -231,6 +243,22 @@ When the user prompts "what's next", execute ONLY the first uncompleted `[ ]` su
          - Avoids duplicate maintenance drag on small leaf modules (where token savings are negligible), while delivering a massive 95–97% token reduction on large files (reducing an ~800-line / ~4,000-token file to a ~120-token interface stub).
       3. Universal Surgical Range-Editing & Chunking Rules (`AGENTS.md`, `GEMINI.md`) [Applied Across ALL Modules]:
          - Formalize operational directives requiring models to view and edit files via targeted line slices (`view_file` StartLine/EndLine ranges and `replace_file_content`), strictly prohibiting whole-file rewrites to prevent token exhaustion, truncation, and latency timeouts.
+
+[x] 3.10 Google Drive/Docs Plugin & OAuth Runtime Removal (`plugins/gdocs/`, `export_documents.py`, `plugins/manager.py`, `plugin_dialogs.py`, `GOOGLE_OAUTH_SETUP.md`, `GOOGLE_DOCS_USER_GUIDE.md`) [COMPLETED in v3.9.33-beta]
+    - Fully deprecate and remove Google Drive and Google Docs cloud integrations and external OAuth dependencies:
+      1. Remove `plugins/gdocs/` plugin directory and unregister Google Docs from `plugins/manager.py`, `plugin_dialogs.py`, and `UnifiedExportDialog`.
+      2. Eliminate OAuth 2.0 PKCE authorization loops, browser redirect listener ports, Google token caching, and associated setup guides (`GOOGLE_OAUTH_SETUP.md`, `GOOGLE_DOCS_USER_GUIDE.md`).
+      3. Preserve robust offline local document export formats in `export_documents.py` (DOCX, vector PDF, plain text, SRT/VTT subtitles, CSV, and HTML).
+      4. Clean up diagnostic tests in `test_runner.py` and `diagnostic_cloud_and_system_tests.py` that previously verified Google Docs OAuth/PKCE.
+
+[x] 3.11 YouTube Zero-Auth Manual Export Streamlining (`plugins/youtube/`, `export_dialogs.py`, `export_story_pipeline.py`) [COMPLETED in v3.9.33-beta]
+    - Retain the YouTube plugin while eliminating Google OAuth login and direct YouTube API upload dependencies in favor of a fast, reliable manual publishing workflow:
+      1. Remove Google OAuth login prompts, token validation, and YouTube Data API v3 upload code from `plugins/youtube/`.
+      2. Streamline the YouTube export destination in `export_dialogs.py` to focus on the zero-auth manual publishing package:
+         - Renders the video file (e.g., MP4 with audiogram/waveform, subtitles, or background visualizer) via `export_story_pipeline.py`.
+         - Exports the companion thumbnail image (`.png` / `.jpg`).
+         - Formats the complete video metadata package into a sidecar `.txt` and system clipboard payload: Video Title, Story Description with clickable chapter timestamps (`00:00 Introduction`, `02:15 Topic`), speaker credits, and comma-separated tags.
+      3. Provides a clean "Open YouTube Studio" link or button so creators can upload the rendered video and paste title/description/chapters directly in their browser without any app-level authentication.
 
 ================================================================================
 4. UPCOMING MILESTONE: SMART HYBRID AUDIO LOUDNESS NORMALIZATION & NON-DESTRUCTIVE AUTO-BOOST SUITE [x] [COMPLETED in v3.9.25-beta]
@@ -392,3 +420,50 @@ Key Architectural Requirements:
      }
    - Also support plain text (.txt) and SRT subtitle export.
 --------------------------------------------------------------------------------
+
+================================================================================
+9. REAPER DAW COMPANION BRIDGE & REASCRIPT TRANSCRIPT INTEGRATION [PLANNED for v4.2.0] [OPTIONAL / PLANNED] [NOT STARTED]
+================================================================================
+ARCHITECTURAL INVARIANTS FOR REAPER INTEGRATION:
+- Modular <1,000-Line Invariant: Keep all Python bridge logic in a dedicated module `reaper_bridge.py` (<= 500 lines) and companion Lua ReaScripts in `scripts/reaper/` so existing transcript editor modules remain well under the 1,000-line ceiling.
+- Non-Destructive OS Clipboard Behavior: Copying text in RTVS3 (`Ctrl+C`) must keep clean readable prose in the standard `text/plain` system clipboard for Word/Docs/Slack while simultaneously writing structured REAPER timeline cue metadata to `~/.rtvs_reaper_clip.json` (and custom MIME `application/x-rtvs-clip+json`).
+
+[ ] 9.1 RTVS3 Clip Cue Payload & Sidecar/IPC Emitter (`reaper_bridge.py`)
+    - Create `reaper_bridge.py` to bridge RTVS3 word-level timestamp selections (`get_time_range_for_char_span` / `get_all_selected_story_ranges`) to REAPER:
+      1. Define `ReaperClipCue` payload schema (`version`, `source_audio`, `start_time`, `end_time`, `duration`, `speaker`, `excerpt_label`, `full_text`, `story_title`, `project_path`, `timestamp_utc`).
+      2. Ensure `source_audio` resolves to a permanent, REAPER-readable media file path on disk.
+      3. Implement dual-channel emission:
+         - **Sidecar + Multi-MIME Clipboard**: On copy or "Send to REAPER", write `~/.rtvs_reaper_clip.json` (or `get_app_data_dir() / "ipc" / "reaper_clip_cue.json"`) and attach `application/x-rtvs-clip+json` to `QMimeData` while keeping clean plain text in `text/plain`.
+         - **Zero-Click Local Loopback / Web Control Trigger**: Optionally dispatch a non-blocking local HTTP/OSC command or `reaper -nonewinst` action trigger so clicking "Send to REAPER" drops the clip onto REAPER's timeline immediately without switching window focus.
+
+[ ] 9.2 Interactive Transcript Quick-Action & Shortcut Integration (`transcript_editor_dialogs.py`, `transcript_context_menu_mixin.py`, `shortcuts_manager.py`)
+    - Add a `"Send to REAPER"` action button to `TranscriptSelectionBubble` (`transcript_editor_dialogs.py`) and the right-click context menu (`transcript_context_menu_mixin.py`), plus a configurable keyboard shortcut (`Ctrl+Shift+R` default in `shortcuts_manager.py`).
+    - Automatically populate the clip cue whenever a user copies a transcript selection (`Ctrl+C`) so pasting inside REAPER works transparently.
+
+[ ] 9.3 Companion ReaScript Timeline Paste & Take Labeling Action (`scripts/reaper/rtvs_reaper_companion.lua`)
+    - Create a dependency-free Lua ReaScript (`scripts/reaper/rtvs_reaper_companion.lua`) that users can bind to a shortcut (e.g., `Alt+V` or `Ctrl+Shift+V`) in REAPER's Action List:
+      1. Reads the latest `ReaperClipCue` JSON payload from the sidecar cue file (or clipboard fallback).
+      2. Wraps timeline insertion in `reaper.Undo_BeginBlock()` / `reaper.Undo_EndBlock("RTVS3: Insert Transcript Clip", -1)`.
+      3. Locates the active/selected track (or creates a new track if none is selected) and inserts a new media item at `reaper.GetCursorPosition()` via `reaper.AddMediaItemToTrack()`, `reaper.AddTakeToMediaItem()`, and `reaper.PCM_Source_CreateFromFile()`.
+      4. Sets `D_POSITION` to the edit cursor, `D_LENGTH` to `end_time - start_time`, and take `D_STARTOFFS` to `start_time` (with optional short crossfade/fade-in/out padding).
+      5. Labels the take banner (`P_NAME`) with `"{speaker}: \"{excerpt_label}\""` (using `generate_story_excerpt`-style truncation) so the spoken words appear directly on the waveform in REAPER's arrange view, and writes the full unabridged quote into the item's notes (`P_NOTES`).
+      6. Advances the REAPER edit cursor to the end of the newly inserted item for rapid sequential paper-cut assembly and calls `reaper.UpdateArrange()`.
+
+[ ] 9.4 Optional Dockable ReaImGui Transcript Viewer for REAPER (`scripts/reaper/rtvs_reaper_dock.lua`)
+    - Create an optional dockable ReaImGui Lua script (`scripts/reaper/rtvs_reaper_dock.lua`) that opens any `.rtvs` / `.rtvs.json` project file directly inside REAPER:
+      1. Renders speaker labels, timestamps, story boundaries, and a live search/filter bar inside a dockable REAPER panel.
+      2. Supports playhead chasing (clicking a word seeks REAPER's playhead) and a one-click `"Insert Selection at Cursor"` button that slices and labels the corresponding audio item on the active REAPER track.
+
+[ ] 9.5 Preferences Integration, One-Click Script Installer & Diagnostic Tests (`preferences_dialog.py`, `reaper_bridge.py`, `test_runner.py`)
+    - Add a `"DAW & REAPER Integration"` section in Preferences (`preferences_dialog.py`) allowing users to:
+      1. Configure default clip handle/fade padding (ms) and take label format (`Speaker + Excerpt`, `Excerpt Only`, `Story Title + Speaker`).
+      2. Click `"Install Companion ReaScripts to REAPER..."` to automatically detect the OS REAPER resource path (`%APPDATA%/REAPER/Scripts`, `~/Library/Application Support/REAPER/Scripts`, or `~/.config/REAPER/Scripts`) and copy the Lua scripts into place.
+    - Add a diagnostic unit test in `test_runner.py` (`"REAPER Companion Bridge & ReaScript Payload Invariants"`) verifying `ReaperClipCue` serialization, excerpt label truncation, non-destructive `text/plain` clipboard preservation, and Lua script syntax/API invariants.
+
+[ ] 9.6 Universal Text-to-WAV Clipboard & Drag-and-Drop Fallback for Other DAWs (`reaper_bridge.py`, `export_media_clipper.py`, `transcript_context_menu_mixin.py`)
+    - Provide a lightweight, universal fallback solution in `reaper_bridge.py` and `transcript_context_menu_mixin.py` for DAWs without an open non-destructive take-offset API (Audacity, Hindenburg Pro, Adobe Audition, Premiere, DaVinci Resolve):
+      1. Add a `"Copy Audio Clip for DAW"` / `"Render & Copy WAV Clip to System Clipboard"` action to the transcript selection context menu and bubble, plus drag-and-drop file export support.
+      2. When triggered, use RTVS3's existing `extract_audio_clip` helper (`export_media_clipper.py`) to render the selected quote into a temporary, cleanly trimmed `.wav` slice named after the speaker and quote excerpt (via `generate_story_excerpt` in `story_metadata_dialog.py`): e.g., `Jane_Doe_-_We_started_this_project_back_in_2020.wav`.
+      3. Place the rendered `.wav` file path onto the OS clipboard as a file URI list (`QMimeData.setUrls([QUrl.fromLocalFile(wav_path)])`).
+      4. Enable users of Audacity, Hindenburg, Audition, or other NLEs to simply `Ctrl+V` (or drag) the named audio file onto a track, where the DAW automatically names the timeline clip after the descriptive `.wav` filename—delivering ~80% of the interactive pasting benefit while preserving instant 0ms non-destructive pointer slicing (`D_STARTOFFS`) in Cockos REAPER.
+

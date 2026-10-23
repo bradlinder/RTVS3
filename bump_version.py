@@ -46,16 +46,12 @@ def get_current_version() -> str:
     raise ValueError("Could not find PROJECT_VERSION in core_utils.py or prs_shared.py")
 
 def compute_bump(current_version: str, bump_type: str) -> str:
-    """Calculate next semantic version (patch, minor, major) preserving suffix."""
-    has_stable = "-stable" in current_version
-    base = current_version.replace("-stable", "")
-    parts = base.split(".")
-    while len(parts) < 3:
-        parts.append("0")
-    try:
-        major, minor, patch = int(parts[0]), int(parts[1]), int(parts[2])
-    except ValueError:
+    """Calculate next semantic version (patch, minor, major) preserving any suffix (e.g. -beta, -stable)."""
+    m = re.match(r"^(\d+)\.(\d+)\.(\d+)(.*)$", current_version.strip())
+    if not m:
         raise ValueError(f"Cannot parse semantic version from: {current_version}")
+    major, minor, patch = int(m.group(1)), int(m.group(2)), int(m.group(3))
+    suffix = m.group(4) or ""
 
     if bump_type == "patch":
         patch += 1
@@ -67,10 +63,33 @@ def compute_bump(current_version: str, bump_type: str) -> str:
         minor = 0
         patch = 0
 
-    new_ver = f"{major}.{minor}.{patch}"
-    if has_stable:
-        new_ver += "-stable"
-    return new_ver
+    return f"{major}.{minor}.{patch}{suffix}"
+
+
+def detect_modified_plugins() -> list[str]:
+    """Auto-detect plugins with uncommitted changes via git status for Lazy Catch-Up Policy."""
+    import subprocess
+    modified: set[str] = set()
+    try:
+        res = subprocess.run(
+            ["git", "status", "--porcelain", "plugins/"],
+            cwd=str(ROOT_DIR),
+            capture_output=True,
+            text=True,
+            timeout=5,
+        )
+        if res.returncode == 0:
+            for line in res.stdout.splitlines():
+                if len(line) > 3:
+                    path_str = line[3:].strip().strip('"').replace("\\", "/")
+                    parts = path_str.split("/")
+                    if len(parts) >= 3 and parts[0] == "plugins":
+                        plugin_dir = ROOT_DIR / "plugins" / parts[1]
+                        if (plugin_dir / "manifest.json").is_file():
+                            modified.add(parts[1].lower())
+    except Exception:
+        pass
+    return sorted(modified)
 
 def check_all_versions() -> dict[str, str]:
     """Inspect and report the version strings currently set across all files."""
@@ -260,6 +279,21 @@ def bump_all(new_version: str, dry_run: bool = False, plugins: list[str] | None 
             modifications.append((bi_path, new_content))
             print(f"  [x] build_installer.py -> {clean_ver}")
 
+    # 3b. backup_manager.py fallback
+    bm_path = ROOT_DIR / "backup_manager.py"
+    if bm_path.is_file():
+        content = bm_path.read_text(encoding="utf-8")
+        new_content, count = re.subn(
+            r'(^\s*PROJECT_VERSION\s*=\s*)["\'][^"\']+["\']',
+            f'\\g<1>"{clean_ver}"',
+            content,
+            count=1,
+            flags=re.MULTILINE
+        )
+        if count:
+            modifications.append((bm_path, new_content))
+            print(f"  [x] backup_manager.py -> {clean_ver}")
+
     # 4. installer/Windows/RadioTVStorySegmenter.iss
     iss_path = ROOT_DIR / "installer" / "Windows" / "RadioTVStorySegmenter.iss"
     if iss_path.is_file():
@@ -326,7 +360,6 @@ def bump_all(new_version: str, dry_run: bool = False, plugins: list[str] | None 
     app_path = ROOT_DIR / "src" / "App.tsx"
     if app_path.is_file():
         content = app_path.read_text(encoding="utf-8")
-        # replace default expanded accordion
         c1 = re.sub(
             r"expandedVersions,\s*setExpandedVersions\s*\]\s*=\s*useState<Record<string,\s*boolean>>\(\{\s*'v[^']+':\s*true\s*\}\);",
             f"expandedVersions, setExpandedVersions] = useState<Record<string, boolean>>({{ 'v{clean_ver}': true }});",
@@ -337,7 +370,12 @@ def bump_all(new_version: str, dry_run: bool = False, plugins: list[str] | None 
             f"release.version === 'v{clean_ver}' || release.version === 'v3.5.34'",
             c1
         )
-        modifications.append((app_path, c2))
+        c3 = re.sub(
+            r'(<span className="text-xs font-semibold px-2 py-0\.5 rounded-full bg-cyan-950 text-cyan-400 border border-cyan-800/80">\s*)v[^\s<]+(\s*</span>)',
+            f'\\g<1>v{clean_ver}\\g<2>',
+            c2
+        )
+        modifications.append((app_path, c3))
         print(f"  [x] src/App.tsx -> v{clean_ver}")
 
     # 10. CHANGELOG.md (Ensure section header exists)
@@ -357,9 +395,11 @@ def bump_all(new_version: str, dry_run: bool = False, plugins: list[str] | None 
             modifications.append((changelog_path, new_content))
             print(f"  [x] CHANGELOG.md -> added header ## v{clean_ver}")
 
-    # 11. Plugins (Selective / Lazy Catch-Up Policy)
-    if plugins:
-        plugin_targets = [p.strip().lower() for p in plugins]
+    # 11. Plugins (Selective / Lazy Catch-Up Policy with Auto-Detection)
+    effective_plugins = list(plugins) if plugins else detect_modified_plugins()
+    repackage_dirs: list[Path] = []
+    if effective_plugins:
+        plugin_targets = [p.strip().lower() for p in effective_plugins]
         for manifest in (ROOT_DIR / "plugins").glob("*/manifest.json"):
             plugin_name = manifest.parent.name.lower()
             if "all" in plugin_targets or plugin_name in plugin_targets:
@@ -368,6 +408,7 @@ def bump_all(new_version: str, dry_run: bool = False, plugins: list[str] | None 
                     d["version"] = clean_ver
                     new_content = json.dumps(d, indent=2) + "\n"
                     modifications.append((manifest, new_content))
+                    repackage_dirs.append(manifest.parent)
                     print(f"  [x] plugin {manifest.parent.name}/manifest.json -> {clean_ver}")
                 except Exception as e:
                     print(f"  [!] Plugin {plugin_name} error: {e}")
@@ -378,6 +419,18 @@ def bump_all(new_version: str, dry_run: bool = False, plugins: list[str] | None 
 
     for path, new_content in modifications:
         path.write_text(new_content, encoding="utf-8")
+
+    # Repackage .rtvs-addon archives for bumped plugins
+    if repackage_dirs:
+        import zipfile
+        for pdir in repackage_dirs:
+            files = [f for f in pdir.iterdir() if f.is_file() and f.suffix != ".rtvs-addon" and not f.name.startswith(".")]
+            for dst in (ROOT_DIR / "plugins" / f"{pdir.name}.rtvs-addon", pdir / f"{pdir.name}.rtvs-addon"):
+                if dst.exists():
+                    with zipfile.ZipFile(dst, "w", zipfile.ZIP_DEFLATED) as zf:
+                        for f in files:
+                            zf.write(f, f.name)
+                    print(f"  [x] repackaged {dst.relative_to(ROOT_DIR)}")
 
     # Synchronize roadmap.txt Section 2
     roadmap_path = ROOT_DIR / "roadmap.txt"

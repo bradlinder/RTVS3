@@ -436,25 +436,9 @@ class DiagnosticExportTestsMixin:
             if "\n\n" in block_match:
                 raise AssertionError(f"Found unwanted internal double line break inside WordPress paragraph block: {block_match}")
 
-        # 6. Google Docs REST Document Serializer
-        from plugins.gdocs.formatter import GoogleDocsSerializer
-        gdocs_serializer = GoogleDocsSerializer()
-        gdocs_full_text, gdocs_reqs, _ = gdocs_serializer.serialize_document(
-            document_title="Parity Verification",
-            stories=[],
-            transcript_segments=sample_segments,
-            include_timestamps=True,
-            include_speakers=True,
-        )
-        # Verify paragraph count in Google Docs document body (excluding title header line)
-        body_text = gdocs_full_text.split("Parity Verification\n", 1)[-1].strip()
-        gdocs_paras = [p.strip() for p in body_text.split("\n\n") if p.strip()]
-        if len(gdocs_paras) != len(blocks):
-            raise AssertionError(f"Google Docs export paragraph mismatch: expected {len(blocks)}, got {len(gdocs_paras)} in:\n{gdocs_full_text}")
-
         item.status = "PASS"
         item.message = (
-            f"Line break & paragraph parity verified across in-app view, TXT, DOCX, PDF, WordPress Gutenberg HTML, and Google Docs "
+            f"Line break & paragraph parity verified across in-app view, TXT, DOCX, PDF, and WordPress Gutenberg HTML "
             f"({len(blocks)} paragraphs synchronized 1:1)"
         )
 

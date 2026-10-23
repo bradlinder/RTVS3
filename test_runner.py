@@ -318,7 +318,7 @@ class DiagnosticEngine(
             DiagnosticItem(
                 "Unified Export Destinations and YouTube Auth Integrity",
                 "Export & Packaging Engines",
-                "Validates YouTube and Google Docs auth manager email methods, export destination error guards, and WordPress story panel clean separation",
+                "Validates YouTube zero-auth export destination, export destination error guards, and WordPress story panel clean separation",
             ),
             DiagnosticItem(
                 "PDF Transcript Export and Bold Speaker Labels",
@@ -369,17 +369,12 @@ class DiagnosticEngine(
             DiagnosticItem(
                 "Plugin Interface Sandbox Testing",
                 "Plugin Architecture & Sandboxing",
-                "Validates plugin manifest schemas, base plugin lifecycle hooks, and Google Docs export payload serialization",
+                "Validates plugin manifest schemas, base plugin lifecycle hooks, and export destination registration",
             ),
             DiagnosticItem(
                 "Project File Integrity & Portable Path Resolution",
                 "Core Logic & File I/O",
                 "Validates structural error catching on malformed project data and tests relative/absolute portable media resolution",
-            ),
-            DiagnosticItem(
-                "Google Docs Export Integrity",
-                "Export & Packaging Engines",
-                "Validates Google Docs export title fallback, enforced bold speaker styling, and optional H2 Table of Contents headers",
             ),
             DiagnosticItem(
                 "Acoustic Voice Profile Matcher",
@@ -392,11 +387,6 @@ class DiagnosticEngine(
                 "Validates detached update helper script generation, process exit polling semantics, elevated UAC execution fallback, and update logging",
             ),
             DiagnosticItem(
-                "Google Docs OAuth and PKCE Security",
-                "Plugin Architecture & Sandboxing",
-                "Validates PKCE pair generation, cryptographic state tokens, zero-config public client credentials, and callback state verification",
-            ),
-            DiagnosticItem(
                 "Temporary Cache Management and Storage Inspection",
                 "Project & Filesystem Lifecycle",
                 "Validates disk cache statistics calculation, preview inspection data, and temporary cache purging",
@@ -404,12 +394,7 @@ class DiagnosticEngine(
             DiagnosticItem(
                 "YouTube Data API and Direct Video Upload Engine",
                 "Subtitles & Export Formats",
-                "Validates YouTube resumable upload chunking protocol, custom thumbnail submission, caption track insertion, and dual-mode publishing",
-            ),
-            DiagnosticItem(
-                "Google Sheets Tabular Export and Formatting Engine",
-                "Export & Packaging Engines",
-                "Validates Google Sheets spreadsheet creation payloads, tabular rundown row conversion, speaker talk-time airtime analytics, and A1 range appending",
+                "Validates YouTube zero-auth manual export package (MP4 rendering, companion thumbnail, .srt captions, and sidecar metadata .txt with chapters and speakers)",
             ),
             DiagnosticItem(
                 "Multiprocessing Freeze Support and Spawn Intercept",
@@ -429,7 +414,7 @@ class DiagnosticEngine(
             DiagnosticItem(
                 "Comprehensive Local and Cloud Backup and Restore Engine",
                 "Core Logic & File I/O",
-                "Validates unified state serialization (preferences, shortcuts, glossary, plugins), SHA-256 cryptographic verification, local archive roundtrip, and Google Drive cloud payload integrity",
+                "Validates unified state serialization (preferences, shortcuts, glossary, plugins), SHA-256 cryptographic verification, and local archive roundtrip integrity",
             ),
             DiagnosticItem(
                 "Option C Muted Silver Fog Light Theme and Dark Mode Clipboard Formatting",
@@ -901,9 +886,18 @@ def create_diagnostic_dialog(parent=None, include_dev_tests: Optional[bool] = No
 # CLI Test Runner Entrypoint
 # ---------------------------------------------------------------------------
 
-def run_cli_diagnostics(verbose: bool = True, quiet: bool = False, include_dev_tests: Optional[bool] = None) -> int:
+def run_cli_diagnostics(
+    verbose: bool = True,
+    quiet: bool = False,
+    include_dev_tests: Optional[bool] = None,
+    filter_expr: str = "",
+    changed_only: bool = False,
+) -> int:
     """Executes the diagnostic engine in headless console mode with human-readable or quiet output."""
     engine = DiagnosticEngine(include_dev_tests=include_dev_tests)
+    if filter_expr or changed_only:
+        from diagnostic_selector import select_diagnostic_items
+        engine.items = select_diagnostic_items(engine, engine.items, filter_expr=filter_expr, changed_only=changed_only)
     total_tests = len(engine.items)
     passed_count = 0
     failed_count = 0
@@ -975,7 +969,19 @@ def main():
     else:
         quiet = "--quiet" in sys.argv or "-q" in sys.argv
         verbose = "-v" in sys.argv or "--verbose" in sys.argv or not quiet
-        return run_cli_diagnostics(verbose=verbose, quiet=quiet)
+        changed_only = "--changed" in sys.argv or "--smart" in sys.argv
+        filter_expr = ""
+        for idx, arg in enumerate(sys.argv[1:], 1):
+            if arg in ("--filter", "-k") and idx < len(sys.argv) - 1:
+                filter_expr = sys.argv[idx + 1]
+            elif arg.startswith("--filter="):
+                filter_expr = arg.split("=", 1)[1]
+        return run_cli_diagnostics(
+            verbose=verbose,
+            quiet=quiet,
+            filter_expr=filter_expr,
+            changed_only=changed_only,
+        )
 
 
 if __name__ == "__main__":

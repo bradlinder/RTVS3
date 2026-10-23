@@ -56,13 +56,10 @@ class PreferencesDialogMixin(PreferencesResetMixin):
         ]
         show_wp = hasattr(self, "plugin_manager") and self.plugin_manager and self.plugin_manager.is_plugin_enabled("wordpress")
         show_yt = hasattr(self, "plugin_manager") and self.plugin_manager and self.plugin_manager.is_plugin_enabled("youtube")
-        show_gd = hasattr(self, "plugin_manager") and self.plugin_manager and self.plugin_manager.is_plugin_enabled("gdocs")
         if show_wp:
             categories.append("WordPress")
         if show_yt:
             categories.append("YouTube")
-        if show_gd:
-            categories.append("Google Docs")
 
         for cat in categories:
             cat_list.addItem(QListWidgetItem(cat))
@@ -122,16 +119,6 @@ class PreferencesDialogMixin(PreferencesResetMixin):
         if show_yt:
             stack.addWidget(build_youtube_tab(self, dialog, live_widgets, _add_custom_defaults_btn))
 
-        page_gd = None
-        if show_gd and hasattr(self, "plugin_manager") and self.plugin_manager:
-            gd_plugin = self.plugin_manager.plugins.get("gdocs")
-            if gd_plugin and hasattr(gd_plugin, "get_preferences_widget"):
-                page_gd = gd_plugin.get_preferences_widget(dialog)
-                if page_gd:
-                    if page_gd.layout():
-                        _add_custom_defaults_btn(page_gd.layout(), "Google Docs & Drive")
-                    stack.addWidget(page_gd)
-
         content_layout.addWidget(stack, 1)
         main_layout.addLayout(content_layout)
 
@@ -168,11 +155,6 @@ class PreferencesDialogMixin(PreferencesResetMixin):
             "cache": "cleanup data",
             "wordpress": "wordpress",
             "youtube": "youtube",
-            "gdocs": "google docs",
-            "google docs": "google docs",
-            "googledocs": "google docs",
-            "google": "google docs",
-            "drive": "google docs",
         }
         requested = str(initial_category).strip().lower() if initial_category else "general"
         target = aliases.get(requested, requested)
@@ -558,14 +540,6 @@ class PreferencesDialogMixin(PreferencesResetMixin):
             # Save WordPress preferences if plugin page was loaded and active
             if show_wp and page_wp and hasattr(page_wp, "save_preferences"):
                 page_wp.save_preferences(dialog)
-
-            # Save Google Docs preferences if plugin page was loaded and active
-            if show_gd and page_gd and hasattr(page_gd, "save_preferences"):
-                page_gd.save_preferences(dialog)
-            elif show_gd and hasattr(self, "plugin_manager") and self.plugin_manager:
-                gd_plugin = self.plugin_manager.plugins.get("gdocs")
-                if gd_plugin and hasattr(gd_plugin, "save_preferences") and page_gd:
-                    gd_plugin.save_preferences(page_gd)
 
             # Save YouTube preferences
             if show_yt:

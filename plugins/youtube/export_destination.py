@@ -1,8 +1,11 @@
-"""YouTube Export Destination for UnifiedExportDialog with Dual-Mode Publishing.
+"""YouTube Export Destination for UnifiedExportDialog with Zero-Auth Manual Publishing.
 
 Supports:
-1. Direct 1-Click Upload via YouTube Data API v3 (Resumable upload, custom thumbnails, .srt captions)
-2. Zero-API Assisted Upload (Local video packaging, thumbnail grab, clipboard chapters, browser launch)
+- Local video packaging (or rendering audio broadcasts to MP4)
+- Companion thumbnail extraction or custom image packaging
+- Subtitles (.srt) generation
+- Formatted sidecar metadata (.txt) and clipboard payload (Title, Description with clickable chapters, Speaker credits, Tags)
+- One-click YouTube Studio browser launch
 """
 from __future__ import annotations
 
@@ -10,13 +13,9 @@ import logging
 import os
 import subprocess
 import sys
-import threading
-import time
 import webbrowser
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
-
-from prs_shared import safe_process_events
 
 logger = logging.getLogger("rtvs.youtube.export")
 
@@ -27,17 +26,12 @@ from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
     QFileDialog,
-    QFormLayout,
     QFrame,
     QGridLayout,
-    QGroupBox,
     QHBoxLayout,
     QLabel,
     QLineEdit,
-    QMessageBox,
     QPlainTextEdit,
-    QProgressBar,
-    QProgressDialog,
     QPushButton,
     QRadioButton,
     QScrollArea,
@@ -57,11 +51,19 @@ from prs_shared import (
 from plugins.base import ExportDestination
 from plugins.youtube.guide_dialog import YouTubeAssistedUploadGuideDialog
 from export.subtitles import generate_youtube_chapters, write_subtitles_file
-from plugins.youtube.api import (
-    YouTubeApiClient,
-    YouTubeAuthManager,
-    YOUTUBE_CATEGORIES,
-)
+
+YOUTUBE_CATEGORIES = [
+    ("25", "News & Politics"),
+    ("24", "Entertainment"),
+    ("22", "People & Blogs"),
+    ("27", "Education"),
+    ("28", "Science & Technology"),
+    ("10", "Music"),
+    ("17", "Sports"),
+    ("23", "Comedy"),
+    ("1", "Film & Animation"),
+    ("26", "Howto & Style"),
+]
 
 
 def capture_video_frame(video_path: str, timestamp: float, output_path: str) -> bool:
@@ -83,13 +85,12 @@ def capture_video_frame(video_path: str, timestamp: float, output_path: str) -> 
 
 
 class YouTubeExportTabWidget(QWidget):
-    """Configuration and preview panel for YouTube Publishing."""
+    """Configuration and preview panel for YouTube Zero-Auth Manual Publishing."""
 
     def __init__(self, parent: QWidget, main_window: Any):
         super().__init__(parent)
         self.main_window = main_window
         self.settings = QSettings(INTERNAL_APP_ID, INTERNAL_APP_ID)
-        self.auth_manager = YouTubeAuthManager()
         self._is_video_project = bool(getattr(self.main_window, "current_media_is_video", False))
         self._yt_frame_pos = float(getattr(self.main_window, "current_position", 0.0) or 0.0)
         self._temp_preview_files = set()
@@ -100,7 +101,6 @@ class YouTubeExportTabWidget(QWidget):
         self._yt_scrub_timer.timeout.connect(self._on_yt_scrub_timer_timeout)
 
         self._setup_ui()
-        self._update_auth_status_ui()
 
     def _setup_ui(self):
         page_layout = QVBoxLayout(self)
@@ -113,7 +113,7 @@ class YouTubeExportTabWidget(QWidget):
         yt_layout = QVBoxLayout(scroll_content)
         yt_layout.setSpacing(12)
 
-        # Overview banner with Mode Selector
+        # Overview banner with Open YouTube Studio button
         yt_theme_mode = get_active_theme_mode("dark")
 
         yt_banner = QWidget()
@@ -125,9 +125,9 @@ class YouTubeExportTabWidget(QWidget):
             yt_banner.setStyleSheet("background-color: #000000; border-radius: 6px; border: 1px solid #ffffff;")
         else:
             yt_banner.setStyleSheet("background-color: #1e293b; border-radius: 6px; border: 1px solid #334155;")
-        
+
         mode_header_layout = QHBoxLayout()
-        yt_banner_title = QLabel("<b>YouTube Video Publisher</b>")
+        yt_banner_title = QLabel("<b>YouTube Video Publisher (Zero-Auth Manual Package)</b>")
         if yt_theme_mode == "light":
             yt_banner_title.setStyleSheet("color: #b91c1c; font-size: 13px;")
         elif yt_theme_mode == "high_contrast":
@@ -137,53 +137,23 @@ class YouTubeExportTabWidget(QWidget):
         mode_header_layout.addWidget(yt_banner_title)
         mode_header_layout.addStretch()
 
-        mode_lbl = QLabel("Publishing Method:")
-        if yt_theme_mode == "light":
-            mode_lbl.setStyleSheet("font-size: 11px; color: #545b66;")
-        elif yt_theme_mode == "high_contrast":
-            mode_lbl.setStyleSheet("font-size: 11px; color: #ffffff;")
-        else:
-            mode_lbl.setStyleSheet("font-size: 11px; color: #94a3b8;")
-        mode_header_layout.addWidget(mode_lbl)
-
-        self.yt_mode_combo = QComboBox()
-        self.yt_mode_combo.addItem("Direct 1-Click API Upload", "api")
-        self.yt_mode_combo.addItem("Zero-API Assisted Upload (Browser)", "assisted")
-        saved_mode = str(self.settings.value("export_yt_mode", "api"))
-        m_idx = self.yt_mode_combo.findData(saved_mode)
-        if m_idx >= 0:
-            self.yt_mode_combo.setCurrentIndex(m_idx)
-        self.yt_mode_combo.currentIndexChanged.connect(self._on_mode_changed)
-        mode_header_layout.addWidget(self.yt_mode_combo)
+        self.open_studio_btn = QPushButton("Open YouTube Studio")
+        self.open_studio_btn.setToolTip("Open YouTube Studio upload page in your default web browser.")
+        self.open_studio_btn.setStyleSheet("background-color: #dc2626; color: white; font-weight: bold; font-size: 11px; padding: 4px 10px; border-radius: 4px;")
+        self.open_studio_btn.clicked.connect(lambda: webbrowser.open("https://studio.youtube.com/channel/UC/videos/upload?d=ud"))
+        mode_header_layout.addWidget(self.open_studio_btn)
 
         yt_b_layout.addLayout(mode_header_layout)
 
         self.yt_banner_info = QLabel(
-            "Uploads video, chapters, custom thumbnail, and .srt captions directly to your YouTube channel in the background."
+            "Exports your rendered video (MP4), companion thumbnail image, .srt captions, and sidecar metadata (.txt), "
+            "copies Title/Description/Chapters to your clipboard, and opens YouTube Studio in your browser—no login required."
         )
         self.yt_banner_info.setStyleSheet("color: #94a3b8; font-size: 11px;")
         self.yt_banner_info.setWordWrap(True)
         yt_b_layout.addWidget(self.yt_banner_info)
 
         yt_layout.addWidget(yt_banner)
-
-        # Account Authentication Card (for Direct API mode)
-        self.auth_card = QWidget()
-        auth_card_layout = QHBoxLayout(self.auth_card)
-        auth_card_layout.setContentsMargins(12, 8, 12, 8)
-        self.auth_card.setStyleSheet("background-color: #0f172a; border-radius: 6px; border: 1px solid #334155;")
-
-        self.auth_status_lbl = QLabel("Google Account: <i>Checking connection...</i>")
-        self.auth_status_lbl.setStyleSheet("font-size: 11px; color: #cbd5e1;")
-        auth_card_layout.addWidget(self.auth_status_lbl)
-        auth_card_layout.addStretch()
-
-        self.auth_action_btn = QPushButton("Link Google Account...")
-        self.auth_action_btn.setStyleSheet("font-size: 11px; padding: 4px 10px;")
-        self.auth_action_btn.clicked.connect(self._on_toggle_auth)
-        auth_card_layout.addWidget(self.auth_action_btn)
-
-        yt_layout.addWidget(self.auth_card)
 
         # Video Metadata Section
         self.yt_meta_section = CollapsibleSection("Video Details", self, is_expanded=True, subtitle="Title, Category, Privacy, Tags")
@@ -352,7 +322,7 @@ class YouTubeExportTabWidget(QWidget):
         self._on_yt_thumb_mode_changed()
 
         # Checkbox extras
-        self.yt_cb_subtitles = QCheckBox("Upload / Generate Closed Captions (.srt)")
+        self.yt_cb_subtitles = QCheckBox("Generate Closed Captions (.srt)")
         self.yt_cb_subtitles.setChecked(self.settings.value("export_yt_subtitles", True, type=bool))
         yt_extras_layout.addWidget(self.yt_cb_subtitles)
 
@@ -360,9 +330,13 @@ class YouTubeExportTabWidget(QWidget):
         self.yt_cb_copy_clipboard.setChecked(self.settings.value("export_yt_copy_clipboard", True, type=bool))
         yt_extras_layout.addWidget(self.yt_cb_copy_clipboard)
 
-        self.yt_cb_open_browser = QCheckBox("Open YouTube Studio in browser after export (Assisted mode)")
+        self.yt_cb_open_browser = QCheckBox("Open YouTube Studio in browser after export")
         self.yt_cb_open_browser.setChecked(self.settings.value("export_yt_open_browser", True, type=bool))
         yt_extras_layout.addWidget(self.yt_cb_open_browser)
+
+        self.yt_cb_open_folder = QCheckBox("Open export folder after packaging")
+        self.yt_cb_open_folder.setChecked(self.settings.value("export_yt_open_folder", True, type=bool))
+        yt_extras_layout.addWidget(self.yt_cb_open_folder)
 
         self.yt_extras_section.add_layout(yt_extras_layout)
         yt_layout.addWidget(self.yt_extras_section)
@@ -375,71 +349,6 @@ class YouTubeExportTabWidget(QWidget):
 
         # Initialize content
         self.populate_metadata()
-        self._on_mode_changed()
-
-    def _on_mode_changed(self):
-        is_api = self.yt_mode_combo.currentData() == "api"
-        self.auth_card.setVisible(is_api)
-        self.yt_cb_open_browser.setVisible(not is_api)
-        if is_api:
-            self.yt_banner_info.setText(
-                "Uploads video, custom thumbnail, and .srt closed captions directly to your YouTube channel in the background via YouTube Data API v3."
-            )
-            self.settings.setValue("export_yt_mode", "api")
-        else:
-            self.yt_banner_info.setText(
-                "Prepares your media clip, thumbnail, and .srt captions, copies chapters to your clipboard, and launches YouTube Studio in your browser."
-            )
-            self.settings.setValue("export_yt_mode", "assisted")
-        self.settings.sync()
-
-    def _update_auth_status_ui(self):
-        is_auth = False
-        try:
-            is_auth = bool(self.auth_manager.is_authenticated())
-        except Exception:
-            is_auth = False
-
-        if is_auth:
-            email_getter = getattr(self.auth_manager, "get_authenticated_email", getattr(self.auth_manager, "get_user_email", lambda: ""))
-            email = ""
-            try:
-                email = email_getter()
-            except Exception:
-                email = ""
-            email = email or "Connected"
-            self.auth_status_lbl.setText(f"YouTube Account: <b style='color: #38bdf8;'>{email}</b>")
-            self.auth_action_btn.setText("Disconnect Account")
-        else:
-            self.auth_status_lbl.setText("YouTube Account: <span style='color: #94a3b8;'>Not linked</span>")
-            self.auth_action_btn.setText("Link Google Account...")
-
-    def _on_toggle_auth(self):
-        if self.auth_manager.is_authenticated():
-            reply = QMessageBox.question(
-                self,
-                "Disconnect YouTube Account",
-                "Are you sure you want to disconnect your Google / YouTube account from Radio & TV Segmenter?",
-                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
-            )
-            if reply == QMessageBox.StandardButton.Yes:
-                self.auth_manager.revoke_token()
-                self._update_auth_status_ui()
-        else:
-            ok, err = self.auth_manager.authorize_interactive(parent_widget=self)
-            if ok:
-                self._update_auth_status_ui()
-                QMessageBox.information(
-                    self,
-                    "YouTube Account Linked",
-                    "Your Google / YouTube account was linked successfully! Direct video uploads are now ready.",
-                )
-            else:
-                QMessageBox.warning(
-                    self,
-                    "Authentication Incomplete",
-                    f"Could not link YouTube account: {err}",
-                )
 
     def _get_yt_bounds(self) -> Tuple[float, float]:
         scope = "full"
@@ -574,7 +483,7 @@ class YouTubeExportTabWidget(QWidget):
         super().done(r)
 
     def populate_metadata(self):
-        """Builds default title, description, and chapter timestamps from current stories."""
+        """Builds default title, description, chapter timestamps, and speaker credits from current stories."""
         proj_title = ""
         if getattr(self.main_window, "project_file", None):
             proj_title = Path(self.main_window.project_file).stem
@@ -598,6 +507,22 @@ class YouTubeExportTabWidget(QWidget):
         else:
             desc_lines.append("00:00 - Full Broadcast")
 
+        # Extract unique speaker credits from transcript segments if available
+        speakers: List[str] = []
+        transcript = getattr(self.main_window, "transcript", None)
+        segments = transcript.get("segments", []) if isinstance(transcript, dict) else getattr(self.main_window, "transcript_segments", [])
+        if segments:
+            seen_spk = set()
+            for seg in segments:
+                spk = (seg.get("speaker") if isinstance(seg, dict) else getattr(seg, "speaker", "")) or ""
+                spk = str(spk).strip()
+                if spk and spk.lower() not in ("unknown", "none") and spk not in seen_spk:
+                    seen_spk.add(spk)
+                    speakers.append(spk)
+        if speakers:
+            desc_lines.append("")
+            desc_lines.append(f"Speakers: {', '.join(speakers)}")
+
         self.yt_desc_edit.setPlainText("\n".join(desc_lines))
         if self.yt_rad_frame_grab.isChecked() and self._is_video_project:
             self._update_yt_scrub_slider_range()
@@ -605,13 +530,13 @@ class YouTubeExportTabWidget(QWidget):
 
 
 class YouTubeExportDestination(ExportDestination):
-    """Export destination handler for YouTube Video Publishing."""
+    """Export destination handler for YouTube Zero-Auth Manual Publishing."""
 
     def __init__(self, plugin: Any = None):
         super().__init__(
             id="youtube",
             title="YouTube Video Publisher",
-            description="Direct 1-click upload or assisted publishing to YouTube with chapters, thumbnail, and .srt subtitles.",
+            description="Zero-auth manual publishing package for YouTube Studio with MP4 video, thumbnail, chapters, and .srt subtitles.",
             icon="youtube",
         )
         self.plugin = plugin
@@ -631,10 +556,6 @@ class YouTubeExportDestination(ExportDestination):
         title = self.tab_widget.yt_title_edit.text().strip()
         if not title:
             return False, "Please enter a YouTube video title."
-
-        if self.tab_widget.yt_mode_combo.currentData() == "api":
-            if not self.tab_widget.auth_manager.is_authenticated():
-                return False, "Please link your Google / YouTube account for direct 1-click upload, or switch to 'Assisted Upload'."
         return True, ""
 
     def get_export_data(self) -> Dict[str, Any]:
@@ -650,7 +571,7 @@ class YouTubeExportDestination(ExportDestination):
             thumb_file = w.yt_thumb_path_label.text().strip()
 
         return {
-            "mode": w.yt_mode_combo.currentData(),
+            "mode": "assisted",
             "title": w.yt_title_edit.text().strip(),
             "category": w.yt_category_combo.currentData(),
             "privacy": w.yt_privacy_combo.currentData(),
@@ -661,174 +582,13 @@ class YouTubeExportDestination(ExportDestination):
             "thumb_frame_pos": w._yt_frame_pos,
             "copy_clipboard": w.yt_cb_copy_clipboard.isChecked(),
             "open_browser": w.yt_cb_open_browser.isChecked(),
+            "open_folder": w.yt_cb_open_folder.isChecked(),
             "subtitles": w.yt_cb_subtitles.isChecked(),
+            "include_subtitles": w.yt_cb_subtitles.isChecked(),
         }
 
     def execute_export(self, main_window: Any, export_data: Dict[str, Any], progress_dialog: Any = None) -> bool:
-        mode = export_data.get("mode", "api")
-
-        if mode == "assisted":
-            if hasattr(main_window, "_handle_youtube_export_result"):
-                main_window._handle_youtube_export_result(export_data)
-                return True
-            return False
-
-        # Direct 1-Click YouTube API Upload
-        return self._execute_direct_api_upload(main_window, export_data)
-
-    def _execute_direct_api_upload(self, main_window: Any, export_data: Dict[str, Any]) -> bool:
-        auth = YouTubeAuthManager()
-        if not auth.is_authenticated():
-            ok, err = auth.authorize_interactive(parent_widget=main_window)
-            if not ok:
-                QMessageBox.warning(main_window, "YouTube Authentication", f"Upload canceled: {err}")
-                return False
-
-        client = YouTubeApiClient(auth_manager=auth)
-
-        # Locate media file
-        media_path = getattr(main_window, "current_media_path", None)
-        if not media_path or not Path(media_path).exists():
-            media_path = getattr(main_window, "audio_file", None)
-        if not media_path or not Path(media_path).exists():
-            QMessageBox.warning(main_window, "YouTube Upload", "No active media file found to upload.")
-            return False
-
-        title = export_data.get("title", "Broadcast Segment")
-        description = export_data.get("description", "")
-        raw_tags = export_data.get("tags", "")
-        tags = [t.strip() for t in raw_tags.split(",") if t.strip()]
-        cat_id = export_data.get("category", "25")
-        privacy = export_data.get("privacy", "unlisted")
-
-        # Prepare thumbnail if requested
-        thumb_path = None
-        if export_data.get("thumb_mode") == "file":
-            tf = export_data.get("thumb_file")
-            if tf and Path(tf).exists():
-                thumb_path = tf
-        elif export_data.get("thumb_mode") == "frame":
-            import tempfile
-            tmp_t = tempfile.NamedTemporaryFile(suffix=".jpg", delete=False)
-            tmp_t.close()
-            self._temp_preview_files.add(tmp_t.name)
-            fpos = float(export_data.get("thumb_frame_pos", 0.0))
-            if capture_video_frame(str(media_path), fpos, tmp_t.name):
-                thumb_path = tmp_t.name
-
-        # Prepare subtitles if requested
-        srt_content = None
-        if export_data.get("subtitles", True):
-            segments = getattr(main_window, "transcript_segments", [])
-            if segments:
-                from export.subtitles import generate_srt_subtitles
-                srt_content = generate_srt_subtitles(segments)
-
-        # Build Interactive Upload Progress Dialog
-        progress = QProgressDialog("Connecting to YouTube...", "Cancel", 0, 100, main_window)
-        progress.setWindowTitle("Uploading to YouTube")
-        progress.setWindowModality(Qt.WindowModality.WindowModal)
-        progress.setMinimumDuration(0)
-        progress.setValue(0)
-        progress.show()
-        safe_process_events()
-
-        cancel_event = threading.Event()
-        upload_result = {}
-        upload_error = []
-
-        def on_progress(bytes_sent: int, total: int, speed: float, eta: float):
-            pct = int((bytes_sent / total) * 100) if total > 0 else 0
-            mb_sent = bytes_sent / (1024 * 1024)
-            mb_total = total / (1024 * 1024)
-            speed_mb = speed / (1024 * 1024)
-            msg = f"Uploading Video: {mb_sent:.1f} / {mb_total:.1f} MB ({pct}%)\nSpeed: {speed_mb:.2f} MB/s — ETA: {eta:.0f}s"
-            progress.setLabelText(msg)
-            progress.setValue(pct)
-            safe_process_events()
-
-        def upload_worker():
-            try:
-                res = client.upload_video_resumable(
-                    video_path=media_path,
-                    title=title,
-                    description=description,
-                    tags=tags,
-                    category_id=cat_id,
-                    privacy_status=privacy,
-                    progress_callback=on_progress,
-                    cancel_event=cancel_event,
-                )
-                upload_result["video"] = res
-            except Exception as e:
-                upload_error.append(str(e))
-
-        thread = threading.Thread(target=upload_worker)
-        thread.start()
-
-        while thread.is_alive():
-            safe_process_events()
-            if progress.wasCanceled():
-                cancel_event.set()
-                break
-            time.sleep(0.05)
-
-        thread.join()
-        progress.close()
-
-        if upload_error:
-            QMessageBox.critical(main_window, "YouTube Upload Failed", f"An error occurred while uploading:\n{upload_error[0]}")
-            return False
-
-        if cancel_event.is_set():
-            QMessageBox.information(main_window, "YouTube Upload", "Upload was cancelled.")
-            return False
-
-        vid_data = upload_result.get("video", {})
-        video_id = vid_data.get("id")
-        if not video_id:
-            QMessageBox.warning(main_window, "YouTube Upload", "Video uploaded, but no video ID was returned.")
+        if hasattr(main_window, "_handle_youtube_export_result"):
+            main_window._handle_youtube_export_result(export_data)
             return True
-
-        # Attach thumbnail
-        if thumb_path:
-            try:
-                client.set_thumbnail(video_id, thumb_path)
-            except Exception as exc:
-                logger.warning(f"Could not set thumbnail on YouTube video {video_id}: {exc}")
-
-        # Attach captions
-        if srt_content:
-            try:
-                client.upload_caption_track(video_id, srt_content, language="en", name="English")
-            except Exception as exc:
-                logger.warning(f"Could not upload captions on YouTube video {video_id}: {exc}")
-
-        # Copy description if requested
-        if export_data.get("copy_clipboard", True):
-            QApplication.clipboard().setText(description)
-
-        # Show Success Dialog with direct link
-        video_url = f"https://youtu.be/{video_id}"
-        studio_url = f"https://studio.youtube.com/video/{video_id}/edit"
-
-        msg_box = QMessageBox(main_window)
-        msg_box.setWindowTitle("YouTube Upload Complete")
-        msg_box.setText(f"<h3>Video Published Successfully!</h3><p>Your video <b>{title}</b> is now on YouTube.</p><p>Link: <a href='{video_url}'>{video_url}</a></p>")
-        
-        btn_open = msg_box.addButton("Open in YouTube", QMessageBox.ButtonRole.ActionRole)
-        btn_studio = msg_box.addButton("Open in YouTube Studio", QMessageBox.ButtonRole.ActionRole)
-        btn_copy = msg_box.addButton("Copy Link", QMessageBox.ButtonRole.ActionRole)
-        btn_close = msg_box.addButton("Close", QMessageBox.ButtonRole.RejectRole)
-
-        msg_box.exec()
-
-        clicked = msg_box.clickedButton()
-        if clicked == btn_open:
-            webbrowser.open(video_url)
-        elif clicked == btn_studio:
-            webbrowser.open(studio_url)
-        elif clicked == btn_copy:
-            QApplication.clipboard().setText(video_url)
-
-        return True
+        return False

@@ -21,17 +21,6 @@ def get_official_plugins_catalog(repo: str) -> List[Dict[str, Any]]:
     """Returns the base catalog of official plugins for the repository."""
     return [
         {
-            "id": "gdocs",
-            "name": "Google Docs & Drive Exporter",
-            "category": "export",
-            "version": PROJECT_VERSION,
-            "description": "Exports transcripts, speaker turns, stories, and editorial notes directly to formatted Google Docs via Google Drive REST API with OAuth 2.0 loopback authentication and native margin comment anchoring.",
-            "author": "Radio & TV Segmenter Team",
-            "asset_name": f"rtvs-plugin-gdocs-v{PROJECT_VERSION}.rtvs-addon",
-            "download_url": f"https://github.com/{repo}/releases/download/v{PROJECT_VERSION}/rtvs-plugin-gdocs-v{PROJECT_VERSION}.rtvs-addon",
-            "fallback_url": f"https://raw.githubusercontent.com/{repo}/main/plugins/gdocs.rtvs-addon",
-        },
-        {
             "id": "youtube",
             "name": "YouTube Video Publisher",
             "category": "export",

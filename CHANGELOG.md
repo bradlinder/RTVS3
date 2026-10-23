@@ -1,5 +1,19 @@
 # Changelog
 
+## v3.9.33-beta
+- **Google Drive/Docs & Sheets Cloud Integration Removal (`plugins/gdocs/`, `plugins/google_sheets.py`, `backup_manager.py`, `plugins/installer_workers.py`, `plugins/manager_dialog.py`, `plugin_dialogs.py`, `export/reorder_dialog.py`, `preferences_dialog.py`, `build_installer.py`)**:
+  - Retired the Google Docs/Drive export plugin (`plugins/gdocs/`, `plugins/gdocs.rtvs-addon`), dormant Google Sheets plugin (`plugins/google_sheets.py`), OAuth 2.0 PKCE local loopback listeners, token caches, and setup guides (`GOOGLE_OAUTH_SETUP.md`, `GOOGLE_DOCS_USER_GUIDE.md`).
+  - Removed the Google Drive Cloud Backup tab and cloud upload/download helpers from `backup_manager.py`, consolidating backup management around verified local `.rtvs-backup` archives.
+  - Unregistered `gdocs` from plugin installer catalogs, manager dialogs, export tab reordering defaults, preferences reset handlers, and PyInstaller build flags while preserving all local offline document exports (`export_documents.py`: DOCX, PDF, TXT, HTML, CSV, JSON, SRT/VTT).
+- **YouTube Zero-Auth Manual Export Streamlining (`plugins/youtube/plugin.py`, `plugins/youtube/export_destination.py`, `export_media_clipper.py`, `export_story_pipeline.py`)**:
+  - Removed `plugins/youtube/api.py`, Google OAuth 2.0 account linking, and direct YouTube Data API v3 upload dependencies from the YouTube Video Publisher plugin (`v3.9.33-beta`).
+  - Streamlined the YouTube export destination around a zero-auth local upload package workflow with a direct "Open YouTube Studio" browser launcher.
+  - Added automatic audio-to-video MP4 conversion (`ffmpeg -loop 1 ... -c:v libx264 -tune stillimage -pix_fmt yuv420p`) for audio-only broadcasts (`.mp3`, `.wav`, `.m4a`, `.flac`, `.ogg`, `.aac`, `.wma`) using either a user-selected thumbnail or an auto-generated 1280x720 dark broadcast slate PNG (`_generate_broadcast_slate_thumbnail`).
+  - Enhanced the exported `{base_name}_youtube_metadata.txt` sidecar and clipboard payload to include Video Title, Description with clickable chapter timestamps (`00:00`), automatic Speaker credits, and comma-separated tags alongside the `.mp4` video, companion thumbnail image, and `.srt` closed captions.
+- **Diagnostic Test Suite Synchronization & Lazy Facade Wildcard Export Fix (`prs_shared.py`, `diagnostic_core_tests.py`, `diagnostic_selector.py`, `test_runner.py`, `diagnostic_batch_tests.py`, `diagnostic_export_tests.py`, `diagnostic_cloud_and_system_tests.py`)**:
+  - Added explicit `__all__` export list in `prs_shared.py` covering `_STORY_WIDGET_EXPORTS`, `_TIMELINE_WIDGET_EXPORTS`, and `_BACKGROUND_WORKER_EXPORTS` so modules using `from prs_shared import *` (`media_batch.py`, `RadioTVSegmenter.py`, `transcript_story.py`, etc.) bind `read_waveform_peak_cache`, `WaveformWorker`, and `VideoThumbnailWorker` via `__getattr__`, resolving `NameError: name 'read_waveform_peak_cache' is not defined` when loading media files.
+  - Replaced retired Google Docs/Sheets OAuth tests with offline document and YouTube zero-auth package verification tests across all 68 diagnostic checks, and added `--changed` / `--filter` smart test selection via `diagnostic_selector.py`.
+
 ## v3.9.32-beta
 - **Circular Import Elimination & Core Facade Decoupling (`prs_shared.py`, `story_widgets.py`, `background_workers.py`)**:
   - Replaced tight top-level UI and background worker imports in `prs_shared.py` (`FadeCurveVisualSelector`, `StoryFadesChangeCommand`, `TimelineCanvas`, `StoryAutoDetectWorker`, etc.) with Python 3.7+ module-level `__getattr__` and `globals()` caching.
