@@ -148,10 +148,14 @@ def copy_podcast_meta(target: Dict[str, Any], src: Dict[str, Any]) -> None:
     target["podcast_feed_ids"] = list(src.get("podcast_feed_ids") or [])
     target["podcast_feeds"] = list(src.get("podcast_feeds") or [])
     target["podcast_episode_type"] = str(src.get("podcast_episode_type") or "full")
-    if "podcast_season" in src:
-        target["podcast_season"] = src.get("podcast_season")
-    if "podcast_episode_number" in src:
-        target["podcast_episode_number"] = src.get("podcast_episode_number")
+    season_val = src.get("podcast_season") if src.get("podcast_season") is not None else src.get("season")
+    if season_val is not None or "podcast_season" in src or "season" in src:
+        target["podcast_season"] = season_val
+        target["season"] = season_val
+    ep_num_val = src.get("podcast_episode_number") if src.get("podcast_episode_number") is not None else src.get("episode_number")
+    if ep_num_val is not None or "podcast_episode_number" in src or "episode_number" in src:
+        target["podcast_episode_number"] = ep_num_val
+        target["episode_number"] = ep_num_val
 
 
 def fetch_castos_feeds(client: Any) -> List[Dict[str, Any]]:
@@ -432,6 +436,8 @@ def setup_castos_ui(tab_widget: Any, editor_layout: QVBoxLayout) -> None:
                 post["is_podcast"] = checked
                 if hasattr(tab_widget, "_update_post_list_item_label"):
                     tab_widget._update_post_list_item_label(tab_widget._current_post_index)
+                if hasattr(tab_widget, "_sync_post_to_project"):
+                    tab_widget._sync_post_to_project(tab_widget._current_post_index)
 
     tab_widget.wp_cb_is_podcast.toggled.connect(_on_podcast_toggled)
 
@@ -439,6 +445,8 @@ def setup_castos_ui(tab_widget: Any, editor_layout: QVBoxLayout) -> None:
         if not getattr(tab_widget, "_syncing_post_editor", False):
             if 0 <= tab_widget._current_post_index < len(tab_widget.wp_post_items):
                 sync_castos_to_post(tab_widget, tab_widget.wp_post_items[tab_widget._current_post_index])
+                if hasattr(tab_widget, "_sync_post_to_project"):
+                    tab_widget._sync_post_to_project(tab_widget._current_post_index)
 
     tab_widget.wp_podcast_feeds_list.itemChanged.connect(_on_feed_item_changed)
 
@@ -451,6 +459,8 @@ def setup_castos_ui(tab_widget: Any, editor_layout: QVBoxLayout) -> None:
                 idx = tab_widget.wp_podcast_feed_combo.currentIndex()
                 feed_data = tab_widget.wp_podcast_feed_combo.itemData(idx, Qt.ItemDataRole.UserRole + 1)
                 post["podcast_feed_id"] = feed_data.get("id") if isinstance(feed_data, dict) else None
+                if hasattr(tab_widget, "_sync_post_to_project"):
+                    tab_widget._sync_post_to_project(tab_widget._current_post_index)
 
     tab_widget.wp_podcast_feed_combo.currentIndexChanged.connect(_on_feed_changed)
 
@@ -460,20 +470,30 @@ def setup_castos_ui(tab_widget: Any, editor_layout: QVBoxLayout) -> None:
                 tab_widget.wp_post_items[tab_widget._current_post_index]["podcast_episode_type"] = (
                     tab_widget.wp_podcast_type_combo.currentData()
                 )
+                if hasattr(tab_widget, "_sync_post_to_project"):
+                    tab_widget._sync_post_to_project(tab_widget._current_post_index)
 
     tab_widget.wp_podcast_type_combo.currentIndexChanged.connect(_on_type_changed)
 
     def _on_season_edited(text: str):
         if not getattr(tab_widget, "_syncing_post_editor", False):
             if 0 <= tab_widget._current_post_index < len(tab_widget.wp_post_items):
-                tab_widget.wp_post_items[tab_widget._current_post_index]["podcast_season"] = text.strip()
+                val = text.strip()
+                tab_widget.wp_post_items[tab_widget._current_post_index]["podcast_season"] = val
+                tab_widget.wp_post_items[tab_widget._current_post_index]["season"] = val
+                if hasattr(tab_widget, "_sync_post_to_project"):
+                    tab_widget._sync_post_to_project(tab_widget._current_post_index)
 
     tab_widget.wp_podcast_season_edit.textEdited.connect(_on_season_edited)
 
     def _on_ep_num_edited(text: str):
         if not getattr(tab_widget, "_syncing_post_editor", False):
             if 0 <= tab_widget._current_post_index < len(tab_widget.wp_post_items):
-                tab_widget.wp_post_items[tab_widget._current_post_index]["podcast_episode_number"] = text.strip()
+                val = text.strip()
+                tab_widget.wp_post_items[tab_widget._current_post_index]["podcast_episode_number"] = val
+                tab_widget.wp_post_items[tab_widget._current_post_index]["episode_number"] = val
+                if hasattr(tab_widget, "_sync_post_to_project"):
+                    tab_widget._sync_post_to_project(tab_widget._current_post_index)
 
     tab_widget.wp_podcast_episode_num_edit.textEdited.connect(_on_ep_num_edited)
 
@@ -571,9 +591,13 @@ def sync_castos_to_post(tab_widget: Any, post: Dict[str, Any]) -> None:
     if hasattr(tab_widget, "wp_podcast_type_combo"):
         post["podcast_episode_type"] = tab_widget.wp_podcast_type_combo.currentData() or "full"
     if hasattr(tab_widget, "wp_podcast_season_edit"):
-        post["podcast_season"] = tab_widget.wp_podcast_season_edit.text().strip()
+        s_val = tab_widget.wp_podcast_season_edit.text().strip()
+        post["podcast_season"] = s_val
+        post["season"] = s_val
     if hasattr(tab_widget, "wp_podcast_episode_num_edit"):
-        post["podcast_episode_number"] = tab_widget.wp_podcast_episode_num_edit.text().strip()
+        ep_val = tab_widget.wp_podcast_episode_num_edit.text().strip()
+        post["podcast_episode_number"] = ep_val
+        post["episode_number"] = ep_val
 
     if getattr(tab_widget, "wp_post_items", None) and len(tab_widget.wp_post_items) == 2:
         other_post = tab_widget.wp_post_items[0] if post is tab_widget.wp_post_items[1] else tab_widget.wp_post_items[1]
@@ -657,9 +681,11 @@ def load_castos_from_post(tab_widget: Any, post: Dict[str, Any]) -> None:
         tab_widget.wp_podcast_type_combo.setCurrentIndex(max(0, t_idx))
 
     if hasattr(tab_widget, "wp_podcast_season_edit"):
-        tab_widget.wp_podcast_season_edit.setText(str(post.get("podcast_season") or ""))
+        s_val = post.get("podcast_season") if post.get("podcast_season") is not None else post.get("season")
+        tab_widget.wp_podcast_season_edit.setText(str(s_val or ""))
     if hasattr(tab_widget, "wp_podcast_episode_num_edit"):
-        tab_widget.wp_podcast_episode_num_edit.setText(str(post.get("podcast_episode_number") or ""))
+        ep_val = post.get("podcast_episode_number") if post.get("podcast_episode_number") is not None else post.get("episode_number")
+        tab_widget.wp_podcast_episode_num_edit.setText(str(ep_val or ""))
 
 
 __all__ = [

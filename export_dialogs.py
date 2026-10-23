@@ -74,13 +74,18 @@ class ExportDialogsMixin:
             return
 
         if initial_scope is None:
-            sel = getattr(self, "current_selected_story_indices", [])
-            if sel:
-                initial_scope = "selected_stories"
-            elif getattr(self, "stories", []):
-                initial_scope = "all_stories"
+            proj_meta = getattr(self, "project_metadata", None)
+            saved_scope = proj_meta.get("last_export_scope") if isinstance(proj_meta, dict) else None
+            if saved_scope in ("selected_stories", "all_stories", "full", "full_and_all_stories"):
+                initial_scope = saved_scope
             else:
-                initial_scope = "full"
+                sel = getattr(self, "current_selected_story_indices", [])
+                if sel:
+                    initial_scope = "selected_stories"
+                elif getattr(self, "stories", []):
+                    initial_scope = "all_stories"
+                else:
+                    initial_scope = "full"
 
         dialog = UnifiedExportDialog(self, initial_scope=initial_scope, initial_dest=initial_dest)
         if dialog.exec() != QDialog.DialogCode.Accepted:

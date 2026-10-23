@@ -1,5 +1,15 @@
 # Changelog
 
+## v3.9.34-beta
+- **Shared Story & Project WordPress Metadata Persistence (`story_metadata_dialog.py`, `plugins/wordpress/export_destination.py`, `plugins/wordpress/wp_post_builder.py`, `plugins/wordpress/wp_tab_widget.py`, `plugins/wordpress/castos.py`, `export/dialog.py`, `export_dialogs.py`)**:
+  - Established `story.metadata["wordpress"]` and `project_metadata["wordpress"]` as the canonical source of truth for all WordPress publishing metadata (`title`, `excerpt`, `author_ids`, `author_term_ids`, `category_ids`, `featured_image`, `featured_image_mode`, `frame_pos`, `status`, `slug`, `tags`, `is_podcast`, `podcast_feed_ids`, `season`, `episode_number`).
+  - Implemented live two-way synchronization in `WordPressExportTabWidget` and `castos.py` so all field edits, excerpt auto-generation, thumbnail captures, and Castos podcast toggles immediately update the active project state.
+  - Ensured closing or canceling `UnifiedExportDialog` preserves all typed data, author selections, category assignments, and custom notices, auto-saving them to the `.rtvs` project container so users can switch back to the main window to edit transcript text or label speakers without losing work.
+  - Added export session memory (`last_export_scope` and `last_export_dest`) so reopening the Export dialog returns directly to the user's active workflow.
+  - Added plugin-aware taxonomy visibility to `StoryMetadataDialog`: dynamically displays WordPress taxonomy lists and refresh tools only when the WordPress plugin is active, while cleanly managing offline metadata natively.
+- **Orphaned Plugin Deprecation Pruning (`plugins/manager.py`)**:
+  - Added automatic deprecation pruning in `PluginManager.sync_bundled_updates()` to remove obsolete user-directory plugin remnants (such as retired `gdocs`) on launch, preventing `No module named 'plugins.gdocs'` startup warnings.
+
 ## v3.9.33-beta
 - **Google Drive/Docs & Sheets Cloud Integration Removal (`plugins/gdocs/`, `plugins/google_sheets.py`, `backup_manager.py`, `plugins/installer_workers.py`, `plugins/manager_dialog.py`, `plugin_dialogs.py`, `export/reorder_dialog.py`, `preferences_dialog.py`, `build_installer.py`)**:
   - Retired the Google Docs/Drive export plugin (`plugins/gdocs/`, `plugins/gdocs.rtvs-addon`), dormant Google Sheets plugin (`plugins/google_sheets.py`), OAuth 2.0 PKCE local loopback listeners, token caches, and setup guides (`GOOGLE_OAUTH_SETUP.md`, `GOOGLE_DOCS_USER_GUIDE.md`).

@@ -181,11 +181,33 @@ class PluginManager:
         return self.manifests
 
     def sync_bundled_updates(self) -> None:
-        """Automatically updates installed plugins in the user directory if a newer version is bundled with an app update."""
+        """Automatically updates installed plugins in the user directory if a newer version is bundled with an app update,
+        and prunes deprecated/removed plugins from the user directory.
+        """
         bundled_dir = self.get_bundled_plugins_dir()
         user_dir = self.get_user_plugins_dir()
         if not bundled_dir.exists() or not bundled_dir.is_dir():
             return
+
+        # Prune known deprecated/removed plugins from user plugin folder
+        DEPRECATED_PLUGINS = {"gdocs", "google_docs", "gdrive"}
+        for dep_id in DEPRECATED_PLUGINS:
+            dep_path = user_dir / dep_id
+            dep_addon = user_dir / f"{dep_id}.rtvs-addon"
+            if dep_path.exists():
+                try:
+                    shutil.rmtree(dep_path, ignore_errors=True)
+                except Exception:
+                    pass
+            if dep_addon.exists():
+                try:
+                    dep_addon.unlink(missing_ok=True)
+                except Exception:
+                    pass
+            if dep_id in self.manifests:
+                del self.manifests[dep_id]
+            if dep_id in self.plugin_paths:
+                del self.plugin_paths[dep_id]
 
         for item in bundled_dir.iterdir():
             if item.name.startswith("."):

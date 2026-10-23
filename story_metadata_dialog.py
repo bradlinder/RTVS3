@@ -129,6 +129,26 @@ class StoryMetadataDialog(QDialog):
             item_row = self.target_story_index + 1
             if 0 <= item_row < self.targets_list.count():
                 self.targets_list.setCurrentRow(item_row)
+        self._apply_wp_plugin_visibility()
+
+    def _is_wordpress_plugin_active(self) -> bool:
+        """Check whether the WordPress plugin is installed and enabled."""
+        pm = getattr(self.main_window, "plugin_manager", None)
+        if pm and hasattr(pm, "is_plugin_enabled"):
+            try:
+                return bool(pm.is_plugin_enabled("wordpress"))
+            except Exception:
+                pass
+        if str(self.settings.value("plugins/wordpress/uninstalled", "false")).lower() in ("1", "true", "yes"):
+            return False
+        return str(self.settings.value("plugins/wordpress/enabled", "true")).lower() in ("1", "true", "yes")
+
+    def _apply_wp_plugin_visibility(self):
+        """Show or hide WordPress-specific taxonomy controls depending on whether the WordPress plugin is active."""
+        wp_active = self._is_wordpress_plugin_active()
+        for w in (self.refresh_tax_btn, self.authors_filter, self.authors_list, self.cats_filter, self.cats_list):
+            if w is not None:
+                w.setVisible(wp_active)
 
     def _init_ui(self):
         main_layout = QVBoxLayout(self)
@@ -1051,6 +1071,7 @@ class StoryMetadataDialog(QDialog):
             self.image_path_label.setText(Path(fn).name)
             pix = QPixmap(fn).scaled(160, 90, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
             self.thumb_preview_label.setPixmap(pix)
+            self.save_all_to_project()
 
     def _on_title_text_changed(self, text: str):
         if self._syncing_editor or not (0 <= self._current_target_index < len(self.target_items)):
@@ -1073,6 +1094,7 @@ class StoryMetadataDialog(QDialog):
         exc = generate_story_excerpt(raw_text, 55)
         self.excerpt_edit.setPlainText(exc)
         target["excerpt"] = exc
+        self.save_all_to_project()
 
     def _on_manual_author_changed(self, text: str):
         if self._syncing_editor or not (0 <= self._current_target_index < len(self.target_items)):
@@ -1289,3 +1311,10 @@ class StoryMetadataDialog(QDialog):
     def _on_save_and_close(self):
         self.save_all_to_project()
         self.accept()
+
+    def done(self, r: int):
+        try:
+            self.save_all_to_project()
+        except Exception:
+            pass
+        super().done(r)

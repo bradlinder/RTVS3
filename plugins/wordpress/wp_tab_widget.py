@@ -102,16 +102,22 @@ class WordPressExportTabWidget(QWidget):
             item = self.wp_category_list.item(i)
             item.setHidden(query != "" and query not in item.text().lower())
 
+    def _sync_to_proj(self, idx: int):
+        if hasattr(self, "_sync_post_to_project"):
+            self._sync_post_to_project(idx)
+
     def _on_title_edited(self, text: str):
         if self._syncing_post_editor or not (0 <= self._current_post_index < len(self.wp_post_items)):
             return
         self.wp_post_items[self._current_post_index]["title"] = text.strip()
         self._update_post_list_item_label(self._current_post_index)
+        self._sync_to_proj(self._current_post_index)
 
     def _on_excerpt_edited(self):
         if self._syncing_post_editor or not (0 <= self._current_post_index < len(self.wp_post_items)):
             return
         self.wp_post_items[self._current_post_index]["excerpt"] = self.wp_excerpt_edit.toPlainText().strip()
+        self._sync_to_proj(self._current_post_index)
 
     def _auto_generate_current_excerpt(self):
         if not (0 <= self._current_post_index < len(self.wp_post_items)):
@@ -121,11 +127,13 @@ class WordPressExportTabWidget(QWidget):
         excerpt = generate_wp_excerpt(raw_text, 55)
         self.wp_excerpt_edit.setPlainText(excerpt)
         post["excerpt"] = excerpt
+        self._sync_to_proj(self._current_post_index)
 
     def _autofill_all_excerpts(self):
-        for post in self.wp_post_items:
+        for idx, post in enumerate(self.wp_post_items):
             raw_text = self.main_window._get_transcript_text_slice(post.get("start"), post.get("end")) if hasattr(self.main_window, "_get_transcript_text_slice") else ""
             post["excerpt"] = generate_wp_excerpt(raw_text, 55)
+            self._sync_to_proj(idx)
         if 0 <= self._current_post_index < len(self.wp_post_items):
             self.wp_excerpt_edit.setPlainText(self.wp_post_items[self._current_post_index].get("excerpt", ""))
         QMessageBox.information(self, "Auto-fill Excerpts", f"Generated transcript excerpts for all {len(self.wp_post_items)} posts.")
@@ -138,6 +146,7 @@ class WordPressExportTabWidget(QWidget):
         post["author_ids"] = auth_ids
         post["author_term_ids"] = term_ids
         self._update_post_list_item_label(self._current_post_index)
+        self._sync_to_proj(self._current_post_index)
 
     def _on_category_item_changed(self, item):
         if self._syncing_post_editor or not (0 <= self._current_post_index < len(self.wp_post_items)):
@@ -146,6 +155,7 @@ class WordPressExportTabWidget(QWidget):
         post = self.wp_post_items[self._current_post_index]
         post["category_ids"] = cat_ids
         self._update_post_list_item_label(self._current_post_index)
+        self._sync_to_proj(self._current_post_index)
 
     def _clear_current_authors(self):
         self._set_editor_checked_authors([], [])
@@ -153,12 +163,14 @@ class WordPressExportTabWidget(QWidget):
             self.wp_post_items[self._current_post_index]["author_ids"] = []
             self.wp_post_items[self._current_post_index]["author_term_ids"] = []
             self._update_post_list_item_label(self._current_post_index)
+            self._sync_to_proj(self._current_post_index)
 
     def _clear_current_categories(self):
         self._set_editor_checked_categories([])
         if 0 <= self._current_post_index < len(self.wp_post_items):
             self.wp_post_items[self._current_post_index]["category_ids"] = []
             self._update_post_list_item_label(self._current_post_index)
+            self._sync_to_proj(self._current_post_index)
 
     def _get_selected_story_indices(self) -> List[int]:
         indices = list(getattr(self.main_window, "current_selected_story_indices", []) or [])
@@ -392,6 +404,8 @@ class WordPressExportTabWidget(QWidget):
             wp_meta = proj_meta.setdefault("wordpress", {})
             wp_meta["title"] = post.get("title", "")
             wp_meta["excerpt"] = post.get("excerpt", "")
+            proj_meta["title"] = post.get("title", "")
+            proj_meta["excerpt"] = post.get("excerpt", "")
             wp_meta["author_ids"] = list(post.get("author_ids") or [])
             wp_meta["author_term_ids"] = list(post.get("author_term_ids") or [])
             wp_meta["category_ids"] = list(post.get("category_ids") or [])
@@ -399,6 +413,7 @@ class WordPressExportTabWidget(QWidget):
             wp_meta["featured_image_mode"] = post.get("featured_image_mode", "none")
             wp_meta["frame_pos"] = post.get("frame_pos")
             wp_meta["status"] = post.get("status", "draft")
+            wp_meta["slug"] = post.get("slug", "")
             wp_meta["tags"] = list(post.get("tags") or [])
             from plugins.wordpress.castos import copy_podcast_meta
             copy_podcast_meta(wp_meta, post)
@@ -449,8 +464,11 @@ class WordPressExportTabWidget(QWidget):
                 wp_meta["category_ids"] = list(post.get("category_ids") or [])
                 wp_meta["featured_image"] = post.get("featured_image")
                 wp_meta["featured_image_mode"] = post.get("featured_image_mode", "none")
+                target_story.metadata["featured_image"] = post.get("featured_image")
+                target_story.metadata["featured_image_mode"] = post.get("featured_image_mode", "none")
                 wp_meta["frame_pos"] = post.get("frame_pos")
                 wp_meta["status"] = post.get("status", "draft")
+                wp_meta["slug"] = post.get("slug", "")
                 wp_meta["tags"] = list(post.get("tags") or [])
                 from plugins.wordpress.castos import copy_podcast_meta
                 copy_podcast_meta(wp_meta, post)
@@ -476,9 +494,18 @@ class WordPressExportTabWidget(QWidget):
             self.main_window.set_unsaved_changes(True)
 
     def save_all_posts_to_project(self):
-        """Persist all post metadata back into stories and project_metadata."""
+        """Persist all post metadata and export options back into stories and project_metadata."""
         for idx in range(len(self.wp_post_items)):
             self._sync_post_to_project(idx)
+        proj_meta = getattr(self.main_window, "project_metadata", None)
+        if not isinstance(proj_meta, dict):
+            proj_meta = {}
+            self.main_window.project_metadata = proj_meta
+        wp_meta = proj_meta.setdefault("wordpress", {})
+        if hasattr(self, "wp_custom_text_edit") and self.wp_custom_text_edit:
+            wp_meta["custom_notice"] = self.wp_custom_text_edit.toPlainText().strip()
+        if hasattr(self, "wp_rad_pos_top") and self.wp_rad_pos_top:
+            wp_meta["notice_placement"] = "top" if self.wp_rad_pos_top.isChecked() else "bottom"
         if hasattr(self.main_window, "save_project"):
             try:
                 self.main_window.save_project()
@@ -694,6 +721,8 @@ class WordPressExportTabWidget(QWidget):
             self.wp_thumb_preview_label.setText("No Thumbnail")
             post["featured_image"] = None
             post["featured_image_mode"] = "none"
+            if hasattr(self, "_sync_post_to_project"):
+                self._sync_post_to_project(self._current_post_index)
         elif self.wp_rad_thumb_grab.isChecked():
             self.wp_browse_widget.setVisible(False)
             self.wp_scrub_widget.setVisible(True)
@@ -714,6 +743,8 @@ class WordPressExportTabWidget(QWidget):
                 self.wp_thumb_path_label.setText("Click Browse to select image file")
                 self.wp_thumb_preview_label.clear()
                 self.wp_thumb_preview_label.setText("No Image\nSelected")
+            if hasattr(self, "_sync_post_to_project"):
+                self._sync_post_to_project(self._current_post_index)
 
     def _capture_wp_frame(self, pos=None):
         if not (0 <= self._current_post_index < len(self.wp_post_items)):
@@ -738,32 +769,16 @@ class WordPressExportTabWidget(QWidget):
         post["frame_pos"] = float(pos)
         out_dir = Path(tempfile.gettempdir())
         out_path = out_dir / f"rtvs_wp_frame_{self._current_post_index}_{os.getpid()}.jpg"
-        ff = ffmpeg_path() or "ffmpeg"
-        cmd = [
-            ff, "-hide_banner", "-loglevel", "error", "-y",
-            "-ss", f"{max(0.0, float(pos)):.3f}",
-            "-i", str(media_file),
-            "-frames:v", "1",
-            "-q:v", "2",
-            str(out_path),
-        ]
-        flags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
-        try:
-            res = subprocess.run(cmd, stdin=subprocess.DEVNULL, capture_output=True, timeout=5, creationflags=flags)
-            if res.returncode == 0 and out_path.exists() and out_path.stat().st_size > 0:
-                post["featured_image"] = str(out_path)
-                post["featured_image_mode"] = "grab"
-                self._temp_preview_files.add(str(out_path))
-                self.wp_thumb_path_label.setText(f"Video frame captured at {format_time(pos, include_millis=True)}")
-                pix = QPixmap(str(out_path)).scaled(160, 90, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
-                self.wp_thumb_preview_label.setPixmap(pix)
-                return str(out_path)
-        except subprocess.TimeoutExpired:
-            print(f"[WORDPRESS EXPORT] Frame capture timed out after 5 seconds at {pos}s")
-            self.wp_thumb_preview_label.setText("Frame capture\ntimed out")
-            return None
-        except Exception as exc:
-            print(f"[WORDPRESS EXPORT] Frame capture failed: {exc}")
+        if capture_video_frame(str(media_file), float(pos), str(out_path), timeout=5.0):
+            post["featured_image"] = str(out_path)
+            post["featured_image_mode"] = "grab"
+            self._temp_preview_files.add(str(out_path))
+            self.wp_thumb_path_label.setText(f"Video frame captured at {format_time(pos, include_millis=True)}")
+            pix = QPixmap(str(out_path)).scaled(160, 90, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
+            self.wp_thumb_preview_label.setPixmap(pix)
+            if hasattr(self, "_sync_post_to_project"):
+                self._sync_post_to_project(self._current_post_index)
+            return str(out_path)
         self.wp_thumb_preview_label.setText("Frame capture\nfailed")
         return None
 
@@ -784,6 +799,8 @@ class WordPressExportTabWidget(QWidget):
             self.wp_thumb_path_label.setText(Path(fn).name)
             pix = QPixmap(fn).scaled(160, 90, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
             self.wp_thumb_preview_label.setPixmap(pix)
+            if hasattr(self, "_sync_post_to_project"):
+                self._sync_post_to_project(self._current_post_index)
 
     def _cleanup_temp_files(self) -> None:
         """Purge temporary frame grabs and preview images."""
@@ -792,16 +809,24 @@ class WordPressExportTabWidget(QWidget):
                 try:
                     if temp_f and Path(temp_f).exists():
                         Path(temp_f).unlink(missing_ok=True)
-                except Exception as exc:
-                    logger.debug(f"Failed to remove temp file {temp_f}: {exc}")
+                except Exception:
+                    pass
             self._temp_preview_files.clear()
 
     def closeEvent(self, event: Any) -> None:
-        """Clean up temp files on widget/dialog closure."""
+        """Persist current post state and clean up temp files on widget/dialog closure."""
+        try:
+            if hasattr(self, "save_all_posts_to_project"):
+                self.save_all_posts_to_project()
+        except Exception:
+            pass
         self._cleanup_temp_files()
         super().closeEvent(event)
 
     def rebuild_post_items(self, scope: Optional[str] = None):
+        if getattr(self, "wp_post_items", None) and hasattr(self, "_sync_post_to_project"):
+            for idx in range(len(self.wp_post_items)):
+                self._sync_post_to_project(idx)
         if getattr(self, "metadata_editor_mode", False):
             scope = "full_and_all_stories"
         elif scope is None:

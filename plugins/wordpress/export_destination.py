@@ -560,6 +560,13 @@ class WordPressPostMetadataDialog(QDialog):
         self.tab_widget.save_all_posts_to_project()
         self.accept()
 
+    def done(self, r: int):
+        try:
+            self.tab_widget.save_all_posts_to_project()
+        except Exception:
+            pass
+        super().done(r)
+
 
 from plugins.wordpress.castos import (
     SS_PODCAST_AUDIO_FILE,

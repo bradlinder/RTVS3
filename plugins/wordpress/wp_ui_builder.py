@@ -505,8 +505,13 @@ def setup_wp_tab_ui(self: Any):
     wp_layout.addWidget(self.wp_lang_section)
 
     # Custom Notice Section
-    self.wp_custom_section = CollapsibleSection("Custom Header / Footer Notice (Optional)", self, is_expanded=False)
-    self.wp_custom_text_edit = ResizableTextEdit("")
+    proj_meta = getattr(getattr(self, "main_window", None), "project_metadata", {}) or {}
+    wp_proj_meta = proj_meta.get("wordpress", {}) if isinstance(proj_meta, dict) and isinstance(proj_meta.get("wordpress"), dict) else {}
+    saved_notice_text = str(wp_proj_meta.get("custom_notice") or self.settings.value("wp_custom_notice", "") or "")
+    saved_notice_pos = str(wp_proj_meta.get("notice_placement") or self.settings.value("wp_notice_placement", "top") or "top").lower()
+
+    self.wp_custom_section = CollapsibleSection("Custom Header / Footer Notice (Optional)", self, is_expanded=bool(saved_notice_text.strip()))
+    self.wp_custom_text_edit = ResizableTextEdit(saved_notice_text)
     self.wp_custom_text_edit.setPlaceholderText(
         "e.g. Note: The following transcript was machine-generated and may contain some spelling errors or other inaccuracies."
     )
@@ -519,12 +524,29 @@ def setup_wp_tab_ui(self: Any):
     self.wp_rad_pos_bottom = QRadioButton("Place at bottom of post")
     self.wp_pos_button_group.addButton(self.wp_rad_pos_top)
     self.wp_pos_button_group.addButton(self.wp_rad_pos_bottom)
-    self.wp_rad_pos_top.setChecked(True)
+    if saved_notice_pos == "bottom":
+        self.wp_rad_pos_bottom.setChecked(True)
+    else:
+        self.wp_rad_pos_top.setChecked(True)
     wp_pos_row.addWidget(self.wp_rad_pos_top)
     wp_pos_row.addWidget(self.wp_rad_pos_bottom)
     wp_pos_row.addStretch()
     self.wp_custom_section.add_layout(wp_pos_row)
     wp_layout.addWidget(self.wp_custom_section)
+
+    def _sync_custom_notice():
+        txt = self.wp_custom_text_edit.toPlainText().strip()
+        pos = "top" if self.wp_rad_pos_top.isChecked() else "bottom"
+        self.settings.setValue("wp_custom_notice", txt)
+        self.settings.setValue("wp_notice_placement", pos)
+        pm = getattr(getattr(self, "main_window", None), "project_metadata", None)
+        if isinstance(pm, dict):
+            wpm = pm.setdefault("wordpress", {})
+            wpm["custom_notice"] = txt
+            wpm["notice_placement"] = pos
+
+    self.wp_custom_text_edit.textChanged.connect(_sync_custom_notice)
+    self.wp_rad_pos_top.toggled.connect(lambda _: _sync_custom_notice())
 
     # Cross-Linking Section (Full Episode & Stories)
     self.wp_crosslink_section = CollapsibleSection("Episode & Story Cross-Linking (Full Episode & All Stories)", self, is_expanded=True)

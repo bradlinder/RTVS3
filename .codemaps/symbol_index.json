@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-10-23 13:26:44",
+  "generated_at": "2026-10-23 13:49:56",
   "total_files": 154,
   "files": {
     "RadioTVSegmenter.py": {
       "path": "RadioTVSegmenter.py",
       "lines": 593,
-      "summary": "Radio & TV Segmenter \u2014 v3.9.33-beta",
+      "summary": "Radio & TV Segmenter \u2014 v3.9.34-beta",
       "exports": null,
       "classes": [
         {
@@ -2620,7 +2620,7 @@
     },
     "export/dialog.py": {
       "path": "export/dialog.py",
-      "lines": 1409,
+      "lines": 1429,
       "summary": "Unified Export Dialog for Radio & TV Story Segmenter.",
       "exports": null,
       "classes": [
@@ -2630,168 +2630,175 @@
             "QDialog"
           ],
           "start_line": 61,
-          "end_line": 1409,
+          "end_line": 1429,
           "doc": "Unified Export Center supporting Local Files and dynamic plugin destinations.",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, main_window, initial_scope, initial_dest, parent)",
               "start_line": 64,
-              "end_line": 287,
+              "end_line": 290,
               "doc": ""
             },
             {
               "name": "showEvent",
               "sig": "showEvent(self, event)",
-              "start_line": 289,
-              "end_line": 291,
+              "start_line": 292,
+              "end_line": 294,
               "doc": ""
             },
             {
               "name": "_build_destinations_layout",
               "sig": "_build_destinations_layout(self)",
-              "start_line": 293,
-              "end_line": 438,
+              "start_line": 296,
+              "end_line": 441,
               "doc": "Construct destination radio buttons in customized user order."
             },
             {
               "name": "_on_reorder_destinations",
               "sig": "_on_reorder_destinations(self)",
-              "start_line": 440,
-              "end_line": 459,
+              "start_line": 443,
+              "end_line": 462,
               "doc": "Open reorder dialog and rebuild layout on change."
             },
             {
               "name": "_create_local_page",
               "sig": "_create_local_page(self)",
-              "start_line": 461,
-              "end_line": 813,
+              "start_line": 464,
+              "end_line": 816,
               "doc": ""
             },
             {
               "name": "_on_location_radio_toggled",
               "sig": "_on_location_radio_toggled(self)",
-              "start_line": 815,
-              "end_line": 818,
+              "start_line": 818,
+              "end_line": 821,
               "doc": ""
             },
             {
               "name": "_browse_custom_export_location",
               "sig": "_browse_custom_export_location(self)",
-              "start_line": 820,
-              "end_line": 825,
+              "start_line": 823,
+              "end_line": 828,
               "doc": ""
             },
             {
               "name": "_create_timeline_page",
               "sig": "_create_timeline_page(self)",
-              "start_line": 827,
-              "end_line": 989,
+              "start_line": 830,
+              "end_line": 992,
               "doc": ""
             },
             {
               "name": "_on_timeline_location_radio_toggled",
               "sig": "_on_timeline_location_radio_toggled(self)",
-              "start_line": 991,
-              "end_line": 994,
+              "start_line": 994,
+              "end_line": 997,
               "doc": ""
             },
             {
               "name": "_browse_custom_timeline_location",
               "sig": "_browse_custom_timeline_location(self)",
-              "start_line": 996,
-              "end_line": 1001,
+              "start_line": 999,
+              "end_line": 1004,
               "doc": ""
             },
             {
               "name": "_toggle_all_sections",
               "sig": "_toggle_all_sections(self)",
-              "start_line": 1003,
-              "end_line": 1017,
+              "start_line": 1006,
+              "end_line": 1020,
               "doc": ""
             },
             {
               "name": "_update_export_button_label",
               "sig": "_update_export_button_label(self)",
-              "start_line": 1019,
-              "end_line": 1032,
+              "start_line": 1022,
+              "end_line": 1035,
               "doc": ""
             },
             {
               "name": "_on_dest_changed",
               "sig": "_on_dest_changed(self)",
-              "start_line": 1034,
-              "end_line": 1039,
+              "start_line": 1037,
+              "end_line": 1045,
               "doc": ""
             },
             {
               "name": "_on_scope_changed",
               "sig": "_on_scope_changed(self)",
-              "start_line": 1041,
-              "end_line": 1049,
+              "start_line": 1047,
+              "end_line": 1058,
               "doc": ""
             },
             {
               "name": "_open_id3_editor",
               "sig": "_open_id3_editor(self)",
-              "start_line": 1051,
-              "end_line": 1061,
+              "start_line": 1060,
+              "end_line": 1070,
               "doc": "Open the ID3 Tag Editor for MP3 files."
             },
             {
               "name": "_copy_youtube_chapters",
               "sig": "_copy_youtube_chapters(self)",
-              "start_line": 1063,
-              "end_line": 1079,
+              "start_line": 1072,
+              "end_line": 1088,
               "doc": ""
             },
             {
               "name": "_load_saved_options",
               "sig": "_load_saved_options(self)",
-              "start_line": 1081,
-              "end_line": 1159,
+              "start_line": 1090,
+              "end_line": 1168,
               "doc": ""
             },
             {
               "name": "save_options_to_settings",
               "sig": "save_options_to_settings(self, as_default)",
-              "start_line": 1161,
-              "end_line": 1211,
+              "start_line": 1170,
+              "end_line": 1220,
               "doc": ""
             },
             {
               "name": "_handle_accept",
               "sig": "_handle_accept(self)",
-              "start_line": 1213,
-              "end_line": 1276,
+              "start_line": 1222,
+              "end_line": 1285,
               "doc": ""
             },
             {
               "name": "get_result",
               "sig": "get_result(self)",
-              "start_line": 1278,
-              "end_line": 1378,
+              "start_line": 1287,
+              "end_line": 1387,
               "doc": ""
+            },
+            {
+              "name": "_persist_plugin_draft_states",
+              "sig": "_persist_plugin_draft_states(self)",
+              "start_line": 1389,
+              "end_line": 1397,
+              "doc": "Persist any unsaved plugin destination edits (such as WordPress post drafts) back to the project."
             },
             {
               "name": "done",
               "sig": "done(self, r)",
-              "start_line": 1380,
-              "end_line": 1388,
+              "start_line": 1399,
+              "end_line": 1408,
               "doc": ""
             },
             {
               "name": "_toggle_maximize",
               "sig": "_toggle_maximize(self)",
-              "start_line": 1390,
-              "end_line": 1398,
+              "start_line": 1410,
+              "end_line": 1418,
               "doc": ""
             },
             {
               "name": "changeEvent",
               "sig": "changeEvent(self, event)",
-              "start_line": 1400,
-              "end_line": 1409,
+              "start_line": 1420,
+              "end_line": 1429,
               "doc": ""
             }
           ]
@@ -3231,7 +3238,7 @@
     },
     "export_dialogs.py": {
       "path": "export_dialogs.py",
-      "lines": 372,
+      "lines": 377,
       "summary": "Radio & TV Story Segmenter \u2014 Export Dialogs & Scope Selection Interface.",
       "exports": null,
       "classes": [
@@ -3239,7 +3246,7 @@
           "name": "ExportDialogsMixin",
           "bases": [],
           "start_line": 53,
-          "end_line": 372,
+          "end_line": 377,
           "doc": "Provides dialog launchers, format selectors, and destination routing for MainWindow.",
           "methods": [
             {
@@ -3267,14 +3274,14 @@
               "name": "open_unified_export_dialog",
               "sig": "open_unified_export_dialog(self, initial_scope, initial_dest)",
               "start_line": 68,
-              "end_line": 219,
+              "end_line": 224,
               "doc": "Unified Export Dialog entry point for local file exports, WordPress publishing,"
             },
             {
               "name": "_choose_export_formats",
               "sig": "_choose_export_formats(self, title, allow_media)",
-              "start_line": 221,
-              "end_line": 372,
+              "start_line": 226,
+              "end_line": 377,
               "doc": "Modal dialog to choose formats and transcript options for classic export flows."
             }
           ]
@@ -5530,7 +5537,7 @@
     },
     "plugins/manager.py": {
       "path": "plugins/manager.py",
-      "lines": 635,
+      "lines": 657,
       "summary": "Radio & TV Segmenter \u2014 Plugin Manager and Discovery Engine.",
       "exports": [
         "PluginManager",
@@ -5547,7 +5554,7 @@
           "name": "PluginManager",
           "bases": [],
           "start_line": 68,
-          "end_line": 616,
+          "end_line": 638,
           "doc": "Manages discovery, lifecycle, settings, and GUI injection of plugins.",
           "methods": [
             {
@@ -5582,105 +5589,105 @@
               "name": "sync_bundled_updates",
               "sig": "sync_bundled_updates(self)",
               "start_line": 183,
-              "end_line": 246,
-              "doc": "Automatically updates installed plugins in the user directory if a newer version is bundled with an app update."
+              "end_line": 268,
+              "doc": "Automatically updates installed plugins in the user directory if a newer version is bundled with an app update,"
             },
             {
               "name": "ensure_packaged_addons",
               "sig": "ensure_packaged_addons(self)",
-              "start_line": 248,
-              "end_line": 278,
+              "start_line": 270,
+              "end_line": 300,
               "doc": "Ensures that all bundled directory-based plugins have up-to-date .rtvs-addon files created."
             },
             {
               "name": "get_bundled_addons",
               "sig": "get_bundled_addons(cls)",
-              "start_line": 281,
-              "end_line": 297,
+              "start_line": 303,
+              "end_line": 319,
               "doc": "Returns a map of plugin_id -> Path of bundled .rtvs-addon packages."
             },
             {
               "name": "_is_uninstalled",
               "sig": "_is_uninstalled(self, plugin_id)",
-              "start_line": 299,
-              "end_line": 303,
-              "doc": ""
-            },
-            {
-              "name": "is_plugin_installed",
-              "sig": "is_plugin_installed(self, plugin_id)",
-              "start_line": 305,
-              "end_line": 309,
-              "doc": "Checks whether the plugin is installed in the system."
-            },
-            {
-              "name": "is_plugin_enabled",
-              "sig": "is_plugin_enabled(self, plugin_id)",
-              "start_line": 311,
-              "end_line": 319,
-              "doc": ""
-            },
-            {
-              "name": "plugin_runtime",
-              "sig": "plugin_runtime(self, plugin_id)",
               "start_line": 321,
               "end_line": 325,
               "doc": ""
             },
             {
+              "name": "is_plugin_installed",
+              "sig": "is_plugin_installed(self, plugin_id)",
+              "start_line": 327,
+              "end_line": 331,
+              "doc": "Checks whether the plugin is installed in the system."
+            },
+            {
+              "name": "is_plugin_enabled",
+              "sig": "is_plugin_enabled(self, plugin_id)",
+              "start_line": 333,
+              "end_line": 341,
+              "doc": ""
+            },
+            {
+              "name": "plugin_runtime",
+              "sig": "plugin_runtime(self, plugin_id)",
+              "start_line": 343,
+              "end_line": 347,
+              "doc": ""
+            },
+            {
               "name": "set_plugin_enabled",
               "sig": "set_plugin_enabled(self, plugin_id, enabled)",
-              "start_line": 327,
-              "end_line": 339,
+              "start_line": 349,
+              "end_line": 361,
               "doc": ""
             },
             {
               "name": "load_all_plugins",
               "sig": "load_all_plugins(self)",
-              "start_line": 341,
-              "end_line": 346,
+              "start_line": 363,
+              "end_line": 368,
               "doc": "Discovers and instantiates all enabled plugins."
             },
             {
               "name": "load_plugin",
               "sig": "load_plugin(self, plugin_id)",
-              "start_line": 348,
-              "end_line": 400,
+              "start_line": 370,
+              "end_line": 422,
               "doc": ""
             },
             {
               "name": "unload_plugin",
               "sig": "unload_plugin(self, plugin_id)",
-              "start_line": 402,
-              "end_line": 409,
+              "start_line": 424,
+              "end_line": 431,
               "doc": ""
             },
             {
               "name": "get_export_destinations",
               "sig": "get_export_destinations(self)",
-              "start_line": 411,
-              "end_line": 421,
+              "start_line": 433,
+              "end_line": 443,
               "doc": "Returns all ExportDestination objects contributed by currently enabled plugins."
             },
             {
               "name": "uninstall_plugin",
               "sig": "uninstall_plugin(self, plugin_id)",
-              "start_line": 424,
-              "end_line": 525,
+              "start_line": 446,
+              "end_line": 547,
               "doc": "Uninstalls and removes a plugin completely from the system."
             },
             {
               "name": "install_addon",
               "sig": "install_addon(self, package_path, enable, expected_sha256, load_ui)",
-              "start_line": 527,
-              "end_line": 592,
+              "start_line": 549,
+              "end_line": 614,
               "doc": "Installs a .rtvs-addon or .zip package into the user plugins directory."
             },
             {
               "name": "package_addon",
               "sig": "package_addon(cls, plugin_folder, output_zip)",
-              "start_line": 595,
-              "end_line": 616,
+              "start_line": 617,
+              "end_line": 638,
               "doc": "Zips a plugin directory into an .rtvs-addon file."
             }
           ]
@@ -6146,7 +6153,7 @@
     },
     "plugins/wordpress/castos.py": {
       "path": "plugins/wordpress/castos.py",
-      "lines": 696,
+      "lines": 722,
       "summary": "Seriously Simple Podcasting (Castos) integration for WordPress export.",
       "exports": [
         "SS_PODCAST_AUDIO_FILE",
@@ -6200,49 +6207,49 @@
           "name": "copy_podcast_meta",
           "sig": "copy_podcast_meta(target, src)",
           "start_line": 143,
-          "end_line": 154,
+          "end_line": 158,
           "doc": "Copy Seriously Simple Podcasting metadata fields from src to target dictionary."
         },
         {
           "name": "fetch_castos_feeds",
           "sig": "fetch_castos_feeds(client)",
-          "start_line": 157,
-          "end_line": 303,
+          "start_line": 161,
+          "end_line": 307,
           "doc": "Query WordPress REST API for Seriously Simple Podcasting series/feeds."
         },
         {
           "name": "sanitize_castos_feeds",
           "sig": "sanitize_castos_feeds(feeds)",
-          "start_line": 306,
-          "end_line": 320,
+          "start_line": 310,
+          "end_line": 324,
           "doc": "Filter out non-podcast/author items and ensure valid feed structures."
         },
         {
           "name": "setup_castos_ui",
           "sig": "setup_castos_ui(tab_widget, editor_layout)",
-          "start_line": 323,
-          "end_line": 483,
+          "start_line": 327,
+          "end_line": 503,
           "doc": "Build and insert the Castos Seriously Simple Podcasting section into the post editor layout."
         },
         {
           "name": "populate_castos_feeds_combo",
           "sig": "populate_castos_feeds_combo(tab_widget, feeds)",
-          "start_line": 486,
-          "end_line": 523,
+          "start_line": 506,
+          "end_line": 543,
           "doc": "Populate the podcast feed list and combo with discovered series/feeds."
         },
         {
           "name": "sync_castos_to_post",
           "sig": "sync_castos_to_post(tab_widget, post)",
-          "start_line": 526,
-          "end_line": 585,
+          "start_line": 546,
+          "end_line": 609,
           "doc": "Extract Castos UI state and write into post dictionary."
         },
         {
           "name": "load_castos_from_post",
           "sig": "load_castos_from_post(tab_widget, post)",
-          "start_line": 588,
-          "end_line": 662,
+          "start_line": 612,
+          "end_line": 688,
           "doc": "Set Castos UI controls from post dictionary."
         }
       ]
@@ -6528,7 +6535,7 @@
     },
     "plugins/wordpress/export_destination.py": {
       "path": "plugins/wordpress/export_destination.py",
-      "lines": 599,
+      "lines": 606,
       "summary": "WordPress Export Destination for UnifiedExportDialog.",
       "exports": [
         "WordPressExportDestination",
@@ -6646,7 +6653,7 @@
             "QDialog"
           ],
           "start_line": 513,
-          "end_line": 561,
+          "end_line": 568,
           "doc": "Full-featured WordPress post & story metadata editor dialog.",
           "methods": [
             {
@@ -6661,6 +6668,13 @@
               "sig": "_on_save_and_close(self)",
               "start_line": 559,
               "end_line": 561,
+              "doc": ""
+            },
+            {
+              "name": "done",
+              "sig": "done(self, r)",
+              "start_line": 563,
+              "end_line": 568,
               "doc": ""
             }
           ]
@@ -7323,7 +7337,7 @@
     },
     "plugins/wordpress/wp_post_builder.py": {
       "path": "plugins/wordpress/wp_post_builder.py",
-      "lines": 266,
+      "lines": 287,
       "summary": "Post item builder, transcript slicing, and video frame extraction for WordPress export.",
       "exports": null,
       "classes": [],
@@ -7346,14 +7360,14 @@
           "name": "build_wp_post_items",
           "sig": "build_wp_post_items(main_window, scope, primary_lang, existing_items)",
           "start_line": 70,
-          "end_line": 266,
+          "end_line": 287,
           "doc": "Build the list of WordPress post definitions according to the export scope."
         }
       ]
     },
     "plugins/wordpress/wp_tab_widget.py": {
       "path": "plugins/wordpress/wp_tab_widget.py",
-      "lines": 969,
+      "lines": 994,
       "summary": "WordPress export tab configuration widget and preview controller.",
       "exports": null,
       "classes": [
@@ -7363,7 +7377,7 @@
             "QWidget"
           ],
           "start_line": 37,
-          "end_line": 968,
+          "end_line": 993,
           "doc": "Configuration and preview panel for WordPress Draft Posts.",
           "methods": [
             {
@@ -7416,290 +7430,297 @@
               "doc": ""
             },
             {
+              "name": "_sync_to_proj",
+              "sig": "_sync_to_proj(self, idx)",
+              "start_line": 105,
+              "end_line": 107,
+              "doc": ""
+            },
+            {
               "name": "_on_title_edited",
               "sig": "_on_title_edited(self, text)",
-              "start_line": 105,
-              "end_line": 109,
+              "start_line": 109,
+              "end_line": 114,
               "doc": ""
             },
             {
               "name": "_on_excerpt_edited",
               "sig": "_on_excerpt_edited(self)",
-              "start_line": 111,
-              "end_line": 114,
+              "start_line": 116,
+              "end_line": 120,
               "doc": ""
             },
             {
               "name": "_auto_generate_current_excerpt",
               "sig": "_auto_generate_current_excerpt(self)",
-              "start_line": 116,
-              "end_line": 123,
+              "start_line": 122,
+              "end_line": 130,
               "doc": ""
             },
             {
               "name": "_autofill_all_excerpts",
               "sig": "_autofill_all_excerpts(self)",
-              "start_line": 125,
-              "end_line": 131,
+              "start_line": 132,
+              "end_line": 139,
               "doc": ""
             },
             {
               "name": "_on_author_item_changed",
               "sig": "_on_author_item_changed(self, item)",
-              "start_line": 133,
-              "end_line": 140,
+              "start_line": 141,
+              "end_line": 149,
               "doc": ""
             },
             {
               "name": "_on_category_item_changed",
               "sig": "_on_category_item_changed(self, item)",
-              "start_line": 142,
-              "end_line": 148,
+              "start_line": 151,
+              "end_line": 158,
               "doc": ""
             },
             {
               "name": "_clear_current_authors",
               "sig": "_clear_current_authors(self)",
-              "start_line": 150,
-              "end_line": 155,
+              "start_line": 160,
+              "end_line": 166,
               "doc": ""
             },
             {
               "name": "_clear_current_categories",
               "sig": "_clear_current_categories(self)",
-              "start_line": 157,
-              "end_line": 161,
+              "start_line": 168,
+              "end_line": 173,
               "doc": ""
             },
             {
               "name": "_get_selected_story_indices",
               "sig": "_get_selected_story_indices(self)",
-              "start_line": 163,
-              "end_line": 167,
+              "start_line": 175,
+              "end_line": 179,
               "doc": ""
             },
             {
               "name": "_apply_authors_to_selected_stories",
               "sig": "_apply_authors_to_selected_stories(self)",
-              "start_line": 169,
-              "end_line": 202,
+              "start_line": 181,
+              "end_line": 214,
               "doc": ""
             },
             {
               "name": "_apply_categories_to_selected_stories",
               "sig": "_apply_categories_to_selected_stories(self)",
-              "start_line": 204,
-              "end_line": 234,
+              "start_line": 216,
+              "end_line": 246,
               "doc": ""
             },
             {
               "name": "_apply_thumbnails_to_selected_stories",
               "sig": "_apply_thumbnails_to_selected_stories(self)",
-              "start_line": 236,
-              "end_line": 269,
+              "start_line": 248,
+              "end_line": 281,
               "doc": ""
             },
             {
               "name": "_apply_authors_to_all_posts",
               "sig": "_apply_authors_to_all_posts(self)",
-              "start_line": 271,
-              "end_line": 290,
+              "start_line": 283,
+              "end_line": 302,
               "doc": ""
             },
             {
               "name": "_apply_categories_to_all_posts",
               "sig": "_apply_categories_to_all_posts(self)",
-              "start_line": 292,
-              "end_line": 308,
+              "start_line": 304,
+              "end_line": 320,
               "doc": ""
             },
             {
               "name": "_apply_thumbnails_to_all_posts",
               "sig": "_apply_thumbnails_to_all_posts(self)",
-              "start_line": 310,
-              "end_line": 330,
+              "start_line": 322,
+              "end_line": 342,
               "doc": ""
             },
             {
               "name": "_apply_podcast_to_selected_stories",
               "sig": "_apply_podcast_to_selected_stories(self)",
-              "start_line": 332,
-              "end_line": 362,
+              "start_line": 344,
+              "end_line": 374,
               "doc": ""
             },
             {
               "name": "_apply_podcast_to_all_posts",
               "sig": "_apply_podcast_to_all_posts(self)",
-              "start_line": 364,
-              "end_line": 379,
+              "start_line": 376,
+              "end_line": 391,
               "doc": ""
             },
             {
               "name": "_sync_post_to_project",
               "sig": "_sync_post_to_project(self, idx)",
-              "start_line": 381,
-              "end_line": 476,
+              "start_line": 393,
+              "end_line": 494,
               "doc": ""
             },
             {
               "name": "save_all_posts_to_project",
               "sig": "save_all_posts_to_project(self)",
-              "start_line": 478,
-              "end_line": 486,
-              "doc": "Persist all post metadata back into stories and project_metadata."
+              "start_line": 496,
+              "end_line": 513,
+              "doc": "Persist all post metadata and export options back into stories and project_metadata."
             },
             {
               "name": "_update_post_list_item_label",
               "sig": "_update_post_list_item_label(self, idx)",
-              "start_line": 488,
-              "end_line": 503,
+              "start_line": 515,
+              "end_line": 530,
               "doc": ""
             },
             {
               "name": "_on_wp_post_selection_changed",
               "sig": "_on_wp_post_selection_changed(self, row)",
-              "start_line": 505,
-              "end_line": 508,
+              "start_line": 532,
+              "end_line": 535,
               "doc": ""
             },
             {
               "name": "_get_editor_checked_authors",
               "sig": "_get_editor_checked_authors(self)",
-              "start_line": 510,
-              "end_line": 526,
+              "start_line": 537,
+              "end_line": 553,
               "doc": ""
             },
             {
               "name": "_set_editor_checked_authors",
               "sig": "_set_editor_checked_authors(self, author_ids, author_term_ids)",
-              "start_line": 528,
-              "end_line": 546,
+              "start_line": 555,
+              "end_line": 573,
               "doc": ""
             },
             {
               "name": "_get_editor_checked_categories",
               "sig": "_get_editor_checked_categories(self)",
-              "start_line": 548,
-              "end_line": 556,
+              "start_line": 575,
+              "end_line": 583,
               "doc": ""
             },
             {
               "name": "_set_editor_checked_categories",
               "sig": "_set_editor_checked_categories(self, cat_ids)",
-              "start_line": 558,
-              "end_line": 566,
+              "start_line": 585,
+              "end_line": 593,
               "doc": ""
             },
             {
               "name": "_get_wp_post_bounds",
               "sig": "_get_wp_post_bounds(self, post_index)",
-              "start_line": 568,
-              "end_line": 577,
+              "start_line": 595,
+              "end_line": 604,
               "doc": ""
             },
             {
               "name": "_sync_wp_slider_to_pos",
               "sig": "_sync_wp_slider_to_pos(self, pos)",
-              "start_line": 579,
-              "end_line": 589,
+              "start_line": 606,
+              "end_line": 616,
               "doc": ""
             },
             {
               "name": "_on_wp_slider_value_changed",
               "sig": "_on_wp_slider_value_changed(self, val)",
-              "start_line": 591,
-              "end_line": 599,
+              "start_line": 618,
+              "end_line": 626,
               "doc": ""
             },
             {
               "name": "_on_wp_scrub_timer_timeout",
               "sig": "_on_wp_scrub_timer_timeout(self)",
-              "start_line": 601,
-              "end_line": 605,
+              "start_line": 628,
+              "end_line": 632,
               "doc": ""
             },
             {
               "name": "_on_wp_step",
               "sig": "_on_wp_step(self, delta_secs)",
-              "start_line": 607,
-              "end_line": 615,
+              "start_line": 634,
+              "end_line": 642,
               "doc": ""
             },
             {
               "name": "_on_wp_sync_playhead",
               "sig": "_on_wp_sync_playhead(self)",
-              "start_line": 617,
-              "end_line": 624,
+              "start_line": 644,
+              "end_line": 651,
               "doc": ""
             },
             {
               "name": "_load_post_editor_state",
               "sig": "_load_post_editor_state(self, index)",
-              "start_line": 626,
-              "end_line": 683,
+              "start_line": 653,
+              "end_line": 710,
               "doc": ""
             },
             {
               "name": "_on_wp_thumb_mode_changed",
               "sig": "_on_wp_thumb_mode_changed(self)",
-              "start_line": 685,
-              "end_line": 716,
+              "start_line": 712,
+              "end_line": 747,
               "doc": ""
             },
             {
               "name": "_capture_wp_frame",
               "sig": "_capture_wp_frame(self, pos)",
-              "start_line": 718,
-              "end_line": 768,
+              "start_line": 749,
+              "end_line": 783,
               "doc": ""
             },
             {
               "name": "_on_wp_browse_thumb",
               "sig": "_on_wp_browse_thumb(self)",
-              "start_line": 770,
-              "end_line": 786,
+              "start_line": 785,
+              "end_line": 803,
               "doc": ""
             },
             {
               "name": "_cleanup_temp_files",
               "sig": "_cleanup_temp_files(self)",
-              "start_line": 788,
-              "end_line": 797,
+              "start_line": 805,
+              "end_line": 814,
               "doc": "Purge temporary frame grabs and preview images."
             },
             {
               "name": "closeEvent",
               "sig": "closeEvent(self, event)",
-              "start_line": 799,
-              "end_line": 802,
-              "doc": "Clean up temp files on widget/dialog closure."
+              "start_line": 816,
+              "end_line": 824,
+              "doc": "Persist current post state and clean up temp files on widget/dialog closure."
             },
             {
               "name": "rebuild_post_items",
               "sig": "rebuild_post_items(self, scope)",
-              "start_line": 804,
-              "end_line": 838,
+              "start_line": 826,
+              "end_line": 863,
               "doc": ""
             },
             {
               "name": "_populate_wp_export_metadata",
               "sig": "_populate_wp_export_metadata(self, force_refresh)",
-              "start_line": 840,
-              "end_line": 907,
+              "start_line": 865,
+              "end_line": 932,
               "doc": ""
             },
             {
               "name": "_refresh_castos_feeds",
               "sig": "_refresh_castos_feeds(self)",
-              "start_line": 909,
-              "end_line": 934,
+              "start_line": 934,
+              "end_line": 959,
               "doc": ""
             },
             {
               "name": "_refresh_wp_metadata",
               "sig": "_refresh_wp_metadata(self)",
-              "start_line": 936,
-              "end_line": 968,
+              "start_line": 961,
+              "end_line": 993,
               "doc": ""
             }
           ]
@@ -7709,7 +7730,7 @@
     },
     "plugins/wordpress/wp_ui_builder.py": {
       "path": "plugins/wordpress/wp_ui_builder.py",
-      "lines": 627,
+      "lines": 649,
       "summary": "UI layout construction and widget setup for WordPressExportTabWidget.",
       "exports": null,
       "classes": [],
@@ -7718,7 +7739,7 @@
           "name": "setup_wp_tab_ui",
           "sig": "setup_wp_tab_ui(self)",
           "start_line": 32,
-          "end_line": 627,
+          "end_line": 649,
           "doc": "Construct all controls, forms, sliders, list widgets, and collapsible panels for the WordPress export tab."
         }
       ]
@@ -12089,7 +12110,7 @@
     },
     "story_metadata_dialog.py": {
       "path": "story_metadata_dialog.py",
-      "lines": 1291,
+      "lines": 1320,
       "summary": "Radio & TV Story Segmenter \u2014 Universal Story & Post Metadata Architecture.",
       "exports": null,
       "classes": [
@@ -12099,266 +12120,287 @@
             "QDialog"
           ],
           "start_line": 85,
-          "end_line": 1291,
+          "end_line": 1320,
           "doc": "Universal modal dialog for inspecting and editing post and story metadata across the project.",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, parent, main_window, target_story_index)",
               "start_line": 88,
-              "end_line": 131,
+              "end_line": 132,
               "doc": ""
+            },
+            {
+              "name": "_is_wordpress_plugin_active",
+              "sig": "_is_wordpress_plugin_active(self)",
+              "start_line": 134,
+              "end_line": 144,
+              "doc": "Check whether the WordPress plugin is installed and enabled."
+            },
+            {
+              "name": "_apply_wp_plugin_visibility",
+              "sig": "_apply_wp_plugin_visibility(self)",
+              "start_line": 146,
+              "end_line": 151,
+              "doc": "Show or hide WordPress-specific taxonomy controls depending on whether the WordPress plugin is active."
             },
             {
               "name": "_init_ui",
               "sig": "_init_ui(self)",
-              "start_line": 133,
-              "end_line": 607,
+              "start_line": 153,
+              "end_line": 627,
               "doc": ""
             },
             {
               "name": "_load_taxonomies",
               "sig": "_load_taxonomies(self, force_remote)",
-              "start_line": 609,
-              "end_line": 645,
+              "start_line": 629,
+              "end_line": 665,
               "doc": "Load cached WordPress taxonomies or attempt remote fetch if active."
             },
             {
               "name": "_populate_authors_list",
               "sig": "_populate_authors_list(self)",
-              "start_line": 647,
-              "end_line": 670,
+              "start_line": 667,
+              "end_line": 690,
               "doc": ""
             },
             {
               "name": "_populate_categories_list",
               "sig": "_populate_categories_list(self)",
-              "start_line": 672,
-              "end_line": 689,
+              "start_line": 692,
+              "end_line": 709,
               "doc": ""
             },
             {
               "name": "_filter_authors",
               "sig": "_filter_authors(self, _)",
-              "start_line": 691,
-              "end_line": 694,
+              "start_line": 711,
+              "end_line": 714,
               "doc": ""
             },
             {
               "name": "_filter_categories",
               "sig": "_filter_categories(self, _)",
-              "start_line": 696,
-              "end_line": 699,
+              "start_line": 716,
+              "end_line": 719,
               "doc": ""
             },
             {
               "name": "_on_refresh_taxonomy_clicked",
               "sig": "_on_refresh_taxonomy_clicked(self)",
-              "start_line": 701,
-              "end_line": 709,
+              "start_line": 721,
+              "end_line": 729,
               "doc": ""
             },
             {
               "name": "rebuild_target_items",
               "sig": "rebuild_target_items(self)",
-              "start_line": 711,
-              "end_line": 797,
+              "start_line": 731,
+              "end_line": 817,
               "doc": "Construct the list of editable targets: Full Episode (0) followed by each Story."
             },
             {
               "name": "_update_target_list_item_display",
               "sig": "_update_target_list_item_display(self, idx)",
-              "start_line": 799,
-              "end_line": 814,
+              "start_line": 819,
+              "end_line": 834,
               "doc": ""
             },
             {
               "name": "_on_target_selection_changed",
               "sig": "_on_target_selection_changed(self, row)",
-              "start_line": 816,
-              "end_line": 819,
+              "start_line": 836,
+              "end_line": 839,
               "doc": ""
             },
             {
               "name": "_load_target_into_ui",
               "sig": "_load_target_into_ui(self, index)",
-              "start_line": 821,
-              "end_line": 905,
+              "start_line": 841,
+              "end_line": 925,
               "doc": ""
             },
             {
               "name": "_get_target_bounds",
               "sig": "_get_target_bounds(self, target_index)",
-              "start_line": 907,
-              "end_line": 916,
+              "start_line": 927,
+              "end_line": 936,
               "doc": ""
             },
             {
               "name": "_sync_slider_to_pos",
               "sig": "_sync_slider_to_pos(self, pos)",
-              "start_line": 918,
-              "end_line": 928,
+              "start_line": 938,
+              "end_line": 948,
               "doc": ""
             },
             {
               "name": "_on_slider_value_changed",
               "sig": "_on_slider_value_changed(self, val)",
-              "start_line": 930,
-              "end_line": 937,
+              "start_line": 950,
+              "end_line": 957,
               "doc": ""
             },
             {
               "name": "_on_scrub_timer_timeout",
               "sig": "_on_scrub_timer_timeout(self)",
-              "start_line": 939,
-              "end_line": 942,
+              "start_line": 959,
+              "end_line": 962,
               "doc": ""
             },
             {
               "name": "_on_step_frame",
               "sig": "_on_step_frame(self, delta_secs)",
-              "start_line": 944,
-              "end_line": 951,
+              "start_line": 964,
+              "end_line": 971,
               "doc": ""
             },
             {
               "name": "_on_sync_playhead_clicked",
               "sig": "_on_sync_playhead_clicked(self)",
-              "start_line": 953,
-              "end_line": 960,
+              "start_line": 973,
+              "end_line": 980,
               "doc": ""
             },
             {
               "name": "_capture_frame",
               "sig": "_capture_frame(self, pos)",
-              "start_line": 962,
-              "end_line": 1002,
+              "start_line": 982,
+              "end_line": 1022,
               "doc": ""
             },
             {
               "name": "_on_thumb_mode_changed",
               "sig": "_on_thumb_mode_changed(self)",
-              "start_line": 1004,
-              "end_line": 1035,
+              "start_line": 1024,
+              "end_line": 1055,
               "doc": ""
             },
             {
               "name": "_on_browse_image",
               "sig": "_on_browse_image(self)",
-              "start_line": 1037,
-              "end_line": 1053,
+              "start_line": 1057,
+              "end_line": 1074,
               "doc": ""
             },
             {
               "name": "_on_title_text_changed",
               "sig": "_on_title_text_changed(self, text)",
-              "start_line": 1055,
-              "end_line": 1059,
+              "start_line": 1076,
+              "end_line": 1080,
               "doc": ""
             },
             {
               "name": "_on_excerpt_text_changed",
               "sig": "_on_excerpt_text_changed(self)",
-              "start_line": 1061,
-              "end_line": 1064,
+              "start_line": 1082,
+              "end_line": 1085,
               "doc": ""
             },
             {
               "name": "_on_auto_generate_excerpt",
               "sig": "_on_auto_generate_excerpt(self)",
-              "start_line": 1066,
-              "end_line": 1075,
+              "start_line": 1087,
+              "end_line": 1097,
               "doc": ""
             },
             {
               "name": "_on_manual_author_changed",
               "sig": "_on_manual_author_changed(self, text)",
-              "start_line": 1077,
-              "end_line": 1081,
+              "start_line": 1099,
+              "end_line": 1103,
               "doc": ""
             },
             {
               "name": "_on_tags_changed",
               "sig": "_on_tags_changed(self, text)",
-              "start_line": 1083,
-              "end_line": 1087,
+              "start_line": 1105,
+              "end_line": 1109,
               "doc": ""
             },
             {
               "name": "_on_status_changed",
               "sig": "_on_status_changed(self, _)",
-              "start_line": 1089,
-              "end_line": 1092,
+              "start_line": 1111,
+              "end_line": 1114,
               "doc": ""
             },
             {
               "name": "_on_slug_changed",
               "sig": "_on_slug_changed(self, text)",
-              "start_line": 1094,
-              "end_line": 1097,
+              "start_line": 1116,
+              "end_line": 1119,
               "doc": ""
             },
             {
               "name": "_on_notes_changed",
               "sig": "_on_notes_changed(self, text)",
-              "start_line": 1099,
-              "end_line": 1102,
+              "start_line": 1121,
+              "end_line": 1124,
               "doc": ""
             },
             {
               "name": "_on_author_item_changed",
               "sig": "_on_author_item_changed(self, _)",
-              "start_line": 1104,
-              "end_line": 1125,
+              "start_line": 1126,
+              "end_line": 1147,
               "doc": ""
             },
             {
               "name": "_on_category_item_changed",
               "sig": "_on_category_item_changed(self, _)",
-              "start_line": 1127,
-              "end_line": 1132,
+              "start_line": 1149,
+              "end_line": 1154,
               "doc": ""
             },
             {
               "name": "_get_checked_authors_from_ui",
               "sig": "_get_checked_authors_from_ui(self)",
-              "start_line": 1134,
-              "end_line": 1150,
+              "start_line": 1156,
+              "end_line": 1172,
               "doc": ""
             },
             {
               "name": "_set_checked_authors_in_ui",
               "sig": "_set_checked_authors_in_ui(self, author_ids, author_term_ids)",
-              "start_line": 1152,
-              "end_line": 1170,
+              "start_line": 1174,
+              "end_line": 1192,
               "doc": ""
             },
             {
               "name": "_get_checked_categories_from_ui",
               "sig": "_get_checked_categories_from_ui(self)",
-              "start_line": 1172,
-              "end_line": 1180,
+              "start_line": 1194,
+              "end_line": 1202,
               "doc": ""
             },
             {
               "name": "_set_checked_categories_in_ui",
               "sig": "_set_checked_categories_in_ui(self, cat_ids)",
-              "start_line": 1182,
-              "end_line": 1190,
+              "start_line": 1204,
+              "end_line": 1212,
               "doc": ""
             },
             {
               "name": "save_all_to_project",
               "sig": "save_all_to_project(self)",
-              "start_line": 1192,
-              "end_line": 1287,
+              "start_line": 1214,
+              "end_line": 1309,
               "doc": "Commit all configured metadata into Project/Story data structures and sync UI."
             },
             {
               "name": "_on_save_and_close",
               "sig": "_on_save_and_close(self)",
-              "start_line": 1289,
-              "end_line": 1291,
+              "start_line": 1311,
+              "end_line": 1313,
+              "doc": ""
+            },
+            {
+              "name": "done",
+              "sig": "done(self, r)",
+              "start_line": 1315,
+              "end_line": 1320,
               "doc": ""
             }
           ]
@@ -15090,7 +15132,7 @@
     "transcript_story.py": {
       "path": "transcript_story.py",
       "lines": 836,
-      "summary": "Radio & TV Segmenter v3.9.33-beta \u2014 transcript story responsibilities.",
+      "summary": "Radio & TV Segmenter v3.9.34-beta \u2014 transcript story responsibilities.",
       "exports": [
         "TranscriptStoryMixin",
         "Story",

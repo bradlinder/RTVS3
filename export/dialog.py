@@ -278,6 +278,9 @@ class UnifiedExportDialog(QDialog):
         self._load_saved_options()
 
         # Handle initial_dest routing
+        proj_meta = getattr(self.main_window, "project_metadata", None)
+        if not initial_dest and isinstance(proj_meta, dict):
+            initial_dest = proj_meta.get("last_export_dest")
         if initial_dest:
             for entry in self._dest_entries:
                 if entry["id"] == initial_dest:
@@ -1036,10 +1039,16 @@ class UnifiedExportDialog(QDialog):
             if entry["radio"].isChecked():
                 self.stacked_widget.setCurrentWidget(entry["page"])
                 self._update_export_button_label()
+                proj_meta = getattr(self.main_window, "project_metadata", None)
+                if isinstance(proj_meta, dict):
+                    proj_meta["last_export_dest"] = entry["id"]
                 break
 
     def _on_scope_changed(self):
         scope = self.scope_combo.currentData()
+        proj_meta = getattr(self.main_window, "project_metadata", None)
+        if isinstance(proj_meta, dict) and scope:
+            proj_meta["last_export_scope"] = scope
         stories = getattr(self.main_window, "stories", []) or []
         for _, dest, _ in self._plugin_destinations:
             try:
@@ -1377,7 +1386,18 @@ class UnifiedExportDialog(QDialog):
 
         return {"destination": "local", "scope": scope}
 
+    def _persist_plugin_draft_states(self):
+        """Persist any unsaved plugin destination edits (such as WordPress post drafts) back to the project."""
+        for _, dest, page in getattr(self, "_plugin_destinations", []):
+            tab = getattr(dest, "tab_widget", None) or page
+            if tab and hasattr(tab, "save_all_posts_to_project") and callable(tab.save_all_posts_to_project):
+                try:
+                    tab.save_all_posts_to_project()
+                except Exception as exc:
+                    print(f"[EXPORT] Warning: Failed to save plugin draft state for '{getattr(dest, 'id', 'unknown')}': {exc}")
+
     def done(self, r: int):
+        self._persist_plugin_draft_states()
         if r != QDialog.DialogCode.Accepted:
             for temp_f in self._temp_preview_files:
                 try:

@@ -94,12 +94,15 @@ def build_wp_post_items(
         st_title = st.title if getattr(st, "title", None) else f"{base_name} - Story {idx + 1}"
         raw_text = get_primary_text_slice(main_window, primary_lang, getattr(st, "start", 0.0), getattr(st, "end", None))
         default_excerpt = generate_wp_excerpt(raw_text, 55)
-        wp_meta = getattr(st, "metadata", {}).get("wordpress", {}) if getattr(st, "metadata", None) else {}
+        st_meta = getattr(st, "metadata", {}) if isinstance(getattr(st, "metadata", None), dict) else {}
+        wp_meta = st_meta.get("wordpress", {}) if isinstance(st_meta.get("wordpress"), dict) else {}
+        season_val = wp_meta.get("podcast_season") if wp_meta.get("podcast_season") is not None else wp_meta.get("season")
+        ep_num_val = wp_meta.get("podcast_episode_number") if wp_meta.get("podcast_episode_number") is not None else wp_meta.get("episode_number")
 
         item: Dict[str, Any] = {
             "task_label": f"Story {idx + 1}" + (f": {st.title}" if getattr(st, "title", None) else ""),
             "title": wp_meta.get("title") or st_title,
-            "excerpt": wp_meta.get("excerpt") or default_excerpt,
+            "excerpt": wp_meta.get("excerpt") or st_meta.get("excerpt") or default_excerpt,
             "start": getattr(st, "start", None),
             "end": getattr(st, "end", None),
             "story_index": idx,
@@ -111,17 +114,20 @@ def build_wp_post_items(
             "author_term_ids": list(wp_meta.get("author_term_ids") or []),
             "category_ids": list(wp_meta.get("category_ids") or []),
             "status": wp_meta.get("status", "draft"),
-            "tags": list(wp_meta.get("tags") or []),
-            "featured_image": wp_meta.get("featured_image", None),
-            "featured_image_mode": wp_meta.get("featured_image_mode", "none"),
+            "slug": wp_meta.get("slug", ""),
+            "tags": list(wp_meta.get("tags") or st_meta.get("tags") or []),
+            "featured_image": wp_meta.get("featured_image") if wp_meta.get("featured_image") is not None else st_meta.get("featured_image"),
+            "featured_image_mode": wp_meta.get("featured_image_mode") or st_meta.get("featured_image_mode") or "none",
             "is_podcast": bool(wp_meta.get("is_podcast", False)),
             "podcast_feed": str(wp_meta.get("podcast_feed") or "default"),
             "podcast_feed_id": wp_meta.get("podcast_feed_id"),
             "podcast_feed_ids": list(wp_meta.get("podcast_feed_ids") or ([int(wp_meta.get("podcast_feed_id"))] if wp_meta.get("podcast_feed_id") else [])),
             "podcast_feeds": list(wp_meta.get("podcast_feeds") or ([str(wp_meta.get("podcast_feed"))] if wp_meta.get("podcast_feed") else [])),
             "podcast_episode_type": str(wp_meta.get("podcast_episode_type") or "full"),
-            "podcast_season": wp_meta.get("podcast_season"),
-            "podcast_episode_number": wp_meta.get("podcast_episode_number"),
+            "podcast_season": season_val,
+            "season": season_val,
+            "podcast_episode_number": ep_num_val,
+            "episode_number": ep_num_val,
         }
         existing = existing_by_start.get((item["task_label"], item["start"])) or existing_by_start.get(item["start"])
         if existing:
@@ -152,21 +158,29 @@ def build_wp_post_items(
                 item["podcast_feeds"] = list(existing["podcast_feeds"] or [])
             if "podcast_episode_type" in existing:
                 item["podcast_episode_type"] = existing["podcast_episode_type"]
-            if "podcast_season" in existing:
-                item["podcast_season"] = existing["podcast_season"]
-            if "podcast_episode_number" in existing:
-                item["podcast_episode_number"] = existing["podcast_episode_number"]
+            if "podcast_season" in existing or "season" in existing:
+                s_ex = existing.get("podcast_season") if existing.get("podcast_season") is not None else existing.get("season")
+                item["podcast_season"] = s_ex
+                item["season"] = s_ex
+            if "podcast_episode_number" in existing or "episode_number" in existing:
+                ep_ex = existing.get("podcast_episode_number") if existing.get("podcast_episode_number") is not None else existing.get("episode_number")
+                item["podcast_episode_number"] = ep_ex
+                item["episode_number"] = ep_ex
         return item
 
     def build_full_item() -> Dict[str, Any]:
         raw_text = main_window._get_transcript_text_slice(0.0, None) if hasattr(main_window, "_get_transcript_text_slice") else ""
         default_excerpt = generate_wp_excerpt(raw_text, 55)
         proj_meta = getattr(main_window, "project_metadata", {}) or {}
-        wp_meta = proj_meta.get("wordpress", {}) if isinstance(proj_meta, dict) else {}
+        if not isinstance(proj_meta, dict):
+            proj_meta = {}
+        wp_meta = proj_meta.get("wordpress", {}) if isinstance(proj_meta.get("wordpress"), dict) else {}
+        season_val = wp_meta.get("podcast_season") if wp_meta.get("podcast_season") is not None else wp_meta.get("season")
+        ep_num_val = wp_meta.get("podcast_episode_number") if wp_meta.get("podcast_episode_number") is not None else wp_meta.get("episode_number")
         item: Dict[str, Any] = {
             "task_label": "Full Episode",
-            "title": wp_meta.get("title") or base_name,
-            "excerpt": wp_meta.get("excerpt") or default_excerpt,
+            "title": wp_meta.get("title") or proj_meta.get("title") or base_name,
+            "excerpt": wp_meta.get("excerpt") or proj_meta.get("excerpt") or default_excerpt,
             "start": None,
             "end": None,
             "story_index": None,
@@ -178,17 +192,20 @@ def build_wp_post_items(
             "author_term_ids": list(wp_meta.get("author_term_ids") or []),
             "category_ids": list(wp_meta.get("category_ids") or []),
             "status": wp_meta.get("status", "draft"),
-            "tags": list(wp_meta.get("tags") or []),
-            "featured_image": wp_meta.get("featured_image", None),
-            "featured_image_mode": wp_meta.get("featured_image_mode", "none"),
+            "slug": wp_meta.get("slug", ""),
+            "tags": list(wp_meta.get("tags") or proj_meta.get("tags") or []),
+            "featured_image": wp_meta.get("featured_image") if wp_meta.get("featured_image") is not None else proj_meta.get("featured_image"),
+            "featured_image_mode": wp_meta.get("featured_image_mode") or proj_meta.get("featured_image_mode") or "none",
             "is_podcast": bool(wp_meta.get("is_podcast", True)),
             "podcast_feed": str(wp_meta.get("podcast_feed") or "default"),
             "podcast_feed_id": wp_meta.get("podcast_feed_id"),
             "podcast_feed_ids": list(wp_meta.get("podcast_feed_ids") or ([int(wp_meta.get("podcast_feed_id"))] if wp_meta.get("podcast_feed_id") else [])),
             "podcast_feeds": list(wp_meta.get("podcast_feeds") or ([str(wp_meta.get("podcast_feed"))] if wp_meta.get("podcast_feed") else [])),
             "podcast_episode_type": str(wp_meta.get("podcast_episode_type") or "full"),
-            "podcast_season": wp_meta.get("podcast_season"),
-            "podcast_episode_number": wp_meta.get("podcast_episode_number"),
+            "podcast_season": season_val,
+            "season": season_val,
+            "podcast_episode_number": ep_num_val,
+            "episode_number": ep_num_val,
         }
         existing = existing_by_start.get("full")
         is_full_existing = bool(existing and (existing.get("task_label") == "Full Episode" or existing.get("start") is None))
@@ -213,10 +230,14 @@ def build_wp_post_items(
                     item["podcast_feeds"] = list(existing["podcast_feeds"] or [])
                 if "podcast_episode_type" in existing:
                     item["podcast_episode_type"] = existing["podcast_episode_type"]
-                if "podcast_season" in existing:
-                    item["podcast_season"] = existing["podcast_season"]
-                if "podcast_episode_number" in existing:
-                    item["podcast_episode_number"] = existing["podcast_episode_number"]
+                if "podcast_season" in existing or "season" in existing:
+                    s_ex = existing.get("podcast_season") if existing.get("podcast_season") is not None else existing.get("season")
+                    item["podcast_season"] = s_ex
+                    item["season"] = s_ex
+                if "podcast_episode_number" in existing or "episode_number" in existing:
+                    ep_ex = existing.get("podcast_episode_number") if existing.get("podcast_episode_number") is not None else existing.get("episode_number")
+                    item["podcast_episode_number"] = ep_ex
+                    item["episode_number"] = ep_ex
             item["author_ids"] = list(existing.get("author_ids", item["author_ids"]))
             item["author_term_ids"] = list(existing.get("author_term_ids", item["author_term_ids"]))
             item["category_ids"] = list(existing.get("category_ids", item["category_ids"]))
