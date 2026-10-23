@@ -284,6 +284,8 @@ class ProjectStateMixin:
             self.project_dirty = True
             self.update_window_title()
             self.save_project()
+            if hasattr(self, "_notify_floating_dialogs"):
+                self._notify_floating_dialogs()
         finally:
             self.is_restoring_undo = False
 
@@ -295,6 +297,8 @@ class ProjectStateMixin:
         if before_state == after_state:
             return
         self.undo_stack.push(ProjectStateCommand(self, before_state, after_state, description))
+        if hasattr(self, "_notify_floating_dialogs"):
+            self._notify_floating_dialogs()
 
     def flush_pending_transcript_undo(self):
         """Commit a pending grouped text edit before another project action or Ctrl+Z."""

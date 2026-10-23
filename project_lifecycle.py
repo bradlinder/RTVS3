@@ -73,6 +73,9 @@ class ProjectLifecycleMixin:
             )
             return False
 
+        if hasattr(self, "_close_floating_dialogs"):
+            self._close_floating_dialogs(persist_drafts=False)
+
         self.media_generation = getattr(self, "media_generation", 0) + 1
         self.story_job_token = getattr(self, "story_job_token", 0) + 1
 

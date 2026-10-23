@@ -441,6 +441,14 @@ class UiLayoutMixin(UiMenusMixin, UiDialogLaunchersMixin):
         header_row.addWidget(self.stories_header)
         header_row.addStretch()
 
+        self.popout_stories_btn = QPushButton("Pop Out", stories_box)
+        self.popout_stories_btn.setObjectName("popout_stories_btn")
+        self.popout_stories_btn.setToolTip("Open Story & Post Metadata in a floating window without obscuring the transcript")
+        self.popout_stories_btn.setFixedHeight(20)
+        self.popout_stories_btn.setStyleSheet("QPushButton { font-size: 10px; padding: 0px 6px; margin: 0px; border-radius: 3px; }")
+        self.popout_stories_btn.clicked.connect(lambda: self.open_story_metadata_dialog())
+        header_row.addWidget(self.popout_stories_btn)
+
         self.maximize_stories_btn = QPushButton("⛶", stories_box)
         self.maximize_stories_btn.setObjectName("maximize_stories_btn")
         self.maximize_stories_btn.setToolTip("Toggle expand Stories panel across full height")

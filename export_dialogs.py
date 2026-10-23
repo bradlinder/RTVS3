@@ -65,13 +65,30 @@ class ExportDialogsMixin:
         """Standard trigger for the main toolbar Export button."""
         self.open_unified_export_dialog()
 
-    def open_unified_export_dialog(self, initial_scope: Optional[str] = None, initial_dest: Optional[str] = None):
+    def open_unified_export_dialog(self, initial_scope: Optional[str] = None, initial_dest: Optional[str] = None, modal: bool = False):
         """Unified Export Dialog entry point for local file exports, WordPress publishing,
-        and YouTube Studio assisted exports.
+        and YouTube Studio assisted exports. Opens as a non-modal floating window by default
+        so users can continue editing the transcript side-by-side.
         """
         if not getattr(self, "transcript", None) and not getattr(self, "audio_file", None):
             QMessageBox.warning(self, "Nothing to Export", "There is no transcript or media available to export.")
-            return
+            return None
+
+        if hasattr(self, "flush_pending_transcript_undo"):
+            try:
+                self.flush_pending_transcript_undo()
+            except Exception:
+                pass
+
+        existing = getattr(self, "_active_export_dialog", None)
+        if existing is not None and existing.isVisible():
+            existing.set_scope_and_destination(scope=initial_scope, dest_id=initial_dest)
+            existing.refresh_from_main_window()
+            if existing.isMinimized():
+                existing.showNormal()
+            existing.raise_()
+            existing.activateWindow()
+            return existing
 
         if initial_scope is None:
             proj_meta = getattr(self, "project_metadata", None)
@@ -88,10 +105,31 @@ class ExportDialogsMixin:
                     initial_scope = "full"
 
         dialog = UnifiedExportDialog(self, initial_scope=initial_scope, initial_dest=initial_dest)
-        if dialog.exec() != QDialog.DialogCode.Accepted:
-            return
+        self._active_export_dialog = dialog
 
-        result = dialog.get_result()
+        def _on_accepted():
+            res = dialog.get_result()
+            self._dispatch_unified_export_result(res)
+
+        def _on_finished(_code: int):
+            if getattr(self, "_active_export_dialog", None) is dialog:
+                self._active_export_dialog = None
+
+        dialog.accepted.connect(_on_accepted)
+        dialog.finished.connect(_on_finished)
+
+        if modal:
+            dialog.exec()
+            return dialog
+
+        dialog.setWindowModality(Qt.WindowModality.NonModal)
+        dialog.show()
+        dialog.raise_()
+        dialog.activateWindow()
+        return dialog
+
+    def _dispatch_unified_export_result(self, result: dict):
+        """Execute the selected export operation after UnifiedExportDialog is accepted."""
         dest = result.get("destination", "local")
         scope = result.get("scope", "full")
 

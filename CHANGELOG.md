@@ -1,5 +1,18 @@
 # Changelog
 
+## v3.9.35-beta
+- **4-Tab WordPress Export Architecture & Configurable Layout Switcher (`plugins/wordpress/wp_ui_builder.py`, `plugins/wordpress/wp_tab_widget.py`, `plugins/wordpress/client.py`)**:
+  - Replaced the cramped vertical accordion stack in `WordPressExportTabWidget` with a spacious 4-tab layout (`Post Content`, `Authors & Taxonomy`, `Podcast & Media`, and `Publishing & Formatting`) featuring high-contrast card/pill tab styling across Dark, Light, and High-Contrast themes.
+  - Replaced the fixed-height gripped `ResizableTextEdit` excerpt input with a full-height auto-expanding `QTextEdit` (`QSizePolicy.Policy.Expanding`) that scales dynamically with dialog resizing, paired with a docked Custom Header/Footer Notice inside a vertical `QSplitter`.
+  - Expanded Author and Category checklists to fill full vertical tab height, removed the 8 redundant "Bulk Apply" buttons, preserved active tab selection when stepping through stories in the left-hand queue, and automatically omitted the `Publishing & Formatting` tab when running in Story Metadata mode.
+  - Added a user-configurable `Export Configuration View Layout` dropdown (`Tabs (Recommended)`, `Split Two-Column`, `Classic Vertical Accordion`) in `WordPressSettingsDialog` and `WordPressPreferencesPage` persisted via `QSettings("wordpress_layout_style")` (including `QComboBox` import resolution in `plugins/wordpress/client.py`).
+- **Non-Modal Floating Export & Story Metadata Windows with Live Transcript Co-Editing (`export/dialog.py`, `export_dialogs.py`, `story_metadata_dialog.py`, `story_crud_mixin.py`, `project_state_mixin.py`, `project_lifecycle.py`, `project_export.py`, `ui_layout.py`)**:
+  - Transitioned `UnifiedExportDialog` and `StoryMetadataDialog` to independent non-modal floating windows (`Qt.WindowType.Window`, `Qt.WindowModality.NonModal`, `WA_QuitOnClose=False`), enabling publishers to freely click back into the main transcript window to edit words, fix spelling, scrub audio, or relabel speakers without modal lockout or z-order window obstruction.
+  - Added a checkable `Pin on Top` header button (`toggle_float_mode`), a `Sync Transcript` header button (`refresh_from_main_window`), and a `Pop Out` button (`popout_stories_btn`) in the main window's Stories sidebar header that automatically un-maximizes the Stories panel if needed and launches the floating metadata editor.
+  - Implemented singleton window focus management (`_active_export_dialog`, `_active_metadata_dialog`), live state synchronization on `_commit_project_state_change` and `QEvent.Type.WindowActivate`, pre-export pending transcript undo flushing, and clean draft persistence/window teardown on `close_project` and `closeEvent`.
+- **Diagnostic Verification Suite (`diagnostic_export_tests.py`)**:
+  - Added automated assertions verifying shared story/project WordPress metadata round-tripping, 4-tab and 3-tab (`metadata_editor_mode`) layout construction, `WordPressPreferencesPage` / `WordPressSettingsDialog` layout combo initialization, and non-modal floating dialog controls.
+
 ## v3.9.34-beta
 - **Shared Story & Project WordPress Metadata Persistence (`story_metadata_dialog.py`, `plugins/wordpress/export_destination.py`, `plugins/wordpress/wp_post_builder.py`, `plugins/wordpress/wp_tab_widget.py`, `plugins/wordpress/castos.py`, `export/dialog.py`, `export_dialogs.py`)**:
   - Established `story.metadata["wordpress"]` and `project_metadata["wordpress"]` as the canonical source of truth for all WordPress publishing metadata (`title`, `excerpt`, `author_ids`, `author_term_ids`, `category_ids`, `featured_image`, `featured_image_mode`, `frame_pos`, `status`, `slug`, `tags`, `is_podcast`, `podcast_feed_ids`, `season`, `episode_number`).

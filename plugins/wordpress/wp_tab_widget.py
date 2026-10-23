@@ -850,7 +850,8 @@ class WordPressExportTabWidget(QWidget):
 
         has_multi = len(self.wp_post_items) > 1
         self.wp_post_nav_widget.setVisible(has_multi)
-        self.wp_bulk_box.setVisible(has_multi)
+        if hasattr(self, "wp_bulk_box") and self.wp_bulk_box is not None:
+            self.wp_bulk_box.setVisible(False)
 
         if self.wp_posts_list.count() > 0:
             self.wp_posts_list.setCurrentRow(0)

@@ -18,19 +18,23 @@ from PySide6.QtWidgets import (
     QPushButton,
     QRadioButton,
     QScrollArea,
+    QSizePolicy,
     QSlider,
+    QSplitter,
+    QTabWidget,
+    QTextEdit,
     QVBoxLayout,
     QWidget,
 )
 
 from prs_shared import (
     CollapsibleSection,
-    ResizableTextEdit,
     get_active_theme_mode,
 )
 
+
 def setup_wp_tab_ui(self: Any):
-    """Construct all controls, forms, sliders, list widgets, and collapsible panels for the WordPress export tab."""
+    """Construct all controls, forms, sliders, list widgets, and tabbed panels for the WordPress export tab."""
     wp_page_layout = QVBoxLayout(self)
     wp_page_layout.setContentsMargins(0, 0, 0, 0)
 
@@ -43,9 +47,9 @@ def setup_wp_tab_ui(self: Any):
     wp_scroll_content = QWidget()
     wp_layout = QVBoxLayout(wp_scroll_content)
     wp_layout.setContentsMargins(2, 2, 2, 2)
-    wp_layout.setSpacing(10)
+    wp_layout.setSpacing(8)
 
-    self.wp_info_section = CollapsibleSection("WordPress Post Configuration", self, is_expanded=True, subtitle="Title, Excerpt, Authors, Categories")
+    self.wp_info_section = CollapsibleSection("WordPress Post Configuration", self, is_expanded=True, subtitle="Title, Excerpt, Authors, Categories, Media, Publishing")
     if getattr(self, "metadata_editor_mode", False):
         wp_notice = QLabel(
             "Configure WordPress post titles, excerpts, authors, categories, and featured images "
@@ -85,11 +89,14 @@ def setup_wp_tab_ui(self: Any):
     self.wp_post_editor_widget = QWidget()
     editor_layout = QVBoxLayout(self.wp_post_editor_widget)
     editor_layout.setContentsMargins(0, 0, 0, 0)
-    editor_layout.setSpacing(8)
+    editor_layout.setSpacing(6)
 
     self.wp_current_post_header = QLabel("<b>Post Settings</b>")
     self.wp_current_post_header.setStyleSheet("color: #38bdf8; font-size: 12px;")
     editor_layout.addWidget(self.wp_current_post_header)
+
+    # Determine layout style preference: 'tabs' (default), 'split', or 'classic'
+    layout_style = str(self.settings.value("wordpress_layout_style", "tabs") or "tabs").lower().strip()
 
     # Title Field
     post_title_row = QHBoxLayout()
@@ -97,13 +104,13 @@ def setup_wp_tab_ui(self: Any):
     self.wp_title_edit = QLineEdit()
     self.wp_title_edit.textEdited.connect(self._on_title_edited)
     post_title_row.addWidget(self.wp_title_edit, 1)
-    editor_layout.addLayout(post_title_row)
 
-    # Excerpt Field
+    # Excerpt Field Box: Auto-expanding QTextEdit without internal grip bar
     excerpt_box = QVBoxLayout()
-    excerpt_box.setSpacing(3)
+    excerpt_box.setSpacing(4)
     exc_hdr = QHBoxLayout()
-    exc_hdr.addWidget(QLabel("Excerpt / Description (≤55 words):"))
+    exc_lbl_text = "Excerpt / Description (≤55 words):" if layout_style == "classic" else "Post Excerpt / Teaser:"
+    exc_hdr.addWidget(QLabel(exc_lbl_text))
     exc_hdr.addStretch()
     self.wp_auto_excerpt_btn = QPushButton("Generate from Story")
     self.wp_auto_excerpt_btn.setToolTip("Auto-generate excerpt from the current story's transcript")
@@ -111,11 +118,67 @@ def setup_wp_tab_ui(self: Any):
     exc_hdr.addWidget(self.wp_auto_excerpt_btn)
     excerpt_box.addLayout(exc_hdr)
 
-    self.wp_excerpt_edit = ResizableTextEdit()
-    self.wp_excerpt_edit.setMaximumHeight(55)
+    self.wp_excerpt_edit = QTextEdit()
+    self.wp_excerpt_edit.setAcceptRichText(False)
+    self.wp_excerpt_edit.setTabChangesFocus(True)
+    self.wp_excerpt_edit.setLineWrapMode(QTextEdit.LineWrapMode.WidgetWidth)
+    self.wp_excerpt_edit.setPlaceholderText("Enter a brief description or teaser for this post...")
+    self.wp_excerpt_edit.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+    if layout_style == "classic":
+        self.wp_excerpt_edit.setMaximumHeight(65)
+    else:
+        self.wp_excerpt_edit.setMinimumHeight(90)
     self.wp_excerpt_edit.textChanged.connect(self._on_excerpt_edited)
-    excerpt_box.addWidget(self.wp_excerpt_edit)
-    editor_layout.addLayout(excerpt_box)
+    excerpt_box.addWidget(self.wp_excerpt_edit, 1)
+
+    # Custom Header / Footer Notice Section
+    proj_meta = getattr(getattr(self, "main_window", None), "project_metadata", {}) or {}
+    wp_proj_meta = proj_meta.get("wordpress", {}) if isinstance(proj_meta, dict) and isinstance(proj_meta.get("wordpress"), dict) else {}
+    saved_notice_text = str(wp_proj_meta.get("custom_notice") or self.settings.value("wp_custom_notice", "") or "")
+    saved_notice_pos = str(wp_proj_meta.get("notice_placement") or self.settings.value("wp_notice_placement", "top") or "top").lower()
+
+    self.wp_custom_section = CollapsibleSection("Custom Header / Footer Notice (Optional)", self, is_expanded=bool(saved_notice_text.strip()))
+    self.wp_custom_text_edit = QTextEdit()
+    self.wp_custom_text_edit.setAcceptRichText(False)
+    self.wp_custom_text_edit.setTabChangesFocus(True)
+    self.wp_custom_text_edit.setLineWrapMode(QTextEdit.LineWrapMode.WidgetWidth)
+    if saved_notice_text:
+        self.wp_custom_text_edit.setPlainText(saved_notice_text)
+    self.wp_custom_text_edit.setPlaceholderText(
+        "e.g. Note: The following transcript was machine-generated and may contain some spelling errors or other inaccuracies."
+    )
+    self.wp_custom_text_edit.setMinimumHeight(45)
+    self.wp_custom_text_edit.setMaximumHeight(85)
+    self.wp_custom_section.add_widget(self.wp_custom_text_edit)
+
+    wp_pos_row = QHBoxLayout()
+    self.wp_pos_button_group = QButtonGroup(self)
+    self.wp_rad_pos_top = QRadioButton("Place at top of post")
+    self.wp_rad_pos_bottom = QRadioButton("Place at bottom of post")
+    self.wp_pos_button_group.addButton(self.wp_rad_pos_top)
+    self.wp_pos_button_group.addButton(self.wp_rad_pos_bottom)
+    if saved_notice_pos == "bottom":
+        self.wp_rad_pos_bottom.setChecked(True)
+    else:
+        self.wp_rad_pos_top.setChecked(True)
+    wp_pos_row.addWidget(self.wp_rad_pos_top)
+    wp_pos_row.addWidget(self.wp_rad_pos_bottom)
+    wp_pos_row.addStretch()
+    self.wp_custom_section.add_layout(wp_pos_row)
+
+    def _sync_custom_notice():
+        txt = self.wp_custom_text_edit.toPlainText().strip()
+        pos = "top" if self.wp_rad_pos_top.isChecked() else "bottom"
+        self.settings.setValue("wp_custom_notice", txt)
+        self.settings.setValue("wp_notice_placement", pos)
+        pm = getattr(getattr(self, "main_window", None), "project_metadata", None)
+        if isinstance(pm, dict):
+            wpm = pm.setdefault("wordpress", {})
+            wpm["custom_notice"] = txt
+            wpm["notice_placement"] = pos
+
+    self.wp_custom_text_edit.textChanged.connect(_sync_custom_notice)
+    self.wp_rad_pos_top.toggled.connect(lambda _: _sync_custom_notice())
 
     # Dual Column: Authors and Categories Checklist
     tax_container = QHBoxLayout()
@@ -139,10 +202,14 @@ def setup_wp_tab_ui(self: Any):
     author_col.addWidget(self.wp_author_filter_edit)
 
     self.wp_author_list = QListWidget()
-    self.wp_author_list.setMaximumHeight(95)
+    self.wp_author_list.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+    if layout_style == "classic":
+        self.wp_author_list.setMaximumHeight(95)
+    else:
+        self.wp_author_list.setMinimumHeight(140)
     self.wp_author_list.itemChanged.connect(self._on_author_item_changed)
-    author_col.addWidget(self.wp_author_list)
-    tax_container.addLayout(author_col)
+    author_col.addWidget(self.wp_author_list, 1)
+    tax_container.addLayout(author_col, 1)
 
     # Category selection column
     cat_col = QVBoxLayout()
@@ -162,14 +229,16 @@ def setup_wp_tab_ui(self: Any):
     cat_col.addWidget(self.wp_category_filter_edit)
 
     self.wp_category_list = QListWidget()
-    self.wp_category_list.setMaximumHeight(95)
+    self.wp_category_list.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+    if layout_style == "classic":
+        self.wp_category_list.setMaximumHeight(95)
+    else:
+        self.wp_category_list.setMinimumHeight(140)
     self.wp_category_list.itemChanged.connect(self._on_category_item_changed)
-    cat_col.addWidget(self.wp_category_list)
-    tax_container.addLayout(cat_col)
+    cat_col.addWidget(self.wp_category_list, 1)
+    tax_container.addLayout(cat_col, 1)
 
-    editor_layout.addLayout(tax_container)
-
-    # Featured Image Section
+    # Featured Image Section (Thumbnail)
     self.wp_thumb_section = CollapsibleSection("Featured Image (Thumbnail)", self, is_expanded=True)
     wp_thumb_layout = QHBoxLayout()
     wp_thumb_layout.setSpacing(10)
@@ -267,111 +336,49 @@ def setup_wp_tab_ui(self: Any):
     else:
         self.wp_thumb_preview_label.setStyleSheet("border: 1px dashed #475569; border-radius: 4px; background-color: #0f172a; color: #64748b; font-size: 10px;")
     wp_thumb_layout.addWidget(self.wp_thumb_preview_label, stretch=1)
-
     self.wp_thumb_section.add_layout(wp_thumb_layout)
-    editor_layout.addWidget(self.wp_thumb_section)
 
     self.wp_rad_thumb_none.toggled.connect(self._on_wp_thumb_mode_changed)
     self.wp_rad_thumb_grab.toggled.connect(self._on_wp_thumb_mode_changed)
     self.wp_rad_thumb_file.toggled.connect(self._on_wp_thumb_mode_changed)
 
-    # Seriously Simple Podcasting (Castos) Section
+    # Audio & Media Attachments Section
+    self.wp_media_section = CollapsibleSection("Audio & Media Attachments", self, is_expanded=True)
+    media_section_layout = QVBoxLayout()
+    media_section_layout.setContentsMargins(4, 4, 4, 4)
+    media_section_layout.setSpacing(6)
+
+    self.wp_cb_include_audio = QCheckBox("Include audio files in WordPress export (upload audio and embed player)")
+    self.wp_cb_include_audio.setToolTip(
+        "When enabled, uploads audio recordings to the WordPress Media Library and embeds an audio player in each post. "
+        "When disabled, exports only transcript text (and featured images, when selected), omitting audio file uploads."
+    )
+    saved_inc_audio = str(self.settings.value("wp_include_audio", "true")).lower() in ("true", "1", "yes")
+    self.wp_cb_include_audio.setChecked(saved_inc_audio)
+    self.wp_cb_include_audio.toggled.connect(self._on_wp_include_audio_toggled)
+    media_section_layout.addWidget(self.wp_cb_include_audio)
+
+    self.wp_cb_apply_fades = QCheckBox("Apply audio fades to story clips (fade-in & fade-out)")
+    self.wp_cb_apply_fades.setToolTip(
+        "When enabled, renders volume fade-in and fade-out ramps into new MP3 files before uploading them to WordPress. "
+        "When disabled, exports story clips without fade envelope modifications."
+    )
+    saved_apply_fades = str(self.settings.value("wp_apply_audio_fades", "true")).lower() in ("true", "1", "yes")
+    self.wp_cb_apply_fades.setChecked(saved_apply_fades)
+    self.wp_cb_apply_fades.toggled.connect(lambda chk: self.settings.setValue("wp_apply_audio_fades", chk))
+    self.wp_cb_include_audio.toggled.connect(self.wp_cb_apply_fades.setEnabled)
+    self.wp_cb_apply_fades.setEnabled(self.wp_cb_include_audio.isChecked())
+    media_section_layout.addWidget(self.wp_cb_apply_fades)
+    self.wp_media_section.add_layout(media_section_layout)
+
+    # Castos Seriously Simple Podcasting section container
+    self.wp_castos_container_widget = QWidget()
+    castos_wrapper_layout = QVBoxLayout(self.wp_castos_container_widget)
+    castos_wrapper_layout.setContentsMargins(0, 0, 0, 0)
     from plugins.wordpress.castos import setup_castos_ui
-    setup_castos_ui(self, editor_layout)
+    setup_castos_ui(self, castos_wrapper_layout)
 
-    # Bulk Actions Rows
-    self.wp_bulk_box = QWidget()
-    bulk_vbox = QVBoxLayout(self.wp_bulk_box)
-    bulk_vbox.setContentsMargins(0, 4, 0, 4)
-    bulk_vbox.setSpacing(4)
-
-    bulk_hdr = QLabel("<b>Bulk Apply to Other Posts / Stories:</b>")
-    if wp_mode == "light":
-        bulk_hdr.setStyleSheet("color: #545b66; font-size: 11px;")
-    elif wp_mode == "high_contrast":
-        bulk_hdr.setStyleSheet("color: #ffffff; font-size: 11px;")
-    else:
-        bulk_hdr.setStyleSheet("color: #94a3b8; font-size: 11px;")
-    bulk_vbox.addWidget(bulk_hdr)
-
-    bulk_row1 = QHBoxLayout()
-    bulk_row1.setSpacing(6)
-    self.wp_apply_authors_selected_btn = QPushButton("Apply Authors to Selected Stories")
-    self.wp_apply_authors_selected_btn.setToolTip("Copy this post's author selection to currently selected stories")
-    self.wp_apply_authors_selected_btn.clicked.connect(self._apply_authors_to_selected_stories)
-
-    self.wp_apply_authors_all_btn = QPushButton("Apply Authors to All Posts")
-    self.wp_apply_authors_all_btn.setToolTip("Copy this post's author selection to all other posts in the queue")
-    self.wp_apply_authors_all_btn.clicked.connect(self._apply_authors_to_all_posts)
-    bulk_row1.addWidget(self.wp_apply_authors_selected_btn)
-    bulk_row1.addWidget(self.wp_apply_authors_all_btn)
-    bulk_row1.addStretch()
-    bulk_vbox.addLayout(bulk_row1)
-
-    bulk_row2 = QHBoxLayout()
-    bulk_row2.setSpacing(6)
-    self.wp_apply_cats_selected_btn = QPushButton("Apply Categories to Selected Stories")
-    self.wp_apply_cats_selected_btn.setToolTip("Copy this post's category selection to currently selected stories")
-    self.wp_apply_cats_selected_btn.clicked.connect(self._apply_categories_to_selected_stories)
-
-    self.wp_apply_cats_all_btn = QPushButton("Apply Categories to All Posts")
-    self.wp_apply_cats_all_btn.setToolTip("Copy this post's category selection to all other posts in the queue")
-    self.wp_apply_cats_all_btn.clicked.connect(self._apply_categories_to_all_posts)
-    bulk_row2.addWidget(self.wp_apply_cats_selected_btn)
-    bulk_row2.addWidget(self.wp_apply_cats_all_btn)
-    bulk_row2.addStretch()
-    bulk_vbox.addLayout(bulk_row2)
-
-    bulk_row3 = QHBoxLayout()
-    bulk_row3.setSpacing(6)
-    self.wp_apply_thumb_selected_btn = QPushButton("Apply Thumbnail to Selected Stories")
-    self.wp_apply_thumb_selected_btn.setToolTip("Copy this post's thumbnail selection to currently selected stories")
-    self.wp_apply_thumb_selected_btn.clicked.connect(self._apply_thumbnails_to_selected_stories)
-
-    self.wp_apply_thumb_all_btn = QPushButton("Apply Thumbnail to All Posts")
-    self.wp_apply_thumb_all_btn.setToolTip("Copy this post's thumbnail selection to all other posts in the queue")
-    self.wp_apply_thumb_all_btn.clicked.connect(self._apply_thumbnails_to_all_posts)
-    bulk_row3.addWidget(self.wp_apply_thumb_selected_btn)
-    bulk_row3.addWidget(self.wp_apply_thumb_all_btn)
-    bulk_row3.addStretch()
-    bulk_vbox.addLayout(bulk_row3)
-
-    bulk_row4 = QHBoxLayout()
-    bulk_row4.setSpacing(6)
-    self.wp_apply_podcast_selected_btn = QPushButton("Apply Podcast Settings to Selected Stories")
-    self.wp_apply_podcast_selected_btn.setToolTip("Copy this post's podcast settings (feed, type) to currently selected stories")
-    self.wp_apply_podcast_selected_btn.clicked.connect(self._apply_podcast_to_selected_stories)
-
-    self.wp_apply_podcast_all_btn = QPushButton("Apply Podcast Settings to All Posts")
-    self.wp_apply_podcast_all_btn.setToolTip("Copy this post's podcast settings to all other posts in the queue")
-    self.wp_apply_podcast_all_btn.clicked.connect(self._apply_podcast_to_all_posts)
-    bulk_row4.addWidget(self.wp_apply_podcast_selected_btn)
-    bulk_row4.addWidget(self.wp_apply_podcast_all_btn)
-    bulk_row4.addStretch()
-    bulk_vbox.addLayout(bulk_row4)
-
-    editor_layout.addWidget(self.wp_bulk_box)
-
-    self.wp_posts_container.addWidget(self.wp_post_editor_widget)
-    self.wp_info_section.add_layout(self.wp_posts_container)
-
-    self.wp_posts_list.currentRowChanged.connect(self._on_wp_post_selection_changed)
-
-    # Load cached metadata
-    self._populate_wp_export_metadata(force_refresh=False)
-    self.rebuild_post_items()
-
-    # Metadata Refresh Button Row
-    meta_btn_row = QHBoxLayout()
-    self.wp_refresh_meta_btn = QPushButton("Refresh WordPress Metadata")
-    self.wp_refresh_meta_btn.setToolTip("Fetch fresh Author and Category lists from WordPress site")
-    self.wp_refresh_meta_btn.clicked.connect(self._refresh_wp_metadata)
-    meta_btn_row.addStretch()
-    meta_btn_row.addWidget(self.wp_refresh_meta_btn)
-    self.wp_info_section.add_layout(meta_btn_row)
-    wp_layout.addWidget(self.wp_info_section)
-
-    # Languages & Presentation
+    # Languages & Presentation Section
     self.wp_lang_section = CollapsibleSection("Transcript Languages & Presentation", self, is_expanded=True)
     wp_lang_checks = QHBoxLayout()
     src_code = self.main_window.source_language_code() if hasattr(self.main_window, "source_language_code") else "en"
@@ -489,7 +496,6 @@ def setup_wp_tab_ui(self: Any):
         update_wp_accordion_pos_visibility()
 
     self.wp_primary_lang_combo.currentIndexChanged.connect(on_wp_primary_lang_changed)
-
     self.wp_lang_section.add_widget(self.wp_pres_container)
 
     def update_wp_pres_visibility():
@@ -502,51 +508,6 @@ def setup_wp_tab_ui(self: Any):
     self.wp_cb_es.toggled.connect(update_wp_pres_visibility)
     update_wp_pres_visibility()
     update_wp_accordion_pos_visibility()
-    wp_layout.addWidget(self.wp_lang_section)
-
-    # Custom Notice Section
-    proj_meta = getattr(getattr(self, "main_window", None), "project_metadata", {}) or {}
-    wp_proj_meta = proj_meta.get("wordpress", {}) if isinstance(proj_meta, dict) and isinstance(proj_meta.get("wordpress"), dict) else {}
-    saved_notice_text = str(wp_proj_meta.get("custom_notice") or self.settings.value("wp_custom_notice", "") or "")
-    saved_notice_pos = str(wp_proj_meta.get("notice_placement") or self.settings.value("wp_notice_placement", "top") or "top").lower()
-
-    self.wp_custom_section = CollapsibleSection("Custom Header / Footer Notice (Optional)", self, is_expanded=bool(saved_notice_text.strip()))
-    self.wp_custom_text_edit = ResizableTextEdit(saved_notice_text)
-    self.wp_custom_text_edit.setPlaceholderText(
-        "e.g. Note: The following transcript was machine-generated and may contain some spelling errors or other inaccuracies."
-    )
-    self.wp_custom_text_edit.setMaximumHeight(65)
-    self.wp_custom_section.add_widget(self.wp_custom_text_edit)
-
-    wp_pos_row = QHBoxLayout()
-    self.wp_pos_button_group = QButtonGroup(self)
-    self.wp_rad_pos_top = QRadioButton("Place at top of post")
-    self.wp_rad_pos_bottom = QRadioButton("Place at bottom of post")
-    self.wp_pos_button_group.addButton(self.wp_rad_pos_top)
-    self.wp_pos_button_group.addButton(self.wp_rad_pos_bottom)
-    if saved_notice_pos == "bottom":
-        self.wp_rad_pos_bottom.setChecked(True)
-    else:
-        self.wp_rad_pos_top.setChecked(True)
-    wp_pos_row.addWidget(self.wp_rad_pos_top)
-    wp_pos_row.addWidget(self.wp_rad_pos_bottom)
-    wp_pos_row.addStretch()
-    self.wp_custom_section.add_layout(wp_pos_row)
-    wp_layout.addWidget(self.wp_custom_section)
-
-    def _sync_custom_notice():
-        txt = self.wp_custom_text_edit.toPlainText().strip()
-        pos = "top" if self.wp_rad_pos_top.isChecked() else "bottom"
-        self.settings.setValue("wp_custom_notice", txt)
-        self.settings.setValue("wp_notice_placement", pos)
-        pm = getattr(getattr(self, "main_window", None), "project_metadata", None)
-        if isinstance(pm, dict):
-            wpm = pm.setdefault("wordpress", {})
-            wpm["custom_notice"] = txt
-            wpm["notice_placement"] = pos
-
-    self.wp_custom_text_edit.textChanged.connect(_sync_custom_notice)
-    self.wp_rad_pos_top.toggled.connect(lambda _: _sync_custom_notice())
 
     # Cross-Linking Section (Full Episode & Stories)
     self.wp_crosslink_section = CollapsibleSection("Episode & Story Cross-Linking (Full Episode & All Stories)", self, is_expanded=True)
@@ -590,44 +551,166 @@ def setup_wp_tab_ui(self: Any):
     saved_update_toc = str(self.settings.value("wp_update_parent_toc", "true")).lower() in ("true", "1", "yes")
     self.wp_cb_update_parent_toc.setChecked(saved_update_toc)
     crosslink_layout.addWidget(self.wp_cb_update_parent_toc)
-
     self.wp_crosslink_section.add_layout(crosslink_layout)
-    wp_layout.addWidget(self.wp_crosslink_section)
 
-    # Audio & Media Attachments Section
-    self.wp_media_section = CollapsibleSection("Audio & Media Attachments", self, is_expanded=True)
-    media_section_layout = QVBoxLayout()
-    media_section_layout.setContentsMargins(4, 4, 4, 4)
-    media_section_layout.setSpacing(6)
+    # Legacy dummy bulk box to ensure zero regression for mock widgets and callers
+    self.wp_bulk_box = QWidget()
+    self.wp_bulk_box.setVisible(False)
 
-    self.wp_cb_include_audio = QCheckBox("Include audio files in WordPress export (upload audio and embed player)")
-    self.wp_cb_include_audio.setToolTip(
-        "When enabled, uploads audio recordings to the WordPress Media Library and embeds an audio player in each post. "
-        "When disabled, exports only transcript text (and featured images, when selected), omitting audio file uploads."
+    # High-contrast, theme-adaptive stylesheet for tabs
+    if wp_mode == "light":
+        p_bg, p_bd, t_bg, t_fg, s_bg, s_fg, s_bd, h_bg, h_fg = "#ffffff", "#cbd5e1", "#f1f5f9", "#475569", "#0284c7", "#ffffff", "#0284c7", "#e2e8f0", "#0f172a"
+    elif wp_mode == "high_contrast":
+        p_bg, p_bd, t_bg, t_fg, s_bg, s_fg, s_bd, h_bg, h_fg = "#000000", "#ffffff", "#000000", "#ffffff", "#ffffff", "#000000", "#ffffff", "#333333", "#ffffff"
+    else:
+        p_bg, p_bd, t_bg, t_fg, s_bg, s_fg, s_bd, h_bg, h_fg = "#0f172a", "#334155", "#1e293b", "#94a3b8", "#0284c7", "#ffffff", "#38bdf8", "#334155", "#f8fafc"
+
+    tab_style = (
+        f"QTabWidget#wp_editor_tabs::pane {{ border: 1px solid {p_bd}; border-radius: 6px; background-color: {p_bg}; top: -1px; }}\n"
+        f"QTabWidget#wp_editor_tabs QTabBar::tab {{ background-color: {t_bg}; color: {t_fg}; font-size: 11px; font-weight: 600; padding: 7px 16px; margin-right: 4px; border-top-left-radius: 6px; border-top-right-radius: 6px; border: 1px solid {p_bd}; border-bottom: none; }}\n"
+        f"QTabWidget#wp_editor_tabs QTabBar::tab:selected {{ background-color: {s_bg}; color: {s_fg}; font-weight: bold; border: 1px solid {s_bd}; border-bottom: none; }}\n"
+        f"QTabWidget#wp_editor_tabs QTabBar::tab:hover:!selected {{ background-color: {h_bg}; color: {h_fg}; }}"
     )
-    saved_inc_audio = str(self.settings.value("wp_include_audio", "true")).lower() in ("true", "1", "yes")
-    self.wp_cb_include_audio.setChecked(saved_inc_audio)
-    self.wp_cb_include_audio.toggled.connect(self._on_wp_include_audio_toggled)
-    media_section_layout.addWidget(self.wp_cb_include_audio)
 
-    self.wp_cb_apply_fades = QCheckBox("Apply audio fades to story clips (fade-in & fade-out)")
-    self.wp_cb_apply_fades.setToolTip(
-        "When enabled, renders volume fade-in and fade-out ramps into new MP3 files before uploading them to WordPress. "
-        "When disabled, exports story clips without fade envelope modifications."
-    )
-    saved_apply_fades = str(self.settings.value("wp_apply_audio_fades", "true")).lower() in ("true", "1", "yes")
-    self.wp_cb_apply_fades.setChecked(saved_apply_fades)
-    self.wp_cb_apply_fades.toggled.connect(lambda chk: self.settings.setValue("wp_apply_audio_fades", chk))
-    self.wp_cb_include_audio.toggled.connect(self.wp_cb_apply_fades.setEnabled)
-    self.wp_cb_apply_fades.setEnabled(self.wp_cb_include_audio.isChecked())
-    media_section_layout.addWidget(self.wp_cb_apply_fades)
+    # Assemble into configured layout style (Tabs, Split, or Classic)
+    if layout_style == "tabs":
+        self.wp_editor_tabs = QTabWidget()
+        self.wp_editor_tabs.setObjectName("wp_editor_tabs")
+        self.wp_editor_tabs.setStyleSheet(tab_style)
 
-    self.wp_media_section.add_layout(media_section_layout)
-    wp_layout.addWidget(self.wp_media_section)
+        # Tab 1: Post Content (Title, Full Excerpt Box, Custom Notice Splitter)
+        tab_content = QWidget()
+        t1_layout = QVBoxLayout(tab_content)
+        t1_layout.setContentsMargins(8, 8, 8, 8)
+        t1_layout.setSpacing(8)
+        t1_layout.addLayout(post_title_row)
+
+        content_splitter = QSplitter(Qt.Orientation.Vertical)
+        exc_container = QWidget()
+        exc_cont_layout = QVBoxLayout(exc_container)
+        exc_cont_layout.setContentsMargins(0, 0, 0, 0)
+        exc_cont_layout.setSpacing(4)
+        exc_cont_layout.addLayout(excerpt_box)
+        content_splitter.addWidget(exc_container)
+        content_splitter.addWidget(self.wp_custom_section)
+        content_splitter.setStretchFactor(0, 3)
+        content_splitter.setStretchFactor(1, 1)
+        t1_layout.addWidget(content_splitter, 1)
+        self.wp_editor_tabs.addTab(tab_content, "Post Content")
+
+        # Tab 2: Authors & Taxonomy (Side-by-side lists with filter inputs)
+        tab_tax = QWidget()
+        t2_layout = QVBoxLayout(tab_tax)
+        t2_layout.setContentsMargins(8, 8, 8, 8)
+        t2_layout.setSpacing(8)
+        t2_layout.addLayout(tax_container, 1)
+        self.wp_editor_tabs.addTab(tab_tax, "Authors && Taxonomy")
+
+        # Tab 3: Podcast & Media (Thumbnail frame grabber, audio attachment & Castos feeds)
+        tab_media = QWidget()
+        tab_media_scroll = QScrollArea()
+        tab_media_scroll.setWidgetResizable(True)
+        tab_media_scroll.setFrameShape(QFrame.Shape.NoFrame)
+        tab_media_inner = QWidget()
+        t3_layout = QVBoxLayout(tab_media_inner)
+        t3_layout.setContentsMargins(8, 8, 8, 8)
+        t3_layout.setSpacing(8)
+        t3_layout.addWidget(self.wp_thumb_section)
+        t3_layout.addWidget(self.wp_media_section)
+        t3_layout.addWidget(self.wp_castos_container_widget)
+        t3_layout.addStretch()
+        tab_media_scroll.setWidget(tab_media_inner)
+        t3_outer = QVBoxLayout(tab_media)
+        t3_outer.setContentsMargins(0, 0, 0, 0)
+        t3_outer.addWidget(tab_media_scroll)
+        self.wp_editor_tabs.addTab(tab_media, "Podcast && Media")
+
+        # Tab 4: Publishing & Formatting (Transcript languages & Episode cross-linking)
+        if not getattr(self, "metadata_editor_mode", False):
+            tab_pub = QWidget()
+            tab_pub_scroll = QScrollArea()
+            tab_pub_scroll.setWidgetResizable(True)
+            tab_pub_scroll.setFrameShape(QFrame.Shape.NoFrame)
+            tab_pub_inner = QWidget()
+            t4_layout = QVBoxLayout(tab_pub_inner)
+            t4_layout.setContentsMargins(8, 8, 8, 8)
+            t4_layout.setSpacing(8)
+            t4_layout.addWidget(self.wp_lang_section)
+            t4_layout.addWidget(self.wp_crosslink_section)
+            t4_layout.addStretch()
+            tab_pub_scroll.setWidget(tab_pub_inner)
+            t4_outer = QVBoxLayout(tab_pub)
+            t4_outer.setContentsMargins(0, 0, 0, 0)
+            t4_outer.addWidget(tab_pub_scroll)
+            self.wp_editor_tabs.addTab(tab_pub, "Publishing && Formatting")
+
+        editor_layout.addWidget(self.wp_editor_tabs, 1)
+
+    elif layout_style == "split":
+        self.wp_split_widget = QWidget()
+        split_layout = QHBoxLayout(self.wp_split_widget)
+        split_layout.setContentsMargins(0, 0, 0, 0)
+        split_layout.setSpacing(12)
+
+        # Left Column: Title, Excerpt, Custom Notice, Thumbnail, Media
+        left_col = QVBoxLayout()
+        left_col.setSpacing(8)
+        left_col.addLayout(post_title_row)
+        left_col.addLayout(excerpt_box)
+        left_col.addWidget(self.wp_custom_section)
+        left_col.addWidget(self.wp_thumb_section)
+        left_col.addWidget(self.wp_media_section)
+        left_col.addStretch()
+        split_layout.addLayout(left_col, 3)
+
+        # Right Column: Authors, Categories, Castos Podcast, Languages, Crosslink
+        right_col = QVBoxLayout()
+        right_col.setSpacing(8)
+        right_col.addLayout(tax_container)
+        right_col.addWidget(self.wp_castos_container_widget)
+        if not getattr(self, "metadata_editor_mode", False):
+            right_col.addWidget(self.wp_lang_section)
+            right_col.addWidget(self.wp_crosslink_section)
+        right_col.addStretch()
+        split_layout.addLayout(right_col, 2)
+
+        editor_layout.addWidget(self.wp_split_widget, 1)
+
+    else:
+        # Classic Vertical Accordion Stack
+        editor_layout.addLayout(post_title_row)
+        editor_layout.addLayout(excerpt_box)
+        editor_layout.addLayout(tax_container)
+        editor_layout.addWidget(self.wp_thumb_section)
+        editor_layout.addWidget(self.wp_media_section)
+        editor_layout.addWidget(self.wp_castos_container_widget)
+        editor_layout.addWidget(self.wp_custom_section)
+        if not getattr(self, "metadata_editor_mode", False):
+            editor_layout.addWidget(self.wp_lang_section)
+            editor_layout.addWidget(self.wp_crosslink_section)
+
+    self.wp_posts_container.addWidget(self.wp_post_editor_widget, 1)
+    self.wp_info_section.add_layout(self.wp_posts_container)
+
+    self.wp_posts_list.currentRowChanged.connect(self._on_wp_post_selection_changed)
+
+    # Load cached metadata
+    self._populate_wp_export_metadata(force_refresh=False)
+    self.rebuild_post_items()
+
+    # Metadata Refresh Button Row
+    meta_btn_row = QHBoxLayout()
+    self.wp_refresh_meta_btn = QPushButton("Refresh WordPress Metadata")
+    self.wp_refresh_meta_btn.setToolTip("Fetch fresh Author and Category lists from WordPress site")
+    self.wp_refresh_meta_btn.clicked.connect(self._refresh_wp_metadata)
+    meta_btn_row.addStretch()
+    meta_btn_row.addWidget(self.wp_refresh_meta_btn)
+    self.wp_info_section.add_layout(meta_btn_row)
+
+    wp_layout.addWidget(self.wp_info_section, 1)
 
     if getattr(self, "metadata_editor_mode", False):
         self.wp_lang_section.setVisible(False)
-        self.wp_custom_section.setVisible(False)
         self.wp_crosslink_section.setVisible(False)
         self.wp_media_section.setVisible(False)
 
@@ -643,7 +726,6 @@ def setup_wp_tab_ui(self: Any):
     wp_layout.addLayout(wp_conn_layout)
 
     self._update_wp_conn_status()
-    wp_layout.addStretch()
 
     wp_scroll.setWidget(wp_scroll_content)
     wp_page_layout.addWidget(wp_scroll)

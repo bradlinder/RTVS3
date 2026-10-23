@@ -29,7 +29,7 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 
 from prs_shared import ProjectMetadataDict
 
-from PySide6.QtCore import QSettings, QSize, Qt, QTimer
+from PySide6.QtCore import QEvent, QSettings, QSize, Qt, QTimer
 from PySide6.QtGui import QColor, QFont, QIcon, QPixmap
 from PySide6.QtWidgets import (
     QButtonGroup,
@@ -91,12 +91,23 @@ class StoryMetadataDialog(QDialog):
         main_window: Any = None,
         target_story_index: Optional[int] = None,
     ):
-        super().__init__(parent)
+        super().__init__(None)
         self.main_window = main_window or parent
         self.target_story_index = target_story_index
         self.settings = QSettings(INTERNAL_APP_ID, INTERNAL_APP_ID)
+        self._is_floating = True
+        self._stay_on_top = False
+        self._syncing_from_main = False
 
         self.setWindowTitle("Story & Post Metadata Editor")
+        self.setWindowModality(Qt.WindowModality.NonModal)
+        self.setAttribute(Qt.WidgetAttribute.WA_QuitOnClose, False)
+        self.setWindowFlags(
+            Qt.WindowType.Window
+            | Qt.WindowType.WindowMinimizeButtonHint
+            | Qt.WindowType.WindowMaximizeButtonHint
+            | Qt.WindowType.WindowCloseButtonHint
+        )
         self.resize(960, 720)
         self.setMinimumSize(780, 560)
         make_dialog_maximizable(self)
@@ -159,6 +170,7 @@ class StoryMetadataDialog(QDialog):
         header_widget = QWidget(self)
         header_layout = QHBoxLayout(header_widget)
         header_layout.setContentsMargins(0, 0, 0, 0)
+        header_layout.setSpacing(6)
         
         info_label = QLabel(
             "<b>Story & Post Metadata</b> — Configure titles, authors, categories/tags, "
@@ -169,58 +181,39 @@ class StoryMetadataDialog(QDialog):
         header_layout.addWidget(info_label, 1)
 
         theme_mode = _get_metadata_theme_mode()
+        if theme_mode == "light":
+            b_bg, b_fg, b_bd, h_bg, h_fg = "#e3e6ea", "#2e74b5", "#2e74b5", "#2e74b5", "#ffffff"
+        elif theme_mode == "high_contrast":
+            b_bg, b_fg, b_bd, h_bg, h_fg = "#000000", "#ffff00", "#ffff00", "#ffff00", "#000000"
+        else:
+            b_bg, b_fg, b_bd, h_bg, h_fg = "#1e293b", "#38bdf8", "#0284c7", "#0284c7", "#ffffff"
+
+        hdr_btn_qss = (
+            f"QPushButton {{ background-color: {b_bg}; color: {b_fg}; border: 1px solid {b_bd}; border-radius: 4px; padding: 4px 10px; font-size: 11px; font-weight: 500; }}\n"
+            f"QPushButton:hover {{ background-color: {h_bg}; color: {h_fg}; }}\n"
+            f"QPushButton:checked {{ background-color: {h_bg}; color: {h_fg}; font-weight: bold; }}"
+        )
+
+        self.refresh_btn = QPushButton("Sync Transcript", self)
+        self.refresh_btn.setToolTip("Refresh story excerpts and transcript changes from the main window")
+        self.refresh_btn.setStyleSheet(hdr_btn_qss)
+        self.refresh_btn.clicked.connect(lambda: self.refresh_from_main_window())
+        header_layout.addWidget(self.refresh_btn)
+
+        self.float_btn = QPushButton("Pin on Top", self)
+        self.float_btn.setCheckable(True)
+        self.float_btn.setToolTip(
+            "This window is non-modal so you can freely edit the transcript in the main window. "
+            "Toggle 'Pin on Top' to keep this window above the main window while co-editing."
+        )
+        self.float_btn.setStyleSheet(hdr_btn_qss)
+        self.float_btn.toggled.connect(self.toggle_float_mode)
+        header_layout.addWidget(self.float_btn)
 
         # Taxonomy Refresh Button (if WP or CMS available)
         self.refresh_tax_btn = QPushButton("Refresh WP Taxonomies", self)
         self.refresh_tax_btn.setToolTip("Fetch latest Authors and Categories from WordPress REST API")
-        if theme_mode == "light":
-            self.refresh_tax_btn.setStyleSheet("""
-                QPushButton {
-                    background-color: #e3e6ea;
-                    color: #2e74b5;
-                    border: 1px solid #2e74b5;
-                    border-radius: 4px;
-                    padding: 4px 10px;
-                    font-size: 11px;
-                    font-weight: 500;
-                }
-                QPushButton:hover {
-                    background-color: #2e74b5;
-                    color: #ffffff;
-                }
-            """)
-        elif theme_mode == "high_contrast":
-            self.refresh_tax_btn.setStyleSheet("""
-                QPushButton {
-                    background-color: #000000;
-                    color: #ffff00;
-                    border: 1px solid #ffff00;
-                    border-radius: 4px;
-                    padding: 4px 10px;
-                    font-size: 11px;
-                    font-weight: 500;
-                }
-                QPushButton:hover {
-                    background-color: #ffff00;
-                    color: #000000;
-                }
-            """)
-        else:
-            self.refresh_tax_btn.setStyleSheet("""
-                QPushButton {
-                    background-color: #1e293b;
-                    color: #38bdf8;
-                    border: 1px solid #0284c7;
-                    border-radius: 4px;
-                    padding: 4px 10px;
-                    font-size: 11px;
-                    font-weight: 500;
-                }
-                QPushButton:hover {
-                    background-color: #0284c7;
-                    color: #ffffff;
-                }
-            """)
+        self.refresh_tax_btn.setStyleSheet(hdr_btn_qss)
         self.refresh_tax_btn.clicked.connect(self._on_refresh_taxonomy_clicked)
         header_layout.addWidget(self.refresh_tax_btn)
 
@@ -357,54 +350,7 @@ class StoryMetadataDialog(QDialog):
         exc_btn_row.addStretch()
 
         self.auto_excerpt_btn = QPushButton("Auto-Generate Excerpt (55 Words)", excerpt_group)
-        if theme_mode == "light":
-            self.auto_excerpt_btn.setStyleSheet("""
-                QPushButton {
-                    background-color: #e3e6ea;
-                    color: #2e74b5;
-                    border: 1px solid #2e74b5;
-                    border-radius: 3px;
-                    padding: 2px 8px;
-                    font-size: 11px;
-                    font-weight: 500;
-                }
-                QPushButton:hover {
-                    background-color: #2e74b5;
-                    color: #ffffff;
-                }
-            """)
-        elif theme_mode == "high_contrast":
-            self.auto_excerpt_btn.setStyleSheet("""
-                QPushButton {
-                    background-color: #000000;
-                    color: #ffff00;
-                    border: 1px solid #ffff00;
-                    border-radius: 3px;
-                    padding: 2px 8px;
-                    font-size: 11px;
-                    font-weight: 500;
-                }
-                QPushButton:hover {
-                    background-color: #ffff00;
-                    color: #000000;
-                }
-            """)
-        else:
-            self.auto_excerpt_btn.setStyleSheet("""
-                QPushButton {
-                    background-color: #1e293b;
-                    color: #38bdf8;
-                    border: 1px solid #0284c7;
-                    border-radius: 3px;
-                    padding: 2px 8px;
-                    font-size: 11px;
-                    font-weight: 500;
-                }
-                QPushButton:hover {
-                    background-color: #0284c7;
-                    color: #ffffff;
-                }
-            """)
+        self.auto_excerpt_btn.setStyleSheet(hdr_btn_qss)
         self.auto_excerpt_btn.clicked.connect(self._on_auto_generate_excerpt)
         exc_btn_row.addWidget(self.auto_excerpt_btn)
         excerpt_layout.addLayout(exc_btn_row)
@@ -1307,6 +1253,52 @@ class StoryMetadataDialog(QDialog):
                 self.main_window.save_project()
             except Exception as e:
                 print(f"[STORY METADATA] Error auto-saving project: {e}")
+
+    def toggle_float_mode(self, pinned: Optional[bool] = None):
+        """Toggle whether the non-modal floating window stays pinned on top of other windows."""
+        if pinned is None:
+            pinned = not getattr(self, "_stay_on_top", False)
+        self._stay_on_top = bool(pinned)
+        if hasattr(self, "float_btn"):
+            self.float_btn.blockSignals(True)
+            self.float_btn.setChecked(self._stay_on_top)
+            self.float_btn.setText("Pinned on Top" if self._stay_on_top else "Pin on Top")
+            self.float_btn.blockSignals(False)
+        was_visible = self.isVisible()
+        self.setWindowFlag(Qt.WindowType.WindowStaysOnTopHint, self._stay_on_top)
+        if was_visible:
+            self.show()
+            apply_window_titlebar_theme(self)
+            self.raise_()
+            self.activateWindow()
+
+    def refresh_from_main_window(self, target_story_index: Optional[int] = None):
+        """Synchronize stories, excerpts, and transcript changes from the main window."""
+        if getattr(self, "_syncing_from_main", False):
+            return
+        self._syncing_from_main = True
+        try:
+            if hasattr(self.main_window, "flush_pending_transcript_undo"):
+                try:
+                    self.main_window.flush_pending_transcript_undo()
+                except Exception:
+                    pass
+            try:
+                self.save_all_to_project()
+            except Exception:
+                pass
+            cur_row = (target_story_index + 1) if target_story_index is not None else self.targets_list.currentRow()
+            self.rebuild_target_items()
+            if 0 <= cur_row < self.targets_list.count():
+                self.targets_list.setCurrentRow(cur_row)
+            self._apply_wp_plugin_visibility()
+        finally:
+            self._syncing_from_main = False
+
+    def changeEvent(self, event):
+        super().changeEvent(event)
+        if event.type() == QEvent.Type.WindowActivate:
+            self.refresh_from_main_window()
 
     def _on_save_and_close(self):
         self.save_all_to_project()

@@ -62,10 +62,20 @@ class UnifiedExportDialog(QDialog):
     """Unified Export Center supporting Local Files and dynamic plugin destinations."""
 
     def __init__(self, main_window: Any, initial_scope: str = "full", initial_dest: Optional[str] = None, parent: Optional[QWidget] = None):
-        super().__init__(parent or main_window)
+        super().__init__(parent)
         self.main_window = main_window
+        self._is_floating = True
+        self._stay_on_top = False
+        self._syncing_from_main = False
         self.setWindowTitle("Export")
-        self.setWindowFlags(self.windowFlags() | Qt.WindowType.WindowMaximizeButtonHint | Qt.WindowType.WindowMinimizeButtonHint)
+        self.setWindowModality(Qt.WindowModality.NonModal)
+        self.setAttribute(Qt.WidgetAttribute.WA_QuitOnClose, False)
+        self.setWindowFlags(
+            Qt.WindowType.Window
+            | Qt.WindowType.WindowMinimizeButtonHint
+            | Qt.WindowType.WindowMaximizeButtonHint
+            | Qt.WindowType.WindowCloseButtonHint
+        )
         self.setSizeGripEnabled(True)
         self.setMinimumWidth(780)
         self.setMinimumHeight(560)
@@ -82,125 +92,60 @@ class UnifiedExportDialog(QDialog):
         layout.setContentsMargins(12, 10, 12, 10)
         layout.setSpacing(8)
 
-        # Header bar with Expand / Collapse All control and Maximize / Restore button
+        # Header bar with Sync, Float/Pin, Expand/Collapse All, and Maximize/Restore controls
         hdr_row = QHBoxLayout()
         hdr_row.setContentsMargins(2, 0, 2, 0)
         hdr_row.setSpacing(6)
         hdr_label = QLabel("<b>Unified Export Center</b>")
         if theme_mode == "light":
             hdr_label.setStyleSheet("font-size: 13px; font-weight: bold; color: #22262c;")
+            b_bg, b_fg, b_bd, h_bg, h_fg, a_bg, a_fg = "#e3e6ea", "#22262c", "#b6bcc4", "#d0d4d9", "#22262c", "#0284c7", "#ffffff"
         elif theme_mode == "high_contrast":
             hdr_label.setStyleSheet("font-size: 13px; font-weight: bold; color: #ffffff;")
+            b_bg, b_fg, b_bd, h_bg, h_fg, a_bg, a_fg = "#000000", "#ffffff", "#ffffff", "#1a1a1a", "#ffff00", "#ffffff", "#000000"
         else:
             hdr_label.setStyleSheet("font-size: 13px; font-weight: bold; color: #f1f5f9;")
+            b_bg, b_fg, b_bd, h_bg, h_fg, a_bg, a_fg = "#1e293b", "#94a3b8", "#334155", "#334155", "#f1f5f9", "#0284c7", "#ffffff"
+
+        hdr_btn_qss = (
+            f"QPushButton {{ background-color: {b_bg}; color: {b_fg}; border: 1px solid {b_bd}; border-radius: 4px; padding: 3px 10px; font-size: 11px; font-weight: 500; }}\n"
+            f"QPushButton:hover {{ background-color: {h_bg}; color: {h_fg}; }}\n"
+            f"QPushButton:checked {{ background-color: {a_bg}; color: {a_fg}; border-color: {a_bg}; font-weight: bold; }}"
+        )
+        max_btn_qss = (
+            f"QPushButton {{ background-color: {b_bg}; color: {b_fg}; border: 1px solid {b_bd}; border-radius: 4px; padding: 0px; font-size: 13px; font-weight: bold; }}\n"
+            f"QPushButton:hover {{ background-color: {h_bg}; color: {h_fg}; }}"
+        )
+
+        self.refresh_btn = QPushButton("Sync Transcript", self)
+        self.refresh_btn.setToolTip("Refresh story excerpts and transcript changes from the main window")
+        self.refresh_btn.setStyleSheet(hdr_btn_qss)
+        self.refresh_btn.clicked.connect(self.refresh_from_main_window)
+
+        self.float_btn = QPushButton("Pin on Top", self)
+        self.float_btn.setCheckable(True)
+        self.float_btn.setToolTip(
+            "This window is non-modal so you can freely edit the transcript in the main window. "
+            "Toggle 'Pin on Top' to keep this window above the main window while co-editing."
+        )
+        self.float_btn.setStyleSheet(hdr_btn_qss)
+        self.float_btn.toggled.connect(self.toggle_float_mode)
 
         self.toggle_all_btn = QPushButton("▾ Collapse All")
         self.toggle_all_btn.setToolTip("Toggle expand/collapse for all sections on the current page")
-        if theme_mode == "light":
-            self.toggle_all_btn.setStyleSheet("""
-                QPushButton {
-                    background-color: #e3e6ea;
-                    color: #22262c;
-                    border: 1px solid #b6bcc4;
-                    border-radius: 4px;
-                    padding: 3px 10px;
-                    font-size: 11px;
-                    font-weight: 500;
-                }
-                QPushButton:hover {
-                    background-color: #d0d4d9;
-                    color: #22262c;
-                }
-            """)
-        elif theme_mode == "high_contrast":
-            self.toggle_all_btn.setStyleSheet("""
-                QPushButton {
-                    background-color: #000000;
-                    color: #ffffff;
-                    border: 1px solid #ffffff;
-                    border-radius: 4px;
-                    padding: 3px 10px;
-                    font-size: 11px;
-                    font-weight: 500;
-                }
-                QPushButton:hover {
-                    background-color: #1a1a1a;
-                    color: #ffff00;
-                }
-            """)
-        else:
-            self.toggle_all_btn.setStyleSheet("""
-                QPushButton {
-                    background-color: #1e293b;
-                    color: #94a3b8;
-                    border: 1px solid #334155;
-                    border-radius: 4px;
-                    padding: 3px 10px;
-                    font-size: 11px;
-                    font-weight: 500;
-                }
-                QPushButton:hover {
-                    background-color: #334155;
-                    color: #f1f5f9;
-                }
-            """)
+        self.toggle_all_btn.setStyleSheet(hdr_btn_qss)
         self.toggle_all_btn.clicked.connect(self._toggle_all_sections)
 
         self.maximize_btn = QPushButton("⛶", self)
         self.maximize_btn.setToolTip("Maximize Export window")
         self.maximize_btn.setFixedSize(28, 24)
-        if theme_mode == "light":
-            self.maximize_btn.setStyleSheet("""
-                QPushButton {
-                    background-color: #e3e6ea;
-                    color: #22262c;
-                    border: 1px solid #b6bcc4;
-                    border-radius: 4px;
-                    padding: 0px;
-                    font-size: 13px;
-                    font-weight: bold;
-                }
-                QPushButton:hover {
-                    background-color: #d0d4d9;
-                    color: #22262c;
-                }
-            """)
-        elif theme_mode == "high_contrast":
-            self.maximize_btn.setStyleSheet("""
-                QPushButton {
-                    background-color: #000000;
-                    color: #ffffff;
-                    border: 1px solid #ffffff;
-                    border-radius: 4px;
-                    padding: 0px;
-                    font-size: 13px;
-                    font-weight: bold;
-                }
-                QPushButton:hover {
-                    background-color: #1a1a1a;
-                    color: #ffff00;
-                }
-            """)
-        else:
-            self.maximize_btn.setStyleSheet("""
-                QPushButton {
-                    background-color: #1e293b;
-                    color: #94a3b8;
-                    border: 1px solid #334155;
-                    border-radius: 4px;
-                    padding: 0px;
-                    font-size: 13px;
-                    font-weight: bold;
-                }
-                QPushButton:hover {
-                    background-color: #334155;
-                    color: #f1f5f9;
-                }
-            """)
+        self.maximize_btn.setStyleSheet(max_btn_qss)
         self.maximize_btn.clicked.connect(self._toggle_maximize)
 
         hdr_row.addWidget(hdr_label)
         hdr_row.addStretch()
+        hdr_row.addWidget(self.refresh_btn)
+        hdr_row.addWidget(self.float_btn)
         hdr_row.addWidget(self.toggle_all_btn)
         hdr_row.addWidget(self.maximize_btn)
         layout.addLayout(hdr_row)
@@ -1220,6 +1165,11 @@ class UnifiedExportDialog(QDialog):
             QMessageBox.information(self, "Export Options", "Current export options have been saved as defaults.")
 
     def _handle_accept(self):
+        if hasattr(self.main_window, "flush_pending_transcript_undo"):
+            try:
+                self.main_window.flush_pending_transcript_undo()
+            except Exception:
+                pass
         if self.radio_local.isChecked():
             if self.loc_radio_custom.isChecked():
                 custom_path = self.loc_custom_path_edit.text().strip()
@@ -1407,6 +1357,61 @@ class UnifiedExportDialog(QDialog):
                     pass
         super().done(r)
 
+    def toggle_float_mode(self, pinned: Optional[bool] = None):
+        """Toggle whether the non-modal floating window stays pinned on top of other windows."""
+        if pinned is None:
+            pinned = not getattr(self, "_stay_on_top", False)
+        self._stay_on_top = bool(pinned)
+        if hasattr(self, "float_btn"):
+            self.float_btn.blockSignals(True)
+            self.float_btn.setChecked(self._stay_on_top)
+            self.float_btn.setText("Pinned on Top" if self._stay_on_top else "Pin on Top")
+            self.float_btn.blockSignals(False)
+        was_visible = self.isVisible()
+        self.setWindowFlag(Qt.WindowType.WindowStaysOnTopHint, self._stay_on_top)
+        if was_visible:
+            self.show()
+            apply_window_titlebar_theme(self)
+            self.raise_()
+            self.activateWindow()
+
+    def set_scope_and_destination(self, scope: Optional[str] = None, dest_id: Optional[str] = None):
+        """Update export scope and active destination tab on an open modeless export window."""
+        if scope:
+            idx = self.scope_combo.findData(scope)
+            if idx >= 0:
+                self.scope_combo.setCurrentIndex(idx)
+        if dest_id:
+            for entry in getattr(self, "_dest_entries", []):
+                if entry.get("id") == dest_id and entry.get("radio"):
+                    entry["radio"].setChecked(True)
+                    break
+            self._on_dest_changed()
+
+    def refresh_from_main_window(self):
+        """Synchronize post items, excerpts, and story lists from the main window without losing draft edits."""
+        if getattr(self, "_syncing_from_main", False):
+            return
+        self._syncing_from_main = True
+        try:
+            if hasattr(self.main_window, "flush_pending_transcript_undo"):
+                try:
+                    self.main_window.flush_pending_transcript_undo()
+                except Exception:
+                    pass
+            self._persist_plugin_draft_states()
+            for _, dest, page in getattr(self, "_plugin_destinations", []):
+                tab = getattr(dest, "tab_widget", None) or page
+                if tab and hasattr(tab, "rebuild_post_items") and callable(tab.rebuild_post_items):
+                    cur_row = tab.wp_posts_list.currentRow() if hasattr(tab, "wp_posts_list") else 0
+                    tab.rebuild_post_items()
+                    if hasattr(tab, "wp_posts_list") and 0 <= cur_row < tab.wp_posts_list.count():
+                        tab.wp_posts_list.setCurrentRow(cur_row)
+            if hasattr(self, "_update_export_button_label"):
+                self._update_export_button_label()
+        finally:
+            self._syncing_from_main = False
+
     def _toggle_maximize(self):
         if self.isMaximized():
             self.showNormal()
@@ -1427,3 +1432,5 @@ class UnifiedExportDialog(QDialog):
                 else:
                     self.maximize_btn.setText("⛶")
                     self.maximize_btn.setToolTip("Maximize Export window")
+        elif event.type() == QEvent.Type.WindowActivate:
+            self.refresh_from_main_window()

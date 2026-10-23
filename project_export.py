@@ -308,6 +308,17 @@ class ProjectExportMixin(
             event.ignore()
             return
 
+        for attr in ("_active_export_dialog", "_active_metadata_dialog"):
+            dlg = getattr(self, attr, None)
+            if dlg is not None and dlg.isVisible():
+                try:
+                    if hasattr(dlg, "_persist_plugin_draft_states"):
+                        dlg._persist_plugin_draft_states()
+                    if hasattr(dlg, "save_all_to_project"):
+                        dlg.save_all_to_project()
+                except Exception:
+                    pass
+
         if getattr(self, "project_dirty", False) and not getattr(self, "batch_active", False):
             reply = QMessageBox.question(
                 self,
@@ -372,6 +383,9 @@ class ProjectExportMixin(
         except Exception as exc:
             if hasattr(self, "log_activity"):
                 self.log_activity(f"[WARNING] Waveform cleanup encountered an issue: {exc}", mark_dirty=False)
+
+        if hasattr(self, "_close_floating_dialogs"):
+            self._close_floating_dialogs(persist_drafts=False)
 
         try:
             for thread in list(getattr(self, "translation_status_threads", [])):

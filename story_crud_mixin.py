@@ -726,10 +726,64 @@ class StoryCrudMixin:
                 self.timeline.update()
             self.save_project()
 
-    def open_story_metadata_dialog(self, target_story_index: Optional[int] = None):
+    def open_story_metadata_dialog(self, target_story_index: Optional[int] = None, modal: bool = False):
         from story_metadata_dialog import StoryMetadataDialog
         if target_story_index is None and getattr(self, "current_selected_story_indices", None):
             target_story_index = self.current_selected_story_indices[0]
 
+        if getattr(self, "_stories_panel_maximized", False) and hasattr(self, "toggle_maximize_stories_panel"):
+            self.toggle_maximize_stories_panel()
+
+        existing = getattr(self, "_active_metadata_dialog", None)
+        if existing is not None and existing.isVisible():
+            existing.refresh_from_main_window(target_story_index=target_story_index)
+            if existing.isMinimized():
+                existing.showNormal()
+            existing.raise_()
+            existing.activateWindow()
+            return existing
+
         dlg = StoryMetadataDialog(self, main_window=self, target_story_index=target_story_index)
-        dlg.exec()
+        self._active_metadata_dialog = dlg
+
+        def _on_finished(_code: int):
+            if getattr(self, "_active_metadata_dialog", None) is dlg:
+                self._active_metadata_dialog = None
+
+        dlg.finished.connect(_on_finished)
+        if modal:
+            dlg.exec()
+            return dlg
+
+        dlg.setWindowModality(Qt.WindowModality.NonModal)
+        dlg.show()
+        dlg.raise_()
+        dlg.activateWindow()
+        return dlg
+
+    def _notify_floating_dialogs(self):
+        """Refresh any open non-modal export or metadata floating windows after main window edits."""
+        for attr in ("_active_export_dialog", "_active_metadata_dialog"):
+            dlg = getattr(self, attr, None)
+            if dlg is not None and dlg.isVisible() and not dlg.isActiveWindow():
+                if hasattr(dlg, "refresh_from_main_window"):
+                    try:
+                        dlg.refresh_from_main_window()
+                    except Exception:
+                        pass
+
+    def _close_floating_dialogs(self, persist_drafts: bool = True):
+        """Persist drafts and close any active non-modal floating windows on project close or shutdown."""
+        for attr in ("_active_export_dialog", "_active_metadata_dialog"):
+            dlg = getattr(self, attr, None)
+            if dlg is not None:
+                try:
+                    if persist_drafts:
+                        if hasattr(dlg, "_persist_plugin_draft_states"):
+                            dlg._persist_plugin_draft_states()
+                        if hasattr(dlg, "save_all_to_project"):
+                            dlg.save_all_to_project()
+                    dlg.close()
+                except Exception:
+                    pass
+                setattr(self, attr, None)

@@ -119,8 +119,62 @@ class DiagnosticExportTestsMixin:
         if len(mock_widget.wp_post_items) != 3:
             raise AssertionError(f"Full and all stories scope failed: expected 3 items, got {len(mock_widget.wp_post_items)}")
 
+        # 5. Verify shared story & project WordPress metadata persistence (Item 6.1)
+        mock_widget._sync_post_to_project = WordPressExportTabWidget._sync_post_to_project.__get__(mock_widget, type(mock_widget))
+        mock_widget.save_all_posts_to_project = WordPressExportTabWidget.save_all_posts_to_project.__get__(mock_widget, type(mock_widget))
+        mock_widget.wp_post_items[0]["title"] = "Saved Episode Draft Title"
+        mock_widget.wp_post_items[0]["excerpt"] = "Saved episode draft excerpt"
+        mock_widget.wp_post_items[1]["title"] = "Saved Story 1 Draft Title"
+        mock_widget.wp_post_items[1]["excerpt"] = "Saved story 1 draft excerpt"
+        mock_widget.wp_post_items[1]["author_ids"] = [42]
+        mock_widget.wp_post_items[1]["category_ids"] = [7, 9]
+        mock_widget.save_all_posts_to_project()
+
+        wp_proj_saved = mock_widget.main_window.project_metadata.get("wordpress", {})
+        if wp_proj_saved.get("title") != "Saved Episode Draft Title" or wp_proj_saved.get("excerpt") != "Saved episode draft excerpt":
+            raise AssertionError(f"Project WordPress metadata persistence failed: {wp_proj_saved}")
+        st0_wp = mock_widget.main_window.stories[0].metadata.get("wordpress", {})
+        if st0_wp.get("title") != "Saved Story 1 Draft Title" or st0_wp.get("author_ids") != [42] or st0_wp.get("category_ids") != [7, 9]:
+            raise AssertionError(f"Story WordPress metadata persistence failed: {st0_wp}")
+
+        # 6. Verify 4-Tab Layout, Preferences Page QComboBox, and Non-Modal Floating Dialogs (Items 6.2 & 6.3)
+        from PySide6.QtCore import Qt
+        from PySide6.QtWidgets import QApplication
+        if QApplication.instance() is not None:
+            from plugins.wordpress.client import WordPressPreferencesPage, WordPressSettingsDialog
+            from export.dialog import UnifiedExportDialog
+            from story_metadata_dialog import StoryMetadataDialog
+
+            wp_pref = WordPressPreferencesPage(None, app=mock_widget.main_window)
+            if not hasattr(wp_pref, "layout_style_combo") or wp_pref.layout_style_combo.count() != 3:
+                raise AssertionError("WordPressPreferencesPage missing 3-option layout_style_combo")
+            wp_set_dlg = WordPressSettingsDialog(None)
+            if not hasattr(wp_set_dlg, "layout_style_combo") or wp_set_dlg.layout_style_combo.count() != 3:
+                raise AssertionError("WordPressSettingsDialog missing 3-option layout_style_combo")
+            wp_set_dlg.close()
+
+            tab_w = WordPressExportTabWidget(None, mock_widget.main_window)
+            if hasattr(tab_w, "wp_editor_tabs") and tab_w.wp_editor_tabs.count() != 4:
+                raise AssertionError(f"Expected 4 tabs in WordPressExportTabWidget, got {tab_w.wp_editor_tabs.count()}")
+            if tab_w.wp_bulk_box.isVisible():
+                raise AssertionError("wp_bulk_box should be hidden")
+
+            tab_meta = WordPressExportTabWidget(None, mock_widget.main_window, metadata_editor_mode=True)
+            if hasattr(tab_meta, "wp_editor_tabs") and tab_meta.wp_editor_tabs.count() != 3:
+                raise AssertionError(f"Expected 3 tabs in metadata_editor_mode, got {tab_meta.wp_editor_tabs.count()}")
+
+            exp_dlg = UnifiedExportDialog(mock_widget.main_window, initial_scope="all_stories")
+            if exp_dlg.windowModality() != Qt.WindowModality.NonModal or not hasattr(exp_dlg, "float_btn") or not hasattr(exp_dlg, "refresh_btn"):
+                raise AssertionError("UnifiedExportDialog missing NonModal floating controls")
+            exp_dlg.close()
+
+            meta_dlg = StoryMetadataDialog(None, main_window=mock_widget.main_window, target_story_index=0)
+            if meta_dlg.windowModality() != Qt.WindowModality.NonModal or not hasattr(meta_dlg, "float_btn") or not hasattr(meta_dlg, "refresh_btn"):
+                raise AssertionError("StoryMetadataDialog missing NonModal floating controls")
+            meta_dlg.close()
+
         item.status = "PASS"
-        item.message = "WordPress export post items rebuilding across all scope modes fully verified"
+        item.message = "WordPress export scope, shared metadata persistence, 4-tab layout, and non-modal floating dialogs verified"
 
     def _test_wordpress_export_content_and_transcript_formatter(self, item: DiagnosticItem):
         try:

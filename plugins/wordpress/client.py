@@ -30,6 +30,7 @@ from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QButtonGroup,
     QCheckBox,
+    QComboBox,
     QDialog,
     QFormLayout,
     QGroupBox,
@@ -979,6 +980,29 @@ class WordPressSettingsDialog(QDialog):
 
         layout.addWidget(custom_group)
 
+        # Export View Layout Preference
+        layout_group = QGroupBox("Export Configuration View Layout")
+        lg_layout = QVBoxLayout(layout_group)
+        layout_desc = QLabel(
+            "Choose how WordPress post fields (title, excerpt, authors, categories, featured image, "
+            "and podcast feeds) are arranged in the export window:"
+        )
+        layout_desc.setWordWrap(True)
+        lg_layout.addWidget(layout_desc)
+
+        lg_form = QFormLayout()
+        self.layout_style_combo = QComboBox()
+        self.layout_style_combo.addItem("Tabs: Post Content | Authors & Taxonomy | Podcast & Media | Publishing & Formatting (Recommended)", "tabs")
+        self.layout_style_combo.addItem("Split Two-Column: Post Content & Thumbnail | Authors & Categories", "split")
+        self.layout_style_combo.addItem("Classic Vertical Accordion", "classic")
+
+        saved_layout = str(self.settings.value("wordpress_layout_style", "tabs") or "tabs").lower().strip()
+        idx = self.layout_style_combo.findData(saved_layout)
+        self.layout_style_combo.setCurrentIndex(max(0, idx))
+        lg_form.addRow("View Layout:", self.layout_style_combo)
+        lg_layout.addLayout(lg_form)
+        layout.addWidget(layout_group)
+
         self.status_label = QLabel("")
         self.status_label.setWordWrap(True)
         layout.addWidget(self.status_label)
@@ -1032,6 +1056,10 @@ class WordPressSettingsDialog(QDialog):
         self.settings.setValue("wp_custom_text_pos", "bottom" if self.rad_pos_bottom.isChecked() else "top")
         self.settings.setValue("wp_custom_text_no_snippet", self.chk_no_snippet.isChecked())
         self.settings.setValue("wp_custom_text_no_excerpt", self.chk_no_excerpt.isChecked())
+
+        if hasattr(self, "layout_style_combo") and self.layout_style_combo:
+            style_val = self.layout_style_combo.currentData() or "tabs"
+            self.settings.setValue("wordpress_layout_style", style_val)
         if user and pwd:
             saved_in_keyring = _set_wp_password(user, pwd)
             if not saved_in_keyring:
@@ -1144,6 +1172,29 @@ class WordPressPreferencesPage(QWidget):
 
         layout.addWidget(custom_group)
 
+        # Export View Layout Preference
+        layout_group = QGroupBox("Export Configuration View Layout")
+        lg_layout = QVBoxLayout(layout_group)
+        layout_desc = QLabel(
+            "Choose how WordPress post fields (title, excerpt, authors, categories, featured image, "
+            "and podcast feeds) are arranged in the export window:"
+        )
+        layout_desc.setWordWrap(True)
+        lg_layout.addWidget(layout_desc)
+
+        lg_form = QFormLayout()
+        self.layout_style_combo = QComboBox()
+        self.layout_style_combo.addItem("Tabs: Post Content | Authors & Taxonomy | Podcast & Media | Publishing & Formatting (Recommended)", "tabs")
+        self.layout_style_combo.addItem("Split Two-Column: Post Content & Thumbnail | Authors & Categories", "split")
+        self.layout_style_combo.addItem("Classic Vertical Accordion", "classic")
+
+        saved_layout = str(self.settings.value("wordpress_layout_style", "tabs") or "tabs").lower().strip()
+        idx = self.layout_style_combo.findData(saved_layout)
+        self.layout_style_combo.setCurrentIndex(max(0, idx))
+        lg_form.addRow("View Layout:", self.layout_style_combo)
+        lg_layout.addLayout(lg_form)
+        layout.addWidget(layout_group)
+
         self.status_label = QLabel("")
         self.status_label.setWordWrap(True)
         layout.addWidget(self.status_label)
@@ -1188,6 +1239,10 @@ class WordPressPreferencesPage(QWidget):
         self.settings.setValue("wp_custom_text_pos", "bottom" if self.rad_pos_bottom.isChecked() else "top")
         self.settings.setValue("wp_custom_text_no_snippet", self.chk_no_snippet.isChecked())
         self.settings.setValue("wp_custom_text_no_excerpt", self.chk_no_excerpt.isChecked())
+
+        if hasattr(self, "layout_style_combo") and self.layout_style_combo:
+            style_val = self.layout_style_combo.currentData() or "tabs"
+            self.settings.setValue("wordpress_layout_style", style_val)
 
         if wp_user and wp_pwd and (wp_user != self.orig_user or wp_pwd != self.orig_pwd):
             saved_in_keyring = _set_wp_password(wp_user, wp_pwd)
