@@ -418,10 +418,38 @@ jobs:
           enable-cache: true
           cache-dependency-glob: "requirements*.txt"
 
+      - name: Setup FFmpeg (Static Linux Binaries)
+        run: |
+          echo "Setting up FFmpeg for Linux (x86_64)..."
+          mkdir -p "$HOME/bin" bin
+          FFMPEG_URL="https://github.com/Tyrrrz/FFmpegBin/releases/download/7.0.2/ffmpeg-linux-x64.zip"
+          echo "Downloading static FFmpeg from $FFMPEG_URL..."
+          if curl -fsSL --retry 3 "$FFMPEG_URL" -o /tmp/ffmpeg.zip && unzip -q -o /tmp/ffmpeg.zip -d "$HOME/bin"; then
+            rm -f /tmp/ffmpeg.zip
+            chmod +x "$HOME/bin/ffmpeg" "$HOME/bin/ffprobe"
+            cp "$HOME/bin/ffmpeg" bin/ 2>/dev/null || true
+            cp "$HOME/bin/ffprobe" bin/ 2>/dev/null || true
+            echo "$HOME/bin" >> $GITHUB_PATH
+            export PATH="$HOME/bin:$PATH"
+          fi
+          if ! command -v ffmpeg >/dev/null 2>&1 || ! command -v ffprobe >/dev/null 2>&1; then
+            echo "Falling back to apt-get for FFmpeg..."
+            sudo apt-get install -y --no-install-recommends ffmpeg
+            mkdir -p bin
+            cp "$(which ffmpeg)" bin/ 2>/dev/null || true
+            cp "$(which ffprobe)" bin/ 2>/dev/null || true
+          fi
+          ffmpeg -version
+          ffprobe -version
+
       - name: Install system dependencies
         run: |
+          # Configure resilient apt retries and timeouts to prevent Azure mirror stalls
+          echo 'Acquire::Retries "3";' | sudo tee /etc/apt/apt.conf.d/80-retries
+          echo 'Acquire::http::Timeout "30";' | sudo tee -a /etc/apt/apt.conf.d/80-retries
+          echo 'Acquire::https::Timeout "30";' | sudo tee -a /etc/apt/apt.conf.d/80-retries
           sudo apt-get update
-          sudo apt-get install -y ffmpeg libxcb-cursor0 libpulse0 binutils dpkg-dev
+          sudo apt-get install -y --no-install-recommends libxcb-cursor0 libpulse0 binutils dpkg-dev
 
       - name: Install Python dependencies (Fast CPU PyTorch with uv)
         run: |

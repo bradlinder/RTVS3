@@ -91,40 +91,40 @@ TABLE OF CONTENTS & STATUS OVERVIEW
 
 7. Upcoming Milestone: Automated AMD Ryzen AI Local Development Platform & Token-Efficient Model Suite (`scripts/setup_local_ai.py`, `.vscode/settings.json`, `.clinerules`, `.github/workflows/build.yml`) [PLANNED for v4.1.0] [OPTIONAL / PLANNED] [NOT STARTED]
    - *Purpose*: One-command non-destructive setup script and auto-configuration suite enabling offline AI-assisted development on AMD Ryzen AI 9 HX 370 (Radeon 890M `gfx1150` + XDNA 2 NPU, 64GB RAM) systems with token-budget optimization, prefix-caching architecture, and automated AST split tooling.
-   [ ] 6.1 Strix Point Hardware, UMA VRAM & Context Allocation Probe (`scripts/setup_local_ai.py`): Detect CPU/iGPU/NPU, 64GB RAM, UMA aperture, and configure `gfx1150` Vulkan/ROCm runtime with KV-cache VRAM budgets (`OLLAMA_FLASH_ATTENTION=1`, `OLLAMA_KV_CACHE_TYPE=q8_0`).
-   [ ] 6.2 Tiered Local AI Model Provisioner with Prefix-Cache Optimization (`scripts/setup_local_ai.py`): Pull and verify quantized coding models (`Qwen2.5-Coder-32B-Instruct` Q4_K_M for refactoring, `14B/7B` for fast edits, `1.5B` for sub-50ms autocomplete) with shared prefix-caching.
-   [ ] 6.3 Local Server Health Check, Context Window Tuning & Prompt Cache Pinning (`scripts/setup_local_ai.py`): Bind `http://127.0.0.1:11434`, pin project symbol indices (`.codemaps/symbol_index.json`) into KV prompt cache for 0-latency context, and enforce 16k-32k working context limits.
-   [ ] 6.4 Token-Thrift IDE Configuration & AST Suggester Integration (`scripts/setup_local_ai.py`): Configure Continue/Cline with symbol-first retrieval, diff-only edits, line-slice reading rules, and map `.clinerules`/`.cursorrules` to `scripts/modular_audit.py` to prevent token bloat.
-   [ ] 6.5 Token-Budget Task-to-Model Router & CI Pipeline Verification (`.github/workflows/build.yml`, `test_runner.py`): Provide token-aware task router (<300 lines -> 7B/14B; refactoring -> 32B) and verify CI build invariants.
+   [ ] 7.1 Strix Point Hardware, UMA VRAM & Context Allocation Probe (`scripts/setup_local_ai.py`): Detect CPU/iGPU/NPU, 64GB RAM, UMA aperture, and configure `gfx1150` Vulkan/ROCm runtime with KV-cache VRAM budgets (`OLLAMA_FLASH_ATTENTION=1`, `OLLAMA_KV_CACHE_TYPE=q8_0`).
+   [ ] 7.2 Tiered Local AI Model Provisioner with Prefix-Cache Optimization (`scripts/setup_local_ai.py`): Pull and verify quantized coding models (`Qwen2.5-Coder-32B-Instruct` Q4_K_M for refactoring, `14B/7B` for fast edits, `1.5B` for sub-50ms autocomplete) with shared prefix-caching.
+   [ ] 7.3 Local Server Health Check, Context Window Tuning & Prompt Cache Pinning (`scripts/setup_local_ai.py`): Bind `http://127.0.0.1:11434`, pin project symbol indices (`.codemaps/symbol_index.json`) into KV prompt cache for 0-latency context, and enforce 16k-32k working context limits.
+   [ ] 7.4 Token-Thrift IDE Configuration & AST Suggester Integration (`scripts/setup_local_ai.py`): Configure Continue/Cline with symbol-first retrieval, diff-only edits, line-slice reading rules, and map `.clinerules`/`.cursorrules` to `scripts/modular_audit.py` to prevent token bloat.
+   [ ] 7.5 Token-Budget Task-to-Model Router & CI Pipeline Verification (`.github/workflows/build.yml`, `test_runner.py`): Provide token-aware task router (<300 lines -> 7B/14B; refactoring -> 32B) and verify CI build invariants.
 
 8. Optional Future Milestone: Interactive Text-Based Media Assembly & Multi-Asset Ripple Editing Engine (`assembly/bin_model.py`, `assembly/clipboard.py`, `assembly/ripple_engine.py`, `transcript_editor.py`, `export/timeline.py`) [PLANNED for v4.2.0] [OPTIONAL] [NOT STARTED]
-   [ ] 7.1 Multi-Asset Project Container & Media Bin Submodule (`assembly/bin_model.py`, `project_lifecycle.py`)
-   [ ] 7.2 Dynamic Uncapped Tabbed Document Workspace (`assembly/tab_workspace.py`, `ui_layout.py`)
-   [ ] 7.3 Rich Media Clipboard Engine (`assembly/clipboard.py` — `application/x-rtvs-clip+json`)
-   [ ] 7.4 Non-Destructive Multi-Source Playout Engine (`assembly/playout_engine.py`)
-   [ ] 7.5 Text-Driven Audio/Video Ripple Cut Engine (`assembly/ripple_engine.py`)
-   [ ] 7.6 Paper-Cut Story Assembly Workflow (`assembly/paper_cut_mixin.py`)
-   [ ] 7.7 Document Revisions & Snapshot Version History (`assembly/revision_history.py`)
-   [ ] 7.8 Word-Level Timecode Sync, NLE Markers & Multi-Track DAW Timeline Export (`export/timeline.py`)
-   [ ] 7.9 Automated Diagnostic Test Suite (`test_runner.py`)
+   [ ] 8.1 Multi-Asset Project Container & Media Bin Submodule (`assembly/bin_model.py`, `project_lifecycle.py`)
+   [ ] 8.2 Dynamic Uncapped Tabbed Document Workspace (`assembly/tab_workspace.py`, `ui_layout.py`)
+   [ ] 8.3 Rich Media Clipboard Engine (`assembly/clipboard.py` — `application/x-rtvs-clip+json`)
+   [ ] 8.4 Non-Destructive Multi-Source Playout Engine (`assembly/playout_engine.py`)
+   [ ] 8.5 Text-Driven Audio/Video Ripple Cut Engine (`assembly/ripple_engine.py`)
+   [ ] 8.6 Paper-Cut Story Assembly Workflow (`assembly/paper_cut_mixin.py`)
+   [ ] 8.7 Document Revisions & Snapshot Version History (`assembly/revision_history.py`)
+   [ ] 8.8 Word-Level Timecode Sync, NLE Markers & Multi-Track DAW Timeline Export (`export/timeline.py`)
+   [ ] 8.9 Automated Diagnostic Test Suite (`test_runner.py`)
 
 9. Optional Future Milestone: Android Transcriber & Speaker Diarization Companion App (`android/`, Kotlin, Jetpack Compose, `whisper.cpp`, `sherpa-onnx`, WeSpeaker) [PLANNED for v4.3.0] [OPTIONAL / LOWER PRIORITY] [NOT STARTED]
    - *Workflow Design Note*: Offline mobile companion app for Android (e.g. Google Pixel series with NPU acceleration) providing dual ASR engines (Whisper `base.en` q8_0 vs. Zipformer via `sherpa-onnx`) and an on-demand model download and removal manager. Can be spun off into a dedicated AI Studio Android project (Option A) using the provided starter prompt.
-   [ ] 8.1 Android Project Scaffolding & Audio Foreground Service (`android/` Kotlin / Jetpack Compose)
-   [ ] 8.2 Dual On-Device ASR Runtimes (`whisper.cpp` JNI for Whisper `base.en` & `onnxruntime-android` for Zipformer)
-   [ ] 8.3 On-Demand Model Download & Removal Manager (UI dialog to download, verify, inspect storage, and delete models on demand)
-   [ ] 8.4 On-Device Speaker Diarization Engine (`onnxruntime-android` WeSpeaker embedding extraction + clustering)
-   [ ] 8.5 Mobile Export & Session Sync with Desktop RTVS3 Projects (`.json` project container sync)
-   [ ] 8.6 Standalone AI Studio Starter Prompt Specification & Project Blueprint (Option A Launcher)
+   [ ] 9.1 Android Project Scaffolding & Audio Foreground Service (`android/` Kotlin / Jetpack Compose)
+   [ ] 9.2 Dual On-Device ASR Runtimes (`whisper.cpp` JNI for Whisper `base.en` & `onnxruntime-android` for Zipformer)
+   [ ] 9.3 On-Demand Model Download & Removal Manager (UI dialog to download, verify, inspect storage, and delete models on demand)
+   [ ] 9.4 On-Device Speaker Diarization Engine (`onnxruntime-android` WeSpeaker embedding extraction + clustering)
+   [ ] 9.5 Mobile Export & Session Sync with Desktop RTVS3 Projects (`.json` project container sync)
+   [ ] 9.6 Standalone AI Studio Starter Prompt Specification & Project Blueprint (Option A Launcher)
 
 10. REAPER DAW Companion Bridge & ReaScript Transcript Integration (`reaper_bridge.py`, `transcript_editor_dialogs.py`, `transcript_context_menu_mixin.py`, `scripts/reaper/rtvs_reaper_companion.lua`, `scripts/reaper/rtvs_reaper_dock.lua`, `test_runner.py`) [PLANNED for v4.2.0] [OPTIONAL / PLANNED] [NOT STARTED]
    - *Purpose*: Enable seamless text-to-timeline audio editing in Cockos REAPER without building a full multi-track DAW inside RTVS3. Allows users to copy or send selected transcript quotes from RTVS3 directly to a REAPER track at the edit cursor with automatic source slicing (`D_STARTOFFS` / `D_LENGTH`), speaker/quote take labeling (`P_NAME`), and full item notes (`P_NOTES`), plus an optional ReaImGui dockable `.rtvs` transcript viewer inside REAPER.
-   [ ] 9.1 RTVS3 Clip Cue Payload & Sidecar/IPC Emitter (`reaper_bridge.py`)
-   [ ] 9.2 Interactive Transcript Quick-Action & Shortcut Integration (`transcript_editor_dialogs.py`, `transcript_context_menu_mixin.py`, `shortcuts_manager.py`)
-   [ ] 9.3 Companion ReaScript Timeline Paste & Take Labeling Action (`scripts/reaper/rtvs_reaper_companion.lua`)
-   [ ] 9.4 Optional Dockable ReaImGui Transcript Viewer for REAPER (`scripts/reaper/rtvs_reaper_dock.lua`)
-   [ ] 9.5 Preferences Integration, One-Click Script Installer & Diagnostic Tests (`preferences_dialog.py`, `reaper_bridge.py`, `test_runner.py`)
-   [ ] 9.6 Universal Text-to-WAV Clipboard & Drag-and-Drop Fallback for Other DAWs (`reaper_bridge.py`, `export_media_clipper.py`, `transcript_context_menu_mixin.py`)
+   [ ] 10.1 RTVS3 Clip Cue Payload & Sidecar/IPC Emitter (`reaper_bridge.py`)
+   [ ] 10.2 Interactive Transcript Quick-Action & Shortcut Integration (`transcript_editor_dialogs.py`, `transcript_context_menu_mixin.py`, `shortcuts_manager.py`)
+   [ ] 10.3 Companion ReaScript Timeline Paste & Take Labeling Action (`scripts/reaper/rtvs_reaper_companion.lua`)
+   [ ] 10.4 Optional Dockable ReaImGui Transcript Viewer for REAPER (`scripts/reaper/rtvs_reaper_dock.lua`)
+   [ ] 10.5 Preferences Integration, One-Click Script Installer & Diagnostic Tests (`preferences_dialog.py`, `reaper_bridge.py`, `test_runner.py`)
+   [ ] 10.6 Universal Text-to-WAV Clipboard & Drag-and-Drop Fallback for Other DAWs (`reaper_bridge.py`, `export_media_clipper.py`, `transcript_context_menu_mixin.py`)
 
 ================================================================================
 DETAILED MILESTONE SPECIFICATIONS
@@ -353,37 +353,37 @@ ARCHITECTURAL INVARIANTS FOR SECTION 6:
 ================================================================================
 7. UPCOMING MILESTONE: AUTOMATED AMD RYZEN AI LOCAL DEVELOPMENT PLATFORM & TOKEN-EFFICIENT MODEL SUITE [PLANNED for v4.1.0] [OPTIONAL / PLANNED] [NOT STARTED]
 ================================================================================
-ARCHITECTURAL INVARIANTS FOR SECTION 6:
+ARCHITECTURAL INVARIANTS FOR SECTION 7:
 - Non-Destructive & Cross-Platform Safe: `scripts/setup_local_ai.py` must support `--check` / `--dry-run`, never overwrite existing user IDE settings without creating a `.bak` backup, and degrade gracefully on non-AMD machines.
 - Token Thrift & Prefix Caching First: All local coding models running on unified memory architectures (UMA) must be configured to maximize token-per-second throughput, minimize KV-cache memory pressure, and leverage the symbol stubs and AST analysis tools established in Milestone 3.
 - Preserve All Existing CI & Packaging Tests: Any updates to `.github/workflows/build.yml` MUST retain every invariant tested by `_test_windows_ci_build_and_packaging_optimization_invariants` in `test_runner.py`.
 
-[ ] 6.1 Strix Point Hardware, UMA VRAM & Context Allocation Probe (`scripts/setup_local_ai.py`)
+[ ] 7.1 Strix Point Hardware, UMA VRAM & Context Allocation Probe (`scripts/setup_local_ai.py`)
     - Implement hardware inspection for AMD Ryzen AI 9 HX 370 (12C/24T Zen 5, Radeon 890M `gfx1150` RDNA 3.5 iGPU, XDNA 2 50-TOPS NPU, 64GB RAM):
       1. Detect total physical RAM, dedicated/UMA aperture allocation, and Vulkan/ROCm driver availability.
       2. Compute optimal KV-cache VRAM budget: halving KV-cache footprint via `OLLAMA_KV_CACHE_TYPE=q8_0` and setting working context limits (16k default, 32k max) so local models consume <4 GB KV VRAM instead of ~10 GB, leaving at least 24 GB of system RAM free for concurrent Whisper/WeSpeaker transcription runs.
       3. Configure optimal runtime environment variables for `gfx1150` stability on Windows/Linux: `OLLAMA_FLASH_ATTENTION=1`, `OLLAMA_KV_CACHE_TYPE=q8_0`, and `OLLAMA_NUM_PARALLEL=1`.
 
-[ ] 6.2 Tiered Local AI Model Provisioner with Prefix-Cache Optimization (`scripts/setup_local_ai.py`)
+[ ] 7.2 Tiered Local AI Model Provisioner with Prefix-Cache Optimization (`scripts/setup_local_ai.py`)
     - Automate pulling and registering memory-budgeted coding model tiers via Ollama / LM Studio CLI:
       1. Tier 1 (Heavy Refactoring & Architectural Decomposition — ~20 GB VRAM): `qwen2.5-coder:32b-instruct-q4_K_M` with 32,768 token context for complex AST splits and multi-file facades.
       2. Tier 2 (Fast Single-File Bug Fixes & Mixin Edits — ~9 GB VRAM): `qwen2.5-coder:14b-instruct-q4_K_M` / `7b-instruct-q4_K_M` delivering >50 tok/s on Radeon 890M.
       3. Tier 3 (Sub-50ms Inline Autocomplete — ~1.2 GB VRAM): `qwen2.5-coder:1.5b-base` running on lightweight context.
       4. Validate all models with automated `--dry-run` and SHA-256 integrity checks.
 
-[ ] 6.3 Local Server Health Check, Context Window Tuning & Prompt Cache Pinning (`scripts/setup_local_ai.py`)
+[ ] 7.3 Local Server Health Check, Context Window Tuning & Prompt Cache Pinning (`scripts/setup_local_ai.py`)
     - Verify `http://127.0.0.1:11434` endpoint readiness and generate custom Ollama / llama.cpp `Modelfile` presets:
       1. Pin the project symbol catalog (`.codemaps/symbol_index.json` and `.pyi` stubs created in Item 3.9) into the prefix cache, giving the local model instant zero-token access to repository APIs and signatures without re-ingesting 30+ files on each interaction.
       2. Enforce context ceilings (`num_ctx 16384` for daily development, expandable to `32768` for full audits) and `temperature 0.1` for deterministic code generation.
       3. Run a 64-token warmup benchmark reporting TTFT (Time To First Token) and token/sec throughput.
 
-[ ] 6.4 Token-Thrift IDE Configuration & AST Suggester Integration (`scripts/setup_local_ai.py`)
+[ ] 7.4 Token-Thrift IDE Configuration & AST Suggester Integration (`scripts/setup_local_ai.py`)
     - Safely generate/merge `.vscode/settings.json` and Continue.dev / Cline / Roo Code configuration templates pointing to `http://127.0.0.1:11434`:
       1. Configure IDE extensions for **token-thrifty retrieval**: instruct assistants to query the symbol index (`.codemaps/`) before requesting full file reads, use line-slice reads (`view_file` StartLine/EndLine), and produce unified diff patches rather than regenerating whole files.
       2. Direct integration with AST Split Suggester: configure agent instructions so when an edit touches a file exceeding 800 lines, the assistant automatically invokes `python scripts/modular_audit.py --suggest <file>` to receive turnkey decomposition blueprints rather than wasting thousands of tokens analyzing AST coupling manually.
       3. Create cross-platform symlinks or synchronized copies mapping `.clinerules` and `.cursorrules` to `AGENTS.md` and `GEMINI.md` to enforce the 10-location version bump checklist, `roadmap_manager.py --check`, and the <1,000-line modular ceiling.
 
-[ ] 6.5 Token-Budget Task-to-Model Router & CI Pipeline Verification (`.github/workflows/build.yml`, `test_runner.py`)
+[ ] 7.5 Token-Budget Task-to-Model Router & CI Pipeline Verification (`.github/workflows/build.yml`, `test_runner.py`)
     - Add `--guide` CLI mode and interactive task-to-model routing matrix to `scripts/setup_local_ai.py`:
       * Small single-file fixes (<300 lines) -> Route to 7B/14B model (<100ms TTFT, saving power and memory).
       * Multi-file refactoring, architectural planning, or files >500 lines -> Route to 32B model with pre-cached symbol catalog.
@@ -395,27 +395,27 @@ ARCHITECTURAL INVARIANTS FOR SECTION 6:
 ================================================================================
 *Workflow Design Note*: Marked as an optional workflow extension for users requesting text-driven paper cuts. The core single-file story segmenter, voicebook, and DAW exports remain default and lightweight. All new modules in this milestone MUST reside in a dedicated `assembly/` package with every file kept strictly under 1,000 lines.
 
-[ ] 7.1 Multi-Asset Project Container & Media Bin Submodule (`assembly/bin_model.py`, `project_lifecycle.py`)
-[ ] 7.2 Dynamic Uncapped Tabbed Document Workspace (`assembly/tab_workspace.py`, `ui_layout.py`)
-[ ] 7.3 Rich Media Clipboard Engine (`assembly/clipboard.py` — `application/x-rtvs-clip+json`)
-[ ] 7.4 Non-Destructive Multi-Source Playout Engine (`assembly/playout_engine.py`)
-[ ] 7.5 Text-Driven Audio/Video Ripple Cut Engine (`assembly/ripple_engine.py`)
-[ ] 7.6 Paper-Cut Story Assembly Workflow (`assembly/paper_cut_mixin.py`)
-[ ] 7.7 Document Revisions & Snapshot Version History (`assembly/revision_history.py`)
-[ ] 7.8 Word-Level Timecode Sync, NLE Markers & Multi-Track DAW Timeline Export (`export/timeline.py`)
-[ ] 7.9 Automated Diagnostic Test Suite (`test_runner.py`)
+[ ] 8.1 Multi-Asset Project Container & Media Bin Submodule (`assembly/bin_model.py`, `project_lifecycle.py`)
+[ ] 8.2 Dynamic Uncapped Tabbed Document Workspace (`assembly/tab_workspace.py`, `ui_layout.py`)
+[ ] 8.3 Rich Media Clipboard Engine (`assembly/clipboard.py` — `application/x-rtvs-clip+json`)
+[ ] 8.4 Non-Destructive Multi-Source Playout Engine (`assembly/playout_engine.py`)
+[ ] 8.5 Text-Driven Audio/Video Ripple Cut Engine (`assembly/ripple_engine.py`)
+[ ] 8.6 Paper-Cut Story Assembly Workflow (`assembly/paper_cut_mixin.py`)
+[ ] 8.7 Document Revisions & Snapshot Version History (`assembly/revision_history.py`)
+[ ] 8.8 Word-Level Timecode Sync, NLE Markers & Multi-Track DAW Timeline Export (`export/timeline.py`)
+[ ] 8.9 Automated Diagnostic Test Suite (`test_runner.py`)
 
 ================================================================================
 9. OPTIONAL FUTURE MILESTONE: ANDROID TRANSCRIBER & SPEAKER DIARIZATION COMPANION APP [PLANNED for v4.3.0] [OPTIONAL / LOWER PRIORITY] [NOT STARTED]
 ================================================================================
 *Workflow Design Note*: Lower priority offline mobile companion app focused on core transcription and speaker diarization subset running on Android (e.g. Google Pixel series with NPU hardware acceleration). Includes dual ASR engine options (Whisper `base.en` q8_0 vs. Zipformer via `sherpa-onnx`) with an on-demand model download and removal manager so users can test both engines and choose the ideal balance of accuracy and speed.
 
-[ ] 8.1 Android Project Scaffolding & Audio Foreground Service (`android/` Kotlin / Jetpack Compose)
-[ ] 8.2 Dual On-Device ASR Runtimes (`whisper.cpp` JNI for Whisper `base.en` & `onnxruntime-android` for Zipformer)
-[ ] 8.3 On-Demand Model Download & Removal Manager (UI dialog to download, verify, inspect storage, and delete models on demand)
-[ ] 8.4 On-Device Speaker Diarization Engine (`onnxruntime-android` WeSpeaker embedding extraction + clustering)
-[ ] 8.5 Mobile Export & Session Sync with Desktop RTVS3 Projects (`.json` project container sync)
-[ ] 8.6 Standalone AI Studio Starter Prompt Specification & Project Blueprint (Option A Launcher)
+[ ] 9.1 Android Project Scaffolding & Audio Foreground Service (`android/` Kotlin / Jetpack Compose)
+[ ] 9.2 Dual On-Device ASR Runtimes (`whisper.cpp` JNI for Whisper `base.en` & `onnxruntime-android` for Zipformer)
+[ ] 9.3 On-Demand Model Download & Removal Manager (UI dialog to download, verify, inspect storage, and delete models on demand)
+[ ] 9.4 On-Device Speaker Diarization Engine (`onnxruntime-android` WeSpeaker embedding extraction + clustering)
+[ ] 9.5 Mobile Export & Session Sync with Desktop RTVS3 Projects (`.json` project container sync)
+[ ] 9.6 Standalone AI Studio Starter Prompt Specification & Project Blueprint (Option A Launcher)
     - When ready to spin off this companion app into a dedicated Android AI Studio project, create a new Android/Kotlin project in AI Studio and submit the following initial architectural prompt:
 
 --------------------------------------------------------------------------------
@@ -462,7 +462,7 @@ ARCHITECTURAL INVARIANTS FOR REAPER INTEGRATION:
 - Modular <1,000-Line Invariant: Keep all Python bridge logic in a dedicated module `reaper_bridge.py` (<= 500 lines) and companion Lua ReaScripts in `scripts/reaper/` so existing transcript editor modules remain well under the 1,000-line ceiling.
 - Non-Destructive OS Clipboard Behavior: Copying text in RTVS3 (`Ctrl+C`) must keep clean readable prose in the standard `text/plain` system clipboard for Word/Docs/Slack while simultaneously writing structured REAPER timeline cue metadata to `~/.rtvs_reaper_clip.json` (and custom MIME `application/x-rtvs-clip+json`).
 
-[ ] 9.1 RTVS3 Clip Cue Payload & Sidecar/IPC Emitter (`reaper_bridge.py`)
+[ ] 10.1 RTVS3 Clip Cue Payload & Sidecar/IPC Emitter (`reaper_bridge.py`)
     - Create `reaper_bridge.py` to bridge RTVS3 word-level timestamp selections (`get_time_range_for_char_span` / `get_all_selected_story_ranges`) to REAPER:
       1. Define `ReaperClipCue` payload schema (`version`, `source_audio`, `start_time`, `end_time`, `duration`, `speaker`, `excerpt_label`, `full_text`, `story_title`, `project_path`, `timestamp_utc`).
       2. Ensure `source_audio` resolves to a permanent, REAPER-readable media file path on disk.
@@ -470,11 +470,11 @@ ARCHITECTURAL INVARIANTS FOR REAPER INTEGRATION:
          - **Sidecar + Multi-MIME Clipboard**: On copy or "Send to REAPER", write `~/.rtvs_reaper_clip.json` (or `get_app_data_dir() / "ipc" / "reaper_clip_cue.json"`) and attach `application/x-rtvs-clip+json` to `QMimeData` while keeping clean plain text in `text/plain`.
          - **Zero-Click Local Loopback / Web Control Trigger**: Optionally dispatch a non-blocking local HTTP/OSC command or `reaper -nonewinst` action trigger so clicking "Send to REAPER" drops the clip onto REAPER's timeline immediately without switching window focus.
 
-[ ] 9.2 Interactive Transcript Quick-Action & Shortcut Integration (`transcript_editor_dialogs.py`, `transcript_context_menu_mixin.py`, `shortcuts_manager.py`)
+[ ] 10.2 Interactive Transcript Quick-Action & Shortcut Integration (`transcript_editor_dialogs.py`, `transcript_context_menu_mixin.py`, `shortcuts_manager.py`)
     - Add a `"Send to REAPER"` action button to `TranscriptSelectionBubble` (`transcript_editor_dialogs.py`) and the right-click context menu (`transcript_context_menu_mixin.py`), plus a configurable keyboard shortcut (`Ctrl+Shift+R` default in `shortcuts_manager.py`).
     - Automatically populate the clip cue whenever a user copies a transcript selection (`Ctrl+C`) so pasting inside REAPER works transparently.
 
-[ ] 9.3 Companion ReaScript Timeline Paste & Take Labeling Action (`scripts/reaper/rtvs_reaper_companion.lua`)
+[ ] 10.3 Companion ReaScript Timeline Paste & Take Labeling Action (`scripts/reaper/rtvs_reaper_companion.lua`)
     - Create a dependency-free Lua ReaScript (`scripts/reaper/rtvs_reaper_companion.lua`) that users can bind to a shortcut (e.g., `Alt+V` or `Ctrl+Shift+V`) in REAPER's Action List:
       1. Reads the latest `ReaperClipCue` JSON payload from the sidecar cue file (or clipboard fallback).
       2. Wraps timeline insertion in `reaper.Undo_BeginBlock()` / `reaper.Undo_EndBlock("RTVS3: Insert Transcript Clip", -1)`.
@@ -483,18 +483,18 @@ ARCHITECTURAL INVARIANTS FOR REAPER INTEGRATION:
       5. Labels the take banner (`P_NAME`) with `"{speaker}: \"{excerpt_label}\""` (using `generate_story_excerpt`-style truncation) so the spoken words appear directly on the waveform in REAPER's arrange view, and writes the full unabridged quote into the item's notes (`P_NOTES`).
       6. Advances the REAPER edit cursor to the end of the newly inserted item for rapid sequential paper-cut assembly and calls `reaper.UpdateArrange()`.
 
-[ ] 9.4 Optional Dockable ReaImGui Transcript Viewer for REAPER (`scripts/reaper/rtvs_reaper_dock.lua`)
+[ ] 10.4 Optional Dockable ReaImGui Transcript Viewer for REAPER (`scripts/reaper/rtvs_reaper_dock.lua`)
     - Create an optional dockable ReaImGui Lua script (`scripts/reaper/rtvs_reaper_dock.lua`) that opens any `.rtvs` / `.rtvs.json` project file directly inside REAPER:
       1. Renders speaker labels, timestamps, story boundaries, and a live search/filter bar inside a dockable REAPER panel.
       2. Supports playhead chasing (clicking a word seeks REAPER's playhead) and a one-click `"Insert Selection at Cursor"` button that slices and labels the corresponding audio item on the active REAPER track.
 
-[ ] 9.5 Preferences Integration, One-Click Script Installer & Diagnostic Tests (`preferences_dialog.py`, `reaper_bridge.py`, `test_runner.py`)
+[ ] 10.5 Preferences Integration, One-Click Script Installer & Diagnostic Tests (`preferences_dialog.py`, `reaper_bridge.py`, `test_runner.py`)
     - Add a `"DAW & REAPER Integration"` section in Preferences (`preferences_dialog.py`) allowing users to:
       1. Configure default clip handle/fade padding (ms) and take label format (`Speaker + Excerpt`, `Excerpt Only`, `Story Title + Speaker`).
       2. Click `"Install Companion ReaScripts to REAPER..."` to automatically detect the OS REAPER resource path (`%APPDATA%/REAPER/Scripts`, `~/Library/Application Support/REAPER/Scripts`, or `~/.config/REAPER/Scripts`) and copy the Lua scripts into place.
     - Add a diagnostic unit test in `test_runner.py` (`"REAPER Companion Bridge & ReaScript Payload Invariants"`) verifying `ReaperClipCue` serialization, excerpt label truncation, non-destructive `text/plain` clipboard preservation, and Lua script syntax/API invariants.
 
-[ ] 9.6 Universal Text-to-WAV Clipboard & Drag-and-Drop Fallback for Other DAWs (`reaper_bridge.py`, `export_media_clipper.py`, `transcript_context_menu_mixin.py`)
+[ ] 10.6 Universal Text-to-WAV Clipboard & Drag-and-Drop Fallback for Other DAWs (`reaper_bridge.py`, `export_media_clipper.py`, `transcript_context_menu_mixin.py`)
     - Provide a lightweight, universal fallback solution in `reaper_bridge.py` and `transcript_context_menu_mixin.py` for DAWs without an open non-destructive take-offset API (Audacity, Hindenburg Pro, Adobe Audition, Premiere, DaVinci Resolve):
       1. Add a `"Copy Audio Clip for DAW"` / `"Render & Copy WAV Clip to System Clipboard"` action to the transcript selection context menu and bubble, plus drag-and-drop file export support.
       2. When triggered, use RTVS3's existing `extract_audio_clip` helper (`export_media_clipper.py`) to render the selected quote into a temporary, cleanly trimmed `.wav` slice named after the speaker and quote excerpt (via `generate_story_excerpt` in `story_metadata_dialog.py`): e.g., `Jane_Doe_-_We_started_this_project_back_in_2020.wav`.
