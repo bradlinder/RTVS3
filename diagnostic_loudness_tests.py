@@ -198,7 +198,7 @@ class DiagnosticLoudnessTestsMixin:
         from PySide6.QtWidgets import QApplication, QMessageBox
 
         # Determine if we are running in the main GUI thread or in a background worker QThread
-        app = QCoreApplication.instance()
+        app = getattr(QCoreApplication, "instance", lambda: None)()
         is_main_gui_thread = (
             app is not None
             and hasattr(app, "thread")
@@ -319,11 +319,54 @@ class DiagnosticLoudnessTestsMixin:
 
             assert mock_win.settings_store.value("target_standard") == "podcast"
             assert float(mock_win.settings_store.value("target_lufs")) == -14.0
+
+            # 7. Test Non-Modal Preferences Inspector Window
+            from preferences_dialog import PreferencesDialogMixin
+            from PySide6.QtCore import Qt
+
+            class MockPreferencesApp(PreferencesDialogMixin):
+                def __init__(self):
+                    self.settings_store = mock_win.settings_store
+                    self.transcript_font_scale = 1.0
+                def log_activity(self, msg):
+                    pass
+                def set_theme(self, t):
+                    pass
+                def set_language(self, l, persist=True):
+                    pass
+                def update_auto_save_timer(self):
+                    pass
+
+            if is_main_gui_thread:
+                pref_app = MockPreferencesApp()
+                pref_dlg = pref_app.open_preferences_dialog(initial_category="Audio Settings", modal=False)
+                assert pref_dlg is not None
+                assert pref_dlg.windowModality() == Qt.WindowModality.NonModal
+                assert hasattr(pref_dlg, "_stay_on_top")
+                assert pref_app._active_preferences_dialog is pref_dlg
+
+                # Verify singleton behavior and category switcher
+                pref_dlg2 = pref_app.open_preferences_dialog(initial_category="AI Models", modal=False)
+                assert pref_dlg2 is pref_dlg
+
+                # Verify pin on top toggle
+                float_btn = pref_dlg.findChild(QPushButton)
+                for btn in pref_dlg.findChildren(QPushButton):
+                    if "Pin on Top" in btn.text():
+                        float_btn = btn
+                        break
+                if float_btn and float_btn.isCheckable():
+                    float_btn.setChecked(True)
+                    assert pref_dlg._stay_on_top is True
+
+                pref_dlg.close()
+                assert pref_app._active_preferences_dialog is None
+
             if hasattr(mock_win.settings_store, "clear"):
                 mock_win.settings_store.clear()
 
             item.status = "PASS"
-            item.message = "Audio loudness preferences and manual normalization dialog telemetry verified"
+            item.message = "Audio loudness preferences and non-modal preferences inspector window verified"
         finally:
             if orig_info:
                 QMessageBox.information = orig_info

@@ -5,14 +5,15 @@ custom defaults saving, category reset wiring, and settings persistence.
 """
 
 import logging
+from typing import Optional
 from PySide6.QtCore import Qt, QSettings
 from PySide6.QtWidgets import (
     QDialog, QVBoxLayout, QHBoxLayout, QListWidget, QListWidgetItem,
-    QStackedWidget, QPushButton, QDialogButtonBox, QMessageBox
+    QStackedWidget, QPushButton, QDialogButtonBox, QMessageBox, QLabel
 )
 
 from prs_shared import APP_DISPLAY_NAME, DEFAULT_GITHUB_REPO, INTERNAL_APP_ID, set_models_storage_dir
-from core_utils import make_dialog_maximizable
+from core_utils import make_dialog_maximizable, apply_window_titlebar_theme, get_active_theme_mode
 from preferences_reset import RestoreSelectedSettingsDialog, PreferencesResetMixin
 from preferences_tabs_core import (
     build_general_tab, build_shortcuts_tab, build_audio_hardware_tab,
@@ -29,19 +30,93 @@ logger = logging.getLogger(__name__)
 class PreferencesDialogMixin(PreferencesResetMixin):
     """Provides the main open_preferences_dialog method and settings persistence."""
 
-    def open_preferences_dialog(self, initial_category="General"):
-        """Open the multi-category Preferences dialog."""
+    def open_preferences_dialog(self, initial_category="General", modal=False):
+        """Open the multi-category Preferences dialog as a non-modal floating inspector."""
         if not isinstance(initial_category, str):
             initial_category = "General"
 
+        existing = getattr(self, "_active_preferences_dialog", None)
+        if existing is not None and existing.isVisible():
+            if hasattr(existing, "_select_category"):
+                existing._select_category(initial_category)
+            if existing.isMinimized():
+                existing.showNormal()
+            existing.raise_()
+            existing.activateWindow()
+            return existing
+
         dialog = QDialog(self)
         dialog.setWindowTitle(f"Preferences — {APP_DISPLAY_NAME}")
-        dialog.resize(700, 500)
+        dialog.resize(740, 540)
+        dialog.setMinimumSize(680, 460)
+        dialog.setWindowModality(Qt.WindowModality.NonModal)
+        dialog.setAttribute(Qt.WidgetAttribute.WA_QuitOnClose, False)
+        dialog.setWindowFlags(
+            Qt.WindowType.Window
+            | Qt.WindowType.WindowMinimizeButtonHint
+            | Qt.WindowType.WindowMaximizeButtonHint
+            | Qt.WindowType.WindowCloseButtonHint
+        )
+        dialog._stay_on_top = False
         make_dialog_maximizable(dialog)
+        apply_window_titlebar_theme(dialog)
 
         main_layout = QVBoxLayout(dialog)
         main_layout.setContentsMargins(14, 14, 14, 14)
         main_layout.setSpacing(10)
+
+        # Header bar with description and Pin on Top toggle
+        hdr_row = QHBoxLayout()
+        hdr_row.setContentsMargins(0, 0, 0, 0)
+        hdr_row.setSpacing(8)
+
+        desc = QLabel(
+            "<b>Preferences</b> — Configure application appearance, audio hardware, shortcuts, and processing models."
+        )
+        desc.setWordWrap(True)
+        hdr_row.addWidget(desc, 1)
+
+        theme_mode = get_active_theme_mode("dark")
+        if theme_mode == "light":
+            b_bg, b_fg, b_bd, h_bg, h_fg = "#e3e6ea", "#2e74b5", "#2e74b5", "#2e74b5", "#ffffff"
+        elif theme_mode == "high_contrast":
+            b_bg, b_fg, b_bd, h_bg, h_fg = "#000000", "#ffff00", "#ffff00", "#ffff00", "#000000"
+        else:
+            b_bg, b_fg, b_bd, h_bg, h_fg = "#1e293b", "#38bdf8", "#0284c7", "#0284c7", "#ffffff"
+
+        hdr_btn_qss = (
+            f"QPushButton {{ background-color: {b_bg}; color: {b_fg}; border: 1px solid {b_bd}; border-radius: 4px; padding: 3px 10px; font-size: 11px; font-weight: 500; }}\n"
+            f"QPushButton:hover {{ background-color: {h_bg}; color: {h_fg}; }}\n"
+            f"QPushButton:checked {{ background-color: {h_bg}; color: {h_fg}; font-weight: bold; }}"
+        )
+
+        float_btn = QPushButton("Pin on Top", dialog)
+        float_btn.setCheckable(True)
+        float_btn.setToolTip(
+            "This window is non-modal so you can freely interact with the main window and edit transcripts. "
+            "Toggle 'Pin on Top' to keep this window above the main window while adjusting settings."
+        )
+        float_btn.setStyleSheet(hdr_btn_qss)
+
+        def toggle_float_mode(pinned: Optional[bool] = None):
+            if pinned is None:
+                pinned = not getattr(dialog, "_stay_on_top", False)
+            dialog._stay_on_top = bool(pinned)
+            float_btn.blockSignals(True)
+            float_btn.setChecked(dialog._stay_on_top)
+            float_btn.setText("Pinned on Top" if dialog._stay_on_top else "Pin on Top")
+            float_btn.blockSignals(False)
+            was_visible = dialog.isVisible()
+            dialog.setWindowFlag(Qt.WindowType.WindowStaysOnTopHint, dialog._stay_on_top)
+            if was_visible:
+                dialog.show()
+                apply_window_titlebar_theme(dialog)
+                dialog.raise_()
+                dialog.activateWindow()
+
+        float_btn.toggled.connect(toggle_float_mode)
+        hdr_row.addWidget(float_btn)
+        main_layout.addLayout(hdr_row)
 
         content_layout = QHBoxLayout()
         content_layout.setSpacing(12)
@@ -156,14 +231,17 @@ class PreferencesDialogMixin(PreferencesResetMixin):
             "wordpress": "wordpress",
             "youtube": "youtube",
         }
-        requested = str(initial_category).strip().lower() if initial_category else "general"
-        target = aliases.get(requested, requested)
-        selected_index = 0
-        for i, c in enumerate(categories):
-            if c.lower() == target or c.lower().startswith(target):
-                selected_index = i
-                break
-        cat_list.setCurrentRow(selected_index)
+        def _select_category_in_list(cat_name: str):
+            requested = str(cat_name).strip().lower() if cat_name else "general"
+            target = aliases.get(requested, requested)
+            for i, c in enumerate(categories):
+                if c.lower() == target or c.lower().startswith(target):
+                    cat_list.setCurrentRow(i)
+                    return True
+            return False
+
+        dialog._select_category = _select_category_in_list
+        _select_category_in_list(initial_category)
 
         # Dialog bottom bar
         bottom_bar = QHBoxLayout()
@@ -205,6 +283,16 @@ class PreferencesDialogMixin(PreferencesResetMixin):
                 new_theme = theme_combo.currentText()
                 self.settings_store.setValue("theme_mode", new_theme)
                 self.set_theme(new_theme)
+                apply_window_titlebar_theme(dialog)
+
+            font_scale_spin = live_widgets.get("font_scale_spin")
+            if font_scale_spin:
+                new_scale = float(font_scale_spin.value()) / 100.0
+                if hasattr(self, "_apply_transcript_font_scale"):
+                    self._apply_transcript_font_scale(new_scale, persist=True)
+                else:
+                    self.transcript_font_scale = new_scale
+                    self.settings_store.setValue("transcript_font_scale", new_scale)
 
             lang_combo = live_widgets.get("lang_combo")
             if lang_combo:
@@ -286,16 +374,19 @@ class PreferencesDialogMixin(PreferencesResetMixin):
             if hasattr(self, "render_transcript"):
                 self.render_transcript()
 
-            # Save Audio Hardware
+            # Save Audio Hardware with stream safety guard
             audio_dev_combo = live_widgets.get("audio_dev_combo")
             vol_slider = live_widgets.get("vol_slider")
             if audio_dev_combo and vol_slider:
                 new_dev = audio_dev_combo.currentText()
-                self.settings_store.setValue("audio_output_device", new_dev)
                 new_vol = vol_slider.value()
+                self.settings_store.setValue("audio_output_device", new_dev)
                 self.settings_store.setValue("audio_output_volume", new_vol)
                 if hasattr(self, "apply_audio_output_device"):
-                    self.apply_audio_output_device(new_dev, new_vol / 100.0)
+                    try:
+                        self.apply_audio_output_device(new_dev, new_vol / 100.0)
+                    except Exception as dev_err:
+                        logger.warning(f"Error applying audio output device '{new_dev}': {dev_err}")
 
             # Save Audio Loudness Normalization & Auto-Boost
             auto_norm_chk = live_widgets.get("auto_norm_chk")
@@ -338,7 +429,7 @@ class PreferencesDialogMixin(PreferencesResetMixin):
                         new_repo = DEFAULT_GITHUB_REPO
                     self.settings_store.setValue("github_repo", new_repo)
 
-            # Save Models dir & selections
+            # Save Models dir & selections with active pipeline guard
             model_dir_edit = live_widgets.get("model_dir_edit")
             if model_dir_edit:
                 new_model_dir = model_dir_edit.text().strip()
@@ -349,10 +440,17 @@ class PreferencesDialogMixin(PreferencesResetMixin):
             if pref_whisper_combo:
                 new_whisper = pref_whisper_combo.currentData()
                 if new_whisper:
+                    is_transcribing = (
+                        getattr(self, "pipeline_active", False)
+                        or (isinstance(getattr(self, "processing_status", None), dict)
+                            and self.processing_status.get("transcription", False))
+                    )
                     self.whisper_model = str(new_whisper)
                     self.settings_store.setValue("whisper_model", self.whisper_model)
                     if hasattr(self, "refresh_whisper_model_chooser"):
                         self.refresh_whisper_model_chooser()
+                    if is_transcribing:
+                        logger.info("Active transcription running; new Whisper model will take effect on next job.")
 
             pref_auto_lang_chk = live_widgets.get("pref_auto_lang_chk")
             if pref_auto_lang_chk:
@@ -577,11 +675,29 @@ class PreferencesDialogMixin(PreferencesResetMixin):
                 pass
 
             self.log_activity("[SETTINGS] Preferences updated.")
+            if hasattr(self, "statusBar") and self.statusBar():
+                self.statusBar().showMessage("Preferences updated.", 3000)
             if close_dialog:
                 dialog.accept()
 
         btn_box.accepted.connect(lambda: _save_preferences(close_dialog=True))
-        btn_box.rejected.connect(dialog.reject)
+        btn_box.rejected.connect(dialog.close)
         apply_btn.clicked.connect(lambda: _save_preferences(close_dialog=False))
 
-        dialog.exec()
+        self._active_preferences_dialog = dialog
+        dialog.save_preferences = lambda: _save_preferences(close_dialog=False)
+
+        def _on_finished(_code: int = 0):
+            if getattr(self, "_active_preferences_dialog", None) is dialog:
+                self._active_preferences_dialog = None
+
+        dialog.finished.connect(_on_finished)
+
+        if modal:
+            dialog.exec()
+            return dialog
+
+        dialog.show()
+        dialog.raise_()
+        dialog.activateWindow()
+        return dialog

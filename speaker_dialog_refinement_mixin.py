@@ -450,9 +450,33 @@ class SpeakerDialogRefinementMixin:
             self.statusBar().showMessage(f"Merged '{source}' into '{target}'.")
         return True
 
-    def open_speaker_manager_dialog(self):
+    def open_speaker_manager_dialog(self, modal: bool = False):
+        existing = getattr(self, "_active_speaker_manager_dialog", None)
+        if existing is not None and existing.isVisible():
+            existing._populate()
+            if existing.isMinimized():
+                existing.showNormal()
+            existing.raise_()
+            existing.activateWindow()
+            return existing
+
         dialog = SpeakerManagerDialog(self)
-        dialog.exec()
+        self._active_speaker_manager_dialog = dialog
+
+        def _on_finished(_code: int = 0):
+            if getattr(self, "_active_speaker_manager_dialog", None) is dialog:
+                self._active_speaker_manager_dialog = None
+
+        dialog.finished.connect(_on_finished)
+        if modal:
+            dialog.exec()
+            return dialog
+
+        dialog.setWindowModality(Qt.WindowModality.NonModal)
+        dialog.show()
+        dialog.raise_()
+        dialog.activateWindow()
+        return dialog
 
     def merge_contiguous_speaker_segments(self):
         if not getattr(self, "transcript", None) or "segments" not in self.transcript:

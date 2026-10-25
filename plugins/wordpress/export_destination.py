@@ -528,25 +528,40 @@ class WordPressPostMetadataDialog(QDialog):
         layout.setContentsMargins(12, 12, 12, 12)
         layout.setSpacing(10)
 
-        self.tab_widget = WordPressExportTabWidget(self, self.main_window, metadata_editor_mode=True)
+        self.tab_widget = WordPressExportTabWidget(self, self.main_window, metadata_editor_mode=False)
         layout.addWidget(self.tab_widget, 1)
 
-        # Bottom buttons
+        # Bottom buttons: Save and Close in bottom right
         btn_box = QHBoxLayout()
         btn_box.setSpacing(8)
 
-        self.save_close_btn = QPushButton("Save & Close", self)
-        self.save_close_btn.setObjectName("wp_save_close_btn")
-        self.save_close_btn.setDefault(True)
-        self.save_close_btn.clicked.connect(self._on_save_and_close)
+        self.save_btn = QPushButton("Save", self)
+        self.save_btn.setObjectName("wp_save_btn")
+        self.save_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #0284c7;
+                color: #ffffff;
+                font-weight: bold;
+                padding: 6px 18px;
+                border-radius: 4px;
+            }
+            QPushButton:hover {
+                background-color: #0369a1;
+            }
+        """)
+        self.save_btn.clicked.connect(self._on_save_clicked)
 
         self.close_btn = QPushButton("Close", self)
         self.close_btn.setObjectName("wp_close_btn")
-        self.close_btn.clicked.connect(self.reject)
+        self.close_btn.setStyleSheet("QPushButton { padding: 6px 14px; border-radius: 4px; }")
+        self.close_btn.clicked.connect(self._on_close_clicked)
+
+        # Backward compatibility alias
+        self.save_close_btn = self.close_btn
 
         btn_box.addStretch()
+        btn_box.addWidget(self.save_btn)
         btn_box.addWidget(self.close_btn)
-        btn_box.addWidget(self.save_close_btn)
         layout.addLayout(btn_box)
 
         # Select target story if specified
@@ -556,9 +571,19 @@ class WordPressPostMetadataDialog(QDialog):
             if 0 <= post_idx < self.tab_widget.wp_posts_list.count():
                 self.tab_widget.wp_posts_list.setCurrentRow(post_idx)
 
-    def _on_save_and_close(self):
+    def _on_save_clicked(self):
+        self.tab_widget.save_all_posts_to_project()
+        orig = self.save_btn.text()
+        self.save_btn.setText("Saved ✓")
+        from PySide6.QtCore import QTimer
+        QTimer.singleShot(1500, lambda: self.save_btn.setText(orig) if not self.isHidden() else None)
+
+    def _on_close_clicked(self):
         self.tab_widget.save_all_posts_to_project()
         self.accept()
+
+    def _on_save_and_close(self):
+        self._on_close_clicked()
 
     def done(self, r: int):
         try:

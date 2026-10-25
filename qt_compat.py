@@ -14,6 +14,80 @@ from types import ModuleType
 from typing import Any
 
 
+class MockClassMeta(type):
+    """Metaclass allowing class-level attributes, static methods, and constructor calls to mock gracefully."""
+
+    def __getattr__(cls, attr: str) -> Any:
+        if attr in ("instance", "currentThread"):
+            return staticmethod(lambda *a, **k: None)
+        return DynamicMock()
+
+
+class DynamicMock(metaclass=MockClassMeta):
+    def __init__(self, *args, **kwargs):
+        pass
+
+    def __call__(self, *args, **kwargs):
+        return self
+
+    def connect(self, *a, **k):
+        return None
+
+    def disconnect(self, *a, **k):
+        return None
+
+    def emit(self, *a, **k):
+        return None
+
+    def __getattr__(self, attr):
+        return DynamicMock()
+
+    def isEnabled(self):
+        return getattr(self, "_enabled", True)
+
+    def setEnabled(self, val):
+        self._enabled = bool(val)
+
+    def isChecked(self):
+        return getattr(self, "_checked", False)
+
+    def setChecked(self, val):
+        self._checked = bool(val)
+
+    def isVisible(self):
+        return getattr(self, "_visible", True)
+
+    def setVisible(self, val):
+        self._visible = bool(val)
+
+    def show(self):
+        self._visible = True
+
+    def hide(self):
+        self._visible = False
+
+    def accept(self):
+        pass
+
+    def reject(self):
+        pass
+
+    def exec_(self):
+        return 1
+
+    def exec(self):
+        return 1
+
+    def __int__(self):
+        return 0
+
+    def __index__(self):
+        return 0
+
+    def __float__(self):
+        return 0.0
+
+
 class MockModule(ModuleType):
     """Dynamic mock module that automatically manufactures nested mock classes and attributes."""
 
@@ -32,73 +106,9 @@ class MockModule(ModuleType):
         if name == "__path__":
             return []
 
-        class DynamicMock:
-            def __init__(self, *args, **kwargs):
-                pass
-
-            def __call__(self, *args, **kwargs):
-                return self
-
-            def connect(self, *a, **k):
-                return None
-
-            def disconnect(self, *a, **k):
-                return None
-
-            def emit(self, *a, **k):
-                return None
-
-            def __getattr__(self, attr):
-                return DynamicMock()
-
-            def isEnabled(self):
-                return getattr(self, "_enabled", True)
-
-            def setEnabled(self, val):
-                self._enabled = bool(val)
-
-            def isChecked(self):
-                return getattr(self, "_checked", False)
-
-            def setChecked(self, val):
-                self._checked = bool(val)
-
-            def isVisible(self):
-                return getattr(self, "_visible", True)
-
-            def setVisible(self, val):
-                self._visible = bool(val)
-
-            def show(self):
-                self._visible = True
-
-            def hide(self):
-                self._visible = False
-
-            def accept(self):
-                pass
-
-            def reject(self):
-                pass
-
-            def exec_(self):
-                return 1
-
-            def exec(self):
-                return 1
-
-            def __int__(self):
-                return 0
-
-            def __index__(self):
-                return 0
-
-            def __float__(self):
-                return 0.0
-
-        DynamicMock.__name__ = name
-        setattr(self, name, DynamicMock)
-        return DynamicMock
+        mock_cls = type(name, (DynamicMock,), {})
+        setattr(self, name, mock_cls)
+        return mock_cls
 
 
 class DummyQt:
@@ -383,6 +393,7 @@ def _ensure_pyside6_fallback(force: bool = False) -> bool:
     pyside6_mod.QtGui.QUndoCommand = type("QUndoCommand", (), {"__init__": lambda self, *a, **k: None, "redo": lambda self: None, "undo": lambda self: None})
     pyside6_mod.QtWidgets.QMessageBox = DummyQMessageBox
     pyside6_mod.QtWidgets.QApplication = DummyQApplication
+    pyside6_mod.QtCore.QCoreApplication = DummyQApplication
     pyside6_mod.QtWidgets.QHeaderView = DummyQHeaderView
     pyside6_mod.QtWidgets.QAbstractItemView = DummyQAbstractItemView
     pyside6_mod.QtWidgets.QLineEdit = DummyQLineEdit

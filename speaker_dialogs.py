@@ -91,19 +91,64 @@ class SpeakerManagerDialog(QDialog):
         self.setWindowTitle("Manage Speakers & Detection Clusters")
         self.resize(800, 500)
         self.setMinimumSize(760, 460)
+        self.setWindowModality(Qt.WindowModality.NonModal)
+        self.setAttribute(Qt.WidgetAttribute.WA_QuitOnClose, False)
+        self.setWindowFlags(
+            Qt.WindowType.Window
+            | Qt.WindowType.WindowMinimizeButtonHint
+            | Qt.WindowType.WindowMaximizeButtonHint
+            | Qt.WindowType.WindowCloseButtonHint
+        )
+        self._stay_on_top = False
         make_dialog_maximizable(self)
+        apply_window_titlebar_theme(self)
         self._init_ui()
         self._populate()
 
     def _init_ui(self):
         layout = QVBoxLayout(self)
 
+        theme_mode = get_active_theme_mode("dark")
+        if theme_mode == "light":
+            b_bg, b_fg, b_bd, h_bg, h_fg = "#e3e6ea", "#2e74b5", "#2e74b5", "#2e74b5", "#ffffff"
+        elif theme_mode == "high_contrast":
+            b_bg, b_fg, b_bd, h_bg, h_fg = "#000000", "#ffff00", "#ffff00", "#ffff00", "#000000"
+        else:
+            b_bg, b_fg, b_bd, h_bg, h_fg = "#1e293b", "#38bdf8", "#0284c7", "#0284c7", "#ffffff"
+
+        hdr_btn_qss = (
+            f"QPushButton {{ background-color: {b_bg}; color: {b_fg}; border: 1px solid {b_bd}; border-radius: 4px; padding: 3px 10px; font-size: 11px; font-weight: 500; }}\n"
+            f"QPushButton:hover {{ background-color: {h_bg}; color: {h_fg}; }}\n"
+            f"QPushButton:checked {{ background-color: {h_bg}; color: {h_fg}; font-weight: bold; }}"
+        )
+
+        hdr_row = QHBoxLayout()
+        hdr_row.setContentsMargins(0, 0, 0, 0)
+        hdr_row.setSpacing(8)
+
         desc = QLabel(
-            "<b>Speakers & Detection Clusters</b><br>"
-            "Inspect all detected speaker clusters, rename / assign global aliases, or merge redundant clusters."
+            "<b>Speakers & Detection Clusters</b> — Inspect all detected speaker clusters, rename / assign global aliases, or merge redundant clusters."
         )
         desc.setWordWrap(True)
-        layout.addWidget(desc)
+        hdr_row.addWidget(desc, 1)
+
+        self.refresh_btn = QPushButton("Refresh", self)
+        self.refresh_btn.setToolTip("Refresh speaker clusters and turn counts from active transcript")
+        self.refresh_btn.setStyleSheet(hdr_btn_qss)
+        self.refresh_btn.clicked.connect(self._populate)
+        hdr_row.addWidget(self.refresh_btn)
+
+        self.float_btn = QPushButton("Pin on Top", self)
+        self.float_btn.setCheckable(True)
+        self.float_btn.setToolTip(
+            "This window is non-modal so you can freely edit the transcript in the main window. "
+            "Toggle 'Pin on Top' to keep this window above the main window while co-editing."
+        )
+        self.float_btn.setStyleSheet(hdr_btn_qss)
+        self.float_btn.toggled.connect(self.toggle_float_mode)
+        hdr_row.addWidget(self.float_btn)
+
+        layout.addLayout(hdr_row)
 
         self.table = QTableWidget(self)
         self.table.setColumnCount(5)
@@ -299,4 +344,28 @@ class SpeakerManagerDialog(QDialog):
     def _on_open_voice_profiles(self):
         if hasattr(self.main_win, "open_manage_voice_profiles_dialog"):
             self.main_win.open_manage_voice_profiles_dialog()
+            self._populate()
+
+    def toggle_float_mode(self, pinned: Optional[bool] = None):
+        """Toggle whether the non-modal floating window stays pinned on top of other windows."""
+        if pinned is None:
+            pinned = not getattr(self, "_stay_on_top", False)
+        self._stay_on_top = bool(pinned)
+        if hasattr(self, "float_btn"):
+            self.float_btn.blockSignals(True)
+            self.float_btn.setChecked(self._stay_on_top)
+            self.float_btn.setText("Pinned on Top" if self._stay_on_top else "Pin on Top")
+            self.float_btn.blockSignals(False)
+        was_visible = self.isVisible()
+        self.setWindowFlag(Qt.WindowType.WindowStaysOnTopHint, self._stay_on_top)
+        if was_visible:
+            self.show()
+            apply_window_titlebar_theme(self)
+            self.raise_()
+            self.activateWindow()
+
+    def changeEvent(self, event):
+        super().changeEvent(event)
+        from PySide6.QtCore import QEvent
+        if event.type() == QEvent.Type.WindowActivate:
             self._populate()

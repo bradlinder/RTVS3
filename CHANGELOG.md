@@ -1,5 +1,17 @@
 # Changelog
 
+## v3.9.36-beta
+- **Stories Pop-Out Dialog Parity with WordPress Draft Export View (`story_metadata_dialog.py`, `plugins/wordpress/export_destination.py`, `ui_layout.py`)**:
+  - Replaced the monolithic 1,313-line vertical form in `story_metadata_dialog.py` with an exact clone of the 4-tab WordPress draft export view (`WordPressExportTabWidget`), bringing full feature parity (`Post Content`, `Authors & Taxonomy`, `Podcast & Media`, and `Publishing & Formatting`) to the pop-out editor.
+  - Implemented dedicated "Save" and "Close" action buttons in the bottom right of the Stories pop-out dialog and `WordPressPostMetadataDialog`, replacing modal "Cancel" and "Export" buttons. The "Save" button instantly commits all post metadata to the active project state with visual confirmation ("Saved ✓") without closing the window, while "Close" auto-commits and dismisses the floating dialog.
+  - Renamed the header pop-out button from "Pop Out" to "Story Settings" with an expanded, descriptive tooltip explaining that it opens comprehensive story and post settings.
+- **Strict Prohibition on Non-Draft Export Statuses (`plugins/wordpress/wordpress_dialog.py`, `plugins/wordpress/plugin.py`, `story_metadata_dialog.py`)**:
+  - Locked all post status selectors strictly to "Draft" only, permanently removing options for "Published", "Publish Immediately", "Pending Review", and "Private" to ensure posts can never be accidentally published or altered from draft status during export or metadata staging.
+- **Icon and Emoji Elimination from Search & Filter Bars (`story_metadata_dialog.py`, `plugins/wordpress/wp_ui_builder.py`, `shortcuts/dialogs.py`)**:
+  - Audited search and filter interfaces across the application and removed decorative magnifying glass glyphs (`🔍`) from author/category filter inputs and group boxes, enforcing clean, distraction-free desktop typography in strict adherence to UI design discipline.
+- **Live Co-Editing & Sync Transcript Architecture**:
+  - Synchronized "Sync Transcript" button integration across both `UnifiedExportDialog` and `StoryMetadataDialog`: when co-editing transcripts in the main window while keeping metadata floating side-by-side, clicking "Sync Transcript" flushes in-memory keystroke buffers, recalculates word counts/story boundaries, and updates post models in real time without requiring a window restart.
+
 ## v3.9.35-beta
 - **4-Tab WordPress Export Architecture & Configurable Layout Switcher (`plugins/wordpress/wp_ui_builder.py`, `plugins/wordpress/wp_tab_widget.py`, `plugins/wordpress/client.py`)**:
   - Replaced the cramped vertical accordion stack in `WordPressExportTabWidget` with a spacious 4-tab layout (`Post Content`, `Authors & Taxonomy`, `Podcast & Media`, and `Publishing & Formatting`) featuring high-contrast card/pill tab styling across Dark, Light, and High-Contrast themes.

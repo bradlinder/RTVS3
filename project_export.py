@@ -308,7 +308,7 @@ class ProjectExportMixin(
             event.ignore()
             return
 
-        for attr in ("_active_export_dialog", "_active_metadata_dialog"):
+        for attr in ("_active_export_dialog", "_active_metadata_dialog", "_active_speaker_manager_dialog", "_active_preferences_dialog"):
             dlg = getattr(self, attr, None)
             if dlg is not None and dlg.isVisible():
                 try:
@@ -316,6 +316,8 @@ class ProjectExportMixin(
                         dlg._persist_plugin_draft_states()
                     if hasattr(dlg, "save_all_to_project"):
                         dlg.save_all_to_project()
+                    if hasattr(dlg, "save_preferences"):
+                        dlg.save_preferences()
                 except Exception:
                     pass
 

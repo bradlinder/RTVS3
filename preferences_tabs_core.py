@@ -151,6 +151,16 @@ def build_general_tab(win, dialog, live_widgets, add_custom_defaults_btn) -> QWi
     gen_form.addRow("Paragraph Length:", min_words_spin)
     live_widgets["min_words_spin"] = min_words_spin
 
+    font_scale_spin = QSpinBox()
+    font_scale_spin.setRange(80, 180)
+    font_scale_spin.setSingleStep(5)
+    curr_scale = int(round(float(getattr(win, "transcript_font_scale", 1.0) or 1.0) * 100))
+    font_scale_spin.setValue(curr_scale)
+    font_scale_spin.setSuffix("%")
+    font_scale_spin.setToolTip("Scale transcript display font size (80% to 180%).")
+    gen_form.addRow("Transcript Font Scale:", font_scale_spin)
+    live_widgets["font_scale_spin"] = font_scale_spin
+
     autosave_spin = QSpinBox()
     autosave_spin.setRange(0, 120)
     autosave_spin.setValue(getattr(win, "auto_save_minutes", 5))

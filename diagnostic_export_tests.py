@@ -1638,6 +1638,7 @@ class DiagnosticExportTestsMixin:
             "story_metadata_dialog.py",
             "project_lifecycle.py",
             "playback_preferences.py",
+            "preferences_dialog.py",
             "transcript_story.py",
             "backup_manager.py",
         ]

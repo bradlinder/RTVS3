@@ -161,7 +161,8 @@ class WordPressExportTabWidget(QWidget):
         self.wp_slug_edit = QLineEdit(self)
         slug_row.addWidget(self.wp_slug_edit, 1)
         self.wp_status_combo = QComboBox(self)
-        self.wp_status_combo.addItems(["Draft", "Publish", "Pending Review", "Private"])
+        self.wp_status_combo.addItems(["Draft"])
+        self.wp_status_combo.setEnabled(False)
         slug_row.addWidget(QLabel("Status:"))
         slug_row.addWidget(self.wp_status_combo)
         self.form_layout.addRow("URL Slug & Status:", slug_row)
@@ -862,7 +863,8 @@ class WordPressPostMetadataDialog(QDialog):
         form.addRow("URL Slug:", self.slug_edit)
 
         self.status_combo = QComboBox(self)
-        self.status_combo.addItems(["Draft", "Publish", "Pending Review", "Private"])
+        self.status_combo.addItems(["Draft"])
+        self.status_combo.setEnabled(False)
         form.addRow("Post Status:", self.status_combo)
 
         self.excerpt_edit = ResizableTextEdit(self)

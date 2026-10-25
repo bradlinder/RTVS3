@@ -43,10 +43,11 @@ TABLE OF CONTENTS & STATUS OVERVIEW
    [x] 1.3 Live Export Dialog Sync & Two-Way Persistence (`plugins/wordpress/export_destination.py`, `plugins/wordpress/wp_post_builder.py`, `plugins/wordpress/client.py`, `plugins/wordpress/wp_ui_builder.py`): Pre-populated WordPress export scopes from `story.metadata["wordpress"]` and `project_metadata["wordpress"]`, and wired live field edits to immediately sync back to the underlying story and project models so closing the export dialog never discards draft titles, excerpts, or taxonomy selections.
    [x] 1.4 Synchronous Version Bump: Synchronized all 10 project locations, `plugins/wordpress/manifest.json`, and web preview scaffolding to `v3.9.34-beta`.
 
-2. Current Release: WordPress 4-Tab Export Layout, Non-Modal Floating Windows & Live Transcript Co-Editing (`plugins/wordpress/wp_ui_builder.py`, `plugins/wordpress/wp_tab_widget.py`, `plugins/wordpress/client.py`, `export/dialog.py`, `export_dialogs.py`, `story_metadata_dialog.py`, `story_crud_mixin.py`, `ui_layout.py`) [x] [COMPLETED in v3.9.35-beta]
+2. Current Release: WordPress 4-Tab Export Layout, Non-Modal Floating Windows & Live Transcript Co-Editing (`plugins/wordpress/wp_ui_builder.py`, `plugins/wordpress/wp_tab_widget.py`, `plugins/wordpress/client.py`, `export/dialog.py`, `export_dialogs.py`, `story_metadata_dialog.py`, `story_crud_mixin.py`, `ui_layout.py`) [x] [COMPLETED in v3.9.36-beta]
    [x] 2.1 4-Tab WordPress Export View Layout & Preference Switcher (`plugins/wordpress/wp_ui_builder.py`, `plugins/wordpress/wp_tab_widget.py`, `plugins/wordpress/client.py`): Replaced the vertical accordion with a high-contrast 4-tab layout (`Post Content`, `Authors & Taxonomy`, `Podcast & Media`, `Publishing & Formatting`) with active tab count badges, auto-expanding full-height excerpt box, docked Custom Header/Footer Notice inside a vertical `QSplitter`, removal of redundant bulk-apply buttons, and a user-configurable layout switcher (`Tabs | Split | Classic`) in Preferences (`QComboBox` import resolved in `plugins/wordpress/client.py`).
    [x] 2.2 Non-Modal Floating Window & Modeless Transcript Co-Editing (`export/dialog.py`, `export_dialogs.py`, `story_metadata_dialog.py`, `story_crud_mixin.py`, `ui_layout.py`, `project_state_mixin.py`, `project_lifecycle.py`): Transitioned `UnifiedExportDialog` and `StoryMetadataDialog` to non-modal floating windows (`Qt.WindowModality.NonModal`, `WA_QuitOnClose=False`) with `Pin on Top` (`float_btn`), `Sync Transcript` (`refresh_btn`), a `Pop Out` button in the Stories sidebar header, automatic un-maximizing of the Stories panel, live state synchronization, and pre-export `flush_pending_transcript_undo()`.
    [x] 2.3 Diagnostic Tests & Version Synchronization (`diagnostic_export_tests.py`, `bump_version.py`): Added unit tests covering shared WordPress metadata persistence, 4-tab layout switching, and non-modal floating dialog lifecycle; synchronized all project locations and `wordpress.rtvs-addon` to `v3.9.35-beta`.
+   [x] 2.4 Stories Pop-Out Dialog Parity & WordPress Export Strict Draft Enforcement (`story_metadata_dialog.py`, `plugins/wordpress/export_destination.py`, `plugins/wordpress/wordpress_dialog.py`, `plugins/wordpress/plugin.py`, `ui_layout.py`): Cloned the full 4-tab WordPress draft export interface into `StoryMetadataDialog` with Save and Close buttons, renamed the header launcher to "Story Settings", eliminated all search/filter magnifying glass icons, and restricted post statuses strictly to Draft only.
 
 3. Upcoming Milestone: Codebase Modularization & Monolithic File Decomposition Strategy (<1,000-Line Invariant) (`playback_preferences.py`, `project_export.py`, `transcript_story.py`, `transcript_editor.py`, `radio_tv_story_segmenter_worker.py`, `benchmark.py`, `plugins/wordpress/export_destination.py`, `plugins/manager.py`, `timeline_widgets.py`) [x] [COMPLETED in v3.9.33-beta]
    - *Architecture Note*: Incrementally refactors all remaining source files exceeding 1,000 lines (at most 1 to 2 monoliths per turn) into focused domain modules (<1,000 lines each) while preserving 100% backward compatibility via zero-breakage facade re-exports.
@@ -126,6 +127,13 @@ TABLE OF CONTENTS & STATUS OVERVIEW
    [ ] 10.5 Preferences Integration, One-Click Script Installer & Diagnostic Tests (`preferences_dialog.py`, `reaper_bridge.py`, `test_runner.py`)
    [ ] 10.6 Universal Text-to-WAV Clipboard & Drag-and-Drop Fallback for Other DAWs (`reaper_bridge.py`, `export_media_clipper.py`, `transcript_context_menu_mixin.py`)
 
+11. Upcoming Milestone: Speaker Management Ergonomics & Quick Sample Audio Preview (`speaker_dialogs.py`, `playback_controller.py`, `speaker_dialog_refinement_mixin.py`, `test_runner.py`) [PLANNED] [NOT STARTED]
+   - *Purpose*: Streamline speaker identification and naming by providing immediate audio verification of detected speaker clusters directly inside the speaker management dialog.
+   [-] 11.1 Non-Modal Floating Speaker Management Dialog & Modeless Co-Editing (`speaker_dialogs.py`, `speaker_dialog_refinement_mixin.py`)
+   [ ] 11.2 Quick Sample Audio Preview: An instant "Listen to sample" play button directly alongside each detected speaker in the management dialog so the user can hear 3 seconds of their voice before assigning the name.
+   [ ] 11.3 Direct Inline Speaker Renaming & Tab Progression: Enable direct inline double-click editing on the "Speaker Name / Alias" cell in the table with Tab key progression (type name → press Tab → jump directly to rename the next speaker).
+   [ ] 11.4 Non-Modal Preferences Inspector Window (`preferences_dialog.py`, `theme_preferences.py`) [OPTIONAL / FUTURE]
+
 ================================================================================
 DETAILED MILESTONE SPECIFICATIONS
 ================================================================================
@@ -140,12 +148,13 @@ DETAILED MILESTONE SPECIFICATIONS
 [x] 1.4 Synchronous Version Bump: Synchronized all 10 project locations, `plugins/wordpress/manifest.json`, and web preview scaffolding to `v3.9.34-beta`.
 
 ================================================================================
-2. CURRENT RELEASE: WORDPRESS 4-TAB EXPORT LAYOUT, NON-MODAL FLOATING WINDOWS & LIVE TRANSCRIPT CO-EDITING [x] [COMPLETED in v3.9.35-beta]
+2. CURRENT RELEASE: WORDPRESS 4-TAB EXPORT LAYOUT, NON-MODAL FLOATING WINDOWS & LIVE TRANSCRIPT CO-EDITING [x] [COMPLETED in v3.9.36-beta]
 ================================================================================
 
 [x] 2.1 4-Tab WordPress Export View Layout & Preference Switcher (`plugins/wordpress/wp_ui_builder.py`, `plugins/wordpress/wp_tab_widget.py`, `plugins/wordpress/client.py`): Replaced the vertical accordion with a high-contrast 4-tab layout (`Post Content`, `Authors & Taxonomy`, `Podcast & Media`, `Publishing & Formatting`) with active tab count badges, auto-expanding full-height excerpt box, docked Custom Header/Footer Notice inside a vertical `QSplitter`, removal of redundant bulk-apply buttons, and a user-configurable layout switcher (`Tabs | Split | Classic`) in Preferences (`QComboBox` import resolved in `plugins/wordpress/client.py`).
 [x] 2.2 Non-Modal Floating Window & Modeless Transcript Co-Editing (`export/dialog.py`, `export_dialogs.py`, `story_metadata_dialog.py`, `story_crud_mixin.py`, `ui_layout.py`, `project_state_mixin.py`, `project_lifecycle.py`): Transitioned `UnifiedExportDialog` and `StoryMetadataDialog` to non-modal floating windows (`Qt.WindowModality.NonModal`, `WA_QuitOnClose=False`) with `Pin on Top` (`float_btn`), `Sync Transcript` (`refresh_btn`), a `Pop Out` button in the Stories sidebar header, automatic un-maximizing of the Stories panel, live state synchronization, and pre-export `flush_pending_transcript_undo()`.
 [x] 2.3 Diagnostic Tests & Version Synchronization (`diagnostic_export_tests.py`, `bump_version.py`): Added unit tests covering shared WordPress metadata persistence, 4-tab layout switching, and non-modal floating dialog lifecycle; synchronized all project locations and `wordpress.rtvs-addon` to `v3.9.35-beta`.
+[x] 2.4 Stories Pop-Out Dialog Parity & WordPress Export Strict Draft Enforcement (`story_metadata_dialog.py`, `plugins/wordpress/export_destination.py`, `plugins/wordpress/wordpress_dialog.py`, `plugins/wordpress/plugin.py`, `ui_layout.py`): Cloned the full 4-tab WordPress draft export interface into `StoryMetadataDialog` with Save and Close buttons, renamed the header launcher to "Story Settings", eliminated all search/filter magnifying glass icons, and restricted post statuses strictly to Draft only.
 
 ================================================================================
 3. UPCOMING MILESTONE: CODEBASE MODULARIZATION & MONOLITHIC FILE DECOMPOSITION STRATEGY [x] [COMPLETED in v3.9.33-beta]
@@ -500,4 +509,41 @@ ARCHITECTURAL INVARIANTS FOR REAPER INTEGRATION:
       2. When triggered, use RTVS3's existing `extract_audio_clip` helper (`export_media_clipper.py`) to render the selected quote into a temporary, cleanly trimmed `.wav` slice named after the speaker and quote excerpt (via `generate_story_excerpt` in `story_metadata_dialog.py`): e.g., `Jane_Doe_-_We_started_this_project_back_in_2020.wav`.
       3. Place the rendered `.wav` file path onto the OS clipboard as a file URI list (`QMimeData.setUrls([QUrl.fromLocalFile(wav_path)])`).
       4. Enable users of Audacity, Hindenburg, Audition, or other NLEs to simply `Ctrl+V` (or drag) the named audio file onto a track, where the DAW automatically names the timeline clip after the descriptive `.wav` filename—delivering ~80% of the interactive pasting benefit while preserving instant 0ms non-destructive pointer slicing (`D_STARTOFFS`) in Cockos REAPER.
+--------------------------------------------------------------------------------
+
+================================================================================
+11. UPCOMING MILESTONE: SPEAKER MANAGEMENT ERGONOMICS & QUICK SAMPLE AUDIO PREVIEW [PLANNED] [NOT STARTED]
+================================================================================
+ARCHITECTURAL INVARIANTS FOR SPEAKER AUDIO PREVIEW:
+- Modular <1,000-Line Invariant: Keep all UI controls inside `speaker_dialogs.py` (303 lines) and reuse existing non-blocking audio playout mechanisms (`playback_controller.py` or dedicated `QMediaPlayer` preview channel) without blocking the Qt main GUI loop.
+- Non-Destructive Playout & Clean Teardown: Previewing a sample must never disrupt main timeline playback state or scrub position unless intentionally requested, and any playing preview sample must automatically terminate if the dialog is closed or dismissed (`reject()`, `accept()`, `closeEvent`).
+- Strict UI Discipline: No unrequested icons or decorative emojis on buttons; use clean, native desktop text ("Play Sample", "Stop", "Sample (3s)").
+
+[x] 11.1 Non-Modal Floating Speaker Management Dialog & Modeless Co-Editing (`speaker_dialogs.py`, `speaker_dialog_refinement_mixin.py`) [COMPLETED]
+    - Scope & Implementation Specifications:
+      1. Non-Modal Window Presentation: Transition `SpeakerManagerDialog` to an independent non-modal floating window (`Qt.WindowType.Window`, `Qt.WindowModality.NonModal`, `WA_QuitOnClose=False`), allowing users to click back into the main transcript window to edit words, fix spelling, scrub audio, or relabel speakers without modal lockout.
+      2. Pin on Top Toggle: Add a checkable `Pin on Top` header button (`float_btn`) that toggles `Qt.WindowType.WindowStaysOnTopHint` to keep the speaker management window visible while scrubbing media.
+      3. Live Two-Way State Synchronization: Wire `changeEvent` (`QEvent.Type.WindowActivate`) and a dedicated `Refresh` button (`refresh_btn`) to automatically refresh the speaker cluster table whenever the window gains focus or edits occur in the main transcript window.
+      4. Singleton Window Management: Track `_active_speaker_manager_dialog` on `MainWindow` to prevent duplicate popups and properly raise/activate the existing window if already open.
+
+[ ] 11.2 Quick Sample Audio Preview: An instant "Listen to sample" play button directly alongside each detected speaker in the management dialog so the user can hear 3 seconds of their voice before assigning the name. (`speaker_dialogs.py`, `playback_controller.py`, `speaker_dialog_refinement_mixin.py`)
+    - Scope & Implementation Specifications:
+      1. Representative Utterance Resolution: Inspect the project transcript segments for each detected speaker cluster to find a clean, representative speech sample (preferring the longest continuous utterance >= 3.0s, or the first utterance if shorter).
+      2. Inline Table Action Button: Add an instant "Play Sample" / "Listen to Sample" action button directly in each speaker's row inside `SpeakerManagerDialog` (`speaker_dialogs.py`) under the Actions column.
+      3. Non-Blocking 3-Second Playback: When clicked, stream or play exactly 3 seconds of audio from the resolved start timestamp using the audio playback controller or a dedicated preview sound channel. Automatically cease playout after 3 seconds or when clicking Stop / another speaker's sample button.
+      4. Teardown & Lifecycle Safety: Ensure any ongoing preview playback immediately stops on dialog close, escape, or speaker merge/reassignment.
+
+[ ] 11.3 Direct Inline Speaker Renaming & Tab Progression: Enable direct inline double-click editing on the "Speaker Name / Alias" cell in the table with Tab key progression (type name → press Tab → jump directly to rename the next speaker). (`speaker_dialogs.py`, `speaker_dialog_refinement_mixin.py`)
+    - Scope & Implementation Specifications:
+      1. In-Place Table Cell Editing Triggers: Configure `self.table.setEditTriggers(QAbstractItemView.EditTrigger.DoubleClicked | QAbstractItemView.EditTrigger.SelectedClicked | QAbstractItemView.EditTrigger.EditKeyPressed)` specifically for column 0 ("Speaker Name / Alias"), while maintaining read-only item flags on columns 1-3.
+      2. Fast Tab-Key Navigation Progression: Support rapid linear workflow where typing a new name and pressing Tab automatically commits the alias change and seamlessly transfers focus and edit mode to the next speaker row below (`table.editItem(next_item)`), eliminating repetitive modal popup clicks when renaming an entire panel of speakers.
+      3. Project Undo State & Alias Binding: On edit completion (`itemChanged` or delegate `commitData`), if the text has changed, automatically trigger the full project undo capture (`flush_pending_transcript_undo` and `_capture_project_state`), rebind speaker aliases in `main_win.speaker_aliases` or `segment_speaker_overrides`, and trigger UI transcript refresh (`render_transcript()`).
+      4. Escape / Revert Safety: Pressing Escape cleanly cancels the inline edit and restores the previous alias without mutating project state or dirtying the undo history.
+
+[x] 11.4 Non-Modal Preferences Inspector Window (`preferences_dialog.py`, `preferences_tabs_core.py`, `story_crud_mixin.py`, `project_export.py`) [COMPLETED]
+    - Scope & Implementation Specifications:
+      1. Modeless Inspector Architecture: Transition Preferences from modal `exec()` to modeless floating window with live preview of visual tokens (theme, transcript font scale, timeline display views, audio fades).
+      2. Live Auto-Commit / Reset Defaults Model: Provide "Apply" for instant non-closing settings persistence, "Save" for saving & closing, and clean singleton tracking (`_active_preferences_dialog`) with category switching (`dialog._select_category`).
+      3. Safe Audio/Hardware Reload Guards: Implement thread-safe guards preventing audio device or ASR model reloads from conflicting with active playback streams or running transcription jobs.
+
 

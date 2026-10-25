@@ -111,7 +111,7 @@ class KeyboardShortcutsPage(QWidget):
 
         # Shortcut Lookup Tool (Lookup assigned command for any key combination)
         self.lookup_matched_action_id: Optional[str] = None
-        self.lookup_group = QGroupBox("🔍 Shortcut Lookup Tool (Find Bound Action)")
+        self.lookup_group = QGroupBox("Shortcut Lookup Tool (Find Bound Action)")
         lookup_layout = QVBoxLayout(self.lookup_group)
         lookup_layout.setSpacing(6)
 

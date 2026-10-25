@@ -133,8 +133,7 @@ class WordPressPublishDialog(QDialog):
 
         self.status_combo = QComboBox()
         self.status_combo.addItem("Draft", "draft")
-        self.status_combo.addItem("Pending Review", "pending")
-        self.status_combo.addItem("Publish Immediately", "publish")
+        self.status_combo.setEnabled(False)
         form.addRow("Status:", self.status_combo)
 
         layout.addWidget(post_group)

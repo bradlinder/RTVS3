@@ -762,8 +762,8 @@ class StoryCrudMixin:
         return dlg
 
     def _notify_floating_dialogs(self):
-        """Refresh any open non-modal export or metadata floating windows after main window edits."""
-        for attr in ("_active_export_dialog", "_active_metadata_dialog"):
+        """Refresh any open non-modal export, metadata, or speaker management floating windows after main window edits."""
+        for attr in ("_active_export_dialog", "_active_metadata_dialog", "_active_speaker_manager_dialog", "_active_preferences_dialog"):
             dlg = getattr(self, attr, None)
             if dlg is not None and dlg.isVisible() and not dlg.isActiveWindow():
                 if hasattr(dlg, "refresh_from_main_window"):
@@ -771,10 +771,15 @@ class StoryCrudMixin:
                         dlg.refresh_from_main_window()
                     except Exception:
                         pass
+                elif hasattr(dlg, "_populate"):
+                    try:
+                        dlg._populate()
+                    except Exception:
+                        pass
 
     def _close_floating_dialogs(self, persist_drafts: bool = True):
         """Persist drafts and close any active non-modal floating windows on project close or shutdown."""
-        for attr in ("_active_export_dialog", "_active_metadata_dialog"):
+        for attr in ("_active_export_dialog", "_active_metadata_dialog", "_active_speaker_manager_dialog", "_active_preferences_dialog"):
             dlg = getattr(self, attr, None)
             if dlg is not None:
                 try:
@@ -783,6 +788,8 @@ class StoryCrudMixin:
                             dlg._persist_plugin_draft_states()
                         if hasattr(dlg, "save_all_to_project"):
                             dlg.save_all_to_project()
+                        if hasattr(dlg, "save_preferences"):
+                            dlg.save_preferences()
                     dlg.close()
                 except Exception:
                     pass
