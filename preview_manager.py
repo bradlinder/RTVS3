@@ -68,7 +68,7 @@ const server = http.createServer((req, res) => {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Radio & TV Story Segmenter v\${version}</title>
+  <title>Radio & TV Story Segmenter v\\${version}</title>
   <style>
     body {
       background: #090d16;
@@ -106,7 +106,7 @@ const server = http.createServer((req, res) => {
 <body>
   <div class="card">
     <h1>Radio & TV Story Segmenter</h1>
-    <div class="badge">v\${version}</div>
+    <div class="badge">v\\${version}</div>
     <p>Native PySide6 Desktop Application Suite</p>
   </div>
 </body>

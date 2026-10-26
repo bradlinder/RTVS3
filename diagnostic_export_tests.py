@@ -173,6 +173,14 @@ class DiagnosticExportTestsMixin:
                 raise AssertionError("StoryMetadataDialog missing NonModal floating controls")
             meta_dlg.close()
 
+            # Clean up transient test widgets
+            wp_set_dlg.deleteLater()
+            tab_w.deleteLater()
+            tab_meta.deleteLater()
+            exp_dlg.deleteLater()
+            meta_dlg.deleteLater()
+            wp_pref.deleteLater()
+
         item.status = "PASS"
         item.message = "WordPress export scope, shared metadata persistence, 4-tab layout, and non-modal floating dialogs verified"
 

@@ -30,7 +30,7 @@ else:
 
 INTERNAL_APP_ID = "RadioTVStorySegmenter"
 APP_DISPLAY_NAME = "Radio & TV Segmenter"
-PROJECT_VERSION = "3.9.44-beta"
+PROJECT_VERSION = "3.9.45-beta"
 DEFAULT_GITHUB_REPO = "bradlinder/RTVS3"
 
 
@@ -149,6 +149,15 @@ def apply_window_titlebar_theme(widget, theme_mode: Optional[str] = None) -> Non
     if sys.platform != "win32" or widget is None:
         return
     try:
+        from PySide6.QtCore import QThread
+        from PySide6.QtWidgets import QApplication
+        app = QApplication.instance()
+        # Ensure we only query native OS window handles from the main GUI thread.
+        # Querying widget.winId() on a background worker thread causes Win32/Qt cross-thread
+        # window creation deadlock when QApplication event loop is running on the main thread.
+        if app is not None and QThread.currentThread() != app.thread():
+            return
+
         # Determine theme mode if not provided
         if not theme_mode:
             theme_mode = get_active_theme_mode("dark")
@@ -176,6 +185,12 @@ def apply_window_titlebar_theme(widget, theme_mode: Optional[str] = None) -> Non
 def _deferred_titlebar_theme(widget, theme_mode: str) -> None:
     """Deferred callback ensuring DWM attributes persist after Qt window frame initialization."""
     try:
+        from PySide6.QtCore import QThread
+        from PySide6.QtWidgets import QApplication
+        app = QApplication.instance()
+        if app is not None and QThread.currentThread() != app.thread():
+            return
+
         if widget and hasattr(widget, "winId"):
             hwnd = int(widget.winId())
             if hwnd:

@@ -1,5 +1,13 @@
 # Changelog
 
+## v3.9.45-beta
+- **Diagnostic Test Bench Background Worker Thread-Safety & UI Hang Resolution (`core_utils.py`, `diagnostic_export_tests.py`, `preview_manager.py`)**:
+  - Resolved an application-wide freeze and "(Not Responding)" lockup occurring during the System Diagnostic Test Bench when executing the `WordPress Export Scope Post Builder` diagnostic check.
+  - Added thread-affinity guards to `apply_window_titlebar_theme` and its deferred callback `_deferred_titlebar_theme` in `core_utils.py`: verified `QThread.currentThread() == app.thread()` prior to querying native OS window handles (`widget.winId()`).
+  - Prevented Win32/Qt cross-thread window creation deadlock where worker threads instantiating modeless export dialogs (`UnifiedExportDialog`, `StoryMetadataDialog`) synchronously requested native OS platform window handles (`HWND`) while the main GUI thread event loop was blocked waiting on worker task progression.
+  - Added transient widget cleanup (`deleteLater()`) across test scopes in `diagnostic_export_tests.py` to prevent orphaned QWidget references during headless and graphical test bench runs.
+  - Fixed escaped template literals in `preview_manager.py` to resolve Python `SyntaxWarning` notifications during runtime inspection.
+
 ## v3.9.44-beta
 - **Application-Wide Keyboard Shortcut Alignment & 79-Action Schema Harmonization (`shortcuts/schema.py`, `ui_dialog_launchers.py`, `shortcuts/manager.py`, `README.md`)**:
   - Restored true application keybindings across the central shortcut schema, aligning Preferences to `Ctrl+P` (macOS: `Cmd+P`), Glossary / Terminology to `Ctrl+Shift+G`, Add Comment to `Ctrl+M`, Manage AI Models to `Ctrl+Alt+M`, Multi-Stage Pipeline to `Ctrl+R`, ID3 Tag Editor to `Ctrl+Shift+I`, and Timeline Zoom to `+` / `-`.

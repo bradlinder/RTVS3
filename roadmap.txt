@@ -73,18 +73,17 @@ TABLE OF CONTENTS & STATUS OVERVIEW
    [ ] 4.4 Burned-in Subtitles & Platform Safe Zone Enforcement (`plugins/social_reel/reel_subtitles.py`)
    [ ] 4.5 Unified Export Integration & Social Reel Diagnostic Tests (`export/dialog.py`, `test_runner.py`)
 
-5. Current Release: Application-Wide Keyboard Shortcut Alignment & 79-Action Schema Harmonization (`shortcuts/schema.py`, `ui_dialog_launchers.py`, `shortcuts/manager.py`, `README.md`) [x] [COMPLETED in v3.9.44-beta]
-   [x] 5.1 Live Running Shortcut Parity (`shortcuts/schema.py`): Aligned all schema default keybindings with real application execution paths (`Ctrl+P` for Preferences, `Ctrl+Shift+G` for Glossary, `Ctrl+M` for Comments, `Ctrl+Alt+M` for Models, `Ctrl+R` for Pipeline, `Ctrl+Shift+I` for ID3, `+` / `-` for Timeline Zoom).
-   [x] 5.2 Complete 79-Action Schema Registry (`shortcuts/schema.py`, `ui_dialog_launchers.py`): Incorporated all missing AI Pipeline tools (Transcribe, Diarize, Stories, Translate), View Panel toggles, and Editing actions into the single source of truth and F1 Reference table.
-   [x] 5.3 MainWindow Attribute Binding Integrity (`shortcuts/schema.py`, `shortcuts/manager.py`): Aligned 100% of definition `attr_name` fields to match actual attributes on `MainWindow`, enabling seamless custom keybinding propagation from Preferences to menus and toolbars.
-   [x] 5.4 Seeker Duplicate Pruning & Alias Resolution (`shortcuts/schema.py`): Consolidated transport seekers into single distinct actions and mapped legacy keys through `ACTION_ALIASES`.
-   [x] 5.5 Documentation Synchronization (`README.md`): Completely rebuilt the Keyboard Shortcuts table in `README.md` to document all 79 shortcuts across 8 canonical categories.
+5. Current Release: Diagnostic Test Bench Background Worker Thread-Safety & UI Hang Resolution (`core_utils.py`, `diagnostic_export_tests.py`, `preview_manager.py`) [x] [COMPLETED in v3.9.45-beta]
+   [x] 5.1 Main GUI Thread Affinity Guard (`core_utils.py`): Enforce `QThread.currentThread() == app.thread()` inside `apply_window_titlebar_theme` and `_deferred_titlebar_theme` to eliminate cross-thread Win32/Qt window creation deadlocks.
+   [x] 5.2 Test Widget Lifecycle & Memory Cleanup (`diagnostic_export_tests.py`): Add `deleteLater()` to transient widgets and dialogs in `_test_wordpress_export_scope_post_builder`.
+   [x] 5.3 Syntax Warning Cleanup (`preview_manager.py`): Escape template literal expressions to silence Python invalid escape sequence warnings.
 
-6. Previous Release: Configurable Speaker Sample Preview Duration & Open-Source AI Attribution (`preferences_tabs_media.py`, `preferences_dialog.py`, `speaker_dialogs.py`, `playback_preferences.py`) [x] [COMPLETED in v3.9.43-beta]
-   [x] 6.1 Configurable Speaker Sample Duration (`preferences_tabs_media.py`, `preferences_tabs.py`): Added a `QDoubleSpinBox` (1.0s–15.0s, default 3.0s) to the Story Detection & Diarization preferences page.
-   [x] 6.2 Preferences Persistence & Category Reset (`preferences_dialog.py`, `preferences_reset.py`, `preferences_reset_dialog.py`): Persisted `speaker_sample_duration` to `QSettings` with factory defaults and category restoration support.
-   [x] 6.3 Dynamic Speaker Sample Resolution (`speaker_dialogs.py`): Updated `SpeakerManagerDialog` to dynamically resolve representative utterances based on user-configured duration with dynamic tooltip indicators.
-   [x] 6.4 Open-Source AI Attribution Synchronization (`playback_preferences.py`): Updated the Help -> About dialog to explicitly include WeSpeaker and ONNX Runtime alongside Whisper, CTranslate2, and PyTorch.
+6. Previous Release: Application-Wide Keyboard Shortcut Alignment & 79-Action Schema Harmonization (`shortcuts/schema.py`, `ui_dialog_launchers.py`, `shortcuts/manager.py`, `README.md`) [x] [COMPLETED in v3.9.44-beta]
+   [x] 6.1 Live Running Shortcut Parity (`shortcuts/schema.py`): Aligned all schema default keybindings with real application execution paths (`Ctrl+P` for Preferences, `Ctrl+Shift+G` for Glossary, `Ctrl+M` for Comments, `Ctrl+Alt+M` for Models, `Ctrl+R` for Pipeline, `Ctrl+Shift+I` for ID3, `+` / `-` for Timeline Zoom).
+   [x] 6.2 Complete 79-Action Schema Registry (`shortcuts/schema.py`, `ui_dialog_launchers.py`): Incorporated all missing AI Pipeline tools (Transcribe, Diarize, Stories, Translate), View Panel toggles, and Editing actions into the single source of truth and F1 Reference table.
+   [x] 6.3 MainWindow Attribute Binding Integrity (`shortcuts/schema.py`, `shortcuts/manager.py`): Aligned 100% of definition `attr_name` fields to match actual attributes on `MainWindow`, enabling seamless custom keybinding propagation from Preferences to menus and toolbars.
+   [x] 6.4 Seeker Duplicate Pruning & Alias Resolution (`shortcuts/schema.py`): Consolidated transport seekers into single distinct actions and mapped legacy keys through `ACTION_ALIASES`.
+   [x] 6.5 Documentation Synchronization (`README.md`): Completely rebuilt the Keyboard Shortcuts table in `README.md` to document all 79 shortcuts across 8 canonical categories.
 
 7. Completed Milestone: Speaker Management Ergonomics & Quick Sample Audio Preview (`speaker_dialogs.py`, `playback_controller.py`, `speaker_dialog_refinement_mixin.py`, `test_runner.py`) [x] [COMPLETED in v3.9.41-beta]
    - *Purpose*: Streamline speaker identification and naming by providing immediate audio verification of detected speaker clusters directly inside the speaker management dialog.
@@ -282,23 +281,22 @@ ARCHITECTURAL INVARIANTS FOR SOCIAL REEL PLUGIN:
       2. Automated Diagnostic Suite: Add unit tests in `test_runner.py` verifying plugin registration, ASS subtitle timing generation, safe zone margin math, and FFmpeg filtergraph string assembly.
 
 ================================================================================
-2. CURRENT RELEASE: APPLICATION-WIDE KEYBOARD SHORTCUT ALIGNMENT & 79-ACTION SCHEMA HARMONIZATION [x] [COMPLETED in v3.9.44-beta]
+2. CURRENT RELEASE: DIAGNOSTIC TEST BENCH BACKGROUND WORKER THREAD-SAFETY & UI HANG RESOLUTION [x] [COMPLETED in v3.9.45-beta]
 ================================================================================
 
-[x] 5.1 Live Running Shortcut Parity (`shortcuts/schema.py`): Aligned all schema default keybindings with real application execution paths (`Ctrl+P` for Preferences, `Ctrl+Shift+G` for Glossary, `Ctrl+M` for Comments, `Ctrl+Alt+M` for Models, `Ctrl+R` for Pipeline, `Ctrl+Shift+I` for ID3, `+` / `-` for Timeline Zoom).
-[x] 5.2 Complete 79-Action Schema Registry (`shortcuts/schema.py`, `ui_dialog_launchers.py`): Incorporated all missing AI Pipeline tools (Transcribe, Diarize, Stories, Translate), View Panel toggles, and Editing actions into the single source of truth and F1 Reference table.
-[x] 5.3 MainWindow Attribute Binding Integrity (`shortcuts/schema.py`, `shortcuts/manager.py`): Aligned 100% of definition `attr_name` fields to match actual attributes on `MainWindow`, enabling seamless custom keybinding propagation from Preferences to menus and toolbars.
-[x] 5.4 Seeker Duplicate Pruning & Alias Resolution (`shortcuts/schema.py`): Consolidated transport seekers into single distinct actions and mapped legacy keys through `ACTION_ALIASES`.
-[x] 5.5 Documentation Synchronization (`README.md`): Completely rebuilt the Keyboard Shortcuts table in `README.md` to document all 79 shortcuts across 8 canonical categories.
+[x] 5.1 Main GUI Thread Affinity Guard (`core_utils.py`): Enforce `QThread.currentThread() == app.thread()` inside `apply_window_titlebar_theme` and `_deferred_titlebar_theme` to eliminate cross-thread Win32/Qt window creation deadlocks.
+[x] 5.2 Test Widget Lifecycle & Memory Cleanup (`diagnostic_export_tests.py`): Add `deleteLater()` to transient widgets and dialogs in `_test_wordpress_export_scope_post_builder`.
+[x] 5.3 Syntax Warning Cleanup (`preview_manager.py`): Escape template literal expressions to silence Python invalid escape sequence warnings.
 
 ================================================================================
-1. PREVIOUS RELEASE: CONFIGURABLE SPEAKER SAMPLE PREVIEW DURATION & OPEN-SOURCE AI ATTRIBUTION [x] [COMPLETED in v3.9.43-beta]
+1. PREVIOUS RELEASE: APPLICATION-WIDE KEYBOARD SHORTCUT ALIGNMENT & 79-ACTION SCHEMA HARMONIZATION [x] [COMPLETED in v3.9.44-beta]
 ================================================================================
 
-[x] 6.1 Configurable Speaker Sample Duration (`preferences_tabs_media.py`, `preferences_tabs.py`): Added a `QDoubleSpinBox` (1.0s–15.0s, default 3.0s) to the Story Detection & Diarization preferences page.
-[x] 6.2 Preferences Persistence & Category Reset (`preferences_dialog.py`, `preferences_reset.py`, `preferences_reset_dialog.py`): Persisted `speaker_sample_duration` to `QSettings` with factory defaults and category restoration support.
-[x] 6.3 Dynamic Speaker Sample Resolution (`speaker_dialogs.py`): Updated `SpeakerManagerDialog` to dynamically resolve representative utterances based on user-configured duration with dynamic tooltip indicators.
-[x] 6.4 Open-Source AI Attribution Synchronization (`playback_preferences.py`): Updated the Help -> About dialog to explicitly include WeSpeaker and ONNX Runtime alongside Whisper, CTranslate2, and PyTorch.
+[x] 6.1 Live Running Shortcut Parity (`shortcuts/schema.py`): Aligned all schema default keybindings with real application execution paths (`Ctrl+P` for Preferences, `Ctrl+Shift+G` for Glossary, `Ctrl+M` for Comments, `Ctrl+Alt+M` for Models, `Ctrl+R` for Pipeline, `Ctrl+Shift+I` for ID3, `+` / `-` for Timeline Zoom).
+[x] 6.2 Complete 79-Action Schema Registry (`shortcuts/schema.py`, `ui_dialog_launchers.py`): Incorporated all missing AI Pipeline tools (Transcribe, Diarize, Stories, Translate), View Panel toggles, and Editing actions into the single source of truth and F1 Reference table.
+[x] 6.3 MainWindow Attribute Binding Integrity (`shortcuts/schema.py`, `shortcuts/manager.py`): Aligned 100% of definition `attr_name` fields to match actual attributes on `MainWindow`, enabling seamless custom keybinding propagation from Preferences to menus and toolbars.
+[x] 6.4 Seeker Duplicate Pruning & Alias Resolution (`shortcuts/schema.py`): Consolidated transport seekers into single distinct actions and mapped legacy keys through `ACTION_ALIASES`.
+[x] 6.5 Documentation Synchronization (`README.md`): Completely rebuilt the Keyboard Shortcuts table in `README.md` to document all 79 shortcuts across 8 canonical categories.
 
 ================================================================================
 10. COMPLETED MILESTONE: SPEAKER MANAGEMENT ERGONOMICS & QUICK SAMPLE AUDIO PREVIEW [x] [COMPLETED in v3.9.41-beta]
