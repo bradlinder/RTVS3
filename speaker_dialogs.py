@@ -5,20 +5,20 @@ import html
 from pathlib import Path
 from typing import List, Optional, Tuple
 
-from PySide6.QtCore import Qt, QTimer, QSettings, QUrl
+from PySide6.QtCore import Qt, QTimer, QSettings, QUrl, QEvent
 from PySide6.QtGui import QColor, QBrush, QFont
 from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput
 from PySide6.QtWidgets import (
     QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QComboBox,
     QTableWidget, QTableWidgetItem, QHeaderView, QGroupBox, QWidget,
     QCheckBox, QAbstractItemView, QMessageBox, QFrame, QLineEdit, QInputDialog,
-    QApplication
+    QApplication, QStyledItemDelegate, QAbstractItemDelegate
 )
 
 from prs_shared import format_time, parse_time, INTERNAL_APP_ID
 from core_utils import make_dialog_maximizable, apply_window_titlebar_theme, get_active_theme_mode
 
-__all__ = ["ChangeSpeakerDialog", "SpeakerManagerDialog"]
+__all__ = ["ChangeSpeakerDialog", "SpeakerManagerDialog", "SpeakerNameDelegate"]
 
 class ChangeSpeakerDialog(QDialog):
     """Dialog prompting whether to apply a speaker name change to all instances or a single turn."""
@@ -82,6 +82,70 @@ class ChangeSpeakerDialog(QDialog):
         self.accept()
 
 
+class SpeakerNameDelegate(QStyledItemDelegate):
+    """Delegate for inline double-click editing of speaker names with Tab progression."""
+
+    def __init__(self, dialog: SpeakerManagerDialog):
+        super().__init__(dialog.table)
+        self.dialog = dialog
+
+    def createEditor(self, parent, option, index):
+        if index.column() == 0:
+            editor = QLineEdit(parent)
+            theme_mode = get_active_theme_mode("dark")
+            if theme_mode == "light":
+                editor.setStyleSheet(
+                    "QLineEdit { background-color: #ffffff; color: #0f172a; "
+                    "border: 2px solid #2e74b5; border-radius: 4px; padding: 2px 6px; "
+                    "font-size: 12px; font-weight: 600; }"
+                )
+            elif theme_mode == "high_contrast":
+                editor.setStyleSheet(
+                    "QLineEdit { background-color: #000000; color: #ffff00; "
+                    "border: 2px solid #ffff00; border-radius: 4px; padding: 2px 6px; "
+                    "font-size: 12px; font-weight: 600; }"
+                )
+            else:
+                editor.setStyleSheet(
+                    "QLineEdit { background-color: #0f172a; color: #38bdf8; "
+                    "border: 2px solid #38bdf8; border-radius: 4px; padding: 2px 6px; "
+                    "font-size: 12px; font-weight: 600; }"
+                )
+            QTimer.singleShot(0, editor.selectAll)
+            return editor
+        return super().createEditor(parent, option, index)
+
+    def eventFilter(self, editor, event):
+        if event.type() == QEvent.Type.KeyPress:
+            if event.key() == Qt.Key.Key_Tab:
+                row = self.dialog.table.currentRow()
+                total = self.dialog.table.rowCount()
+                nxt = (row + 1) % total if total > 0 else 0
+                old_text = self.dialog.table.item(row, 0).text() if self.dialog.table.item(row, 0) else ""
+                new_text = editor.text().strip()
+                if new_text != old_text and new_text:
+                    self.dialog._pending_tab_advance = nxt
+                    self.commitData.emit(editor)
+                    self.closeEditor.emit(editor, QAbstractItemDelegate.EndEditHint.NoHint)
+                else:
+                    self.closeEditor.emit(editor, QAbstractItemDelegate.EndEditHint.RevertModelCache)
+                    QTimer.singleShot(0, lambda: self.dialog._start_inline_edit_on_row(nxt))
+                return True
+            elif event.key() == Qt.Key.Key_Backtab:
+                row = self.dialog.table.currentRow()
+                total = self.dialog.table.rowCount()
+                prev = (row - 1) % total if total > 0 else 0
+                old_text = self.dialog.table.item(row, 0).text() if self.dialog.table.item(row, 0) else ""
+                new_text = editor.text().strip()
+                if new_text != old_text and new_text:
+                    self.dialog._pending_tab_advance = prev
+                    self.commitData.emit(editor)
+                    self.closeEditor.emit(editor, QAbstractItemDelegate.EndEditHint.NoHint)
+                else:
+                    self.closeEditor.emit(editor, QAbstractItemDelegate.EndEditHint.RevertModelCache)
+                    QTimer.singleShot(0, lambda: self.dialog._start_inline_edit_on_row(prev))
+                return True
+        return super().eventFilter(editor, event)
 
 
 class SpeakerManagerDialog(QDialog):
@@ -109,6 +173,8 @@ class SpeakerManagerDialog(QDialog):
         self._sample_buttons = {}
         self._active_sample_speaker = None
         self._pending_play_pos_ms = None
+        self._is_populating = False
+        self._pending_tab_advance: Optional[int] = None
 
         self._sample_timer = QTimer(self)
         self._sample_timer.setSingleShot(True)
@@ -304,6 +370,9 @@ class SpeakerManagerDialog(QDialog):
         self.table.setHorizontalHeaderLabels([
             "Speaker Name / Alias", "Cluster / Raw ID", "Turns", "Total Duration", "Actions"
         ])
+        header_item = self.table.horizontalHeaderItem(0)
+        if header_item:
+            header_item.setToolTip("Double-click any name to edit inline; press Tab to jump directly to the next speaker")
         self.table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
         self.table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
         self.table.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
@@ -312,7 +381,13 @@ class SpeakerManagerDialog(QDialog):
         self.table.setColumnWidth(4, 330)
         self.table.verticalHeader().setDefaultSectionSize(46)
         self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
-        self.table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+        self.table.setEditTriggers(
+            QAbstractItemView.EditTrigger.DoubleClicked
+            | QAbstractItemView.EditTrigger.EditKeyPressed
+            | QAbstractItemView.EditTrigger.SelectedClicked
+        )
+        self.table.setItemDelegateForColumn(0, SpeakerNameDelegate(self))
+        self.table.itemChanged.connect(self._on_table_item_changed)
         layout.addWidget(self.table)
 
         btn_row = QHBoxLayout()
@@ -333,107 +408,162 @@ class SpeakerManagerDialog(QDialog):
         layout.addLayout(btn_row)
 
     def _populate(self):
-        self._stop_sample_playback()
-        self._sample_buttons.clear()
-        self.table.setRowCount(0)
-        if not self.main_win or not getattr(self.main_win, "transcript", None):
+        self._is_populating = True
+        try:
+            self._stop_sample_playback()
+            self._sample_buttons.clear()
+            self.table.setRowCount(0)
+            if not self.main_win or not getattr(self.main_win, "transcript", None):
+                return
+
+            source_url = self._get_audio_source_url()
+            if source_url and self._preview_player.source() != source_url:
+                self._preview_player.setSource(source_url)
+
+            segments = self.main_win.transcript.get("segments", [])
+            speaker_stats = {}
+
+            for idx, seg in enumerate(segments):
+                name = self.main_win.get_effective_speaker_name(idx, seg) or "Unknown Speaker"
+                raw = str(self.main_win.segment_speaker_overrides.get(idx) or seg.get("speaker") or name)
+                start = float(seg.get("start", 0.0))
+                end = float(seg.get("end", start))
+                dur = max(0.0, end - start)
+
+                if name not in speaker_stats:
+                    speaker_stats[name] = {"raw": raw, "turns": 0, "duration": 0.0}
+                speaker_stats[name]["turns"] += 1
+                speaker_stats[name]["duration"] += dur
+
+            self.table.setRowCount(len(speaker_stats))
+            for row, (name, info) in enumerate(sorted(speaker_stats.items(), key=lambda x: -x[1]["duration"])):
+                self.table.setRowHeight(row, 46)
+
+                name_item = QTableWidgetItem(name)
+                name_item.setFlags(
+                    name_item.flags()
+                    | Qt.ItemFlag.ItemIsEditable
+                    | Qt.ItemFlag.ItemIsEnabled
+                    | Qt.ItemFlag.ItemIsSelectable
+                )
+                name_item.setData(Qt.ItemDataRole.UserRole, name)
+                name_item.setData(Qt.ItemDataRole.UserRole + 1, info["raw"])
+                name_item.setToolTip("Double-click to rename this speaker directly (press Tab to advance to next speaker)")
+                self.table.setItem(row, 0, name_item)
+
+                raw_item = QTableWidgetItem(info["raw"])
+                raw_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+                raw_item.setFlags(raw_item.flags() & ~Qt.ItemFlag.ItemIsEditable)
+                self.table.setItem(row, 1, raw_item)
+
+                turns_item = QTableWidgetItem(str(info["turns"]))
+                turns_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+                turns_item.setFlags(turns_item.flags() & ~Qt.ItemFlag.ItemIsEditable)
+                self.table.setItem(row, 2, turns_item)
+
+                dur_item = QTableWidgetItem(format_time(info["duration"]))
+                dur_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+                dur_item.setFlags(dur_item.flags() & ~Qt.ItemFlag.ItemIsEditable)
+                self.table.setItem(row, 3, dur_item)
+
+                action_widget = QWidget(self)
+                action_layout = QHBoxLayout(action_widget)
+                action_layout.setContentsMargins(6, 4, 6, 4)
+                action_layout.setSpacing(6)
+
+                btn_style = """
+                    QPushButton {
+                        background-color: #1e293b;
+                        color: #f1f5f9;
+                        border: 1px solid #475569;
+                        border-radius: 4px;
+                        padding: 4px 10px;
+                        font-size: 11px;
+                        font-weight: 600;
+                        min-height: 26px;
+                    }
+                    QPushButton:hover {
+                        background-color: #334155;
+                        border-color: #38bdf8;
+                        color: #38bdf8;
+                    }
+                    QPushButton:pressed {
+                        background-color: #0f172a;
+                    }
+                    QPushButton:disabled {
+                        background-color: #0f172a;
+                        color: #64748b;
+                        border-color: #334155;
+                    }
+                """
+
+                sample_btn = QPushButton("Play Sample", action_widget)
+                sample_btn.setStyleSheet(btn_style)
+                sample_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+                sample_range = self._find_speaker_sample_range(name)
+                if not source_url or not sample_range:
+                    sample_btn.setEnabled(False)
+                    sample_btn.setToolTip("No audio sample available for this speaker" if source_url else "No audio media loaded for this project")
+                else:
+                    sample_btn.setToolTip(f"Listen to a 3-second sample of {name}'s voice")
+                    sample_btn.clicked.connect(lambda _, n=name: self._play_speaker_sample(n))
+                self._sample_buttons[name] = sample_btn
+                action_layout.addWidget(sample_btn)
+
+                rename_btn = QPushButton("Rename / Alias", action_widget)
+                rename_btn.setStyleSheet(btn_style)
+                rename_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+                rename_btn.clicked.connect(lambda _, n=name, r=info["raw"]: self._rename_speaker(n, r))
+                action_layout.addWidget(rename_btn)
+
+                merge_btn = QPushButton("Merge Into...", action_widget)
+                merge_btn.setStyleSheet(btn_style)
+                merge_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+                merge_btn.clicked.connect(lambda _, n=name: self._merge_speaker_into(n))
+                action_layout.addWidget(merge_btn)
+
+                self.table.setCellWidget(row, 4, action_widget)
+        finally:
+            self._is_populating = False
+
+        if self._pending_tab_advance is not None:
+            nxt = self._pending_tab_advance
+            self._pending_tab_advance = None
+            QTimer.singleShot(0, lambda: self._start_inline_edit_on_row(nxt))
+
+    def _start_inline_edit_on_row(self, row: int):
+        total = self.table.rowCount()
+        if total <= 0:
+            return
+        target_row = row % total
+        self.table.setCurrentCell(target_row, 0)
+        item = self.table.item(target_row, 0)
+        if item:
+            self.table.editItem(item)
+
+    def _on_table_item_changed(self, item: QTableWidgetItem):
+        if self._is_populating or item.column() != 0:
+            return
+        old_name = item.data(Qt.ItemDataRole.UserRole)
+        raw_id = item.data(Qt.ItemDataRole.UserRole + 1)
+        new_name = item.text().strip()
+
+        if not old_name:
             return
 
-        source_url = self._get_audio_source_url()
-        if source_url and self._preview_player.source() != source_url:
-            self._preview_player.setSource(source_url)
+        if not new_name or new_name == old_name:
+            self._is_populating = True
+            try:
+                item.setText(old_name)
+            finally:
+                self._is_populating = False
+            if self._pending_tab_advance is not None:
+                nxt = self._pending_tab_advance
+                self._pending_tab_advance = None
+                QTimer.singleShot(0, lambda: self._start_inline_edit_on_row(nxt))
+            return
 
-        segments = self.main_win.transcript.get("segments", [])
-        speaker_stats = {}
-
-        for idx, seg in enumerate(segments):
-            name = self.main_win.get_effective_speaker_name(idx, seg) or "Unknown Speaker"
-            raw = str(self.main_win.segment_speaker_overrides.get(idx) or seg.get("speaker") or name)
-            start = float(seg.get("start", 0.0))
-            end = float(seg.get("end", start))
-            dur = max(0.0, end - start)
-
-            if name not in speaker_stats:
-                speaker_stats[name] = {"raw": raw, "turns": 0, "duration": 0.0}
-            speaker_stats[name]["turns"] += 1
-            speaker_stats[name]["duration"] += dur
-
-        self.table.setRowCount(len(speaker_stats))
-        for row, (name, info) in enumerate(sorted(speaker_stats.items(), key=lambda x: -x[1]["duration"])):
-            self.table.setRowHeight(row, 46)
-
-            name_item = QTableWidgetItem(name)
-            self.table.setItem(row, 0, name_item)
-
-            raw_item = QTableWidgetItem(info["raw"])
-            raw_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-            self.table.setItem(row, 1, raw_item)
-
-            turns_item = QTableWidgetItem(str(info["turns"]))
-            turns_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-            self.table.setItem(row, 2, turns_item)
-
-            dur_item = QTableWidgetItem(format_time(info["duration"]))
-            dur_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-            self.table.setItem(row, 3, dur_item)
-
-            action_widget = QWidget(self)
-            action_layout = QHBoxLayout(action_widget)
-            action_layout.setContentsMargins(6, 4, 6, 4)
-            action_layout.setSpacing(6)
-
-            btn_style = """
-                QPushButton {
-                    background-color: #1e293b;
-                    color: #f1f5f9;
-                    border: 1px solid #475569;
-                    border-radius: 4px;
-                    padding: 4px 10px;
-                    font-size: 11px;
-                    font-weight: 600;
-                    min-height: 26px;
-                }
-                QPushButton:hover {
-                    background-color: #334155;
-                    border-color: #38bdf8;
-                    color: #38bdf8;
-                }
-                QPushButton:pressed {
-                    background-color: #0f172a;
-                }
-                QPushButton:disabled {
-                    background-color: #0f172a;
-                    color: #64748b;
-                    border-color: #334155;
-                }
-            """
-
-            sample_btn = QPushButton("Play Sample", action_widget)
-            sample_btn.setStyleSheet(btn_style)
-            sample_btn.setCursor(Qt.CursorShape.PointingHandCursor)
-            sample_range = self._find_speaker_sample_range(name)
-            if not source_url or not sample_range:
-                sample_btn.setEnabled(False)
-                sample_btn.setToolTip("No audio sample available for this speaker" if source_url else "No audio media loaded for this project")
-            else:
-                sample_btn.setToolTip(f"Listen to a 3-second sample of {name}'s voice")
-                sample_btn.clicked.connect(lambda _, n=name: self._play_speaker_sample(n))
-            self._sample_buttons[name] = sample_btn
-            action_layout.addWidget(sample_btn)
-
-            rename_btn = QPushButton("Rename / Alias", action_widget)
-            rename_btn.setStyleSheet(btn_style)
-            rename_btn.setCursor(Qt.CursorShape.PointingHandCursor)
-            rename_btn.clicked.connect(lambda _, n=name, r=info["raw"]: self._rename_speaker(n, r))
-            action_layout.addWidget(rename_btn)
-
-            merge_btn = QPushButton("Merge Into...", action_widget)
-            merge_btn.setStyleSheet(btn_style)
-            merge_btn.setCursor(Qt.CursorShape.PointingHandCursor)
-            merge_btn.clicked.connect(lambda _, n=name: self._merge_speaker_into(n))
-            action_layout.addWidget(merge_btn)
-
-            self.table.setCellWidget(row, 4, action_widget)
+        self._apply_speaker_rename(old_name, new_name, raw_id)
 
     def _rename_speaker(self, current_name, raw_id):
         self._stop_sample_playback()
@@ -443,46 +573,51 @@ class SpeakerManagerDialog(QDialog):
             QLineEdit.EchoMode.Normal, current_name
         )
         if accepted and new_name.strip() and new_name.strip() != current_name:
-            target = new_name.strip()
-            if hasattr(self.main_win, "flush_pending_transcript_undo"):
-                self.main_win.flush_pending_transcript_undo()
-            if hasattr(self.main_win, "_capture_project_state"):
-                before_state = self.main_win._capture_project_state()
-            elif hasattr(self.main_win, "get_project_state"):
-                before_state = self.main_win.get_project_state()
-            else:
-                before_state = None
-            is_unknown = current_name.strip().lower() in ("unknown speaker", "unknown", "unassigned")
-            if not is_unknown:
-                self.main_win.speaker_names[str(raw_id)] = target
-                self.main_win.speaker_names[current_name] = target
-            else:
-                self.main_win.speaker_names.pop("Unknown Speaker", None)
-                self.main_win.speaker_names.pop("unknown speaker", None)
-            self.main_win.add_custom_speaker_to_glossary(target)
+            self._apply_speaker_rename(current_name, new_name.strip(), raw_id)
 
-            segments = self.main_win.transcript.get("segments", [])
-            for idx, seg in enumerate(segments):
-                curr = self.main_win.get_effective_speaker_name(idx, seg)
-                matches = False
-                if curr == current_name:
+    def _apply_speaker_rename(self, current_name: str, target: str, raw_id: Any):
+        if not self.main_win:
+            return
+        self._stop_sample_playback()
+        if hasattr(self.main_win, "flush_pending_transcript_undo"):
+            self.main_win.flush_pending_transcript_undo()
+        if hasattr(self.main_win, "_capture_project_state"):
+            before_state = self.main_win._capture_project_state()
+        elif hasattr(self.main_win, "get_project_state"):
+            before_state = self.main_win.get_project_state()
+        else:
+            before_state = None
+        is_unknown = current_name.strip().lower() in ("unknown speaker", "unknown", "unassigned")
+        if not is_unknown:
+            self.main_win.speaker_names[str(raw_id)] = target
+            self.main_win.speaker_names[current_name] = target
+        else:
+            self.main_win.speaker_names.pop("Unknown Speaker", None)
+            self.main_win.speaker_names.pop("unknown speaker", None)
+        self.main_win.add_custom_speaker_to_glossary(target)
+
+        segments = self.main_win.transcript.get("segments", [])
+        for idx, seg in enumerate(segments):
+            curr = self.main_win.get_effective_speaker_name(idx, seg)
+            matches = False
+            if curr == current_name:
+                matches = True
+            elif is_unknown:
+                if not curr or curr.strip().lower() in ("unknown speaker", "unknown", "unassigned", "none", ""):
                     matches = True
-                elif is_unknown:
-                    if not curr or curr.strip().lower() in ("unknown speaker", "unknown", "unassigned", "none", ""):
-                        matches = True
 
-                if matches:
-                    override_key = f"SEG_{idx}_SPEAKER"
-                    self.main_win.speaker_names[override_key] = target
-                    self.main_win.segment_speaker_overrides[idx] = override_key
-                    seg["speaker"] = target
+            if matches:
+                override_key = f"SEG_{idx}_SPEAKER"
+                self.main_win.speaker_names[override_key] = target
+                self.main_win.segment_speaker_overrides[idx] = override_key
+                seg["speaker"] = target
 
-            if before_state is not None and hasattr(self.main_win, "_commit_project_state_change"):
-                self.main_win._commit_project_state_change(before_state, f"Rename Speaker: {current_name} → {target}")
+        if before_state is not None and hasattr(self.main_win, "_commit_project_state_change"):
+            self.main_win._commit_project_state_change(before_state, f"Rename Speaker: {current_name} → {target}")
 
-            self.main_win.render_transcript()
-            self.main_win.save_project()
-            self._populate()
+        self.main_win.render_transcript()
+        self.main_win.save_project()
+        self._populate()
 
     def _merge_speaker_into(self, source_name):
         self._stop_sample_playback()

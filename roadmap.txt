@@ -37,25 +37,21 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 --------------------------------------------------------------------------------
 TABLE OF CONTENTS & STATUS OVERVIEW
 --------------------------------------------------------------------------------
-<<<<<<< HEAD
-1. Previous Release: Speaker Management Quick Sample Audio Preview & Ergonomics (`speaker_dialogs.py`, `speaker_dialog_refinement_mixin.py`, `diagnostic_core_tests.py`, `test_runner.py`) [x] [COMPLETED in v3.9.39-beta]
-   [x] 1.1 Representative Utterance Resolution (`speaker_dialogs.py`): Implemented `_find_speaker_sample_range` to automatically locate the longest continuous speech segment >= 3.0s (or the first segment if shorter) for each detected speaker cluster.
-   [x] 1.2 Isolated Preview Playout Channel & Lifecycle Safety (`speaker_dialogs.py`): Built non-blocking 3-second audio preview with dedicated `QMediaPlayer` / `QAudioOutput` and single-shot timeout timer, ensuring preview playback never affects the main timeline scrub position or transport state.
-   [x] 1.3 Instant Inline Sample Buttons & Toggling (`speaker_dialogs.py`): Added "Play Sample" / "Stop" buttons in the speaker table actions column with automatic state toggling, tooltips, and graceful handling of projects without media files.
-   [x] 1.4 Diagnostic Tests & Version Synchronization (`diagnostic_core_tests.py`, `test_runner.py`, `bump_version.py`): Added automated test suite verifying representative range resolution, playout toggling, button state tracking, Unknown Speaker merging, and teardown safety; synchronized all project locations to `v3.9.39-beta`.
-   [x] 1.5 "Unknown Speaker" Cluster Merge & Rename Fix (`speaker_dialog_refinement_mixin.py`, `speaker_dialogs.py`, `export_documents.py`): Resolved issue where turns without diarization overlap displayed as "Unknown Speaker" failed to reassign when merged or renamed due to strict string matching against empty effective names.
-   [x] 1.6 Strict Effective Speaker Scoping on Unknown Cluster Reassignment (`speaker_dialog_refinement_mixin.py`, `speaker_dialogs.py`): Enforced strict effective speaker boundary checks preventing segments with valid diarization labels from matching empty raw speaker fallback guards during unknown speaker merges.
+1. Previous Release: Batch Processing Auto-Save & Three-Tier Diagnostic Verification Hierarchy (`media_batch.py`, `project_lifecycle.py`, `test_runner.py`, `diagnostic_dialog.py`, `diagnostic_selector.py`, `diagnostic_loudness_tests.py`, `AGENTS.md`, `GEMINI.md`) [x] [COMPLETED in v3.9.40-beta]
+   [x] 1.1 Unified Batch Project File Path Resolution (`media_batch.py`): Implemented `_get_batch_project_target_path(base_name)` providing unified, centralized `.rtvs` target path resolution for both standard and unified transcripts mode across pipeline pre-binding and batch export.
+   [x] 1.2 Pre-Binding Project File Path Before Stage Execution (`media_batch.py`): Pre-binds `self.project_file` immediately after loading each audio file in `_batch_next_media()`, allowing intermediate pipeline stages to auto-save silently without falling back to modal file save prompts.
+   [x] 1.3 Headless Batch Save Fallback & Dialog Suppression (`project_lifecycle.py`): Added an active batch fallback in `save_project()` routing directly to `self._batch_save_project_file()` instead of invoking `QFileDialog.getSaveFileName()`.
+   [x] 1.4 Smart Change-Aware Test Defaulting & `--all` Flag (`test_runner.py`, `diagnostic_selector.py`): Automatically defaults to Tier 2 (tests matching modified git files in ~0.5–2s) when uncommitted changes exist; added explicit `--all` flag for Tier 3 release audits.
+   [x] 1.5 Strict Three-Tier Rule Codification (`AGENTS.md`, `GEMINI.md`): Formally codified Tier 1 (`--filter <keyword>`), Tier 2 (`--quiet` / `--changed`), and Tier 3 (`--all`) in Section 3 and Section 11.
+   [x] 1.6 Modular AST Decomposition of `test_runner.py` (`test_runner.py`, `diagnostic_dialog.py`): Extracted `create_diagnostic_dialog` into dedicated submodule `diagnostic_dialog.py` (284 lines), reducing `test_runner.py` to 740 lines in full compliance with the <800-line modularity invariant.
+   [x] 1.7 Test Suite Hardening & Full-Suite Verification (`diagnostic_loudness_tests.py`, `test_runner.py`): Fixed `MockPreferencesApp` Qt widget parentage and missing `QPushButton` import, achieving 100% pass rate in under 20 seconds.
 
-2. Current Release: Batch Processing Auto-Save & Three-Tier Diagnostic Verification Hierarchy (`media_batch.py`, `project_lifecycle.py`, `test_runner.py`, `diagnostic_dialog.py`, `diagnostic_selector.py`, `diagnostic_loudness_tests.py`, `AGENTS.md`, `GEMINI.md`) [x] [COMPLETED in v3.9.40-beta]
-   [x] 2.1 Unified Batch Project File Path Resolution (`media_batch.py`): Implemented `_get_batch_project_target_path(base_name)` providing unified, centralized `.rtvs` target path resolution for both standard and unified transcripts mode across pipeline pre-binding and batch export.
-   [x] 2.2 Pre-Binding Project File Path Before Stage Execution (`media_batch.py`): Pre-binds `self.project_file` immediately after loading each audio file in `_batch_next_media()`, allowing intermediate pipeline stages (e.g. `save_project()` called in `transcription_processing.py`) to auto-save silently to the media directory without falling back to modal file save prompts.
-   [x] 2.3 Headless Batch Save Fallback & Dialog Suppression (`project_lifecycle.py`): Added an active batch fallback in `save_project()`: if `self.project_file` is unassigned during batch execution, it routes directly to `self._batch_save_project_file()` instead of invoking `QFileDialog.getSaveFileName()`. Suppressed interactive `QMessageBox` alerts and media copy prompts when `batch_active` is True.
-   [x] 2.4 Multi-File Batch Verification & Version Synchronization (`media_batch.py`, `bump_version.py`): Verified multi-file batch execution through simulation and automated tests, ensuring each audio file in a batch creates and preserves its own individual `.rtvs` project file; synchronized all project locations to `v3.9.40-beta`.
-   [x] 2.5 Smart Change-Aware Test Defaulting & `--all` Flag (`test_runner.py`, `diagnostic_selector.py`): Automatically defaults to Tier 2 (tests matching modified git files in ~0.5–2s) when uncommitted changes exist, preventing accidental 68-test runs during turn-by-turn development; added explicit `--all` flag for Tier 3 release audits.
-   [x] 2.6 Strict Three-Tier Rule Codification (`AGENTS.md`, `GEMINI.md`): Formally codified Tier 1 (`--filter <keyword>`), Tier 2 (`--quiet` / `--changed`), and Tier 3 (`--all`) in Section 3 (Pre-Completion Verification) and Section 11 (Diagnostic & Log Output Discipline).
-   [x] 2.7 Modular AST Decomposition of `test_runner.py` (`test_runner.py`, `diagnostic_dialog.py`): Extracted `create_diagnostic_dialog` into dedicated submodule `diagnostic_dialog.py` (284 lines), reducing `test_runner.py` to 740 lines in full compliance with the <800-line modularity invariant (Rule 10).
-   [x] 2.8 Test Suite Hardening & Full-Suite Verification (`diagnostic_loudness_tests.py`, `test_runner.py`): Fixed `MockPreferencesApp` Qt widget parentage and missing `QPushButton` import, achieving 100% pass rate (68/69 passed, 1 modularity advisory warning) across the entire diagnostic suite in under 20 seconds.
-   [x] 2.9 Synthetic Fixture Duration Optimization (`diagnostic_core_tests.py`, `diagnostic_export_tests.py`): Reduced synthetic audio fixture durations from 15.0s/10.0s to 5.0s, reducing full-suite test execution time by ~67%.
+2. Current Release: Direct Inline Speaker Renaming & Tab Progression (`speaker_dialogs.py`, `diagnostic_core_tests.py`, `test_runner.py`) [x] [COMPLETED in v3.9.41-beta]
+   [x] 2.1 Double-Click Inline Speaker Name Editing (`speaker_dialogs.py`): Configured `QTableWidget` edit triggers (`DoubleClicked | EditKeyPressed | SelectedClicked`) on Column 0 while strictly locking Columns 1–3 (`Cluster / Raw ID`, `Turns`, `Total Duration`) to non-editable flags (`~Qt.ItemFlag.ItemIsEditable`).
+   [x] 2.2 Theme-Adaptive Speaker Name Delegate (`speaker_dialogs.py`): Built `SpeakerNameDelegate` (`QStyledItemDelegate`) with theme-aware active editor styling (high contrast borders, focused colors) and automatic pre-selection of speaker names upon opening.
+   [x] 2.3 Sequential Tab & Shift+Tab Progression Navigation (`speaker_dialogs.py`): Implemented seamless keyboard navigation in `eventFilter`: pressing Tab automatically commits the current name, persists project state, and jumps directly to edit the next row's speaker name in sequence (or Shift+Tab for previous row).
+   [x] 2.4 Smart No-Op Advance & Teardown Safety (`speaker_dialogs.py`): Pressing Tab without changing text immediately advances to the next speaker without triggering redundant undo snapshots or disk writes.
+   [x] 2.5 Diagnostic Tests & Version Synchronization (`diagnostic_core_tests.py`, `test_runner.py`, `bump_version.py`): Added automated test suite verifying column edit flags, delegate assignment, inline renaming, and Tab progression focus; synchronized all project locations to `v3.9.41-beta`.
 
 3. Upcoming Milestone: Codebase Modularization & Monolithic File Decomposition Strategy (<1,000-Line Invariant) (`playback_preferences.py`, `project_export.py`, `transcript_story.py`, `transcript_editor.py`, `radio_tv_story_segmenter_worker.py`, `benchmark.py`, `plugins/wordpress/export_destination.py`, `plugins/manager.py`, `timeline_widgets.py`) [x] [COMPLETED in v3.9.33-beta]
    - *Architecture Note*: Incrementally refactors all remaining source files exceeding 1,000 lines (at most 1 to 2 monoliths per turn) into focused domain modules (<1,000 lines each) while preserving 100% backward compatibility via zero-breakage facade re-exports.
@@ -135,11 +131,11 @@ TABLE OF CONTENTS & STATUS OVERVIEW
    [ ] 10.5 Preferences Integration, One-Click Script Installer & Diagnostic Tests (`preferences_dialog.py`, `reaper_bridge.py`, `test_runner.py`)
    [ ] 10.6 Universal Text-to-WAV Clipboard & Drag-and-Drop Fallback for Other DAWs (`reaper_bridge.py`, `export_media_clipper.py`, `transcript_context_menu_mixin.py`)
 
-11. Upcoming Milestone: Speaker Management Ergonomics & Quick Sample Audio Preview (`speaker_dialogs.py`, `playback_controller.py`, `speaker_dialog_refinement_mixin.py`, `test_runner.py`) [-] [IN PROGRESS]
+11. Upcoming Milestone: Speaker Management Ergonomics & Quick Sample Audio Preview (`speaker_dialogs.py`, `playback_controller.py`, `speaker_dialog_refinement_mixin.py`, `test_runner.py`) [x] [COMPLETED in v3.9.41-beta]
    - *Purpose*: Streamline speaker identification and naming by providing immediate audio verification of detected speaker clusters directly inside the speaker management dialog.
    [x] 11.1 Non-Modal Floating Speaker Management Dialog & Modeless Co-Editing (`speaker_dialogs.py`, `speaker_dialog_refinement_mixin.py`) [COMPLETED]
    [x] 11.2 Quick Sample Audio Preview: An instant "Listen to sample" play button directly alongside each detected speaker in the management dialog so the user can hear 3 seconds of their voice before assigning the name. [COMPLETED in v3.9.37-beta]
-   [ ] 11.3 Direct Inline Speaker Renaming & Tab Progression: Enable direct inline double-click editing on the "Speaker Name / Alias" cell in the table with Tab key progression (type name → press Tab → jump directly to rename the next speaker).
+   [x] 11.3 Direct Inline Speaker Renaming & Tab Progression: Enable direct inline double-click editing on the "Speaker Name / Alias" cell in the table with Tab key progression (type name → press Tab → jump directly to rename the next speaker). [COMPLETED in v3.9.41-beta]
    [x] 11.4 Non-Modal Preferences Inspector Window (`preferences_dialog.py`, `preferences_tabs_core.py`, `story_crud_mixin.py`, `project_export.py`) [COMPLETED]
 
 12. Upcoming Milestone: Social Reel & Short Video Export Plugin (Instagram Reels, YouTube Shorts, TikTok) (`plugins/social_reel/`, `export_media_clipper.py`, `export_dialogs.py`) [PLANNED] [NOT STARTED]
@@ -166,10 +162,9 @@ DETAILED MILESTONE SPECIFICATIONS
 [x] 1.6 Strict Effective Speaker Scoping on Unknown Cluster Reassignment (`speaker_dialog_refinement_mixin.py`, `speaker_dialogs.py`): Enforced strict effective speaker boundary checks preventing segments with valid diarization labels from matching empty raw speaker fallback guards during unknown speaker merges.
 
 ================================================================================
-<<<<<<< HEAD
-2. CURRENT RELEASE: WORDPRESS 4-TAB EXPORT LAYOUT, NON-MODAL FLOATING WINDOWS & LIVE TRANSCRIPT CO-EDITING [x] [COMPLETED in v3.9.40-beta]
+2. CURRENT RELEASE: WORDPRESS 4-TAB EXPORT LAYOUT, NON-MODAL FLOATING WINDOWS & LIVE TRANSCRIPT CO-EDITING [x] [COMPLETED in v3.9.41-beta]
 =======
-2. CURRENT RELEASE: BATCH PROCESSING SILENT AUTO-SAVE & UNIFIED PROJECT FILE GENERATION [x] [COMPLETED in v3.9.40-beta]
+2. CURRENT RELEASE: BATCH PROCESSING SILENT AUTO-SAVE & UNIFIED PROJECT FILE GENERATION [x] [COMPLETED in v3.9.41-beta]
 >>>>>>> origin/main
 ================================================================================
 

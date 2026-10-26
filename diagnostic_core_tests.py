@@ -740,6 +740,52 @@ class DiagnosticCoreTestsMixin:
             except Exception:
                 pass
 
+        # 7. Test direct inline speaker renaming and Tab progression (Milestone 11.3)
+        dialog = SpeakerManagerDialog(mock_win)
+        from PySide6.QtCore import Qt, QEvent
+        from PySide6.QtGui import QKeyEvent
+        from PySide6.QtWidgets import QLineEdit
+        from speaker_dialogs import SpeakerNameDelegate
+
+        # Verify column 0 edit flags and non-editable columns 1-3
+        col0_item = dialog.table.item(0, 0)
+        col1_item = dialog.table.item(0, 1)
+        if not col0_item or not (col0_item.flags() & Qt.ItemFlag.ItemIsEditable):
+            raise AssertionError("Column 0 ('Speaker Name / Alias') must have ItemIsEditable flag enabled")
+        if col1_item and (col1_item.flags() & Qt.ItemFlag.ItemIsEditable):
+            raise AssertionError("Column 1 ('Cluster / Raw ID') must NOT have ItemIsEditable flag enabled")
+
+        # Verify SpeakerNameDelegate is installed on column 0
+        delegate = dialog.table.itemDelegateForColumn(0)
+        if not isinstance(delegate, SpeakerNameDelegate):
+            raise AssertionError(f"Expected SpeakerNameDelegate on column 0, got {type(delegate)}")
+
+        # Test direct inline rename via item data change
+        col0_item.setText("Dr. Alice Smith")
+        app.processEvents()
+
+        if mock_win.get_effective_speaker_name(0, mock_win.transcript["segments"][0]) != "Dr. Alice Smith":
+            raise AssertionError("Expected segment 0 speaker to be renamed to 'Dr. Alice Smith'")
+
+        # Test Tab progression: start edit on row 0 and simulate Tab key press
+        dialog._start_inline_edit_on_row(0)
+        editor = dialog.table.findChild(QLineEdit)
+        if not editor:
+            raise AssertionError("Failed to find inline QLineEdit editor on row 0")
+        editor.setText("Lead Host")
+
+        tab_ev = QKeyEvent(QEvent.Type.KeyPress, Qt.Key.Key_Tab, Qt.KeyboardModifier.NoModifier)
+        app.sendEvent(editor, tab_ev)
+        app.processEvents()
+
+        # Verify row 0 was renamed to 'Lead Host' and edit focus advanced to row 1
+        if mock_win.get_effective_speaker_name(0, mock_win.transcript["segments"][0]) != "Lead Host":
+            raise AssertionError("Expected speaker to be renamed to 'Lead Host' upon Tab press")
+        if dialog.table.currentRow() != 1:
+            raise AssertionError(f"Expected active table row 1 after Tab progression, got {dialog.table.currentRow()}")
+
+        dialog.close()
+
         item.status = "PASS"
-        item.message = "SpeakerManagerDialog representative utterance resolution, sample playout toggle, Unknown Speaker merging, and lifecycle safety verified"
+        item.message = "SpeakerManagerDialog sample range, preview playback, inline renaming, and Tab progression verified"
 

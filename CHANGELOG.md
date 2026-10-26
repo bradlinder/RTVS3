@@ -1,5 +1,14 @@
 # Changelog
 
+## v3.9.41-beta
+- **Direct Inline Speaker Renaming & Tab Progression (`speaker_dialogs.py`, `diagnostic_core_tests.py`)**:
+  - Implemented direct inline double-click editing on the "Speaker Name / Alias" cell in the speaker management table with seamless Tab key progression (Milestone 11.3).
+  - Built `SpeakerNameDelegate` (`QStyledItemDelegate`) with theme-adaptive active styling (dark, light, high-contrast) and automatic pre-selection of speaker names upon editor focus.
+  - Added intelligent Tab / Shift+Tab keyboard progression: pressing Tab automatically commits the current speaker rename, flushes transcript undo state, persists to project JSON, and advances the inline editor directly to the next speaker row in editing state, enabling rapid sequential renaming of all detected clusters.
+  - Implemented smart navigation guards: pressing Tab without modifying a name or with whitespace immediately advances to the next speaker without triggering redundant project saves or undo history mutations.
+  - Locked columns 1–3 ("Cluster / Raw ID", "Turns", "Total Duration") to non-editable flags (`~Qt.ItemFlag.ItemIsEditable`), ensuring clean, single-column inline renaming without accidental cell clicks.
+  - Added comprehensive automated diagnostic test assertions in `diagnostic_core_tests.py` validating column edit triggers, delegate binding, inline rename propagation, and Tab progression state transitions.
+
 ## v3.9.40-beta
 - **Batch Processing Silent Auto-Save & Unified Project File Generation (`media_batch.py`, `project_lifecycle.py`, `transcription_processing.py`)**:
   - Resolved an issue where running a multi-file batch job saved only a single `.rtvs` project file for the first item and failed to generate individual `.rtvs` project files for subsequent media items.
