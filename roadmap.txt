@@ -110,38 +110,29 @@ TABLE OF CONTENTS & STATUS OVERVIEW
    [ ] 8.8 Word-Level Timecode Sync, NLE Markers & Multi-Track DAW Timeline Export (`export/timeline.py`)
    [ ] 8.9 Automated Diagnostic Test Suite (`test_runner.py`)
 
-9. Optional Future Milestone: Android Transcriber & Speaker Diarization Companion App (`android/`, Kotlin, Jetpack Compose, `whisper.cpp`, `sherpa-onnx`, WeSpeaker) [PLANNED for v4.3.0] [OPTIONAL / LOWER PRIORITY] [NOT STARTED]
-   - *Workflow Design Note*: Offline mobile companion app for Android (e.g. Google Pixel series with NPU acceleration) providing dual ASR engines (Whisper `base.en` q8_0 vs. Zipformer via `sherpa-onnx`) and an on-demand model download and removal manager. Can be spun off into a dedicated AI Studio Android project (Option A) using the provided starter prompt.
-   [ ] 9.1 Android Project Scaffolding & Audio Foreground Service (`android/` Kotlin / Jetpack Compose)
-   [ ] 9.2 Dual On-Device ASR Runtimes (`whisper.cpp` JNI for Whisper `base.en` & `onnxruntime-android` for Zipformer)
-   [ ] 9.3 On-Demand Model Download & Removal Manager (UI dialog to download, verify, inspect storage, and delete models on demand)
-   [ ] 9.4 On-Device Speaker Diarization Engine (`onnxruntime-android` WeSpeaker embedding extraction + clustering)
-   [ ] 9.5 Mobile Export & Session Sync with Desktop RTVS3 Projects (`.json` project container sync)
-   [ ] 9.6 Standalone AI Studio Starter Prompt Specification & Project Blueprint (Option A Launcher)
-
-10. REAPER DAW Companion Bridge & ReaScript Transcript Integration (`reaper_bridge.py`, `transcript_editor_dialogs.py`, `transcript_context_menu_mixin.py`, `scripts/reaper/rtvs_reaper_companion.lua`, `scripts/reaper/rtvs_reaper_dock.lua`, `test_runner.py`) [PLANNED for v4.2.0] [OPTIONAL / PLANNED] [NOT STARTED]
+9. REAPER DAW Companion Bridge & ReaScript Transcript Integration (`reaper_bridge.py`, `transcript_editor_dialogs.py`, `transcript_context_menu_mixin.py`, `scripts/reaper/rtvs_reaper_companion.lua`, `scripts/reaper/rtvs_reaper_dock.lua`, `test_runner.py`) [PLANNED for v4.2.0] [OPTIONAL / PLANNED] [NOT STARTED]
    - *Purpose*: Enable seamless text-to-timeline audio editing in Cockos REAPER without building a full multi-track DAW inside RTVS3. Allows users to copy or send selected transcript quotes from RTVS3 directly to a REAPER track at the edit cursor with automatic source slicing (`D_STARTOFFS` / `D_LENGTH`), speaker/quote take labeling (`P_NAME`), and full item notes (`P_NOTES`), plus an optional ReaImGui dockable `.rtvs` transcript viewer inside REAPER.
-   [ ] 10.1 RTVS3 Clip Cue Payload & Sidecar/IPC Emitter (`reaper_bridge.py`)
-   [ ] 10.2 Interactive Transcript Quick-Action & Shortcut Integration (`transcript_editor_dialogs.py`, `transcript_context_menu_mixin.py`, `shortcuts_manager.py`)
-   [ ] 10.3 Companion ReaScript Timeline Paste & Take Labeling Action (`scripts/reaper/rtvs_reaper_companion.lua`)
-   [ ] 10.4 Optional Dockable ReaImGui Transcript Viewer for REAPER (`scripts/reaper/rtvs_reaper_dock.lua`)
-   [ ] 10.5 Preferences Integration, One-Click Script Installer & Diagnostic Tests (`preferences_dialog.py`, `reaper_bridge.py`, `test_runner.py`)
-   [ ] 10.6 Universal Text-to-WAV Clipboard & Drag-and-Drop Fallback for Other DAWs (`reaper_bridge.py`, `export_media_clipper.py`, `transcript_context_menu_mixin.py`)
+   [ ] 9.1 RTVS3 Clip Cue Payload & Sidecar/IPC Emitter (`reaper_bridge.py`)
+   [ ] 9.2 Interactive Transcript Quick-Action & Shortcut Integration (`transcript_editor_dialogs.py`, `transcript_context_menu_mixin.py`, `shortcuts_manager.py`)
+   [ ] 9.3 Companion ReaScript Timeline Paste & Take Labeling Action (`scripts/reaper/rtvs_reaper_companion.lua`)
+   [ ] 9.4 Optional Dockable ReaImGui Transcript Viewer for REAPER (`scripts/reaper/rtvs_reaper_dock.lua`)
+   [ ] 9.5 Preferences Integration, One-Click Script Installer & Diagnostic Tests (`preferences_dialog.py`, `reaper_bridge.py`, `test_runner.py`)
+   [ ] 9.6 Universal Text-to-WAV Clipboard & Drag-and-Drop Fallback for Other DAWs (`reaper_bridge.py`, `export_media_clipper.py`, `transcript_context_menu_mixin.py`)
 
-11. Upcoming Milestone: Speaker Management Ergonomics & Quick Sample Audio Preview (`speaker_dialogs.py`, `playback_controller.py`, `speaker_dialog_refinement_mixin.py`, `test_runner.py`) [x] [COMPLETED in v3.9.41-beta]
+10. Upcoming Milestone: Speaker Management Ergonomics & Quick Sample Audio Preview (`speaker_dialogs.py`, `playback_controller.py`, `speaker_dialog_refinement_mixin.py`, `test_runner.py`) [x] [COMPLETED in v3.9.41-beta]
    - *Purpose*: Streamline speaker identification and naming by providing immediate audio verification of detected speaker clusters directly inside the speaker management dialog.
-   [x] 11.1 Non-Modal Floating Speaker Management Dialog & Modeless Co-Editing (`speaker_dialogs.py`, `speaker_dialog_refinement_mixin.py`) [COMPLETED]
-   [x] 11.2 Quick Sample Audio Preview: An instant "Listen to sample" play button directly alongside each detected speaker in the management dialog so the user can hear 3 seconds of their voice before assigning the name. [COMPLETED in v3.9.37-beta]
-   [x] 11.3 Direct Inline Speaker Renaming & Tab Progression: Enable direct inline double-click editing on the "Speaker Name / Alias" cell in the table with Tab key progression (type name → press Tab → jump directly to rename the next speaker). [COMPLETED in v3.9.41-beta]
-   [x] 11.4 Non-Modal Preferences Inspector Window (`preferences_dialog.py`, `preferences_tabs_core.py`, `story_crud_mixin.py`, `project_export.py`) [COMPLETED]
+   [x] 10.1 Non-Modal Floating Speaker Management Dialog & Modeless Co-Editing (`speaker_dialogs.py`, `speaker_dialog_refinement_mixin.py`) [COMPLETED]
+   [x] 10.2 Quick Sample Audio Preview: An instant "Listen to sample" play button directly alongside each detected speaker in the management dialog so the user can hear 3 seconds of their voice before assigning the name. [COMPLETED in v3.9.37-beta]
+   [x] 10.3 Direct Inline Speaker Renaming & Tab Progression: Enable direct inline double-click editing on the "Speaker Name / Alias" cell in the table with Tab key progression (type name → press Tab → jump directly to rename the next speaker). [COMPLETED in v3.9.41-beta]
+   [x] 10.4 Non-Modal Preferences Inspector Window (`preferences_dialog.py`, `preferences_tabs_core.py`, `story_crud_mixin.py`, `project_export.py`) [COMPLETED]
 
-12. Upcoming Milestone: Social Reel & Short Video Export Plugin (Instagram Reels, YouTube Shorts, TikTok) (`plugins/social_reel/`, `export_media_clipper.py`, `export_dialogs.py`) [PLANNED] [NOT STARTED]
+11. Upcoming Milestone: Social Reel & Short Video Export Plugin (Instagram Reels, YouTube Shorts, TikTok) (`plugins/social_reel/`, `export_media_clipper.py`, `export_dialogs.py`) [PLANNED] [NOT STARTED]
    - *Purpose*: Provide an optional plugin and export destination to create vertical 9:16 social videos from audio or video files, incorporating custom template images, burned-in safe-zone captions, and audio visualizers for Instagram Reels, YouTube Shorts, and TikTok.
-   [ ] 12.1 Social Reel Plugin Architecture & Manifest (`plugins/social_reel/plugin.py`, `plugins/social_reel/manifest.json`, `plugins/social_reel/export_destination.py`)
-   [ ] 12.2 Multi-Source Input & Template Image Configuration (`plugins/social_reel/reel_config.py`, `plugins/social_reel/reel_dialog.py`)
-   [ ] 12.3 9:16 Vertical Video Compositor & Audiogram Pipeline (`plugins/social_reel/reel_renderer.py`, `export_media_clipper.py`)
-   [ ] 12.4 Burned-in Subtitles & Platform Safe Zone Enforcement (`plugins/social_reel/reel_subtitles.py`)
-   [ ] 12.5 Unified Export Integration & Social Reel Diagnostic Tests (`export/dialog.py`, `test_runner.py`)
+   [ ] 11.1 Social Reel Plugin Architecture & Manifest (`plugins/social_reel/plugin.py`, `plugins/social_reel/manifest.json`, `plugins/social_reel/export_destination.py`)
+   [ ] 11.2 Multi-Source Input & Template Image Configuration (`plugins/social_reel/reel_config.py`, `plugins/social_reel/reel_dialog.py`)
+   [ ] 11.3 9:16 Vertical Video Compositor & Audiogram Pipeline (`plugins/social_reel/reel_renderer.py`, `export_media_clipper.py`)
+   [ ] 11.4 Burned-in Subtitles & Platform Safe Zone Enforcement (`plugins/social_reel/reel_subtitles.py`)
+   [ ] 11.5 Unified Export Integration & Social Reel Diagnostic Tests (`export/dialog.py`, `test_runner.py`)
 
 ================================================================================
 DETAILED MILESTONE SPECIFICATIONS
@@ -425,63 +416,13 @@ ARCHITECTURAL INVARIANTS FOR SECTION 7:
 [ ] 8.9 Automated Diagnostic Test Suite (`test_runner.py`)
 
 ================================================================================
-9. OPTIONAL FUTURE MILESTONE: ANDROID TRANSCRIBER & SPEAKER DIARIZATION COMPANION APP [PLANNED for v4.3.0] [OPTIONAL / LOWER PRIORITY] [NOT STARTED]
-================================================================================
-*Workflow Design Note*: Lower priority offline mobile companion app focused on core transcription and speaker diarization subset running on Android (e.g. Google Pixel series with NPU hardware acceleration). Includes dual ASR engine options (Whisper `base.en` q8_0 vs. Zipformer via `sherpa-onnx`) with an on-demand model download and removal manager so users can test both engines and choose the ideal balance of accuracy and speed.
-
-[ ] 9.1 Android Project Scaffolding & Audio Foreground Service (`android/` Kotlin / Jetpack Compose)
-[ ] 9.2 Dual On-Device ASR Runtimes (`whisper.cpp` JNI for Whisper `base.en` & `onnxruntime-android` for Zipformer)
-[ ] 9.3 On-Demand Model Download & Removal Manager (UI dialog to download, verify, inspect storage, and delete models on demand)
-[ ] 9.4 On-Device Speaker Diarization Engine (`onnxruntime-android` WeSpeaker embedding extraction + clustering)
-[ ] 9.5 Mobile Export & Session Sync with Desktop RTVS3 Projects (`.json` project container sync)
-[ ] 9.6 Standalone AI Studio Starter Prompt Specification & Project Blueprint (Option A Launcher)
-    - When ready to spin off this companion app into a dedicated Android AI Studio project, create a new Android/Kotlin project in AI Studio and submit the following initial architectural prompt:
-
---------------------------------------------------------------------------------
-STANDALONE AI STUDIO STARTER PROMPT (FOR OPTION A):
---------------------------------------------------------------------------------
-Build a high-performance, 100% offline Android transcription and speaker diarization mobile companion app called "RTVS Mobile Transcriber" targeting modern 64-bit Android (arm64-v8a, API 34+ / Android 14/15, optimized for Google Pixel series).
-
-Key Architectural Requirements:
-1. Native Architecture & Modern UI:
-   - Kotlin with Jetpack Compose, Material 3 dark-mode-first aesthetic, MVVM architecture, Coroutines/Flow, and strict 64-bit native libraries (arm64-v8a only; no deprecated 32-bit binaries).
-   - Audio Foreground Service with ongoing notification and wake-lock to record and transcribe multi-hour interviews without getting killed when the screen turns off.
-
-2. Dual On-Device ASR Engine Architecture:
-   - Engine 1: Whisper base.en (8-bit quantized q8_0 ~78 MB via whisper.cpp JNI bindings) for highest transcription accuracy, punctuation, capitalization, and robust handling of accents and noisy room environments.
-   - Engine 2: Zipformer (~50 MB via sherpa-onnx / onnxruntime-android) for ultra-fast, low-power real-time streaming dictation with sub-50ms latency.
-   - Provide a Settings toggle allowing the user to select the active transcription engine per recording or batch job.
-
-3. On-Demand Model Download & Storage Management:
-   - Clean Model Manager screen displaying installed vs. downloadable models.
-   - Show model file sizes, checksum verification, device storage indicators, and one-tap download / remove buttons so users only keep models they actually use on their phone.
-
-4. On-Device Speaker Diarization:
-   - Voice embedding extraction via WeSpeaker ONNX runtime with cosine distance agglomerative clustering to automatically identify distinct speakers (Speaker 1, Speaker 2, etc.) in recorded sessions.
-
-5. File Import & Batch Transcription:
-   - Support live microphone recording (16kHz mono 16-bit WAV) as well as importing pre-existing audio files (.wav, .mp3, .m4a) from the device storage.
-
-6. RTVS3 Desktop Cross-Compatibility:
-   - Export transcripts to the standard RTVS3 project container format (.rtvs.json):
-     {
-       "app_version": "3.9.9",
-       "media_filename": "interview.wav",
-       "segments": [
-         { "start": 0.0, "end": 4.5, "speaker": "Speaker 1", "text": "..." }
-       ]
-     }
-   - Also support plain text (.txt) and SRT subtitle export.
---------------------------------------------------------------------------------
-
-================================================================================
-10. REAPER DAW COMPANION BRIDGE & REASCRIPT TRANSCRIPT INTEGRATION [PLANNED for v4.2.0] [OPTIONAL / PLANNED] [NOT STARTED]
+9. REAPER DAW COMPANION BRIDGE & REASCRIPT TRANSCRIPT INTEGRATION [PLANNED for v4.2.0] [OPTIONAL / PLANNED] [NOT STARTED]
 ================================================================================
 ARCHITECTURAL INVARIANTS FOR REAPER INTEGRATION:
 - Modular <1,000-Line Invariant: Keep all Python bridge logic in a dedicated module `reaper_bridge.py` (<= 500 lines) and companion Lua ReaScripts in `scripts/reaper/` so existing transcript editor modules remain well under the 1,000-line ceiling.
 - Non-Destructive OS Clipboard Behavior: Copying text in RTVS3 (`Ctrl+C`) must keep clean readable prose in the standard `text/plain` system clipboard for Word/Docs/Slack while simultaneously writing structured REAPER timeline cue metadata to `~/.rtvs_reaper_clip.json` (and custom MIME `application/x-rtvs-clip+json`).
 
-[ ] 10.1 RTVS3 Clip Cue Payload & Sidecar/IPC Emitter (`reaper_bridge.py`)
+[ ] 9.1 RTVS3 Clip Cue Payload & Sidecar/IPC Emitter (`reaper_bridge.py`)
     - Create `reaper_bridge.py` to bridge RTVS3 word-level timestamp selections (`get_time_range_for_char_span` / `get_all_selected_story_ranges`) to REAPER:
       1. Define `ReaperClipCue` payload schema (`version`, `source_audio`, `start_time`, `end_time`, `duration`, `speaker`, `excerpt_label`, `full_text`, `story_title`, `project_path`, `timestamp_utc`).
       2. Ensure `source_audio` resolves to a permanent, REAPER-readable media file path on disk.
@@ -489,11 +430,11 @@ ARCHITECTURAL INVARIANTS FOR REAPER INTEGRATION:
          - **Sidecar + Multi-MIME Clipboard**: On copy or "Send to REAPER", write `~/.rtvs_reaper_clip.json` (or `get_app_data_dir() / "ipc" / "reaper_clip_cue.json"`) and attach `application/x-rtvs-clip+json` to `QMimeData` while keeping clean plain text in `text/plain`.
          - **Zero-Click Local Loopback / Web Control Trigger**: Optionally dispatch a non-blocking local HTTP/OSC command or `reaper -nonewinst` action trigger so clicking "Send to REAPER" drops the clip onto REAPER's timeline immediately without switching window focus.
 
-[ ] 10.2 Interactive Transcript Quick-Action & Shortcut Integration (`transcript_editor_dialogs.py`, `transcript_context_menu_mixin.py`, `shortcuts_manager.py`)
+[ ] 9.2 Interactive Transcript Quick-Action & Shortcut Integration (`transcript_editor_dialogs.py`, `transcript_context_menu_mixin.py`, `shortcuts_manager.py`)
     - Add a `"Send to REAPER"` action button to `TranscriptSelectionBubble` (`transcript_editor_dialogs.py`) and the right-click context menu (`transcript_context_menu_mixin.py`), plus a configurable keyboard shortcut (`Ctrl+Shift+R` default in `shortcuts_manager.py`).
     - Automatically populate the clip cue whenever a user copies a transcript selection (`Ctrl+C`) so pasting inside REAPER works transparently.
 
-[ ] 10.3 Companion ReaScript Timeline Paste & Take Labeling Action (`scripts/reaper/rtvs_reaper_companion.lua`)
+[ ] 9.3 Companion ReaScript Timeline Paste & Take Labeling Action (`scripts/reaper/rtvs_reaper_companion.lua`)
     - Create a dependency-free Lua ReaScript (`scripts/reaper/rtvs_reaper_companion.lua`) that users can bind to a shortcut (e.g., `Alt+V` or `Ctrl+Shift+V`) in REAPER's Action List:
       1. Reads the latest `ReaperClipCue` JSON payload from the sidecar cue file (or clipboard fallback).
       2. Wraps timeline insertion in `reaper.Undo_BeginBlock()` / `reaper.Undo_EndBlock("RTVS3: Insert Transcript Clip", -1)`.
@@ -502,18 +443,18 @@ ARCHITECTURAL INVARIANTS FOR REAPER INTEGRATION:
       5. Labels the take banner (`P_NAME`) with `"{speaker}: \"{excerpt_label}\""` (using `generate_story_excerpt`-style truncation) so the spoken words appear directly on the waveform in REAPER's arrange view, and writes the full unabridged quote into the item's notes (`P_NOTES`).
       6. Advances the REAPER edit cursor to the end of the newly inserted item for rapid sequential paper-cut assembly and calls `reaper.UpdateArrange()`.
 
-[ ] 10.4 Optional Dockable ReaImGui Transcript Viewer for REAPER (`scripts/reaper/rtvs_reaper_dock.lua`)
+[ ] 9.4 Optional Dockable ReaImGui Transcript Viewer for REAPER (`scripts/reaper/rtvs_reaper_dock.lua`)
     - Create an optional dockable ReaImGui Lua script (`scripts/reaper/rtvs_reaper_dock.lua`) that opens any `.rtvs` / `.rtvs.json` project file directly inside REAPER:
       1. Renders speaker labels, timestamps, story boundaries, and a live search/filter bar inside a dockable REAPER panel.
       2. Supports playhead chasing (clicking a word seeks REAPER's playhead) and a one-click `"Insert Selection at Cursor"` button that slices and labels the corresponding audio item on the active REAPER track.
 
-[ ] 10.5 Preferences Integration, One-Click Script Installer & Diagnostic Tests (`preferences_dialog.py`, `reaper_bridge.py`, `test_runner.py`)
+[ ] 9.5 Preferences Integration, One-Click Script Installer & Diagnostic Tests (`preferences_dialog.py`, `reaper_bridge.py`, `test_runner.py`)
     - Add a `"DAW & REAPER Integration"` section in Preferences (`preferences_dialog.py`) allowing users to:
       1. Configure default clip handle/fade padding (ms) and take label format (`Speaker + Excerpt`, `Excerpt Only`, `Story Title + Speaker`).
       2. Click `"Install Companion ReaScripts to REAPER..."` to automatically detect the OS REAPER resource path (`%APPDATA%/REAPER/Scripts`, `~/Library/Application Support/REAPER/Scripts`, or `~/.config/REAPER/Scripts`) and copy the Lua scripts into place.
     - Add a diagnostic unit test in `test_runner.py` (`"REAPER Companion Bridge & ReaScript Payload Invariants"`) verifying `ReaperClipCue` serialization, excerpt label truncation, non-destructive `text/plain` clipboard preservation, and Lua script syntax/API invariants.
 
-[ ] 10.6 Universal Text-to-WAV Clipboard & Drag-and-Drop Fallback for Other DAWs (`reaper_bridge.py`, `export_media_clipper.py`, `transcript_context_menu_mixin.py`)
+[ ] 9.6 Universal Text-to-WAV Clipboard & Drag-and-Drop Fallback for Other DAWs (`reaper_bridge.py`, `export_media_clipper.py`, `transcript_context_menu_mixin.py`)
     - Provide a lightweight, universal fallback solution in `reaper_bridge.py` and `transcript_context_menu_mixin.py` for DAWs without an open non-destructive take-offset API (Audacity, Hindenburg Pro, Adobe Audition, Premiere, DaVinci Resolve):
       1. Add a `"Copy Audio Clip for DAW"` / `"Render & Copy WAV Clip to System Clipboard"` action to the transcript selection context menu and bubble, plus drag-and-drop file export support.
       2. When triggered, use RTVS3's existing `extract_audio_clip` helper (`export_media_clipper.py`) to render the selected quote into a temporary, cleanly trimmed `.wav` slice named after the speaker and quote excerpt (via `generate_story_excerpt` in `story_metadata_dialog.py`): e.g., `Jane_Doe_-_We_started_this_project_back_in_2020.wav`.
@@ -522,35 +463,35 @@ ARCHITECTURAL INVARIANTS FOR REAPER INTEGRATION:
 --------------------------------------------------------------------------------
 
 ================================================================================
-11. UPCOMING MILESTONE: SPEAKER MANAGEMENT ERGONOMICS & QUICK SAMPLE AUDIO PREVIEW [x] [COMPLETED in v3.9.41-beta]
+10. UPCOMING MILESTONE: SPEAKER MANAGEMENT ERGONOMICS & QUICK SAMPLE AUDIO PREVIEW [x] [COMPLETED in v3.9.41-beta]
 ================================================================================
 ARCHITECTURAL INVARIANTS FOR SPEAKER AUDIO PREVIEW:
 - Modular <1,000-Line Invariant: Keep all UI controls inside `speaker_dialogs.py` (303 lines) and reuse existing non-blocking audio playout mechanisms (`playback_controller.py` or dedicated `QMediaPlayer` preview channel) without blocking the Qt main GUI loop.
 - Non-Destructive Playout & Clean Teardown: Previewing a sample must never disrupt main timeline playback state or scrub position unless intentionally requested, and any playing preview sample must automatically terminate if the dialog is closed or dismissed (`reject()`, `accept()`, `closeEvent`).
 - Strict UI Discipline: No unrequested icons or decorative emojis on buttons; use clean, native desktop text ("Play Sample", "Stop", "Sample (3s)").
 
-[x] 11.1 Non-Modal Floating Speaker Management Dialog & Modeless Co-Editing (`speaker_dialogs.py`, `speaker_dialog_refinement_mixin.py`) [COMPLETED]
+[x] 10.1 Non-Modal Floating Speaker Management Dialog & Modeless Co-Editing (`speaker_dialogs.py`, `speaker_dialog_refinement_mixin.py`) [COMPLETED]
     - Scope & Implementation Specifications:
       1. Non-Modal Window Presentation: Transition `SpeakerManagerDialog` to an independent non-modal floating window (`Qt.WindowType.Window`, `Qt.WindowModality.NonModal`, `WA_QuitOnClose=False`), allowing users to click back into the main transcript window to edit words, fix spelling, scrub audio, or relabel speakers without modal lockout.
       2. Pin on Top Toggle: Add a checkable `Pin on Top` header button (`float_btn`) that toggles `Qt.WindowType.WindowStaysOnTopHint` to keep the speaker management window visible while scrubbing media.
       3. Live Two-Way State Synchronization: Wire `changeEvent` (`QEvent.Type.WindowActivate`) and a dedicated `Refresh` button (`refresh_btn`) to automatically refresh the speaker cluster table whenever the window gains focus or edits occur in the main transcript window.
       4. Singleton Window Management: Track `_active_speaker_manager_dialog` on `MainWindow` to prevent duplicate popups and properly raise/activate the existing window if already open.
 
-[x] 11.2 Quick Sample Audio Preview: An instant "Listen to sample" play button directly alongside each detected speaker in the management dialog so the user can hear 3 seconds of their voice before assigning the name. (`speaker_dialogs.py`, `playback_controller.py`, `speaker_dialog_refinement_mixin.py`) [COMPLETED in v3.9.37-beta]
+[x] 10.2 Quick Sample Audio Preview: An instant "Listen to sample" play button directly alongside each detected speaker in the management dialog so the user can hear 3 seconds of their voice before assigning the name. (`speaker_dialogs.py`, `playback_controller.py`, `speaker_dialog_refinement_mixin.py`) [COMPLETED in v3.9.37-beta]
     - Scope & Implementation Specifications:
       1. Representative Utterance Resolution: Inspect the project transcript segments for each detected speaker cluster to find a clean, representative speech sample (preferring the longest continuous utterance >= 3.0s, or the first utterance if shorter).
       2. Inline Table Action Button: Add an instant "Play Sample" / "Listen to Sample" action button directly in each speaker's row inside `SpeakerManagerDialog` (`speaker_dialogs.py`) under the Actions column.
       3. Non-Blocking 3-Second Playback: When clicked, stream or play exactly 3 seconds of audio from the resolved start timestamp using the audio playback controller or a dedicated preview sound channel. Automatically cease playout after 3 seconds or when clicking Stop / another speaker's sample button.
       4. Teardown & Lifecycle Safety: Ensure any ongoing preview playback immediately stops on dialog close, escape, or speaker merge/reassignment.
 
-[x] 11.3 Direct Inline Speaker Renaming & Tab Progression: Enable direct inline double-click editing on the "Speaker Name / Alias" cell in the table with Tab key progression (type name → press Tab → jump directly to rename the next speaker). (`speaker_dialogs.py`, `speaker_dialog_refinement_mixin.py`) [COMPLETED in v3.9.41-beta]
+[x] 10.3 Direct Inline Speaker Renaming & Tab Progression: Enable direct inline double-click editing on the "Speaker Name / Alias" cell in the table with Tab key progression (type name → press Tab → jump directly to rename the next speaker). (`speaker_dialogs.py`, `speaker_dialog_refinement_mixin.py`) [COMPLETED in v3.9.41-beta]
     - Scope & Implementation Specifications:
       1. In-Place Table Cell Editing Triggers: Configure `self.table.setEditTriggers(QAbstractItemView.EditTrigger.DoubleClicked | QAbstractItemView.EditTrigger.SelectedClicked | QAbstractItemView.EditTrigger.EditKeyPressed)` specifically for column 0 ("Speaker Name / Alias"), while maintaining read-only item flags on columns 1-3.
       2. Fast Tab-Key Navigation Progression: Support rapid linear workflow where typing a new name and pressing Tab automatically commits the alias change and seamlessly transfers focus and edit mode to the next speaker row below (`table.editItem(next_item)`), eliminating repetitive modal popup clicks when renaming an entire panel of speakers.
       3. Project Undo State & Alias Binding: On edit completion (`itemChanged` or delegate `commitData`), if the text has changed, automatically trigger the full project undo capture (`flush_pending_transcript_undo` and `_capture_project_state`), rebind speaker aliases in `main_win.speaker_aliases` or `segment_speaker_overrides`, and trigger UI transcript refresh (`render_transcript()`).
       4. Escape / Revert Safety: Pressing Escape cleanly cancels the inline edit and restores the previous alias without mutating project state or dirtying the undo history.
 
-[x] 11.4 Non-Modal Preferences Inspector Window (`preferences_dialog.py`, `preferences_tabs_core.py`, `story_crud_mixin.py`, `project_export.py`) [COMPLETED]
+[x] 10.4 Non-Modal Preferences Inspector Window (`preferences_dialog.py`, `preferences_tabs_core.py`, `story_crud_mixin.py`, `project_export.py`) [COMPLETED]
     - Scope & Implementation Specifications:
       1. Modeless Inspector Architecture: Transition Preferences from modal `exec()` to modeless floating window with live preview of visual tokens (theme, transcript font scale, timeline display views, audio fades).
       2. Live Auto-Commit / Reset Defaults Model: Provide "Apply" for instant non-closing settings persistence, "Save" for saving & closing, and clean singleton tracking (`_active_preferences_dialog`) with category switching (`dialog._select_category`).
@@ -558,7 +499,7 @@ ARCHITECTURAL INVARIANTS FOR SPEAKER AUDIO PREVIEW:
 --------------------------------------------------------------------------------
 
 ================================================================================
-12. UPCOMING MILESTONE: SOCIAL REEL & SHORT VIDEO EXPORT PLUGIN (INSTAGRAM REELS, YOUTUBE SHORTS, TIKTOK) [PLANNED] [NOT STARTED]
+11. UPCOMING MILESTONE: SOCIAL REEL & SHORT VIDEO EXPORT PLUGIN (INSTAGRAM REELS, YOUTUBE SHORTS, TIKTOK) [PLANNED] [NOT STARTED]
 ================================================================================
 ARCHITECTURAL INVARIANTS FOR SOCIAL REEL PLUGIN:
 - Modular Plugin Isolation: The feature MUST live completely inside an optional plugin at `plugins/social_reel/` (`plugin.py`, `manifest.json`, `export_destination.py`, `reel_config.py`, `reel_renderer.py`, `reel_subtitles.py`). Core modules (`RadioTVSegmenter.py`, `ui_layout.py`, `processing.py`) must NEVER import from `plugins/social_reel/`.
@@ -566,20 +507,20 @@ ARCHITECTURAL INVARIANTS FOR SOCIAL REEL PLUGIN:
 - Native FFmpeg Subprocess Pipeline: Utilize RTVS3's non-blocking FFmpeg execution with safe argument vectors (`shell=False`, `CREATE_NO_WINDOW` on Windows) without blocking the Qt main GUI loop.
 - UI Discipline: No unrequested icons or decorative emojis on buttons, dialogs, or dropdowns.
 
-[ ] 12.1 Social Reel Plugin Architecture & Manifest (`plugins/social_reel/plugin.py`, `plugins/social_reel/manifest.json`, `plugins/social_reel/export_destination.py`)
+[ ] 11.1 Social Reel Plugin Architecture & Manifest (`plugins/social_reel/plugin.py`, `plugins/social_reel/manifest.json`, `plugins/social_reel/export_destination.py`)
     - Scope & Implementation Specifications:
       1. Plugin Registration & Lifecycle: Create `plugins/social_reel/` adhering to RTVS3's `IPlugin` and `IExportDestination` contracts.
       2. Plugin Manifest: Define `plugins/social_reel/manifest.json` with metadata, configurable settings schema, and default enablement.
       3. Export Destination Hook: Register a "Social Reel / Short (9:16)" export destination that dynamically mounts into the Unified Export Dialog (`UnifiedExportDialog`) and Stories pop-out dialog when the plugin is active.
 
-[ ] 12.2 Multi-Source Input & Template Image Configuration (`plugins/social_reel/reel_config.py`, `plugins/social_reel/reel_dialog.py`)
+[ ] 11.2 Multi-Source Input & Template Image Configuration (`plugins/social_reel/reel_config.py`, `plugins/social_reel/reel_dialog.py`)
     - Scope & Implementation Specifications:
       1. Dual Audio / Video Source Selection: Allow users to target either the active video stream, an audio-only track, an external audio/video file, or a selected story segment.
       2. Template & Branding Image Ingestion: Provide an image picker supporting `.png`, `.jpg`, and `.webp` for header cards, logos, or full 9:16 background artwork.
       3. Save Default Template: Include a "Save as Default Template" action persisting the template image path and layout parameters in `QSettings` (`social_reel/default_template_path`, `social_reel/caption_style`), enabling 1-click reusable branded exports across projects.
       4. Target Platform Presets: Presets for Instagram Reels (9:16, 1080x1920), YouTube Shorts (9:16, 1080x1920), and TikTok (9:16, 1080x1920).
 
-[ ] 12.3 9:16 Vertical Video Compositor & Audiogram Pipeline (`plugins/social_reel/reel_renderer.py`, `export_media_clipper.py`)
+[ ] 11.3 9:16 Vertical Video Compositor & Audiogram Pipeline (`plugins/social_reel/reel_renderer.py`, `export_media_clipper.py`)
     - Scope & Implementation Specifications:
       1. Video Source Pipeline (1080x1920): Build an FFmpeg filtergraph supporting:
          - Blurred Pillarbox Backdrop: Scale original 16:9 video to fill 1080x1920, apply `boxblur=luma_radius=25:luma_power=3`, and overlay the centered, uncropped original video.
@@ -587,14 +528,14 @@ ARCHITECTURAL INVARIANTS FOR SOCIAL REEL PLUGIN:
       2. Audio Source Pipeline (Audiogram): Build an FFmpeg filtergraph combining the background template image with a dynamic audio waveform visualizer (`showwaves` or `showwavespic`) centered or anchored in the middle third.
       3. Non-Blocking Background Execution: Run video rendering through a dedicated `QThread` / `subprocess` worker with progress calculation, cancel check, and atomic output writing.
 
-[ ] 12.4 Burned-in Subtitles & Platform Safe Zone Enforcement (`plugins/social_reel/reel_subtitles.py`)
+[ ] 11.4 Burned-in Subtitles & Platform Safe Zone Enforcement (`plugins/social_reel/reel_subtitles.py`)
     - Scope & Implementation Specifications:
       1. ASS / Styled Caption Generator: Transform Whisper word-level timestamps for the target story segment into an Advanced SubStation Alpha (`.ass`) subtitle stream.
       2. High-Contrast Typography: Apply bold, readable sans-serif typography with high-contrast text outlines, drop shadows, or background pill backing.
       3. UI Safe Zone Constraint: Enforce vertical bounding boxes that prevent subtitles from being obscured by Instagram/TikTok interface elements (preserving top 15% and bottom 25% margins, rendering text in the safe middle 60%).
       4. Optional Word-Level Karaoke Highlight: Highlight the active spoken word in real time based on Whisper word start/end timings.
 
-[ ] 12.5 Unified Export Integration & Social Reel Diagnostic Tests (`export/dialog.py`, `test_runner.py`)
+[ ] 11.5 Unified Export Integration & Social Reel Diagnostic Tests (`export/dialog.py`, `test_runner.py`)
     - Scope & Implementation Specifications:
       1. Export Dialog Tab / Staging: Add a dedicated "Social Reel" configuration view in the Unified Export Dialog when the plugin is active, displaying preview framing, safe zone guidelines, template image picker, and caption toggle.
       2. Automated Diagnostic Suite: Add unit tests in `test_runner.py` verifying plugin registration, ASS subtitle timing generation, safe zone margin math, and FFmpeg filtergraph string assembly.
