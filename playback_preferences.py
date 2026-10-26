@@ -346,7 +346,7 @@ class PlaybackPreferencesMixin(ThemePreferencesMixin, PlaybackControllerMixin, P
             f"  <b>PySide6 / Qt 6:</b> The Qt Company (LGPLv3). Dynamically linked.<br>"
             f"  <b>FFmpeg:</b> FFmpeg developers (LGPLv2.1+ / GPLv2+). Invoked as separate binary.<br>"
             f"  <b>AI &amp; Speech:</b> OpenAI Whisper (MIT), faster-whisper &amp; CTranslate2 (MIT), "
-            f"PyTorch (BSD-3), Hugging Face Transformers &amp; Hub (Apache 2.0).<br>"
+            f"WeSpeaker &amp; ONNX Runtime (Apache 2.0 / MIT), PyTorch (BSD-3), Hugging Face Transformers &amp; Hub (Apache 2.0).<br>"
             f"</p>"
             f"<p style='font-size:11px; color:#666;'>"
             f"Click 'View Licenses' to review full license texts, compliance disclosures, and copyright notices."

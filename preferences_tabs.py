@@ -701,6 +701,15 @@ def build_detection_tab(win, dialog, live_widgets, add_custom_defaults_btn) -> Q
     det_form.addRow("Speaker Separation Sensitivity:", sensitivity_combo)
     live_widgets["sensitivity_combo"] = sensitivity_combo
 
+    sample_dur_spin = QDoubleSpinBox()
+    sample_dur_spin.setRange(1.0, 15.0)
+    sample_dur_spin.setSingleStep(0.5)
+    sample_dur_spin.setValue(float(win.settings_store.value("speaker_sample_duration", 3.0) or 3.0))
+    sample_dur_spin.setSuffix(" sec")
+    sample_dur_spin.setToolTip("Duration in seconds to play when auditioning representative voice samples in the Speaker Manager.")
+    det_form.addRow("Speaker Sample Preview Length:", sample_dur_spin)
+    live_widgets["sample_dur_spin"] = sample_dur_spin
+
     voice_profiles_chk = QCheckBox("Enable persistent Voice Profiles library and cross-show matching")
     voice_profiles_chk.setChecked(str(win.settings_store.value("enable_voice_profiles", "true")).lower() in {"1", "true", "yes"})
     voice_profiles_chk.setToolTip("When enabled, RTVS automatically matches recurring speaker voices against the persistent station voice profiles library across recordings.")

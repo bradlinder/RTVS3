@@ -32,7 +32,7 @@ class RestoreSelectedSettingsDialog(QDialog):
         ("gpu_acceleration", "Hardware / GPU Acceleration", "GPU and DirectML hardware acceleration settings."),
         ("playback_timeline", "Playback & Timeline Display", "Skip duration (5s), waveform visibility, thumbnail strip, and transcript selection mode."),
         ("audio_fades", "Audio Fades & Fade Curve Defaults", "Enable audio fades (disabled), fade audio preview (disabled), default fade-in duration (0.0s), default fade-out duration (1.0s), and default fade curve (linear)."),
-        ("detection_diarization", "Story Detection & Diarization Defaults", "Detection basis/mode (Voice), silence gap threshold / speech detection length (3.0s), lead-in padding (0.5s), default expected speakers (auto), speaker estimate prompt (enabled), and separation sensitivity (normal)."),
+        ("detection_diarization", "Story Detection & Diarization Defaults", "Detection basis/mode (Voice), silence gap threshold / speech detection length (3.0s), lead-in padding (0.5s), default expected speakers (auto), speaker estimate prompt (enabled), separation sensitivity (normal), and speaker sample preview length (3.0s)."),
         ("batch_processing", "Batch Processing Tool Options", "Batch tasks (transcribe, diarize, detect stories), output formats, and batch custom directory."),
         ("export_options", "Export Window: Formats & Content Options", "Export formats (TXT, DOCX, Media enabled; SRT, VTT disabled) and content options (speakers, timestamps, languages)."),
         ("export_directory", "Export Window: Custom Location", "Clear saved custom export location and restore default project folder export routing."),
@@ -490,11 +490,13 @@ class PreferencesResetMixin:
             self.settings_store.setValue("default_expected_speakers", "auto")
             self.settings_store.setValue("ask_expected_speakers", True)
             self.settings_store.setValue("diarization_sensitivity", "normal")
+            self.settings_store.setValue("speaker_sample_duration", 3.0)
             self.story_detection_mode = "voice"
             self.silence_threshold = 3.0
             self.lead_in_padding = 0.5
             self.expected_speakers = "auto"
             self.diarization_sensitivity = "normal"
+            self.speaker_sample_duration = 3.0
             if hasattr(self, "update_story_segment_terminology"):
                 try:
                     self.update_story_segment_terminology()
@@ -518,6 +520,8 @@ class PreferencesResetMixin:
                     lw["sensitivity_combo"].setCurrentIndex(idx_s)
             if "ask_speakers_chk" in lw and lw["ask_speakers_chk"]:
                 lw["ask_speakers_chk"].setChecked(True)
+            if "sample_dur_spin" in lw and lw["sample_dur_spin"]:
+                lw["sample_dur_spin"].setValue(3.0)
 
         # 10. Batch Processing Tool Options
         if "batch_processing" in selected_set:

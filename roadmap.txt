@@ -37,19 +37,18 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 --------------------------------------------------------------------------------
 TABLE OF CONTENTS & STATUS OVERVIEW
 --------------------------------------------------------------------------------
-1. Previous Release: Direct Inline Speaker Renaming & Tab Progression (`speaker_dialogs.py`, `diagnostic_core_tests.py`, `test_runner.py`) [x] [COMPLETED in v3.9.41-beta]
-   [x] 1.1 Double-Click Inline Speaker Name Editing (`speaker_dialogs.py`): Configured `QTableWidget` edit triggers (`DoubleClicked | EditKeyPressed | SelectedClicked`) on Column 0 while strictly locking Columns 1–3 (`Cluster / Raw ID`, `Turns`, `Total Duration`) to non-editable flags (`~Qt.ItemFlag.ItemIsEditable`).
-   [x] 1.2 Theme-Adaptive Speaker Name Delegate (`speaker_dialogs.py`): Built `SpeakerNameDelegate` (`QStyledItemDelegate`) with theme-aware active editor styling (high contrast borders, focused colors) and automatic pre-selection of speaker names upon opening.
-   [x] 1.3 Sequential Tab & Shift+Tab Progression Navigation (`speaker_dialogs.py`): Implemented seamless keyboard navigation in `eventFilter`: pressing Tab automatically commits the current name, persists project state, and jumps directly to edit the next row's speaker name in sequence (or Shift+Tab for previous row).
-   [x] 1.4 Smart No-Op Advance & Teardown Safety (`speaker_dialogs.py`): Pressing Tab without changing text immediately advances to the next speaker without triggering redundant undo snapshots or disk writes.
-   [x] 1.5 Diagnostic Tests & Version Synchronization (`diagnostic_core_tests.py`, `test_runner.py`, `bump_version.py`): Added automated test suite verifying column edit flags, delegate assignment, inline renaming, and Tab progression focus; synchronized all project locations to `v3.9.41-beta`.
+1. Previous Release: Dynamic Single-Source-of-Truth F1 Keyboard Shortcuts Reference & Live Search (`ui_dialog_launchers.py`, `README.md`) [x] [COMPLETED in v3.9.42-beta]
+   [x] 1.1 Dynamic Table Construction via ShortcutsManager (`ui_dialog_launchers.py`): Dynamically builds the F1 reference dialog directly from `ShortcutsManager` and active keybinding overrides (`get_current_shortcut()`), replacing static hardcoded HTML and guaranteeing 100% synchronization forever.
+   [x] 1.2 Instant Search & Real-Time Filtering Toolbar (`ui_dialog_launchers.py`): Integrated a responsive `QLineEdit` search bar filtering across action names, categories, descriptions, and formatted shortcut sequences with instant `QTextBrowser` updates.
+   [x] 1.3 Six-Category Canonical Schema Alignment (`ui_dialog_launchers.py`): Categorized all 51 active application shortcuts into canonical groupings: File & Project, Playback & Transport, Story & Segment Editing, Search & Transcript Tools, Timeline & Navigation, and Help & Diagnostics.
+   [x] 1.4 Theme-Aware Badge Styling & Direct Preferences Link (`ui_dialog_launchers.py`): Added dark, light, and high-contrast responsive styling with `<kbd>` badges and retained the "Customize Shortcuts..." action button opening Preferences -> Keyboard Shortcuts.
+   [x] 1.5 Comprehensive Documentation Synchronization (`README.md`): Completely overhauled the Keyboard Shortcuts section in `README.md` to document all 51 shortcuts with accurate platform defaults (Windows/Linux and macOS) and descriptive annotations.
 
-2. Current Release: Dynamic Single-Source-of-Truth F1 Keyboard Shortcuts Reference & Live Search (`ui_dialog_launchers.py`, `README.md`) [x] [COMPLETED in v3.9.42-beta]
-   [x] 2.1 Dynamic Table Construction via ShortcutsManager (`ui_dialog_launchers.py`): Dynamically builds the F1 reference dialog directly from `ShortcutsManager` and active keybinding overrides (`get_current_shortcut()`), replacing static hardcoded HTML and guaranteeing 100% synchronization forever.
-   [x] 2.2 Instant Search & Real-Time Filtering Toolbar (`ui_dialog_launchers.py`): Integrated a responsive `QLineEdit` search bar filtering across action names, categories, descriptions, and formatted shortcut sequences with instant `QTextBrowser` updates.
-   [x] 2.3 Six-Category Canonical Schema Alignment (`ui_dialog_launchers.py`): Categorized all 51 active application shortcuts into canonical groupings: File & Project, Playback & Transport, Story & Segment Editing, Search & Transcript Tools, Timeline & Navigation, and Help & Diagnostics.
-   [x] 2.4 Theme-Aware Badge Styling & Direct Preferences Link (`ui_dialog_launchers.py`): Added dark, light, and high-contrast responsive styling with `<kbd>` badges and retained the "Customize Shortcuts..." action button opening Preferences -> Keyboard Shortcuts.
-   [x] 2.5 Comprehensive Documentation Synchronization (`README.md`): Completely overhauled the Keyboard Shortcuts section in `README.md` to document all 51 shortcuts with accurate platform defaults (Windows/Linux and macOS) and descriptive annotations.
+2. Current Release: Configurable Speaker Sample Preview Duration & Open-Source AI Attribution (`preferences_tabs_media.py`, `preferences_dialog.py`, `speaker_dialogs.py`, `playback_preferences.py`) [x] [COMPLETED in v3.9.43-beta]
+   [x] 2.1 Configurable Speaker Sample Duration (`preferences_tabs_media.py`, `preferences_tabs.py`): Added a `QDoubleSpinBox` (1.0s–15.0s, default 3.0s) to the Story Detection & Diarization preferences page.
+   [x] 2.2 Preferences Persistence & Category Reset (`preferences_dialog.py`, `preferences_reset.py`, `preferences_reset_dialog.py`): Persisted `speaker_sample_duration` to `QSettings` with factory defaults and category restoration support.
+   [x] 2.3 Dynamic Speaker Sample Resolution (`speaker_dialogs.py`): Updated `SpeakerManagerDialog` to dynamically resolve representative utterances based on user-configured duration with dynamic tooltip indicators.
+   [x] 2.4 Open-Source AI Attribution Synchronization (`playback_preferences.py`): Updated the Help -> About dialog to explicitly include WeSpeaker and ONNX Runtime alongside Whisper, CTranslate2, and PyTorch.
 
 3. Upcoming Milestone: Codebase Modularization & Monolithic File Decomposition Strategy (<1,000-Line Invariant) (`playback_preferences.py`, `project_export.py`, `transcript_story.py`, `transcript_editor.py`, `radio_tv_story_segmenter_worker.py`, `benchmark.py`, `plugins/wordpress/export_destination.py`, `plugins/manager.py`, `timeline_widgets.py`) [x] [COMPLETED in v3.9.33-beta]
    - *Architecture Note*: Incrementally refactors all remaining source files exceeding 1,000 lines (at most 1 to 2 monoliths per turn) into focused domain modules (<1,000 lines each) while preserving 100% backward compatibility via zero-breakage facade re-exports.
@@ -160,9 +159,9 @@ DETAILED MILESTONE SPECIFICATIONS
 [x] 1.6 Strict Effective Speaker Scoping on Unknown Cluster Reassignment (`speaker_dialog_refinement_mixin.py`, `speaker_dialogs.py`): Enforced strict effective speaker boundary checks preventing segments with valid diarization labels from matching empty raw speaker fallback guards during unknown speaker merges.
 
 ================================================================================
-2. CURRENT RELEASE: WORDPRESS 4-TAB EXPORT LAYOUT, NON-MODAL FLOATING WINDOWS & LIVE TRANSCRIPT CO-EDITING [x] [COMPLETED in v3.9.42-beta]
+2. CURRENT RELEASE: WORDPRESS 4-TAB EXPORT LAYOUT, NON-MODAL FLOATING WINDOWS & LIVE TRANSCRIPT CO-EDITING [x] [COMPLETED in v3.9.43-beta]
 =======
-2. CURRENT RELEASE: BATCH PROCESSING SILENT AUTO-SAVE & UNIFIED PROJECT FILE GENERATION [x] [COMPLETED in v3.9.42-beta]
+2. CURRENT RELEASE: BATCH PROCESSING SILENT AUTO-SAVE & UNIFIED PROJECT FILE GENERATION [x] [COMPLETED in v3.9.43-beta]
 >>>>>>> origin/main
 ================================================================================
 

@@ -566,6 +566,7 @@ class PreferencesDialogMixin(PreferencesResetMixin):
             ask_speakers_chk = live_widgets.get("ask_speakers_chk")
             voice_profiles_chk = live_widgets.get("voice_profiles_chk")
             voice_match_thresh_spin = live_widgets.get("voice_match_thresh_spin")
+            sample_dur_spin = live_widgets.get("sample_dur_spin")
 
             if det_mode_combo:
                 self.story_detection_mode = str(det_mode_combo.currentData() or "voice")
@@ -592,6 +593,9 @@ class PreferencesDialogMixin(PreferencesResetMixin):
             if voice_match_thresh_spin:
                 self.voice_profile_auto_match_threshold = voice_match_thresh_spin.value() / 100.0
                 self.settings_store.setValue("voice_profile_auto_match_threshold", voice_match_thresh_spin.value())
+            if sample_dur_spin:
+                self.speaker_sample_duration = sample_dur_spin.value()
+                self.settings_store.setValue("speaker_sample_duration", self.speaker_sample_duration)
 
             # Save Batch Processing
             batch_dir_edit = live_widgets.get("batch_dir_edit")

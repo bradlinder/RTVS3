@@ -1,5 +1,14 @@
 # Changelog
 
+## v3.9.43-beta
+- **Configurable Speaker Sample Preview Duration in Preferences (`preferences_tabs_media.py`, `preferences_dialog.py`, `preferences_reset.py`, `speaker_dialogs.py`)**:
+  - Added a dedicated "Speaker Sample Preview Length" control (`QDoubleSpinBox`, 1.0s to 15.0s, default 3.0s) to the **Story Detection & Diarization** preferences tab.
+  - Wired settings persistence to `QSettings` (`speaker_sample_duration`), enabling users to customize the audition length for representative speaker voice clips across the application.
+  - Updated `SpeakerManagerDialog` (`speaker_dialogs.py`) to dynamically read `_get_sample_duration()`, selecting candidate utterances and auditioning audio according to user preferences, with dynamic tooltip feedback showing the configured sample length.
+  - Integrated full factory defaults restoration and category reset support in `preferences_reset.py` and `preferences_reset_dialog.py`.
+- **Open-Source AI & Speech Attribution Synchronization (`playback_preferences.py`)**:
+  - Updated the **Help -> About Radio & TV Story Segmenter** dialog to explicitly credit **WeSpeaker** and **ONNX Runtime** (`Apache 2.0 / MIT`), aligning the dialog with `NOTICES.txt` and `ARCHITECTURE.md` as the primary on-device neural speaker diarization engines.
+
 ## v3.9.42-beta
 - **Dynamic Single-Source-of-Truth F1 Keyboard Shortcuts Reference & Live Search (`ui_dialog_launchers.py`, `README.md`)**:
   - Dynamically generated the F1 Keyboard Shortcuts Reference dialog in `ui_dialog_launchers.py` (`show_shortcuts_dialog`) directly from `ShortcutsManager` and active keybinding overrides, eliminating outdated static HTML tables and ensuring 100% synchronization forever.

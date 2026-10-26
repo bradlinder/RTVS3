@@ -218,6 +218,16 @@ class SpeakerManagerDialog(QDialog):
                 pass
         return None
 
+    def _get_sample_duration(self) -> float:
+        """Retrieve the configured speaker sample preview duration in seconds (default 3.0s)."""
+        dur = 3.0
+        if self.main_win and hasattr(self.main_win, "settings_store") and self.main_win.settings_store:
+            try:
+                dur = float(self.main_win.settings_store.value("speaker_sample_duration", 3.0))
+            except (ValueError, TypeError):
+                dur = 3.0
+        return max(0.5, min(15.0, dur))
+
     def _find_speaker_sample_range(self, speaker_name: str) -> Optional[Tuple[float, float]]:
         """Resolve a clean representative utterance (start_s, duration_s) for the speaker cluster."""
         if not self.main_win or not getattr(self.main_win, "transcript", None):
@@ -236,15 +246,16 @@ class SpeakerManagerDialog(QDialog):
         if not candidates:
             return None
 
-        # Prefer longest continuous utterance >= 3.0s
-        long_candidates = [c for c in candidates if c[1] >= 3.0]
+        target_dur = self._get_sample_duration()
+        # Prefer longest continuous utterance >= target_dur
+        long_candidates = [c for c in candidates if c[1] >= target_dur]
         if long_candidates:
             best_start, best_dur = max(long_candidates, key=lambda c: c[1])
         else:
-            # First utterance if none >= 3.0s
+            # First utterance if none >= target_dur
             best_start, best_dur = candidates[0]
 
-        sample_dur = min(3.0, best_dur) if best_dur > 0 else 3.0
+        sample_dur = min(target_dur, best_dur) if best_dur > 0 else target_dur
         return (best_start, sample_dur)
 
     def _play_speaker_sample(self, speaker_name: str):
@@ -505,7 +516,7 @@ class SpeakerManagerDialog(QDialog):
                     sample_btn.setEnabled(False)
                     sample_btn.setToolTip("No audio sample available for this speaker" if source_url else "No audio media loaded for this project")
                 else:
-                    sample_btn.setToolTip(f"Listen to a 3-second sample of {name}'s voice")
+                    sample_btn.setToolTip(f"Listen to a {sample_range[1]:.1f}s sample of {name}'s voice")
                     sample_btn.clicked.connect(lambda _, n=name: self._play_speaker_sample(n))
                 self._sample_buttons[name] = sample_btn
                 action_layout.addWidget(sample_btn)
