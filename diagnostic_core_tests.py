@@ -703,7 +703,7 @@ class DiagnosticCoreTestsMixin:
         from pathlib import Path
         with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tf:
             temp_wav = tf.name
-        generate_synthetic_wav(15.0, output_path=temp_wav)
+        generate_synthetic_wav(5.0, output_path=temp_wav)
 
         try:
             mock_win.audio_file = temp_wav

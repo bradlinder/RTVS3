@@ -208,8 +208,8 @@ class DiagnosticExportTestsMixin:
                 w.setnchannels(1)
                 w.setsampwidth(2)
                 w.setframerate(16000)
-                # 10 seconds of valid 16-bit PCM silence
-                w.writeframes(b"\x00" * (16000 * 2 * 10))
+                # 5 seconds of valid 16-bit PCM silence
+                w.writeframes(b"\x00" * (16000 * 2 * 5))
             dummy_audio_path = tmp.name
 
         # Ensure FFmpeg execution in unit testing is bulletproof across all environments
