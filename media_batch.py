@@ -467,12 +467,23 @@ class MediaBatchMixin:
 
             # Silence auto-save prompts before switching contexts
             if self.project_dirty and self.audio_file:
-                self.save_project(force=True)
+                if self.project_file:
+                    self.save_project(force=True)
+                elif hasattr(self, "_batch_save_project_file"):
+                    self._batch_save_project_file()
 
             # Load the media file
             if not self.load_media_file(current_file):
                 self._batch_media_error(f"Could not load file {current_file}")
                 return
+
+            # Pre-bind the project file path so intermediate pipeline stages auto-save silently
+            if self.batch_settings.get("save_project", True) or self.batch_settings.get("save_project_only", False):
+                batch_base_dir = self.batch_settings.get("output") or self.get_default_save_directory()
+                if self.batch_settings.get("unified_transcripts", False):
+                    self.project_file = Path(batch_base_dir) / "Projects" / f"{base_name}.rtvs"
+                else:
+                    self.project_file = Path(batch_base_dir) / base_name / f"{base_name}.rtvs"
 
             # If skipping re-processing, trigger immediate export from existing data
             if all_exist:
@@ -1488,7 +1499,10 @@ class MediaBatchMixin:
         if self.project_dirty:
             # If running a batch process, auto-save instead of asking via dialog
             if getattr(self, "batch_active", False):
-                self.save_project(force=True)
+                if self.project_file:
+                    self.save_project(force=True)
+                elif hasattr(self, "_batch_save_project_file"):
+                    self._batch_save_project_file()
                 return True
 
             save_answer = QMessageBox.question(
@@ -1536,6 +1550,8 @@ class MediaBatchMixin:
                 )
                 target_path = str(project_dir / f"{base_name}.rtvs")
             self._write_project_file(target_path)
+            self.project_file = Path(target_path)
+            self.project_dirty = False
             self.log_activity(f"[BATCH] Auto-saved project file to {target_path}")
         except Exception as e:
             self.log_activity(f"[BATCH ERROR] Failed to save project file for {self.audio_file}: {e}")

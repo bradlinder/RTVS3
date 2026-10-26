@@ -491,7 +491,8 @@ class TranscriptionProcessingMixin:
         # Prompt user if Spanish was detected and no Spanish FastConformer model is installed
         # (Worker sets need_spanish_model_prompt=True when it had to fall back to Whisper)
         if (
-            detected_lang.startswith("es")
+            not getattr(self, "batch_active", False)
+            and detected_lang.startswith("es")
             and isinstance(transcript, dict)
             and transcript.get("need_spanish_model_prompt") is True
         ):
