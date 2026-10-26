@@ -370,6 +370,17 @@ def sync_version(version: str | None = None) -> int:
         except Exception as e:
             print(f"  ! Error updating metadata.json: {e}")
 
+    # 3. index.html
+    html_path = ROOT_DIR / "index.html"
+    if html_path.is_file():
+        try:
+            content = html_path.read_text(encoding="utf-8")
+            content = re.sub(r"v\d+\.\d+\.\d+[-a-zA-Z0-9._]*", f"v{clean_version}", content)
+            html_path.write_text(content, encoding="utf-8")
+            print(f"  * Synchronized index.html -> v{clean_version}")
+        except Exception as e:
+            print(f"  ! Error updating index.html: {e}")
+
     print("[PREVIEW] Version synchronization complete.")
     return 0
 
