@@ -127,12 +127,20 @@ TABLE OF CONTENTS & STATUS OVERVIEW
    [ ] 10.5 Preferences Integration, One-Click Script Installer & Diagnostic Tests (`preferences_dialog.py`, `reaper_bridge.py`, `test_runner.py`)
    [ ] 10.6 Universal Text-to-WAV Clipboard & Drag-and-Drop Fallback for Other DAWs (`reaper_bridge.py`, `export_media_clipper.py`, `transcript_context_menu_mixin.py`)
 
-11. Upcoming Milestone: Speaker Management Ergonomics & Quick Sample Audio Preview (`speaker_dialogs.py`, `playback_controller.py`, `speaker_dialog_refinement_mixin.py`, `test_runner.py`) [PLANNED] [NOT STARTED]
+11. Upcoming Milestone: Speaker Management Ergonomics & Quick Sample Audio Preview (`speaker_dialogs.py`, `playback_controller.py`, `speaker_dialog_refinement_mixin.py`, `test_runner.py`) [-] [IN PROGRESS]
    - *Purpose*: Streamline speaker identification and naming by providing immediate audio verification of detected speaker clusters directly inside the speaker management dialog.
-   [-] 11.1 Non-Modal Floating Speaker Management Dialog & Modeless Co-Editing (`speaker_dialogs.py`, `speaker_dialog_refinement_mixin.py`)
+   [x] 11.1 Non-Modal Floating Speaker Management Dialog & Modeless Co-Editing (`speaker_dialogs.py`, `speaker_dialog_refinement_mixin.py`) [COMPLETED]
    [ ] 11.2 Quick Sample Audio Preview: An instant "Listen to sample" play button directly alongside each detected speaker in the management dialog so the user can hear 3 seconds of their voice before assigning the name.
    [ ] 11.3 Direct Inline Speaker Renaming & Tab Progression: Enable direct inline double-click editing on the "Speaker Name / Alias" cell in the table with Tab key progression (type name → press Tab → jump directly to rename the next speaker).
-   [ ] 11.4 Non-Modal Preferences Inspector Window (`preferences_dialog.py`, `theme_preferences.py`) [OPTIONAL / FUTURE]
+   [x] 11.4 Non-Modal Preferences Inspector Window (`preferences_dialog.py`, `preferences_tabs_core.py`, `story_crud_mixin.py`, `project_export.py`) [COMPLETED]
+
+12. Upcoming Milestone: Social Reel & Short Video Export Plugin (Instagram Reels, YouTube Shorts, TikTok) (`plugins/social_reel/`, `export_media_clipper.py`, `export_dialogs.py`) [PLANNED] [NOT STARTED]
+   - *Purpose*: Provide an optional plugin and export destination to create vertical 9:16 social videos from audio or video files, incorporating custom template images, burned-in safe-zone captions, and audio visualizers for Instagram Reels, YouTube Shorts, and TikTok.
+   [ ] 12.1 Social Reel Plugin Architecture & Manifest (`plugins/social_reel/plugin.py`, `plugins/social_reel/manifest.json`, `plugins/social_reel/export_destination.py`)
+   [ ] 12.2 Multi-Source Input & Template Image Configuration (`plugins/social_reel/reel_config.py`, `plugins/social_reel/reel_dialog.py`)
+   [ ] 12.3 9:16 Vertical Video Compositor & Audiogram Pipeline (`plugins/social_reel/reel_renderer.py`, `export_media_clipper.py`)
+   [ ] 12.4 Burned-in Subtitles & Platform Safe Zone Enforcement (`plugins/social_reel/reel_subtitles.py`)
+   [ ] 12.5 Unified Export Integration & Social Reel Diagnostic Tests (`export/dialog.py`, `test_runner.py`)
 
 ================================================================================
 DETAILED MILESTONE SPECIFICATIONS
@@ -512,7 +520,7 @@ ARCHITECTURAL INVARIANTS FOR REAPER INTEGRATION:
 --------------------------------------------------------------------------------
 
 ================================================================================
-11. UPCOMING MILESTONE: SPEAKER MANAGEMENT ERGONOMICS & QUICK SAMPLE AUDIO PREVIEW [PLANNED] [NOT STARTED]
+11. UPCOMING MILESTONE: SPEAKER MANAGEMENT ERGONOMICS & QUICK SAMPLE AUDIO PREVIEW [-] [IN PROGRESS]
 ================================================================================
 ARCHITECTURAL INVARIANTS FOR SPEAKER AUDIO PREVIEW:
 - Modular <1,000-Line Invariant: Keep all UI controls inside `speaker_dialogs.py` (303 lines) and reuse existing non-blocking audio playout mechanisms (`playback_controller.py` or dedicated `QMediaPlayer` preview channel) without blocking the Qt main GUI loop.
@@ -545,5 +553,48 @@ ARCHITECTURAL INVARIANTS FOR SPEAKER AUDIO PREVIEW:
       1. Modeless Inspector Architecture: Transition Preferences from modal `exec()` to modeless floating window with live preview of visual tokens (theme, transcript font scale, timeline display views, audio fades).
       2. Live Auto-Commit / Reset Defaults Model: Provide "Apply" for instant non-closing settings persistence, "Save" for saving & closing, and clean singleton tracking (`_active_preferences_dialog`) with category switching (`dialog._select_category`).
       3. Safe Audio/Hardware Reload Guards: Implement thread-safe guards preventing audio device or ASR model reloads from conflicting with active playback streams or running transcription jobs.
+--------------------------------------------------------------------------------
+
+================================================================================
+12. UPCOMING MILESTONE: SOCIAL REEL & SHORT VIDEO EXPORT PLUGIN (INSTAGRAM REELS, YOUTUBE SHORTS, TIKTOK) [PLANNED] [NOT STARTED]
+================================================================================
+ARCHITECTURAL INVARIANTS FOR SOCIAL REEL PLUGIN:
+- Modular Plugin Isolation: The feature MUST live completely inside an optional plugin at `plugins/social_reel/` (`plugin.py`, `manifest.json`, `export_destination.py`, `reel_config.py`, `reel_renderer.py`, `reel_subtitles.py`). Core modules (`RadioTVSegmenter.py`, `ui_layout.py`, `processing.py`) must NEVER import from `plugins/social_reel/`.
+- Modular <1,000-Line Invariant: Keep every plugin submodule well under the 800-line target ceiling.
+- Native FFmpeg Subprocess Pipeline: Utilize RTVS3's non-blocking FFmpeg execution with safe argument vectors (`shell=False`, `CREATE_NO_WINDOW` on Windows) without blocking the Qt main GUI loop.
+- UI Discipline: No unrequested icons or decorative emojis on buttons, dialogs, or dropdowns.
+
+[ ] 12.1 Social Reel Plugin Architecture & Manifest (`plugins/social_reel/plugin.py`, `plugins/social_reel/manifest.json`, `plugins/social_reel/export_destination.py`)
+    - Scope & Implementation Specifications:
+      1. Plugin Registration & Lifecycle: Create `plugins/social_reel/` adhering to RTVS3's `IPlugin` and `IExportDestination` contracts.
+      2. Plugin Manifest: Define `plugins/social_reel/manifest.json` with metadata, configurable settings schema, and default enablement.
+      3. Export Destination Hook: Register a "Social Reel / Short (9:16)" export destination that dynamically mounts into the Unified Export Dialog (`UnifiedExportDialog`) and Stories pop-out dialog when the plugin is active.
+
+[ ] 12.2 Multi-Source Input & Template Image Configuration (`plugins/social_reel/reel_config.py`, `plugins/social_reel/reel_dialog.py`)
+    - Scope & Implementation Specifications:
+      1. Dual Audio / Video Source Selection: Allow users to target either the active video stream, an audio-only track, an external audio/video file, or a selected story segment.
+      2. Template & Branding Image Ingestion: Provide an image picker supporting `.png`, `.jpg`, and `.webp` for header cards, logos, or full 9:16 background artwork.
+      3. Save Default Template: Include a "Save as Default Template" action persisting the template image path and layout parameters in `QSettings` (`social_reel/default_template_path`, `social_reel/caption_style`), enabling 1-click reusable branded exports across projects.
+      4. Target Platform Presets: Presets for Instagram Reels (9:16, 1080x1920), YouTube Shorts (9:16, 1080x1920), and TikTok (9:16, 1080x1920).
+
+[ ] 12.3 9:16 Vertical Video Compositor & Audiogram Pipeline (`plugins/social_reel/reel_renderer.py`, `export_media_clipper.py`)
+    - Scope & Implementation Specifications:
+      1. Video Source Pipeline (1080x1920): Build an FFmpeg filtergraph supporting:
+         - Blurred Pillarbox Backdrop: Scale original 16:9 video to fill 1080x1920, apply `boxblur=luma_radius=25:luma_power=3`, and overlay the centered, uncropped original video.
+         - Center Crop Mode: Crop 9:16 center region (`crop=ih*9/16:ih`) with optional X-offset panning.
+      2. Audio Source Pipeline (Audiogram): Build an FFmpeg filtergraph combining the background template image with a dynamic audio waveform visualizer (`showwaves` or `showwavespic`) centered or anchored in the middle third.
+      3. Non-Blocking Background Execution: Run video rendering through a dedicated `QThread` / `subprocess` worker with progress calculation, cancel check, and atomic output writing.
+
+[ ] 12.4 Burned-in Subtitles & Platform Safe Zone Enforcement (`plugins/social_reel/reel_subtitles.py`)
+    - Scope & Implementation Specifications:
+      1. ASS / Styled Caption Generator: Transform Whisper word-level timestamps for the target story segment into an Advanced SubStation Alpha (`.ass`) subtitle stream.
+      2. High-Contrast Typography: Apply bold, readable sans-serif typography with high-contrast text outlines, drop shadows, or background pill backing.
+      3. UI Safe Zone Constraint: Enforce vertical bounding boxes that prevent subtitles from being obscured by Instagram/TikTok interface elements (preserving top 15% and bottom 25% margins, rendering text in the safe middle 60%).
+      4. Optional Word-Level Karaoke Highlight: Highlight the active spoken word in real time based on Whisper word start/end timings.
+
+[ ] 12.5 Unified Export Integration & Social Reel Diagnostic Tests (`export/dialog.py`, `test_runner.py`)
+    - Scope & Implementation Specifications:
+      1. Export Dialog Tab / Staging: Add a dedicated "Social Reel" configuration view in the Unified Export Dialog when the plugin is active, displaying preview framing, safe zone guidelines, template image picker, and caption toggle.
+      2. Automated Diagnostic Suite: Add unit tests in `test_runner.py` verifying plugin registration, ASS subtitle timing generation, safe zone margin math, and FFmpeg filtergraph string assembly.
 
 
