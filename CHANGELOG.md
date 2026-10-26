@@ -1,5 +1,13 @@
 # Changelog
 
+## v3.9.40-beta
+- **Batch Processing Silent Auto-Save & Unified Project File Generation (`media_batch.py`, `project_lifecycle.py`, `transcription_processing.py`)**:
+  - Resolved a critical defect where running a multi-file batch job saved only a single `.rtvs` project file for the first item and failed to generate individual `.rtvs` project files for subsequent media items.
+  - Implemented `_get_batch_project_target_path(base_name)` in `media_batch.py` to ensure consistent, reliable project file resolution across both pre-binding and export cycles for standard and unified transcripts mode.
+  - Pre-bound `self.project_file` in `_batch_next_media()` immediately after loading each audio file, enabling intermediate pipeline stages (e.g. `save_project()` at line 489 in `transcription_processing.py`) to auto-save silently without falling back to interactive modal prompts (`save_project_as()`).
+  - Added an active batch fallback in `project_lifecycle.py` (`save_project`): if `self.project_file` is unassigned during batch execution, it routes directly to `self._batch_save_project_file()` instead of invoking `QFileDialog.getSaveFileName()`.
+  - Suppressed interactive `QMessageBox` critical error alerts and interactive media-copy prompts during batch runs (`batch_active == True`), guaranteeing uninterrupted, headless execution of multi-file batch jobs.
+
 ## v3.9.39-beta
 - **Strict Effective Speaker Scoping for Unknown Cluster Merges (`speaker_dialog_refinement_mixin.py`, `speaker_dialogs.py`)**:
   - Fixed an over-broad segment matching bug where raw segments that lacked manual speaker overrides (`segment_speaker_overrides` = None) were erroneously matched as "Unknown Speaker" even when their effective diarization name was already a valid speaker (such as "Speaker 2").

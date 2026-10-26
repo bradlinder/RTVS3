@@ -231,16 +231,19 @@ class ProjectLifecycleMixin:
         if media_mode == "ask" and self.audio_file and Path(self.audio_file).exists():
             src_media = Path(self.audio_file).resolve()
             if src_media.parent != destination.parent and src_media.parent != (destination.parent / "Media"):
-                res = QMessageBox.question(
-                    self,
-                    "Copy Media to Project Folder?",
-                    f"Would you like to copy the media file ('{src_media.name}') into the project bundle folder for portability?",
-                    QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No | QMessageBox.StandardButton.Cancel,
-                    QMessageBox.StandardButton.Yes,
-                )
-                if res == QMessageBox.StandardButton.Cancel:
-                    return False
-                copy_media = (res == QMessageBox.StandardButton.Yes)
+                if getattr(self, "batch_active", False):
+                    copy_media = False
+                else:
+                    res = QMessageBox.question(
+                        self,
+                        "Copy Media to Project Folder?",
+                        f"Would you like to copy the media file ('{src_media.name}') into the project bundle folder for portability?",
+                        QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No | QMessageBox.StandardButton.Cancel,
+                        QMessageBox.StandardButton.Yes,
+                    )
+                    if res == QMessageBox.StandardButton.Cancel:
+                        return False
+                    copy_media = (res == QMessageBox.StandardButton.Yes)
 
         if copy_media and self.audio_file and Path(self.audio_file).exists():
             src_media = Path(self.audio_file).resolve()
@@ -515,7 +518,8 @@ class ProjectLifecycleMixin:
                 message = "Project validation failed:\n\n" + "\n".join(f"• {item}" for item in errors)
                 if hasattr(self, "log_activity"):
                     self.log_activity(f"[ERROR] Project validation failed: {'; '.join(errors)}", mark_dirty=False)
-                QMessageBox.critical(self, "Project Validation Error", message)
+                if not getattr(self, "batch_active", False):
+                    QMessageBox.critical(self, "Project Validation Error", message)
                 return False
 
             if self.project_file.exists():
@@ -545,7 +549,8 @@ class ProjectLifecycleMixin:
                 pass
             if hasattr(self, "log_activity"):
                 self.log_activity(f"[ERROR] Project save failed: {exc}", mark_dirty=False)
-            QMessageBox.critical(self, "Save Error", str(exc))
+            if not getattr(self, "batch_active", False):
+                QMessageBox.critical(self, "Save Error", str(exc))
             return False
         finally:
             self.save_in_progress = False
