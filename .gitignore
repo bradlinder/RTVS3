@@ -51,3 +51,10 @@ package-lock.json
 yarn.lock
 pnpm-lock.yaml
 bun.lock
+
+vite.config.ts
+tsconfig*.json
+tailwind.config.js
+postcss.config.js
+eslint.config.js
+src/

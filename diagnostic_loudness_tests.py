@@ -323,9 +323,11 @@ class DiagnosticLoudnessTestsMixin:
             # 7. Test Non-Modal Preferences Inspector Window
             from preferences_dialog import PreferencesDialogMixin
             from PySide6.QtCore import Qt
+            from PySide6.QtWidgets import QWidget, QPushButton
 
-            class MockPreferencesApp(PreferencesDialogMixin):
+            class MockPreferencesApp(QWidget, PreferencesDialogMixin):
                 def __init__(self):
+                    super().__init__()
                     self.settings_store = mock_win.settings_store
                     self.transcript_font_scale = 1.0
                 def log_activity(self, msg):

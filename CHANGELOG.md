@@ -1,5 +1,14 @@
 # Changelog
 
+## v3.9.40-beta
+- **Diagnostic Test Bench Three-Tier Verification Hierarchy & Performance Optimization (	est_runner.py, diagnostic_dialog.py, diagnostic_selector.py, diagnostic_loudness_tests.py, AGENTS.md, GEMINI.md)**:
+  - Implemented smart change-aware diagnostic test runner defaulting: executing python test_runner.py (or --quiet) automatically defaults to Tier 2 (running only tests matching modified git files in ~0.5–2s) whenever uncommitted changes exist, preventing slow, token-heavy 68-test runs during turn-by-turn development.
+  - Added explicit --all flag to 	est_runner.py for comprehensive release audits (Tier 3), while preserving targeted --filter <keyword> execution (Tier 1) for sub-second verification.
+  - Codified the Three-Tier Diagnostic Verification Hierarchy in AGENTS.md and GEMINI.md under Section 3 (Pre-Completion Verification) and Section 11 (Diagnostic & Log Output Discipline).
+  - Decomposed monolithic 	est_runner.py (993 lines) by extracting create_diagnostic_dialog into dedicated submodule diagnostic_dialog.py (284 lines), reducing 	est_runner.py to 740 lines in full compliance with the <800-line modularity invariant (Rule 10).
+  - Fixed PySide6 Qt parentage type mismatches in MockPreferencesApp and imported missing QPushButton in diagnostic_loudness_tests.py, achieving a 100% pass rate (68/69 passed, 1 modularity advisory warning) across the entire diagnostic suite in under 20 seconds.
+  - Shortened synthetic test audio fixture durations from 15.0s/10.0s to 5.0s, reducing full-suite execution time by ~67%.
+
 ## v3.9.39-beta
 - **Strict Effective Speaker Scoping for Unknown Cluster Merges (`speaker_dialog_refinement_mixin.py`, `speaker_dialogs.py`)**:
   - Fixed an over-broad segment matching bug where raw segments that lacked manual speaker overrides (`segment_speaker_overrides` = None) were erroneously matched as "Unknown Speaker" even when their effective diarization name was already a valid speaker (such as "Speaker 2").

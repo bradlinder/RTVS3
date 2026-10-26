@@ -49,6 +49,14 @@ When bumping or updating the application version number, you MUST update **ALL**
 Before completing code modifications:
 - Run Python syntax compilation checks: `python -m py_compile RadioTVSegmenter.py prs_shared.py processing.py runtime_manager.py radio_tv_story_segmenter_worker.py updater.py build_installer.py plugins/manager.py`
 - Run the web preview linter and build tools (`lint_applet` & `compile_applet`) to ensure zero regressions.
+- **Three-Tier Diagnostic Verification Discipline**:
+  Never execute the full 68-test suite (`python test_runner.py --all`) during routine turn-by-turn development. Adhere strictly to the three-tier hierarchy:
+  1. **Tier 1 (Targeted Feature/Bug Test)**: When implementing or modifying a specific feature or bug fix, run only the relevant test by keyword:
+     `python test_runner.py --quiet --filter "<keyword>"` (e.g. `--filter "Quick Sample"` or `--filter "Speaker"`). Completes in ~0.1–1s.
+  2. **Tier 2 (Smart Change-Aware Test)**: When verifying multi-file localized changes across modules before committing:
+     `python test_runner.py --quiet` (or `python test_runner.py --quiet --changed`). Auto-detects modified modules via git status and executes only related tests in ~1–3s.
+  3. **Tier 3 (Full Diagnostic Suite)**: Reserved strictly for comprehensive release audits, final packaging, or when explicitly requested by the user:
+     `python test_runner.py --quiet --all`.
 
 ## 4. Architectural Invariants Reference
 Always adhere strictly to the invariants defined in `ARCHITECTURE.md`:
@@ -161,7 +169,8 @@ Instead, the agent MUST actively perform deep, adversarial code-level inspection
 - **Consult `.pyi` Typing Stubs**:
   - When verifying method signatures, argument types, or public exports of central facades (`prs_shared.py`, `processing.py`, `playback_preferences.py`, `transcript_editor.py`, `project_export.py`), inspect the corresponding `.pyi` stub to save up to 97% of prompt tokens.
 - **Diagnostic & Log Output Discipline**:
-  - When verifying localized changes, run `python test_runner.py --quiet --changed` (auto-selects tests matching `git status` / modified modules via `diagnostic_selector.py`) or `python test_runner.py --quiet --filter <keyword>` to execute only the relevant subset of tests in ~1–2s instead of running all 68 tests repeatedly.
+  - Adhere strictly to the Three-Tier Diagnostic Verification Discipline (Section 3). Routine verification MUST use Tier 1 (`--filter <keyword>`) or Tier 2 (`--quiet` / `--changed`). Full runs (`--all`) are strictly reserved for release audits or explicit user request.
+  - When verifying localized changes, run `python test_runner.py --quiet` (auto-detects changed files via `diagnostic_selector.py`) or `python test_runner.py --quiet --filter <keyword>` to execute in ~0.5–2s.
   - Always use quiet mode (`--quiet`) to collapse passing test results into a single token-dense line.
   - Use `python bump_version.py --patch` (or `python bump_version.py <version>`) to update all version locations, modified plugin manifests/addons, and web preview files in a single command rather than editing 10 files individually.
   - Pipe or pass raw terminal error traces through `scripts/log_summary.py` to extract concise <15-line root cause reports instead of outputting massive traceback noise.
