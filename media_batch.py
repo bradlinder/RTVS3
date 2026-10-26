@@ -479,11 +479,7 @@ class MediaBatchMixin:
 
             # Pre-bind the project file path so intermediate pipeline stages auto-save silently
             if self.batch_settings.get("save_project", True) or self.batch_settings.get("save_project_only", False):
-                batch_base_dir = self.batch_settings.get("output") or self.get_default_save_directory()
-                if self.batch_settings.get("unified_transcripts", False):
-                    self.project_file = Path(batch_base_dir) / "Projects" / f"{base_name}.rtvs"
-                else:
-                    self.project_file = Path(batch_base_dir) / base_name / f"{base_name}.rtvs"
+                self.project_file = self._get_batch_project_target_path(base_name)
 
             # If skipping re-processing, trigger immediate export from existing data
             if all_exist:
@@ -1528,29 +1524,36 @@ class MediaBatchMixin:
         self.set_processing_stage(None)
         self.set_tools_actions_enabled(True)
 
-    def _batch_save_project_file(self):
-        """Saves project .json to dedicated directory structure during batch processing."""
-        if not self.audio_file:
-            return
-
+    def _get_batch_project_target_path(self, base_name: str) -> Path:
+        """Determines consistent target .rtvs project file path during batch processing."""
         base_dir = self.batch_settings.get("output") if hasattr(self, "batch_settings") else ""
         if not base_dir or not os.path.exists(base_dir):
             base_dir = self.get_default_save_directory()
 
+        if hasattr(self, "batch_settings") and self.batch_settings.get("unified_transcripts", False):
+            projects_dir = Path(base_dir) / "Projects"
+            projects_dir.mkdir(parents=True, exist_ok=True)
+            return projects_dir / f"{base_name}.rtvs"
+        else:
+            project_dir, _, _, _ = self.prepare_export_directories(
+                base_dir, default_name=base_name, prompt_user=False
+            )
+            if not project_dir:
+                project_dir = Path(base_dir)
+            return Path(project_dir) / f"{base_name}.rtvs"
+
+    def _batch_save_project_file(self):
+        """Saves project .rtvs to dedicated directory structure during batch processing."""
+        if not self.audio_file:
+            return
+
         base_name = safe_filename(Path(self.audio_file).stem)
 
         try:
-            if self.batch_settings.get("unified_transcripts", False):
-                projects_dir = Path(base_dir) / "Projects"
-                projects_dir.mkdir(parents=True, exist_ok=True)
-                target_path = str(projects_dir / f"{base_name}.rtvs")
-            else:
-                project_dir, trans_dir, media_dir, _ = self.prepare_export_directories(
-                    base_dir, default_name=base_name, prompt_user=False
-                )
-                target_path = str(project_dir / f"{base_name}.rtvs")
-            self._write_project_file(target_path)
-            self.project_file = Path(target_path)
+            target_path = self._get_batch_project_target_path(base_name)
+            target_path.parent.mkdir(parents=True, exist_ok=True)
+            self._write_project_file(str(target_path))
+            self.project_file = target_path
             self.project_dirty = False
             self.log_activity(f"[BATCH] Auto-saved project file to {target_path}")
         except Exception as e:
