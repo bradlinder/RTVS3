@@ -1,5 +1,14 @@
 # Changelog
 
+## v3.9.42-beta
+- **Dynamic Single-Source-of-Truth F1 Keyboard Shortcuts Reference & Live Search (`ui_dialog_launchers.py`, `README.md`)**:
+  - Dynamically generated the F1 Keyboard Shortcuts Reference dialog in `ui_dialog_launchers.py` (`show_shortcuts_dialog`) directly from `ShortcutsManager` and active keybinding overrides, eliminating outdated static HTML tables and ensuring 100% synchronization forever.
+  - Added real-time instant search and filtering toolbar (`QLineEdit`) at the top of the dialog, allowing users to quickly search shortcuts by action name, key sequence, category, or description.
+  - Grouped all 51 canonical application shortcuts into clean, structured tables matching canonical categories: *File & Project*, *Playback & Transport*, *Story & Segment Editing*, *Search & Transcript Tools*, *Timeline & Navigation*, and *Help & Diagnostics*.
+  - Added theme-adaptive styling supporting dark, light, and high-contrast modes, rendering keyboard badges with `<kbd>` tags and displaying descriptive tooltips/subtitles for all actions.
+  - Retained the "Customize Shortcuts..." button connecting directly to the Keyboard Shortcuts tab in Preferences for rapid customization.
+  - Synchronized `README.md` keyboard shortcuts documentation to reflect all 51 active shortcuts, canonical categories, accurate platform defaults (Windows/Linux and macOS), and detailed descriptions.
+
 ## v3.9.41-beta
 - **Direct Inline Speaker Renaming & Tab Progression (`speaker_dialogs.py`, `diagnostic_core_tests.py`)**:
   - Implemented direct inline double-click editing on the "Speaker Name / Alias" cell in the speaker management table with seamless Tab key progression (Milestone 11.3).

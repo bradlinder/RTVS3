@@ -51,148 +51,170 @@ class UiDialogLaunchersMixin:
 
 
     def show_shortcuts_dialog(self):
-        """Display a searchable or structured reference table of all active shortcuts."""
-        from PySide6.QtWidgets import QDialog, QVBoxLayout, QTextBrowser, QDialogButtonBox
+        """Display a searchable, dynamically generated reference table of all active shortcuts."""
+        import html
+        from PySide6.QtWidgets import (
+            QDialog, QVBoxLayout, QLineEdit, QTextBrowser, QDialogButtonBox
+        )
+        from shortcuts.manager import ShortcutsManager
+        from shortcuts.schema import format_sequence_display, _get_shortcuts_theme_mode
+
+        mgr = getattr(self, "shortcuts_manager", None)
+        if mgr is None:
+            mgr = ShortcutsManager(getattr(self, "settings_store", None))
 
         dialog = QDialog(self)
-        dialog.setWindowTitle("Keyboard Shortcuts")
-        dialog.resize(620, 540)
+        dialog.setWindowTitle("Keyboard Shortcuts Reference")
+        dialog.resize(680, 580)
+        dialog.setMinimumSize(540, 420)
 
         layout = QVBoxLayout(dialog)
         layout.setContentsMargins(14, 14, 14, 14)
         layout.setSpacing(10)
 
+        search_bar = QLineEdit(dialog)
+        search_bar.setPlaceholderText("Search shortcuts by action name, key, or category...")
+        search_bar.setClearButtonEnabled(True)
+        layout.addWidget(search_bar)
+
         browser = QTextBrowser(dialog)
         browser.setOpenExternalLinks(False)
-        browser.setStyleSheet("""
-            QTextBrowser {
-                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-                font-size: 13px;
-                padding: 10px;
-            }
-        """)
-
-        is_mac = sys.platform == "darwin"
-        cmd = "Cmd" if is_mac else "Ctrl"
-        opt = "Option" if is_mac else "Alt"
-        panel_mod = "Ctrl+Option" if is_mac else "Alt"
-
-        def get_sc(action_id: str, fallback: str = "") -> str:
-            if hasattr(self, "shortcuts_manager") and self.shortcuts_manager:
-                sc = self.shortcuts_manager.get_current_shortcut(action_id)
-                if sc and sc != "None":
-                    from shortcuts_manager import format_sequence_display
-                    return format_sequence_display(sc)
-                if sc == "None":
-                    return "Unassigned"
-            return fallback
-
-        clear_fmt_sc = get_sc("fmt_clear", f"{cmd}+\\")
-
-        html_content = f"""
-        <style>
-            table {{ width: 100%; border-collapse: collapse; margin-bottom: 16px; }}
-            th {{ text-align: left; padding: 6px 8px; border-bottom: 2px solid #555; }}
-            td {{ padding: 5px 8px; border-bottom: 1px solid #333; }}
-            kbd {{
-                background-color: #2b303c;
-                border: 1px solid #4f5666;
-                border-radius: 4px;
-                padding: 2px 6px;
-                font-family: monospace;
-                font-size: 12px;
-                color: #e6edf3;
-            }}
-            h3 {{ margin-top: 14px; margin-bottom: 6px; color: #58a6ff; }}
-        </style>
-
-        <h3>Playback & Navigation</h3>
-        <table>
-            <tr><td><b>Play / Pause</b></td><td><kbd>{get_sc("play_pause", "Space")}</kbd> or <kbd>Media Play/Pause</kbd></td></tr>
-            <tr><td><b>Skip Backward / Forward</b></td><td><kbd>{get_sc("seek_backward", "Left")}</kbd> / <kbd>{get_sc("seek_forward", "Right")}</kbd></td></tr>
-            <tr><td><b>Seek to Start / End</b></td><td><kbd>{get_sc("seek_start", "Home")}</kbd> / <kbd>{get_sc("seek_end", "End")}</kbd></td></tr>
-            <tr><td><b>Zoom In / Out on Timeline</b></td><td><kbd>{get_sc("zoom_in", "+")}</kbd> / <kbd>{get_sc("zoom_out", "-")}</kbd> or <kbd>Mouse Wheel</kbd></td></tr>
-            <tr><td><b>Pan Timeline View</b></td><td><kbd>Shift + Wheel</kbd> or <kbd>Middle-Click Drag</kbd></td></tr>
-            <tr><td><b>Increase / Decrease Transcript Text</b></td><td><kbd>{get_sc("transcript_font_up", f"{cmd}++")}</kbd> / <kbd>{get_sc("transcript_font_down", f"{cmd}+-")}</kbd></td></tr>
-            <tr><td><b>Reset Transcript Text Size</b></td><td><kbd>{get_sc("transcript_font_reset", f"{cmd}+0")}</kbd></td></tr>
-        </table>
-
-        <h3>File & Project</h3>
-        <table>
-            <tr><td><b>New Project</b></td><td><kbd>{get_sc("new_project", f"{cmd}+N")}</kbd></td></tr>
-            <tr><td><b>Open Media File</b></td><td><kbd>{get_sc("open_media", f"{cmd}+O")}</kbd></td></tr>
-            <tr><td><b>Open Document</b></td><td><kbd>{get_sc("open_document", f"{cmd}+{opt}+O")}</kbd></td></tr>
-            <tr><td><b>Open Project Session</b></td><td><kbd>{get_sc("open_project", f"{cmd}+Shift+O")}</kbd></td></tr>
-            <tr><td><b>Close Project Session</b></td><td><kbd>{get_sc("close_project", f"{cmd}+W")}</kbd></td></tr>
-            <tr><td><b>Save Project</b></td><td><kbd>{get_sc("save_project", f"{cmd}+S")}</kbd></td></tr>
-            <tr><td><b>Save Project As...</b></td><td><kbd>{get_sc("save_project_as", f"{cmd}+Shift+S")}</kbd></td></tr>
-            <tr><td><b>Export Dialog</b></td><td><kbd>{get_sc("export", f"{cmd}+E")}</kbd></td></tr>
-            <tr><td><b>Batch Processing</b></td><td><kbd>{get_sc("batch_processing", f"{cmd}+Shift+B")}</kbd></td></tr>
-            <tr><td><b>Preferences</b></td><td><kbd>{get_sc("preferences", f"{cmd}+P")}</kbd></td></tr>
-            <tr><td><b>Customize Keyboard Shortcuts</b></td><td><kbd>{get_sc("customize_shortcuts", f"{cmd}+K")}</kbd></td></tr>
-            <tr><td><b>Exit Application</b></td><td><kbd>{get_sc("exit_app", f"{cmd}+Q")}</kbd></td></tr>
-        </table>
-
-        <h3>Panels & Views</h3>
-        <table>
-            <tr><td><b>Toggle Timeline Panel</b></td><td><kbd>{get_sc("toggle_timeline", f"{panel_mod}+1")}</kbd></td></tr>
-            <tr><td><b>Toggle Transcript Panel</b></td><td><kbd>{get_sc("toggle_transcript", f"{panel_mod}+2")}</kbd></td></tr>
-            <tr><td><b>Toggle Stories Panel</b></td><td><kbd>{get_sc("toggle_stories", f"{panel_mod}+3")}</kbd></td></tr>
-            <tr><td><b>Toggle Activity History Panel</b></td><td><kbd>{get_sc("toggle_activity", f"{panel_mod}+4")}</kbd></td></tr>
-            <tr><td><b>Toggle Comments Sidebar & Annotations</b></td><td><kbd>{get_sc("toggle_comments", f"{cmd}+{opt}+C")}</kbd></td></tr>
-            <tr><td><b>Toggle Waveform Display</b></td><td><kbd>{get_sc("toggle_waveform", f"{cmd}+{opt}+W")}</kbd></td></tr>
-            <tr><td><b>Toggle Video Thumbnails</b></td><td><kbd>{get_sc("toggle_thumbnails", f"{cmd}+{opt}+T")}</kbd></td></tr>
-            <tr><td><b>Toggle Video Preview Window</b></td><td><kbd>{get_sc("toggle_video_preview", f"{cmd}+Shift+M")}</kbd></td></tr>
-            <tr><td><b>Toggle Speaker Labels</b></td><td><kbd>{get_sc("toggle_speaker_labels", f"{cmd}+{opt}+S")}</kbd></td></tr>
-            <tr><td><b>Toggle Timestamps</b></td><td><kbd>{get_sc("toggle_timestamps", f"{cmd}+{opt}+I")}</kbd></td></tr>
-        </table>
-
-        <h3>Editing & Transcript</h3>
-        <table>
-            <tr><td><b>Toggle Transcript Edit Mode</b></td><td><kbd>{get_sc("toggle_edit_mode", "F2")}</kbd></td></tr>
-            <tr><td><b>Undo / Redo</b></td><td><kbd>{get_sc("undo", f"{cmd}+Z")}</kbd> / <kbd>{get_sc("redo", f"{cmd}+Y")}</kbd></td></tr>
-            <tr><td><b>Bold / Italic / Underline / Strike</b></td><td><kbd>{get_sc("fmt_bold", f"{cmd}+B")}</kbd> / <kbd>{get_sc("fmt_italic", f"{cmd}+I")}</kbd> / <kbd>{get_sc("fmt_underline", f"{cmd}+U")}</kbd> / <kbd>{get_sc("fmt_strikethrough", f"{cmd}+K")}</kbd></td></tr>
-            <tr><td><b>Highlight Text (Yellow)</b></td><td><kbd>{get_sc("fmt_highlight", f"{cmd}+Shift+H")}</kbd></td></tr>
-            <tr><td><b>Clear Text Formatting</b></td><td><kbd>{clear_fmt_sc}</kbd></td></tr>
-            <tr><td><b>Add / Edit Comment</b></td><td><kbd>{get_sc("add_comment", f"{cmd}+M")}</kbd></td></tr>
-            <tr><td><b>Split Speaker Segment</b></td><td><kbd>{get_sc("split_speaker", "Shift+Enter")}</kbd></td></tr>
-            <tr><td><b>Find and Replace</b></td><td><kbd>{get_sc("find_replace", f"{cmd}+F")}</kbd></td></tr>
-            <tr><td><b>Find Next Match</b></td><td><kbd>{get_sc("find_next", f"{cmd}+G")}</kbd></td></tr>
-            <tr><td><b>Insert Timestamp Line (Edit Mode)</b></td><td><kbd>Enter</kbd></td></tr>
-            <tr><td><b>Exit Editing Mode</b></td><td><kbd>Esc</kbd></td></tr>
-        </table>
-
-        <h3>AI Pipeline & Tools</h3>
-        <table>
-            <tr><td><b>Transcribe Audio</b></td><td><kbd>{get_sc("transcribe", f"{cmd}+T")}</kbd></td></tr>
-            <tr><td><b>Detect Speakers (Diarization)</b></td><td><kbd>{get_sc("detect_speakers", f"{cmd}+D")}</kbd></td></tr>
-            <tr><td><b>Detect Stories</b></td><td><kbd>{get_sc("detect_stories", f"{cmd}+Shift+A")}</kbd></td></tr>
-            <tr><td><b>Translate Transcript</b></td><td><kbd>{get_sc("translate", f"{cmd}+Shift+L")}</kbd></td></tr>
-            <tr><td><b>Multi-Stage Processing Pipeline</b></td><td><kbd>{get_sc("run_pipeline", f"{cmd}+R")}</kbd></td></tr>
-            <tr><td><b>Regenerate Waveform</b></td><td><kbd>{get_sc("regen_waveform", f"{cmd}+Shift+W")}</kbd></td></tr>
-            <tr><td><b>Regenerate Video Thumbnails</b></td><td><kbd>{get_sc("regen_thumbnails", f"{cmd}+Shift+T")}</kbd></td></tr>
-            <tr><td><b>Clear Temporary Cache</b></td><td><kbd>{get_sc("clear_cache", f"{cmd}+{opt}+C")}</kbd></td></tr>
-            <tr><td><b>Normalize Audio Loudness</b></td><td><kbd>{get_sc("normalize_loudness", f"{cmd}+{opt}+N")}</kbd></td></tr>
-            <tr><td><b>Manage AI Models</b></td><td><kbd>{get_sc("manage_models", f"{cmd}+M")}</kbd></td></tr>
-            <tr><td><b>Manage Plugins & Add-ons</b></td><td><kbd>{get_sc("manage_plugins", f"{cmd}+Shift+X")}</kbd></td></tr>
-        </table>
-
-        <h3>Settings & Diagnostics</h3>
-        <table>
-            <tr><td><b>Preferences</b></td><td><kbd>{get_sc("preferences", f"{cmd}+P")}</kbd></td></tr>
-            <tr><td><b>Customize Keyboard Shortcuts</b></td><td><kbd>{get_sc("customize_shortcuts", f"{cmd}+K")}</kbd></td></tr>
-            <tr><td><b>GPU Acceleration Settings</b></td><td><kbd>{get_sc("gpu_settings", f"{cmd}+{opt}+G")}</kbd></td></tr>
-            <tr><td><b>Glossary & Custom Vocabulary</b></td><td><kbd>{get_sc("glossary", f"{cmd}+Shift+G")}</kbd></td></tr>
-            <tr><td><b>Check for Updates</b></td><td><kbd>{get_sc("check_updates", f"{cmd}+U")}</kbd></td></tr>
-            <tr><td><b>Keyboard Shortcuts Reference</b></td><td><kbd>{get_sc("help_shortcuts", "F1" if not is_mac else "Cmd+?")}</kbd></td></tr>
-            <tr><td><b>About Radio & TV Story Segmenter</b></td><td><kbd>{get_sc("about", "Shift+F1")}</kbd></td></tr>
-            <tr><td><b>Open Diagnostic Log Folder</b></td><td><kbd>{get_sc("diagnostic_log", f"{cmd}+Shift+K")}</kbd></td></tr>
-            <tr><td><b>Third-Party Licenses</b></td><td><kbd>{get_sc("licenses", f"{cmd}+Shift+F1")}</kbd></td></tr>
-        </table>
-        """
-
-        browser.setHtml(html_content)
         layout.addWidget(browser)
+
+        category_order = [
+            "File & Project",
+            "Playback & Transport",
+            "Story & Segment Editing",
+            "Search & Transcript Tools",
+            "Timeline & Navigation",
+            "Help & Diagnostics",
+        ]
+
+        definitions = mgr.get_definitions()
+
+        def render_html(query: str = "") -> str:
+            query = query.strip().lower()
+            theme_mode = _get_shortcuts_theme_mode()
+            is_light = theme_mode == "light"
+
+            bg_color = "#ffffff" if is_light else "#1e222b"
+            text_color = "#1e293b" if is_light else "#e2e8f0"
+            header_color = "#0969da" if is_light else "#58a6ff"
+            border_color = "#e2e8f0" if is_light else "#334155"
+            th_border = "#94a3b8" if is_light else "#475569"
+            kbd_bg = "#f1f5f9" if is_light else "#2b303c"
+            kbd_border = "#cbd5e1" if is_light else "#4f5666"
+            kbd_text = "#0f172a" if is_light else "#f1f5f9"
+            desc_color = "#64748b" if is_light else "#94a3b8"
+
+            grouped = {}
+            for defn in definitions:
+                cur_seq = mgr.get_current_shortcut(defn.action_id)
+                disp_seq = format_sequence_display(cur_seq) if (cur_seq and cur_seq != "None") else "Unassigned"
+
+                if query:
+                    searchable = f"{defn.name} {defn.category} {defn.description} {disp_seq}".lower()
+                    if query not in searchable:
+                        continue
+
+                grouped.setdefault(defn.category, []).append((defn, disp_seq))
+
+            if not grouped:
+                return (
+                    f"<body style='font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Arial, sans-serif; "
+                    f"font-size: 13px; color: {text_color}; background-color: {bg_color}; padding: 20px; text-align: center;'>"
+                    f"<p style='color: {desc_color}; margin-top: 40px; font-size: 14px;'>"
+                    f"No shortcuts found matching \"<b>{html.escape(query)}</b>\".</p></body>"
+                )
+
+            html_parts = [
+                f"""
+                <style>
+                    body {{
+                        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+                        font-size: 13px;
+                        color: {text_color};
+                        background-color: {bg_color};
+                        padding: 12px;
+                        margin: 0;
+                    }}
+                    table {{
+                        width: 100%;
+                        border-collapse: collapse;
+                        margin-bottom: 20px;
+                    }}
+                    th {{
+                        text-align: left;
+                        padding: 6px 8px;
+                        border-bottom: 2px solid {th_border};
+                        font-weight: 600;
+                        color: {text_color};
+                    }}
+                    td {{
+                        padding: 6px 8px;
+                        border-bottom: 1px solid {border_color};
+                        vertical-align: middle;
+                    }}
+                    kbd {{
+                        background-color: {kbd_bg};
+                        border: 1px solid {kbd_border};
+                        border-radius: 4px;
+                        padding: 2px 7px;
+                        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+                        font-size: 12px;
+                        color: {kbd_text};
+                        white-space: nowrap;
+                    }}
+                    h3 {{
+                        margin-top: 14px;
+                        margin-bottom: 8px;
+                        color: {header_color};
+                        font-size: 14px;
+                        font-weight: 600;
+                    }}
+                    .desc {{
+                        color: {desc_color};
+                        font-size: 11px;
+                        margin-top: 2px;
+                    }}
+                    .unassigned {{
+                        color: {desc_color};
+                        font-style: italic;
+                    }}
+                </style>
+                <body>
+                """
+            ]
+
+            all_cats = list(category_order)
+            for c in grouped.keys():
+                if c not in all_cats:
+                    all_cats.append(c)
+
+            for cat in all_cats:
+                items = grouped.get(cat)
+                if not items:
+                    continue
+                html_parts.append(f"<h3>{html.escape(cat)}</h3>")
+                html_parts.append("<table>")
+                html_parts.append("<thead><tr><th style='width: 60%;'>Action</th><th style='width: 40%;'>Shortcut</th></tr></thead>")
+                html_parts.append("<tbody>")
+                for defn, disp_seq in items:
+                    desc_html = f"<div class='desc'>{html.escape(defn.description)}</div>" if defn.description else ""
+                    if disp_seq == "Unassigned":
+                        key_html = "<span class='unassigned'>Unassigned</span>"
+                    else:
+                        key_html = f"<kbd>{html.escape(disp_seq)}</kbd>"
+                    html_parts.append(
+                        f"<tr><td><b>{html.escape(defn.name)}</b>{desc_html}</td><td>{key_html}</td></tr>"
+                    )
+                html_parts.append("</tbody></table>")
+
+            html_parts.append("</body>")
+            return "".join(html_parts)
+
+        browser.setHtml(render_html())
+        search_bar.textChanged.connect(lambda txt: browser.setHtml(render_html(txt)))
 
         button_box = QDialogButtonBox(dialog)
         customize_btn = button_box.addButton("Customize Shortcuts...", QDialogButtonBox.ButtonRole.ActionRole)
@@ -206,6 +228,7 @@ class UiDialogLaunchersMixin:
         close_btn.clicked.connect(dialog.accept)
         layout.addWidget(button_box)
 
+        search_bar.setFocus()
         dialog.exec()
 
     def show_diagnostic_test_bench(self):

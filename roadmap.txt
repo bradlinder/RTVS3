@@ -37,21 +37,19 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 --------------------------------------------------------------------------------
 TABLE OF CONTENTS & STATUS OVERVIEW
 --------------------------------------------------------------------------------
-1. Previous Release: Batch Processing Auto-Save & Three-Tier Diagnostic Verification Hierarchy (`media_batch.py`, `project_lifecycle.py`, `test_runner.py`, `diagnostic_dialog.py`, `diagnostic_selector.py`, `diagnostic_loudness_tests.py`, `AGENTS.md`, `GEMINI.md`) [x] [COMPLETED in v3.9.40-beta]
-   [x] 1.1 Unified Batch Project File Path Resolution (`media_batch.py`): Implemented `_get_batch_project_target_path(base_name)` providing unified, centralized `.rtvs` target path resolution for both standard and unified transcripts mode across pipeline pre-binding and batch export.
-   [x] 1.2 Pre-Binding Project File Path Before Stage Execution (`media_batch.py`): Pre-binds `self.project_file` immediately after loading each audio file in `_batch_next_media()`, allowing intermediate pipeline stages to auto-save silently without falling back to modal file save prompts.
-   [x] 1.3 Headless Batch Save Fallback & Dialog Suppression (`project_lifecycle.py`): Added an active batch fallback in `save_project()` routing directly to `self._batch_save_project_file()` instead of invoking `QFileDialog.getSaveFileName()`.
-   [x] 1.4 Smart Change-Aware Test Defaulting & `--all` Flag (`test_runner.py`, `diagnostic_selector.py`): Automatically defaults to Tier 2 (tests matching modified git files in ~0.5–2s) when uncommitted changes exist; added explicit `--all` flag for Tier 3 release audits.
-   [x] 1.5 Strict Three-Tier Rule Codification (`AGENTS.md`, `GEMINI.md`): Formally codified Tier 1 (`--filter <keyword>`), Tier 2 (`--quiet` / `--changed`), and Tier 3 (`--all`) in Section 3 and Section 11.
-   [x] 1.6 Modular AST Decomposition of `test_runner.py` (`test_runner.py`, `diagnostic_dialog.py`): Extracted `create_diagnostic_dialog` into dedicated submodule `diagnostic_dialog.py` (284 lines), reducing `test_runner.py` to 740 lines in full compliance with the <800-line modularity invariant.
-   [x] 1.7 Test Suite Hardening & Full-Suite Verification (`diagnostic_loudness_tests.py`, `test_runner.py`): Fixed `MockPreferencesApp` Qt widget parentage and missing `QPushButton` import, achieving 100% pass rate in under 20 seconds.
+1. Previous Release: Direct Inline Speaker Renaming & Tab Progression (`speaker_dialogs.py`, `diagnostic_core_tests.py`, `test_runner.py`) [x] [COMPLETED in v3.9.41-beta]
+   [x] 1.1 Double-Click Inline Speaker Name Editing (`speaker_dialogs.py`): Configured `QTableWidget` edit triggers (`DoubleClicked | EditKeyPressed | SelectedClicked`) on Column 0 while strictly locking Columns 1–3 (`Cluster / Raw ID`, `Turns`, `Total Duration`) to non-editable flags (`~Qt.ItemFlag.ItemIsEditable`).
+   [x] 1.2 Theme-Adaptive Speaker Name Delegate (`speaker_dialogs.py`): Built `SpeakerNameDelegate` (`QStyledItemDelegate`) with theme-aware active editor styling (high contrast borders, focused colors) and automatic pre-selection of speaker names upon opening.
+   [x] 1.3 Sequential Tab & Shift+Tab Progression Navigation (`speaker_dialogs.py`): Implemented seamless keyboard navigation in `eventFilter`: pressing Tab automatically commits the current name, persists project state, and jumps directly to edit the next row's speaker name in sequence (or Shift+Tab for previous row).
+   [x] 1.4 Smart No-Op Advance & Teardown Safety (`speaker_dialogs.py`): Pressing Tab without changing text immediately advances to the next speaker without triggering redundant undo snapshots or disk writes.
+   [x] 1.5 Diagnostic Tests & Version Synchronization (`diagnostic_core_tests.py`, `test_runner.py`, `bump_version.py`): Added automated test suite verifying column edit flags, delegate assignment, inline renaming, and Tab progression focus; synchronized all project locations to `v3.9.41-beta`.
 
-2. Current Release: Direct Inline Speaker Renaming & Tab Progression (`speaker_dialogs.py`, `diagnostic_core_tests.py`, `test_runner.py`) [x] [COMPLETED in v3.9.41-beta]
-   [x] 2.1 Double-Click Inline Speaker Name Editing (`speaker_dialogs.py`): Configured `QTableWidget` edit triggers (`DoubleClicked | EditKeyPressed | SelectedClicked`) on Column 0 while strictly locking Columns 1–3 (`Cluster / Raw ID`, `Turns`, `Total Duration`) to non-editable flags (`~Qt.ItemFlag.ItemIsEditable`).
-   [x] 2.2 Theme-Adaptive Speaker Name Delegate (`speaker_dialogs.py`): Built `SpeakerNameDelegate` (`QStyledItemDelegate`) with theme-aware active editor styling (high contrast borders, focused colors) and automatic pre-selection of speaker names upon opening.
-   [x] 2.3 Sequential Tab & Shift+Tab Progression Navigation (`speaker_dialogs.py`): Implemented seamless keyboard navigation in `eventFilter`: pressing Tab automatically commits the current name, persists project state, and jumps directly to edit the next row's speaker name in sequence (or Shift+Tab for previous row).
-   [x] 2.4 Smart No-Op Advance & Teardown Safety (`speaker_dialogs.py`): Pressing Tab without changing text immediately advances to the next speaker without triggering redundant undo snapshots or disk writes.
-   [x] 2.5 Diagnostic Tests & Version Synchronization (`diagnostic_core_tests.py`, `test_runner.py`, `bump_version.py`): Added automated test suite verifying column edit flags, delegate assignment, inline renaming, and Tab progression focus; synchronized all project locations to `v3.9.41-beta`.
+2. Current Release: Dynamic Single-Source-of-Truth F1 Keyboard Shortcuts Reference & Live Search (`ui_dialog_launchers.py`, `README.md`) [x] [COMPLETED in v3.9.42-beta]
+   [x] 2.1 Dynamic Table Construction via ShortcutsManager (`ui_dialog_launchers.py`): Dynamically builds the F1 reference dialog directly from `ShortcutsManager` and active keybinding overrides (`get_current_shortcut()`), replacing static hardcoded HTML and guaranteeing 100% synchronization forever.
+   [x] 2.2 Instant Search & Real-Time Filtering Toolbar (`ui_dialog_launchers.py`): Integrated a responsive `QLineEdit` search bar filtering across action names, categories, descriptions, and formatted shortcut sequences with instant `QTextBrowser` updates.
+   [x] 2.3 Six-Category Canonical Schema Alignment (`ui_dialog_launchers.py`): Categorized all 51 active application shortcuts into canonical groupings: File & Project, Playback & Transport, Story & Segment Editing, Search & Transcript Tools, Timeline & Navigation, and Help & Diagnostics.
+   [x] 2.4 Theme-Aware Badge Styling & Direct Preferences Link (`ui_dialog_launchers.py`): Added dark, light, and high-contrast responsive styling with `<kbd>` badges and retained the "Customize Shortcuts..." action button opening Preferences -> Keyboard Shortcuts.
+   [x] 2.5 Comprehensive Documentation Synchronization (`README.md`): Completely overhauled the Keyboard Shortcuts section in `README.md` to document all 51 shortcuts with accurate platform defaults (Windows/Linux and macOS) and descriptive annotations.
 
 3. Upcoming Milestone: Codebase Modularization & Monolithic File Decomposition Strategy (<1,000-Line Invariant) (`playback_preferences.py`, `project_export.py`, `transcript_story.py`, `transcript_editor.py`, `radio_tv_story_segmenter_worker.py`, `benchmark.py`, `plugins/wordpress/export_destination.py`, `plugins/manager.py`, `timeline_widgets.py`) [x] [COMPLETED in v3.9.33-beta]
    - *Architecture Note*: Incrementally refactors all remaining source files exceeding 1,000 lines (at most 1 to 2 monoliths per turn) into focused domain modules (<1,000 lines each) while preserving 100% backward compatibility via zero-breakage facade re-exports.
@@ -162,9 +160,9 @@ DETAILED MILESTONE SPECIFICATIONS
 [x] 1.6 Strict Effective Speaker Scoping on Unknown Cluster Reassignment (`speaker_dialog_refinement_mixin.py`, `speaker_dialogs.py`): Enforced strict effective speaker boundary checks preventing segments with valid diarization labels from matching empty raw speaker fallback guards during unknown speaker merges.
 
 ================================================================================
-2. CURRENT RELEASE: WORDPRESS 4-TAB EXPORT LAYOUT, NON-MODAL FLOATING WINDOWS & LIVE TRANSCRIPT CO-EDITING [x] [COMPLETED in v3.9.41-beta]
+2. CURRENT RELEASE: WORDPRESS 4-TAB EXPORT LAYOUT, NON-MODAL FLOATING WINDOWS & LIVE TRANSCRIPT CO-EDITING [x] [COMPLETED in v3.9.42-beta]
 =======
-2. CURRENT RELEASE: BATCH PROCESSING SILENT AUTO-SAVE & UNIFIED PROJECT FILE GENERATION [x] [COMPLETED in v3.9.41-beta]
+2. CURRENT RELEASE: BATCH PROCESSING SILENT AUTO-SAVE & UNIFIED PROJECT FILE GENERATION [x] [COMPLETED in v3.9.42-beta]
 >>>>>>> origin/main
 ================================================================================
 
@@ -529,7 +527,7 @@ ARCHITECTURAL INVARIANTS FOR REAPER INTEGRATION:
 --------------------------------------------------------------------------------
 
 ================================================================================
-11. UPCOMING MILESTONE: SPEAKER MANAGEMENT ERGONOMICS & QUICK SAMPLE AUDIO PREVIEW [-] [IN PROGRESS]
+11. UPCOMING MILESTONE: SPEAKER MANAGEMENT ERGONOMICS & QUICK SAMPLE AUDIO PREVIEW [x] [COMPLETED in v3.9.41-beta]
 ================================================================================
 ARCHITECTURAL INVARIANTS FOR SPEAKER AUDIO PREVIEW:
 - Modular <1,000-Line Invariant: Keep all UI controls inside `speaker_dialogs.py` (303 lines) and reuse existing non-blocking audio playout mechanisms (`playback_controller.py` or dedicated `QMediaPlayer` preview channel) without blocking the Qt main GUI loop.
@@ -550,7 +548,7 @@ ARCHITECTURAL INVARIANTS FOR SPEAKER AUDIO PREVIEW:
       3. Non-Blocking 3-Second Playback: When clicked, stream or play exactly 3 seconds of audio from the resolved start timestamp using the audio playback controller or a dedicated preview sound channel. Automatically cease playout after 3 seconds or when clicking Stop / another speaker's sample button.
       4. Teardown & Lifecycle Safety: Ensure any ongoing preview playback immediately stops on dialog close, escape, or speaker merge/reassignment.
 
-[ ] 11.3 Direct Inline Speaker Renaming & Tab Progression: Enable direct inline double-click editing on the "Speaker Name / Alias" cell in the table with Tab key progression (type name → press Tab → jump directly to rename the next speaker). (`speaker_dialogs.py`, `speaker_dialog_refinement_mixin.py`)
+[x] 11.3 Direct Inline Speaker Renaming & Tab Progression: Enable direct inline double-click editing on the "Speaker Name / Alias" cell in the table with Tab key progression (type name → press Tab → jump directly to rename the next speaker). (`speaker_dialogs.py`, `speaker_dialog_refinement_mixin.py`) [COMPLETED in v3.9.41-beta]
     - Scope & Implementation Specifications:
       1. In-Place Table Cell Editing Triggers: Configure `self.table.setEditTriggers(QAbstractItemView.EditTrigger.DoubleClicked | QAbstractItemView.EditTrigger.SelectedClicked | QAbstractItemView.EditTrigger.EditKeyPressed)` specifically for column 0 ("Speaker Name / Alias"), while maintaining read-only item flags on columns 1-3.
       2. Fast Tab-Key Navigation Progression: Support rapid linear workflow where typing a new name and pressing Tab automatically commits the alias change and seamlessly transfers focus and edit mode to the next speaker row below (`table.editItem(next_item)`), eliminating repetitive modal popup clicks when renaming an entire panel of speakers.
