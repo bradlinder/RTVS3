@@ -466,6 +466,11 @@ class ProjectLifecycleMixin:
         if not self.audio_file and not self.transcript:
             return False
         if not self.project_file:
+            if getattr(self, "batch_active", False):
+                if hasattr(self, "_batch_save_project_file"):
+                    self._batch_save_project_file()
+                    return True
+                return False
             return self.save_project_as()
         if not force and not getattr(self, "project_dirty", False):
             return True
