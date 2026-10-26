@@ -1,5 +1,13 @@
 # Changelog
 
+## v3.9.44-beta
+- **Application-Wide Keyboard Shortcut Alignment & 79-Action Schema Harmonization (`shortcuts/schema.py`, `ui_dialog_launchers.py`, `shortcuts/manager.py`, `README.md`)**:
+  - Restored true application keybindings across the central shortcut schema, aligning Preferences to `Ctrl+P` (macOS: `Cmd+P`), Glossary / Terminology to `Ctrl+Shift+G`, Add Comment to `Ctrl+M`, Manage AI Models to `Ctrl+Alt+M`, Multi-Stage Pipeline to `Ctrl+R`, ID3 Tag Editor to `Ctrl+Shift+I`, and Timeline Zoom to `+` / `-`.
+  - Added 28 missing canonical actions to `shortcuts/schema.py` and the F1 Reference table, including the full AI Processing Pipeline (Transcribe `Ctrl+T`, Detect Speakers `Ctrl+D`, Detect Stories `Ctrl+Shift+A`, Translate `Ctrl+Shift+L`, Regenerate Waveform `Ctrl+Shift+W`, Regenerate Thumbnails `Ctrl+Shift+T`, Normalize Loudness `Ctrl+Alt+N`), all Panel & View Toggles (Timeline `Alt+1`, Transcript `Alt+2`, Stories `Alt+3`, Activity `Alt+4`, Comments Sidebar `Ctrl+Alt+C`, Comment Highlights `Ctrl+Alt+H`, Waveform `Ctrl+Alt+W`, Thumbnails `Ctrl+Alt+T`, Video Preview `Ctrl+Shift+V`, Speaker Labels `Ctrl+Alt+S`, Timestamps `Ctrl+Alt+I`), Core Editing (Undo `Ctrl+Z`, Redo `Ctrl+Shift+Z`), and Diagnostic Utilities.
+  - Linked 100% of action attribute names directly to `MainWindow` and `ui_menus.py` (e.g. `pref_action`, `save_action`, `save_as_action`, `export_action`), ensuring user customizations in Preferences -> Keyboard Shortcuts immediately and reliably bind to application menus and toolbars.
+  - Resolved transport seek duplicates by mapping aliases (`seek_backward`, `seek_forward`, `seek_start`, `seek_end`) cleanly in `ACTION_ALIASES`, eliminating redundant rows in the F1 reference dialog.
+  - Completely synchronized the Markdown reference table in `README.md` to document all 79 active shortcuts across 8 canonical categories.
+
 ## v3.9.43-beta
 - **Configurable Speaker Sample Preview Duration in Preferences (`preferences_tabs_media.py`, `preferences_dialog.py`, `preferences_reset.py`, `speaker_dialogs.py`)**:
   - Added a dedicated "Speaker Sample Preview Length" control (`QDoubleSpinBox`, 1.0s to 15.0s, default 3.0s) to the **Story Detection & Diarization** preferences tab.

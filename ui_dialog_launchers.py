@@ -83,6 +83,8 @@ class UiDialogLaunchersMixin:
 
         category_order = [
             "File & Project",
+            "AI Pipeline & Tools",
+            "Panels & Views",
             "Playback & Transport",
             "Story & Segment Editing",
             "Search & Transcript Tools",

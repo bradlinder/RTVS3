@@ -98,61 +98,89 @@ Run_RadioTVSegmenter.bat
 
 ## Keyboard Shortcuts
 
-All keyboard shortcuts can be viewed at any time by pressing <kbd>F1</kbd> (or <kbd>Cmd+?</kbd> on macOS) to open the interactive, searchable **Keyboard Shortcuts Reference** dialog, and can be fully customized in **Preferences -> Keyboard Shortcuts** (<kbd>Ctrl+,</kbd> / <kbd>Cmd+,</kbd>).
+All keyboard shortcuts can be viewed at any time by pressing <kbd>F1</kbd> (or <kbd>Cmd+?</kbd> on macOS) to open the interactive, searchable **Keyboard Shortcuts Reference** dialog, and can be fully customized in **Preferences -> Keyboard Shortcuts** (<kbd>Ctrl+P</kbd> / <kbd>Cmd+P</kbd>).
 
 | Category | Action | Windows / Linux | macOS | Description |
 | --- | --- | --- | --- | --- |
 | **File & Project** | Open Media... | `Ctrl+O` | `Cmd+O` | Select an audio or video file to open and process |
-| **File & Project** | Open Document... | `Ctrl+Alt+O` | `Cmd+Alt+O` | Open an existing .rtvs project document file |
-| **File & Project** | Save Document | `Ctrl+S` | `Cmd+S` | Save current project, audio offsets, stories, and edits to .rtvs file |
-| **File & Project** | Save Document As... | `Ctrl+Shift+S` | `Cmd+Shift+S` | Save current project to a new .rtvs file location |
-| **File & Project** | Export Center... | `Ctrl+E` | `Cmd+E` | Open the Unified Export Center for audio, text, transcripts, and plugins |
+| **File & Project** | Open Document... | `Ctrl+Alt+O` | `Cmd+Alt+O` | Import an external text document into transcript workspace |
+| **File & Project** | New Project | `Ctrl+N` | `Cmd+N` | Create a new project session |
+| **File & Project** | Open Project... | `Ctrl+Shift+O` | `Cmd+Shift+O` | Open an existing .rtvs project session |
+| **File & Project** | Close Project | `Ctrl+W` | `Cmd+W` | Close current project session |
+| **File & Project** | Save Project | `Ctrl+S` | `Cmd+S` | Save current project, audio offsets, stories, and edits |
+| **File & Project** | Save Project As... | `Ctrl+Shift+S` | `Cmd+Shift+S` | Save current project to a new file location |
+| **File & Project** | Export Project Archive (.zip)... | `Ctrl+Shift+E` | `Cmd+Shift+E` | Export complete project archive with audio and transcript to a .zip file |
+| **File & Project** | Unified Export Center... | `Ctrl+E` | `Cmd+E` | Open the Unified Export Center for audio, text, transcripts, and plugins |
+| **File & Project** | Copy YouTube Chapters to Clipboard | `Ctrl+Shift+Y` | `Cmd+Shift+Y` | Copy zero-based timestamps and story headlines formatted for YouTube descriptions |
 | **File & Project** | Batch Processing... | `Ctrl+Shift+B` | `Cmd+Shift+B` | Open Batch Audio / Video Transcription and Diarization Manager |
 | **File & Project** | Backup & Restore... | *Unassigned* | *Unassigned* | Open project snapshot backup and restore manager |
-| **File & Project** | Multi-Stage Pipeline... | `Ctrl+Shift+M` | `Cmd+Shift+M` | Open automated multi-model pipeline configuration |
-| **File & Project** | Manage AI Models... | `Ctrl+M` | `Cmd+M` | Download, delete, verify, and monitor Whisper and ASR neural weights |
-| **File & Project** | Preferences... | `Ctrl+,` | `Cmd+,` | Open application settings, audio playback, theming, and shortcuts |
-| **File & Project** | Export Diagnostic Bundle... | `Ctrl+Alt+D` | `Cmd+Alt+D` | Export system diagnostic zip bundle for bug reports and support |
+| **File & Project** | Manage AI Models... | `Ctrl+Alt+M` | `Cmd+Alt+M` | Download, delete, verify, and monitor Whisper and ASR neural weights |
+| **File & Project** | Preferences... | `Ctrl+P` | `Cmd+P` | Open application settings, audio playback, theming, and shortcuts |
+| **File & Project** | Manage Plugins & Add-ons... | `Ctrl+Shift+X` | `Cmd+Shift+X` | Enable, disable, or inspect external plugins and integrations |
+| **File & Project** | GPU Acceleration Settings... | `Ctrl+Alt+G` | `Cmd+Alt+G` | Configure CUDA, ROCm, or DirectML GPU hardware acceleration |
 | **File & Project** | Exit Application | `Ctrl+Q` | `Cmd+Q` | Close the application |
+| **AI Pipeline & Tools** | Transcribe Audio... | `Ctrl+T` | `Cmd+T` | Run automated speech-to-text transcription on loaded media |
+| **AI Pipeline & Tools** | Detect Speakers (Diarization)... | `Ctrl+D` | `Cmd+D` | Perform speaker diarization and voice cluster detection |
+| **AI Pipeline & Tools** | Detect Stories... | `Ctrl+Shift+A` | `Cmd+Shift+A` | Automatically segment recording into stories or songs based on pauses |
+| **AI Pipeline & Tools** | Translate Transcript... | `Ctrl+Shift+L` | `Cmd+Shift+L` | Translate transcript text into Spanish or target language |
+| **AI Pipeline & Tools** | Multi-Stage Processing Pipeline... | `Ctrl+R` | `Cmd+R` | Execute automated multi-model transcription, diarization, and story segmentation |
+| **AI Pipeline & Tools** | Regenerate Waveform | `Ctrl+Shift+W` | `Cmd+Shift+W` | Rebuild audio peak envelope cache for the timeline |
+| **AI Pipeline & Tools** | Regenerate Video Thumbnails | `Ctrl+Shift+T` | `Cmd+Shift+T` | Extract new frame thumbnails across video duration |
+| **AI Pipeline & Tools** | Normalize Audio Loudness... | `Ctrl+Alt+N` | `Cmd+Alt+N` | Analyze and normalize broadcast loudness according to EBU R128 / ITU BS.1770 |
+| **Panels & Views** | Toggle Timeline Panel | `Alt+1` | `Ctrl+Alt+1` | Show or hide the audio/video timeline and waveform panel |
+| **Panels & Views** | Toggle Transcript Panel | `Alt+2` | `Ctrl+Alt+2` | Show or hide the interactive text transcript panel |
+| **Panels & Views** | Toggle Stories Panel | `Alt+3` | `Ctrl+Alt+3` | Show or hide the story cuts and segment list panel |
+| **Panels & Views** | Toggle Activity History Panel | `Alt+4` | `Ctrl+Alt+4` | Show or hide the background job and activity log panel |
+| **Panels & Views** | Toggle Comments Sidebar | `Ctrl+Alt+C` | `Cmd+Alt+C` | Show or hide the editorial comments and annotations sidebar |
+| **Panels & Views** | Show Comment Highlights | `Ctrl+Alt+H` | `Cmd+Alt+H` | Toggle yellow editorial comment highlight overlays in transcript |
+| **Panels & Views** | Show Waveform | `Ctrl+Alt+W` | `Cmd+Alt+W` | Toggle visual audio waveform display in the timeline |
+| **Panels & Views** | Show Video Thumbnails | `Ctrl+Alt+T` | `Cmd+Alt+T` | Toggle thumbnail preview strip along the video timeline |
+| **Panels & Views** | Video Preview Window | `Ctrl+Shift+V` | `Cmd+Shift+V` | Open or toggle the floating video preview monitor window |
+| **Panels & Views** | Show Speaker Labels | `Ctrl+Alt+S` | `Cmd+Alt+S` | Show or hide speaker names before each transcript turn |
+| **Panels & Views** | Show Timestamps | `Ctrl+Alt+I` | `Cmd+Alt+I` | Show or hide timecode markers in the transcript |
 | **Playback & Transport** | Play / Pause Audio | `Space` | `Space` | Toggle audio playback on/off from current playhead position |
-| **Playback & Transport** | Jump Back (Short / 5s) | `Left` | `Left` | Rewind audio playhead by configured short jump distance (default 5s) |
-| **Playback & Transport** | Skip Backward | `Left` | `Left` | Rewind audio playhead by configured jump distance |
-| **Playback & Transport** | Jump Forward (Short / 5s) | `Right` | `Right` | Advance audio playhead by configured short jump distance (default 5s) |
-| **Playback & Transport** | Skip Forward | `Right` | `Right` | Advance audio playhead by configured jump distance |
-| **Playback & Transport** | Jump Back (Medium / 15s) | `Shift+Left` | `Shift+Left` | Rewind audio playhead by medium jump distance (default 15s) |
-| **Playback & Transport** | Jump Forward (Medium / 15s) | `Shift+Right` | `Shift+Right` | Advance audio playhead by medium jump distance (default 15s) |
-| **Playback & Transport** | Jump Back (Long / 30s) | `Ctrl+Left` | `Cmd+Left` | Rewind audio playhead by long jump distance (default 30s) |
-| **Playback & Transport** | Jump Forward (Long / 30s) | `Ctrl+Right` | `Cmd+Right` | Advance audio playhead by long jump distance (default 30s) |
-| **Playback & Transport** | Jump to Start of Recording | `Home` | `Home` | Seek playhead to 00:00:00 |
+| **Playback & Transport** | Skip Backward (5s) | `Left` | `Left` | Rewind audio playhead by configured short jump distance (default 5s) |
+| **Playback & Transport** | Skip Forward (5s) | `Right` | `Right` | Advance audio playhead by configured short jump distance (default 5s) |
+| **Playback & Transport** | Jump Back (15s) | `Shift+Left` | `Shift+Left` | Rewind audio playhead by medium jump distance (default 15s) |
+| **Playback & Transport** | Jump Forward (15s) | `Shift+Right` | `Shift+Right` | Advance audio playhead by medium jump distance (default 15s) |
+| **Playback & Transport** | Jump Back (30s) | `Ctrl+Left` | `Cmd+Left` | Rewind audio playhead by long jump distance (default 30s) |
+| **Playback & Transport** | Jump Forward (30s) | `Ctrl+Right` | `Cmd+Right` | Advance audio playhead by long jump distance (default 30s) |
 | **Playback & Transport** | Seek to Start | `Home` | `Home` | Seek playhead to 00:00:00 |
-| **Playback & Transport** | Jump to End of Recording | `End` | `End` | Seek playhead to the end of the loaded media |
 | **Playback & Transport** | Seek to End | `End` | `End` | Seek playhead to the end of the loaded media |
 | **Playback & Transport** | Play Current Story Only | `Ctrl+Alt+Space` | `Cmd+Alt+Space` | Play selected story block from in-point to out-point then stop |
 | **Playback & Transport** | Toggle Auto-Follow Playhead | `Ctrl+F12` | `Cmd+F12` | Enable or disable automatic timeline scrolling following the playhead |
 | **Story & Segment Editing** | Mark Story In-Point ([) | `[` | `[` | Set the beginning timestamp of a new story segment at current playhead |
 | **Story & Segment Editing** | Mark Story Out-Point (]) | `]` | `]` | Set the ending timestamp of the current story segment at playhead and save story |
-| **Story & Segment Editing** | Edit Story Metadata... | `Ctrl+Shift+E` | `Cmd+Shift+E` | Open story metadata editor for headline, author, excerpt, tags, and category |
 | **Story & Segment Editing** | Audio Fades & Crossfades... | `Ctrl+Shift+F` | `Cmd+Shift+F` | Configure audio fade-in, fade-out, crossfade curves, and ducking parameters |
-| **Story & Segment Editing** | Edit ID3 / Broadcast Tags... | `Ctrl+I` | `Cmd+I` | Open ID3v2 metadata tag editor for broadcast episode and podcast tagging |
+| **Story & Segment Editing** | ID3 Tag Editor (MP3)... | `Ctrl+Shift+I` | `Cmd+Shift+I` | Open ID3v2 metadata tag editor for broadcast episode and podcast tagging |
 | **Story & Segment Editing** | Delete Selected Story | `Delete` | `Backspace` | Remove currently highlighted story cut from project |
-| **Story & Segment Editing** | Rename Speaker... | `Ctrl+R` | `Cmd+R` | Open speaker rename and identity manager for current segment |
-| **Story & Segment Editing** | Toggle Proofreading / Edit Mode | `F2` | `F2` | Toggle between viewing and proofreading edit mode; in edit mode, pauses audio and places cursor on spoken word; in viewing mode, resumes playback with pre-roll |
+| **Story & Segment Editing** | Toggle Proofreading / Edit Mode | `F2` | `F2` | Toggle between viewing and proofreading edit mode |
 | **Story & Segment Editing** | Split Speaker Segment | `Shift+Return` | `Shift+Return` | Split current segment at cursor position and insert a new speaker turn |
 | **Story & Segment Editing** | Split Segment at Playhead | `Ctrl+K` | `Cmd+K` | Split the highlighted transcript segment into two pieces at playhead timestamp |
 | **Story & Segment Editing** | Merge with Next Segment | `Ctrl+J` | `Cmd+J` | Combine selected transcript segment with following segment |
+| **Story & Segment Editing** | Undo | `Ctrl+Z` | `Cmd+Z` | Undo previous transcript or story edit |
+| **Story & Segment Editing** | Redo | `Ctrl+Shift+Z` | `Cmd+Shift+Z` | Redo previously undone edit |
 | **Search & Transcript Tools** | Find in Transcript... | `Ctrl+F` | `Cmd+F` | Focus search bar to highlight words and phrases across transcript |
 | **Search & Transcript Tools** | Find Next Occurrence | `F3` | `Cmd+G` | Jump to next occurrence of search term in transcript |
 | **Search & Transcript Tools** | Find Previous Occurrence | `Shift+F3` | `Cmd+Shift+G` | Jump to previous occurrence of search term in transcript |
-| **Search & Transcript Tools** | Add Comment / Marker | `Ctrl+Alt+C` | `Cmd+Alt+C` | Attach an editorial comment or production marker to current playhead / text selection |
-| **Search & Transcript Tools** | Glossary / Terminology... | `Ctrl+T` | `Cmd+T` | Open custom vocabulary, acronyms, station glossary, and ASR phonetic hints |
-| **Timeline & Navigation** | Zoom In Timeline | `Ctrl+=` | `Cmd+=` | Increase timeline horizontal zoom resolution |
-| **Timeline & Navigation** | Zoom Out Timeline | `Ctrl+-` | `Cmd+-` | Decrease timeline horizontal zoom resolution |
-| **Timeline & Navigation** | Fit Entire Timeline in View | `Ctrl+0` | `Cmd+0` | Scale timeline zoom to show full audio duration within window width |
+| **Search & Transcript Tools** | Add / Edit Comment... | `Ctrl+M` | `Cmd+M` | Attach an editorial comment or production marker to current playhead / text selection |
+| **Search & Transcript Tools** | Glossary & Custom Vocabulary... | `Ctrl+Shift+G` | `Cmd+Shift+G` | Open custom vocabulary, acronyms, station glossary, and ASR phonetic hints |
+| **Search & Transcript Tools** | Bold Text | `Ctrl+B` | `Cmd+B` | Toggle bold formatting on selected transcript text |
+| **Search & Transcript Tools** | Italic Text | `Ctrl+I` | `Cmd+I` | Toggle italic formatting on selected transcript text |
+| **Search & Transcript Tools** | Underline Text | `Ctrl+U` | `Cmd+U` | Toggle underline formatting on selected transcript text |
+| **Search & Transcript Tools** | Clear Text Formatting | `Ctrl+\` | `Cmd+\` | Remove rich formatting and color styles from selected transcript text |
+| **Search & Transcript Tools** | Increase Transcript Text Size | `Ctrl++` | `Cmd++` | Increase transcript display font size by 1 point |
+| **Search & Transcript Tools** | Decrease Transcript Text Size | `Ctrl+-` | `Cmd+-` | Decrease transcript display font size by 1 point |
+| **Search & Transcript Tools** | Reset Transcript Text Size | `Ctrl+0` | `Cmd+0` | Reset transcript display font size to default |
+| **Timeline & Navigation** | Zoom In Timeline | `+` | `+` | Increase timeline horizontal zoom resolution (or Mouse Wheel) |
+| **Timeline & Navigation** | Zoom Out Timeline | `-` | `-` | Decrease timeline horizontal zoom resolution (or Mouse Wheel) |
 | **Help & Diagnostics** | Run Performance Benchmark... | `Ctrl+Alt+B` | `Cmd+Alt+B` | Execute CPU, GPU, memory, and ASR model transcription speed benchmark |
 | **Help & Diagnostics** | Run Diagnostic Test Bench... | `Ctrl+Shift+D` | `Cmd+Shift+D` | Execute automated self-tests across all application engines and plugins |
 | **Help & Diagnostics** | Check for Updates... | `Ctrl+Alt+U` | `Cmd+Alt+U` | Check GitHub releases for new versions and patches |
 | **Help & Diagnostics** | Keyboard Shortcuts Reference | `F1` | `Cmd+?` | Open interactive keyboard shortcuts reference table |
 | **Help & Diagnostics** | About Application | `Shift+F1` | `Shift+F1` | Display version, build, and system diagnostic overview |
+| **Help & Diagnostics** | Open Diagnostic Log Folder | `Ctrl+Shift+K` | `Cmd+Shift+K` | Open the application diagnostic logs directory in file explorer |
+| **Help & Diagnostics** | Third-Party Licenses | `Ctrl+Shift+F1` | `Cmd+Shift+F1` | View open-source licenses and attribution disclosures |
 
 ---
 

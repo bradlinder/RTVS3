@@ -37,18 +37,18 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 --------------------------------------------------------------------------------
 TABLE OF CONTENTS & STATUS OVERVIEW
 --------------------------------------------------------------------------------
-1. Previous Release: Dynamic Single-Source-of-Truth F1 Keyboard Shortcuts Reference & Live Search (`ui_dialog_launchers.py`, `README.md`) [x] [COMPLETED in v3.9.42-beta]
-   [x] 1.1 Dynamic Table Construction via ShortcutsManager (`ui_dialog_launchers.py`): Dynamically builds the F1 reference dialog directly from `ShortcutsManager` and active keybinding overrides (`get_current_shortcut()`), replacing static hardcoded HTML and guaranteeing 100% synchronization forever.
-   [x] 1.2 Instant Search & Real-Time Filtering Toolbar (`ui_dialog_launchers.py`): Integrated a responsive `QLineEdit` search bar filtering across action names, categories, descriptions, and formatted shortcut sequences with instant `QTextBrowser` updates.
-   [x] 1.3 Six-Category Canonical Schema Alignment (`ui_dialog_launchers.py`): Categorized all 51 active application shortcuts into canonical groupings: File & Project, Playback & Transport, Story & Segment Editing, Search & Transcript Tools, Timeline & Navigation, and Help & Diagnostics.
-   [x] 1.4 Theme-Aware Badge Styling & Direct Preferences Link (`ui_dialog_launchers.py`): Added dark, light, and high-contrast responsive styling with `<kbd>` badges and retained the "Customize Shortcuts..." action button opening Preferences -> Keyboard Shortcuts.
-   [x] 1.5 Comprehensive Documentation Synchronization (`README.md`): Completely overhauled the Keyboard Shortcuts section in `README.md` to document all 51 shortcuts with accurate platform defaults (Windows/Linux and macOS) and descriptive annotations.
+1. Previous Release: Configurable Speaker Sample Preview Duration & Open-Source AI Attribution (`preferences_tabs_media.py`, `preferences_dialog.py`, `speaker_dialogs.py`, `playback_preferences.py`) [x] [COMPLETED in v3.9.43-beta]
+   [x] 1.1 Configurable Speaker Sample Duration (`preferences_tabs_media.py`, `preferences_tabs.py`): Added a `QDoubleSpinBox` (1.0s–15.0s, default 3.0s) to the Story Detection & Diarization preferences page.
+   [x] 1.2 Preferences Persistence & Category Reset (`preferences_dialog.py`, `preferences_reset.py`, `preferences_reset_dialog.py`): Persisted `speaker_sample_duration` to `QSettings` with factory defaults and category restoration support.
+   [x] 1.3 Dynamic Speaker Sample Resolution (`speaker_dialogs.py`): Updated `SpeakerManagerDialog` to dynamically resolve representative utterances based on user-configured duration with dynamic tooltip indicators.
+   [x] 1.4 Open-Source AI Attribution Synchronization (`playback_preferences.py`): Updated the Help -> About dialog to explicitly include WeSpeaker and ONNX Runtime alongside Whisper, CTranslate2, and PyTorch.
 
-2. Current Release: Configurable Speaker Sample Preview Duration & Open-Source AI Attribution (`preferences_tabs_media.py`, `preferences_dialog.py`, `speaker_dialogs.py`, `playback_preferences.py`) [x] [COMPLETED in v3.9.43-beta]
-   [x] 2.1 Configurable Speaker Sample Duration (`preferences_tabs_media.py`, `preferences_tabs.py`): Added a `QDoubleSpinBox` (1.0s–15.0s, default 3.0s) to the Story Detection & Diarization preferences page.
-   [x] 2.2 Preferences Persistence & Category Reset (`preferences_dialog.py`, `preferences_reset.py`, `preferences_reset_dialog.py`): Persisted `speaker_sample_duration` to `QSettings` with factory defaults and category restoration support.
-   [x] 2.3 Dynamic Speaker Sample Resolution (`speaker_dialogs.py`): Updated `SpeakerManagerDialog` to dynamically resolve representative utterances based on user-configured duration with dynamic tooltip indicators.
-   [x] 2.4 Open-Source AI Attribution Synchronization (`playback_preferences.py`): Updated the Help -> About dialog to explicitly include WeSpeaker and ONNX Runtime alongside Whisper, CTranslate2, and PyTorch.
+2. Current Release: Application-Wide Keyboard Shortcut Alignment & 79-Action Schema Harmonization (`shortcuts/schema.py`, `ui_dialog_launchers.py`, `shortcuts/manager.py`, `README.md`) [x] [COMPLETED in v3.9.44-beta]
+   [x] 2.1 Live Running Shortcut Parity (`shortcuts/schema.py`): Aligned all schema default keybindings with real application execution paths (`Ctrl+P` for Preferences, `Ctrl+Shift+G` for Glossary, `Ctrl+M` for Comments, `Ctrl+Alt+M` for Models, `Ctrl+R` for Pipeline, `Ctrl+Shift+I` for ID3, `+` / `-` for Timeline Zoom).
+   [x] 2.2 Complete 79-Action Schema Registry (`shortcuts/schema.py`, `ui_dialog_launchers.py`): Incorporated all missing AI Pipeline tools (Transcribe, Diarize, Stories, Translate), View Panel toggles, and Editing actions into the single source of truth and F1 Reference table.
+   [x] 2.3 MainWindow Attribute Binding Integrity (`shortcuts/schema.py`, `shortcuts/manager.py`): Aligned 100% of definition `attr_name` fields to match actual attributes on `MainWindow`, enabling seamless custom keybinding propagation from Preferences to menus and toolbars.
+   [x] 2.4 Seeker Duplicate Pruning & Alias Resolution (`shortcuts/schema.py`): Consolidated transport seekers into single distinct actions and mapped legacy keys through `ACTION_ALIASES`.
+   [x] 2.5 Documentation Synchronization (`README.md`): Completely rebuilt the Keyboard Shortcuts table in `README.md` to document all 79 shortcuts across 8 canonical categories.
 
 3. Upcoming Milestone: Codebase Modularization & Monolithic File Decomposition Strategy (<1,000-Line Invariant) (`playback_preferences.py`, `project_export.py`, `transcript_story.py`, `transcript_editor.py`, `radio_tv_story_segmenter_worker.py`, `benchmark.py`, `plugins/wordpress/export_destination.py`, `plugins/manager.py`, `timeline_widgets.py`) [x] [COMPLETED in v3.9.33-beta]
    - *Architecture Note*: Incrementally refactors all remaining source files exceeding 1,000 lines (at most 1 to 2 monoliths per turn) into focused domain modules (<1,000 lines each) while preserving 100% backward compatibility via zero-breakage facade re-exports.
@@ -148,27 +148,23 @@ DETAILED MILESTONE SPECIFICATIONS
 ================================================================================
 
 ================================================================================
-1. PREVIOUS RELEASE: SPEAKER MANAGEMENT QUICK SAMPLE AUDIO PREVIEW & ERGONOMICS [x] [COMPLETED in v3.9.39-beta]
+1. PREVIOUS RELEASE: CONFIGURABLE SPEAKER SAMPLE PREVIEW DURATION & OPEN-SOURCE AI ATTRIBUTION [x] [COMPLETED in v3.9.43-beta]
 ================================================================================
 
-[x] 1.1 Representative Utterance Resolution (`speaker_dialogs.py`): Implemented `_find_speaker_sample_range` to automatically locate the longest continuous speech segment >= 3.0s (or the first segment if shorter) for each detected speaker cluster.
-[x] 1.2 Isolated Preview Playout Channel & Lifecycle Safety (`speaker_dialogs.py`): Built non-blocking 3-second audio preview with dedicated `QMediaPlayer` / `QAudioOutput` and single-shot timeout timer, ensuring preview playback never affects the main timeline scrub position or transport state.
-[x] 1.3 Instant Inline Sample Buttons & Toggling (`speaker_dialogs.py`): Added "Play Sample" / "Stop" buttons in the speaker table actions column with automatic state toggling, tooltips, and graceful handling of projects without media files.
-[x] 1.4 Diagnostic Tests & Version Synchronization (`diagnostic_core_tests.py`, `test_runner.py`, `bump_version.py`): Added automated test suite verifying representative range resolution, playout toggling, button state tracking, Unknown Speaker merging, and teardown safety; synchronized all project locations to `v3.9.39-beta`.
-[x] 1.5 "Unknown Speaker" Cluster Merge & Rename Fix (`speaker_dialog_refinement_mixin.py`, `speaker_dialogs.py`, `export_documents.py`): Resolved issue where turns without diarization overlap displayed as "Unknown Speaker" failed to reassign when merged or renamed due to strict string matching against empty effective names.
-[x] 1.6 Strict Effective Speaker Scoping on Unknown Cluster Reassignment (`speaker_dialog_refinement_mixin.py`, `speaker_dialogs.py`): Enforced strict effective speaker boundary checks preventing segments with valid diarization labels from matching empty raw speaker fallback guards during unknown speaker merges.
+[x] 1.1 Configurable Speaker Sample Duration (`preferences_tabs_media.py`, `preferences_tabs.py`): Added a `QDoubleSpinBox` (1.0s–15.0s, default 3.0s) to the Story Detection & Diarization preferences page.
+[x] 1.2 Preferences Persistence & Category Reset (`preferences_dialog.py`, `preferences_reset.py`, `preferences_reset_dialog.py`): Persisted `speaker_sample_duration` to `QSettings` with factory defaults and category restoration support.
+[x] 1.3 Dynamic Speaker Sample Resolution (`speaker_dialogs.py`): Updated `SpeakerManagerDialog` to dynamically resolve representative utterances based on user-configured duration with dynamic tooltip indicators.
+[x] 1.4 Open-Source AI Attribution Synchronization (`playback_preferences.py`): Updated the Help -> About dialog to explicitly include WeSpeaker and ONNX Runtime alongside Whisper, CTranslate2, and PyTorch.
 
 ================================================================================
-2. CURRENT RELEASE: WORDPRESS 4-TAB EXPORT LAYOUT, NON-MODAL FLOATING WINDOWS & LIVE TRANSCRIPT CO-EDITING [x] [COMPLETED in v3.9.43-beta]
-=======
-2. CURRENT RELEASE: BATCH PROCESSING SILENT AUTO-SAVE & UNIFIED PROJECT FILE GENERATION [x] [COMPLETED in v3.9.43-beta]
->>>>>>> origin/main
+2. CURRENT RELEASE: APPLICATION-WIDE KEYBOARD SHORTCUT ALIGNMENT & 79-ACTION SCHEMA HARMONIZATION [x] [COMPLETED in v3.9.44-beta]
 ================================================================================
 
-[x] 2.1 Unified Batch Project File Path Resolution (`media_batch.py`): Implemented `_get_batch_project_target_path(base_name)` providing unified, centralized `.rtvs` target path resolution for both standard and unified transcripts mode across pipeline pre-binding and batch export.
-[x] 2.2 Pre-Binding Project File Path Before Stage Execution (`media_batch.py`): Pre-binds `self.project_file` immediately after loading each audio file in `_batch_next_media()`, allowing intermediate pipeline stages (e.g. `save_project()` called in `transcription_processing.py`) to auto-save silently to the media directory without falling back to modal file save prompts.
-[x] 2.3 Headless Batch Save Fallback & Dialog Suppression (`project_lifecycle.py`): Added an active batch fallback in `save_project()`: if `self.project_file` is unassigned during batch execution, it routes directly to `self._batch_save_project_file()` instead of invoking `QFileDialog.getSaveFileName()`. Suppressed interactive `QMessageBox` alerts and media copy prompts when `batch_active` is True.
-[x] 2.4 Multi-File Batch Verification & Version Synchronization (`media_batch.py`, `bump_version.py`): Verified multi-file batch execution through simulation and automated tests, ensuring each audio file in a batch creates and preserves its own individual `.rtvs` project file; synchronized all project locations to `v3.9.40-beta`.
+[x] 2.1 Live Running Shortcut Parity (`shortcuts/schema.py`): Aligned all schema default keybindings with real application execution paths (`Ctrl+P` for Preferences, `Ctrl+Shift+G` for Glossary, `Ctrl+M` for Comments, `Ctrl+Alt+M` for Models, `Ctrl+R` for Pipeline, `Ctrl+Shift+I` for ID3, `+` / `-` for Timeline Zoom).
+[x] 2.2 Complete 79-Action Schema Registry (`shortcuts/schema.py`, `ui_dialog_launchers.py`): Incorporated all missing AI Pipeline tools (Transcribe, Diarize, Stories, Translate), View Panel toggles, and Editing actions into the single source of truth and F1 Reference table.
+[x] 2.3 MainWindow Attribute Binding Integrity (`shortcuts/schema.py`, `shortcuts/manager.py`): Aligned 100% of definition `attr_name` fields to match actual attributes on `MainWindow`, enabling seamless custom keybinding propagation from Preferences to menus and toolbars.
+[x] 2.4 Seeker Duplicate Pruning & Alias Resolution (`shortcuts/schema.py`): Consolidated transport seekers into single distinct actions and mapped legacy keys through `ACTION_ALIASES`.
+[x] 2.5 Documentation Synchronization (`README.md`): Completely rebuilt the Keyboard Shortcuts table in `README.md` to document all 79 shortcuts across 8 canonical categories.
 
 ================================================================================
 3. UPCOMING MILESTONE: CODEBASE MODULARIZATION & MONOLITHIC FILE DECOMPOSITION STRATEGY [x] [COMPLETED in v3.9.33-beta]
