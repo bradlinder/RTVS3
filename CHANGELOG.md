@@ -1,5 +1,28 @@
 # Changelog
 
+## v3.9.39-beta
+- **Strict Effective Speaker Scoping for Unknown Cluster Merges (`speaker_dialog_refinement_mixin.py`, `speaker_dialogs.py`)**:
+  - Fixed an over-broad segment matching bug where raw segments that lacked manual speaker overrides (`segment_speaker_overrides` = None) were erroneously matched as "Unknown Speaker" even when their effective diarization name was already a valid speaker (such as "Speaker 2").
+  - Tightened `is_unknown_source` guards in `merge_speakers()` and `_rename_speaker()` to strictly check that `get_effective_speaker_name()` is empty or unassigned before matching, ensuring known speaker clusters are completely untouched when merging unassigned turns.
+  - Prevented global alias contamination by popping "Unknown Speaker" from `speaker_names` rather than aliasing it globally, preserving distinct unassigned states for future media.
+  - Added unit test assertion in `diagnostic_core_tests.py` ensuring known speaker turns (`SPEAKER_01`) remain intact when an unassigned turn is merged.
+
+## v3.9.38-beta
+- **"Unknown Speaker" Cluster Merge & Rename Fix (`speaker_dialog_refinement_mixin.py`, `speaker_dialogs.py`, `export_documents.py`)**:
+  - Fixed an issue where segments without diarization overlap (displayed in the speaker management table as "Unknown Speaker") failed to reassign when clicking "Merge Into..." or "Rename / Alias".
+  - Updated `merge_speakers()` in `speaker_dialog_refinement_mixin.py` to recognize unknown/unassigned speaker clusters (`is_unknown_source`), matching empty or unassigned effective names and reassigning turn overrides (`SEG_{idx}_SPEAKER`), `seg["speaker"]`, and diarization segments properly.
+  - Updated `SpeakerManagerDialog` (`speaker_dialogs.py`) to pool candidates across visible table items and known speakers for both "Merge Into..." and "Merge Two Speakers...", and updated `_rename_speaker` to handle renaming "Unknown Speaker" clusters.
+  - Enhanced `export_documents.py` (`speaker_for_segment`) to fall back gracefully to `segment.get("speaker")` when `speaker_at_time` returns no diarization match.
+  - Added unit test assertions in `diagnostic_core_tests.py` verifying full round-trip merge of "Unknown Speaker" turns into named clusters with live table row reduction.
+
+## v3.9.37-beta
+- **Speaker Management Quick Sample Audio Preview (`speaker_dialogs.py`, `diagnostic_core_tests.py`, `test_runner.py`)**:
+  - Implemented instant "Play Sample" / "Stop" voice audition buttons alongside each detected speaker in `SpeakerManagerDialog` (`speaker_dialogs.py`).
+  - Added intelligent representative utterance resolution (`_find_speaker_sample_range`): scans transcript segments for the active speaker cluster and selects the longest continuous speech segment >= 3.0 seconds (or the first utterance if shorter) to ensure clean, identifiable voice preview.
+  - Built non-blocking 3-second preview playout using an isolated `QMediaPlayer` and `QAudioOutput` channel with dedicated volume and audio device binding, guaranteeing that auditioning speaker samples never alters main project scrub position, playback markers, or transport state.
+  - Added robust playout lifecycle and teardown safety: preview playback automatically terminates on timeout, on clicking "Stop", when switching to audition another speaker, on window close/rejection/acceptance, or before entering rename/merge workflows.
+  - Added automated diagnostic test coverage in `diagnostic_core_tests.py` and `test_runner.py` verifying sample range resolution, playout toggling, button state synchronization, and clean dialog teardown.
+
 ## v3.9.36-beta
 - **Stories Pop-Out Dialog Parity with WordPress Draft Export View (`story_metadata_dialog.py`, `plugins/wordpress/export_destination.py`, `ui_layout.py`)**:
   - Replaced the monolithic 1,313-line vertical form in `story_metadata_dialog.py` with an exact clone of the 4-tab WordPress draft export view (`WordPressExportTabWidget`), bringing full feature parity (`Post Content`, `Authors & Taxonomy`, `Podcast & Media`, and `Publishing & Formatting`) to the pop-out editor.

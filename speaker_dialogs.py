@@ -2,10 +2,12 @@
 from __future__ import annotations
 
 import html
+from pathlib import Path
 from typing import List, Optional, Tuple
 
-from PySide6.QtCore import Qt, QTimer, QSettings
+from PySide6.QtCore import Qt, QTimer, QSettings, QUrl
 from PySide6.QtGui import QColor, QBrush, QFont
+from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput
 from PySide6.QtWidgets import (
     QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QComboBox,
     QTableWidget, QTableWidgetItem, QHeaderView, QGroupBox, QWidget,
@@ -86,11 +88,12 @@ class SpeakerManagerDialog(QDialog):
     """Manager dialog for inspecting, aliasing, and merging detected speaker clusters."""
 
     def __init__(self, parent=None):
-        super().__init__(parent)
+        qparent = parent if isinstance(parent, QWidget) else None
+        super().__init__(qparent)
         self.main_win = parent
         self.setWindowTitle("Manage Speakers & Detection Clusters")
-        self.resize(800, 500)
-        self.setMinimumSize(760, 460)
+        self.resize(880, 520)
+        self.setMinimumSize(800, 460)
         self.setWindowModality(Qt.WindowModality.NonModal)
         self.setAttribute(Qt.WidgetAttribute.WA_QuitOnClose, False)
         self.setWindowFlags(
@@ -102,8 +105,154 @@ class SpeakerManagerDialog(QDialog):
         self._stay_on_top = False
         make_dialog_maximizable(self)
         apply_window_titlebar_theme(self)
+
+        self._sample_buttons = {}
+        self._active_sample_speaker = None
+        self._pending_play_pos_ms = None
+
+        self._sample_timer = QTimer(self)
+        self._sample_timer.setSingleShot(True)
+        self._sample_timer.timeout.connect(self._stop_sample_playback)
+
+        self._preview_audio_output = QAudioOutput(self)
+        self._preview_player = QMediaPlayer(self)
+        self._preview_player.setAudioOutput(self._preview_audio_output)
+        if hasattr(self.main_win, "apply_audio_output_device"):
+            try:
+                dev = getattr(getattr(self.main_win, "audio_output", None), "device", None)
+                if callable(dev):
+                    self._preview_audio_output.setDevice(dev())
+            except Exception:
+                pass
+        if hasattr(self.main_win, "master_volume"):
+            try:
+                self._preview_audio_output.setVolume(float(self.main_win.master_volume))
+            except Exception:
+                self._preview_audio_output.setVolume(1.0)
+        self._preview_player.playbackStateChanged.connect(self._on_preview_playback_state_changed)
+        self._preview_player.mediaStatusChanged.connect(self._on_preview_media_status_changed)
+
         self._init_ui()
         self._populate()
+
+    def _get_audio_source_url(self) -> Optional[QUrl]:
+        if not self.main_win:
+            return None
+        audio_file = getattr(self.main_win, "audio_file", None)
+        if audio_file:
+            p = Path(audio_file).resolve()
+            if p.exists():
+                return QUrl.fromLocalFile(str(p))
+        if hasattr(self.main_win, "player") and self.main_win.player:
+            try:
+                src = self.main_win.player.source()
+                if src and not src.isEmpty():
+                    return src
+            except Exception:
+                pass
+        return None
+
+    def _find_speaker_sample_range(self, speaker_name: str) -> Optional[Tuple[float, float]]:
+        """Resolve a clean representative utterance (start_s, duration_s) for the speaker cluster."""
+        if not self.main_win or not getattr(self.main_win, "transcript", None):
+            return None
+        segments = self.main_win.transcript.get("segments", [])
+        candidates = []
+        for idx, seg in enumerate(segments):
+            eff_name = self.main_win.get_effective_speaker_name(idx, seg) or "Unknown Speaker"
+            if eff_name == speaker_name:
+                start = float(seg.get("start", 0.0))
+                end = float(seg.get("end", start))
+                dur = max(0.0, end - start)
+                if dur > 0:
+                    candidates.append((start, dur))
+
+        if not candidates:
+            return None
+
+        # Prefer longest continuous utterance >= 3.0s
+        long_candidates = [c for c in candidates if c[1] >= 3.0]
+        if long_candidates:
+            best_start, best_dur = max(long_candidates, key=lambda c: c[1])
+        else:
+            # First utterance if none >= 3.0s
+            best_start, best_dur = candidates[0]
+
+        sample_dur = min(3.0, best_dur) if best_dur > 0 else 3.0
+        return (best_start, sample_dur)
+
+    def _play_speaker_sample(self, speaker_name: str):
+        """Play a non-blocking 3-second sample for the specified speaker without altering timeline state."""
+        if self._active_sample_speaker == speaker_name:
+            self._stop_sample_playback()
+            return
+
+        self._stop_sample_playback()
+
+        source_url = self._get_audio_source_url()
+        if not source_url:
+            return
+
+        sample_range = self._find_speaker_sample_range(speaker_name)
+        if not sample_range:
+            return
+
+        start_sec, sample_dur = sample_range
+        pos_ms = int(max(0.0, start_sec) * 1000)
+        dur_ms = int(max(0.5, sample_dur) * 1000)
+
+        if hasattr(self.main_win, "master_volume"):
+            try:
+                self._preview_audio_output.setVolume(float(self.main_win.master_volume))
+            except Exception:
+                pass
+
+        if self._preview_player.source() != source_url:
+            self._pending_play_pos_ms = pos_ms
+            self._preview_player.setSource(source_url)
+        else:
+            self._pending_play_pos_ms = None
+            self._preview_player.setPosition(pos_ms)
+            self._preview_player.play()
+
+        self._active_sample_speaker = speaker_name
+        btn = self._sample_buttons.get(speaker_name)
+        if btn:
+            btn.setText("Stop")
+            btn.setToolTip(f"Stop voice sample for {speaker_name}")
+
+        self._sample_timer.stop()
+        self._sample_timer.setInterval(dur_ms)
+        self._sample_timer.start()
+
+    def _stop_sample_playback(self):
+        """Cease any active sample audio playback and reset UI button text."""
+        self._sample_timer.stop()
+        self._pending_play_pos_ms = None
+        if hasattr(self, "_preview_player"):
+            try:
+                self._preview_player.pause()
+            except Exception:
+                pass
+        if self._active_sample_speaker:
+            btn = self._sample_buttons.get(self._active_sample_speaker)
+            if btn:
+                btn.setText("Play Sample")
+                btn.setToolTip("Listen to a 3-second sample of this speaker's voice")
+            self._active_sample_speaker = None
+
+    def _on_preview_playback_state_changed(self, state):
+        if state != QMediaPlayer.PlaybackState.PlayingState:
+            if self._active_sample_speaker:
+                self._stop_sample_playback()
+
+    def _on_preview_media_status_changed(self, status):
+        if status in (QMediaPlayer.MediaStatus.LoadedMedia, QMediaPlayer.MediaStatus.BufferedMedia):
+            if self._pending_play_pos_ms is not None:
+                pos = self._pending_play_pos_ms
+                self._pending_play_pos_ms = None
+                self._preview_player.setPosition(pos)
+                self._preview_player.play()
 
     def _init_ui(self):
         layout = QVBoxLayout(self)
@@ -160,7 +309,7 @@ class SpeakerManagerDialog(QDialog):
         self.table.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
         self.table.horizontalHeader().setSectionResizeMode(3, QHeaderView.ResizeMode.ResizeToContents)
         self.table.horizontalHeader().setSectionResizeMode(4, QHeaderView.ResizeMode.Fixed)
-        self.table.setColumnWidth(4, 240)
+        self.table.setColumnWidth(4, 330)
         self.table.verticalHeader().setDefaultSectionSize(46)
         self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
@@ -184,9 +333,15 @@ class SpeakerManagerDialog(QDialog):
         layout.addLayout(btn_row)
 
     def _populate(self):
+        self._stop_sample_playback()
+        self._sample_buttons.clear()
         self.table.setRowCount(0)
         if not self.main_win or not getattr(self.main_win, "transcript", None):
             return
+
+        source_url = self._get_audio_source_url()
+        if source_url and self._preview_player.source() != source_url:
+            self._preview_player.setSource(source_url)
 
         segments = self.main_win.transcript.get("segments", [])
         speaker_stats = {}
@@ -225,7 +380,7 @@ class SpeakerManagerDialog(QDialog):
             action_widget = QWidget(self)
             action_layout = QHBoxLayout(action_widget)
             action_layout.setContentsMargins(6, 4, 6, 4)
-            action_layout.setSpacing(8)
+            action_layout.setSpacing(6)
 
             btn_style = """
                 QPushButton {
@@ -246,7 +401,25 @@ class SpeakerManagerDialog(QDialog):
                 QPushButton:pressed {
                     background-color: #0f172a;
                 }
+                QPushButton:disabled {
+                    background-color: #0f172a;
+                    color: #64748b;
+                    border-color: #334155;
+                }
             """
+
+            sample_btn = QPushButton("Play Sample", action_widget)
+            sample_btn.setStyleSheet(btn_style)
+            sample_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+            sample_range = self._find_speaker_sample_range(name)
+            if not source_url or not sample_range:
+                sample_btn.setEnabled(False)
+                sample_btn.setToolTip("No audio sample available for this speaker" if source_url else "No audio media loaded for this project")
+            else:
+                sample_btn.setToolTip(f"Listen to a 3-second sample of {name}'s voice")
+                sample_btn.clicked.connect(lambda _, n=name: self._play_speaker_sample(n))
+            self._sample_buttons[name] = sample_btn
+            action_layout.addWidget(sample_btn)
 
             rename_btn = QPushButton("Rename / Alias", action_widget)
             rename_btn.setStyleSheet(btn_style)
@@ -263,6 +436,7 @@ class SpeakerManagerDialog(QDialog):
             self.table.setCellWidget(row, 4, action_widget)
 
     def _rename_speaker(self, current_name, raw_id):
+        self._stop_sample_playback()
         new_name, accepted = QInputDialog.getText(
             self, "Rename Speaker Alias",
             f"Enter new display alias for '{current_name}':",
@@ -278,16 +452,30 @@ class SpeakerManagerDialog(QDialog):
                 before_state = self.main_win.get_project_state()
             else:
                 before_state = None
-            self.main_win.speaker_names[str(raw_id)] = target
-            self.main_win.speaker_names[current_name] = target
+            is_unknown = current_name.strip().lower() in ("unknown speaker", "unknown", "unassigned")
+            if not is_unknown:
+                self.main_win.speaker_names[str(raw_id)] = target
+                self.main_win.speaker_names[current_name] = target
+            else:
+                self.main_win.speaker_names.pop("Unknown Speaker", None)
+                self.main_win.speaker_names.pop("unknown speaker", None)
             self.main_win.add_custom_speaker_to_glossary(target)
 
             segments = self.main_win.transcript.get("segments", [])
             for idx, seg in enumerate(segments):
-                if self.main_win.get_effective_speaker_name(idx, seg) == current_name:
+                curr = self.main_win.get_effective_speaker_name(idx, seg)
+                matches = False
+                if curr == current_name:
+                    matches = True
+                elif is_unknown:
+                    if not curr or curr.strip().lower() in ("unknown speaker", "unknown", "unassigned", "none", ""):
+                        matches = True
+
+                if matches:
                     override_key = f"SEG_{idx}_SPEAKER"
                     self.main_win.speaker_names[override_key] = target
                     self.main_win.segment_speaker_overrides[idx] = override_key
+                    seg["speaker"] = target
 
             if before_state is not None and hasattr(self.main_win, "_commit_project_state_change"):
                 self.main_win._commit_project_state_change(before_state, f"Rename Speaker: {current_name} → {target}")
@@ -297,7 +485,13 @@ class SpeakerManagerDialog(QDialog):
             self._populate()
 
     def _merge_speaker_into(self, source_name):
-        known = [s for s in self.main_win.get_all_known_speakers() if s != source_name]
+        self._stop_sample_playback()
+        table_speakers = [
+            self.table.item(r, 0).text() for r in range(self.table.rowCount())
+            if self.table.item(r, 0) and self.table.item(r, 0).text().strip()
+        ]
+        all_candidates = list(dict.fromkeys(table_speakers + self.main_win.get_all_known_speakers()))
+        known = [s for s in all_candidates if s != source_name]
         if not known:
             QMessageBox.information(self, "Merge Speakers", "No other speakers available to merge into.")
             return
@@ -320,7 +514,12 @@ class SpeakerManagerDialog(QDialog):
                 self._populate()
 
     def _on_quick_merge(self):
-        known = self.main_win.get_all_known_speakers()
+        self._stop_sample_playback()
+        table_speakers = [
+            self.table.item(r, 0).text() for r in range(self.table.rowCount())
+            if self.table.item(r, 0) and self.table.item(r, 0).text().strip()
+        ]
+        known = list(dict.fromkeys(table_speakers + self.main_win.get_all_known_speakers()))
         if len(known) < 2:
             QMessageBox.information(self, "Merge Speakers", "At least two distinct speakers are required to merge.")
             return
@@ -342,9 +541,22 @@ class SpeakerManagerDialog(QDialog):
         self._populate()
 
     def _on_open_voice_profiles(self):
+        self._stop_sample_playback()
         if hasattr(self.main_win, "open_manage_voice_profiles_dialog"):
             self.main_win.open_manage_voice_profiles_dialog()
             self._populate()
+
+    def reject(self):
+        self._stop_sample_playback()
+        super().reject()
+
+    def accept(self):
+        self._stop_sample_playback()
+        super().accept()
+
+    def closeEvent(self, event):
+        self._stop_sample_playback()
+        super().closeEvent(event)
 
     def toggle_float_mode(self, pinned: Optional[bool] = None):
         """Toggle whether the non-modal floating window stays pinned on top of other windows."""

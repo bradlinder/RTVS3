@@ -362,6 +362,11 @@ class DiagnosticEngine(
                 "Validates segment splitting with/without word timestamps, proportional interpolation, segment merging, and speaker override index shifting",
             ),
             DiagnosticItem(
+                "Quick Sample Audio Preview and Speaker Manager Dialog Invariants",
+                "Transcript & Speaker Management",
+                "Validates SpeakerManagerDialog representative utterance resolution, inline sample preview playout, button state toggling, and teardown safety",
+            ),
+            DiagnosticItem(
                 "Exporter Structure Invariant Tests",
                 "Export & Packaging Engines",
                 "Validates structural syntax trees and well-formedness for REAPER .rpp, Samplitude .edl, and Audition/FCP XML",

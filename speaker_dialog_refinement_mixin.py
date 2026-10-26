@@ -409,11 +409,19 @@ class SpeakerDialogRefinementMixin:
         before_state = self._capture_project_state() if hasattr(self, "_capture_project_state") else None
         segments = self.transcript.get("segments", [])
         reassigned_segments = 0
+        is_unknown_source = source.lower() in ("unknown speaker", "unknown", "unassigned")
 
         for idx, seg in enumerate(segments):
             curr_name = self.get_effective_speaker_name(idx, seg)
             raw_spk = self.segment_speaker_overrides.get(idx) or seg.get("speaker")
-            if curr_name == source or str(raw_spk) == source:
+            matches = False
+            if curr_name == source or (raw_spk and str(raw_spk) == source):
+                matches = True
+            elif is_unknown_source:
+                if not curr_name or str(curr_name).strip().lower() in ("unknown speaker", "unknown", "unassigned", "none", ""):
+                    matches = True
+
+            if matches:
                 override_key = f"SEG_{idx}_SPEAKER"
                 self.speaker_names[override_key] = target
                 self.segment_speaker_overrides[idx] = override_key
@@ -427,12 +435,18 @@ class SpeakerDialogRefinementMixin:
                 disp_d = self.display_speaker(raw_d)
                 if disp_d == source or raw_d == source:
                     d_seg["speaker"] = target
+                elif is_unknown_source and (raw_d.lower() in ("unknown", "unknown speaker") or disp_d.lower() in ("unknown", "unknown speaker")):
+                    d_seg["speaker"] = target
 
             unique_speakers = {s.get("speaker") for s in diar_data["segments"] if s.get("speaker")}
             diar_data["num_speakers"] = len(unique_speakers)
             self._diar_index_key = None
 
-        self.speaker_names[source] = target
+        if not is_unknown_source:
+            self.speaker_names[source] = target
+        else:
+            self.speaker_names.pop("Unknown Speaker", None)
+            self.speaker_names.pop("unknown speaker", None)
         if hasattr(self, "custom_speakers"):
             if source in self.custom_speakers:
                 self.custom_speakers.remove(source)

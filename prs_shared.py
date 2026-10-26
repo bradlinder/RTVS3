@@ -70,7 +70,7 @@ def _ensure_runtime_bin_on_path():
 _ensure_runtime_bin_on_path()
 
 # Re-exports from Phase 1 modularization (core_utils, transcript_cleaner, project_serialization, process_lifecycle)
-PROJECT_VERSION = "3.9.36-beta"
+PROJECT_VERSION = "3.9.39-beta"
 from core_utils import (
     INTERNAL_APP_ID,
     APP_DISPLAY_NAME,

@@ -105,7 +105,9 @@ class ExportDocumentsMixin:
         start = segment.get("start", 0.0) if isinstance(segment, dict) else getattr(segment, "start", 0.0)
         end = segment.get("end", start) if isinstance(segment, dict) else getattr(segment, "end", start)
         if hasattr(self, "speaker_at_time"):
-            return self.speaker_at_time(start, end)
+            spk = self.speaker_at_time(start, end)
+            if spk:
+                return spk
         return segment.get("speaker", "") if isinstance(segment, dict) else getattr(segment, "speaker", "")
 
     def clean_export_text(self, text: Any, current_speaker: str = "") -> str:
