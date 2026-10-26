@@ -90,9 +90,9 @@ class RoadmapManager:
             ver = v_match.group(1) if v_match else None
             entry["version"] = ver
 
-            if num == 1:
+            if "Previous" in entry_type:
                 info["prev_version"] = ver
-            elif num == 2:
+            elif "Current" in entry_type:
                 info["current_version"] = ver
             else:
                 info["upcoming_milestones"].append(entry)
@@ -110,27 +110,24 @@ class RoadmapManager:
         if "error" in info:
             return False, [info["error"]]
 
-        # 1. Verify Entry 1 is Previous Release
-        entries = {e["number"]: e for e in info["entries"]}
-        if 1 not in entries:
-            issues.append("Missing Section 1 (Previous Release $N-1$) in Table of Contents.")
-        elif "Previous" not in entries[1]["type"]:
-            issues.append(f"Section 1 should be 'Previous Release', but found '{entries[1]['type']}'.")
+        # 1. Verify Previous Release is present
+        prev_entries = [e for e in info["entries"] if "Previous" in e["type"]]
+        if not prev_entries:
+            issues.append("Missing Previous Release ($N-1$) in Table of Contents.")
 
-        # 2. Verify Entry 2 is Current Release
-        if 2 not in entries:
-            issues.append("Missing Section 2 (Current Release $N$) in Table of Contents.")
-        elif "Current" not in entries[2]["type"]:
-            issues.append(f"Section 2 should be 'Current Release', but found '{entries[2]['type']}'.")
+        # 2. Verify Current Release is present
+        cur_entries = [e for e in info["entries"] if "Current" in e["type"]]
+        if not cur_entries:
+            issues.append("Missing Current Release ($N$) in Table of Contents.")
         else:
-            cur_v = entries[2].get("version")
+            cur_v = cur_entries[0].get("version")
             if app_ver and cur_v and cur_v != app_ver:
                 issues.append(
                     f"Current release version in roadmap (v{cur_v}) does not match prs_shared.py (v{app_ver})."
                 )
 
-        # 3. Verify N-1 Sliding Window (at least 2 sections, and Section 1 is N-1)
-        if len(entries) < 2:
+        # 3. Verify N-1 Sliding Window (both N and N-1 present)
+        if not prev_entries or not cur_entries:
             issues.append("Roadmap does not contain both $N-1$ and $N$ sections.")
 
         # 4. Check for invalid or malformed status indicators
@@ -145,7 +142,7 @@ class RoadmapManager:
             details_section = self.content.split("DETAILED MILESTONE SPECIFICATIONS", 1)[1]
             for entry in info["entries"]:
                 num = entry["number"]
-                if not re.search(rf'(?m)^{num}\.\s+[A-Z\s]+:', details_section):
+                if not re.search(rf'(?m)^{num}\.\s+[A-Z0-9\s/&,()_-]+:', details_section):
                     issues.append(f"Detailed Specifications header for Section {num} is missing or malformed.")
 
         return (len(issues) == 0), issues
@@ -182,12 +179,12 @@ class RoadmapManager:
             print("[!] Could not determine target version to sync.")
             return False
 
-        # In TOC: Update "2. Current Release: ... in v...]"
-        toc_pat = r'(?m)^(2\.\s+Current Release:[^\n]+v)[0-9a-zA-Z_.-]+(\])'
+        # In TOC: Update "(\d+\.\s+Current Release:[^\n]+v)[0-9a-zA-Z_.-]+(\])"
+        toc_pat = r'(?m)^(\d+\.\s+Current Release:[^\n]+v)[0-9a-zA-Z_.-]+(\])'
         new_content, count1 = re.subn(toc_pat, rf'\g<1>{clean_ver}\2', self.content)
         
-        # In Details: Update "2. CURRENT RELEASE: ... in v...]"
-        det_pat = r'(?m)^(2\.\s+CURRENT RELEASE:[^\n]+v)[0-9a-zA-Z_.-]+(\])'
+        # In Details: Update "(\d+\.\s+CURRENT RELEASE:[^\n]+v)[0-9a-zA-Z_.-]+(\])"
+        det_pat = r'(?m)^(\d+\.\s+CURRENT RELEASE:[^\n]+v)[0-9a-zA-Z_.-]+(\])'
         new_content, count2 = re.subn(det_pat, rf'\g<1>{clean_ver}\2', new_content)
 
         # In Synchronous Version Bump sub-item: e.g. "Synchronized all 10 project locations to v..."

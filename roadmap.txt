@@ -37,41 +37,84 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 --------------------------------------------------------------------------------
 TABLE OF CONTENTS & STATUS OVERVIEW
 --------------------------------------------------------------------------------
-1. Previous Release: Configurable Speaker Sample Preview Duration & Open-Source AI Attribution (`preferences_tabs_media.py`, `preferences_dialog.py`, `speaker_dialogs.py`, `playback_preferences.py`) [x] [COMPLETED in v3.9.43-beta]
-   [x] 1.1 Configurable Speaker Sample Duration (`preferences_tabs_media.py`, `preferences_tabs.py`): Added a `QDoubleSpinBox` (1.0s–15.0s, default 3.0s) to the Story Detection & Diarization preferences page.
-   [x] 1.2 Preferences Persistence & Category Reset (`preferences_dialog.py`, `preferences_reset.py`, `preferences_reset_dialog.py`): Persisted `speaker_sample_duration` to `QSettings` with factory defaults and category restoration support.
-   [x] 1.3 Dynamic Speaker Sample Resolution (`speaker_dialogs.py`): Updated `SpeakerManagerDialog` to dynamically resolve representative utterances based on user-configured duration with dynamic tooltip indicators.
-   [x] 1.4 Open-Source AI Attribution Synchronization (`playback_preferences.py`): Updated the Help -> About dialog to explicitly include WeSpeaker and ONNX Runtime alongside Whisper, CTranslate2, and PyTorch.
+1. Upcoming Milestone: Automated AMD Ryzen AI Local Development Platform & Token-Efficient Model Suite (`scripts/setup_local_ai.py`, `.vscode/settings.json`, `.clinerules`, `.github/workflows/build.yml`) [PLANNED for v4.1.0] [OPTIONAL / PLANNED] [NOT STARTED]
+   - *Purpose*: One-command non-destructive setup script and auto-configuration suite enabling offline AI-assisted development on AMD Ryzen AI 9 HX 370 (Radeon 890M `gfx1150` + XDNA 2 NPU, 64GB RAM) systems with token-budget optimization, prefix-caching architecture, and automated AST split tooling.
+   [ ] 1.1 Strix Point Hardware, UMA VRAM & Context Allocation Probe (`scripts/setup_local_ai.py`): Detect CPU/iGPU/NPU, 64GB RAM, UMA aperture, and configure `gfx1150` Vulkan/ROCm runtime with KV-cache VRAM budgets (`OLLAMA_FLASH_ATTENTION=1`, `OLLAMA_KV_CACHE_TYPE=q8_0`).
+   [ ] 1.2 Tiered Local AI Model Provisioner with Prefix-Cache Optimization (`scripts/setup_local_ai.py`): Pull and verify quantized coding models (`Qwen2.5-Coder-32B-Instruct` Q4_K_M for refactoring, `14B/7B` for fast edits, `1.5B` for sub-50ms autocomplete) with shared prefix-caching.
+   [ ] 1.3 Local Server Health Check, Context Window Tuning & Prompt Cache Pinning (`scripts/setup_local_ai.py`): Bind `http://127.0.0.1:11434`, pin project symbol indices (`.codemaps/symbol_index.json`) into KV prompt cache for 0-latency context, and enforce 16k-32k working context limits.
+   [ ] 1.4 Token-Thrift IDE Configuration & AST Suggester Integration (`scripts/setup_local_ai.py`): Configure Continue/Cline with symbol-first retrieval, diff-only edits, line-slice reading rules, and map `.clinerules`/`.cursorrules` to `scripts/modular_audit.py` to prevent token bloat.
+   [ ] 1.5 Token-Budget Task-to-Model Router & CI Pipeline Verification (`.github/workflows/build.yml`, `test_runner.py`): Provide token-aware task router (<300 lines -> 7B/14B; refactoring -> 32B) and verify CI build invariants.
 
-2. Current Release: Application-Wide Keyboard Shortcut Alignment & 79-Action Schema Harmonization (`shortcuts/schema.py`, `ui_dialog_launchers.py`, `shortcuts/manager.py`, `README.md`) [x] [COMPLETED in v3.9.44-beta]
-   [x] 2.1 Live Running Shortcut Parity (`shortcuts/schema.py`): Aligned all schema default keybindings with real application execution paths (`Ctrl+P` for Preferences, `Ctrl+Shift+G` for Glossary, `Ctrl+M` for Comments, `Ctrl+Alt+M` for Models, `Ctrl+R` for Pipeline, `Ctrl+Shift+I` for ID3, `+` / `-` for Timeline Zoom).
-   [x] 2.2 Complete 79-Action Schema Registry (`shortcuts/schema.py`, `ui_dialog_launchers.py`): Incorporated all missing AI Pipeline tools (Transcribe, Diarize, Stories, Translate), View Panel toggles, and Editing actions into the single source of truth and F1 Reference table.
-   [x] 2.3 MainWindow Attribute Binding Integrity (`shortcuts/schema.py`, `shortcuts/manager.py`): Aligned 100% of definition `attr_name` fields to match actual attributes on `MainWindow`, enabling seamless custom keybinding propagation from Preferences to menus and toolbars.
-   [x] 2.4 Seeker Duplicate Pruning & Alias Resolution (`shortcuts/schema.py`): Consolidated transport seekers into single distinct actions and mapped legacy keys through `ACTION_ALIASES`.
-   [x] 2.5 Documentation Synchronization (`README.md`): Completely rebuilt the Keyboard Shortcuts table in `README.md` to document all 79 shortcuts across 8 canonical categories.
+2. Optional Future Milestone: Interactive Text-Based Media Assembly & Multi-Asset Ripple Editing Engine (`assembly/bin_model.py`, `assembly/clipboard.py`, `assembly/ripple_engine.py`, `transcript_editor.py`, `export/timeline.py`) [PLANNED for v4.2.0] [OPTIONAL] [NOT STARTED]
+   [ ] 2.1 Multi-Asset Project Container & Media Bin Submodule (`assembly/bin_model.py`, `project_lifecycle.py`)
+   [ ] 2.2 Dynamic Uncapped Tabbed Document Workspace (`assembly/tab_workspace.py`, `ui_layout.py`)
+   [ ] 2.3 Rich Media Clipboard Engine (`assembly/clipboard.py` — `application/x-rtvs-clip+json`)
+   [ ] 2.4 Non-Destructive Multi-Source Playout Engine (`assembly/playout_engine.py`)
+   [ ] 2.5 Text-Driven Audio/Video Ripple Cut Engine (`assembly/ripple_engine.py`)
+   [ ] 2.6 Paper-Cut Story Assembly Workflow (`assembly/paper_cut_mixin.py`)
+   [ ] 2.7 Document Revisions & Snapshot Version History (`assembly/revision_history.py`)
+   [ ] 2.8 Word-Level Timecode Sync, NLE Markers & Multi-Track DAW Timeline Export (`export/timeline.py`)
+   [ ] 2.9 Automated Diagnostic Test Suite (`test_runner.py`)
 
-3. Upcoming Milestone: Codebase Modularization & Monolithic File Decomposition Strategy (<1,000-Line Invariant) (`playback_preferences.py`, `project_export.py`, `transcript_story.py`, `transcript_editor.py`, `radio_tv_story_segmenter_worker.py`, `benchmark.py`, `plugins/wordpress/export_destination.py`, `plugins/manager.py`, `timeline_widgets.py`) [x] [COMPLETED in v3.9.33-beta]
+3. Upcoming Milestone: REAPER DAW Companion Bridge & ReaScript Transcript Integration (`reaper_bridge.py`, `transcript_editor_dialogs.py`, `transcript_context_menu_mixin.py`, `scripts/reaper/rtvs_reaper_companion.lua`, `scripts/reaper/rtvs_reaper_dock.lua`, `test_runner.py`) [PLANNED for v4.2.0] [OPTIONAL / PLANNED] [NOT STARTED]
+   - *Purpose*: Enable seamless text-to-timeline audio editing in Cockos REAPER without building a full multi-track DAW inside RTVS3. Allows users to copy or send selected transcript quotes from RTVS3 directly to a REAPER track at the edit cursor with automatic source slicing (`D_STARTOFFS` / `D_LENGTH`), speaker/quote take labeling (`P_NAME`), and full item notes (`P_NOTES`), plus an optional ReaImGui dockable `.rtvs` transcript viewer inside REAPER.
+   [ ] 3.1 RTVS3 Clip Cue Payload & Sidecar/IPC Emitter (`reaper_bridge.py`)
+   [ ] 3.2 Interactive Transcript Quick-Action & Shortcut Integration (`transcript_editor_dialogs.py`, `transcript_context_menu_mixin.py`, `shortcuts_manager.py`)
+   [ ] 3.3 Companion ReaScript Timeline Paste & Take Labeling Action (`scripts/reaper/rtvs_reaper_companion.lua`)
+   [ ] 3.4 Optional Dockable ReaImGui Transcript Viewer for REAPER (`scripts/reaper/rtvs_reaper_dock.lua`)
+   [ ] 3.5 Preferences Integration, One-Click Script Installer & Diagnostic Tests (`preferences_dialog.py`, `reaper_bridge.py`, `test_runner.py`)
+   [ ] 3.6 Universal Text-to-WAV Clipboard & Drag-and-Drop Fallback for Other DAWs (`reaper_bridge.py`, `export_media_clipper.py`, `transcript_context_menu_mixin.py`)
+
+4. Upcoming Milestone: Social Reel & Short Video Export Plugin (Instagram Reels, YouTube Shorts, TikTok) (`plugins/social_reel/`, `export_media_clipper.py`, `export_dialogs.py`) [PLANNED] [NOT STARTED]
+   - *Purpose*: Provide an optional plugin and export destination to create vertical 9:16 social videos from audio or video files, incorporating custom template images, burned-in safe-zone captions, and audio visualizers for Instagram Reels, YouTube Shorts, and TikTok.
+   [ ] 4.1 Social Reel Plugin Architecture & Manifest (`plugins/social_reel/plugin.py`, `plugins/social_reel/manifest.json`, `plugins/social_reel/export_destination.py`)
+   [ ] 4.2 Multi-Source Input & Template Image Configuration (`plugins/social_reel/reel_config.py`, `plugins/social_reel/reel_dialog.py`)
+   [ ] 4.3 9:16 Vertical Video Compositor & Audiogram Pipeline (`plugins/social_reel/reel_renderer.py`, `export_media_clipper.py`)
+   [ ] 4.4 Burned-in Subtitles & Platform Safe Zone Enforcement (`plugins/social_reel/reel_subtitles.py`)
+   [ ] 4.5 Unified Export Integration & Social Reel Diagnostic Tests (`export/dialog.py`, `test_runner.py`)
+
+5. Current Release: Application-Wide Keyboard Shortcut Alignment & 79-Action Schema Harmonization (`shortcuts/schema.py`, `ui_dialog_launchers.py`, `shortcuts/manager.py`, `README.md`) [x] [COMPLETED in v3.9.44-beta]
+   [x] 5.1 Live Running Shortcut Parity (`shortcuts/schema.py`): Aligned all schema default keybindings with real application execution paths (`Ctrl+P` for Preferences, `Ctrl+Shift+G` for Glossary, `Ctrl+M` for Comments, `Ctrl+Alt+M` for Models, `Ctrl+R` for Pipeline, `Ctrl+Shift+I` for ID3, `+` / `-` for Timeline Zoom).
+   [x] 5.2 Complete 79-Action Schema Registry (`shortcuts/schema.py`, `ui_dialog_launchers.py`): Incorporated all missing AI Pipeline tools (Transcribe, Diarize, Stories, Translate), View Panel toggles, and Editing actions into the single source of truth and F1 Reference table.
+   [x] 5.3 MainWindow Attribute Binding Integrity (`shortcuts/schema.py`, `shortcuts/manager.py`): Aligned 100% of definition `attr_name` fields to match actual attributes on `MainWindow`, enabling seamless custom keybinding propagation from Preferences to menus and toolbars.
+   [x] 5.4 Seeker Duplicate Pruning & Alias Resolution (`shortcuts/schema.py`): Consolidated transport seekers into single distinct actions and mapped legacy keys through `ACTION_ALIASES`.
+   [x] 5.5 Documentation Synchronization (`README.md`): Completely rebuilt the Keyboard Shortcuts table in `README.md` to document all 79 shortcuts across 8 canonical categories.
+
+6. Previous Release: Configurable Speaker Sample Preview Duration & Open-Source AI Attribution (`preferences_tabs_media.py`, `preferences_dialog.py`, `speaker_dialogs.py`, `playback_preferences.py`) [x] [COMPLETED in v3.9.43-beta]
+   [x] 6.1 Configurable Speaker Sample Duration (`preferences_tabs_media.py`, `preferences_tabs.py`): Added a `QDoubleSpinBox` (1.0s–15.0s, default 3.0s) to the Story Detection & Diarization preferences page.
+   [x] 6.2 Preferences Persistence & Category Reset (`preferences_dialog.py`, `preferences_reset.py`, `preferences_reset_dialog.py`): Persisted `speaker_sample_duration` to `QSettings` with factory defaults and category restoration support.
+   [x] 6.3 Dynamic Speaker Sample Resolution (`speaker_dialogs.py`): Updated `SpeakerManagerDialog` to dynamically resolve representative utterances based on user-configured duration with dynamic tooltip indicators.
+   [x] 6.4 Open-Source AI Attribution Synchronization (`playback_preferences.py`): Updated the Help -> About dialog to explicitly include WeSpeaker and ONNX Runtime alongside Whisper, CTranslate2, and PyTorch.
+
+7. Completed Milestone: Speaker Management Ergonomics & Quick Sample Audio Preview (`speaker_dialogs.py`, `playback_controller.py`, `speaker_dialog_refinement_mixin.py`, `test_runner.py`) [x] [COMPLETED in v3.9.41-beta]
+   - *Purpose*: Streamline speaker identification and naming by providing immediate audio verification of detected speaker clusters directly inside the speaker management dialog.
+   [x] 7.1 Non-Modal Floating Speaker Management Dialog & Modeless Co-Editing (`speaker_dialogs.py`, `speaker_dialog_refinement_mixin.py`) [COMPLETED]
+   [x] 7.2 Quick Sample Audio Preview: An instant "Listen to sample" play button directly alongside each detected speaker in the management dialog so the user can hear 3 seconds of their voice before assigning the name. [COMPLETED in v3.9.37-beta]
+   [x] 7.3 Direct Inline Speaker Renaming & Tab Progression: Enable direct inline double-click editing on the "Speaker Name / Alias" cell in the table with Tab key progression (type name → press Tab → jump directly to rename the next speaker). [COMPLETED in v3.9.41-beta]
+   [x] 7.4 Non-Modal Preferences Inspector Window (`preferences_dialog.py`, `preferences_tabs_core.py`, `story_crud_mixin.py`, `project_export.py`) [COMPLETED]
+
+8. Completed Milestone: WordPress Publishing Ergonomics, Shared Story Metadata & Non-Modal Dialog Architecture (`plugins/wordpress/wp_ui_builder.py`, `plugins/wordpress/wp_tab_widget.py`, `plugins/wordpress/export_destination.py`, `story_metadata_dialog.py`, `export/dialog.py`, `preferences_dialog.py`) [x] [COMPLETED in v3.9.35-beta]
+   - *Purpose*: Eliminate export friction by establishing `story.metadata["wordpress"]` and `project_metadata["wordpress"]` as a permanent single source of truth, modernizing the dense vertical accordion into a spacious tabbed/split layout with a configurable Preferences toggle, and introducing non-modal floating window support so users can draft WordPress posts and edit transcripts side-by-side without modal lockout.
+   [x] 8.1 Shared Story & Project WordPress Metadata Persistence (`story_metadata_dialog.py`, `plugins/wordpress/export_destination.py`, `plugins/wordpress/wp_post_builder.py`, `story_model.py`): Persist WordPress publishing metadata (`title`, `excerpt`, `author_ids`, `category_ids`, `featured_image`, `is_podcast`, `podcast_feed_ids`, `season`, `episode_number`) directly in `story.metadata["wordpress"]` and `project_metadata["wordpress"]`. Both the Story Metadata dialog and Unified Export dialog read and write to this single canonical model, ensuring post drafts and excerpts are never discarded when closing the export dialog to make transcript corrections. [COMPLETED in v3.9.34-beta]
+   [x] 8.2 Tabbed Export View Layout & User-Configurable Preference Switcher (`plugins/wordpress/wp_ui_builder.py`, `plugins/wordpress/wp_tab_widget.py`, `preferences_dialog.py`): Replace the cramped vertical accordion with 4 spacious tabs (`Post Content`, `Authors & Taxonomy`, `Podcast & Media`, `Publishing & Formatting`), auto-expanding excerpt editor with vertical splitter for Custom Header/Footer Notice, and a user preference in Settings (`Tabs (Recommended) | Split Two-Column | Classic Accordion`) persisted via `QSettings`. [COMPLETED in v3.9.35-beta]
+   [x] 8.3 Non-Modal Floating Window & Modeless Transcript Co-Editing (`export/dialog.py`, `story_metadata_dialog.py`, `RadioTVSegmenter.py`): Add a "Pin on Top" / "Pop Out" capability and transition `UnifiedExportDialog` and `StoryMetadataDialog` to non-modal window presentation (`Qt.WindowModality.NonModal`), allowing publishers to keep metadata or export panels open on a second monitor or side-by-side while scrubbing audio, labeling speakers, and editing transcripts in the main window. [COMPLETED in v3.9.35-beta]
+   [x] 8.4 Diagnostic Tests & Version Synchronization (`test_runner.py`, `diagnostic_export_tests.py`, `bump_version.py`): Add unit tests verifying shared metadata round-tripping across story models and export dialogs, tab layout switching, modeless window lifecycle handling, and synchronize all project locations to `v3.9.35-beta`. [COMPLETED in v3.9.35-beta]
+
+9. Completed Milestone: Codebase Modularization & Monolithic File Decomposition Strategy (<1,000-Line Invariant) (`playback_preferences.py`, `project_export.py`, `transcript_story.py`, `transcript_editor.py`, `radio_tv_story_segmenter_worker.py`, `benchmark.py`, `plugins/wordpress/export_destination.py`, `plugins/manager.py`, `timeline_widgets.py`) [x] [COMPLETED in v3.9.33-beta]
    - *Architecture Note*: Incrementally refactors all remaining source files exceeding 1,000 lines (at most 1 to 2 monoliths per turn) into focused domain modules (<1,000 lines each) while preserving 100% backward compatibility via zero-breakage facade re-exports.
-   [x] 3.1 Codebase Audit & Wave 1 Core/Processing Decomposition (`core_utils.py`, `prs_shared.py`, `processing.py`, `test_runner.py`, `qt_compat.py`, `model_install_workers.py`)
-   [x] 3.2 Final Version Regex, Header & Dependency Synchronization (`bump_version.py`, `preview_manager.py`, `snapshot_manager.py`, `package.json`, `RadioTVSegmenter.py`, `backup_manager.py`)
-   [x] 3.3 Wave 2A - Playback & Preferences Decomposition (`playback_preferences.py` — 4,042 lines -> `playback_controller.py`, `preferences_dialog.py`, `theme_preferences.py`)
-   [x] 3.4 Wave 2B - Unified Project & Media Export Decomposition (`project_export.py` — 3,144 lines -> `export_dialogs.py`, `export_media_clipper.py`, `export_documents.py`, `export_story_pipeline.py`)
-   [x] 3.5 Wave 3 - Transcript Story & Interactive Editor Decomposition (`transcript_story.py` — 3,055 lines -> 836 lines & `transcript_editor.py` — 2,566 lines -> 862 lines)
-   [x] 3.6 Wave 4 - AI Worker & Benchmark Suite Decomposition (`radio_tv_story_segmenter_worker.py` — 2,264 -> 219 lines & `benchmark.py` — 2,198 -> 216 lines) [COMPLETED in v3.9.13-beta]
-   [x] 3.7 Wave 5 - WordPress Export, Plugin Manager & Timeline Widgets Decomposition (`plugins/wordpress/export_destination.py` — 2,080 -> 474 lines, `plugins/manager.py` — 1,942 -> 586 lines, `timeline_widgets.py` — 1,898 -> 934 lines) [COMPLETED in v3.9.14-beta]
-   [x] 3.8 Permanent <1,000-Line Architectural Rule, AST Decomposition Suggester & Automated Budget Guard (`AGENTS.md`, `GEMINI.md`, `scripts/modular_audit.py`, `test_runner.py`)
-   [x] 3.9 Token-Reduction Architecture & Tiered Symbol Indexing for Local LLM Efficiency (`scripts/generate_symbol_index.py`, `.codemaps/`, `.pyi`, `AGENTS.md`, `GEMINI.md`) [COMPLETED in v3.9.12-beta]
-   [x] 3.10 Google Drive/Docs Plugin & OAuth Runtime Removal (`plugins/gdocs/`, `export_documents.py`, `plugins/manager.py`, `plugin_dialogs.py`, `GOOGLE_OAUTH_SETUP.md`, `GOOGLE_DOCS_USER_GUIDE.md`) [COMPLETED in v3.9.33-beta]
-   [x] 3.11 YouTube Zero-Auth Manual Export Streamlining (`plugins/youtube/`, `export_dialogs.py`, `export_story_pipeline.py`) [COMPLETED in v3.9.33-beta]
+   [x] 9.1 Codebase Audit & Wave 1 Core/Processing Decomposition (`core_utils.py`, `prs_shared.py`, `processing.py`, `test_runner.py`, `qt_compat.py`, `model_install_workers.py`)
+   [x] 9.2 Final Version Regex, Header & Dependency Synchronization (`bump_version.py`, `preview_manager.py`, `snapshot_manager.py`, `package.json`, `RadioTVSegmenter.py`, `backup_manager.py`)
+   [x] 9.3 Wave 2A - Playback & Preferences Decomposition (`playback_preferences.py` — 4,042 lines -> `playback_controller.py`, `preferences_dialog.py`, `theme_preferences.py`)
+   [x] 9.4 Wave 2B - Unified Project & Media Export Decomposition (`project_export.py` — 3,144 lines -> `export_dialogs.py`, `export_media_clipper.py`, `export_documents.py`, `export_story_pipeline.py`)
+   [x] 9.5 Wave 3 - Transcript Story & Interactive Editor Decomposition (`transcript_story.py` — 3,055 lines -> 836 lines & `transcript_editor.py` — 2,566 lines -> 862 lines)
+   [x] 9.6 Wave 4 - AI Worker & Benchmark Suite Decomposition (`radio_tv_story_segmenter_worker.py` — 2,264 -> 219 lines & `benchmark.py` — 2,198 -> 216 lines) [COMPLETED in v3.9.13-beta]
+   [x] 9.7 Wave 5 - WordPress Export, Plugin Manager & Timeline Widgets Decomposition (`plugins/wordpress/export_destination.py` — 2,080 -> 474 lines, `plugins/manager.py` — 1,942 -> 586 lines, `timeline_widgets.py` — 1,898 -> 934 lines) [COMPLETED in v3.9.14-beta]
+   [x] 9.8 Permanent <1,000-Line Architectural Rule, AST Decomposition Suggester & Automated Budget Guard (`AGENTS.md`, `GEMINI.md`, `scripts/modular_audit.py`, `test_runner.py`)
+   [x] 9.9 Token-Reduction Architecture & Tiered Symbol Indexing for Local LLM Efficiency (`scripts/generate_symbol_index.py`, `.codemaps/`, `.pyi`, `AGENTS.md`, `GEMINI.md`) [COMPLETED in v3.9.12-beta]
+   [x] 9.10 Google Drive/Docs Plugin & OAuth Runtime Removal (`plugins/gdocs/`, `export_documents.py`, `plugins/manager.py`, `plugin_dialogs.py`, `GOOGLE_OAUTH_SETUP.md`, `GOOGLE_DOCS_USER_GUIDE.md`) [COMPLETED in v3.9.33-beta]
+   [x] 9.11 YouTube Zero-Auth Manual Export Streamlining (`plugins/youtube/`, `export_dialogs.py`, `export_story_pipeline.py`) [COMPLETED in v3.9.33-beta]
 
-4. Upcoming Milestone: Smart Hybrid Audio Loudness Normalization & Non-Destructive Auto-Boost Suite (`audio_normalization.py`, `preferences_dialog.py`, `playback_preferences.py`, `RadioTVSegmenter.py`, `dialogs.py`, `test_runner.py`) [x] [COMPLETED in v3.9.25-beta]
-   - *Purpose*: Automatically or manually boost quiet broadcast recordings to improve ASR transcription and speaker diarization accuracy without modifying original source media, blocking the UI thread, or introducing compressor pumping artifacts.
-   [x] 4.1 Fast Non-Blocking Multi-Window LUFS & Peak Probing (`audio_normalization.py`): Probe 3 short windows (15%, 50%, 85% of duration) via `ffmpeg -af ebur128=peak=true` in a background worker (<1.5s latency) to measure integrated LUFS, LRA (Loudness Range), and True Peak dBTP/dBFS. [COMPLETED in v3.9.9-beta]
-   [x] 4.2 Conditional Two-Tier Hybrid Normalization Pipeline (`audio_normalization.py`): Bypass audio already within target thresholds; apply clean linear gain + brickwall true-peak limiter (`volume` + `alimiter`) for uniform quiet audio, or speech-safe `dynaudnorm` when LRA > 14 LU (mixed loud host + quiet caller), outputting to a non-destructive session sidecar WAV. Automatically fed into `transcription_processing.py` and `diarization_processing.py`. [COMPLETED in v3.9.24-beta]
-   [x] 4.3 Preferences Dialog & Adjustable Thresholds / Targets (`preferences_dialog.py`, `playback_preferences.py`): Add UI controls in Preferences to enable/disable automatic loudness normalization on import, adjust quiet detection trigger thresholds (LUFS and dBFS spinboxes), select target standard (defaulting to modern LUFS targets: `-16.0 LUFS` broadcast, `-14.0 LUFS` podcast, `-24.0 LUFS` EBU R128, or dBFS/True Peak target `-1.5 dBTP` / `-3.0 dBFS`), and optionally apply loudness gain to playback and clip export. [COMPLETED in v3.9.25-beta]
-   [x] 4.4 Tools Menu Manual Normalization Action & Telemetry Dialog (`RadioTVSegmenter.py`, `dialogs.py`, `test_runner.py`): Add on-demand "Normalize Audio Loudness..." action in the Tools menu with before/after LUFS & True Peak telemetry, manual run/reset controls, and diagnostic unit tests in `test_runner.py`. [COMPLETED in v3.9.25-beta]
-
-5. Upcoming Milestone: Seriously Simple Podcasting (Castos) WordPress Plugin Integration (`plugins/wordpress/castos.py`, `plugins/wordpress/client.py`, `plugins/wordpress/export_destination.py`, `plugins/wordpress/wp_post_builder.py`, `plugins/wordpress/wp_ui_builder.py`, `plugins/wordpress/wp_tab_widget.py`) [x] [COMPLETED in v3.9.26-beta]
+10. Completed Milestone: Seriously Simple Podcasting (Castos) WordPress Plugin Integration (`plugins/wordpress/castos.py`, `plugins/wordpress/client.py`, `plugins/wordpress/export_destination.py`, `plugins/wordpress/wp_post_builder.py`, `plugins/wordpress/wp_ui_builder.py`, `plugins/wordpress/wp_tab_widget.py`) [x] [COMPLETED in v3.9.26-beta]
    - *Purpose*: Integrate Castos' Seriously Simple Podcasting plugin into WordPress full-episode draft exports, allowing users to designate posts as podcast episodes within the export dialog, dynamically show Castos options, and map media files to the selected podcast feed via WordPress REST API application passwords and post meta (`ss_podcast_audio_file`, `ss_podcast_feed`, etc.).
    - *Confirmed User Specifications*:
      1. **Dynamic Podcast Designation UI**: When a user designates a post as a podcast episode in the export dialog, Castos options (podcast feed selection, episode meta) appear dynamically.
@@ -80,85 +123,252 @@ TABLE OF CONTENTS & STATUS OVERVIEW
      4. **Conditional Player Embedding**:
         - *Podcast Episode*: Displays the embedded Castos player on the website page (omitting standard `<!-- wp:audio -->` block to prevent duplicate players).
         - *Standard Export (Non-Podcast)*: Embeds the audio file at the top of the page using standard WordPress audio block (`<!-- wp:audio -->`), preserving default behavior.
-   [x] 5.1 WordPress Media Library Upload & Attachment ID Binding (`plugins/wordpress/export_destination.py`, `plugins/wordpress/client.py`): Implement automated media file upload via REST API to obtain media attachment ID and filesize (`ss_podcast_audio_file` and `ss_podcast_filesize`). [COMPLETED in v3.9.26-beta]
-   [x] 5.2 Dynamic Podcast Options UI & Feed Picker (`plugins/wordpress/wp_ui_builder.py`, `plugins/wordpress/wp_tab_widget.py`, `plugins/wordpress/castos.py`): Show Castos options when a post is designated as a podcast episode, dynamically fetch available podcast feeds via REST API, and provide episode type and season/episode controls. [COMPLETED in v3.9.26-beta]
-   [x] 5.3 Castos Post Meta Mapping, Conditional Player Embedding & Draft Publishing (`plugins/wordpress/client.py`, `plugins/wordpress/export_destination.py`): Inject Castos post meta (`ss_podcast_audio_file`, `ss_podcast_feed`) and RSS excerpt for podcast posts while omitting standard `<!-- wp:audio -->` blocks in favor of the Castos web player; embed standard `<!-- wp:audio -->` blocks at top of page for non-podcast exports. [COMPLETED in v3.9.26-beta]
+   [x] 10.1 WordPress Media Library Upload & Attachment ID Binding (`plugins/wordpress/export_destination.py`, `plugins/wordpress/client.py`): Implement automated media file upload via REST API to obtain media attachment ID and filesize (`ss_podcast_audio_file` and `ss_podcast_filesize`). [COMPLETED in v3.9.26-beta]
+   [x] 10.2 Dynamic Podcast Options UI & Feed Picker (`plugins/wordpress/wp_ui_builder.py`, `plugins/wordpress/wp_tab_widget.py`, `plugins/wordpress/castos.py`): Show Castos options when a post is designated as a podcast episode, dynamically fetch available podcast feeds via REST API, and provide episode type and season/episode controls. [COMPLETED in v3.9.26-beta]
+   [x] 10.3 Castos Post Meta Mapping, Conditional Player Embedding & Draft Publishing (`plugins/wordpress/client.py`, `plugins/wordpress/export_destination.py`): Inject Castos post meta (`ss_podcast_audio_file`, `ss_podcast_feed`) and RSS excerpt for podcast posts while omitting standard `<!-- wp:audio -->` blocks in favor of the Castos web player; embed standard `<!-- wp:audio -->` blocks at top of page for non-podcast exports. [COMPLETED in v3.9.26-beta]
 
-6. Upcoming Milestone: WordPress Publishing Ergonomics, Shared Story Metadata & Non-Modal Dialog Architecture (`plugins/wordpress/wp_ui_builder.py`, `plugins/wordpress/wp_tab_widget.py`, `plugins/wordpress/export_destination.py`, `story_metadata_dialog.py`, `export/dialog.py`, `preferences_dialog.py`) [x] [COMPLETED in v3.9.35-beta]
-   - *Purpose*: Eliminate export friction by establishing `story.metadata["wordpress"]` and `project_metadata["wordpress"]` as a permanent single source of truth, modernizing the dense vertical accordion into a spacious tabbed/split layout with a configurable Preferences toggle, and introducing non-modal floating window support so users can draft WordPress posts and edit transcripts side-by-side without modal lockout.
-   [x] 6.1 Shared Story & Project WordPress Metadata Persistence (`story_metadata_dialog.py`, `plugins/wordpress/export_destination.py`, `plugins/wordpress/wp_post_builder.py`, `story_model.py`): Persist WordPress publishing metadata (`title`, `excerpt`, `author_ids`, `category_ids`, `featured_image`, `is_podcast`, `podcast_feed_ids`, `season`, `episode_number`) directly in `story.metadata["wordpress"]` and `project_metadata["wordpress"]`. Both the Story Metadata dialog and Unified Export dialog read and write to this single canonical model, ensuring post drafts and excerpts are never discarded when closing the export dialog to make transcript corrections. [COMPLETED in v3.9.34-beta]
-   [x] 6.2 Tabbed Export View Layout & User-Configurable Preference Switcher (`plugins/wordpress/wp_ui_builder.py`, `plugins/wordpress/wp_tab_widget.py`, `preferences_dialog.py`): Replace the cramped vertical accordion with 4 spacious tabs (`Post Content`, `Authors & Taxonomy`, `Podcast & Media`, `Publishing & Formatting`), auto-expanding excerpt editor with vertical splitter for Custom Header/Footer Notice, and a user preference in Settings (`Tabs (Recommended) | Split Two-Column | Classic Accordion`) persisted via `QSettings`. [COMPLETED in v3.9.35-beta]
-   [x] 6.3 Non-Modal Floating Window & Modeless Transcript Co-Editing (`export/dialog.py`, `story_metadata_dialog.py`, `RadioTVSegmenter.py`): Add a "Pin on Top" / "Pop Out" capability and transition `UnifiedExportDialog` and `StoryMetadataDialog` to non-modal window presentation (`Qt.WindowModality.NonModal`), allowing publishers to keep metadata or export panels open on a second monitor or side-by-side while scrubbing audio, labeling speakers, and editing transcripts in the main window. [COMPLETED in v3.9.35-beta]
-   [x] 6.4 Diagnostic Tests & Version Synchronization (`test_runner.py`, `diagnostic_export_tests.py`, `bump_version.py`): Add unit tests verifying shared metadata round-tripping across story models and export dialogs, tab layout switching, modeless window lifecycle handling, and synchronize all project locations to `v3.9.35-beta`. [COMPLETED in v3.9.35-beta]
-
-7. Upcoming Milestone: Automated AMD Ryzen AI Local Development Platform & Token-Efficient Model Suite (`scripts/setup_local_ai.py`, `.vscode/settings.json`, `.clinerules`, `.github/workflows/build.yml`) [PLANNED for v4.1.0] [OPTIONAL / PLANNED] [NOT STARTED]
-   - *Purpose*: One-command non-destructive setup script and auto-configuration suite enabling offline AI-assisted development on AMD Ryzen AI 9 HX 370 (Radeon 890M `gfx1150` + XDNA 2 NPU, 64GB RAM) systems with token-budget optimization, prefix-caching architecture, and automated AST split tooling.
-   [ ] 7.1 Strix Point Hardware, UMA VRAM & Context Allocation Probe (`scripts/setup_local_ai.py`): Detect CPU/iGPU/NPU, 64GB RAM, UMA aperture, and configure `gfx1150` Vulkan/ROCm runtime with KV-cache VRAM budgets (`OLLAMA_FLASH_ATTENTION=1`, `OLLAMA_KV_CACHE_TYPE=q8_0`).
-   [ ] 7.2 Tiered Local AI Model Provisioner with Prefix-Cache Optimization (`scripts/setup_local_ai.py`): Pull and verify quantized coding models (`Qwen2.5-Coder-32B-Instruct` Q4_K_M for refactoring, `14B/7B` for fast edits, `1.5B` for sub-50ms autocomplete) with shared prefix-caching.
-   [ ] 7.3 Local Server Health Check, Context Window Tuning & Prompt Cache Pinning (`scripts/setup_local_ai.py`): Bind `http://127.0.0.1:11434`, pin project symbol indices (`.codemaps/symbol_index.json`) into KV prompt cache for 0-latency context, and enforce 16k-32k working context limits.
-   [ ] 7.4 Token-Thrift IDE Configuration & AST Suggester Integration (`scripts/setup_local_ai.py`): Configure Continue/Cline with symbol-first retrieval, diff-only edits, line-slice reading rules, and map `.clinerules`/`.cursorrules` to `scripts/modular_audit.py` to prevent token bloat.
-   [ ] 7.5 Token-Budget Task-to-Model Router & CI Pipeline Verification (`.github/workflows/build.yml`, `test_runner.py`): Provide token-aware task router (<300 lines -> 7B/14B; refactoring -> 32B) and verify CI build invariants.
-
-8. Optional Future Milestone: Interactive Text-Based Media Assembly & Multi-Asset Ripple Editing Engine (`assembly/bin_model.py`, `assembly/clipboard.py`, `assembly/ripple_engine.py`, `transcript_editor.py`, `export/timeline.py`) [PLANNED for v4.2.0] [OPTIONAL] [NOT STARTED]
-   [ ] 8.1 Multi-Asset Project Container & Media Bin Submodule (`assembly/bin_model.py`, `project_lifecycle.py`)
-   [ ] 8.2 Dynamic Uncapped Tabbed Document Workspace (`assembly/tab_workspace.py`, `ui_layout.py`)
-   [ ] 8.3 Rich Media Clipboard Engine (`assembly/clipboard.py` — `application/x-rtvs-clip+json`)
-   [ ] 8.4 Non-Destructive Multi-Source Playout Engine (`assembly/playout_engine.py`)
-   [ ] 8.5 Text-Driven Audio/Video Ripple Cut Engine (`assembly/ripple_engine.py`)
-   [ ] 8.6 Paper-Cut Story Assembly Workflow (`assembly/paper_cut_mixin.py`)
-   [ ] 8.7 Document Revisions & Snapshot Version History (`assembly/revision_history.py`)
-   [ ] 8.8 Word-Level Timecode Sync, NLE Markers & Multi-Track DAW Timeline Export (`export/timeline.py`)
-   [ ] 8.9 Automated Diagnostic Test Suite (`test_runner.py`)
-
-9. REAPER DAW Companion Bridge & ReaScript Transcript Integration (`reaper_bridge.py`, `transcript_editor_dialogs.py`, `transcript_context_menu_mixin.py`, `scripts/reaper/rtvs_reaper_companion.lua`, `scripts/reaper/rtvs_reaper_dock.lua`, `test_runner.py`) [PLANNED for v4.2.0] [OPTIONAL / PLANNED] [NOT STARTED]
-   - *Purpose*: Enable seamless text-to-timeline audio editing in Cockos REAPER without building a full multi-track DAW inside RTVS3. Allows users to copy or send selected transcript quotes from RTVS3 directly to a REAPER track at the edit cursor with automatic source slicing (`D_STARTOFFS` / `D_LENGTH`), speaker/quote take labeling (`P_NAME`), and full item notes (`P_NOTES`), plus an optional ReaImGui dockable `.rtvs` transcript viewer inside REAPER.
-   [ ] 9.1 RTVS3 Clip Cue Payload & Sidecar/IPC Emitter (`reaper_bridge.py`)
-   [ ] 9.2 Interactive Transcript Quick-Action & Shortcut Integration (`transcript_editor_dialogs.py`, `transcript_context_menu_mixin.py`, `shortcuts_manager.py`)
-   [ ] 9.3 Companion ReaScript Timeline Paste & Take Labeling Action (`scripts/reaper/rtvs_reaper_companion.lua`)
-   [ ] 9.4 Optional Dockable ReaImGui Transcript Viewer for REAPER (`scripts/reaper/rtvs_reaper_dock.lua`)
-   [ ] 9.5 Preferences Integration, One-Click Script Installer & Diagnostic Tests (`preferences_dialog.py`, `reaper_bridge.py`, `test_runner.py`)
-   [ ] 9.6 Universal Text-to-WAV Clipboard & Drag-and-Drop Fallback for Other DAWs (`reaper_bridge.py`, `export_media_clipper.py`, `transcript_context_menu_mixin.py`)
-
-10. Upcoming Milestone: Speaker Management Ergonomics & Quick Sample Audio Preview (`speaker_dialogs.py`, `playback_controller.py`, `speaker_dialog_refinement_mixin.py`, `test_runner.py`) [x] [COMPLETED in v3.9.41-beta]
-   - *Purpose*: Streamline speaker identification and naming by providing immediate audio verification of detected speaker clusters directly inside the speaker management dialog.
-   [x] 10.1 Non-Modal Floating Speaker Management Dialog & Modeless Co-Editing (`speaker_dialogs.py`, `speaker_dialog_refinement_mixin.py`) [COMPLETED]
-   [x] 10.2 Quick Sample Audio Preview: An instant "Listen to sample" play button directly alongside each detected speaker in the management dialog so the user can hear 3 seconds of their voice before assigning the name. [COMPLETED in v3.9.37-beta]
-   [x] 10.3 Direct Inline Speaker Renaming & Tab Progression: Enable direct inline double-click editing on the "Speaker Name / Alias" cell in the table with Tab key progression (type name → press Tab → jump directly to rename the next speaker). [COMPLETED in v3.9.41-beta]
-   [x] 10.4 Non-Modal Preferences Inspector Window (`preferences_dialog.py`, `preferences_tabs_core.py`, `story_crud_mixin.py`, `project_export.py`) [COMPLETED]
-
-11. Upcoming Milestone: Social Reel & Short Video Export Plugin (Instagram Reels, YouTube Shorts, TikTok) (`plugins/social_reel/`, `export_media_clipper.py`, `export_dialogs.py`) [PLANNED] [NOT STARTED]
-   - *Purpose*: Provide an optional plugin and export destination to create vertical 9:16 social videos from audio or video files, incorporating custom template images, burned-in safe-zone captions, and audio visualizers for Instagram Reels, YouTube Shorts, and TikTok.
-   [ ] 11.1 Social Reel Plugin Architecture & Manifest (`plugins/social_reel/plugin.py`, `plugins/social_reel/manifest.json`, `plugins/social_reel/export_destination.py`)
-   [ ] 11.2 Multi-Source Input & Template Image Configuration (`plugins/social_reel/reel_config.py`, `plugins/social_reel/reel_dialog.py`)
-   [ ] 11.3 9:16 Vertical Video Compositor & Audiogram Pipeline (`plugins/social_reel/reel_renderer.py`, `export_media_clipper.py`)
-   [ ] 11.4 Burned-in Subtitles & Platform Safe Zone Enforcement (`plugins/social_reel/reel_subtitles.py`)
-   [ ] 11.5 Unified Export Integration & Social Reel Diagnostic Tests (`export/dialog.py`, `test_runner.py`)
+11. Completed Milestone: Smart Hybrid Audio Loudness Normalization & Non-Destructive Auto-Boost Suite (`audio_normalization.py`, `preferences_dialog.py`, `playback_preferences.py`, `RadioTVSegmenter.py`, `dialogs.py`, `test_runner.py`) [x] [COMPLETED in v3.9.25-beta]
+   - *Purpose*: Automatically or manually boost quiet broadcast recordings to improve ASR transcription and speaker diarization accuracy without modifying original source media, blocking the UI thread, or introducing compressor pumping artifacts.
+   [x] 11.1 Fast Non-Blocking Multi-Window LUFS & Peak Probing (`audio_normalization.py`): Probe 3 short windows (15%, 50%, 85% of duration) via `ffmpeg -af ebur128=peak=true` in a background worker (<1.5s latency) to measure integrated LUFS, LRA (Loudness Range), and True Peak dBTP/dBFS. [COMPLETED in v3.9.9-beta]
+   [x] 11.2 Conditional Two-Tier Hybrid Normalization Pipeline (`audio_normalization.py`): Bypass audio already within target thresholds; apply clean linear gain + brickwall true-peak limiter (`volume` + `alimiter`) for uniform quiet audio, or speech-safe `dynaudnorm` when LRA > 14 LU (mixed loud host + quiet caller), outputting to a non-destructive session sidecar WAV. Automatically fed into `transcription_processing.py` and `diarization_processing.py`. [COMPLETED in v3.9.24-beta]
+   [x] 11.3 Preferences Dialog & Adjustable Thresholds / Targets (`preferences_dialog.py`, `playback_preferences.py`): Add UI controls in Preferences to enable/disable automatic loudness normalization on import, adjust quiet detection trigger thresholds (LUFS and dBFS spinboxes), select target standard (defaulting to modern LUFS targets: `-16.0 LUFS` broadcast, `-14.0 LUFS` podcast, `-24.0 LUFS` EBU R128, or dBFS/True Peak target `-1.5 dBTP` / `-3.0 dBFS`), and optionally apply loudness gain to playback and clip export. [COMPLETED in v3.9.25-beta]
+   [x] 11.4 Tools Menu Manual Normalization Action & Telemetry Dialog (`RadioTVSegmenter.py`, `dialogs.py`, `test_runner.py`): Add on-demand "Normalize Audio Loudness..." action in the Tools menu with before/after LUFS & True Peak telemetry, manual run/reset controls, and diagnostic unit tests in `test_runner.py`. [COMPLETED in v3.9.25-beta]
 
 ================================================================================
 DETAILED MILESTONE SPECIFICATIONS
 ================================================================================
+================================================================================
+7. UPCOMING MILESTONE: AUTOMATED AMD RYZEN AI LOCAL DEVELOPMENT PLATFORM & TOKEN-EFFICIENT MODEL SUITE [PLANNED for v4.1.0] [OPTIONAL / PLANNED] [NOT STARTED]
+================================================================================
+ARCHITECTURAL INVARIANTS FOR SECTION 7:
+- Non-Destructive & Cross-Platform Safe: `scripts/setup_local_ai.py` must support `--check` / `--dry-run`, never overwrite existing user IDE settings without creating a `.bak` backup, and degrade gracefully on non-AMD machines.
+- Token Thrift & Prefix Caching First: All local coding models running on unified memory architectures (UMA) must be configured to maximize token-per-second throughput, minimize KV-cache memory pressure, and leverage the symbol stubs and AST analysis tools established in Milestone 3.
+- Preserve All Existing CI & Packaging Tests: Any updates to `.github/workflows/build.yml` MUST retain every invariant tested by `_test_windows_ci_build_and_packaging_optimization_invariants` in `test_runner.py`.
+
+[ ] 1.1 Strix Point Hardware, UMA VRAM & Context Allocation Probe (`scripts/setup_local_ai.py`)
+    - Implement hardware inspection for AMD Ryzen AI 9 HX 370 (12C/24T Zen 5, Radeon 890M `gfx1150` RDNA 3.5 iGPU, XDNA 2 50-TOPS NPU, 64GB RAM):
+      1. Detect total physical RAM, dedicated/UMA aperture allocation, and Vulkan/ROCm driver availability.
+      2. Compute optimal KV-cache VRAM budget: halving KV-cache footprint via `OLLAMA_KV_CACHE_TYPE=q8_0` and setting working context limits (16k default, 32k max) so local models consume <4 GB KV VRAM instead of ~10 GB, leaving at least 24 GB of system RAM free for concurrent Whisper/WeSpeaker transcription runs.
+      3. Configure optimal runtime environment variables for `gfx1150` stability on Windows/Linux: `OLLAMA_FLASH_ATTENTION=1`, `OLLAMA_KV_CACHE_TYPE=q8_0`, and `OLLAMA_NUM_PARALLEL=1`.
+
+[ ] 1.2 Tiered Local AI Model Provisioner with Prefix-Cache Optimization (`scripts/setup_local_ai.py`)
+    - Automate pulling and registering memory-budgeted coding model tiers via Ollama / LM Studio CLI:
+      1. Tier 1 (Heavy Refactoring & Architectural Decomposition — ~20 GB VRAM): `qwen2.5-coder:32b-instruct-q4_K_M` with 32,768 token context for complex AST splits and multi-file facades.
+      2. Tier 2 (Fast Single-File Bug Fixes & Mixin Edits — ~9 GB VRAM): `qwen2.5-coder:14b-instruct-q4_K_M` / `7b-instruct-q4_K_M` delivering >50 tok/s on Radeon 890M.
+      3. Tier 3 (Sub-50ms Inline Autocomplete — ~1.2 GB VRAM): `qwen2.5-coder:1.5b-base` running on lightweight context.
+      4. Validate all models with automated `--dry-run` and SHA-256 integrity checks.
+
+[ ] 1.3 Local Server Health Check, Context Window Tuning & Prompt Cache Pinning (`scripts/setup_local_ai.py`)
+    - Verify `http://127.0.0.1:11434` endpoint readiness and generate custom Ollama / llama.cpp `Modelfile` presets:
+      1. Pin the project symbol catalog (`.codemaps/symbol_index.json` and `.pyi` stubs created in Item 3.9) into the prefix cache, giving the local model instant zero-token access to repository APIs and signatures without re-ingesting 30+ files on each interaction.
+      2. Enforce context ceilings (`num_ctx 16384` for daily development, expandable to `32768` for full audits) and `temperature 0.1` for deterministic code generation.
+      3. Run a 64-token warmup benchmark reporting TTFT (Time To First Token) and token/sec throughput.
+
+[ ] 1.4 Token-Thrift IDE Configuration & AST Suggester Integration (`scripts/setup_local_ai.py`)
+    - Safely generate/merge `.vscode/settings.json` and Continue.dev / Cline / Roo Code configuration templates pointing to `http://127.0.0.1:11434`:
+      1. Configure IDE extensions for **token-thrifty retrieval**: instruct assistants to query the symbol index (`.codemaps/`) before requesting full file reads, use line-slice reads (`view_file` StartLine/EndLine), and produce unified diff patches rather than regenerating whole files.
+      2. Direct integration with AST Split Suggester: configure agent instructions so when an edit touches a file exceeding 800 lines, the assistant automatically invokes `python scripts/modular_audit.py --suggest <file>` to receive turnkey decomposition blueprints rather than wasting thousands of tokens analyzing AST coupling manually.
+      3. Create cross-platform symlinks or synchronized copies mapping `.clinerules` and `.cursorrules` to `AGENTS.md` and `GEMINI.md` to enforce the 10-location version bump checklist, `roadmap_manager.py --check`, and the <1,000-line modular ceiling.
+
+[ ] 1.5 Token-Budget Task-to-Model Router & CI Pipeline Verification (`.github/workflows/build.yml`, `test_runner.py`)
+    - Add `--guide` CLI mode and interactive task-to-model routing matrix to `scripts/setup_local_ai.py`:
+      * Small single-file fixes (<300 lines) -> Route to 7B/14B model (<100ms TTFT, saving power and memory).
+      * Multi-file refactoring, architectural planning, or files >500 lines -> Route to 32B model with pre-cached symbol catalog.
+      * Inline code completions -> Route to 1.5B autocomplete model.
+    - Verify `.github/workflows/build.yml` and add a diagnostic unit test in `test_runner.py` validating `scripts/setup_local_ai.py --dry-run` hardware profile serialization and token budget calculations.
 
 ================================================================================
-1. PREVIOUS RELEASE: CONFIGURABLE SPEAKER SAMPLE PREVIEW DURATION & OPEN-SOURCE AI ATTRIBUTION [x] [COMPLETED in v3.9.43-beta]
+8. OPTIONAL FUTURE MILESTONE: INTERACTIVE TEXT-BASED MEDIA ASSEMBLY & MULTI-ASSET RIPPLE EDITING ENGINE [PLANNED for v4.2.0] [OPTIONAL] [NOT STARTED]
 ================================================================================
+*Workflow Design Note*: Marked as an optional workflow extension for users requesting text-driven paper cuts. The core single-file story segmenter, voicebook, and DAW exports remain default and lightweight. All new modules in this milestone MUST reside in a dedicated `assembly/` package with every file kept strictly under 1,000 lines.
 
-[x] 1.1 Configurable Speaker Sample Duration (`preferences_tabs_media.py`, `preferences_tabs.py`): Added a `QDoubleSpinBox` (1.0s–15.0s, default 3.0s) to the Story Detection & Diarization preferences page.
-[x] 1.2 Preferences Persistence & Category Reset (`preferences_dialog.py`, `preferences_reset.py`, `preferences_reset_dialog.py`): Persisted `speaker_sample_duration` to `QSettings` with factory defaults and category restoration support.
-[x] 1.3 Dynamic Speaker Sample Resolution (`speaker_dialogs.py`): Updated `SpeakerManagerDialog` to dynamically resolve representative utterances based on user-configured duration with dynamic tooltip indicators.
-[x] 1.4 Open-Source AI Attribution Synchronization (`playback_preferences.py`): Updated the Help -> About dialog to explicitly include WeSpeaker and ONNX Runtime alongside Whisper, CTranslate2, and PyTorch.
+[ ] 2.1 Multi-Asset Project Container & Media Bin Submodule (`assembly/bin_model.py`, `project_lifecycle.py`)
+[ ] 2.2 Dynamic Uncapped Tabbed Document Workspace (`assembly/tab_workspace.py`, `ui_layout.py`)
+[ ] 2.3 Rich Media Clipboard Engine (`assembly/clipboard.py` — `application/x-rtvs-clip+json`)
+[ ] 2.4 Non-Destructive Multi-Source Playout Engine (`assembly/playout_engine.py`)
+[ ] 2.5 Text-Driven Audio/Video Ripple Cut Engine (`assembly/ripple_engine.py`)
+[ ] 2.6 Paper-Cut Story Assembly Workflow (`assembly/paper_cut_mixin.py`)
+[ ] 2.7 Document Revisions & Snapshot Version History (`assembly/revision_history.py`)
+[ ] 2.8 Word-Level Timecode Sync, NLE Markers & Multi-Track DAW Timeline Export (`export/timeline.py`)
+[ ] 2.9 Automated Diagnostic Test Suite (`test_runner.py`)
+
+================================================================================
+9. UPCOMING MILESTONE: REAPER DAW COMPANION BRIDGE & REASCRIPT TRANSCRIPT INTEGRATION [PLANNED for v4.2.0] [OPTIONAL / PLANNED] [NOT STARTED]
+================================================================================
+ARCHITECTURAL INVARIANTS FOR REAPER INTEGRATION:
+- Modular <1,000-Line Invariant: Keep all Python bridge logic in a dedicated module `reaper_bridge.py` (<= 500 lines) and companion Lua ReaScripts in `scripts/reaper/` so existing transcript editor modules remain well under the 1,000-line ceiling.
+- Non-Destructive OS Clipboard Behavior: Copying text in RTVS3 (`Ctrl+C`) must keep clean readable prose in the standard `text/plain` system clipboard for Word/Docs/Slack while simultaneously writing structured REAPER timeline cue metadata to `~/.rtvs_reaper_clip.json` (and custom MIME `application/x-rtvs-clip+json`).
+
+[ ] 3.1 RTVS3 Clip Cue Payload & Sidecar/IPC Emitter (`reaper_bridge.py`)
+    - Create `reaper_bridge.py` to bridge RTVS3 word-level timestamp selections (`get_time_range_for_char_span` / `get_all_selected_story_ranges`) to REAPER:
+      1. Define `ReaperClipCue` payload schema (`version`, `source_audio`, `start_time`, `end_time`, `duration`, `speaker`, `excerpt_label`, `full_text`, `story_title`, `project_path`, `timestamp_utc`).
+      2. Ensure `source_audio` resolves to a permanent, REAPER-readable media file path on disk.
+      3. Implement dual-channel emission:
+         - **Sidecar + Multi-MIME Clipboard**: On copy or "Send to REAPER", write `~/.rtvs_reaper_clip.json` (or `get_app_data_dir() / "ipc" / "reaper_clip_cue.json"`) and attach `application/x-rtvs-clip+json` to `QMimeData` while keeping clean plain text in `text/plain`.
+         - **Zero-Click Local Loopback / Web Control Trigger**: Optionally dispatch a non-blocking local HTTP/OSC command or `reaper -nonewinst` action trigger so clicking "Send to REAPER" drops the clip onto REAPER's timeline immediately without switching window focus.
+
+[ ] 3.2 Interactive Transcript Quick-Action & Shortcut Integration (`transcript_editor_dialogs.py`, `transcript_context_menu_mixin.py`, `shortcuts_manager.py`)
+    - Add a `"Send to REAPER"` action button to `TranscriptSelectionBubble` (`transcript_editor_dialogs.py`) and the right-click context menu (`transcript_context_menu_mixin.py`), plus a configurable keyboard shortcut (`Ctrl+Shift+R` default in `shortcuts_manager.py`).
+    - Automatically populate the clip cue whenever a user copies a transcript selection (`Ctrl+C`) so pasting inside REAPER works transparently.
+
+[ ] 3.3 Companion ReaScript Timeline Paste & Take Labeling Action (`scripts/reaper/rtvs_reaper_companion.lua`)
+    - Create a dependency-free Lua ReaScript (`scripts/reaper/rtvs_reaper_companion.lua`) that users can bind to a shortcut (e.g., `Alt+V` or `Ctrl+Shift+V`) in REAPER's Action List:
+      1. Reads the latest `ReaperClipCue` JSON payload from the sidecar cue file (or clipboard fallback).
+      2. Wraps timeline insertion in `reaper.Undo_BeginBlock()` / `reaper.Undo_EndBlock("RTVS3: Insert Transcript Clip", -1)`.
+      3. Locates the active/selected track (or creates a new track if none is selected) and inserts a new media item at `reaper.GetCursorPosition()` via `reaper.AddMediaItemToTrack()`, `reaper.AddTakeToMediaItem()`, and `reaper.PCM_Source_CreateFromFile()`.
+      4. Sets `D_POSITION` to the edit cursor, `D_LENGTH` to `end_time - start_time`, and take `D_STARTOFFS` to `start_time` (with optional short crossfade/fade-in/out padding).
+      5. Labels the take banner (`P_NAME`) with `"{speaker}: \"{excerpt_label}\""` (using `generate_story_excerpt`-style truncation) so the spoken words appear directly on the waveform in REAPER's arrange view, and writes the full unabridged quote into the item's notes (`P_NOTES`).
+      6. Advances the REAPER edit cursor to the end of the newly inserted item for rapid sequential paper-cut assembly and calls `reaper.UpdateArrange()`.
+
+[ ] 3.4 Optional Dockable ReaImGui Transcript Viewer for REAPER (`scripts/reaper/rtvs_reaper_dock.lua`)
+    - Create an optional dockable ReaImGui Lua script (`scripts/reaper/rtvs_reaper_dock.lua`) that opens any `.rtvs` / `.rtvs.json` project file directly inside REAPER:
+      1. Renders speaker labels, timestamps, story boundaries, and a live search/filter bar inside a dockable REAPER panel.
+      2. Supports playhead chasing (clicking a word seeks REAPER's playhead) and a one-click `"Insert Selection at Cursor"` button that slices and labels the corresponding audio item on the active REAPER track.
+
+[ ] 3.5 Preferences Integration, One-Click Script Installer & Diagnostic Tests (`preferences_dialog.py`, `reaper_bridge.py`, `test_runner.py`)
+    - Add a `"DAW & REAPER Integration"` section in Preferences (`preferences_dialog.py`) allowing users to:
+      1. Configure default clip handle/fade padding (ms) and take label format (`Speaker + Excerpt`, `Excerpt Only`, `Story Title + Speaker`).
+      2. Click `"Install Companion ReaScripts to REAPER..."` to automatically detect the OS REAPER resource path (`%APPDATA%/REAPER/Scripts`, `~/Library/Application Support/REAPER/Scripts`, or `~/.config/REAPER/Scripts`) and copy the Lua scripts into place.
+    - Add a diagnostic unit test in `test_runner.py` (`"REAPER Companion Bridge & ReaScript Payload Invariants"`) verifying `ReaperClipCue` serialization, excerpt label truncation, non-destructive `text/plain` clipboard preservation, and Lua script syntax/API invariants.
+
+[ ] 3.6 Universal Text-to-WAV Clipboard & Drag-and-Drop Fallback for Other DAWs (`reaper_bridge.py`, `export_media_clipper.py`, `transcript_context_menu_mixin.py`)
+    - Provide a lightweight, universal fallback solution in `reaper_bridge.py` and `transcript_context_menu_mixin.py` for DAWs without an open non-destructive take-offset API (Audacity, Hindenburg Pro, Adobe Audition, Premiere, DaVinci Resolve):
+      1. Add a `"Copy Audio Clip for DAW"` / `"Render & Copy WAV Clip to System Clipboard"` action to the transcript selection context menu and bubble, plus drag-and-drop file export support.
+      2. When triggered, use RTVS3's existing `extract_audio_clip` helper (`export_media_clipper.py`) to render the selected quote into a temporary, cleanly trimmed `.wav` slice named after the speaker and quote excerpt (via `generate_story_excerpt` in `story_metadata_dialog.py`): e.g., `Jane_Doe_-_We_started_this_project_back_in_2020.wav`.
+      3. Place the rendered `.wav` file path onto the OS clipboard as a file URI list (`QMimeData.setUrls([QUrl.fromLocalFile(wav_path)])`).
+      4. Enable users of Audacity, Hindenburg, Audition, or other NLEs to simply `Ctrl+V` (or drag) the named audio file onto a track, where the DAW automatically names the timeline clip after the descriptive `.wav` filename—delivering ~80% of the interactive pasting benefit while preserving instant 0ms non-destructive pointer slicing (`D_STARTOFFS`) in Cockos REAPER.
+--------------------------------------------------------------------------------
+
+================================================================================
+11. UPCOMING MILESTONE: SOCIAL REEL & SHORT VIDEO EXPORT PLUGIN (INSTAGRAM REELS, YOUTUBE SHORTS, TIKTOK) [PLANNED] [NOT STARTED]
+================================================================================
+ARCHITECTURAL INVARIANTS FOR SOCIAL REEL PLUGIN:
+- Modular Plugin Isolation: The feature MUST live completely inside an optional plugin at `plugins/social_reel/` (`plugin.py`, `manifest.json`, `export_destination.py`, `reel_config.py`, `reel_renderer.py`, `reel_subtitles.py`). Core modules (`RadioTVSegmenter.py`, `ui_layout.py`, `processing.py`) must NEVER import from `plugins/social_reel/`.
+- Modular <1,000-Line Invariant: Keep every plugin submodule well under the 800-line target ceiling.
+- Native FFmpeg Subprocess Pipeline: Utilize RTVS3's non-blocking FFmpeg execution with safe argument vectors (`shell=False`, `CREATE_NO_WINDOW` on Windows) without blocking the Qt main GUI loop.
+- UI Discipline: No unrequested icons or decorative emojis on buttons, dialogs, or dropdowns.
+
+[ ] 4.1 Social Reel Plugin Architecture & Manifest (`plugins/social_reel/plugin.py`, `plugins/social_reel/manifest.json`, `plugins/social_reel/export_destination.py`)
+    - Scope & Implementation Specifications:
+      1. Plugin Registration & Lifecycle: Create `plugins/social_reel/` adhering to RTVS3's `IPlugin` and `IExportDestination` contracts.
+      2. Plugin Manifest: Define `plugins/social_reel/manifest.json` with metadata, configurable settings schema, and default enablement.
+      3. Export Destination Hook: Register a "Social Reel / Short (9:16)" export destination that dynamically mounts into the Unified Export Dialog (`UnifiedExportDialog`) and Stories pop-out dialog when the plugin is active.
+
+[ ] 4.2 Multi-Source Input & Template Image Configuration (`plugins/social_reel/reel_config.py`, `plugins/social_reel/reel_dialog.py`)
+    - Scope & Implementation Specifications:
+      1. Dual Audio / Video Source Selection: Allow users to target either the active video stream, an audio-only track, an external audio/video file, or a selected story segment.
+      2. Template & Branding Image Ingestion: Provide an image picker supporting `.png`, `.jpg`, and `.webp` for header cards, logos, or full 9:16 background artwork.
+      3. Save Default Template: Include a "Save as Default Template" action persisting the template image path and layout parameters in `QSettings` (`social_reel/default_template_path`, `social_reel/caption_style`), enabling 1-click reusable branded exports across projects.
+      4. Target Platform Presets: Presets for Instagram Reels (9:16, 1080x1920), YouTube Shorts (9:16, 1080x1920), and TikTok (9:16, 1080x1920).
+
+[ ] 4.3 9:16 Vertical Video Compositor & Audiogram Pipeline (`plugins/social_reel/reel_renderer.py`, `export_media_clipper.py`)
+    - Scope & Implementation Specifications:
+      1. Video Source Pipeline (1080x1920): Build an FFmpeg filtergraph supporting:
+         - Blurred Pillarbox Backdrop: Scale original 16:9 video to fill 1080x1920, apply `boxblur=luma_radius=25:luma_power=3`, and overlay the centered, uncropped original video.
+         - Center Crop Mode: Crop 9:16 center region (`crop=ih*9/16:ih`) with optional X-offset panning.
+      2. Audio Source Pipeline (Audiogram): Build an FFmpeg filtergraph combining the background template image with a dynamic audio waveform visualizer (`showwaves` or `showwavespic`) centered or anchored in the middle third.
+      3. Non-Blocking Background Execution: Run video rendering through a dedicated `QThread` / `subprocess` worker with progress calculation, cancel check, and atomic output writing.
+
+[ ] 4.4 Burned-in Subtitles & Platform Safe Zone Enforcement (`plugins/social_reel/reel_subtitles.py`)
+    - Scope & Implementation Specifications:
+      1. ASS / Styled Caption Generator: Transform Whisper word-level timestamps for the target story segment into an Advanced SubStation Alpha (`.ass`) subtitle stream.
+      2. High-Contrast Typography: Apply bold, readable sans-serif typography with high-contrast text outlines, drop shadows, or background pill backing.
+      3. UI Safe Zone Constraint: Enforce vertical bounding boxes that prevent subtitles from being obscured by Instagram/TikTok interface elements (preserving top 15% and bottom 25% margins, rendering text in the safe middle 60%).
+      4. Optional Word-Level Karaoke Highlight: Highlight the active spoken word in real time based on Whisper word start/end timings.
+
+[ ] 4.5 Unified Export Integration & Social Reel Diagnostic Tests (`export/dialog.py`, `test_runner.py`)
+    - Scope & Implementation Specifications:
+      1. Export Dialog Tab / Staging: Add a dedicated "Social Reel" configuration view in the Unified Export Dialog when the plugin is active, displaying preview framing, safe zone guidelines, template image picker, and caption toggle.
+      2. Automated Diagnostic Suite: Add unit tests in `test_runner.py` verifying plugin registration, ASS subtitle timing generation, safe zone margin math, and FFmpeg filtergraph string assembly.
 
 ================================================================================
 2. CURRENT RELEASE: APPLICATION-WIDE KEYBOARD SHORTCUT ALIGNMENT & 79-ACTION SCHEMA HARMONIZATION [x] [COMPLETED in v3.9.44-beta]
 ================================================================================
 
-[x] 2.1 Live Running Shortcut Parity (`shortcuts/schema.py`): Aligned all schema default keybindings with real application execution paths (`Ctrl+P` for Preferences, `Ctrl+Shift+G` for Glossary, `Ctrl+M` for Comments, `Ctrl+Alt+M` for Models, `Ctrl+R` for Pipeline, `Ctrl+Shift+I` for ID3, `+` / `-` for Timeline Zoom).
-[x] 2.2 Complete 79-Action Schema Registry (`shortcuts/schema.py`, `ui_dialog_launchers.py`): Incorporated all missing AI Pipeline tools (Transcribe, Diarize, Stories, Translate), View Panel toggles, and Editing actions into the single source of truth and F1 Reference table.
-[x] 2.3 MainWindow Attribute Binding Integrity (`shortcuts/schema.py`, `shortcuts/manager.py`): Aligned 100% of definition `attr_name` fields to match actual attributes on `MainWindow`, enabling seamless custom keybinding propagation from Preferences to menus and toolbars.
-[x] 2.4 Seeker Duplicate Pruning & Alias Resolution (`shortcuts/schema.py`): Consolidated transport seekers into single distinct actions and mapped legacy keys through `ACTION_ALIASES`.
-[x] 2.5 Documentation Synchronization (`README.md`): Completely rebuilt the Keyboard Shortcuts table in `README.md` to document all 79 shortcuts across 8 canonical categories.
+[x] 5.1 Live Running Shortcut Parity (`shortcuts/schema.py`): Aligned all schema default keybindings with real application execution paths (`Ctrl+P` for Preferences, `Ctrl+Shift+G` for Glossary, `Ctrl+M` for Comments, `Ctrl+Alt+M` for Models, `Ctrl+R` for Pipeline, `Ctrl+Shift+I` for ID3, `+` / `-` for Timeline Zoom).
+[x] 5.2 Complete 79-Action Schema Registry (`shortcuts/schema.py`, `ui_dialog_launchers.py`): Incorporated all missing AI Pipeline tools (Transcribe, Diarize, Stories, Translate), View Panel toggles, and Editing actions into the single source of truth and F1 Reference table.
+[x] 5.3 MainWindow Attribute Binding Integrity (`shortcuts/schema.py`, `shortcuts/manager.py`): Aligned 100% of definition `attr_name` fields to match actual attributes on `MainWindow`, enabling seamless custom keybinding propagation from Preferences to menus and toolbars.
+[x] 5.4 Seeker Duplicate Pruning & Alias Resolution (`shortcuts/schema.py`): Consolidated transport seekers into single distinct actions and mapped legacy keys through `ACTION_ALIASES`.
+[x] 5.5 Documentation Synchronization (`README.md`): Completely rebuilt the Keyboard Shortcuts table in `README.md` to document all 79 shortcuts across 8 canonical categories.
 
 ================================================================================
-3. UPCOMING MILESTONE: CODEBASE MODULARIZATION & MONOLITHIC FILE DECOMPOSITION STRATEGY [x] [COMPLETED in v3.9.33-beta]
+1. PREVIOUS RELEASE: CONFIGURABLE SPEAKER SAMPLE PREVIEW DURATION & OPEN-SOURCE AI ATTRIBUTION [x] [COMPLETED in v3.9.43-beta]
+================================================================================
+
+[x] 6.1 Configurable Speaker Sample Duration (`preferences_tabs_media.py`, `preferences_tabs.py`): Added a `QDoubleSpinBox` (1.0s–15.0s, default 3.0s) to the Story Detection & Diarization preferences page.
+[x] 6.2 Preferences Persistence & Category Reset (`preferences_dialog.py`, `preferences_reset.py`, `preferences_reset_dialog.py`): Persisted `speaker_sample_duration` to `QSettings` with factory defaults and category restoration support.
+[x] 6.3 Dynamic Speaker Sample Resolution (`speaker_dialogs.py`): Updated `SpeakerManagerDialog` to dynamically resolve representative utterances based on user-configured duration with dynamic tooltip indicators.
+[x] 6.4 Open-Source AI Attribution Synchronization (`playback_preferences.py`): Updated the Help -> About dialog to explicitly include WeSpeaker and ONNX Runtime alongside Whisper, CTranslate2, and PyTorch.
+
+================================================================================
+10. COMPLETED MILESTONE: SPEAKER MANAGEMENT ERGONOMICS & QUICK SAMPLE AUDIO PREVIEW [x] [COMPLETED in v3.9.41-beta]
+================================================================================
+ARCHITECTURAL INVARIANTS FOR SPEAKER AUDIO PREVIEW:
+- Modular <1,000-Line Invariant: Keep all UI controls inside `speaker_dialogs.py` (303 lines) and reuse existing non-blocking audio playout mechanisms (`playback_controller.py` or dedicated `QMediaPlayer` preview channel) without blocking the Qt main GUI loop.
+- Non-Destructive Playout & Clean Teardown: Previewing a sample must never disrupt main timeline playback state or scrub position unless intentionally requested, and any playing preview sample must automatically terminate if the dialog is closed or dismissed (`reject()`, `accept()`, `closeEvent`).
+- Strict UI Discipline: No unrequested icons or decorative emojis on buttons; use clean, native desktop text ("Play Sample", "Stop", "Sample (3s)").
+
+[x] 7.1 Non-Modal Floating Speaker Management Dialog & Modeless Co-Editing (`speaker_dialogs.py`, `speaker_dialog_refinement_mixin.py`) [COMPLETED]
+    - Scope & Implementation Specifications:
+      1. Non-Modal Window Presentation: Transition `SpeakerManagerDialog` to an independent non-modal floating window (`Qt.WindowType.Window`, `Qt.WindowModality.NonModal`, `WA_QuitOnClose=False`), allowing users to click back into the main transcript window to edit words, fix spelling, scrub audio, or relabel speakers without modal lockout.
+      2. Pin on Top Toggle: Add a checkable `Pin on Top` header button (`float_btn`) that toggles `Qt.WindowType.WindowStaysOnTopHint` to keep the speaker management window visible while scrubbing media.
+      3. Live Two-Way State Synchronization: Wire `changeEvent` (`QEvent.Type.WindowActivate`) and a dedicated `Refresh` button (`refresh_btn`) to automatically refresh the speaker cluster table whenever the window gains focus or edits occur in the main transcript window.
+      4. Singleton Window Management: Track `_active_speaker_manager_dialog` on `MainWindow` to prevent duplicate popups and properly raise/activate the existing window if already open.
+
+[x] 7.2 Quick Sample Audio Preview: An instant "Listen to sample" play button directly alongside each detected speaker in the management dialog so the user can hear 3 seconds of their voice before assigning the name. (`speaker_dialogs.py`, `playback_controller.py`, `speaker_dialog_refinement_mixin.py`) [COMPLETED in v3.9.37-beta]
+    - Scope & Implementation Specifications:
+      1. Representative Utterance Resolution: Inspect the project transcript segments for each detected speaker cluster to find a clean, representative speech sample (preferring the longest continuous utterance >= 3.0s, or the first utterance if shorter).
+      2. Inline Table Action Button: Add an instant "Play Sample" / "Listen to Sample" action button directly in each speaker's row inside `SpeakerManagerDialog` (`speaker_dialogs.py`) under the Actions column.
+      3. Non-Blocking 3-Second Playback: When clicked, stream or play exactly 3 seconds of audio from the resolved start timestamp using the audio playback controller or a dedicated preview sound channel. Automatically cease playout after 3 seconds or when clicking Stop / another speaker's sample button.
+      4. Teardown & Lifecycle Safety: Ensure any ongoing preview playback immediately stops on dialog close, escape, or speaker merge/reassignment.
+
+[x] 7.3 Direct Inline Speaker Renaming & Tab Progression: Enable direct inline double-click editing on the "Speaker Name / Alias" cell in the table with Tab key progression (type name → press Tab → jump directly to rename the next speaker). (`speaker_dialogs.py`, `speaker_dialog_refinement_mixin.py`) [COMPLETED in v3.9.41-beta]
+    - Scope & Implementation Specifications:
+      1. In-Place Table Cell Editing Triggers: Configure `self.table.setEditTriggers(QAbstractItemView.EditTrigger.DoubleClicked | QAbstractItemView.EditTrigger.SelectedClicked | QAbstractItemView.EditTrigger.EditKeyPressed)` specifically for column 0 ("Speaker Name / Alias"), while maintaining read-only item flags on columns 1-3.
+      2. Fast Tab-Key Navigation Progression: Support rapid linear workflow where typing a new name and pressing Tab automatically commits the alias change and seamlessly transfers focus and edit mode to the next speaker row below (`table.editItem(next_item)`), eliminating repetitive modal popup clicks when renaming an entire panel of speakers.
+      3. Project Undo State & Alias Binding: On edit completion (`itemChanged` or delegate `commitData`), if the text has changed, automatically trigger the full project undo capture (`flush_pending_transcript_undo` and `_capture_project_state`), rebind speaker aliases in `main_win.speaker_aliases` or `segment_speaker_overrides`, and trigger UI transcript refresh (`render_transcript()`).
+      4. Escape / Revert Safety: Pressing Escape cleanly cancels the inline edit and restores the previous alias without mutating project state or dirtying the undo history.
+
+[x] 7.4 Non-Modal Preferences Inspector Window (`preferences_dialog.py`, `preferences_tabs_core.py`, `story_crud_mixin.py`, `project_export.py`) [COMPLETED]
+    - Scope & Implementation Specifications:
+      1. Modeless Inspector Architecture: Transition Preferences from modal `exec()` to modeless floating window with live preview of visual tokens (theme, transcript font scale, timeline display views, audio fades).
+      2. Live Auto-Commit / Reset Defaults Model: Provide "Apply" for instant non-closing settings persistence, "Save" for saving & closing, and clean singleton tracking (`_active_preferences_dialog`) with category switching (`dialog._select_category`).
+      3. Safe Audio/Hardware Reload Guards: Implement thread-safe guards preventing audio device or ASR model reloads from conflicting with active playback streams or running transcription jobs.
+--------------------------------------------------------------------------------
+
+================================================================================
+6. COMPLETED MILESTONE: WORDPRESS PUBLISHING ERGONOMICS, SHARED STORY METADATA & NON-MODAL DIALOG ARCHITECTURE [x] [COMPLETED in v3.9.35-beta]
+================================================================================
+ARCHITECTURAL INVARIANTS FOR SECTION 6:
+- Canonical Single Source of Truth: Never keep isolated publishing metadata trapped inside transient UI dialog fields. Store WordPress attributes directly under `story.metadata["wordpress"]` (for story scopes) and `project_metadata["wordpress"]` (for full episode/podcast scopes), auto-saving to `.rtvs` project containers.
+- Reusable Widget Architecture (<1,000-Line Ceiling): All input controls (title, excerpt, authors, categories, featured image, Castos feeds) remain singletons managed by `plugins/wordpress/wp_ui_builder.py`. The Tabbed vs. Split Two-Column presentation is purely an outer container layout adapter, avoiding duplicated business or networking logic.
+- Non-Modal / Modeless Integrity: Modeless tool windows must handle project close/reload cleanly, unsubscribing from change events when media changes to prevent stale UI state or crashes.
+
+[x] 8.1 Shared Story & Project WordPress Metadata Persistence (`story_metadata_dialog.py`, `plugins/wordpress/export_destination.py`, `plugins/wordpress/wp_post_builder.py`, `story_model.py`) [COMPLETED in v3.9.34-beta]
+    - Implement unified two-way binding between the project model and UI:
+      1. Define standard `story.metadata["wordpress"]` dictionary schema (`title`, `excerpt`, `author_ids`, `category_ids`, `featured_image`, `is_podcast`, `podcast_feed_ids`, `season`, `episode_number`).
+      2. When `StoryMetadataDialog` loads or saves, populate and commit WordPress attributes to `story.metadata["wordpress"]` (only active when the WordPress plugin is enabled).
+      3. When `UnifiedExportDialog` opens, pre-populate all WordPress fields directly from `story.metadata["wordpress"]` (or `project_metadata["wordpress"]` for full episode).
+      4. Any edit made inside the Export dialog immediately updates the underlying story/project metadata and in-session cache so closing the dialog never discards typed data.
+
+[x] 8.2 Tabbed Export View Layout & User-Configurable Preference Switcher (`plugins/wordpress/wp_ui_builder.py`, `plugins/wordpress/wp_tab_widget.py`, `preferences_dialog.py`) [COMPLETED in v3.9.35-beta]
+    - Restructure the WordPress export configuration view from a single vertical accordion into a clean 4-tab panel:
+      1. Tab 1: **Post Content** — Full-width post title, auto-expanding full-height excerpt box with word count badge and "Generate from Story" action, and Custom Header & Footer Notice docked in a vertical `QSplitter`.
+      2. Tab 2: **Authors & Taxonomy** — Spacious side-by-side author and category checklist columns with active selection count badge and filter inputs.
+      3. Tab 3: **Podcast & Media** — Featured thumbnail frame grabber/file selector, Castos podcast feed selector, and episode/season metadata.
+      4. Tab 4: **Publishing & Formatting** — Transcript language toggles and formatting options, plus a user setting in `preferences_dialog.py` (`Export View Layout: [Tabs (4-Tab Recommended) | Split Two-Column | Classic Accordion]`) persisted in `QSettings("wordpress_layout_style", "tabs")`.
+
+[x] 8.3 Non-Modal Floating Window & Modeless Transcript Co-Editing (`export/dialog.py`, `story_metadata_dialog.py`, `RadioTVSegmenter.py`) [COMPLETED in v3.9.35-beta]
+    - Add floating non-modal capability to export and metadata editors:
+      1. Add a "Pin on Top" (`float_btn`) and "Sync Transcript" (`refresh_btn`) toggle to `UnifiedExportDialog` and `StoryMetadataDialog`, plus a "Pop Out" button in the Stories sidebar header.
+      2. Configure `Qt.WindowModality.NonModal` presentation so users can interact with the transcript, scrub audio, and re-label speakers while keeping the export or metadata panel visible on a second monitor or side-by-side.
+      3. Connect transcript edit signals to refresh story word counts and excerpt references live without closing the dialog, and flush pending edits before export execution.
+
+[x] 8.4 Diagnostic Tests & Version Synchronization (`test_runner.py`, `diagnostic_export_tests.py`, `bump_version.py`) [COMPLETED in v3.9.35-beta]
+    - Add diagnostic unit tests verifying shared metadata persistence across story models, tab layout instantiation, preference switching, modeless window lifecycle, and synchronize project version to `v3.9.35-beta`.
+
+================================================================================
+3. COMPLETED MILESTONE: CODEBASE MODULARIZATION & MONOLITHIC FILE DECOMPOSITION STRATEGY [x] [COMPLETED in v3.9.33-beta]
 ================================================================================
 STRICT EXECUTION DIRECTIVE FOR AI STUDIO (GEMINI 3.8 FLASH):
 When the user prompts "what's next", execute ONLY the first uncompleted `[ ]` sub-item below in that turn, then stop. Follow these mandatory invariants on every step:
@@ -167,10 +377,10 @@ When the user prompts "what's next", execute ONLY the first uncompleted `[ ]` su
 3. NO CIRCULAR IMPORTS: Extracted leaf modules must import shared utilities from `core_utils`, `qt_compat`, or `prs_shared`, never from the parent facade that imports them.
 4. UPDATE ROADMAP CHECKBOX: After completing the single sub-item, mark that sub-item `[x]` in both the Table of Contents and Detailed Specifications.
 
-[x] 3.1 Codebase Audit & Wave 1 Core/Processing Decomposition (`core_utils.py`, `prs_shared.py`, `processing.py`, `test_runner.py`, `qt_compat.py`, `model_install_workers.py`)
+[x] 9.1 Codebase Audit & Wave 1 Core/Processing Decomposition (`core_utils.py`, `prs_shared.py`, `processing.py`, `test_runner.py`, `qt_compat.py`, `model_install_workers.py`)
     - Extracted `core_utils.py`, `transcript_cleaner.py`, `project_serialization.py`, `process_lifecycle.py`, `model_install_workers.py`, `qt_compat.py`, `transcription_processing.py`, `diarization_processing.py`, `story_detection_processing.py`, and diagnostic test mixins while preserving `prs_shared.py` and `processing.py` facades.
 
-[x] 3.2 Final Version Regex, Header & Dependency Synchronization (`bump_version.py`, `preview_manager.py`, `snapshot_manager.py`, `package.json`, `RadioTVSegmenter.py`, `backup_manager.py`)
+[x] 9.2 Final Version Regex, Header & Dependency Synchronization (`bump_version.py`, `preview_manager.py`, `snapshot_manager.py`, `package.json`, `RadioTVSegmenter.py`, `backup_manager.py`)
     - Execute these 5 exact fixes before further file decomposition:
       1. In `bump_version.py` (`normalize_version`) and `preview_manager.py` (`get_project_version` and `sync_version`), replace the unescaped regex `re.sub(r".+", ".", ...)` with `re.sub(r"\.+", ".", ...)` so version strings are not wiped to `"."`.
       2. In `snapshot_manager.py`, replace the corrupted line 1 (`#### #!/usr/bin/env python3 """ Snapshot Manager...`) with a valid shebang (`#!/usr/bin/env python3`) on line 1 and opening docstring (`"""Snapshot Manager for Radio & TV Story Segmenter`) on line 2.
@@ -178,21 +388,21 @@ When the user prompts "what's next", execute ONLY the first uncompleted `[ ]` su
       4. In `RadioTVSegmenter.py`, update line 1 docstring to `"""Radio & TV Segmenter — v3.9.8-beta` and ensure `multiprocessing.freeze_support()` and the restricted `if len(sys.argv) > 2 and sys.argv[1] == "-c":` handler (`code_str.lstrip().startswith("from multiprocessing.")`) appear immediately after `import sys` and `import multiprocessing`, BEFORE `from bootstrap import ...`.
       5. In `backup_manager.py`, update the fallback `PROJECT_VERSION = "3.9.0-beta.9"` to `"3.9.8-beta"`.
 
-[x] 3.3 Wave 2A - Playback & Preferences Decomposition (`playback_preferences.py` — 4,042 lines)
+[x] 9.3 Wave 2A - Playback & Preferences Decomposition (`playback_preferences.py` — 4,042 lines)
     - Target: Split `playback_preferences.py` so every resulting file is <= 1,000 lines:
       1. Extract `theme_preferences.py`: Theme palette constants, dark/light/silver-fog mode switching, font/UI scaling helpers, and stylesheet builders.
       2. Extract `preferences_dialog.py`: Preferences/Settings modal dialog UI builders, tab layouts, and settings persistence handlers.
       3. Extract `playback_controller.py`: Audio/video media player transport controls, playback speed/rate (`0.75x`-`2.0x`), WSOLA pitch preservation, proofreading pre-roll seeking, and scrub/loop handlers.
       4. Keep `PlaybackPreferencesMixin` in `playback_preferences.py` (inheriting from or composing the extracted mixins) and re-export all extracted classes, functions, and constants in `playback_preferences.py` so existing imports remain 100% intact.
 
-[x] 3.4 Wave 2B - Unified Project & Media Export Decomposition (`project_export.py` — 3,144 lines)
+[x] 9.4 Wave 2B - Unified Project & Media Export Decomposition (`project_export.py` — 3,144 lines)
     - Target: Split `project_export.py` so every resulting file is <= 1,000 lines:
       1. Extract `export_dialogs.py`: `UnifiedExportDialog` UI classes, export scope selectors (`Full Episode`, `Selected Stories`, `All Stories`), and destination tab containers.
       2. Extract `export_media_clipper.py`: FFmpeg audio/video track and story clip extraction (`export_audio_track`, `extract_audio_clip`), fade curve application, non-blocking process polling, and cancellation handling.
       3. Extract `export_documents.py`: Document/transcript formatting builders for TXT, HTML, DOCX, vector PDF, CSV, JSON, and subtitle/chapter helpers.
       4. Keep `ProjectExportMixin` in `project_export.py` and re-export all extracted classes and functions from `project_export.py` and `prs_shared.py`.
 
-[x] 3.5 Wave 3 - Transcript Story & Interactive Editor Decomposition (`transcript_story.py` — 3,055 lines -> 836 lines & `transcript_editor.py` — 2,566 lines -> 862 lines)
+[x] 9.5 Wave 3 - Transcript Story & Interactive Editor Decomposition (`transcript_story.py` — 3,055 lines -> 836 lines & `transcript_editor.py` — 2,566 lines -> 862 lines)
     - Target: Split `transcript_story.py` and `transcript_editor.py` so every resulting file is <= 1,000 lines:
       1. From `transcript_story.py`, extract:
          - `story_model.py`: The `Story` data class, boundary clamping/overlap validation, fade curve lookup/serialization tables, and undo/redo `QUndoCommand` classes (`SetStoriesCommand`, `SelectStoriesCommand`).
@@ -203,7 +413,7 @@ When the user prompts "what's next", execute ONLY the first uncompleted `[ ]` su
          - `transcript_styles.py`: `transcript_text_view_stylesheet`, high-contrast active word formatting, dark/light clipboard rich-text/HTML builders, and span helpers.
          - Keep `InteractiveTranscriptEdit` in `transcript_editor.py` and re-export all extracted symbols in `transcript_editor.py` and `prs_shared.py`.
 
-[x] 3.6 Wave 4 - AI Worker & Benchmark Suite Decomposition (`radio_tv_story_segmenter_worker.py` — 2,264 -> 219 lines & `benchmark.py` — 2,198 -> 216 lines) [COMPLETED in v3.9.13-beta]
+[x] 9.6 Wave 4 - AI Worker & Benchmark Suite Decomposition (`radio_tv_story_segmenter_worker.py` — 2,264 -> 219 lines & `benchmark.py` — 2,198 -> 216 lines) [COMPLETED in v3.9.13-beta]
     - Target: Split `radio_tv_story_segmenter_worker.py` and `benchmark.py` so every resulting file is <= 1,000 lines:
       1. From `radio_tv_story_segmenter_worker.py`, extract:
          - `worker_asr_engines.py`: Faster-Whisper, CTranslate2, Sherpa-ONNX Parakeet, and FastConformer transcription pipelines and word-timestamp alignment.
@@ -215,7 +425,7 @@ When the user prompts "what's next", execute ONLY the first uncompleted `[ ]` su
          - `benchmark_dialog.py`: PySide6 Benchmark UI dialog, progress bars, and comparison charts.
          - Re-export all public classes and CLI entrypoints in `benchmark.py`.
 
-[x] 3.7 Wave 5 - WordPress Export, Plugin Manager & Timeline Widgets Decomposition (`plugins/wordpress/export_destination.py` — 2,080 -> 474 lines, `plugins/manager.py` — 1,942 -> 586 lines, `timeline_widgets.py` — 1,898 -> 934 lines) [COMPLETED in v3.9.14-beta]
+[x] 9.7 Wave 5 - WordPress Export, Plugin Manager & Timeline Widgets Decomposition (`plugins/wordpress/export_destination.py` — 2,080 -> 474 lines, `plugins/manager.py` — 1,942 -> 586 lines, `timeline_widgets.py` — 1,898 -> 934 lines) [COMPLETED in v3.9.14-beta]
     - Target: Split the final 3 files exceeding 1,000 lines into focused modules <= 1,000 lines each:
       1. Split `plugins/wordpress/export_destination.py` into:
          - `plugins/wordpress/wp_client.py`: WordPress REST API client, authentication, media payload disambiguation/upload, and author/category fetching.
@@ -230,7 +440,7 @@ When the user prompts "what's next", execute ONLY the first uncompleted `[ ]` su
          - `timeline_overview_widget.py`: Timeline overview bar and mini-map navigation widget.
          - Keep the main zoomable timeline widget in `timeline_widgets.py` and re-export all extracted symbols in `timeline_widgets.py` and `prs_shared.py`.
 
-[x] 3.8 Permanent <1,000-Line Architectural Rule, AST Decomposition Suggester & Automated Budget Guard (`AGENTS.md`, `GEMINI.md`, `scripts/modular_audit.py`, `test_runner.py`)
+[x] 9.8 Permanent <1,000-Line Architectural Rule, AST Decomposition Suggester & Automated Budget Guard (`AGENTS.md`, `GEMINI.md`, `scripts/modular_audit.py`, `test_runner.py`)
     - Enforce the modular file size limit permanently and provide automated tooling to assist future decomposition:
       1. Mandatory Architecture Rule in `AGENTS.md` & `GEMINI.md`:
          - Soft target: ~800 lines per `.py` file; hard ceiling: 1,000 lines per `.py` file.
@@ -245,7 +455,7 @@ When the user prompts "what's next", execute ONLY the first uncompleted `[ ]` su
          - Dev-mode diagnostic test ("Source File Modularity & 1,000-Line Budget Invariant") scanning all production `.py` files.
          - If any file exceeds 1,000 lines, outputs actionable split suggestions from `scripts/modular_audit.py` directly in the test failure message to guide instantaneous remediation.
 
-[x] 3.9 Token-Reduction Architecture & Tiered Symbol Indexing for Local LLM Efficiency (`scripts/generate_symbol_index.py`, `.codemaps/`, `.pyi`, `AGENTS.md`, `GEMINI.md`) [COMPLETED in v3.9.12-beta]
+[x] 9.9 Token-Reduction Architecture & Tiered Symbol Indexing for Local LLM Efficiency (`scripts/generate_symbol_index.py`, `.codemaps/`, `.pyi`, `AGENTS.md`, `GEMINI.md`) [COMPLETED in v3.9.12-beta]
     - Implement a high-ROI tiered token-reduction strategy to drastically reduce context window consumption across local and cloud AI models:
       1. Repository-Wide AST Symbol Indexer & API Catalog (`scripts/generate_symbol_index.py`) [Applied to ALL Files]:
          - Fast, automated AST scanner executed across 100% of repository Python modules (<0.2s runtime).
@@ -257,14 +467,14 @@ When the user prompts "what's next", execute ONLY the first uncompleted `[ ]` su
       3. Universal Surgical Range-Editing & Chunking Rules (`AGENTS.md`, `GEMINI.md`) [Applied Across ALL Modules]:
          - Formalize operational directives requiring models to view and edit files via targeted line slices (`view_file` StartLine/EndLine ranges and `replace_file_content`), strictly prohibiting whole-file rewrites to prevent token exhaustion, truncation, and latency timeouts.
 
-[x] 3.10 Google Drive/Docs Plugin & OAuth Runtime Removal (`plugins/gdocs/`, `export_documents.py`, `plugins/manager.py`, `plugin_dialogs.py`, `GOOGLE_OAUTH_SETUP.md`, `GOOGLE_DOCS_USER_GUIDE.md`) [COMPLETED in v3.9.33-beta]
+[x] 9.10 Google Drive/Docs Plugin & OAuth Runtime Removal (`plugins/gdocs/`, `export_documents.py`, `plugins/manager.py`, `plugin_dialogs.py`, `GOOGLE_OAUTH_SETUP.md`, `GOOGLE_DOCS_USER_GUIDE.md`) [COMPLETED in v3.9.33-beta]
     - Fully deprecate and remove Google Drive and Google Docs cloud integrations and external OAuth dependencies:
       1. Remove `plugins/gdocs/` plugin directory and unregister Google Docs from `plugins/manager.py`, `plugin_dialogs.py`, and `UnifiedExportDialog`.
       2. Eliminate OAuth 2.0 PKCE authorization loops, browser redirect listener ports, Google token caching, and associated setup guides (`GOOGLE_OAUTH_SETUP.md`, `GOOGLE_DOCS_USER_GUIDE.md`).
       3. Preserve robust offline local document export formats in `export_documents.py` (DOCX, vector PDF, plain text, SRT/VTT subtitles, CSV, and HTML).
       4. Clean up diagnostic tests in `test_runner.py` and `diagnostic_cloud_and_system_tests.py` that previously verified Google Docs OAuth/PKCE.
 
-[x] 3.11 YouTube Zero-Auth Manual Export Streamlining (`plugins/youtube/`, `export_dialogs.py`, `export_story_pipeline.py`) [COMPLETED in v3.9.33-beta]
+[x] 9.11 YouTube Zero-Auth Manual Export Streamlining (`plugins/youtube/`, `export_dialogs.py`, `export_story_pipeline.py`) [COMPLETED in v3.9.33-beta]
     - Retain the YouTube plugin while eliminating Google OAuth login and direct YouTube API upload dependencies in favor of a fast, reliable manual publishing workflow:
       1. Remove Google OAuth login prompts, token validation, and YouTube Data API v3 upload code from `plugins/youtube/`.
       2. Streamline the YouTube export destination in `export_dialogs.py` to focus on the zero-auth manual publishing package:
@@ -274,27 +484,43 @@ When the user prompts "what's next", execute ONLY the first uncompleted `[ ]` su
       3. Provides a clean "Open YouTube Studio" link or button so creators can upload the rendered video and paste title/description/chapters directly in their browser without any app-level authentication.
 
 ================================================================================
-4. UPCOMING MILESTONE: SMART HYBRID AUDIO LOUDNESS NORMALIZATION & NON-DESTRUCTIVE AUTO-BOOST SUITE [x] [COMPLETED in v3.9.25-beta]
+5. COMPLETED MILESTONE: SERIOUSLY SIMPLE PODCASTING (CASTOS) WORDPRESS PLUGIN INTEGRATION [x] [COMPLETED in v3.9.26-beta]
+================================================================================
+- Purpose: Integrate Castos' Seriously Simple Podcasting plugin into WordPress full-episode draft exports, allowing users to designate posts as podcast episodes within the export dialog, dynamically show Castos options, and map media files to the selected podcast feed via WordPress REST API application passwords and post meta (`ss_podcast_audio_file`, `ss_podcast_feed`, etc.).
+- Confirmed User Specifications:
+  1. Dynamic Podcast Designation UI: When a user designates a post as a podcast episode in the export dialog, Castos options (podcast feed selection, episode meta) appear dynamically.
+  2. Authentication: Uses standard WordPress REST API application passwords.
+  3. Media Binding & RSS Feed: Automatically uploads full-episode audio to WordPress Media Library, assigning audio file and excerpt to the podcast RSS feed via Castos post meta.
+  4. Conditional Player Embedding:
+     - Podcast Episode: Displays the embedded Castos player on the website page (omitting standard `<!-- wp:audio -->` block to prevent duplicate players).
+     - Standard Export (Non-Podcast): Embeds the audio file at the top of the page using standard WordPress audio block (`<!-- wp:audio -->`), preserving default behavior.
+
+[x] 10.1 WordPress Media Library Upload & Attachment ID Binding (`plugins/wordpress/export_destination.py`, `plugins/wordpress/client.py`): Implement automated media file upload via REST API to obtain media attachment ID and filesize (`ss_podcast_audio_file` and `ss_podcast_filesize`). [COMPLETED in v3.9.26-beta]
+[x] 10.2 Dynamic Podcast Options UI & Feed Picker (`plugins/wordpress/wp_ui_builder.py`, `plugins/wordpress/wp_tab_widget.py`, `plugins/wordpress/castos.py`): Show Castos options when a post is designated as a podcast episode, dynamically fetch available podcast feeds via REST API, and provide episode type and season/episode controls. [COMPLETED in v3.9.26-beta]
+[x] 10.3 Castos Post Meta Mapping, Conditional Player Embedding & Draft Publishing (`plugins/wordpress/client.py`, `plugins/wordpress/export_destination.py`): Inject Castos post meta (`ss_podcast_audio_file`, `ss_podcast_feed`) and RSS excerpt for podcast posts while omitting standard `<!-- wp:audio -->` blocks in favor of the Castos web player; embed standard `<!-- wp:audio -->` blocks at top of page for non-podcast exports. [COMPLETED in v3.9.26-beta]
+
+================================================================================
+4. COMPLETED MILESTONE: SMART HYBRID AUDIO LOUDNESS NORMALIZATION & NON-DESTRUCTIVE AUTO-BOOST SUITE [x] [COMPLETED in v3.9.25-beta]
 ================================================================================
 ARCHITECTURAL INVARIANTS FOR SECTION 4:
 - Dedicated Module: Implement all probing and normalization logic in a dedicated module `audio_normalization.py` (<= 600 lines) rather than bloating existing processing files.
 - Non-Destructive Sidecar Design: NEVER overwrite or mutate the user's original media file on disk. Generate normalized audio as a cached 16 kHz mono WAV sidecar in `get_app_data_dir() / "cache" / "normalized"` for ASR/diarization consumption, and store the computed `loudness_gain_db` metadata in the `.rtvs` project dictionary.
 - Subprocess Safety: All `ffmpeg` / `ffprobe` calls must use `process_lifecycle.register_process()`, `stdin=subprocess.DEVNULL`, `CREATE_NO_WINDOW` on Windows, and explicit timeouts.
 
-[x] 4.1 Fast Non-Blocking Multi-Window LUFS & Peak Probing (`audio_normalization.py`) [COMPLETED in v3.9.9-beta]
+[x] 11.1 Fast Non-Blocking Multi-Window LUFS & Peak Probing (`audio_normalization.py`) [COMPLETED in v3.9.9-beta]
     - Implemented `probe_media_loudness()` and `AudioLoudnessProbeWorker(QThread)` in `audio_normalization.py`:
       1. Fast 3-window sampling at 15%, 50%, and 85% of duration for files > 180s in < 1.5 seconds.
       2. Parses `Integrated Loudness (I)` in LUFS, `Loudness Range (LRA)` in LU, and `True Peak (TP)` in dBTP/dBFS.
       3. Handles silent or audio-less files gracefully and integrates with `process_lifecycle`.
 
-[x] 4.2 Conditional Two-Tier Hybrid Normalization Pipeline (`audio_normalization.py`) [COMPLETED in v3.9.24-beta]
+[x] 11.2 Conditional Two-Tier Hybrid Normalization Pipeline (`audio_normalization.py`) [COMPLETED in v3.9.24-beta]
     - Implement `normalize_audio_sidecar(media_path, report, target_lufs=-16.0, max_true_peak=-1.5) -> Path`:
       1. Bypass Condition: If `report.integrated_lufs >= (target_lufs - 2.0)` and `report.true_peak_dbtp <= -0.5`, skip normalization and return the original path (`needs_boost = False`) to avoid unnecessary disk I/O.
       2. Tier 1 — Linear Gain + True-Peak Limiter (Default for uniform quiet audio, `LRA <= 14.0 LU`): Apply exact linear gain `delta_db = min(target_lufs - report.integrated_lufs, 24.0)` followed by a transparent brickwall limiter (`-af "volume={delta_db}dB,alimiter=limit=-1.5dB:level=false"`) so speech dynamics remain 100% natural without single-pass `loudnorm` pumping artifacts.
       3. Tier 2 — Dynamic Speech Leveler (For extreme speaker disparity, `LRA > 14.0 LU`, e.g., loud studio host + quiet phone-in guest): Apply speech-tuned dynamic normalization (`-af "highpass=f=80,dynaudnorm=f=250:g=15:p=0.89:m=10.0,alimiter=limit=-1.5dB:level=false"`).
       4. Automatically feed the normalized sidecar WAV into `transcription_processing.py` and `diarization_processing.py` when enabled.
 
-[x] 4.3 Preferences Dialog & Adjustable Thresholds / Targets (`preferences_dialog.py`, `playback_preferences.py`, `preferences_tabs_core.py`, `preferences_reset.py`) [COMPLETED in v3.9.25-beta]
+[x] 11.3 Preferences Dialog & Adjustable Thresholds / Targets (`preferences_dialog.py`, `playback_preferences.py`, `preferences_tabs_core.py`, `preferences_reset.py`) [COMPLETED in v3.9.25-beta]
     - Add an "Audio Loudness Normalization & Auto-Boost" group in `preferences_dialog.py` (persisted via `QSettings`):
       1. Checkbox: "Automatically boost quiet audio on import for transcription & speaker detection" (Default: Enabled).
       2. Target Standard selector (defaults to modern LUFS target):
@@ -307,237 +533,10 @@ ARCHITECTURAL INVARIANTS FOR SECTION 4:
          - Minimum Peak/dBFS Trigger Threshold spinbox (Default: `-6.0 dBFS`, range `-18.0` to `-1.0 dBFS`). Audio peaking below this triggers normalization.
       4. Checkbox: "Apply loudness boost to in-app playback and exported audio clips" (Default: Disabled, preserves original mix unless user opts in).
 
-[x] 4.4 Tools Menu Manual Normalization Action & Telemetry Dialog (`RadioTVSegmenter.py`, `dialogs.py`, `test_runner.py`) [COMPLETED in v3.9.25-beta]
+[x] 11.4 Tools Menu Manual Normalization Action & Telemetry Dialog (`RadioTVSegmenter.py`, `dialogs.py`, `test_runner.py`) [COMPLETED in v3.9.25-beta]
     - Add `Tools -> Normalize Audio Loudness...` action in `RadioTVSegmenter.py` opening a dedicated dialog:
       1. Displays current file audio metrics: Integrated LUFS, Loudness Range (LRA), and True Peak (dBTP/dBFS).
       2. Displays configured target standard and target LUFS/dBFS level with dynamic preview of required gain adjustment.
       3. Provides "Apply Normalization", "Re-Analyze", and "Reset to Original" buttons.
     - Add a diagnostic test in `test_runner.py` verifying end-to-end normalization against synthetic quiet audio.
-================================================================================
-5. UPCOMING MILESTONE: SERIOUSLY SIMPLE PODCASTING (CASTOS) WORDPRESS PLUGIN INTEGRATION [x] [COMPLETED in v3.9.26-beta]
-================================================================================
-- Purpose: Integrate Castos' Seriously Simple Podcasting plugin into WordPress full-episode draft exports, allowing users to designate posts as podcast episodes within the export dialog, dynamically show Castos options, and map media files to the selected podcast feed via WordPress REST API application passwords and post meta (`ss_podcast_audio_file`, `ss_podcast_feed`, etc.).
-- Confirmed User Specifications:
-  1. Dynamic Podcast Designation UI: When a user designates a post as a podcast episode in the export dialog, Castos options (podcast feed selection, episode meta) appear dynamically.
-  2. Authentication: Uses standard WordPress REST API application passwords.
-  3. Media Binding & RSS Feed: Automatically uploads full-episode audio to WordPress Media Library, assigning audio file and excerpt to the podcast RSS feed via Castos post meta.
-  4. Conditional Player Embedding:
-     - Podcast Episode: Displays the embedded Castos player on the website page (omitting standard `<!-- wp:audio -->` block to prevent duplicate players).
-     - Standard Export (Non-Podcast): Embeds the audio file at the top of the page using standard WordPress audio block (`<!-- wp:audio -->`), preserving default behavior.
-
-[x] 5.1 WordPress Media Library Upload & Attachment ID Binding (`plugins/wordpress/export_destination.py`, `plugins/wordpress/client.py`): Implement automated media file upload via REST API to obtain media attachment ID and filesize (`ss_podcast_audio_file` and `ss_podcast_filesize`). [COMPLETED in v3.9.26-beta]
-[x] 5.2 Dynamic Podcast Options UI & Feed Picker (`plugins/wordpress/wp_ui_builder.py`, `plugins/wordpress/wp_tab_widget.py`, `plugins/wordpress/castos.py`): Show Castos options when a post is designated as a podcast episode, dynamically fetch available podcast feeds via REST API, and provide episode type and season/episode controls. [COMPLETED in v3.9.26-beta]
-[x] 5.3 Castos Post Meta Mapping, Conditional Player Embedding & Draft Publishing (`plugins/wordpress/client.py`, `plugins/wordpress/export_destination.py`): Inject Castos post meta (`ss_podcast_audio_file`, `ss_podcast_feed`) and RSS excerpt for podcast posts while omitting standard `<!-- wp:audio -->` blocks in favor of the Castos web player; embed standard `<!-- wp:audio -->` blocks at top of page for non-podcast exports. [COMPLETED in v3.9.26-beta]
-
-================================================================================
-6. UPCOMING MILESTONE: WORDPRESS PUBLISHING ERGONOMICS, SHARED STORY METADATA & NON-MODAL DIALOG ARCHITECTURE [x] [COMPLETED in v3.9.35-beta]
-================================================================================
-ARCHITECTURAL INVARIANTS FOR SECTION 6:
-- Canonical Single Source of Truth: Never keep isolated publishing metadata trapped inside transient UI dialog fields. Store WordPress attributes directly under `story.metadata["wordpress"]` (for story scopes) and `project_metadata["wordpress"]` (for full episode/podcast scopes), auto-saving to `.rtvs` project containers.
-- Reusable Widget Architecture (<1,000-Line Ceiling): All input controls (title, excerpt, authors, categories, featured image, Castos feeds) remain singletons managed by `plugins/wordpress/wp_ui_builder.py`. The Tabbed vs. Split Two-Column presentation is purely an outer container layout adapter, avoiding duplicated business or networking logic.
-- Non-Modal / Modeless Integrity: Modeless tool windows must handle project close/reload cleanly, unsubscribing from change events when media changes to prevent stale UI state or crashes.
-
-[x] 6.1 Shared Story & Project WordPress Metadata Persistence (`story_metadata_dialog.py`, `plugins/wordpress/export_destination.py`, `plugins/wordpress/wp_post_builder.py`, `story_model.py`) [COMPLETED in v3.9.34-beta]
-    - Implement unified two-way binding between the project model and UI:
-      1. Define standard `story.metadata["wordpress"]` dictionary schema (`title`, `excerpt`, `author_ids`, `category_ids`, `featured_image`, `is_podcast`, `podcast_feed_ids`, `season`, `episode_number`).
-      2. When `StoryMetadataDialog` loads or saves, populate and commit WordPress attributes to `story.metadata["wordpress"]` (only active when the WordPress plugin is enabled).
-      3. When `UnifiedExportDialog` opens, pre-populate all WordPress fields directly from `story.metadata["wordpress"]` (or `project_metadata["wordpress"]` for full episode).
-      4. Any edit made inside the Export dialog immediately updates the underlying story/project metadata and in-session cache so closing the dialog never discards typed data.
-
-[x] 6.2 Tabbed Export View Layout & User-Configurable Preference Switcher (`plugins/wordpress/wp_ui_builder.py`, `plugins/wordpress/wp_tab_widget.py`, `preferences_dialog.py`) [COMPLETED in v3.9.35-beta]
-    - Restructure the WordPress export configuration view from a single vertical accordion into a clean 4-tab panel:
-      1. Tab 1: **Post Content** — Full-width post title, auto-expanding full-height excerpt box with word count badge and "Generate from Story" action, and Custom Header & Footer Notice docked in a vertical `QSplitter`.
-      2. Tab 2: **Authors & Taxonomy** — Spacious side-by-side author and category checklist columns with active selection count badge and filter inputs.
-      3. Tab 3: **Podcast & Media** — Featured thumbnail frame grabber/file selector, Castos podcast feed selector, and episode/season metadata.
-      4. Tab 4: **Publishing & Formatting** — Transcript language toggles and formatting options, plus a user setting in `preferences_dialog.py` (`Export View Layout: [Tabs (4-Tab Recommended) | Split Two-Column | Classic Accordion]`) persisted in `QSettings("wordpress_layout_style", "tabs")`.
-
-[x] 6.3 Non-Modal Floating Window & Modeless Transcript Co-Editing (`export/dialog.py`, `story_metadata_dialog.py`, `RadioTVSegmenter.py`) [COMPLETED in v3.9.35-beta]
-    - Add floating non-modal capability to export and metadata editors:
-      1. Add a "Pin on Top" (`float_btn`) and "Sync Transcript" (`refresh_btn`) toggle to `UnifiedExportDialog` and `StoryMetadataDialog`, plus a "Pop Out" button in the Stories sidebar header.
-      2. Configure `Qt.WindowModality.NonModal` presentation so users can interact with the transcript, scrub audio, and re-label speakers while keeping the export or metadata panel visible on a second monitor or side-by-side.
-      3. Connect transcript edit signals to refresh story word counts and excerpt references live without closing the dialog, and flush pending edits before export execution.
-
-[x] 6.4 Diagnostic Tests & Version Synchronization (`test_runner.py`, `diagnostic_export_tests.py`, `bump_version.py`) [COMPLETED in v3.9.35-beta]
-    - Add diagnostic unit tests verifying shared metadata persistence across story models, tab layout instantiation, preference switching, modeless window lifecycle, and synchronize project version to `v3.9.35-beta`.
-
-================================================================================
-7. UPCOMING MILESTONE: AUTOMATED AMD RYZEN AI LOCAL DEVELOPMENT PLATFORM & TOKEN-EFFICIENT MODEL SUITE [PLANNED for v4.1.0] [OPTIONAL / PLANNED] [NOT STARTED]
-================================================================================
-ARCHITECTURAL INVARIANTS FOR SECTION 7:
-- Non-Destructive & Cross-Platform Safe: `scripts/setup_local_ai.py` must support `--check` / `--dry-run`, never overwrite existing user IDE settings without creating a `.bak` backup, and degrade gracefully on non-AMD machines.
-- Token Thrift & Prefix Caching First: All local coding models running on unified memory architectures (UMA) must be configured to maximize token-per-second throughput, minimize KV-cache memory pressure, and leverage the symbol stubs and AST analysis tools established in Milestone 3.
-- Preserve All Existing CI & Packaging Tests: Any updates to `.github/workflows/build.yml` MUST retain every invariant tested by `_test_windows_ci_build_and_packaging_optimization_invariants` in `test_runner.py`.
-
-[ ] 7.1 Strix Point Hardware, UMA VRAM & Context Allocation Probe (`scripts/setup_local_ai.py`)
-    - Implement hardware inspection for AMD Ryzen AI 9 HX 370 (12C/24T Zen 5, Radeon 890M `gfx1150` RDNA 3.5 iGPU, XDNA 2 50-TOPS NPU, 64GB RAM):
-      1. Detect total physical RAM, dedicated/UMA aperture allocation, and Vulkan/ROCm driver availability.
-      2. Compute optimal KV-cache VRAM budget: halving KV-cache footprint via `OLLAMA_KV_CACHE_TYPE=q8_0` and setting working context limits (16k default, 32k max) so local models consume <4 GB KV VRAM instead of ~10 GB, leaving at least 24 GB of system RAM free for concurrent Whisper/WeSpeaker transcription runs.
-      3. Configure optimal runtime environment variables for `gfx1150` stability on Windows/Linux: `OLLAMA_FLASH_ATTENTION=1`, `OLLAMA_KV_CACHE_TYPE=q8_0`, and `OLLAMA_NUM_PARALLEL=1`.
-
-[ ] 7.2 Tiered Local AI Model Provisioner with Prefix-Cache Optimization (`scripts/setup_local_ai.py`)
-    - Automate pulling and registering memory-budgeted coding model tiers via Ollama / LM Studio CLI:
-      1. Tier 1 (Heavy Refactoring & Architectural Decomposition — ~20 GB VRAM): `qwen2.5-coder:32b-instruct-q4_K_M` with 32,768 token context for complex AST splits and multi-file facades.
-      2. Tier 2 (Fast Single-File Bug Fixes & Mixin Edits — ~9 GB VRAM): `qwen2.5-coder:14b-instruct-q4_K_M` / `7b-instruct-q4_K_M` delivering >50 tok/s on Radeon 890M.
-      3. Tier 3 (Sub-50ms Inline Autocomplete — ~1.2 GB VRAM): `qwen2.5-coder:1.5b-base` running on lightweight context.
-      4. Validate all models with automated `--dry-run` and SHA-256 integrity checks.
-
-[ ] 7.3 Local Server Health Check, Context Window Tuning & Prompt Cache Pinning (`scripts/setup_local_ai.py`)
-    - Verify `http://127.0.0.1:11434` endpoint readiness and generate custom Ollama / llama.cpp `Modelfile` presets:
-      1. Pin the project symbol catalog (`.codemaps/symbol_index.json` and `.pyi` stubs created in Item 3.9) into the prefix cache, giving the local model instant zero-token access to repository APIs and signatures without re-ingesting 30+ files on each interaction.
-      2. Enforce context ceilings (`num_ctx 16384` for daily development, expandable to `32768` for full audits) and `temperature 0.1` for deterministic code generation.
-      3. Run a 64-token warmup benchmark reporting TTFT (Time To First Token) and token/sec throughput.
-
-[ ] 7.4 Token-Thrift IDE Configuration & AST Suggester Integration (`scripts/setup_local_ai.py`)
-    - Safely generate/merge `.vscode/settings.json` and Continue.dev / Cline / Roo Code configuration templates pointing to `http://127.0.0.1:11434`:
-      1. Configure IDE extensions for **token-thrifty retrieval**: instruct assistants to query the symbol index (`.codemaps/`) before requesting full file reads, use line-slice reads (`view_file` StartLine/EndLine), and produce unified diff patches rather than regenerating whole files.
-      2. Direct integration with AST Split Suggester: configure agent instructions so when an edit touches a file exceeding 800 lines, the assistant automatically invokes `python scripts/modular_audit.py --suggest <file>` to receive turnkey decomposition blueprints rather than wasting thousands of tokens analyzing AST coupling manually.
-      3. Create cross-platform symlinks or synchronized copies mapping `.clinerules` and `.cursorrules` to `AGENTS.md` and `GEMINI.md` to enforce the 10-location version bump checklist, `roadmap_manager.py --check`, and the <1,000-line modular ceiling.
-
-[ ] 7.5 Token-Budget Task-to-Model Router & CI Pipeline Verification (`.github/workflows/build.yml`, `test_runner.py`)
-    - Add `--guide` CLI mode and interactive task-to-model routing matrix to `scripts/setup_local_ai.py`:
-      * Small single-file fixes (<300 lines) -> Route to 7B/14B model (<100ms TTFT, saving power and memory).
-      * Multi-file refactoring, architectural planning, or files >500 lines -> Route to 32B model with pre-cached symbol catalog.
-      * Inline code completions -> Route to 1.5B autocomplete model.
-    - Verify `.github/workflows/build.yml` and add a diagnostic unit test in `test_runner.py` validating `scripts/setup_local_ai.py --dry-run` hardware profile serialization and token budget calculations.
-
-================================================================================
-8. OPTIONAL FUTURE MILESTONE: INTERACTIVE TEXT-BASED MEDIA ASSEMBLY & MULTI-ASSET RIPPLE EDITING ENGINE [PLANNED for v4.2.0] [OPTIONAL] [NOT STARTED]
-================================================================================
-*Workflow Design Note*: Marked as an optional workflow extension for users requesting text-driven paper cuts. The core single-file story segmenter, voicebook, and DAW exports remain default and lightweight. All new modules in this milestone MUST reside in a dedicated `assembly/` package with every file kept strictly under 1,000 lines.
-
-[ ] 8.1 Multi-Asset Project Container & Media Bin Submodule (`assembly/bin_model.py`, `project_lifecycle.py`)
-[ ] 8.2 Dynamic Uncapped Tabbed Document Workspace (`assembly/tab_workspace.py`, `ui_layout.py`)
-[ ] 8.3 Rich Media Clipboard Engine (`assembly/clipboard.py` — `application/x-rtvs-clip+json`)
-[ ] 8.4 Non-Destructive Multi-Source Playout Engine (`assembly/playout_engine.py`)
-[ ] 8.5 Text-Driven Audio/Video Ripple Cut Engine (`assembly/ripple_engine.py`)
-[ ] 8.6 Paper-Cut Story Assembly Workflow (`assembly/paper_cut_mixin.py`)
-[ ] 8.7 Document Revisions & Snapshot Version History (`assembly/revision_history.py`)
-[ ] 8.8 Word-Level Timecode Sync, NLE Markers & Multi-Track DAW Timeline Export (`export/timeline.py`)
-[ ] 8.9 Automated Diagnostic Test Suite (`test_runner.py`)
-
-================================================================================
-9. REAPER DAW COMPANION BRIDGE & REASCRIPT TRANSCRIPT INTEGRATION [PLANNED for v4.2.0] [OPTIONAL / PLANNED] [NOT STARTED]
-================================================================================
-ARCHITECTURAL INVARIANTS FOR REAPER INTEGRATION:
-- Modular <1,000-Line Invariant: Keep all Python bridge logic in a dedicated module `reaper_bridge.py` (<= 500 lines) and companion Lua ReaScripts in `scripts/reaper/` so existing transcript editor modules remain well under the 1,000-line ceiling.
-- Non-Destructive OS Clipboard Behavior: Copying text in RTVS3 (`Ctrl+C`) must keep clean readable prose in the standard `text/plain` system clipboard for Word/Docs/Slack while simultaneously writing structured REAPER timeline cue metadata to `~/.rtvs_reaper_clip.json` (and custom MIME `application/x-rtvs-clip+json`).
-
-[ ] 9.1 RTVS3 Clip Cue Payload & Sidecar/IPC Emitter (`reaper_bridge.py`)
-    - Create `reaper_bridge.py` to bridge RTVS3 word-level timestamp selections (`get_time_range_for_char_span` / `get_all_selected_story_ranges`) to REAPER:
-      1. Define `ReaperClipCue` payload schema (`version`, `source_audio`, `start_time`, `end_time`, `duration`, `speaker`, `excerpt_label`, `full_text`, `story_title`, `project_path`, `timestamp_utc`).
-      2. Ensure `source_audio` resolves to a permanent, REAPER-readable media file path on disk.
-      3. Implement dual-channel emission:
-         - **Sidecar + Multi-MIME Clipboard**: On copy or "Send to REAPER", write `~/.rtvs_reaper_clip.json` (or `get_app_data_dir() / "ipc" / "reaper_clip_cue.json"`) and attach `application/x-rtvs-clip+json` to `QMimeData` while keeping clean plain text in `text/plain`.
-         - **Zero-Click Local Loopback / Web Control Trigger**: Optionally dispatch a non-blocking local HTTP/OSC command or `reaper -nonewinst` action trigger so clicking "Send to REAPER" drops the clip onto REAPER's timeline immediately without switching window focus.
-
-[ ] 9.2 Interactive Transcript Quick-Action & Shortcut Integration (`transcript_editor_dialogs.py`, `transcript_context_menu_mixin.py`, `shortcuts_manager.py`)
-    - Add a `"Send to REAPER"` action button to `TranscriptSelectionBubble` (`transcript_editor_dialogs.py`) and the right-click context menu (`transcript_context_menu_mixin.py`), plus a configurable keyboard shortcut (`Ctrl+Shift+R` default in `shortcuts_manager.py`).
-    - Automatically populate the clip cue whenever a user copies a transcript selection (`Ctrl+C`) so pasting inside REAPER works transparently.
-
-[ ] 9.3 Companion ReaScript Timeline Paste & Take Labeling Action (`scripts/reaper/rtvs_reaper_companion.lua`)
-    - Create a dependency-free Lua ReaScript (`scripts/reaper/rtvs_reaper_companion.lua`) that users can bind to a shortcut (e.g., `Alt+V` or `Ctrl+Shift+V`) in REAPER's Action List:
-      1. Reads the latest `ReaperClipCue` JSON payload from the sidecar cue file (or clipboard fallback).
-      2. Wraps timeline insertion in `reaper.Undo_BeginBlock()` / `reaper.Undo_EndBlock("RTVS3: Insert Transcript Clip", -1)`.
-      3. Locates the active/selected track (or creates a new track if none is selected) and inserts a new media item at `reaper.GetCursorPosition()` via `reaper.AddMediaItemToTrack()`, `reaper.AddTakeToMediaItem()`, and `reaper.PCM_Source_CreateFromFile()`.
-      4. Sets `D_POSITION` to the edit cursor, `D_LENGTH` to `end_time - start_time`, and take `D_STARTOFFS` to `start_time` (with optional short crossfade/fade-in/out padding).
-      5. Labels the take banner (`P_NAME`) with `"{speaker}: \"{excerpt_label}\""` (using `generate_story_excerpt`-style truncation) so the spoken words appear directly on the waveform in REAPER's arrange view, and writes the full unabridged quote into the item's notes (`P_NOTES`).
-      6. Advances the REAPER edit cursor to the end of the newly inserted item for rapid sequential paper-cut assembly and calls `reaper.UpdateArrange()`.
-
-[ ] 9.4 Optional Dockable ReaImGui Transcript Viewer for REAPER (`scripts/reaper/rtvs_reaper_dock.lua`)
-    - Create an optional dockable ReaImGui Lua script (`scripts/reaper/rtvs_reaper_dock.lua`) that opens any `.rtvs` / `.rtvs.json` project file directly inside REAPER:
-      1. Renders speaker labels, timestamps, story boundaries, and a live search/filter bar inside a dockable REAPER panel.
-      2. Supports playhead chasing (clicking a word seeks REAPER's playhead) and a one-click `"Insert Selection at Cursor"` button that slices and labels the corresponding audio item on the active REAPER track.
-
-[ ] 9.5 Preferences Integration, One-Click Script Installer & Diagnostic Tests (`preferences_dialog.py`, `reaper_bridge.py`, `test_runner.py`)
-    - Add a `"DAW & REAPER Integration"` section in Preferences (`preferences_dialog.py`) allowing users to:
-      1. Configure default clip handle/fade padding (ms) and take label format (`Speaker + Excerpt`, `Excerpt Only`, `Story Title + Speaker`).
-      2. Click `"Install Companion ReaScripts to REAPER..."` to automatically detect the OS REAPER resource path (`%APPDATA%/REAPER/Scripts`, `~/Library/Application Support/REAPER/Scripts`, or `~/.config/REAPER/Scripts`) and copy the Lua scripts into place.
-    - Add a diagnostic unit test in `test_runner.py` (`"REAPER Companion Bridge & ReaScript Payload Invariants"`) verifying `ReaperClipCue` serialization, excerpt label truncation, non-destructive `text/plain` clipboard preservation, and Lua script syntax/API invariants.
-
-[ ] 9.6 Universal Text-to-WAV Clipboard & Drag-and-Drop Fallback for Other DAWs (`reaper_bridge.py`, `export_media_clipper.py`, `transcript_context_menu_mixin.py`)
-    - Provide a lightweight, universal fallback solution in `reaper_bridge.py` and `transcript_context_menu_mixin.py` for DAWs without an open non-destructive take-offset API (Audacity, Hindenburg Pro, Adobe Audition, Premiere, DaVinci Resolve):
-      1. Add a `"Copy Audio Clip for DAW"` / `"Render & Copy WAV Clip to System Clipboard"` action to the transcript selection context menu and bubble, plus drag-and-drop file export support.
-      2. When triggered, use RTVS3's existing `extract_audio_clip` helper (`export_media_clipper.py`) to render the selected quote into a temporary, cleanly trimmed `.wav` slice named after the speaker and quote excerpt (via `generate_story_excerpt` in `story_metadata_dialog.py`): e.g., `Jane_Doe_-_We_started_this_project_back_in_2020.wav`.
-      3. Place the rendered `.wav` file path onto the OS clipboard as a file URI list (`QMimeData.setUrls([QUrl.fromLocalFile(wav_path)])`).
-      4. Enable users of Audacity, Hindenburg, Audition, or other NLEs to simply `Ctrl+V` (or drag) the named audio file onto a track, where the DAW automatically names the timeline clip after the descriptive `.wav` filename—delivering ~80% of the interactive pasting benefit while preserving instant 0ms non-destructive pointer slicing (`D_STARTOFFS`) in Cockos REAPER.
---------------------------------------------------------------------------------
-
-================================================================================
-10. UPCOMING MILESTONE: SPEAKER MANAGEMENT ERGONOMICS & QUICK SAMPLE AUDIO PREVIEW [x] [COMPLETED in v3.9.41-beta]
-================================================================================
-ARCHITECTURAL INVARIANTS FOR SPEAKER AUDIO PREVIEW:
-- Modular <1,000-Line Invariant: Keep all UI controls inside `speaker_dialogs.py` (303 lines) and reuse existing non-blocking audio playout mechanisms (`playback_controller.py` or dedicated `QMediaPlayer` preview channel) without blocking the Qt main GUI loop.
-- Non-Destructive Playout & Clean Teardown: Previewing a sample must never disrupt main timeline playback state or scrub position unless intentionally requested, and any playing preview sample must automatically terminate if the dialog is closed or dismissed (`reject()`, `accept()`, `closeEvent`).
-- Strict UI Discipline: No unrequested icons or decorative emojis on buttons; use clean, native desktop text ("Play Sample", "Stop", "Sample (3s)").
-
-[x] 10.1 Non-Modal Floating Speaker Management Dialog & Modeless Co-Editing (`speaker_dialogs.py`, `speaker_dialog_refinement_mixin.py`) [COMPLETED]
-    - Scope & Implementation Specifications:
-      1. Non-Modal Window Presentation: Transition `SpeakerManagerDialog` to an independent non-modal floating window (`Qt.WindowType.Window`, `Qt.WindowModality.NonModal`, `WA_QuitOnClose=False`), allowing users to click back into the main transcript window to edit words, fix spelling, scrub audio, or relabel speakers without modal lockout.
-      2. Pin on Top Toggle: Add a checkable `Pin on Top` header button (`float_btn`) that toggles `Qt.WindowType.WindowStaysOnTopHint` to keep the speaker management window visible while scrubbing media.
-      3. Live Two-Way State Synchronization: Wire `changeEvent` (`QEvent.Type.WindowActivate`) and a dedicated `Refresh` button (`refresh_btn`) to automatically refresh the speaker cluster table whenever the window gains focus or edits occur in the main transcript window.
-      4. Singleton Window Management: Track `_active_speaker_manager_dialog` on `MainWindow` to prevent duplicate popups and properly raise/activate the existing window if already open.
-
-[x] 10.2 Quick Sample Audio Preview: An instant "Listen to sample" play button directly alongside each detected speaker in the management dialog so the user can hear 3 seconds of their voice before assigning the name. (`speaker_dialogs.py`, `playback_controller.py`, `speaker_dialog_refinement_mixin.py`) [COMPLETED in v3.9.37-beta]
-    - Scope & Implementation Specifications:
-      1. Representative Utterance Resolution: Inspect the project transcript segments for each detected speaker cluster to find a clean, representative speech sample (preferring the longest continuous utterance >= 3.0s, or the first utterance if shorter).
-      2. Inline Table Action Button: Add an instant "Play Sample" / "Listen to Sample" action button directly in each speaker's row inside `SpeakerManagerDialog` (`speaker_dialogs.py`) under the Actions column.
-      3. Non-Blocking 3-Second Playback: When clicked, stream or play exactly 3 seconds of audio from the resolved start timestamp using the audio playback controller or a dedicated preview sound channel. Automatically cease playout after 3 seconds or when clicking Stop / another speaker's sample button.
-      4. Teardown & Lifecycle Safety: Ensure any ongoing preview playback immediately stops on dialog close, escape, or speaker merge/reassignment.
-
-[x] 10.3 Direct Inline Speaker Renaming & Tab Progression: Enable direct inline double-click editing on the "Speaker Name / Alias" cell in the table with Tab key progression (type name → press Tab → jump directly to rename the next speaker). (`speaker_dialogs.py`, `speaker_dialog_refinement_mixin.py`) [COMPLETED in v3.9.41-beta]
-    - Scope & Implementation Specifications:
-      1. In-Place Table Cell Editing Triggers: Configure `self.table.setEditTriggers(QAbstractItemView.EditTrigger.DoubleClicked | QAbstractItemView.EditTrigger.SelectedClicked | QAbstractItemView.EditTrigger.EditKeyPressed)` specifically for column 0 ("Speaker Name / Alias"), while maintaining read-only item flags on columns 1-3.
-      2. Fast Tab-Key Navigation Progression: Support rapid linear workflow where typing a new name and pressing Tab automatically commits the alias change and seamlessly transfers focus and edit mode to the next speaker row below (`table.editItem(next_item)`), eliminating repetitive modal popup clicks when renaming an entire panel of speakers.
-      3. Project Undo State & Alias Binding: On edit completion (`itemChanged` or delegate `commitData`), if the text has changed, automatically trigger the full project undo capture (`flush_pending_transcript_undo` and `_capture_project_state`), rebind speaker aliases in `main_win.speaker_aliases` or `segment_speaker_overrides`, and trigger UI transcript refresh (`render_transcript()`).
-      4. Escape / Revert Safety: Pressing Escape cleanly cancels the inline edit and restores the previous alias without mutating project state or dirtying the undo history.
-
-[x] 10.4 Non-Modal Preferences Inspector Window (`preferences_dialog.py`, `preferences_tabs_core.py`, `story_crud_mixin.py`, `project_export.py`) [COMPLETED]
-    - Scope & Implementation Specifications:
-      1. Modeless Inspector Architecture: Transition Preferences from modal `exec()` to modeless floating window with live preview of visual tokens (theme, transcript font scale, timeline display views, audio fades).
-      2. Live Auto-Commit / Reset Defaults Model: Provide "Apply" for instant non-closing settings persistence, "Save" for saving & closing, and clean singleton tracking (`_active_preferences_dialog`) with category switching (`dialog._select_category`).
-      3. Safe Audio/Hardware Reload Guards: Implement thread-safe guards preventing audio device or ASR model reloads from conflicting with active playback streams or running transcription jobs.
---------------------------------------------------------------------------------
-
-================================================================================
-11. UPCOMING MILESTONE: SOCIAL REEL & SHORT VIDEO EXPORT PLUGIN (INSTAGRAM REELS, YOUTUBE SHORTS, TIKTOK) [PLANNED] [NOT STARTED]
-================================================================================
-ARCHITECTURAL INVARIANTS FOR SOCIAL REEL PLUGIN:
-- Modular Plugin Isolation: The feature MUST live completely inside an optional plugin at `plugins/social_reel/` (`plugin.py`, `manifest.json`, `export_destination.py`, `reel_config.py`, `reel_renderer.py`, `reel_subtitles.py`). Core modules (`RadioTVSegmenter.py`, `ui_layout.py`, `processing.py`) must NEVER import from `plugins/social_reel/`.
-- Modular <1,000-Line Invariant: Keep every plugin submodule well under the 800-line target ceiling.
-- Native FFmpeg Subprocess Pipeline: Utilize RTVS3's non-blocking FFmpeg execution with safe argument vectors (`shell=False`, `CREATE_NO_WINDOW` on Windows) without blocking the Qt main GUI loop.
-- UI Discipline: No unrequested icons or decorative emojis on buttons, dialogs, or dropdowns.
-
-[ ] 11.1 Social Reel Plugin Architecture & Manifest (`plugins/social_reel/plugin.py`, `plugins/social_reel/manifest.json`, `plugins/social_reel/export_destination.py`)
-    - Scope & Implementation Specifications:
-      1. Plugin Registration & Lifecycle: Create `plugins/social_reel/` adhering to RTVS3's `IPlugin` and `IExportDestination` contracts.
-      2. Plugin Manifest: Define `plugins/social_reel/manifest.json` with metadata, configurable settings schema, and default enablement.
-      3. Export Destination Hook: Register a "Social Reel / Short (9:16)" export destination that dynamically mounts into the Unified Export Dialog (`UnifiedExportDialog`) and Stories pop-out dialog when the plugin is active.
-
-[ ] 11.2 Multi-Source Input & Template Image Configuration (`plugins/social_reel/reel_config.py`, `plugins/social_reel/reel_dialog.py`)
-    - Scope & Implementation Specifications:
-      1. Dual Audio / Video Source Selection: Allow users to target either the active video stream, an audio-only track, an external audio/video file, or a selected story segment.
-      2. Template & Branding Image Ingestion: Provide an image picker supporting `.png`, `.jpg`, and `.webp` for header cards, logos, or full 9:16 background artwork.
-      3. Save Default Template: Include a "Save as Default Template" action persisting the template image path and layout parameters in `QSettings` (`social_reel/default_template_path`, `social_reel/caption_style`), enabling 1-click reusable branded exports across projects.
-      4. Target Platform Presets: Presets for Instagram Reels (9:16, 1080x1920), YouTube Shorts (9:16, 1080x1920), and TikTok (9:16, 1080x1920).
-
-[ ] 11.3 9:16 Vertical Video Compositor & Audiogram Pipeline (`plugins/social_reel/reel_renderer.py`, `export_media_clipper.py`)
-    - Scope & Implementation Specifications:
-      1. Video Source Pipeline (1080x1920): Build an FFmpeg filtergraph supporting:
-         - Blurred Pillarbox Backdrop: Scale original 16:9 video to fill 1080x1920, apply `boxblur=luma_radius=25:luma_power=3`, and overlay the centered, uncropped original video.
-         - Center Crop Mode: Crop 9:16 center region (`crop=ih*9/16:ih`) with optional X-offset panning.
-      2. Audio Source Pipeline (Audiogram): Build an FFmpeg filtergraph combining the background template image with a dynamic audio waveform visualizer (`showwaves` or `showwavespic`) centered or anchored in the middle third.
-      3. Non-Blocking Background Execution: Run video rendering through a dedicated `QThread` / `subprocess` worker with progress calculation, cancel check, and atomic output writing.
-
-[ ] 11.4 Burned-in Subtitles & Platform Safe Zone Enforcement (`plugins/social_reel/reel_subtitles.py`)
-    - Scope & Implementation Specifications:
-      1. ASS / Styled Caption Generator: Transform Whisper word-level timestamps for the target story segment into an Advanced SubStation Alpha (`.ass`) subtitle stream.
-      2. High-Contrast Typography: Apply bold, readable sans-serif typography with high-contrast text outlines, drop shadows, or background pill backing.
-      3. UI Safe Zone Constraint: Enforce vertical bounding boxes that prevent subtitles from being obscured by Instagram/TikTok interface elements (preserving top 15% and bottom 25% margins, rendering text in the safe middle 60%).
-      4. Optional Word-Level Karaoke Highlight: Highlight the active spoken word in real time based on Whisper word start/end timings.
-
-[ ] 11.5 Unified Export Integration & Social Reel Diagnostic Tests (`export/dialog.py`, `test_runner.py`)
-    - Scope & Implementation Specifications:
-      1. Export Dialog Tab / Staging: Add a dedicated "Social Reel" configuration view in the Unified Export Dialog when the plugin is active, displaying preview framing, safe zone guidelines, template image picker, and caption toggle.
-      2. Automated Diagnostic Suite: Add unit tests in `test_runner.py` verifying plugin registration, ASS subtitle timing generation, safe zone margin math, and FFmpeg filtergraph string assembly.
-
 
