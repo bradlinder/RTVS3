@@ -1527,8 +1527,19 @@ class MediaBatchMixin:
     def _get_batch_project_target_path(self, base_name: str) -> Path:
         """Determines consistent target .rtvs project file path during batch processing."""
         base_dir = self.batch_settings.get("output") if hasattr(self, "batch_settings") else ""
-        if not base_dir or not os.path.exists(base_dir):
-            base_dir = self.get_default_save_directory()
+        if not base_dir:
+            if hasattr(self, "batch_settings") and self.batch_settings.get("transcripts_output"):
+                custom_t = str(self.batch_settings.get("transcripts_output", "")).strip()
+                if custom_t:
+                    p = Path(custom_t.replace("\\", "/"))
+                    if p.name.lower() == "transcripts":
+                        base_dir = str(p.parent)
+                    else:
+                        base_dir = str(p.parent if p.is_dir() or p.suffix else p)
+            if not base_dir and self.audio_file:
+                base_dir = str(Path(self.audio_file).parent)
+            if not base_dir:
+                base_dir = self.get_default_save_directory()
 
         if hasattr(self, "batch_settings") and self.batch_settings.get("unified_transcripts", False):
             projects_dir = Path(base_dir) / "Projects"
