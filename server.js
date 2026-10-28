@@ -14,7 +14,7 @@ function getVersion() {
     const m = prs.match(/PROJECT_VERSION\s*=\s*["']([^"']+)["']/);
     if (m) return m[1];
   } catch (e) {}
-  return '3.9.40-beta';
+  return '3.9.45-beta';
 }
 
 const server = http.createServer((req, res) => {

@@ -25,6 +25,7 @@ from speaker_identity import (
     is_confident_match,
     centroid,
 )
+from speaker_palette import SpeakerColorAssigner
 
 
 from voice_profile_dialog import VoiceProfileMatchDialog
@@ -192,6 +193,7 @@ class TranscriptStoryMixin(StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsM
         curr_speaker_name = None
         curr_raw_speaker = None
         last_rendered_speaker_name = None
+        color_assigner = SpeakerColorAssigner() if getattr(self, "colorize_speaker_labels", True) else None
 
         def render_paragraph_block(p_words, p_speaker_name, p_raw_speaker, is_speaker_change):
             nonlocal current_char_pos
@@ -205,8 +207,17 @@ class TranscriptStoryMixin(StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsM
             if p_speaker_name and is_speaker_change and self.show_speaker_labels:
                 esc_spk = html.escape(p_speaker_name)
                 esc_raw = html.escape(str(p_raw_speaker or ""))
+                eff_spk_color = (
+                    color_assigner.get_hex(
+                        p_speaker_name,
+                        dark_mode=(curr_theme != "light"),
+                        high_contrast=(curr_theme == "high_contrast"),
+                    )
+                    if color_assigner
+                    else speaker_color
+                )
                 speaker_html = (
-                    f'<a href="speaker:{first_seg_idx}:{esc_raw}" style="color:{speaker_color}; font-weight:bold; text-decoration:none;">'
+                    f'<a href="speaker:{first_seg_idx}:{esc_raw}" style="color:{eff_spk_color}; font-weight:bold; text-decoration:none;">'
                     f'{esc_spk}:</a> '
                 )
             else:

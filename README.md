@@ -44,7 +44,7 @@ python3 -m venv venv
 source venv/bin/activate
 
 Install standard application requirements:
-pip install -r requirements.txt
+pip install -r installer/requirements.txt
 
 ### 3. GPU Hardware Acceleration (Optional - Windows NVIDIA)
 

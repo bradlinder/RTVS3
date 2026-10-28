@@ -11,6 +11,15 @@ from export.subtitles import (
     generate_youtube_chapters,
 )
 from export.docx import create_story_docx
+from speaker_palette import (
+    SpeakerColor,
+    SpeakerColorAssigner,
+    get_speaker_color,
+    get_speaker_hex,
+    get_speaker_rgb,
+    get_speaker_pdf_rgb,
+    SPEAKER_PALETTE,
+)
 try:
     from export.dialog import UnifiedExportDialog
 except ImportError:

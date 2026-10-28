@@ -381,8 +381,9 @@ class MediaBatchMixin:
             "story_txt": dialog.fmt_txt.isChecked() and scope in ("stories", "both") and not save_project_only,
             "story_docx": dialog.fmt_docx.isChecked() and scope in ("stories", "both") and not save_project_only,
             "story_srt": dialog.fmt_srt.isChecked() and scope in ("stories", "both") and not save_project_only,
-            "story_vtt": dialog.fmt_vtt.isChecked() and scope in ("stories", "both") and not save_project_only,
             "include_speakers": dialog.include_speakers.isChecked(),
+            "color_speakers": dialog.color_speakers.isChecked() if hasattr(dialog, "color_speakers") else False,
+            "colorize_speakers": dialog.color_speakers.isChecked() if hasattr(dialog, "color_speakers") else False,
             "include_timestamps": dialog.include_times.isChecked(),
             "translate_es": translate_pipeline,
             "translate_stories": translate_pipeline and scope in ("stories", "both"),
@@ -873,6 +874,17 @@ class MediaBatchMixin:
     def toggle_speaker_labels(self, checked):
         self.show_speaker_labels = bool(checked)
         self.settings_store.setValue("show_speaker_labels", self.show_speaker_labels)
+        if hasattr(self, "colorize_speaker_labels_action"):
+            self.colorize_speaker_labels_action.setEnabled(self.show_speaker_labels)
+        self.render_transcript()
+
+    def toggle_colorize_speaker_labels(self, checked):
+        self.colorize_speaker_labels = bool(checked)
+        self.settings_store.setValue("colorize_speaker_labels", self.colorize_speaker_labels)
+        if hasattr(self, "colorize_speaker_labels_action"):
+            self.colorize_speaker_labels_action.blockSignals(True)
+            self.colorize_speaker_labels_action.setChecked(self.colorize_speaker_labels)
+            self.colorize_speaker_labels_action.blockSignals(False)
         self.render_transcript()
 
     def toggle_timestamps(self, checked):
@@ -1620,6 +1632,8 @@ class MediaBatchMixin:
 
         options = {
             "include_speakers": self.batch_settings.get("include_speakers", True),
+            "color_speakers": self.batch_settings.get("color_speakers", False),
+            "colorize_speakers": self.batch_settings.get("colorize_speakers", False),
             "include_timestamps": self.batch_settings.get("include_timestamps", False),
             "include_english": True,
             "include_spanish": self.batch_settings.get("translate_es", False),

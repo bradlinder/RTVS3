@@ -2,20 +2,18 @@
 
 ## 1. App Purpose & Web Preview Directive (CRITICAL RECOVERY DIRECTIVE)
 - **What the AI Studio Preview MUST Display**: 
-  The AI Studio web preview for this project MUST always display the **interactive changelog and release history viewer** powered by `/src/App.tsx` and synchronized with `CHANGELOG.md`.
-- **STRICT PROHIBITION (Never Replace)**:
-  Under NO circumstances should an agent rewrite, scaffold over, or replace `/src/App.tsx` or `/index.html` with:
-  - Dummy/mock audio waveform players or simulated transcription editors
-  - Promotional SaaS landing pages, "Hero" headers, or feature pitch marketing cards
-  - Standalone single-purpose demo widgets or test audio uploaders
+  The AI Studio web preview for this project MUST always display the **zero-dependency app status & version inspector** served by `node server.js` on port 3000 and synchronized with `prs_shared.py`.
+- **STRICT PROHIBITION ON VITE / REACT / NPM INSTALLS (Zero-Dependency Mandatory)**:
+  Under NO circumstances should an agent install `vite`, `react`, `react-dom`, `@vitejs/plugin-react`, or run `npm install` for the web preview.
+  - Do NOT create or scaffold React components (`/src/App.tsx`), `vite.config.ts`, or build pipelines.
+  - The preview uses standard Node.js built-in `node:http` (`node server.js`). It requires ZERO external npm packages.
+  - Do NOT rewrite or scaffold over `server.js` or `package.json` with dummy audio players or SaaS marketing pages.
 - **Why this exists**:
-  The actual application is a native Python/PySide6 (Qt) desktop software suite. The Node/Vite web container in AI Studio exists exclusively to serve the live interactive changelog, release documentation, and version inspector on port 3000.
-- **Recovery / Error Response & Zero-Token Restoration**:
-  If the web preview breaks, fails linting, reports build errors, or if preview files are missing after a git update/pull (since web preview files are ignored in `.gitignore` to keep the desktop repository focused on the Python app):
-  - **NEVER** rewrite, scaffold over, or regenerate the UI from scratch (which wastes tokens and risks hallucination).
-  - Run `python preview_manager.py` (or `python preview_manager.py --restore`) to immediately restore all preview files in < 0.1s.
-- **Changelog Synchronization**:
-  `/src/App.tsx` imports `CHANGELOG.md` directly (`import CHANGELOG_MARKDOWN from '../CHANGELOG.md?raw'`). Whenever `CHANGELOG.md` is updated, the changes are automatically reflected in the web preview without needing to duplicate markdown strings in React code. Use `python preview_manager.py --sync` to align version numbers across preview files.
+  The actual application is a native Python/PySide6 (Qt) desktop software suite. The Node web container in AI Studio exists exclusively to serve the live version inspector card on port 3000 without requiring heavy node_modules or Vite builds.
+- **Recovery / Zero-Token Restoration**:
+  If preview files (`server.js`, `package.json`) are missing or corrupted:
+  - **NEVER** run `npm install` or scaffold a React app.
+  - Run `python preview_manager.py` (or `python preview_manager.py --restore`) to immediately restore all zero-dependency preview files in < 0.1s.
 
 ## 2. Standardized Version Bump Checklist
 - **Incremental Point Release Policy**:
@@ -32,7 +30,7 @@ When bumping or updating the application version number, you MUST update **ALL**
    - **No Changes, No Bump**: If no code, schema, dependency, or asset changes are made to a specific plugin during a release cycle, DO NOT bump that plugin's `version` in `manifest.json`. It is completely expected and supported for a user running e.g. v3.2.20 of the application to run v3.2.15 of the YouTube plugin.
    - **Catch-Up Synchronization on Modification**: The next time a change *does* affect a plugin, its `version` field in `manifest.json` MUST be brought up to date to match the current application `PROJECT_VERSION` being released.
 6. `transcript_story.py` (docstring version header)
-7. `package.json`, `metadata.json`, and `index.html` (title & meta tags)
+7. `package.json`, `metadata.json`, and `index.html` (web preview entrypoints; update version string ONLY, NEVER alter "dev": "node server.js" or install npm packages)
 8. `CHANGELOG.md` & `/src/App.tsx` (version notes and expanded accordion defaults)
 9. `roadmap.txt & CHANGELOG.md (N-1 Sliding-Window & Real-Time Sync Policy)`:
    - Whenever any code change, bug fix, packaging adjustment, or feature refinement is made during a release cycle, it MUST be recorded immediately in the current release section of `roadmap.txt` and `CHANGELOG.md` (even if it occurs after the initial version number bump).
@@ -48,6 +46,7 @@ When bumping or updating the application version number, you MUST update **ALL**
 ## 3. Pre-Completion Verification
 Before completing code modifications:
 - Run Python syntax compilation checks: `python -m py_compile RadioTVSegmenter.py prs_shared.py processing.py runtime_manager.py radio_tv_story_segmenter_worker.py updater.py build_installer.py plugins/manager.py`
+- Verify zero-dependency web preview state: `python preview_manager.py --sync` to ensure `server.js` and `package.json` are valid and synchronized.
 - Run the web preview linter and build tools (`lint_applet` & `compile_applet`) to ensure zero regressions.
 - **Three-Tier Diagnostic Verification Discipline**:
   Never execute the full 68-test suite (`python test_runner.py --all`) during routine turn-by-turn development. Adhere strictly to the three-tier hierarchy:
@@ -57,6 +56,8 @@ Before completing code modifications:
      `python test_runner.py --quiet` (or `python test_runner.py --quiet --changed`). Auto-detects modified modules via git status and executes only related tests in ~1–3s.
   3. **Tier 3 (Full Diagnostic Suite)**: Reserved strictly for comprehensive release audits, final packaging, or when explicitly requested by the user:
      `python test_runner.py --quiet --all`.
+- **Early Stop on Test Harness & Methodology Failures**:
+  If a test failure is attributed to headless test environment limitations, missing mock shim primitives (e.g. in `qt_compat.py`), or test suite methodology rather than an actual application code bug, STOP execution immediately and inform the user. Explain that the application code changes are complete, detail the mock/harness limitation encountered, and ask how to proceed rather than spending tokens repeatedly iterating on test stubs.
 
 ## 4. Architectural Invariants Reference
 Always adhere strictly to the invariants defined in `ARCHITECTURE.md`:

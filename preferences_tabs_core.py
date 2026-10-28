@@ -126,8 +126,21 @@ def build_general_tab(win, dialog, live_widgets, add_custom_defaults_btn) -> QWi
     show_highlights_chk = QCheckBox("Show Comment highlights in transcript")
     show_highlights_chk.setToolTip("When checked (default), amber/yellow highlights mark commented text in the transcript.")
     show_highlights_chk.setChecked(str(win.settings_store.value("show_comment_highlights", "true")).lower() in {"1", "true", "yes"})
-    gen_form.addRow("Transcript Highlights:", show_highlights_chk)
     live_widgets["show_highlights_chk"] = show_highlights_chk
+
+    show_speaker_chk = QCheckBox("Show speaker labels in transcript viewer")
+    show_speaker_chk.setToolTip("Displays speaker turn headers (e.g. SPEAKER_01:) in the transcript window.")
+    show_speaker_chk.setChecked(str(win.settings_store.value("show_speaker_labels", "true")).lower() in {"1", "true", "yes"})
+    gen_form.addRow("Speaker Labels:", show_speaker_chk)
+    live_widgets["show_speaker_chk"] = show_speaker_chk
+
+    colorize_speakers_chk = QCheckBox("Colorize speaker labels in transcript")
+    colorize_speakers_chk.setToolTip("Applies distinct, theme-adaptive colors to each speaker label for quick visual scanning.")
+    colorize_speakers_chk.setChecked(str(win.settings_store.value("colorize_speaker_labels", "true")).lower() in {"1", "true", "yes"})
+    colorize_speakers_chk.setEnabled(show_speaker_chk.isChecked())
+    show_speaker_chk.toggled.connect(lambda checked: colorize_speakers_chk.setEnabled(checked))
+    gen_form.addRow("Colorize Speakers:", colorize_speakers_chk)
+    live_widgets["colorize_speakers_chk"] = colorize_speakers_chk
 
     show_timestamps_chk = QCheckBox("Show timestamps in transcript viewer")
     show_timestamps_chk.setToolTip("Displays timecodes at speaker turns in the transcript window.")

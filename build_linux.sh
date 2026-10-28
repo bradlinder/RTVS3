@@ -33,7 +33,7 @@ source .venv-build/bin/activate
 echo "[3/5] Installing / verifying lightweight CPU build dependencies..."
 pip install --upgrade pip --quiet
 pip install --prefer-binary "torch>=2.0.0,<2.4.0" "torchaudio>=2.0.0,<2.4.0" --index-url https://download.pytorch.org/whl/cpu --quiet
-pip install --prefer-binary -r requirements.txt -r requirements-build.txt --extra-index-url https://download.pytorch.org/whl/cpu --quiet
+pip install --prefer-binary -r installer/requirements.txt -r requirements-build.txt --extra-index-url https://download.pytorch.org/whl/cpu --quiet
 pip install --force-reinstall --no-deps "torch==2.3.1+cpu" "torchaudio==2.3.1+cpu" --index-url https://download.pytorch.org/whl/cpu --quiet
 python3 -c "import torch; print('Torch ' + torch.__version__ + ' CUDA=' + str(torch.version.cuda)); assert torch.version.cuda is None; print('torch._C OK')"
 

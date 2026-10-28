@@ -21,6 +21,8 @@ try:
 except ImportError:
     from prs_shared import format_time
 
+from speaker_palette import SpeakerColorAssigner
+
 try:
     from docx import Document
     from docx.shared import Inches, Pt, RGBColor
@@ -388,6 +390,7 @@ def create_story_docx(
     include_highlights: bool = True,
     lang_code: str = "en",
     source_segments: Optional[List[Dict[str, Any]]] = None,
+    color_speakers: bool = False,
 ) -> bool:
     """Creates a formatted Word (.docx) document with native OpenXML comments from story blocks and metadata."""
     if not DOCX_AVAILABLE:
@@ -412,6 +415,7 @@ def create_story_docx(
         comments_map: Dict[int, List[Dict[str, Any]]] = {}
         last_speaker = None
         processed_seg_comments = set()
+        color_assigner = SpeakerColorAssigner() if color_speakers else None
 
         for block in blocks:
             speaker = (block.get("speaker") or "").strip() if include_speakers else ""
@@ -428,6 +432,9 @@ def create_story_docx(
             if speaker and is_speaker_change and speaker != last_speaker:
                 r_spk = p.add_run(f"{speaker}: ")
                 r_spk.bold = True
+                if color_speakers and color_assigner and RGBColor is not None:
+                    r, g, b = color_assigner.get_rgb(speaker, dark_mode=False)
+                    r_spk.font.color.rgb = RGBColor(r, g, b)
                 last_speaker = speaker
 
             words = block.get("words")

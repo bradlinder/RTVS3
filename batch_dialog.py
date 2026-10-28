@@ -336,10 +336,15 @@ class BatchProcessingDialog(QDialog):
         details_row = QHBoxLayout()
         self.include_speakers = QCheckBox("Include speaker labels")
         self.include_speakers.setChecked(True)
+        self.color_speakers = QCheckBox("Colorize speaker labels")
+        self.color_speakers.setChecked(False)
+        self.color_speakers.setEnabled(self.include_speakers.isChecked())
+        self.include_speakers.toggled.connect(lambda checked: self.color_speakers.setEnabled(checked))
         self.include_times = QCheckBox("Include timestamps")
         self.include_times.setChecked(False)
         self.translate_check = QCheckBox("Translate")
         details_row.addWidget(self.include_speakers)
+        details_row.addWidget(self.color_speakers)
         details_row.addWidget(self.include_times)
         details_row.addWidget(self.translate_check)
         export_layout.addLayout(details_row)
@@ -363,6 +368,7 @@ class BatchProcessingDialog(QDialog):
             self.fmt_srt.setEnabled(not checked)
             self.fmt_vtt.setEnabled(not checked)
             self.include_speakers.setEnabled(not checked)
+            self.color_speakers.setEnabled((not checked) and self.include_speakers.isChecked())
             self.include_times.setEnabled(not checked)
             self.translate_check.setEnabled(not checked)
             self.batch_export_translate_direction_combo.setEnabled((not checked) and self.translate_check.isChecked())
@@ -490,6 +496,8 @@ class BatchProcessingDialog(QDialog):
         self.fmt_vtt.setChecked(_to_bool(settings.value("batch_opt_fmt_vtt"), False))
 
         self.include_speakers.setChecked(_to_bool(settings.value("batch_opt_include_speakers"), True))
+        self.color_speakers.setChecked(_to_bool(settings.value("batch_opt_color_speakers"), False))
+        self.color_speakers.setEnabled(self.include_speakers.isChecked())
         self.include_times.setChecked(_to_bool(settings.value("batch_opt_include_times"), False))
         self.translate_check.setChecked(_to_bool(settings.value("batch_opt_translate_check"), False))
 
@@ -526,6 +534,7 @@ class BatchProcessingDialog(QDialog):
         settings.setValue("batch_opt_fmt_vtt", self.fmt_vtt.isChecked())
 
         settings.setValue("batch_opt_include_speakers", self.include_speakers.isChecked())
+        settings.setValue("batch_opt_color_speakers", self.color_speakers.isChecked())
         settings.setValue("batch_opt_include_times", self.include_times.isChecked())
         settings.setValue("batch_opt_translate_check", self.translate_check.isChecked())
 
@@ -564,6 +573,8 @@ class BatchProcessingDialog(QDialog):
         self.fmt_vtt.setChecked(False)
 
         self.include_speakers.setChecked(True)
+        self.color_speakers.setChecked(False)
+        self.color_speakers.setEnabled(True)
         self.include_times.setChecked(False)
         self.translate_check.setChecked(False)
 
@@ -672,6 +683,7 @@ class BatchProcessingDialog(QDialog):
 
         # Adjust option controls depending on file types found in queue
         self.include_speakers.setEnabled(has_media)
+        self.color_speakers.setEnabled(has_media and self.include_speakers.isChecked())
         self.include_times.setEnabled(has_media)
         self.fmt_srt.setEnabled(has_media)
         self.fmt_vtt.setEnabled(has_media)

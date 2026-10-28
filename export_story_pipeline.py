@@ -22,6 +22,7 @@ from core_utils import safe_filename, safe_process_events, format_time
 from export_dialogs import show_export_completion_dialog
 from export.pdf import TranscriptPdfWriter
 from export.docx import create_story_docx
+from speaker_palette import SpeakerColorAssigner
 from export.subtitles import generate_cue_sheet, generate_youtube_chapters
 from export.timeline import (
     generate_reaper_project,
@@ -242,6 +243,7 @@ class ExportStoryPipelineMixin:
                         include_highlights=options.get("include_highlights", True),
                         lang_code=lang_code,
                         source_segments=(self.transcript.get("segments", []) if getattr(self, "transcript", None) else None),
+                        color_speakers=options.get("color_speakers", options.get("colorize_speakers", False)),
                     )
 
                 # Export PDF
@@ -254,6 +256,9 @@ class ExportStoryPipelineMixin:
                     pdf_writer.add_header(header_title, rec_info)
 
                     last_speaker = None
+                    color_spk_opt = options.get("color_speakers", options.get("colorize_speakers", False))
+                    color_assigner = SpeakerColorAssigner() if color_spk_opt else None
+
                     for block in blocks:
                         speaker = (block.get("speaker") or "").strip() if options.get("include_speakers", True) else ""
                         p_text = block.get("text", "").strip()
@@ -276,12 +281,14 @@ class ExportStoryPipelineMixin:
                             elif "comments" in block or "notes" in block:
                                 seg_comment = str(block.get("comments") or block.get("notes", "")).strip()
 
+                        spk_rgb = color_assigner.get_pdf_rgb(effective_speaker) if (color_assigner and effective_speaker) else None
                         pdf_writer.add_paragraph(
                             text=p_text,
                             speaker=effective_speaker,
                             timestamp=t_stamp,
                             comment=seg_comment,
                             highlight=(bool(seg_comment) and options.get("include_highlights", True)),
+                            speaker_rgb=spk_rgb,
                         )
                     with open(pdf_file, "wb") as pf:
                         pf.write(pdf_writer.get_pdf_bytes())
@@ -806,6 +813,7 @@ class ExportStoryPipelineMixin:
                             include_highlights=options.get("include_highlights", True),
                             lang_code=lang_code,
                             source_segments=(transcript.get("segments", []) if transcript else None),
+                            color_speakers=options.get("color_speakers", options.get("colorize_speakers", False)),
                         )
                     except Exception as docx_exc:
                         if hasattr(self, "log_activity"):
@@ -822,6 +830,9 @@ class ExportStoryPipelineMixin:
 
                     if blocks:
                         last_speaker = None
+                        color_spk_opt = options.get("color_speakers", options.get("colorize_speakers", False))
+                        color_assigner = SpeakerColorAssigner() if color_spk_opt else None
+
                         for block in blocks:
                             speaker = (block.get("speaker") or "").strip() if options.get("include_speakers", True) else ""
                             paragraph_text = block.get("text", "").strip()
@@ -846,12 +857,14 @@ class ExportStoryPipelineMixin:
                                 elif "comments" in block or "notes" in block:
                                     seg_comment = str(block.get("comments") or block.get("notes", "")).strip()
 
+                            spk_rgb = color_assigner.get_pdf_rgb(effective_speaker) if (color_assigner and effective_speaker) else None
                             pdf_writer.add_paragraph(
                                 text=paragraph_text,
                                 speaker=effective_speaker,
                                 timestamp=t_stamp,
                                 comment=seg_comment,
                                 highlight=(bool(seg_comment) and options.get("include_highlights", True)),
+                                speaker_rgb=spk_rgb,
                             )
                     with open(pdf_file, "wb") as pf:
                         pf.write(pdf_writer.get_pdf_bytes())

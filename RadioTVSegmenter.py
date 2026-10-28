@@ -423,6 +423,7 @@ class MainWindow(
         self.show_timestamps = str(s.value("show_timestamps", "true")).lower() in {"1", "true", "yes"}
         self.show_milliseconds = str(s.value("show_milliseconds", "false")).lower() in {"1", "true", "yes"}
         self.show_speaker_labels = str(s.value("show_speaker_labels", "true")).lower() in {"1", "true", "yes"}
+        self.colorize_speaker_labels = str(s.value("colorize_speaker_labels", "true")).lower() in {"1", "true", "yes"}
         self.show_comment_highlights = str(s.value("show_comment_highlights", "true")).lower() in {"1", "true", "yes"}
         try:
             self.min_words_per_paragraph = int(s.value("min_words_per_paragraph", 65) or 65)

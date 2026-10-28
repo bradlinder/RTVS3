@@ -415,6 +415,7 @@ class PreferencesResetMixin:
             self.settings_store.setValue("transcript_selection_mode", "replace")
             self.settings_store.setValue("transcript_font_scale", 1.0)
             self.settings_store.setValue("show_speaker_labels", "true")
+            self.settings_store.setValue("colorize_speaker_labels", "true")
             self.skip_seconds = 5
             self.timeline_show_waveform = True
             self.timeline_show_thumbnails = True
@@ -422,8 +423,11 @@ class PreferencesResetMixin:
             self.transcript_selection_mode = "replace"
             self.transcript_font_scale = 1.0
             self.show_speaker_labels = True
+            self.colorize_speaker_labels = True
             if hasattr(self, "show_speaker_labels_action"):
                 self.show_speaker_labels_action.setChecked(True)
+            if hasattr(self, "colorize_speaker_labels_action"):
+                self.colorize_speaker_labels_action.setChecked(True)
             if hasattr(self, "timeline"):
                 try:
                     self.timeline.set_skip_seconds(5)

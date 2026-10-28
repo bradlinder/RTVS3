@@ -306,6 +306,12 @@ class UiMenusMixin:
         self.show_speaker_labels_action.toggled.connect(self.toggle_speaker_labels)
         transcript_menu.addAction(self.show_speaker_labels_action)
 
+        self.colorize_speaker_labels_action = QAction("Colorize Speaker &Labels", self, checkable=True)
+        self.colorize_speaker_labels_action.setChecked(getattr(self, "colorize_speaker_labels", True))
+        self.colorize_speaker_labels_action.setEnabled(getattr(self, "show_speaker_labels", True))
+        self.colorize_speaker_labels_action.toggled.connect(getattr(self, "toggle_colorize_speaker_labels", lambda c: None))
+        transcript_menu.addAction(self.colorize_speaker_labels_action)
+
         self.show_timestamps_action = QAction("Show T&imestamps", self, checkable=True)
         self.show_timestamps_action.setShortcut(platform_seq("Ctrl+Alt+I"))
         self.show_timestamps_action.setChecked(getattr(self, "show_timestamps", True))

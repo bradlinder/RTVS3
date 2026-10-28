@@ -7,7 +7,7 @@ refuses to produce a release package unless FFmpeg and ffprobe are available at 
 because the finished application is expected to carry its own media runtime rather than
 require end users to install FFmpeg.
 
-This build is CPU-only by design (see requirements.txt): GPU acceleration is an optional,
+This build is CPU-only by design (see installer/requirements.txt): GPU acceleration is an optional,
 separately-downloaded component the user can enable from Settings after installing,
 not something bundled into the installer.
 """
@@ -202,7 +202,7 @@ def check_cpu_only_torch() -> None:
             "just warning.\n\n"
             "To fix, install CPU-only torch before building:\n"
             "  pip install 'torch>=2.0,<2.4' 'torchaudio>=2.0,<2.4' --index-url https://download.pytorch.org/whl/cpu\n"
-            "  pip install -r requirements.txt -r requirements-build.txt --extra-index-url https://download.pytorch.org/whl/cpu\n\n"
+            "  pip install -r installer/requirements.txt -r requirements-build.txt --extra-index-url https://download.pytorch.org/whl/cpu\n\n"
             "If you specifically need a CUDA build for local testing and understand the above risk,\n"
             "set PRS_ALLOW_CUDA_BUILD=1 to bypass this check."
         )

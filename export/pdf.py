@@ -6,7 +6,7 @@ with support for pagination, Helvetica fonts, speaker headers, timestamps, and c
 from __future__ import annotations
 
 import io
-from typing import Optional
+from typing import Optional, Tuple
 
 
 class TranscriptPdfWriter:
@@ -148,7 +148,15 @@ class TranscriptPdfWriter:
             lines.append(' '.join(cur_line))
         return lines
 
-    def add_paragraph(self, text: str, speaker: str = '', timestamp: str = '', comment: str = '', highlight: bool = False):
+    def add_paragraph(
+        self,
+        text: str,
+        speaker: str = '',
+        timestamp: str = '',
+        comment: str = '',
+        highlight: bool = False,
+        speaker_rgb: Optional[Tuple[float, float, float]] = None,
+    ):
         font_size = 10.0
         line_height = 14.0
 
@@ -192,7 +200,11 @@ class TranscriptPdfWriter:
                 cmd_parts.append(f"/F1 9.5 Tf 0.45 0.5 0.55 rg ({ts_esc}) Tj")
             if spk_str:
                 spk_esc = self._escape_pdf(spk_str)
-                cmd_parts.append(f"/F2 {font_size} Tf 0.1 0.1 0.15 rg ({spk_esc}) Tj")
+                if speaker_rgb:
+                    r, g, b = speaker_rgb
+                    cmd_parts.append(f"/F2 {font_size} Tf {r:.3f} {g:.3f} {b:.3f} rg ({spk_esc}) Tj")
+                else:
+                    cmd_parts.append(f"/F2 {font_size} Tf 0.1 0.1 0.15 rg ({spk_esc}) Tj")
             if lines[0]:
                 l0_esc = self._escape_pdf(lines[0])
                 cmd_parts.append(f"/F1 {font_size} Tf 0.15 0.15 0.15 rg ({l0_esc}) Tj")

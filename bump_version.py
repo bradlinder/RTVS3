@@ -166,7 +166,7 @@ def check_all_versions() -> dict[str, str]:
     # 8. index.html
     html_path = ROOT_DIR / "index.html"
     if html_path.is_file():
-        m = re.search(r'<title>Radio & TV Segmenter v([^<]+)</title>', html_path.read_text(encoding="utf-8"))
+        m = re.search(r'<title>Radio & TV (?:Story )?Segmenter v([^<]+)</title>', html_path.read_text(encoding="utf-8"))
         report["index.html"] = m.group(1) if m else "NOT FOUND"
 
     # 9. src/App.tsx

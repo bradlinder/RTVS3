@@ -349,6 +349,22 @@ class PreferencesDialogMixin(PreferencesResetMixin):
                 if hasattr(self, "toggle_comment_highlights"):
                     self.toggle_comment_highlights(new_show_hl)
 
+            show_speaker_chk = live_widgets.get("show_speaker_chk")
+            if show_speaker_chk:
+                new_show_spk = show_speaker_chk.isChecked()
+                self.settings_store.setValue("show_speaker_labels", "true" if new_show_spk else "false")
+                self.show_speaker_labels = new_show_spk
+                if hasattr(self, "show_speaker_labels_action"):
+                    self.show_speaker_labels_action.setChecked(new_show_spk)
+
+            colorize_speakers_chk = live_widgets.get("colorize_speakers_chk")
+            if colorize_speakers_chk:
+                new_col_spk = colorize_speakers_chk.isChecked()
+                self.settings_store.setValue("colorize_speaker_labels", "true" if new_col_spk else "false")
+                self.colorize_speaker_labels = new_col_spk
+                if hasattr(self, "colorize_speaker_labels_action"):
+                    self.colorize_speaker_labels_action.setChecked(new_col_spk)
+
             show_timestamps_chk = live_widgets.get("show_timestamps_chk")
             if show_timestamps_chk:
                 new_show_ts = show_timestamps_chk.isChecked()

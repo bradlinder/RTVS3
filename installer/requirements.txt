@@ -1,4 +1,6 @@
-# Radio & TV Segmenter 1.1 -- base (CPU-only) runtime dependencies.
+# Radio & TV Segmenter -- base desktop application runtime dependencies.
+#
+# Desktop build requirements for PyInstaller and frozen installer packaging.
 #
 # This app is CPU-only by default; GPU acceleration is a separate, optional
 # download from Settings > Processing > GPU Acceleration (see
@@ -7,7 +9,7 @@
 # PyPI -- on Windows and Linux, PyPI's default torch wheel bundles CUDA
 # runtime libraries and is well over a gigabyte larger than the CPU build:
 #
-#   pip install -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cpu
+#   pip install -r installer/requirements.txt --extra-index-url https://download.pytorch.org/whl/cpu
 #
 # (On macOS this doesn't matter -- PyPI only ships CPU/MPS wheels there.)
 # build_installer.py checks for this and warns if it detects a CUDA-enabled
@@ -40,4 +42,3 @@ scipy>=1.11.0,<1.15.0
 scikit-learn>=1.4.0,<1.6.0
 # Speaker diarization ONNX voice embedding engine (WeSpeaker ResNet34-LM)
 wespeakerruntime>=1.0.0,<2.0.0
-

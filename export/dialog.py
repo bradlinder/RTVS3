@@ -668,6 +668,11 @@ class UnifiedExportDialog(QDialog):
         self.content_section = CollapsibleSection("Content & Language Options", self, is_expanded=True, subtitle="Speakers, Timestamps, Comments")
         self.cb_speakers = QCheckBox("Include Speaker Labels")
         self.cb_speakers.setChecked(True)
+        self.cb_color_speakers = QCheckBox("Colorize Speaker Labels")
+        self.cb_color_speakers.setToolTip("Apply distinct, accessible colors to each speaker label in DOCX and PDF exports.")
+        self.cb_color_speakers.setChecked(False)
+        self.cb_color_speakers.setEnabled(self.cb_speakers.isChecked())
+        self.cb_speakers.toggled.connect(lambda checked: self.cb_color_speakers.setEnabled(checked))
         self.cb_timestamps = QCheckBox("Include Timestamps")
         self.cb_timestamps.setChecked(False)
         self.cb_milliseconds = QCheckBox("Show Milliseconds in Timestamps")
@@ -711,6 +716,7 @@ class UnifiedExportDialog(QDialog):
                 self.cb_es.setToolTip("Spanish translation is not available for this project. Generate a translation first to enable.")
 
         self.content_section.add_widget(self.cb_speakers)
+        self.content_section.add_widget(self.cb_color_speakers)
         self.content_section.add_widget(self.cb_timestamps)
         self.content_section.add_widget(self.cb_milliseconds)
         self.content_section.add_widget(self.cb_notes)
@@ -1056,6 +1062,8 @@ class UnifiedExportDialog(QDialog):
             self.cb_media.setChecked(str(settings.value("export_opt_fmt_media", "false")).lower() in {"1", "true", "yes"})
 
         self.cb_speakers.setChecked(str(settings.value("export_opt_include_speakers", "true")).lower() in {"1", "true", "yes"})
+        self.cb_color_speakers.setChecked(str(settings.value("export_opt_color_speakers", "false")).lower() in {"1", "true", "yes"})
+        self.cb_color_speakers.setEnabled(self.cb_speakers.isChecked())
         self.cb_timestamps.setChecked(str(settings.value("export_opt_include_timestamps", "false")).lower() in {"1", "true", "yes"})
         self.cb_milliseconds.setChecked(str(settings.value("export_opt_include_milliseconds", str(getattr(self.main_window, "show_milliseconds", False)))).lower() in {"1", "true", "yes"})
         self.cb_milliseconds.setEnabled(self.cb_timestamps.isChecked())
@@ -1130,6 +1138,7 @@ class UnifiedExportDialog(QDialog):
         settings.setValue("export_opt_fmt_media", self.cb_media.isChecked())
 
         settings.setValue("export_opt_include_speakers", self.cb_speakers.isChecked())
+        settings.setValue("export_opt_color_speakers", self.cb_color_speakers.isChecked())
         settings.setValue("export_opt_include_timestamps", self.cb_timestamps.isChecked())
         settings.setValue("export_opt_include_milliseconds", self.cb_milliseconds.isChecked())
         settings.setValue("export_opt_include_notes", self.cb_notes.isChecked())
@@ -1260,6 +1269,8 @@ class UnifiedExportDialog(QDialog):
 
             options = {
                 "include_speakers": self.cb_speakers.isChecked(),
+                "color_speakers": self.cb_color_speakers.isChecked() if hasattr(self, "cb_color_speakers") else False,
+                "colorize_speakers": self.cb_color_speakers.isChecked() if hasattr(self, "cb_color_speakers") else False,
                 "include_timestamps": self.cb_timestamps.isChecked(),
                 "include_milliseconds": self.cb_milliseconds.isChecked(),
                 "show_milliseconds": self.cb_milliseconds.isChecked(),

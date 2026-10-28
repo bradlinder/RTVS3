@@ -37,7 +37,7 @@ Create and activate your virtual environment:
     source venv/bin/activate
 
 Install core application requirements:
-    pip install -r requirements.txt
+    pip install -r installer/requirements.txt
     pip install -r requirements-build.txt
 
 Heavy machine translation (OPUS-MT / Transformers) runs in an isolated,

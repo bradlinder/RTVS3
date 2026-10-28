@@ -191,7 +191,7 @@ jobs:
         run: |
           uv pip install --system --no-deps --index-url https://download.pytorch.org/whl/cpu "torch>=2.0.0,<2.4.0" "torchaudio>=2.0.0,<2.4.0"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          uv pip install --system --index-strategy unsafe-best-match --extra-index-url https://download.pytorch.org/whl/cpu -r requirements.txt -r requirements-build.txt
+          uv pip install --system --index-strategy unsafe-best-match --extra-index-url https://download.pytorch.org/whl/cpu -r installer/requirements.txt -r requirements-build.txt
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           python -c "import torch; print('Torch ' + torch.__version__ + ' CUDA=' + str(torch.version.cuda)); assert torch.version.cuda is None; print('torch._C OK')"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
@@ -336,7 +336,7 @@ jobs:
 
       - name: Install Python dependencies (Fast uv)
         run: |
-          uv pip install --system -r requirements.txt -r requirements-build.txt
+          uv pip install --system -r installer/requirements.txt -r requirements-build.txt
 
       - name: Extract Project Version
         id: get_version
@@ -454,7 +454,7 @@ jobs:
       - name: Install Python dependencies (Fast CPU PyTorch with uv)
         run: |
           uv pip install --system --no-deps --index-url https://download.pytorch.org/whl/cpu "torch>=2.0.0,<2.4.0" "torchaudio>=2.0.0,<2.4.0"
-          uv pip install --system --index-strategy unsafe-best-match --extra-index-url https://download.pytorch.org/whl/cpu -r requirements.txt -r requirements-build.txt
+          uv pip install --system --index-strategy unsafe-best-match --extra-index-url https://download.pytorch.org/whl/cpu -r installer/requirements.txt -r requirements-build.txt
 
       - name: Extract Project Version
         id: get_version

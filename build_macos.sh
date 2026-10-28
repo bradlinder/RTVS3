@@ -32,7 +32,7 @@ source .venv-build/bin/activate
 # 3. Upgrade pip and install build dependencies
 echo "[3/4] Installing / verifying lightweight CPU build dependencies..."
 pip install --upgrade pip --quiet
-pip install -r requirements.txt -r requirements-build.txt --extra-index-url https://download.pytorch.org/whl/cpu --quiet
+pip install -r installer/requirements.txt -r requirements-build.txt --extra-index-url https://download.pytorch.org/whl/cpu --quiet
 
 # 4. Run the installer builder
 echo "[4/4] Running PyInstaller binary compilation..."
