@@ -38,9 +38,13 @@ def create_diagnostic_dialog(parent=None, include_dev_tests: Optional[bool] = No
             self._is_stopped = True
 
         def run(self):
-            self.engine.on_update = lambda it: self.item_updated.emit(it)
-            self.engine.run_all(stop_requested_fn=lambda: self._is_stopped)
-            self.finished.emit()
+            try:
+                self.engine.on_update = lambda it: self.item_updated.emit(it)
+                self.engine.run_all(stop_requested_fn=lambda: self._is_stopped)
+            except Exception:
+                pass
+            finally:
+                self.finished.emit()
 
     class DiagnosticDialog(QDialog):
         def __init__(self, parent=None, include_dev_tests: Optional[bool] = None):

@@ -89,6 +89,8 @@ class DiarizationProcessingMixin:
             self.diarization_error("No audio file is loaded.")
             return
 
+        self._diarization_source_media = str(Path(self.audio_file).resolve()) if getattr(self, "audio_file", None) else None
+
         # Stop background thumbnail and waveform workers during heavy ML tasks to free CPU/disk I/O
         self.stop_waveform_worker()
         self.stop_video_thumbnail_worker()
@@ -476,12 +478,47 @@ class DiarizationProcessingMixin:
         self.update_processing_progress(percent, message)
 
     def diarization_finished(self, result):
+        # Stale Worker State Overwrite Guard (Item 1.1 / P1-03)
+        current_media = str(Path(self.audio_file).resolve()) if getattr(self, "audio_file", None) else None
+        target_media = getattr(self, "_diarization_source_media", None)
+        if target_media and current_media != target_media:
+            self.log_activity(
+                f"[SPEAKER DETECT] Ignored stale completion payload: active media changed from {target_media} to {current_media}.",
+                mark_dirty=False
+            )
+            self.cleanup_diarization_process()
+            return
+
         self._diar_stage_idx = 0
         self._diar_last_raw_pct = 0.0
         self._diar_last_overall_percent = 0
         self.progress.hide()
         self.cancel_button.hide()
+        if hasattr(self, "skip_stage_button"):
+            self.skip_stage_button.hide()
         self.set_tools_actions_enabled(True)
+
+        try:
+            self._apply_diarization_result(result)
+        except Exception as exc:
+            logger.exception("Error in diarization_finished")
+            self.log_activity(f"[SPEAKER DETECT ERROR] Error processing speaker detection results: {exc}")
+            self.progress.hide()
+            self.cancel_button.hide()
+            if hasattr(self, "skip_stage_button"):
+                self.skip_stage_button.hide()
+            self.set_processing_stage(None)
+            self.set_tools_actions_enabled(True)
+            if getattr(self, "pipeline_active", False) and getattr(self, "pipeline_queue", []):
+                self.log_activity(
+                    f"[PIPELINE RECOVERY] Advancing to next queued stage '{self.pipeline_queue[0]}' following speaker detection error."
+                )
+                QTimer.singleShot(100, self._run_next_selected_processing)
+            else:
+                self.pipeline_active = False
+                self.pipeline_queue = []
+
+    def _apply_diarization_result(self, result):
 
         self.flush_pending_transcript_undo() if hasattr(self, "flush_pending_transcript_undo") else None
         before_state = self._capture_project_state() if hasattr(self, "_capture_project_state") else None
@@ -614,9 +651,15 @@ class DiarizationProcessingMixin:
         self.pipeline_rerun_confirmed = False
         self.pending_auto_detect_stories = False
         if getattr(self, "batch_active", False):
-            self.batch_active = False
+            self.log_activity(f"[BATCH ERROR] Speaker detection error: {message}")
+            if hasattr(self, "_batch_media_error"):
+                self._batch_media_error(message)
+            return
+
         self.progress.hide()
         self.cancel_button.hide()
+        if hasattr(self, "skip_stage_button"):
+            self.skip_stage_button.hide()
         self.set_processing_stage(None)
         self.set_tools_actions_enabled(True)
 
@@ -625,7 +668,25 @@ class DiarizationProcessingMixin:
             self.log_activity("[SPEAKER DETECT] Canceled by user.")
         else:
             self.log_activity(f"[SPEAKER DETECT] Error: {message}")
-            QMessageBox.critical(self, "Speaker Detection Error", message)
+            if getattr(self, "pipeline_active", False) and getattr(self, "pipeline_queue", []):
+                next_stage = self.pipeline_queue[0]
+                reply = QMessageBox.question(
+                    self,
+                    "Speaker Detection Failed",
+                    f"Speaker Detection failed: {message}\n\nWould you like to skip this stage and continue with '{next_stage}'?",
+                    QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                    QMessageBox.StandardButton.Yes,
+                )
+                if reply == QMessageBox.StandardButton.Yes:
+                    self.log_activity(f"[PIPELINE RECOVERY] User skipped failed speaker detection; continuing with '{next_stage}'.")
+                    QTimer.singleShot(0, self._run_next_selected_processing)
+                    return
+                else:
+                    self.pipeline_active = False
+                    self.pipeline_queue = []
+                    self.pipeline_rerun_confirmed = False
+            else:
+                QMessageBox.critical(self, "Speaker Detection Error", message)
 
 
     def _diar_segments_cache_key(self):

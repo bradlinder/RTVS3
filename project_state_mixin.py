@@ -110,6 +110,14 @@ class ProjectStateMixin:
             if not self._progress_tick_timer.isActive():
                 self._progress_tick_timer.start()
 
+            if hasattr(self, "skip_stage_button"):
+                can_skip = bool(
+                    getattr(self, "pipeline_active", False)
+                    and getattr(self, "pipeline_queue", [])
+                    and not getattr(self, "batch_active", False)
+                )
+                self.skip_stage_button.setVisible(can_skip)
+
             self.update_processing_progress(0, "")
         else:
             self.current_processing_stage_key = None
@@ -123,6 +131,8 @@ class ProjectStateMixin:
                 self._progress_tick_timer.stop()
             self.processing_stage_label.clear()
             self.processing_stage_label.hide()
+            if hasattr(self, "skip_stage_button"):
+                self.skip_stage_button.hide()
             if hasattr(self, "progress"):
                 self.progress.hide()
                 self.progress.setFormat("%p%")
@@ -283,7 +293,11 @@ class ProjectStateMixin:
             self.apply_story_selection_indices(self.current_selected_story_indices, seek=False)
             self.project_dirty = True
             self.update_window_title()
-            self.save_project()
+            if getattr(self, "project_file", None):
+                try:
+                    self.save_project()
+                except Exception:
+                    pass
             if hasattr(self, "_notify_floating_dialogs"):
                 self._notify_floating_dialogs()
         finally:

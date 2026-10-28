@@ -254,6 +254,8 @@ class ProcessingMixin(
             if answer != QMessageBox.StandardButton.Yes:
                 return
 
+        if hasattr(self, "skip_stage_button"):
+            self.skip_stage_button.hide()
         self.pipeline_active = False
         self.pipeline_start_monotonic = None
         self.pipeline_queue = []
@@ -325,6 +327,68 @@ class ProcessingMixin(
             return
 
         self.log_activity("[PROCESS] No cancellable process is currently running.")
+
+    def update_skip_stage_button_visibility(self):
+        """Show or hide the 'Skip Stage' button based on active pipeline state."""
+        btn = getattr(self, "skip_stage_button", None)
+        if btn is not None:
+            can_skip = bool(
+                getattr(self, "pipeline_active", False)
+                and getattr(self, "pipeline_queue", [])
+                and not getattr(self, "batch_active", False)
+            )
+            btn.setVisible(can_skip)
+            btn.setEnabled(can_skip)
+
+    def skip_current_pipeline_stage(self):
+        """Cancel the active pipeline stage and advance directly to the next queued stage."""
+        if not getattr(self, "pipeline_active", False) or not getattr(self, "pipeline_queue", []):
+            self.cancel_current_process()
+            return
+
+        curr_stage = getattr(self, "current_processing_stage_name", "") or getattr(self, "current_processing_stage_key", "active stage")
+        next_stage = self.pipeline_queue[0]
+
+        # Safety check: if skipping transcription without any existing transcript
+        if self.transcription_process is not None and not getattr(self, "transcript", None):
+            if next_stage in ("stories", "translation"):
+                reply = QMessageBox.question(
+                    self,
+                    "Skip Transcription?",
+                    f"No transcript exists yet. If you skip transcription, subsequent stage '{next_stage}' will fail without text.\n\nSkip anyway and proceed?",
+                    QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                    QMessageBox.StandardButton.No,
+                )
+                if reply != QMessageBox.StandardButton.Yes:
+                    return
+
+        self.log_activity(f"[PIPELINE] Skipped '{curr_stage}'. Advancing to next stage: '{next_stage}'...")
+        self.statusBar().showMessage(f"Skipped {curr_stage}. Starting {next_stage}...")
+
+        is_trans_running = (
+            getattr(self, "translation_process", None) is not None
+            or getattr(self, "translation_thread", None) is not None
+            or getattr(self, "_translation_env_thread", None) is not None
+            or getattr(self, "_translation_env_worker", None) is not None
+        )
+
+        # Terminate active worker cleanly
+        if self.transcription_process is not None:
+            self.cleanup_transcription_process()
+            self.transcription_result_received = False
+        elif self.diarization_process is not None:
+            self._diarization_canceled_by_user = True
+            self.cleanup_diarization_process()
+            self.diarization_result_received = False
+        elif self.thread is not None:
+            self.stop_story_detection_worker(timeout_ms=5000)
+        elif is_trans_running:
+            self.stop_translation_worker()
+
+        # Update button and advance pipeline
+        self.set_processing_stage(None)
+        self.update_skip_stage_button_visibility()
+        QTimer.singleShot(50, self._run_next_selected_processing)
 
     def commit_story_change(self, old_stories, new_stories, description="Modify Story"):
         # Story changes are part of the same complete project-state undo
@@ -484,7 +548,7 @@ class ProcessingMixin(
                 )
             )
         if hasattr(self, "translate_button"):
-            self.translate_button.setEnabled(bool(self.transcript))
+            self.translate_button.setEnabled(has_transcript)
         if hasattr(self, "regen_waveform_action"):
             self.regen_waveform_action.setEnabled(has_audio)
         if hasattr(self, "regen_thumbnails_action"):
@@ -797,6 +861,7 @@ class ProcessingMixin(
             return
         if not self.pipeline_queue:
             self.pipeline_rerun_confirmed = False
+            self.update_skip_stage_button_visibility()
             if self.batch_active:
                 self.pipeline_active = False
                 self.pipeline_start_monotonic = None
@@ -818,6 +883,7 @@ class ProcessingMixin(
 
         kind = self.pipeline_queue.pop(0)
         self.pipeline_current_stage_idx = max(1, getattr(self, "pipeline_total_stages", 1) - len(self.pipeline_queue))
+        self.update_skip_stage_button_visibility()
         skip_choice = self.batch_active or getattr(self, "pipeline_rerun_confirmed", False)
         if kind == "transcription":
             if not skip_choice:

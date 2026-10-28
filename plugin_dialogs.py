@@ -34,7 +34,7 @@ from PySide6.QtWidgets import (
 )
 
 from prs_shared import INTERNAL_APP_ID, PROJECT_VERSION, get_github_repo, safe_extract_zip, verify_file_sha256
-from plugins.base import BasePlugin, PluginManifest
+from plugin_base import BasePlugin, PluginManifest
 
 logger = logging.getLogger(__name__)
 

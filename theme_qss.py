@@ -209,6 +209,11 @@ QPushButton#cancel_button {
     border-radius: 6px; padding: 4px 12px; font-size: 11px; font-weight: 600;
 }
 QPushButton#cancel_button:hover { background: #451e22; border-color: #ef4444; color: #ffffff; }
+QPushButton#skip_stage_button {
+    background: #1e293b; color: #94a3b8; border: 1px solid #334155;
+    border-radius: 6px; padding: 4px 12px; font-size: 11px; font-weight: 600;
+}
+QPushButton#skip_stage_button:hover { background: #334155; border-color: #64748b; color: #f8fafc; }
 
 /* ========================================================================
    TRANSCRIPT

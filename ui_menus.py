@@ -216,6 +216,26 @@ class UiMenusMixin:
         self.find_action = find_act
         edit_menu.addAction(find_act)
 
+        find_next_act = QAction("Find &Next", self)
+        find_next_act.setShortcut(platform_seq("F3"))
+        find_next_act.triggered.connect(lambda: getattr(self, "trigger_find_next", lambda: None)())
+        self.find_next_action = find_next_act
+        edit_menu.addAction(find_next_act)
+
+        find_prev_act = QAction("Find &Previous", self)
+        find_prev_act.setShortcut(platform_seq("Shift+F3"))
+        find_prev_act.triggered.connect(lambda: getattr(self, "trigger_find_prev", lambda: None)())
+        self.find_prev_action = find_prev_act
+        edit_menu.addAction(find_prev_act)
+
+        edit_menu.addSeparator()
+
+        configure_fades_act = QAction("Configure Audio &Fades...", self)
+        configure_fades_act.setShortcut(platform_seq("Ctrl+Shift+F"))
+        configure_fades_act.triggered.connect(lambda: getattr(self, "open_story_fades_dialog", lambda: None)())
+        self.configure_fades_action = configure_fades_act
+        edit_menu.addAction(configure_fades_act)
+
         edit_menu.addSeparator()
 
         purge_data_act = QAction("Clear / &Purge Project Data...", self)

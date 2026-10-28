@@ -48,7 +48,7 @@ from prs_shared import (
     make_dialog_maximizable,
 )
 from core_utils import apply_window_titlebar_theme, get_active_theme_mode
-from plugins.base import ExportDestination
+from plugin_base import ExportDestination
 from export.reorder_dialog import (
     DEFAULT_EXPORT_DESTINATIONS_ORDER,
     _get_export_theme_mode,
@@ -1281,6 +1281,8 @@ class UnifiedExportDialog(QDialog):
                 "include_spanish": self.cb_es.isChecked(),
                 "apply_audio_fades": apply_fades,
                 "unselected_audio_mode": unselected_mode,
+                "sample_rate": int(getattr(self.main_window, "audio_sample_rate", 44100) or 44100),
+                "track_name": getattr(self.main_window, "story_track_name", "Segmented Stories") or "Segmented Stories",
             }
             base = safe_filename(self.filename_edit.text().strip() or "export")
             export_dir = None

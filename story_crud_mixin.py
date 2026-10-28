@@ -12,18 +12,30 @@ from typing import Any, List, Optional
 try:
     from PySide6.QtCore import Qt, QSettings
     from PySide6.QtWidgets import (
+        QApplication,
+        QAbstractSpinBox,
+        QComboBox,
         QDialog,
+        QLineEdit,
         QListWidgetItem,
         QMessageBox,
+        QPlainTextEdit,
+        QTextEdit,
     )
 except ImportError:
     from qt_compat import _ensure_pyside6_fallback
     _ensure_pyside6_fallback()
     from PySide6.QtCore import Qt, QSettings
     from PySide6.QtWidgets import (
+        QApplication,
+        QAbstractSpinBox,
+        QComboBox,
         QDialog,
+        QLineEdit,
         QListWidgetItem,
         QMessageBox,
+        QPlainTextEdit,
+        QTextEdit,
     )
 
 from core_utils import INTERNAL_APP_ID, format_time, parse_time
@@ -236,6 +248,12 @@ class StoryCrudMixin:
         self.apply_story_selection_indices([index], seek=False)
 
     def delete_selected_story(self):
+        focused_widget = QApplication.focusWidget()
+        if focused_widget and isinstance(focused_widget, (QLineEdit, QTextEdit, QPlainTextEdit, QAbstractSpinBox, QComboBox)):
+            from transcript_editor import InteractiveTranscriptEdit
+            if not (isinstance(focused_widget, InteractiveTranscriptEdit) and not getattr(focused_widget, "is_editing_mode", False)):
+                return
+
         selected_rows = sorted(list(self.current_selected_story_indices), reverse=True)
         if not selected_rows:
             return

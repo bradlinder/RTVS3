@@ -82,6 +82,17 @@ class ChangeSpeakerDialog(QDialog):
         self.accept()
 
 
+def _is_gui_thread() -> bool:
+    """Check whether execution is on the main Qt GUI thread."""
+    try:
+        from PySide6.QtCore import QThread
+        from PySide6.QtWidgets import QApplication
+        app = QApplication.instance()
+        return app is None or not hasattr(app, "thread") or QThread.currentThread() == app.thread()
+    except Exception:
+        return True
+
+
 class SpeakerNameDelegate(QStyledItemDelegate):
     """Delegate for inline double-click editing of speaker names with Tab progression."""
 
@@ -111,7 +122,8 @@ class SpeakerNameDelegate(QStyledItemDelegate):
                     "border: 2px solid #38bdf8; border-radius: 4px; padding: 2px 6px; "
                     "font-size: 12px; font-weight: 600; }"
                 )
-            QTimer.singleShot(0, editor.selectAll)
+            if hasattr(self.dialog, "_is_gui_thread") and self.dialog._is_gui_thread():
+                QTimer.singleShot(0, editor.selectAll)
             return editor
         return super().createEditor(parent, option, index)
 
@@ -129,7 +141,10 @@ class SpeakerNameDelegate(QStyledItemDelegate):
                     self.closeEditor.emit(editor, QAbstractItemDelegate.EndEditHint.NoHint)
                 else:
                     self.closeEditor.emit(editor, QAbstractItemDelegate.EndEditHint.RevertModelCache)
-                    QTimer.singleShot(0, lambda: self.dialog._start_inline_edit_on_row(nxt))
+                    if hasattr(self.dialog, "_is_gui_thread") and not self.dialog._is_gui_thread():
+                        self.dialog._start_inline_edit_on_row(nxt)
+                    else:
+                        QTimer.singleShot(0, lambda: self.dialog._start_inline_edit_on_row(nxt))
                 return True
             elif event.key() == Qt.Key.Key_Backtab:
                 row = self.dialog.table.currentRow()
@@ -180,26 +195,40 @@ class SpeakerManagerDialog(QDialog):
         self._sample_timer.setSingleShot(True)
         self._sample_timer.timeout.connect(self._stop_sample_playback)
 
-        self._preview_audio_output = QAudioOutput(self)
-        self._preview_player = QMediaPlayer(self)
-        self._preview_player.setAudioOutput(self._preview_audio_output)
-        if hasattr(self.main_win, "apply_audio_output_device"):
-            try:
-                dev = getattr(getattr(self.main_win, "audio_output", None), "device", None)
-                if callable(dev):
-                    self._preview_audio_output.setDevice(dev())
-            except Exception:
-                pass
-        if hasattr(self.main_win, "master_volume"):
-            try:
-                self._preview_audio_output.setVolume(float(self.main_win.master_volume))
-            except Exception:
-                self._preview_audio_output.setVolume(1.0)
-        self._preview_player.playbackStateChanged.connect(self._on_preview_playback_state_changed)
-        self._preview_player.mediaStatusChanged.connect(self._on_preview_media_status_changed)
+        if _is_gui_thread():
+            self._preview_audio_output = QAudioOutput(self)
+            self._preview_player = QMediaPlayer(self)
+            self._preview_player.setAudioOutput(self._preview_audio_output)
+            if hasattr(self.main_win, "apply_audio_output_device"):
+                try:
+                    dev = getattr(getattr(self.main_win, "audio_output", None), "device", None)
+                    if callable(dev):
+                        self._preview_audio_output.setDevice(dev())
+                except Exception:
+                    pass
+            if hasattr(self.main_win, "master_volume"):
+                try:
+                    self._preview_audio_output.setVolume(float(self.main_win.master_volume))
+                except Exception:
+                    self._preview_audio_output.setVolume(1.0)
+            self._preview_player.playbackStateChanged.connect(self._on_preview_playback_state_changed)
+            self._preview_player.mediaStatusChanged.connect(self._on_preview_media_status_changed)
+        else:
+            self._preview_audio_output = None
+            self._preview_player = None
 
         self._init_ui()
         self._populate()
+
+    def _is_gui_thread(self) -> bool:
+        """Check whether execution is on the main Qt GUI thread."""
+        try:
+            from PySide6.QtCore import QThread
+            from PySide6.QtWidgets import QApplication
+            app = QApplication.instance()
+            return app is None or not hasattr(app, "thread") or QThread.currentThread() == app.thread()
+        except Exception:
+            return True
 
     def _get_audio_source_url(self) -> Optional[QUrl]:
         if not self.main_win:
@@ -278,19 +307,20 @@ class SpeakerManagerDialog(QDialog):
         pos_ms = int(max(0.0, start_sec) * 1000)
         dur_ms = int(max(0.5, sample_dur) * 1000)
 
-        if hasattr(self.main_win, "master_volume"):
+        if hasattr(self.main_win, "master_volume") and self._is_gui_thread():
             try:
                 self._preview_audio_output.setVolume(float(self.main_win.master_volume))
             except Exception:
                 pass
 
-        if self._preview_player.source() != source_url:
-            self._pending_play_pos_ms = pos_ms
-            self._preview_player.setSource(source_url)
-        else:
-            self._pending_play_pos_ms = None
-            self._preview_player.setPosition(pos_ms)
-            self._preview_player.play()
+        if self._is_gui_thread():
+            if self._preview_player.source() != source_url:
+                self._pending_play_pos_ms = pos_ms
+                self._preview_player.setSource(source_url)
+            else:
+                self._pending_play_pos_ms = None
+                self._preview_player.setPosition(pos_ms)
+                self._preview_player.play()
 
         self._active_sample_speaker = speaker_name
         btn = self._sample_buttons.get(speaker_name)
@@ -306,7 +336,7 @@ class SpeakerManagerDialog(QDialog):
         """Cease any active sample audio playback and reset UI button text."""
         self._sample_timer.stop()
         self._pending_play_pos_ms = None
-        if hasattr(self, "_preview_player"):
+        if hasattr(self, "_preview_player") and self._is_gui_thread():
             try:
                 self._preview_player.pause()
             except Exception:
@@ -418,6 +448,23 @@ class SpeakerManagerDialog(QDialog):
         btn_row.addWidget(close_btn)
         layout.addLayout(btn_row)
 
+        self._save_debounce_timer = QTimer(self)
+        self._save_debounce_timer.setSingleShot(True)
+        self._save_debounce_timer.setInterval(500)
+        self._save_debounce_timer.timeout.connect(self._flush_debounced_save)
+
+    def _schedule_debounced_save(self):
+        """Schedule a debounced full-project save 500ms after the last speaker rename."""
+        if getattr(self, "_save_debounce_timer", None) is not None:
+            self._save_debounce_timer.start(500)
+
+    def _flush_debounced_save(self):
+        """Immediately execute any pending debounced project save."""
+        if hasattr(self, "_save_debounce_timer") and self._save_debounce_timer is not None and self._save_debounce_timer.isActive():
+            self._save_debounce_timer.stop()
+            if self.main_win and hasattr(self.main_win, "save_project"):
+                self.main_win.save_project()
+
     def _populate(self):
         self._is_populating = True
         try:
@@ -428,7 +475,7 @@ class SpeakerManagerDialog(QDialog):
                 return
 
             source_url = self._get_audio_source_url()
-            if source_url and self._preview_player.source() != source_url:
+            if source_url and self._is_gui_thread() and self._preview_player.source() != source_url:
                 self._preview_player.setSource(source_url)
 
             segments = self.main_win.transcript.get("segments", [])
@@ -540,7 +587,10 @@ class SpeakerManagerDialog(QDialog):
         if self._pending_tab_advance is not None:
             nxt = self._pending_tab_advance
             self._pending_tab_advance = None
-            QTimer.singleShot(0, lambda: self._start_inline_edit_on_row(nxt))
+            if not _is_gui_thread():
+                self.table.setCurrentCell(nxt, 0)
+            else:
+                QTimer.singleShot(0, lambda: self._start_inline_edit_on_row(nxt))
 
     def _start_inline_edit_on_row(self, row: int):
         total = self.table.rowCount()
@@ -627,7 +677,7 @@ class SpeakerManagerDialog(QDialog):
             self.main_win._commit_project_state_change(before_state, f"Rename Speaker: {current_name} → {target}")
 
         self.main_win.render_transcript()
-        self.main_win.save_project()
+        self._schedule_debounced_save()
         self._populate()
 
     def _merge_speaker_into(self, source_name):
@@ -693,14 +743,17 @@ class SpeakerManagerDialog(QDialog):
             self._populate()
 
     def reject(self):
+        self._flush_debounced_save()
         self._stop_sample_playback()
         super().reject()
 
     def accept(self):
+        self._flush_debounced_save()
         self._stop_sample_playback()
         super().accept()
 
     def closeEvent(self, event):
+        self._flush_debounced_save()
         self._stop_sample_playback()
         super().closeEvent(event)
 

@@ -27,10 +27,33 @@ except Exception:
     pass
 
 
+class _DummyTranslationWorker:
+    @classmethod
+    def model_root(cls, variant="tiny"):
+        from core_utils import get_models_storage_dir
+        return get_models_storage_dir() / f"opus-mt-{variant}"
+
+    @classmethod
+    def model_dir(cls, from_code, to_code, variant="tiny"):
+        return cls.model_root(variant) / f"{from_code}-{to_code}"
+
+    @classmethod
+    def model_is_installed(cls, from_code, to_code, variant="tiny"):
+        target = cls.model_dir(from_code, to_code, variant)
+        return (target / "model.bin").exists() or (target / "model.onnx").exists()
+
+
 def _translation_worker_class():
-    """Load translation implementation only when the translation plugin is installed."""
-    from plugins.translation.worker import TranslationWorker
-    return TranslationWorker
+    """Load translation implementation dynamically without hard-importing from plugins."""
+    try:
+        import importlib
+        mod = importlib.import_module("plugins.translation.worker")
+        worker_cls = getattr(mod, "TranslationWorker", None)
+        if worker_cls is not None:
+            return worker_cls
+    except Exception:
+        pass
+    return _DummyTranslationWorker
 
 def _translation_plugin_installed(self) -> bool:
     manager = getattr(self, "plugin_manager", None)

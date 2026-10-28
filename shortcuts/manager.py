@@ -155,11 +155,19 @@ class ShortcutsManager(QObject):
                         if defn.is_qshortcut:
                             target.setKey(qt_seq)
                             if hasattr(target, "setContext"):
-                                target.setContext(Qt.ShortcutContext.ApplicationShortcut)
+                                target.setContext(
+                                    Qt.ShortcutContext.WidgetShortcut
+                                    if getattr(defn, "is_custom_event", False)
+                                    else Qt.ShortcutContext.ApplicationShortcut
+                                )
                         else:
                             target.setShortcut(qt_seq)
                             if hasattr(target, "setShortcutContext"):
-                                target.setShortcutContext(Qt.ShortcutContext.ApplicationShortcut)
+                                target.setShortcutContext(
+                                    Qt.ShortcutContext.WidgetShortcut
+                                    if getattr(defn, "is_custom_event", False)
+                                    else Qt.ShortcutContext.ApplicationShortcut
+                                )
                             if hasattr(window, "addAction") and target not in window.actions():
                                 window.addAction(target)
                     except Exception as exc:
@@ -180,6 +188,8 @@ class ShortcutsManager(QObject):
             "fmt_clear": ("fmt_clear_btn", "Clear Formatting"),
             "split_speaker": ("fmt_split_btn", "Split Speaker Segment at Cursor"),
             "play_pause": ("play_pause_btn", "Play / Pause playback"),
+            "mark_story_start": ("set_story_start_btn", "Set start time of selected story"),
+            "mark_story_end": ("set_story_end_btn", "Set end time of selected story"),
             "set_story_start": ("set_story_start_btn", "Set start time of selected story"),
             "set_story_end": ("set_story_end_btn", "Set end time of selected story"),
             "add_story": ("add_story_btn", "Add story from active selection"),

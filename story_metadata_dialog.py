@@ -38,7 +38,10 @@ from core_utils import (
     apply_window_titlebar_theme,
     make_dialog_maximizable,
 )
-from plugins.wordpress.wp_tab_widget import WordPressExportTabWidget
+try:
+    from plugins.wordpress.wp_tab_widget import WordPressExportTabWidget
+except Exception:
+    WordPressExportTabWidget = None
 
 
 def _get_metadata_theme_mode() -> str:
@@ -153,8 +156,17 @@ class StoryMetadataDialog(QDialog):
         main_layout.addWidget(header_widget)
 
         # Clone of the WordPress Draft Export view (4-tab layout, media scrubber, taxonomy, Castos, notices)
-        self.tab_widget = WordPressExportTabWidget(self, self.main_window, metadata_editor_mode=False)
-        main_layout.addWidget(self.tab_widget, 1)
+        if WordPressExportTabWidget is not None:
+            self.tab_widget = WordPressExportTabWidget(self, self.main_window, metadata_editor_mode=False)
+            main_layout.addWidget(self.tab_widget, 1)
+        else:
+            fallback = QLabel(
+                "WordPress export plugin is unavailable or disabled. Story metadata settings require the WordPress plugin.",
+                self
+            )
+            fallback.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            main_layout.addWidget(fallback, 1)
+            self.tab_widget = None
 
         # Bottom Button Bar: Save and Close in bottom right
         btn_box = QHBoxLayout()
@@ -232,7 +244,7 @@ class StoryMetadataDialog(QDialog):
     def _on_save_clicked(self):
         self.save_all_to_project()
         orig_text = self.save_btn.text()
-        self.save_btn.setText("Saved ✓")
+        self.save_btn.setText("Saved")
         QTimer.singleShot(1500, lambda: self.save_btn.setText(orig_text) if not self.isHidden() else None)
 
     def _on_close_clicked(self):
@@ -273,11 +285,11 @@ class StoryMetadataDialog(QDialog):
                     pass
             self.save_all_to_project()
             cur_row = (target_story_index + 1) if target_story_index is not None else (
-                self.tab_widget.wp_posts_list.currentRow() if hasattr(self.tab_widget, "wp_posts_list") else 0
+                self.tab_widget.wp_posts_list.currentRow() if (self.tab_widget and hasattr(self.tab_widget, "wp_posts_list")) else 0
             )
             if hasattr(self.tab_widget, "rebuild_post_items"):
                 self.tab_widget.rebuild_post_items()
-            if hasattr(self.tab_widget, "wp_posts_list") and 0 <= cur_row < self.tab_widget.wp_posts_list.count():
+            if self.tab_widget and hasattr(self.tab_widget, "wp_posts_list") and 0 <= cur_row < self.tab_widget.wp_posts_list.count():
                 self.tab_widget.wp_posts_list.setCurrentRow(cur_row)
         finally:
             self._syncing_from_main = False

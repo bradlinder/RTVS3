@@ -381,6 +381,17 @@ class WordPressClient:
         except Exception:
             pass
 
+    def _is_safe_redirect(self, current_url: str, next_url: str) -> bool:
+        """Verify redirect does not cross domains or downgrade from HTTPS to HTTP."""
+        import urllib.parse
+        parsed_cur = urllib.parse.urlparse(current_url)
+        parsed_next = urllib.parse.urlparse(next_url)
+        if parsed_cur.scheme == "https" and parsed_next.scheme == "http":
+            return False
+        if parsed_cur.netloc.lower() != parsed_next.netloc.lower():
+            return False
+        return True
+
     def _get_request(self, url: str, params: dict | None = None, headers: dict | None = None, timeout: int = 30) -> Any:
         """Issue an HTTP GET with manual redirect protection and authentication."""
         import requests
@@ -390,10 +401,11 @@ class WordPressClient:
         req_headers["Accept"] = "application/json"
         current_params = params
 
+        current_auth = self._get_auth()
         for _ in range(5):
             resp = requests.get(
                 current_url,
-                auth=self._get_auth(),
+                auth=current_auth,
                 params=current_params,
                 headers=req_headers,
                 timeout=timeout,
@@ -403,6 +415,8 @@ class WordPressClient:
                 next_url = resp.headers["Location"]
                 if not next_url.startswith(("http://", "https://")):
                     next_url = urllib.parse.urljoin(current_url, next_url)
+                if not self._is_safe_redirect(current_url, next_url):
+                    current_auth = None
                 parsed_next = urllib.parse.urlparse(next_url)
                 if parsed_next.query:
                     current_params = None
@@ -419,10 +433,11 @@ class WordPressClient:
         req_headers = dict(headers or {})
         req_headers["Accept"] = "application/json"
         
+        current_auth = self._get_auth()
         for _ in range(5):
             resp = requests.post(
                 current_url,
-                auth=self._get_auth(),
+                auth=current_auth,
                 json=json_data,
                 headers=req_headers,
                 timeout=timeout,
@@ -432,6 +447,8 @@ class WordPressClient:
                 next_url = resp.headers["Location"]
                 if not next_url.startswith(("http://", "https://")):
                     next_url = urllib.parse.urljoin(current_url, next_url)
+                if not self._is_safe_redirect(current_url, next_url):
+                    current_auth = None
                 current_url = next_url
                 continue
             return resp
@@ -443,11 +460,12 @@ class WordPressClient:
         import urllib.parse
         current_url = url
         
+        current_auth = self._get_auth()
         for _ in range(5):
             with open(path, "rb") as f:
                 resp = requests.post(
                     current_url,
-                    auth=self._get_auth(),
+                    auth=current_auth,
                     files={"file": (upload_filename, f, mime_type)},
                     headers={"Accept": "application/json"},
                     timeout=timeout,
@@ -457,6 +475,8 @@ class WordPressClient:
                 next_url = resp.headers["Location"]
                 if not next_url.startswith(("http://", "https://")):
                     next_url = urllib.parse.urljoin(current_url, next_url)
+                if not self._is_safe_redirect(current_url, next_url):
+                    current_auth = None
                 current_url = next_url
                 continue
             return resp

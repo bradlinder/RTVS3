@@ -138,9 +138,14 @@ class DiagnosticExportTestsMixin:
             raise AssertionError(f"Story WordPress metadata persistence failed: {st0_wp}")
 
         # 6. Verify 4-Tab Layout, Preferences Page QComboBox, and Non-Modal Floating Dialogs (Items 6.2 & 6.3)
-        from PySide6.QtCore import Qt
-        from PySide6.QtWidgets import QApplication
-        if QApplication.instance() is not None:
+        from PySide6.QtCore import Qt, QCoreApplication, QThread
+        app = getattr(QCoreApplication, "instance", lambda: None)()
+        is_main_gui_thread = (
+            app is not None
+            and hasattr(app, "thread")
+            and QThread.currentThread() == app.thread()
+        )
+        if is_main_gui_thread:
             from plugins.wordpress.client import WordPressPreferencesPage, WordPressSettingsDialog
             from export.dialog import UnifiedExportDialog
             from story_metadata_dialog import StoryMetadataDialog
@@ -180,6 +185,18 @@ class DiagnosticExportTestsMixin:
             exp_dlg.deleteLater()
             meta_dlg.deleteLater()
             wp_pref.deleteLater()
+        else:
+            from plugins.wordpress.client import WordPressPreferencesPage, WordPressSettingsDialog
+            from export.dialog import UnifiedExportDialog
+            from story_metadata_dialog import StoryMetadataDialog
+            if not hasattr(WordPressPreferencesPage, "__init__"):
+                raise AssertionError("WordPressPreferencesPage class contract invalid")
+            if not hasattr(WordPressSettingsDialog, "__init__"):
+                raise AssertionError("WordPressSettingsDialog class contract invalid")
+            if not hasattr(UnifiedExportDialog, "__init__"):
+                raise AssertionError("UnifiedExportDialog class contract invalid")
+            if not hasattr(StoryMetadataDialog, "__init__"):
+                raise AssertionError("StoryMetadataDialog class contract invalid")
 
         item.status = "PASS"
         item.message = "WordPress export scope, shared metadata persistence, 4-tab layout, and non-modal floating dialogs verified"

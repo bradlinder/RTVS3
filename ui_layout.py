@@ -156,9 +156,17 @@ class UiLayoutMixin(UiMenusMixin, UiDialogLaunchersMixin):
         self.cancel_btn = self.cancel_button
         progress_row.addWidget(self.cancel_button)
 
+        self.skip_stage_button = QPushButton("Skip Stage", self)
+        self.skip_stage_button.setObjectName("skip_stage_button")
+        self.skip_stage_button.setToolTip("Cancel active stage and continue to next queued pipeline stage")
+        self.skip_stage_button.clicked.connect(lambda: getattr(self, "skip_current_pipeline_stage", lambda: None)())
+        self.skip_stage_btn = self.skip_stage_button
+        progress_row.addWidget(self.skip_stage_button)
+
         self.processing_stage_label.hide()
         self.progress_bar.hide()
         self.cancel_button.hide()
+        self.skip_stage_button.hide()
 
         progress_panel_layout.addLayout(progress_row)
         main_layout.addWidget(self.progress_panel)
@@ -905,22 +913,39 @@ class UiLayoutMixin(UiMenusMixin, UiDialogLaunchersMixin):
             raw_text = self._get_transcript_text_slice(st.start, st.end)
         if not raw_text and hasattr(self, "transcript"):
             words = []
-            for seg in getattr(self, "transcript", []) or []:
-                s_start = seg.get("start", 0.0)
-                s_end = seg.get("end", 0.0)
-                if (st.start is None or s_end >= st.start) and (st.end is None or s_start <= st.end):
-                    words.append(seg.get("text", ""))
+            trans_obj = getattr(self, "transcript", None) or {}
+            segs = trans_obj.get("segments", []) if isinstance(trans_obj, dict) else (trans_obj if isinstance(trans_obj, list) else [])
+            for seg in segs:
+                if isinstance(seg, dict):
+                    s_start = seg.get("start", 0.0)
+                    s_end = seg.get("end", 0.0)
+                    if (st.start is None or s_end >= st.start) and (st.end is None or s_start <= st.end):
+                        words.append(seg.get("text", ""))
             raw_text = " ".join(words)
         words = raw_text.split()
         if len(words) <= 55:
             excerpt = raw_text.strip()
         else:
             excerpt = " ".join(words[:55]).rstrip(".,;:!?") + "..."
+
+        from story_model import Story
+        old_stories = [Story.from_dict(s.to_dict()) for s in self.stories]
+        new_stories = [Story.from_dict(s.to_dict()) for s in self.stories]
+        if not hasattr(new_stories[idx], "metadata") or new_stories[idx].metadata is None:
+            new_stories[idx].metadata = {}
+        new_stories[idx].metadata["excerpt"] = excerpt
+        wp_meta = new_stories[idx].metadata.setdefault("wordpress", {})
+        wp_meta["excerpt"] = excerpt
+
+        if hasattr(self, "commit_story_change"):
+            self.commit_story_change(old_stories, new_stories, "Auto-generate Excerpt")
+        else:
+            self.stories = new_stories
+
         if hasattr(self, "excerpt_edit"):
             self.excerpt_edit.blockSignals(True)
             self.excerpt_edit.setPlainText(excerpt)
             self.excerpt_edit.blockSignals(False)
-        self._on_story_excerpt_text_changed()
 
     def _on_story_excerpt_text_changed(self):
         """Synchronize excerpt edits from the inline editor into story metadata."""

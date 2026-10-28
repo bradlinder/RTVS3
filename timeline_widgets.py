@@ -279,6 +279,9 @@ class TimelineCanvas(QWidget):
         old_offset = self.scroll_offset
 
         if self.is_playing:
+            win = self.window()
+            if win is not None and not getattr(win, "follow_playhead", True):
+                return
             self.scroll_offset = target_time - (vis_dur / 2.0)
             self.clamp_scroll_offset()
         else:

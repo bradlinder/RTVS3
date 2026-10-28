@@ -404,6 +404,15 @@ class ProjectExportMixin(
             if hasattr(self, "stop_video_thumbnail_worker") and not self.stop_video_thumbnail_worker():
                 if hasattr(self, "log_activity"):
                     self.log_activity("[WARNING] Video thumbnail worker is still stopping. Close was canceled to avoid a QThread lifetime crash.", mark_dirty=False)
+                try:
+                    QMessageBox.warning(
+                        self,
+                        "Video Thumbnails Generating",
+                        "Video thumbnail generation is still finishing in the background.\n\n"
+                        "Please wait a few seconds and try closing again to ensure clean thread termination."
+                    )
+                except Exception:
+                    pass
                 event.ignore()
                 return
         except Exception:

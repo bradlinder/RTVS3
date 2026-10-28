@@ -131,10 +131,11 @@ def _run_ffmpeg_export(
                         pass
                 raise RuntimeError("Export cancelled by user.")
 
-            retcode = proc.poll()
-            if retcode is not None:
-                stdout, stderr = proc.communicate()
-                return subprocess.CompletedProcess(command, retcode, stdout, stderr)
+            try:
+                stdout, stderr = proc.communicate(timeout=0.05)
+                return subprocess.CompletedProcess(command, proc.returncode, stdout, stderr)
+            except subprocess.TimeoutExpired:
+                pass
 
             if time.time() - start_time > timeout_sec:
                 try:
@@ -149,7 +150,6 @@ def _run_ffmpeg_export(
                 raise subprocess.TimeoutExpired(command, timeout_sec)
 
             safe_process_events()
-            time.sleep(0.03)
     finally:
         unregister_process(proc)
 
@@ -197,7 +197,7 @@ def export_audio_track(
     # Fast-path: stream-copy when no audio filters are needed and format matches
     if not af_chain:
         copy_cmd = [
-            ff_bin, "-y", "-ss", str(start), "-i", str(source_path),
+            ff_bin, "-y", "-nostats", "-loglevel", "error", "-ss", str(start), "-i", str(source_path),
             "-t", str(duration), "-map", "0", "-c", "copy", str(output_path),
         ]
         result = _run_ffmpeg_export(
@@ -219,7 +219,7 @@ def export_audio_track(
 
         # Try stream-copying video while filtering audio
         video_copy_cmd = [
-            ff_bin, "-y", "-ss", str(start), "-i", str(source_path),
+            ff_bin, "-y", "-nostats", "-loglevel", "error", "-ss", str(start), "-i", str(source_path),
             "-t", str(duration), "-map", "0", "-c:v", "copy",
         ] + audio_codec + af_args + [str(output_path)]
 
@@ -231,7 +231,7 @@ def export_audio_track(
 
         # Fallback to full transcode if video copy failed
         transcode_cmd = [
-            ff_bin, "-y", "-ss", str(start), "-i", str(source_path),
+            ff_bin, "-y", "-nostats", "-loglevel", "error", "-ss", str(start), "-i", str(source_path),
             "-t", str(duration), "-map", "0",
         ] + fallback_vcodec + audio_codec + af_args + [str(output_path)]
 
@@ -253,7 +253,7 @@ def export_audio_track(
     }
     codec_args = audio_codecs.get(ext, ["-c:a", "aac", "-b:a", "192k"])
     transcode_cmd = [
-        ff_bin, "-y", "-ss", str(start), "-i", str(source_path),
+        ff_bin, "-y", "-nostats", "-loglevel", "error", "-ss", str(start), "-i", str(source_path),
         "-t", str(duration), "-map", "0:a",
     ] + codec_args + af_args + [str(output_path)]
 

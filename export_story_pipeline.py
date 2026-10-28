@@ -335,67 +335,76 @@ class ExportStoryPipelineMixin:
                     except Exception:
                         pass
 
-        # Export CUE sheet and tracklist if requested
-        if formats.get("cue") and stories_with_indices:
-            stories_subset = [s for _, s in stories_with_indices]
-            cue_file = transcripts_out / f"{base}.cue"
-            album_title = base
-            media_name = audio_file.name if audio_file else ""
-            cue_text = generate_cue_sheet(stories_subset, media_name, album_title)
-            with open(cue_file, "w", encoding="utf-8") as f:
-                f.write(cue_text)
-
-        if formats.get("tracklist") and stories_with_indices:
-            stories_subset = [s for _, s in stories_with_indices]
-            chapters_file = transcripts_out / f"{base}_chapters.txt"
-            chapters_text = generate_youtube_chapters(stories_subset)
-            with open(chapters_file, "w", encoding="utf-8") as f:
-                f.write(chapters_text)
-
-        unselected_mode = options.get("unselected_audio_mode", "exclude")
-        tot_dur = float(getattr(self, "duration", 0.0) or getattr(self, "audio_duration", 0.0) or 0.0)
-
-        if formats.get("rpp") and stories_with_indices:
-            stories_subset = [s for _, s in stories_with_indices]
-            rpp_file = transcripts_out / f"{base}.rpp"
-            media_name = audio_file.name if audio_file else ""
-            apply_fades = bool(options.get("apply_audio_fades", True))
-            rpp_text = generate_reaper_project(stories_subset, media_name, base, apply_fades=apply_fades, total_duration=tot_dur, unselected_audio_mode=unselected_mode)
-            with open(rpp_file, "w", encoding="utf-8") as f:
-                f.write(rpp_text)
-
-        if formats.get("edl") and stories_with_indices:
-            stories_subset = [s for _, s in stories_with_indices]
-            edl_file = transcripts_out / f"{base}.edl"
-            media_name = audio_file.name if audio_file else ""
-            apply_fades = bool(options.get("apply_audio_fades", True))
-            edl_text = generate_samplitude_edl(stories_subset, media_name, base, apply_fades=apply_fades, total_duration=tot_dur, unselected_audio_mode=unselected_mode)
-            with open(edl_file, "w", encoding="utf-8") as f:
-                f.write(edl_text)
-
-        if formats.get("audacity") and stories_with_indices:
-            stories_subset = [s for _, s in stories_with_indices]
-            audacity_file = transcripts_out / f"{base}_labels.txt"
-            aud_text = generate_audacity_labels(stories_subset, total_duration=tot_dur, unselected_audio_mode=unselected_mode)
-            with open(audacity_file, "w", encoding="utf-8") as f:
-                f.write(aud_text)
-
-        if formats.get("audition_xml") and stories_with_indices:
-            stories_subset = [s for _, s in stories_with_indices]
-            xml_file = transcripts_out / f"{base}.xml"
-            media_name = audio_file.name if audio_file else ""
-            xml_text = generate_audition_xml(stories_subset, media_name, base, total_duration=tot_dur, unselected_audio_mode=unselected_mode)
-            with open(xml_file, "w", encoding="utf-8") as f:
-                f.write(xml_text)
-
-        if formats.get("daw_csv") and stories_with_indices:
-            stories_subset = [s for _, s in stories_with_indices]
-            csv_file = transcripts_out / f"{base}_markers.csv"
-            csv_text = generate_daw_marker_csv(stories_subset, total_duration=tot_dur, unselected_audio_mode=unselected_mode)
-            with open(csv_file, "w", encoding="utf-8") as f:
-                f.write(csv_text)
+        self._export_daw_interchange_files(
+            formats,
+            [s for _, s in stories_with_indices] if stories_with_indices else [],
+            base,
+            transcripts_out,
+            audio_file,
+            options,
+            default_track="Segmented Stories",
+            default_scope="selected_stories",
+        )
 
         return True
+
+    def _export_daw_interchange_files(
+        self,
+        formats: Dict[str, bool],
+        stories: List[Any],
+        base: str,
+        transcripts_out: Path,
+        audio_file: Optional[Path],
+        options: Dict[str, Any],
+        default_track: str = "Segmented Stories",
+        default_scope: str = "selected_stories",
+    ) -> None:
+        if not stories and not audio_file:
+            return
+        tot_dur = float(getattr(self, "duration", 0.0) or getattr(self, "audio_duration", 0.0) or 0.0)
+        effective_stories = list(stories) if stories else [
+            type("StorySpan", (), {"start": 0.0, "end": tot_dur, "title": base, "to_dict": lambda s: {"start": 0.0, "end": tot_dur, "title": base}})()
+        ]
+        media_name = audio_file.name if audio_file else ""
+        if formats.get("cue") and stories:
+            with open(transcripts_out / f"{base}.cue", "w", encoding="utf-8") as f:
+                f.write(generate_cue_sheet(stories, media_name, base))
+        if formats.get("tracklist") and stories:
+            with open(transcripts_out / f"{base}_chapters.txt", "w", encoding="utf-8") as f:
+                f.write(generate_youtube_chapters(stories))
+        unselected_mode = options.get("unselected_audio_mode", "exclude")
+        s_rate = int(options.get("sample_rate", getattr(self, "audio_sample_rate", 44100)) or 44100)
+        trk_name = str(options.get("track_name", default_track) or default_track)
+        scp = str(options.get("scope", default_scope) or default_scope)
+        all_st = getattr(self, "stories", None) or effective_stories
+        apply_fades = bool(options.get("apply_audio_fades", True))
+
+        if formats.get("rpp"):
+            with open(transcripts_out / f"{base}.rpp", "w", encoding="utf-8") as f:
+                f.write(generate_reaper_project(
+                    effective_stories, media_name, base,
+                    apply_fades=apply_fades, sample_rate=s_rate, total_duration=tot_dur,
+                    unselected_audio_mode=unselected_mode, track_name=trk_name, scope=scp, all_stories=all_st,
+                ))
+        if formats.get("edl"):
+            with open(transcripts_out / f"{base}.edl", "w", encoding="utf-8") as f:
+                f.write(generate_samplitude_edl(
+                    effective_stories, media_name, base,
+                    sample_rate=s_rate, apply_fades=apply_fades, total_duration=tot_dur,
+                    unselected_audio_mode=unselected_mode, track_name=trk_name, scope=scp, all_stories=all_st,
+                ))
+        if formats.get("audacity"):
+            with open(transcripts_out / f"{base}_labels.txt", "w", encoding="utf-8") as f:
+                f.write(generate_audacity_labels(effective_stories, total_duration=tot_dur, unselected_audio_mode=unselected_mode))
+        if formats.get("audition_xml"):
+            with open(transcripts_out / f"{base}.xml", "w", encoding="utf-8") as f:
+                f.write(generate_audition_xml(
+                    effective_stories, media_name, base, sample_rate=s_rate,
+                    total_duration=tot_dur, unselected_audio_mode=unselected_mode,
+                ))
+        if formats.get("daw_csv"):
+            with open(transcripts_out / f"{base}_markers.csv", "w", encoding="utf-8") as f:
+                f.write(generate_daw_marker_csv(effective_stories, total_duration=tot_dur, unselected_audio_mode=unselected_mode))
 
     def export_selected_stories(
         self,
@@ -891,59 +900,16 @@ class ExportStoryPipelineMixin:
                         return False
                     raise
 
-            # Export CUE sheet and Tracklist/Chapters if requested
-            stories = getattr(self, "stories", None)
-            if formats.get("cue") and stories:
-                cue_file = transcripts_out / f"{base}.cue"
-                album_title = base
-                media_name = audio_file.name if audio_file else ""
-                cue_text = generate_cue_sheet(stories, media_name, album_title)
-                with open(cue_file, "w", encoding="utf-8") as f:
-                    f.write(cue_text)
-
-            if formats.get("tracklist") and stories:
-                chapters_file = transcripts_out / f"{base}_chapters.txt"
-                chapters_text = generate_youtube_chapters(stories)
-                with open(chapters_file, "w", encoding="utf-8") as f:
-                    f.write(chapters_text)
-
-            unselected_mode = options.get("unselected_audio_mode", "exclude")
-            tot_dur = float(getattr(self, "duration", 0.0) or getattr(self, "audio_duration", 0.0) or 0.0)
-
-            if formats.get("rpp") and stories:
-                rpp_file = transcripts_out / f"{base}.rpp"
-                media_name = audio_file.name if audio_file else ""
-                apply_fades = bool(options.get("apply_audio_fades", True))
-                rpp_text = generate_reaper_project(stories, media_name, base, apply_fades=apply_fades, total_duration=tot_dur, unselected_audio_mode=unselected_mode)
-                with open(rpp_file, "w", encoding="utf-8") as f:
-                    f.write(rpp_text)
-
-            if formats.get("edl") and stories:
-                edl_file = transcripts_out / f"{base}.edl"
-                media_name = audio_file.name if audio_file else ""
-                apply_fades = bool(options.get("apply_audio_fades", True))
-                edl_text = generate_samplitude_edl(stories, media_name, base, apply_fades=apply_fades, total_duration=tot_dur, unselected_audio_mode=unselected_mode)
-                with open(edl_file, "w", encoding="utf-8") as f:
-                    f.write(edl_text)
-
-            if formats.get("audacity") and stories:
-                audacity_file = transcripts_out / f"{base}_labels.txt"
-                aud_text = generate_audacity_labels(stories, total_duration=tot_dur, unselected_audio_mode=unselected_mode)
-                with open(audacity_file, "w", encoding="utf-8") as f:
-                    f.write(aud_text)
-
-            if formats.get("audition_xml") and stories:
-                xml_file = transcripts_out / f"{base}.xml"
-                media_name = audio_file.name if audio_file else ""
-                xml_text = generate_audition_xml(stories, media_name, base, total_duration=tot_dur, unselected_audio_mode=unselected_mode)
-                with open(xml_file, "w", encoding="utf-8") as f:
-                    f.write(xml_text)
-
-            if formats.get("daw_csv") and stories:
-                csv_file = transcripts_out / f"{base}_markers.csv"
-                csv_text = generate_daw_marker_csv(stories, total_duration=tot_dur, unselected_audio_mode=unselected_mode)
-                with open(csv_file, "w", encoding="utf-8") as f:
-                    f.write(csv_text)
+            self._export_daw_interchange_files(
+                formats,
+                getattr(self, "stories", None) or [],
+                base,
+                transcripts_out,
+                audio_file,
+                options,
+                default_track="Full Episode",
+                default_scope="all_stories",
+            )
 
             if progress_dialog is not None and created_local_dialog:
                 progress_dialog.setValue(1)

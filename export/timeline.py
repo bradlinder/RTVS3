@@ -413,15 +413,23 @@ def generate_samplitude_edl(
         '// Track   Index   Source-In      Source-Out     Dest-In        Dest-Out       FadeIn FadeOut Name             File',
     ]
 
+    dst_cursor = 0.0
     for i, clip in enumerate(clips, 1):
         start = clip["start"]
         end = clip["end"]
+        dur = max(0.0, end - start)
         title = clip["title"].replace('"', "'")
 
         src_in_tc = format_edl_timestamp(start)
         src_out_tc = format_edl_timestamp(end)
-        dst_in_tc = src_in_tc
-        dst_out_tc = src_out_tc
+
+        if unselected_audio_mode == "exclude":
+            dst_in_tc = format_edl_timestamp(dst_cursor)
+            dst_cursor += dur
+            dst_out_tc = format_edl_timestamp(dst_cursor)
+        else:
+            dst_in_tc = src_in_tc
+            dst_out_tc = src_out_tc
 
         f_in = clip.get("fade_in", 0.0)
         f_out = clip.get("fade_out", 0.0)

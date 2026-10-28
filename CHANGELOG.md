@@ -1,5 +1,81 @@
 # Changelog
 
+## v3.9.51-beta
+- **Debounced Speaker Table Disk Writes (`speaker_dialogs.py`) [P4-04]**:
+  - Implemented 500ms debounced project saving (`_save_debounce_timer`) in `SpeakerManagerDialog` during inline speaker name editing and cell navigation, eliminating rapid synchronous full-project gzip disk writes and UI stutter.
+  - Added guaranteed `_flush_debounced_save()` across dialog `accept()`, `reject()`, and `closeEvent()`, ensuring zero data loss when exiting the dialog.
+- **Story Excerpt Undo/Redo Snapshots (`ui_layout.py`) [P6-08]**:
+  - Integrated `auto_generate_selected_story_excerpt()` with project-level undo history via `commit_story_change(old_stories, new_stories, "Auto-generate Excerpt")`.
+  - Captures full pre-mutation story state snapshots so generated excerpts can be immediately reverted or restored via Ctrl+Z / Ctrl+Shift+Z without corrupting custom excerpts.
+- **Core Module Plugin Decoupling & Architectural Invariant Enforcement (`plugin_base.py`, `plugins/base.py`, `export/dialog.py`, `plugin_dialogs.py`, `model_management.py`) [P5-03]**:
+  - Extracted core plugin interface contracts (`PluginManifest`, `BasePlugin`, `ExportDestination`) into `plugin_base.py`, establishing a clean interface boundary at the application root.
+  - Preserved 100% backward compatibility for all plugins and test harnesses through facade re-exports in `plugins/base.py`.
+  - Decoupled `export/dialog.py` and `plugin_dialogs.py` from `plugins.base` by importing directly from `plugin_base`.
+  - Replaced hard import of `plugins.translation.worker` in `model_management.py` with dynamic import and fallback `_DummyTranslationWorker`, eliminating crashes when the translation plugin is absent or disabled.
+- **Multi-Stage Pipeline Skip Stage & Fault Recovery (`processing.py`, `ui_layout.py`, `project_state_mixin.py`, `story_detection_processing.py`, `diarization_processing.py`, `transcription_processing.py`, `translation.py`, `theme_qss.py`)**:
+  - Added dynamic "Skip Stage" button alongside Cancel in `ui_layout.py` progress bar row, visible only when a multi-stage pipeline has downstream queued stages.
+  - Implemented `skip_current_pipeline_stage()` in `processing.py` to cleanly terminate the active worker and immediately advance the pipeline queue without losing remaining stages.
+  - Added interactive error recovery prompts in `story_detection_processing.py`, `diarization_processing.py`, `transcription_processing.py`, and `translation.py` offering to skip failed stages and continue processing the remaining pipeline.
+  - Fixed `NameError: name 'Path' is not defined` in `story_detection_processing.py`.
+
+## v3.9.50-beta
+- **Pipeline Fault Recovery & Skip Stage (`processing.py`, `ui_layout.py`, `project_state_mixin.py`, `story_detection_processing.py`, `diarization_processing.py`, `transcription_processing.py`, `translation.py`, `theme_qss.py`)**:
+  - **Dynamic Skip Stage Button (`ui_layout.py`, `processing.py`, `project_state_mixin.py`)**: Added a dedicated "Skip Stage" button alongside Cancel that dynamically appears whenever a multi-stage pipeline is running with queued downstream stages. Cleanly terminates the active worker and immediately advances the pipeline queue without losing remaining stages.
+  - **Stage Completion & Error Fault Recovery (`story_detection_processing.py`, `diarization_processing.py`, `transcription_processing.py`, `translation.py`)**: Wrapped stage completion callbacks in robust exception handlers that prevent the UI and progress bar from locking up if result processing fails, and added user prompts on worker errors offering to skip the failed stage and continue with the rest of the pipeline.
+- **Keyboard Usability & Transport Customization (`shortcuts/schema.py`, `shortcuts/manager.py`, `playback_controller.py`, `RadioTVSegmenter.py`, `ui_menus.py`, `story_crud_mixin.py`, `transcript_editor_dialogs.py`, `playback_preferences.py`)**:
+  - **Complete Shortcut Customization Coverage (`shortcuts/schema.py`, `RadioTVSegmenter.py`, `ui_menus.py`)**: Wired all 24 shortcut schema definitions previously lacking `attr_name` (now 79/79 actions fully customizable), registering corresponding QActions and QShortcuts on MainWindow and adding Find Next / Find Previous and Configure Audio Fades to the Edit menu [P4-01].
+  - **Customizable Transport & Text Focus Mitigations (`playback_controller.py`, `shortcuts/manager.py`, `story_crud_mixin.py`, `timeline_widgets.py`)**: Bound Spacebar play/pause and all transport/navigation shortcuts to user preferences with `_is_text_entry_focused()` focus guards, preventing key-stealing in QLineEdit, QTextEdit, QPlainTextEdit, QAbstractSpinBox, QComboBox, and editable transcript modes [P4-02].
+- **Concurrency, Batch Reliability & Export Interchange Fidelity (`transcription_processing.py`, `diarization_processing.py`, `story_detection_processing.py`, `media_batch.py`, `export/timeline.py`, `export_story_pipeline.py`, `export/dialog.py`, `processing.py`, `project_export.py`, `diagnostic_dialog.py`)**:
+  - **Stale Background Worker State Overwrite Guard (`transcription_processing.py`, `diarization_processing.py`, `story_detection_processing.py`)**: Bound transcription and diarization completion callbacks to the active media path (`_transcription_source_media`, `_diarization_source_media`), discarding background results if the user switched media before the worker finished [P1-03].
+  - **Non-Modal Batch Error Handling (`media_batch.py`, `transcription_processing.py`, `diarization_processing.py`, `story_detection_processing.py`)**: Replaced blocking modal `QMessageBox` error popups during batch processing with non-modal activity log warnings and automatic advance to `_batch_next_media`, ensuring unattended multi-file batch runs are never halted by a single failing file [P1-04].
+  - **Worker Lifecycle & Re-entrancy Guards (`media_batch.py`, `project_export.py`, `processing.py`, `diagnostic_dialog.py`)**:
+    - Added lingering video thumbnail worker thread tracking to prevent Qt thread teardown crashes [P3-02].
+    - Added user notification on export thumbnail generation timeout in `project_export.py` [P3-03].
+    - Bound `translate_button.setEnabled(has_transcript)` in `processing.py` to prevent invalid translation triggers [P3-04].
+    - Added `try ... finally: self.finished.emit()` in `diagnostic_dialog.py:TestRunnerWorker.run` to guarantee background diagnostic worker threads cleanly signal completion even on uncaught errors.
+  - **Samplitude EDL Destination Timecode Contiguity (`export/timeline.py`)**: Fixed destination timecode tracking in `generate_samplitude_edl` when `unselected_audio_mode == "exclude"`, using a contiguous `dst_cursor` placement so destination timecode starts at 00:00:00:00 and advances contiguously across selected regions without dead air gaps [P6-05].
+  - **DAW Export Format Matrix Unification & Line Budget Hygiene (`export_story_pipeline.py`, `export/dialog.py`)**:
+    - Harmonized DAW project parameters (sample rates, track names, and scopes) across story and full-episode export pipelines [P6-04].
+    - Consolidated duplicate DAW timeline writing routines in `export_story_pipeline.py` into a shared `_export_daw_interchange_files` helper, maintaining the strict 1,000-line budget invariant (964 lines).
+  - **Permanent Audit Documentation (`docs/audit/`)**: Migrated all 8 comprehensive audit phase reports and roadmap specifications into versioned repository documents for permanent developer reference.
+
+## v3.9.49-beta
+- **Thread-Affinity & Cross-Thread Qt Warning Elimination (`diagnostic_core_tests.py`, `diagnostic_export_tests.py`, `speaker_dialogs.py`)**:
+  - Eliminated `QObject: Cannot create children for a parent that is in a different thread` and `QBasicTimer::stop: Failed. Possibly trying to stop from a different thread` warnings in the console when running diagnostic suites from within the GUI application (`DiagnosticDialog` worker `QThread`).
+  - Refactored `diagnostic_core_tests.py` mock host window from `QWidget` to pure-Python `SpeakerDialogRefinementMixin`, preventing secondary worker threads from attempting top-level native window registration.
+  - Implemented `is_main_gui_thread` thread-affinity branching in `diagnostic_core_tests.py` and `diagnostic_export_tests.py` (matching the pattern in `diagnostic_loudness_tests.py`), executing full interactive UI widget lifecycles when run on the main thread and verifying business logic and class invariants when executed inside secondary worker threads.
+  - Added inline cell editor cleanup prior to dialog teardown, eliminating orphaned `QLineEdit` cursor blink timers (`QBasicTimer`).
+
+## v3.9.48-beta
+- **Speaker Sample Player Thread-Affinity Guard & Diagnostic Console Hygiene (`speaker_dialogs.py`, `diagnostic_core_tests.py`)**:
+  - Resolved `QObject: Cannot create children for a parent that is in a different thread` cross-thread parenting warnings and unwanted FFmpeg hardware probe messages in the application console.
+  - Added thread-affinity verification (`_is_gui_thread()`) to `SpeakerManagerDialog` across `_populate()`, `_play_speaker_sample()`, and `_stop_sample_playback()`.
+  - Prevented background worker threads (such as `DiagnosticDialog` worker threads) from invoking hardware soundcard media loading on secondary threads while preserving 100% normal audio playback when accessed from the main GUI window.
+  - Guarded `_preview_player` media engine triggers during automated unit test suite execution in `diagnostic_core_tests.py`.
+
+## v3.9.47-beta
+- **Active Danger Zone: Critical Data Loss, Security & Instant Crash Resolution (`media_batch.py`, `updater.py`, `story_metadata_dialog.py`, `plugins/wordpress/client.py`, `ui_layout.py`, `export/audio.py`, `project_state_mixin.py`)**:
+  - **Batch Queue Zero-Byte Overwrite Protection (`media_batch.py`)**: Fixed critical bug where enabling "Skip already-transcribed files" (`skip_existing`) invoked `_batch_export_current()` with `transcript=None`, clobbering existing valid transcript files on disk with 0-byte blanks. Guarded export routines against None transcripts.
+  - **Updater SHA-256 Checksum Verification & Unverified Warning (`updater.py`)**: Enforced SHA-256 package verification in `DownloadUpdateWorker`, recording checksum status. Added an explicit confirmation warning dialog in `_install_and_restart()` if an update lacks a verified SHA-256 checksum on GitHub, preventing unverified installer execution.
+  - **Unsaved Work Guard Prior to Update Restart (`updater.py`)**: Added a top-level project dirty inspection prior to updater restart. If unsaved project edits exist, users are prompted with Save / Discard / Cancel dialog to prevent data loss. Extended the shutdown watcher wait interval from 0.8s to 3.0s.
+  - **WordPress Dialog Import Resilience & Decoupling (`story_metadata_dialog.py`)**: Replaced direct hard import of `plugins.wordpress.wp_tab_widget.WordPressExportTabWidget` with safe dynamic import and fallback notice widget, eliminating crashes when the WordPress plugin is absent, disabled, or uninstalled, and adhering to core-plugin architectural boundaries.
+  - **HTTP Redirect Credential Protection (`plugins/wordpress/client.py`)**: Added `_is_safe_redirect()` validation to strip WordPress credentials and basic auth headers whenever a server redirect crosses domains or downgrades from HTTPS to plain HTTP, preventing credential leakage to untrusted third parties.
+  - **Story Excerpt Type Safety Crash Fix (`ui_layout.py`)**: Fixed dictionary key iteration crash in `auto_generate_selected_story_excerpt()`. Safely extracted segment arrays from `self.transcript` dictionary objects (`{"segments": [...]}`) and guarded segment element types.
+  - **FFmpeg OS Pipe Buffer Deadlock Elimination (`export/audio.py`)**: Replaced blocking `proc.poll()` / `time.sleep()` loop with non-blocking `proc.communicate(timeout=0.05)` pipe draining inside `_run_ffmpeg_export()`. Completely eliminates process deadlocks when FFmpeg emits >64KB to stdout/stderr. Added `-nostats` and `-loglevel error` to reduce pipe saturation and processing overhead.
+  - **Undo/Redo File Dialog Suppression on Unsaved Projects (`project_state_mixin.py`)**: Suppressed modal "Save Project As" file chooser dialogs when pressing Ctrl+Z (undo) or Ctrl+Shift+Z (redo) on new, unsaved projects by checking `getattr(self, "project_file", None)` prior to invoking `self.save_project()`.
+
+## v3.9.46-beta
+- **Codebase De-Bloat & Orphaned Code Eradication (`timeline_canvas.py`, `preferences_tabs.py`, `voice_profile_matcher_mixin.py`, `timeline_envelope.py`, `build_installer.py`)**:
+  - Permanently eliminated **3,085 lines of orphaned dead duplicate code** identified during the comprehensive architectural audit:
+    - Deleted `timeline_canvas.py` (1,344 lines) and `timeline_envelope.py` (51 lines), which were fully superseded by `timeline_widgets.py` and `waveform_envelope.py` with zero active imports.
+    - Deleted `preferences_tabs.py` (1,142 lines), which was fully superseded by `preferences_tabs_core.py` and `preferences_tabs_media.py`.
+    - Deleted `voice_profile_matcher_mixin.py` (548 lines), an unimported byte-for-byte duplicate of `voice_profile_ops_mixin.py`.
+  - Reduced the repository's modules exceeding the 1,000-line ceiling from 16 down to 14, and total project files from 157 down to 153.
+  - Cleaned up obsolete build and scaffold artifacts in the repository root: removed stale Inno Setup script `RadioTVStorySegmenter.iss` (dated Oct 23, superseded by `installer/Windows/RadioTVStorySegmenter.iss`) and dead Vite/React scaffold configuration files (`vite.config.ts`, `eslint.config.js`, `tailwind.config.js`, `postcss.config.js`, `tsconfig.json`).
+  - Added missing PyInstaller hidden-imports in `build_installer.py` for new export engine submodules: `--hidden-import export.audio` and `--hidden-import export.timeline`, preventing dynamic import failures in frozen standalone distributions.
+  - Re-synchronized `roadmap.txt` to strict $N-1$ sliding-window compliance, pruning historical milestones older than $N-1$ to reduce prompt context tokens.
+
+
 ## v3.9.45-beta
 - **Diagnostic Test Bench Background Worker Thread-Safety & UI Hang Resolution (`core_utils.py`, `diagnostic_export_tests.py`, `preview_manager.py`)**:
   - Resolved an application-wide freeze and "(Not Responding)" lockup occurring during the System Diagnostic Test Bench when executing the `WordPress Export Scope Post Builder` diagnostic check.

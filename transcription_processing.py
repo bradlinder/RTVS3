@@ -58,6 +58,7 @@ class TranscriptionProcessingMixin:
         if not self._ensure_runtime_environment_responsive("transcribe"):
             return
 
+        self._transcription_source_media = str(Path(self.audio_file).resolve()) if getattr(self, "audio_file", None) else None
         self.set_tools_actions_enabled(False)
         self.progress.setValue(0)
         self.progress.show()
@@ -417,6 +418,17 @@ class TranscriptionProcessingMixin:
         self.update_processing_progress(percent, message)
 
     def transcription_finished(self, transcript):
+        # Stale Worker State Overwrite Guard (Item 1.1 / P1-03)
+        current_media = str(Path(self.audio_file).resolve()) if getattr(self, "audio_file", None) else None
+        target_media = getattr(self, "_transcription_source_media", None)
+        if target_media and current_media != target_media:
+            self.log_activity(
+                f"[TRANSCRIPTION] Ignored stale completion payload: active media changed from {target_media} to {current_media}.",
+                mark_dirty=False
+            )
+            self.cleanup_transcription_process()
+            return
+
         if not isinstance(transcript, dict) or "segments" not in transcript:
             self.transcription_error(
                 "The transcription helper returned an invalid transcript result."
@@ -529,14 +541,39 @@ class TranscriptionProcessingMixin:
         self.pipeline_queue = []
         self.pipeline_rerun_confirmed = False
         if getattr(self, "batch_active", False):
-            self.batch_active = False
+            self.log_activity(f"[BATCH ERROR] Transcription error: {message}")
+            if hasattr(self, "_batch_media_error"):
+                self._batch_media_error(message)
+            return
+
         self.progress.hide()
         self.cancel_button.hide()
+        if hasattr(self, "skip_stage_button"):
+            self.skip_stage_button.hide()
         self.set_processing_stage(None)
         self.set_tools_actions_enabled(True)
 
         if message == "Process canceled by user.":
             self.statusBar().showMessage("Transcription canceled by user.")
         else:
-            QMessageBox.critical(self, "Transcription Error", message)
+            self.log_activity(f"[TRANSCRIPTION] Error: {message}")
+            if getattr(self, "pipeline_active", False) and getattr(self, "pipeline_queue", []):
+                next_stage = self.pipeline_queue[0]
+                reply = QMessageBox.question(
+                    self,
+                    "Transcription Failed",
+                    f"Transcription failed: {message}\n\nWould you like to skip transcription and continue with '{next_stage}'?",
+                    QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                    QMessageBox.StandardButton.Yes,
+                )
+                if reply == QMessageBox.StandardButton.Yes:
+                    self.log_activity(f"[PIPELINE RECOVERY] User skipped failed transcription; continuing with '{next_stage}'.")
+                    QTimer.singleShot(0, self._run_next_selected_processing)
+                    return
+                else:
+                    self.pipeline_active = False
+                    self.pipeline_queue = []
+                    self.pipeline_rerun_confirmed = False
+            else:
+                QMessageBox.critical(self, "Transcription Error", message)
 

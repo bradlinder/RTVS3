@@ -307,11 +307,21 @@ class PlaybackPreferencesMixin(ThemePreferencesMixin, PlaybackControllerMixin, P
 
     def trigger_find_next(self):
         """Find Next shortcut (F3) handler: advances to next search match."""
-        find_panel = getattr(self, "find_replace_panel", None)
-        if find_panel and find_panel.isVisible():
-            find_panel._find_next()
+        find_dialog = getattr(self, "find_dialog", None)
+        if find_dialog and find_dialog.isVisible():
+            find_dialog.find_next()
+        elif hasattr(self, "open_find_dialog"):
+            self.open_find_dialog()
         elif hasattr(self, "open_find_replace"):
             self.open_find_replace()
+
+    def trigger_find_prev(self):
+        """Find Previous shortcut (Shift+F3) handler: retreats to previous search match."""
+        find_dialog = getattr(self, "find_dialog", None)
+        if find_dialog and find_dialog.isVisible():
+            find_dialog.find_prev()
+        elif hasattr(self, "open_find_dialog"):
+            self.open_find_dialog()
 
     def open_diagnostic_log_folder(self):
         folder = getattr(self, "log_dir", get_app_data_dir() / "logs")

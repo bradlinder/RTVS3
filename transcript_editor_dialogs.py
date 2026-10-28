@@ -76,6 +76,8 @@ class FindReplaceDialog(QDialog):
 
         self.shortcut_find_next = QShortcut(QKeySequence("Ctrl+G"), self)
         self.shortcut_find_next.activated.connect(self.find_next)
+        self.shortcut_find_prev = QShortcut(QKeySequence("Shift+Ctrl+G"), self)
+        self.shortcut_find_prev.activated.connect(self.find_prev)
 
     def get_flags(self):
         flags = QTextDocument.FindFlag(0)
@@ -94,6 +96,21 @@ class FindReplaceDialog(QDialog):
             cursor.movePosition(QTextCursor.Start)
             self.text_edit.setTextCursor(cursor)
             found = self.text_edit.find(target, self.get_flags())
+
+        return found
+
+    def find_prev(self):
+        target = self.find_input.text()
+        if not target:
+            return False
+
+        flags = self.get_flags() | QTextDocument.FindFlag.FindBackward
+        found = self.text_edit.find(target, flags)
+        if not found:
+            cursor = self.text_edit.textCursor()
+            cursor.movePosition(QTextCursor.End)
+            self.text_edit.setTextCursor(cursor)
+            found = self.text_edit.find(target, flags)
 
         return found
 

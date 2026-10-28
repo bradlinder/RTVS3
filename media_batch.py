@@ -177,6 +177,8 @@ class MediaBatchMixin:
                         pass
                 if not thread.wait(1000):
                     self.log_activity("[WARNING] Video thumbnail worker did not finish in time.", mark_dirty=False)
+                    if hasattr(self, "_track_worker_thread"):
+                        self._track_worker_thread(thread)
                     return False
         if hasattr(self, "timeline"):
             try:
@@ -484,8 +486,8 @@ class MediaBatchMixin:
 
             # If skipping re-processing, trigger immediate export from existing data
             if all_exist:
-                self.log_activity(f"[BATCH] Requested outputs exist for {base_name}. Skipping AI pipeline and generating exports directly.")
-                self._batch_export_current()
+                self.log_activity(f"[BATCH] Requested outputs already exist for {base_name}. Skipping re-processing (Skip Existing enabled).")
+                # Target outputs already exist on disk; skip export to preserve files
                 QTimer.singleShot(0, self._batch_next_media)
                 return
 
@@ -523,7 +525,8 @@ class MediaBatchMixin:
                 self.pipeline_active = True
                 QTimer.singleShot(0, self._run_next_selected_processing)
             else:
-                self._batch_export_current()
+                if getattr(self, "transcript", None) is not None:
+                    self._batch_export_current()
                 QTimer.singleShot(0, self._batch_next_media)
 
         except Exception as e:
@@ -1530,6 +1533,21 @@ class MediaBatchMixin:
     def _batch_media_error(self, message: str):
         if hasattr(self, "log_activity"):
             self.log_activity(f"[BATCH ERROR] {message}")
+        if not hasattr(self, "batch_failed_items"):
+            self.batch_failed_items = []
+        curr = getattr(self, "audio_file", None) or "unknown"
+        self.batch_failed_items.append((curr, message))
+
+        # If there are remaining files in the batch queue, log and continue processing
+        if getattr(self, "batch_active", False) and getattr(self, "batch_queue", None):
+            self.log_activity(f"[BATCH WARNING] Skipping failed file '{curr}' and advancing to next item ({len(self.batch_queue)} remaining).")
+            self.progress.hide()
+            self.cancel_button.hide()
+            self.set_processing_stage(None)
+            from PySide6.QtCore import QTimer
+            QTimer.singleShot(50, self._batch_next_media)
+            return
+
         self.batch_active = False  # Reset active flag on batch failure
         self.progress.hide()
         self.cancel_button.hide()

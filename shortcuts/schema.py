@@ -435,7 +435,8 @@ SHORTCUT_DEFINITIONS: List[ShortcutDef] = [
         default_seq="Space",
         default_mac="Space",
         description="Toggle audio playback on/off from current playhead position",
-        is_qshortcut=True,
+        attr_name="play_pause_action",
+        is_custom_event=True,
     ),
     ShortcutDef(
         action_id="jump_back_short",
@@ -444,7 +445,8 @@ SHORTCUT_DEFINITIONS: List[ShortcutDef] = [
         default_seq="Left",
         default_mac="Left",
         description="Rewind audio playhead by configured short jump distance (default 5s)",
-        is_qshortcut=True,
+        attr_name="jump_back_short_action",
+        is_custom_event=True,
     ),
     ShortcutDef(
         action_id="jump_forward_short",
@@ -453,7 +455,8 @@ SHORTCUT_DEFINITIONS: List[ShortcutDef] = [
         default_seq="Right",
         default_mac="Right",
         description="Advance audio playhead by configured short jump distance (default 5s)",
-        is_qshortcut=True,
+        attr_name="jump_forward_short_action",
+        is_custom_event=True,
     ),
     ShortcutDef(
         action_id="jump_back_medium",
@@ -462,7 +465,8 @@ SHORTCUT_DEFINITIONS: List[ShortcutDef] = [
         default_seq="Shift+Left",
         default_mac="Shift+Left",
         description="Rewind audio playhead by medium jump distance (default 15s)",
-        is_qshortcut=True,
+        attr_name="jump_back_medium_action",
+        is_custom_event=True,
     ),
     ShortcutDef(
         action_id="jump_forward_medium",
@@ -471,7 +475,8 @@ SHORTCUT_DEFINITIONS: List[ShortcutDef] = [
         default_seq="Shift+Right",
         default_mac="Shift+Right",
         description="Advance audio playhead by medium jump distance (default 15s)",
-        is_qshortcut=True,
+        attr_name="jump_forward_medium_action",
+        is_custom_event=True,
     ),
     ShortcutDef(
         action_id="jump_back_long",
@@ -480,7 +485,8 @@ SHORTCUT_DEFINITIONS: List[ShortcutDef] = [
         default_seq="Ctrl+Left",
         default_mac="Meta+Left",
         description="Rewind audio playhead by long jump distance (default 30s)",
-        is_qshortcut=True,
+        attr_name="jump_back_long_action",
+        is_custom_event=True,
     ),
     ShortcutDef(
         action_id="jump_forward_long",
@@ -489,7 +495,8 @@ SHORTCUT_DEFINITIONS: List[ShortcutDef] = [
         default_seq="Ctrl+Right",
         default_mac="Meta+Right",
         description="Advance audio playhead by long jump distance (default 30s)",
-        is_qshortcut=True,
+        attr_name="jump_forward_long_action",
+        is_custom_event=True,
     ),
     ShortcutDef(
         action_id="jump_to_start",
@@ -498,7 +505,8 @@ SHORTCUT_DEFINITIONS: List[ShortcutDef] = [
         default_seq="Home",
         default_mac="Home",
         description="Seek playhead to 00:00:00",
-        is_qshortcut=True,
+        attr_name="jump_to_start_action",
+        is_custom_event=True,
     ),
     ShortcutDef(
         action_id="jump_to_end",
@@ -507,7 +515,8 @@ SHORTCUT_DEFINITIONS: List[ShortcutDef] = [
         default_seq="End",
         default_mac="End",
         description="Seek playhead to the end of the loaded media",
-        is_qshortcut=True,
+        attr_name="jump_to_end_action",
+        is_custom_event=True,
     ),
     ShortcutDef(
         action_id="play_current_story",
@@ -516,7 +525,8 @@ SHORTCUT_DEFINITIONS: List[ShortcutDef] = [
         default_seq="Ctrl+Alt+Space",
         default_mac="Meta+Alt+Space",
         description="Play selected story block from in-point to out-point then stop",
-        is_qshortcut=True,
+        attr_name="play_current_story_action",
+        is_custom_event=True,
     ),
     ShortcutDef(
         action_id="toggle_follow_playhead",
@@ -525,7 +535,8 @@ SHORTCUT_DEFINITIONS: List[ShortcutDef] = [
         default_seq="Ctrl+F12",
         default_mac="Meta+F12",
         description="Enable or disable automatic timeline scrolling following the playhead",
-        is_qshortcut=True,
+        attr_name="toggle_follow_playhead_action",
+        is_custom_event=True,
     ),
 
     # -------------------------------------------------------------
@@ -538,7 +549,8 @@ SHORTCUT_DEFINITIONS: List[ShortcutDef] = [
         default_seq="[",
         default_mac="[",
         description="Set the beginning timestamp of a new story segment at current playhead",
-        is_qshortcut=True,
+        attr_name="mark_story_start_action",
+        is_custom_event=True,
     ),
     ShortcutDef(
         action_id="mark_story_end",
@@ -547,7 +559,8 @@ SHORTCUT_DEFINITIONS: List[ShortcutDef] = [
         default_seq="]",
         default_mac="]",
         description="Set the ending timestamp of the current story segment at playhead and save story",
-        is_qshortcut=True,
+        attr_name="mark_story_end_action",
+        is_custom_event=True,
     ),
     ShortcutDef(
         action_id="configure_fades",
@@ -556,7 +569,8 @@ SHORTCUT_DEFINITIONS: List[ShortcutDef] = [
         default_seq="Ctrl+Shift+F",
         default_mac="Meta+Shift+F",
         description="Configure audio fade-in, fade-out, crossfade curves, and ducking parameters",
-        is_custom_event=True,
+        attr_name="configure_fades_action",
+        is_custom_event=False,
     ),
     ShortcutDef(
         action_id="edit_id3_tags",
@@ -574,7 +588,8 @@ SHORTCUT_DEFINITIONS: List[ShortcutDef] = [
         default_seq="Delete",
         default_mac="Backspace",
         description="Remove currently highlighted story cut from project",
-        is_qshortcut=True,
+        attr_name="delete_story_action",
+        is_custom_event=True,
     ),
     ShortcutDef(
         action_id="toggle_edit_mode",
@@ -601,7 +616,8 @@ SHORTCUT_DEFINITIONS: List[ShortcutDef] = [
         default_seq="Ctrl+K",
         default_mac="Meta+K",
         description="Split the highlighted transcript segment into two pieces at playhead timestamp",
-        is_qshortcut=True,
+        attr_name="split_segment_action",
+        is_custom_event=True,
     ),
     ShortcutDef(
         action_id="merge_segments",
@@ -610,7 +626,8 @@ SHORTCUT_DEFINITIONS: List[ShortcutDef] = [
         default_seq="Ctrl+J",
         default_mac="Meta+J",
         description="Combine selected transcript segment with following segment",
-        is_qshortcut=True,
+        attr_name="merge_segments_action",
+        is_custom_event=True,
     ),
     ShortcutDef(
         action_id="undo",
@@ -650,6 +667,7 @@ SHORTCUT_DEFINITIONS: List[ShortcutDef] = [
         default_seq="F3",
         default_mac="Meta+G",
         description="Jump to next occurrence of search term in transcript",
+        attr_name="shortcut_find_next",
         is_qshortcut=True,
     ),
     ShortcutDef(
@@ -659,6 +677,7 @@ SHORTCUT_DEFINITIONS: List[ShortcutDef] = [
         default_seq="Shift+F3",
         default_mac="Meta+Shift+G",
         description="Jump to previous occurrence of search term in transcript",
+        attr_name="shortcut_find_prev",
         is_qshortcut=True,
     ),
     ShortcutDef(
@@ -722,6 +741,7 @@ SHORTCUT_DEFINITIONS: List[ShortcutDef] = [
         default_seq="Ctrl++",
         default_mac="Meta++",
         description="Increase transcript display font size by 1 point",
+        attr_name="shortcut_transcript_font_up",
         is_qshortcut=True,
     ),
     ShortcutDef(
@@ -731,6 +751,7 @@ SHORTCUT_DEFINITIONS: List[ShortcutDef] = [
         default_seq="Ctrl+-",
         default_mac="Meta+-",
         description="Decrease transcript display font size by 1 point",
+        attr_name="shortcut_transcript_font_down",
         is_qshortcut=True,
     ),
     ShortcutDef(
@@ -740,6 +761,7 @@ SHORTCUT_DEFINITIONS: List[ShortcutDef] = [
         default_seq="Ctrl+0",
         default_mac="Meta+0",
         description="Reset transcript display font size to default",
+        attr_name="shortcut_transcript_font_reset",
         is_qshortcut=True,
     ),
 
@@ -753,6 +775,7 @@ SHORTCUT_DEFINITIONS: List[ShortcutDef] = [
         default_seq="+",
         default_mac="+",
         description="Increase timeline horizontal zoom resolution (or Mouse Wheel)",
+        attr_name="zoom_in_action",
         is_custom_event=True,
     ),
     ShortcutDef(
@@ -762,6 +785,7 @@ SHORTCUT_DEFINITIONS: List[ShortcutDef] = [
         default_seq="-",
         default_mac="-",
         description="Decrease timeline horizontal zoom resolution (or Mouse Wheel)",
+        attr_name="zoom_out_action",
         is_custom_event=True,
     ),
 

@@ -1,4 +1,4 @@
-"""Radio & TV Segmenter — v3.9.45-beta
+"""Radio & TV Segmenter — v3.9.51-beta
 
 This is the thin application composition root. UI/processing responsibilities
 are implemented in focused mixins so future changes can target smaller files
@@ -140,7 +140,7 @@ if len(sys.argv) > 1 and sys.argv[1] == "--self-test":
 
 from prs_shared import *
 from PySide6.QtCore import Qt, QTimer, QSettings, QEvent, QUrl
-from PySide6.QtGui import QShortcut, QKeySequence, QUndoStack
+from PySide6.QtGui import QAction, QShortcut, QKeySequence, QUndoStack
 from PySide6.QtWidgets import QApplication, QMainWindow, QMessageBox
 from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput
 from runtime_manager import RuntimeManager
@@ -342,14 +342,66 @@ class MainWindow(
         self._load_user_preferences()
         QTimer.singleShot(150, self.restore_last_opened)
 
-        find_next_key = self.shortcuts_manager.get_current_shortcut("find_next")
-        self.shortcut_find_next = QShortcut(platform_seq(find_next_key), self)
-        self.shortcut_find_next.activated.connect(self.trigger_find_next)
+        self._setup_shortcuts_and_actions()
 
         self.log_activity("[SYSTEM] Application initialized.")
         self.statusBar().showMessage("Open a media file or create a new project to begin.")
         QTimer.singleShot(0, lambda: self.check_translation_models_async())
         QTimer.singleShot(3000, lambda: self.trigger_silent_update_check())
+
+    def _setup_shortcuts_and_actions(self):
+        """Register customizable QShortcut and QAction objects on MainWindow."""
+        # Configurable QShortcuts
+        find_next_key = self.shortcuts_manager.get_current_shortcut("find_next")
+        self.shortcut_find_next = QShortcut(platform_seq(find_next_key), self)
+        self.shortcut_find_next.activated.connect(self.trigger_find_next)
+
+        find_prev_key = self.shortcuts_manager.get_current_shortcut("find_prev")
+        self.shortcut_find_prev = QShortcut(platform_seq(find_prev_key), self)
+        self.shortcut_find_prev.activated.connect(self.trigger_find_prev)
+
+        font_up_key = self.shortcuts_manager.get_current_shortcut("transcript_font_up")
+        self.shortcut_transcript_font_up = QShortcut(platform_seq(font_up_key), self)
+        self.shortcut_transcript_font_up.activated.connect(lambda: getattr(self, "adjust_transcript_font_size", lambda d: None)(1))
+
+        font_down_key = self.shortcuts_manager.get_current_shortcut("transcript_font_down")
+        self.shortcut_transcript_font_down = QShortcut(platform_seq(font_down_key), self)
+        self.shortcut_transcript_font_down.activated.connect(lambda: getattr(self, "adjust_transcript_font_size", lambda d: None)(-1))
+
+        font_reset_key = self.shortcuts_manager.get_current_shortcut("transcript_font_reset")
+        self.shortcut_transcript_font_reset = QShortcut(platform_seq(font_reset_key), self)
+        self.shortcut_transcript_font_reset.activated.connect(lambda: getattr(self, "reset_transcript_font_size", lambda: None)())
+
+        # Register QActions for custom event shortcuts so they can be inspected, bound, and listed
+        action_bindings = {
+            "play_pause_action": ("Play / Pause", self.toggle_play),
+            "jump_back_short_action": ("Jump Back Short", lambda: self.seek_relative(-getattr(self, "skip_seconds", 5))),
+            "jump_forward_short_action": ("Jump Forward Short", lambda: self.seek_relative(getattr(self, "skip_seconds", 5))),
+            "jump_back_medium_action": ("Jump Back Medium", lambda: self.seek_relative(-15)),
+            "jump_forward_medium_action": ("Jump Forward Medium", lambda: self.seek_relative(15)),
+            "jump_back_long_action": ("Jump Back Long", lambda: self.seek_relative(-30)),
+            "jump_forward_long_action": ("Jump Forward Long", lambda: self.seek_relative(30)),
+            "jump_to_start_action": ("Jump to Start", lambda: self.seek_to(0)),
+            "jump_to_end_action": ("Jump to End", lambda: self.seek_to(getattr(self, "duration", 0))),
+            "play_current_story_action": ("Play Current Story", lambda: self.audition_story(list(self.current_selected_story_indices)[0]) if getattr(self, "current_selected_story_indices", None) and hasattr(self, "audition_story") else None),
+            "toggle_follow_playhead_action": ("Toggle Follow Playhead", self._toggle_follow_playhead),
+            "mark_story_start_action": ("Mark Story Start", self.mark_story_start_point),
+            "mark_story_end_action": ("Mark Story End", self.mark_story_end_point),
+            "delete_story_action": ("Delete Story", self.delete_selected_story),
+            "split_segment_action": ("Split Segment", self.split_current_segment_at_playhead),
+            "merge_segments_action": ("Merge Segments", self.merge_current_segment_with_next),
+            "zoom_in_action": ("Timeline Zoom In", lambda: getattr(getattr(self, "timeline", None), "canvas", None) and self.timeline.canvas.set_zoom(self.timeline.canvas.zoom_level * 1.2)),
+            "zoom_out_action": ("Timeline Zoom Out", lambda: getattr(getattr(self, "timeline", None), "canvas", None) and self.timeline.canvas.set_zoom(self.timeline.canvas.zoom_level / 1.2)),
+        }
+
+        for attr, (label, handler) in action_bindings.items():
+            if not hasattr(self, attr):
+                act = QAction(label, self)
+                act.triggered.connect(handler)
+                setattr(self, attr, act)
+
+        # Apply shortcuts configuration to all registered actions and shortcuts
+        self.apply_user_shortcuts()
 
     def handle_external_open_request(self, file_path: str):
         """Called when another instance attempts to open a project file in single-instance mode."""

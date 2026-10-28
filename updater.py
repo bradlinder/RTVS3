@@ -48,7 +48,7 @@ except ImportError:
         )
     except Exception:
         APP_DISPLAY_NAME = "Radio & TV Segmenter"
-        PROJECT_VERSION = "3.9.45-beta"
+        PROJECT_VERSION = "3.9.51-beta"
         DEFAULT_GITHUB_REPO = "bradlinder/RTVS3"
         INTERNAL_APP_ID = "RadioTVStorySegmenter"
 
@@ -844,6 +844,9 @@ class DownloadUpdateWorker(QThread):
                     temp_dest.unlink(missing_ok=True)
                     self.error.emit("Downloaded file failed SHA-256 verification and was discarded.")
                     return
+                self.checksum_verified = True
+            else:
+                self.checksum_verified = False
 
             shutil.move(str(temp_dest), str(destination))
             # Automatically purge older installer packages, retaining recent installers
@@ -1317,6 +1320,45 @@ class CheckUpdateDialog(QDialog):
         if not self.downloaded_path:
             return
 
+        is_verified = getattr(self.download_worker, "checksum_verified", True)
+        if not is_verified:
+            warn = QMessageBox.warning(
+                self,
+                "Unverified Update Package",
+                f"Notice: The release on GitHub did not include a published SHA-256 checksum file to verify the downloaded package.\n\n"
+                f"Package: {Path(self.downloaded_path).name}\n\n"
+                f"Do you want to proceed with installing this unverified package?",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                QMessageBox.StandardButton.No,
+            )
+            if warn != QMessageBox.StandardButton.Yes:
+                return
+
+        # Guard unsaved user work before initiating shutdown
+        app = QApplication.instance()
+        dirty_win = None
+        if app:
+            for widget in app.topLevelWidgets():
+                if getattr(widget, "project_dirty", False):
+                    dirty_win = widget
+                    break
+        if dirty_win:
+            save_reply = QMessageBox.question(
+                self,
+                "Save Changes Before Restart?",
+                "You have unsaved changes in your current project.\n\n"
+                "Would you like to save your project before closing the application to install the update?",
+                QMessageBox.StandardButton.Save | QMessageBox.StandardButton.Discard | QMessageBox.StandardButton.Cancel,
+                QMessageBox.StandardButton.Save,
+            )
+            if save_reply == QMessageBox.StandardButton.Cancel:
+                return
+            if save_reply == QMessageBox.StandardButton.Save:
+                if hasattr(dirty_win, "save_project"):
+                    saved = dirty_win.save_project()
+                    if not saved:
+                        return
+
         tag = self.release_info.get("tag_name", "update")
         confirm = QMessageBox.question(
             self,
@@ -1355,7 +1397,7 @@ class CheckUpdateDialog(QDialog):
                 # Force immediate exit watcher after 0.8s if Qt event loop delays shutdown
                 import threading
                 def _force_exit_watcher():
-                    time.sleep(0.8)
+                    time.sleep(3.0)
                     os._exit(0)
 
                 threading.Thread(target=_force_exit_watcher, daemon=True).start()

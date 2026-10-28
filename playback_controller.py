@@ -167,34 +167,241 @@ class PlaybackControllerMixin:
                             event.accept()
                             return True
 
-            # Play / Pause shortcut check (default Space, or custom user assignment)
-            play_seq = "Space"
-            if hasattr(self, "shortcuts_manager") and self.shortcuts_manager:
-                play_seq = self.shortcuts_manager.get_current_shortcut("play_pause") or "Space"
+            # If text entry is focused, protect typing by passing keystrokes through
+            if self._is_text_entry_focused():
+                return super().eventFilter(watched, event)
 
-            is_play_key = False
-            if play_seq.lower() in ("space", ""):
-                is_play_key = (key == Qt.Key.Key_Space and not event.modifiers())
-            elif play_seq and play_seq != "None":
-                is_play_key = (QKeySequence(int(event.modifiers()) | key) == QKeySequence(play_seq))
-
-            if is_play_key:
-                focused_widget = QApplication.focusWidget()
-                if focused_widget and isinstance(focused_widget, (QLineEdit, QTextEdit, QPlainTextEdit, QAbstractSpinBox, QComboBox)):
-                    if isinstance(focused_widget, InteractiveTranscriptEdit) and not focused_widget.is_editing_mode:
-                        pass
-                    else:
-                        return super().eventFilter(watched, event)
-                if QApplication.activeModalWidget() is not None:
-                    return super().eventFilter(watched, event)
-                if focused_widget and (focused_widget.window() != self or isinstance(focused_widget.window(), QDialog)):
-                    return super().eventFilter(watched, event)
-                if focused_widget and isinstance(focused_widget, InteractiveTranscriptEdit) and focused_widget.is_editing_mode:
-                    return super().eventFilter(watched, event)
+            # Dispatch customizable transport and timeline shortcuts
+            if self._matches_shortcut(event, "play_pause", "Space"):
                 self.toggle_play()
+                event.accept()
                 return True
 
+            if self._matches_shortcut(event, "jump_back_short", "Left"):
+                self.seek_relative(-getattr(self, "skip_seconds", 5))
+                event.accept()
+                return True
+
+            if self._matches_shortcut(event, "jump_forward_short", "Right"):
+                self.seek_relative(getattr(self, "skip_seconds", 5))
+                event.accept()
+                return True
+
+            if self._matches_shortcut(event, "jump_back_medium", "Shift+Left"):
+                self.seek_relative(-15)
+                event.accept()
+                return True
+
+            if self._matches_shortcut(event, "jump_forward_medium", "Shift+Right"):
+                self.seek_relative(15)
+                event.accept()
+                return True
+
+            if self._matches_shortcut(event, "jump_back_long", "Ctrl+Left"):
+                self.seek_relative(-30)
+                event.accept()
+                return True
+
+            if self._matches_shortcut(event, "jump_forward_long", "Ctrl+Right"):
+                self.seek_relative(30)
+                event.accept()
+                return True
+
+            if self._matches_shortcut(event, "jump_to_start", "Home"):
+                self.seek_to(0)
+                event.accept()
+                return True
+
+            if self._matches_shortcut(event, "jump_to_end", "End"):
+                self.seek_to(getattr(self, "duration", 0))
+                event.accept()
+                return True
+
+            if self._matches_shortcut(event, "play_current_story", "Ctrl+Alt+Space"):
+                sel = getattr(self, "current_selected_story_indices", None)
+                if sel and hasattr(self, "audition_story"):
+                    self.audition_story(list(sel)[0])
+                    event.accept()
+                    return True
+
+            if self._matches_shortcut(event, "toggle_follow_playhead", "Ctrl+F12"):
+                self._toggle_follow_playhead()
+                event.accept()
+                return True
+
+            if self._matches_shortcut(event, "mark_story_start", "["):
+                self.mark_story_start_point()
+                event.accept()
+                return True
+
+            if self._matches_shortcut(event, "mark_story_end", "]"):
+                self.mark_story_end_point()
+                event.accept()
+                return True
+
+            if self._matches_shortcut(event, "delete_story", "Delete"):
+                if hasattr(self, "delete_selected_story"):
+                    self.delete_selected_story()
+                    event.accept()
+                    return True
+
+            if self._matches_shortcut(event, "split_segment", "Ctrl+K"):
+                self.split_current_segment_at_playhead()
+                event.accept()
+                return True
+
+            if self._matches_shortcut(event, "merge_segments", "Ctrl+J"):
+                self.merge_current_segment_with_next()
+                event.accept()
+                return True
+
+            if self._matches_shortcut(event, "zoom_in", "+"):
+                timeline = getattr(self, "timeline", None)
+                if timeline and hasattr(timeline, "canvas"):
+                    timeline.canvas.set_zoom(timeline.canvas.zoom_level * 1.2)
+                    event.accept()
+                    return True
+
+            if self._matches_shortcut(event, "zoom_out", "-"):
+                timeline = getattr(self, "timeline", None)
+                if timeline and hasattr(timeline, "canvas"):
+                    timeline.canvas.set_zoom(timeline.canvas.zoom_level / 1.2)
+                    event.accept()
+                    return True
+
         return super().eventFilter(watched, event)
+
+    def _is_text_entry_focused(self) -> bool:
+        """Return True if a text entry widget or editable transcript currently has focus."""
+        focused_widget = QApplication.focusWidget()
+        if not focused_widget:
+            return False
+        if QApplication.activeModalWidget() is not None:
+            return True
+        if hasattr(focused_widget, "window"):
+            win = focused_widget.window()
+            if win != self or isinstance(win, QDialog):
+                return True
+        if isinstance(focused_widget, (QLineEdit, QTextEdit, QPlainTextEdit, QAbstractSpinBox, QComboBox)):
+            if isinstance(focused_widget, InteractiveTranscriptEdit) and not getattr(focused_widget, "is_editing_mode", False):
+                return False
+            return True
+        return False
+
+    def _matches_shortcut(self, event, action_id: str, default_seq: str) -> bool:
+        """Return True if key event matches user configured shortcut for action_id."""
+        seq_str = default_seq
+        if hasattr(self, "shortcuts_manager") and self.shortcuts_manager:
+            seq_str = self.shortcuts_manager.get_current_shortcut(action_id) or default_seq
+        if not seq_str or seq_str == "None":
+            return False
+
+        key = event.key()
+        mods = event.modifiers()
+        mods_val = mods.value if hasattr(mods, "value") else int(mods)
+        mods_val &= ~Qt.KeyboardModifier.KeypadModifier.value
+
+        seq_clean = seq_str.strip().lower()
+        if not mods:
+            if seq_clean in ("space", "") and key == Qt.Key.Key_Space:
+                return True
+            if seq_clean == "left" and key == Qt.Key.Key_Left:
+                return True
+            if seq_clean == "right" and key == Qt.Key.Key_Right:
+                return True
+            if seq_clean == "home" and key == Qt.Key.Key_Home:
+                return True
+            if seq_clean == "end" and key == Qt.Key.Key_End:
+                return True
+            if seq_clean in ("[", "bracketleft") and key in (Qt.Key.Key_BracketLeft, 91):
+                return True
+            if seq_clean in ("]", "bracketright") and key in (Qt.Key.Key_BracketRight, 93):
+                return True
+            if seq_clean in ("+", "plus", "=") and key in (Qt.Key.Key_Plus, Qt.Key.Key_Equal):
+                return True
+            if seq_clean in ("-", "minus") and key == Qt.Key.Key_Minus:
+                return True
+            if seq_clean in ("delete", "del") and key == Qt.Key.Key_Delete:
+                return True
+
+        try:
+            target_seq = QKeySequence(seq_str)
+            event_seq = QKeySequence(mods_val | key)
+            if target_seq == event_seq:
+                return True
+        except Exception:
+            pass
+
+        return False
+
+    def _toggle_follow_playhead(self):
+        """Toggle automatic timeline view scrolling following the audio playhead."""
+        self.follow_playhead = not getattr(self, "follow_playhead", True)
+        if hasattr(self, "statusBar") and self.statusBar():
+            self.statusBar().showMessage(
+                f"Follow Playhead: {'On' if self.follow_playhead else 'Off'}", 1500
+            )
+
+    def mark_story_start_point(self):
+        """Mark start point at current playhead position."""
+        if len(getattr(self, "current_selected_story_indices", [])) == 1:
+            if hasattr(self, "set_selected_story_start"):
+                self.set_selected_story_start()
+            return
+        timeline = getattr(self, "timeline", None)
+        canvas = getattr(timeline, "canvas", None) if timeline else None
+        if canvas:
+            t = getattr(self, "current_position", 0.0)
+            canvas.selection_start = t
+            canvas.selectionRangeChanged.emit(canvas.selection_start, canvas.selection_end)
+            canvas.update()
+            if hasattr(self, "statusBar") and self.statusBar():
+                self.statusBar().showMessage(f"Marked Story In-Point: {format_time(t)}", 1500)
+
+    def mark_story_end_point(self):
+        """Mark end point at current playhead position and create story if valid range."""
+        if len(getattr(self, "current_selected_story_indices", [])) == 1:
+            if hasattr(self, "set_selected_story_end"):
+                self.set_selected_story_end()
+            return
+        timeline = getattr(self, "timeline", None)
+        canvas = getattr(timeline, "canvas", None) if timeline else None
+        if canvas:
+            t = getattr(self, "current_position", 0.0)
+            canvas.selection_end = t
+            canvas.selectionRangeChanged.emit(canvas.selection_start, canvas.selection_end)
+            canvas.update()
+            if canvas.selection_start is not None and canvas.selection_end > canvas.selection_start:
+                if hasattr(self, "add_story_from_active_selection"):
+                    self.add_story_from_active_selection()
+            elif hasattr(self, "statusBar") and self.statusBar():
+                self.statusBar().showMessage(f"Marked Story Out-Point: {format_time(t)}", 1500)
+
+    def get_segment_index_at_time(self, target_time: float):
+        """Find transcript segment index active at target_time."""
+        if not getattr(self, "transcript", None) or "segments" not in self.transcript:
+            return None
+        segments = self.transcript.get("segments", [])
+        for idx, seg in enumerate(segments):
+            if seg.get("start", 0.0) <= target_time <= seg.get("end", 0.0):
+                return idx
+        return None
+
+    def split_current_segment_at_playhead(self):
+        """Split the transcript segment active at current playhead position."""
+        t = getattr(self, "current_position", 0.0)
+        idx = self.get_segment_index_at_time(t)
+        if idx is not None and hasattr(self, "split_segment_at_time"):
+            self.split_segment_at_time(idx, t)
+
+    def merge_current_segment_with_next(self):
+        """Merge the transcript segment active at current playhead with following segment."""
+        t = getattr(self, "current_position", 0.0)
+        idx = self.get_segment_index_at_time(t)
+        if idx is not None and hasattr(self, "remove_speaker_label_at_segment"):
+            segments = self.transcript.get("segments", [])
+            if idx + 1 < len(segments):
+                self.remove_speaker_label_at_segment(idx + 1)
 
     def set_skip_seconds_from_ui(self, value):
         self.skip_seconds = max(1, int(value))

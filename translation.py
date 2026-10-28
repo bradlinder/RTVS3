@@ -844,6 +844,8 @@ class TranslationMixin:
         self.set_tools_actions_enabled(True)
         if hasattr(self, "cancel_button") and self.cancel_button is not None:
             self.cancel_button.hide()
+        if hasattr(self, "skip_stage_button") and self.skip_stage_button is not None:
+            self.skip_stage_button.hide()
 
         # Maintain the current language view until the user selects a different view
         self.render_transcript()
@@ -872,19 +874,44 @@ class TranslationMixin:
         self.set_tools_actions_enabled(True)
         if hasattr(self, "cancel_button") and self.cancel_button is not None:
             self.cancel_button.hide()
+        if hasattr(self, "skip_stage_button") and self.skip_stage_button is not None:
+            self.skip_stage_button.hide()
 
     def _on_translation_error(self, error_message: str):
         """Handle translation worker failures."""
         self.log_activity(f"[TRANSLATION ERROR] {error_message}")
-        if getattr(self, "pipeline_active", False):
-            self.pipeline_active = False
-            self.pipeline_queue = []
-            self.pipeline_rerun_confirmed = False
         self.set_processing_stage(None)
         self.set_tools_actions_enabled(True)
         if hasattr(self, "cancel_button") and self.cancel_button is not None:
             self.cancel_button.hide()
-        QMessageBox.critical(self, "Translation Error", f"Translation failed:\n\n{error_message}")
+        if hasattr(self, "skip_stage_button") and self.skip_stage_button is not None:
+            self.skip_stage_button.hide()
+        if hasattr(self, "skip_stage_button") and self.skip_stage_button is not None:
+            self.skip_stage_button.hide()
+
+        if getattr(self, "pipeline_active", False) and getattr(self, "pipeline_queue", []):
+            next_stage = self.pipeline_queue[0]
+            reply = QMessageBox.question(
+                self,
+                "Translation Failed",
+                f"Translation failed:\n{error_message}\n\nWould you like to skip this stage and continue with '{next_stage}'?",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                QMessageBox.StandardButton.Yes,
+            )
+            if reply == QMessageBox.StandardButton.Yes:
+                self.log_activity(f"[PIPELINE RECOVERY] User skipped failed translation; continuing with '{next_stage}'.")
+                QTimer.singleShot(0, self._run_next_selected_processing)
+                return
+            else:
+                self.pipeline_active = False
+                self.pipeline_queue = []
+                self.pipeline_rerun_confirmed = False
+        else:
+            if getattr(self, "pipeline_active", False):
+                self.pipeline_active = False
+                self.pipeline_queue = []
+                self.pipeline_rerun_confirmed = False
+            QMessageBox.critical(self, "Translation Error", f"Translation failed:\n\n{error_message}")
 
     def _on_translation_thread_finished(self):
         """Clean up thread reference."""
