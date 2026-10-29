@@ -88,7 +88,7 @@ TABLE OF CONTENTS & STATUS OVERVIEW
    [ ] 6.4 Burned-in Subtitles & Platform Safe Zone Enforcement (`plugins/social_reel/reel_subtitles.py`)
    [ ] 6.5 Unified Export Integration & Social Reel Diagnostic Tests (`export/dialog.py`, `test_runner.py`)
 
-7. Current Release: Concurrency, Batch Reliability & Export Interchange Fidelity (`transcription_processing.py`, `diarization_processing.py`, `media_batch.py`, `export/timeline.py`, `export_story_pipeline.py`) [x] [COMPLETED in v3.9.51-beta]
+7. Current Release: Concurrency, Batch Reliability & Export Interchange Fidelity (`transcription_processing.py`, `diarization_processing.py`, `media_batch.py`, `export/timeline.py`, `export_story_pipeline.py`) [x] [COMPLETED in v3.9.52-beta]
    [x] 7.1 Stale Worker State Overwrite Guard: Check if active media changed before assigning transcription/diarization results. [P1-03]
    [x] 7.2 Non-Modal Batch Error Handling: Log errors and continue processing remaining queue items instead of modal `QMessageBox` popups. [P1-04]
    [x] 7.3 Worker Lifecycle & Re-entrancy Guards: Fix thumbnail QThread teardown and disable Translate action during processing. [P3-02, P3-04]

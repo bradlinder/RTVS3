@@ -1,6 +1,6 @@
 {
   "name": "Radio & TV Segmenter",
-  "description": "Radio & TV Segmenter v3.9.51-beta - AI-powered audio/video transcription, diarization, translation, and story segmentation suite.",
+  "description": "Radio & TV Segmenter v3.9.52-beta - AI-powered audio/video transcription, diarization, translation, and story segmentation suite.",
   "requestFramePermissions": [],
   "majorCapabilities": [
     "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"

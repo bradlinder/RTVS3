@@ -1,5 +1,8 @@
 # Changelog
 
+## v3.9.52-beta
+- Release updates and performance enhancements for v3.9.52-beta.
+
 ## v3.9.51-beta
 - **Debounced Speaker Table Disk Writes (`speaker_dialogs.py`) [P4-04]**:
   - Implemented 500ms debounced project saving (`_save_debounce_timer`) in `SpeakerManagerDialog` during inline speaker name editing and cell navigation, eliminating rapid synchronous full-project gzip disk writes and UI stutter.
