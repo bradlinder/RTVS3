@@ -508,7 +508,7 @@ class ProjectLifecycleMixin:
 
             if self.audio_file and getattr(self, "timeline", None) and getattr(self.timeline, "waveform_peaks", None):
                 try:
-                    write_waveform_peak_cache(self.audio_file, self.timeline.waveform_peaks)
+                    write_waveform_peak_cache(self.audio_file, self.timeline.waveform_peaks, project_file=self.project_file)
                 except Exception:
                     pass
 
@@ -594,7 +594,9 @@ class ProjectLifecycleMixin:
 
         ref = data.get("audio_file")
         resolved_audio = None
-        if ref:
+        if hasattr(self, "resolve_project_media"):
+            resolved_audio = self.resolve_project_media(project_path, ref, data.get("audio_file_abs"))
+        elif ref:
             direct_candidate = (project_path.parent / ref).resolve()
             if direct_candidate.exists():
                 resolved_audio = direct_candidate
@@ -646,6 +648,26 @@ class ProjectLifecycleMixin:
         pos = float(session.get("position", 0.0) or 0.0)
         self.current_position = max(0.0, min(self.duration, pos))
         self.timeline.set_position(self.current_position)
+        if hasattr(self.timeline, "set_zoom"):
+            self.timeline.set_zoom(float(session.get("timeline_zoom", 1.0) or 1.0))
+        if hasattr(self.timeline, "scroll_offset"):
+            self.timeline.scroll_offset = float(session.get("timeline_scroll_offset", 0.0) or 0.0)
+
+        if self.audio_file and hasattr(self, "load_waveform_async"):
+            self.load_waveform_async()
+        if self.audio_file and getattr(self, "current_media_is_video", False) and hasattr(self, "start_video_thumbnail_generation"):
+            self.start_video_thumbnail_generation()
+
+        if hasattr(self, "save_action"):
+            self.save_action.setEnabled(True)
+        if hasattr(self, "save_as_action"):
+            self.save_as_action.setEnabled(True)
+        if hasattr(self, "quick_save_button"):
+            self.quick_save_button.setEnabled(True)
+        if hasattr(self, "set_tools_actions_enabled"):
+            self.set_tools_actions_enabled(True)
+        if hasattr(self, "update_processing_menu_status"):
+            self.update_processing_menu_status()
 
         self.project_dirty = False
         if hasattr(self, "update_window_title"):

@@ -580,7 +580,7 @@ class WordPressStoryMetadataWidget(QGroupBox):
         layout.setSpacing(6)
 
         # Primary Action Button: "WordPress Post Settings..."
-        self.open_dialog_btn = QPushButton("🗗 WordPress Post Settings...")
+        self.open_dialog_btn = QPushButton("WordPress Post Settings...")
         self.open_dialog_btn.setObjectName("wp_open_post_settings_btn")
         self.open_dialog_btn.setToolTip("Open the multi-pane WordPress post editor to configure titles, excerpts, authors, categories, and featured images for all stories and the full episode.")
         self.open_dialog_btn.setStyleSheet("""

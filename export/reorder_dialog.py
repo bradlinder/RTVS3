@@ -63,6 +63,7 @@ class ReorderExportDestinationsDialog(QDialog):
         # available_dests is a list of (dest_id, dest_title)
         self.available_dests = available_dests or [
             ("local", "Local Files (Media & Transcripts)"),
+            ("timeline", "Timeline & DAW Project Files"),
             ("wordpress", "WordPress Draft Post"),
             ("youtube", "YouTube Studio (Assisted Upload)"),
         ]

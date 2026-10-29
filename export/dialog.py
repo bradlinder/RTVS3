@@ -84,7 +84,6 @@ class UnifiedExportDialog(QDialog):
 
         self._dest_entries: List[Dict[str, Any]] = []
         self._plugin_destinations: List[Tuple[QRadioButton, ExportDestination, QWidget]] = []
-        self._temp_preview_files = set()
 
         theme_mode = _get_export_theme_mode()
 
@@ -1361,13 +1360,6 @@ class UnifiedExportDialog(QDialog):
 
     def done(self, r: int):
         self._persist_plugin_draft_states()
-        if r != QDialog.DialogCode.Accepted:
-            for temp_f in self._temp_preview_files:
-                try:
-                    if temp_f and Path(temp_f).exists():
-                        Path(temp_f).unlink(missing_ok=True)
-                except Exception:
-                    pass
         super().done(r)
 
     def toggle_float_mode(self, pinned: Optional[bool] = None):

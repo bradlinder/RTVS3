@@ -329,6 +329,12 @@ class ProjectStateMixin:
         if getattr(self, "is_restoring_snapshot", False):
             return
         self.project_dirty = True
+        if hasattr(self, "save_action"):
+            self.save_action.setEnabled(True)
+        if hasattr(self, "save_as_action"):
+            self.save_as_action.setEnabled(True)
+        if hasattr(self, "quick_save_button"):
+            self.quick_save_button.setEnabled(True)
         self.update_window_title()
         if reason:
             self.log_activity(f"[PROJECT] {reason}", mark_dirty=False)

@@ -967,6 +967,9 @@ class MediaBatchMixin:
         self.transcript={"text":text,"segments":segments,"language":"en"}
         self.diarization=None; self.stories=[]; self.translations={}; self.translation_display_mode="en"
         self.project_dirty=True
+        if hasattr(self, "save_action"): self.save_action.setEnabled(True)
+        if hasattr(self, "save_as_action"): self.save_as_action.setEnabled(True)
+        if hasattr(self, "quick_save_button"): self.quick_save_button.setEnabled(True)
         self.update_translation_language_selector(); self.render_transcript(); self.update_processing_menu_status(); self.set_tools_actions_enabled(True)
         self.statusBar().showMessage(f"Document loaded: {path.name}")
         return True

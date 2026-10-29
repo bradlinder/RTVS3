@@ -158,7 +158,7 @@ class KeyboardShortcutsPage(QWidget):
         self.lookup_result_lbl.setWordWrap(True)
         lookup_res_layout.addWidget(self.lookup_result_lbl, 1)
 
-        self.lookup_jump_btn = QPushButton("📍 Select in Table")
+        self.lookup_jump_btn = QPushButton("Select in Table")
         self.lookup_jump_btn.setStyleSheet(
             "QPushButton { background-color: #0284c7; color: white; font-weight: bold; border-radius: 4px; padding: 4px 10px; }"
             "QPushButton:hover { background-color: #0369a1; }"
@@ -344,19 +344,19 @@ class KeyboardShortcutsPage(QWidget):
             self.lookup_matched_action_id = matched_defn.action_id
             if tm == "light":
                 self.lookup_result_lbl.setText(
-                    f"✅ '<b>{disp_str}</b>' triggers: <b>{matched_defn.name}</b> "
+                    f"'<b>{disp_str}</b>' triggers: <b>{matched_defn.name}</b> "
                     f"(<span style='color: #2e74b5;'>{matched_defn.category}</span>)<br>"
                     f"<span style='color: #545b66; font-size: 11px;'>{matched_defn.description}</span>"
                 )
             elif tm == "high_contrast":
                 self.lookup_result_lbl.setText(
-                    f"✅ '<b>{disp_str}</b>' triggers: <b>{matched_defn.name}</b> "
+                    f"'<b>{disp_str}</b>' triggers: <b>{matched_defn.name}</b> "
                     f"(<span style='color: #ffff00;'>{matched_defn.category}</span>)<br>"
                     f"<span style='color: #ffffff; font-size: 11px;'>{matched_defn.description}</span>"
                 )
             else:
                 self.lookup_result_lbl.setText(
-                    f"✅ '<b>{disp_str}</b>' triggers: <b>{matched_defn.name}</b> "
+                    f"'<b>{disp_str}</b>' triggers: <b>{matched_defn.name}</b> "
                     f"(<span style='color: #38bdf8;'>{matched_defn.category}</span>)<br>"
                     f"<span style='color: #94a3b8; font-size: 11px;'>{matched_defn.description}</span>"
                 )
@@ -365,15 +365,15 @@ class KeyboardShortcutsPage(QWidget):
             self.lookup_matched_action_id = None
             if tm == "light":
                 self.lookup_result_lbl.setText(
-                    f"ℹ️ '<b>{disp_str}</b>' is <b>Unassigned</b> (Available for binding)."
+                    f"'<b>{disp_str}</b>' is <b>Unassigned</b> (Available for binding)."
                 )
             elif tm == "high_contrast":
                 self.lookup_result_lbl.setText(
-                    f"ℹ️ '<b>{disp_str}</b>' is <b>Unassigned</b> (Available for binding)."
+                    f"'<b>{disp_str}</b>' is <b>Unassigned</b> (Available for binding)."
                 )
             else:
                 self.lookup_result_lbl.setText(
-                    f"ℹ️ '<b>{disp_str}</b>' is <b>Unassigned</b> (Available for binding)."
+                    f"'<b>{disp_str}</b>' is <b>Unassigned</b> (Available for binding)."
                 )
             self.lookup_jump_btn.setVisible(False)
 
@@ -575,7 +575,7 @@ class KeyboardShortcutsPage(QWidget):
 
         if conflicting_defn:
             self.conflict_lbl.setText(
-                f"⚠️ <b>Conflict Detected:</b> '<b>{format_sequence_display(candidate_seq)}</b>' "
+                f"<b>Conflict Detected:</b> '<b>{format_sequence_display(candidate_seq)}</b>' "
                 f"is currently assigned to '<b>{conflicting_defn.name}</b>' ({conflicting_defn.category})."
             )
             self.conflicting_action_id = conflicting_defn.action_id

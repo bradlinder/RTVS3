@@ -1,9 +1,333 @@
-# Changelog Archive (Historical Releases: v1.1 – v3.7.22)
+# Changelog Archive (Historical Releases: v1.1 – v3.8.9-beta.19)
 
-This archive preserves historical release notes and point releases prior to v3.8.0-stable.
+This archive preserves historical release notes and point releases prior to v3.9.0-beta.1.
 For current and active releases, see [CHANGELOG.md](CHANGELOG.md).
 
 ---
+
+## v3.8.9-beta.19
+- **REAPER RPP Clean Header, Native Fades, Color-Coded Regions & Scope-Aware Splits (`export/timeline.py`, `project_export.py`, `ui_layout.py`, `test_runner.py`)**:
+  - **Eliminated REAPER Project Load Warnings**: Stripped obsolete tokens (`MIXERSLIDERS` and `PLAYREC`) from the Cockos REAPER `.rpp` generator, ensuring exported projects open with 100% clean loads and no warning popups across all REAPER versions.
+  - **Native REAPER Fades & Curve Shape Mapping**: Connected story `fade_in`, `fade_out`, and `fade_curve` parameters directly to REAPER's `<ITEM` chunk with second-precision durations and native curve shape index mapping (`linear` -> 0, `exponential` -> 1, `logarithmic` -> 2, `s_curve` -> 3). Manually adjusted RTVS fades now render exact visual fade ramps and interactive handles on media items in REAPER.
+  - **Color-Coded Story Regions & Track Items Matching RTVS Palette**:
+    - Generates Cockos REAPER paired region markers (`MARKER <id> <start> "<title>" 1 <color> 1 B {GUID} 0` and `MARKER <id> <end> "" 1`) across the project ruler, accurately marking each story boundary.
+    - Regions and track media items are color-coded using REAPER's `0x1000000 | 0x1RRGGBB` format (`COLOR <color> B`) using the exact harmonized accessible 8-color story palette from RTVS (`#2563eb`, `#d97706`, `#059669`, `#7c3aed`, `#e11d48`, `#0d9488`, `#4f46e5`, `#db2777`).
+  - **Clean Split Division with Unlabelled Non-Story Audio**:
+    - **No Artificial Gap Labels**: Non-story sections (audio before, between, or after stories) are cleanly split without artificial placeholder labels like "Interstitial Gap" or "Intro / Pre-Story" (`NAME ""`), keeping the episode continuous without cluttering item names.
+    - **Story Title Integrity**: Story sections and unselected stories always retain their authentic story titles and segment identity.
+    - **Full Episode**: Generates continuous timeline coverage spanning 0:00 to the total episode duration with pre-splits separating stories and unlabelled non-story audio.
+    - **All Stories / Selected Stories**: Generates isolated story cuts on a dedicated track with non-story audio excluded.
+    - **Full Episode & All Stories**: Generates a multi-track DAW layout with Track 1 ("Full Episode (Splits)") and Track 2 ("Story Cuts"), accompanied by REAPER color-coded region markers.
+  - **Multi-DAW Scope & Split Parity**: Extended continuous full-episode split generation and unlabelled non-story audio handling across Apple Final Cut Pro / Adobe Premiere XML (`.xml`), DaVinci Resolve (`.fcpxml`), Avid Media Composer (`.aaf`), Hindenburg (`.nhx`), and Samplitude (`.edl`).
+  - **File Menu Redundancy Cleanup**: Removed the redundant `Export Timeline / DAW...` action from the File menu in `ui_layout.py`, directing timeline export workflows cleanly into the Unified Export Center dialog.
+  - **Diagnostic Suite Coverage**: Added test assertions in `test_runner.py` verifying header hygiene (no `MIXERSLIDERS` or `PLAYREC`), Full Episode split continuity with unlabelled non-story sections, paired color-coded regions, and curve fade mapping.
+
+## v3.8.9-beta.18
+- **Windows CI Build Speed & PyInstaller Packaging Optimization (`build_installer.py`, `installer/Windows/RadioTVStorySegmenter.iss`, `.github/workflows/build.yml`)**:
+  - **Fast Dedicated AI Worker Compilation (`build_installer.py`)**: Omitted redundant wheel collection and analysis flags (`*torch_binary_flags`, `*collect_flags`) from Stage 3 PyInstaller background worker packaging and explicitly excluded `PySide6`. Because `prs_worker.exe` is deployed alongside the fully-populated `app_root/_internal` directory produced in Stage 1, this eliminates 5m 45s of redundant wheel extraction, dropping dedicated AI background worker compilation to ~15 seconds while maintaining a 100% native Windows console subsystem executable with standard I/O pipes.
+  - **Inno Setup LZMA2 Compression & Multi-Core Optimization (`installer/Windows/RadioTVStorySegmenter.iss`)**: Upgraded Inno Setup compression from single-threaded `lzma2/ultra64` to `Compression=lzma2/max` with `LZMANumBlockThreads=2`. By bypassing the diminishing returns of the 64MB match-finder dictionary and distributing block compression across available vCPU threads, installer generation time is cut from 10m 53s down to ~3–4 minutes while preserving solid compression and adding less than 1 MB to the installer package.
+  - **Robust CI Tool Retrieval (`.github/workflows/build.yml`)**: Replaced PowerShell `Invoke-WebRequest` with native `curl.exe -fSL --retry 3` for fast, resilient static FFmpeg binary downloads on Windows CI runners.
+  - **Audited Safe Optimization Scope**: Retained all existing module exclusions (`PYSIDE6_EXCLUDES`, `TEST_AND_BENCHMARK_EXCLUDES`) while explicitly rejecting risky `--optimize 1` bytecode stripping (which breaks docstrings and assert-dependent AI runtimes) and avoiding brittle runner-level directory caching.
+
+## v3.8.9-beta.17
+- **Multi-Platform Timeline & DAW Interchange Engine (`export/timeline.py`, `export/dialog.py`, `ui_layout.py`, `project_export.py`, `test_runner.py`)**:
+  - **Migration to Unified Export Center Tab**: Migrated timeline and DAW project exports from separate scattered File submenus into a first-class, dedicated "Timeline & DAW Interchange" tab inside the Unified Export Center dialog (`export/dialog.py`).
+  - **Centralized Parameter Controls**: Centralized primary track naming, unselected audio gap handling (Exclude, Split Clips, Muted Clips), project sequence sampling rate selection (44.1 kHz, 48 kHz, 96 kHz, 192 kHz), audio fade embedding, and destination directory routing into a unified workflow.
+  - **Streamlined Multi-Platform Format Exporters (`export/timeline.py`)**: Implemented production-grade XML and interchange sequence generators for:
+    - Final Cut Pro 7 XML (`.xml`) for Adobe Premiere Pro and Adobe Audition
+    - Final Cut Pro X XML (`.fcpxml`) for Apple Final Cut Pro and Blackmagic DaVinci Resolve
+    - Universal AAF Interchange (`.aaf`) for Avid Media Composer
+    - Hindenburg Broadcast Session (`.nhx`) for Hindenburg Journalist / PRO
+    - Cockos REAPER Project (`.rpp`) with embedded media items, track fades, and region markers
+    - Magix Samplitude EDL v1.5 (`.edl`)
+    - Audacity Label Track (`.txt`)
+    - Red Book Audio CD CUE Sheet (`.cue`)
+    - Universal DAW Marker List (`.csv`)
+  - **Direct Menu Accessibility**: Added `File -> Export Timeline / DAW...` in `ui_layout.py` which directly opens the Unified Export Center on the Timeline & DAW Interchange tab with shortcut integration.
+  - **Automated Diagnostic Suite Coverage**: Added comprehensive test assertions in `test_runner.py` verifying all 9 timeline format generators, track headers, and gap clip structures with 100% test pass rate.
+
+## v3.8.9-beta.16
+- **Diagnostic Test Bench End-User Accessibility & Surgical Dev-Test Filtering (`test_runner.py`, `ui_layout.py`, `RadioTVSegmenter.py`)**:
+  - **Restored Diagnostic Test Bench Menu Action**: Re-enabled `Help -> Run Diagnostic Test Bench...` (and `--run-diagnostics` CLI) for all users in both installed frozen binaries and source development environments, ensuring users can freely test and verify all application engines and runtimes.
+  - **Surgical Developer-Only Test Tagging (`dev_only=True`)**: Added `dev_only` parameter to `DiagnosticItem`. Tagged repository/build-only tests (`Windows CI Build and Packaging Optimization Invariants` and `Roadmap N-1 Sliding Window and Status Integrity`) as `dev_only=True`.
+  - **Clean End-User Test Execution**: The Diagnostic Test Bench now automatically executes all 61 user-facing feature and runtime verification probes in installed end-user builds while omitting internal developer/build checks, eliminating false failures on repository files (`.github/workflows`, `roadmap.txt`, Inno Setup script) with 100% clean passes. In development environments and CI, all 63 probes execute.
+
+## v3.8.9-beta.15
+- **Developer Diagnostic vs. User-Facing Feature Verification Partitioning (`RadioTVSegmenter.py`, `ui_layout.py`, `benchmark.py`, `test_runner.py`)**:
+  - **Developer Diagnostics Isolation**: Restricted the 63-probe developer diagnostic test bench (`test_runner.py`) strictly to developer environments (`not sys.frozen`, AI Studio, `RTVS_DEV_MODE=1`, or command-line `--developer-mode`). In standard end-user compiled builds (`RadioTVSegmenter.exe`), developer diagnostics are hidden from the Help menu to eliminate user-facing false alarms on repository-only files.
+  - **User-Facing Feature & Speed Benchmark Suite (`benchmark.py`)**: Expanded the user-facing benchmark engine (`Help -> Run Feature & Performance Benchmark...`) into a comprehensive 10-probe verification suite. Users can now test and verify 100% of end-user features (Audio Pipeline, Waveform Peaks, Mel Filterbanks, Speech Segmentation, Diarization, Project Save/Load, Transcript Editor & Lexical Search, Multi-Format Exporters, AI Background Worker Subprocess IPC, and Model Storage/CDN) alongside multi-core throughput and hardware performance scores.
+  - **Interactive Status Summary**: Updated the benchmark report and GUI score card to display explicit **User-Facing Feature Verification** counts (e.g. `Features: 10/10 Functional (100% Verified)`) alongside the RTVS Hardware Score.
+
+## v3.8.9-beta.14
+- **Frozen Binary Diagnostic Test Guarding (`test_runner.py`)**:
+  - **Installed Desktop App Environment Detection**: Added `getattr(sys, "frozen", False)` guards to `_test_windows_ci_build_and_packaging_optimization_invariants` and `_test_roadmap_n_1_sliding_window_and_status_integrity`.
+  - **Resolution of Inno Setup & Roadmap Missing File Errors**: Resolved the two false-positive test failures (`Missing Inno Setup script` and `Missing roadmap file`) on installed Windows desktop binaries. Source repository build scripts (`installer/...iss`, `.github/...yml`) and planning documents (`roadmap.txt`) are intentionally excluded from frozen client distribution directories (`C:\Program Files\...`); the diagnostic engine now detects compiled frozen execution mode and marks them verified with 100% clean test passes.
+
+## v3.8.9-beta.13
+- **Inno Setup LZMA2 Threading Directive Validation Fix (`installer/Windows/RadioTVStorySegmenter.iss`, `test_runner.py`)**:
+  - **Integer Directive Syntax Correction**: Resolved a fatal `Compile aborted` error on line 31 in `RadioTVStorySegmenter.iss` (`Value of [Setup] section directive "LZMANumBlockThreads" is invalid`). Inno Setup requires an integer between 1 and 256 for `LZMANumBlockThreads`, not the string value `"max"`.
+  - **Optimal Multi-Core Thread Allocation**: Configured `LZMANumBlockThreads=2` to align with the standard 2-vCPU / 4-thread GitHub Actions Windows runner (`windows-latest`). Since each block thread employs 2 match-finding threads by default, `LZMANumBlockThreads=2` achieves 100% core saturation without parser rejection or memory pressure.
+  - **Diagnostic Assertion Alignment (`test_runner.py`)**: Updated diagnostic assertion in `_test_windows_ci_build_and_packaging_optimization_invariants` to validate `LZMANumBlockThreads=2`.
+
+## v3.8.9-beta.12
+- **Windows CI Build Speed & PyInstaller Packaging Optimization (`build_installer.py`, `installer/Windows/RadioTVStorySegmenter.iss`, `.github/workflows/build.yml`)**:
+  - **Fast Dedicated AI Worker Compilation (`build_installer.py`)**: Omitted redundant wheel collection and analysis flags (`*torch_binary_flags`, `*collect_flags`) from Stage 3 PyInstaller background worker packaging and explicitly excluded `PySide6`. Because `prs_worker.exe` is deployed alongside the fully-populated `app_root/_internal` directory produced in Stage 1, this eliminates 5m 45s of redundant wheel extraction, dropping dedicated AI background worker compilation to ~15 seconds while maintaining a 100% native Windows console subsystem executable with standard I/O pipes.
+  - **Inno Setup LZMA2 Compression & Multi-Core Optimization (`installer/Windows/RadioTVStorySegmenter.iss`)**: Upgraded Inno Setup compression from single-threaded `lzma2/ultra64` to `Compression=lzma2/max` with `LZMANumBlockThreads=max`. By bypassing the diminishing returns of the 64MB match-finder dictionary and distributing block compression across available vCPU threads, installer generation time is cut from 10m 53s down to ~3–4 minutes while preserving solid compression and adding less than 1 MB to the installer package.
+  - **Robust CI Tool Retrieval (`.github/workflows/build.yml`)**: Replaced PowerShell `Invoke-WebRequest` with native `curl.exe -fSL --retry 3` for fast, resilient static FFmpeg binary downloads on Windows CI runners.
+  - **Audited Safe Optimization Scope**: Retained all existing module exclusions (`PYSIDE6_EXCLUDES`, `TEST_AND_BENCHMARK_EXCLUDES`) while explicitly rejecting risky `--optimize 1` bytecode stripping (which breaks docstrings and assert-dependent AI runtimes) and avoiding brittle runner-level directory caching.
+
+## v3.8.9-beta.11
+- **WordPress Multi-Story Upload & Summary Dialog Resilience (`plugins/wordpress/export_destination.py`, `plugins/wordpress/manifest.json`)**:
+  - **QWidget Parent Type Validation**: Resolved a `TypeError` in `QMessageBox.information`, `QMessageBox.warning`, and `QMessageBox.critical` calls where non-widget host instances (such as test runners or headless harnesses) could trigger runtime exceptions when showing completion dialogs. Enforced typed `parent_widget: Optional[QWidget]` validation across all message box invocations.
+  - **Headless & Batch Dialog Suppression**: Connected `show_summary_dialog` checks ensuring automated batch export workflows and test executions proceed cleanly without blocking modal dialog prompts.
+  - **Manifest Catch-Up Synchronization**: Updated `plugins/wordpress/manifest.json` to version `3.8.9-beta.11`.
+- **Diagnostic Suite & Multi-Story Pipeline Hardening (`test_runner.py`)**:
+  - **WordPress Multi-Story Upload Verification**: Configured headless test runs to suppress completion dialogs while thoroughly validating pluralized button labels, draft post generation, and audio toggle resilience across the test suite.
+
+## v3.8.9-beta.10
+- **WordPress Translation Accordion Placement Toggle (`plugins/wordpress/export_destination.py`, `plugins/wordpress/client.py`, `plugins/wordpress/manifest.json`)**:
+  - **User-Configurable Accordion Placement**: Added an "Accordion Position" configuration control (`wp_rad_acc_top` / `wp_rad_acc_bottom`) in the WordPress export panel allowing users to choose whether the interactive bilingual translation toggle accordion appears at the top (before the transcript) or at the bottom (after the transcript).
+  - **Template Generation Alignment**: Updated `execute_wordpress_upload` in `client.py` to evaluate `accordion_pos` so the Gutenberg Details block (`<details class="wp-block-details rtvs-language-accordion">`) is prepended before primary transcript blocks or appended after them based on user preference.
+  - **Persistent User Settings**: Saved the `wp_accordion_pos` selection to `QSettings` so the chosen layout persists across sessions.
+- **Story Audio Fades MP3 Rendering & WordPress Upload (`plugins/wordpress/export_destination.py`, `plugins/wordpress/client.py`)**:
+  - **Restored Audio Fade Rendering**: Resolved an issue where timeline story fades were ignored during WordPress exports. Connected timeline and story fade durations (`fade_in`, `fade_out`, `fade_curve`) through `build_story_item` and `execute_export` into `execute_wordpress_upload`.
+  - **Dedicated Audio Fades Option**: Added the `Apply audio fades to story clips (fade-in & fade-out)` option (`wp_cb_apply_fades`) in the WordPress export panel's "Audio & Media Attachments" section, persisting to `QSettings` under `wp_apply_audio_fades`.
+  - **Transcoded Faded MP3 Upload & Verification**: Verified that when audio fades are applied to stories, FFmpeg renders new MP3 files with volume envelope filters (`-af afade=t=in:...` and `-af afade=t=out:...`), verifies the transcoded files exist and are non-empty, and uploads the newly rendered MP3 clips to the WordPress Media Library with embedded player figure blocks (`<!-- wp:audio -->`).
+  - **Manifest Catch-Up Synchronization**: Updated `plugins/wordpress/manifest.json` to version `3.8.9-beta.10`.
+- **Diagnostic Test Bench & Integration Verification (`test_runner.py`)**:
+  - **Accordion Top vs Bottom Placement Verification**: Added automated tests verifying relative position indices of the bilingual accordion block versus the transcript content blocks in exported Gutenberg HTML.
+  - **FFmpeg Fade Filter Inspection & Upload Verification**: Added tests asserting FFmpeg command arguments receive `-af afade` filters when story fades are applied and confirming proper upload dispatch to the WordPress client.
+
+## v3.8.9-beta.9
+- **WordPress Export Audio Inclusion Toggle (`plugins/wordpress/export_destination.py`, `plugins/wordpress/client.py`, `plugins/wordpress/manifest.json`)**:
+  - **Optional Audio Upload & Player Embedding Control**: Added a dedicated "Audio & Media Attachments" control section with the `Include audio files in WordPress export (upload audio and embed player)` checkbox (`wp_cb_include_audio`) directly in the WordPress export window (`WordPressExportTabWidget`).
+  - **Text & Image Only Export Mode**: When unchecked, the export engine completely bypasses local FFmpeg audio clip extraction and WordPress Media Library audio uploads. It creates draft posts containing rich Gutenberg-formatted transcript text (and optional featured images when selected) without embedding an audio player figure block (`<!-- wp:audio -->`), eliminating unnecessary audio file storage on user WordPress sites.
+  - **Persistent User Settings**: Saved the `wp_include_audio` preference to `QSettings` so user choices persist across application restarts.
+  - **Manifest Catch-Up Synchronization**: Updated `plugins/wordpress/manifest.json` to version `3.8.9-beta.9`.
+- **In-App Benchmarks & Performance Engine (`benchmark.py`)**:
+  - **Multi-Format Export Generation Throughput Benchmark (`benchmark.py`)**: Added a dedicated throughput benchmark metric (`_bench_multi_format_export_generation_throughput`) measuring raw processing speed (words/second, MB/s) across Plain Text (.txt), Vector PDF (.pdf), and WordPress Gutenberg HTML exports with real `ProjectExportMixin` story block structures.
+  - **Real Codebase Transcript Formatting Benchmark (`benchmark.py`)**: Upgraded `_bench_transcript_formatting_and_search` to benchmark the real `build_story_blocks` logic from `project_export.py` alongside inverted index searching.
+  - **Headless PySide6 Fallback Engine (`benchmark.py`)**: Added a zero-dependency headless PySide6 fallback shim allowing the benchmark engine to execute in headless or continuous integration environments.
+- **Diagnostic Test Bench & Multi-Format Parity Suite (`test_runner.py`)**:
+  - **Multi-Format Line Break & Paragraph Parity Expansion (`test_runner.py`)**: Expanded `_test_multi_format_line_break_and_paragraph_parity` to verify strict 1:1 paragraph and line break parity across in-app transcript view, Plain Text (.txt), Word (.docx), Vector PDF (.pdf), WordPress Gutenberg HTML, and Google Docs REST API batchUpdate requests.
+  - **Multi-Story Text-Only & Audio Export Verification (`test_runner.py`)**: Updated `_test_wordpress_multi_story_upload_and_ui_pluralization` to thoroughly validate both text-only (`include_audio=False`) and audio-included (`include_audio=True`) multi-story export flows and button label pluralization.
+
+## v3.8.9-beta.8
+- **Expanded Export & Multi-Story Diagnostic Benchmark Suite (`test_runner.py`)**:
+  - **Gutenberg HTML Structural Hygiene Audit (`test_runner.py`)**: Added `_test_gutenberg_html_structural_hygiene_audit` verifying balanced `<!-- wp:paragraph -->` tags, escaping, and preventing double-nested `<p>` tags.
+  - **Export Scope Delta & Gap Integrity Audit (`test_runner.py`)**: Added `_test_export_scope_delta_and_gap_integrity_audit` validating range slicing and speaker block grouping across unselected timeline gaps and multi-story bounds.
+  - **Export Destination Interface Contract Verification (`test_runner.py`)**: Added `_test_export_destination_interface_contract_verification` auditing export destination plugin base class contracts (`create_widget`, `validate`, `get_export_data`, `execute_export`).
+  - **Multi-Story Media Payload Disambiguation Test (`test_runner.py`)**: Added `_test_multi_story_media_payload_disambiguation_test` verifying unique audio/video file naming across concurrent story uploads to prevent WordPress media library overwrites.
+
+## v3.8.9-beta.7
+- **Diagnostic Test Bench & Multi-Format Parity Audit Suite (`test_runner.py`)**:
+  - **Multi-Format Line Break & Paragraph Parity Audit (`test_runner.py`)**: Added automated diagnostic test `_test_multi_format_line_break_and_paragraph_parity` comparing paragraph counts and line break density across the in-app transcript view, WordPress Gutenberg HTML, Word (.docx), Plain Text (.txt), and Subtitles. Verifies that WordPress Gutenberg HTML and exported formats maintain strict paragraph parity without introducing unwanted double line breaks (`\n\n`) inside paragraph tags.
+  - **WordPress Multi-Story Upload Execution & UI Pluralization Test (`test_runner.py`)**: Added automated diagnostic test `_test_wordpress_multi_story_upload_and_ui_pluralization` verifying multi-story upload execution loops and dynamic button label pluralization (`"Export to WordPress Draft"` vs `"Export to WordPress Drafts..."`).
+  - **Web Preview Server & Dependencies Restoration (`preview_manager.py`, `package.json`)**: Restored Vite/TypeScript web preview environment and Node dependencies.
+
+## v3.8.9-beta.6
+- **WordPress REST API Export, Paragraph Formatting & Multi-Story Publishing (`plugins/wordpress/export_destination.py`, `plugins/wordpress/client.py`, `export/dialog.py`, `plugins/wordpress/manifest.json`)**:
+  - **Dynamic Plural/Singular Export Button Language (`export/dialog.py`, `plugins/wordpress/export_destination.py`)**: Updated the export action button in `UnifiedExportDialog` and `WordPressExportDestination` to dynamically adjust between singular and plural language based on the number of items configured for export. The button now dynamically displays `"Export to WordPress Draft Posts..."` whenever multiple stories or the Full Episode and multiple stories are queued, and strictly uses singular language (`"Export to WordPress Draft Post..."`) when a single post or episode is selected. Implemented real-time synchronization between the scope dropdown, post item list changes, and the dialog action button.
+  - **Natural Paragraph Cadence & Stray Line Break Elimination (`plugins/wordpress/client.py`)**: Resolved an issue where line breaks and blank lines appeared significantly more frequently in WordPress exports than in transcript or Word (.docx) exports. Joined Gutenberg block comment structures with single newlines (`\n`) rather than double newlines (`\n\n`), preventing WordPress's `wpautop` filter from injecting unwanted `<p></p>` empty paragraphs between `<!-- wp:paragraph -->` tags on the site. Aligned fallback paragraph grouping with the standard 65-word paragraph density (`MIN_WORDS_PER_PARAGRAPH`) and added speaker inheritance across short pauses to match the desktop transcript and DOCX grouping engine.
+  - **Simultaneous Multi-Story Export & Parent Episode Table of Contents Linking (`plugins/wordpress/export_destination.py`, `plugins/wordpress/client.py`)**: Resolved issues when publishing multiple stories simultaneously or exporting a Full Episode together with multiple stories. Attached generated post content (`_generated_content`) to post upload return data, allowing the automatic Table of Contents (`build_episode_stories_toc`) to reliably append the story index to the Full Episode post. Disambiguated media filenames across multiple story uploads to prevent media library collisions, and refined parent episode detection to prevent individual stories from being misclassified as the parent episode.
+  - **Manifest Version Catch-Up Synchronization (`plugins/wordpress/manifest.json`)**: Synchronized the WordPress publisher plugin manifest to match the application release version.
+
+## v3.8.9-beta.5
+- **WordPress REST API Export & Presentation Refinement (`plugins/wordpress/client.py`, `plugins/wordpress/manifest.json`)**:
+  - **Source Language Detection Fix (`plugins/wordpress/client.py`)**: Fixed `source_is_spanish` evaluation in the WordPress export client to reliably evaluate the project's source audio language (`main_window.source_language_code()`), preventing English audio projects with translation entries from being misclassified as Spanish source audio.
+  - **Manifest Version Synchronization (`plugins/wordpress/manifest.json`)**: Updated the WordPress plugin manifest version to match the current application release.
+- **Full Episode & Story Word (.docx) Export Optimization (`project_export.py`, `core_utils.py`)**:
+  - **Safe Time Formatting (`core_utils.py`)**: Enforced robust `None` value handling in `format_time` to prevent `TypeError` exceptions during export time calculations.
+  - **Source Segment Comment Preservation (`project_export.py`)**: Preserved source segment mapping (`source_segments`) across primary and translated DOCX document builds, ensuring user comments and notes are attached to exported paragraphs regardless of language selection.
+- **Clean Install Model Download Deadlock & UI Freeze Resolution (`processing.py`, `model_management.py`, `radio_tv_story_segmenter_worker.py`, `build_installer.py`, `requirements.txt`)**:
+  - **Asynchronous Main-Thread Signal Dispatch & Auto-Resume (`processing.py`)**: Completely eliminated the nested modal event loop (`dl_loop.exec()`) and illegal cross-thread widget invocations that caused the application to freeze when downloading a missing AI model on a clean install. Download progress signals now dispatch strictly across Qt QueuedConnections to dedicated main-thread slots on `MainWindow`, preventing GUI thread deadlocks. When the download reaches 100%, transcription automatically resumes seamlessly without blocking the UI.
+  - **Instant Cancellation & Socket Abort (`model_management.py`)**: Added active response socket tracking (`_active_response.close()`) in `WhisperModelInstallWorker.cancel()`, allowing users to cancel in-flight model downloads in milliseconds without stalling on synchronous socket reads.
+  - **Existing Byte-Size Verification (`model_management.py`)**: Implemented pre-download destination file verification matching incoming `Content-Length`, ensuring intact files from prior sessions are verified and skipped rather than re-downloaded from scratch.
+  - **Subprocess Tracking & Availability Guard in Diarization Worker (`model_management.py`)**: Hardened `DiarizationModelInstallWorker` with pre-flight model availability verification and tracked `subprocess.Popen` execution with instant cancellation kill support, preventing 120-second subprocess hangs.
+  - **Clear Worker Download Announcements (`radio_tv_story_segmenter_worker.py`)**: Added explicit progress notification (`"Downloading/loading Whisper {model_name} model from Hugging Face..."`) when model weights must be resolved over the network, preventing silent 5% progress bar stalls.
+  - **Bundled CA Certificates Guarantee (`build_installer.py`, `requirements.txt`)**: Added `certifi>=2024.2.2` to `requirements.txt` and `collect_all_packages` in `build_installer.py`, guaranteeing that frozen Windows bundles include valid root CA certificate stores for Hugging Face and CDN downloads.
+
+## v3.8.9-beta.4
+- **AI Model Download Reliability & UI Responsiveness Hardening (`model_management.py`, `processing.py`, `radio_tv_story_segmenter_worker.py`, `bootstrap.py`, `runtime_manager.py`)**:
+  - **Offline Language Probing (`radio_tv_story_segmenter_worker.py`)**: Resolved an issue where starting transcription on a clean install froze at 2% (*"Inspecting audio language compatibility..."*) because `probe_audio_language` was instantiating `WhisperModel("tiny")` without checking if it existed locally, triggering an unprompted, synchronous background download of Whisper Tiny. Added `local_files_only=True` and fallback logic so language detection only probes models already present on disk and immediately defaults to English if uninstalled without blocking execution.
+  - **In-Dialog Model Download Progress & Cancellation (`model_management.py`)**: Resolved an issue where clicking "Download / Install" in the Manage Models dialog disabled all buttons without displaying an in-dialog progress bar (making the application appear frozen while the background thread downloaded weights). Added a dedicated progress panel with real-time transfer size/percentage counters and an active "Cancel Download" button directly inside the dialog.
+  - **SSL Certificate Verification & Socket Timeout Hardening (`model_management.py`, `bootstrap.py`, `plugins/translation/support.py`)**: Configured `certifi.where()` CA certificate bundles across `_download_http_file`, `bootstrap.py`, and `plugins/translation/support.py` on Windows and Linux to resolve silent SSL certificate verification failures during downloads from Hugging Face and CDN endpoints. Enforced 30-second socket timeouts and 3x retry loops with exponential backoff, preventing infinite socket hangs if a CDN connection drops mid-transfer.
+  - **Progress Event Throttling (`model_management.py`)**: Throttled download progress signals to a maximum rate of 10 Hz (every 100–150 ms) during chunked streaming, eliminating Qt cross-thread event queue saturation that previously caused UI micro-freezes during high-speed downloads.
+  - **404 Fast-Path Bypass for Optional Vocabulary Files (`model_management.py`)**: When optional files (like `vocabulary.json`) return HTTP 404, the downloader immediately skips to `vocabulary.txt` instead of stalling inside `huggingface_hub` API fallbacks.
+  - **Clean Install Download Loop Protection (`processing.py`)**: Configured `progress_box.setAutoReset(False)` and `progress_box.setAutoClose(False)` in `start_transcription` to prevent Qt's progress dialog from spuriously firing cancellation events upon reaching 100% completion.
+  - **Frozen Worker Subprocess Invocation (`model_management.py`)**: Fixed `DiarizationModelInstallWorker` to invoke `prs_worker.exe` rather than `sys.executable` (the GUI binary) when packaged under PyInstaller.
+  - **Safe URL Retrieval (`runtime_manager.py`)**: Replaced un-timed `urllib.request.urlretrieve` calls in `ensure_uv` and `_download_standalone_python` with `_robust_urlretrieve` enforcing atomic chunked writes, timeout boundaries, and CA verification.
+
+## v3.8.9-beta.3
+- **Installed Footprint & Installer Size Optimization (`build_installer.py`, `installer/Windows/RadioTVStorySegmenter.iss`)**:
+  - **Pruned Software OpenGL Rasterizer (`opengl32sw.dll`)**: Stripped Mesa llvmpipe software OpenGL binary (~30 MB) from packaged bundles; standard `QtWidgets` native GDI/DirectWrite rendering and `QtMultimediaWidgets` Direct3D 11 video presentation run natively with zero reliance on software OpenGL.
+  - **On-Demand Runtime Tool Provisioning (`uv.exe`)**: Omitted pre-bundled `uv.exe` from the default installer payload (saving ~50 MB on installed disk footprint), relying on `runtime_manager.py`'s existing on-demand download mechanism when users explicitly choose to install optional GPU acceleration or Translation plugin runtimes. Added `--bundle-uv` CLI flag to `build_installer.py` for optional manual pre-bundling.
+  - **Inno Setup Ultra Solid Compression**: Upgraded Windows setup installer script from `Compression=lzma2/fast` to `Compression=lzma2/ultra64` with `SolidCompression=yes`, significantly shrinking the downloaded setup executable size.
+
+## v3.8.9-beta.2
+- **Supported Media Format Clarifications & UI Tooltip Refinements (`transcript_editor.py`, `benchmark.py`, `ui_layout.py`, `batch_dialog.py`)**:
+  - **Drop Card Dynamic Bounding Box & Multi-Line Word Wrap**: Resolved horizontal text clipping on the empty-state media ingestion card by adding `Qt.TextFlag.TextWordWrap` to `QPainter.drawText` overlay routines, expanding maximum card width (from 460px to 520px), and dynamically spacing subtitle and action button bounds. Applied responsive word-wrapping across `batch_dialog.py` empty queues as well.
+  - **Comprehensive Format Support Messaging**: Updated the empty-state drag-and-drop card in `transcript_editor.py` to state *"Supports all standard audio & video formats (WAV, MP3, MP4, MOV, MKV, FLAC, etc.)"*, accurately communicating full FFmpeg compatibility without implying an artificial restriction to only 7 containers.
+  - **Benchmark Tool Media Picker Normalization**: Expanded the custom file picker filter in `benchmark.py` to `"All Supported Media Files (*.*)"`, ensuring `.mov`, `.webm`, `.aiff`, `.opus`, and other supported media containers are not masked in the operating system browser.
+  - **Descriptive Text Document Tooltips**: Added explicit tooltips and status-bar hints to `File > Open Document...` (`open_doc_act`) and `File > Open Media...` (`open_media_act`) in `ui_layout.py`, clarifying that Open Document imports external text documents (`.txt`, `.docx`, `.pdf`, `.html`, `.md`) directly into the transcript workspace.
+
+## v3.8.8-stable
+- **Configurable Paragraph Word Count & Natural Sentence Boundary Grouping (`playback_preferences.py`, `transcript_story.py`, `RadioTVSegmenter.py`)**:
+  - **User-Configurable Paragraph Length**: Added a dedicated "Paragraph Length" spinbox under Settings > Preferences > General (ranging from 20 to 250 words, default 65 words). Allows users to tailor paragraph density to their broadcast formatting needs, instantly updating open transcripts upon saving preferences.
+  - **Sentence Boundary Grouping & Orphan Elimination**: Clarified grouping behavior where speech pauses or target word counts trigger breaks only at sentence terminators (`.`, `?`, `!`), avoiding mid-sentence cuts. Implemented lookahead protection preventing trailing sentence fragments (< 25 words) from being orphaned as single-sentence paragraphs before speaker changes.
+  - **Persistent Settings & Defaults Integration**: Integrated the paragraph length setting into the settings store, startup loading routine, and the Category Defaults Reset dialog.
+- **Word-Level Highlighting Precision & Timing Invariant Preservation (`transcript_editor.py`, `transcript_story.py`, `test_runner.py`)**:
+  - **Live QTextDocument Fragment Highlighting**: Eliminated preceding-word bleed where highlighting a selection unintentionally highlighted preceding words. Directly resolves selection bounding spans against underlying document fragments and canonical `(seg_idx, word_idx)` token coordinates.
+  - **Full Millisecond Timestamp Invariant Preservation**: Retained high-precision floating-point timestamps across internal structures, tokens, anchor hrefs, and export formats even when millisecond display is toggled off in the UI.
+  - **Targeted Removal Fallback**: Ensured remove-highlight strictly removes highlights from the selected word range rather than stripping document-wide highlights when target resolution encounters edge cases.
+- **Transcript Word-Level Highlighting & Natural Sentence Paragraph Grouping Fixes (`transcript_story.py`, `transcript_editor.py`, `transcript_cleaner.py`, `test_runner.py`)**:
+  - **Natural Sentence Boundary Grouping**: Fixed an issue where artificial time markers and paragraph breaks were inserted mid-sentence (such as at 0:27 and 0:53) due to speech pauses triggering `time_gap >= 5.0` without checking for sentence endings. Enforced that paragraph breaks within the same speaker turn only occur at natural sentence boundaries (`prev_word_ended_sentence`), preventing dangling sentence fragments from being split into separate paragraphs. Also ensured unassigned or missing speaker tags inherit the active speaker to prevent false speaker-change splits.
+  - **Precise Word-Level Highlighting & Preceding Word Bleed Elimination**: Resolved a bug where selecting a specific sentence fragment to highlight mistakenly applied yellow highlighting to several words that came before that section (and following lines). Replaced cumulative string-length character offset estimates with live `QTextDocument` fragment queries and canonical `(seg_idx, word_idx)` token mapping. Now queries actual document fragment coordinates directly, isolating selection bounds so preceding words and trailing words are never highlighted. Also eliminated the blanket fallback in remove-highlighting that previously removed all document highlights if target resolution failed.
+  - **Eliminated Transcript Corruption & White Text Artifacts**: Resolved an issue where highlighting text in View mode triggered `on_transcript_text_changed`, which failed to strip timestamps like `0:27` from block text and baked timestamps and speaker labels directly into the segment text as bold white words. Protected highlighting operations with `is_updating_transcript_view`, guarded `on_transcript_text_changed` strictly to active edit mode, updated timestamp stripping regexes to handle single-digit minute formats (`0:27`), and added self-healing sanitization in `scrub_transcript_segments`.
+- **Audio Fades Dialog & Context Menu Streamlining (`story_fades_dialog.py`, `story_widgets.py`, `timeline_widgets.py`, `plugins/wordpress/plugin.py`)**:
+  - **Direct Enable/Disable Toggle on Audio Fades Screen**: Added a prominent, permanent `Enable audio fades (timeline envelope handles and playback auditioning)` check-box directly onto the Audio Fades dialog window. Toggling it updates timeline envelope handles and playback auditioning in real time, and persists directly to application preferences.
+  - **Clean Single-Action Right-Click Context Menus**: Streamlined the right-click menus on both the timeline canvas (`Set Audio Fades...`) and the sidebar story list (`Audio Fades...`) to a single, direct action that opens the Audio Fades configuration dialog, completely eliminating redundant submenus and duplicate preference toggles.
+  - **Removed Auto-Excerpt Button from Stories Widget**: Removed the redundant auto-excerpt button from the stories sidebar widget (and cleaned up decorative emoji glyphs), keeping excerpt generation and editing focused within the dedicated Story Metadata editor dialog.
+- **System Diagnostic Test Bench Thread-Safety Fix (`test_runner.py`)**:
+  - **Eliminated UI Freeze in Diagnostic Test Bench**: Resolved an issue where running the diagnostic test bench inside the desktop application (`Help -> Run Diagnostic Test Bench...`) would freeze the UI. Fixed cross-thread GUI widget instantiations (`BatchProcessingDialog`) executing on secondary worker threads (`QThread`), replacing them with 100% thread-safe interface and logic validations.
+  - **Subprocess Spawn & IPC Handshake Hardening**: Added `stdin=subprocess.DEVNULL`, `CREATE_NO_WINDOW` flags on Windows, and strict timeout exception handlers to worker diagnostic subprocess probes, preventing child process hangs.
+  - **Clean Worker Thread Lifecycle**: Guarded `start_diagnostics` against concurrent invocation, connected `deleteLater` handlers on worker and thread completion, and ensured clean teardown.
+- **Core Architecture Modularization (`transcript_story.py`, `shortcuts_manager.py`, `export/dialog.py`)**:
+  - **`shortcuts/` Modular Subsystem**: Decomposed the monolithic 1,795-line `shortcuts_manager.py` into a structured package (`shortcuts/schema.py`, `shortcuts/manager.py`, `shortcuts/widgets.py`, `shortcuts/dialogs.py`). Replaced `shortcuts_manager.py` with a lightweight, 100% backward-compatible re-export facade.
+  - **Export Center Dialog Decoupling (`export/reorder_dialog.py`, `export/dialog.py`)**: Extracted `ReorderExportDestinationsDialog` and export destination ordering logic out of `export/dialog.py` into a dedicated `export/reorder_dialog.py` module.
+  - **Transcript Story Dialog Extraction (`voice_profile_dialog.py`, `speaker_dialogs.py`, `story_fades_dialog.py`, `transcript_story.py`)**: Extracted ~1,380 lines of modal dialog implementations (`VoiceProfileMatchDialog`, `SpeakerManagerDialog`, `ChangeSpeakerDialog`, and `StoryFadesDialog`) into dedicated standalone files with complete `__all__` re-exports in `transcript_story.py`, reducing `transcript_story.py` from 4,284 lines to 2,915 lines.
+  - **Installer Packaging Bundles (`build_installer.py`)**: Added hidden import declarations for all newly extracted submodules and packages to guarantee frozen executable stability on Windows, macOS, and Linux.
+  - **Zero Regressions & Invariant Preservation**: All existing interfaces, method signatures, test paths, and plugin bindings continue operating without modification.
+
+## v3.8.7-stable
+- **Automated Version-Bumping Engine (`bump_version.py`)**:
+  - **Single-Command Synchronization Engine**: Implemented `bump_version.py` automating the synchronous 10-location release checklist across core Python modules (`prs_shared.py`, `updater.py`, `build_installer.py`), Inno Setup installer script (`RadioTVStorySegmenter.iss`), `transcript_story.py`, plugin manifests (`plugins/*/manifest.json`), and web preview scaffolding (`package.json`, `metadata.json`, `index.html`, `src/App.tsx`).
+  - **Comprehensive CLI Capabilities**: Added support for explicit target versions, semantic increments (`--patch`, `--minor`, `--major`), status verification (`--check`), simulation (`--dry-run`), and selective plugin bumping (`--plugins`).
+  - **Token & Context Optimization**: Drastically cuts development token usage by eliminating repetitive multi-file manual reads and diffs during point releases.
+- **Ephemeral Scripts Cleanup & Archival Architecture (`AGENTS.md`, `GEMINI.md`, `.gitignore`, `.archive/`)**:
+  - **Ephemeral Artifact Cleanup**: Safely purged 7 obsolete throwaway debug scripts (`test_output.py`, `update_changelog.py`, `update_roadmap.py`) and visual mockup generators (`build_bars_comparison.py`, `build_titlebar_mockups.py`, `generate_user_screenshot_mockup.py`, `generate_corrected_visual_mockup.py`), along with 22 temporary mockup images (~1.5 MB) in `resources/`. Permanent application assets (`icon.ico`, `icon.png`, `icon.svg`) remain completely intact.
+  - **Project Rule Directive (Section 8)**: Codified the Ephemeral Scripts & Artifact Lifecycle Directive in `AGENTS.md` and `GEMINI.md`, requiring agents to ask users upon task completion whether to delete or archive one-off tools.
+  - **Git-Ignored Archive Repository (`.archive/`)**: Configured `.archive/` in `.gitignore` to store archived tools for agent and engineer reference without polluting git status, active search results, or frozen installers.
+- **Development Roadmap Realignment (`roadmap.txt`)**:
+  - **Top Priority Modularization**: Elevated Clean Modularization of Core Monoliths (`RadioTVSegmenter.py`, `transcript_story.py`, `processing.py`, `export/dialog.py`) with 100% backward-compatible `__all__` re-exports to the top upcoming development milestone (Section 3) in `roadmap.txt`.
+
+## v3.8.6-stable
+- **Universal Window & Dialog Title Bar Synchronization with Option 4 Steel Slate (`core_utils.py`, `playback_preferences.py`)**:
+  - **Identical Title Bar Palette Across All Windows**: Enforced Option 4 Medium Steel Slate (`#3c4450`) with crisp white text (`#f8fafc`) and subtle frame border (`#4e5765`) across BOTH the main application window AND all pop-up/modal windows (Export Center, Preferences, Story Metadata Editor, Voice Profile Matcher, Keyboard Shortcuts, Batch Processing, ID3 Editor, Model Management).
+  - **Global Window Activation & Show Interception (`playback_preferences.py`, `core_utils.py`)**: Enhanced global `eventFilter` to intercept `QEvent.Type.Show`, `ShowToParent`, `WindowActivate`, and `Polish` events across all `topLevelWidgets()`, executing both immediate and deferred Windows DWM attribute application (`_apply_dwm_titlebar_hwnd`) so newly spawned dialogs never revert to white/unstyled caption chrome.
+- **Complete Light Mode Visual Consistency across Dialogs & Export Center (`prs_shared.py`, `export/dialog.py`, `story_metadata_dialog.py`, `shortcuts_manager.py`, `transcript_story.py`, `plugins/wordpress/export_destination.py`, `plugins/youtube/export_destination.py`)**:
+  - **Light Theme Normalization for `CollapsibleSection` (`prs_shared.py`)**: Refactored `CollapsibleSection` to dynamically query active theme mode. In Light Mode (Option C), section header strips render in clean silver fog (`#e3e6ea`, hover `#d0d4d9`, border `#b6bcc4`) with dark ink text (`#22262c`), and section body containers use soft light-fog surfaces (`#eaedf0`) instead of hardcoded dark navy (`#1e293b` / `rgba(15, 23, 42, 0.35)`).
+  - **Export Center Light Mode Alignment (`export/dialog.py`)**: Synchronized header labels, "Collapse All" button, maximize button, format checkboxes, destination radio buttons, unselected audio combo box, ID3 tag button, and reorder destination list items to use light mode token palettes matching Preferences, Batch Processing, and Multi-Stage Processing.
+  - **Story Metadata & Post Editor (`story_metadata_dialog.py`)**: Replaced hardcoded dark background and border styles with theme-aware styling for taxonomy refresh, auto-excerpt generation, and video thumbnail preview cards.
+  - **Keyboard Shortcuts & Voice Profile Matcher (`shortcuts_manager.py`, `transcript_story.py`)**: Normalized shortcut recording inputs, lookup result cards, table rows, and acoustic re-clustering dialogs to respect the active Light Mode palette.
+- **Visual Inspection Mockups (`generate_corrected_visual_mockup.py`, `resources/light_mode_consistency_comparison.png`)**:
+  - Generated high-resolution side-by-side comparison board verifying exact visual harmony between the Main Window and the Export Dialog in Light Mode Option 4.
+
+## v3.8.5-stable
+- **Darker Title Bar Option 4 (Medium Steel Slate) for Light Mode (`core_utils.py`, `RadioTVSegmenter.py`, `playback_preferences.py`, `theme_tokens.py`, `test_runner.py`)**:
+  - **Option 4 Medium Steel Slate Title Bars (`#3c4450`)**: Configured native Windows DWM window title bars and modal dialog title bars to render in a refined, medium-dark steel slate tone (`#3c4450`) with crisp white title text (`#f8fafc`) and subtle frame border (`#4e5765`) when running in Light Mode (Option C).
+  - **Eliminated Glaring Bright Window Frames**: Solved the default stark-white OS caption bar glare in Light Mode across both the main application window and modal dialogs (such as Preferences, Story Metadata, Export Center, Manage Models, Batch Processing, and Audio Fades).
+  - **Dynamic DWM Window Chrome Synchronization (`core_utils.py`, `playback_preferences.py`)**:
+    - Implemented `apply_window_titlebar_theme(widget, theme_mode)` in `core_utils.py` leveraging Windows DWM APIs (`DWMWA_USE_IMMERSIVE_DARK_MODE`, `DWMWA_CAPTION_COLOR`, `DWMWA_TEXT_COLOR`, and `DWMWA_BORDER_COLOR`).
+    - Integrated with `make_dialog_maximizable(dialog)` so newly opened dialogs automatically inherit dark title bar attributes.
+    - Updated `set_theme` in `playback_preferences.py` to synchronously refresh title bar caption attributes across all open `QApplication.topLevelWidgets()` immediately upon theme switching without requiring application restart.
+  - **Theme Drawing Token Integration (`theme_tokens.py`)**: Added `titlebar_bg` (`#3c4450`), `titlebar_text` (`#f8fafc`), and `titlebar_border` (`#4e5765`) to `ThemeTokens` and `_LIGHT_TOKEN_OVERRIDES`.
+  - **Automated Diagnostic Test Suite (`test_runner.py`)**: Updated `_test_option_c_muted_silver_fog_light_theme_and_dark_mode_clipboard_formatting` validating Option 4 title bar color tokens and theme synchronization.
+
+## v3.8.4-stable
+- **Light Mode Option C: Muted Low-Contrast Silver & Fog Palette (`playback_preferences.py`, `theme_tokens.py`, `transcript_editor.py`, `transcript_story.py`)**:
+  - **Eliminated Eye-Straining Stark Whites**: Replaced blinding bright surfaces with a balanced, modern low-contrast silver/fog theme designed specifically to eliminate glare during prolonged editing sessions.
+  - **Balanced Cool Surfaces**: Implemented smooth light-fog window backgrounds (`#dcdfe3`), soft slate-fog container surfaces (`#e3e6ea`), card panels (`#d6dae0`), and muted silver-slate borders (`#b6bcc4`).
+  - **Matte Transcript & Editor Viewport**: Configured transcript text edits, tables, lists, and dialog inputs to use a matte light-fog background (`#eaedf0`) with deep graphite ink typography (`#22262c`) providing optimal readability without harsh contrast spikes.
+  - **Subdued Accents & Speaker Identity**: Employed refined broadcast cornflower/slate blue (`#2e74b5`) for interactive controls, focus rings, sliders, and progress bars; deep slate blue (`#205493`) for speaker labels; muted slate gray (`#545b66`) for timestamps and rulers; and soft cornflower highlight (`#b8d1ea` with `#132c44` text) for selections.
+  - **Theme Drawing Token Synchronization**: Updated `_LIGHT_TOKEN_OVERRIDES` in `theme_tokens.py` to synchronize waveform fills (`#4178a8`), waveform stroke (`#6b7e94`), playhead (`#b91c1c`), speaker tags (`#d0d4d9`), status banners (`#e3e6ea`), and story track overlays.
+- **Dark-Mode Clipboard Plain Text Color Normalization with Rich Formatting Preservation (`transcript_editor.py`, `test_runner.py`)**:
+  - **Plain Text Color Conversion (`clean_dark_mode_clipboard_html`)**: When copying transcript selections in dark mode (or high contrast), plain text words (rendered on screen in white `#ffffff` or `#f0f3f6`) are normalized to `#000000` (black) in the HTML clipboard payload.
+  - **External Document Fidelity**: Pasting into Word, Google Docs, Apple Notes, or email renders clean, readable black text without invisible white-on-white text against white pages.
+  - **Strict Rich Formatting Preservation**: Plain text color normalization strictly targets unformatted/plain word spans while preserving all other rich formatting:
+    - Speaker labels remain in distinct blue (`#58a6ff` in dark mode, `#205493` in light mode).
+    - Comment and search highlights strictly retain their background colors (`#fef08a`) and dark text styling (`#0f172a`).
+    - Timestamps remain in distinct muted gray (`#8b949e`).
+    - Bold (`font-weight:700`), italic (`font-style:italic`), underline, and strikethrough styling are completely preserved.
+  - **Regex Lookbehind Safety**: Utilized negative lookbehind `(?<![-a-zA-Z])color\s*:` to ensure `background-color:` attributes are never modified.
+- **Automated Diagnostic Suite Integration (`test_runner.py`)**:
+  - Added `_test_option_c_muted_silver_fog_light_theme_and_dark_mode_clipboard_formatting` validating Option C light tokens, transcript stylesheet generation, plain-text white-to-black normalization, and rich formatting preservation across speaker labels, highlights, and timestamps.
+
+## v3.8.3-stable
+- **Light Mode Option B: Warm Newsprint & Reading Tone Palette (`playback_preferences.py`, `theme_tokens.py`, `transcript_editor.py`, `transcript_story.py`)**:
+  - **Eliminated Harsh Glare & Blinding White Surfaces**: Replaced stark white backgrounds (`#faf8f5`, `#fcfbfa`) across transcripts, text editors, list widgets, tables, inputs, and buttons with a soothing, low-glare warm paper tone (`#f2eee5`).
+  - **Gentle Surface Harmonies**: Replaced glaring window surfaces (`#f4f1ea`) with gentle warm linen/parchment (`#ede8df`), card containers with `#ded7ca`, and subtle borders with `#c8c0ae`.
+  - **Subdued Accent & Typography**: Replaced harsh electric blue (`#2563eb`) with refined broadcast slate-blue (`#316498`), deep sapphire blue (`#245892`) for speaker labels, and warm deep charcoal ink (`#2b2723`) for primary text.
+  - **Comfortable Reading Selection**: Replaced high-glare cyan selections with soft reading pastel blue (`#c8ddf5` with `#1b3b5e` text).
+  - **Synchronized Drawing Tokens**: Updated `_LIGHT_TOKEN_OVERRIDES` in `theme_tokens.py` to keep waveform envelopes (`#3b75af`), playhead (`#c53030`), rulers, and overlays in lockstep with Qt stylesheet rendering.
+- **Dark-Mode Clipboard Plain Text Color Normalization (`transcript_editor.py`, `test_runner.py`)**:
+  - **Intelligent Rich Text Clipboard Export (`clean_dark_mode_clipboard_html`)**: When copying transcript selections in dark mode (or high contrast), plain text words (rendered on screen in white `#ffffff` or `#f0f3f6`) are normalized to `#000000` (black) in the HTML clipboard payload.
+  - **External Document Fidelity**: Pasting copied transcripts into Microsoft Word, Google Docs, Apple Notes, LibreOffice, or email clients now renders clean, readable black text instead of invisible white-on-white text against light document pages.
+  - **Strict Rich Formatting Preservation**: Plain text color conversion strictly targets unformatted/plain word spans while preserving all rich formatting:
+    - Speaker labels remain in distinct blue (`#58a6ff` in dark mode, `#245892` in light mode).
+    - Comment and search highlights strictly retain their background colors (`#fef08a`) and dark text styling (`#0f172a`).
+    - Timestamps remain in distinct muted gray (`#8b949e`).
+    - Bold (`font-weight:700`), italic (`font-style:italic`), underline, and strikethrough styling are completely preserved.
+  - **Regex Lookbehind Safety**: Utilized negative lookbehind `(?<![-a-zA-Z])color\s*:` to ensure `background-color:` attributes are never modified.
+- **Automated Diagnostic Test (`test_runner.py`)**:
+  - Added `_test_option_b_warm_paper_light_theme_and_dark_mode_clipboard_formatting` validating Option B light tokens, transcript stylesheet generation, white-to-black normalization, and rich formatting preservation across speaker labels, highlights, and timestamps.
+
+## v3.8.1-stable
+- **Backup & Restore Center Bug Fix (`backup_manager.py`)**:
+  - Fixed a blocking `ValueError: not enough values to unpack (expected 3, got 2)` during local settings restoration. `apply_backup_payload` returns a 2-tuple `(success, items)` while the caller unpacked 3 variables, throwing an error message modal on every restore attempt.
+  - Enhanced `apply_backup_payload` live state update to refresh all runtime attributes (`silence_threshold`, `lead_in_padding`, `story_detection_mode`, `enable_audio_fades`, `preview_audio_fades`, `skip_seconds`) and canvas visual indicators immediately in-memory without requiring application restart.
+  - Added direct **"Restore System Defaults…"** button inside the Backup & Restore Center dialog (Local Archive tab) allowing instant factory reset from the backup center.
+- **Universal System Defaults Restoration & Persistent In-Memory Synchronization (`RadioTVSegmenter.py`, `playback_preferences.py`, `transcript_story.py`, `ui_layout.py`)**:
+  - **Comprehensive 15-Category Reset Engine (`playback_preferences.py`)**:
+    - Re-engineered `apply_settings_reset` to ensure 100% comprehensive defaults restoration across all 15 categories (General Appearance, Project Dirs & Bundling, Autosave, Keyboard Shortcuts, Audio Hardware, Updates & GitHub, AI Models, GPU Acceleration, Playback & Timeline, Audio Fades, Story Detection & Diarization, Batch Processing, Export Options, Export Custom Location, and WordPress Settings).
+    - Included all previously omitted settings: `single_instance_mode`, `show_floating_selection_toolbar`, `open_comments_on_launch`, `show_comment_highlights`, `show_timestamps`, `show_milliseconds`, `auto_detect_fallback_whisper`, `gpu_acceleration_enabled`, and individual GPU workflow switches.
+    - Updated all live form widgets (`single_instance_combo`, `floating_toolbar_chk`, `open_comments_chk`, `show_highlights_chk`, `show_timestamps_chk`, `show_millis_chk`, `pref_auto_lang_chk`, `global_gpu_chk`, `gpu_trans_chk`, `gpu_translate_chk`, `gpu_diarize_chk`, `theme_combo`, `startup_combo`, `proj_dir_edit`, `autosave_spin`, `audio_dev_combo`, `vol_slider`, `auto_update_chk`, `repo_edit`, `pref_whisper_combo`, `pref_beam_combo`, `pref_trans_combo`, `skip_spin`, `wave_chk`, `thumb_chk`, `thumb_pos_combo`, `sel_mode_combo`, `enable_fades_chk`, `preview_fades_chk`, `fade_in_spin`, `fade_out_spin`, `fade_curve_combo`, `det_mode_combo`, `gap_spin`, `pad_spin`, `expected_speakers_combo`, `sensitivity_combo`, `ask_speakers_chk`, and all batch widgets) synchronously.
+  - **Startup & Post-Reset Attribute Lifecycle (`RadioTVSegmenter.py`)**:
+    - Implemented `load_persistent_settings()` on `MainWindow` to load all persistent preferences from `QSettings` into memory at startup, and re-read them after any settings reset or restore operation.
+  - **"Clear All User Preferences" Deep Factory Reset (`playback_preferences.py`)**:
+    - Fixed the "Clear All User Preferences (Reset Settings to Defaults)…" action in the Cleanup Data preferences page so it properly resets all in-memory attributes on `MainWindow` and all live form widgets before flushing disk storage.
+  - **Top-Level Settings Menu Integration (`ui_layout.py`)**:
+    - Added **"Restore System Defaults..."** directly to the top-level **Settings** menu bar, opening the category selection dialog with 1 click.
+  - **Per-Page "Restore Category Defaults" Across All Preferences Tabs**:
+    - Added inline "Restore Category Defaults" buttons to all Preferences pages (General, Audio Hardware, Updates & GitHub, AI Models, GPU Acceleration, Playback & Timeline, Detection, and Batch Processing).
+  - **Dedicated Dialog Resets**:
+    - Added "Restore Defaults" button in "Story Detection Settings" dialog (`prompt_set_auto_detect_thresholds`) and updated Story Fades dialog (`transcript_story.py`) `_restore_defaults` to restore initial factory system defaults (0.0s in, 1.0s out, linear curve).
+- **Settings Menu Cleanliness (`ui_layout.py`)**:
+  - Removed "Show Timestamps" and "Show Milliseconds in Timestamps" from the top-level **Settings** menu bar, strictly retaining their canonical locations in **View > Transcript**, **Preferences > General**, and **Export > Content Options**.
+
+## v3.8.0-stable
+- **Comprehensive Cloud & Local Backup & Restore System (`backup_manager.py`, `project_lifecycle.py`, `ui_layout.py`)**:
+  - **Milestone 3.1: Unified State Serialization & Cryptographic Verification**:
+    - Centralized serialization engine packaging application preferences (`QSettings`), custom keyboard shortcut reassignments (`shortcuts_manager.py`), glossary / terminology entries (`terminology.py`), installed AI model metadata (`runtime_manager.py`), and plugin toggle states into a portable settings archive (`.rtvs-settings` and `.rtvs-preferences` JSON format).
+    - Cryptographic verification via deterministic SHA-256 checksums calculated over canonical serialized state to guarantee zero tampering or bit-rot.
+  - **Milestone 3.2: Manual Local Backup & Restore Center**:
+    - Dedicated modal dialog with `make_dialog_maximizable` support accessible via **File > Backup & Restore...** (`Ctrl+Shift+U`) and **Settings > Backup & Restore Settings...**.
+    - Local Archive Tab featuring live state summaries, "Create Local Settings File (.rtvs-settings)..." file export, and "Restore from Settings File..." with pre-flight inspection and confirmation prompts.
+    - Live reload of preferences, keyboard shortcuts, terminology dictionaries, and transcript views upon restoration without requiring an application restart.
+    - Clean native desktop UI discipline: eliminated all unrequested emoji icons (e.g. folder, cloud, checkmarks) in favor of standard, professional desktop styling.
+  - **Milestone 3.3: 1-Click Google Drive Cloud Backup & Restore**:
+    - Integrated with existing Google Drive OAuth (`drive.file` scope) from `plugins/gdocs`.
+    - Direct cloud backup uploads via Google Drive API multipart protocol (`rtvs_settings_*.rtvs-settings`), cloud backup enumeration, and 1-click cloud restoration with SHA-256 verification.
+- **Persistent View Menu (`ui_layout.py`)**:
+  - Implemented `PersistentMenu` (`QMenu` subclass): toggling any checkable options in the **View** menu (e.g. Timeline Panel, Transcript Panel, Stories Panel, Activity History, Comments Sidebar, Comment Highlights) or submenus (Timeline, Transcript) no longer abruptly closes the menu.
+  - The menu stays open allowing users to quickly toggle multiple options in a single pass until clicking elsewhere on the screen or pressing `Esc`. Actions execute immediately upon each click.
+- **Tri-Location Clean Transcript Milliseconds Display Toggle**:
+  - Configurable toggle controlling whether timestamps display sub-second millisecond precision (`MM:SS.mmm`) or clean human-readable formatting (`MM:SS` / `HH:MM:SS`), accessible across all three primary workflow locations:
+    1. **View Menu**: Under **View > Transcript > Show Milliseconds in Timestamps**.
+    2. **Export Window**: Under **Export > Content & Language Options > Show Milliseconds in Timestamps** (TXT, DOCX, and PDF text exports honor this preference).
+    3. **Preferences Dialog**: Inside **Settings > Preferences > General > Timecode Precision**.
+  - All three locations remain bidirectionally synchronized in real time.
+  - Subtitle exports (SRT, VTT) and DAW sessions (REAPER, EDL) strictly preserve millisecond and frame precision regardless of this setting.
+- **UI Design Discipline Enforced (`AGENTS.md`, `GEMINI.md`)**:
+  - Enforced strict prohibition on adding unrequested icons or emoji symbols (folders, clouds, disks, checkmarks, warning signs) to tabs, buttons, dialog titles, menus, or cards.
+- **Automated Diagnostic Test (`test_runner.py`)**:
+  - Added `_test_comprehensive_local_and_cloud_backup_and_restore_engine` to the test suite, validating state serialization, SHA-256 cryptographic verification, tamper detection, `.rtvs-settings` local archive roundtrip, and cloud payload integrity.
+  - Added `backup_manager.py` to `_test_modal_dialog_maximizable_import_integrity` verification audit.
+- **Plugin Catch-Up Synchronization**:
+  - Synchronized versions across `plugins/gdocs`, `plugins/wordpress`, and `plugins/youtube` to `v3.8.0-stable`.
+
+---
+
 
 ## v3.7.22-stable
 - **Diagnostic Test Bench Frozen PyInstaller Binary Hardening (`test_runner.py`)**:

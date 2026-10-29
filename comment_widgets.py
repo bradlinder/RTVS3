@@ -55,7 +55,7 @@ class CommentEditorDialog(QDialog):
         layout.addWidget(self.text_edit)
 
         btn_layout = QHBoxLayout()
-        self.delete_btn = QPushButton("🗑️ Delete Comment", self)
+        self.delete_btn = QPushButton("Delete Comment", self)
         self.delete_btn.setStyleSheet("color: #dc2626; font-weight: bold;")
         self.delete_btn.setVisible(bool(comment_text and comment_text.strip()))
 
@@ -128,16 +128,16 @@ class CommentCardWidget(QFrame):
         header_layout.addStretch()
 
         self.edit_btn = QToolButton(self)
-        self.edit_btn.setText("✏️")
+        self.edit_btn.setText("Edit")
         self.edit_btn.setToolTip("Edit comment")
-        self.edit_btn.setStyleSheet("border: none; padding: 2px;")
+        self.edit_btn.setStyleSheet("border: none; padding: 2px; font-size: 11px;")
         self.edit_btn.clicked.connect(lambda: self.editRequested.emit(self.seg_idx))
         header_layout.addWidget(self.edit_btn)
 
         self.delete_btn = QToolButton(self)
-        self.delete_btn.setText("🗑️")
+        self.delete_btn.setText("Delete")
         self.delete_btn.setToolTip("Delete comment")
-        self.delete_btn.setStyleSheet("border: none; padding: 2px; color: #ef4444;")
+        self.delete_btn.setStyleSheet("border: none; padding: 2px; font-size: 11px; color: #ef4444;")
         self.delete_btn.clicked.connect(lambda: self.deleteRequested.emit(self.seg_idx))
         header_layout.addWidget(self.delete_btn)
         layout.addLayout(header_layout)
@@ -240,7 +240,7 @@ class CommentsPanel(QWidget):
         # Header bar
         header_layout = QHBoxLayout()
         header_layout.setContentsMargins(2, 2, 2, 4)
-        self.title_lbl = QLabel("<b>💬 Comments (0)</b>", self)
+        self.title_lbl = QLabel("<b>Comments (0)</b>", self)
         self.title_lbl.setStyleSheet("font-size: 13px;")
         header_layout.addWidget(self.title_lbl)
         header_layout.addStretch()
@@ -274,7 +274,7 @@ class CommentsPanel(QWidget):
 
         # Empty state label
         self.empty_lbl = QLabel(
-            "No comments yet.\n\nHighlight text in the transcript and select '💬 Add Comment' to annotate.",
+            "No comments yet.\n\nHighlight text in the transcript and select 'Add Comment' to annotate.",
             self
         )
         self.empty_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -328,7 +328,7 @@ class CommentsPanel(QWidget):
                     card.deleteRequested.connect(self.commentDeleteRequested.emit)
                     self.cards_layout.insertWidget(self.cards_layout.count() - 1, card)
 
-        self.title_lbl.setText(f"<b>💬 Comments ({comment_count})</b>")
+        self.title_lbl.setText(f"<b>Comments ({comment_count})</b>")
         if comment_count > 0:
             self.empty_lbl.hide()
             self.scroll_area.show()

@@ -101,7 +101,7 @@ class VoiceProfileMatchDialog(QDialog):
             title_lbl.setStyleSheet("font-size: 15px; font-weight: bold; color: #f1f5f9;")
         header_top_layout.addWidget(title_lbl, 1)
 
-        self.btn_toggle_hints = QPushButton("💡 Usage Hints", self)
+        self.btn_toggle_hints = QPushButton("Usage Hints", self)
         self.btn_toggle_hints.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_toggle_hints.setMaximumHeight(26)
         if vp_mode == "light":
@@ -171,7 +171,7 @@ class VoiceProfileMatchDialog(QDialog):
         layout.addLayout(header_layout)
 
         # Collapsible Usage Hints Card
-        self.hints_box = QGroupBox("💡 Acoustic Voice Profile Matcher — Quick Usage Guide", self)
+        self.hints_box = QGroupBox("Acoustic Voice Profile Matcher — Quick Usage Guide", self)
         if vp_mode == "light":
             self.hints_box.setStyleSheet("""
                 QGroupBox {
@@ -306,7 +306,7 @@ class VoiceProfileMatchDialog(QDialog):
             show_hints = True
 
         self.hints_box.setVisible(show_hints)
-        self.btn_toggle_hints.setText("💡 Hide Hints" if show_hints else "💡 Usage Hints")
+        self.btn_toggle_hints.setText("Hide Hints" if show_hints else "Usage Hints")
 
         ref_card = QGroupBox("Reference Speaker Turn & Profile Baseline", self)
         if vp_mode == "light":
@@ -675,7 +675,7 @@ class VoiceProfileMatchDialog(QDialog):
     def _toggle_hints(self):
         is_visible = self.hints_box.isVisible()
         self.hints_box.setVisible(not is_visible)
-        self.btn_toggle_hints.setText("💡 Usage Hints" if is_visible else "💡 Hide Hints")
+        self.btn_toggle_hints.setText("Usage Hints" if is_visible else "Hide Hints")
         try:
             settings = QSettings(INTERNAL_APP_ID, INTERNAL_APP_ID)
             settings.setValue("voice_profile_matcher_show_hints", not is_visible)

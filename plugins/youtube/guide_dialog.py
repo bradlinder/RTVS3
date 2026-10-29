@@ -66,7 +66,7 @@ class YouTubeAssistedUploadGuideDialog(QDialog):
         layout.addWidget(files_box)
 
         # Clipboard Notice
-        clip_notice = QLabel("📋 <b>Video Title, Description & Chapters have been copied to your clipboard!</b>")
+        clip_notice = QLabel("<b>Video Title, Description & Chapters have been copied to your clipboard!</b>")
         clip_notice.setStyleSheet("color: #38bdf8; font-size: 12px; font-weight: bold;")
         layout.addWidget(clip_notice)
 

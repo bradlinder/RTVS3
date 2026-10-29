@@ -305,10 +305,10 @@ def create_benchmark_dialog(parent=None):
 
             self.duration_combo = QComboBox()
             self.duration_combo.addItems([
-                "⚡ Quick Mode (1 Min Audio | ~3–5s Evaluation)",
-                "🎯 Standard Benchmark (5 Min Audio | ~15–25s Run) [Recommended]",
-                "🔥 Sustained Stress (10 Min Audio | ~45–90s Run)",
-                "🏔️ Full 30-Min Endurance (30 Min Audio | ~2–5m Run)",
+                "Quick Mode (1 Min Audio | ~3–5s Evaluation)",
+                "Standard Benchmark (5 Min Audio | ~15–25s Run) [Recommended]",
+                "Sustained Stress (10 Min Audio | ~45–90s Run)",
+                "Full 30-Min Endurance (30 Min Audio | ~2–5m Run)",
             ])
             self.duration_combo.setCurrentIndex(1)
             self.duration_combo.setToolTip("Select workload scale and audio duration to balance speed vs thermal/boost clock evaluation")
@@ -408,7 +408,7 @@ def create_benchmark_dialog(parent=None):
             mode = self._get_selected_duration_mode()
             info = BenchmarkEngine.DURATION_MODES.get(mode, BenchmarkEngine.DURATION_MODES["standard"])
             if hasattr(self, "duration_desc_lbl"):
-                self.duration_desc_lbl.setText(f"ℹ️ {info['name']}: {info['description']} (Est. duration: {info['estimate_runtime']})")
+                self.duration_desc_lbl.setText(f"{info['name']}: {info['description']} (Est. duration: {info['estimate_runtime']})")
             dur_label = f"{int(info['audio_seconds'] // 60)}-Min Audio" if info['audio_seconds'] >= 60 else f"{int(info['audio_seconds'])}s Audio"
             if hasattr(self, "run_btn"):
                 self.run_btn.setText(f"Run Benchmark ({dur_label})")
@@ -431,12 +431,12 @@ def create_benchmark_dialog(parent=None):
                     mb = sample_path.stat().st_size / (1024 * 1024)
                     self.sample_action_btn.setVisible(False)
                     self.delete_sample_btn.setVisible(True)
-                    self.source_status_lbl.setText(f"✓ Broadcast sample ready ({sample_path.name}, {mb:.1f} MB, ~30m). Tests FFmpeg decoding & real speech.")
+                    self.source_status_lbl.setText(f"Broadcast sample ready ({sample_path.name}, {mb:.1f} MB, ~30m). Tests FFmpeg decoding & real speech.")
                 else:
                     self.sample_action_btn.setVisible(True)
-                    self.sample_action_btn.setText("📥 Download Sample (~6.9 MB)")
+                    self.sample_action_btn.setText("Download Sample (~6.9 MB)")
                     self.delete_sample_btn.setVisible(False)
-                    self.source_status_lbl.setText("✗ Sample not downloaded. Click 'Download Sample' to fetch from GitHub.")
+                    self.source_status_lbl.setText("Sample not downloaded. Click 'Download Sample' to fetch from GitHub.")
             elif idx == 2:  # Custom Audio
                 self.sample_action_btn.setVisible(False)
                 self.delete_sample_btn.setVisible(False)

@@ -57,10 +57,10 @@ TABLE OF CONTENTS & STATUS OVERVIEW
 
 3. Deferred Milestone: Monolithic File Decomposition & Lower-Priority Refinements [ ] [DEFERRED / LOWER PRIORITY]
    [ ] 3.1 AST-Driven Monolithic File Decomposition: Incrementally decompose remaining files exceeding 1,000 lines (`plugins/wordpress/client.py`, `media_batch.py`, `prs_shared.py`, `export/dialog.py`, `processing.py`, `runtime_manager.py`, `ui_layout.py`, `background_workers.py`, `voice_profile_dialog.py`). [P7-01]
-   [ ] 3.2 UI Typography Cleanliness: Remove unrequested emoji symbols (💬, 🟡, 🟢) and decorative checkmarks from buttons and comboboxes. [P6-06]
-   [ ] 3.3 PDF Proportional Font Word-Wrap Accuracy: Refine Helvetica character width measurement tables in `export/pdf.py`. [P6-07]
-   [ ] 3.4 Export Dialog Vestigial Cleanup: Clean orphaned preview set and restore `"timeline"` to fallback reorder list. [P6-09, P6-10]
-   [ ] 3.5 Changelog Archive Roll: Prune older changelog entries into `CHANGELOG_ARCHIVE.md`. [P7-06]
+   [x] 3.2 UI Typography Cleanliness: Remove unrequested emoji symbols (💬, 🟡, 🟢) and decorative checkmarks from buttons and comboboxes. [P6-06]
+   [x] 3.3 PDF Proportional Font Word-Wrap Accuracy: Refine Helvetica character width measurement tables in `export/pdf.py`. [P6-07]
+   [x] 3.4 Export Dialog Vestigial Cleanup: Clean orphaned preview set and restore `"timeline"` to fallback reorder list. [P6-09, P6-10]
+   [x] 3.5 Changelog Archive Roll: Prune older changelog entries into `CHANGELOG_ARCHIVE.md`. [P7-06]
 
 4. Optional Future Milestone: Interactive Text-Based Media Assembly & Multi-Asset Ripple Editing Engine (`assembly/bin_model.py`, `assembly/clipboard.py`, `assembly/ripple_engine.py`, `transcript_editor.py`, `export/timeline.py`) [PLANNED for v4.2.0] [OPTIONAL] [NOT STARTED]
    [ ] 4.1 Multi-Asset Project Container & Media Bin Submodule (`assembly/bin_model.py`, `project_lifecycle.py`)

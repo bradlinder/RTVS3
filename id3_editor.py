@@ -498,7 +498,7 @@ class ID3TagEditorDialog(QDialog):
         btn_row.setSpacing(10)
 
         if self.main_window:
-            autofill_btn = QPushButton("⚡ Auto-Fill from Project")
+            autofill_btn = QPushButton("Auto-Fill from Project")
             autofill_btn.setToolTip("Auto-populate tags using active project name, story titles, and speaker labels")
             autofill_btn.clicked.connect(self._autofill_from_project)
             btn_row.addWidget(autofill_btn)
@@ -667,7 +667,7 @@ class ID3TagEditorDialog(QDialog):
         elif proj_name and not self.title_edit.text():
             self.title_edit.setText(proj_name)
 
-        self.status_lbl.setText("⚡ Auto-filled metadata from active project!")
+        self.status_lbl.setText("Auto-filled metadata from active project!")
         self.status_lbl.setStyleSheet("font-size: 12px; color: #1976d2; font-weight: bold;")
 
     def save_tags(self):

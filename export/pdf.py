@@ -8,6 +8,56 @@ from __future__ import annotations
 import io
 from typing import Optional, Tuple
 
+# Typographic Unicode replacements to standard ASCII/Latin characters
+_UNICODE_NORMALIZATIONS = {
+    '\u2018': "'",   # Left single quotation mark
+    '\u2019': "'",   # Right single quotation mark
+    '\u201a': "'",   # Single low-9 quotation mark
+    '\u201b': "'",   # Single high-reversed-9 quotation mark
+    '\u2032': "'",   # Prime
+    '\u2035': "'",   # Reversed prime
+    '\u201c': '"',   # Left double quotation mark
+    '\u201d': '"',   # Right double quotation mark
+    '\u201e': '"',   # Double low-9 quotation mark
+    '\u201f': '"',   # Double high-reversed-9 quotation mark
+    '\u2033': '"',   # Double prime
+    '\u2036': '"',   # Reversed double prime
+    '\u2013': '-',   # En dash
+    '\u2014': '-',   # Em dash
+    '\u2015': '-',   # Horizontal bar
+    '\u2012': '-',   # Figure dash
+    '\u2212': '-',   # Minus sign
+    '\u2026': '...', # Horizontal ellipsis
+    '\u00a0': ' ',   # Non-breaking space
+    '\u2002': ' ',   # En space
+    '\u2003': ' ',   # Em space
+    '\u2009': ' ',   # Thin space
+    '\u202f': ' ',   # Narrow no-break space
+    '\u200b': '',    # Zero-width space
+    '\ufeff': '',    # Byte order mark
+    '\u2022': '*',   # Bullet
+    '\u25cf': '*',   # Black circle
+}
+
+# Standard Adobe Helvetica AFM glyph widths (per 1,000 units of font size)
+_HELVETICA_GLYPH_WIDTHS = {
+    ' ': 278, '!': 278, '"': 355, '#': 556, '$': 556, '%': 889, '&': 667, "'": 222,
+    '(': 333, ')': 333, '*': 389, '+': 584, ',': 278, '-': 333, '.': 278, '/': 278,
+    '0': 556, '1': 556, '2': 556, '3': 556, '4': 556, '5': 556, '6': 556, '7': 556,
+    '8': 556, '9': 556, ':': 278, ';': 278, '<': 584, '=': 584, '>': 584, '?': 556,
+    '@': 1015,
+    'A': 667, 'B': 667, 'C': 722, 'D': 722, 'E': 667, 'F': 611, 'G': 778, 'H': 722,
+    'I': 278, 'J': 500, 'K': 667, 'L': 556, 'M': 833, 'N': 722, 'O': 778, 'P': 667,
+    'Q': 778, 'R': 722, 'S': 667, 'T': 611, 'U': 722, 'V': 667, 'W': 944, 'X': 667,
+    'Y': 667, 'Z': 611,
+    '[': 278, '\\': 278, ']': 278, '^': 469, '_': 556, '`': 222,
+    'a': 556, 'b': 556, 'c': 500, 'd': 556, 'e': 556, 'f': 278, 'g': 556, 'h': 556,
+    'i': 222, 'j': 222, 'k': 500, 'l': 222, 'm': 833, 'n': 556, 'o': 556, 'p': 556,
+    'q': 556, 'r': 333, 's': 500, 't': 278, 'u': 556, 'v': 500, 'w': 722, 'x': 500,
+    'y': 500, 'z': 500,
+    '{': 334, '|': 260, '}': 334, '~': 584,
+}
+
 
 class TranscriptPdfWriter:
     """Lightweight, self-contained PDF 1.4 vector generator for transcript documents.
@@ -29,8 +79,11 @@ class TranscriptPdfWriter:
         self.cur_stream = io.BytesIO()
         self.y = self.height - self.margin
         self.current_page = 1
+        self._finished = False
+        self._cached_pdf_bytes: Optional[bytes] = None
 
     def _escape_pdf(self, s: str) -> str:
+        s = "".join(_UNICODE_NORMALIZATIONS.get(ch, ch) for ch in s)
         out = []
         for ch in s:
             if ch in ('(', ')', '\\'):
@@ -82,26 +135,42 @@ class TranscriptPdfWriter:
         self.cur_stream.write(cmd.encode('latin1', errors='replace'))
         self.y -= 16
 
+    def _string_width(self, text: str, font_name: str, size: float) -> float:
+        """Calculate the precise rendered width in points using standard Helvetica font metrics."""
+        is_bold = 'Bold' in font_name
+        bold_mult = 1.08 if is_bold else 1.0
+        total_units = 0.0
+        for ch in text:
+            norm = _UNICODE_NORMALIZATIONS.get(ch, ch)
+            if len(norm) > 1:
+                total_units += sum(_HELVETICA_GLYPH_WIDTHS.get(c, 500) for c in norm) * bold_mult
+            else:
+                total_units += _HELVETICA_GLYPH_WIDTHS.get(norm, 500) * bold_mult
+        return (total_units / 1000.0) * size
+
     def _approx_char_width(self, font_name: str, size: float) -> float:
+        """Approximate average character width in points for legacy/backward compatibility."""
         return size * (0.56 if 'Bold' in font_name else 0.51)
 
     def _wrap_text(self, text: str, max_width: float, font_name: str, size: float):
-        char_w = self._approx_char_width(font_name, size)
-        max_chars = max(10, int(max_width / char_w))
+        space_w = self._string_width(' ', font_name, size)
         words = text.split()
+        if not words:
+            return []
         lines = []
         cur_line = []
-        cur_len = 0
+        cur_w = 0.0
         for w in words:
-            w_len = len(w)
-            if cur_len + (1 if cur_line else 0) + w_len <= max_chars:
+            w_w = self._string_width(w, font_name, size)
+            needed = (space_w if cur_line else 0.0) + w_w
+            if cur_w + needed <= max_width:
                 cur_line.append(w)
-                cur_len += (1 if cur_line else 0) + w_len
+                cur_w += needed
             else:
                 if cur_line:
                     lines.append(' '.join(cur_line))
                 cur_line = [w]
-                cur_len = w_len
+                cur_w = w_w
         if cur_line:
             lines.append(' '.join(cur_line))
         return lines
@@ -115,35 +184,33 @@ class TranscriptPdfWriter:
         size: float,
         has_prefix: bool = False,
     ):
-        char_w = self._approx_char_width(font_name, size)
-        first_max_chars = max(5, int(first_line_width / char_w))
-        rest_max_chars = max(10, int(rest_line_width / char_w))
+        space_w = self._string_width(' ', font_name, size)
         words = text.split()
         if not words:
             return []
         lines = []
         cur_line = []
-        cur_len = 0
-        max_chars = first_max_chars
+        cur_w = 0.0
+        target_w = first_line_width
         for w in words:
-            w_len = len(w)
-            needed = (1 if cur_line else 0) + w_len
-            if cur_len + needed <= max_chars:
+            w_w = self._string_width(w, font_name, size)
+            needed = (space_w if cur_line else 0.0) + w_w
+            if cur_w + needed <= target_w:
                 cur_line.append(w)
-                cur_len += needed
+                cur_w += needed
             else:
                 if cur_line:
                     lines.append(' '.join(cur_line))
                     cur_line = [w]
-                    cur_len = w_len
+                    cur_w = w_w
                 elif has_prefix and not lines:
                     lines.append('')
                     cur_line = [w]
-                    cur_len = w_len
+                    cur_w = w_w
                 else:
                     cur_line = [w]
-                    cur_len = w_len
-                max_chars = rest_max_chars
+                    cur_w = w_w
+                target_w = rest_line_width
         if cur_line:
             lines.append(' '.join(cur_line))
         return lines
@@ -166,9 +233,9 @@ class TranscriptPdfWriter:
 
         prefix_width = 0.0
         if ts_str:
-            prefix_width += len(ts_str) * self._approx_char_width('Helvetica', 9.5)
+            prefix_width += self._string_width(ts_str, 'Helvetica', 9.5)
         if spk_str:
-            prefix_width += len(spk_str) * self._approx_char_width('Helvetica-Bold', font_size)
+            prefix_width += self._string_width(spk_str, 'Helvetica-Bold', font_size)
 
         first_line_width = max(self.content_width - prefix_width, 40.0)
         lines = self._wrap_paragraph_text(
@@ -249,6 +316,9 @@ class TranscriptPdfWriter:
             self.y = box_y - 6
 
     def finish(self) -> bytes:
+        if self._finished and self._cached_pdf_bytes is not None:
+            return self._cached_pdf_bytes
+
         if self.cur_stream.tell() > 0 or not self.pages:
             self._flush_page()
 
@@ -291,7 +361,9 @@ class TranscriptPdfWriter:
             out.write(f'{offset:010d} 00000 n \n'.encode('ascii'))
 
         out.write(f'trailer\n<< /Size {total_objs + 1} /Root 1 0 R >>\nstartxref\n{xref_offset}\n%%EOF\n'.encode('ascii'))
-        return out.getvalue()
+        self._cached_pdf_bytes = out.getvalue()
+        self._finished = True
+        return self._cached_pdf_bytes
 
     def get_pdf_bytes(self) -> bytes:
         return self.finish()
