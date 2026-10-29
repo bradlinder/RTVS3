@@ -162,16 +162,32 @@ Instead, the agent MUST actively perform deep, adversarial code-level inspection
   - Run `python scripts/modular_audit.py --audit` to inspect repository-wide line counts, or `python scripts/modular_audit.py --budget-guard` to verify compliance.
 
 ## 11. Token-Thrifty Development & Surgical Range-Editing Directive
-- **Surgical Line-Slice Reading**:
+- **Automated Symbol-First Range Reads**:
   - Do NOT read whole files into context when inspecting or making localized edits.
-  - Always consult `.codemaps/INDEX.md` or run `python scripts/generate_symbol_index.py --outline <file>` to find the exact class, method, and line range, then view only that targeted range with `view_file(StartLine, EndLine)`.
+  - Before reading or editing any file over 150 lines, always consult `.codemaps/INDEX.md` or run `python scripts/generate_symbol_index.py --outline <file>` to identify the exact class, method, and line ranges.
+  - View only that targeted range with `read_file(StartLine, EndLine)`. Never ingest full modules.
+- **Consult & Maintain Automated `.pyi` Typing Stubs (`scripts/generate_pyi_stubs.py`)**:
+  - When verifying method signatures, argument types, or public exports of any module exceeding 800 lines (such as `prs_shared.py`, `processing.py`, `media_batch.py`, `runtime_manager.py`, `project_lifecycle.py`, `updater.py`, `export/dialog.py`), inspect the corresponding `.pyi` stub to save up to 95% of prompt tokens.
+  - Run `python scripts/generate_pyi_stubs.py --all` (or `--file <path>`) whenever public interfaces or mixins are updated, and `python scripts/generate_pyi_stubs.py --check` during release audits to guarantee stub synchronization across all 28 large modules.
 - **Targeted Contiguous Replacements**:
-  - Never rewrite or overwrite entire source files to apply a bug fix or feature tweak. Use `replace_file_content` with minimal, contiguous diff chunks.
-- **Consult `.pyi` Typing Stubs**:
-  - When verifying method signatures, argument types, or public exports of central facades (`prs_shared.py`, `processing.py`, `playback_preferences.py`, `transcript_editor.py`, `project_export.py`), inspect the corresponding `.pyi` stub to save up to 97% of prompt tokens.
+  - Never rewrite or overwrite entire source files to apply a bug fix or feature tweak. Use `edit_file` with minimal, contiguous diff chunks.
+- **Research Subagent Delegation for Wide Multi-File Explorations**:
+  - When conducting multi-file code exploration, broad architecture tracing, or cross-subsystem audits across 3+ modules, invoke the `research` subagent (`invoke_subagent(TypeName="research", Role="Codebase Researcher", Prompt=...)`).
+  - The subagent digests thousands of raw code tokens in its isolated sandbox and returns only a concise, structured 10-to-20 line findings summary to the main conversation, keeping the parent context lean and fast.
+- **Sliding-Window Changelog & Roadmap Compaction Policy**:
+  - Maintain a strict sliding window in `CHANGELOG.md`: historical release notes older than the active release cycle ($N$ and $N-1$) MUST be pruned into `CHANGELOG_ARCHIVE.md`, keeping the primary changelog lean.
+  - In technical audit documents, task notes, and pull requests, reference clickable file/line links (`[filename:L10-L20](file:///path#L10-L20)`) and minimal 3-to-5 line reproduction diffs rather than duplicating full multi-line functions.
 - **Diagnostic & Log Output Discipline**:
   - Adhere strictly to the Three-Tier Diagnostic Verification Discipline (Section 3). Routine verification MUST use Tier 1 (`--filter <keyword>`) or Tier 2 (`--quiet` / `--changed`). Full runs (`--all`) are strictly reserved for release audits or explicit user request.
   - When verifying localized changes, run `python test_runner.py --quiet` (auto-detects changed files via `diagnostic_selector.py`) or `python test_runner.py --quiet --filter <keyword>` to execute in ~0.5–2s.
   - Always use quiet mode (`--quiet`) to collapse passing test results into a single token-dense line.
   - Use `python bump_version.py --patch` (or `python bump_version.py <version>`) to update all version locations, modified plugin manifests/addons, and web preview files in a single command rather than editing 10 files individually.
   - Pipe or pass raw terminal error traces through `scripts/log_summary.py` to extract concise <15-line root cause reports instead of outputting massive traceback noise.
+
+## 12. Conversation Lifecycle & Context Compaction Directive
+- **Periodic Compaction Rule (`/compact`)**:
+  - To prevent degradation of agent attention and eliminate stale command logs, the agent MUST proactively recommend the `/compact` slash command to the user:
+    1. Immediately upon completing any major roadmap milestone or complex multi-phase task.
+    2. When the conversation history approaches 15–20 active turns.
+    3. Before embarking on large architectural refactorings or comprehensive audits.
+  - Compacting summarizes past tool runs, test outputs, and diagnostic traces while cleanly retaining active workspace state, uncommitted changes, and active roadmap targets.

@@ -1,0 +1,33 @@
+# schema.pyi — Typing and Interface Stub for schema
+from __future__ import annotations
+from __future__ import annotations
+import sys
+from dataclasses import dataclass
+from typing import List
+from PySide6.QtGui import QKeySequence
+from core_utils import get_active_theme_mode
+
+@dataclass
+class ShortcutDef:
+    action_id: str
+    name: str
+    category: str
+    default_seq: str
+    default_mac: str = ...
+    description: str = ...
+    attr_name: str = ...
+    is_qshortcut: bool = ...
+    is_custom_event: bool = ...
+
+def _get_shortcuts_theme_mode() -> str:
+    ...
+
+def get_platform_default(defn: ShortcutDef) -> str:
+    ...
+
+def format_sequence_display(seq_str: str) -> str:
+    ...
+
+def normalize_sequence_string(seq_str: str) -> str:
+    ...
+SHORTCUT_DEFINITIONS: List[ShortcutDef] = ...
