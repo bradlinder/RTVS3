@@ -1,0 +1,33 @@
+{
+  "python.analysis.typeCheckingMode": "basic",
+  "python.analysis.diagnosticSeverityOverrides": {
+    "reportMissingImports": "warning",
+    "reportUndefinedVariable": "error"
+  },
+  "python.analysis.extraPaths": [
+    ".",
+    "plugins",
+    "plugins/wordpress",
+    "plugins/youtube",
+    "plugins/translation"
+  ],
+  "editor.formatOnSave": false,
+  "editor.tabSize": 4,
+  "editor.insertSpaces": true,
+  "files.exclude": {
+    "**/.git": true,
+    "**/.snapshots": true,
+    "**/.archive": true,
+    "**/__pycache__": true,
+    "**/*.pyc": true,
+    "**/*.egg-info": true,
+    "**/.pytest_cache": true
+  },
+  "search.exclude": {
+    "**/.git": true,
+    "**/.snapshots": true,
+    "**/.archive": true,
+    "**/CHANGELOG_ARCHIVE.md": true,
+    "**/*.pyc": true
+  }
+}

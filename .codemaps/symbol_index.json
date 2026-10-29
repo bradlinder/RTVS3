@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-29 15:04:30",
-  "total_files": 154,
+  "generated_at": "2026-10-29 16:58:23",
+  "total_files": 157,
   "files": {
     "RadioTVSegmenter.py": {
       "path": "RadioTVSegmenter.py",
@@ -11463,6 +11463,43 @@
         }
       ]
     },
+    "scripts/ide_config.py": {
+      "path": "scripts/ide_config.py",
+      "lines": 183,
+      "summary": "scripts/ide_config.py - Token-Thrifty IDE Configuration & Rule Provisioner",
+      "exports": null,
+      "classes": [],
+      "functions": [
+        {
+          "name": "build_vscode_settings",
+          "sig": "build_vscode_settings()",
+          "start_line": 16,
+          "end_line": 49,
+          "doc": ""
+        },
+        {
+          "name": "build_continue_config",
+          "sig": "build_continue_config()",
+          "start_line": 52,
+          "end_line": 120,
+          "doc": ""
+        },
+        {
+          "name": "build_cline_rules",
+          "sig": "build_cline_rules()",
+          "start_line": 123,
+          "end_line": 153,
+          "doc": ""
+        },
+        {
+          "name": "setup_all_ide_configs",
+          "sig": "setup_all_ide_configs(workspace_root)",
+          "start_line": 156,
+          "end_line": 183,
+          "doc": ""
+        }
+      ]
+    },
     "scripts/log_summary.py": {
       "path": "scripts/log_summary.py",
       "lines": 150,
@@ -11611,6 +11648,290 @@
           "doc": ""
         }
       ]
+    },
+    "scripts/setup_local_ai.py": {
+      "path": "scripts/setup_local_ai.py",
+      "lines": 952,
+      "summary": "scripts/setup_local_ai.py - Automated AMD Ryzen AI Local Platform & Hardware Probe",
+      "exports": null,
+      "classes": [
+        {
+          "name": "CPUInfo",
+          "bases": [],
+          "start_line": 34,
+          "end_line": 39,
+          "doc": "",
+          "methods": []
+        },
+        {
+          "name": "MemoryInfo",
+          "bases": [],
+          "start_line": 43,
+          "end_line": 47,
+          "doc": "",
+          "methods": []
+        },
+        {
+          "name": "VulkanHeap",
+          "bases": [],
+          "start_line": 51,
+          "end_line": 55,
+          "doc": "",
+          "methods": []
+        },
+        {
+          "name": "GPUInfo",
+          "bases": [],
+          "start_line": 59,
+          "end_line": 70,
+          "doc": "",
+          "methods": []
+        },
+        {
+          "name": "NPUInfo",
+          "bases": [],
+          "start_line": 74,
+          "end_line": 78,
+          "doc": "",
+          "methods": []
+        },
+        {
+          "name": "OllamaInfo",
+          "bases": [],
+          "start_line": 82,
+          "end_line": 87,
+          "doc": "",
+          "methods": []
+        },
+        {
+          "name": "RecommendedEnv",
+          "bases": [],
+          "start_line": 91,
+          "end_line": 98,
+          "doc": "",
+          "methods": []
+        },
+        {
+          "name": "HardwareProbe",
+          "bases": [],
+          "start_line": 101,
+          "end_line": 335,
+          "doc": "Probes host hardware, UMA memory layout, and local inference runtimes.",
+          "methods": [
+            {
+              "name": "detect_cpu",
+              "sig": "detect_cpu()",
+              "start_line": 105,
+              "end_line": 130,
+              "doc": ""
+            },
+            {
+              "name": "detect_memory",
+              "sig": "detect_memory()",
+              "start_line": 133,
+              "end_line": 176,
+              "doc": ""
+            },
+            {
+              "name": "detect_gpu",
+              "sig": "detect_gpu()",
+              "start_line": 179,
+              "end_line": 273,
+              "doc": ""
+            },
+            {
+              "name": "detect_npu",
+              "sig": "detect_npu()",
+              "start_line": 276,
+              "end_line": 300,
+              "doc": ""
+            },
+            {
+              "name": "detect_ollama",
+              "sig": "detect_ollama()",
+              "start_line": 303,
+              "end_line": 335,
+              "doc": ""
+            }
+          ]
+        },
+        {
+          "name": "ModelProvisioner",
+          "bases": [],
+          "start_line": 374,
+          "end_line": 504,
+          "doc": "Provisions, manages, and verifies quantized local models via Ollama.",
+          "methods": [
+            {
+              "name": "resolve_tag",
+              "sig": "resolve_tag(cls, tier_or_tag)",
+              "start_line": 380,
+              "end_line": 384,
+              "doc": ""
+            },
+            {
+              "name": "list_tiers",
+              "sig": "list_tiers(cls)",
+              "start_line": 387,
+              "end_line": 402,
+              "doc": ""
+            },
+            {
+              "name": "pull_model",
+              "sig": "pull_model(cls, tier_or_tag)",
+              "start_line": 405,
+              "end_line": 448,
+              "doc": ""
+            },
+            {
+              "name": "verify_model",
+              "sig": "verify_model(cls, tier_or_tag, prompt)",
+              "start_line": 451,
+              "end_line": 504,
+              "doc": ""
+            }
+          ]
+        },
+        {
+          "name": "PromptCacheManager",
+          "bases": [],
+          "start_line": 507,
+          "end_line": 669,
+          "doc": "Pins repository symbol context into local Ollama KV prompt cache and tunes context windows.",
+          "methods": [
+            {
+              "name": "build_symbol_prefix",
+              "sig": "build_symbol_prefix(cls, index_path)",
+              "start_line": 513,
+              "end_line": 540,
+              "doc": ""
+            },
+            {
+              "name": "health_check",
+              "sig": "health_check(cls)",
+              "start_line": 543,
+              "end_line": 571,
+              "doc": ""
+            },
+            {
+              "name": "pin_cache",
+              "sig": "pin_cache(cls, tier_or_tag, keep_alive)",
+              "start_line": 574,
+              "end_line": 634,
+              "doc": ""
+            },
+            {
+              "name": "tune_context",
+              "sig": "tune_context(cls, tier_or_tag, context_window)",
+              "start_line": 637,
+              "end_line": 669,
+              "doc": ""
+            }
+          ]
+        },
+        {
+          "name": "PlatformReporter",
+          "bases": [],
+          "start_line": 672,
+          "end_line": 821,
+          "doc": "Formats hardware and runtime telemetry into readable diagnostic summaries.",
+          "methods": [
+            {
+              "name": "generate_full_report",
+              "sig": "generate_full_report(cls)",
+              "start_line": 676,
+              "end_line": 695,
+              "doc": ""
+            },
+            {
+              "name": "calculate_tier_feasibility",
+              "sig": "calculate_tier_feasibility(gpu, mem)",
+              "start_line": 698,
+              "end_line": 750,
+              "doc": ""
+            },
+            {
+              "name": "print_text_report",
+              "sig": "print_text_report(cls, report)",
+              "start_line": 753,
+              "end_line": 821,
+              "doc": ""
+            }
+          ]
+        }
+      ],
+      "functions": [
+        {
+          "name": "main",
+          "sig": "main()",
+          "start_line": 824,
+          "end_line": 948,
+          "doc": ""
+        }
+      ]
+    },
+    "scripts/task_router.py": {
+      "path": "scripts/task_router.py",
+      "lines": 233,
+      "summary": "scripts/task_router.py - Token-Budget Task-to-Model Router & CI Invariant Verifier",
+      "exports": null,
+      "classes": [
+        {
+          "name": "RouteRecommendation",
+          "bases": [],
+          "start_line": 21,
+          "end_line": 29,
+          "doc": "",
+          "methods": []
+        },
+        {
+          "name": "TaskRouter",
+          "bases": [],
+          "start_line": 32,
+          "end_line": 153,
+          "doc": "Routes coding tasks to the optimal local model based on token budgets and file scope.",
+          "methods": [
+            {
+              "name": "load_symbol_index",
+              "sig": "load_symbol_index(cls)",
+              "start_line": 50,
+              "end_line": 57,
+              "doc": ""
+            },
+            {
+              "name": "identify_target_files",
+              "sig": "identify_target_files(cls, query, symbol_index)",
+              "start_line": 60,
+              "end_line": 72,
+              "doc": ""
+            },
+            {
+              "name": "route_task",
+              "sig": "route_task(cls, query)",
+              "start_line": 75,
+              "end_line": 153,
+              "doc": ""
+            }
+          ]
+        },
+        {
+          "name": "CIInvariantVerifier",
+          "bases": [],
+          "start_line": 156,
+          "end_line": 233,
+          "doc": "Verifies repository build, modularity, and CI packaging invariants.",
+          "methods": [
+            {
+              "name": "verify_all",
+              "sig": "verify_all(cls)",
+              "start_line": 160,
+              "end_line": 233,
+              "doc": ""
+            }
+          ]
+        }
+      ],
+      "functions": []
     },
     "shortcuts/__init__.py": {
       "path": "shortcuts/__init__.py",

@@ -1,0 +1,80 @@
+{
+  "models": [
+    {
+      "title": "Fast Edit & Chat (Qwen 14B)",
+      "provider": "ollama",
+      "model": "qwen2.5-coder:14b-rtvs",
+      "apiBase": "http://127.0.0.1:11434"
+    },
+    {
+      "title": "Lead Architect (Qwen 32B)",
+      "provider": "ollama",
+      "model": "qwen2.5-coder:32b-rtvs",
+      "apiBase": "http://127.0.0.1:11434"
+    },
+    {
+      "title": "Deep Reasoning & Concurrency (R1 14B)",
+      "provider": "ollama",
+      "model": "deepseek-r1:14b",
+      "apiBase": "http://127.0.0.1:11434"
+    },
+    {
+      "title": "Targeted Bug Fixes (Qwen 7B)",
+      "provider": "ollama",
+      "model": "qwen2.5-coder:7b-rtvs",
+      "apiBase": "http://127.0.0.1:11434"
+    },
+    {
+      "title": "UI & Screenshot Inspector (MiniCPM-V)",
+      "provider": "ollama",
+      "model": "minicpm-v:latest",
+      "apiBase": "http://127.0.0.1:11434"
+    }
+  ],
+  "tabAutocompleteModel": {
+    "title": "Autocomplete (Qwen 1.5B)",
+    "provider": "ollama",
+    "model": "qwen2.5-coder:1.5b-rtvs",
+    "apiBase": "http://127.0.0.1:11434"
+  },
+  "embeddingsProvider": {
+    "provider": "ollama",
+    "model": "nomic-embed-text",
+    "apiBase": "http://127.0.0.1:11434"
+  },
+  "customCommands": [
+    {
+      "name": "audit",
+      "prompt": "Run python scripts/modular_audit.py --suggest on {{{ input }}} and generate an AST-driven decomposition blueprint.",
+      "description": "Suggest AST modular decomposition for files approaching 850 lines."
+    },
+    {
+      "name": "verify",
+      "prompt": "Run python test_runner.py --quiet to run Tier 2 change-aware diagnostic tests.",
+      "description": "Execute change-aware diagnostic test suite."
+    },
+    {
+      "name": "symbols",
+      "prompt": "Consult .codemaps/INDEX.md to find class and method line ranges for {{{ input }}} before reading full files.",
+      "description": "Find targeted symbol ranges."
+    }
+  ],
+  "contextProviders": [
+    {
+      "name": "codebase",
+      "params": {}
+    },
+    {
+      "name": "diff",
+      "params": {}
+    },
+    {
+      "name": "terminal",
+      "params": {}
+    },
+    {
+      "name": "open",
+      "params": {}
+    }
+  ]
+}

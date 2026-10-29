@@ -47,13 +47,13 @@ TABLE OF CONTENTS & STATUS OVERVIEW
    [x] 1.4 Story Excerpt Undo/Redo Snapshots: Push undo state before mutating story excerpts. [P6-08]
    [x] 1.5 Core Module Plugin Isolation: Decouple direct `plugins/` imports from core modules (`export/dialog.py`, `model_management.py`). [P5-03]
 
-2. Upcoming Milestone: Automated AMD Ryzen AI Local Development Platform & Token-Efficient Model Suite (`scripts/setup_local_ai.py`, `.vscode/settings.json`, `.clinerules`, `.github/workflows/build.yml`) [PLANNED for v4.1.0] [OPTIONAL / PLANNED] [NOT STARTED]
+2. Upcoming Milestone: Automated AMD Ryzen AI Local Development Platform & Token-Efficient Model Suite (`scripts/setup_local_ai.py`, `.vscode/settings.json`, `.clinerules`, `.github/workflows/build.yml`) [x] [COMPLETED in v3.9.52-beta]
    - *Purpose*: One-command non-destructive setup script and auto-configuration suite enabling offline AI-assisted development on AMD Ryzen AI 9 HX 370 (Radeon 890M `gfx1150` + XDNA 2 NPU, 64GB RAM) systems with token-budget optimization, prefix-caching architecture, and automated AST split tooling.
-   [ ] 2.1 Strix Point Hardware, UMA VRAM & Context Allocation Probe (`scripts/setup_local_ai.py`): Detect CPU/iGPU/NPU, 64GB RAM, UMA aperture, and configure `gfx1150` Vulkan/ROCm runtime with KV-cache VRAM budgets (`OLLAMA_FLASH_ATTENTION=1`, `OLLAMA_KV_CACHE_TYPE=q8_0`).
-   [ ] 2.2 Tiered Local AI Model Provisioner with Prefix-Cache Optimization (`scripts/setup_local_ai.py`): Pull and verify quantized coding models (`Qwen2.5-Coder-32B-Instruct` Q4_K_M for refactoring, `14B/7B` for fast edits, `1.5B` for sub-50ms autocomplete) with shared prefix-caching.
-   [ ] 2.3 Local Server Health Check, Context Window Tuning & Prompt Cache Pinning (`scripts/setup_local_ai.py`): Bind `http://127.0.0.1:11434`, pin project symbol indices (`.codemaps/symbol_index.json`) into KV prompt cache for 0-latency context, and enforce 16k-32k working context limits.
-   [ ] 2.4 Token-Thrift IDE Configuration & AST Suggester Integration (`scripts/setup_local_ai.py`): Configure Continue/Cline with symbol-first retrieval, diff-only edits, line-slice reading rules, and map `.clinerules`/`.cursorrules` to `scripts/modular_audit.py` to prevent token bloat.
-   [ ] 2.5 Token-Budget Task-to-Model Router & CI Pipeline Verification (`.github/workflows/build.yml`, `test_runner.py`): Provide token-aware task router (<300 lines -> 7B/14B; refactoring -> 32B) and verify CI build invariants.
+   [x] 2.1 Strix Point Hardware, UMA VRAM & Context Allocation Probe (`scripts/setup_local_ai.py`): Detect CPU/iGPU/NPU, 64GB RAM, UMA aperture, and configure `gfx1150` Vulkan/ROCm runtime with KV-cache VRAM budgets (`OLLAMA_FLASH_ATTENTION=1`, `OLLAMA_KV_CACHE_TYPE=q8_0`).
+   [x] 2.2 Tiered Local AI Model Provisioner with Prefix-Cache Optimization (`scripts/setup_local_ai.py`): Pull and verify quantized coding models (`Qwen2.5-Coder-32B-Instruct` Q4_K_M for refactoring, `14B/7B` for fast edits, `1.5B` for sub-50ms autocomplete) with shared prefix-caching.
+   [x] 2.3 Local Server Health Check, Context Window Tuning & Prompt Cache Pinning (`scripts/setup_local_ai.py`): Bind `http://127.0.0.1:11434`, pin project symbol indices (`.codemaps/symbol_index.json`) into KV prompt cache for 0-latency context, and enforce 16k-32k working context limits.
+   [x] 2.4 Token-Thrift IDE Configuration & AST Suggester Integration (`scripts/setup_local_ai.py`): Configure Continue/Cline with symbol-first retrieval, diff-only edits, line-slice reading rules, and map `.clinerules`/`.cursorrules` to `scripts/modular_audit.py` to prevent token bloat.
+   [x] 2.5 Token-Budget Task-to-Model Router & CI Pipeline Verification (`.github/workflows/build.yml`, `test_runner.py`): Provide token-aware task router (<300 lines -> 7B/14B; refactoring -> 32B) and verify CI build invariants.
 
 3. Deferred Milestone: Monolithic File Decomposition & Lower-Priority Refinements [ ] [DEFERRED / LOWER PRIORITY]
    [ ] 3.1 AST-Driven Monolithic File Decomposition: Incrementally decompose remaining files exceeding 1,000 lines (`plugins/wordpress/client.py`, `media_batch.py`, `prs_shared.py`, `export/dialog.py`, `processing.py`, `runtime_manager.py`, `ui_layout.py`, `background_workers.py`, `voice_profile_dialog.py`). [P7-01]
@@ -115,7 +115,7 @@ DETAILED MILESTONE SPECIFICATIONS
 
 2. UPCOMING MILESTONE: AUTOMATED AMD RYZEN AI LOCAL DEVELOPMENT PLATFORM & TOKEN-EFFICIENT MODEL SUITE:
 - Purpose: One-command non-destructive setup script and auto-configuration suite enabling offline AI-assisted development on AMD Ryzen AI 9 HX 370 (Radeon 890M `gfx1150` + XDNA 2 NPU, 64GB RAM) systems with token-budget optimization, prefix-caching architecture, and automated AST split tooling.
-- Target Release: v4.1.0 (Optional / Planned)
+- Target Release: v3.9.52-beta (Completed in v3.9.52-beta)
 - Technical References & Implementation Specifications:
   * Hardware & Context Allocation: Implement hardware inspection in `scripts/setup_local_ai.py` for AMD Ryzen AI 9 HX 370 (detecting 64GB RAM, UMA aperture, ROCm/Vulkan runtime) with KV-cache budget optimization (`OLLAMA_FLASH_ATTENTION=1`, `OLLAMA_KV_CACHE_TYPE=q8_0`, `OLLAMA_NUM_PARALLEL=1`).
   * Tiered Model Provisioning: Automate pulling and registering `qwen2.5-coder:32b-instruct-q4_K_M` (heavy refactoring), `14b/7b` (fast single-file edits), and `1.5b-base` (sub-50ms autocomplete).

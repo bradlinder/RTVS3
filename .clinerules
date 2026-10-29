@@ -1,0 +1,29 @@
+# Radio & TV Story Segmenter — AI Coding Directives & Token-Thrift Guidelines
+
+## 1. Symbol-First Range Reads (Token Optimization)
+- NEVER read entire source files exceeding 150 lines into context.
+- Before inspecting or editing any large file, consult `.codemaps/INDEX.md` or `.codemaps/symbol_index.json` to identify exact class and function line ranges.
+- View only that targeted line slice using range reads.
+
+## 2. Monolithic File Budget Invariants (Rule 10)
+- Python source files SHOULD be kept under 800 lines and MUST NOT exceed 1,000 lines.
+- When implementing new feature logic, create dedicated submodules in appropriate sub-packages rather than appending code to large files.
+- If any file approaches 850 lines, run `python scripts/modular_audit.py --suggest <file>` to generate an AST decomposition blueprint.
+- Preserve backward compatibility 100% by re-exporting public classes/functions in the original module facade.
+
+## 3. Targeted Contiguous Diffs
+- Never rewrite or overwrite entire source files to apply a bug fix or feature.
+- Use minimal, drop-in contiguous replacements.
+
+## 4. UI Design Discipline: Ban on Unrequested Emojis / Decorative Icons
+- Do NOT add icons or emoji symbols (such as folders, checkmarks, warning signs, or decorative unicode glyphs) to tabs, buttons, dialog titles, menus, table headers, or cards unless explicitly requested by the user.
+- Maintain clean, native desktop typography.
+
+## 5. Architectural Invariants
+- Core modules (`RadioTVSegmenter.py`, `processing.py`, `runtime_manager.py`) must NEVER import from `plugins/`.
+- Heavy AI/translation runtimes remain isolated inside `plugins/translation/`.
+- Speaker diarization uses `wespeakerruntime` as the primary ONNX embedding engine.
+
+## 6. Diagnostic Hierarchy (Three-Tier Discipline)
+- Routine turn-by-turn verification must use Tier 1 (`python test_runner.py --quiet --filter "<keyword>"`) or Tier 2 (`python test_runner.py --quiet`).
+- Full runs (`--all`) are strictly reserved for release audits.

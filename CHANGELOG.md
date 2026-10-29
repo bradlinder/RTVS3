@@ -1,7 +1,23 @@
 # Changelog
 
 ## v3.9.52-beta
-- Release updates and performance enhancements for v3.9.52-beta.
+- **AMD Ryzen AI Strix Point Hardware Probe & UMA Telemetry (`scripts/setup_local_ai.py`) [Milestone 2.1]**:
+  - Implemented zero-dependency hardware detection for AMD Ryzen AI 9 HX 370 (12 cores / 24 threads), Radeon 890M (`gfx1150`, RDNA 3.5), AMD XDNA 2 NPU (`DEV_17F0`), and unified memory architecture (64GB LPDDR5x with 32GB dedicated UMA VRAM).
+  - Calculated optimal runtime parameters for Ollama local inference (`OLLAMA_FLASH_ATTENTION=1`, `OLLAMA_KV_CACHE_TYPE=q8_0`, `OLLAMA_KEEP_ALIVE=60m`, `OLLAMA_NUM_PARALLEL=1`, `OLLAMA_IGPU_ENABLE=1`).
+- **Tiered Local AI Model Suite & D: Drive Consolidation (`scripts/setup_local_ai.py`) [Milestone 2.2]**:
+  - Migrated Ollama model storage to `D:\OllamaModels`, freeing C: drive SSD capacity and activating ROCm 7.1 + Vulkan GPU acceleration on Radeon 890M.
+  - Provisioned, SHA256-verified, and GPU-benchmarked the complete four-tier quantized coding model suite: `qwen2.5-coder:1.5b` (50.7 tok/s), `7b` (17.4 tok/s), `14b` (8.3 tok/s), `32b` (4.2 tok/s), plus `nomic-embed-text` (semantic vector indexing), `minicpm-v` (29.9 tok/s Qwen2 vision model), and `deepseek-r1:14b` (9.6 tok/s chain-of-thought reasoning engine).
+- **Local Server Health Check & 0-Latency Prompt Cache Pinning (`scripts/setup_local_ai.py`) [Milestone 2.3]**:
+  - Integrated repository symbol map from `.codemaps/symbol_index.json` (~3,710 tokens across all 155 modules) into Ollama's KV prompt cache, achieving 58.6x faster prompt retrieval (39.3 ms vs 2,305 ms cold compilation).
+  - Registered tuned model variants (`qwen2.5-coder:*-rtvs`) enforcing 32k/16k working context window limits with 8-bit quantized KV cache (`q8_0`).
+- **Token-Thrift IDE Configuration & Rule Provisioner (`scripts/ide_config.py`, `scripts/setup_local_ai.py`, `.vscode/settings.json`, `.continue/config.json`, `.clinerules`, `.cursorrules`) [Milestone 2.4]**:
+  - Automated zero-token setup via `python scripts/setup_local_ai.py --setup-ide`, creating fully wired configurations for Continue, Cline, Cursor, and VS Code.
+  - Wired tiered model routing: `qwen2.5-coder:1.5b-rtvs` for real-time tab autocomplete, `14b-rtvs` for fast chat/edits, `32b-rtvs` for architecture, `deepseek-r1:14b` for concurrency proofs, `minicpm-v` for UI inspection, and `nomic-embed-text` for semantic indexing.
+  - Enforced project architectural invariants in `.clinerules` and `.cursorrules`: symbol-first targeted range reads, 800-line budget ceilings, minimal contiguous diff replacements, and clean typography.
+
+- **Token-Budget Task-to-Model Router & CI Invariant Verifier (`scripts/task_router.py`, `scripts/setup_local_ai.py`) [Milestone 2.5]**:
+  - Implemented automated task routing (`python scripts/setup_local_ai.py --route "<task>"`) mapping work to model tiers based on file length (<300 lines -> 7B/14B; refactoring -> 32B; concurrency -> R1 14B; UI -> MiniCPM-V).
+  - Added CI invariant verifier (`python scripts/setup_local_ai.py --verify-ci`) ensuring strict core module decoupling from dev scripts, full Python syntax integrity across all 157 modules, and version synchronization.
 
 ## v3.9.51-beta
 - **Debounced Speaker Table Disk Writes (`speaker_dialogs.py`) [P4-04]**:

@@ -1,6 +1,6 @@
 # Repository Symbol Index & API Map
 
-> Generated: 2026-10-29 15:04:30 | Total Files: 154
+> Generated: 2026-10-29 16:58:23 | Total Files: 157
 > Use `python scripts/generate_symbol_index.py --outline <file>` for exact line numbers.
 
 ## Modules Overview
@@ -99,8 +99,11 @@
 | `runtime_manager.py` | 1037 |  | `RuntimeManager`, `register_process()`, `unregister_process()`, `kill_all_subprocesses()` *(+1 more)* |
 | `scripts/generate_pyi_stubs.py` | 214 | generate_pyi_stubs.py — Automated Interface Typing Stub (... | `StubTransformer`, `generate_stub_source()`, `get_large_modules()`, `generate_stub_file()` *(+1 more)* |
 | `scripts/generate_symbol_index.py` | 380 | generate_symbol_index.py — Fast AST Symbol Indexer & Repo... | `parse_function_signature()`, `analyze_file()`, `scan_repository()`, `generate_index_markdown()` *(+4 more)* |
+| `scripts/ide_config.py` | 183 | scripts/ide_config.py - Token-Thrifty IDE Configuration &... | `build_vscode_settings()`, `build_continue_config()`, `build_cline_rules()`, `setup_all_ide_configs()` |
 | `scripts/log_summary.py` | 150 | log_summary.py — Compact Error & Exception Extraction Engine | `is_project_frame()`, `extract_log_summary()`, `main()` |
 | `scripts/modular_audit.py` | 570 | scripts/modular_audit.py — AST Decomposition Suggester & ... | `ModuleStructure`, `DecompositionPlan`, `scan_repository()`, `print_audit_report()` *(+2 more)* |
+| `scripts/setup_local_ai.py` | 952 | scripts/setup_local_ai.py - Automated AMD Ryzen AI Local ... | `CPUInfo`, `MemoryInfo`, `VulkanHeap`, `GPUInfo` *(+8 more)* |
+| `scripts/task_router.py` | 233 | scripts/task_router.py - Token-Budget Task-to-Model Route... | `RouteRecommendation`, `TaskRouter`, `CIInvariantVerifier` |
 | `shortcuts/__init__.py` | 26 | shortcuts package — Modular Keyboard Shortcuts Management... | - |
 | `shortcuts/definitions.py` | 22 | shortcuts/definitions.py — Shortcut definitions and schem... | - |
 | `shortcuts/dialogs.py` | 623 | shortcuts/dialogs.py — Preferences page for keyboard shor... | `KeyboardShortcutsPage` |
@@ -2016,6 +2019,14 @@
   - `build_and_save_index()` [L322-L342] — *Build the symbol index and save both JSON and Markdown into .codemaps/.*
   - `main()` [L345-L376]
 
+### `scripts/ide_config.py` (183 lines)
+*scripts/ide_config.py - Token-Thrifty IDE Configuration & Rule Provisioner*
+- **Functions**:
+  - `build_vscode_settings()` [L16-L49]
+  - `build_continue_config()` [L52-L120]
+  - `build_cline_rules()` [L123-L153]
+  - `setup_all_ide_configs(workspace_root)` [L156-L183]
+
 ### `scripts/log_summary.py` (150 lines)
 *log_summary.py — Compact Error & Exception Extraction Engine*
 - **Functions**:
@@ -2043,6 +2054,54 @@
   - `print_audit_report(structures, warn_threshold, hard_ceiling, sort_by)` [L417-L458] — *Prints a formatted terminal table showing modularity compliance.*
   - `check_budget_guard(structures, hard_ceiling, warn_threshold, exempt_paths)` [L461-L494] — *Programmatic budget check suitable for test runner and CI pipelines.*
   - `main()` [L497-L566]
+
+### `scripts/setup_local_ai.py` (952 lines)
+*scripts/setup_local_ai.py - Automated AMD Ryzen AI Local Platform & Hardware Probe*
+- **class `CPUInfo`** (lines 34–39):
+- **class `MemoryInfo`** (lines 43–47):
+- **class `VulkanHeap`** (lines 51–55):
+- **class `GPUInfo`** (lines 59–70):
+- **class `NPUInfo`** (lines 74–78):
+- **class `OllamaInfo`** (lines 82–87):
+- **class `RecommendedEnv`** (lines 91–98):
+- **class `HardwareProbe`** (lines 101–335):
+  *Probes host hardware, UMA memory layout, and local inference runtimes.*
+  - `detect_cpu()` [L105-L130]
+  - `detect_memory()` [L133-L176]
+  - `detect_gpu()` [L179-L273]
+  - `detect_npu()` [L276-L300]
+  - `detect_ollama()` [L303-L335]
+- **class `ModelProvisioner`** (lines 374–504):
+  *Provisions, manages, and verifies quantized local models via Ollama.*
+  - `resolve_tag(cls, tier_or_tag)` [L380-L384]
+  - `list_tiers(cls)` [L387-L402]
+  - `pull_model(cls, tier_or_tag)` [L405-L448]
+  - `verify_model(cls, tier_or_tag, prompt)` [L451-L504]
+- **class `PromptCacheManager`** (lines 507–669):
+  *Pins repository symbol context into local Ollama KV prompt cache and tunes context windows.*
+  - `build_symbol_prefix(cls, index_path)` [L513-L540]
+  - `health_check(cls)` [L543-L571]
+  - `pin_cache(cls, tier_or_tag, keep_alive)` [L574-L634]
+  - `tune_context(cls, tier_or_tag, context_window)` [L637-L669]
+- **class `PlatformReporter`** (lines 672–821):
+  *Formats hardware and runtime telemetry into readable diagnostic summaries.*
+  - `generate_full_report(cls)` [L676-L695]
+  - `calculate_tier_feasibility(gpu, mem)` [L698-L750]
+  - `print_text_report(cls, report)` [L753-L821]
+- **Functions**:
+  - `main()` [L824-L948]
+
+### `scripts/task_router.py` (233 lines)
+*scripts/task_router.py - Token-Budget Task-to-Model Router & CI Invariant Verifier*
+- **class `RouteRecommendation`** (lines 21–29):
+- **class `TaskRouter`** (lines 32–153):
+  *Routes coding tasks to the optimal local model based on token budgets and file scope.*
+  - `load_symbol_index(cls)` [L50-L57]
+  - `identify_target_files(cls, query, symbol_index)` [L60-L72]
+  - `route_task(cls, query)` [L75-L153]
+- **class `CIInvariantVerifier`** (lines 156–233):
+  *Verifies repository build, modularity, and CI packaging invariants.*
+  - `verify_all(cls)` [L160-L233]
 
 ### `shortcuts/__init__.py` (26 lines)
 *shortcuts package — Modular Keyboard Shortcuts Management Subsystem.*
