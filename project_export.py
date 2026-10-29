@@ -46,7 +46,6 @@ from core_utils import (
     is_sentence_end,
     ffmpeg_path,
 )
-from project_serialization import read_rtvs_project_file
 from prs_shared import *
 from project_lifecycle import ProjectLifecycleMixin
 
@@ -202,31 +201,6 @@ class ProjectExportMixin(
             return False
 
         return False
-
-    def find_adjacent_project(self, media_path: Path) -> Optional[Path]:
-        """Looks for adjacent .rtvs or legacy .json project files referencing media_path."""
-        candidates = [
-            media_path.parent / f"{media_path.stem}.rtvs",
-            media_path.parent / f"{media_path.stem}.json",
-            media_path.parent / media_path.stem / f"{media_path.stem}.rtvs",
-            media_path.parent / media_path.stem / f"{media_path.stem}.json",
-        ]
-        for candidate in candidates:
-            if not candidate.exists() or not candidate.is_file():
-                continue
-            try:
-                data = read_rtvs_project_file(candidate)
-                ref = data.get("audio_file")
-                if not ref:
-                    continue
-                ref_path = Path(ref)
-                if not ref_path.is_absolute():
-                    ref_path = candidate.parent / ref_path
-                if ref_path.resolve() == media_path.resolve():
-                    return candidate.resolve()
-            except Exception:
-                continue
-        return None
 
     def resolve_project_media(
         self,

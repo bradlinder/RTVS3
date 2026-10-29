@@ -1689,7 +1689,7 @@ class MediaBatchMixin:
         except Exception as e:
             self.log_activity(f"[BATCH ERROR] Export failed for {base_name}: {e}")
 
-    def load_media_file(self, filename, source="media load", restore_adjacent_project=True):
+    def load_media_file(self, filename, source="media load", restore_adjacent_project=False):
         path = Path(filename).resolve()
         if not path.exists() or not path.is_file():
             QMessageBox.warning(self, "Open Media", "The selected media file could not be found.")
@@ -1789,15 +1789,6 @@ class MediaBatchMixin:
             self.speaker_status.setText("Speaker detection has not been run.")
 
             self.log_activity(f"[FILE] Opened media: {path.name} ({source})")
-
-            # Look for an associated project file; if found, load it; otherwise show a blank slate
-            if restore_adjacent_project:
-                project = self.find_adjacent_project(path)
-                if project:
-                    if self.load_project_file(project, prompt=False, preserve_media=True):
-                        self.log_activity(f"[PROJECT] Automatically restored project: {project.name}")
-                        return True
-                    self.log_activity(f"[WARNING] Adjacent project could not be restored: {project.name}")
 
             if self.current_media_is_video:
                 self.log_activity("[MEDIA] Video detected; extracting its audio track for waveform generation.")

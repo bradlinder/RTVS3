@@ -25,11 +25,12 @@
 - **Export Dialog Vestigial Cleanup & Reorder List Parity (`export/dialog.py`, `export/reorder_dialog.py`) [P6-09, P6-10]**:
   - Cleaned unpopulated `self._temp_preview_files` set and dead loop in `UnifiedExportDialog.done()` [P6-09].
   - Restored `"timeline"` (`Timeline & DAW Project Files`) to the default fallback available destinations list in `ReorderExportDestinationsDialog` [P6-10].
-- **Project Save/Load Pipeline Reliability & Waveform Peak Restitution (`project_lifecycle.py`, `project_state_mixin.py`, `media_batch.py`)**:
+- **Project Save/Load Pipeline Reliability & Waveform Peak Restitution (`project_lifecycle.py`, `project_state_mixin.py`, `media_batch.py`, `project_export.py`)**:
   - Fixed disabled File > Save Project / Save Project As menu actions on project load and when project modifications occur.
   - Added instant async loading of cached waveform peaks (`.cache/peaks/`) and background video thumbnail generation upon opening saved projects, resolving blank timeline views.
   - Restored timeline zoom and scroll offsets from project session metadata.
   - Hardened media path resolution with fallback to relative/absolute file searches and passed `project_file` context when writing peak caches.
+  - Removed ambiguous automatic adjacent project restoration and eliminated orphaned candidate search routines (`find_adjacent_project`), establishing strict separation between File > Open Media (clean media slate) and File > Open Project (session restoration).
 - **PDF Proportional Font Word-Wrap Accuracy & Idempotency (`export/pdf.py`) [P6-07]**:
   - Replaced monospace character width approximation with standard Adobe Helvetica AFM proportional glyph width tables, preventing word-wrap overflow and margin clipping on uppercase text and acronyms.
   - Added typographic Unicode character normalization for smart quotes (`“`, `”`, `‘`, `’`), prime quotes, em/en-dashes, and special whitespace before CP1252 encoding, eliminating unwanted `?` corruption.
