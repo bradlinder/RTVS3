@@ -34,6 +34,15 @@ This document defines the core architectural rules, module boundaries, and machi
 - The root web scaffolding (`package.json`, `index.html`, `vite.config.ts`, `src/App.tsx`) powers the AI Studio live preview container on port 3000 (serving the interactive changelog).
 - Desktop packaging scripts (`build_installer.py`, Inno Setup, GitHub Actions) ignore the web files, keeping the shipped desktop application lightweight and native.
 
+### 5. Single Responsibility & Desktop Domain Separation
+- **Every Python module must adhere strictly to a single architectural domain**:
+  1. **UI Presentation**: Widgets, dialogs, canvas, layout (must never contain DSP, transcription, or direct model inference).
+  2. **Worker Concurrency**: QThread lifecycle and progress coordination (must never instantiate GUI widgets).
+  3. **Headless Engine**: Audio/video decoding, DSP, AI models, timeline math (100% headless, zero Qt GUI dependencies).
+  4. **Data Models & Serialization**: Schemas, state snapshots, document export format engines.
+- **Prohibited Collisions**: Mixing UI presentation with heavy processing engines, embedding QThread workers into dialog files, or coupling multiple top-level dialogs into a single module is prohibited.
+- **Enforcement**: Validated via `python scripts/modular_audit.py --check-srp` and pre-flight gate `scripts/dev_check.py`.
+
 ---
 
 ## 3. Directory Layout Overview

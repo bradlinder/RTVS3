@@ -146,8 +146,25 @@ Instead, the agent MUST actively perform deep, adversarial code-level inspection
    - Installer exclusion compliance: `.archive/`, `.snapshots/`, `.git/`, and dev tests excluded from PyInstaller and Inno Setup bundles.
    - Version coherence: Synchronous alignment across all 10 project locations with valid $N-1$ sliding-window roadmap tracking.
 
-## 10. Modular Architecture & Monolithic File Size Discipline Directive
-- **File Length Target Thresholds**:
+## 10. Modular Architecture, Single Responsibility & File Size Discipline Directive
+- **Strict Single Responsibility & Desktop Domain Separation Invariant**:
+  Every Python source file MUST have a single primary architectural purpose. Incompatible desktop domains MUST NOT be co-located in the same implementation file:
+  1. **UI Presentation & Interaction** (`ui/`, `*_dialog.py`, `*_widgets.py`): QWidgets, QDialogs, QMainWindow, paint events, user input, layouts. Must NEVER contain heavy compute, DSP/FFmpeg processing, direct AI model execution, or background thread run loops.
+  2. **Background Worker Coordination** (`workers/`, `*_worker.py`): QThread lifecycle, progress signals, cancellation, task queues. Must NEVER directly instantiate or touch GUI widgets (signals and slots only).
+  3. **Headless Processing & Engine Logic** (`processing/`, `audio/`, `engine/`): Audio/video decoding, DSP filters, VAD, transcription, diarization, translation inference, timeline math. Must be 100% headless with zero PySide6/Qt GUI dependencies.
+  4. **Data Models, State & Serialization** (`models/`, `export/formats/`, `project_lifecycle.py`): Schemas, dataclasses, project serialization, undo/redo state snapshots, document export format engines (DOCX, PDF, EDL, RPP, XML). Decoupled from interactive presentation.
+- **Prohibited Domain Collisions**:
+  - Prohibited: Co-locating UI widgets and headless audio/processing engines in one file.
+  - Prohibited: Co-locating UI dialogs and background QThread worker definitions in one file.
+  - Prohibited: Co-locating UI dialogs and large data model entities in one file (>400 lines).
+  - Prohibited: Co-locating worker coordination with direct heavy engine computation.
+  - Prohibited: Bundling multiple distinct, complex top-level dialogs in a single file (>2 dialogs).
+- **Automated Single Responsibility Audit (`scripts/modular_audit.py --check-srp`)**:
+  - Run `python scripts/modular_audit.py --check-srp` to audit repository-wide domain separation.
+  - Run `python scripts/modular_audit.py --check-srp <file>` to inspect domain classification and collision diagnostics for a specific module.
+  - Enforced automatically in the pre-flight gate (`scripts/dev_check.py`) and CI workflows.
+- **File Length Target Thresholds & Purpose Balance**:
+  - While line count is a useful proxy, **file purpose and cohesion supersede raw line count**. A 300-line file mixing UI with DSP engines is an architectural violation; conversely, a cohesive, single-domain engine or grammar parser approaching 700 lines is acceptable.
   - Python files SHOULD be kept under **800 lines** of code and MUST NOT exceed **1,000 lines**.
   - Any file approaching or exceeding 1,000 lines is flagged for modular decomposition into a dedicated sub-package.
 - **Prefer Submodule Creation Over Code Appending**:
@@ -155,11 +172,12 @@ Instead, the agent MUST actively perform deep, adversarial code-level inspection
 - **Zero-Breakage Facade Pattern Re-exports**:
   - When decomposing a monolithic file into submodules, preserve the original module filename as a lightweight facade that imports and re-exports public classes/functions (`from .submodule import ClassName`).
   - This guarantees 100% backward compatibility for external callers, plugins, and the automated diagnostic suite (`test_runner.py`).
-- **Single Responsibility Discipline**:
-  - Enforce strict single-responsibility boundaries: separate UI layout construction from event handling, audio decoding from AI model execution, and data serialization from presentation logic.
+- **Grandfathered Legacy Monoliths vs. New Modules**:
+  - Existing legacy monoliths (e.g. `prs_shared.py`, `processing.py`, `ui_layout.py`) that pre-date this rule are cataloged in `GRANDFATHERED_LEGACY_MODULES` and tracked in `roadmap.txt` Section 3 for phased, risk-managed decomposition.
+  - All new files and modified modules must strictly comply with the single responsibility invariant.
 - **AST Decomposition Suggester & Automated Budget Guard (`scripts/modular_audit.py`)**:
   - Run `python scripts/modular_audit.py --suggest <file>` on any file approaching 850 lines to automatically generate an AST-driven decomposition blueprint with recommended submodules, method groupings, and backward-compatible re-exports.
-  - Run `python scripts/modular_audit.py --audit` to inspect repository-wide line counts, or `python scripts/modular_audit.py --budget-guard` to verify compliance.
+  - Run `python scripts/modular_audit.py --audit` to inspect repository-wide line counts, or `python scripts/modular_audit.py --budget-guard` to verify line budget compliance.
 
 ## 11. Token-Thrifty Development & Surgical Range-Editing Directive
 - **Automated Symbol-First Range Reads**:
@@ -191,3 +209,30 @@ Instead, the agent MUST actively perform deep, adversarial code-level inspection
     2. When the conversation history approaches 15–20 active turns.
     3. Before embarking on large architectural refactorings or comprehensive audits.
   - Compacting summarizes past tool runs, test outputs, and diagnostic traces while cleanly retaining active workspace state, uncommitted changes, and active roadmap targets.
+
+## 13. Automated Task Routing, Context Scaffolding & Escalation Directive
+- **Adaptive Model-Tier Routing Policy**:
+  - **Local Models (Qwen 14B/32B, DeepSeek, Ollama / LM Studio)**: Strict Surgical Mode. Local models MUST run `python scripts/task_router.py "<task query>"` prior to inspecting files or making edits. Local models must adhere to targeted symbol slice reads (`StartLine`/`EndLine`) and `.pyi` stubs to prevent VRAM exhaustion, KV cache overflow, and instruction drift.
+  - **Frontier Cloud Models (Gemini 1.5/2.0/3, Claude 3.5 Sonnet, GPT-4o)**: Macro-Aware Mode. Frontier models are NOT strictly bound to micro-slices; they may inspect broader module blocks or entire source files directly to comprehend system-wide call graphs, Qt event loops, and cross-cutting dependencies. However, they must still use minimal contiguous diffs (`replace_file_content`) rather than full-file rewrites to prevent token snowballing across long conversation sessions.
+- **Two-Strike Escalation Protocol for Bug Fixes**:
+  - **Strikes 1 & 2 (Surgical First)**: On the initial bug-fixing attempt (and second attempt if needed), use targeted slice inspection and minimal diffs.
+  - **Strike 3 Escalation (Broader Search)**: If a bug fix fails diagnostic verification (Tier 1/Tier 2 test) or regressions occur on the first or second attempt, the agent MUST immediately abandon micro-slicing and escalate to broader inspection:
+    1. Trace all callers and call sites across the codebase using symbol search or grep.
+    2. Inspect full parent classes, signal/slot wiring, or related lifecycle modules.
+    3. If 3+ modules are involved in the regression, delegate to a `research` subagent to analyze cross-cutting dependencies without polluting the primary context.
+- **Stub & Symbol Index Synchronization Cadence (Zero Drift)**:
+  - **Immediate (On-Change)**: Whenever modifying or adding public methods, classes, or exported interfaces in large modules (>800 lines), update the corresponding `.pyi` stub or run `python scripts/generate_pyi_stubs.py --file <path>`.
+  - **Periodic Full Scan (Release / Version Bump Sync)**: During version bumps (`bump_version.py`), release audits, or snapshot creation, a full scan (`python scripts/generate_pyi_stubs.py --all` and `python scripts/generate_symbol_index.py`) runs automatically to ensure `.codemaps/symbol_index.json` and all 29 `.pyi` stubs remain 100% synchronized with zero drift.
+
+## 14. Version Control, AI Safety & Pre-Flight Gate Directive
+- **3-Tier Branching & AI Safety (`docs/VERSION_CONTROL_GUIDE.md`)**:
+  - The repository maintains three primary branch levels: `stable` (production releases), `beta` (pre-release candidate testing), and `dev` (active integration).
+  - All AI agents (local and cloud) MUST work exclusively in disposable task branches (`ai/<feature>` or `fix/<bug>`) branched from `dev`. Never execute AI work directly on `stable` or `main`.
+  - Consult `docs/VERSION_CONTROL_GUIDE.md` for standard workflows, emergency rollbacks (`git restore .`, `git reset --hard`), and promotion procedures.
+- **Reverse-Caller & Blast-Radius Tracing (`task_router.py --impact <symbol>`)**:
+  - Before modifying existing functions, methods, or signatures, run `python scripts/task_router.py --impact <symbol>` to inspect all AST definitions and caller sites across the codebase in <1s.
+- **One-Shot Context Bundling (`scripts/bundle_context.py <symbol>`)**:
+  - Use `python scripts/bundle_context.py <symbol>` to generate a token-bounded (~1,000-1,500 token) markdown bundle containing source slice, `.pyi` typing stub, caller sites, and targeted test command for copy-pasting into local AI chats.
+- **Pre-Flight Verification Gate (`scripts/dev_check.py`)**:
+  - Before committing or merging any task branch into `dev`, run `python scripts/dev_check.py` to verify syntax compilation, `.pyi` stub sync, preview sync, modular budget, and Tier 2 regression tests in <10s.
+

@@ -18,8 +18,19 @@
 - **Token-Budget Task-to-Model Router & CI Invariant Verifier (`scripts/task_router.py`, `scripts/setup_local_ai.py`) [Milestone 2.5]**:
   - Implemented automated task routing (`python scripts/setup_local_ai.py --route "<task>"`) mapping work to model tiers based on file length (<300 lines -> 7B/14B; refactoring -> 32B; concurrency -> R1 14B; UI -> MiniCPM-V).
   - Added CI invariant verifier (`python scripts/setup_local_ai.py --verify-ci`) ensuring strict core module decoupling from dev scripts, full Python syntax integrity across all 157 modules, and version synchronization.
+- **Multi-Tier AI Safety, Reverse-Caller Impact Analysis & Pre-Flight Gate (`docs/VERSION_CONTROL_GUIDE.md`, `scripts/task_router.py`, `scripts/bundle_context.py`, `scripts/dev_check.py`) [Milestone 2.6]**:
+  - Authored comprehensive `docs/VERSION_CONTROL_GUIDE.md` detailing the 3-tier branching model (`stable`, `beta`, `dev`), disposable AI task branches (`ai/*`), snapshot rollbacks, and recovery cheat sheets.
+  - Implemented AST reverse-caller and blast-radius analyzer (`python scripts/task_router.py --impact <symbol>`) providing sub-second call site mapping before method signature edits.
+  - Built one-shot context bundler CLI (`python scripts/bundle_context.py <symbol>`) packaging targeted symbol slices, `.pyi` typing stubs, caller patterns, and test commands into a token-bounded (~1,200 token) markdown bundle for local AI models.
+  - Created fast pre-flight developer gate (`python scripts/dev_check.py`) verifying syntax integrity, `.pyi` stub sync, preview sync, line budget, and change-aware Tier 2 tests in <10 seconds.
+- **Single Responsibility & Desktop Domain Separation Invariant (`scripts/modular_audit.py`, `scripts/dev_check.py`, `AGENTS.md`, `ARCHITECTURE.md`, `roadmap.txt`) [Milestone 2.7]**:
+  - Formalized strict single-purpose domain separation as an unbreakable architectural invariant across the 4 core domains: UI presentation, worker concurrency, headless processing engines, and data models/serialization.
+  - Implemented automated AST domain collision analyzer (`python scripts/modular_audit.py --check-srp [file]`) detecting and preventing incompatible domain mixtures (e.g. UI widgets co-located with audio DSP engines or background QThreads).
+  - Integrated SRP collision checks directly into the pre-flight developer gate (`scripts/dev_check.py`) to guarantee zero architectural drift on future development.
+  - Refocused roadmap monolithic file modularization milestones on purpose and responsibility decoupling in addition to line budgets.
 
 ## v3.9.51-beta
+
 - **Debounced Speaker Table Disk Writes (`speaker_dialogs.py`) [P4-04]**:
   - Implemented 500ms debounced project saving (`_save_debounce_timer`) in `SpeakerManagerDialog` during inline speaker name editing and cell navigation, eliminating rapid synchronous full-project gzip disk writes and UI stutter.
   - Added guaranteed `_flush_debounced_save()` across dialog `accept()`, `reject()`, and `closeEvent()`, ensuring zero data loss when exiting the dialog.

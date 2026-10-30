@@ -45,6 +45,38 @@ EXCLUDED_DIRS = {
 DEFAULT_WARN_THRESHOLD = 800
 DEFAULT_HARD_CEILING = 1000
 
+# Known legacy monoliths grandfathered pending incremental roadmap decomposition
+GRANDFATHERED_LEGACY_MODULES = {
+    "prs_shared.py",
+    "processing.py",
+    "ui_layout.py",
+    "media_batch.py",
+    "voice_profile_dialog.py",
+    "runtime_manager.py",
+    "updater.py",
+    "build_installer.py",
+    "background_workers.py",
+    "speaker_dialogs.py",
+    "speaker_profiles.py",
+    "plugin_dialogs.py",
+    "audio_normalization.py",
+    "worker_asr_engines.py",
+    "worker_diarization_engine.py",
+    "core_utils.py",
+    "export/dialog.py",
+    "plugins/wordpress/client.py",
+    "plugins/wordpress/plugin.py",
+    "plugins/wordpress/wordpress_dialog.py",
+    "plugins/wordpress/export_destination.py",
+    "plugins/youtube/plugin.py",
+    "plugins/youtube/export_destination.py",
+    "diagnostic_cloud_and_system_tests.py",
+    "diagnostic_batch_tests.py",
+    "diagnostic_export_tests.py",
+    "radio_tv_story_segmenter_worker.py",
+    "RadioTVSegmenter.py",
+}
+
 
 # ---------------------------------------------------------------------------
 # AST Structural Analyzer
@@ -211,15 +243,15 @@ class ModuleStructure:
             return "worker"
 
         # 3. Data Models, Schemas & Serialization
-        if "model" in n_lower or "schema" in n_lower or "store" in n_lower or "dict" in n_lower or "data" in n_lower:
+        if "model" in n_lower or "schema" in n_lower or "store" in n_lower or "dict" in n_lower:
             return "model"
-        if any(m in ("to_dict", "from_dict", "serialize", "deserialize", "save", "load") for m in m_lower):
+        if any(m in ("to_dict", "from_dict", "serialize", "deserialize") for m in m_lower):
             return "model"
 
         # 4. Engine & Heavy Processing
-        if "engine" in n_lower or "pipeline" in n_lower or "processor" in n_lower or "handler" in n_lower:
+        if "engine" in n_lower or "pipeline" in n_lower or "processor" in n_lower:
             return "engine"
-        if any(w in n_lower for w in ("audio", "waveform", "video", "ffmpeg", "transcription", "diarization", "detector", "export")):
+        if any(w in n_lower for w in ("waveform", "ffmpeg", "transcription", "diarization", "vad", "detector", "denoiser", "normaliz", "resample")):
             return "engine"
 
         # 5. Utilities & Helpers
@@ -494,11 +526,159 @@ def check_budget_guard(
     }
 
 
+def check_single_responsibility(
+    structure: ModuleStructure,
+    strict: bool = False,
+) -> Dict[str, Any]:
+    """Analyzes AST domain classification to verify Single Responsibility & Domain Separation.
+
+    Verifies that the module does not mix incompatible desktop architectural domains:
+      - UI presentation (QWidget, QDialog, QMainWindow, paint/layout)
+      - Background worker concurrency (QThread, QRunnable, Worker)
+      - Headless engine processing (audio/video, transcription, diarization, DSP)
+      - Data models & state serialization (schemas, dataclasses, export format engines)
+    """
+    domain_counts: Dict[str, int] = defaultdict(int)
+    classes_by_domain: Dict[str, List[str]] = defaultdict(list)
+    funcs_by_domain: Dict[str, List[str]] = defaultdict(list)
+
+    for c in structure.classes:
+        classes_by_domain[c["domain"]].append(c["name"])
+        domain_counts[c["domain"]] += 1
+
+    for f in structure.functions:
+        funcs_by_domain[f["domain"]].append(f["name"])
+        domain_counts[f["domain"]] += 1
+
+    collisions: List[str] = []
+
+    # 1. UI presentation co-located with heavy headless engine logic
+    has_ui = bool(classes_by_domain.get("ui"))
+    has_engine = bool(classes_by_domain.get("engine"))
+    if has_ui and has_engine:
+        collisions.append("UI presentation co-located with Headless Audio/Processing Engine")
+
+    # 2. UI presentation co-located with background worker thread definitions
+    has_worker = bool(classes_by_domain.get("worker"))
+    if has_ui and has_worker:
+        collisions.append("UI presentation co-located with Background QThread Worker logic")
+
+    # 3. UI presentation co-located with data models in large files (>400 lines)
+    has_model = bool(classes_by_domain.get("model"))
+    if has_ui and has_model and structure.total_lines > 400:
+        collisions.append("UI presentation co-located with Data Model entities in a large file (>400 lines)")
+
+    # 4. Background worker coordination co-located with direct engine computation
+    if has_worker and has_engine:
+        collisions.append("Background Worker coordination co-located with direct Engine implementation")
+
+    # 5. Multiple distinct top-level dialogs in a single file (>2 dialogs)
+    dialog_classes = [c["name"] for c in structure.classes if "dialog" in c["name"].lower() and "base" not in c["name"].lower()]
+    if len(dialog_classes) > 2:
+        collisions.append(f"Multiple top-level dialogs in single file ({len(dialog_classes)} dialogs: {', '.join(dialog_classes)})")
+
+    # 6. Multi-domain sprawl (>= 3 distinct non-utils domains)
+    non_utils_domains = [d for d in domain_counts if d != "utils" and domain_counts[d] > 0]
+    if len(non_utils_domains) >= 3:
+        collisions.append(f"Multi-domain sprawl across {len(non_utils_domains)} domains ({', '.join(non_utils_domains)})")
+
+    # Primary domain calculation
+    primary_domain = "utils"
+    if domain_counts:
+        primary_domain = max(domain_counts.items(), key=lambda x: x[1])[0]
+
+    is_facade = len(structure.classes) == 0 and len(structure.functions) == 0 and len(structure.imports) > 0
+    if is_facade:
+        collisions = []
+        primary_domain = "facade"
+
+    norm_rel = structure.rel_path.replace("\\", "/")
+    is_legacy = (
+        norm_rel in GRANDFATHERED_LEGACY_MODULES
+        or structure.file_path.name in GRANDFATHERED_LEGACY_MODULES
+        or any(norm_rel == m or norm_rel.endswith("/" + m) for m in GRANDFATHERED_LEGACY_MODULES)
+    )
+
+    is_compliant = len(collisions) == 0
+    passed = is_compliant or (is_legacy and not strict)
+
+    return {
+        "path": structure.rel_path,
+        "primary_domain": primary_domain,
+        "domain_counts": dict(domain_counts),
+        "classes_by_domain": dict(classes_by_domain),
+        "funcs_by_domain": dict(funcs_by_domain),
+        "collisions": collisions,
+        "is_facade": is_facade,
+        "is_legacy": is_legacy,
+        "is_compliant": is_compliant,
+        "passed": passed,
+        "total_lines": structure.total_lines,
+    }
+
+
+def print_srp_report(results: List[Dict[str, Any]], strict: bool = False) -> bool:
+    """Prints a structured terminal report for Single Responsibility & Domain Separation."""
+    total = len(results)
+    compliant = [r for r in results if r["is_compliant"]]
+    legacy_collisions = [r for r in results if not r["is_compliant"] and r["is_legacy"]]
+    new_violations = [r for r in results if not r["is_compliant"] and not r["is_legacy"]]
+
+    print("=" * 88)
+    print("RADIO & TV STORY SEGMENTER — SINGLE RESPONSIBILITY & DOMAIN SEPARATION AUDIT")
+    print("=" * 88)
+    print("Architectural Domain Boundaries:")
+    print("  1. UI Presentation:      Widgets, dialogs, views, canvas, layout (no heavy compute/engines)")
+    print("  2. Concurrency/Workers:  QThread lifecycle, background runners, cancellation (no GUI widgets)")
+    print("  3. Headless Engines:     Audio/video decoding, transcription, diarization, DSP pipelines")
+    print("  4. Models/Serialization: Schemas, dataclasses, export format engines, state snapshots")
+    print("-" * 88)
+    print(f"Total Modules Scanned:    {total}")
+    print(f"Single-Purpose Compliant: {len(compliant)}")
+    print(f"Grandfathered Legacy:     {len(legacy_collisions)} (tracked for incremental decomposition in roadmap)")
+    print(f"New Unexempted Collisions:{len(new_violations)}")
+    print("=" * 88)
+
+    if new_violations:
+        print("\n[FAIL] NEW SINGLE RESPONSIBILITY VIOLATIONS DETECTED:")
+        for r in new_violations:
+            print(f"\n  File: {r['path']} ({r['total_lines']} lines, Primary Domain: {r['primary_domain'].upper()})")
+            for col in r["collisions"]:
+                print(f"    - Collision: {col}")
+            print("    Suggested Fix: Split into dedicated submodules and export via facade pattern.")
+        print("")
+
+    if legacy_collisions:
+        print(f"\n[INFO] {len(legacy_collisions)} Grandfathered Legacy Monoliths with Multi-Domain Overlap:")
+        for r in legacy_collisions:
+            cols_str = "; ".join(r["collisions"])
+            print(f"  - {r['path']:<35} ({r['total_lines']:>4} lines) -> {cols_str}")
+        print("\nNote: Legacy monoliths are protected by .pyi stubs and prioritized in roadmap.txt Section 3.")
+
+    if not new_violations:
+        if strict and legacy_collisions:
+            print("\n[FAIL] Strict mode enabled: Legacy multi-domain technical debt must be resolved.\n")
+            return False
+        print("\n[PASS] Single Responsibility & Domain Separation Invariants verified successfully.\n")
+        return True
+    return False
+
+
 def main():
     parser = argparse.ArgumentParser(description="AST Decomposition Suggester & Modular Budget Guard.")
     parser.add_argument("--audit", action="store_true", help="Audit all modules and print compliance table.")
     parser.add_argument("--suggest", type=str, metavar="FILE", help="Generate decomposition blueprint for target file.")
     parser.add_argument("--budget-guard", action="store_true", help="Run budget guard verification (exit code 1 on violations).")
+    parser.add_argument(
+        "--check-srp",
+        "--responsibility-check",
+        dest="check_srp",
+        nargs="?",
+        const="ALL",
+        metavar="FILE",
+        help="Audit Single Responsibility & Domain Separation for target FILE or all repository modules.",
+    )
+    parser.add_argument("--strict", action="store_true", help="Enforce strict compliance without legacy exemptions.")
     parser.add_argument("--warn-threshold", type=int, default=DEFAULT_WARN_THRESHOLD, help="Warning threshold lines (default: 800).")
     parser.add_argument("--hard-ceiling", type=int, default=DEFAULT_HARD_CEILING, help="Hard ceiling lines (default: 1000).")
     parser.add_argument("--json", action="store_true", help="Output results in JSON format.")
@@ -531,7 +711,37 @@ def main():
             print(plan.render_markdown_blueprint())
         return
 
-    # 2. Repository Scan (Audit or Budget Guard)
+    # 2. Single Responsibility & Domain Separation Check Mode
+    if args.check_srp:
+        if args.check_srp != "ALL":
+            target = Path(args.check_srp)
+            if not target.is_absolute():
+                target = (ROOT_DIR / target).resolve()
+            if not target.exists():
+                print(f"Error: Target file not found: {args.check_srp}", file=sys.stderr)
+                sys.exit(1)
+            struct = ModuleStructure(target)
+            if struct.parse_error:
+                print(f"Error: {struct.parse_error}", file=sys.stderr)
+                sys.exit(1)
+            res = check_single_responsibility(struct, strict=args.strict)
+            if args.json:
+                print(json.dumps(res, indent=2))
+            else:
+                passed = print_srp_report([res], strict=args.strict)
+                sys.exit(0 if passed else 1)
+            return
+
+        structures = scan_repository(ROOT_DIR)
+        results = [check_single_responsibility(s, strict=args.strict) for s in structures]
+        if args.json:
+            print(json.dumps(results, indent=2))
+        else:
+            passed = print_srp_report(results, strict=args.strict)
+            sys.exit(0 if passed else 1)
+        return
+
+    # 3. Repository Scan (Audit or Budget Guard)
     structures = scan_repository(ROOT_DIR)
 
     if args.budget_guard:

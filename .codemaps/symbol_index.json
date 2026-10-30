@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-29 16:58:23",
+  "generated_at": "2026-10-30 11:11:14",
   "total_files": 157,
   "files": {
     "RadioTVSegmenter.py": {
@@ -11872,7 +11872,7 @@
     },
     "scripts/task_router.py": {
       "path": "scripts/task_router.py",
-      "lines": 233,
+      "lines": 257,
       "summary": "scripts/task_router.py - Token-Budget Task-to-Model Router & CI Invariant Verifier",
       "exports": null,
       "classes": [

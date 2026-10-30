@@ -54,13 +54,29 @@ TABLE OF CONTENTS & STATUS OVERVIEW
    [x] 2.3 Local Server Health Check, Context Window Tuning & Prompt Cache Pinning (`scripts/setup_local_ai.py`): Bind `http://127.0.0.1:11434`, pin project symbol indices (`.codemaps/symbol_index.json`) into KV prompt cache for 0-latency context, and enforce 16k-32k working context limits.
    [x] 2.4 Token-Thrift IDE Configuration & AST Suggester Integration (`scripts/setup_local_ai.py`): Configure Continue/Cline with symbol-first retrieval, diff-only edits, line-slice reading rules, and map `.clinerules`/`.cursorrules` to `scripts/modular_audit.py` to prevent token bloat.
    [x] 2.5 Token-Budget Task-to-Model Router & CI Pipeline Verification (`.github/workflows/build.yml`, `test_runner.py`): Provide token-aware task router (<300 lines -> 7B/14B; refactoring -> 32B) and verify CI build invariants.
+   [x] 2.6 Multi-Tier AI Safety, Reverse-Caller Impact Analysis & Pre-Flight Gate (`docs/VERSION_CONTROL_GUIDE.md`, `scripts/task_router.py`, `scripts/bundle_context.py`, `scripts/dev_check.py`): User-friendly version control guide for stable, beta, and dev branches with disposable AI task branching; AST reverse-caller blast-radius analyzer (`scripts/task_router.py --impact`); one-shot token-bounded context bundler (`scripts/bundle_context.py`); ultra-fast 5-pillar pre-flight verification gate (`scripts/dev_check.py`).
+   [x] 2.7 Single Responsibility & Desktop Domain Separation Invariant (`scripts/modular_audit.py --check-srp`, `scripts/dev_check.py`, `AGENTS.md`, `ARCHITECTURE.md`): Formalized strict desktop domain separation across the 4 core domains (UI presentation, worker concurrency, headless engines, data models/serialization); added AST domain collision detection (`--check-srp`); integrated SRP verification into `dev_check.py` pre-flight gate.
 
-3. Deferred Milestone: Monolithic File Decomposition & Lower-Priority Refinements [ ] [DEFERRED / LOWER PRIORITY]
-   [ ] 3.1 AST-Driven Monolithic File Decomposition: Incrementally decompose remaining files exceeding 1,000 lines (`plugins/wordpress/client.py`, `media_batch.py`, `prs_shared.py`, `export/dialog.py`, `processing.py`, `runtime_manager.py`, `ui_layout.py`, `background_workers.py`, `voice_profile_dialog.py`). [P7-01]
-   [x] 3.2 UI Typography Cleanliness: Remove unrequested emoji symbols (💬, 🟡, 🟢) and decorative checkmarks from buttons and comboboxes. [P6-06]
-   [x] 3.3 PDF Proportional Font Word-Wrap Accuracy: Refine Helvetica character width measurement tables in `export/pdf.py`. [P6-07]
-   [x] 3.4 Export Dialog Vestigial Cleanup: Clean orphaned preview set and restore `"timeline"` to fallback reorder list. [P6-09, P6-10]
-   [x] 3.5 Changelog Archive Roll: Prune older changelog entries into `CHANGELOG_ARCHIVE.md`. [P7-06]
+3. Deferred Milestone: Domain Separation & Purpose-Driven Monolithic File Modularization [ ] [DEFERRED / LOWER PRIORITY]
+   - *Purpose*: Systematic architectural refactoring prioritizing **file purpose, single responsibility, and domain cohesion** alongside line count reduction (<800 lines target, 1,000 lines ceiling), systematically decoupling grandfathered multi-domain monoliths into focused submodules with 100% backward-compatible facade re-exports.
+   [ ] 3.1 Priority 1: Imminent Ceiling Breaches & High-Payoff Domain Decoupling (<1000 lines, high urgency/clean boundaries):
+     * `project_lifecycle.py` (992 lines) — Imminent ceiling breach (<10 lines from 1,000 ceiling). Decouple project session dirty-state tracking from disk gzip compression and waveform peak caching (`project_state.py`, `project_cache.py`).
+     * `model_management.py` (989 lines) — Decouple Hugging Face / ONNX weight verification and SHA256 integrity checks from the GUI download progress worker.
+     * `audio_normalization.py` (541 lines) — Triple-domain sprawl resolution: decouple loudness DSP normalization math (`normalization_engine.py`) from background `QThread` workers (`normalization_worker.py`) and data parameters.
+     * `timeline_widgets.py` (974 lines) — Decouple viewport waveform canvas paint events and LOD rendering from mouse scrubbing and selection event handlers.
+   [ ] 3.2 Priority 2: Grandfathered Legacy Monoliths (>1,000 lines, wide caller blast radius):
+     * Incrementally decompose the 9 core legacy monoliths via AST blueprints and facade pattern: `plugins/wordpress/client.py` (1,887 lines), `media_batch.py` (1,848 lines), `prs_shared.py` (1,491 lines), `updater.py` (1,460 lines), `export/dialog.py` (1,441 lines), `processing.py` (1,216 lines), `ui_layout.py` (1,060 lines), `runtime_manager.py` (1,037 lines), `background_workers.py` (1,015 lines), and `voice_profile_dialog.py` (1,006 lines). [P7-01]
+   [ ] 3.3 Priority 3: Secondary Warning Zone & Worker/UI Decoupling (800–965 lines & multi-domain plugins):
+     * Headless ML & Engine Decoupling: Separate background worker loops from low-level model inference in `worker_diarization_engine.py` (902 lines) and `worker_asr_engines.py` (839 lines).
+     * Pipeline & Presentation Decoupling: Modularize `export_story_pipeline.py` (964 lines), `translation.py` (923 lines), `transcript_editor.py` (862 lines), `transcript_story.py` (847 lines), `shortcuts/schema.py` (858 lines), and `ui_menus.py` (809 lines).
+     * Worker Thread Decoupling from Dialogs: Extract `QThread` workers out of `plugin_dialogs.py` (447 lines), `speaker_dialogs.py` (782 lines), and `plugins/wordpress/wordpress_dialog.py` (886 lines).
+     * Model & Export Tab Decoupling: Extract `ManageVoiceProfilesDialog` from `speaker_profiles.py` (630 lines), and separate Qt UI tabs from API publishing in `plugins/youtube/export_destination.py` (594 lines) and `plugins/wordpress/export_destination.py` (631 lines).
+   [ ] 3.4 Priority 4: Monolithic Test Suites & Packaging Tooling (>1,000 lines, dev-only):
+     * Split monolithic 1,000+ line test suites and installers into modular packages: `diagnostic_export_tests.py` (1,699 lines), `diagnostic_cloud_and_system_tests.py` (1,267 lines), `diagnostic_batch_tests.py` (1,067 lines), and `build_installer.py` (1,079 lines).
+   [x] 3.5 UI Typography Cleanliness: Remove unrequested emoji symbols (💬, 🟡, 🟢) and decorative checkmarks from buttons and comboboxes. [P6-06]
+   [x] 3.6 PDF Proportional Font Word-Wrap Accuracy: Refine Helvetica character width measurement tables in `export/pdf.py`. [P6-07]
+   [x] 3.7 Export Dialog Vestigial Cleanup: Clean orphaned preview set and restore `"timeline"` to fallback reorder list. [P6-09, P6-10]
+   [x] 3.8 Changelog Archive Roll: Prune older changelog entries into `CHANGELOG_ARCHIVE.md`. [P7-06]
 
 4. Optional Future Milestone: Interactive Text-Based Media Assembly & Multi-Asset Ripple Editing Engine (`assembly/bin_model.py`, `assembly/clipboard.py`, `assembly/ripple_engine.py`, `transcript_editor.py`, `export/timeline.py`) [PLANNED for v4.2.0] [OPTIONAL] [NOT STARTED]
    [ ] 4.1 Multi-Asset Project Container & Media Bin Submodule (`assembly/bin_model.py`, `project_lifecycle.py`)
@@ -123,11 +139,16 @@ DETAILED MILESTONE SPECIFICATIONS
   * Token-Thrift IDE Integration: Safely generate/merge Continue.dev and Cline/Roo Code configurations with symbol-first retrieval, diff-only edits, line-slice reading rules, and map `.clinerules`/`.cursorrules` to `scripts/modular_audit.py`.
   * Task Router & CI Testing: Add `--guide` CLI mode to `scripts/setup_local_ai.py` and add diagnostic test in `test_runner.py` validating `--dry-run` profile serialization.
 
-3. DEFERRED MILESTONE: MONOLITHIC FILE DECOMPOSITION & LOWER-PRIORITY REFINEMENTS:
-- Purpose: Architectural health, modular sub-package decomposition, code hygiene, and non-breaking typographical refinements.
+3. DEFERRED MILESTONE: DOMAIN SEPARATION & PURPOSE-DRIVEN MONOLITHIC FILE MODULARIZATION:
+- Purpose: Systematic architectural health, single responsibility enforcement, domain decoupling, and non-breaking typographical refinements.
 - Target Release: Deferred
 - Technical References & Exhaustive Audit Details:
-  * Monolithic File Decomposition: See `docs/audit/audit_phase7_findings.md` (Item P7-01) for AST decomposition blueprints of 9 modules exceeding 1,000 lines (`plugins/wordpress/client.py`, `media_batch.py`, `prs_shared.py`, `export/dialog.py`, `processing.py`, `runtime_manager.py`, `ui_layout.py`, `background_workers.py`, `voice_profile_dialog.py`).
+  * Purpose-Driven Prioritized Decomposition Strategy:
+    - Priority 1 (Imminent Ceiling Breaches & High-Payoff Domain Decoupling): Focuses on files within 30 lines of the 1,000-line hard ceiling (`project_lifecycle.py` [992L], `model_management.py` [989L], `timeline_widgets.py` [974L]) and self-contained triple-domain sprawl files (`audio_normalization.py` [541L]). These offer immediate risk elimination and low caller blast radius.
+    - Priority 2 (Grandfathered Core & Plugin Monoliths >1,000 Lines): See `docs/audit/audit_phase7_findings.md` (Item P7-01) for AST decomposition blueprints of the 9 core modules exceeding 1,000 lines (`plugins/wordpress/client.py`, `media_batch.py`, `prs_shared.py`, `export/dialog.py`, `processing.py`, `runtime_manager.py`, `ui_layout.py`, `background_workers.py`, `voice_profile_dialog.py`). Must be executed with zero-breakage facade re-exports to safeguard wide caller dependencies.
+    - Priority 3 (Secondary Warning Zone & Worker/UI Coupling 800–965 Lines): Separates background thread worker loops from direct model inference in `worker_diarization_engine.py` (902L) and `worker_asr_engines.py` (839L); isolates `QThread` workers out of `plugin_dialogs.py` (447L), `speaker_dialogs.py` (782L), and `plugins/wordpress/wordpress_dialog.py` (886L); and decouples UI tabs from API publishing in `plugins/youtube/export_destination.py` (594L) and `plugins/wordpress/export_destination.py` (631L).
+    - Priority 4 (Packaging Scripts & Monolithic Test Suites): Modularity pass for developer-only suites (`diagnostic_export_tests.py` [1,699L], `diagnostic_cloud_and_system_tests.py` [1,267L], `diagnostic_batch_tests.py` [1,067L], and `build_installer.py` [1,079L]).
+  * Single Responsibility Verification: Validated via `python scripts/modular_audit.py --check-srp` to ensure newly extracted submodules do not reintroduce domain collisions.
   * UI Typography Cleanliness: See `docs/audit/audit_phase6_findings.md` (Item P6-06) for emoji and decorative unicode glyph removal in `ui_layout.py` and `preferences_tabs_core.py`.
   * PDF Helvetica Measurement Tables: See `docs/audit/audit_phase6_findings.md` (Item P6-07) for character width lookup tables in `export/pdf.py`.
 

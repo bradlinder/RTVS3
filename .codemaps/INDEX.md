@@ -1,6 +1,6 @@
 # Repository Symbol Index & API Map
 
-> Generated: 2026-10-29 16:58:23 | Total Files: 157
+> Generated: 2026-10-30 11:11:14 | Total Files: 157
 > Use `python scripts/generate_symbol_index.py --outline <file>` for exact line numbers.
 
 ## Modules Overview
@@ -103,7 +103,7 @@
 | `scripts/log_summary.py` | 150 | log_summary.py — Compact Error & Exception Extraction Engine | `is_project_frame()`, `extract_log_summary()`, `main()` |
 | `scripts/modular_audit.py` | 570 | scripts/modular_audit.py — AST Decomposition Suggester & ... | `ModuleStructure`, `DecompositionPlan`, `scan_repository()`, `print_audit_report()` *(+2 more)* |
 | `scripts/setup_local_ai.py` | 952 | scripts/setup_local_ai.py - Automated AMD Ryzen AI Local ... | `CPUInfo`, `MemoryInfo`, `VulkanHeap`, `GPUInfo` *(+8 more)* |
-| `scripts/task_router.py` | 233 | scripts/task_router.py - Token-Budget Task-to-Model Route... | `RouteRecommendation`, `TaskRouter`, `CIInvariantVerifier` |
+| `scripts/task_router.py` | 257 | scripts/task_router.py - Token-Budget Task-to-Model Route... | `RouteRecommendation`, `TaskRouter`, `CIInvariantVerifier` |
 | `shortcuts/__init__.py` | 26 | shortcuts package — Modular Keyboard Shortcuts Management... | - |
 | `shortcuts/definitions.py` | 22 | shortcuts/definitions.py — Shortcut definitions and schem... | - |
 | `shortcuts/dialogs.py` | 623 | shortcuts/dialogs.py — Preferences page for keyboard shor... | `KeyboardShortcutsPage` |
@@ -2091,7 +2091,7 @@
 - **Functions**:
   - `main()` [L824-L948]
 
-### `scripts/task_router.py` (233 lines)
+### `scripts/task_router.py` (257 lines)
 *scripts/task_router.py - Token-Budget Task-to-Model Router & CI Invariant Verifier*
 - **class `RouteRecommendation`** (lines 21–29):
 - **class `TaskRouter`** (lines 32–153):

@@ -451,6 +451,15 @@ def bump_all(new_version: str, dry_run: bool = False, plugins: list[str] | None 
     except Exception as e:
         print(f"  [!] Failed to sync preview_manager: {e}")
 
+    # Synchronize .pyi typing stubs and .codemaps symbol index
+    try:
+        import subprocess
+        subprocess.run([sys.executable, str(ROOT_DIR / "scripts" / "generate_pyi_stubs.py"), "--all"], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        subprocess.run([sys.executable, str(ROOT_DIR / "scripts" / "generate_symbol_index.py")], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        print("  [x] .pyi typing stubs & .codemaps/symbol_index.json -> full scan & synchronized")
+    except Exception as e:
+        print(f"  [!] Failed to synchronize stubs/symbol index: {e}")
+
     print(f"[BUMP] Successfully updated {len(modifications)} files to v{clean_ver}.")
     return True
 

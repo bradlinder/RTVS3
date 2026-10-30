@@ -27,3 +27,18 @@
 ## 6. Diagnostic Hierarchy (Three-Tier Discipline)
 - Routine turn-by-turn verification must use Tier 1 (`python test_runner.py --quiet --filter "<keyword>"`) or Tier 2 (`python test_runner.py --quiet`).
 - Full runs (`--all`) are strictly reserved for release audits.
+
+## 7. Automated Task Routing & Model-Tier Discipline
+- Local models (Qwen, DeepSeek) MUST run `python scripts/task_router.py "<task description>"` by default to operate within VRAM and KV cache bounds.
+- Frontier cloud models (Gemini, Claude) operate in macro-aware mode by default and may inspect full modules directly, while using targeted contiguous diffs (`replace_file_content`).
+
+## 8. Two-Strike Bug Escalation & Stub Synchronization Cadence
+- **Two-Strike Escalation Protocol**: Bug fixes must start with surgical slice inspection (Strikes 1 & 2). If not resolved within two attempts, immediately escalate to broader searches (caller tracing, parent class context, or research subagents).
+- **Stub Synchronization**: Update `.pyi` stubs immediately (`python scripts/generate_pyi_stubs.py --file <path>`) when modifying public interfaces. Full scans run automatically on every version bump (`bump_version.py`).
+
+## 9. Version Control Safety, Impact Analysis & Pre-Flight Gate
+- **AI Safety & Disposable Branches**: Work exclusively in disposable `ai/<feature>` or `fix/<bug>` branches off `dev`. Never edit `stable` or `main` directly. Refer to `docs/VERSION_CONTROL_GUIDE.md`.
+- **AST Blast-Radius Analysis**: Run `python scripts/task_router.py --impact <symbol>` to inspect all callers and definitions across the codebase before altering signatures.
+- **Context Bundling**: Run `python scripts/bundle_context.py <symbol>` to generate a token-bounded prompt bundle (~1,200 tokens).
+- **Pre-Flight Gate**: Always run `python scripts/dev_check.py` before committing or merging.
+
