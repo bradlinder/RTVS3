@@ -53,15 +53,28 @@ def build_continue_config() -> Dict[str, Any]:
     return {
         "models": [
             {
-                "title": "Fast Edit & Chat (Qwen 14B)",
+                "title": "Smart Router (Autonomous NL Dispatcher)",
+                "provider": "openai",
+                "model": "rtvs-smart-router",
+                "apiBase": "http://127.0.0.1:8000/v1",
+                "apiKey": "local-no-key",
+            },
+            {
+                "title": "Lead Architect & Refactor (Qwen 3.8 27B)",
                 "provider": "ollama",
-                "model": "qwen2.5-coder:14b-rtvs",
+                "model": "qwen3.8-27b",
                 "apiBase": "http://127.0.0.1:11434",
             },
             {
-                "title": "Lead Architect (Qwen 32B)",
+                "title": "Fast Chat & Debug (Qwen 3 14B)",
                 "provider": "ollama",
-                "model": "qwen2.5-coder:32b-rtvs",
+                "model": "qwen3:14b",
+                "apiBase": "http://127.0.0.1:11434",
+            },
+            {
+                "title": "Surgical Diff & Patch (Qwen 2.5 Coder 32B)",
+                "provider": "ollama",
+                "model": "qwen2.5-coder:32b",
                 "apiBase": "http://127.0.0.1:11434",
             },
             {
@@ -71,9 +84,9 @@ def build_continue_config() -> Dict[str, Any]:
                 "apiBase": "http://127.0.0.1:11434",
             },
             {
-                "title": "Targeted Bug Fixes (Qwen 7B)",
+                "title": "Targeted Bug Fixes (Qwen 3.5 9B)",
                 "provider": "ollama",
-                "model": "qwen2.5-coder:7b-rtvs",
+                "model": "qwen3.5:9b",
                 "apiBase": "http://127.0.0.1:11434",
             },
             {
@@ -84,9 +97,9 @@ def build_continue_config() -> Dict[str, Any]:
             },
         ],
         "tabAutocompleteModel": {
-            "title": "Autocomplete (Qwen 1.5B)",
+            "title": "Autocomplete (Qwen 1.5B FIM)",
             "provider": "ollama",
-            "model": "qwen2.5-coder:1.5b-rtvs",
+            "model": "qwen2.5-coder:1.5b",
             "apiBase": "http://127.0.0.1:11434",
         },
         "embeddingsProvider": {
@@ -150,6 +163,11 @@ def build_cline_rules() -> str:
 ## 6. Diagnostic Hierarchy (Three-Tier Discipline)
 - Routine turn-by-turn verification must use Tier 1 (`python test_runner.py --quiet --filter "<keyword>"`) or Tier 2 (`python test_runner.py --quiet`).
 - Full runs (`--all`) are strictly reserved for release audits.
+
+## 7. Autonomous Smart Router & Antigravity Setup
+- Start proxy: `python scripts/task_router.py --serve-proxy` (runs on http://127.0.0.1:8000/v1).
+- Use model: `rtvs-smart-router` in Cline / Continue / Antigravity for zero-friction natural language routing.
+- Automatically dispatches to Qwen3.8-27B (refactoring), Qwen2.5-Coder:32B (surgical diffs), Qwen3:14B (chat), or DeepSeek-R1 (proofs).
 """
 
 

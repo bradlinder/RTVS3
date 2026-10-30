@@ -112,6 +112,28 @@ class TaskRouter:
             target_lines = symbol_index.get(first_target, {}).get("lines", 0)
             if not target_lines and Path(first_target).is_file():
                 target_lines = len(Path(first_target).read_text(encoding="utf-8", errors="ignore").splitlines())
+        # 3. Surgical Diff & Minimal Patch Intent (Zero-fluff code generation)
+        diff_keywords = ["patch", "diff", "replace line", "surgical", "just the fix", "only the code", "regex"]
+        if any(dk in q_lower for dk in diff_keywords) and not any(rf in q_lower for rf in cls.REFACTOR_KEYWORDS):
+            return RouteRecommendation(
+                task_query=query,
+                target_files=targets,
+                category="Surgical Diff & Precise Patch",
+                recommended_model="qwen2.5-coder:32b",
+                model_role="Deterministic Patch Engineer",
+                context_budget=16384,
+                rationale="Surgical code fix requires deterministic diff output with zero conversational chatter or scope creep.",
+                suggested_action="Apply minimal contiguous diff using qwen2.5-coder:32b.",
+            )
+
+        # 4. Architectural Decomposition & Large Monolithic Files
+        is_large_target = False
+        target_lines = 0
+        if targets:
+            first_target = targets[0]
+            target_lines = symbol_index.get(first_target, {}).get("lines", 0)
+            if not target_lines and Path(first_target).is_file():
+                target_lines = len(Path(first_target).read_text(encoding="utf-8", errors="ignore").splitlines())
             if target_lines >= 800:
                 is_large_target = True
 
@@ -121,36 +143,36 @@ class TaskRouter:
                 task_query=query,
                 target_files=targets,
                 category="Architectural Planning & Large File Decomposition",
-                recommended_model="qwen2.5-coder:32b-rtvs",
+                recommended_model="qwen3.8-27b",
                 model_role="Lead Architect",
-                context_budget=16384,
-                rationale=f"Large file scope ({target_lines} lines) or refactoring requires 32B code comprehension and AST preservation.",
-                suggested_action=f"{action} and prompt qwen2.5-coder:32b-rtvs with the generated AST blueprint.",
+                context_budget=32768,
+                rationale=f"Large file scope ({target_lines} lines) or refactoring requires 262k context scaling and Qwen 3.8 hybrid DeltaNet architecture.",
+                suggested_action=f"{action} and prompt qwen3.8-27b with the generated AST blueprint.",
             )
 
-        # 4. Multi-File Changes (Moderate Scope)
+        # 5. Multi-File Changes & Complex Workflows (Moderate Scope)
         if len(targets) >= 2 or (targets and target_lines >= 300):
             return RouteRecommendation(
                 task_query=query,
                 target_files=targets,
-                category="Multi-File Changes & Subsystem Wiring",
-                recommended_model="qwen2.5-coder:14b-rtvs",
+                category="Multi-File Changes & Interactive Development",
+                recommended_model="qwen3:14b",
                 model_role="Standard Developer",
                 context_budget=32768,
-                rationale=f"Target file scope ({target_lines} lines) or multi-file wiring fits 14B sweet spot (8.3 tok/s, 32k context).",
-                suggested_action="Use qwen2.5-coder:14b-rtvs with symbol-first targeted slice retrieval.",
+                rationale=f"Target file scope ({target_lines} lines) fits Qwen 3 14B sweet spot (~11 tok/s, dual-mode thinking, high reasoning).",
+                suggested_action="Use qwen3:14b with symbol-first targeted slice retrieval.",
             )
 
-        # 5. Localized Bug Fixes & Small File Changes (< 300 lines)
+        # 6. Localized Bug Fixes & Small File Changes (< 300 lines)
         return RouteRecommendation(
             task_query=query,
             target_files=targets,
             category="Localized Edits & Fast Unit Tests",
-            recommended_model="qwen2.5-coder:7b-rtvs",
+            recommended_model="qwen3.5:9b",
             model_role="Fast Edits",
             context_budget=8192,
-            rationale="Small scope (<300 lines) completes fastest on 7B (17.4 tok/s) with minimal VRAM and power draw.",
-            suggested_action="Apply minimal contiguous diff using qwen2.5-coder:7b-rtvs.",
+            rationale="Small scope (<300 lines) completes fastest on Qwen 3.5 9B (~16 tok/s) with low latency.",
+            suggested_action="Apply minimal contiguous diff using qwen3.5:9b (or qwen2.5-coder:7b).",
         )
 
 
@@ -396,6 +418,15 @@ class ASTImpactAnalyzer:
 
 if __name__ == "__main__":
     import sys
+
+    if len(sys.argv) > 1 and sys.argv[1] in ("--serve-proxy", "--proxy"):
+        try:
+            from scripts.local_proxy import run_smart_proxy
+        except ImportError:
+            from local_proxy import run_smart_proxy
+        port = int(sys.argv[2]) if len(sys.argv) > 2 and sys.argv[2].isdigit() else 8000
+        run_smart_proxy(port=port)
+        sys.exit(0)
 
     if len(sys.argv) > 1 and sys.argv[1] in ("--verify", "--ci"):
         res = CIInvariantVerifier.verify_all()
