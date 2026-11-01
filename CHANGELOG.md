@@ -1,5 +1,10 @@
 # Changelog
 
+## v3.9.53-beta
+- **Updater Check & Cached Installer State Disambiguation (`updater.py`)**:
+  - Resolved an issue in `CheckUpdateDialog` where having a previously downloaded installer package in `%APPDATA%/RTVS3/updates/` falsely caused the dialog to display `✓ Update package for <version> is already downloaded and ready to install.` and show a `Restart & Install` button even when the user was already running that version.
+  - Added strict `is_current` and `is_top_release` verification before evaluating cached installer packages, ensuring the dialog accurately confirms `✓ Radio & TV Segmenter is up to date (v{PROJECT_VERSION})` and presents a `Check Again` action when running the latest release.
+
 ## v3.9.52-beta
 - **AMD Ryzen AI Strix Point Hardware Probe & UMA Telemetry (`scripts/setup_local_ai.py`) [Milestone 2.1]**:
   - Implemented zero-dependency hardware detection for AMD Ryzen AI 9 HX 370 (12 cores / 24 threads), Radeon 890M (`gfx1150`, RDNA 3.5), AMD XDNA 2 NPU (`DEV_17F0`), and unified memory architecture (64GB LPDDR5x with 32GB dedicated UMA VRAM).

@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-10-30 11:11:14",
-  "total_files": 157,
+  "generated_at": "2026-11-01 17:50:29",
+  "total_files": 155,
   "files": {
     "RadioTVSegmenter.py": {
       "path": "RadioTVSegmenter.py",
       "lines": 646,
-      "summary": "Radio & TV Segmenter \u2014 v3.9.52-beta",
+      "summary": "Radio & TV Segmenter \u2014 v3.9.53-beta",
       "exports": null,
       "classes": [
         {
@@ -1124,7 +1124,7 @@
     },
     "bump_version.py": {
       "path": "bump_version.py",
-      "lines": 504,
+      "lines": 513,
       "summary": "bump_version.py \u2014 Automated Version Synchronization Engine",
       "exports": null,
       "classes": [],
@@ -1168,14 +1168,14 @@
           "name": "bump_all",
           "sig": "bump_all(new_version, dry_run, plugins)",
           "start_line": 199,
-          "end_line": 455,
+          "end_line": 464,
           "doc": "Execute synchronous version updates across all checklist targets."
         },
         {
           "name": "main",
           "sig": "main()",
-          "start_line": 457,
-          "end_line": 501,
+          "start_line": 466,
+          "end_line": 510,
           "doc": ""
         }
       ]
@@ -11328,6 +11328,57 @@
         }
       ]
     },
+    "scripts/dev_check.py": {
+      "path": "scripts/dev_check.py",
+      "lines": 154,
+      "summary": "scripts/dev_check.py - Ultra-Fast Pre-Flight Development & AI Safety Gate",
+      "exports": null,
+      "classes": [],
+      "functions": [
+        {
+          "name": "check_syntax",
+          "sig": "check_syntax()",
+          "start_line": 32,
+          "end_line": 43,
+          "doc": "Compiles all tracked python files in root and scripts."
+        },
+        {
+          "name": "check_typing_stubs",
+          "sig": "check_typing_stubs()",
+          "start_line": 46,
+          "end_line": 52,
+          "doc": "Verifies interface stubs for modules exceeding 800 lines."
+        },
+        {
+          "name": "check_preview_sync",
+          "sig": "check_preview_sync()",
+          "start_line": 55,
+          "end_line": 61,
+          "doc": "Ensures zero-dependency preview files match prs_shared.py."
+        },
+        {
+          "name": "check_modular_budget",
+          "sig": "check_modular_budget()",
+          "start_line": 64,
+          "end_line": 98,
+          "doc": "Guards against new monolithic files exceeding the 1,000 line ceiling."
+        },
+        {
+          "name": "check_regression_tests",
+          "sig": "check_regression_tests()",
+          "start_line": 101,
+          "end_line": 109,
+          "doc": "Executes change-aware Tier 2 diagnostic test suite."
+        },
+        {
+          "name": "main",
+          "sig": "main()",
+          "start_line": 112,
+          "end_line": 150,
+          "doc": ""
+        }
+      ]
+    },
     "scripts/generate_pyi_stubs.py": {
       "path": "scripts/generate_pyi_stubs.py",
       "lines": 214,
@@ -11463,43 +11514,6 @@
         }
       ]
     },
-    "scripts/ide_config.py": {
-      "path": "scripts/ide_config.py",
-      "lines": 183,
-      "summary": "scripts/ide_config.py - Token-Thrifty IDE Configuration & Rule Provisioner",
-      "exports": null,
-      "classes": [],
-      "functions": [
-        {
-          "name": "build_vscode_settings",
-          "sig": "build_vscode_settings()",
-          "start_line": 16,
-          "end_line": 49,
-          "doc": ""
-        },
-        {
-          "name": "build_continue_config",
-          "sig": "build_continue_config()",
-          "start_line": 52,
-          "end_line": 120,
-          "doc": ""
-        },
-        {
-          "name": "build_cline_rules",
-          "sig": "build_cline_rules()",
-          "start_line": 123,
-          "end_line": 153,
-          "doc": ""
-        },
-        {
-          "name": "setup_all_ide_configs",
-          "sig": "setup_all_ide_configs(workspace_root)",
-          "start_line": 156,
-          "end_line": 183,
-          "doc": ""
-        }
-      ]
-    },
     "scripts/log_summary.py": {
       "path": "scripts/log_summary.py",
       "lines": 150,
@@ -11532,50 +11546,50 @@
     },
     "scripts/modular_audit.py": {
       "path": "scripts/modular_audit.py",
-      "lines": 570,
+      "lines": 780,
       "summary": "scripts/modular_audit.py \u2014 AST Decomposition Suggester & Modular Budget Guard.",
       "exports": null,
       "classes": [
         {
           "name": "ModuleStructure",
           "bases": [],
-          "start_line": 53,
-          "end_line": 226,
+          "start_line": 85,
+          "end_line": 258,
           "doc": "Detailed structural metrics extracted from a Python module.",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, file_path)",
-              "start_line": 56,
-              "end_line": 73,
+              "start_line": 88,
+              "end_line": 105,
               "doc": ""
             },
             {
               "name": "_analyze",
               "sig": "_analyze(self)",
-              "start_line": 75,
-              "end_line": 149,
+              "start_line": 107,
+              "end_line": 181,
               "doc": ""
             },
             {
               "name": "_extract_class_info",
               "sig": "_extract_class_info(self, node, lines)",
-              "start_line": 151,
-              "end_line": 179,
+              "start_line": 183,
+              "end_line": 211,
               "doc": ""
             },
             {
               "name": "_extract_func_info",
               "sig": "_extract_func_info(self, node, lines)",
-              "start_line": 181,
-              "end_line": 190,
+              "start_line": 213,
+              "end_line": 222,
               "doc": ""
             },
             {
               "name": "_classify_domain",
               "sig": "_classify_domain(name, bases, method_names)",
-              "start_line": 193,
-              "end_line": 226,
+              "start_line": 225,
+              "end_line": 258,
               "doc": "Classifies a class or function into a logical domain based on naming and signatures."
             }
           ]
@@ -11583,36 +11597,36 @@
         {
           "name": "DecompositionPlan",
           "bases": [],
-          "start_line": 233,
-          "end_line": 395,
+          "start_line": 265,
+          "end_line": 427,
           "doc": "Proposed modular decomposition plan for a monolithic source file.",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, structure)",
-              "start_line": 236,
-              "end_line": 244,
+              "start_line": 268,
+              "end_line": 276,
               "doc": ""
             },
             {
               "name": "_classify_method_domain",
               "sig": "_classify_method_domain(m_name)",
-              "start_line": 247,
-              "end_line": 257,
+              "start_line": 279,
+              "end_line": 289,
               "doc": ""
             },
             {
               "name": "_build_plan",
               "sig": "_build_plan(self)",
-              "start_line": 259,
-              "end_line": 362,
+              "start_line": 291,
+              "end_line": 394,
               "doc": ""
             },
             {
               "name": "render_markdown_blueprint",
               "sig": "render_markdown_blueprint(self)",
-              "start_line": 364,
-              "end_line": 395,
+              "start_line": 396,
+              "end_line": 427,
               "doc": ""
             }
           ]
@@ -11622,316 +11636,46 @@
         {
           "name": "scan_repository",
           "sig": "scan_repository(root_dir)",
-          "start_line": 402,
-          "end_line": 414,
+          "start_line": 434,
+          "end_line": 446,
           "doc": "Scans all Python modules in the repository, excluding build/venv directories."
         },
         {
           "name": "print_audit_report",
           "sig": "print_audit_report(structures, warn_threshold, hard_ceiling, sort_by)",
-          "start_line": 417,
-          "end_line": 458,
+          "start_line": 449,
+          "end_line": 490,
           "doc": "Prints a formatted terminal table showing modularity compliance."
         },
         {
           "name": "check_budget_guard",
           "sig": "check_budget_guard(structures, hard_ceiling, warn_threshold, exempt_paths)",
-          "start_line": 461,
-          "end_line": 494,
+          "start_line": 493,
+          "end_line": 526,
           "doc": "Programmatic budget check suitable for test runner and CI pipelines."
         },
         {
-          "name": "main",
-          "sig": "main()",
-          "start_line": 497,
-          "end_line": 566,
-          "doc": ""
-        }
-      ]
-    },
-    "scripts/setup_local_ai.py": {
-      "path": "scripts/setup_local_ai.py",
-      "lines": 952,
-      "summary": "scripts/setup_local_ai.py - Automated AMD Ryzen AI Local Platform & Hardware Probe",
-      "exports": null,
-      "classes": [
-        {
-          "name": "CPUInfo",
-          "bases": [],
-          "start_line": 34,
-          "end_line": 39,
-          "doc": "",
-          "methods": []
+          "name": "check_single_responsibility",
+          "sig": "check_single_responsibility(structure, strict)",
+          "start_line": 529,
+          "end_line": 617,
+          "doc": "Analyzes AST domain classification to verify Single Responsibility & Domain Separation."
         },
         {
-          "name": "MemoryInfo",
-          "bases": [],
-          "start_line": 43,
-          "end_line": 47,
-          "doc": "",
-          "methods": []
+          "name": "print_srp_report",
+          "sig": "print_srp_report(results, strict)",
+          "start_line": 620,
+          "end_line": 664,
+          "doc": "Prints a structured terminal report for Single Responsibility & Domain Separation."
         },
-        {
-          "name": "VulkanHeap",
-          "bases": [],
-          "start_line": 51,
-          "end_line": 55,
-          "doc": "",
-          "methods": []
-        },
-        {
-          "name": "GPUInfo",
-          "bases": [],
-          "start_line": 59,
-          "end_line": 70,
-          "doc": "",
-          "methods": []
-        },
-        {
-          "name": "NPUInfo",
-          "bases": [],
-          "start_line": 74,
-          "end_line": 78,
-          "doc": "",
-          "methods": []
-        },
-        {
-          "name": "OllamaInfo",
-          "bases": [],
-          "start_line": 82,
-          "end_line": 87,
-          "doc": "",
-          "methods": []
-        },
-        {
-          "name": "RecommendedEnv",
-          "bases": [],
-          "start_line": 91,
-          "end_line": 98,
-          "doc": "",
-          "methods": []
-        },
-        {
-          "name": "HardwareProbe",
-          "bases": [],
-          "start_line": 101,
-          "end_line": 335,
-          "doc": "Probes host hardware, UMA memory layout, and local inference runtimes.",
-          "methods": [
-            {
-              "name": "detect_cpu",
-              "sig": "detect_cpu()",
-              "start_line": 105,
-              "end_line": 130,
-              "doc": ""
-            },
-            {
-              "name": "detect_memory",
-              "sig": "detect_memory()",
-              "start_line": 133,
-              "end_line": 176,
-              "doc": ""
-            },
-            {
-              "name": "detect_gpu",
-              "sig": "detect_gpu()",
-              "start_line": 179,
-              "end_line": 273,
-              "doc": ""
-            },
-            {
-              "name": "detect_npu",
-              "sig": "detect_npu()",
-              "start_line": 276,
-              "end_line": 300,
-              "doc": ""
-            },
-            {
-              "name": "detect_ollama",
-              "sig": "detect_ollama()",
-              "start_line": 303,
-              "end_line": 335,
-              "doc": ""
-            }
-          ]
-        },
-        {
-          "name": "ModelProvisioner",
-          "bases": [],
-          "start_line": 374,
-          "end_line": 504,
-          "doc": "Provisions, manages, and verifies quantized local models via Ollama.",
-          "methods": [
-            {
-              "name": "resolve_tag",
-              "sig": "resolve_tag(cls, tier_or_tag)",
-              "start_line": 380,
-              "end_line": 384,
-              "doc": ""
-            },
-            {
-              "name": "list_tiers",
-              "sig": "list_tiers(cls)",
-              "start_line": 387,
-              "end_line": 402,
-              "doc": ""
-            },
-            {
-              "name": "pull_model",
-              "sig": "pull_model(cls, tier_or_tag)",
-              "start_line": 405,
-              "end_line": 448,
-              "doc": ""
-            },
-            {
-              "name": "verify_model",
-              "sig": "verify_model(cls, tier_or_tag, prompt)",
-              "start_line": 451,
-              "end_line": 504,
-              "doc": ""
-            }
-          ]
-        },
-        {
-          "name": "PromptCacheManager",
-          "bases": [],
-          "start_line": 507,
-          "end_line": 669,
-          "doc": "Pins repository symbol context into local Ollama KV prompt cache and tunes context windows.",
-          "methods": [
-            {
-              "name": "build_symbol_prefix",
-              "sig": "build_symbol_prefix(cls, index_path)",
-              "start_line": 513,
-              "end_line": 540,
-              "doc": ""
-            },
-            {
-              "name": "health_check",
-              "sig": "health_check(cls)",
-              "start_line": 543,
-              "end_line": 571,
-              "doc": ""
-            },
-            {
-              "name": "pin_cache",
-              "sig": "pin_cache(cls, tier_or_tag, keep_alive)",
-              "start_line": 574,
-              "end_line": 634,
-              "doc": ""
-            },
-            {
-              "name": "tune_context",
-              "sig": "tune_context(cls, tier_or_tag, context_window)",
-              "start_line": 637,
-              "end_line": 669,
-              "doc": ""
-            }
-          ]
-        },
-        {
-          "name": "PlatformReporter",
-          "bases": [],
-          "start_line": 672,
-          "end_line": 821,
-          "doc": "Formats hardware and runtime telemetry into readable diagnostic summaries.",
-          "methods": [
-            {
-              "name": "generate_full_report",
-              "sig": "generate_full_report(cls)",
-              "start_line": 676,
-              "end_line": 695,
-              "doc": ""
-            },
-            {
-              "name": "calculate_tier_feasibility",
-              "sig": "calculate_tier_feasibility(gpu, mem)",
-              "start_line": 698,
-              "end_line": 750,
-              "doc": ""
-            },
-            {
-              "name": "print_text_report",
-              "sig": "print_text_report(cls, report)",
-              "start_line": 753,
-              "end_line": 821,
-              "doc": ""
-            }
-          ]
-        }
-      ],
-      "functions": [
         {
           "name": "main",
           "sig": "main()",
-          "start_line": 824,
-          "end_line": 948,
+          "start_line": 667,
+          "end_line": 776,
           "doc": ""
         }
       ]
-    },
-    "scripts/task_router.py": {
-      "path": "scripts/task_router.py",
-      "lines": 257,
-      "summary": "scripts/task_router.py - Token-Budget Task-to-Model Router & CI Invariant Verifier",
-      "exports": null,
-      "classes": [
-        {
-          "name": "RouteRecommendation",
-          "bases": [],
-          "start_line": 21,
-          "end_line": 29,
-          "doc": "",
-          "methods": []
-        },
-        {
-          "name": "TaskRouter",
-          "bases": [],
-          "start_line": 32,
-          "end_line": 153,
-          "doc": "Routes coding tasks to the optimal local model based on token budgets and file scope.",
-          "methods": [
-            {
-              "name": "load_symbol_index",
-              "sig": "load_symbol_index(cls)",
-              "start_line": 50,
-              "end_line": 57,
-              "doc": ""
-            },
-            {
-              "name": "identify_target_files",
-              "sig": "identify_target_files(cls, query, symbol_index)",
-              "start_line": 60,
-              "end_line": 72,
-              "doc": ""
-            },
-            {
-              "name": "route_task",
-              "sig": "route_task(cls, query)",
-              "start_line": 75,
-              "end_line": 153,
-              "doc": ""
-            }
-          ]
-        },
-        {
-          "name": "CIInvariantVerifier",
-          "bases": [],
-          "start_line": 156,
-          "end_line": 233,
-          "doc": "Verifies repository build, modularity, and CI packaging invariants.",
-          "methods": [
-            {
-              "name": "verify_all",
-              "sig": "verify_all(cls)",
-              "start_line": 160,
-              "end_line": 233,
-              "doc": ""
-            }
-          ]
-        }
-      ],
-      "functions": []
     },
     "shortcuts/__init__.py": {
       "path": "shortcuts/__init__.py",
@@ -16093,7 +15837,7 @@
     "transcript_story.py": {
       "path": "transcript_story.py",
       "lines": 847,
-      "summary": "Radio & TV Segmenter v3.9.52-beta \u2014 transcript story responsibilities.",
+      "summary": "Radio & TV Segmenter v3.9.53-beta \u2014 transcript story responsibilities.",
       "exports": [
         "TranscriptStoryMixin",
         "Story",
@@ -17049,7 +16793,7 @@
     },
     "updater.py": {
       "path": "updater.py",
-      "lines": 1460,
+      "lines": 1481,
       "summary": "Update manager and GitHub release installer for Radio & TV Segmenter.",
       "exports": null,
       "classes": [
@@ -17116,7 +16860,7 @@
             "QDialog"
           ],
           "start_line": 860,
-          "end_line": 1424,
+          "end_line": 1445,
           "doc": "",
           "methods": [
             {
@@ -17165,91 +16909,91 @@
               "name": "_display_release",
               "sig": "_display_release(self, release_info)",
               "start_line": 1105,
-              "end_line": 1191,
+              "end_line": 1212,
               "doc": ""
             },
             {
               "name": "_on_up_to_date",
               "sig": "_on_up_to_date(self, current_ver, remote_tag)",
-              "start_line": 1193,
-              "end_line": 1205,
+              "start_line": 1214,
+              "end_line": 1226,
               "doc": ""
             },
             {
               "name": "_on_update_available",
               "sig": "_on_update_available(self, release_info, asset_info, is_newer)",
-              "start_line": 1207,
-              "end_line": 1208,
+              "start_line": 1228,
+              "end_line": 1229,
               "doc": ""
             },
             {
               "name": "_on_check_error",
               "sig": "_on_check_error(self, message)",
-              "start_line": 1210,
-              "end_line": 1216,
+              "start_line": 1231,
+              "end_line": 1237,
               "doc": ""
             },
             {
               "name": "_handle_primary_action",
               "sig": "_handle_primary_action(self)",
-              "start_line": 1218,
-              "end_line": 1232,
+              "start_line": 1239,
+              "end_line": 1253,
               "doc": ""
             },
             {
               "name": "_confirm_downgrade",
               "sig": "_confirm_downgrade(self, target_version)",
-              "start_line": 1234,
-              "end_line": 1249,
+              "start_line": 1255,
+              "end_line": 1270,
               "doc": "Modal Warning Dialog when selecting a version lower than installed PROJECT_VERSION."
             },
             {
               "name": "start_download",
               "sig": "start_download(self)",
-              "start_line": 1251,
-              "end_line": 1281,
+              "start_line": 1272,
+              "end_line": 1302,
               "doc": ""
             },
             {
               "name": "_on_download_progress",
               "sig": "_on_download_progress(self, percent, downloaded, total, speed_str)",
-              "start_line": 1283,
-              "end_line": 1287,
+              "start_line": 1304,
+              "end_line": 1308,
               "doc": ""
             },
             {
               "name": "_on_download_finished",
               "sig": "_on_download_finished(self, file_path)",
-              "start_line": 1289,
-              "end_line": 1296,
+              "start_line": 1310,
+              "end_line": 1317,
               "doc": ""
             },
             {
               "name": "_on_download_error",
               "sig": "_on_download_error(self, message)",
-              "start_line": 1298,
-              "end_line": 1317,
+              "start_line": 1319,
+              "end_line": 1338,
               "doc": ""
             },
             {
               "name": "_install_and_restart",
               "sig": "_install_and_restart(self)",
-              "start_line": 1319,
-              "end_line": 1406,
+              "start_line": 1340,
+              "end_line": 1427,
               "doc": ""
             },
             {
               "name": "_open_github_release",
               "sig": "_open_github_release(self)",
-              "start_line": 1408,
-              "end_line": 1410,
+              "start_line": 1429,
+              "end_line": 1431,
               "doc": ""
             },
             {
               "name": "_handle_close",
               "sig": "_handle_close(self)",
-              "start_line": 1412,
-              "end_line": 1424,
+              "start_line": 1433,
+              "end_line": 1445,
               "doc": ""
             }
           ]
@@ -17257,22 +17001,22 @@
         {
           "name": "UpdaterMixin",
           "bases": [],
-          "start_line": 1427,
-          "end_line": 1460,
+          "start_line": 1448,
+          "end_line": 1481,
           "doc": "",
           "methods": [
             {
               "name": "check_for_updates",
               "sig": "check_for_updates(self, interactive)",
-              "start_line": 1428,
-              "end_line": 1434,
+              "start_line": 1449,
+              "end_line": 1455,
               "doc": ""
             },
             {
               "name": "trigger_silent_update_check",
               "sig": "trigger_silent_update_check(self)",
-              "start_line": 1436,
-              "end_line": 1460,
+              "start_line": 1457,
+              "end_line": 1481,
               "doc": ""
             }
           ]

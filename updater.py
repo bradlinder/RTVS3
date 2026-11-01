@@ -48,7 +48,7 @@ except ImportError:
         )
     except Exception:
         APP_DISPLAY_NAME = "Radio & TV Segmenter"
-        PROJECT_VERSION = "3.9.52-beta"
+        PROJECT_VERSION = "3.9.53-beta"
         DEFAULT_GITHUB_REPO = "bradlinder/RTVS3"
         INTERNAL_APP_ID = "RadioTVStorySegmenter"
 
@@ -1136,6 +1136,13 @@ class CheckUpdateDialog(QDialog):
         is_older = is_version_older(tag, PROJECT_VERSION)
         is_current = (clean_cur == clean_tag)
 
+        top_release = self.releases[0] if getattr(self, "releases", None) else None
+        is_top_release = False
+        if top_release:
+            top_tag = top_release.get("tag_name", "")
+            clean_top = re.sub(r"^(?:version|ver|v)?[.\s_-]*", "", top_tag.strip(), flags=re.IGNORECASE).lower()
+            is_top_release = (clean_tag == clean_top)
+
         if is_newer:
             self.status_label.setText(f"★ A newer version is available: {name} ({tag})")
             self.status_label.setStyleSheet("font-size: 14px; color: #1976d2; font-weight: bold;")
@@ -1145,7 +1152,10 @@ class CheckUpdateDialog(QDialog):
             self.status_label.setStyleSheet("font-size: 13px; color: #e65100; font-weight: bold;")
             primary_verb = "Rollback to"
         elif is_current:
-            self.status_label.setText(f"✓ You are currently running this version (v{PROJECT_VERSION})")
+            if is_top_release:
+                self.status_label.setText(f"✓ Radio & TV Segmenter is up to date (v{PROJECT_VERSION})")
+            else:
+                self.status_label.setText(f"✓ You are currently running this version (v{PROJECT_VERSION})")
             self.status_label.setStyleSheet("font-size: 13px; color: #2e7d32; font-weight: bold;")
             primary_verb = "Reinstall"
         else:
@@ -1174,7 +1184,15 @@ class CheckUpdateDialog(QDialog):
             updates_dir = get_app_data_dir() / "updates"
             existing_file = (updates_dir / Path(asset_name).name).resolve() if asset_name else None
             expected_size = int(self.asset_info.get("size", 0))
-            if existing_file and existing_file.is_file() and (expected_size <= 0 or existing_file.stat().st_size >= expected_size * 0.95):
+            is_cached = bool(existing_file and existing_file.is_file() and (expected_size <= 0 or existing_file.stat().st_size >= expected_size * 0.95))
+
+            if is_current:
+                self.downloaded_path = str(existing_file) if is_cached else None
+                if is_top_release:
+                    self.action_btn.setText("Check Again")
+                else:
+                    self.action_btn.setText(f"Reinstall {tag}")
+            elif is_cached:
                 self.downloaded_path = str(existing_file)
                 self.action_btn.setText("Restart && Install")
                 self.status_label.setText(f"✓ Update package for {tag} is already downloaded and ready to install.")
@@ -1185,7 +1203,10 @@ class CheckUpdateDialog(QDialog):
         else:
             self.asset_info_label.setText("No automated binary package detected for your OS. Visit GitHub to download.")
             self.asset_info_label.show()
-            self.action_btn.setText("Open Download Page")
+            if is_current and is_top_release:
+                self.action_btn.setText("Check Again")
+            else:
+                self.action_btn.setText("Open Download Page")
 
         self.action_btn.setEnabled(True)
         self.github_link_btn.show()

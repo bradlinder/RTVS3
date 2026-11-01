@@ -1,13 +1,13 @@
 # Repository Symbol Index & API Map
 
-> Generated: 2026-10-30 11:11:14 | Total Files: 157
+> Generated: 2026-11-01 17:50:29 | Total Files: 155
 > Use `python scripts/generate_symbol_index.py --outline <file>` for exact line numbers.
 
 ## Modules Overview
 
 | Module | Lines | Summary | Primary Classes / Functions |
 | :--- | :---: | :--- | :--- |
-| `RadioTVSegmenter.py` | 646 | Radio & TV Segmenter — v3.9.52-beta | `MainWindow`, `main()` |
+| `RadioTVSegmenter.py` | 646 | Radio & TV Segmenter — v3.9.53-beta | `MainWindow`, `main()` |
 | `audio_normalization.py` | 541 | Radio & TV Story Segmenter — Audio Loudness Probing & Nor... | `LoudnessReport`, `AudioLoudnessProbeWorker`, `parse_ebur128_summary()`, `probe_media_duration_seconds()` *(+3 more)* |
 | `background_workers.py` | 1015 | Radio & TV Story Segmenter — Background Worker Threads & ... | `StoryAutoDetectWorker`, `WaveformWorker`, `VideoThumbnailWorker`, `get_waveform_peak_cache_path()` *(+6 more)* |
 | `backup_manager.py` | 622 | Unified State Serialization, Local, and Google Drive Clou... | `compute_data_checksum()`, `serialize_preferences()`, `serialize_keyboard_shortcuts()`, `serialize_glossary()` *(+7 more)* |
@@ -18,7 +18,7 @@
 | `benchmark_models.py` | 457 | benchmark_models.py - Benchmark Data Models, Audio Genera... | `BenchmarkMetric`, `ProcessingEstimates`, `get_app_data_dir()`, `get_candidate_sample_audio_paths()` *(+9 more)* |
 | `bootstrap.py` | 385 | Install-safe startup environment configuration for Radio ... | `NullWriter`, `init_null_streams_and_hf_env()`, `patch_av_open()`, `app_data_dir()` *(+7 more)* |
 | `build_installer.py` | 1079 | Build the installable Radio & TV Segmenter application wi... | `exe_name()`, `find_tool()`, `check_cpu_only_torch()`, `torch_windows_binary_flags()` *(+8 more)* |
-| `bump_version.py` | 504 | bump_version.py — Automated Version Synchronization Engine | `normalize_version()`, `get_current_version()`, `compute_bump()`, `detect_modified_plugins()` *(+3 more)* |
+| `bump_version.py` | 513 | bump_version.py — Automated Version Synchronization Engine | `normalize_version()`, `get_current_version()`, `compute_bump()`, `detect_modified_plugins()` *(+3 more)* |
 | `cache_manager.py` | 685 | Radio & TV Segmenter — Cache management, disk usage scann... | `ClearCacheDialog`, `register_active_thumbnail_dir()`, `unregister_active_thumbnail_dir()`, `get_active_thumbnail_dirs()` *(+3 more)* |
 | `comment_widgets.py` | 350 | comment_widgets.py - Range-Anchored Comments Panel & Comm... | `CommentEditorDialog`, `CommentCardWidget`, `CommentsPanel` |
 | `core_utils.py` | 666 | Radio & TV Segmenter — Core filesystem, path, timing, and... | `safe_process_events()`, `get_active_theme_mode()`, `apply_window_titlebar_theme()`, `make_dialog_maximizable()` *(+22 more)* |
@@ -97,13 +97,11 @@
 | `radio_tv_story_segmenter_worker.py` | 226 | Radio & TV Story Segmenter — AI Background Subprocess Wor... | `main()` |
 | `roadmap_manager.py` | 259 | roadmap_manager.py — Automated Roadmap & N-1 Sliding-Wind... | `RoadmapManager`, `get_current_app_version()`, `main()` |
 | `runtime_manager.py` | 1037 |  | `RuntimeManager`, `register_process()`, `unregister_process()`, `kill_all_subprocesses()` *(+1 more)* |
+| `scripts/dev_check.py` | 154 | scripts/dev_check.py - Ultra-Fast Pre-Flight Development ... | `check_syntax()`, `check_typing_stubs()`, `check_preview_sync()`, `check_modular_budget()` *(+2 more)* |
 | `scripts/generate_pyi_stubs.py` | 214 | generate_pyi_stubs.py — Automated Interface Typing Stub (... | `StubTransformer`, `generate_stub_source()`, `get_large_modules()`, `generate_stub_file()` *(+1 more)* |
 | `scripts/generate_symbol_index.py` | 380 | generate_symbol_index.py — Fast AST Symbol Indexer & Repo... | `parse_function_signature()`, `analyze_file()`, `scan_repository()`, `generate_index_markdown()` *(+4 more)* |
-| `scripts/ide_config.py` | 183 | scripts/ide_config.py - Token-Thrifty IDE Configuration &... | `build_vscode_settings()`, `build_continue_config()`, `build_cline_rules()`, `setup_all_ide_configs()` |
 | `scripts/log_summary.py` | 150 | log_summary.py — Compact Error & Exception Extraction Engine | `is_project_frame()`, `extract_log_summary()`, `main()` |
-| `scripts/modular_audit.py` | 570 | scripts/modular_audit.py — AST Decomposition Suggester & ... | `ModuleStructure`, `DecompositionPlan`, `scan_repository()`, `print_audit_report()` *(+2 more)* |
-| `scripts/setup_local_ai.py` | 952 | scripts/setup_local_ai.py - Automated AMD Ryzen AI Local ... | `CPUInfo`, `MemoryInfo`, `VulkanHeap`, `GPUInfo` *(+8 more)* |
-| `scripts/task_router.py` | 257 | scripts/task_router.py - Token-Budget Task-to-Model Route... | `RouteRecommendation`, `TaskRouter`, `CIInvariantVerifier` |
+| `scripts/modular_audit.py` | 780 | scripts/modular_audit.py — AST Decomposition Suggester & ... | `ModuleStructure`, `DecompositionPlan`, `scan_repository()`, `print_audit_report()` *(+4 more)* |
 | `shortcuts/__init__.py` | 26 | shortcuts package — Modular Keyboard Shortcuts Management... | - |
 | `shortcuts/definitions.py` | 22 | shortcuts/definitions.py — Shortcut definitions and schem... | - |
 | `shortcuts/dialogs.py` | 623 | shortcuts/dialogs.py — Preferences page for keyboard shor... | `KeyboardShortcutsPage` |
@@ -143,7 +141,7 @@
 | `transcript_navigation_mixin.py` | 299 | transcript_navigation_mixin.py - Timestamp discovery, car... | `TranscriptNavigationMixin` |
 | `transcript_playback_highlight_mixin.py` | 276 | Radio & TV Story Segmenter — Interactive Transcript Playb... | `TranscriptPlaybackHighlightMixin` |
 | `transcript_selection_mixin.py` | 420 | transcript_selection_mixin.py - Multi-selection, timeline... | `TranscriptSelectionMixin` |
-| `transcript_story.py` | 847 | Radio & TV Segmenter v3.9.52-beta — transcript story resp... | `TranscriptStoryMixin` |
+| `transcript_story.py` | 847 | Radio & TV Segmenter v3.9.53-beta — transcript story resp... | `TranscriptStoryMixin` |
 | `transcript_styles.py` | 104 | transcript_styles.py - Transcript view stylesheets and da... | `transcript_text_view_stylesheet()`, `clean_dark_mode_clipboard_html()` |
 | `transcript_timeline_sync_mixin.py` | 566 | Radio & TV Story Segmenter — Transcript Timeline & Playba... | `TranscriptTimelineSyncMixin` |
 | `transcription_processing.py` | 579 | Transcription background process management for Radio & T... | `TranscriptionProcessingMixin` |
@@ -151,7 +149,7 @@
 | `ui_dialog_launchers.py` | 337 | Dialog launchers and external modal helpers for Radio & T... | `UiDialogLaunchersMixin` |
 | `ui_layout.py` | 1060 | Radio & TV Segmenter — UI Layout & Menu Construction Mixin. | `UiLayoutMixin` |
 | `ui_menus.py` | 809 | Main application menu bar and action assembly for Radio &... | `PersistentMenu`, `UiMenusMixin` |
-| `updater.py` | 1460 | Update manager and GitHub release installer for Radio & T... | `CheckUpdateWorker`, `DownloadUpdateWorker`, `CheckUpdateDialog`, `UpdaterMixin` *(+9 more)* |
+| `updater.py` | 1481 | Update manager and GitHub release installer for Radio & T... | `CheckUpdateWorker`, `DownloadUpdateWorker`, `CheckUpdateDialog`, `UpdaterMixin` *(+9 more)* |
 | `utils/__init__.py` | 36 | Utility modules for Radio & TV Story Segmenter. | - |
 | `utils/constants.py` | 41 | Application constants and environment configuration. | - |
 | `utils/time_format.py` | 19 | Time formatting and parsing utilities. | - |
@@ -168,7 +166,7 @@
 ## Detailed Symbol Catalog
 
 ### `RadioTVSegmenter.py` (646 lines)
-*Radio & TV Segmenter — v3.9.52-beta*
+*Radio & TV Segmenter — v3.9.53-beta*
 - **class `MainWindow(ModelManagementMixin, MediaBatchMixin, PlaybackPreferencesMixin, UiLayoutMixin, ProcessingMixin, TranslationMixin, TranscriptStoryMixin, ProjectExportMixin, GpuAccelerationMixin, QMainWindow)`** (lines 160–543):
   *Main application window for Radio & TV Segmenter.*
   - `__init__(self)` [L178-L350]
@@ -352,7 +350,7 @@
   - `package_plugins(app_root, include_wp, include_yt, include_tr)` [L624-L692] — *Package plugins into standalone .zip release artifacts in dist/plugins/*
   - `main()` [L695-L1075]
 
-### `bump_version.py` (504 lines)
+### `bump_version.py` (513 lines)
 *bump_version.py — Automated Version Synchronization Engine*
 - **Functions**:
   - `normalize_version(ver)` [L26-L30] — *Normalize version string: strip leading 'v', collapse double dots, trim.*
@@ -360,8 +358,8 @@
   - `compute_bump(current_version, bump_type)` [L48-L66] — *Calculate next semantic version (patch, minor, major) preserving any suffix (e.g. -beta, -stable).*
   - `detect_modified_plugins()` [L69-L92] — *Auto-detect plugins with uncommitted changes via git status for Lazy Catch-Up Policy.*
   - `check_all_versions()` [L94-L197] — *Inspect and report the version strings currently set across all files.*
-  - `bump_all(new_version, dry_run, plugins)` [L199-L455] — *Execute synchronous version updates across all checklist targets.*
-  - `main()` [L457-L501]
+  - `bump_all(new_version, dry_run, plugins)` [L199-L464] — *Execute synchronous version updates across all checklist targets.*
+  - `main()` [L466-L510]
 
 ### `cache_manager.py` (685 lines)
 *Radio & TV Segmenter — Cache management, disk usage scanning, and purging utilities.*
@@ -1994,6 +1992,16 @@
   - `detect_nvidia_gpu()` [L329-L343] — *Best-effort check for a usable NVIDIA GPU on this machine, so the*
   - `_remove_macos_quarantine(target_path)` [L346-L360] — *Strip Gatekeeper com.apple.quarantine attribute on macOS for standalone executables.*
 
+### `scripts/dev_check.py` (154 lines)
+*scripts/dev_check.py - Ultra-Fast Pre-Flight Development & AI Safety Gate*
+- **Functions**:
+  - `check_syntax()` [L32-L43] — *Compiles all tracked python files in root and scripts.*
+  - `check_typing_stubs()` [L46-L52] — *Verifies interface stubs for modules exceeding 800 lines.*
+  - `check_preview_sync()` [L55-L61] — *Ensures zero-dependency preview files match prs_shared.py.*
+  - `check_modular_budget()` [L64-L98] — *Guards against new monolithic files exceeding the 1,000 line ceiling.*
+  - `check_regression_tests()` [L101-L109] — *Executes change-aware Tier 2 diagnostic test suite.*
+  - `main()` [L112-L150]
+
 ### `scripts/generate_pyi_stubs.py` (214 lines)
 *generate_pyi_stubs.py — Automated Interface Typing Stub (.pyi) Generator.*
 - **class `StubTransformer(ast.NodeTransformer)`** (lines 48–87):
@@ -2019,14 +2027,6 @@
   - `build_and_save_index()` [L322-L342] — *Build the symbol index and save both JSON and Markdown into .codemaps/.*
   - `main()` [L345-L376]
 
-### `scripts/ide_config.py` (183 lines)
-*scripts/ide_config.py - Token-Thrifty IDE Configuration & Rule Provisioner*
-- **Functions**:
-  - `build_vscode_settings()` [L16-L49]
-  - `build_continue_config()` [L52-L120]
-  - `build_cline_rules()` [L123-L153]
-  - `setup_all_ide_configs(workspace_root)` [L156-L183]
-
 ### `scripts/log_summary.py` (150 lines)
 *log_summary.py — Compact Error & Exception Extraction Engine*
 - **Functions**:
@@ -2034,74 +2034,28 @@
   - `extract_log_summary(raw_log)` [L42-L128] — *Extract a high-density summary from a raw log or traceback string.*
   - `main()` [L130-L147]
 
-### `scripts/modular_audit.py` (570 lines)
+### `scripts/modular_audit.py` (780 lines)
 *scripts/modular_audit.py — AST Decomposition Suggester & Modular Budget Guard.*
-- **class `ModuleStructure`** (lines 53–226):
+- **class `ModuleStructure`** (lines 85–258):
   *Detailed structural metrics extracted from a Python module.*
-  - `__init__(self, file_path)` [L56-L73]
-  - `_analyze(self)` [L75-L149]
-  - `_extract_class_info(self, node, lines)` [L151-L179]
-  - `_extract_func_info(self, node, lines)` [L181-L190]
-  - `_classify_domain(name, bases, method_names)` [L193-L226] — *Classifies a class or function into a logical domain based on naming and signatures.*
-- **class `DecompositionPlan`** (lines 233–395):
+  - `__init__(self, file_path)` [L88-L105]
+  - `_analyze(self)` [L107-L181]
+  - `_extract_class_info(self, node, lines)` [L183-L211]
+  - `_extract_func_info(self, node, lines)` [L213-L222]
+  - `_classify_domain(name, bases, method_names)` [L225-L258] — *Classifies a class or function into a logical domain based on naming and signatures.*
+- **class `DecompositionPlan`** (lines 265–427):
   *Proposed modular decomposition plan for a monolithic source file.*
-  - `__init__(self, structure)` [L236-L244]
-  - `_classify_method_domain(m_name)` [L247-L257]
-  - `_build_plan(self)` [L259-L362]
-  - `render_markdown_blueprint(self)` [L364-L395]
+  - `__init__(self, structure)` [L268-L276]
+  - `_classify_method_domain(m_name)` [L279-L289]
+  - `_build_plan(self)` [L291-L394]
+  - `render_markdown_blueprint(self)` [L396-L427]
 - **Functions**:
-  - `scan_repository(root_dir)` [L402-L414] — *Scans all Python modules in the repository, excluding build/venv directories.*
-  - `print_audit_report(structures, warn_threshold, hard_ceiling, sort_by)` [L417-L458] — *Prints a formatted terminal table showing modularity compliance.*
-  - `check_budget_guard(structures, hard_ceiling, warn_threshold, exempt_paths)` [L461-L494] — *Programmatic budget check suitable for test runner and CI pipelines.*
-  - `main()` [L497-L566]
-
-### `scripts/setup_local_ai.py` (952 lines)
-*scripts/setup_local_ai.py - Automated AMD Ryzen AI Local Platform & Hardware Probe*
-- **class `CPUInfo`** (lines 34–39):
-- **class `MemoryInfo`** (lines 43–47):
-- **class `VulkanHeap`** (lines 51–55):
-- **class `GPUInfo`** (lines 59–70):
-- **class `NPUInfo`** (lines 74–78):
-- **class `OllamaInfo`** (lines 82–87):
-- **class `RecommendedEnv`** (lines 91–98):
-- **class `HardwareProbe`** (lines 101–335):
-  *Probes host hardware, UMA memory layout, and local inference runtimes.*
-  - `detect_cpu()` [L105-L130]
-  - `detect_memory()` [L133-L176]
-  - `detect_gpu()` [L179-L273]
-  - `detect_npu()` [L276-L300]
-  - `detect_ollama()` [L303-L335]
-- **class `ModelProvisioner`** (lines 374–504):
-  *Provisions, manages, and verifies quantized local models via Ollama.*
-  - `resolve_tag(cls, tier_or_tag)` [L380-L384]
-  - `list_tiers(cls)` [L387-L402]
-  - `pull_model(cls, tier_or_tag)` [L405-L448]
-  - `verify_model(cls, tier_or_tag, prompt)` [L451-L504]
-- **class `PromptCacheManager`** (lines 507–669):
-  *Pins repository symbol context into local Ollama KV prompt cache and tunes context windows.*
-  - `build_symbol_prefix(cls, index_path)` [L513-L540]
-  - `health_check(cls)` [L543-L571]
-  - `pin_cache(cls, tier_or_tag, keep_alive)` [L574-L634]
-  - `tune_context(cls, tier_or_tag, context_window)` [L637-L669]
-- **class `PlatformReporter`** (lines 672–821):
-  *Formats hardware and runtime telemetry into readable diagnostic summaries.*
-  - `generate_full_report(cls)` [L676-L695]
-  - `calculate_tier_feasibility(gpu, mem)` [L698-L750]
-  - `print_text_report(cls, report)` [L753-L821]
-- **Functions**:
-  - `main()` [L824-L948]
-
-### `scripts/task_router.py` (257 lines)
-*scripts/task_router.py - Token-Budget Task-to-Model Router & CI Invariant Verifier*
-- **class `RouteRecommendation`** (lines 21–29):
-- **class `TaskRouter`** (lines 32–153):
-  *Routes coding tasks to the optimal local model based on token budgets and file scope.*
-  - `load_symbol_index(cls)` [L50-L57]
-  - `identify_target_files(cls, query, symbol_index)` [L60-L72]
-  - `route_task(cls, query)` [L75-L153]
-- **class `CIInvariantVerifier`** (lines 156–233):
-  *Verifies repository build, modularity, and CI packaging invariants.*
-  - `verify_all(cls)` [L160-L233]
+  - `scan_repository(root_dir)` [L434-L446] — *Scans all Python modules in the repository, excluding build/venv directories.*
+  - `print_audit_report(structures, warn_threshold, hard_ceiling, sort_by)` [L449-L490] — *Prints a formatted terminal table showing modularity compliance.*
+  - `check_budget_guard(structures, hard_ceiling, warn_threshold, exempt_paths)` [L493-L526] — *Programmatic budget check suitable for test runner and CI pipelines.*
+  - `check_single_responsibility(structure, strict)` [L529-L617] — *Analyzes AST domain classification to verify Single Responsibility & Domain Separation.*
+  - `print_srp_report(results, strict)` [L620-L664] — *Prints a structured terminal report for Single Responsibility & Domain Separation.*
+  - `main()` [L667-L776]
 
 ### `shortcuts/__init__.py` (26 lines)
 *shortcuts package — Modular Keyboard Shortcuts Management Subsystem.*
@@ -2794,7 +2748,7 @@
   - `_on_bubble_export(self)` [L415-L420]
 
 ### `transcript_story.py` (847 lines)
-*Radio & TV Segmenter v3.9.52-beta — transcript story responsibilities.*
+*Radio & TV Segmenter v3.9.53-beta — transcript story responsibilities.*
 - **Public Exports (`__all__`)**: TranscriptStoryMixin, Story, SetStoriesCommand, SelectStoriesCommand, StoryBoundaryChangeCommand, StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin, ChangeSpeakerDialog, VoiceProfileMatchDialog, StoryFadesDialog, SpeakerManagerDialog, FADE_CURVE_TABLES, get_fade_curve_factors
 - **class `TranscriptStoryMixin(StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin)`** (lines 63–846):
   - `render_transcript(self)` [L64-L463]
@@ -2947,7 +2901,7 @@
   - `update_processing_menu_status(self)` [L731-L754] — *Update label annotations on Tools actions reflecting pipeline stage completion.*
   - `refresh_plugin_menus(self)` [L757-L808] — *Dynamically populate plugin export actions, tools menu actions, and core UI controls.*
 
-### `updater.py` (1460 lines)
+### `updater.py` (1481 lines)
 *Update manager and GitHub release installer for Radio & TV Segmenter.*
 - **class `CheckUpdateWorker(QThread)`** (lines 649–707):
   - `__init__(self, repo, parent, channel)` [L655-L661]
@@ -2956,29 +2910,29 @@
   - `__init__(self, download_url, file_name, parent, release_info)` [L777-L782]
   - `cancel(self)` [L784-L785]
   - `run(self)` [L787-L857]
-- **class `CheckUpdateDialog(QDialog)`** (lines 860–1424):
+- **class `CheckUpdateDialog(QDialog)`** (lines 860–1445):
   - `__init__(self, parent, auto_start)` [L861-L892]
   - `_build_ui(self)` [L894-L1029]
   - `_on_channel_changed(self, index)` [L1031-L1038]
   - `start_check(self)` [L1040-L1060]
   - `_on_releases_loaded(self, releases)` [L1062-L1097]
   - `_on_version_selected(self, index)` [L1099-L1103]
-  - `_display_release(self, release_info)` [L1105-L1191]
-  - `_on_up_to_date(self, current_ver, remote_tag)` [L1193-L1205]
-  - `_on_update_available(self, release_info, asset_info, is_newer)` [L1207-L1208]
-  - `_on_check_error(self, message)` [L1210-L1216]
-  - `_handle_primary_action(self)` [L1218-L1232]
-  - `_confirm_downgrade(self, target_version)` [L1234-L1249] — *Modal Warning Dialog when selecting a version lower than installed PROJECT_VERSION.*
-  - `start_download(self)` [L1251-L1281]
-  - `_on_download_progress(self, percent, downloaded, total, speed_str)` [L1283-L1287]
-  - `_on_download_finished(self, file_path)` [L1289-L1296]
-  - `_on_download_error(self, message)` [L1298-L1317]
-  - `_install_and_restart(self)` [L1319-L1406]
-  - `_open_github_release(self)` [L1408-L1410]
-  - `_handle_close(self)` [L1412-L1424]
-- **class `UpdaterMixin`** (lines 1427–1460):
-  - `check_for_updates(self, interactive)` [L1428-L1434]
-  - `trigger_silent_update_check(self)` [L1436-L1460]
+  - `_display_release(self, release_info)` [L1105-L1212]
+  - `_on_up_to_date(self, current_ver, remote_tag)` [L1214-L1226]
+  - `_on_update_available(self, release_info, asset_info, is_newer)` [L1228-L1229]
+  - `_on_check_error(self, message)` [L1231-L1237]
+  - `_handle_primary_action(self)` [L1239-L1253]
+  - `_confirm_downgrade(self, target_version)` [L1255-L1270] — *Modal Warning Dialog when selecting a version lower than installed PROJECT_VERSION.*
+  - `start_download(self)` [L1272-L1302]
+  - `_on_download_progress(self, percent, downloaded, total, speed_str)` [L1304-L1308]
+  - `_on_download_finished(self, file_path)` [L1310-L1317]
+  - `_on_download_error(self, message)` [L1319-L1338]
+  - `_install_and_restart(self)` [L1340-L1427]
+  - `_open_github_release(self)` [L1429-L1431]
+  - `_handle_close(self)` [L1433-L1445]
+- **class `UpdaterMixin`** (lines 1448–1481):
+  - `check_for_updates(self, interactive)` [L1449-L1455]
+  - `trigger_silent_update_check(self)` [L1457-L1481]
 - **Functions**:
   - `parse_version_tuple(version_str)` [L117-L150] — *Parse version string into comparable numerical components and a pre-release weight tuple.*
   - `is_version_newer(remote_version_str, current_version_str)` [L153-L160] — *Return True if remote_version_str is strictly newer than current_version_str.*
