@@ -427,6 +427,8 @@ class PlaybackControllerMixin:
                 self.speed_combo.blockSignals(False)
 
     def toggle_play(self):
+        if hasattr(self, "transcript_view"):
+            self.transcript_view._auto_scroll_detached = False
         if self.player.playbackState() == QMediaPlayer.PlaybackState.PlayingState:
             self.player.pause()
             if hasattr(self, "fade_preview_timer"):
@@ -473,6 +475,7 @@ class PlaybackControllerMixin:
                 f"{format_time(self.current_position)} / {format_time(getattr(self, 'duration', 0.0))}"
             )
         if hasattr(self, "transcript_view"):
+            self.transcript_view._auto_scroll_detached = False
             self.transcript_view.highlight_word_at_time(seconds, self.transcript)
         if hasattr(self, "player") and self.player.playbackState() == QMediaPlayer.PlaybackState.PlayingState:
             self.update_realtime_fade_volume()

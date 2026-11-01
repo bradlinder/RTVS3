@@ -564,3 +564,25 @@ class TranscriptTimelineSyncMixin:
         self.last_active_highlight_anchor = target_anchor
         self._playback_highlight_selection = extra
         self.update_extra_selections()
+
+        # Threshold-based auto-scroll during playback
+        should_auto_scroll = getattr(self, "transcript_auto_scroll", True)
+        if should_auto_scroll and hasattr(self, "viewport") and hasattr(self, "cursorRect"):
+            # Do not scroll if in edit mode or during active user click/selection drag
+            if not getattr(self, "is_editing_mode", False) and not getattr(self, "_is_left_down", False) and not getattr(self, "_is_right_down", False):
+                viewport = self.viewport()
+                vh = viewport.height() if viewport else 0
+                if vh > 40:
+                    cursor_rect = self.cursorRect(target_cursor)
+                    is_in_viewport = (0 <= cursor_rect.top() <= vh)
+                    if is_in_viewport:
+                        self._auto_scroll_detached = False
+
+                    if not getattr(self, "_auto_scroll_detached", False):
+                        # Scroll when word reaches the bottom ~18% threshold or is off-screen
+                        if cursor_rect.bottom() > vh * 0.82 or cursor_rect.top() < 0 or cursor_rect.bottom() > vh:
+                            target_y = int(vh * 0.25)
+                            diff = cursor_rect.top() - target_y
+                            sb = self.verticalScrollBar()
+                            if sb is not None:
+                                sb.setValue(sb.value() + diff)

@@ -1,4 +1,4 @@
-"""Radio & TV Segmenter — v3.9.53-beta
+"""Radio & TV Segmenter — v3.9.54-beta
 
 This is the thin application composition root. UI/processing responsibilities
 are implemented in focused mixins so future changes can target smaller files
@@ -442,6 +442,11 @@ class MainWindow(
         if self.timeline_thumbnail_position not in ("above", "below"):
             self.timeline_thumbnail_position = "below"
         self.transcript_selection_mode = str(s.value("transcript_selection_mode", "replace") or "replace")
+        self.transcript_auto_scroll = str(s.value("transcript_auto_scroll", "true")).lower() in {"1", "true", "yes"}
+        if hasattr(self, "transcript_view"):
+            self.transcript_view.transcript_auto_scroll = self.transcript_auto_scroll
+        if hasattr(self, "transcript_auto_scroll_action"):
+            self.transcript_auto_scroll_action.setChecked(self.transcript_auto_scroll)
         self.show_floating_selection_toolbar = str(s.value("show_floating_selection_toolbar", "true")).lower() in {"1", "true", "yes"}
         try:
             self.transcript_font_scale = max(0.80, min(1.80, float(s.value("transcript_font_scale", 1.0))))
@@ -498,6 +503,18 @@ class MainWindow(
 
         from speaker_profiles import StationVoiceProfileStore
         self.voice_profile_store = StationVoiceProfileStore()
+
+    def toggle_transcript_auto_scroll(self, checked: bool):
+        """Toggle transcript auto-scrolling during playback and persist setting."""
+        self.transcript_auto_scroll = bool(checked)
+        if hasattr(self, "settings_store") and self.settings_store:
+            self.settings_store.setValue("transcript_auto_scroll", "true" if self.transcript_auto_scroll else "false")
+        if hasattr(self, "transcript_auto_scroll_action") and self.transcript_auto_scroll_action.isChecked() != self.transcript_auto_scroll:
+            self.transcript_auto_scroll_action.setChecked(self.transcript_auto_scroll)
+        if hasattr(self, "transcript_view"):
+            self.transcript_view.transcript_auto_scroll = self.transcript_auto_scroll
+        if hasattr(self, "statusBar") and self.statusBar():
+            self.statusBar().showMessage(f"Transcript Auto-Scroll: {'On' if self.transcript_auto_scroll else 'Off'}", 2000)
 
     def changeEvent(self, event):
         """Handle window state changes (e.g. maximize, restore, minimize) safely."""

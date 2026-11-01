@@ -409,6 +409,8 @@ class UiLayoutMixin(UiMenusMixin, UiDialogLaunchersMixin):
         self.transcript_view.set_font_scale(getattr(self, "transcript_font_scale", 1.0))
         if hasattr(self, "show_floating_selection_toolbar"):
             self.transcript_view.show_floating_selection_toolbar = self.show_floating_selection_toolbar
+        if hasattr(self, "transcript_auto_scroll"):
+            self.transcript_view.transcript_auto_scroll = self.transcript_auto_scroll
         self.transcript_comments_splitter.addWidget(self.transcript_view)
 
         self.comments_panel = CommentsPanel(self)

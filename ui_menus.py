@@ -343,6 +343,11 @@ class UiMenusMixin:
         self.show_milliseconds_action.toggled.connect(getattr(self, "toggle_milliseconds", lambda c: None))
         transcript_menu.addAction(self.show_milliseconds_action)
 
+        self.transcript_auto_scroll_action = QAction("&Auto-Scroll During Playback", self, checkable=True)
+        self.transcript_auto_scroll_action.setChecked(getattr(self, "transcript_auto_scroll", True))
+        self.transcript_auto_scroll_action.toggled.connect(getattr(self, "toggle_transcript_auto_scroll", lambda c: None))
+        transcript_menu.addAction(self.transcript_auto_scroll_action)
+
         transcript_menu.addSeparator()
 
         self.transcript_show_comments_action = self.toggle_comments_action

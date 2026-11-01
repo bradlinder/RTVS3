@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-01 17:50:29",
+  "generated_at": "2026-11-01 18:49:51",
   "total_files": 155,
   "files": {
     "RadioTVSegmenter.py": {
       "path": "RadioTVSegmenter.py",
-      "lines": 646,
-      "summary": "Radio & TV Segmenter \u2014 v3.9.53-beta",
+      "lines": 663,
+      "summary": "Radio & TV Segmenter \u2014 v3.9.54-beta",
       "exports": null,
       "classes": [
         {
@@ -23,7 +23,7 @@
             "QMainWindow"
           ],
           "start_line": 160,
-          "end_line": 543,
+          "end_line": 560,
           "doc": "Main application window for Radio & TV Segmenter.",
           "methods": [
             {
@@ -51,35 +51,42 @@
               "name": "load_persistent_settings",
               "sig": "load_persistent_settings(self)",
               "start_line": 433,
-              "end_line": 500,
+              "end_line": 505,
               "doc": "Loads all persistent user preferences from QSettings into MainWindow attributes."
+            },
+            {
+              "name": "toggle_transcript_auto_scroll",
+              "sig": "toggle_transcript_auto_scroll(self, checked)",
+              "start_line": 507,
+              "end_line": 517,
+              "doc": "Toggle transcript auto-scrolling during playback and persist setting."
             },
             {
               "name": "changeEvent",
               "sig": "changeEvent(self, event)",
-              "start_line": 502,
-              "end_line": 509,
+              "start_line": 519,
+              "end_line": 526,
               "doc": "Handle window state changes (e.g. maximize, restore, minimize) safely."
             },
             {
               "name": "dragEnterEvent",
               "sig": "dragEnterEvent(self, event)",
-              "start_line": 511,
-              "end_line": 518,
+              "start_line": 528,
+              "end_line": 535,
               "doc": ""
             },
             {
               "name": "dragMoveEvent",
               "sig": "dragMoveEvent(self, event)",
-              "start_line": 520,
-              "end_line": 527,
+              "start_line": 537,
+              "end_line": 544,
               "doc": ""
             },
             {
               "name": "dropEvent",
               "sig": "dropEvent(self, event)",
-              "start_line": 529,
-              "end_line": 543,
+              "start_line": 546,
+              "end_line": 560,
               "doc": ""
             }
           ]
@@ -89,8 +96,8 @@
         {
           "name": "main",
           "sig": "main()",
-          "start_line": 546,
-          "end_line": 642,
+          "start_line": 563,
+          "end_line": 659,
           "doc": ""
         }
       ]
@@ -4653,7 +4660,7 @@
     },
     "playback_controller.py": {
       "path": "playback_controller.py",
-      "lines": 581,
+      "lines": 584,
       "summary": "Radio & TV Story Segmenter \u2014 Media Player Transport & Playback Controller.",
       "exports": null,
       "classes": [
@@ -4661,7 +4668,7 @@
           "name": "PlaybackControllerMixin",
           "bases": [],
           "start_line": 25,
-          "end_line": 581,
+          "end_line": 584,
           "doc": "Provides audio/video media player transport, scrubbing, and fade controls.",
           "methods": [
             {
@@ -4780,63 +4787,63 @@
               "name": "toggle_play",
               "sig": "toggle_play(self)",
               "start_line": 429,
-              "end_line": 451,
+              "end_line": 453,
               "doc": ""
             },
             {
               "name": "stop_audio",
               "sig": "stop_audio(self)",
-              "start_line": 453,
-              "end_line": 463,
+              "start_line": 455,
+              "end_line": 465,
               "doc": ""
             },
             {
               "name": "seek_to",
               "sig": "seek_to(self, seconds)",
-              "start_line": 465,
-              "end_line": 478,
+              "start_line": 467,
+              "end_line": 481,
               "doc": ""
             },
             {
               "name": "seek_relative",
               "sig": "seek_relative(self, delta_seconds)",
-              "start_line": 480,
-              "end_line": 486,
+              "start_line": 483,
+              "end_line": 489,
               "doc": ""
             },
             {
               "name": "audio_position_changed",
               "sig": "audio_position_changed(self, position)",
-              "start_line": 488,
-              "end_line": 495,
+              "start_line": 491,
+              "end_line": 498,
               "doc": ""
             },
             {
               "name": "get_fade_volume_factor_at_time",
               "sig": "get_fade_volume_factor_at_time(self, t)",
-              "start_line": 497,
-              "end_line": 540,
+              "start_line": 500,
+              "end_line": 543,
               "doc": "Calculate the real-time audio volume fade factor [0.0, 1.0] for position `t`."
             },
             {
               "name": "update_realtime_fade_volume",
               "sig": "update_realtime_fade_volume(self)",
-              "start_line": 542,
-              "end_line": 571,
+              "start_line": 545,
+              "end_line": 574,
               "doc": "Modulate QAudioOutput volume in real-time according to story fade envelopes."
             },
             {
               "name": "_on_fade_timer_tick",
               "sig": "_on_fade_timer_tick(self)",
-              "start_line": 573,
-              "end_line": 575,
+              "start_line": 576,
+              "end_line": 578,
               "doc": ""
             },
             {
               "name": "audio_duration_changed",
               "sig": "audio_duration_changed(self, duration)",
-              "start_line": 577,
-              "end_line": 581,
+              "start_line": 580,
+              "end_line": 584,
               "doc": ""
             }
           ]
@@ -8337,7 +8344,7 @@
     },
     "preferences_dialog.py": {
       "path": "preferences_dialog.py",
-      "lines": 723,
+      "lines": 733,
       "summary": "Radio & TV Story Segmenter \u2014 Preferences Modal Dialog.",
       "exports": null,
       "classes": [
@@ -8347,14 +8354,14 @@
             "PreferencesResetMixin"
           ],
           "start_line": 30,
-          "end_line": 723,
+          "end_line": 733,
           "doc": "Provides the main open_preferences_dialog method and settings persistence.",
           "methods": [
             {
               "name": "open_preferences_dialog",
               "sig": "open_preferences_dialog(self, initial_category, modal)",
               "start_line": 33,
-              "end_line": 723,
+              "end_line": 733,
               "doc": "Open the multi-category Preferences dialog as a non-modal floating inspector."
             }
           ]
@@ -8364,7 +8371,7 @@
     },
     "preferences_reset.py": {
       "path": "preferences_reset.py",
-      "lines": 642,
+      "lines": 650,
       "summary": "Radio & TV Story Segmenter \u2014 Preferences Reset & Factory Defaults Engine.",
       "exports": null,
       "classes": [
@@ -8411,21 +8418,21 @@
           "name": "PreferencesResetMixin",
           "bases": [],
           "start_line": 167,
-          "end_line": 642,
+          "end_line": 650,
           "doc": "Provides methods for resetting settings to defaults across all app categories.",
           "methods": [
             {
               "name": "apply_settings_reset",
               "sig": "apply_settings_reset(self, selected_ids, live_widgets)",
               "start_line": 170,
-              "end_line": 631,
+              "end_line": 639,
               "doc": "Apply factory default settings to the requested categories and update live widgets if present."
             },
             {
               "name": "open_restore_system_defaults_dialog",
               "sig": "open_restore_system_defaults_dialog(self)",
-              "start_line": 633,
-              "end_line": 642,
+              "start_line": 641,
+              "end_line": 650,
               "doc": "Open the Restore System Defaults dialog directly from Settings menu or Backup & Restore Center."
             }
           ]
@@ -8435,7 +8442,7 @@
     },
     "preferences_reset_dialog.py": {
       "path": "preferences_reset_dialog.py",
-      "lines": 621,
+      "lines": 629,
       "summary": "Radio & TV Segmenter \u2014 Preferences reset and factory default restore engine.",
       "exports": null,
       "classes": [
@@ -8482,21 +8489,21 @@
           "name": "PreferencesResetMixin",
           "bases": [],
           "start_line": 166,
-          "end_line": 620,
+          "end_line": 628,
           "doc": "Mixin providing settings reset and restore dialog actions.",
           "methods": [
             {
               "name": "apply_settings_reset",
               "sig": "apply_settings_reset(self, selected_ids, live_widgets)",
               "start_line": 169,
-              "end_line": 609,
+              "end_line": 617,
               "doc": "Apply factory default settings to the requested categories and update live widgets if present."
             },
             {
               "name": "open_restore_system_defaults_dialog",
               "sig": "open_restore_system_defaults_dialog(self)",
-              "start_line": 611,
-              "end_line": 620,
+              "start_line": 619,
+              "end_line": 628,
               "doc": "Open the Restore System Defaults dialog directly from Settings menu or Backup & Restore Center."
             }
           ]
@@ -8557,7 +8564,7 @@
     },
     "preferences_tabs_media.py": {
       "path": "preferences_tabs_media.py",
-      "lines": 650,
+      "lines": 656,
       "summary": "Radio & TV Story Segmenter \u2014 Preferences Modal Media & Workflow Tab Builders.",
       "exports": null,
       "classes": [],
@@ -8566,35 +8573,35 @@
           "name": "build_playback_timeline_tab",
           "sig": "build_playback_timeline_tab(win, dialog, live_widgets, add_custom_defaults_btn)",
           "start_line": 22,
-          "end_line": 136,
+          "end_line": 142,
           "doc": ""
         },
         {
           "name": "build_detection_tab",
           "sig": "build_detection_tab(win, dialog, live_widgets, add_custom_defaults_btn)",
-          "start_line": 139,
-          "end_line": 238,
+          "start_line": 145,
+          "end_line": 244,
           "doc": ""
         },
         {
           "name": "build_batch_tab",
           "sig": "build_batch_tab(win, dialog, live_widgets, add_custom_defaults_btn)",
-          "start_line": 241,
-          "end_line": 364,
+          "start_line": 247,
+          "end_line": 370,
           "doc": ""
         },
         {
           "name": "build_cleanup_tab",
           "sig": "build_cleanup_tab(win, dialog, live_widgets, add_custom_defaults_btn)",
-          "start_line": 367,
-          "end_line": 565,
+          "start_line": 373,
+          "end_line": 571,
           "doc": ""
         },
         {
           "name": "build_youtube_tab",
           "sig": "build_youtube_tab(win, dialog, live_widgets, add_custom_defaults_btn)",
-          "start_line": 568,
-          "end_line": 650,
+          "start_line": 574,
+          "end_line": 656,
           "doc": ""
         }
       ]
@@ -15186,7 +15193,7 @@
     },
     "transcript_editor.py": {
       "path": "transcript_editor.py",
-      "lines": 862,
+      "lines": 866,
       "summary": "transcript_editor.py - Interactive Transcript Editor & Viewer Components",
       "exports": [
         "FindReplaceDialog",
@@ -15205,154 +15212,154 @@
             "QTextEdit"
           ],
           "start_line": 116,
-          "end_line": 862,
+          "end_line": 866,
           "doc": "",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, parent)",
               "start_line": 129,
-              "end_line": 188,
+              "end_line": 191,
               "doc": ""
             },
             {
               "name": "lock_scroll_position",
               "sig": "lock_scroll_position(self, v_val, h_val, duration_ms)",
-              "start_line": 190,
-              "end_line": 211,
+              "start_line": 193,
+              "end_line": 214,
               "doc": "Pin vertical and horizontal scrollbars to exact pixel values during layout reflows."
             },
             {
               "name": "_release_scroll_lock",
               "sig": "_release_scroll_lock(self)",
-              "start_line": 213,
-              "end_line": 216,
+              "start_line": 216,
+              "end_line": 219,
               "doc": ""
             },
             {
               "name": "_on_v_range_changed",
               "sig": "_on_v_range_changed(self, min_val, max_val)",
-              "start_line": 218,
-              "end_line": 222,
+              "start_line": 221,
+              "end_line": 225,
               "doc": ""
             },
             {
               "name": "focusInEvent",
               "sig": "focusInEvent(self, event)",
-              "start_line": 224,
-              "end_line": 240,
+              "start_line": 227,
+              "end_line": 243,
               "doc": ""
             },
             {
               "name": "_enforce_scroll_after_focus",
               "sig": "_enforce_scroll_after_focus(self, target_v, target_h)",
-              "start_line": 242,
-              "end_line": 248,
+              "start_line": 245,
+              "end_line": 251,
               "doc": ""
             },
             {
               "name": "createMimeDataFromSelection",
               "sig": "createMimeDataFromSelection(self)",
-              "start_line": 250,
-              "end_line": 264,
+              "start_line": 253,
+              "end_line": 267,
               "doc": "Clean dark-mode white/light plain text colors to black (#000000) when copying."
             },
             {
               "name": "wheelEvent",
               "sig": "wheelEvent(self, event)",
-              "start_line": 266,
-              "end_line": 271,
+              "start_line": 269,
+              "end_line": 275,
               "doc": ""
             },
             {
               "name": "event",
               "sig": "event(self, e)",
-              "start_line": 273,
-              "end_line": 322,
+              "start_line": 277,
+              "end_line": 326,
               "doc": ""
             },
             {
               "name": "paintEvent",
               "sig": "paintEvent(self, event)",
-              "start_line": 324,
-              "end_line": 387,
+              "start_line": 328,
+              "end_line": 391,
               "doc": ""
             },
             {
               "name": "dragEnterEvent",
               "sig": "dragEnterEvent(self, event)",
-              "start_line": 389,
-              "end_line": 393,
+              "start_line": 393,
+              "end_line": 397,
               "doc": ""
             },
             {
               "name": "dragMoveEvent",
               "sig": "dragMoveEvent(self, event)",
-              "start_line": 395,
-              "end_line": 399,
+              "start_line": 399,
+              "end_line": 403,
               "doc": ""
             },
             {
               "name": "dropEvent",
               "sig": "dropEvent(self, event)",
-              "start_line": 401,
-              "end_line": 411,
+              "start_line": 405,
+              "end_line": 415,
               "doc": ""
             },
             {
               "name": "apply_theme_style",
               "sig": "apply_theme_style(self, mode)",
-              "start_line": 413,
-              "end_line": 416,
+              "start_line": 417,
+              "end_line": 420,
               "doc": ""
             },
             {
               "name": "set_font_scale",
               "sig": "set_font_scale(self, scale)",
-              "start_line": 418,
-              "end_line": 428,
+              "start_line": 422,
+              "end_line": 432,
               "doc": "Set transcript font scale without affecting the rest of the UI."
             },
             {
               "name": "set_editing_mode",
               "sig": "set_editing_mode(self, enabled)",
-              "start_line": 430,
-              "end_line": 446,
+              "start_line": 434,
+              "end_line": 450,
               "doc": ""
             },
             {
               "name": "mousePressEvent",
               "sig": "mousePressEvent(self, event)",
-              "start_line": 448,
-              "end_line": 488,
+              "start_line": 452,
+              "end_line": 492,
               "doc": ""
             },
             {
               "name": "mouseMoveEvent",
               "sig": "mouseMoveEvent(self, event)",
-              "start_line": 490,
-              "end_line": 538,
+              "start_line": 494,
+              "end_line": 542,
               "doc": ""
             },
             {
               "name": "leaveEvent",
               "sig": "leaveEvent(self, event)",
-              "start_line": 540,
-              "end_line": 544,
+              "start_line": 544,
+              "end_line": 548,
               "doc": ""
             },
             {
               "name": "mouseReleaseEvent",
               "sig": "mouseReleaseEvent(self, event)",
-              "start_line": 546,
-              "end_line": 632,
+              "start_line": 550,
+              "end_line": 636,
               "doc": ""
             },
             {
               "name": "keyPressEvent",
               "sig": "keyPressEvent(self, event)",
-              "start_line": 634,
-              "end_line": 862,
+              "start_line": 638,
+              "end_line": 866,
               "doc": ""
             }
           ]
@@ -15837,7 +15844,7 @@
     "transcript_story.py": {
       "path": "transcript_story.py",
       "lines": 847,
-      "summary": "Radio & TV Segmenter v3.9.53-beta \u2014 transcript story responsibilities.",
+      "summary": "Radio & TV Segmenter v3.9.54-beta \u2014 transcript story responsibilities.",
       "exports": [
         "TranscriptStoryMixin",
         "Story",
@@ -15966,7 +15973,7 @@
     },
     "transcript_timeline_sync_mixin.py": {
       "path": "transcript_timeline_sync_mixin.py",
-      "lines": 566,
+      "lines": 588,
       "summary": "Radio & TV Story Segmenter \u2014 Transcript Timeline & Playback Synchronization Mixin.",
       "exports": null,
       "classes": [
@@ -15974,7 +15981,7 @@
           "name": "TranscriptTimelineSyncMixin",
           "bases": [],
           "start_line": 34,
-          "end_line": 566,
+          "end_line": 588,
           "doc": "Mixin for audio timecode synchronization, anchor indexing, and playback highlighting.",
           "methods": [
             {
@@ -16121,7 +16128,7 @@
               "name": "highlight_word_at_time",
               "sig": "highlight_word_at_time(self, seconds, transcript_data, auto_scroll)",
               "start_line": 506,
-              "end_line": 566,
+              "end_line": 588,
               "doc": ""
             }
           ]
@@ -16561,7 +16568,7 @@
     },
     "ui_layout.py": {
       "path": "ui_layout.py",
-      "lines": 1060,
+      "lines": 1062,
       "summary": "Radio & TV Segmenter \u2014 UI Layout & Menu Construction Mixin.",
       "exports": null,
       "classes": [
@@ -16572,119 +16579,119 @@
             "UiDialogLaunchersMixin"
           ],
           "start_line": 57,
-          "end_line": 1056,
+          "end_line": 1058,
           "doc": "Mixin class providing UI construction, menu assembly, and UI event binding.",
           "methods": [
             {
               "name": "build_ui",
               "sig": "build_ui(self)",
               "start_line": 59,
-              "end_line": 733,
+              "end_line": 735,
               "doc": "Build and assemble all central widgets, layouts, and panels."
             },
             {
               "name": "filter_transcript_search",
               "sig": "filter_transcript_search(self, target)",
-              "start_line": 735,
-              "end_line": 752,
+              "start_line": 737,
+              "end_line": 754,
               "doc": "Highlight and focus next occurrence of search term in transcript text view."
             },
             {
               "name": "toggle_transcript_editing_mode",
               "sig": "toggle_transcript_editing_mode(self, *args, **kwargs)",
-              "start_line": 754,
-              "end_line": 776,
+              "start_line": 756,
+              "end_line": 778,
               "doc": "Toggle between Viewing Mode (navigation/click-to-seek) and Editing Mode (text editing)."
             },
             {
               "name": "_on_transcript_editing_mode_changed",
               "sig": "_on_transcript_editing_mode_changed(self, is_editing)",
-              "start_line": 778,
-              "end_line": 813,
+              "start_line": 780,
+              "end_line": 815,
               "doc": "Respond to changes in transcript edit vs view mode."
             },
             {
               "name": "_sync_format_toolbar_buttons",
               "sig": "_sync_format_toolbar_buttons(self)",
-              "start_line": 815,
-              "end_line": 835,
+              "start_line": 817,
+              "end_line": 837,
               "doc": ""
             },
             {
               "name": "_on_toolbar_split_speaker",
               "sig": "_on_toolbar_split_speaker(self)",
-              "start_line": 837,
-              "end_line": 844,
+              "start_line": 839,
+              "end_line": 846,
               "doc": ""
             },
             {
               "name": "_apply_transcript_font_scale",
               "sig": "_apply_transcript_font_scale(self, scale, persist)",
-              "start_line": 846,
-              "end_line": 870,
+              "start_line": 848,
+              "end_line": 872,
               "doc": "Apply a transcript-only font scale and optionally persist it."
             },
             {
               "name": "_on_font_size_combo_changed",
               "sig": "_on_font_size_combo_changed(self, index)",
-              "start_line": 872,
-              "end_line": 876,
+              "start_line": 874,
+              "end_line": 878,
               "doc": ""
             },
             {
               "name": "adjust_transcript_font_size",
               "sig": "adjust_transcript_font_size(self, direction)",
-              "start_line": 878,
-              "end_line": 880,
+              "start_line": 880,
+              "end_line": 882,
               "doc": "Increase or decrease transcript font size by one 5% step."
             },
             {
               "name": "reset_transcript_font_size",
               "sig": "reset_transcript_font_size(self)",
-              "start_line": 882,
-              "end_line": 884,
+              "start_line": 884,
+              "end_line": 886,
               "doc": "Restore the default transcript font size."
             },
             {
               "name": "update_story_list_height",
               "sig": "update_story_list_height(self)",
-              "start_line": 886,
-              "end_line": 901,
+              "start_line": 888,
+              "end_line": 903,
               "doc": "Size the story list to fit the current number of stories, leaving space for metadata and export fields."
             },
             {
               "name": "auto_generate_selected_story_excerpt",
               "sig": "auto_generate_selected_story_excerpt(self)",
-              "start_line": 903,
-              "end_line": 948,
+              "start_line": 905,
+              "end_line": 950,
               "doc": "Auto-generate an excerpt from the story transcript text for the currently selected story."
             },
             {
               "name": "_on_story_excerpt_text_changed",
               "sig": "_on_story_excerpt_text_changed(self)",
-              "start_line": 950,
-              "end_line": 967,
+              "start_line": 952,
+              "end_line": 969,
               "doc": "Synchronize excerpt edits from the inline editor into story metadata."
             },
             {
               "name": "toggle_maximize_stories_panel",
               "sig": "toggle_maximize_stories_panel(self)",
-              "start_line": 969,
-              "end_line": 1022,
+              "start_line": 971,
+              "end_line": 1024,
               "doc": "Toggle maximize/restore of the stories panel across the full application window."
             },
             {
               "name": "setup_plugin_story_extensions",
               "sig": "setup_plugin_story_extensions(self)",
-              "start_line": 1024,
-              "end_line": 1046,
+              "start_line": 1026,
+              "end_line": 1048,
               "doc": "Populate plugin-provided widgets in the story panel."
             },
             {
               "name": "notify_story_selection_to_plugins",
               "sig": "notify_story_selection_to_plugins(self, selected_story)",
-              "start_line": 1048,
-              "end_line": 1056,
+              "start_line": 1050,
+              "end_line": 1058,
               "doc": "Notify all enabled plugins when the active story selection changes."
             }
           ]
@@ -16694,7 +16701,7 @@
     },
     "ui_menus.py": {
       "path": "ui_menus.py",
-      "lines": 809,
+      "lines": 814,
       "summary": "Main application menu bar and action assembly for Radio & TV Story Segmenter.",
       "exports": null,
       "classes": [
@@ -16727,63 +16734,63 @@
           "name": "UiMenusMixin",
           "bases": [],
           "start_line": 78,
-          "end_line": 808,
+          "end_line": 813,
           "doc": "Mixin providing menu construction, action shortcut wiring, and menu synchronization.",
           "methods": [
             {
               "name": "build_menus",
               "sig": "build_menus(self)",
               "start_line": 80,
-              "end_line": 652,
+              "end_line": 657,
               "doc": "Construct the main application menu bar and associated keyboard shortcuts."
             },
             {
               "name": "apply_user_shortcuts",
               "sig": "apply_user_shortcuts(self)",
-              "start_line": 654,
-              "end_line": 659,
+              "start_line": 659,
+              "end_line": 664,
               "doc": "Rebind all menu actions and application shortcuts according to user preferences."
             },
             {
               "name": "_refresh_recent_projects_menu",
               "sig": "_refresh_recent_projects_menu(self)",
-              "start_line": 661,
-              "end_line": 689,
+              "start_line": 666,
+              "end_line": 694,
               "doc": "Update recent projects submenu items based on user settings store."
             },
             {
               "name": "_check_external_dependencies",
               "sig": "_check_external_dependencies(self)",
-              "start_line": 691,
-              "end_line": 705,
+              "start_line": 696,
+              "end_line": 710,
               "doc": "Check bundled media tools and record actionable diagnostics."
             },
             {
               "name": "_sync_undo_redo_actions",
               "sig": "_sync_undo_redo_actions(self)",
-              "start_line": 707,
-              "end_line": 716,
+              "start_line": 712,
+              "end_line": 721,
               "doc": "Synchronize undo/redo action states with QUndoStack."
             },
             {
               "name": "_remember_directory",
               "sig": "_remember_directory(self, path)",
-              "start_line": 718,
-              "end_line": 728,
+              "start_line": 723,
+              "end_line": 733,
               "doc": "Persist directory of chosen file to improve user file dialog experience."
             },
             {
               "name": "update_processing_menu_status",
               "sig": "update_processing_menu_status(self)",
-              "start_line": 731,
-              "end_line": 754,
+              "start_line": 736,
+              "end_line": 759,
               "doc": "Update label annotations on Tools actions reflecting pipeline stage completion."
             },
             {
               "name": "refresh_plugin_menus",
               "sig": "refresh_plugin_menus(self)",
-              "start_line": 757,
-              "end_line": 808,
+              "start_line": 762,
+              "end_line": 813,
               "doc": "Dynamically populate plugin export actions, tools menu actions, and core UI controls."
             }
           ]

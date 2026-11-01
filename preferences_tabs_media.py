@@ -79,6 +79,12 @@ def build_playback_timeline_tab(win, dialog, live_widgets, add_custom_defaults_b
     play_form.addRow("New Text Selection Behavior:", sel_mode_combo)
     live_widgets["sel_mode_combo"] = sel_mode_combo
 
+    transcript_auto_scroll_chk = QCheckBox("Auto-scroll transcript during playback")
+    transcript_auto_scroll_chk.setToolTip("Automatically scrolls the transcript when playback approaches the bottom of the visible screen space.")
+    transcript_auto_scroll_chk.setChecked(getattr(win, "transcript_auto_scroll", True))
+    play_form.addRow("Transcript Playback Scroll:", transcript_auto_scroll_chk)
+    live_widgets["transcript_auto_scroll_chk"] = transcript_auto_scroll_chk
+
     enable_fades_chk = QCheckBox("Enable story audio fades and timeline envelope handles")
     enable_fades_chk.setToolTip("Enables tactile fade-in and fade-out handles on the timeline and applies fade ramps to exported stories. Disabling this turns off fade envelope rendering and export processing for maximum timeline responsiveness.")
     enable_fades_chk.setChecked(getattr(win, "enable_audio_fades", False))

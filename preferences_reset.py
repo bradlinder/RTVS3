@@ -460,6 +460,14 @@ class PreferencesResetMixin:
                 idx = lw["sel_mode_combo"].findData("replace")
                 if idx >= 0:
                     lw["sel_mode_combo"].setCurrentIndex(idx)
+            if "transcript_auto_scroll_chk" in lw and lw["transcript_auto_scroll_chk"]:
+                lw["transcript_auto_scroll_chk"].setChecked(True)
+            self.settings_store.setValue("transcript_auto_scroll", "true")
+            self.transcript_auto_scroll = True
+            if hasattr(self, "transcript_view"):
+                self.transcript_view.transcript_auto_scroll = True
+            if hasattr(self, "transcript_auto_scroll_action"):
+                self.transcript_auto_scroll_action.setChecked(True)
 
         # 8b. Audio Fades & Defaults
         if "audio_fades" in selected_set or "playback_timeline" in selected_set:

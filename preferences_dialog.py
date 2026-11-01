@@ -539,6 +539,16 @@ class PreferencesDialogMixin(PreferencesResetMixin):
                 if hasattr(self, "transcript_view") and hasattr(self.transcript_view, "set_selection_mode"):
                     self.transcript_view.set_selection_mode(new_sel_mode)
 
+            # Save Transcript Auto-Scroll Preference
+            transcript_auto_scroll_chk = live_widgets.get("transcript_auto_scroll_chk")
+            if transcript_auto_scroll_chk:
+                self.transcript_auto_scroll = transcript_auto_scroll_chk.isChecked()
+                self.settings_store.setValue("transcript_auto_scroll", "true" if self.transcript_auto_scroll else "false")
+                if hasattr(self, "transcript_auto_scroll_action"):
+                    self.transcript_auto_scroll_action.setChecked(self.transcript_auto_scroll)
+                if hasattr(self, "transcript_view"):
+                    self.transcript_view.transcript_auto_scroll = self.transcript_auto_scroll
+
             # Save Floating Selection Toolbar Preference
             floating_toolbar_chk = live_widgets.get("floating_toolbar_chk")
             if floating_toolbar_chk:

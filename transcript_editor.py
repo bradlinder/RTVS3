@@ -146,6 +146,9 @@ class InteractiveTranscriptEdit(
 
         self.char_timestamp_map = []
         self._context_menu_cursor_position = None
+        self.transcript_auto_scroll = True
+        self._auto_scroll_detached = False
+        self.verticalScrollBar().sliderMoved.connect(lambda _: setattr(self, "_auto_scroll_detached", True))
 
         # Text selection state and preferences
         self.selection_mode = "replace"  # "replace" or "keep"
@@ -264,9 +267,10 @@ class InteractiveTranscriptEdit(
         return mime_data
 
     def wheelEvent(self, event):
-        # Manual user scroll cancels any active scroll lock
+        # Manual user scroll cancels any active scroll lock and detaches playback auto-scroll
         self._release_scroll_lock()
         self._user_scrolled_recently = True
+        self._auto_scroll_detached = True
         QTimer.singleShot(500, lambda: setattr(self, "_user_scrolled_recently", False))
         super().wheelEvent(event)
 
