@@ -47,75 +47,64 @@ TABLE OF CONTENTS & STATUS OVERVIEW
    [x] 1.4 Story Excerpt Undo/Redo Snapshots: Push undo state before mutating story excerpts. [P6-08]
    [x] 1.5 Core Module Plugin Isolation: Decouple direct `plugins/` imports from core modules (`export/dialog.py`, `model_management.py`). [P5-03]
 
-2. Active Milestone: Automated AMD Ryzen AI Local Development Platform & Token-Efficient Model Suite (`scripts/setup_local_ai.py`, `scripts/local_proxy.py`, `scripts/task_router.py`, `.vscode/settings.json`, `.clinerules`) [-] [IN PROGRESS — SCRIPTS AUTHORED / PENDING LOCAL ANTIGRAVITY RUN]
-   - *Purpose*: One-command non-destructive setup script and auto-configuration suite enabling offline AI-assisted development on AMD Ryzen AI 9 HX 370 (Radeon 890M `gfx1150` + XDNA 2 NPU, 64GB RAM) systems with token-budget optimization, prefix-caching architecture, automated AST split tooling, and zero-click natural language model routing.
-   [-] 2.1 Strix Point Hardware, UMA VRAM & Context Allocation Probe (`scripts/setup_local_ai.py`): Script authored to detect CPU/iGPU/NPU and 64GB RAM/32GB UMA; [-] [PENDING LOCAL EXECUTION in Antigravity to probe hardware].
-   [ ] 2.2 Tiered Local AI Model Provisioner with Prefix-Cache Optimization (`scripts/setup_local_ai.py`): Script authored to pull/verify models; [ ] [UNSTARTED LOCALLY — Models not yet pulled via Ollama on physical machine].
-   [ ] 2.3 Local Server Health Check, Context Window Tuning & Prompt Cache Pinning (`scripts/setup_local_ai.py`): Script authored for prompt cache pinning; [ ] [UNSTARTED LOCALLY — Local Ollama daemon not yet connected].
-   [-] 2.4 Token-Thrift IDE Configuration & AST Suggester Integration (`scripts/setup_local_ai.py`, `scripts/ide_config.py`): Config generator authored for Continue, Cline, and VS Code; [-] [PENDING LOCAL EXECUTION to write workspace configs].
-   [-] 2.5 Token-Budget Task-to-Model Router & CI Pipeline Verification (`scripts/task_router.py`, `.github/workflows/build.yml`, `test_runner.py`): Task router, impact analyzer, and CI checks authored; [-] [PENDING LOCAL VERIFICATION].
-   [-] 2.6 Multi-Tier AI Safety, Reverse-Caller Impact Analysis & Pre-Flight Gate (`docs/VERSION_CONTROL_GUIDE.md`, `scripts/task_router.py`, `scripts/bundle_context.py`, `scripts/dev_check.py`): Safety guides, context bundler, and 5-pillar pre-flight gate built; [-] [PENDING LOCAL GIT INTEGRATION].
-   [-] 2.7 Single Responsibility & Desktop Domain Separation Invariant (`scripts/modular_audit.py --check-srp`, `scripts/dev_check.py`, `AGENTS.md`, `ARCHITECTURE.md`): AST domain collision detector built and verified in CI; [-] [IN PROGRESS across local development tasks].
-   [-] 2.8 Local AI Model Suite Modernization, Autonomous Smart Router & Physical Setup Verification (`scripts/setup_local_ai.py`, `scripts/local_proxy.py`, `scripts/task_router.py`, `scripts/ide_config.py`, `docs/LOCAL_AI_SETUP.md`): Upgraded model recommendations, zero-dependency OpenAI proxy (`scripts/local_proxy.py`), and documentation authored; [-] [PENDING LOCAL ANTIGRAVITY RUN & PROXY LAUNCH on port 8000].
-
-3. Deferred Milestone: Domain Separation & Purpose-Driven Monolithic File Modularization [ ] [DEFERRED / LOWER PRIORITY]
+2. Deferred Milestone: Domain Separation & Purpose-Driven Monolithic File Modularization [ ] [DEFERRED / LOWER PRIORITY]
    - *Purpose*: Systematic architectural refactoring prioritizing **file purpose, single responsibility, and domain cohesion** alongside line count reduction (<800 lines target, 1,000 lines ceiling), systematically decoupling grandfathered multi-domain monoliths into focused submodules with 100% backward-compatible facade re-exports.
-   [ ] 3.1 Priority 1: Imminent Ceiling Breaches & High-Payoff Domain Decoupling (<1000 lines, high urgency/clean boundaries):
+   [ ] 2.1 Priority 1: Imminent Ceiling Breaches & High-Payoff Domain Decoupling (<1000 lines, high urgency/clean boundaries):
      * `project_lifecycle.py` (992 lines) — Imminent ceiling breach (<10 lines from 1,000 ceiling). Decouple project session dirty-state tracking from disk gzip compression and waveform peak caching (`project_state.py`, `project_cache.py`).
      * `model_management.py` (989 lines) — Decouple Hugging Face / ONNX weight verification and SHA256 integrity checks from the GUI download progress worker.
      * `audio_normalization.py` (541 lines) — Triple-domain sprawl resolution: decouple loudness DSP normalization math (`normalization_engine.py`) from background `QThread` workers (`normalization_worker.py`) and data parameters.
      * `timeline_widgets.py` (974 lines) — Decouple viewport waveform canvas paint events and LOD rendering from mouse scrubbing and selection event handlers.
-   [ ] 3.2 Priority 2: Grandfathered Legacy Monoliths (>1,000 lines, wide caller blast radius):
+   [ ] 2.2 Priority 2: Grandfathered Legacy Monoliths (>1,000 lines, wide caller blast radius):
      * Incrementally decompose the 9 core legacy monoliths via AST blueprints and facade pattern: `plugins/wordpress/client.py` (1,887 lines), `media_batch.py` (1,848 lines), `prs_shared.py` (1,491 lines), `updater.py` (1,460 lines), `export/dialog.py` (1,441 lines), `processing.py` (1,216 lines), `ui_layout.py` (1,060 lines), `runtime_manager.py` (1,037 lines), `background_workers.py` (1,015 lines), and `voice_profile_dialog.py` (1,006 lines). [P7-01]
-   [ ] 3.3 Priority 3: Secondary Warning Zone & Worker/UI Decoupling (800–965 lines & multi-domain plugins):
+   [ ] 2.3 Priority 3: Secondary Warning Zone & Worker/UI Decoupling (800–965 lines & multi-domain plugins):
      * Headless ML & Engine Decoupling: Separate background worker loops from low-level model inference in `worker_diarization_engine.py` (902 lines) and `worker_asr_engines.py` (839 lines).
      * Pipeline & Presentation Decoupling: Modularize `export_story_pipeline.py` (964 lines), `translation.py` (923 lines), `transcript_editor.py` (862 lines), `transcript_story.py` (847 lines), `shortcuts/schema.py` (858 lines), and `ui_menus.py` (809 lines).
      * Worker Thread Decoupling from Dialogs: Extract `QThread` workers out of `plugin_dialogs.py` (447 lines), `speaker_dialogs.py` (782 lines), and `plugins/wordpress/wordpress_dialog.py` (886 lines).
      * Model & Export Tab Decoupling: Extract `ManageVoiceProfilesDialog` from `speaker_profiles.py` (630 lines), and separate Qt UI tabs from API publishing in `plugins/youtube/export_destination.py` (594 lines) and `plugins/wordpress/export_destination.py` (631 lines).
-   [ ] 3.4 Priority 4: Monolithic Test Suites & Packaging Tooling (>1,000 lines, dev-only):
+   [ ] 2.4 Priority 4: Monolithic Test Suites & Packaging Tooling (>1,000 lines, dev-only):
      * Split monolithic 1,000+ line test suites and installers into modular packages: `diagnostic_export_tests.py` (1,699 lines), `diagnostic_cloud_and_system_tests.py` (1,267 lines), `diagnostic_batch_tests.py` (1,067 lines), and `build_installer.py` (1,079 lines).
-   [x] 3.5 UI Typography Cleanliness: Remove unrequested emoji symbols (💬, 🟡, 🟢) and decorative checkmarks from buttons and comboboxes. [P6-06]
-   [x] 3.6 PDF Proportional Font Word-Wrap Accuracy: Refine Helvetica character width measurement tables in `export/pdf.py`. [P6-07]
-   [x] 3.7 Export Dialog Vestigial Cleanup: Clean orphaned preview set and restore `"timeline"` to fallback reorder list. [P6-09, P6-10]
-   [x] 3.8 Changelog Archive Roll: Prune older changelog entries into `CHANGELOG_ARCHIVE.md`. [P7-06]
+   [x] 2.5 UI Typography Cleanliness: Remove unrequested emoji symbols (💬, 🟡, 🟢) and decorative checkmarks from buttons and comboboxes. [P6-06]
+   [x] 2.6 PDF Proportional Font Word-Wrap Accuracy: Refine Helvetica character width measurement tables in `export/pdf.py`. [P6-07]
+   [x] 2.7 Export Dialog Vestigial Cleanup: Clean orphaned preview set and restore `"timeline"` to fallback reorder list. [P6-09, P6-10]
+   [x] 2.8 Changelog Archive Roll: Prune older changelog entries into `CHANGELOG_ARCHIVE.md`. [P7-06]
 
-4. Optional Future Milestone: Interactive Text-Based Media Assembly & Multi-Asset Ripple Editing Engine (`assembly/bin_model.py`, `assembly/clipboard.py`, `assembly/ripple_engine.py`, `transcript_editor.py`, `export/timeline.py`) [PLANNED for v4.2.0] [OPTIONAL] [NOT STARTED]
-   [ ] 4.1 Multi-Asset Project Container & Media Bin Submodule (`assembly/bin_model.py`, `project_lifecycle.py`)
-   [ ] 4.2 Dynamic Uncapped Tabbed Document Workspace (`assembly/tab_workspace.py`, `ui_layout.py`)
-   [ ] 4.3 Rich Media Clipboard Engine (`assembly/clipboard.py` — `application/x-rtvs-clip+json`)
-   [ ] 4.4 Non-Destructive Multi-Source Playout Engine (`assembly/playout_engine.py`)
-   [ ] 4.5 Text-Driven Audio/Video Ripple Cut Engine (`assembly/ripple_engine.py`)
-   [ ] 4.6 Paper-Cut Story Assembly Workflow (`assembly/paper_cut_mixin.py`)
-   [ ] 4.7 Document Revisions & Snapshot Version History (`assembly/revision_history.py`)
-   [ ] 4.8 Word-Level Timecode Sync, NLE Markers & Multi-Track DAW Timeline Export (`export/timeline.py`)
-   [ ] 4.9 Automated Diagnostic Test Suite (`test_runner.py`)
+3. Optional Future Milestone: Interactive Text-Based Media Assembly & Multi-Asset Ripple Editing Engine (`assembly/bin_model.py`, `assembly/clipboard.py`, `assembly/ripple_engine.py`, `transcript_editor.py`, `export/timeline.py`) [PLANNED for v4.2.0] [OPTIONAL] [NOT STARTED]
+   [ ] 3.1 Multi-Asset Project Container & Media Bin Submodule (`assembly/bin_model.py`, `project_lifecycle.py`)
+   [ ] 3.2 Dynamic Uncapped Tabbed Document Workspace (`assembly/tab_workspace.py`, `ui_layout.py`)
+   [ ] 3.3 Rich Media Clipboard Engine (`assembly/clipboard.py` — `application/x-rtvs-clip+json`)
+   [ ] 3.4 Non-Destructive Multi-Source Playout Engine (`assembly/playout_engine.py`)
+   [ ] 3.5 Text-Driven Audio/Video Ripple Cut Engine (`assembly/ripple_engine.py`)
+   [ ] 3.6 Paper-Cut Story Assembly Workflow (`assembly/paper_cut_mixin.py`)
+   [ ] 3.7 Document Revisions & Snapshot Version History (`assembly/revision_history.py`)
+   [ ] 3.8 Word-Level Timecode Sync, NLE Markers & Multi-Track DAW Timeline Export (`export/timeline.py`)
+   [ ] 3.9 Automated Diagnostic Test Suite (`test_runner.py`)
 
-5. Optional Future Milestone: REAPER DAW Companion Bridge & ReaScript Transcript Integration (`reaper_bridge.py`, `transcript_editor_dialogs.py`, `transcript_context_menu_mixin.py`, `scripts/reaper/rtvs_reaper_companion.lua`, `scripts/reaper/rtvs_reaper_dock.lua`, `test_runner.py`) [PLANNED for v4.2.0] [OPTIONAL / PLANNED] [NOT STARTED]
-   [ ] 5.1 RTVS3 Clip Cue Payload & Sidecar/IPC Emitter (`reaper_bridge.py`)
-   [ ] 5.2 Interactive Transcript Quick-Action & Shortcut Integration (`transcript_editor_dialogs.py`, `transcript_context_menu_mixin.py`, `shortcuts_manager.py`)
-   [ ] 5.3 Companion ReaScript Timeline Paste & Take Labeling Action (`scripts/reaper/rtvs_reaper_companion.lua`)
-   [ ] 5.4 Optional Dockable ReaImGui Transcript Viewer for REAPER (`scripts/reaper/rtvs_reaper_dock.lua`)
-   [ ] 5.5 Preferences Integration, One-Click Script Installer & Diagnostic Tests (`preferences_dialog.py`, `reaper_bridge.py`, `test_runner.py`)
-   [ ] 5.6 Universal Text-to-WAV Clipboard & Drag-and-Drop Fallback for Other DAWs (`reaper_bridge.py`, `export_media_clipper.py`, `transcript_context_menu_mixin.py`)
+4. Optional Future Milestone: REAPER DAW Companion Bridge & ReaScript Transcript Integration (`reaper_bridge.py`, `transcript_editor_dialogs.py`, `transcript_context_menu_mixin.py`, `scripts/reaper/rtvs_reaper_companion.lua`, `scripts/reaper/rtvs_reaper_dock.lua`, `test_runner.py`) [PLANNED for v4.2.0] [OPTIONAL / PLANNED] [NOT STARTED]
+   [ ] 4.1 RTVS3 Clip Cue Payload & Sidecar/IPC Emitter (`reaper_bridge.py`)
+   [ ] 4.2 Interactive Transcript Quick-Action & Shortcut Integration (`transcript_editor_dialogs.py`, `transcript_context_menu_mixin.py`, `shortcuts_manager.py`)
+   [ ] 4.3 Companion ReaScript Timeline Paste & Take Labeling Action (`scripts/reaper/rtvs_reaper_companion.lua`)
+   [ ] 4.4 Optional Dockable ReaImGui Transcript Viewer for REAPER (`scripts/reaper/rtvs_reaper_dock.lua`)
+   [ ] 4.5 Preferences Integration, One-Click Script Installer & Diagnostic Tests (`preferences_dialog.py`, `reaper_bridge.py`, `test_runner.py`)
+   [ ] 4.6 Universal Text-to-WAV Clipboard & Drag-and-Drop Fallback for Other DAWs (`reaper_bridge.py`, `export_media_clipper.py`, `transcript_context_menu_mixin.py`)
 
-6. Optional Future Milestone: Social Reel & Short Video Export Plugin (Instagram Reels, YouTube Shorts, TikTok) (`plugins/social_reel/`, `export_media_clipper.py`, `export_dialogs.py`) [PLANNED] [NOT STARTED]
-   [ ] 6.1 Social Reel Plugin Architecture & Manifest (`plugins/social_reel/plugin.py`, `plugins/social_reel/manifest.json`, `plugins/social_reel/export_destination.py`)
-   [ ] 6.2 Multi-Source Input & Template Image Configuration (`plugins/social_reel/reel_config.py`, `plugins/social_reel/reel_dialog.py`)
-   [ ] 6.3 9:16 Vertical Video Compositor & Audiogram Pipeline (`plugins/social_reel/reel_renderer.py`, `export_media_clipper.py`)
-   [ ] 6.4 Burned-in Subtitles & Platform Safe Zone Enforcement (`plugins/social_reel/reel_subtitles.py`)
-   [ ] 6.5 Unified Export Integration & Social Reel Diagnostic Tests (`export/dialog.py`, `test_runner.py`)
+5. Optional Future Milestone: Social Reel & Short Video Export Plugin (Instagram Reels, YouTube Shorts, TikTok) (`plugins/social_reel/`, `export_media_clipper.py`, `export_dialogs.py`) [PLANNED] [NOT STARTED]
+   [ ] 5.1 Social Reel Plugin Architecture & Manifest (`plugins/social_reel/plugin.py`, `plugins/social_reel/manifest.json`, `plugins/social_reel/export_destination.py`)
+   [ ] 5.2 Multi-Source Input & Template Image Configuration (`plugins/social_reel/reel_config.py`, `plugins/social_reel/reel_dialog.py`)
+   [ ] 5.3 9:16 Vertical Video Compositor & Audiogram Pipeline (`plugins/social_reel/reel_renderer.py`, `export_media_clipper.py`)
+   [ ] 5.4 Burned-in Subtitles & Platform Safe Zone Enforcement (`plugins/social_reel/reel_subtitles.py`)
+   [ ] 5.5 Unified Export Integration & Social Reel Diagnostic Tests (`export/dialog.py`, `test_runner.py`)
 
-7. Current Release: Concurrency, Batch Reliability & Export Interchange Fidelity (`transcription_processing.py`, `diarization_processing.py`, `media_batch.py`, `export/timeline.py`, `export_story_pipeline.py`) [x] [COMPLETED in v3.9.52-beta]
-   [x] 7.1 Stale Worker State Overwrite Guard: Check if active media changed before assigning transcription/diarization results. [P1-03]
-   [x] 7.2 Non-Modal Batch Error Handling: Log errors and continue processing remaining queue items instead of modal `QMessageBox` popups. [P1-04]
-   [x] 7.3 Worker Lifecycle & Re-entrancy Guards: Fix thumbnail QThread teardown and disable Translate action during processing. [P3-02, P3-04]
-   [x] 7.4 DAW Export Format Matrix Unification: Harmonize Local Disk and Timeline DAW exports, passing sample rates and track names. [P6-04]
-   [x] 7.5 Samplitude EDL Destination Timecode Contiguity: Correct destination timecode in `export/timeline.py` for excluded unselected audio. [P6-05]
+6. Current Release: Concurrency, Batch Reliability & Export Interchange Fidelity (`transcription_processing.py`, `diarization_processing.py`, `media_batch.py`, `export/timeline.py`, `export_story_pipeline.py`) [x] [COMPLETED in v3.9.52-beta]
+   [x] 6.1 Stale Worker State Overwrite Guard: Check if active media changed before assigning transcription/diarization results. [P1-03]
+   [x] 6.2 Non-Modal Batch Error Handling: Log errors and continue processing remaining queue items instead of modal `QMessageBox` popups. [P1-04]
+   [x] 6.3 Worker Lifecycle & Re-entrancy Guards: Fix thumbnail QThread teardown and disable Translate action during processing. [P3-02, P3-04]
+   [x] 6.4 DAW Export Format Matrix Unification: Harmonize Local Disk and Timeline DAW exports, passing sample rates and track names. [P6-04]
+   [x] 6.5 Samplitude EDL Destination Timecode Contiguity: Correct destination timecode in `export/timeline.py` for excluded unselected audio. [P6-05]
 
-8. Previous Release: Thread-Affinity & Cross-Thread Qt Warning Elimination (`diagnostic_core_tests.py`, `diagnostic_export_tests.py`, `speaker_dialogs.py`) [x] [COMPLETED in v3.9.49-beta]
-   [x] 8.1 Cross-Thread Qt Warning Elimination: Refactored `diagnostic_core_tests.py` and `diagnostic_export_tests.py` to decouple top-level native QWidget creation from secondary worker threads (`TestRunnerWorker` in `DiagnosticDialog`), eliminating `QObject: Cannot create children for a parent that is in a different thread`.
-   [x] 8.2 Cell Editor Teardown Safety: Cleaned up active `QLineEdit` cell editors and timers before dialog destruction, eliminating orphaned `QBasicTimer::stop` failure warnings.
-   [x] 8.3 Main-Thread vs. Worker-Thread Test Branching: Implemented `is_main_gui_thread` branching across UI diagnostic tests to execute interactive widget flows on the GUI thread and class/contract invariants on secondary worker threads.
+7. Previous Release: Thread-Affinity & Cross-Thread Qt Warning Elimination (`diagnostic_core_tests.py`, `diagnostic_export_tests.py`, `speaker_dialogs.py`) [x] [COMPLETED in v3.9.49-beta]
+   [x] 7.1 Cross-Thread Qt Warning Elimination: Refactored `diagnostic_core_tests.py` and `diagnostic_export_tests.py` to decouple top-level native QWidget creation from secondary worker threads (`TestRunnerWorker` in `DiagnosticDialog`), eliminating `QObject: Cannot create children for a parent that is in a different thread`.
+   [x] 7.2 Cell Editor Teardown Safety: Cleaned up active `QLineEdit` cell editors and timers before dialog destruction, eliminating orphaned `QBasicTimer::stop` failure warnings.
+   [x] 7.3 Main-Thread vs. Worker-Thread Test Branching: Implemented `is_main_gui_thread` branching across UI diagnostic tests to execute interactive widget flows on the GUI thread and class/contract invariants on secondary worker threads.
 
 ================================================================================
 DETAILED MILESTONE SPECIFICATIONS
@@ -130,17 +119,7 @@ DETAILED MILESTONE SPECIFICATIONS
   * Story Excerpt Undo Snapshots: See `docs/audit/audit_phase6_findings.md` (Item P6-08) for undo stack commit invocations in `ui_layout.py`.
   * Core Module Plugin Decoupling: See `docs/audit/audit_phase5_findings.md` (Item P5-03) for dynamic lazy loading and interface isolation across `export/dialog.py` and `model_management.py`.
 
-2. UPCOMING MILESTONE: AUTOMATED AMD RYZEN AI LOCAL DEVELOPMENT PLATFORM & TOKEN-EFFICIENT MODEL SUITE:
-- Purpose: One-command non-destructive setup script and auto-configuration suite enabling offline AI-assisted development on AMD Ryzen AI 9 HX 370 (Radeon 890M `gfx1150` + XDNA 2 NPU, 64GB RAM) systems with token-budget optimization, prefix-caching architecture, and automated AST split tooling.
-- Target Release: v3.9.52-beta [-] [IN PROGRESS — SCRIPTS AUTHORED / PENDING LOCAL ANTIGRAVITY RUN]
-- Technical References & Implementation Specifications:
-  * Hardware & Context Allocation: Implement hardware inspection in `scripts/setup_local_ai.py` for AMD Ryzen AI 9 HX 370 (detecting 64GB RAM, UMA aperture, ROCm/Vulkan runtime) with KV-cache budget optimization (`OLLAMA_FLASH_ATTENTION=1`, `OLLAMA_KV_CACHE_TYPE=q8_0`, `OLLAMA_NUM_PARALLEL=1`).
-  * Tiered Model Provisioning: Automate pulling and registering `qwen2.5-coder:32b-instruct-q4_K_M` (heavy refactoring), `14b/7b` (fast single-file edits), and `1.5b-base` (sub-50ms autocomplete).
-  * Server Health & Prompt Cache Pinning: Verify `http://127.0.0.1:11434` readiness and generate Ollama presets pinning repository symbol indices (`.codemaps/symbol_index.json` and `.pyi` stubs) into KV cache for 0-latency context.
-  * Token-Thrift IDE Integration: Safely generate/merge Continue.dev and Cline/Roo Code configurations with symbol-first retrieval, diff-only edits, line-slice reading rules, and map `.clinerules`/`.cursorrules` to `scripts/modular_audit.py`.
-  * Task Router & CI Testing: Add `--guide` CLI mode to `scripts/setup_local_ai.py` and add diagnostic test in `test_runner.py` validating `--dry-run` profile serialization.
-
-3. DEFERRED MILESTONE: DOMAIN SEPARATION & PURPOSE-DRIVEN MONOLITHIC FILE MODULARIZATION:
+2. DEFERRED MILESTONE: DOMAIN SEPARATION & PURPOSE-DRIVEN MONOLITHIC FILE MODULARIZATION:
 - Purpose: Systematic architectural health, single responsibility enforcement, domain decoupling, and non-breaking typographical refinements.
 - Target Release: Deferred
 - Technical References & Exhaustive Audit Details:
@@ -153,22 +132,22 @@ DETAILED MILESTONE SPECIFICATIONS
   * UI Typography Cleanliness: See `docs/audit/audit_phase6_findings.md` (Item P6-06) for emoji and decorative unicode glyph removal in `ui_layout.py` and `preferences_tabs_core.py`.
   * PDF Helvetica Measurement Tables: See `docs/audit/audit_phase6_findings.md` (Item P6-07) for character width lookup tables in `export/pdf.py`.
 
-4. OPTIONAL FUTURE MILESTONE: INTERACTIVE TEXT-BASED MEDIA ASSEMBLY & MULTI-ASSET RIPPLE EDITING ENGINE:
+3. OPTIONAL FUTURE MILESTONE: INTERACTIVE TEXT-BASED MEDIA ASSEMBLY & MULTI-ASSET RIPPLE EDITING ENGINE:
 - Purpose: Multi-document tabbed workspace allowing non-destructive audio/video assembly, text-based ripple cutting, and rich media clipboard interchange.
 - Target Release: v4.2.0 (Optional / Planned)
 - Technical References: Full architectural data models, `bin_model.py` schemas, and ripple playout engine specifications are detailed in `ARCHITECTURE.md` (Section 3).
 
-5. OPTIONAL FUTURE MILESTONE: REAPER DAW COMPANION BRIDGE & REASCRIPT TRANSCRIPT INTEGRATION:
+4. OPTIONAL FUTURE MILESTONE: REAPER DAW COMPANION BRIDGE & REASCRIPT TRANSCRIPT INTEGRATION:
 - Purpose: Two-way IPC sidecar bridge allowing RTVS3 transcript selections to be pasted directly into REAPER DAW timelines with take markers and colors.
 - Target Release: v4.2.0 (Optional / Planned)
 - Technical References: IPC protocol, ReaScript Lua scripts (`rtvs_reaper_companion.lua`), and ReaImGui dock designs are detailed in `ARCHITECTURE.md` (Section 5).
 
-6. OPTIONAL FUTURE MILESTONE: SOCIAL REEL & SHORT VIDEO EXPORT PLUGIN:
+5. OPTIONAL FUTURE MILESTONE: SOCIAL REEL & SHORT VIDEO EXPORT PLUGIN:
 - Purpose: Vertical 9:16 video renderer with animated audiograms, platform safe-zone margin enforcement, and burned-in subtitles for social platforms.
 - Target Release: v4.3.0 (Optional / Planned)
 - Technical References: Subsystem architecture, plugin manifest, and FFmpeg filtergraph pipeline specifications are detailed in `ARCHITECTURE.md` (Section 6).
 
-7. CURRENT RELEASE: CONCURRENCY, BATCH RELIABILITY & EXPORT INTERCHANGE FIDELITY:
+6. CURRENT RELEASE: CONCURRENCY, BATCH RELIABILITY & EXPORT INTERCHANGE FIDELITY:
 - Purpose: Eliminate state corruption from stale worker callbacks, prevent queue aborts during unattended batch processing, guard worker lifetimes, and harmonize DAW export timecode calculations.
 - Target Release: v3.9.50-beta (Current Release)
 - Technical References & Exhaustive Audit Details:
@@ -177,7 +156,7 @@ DETAILED MILESTONE SPECIFICATIONS
   * DAW Matrix & Samplitude EDL Timecode Contiguity: See `docs/audit/audit_phase6_findings.md` (Items P6-04, P6-05) for parameter passing in `export/dialog.py` and sequential `dst_cursor` timecode math in `export/timeline.py`.
   * Release Logs: Documented in `CHANGELOG.md` under `## v3.9.50-beta`.
 
-8. PREVIOUS RELEASE: THREAD-AFFINITY & CROSS-THREAD QT WARNING ELIMINATION:
+7. PREVIOUS RELEASE: THREAD-AFFINITY & CROSS-THREAD QT WARNING ELIMINATION:
 - Purpose: Eliminated QObject cross-thread parenting warnings and timer failures by decoupling native widget instantiation from background worker threads.
 - Target Release: v3.9.49-beta (Previous Release)
 - Technical References: Full implementation details and test bench verification logs are documented in `CHANGELOG.md` under `## v3.9.49-beta`.
