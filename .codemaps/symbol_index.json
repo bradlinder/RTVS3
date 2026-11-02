@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-01 19:06:37",
+  "generated_at": "2026-11-01 19:14:27",
   "total_files": 155,
   "files": {
     "RadioTVSegmenter.py": {
       "path": "RadioTVSegmenter.py",
       "lines": 658,
-      "summary": "Radio & TV Segmenter \u2014 v3.9.55-beta",
+      "summary": "Radio & TV Segmenter \u2014 v3.9.56-beta",
       "exports": null,
       "classes": [
         {
@@ -4853,7 +4853,7 @@
     },
     "playback_preferences.py": {
       "path": "playback_preferences.py",
-      "lines": 724,
+      "lines": 730,
       "summary": "Radio & TV Story Segmenter \u2014 Playback Preferences & Application Facade.",
       "exports": [
         "PlaybackPreferencesMixin",
@@ -4874,7 +4874,7 @@
             "ProjectStateMixin"
           ],
           "start_line": 51,
-          "end_line": 724,
+          "end_line": 730,
           "doc": "Aggregates all playback, preferences, styling, and application lifecycle mixins.",
           "methods": [
             {
@@ -4930,105 +4930,105 @@
               "name": "trigger_find_prev",
               "sig": "trigger_find_prev(self)",
               "start_line": 354,
-              "end_line": 398,
+              "end_line": 404,
               "doc": "Find Previous shortcut (Ctrl+Shift+G) handler: retreats to previous search match in transcript."
             },
             {
               "name": "open_diagnostic_log_folder",
               "sig": "open_diagnostic_log_folder(self)",
-              "start_line": 400,
-              "end_line": 415,
+              "start_line": 406,
+              "end_line": 421,
               "doc": ""
             },
             {
               "name": "show_about_dialog",
               "sig": "show_about_dialog(self)",
-              "start_line": 417,
-              "end_line": 456,
+              "start_line": 423,
+              "end_line": 462,
               "doc": ""
             },
             {
               "name": "check_for_updates",
               "sig": "check_for_updates(self, interactive)",
-              "start_line": 458,
-              "end_line": 469,
+              "start_line": 464,
+              "end_line": 475,
               "doc": "Open the Check for Updates dialog to query GitHub releases and install updates."
             },
             {
               "name": "trigger_silent_update_check",
               "sig": "trigger_silent_update_check(self)",
-              "start_line": 471,
-              "end_line": 496,
+              "start_line": 477,
+              "end_line": 502,
               "doc": "Perform a background update check without showing UI unless an update is found."
             },
             {
               "name": "apply_audio_output_device",
               "sig": "apply_audio_output_device(self, device_name, volume)",
-              "start_line": 498,
-              "end_line": 522,
+              "start_line": 504,
+              "end_line": 528,
               "doc": "Apply selected audio output device and volume to the active player."
             },
             {
               "name": "show_licenses_dialog",
               "sig": "show_licenses_dialog(self)",
-              "start_line": 524,
-              "end_line": 563,
+              "start_line": 530,
+              "end_line": 569,
               "doc": ""
             },
             {
               "name": "on_expected_speakers_changed",
               "sig": "on_expected_speakers_changed(self, value)",
-              "start_line": 565,
-              "end_line": 575,
+              "start_line": 571,
+              "end_line": 581,
               "doc": "Kept as a public hook in case a future toolbar control adjusts the expected-speakers hint directly."
             },
             {
               "name": "on_diarization_sensitivity_changed",
               "sig": "on_diarization_sensitivity_changed(self, value)",
-              "start_line": 577,
-              "end_line": 587,
+              "start_line": 583,
+              "end_line": 593,
               "doc": "Public hook for adjusting speaker separation sensitivity."
             },
             {
               "name": "update_auto_save_timer",
               "sig": "update_auto_save_timer(self)",
-              "start_line": 589,
-              "end_line": 593,
+              "start_line": 595,
+              "end_line": 599,
               "doc": ""
             },
             {
               "name": "prompt_set_whisper_model",
               "sig": "prompt_set_whisper_model(self)",
-              "start_line": 595,
-              "end_line": 598,
+              "start_line": 601,
+              "end_line": 604,
               "doc": ""
             },
             {
               "name": "prompt_set_skip_seconds",
               "sig": "prompt_set_skip_seconds(self)",
-              "start_line": 600,
-              "end_line": 614,
+              "start_line": 606,
+              "end_line": 620,
               "doc": ""
             },
             {
               "name": "prompt_set_auto_detect_thresholds",
               "sig": "prompt_set_auto_detect_thresholds(self)",
-              "start_line": 616,
-              "end_line": 682,
+              "start_line": 622,
+              "end_line": 688,
               "doc": ""
             },
             {
               "name": "prompt_set_auto_save",
               "sig": "prompt_set_auto_save(self)",
-              "start_line": 684,
-              "end_line": 702,
+              "start_line": 690,
+              "end_line": 708,
               "doc": ""
             },
             {
               "name": "trigger_auto_save",
               "sig": "trigger_auto_save(self)",
-              "start_line": 704,
-              "end_line": 724,
+              "start_line": 710,
+              "end_line": 730,
               "doc": ""
             }
           ]
@@ -15369,7 +15369,7 @@
     },
     "transcript_editor_dialogs.py": {
       "path": "transcript_editor_dialogs.py",
-      "lines": 243,
+      "lines": 340,
       "summary": "transcript_editor_dialogs.py - Dialog and floating toolbar components for transcript editing.",
       "exports": null,
       "classes": [
@@ -15379,56 +15379,63 @@
             "QDialog"
           ],
           "start_line": 42,
-          "end_line": 159,
+          "end_line": 256,
           "doc": "Modeless find-and-replace dialog for QTextEdit / InteractiveTranscriptEdit.",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, text_edit, parent)",
               "start_line": 45,
-              "end_line": 84,
+              "end_line": 120,
+              "doc": ""
+            },
+            {
+              "name": "keyPressEvent",
+              "sig": "keyPressEvent(self, event)",
+              "start_line": 122,
+              "end_line": 148,
               "doc": ""
             },
             {
               "name": "_sync_parent_search",
               "sig": "_sync_parent_search(self, target)",
-              "start_line": 86,
-              "end_line": 90,
+              "start_line": 150,
+              "end_line": 154,
               "doc": ""
             },
             {
               "name": "get_flags",
               "sig": "get_flags(self)",
-              "start_line": 92,
-              "end_line": 96,
+              "start_line": 156,
+              "end_line": 160,
               "doc": ""
             },
             {
               "name": "find_next",
               "sig": "find_next(self)",
-              "start_line": 98,
-              "end_line": 111,
+              "start_line": 162,
+              "end_line": 188,
               "doc": ""
             },
             {
               "name": "find_prev",
               "sig": "find_prev(self)",
-              "start_line": 113,
-              "end_line": 127,
+              "start_line": 190,
+              "end_line": 224,
               "doc": ""
             },
             {
               "name": "replace",
               "sig": "replace(self)",
-              "start_line": 129,
-              "end_line": 137,
+              "start_line": 226,
+              "end_line": 234,
               "doc": ""
             },
             {
               "name": "replace_all",
               "sig": "replace_all(self)",
-              "start_line": 139,
-              "end_line": 159,
+              "start_line": 236,
+              "end_line": 256,
               "doc": ""
             }
           ]
@@ -15438,22 +15445,22 @@
           "bases": [
             "QFrame"
           ],
-          "start_line": 162,
-          "end_line": 243,
+          "start_line": 259,
+          "end_line": 340,
           "doc": "Floating quick-action toolbar on transcript selection (Milestone 3.12).",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, parent)",
-              "start_line": 171,
-              "end_line": 238,
+              "start_line": 268,
+              "end_line": 335,
               "doc": ""
             },
             {
               "name": "_emit_comment",
               "sig": "_emit_comment(self)",
-              "start_line": 240,
-              "end_line": 243,
+              "start_line": 337,
+              "end_line": 340,
               "doc": ""
             }
           ]
@@ -15851,7 +15858,7 @@
     "transcript_story.py": {
       "path": "transcript_story.py",
       "lines": 847,
-      "summary": "Radio & TV Segmenter v3.9.55-beta \u2014 transcript story responsibilities.",
+      "summary": "Radio & TV Segmenter v3.9.56-beta \u2014 transcript story responsibilities.",
       "exports": [
         "TranscriptStoryMixin",
         "Story",

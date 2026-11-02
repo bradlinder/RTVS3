@@ -70,18 +70,82 @@ class FindReplaceDialog(QDialog):
         btn_layout.addWidget(self.replace_all_btn)
         layout.addLayout(btn_layout)
 
+        self.find_next_btn.setToolTip("Find next occurrence (Ctrl+G / Enter)")
         self.find_next_btn.clicked.connect(self.find_next)
+        self.replace_btn.setToolTip("Replace current match")
         self.replace_btn.clicked.connect(self.replace)
+        self.replace_all_btn.setToolTip("Replace all occurrences in transcript")
         self.replace_all_btn.clicked.connect(self.replace_all)
 
-        self.find_input.returnPressed.connect(self.find_next)
-        self.replace_input.returnPressed.connect(self.replace)
+        self.find_input.setPlaceholderText("Search phrase...")
+        self.replace_input.setPlaceholderText("Replacement text...")
 
-        from prs_shared import platform_seq
-        self.shortcut_find_next = QShortcut(platform_seq("Ctrl+G"), self)
-        self.shortcut_find_next.activated.connect(self.find_next)
-        self.shortcut_find_prev = QShortcut(platform_seq("Ctrl+Shift+G"), self)
-        self.shortcut_find_prev.activated.connect(self.find_prev)
+        orig_find_key_press = self.find_input.keyPressEvent
+        def _find_input_key_press(event):
+            ctrl = bool(event.modifiers() & (Qt.ControlModifier | Qt.MetaModifier))
+            shift = bool(event.modifiers() & Qt.ShiftModifier)
+            if (ctrl and event.key() == Qt.Key_G) or event.key() == Qt.Key_F3:
+                if shift:
+                    self.find_prev()
+                else:
+                    self.find_next()
+                event.accept()
+                return
+            if event.key() in (Qt.Key_Return, Qt.Key_Enter):
+                if shift:
+                    self.find_prev()
+                else:
+                    self.find_next()
+                event.accept()
+                return
+            orig_find_key_press(event)
+        self.find_input.keyPressEvent = _find_input_key_press
+
+        orig_replace_key_press = self.replace_input.keyPressEvent
+        def _replace_input_key_press(event):
+            ctrl = bool(event.modifiers() & (Qt.ControlModifier | Qt.MetaModifier))
+            shift = bool(event.modifiers() & Qt.ShiftModifier)
+            if (ctrl and event.key() == Qt.Key_G) or event.key() == Qt.Key_F3:
+                if shift:
+                    self.find_prev()
+                else:
+                    self.find_next()
+                event.accept()
+                return
+            if event.key() in (Qt.Key_Return, Qt.Key_Enter):
+                self.replace()
+                event.accept()
+                return
+            orig_replace_key_press(event)
+        self.replace_input.keyPressEvent = _replace_input_key_press
+
+    def keyPressEvent(self, event):
+        ctrl = bool(event.modifiers() & Qt.ControlModifier or event.modifiers() & Qt.MetaModifier)
+        shift = bool(event.modifiers() & Qt.ShiftModifier)
+
+        # Ctrl+G / Cmd+G or F3: Find Next (or Find Previous with Shift)
+        if (ctrl and event.key() == Qt.Key_G) or event.key() == Qt.Key_F3:
+            if shift:
+                self.find_prev()
+            else:
+                self.find_next()
+            event.accept()
+            return
+
+        # Ctrl+F / Cmd+F: Refocus search query
+        if ctrl and event.key() == Qt.Key_F:
+            self.find_input.setFocus()
+            self.find_input.selectAll()
+            event.accept()
+            return
+
+        # Shift+Enter inside Find input: Find Previous
+        if shift and event.key() in (Qt.Key_Return, Qt.Key_Enter):
+            self.find_prev()
+            event.accept()
+            return
+
+        super().keyPressEvent(event)
 
     def _sync_parent_search(self, target: str):
         parent = self.parent()
@@ -102,11 +166,24 @@ class FindReplaceDialog(QDialog):
 
         self._sync_parent_search(target)
         found = self.text_edit.find(target, self.get_flags())
+        wrapped = False
         if not found:
             cursor = self.text_edit.textCursor()
             cursor.movePosition(QTextCursor.Start)
             self.text_edit.setTextCursor(cursor)
             found = self.text_edit.find(target, self.get_flags())
+            wrapped = True
+
+        if found:
+            self.text_edit.ensureCursorVisible()
+
+        parent = self.parent()
+        if parent and hasattr(parent, "statusBar") and parent.statusBar():
+            if found:
+                msg = f"Found next: '{target}'" + (" (wrapped to start)" if wrapped else "")
+                parent.statusBar().showMessage(msg, 2000)
+            else:
+                parent.statusBar().showMessage(f"Phrase not found: '{target}'", 2500)
 
         return found
 
@@ -116,13 +193,33 @@ class FindReplaceDialog(QDialog):
             return False
 
         self._sync_parent_search(target)
+
+        # Move cursor to beginning of existing selection so backward search advances to the prior match
+        cur = self.text_edit.textCursor()
+        if cur.hasSelection():
+            cur.setPosition(cur.selectionStart())
+            self.text_edit.setTextCursor(cur)
+
         flags = self.get_flags() | QTextDocument.FindFlag.FindBackward
         found = self.text_edit.find(target, flags)
+        wrapped = False
         if not found:
             cursor = self.text_edit.textCursor()
             cursor.movePosition(QTextCursor.End)
             self.text_edit.setTextCursor(cursor)
             found = self.text_edit.find(target, flags)
+            wrapped = True
+
+        if found:
+            self.text_edit.ensureCursorVisible()
+
+        parent = self.parent()
+        if parent and hasattr(parent, "statusBar") and parent.statusBar():
+            if found:
+                msg = f"Found previous: '{target}'" + (" (wrapped to end)" if wrapped else "")
+                parent.statusBar().showMessage(msg, 2000)
+            else:
+                parent.statusBar().showMessage(f"Phrase not found: '{target}'", 2500)
 
         return found
 

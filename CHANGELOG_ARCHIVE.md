@@ -5,6 +5,12 @@ For current and active releases, see [CHANGELOG.md](CHANGELOG.md).
 
 ---
 
+## v3.9.54-beta
+- **Interactive Transcript Threshold Auto-Scroll & Dual Settings Toggles (	ranscript_timeline_sync_mixin.py, 	ranscript_editor.py, playback_controller.py, ui_menus.py, preferences_tabs_media.py, preferences_dialog.py, RadioTVSegmenter.py)**:
+  - Implemented intelligent threshold-based auto-scrolling in InteractiveTranscriptEdit: when playback approaches the bottom ~18% of the visible viewport or moves off-screen, the view smoothly scrolls to position the active spoken line at the upper third (~25%) of the screen, providing ample forward reading space without continuous word-by-word micro-jitter.
+  - Added user interaction safety guards: auto-scroll is safely suppressed during text editing mode (Ctrl+E), active text selection drags, and manual scrolling (mouse wheel or scrollbar drag temporarily disengages auto-scroll until seeking, toggling playback, or clicking a transcript link).
+  - Added user-configurable toggle in **View > Transcript > Auto-Scroll During Playback** and in **Preferences > Playback & Timeline > Transcript Playback Scroll** (default: enabled), persisted in QSettings.
+
 ## v3.9.53-beta
 - **Updater Check & Cached Installer State Disambiguation (`updater.py`)**:
   - Resolved an issue in `CheckUpdateDialog` where having a previously downloaded installer package in `%APPDATA%/RTVS3/updates/` falsely caused the dialog to display `✓ Update package for <version> is already downloaded and ready to install.` and show a `Restart & Install` button even when the user was already running that version.

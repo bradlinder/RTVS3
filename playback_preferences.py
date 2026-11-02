@@ -378,6 +378,12 @@ class PlaybackPreferencesMixin(ThemePreferencesMixin, PlaybackControllerMixin, P
             return
 
         from PySide6.QtGui import QTextDocument, QTextCursor
+        # Move cursor to beginning of existing selection so backward search advances to the prior match
+        cur = tv.textCursor()
+        if cur.hasSelection():
+            cur.setPosition(cur.selectionStart())
+            tv.setTextCursor(cur)
+
         flags = QTextDocument.FindFlag.FindBackward
         found = tv.find(query, flags)
         wrapped = False
