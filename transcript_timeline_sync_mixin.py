@@ -281,10 +281,56 @@ class TranscriptTimelineSyncMixin:
                 extra.cursor = cursor
                 extras.append(extra)
 
+        if getattr(self, "_search_highlight_selections", None):
+            extras.extend(self._search_highlight_selections)
+
         if getattr(self, "_playback_highlight_selection", None) is not None:
             extras.append(self._playback_highlight_selection)
 
         self.setExtraSelections(extras)
+
+    def set_search_highlights(self, ranges: list, active_idx: int = -1):
+        """Highlight all search matches across transcript with prominent active match."""
+        if not ranges:
+            self._search_highlight_selections = []
+            self.update_extra_selections()
+            return
+
+        doc = self.document()
+        is_light = getattr(self, "current_theme", "dark") == "light"
+
+        # Inactive matches: soft amber/yellow background
+        inactive_bg = QColor(254, 240, 138, 210) if is_light else QColor(161, 98, 7, 200)
+        inactive_fg = QColor(113, 63, 18) if is_light else QColor(254, 240, 138)
+
+        # Active match: vibrant cyan/blue background
+        active_bg = QColor(56, 189, 248, 230) if is_light else QColor(2, 132, 199, 230)
+        active_fg = QColor(15, 23, 42) if is_light else QColor(255, 255, 255)
+
+        selections = []
+        for i, (start, end) in enumerate(ranges):
+            extra = QTextEdit.ExtraSelection()
+            fmt = QTextCharFormat()
+            if i == active_idx:
+                fmt.setBackground(active_bg)
+                fmt.setForeground(active_fg)
+            else:
+                fmt.setBackground(inactive_bg)
+                fmt.setForeground(inactive_fg)
+            extra.format = fmt
+            cursor = QTextCursor(doc)
+            cursor.setPosition(start)
+            cursor.setPosition(end, QTextCursor.MoveMode.KeepAnchor)
+            extra.cursor = cursor
+            selections.append(extra)
+
+        self._search_highlight_selections = selections
+        self.update_extra_selections()
+
+    def clear_search_highlights(self):
+        """Clear all search match highlights from transcript."""
+        self._search_highlight_selections = []
+        self.update_extra_selections()
 
     def set_timeline_selection_span(self, start_char, end_char):
         if start_char is not None and end_char is not None and end_char > start_char:

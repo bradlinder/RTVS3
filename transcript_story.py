@@ -1,4 +1,4 @@
-"""Radio & TV Segmenter v3.9.56-beta — transcript story responsibilities.
+"""Radio & TV Segmenter v3.9.57-beta — transcript story responsibilities.
 
 Methods intentionally retain the MainWindow-facing API so behavior remains
 maintaining the established MainWindow-facing API while responsibilities are isolated.
@@ -414,6 +414,10 @@ class TranscriptStoryMixin(StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsM
             self.comments_panel.set_comments(self.transcript.get("segments", []))
         if hasattr(self, "transcript_view"):
             self.transcript_view.update_extra_selections()
+        if hasattr(self, "transcript_search_input") and hasattr(self, "_on_transcript_search_text_changed"):
+            q = self.transcript_search_input.text().strip()
+            if q:
+                self._on_transcript_search_text_changed(q)
 
         if hasattr(self, "transcript_view") and self.transcript_view:
             self.transcript_view.active_highlight_anchor = None

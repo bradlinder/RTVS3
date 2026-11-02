@@ -11,6 +11,7 @@ try:
     from PySide6.QtWidgets import (
         QDialog,
         QFrame,
+        QLabel,
         QToolButton,
         QLineEdit,
         QCheckBox,
@@ -28,6 +29,7 @@ except ImportError:
     from PySide6.QtWidgets import (
         QDialog,
         QFrame,
+        QLabel,
         QToolButton,
         QLineEdit,
         QCheckBox,
@@ -52,33 +54,43 @@ class FindReplaceDialog(QDialog):
         form = QFormLayout()
 
         self.find_input = QLineEdit()
+        self.find_input.setPlaceholderText("Search phrase...")
+        self.count_label = QLabel("", self)
+        self.count_label.setStyleSheet("color: #94a3b8; font-size: 11px; font-weight: 600; padding: 0 4px;")
+        find_row = QHBoxLayout()
+        find_row.addWidget(self.find_input, 1)
+        find_row.addWidget(self.count_label)
+
         self.replace_input = QLineEdit()
+        self.replace_input.setPlaceholderText("Replacement text...")
         self.case_checkbox = QCheckBox("Match Case")
 
-        form.addRow("Find:", self.find_input)
+        form.addRow("Find:", find_row)
         form.addRow("Replace with:", self.replace_input)
         layout.addLayout(form)
         layout.addWidget(self.case_checkbox)
 
         btn_layout = QHBoxLayout()
+        self.find_prev_btn = QPushButton("Find Prev")
+        self.find_prev_btn.setToolTip("Find previous occurrence (Shift+Enter / Ctrl+Shift+G)")
+        self.find_prev_btn.clicked.connect(self.find_prev)
         self.find_next_btn = QPushButton("Find Next")
+        self.find_next_btn.setToolTip("Find next occurrence (Enter / Ctrl+G)")
+        self.find_next_btn.clicked.connect(self.find_next)
         self.replace_btn = QPushButton("Replace")
+        self.replace_btn.setToolTip("Replace current match")
+        self.replace_btn.clicked.connect(self.replace)
         self.replace_all_btn = QPushButton("Replace All")
+        self.replace_all_btn.setToolTip("Replace all occurrences in transcript")
+        self.replace_all_btn.clicked.connect(self.replace_all)
 
+        btn_layout.addWidget(self.find_prev_btn)
         btn_layout.addWidget(self.find_next_btn)
         btn_layout.addWidget(self.replace_btn)
         btn_layout.addWidget(self.replace_all_btn)
         layout.addLayout(btn_layout)
 
-        self.find_next_btn.setToolTip("Find next occurrence (Ctrl+G / Enter)")
-        self.find_next_btn.clicked.connect(self.find_next)
-        self.replace_btn.setToolTip("Replace current match")
-        self.replace_btn.clicked.connect(self.replace)
-        self.replace_all_btn.setToolTip("Replace all occurrences in transcript")
-        self.replace_all_btn.clicked.connect(self.replace_all)
-
-        self.find_input.setPlaceholderText("Search phrase...")
-        self.replace_input.setPlaceholderText("Replacement text...")
+        self.find_input.textChanged.connect(self._on_find_text_changed)
 
         orig_find_key_press = self.find_input.keyPressEvent
         def _find_input_key_press(event):
@@ -147,6 +159,23 @@ class FindReplaceDialog(QDialog):
 
         super().keyPressEvent(event)
 
+    def _on_find_text_changed(self, text: str):
+        target = text.strip()
+        self._sync_parent_search(target)
+        self._update_local_match_count()
+
+    def _update_local_match_count(self):
+        parent = self.parent()
+        if parent and hasattr(parent, "transcript_search_count_lbl") and parent.transcript_search_count_lbl:
+            self.count_label.setText(parent.transcript_search_count_lbl.text())
+        elif parent and hasattr(parent, "_search_match_ranges"):
+            matches = getattr(parent, "_search_match_ranges", [])
+            idx = getattr(parent, "_search_match_index", -1)
+            if matches:
+                self.count_label.setText(f"{idx + 1} / {len(matches)}")
+            else:
+                self.count_label.setText("0 / 0" if self.find_input.text().strip() else "")
+
     def _sync_parent_search(self, target: str):
         parent = self.parent()
         if parent and hasattr(parent, "transcript_search_input") and parent.transcript_search_input:
@@ -164,7 +193,16 @@ class FindReplaceDialog(QDialog):
         if not target:
             return False
 
+        parent = self.parent()
         self._sync_parent_search(target)
+
+        # Advance via parent match tracker if active
+        if parent and hasattr(parent, "_search_match_ranges") and parent._search_match_ranges:
+            parent._search_match_index = (parent._search_match_index + 1) % len(parent._search_match_ranges)
+            parent._sync_search_match_ui(scroll_to_match=True)
+            self._update_local_match_count()
+            return True
+
         found = self.text_edit.find(target, self.get_flags())
         wrapped = False
         if not found:
@@ -185,6 +223,7 @@ class FindReplaceDialog(QDialog):
             else:
                 parent.statusBar().showMessage(f"Phrase not found: '{target}'", 2500)
 
+        self._update_local_match_count()
         return found
 
     def find_prev(self):
@@ -192,7 +231,15 @@ class FindReplaceDialog(QDialog):
         if not target:
             return False
 
+        parent = self.parent()
         self._sync_parent_search(target)
+
+        # Retreat via parent match tracker if active
+        if parent and hasattr(parent, "_search_match_ranges") and parent._search_match_ranges:
+            parent._search_match_index = (parent._search_match_index - 1) % len(parent._search_match_ranges)
+            parent._sync_search_match_ui(scroll_to_match=True)
+            self._update_local_match_count()
+            return True
 
         # Move cursor to beginning of existing selection so backward search advances to the prior match
         cur = self.text_edit.textCursor()
@@ -221,6 +268,7 @@ class FindReplaceDialog(QDialog):
             else:
                 parent.statusBar().showMessage(f"Phrase not found: '{target}'", 2500)
 
+        self._update_local_match_count()
         return found
 
     def replace(self):
@@ -253,6 +301,10 @@ class FindReplaceDialog(QDialog):
             count += 1
 
         cursor.endEditBlock()
+        parent = self.parent()
+        if parent and hasattr(parent, "_on_transcript_search_text_changed"):
+            parent._on_transcript_search_text_changed(target)
+        self._update_local_match_count()
         QMessageBox.information(self, "Replace All", f"Replaced {count} occurrence(s).")
 
 

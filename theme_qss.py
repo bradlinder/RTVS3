@@ -143,7 +143,7 @@ QPushButton#play_button {
 QPushButton#play_button:hover { background: #67d3ff; }
 QPushButton#play_button:pressed { background: #0ea5e9; }
 
-QPushButton#quick_save_button, QPushButton#add_story_btn, QPushButton#find_next_btn,
+QPushButton#quick_save_button, QPushButton#add_story_btn, QPushButton#find_next_btn, QPushButton#find_prev_btn,
 QPushButton#translate_button {
     background: #20242b;
     color: #f0f3f6;
@@ -154,7 +154,7 @@ QPushButton#translate_button {
     font-weight: 600;
 }
 QPushButton#quick_save_button:hover, QPushButton#add_story_btn:hover,
-QPushButton#find_next_btn:hover, QPushButton#translate_button:hover {
+QPushButton#find_next_btn:hover, QPushButton#find_prev_btn:hover, QPushButton#translate_button:hover {
     background: #282c35;
     border-color: #38bdf8;
     color: #ffffff;

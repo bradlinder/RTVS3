@@ -70,6 +70,9 @@ class UiDialogLaunchersMixin:
         else:
             self.find_dialog.find_input.selectAll()
 
+        if hasattr(self.find_dialog, "_update_local_match_count"):
+            self.find_dialog._update_local_match_count()
+
         self.find_dialog.show()
         self.find_dialog.raise_()
         self.find_dialog.activateWindow()

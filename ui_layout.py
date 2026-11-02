@@ -215,12 +215,24 @@ class UiLayoutMixin(UiMenusMixin, UiDialogLaunchersMixin):
                     return
             orig_search_key_press(event)
         self.transcript_search_input.keyPressEvent = _search_key_press
+        self.transcript_search_input.textChanged.connect(lambda text: getattr(self, "_on_transcript_search_text_changed", lambda t: None)(text))
 
         search_bar.addWidget(self.transcript_search_input, 1)
 
+        self.transcript_search_count_lbl = QLabel("", self)
+        self.transcript_search_count_lbl.setObjectName("transcript_search_count_lbl")
+        self.transcript_search_count_lbl.setStyleSheet("color: #94a3b8; font-size: 11px; font-weight: 600; padding: 0 4px;")
+        search_bar.addWidget(self.transcript_search_count_lbl)
+
+        self.find_prev_btn = QPushButton("Find Prev", self)
+        self.find_prev_btn.setObjectName("find_prev_btn")
+        self.find_prev_btn.setToolTip("Find previous occurrence of search term in transcript (Shift+Enter / Ctrl+Shift+G)")
+        self.find_prev_btn.clicked.connect(self.trigger_find_prev)
+        search_bar.addWidget(self.find_prev_btn)
+
         self.find_next_btn = QPushButton("Find Next", self)
         self.find_next_btn.setObjectName("find_next_btn")
-        self.find_next_btn.setToolTip("Find next occurrence of search term in transcript (Ctrl+G)")
+        self.find_next_btn.setToolTip("Find next occurrence of search term in transcript (Ctrl+G / Enter)")
         self.find_next_btn.clicked.connect(self.trigger_find_next)
         search_bar.addWidget(self.find_next_btn)
 

@@ -305,6 +305,110 @@ class PlaybackPreferencesMixin(ThemePreferencesMixin, PlaybackControllerMixin, P
             self.activity_list.clear()
             self.log_activity("[ACTIVITY] Log cleared.", mark_dirty=False)
 
+    def _find_all_transcript_matches(self, query: str):
+        tv = getattr(self, "transcript_view", None)
+        if not tv or not query:
+            return []
+        text = tv.toPlainText()
+        if not text:
+            return []
+        l_text = text.lower()
+        l_query = query.lower()
+        matches = []
+        pos = 0
+        q_len = len(l_query)
+        while True:
+            idx = l_text.find(l_query, pos)
+            if idx == -1:
+                break
+            matches.append((idx, idx + q_len))
+            pos = idx + q_len
+        return matches
+
+    def _on_transcript_search_text_changed(self, text: str):
+        """Update auto-highlights and match count badge in real time as search query changes."""
+        query = text.strip()
+        tv = getattr(self, "transcript_view", None)
+        count_lbl = getattr(self, "transcript_search_count_lbl", None)
+
+        if not query:
+            self._search_match_ranges = []
+            self._search_match_index = -1
+            if count_lbl:
+                count_lbl.setText("")
+            if tv and hasattr(tv, "clear_search_highlights"):
+                tv.clear_search_highlights()
+            find_dialog = getattr(self, "find_dialog", None)
+            if find_dialog and hasattr(find_dialog, "count_label") and find_dialog.count_label:
+                find_dialog.count_label.setText("")
+            return
+
+        matches = self._find_all_transcript_matches(query)
+        self._search_match_ranges = matches
+
+        if not matches:
+            self._search_match_index = -1
+            if count_lbl:
+                count_lbl.setText("0 / 0")
+            if tv and hasattr(tv, "clear_search_highlights"):
+                tv.clear_search_highlights()
+            find_dialog = getattr(self, "find_dialog", None)
+            if find_dialog and hasattr(find_dialog, "count_label") and find_dialog.count_label:
+                find_dialog.count_label.setText("0 / 0")
+            return
+
+        # Determine closest match to current cursor
+        cur_pos = tv.textCursor().selectionStart() if tv else 0
+        active_idx = 0
+        for i, (m_start, m_end) in enumerate(matches):
+            if cur_pos <= m_end:
+                active_idx = i
+                break
+
+        self._search_match_index = active_idx
+        self._sync_search_match_ui(scroll_to_match=True)
+
+    def _sync_search_match_ui(self, scroll_to_match: bool = True):
+        matches = getattr(self, "_search_match_ranges", [])
+        active_idx = getattr(self, "_search_match_index", -1)
+        count_lbl = getattr(self, "transcript_search_count_lbl", None)
+        tv = getattr(self, "transcript_view", None)
+
+        if not matches:
+            has_text = bool(hasattr(self, "transcript_search_input") and self.transcript_search_input.text().strip())
+            badge = "0 / 0" if has_text else ""
+            if count_lbl:
+                count_lbl.setText(badge)
+            find_dialog = getattr(self, "find_dialog", None)
+            if find_dialog and hasattr(find_dialog, "count_label") and find_dialog.count_label:
+                find_dialog.count_label.setText(badge)
+            if tv and hasattr(tv, "clear_search_highlights"):
+                tv.clear_search_highlights()
+            return
+
+        active_idx = max(0, min(active_idx, len(matches) - 1))
+        self._search_match_index = active_idx
+
+        badge_text = f"{active_idx + 1} / {len(matches)}"
+        if count_lbl:
+            count_lbl.setText(badge_text)
+
+        find_dialog = getattr(self, "find_dialog", None)
+        if find_dialog and hasattr(find_dialog, "count_label") and find_dialog.count_label:
+            find_dialog.count_label.setText(badge_text)
+
+        if tv and hasattr(tv, "set_search_highlights"):
+            tv.set_search_highlights(matches, active_idx)
+
+        if scroll_to_match and tv and 0 <= active_idx < len(matches):
+            from PySide6.QtGui import QTextCursor
+            start, end = matches[active_idx]
+            cur = tv.textCursor()
+            cur.setPosition(start)
+            cur.setPosition(end, QTextCursor.MoveMode.KeepAnchor)
+            tv.setTextCursor(cur)
+            tv.ensureCursorVisible()
+
     def trigger_find_next(self):
         """Find Next shortcut (Ctrl+G) handler: advances to next search match in transcript."""
         find_dialog = getattr(self, "find_dialog", None)
@@ -312,12 +416,20 @@ class PlaybackPreferencesMixin(ThemePreferencesMixin, PlaybackControllerMixin, P
             find_dialog.find_next()
             return
 
-        # Perform inline transcript search
+        matches = getattr(self, "_search_match_ranges", [])
+        if matches:
+            self._search_match_index = (self._search_match_index + 1) % len(matches)
+            self._sync_search_match_ui(scroll_to_match=True)
+            msg = f"Match {self._search_match_index + 1} of {len(matches)}"
+            if self._search_match_index == 0 and len(matches) > 1:
+                msg += " (wrapped to start)"
+            if hasattr(self, "statusBar") and self.statusBar():
+                self.statusBar().showMessage(msg, 2000)
+            return
+
         query = ""
         if hasattr(self, "transcript_search_input") and self.transcript_search_input:
             query = self.transcript_search_input.text().strip()
-        if not query and find_dialog and hasattr(find_dialog, "find_input"):
-            query = find_dialog.find_input.text().strip()
 
         if not query:
             if hasattr(self, "transcript_search_input") and self.transcript_search_input:
@@ -327,29 +439,7 @@ class PlaybackPreferencesMixin(ThemePreferencesMixin, PlaybackControllerMixin, P
                 self.statusBar().showMessage("Type a search term in the transcript search box or press Ctrl+F for Find & Replace.", 3000)
             return
 
-        tv = getattr(self, "transcript_view", None)
-        if not tv:
-            return
-
-        from PySide6.QtGui import QTextDocument, QTextCursor
-        flags = QTextDocument.FindFlag(0)
-        found = tv.find(query, flags)
-        wrapped = False
-        if not found:
-            cursor = tv.textCursor()
-            cursor.movePosition(QTextCursor.Start)
-            tv.setTextCursor(cursor)
-            found = tv.find(query, flags)
-            wrapped = True
-
-        if found:
-            tv.ensureCursorVisible()
-            msg = f"Found next: '{query}'" + (" (wrapped to start)" if wrapped else "")
-            if hasattr(self, "statusBar") and self.statusBar():
-                self.statusBar().showMessage(msg, 2500)
-        else:
-            if hasattr(self, "statusBar") and self.statusBar():
-                self.statusBar().showMessage(f"Phrase not found: '{query}'", 2500)
+        self._on_transcript_search_text_changed(query)
 
     def trigger_find_prev(self):
         """Find Previous shortcut (Ctrl+Shift+G) handler: retreats to previous search match in transcript."""
@@ -358,12 +448,20 @@ class PlaybackPreferencesMixin(ThemePreferencesMixin, PlaybackControllerMixin, P
             find_dialog.find_prev()
             return
 
-        # Perform inline transcript search backward
+        matches = getattr(self, "_search_match_ranges", [])
+        if matches:
+            self._search_match_index = (self._search_match_index - 1) % len(matches)
+            self._sync_search_match_ui(scroll_to_match=True)
+            msg = f"Match {self._search_match_index + 1} of {len(matches)}"
+            if self._search_match_index == len(matches) - 1 and len(matches) > 1:
+                msg += " (wrapped to end)"
+            if hasattr(self, "statusBar") and self.statusBar():
+                self.statusBar().showMessage(msg, 2000)
+            return
+
         query = ""
         if hasattr(self, "transcript_search_input") and self.transcript_search_input:
             query = self.transcript_search_input.text().strip()
-        if not query and find_dialog and hasattr(find_dialog, "find_input"):
-            query = find_dialog.find_input.text().strip()
 
         if not query:
             if hasattr(self, "transcript_search_input") and self.transcript_search_input:
@@ -373,35 +471,7 @@ class PlaybackPreferencesMixin(ThemePreferencesMixin, PlaybackControllerMixin, P
                 self.statusBar().showMessage("Type a search term in the transcript search box or press Ctrl+F for Find & Replace.", 3000)
             return
 
-        tv = getattr(self, "transcript_view", None)
-        if not tv:
-            return
-
-        from PySide6.QtGui import QTextDocument, QTextCursor
-        # Move cursor to beginning of existing selection so backward search advances to the prior match
-        cur = tv.textCursor()
-        if cur.hasSelection():
-            cur.setPosition(cur.selectionStart())
-            tv.setTextCursor(cur)
-
-        flags = QTextDocument.FindFlag.FindBackward
-        found = tv.find(query, flags)
-        wrapped = False
-        if not found:
-            cursor = tv.textCursor()
-            cursor.movePosition(QTextCursor.End)
-            tv.setTextCursor(cursor)
-            found = tv.find(query, flags)
-            wrapped = True
-
-        if found:
-            tv.ensureCursorVisible()
-            msg = f"Found previous: '{query}'" + (" (wrapped to end)" if wrapped else "")
-            if hasattr(self, "statusBar") and self.statusBar():
-                self.statusBar().showMessage(msg, 2500)
-        else:
-            if hasattr(self, "statusBar") and self.statusBar():
-                self.statusBar().showMessage(f"Phrase not found: '{query}'", 2500)
+        self._on_transcript_search_text_changed(query)
 
     def open_diagnostic_log_folder(self):
         folder = getattr(self, "log_dir", get_app_data_dir() / "logs")
