@@ -1509,8 +1509,12 @@ class MediaBatchMixin:
         """
         Checks for unsaved changes before loading new media.
         Bypasses interactive prompt during batch processing by auto-saving.
+        Silently skips prompts if the current project workspace is completely empty.
         """
-        if self.project_dirty:
+        is_empty = self.is_project_empty() if hasattr(self, "is_project_empty") else (
+            not getattr(self, "audio_file", None) and not getattr(self, "project_file", None)
+        )
+        if getattr(self, "project_dirty", False) and not is_empty:
             # If running a batch process, auto-save instead of asking via dialog
             if getattr(self, "batch_active", False):
                 if self.project_file:

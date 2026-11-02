@@ -173,6 +173,22 @@ class DiagnosticCloudAndSystemTestsMixin:
             if cand.exists():
                 raise AssertionError("Missing candidate unexpectedly reported as existing")
 
+        # 3. Verify empty project dirty prompt bypass
+        from project_state_mixin import ProjectStateMixin
+        from media_batch import MediaBatchMixin
+        class EmptyProjectProbe(ProjectStateMixin, MediaBatchMixin):
+            def __init__(self):
+                self.audio_file = None
+                self.project_file = None
+                self.transcript = None
+                self.stories = []
+                self.project_dirty = True
+        probe = EmptyProjectProbe()
+        assert probe.is_project_empty() is True
+        assert probe.prepare_for_new_media() is True
+        probe.audio_file = "voice.mp3"
+        assert probe.is_project_empty() is False
+
         item.status = "PASS"
         item.message = "Project structure validation errors and portable media resolution verified"
 

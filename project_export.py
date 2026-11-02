@@ -295,7 +295,10 @@ class ProjectExportMixin(
                 except Exception:
                     pass
 
-        if getattr(self, "project_dirty", False) and not getattr(self, "batch_active", False):
+        is_empty = self.is_project_empty() if hasattr(self, "is_project_empty") else (
+            not getattr(self, "audio_file", None) and not getattr(self, "project_file", None)
+        )
+        if getattr(self, "project_dirty", False) and not getattr(self, "batch_active", False) and not is_empty:
             reply = QMessageBox.question(
                 self,
                 "Unsaved Changes",

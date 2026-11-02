@@ -44,7 +44,10 @@ class ProjectLifecycleMixin:
     """Provides project lifecycle and persistence methods for MainWindow."""
 
     def close_project(self, prompt=True):
-        if prompt and getattr(self, "project_dirty", False):
+        is_empty = self.is_project_empty() if hasattr(self, "is_project_empty") else (
+            not getattr(self, "audio_file", None) and not getattr(self, "project_file", None)
+        )
+        if prompt and getattr(self, "project_dirty", False) and not is_empty:
             answer = QMessageBox.question(
                 self,
                 "Close Project",
@@ -95,6 +98,7 @@ class ProjectLifecycleMixin:
         self.current_selected_story_indices = []
         self.duration = 0
         self.current_position = 0
+        self.project_dirty = False
 
         if hasattr(self, "undo_stack") and self.undo_stack:
             self.undo_stack.clear()
@@ -570,7 +574,10 @@ class ProjectLifecycleMixin:
             QMessageBox.critical(self, "Error", f"Project file not found: {filename}")
             return False
 
-        if not preserve_media and prompt and getattr(self, "project_dirty", False):
+        is_empty = self.is_project_empty() if hasattr(self, "is_project_empty") else (
+            not getattr(self, "audio_file", None) and not getattr(self, "project_file", None)
+        )
+        if not preserve_media and prompt and getattr(self, "project_dirty", False) and not is_empty:
             answer = QMessageBox.question(
                 self,
                 "Open Project",

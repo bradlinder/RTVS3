@@ -350,3 +350,12 @@ class ProjectStateMixin:
                 self.save_state_label.setText("✓ Saved")
             else:
                 self.save_state_label.setText("Not saved")
+
+    def is_project_empty(self) -> bool:
+        """Returns True if the current workspace has no loaded audio, project file, transcript text, or stories."""
+        has_media = bool(getattr(self, "audio_file", None))
+        transcript = getattr(self, "transcript", None)
+        has_transcript = bool(transcript and (transcript.get("text") or transcript.get("segments")))
+        has_stories = bool(getattr(self, "stories", []))
+        has_project_file = bool(getattr(self, "project_file", None))
+        return not has_media and not has_project_file and not has_transcript and not has_stories

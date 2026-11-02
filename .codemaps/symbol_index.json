@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-02 10:59:09",
+  "generated_at": "2026-11-02 11:09:28",
   "total_files": 155,
   "files": {
     "RadioTVSegmenter.py": {
       "path": "RadioTVSegmenter.py",
       "lines": 658,
-      "summary": "Radio & TV Segmenter \u2014 v3.9.59-beta",
+      "summary": "Radio & TV Segmenter \u2014 v3.9.60-beta",
       "exports": null,
       "classes": [
         {
@@ -1748,7 +1748,7 @@
     },
     "diagnostic_cloud_and_system_tests.py": {
       "path": "diagnostic_cloud_and_system_tests.py",
-      "lines": 1267,
+      "lines": 1283,
       "summary": "Diagnostic test bench suite component.",
       "exports": null,
       "classes": [
@@ -1756,7 +1756,7 @@
           "name": "DiagnosticCloudAndSystemTestsMixin",
           "bases": [],
           "start_line": 26,
-          "end_line": 1265,
+          "end_line": 1281,
           "doc": "",
           "methods": [
             {
@@ -1770,119 +1770,119 @@
               "name": "_test_project_file_integrity_and_portable_path_resolution",
               "sig": "_test_project_file_integrity_and_portable_path_resolution(self, item)",
               "start_line": 107,
-              "end_line": 177,
+              "end_line": 193,
               "doc": ""
             },
             {
               "name": "_test_acoustic_voice_profile_matcher",
               "sig": "_test_acoustic_voice_profile_matcher(self, item)",
-              "start_line": 179,
-              "end_line": 441,
+              "start_line": 195,
+              "end_line": 457,
               "doc": ""
             },
             {
               "name": "_test_windows_detached_update_helper_architecture",
               "sig": "_test_windows_detached_update_helper_architecture(self, item)",
-              "start_line": 443,
-              "end_line": 473,
+              "start_line": 459,
+              "end_line": 489,
               "doc": "Validates update helper architecture: helper script generation, exit polling, and logging."
             },
             {
               "name": "_test_temporary_cache_management_and_storage_inspection",
               "sig": "_test_temporary_cache_management_and_storage_inspection(self, item)",
-              "start_line": 475,
-              "end_line": 574,
+              "start_line": 491,
+              "end_line": 590,
               "doc": "Validates cache usage stats calculation, preview categorization, and cache purging."
             },
             {
               "name": "_test_youtube_data_api_and_direct_video_upload_engine",
               "sig": "_test_youtube_data_api_and_direct_video_upload_engine(self, item)",
-              "start_line": 576,
-              "end_line": 654,
+              "start_line": 592,
+              "end_line": 670,
               "doc": "Validates YouTube Zero-Auth manual export packaging (MP4, thumbnail, SRT, metadata .txt with chapters & speakers)."
             },
             {
               "name": "_test_multiprocessing_freeze_support_and_spawn_intercept",
               "sig": "_test_multiprocessing_freeze_support_and_spawn_intercept(self, item)",
-              "start_line": 656,
-              "end_line": 677,
+              "start_line": 672,
+              "end_line": 693,
               "doc": "Validates that frozen process spawn intercepts -c invocations from resource_tracker and multiprocessing."
             },
             {
               "name": "_resolve_worker_cmd",
               "sig": "_resolve_worker_cmd(self)",
-              "start_line": 679,
-              "end_line": 693,
+              "start_line": 695,
+              "end_line": 709,
               "doc": "Resolves the executable and arguments to launch the AI background worker."
             },
             {
               "name": "_test_ai_worker_subprocess_execution_and_ipc_handshake",
               "sig": "_test_ai_worker_subprocess_execution_and_ipc_handshake(self, item)",
-              "start_line": 695,
-              "end_line": 761,
+              "start_line": 711,
+              "end_line": 777,
               "doc": "Spawns the AI worker binary in an isolated subprocess, verifying IPC hello handshake and self-test."
             },
             {
               "name": "_test_frozen_subprocess_multiprocessing_spawn_protocol",
               "sig": "_test_frozen_subprocess_multiprocessing_spawn_protocol(self, item)",
-              "start_line": 763,
-              "end_line": 801,
+              "start_line": 779,
+              "end_line": 817,
               "doc": "Spawns the AI worker executable with Python -c to verify multiprocessing resource tracker interception."
             },
             {
               "name": "_test_comprehensive_local_and_cloud_backup_and_restore_engine",
               "sig": "_test_comprehensive_local_and_cloud_backup_and_restore_engine(self, item)",
-              "start_line": 803,
-              "end_line": 915,
+              "start_line": 819,
+              "end_line": 931,
               "doc": "Validates state serialization, SHA-256 verification, local backup roundtrip, and cloud payload integrity."
             },
             {
               "name": "_test_option_c_muted_silver_fog_light_theme_and_dark_mode_clipboard_formatting",
               "sig": "_test_option_c_muted_silver_fog_light_theme_and_dark_mode_clipboard_formatting(self, item)",
-              "start_line": 917,
-              "end_line": 970,
+              "start_line": 933,
+              "end_line": 986,
               "doc": "Validates Option C muted low-contrast silver/fog palette and dark-mode clipboard rich styling."
             },
             {
               "name": "_test_windows_ci_build_and_packaging_optimization_invariants",
               "sig": "_test_windows_ci_build_and_packaging_optimization_invariants(self, item)",
-              "start_line": 972,
-              "end_line": 1004,
+              "start_line": 988,
+              "end_line": 1020,
               "doc": "Validates Inno Setup compression parameters, Stage 3 PyInstaller optimizations, and CI settings."
             },
             {
               "name": "_test_roadmap_n_1_sliding_window_and_status_integrity",
               "sig": "_test_roadmap_n_1_sliding_window_and_status_integrity(self, item)",
-              "start_line": 1006,
-              "end_line": 1025,
+              "start_line": 1022,
+              "end_line": 1041,
               "doc": "Validates roadmap.txt N-1 sliding window retention, status indicator syntax, and version sync."
             },
             {
               "name": "_test_source_file_modularity_and_1000_line_budget_invariant",
               "sig": "_test_source_file_modularity_and_1000_line_budget_invariant(self, item)",
-              "start_line": 1027,
-              "end_line": 1096,
+              "start_line": 1043,
+              "end_line": 1112,
               "doc": "Validates that recently decomposed modules adhere to the 1,000-line modular budget,"
             },
             {
               "name": "_test_station_voice_profiles_store_and_matching_engine",
               "sig": "_test_station_voice_profiles_store_and_matching_engine(self, item)",
-              "start_line": 1098,
-              "end_line": 1213,
+              "start_line": 1114,
+              "end_line": 1229,
               "doc": "Validates StationVoiceProfileStore persistence, vector normalization, profile addition, matching logic, and JSON export/import."
             },
             {
               "name": "_test_multi_tier_mipmapped_waveform_peak_cache_serialization",
               "sig": "_test_multi_tier_mipmapped_waveform_peak_cache_serialization(self, item)",
-              "start_line": 1215,
-              "end_line": 1252,
+              "start_line": 1231,
+              "end_line": 1268,
               "doc": "Validates Version 2 .peaks binary cache read/write with 4x/16x/64x LOD pyramid levels and transparent Version 1 upgrade."
             },
             {
               "name": "_test_speed_listening_proofreading_rate_and_context_controls",
               "sig": "_test_speed_listening_proofreading_rate_and_context_controls(self, item)",
-              "start_line": 1254,
-              "end_line": 1265,
+              "start_line": 1270,
+              "end_line": 1281,
               "doc": "Validates playback speed rates (0.75x to 2.0x), WSOLA pitch preservation parameters, and proofreading pre-roll configuration."
             }
           ]
@@ -3938,7 +3938,7 @@
     },
     "media_batch.py": {
       "path": "media_batch.py",
-      "lines": 1848,
+      "lines": 1852,
       "summary": "Radio & TV Segmenter v1.1.1 \u2014 media batch responsibilities.",
       "exports": null,
       "classes": [
@@ -3946,7 +3946,7 @@
           "name": "MediaBatchMixin",
           "bases": [],
           "start_line": 21,
-          "end_line": 1848,
+          "end_line": 1852,
           "doc": "",
           "methods": [
             {
@@ -4261,63 +4261,63 @@
               "name": "prepare_for_new_media",
               "sig": "prepare_for_new_media(self)",
               "start_line": 1508,
-              "end_line": 1534,
+              "end_line": 1538,
               "doc": "Checks for unsaved changes before loading new media."
             },
             {
               "name": "_batch_media_error",
               "sig": "_batch_media_error(self, message)",
-              "start_line": 1536,
-              "end_line": 1558,
+              "start_line": 1540,
+              "end_line": 1562,
               "doc": ""
             },
             {
               "name": "_get_batch_project_target_path",
               "sig": "_get_batch_project_target_path(self, base_name)",
-              "start_line": 1560,
-              "end_line": 1587,
+              "start_line": 1564,
+              "end_line": 1591,
               "doc": "Determines consistent target .rtvs project file path during batch processing."
             },
             {
               "name": "_batch_save_project_file",
               "sig": "_batch_save_project_file(self)",
-              "start_line": 1589,
-              "end_line": 1604,
+              "start_line": 1593,
+              "end_line": 1608,
               "doc": "Saves project .rtvs to dedicated directory structure during batch processing."
             },
             {
               "name": "_batch_export_current",
               "sig": "_batch_export_current(self)",
-              "start_line": 1606,
-              "end_line": 1690,
+              "start_line": 1610,
+              "end_line": 1694,
               "doc": "Handles automatic export or project saving during batch processing."
             },
             {
               "name": "load_media_file",
               "sig": "load_media_file(self, filename, source, restore_adjacent_project)",
-              "start_line": 1692,
-              "end_line": 1807,
+              "start_line": 1696,
+              "end_line": 1811,
               "doc": ""
             },
             {
               "name": "update_active_media_source",
               "sig": "update_active_media_source(self)",
-              "start_line": 1809,
-              "end_line": 1842,
+              "start_line": 1813,
+              "end_line": 1846,
               "doc": "Update media player source and refresh waveform when normalization state changes."
             },
             {
               "name": "open_audio",
               "sig": "open_audio(self)",
-              "start_line": 1844,
-              "end_line": 1845,
+              "start_line": 1848,
+              "end_line": 1849,
               "doc": ""
             },
             {
               "name": "handle_media_drop",
               "sig": "handle_media_drop(self, filename)",
-              "start_line": 1847,
-              "end_line": 1848,
+              "start_line": 1851,
+              "end_line": 1852,
               "doc": ""
             }
           ]
@@ -8960,7 +8960,7 @@
     },
     "project_export.py": {
       "path": "project_export.py",
-      "lines": 446,
+      "lines": 449,
       "summary": "Radio & TV Story Segmenter \u2014 Unified Project & Media Export Facade.",
       "exports": null,
       "classes": [
@@ -8974,7 +8974,7 @@
             "ProjectLifecycleMixin"
           ],
           "start_line": 87,
-          "end_line": 446,
+          "end_line": 449,
           "doc": "Unified application export mixin composed of focused export sub-mixins.",
           "methods": [
             {
@@ -9002,7 +9002,7 @@
               "name": "closeEvent",
               "sig": "closeEvent(self, event)",
               "start_line": 265,
-              "end_line": 446,
+              "end_line": 449,
               "doc": "MainWindow close event handling shutdown, worker cancellation, and QSettings sync."
             }
           ]
@@ -9012,7 +9012,7 @@
     },
     "project_lifecycle.py": {
       "path": "project_lifecycle.py",
-      "lines": 992,
+      "lines": 999,
       "summary": "Radio & TV Story Segmenter \u2014 Project Lifecycle & Persistence Management.",
       "exports": null,
       "classes": [
@@ -9020,112 +9020,112 @@
           "name": "ProjectLifecycleMixin",
           "bases": [],
           "start_line": 43,
-          "end_line": 840,
+          "end_line": 847,
           "doc": "Provides project lifecycle and persistence methods for MainWindow.",
           "methods": [
             {
               "name": "close_project",
               "sig": "close_project(self, prompt)",
               "start_line": 46,
-              "end_line": 161,
+              "end_line": 165,
               "doc": ""
             },
             {
               "name": "new_project",
               "sig": "new_project(self)",
-              "start_line": 163,
-              "end_line": 165,
+              "start_line": 167,
+              "end_line": 169,
               "doc": ""
             },
             {
               "name": "project_audio_reference",
               "sig": "project_audio_reference(self)",
-              "start_line": 167,
-              "end_line": 175,
+              "start_line": 171,
+              "end_line": 179,
               "doc": ""
             },
             {
               "name": "project_data",
               "sig": "project_data(self)",
-              "start_line": 177,
-              "end_line": 217,
+              "start_line": 181,
+              "end_line": 221,
               "doc": ""
             },
             {
               "name": "_write_project_file",
               "sig": "_write_project_file(self, file_path)",
-              "start_line": 219,
-              "end_line": 282,
+              "start_line": 223,
+              "end_line": 286,
               "doc": "Writes project state dictionary directly to disk."
             },
             {
               "name": "prepare_export_directories",
               "sig": "prepare_export_directories(self, target_base_dir, default_name, prompt_user)",
-              "start_line": 284,
-              "end_line": 345,
+              "start_line": 288,
+              "end_line": 349,
               "doc": "Resolves project export subfolders (Transcripts, Media)."
             },
             {
               "name": "get_default_save_directory",
               "sig": "get_default_save_directory(self)",
-              "start_line": 347,
-              "end_line": 360,
+              "start_line": 351,
+              "end_line": 364,
               "doc": "Returns target base directory based on preferences and loaded media."
             },
             {
               "name": "validate_project_data",
               "sig": "validate_project_data(self, data)",
-              "start_line": 362,
-              "end_line": 420,
+              "start_line": 366,
+              "end_line": 424,
               "doc": "Return a list of structural project-data problems before saving."
             },
             {
               "name": "save_project_as",
               "sig": "save_project_as(self)",
-              "start_line": 422,
-              "end_line": 466,
+              "start_line": 426,
+              "end_line": 470,
               "doc": ""
             },
             {
               "name": "save_project",
               "sig": "save_project(self, force)",
-              "start_line": 468,
-              "end_line": 556,
+              "start_line": 472,
+              "end_line": 560,
               "doc": ""
             },
             {
               "name": "open_backup_restore_dialog",
               "sig": "open_backup_restore_dialog(self)",
-              "start_line": 558,
-              "end_line": 565,
+              "start_line": 562,
+              "end_line": 569,
               "doc": "Opens the unified Backup & Restore Center dialog."
             },
             {
               "name": "load_project_file",
               "sig": "load_project_file(self, filename, prompt, preserve_media)",
-              "start_line": 567,
-              "end_line": 677,
+              "start_line": 571,
+              "end_line": 684,
               "doc": ""
             },
             {
               "name": "load_project",
               "sig": "load_project(self, filename)",
-              "start_line": 679,
-              "end_line": 693,
+              "start_line": 686,
+              "end_line": 700,
               "doc": ""
             },
             {
               "name": "open_purge_project_data_dialog",
               "sig": "open_purge_project_data_dialog(self)",
-              "start_line": 695,
-              "end_line": 707,
+              "start_line": 702,
+              "end_line": 714,
               "doc": "Open the modal dialog allowing users to selectively wipe project data."
             },
             {
               "name": "purge_project_data",
               "sig": "purge_project_data(self, purge_transcript, purge_translations, purge_speakers, purge_stories, purge_media)",
-              "start_line": 709,
-              "end_line": 840,
+              "start_line": 716,
+              "end_line": 847,
               "doc": "Selectively wipe project components while preserving user undo history."
             }
           ]
@@ -9135,43 +9135,43 @@
           "bases": [
             "QDialog"
           ],
-          "start_line": 843,
-          "end_line": 991,
+          "start_line": 850,
+          "end_line": 998,
           "doc": "Modal dialog allowing users to selectively clear/purge project components.",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, parent, is_es)",
-              "start_line": 846,
-              "end_line": 853,
+              "start_line": 853,
+              "end_line": 860,
               "doc": ""
             },
             {
               "name": "_init_ui",
               "sig": "_init_ui(self)",
-              "start_line": 855,
-              "end_line": 972,
+              "start_line": 862,
+              "end_line": 979,
               "doc": ""
             },
             {
               "name": "_set_all_checked",
               "sig": "_set_all_checked(self, checked)",
-              "start_line": 974,
-              "end_line": 976,
+              "start_line": 981,
+              "end_line": 983,
               "doc": ""
             },
             {
               "name": "_update_purge_button_state",
               "sig": "_update_purge_button_state(self)",
-              "start_line": 978,
-              "end_line": 982,
+              "start_line": 985,
+              "end_line": 989,
               "doc": ""
             },
             {
               "name": "get_purge_options",
               "sig": "get_purge_options(self)",
-              "start_line": 984,
-              "end_line": 991,
+              "start_line": 991,
+              "end_line": 998,
               "doc": ""
             }
           ]
@@ -9232,7 +9232,7 @@
     },
     "project_state_mixin.py": {
       "path": "project_state_mixin.py",
-      "lines": 352,
+      "lines": 361,
       "summary": "Radio & TV Story Segmenter \u2014 Project State, Undo/Redo & Processing Progress Mixin.",
       "exports": null,
       "classes": [
@@ -9240,7 +9240,7 @@
           "name": "ProjectStateMixin",
           "bases": [],
           "start_line": 18,
-          "end_line": 352,
+          "end_line": 361,
           "doc": "Provides project state snapshotting, undo/redo state restoration, and progress tracking.",
           "methods": [
             {
@@ -9354,6 +9354,13 @@
               "start_line": 342,
               "end_line": 352,
               "doc": ""
+            },
+            {
+              "name": "is_project_empty",
+              "sig": "is_project_empty(self)",
+              "start_line": 354,
+              "end_line": 361,
+              "doc": "Returns True if the current workspace has no loaded audio, project file, transcript text, or stories."
             }
           ]
         }
@@ -15907,7 +15914,7 @@
     "transcript_story.py": {
       "path": "transcript_story.py",
       "lines": 851,
-      "summary": "Radio & TV Segmenter v3.9.59-beta \u2014 transcript story responsibilities.",
+      "summary": "Radio & TV Segmenter v3.9.60-beta \u2014 transcript story responsibilities.",
       "exports": [
         "TranscriptStoryMixin",
         "Story",
