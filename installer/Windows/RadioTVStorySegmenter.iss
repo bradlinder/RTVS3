@@ -1,7 +1,7 @@
 #define MyAppName "Radio & TV Segmenter"
 
 #ifndef MyAppVersion
-#define MyAppVersion "3.9.63-beta"
+#define MyAppVersion "3.9.64-beta"
 #endif
 
 
@@ -61,7 +61,7 @@ Root: HKA; Subkey: "Software\Classes\RTVSProject\DefaultIcon"; ValueType: string
 Root: HKA; Subkey: "Software\Classes\RTVSProject\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""%1"""
 
 [Run]
-Filename: "{app}\{#MyAppExeName}"; Description: "Launch {#MyAppName}"; Flags: nowait postinstall skipifsilent runasoriginaluser
+Filename: "{win}\explorer.exe"; Parameters: """{app}\{#MyAppExeName}"""; WorkingDir: "{app}"; Description: "Launch {#MyAppName}"; Flags: nowait postinstall skipifsilent
 
 [UninstallDelete]
 Type: filesandordirs; Name: "{app}"

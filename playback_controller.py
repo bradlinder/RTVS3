@@ -84,6 +84,42 @@ class PlaybackControllerMixin:
             except Exception:
                 pass
 
+        # Timeline and window media drag-and-drop event filtering
+        if event.type() in (QEvent.Type.DragEnter, QEvent.Type.DragMove, QEvent.Type.Drop):
+            timeline = getattr(self, "timeline", None)
+            is_timeline_target = False
+            if timeline is not None:
+                if watched is timeline or watched is getattr(timeline, "canvas", None) or watched is getattr(timeline, "overview_bar", None):
+                    is_timeline_target = True
+                elif isinstance(watched, QWidget) and hasattr(timeline, "isAncestorOf"):
+                    try:
+                        if timeline.isAncestorOf(watched):
+                            is_timeline_target = True
+                    except Exception:
+                        pass
+
+            if is_timeline_target or watched is self:
+                from core_utils import extract_dropped_file_paths
+                paths = extract_dropped_file_paths(event.mimeData())
+                if paths:
+                    if event.type() in (QEvent.Type.DragEnter, QEvent.Type.DragMove):
+                        event.setDropAction(Qt.DropAction.CopyAction)
+                        event.acceptProposedAction()
+                        event.accept()
+                        return True
+                    elif event.type() == QEvent.Type.Drop:
+                        first_path = paths[0]
+                        if first_path.lower().endswith((".rtvs", ".rtvs3")):
+                            if hasattr(self, "load_project_file"):
+                                self.load_project_file(first_path)
+                        else:
+                            if hasattr(self, "load_media_file"):
+                                self.load_media_file(first_path)
+                        event.setDropAction(Qt.DropAction.CopyAction)
+                        event.acceptProposedAction()
+                        event.accept()
+                        return True
+
         if event.type() == QEvent.Type.KeyPress:
             key = event.key()
 

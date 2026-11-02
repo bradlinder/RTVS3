@@ -19,9 +19,6 @@ class UiLayoutMixin(UiMenusMixin, UiDialogLaunchersMixin):
     def build_ui(self):
         ...
 
-    def _handle_dropped_media_or_project(self, path_or_paths):
-        ...
-
     def filter_transcript_search(self, target: str):
         ...
 

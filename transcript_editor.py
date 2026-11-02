@@ -391,38 +391,27 @@ class InteractiveTranscriptEdit(
             painter.end()
 
     def dragEnterEvent(self, event):
-        from core_utils import extract_dropped_file_paths
-        paths = extract_dropped_file_paths(event.mimeData())
-        if paths:
-            event.setDropAction(Qt.DropAction.CopyAction)
+        if event.mimeData().hasUrls() and any(u.isLocalFile() for u in event.mimeData().urls()):
             event.acceptProposedAction()
-            event.accept()
             return
         super().dragEnterEvent(event)
 
     def dragMoveEvent(self, event):
-        from core_utils import extract_dropped_file_paths
-        paths = extract_dropped_file_paths(event.mimeData())
-        if paths:
-            event.setDropAction(Qt.DropAction.CopyAction)
+        if event.mimeData().hasUrls() and any(u.isLocalFile() for u in event.mimeData().urls()):
             event.acceptProposedAction()
-            event.accept()
             return
         super().dragMoveEvent(event)
 
     def dropEvent(self, event):
-        from core_utils import extract_dropped_file_paths
-        paths = extract_dropped_file_paths(event.mimeData())
-        if paths:
-            win = self.window()
-            if hasattr(win, "_handle_dropped_media_or_project"):
-                win._handle_dropped_media_or_project(paths)
-            elif hasattr(win, "load_media_file"):
-                win.load_media_file(paths[0])
-            event.setDropAction(Qt.DropAction.CopyAction)
-            event.acceptProposedAction()
-            event.accept()
-            return
+        if event.mimeData().hasUrls():
+            for u in event.mimeData().urls():
+                if u.isLocalFile():
+                    path = u.toLocalFile()
+                    win = self.window()
+                    if hasattr(win, "load_media_file"):
+                        win.load_media_file(path)
+                        event.acceptProposedAction()
+                        return
         super().dropEvent(event)
 
     def apply_theme_style(self, mode):

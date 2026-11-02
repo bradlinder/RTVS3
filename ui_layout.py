@@ -673,7 +673,7 @@ class UiLayoutMixin(UiMenusMixin, UiDialogLaunchersMixin):
         self.timeline.canvas.multiSelectionChanged.connect(self.handle_timeline_multi_selection)
         self.timeline.canvas.storyClicked.connect(self.on_timeline_story_clicked)
         self.timeline.canvas.dragOperationFinished.connect(self.handle_drag_finished)
-        self.timeline.mediaDropped.connect(self._handle_dropped_media_or_project)
+        self.timeline.mediaDropped.connect(self.load_media_file)
         
         self.timeline.selectionRangeChanged.connect(self.handle_timeline_selection_range_changed)
         self.timeline.storyCreatedFromSelection.connect(self.add_story_from_range)
@@ -751,24 +751,7 @@ class UiLayoutMixin(UiMenusMixin, UiDialogLaunchersMixin):
         self.story_list.deleteRequested.connect(self.delete_selected_story)
         self.story_list.exportRequested.connect(self.export_selected_stories)
         self.story_list.exportStoryWordPressRequested.connect(lambda: self.open_unified_export_dialog(initial_dest="wordpress"))
-        self.story_list.filesDropped.connect(self._handle_dropped_media_or_project)
-
-    def _handle_dropped_media_or_project(self, path_or_paths):
-        """Unified ingestion handler for dropped media files and project archives."""
-        if not path_or_paths:
-            return
-        if isinstance(path_or_paths, (list, tuple)):
-            path = path_or_paths[0] if path_or_paths else ""
-        else:
-            path = str(path_or_paths)
-        if not path:
-            return
-        if path.lower().endswith((".rtvs", ".rtvs3")):
-            if hasattr(self, "load_project_file"):
-                self.load_project_file(path)
-        else:
-            if hasattr(self, "load_media_file"):
-                self.load_media_file(path)
+        self.story_list.filesDropped.connect(lambda paths: getattr(self, "load_media_file", lambda p: None)(paths[0]) if paths else None)
 
         # Initialize status bar
         self.statusBar().showMessage("Ready")

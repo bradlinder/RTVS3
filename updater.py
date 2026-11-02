@@ -48,7 +48,7 @@ except ImportError:
         )
     except Exception:
         APP_DISPLAY_NAME = "Radio & TV Segmenter"
-        PROJECT_VERSION = "3.9.63-beta"
+        PROJECT_VERSION = "3.9.64-beta"
         DEFAULT_GITHUB_REPO = "bradlinder/RTVS3"
         INTERNAL_APP_ID = "RadioTVStorySegmenter"
 
@@ -462,23 +462,33 @@ def launch_and_install(file_path: str, parent: QWidget | None = None) -> bool:
             "# 2. Safety pause to ensure file handles and SQLite/QSettings locks are released\n"
             "time.sleep(1.0)\n"
             "\n"
-            "# 3. Execute installer with elevated permissions (runas)\n"
+            "# 3. Execute installer via standard shell 'open' so Inno Setup's outer\n"
+            "#    bootstrapper (SetupLdr.e32, asInvoker) retains the standard user\n"
+            "#    token for postinstall [Run] (preventing UIPI drag-and-drop lockout),\n"
+            "#    while Inno Setup handles its own elevation for its internal worker.\n"
             "log(f'Launching installer: {installer_path}')\n"
-            "launched_elevated = False\n"
+            "launched_installer = False\n"
             "if ctypes:\n"
             "    try:\n"
             "        shell32 = ctypes.windll.shell32\n"
-            "        ret = shell32.ShellExecuteW(None, 'runas', installer_path, '', os.path.dirname(installer_path), 1)\n"
+            "        ret = shell32.ShellExecuteW(None, 'open', installer_path, '', os.path.dirname(installer_path), 1)\n"
             "        ret_val = int(ctypes.cast(ret, ctypes.c_void_p).value or 0)\n"
             "        if ret_val > 32:\n"
-            "            launched_elevated = True\n"
-            "            log(f'ShellExecuteW runas successful (code {ret_val})')\n"
+            "            launched_installer = True\n"
+            "            log(f'ShellExecuteW open successful (code {ret_val})')\n"
             "        else:\n"
-            "            log(f'ShellExecuteW runas returned {ret_val}')\n"
+            "            log(f'ShellExecuteW open returned {ret_val}, falling back to runas')\n"
+            "            ret = shell32.ShellExecuteW(None, 'runas', installer_path, '', os.path.dirname(installer_path), 1)\n"
+            "        ret_val = int(ctypes.cast(ret, ctypes.c_void_p).value or 0)\n"
+            "            if ret_val > 32:\n"
+            "                launched_installer = True\n"
+            "                log(f'ShellExecuteW runas successful (code {ret_val})')\n"
+            "            else:\n"
+            "                log(f'ShellExecuteW runas returned {ret_val}')\n"
             "    except Exception as e:\n"
             "        log(f'ShellExecuteW error: {e}')\n"
             "\n"
-            "if not launched_elevated:\n"
+            "if not launched_installer:\n"
             "    try:\n"
             "        subprocess.Popen([installer_path], shell=False, creationflags=0x00000008)\n"
             "        log('Subprocess fallback launch successful.')\n"
@@ -538,7 +548,7 @@ def launch_and_install(file_path: str, parent: QWidget | None = None) -> bool:
                     f"}}\n"
                     f"Start-Sleep -Seconds 1\n"
                     f"Add-Content -Path $logFile -Value ('[' + (Get-Date -Format 'yyyy-MM-dd HH:mm:ss') + '] [PS-Helper] Launching installer {escaped_path}')\n"
-                    f"Start-Process -FilePath '{escaped_path}' -Verb RunAs\n"
+                    f"try {{ Start-Process -FilePath '{escaped_path}' -ErrorAction Stop }} catch {{ Start-Process -FilePath '{escaped_path}' -Verb RunAs }}\n"
                     f"Add-Content -Path $logFile -Value ('[' + (Get-Date -Format 'yyyy-MM-dd HH:mm:ss') + '] [PS-Helper] Finished')\n"
                 )
                 temp_helper_ps = get_app_data_dir() / "rtvs_update_supervisor.ps1"
@@ -581,19 +591,19 @@ def launch_and_install(file_path: str, parent: QWidget | None = None) -> bool:
                 shell32.ShellExecuteW.restype = wintypes.HINSTANCE
 
                 hwnd = parent.winId() if parent and hasattr(parent, "winId") else None
-                ret = shell32.ShellExecuteW(hwnd, "runas", str(path), "", str(path.parent), 1)
+                ret = shell32.ShellExecuteW(hwnd, "open", str(path), "", str(path.parent), 1)
                 ret_val = int(ctypes.cast(ret, ctypes.c_void_p).value or 0)
                 if ret_val > 32:
                     launched = True
-                    _write_update_log(f"Direct ShellExecuteW runas succeeded with code {ret_val}")
+                    _write_update_log(f"Direct ShellExecuteW open succeeded with code {ret_val}")
                 else:
-                    ret2 = shell32.ShellExecuteW(hwnd, "open", str(path), "", str(path.parent), 1)
+                    ret2 = shell32.ShellExecuteW(hwnd, "runas", str(path), "", str(path.parent), 1)
                     ret2_val = int(ctypes.cast(ret2, ctypes.c_void_p).value or 0)
                     if ret2_val > 32:
                         launched = True
-                        _write_update_log(f"Direct ShellExecuteW open succeeded with code {ret2_val}")
+                        _write_update_log(f"Direct ShellExecuteW runas succeeded with code {ret2_val}")
                     else:
-                        last_error += f" | ShellExecuteW (runas: {ret_val}, open: {ret2_val})"
+                        last_error += f" | ShellExecuteW (open: {ret_val}, runas: {ret2_val})"
             except Exception as exc_shell:
                 last_error += f" | ShellExecuteW error: {exc_shell}"
 

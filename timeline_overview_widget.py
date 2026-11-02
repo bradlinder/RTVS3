@@ -328,7 +328,6 @@ class TimelineOverviewBar(QWidget):
         super().leaveEvent(event)
 
     def dragEnterEvent(self, event: Any):
-        from core_utils import extract_dropped_file_paths
         paths = extract_dropped_file_paths(event.mimeData())
         if paths:
             event.setDropAction(Qt.DropAction.CopyAction)
@@ -338,7 +337,6 @@ class TimelineOverviewBar(QWidget):
         event.ignore()
 
     def dragMoveEvent(self, event: Any):
-        from core_utils import extract_dropped_file_paths
         paths = extract_dropped_file_paths(event.mimeData())
         if paths:
             event.setDropAction(Qt.DropAction.CopyAction)
@@ -347,8 +345,10 @@ class TimelineOverviewBar(QWidget):
             return
         event.ignore()
 
+    def dragLeaveEvent(self, event: Any):
+        event.accept()
+
     def dropEvent(self, event: Any):
-        from core_utils import extract_dropped_file_paths
         paths = extract_dropped_file_paths(event.mimeData())
         if paths:
             if hasattr(self, "canvas") and hasattr(self.canvas, "mediaDropped"):

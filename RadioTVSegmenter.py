@@ -1,4 +1,4 @@
-"""Radio & TV Segmenter — v3.9.63-beta
+"""Radio & TV Segmenter — v3.9.64-beta
 
 This is the thin application composition root. UI/processing responsibilities
 are implemented in focused mixins so future changes can target smaller files
@@ -521,7 +521,6 @@ class MainWindow(
                     self.timeline.canvas.update()
 
     def dragEnterEvent(self, event):
-        from core_utils import extract_dropped_file_paths
         paths = extract_dropped_file_paths(event.mimeData())
         if paths:
             event.setDropAction(Qt.DropAction.CopyAction)
@@ -531,7 +530,6 @@ class MainWindow(
         super().dragEnterEvent(event)
 
     def dragMoveEvent(self, event):
-        from core_utils import extract_dropped_file_paths
         paths = extract_dropped_file_paths(event.mimeData())
         if paths:
             event.setDropAction(Qt.DropAction.CopyAction)
@@ -541,13 +539,15 @@ class MainWindow(
         super().dragMoveEvent(event)
 
     def dropEvent(self, event):
-        from core_utils import extract_dropped_file_paths
         paths = extract_dropped_file_paths(event.mimeData())
         if paths:
-            if hasattr(self, "_handle_dropped_media_or_project"):
-                self._handle_dropped_media_or_project(paths)
-            elif hasattr(self, "load_media_file"):
-                self.load_media_file(paths[0])
+            first_path = paths[0]
+            if first_path.lower().endswith((".rtvs", ".rtvs3")):
+                if hasattr(self, "load_project_file"):
+                    self.load_project_file(first_path)
+            else:
+                if hasattr(self, "load_media_file"):
+                    self.load_media_file(first_path)
             event.setDropAction(Qt.DropAction.CopyAction)
             event.acceptProposedAction()
             event.accept()

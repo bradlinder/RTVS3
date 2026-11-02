@@ -1,5 +1,12 @@
 # Changelog
 
+## v3.9.64-beta
+- **Windows Update Elevation (UIPI) Fix & Pre-Regression Drag-and-Drop Rollback (`updater.py`, `installer/Windows/RadioTVStorySegmenter.iss`, `RadioTVSegmenter.py`, `ui_layout.py`, `playback_controller.py`, `timeline_widgets.py`, `timeline_overview_widget.py`, `transcript_editor.py`)**:
+  - **Root-Cause Resolution for Post-Update Drag-and-Drop Lockout (`updater.py`, `RadioTVStorySegmenter.iss`)**: Resolved the Windows User Interface Privilege Isolation (UIPI) elevation loop where installing an update via **Help -> Check for Updates** explicitly invoked `ShellExecuteW(..., 'runas', ...)` on the outer Inno Setup `SetupLdr.e32` bootstrapper (`asInvoker`), causing `[Run] ... runasoriginaluser` to inherit an elevated Administrator token (`TokenElevation = True`) and causing Windows Kernel UIPI to block all OLE drag-and-drop from Medium Integrity `explorer.exe`.
+  - **Explorer Shell De-Elevated Post-Install Launch (`RadioTVStorySegmenter.iss`)**: Updated the Inno Setup `[Run]` postinstall entry to launch `{app}\{#MyAppExeName}` via `{win}\explorer.exe`, guaranteeing that even when the installer is launched from an already-elevated session, the new application process spawns under the interactive desktop shell's non-elevated user token.
+  - **Standard Invoker Update Hand-Off (`updater.py`)**: Updated the detached update helper to launch the Inno Setup installer via standard `'open'` first (falling back to `'runas'` only if needed) so Inno Setup's outer bootstrapper retains the non-elevated user token while its internal worker handles elevation.
+  - **Rollback of Unnecessary Drag-and-Drop Experimental Changes**: Reverted `RadioTVSegmenter.py`, `ui_layout.py`, `playback_controller.py`, `timeline_widgets.py`, `timeline_overview_widget.py`, and `transcript_editor.py` to their clean `v3.9.57-beta` baseline (retaining only the `load_media_file` signal connection fix in `ui_layout.py` and preserving all non-drag-and-drop features from `v3.9.59-beta` and `v3.9.60-beta`).
+
 ## v3.9.63-beta
 - **Complete Drag-and-Drop Restoration Across All Native Targets (`timeline_widgets.py`, `timeline_overview_widget.py`, `transcript_editor.py`, `RadioTVSegmenter.py`)**:
   - **Comprehensive Widget-Level Event Coverage**: Implemented missing `dragMoveEvent` alongside `dragEnterEvent` and `dropEvent` across `TimelineCanvas`, `TimelineWidget`, and `TimelineOverviewBar`, ensuring continuous mouse movement over the timeline canvas does not cause Windows OLE to drop to `DROPEFFECT_NONE` (?? cursor).
@@ -7,9 +14,3 @@
   - **Transcript Window File Dropping (`transcript_editor.py`)**: Wired `InteractiveTranscriptEdit`'s `dragEnterEvent`, `dragMoveEvent`, and `dropEvent` with `extract_dropped_file_paths` so dropping audio/video files directly into the transcript area reliably opens them.
   - **Top-Level Fallback Acceptance (`RadioTVSegmenter.py`)**: Enabled `self.setAcceptDrops(True)` and clean drag events on `MainWindow` as a universal drop target for window borders and background areas.
 
-## v3.9.62-beta
-- **Dual-Target Native Drag-and-Drop Restoration for Timeline & Transcript (`playback_controller.py`, `RadioTVSegmenter.py`, `timeline_widgets.py`, `timeline_overview_widget.py`, `transcript_editor.py`, `build_installer.py`)**:
-  - **De-overengineered Architecture & Global Interceptor Pruning (`playback_controller.py`, `RadioTVSegmenter.py`)**: Completely removed the application-wide `eventFilter` drag interception in `playback_controller.py` that was consuming events at the `QApplication` level, as well as `MainWindow` drop handlers and `win32_dnd.py` message filter collisions.
-  - **Direct-to-Widget Timeline Ingestion (`timeline_widgets.py`, `timeline_overview_widget.py`)**: Restored the clean, native Qt widget-level drop handling on `TimelineCanvas` and `TimelineWidget` using standard `event.mimeData().hasUrls()` and `event.acceptProposedAction()`, dispatching dropped file paths directly to `mediaDropped` and `load_media_file`.
-  - **Direct-to-Widget Transcript Ingestion (`transcript_editor.py`)**: Standardized `TranscriptEditor`'s `dragEnterEvent` and `dropEvent` to accept dropped audio/video media files and project archives natively, matching the visual empty-state invitation card (*"Drop an Audio or Video File Here to Begin"*).
-  - **Native OLE Integrity**: Preserved unhindered OLE communication between Windows Explorer and Qt's Windows platform plugin (`qwindows.dll`), eliminating drop cursor rejections across installed desktop environments.

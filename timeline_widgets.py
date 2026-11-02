@@ -235,6 +235,9 @@ class TimelineCanvas(QWidget):
             return
         event.ignore()
 
+    def dragLeaveEvent(self, event):
+        event.accept()
+
     def dropEvent(self, event):
         paths = extract_dropped_file_paths(event.mimeData())
         if paths:
@@ -918,6 +921,9 @@ class TimelineWidget(QWidget):
             event.accept()
             return
         event.ignore()
+
+    def dragLeaveEvent(self, event):
+        event.accept()
 
     def dropEvent(self, event):
         paths = extract_dropped_file_paths(event.mimeData())

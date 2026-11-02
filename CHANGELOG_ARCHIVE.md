@@ -11,6 +11,13 @@ For current and active releases, see [CHANGELOG.md](CHANGELOG.md).
 
 ---
 
+## v3.9.62-beta
+- **Dual-Target Native Drag-and-Drop Restoration for Timeline & Transcript (`playback_controller.py`, `RadioTVSegmenter.py`, `timeline_widgets.py`, `timeline_overview_widget.py`, `transcript_editor.py`, `build_installer.py`)**:
+  - **De-overengineered Architecture & Global Interceptor Pruning (`playback_controller.py`, `RadioTVSegmenter.py`)**: Completely removed the application-wide `eventFilter` drag interception in `playback_controller.py` that was consuming events at the `QApplication` level, as well as `MainWindow` drop handlers and `win32_dnd.py` message filter collisions.
+  - **Direct-to-Widget Timeline Ingestion (`timeline_widgets.py`, `timeline_overview_widget.py`)**: Restored the clean, native Qt widget-level drop handling on `TimelineCanvas` and `TimelineWidget` using standard `event.mimeData().hasUrls()` and `event.acceptProposedAction()`, dispatching dropped file paths directly to `mediaDropped` and `load_media_file`.
+  - **Direct-to-Widget Transcript Ingestion (`transcript_editor.py`)**: Standardized `TranscriptEditor`'s `dragEnterEvent` and `dropEvent` to accept dropped audio/video media files and project archives natively, matching the visual empty-state invitation card (*"Drop an Audio or Video File Here to Begin"*).
+  - **Native OLE Integrity**: Preserved unhindered OLE communication between Windows Explorer and Qt's Windows platform plugin (`qwindows.dll`), eliminating drop cursor rejections across installed desktop environments.
+
 ## v3.9.60-beta
 - **Empty Project Close & Save Prompt Bypass (`project_state_mixin.py`, `media_batch.py`, `project_lifecycle.py`, `project_export.py`, `diagnostic_cloud_and_system_tests.py`)**:
   - **Workspace State Inspection (`is_project_empty()`)**: Added `is_project_empty()` to `ProjectStateMixin` to verify whether the workspace contains loaded audio (`audio_file`), an associated project file (`project_file`), transcript text/segments (`transcript`), or defined stories (`stories`).

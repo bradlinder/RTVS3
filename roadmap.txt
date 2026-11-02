@@ -94,14 +94,14 @@ TABLE OF CONTENTS & STATUS OVERVIEW
    [ ] 5.4 Burned-in Subtitles & Platform Safe Zone Enforcement (`plugins/social_reel/reel_subtitles.py`)
    [ ] 5.5 Unified Export Integration & Social Reel Diagnostic Tests (`export/dialog.py`, `test_runner.py`)
 
-6. Current Release: Concurrency, Batch Reliability & Export Interchange Fidelity (`transcription_processing.py`, `diarization_processing.py`, `media_batch.py`, `export/timeline.py`, `export_story_pipeline.py`) [x] [COMPLETED in v3.9.62-beta]
+6. Current Release: Windows Update UIPI De-Elevation & Drag-and-Drop Restoration (`updater.py`, `installer/Windows/RadioTVStorySegmenter.iss`, `ui_layout.py`) [x] [COMPLETED in v3.9.64-beta]
    [x] 6.1 Stale Worker State Overwrite Guard: Check if active media changed before assigning transcription/diarization results. [P1-03]
    [x] 6.2 Non-Modal Batch Error Handling: Log errors and continue processing remaining queue items instead of modal `QMessageBox` popups. [P1-04]
    [x] 6.3 Worker Lifecycle & Re-entrancy Guards: Fix thumbnail QThread teardown and disable Translate action during processing. [P3-02, P3-04]
    [x] 6.4 DAW Export Format Matrix Unification: Harmonize Local Disk and Timeline DAW exports, passing sample rates and track names. [P6-04]
    [x] 6.5 Samplitude EDL Destination Timecode Contiguity: Correct destination timecode in `export/timeline.py` for excluded unselected audio. [P6-05]
 
-7. Previous Release: Thread-Affinity & Cross-Thread Qt Warning Elimination (`diagnostic_core_tests.py`, `diagnostic_export_tests.py`, `speaker_dialogs.py`) [x] [COMPLETED in v3.9.49-beta]
+7. Previous Release: Complete Drag-and-Drop Restoration Across All Native Targets (`timeline_widgets.py`, `timeline_overview_widget.py`, `transcript_editor.py`, `RadioTVSegmenter.py`) [x] [COMPLETED in v3.9.63-beta]
    [x] 7.1 Cross-Thread Qt Warning Elimination: Refactored `diagnostic_core_tests.py` and `diagnostic_export_tests.py` to decouple top-level native QWidget creation from secondary worker threads (`TestRunnerWorker` in `DiagnosticDialog`), eliminating `QObject: Cannot create children for a parent that is in a different thread`.
    [x] 7.2 Cell Editor Teardown Safety: Cleaned up active `QLineEdit` cell editors and timers before dialog destruction, eliminating orphaned `QBasicTimer::stop` failure warnings.
    [x] 7.3 Main-Thread vs. Worker-Thread Test Branching: Implemented `is_main_gui_thread` branching across UI diagnostic tests to execute interactive widget flows on the GUI thread and class/contract invariants on secondary worker threads.
@@ -147,16 +147,16 @@ DETAILED MILESTONE SPECIFICATIONS
 - Target Release: v4.3.0 (Optional / Planned)
 - Technical References: Subsystem architecture, plugin manifest, and FFmpeg filtergraph pipeline specifications are detailed in `ARCHITECTURE.md` (Section 6).
 
-6. CURRENT RELEASE: DUAL-TARGET NATIVE DRAG-AND-DROP RESTORATION:
-- Purpose: Restored minimal, native Qt widget-level file drag-and-drop ingestion directly into both the Timeline Canvas and Transcript Editor, stripping out overengineered global event filters and Win32 hook collisions.
-- Target Release: v3.9.62-beta (Current Release)
+6. CURRENT RELEASE: WINDOWS UPDATE UIPI DE-ELEVATION & DRAG-AND-DROP RESTORATION:
+- Purpose: Eliminate Windows User Interface Privilege Isolation (UIPI) drag-and-drop lockout after in-app updates by launching the post-install application via `{win}\explorer.exe` and invoking the Inno Setup bootstrapper via standard `'open'`, while rolling back today's experimental drag-and-drop widget changes to the clean `v3.9.57-beta` baseline.
+- Target Release: v3.9.64-beta (Current Release)
 - Technical References & Implementation Details:
-  * Direct Timeline Drops: Restored `TimelineCanvas` and `TimelineWidget` drop handling via `event.mimeData().hasUrls()` and `event.acceptProposedAction()`.
-  * Direct Transcript Drops: Standardized `TranscriptEditor`'s `dragEnterEvent` and `dropEvent` to accept dropped audio/video media files and project archives natively.
-  * Global Filter Pruning: Completely removed application-wide `eventFilter` drag interception in `playback_controller.py`, `MainWindow` drop handlers, and Win32 hook collisions.
-  * Release Logs: Documented in `CHANGELOG.md` under `## v3.9.62-beta`.
+  * De-Elevated Post-Install Launch (`RadioTVStorySegmenter.iss`): Launches `{app}\{#MyAppExeName}` via `{win}\explorer.exe` in `[Run]` so the app always starts with a Medium Integrity desktop token even if the updater or installer was elevated.
+  * Updater Standard Token Hand-Off (`updater.py`): Invokes Inno Setup with `ShellExecuteW(..., 'open', ...)` before falling back to `'runas'`.
+  * Clean Widget Rollback: Reverted `RadioTVSegmenter.py`, `ui_layout.py`, `playback_controller.py`, `timeline_widgets.py`, `timeline_overview_widget.py`, and `transcript_editor.py` to `v3.9.57-beta` plus `load_media_file` on `story_list.filesDropped`.
+  * Release Logs: Documented in `CHANGELOG.md` under `## v3.9.64-beta`.
 
-7. PREVIOUS RELEASE: INSTALLED WINDOWS DRAG-AND-DROP DIAGNOSTIC & SETUP HARDENING:
-- Purpose: Hardened Windows installer shortcut configurations and investigated OLE drag-and-drop state mechanics.
-- Target Release: v3.9.61-beta (Previous Release)
-- Technical References: Full implementation details and test bench verification logs are documented in `CHANGELOG.md` under `## v3.9.61-beta`.
+7. PREVIOUS RELEASE: COMPLETE DRAG-AND-DROP RESTORATION ACROSS ALL NATIVE TARGETS:
+- Purpose: Widget-level drag-and-drop event experiments across timeline and transcript widgets prior to isolating the Windows Update UIPI elevation loop.
+- Target Release: v3.9.63-beta (Previous Release)
+- Technical References: Full implementation details are documented in `CHANGELOG.md` under `## v3.9.63-beta`.
