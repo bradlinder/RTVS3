@@ -21,6 +21,10 @@
   - Always format version strings strictly as standard semantic numbers with single period delimiters (e.g. `2.9.6`, `2.9.7`, `2.10.1`). Never introduce double dots (e.g. `2.9..6`).
   - Execute the full version bump checklist below synchronously with every update.
 
+- **Local Working Tree & Commit Scope (No Automatic Remote Push)**:
+  - Version bumps and git commits remain strictly local.
+  - NEVER run `git push` or push release tags to trigger remote GitHub Actions build workflows unless explicitly instructed by the user in that specific message.
+
 When bumping or updating the application version number, you MUST update **ALL** of the following locations synchronously:
 1. `prs_shared.py` (`PROJECT_VERSION`)
 2. `updater.py` (`PROJECT_VERSION` fallback)
@@ -236,3 +240,15 @@ Instead, the agent MUST actively perform deep, adversarial code-level inspection
 - **Pre-Flight Verification Gate (`scripts/dev_check.py`)**:
   - Before committing or merging any task branch into `dev`, run `python scripts/dev_check.py` to verify syntax compilation, `.pyi` stub sync, preview sync, modular budget, and Tier 2 regression tests in <10s.
 
+## 15. Interaction Protocol: Consultation Before Action & One-Time Scope Discipline
+- **Consultation & Clarification Invariant (Questions Require Answers, Not Code Edits)**:
+  - Whenever the user asks an exploratory question, asks for an opinion, compares alternatives, or inquires about UI placement or architecture (e.g., *"Should we consider..."*, *"Would it make more sense to..."*, *"Which option do you think..."*, *"Where should we put..."*):
+    - The agent MUST provide its objective technical analysis, layout/architecture trade-offs, and recommended choice, and then **STOP**.
+    - The agent MUST NOT modify code, create files, bump versions, or execute changes until the user explicitly reviews the recommendation and gives an unambiguous command to proceed (e.g., *"Proceed with Option A"*, *"Go ahead and implement that"*).
+    - If a user message contains both an approval and an open question (e.g., *"Let's add that, but would it make more sense to put it here or there?"*), the agent MUST address the layout/design question first and wait for confirmation on the unresolved placement before modifying any code.
+- **One-Time Instruction Scope (No Perpetual Mandates)**:
+  - Turn-specific execution directives (such as *"push to github"*, *"trigger the build script"*, *"run all tests"*, *"revert to snapshot"*) apply strictly to the single turn in which they are commanded.
+  - The agent must NEVER carry forward a one-time instruction into subsequent turns as an automatic routine. Every turn must evaluate only the user's latest request.
+- **Strict Prohibition on Automatic Git Push & Build Workflow Triggers**:
+  - All git commits made by the agent remain strictly local to the local repository.
+  - The agent must NEVER execute `git push`, push git tags (`git push origin <tag>`), or trigger remote GitHub Actions CI/CD workflows unless the user explicitly requests a remote push in that specific prompt. Remote deployment and release builds are managed manually by the user.
