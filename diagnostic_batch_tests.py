@@ -241,6 +241,15 @@ class DiagnosticBatchTestsMixin:
         paths_str = extract_dropped_file_paths(mime_str)
         assert len(paths_str) == 1 and "path with spaces" in paths_str[0], f"Failed URI unquoting: {paths_str}"
 
+        # Test Windows drive letters with leading slash and percent-encoded paths
+        mime_win = MockMimeData(urls=[MockUrl("/C:/Users/Audio/podcast.mp3", False)])
+        paths_win = extract_dropped_file_paths(mime_win)
+        assert paths_win == ["C:/Users/Audio/podcast.mp3"], f"Failed Windows URI path cleaning: {paths_win}"
+
+        mime_win_triple = MockMimeData(text="///D:/Audio/track.flac\nfile://localhost/C:/Music/intro.wav")
+        paths_win_triple = extract_dropped_file_paths(mime_win_triple)
+        assert paths_win_triple == ["D:/Audio/track.flac", "C:/Music/intro.wav"], f"Failed multi-slash Windows URI cleaning: {paths_win_triple}"
+
         # Test raw text drag lines
         mime_text = MockMimeData(text="\"/videos/clip1.mov\"\n'/videos/clip2.mkv'\n")
         paths_text = extract_dropped_file_paths(mime_text)

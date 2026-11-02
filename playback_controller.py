@@ -98,27 +98,42 @@ class PlaybackControllerMixin:
                     except Exception:
                         pass
 
-            if is_timeline_target or watched is self:
+            is_app_target = is_timeline_target or (watched is self)
+            if not is_app_target and isinstance(watched, QWidget) and hasattr(self, "isAncestorOf"):
+                try:
+                    if self.isAncestorOf(watched) and not (hasattr(watched, "isWindow") and watched.isWindow()):
+                        is_app_target = True
+                except Exception:
+                    pass
+
+            if is_app_target:
                 from core_utils import extract_dropped_file_paths
                 paths = extract_dropped_file_paths(event.mimeData())
                 if paths:
-                    if event.type() in (QEvent.Type.DragEnter, QEvent.Type.DragMove):
-                        event.setDropAction(Qt.DropAction.CopyAction)
-                        event.acceptProposedAction()
-                        event.accept()
-                        return True
-                    elif event.type() == QEvent.Type.Drop:
-                        first_path = paths[0]
-                        if first_path.lower().endswith((".rtvs", ".rtvs3")):
-                            if hasattr(self, "load_project_file"):
-                                self.load_project_file(first_path)
-                        else:
-                            if hasattr(self, "load_media_file"):
-                                self.load_media_file(first_path)
-                        event.setDropAction(Qt.DropAction.CopyAction)
-                        event.acceptProposedAction()
-                        event.accept()
-                        return True
+                    media_exts = (
+                        ".wav", ".mp3", ".m4a", ".aac", ".ogg", ".flac", ".wma", ".aiff", ".aif",
+                        ".mp4", ".mov", ".mkv", ".avi", ".webm", ".ts",
+                        ".rtvs", ".rtvs3"
+                    )
+                    valid_paths = [p for p in paths if p.lower().endswith(media_exts)]
+                    if valid_paths:
+                        if event.type() in (QEvent.Type.DragEnter, QEvent.Type.DragMove):
+                            event.setDropAction(Qt.DropAction.CopyAction)
+                            event.acceptProposedAction()
+                            event.accept()
+                            return True
+                        elif event.type() == QEvent.Type.Drop:
+                            first_path = valid_paths[0]
+                            if first_path.lower().endswith((".rtvs", ".rtvs3")):
+                                if hasattr(self, "load_project_file"):
+                                    self.load_project_file(first_path)
+                            else:
+                                if hasattr(self, "load_media_file"):
+                                    self.load_media_file(first_path)
+                            event.setDropAction(Qt.DropAction.CopyAction)
+                            event.acceptProposedAction()
+                            event.accept()
+                            return True
 
         if event.type() == QEvent.Type.KeyPress:
             key = event.key()

@@ -408,7 +408,11 @@ class InteractiveTranscriptEdit(
                 if u.isLocalFile():
                     path = u.toLocalFile()
                     win = self.window()
-                    if hasattr(win, "load_media_file"):
+                    if hasattr(win, "_handle_dropped_media_or_project"):
+                        win._handle_dropped_media_or_project(path)
+                        event.acceptProposedAction()
+                        return
+                    elif hasattr(win, "load_media_file"):
                         win.load_media_file(path)
                         event.acceptProposedAction()
                         return

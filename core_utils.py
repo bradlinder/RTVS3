@@ -30,7 +30,7 @@ else:
 
 INTERNAL_APP_ID = "RadioTVStorySegmenter"
 APP_DISPLAY_NAME = "Radio & TV Segmenter"
-PROJECT_VERSION = "3.9.57-beta"
+PROJECT_VERSION = "3.9.58-beta"
 DEFAULT_GITHUB_REPO = "bradlinder/RTVS3"
 
 
@@ -220,15 +220,15 @@ def extract_dropped_file_paths(mime_data) -> List[str]:
         if not candidate:
             return ""
         cand = str(candidate).strip().strip('"').strip("'")
-        if cand.startswith("file://"):
+        while cand.startswith("file://"):
             cand = unquote(cand[7:])
         if cand.startswith("localhost/"):
             cand = "/" + cand[10:]
         elif cand.startswith("localhost\\"):
             cand = "\\" + cand[10:]
-        # Windows drive letters with leading slash e.g. /C:/path or /c:\path
-        if cand.startswith("/") and len(cand) > 2 and cand[1] == ":" and cand[2] in "\\/":
-            cand = cand[1:]
+        # Windows drive letters with leading slashes e.g. /C:/path, ///C:/path, or /c:\path
+        import re
+        cand = re.sub(r"^/+(?=[a-zA-Z]:[\\/])", "", cand)
         return cand
 
     # 1. Inspect mimeData URLs
