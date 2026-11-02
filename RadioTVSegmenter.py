@@ -1,4 +1,4 @@
-"""Radio & TV Segmenter — v3.9.61-beta
+"""Radio & TV Segmenter — v3.9.62-beta
 
 This is the thin application composition root. UI/processing responsibilities
 are implemented in focused mixins so future changes can target smaller files
@@ -182,7 +182,6 @@ class MainWindow(
 
         from core_utils import apply_window_titlebar_theme
         apply_window_titlebar_theme(self)
-        self.setAcceptDrops(True)
 
         self.runtime_mgr = RuntimeManager()
         self.audio_file = None
@@ -520,48 +519,9 @@ class MainWindow(
                     self.timeline.canvas.pixmap_dirty = True
                     self.timeline.canvas.update()
 
-    def dragEnterEvent(self, event):
-        paths = extract_dropped_file_paths(event.mimeData())
-        if paths:
-            event.setDropAction(Qt.DropAction.CopyAction)
-            event.acceptProposedAction()
-            event.accept()
-            return
-        super().dragEnterEvent(event)
-
-    def dragMoveEvent(self, event):
-        paths = extract_dropped_file_paths(event.mimeData())
-        if paths:
-            event.setDropAction(Qt.DropAction.CopyAction)
-            event.acceptProposedAction()
-            event.accept()
-            return
-        super().dragMoveEvent(event)
-
-    def dropEvent(self, event):
-        paths = extract_dropped_file_paths(event.mimeData())
-        if paths:
-            first_path = paths[0]
-            if first_path.lower().endswith((".rtvs", ".rtvs3")):
-                if hasattr(self, "load_project_file"):
-                    self.load_project_file(first_path)
-            else:
-                if hasattr(self, "load_media_file"):
-                    self.load_media_file(first_path)
-            event.setDropAction(Qt.DropAction.CopyAction)
-            event.acceptProposedAction()
-            event.accept()
-            return
-        super().dropEvent(event)
-
 
 def main():
     if sys.platform == "win32":
-        try:
-            from win32_dnd import init_ole_sta
-            init_ole_sta()
-        except Exception:
-            pass
         try:
             import ctypes
             app_id = f"radiotvsegmenter.radiotvstorysegmenter.app.{PROJECT_VERSION}"
@@ -612,13 +572,6 @@ def main():
     window = MainWindow()
     if not icon.isNull():
         window.setWindowIcon(icon)
-
-    if sys.platform == "win32":
-        try:
-            from win32_dnd import setup_win32_window_drag_drop
-            window._native_drop_filter = setup_win32_window_drag_drop(window)
-        except Exception:
-            pass
 
     ipc_server = QLocalServer()
     window.ipc_server = ipc_server

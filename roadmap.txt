@@ -94,7 +94,7 @@ TABLE OF CONTENTS & STATUS OVERVIEW
    [ ] 5.4 Burned-in Subtitles & Platform Safe Zone Enforcement (`plugins/social_reel/reel_subtitles.py`)
    [ ] 5.5 Unified Export Integration & Social Reel Diagnostic Tests (`export/dialog.py`, `test_runner.py`)
 
-6. Current Release: Concurrency, Batch Reliability & Export Interchange Fidelity (`transcription_processing.py`, `diarization_processing.py`, `media_batch.py`, `export/timeline.py`, `export_story_pipeline.py`) [x] [COMPLETED in v3.9.61-beta]
+6. Current Release: Concurrency, Batch Reliability & Export Interchange Fidelity (`transcription_processing.py`, `diarization_processing.py`, `media_batch.py`, `export/timeline.py`, `export_story_pipeline.py`) [x] [COMPLETED in v3.9.62-beta]
    [x] 6.1 Stale Worker State Overwrite Guard: Check if active media changed before assigning transcription/diarization results. [P1-03]
    [x] 6.2 Non-Modal Batch Error Handling: Log errors and continue processing remaining queue items instead of modal `QMessageBox` popups. [P1-04]
    [x] 6.3 Worker Lifecycle & Re-entrancy Guards: Fix thumbnail QThread teardown and disable Translate action during processing. [P3-02, P3-04]
@@ -147,18 +147,16 @@ DETAILED MILESTONE SPECIFICATIONS
 - Target Release: v4.3.0 (Optional / Planned)
 - Technical References: Subsystem architecture, plugin manifest, and FFmpeg filtergraph pipeline specifications are detailed in `ARCHITECTURE.md` (Section 6).
 
-6. CURRENT RELEASE: INSTALLED WINDOWS DRAG-AND-DROP & UIPI ELEVATION BRIDGE:
-- Purpose: Resolve drag-and-drop failure in installed Windows executables by bridging Win32 WM_DROPFILES native event filtering, UIPI whitelisting, early STA COM initialization, and child widget event propagation.
-- Target Release: v3.9.61-beta (Current Release)
+6. CURRENT RELEASE: DUAL-TARGET NATIVE DRAG-AND-DROP RESTORATION:
+- Purpose: Restored minimal, native Qt widget-level file drag-and-drop ingestion directly into both the Timeline Canvas and Transcript Editor, stripping out overengineered global event filters and Win32 hook collisions.
+- Target Release: v3.9.62-beta (Current Release)
 - Technical References & Implementation Details:
-  * Dual-Layer Win32 Native Drag-and-Drop Bridge: Implemented `Win32DropNativeEventFilter` in `win32_dnd.py` intercepting `WM_DROPFILES` (0x0233) via `DragQueryFileW`.
-  * UIPI Window Message Whitelisting: Added `ChangeWindowMessageFilterEx` for `WM_DROPFILES`, `WM_COPYDATA`, and `WM_COPYGLOBALDATA` on the native HWND paired with `DragAcceptFiles`.
-  * Early STA COM Mode: Added `init_ole_sta()` at Windows boot before native ML C-extensions can set MTA.
-  * Child Widget Event Suppression Fix: Removed `central_widget.setAcceptDrops(True)` in `ui_layout.py` restoring Qt drop event bubbling to `TimelineCanvas` and `MainWindow`.
-  * Installer Working Directory: Configured `WorkingDir: "{app}"` in `installer/Windows/RadioTVStorySegmenter.iss`.
-  * Release Logs: Documented in `CHANGELOG.md` under `## v3.9.61-beta`.
+  * Direct Timeline Drops: Restored `TimelineCanvas` and `TimelineWidget` drop handling via `event.mimeData().hasUrls()` and `event.acceptProposedAction()`.
+  * Direct Transcript Drops: Standardized `TranscriptEditor`'s `dragEnterEvent` and `dropEvent` to accept dropped audio/video media files and project archives natively.
+  * Global Filter Pruning: Completely removed application-wide `eventFilter` drag interception in `playback_controller.py`, `MainWindow` drop handlers, and Win32 hook collisions.
+  * Release Logs: Documented in `CHANGELOG.md` under `## v3.9.62-beta`.
 
-7. PREVIOUS RELEASE: EMPTY PROJECT CLOSE & SAVE PROMPT BYPASS:
-- Purpose: Bypassed unsaved changes confirmation prompts when the project workspace is completely blank and no media is loaded.
-- Target Release: v3.9.60-beta (Previous Release)
-- Technical References: Full implementation details and test bench verification logs are documented in `CHANGELOG.md` under `## v3.9.60-beta`.
+7. PREVIOUS RELEASE: INSTALLED WINDOWS DRAG-AND-DROP DIAGNOSTIC & SETUP HARDENING:
+- Purpose: Hardened Windows installer shortcut configurations and investigated OLE drag-and-drop state mechanics.
+- Target Release: v3.9.61-beta (Previous Release)
+- Technical References: Full implementation details and test bench verification logs are documented in `CHANGELOG.md` under `## v3.9.61-beta`.

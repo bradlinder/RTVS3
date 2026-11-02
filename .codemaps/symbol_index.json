@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-02 15:28:27",
-  "total_files": 156,
+  "generated_at": "2026-11-02 16:05:04",
+  "total_files": 155,
   "files": {
     "RadioTVSegmenter.py": {
       "path": "RadioTVSegmenter.py",
-      "lines": 670,
-      "summary": "Radio & TV Segmenter \u2014 v3.9.61-beta",
+      "lines": 623,
+      "summary": "Radio & TV Segmenter \u2014 v3.9.62-beta",
       "exports": null,
       "classes": [
         {
@@ -23,71 +23,50 @@
             "QMainWindow"
           ],
           "start_line": 160,
-          "end_line": 555,
+          "end_line": 520,
           "doc": "Main application window for Radio & TV Segmenter.",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self)",
               "start_line": 178,
-              "end_line": 350,
+              "end_line": 349,
               "doc": ""
             },
             {
               "name": "_setup_shortcuts_and_actions",
               "sig": "_setup_shortcuts_and_actions(self)",
-              "start_line": 352,
-              "end_line": 399,
+              "start_line": 351,
+              "end_line": 398,
               "doc": "Register customizable QShortcut and QAction objects on MainWindow."
             },
             {
               "name": "handle_external_open_request",
               "sig": "handle_external_open_request(self, file_path)",
-              "start_line": 401,
-              "end_line": 426,
+              "start_line": 400,
+              "end_line": 425,
               "doc": "Called when another instance attempts to open a project file in single-instance mode."
             },
             {
               "name": "load_persistent_settings",
               "sig": "load_persistent_settings(self)",
-              "start_line": 428,
-              "end_line": 500,
+              "start_line": 427,
+              "end_line": 499,
               "doc": "Loads all persistent user preferences from QSettings into MainWindow attributes."
             },
             {
               "name": "toggle_transcript_auto_scroll",
               "sig": "toggle_transcript_auto_scroll(self, checked)",
-              "start_line": 502,
-              "end_line": 512,
+              "start_line": 501,
+              "end_line": 511,
               "doc": "Toggle transcript auto-scrolling during playback and persist setting."
             },
             {
               "name": "changeEvent",
               "sig": "changeEvent(self, event)",
-              "start_line": 514,
-              "end_line": 521,
+              "start_line": 513,
+              "end_line": 520,
               "doc": "Handle window state changes (e.g. maximize, restore, minimize) safely."
-            },
-            {
-              "name": "dragEnterEvent",
-              "sig": "dragEnterEvent(self, event)",
-              "start_line": 523,
-              "end_line": 530,
-              "doc": ""
-            },
-            {
-              "name": "dragMoveEvent",
-              "sig": "dragMoveEvent(self, event)",
-              "start_line": 532,
-              "end_line": 539,
-              "doc": ""
-            },
-            {
-              "name": "dropEvent",
-              "sig": "dropEvent(self, event)",
-              "start_line": 541,
-              "end_line": 555,
-              "doc": ""
             }
           ]
         }
@@ -96,8 +75,8 @@
         {
           "name": "main",
           "sig": "main()",
-          "start_line": 558,
-          "end_line": 666,
+          "start_line": 523,
+          "end_line": 619,
           "doc": ""
         }
       ]
@@ -1038,7 +1017,7 @@
     },
     "build_installer.py": {
       "path": "build_installer.py",
-      "lines": 1080,
+      "lines": 1079,
       "summary": "Build the installable Radio & TV Segmenter application with PyInstaller.",
       "exports": null,
       "classes": [],
@@ -1124,7 +1103,7 @@
           "name": "main",
           "sig": "main()",
           "start_line": 695,
-          "end_line": 1076,
+          "end_line": 1075,
           "doc": ""
         }
       ]
@@ -4660,7 +4639,7 @@
     },
     "playback_controller.py": {
       "path": "playback_controller.py",
-      "lines": 599,
+      "lines": 548,
       "summary": "Radio & TV Story Segmenter \u2014 Media Player Transport & Playback Controller.",
       "exports": null,
       "classes": [
@@ -4668,7 +4647,7 @@
           "name": "PlaybackControllerMixin",
           "bases": [],
           "start_line": 25,
-          "end_line": 599,
+          "end_line": 548,
           "doc": "Provides audio/video media player transport, scrubbing, and fade controls.",
           "methods": [
             {
@@ -4710,140 +4689,140 @@
               "name": "eventFilter",
               "sig": "eventFilter(self, watched, event)",
               "start_line": 78,
-              "end_line": 287,
+              "end_line": 236,
               "doc": ""
             },
             {
               "name": "_is_text_entry_focused",
               "sig": "_is_text_entry_focused(self)",
-              "start_line": 289,
-              "end_line": 304,
+              "start_line": 238,
+              "end_line": 253,
               "doc": "Return True if a text entry widget or editable transcript currently has focus."
             },
             {
               "name": "_matches_shortcut",
               "sig": "_matches_shortcut(self, event, action_id, default_seq)",
-              "start_line": 306,
-              "end_line": 350,
+              "start_line": 255,
+              "end_line": 299,
               "doc": "Return True if key event matches user configured shortcut for action_id."
             },
             {
               "name": "_toggle_follow_playhead",
               "sig": "_toggle_follow_playhead(self)",
-              "start_line": 352,
-              "end_line": 358,
+              "start_line": 301,
+              "end_line": 307,
               "doc": "Toggle automatic timeline view scrolling following the audio playhead."
             },
             {
               "name": "mark_story_start_point",
               "sig": "mark_story_start_point(self)",
-              "start_line": 360,
-              "end_line": 374,
+              "start_line": 309,
+              "end_line": 323,
               "doc": "Mark start point at current playhead position."
             },
             {
               "name": "mark_story_end_point",
               "sig": "mark_story_end_point(self)",
-              "start_line": 376,
-              "end_line": 393,
+              "start_line": 325,
+              "end_line": 342,
               "doc": "Mark end point at current playhead position and create story if valid range."
             },
             {
               "name": "get_segment_index_at_time",
               "sig": "get_segment_index_at_time(self, target_time)",
-              "start_line": 395,
-              "end_line": 403,
+              "start_line": 344,
+              "end_line": 352,
               "doc": "Find transcript segment index active at target_time."
             },
             {
               "name": "split_current_segment_at_playhead",
               "sig": "split_current_segment_at_playhead(self)",
-              "start_line": 405,
-              "end_line": 410,
+              "start_line": 354,
+              "end_line": 359,
               "doc": "Split the transcript segment active at current playhead position."
             },
             {
               "name": "merge_current_segment_with_next",
               "sig": "merge_current_segment_with_next(self)",
-              "start_line": 412,
-              "end_line": 419,
+              "start_line": 361,
+              "end_line": 368,
               "doc": "Merge the transcript segment active at current playhead with following segment."
             },
             {
               "name": "set_skip_seconds_from_ui",
               "sig": "set_skip_seconds_from_ui(self, value)",
-              "start_line": 421,
-              "end_line": 428,
+              "start_line": 370,
+              "end_line": 377,
               "doc": ""
             },
             {
               "name": "set_playback_rate",
               "sig": "set_playback_rate(self, rate)",
-              "start_line": 430,
-              "end_line": 442,
+              "start_line": 379,
+              "end_line": 391,
               "doc": ""
             },
             {
               "name": "toggle_play",
               "sig": "toggle_play(self)",
-              "start_line": 444,
-              "end_line": 468,
+              "start_line": 393,
+              "end_line": 417,
               "doc": ""
             },
             {
               "name": "stop_audio",
               "sig": "stop_audio(self)",
-              "start_line": 470,
-              "end_line": 480,
+              "start_line": 419,
+              "end_line": 429,
               "doc": ""
             },
             {
               "name": "seek_to",
               "sig": "seek_to(self, seconds)",
-              "start_line": 482,
-              "end_line": 496,
+              "start_line": 431,
+              "end_line": 445,
               "doc": ""
             },
             {
               "name": "seek_relative",
               "sig": "seek_relative(self, delta_seconds)",
-              "start_line": 498,
-              "end_line": 504,
+              "start_line": 447,
+              "end_line": 453,
               "doc": ""
             },
             {
               "name": "audio_position_changed",
               "sig": "audio_position_changed(self, position)",
-              "start_line": 506,
-              "end_line": 513,
+              "start_line": 455,
+              "end_line": 462,
               "doc": ""
             },
             {
               "name": "get_fade_volume_factor_at_time",
               "sig": "get_fade_volume_factor_at_time(self, t)",
-              "start_line": 515,
-              "end_line": 558,
+              "start_line": 464,
+              "end_line": 507,
               "doc": "Calculate the real-time audio volume fade factor [0.0, 1.0] for position `t`."
             },
             {
               "name": "update_realtime_fade_volume",
               "sig": "update_realtime_fade_volume(self)",
-              "start_line": 560,
-              "end_line": 589,
+              "start_line": 509,
+              "end_line": 538,
               "doc": "Modulate QAudioOutput volume in real-time according to story fade envelopes."
             },
             {
               "name": "_on_fade_timer_tick",
               "sig": "_on_fade_timer_tick(self)",
-              "start_line": 591,
-              "end_line": 593,
+              "start_line": 540,
+              "end_line": 542,
               "doc": ""
             },
             {
               "name": "audio_duration_changed",
               "sig": "audio_duration_changed(self, duration)",
-              "start_line": 595,
-              "end_line": 599,
+              "start_line": 544,
+              "end_line": 548,
               "doc": ""
             }
           ]
@@ -14477,7 +14456,7 @@
     },
     "timeline_overview_widget.py": {
       "path": "timeline_overview_widget.py",
-      "lines": 372,
+      "lines": 358,
       "summary": "Timeline overview bar, mini-map navigator, and resize handle widgets.",
       "exports": null,
       "classes": [
@@ -14533,7 +14512,7 @@
             "QWidget"
           ],
           "start_line": 76,
-          "end_line": 372,
+          "end_line": 358,
           "doc": "Interactive navigation overview pill below the timeline with drag-to-zoom edge handles.",
           "methods": [
             {
@@ -14596,56 +14575,42 @@
               "name": "dragEnterEvent",
               "sig": "dragEnterEvent(self, event)",
               "start_line": 330,
-              "end_line": 337,
-              "doc": ""
-            },
-            {
-              "name": "dragMoveEvent",
-              "sig": "dragMoveEvent(self, event)",
-              "start_line": 339,
-              "end_line": 346,
-              "doc": ""
-            },
-            {
-              "name": "dragLeaveEvent",
-              "sig": "dragLeaveEvent(self, event)",
-              "start_line": 348,
-              "end_line": 349,
+              "end_line": 336,
               "doc": ""
             },
             {
               "name": "dropEvent",
               "sig": "dropEvent(self, event)",
-              "start_line": 351,
-              "end_line": 360,
+              "start_line": 338,
+              "end_line": 346,
               "doc": ""
             },
             {
               "name": "setRange",
               "sig": "setRange(self, min_val, max_val)",
-              "start_line": 362,
-              "end_line": 363,
+              "start_line": 348,
+              "end_line": 349,
               "doc": ""
             },
             {
               "name": "setPageStep",
               "sig": "setPageStep(self, step)",
-              "start_line": 365,
-              "end_line": 366,
+              "start_line": 351,
+              "end_line": 352,
               "doc": ""
             },
             {
               "name": "setSingleStep",
               "sig": "setSingleStep(self, step)",
-              "start_line": 368,
-              "end_line": 369,
+              "start_line": 354,
+              "end_line": 355,
               "doc": ""
             },
             {
               "name": "setValue",
               "sig": "setValue(self, val)",
-              "start_line": 371,
-              "end_line": 372,
+              "start_line": 357,
+              "end_line": 358,
               "doc": ""
             }
           ]
@@ -14722,7 +14687,7 @@
     },
     "timeline_widgets.py": {
       "path": "timeline_widgets.py",
-      "lines": 974,
+      "lines": 944,
       "summary": "Radio & TV Story Segmenter \u2014 Timeline Ruler, Track Views, Playhead, Overview & Canvas Widgets.",
       "exports": null,
       "classes": [
@@ -14732,7 +14697,7 @@
             "QWidget"
           ],
           "start_line": 60,
-          "end_line": 854,
+          "end_line": 840,
           "doc": "",
           "methods": [
             {
@@ -14774,252 +14739,238 @@
               "name": "dragEnterEvent",
               "sig": "dragEnterEvent(self, event)",
               "start_line": 220,
-              "end_line": 227,
-              "doc": ""
-            },
-            {
-              "name": "dragMoveEvent",
-              "sig": "dragMoveEvent(self, event)",
-              "start_line": 229,
-              "end_line": 236,
-              "doc": ""
-            },
-            {
-              "name": "dragLeaveEvent",
-              "sig": "dragLeaveEvent(self, event)",
-              "start_line": 238,
-              "end_line": 239,
+              "end_line": 226,
               "doc": ""
             },
             {
               "name": "dropEvent",
               "sig": "dropEvent(self, event)",
-              "start_line": 241,
-              "end_line": 249,
+              "start_line": 228,
+              "end_line": 235,
               "doc": ""
             },
             {
               "name": "set_audio_filename",
               "sig": "set_audio_filename(self, filename)",
-              "start_line": 251,
-              "end_line": 254,
+              "start_line": 237,
+              "end_line": 240,
               "doc": ""
             },
             {
               "name": "set_duration",
               "sig": "set_duration(self, duration)",
-              "start_line": 256,
-              "end_line": 264,
+              "start_line": 242,
+              "end_line": 250,
               "doc": ""
             },
             {
               "name": "set_position",
               "sig": "set_position(self, position)",
-              "start_line": 266,
-              "end_line": 269,
+              "start_line": 252,
+              "end_line": 255,
               "doc": ""
             },
             {
               "name": "set_playing_state",
               "sig": "set_playing_state(self, is_playing)",
-              "start_line": 271,
-              "end_line": 272,
+              "start_line": 257,
+              "end_line": 258,
               "doc": ""
             },
             {
               "name": "ensure_position_visible",
               "sig": "ensure_position_visible(self, target_time)",
-              "start_line": 274,
-              "end_line": 297,
+              "start_line": 260,
+              "end_line": 283,
               "doc": ""
             },
             {
               "name": "set_transcript_selection_range",
               "sig": "set_transcript_selection_range(self, start, end)",
-              "start_line": 299,
-              "end_line": 304,
+              "start_line": 285,
+              "end_line": 290,
               "doc": ""
             },
             {
               "name": "set_stories",
               "sig": "set_stories(self, stories, selected_indices)",
-              "start_line": 306,
-              "end_line": 310,
+              "start_line": 292,
+              "end_line": 296,
               "doc": ""
             },
             {
               "name": "set_waveform_peaks",
               "sig": "set_waveform_peaks(self, peaks, levels)",
-              "start_line": 312,
-              "end_line": 323,
+              "start_line": 298,
+              "end_line": 309,
               "doc": ""
             },
             {
               "name": "set_timeline_views",
               "sig": "set_timeline_views(self, show_waveform, show_thumbnails)",
-              "start_line": 325,
-              "end_line": 329,
+              "start_line": 311,
+              "end_line": 315,
               "doc": ""
             },
             {
               "name": "set_video_thumbnails",
               "sig": "set_video_thumbnails(self, thumbnails)",
-              "start_line": 331,
-              "end_line": 338,
+              "start_line": 317,
+              "end_line": 324,
               "doc": ""
             },
             {
               "name": "set_skip_seconds",
               "sig": "set_skip_seconds(self, seconds)",
-              "start_line": 340,
-              "end_line": 341,
+              "start_line": 326,
+              "end_line": 327,
               "doc": ""
             },
             {
               "name": "visible_duration",
               "sig": "visible_duration(self)",
-              "start_line": 343,
-              "end_line": 344,
+              "start_line": 329,
+              "end_line": 330,
               "doc": ""
             },
             {
               "name": "clamp_scroll_offset",
               "sig": "clamp_scroll_offset(self)",
-              "start_line": 346,
-              "end_line": 349,
+              "start_line": 332,
+              "end_line": 335,
               "doc": ""
             },
             {
               "name": "time_to_x",
               "sig": "time_to_x(self, time_val, width)",
-              "start_line": 351,
-              "end_line": 354,
+              "start_line": 337,
+              "end_line": 340,
               "doc": ""
             },
             {
               "name": "x_to_time",
               "sig": "x_to_time(self, x_val, width)",
-              "start_line": 356,
-              "end_line": 358,
+              "start_line": 342,
+              "end_line": 344,
               "doc": ""
             },
             {
               "name": "snap_time",
               "sig": "snap_time(self, raw_time, exclude_story_idx, width, pixel_threshold)",
-              "start_line": 360,
-              "end_line": 361,
+              "start_line": 346,
+              "end_line": 347,
               "doc": ""
             },
             {
               "name": "find_edge_at_pos",
               "sig": "find_edge_at_pos(self, pos_x, width)",
-              "start_line": 363,
-              "end_line": 364,
+              "start_line": 349,
+              "end_line": 350,
               "doc": ""
             },
             {
               "name": "find_fade_handle_at_pos",
               "sig": "find_fade_handle_at_pos(self, pos_x, pos_y, width)",
-              "start_line": 368,
-              "end_line": 369,
+              "start_line": 354,
+              "end_line": 355,
               "doc": ""
             },
             {
               "name": "find_story_at_time",
               "sig": "find_story_at_time(self, time)",
-              "start_line": 371,
-              "end_line": 372,
+              "start_line": 357,
+              "end_line": 358,
               "doc": ""
             },
             {
               "name": "is_near_playhead",
               "sig": "is_near_playhead(self, pos_x, width)",
-              "start_line": 374,
-              "end_line": 375,
+              "start_line": 360,
+              "end_line": 361,
               "doc": ""
             },
             {
               "name": "set_zoom",
               "sig": "set_zoom(self, new_zoom, center_x, focus_time)",
-              "start_line": 377,
-              "end_line": 403,
+              "start_line": 363,
+              "end_line": 389,
               "doc": ""
             },
             {
               "name": "resizeEvent",
               "sig": "resizeEvent(self, event)",
-              "start_line": 405,
-              "end_line": 407,
+              "start_line": 391,
+              "end_line": 393,
               "doc": ""
             },
             {
               "name": "wheelEvent",
               "sig": "wheelEvent(self, event)",
-              "start_line": 409,
-              "end_line": 459,
+              "start_line": 395,
+              "end_line": 445,
               "doc": ""
             },
             {
               "name": "mousePressEvent",
               "sig": "mousePressEvent(self, event)",
-              "start_line": 461,
-              "end_line": 545,
+              "start_line": 447,
+              "end_line": 531,
               "doc": ""
             },
             {
               "name": "mouseMoveEvent",
               "sig": "mouseMoveEvent(self, event)",
-              "start_line": 547,
-              "end_line": 673,
+              "start_line": 533,
+              "end_line": 659,
               "doc": ""
             },
             {
               "name": "mouseReleaseEvent",
               "sig": "mouseReleaseEvent(self, event)",
-              "start_line": 675,
-              "end_line": 745,
+              "start_line": 661,
+              "end_line": 731,
               "doc": ""
             },
             {
               "name": "_show_timeline_context_menu",
               "sig": "_show_timeline_context_menu(self, global_pos, pos_x)",
-              "start_line": 747,
-              "end_line": 748,
+              "start_line": 733,
+              "end_line": 734,
               "doc": ""
             },
             {
               "name": "_show_selection_context_menu",
               "sig": "_show_selection_context_menu(self, global_pos)",
-              "start_line": 750,
-              "end_line": 751,
+              "start_line": 736,
+              "end_line": 737,
               "doc": ""
             },
             {
               "name": "keyPressEvent",
               "sig": "keyPressEvent(self, event)",
-              "start_line": 753,
-              "end_line": 834,
+              "start_line": 739,
+              "end_line": 820,
               "doc": ""
             },
             {
               "name": "set_thumbnail_position",
               "sig": "set_thumbnail_position(self, position)",
-              "start_line": 836,
-              "end_line": 840,
+              "start_line": 822,
+              "end_line": 826,
               "doc": ""
             },
             {
               "name": "render_waveform_buffer",
               "sig": "render_waveform_buffer(self, width, height)",
-              "start_line": 842,
-              "end_line": 843,
+              "start_line": 828,
+              "end_line": 829,
               "doc": ""
             },
             {
               "name": "paintEvent",
               "sig": "paintEvent(self, event)",
-              "start_line": 846,
-              "end_line": 854,
+              "start_line": 832,
+              "end_line": 840,
               "doc": ""
             }
           ]
@@ -15029,85 +14980,71 @@
           "bases": [
             "QWidget"
           ],
-          "start_line": 857,
-          "end_line": 972,
+          "start_line": 843,
+          "end_line": 942,
           "doc": "",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, parent, tokens)",
-              "start_line": 860,
-              "end_line": 897,
+              "start_line": 846,
+              "end_line": 883,
               "doc": ""
             },
             {
               "name": "set_is_video",
               "sig": "set_is_video(self, is_video)",
-              "start_line": 899,
-              "end_line": 901,
+              "start_line": 885,
+              "end_line": 887,
               "doc": ""
             },
             {
               "name": "set_background_generation_active",
               "sig": "set_background_generation_active(self, task_name, active)",
-              "start_line": 903,
-              "end_line": 905,
+              "start_line": 889,
+              "end_line": 891,
               "doc": ""
             },
             {
               "name": "dragEnterEvent",
               "sig": "dragEnterEvent(self, event)",
-              "start_line": 907,
-              "end_line": 914,
-              "doc": ""
-            },
-            {
-              "name": "dragMoveEvent",
-              "sig": "dragMoveEvent(self, event)",
-              "start_line": 916,
-              "end_line": 923,
-              "doc": ""
-            },
-            {
-              "name": "dragLeaveEvent",
-              "sig": "dragLeaveEvent(self, event)",
-              "start_line": 925,
-              "end_line": 926,
+              "start_line": 893,
+              "end_line": 897,
               "doc": ""
             },
             {
               "name": "dropEvent",
               "sig": "dropEvent(self, event)",
-              "start_line": 928,
-              "end_line": 936,
+              "start_line": 899,
+              "end_line": 906,
               "doc": ""
             },
             {
               "name": "update_scrollbar_range",
               "sig": "update_scrollbar_range(self)",
-              "start_line": 938,
-              "end_line": 947,
+              "start_line": 908,
+              "end_line": 917,
               "doc": ""
             },
             {
               "name": "update_scrollbar_from_canvas",
               "sig": "update_scrollbar_from_canvas(self, offset)",
-              "start_line": 949,
-              "end_line": 957,
+              "start_line": 919,
+              "end_line": 927,
               "doc": ""
             },
             {
               "name": "update_canvas_from_scrollbar",
               "sig": "update_canvas_from_scrollbar(self, val)",
-              "start_line": 959,
-              "end_line": 969,
+              "start_line": 929,
+              "end_line": 939,
               "doc": ""
             },
             {
               "name": "__getattr__",
               "sig": "__getattr__(self, name)",
-              "start_line": 971,
-              "end_line": 972,
+              "start_line": 941,
+              "end_line": 942,
               "doc": ""
             }
           ]
@@ -15914,7 +15851,7 @@
     "transcript_story.py": {
       "path": "transcript_story.py",
       "lines": 851,
-      "summary": "Radio & TV Segmenter v3.9.61-beta \u2014 transcript story responsibilities.",
+      "summary": "Radio & TV Segmenter v3.9.62-beta \u2014 transcript story responsibilities.",
       "exports": [
         "TranscriptStoryMixin",
         "Story",
@@ -17551,55 +17488,6 @@
           "start_line": 22,
           "end_line": 55,
           "doc": "Generate a multi-resolution downsampling pyramid for peaks using vectorized operations."
-        }
-      ]
-    },
-    "win32_dnd.py": {
-      "path": "win32_dnd.py",
-      "lines": 152,
-      "summary": "Win32 Native Drag-and-Drop and UIPI Elevation Bridge.",
-      "exports": null,
-      "classes": [
-        {
-          "name": "Win32DropNativeEventFilter",
-          "bases": [
-            "QAbstractNativeEventFilter"
-          ],
-          "start_line": 26,
-          "end_line": 96,
-          "doc": "Native event filter intercepting Win32 WM_DROPFILES messages.",
-          "methods": [
-            {
-              "name": "__init__",
-              "sig": "__init__(self, target_window)",
-              "start_line": 33,
-              "end_line": 37,
-              "doc": ""
-            },
-            {
-              "name": "nativeEventFilter",
-              "sig": "nativeEventFilter(self, event_type, message)",
-              "start_line": 39,
-              "end_line": 96,
-              "doc": ""
-            }
-          ]
-        }
-      ],
-      "functions": [
-        {
-          "name": "init_ole_sta",
-          "sig": "init_ole_sta()",
-          "start_line": 99,
-          "end_line": 114,
-          "doc": "Ensure early Single-Threaded Apartment (STA) COM initialization on Windows."
-        },
-        {
-          "name": "setup_win32_window_drag_drop",
-          "sig": "setup_win32_window_drag_drop(window)",
-          "start_line": 117,
-          "end_line": 152,
-          "doc": "Configure Win32 message filters and native drop handler for the main window."
         }
       ]
     },

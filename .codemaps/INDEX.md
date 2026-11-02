@@ -1,13 +1,13 @@
 # Repository Symbol Index & API Map
 
-> Generated: 2026-11-02 15:28:27 | Total Files: 156
+> Generated: 2026-11-02 16:05:04 | Total Files: 155
 > Use `python scripts/generate_symbol_index.py --outline <file>` for exact line numbers.
 
 ## Modules Overview
 
 | Module | Lines | Summary | Primary Classes / Functions |
 | :--- | :---: | :--- | :--- |
-| `RadioTVSegmenter.py` | 670 | Radio & TV Segmenter — v3.9.61-beta | `MainWindow`, `main()` |
+| `RadioTVSegmenter.py` | 623 | Radio & TV Segmenter — v3.9.62-beta | `MainWindow`, `main()` |
 | `audio_normalization.py` | 541 | Radio & TV Story Segmenter — Audio Loudness Probing & Nor... | `LoudnessReport`, `AudioLoudnessProbeWorker`, `parse_ebur128_summary()`, `probe_media_duration_seconds()` *(+3 more)* |
 | `background_workers.py` | 1015 | Radio & TV Story Segmenter — Background Worker Threads & ... | `StoryAutoDetectWorker`, `WaveformWorker`, `VideoThumbnailWorker`, `get_waveform_peak_cache_path()` *(+6 more)* |
 | `backup_manager.py` | 622 | Unified State Serialization, Local, and Google Drive Clou... | `compute_data_checksum()`, `serialize_preferences()`, `serialize_keyboard_shortcuts()`, `serialize_glossary()` *(+7 more)* |
@@ -17,7 +17,7 @@
 | `benchmark_engine.py` | 903 | benchmark_engine.py - Core High-Precision Performance Ben... | `BenchmarkEngine` |
 | `benchmark_models.py` | 457 | benchmark_models.py - Benchmark Data Models, Audio Genera... | `BenchmarkMetric`, `ProcessingEstimates`, `get_app_data_dir()`, `get_candidate_sample_audio_paths()` *(+9 more)* |
 | `bootstrap.py` | 385 | Install-safe startup environment configuration for Radio ... | `NullWriter`, `init_null_streams_and_hf_env()`, `patch_av_open()`, `app_data_dir()` *(+7 more)* |
-| `build_installer.py` | 1080 | Build the installable Radio & TV Segmenter application wi... | `exe_name()`, `find_tool()`, `check_cpu_only_torch()`, `torch_windows_binary_flags()` *(+8 more)* |
+| `build_installer.py` | 1079 | Build the installable Radio & TV Segmenter application wi... | `exe_name()`, `find_tool()`, `check_cpu_only_torch()`, `torch_windows_binary_flags()` *(+8 more)* |
 | `bump_version.py` | 513 | bump_version.py — Automated Version Synchronization Engine | `normalize_version()`, `get_current_version()`, `compute_bump()`, `detect_modified_plugins()` *(+3 more)* |
 | `cache_manager.py` | 685 | Radio & TV Segmenter — Cache management, disk usage scann... | `ClearCacheDialog`, `register_active_thumbnail_dir()`, `unregister_active_thumbnail_dir()`, `get_active_thumbnail_dirs()` *(+3 more)* |
 | `comment_widgets.py` | 350 | comment_widgets.py - Range-Anchored Comments Panel & Comm... | `CommentEditorDialog`, `CommentCardWidget`, `CommentsPanel` |
@@ -51,7 +51,7 @@
 | `media_batch.py` | 1852 | Radio & TV Segmenter v1.1.1 — media batch responsibilities. | `MediaBatchMixin` |
 | `model_install_workers.py` | 189 | Radio & TV Segmenter — Model Download and Installation Ba... | `WhisperModelInstallWorker`, `DiarizationModelInstallWorker`, `get_diarization_model_dir()`, `is_diarization_model_available()` |
 | `model_management.py` | 989 | Radio & TV Segmenter v1.1.1 — model management responsibi... | `_DummyTranslationWorker`, `ModelManagementMixin` |
-| `playback_controller.py` | 599 | Radio & TV Story Segmenter — Media Player Transport & Pla... | `PlaybackControllerMixin` |
+| `playback_controller.py` | 548 | Radio & TV Story Segmenter — Media Player Transport & Pla... | `PlaybackControllerMixin` |
 | `playback_preferences.py` | 800 | Radio & TV Story Segmenter — Playback Preferences & Appli... | `PlaybackPreferencesMixin` |
 | `plugin_base.py` | 205 | Radio & TV Segmenter — Plugin Base Interfaces and Manifest. | `PluginManifest`, `BasePlugin`, `ExportDestination` |
 | `plugin_dialogs.py` | 447 | GitHub plugins dialogs, batch download workers, and Plugi... | `GitHubPluginsWorker`, `GitHubDownloadWorker`, `GitHubBatchDownloadWorker`, `GitHubPluginsDialog` *(+1 more)* |
@@ -129,10 +129,10 @@
 | `theme_tokens.py` | 307 | Theme Tokens for Radio & TV Story Segmenter. | `ThemeTokens`, `theme_tokens_for_mode()` |
 | `timeline_context_menus.py` | 108 | Context menu builders and event handlers for the timeline... | `show_timeline_context_menu()`, `show_selection_context_menu()` |
 | `timeline_overview.py` | 351 | Timeline Resize Handle and Overview Navigation Bar widgets. | `TimelineResizeHandle`, `TimelineOverviewBar` |
-| `timeline_overview_widget.py` | 372 | Timeline overview bar, mini-map navigator, and resize han... | `TimelineResizeHandle`, `TimelineOverviewBar` |
+| `timeline_overview_widget.py` | 358 | Timeline overview bar, mini-map navigator, and resize han... | `TimelineResizeHandle`, `TimelineOverviewBar` |
 | `timeline_painter.py` | 419 | Timeline canvas rendering engine, waveform drawing, and p... | `render_waveform_buffer()`, `paint_timeline_canvas()` |
 | `timeline_snap.py` | 119 | Timeline snapping algorithms, edge detection, and collisi... | `snap_time()`, `find_edge_at_pos()`, `find_fade_handle_at_pos()`, `find_story_at_time()` *(+1 more)* |
-| `timeline_widgets.py` | 974 | Radio & TV Story Segmenter — Timeline Ruler, Track Views,... | `TimelineCanvas`, `TimelineWidget` |
+| `timeline_widgets.py` | 944 | Radio & TV Story Segmenter — Timeline Ruler, Track Views,... | `TimelineCanvas`, `TimelineWidget` |
 | `transcript_cleaner.py` | 216 | Radio & TV Segmenter — Transcript cleaning, loop collapsi... | `collapse_repeating_ngrams()`, `strip_hallucination_phrases()`, `trim_trailing_degenerate_tail()`, `scrub_transcript_segments()` *(+1 more)* |
 | `transcript_context_menu_mixin.py` | 415 | Radio & TV Story Segmenter — Interactive Transcript Conte... | `TranscriptContextMenuMixin` |
 | `transcript_editor.py` | 870 | transcript_editor.py - Interactive Transcript Editor & Vi... | `InteractiveTranscriptEdit` |
@@ -141,7 +141,7 @@
 | `transcript_navigation_mixin.py` | 299 | transcript_navigation_mixin.py - Timestamp discovery, car... | `TranscriptNavigationMixin` |
 | `transcript_playback_highlight_mixin.py` | 276 | Radio & TV Story Segmenter — Interactive Transcript Playb... | `TranscriptPlaybackHighlightMixin` |
 | `transcript_selection_mixin.py` | 466 | transcript_selection_mixin.py - Multi-selection, timeline... | `TranscriptSelectionMixin` |
-| `transcript_story.py` | 851 | Radio & TV Segmenter v3.9.61-beta — transcript story resp... | `TranscriptStoryMixin` |
+| `transcript_story.py` | 851 | Radio & TV Segmenter v3.9.62-beta — transcript story resp... | `TranscriptStoryMixin` |
 | `transcript_styles.py` | 104 | transcript_styles.py - Transcript view stylesheets and da... | `transcript_text_view_stylesheet()`, `clean_dark_mode_clipboard_html()` |
 | `transcript_timeline_sync_mixin.py` | 634 | Radio & TV Story Segmenter — Transcript Timeline & Playba... | `TranscriptTimelineSyncMixin` |
 | `transcription_processing.py` | 579 | Transcription background process management for Radio & T... | `TranscriptionProcessingMixin` |
@@ -156,7 +156,6 @@
 | `voice_profile_dialog.py` | 1006 | voice_profile_dialog.py — Dialog for finding and reassign... | `VoiceProfileMatchDialog` |
 | `voice_profile_ops_mixin.py` | 585 | Radio & TV Story Segmenter — Voice Profile Matching & Emb... | `VoiceProfileOpsMixin` |
 | `waveform_envelope.py` | 55 | Waveform envelope data structures, downsampling pyramids,... | `WaveformEnvelope`, `build_waveform_pyramid()` |
-| `win32_dnd.py` | 152 | Win32 Native Drag-and-Drop and UIPI Elevation Bridge. | `Win32DropNativeEventFilter`, `init_ole_sta()`, `setup_win32_window_drag_drop()` |
 | `worker_asr_engines.py` | 839 | worker_asr_engines.py - Faster-Whisper, CTranslate2 & She... | `set_emit_callback()`, `get_optimal_transcription_threads()`, `get_app_data_dir_pure()`, `get_models_storage_dir_pure()` *(+4 more)* |
 | `worker_clustering.py` | 448 | worker_clustering.py - Acoustic clustering, VAD pause bri... | `normalize_audio_for_diarization()`, `configure_optimal_pytorch_threads()`, `fast_cluster_ahc()`, `apply_clustering_patches()` *(+2 more)* |
 | `worker_diarization_clustering.py` | 297 | worker_diarization_clustering.py - Speaker Clustering, Ce... | `fast_cluster_ahc()`, `apply_clustering_patches()`, `assign_short_segments_to_centroids()` |
@@ -166,21 +165,18 @@
 
 ## Detailed Symbol Catalog
 
-### `RadioTVSegmenter.py` (670 lines)
-*Radio & TV Segmenter — v3.9.61-beta*
-- **class `MainWindow(ModelManagementMixin, MediaBatchMixin, PlaybackPreferencesMixin, UiLayoutMixin, ProcessingMixin, TranslationMixin, TranscriptStoryMixin, ProjectExportMixin, GpuAccelerationMixin, QMainWindow)`** (lines 160–555):
+### `RadioTVSegmenter.py` (623 lines)
+*Radio & TV Segmenter — v3.9.62-beta*
+- **class `MainWindow(ModelManagementMixin, MediaBatchMixin, PlaybackPreferencesMixin, UiLayoutMixin, ProcessingMixin, TranslationMixin, TranscriptStoryMixin, ProjectExportMixin, GpuAccelerationMixin, QMainWindow)`** (lines 160–520):
   *Main application window for Radio & TV Segmenter.*
-  - `__init__(self)` [L178-L350]
-  - `_setup_shortcuts_and_actions(self)` [L352-L399] — *Register customizable QShortcut and QAction objects on MainWindow.*
-  - `handle_external_open_request(self, file_path)` [L401-L426] — *Called when another instance attempts to open a project file in single-instance mode.*
-  - `load_persistent_settings(self)` [L428-L500] — *Loads all persistent user preferences from QSettings into MainWindow attributes.*
-  - `toggle_transcript_auto_scroll(self, checked)` [L502-L512] — *Toggle transcript auto-scrolling during playback and persist setting.*
-  - `changeEvent(self, event)` [L514-L521] — *Handle window state changes (e.g. maximize, restore, minimize) safely.*
-  - `dragEnterEvent(self, event)` [L523-L530]
-  - `dragMoveEvent(self, event)` [L532-L539]
-  - `dropEvent(self, event)` [L541-L555]
+  - `__init__(self)` [L178-L349]
+  - `_setup_shortcuts_and_actions(self)` [L351-L398] — *Register customizable QShortcut and QAction objects on MainWindow.*
+  - `handle_external_open_request(self, file_path)` [L400-L425] — *Called when another instance attempts to open a project file in single-instance mode.*
+  - `load_persistent_settings(self)` [L427-L499] — *Loads all persistent user preferences from QSettings into MainWindow attributes.*
+  - `toggle_transcript_auto_scroll(self, checked)` [L501-L511] — *Toggle transcript auto-scrolling during playback and persist setting.*
+  - `changeEvent(self, event)` [L513-L520] — *Handle window state changes (e.g. maximize, restore, minimize) safely.*
 - **Functions**:
-  - `main()` [L558-L666]
+  - `main()` [L523-L619]
 
 ### `audio_normalization.py` (541 lines)
 *Radio & TV Story Segmenter — Audio Loudness Probing & Normalization Engine.*
@@ -336,7 +332,7 @@
   - `ensure_keyring_runtime()` [L351-L377] — *Ensure keyring (and pywin32-ctypes on Windows) is installed for secure credential storage.*
   - `check_and_install_core()` [L379-L382] — *Backward-compatible startup dependency check.*
 
-### `build_installer.py` (1080 lines)
+### `build_installer.py` (1079 lines)
 *Build the installable Radio & TV Segmenter application with PyInstaller.*
 - **Functions**:
   - `exe_name(base)` [L105-L106]
@@ -350,7 +346,7 @@
   - `compile_windows_installer(project_version)` [L508-L543] — *Compile the Windows Inno Setup installer executable if ISCC is installed.*
   - `parse_build_args()` [L546-L621]
   - `package_plugins(app_root, include_wp, include_yt, include_tr)` [L624-L692] — *Package plugins into standalone .zip release artifacts in dist/plugins/*
-  - `main()` [L695-L1076]
+  - `main()` [L695-L1075]
 
 ### `bump_version.py` (513 lines)
 *bump_version.py — Automated Version Synchronization Engine*
@@ -931,35 +927,35 @@
   - `_translation_worker_class()` [L46-L56] — *Load translation implementation dynamically without hard-importing from plugins.*
   - `_translation_plugin_installed(self)` [L58-L64]
 
-### `playback_controller.py` (599 lines)
+### `playback_controller.py` (548 lines)
 *Radio & TV Story Segmenter — Media Player Transport & Playback Controller.*
-- **class `PlaybackControllerMixin`** (lines 25–599):
+- **class `PlaybackControllerMixin`** (lines 25–548):
   *Provides audio/video media player transport, scrubbing, and fade controls.*
   - `is_video_file(self, path)` [L28-L33]
   - `update_video_preview_state(self)` [L35-L39]
   - `toggle_video_preview(self, checked)` [L41-L62]
   - `handle_scrub_position(self, seconds)` [L64-L67]
   - `execute_scrub_seek(self)` [L69-L76]
-  - `eventFilter(self, watched, event)` [L78-L287]
-  - `_is_text_entry_focused(self)` [L289-L304] — *Return True if a text entry widget or editable transcript currently has focus.*
-  - `_matches_shortcut(self, event, action_id, default_seq)` [L306-L350] — *Return True if key event matches user configured shortcut for action_id.*
-  - `_toggle_follow_playhead(self)` [L352-L358] — *Toggle automatic timeline view scrolling following the audio playhead.*
-  - `mark_story_start_point(self)` [L360-L374] — *Mark start point at current playhead position.*
-  - `mark_story_end_point(self)` [L376-L393] — *Mark end point at current playhead position and create story if valid range.*
-  - `get_segment_index_at_time(self, target_time)` [L395-L403] — *Find transcript segment index active at target_time.*
-  - `split_current_segment_at_playhead(self)` [L405-L410] — *Split the transcript segment active at current playhead position.*
-  - `merge_current_segment_with_next(self)` [L412-L419] — *Merge the transcript segment active at current playhead with following segment.*
-  - `set_skip_seconds_from_ui(self, value)` [L421-L428]
-  - `set_playback_rate(self, rate)` [L430-L442]
-  - `toggle_play(self)` [L444-L468]
-  - `stop_audio(self)` [L470-L480]
-  - `seek_to(self, seconds)` [L482-L496]
-  - `seek_relative(self, delta_seconds)` [L498-L504]
-  - `audio_position_changed(self, position)` [L506-L513]
-  - `get_fade_volume_factor_at_time(self, t)` [L515-L558] — *Calculate the real-time audio volume fade factor [0.0, 1.0] for position `t`.*
-  - `update_realtime_fade_volume(self)` [L560-L589] — *Modulate QAudioOutput volume in real-time according to story fade envelopes.*
-  - `_on_fade_timer_tick(self)` [L591-L593]
-  - `audio_duration_changed(self, duration)` [L595-L599]
+  - `eventFilter(self, watched, event)` [L78-L236]
+  - `_is_text_entry_focused(self)` [L238-L253] — *Return True if a text entry widget or editable transcript currently has focus.*
+  - `_matches_shortcut(self, event, action_id, default_seq)` [L255-L299] — *Return True if key event matches user configured shortcut for action_id.*
+  - `_toggle_follow_playhead(self)` [L301-L307] — *Toggle automatic timeline view scrolling following the audio playhead.*
+  - `mark_story_start_point(self)` [L309-L323] — *Mark start point at current playhead position.*
+  - `mark_story_end_point(self)` [L325-L342] — *Mark end point at current playhead position and create story if valid range.*
+  - `get_segment_index_at_time(self, target_time)` [L344-L352] — *Find transcript segment index active at target_time.*
+  - `split_current_segment_at_playhead(self)` [L354-L359] — *Split the transcript segment active at current playhead position.*
+  - `merge_current_segment_with_next(self)` [L361-L368] — *Merge the transcript segment active at current playhead with following segment.*
+  - `set_skip_seconds_from_ui(self, value)` [L370-L377]
+  - `set_playback_rate(self, rate)` [L379-L391]
+  - `toggle_play(self)` [L393-L417]
+  - `stop_audio(self)` [L419-L429]
+  - `seek_to(self, seconds)` [L431-L445]
+  - `seek_relative(self, delta_seconds)` [L447-L453]
+  - `audio_position_changed(self, position)` [L455-L462]
+  - `get_fade_volume_factor_at_time(self, t)` [L464-L507] — *Calculate the real-time audio volume fade factor [0.0, 1.0] for position `t`.*
+  - `update_realtime_fade_volume(self)` [L509-L538] — *Modulate QAudioOutput volume in real-time according to story fade envelopes.*
+  - `_on_fade_timer_tick(self)` [L540-L542]
+  - `audio_duration_changed(self, duration)` [L544-L548]
 
 ### `playback_preferences.py` (800 lines)
 *Radio & TV Story Segmenter — Playback Preferences & Application Facade.*
@@ -2527,7 +2523,7 @@
   - `setSingleStep(self, step)` [L347-L348]
   - `setValue(self, val)` [L350-L351]
 
-### `timeline_overview_widget.py` (372 lines)
+### `timeline_overview_widget.py` (358 lines)
 *Timeline overview bar, mini-map navigator, and resize handle widgets.*
 - **class `TimelineResizeHandle(QWidget)`** (lines 13–73):
   *Visual drag-handle at the bottom of the timeline allowing vertical resizing.*
@@ -2536,7 +2532,7 @@
   - `mousePressEvent(self, event)` [L42-L49]
   - `mouseMoveEvent(self, event)` [L51-L60]
   - `mouseReleaseEvent(self, event)` [L62-L73]
-- **class `TimelineOverviewBar(QWidget)`** (lines 76–372):
+- **class `TimelineOverviewBar(QWidget)`** (lines 76–358):
   *Interactive navigation overview pill below the timeline with drag-to-zoom edge handles.*
   - `__init__(self, canvas, parent, tokens)` [L83-L101]
   - `get_pill_rect(self)` [L103-L111]
@@ -2546,14 +2542,12 @@
   - `mouseMoveEvent(self, event)` [L245-L307]
   - `mouseReleaseEvent(self, event)` [L309-L323]
   - `leaveEvent(self, event)` [L325-L328]
-  - `dragEnterEvent(self, event)` [L330-L337]
-  - `dragMoveEvent(self, event)` [L339-L346]
-  - `dragLeaveEvent(self, event)` [L348-L349]
-  - `dropEvent(self, event)` [L351-L360]
-  - `setRange(self, min_val, max_val)` [L362-L363]
-  - `setPageStep(self, step)` [L365-L366]
-  - `setSingleStep(self, step)` [L368-L369]
-  - `setValue(self, val)` [L371-L372]
+  - `dragEnterEvent(self, event)` [L330-L336]
+  - `dropEvent(self, event)` [L338-L346]
+  - `setRange(self, min_val, max_val)` [L348-L349]
+  - `setPageStep(self, step)` [L351-L352]
+  - `setSingleStep(self, step)` [L354-L355]
+  - `setValue(self, val)` [L357-L358]
 
 ### `timeline_painter.py` (419 lines)
 *Timeline canvas rendering engine, waveform drawing, and paint pipeline.*
@@ -2570,62 +2564,58 @@
   - `find_story_at_time(canvas, time)` [L104-L113] — *Return the index of the story enclosing `time`, picking the most specific (shortest) if overlapping.*
   - `is_near_playhead(canvas, pos_x, width)` [L116-L119] — *Check if pos_x is within grab distance of the active playhead cursor.*
 
-### `timeline_widgets.py` (974 lines)
+### `timeline_widgets.py` (944 lines)
 *Radio & TV Story Segmenter — Timeline Ruler, Track Views, Playhead, Overview & Canvas Widgets.*
-- **class `TimelineCanvas(QWidget)`** (lines 60–854):
+- **class `TimelineCanvas(QWidget)`** (lines 60–840):
   - `__init__(self, parent, tokens)` [L80-L170]
   - `set_is_video(self, is_video)` [L172-L175]
   - `set_background_generation_active(self, task_name, active)` [L177-L196] — *Set generation state for 'waveform' or 'thumbnails'.*
   - `_activate_background_banner(self)` [L198-L203]
   - `_update_background_status_text(self)` [L205-L218]
-  - `dragEnterEvent(self, event)` [L220-L227]
-  - `dragMoveEvent(self, event)` [L229-L236]
-  - `dragLeaveEvent(self, event)` [L238-L239]
-  - `dropEvent(self, event)` [L241-L249]
-  - `set_audio_filename(self, filename)` [L251-L254]
-  - `set_duration(self, duration)` [L256-L264]
-  - `set_position(self, position)` [L266-L269]
-  - `set_playing_state(self, is_playing)` [L271-L272]
-  - `ensure_position_visible(self, target_time)` [L274-L297]
-  - `set_transcript_selection_range(self, start, end)` [L299-L304]
-  - `set_stories(self, stories, selected_indices)` [L306-L310]
-  - `set_waveform_peaks(self, peaks, levels)` [L312-L323]
-  - `set_timeline_views(self, show_waveform, show_thumbnails)` [L325-L329]
-  - `set_video_thumbnails(self, thumbnails)` [L331-L338]
-  - `set_skip_seconds(self, seconds)` [L340-L341]
-  - `visible_duration(self)` [L343-L344]
-  - `clamp_scroll_offset(self)` [L346-L349]
-  - `time_to_x(self, time_val, width)` [L351-L354]
-  - `x_to_time(self, x_val, width)` [L356-L358]
-  - `snap_time(self, raw_time, exclude_story_idx, width, pixel_threshold)` [L360-L361]
-  - `find_edge_at_pos(self, pos_x, width)` [L363-L364]
-  - `find_fade_handle_at_pos(self, pos_x, pos_y, width)` [L368-L369]
-  - `find_story_at_time(self, time)` [L371-L372]
-  - `is_near_playhead(self, pos_x, width)` [L374-L375]
-  - `set_zoom(self, new_zoom, center_x, focus_time)` [L377-L403]
-  - `resizeEvent(self, event)` [L405-L407]
-  - `wheelEvent(self, event)` [L409-L459]
-  - `mousePressEvent(self, event)` [L461-L545]
-  - `mouseMoveEvent(self, event)` [L547-L673]
-  - `mouseReleaseEvent(self, event)` [L675-L745]
-  - `_show_timeline_context_menu(self, global_pos, pos_x)` [L747-L748]
-  - `_show_selection_context_menu(self, global_pos)` [L750-L751]
-  - `keyPressEvent(self, event)` [L753-L834]
-  - `set_thumbnail_position(self, position)` [L836-L840]
-  - `render_waveform_buffer(self, width, height)` [L842-L843]
-  - `paintEvent(self, event)` [L846-L854]
-- **class `TimelineWidget(QWidget)`** (lines 857–972):
-  - `__init__(self, parent, tokens)` [L860-L897]
-  - `set_is_video(self, is_video)` [L899-L901]
-  - `set_background_generation_active(self, task_name, active)` [L903-L905]
-  - `dragEnterEvent(self, event)` [L907-L914]
-  - `dragMoveEvent(self, event)` [L916-L923]
-  - `dragLeaveEvent(self, event)` [L925-L926]
-  - `dropEvent(self, event)` [L928-L936]
-  - `update_scrollbar_range(self)` [L938-L947]
-  - `update_scrollbar_from_canvas(self, offset)` [L949-L957]
-  - `update_canvas_from_scrollbar(self, val)` [L959-L969]
-  - `__getattr__(self, name)` [L971-L972]
+  - `dragEnterEvent(self, event)` [L220-L226]
+  - `dropEvent(self, event)` [L228-L235]
+  - `set_audio_filename(self, filename)` [L237-L240]
+  - `set_duration(self, duration)` [L242-L250]
+  - `set_position(self, position)` [L252-L255]
+  - `set_playing_state(self, is_playing)` [L257-L258]
+  - `ensure_position_visible(self, target_time)` [L260-L283]
+  - `set_transcript_selection_range(self, start, end)` [L285-L290]
+  - `set_stories(self, stories, selected_indices)` [L292-L296]
+  - `set_waveform_peaks(self, peaks, levels)` [L298-L309]
+  - `set_timeline_views(self, show_waveform, show_thumbnails)` [L311-L315]
+  - `set_video_thumbnails(self, thumbnails)` [L317-L324]
+  - `set_skip_seconds(self, seconds)` [L326-L327]
+  - `visible_duration(self)` [L329-L330]
+  - `clamp_scroll_offset(self)` [L332-L335]
+  - `time_to_x(self, time_val, width)` [L337-L340]
+  - `x_to_time(self, x_val, width)` [L342-L344]
+  - `snap_time(self, raw_time, exclude_story_idx, width, pixel_threshold)` [L346-L347]
+  - `find_edge_at_pos(self, pos_x, width)` [L349-L350]
+  - `find_fade_handle_at_pos(self, pos_x, pos_y, width)` [L354-L355]
+  - `find_story_at_time(self, time)` [L357-L358]
+  - `is_near_playhead(self, pos_x, width)` [L360-L361]
+  - `set_zoom(self, new_zoom, center_x, focus_time)` [L363-L389]
+  - `resizeEvent(self, event)` [L391-L393]
+  - `wheelEvent(self, event)` [L395-L445]
+  - `mousePressEvent(self, event)` [L447-L531]
+  - `mouseMoveEvent(self, event)` [L533-L659]
+  - `mouseReleaseEvent(self, event)` [L661-L731]
+  - `_show_timeline_context_menu(self, global_pos, pos_x)` [L733-L734]
+  - `_show_selection_context_menu(self, global_pos)` [L736-L737]
+  - `keyPressEvent(self, event)` [L739-L820]
+  - `set_thumbnail_position(self, position)` [L822-L826]
+  - `render_waveform_buffer(self, width, height)` [L828-L829]
+  - `paintEvent(self, event)` [L832-L840]
+- **class `TimelineWidget(QWidget)`** (lines 843–942):
+  - `__init__(self, parent, tokens)` [L846-L883]
+  - `set_is_video(self, is_video)` [L885-L887]
+  - `set_background_generation_active(self, task_name, active)` [L889-L891]
+  - `dragEnterEvent(self, event)` [L893-L897]
+  - `dropEvent(self, event)` [L899-L906]
+  - `update_scrollbar_range(self)` [L908-L917]
+  - `update_scrollbar_from_canvas(self, offset)` [L919-L927]
+  - `update_canvas_from_scrollbar(self, val)` [L929-L939]
+  - `__getattr__(self, name)` [L941-L942]
 
 ### `transcript_cleaner.py` (216 lines)
 *Radio & TV Segmenter — Transcript cleaning, loop collapsing, and hallucination scrubbing.*
@@ -2760,7 +2750,7 @@
   - `_on_bubble_export(self)` [L461-L466]
 
 ### `transcript_story.py` (851 lines)
-*Radio & TV Segmenter v3.9.61-beta — transcript story responsibilities.*
+*Radio & TV Segmenter v3.9.62-beta — transcript story responsibilities.*
 - **Public Exports (`__all__`)**: TranscriptStoryMixin, Story, SetStoriesCommand, SelectStoriesCommand, StoryBoundaryChangeCommand, StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin, ChangeSpeakerDialog, VoiceProfileMatchDialog, StoryFadesDialog, SpeakerManagerDialog, FADE_CURVE_TABLES, get_fade_curve_factors
 - **class `TranscriptStoryMixin(StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin)`** (lines 63–850):
   - `render_transcript(self)` [L64-L467]
@@ -3023,16 +3013,6 @@
   - `__init__(self, iterable, levels)` [L17-L19]
 - **Functions**:
   - `build_waveform_pyramid(peaks)` [L22-L55] — *Generate a multi-resolution downsampling pyramid for peaks using vectorized operations.*
-
-### `win32_dnd.py` (152 lines)
-*Win32 Native Drag-and-Drop and UIPI Elevation Bridge.*
-- **class `Win32DropNativeEventFilter(QAbstractNativeEventFilter)`** (lines 26–96):
-  *Native event filter intercepting Win32 WM_DROPFILES messages.*
-  - `__init__(self, target_window)` [L33-L37]
-  - `nativeEventFilter(self, event_type, message)` [L39-L96]
-- **Functions**:
-  - `init_ole_sta()` [L99-L114] — *Ensure early Single-Threaded Apartment (STA) COM initialization on Windows.*
-  - `setup_win32_window_drag_drop(window)` [L117-L152] — *Configure Win32 message filters and native drop handler for the main window.*
 
 ### `worker_asr_engines.py` (839 lines)
 *worker_asr_engines.py - Faster-Whisper, CTranslate2 & Sherpa-ONNX ASR Engines.*
