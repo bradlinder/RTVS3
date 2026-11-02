@@ -1,4 +1,4 @@
-"""Radio & TV Segmenter — v3.9.60-beta
+"""Radio & TV Segmenter — v3.9.61-beta
 
 This is the thin application composition root. UI/processing responsibilities
 are implemented in focused mixins so future changes can target smaller files
@@ -558,6 +558,11 @@ class MainWindow(
 def main():
     if sys.platform == "win32":
         try:
+            from win32_dnd import init_ole_sta
+            init_ole_sta()
+        except Exception:
+            pass
+        try:
             import ctypes
             app_id = f"radiotvsegmenter.radiotvstorysegmenter.app.{PROJECT_VERSION}"
             ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(app_id)
@@ -607,6 +612,13 @@ def main():
     window = MainWindow()
     if not icon.isNull():
         window.setWindowIcon(icon)
+
+    if sys.platform == "win32":
+        try:
+            from win32_dnd import setup_win32_window_drag_drop
+            window._native_drop_filter = setup_win32_window_drag_drop(window)
+        except Exception:
+            pass
 
     ipc_server = QLocalServer()
     window.ipc_server = ipc_server

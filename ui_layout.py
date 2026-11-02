@@ -59,7 +59,6 @@ class UiLayoutMixin(UiMenusMixin, UiDialogLaunchersMixin):
     def build_ui(self):
         """Build and assemble all central widgets, layouts, and panels."""
         central_widget = QWidget(self)
-        central_widget.setAcceptDrops(True)
         self.setCentralWidget(central_widget)
         main_layout = QVBoxLayout(central_widget)
         main_layout.setContentsMargins(8, 8, 8, 8)

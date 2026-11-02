@@ -1,13 +1,13 @@
 # Repository Symbol Index & API Map
 
-> Generated: 2026-11-02 11:09:28 | Total Files: 155
+> Generated: 2026-11-02 15:28:27 | Total Files: 156
 > Use `python scripts/generate_symbol_index.py --outline <file>` for exact line numbers.
 
 ## Modules Overview
 
 | Module | Lines | Summary | Primary Classes / Functions |
 | :--- | :---: | :--- | :--- |
-| `RadioTVSegmenter.py` | 658 | Radio & TV Segmenter — v3.9.60-beta | `MainWindow`, `main()` |
+| `RadioTVSegmenter.py` | 670 | Radio & TV Segmenter — v3.9.61-beta | `MainWindow`, `main()` |
 | `audio_normalization.py` | 541 | Radio & TV Story Segmenter — Audio Loudness Probing & Nor... | `LoudnessReport`, `AudioLoudnessProbeWorker`, `parse_ebur128_summary()`, `probe_media_duration_seconds()` *(+3 more)* |
 | `background_workers.py` | 1015 | Radio & TV Story Segmenter — Background Worker Threads & ... | `StoryAutoDetectWorker`, `WaveformWorker`, `VideoThumbnailWorker`, `get_waveform_peak_cache_path()` *(+6 more)* |
 | `backup_manager.py` | 622 | Unified State Serialization, Local, and Google Drive Clou... | `compute_data_checksum()`, `serialize_preferences()`, `serialize_keyboard_shortcuts()`, `serialize_glossary()` *(+7 more)* |
@@ -17,7 +17,7 @@
 | `benchmark_engine.py` | 903 | benchmark_engine.py - Core High-Precision Performance Ben... | `BenchmarkEngine` |
 | `benchmark_models.py` | 457 | benchmark_models.py - Benchmark Data Models, Audio Genera... | `BenchmarkMetric`, `ProcessingEstimates`, `get_app_data_dir()`, `get_candidate_sample_audio_paths()` *(+9 more)* |
 | `bootstrap.py` | 385 | Install-safe startup environment configuration for Radio ... | `NullWriter`, `init_null_streams_and_hf_env()`, `patch_av_open()`, `app_data_dir()` *(+7 more)* |
-| `build_installer.py` | 1079 | Build the installable Radio & TV Segmenter application wi... | `exe_name()`, `find_tool()`, `check_cpu_only_torch()`, `torch_windows_binary_flags()` *(+8 more)* |
+| `build_installer.py` | 1080 | Build the installable Radio & TV Segmenter application wi... | `exe_name()`, `find_tool()`, `check_cpu_only_torch()`, `torch_windows_binary_flags()` *(+8 more)* |
 | `bump_version.py` | 513 | bump_version.py — Automated Version Synchronization Engine | `normalize_version()`, `get_current_version()`, `compute_bump()`, `detect_modified_plugins()` *(+3 more)* |
 | `cache_manager.py` | 685 | Radio & TV Segmenter — Cache management, disk usage scann... | `ClearCacheDialog`, `register_active_thumbnail_dir()`, `unregister_active_thumbnail_dir()`, `get_active_thumbnail_dirs()` *(+3 more)* |
 | `comment_widgets.py` | 350 | comment_widgets.py - Range-Anchored Comments Panel & Comm... | `CommentEditorDialog`, `CommentCardWidget`, `CommentsPanel` |
@@ -141,13 +141,13 @@
 | `transcript_navigation_mixin.py` | 299 | transcript_navigation_mixin.py - Timestamp discovery, car... | `TranscriptNavigationMixin` |
 | `transcript_playback_highlight_mixin.py` | 276 | Radio & TV Story Segmenter — Interactive Transcript Playb... | `TranscriptPlaybackHighlightMixin` |
 | `transcript_selection_mixin.py` | 466 | transcript_selection_mixin.py - Multi-selection, timeline... | `TranscriptSelectionMixin` |
-| `transcript_story.py` | 851 | Radio & TV Segmenter v3.9.60-beta — transcript story resp... | `TranscriptStoryMixin` |
+| `transcript_story.py` | 851 | Radio & TV Segmenter v3.9.61-beta — transcript story resp... | `TranscriptStoryMixin` |
 | `transcript_styles.py` | 104 | transcript_styles.py - Transcript view stylesheets and da... | `transcript_text_view_stylesheet()`, `clean_dark_mode_clipboard_html()` |
 | `transcript_timeline_sync_mixin.py` | 634 | Radio & TV Story Segmenter — Transcript Timeline & Playba... | `TranscriptTimelineSyncMixin` |
 | `transcription_processing.py` | 579 | Transcription background process management for Radio & T... | `TranscriptionProcessingMixin` |
 | `translation.py` | 923 | Radio & TV Segmenter — Local Translation Mixin. | `TranslationEnvSetupWorker`, `TranslationMixin` |
 | `ui_dialog_launchers.py` | 366 | Dialog launchers and external modal helpers for Radio & T... | `UiDialogLaunchersMixin` |
-| `ui_layout.py` | 1106 | Radio & TV Segmenter — UI Layout & Menu Construction Mixin. | `UiLayoutMixin` |
+| `ui_layout.py` | 1105 | Radio & TV Segmenter — UI Layout & Menu Construction Mixin. | `UiLayoutMixin` |
 | `ui_menus.py` | 814 | Main application menu bar and action assembly for Radio &... | `PersistentMenu`, `UiMenusMixin` |
 | `updater.py` | 1481 | Update manager and GitHub release installer for Radio & T... | `CheckUpdateWorker`, `DownloadUpdateWorker`, `CheckUpdateDialog`, `UpdaterMixin` *(+9 more)* |
 | `utils/__init__.py` | 36 | Utility modules for Radio & TV Story Segmenter. | - |
@@ -156,6 +156,7 @@
 | `voice_profile_dialog.py` | 1006 | voice_profile_dialog.py — Dialog for finding and reassign... | `VoiceProfileMatchDialog` |
 | `voice_profile_ops_mixin.py` | 585 | Radio & TV Story Segmenter — Voice Profile Matching & Emb... | `VoiceProfileOpsMixin` |
 | `waveform_envelope.py` | 55 | Waveform envelope data structures, downsampling pyramids,... | `WaveformEnvelope`, `build_waveform_pyramid()` |
+| `win32_dnd.py` | 152 | Win32 Native Drag-and-Drop and UIPI Elevation Bridge. | `Win32DropNativeEventFilter`, `init_ole_sta()`, `setup_win32_window_drag_drop()` |
 | `worker_asr_engines.py` | 839 | worker_asr_engines.py - Faster-Whisper, CTranslate2 & She... | `set_emit_callback()`, `get_optimal_transcription_threads()`, `get_app_data_dir_pure()`, `get_models_storage_dir_pure()` *(+4 more)* |
 | `worker_clustering.py` | 448 | worker_clustering.py - Acoustic clustering, VAD pause bri... | `normalize_audio_for_diarization()`, `configure_optimal_pytorch_threads()`, `fast_cluster_ahc()`, `apply_clustering_patches()` *(+2 more)* |
 | `worker_diarization_clustering.py` | 297 | worker_diarization_clustering.py - Speaker Clustering, Ce... | `fast_cluster_ahc()`, `apply_clustering_patches()`, `assign_short_segments_to_centroids()` |
@@ -165,8 +166,8 @@
 
 ## Detailed Symbol Catalog
 
-### `RadioTVSegmenter.py` (658 lines)
-*Radio & TV Segmenter — v3.9.60-beta*
+### `RadioTVSegmenter.py` (670 lines)
+*Radio & TV Segmenter — v3.9.61-beta*
 - **class `MainWindow(ModelManagementMixin, MediaBatchMixin, PlaybackPreferencesMixin, UiLayoutMixin, ProcessingMixin, TranslationMixin, TranscriptStoryMixin, ProjectExportMixin, GpuAccelerationMixin, QMainWindow)`** (lines 160–555):
   *Main application window for Radio & TV Segmenter.*
   - `__init__(self)` [L178-L350]
@@ -179,7 +180,7 @@
   - `dragMoveEvent(self, event)` [L532-L539]
   - `dropEvent(self, event)` [L541-L555]
 - **Functions**:
-  - `main()` [L558-L654]
+  - `main()` [L558-L666]
 
 ### `audio_normalization.py` (541 lines)
 *Radio & TV Story Segmenter — Audio Loudness Probing & Normalization Engine.*
@@ -335,7 +336,7 @@
   - `ensure_keyring_runtime()` [L351-L377] — *Ensure keyring (and pywin32-ctypes on Windows) is installed for secure credential storage.*
   - `check_and_install_core()` [L379-L382] — *Backward-compatible startup dependency check.*
 
-### `build_installer.py` (1079 lines)
+### `build_installer.py` (1080 lines)
 *Build the installable Radio & TV Segmenter application with PyInstaller.*
 - **Functions**:
   - `exe_name(base)` [L105-L106]
@@ -349,7 +350,7 @@
   - `compile_windows_installer(project_version)` [L508-L543] — *Compile the Windows Inno Setup installer executable if ISCC is installed.*
   - `parse_build_args()` [L546-L621]
   - `package_plugins(app_root, include_wp, include_yt, include_tr)` [L624-L692] — *Package plugins into standalone .zip release artifacts in dist/plugins/*
-  - `main()` [L695-L1075]
+  - `main()` [L695-L1076]
 
 ### `bump_version.py` (513 lines)
 *bump_version.py — Automated Version Synchronization Engine*
@@ -2759,7 +2760,7 @@
   - `_on_bubble_export(self)` [L461-L466]
 
 ### `transcript_story.py` (851 lines)
-*Radio & TV Segmenter v3.9.60-beta — transcript story responsibilities.*
+*Radio & TV Segmenter v3.9.61-beta — transcript story responsibilities.*
 - **Public Exports (`__all__`)**: TranscriptStoryMixin, Story, SetStoriesCommand, SelectStoriesCommand, StoryBoundaryChangeCommand, StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin, ChangeSpeakerDialog, VoiceProfileMatchDialog, StoryFadesDialog, SpeakerManagerDialog, FADE_CURVE_TABLES, get_fade_curve_factors
 - **class `TranscriptStoryMixin(StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin)`** (lines 63–850):
   - `render_transcript(self)` [L64-L467]
@@ -2876,27 +2877,27 @@
   - `open_wordpress_publish_dialog(self, story)` [L342-L358] — *Open the WordPress direct publish dialog from the WordPress plugin.*
   - `open_loudness_normalization_dialog(self)` [L360-L364] — *Open the Audio Loudness Normalization & Telemetry modal dialog.*
 
-### `ui_layout.py` (1106 lines)
+### `ui_layout.py` (1105 lines)
 *Radio & TV Segmenter — UI Layout & Menu Construction Mixin.*
-- **class `UiLayoutMixin(UiMenusMixin, UiDialogLaunchersMixin)`** (lines 57–1102):
+- **class `UiLayoutMixin(UiMenusMixin, UiDialogLaunchersMixin)`** (lines 57–1101):
   *Mixin class providing UI construction, menu assembly, and UI event binding.*
-  - `build_ui(self)` [L59-L755] — *Build and assemble all central widgets, layouts, and panels.*
-  - `_handle_dropped_media_or_project(self, path_or_paths)` [L757-L779] — *Unified ingestion handler for dropped media files and project archives.*
-  - `filter_transcript_search(self, target)` [L781-L798] — *Highlight and focus next occurrence of search term in transcript text view.*
-  - `toggle_transcript_editing_mode(self, *args, **kwargs)` [L800-L822] — *Toggle between Viewing Mode (navigation/click-to-seek) and Editing Mode (text editing).*
-  - `_on_transcript_editing_mode_changed(self, is_editing)` [L824-L859] — *Respond to changes in transcript edit vs view mode.*
-  - `_sync_format_toolbar_buttons(self)` [L861-L881]
-  - `_on_toolbar_split_speaker(self)` [L883-L890]
-  - `_apply_transcript_font_scale(self, scale, persist)` [L892-L916] — *Apply a transcript-only font scale and optionally persist it.*
-  - `_on_font_size_combo_changed(self, index)` [L918-L922]
-  - `adjust_transcript_font_size(self, direction)` [L924-L926] — *Increase or decrease transcript font size by one 5% step.*
-  - `reset_transcript_font_size(self)` [L928-L930] — *Restore the default transcript font size.*
-  - `update_story_list_height(self)` [L932-L947] — *Size the story list to fit the current number of stories, leaving space for metadata and export fields.*
-  - `auto_generate_selected_story_excerpt(self)` [L949-L994] — *Auto-generate an excerpt from the story transcript text for the currently selected story.*
-  - `_on_story_excerpt_text_changed(self)` [L996-L1013] — *Synchronize excerpt edits from the inline editor into story metadata.*
-  - `toggle_maximize_stories_panel(self)` [L1015-L1068] — *Toggle maximize/restore of the stories panel across the full application window.*
-  - `setup_plugin_story_extensions(self)` [L1070-L1092] — *Populate plugin-provided widgets in the story panel.*
-  - `notify_story_selection_to_plugins(self, selected_story)` [L1094-L1102] — *Notify all enabled plugins when the active story selection changes.*
+  - `build_ui(self)` [L59-L754] — *Build and assemble all central widgets, layouts, and panels.*
+  - `_handle_dropped_media_or_project(self, path_or_paths)` [L756-L778] — *Unified ingestion handler for dropped media files and project archives.*
+  - `filter_transcript_search(self, target)` [L780-L797] — *Highlight and focus next occurrence of search term in transcript text view.*
+  - `toggle_transcript_editing_mode(self, *args, **kwargs)` [L799-L821] — *Toggle between Viewing Mode (navigation/click-to-seek) and Editing Mode (text editing).*
+  - `_on_transcript_editing_mode_changed(self, is_editing)` [L823-L858] — *Respond to changes in transcript edit vs view mode.*
+  - `_sync_format_toolbar_buttons(self)` [L860-L880]
+  - `_on_toolbar_split_speaker(self)` [L882-L889]
+  - `_apply_transcript_font_scale(self, scale, persist)` [L891-L915] — *Apply a transcript-only font scale and optionally persist it.*
+  - `_on_font_size_combo_changed(self, index)` [L917-L921]
+  - `adjust_transcript_font_size(self, direction)` [L923-L925] — *Increase or decrease transcript font size by one 5% step.*
+  - `reset_transcript_font_size(self)` [L927-L929] — *Restore the default transcript font size.*
+  - `update_story_list_height(self)` [L931-L946] — *Size the story list to fit the current number of stories, leaving space for metadata and export fields.*
+  - `auto_generate_selected_story_excerpt(self)` [L948-L993] — *Auto-generate an excerpt from the story transcript text for the currently selected story.*
+  - `_on_story_excerpt_text_changed(self)` [L995-L1012] — *Synchronize excerpt edits from the inline editor into story metadata.*
+  - `toggle_maximize_stories_panel(self)` [L1014-L1067] — *Toggle maximize/restore of the stories panel across the full application window.*
+  - `setup_plugin_story_extensions(self)` [L1069-L1091] — *Populate plugin-provided widgets in the story panel.*
+  - `notify_story_selection_to_plugins(self, selected_story)` [L1093-L1101] — *Notify all enabled plugins when the active story selection changes.*
 
 ### `ui_menus.py` (814 lines)
 *Main application menu bar and action assembly for Radio & TV Story Segmenter.*
@@ -3022,6 +3023,16 @@
   - `__init__(self, iterable, levels)` [L17-L19]
 - **Functions**:
   - `build_waveform_pyramid(peaks)` [L22-L55] — *Generate a multi-resolution downsampling pyramid for peaks using vectorized operations.*
+
+### `win32_dnd.py` (152 lines)
+*Win32 Native Drag-and-Drop and UIPI Elevation Bridge.*
+- **class `Win32DropNativeEventFilter(QAbstractNativeEventFilter)`** (lines 26–96):
+  *Native event filter intercepting Win32 WM_DROPFILES messages.*
+  - `__init__(self, target_window)` [L33-L37]
+  - `nativeEventFilter(self, event_type, message)` [L39-L96]
+- **Functions**:
+  - `init_ole_sta()` [L99-L114] — *Ensure early Single-Threaded Apartment (STA) COM initialization on Windows.*
+  - `setup_win32_window_drag_drop(window)` [L117-L152] — *Configure Win32 message filters and native drop handler for the main window.*
 
 ### `worker_asr_engines.py` (839 lines)
 *worker_asr_engines.py - Faster-Whisper, CTranslate2 & Sherpa-ONNX ASR Engines.*

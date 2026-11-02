@@ -94,7 +94,7 @@ TABLE OF CONTENTS & STATUS OVERVIEW
    [ ] 5.4 Burned-in Subtitles & Platform Safe Zone Enforcement (`plugins/social_reel/reel_subtitles.py`)
    [ ] 5.5 Unified Export Integration & Social Reel Diagnostic Tests (`export/dialog.py`, `test_runner.py`)
 
-6. Current Release: Concurrency, Batch Reliability & Export Interchange Fidelity (`transcription_processing.py`, `diarization_processing.py`, `media_batch.py`, `export/timeline.py`, `export_story_pipeline.py`) [x] [COMPLETED in v3.9.60-beta]
+6. Current Release: Concurrency, Batch Reliability & Export Interchange Fidelity (`transcription_processing.py`, `diarization_processing.py`, `media_batch.py`, `export/timeline.py`, `export_story_pipeline.py`) [x] [COMPLETED in v3.9.61-beta]
    [x] 6.1 Stale Worker State Overwrite Guard: Check if active media changed before assigning transcription/diarization results. [P1-03]
    [x] 6.2 Non-Modal Batch Error Handling: Log errors and continue processing remaining queue items instead of modal `QMessageBox` popups. [P1-04]
    [x] 6.3 Worker Lifecycle & Re-entrancy Guards: Fix thumbnail QThread teardown and disable Translate action during processing. [P3-02, P3-04]
@@ -147,16 +147,18 @@ DETAILED MILESTONE SPECIFICATIONS
 - Target Release: v4.3.0 (Optional / Planned)
 - Technical References: Subsystem architecture, plugin manifest, and FFmpeg filtergraph pipeline specifications are detailed in `ARCHITECTURE.md` (Section 6).
 
-6. CURRENT RELEASE: CONCURRENCY, BATCH RELIABILITY & EXPORT INTERCHANGE FIDELITY:
-- Purpose: Eliminate state corruption from stale worker callbacks, prevent queue aborts during unattended batch processing, guard worker lifetimes, and harmonize DAW export timecode calculations.
-- Target Release: v3.9.50-beta (Current Release)
-- Technical References & Exhaustive Audit Details:
-  * Stale State & Batch Non-Modal Error Handlers: See `docs/audit/audit_phase1_findings.md` (Items P1-03 and P1-04) for full call stacks and reproduction scenarios in `transcription_processing.py`, `diarization_processing.py`, and `media_batch.py`.
-  * Worker Lifecycle & Re-Entrancy Guards: See `docs/audit/audit_phase3_findings.md` (Items P3-02, P3-03, P3-04) for QThread tracking and `translate_button` action binding in `media_batch.py`, `project_export.py`, and `processing.py`.
-  * DAW Matrix & Samplitude EDL Timecode Contiguity: See `docs/audit/audit_phase6_findings.md` (Items P6-04, P6-05) for parameter passing in `export/dialog.py` and sequential `dst_cursor` timecode math in `export/timeline.py`.
-  * Release Logs: Documented in `CHANGELOG.md` under `## v3.9.50-beta`.
+6. CURRENT RELEASE: INSTALLED WINDOWS DRAG-AND-DROP & UIPI ELEVATION BRIDGE:
+- Purpose: Resolve drag-and-drop failure in installed Windows executables by bridging Win32 WM_DROPFILES native event filtering, UIPI whitelisting, early STA COM initialization, and child widget event propagation.
+- Target Release: v3.9.61-beta (Current Release)
+- Technical References & Implementation Details:
+  * Dual-Layer Win32 Native Drag-and-Drop Bridge: Implemented `Win32DropNativeEventFilter` in `win32_dnd.py` intercepting `WM_DROPFILES` (0x0233) via `DragQueryFileW`.
+  * UIPI Window Message Whitelisting: Added `ChangeWindowMessageFilterEx` for `WM_DROPFILES`, `WM_COPYDATA`, and `WM_COPYGLOBALDATA` on the native HWND paired with `DragAcceptFiles`.
+  * Early STA COM Mode: Added `init_ole_sta()` at Windows boot before native ML C-extensions can set MTA.
+  * Child Widget Event Suppression Fix: Removed `central_widget.setAcceptDrops(True)` in `ui_layout.py` restoring Qt drop event bubbling to `TimelineCanvas` and `MainWindow`.
+  * Installer Working Directory: Configured `WorkingDir: "{app}"` in `installer/Windows/RadioTVStorySegmenter.iss`.
+  * Release Logs: Documented in `CHANGELOG.md` under `## v3.9.61-beta`.
 
-7. PREVIOUS RELEASE: THREAD-AFFINITY & CROSS-THREAD QT WARNING ELIMINATION:
-- Purpose: Eliminated QObject cross-thread parenting warnings and timer failures by decoupling native widget instantiation from background worker threads.
-- Target Release: v3.9.49-beta (Previous Release)
-- Technical References: Full implementation details and test bench verification logs are documented in `CHANGELOG.md` under `## v3.9.49-beta`.
+7. PREVIOUS RELEASE: EMPTY PROJECT CLOSE & SAVE PROMPT BYPASS:
+- Purpose: Bypassed unsaved changes confirmation prompts when the project workspace is completely blank and no media is loaded.
+- Target Release: v3.9.60-beta (Previous Release)
+- Technical References: Full implementation details and test bench verification logs are documented in `CHANGELOG.md` under `## v3.9.60-beta`.

@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-02 11:09:28",
-  "total_files": 155,
+  "generated_at": "2026-11-02 15:28:27",
+  "total_files": 156,
   "files": {
     "RadioTVSegmenter.py": {
       "path": "RadioTVSegmenter.py",
-      "lines": 658,
-      "summary": "Radio & TV Segmenter \u2014 v3.9.60-beta",
+      "lines": 670,
+      "summary": "Radio & TV Segmenter \u2014 v3.9.61-beta",
       "exports": null,
       "classes": [
         {
@@ -97,7 +97,7 @@
           "name": "main",
           "sig": "main()",
           "start_line": 558,
-          "end_line": 654,
+          "end_line": 666,
           "doc": ""
         }
       ]
@@ -1038,7 +1038,7 @@
     },
     "build_installer.py": {
       "path": "build_installer.py",
-      "lines": 1079,
+      "lines": 1080,
       "summary": "Build the installable Radio & TV Segmenter application with PyInstaller.",
       "exports": null,
       "classes": [],
@@ -1124,7 +1124,7 @@
           "name": "main",
           "sig": "main()",
           "start_line": 695,
-          "end_line": 1075,
+          "end_line": 1076,
           "doc": ""
         }
       ]
@@ -15914,7 +15914,7 @@
     "transcript_story.py": {
       "path": "transcript_story.py",
       "lines": 851,
-      "summary": "Radio & TV Segmenter v3.9.60-beta \u2014 transcript story responsibilities.",
+      "summary": "Radio & TV Segmenter v3.9.61-beta \u2014 transcript story responsibilities.",
       "exports": [
         "TranscriptStoryMixin",
         "Story",
@@ -16652,7 +16652,7 @@
     },
     "ui_layout.py": {
       "path": "ui_layout.py",
-      "lines": 1106,
+      "lines": 1105,
       "summary": "Radio & TV Segmenter \u2014 UI Layout & Menu Construction Mixin.",
       "exports": null,
       "classes": [
@@ -16663,126 +16663,126 @@
             "UiDialogLaunchersMixin"
           ],
           "start_line": 57,
-          "end_line": 1102,
+          "end_line": 1101,
           "doc": "Mixin class providing UI construction, menu assembly, and UI event binding.",
           "methods": [
             {
               "name": "build_ui",
               "sig": "build_ui(self)",
               "start_line": 59,
-              "end_line": 755,
+              "end_line": 754,
               "doc": "Build and assemble all central widgets, layouts, and panels."
             },
             {
               "name": "_handle_dropped_media_or_project",
               "sig": "_handle_dropped_media_or_project(self, path_or_paths)",
-              "start_line": 757,
-              "end_line": 779,
+              "start_line": 756,
+              "end_line": 778,
               "doc": "Unified ingestion handler for dropped media files and project archives."
             },
             {
               "name": "filter_transcript_search",
               "sig": "filter_transcript_search(self, target)",
-              "start_line": 781,
-              "end_line": 798,
+              "start_line": 780,
+              "end_line": 797,
               "doc": "Highlight and focus next occurrence of search term in transcript text view."
             },
             {
               "name": "toggle_transcript_editing_mode",
               "sig": "toggle_transcript_editing_mode(self, *args, **kwargs)",
-              "start_line": 800,
-              "end_line": 822,
+              "start_line": 799,
+              "end_line": 821,
               "doc": "Toggle between Viewing Mode (navigation/click-to-seek) and Editing Mode (text editing)."
             },
             {
               "name": "_on_transcript_editing_mode_changed",
               "sig": "_on_transcript_editing_mode_changed(self, is_editing)",
-              "start_line": 824,
-              "end_line": 859,
+              "start_line": 823,
+              "end_line": 858,
               "doc": "Respond to changes in transcript edit vs view mode."
             },
             {
               "name": "_sync_format_toolbar_buttons",
               "sig": "_sync_format_toolbar_buttons(self)",
-              "start_line": 861,
-              "end_line": 881,
+              "start_line": 860,
+              "end_line": 880,
               "doc": ""
             },
             {
               "name": "_on_toolbar_split_speaker",
               "sig": "_on_toolbar_split_speaker(self)",
-              "start_line": 883,
-              "end_line": 890,
+              "start_line": 882,
+              "end_line": 889,
               "doc": ""
             },
             {
               "name": "_apply_transcript_font_scale",
               "sig": "_apply_transcript_font_scale(self, scale, persist)",
-              "start_line": 892,
-              "end_line": 916,
+              "start_line": 891,
+              "end_line": 915,
               "doc": "Apply a transcript-only font scale and optionally persist it."
             },
             {
               "name": "_on_font_size_combo_changed",
               "sig": "_on_font_size_combo_changed(self, index)",
-              "start_line": 918,
-              "end_line": 922,
+              "start_line": 917,
+              "end_line": 921,
               "doc": ""
             },
             {
               "name": "adjust_transcript_font_size",
               "sig": "adjust_transcript_font_size(self, direction)",
-              "start_line": 924,
-              "end_line": 926,
+              "start_line": 923,
+              "end_line": 925,
               "doc": "Increase or decrease transcript font size by one 5% step."
             },
             {
               "name": "reset_transcript_font_size",
               "sig": "reset_transcript_font_size(self)",
-              "start_line": 928,
-              "end_line": 930,
+              "start_line": 927,
+              "end_line": 929,
               "doc": "Restore the default transcript font size."
             },
             {
               "name": "update_story_list_height",
               "sig": "update_story_list_height(self)",
-              "start_line": 932,
-              "end_line": 947,
+              "start_line": 931,
+              "end_line": 946,
               "doc": "Size the story list to fit the current number of stories, leaving space for metadata and export fields."
             },
             {
               "name": "auto_generate_selected_story_excerpt",
               "sig": "auto_generate_selected_story_excerpt(self)",
-              "start_line": 949,
-              "end_line": 994,
+              "start_line": 948,
+              "end_line": 993,
               "doc": "Auto-generate an excerpt from the story transcript text for the currently selected story."
             },
             {
               "name": "_on_story_excerpt_text_changed",
               "sig": "_on_story_excerpt_text_changed(self)",
-              "start_line": 996,
-              "end_line": 1013,
+              "start_line": 995,
+              "end_line": 1012,
               "doc": "Synchronize excerpt edits from the inline editor into story metadata."
             },
             {
               "name": "toggle_maximize_stories_panel",
               "sig": "toggle_maximize_stories_panel(self)",
-              "start_line": 1015,
-              "end_line": 1068,
+              "start_line": 1014,
+              "end_line": 1067,
               "doc": "Toggle maximize/restore of the stories panel across the full application window."
             },
             {
               "name": "setup_plugin_story_extensions",
               "sig": "setup_plugin_story_extensions(self)",
-              "start_line": 1070,
-              "end_line": 1092,
+              "start_line": 1069,
+              "end_line": 1091,
               "doc": "Populate plugin-provided widgets in the story panel."
             },
             {
               "name": "notify_story_selection_to_plugins",
               "sig": "notify_story_selection_to_plugins(self, selected_story)",
-              "start_line": 1094,
-              "end_line": 1102,
+              "start_line": 1093,
+              "end_line": 1101,
               "doc": "Notify all enabled plugins when the active story selection changes."
             }
           ]
@@ -17551,6 +17551,55 @@
           "start_line": 22,
           "end_line": 55,
           "doc": "Generate a multi-resolution downsampling pyramid for peaks using vectorized operations."
+        }
+      ]
+    },
+    "win32_dnd.py": {
+      "path": "win32_dnd.py",
+      "lines": 152,
+      "summary": "Win32 Native Drag-and-Drop and UIPI Elevation Bridge.",
+      "exports": null,
+      "classes": [
+        {
+          "name": "Win32DropNativeEventFilter",
+          "bases": [
+            "QAbstractNativeEventFilter"
+          ],
+          "start_line": 26,
+          "end_line": 96,
+          "doc": "Native event filter intercepting Win32 WM_DROPFILES messages.",
+          "methods": [
+            {
+              "name": "__init__",
+              "sig": "__init__(self, target_window)",
+              "start_line": 33,
+              "end_line": 37,
+              "doc": ""
+            },
+            {
+              "name": "nativeEventFilter",
+              "sig": "nativeEventFilter(self, event_type, message)",
+              "start_line": 39,
+              "end_line": 96,
+              "doc": ""
+            }
+          ]
+        }
+      ],
+      "functions": [
+        {
+          "name": "init_ole_sta",
+          "sig": "init_ole_sta()",
+          "start_line": 99,
+          "end_line": 114,
+          "doc": "Ensure early Single-Threaded Apartment (STA) COM initialization on Windows."
+        },
+        {
+          "name": "setup_win32_window_drag_drop",
+          "sig": "setup_win32_window_drag_drop(window)",
+          "start_line": 117,
+          "end_line": 152,
+          "doc": "Configure Win32 message filters and native drop handler for the main window."
         }
       ]
     },

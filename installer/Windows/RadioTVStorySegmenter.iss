@@ -1,7 +1,7 @@
 #define MyAppName "Radio & TV Segmenter"
 
 #ifndef MyAppVersion
-#define MyAppVersion "3.9.60-beta"
+#define MyAppVersion "3.9.61-beta"
 #endif
 
 
@@ -50,8 +50,8 @@ Source: "..\..\dist\RadioTVSegmenter\*"; DestDir: "{app}"; Flags: recursesubdirs
 Source: "..\..\NOTICES.txt"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
-Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\resources\icon.ico"
-Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\resources\icon.ico"
+Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"; IconFilename: "{app}\resources\icon.ico"
+Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"; IconFilename: "{app}\resources\icon.ico"
 Name: "{group}\Third-Party Notices & Licenses"; Filename: "{app}\NOTICES.txt"
 
 [Registry]
