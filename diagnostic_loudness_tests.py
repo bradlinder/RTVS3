@@ -361,6 +361,15 @@ class DiagnosticLoudnessTestsMixin:
                     float_btn.setChecked(True)
                     assert pref_dlg._stay_on_top is True
 
+                # Verify preferences real-time category search filter
+                assert hasattr(pref_dlg, "search_input") and hasattr(pref_dlg, "cat_list")
+                pref_dlg.search_input.setText("whisper")
+                vis_cats = [pref_dlg.cat_list.item(i).text() for i in range(pref_dlg.cat_list.count()) if not pref_dlg.cat_list.item(i).isHidden()]
+                assert any("AI Models" in c for c in vis_cats), f"Expected AI Models in search results: {vis_cats}"
+                pref_dlg.search_input.clear()
+                vis_all = [pref_dlg.cat_list.item(i).text() for i in range(pref_dlg.cat_list.count()) if not pref_dlg.cat_list.item(i).isHidden()]
+                assert len(vis_all) == pref_dlg.cat_list.count()
+
                 pref_dlg.close()
                 assert pref_app._active_preferences_dialog is None
 

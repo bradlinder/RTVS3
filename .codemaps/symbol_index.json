@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-02 10:48:54",
+  "generated_at": "2026-11-02 10:59:09",
   "total_files": 155,
   "files": {
     "RadioTVSegmenter.py": {
       "path": "RadioTVSegmenter.py",
       "lines": 658,
-      "summary": "Radio & TV Segmenter \u2014 v3.9.58-beta",
+      "summary": "Radio & TV Segmenter \u2014 v3.9.59-beta",
       "exports": null,
       "classes": [
         {
@@ -2269,7 +2269,7 @@
     },
     "diagnostic_loudness_tests.py": {
       "path": "diagnostic_loudness_tests.py",
-      "lines": 382,
+      "lines": 391,
       "summary": "Radio & TV Story Segmenter \u2014 Diagnostic Loudness Normalization & Auto-Boost Test Suite.",
       "exports": null,
       "classes": [
@@ -2277,7 +2277,7 @@
           "name": "DiagnosticLoudnessTestsMixin",
           "bases": [],
           "start_line": 16,
-          "end_line": 381,
+          "end_line": 390,
           "doc": "Diagnostic tests for Smart Hybrid Audio Loudness Probing & Normalization.",
           "methods": [
             {
@@ -2298,7 +2298,7 @@
               "name": "_test_audio_loudness_preferences_and_manual_normalization_dialog",
               "sig": "_test_audio_loudness_preferences_and_manual_normalization_dialog(self, item)",
               "start_line": 185,
-              "end_line": 381,
+              "end_line": 390,
               "doc": "Validates Preferences persistence and manual normalization dialog telemetry."
             }
           ]
@@ -8365,7 +8365,7 @@
     },
     "preferences_dialog.py": {
       "path": "preferences_dialog.py",
-      "lines": 733,
+      "lines": 857,
       "summary": "Radio & TV Story Segmenter \u2014 Preferences Modal Dialog.",
       "exports": null,
       "classes": [
@@ -8374,15 +8374,15 @@
           "bases": [
             "PreferencesResetMixin"
           ],
-          "start_line": 30,
-          "end_line": 733,
+          "start_line": 31,
+          "end_line": 857,
           "doc": "Provides the main open_preferences_dialog method and settings persistence.",
           "methods": [
             {
               "name": "open_preferences_dialog",
               "sig": "open_preferences_dialog(self, initial_category, modal)",
-              "start_line": 33,
-              "end_line": 733,
+              "start_line": 34,
+              "end_line": 857,
               "doc": "Open the multi-category Preferences dialog as a non-modal floating inspector."
             }
           ]
@@ -15907,7 +15907,7 @@
     "transcript_story.py": {
       "path": "transcript_story.py",
       "lines": 851,
-      "summary": "Radio & TV Segmenter v3.9.58-beta \u2014 transcript story responsibilities.",
+      "summary": "Radio & TV Segmenter v3.9.59-beta \u2014 transcript story responsibilities.",
       "exports": [
         "TranscriptStoryMixin",
         "Story",

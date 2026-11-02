@@ -9,7 +9,8 @@ from typing import Optional
 from PySide6.QtCore import Qt, QSettings
 from PySide6.QtWidgets import (
     QDialog, QVBoxLayout, QHBoxLayout, QListWidget, QListWidgetItem,
-    QStackedWidget, QPushButton, QDialogButtonBox, QMessageBox, QLabel
+    QStackedWidget, QPushButton, QDialogButtonBox, QMessageBox, QLabel,
+    QLineEdit, QWidget, QComboBox, QTableWidget
 )
 
 from prs_shared import APP_DISPLAY_NAME, DEFAULT_GITHUB_REPO, INTERNAL_APP_ID, set_models_storage_dir
@@ -121,9 +122,19 @@ class PreferencesDialogMixin(PreferencesResetMixin):
         content_layout = QHBoxLayout()
         content_layout.setSpacing(12)
 
-        # Left category tree / list
+        # Left navigation column with real-time settings search filter
+        left_col = QVBoxLayout()
+        left_col.setContentsMargins(0, 0, 0, 0)
+        left_col.setSpacing(6)
+
+        search_input = QLineEdit(dialog)
+        search_input.setPlaceholderText("Search settings...")
+        search_input.setClearButtonEnabled(True)
+        search_input.setFixedWidth(175)
+        search_input.setToolTip("Type to search settings and filter category tabs.")
+
         cat_list = QListWidget(dialog)
-        cat_list.setFixedWidth(160)
+        cat_list.setFixedWidth(175)
         categories = [
             "General", "Keyboard Shortcuts", "Audio Settings", "Updates & GitHub",
             "AI Models", "GPU Acceleration", "Playback & Timeline", "Detection",
@@ -138,7 +149,13 @@ class PreferencesDialogMixin(PreferencesResetMixin):
 
         for cat in categories:
             cat_list.addItem(QListWidgetItem(cat))
-        content_layout.addWidget(cat_list)
+
+        left_col.addWidget(search_input)
+        left_col.addWidget(cat_list, 1)
+        content_layout.addLayout(left_col)
+
+        dialog.search_input = search_input
+        dialog.cat_list = cat_list
 
         # Right stacked pages
         stack = QStackedWidget(dialog)
@@ -197,6 +214,111 @@ class PreferencesDialogMixin(PreferencesResetMixin):
         content_layout.addWidget(stack, 1)
         main_layout.addLayout(content_layout)
 
+        # Real-time search indexing and filtering across category pages
+        category_search_cache = {}
+
+        def _build_search_cache():
+            for idx in range(len(categories)):
+                cat_name = categories[idx]
+                page_widget = stack.widget(idx) if idx < stack.count() else None
+                tokens = [cat_name]
+                if page_widget is not None:
+                    for w in page_widget.findChildren(QWidget):
+                        if hasattr(w, "text") and callable(w.text):
+                            try:
+                                t = w.text()
+                                if t and len(t) < 300:
+                                    tokens.append(t)
+                            except Exception:
+                                pass
+                        if hasattr(w, "title") and callable(w.title):
+                            try:
+                                t = w.title()
+                                if t:
+                                    tokens.append(t)
+                            except Exception:
+                                pass
+                        if hasattr(w, "toolTip") and callable(w.toolTip):
+                            try:
+                                tt = w.toolTip()
+                                if tt and len(tt) < 300:
+                                    tokens.append(tt)
+                            except Exception:
+                                pass
+                        if isinstance(w, QComboBox):
+                            try:
+                                for j in range(w.count()):
+                                    tokens.append(w.itemText(j))
+                            except Exception:
+                                pass
+                        if isinstance(w, QTableWidget):
+                            try:
+                                for r in range(min(w.rowCount(), 100)):
+                                    for c in range(w.columnCount()):
+                                        it = w.item(r, c)
+                                        if it and it.text():
+                                            tokens.append(it.text())
+                            except Exception:
+                                pass
+                        if isinstance(w, QLineEdit):
+                            try:
+                                ph = w.placeholderText()
+                                if ph:
+                                    tokens.append(ph)
+                            except Exception:
+                                pass
+                category_search_cache[idx] = " ".join(tokens).lower()
+
+        _build_search_cache()
+
+        def _on_search_text_changed(text: str):
+            query = text.strip().lower()
+            first_match_idx = None
+            for idx in range(cat_list.count()):
+                item = cat_list.item(idx)
+                orig_name = categories[idx]
+                if not query:
+                    item.setHidden(False)
+                    item.setText(orig_name)
+                    continue
+
+                cache_text = category_search_cache.get(idx, orig_name.lower())
+                match_count = cache_text.count(query)
+                if match_count > 0:
+                    item.setHidden(False)
+                    item.setText(f"{orig_name} ({match_count})")
+                    if first_match_idx is None:
+                        first_match_idx = idx
+                else:
+                    item.setHidden(True)
+                    item.setText(orig_name)
+
+            if query:
+                current_idx = cat_list.currentRow()
+                curr_item = cat_list.item(current_idx) if current_idx >= 0 else None
+                if curr_item is None or curr_item.isHidden():
+                    if first_match_idx is not None:
+                        cat_list.setCurrentRow(first_match_idx)
+            else:
+                current_idx = cat_list.currentRow()
+                if current_idx < 0:
+                    cat_list.setCurrentRow(0)
+
+        search_input.textChanged.connect(_on_search_text_changed)
+
+        orig_search_key_press = search_input.keyPressEvent
+        def _search_key_press(event):
+            if event.key() == Qt.Key.Key_Escape and search_input.text():
+                search_input.clear()
+                event.accept()
+                return
+            if event.key() == Qt.Key.Key_Down:
+                cat_list.setFocus()
+                event.accept()
+                return
+            orig_search_key_press(event)
+        search_input.keyPressEvent = _search_key_press
+
         # Switch page on category selection
         cat_list.currentRowChanged.connect(stack.setCurrentIndex)
         aliases = {
@@ -236,6 +358,8 @@ class PreferencesDialogMixin(PreferencesResetMixin):
             target = aliases.get(requested, requested)
             for i, c in enumerate(categories):
                 if c.lower() == target or c.lower().startswith(target):
+                    if search_input.text():
+                        search_input.clear()
                     cat_list.setCurrentRow(i)
                     return True
             return False

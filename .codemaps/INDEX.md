@@ -1,13 +1,13 @@
 # Repository Symbol Index & API Map
 
-> Generated: 2026-11-02 10:48:54 | Total Files: 155
+> Generated: 2026-11-02 10:59:09 | Total Files: 155
 > Use `python scripts/generate_symbol_index.py --outline <file>` for exact line numbers.
 
 ## Modules Overview
 
 | Module | Lines | Summary | Primary Classes / Functions |
 | :--- | :---: | :--- | :--- |
-| `RadioTVSegmenter.py` | 658 | Radio & TV Segmenter — v3.9.58-beta | `MainWindow`, `main()` |
+| `RadioTVSegmenter.py` | 658 | Radio & TV Segmenter — v3.9.59-beta | `MainWindow`, `main()` |
 | `audio_normalization.py` | 541 | Radio & TV Story Segmenter — Audio Loudness Probing & Nor... | `LoudnessReport`, `AudioLoudnessProbeWorker`, `parse_ebur128_summary()`, `probe_media_duration_seconds()` *(+3 more)* |
 | `background_workers.py` | 1015 | Radio & TV Story Segmenter — Background Worker Threads & ... | `StoryAutoDetectWorker`, `WaveformWorker`, `VideoThumbnailWorker`, `get_waveform_peak_cache_path()` *(+6 more)* |
 | `backup_manager.py` | 622 | Unified State Serialization, Local, and Google Drive Clou... | `compute_data_checksum()`, `serialize_preferences()`, `serialize_keyboard_shortcuts()`, `serialize_glossary()` *(+7 more)* |
@@ -28,7 +28,7 @@
 | `diagnostic_dialog.py` | 288 | PySide6 Graphical Test Bench Dialog for Radio & TV Story ... | `create_diagnostic_dialog()` |
 | `diagnostic_export_tests.py` | 1699 | Diagnostic test bench suite component. | `DiagnosticExportTestsMixin` |
 | `diagnostic_helpers.py` | 151 | Helper fixtures, module resolvers, and DiagnosticItem for... | `DiagnosticItem`, `generate_synthetic_wav()` |
-| `diagnostic_loudness_tests.py` | 382 | Radio & TV Story Segmenter — Diagnostic Loudness Normaliz... | `DiagnosticLoudnessTestsMixin` |
+| `diagnostic_loudness_tests.py` | 391 | Radio & TV Story Segmenter — Diagnostic Loudness Normaliz... | `DiagnosticLoudnessTestsMixin` |
 | `diagnostic_selector.py` | 191 | Smart Diagnostic Test Selector for Radio & TV Story Segme... | `get_modified_files()`, `has_git_changes()`, `detect_changed_tokens()`, `select_diagnostic_items()` |
 | `dialogs.py` | 433 | Radio & TV Story Segmenter — Audio Loudness Normalization... | `AudioLoudnessNormalizationDialog` |
 | `diarization_processing.py` | 769 | Speaker diarization process management for Radio & TV Sto... | `DiarizationProcessingMixin` |
@@ -80,7 +80,7 @@
 | `plugins/youtube/export_destination.py` | 594 | YouTube Export Destination for UnifiedExportDialog with Z... | `YouTubeExportTabWidget`, `YouTubeExportDestination`, `capture_video_frame()` |
 | `plugins/youtube/guide_dialog.py` | 147 | Interactive Assisted Upload Guide Dialog for YouTube Studio. | `YouTubeAssistedUploadGuideDialog` |
 | `plugins/youtube/plugin.py` | 224 | YouTube Video Publisher Plugin for Radio & TV Segmenter. | `YouTubeSettingsDialog`, `Plugin`, `capture_video_frame()` |
-| `preferences_dialog.py` | 733 | Radio & TV Story Segmenter — Preferences Modal Dialog. | `PreferencesDialogMixin` |
+| `preferences_dialog.py` | 857 | Radio & TV Story Segmenter — Preferences Modal Dialog. | `PreferencesDialogMixin` |
 | `preferences_reset.py` | 650 | Radio & TV Story Segmenter — Preferences Reset & Factory ... | `RestoreSelectedSettingsDialog`, `PreferencesResetMixin` |
 | `preferences_reset_dialog.py` | 629 | Radio & TV Segmenter — Preferences reset and factory defa... | `RestoreSelectedSettingsDialog`, `PreferencesResetMixin` |
 | `preferences_tabs_core.py` | 623 | Radio & TV Story Segmenter — Preferences Modal Core Tab B... | `build_general_tab()`, `build_shortcuts_tab()`, `build_audio_hardware_tab()`, `build_updates_tab()` *(+2 more)* |
@@ -141,7 +141,7 @@
 | `transcript_navigation_mixin.py` | 299 | transcript_navigation_mixin.py - Timestamp discovery, car... | `TranscriptNavigationMixin` |
 | `transcript_playback_highlight_mixin.py` | 276 | Radio & TV Story Segmenter — Interactive Transcript Playb... | `TranscriptPlaybackHighlightMixin` |
 | `transcript_selection_mixin.py` | 466 | transcript_selection_mixin.py - Multi-selection, timeline... | `TranscriptSelectionMixin` |
-| `transcript_story.py` | 851 | Radio & TV Segmenter v3.9.58-beta — transcript story resp... | `TranscriptStoryMixin` |
+| `transcript_story.py` | 851 | Radio & TV Segmenter v3.9.59-beta — transcript story resp... | `TranscriptStoryMixin` |
 | `transcript_styles.py` | 104 | transcript_styles.py - Transcript view stylesheets and da... | `transcript_text_view_stylesheet()`, `clean_dark_mode_clipboard_html()` |
 | `transcript_timeline_sync_mixin.py` | 634 | Radio & TV Story Segmenter — Transcript Timeline & Playba... | `TranscriptTimelineSyncMixin` |
 | `transcription_processing.py` | 579 | Transcription background process management for Radio & T... | `TranscriptionProcessingMixin` |
@@ -166,7 +166,7 @@
 ## Detailed Symbol Catalog
 
 ### `RadioTVSegmenter.py` (658 lines)
-*Radio & TV Segmenter — v3.9.58-beta*
+*Radio & TV Segmenter — v3.9.59-beta*
 - **class `MainWindow(ModelManagementMixin, MediaBatchMixin, PlaybackPreferencesMixin, UiLayoutMixin, ProcessingMixin, TranslationMixin, TranscriptStoryMixin, ProjectExportMixin, GpuAccelerationMixin, QMainWindow)`** (lines 160–555):
   *Main application window for Radio & TV Segmenter.*
   - `__init__(self)` [L178-L350]
@@ -537,13 +537,13 @@
   - `_resolve_export_subtitles_module()` [L95-L117] — *Resolves export.subtitles whether running from source, package, or frozen binary.*
   - `_resolve_export_daw_module()` [L120-L142] — *Resolves export.daw whether running from source, package, or frozen binary.*
 
-### `diagnostic_loudness_tests.py` (382 lines)
+### `diagnostic_loudness_tests.py` (391 lines)
 *Radio & TV Story Segmenter — Diagnostic Loudness Normalization & Auto-Boost Test Suite.*
-- **class `DiagnosticLoudnessTestsMixin`** (lines 16–381):
+- **class `DiagnosticLoudnessTestsMixin`** (lines 16–390):
   *Diagnostic tests for Smart Hybrid Audio Loudness Probing & Normalization.*
   - `_test_smart_hybrid_audio_loudness_probing(self, item)` [L19-L87] — *Validates fast multi-window EBU R128 loudness & peak probing across synthetic test media.*
   - `_test_two_tier_hybrid_audio_loudness_normalization(self, item)` [L89-L183] — *Validates conditional bypass, Tier 1 linear gain + limiter, Tier 2 leveler, and integration.*
-  - `_test_audio_loudness_preferences_and_manual_normalization_dialog(self, item)` [L185-L381] — *Validates Preferences persistence and manual normalization dialog telemetry.*
+  - `_test_audio_loudness_preferences_and_manual_normalization_dialog(self, item)` [L185-L390] — *Validates Preferences persistence and manual normalization dialog telemetry.*
 
 ### `diagnostic_selector.py` (191 lines)
 *Smart Diagnostic Test Selector for Radio & TV Story Segmenter.*
@@ -1533,11 +1533,11 @@
 - **Functions**:
   - `capture_video_frame(video_path, timestamp, output_path)` [L45-L60]
 
-### `preferences_dialog.py` (733 lines)
+### `preferences_dialog.py` (857 lines)
 *Radio & TV Story Segmenter — Preferences Modal Dialog.*
-- **class `PreferencesDialogMixin(PreferencesResetMixin)`** (lines 30–733):
+- **class `PreferencesDialogMixin(PreferencesResetMixin)`** (lines 31–857):
   *Provides the main open_preferences_dialog method and settings persistence.*
-  - `open_preferences_dialog(self, initial_category, modal)` [L33-L733] — *Open the multi-category Preferences dialog as a non-modal floating inspector.*
+  - `open_preferences_dialog(self, initial_category, modal)` [L34-L857] — *Open the multi-category Preferences dialog as a non-modal floating inspector.*
 
 ### `preferences_reset.py` (650 lines)
 *Radio & TV Story Segmenter — Preferences Reset & Factory Defaults Engine.*
@@ -2758,7 +2758,7 @@
   - `_on_bubble_export(self)` [L461-L466]
 
 ### `transcript_story.py` (851 lines)
-*Radio & TV Segmenter v3.9.58-beta — transcript story responsibilities.*
+*Radio & TV Segmenter v3.9.59-beta — transcript story responsibilities.*
 - **Public Exports (`__all__`)**: TranscriptStoryMixin, Story, SetStoriesCommand, SelectStoriesCommand, StoryBoundaryChangeCommand, StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin, ChangeSpeakerDialog, VoiceProfileMatchDialog, StoryFadesDialog, SpeakerManagerDialog, FADE_CURVE_TABLES, get_fade_curve_factors
 - **class `TranscriptStoryMixin(StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin)`** (lines 63–850):
   - `render_transcript(self)` [L64-L467]
