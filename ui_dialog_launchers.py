@@ -42,12 +42,38 @@ class UiDialogLaunchersMixin:
             self.load_project_file(file_path, prompt=True, preserve_media=False)
 
     def open_find_dialog(self):
-        """Display the Find and Replace dialog window."""
+        """Display the Find and Replace dialog window pre-populated with search term."""
         if not getattr(self, "find_dialog", None):
             self.find_dialog = FindReplaceDialog(self.transcript_view, self)
+
+        search_term = ""
+        # 1. Text in transcript search box if present
+        if hasattr(self, "transcript_search_input") and self.transcript_search_input:
+            search_term = self.transcript_search_input.text().strip()
+
+        # 2. Selected text in transcript if search box is empty
+        if not search_term:
+            tv = getattr(self, "transcript_view", None)
+            if tv:
+                try:
+                    cursor = tv.textCursor()
+                    if cursor.hasSelection():
+                        sel = cursor.selectedText()
+                        if sel and "\u2029" not in sel and len(sel) <= 120:
+                            search_term = sel
+                except Exception:
+                    pass
+
+        if search_term:
+            self.find_dialog.find_input.setText(search_term)
+            self.find_dialog.find_input.selectAll()
+        else:
+            self.find_dialog.find_input.selectAll()
+
         self.find_dialog.show()
         self.find_dialog.raise_()
         self.find_dialog.activateWindow()
+        self.find_dialog.find_input.setFocus()
 
 
     def show_shortcuts_dialog(self):

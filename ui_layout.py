@@ -202,11 +202,25 @@ class UiLayoutMixin(UiMenusMixin, UiDialogLaunchersMixin):
         self.transcript_search_input = QLineEdit(self)
         self.transcript_search_input.setObjectName("transcript_search_input")
         self.transcript_search_input.setPlaceholderText("Search transcript...")
-        self.transcript_search_input.returnPressed.connect(self.trigger_find_next)
+        self.transcript_search_input.setToolTip("Search transcript text (Enter / Ctrl+G: Find Next, Shift+Enter / Ctrl+Shift+G: Find Previous)")
+
+        orig_search_key_press = self.transcript_search_input.keyPressEvent
+        def _search_key_press(event):
+            if event.key() in (Qt.Key_Return, Qt.Key_Enter):
+                if event.modifiers() & Qt.ShiftModifier:
+                    self.trigger_find_prev()
+                    return
+                else:
+                    self.trigger_find_next()
+                    return
+            orig_search_key_press(event)
+        self.transcript_search_input.keyPressEvent = _search_key_press
+
         search_bar.addWidget(self.transcript_search_input, 1)
 
         self.find_next_btn = QPushButton("Find Next", self)
         self.find_next_btn.setObjectName("find_next_btn")
+        self.find_next_btn.setToolTip("Find next occurrence of search term in transcript (Ctrl+G)")
         self.find_next_btn.clicked.connect(self.trigger_find_next)
         search_bar.addWidget(self.find_next_btn)
 

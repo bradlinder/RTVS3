@@ -160,11 +160,11 @@ All keyboard shortcuts can be viewed at any time by pressing <kbd>F1</kbd> (or <
 | **Story & Segment Editing** | Merge with Next Segment | `Ctrl+J` | `Cmd+J` | Combine selected transcript segment with following segment |
 | **Story & Segment Editing** | Undo | `Ctrl+Z` | `Cmd+Z` | Undo previous transcript or story edit |
 | **Story & Segment Editing** | Redo | `Ctrl+Shift+Z` | `Cmd+Shift+Z` | Redo previously undone edit |
-| **Search & Transcript Tools** | Find in Transcript... | `Ctrl+F` | `Cmd+F` | Focus search bar to highlight words and phrases across transcript |
-| **Search & Transcript Tools** | Find Next Occurrence | `F3` | `Cmd+G` | Jump to next occurrence of search term in transcript |
-| **Search & Transcript Tools** | Find Previous Occurrence | `Shift+F3` | `Cmd+Shift+G` | Jump to previous occurrence of search term in transcript |
+| **Search & Transcript Tools** | Find in Transcript... | `Ctrl+F` | `Cmd+F` | Open Find and Replace dialog pre-filled with search term |
+| **Search & Transcript Tools** | Find Next Occurrence | `Ctrl+G` | `Cmd+G` | Jump to next occurrence of search term in transcript |
+| **Search & Transcript Tools** | Find Previous Occurrence | `Ctrl+Shift+G` | `Cmd+Shift+G` | Jump to previous occurrence of search term in transcript |
 | **Search & Transcript Tools** | Add / Edit Comment... | `Ctrl+M` | `Cmd+M` | Attach an editorial comment or production marker to current playhead / text selection |
-| **Search & Transcript Tools** | Glossary & Custom Vocabulary... | `Ctrl+Shift+G` | `Cmd+Shift+G` | Open custom vocabulary, acronyms, station glossary, and ASR phonetic hints |
+| **Search & Transcript Tools** | Glossary & Custom Vocabulary... | `Ctrl+Alt+V` | `Cmd+Alt+V` | Open custom vocabulary, acronyms, station glossary, and ASR phonetic hints |
 | **Search & Transcript Tools** | Bold Text | `Ctrl+B` | `Cmd+B` | Toggle bold formatting on selected transcript text |
 | **Search & Transcript Tools** | Italic Text | `Ctrl+I` | `Cmd+I` | Toggle italic formatting on selected transcript text |
 | **Search & Transcript Tools** | Underline Text | `Ctrl+U` | `Cmd+U` | Toggle underline formatting on selected transcript text |

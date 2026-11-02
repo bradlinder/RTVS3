@@ -306,22 +306,96 @@ class PlaybackPreferencesMixin(ThemePreferencesMixin, PlaybackControllerMixin, P
             self.log_activity("[ACTIVITY] Log cleared.", mark_dirty=False)
 
     def trigger_find_next(self):
-        """Find Next shortcut (F3) handler: advances to next search match."""
+        """Find Next shortcut (Ctrl+G) handler: advances to next search match in transcript."""
         find_dialog = getattr(self, "find_dialog", None)
         if find_dialog and find_dialog.isVisible():
             find_dialog.find_next()
-        elif hasattr(self, "open_find_dialog"):
-            self.open_find_dialog()
-        elif hasattr(self, "open_find_replace"):
-            self.open_find_replace()
+            return
+
+        # Perform inline transcript search
+        query = ""
+        if hasattr(self, "transcript_search_input") and self.transcript_search_input:
+            query = self.transcript_search_input.text().strip()
+        if not query and find_dialog and hasattr(find_dialog, "find_input"):
+            query = find_dialog.find_input.text().strip()
+
+        if not query:
+            if hasattr(self, "transcript_search_input") and self.transcript_search_input:
+                self.transcript_search_input.setFocus()
+                self.transcript_search_input.selectAll()
+            if hasattr(self, "statusBar") and self.statusBar():
+                self.statusBar().showMessage("Type a search term in the transcript search box or press Ctrl+F for Find & Replace.", 3000)
+            return
+
+        tv = getattr(self, "transcript_view", None)
+        if not tv:
+            return
+
+        from PySide6.QtGui import QTextDocument, QTextCursor
+        flags = QTextDocument.FindFlag(0)
+        found = tv.find(query, flags)
+        wrapped = False
+        if not found:
+            cursor = tv.textCursor()
+            cursor.movePosition(QTextCursor.Start)
+            tv.setTextCursor(cursor)
+            found = tv.find(query, flags)
+            wrapped = True
+
+        if found:
+            tv.ensureCursorVisible()
+            msg = f"Found next: '{query}'" + (" (wrapped to start)" if wrapped else "")
+            if hasattr(self, "statusBar") and self.statusBar():
+                self.statusBar().showMessage(msg, 2500)
+        else:
+            if hasattr(self, "statusBar") and self.statusBar():
+                self.statusBar().showMessage(f"Phrase not found: '{query}'", 2500)
 
     def trigger_find_prev(self):
-        """Find Previous shortcut (Shift+F3) handler: retreats to previous search match."""
+        """Find Previous shortcut (Ctrl+Shift+G) handler: retreats to previous search match in transcript."""
         find_dialog = getattr(self, "find_dialog", None)
         if find_dialog and find_dialog.isVisible():
             find_dialog.find_prev()
-        elif hasattr(self, "open_find_dialog"):
-            self.open_find_dialog()
+            return
+
+        # Perform inline transcript search backward
+        query = ""
+        if hasattr(self, "transcript_search_input") and self.transcript_search_input:
+            query = self.transcript_search_input.text().strip()
+        if not query and find_dialog and hasattr(find_dialog, "find_input"):
+            query = find_dialog.find_input.text().strip()
+
+        if not query:
+            if hasattr(self, "transcript_search_input") and self.transcript_search_input:
+                self.transcript_search_input.setFocus()
+                self.transcript_search_input.selectAll()
+            if hasattr(self, "statusBar") and self.statusBar():
+                self.statusBar().showMessage("Type a search term in the transcript search box or press Ctrl+F for Find & Replace.", 3000)
+            return
+
+        tv = getattr(self, "transcript_view", None)
+        if not tv:
+            return
+
+        from PySide6.QtGui import QTextDocument, QTextCursor
+        flags = QTextDocument.FindFlag.FindBackward
+        found = tv.find(query, flags)
+        wrapped = False
+        if not found:
+            cursor = tv.textCursor()
+            cursor.movePosition(QTextCursor.End)
+            tv.setTextCursor(cursor)
+            found = tv.find(query, flags)
+            wrapped = True
+
+        if found:
+            tv.ensureCursorVisible()
+            msg = f"Found previous: '{query}'" + (" (wrapped to end)" if wrapped else "")
+            if hasattr(self, "statusBar") and self.statusBar():
+                self.statusBar().showMessage(msg, 2500)
+        else:
+            if hasattr(self, "statusBar") and self.statusBar():
+                self.statusBar().showMessage(f"Phrase not found: '{query}'", 2500)
 
     def open_diagnostic_log_folder(self):
         folder = getattr(self, "log_dir", get_app_data_dir() / "logs")

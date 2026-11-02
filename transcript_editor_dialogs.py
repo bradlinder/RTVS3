@@ -74,10 +74,20 @@ class FindReplaceDialog(QDialog):
         self.replace_btn.clicked.connect(self.replace)
         self.replace_all_btn.clicked.connect(self.replace_all)
 
-        self.shortcut_find_next = QShortcut(QKeySequence("Ctrl+G"), self)
+        self.find_input.returnPressed.connect(self.find_next)
+        self.replace_input.returnPressed.connect(self.replace)
+
+        from prs_shared import platform_seq
+        self.shortcut_find_next = QShortcut(platform_seq("Ctrl+G"), self)
         self.shortcut_find_next.activated.connect(self.find_next)
-        self.shortcut_find_prev = QShortcut(QKeySequence("Shift+Ctrl+G"), self)
+        self.shortcut_find_prev = QShortcut(platform_seq("Ctrl+Shift+G"), self)
         self.shortcut_find_prev.activated.connect(self.find_prev)
+
+    def _sync_parent_search(self, target: str):
+        parent = self.parent()
+        if parent and hasattr(parent, "transcript_search_input") and parent.transcript_search_input:
+            if parent.transcript_search_input.text() != target:
+                parent.transcript_search_input.setText(target)
 
     def get_flags(self):
         flags = QTextDocument.FindFlag(0)
@@ -90,6 +100,7 @@ class FindReplaceDialog(QDialog):
         if not target:
             return False
 
+        self._sync_parent_search(target)
         found = self.text_edit.find(target, self.get_flags())
         if not found:
             cursor = self.text_edit.textCursor()
@@ -104,6 +115,7 @@ class FindReplaceDialog(QDialog):
         if not target:
             return False
 
+        self._sync_parent_search(target)
         flags = self.get_flags() | QTextDocument.FindFlag.FindBackward
         found = self.text_edit.find(target, flags)
         if not found:

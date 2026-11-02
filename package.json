@@ -1,7 +1,7 @@
 {
   "name": "radio-tv-segmenter-preview",
   "private": true,
-  "version": "3.9.54-beta",
+  "version": "3.9.55-beta",
   "type": "module",
   "scripts": {
     "dev": "node server.js",

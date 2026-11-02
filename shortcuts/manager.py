@@ -37,7 +37,15 @@ class ShortcutsManager(QObject):
             for defn in SHORTCUT_DEFINITIONS:
                 val = self.settings_store.value(defn.action_id, None)
                 if val is not None and str(val).strip() != "":
-                    self._overrides[defn.action_id] = str(val).strip()
+                    # Migrate legacy F3 / Shift+F3 shortcuts to modern Ctrl+G / Ctrl+Shift+G
+                    str_val = str(val).strip()
+                    if defn.action_id == "find_next" and str_val in ("F3", "Meta+G"):
+                        continue
+                    if defn.action_id == "find_prev" and str_val in ("Shift+F3", "Meta+Shift+G"):
+                        continue
+                    if defn.action_id == "manage_terminology" and str_val in ("Ctrl+Shift+G", "Meta+Shift+G"):
+                        continue
+                    self._overrides[defn.action_id] = str_val
             self.settings_store.endGroup()
         except Exception as exc:
             print(f"[SHORTCUTS] Error loading shortcut settings: {exc}")

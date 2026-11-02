@@ -217,13 +217,13 @@ class UiMenusMixin:
         edit_menu.addAction(find_act)
 
         find_next_act = QAction("Find &Next", self)
-        find_next_act.setShortcut(platform_seq("F3"))
+        find_next_act.setShortcut(platform_seq("Ctrl+G"))
         find_next_act.triggered.connect(lambda: getattr(self, "trigger_find_next", lambda: None)())
         self.find_next_action = find_next_act
         edit_menu.addAction(find_next_act)
 
         find_prev_act = QAction("Find &Previous", self)
-        find_prev_act.setShortcut(platform_seq("Shift+F3"))
+        find_prev_act.setShortcut(platform_seq("Ctrl+Shift+G"))
         find_prev_act.triggered.connect(lambda: getattr(self, "trigger_find_prev", lambda: None)())
         self.find_prev_action = find_prev_act
         edit_menu.addAction(find_prev_act)
@@ -569,7 +569,7 @@ class UiMenusMixin:
         settings_menu.addAction(gpu_act)
 
         glossary_act = QAction("&Glossary & Custom Vocabulary...", self)
-        glossary_act.setShortcut(platform_seq("Ctrl+Shift+G"))
+        glossary_act.setShortcut(platform_seq("Ctrl+Alt+V"))
         glossary_act.triggered.connect(self.open_glossary_dialog)
         self.glossary_action = glossary_act
         settings_menu.addAction(glossary_act)

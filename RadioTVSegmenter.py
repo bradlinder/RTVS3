@@ -1,4 +1,4 @@
-"""Radio & TV Segmenter — v3.9.54-beta
+"""Radio & TV Segmenter — v3.9.55-beta
 
 This is the thin application composition root. UI/processing responsibilities
 are implemented in focused mixins so future changes can target smaller files
@@ -352,14 +352,9 @@ class MainWindow(
     def _setup_shortcuts_and_actions(self):
         """Register customizable QShortcut and QAction objects on MainWindow."""
         # Configurable QShortcuts
-        find_next_key = self.shortcuts_manager.get_current_shortcut("find_next")
-        self.shortcut_find_next = QShortcut(platform_seq(find_next_key), self)
-        self.shortcut_find_next.activated.connect(self.trigger_find_next)
-
-        find_prev_key = self.shortcuts_manager.get_current_shortcut("find_prev")
-        self.shortcut_find_prev = QShortcut(platform_seq(find_prev_key), self)
-        self.shortcut_find_prev.activated.connect(self.trigger_find_prev)
-
+        # Configurable QShortcuts / QActions (find_next and find_prev are managed via find_next_action / find_prev_action)
+        self.shortcut_find_next = None
+        self.shortcut_find_prev = None
         font_up_key = self.shortcuts_manager.get_current_shortcut("transcript_font_up")
         self.shortcut_transcript_font_up = QShortcut(platform_seq(font_up_key), self)
         self.shortcut_transcript_font_up.activated.connect(lambda: getattr(self, "adjust_transcript_font_size", lambda d: None)(1))
