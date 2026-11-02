@@ -328,21 +328,35 @@ class TimelineOverviewBar(QWidget):
         super().leaveEvent(event)
 
     def dragEnterEvent(self, event: Any):
-        if event.mimeData().hasUrls():
-            local_files = [u.toLocalFile() for u in event.mimeData().urls() if u.isLocalFile()]
-            if local_files:
-                event.acceptProposedAction()
-                return
+        from core_utils import extract_dropped_file_paths
+        paths = extract_dropped_file_paths(event.mimeData())
+        if paths:
+            event.setDropAction(Qt.DropAction.CopyAction)
+            event.acceptProposedAction()
+            event.accept()
+            return
+        event.ignore()
+
+    def dragMoveEvent(self, event: Any):
+        from core_utils import extract_dropped_file_paths
+        paths = extract_dropped_file_paths(event.mimeData())
+        if paths:
+            event.setDropAction(Qt.DropAction.CopyAction)
+            event.acceptProposedAction()
+            event.accept()
+            return
         event.ignore()
 
     def dropEvent(self, event: Any):
-        if event.mimeData().hasUrls():
-            for url in event.mimeData().urls():
-                if url.isLocalFile():
-                    if hasattr(self, "canvas") and hasattr(self.canvas, "mediaDropped"):
-                        self.canvas.mediaDropped.emit(url.toLocalFile())
-                    event.acceptProposedAction()
-                    return
+        from core_utils import extract_dropped_file_paths
+        paths = extract_dropped_file_paths(event.mimeData())
+        if paths:
+            if hasattr(self, "canvas") and hasattr(self.canvas, "mediaDropped"):
+                self.canvas.mediaDropped.emit(paths[0])
+            event.setDropAction(Qt.DropAction.CopyAction)
+            event.acceptProposedAction()
+            event.accept()
+            return
         event.ignore()
 
     def setRange(self, min_val: int, max_val: int):

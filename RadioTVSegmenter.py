@@ -1,4 +1,4 @@
-"""Radio & TV Segmenter — v3.9.62-beta
+"""Radio & TV Segmenter — v3.9.63-beta
 
 This is the thin application composition root. UI/processing responsibilities
 are implemented in focused mixins so future changes can target smaller files
@@ -182,6 +182,7 @@ class MainWindow(
 
         from core_utils import apply_window_titlebar_theme
         apply_window_titlebar_theme(self)
+        self.setAcceptDrops(True)
 
         self.runtime_mgr = RuntimeManager()
         self.audio_file = None
@@ -518,6 +519,40 @@ class MainWindow(
                 if hasattr(self, "timeline") and hasattr(self.timeline, "canvas"):
                     self.timeline.canvas.pixmap_dirty = True
                     self.timeline.canvas.update()
+
+    def dragEnterEvent(self, event):
+        from core_utils import extract_dropped_file_paths
+        paths = extract_dropped_file_paths(event.mimeData())
+        if paths:
+            event.setDropAction(Qt.DropAction.CopyAction)
+            event.acceptProposedAction()
+            event.accept()
+            return
+        super().dragEnterEvent(event)
+
+    def dragMoveEvent(self, event):
+        from core_utils import extract_dropped_file_paths
+        paths = extract_dropped_file_paths(event.mimeData())
+        if paths:
+            event.setDropAction(Qt.DropAction.CopyAction)
+            event.acceptProposedAction()
+            event.accept()
+            return
+        super().dragMoveEvent(event)
+
+    def dropEvent(self, event):
+        from core_utils import extract_dropped_file_paths
+        paths = extract_dropped_file_paths(event.mimeData())
+        if paths:
+            if hasattr(self, "_handle_dropped_media_or_project"):
+                self._handle_dropped_media_or_project(paths)
+            elif hasattr(self, "load_media_file"):
+                self.load_media_file(paths[0])
+            event.setDropAction(Qt.DropAction.CopyAction)
+            event.acceptProposedAction()
+            event.accept()
+            return
+        super().dropEvent(event)
 
 
 def main():

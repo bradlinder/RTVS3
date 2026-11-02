@@ -56,6 +56,9 @@ class TimelineCanvas(QWidget):
     def dragEnterEvent(self, event):
         ...
 
+    def dragMoveEvent(self, event):
+        ...
+
     def dropEvent(self, event):
         ...
 
@@ -169,6 +172,9 @@ class TimelineWidget(QWidget):
         ...
 
     def dragEnterEvent(self, event):
+        ...
+
+    def dragMoveEvent(self, event):
         ...
 
     def dropEvent(self, event):

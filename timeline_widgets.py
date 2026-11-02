@@ -218,20 +218,31 @@ class TimelineCanvas(QWidget):
             self.background_status_text = ""
 
     def dragEnterEvent(self, event):
-        if event.mimeData().hasUrls():
-            local_files = [u.toLocalFile() for u in event.mimeData().urls() if u.isLocalFile()]
-            if local_files:
-                event.acceptProposedAction()
-                return
+        paths = extract_dropped_file_paths(event.mimeData())
+        if paths:
+            event.setDropAction(Qt.DropAction.CopyAction)
+            event.acceptProposedAction()
+            event.accept()
+            return
+        event.ignore()
+
+    def dragMoveEvent(self, event):
+        paths = extract_dropped_file_paths(event.mimeData())
+        if paths:
+            event.setDropAction(Qt.DropAction.CopyAction)
+            event.acceptProposedAction()
+            event.accept()
+            return
         event.ignore()
 
     def dropEvent(self, event):
-        if event.mimeData().hasUrls():
-            for url in event.mimeData().urls():
-                if url.isLocalFile():
-                    self.mediaDropped.emit(url.toLocalFile())
-                    event.acceptProposedAction()
-                    return
+        paths = extract_dropped_file_paths(event.mimeData())
+        if paths:
+            self.mediaDropped.emit(paths[0])
+            event.setDropAction(Qt.DropAction.CopyAction)
+            event.acceptProposedAction()
+            event.accept()
+            return
         event.ignore()
 
     def set_audio_filename(self, filename):
@@ -891,18 +902,31 @@ class TimelineWidget(QWidget):
             self.canvas.set_background_generation_active(task_name, active)
 
     def dragEnterEvent(self, event):
-        if event.mimeData().hasUrls() and any(u.isLocalFile() for u in event.mimeData().urls()):
+        paths = extract_dropped_file_paths(event.mimeData())
+        if paths:
+            event.setDropAction(Qt.DropAction.CopyAction)
             event.acceptProposedAction()
+            event.accept()
+            return
+        event.ignore()
+
+    def dragMoveEvent(self, event):
+        paths = extract_dropped_file_paths(event.mimeData())
+        if paths:
+            event.setDropAction(Qt.DropAction.CopyAction)
+            event.acceptProposedAction()
+            event.accept()
             return
         event.ignore()
 
     def dropEvent(self, event):
-        if event.mimeData().hasUrls():
-            for url in event.mimeData().urls():
-                if url.isLocalFile():
-                    self.mediaDropped.emit(url.toLocalFile())
-                    event.acceptProposedAction()
-                    return
+        paths = extract_dropped_file_paths(event.mimeData())
+        if paths:
+            self.mediaDropped.emit(paths[0])
+            event.setDropAction(Qt.DropAction.CopyAction)
+            event.acceptProposedAction()
+            event.accept()
+            return
         event.ignore()
 
     def update_scrollbar_range(self):
