@@ -779,6 +779,8 @@ class MediaBatchMixin:
                         if self.load_project_file(crash_recovery, prompt=False, preserve_media=False):
                             self.project_file = saved_path
                             self.project_dirty = True
+                            if hasattr(self, "update_window_title"):
+                                self.update_window_title()
                             self.log_activity(f"[CRASH-RECOVERY] Recovered emergency crash snapshot for {saved_path.name}.", mark_dirty=False)
                             try:
                                 crash_recovery.unlink(missing_ok=True)
@@ -797,6 +799,8 @@ class MediaBatchMixin:
                         if self.load_project_file(autosave, prompt=False, preserve_media=False):
                             self.project_file = saved_path
                             self.project_dirty = True
+                            if hasattr(self, "update_window_title"):
+                                self.update_window_title()
                             # The autosave is a recovery artifact, not a recent project.
                             raw_recent = self.settings_store.value("recent_projects", [])
                             try:
@@ -1476,6 +1480,8 @@ class MediaBatchMixin:
         self.translations = {}
         self.translation_display_mode = "en"
         self.project_dirty = True
+        if hasattr(self, "update_window_title"):
+            self.update_window_title()
 
         self.update_translation_language_selector()
         self.render_transcript()

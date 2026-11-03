@@ -266,7 +266,7 @@ class ProjectExportMixin(
         """MainWindow close event handling shutdown, worker cancellation, and QSettings sync."""
         self._is_closing = True
         if hasattr(self, "log_activity"):
-            self.log_activity("[SYSTEM] Application shutdown requested.")
+            self.log_activity("[SYSTEM] Application shutdown requested.", mark_dirty=False)
         if hasattr(self, "statusBar") and self.statusBar():
             self.statusBar().showMessage("Shutting down...")
 
@@ -279,6 +279,7 @@ class ProjectExportMixin(
                 "Model Installation Still Running",
                 "A model or AI component is still being installed. Please wait for the installation to finish before closing the application."
             )
+            self._is_closing = False
             event.ignore()
             return
 
@@ -307,12 +308,16 @@ class ProjectExportMixin(
                 QMessageBox.StandardButton.Save,
             )
             if reply == QMessageBox.StandardButton.Cancel:
+                self._is_closing = False
                 event.ignore()
                 return
             elif reply == QMessageBox.StandardButton.Save:
                 if not self.save_project():
+                    self._is_closing = False
                     event.ignore()
                     return
+            elif reply == QMessageBox.StandardButton.Discard:
+                self.project_dirty = False
 
         try:
             if hasattr(self, "cleanup_transcription_process"):

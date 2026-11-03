@@ -11,6 +11,7 @@ from PySide6.QtCore import Qt, QUrl, QTimer, QSize
 from PySide6.QtGui import QAction, QActionGroup, QIcon, QKeySequence, QTextCursor, QShortcut
 from PySide6.QtWidgets import QApplication, QComboBox, QFileDialog, QFormLayout, QFrame, QHBoxLayout, QLabel, QLineEdit, QListWidget, QMenu, QMenuBar, QMessageBox, QProgressBar, QPushButton, QScrollArea, QSplitter, QStatusBar, QTextEdit, QToolButton, QVBoxLayout, QWidget
 from prs_shared import CommentsPanel, FindReplaceDialog, InteractiveTranscriptEdit, StoryListWidget, TimelineWidget, ffmpeg_path, ffprobe_path, format_time, platform_seq, safe_filename
+from core_utils import make_dialog_maximizable
 from ui_menus import PersistentMenu, UiMenusMixin
 from ui_dialog_launchers import UiDialogLaunchersMixin
 

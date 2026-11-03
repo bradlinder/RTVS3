@@ -94,7 +94,7 @@ TABLE OF CONTENTS & STATUS OVERVIEW
    [ ] 5.4 Burned-in Subtitles & Platform Safe Zone Enforcement (`plugins/social_reel/reel_subtitles.py`)
    [ ] 5.5 Unified Export Integration & Social Reel Diagnostic Tests (`export/dialog.py`, `test_runner.py`)
 
-6. Current Release: Windows Detached Installer Handoff & Window Visibility Fix (`updater.py`) [x] [COMPLETED in v3.9.66-beta]
+6. Current Release: Windows Detached Installer Handoff & Window Visibility Fix (`updater.py`) [x] [COMPLETED in v3.9.67-beta]
    [x] 6.1 Explicit -WindowStyle Normal Execution: Add -WindowStyle Normal parameters to Start-Process calls in PowerShell supervisor script to prevent hidden background Inno Setup execution.
    [x] 6.2 Fail-Safe CMD Batch Supervisor Fallback: Add secondary .cmd batch supervisor using start "" "%INSTALLER_PATH%" so Windows Shell opens installer wizard in SW_SHOWNORMAL mode with UAC elevation support.
    [x] 6.3 Subprocess Cmd Launch Fallback: Update Python helper script fallback to cmd.exe /c start for visible window execution.
@@ -146,16 +146,18 @@ DETAILED MILESTONE SPECIFICATIONS
 - Target Release: v4.3.0 (Optional / Planned)
 - Technical References: Subsystem architecture, plugin manifest, and FFmpeg filtergraph pipeline specifications are detailed in `ARCHITECTURE.md` (Section 6).
 
-6. CURRENT RELEASE: UNSAVED CHANGES PROMPT HARMONIZATION & FALSE-DIRTY ELIMINATION:
-- Purpose: Eliminate redundant double prompts when closing or opening projects, remove erroneous `project_dirty` triggers on playback controls, standardize all close/open dialogs to Save / Discard / Cancel, and modularize `ProjectDataPurgeDialog`.
-- Target Release: v3.9.65-beta (Current Release)
+6. CURRENT RELEASE: FALSE UNSAVED CHANGES PROMPT ELIMINATION ON EXIT:
+- Purpose: Eliminate false unsaved changes prompts on application exit by inverting the activity logger default from mark_dirty=True to mark_dirty=False, preventing shutdown telemetry from dirtying clean projects, and synchronizing state labels.
+- Target Release: v3.9.67-beta (Current Release)
 - Technical References & Implementation Details:
-  * False-Dirty Elimination: `set_skip_seconds_from_ui` persists to `QSettings` without setting `project_dirty = True`.
-  * Save/Discard/Cancel Harmonization: Updated `close_project()`, `load_project_file()`, and `prepare_for_new_media()` to uniform Save/Discard/Cancel actions.
-  * Line Budget & SRP Decoupling: Extracted `ProjectDataPurgeDialog` to `project_data_purge_dialog.py` reducing `project_lifecycle.py` to 864 lines.
-  * Release Logs: Documented in `CHANGELOG.md` under `## v3.9.65-beta`.
+  * [x] Inversion of Activity Logger Default: Changed `log_activity(self, action_text, mark_dirty=False)` in `playback_preferences.py`.
+  * [x] Shutdown Telemetry Self-Dirty Bug Resolution: Explicitly passed `mark_dirty=False` in `project_export.py:closeEvent()`.
+  * [x] Graceful Cancel & Discard Restoration: Reset `_is_closing = False` on dialog cancel / save failure and cleared `project_dirty = False` on discard.
+  * [x] Background & Export False-Dirty Elimination: Background waveform generation and document export operations no longer trigger project dirty state.
+  * [x] Title & Label Sync: Synchronized `update_window_title()` across all recovery and document import handlers.
+  * Release Logs: Documented in `CHANGELOG.md` under `## v3.9.67-beta`.
 
-7. PREVIOUS RELEASE: WINDOWS UPDATE UIPI DE-ELEVATION & DRAG-AND-DROP RESTORATION:
-- Purpose: Eliminated Windows User Interface Privilege Isolation (UIPI) drag-and-drop lockout after in-app updates by launching via explorer.exe.
-- Target Release: v3.9.64-beta (Previous Release)
-- Technical References: Full implementation details are documented in `CHANGELOG.md` under `## v3.9.64-beta`.
+7. PREVIOUS RELEASE: WINDOWS DETACHED INSTALLER HANDOFF & WINDOW VISIBILITY FIX:
+- Purpose: Fixed Inno Setup update installer running invisibly in the background on Windows by adding `-WindowStyle Normal` and a CMD supervisor fallback.
+- Target Release: v3.9.66-beta (Previous Release)
+- Technical References: Full implementation details are documented in `CHANGELOG.md` under `## v3.9.66-beta`.

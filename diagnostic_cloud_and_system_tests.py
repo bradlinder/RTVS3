@@ -176,21 +176,38 @@ class DiagnosticCloudAndSystemTestsMixin:
         # 3. Verify empty project dirty prompt bypass
         from project_state_mixin import ProjectStateMixin
         from media_batch import MediaBatchMixin
-        class EmptyProjectProbe(ProjectStateMixin, MediaBatchMixin):
+        from playback_preferences import PlaybackPreferencesMixin
+        class EmptyProjectProbe(PlaybackPreferencesMixin, ProjectStateMixin, MediaBatchMixin):
             def __init__(self):
                 self.audio_file = None
                 self.project_file = None
                 self.transcript = None
                 self.stories = []
                 self.project_dirty = True
+                from PySide6.QtWidgets import QListWidget
+                self.activity_list = QListWidget()
+                self.settings_store = None
+            def update_window_title(self):
+                pass
         probe = EmptyProjectProbe()
         assert probe.is_project_empty() is True
         assert probe.prepare_for_new_media() is True
         probe.audio_file = "voice.mp3"
         assert probe.is_project_empty() is False
 
+        # 4. Verify log_activity does not dirty clean project by default
+        probe.project_dirty = False
+        probe.log_activity("[SYSTEM] Application shutdown requested.")
+        probe.log_activity("[WAVEFORM] Waveform generation complete (10,000 peaks).")
+        probe.log_activity("[EXPORT] Exported CUE sheet to cue.txt")
+        assert probe.project_dirty is False, "log_activity unexpectedly dirtied project on diagnostic logging"
+
+        # Explicit mark_dirty=True or mark_project_dirty does dirty project
+        probe.log_activity("[TEST] Explicit mutate", mark_dirty=True)
+        assert probe.project_dirty is True
+
         item.status = "PASS"
-        item.message = "Project structure validation errors and portable media resolution verified"
+        item.message = "Project structure validation errors, portable media resolution, and false-dirty prevention verified"
 
     def _test_acoustic_voice_profile_matcher(self, item: DiagnosticItem):
         import math

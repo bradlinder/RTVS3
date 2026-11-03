@@ -215,7 +215,7 @@ class PlaybackPreferencesMixin(ThemePreferencesMixin, PlaybackControllerMixin, P
             self.log_activity(f"[ERROR] Activity log export failed: {exc}")
             QMessageBox.critical(self, "Activity Log Export Error", str(exc))
 
-    def log_activity(self, action_text, mark_dirty=True):
+    def log_activity(self, action_text, mark_dirty=False):
         if not hasattr(self, "activity_list"):
             return
         from PySide6.QtWidgets import QListWidgetItem
@@ -225,7 +225,8 @@ class PlaybackPreferencesMixin(ThemePreferencesMixin, PlaybackControllerMixin, P
         item = QListWidgetItem(item_text)
         item.setData(Qt.ItemDataRole.UserRole, len(getattr(self, "project_snapshots", [])))
 
-        is_dark = str(self.settings_store.value("theme_mode", "dark")).lower() != "light"
+        settings = getattr(self, "settings_store", None)
+        is_dark = str(settings.value("theme_mode", "dark")).lower() != "light" if settings is not None else True
         if "[ERROR]" in action_text or "CRITICAL" in action_text:
             item.setForeground(QColor("#ff6b6b" if is_dark else "#d32f2f"))
         elif "[WARNING]" in action_text:
@@ -643,24 +644,26 @@ class PlaybackPreferencesMixin(ThemePreferencesMixin, PlaybackControllerMixin, P
         new_value = str(value or "auto")
         changed = new_value != getattr(self, "expected_speakers", "auto")
         self.expected_speakers = new_value
-        if changed and getattr(self, "diarization", None) is not None:
-            self.processing_status["diarization"] = False
-            self.log_activity("[PROCESSING] Expected speakers changed; existing speaker detection is marked for reprocessing.", mark_dirty=False)
-        self.mark_project_dirty()
-        self.log_activity(f"[SETTINGS] Expected speakers set to '{new_value}'.")
-        self.statusBar().showMessage(f"Expected speakers: {new_value}.")
+        if changed:
+            if getattr(self, "diarization", None) is not None:
+                self.processing_status["diarization"] = False
+                self.log_activity("[PROCESSING] Expected speakers changed; existing speaker detection is marked for reprocessing.", mark_dirty=False)
+            self.mark_project_dirty()
+            self.log_activity(f"[SETTINGS] Expected speakers set to '{new_value}'.", mark_dirty=False)
+            self.statusBar().showMessage(f"Expected speakers: {new_value}.")
 
     def on_diarization_sensitivity_changed(self, value):
         """Public hook for adjusting speaker separation sensitivity."""
         new_value = str(value or "normal")
         changed = new_value != getattr(self, "diarization_sensitivity", "normal")
         self.diarization_sensitivity = new_value
-        if changed and getattr(self, "diarization", None) is not None:
-            self.processing_status["diarization"] = False
-            self.log_activity("[PROCESSING] Speaker separation sensitivity changed; existing speaker detection is marked for reprocessing.", mark_dirty=False)
-        self.mark_project_dirty()
-        self.log_activity(f"[SETTINGS] Speaker separation sensitivity set to '{new_value}'.")
-        self.statusBar().showMessage(f"Speaker separation sensitivity: {new_value}.")
+        if changed:
+            if getattr(self, "diarization", None) is not None:
+                self.processing_status["diarization"] = False
+                self.log_activity("[PROCESSING] Speaker separation sensitivity changed; existing speaker detection is marked for reprocessing.", mark_dirty=False)
+            self.mark_project_dirty()
+            self.log_activity(f"[SETTINGS] Speaker separation sensitivity set to '{new_value}'.", mark_dirty=False)
+            self.statusBar().showMessage(f"Speaker separation sensitivity: {new_value}.")
 
     def update_auto_save_timer(self):
         if getattr(self, "auto_save_minutes", 0) > 0:
@@ -795,6 +798,6 @@ class PlaybackPreferencesMixin(ThemePreferencesMixin, PlaybackControllerMixin, P
             self.log_activity(f"[AUTOSAVE] Recovery snapshot written ({current_time}).", mark_dirty=False)
             self.statusBar().showMessage(f"Recovery snapshot saved at {current_time}")
             if hasattr(self, "save_state_label"):
-                self.save_state_label.setText(f"✓ Recovery snapshot {current_time}")
+                self.save_state_label.setText(f"● Auto-save snapshot {current_time}")
         except Exception as exc:
             self.log_activity(f"[AUTOSAVE] Recovery snapshot failed: {exc}", mark_dirty=False)

@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-03 15:42:08",
+  "generated_at": "2026-11-03 16:31:23",
   "total_files": 156,
   "files": {
     "RadioTVSegmenter.py": {
       "path": "RadioTVSegmenter.py",
       "lines": 658,
-      "summary": "Radio & TV Segmenter \u2014 v3.9.66-beta",
+      "summary": "Radio & TV Segmenter \u2014 v3.9.67-beta",
       "exports": null,
       "classes": [
         {
@@ -1748,7 +1748,7 @@
     },
     "diagnostic_cloud_and_system_tests.py": {
       "path": "diagnostic_cloud_and_system_tests.py",
-      "lines": 1283,
+      "lines": 1300,
       "summary": "Diagnostic test bench suite component.",
       "exports": null,
       "classes": [
@@ -1756,7 +1756,7 @@
           "name": "DiagnosticCloudAndSystemTestsMixin",
           "bases": [],
           "start_line": 26,
-          "end_line": 1281,
+          "end_line": 1298,
           "doc": "",
           "methods": [
             {
@@ -1770,119 +1770,119 @@
               "name": "_test_project_file_integrity_and_portable_path_resolution",
               "sig": "_test_project_file_integrity_and_portable_path_resolution(self, item)",
               "start_line": 107,
-              "end_line": 193,
+              "end_line": 210,
               "doc": ""
             },
             {
               "name": "_test_acoustic_voice_profile_matcher",
               "sig": "_test_acoustic_voice_profile_matcher(self, item)",
-              "start_line": 195,
-              "end_line": 457,
+              "start_line": 212,
+              "end_line": 474,
               "doc": ""
             },
             {
               "name": "_test_windows_detached_update_helper_architecture",
               "sig": "_test_windows_detached_update_helper_architecture(self, item)",
-              "start_line": 459,
-              "end_line": 489,
+              "start_line": 476,
+              "end_line": 506,
               "doc": "Validates update helper architecture: helper script generation, exit polling, and logging."
             },
             {
               "name": "_test_temporary_cache_management_and_storage_inspection",
               "sig": "_test_temporary_cache_management_and_storage_inspection(self, item)",
-              "start_line": 491,
-              "end_line": 590,
+              "start_line": 508,
+              "end_line": 607,
               "doc": "Validates cache usage stats calculation, preview categorization, and cache purging."
             },
             {
               "name": "_test_youtube_data_api_and_direct_video_upload_engine",
               "sig": "_test_youtube_data_api_and_direct_video_upload_engine(self, item)",
-              "start_line": 592,
-              "end_line": 670,
+              "start_line": 609,
+              "end_line": 687,
               "doc": "Validates YouTube Zero-Auth manual export packaging (MP4, thumbnail, SRT, metadata .txt with chapters & speakers)."
             },
             {
               "name": "_test_multiprocessing_freeze_support_and_spawn_intercept",
               "sig": "_test_multiprocessing_freeze_support_and_spawn_intercept(self, item)",
-              "start_line": 672,
-              "end_line": 693,
+              "start_line": 689,
+              "end_line": 710,
               "doc": "Validates that frozen process spawn intercepts -c invocations from resource_tracker and multiprocessing."
             },
             {
               "name": "_resolve_worker_cmd",
               "sig": "_resolve_worker_cmd(self)",
-              "start_line": 695,
-              "end_line": 709,
+              "start_line": 712,
+              "end_line": 726,
               "doc": "Resolves the executable and arguments to launch the AI background worker."
             },
             {
               "name": "_test_ai_worker_subprocess_execution_and_ipc_handshake",
               "sig": "_test_ai_worker_subprocess_execution_and_ipc_handshake(self, item)",
-              "start_line": 711,
-              "end_line": 777,
+              "start_line": 728,
+              "end_line": 794,
               "doc": "Spawns the AI worker binary in an isolated subprocess, verifying IPC hello handshake and self-test."
             },
             {
               "name": "_test_frozen_subprocess_multiprocessing_spawn_protocol",
               "sig": "_test_frozen_subprocess_multiprocessing_spawn_protocol(self, item)",
-              "start_line": 779,
-              "end_line": 817,
+              "start_line": 796,
+              "end_line": 834,
               "doc": "Spawns the AI worker executable with Python -c to verify multiprocessing resource tracker interception."
             },
             {
               "name": "_test_comprehensive_local_and_cloud_backup_and_restore_engine",
               "sig": "_test_comprehensive_local_and_cloud_backup_and_restore_engine(self, item)",
-              "start_line": 819,
-              "end_line": 931,
+              "start_line": 836,
+              "end_line": 948,
               "doc": "Validates state serialization, SHA-256 verification, local backup roundtrip, and cloud payload integrity."
             },
             {
               "name": "_test_option_c_muted_silver_fog_light_theme_and_dark_mode_clipboard_formatting",
               "sig": "_test_option_c_muted_silver_fog_light_theme_and_dark_mode_clipboard_formatting(self, item)",
-              "start_line": 933,
-              "end_line": 986,
+              "start_line": 950,
+              "end_line": 1003,
               "doc": "Validates Option C muted low-contrast silver/fog palette and dark-mode clipboard rich styling."
             },
             {
               "name": "_test_windows_ci_build_and_packaging_optimization_invariants",
               "sig": "_test_windows_ci_build_and_packaging_optimization_invariants(self, item)",
-              "start_line": 988,
-              "end_line": 1020,
+              "start_line": 1005,
+              "end_line": 1037,
               "doc": "Validates Inno Setup compression parameters, Stage 3 PyInstaller optimizations, and CI settings."
             },
             {
               "name": "_test_roadmap_n_1_sliding_window_and_status_integrity",
               "sig": "_test_roadmap_n_1_sliding_window_and_status_integrity(self, item)",
-              "start_line": 1022,
-              "end_line": 1041,
+              "start_line": 1039,
+              "end_line": 1058,
               "doc": "Validates roadmap.txt N-1 sliding window retention, status indicator syntax, and version sync."
             },
             {
               "name": "_test_source_file_modularity_and_1000_line_budget_invariant",
               "sig": "_test_source_file_modularity_and_1000_line_budget_invariant(self, item)",
-              "start_line": 1043,
-              "end_line": 1112,
+              "start_line": 1060,
+              "end_line": 1129,
               "doc": "Validates that recently decomposed modules adhere to the 1,000-line modular budget,"
             },
             {
               "name": "_test_station_voice_profiles_store_and_matching_engine",
               "sig": "_test_station_voice_profiles_store_and_matching_engine(self, item)",
-              "start_line": 1114,
-              "end_line": 1229,
+              "start_line": 1131,
+              "end_line": 1246,
               "doc": "Validates StationVoiceProfileStore persistence, vector normalization, profile addition, matching logic, and JSON export/import."
             },
             {
               "name": "_test_multi_tier_mipmapped_waveform_peak_cache_serialization",
               "sig": "_test_multi_tier_mipmapped_waveform_peak_cache_serialization(self, item)",
-              "start_line": 1231,
-              "end_line": 1268,
+              "start_line": 1248,
+              "end_line": 1285,
               "doc": "Validates Version 2 .peaks binary cache read/write with 4x/16x/64x LOD pyramid levels and transparent Version 1 upgrade."
             },
             {
               "name": "_test_speed_listening_proofreading_rate_and_context_controls",
               "sig": "_test_speed_listening_proofreading_rate_and_context_controls(self, item)",
-              "start_line": 1270,
-              "end_line": 1281,
+              "start_line": 1287,
+              "end_line": 1298,
               "doc": "Validates playback speed rates (0.75x to 2.0x), WSOLA pitch preservation parameters, and proofreading pre-roll configuration."
             }
           ]
@@ -3938,7 +3938,7 @@
     },
     "media_batch.py": {
       "path": "media_batch.py",
-      "lines": 1855,
+      "lines": 1861,
       "summary": "Radio & TV Segmenter v1.1.1 \u2014 media batch responsibilities.",
       "exports": null,
       "classes": [
@@ -3946,7 +3946,7 @@
           "name": "MediaBatchMixin",
           "bases": [],
           "start_line": 21,
-          "end_line": 1855,
+          "end_line": 1861,
           "doc": "",
           "methods": [
             {
@@ -4114,210 +4114,210 @@
               "name": "restore_last_opened",
               "sig": "restore_last_opened(self)",
               "start_line": 739,
-              "end_line": 875,
+              "end_line": 879,
               "doc": "Apply startup policy and offer recovery from a newer autosave snapshot."
             },
             {
               "name": "toggle_speaker_labels",
               "sig": "toggle_speaker_labels(self, checked)",
-              "start_line": 877,
-              "end_line": 882,
+              "start_line": 881,
+              "end_line": 886,
               "doc": ""
             },
             {
               "name": "toggle_colorize_speaker_labels",
               "sig": "toggle_colorize_speaker_labels(self, checked)",
-              "start_line": 884,
-              "end_line": 891,
+              "start_line": 888,
+              "end_line": 895,
               "doc": ""
             },
             {
               "name": "toggle_timestamps",
               "sig": "toggle_timestamps(self, checked)",
-              "start_line": 893,
-              "end_line": 900,
+              "start_line": 897,
+              "end_line": 904,
               "doc": ""
             },
             {
               "name": "toggle_milliseconds",
               "sig": "toggle_milliseconds(self, checked)",
-              "start_line": 902,
-              "end_line": 909,
+              "start_line": 906,
+              "end_line": 913,
               "doc": ""
             },
             {
               "name": "toggle_waveform_view",
               "sig": "toggle_waveform_view(self, checked)",
-              "start_line": 911,
-              "end_line": 915,
+              "start_line": 915,
+              "end_line": 919,
               "doc": ""
             },
             {
               "name": "toggle_thumbnail_view",
               "sig": "toggle_thumbnail_view(self, checked)",
-              "start_line": 917,
-              "end_line": 921,
+              "start_line": 921,
+              "end_line": 925,
               "doc": ""
             },
             {
               "name": "choose_default_project_directory",
               "sig": "choose_default_project_directory(self)",
-              "start_line": 923,
-              "end_line": 938,
+              "start_line": 927,
+              "end_line": 942,
               "doc": ""
             },
             {
               "name": "open_document_path",
               "sig": "open_document_path(self, path)",
-              "start_line": 940,
-              "end_line": 975,
+              "start_line": 944,
+              "end_line": 979,
               "doc": ""
             },
             {
               "name": "open_clear_cache_dialog",
               "sig": "open_clear_cache_dialog(self)",
-              "start_line": 977,
-              "end_line": 990,
+              "start_line": 981,
+              "end_line": 994,
               "doc": ""
             },
             {
               "name": "open_glossary_dialog",
               "sig": "open_glossary_dialog(self)",
-              "start_line": 992,
-              "end_line": 1230,
+              "start_line": 996,
+              "end_line": 1234,
               "doc": "Edit persistent terminology used by every ASR and translation backend."
             },
             {
               "name": "_save_glossary",
               "sig": "_save_glossary(self)",
-              "start_line": 1232,
-              "end_line": 1233,
+              "start_line": 1236,
+              "end_line": 1237,
               "doc": ""
             },
             {
               "name": "add_to_glossary",
               "sig": "add_to_glossary(self, text)",
-              "start_line": 1235,
-              "end_line": 1246,
+              "start_line": 1239,
+              "end_line": 1250,
               "doc": ""
             },
             {
               "name": "apply_glossary_to_whisper_context",
               "sig": "apply_glossary_to_whisper_context(self)",
-              "start_line": 1248,
-              "end_line": 1259,
+              "start_line": 1252,
+              "end_line": 1263,
               "doc": ""
             },
             {
               "name": "add_custom_speaker_to_glossary",
               "sig": "add_custom_speaker_to_glossary(self, name)",
-              "start_line": 1261,
-              "end_line": 1263,
+              "start_line": 1265,
+              "end_line": 1267,
               "doc": ""
             },
             {
               "name": "set_language",
               "sig": "set_language(self, language, persist)",
-              "start_line": 1265,
-              "end_line": 1286,
+              "start_line": 1269,
+              "end_line": 1290,
               "doc": ""
             },
             {
               "name": "_apply_localization",
               "sig": "_apply_localization(self)",
-              "start_line": 1288,
-              "end_line": 1325,
+              "start_line": 1292,
+              "end_line": 1329,
               "doc": ""
             },
             {
               "name": "update_story_segment_terminology",
               "sig": "update_story_segment_terminology(self)",
-              "start_line": 1327,
-              "end_line": 1431,
+              "start_line": 1331,
+              "end_line": 1435,
               "doc": "Update all user-facing labels and tooltips to use 'Song' in Music mode and 'Story' in Voice mode."
             },
             {
               "name": "open_document",
               "sig": "open_document(self)",
-              "start_line": 1433,
-              "end_line": 1485,
+              "start_line": 1437,
+              "end_line": 1491,
               "doc": ""
             },
             {
               "name": "export_text_file",
               "sig": "export_text_file(self)",
-              "start_line": 1487,
-              "end_line": 1495,
+              "start_line": 1493,
+              "end_line": 1501,
               "doc": ""
             },
             {
               "name": "open_media",
               "sig": "open_media(self)",
-              "start_line": 1497,
-              "end_line": 1506,
+              "start_line": 1503,
+              "end_line": 1512,
               "doc": ""
             },
             {
               "name": "prepare_for_new_media",
               "sig": "prepare_for_new_media(self)",
-              "start_line": 1508,
-              "end_line": 1541,
+              "start_line": 1514,
+              "end_line": 1547,
               "doc": "Checks for unsaved changes before loading new media."
             },
             {
               "name": "_batch_media_error",
               "sig": "_batch_media_error(self, message)",
-              "start_line": 1543,
-              "end_line": 1565,
+              "start_line": 1549,
+              "end_line": 1571,
               "doc": ""
             },
             {
               "name": "_get_batch_project_target_path",
               "sig": "_get_batch_project_target_path(self, base_name)",
-              "start_line": 1567,
-              "end_line": 1594,
+              "start_line": 1573,
+              "end_line": 1600,
               "doc": "Determines consistent target .rtvs project file path during batch processing."
             },
             {
               "name": "_batch_save_project_file",
               "sig": "_batch_save_project_file(self)",
-              "start_line": 1596,
-              "end_line": 1611,
+              "start_line": 1602,
+              "end_line": 1617,
               "doc": "Saves project .rtvs to dedicated directory structure during batch processing."
             },
             {
               "name": "_batch_export_current",
               "sig": "_batch_export_current(self)",
-              "start_line": 1613,
-              "end_line": 1697,
+              "start_line": 1619,
+              "end_line": 1703,
               "doc": "Handles automatic export or project saving during batch processing."
             },
             {
               "name": "load_media_file",
               "sig": "load_media_file(self, filename, source, restore_adjacent_project)",
-              "start_line": 1699,
-              "end_line": 1814,
+              "start_line": 1705,
+              "end_line": 1820,
               "doc": ""
             },
             {
               "name": "update_active_media_source",
               "sig": "update_active_media_source(self)",
-              "start_line": 1816,
-              "end_line": 1849,
+              "start_line": 1822,
+              "end_line": 1855,
               "doc": "Update media player source and refresh waveform when normalization state changes."
             },
             {
               "name": "open_audio",
               "sig": "open_audio(self)",
-              "start_line": 1851,
-              "end_line": 1852,
+              "start_line": 1857,
+              "end_line": 1858,
               "doc": ""
             },
             {
               "name": "handle_media_drop",
               "sig": "handle_media_drop(self, filename)",
-              "start_line": 1854,
-              "end_line": 1855,
+              "start_line": 1860,
+              "end_line": 1861,
               "doc": ""
             }
           ]
@@ -4853,7 +4853,7 @@
     },
     "playback_preferences.py": {
       "path": "playback_preferences.py",
-      "lines": 800,
+      "lines": 803,
       "summary": "Radio & TV Story Segmenter \u2014 Playback Preferences & Application Facade.",
       "exports": [
         "PlaybackPreferencesMixin",
@@ -4874,7 +4874,7 @@
             "ProjectStateMixin"
           ],
           "start_line": 51,
-          "end_line": 800,
+          "end_line": 803,
           "doc": "Aggregates all playback, preferences, styling, and application lifecycle mixins.",
           "methods": [
             {
@@ -4895,161 +4895,161 @@
               "name": "log_activity",
               "sig": "log_activity(self, action_text, mark_dirty)",
               "start_line": 218,
-              "end_line": 255,
+              "end_line": 256,
               "doc": ""
             },
             {
               "name": "handle_activity_click",
               "sig": "handle_activity_click(self, item)",
-              "start_line": 257,
-              "end_line": 260,
+              "start_line": 258,
+              "end_line": 261,
               "doc": ""
             },
             {
               "name": "restore_snapshot",
               "sig": "restore_snapshot(self, index)",
-              "start_line": 262,
-              "end_line": 301,
+              "start_line": 263,
+              "end_line": 302,
               "doc": ""
             },
             {
               "name": "clear_activity_log",
               "sig": "clear_activity_log(self)",
-              "start_line": 303,
-              "end_line": 306,
+              "start_line": 304,
+              "end_line": 307,
               "doc": ""
             },
             {
               "name": "_find_all_transcript_matches",
               "sig": "_find_all_transcript_matches(self, query)",
-              "start_line": 308,
-              "end_line": 326,
+              "start_line": 309,
+              "end_line": 327,
               "doc": ""
             },
             {
               "name": "_on_transcript_search_text_changed",
               "sig": "_on_transcript_search_text_changed(self, text)",
-              "start_line": 328,
-              "end_line": 369,
+              "start_line": 329,
+              "end_line": 370,
               "doc": "Update auto-highlights and match count badge in real time as search query changes."
             },
             {
               "name": "_sync_search_match_ui",
               "sig": "_sync_search_match_ui(self, scroll_to_match)",
-              "start_line": 371,
-              "end_line": 410,
+              "start_line": 372,
+              "end_line": 411,
               "doc": ""
             },
             {
               "name": "trigger_find_next",
               "sig": "trigger_find_next(self)",
-              "start_line": 412,
-              "end_line": 442,
+              "start_line": 413,
+              "end_line": 443,
               "doc": "Find Next shortcut (Ctrl+G) handler: advances to next search match in transcript."
             },
             {
               "name": "trigger_find_prev",
               "sig": "trigger_find_prev(self)",
-              "start_line": 444,
-              "end_line": 474,
+              "start_line": 445,
+              "end_line": 475,
               "doc": "Find Previous shortcut (Ctrl+Shift+G) handler: retreats to previous search match in transcript."
             },
             {
               "name": "open_diagnostic_log_folder",
               "sig": "open_diagnostic_log_folder(self)",
-              "start_line": 476,
-              "end_line": 491,
+              "start_line": 477,
+              "end_line": 492,
               "doc": ""
             },
             {
               "name": "show_about_dialog",
               "sig": "show_about_dialog(self)",
-              "start_line": 493,
-              "end_line": 532,
+              "start_line": 494,
+              "end_line": 533,
               "doc": ""
             },
             {
               "name": "check_for_updates",
               "sig": "check_for_updates(self, interactive)",
-              "start_line": 534,
-              "end_line": 545,
+              "start_line": 535,
+              "end_line": 546,
               "doc": "Open the Check for Updates dialog to query GitHub releases and install updates."
             },
             {
               "name": "trigger_silent_update_check",
               "sig": "trigger_silent_update_check(self)",
-              "start_line": 547,
-              "end_line": 572,
+              "start_line": 548,
+              "end_line": 573,
               "doc": "Perform a background update check without showing UI unless an update is found."
             },
             {
               "name": "apply_audio_output_device",
               "sig": "apply_audio_output_device(self, device_name, volume)",
-              "start_line": 574,
-              "end_line": 598,
+              "start_line": 575,
+              "end_line": 599,
               "doc": "Apply selected audio output device and volume to the active player."
             },
             {
               "name": "show_licenses_dialog",
               "sig": "show_licenses_dialog(self)",
-              "start_line": 600,
-              "end_line": 639,
+              "start_line": 601,
+              "end_line": 640,
               "doc": ""
             },
             {
               "name": "on_expected_speakers_changed",
               "sig": "on_expected_speakers_changed(self, value)",
-              "start_line": 641,
-              "end_line": 651,
+              "start_line": 642,
+              "end_line": 653,
               "doc": "Kept as a public hook in case a future toolbar control adjusts the expected-speakers hint directly."
             },
             {
               "name": "on_diarization_sensitivity_changed",
               "sig": "on_diarization_sensitivity_changed(self, value)",
-              "start_line": 653,
-              "end_line": 663,
+              "start_line": 655,
+              "end_line": 666,
               "doc": "Public hook for adjusting speaker separation sensitivity."
             },
             {
               "name": "update_auto_save_timer",
               "sig": "update_auto_save_timer(self)",
-              "start_line": 665,
-              "end_line": 669,
+              "start_line": 668,
+              "end_line": 672,
               "doc": ""
             },
             {
               "name": "prompt_set_whisper_model",
               "sig": "prompt_set_whisper_model(self)",
-              "start_line": 671,
-              "end_line": 674,
+              "start_line": 674,
+              "end_line": 677,
               "doc": ""
             },
             {
               "name": "prompt_set_skip_seconds",
               "sig": "prompt_set_skip_seconds(self)",
-              "start_line": 676,
-              "end_line": 690,
+              "start_line": 679,
+              "end_line": 693,
               "doc": ""
             },
             {
               "name": "prompt_set_auto_detect_thresholds",
               "sig": "prompt_set_auto_detect_thresholds(self)",
-              "start_line": 692,
-              "end_line": 758,
+              "start_line": 695,
+              "end_line": 761,
               "doc": ""
             },
             {
               "name": "prompt_set_auto_save",
               "sig": "prompt_set_auto_save(self)",
-              "start_line": 760,
-              "end_line": 778,
+              "start_line": 763,
+              "end_line": 781,
               "doc": ""
             },
             {
               "name": "trigger_auto_save",
               "sig": "trigger_auto_save(self)",
-              "start_line": 780,
-              "end_line": 800,
+              "start_line": 783,
+              "end_line": 803,
               "doc": ""
             }
           ]
@@ -9015,7 +9015,7 @@
     },
     "project_export.py": {
       "path": "project_export.py",
-      "lines": 449,
+      "lines": 454,
       "summary": "Radio & TV Story Segmenter \u2014 Unified Project & Media Export Facade.",
       "exports": null,
       "classes": [
@@ -9029,7 +9029,7 @@
             "ProjectLifecycleMixin"
           ],
           "start_line": 87,
-          "end_line": 449,
+          "end_line": 454,
           "doc": "Unified application export mixin composed of focused export sub-mixins.",
           "methods": [
             {
@@ -9057,7 +9057,7 @@
               "name": "closeEvent",
               "sig": "closeEvent(self, event)",
               "start_line": 265,
-              "end_line": 449,
+              "end_line": 454,
               "doc": "MainWindow close event handling shutdown, worker cancellation, and QSettings sync."
             }
           ]
@@ -15926,7 +15926,7 @@
     "transcript_story.py": {
       "path": "transcript_story.py",
       "lines": 851,
-      "summary": "Radio & TV Segmenter v3.9.66-beta \u2014 transcript story responsibilities.",
+      "summary": "Radio & TV Segmenter v3.9.67-beta \u2014 transcript story responsibilities.",
       "exports": [
         "TranscriptStoryMixin",
         "Story",
@@ -16664,7 +16664,7 @@
     },
     "ui_layout.py": {
       "path": "ui_layout.py",
-      "lines": 1088,
+      "lines": 1089,
       "summary": "Radio & TV Segmenter \u2014 UI Layout & Menu Construction Mixin.",
       "exports": null,
       "classes": [
@@ -16674,120 +16674,120 @@
             "UiMenusMixin",
             "UiDialogLaunchersMixin"
           ],
-          "start_line": 57,
-          "end_line": 1084,
+          "start_line": 58,
+          "end_line": 1085,
           "doc": "Mixin class providing UI construction, menu assembly, and UI event binding.",
           "methods": [
             {
               "name": "build_ui",
               "sig": "build_ui(self)",
-              "start_line": 59,
-              "end_line": 761,
+              "start_line": 60,
+              "end_line": 762,
               "doc": "Build and assemble all central widgets, layouts, and panels."
             },
             {
               "name": "filter_transcript_search",
               "sig": "filter_transcript_search(self, target)",
-              "start_line": 763,
-              "end_line": 780,
+              "start_line": 764,
+              "end_line": 781,
               "doc": "Highlight and focus next occurrence of search term in transcript text view."
             },
             {
               "name": "toggle_transcript_editing_mode",
               "sig": "toggle_transcript_editing_mode(self, *args, **kwargs)",
-              "start_line": 782,
-              "end_line": 804,
+              "start_line": 783,
+              "end_line": 805,
               "doc": "Toggle between Viewing Mode (navigation/click-to-seek) and Editing Mode (text editing)."
             },
             {
               "name": "_on_transcript_editing_mode_changed",
               "sig": "_on_transcript_editing_mode_changed(self, is_editing)",
-              "start_line": 806,
-              "end_line": 841,
+              "start_line": 807,
+              "end_line": 842,
               "doc": "Respond to changes in transcript edit vs view mode."
             },
             {
               "name": "_sync_format_toolbar_buttons",
               "sig": "_sync_format_toolbar_buttons(self)",
-              "start_line": 843,
-              "end_line": 863,
+              "start_line": 844,
+              "end_line": 864,
               "doc": ""
             },
             {
               "name": "_on_toolbar_split_speaker",
               "sig": "_on_toolbar_split_speaker(self)",
-              "start_line": 865,
-              "end_line": 872,
+              "start_line": 866,
+              "end_line": 873,
               "doc": ""
             },
             {
               "name": "_apply_transcript_font_scale",
               "sig": "_apply_transcript_font_scale(self, scale, persist)",
-              "start_line": 874,
-              "end_line": 898,
+              "start_line": 875,
+              "end_line": 899,
               "doc": "Apply a transcript-only font scale and optionally persist it."
             },
             {
               "name": "_on_font_size_combo_changed",
               "sig": "_on_font_size_combo_changed(self, index)",
-              "start_line": 900,
-              "end_line": 904,
+              "start_line": 901,
+              "end_line": 905,
               "doc": ""
             },
             {
               "name": "adjust_transcript_font_size",
               "sig": "adjust_transcript_font_size(self, direction)",
-              "start_line": 906,
-              "end_line": 908,
+              "start_line": 907,
+              "end_line": 909,
               "doc": "Increase or decrease transcript font size by one 5% step."
             },
             {
               "name": "reset_transcript_font_size",
               "sig": "reset_transcript_font_size(self)",
-              "start_line": 910,
-              "end_line": 912,
+              "start_line": 911,
+              "end_line": 913,
               "doc": "Restore the default transcript font size."
             },
             {
               "name": "update_story_list_height",
               "sig": "update_story_list_height(self)",
-              "start_line": 914,
-              "end_line": 929,
+              "start_line": 915,
+              "end_line": 930,
               "doc": "Size the story list to fit the current number of stories, leaving space for metadata and export fields."
             },
             {
               "name": "auto_generate_selected_story_excerpt",
               "sig": "auto_generate_selected_story_excerpt(self)",
-              "start_line": 931,
-              "end_line": 976,
+              "start_line": 932,
+              "end_line": 977,
               "doc": "Auto-generate an excerpt from the story transcript text for the currently selected story."
             },
             {
               "name": "_on_story_excerpt_text_changed",
               "sig": "_on_story_excerpt_text_changed(self)",
-              "start_line": 978,
-              "end_line": 995,
+              "start_line": 979,
+              "end_line": 996,
               "doc": "Synchronize excerpt edits from the inline editor into story metadata."
             },
             {
               "name": "toggle_maximize_stories_panel",
               "sig": "toggle_maximize_stories_panel(self)",
-              "start_line": 997,
-              "end_line": 1050,
+              "start_line": 998,
+              "end_line": 1051,
               "doc": "Toggle maximize/restore of the stories panel across the full application window."
             },
             {
               "name": "setup_plugin_story_extensions",
               "sig": "setup_plugin_story_extensions(self)",
-              "start_line": 1052,
-              "end_line": 1074,
+              "start_line": 1053,
+              "end_line": 1075,
               "doc": "Populate plugin-provided widgets in the story panel."
             },
             {
               "name": "notify_story_selection_to_plugins",
               "sig": "notify_story_selection_to_plugins(self, selected_story)",
-              "start_line": 1076,
-              "end_line": 1084,
+              "start_line": 1077,
+              "end_line": 1085,
               "doc": "Notify all enabled plugins when the active story selection changes."
             }
           ]

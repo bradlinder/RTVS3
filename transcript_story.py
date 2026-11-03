@@ -1,4 +1,4 @@
-"""Radio & TV Segmenter v3.9.66-beta — transcript story responsibilities.
+"""Radio & TV Segmenter v3.9.67-beta — transcript story responsibilities.
 
 Methods intentionally retain the MainWindow-facing API so behavior remains
 maintaining the established MainWindow-facing API while responsibilities are isolated.
@@ -647,16 +647,17 @@ class TranscriptStoryMixin(StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsM
                 self._extra_selections_timer = timer
             timer.start()
 
-        if getattr(self, "_pending_transcript_edit_before", None) is None:
-            baseline = getattr(self, "_transcript_edit_baseline", None)
-            if baseline is not None:
-                self._pending_transcript_edit_before = baseline
+        if any_block_changed:
+            if getattr(self, "_pending_transcript_edit_before", None) is None:
+                baseline = getattr(self, "_transcript_edit_baseline", None)
+                if baseline is not None:
+                    self._pending_transcript_edit_before = baseline
 
-        timer = getattr(self, "_transcript_undo_timer", None)
-        if timer is not None:
-            timer.start()
+            timer = getattr(self, "_transcript_undo_timer", None)
+            if timer is not None:
+                timer.start()
 
-        self.mark_project_dirty()
+            self.mark_project_dirty()
 
     def transcript_clicked(self, url):
         text = url.toString()
