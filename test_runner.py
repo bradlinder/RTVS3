@@ -53,6 +53,7 @@ from diagnostic_export_tests import DiagnosticExportTestsMixin
 from diagnostic_batch_tests import DiagnosticBatchTestsMixin
 from diagnostic_cloud_and_system_tests import DiagnosticCloudAndSystemTestsMixin
 from diagnostic_loudness_tests import DiagnosticLoudnessTestsMixin
+from diagnostic_editor_tests import DiagnosticEditorTestsMixin
 
 
 # ---------------------------------------------------------------------------
@@ -65,6 +66,7 @@ class DiagnosticEngine(
     DiagnosticBatchTestsMixin,
     DiagnosticCloudAndSystemTestsMixin,
     DiagnosticLoudnessTestsMixin,
+    DiagnosticEditorTestsMixin,
 ):
     """Executes tests across Core File Formats, Subtitle Generators, AI Runtimes,
     and Download Pipelines with optional progress reporting.
@@ -475,6 +477,11 @@ class DiagnosticEngine(
                 "Audio Loudness Preferences and Manual Normalization Dialog",
                 "Timeline & Audio Performance",
                 "Validates loudness settings persistence, target standard presets, and manual normalization dialog telemetry",
+            ),
+            DiagnosticItem(
+                "Find and Replace Project Synchronization and Undo",
+                "Core Logic & File I/O",
+                "Validates Find & Replace data-model synchronization across segments, word alignments, speaker aliases, undo stack, and speaker change immunity",
             ),
         ]
 

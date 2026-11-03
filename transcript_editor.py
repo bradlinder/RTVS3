@@ -812,10 +812,14 @@ class InteractiveTranscriptEdit(
                 event.accept()
                 return
 
-        if event.matches(QKeySequence.StandardKey.Find):
+        if event.matches(QKeySequence.StandardKey.Find) or (is_ctrl and key == Qt.Key.Key_F and not is_alt and not is_shift):
             main_win = self.window()
             if hasattr(main_win, "open_find_replace"):
                 main_win.open_find_replace()
+                event.accept()
+                return
+            elif hasattr(main_win, "open_find_dialog"):
+                main_win.open_find_dialog()
                 event.accept()
                 return
 

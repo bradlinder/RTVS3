@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-03 13:57:18",
-  "total_files": 156,
+  "generated_at": "2026-11-03 17:03:51",
+  "total_files": 157,
   "files": {
     "RadioTVSegmenter.py": {
       "path": "RadioTVSegmenter.py",
       "lines": 658,
-      "summary": "Radio & TV Segmenter \u2014 v3.9.70-beta",
+      "summary": "Radio & TV Segmenter \u2014 v3.9.71-beta",
       "exports": null,
       "classes": [
         {
@@ -2098,6 +2098,31 @@
           "doc": "Builds the Diagnostic Test Bench Qt Dialog."
         }
       ]
+    },
+    "diagnostic_editor_tests.py": {
+      "path": "diagnostic_editor_tests.py",
+      "lines": 200,
+      "summary": "Diagnostic editor and find-replace tests for Radio & TV Story Segmenter.",
+      "exports": null,
+      "classes": [
+        {
+          "name": "DiagnosticEditorTestsMixin",
+          "bases": [],
+          "start_line": 11,
+          "end_line": 200,
+          "doc": "Diagnostic suite for transcript editor, find-replace, and speaker synchronization.",
+          "methods": [
+            {
+              "name": "_test_find_and_replace_project_synchronization_and_undo",
+              "sig": "_test_find_and_replace_project_synchronization_and_undo(self, item)",
+              "start_line": 14,
+              "end_line": 200,
+              "doc": "Validates that Find & Replace updates segments, word timings, speaker aliases,"
+            }
+          ]
+        }
+      ],
+      "functions": []
     },
     "diagnostic_export_tests.py": {
       "path": "diagnostic_export_tests.py",
@@ -15409,7 +15434,7 @@
     },
     "transcript_editor_dialogs.py": {
       "path": "transcript_editor_dialogs.py",
-      "lines": 392,
+      "lines": 677,
       "summary": "transcript_editor_dialogs.py - Dialog and floating toolbar components for transcript editing.",
       "exports": null,
       "classes": [
@@ -15418,78 +15443,99 @@
           "bases": [
             "QDialog"
           ],
-          "start_line": 44,
-          "end_line": 308,
+          "start_line": 50,
+          "end_line": 593,
           "doc": "Modeless find-and-replace dialog for QTextEdit / InteractiveTranscriptEdit.",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, text_edit, parent)",
-              "start_line": 47,
-              "end_line": 132,
+              "start_line": 53,
+              "end_line": 149,
               "doc": ""
             },
             {
               "name": "keyPressEvent",
               "sig": "keyPressEvent(self, event)",
-              "start_line": 134,
-              "end_line": 160,
+              "start_line": 151,
+              "end_line": 177,
               "doc": ""
             },
             {
               "name": "_on_find_text_changed",
               "sig": "_on_find_text_changed(self, text)",
-              "start_line": 162,
-              "end_line": 165,
+              "start_line": 179,
+              "end_line": 182,
               "doc": ""
             },
             {
               "name": "_update_local_match_count",
               "sig": "_update_local_match_count(self)",
-              "start_line": 167,
-              "end_line": 177,
+              "start_line": 184,
+              "end_line": 194,
               "doc": ""
             },
             {
               "name": "_sync_parent_search",
               "sig": "_sync_parent_search(self, target)",
-              "start_line": 179,
-              "end_line": 183,
+              "start_line": 196,
+              "end_line": 200,
+              "doc": ""
+            },
+            {
+              "name": "main_window",
+              "sig": "main_window(self)",
+              "start_line": 203,
+              "end_line": 211,
               "doc": ""
             },
             {
               "name": "get_flags",
               "sig": "get_flags(self)",
-              "start_line": 185,
-              "end_line": 189,
+              "start_line": 213,
+              "end_line": 219,
               "doc": ""
             },
             {
               "name": "find_next",
               "sig": "find_next(self)",
-              "start_line": 191,
-              "end_line": 227,
+              "start_line": 221,
+              "end_line": 258,
               "doc": ""
             },
             {
               "name": "find_prev",
               "sig": "find_prev(self)",
-              "start_line": 229,
-              "end_line": 272,
+              "start_line": 260,
+              "end_line": 302,
               "doc": ""
             },
             {
               "name": "replace",
               "sig": "replace(self)",
-              "start_line": 274,
-              "end_line": 282,
+              "start_line": 304,
+              "end_line": 447,
               "doc": ""
             },
             {
               "name": "replace_all",
               "sig": "replace_all(self)",
-              "start_line": 284,
-              "end_line": 308,
+              "start_line": 449,
+              "end_line": 563,
+              "doc": ""
+            },
+            {
+              "name": "_fallback_widget_replace",
+              "sig": "_fallback_widget_replace(self, replacement)",
+              "start_line": 565,
+              "end_line": 569,
+              "doc": ""
+            },
+            {
+              "name": "_fallback_widget_replace_all",
+              "sig": "_fallback_widget_replace_all(self, target, replacement)",
+              "start_line": 571,
+              "end_line": 593,
               "doc": ""
             }
           ]
@@ -15499,22 +15545,22 @@
           "bases": [
             "QFrame"
           ],
-          "start_line": 311,
-          "end_line": 392,
+          "start_line": 596,
+          "end_line": 677,
           "doc": "Floating quick-action toolbar on transcript selection (Milestone 3.12).",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, parent)",
-              "start_line": 320,
-              "end_line": 387,
+              "start_line": 605,
+              "end_line": 672,
               "doc": ""
             },
             {
               "name": "_emit_comment",
               "sig": "_emit_comment(self)",
-              "start_line": 389,
-              "end_line": 392,
+              "start_line": 674,
+              "end_line": 677,
               "doc": ""
             }
           ]
@@ -15926,7 +15972,7 @@
     "transcript_story.py": {
       "path": "transcript_story.py",
       "lines": 852,
-      "summary": "Radio & TV Segmenter v3.9.70-beta \u2014 transcript story responsibilities.",
+      "summary": "Radio & TV Segmenter v3.9.71-beta \u2014 transcript story responsibilities.",
       "exports": [
         "TranscriptStoryMixin",
         "Story",
@@ -16576,7 +16622,7 @@
     },
     "ui_dialog_launchers.py": {
       "path": "ui_dialog_launchers.py",
-      "lines": 366,
+      "lines": 371,
       "summary": "Dialog launchers and external modal helpers for Radio & TV Story Segmenter.",
       "exports": null,
       "classes": [
@@ -16584,7 +16630,7 @@
           "name": "UiDialogLaunchersMixin",
           "bases": [],
           "start_line": 25,
-          "end_line": 364,
+          "end_line": 369,
           "doc": "Mixin providing dialog launcher methods for shortcuts, benchmarks, diagnostics, and plugins.",
           "methods": [
             {
@@ -16598,63 +16644,70 @@
               "name": "open_find_dialog",
               "sig": "open_find_dialog(self)",
               "start_line": 44,
-              "end_line": 79,
+              "end_line": 47,
               "doc": "Display the Find and Replace dialog window pre-populated with search term."
+            },
+            {
+              "name": "open_find_replace",
+              "sig": "open_find_replace(self)",
+              "start_line": 49,
+              "end_line": 84,
+              "doc": "Display the Find and Replace dialog window (alias for open_find_dialog)."
             },
             {
               "name": "show_shortcuts_dialog",
               "sig": "show_shortcuts_dialog(self)",
-              "start_line": 82,
-              "end_line": 263,
+              "start_line": 87,
+              "end_line": 268,
               "doc": "Display a searchable, dynamically generated reference table of all active shortcuts."
             },
             {
               "name": "show_diagnostic_test_bench",
               "sig": "show_diagnostic_test_bench(self)",
-              "start_line": 265,
-              "end_line": 277,
+              "start_line": 270,
+              "end_line": 282,
               "doc": "Open the interactive System Diagnostic Test Bench dialog."
             },
             {
               "name": "show_performance_benchmark",
               "sig": "show_performance_benchmark(self)",
-              "start_line": 279,
-              "end_line": 291,
+              "start_line": 284,
+              "end_line": 296,
               "doc": "Open the interactive System Performance & Speed Benchmark dialog."
             },
             {
               "name": "open_plugins_manager",
               "sig": "open_plugins_manager(self)",
-              "start_line": 293,
-              "end_line": 300,
+              "start_line": 298,
+              "end_line": 305,
               "doc": "Open the Plugin Manager dialog to enable, disable, or inspect plugins."
             },
             {
               "name": "open_id3_tag_editor",
               "sig": "open_id3_tag_editor(self, mp3_path)",
-              "start_line": 302,
-              "end_line": 314,
+              "start_line": 307,
+              "end_line": 319,
               "doc": "Open the ID3 Tag Editor dialog to view and edit MP3 audio metadata."
             },
             {
               "name": "open_youtube_publish_dialog",
               "sig": "open_youtube_publish_dialog(self, story)",
-              "start_line": 317,
-              "end_line": 340,
+              "start_line": 322,
+              "end_line": 345,
               "doc": "Open the YouTube video publishing dialog or export view from the YouTube plugin."
             },
             {
               "name": "open_wordpress_publish_dialog",
               "sig": "open_wordpress_publish_dialog(self, story)",
-              "start_line": 342,
-              "end_line": 358,
+              "start_line": 347,
+              "end_line": 363,
               "doc": "Open the WordPress direct publish dialog from the WordPress plugin."
             },
             {
               "name": "open_loudness_normalization_dialog",
               "sig": "open_loudness_normalization_dialog(self)",
-              "start_line": 360,
-              "end_line": 364,
+              "start_line": 365,
+              "end_line": 369,
               "doc": "Open the Audio Loudness Normalization & Telemetry modal dialog."
             }
           ]

@@ -94,16 +94,17 @@ TABLE OF CONTENTS & STATUS OVERVIEW
    [ ] 5.4 Burned-in Subtitles & Platform Safe Zone Enforcement (`plugins/social_reel/reel_subtitles.py`)
    [ ] 5.5 Unified Export Integration & Social Reel Diagnostic Tests (`export/dialog.py`, `test_runner.py`)
 
-6. Current Release: Windows Detached Installer Handoff & Window Visibility Fix (`updater.py`) [x] [COMPLETED in v3.9.70-beta]
-   [x] 6.1 Explicit -WindowStyle Normal Execution: Add -WindowStyle Normal parameters to Start-Process calls in PowerShell supervisor script to prevent hidden background Inno Setup execution.
-   [x] 6.2 Fail-Safe CMD Batch Supervisor Fallback: Add secondary .cmd batch supervisor using start "" "%INSTALLER_PATH%" so Windows Shell opens installer wizard in SW_SHOWNORMAL mode with UAC elevation support.
-   [x] 6.3 Subprocess Cmd Launch Fallback: Update Python helper script fallback to cmd.exe /c start for visible window execution.
+6. Current Release: Find & Replace Data-Model Synchronization & Speaker Reversion Immunity (`transcript_editor_dialogs.py`, `ui_dialog_launchers.py`, `diagnostic_editor_tests.py`) [x] [COMPLETED in v3.9.71-beta]
+   [x] 6.1 Data-Model Backed Replacements: Directly mutate transcript["segments"], words, and full transcript text with automatic word-level timestamp alignment via sync_segment_words().
+   [x] 6.2 Speaker Alias & Glossary Synchronization: Synchronize speaker display aliases in speaker_names and custom_speakers_glossary with user-configurable "Include Speakers" option.
+   [x] 6.3 Project State Undo/Redo & Persistence: Commit discrete ProjectStateCommand undo snapshots before replacements, mark project dirty, and update window title.
+   [x] 6.4 Speaker Re-render Immunity: Eliminate reversion bug where subsequent speaker label changes or speaker manager actions re-rendered the unedited data model.
+   [x] 6.5 Automated Diagnostic Verification: Added diagnostic test Find and Replace Project Synchronization and Undo in diagnostic_editor_tests.py.
 
-7. Previous Release: Unsaved Changes Prompt Harmonization & False-Dirty Elimination (`playback_controller.py`, `project_lifecycle.py`, `media_batch.py`) [x] [COMPLETED in v3.9.65-beta]
-   [x] 7.1 False-Dirty Elimination on UI Playback Controls: Persist skip duration to QSettings without dirtying clean projects.
-   [x] 7.2 Standardized Save / Discard / Cancel Prompt Matrix: Align project close/open prompts and clear project_dirty = False on discard or save.
-   [x] 7.3 Eliminated Double-Prompts on New Project Workflow: Set project_dirty = False immediately on project reset/close.
-   [x] 7.4 Modular Architecture & File Size Compliance: Extract ProjectDataPurgeDialog into project_data_purge_dialog.py.
+7. Previous Release: Version Source-of-Truth Harmonization & Updater Desync Resolution (`core_utils.py`, `prs_shared.py`, `updater.py`, `RadioTVSegmenter.py`) [x] [COMPLETED in v3.9.70-beta]
+   [x] 7.1 Core Version Harmonization: Unified PROJECT_VERSION across core_utils.py and prs_shared.py.
+   [x] 7.2 Updater Import Synchronization: Bound updater.py's PROJECT_VERSION to prs_shared for drift immunity.
+   [x] 7.3 13-Point Version Check Compliance: Verified all 13 canonical project files with bump_version.py.
 
 ================================================================================
 DETAILED MILESTONE SPECIFICATIONS
@@ -146,16 +147,18 @@ DETAILED MILESTONE SPECIFICATIONS
 - Target Release: v4.3.0 (Optional / Planned)
 - Technical References: Subsystem architecture, plugin manifest, and FFmpeg filtergraph pipeline specifications are detailed in `ARCHITECTURE.md` (Section 6).
 
-6. CURRENT RELEASE: VERSION SOURCE-OF-TRUTH HARMONIZATION & UPDATER DESYNC RESOLUTION:
-- Purpose: Harmonize PROJECT_VERSION across core_utils.py, prs_shared.py, updater.py, and RadioTVSegmenter.py, eliminating the split source of truth between the main window title bar and the Check for Updates dialog.
-- Target Release: v3.9.70-beta (Current Release)
+6. CURRENT RELEASE: FIND & REPLACE DATA-MODEL SYNCHRONIZATION & SPEAKER REVERSION IMMUNITY:
+- Purpose: Fix architectural defect where Find & Replace modified only the Qt presentation buffer without mutating project segments or speaker names, causing any subsequent speaker rename or render_transcript() call to revert all corrections.
+- Target Release: v3.9.71-beta (Current Release)
 - Technical References & Implementation Details:
-  * [x] Core Version Harmonization: Unified PROJECT_VERSION across core_utils.py and prs_shared.py.
-  * [x] Updater Import Synchronization: Bound updater.py's PROJECT_VERSION to prs_shared for drift immunity.
-  * [x] 13-Point Version Check Compliance: Verified all 13 canonical project files with bump_version.py.
-  * Release Logs: Documented in `CHANGELOG.md` under `## v3.9.70-beta`.
+  * [x] Data-Model Backed Replacements: Directly mutate transcript["segments"], words, and full transcript text with automatic word-level timestamp alignment via sync_segment_words().
+  * [x] Speaker Alias & Glossary Synchronization: Synchronize speaker display aliases in speaker_names and custom_speakers_glossary with user-configurable "Include Speakers" option.
+  * [x] Project State Undo/Redo & Persistence: Commit discrete ProjectStateCommand undo snapshots before replacements, mark project dirty, and update window title.
+  * [x] Speaker Re-render Immunity: Eliminate reversion bug where subsequent speaker label changes or speaker manager actions re-rendered the unedited data model.
+  * [x] Automated Diagnostic Verification: Added diagnostic test Find and Replace Project Synchronization and Undo in diagnostic_editor_tests.py.
+  * Release Logs: Documented in `CHANGELOG.md` under `## v3.9.71-beta`.
 
-7. PREVIOUS RELEASE: AUTO-UPDATER END-TO-END VERIFICATION RELEASE:
-- Purpose: Incremental validation release to verify live over-the-air update download, detached helper invocation, UAC elevation prompt, and automatic application relaunch.
-- Target Release: v3.9.69-beta (Previous Release)
-- Technical References: Full implementation details are documented in `CHANGELOG.md` under `## v3.9.69-beta`.
+7. PREVIOUS RELEASE: VERSION SOURCE-OF-TRUTH HARMONIZATION & UPDATER DESYNC RESOLUTION:
+- Purpose: Harmonize PROJECT_VERSION across core_utils.py, prs_shared.py, updater.py, and RadioTVSegmenter.py, eliminating the split source of truth between the main window title bar and the Check for Updates dialog.
+- Target Release: v3.9.70-beta (Previous Release)
+- Technical References: Full implementation details are documented in `CHANGELOG.md` under `## v3.9.70-beta`.

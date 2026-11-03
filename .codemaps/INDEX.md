@@ -1,13 +1,13 @@
 # Repository Symbol Index & API Map
 
-> Generated: 2026-11-03 13:57:18 | Total Files: 156
+> Generated: 2026-11-03 17:03:51 | Total Files: 157
 > Use `python scripts/generate_symbol_index.py --outline <file>` for exact line numbers.
 
 ## Modules Overview
 
 | Module | Lines | Summary | Primary Classes / Functions |
 | :--- | :---: | :--- | :--- |
-| `RadioTVSegmenter.py` | 658 | Radio & TV Segmenter — v3.9.70-beta | `MainWindow`, `main()` |
+| `RadioTVSegmenter.py` | 658 | Radio & TV Segmenter — v3.9.71-beta | `MainWindow`, `main()` |
 | `audio_normalization.py` | 541 | Radio & TV Story Segmenter — Audio Loudness Probing & Nor... | `LoudnessReport`, `AudioLoudnessProbeWorker`, `parse_ebur128_summary()`, `probe_media_duration_seconds()` *(+3 more)* |
 | `background_workers.py` | 1015 | Radio & TV Story Segmenter — Background Worker Threads & ... | `StoryAutoDetectWorker`, `WaveformWorker`, `VideoThumbnailWorker`, `get_waveform_peak_cache_path()` *(+6 more)* |
 | `backup_manager.py` | 622 | Unified State Serialization, Local, and Google Drive Clou... | `compute_data_checksum()`, `serialize_preferences()`, `serialize_keyboard_shortcuts()`, `serialize_glossary()` *(+7 more)* |
@@ -26,6 +26,7 @@
 | `diagnostic_cloud_and_system_tests.py` | 1300 | Diagnostic test bench suite component. | `DiagnosticCloudAndSystemTestsMixin` |
 | `diagnostic_core_tests.py` | 826 | Diagnostic test bench suite component. | `DiagnosticCoreTestsMixin` |
 | `diagnostic_dialog.py` | 288 | PySide6 Graphical Test Bench Dialog for Radio & TV Story ... | `create_diagnostic_dialog()` |
+| `diagnostic_editor_tests.py` | 200 | Diagnostic editor and find-replace tests for Radio & TV S... | `DiagnosticEditorTestsMixin` |
 | `diagnostic_export_tests.py` | 1699 | Diagnostic test bench suite component. | `DiagnosticExportTestsMixin` |
 | `diagnostic_helpers.py` | 151 | Helper fixtures, module resolvers, and DiagnosticItem for... | `DiagnosticItem`, `generate_synthetic_wav()` |
 | `diagnostic_loudness_tests.py` | 391 | Radio & TV Story Segmenter — Diagnostic Loudness Normaliz... | `DiagnosticLoudnessTestsMixin` |
@@ -137,17 +138,17 @@
 | `transcript_cleaner.py` | 216 | Radio & TV Segmenter — Transcript cleaning, loop collapsi... | `collapse_repeating_ngrams()`, `strip_hallucination_phrases()`, `trim_trailing_degenerate_tail()`, `scrub_transcript_segments()` *(+1 more)* |
 | `transcript_context_menu_mixin.py` | 415 | Radio & TV Story Segmenter — Interactive Transcript Conte... | `TranscriptContextMenuMixin` |
 | `transcript_editor.py` | 866 | transcript_editor.py - Interactive Transcript Editor & Vi... | `InteractiveTranscriptEdit` |
-| `transcript_editor_dialogs.py` | 392 | transcript_editor_dialogs.py - Dialog and floating toolba... | `FindReplaceDialog`, `TranscriptSelectionBubble` |
+| `transcript_editor_dialogs.py` | 677 | transcript_editor_dialogs.py - Dialog and floating toolba... | `FindReplaceDialog`, `TranscriptSelectionBubble` |
 | `transcript_formatting_mixin.py` | 340 | Radio & TV Story Segmenter — Interactive Transcript Forma... | `TranscriptFormattingMixin` |
 | `transcript_navigation_mixin.py` | 299 | transcript_navigation_mixin.py - Timestamp discovery, car... | `TranscriptNavigationMixin` |
 | `transcript_playback_highlight_mixin.py` | 276 | Radio & TV Story Segmenter — Interactive Transcript Playb... | `TranscriptPlaybackHighlightMixin` |
 | `transcript_selection_mixin.py` | 466 | transcript_selection_mixin.py - Multi-selection, timeline... | `TranscriptSelectionMixin` |
-| `transcript_story.py` | 852 | Radio & TV Segmenter v3.9.70-beta — transcript story resp... | `TranscriptStoryMixin` |
+| `transcript_story.py` | 852 | Radio & TV Segmenter v3.9.71-beta — transcript story resp... | `TranscriptStoryMixin` |
 | `transcript_styles.py` | 104 | transcript_styles.py - Transcript view stylesheets and da... | `transcript_text_view_stylesheet()`, `clean_dark_mode_clipboard_html()` |
 | `transcript_timeline_sync_mixin.py` | 634 | Radio & TV Story Segmenter — Transcript Timeline & Playba... | `TranscriptTimelineSyncMixin` |
 | `transcription_processing.py` | 579 | Transcription background process management for Radio & T... | `TranscriptionProcessingMixin` |
 | `translation.py` | 923 | Radio & TV Segmenter — Local Translation Mixin. | `TranslationEnvSetupWorker`, `TranslationMixin` |
-| `ui_dialog_launchers.py` | 366 | Dialog launchers and external modal helpers for Radio & T... | `UiDialogLaunchersMixin` |
+| `ui_dialog_launchers.py` | 371 | Dialog launchers and external modal helpers for Radio & T... | `UiDialogLaunchersMixin` |
 | `ui_layout.py` | 1090 | Radio & TV Segmenter — UI Layout & Menu Construction Mixin. | `UiLayoutMixin` |
 | `ui_menus.py` | 814 | Main application menu bar and action assembly for Radio &... | `PersistentMenu`, `UiMenusMixin` |
 | `updater.py` | 1549 | Update manager and GitHub release installer for Radio & T... | `CheckUpdateWorker`, `DownloadUpdateWorker`, `CheckUpdateDialog`, `UpdaterMixin` *(+9 more)* |
@@ -167,7 +168,7 @@
 ## Detailed Symbol Catalog
 
 ### `RadioTVSegmenter.py` (658 lines)
-*Radio & TV Segmenter — v3.9.70-beta*
+*Radio & TV Segmenter — v3.9.71-beta*
 - **class `MainWindow(ModelManagementMixin, MediaBatchMixin, PlaybackPreferencesMixin, UiLayoutMixin, ProcessingMixin, TranslationMixin, TranscriptStoryMixin, ProjectExportMixin, GpuAccelerationMixin, QMainWindow)`** (lines 160–555):
   *Main application window for Radio & TV Segmenter.*
   - `__init__(self)` [L178-L350]
@@ -508,6 +509,12 @@
 *PySide6 Graphical Test Bench Dialog for Radio & TV Story Segmenter.*
 - **Functions**:
   - `create_diagnostic_dialog(parent, include_dev_tests)` [L16-L288] — *Builds the Diagnostic Test Bench Qt Dialog.*
+
+### `diagnostic_editor_tests.py` (200 lines)
+*Diagnostic editor and find-replace tests for Radio & TV Story Segmenter.*
+- **class `DiagnosticEditorTestsMixin`** (lines 11–200):
+  *Diagnostic suite for transcript editor, find-replace, and speaker synchronization.*
+  - `_test_find_and_replace_project_synchronization_and_undo(self, item)` [L14-L200] — *Validates that Find & Replace updates segments, word timings, speaker aliases,*
 
 ### `diagnostic_export_tests.py` (1699 lines)
 *Diagnostic test bench suite component.*
@@ -2677,24 +2684,27 @@
   - `mouseReleaseEvent(self, event)` [L550-L636]
   - `keyPressEvent(self, event)` [L638-L866]
 
-### `transcript_editor_dialogs.py` (392 lines)
+### `transcript_editor_dialogs.py` (677 lines)
 *transcript_editor_dialogs.py - Dialog and floating toolbar components for transcript editing.*
-- **class `FindReplaceDialog(QDialog)`** (lines 44–308):
+- **class `FindReplaceDialog(QDialog)`** (lines 50–593):
   *Modeless find-and-replace dialog for QTextEdit / InteractiveTranscriptEdit.*
-  - `__init__(self, text_edit, parent)` [L47-L132]
-  - `keyPressEvent(self, event)` [L134-L160]
-  - `_on_find_text_changed(self, text)` [L162-L165]
-  - `_update_local_match_count(self)` [L167-L177]
-  - `_sync_parent_search(self, target)` [L179-L183]
-  - `get_flags(self)` [L185-L189]
-  - `find_next(self)` [L191-L227]
-  - `find_prev(self)` [L229-L272]
-  - `replace(self)` [L274-L282]
-  - `replace_all(self)` [L284-L308]
-- **class `TranscriptSelectionBubble(QFrame)`** (lines 311–392):
+  - `__init__(self, text_edit, parent)` [L53-L149]
+  - `keyPressEvent(self, event)` [L151-L177]
+  - `_on_find_text_changed(self, text)` [L179-L182]
+  - `_update_local_match_count(self)` [L184-L194]
+  - `_sync_parent_search(self, target)` [L196-L200]
+  - `main_window(self)` [L203-L211]
+  - `get_flags(self)` [L213-L219]
+  - `find_next(self)` [L221-L258]
+  - `find_prev(self)` [L260-L302]
+  - `replace(self)` [L304-L447]
+  - `replace_all(self)` [L449-L563]
+  - `_fallback_widget_replace(self, replacement)` [L565-L569]
+  - `_fallback_widget_replace_all(self, target, replacement)` [L571-L593]
+- **class `TranscriptSelectionBubble(QFrame)`** (lines 596–677):
   *Floating quick-action toolbar on transcript selection (Milestone 3.12).*
-  - `__init__(self, parent)` [L320-L387]
-  - `_emit_comment(self)` [L389-L392]
+  - `__init__(self, parent)` [L605-L672]
+  - `_emit_comment(self)` [L674-L677]
 
 ### `transcript_formatting_mixin.py` (340 lines)
 *Radio & TV Story Segmenter — Interactive Transcript Formatting Mixin.*
@@ -2764,7 +2774,7 @@
   - `_on_bubble_export(self)` [L461-L466]
 
 ### `transcript_story.py` (852 lines)
-*Radio & TV Segmenter v3.9.70-beta — transcript story responsibilities.*
+*Radio & TV Segmenter v3.9.71-beta — transcript story responsibilities.*
 - **Public Exports (`__all__`)**: TranscriptStoryMixin, Story, SetStoriesCommand, SelectStoriesCommand, StoryBoundaryChangeCommand, StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin, ChangeSpeakerDialog, VoiceProfileMatchDialog, StoryFadesDialog, SpeakerManagerDialog, FADE_CURVE_TABLES, get_fade_curve_factors
 - **class `TranscriptStoryMixin(StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin)`** (lines 63–851):
   - `render_transcript(self)` [L64-L467]
@@ -2866,20 +2876,21 @@
   - `_translation_runtime_entry_path(app)` [L95-L121]
   - `_translation_runtime_manager(app)` [L123-L130]
 
-### `ui_dialog_launchers.py` (366 lines)
+### `ui_dialog_launchers.py` (371 lines)
 *Dialog launchers and external modal helpers for Radio & TV Story Segmenter.*
-- **class `UiDialogLaunchersMixin`** (lines 25–364):
+- **class `UiDialogLaunchersMixin`** (lines 25–369):
   *Mixin providing dialog launcher methods for shortcuts, benchmarks, diagnostics, and plugins.*
   - `open_project_dialog(self)` [L27-L42] — *Prompt user to open a project file (*.rtvs).*
-  - `open_find_dialog(self)` [L44-L79] — *Display the Find and Replace dialog window pre-populated with search term.*
-  - `show_shortcuts_dialog(self)` [L82-L263] — *Display a searchable, dynamically generated reference table of all active shortcuts.*
-  - `show_diagnostic_test_bench(self)` [L265-L277] — *Open the interactive System Diagnostic Test Bench dialog.*
-  - `show_performance_benchmark(self)` [L279-L291] — *Open the interactive System Performance & Speed Benchmark dialog.*
-  - `open_plugins_manager(self)` [L293-L300] — *Open the Plugin Manager dialog to enable, disable, or inspect plugins.*
-  - `open_id3_tag_editor(self, mp3_path)` [L302-L314] — *Open the ID3 Tag Editor dialog to view and edit MP3 audio metadata.*
-  - `open_youtube_publish_dialog(self, story)` [L317-L340] — *Open the YouTube video publishing dialog or export view from the YouTube plugin.*
-  - `open_wordpress_publish_dialog(self, story)` [L342-L358] — *Open the WordPress direct publish dialog from the WordPress plugin.*
-  - `open_loudness_normalization_dialog(self)` [L360-L364] — *Open the Audio Loudness Normalization & Telemetry modal dialog.*
+  - `open_find_dialog(self)` [L44-L47] — *Display the Find and Replace dialog window pre-populated with search term.*
+  - `open_find_replace(self)` [L49-L84] — *Display the Find and Replace dialog window (alias for open_find_dialog).*
+  - `show_shortcuts_dialog(self)` [L87-L268] — *Display a searchable, dynamically generated reference table of all active shortcuts.*
+  - `show_diagnostic_test_bench(self)` [L270-L282] — *Open the interactive System Diagnostic Test Bench dialog.*
+  - `show_performance_benchmark(self)` [L284-L296] — *Open the interactive System Performance & Speed Benchmark dialog.*
+  - `open_plugins_manager(self)` [L298-L305] — *Open the Plugin Manager dialog to enable, disable, or inspect plugins.*
+  - `open_id3_tag_editor(self, mp3_path)` [L307-L319] — *Open the ID3 Tag Editor dialog to view and edit MP3 audio metadata.*
+  - `open_youtube_publish_dialog(self, story)` [L322-L345] — *Open the YouTube video publishing dialog or export view from the YouTube plugin.*
+  - `open_wordpress_publish_dialog(self, story)` [L347-L363] — *Open the WordPress direct publish dialog from the WordPress plugin.*
+  - `open_loudness_normalization_dialog(self)` [L365-L369] — *Open the Audio Loudness Normalization & Telemetry modal dialog.*
 
 ### `ui_layout.py` (1090 lines)
 *Radio & TV Segmenter — UI Layout & Menu Construction Mixin.*

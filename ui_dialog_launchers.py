@@ -78,6 +78,10 @@ class UiDialogLaunchersMixin:
         self.find_dialog.activateWindow()
         self.find_dialog.find_input.setFocus()
 
+    def open_find_replace(self):
+        """Display the Find and Replace dialog window (alias for open_find_dialog)."""
+        return self.open_find_dialog()
+
 
     def show_shortcuts_dialog(self):
         """Display a searchable, dynamically generated reference table of all active shortcuts."""
