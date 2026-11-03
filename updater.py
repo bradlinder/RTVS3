@@ -48,7 +48,7 @@ except ImportError:
         )
     except Exception:
         APP_DISPLAY_NAME = "Radio & TV Segmenter"
-        PROJECT_VERSION = "3.9.65-beta"
+        PROJECT_VERSION = "3.9.66-beta"
         DEFAULT_GITHUB_REPO = "bradlinder/RTVS3"
         INTERNAL_APP_ID = "RadioTVStorySegmenter"
 
@@ -490,8 +490,8 @@ def launch_and_install(file_path: str, parent: QWidget | None = None) -> bool:
             "\n"
             "if not launched_installer:\n"
             "    try:\n"
-            "        subprocess.Popen([installer_path], shell=False, creationflags=0x00000008)\n"
-            "        log('Subprocess fallback launch successful.')\n"
+            "        subprocess.Popen(['cmd.exe', '/c', 'start', '', installer_path], shell=False)\n"
+            "        log('Subprocess cmd start fallback launch successful.')\n"
             "    except Exception as e:\n"
             "        log(f'Fallback launch error: {e}')\n"
             "\n"
@@ -542,13 +542,28 @@ def launch_and_install(file_path: str, parent: QWidget | None = None) -> bool:
                 supervisor_ps = (
                     f"$targetPid = {curr_pid}\n"
                     f"$logFile = '{escaped_log}'\n"
+                    f"$installerPath = '{escaped_path}'\n"
                     f"Add-Content -Path $logFile -Value ('[' + (Get-Date -Format 'yyyy-MM-dd HH:mm:ss') + '] [PS-Helper] Waiting for PID ' + $targetPid)\n"
-                    f"while (Get-Process -Id $targetPid -ErrorAction SilentlyContinue) {{\n"
+                    f"$waited = 0\n"
+                    f"while ((Get-Process -Id $targetPid -ErrorAction SilentlyContinue) -and ($waited -lt 120)) {{\n"
                     f"    Start-Sleep -Milliseconds 250\n"
+                    f"    $waited++\n"
                     f"}}\n"
                     f"Start-Sleep -Seconds 1\n"
-                    f"Add-Content -Path $logFile -Value ('[' + (Get-Date -Format 'yyyy-MM-dd HH:mm:ss') + '] [PS-Helper] Launching installer {escaped_path}')\n"
-                    f"try {{ Start-Process -FilePath '{escaped_path}' -ErrorAction Stop }} catch {{ Start-Process -FilePath '{escaped_path}' -Verb RunAs }}\n"
+                    f"Add-Content -Path $logFile -Value ('[' + (Get-Date -Format 'yyyy-MM-dd HH:mm:ss') + '] [PS-Helper] Launching installer ' + $installerPath)\n"
+                    f"try {{\n"
+                    f"    Start-Process -FilePath $installerPath -WindowStyle Normal -ErrorAction Stop\n"
+                    f"    Add-Content -Path $logFile -Value ('[' + (Get-Date -Format 'yyyy-MM-dd HH:mm:ss') + '] [PS-Helper] Start-Process Normal succeeded')\n"
+                    f"}} catch {{\n"
+                    f"    Add-Content -Path $logFile -Value ('[' + (Get-Date -Format 'yyyy-MM-dd HH:mm:ss') + '] [PS-Helper] Normal launch failed ($($_)), attempting Verb RunAs')\n"
+                    f"    try {{\n"
+                    f"        Start-Process -FilePath $installerPath -Verb RunAs -WindowStyle Normal -ErrorAction Stop\n"
+                    f"        Add-Content -Path $logFile -Value ('[' + (Get-Date -Format 'yyyy-MM-dd HH:mm:ss') + '] [PS-Helper] Start-Process RunAs succeeded')\n"
+                    f"    }} catch {{\n"
+                    f"        Add-Content -Path $logFile -Value ('[' + (Get-Date -Format 'yyyy-MM-dd HH:mm:ss') + '] [PS-Helper] RunAs failed ($($_)), attempting cmd.exe start fallback')\n"
+                    f"        Start-Process -FilePath 'cmd.exe' -ArgumentList '/c', 'start', '\"\"', '\"' + $installerPath + '\"' -WindowStyle Normal\n"
+                    f"    }}\n"
+                    f"}}\n"
                     f"Add-Content -Path $logFile -Value ('[' + (Get-Date -Format 'yyyy-MM-dd HH:mm:ss') + '] [PS-Helper] Finished')\n"
                 )
                 temp_helper_ps = get_app_data_dir() / "rtvs_update_supervisor.ps1"
@@ -574,6 +589,42 @@ def launch_and_install(file_path: str, parent: QWidget | None = None) -> bool:
             except Exception as exc_ps:
                 last_error += f" | PowerShell error: {exc_ps}"
                 _write_update_log(f"PowerShell helper spawn failed: {exc_ps}")
+
+        # CMD batch supervisor fallback if PowerShell failed to spawn or execute
+        if not launched:
+            try:
+                cmd_log = str(log_path)
+                cmd_path = str(path)
+                supervisor_cmd = (
+                    f"@echo off\n"
+                    f"set \"TARGET_PID={curr_pid}\"\n"
+                    f"set \"INSTALLER_PATH={cmd_path}\"\n"
+                    f"set \"LOG_FILE={cmd_log}\"\n"
+                    f"echo [%DATE% %TIME%] [CMD-Helper] Waiting for PID %TARGET_PID% to exit... >> \"%LOG_FILE%\"\n"
+                    f":wait_loop\n"
+                    f"timeout /t 1 /nobreak >nul\n"
+                    f"tasklist /fi \"PID eq %TARGET_PID%\" 2>nul | find \"%TARGET_PID%\" >nul\n"
+                    f"if not errorlevel 1 goto wait_loop\n"
+                    f"echo [%DATE% %TIME%] [CMD-Helper] PID %TARGET_PID% exited. Launching installer via start command... >> \"%LOG_FILE%\"\n"
+                    f"timeout /t 1 /nobreak >nul\n"
+                    f"start \"\" \"%INSTALLER_PATH%\"\n"
+                    f"echo [%DATE% %TIME%] [CMD-Helper] Start command issued. >> \"%LOG_FILE%\"\n"
+                )
+                temp_helper_cmd = get_app_data_dir() / "rtvs_update_supervisor.cmd"
+                temp_helper_cmd.write_text(supervisor_cmd, encoding="utf-8")
+
+                subprocess.Popen(
+                    ["cmd.exe", "/c", str(temp_helper_cmd)],
+                    cwd=str(path.parent),
+                    creationflags=creationflags,
+                    close_fds=True,
+                    shell=False,
+                )
+                launched = True
+                _write_update_log("Launched CMD batch detached supervisor.")
+            except Exception as exc_cmd:
+                last_error += f" | CMD helper error: {exc_cmd}"
+                _write_update_log(f"CMD helper spawn failed: {exc_cmd}")
 
         if not launched:
             try:

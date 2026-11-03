@@ -94,17 +94,16 @@ TABLE OF CONTENTS & STATUS OVERVIEW
    [ ] 5.4 Burned-in Subtitles & Platform Safe Zone Enforcement (`plugins/social_reel/reel_subtitles.py`)
    [ ] 5.5 Unified Export Integration & Social Reel Diagnostic Tests (`export/dialog.py`, `test_runner.py`)
 
-6. Current Release: Unsaved Changes Prompt Harmonization & False-Dirty Elimination (`playback_controller.py`, `project_lifecycle.py`, `media_batch.py`) [x] [COMPLETED in v3.9.65-beta]
-   [x] 6.1 Stale Worker State Overwrite Guard: Check if active media changed before assigning transcription/diarization results. [P1-03]
-   [x] 6.2 Non-Modal Batch Error Handling: Log errors and continue processing remaining queue items instead of modal `QMessageBox` popups. [P1-04]
-   [x] 6.3 Worker Lifecycle & Re-entrancy Guards: Fix thumbnail QThread teardown and disable Translate action during processing. [P3-02, P3-04]
-   [x] 6.4 DAW Export Format Matrix Unification: Harmonize Local Disk and Timeline DAW exports, passing sample rates and track names. [P6-04]
-   [x] 6.5 Samplitude EDL Destination Timecode Contiguity: Correct destination timecode in `export/timeline.py` for excluded unselected audio. [P6-05]
+6. Current Release: Windows Detached Installer Handoff & Window Visibility Fix (`updater.py`) [x] [COMPLETED in v3.9.66-beta]
+   [x] 6.1 Explicit -WindowStyle Normal Execution: Add -WindowStyle Normal parameters to Start-Process calls in PowerShell supervisor script to prevent hidden background Inno Setup execution.
+   [x] 6.2 Fail-Safe CMD Batch Supervisor Fallback: Add secondary .cmd batch supervisor using start "" "%INSTALLER_PATH%" so Windows Shell opens installer wizard in SW_SHOWNORMAL mode with UAC elevation support.
+   [x] 6.3 Subprocess Cmd Launch Fallback: Update Python helper script fallback to cmd.exe /c start for visible window execution.
 
-7. Previous Release: Windows Update UIPI De-Elevation & Drag-and-Drop Restoration (`updater.py`, `installer/Windows/RadioTVStorySegmenter.iss`, `ui_layout.py`) [x] [COMPLETED in v3.9.64-beta]
-   [x] 7.1 Cross-Thread Qt Warning Elimination: Refactored `diagnostic_core_tests.py` and `diagnostic_export_tests.py` to decouple top-level native QWidget creation from secondary worker threads (`TestRunnerWorker` in `DiagnosticDialog`), eliminating `QObject: Cannot create children for a parent that is in a different thread`.
-   [x] 7.2 Cell Editor Teardown Safety: Cleaned up active `QLineEdit` cell editors and timers before dialog destruction, eliminating orphaned `QBasicTimer::stop` failure warnings.
-   [x] 7.3 Main-Thread vs. Worker-Thread Test Branching: Implemented `is_main_gui_thread` branching across UI diagnostic tests to execute interactive widget flows on the GUI thread and class/contract invariants on secondary worker threads.
+7. Previous Release: Unsaved Changes Prompt Harmonization & False-Dirty Elimination (`playback_controller.py`, `project_lifecycle.py`, `media_batch.py`) [x] [COMPLETED in v3.9.65-beta]
+   [x] 7.1 False-Dirty Elimination on UI Playback Controls: Persist skip duration to QSettings without dirtying clean projects.
+   [x] 7.2 Standardized Save / Discard / Cancel Prompt Matrix: Align project close/open prompts and clear project_dirty = False on discard or save.
+   [x] 7.3 Eliminated Double-Prompts on New Project Workflow: Set project_dirty = False immediately on project reset/close.
+   [x] 7.4 Modular Architecture & File Size Compliance: Extract ProjectDataPurgeDialog into project_data_purge_dialog.py.
 
 ================================================================================
 DETAILED MILESTONE SPECIFICATIONS

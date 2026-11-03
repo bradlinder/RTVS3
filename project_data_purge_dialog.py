@@ -13,7 +13,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
 )
 
-from ui_layout import make_dialog_maximizable
+from core_utils import make_dialog_maximizable
 
 
 class ProjectDataPurgeDialog(QDialog):

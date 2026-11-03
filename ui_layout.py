@@ -51,6 +51,7 @@ from prs_shared import (
 )
 
 
+from core_utils import make_dialog_maximizable
 from ui_menus import PersistentMenu, UiMenusMixin
 from ui_dialog_launchers import UiDialogLaunchersMixin
 
