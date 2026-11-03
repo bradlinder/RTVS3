@@ -94,7 +94,7 @@ TABLE OF CONTENTS & STATUS OVERVIEW
    [ ] 5.4 Burned-in Subtitles & Platform Safe Zone Enforcement (`plugins/social_reel/reel_subtitles.py`)
    [ ] 5.5 Unified Export Integration & Social Reel Diagnostic Tests (`export/dialog.py`, `test_runner.py`)
 
-6. Current Release: Windows Detached Installer Handoff & Window Visibility Fix (`updater.py`) [x] [COMPLETED in v3.9.67-beta]
+6. Current Release: Windows Detached Installer Handoff & Window Visibility Fix (`updater.py`) [x] [COMPLETED in v3.9.70-beta]
    [x] 6.1 Explicit -WindowStyle Normal Execution: Add -WindowStyle Normal parameters to Start-Process calls in PowerShell supervisor script to prevent hidden background Inno Setup execution.
    [x] 6.2 Fail-Safe CMD Batch Supervisor Fallback: Add secondary .cmd batch supervisor using start "" "%INSTALLER_PATH%" so Windows Shell opens installer wizard in SW_SHOWNORMAL mode with UAC elevation support.
    [x] 6.3 Subprocess Cmd Launch Fallback: Update Python helper script fallback to cmd.exe /c start for visible window execution.
@@ -146,15 +146,16 @@ DETAILED MILESTONE SPECIFICATIONS
 - Target Release: v4.3.0 (Optional / Planned)
 - Technical References: Subsystem architecture, plugin manifest, and FFmpeg filtergraph pipeline specifications are detailed in `ARCHITECTURE.md` (Section 6).
 
-6. CURRENT RELEASE: AUTO-UPDATER END-TO-END VERIFICATION RELEASE:
-- Purpose: Incremental validation release to verify live over-the-air update download, detached helper invocation, UAC elevation prompt, and automatic application relaunch from v3.9.68-beta.
-- Target Release: v3.9.69-beta (Current Release)
+6. CURRENT RELEASE: VERSION SOURCE-OF-TRUTH HARMONIZATION & UPDATER DESYNC RESOLUTION:
+- Purpose: Harmonize PROJECT_VERSION across core_utils.py, prs_shared.py, updater.py, and RadioTVSegmenter.py, eliminating the split source of truth between the main window title bar and the Check for Updates dialog.
+- Target Release: v3.9.70-beta (Current Release)
 - Technical References & Implementation Details:
-  * [x] End-to-End Update Handoff Verification: Validation cycle for live update flow from v3.9.68-beta.
-  * [x] De-Elevated Desktop Shell Integrity: Validates post-install launch via `{win}\explorer.exe` for uninhibited OLE drag-and-drop on first launch.
-  * Release Logs: Documented in `CHANGELOG.md` under `## v3.9.69-beta`.
+  * [x] Core Version Harmonization: Unified PROJECT_VERSION across core_utils.py and prs_shared.py.
+  * [x] Updater Import Synchronization: Bound updater.py's PROJECT_VERSION to prs_shared for drift immunity.
+  * [x] 13-Point Version Check Compliance: Verified all 13 canonical project files with bump_version.py.
+  * Release Logs: Documented in `CHANGELOG.md` under `## v3.9.70-beta`.
 
-7. PREVIOUS RELEASE: WINDOWS AUTO-UPDATER SYNTAX & DETACHED HANDOFF HARDENING:
-- Purpose: Resolved Python helper template indentation crash (`IndentationError`) and established synchronous in-memory compilation guards so updater handoffs reliably launch elevated installers while maintaining first-run de-elevation.
-- Target Release: v3.9.68-beta (Previous Release)
-- Technical References: Full implementation details are documented in `CHANGELOG.md` under `## v3.9.68-beta`.
+7. PREVIOUS RELEASE: AUTO-UPDATER END-TO-END VERIFICATION RELEASE:
+- Purpose: Incremental validation release to verify live over-the-air update download, detached helper invocation, UAC elevation prompt, and automatic application relaunch.
+- Target Release: v3.9.69-beta (Previous Release)
+- Technical References: Full implementation details are documented in `CHANGELOG.md` under `## v3.9.69-beta`.

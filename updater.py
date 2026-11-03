@@ -35,6 +35,11 @@ try:
         get_github_repo,
         get_update_channel,
     )
+    try:
+        from prs_shared import PROJECT_VERSION as _PRS_PROJECT_VERSION
+        PROJECT_VERSION = _PRS_PROJECT_VERSION
+    except Exception:
+        pass
 except ImportError:
     try:
         from prs_shared import (
@@ -48,7 +53,7 @@ except ImportError:
         )
     except Exception:
         APP_DISPLAY_NAME = "Radio & TV Segmenter"
-        PROJECT_VERSION = "3.9.69-beta"
+        PROJECT_VERSION = "3.9.70-beta"
         DEFAULT_GITHUB_REPO = "bradlinder/RTVS3"
         INTERNAL_APP_ID = "RadioTVStorySegmenter"
 

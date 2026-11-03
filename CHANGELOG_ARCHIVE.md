@@ -11,6 +11,12 @@ For current and active releases, see [CHANGELOG.md](CHANGELOG.md).
 
 ---
 
+## v3.9.68-beta
+- **Windows Auto-Updater Syntax & Detached Handoff Hardening (`updater.py`)**:
+  - **Python Helper Syntax & Indentation Resolution**: Fixed critical 4-space unexpected indent bug in `updater.py`'s dynamically generated Python helper template (`rtvs_update_helper.py`), which caused Python to crash on launch with `IndentationError` when updating between releases.
+  - **Synchronous In-Memory Validation Guard**: Added `compile(python_helper_code, "rtvs_update_helper.py", "exec")` validation check before writing the helper script to disk. If template generation ever raises a syntax or indentation exception, execution safely aborts to the PowerShell supervisor instead of spawning an inoperable child process.
+  - **Preserved UAC Elevation & Post-Install De-Elevation Architecture**: Maintained explicit elevated installer handoff (`runas`) for `C:\Program Files` authorization while guaranteeing standard user token execution on first run via `RadioTVStorySegmenter.iss`'s `{win}\explorer.exe` post-install hook, ensuring drag-and-drop and clipboard functionality work out of the box.
+
 ## v3.9.67-beta
 - **False Unsaved Changes Prompt Elimination on Application Exit (`project_export.py`, `playback_preferences.py`, `media_batch.py`)**:
   - **Inversion of Activity Logger Default Parameter (`playback_preferences.py`)**: Changed `log_activity(self, action_text, mark_dirty=False)` default from `mark_dirty=True` to `mark_dirty=False`. Ephemeral activity telemetry and diagnostic console messages no longer mark the user's project file as dirty unless explicit project data mutations are committed.

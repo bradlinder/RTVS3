@@ -25,11 +25,12 @@
   - Version bumps and git commits remain strictly local.
   - NEVER run `git push` or push release tags to trigger remote GitHub Actions build workflows unless explicitly instructed by the user in that specific message.
 
-When bumping or updating the application version number, you MUST update **ALL** of the following locations synchronously:
-1. `prs_shared.py` (`PROJECT_VERSION`)
-2. `updater.py` (`PROJECT_VERSION` fallback)
-3. `build_installer.py` (`PROJECT_VERSION` fallback)
-4. `installer/Windows/RadioTVStorySegmenter.iss` (`#define MyAppVersion`)
+When bumping or updating the application version number, you MUST update **ALL** of the following locations synchronously (or run `python bump_version.py <version>`):
+1. `core_utils.py` & `prs_shared.py` (`PROJECT_VERSION`)
+2. `RadioTVSegmenter.py` (docstring version header)
+3. `updater.py` (`PROJECT_VERSION` fallback)
+4. `build_installer.py` (`PROJECT_VERSION` fallback)
+5. `installer/Windows/RadioTVStorySegmenter.iss` (`#define MyAppVersion`)
 5. `plugins/*/manifest.json` (Selective / Lazy Catch-Up Policy):
    - **No Changes, No Bump**: If no code, schema, dependency, or asset changes are made to a specific plugin during a release cycle, DO NOT bump that plugin's `version` in `manifest.json`. It is completely expected and supported for a user running e.g. v3.2.20 of the application to run v3.2.15 of the YouTube plugin.
    - **Catch-Up Synchronization on Modification**: The next time a change *does* affect a plugin, its `version` field in `manifest.json` MUST be brought up to date to match the current application `PROJECT_VERSION` being released.

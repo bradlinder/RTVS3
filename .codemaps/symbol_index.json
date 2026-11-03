@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-03 13:38:44",
+  "generated_at": "2026-11-03 13:57:18",
   "total_files": 156,
   "files": {
     "RadioTVSegmenter.py": {
       "path": "RadioTVSegmenter.py",
       "lines": 658,
-      "summary": "Radio & TV Segmenter \u2014 v3.9.67-beta",
+      "summary": "Radio & TV Segmenter \u2014 v3.9.70-beta",
       "exports": null,
       "classes": [
         {
@@ -15926,7 +15926,7 @@
     "transcript_story.py": {
       "path": "transcript_story.py",
       "lines": 852,
-      "summary": "Radio & TV Segmenter v3.9.69-beta \u2014 transcript story responsibilities.",
+      "summary": "Radio & TV Segmenter v3.9.70-beta \u2014 transcript story responsibilities.",
       "exports": [
         "TranscriptStoryMixin",
         "Story",
@@ -16896,7 +16896,7 @@
     },
     "updater.py": {
       "path": "updater.py",
-      "lines": 1544,
+      "lines": 1549,
       "summary": "Update manager and GitHub release installer for Radio & TV Segmenter.",
       "exports": null,
       "classes": [
@@ -16905,22 +16905,22 @@
           "bases": [
             "QThread"
           ],
-          "start_line": 712,
-          "end_line": 770,
+          "start_line": 717,
+          "end_line": 775,
           "doc": "",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, repo, parent, channel)",
-              "start_line": 718,
-              "end_line": 724,
+              "start_line": 723,
+              "end_line": 729,
               "doc": ""
             },
             {
               "name": "run",
               "sig": "run(self)",
-              "start_line": 726,
-              "end_line": 770,
+              "start_line": 731,
+              "end_line": 775,
               "doc": ""
             }
           ]
@@ -16930,29 +16930,29 @@
           "bases": [
             "QThread"
           ],
-          "start_line": 835,
-          "end_line": 920,
+          "start_line": 840,
+          "end_line": 925,
           "doc": "",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, download_url, file_name, parent, release_info)",
-              "start_line": 840,
-              "end_line": 845,
+              "start_line": 845,
+              "end_line": 850,
               "doc": ""
             },
             {
               "name": "cancel",
               "sig": "cancel(self)",
-              "start_line": 847,
-              "end_line": 848,
+              "start_line": 852,
+              "end_line": 853,
               "doc": ""
             },
             {
               "name": "run",
               "sig": "run(self)",
-              "start_line": 850,
-              "end_line": 920,
+              "start_line": 855,
+              "end_line": 925,
               "doc": ""
             }
           ]
@@ -16962,141 +16962,141 @@
           "bases": [
             "QDialog"
           ],
-          "start_line": 923,
-          "end_line": 1508,
+          "start_line": 928,
+          "end_line": 1513,
           "doc": "",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, parent, auto_start)",
-              "start_line": 924,
-              "end_line": 955,
+              "start_line": 929,
+              "end_line": 960,
               "doc": ""
             },
             {
               "name": "_build_ui",
               "sig": "_build_ui(self)",
-              "start_line": 957,
-              "end_line": 1092,
+              "start_line": 962,
+              "end_line": 1097,
               "doc": ""
             },
             {
               "name": "_on_channel_changed",
               "sig": "_on_channel_changed(self, index)",
-              "start_line": 1094,
-              "end_line": 1101,
+              "start_line": 1099,
+              "end_line": 1106,
               "doc": ""
             },
             {
               "name": "start_check",
               "sig": "start_check(self)",
-              "start_line": 1103,
-              "end_line": 1123,
+              "start_line": 1108,
+              "end_line": 1128,
               "doc": ""
             },
             {
               "name": "_on_releases_loaded",
               "sig": "_on_releases_loaded(self, releases)",
-              "start_line": 1125,
-              "end_line": 1160,
+              "start_line": 1130,
+              "end_line": 1165,
               "doc": ""
             },
             {
               "name": "_on_version_selected",
               "sig": "_on_version_selected(self, index)",
-              "start_line": 1162,
-              "end_line": 1166,
+              "start_line": 1167,
+              "end_line": 1171,
               "doc": ""
             },
             {
               "name": "_display_release",
               "sig": "_display_release(self, release_info)",
-              "start_line": 1168,
-              "end_line": 1275,
+              "start_line": 1173,
+              "end_line": 1280,
               "doc": ""
             },
             {
               "name": "_on_up_to_date",
               "sig": "_on_up_to_date(self, current_ver, remote_tag)",
-              "start_line": 1277,
-              "end_line": 1289,
+              "start_line": 1282,
+              "end_line": 1294,
               "doc": ""
             },
             {
               "name": "_on_update_available",
               "sig": "_on_update_available(self, release_info, asset_info, is_newer)",
-              "start_line": 1291,
-              "end_line": 1292,
+              "start_line": 1296,
+              "end_line": 1297,
               "doc": ""
             },
             {
               "name": "_on_check_error",
               "sig": "_on_check_error(self, message)",
-              "start_line": 1294,
-              "end_line": 1300,
+              "start_line": 1299,
+              "end_line": 1305,
               "doc": ""
             },
             {
               "name": "_handle_primary_action",
               "sig": "_handle_primary_action(self)",
-              "start_line": 1302,
-              "end_line": 1316,
+              "start_line": 1307,
+              "end_line": 1321,
               "doc": ""
             },
             {
               "name": "_confirm_downgrade",
               "sig": "_confirm_downgrade(self, target_version)",
-              "start_line": 1318,
-              "end_line": 1333,
+              "start_line": 1323,
+              "end_line": 1338,
               "doc": "Modal Warning Dialog when selecting a version lower than installed PROJECT_VERSION."
             },
             {
               "name": "start_download",
               "sig": "start_download(self)",
-              "start_line": 1335,
-              "end_line": 1365,
+              "start_line": 1340,
+              "end_line": 1370,
               "doc": ""
             },
             {
               "name": "_on_download_progress",
               "sig": "_on_download_progress(self, percent, downloaded, total, speed_str)",
-              "start_line": 1367,
-              "end_line": 1371,
+              "start_line": 1372,
+              "end_line": 1376,
               "doc": ""
             },
             {
               "name": "_on_download_finished",
               "sig": "_on_download_finished(self, file_path)",
-              "start_line": 1373,
-              "end_line": 1380,
+              "start_line": 1378,
+              "end_line": 1385,
               "doc": ""
             },
             {
               "name": "_on_download_error",
               "sig": "_on_download_error(self, message)",
-              "start_line": 1382,
-              "end_line": 1401,
+              "start_line": 1387,
+              "end_line": 1406,
               "doc": ""
             },
             {
               "name": "_install_and_restart",
               "sig": "_install_and_restart(self)",
-              "start_line": 1403,
-              "end_line": 1490,
+              "start_line": 1408,
+              "end_line": 1495,
               "doc": ""
             },
             {
               "name": "_open_github_release",
               "sig": "_open_github_release(self)",
-              "start_line": 1492,
-              "end_line": 1494,
+              "start_line": 1497,
+              "end_line": 1499,
               "doc": ""
             },
             {
               "name": "_handle_close",
               "sig": "_handle_close(self)",
-              "start_line": 1496,
-              "end_line": 1508,
+              "start_line": 1501,
+              "end_line": 1513,
               "doc": ""
             }
           ]
@@ -17104,22 +17104,22 @@
         {
           "name": "UpdaterMixin",
           "bases": [],
-          "start_line": 1511,
-          "end_line": 1544,
+          "start_line": 1516,
+          "end_line": 1549,
           "doc": "",
           "methods": [
             {
               "name": "check_for_updates",
               "sig": "check_for_updates(self, interactive)",
-              "start_line": 1512,
-              "end_line": 1518,
+              "start_line": 1517,
+              "end_line": 1523,
               "doc": ""
             },
             {
               "name": "trigger_silent_update_check",
               "sig": "trigger_silent_update_check(self)",
-              "start_line": 1520,
-              "end_line": 1544,
+              "start_line": 1525,
+              "end_line": 1549,
               "doc": ""
             }
           ]
@@ -17129,85 +17129,85 @@
         {
           "name": "parse_version_tuple",
           "sig": "parse_version_tuple(version_str)",
-          "start_line": 117,
-          "end_line": 150,
+          "start_line": 122,
+          "end_line": 155,
           "doc": "Parse version string into comparable numerical components and a pre-release weight tuple."
         },
         {
           "name": "is_version_newer",
           "sig": "is_version_newer(remote_version_str, current_version_str)",
-          "start_line": 153,
-          "end_line": 160,
+          "start_line": 158,
+          "end_line": 165,
           "doc": "Return True if remote_version_str is strictly newer than current_version_str."
         },
         {
           "name": "is_version_older",
           "sig": "is_version_older(remote_version_str, current_version_str)",
-          "start_line": 163,
-          "end_line": 170,
+          "start_line": 168,
+          "end_line": 175,
           "doc": "Return True if remote_version_str is strictly older than current_version_str."
         },
         {
           "name": "format_byte_size",
           "sig": "format_byte_size(num_bytes)",
-          "start_line": 173,
-          "end_line": 180,
+          "start_line": 178,
+          "end_line": 185,
           "doc": ""
         },
         {
           "name": "_is_trusted_download_url",
           "sig": "_is_trusted_download_url(url)",
-          "start_line": 183,
-          "end_line": 192,
+          "start_line": 188,
+          "end_line": 197,
           "doc": ""
         },
         {
           "name": "_find_release_checksum",
           "sig": "_find_release_checksum(release_info, asset_name)",
-          "start_line": 195,
-          "end_line": 234,
+          "start_line": 200,
+          "end_line": 239,
           "doc": ""
         },
         {
           "name": "select_best_asset_for_platform",
           "sig": "select_best_asset_for_platform(assets, target_version, repo)",
-          "start_line": 237,
-          "end_line": 307,
+          "start_line": 242,
+          "end_line": 312,
           "doc": "Select the most suitable release asset dictionary for the current operating system,"
         },
         {
           "name": "fetch_releases",
           "sig": "fetch_releases(repo, max_releases, channel)",
-          "start_line": 310,
-          "end_line": 373,
+          "start_line": 315,
+          "end_line": 378,
           "doc": "Query GitHub API for published releases, sorted semantically by version number."
         },
         {
           "name": "fetch_latest_release",
           "sig": "fetch_latest_release(repo)",
-          "start_line": 376,
-          "end_line": 381,
+          "start_line": 381,
+          "end_line": 386,
           "doc": "Query GitHub API for the most recent release (backward-compatibility wrapper)."
         },
         {
           "name": "_write_update_log",
           "sig": "_write_update_log(msg)",
-          "start_line": 384,
-          "end_line": 394,
+          "start_line": 389,
+          "end_line": 399,
           "doc": "Append timestamped message to the update helper log in LocalAppData."
         },
         {
           "name": "launch_and_install",
           "sig": "launch_and_install(file_path, parent)",
-          "start_line": 397,
-          "end_line": 709,
+          "start_line": 402,
+          "end_line": 714,
           "doc": ""
         },
         {
           "name": "cleanup_old_installers",
           "sig": "cleanup_old_installers(max_to_keep, force_all)",
-          "start_line": 773,
-          "end_line": 832,
+          "start_line": 778,
+          "end_line": 837,
           "doc": "Clean up old downloaded application update installers from AppData/updates directory."
         }
       ]

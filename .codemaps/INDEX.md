@@ -1,13 +1,13 @@
 # Repository Symbol Index & API Map
 
-> Generated: 2026-11-03 13:38:44 | Total Files: 156
+> Generated: 2026-11-03 13:57:18 | Total Files: 156
 > Use `python scripts/generate_symbol_index.py --outline <file>` for exact line numbers.
 
 ## Modules Overview
 
 | Module | Lines | Summary | Primary Classes / Functions |
 | :--- | :---: | :--- | :--- |
-| `RadioTVSegmenter.py` | 658 | Radio & TV Segmenter — v3.9.67-beta | `MainWindow`, `main()` |
+| `RadioTVSegmenter.py` | 658 | Radio & TV Segmenter — v3.9.70-beta | `MainWindow`, `main()` |
 | `audio_normalization.py` | 541 | Radio & TV Story Segmenter — Audio Loudness Probing & Nor... | `LoudnessReport`, `AudioLoudnessProbeWorker`, `parse_ebur128_summary()`, `probe_media_duration_seconds()` *(+3 more)* |
 | `background_workers.py` | 1015 | Radio & TV Story Segmenter — Background Worker Threads & ... | `StoryAutoDetectWorker`, `WaveformWorker`, `VideoThumbnailWorker`, `get_waveform_peak_cache_path()` *(+6 more)* |
 | `backup_manager.py` | 622 | Unified State Serialization, Local, and Google Drive Clou... | `compute_data_checksum()`, `serialize_preferences()`, `serialize_keyboard_shortcuts()`, `serialize_glossary()` *(+7 more)* |
@@ -142,7 +142,7 @@
 | `transcript_navigation_mixin.py` | 299 | transcript_navigation_mixin.py - Timestamp discovery, car... | `TranscriptNavigationMixin` |
 | `transcript_playback_highlight_mixin.py` | 276 | Radio & TV Story Segmenter — Interactive Transcript Playb... | `TranscriptPlaybackHighlightMixin` |
 | `transcript_selection_mixin.py` | 466 | transcript_selection_mixin.py - Multi-selection, timeline... | `TranscriptSelectionMixin` |
-| `transcript_story.py` | 852 | Radio & TV Segmenter v3.9.69-beta — transcript story resp... | `TranscriptStoryMixin` |
+| `transcript_story.py` | 852 | Radio & TV Segmenter v3.9.70-beta — transcript story resp... | `TranscriptStoryMixin` |
 | `transcript_styles.py` | 104 | transcript_styles.py - Transcript view stylesheets and da... | `transcript_text_view_stylesheet()`, `clean_dark_mode_clipboard_html()` |
 | `transcript_timeline_sync_mixin.py` | 634 | Radio & TV Story Segmenter — Transcript Timeline & Playba... | `TranscriptTimelineSyncMixin` |
 | `transcription_processing.py` | 579 | Transcription background process management for Radio & T... | `TranscriptionProcessingMixin` |
@@ -150,7 +150,7 @@
 | `ui_dialog_launchers.py` | 366 | Dialog launchers and external modal helpers for Radio & T... | `UiDialogLaunchersMixin` |
 | `ui_layout.py` | 1090 | Radio & TV Segmenter — UI Layout & Menu Construction Mixin. | `UiLayoutMixin` |
 | `ui_menus.py` | 814 | Main application menu bar and action assembly for Radio &... | `PersistentMenu`, `UiMenusMixin` |
-| `updater.py` | 1544 | Update manager and GitHub release installer for Radio & T... | `CheckUpdateWorker`, `DownloadUpdateWorker`, `CheckUpdateDialog`, `UpdaterMixin` *(+9 more)* |
+| `updater.py` | 1549 | Update manager and GitHub release installer for Radio & T... | `CheckUpdateWorker`, `DownloadUpdateWorker`, `CheckUpdateDialog`, `UpdaterMixin` *(+9 more)* |
 | `utils/__init__.py` | 36 | Utility modules for Radio & TV Story Segmenter. | - |
 | `utils/constants.py` | 41 | Application constants and environment configuration. | - |
 | `utils/time_format.py` | 19 | Time formatting and parsing utilities. | - |
@@ -167,7 +167,7 @@
 ## Detailed Symbol Catalog
 
 ### `RadioTVSegmenter.py` (658 lines)
-*Radio & TV Segmenter — v3.9.67-beta*
+*Radio & TV Segmenter — v3.9.70-beta*
 - **class `MainWindow(ModelManagementMixin, MediaBatchMixin, PlaybackPreferencesMixin, UiLayoutMixin, ProcessingMixin, TranslationMixin, TranscriptStoryMixin, ProjectExportMixin, GpuAccelerationMixin, QMainWindow)`** (lines 160–555):
   *Main application window for Radio & TV Segmenter.*
   - `__init__(self)` [L178-L350]
@@ -2764,7 +2764,7 @@
   - `_on_bubble_export(self)` [L461-L466]
 
 ### `transcript_story.py` (852 lines)
-*Radio & TV Segmenter v3.9.69-beta — transcript story responsibilities.*
+*Radio & TV Segmenter v3.9.70-beta — transcript story responsibilities.*
 - **Public Exports (`__all__`)**: TranscriptStoryMixin, Story, SetStoriesCommand, SelectStoriesCommand, StoryBoundaryChangeCommand, StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin, ChangeSpeakerDialog, VoiceProfileMatchDialog, StoryFadesDialog, SpeakerManagerDialog, FADE_CURVE_TABLES, get_fade_curve_factors
 - **class `TranscriptStoryMixin(StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin)`** (lines 63–851):
   - `render_transcript(self)` [L64-L467]
@@ -2919,51 +2919,51 @@
   - `update_processing_menu_status(self)` [L736-L759] — *Update label annotations on Tools actions reflecting pipeline stage completion.*
   - `refresh_plugin_menus(self)` [L762-L813] — *Dynamically populate plugin export actions, tools menu actions, and core UI controls.*
 
-### `updater.py` (1544 lines)
+### `updater.py` (1549 lines)
 *Update manager and GitHub release installer for Radio & TV Segmenter.*
-- **class `CheckUpdateWorker(QThread)`** (lines 712–770):
-  - `__init__(self, repo, parent, channel)` [L718-L724]
-  - `run(self)` [L726-L770]
-- **class `DownloadUpdateWorker(QThread)`** (lines 835–920):
-  - `__init__(self, download_url, file_name, parent, release_info)` [L840-L845]
-  - `cancel(self)` [L847-L848]
-  - `run(self)` [L850-L920]
-- **class `CheckUpdateDialog(QDialog)`** (lines 923–1508):
-  - `__init__(self, parent, auto_start)` [L924-L955]
-  - `_build_ui(self)` [L957-L1092]
-  - `_on_channel_changed(self, index)` [L1094-L1101]
-  - `start_check(self)` [L1103-L1123]
-  - `_on_releases_loaded(self, releases)` [L1125-L1160]
-  - `_on_version_selected(self, index)` [L1162-L1166]
-  - `_display_release(self, release_info)` [L1168-L1275]
-  - `_on_up_to_date(self, current_ver, remote_tag)` [L1277-L1289]
-  - `_on_update_available(self, release_info, asset_info, is_newer)` [L1291-L1292]
-  - `_on_check_error(self, message)` [L1294-L1300]
-  - `_handle_primary_action(self)` [L1302-L1316]
-  - `_confirm_downgrade(self, target_version)` [L1318-L1333] — *Modal Warning Dialog when selecting a version lower than installed PROJECT_VERSION.*
-  - `start_download(self)` [L1335-L1365]
-  - `_on_download_progress(self, percent, downloaded, total, speed_str)` [L1367-L1371]
-  - `_on_download_finished(self, file_path)` [L1373-L1380]
-  - `_on_download_error(self, message)` [L1382-L1401]
-  - `_install_and_restart(self)` [L1403-L1490]
-  - `_open_github_release(self)` [L1492-L1494]
-  - `_handle_close(self)` [L1496-L1508]
-- **class `UpdaterMixin`** (lines 1511–1544):
-  - `check_for_updates(self, interactive)` [L1512-L1518]
-  - `trigger_silent_update_check(self)` [L1520-L1544]
+- **class `CheckUpdateWorker(QThread)`** (lines 717–775):
+  - `__init__(self, repo, parent, channel)` [L723-L729]
+  - `run(self)` [L731-L775]
+- **class `DownloadUpdateWorker(QThread)`** (lines 840–925):
+  - `__init__(self, download_url, file_name, parent, release_info)` [L845-L850]
+  - `cancel(self)` [L852-L853]
+  - `run(self)` [L855-L925]
+- **class `CheckUpdateDialog(QDialog)`** (lines 928–1513):
+  - `__init__(self, parent, auto_start)` [L929-L960]
+  - `_build_ui(self)` [L962-L1097]
+  - `_on_channel_changed(self, index)` [L1099-L1106]
+  - `start_check(self)` [L1108-L1128]
+  - `_on_releases_loaded(self, releases)` [L1130-L1165]
+  - `_on_version_selected(self, index)` [L1167-L1171]
+  - `_display_release(self, release_info)` [L1173-L1280]
+  - `_on_up_to_date(self, current_ver, remote_tag)` [L1282-L1294]
+  - `_on_update_available(self, release_info, asset_info, is_newer)` [L1296-L1297]
+  - `_on_check_error(self, message)` [L1299-L1305]
+  - `_handle_primary_action(self)` [L1307-L1321]
+  - `_confirm_downgrade(self, target_version)` [L1323-L1338] — *Modal Warning Dialog when selecting a version lower than installed PROJECT_VERSION.*
+  - `start_download(self)` [L1340-L1370]
+  - `_on_download_progress(self, percent, downloaded, total, speed_str)` [L1372-L1376]
+  - `_on_download_finished(self, file_path)` [L1378-L1385]
+  - `_on_download_error(self, message)` [L1387-L1406]
+  - `_install_and_restart(self)` [L1408-L1495]
+  - `_open_github_release(self)` [L1497-L1499]
+  - `_handle_close(self)` [L1501-L1513]
+- **class `UpdaterMixin`** (lines 1516–1549):
+  - `check_for_updates(self, interactive)` [L1517-L1523]
+  - `trigger_silent_update_check(self)` [L1525-L1549]
 - **Functions**:
-  - `parse_version_tuple(version_str)` [L117-L150] — *Parse version string into comparable numerical components and a pre-release weight tuple.*
-  - `is_version_newer(remote_version_str, current_version_str)` [L153-L160] — *Return True if remote_version_str is strictly newer than current_version_str.*
-  - `is_version_older(remote_version_str, current_version_str)` [L163-L170] — *Return True if remote_version_str is strictly older than current_version_str.*
-  - `format_byte_size(num_bytes)` [L173-L180]
-  - `_is_trusted_download_url(url)` [L183-L192]
-  - `_find_release_checksum(release_info, asset_name)` [L195-L234]
-  - `select_best_asset_for_platform(assets, target_version, repo)` [L237-L307] — *Select the most suitable release asset dictionary for the current operating system,*
-  - `fetch_releases(repo, max_releases, channel)` [L310-L373] — *Query GitHub API for published releases, sorted semantically by version number.*
-  - `fetch_latest_release(repo)` [L376-L381] — *Query GitHub API for the most recent release (backward-compatibility wrapper).*
-  - `_write_update_log(msg)` [L384-L394] — *Append timestamped message to the update helper log in LocalAppData.*
-  - `launch_and_install(file_path, parent)` [L397-L709]
-  - `cleanup_old_installers(max_to_keep, force_all)` [L773-L832] — *Clean up old downloaded application update installers from AppData/updates directory.*
+  - `parse_version_tuple(version_str)` [L122-L155] — *Parse version string into comparable numerical components and a pre-release weight tuple.*
+  - `is_version_newer(remote_version_str, current_version_str)` [L158-L165] — *Return True if remote_version_str is strictly newer than current_version_str.*
+  - `is_version_older(remote_version_str, current_version_str)` [L168-L175] — *Return True if remote_version_str is strictly older than current_version_str.*
+  - `format_byte_size(num_bytes)` [L178-L185]
+  - `_is_trusted_download_url(url)` [L188-L197]
+  - `_find_release_checksum(release_info, asset_name)` [L200-L239]
+  - `select_best_asset_for_platform(assets, target_version, repo)` [L242-L312] — *Select the most suitable release asset dictionary for the current operating system,*
+  - `fetch_releases(repo, max_releases, channel)` [L315-L378] — *Query GitHub API for published releases, sorted semantically by version number.*
+  - `fetch_latest_release(repo)` [L381-L386] — *Query GitHub API for the most recent release (backward-compatibility wrapper).*
+  - `_write_update_log(msg)` [L389-L399] — *Append timestamped message to the update helper log in LocalAppData.*
+  - `launch_and_install(file_path, parent)` [L402-L714]
+  - `cleanup_old_installers(max_to_keep, force_all)` [L778-L837] — *Clean up old downloaded application update installers from AppData/updates directory.*
 
 ### `utils/__init__.py` (36 lines)
 *Utility modules for Radio & TV Story Segmenter.*
