@@ -146,18 +146,16 @@ DETAILED MILESTONE SPECIFICATIONS
 - Target Release: v4.3.0 (Optional / Planned)
 - Technical References: Subsystem architecture, plugin manifest, and FFmpeg filtergraph pipeline specifications are detailed in `ARCHITECTURE.md` (Section 6).
 
-6. CURRENT RELEASE: FALSE UNSAVED CHANGES PROMPT ELIMINATION ON EXIT:
-- Purpose: Eliminate false unsaved changes prompts on application exit by inverting the activity logger default from mark_dirty=True to mark_dirty=False, preventing shutdown telemetry from dirtying clean projects, and synchronizing state labels.
-- Target Release: v3.9.67-beta (Current Release)
+6. CURRENT RELEASE: WINDOWS AUTO-UPDATER SYNTAX & DETACHED HANDOFF HARDENING:
+- Purpose: Resolve Python helper template indentation crash (`IndentationError`) and establish synchronous in-memory compilation guards so updater handoffs reliably launch elevated installers while maintaining first-run de-elevation.
+- Target Release: v3.9.68-beta (Current Release)
 - Technical References & Implementation Details:
-  * [x] Inversion of Activity Logger Default: Changed `log_activity(self, action_text, mark_dirty=False)` in `playback_preferences.py`.
-  * [x] Shutdown Telemetry Self-Dirty Bug Resolution: Explicitly passed `mark_dirty=False` in `project_export.py:closeEvent()`.
-  * [x] Graceful Cancel & Discard Restoration: Reset `_is_closing = False` on dialog cancel / save failure and cleared `project_dirty = False` on discard.
-  * [x] Background & Export False-Dirty Elimination: Background waveform generation and document export operations no longer trigger project dirty state.
-  * [x] Title & Label Sync: Synchronized `update_window_title()` across all recovery and document import handlers.
-  * Release Logs: Documented in `CHANGELOG.md` under `## v3.9.67-beta`.
+  * [x] Python Helper Syntax & Indentation Resolution: Fixed unexpected indent in `updater.py`'s `rtvs_update_helper.py` template.
+  * [x] Synchronous In-Memory Validation Guard: Added `compile(python_helper_code, ...)` guard to ensure invalid code is never executed and safely defaults to PowerShell supervisor.
+  * [x] UAC Elevation & Shell De-Elevation Coherence: Verified elevated installer launch (`runas`) and `{win}\explorer.exe` post-install execution for clean UIPI drag-and-drop.
+  * Release Logs: Documented in `CHANGELOG.md` under `## v3.9.68-beta`.
 
-7. PREVIOUS RELEASE: WINDOWS DETACHED INSTALLER HANDOFF & WINDOW VISIBILITY FIX:
-- Purpose: Fixed Inno Setup update installer running invisibly in the background on Windows by adding `-WindowStyle Normal` and a CMD supervisor fallback.
-- Target Release: v3.9.66-beta (Previous Release)
-- Technical References: Full implementation details are documented in `CHANGELOG.md` under `## v3.9.66-beta`.
+7. PREVIOUS RELEASE: FALSE UNSAVED CHANGES PROMPT ELIMINATION ON EXIT:
+- Purpose: Eliminate false unsaved changes prompts on application exit by inverting activity logger defaults and safeguarding shutdown telemetry.
+- Target Release: v3.9.67-beta (Previous Release)
+- Technical References: Full implementation details are documented in `CHANGELOG.md` under `## v3.9.67-beta`.

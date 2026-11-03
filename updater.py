@@ -48,7 +48,7 @@ except ImportError:
         )
     except Exception:
         APP_DISPLAY_NAME = "Radio & TV Segmenter"
-        PROJECT_VERSION = "3.9.67-beta"
+        PROJECT_VERSION = "3.9.68-beta"
         DEFAULT_GITHUB_REPO = "bradlinder/RTVS3"
         INTERNAL_APP_ID = "RadioTVStorySegmenter"
 
@@ -479,7 +479,7 @@ def launch_and_install(file_path: str, parent: QWidget | None = None) -> bool:
             "        else:\n"
             "            log(f'ShellExecuteW open returned {ret_val}, falling back to runas')\n"
             "            ret = shell32.ShellExecuteW(None, 'runas', installer_path, '', os.path.dirname(installer_path), 1)\n"
-            "        ret_val = int(ctypes.cast(ret, ctypes.c_void_p).value or 0)\n"
+            "            ret_val = int(ctypes.cast(ret, ctypes.c_void_p).value or 0)\n"
             "            if ret_val > 32:\n"
             "                launched_installer = True\n"
             "                log(f'ShellExecuteW runas successful (code {ret_val})')\n"
@@ -515,6 +515,8 @@ def launch_and_install(file_path: str, parent: QWidget | None = None) -> bool:
             creationflags |= 0x01000000
 
         try:
+            # Validate helper code in-memory to prevent syntax errors
+            compile(python_helper_code, "rtvs_update_helper.py", "exec")
             temp_helper_py = get_app_data_dir() / "rtvs_update_helper.py"
             temp_helper_py.write_text(python_helper_code, encoding="utf-8")
 

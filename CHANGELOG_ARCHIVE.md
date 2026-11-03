@@ -11,6 +11,13 @@ For current and active releases, see [CHANGELOG.md](CHANGELOG.md).
 
 ---
 
+## v3.9.66-beta
+- **Windows Detached Installer Handoff & Window Visibility Fix (`updater.py`, `project_data_purge_dialog.py`, `ui_layout.py`)**:
+  - **Explicit `-WindowStyle Normal` Execution (`updater.py`)**: Added `-WindowStyle Normal` parameters to `Start-Process` calls in the PowerShell supervisor script (`rtvs_update_supervisor.ps1`). Previously, spawning `powershell.exe` with `CREATE_NO_WINDOW` caused child `Start-Process` invocations to inherit `Hidden` window style, causing Inno Setup (`RadioTVSegmenter-*-Setup.exe`) to execute invisibly in the background.
+  - **Fail-Safe CMD Batch Supervisor Fallback (`updater.py`)**: Added a secondary `.cmd` batch supervisor (`rtvs_update_supervisor.cmd`) utilizing `start "" "%INSTALLER_PATH%"`. The Windows `start` command forces Windows Shell `ShellExecute` with `SW_SHOWNORMAL` (1) and native UAC elevation, guaranteeing the installer GUI wizard opens visibly on screen even if PowerShell is restricted or fails to spawn.
+  - **Subprocess Cmd Launch Fallback (`updater.py`)**: Updated Python helper script fallback to `cmd.exe /c start "" "%INSTALLER_PATH%"`, ensuring shell window visibility across all launch paths.
+  - **Startup Import Error Hotfix (`project_data_purge_dialog.py`, `ui_layout.py`)**: Fixed `ImportError: cannot import name 'make_dialog_maximizable'` by importing from `core_utils` and adding a backward-compatible re-export in `ui_layout.py`.
+
 ## v3.9.65-beta
 - **Unsaved Changes Prompt Harmonization & False-Dirty Elimination (`playback_controller.py`, `project_lifecycle.py`, `media_batch.py`, `project_data_purge_dialog.py`)**:
   - **False-Dirty Elimination on UI Playback Controls (`playback_controller.py`)**: Removed erroneous `self.project_dirty = True` flag when updating skip duration (`set_skip_seconds_from_ui`), persisting user preferences directly to `QSettings` without dirtying clean projects.
