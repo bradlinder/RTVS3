@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-03 13:27:46",
+  "generated_at": "2026-11-03 13:38:44",
   "total_files": 156,
   "files": {
     "RadioTVSegmenter.py": {
@@ -15926,7 +15926,7 @@
     "transcript_story.py": {
       "path": "transcript_story.py",
       "lines": 852,
-      "summary": "Radio & TV Segmenter v3.9.68-beta \u2014 transcript story responsibilities.",
+      "summary": "Radio & TV Segmenter v3.9.69-beta \u2014 transcript story responsibilities.",
       "exports": [
         "TranscriptStoryMixin",
         "Story",
