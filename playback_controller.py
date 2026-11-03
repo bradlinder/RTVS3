@@ -409,8 +409,11 @@ class PlaybackControllerMixin:
             self.timeline.set_skip_seconds(self.skip_seconds)
         if hasattr(self, "skip_display") and self.skip_display.value() != self.skip_seconds:
             self.skip_display.setValue(self.skip_seconds)
-        self.project_dirty = True
-        self.update_window_title()
+        if hasattr(self, "settings_store") and self.settings_store:
+            try:
+                self.settings_store.setValue("skip_seconds", self.skip_seconds)
+            except Exception:
+                pass
 
     def set_playback_rate(self, rate: float):
         self.playback_rate = max(0.5, min(3.0, float(rate)))

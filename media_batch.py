@@ -1527,13 +1527,16 @@ class MediaBatchMixin:
                 self,
                 "Save Project?",
                 "The current project has unsaved changes. Would you like to save it before closing?",
-                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No | QMessageBox.StandardButton.Cancel,
-                QMessageBox.StandardButton.Yes
+                QMessageBox.StandardButton.Save | QMessageBox.StandardButton.Discard | QMessageBox.StandardButton.Cancel,
+                QMessageBox.StandardButton.Save
             )
             if save_answer == QMessageBox.StandardButton.Cancel:
                 return False
-            if save_answer == QMessageBox.StandardButton.Yes:
-                self.save_project(force=True)
+            if save_answer == QMessageBox.StandardButton.Save:
+                if not self.save_project(force=True):
+                    return False
+            else:
+                self.project_dirty = False
 
         return True
 

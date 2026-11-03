@@ -11,6 +11,7 @@ from PySide6.QtCore import QDir, QTime, QUrl, Qt
 from PySide6.QtWidgets import QCheckBox, QDialog, QFileDialog, QGroupBox, QHBoxLayout, QInputDialog, QLabel, QLineEdit, QMessageBox, QPushButton, QVBoxLayout
 from prs_shared import PROJECT_VERSION, cleanup_old_thumbnail_cache, read_rtvs_project_file, safe_filename, write_rtvs_project_file, write_waveform_peak_cache, make_dialog_maximizable, ProjectMetadataDict
 from transcript_story import Story
+from project_data_purge_dialog import ProjectDataPurgeDialog
 
 class ProjectLifecycleMixin:
 
@@ -57,21 +58,4 @@ class ProjectLifecycleMixin:
         ...
 
     def purge_project_data(self, purge_transcript: bool=..., purge_translations: bool=..., purge_speakers: bool=..., purge_stories: bool=..., purge_media: bool=...) -> bool:
-        ...
-
-class ProjectDataPurgeDialog(QDialog):
-
-    def __init__(self, parent=..., is_es=...):
-        ...
-
-    def _init_ui(self):
-        ...
-
-    def _set_all_checked(self, checked: bool):
-        ...
-
-    def _update_purge_button_state(self):
-        ...
-
-    def get_purge_options(self) -> dict[str, bool]:
         ...
