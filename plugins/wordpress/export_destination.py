@@ -37,18 +37,18 @@ class WordPressExportDestination(ExportDestination):
     """Export destination handler for WordPress REST API Draft Posts."""
 
     def __init__(self, plugin: Any = None):
+        self.plugin = plugin
+        self.tab_widget: Optional[WordPressExportTabWidget] = None
         super().__init__(
             id="wordpress",
             title="WordPress Draft Post",
             description="Extracts audio and publishes formatted draft posts directly to your WordPress site.",
             icon="wordpress",
         )
-        self.plugin = plugin
-        self.tab_widget: Optional[WordPressExportTabWidget] = None
 
     @property
     def button_label(self) -> str:
-        tab = getattr(self, "tab_widget", None)
+        tab = getattr(self, "tab_widget", None) or self._ensure_tab_widget()
         if tab and hasattr(tab, "wp_post_items") and tab.wp_post_items:
             count = len(tab.wp_post_items)
             return "Export to WordPress Drafts..." if count > 1 else "Export to WordPress Draft"
@@ -73,12 +73,31 @@ class WordPressExportDestination(ExportDestination):
         self.tab_widget = WordPressExportTabWidget(parent, main_window)
         return self.tab_widget
 
+    def _ensure_tab_widget(self) -> Optional[WordPressExportTabWidget]:
+        """Defensive resolver to bind tab_widget from cached dialog entries if unlinked."""
+        tab = getattr(self, "tab_widget", None)
+        if tab:
+            return tab
+        tab = getattr(self, "widget", None)
+        if tab and hasattr(tab, "wp_cb_en"):
+            self.tab_widget = tab
+            return self.tab_widget
+        if hasattr(self, "plugin") and getattr(self.plugin, "app", None):
+            active_dlg = getattr(self.plugin.app, "_active_export_dialog", None)
+            if active_dlg and hasattr(active_dlg, "_dest_entries"):
+                for entry in active_dlg._dest_entries:
+                    if entry.get("id") == "wordpress" and entry.get("page"):
+                        self.tab_widget = entry["page"]
+                        return self.tab_widget
+        return self.tab_widget
+
     def on_scope_changed(self, scope: str, stories: list) -> None:
-        if self.tab_widget:
-            self.tab_widget.rebuild_post_items(scope=scope)
+        tab = self._ensure_tab_widget()
+        if tab:
+            tab.rebuild_post_items(scope=scope)
 
     def validate(self) -> Tuple[bool, str]:
-        if not self.tab_widget:
+        if not self._ensure_tab_widget():
             return False, "WordPress tab not initialized."
         w = self.tab_widget
         settings = QSettings(INTERNAL_APP_ID, INTERNAL_APP_ID)
@@ -96,7 +115,7 @@ class WordPressExportDestination(ExportDestination):
         return True, ""
 
     def get_export_data(self) -> Dict[str, Any]:
-        if not self.tab_widget:
+        if not self._ensure_tab_widget():
             return {}
         w = self.tab_widget
         return {

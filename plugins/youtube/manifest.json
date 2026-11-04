@@ -1,7 +1,7 @@
 {
   "id": "youtube",
   "name": "YouTube Video Publisher",
-  "version": "3.9.33-beta",
+  "version": "3.9.72-beta",
   "description": "Exports zero-auth YouTube upload packages (.mp4 video or audio-to-video slate, companion thumbnail, .srt captions, and sidecar/clipboard metadata with chapter timestamps and speaker credits).",
   "author": "Radio & TV Segmenter Team",
   "website": "https://github.com/bradlinder/RTVS3",

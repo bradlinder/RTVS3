@@ -1,7 +1,7 @@
 #define MyAppName "Radio & TV Segmenter"
 
 #ifndef MyAppVersion
-#define MyAppVersion "3.9.71-beta"
+#define MyAppVersion "3.9.72-beta"
 #endif
 
 

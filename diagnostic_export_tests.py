@@ -856,8 +856,25 @@ class DiagnosticExportTestsMixin:
             if not hasattr(dest_class, method):
                 raise AssertionError(f"ExportDestination base class missing contract method: '{method}'")
 
+        # Verify WordPress and YouTube defensive unlinked widget reconnection
+        from plugins.wordpress.export_destination import WordPressExportDestination
+        from plugins.youtube.export_destination import YouTubeExportDestination
+        wp_dest = WordPressExportDestination()
+        assert wp_dest.tab_widget is None, "WordPress destination tab_widget should initially be None"
+        mock_wp_tab = type("MockWPTab", (), {"wp_cb_en": None, "wp_post_items": []})()
+        wp_dest.widget = mock_wp_tab
+        assert wp_dest._ensure_tab_widget() is mock_wp_tab, "WordPress destination should resolve unlinked widget from .widget property"
+        assert wp_dest.tab_widget is mock_wp_tab
+
+        yt_dest = YouTubeExportDestination()
+        assert yt_dest.tab_widget is None, "YouTube destination tab_widget should initially be None"
+        mock_yt_tab = type("MockYTTab", (), {"yt_title_edit": None})()
+        yt_dest.widget = mock_yt_tab
+        assert yt_dest._ensure_tab_widget() is mock_yt_tab, "YouTube destination should resolve unlinked widget from .widget property"
+        assert yt_dest.tab_widget is mock_yt_tab
+
         item.status = "PASS"
-        item.message = "ExportDestination plugin interface contract and required method signatures verified"
+        item.message = "ExportDestination plugin interface contract and defensive tab widget reconnection verified"
 
     def _test_multi_story_media_payload_disambiguation_test(self, item: DiagnosticItem):
         try:

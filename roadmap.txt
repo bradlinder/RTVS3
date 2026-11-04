@@ -94,17 +94,17 @@ TABLE OF CONTENTS & STATUS OVERVIEW
    [ ] 5.4 Burned-in Subtitles & Platform Safe Zone Enforcement (`plugins/social_reel/reel_subtitles.py`)
    [ ] 5.5 Unified Export Integration & Social Reel Diagnostic Tests (`export/dialog.py`, `test_runner.py`)
 
-6. Current Release: Find & Replace Data-Model Synchronization & Speaker Reversion Immunity (`transcript_editor_dialogs.py`, `ui_dialog_launchers.py`, `diagnostic_editor_tests.py`) [x] [COMPLETED in v3.9.71-beta]
-   [x] 6.1 Data-Model Backed Replacements: Directly mutate transcript["segments"], words, and full transcript text with automatic word-level timestamp alignment via sync_segment_words().
-   [x] 6.2 Speaker Alias & Glossary Synchronization: Synchronize speaker display aliases in speaker_names and custom_speakers_glossary with user-configurable "Include Speakers" option.
-   [x] 6.3 Project State Undo/Redo & Persistence: Commit discrete ProjectStateCommand undo snapshots before replacements, mark project dirty, and update window title.
-   [x] 6.4 Speaker Re-render Immunity: Eliminate reversion bug where subsequent speaker label changes or speaker manager actions re-rendered the unedited data model.
-   [x] 6.5 Automated Diagnostic Verification: Added diagnostic test Find and Replace Project Synchronization and Undo in diagnostic_editor_tests.py.
+6. Current Release: Export Destination Reordering Synchronization & Plugin Tab Binding Hardening (`export/dialog.py`, `plugins/wordpress/export_destination.py`, `plugins/youtube/export_destination.py`, `diagnostic_export_tests.py`) [x] [COMPLETED in v3.9.72-beta]
+   [x] 6.1 Eliminate Reordering Widget Desynchronization: Preserve existing destination objects (`entry['dest_obj']`) in `_build_destinations_layout()` and guarantee bidirectional rebinding of `tab_widget` and `widget` to cached QWidget pages when reordering destinations.
+   [x] 6.2 Defensive Unlinked Widget Resolvers: Added `_ensure_tab_widget()` fallback in `WordPressExportDestination` and `YouTubeExportDestination` to resolve cached tab instances from active dialog entries before validation or data export.
+   [x] 6.3 Early Destination Constructor Initialization: Set destination attributes prior to `super().__init__()` for reliable property evaluation during base class initialization.
+   [x] 6.4 Automated Interface & Reconnection Verification: Added dynamic unlinked widget reconnection test to `diagnostic_export_tests.py`.
 
-7. Previous Release: Version Source-of-Truth Harmonization & Updater Desync Resolution (`core_utils.py`, `prs_shared.py`, `updater.py`, `RadioTVSegmenter.py`) [x] [COMPLETED in v3.9.70-beta]
-   [x] 7.1 Core Version Harmonization: Unified PROJECT_VERSION across core_utils.py and prs_shared.py.
-   [x] 7.2 Updater Import Synchronization: Bound updater.py's PROJECT_VERSION to prs_shared for drift immunity.
-   [x] 7.3 13-Point Version Check Compliance: Verified all 13 canonical project files with bump_version.py.
+7. Previous Release: Find & Replace Data-Model Synchronization & Speaker Reversion Immunity (`transcript_editor_dialogs.py`, `ui_dialog_launchers.py`, `diagnostic_editor_tests.py`) [x] [COMPLETED in v3.9.71-beta]
+   [x] 7.1 Data-Model Backed Replacements: Directly mutate transcript["segments"], words, and full transcript text with automatic word-level timestamp alignment via sync_segment_words().
+   [x] 7.2 Speaker Alias & Glossary Synchronization: Synchronize speaker display aliases in speaker_names and custom_speakers_glossary with user-configurable "Include Speakers" option.
+   [x] 7.3 Project State Undo/Redo & Persistence: Commit discrete ProjectStateCommand undo snapshots before replacements, mark project dirty, and update window title.
+   [x] 7.4 Speaker Re-render Immunity: Eliminate reversion bug where subsequent speaker label changes or speaker manager actions re-rendered the unedited data model.
 
 ================================================================================
 DETAILED MILESTONE SPECIFICATIONS

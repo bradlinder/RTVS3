@@ -1,13 +1,13 @@
 # Repository Symbol Index & API Map
 
-> Generated: 2026-11-03 17:03:51 | Total Files: 157
+> Generated: 2026-11-04 14:09:22 | Total Files: 157
 > Use `python scripts/generate_symbol_index.py --outline <file>` for exact line numbers.
 
 ## Modules Overview
 
 | Module | Lines | Summary | Primary Classes / Functions |
 | :--- | :---: | :--- | :--- |
-| `RadioTVSegmenter.py` | 658 | Radio & TV Segmenter — v3.9.71-beta | `MainWindow`, `main()` |
+| `RadioTVSegmenter.py` | 658 | Radio & TV Segmenter — v3.9.72-beta | `MainWindow`, `main()` |
 | `audio_normalization.py` | 541 | Radio & TV Story Segmenter — Audio Loudness Probing & Nor... | `LoudnessReport`, `AudioLoudnessProbeWorker`, `parse_ebur128_summary()`, `probe_media_duration_seconds()` *(+3 more)* |
 | `background_workers.py` | 1015 | Radio & TV Story Segmenter — Background Worker Threads & ... | `StoryAutoDetectWorker`, `WaveformWorker`, `VideoThumbnailWorker`, `get_waveform_peak_cache_path()` *(+6 more)* |
 | `backup_manager.py` | 622 | Unified State Serialization, Local, and Google Drive Clou... | `compute_data_checksum()`, `serialize_preferences()`, `serialize_keyboard_shortcuts()`, `serialize_glossary()` *(+7 more)* |
@@ -27,7 +27,7 @@
 | `diagnostic_core_tests.py` | 826 | Diagnostic test bench suite component. | `DiagnosticCoreTestsMixin` |
 | `diagnostic_dialog.py` | 288 | PySide6 Graphical Test Bench Dialog for Radio & TV Story ... | `create_diagnostic_dialog()` |
 | `diagnostic_editor_tests.py` | 200 | Diagnostic editor and find-replace tests for Radio & TV S... | `DiagnosticEditorTestsMixin` |
-| `diagnostic_export_tests.py` | 1699 | Diagnostic test bench suite component. | `DiagnosticExportTestsMixin` |
+| `diagnostic_export_tests.py` | 1716 | Diagnostic test bench suite component. | `DiagnosticExportTestsMixin` |
 | `diagnostic_helpers.py` | 151 | Helper fixtures, module resolvers, and DiagnosticItem for... | `DiagnosticItem`, `generate_synthetic_wav()` |
 | `diagnostic_loudness_tests.py` | 391 | Radio & TV Story Segmenter — Diagnostic Loudness Normaliz... | `DiagnosticLoudnessTestsMixin` |
 | `diagnostic_selector.py` | 191 | Smart Diagnostic Test Selector for Radio & TV Story Segme... | `get_modified_files()`, `has_git_changes()`, `detect_changed_tokens()`, `select_diagnostic_items()` |
@@ -36,7 +36,7 @@
 | `export/__init__.py` | 67 | Export package for Radio & TV Story Segmenter. | - |
 | `export/audio.py` | 287 | Radio & TV Story Segmenter — Broadcast Audio Rendering & ... | `build_audio_fade_filter()`, `export_audio_track()`, `extract_audio_clip()` |
 | `export/daw.py` | 37 | DAW and NLE timeline interchange formatters for Radio & T... | - |
-| `export/dialog.py` | 1441 | Unified Export Dialog for Radio & TV Story Segmenter. | `UnifiedExportDialog` |
+| `export/dialog.py` | 1462 | Unified Export Dialog for Radio & TV Story Segmenter. | `UnifiedExportDialog` |
 | `export/docx.py` | 541 | Word (.docx) export formatter for Radio & TV Story Segmen... | `inject_native_comments_to_docx()`, `create_story_docx()` |
 | `export/pdf.py` | 369 | PDF export formatter for Radio & TV Story Segmenter. | `TranscriptPdfWriter` |
 | `export/reorder_dialog.py` | 255 | export/reorder_dialog.py — Dialog for customizing the dis... | `ReorderExportDestinationsDialog`, `get_export_destinations_order()`, `save_export_destinations_order()` |
@@ -71,14 +71,14 @@
 | `plugins/wordpress/__init__.py` | 6 | WordPress Publisher Plugin for Radio & TV Segmenter. | - |
 | `plugins/wordpress/castos.py` | 722 | Seriously Simple Podcasting (Castos) integration for Word... | `format_castos_duration()`, `build_castos_post_meta()`, `copy_podcast_meta()`, `fetch_castos_feeds()` *(+5 more)* |
 | `plugins/wordpress/client.py` | 1887 | WordPress Plugin — Client, Credential Storage, and Upload... | `WordPressClient`, `WordPressSettingsDialog`, `WordPressPreferencesPage`, `format_rich_text_to_html()` *(+6 more)* |
-| `plugins/wordpress/export_destination.py` | 631 | WordPress Export Destination for UnifiedExportDialog. | `WordPressExportDestination`, `WordPressPostMetadataDialog` |
+| `plugins/wordpress/export_destination.py` | 650 | WordPress Export Destination for UnifiedExportDialog. | `WordPressExportDestination`, `WordPressPostMetadataDialog` |
 | `plugins/wordpress/plugin.py` | 897 | WordPress Publisher Plugin for Radio & TV Segmenter. | `WordPressPublishDialog`, `WordPressPublishWorker`, `WordPressStoryMetadataWidget`, `Plugin` *(+1 more)* |
 | `plugins/wordpress/wordpress_dialog.py` | 886 | WordPress Export Tab Widget and Post Metadata Dialog. | `WordPressExportTabWidget`, `WordPressPostMetadataDialog`, `generate_wp_excerpt()`, `capture_video_frame()` |
 | `plugins/wordpress/wp_post_builder.py` | 287 | Post item builder, transcript slicing, and video frame ex... | `capture_video_frame()`, `get_primary_text_slice()`, `build_wp_post_items()` |
 | `plugins/wordpress/wp_tab_widget.py` | 995 | WordPress export tab configuration widget and preview con... | `WordPressExportTabWidget` |
 | `plugins/wordpress/wp_ui_builder.py` | 731 | UI layout construction and widget setup for WordPressExpo... | `setup_wp_tab_ui()` |
 | `plugins/youtube/__init__.py` | 9 | YouTube Video Publisher Plugin for Radio & TV Segmenter. | - |
-| `plugins/youtube/export_destination.py` | 594 | YouTube Export Destination for UnifiedExportDialog with Z... | `YouTubeExportTabWidget`, `YouTubeExportDestination`, `capture_video_frame()` |
+| `plugins/youtube/export_destination.py` | 613 | YouTube Export Destination for UnifiedExportDialog with Z... | `YouTubeExportTabWidget`, `YouTubeExportDestination`, `capture_video_frame()` |
 | `plugins/youtube/guide_dialog.py` | 147 | Interactive Assisted Upload Guide Dialog for YouTube Studio. | `YouTubeAssistedUploadGuideDialog` |
 | `plugins/youtube/plugin.py` | 224 | YouTube Video Publisher Plugin for Radio & TV Segmenter. | `YouTubeSettingsDialog`, `Plugin`, `capture_video_frame()` |
 | `preferences_dialog.py` | 857 | Radio & TV Story Segmenter — Preferences Modal Dialog. | `PreferencesDialogMixin` |
@@ -137,18 +137,18 @@
 | `timeline_widgets.py` | 974 | Radio & TV Story Segmenter — Timeline Ruler, Track Views,... | `TimelineCanvas`, `TimelineWidget` |
 | `transcript_cleaner.py` | 216 | Radio & TV Segmenter — Transcript cleaning, loop collapsi... | `collapse_repeating_ngrams()`, `strip_hallucination_phrases()`, `trim_trailing_degenerate_tail()`, `scrub_transcript_segments()` *(+1 more)* |
 | `transcript_context_menu_mixin.py` | 415 | Radio & TV Story Segmenter — Interactive Transcript Conte... | `TranscriptContextMenuMixin` |
-| `transcript_editor.py` | 866 | transcript_editor.py - Interactive Transcript Editor & Vi... | `InteractiveTranscriptEdit` |
+| `transcript_editor.py` | 870 | transcript_editor.py - Interactive Transcript Editor & Vi... | `InteractiveTranscriptEdit` |
 | `transcript_editor_dialogs.py` | 677 | transcript_editor_dialogs.py - Dialog and floating toolba... | `FindReplaceDialog`, `TranscriptSelectionBubble` |
 | `transcript_formatting_mixin.py` | 340 | Radio & TV Story Segmenter — Interactive Transcript Forma... | `TranscriptFormattingMixin` |
 | `transcript_navigation_mixin.py` | 299 | transcript_navigation_mixin.py - Timestamp discovery, car... | `TranscriptNavigationMixin` |
 | `transcript_playback_highlight_mixin.py` | 276 | Radio & TV Story Segmenter — Interactive Transcript Playb... | `TranscriptPlaybackHighlightMixin` |
 | `transcript_selection_mixin.py` | 466 | transcript_selection_mixin.py - Multi-selection, timeline... | `TranscriptSelectionMixin` |
-| `transcript_story.py` | 852 | Radio & TV Segmenter v3.9.71-beta — transcript story resp... | `TranscriptStoryMixin` |
+| `transcript_story.py` | 852 | Radio & TV Segmenter v3.9.72-beta — transcript story resp... | `TranscriptStoryMixin` |
 | `transcript_styles.py` | 104 | transcript_styles.py - Transcript view stylesheets and da... | `transcript_text_view_stylesheet()`, `clean_dark_mode_clipboard_html()` |
 | `transcript_timeline_sync_mixin.py` | 634 | Radio & TV Story Segmenter — Transcript Timeline & Playba... | `TranscriptTimelineSyncMixin` |
 | `transcription_processing.py` | 579 | Transcription background process management for Radio & T... | `TranscriptionProcessingMixin` |
 | `translation.py` | 923 | Radio & TV Segmenter — Local Translation Mixin. | `TranslationEnvSetupWorker`, `TranslationMixin` |
-| `ui_dialog_launchers.py` | 371 | Dialog launchers and external modal helpers for Radio & T... | `UiDialogLaunchersMixin` |
+| `ui_dialog_launchers.py` | 370 | Dialog launchers and external modal helpers for Radio & T... | `UiDialogLaunchersMixin` |
 | `ui_layout.py` | 1090 | Radio & TV Segmenter — UI Layout & Menu Construction Mixin. | `UiLayoutMixin` |
 | `ui_menus.py` | 814 | Main application menu bar and action assembly for Radio &... | `PersistentMenu`, `UiMenusMixin` |
 | `updater.py` | 1549 | Update manager and GitHub release installer for Radio & T... | `CheckUpdateWorker`, `DownloadUpdateWorker`, `CheckUpdateDialog`, `UpdaterMixin` *(+9 more)* |
@@ -168,7 +168,7 @@
 ## Detailed Symbol Catalog
 
 ### `RadioTVSegmenter.py` (658 lines)
-*Radio & TV Segmenter — v3.9.71-beta*
+*Radio & TV Segmenter — v3.9.72-beta*
 - **class `MainWindow(ModelManagementMixin, MediaBatchMixin, PlaybackPreferencesMixin, UiLayoutMixin, ProcessingMixin, TranslationMixin, TranscriptStoryMixin, ProjectExportMixin, GpuAccelerationMixin, QMainWindow)`** (lines 160–555):
   *Main application window for Radio & TV Segmenter.*
   - `__init__(self)` [L178-L350]
@@ -516,22 +516,22 @@
   *Diagnostic suite for transcript editor, find-replace, and speaker synchronization.*
   - `_test_find_and_replace_project_synchronization_and_undo(self, item)` [L14-L200] — *Validates that Find & Replace updates segments, word timings, speaker aliases,*
 
-### `diagnostic_export_tests.py` (1699 lines)
+### `diagnostic_export_tests.py` (1716 lines)
 *Diagnostic test bench suite component.*
-- **class `DiagnosticExportTestsMixin`** (lines 26–1698):
+- **class `DiagnosticExportTestsMixin`** (lines 26–1715):
   - `_test_wordpress_export_scope_post_builder(self, item)` [L27-L202]
   - `_test_wordpress_export_content_and_transcript_formatter(self, item)` [L204-L415]
   - `_test_multi_format_line_break_and_paragraph_parity(self, item)` [L417-L522]
   - `_test_wordpress_multi_story_upload_and_ui_pluralization(self, item)` [L524-L748]
   - `_test_gutenberg_html_structural_hygiene_audit(self, item)` [L750-L786]
   - `_test_export_scope_delta_and_gap_integrity_audit(self, item)` [L788-L839]
-  - `_test_export_destination_interface_contract_verification(self, item)` [L841-L860]
-  - `_test_multi_story_media_payload_disambiguation_test(self, item)` [L862-L900]
-  - `_test_wordpress_audio_inclusion_toggle_and_error_resilience(self, item)` [L902-L1228]
-  - `_test_wordpress_castos_podcast_integration(self, item)` [L1230-L1458]
-  - `_test_multi_scope_story_and_full_episode_export_pipeline(self, item)` [L1460-L1541]
-  - `_test_audio_export_non_blocking_and_cancellation_pipeline(self, item)` [L1543-L1653]
-  - `_test_modal_dialog_maximizable_import_integrity(self, item)` [L1655-L1698]
+  - `_test_export_destination_interface_contract_verification(self, item)` [L841-L877]
+  - `_test_multi_story_media_payload_disambiguation_test(self, item)` [L879-L917]
+  - `_test_wordpress_audio_inclusion_toggle_and_error_resilience(self, item)` [L919-L1245]
+  - `_test_wordpress_castos_podcast_integration(self, item)` [L1247-L1475]
+  - `_test_multi_scope_story_and_full_episode_export_pipeline(self, item)` [L1477-L1558]
+  - `_test_audio_export_non_blocking_and_cancellation_pipeline(self, item)` [L1560-L1670]
+  - `_test_modal_dialog_maximizable_import_integrity(self, item)` [L1672-L1715]
 
 ### `diagnostic_helpers.py` (151 lines)
 *Helper fixtures, module resolvers, and DiagnosticItem for test runner.*
@@ -616,37 +616,37 @@
 *DAW and NLE timeline interchange formatters for Radio & TV Story Segmenter.*
 - **Public Exports (`__all__`)**: format_edl_timestamp, build_timeline_clips, generate_reaper_project, generate_samplitude_edl, generate_fcp7_xml, generate_audition_xml, generate_fcpxml, generate_aaf_interchange, generate_hindenburg_session, generate_audacity_labels, generate_cue_sheet, generate_daw_marker_csv
 
-### `export/dialog.py` (1441 lines)
+### `export/dialog.py` (1462 lines)
 *Unified Export Dialog for Radio & TV Story Segmenter.*
-- **class `UnifiedExportDialog(QDialog)`** (lines 61–1441):
+- **class `UnifiedExportDialog(QDialog)`** (lines 61–1462):
   *Unified Export Center supporting Local Files and dynamic plugin destinations.*
   - `__init__(self, main_window, initial_scope, initial_dest, parent)` [L64-L234]
   - `showEvent(self, event)` [L236-L238]
-  - `_build_destinations_layout(self)` [L240-L385] — *Construct destination radio buttons in customized user order.*
-  - `_on_reorder_destinations(self)` [L387-L406] — *Open reorder dialog and rebuild layout on change.*
-  - `_create_local_page(self)` [L408-L766]
-  - `_on_location_radio_toggled(self)` [L768-L771]
-  - `_browse_custom_export_location(self)` [L773-L778]
-  - `_create_timeline_page(self)` [L780-L942]
-  - `_on_timeline_location_radio_toggled(self)` [L944-L947]
-  - `_browse_custom_timeline_location(self)` [L949-L954]
-  - `_toggle_all_sections(self)` [L956-L970]
-  - `_update_export_button_label(self)` [L972-L985]
-  - `_on_dest_changed(self)` [L987-L995]
-  - `_on_scope_changed(self)` [L997-L1008]
-  - `_open_id3_editor(self)` [L1010-L1020] — *Open the ID3 Tag Editor for MP3 files.*
-  - `_copy_youtube_chapters(self)` [L1022-L1038]
-  - `_load_saved_options(self)` [L1040-L1120]
-  - `save_options_to_settings(self, as_default)` [L1122-L1173]
-  - `_handle_accept(self)` [L1175-L1243]
-  - `get_result(self)` [L1245-L1349]
-  - `_persist_plugin_draft_states(self)` [L1351-L1359] — *Persist any unsaved plugin destination edits (such as WordPress post drafts) back to the project.*
-  - `done(self, r)` [L1361-L1363]
-  - `toggle_float_mode(self, pinned)` [L1365-L1381] — *Toggle whether the non-modal floating window stays pinned on top of other windows.*
-  - `set_scope_and_destination(self, scope, dest_id)` [L1383-L1394] — *Update export scope and active destination tab on an open modeless export window.*
-  - `refresh_from_main_window(self)` [L1396-L1418] — *Synchronize post items, excerpts, and story lists from the main window without losing draft edits.*
-  - `_toggle_maximize(self)` [L1420-L1428]
-  - `changeEvent(self, event)` [L1430-L1441]
+  - `_build_destinations_layout(self)` [L240-L406] — *Construct destination radio buttons in customized user order.*
+  - `_on_reorder_destinations(self)` [L408-L427] — *Open reorder dialog and rebuild layout on change.*
+  - `_create_local_page(self)` [L429-L787]
+  - `_on_location_radio_toggled(self)` [L789-L792]
+  - `_browse_custom_export_location(self)` [L794-L799]
+  - `_create_timeline_page(self)` [L801-L963]
+  - `_on_timeline_location_radio_toggled(self)` [L965-L968]
+  - `_browse_custom_timeline_location(self)` [L970-L975]
+  - `_toggle_all_sections(self)` [L977-L991]
+  - `_update_export_button_label(self)` [L993-L1006]
+  - `_on_dest_changed(self)` [L1008-L1016]
+  - `_on_scope_changed(self)` [L1018-L1029]
+  - `_open_id3_editor(self)` [L1031-L1041] — *Open the ID3 Tag Editor for MP3 files.*
+  - `_copy_youtube_chapters(self)` [L1043-L1059]
+  - `_load_saved_options(self)` [L1061-L1141]
+  - `save_options_to_settings(self, as_default)` [L1143-L1194]
+  - `_handle_accept(self)` [L1196-L1264]
+  - `get_result(self)` [L1266-L1370]
+  - `_persist_plugin_draft_states(self)` [L1372-L1380] — *Persist any unsaved plugin destination edits (such as WordPress post drafts) back to the project.*
+  - `done(self, r)` [L1382-L1384]
+  - `toggle_float_mode(self, pinned)` [L1386-L1402] — *Toggle whether the non-modal floating window stays pinned on top of other windows.*
+  - `set_scope_and_destination(self, scope, dest_id)` [L1404-L1415] — *Update export scope and active destination tab on an open modeless export window.*
+  - `refresh_from_main_window(self)` [L1417-L1439] — *Synchronize post items, excerpts, and story lists from the main window without losing draft edits.*
+  - `_toggle_maximize(self)` [L1441-L1449]
+  - `changeEvent(self, event)` [L1451-L1462]
 
 ### `export/docx.py` (541 lines)
 *Word (.docx) export formatter for Radio & TV Story Segmenter.*
@@ -1289,10 +1289,10 @@
   - `_build_audio_fade_filter(duration, fade_in, fade_out, fade_curve)` [L1331-L1359] — *Construct FFmpeg afade audio filter chain for story clips.*
   - `execute_wordpress_upload(main_window, client, post_title, post_excerpt, start, end, task_label, include_english, include_spanish, spanish_presentation, primary_language, author_ids, author_term_ids, category_ids, show_completion_dialog, media_filename, progress_callback, featured_image_path, parent_episode_info, link_parent_episode, parent_episode_template, parent_episode_pos, include_audio, fade_in, fade_out, fade_curve, apply_fades, accordion_pos, is_podcast, podcast_feed, podcast_feed_id, podcast_feed_ids, podcast_feeds, podcast_episode_type, podcast_season, podcast_episode_number)` [L1362-L1887] — *Extract media clip, upload to WordPress media library, and create draft post.*
 
-### `plugins/wordpress/export_destination.py` (631 lines)
+### `plugins/wordpress/export_destination.py` (650 lines)
 *WordPress Export Destination for UnifiedExportDialog.*
 - **Public Exports (`__all__`)**: WordPressExportDestination, WordPressExportTabWidget, WordPressPostMetadataDialog, capture_video_frame, build_wp_post_items, build_episode_stories_toc, format_parent_episode_notice, is_wp_auth_error, SS_PODCAST_AUDIO_FILE, SS_PODCAST_AUDIO_FILE_ID, SS_PODCAST_DURATION, SS_PODCAST_FILESIZE, SS_PODCAST_FEED, SS_PODCAST_EPISODE_TYPE, CASTOS_SHORTCODE, CASTOS_PLAYER_BLOCK, build_castos_post_meta, format_castos_duration, fetch_castos_feeds
-- **class `WordPressExportDestination(ExportDestination)`** (lines 36–510):
+- **class `WordPressExportDestination(ExportDestination)`** (lines 36–529):
   *Export destination handler for WordPress REST API Draft Posts.*
   - `__init__(self, plugin)` [L39-L47]
   - `button_label(self)` [L50-L55]
@@ -1301,17 +1301,18 @@
   - `widget(self)` [L65-L66]
   - `widget(self, val)` [L69-L70]
   - `create_widget(self, parent, main_window)` [L72-L74]
-  - `on_scope_changed(self, scope, stories)` [L76-L78]
-  - `validate(self)` [L80-L96]
-  - `get_export_data(self)` [L98-L117]
-  - `execute_export(self, main_window, export_data, progress_dialog)` [L119-L510]
-- **class `WordPressPostMetadataDialog(QDialog)`** (lines 513–593):
+  - `_ensure_tab_widget(self)` [L76-L92] — *Defensive resolver to bind tab_widget from cached dialog entries if unlinked.*
+  - `on_scope_changed(self, scope, stories)` [L94-L97]
+  - `validate(self)` [L99-L115]
+  - `get_export_data(self)` [L117-L136]
+  - `execute_export(self, main_window, export_data, progress_dialog)` [L138-L529]
+- **class `WordPressPostMetadataDialog(QDialog)`** (lines 532–612):
   *Full-featured WordPress post & story metadata editor dialog.*
-  - `__init__(self, parent, main_window, target_story_index)` [L516-L572]
-  - `_on_save_clicked(self)` [L574-L579]
-  - `_on_close_clicked(self)` [L581-L583]
-  - `_on_save_and_close(self)` [L585-L586]
-  - `done(self, r)` [L588-L593]
+  - `__init__(self, parent, main_window, target_story_index)` [L535-L591]
+  - `_on_save_clicked(self)` [L593-L598]
+  - `_on_close_clicked(self)` [L600-L602]
+  - `_on_save_and_close(self)` [L604-L605]
+  - `done(self, r)` [L607-L612]
 
 ### `plugins/wordpress/plugin.py` (897 lines)
 *WordPress Publisher Plugin for Radio & TV Segmenter.*
@@ -1482,7 +1483,7 @@
 ### `plugins/youtube/__init__.py` (9 lines)
 *YouTube Video Publisher Plugin for Radio & TV Segmenter.*
 
-### `plugins/youtube/export_destination.py` (594 lines)
+### `plugins/youtube/export_destination.py` (613 lines)
 *YouTube Export Destination for UnifiedExportDialog with Zero-Auth Manual Publishing.*
 - **class `YouTubeExportTabWidget(QWidget)`** (lines 87–529):
   *Configuration and preview panel for YouTube Zero-Auth Manual Publishing.*
@@ -1502,14 +1503,15 @@
   - `reject(self)` [L475-L478] — *Ensure temp preview files are purged on dialog rejection.*
   - `done(self, r)` [L480-L483] — *Ensure temp preview files are purged on dialog completion.*
   - `populate_metadata(self)` [L485-L529] — *Builds default title, description, chapter timestamps, and speaker credits from current stories.*
-- **class `YouTubeExportDestination(ExportDestination)`** (lines 532–594):
+- **class `YouTubeExportDestination(ExportDestination)`** (lines 532–613):
   *Export destination handler for YouTube Zero-Auth Manual Publishing.*
   - `__init__(self, plugin)` [L535-L543]
   - `create_widget(self, parent, main_window)` [L545-L547]
-  - `on_scope_changed(self, scope, stories)` [L549-L551]
-  - `validate(self)` [L553-L559]
-  - `get_export_data(self)` [L561-L588]
-  - `execute_export(self, main_window, export_data, progress_dialog)` [L590-L594]
+  - `_ensure_tab_widget(self)` [L549-L565] — *Defensive resolver to bind tab_widget from cached dialog entries if unlinked.*
+  - `on_scope_changed(self, scope, stories)` [L567-L570]
+  - `validate(self)` [L572-L578]
+  - `get_export_data(self)` [L580-L607]
+  - `execute_export(self, main_window, export_data, progress_dialog)` [L609-L613]
 - **Functions**:
   - `capture_video_frame(video_path, timestamp, output_path)` [L69-L84]
 
@@ -2658,10 +2660,10 @@
   - `_on_bubble_export(self)` [L75-L80]
   - `show_context_menu(self, position)` [L82-L415]
 
-### `transcript_editor.py` (866 lines)
+### `transcript_editor.py` (870 lines)
 *transcript_editor.py - Interactive Transcript Editor & Viewer Components*
 - **Public Exports (`__all__`)**: FindReplaceDialog, TranscriptSelectionBubble, transcript_text_view_stylesheet, clean_dark_mode_clipboard_html, InteractiveTranscriptEdit
-- **class `InteractiveTranscriptEdit(TranscriptContextMenuMixin, TranscriptFormattingMixin, TranscriptTimelineSyncMixin, QTextEdit)`** (lines 116–866):
+- **class `InteractiveTranscriptEdit(TranscriptContextMenuMixin, TranscriptFormattingMixin, TranscriptTimelineSyncMixin, QTextEdit)`** (lines 116–870):
   - `__init__(self, parent)` [L129-L191]
   - `lock_scroll_position(self, v_val, h_val, duration_ms)` [L193-L214] — *Pin vertical and horizontal scrollbars to exact pixel values during layout reflows.*
   - `_release_scroll_lock(self)` [L216-L219]
@@ -2682,7 +2684,7 @@
   - `mouseMoveEvent(self, event)` [L494-L542]
   - `leaveEvent(self, event)` [L544-L548]
   - `mouseReleaseEvent(self, event)` [L550-L636]
-  - `keyPressEvent(self, event)` [L638-L866]
+  - `keyPressEvent(self, event)` [L638-L870]
 
 ### `transcript_editor_dialogs.py` (677 lines)
 *transcript_editor_dialogs.py - Dialog and floating toolbar components for transcript editing.*
@@ -2774,7 +2776,7 @@
   - `_on_bubble_export(self)` [L461-L466]
 
 ### `transcript_story.py` (852 lines)
-*Radio & TV Segmenter v3.9.71-beta — transcript story responsibilities.*
+*Radio & TV Segmenter v3.9.72-beta — transcript story responsibilities.*
 - **Public Exports (`__all__`)**: TranscriptStoryMixin, Story, SetStoriesCommand, SelectStoriesCommand, StoryBoundaryChangeCommand, StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin, ChangeSpeakerDialog, VoiceProfileMatchDialog, StoryFadesDialog, SpeakerManagerDialog, FADE_CURVE_TABLES, get_fade_curve_factors
 - **class `TranscriptStoryMixin(StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin)`** (lines 63–851):
   - `render_transcript(self)` [L64-L467]
@@ -2876,21 +2878,21 @@
   - `_translation_runtime_entry_path(app)` [L95-L121]
   - `_translation_runtime_manager(app)` [L123-L130]
 
-### `ui_dialog_launchers.py` (371 lines)
+### `ui_dialog_launchers.py` (370 lines)
 *Dialog launchers and external modal helpers for Radio & TV Story Segmenter.*
-- **class `UiDialogLaunchersMixin`** (lines 25–369):
+- **class `UiDialogLaunchersMixin`** (lines 25–368):
   *Mixin providing dialog launcher methods for shortcuts, benchmarks, diagnostics, and plugins.*
   - `open_project_dialog(self)` [L27-L42] — *Prompt user to open a project file (*.rtvs).*
-  - `open_find_dialog(self)` [L44-L47] — *Display the Find and Replace dialog window pre-populated with search term.*
-  - `open_find_replace(self)` [L49-L84] — *Display the Find and Replace dialog window (alias for open_find_dialog).*
-  - `show_shortcuts_dialog(self)` [L87-L268] — *Display a searchable, dynamically generated reference table of all active shortcuts.*
-  - `show_diagnostic_test_bench(self)` [L270-L282] — *Open the interactive System Diagnostic Test Bench dialog.*
-  - `show_performance_benchmark(self)` [L284-L296] — *Open the interactive System Performance & Speed Benchmark dialog.*
-  - `open_plugins_manager(self)` [L298-L305] — *Open the Plugin Manager dialog to enable, disable, or inspect plugins.*
-  - `open_id3_tag_editor(self, mp3_path)` [L307-L319] — *Open the ID3 Tag Editor dialog to view and edit MP3 audio metadata.*
-  - `open_youtube_publish_dialog(self, story)` [L322-L345] — *Open the YouTube video publishing dialog or export view from the YouTube plugin.*
-  - `open_wordpress_publish_dialog(self, story)` [L347-L363] — *Open the WordPress direct publish dialog from the WordPress plugin.*
-  - `open_loudness_normalization_dialog(self)` [L365-L369] — *Open the Audio Loudness Normalization & Telemetry modal dialog.*
+  - `open_find_dialog(self)` [L44-L79] — *Display the Find and Replace dialog window pre-populated with search term.*
+  - `open_find_replace(self)` [L81-L83] — *Display the Find and Replace dialog window (alias for open_find_dialog).*
+  - `show_shortcuts_dialog(self)` [L86-L267] — *Display a searchable, dynamically generated reference table of all active shortcuts.*
+  - `show_diagnostic_test_bench(self)` [L269-L281] — *Open the interactive System Diagnostic Test Bench dialog.*
+  - `show_performance_benchmark(self)` [L283-L295] — *Open the interactive System Performance & Speed Benchmark dialog.*
+  - `open_plugins_manager(self)` [L297-L304] — *Open the Plugin Manager dialog to enable, disable, or inspect plugins.*
+  - `open_id3_tag_editor(self, mp3_path)` [L306-L318] — *Open the ID3 Tag Editor dialog to view and edit MP3 audio metadata.*
+  - `open_youtube_publish_dialog(self, story)` [L321-L344] — *Open the YouTube video publishing dialog or export view from the YouTube plugin.*
+  - `open_wordpress_publish_dialog(self, story)` [L346-L362] — *Open the WordPress direct publish dialog from the WordPress plugin.*
+  - `open_loudness_normalization_dialog(self)` [L364-L368] — *Open the Audio Loudness Normalization & Telemetry modal dialog.*
 
 ### `ui_layout.py` (1090 lines)
 *Radio & TV Segmenter — UI Layout & Menu Construction Mixin.*

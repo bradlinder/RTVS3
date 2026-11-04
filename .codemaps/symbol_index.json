@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-03 17:03:51",
+  "generated_at": "2026-11-04 14:09:22",
   "total_files": 157,
   "files": {
     "RadioTVSegmenter.py": {
       "path": "RadioTVSegmenter.py",
       "lines": 658,
-      "summary": "Radio & TV Segmenter \u2014 v3.9.71-beta",
+      "summary": "Radio & TV Segmenter \u2014 v3.9.72-beta",
       "exports": null,
       "classes": [
         {
@@ -2126,7 +2126,7 @@
     },
     "diagnostic_export_tests.py": {
       "path": "diagnostic_export_tests.py",
-      "lines": 1699,
+      "lines": 1716,
       "summary": "Diagnostic test bench suite component.",
       "exports": null,
       "classes": [
@@ -2134,7 +2134,7 @@
           "name": "DiagnosticExportTestsMixin",
           "bases": [],
           "start_line": 26,
-          "end_line": 1698,
+          "end_line": 1715,
           "doc": "",
           "methods": [
             {
@@ -2183,49 +2183,49 @@
               "name": "_test_export_destination_interface_contract_verification",
               "sig": "_test_export_destination_interface_contract_verification(self, item)",
               "start_line": 841,
-              "end_line": 860,
+              "end_line": 877,
               "doc": ""
             },
             {
               "name": "_test_multi_story_media_payload_disambiguation_test",
               "sig": "_test_multi_story_media_payload_disambiguation_test(self, item)",
-              "start_line": 862,
-              "end_line": 900,
+              "start_line": 879,
+              "end_line": 917,
               "doc": ""
             },
             {
               "name": "_test_wordpress_audio_inclusion_toggle_and_error_resilience",
               "sig": "_test_wordpress_audio_inclusion_toggle_and_error_resilience(self, item)",
-              "start_line": 902,
-              "end_line": 1228,
+              "start_line": 919,
+              "end_line": 1245,
               "doc": ""
             },
             {
               "name": "_test_wordpress_castos_podcast_integration",
               "sig": "_test_wordpress_castos_podcast_integration(self, item)",
-              "start_line": 1230,
-              "end_line": 1458,
+              "start_line": 1247,
+              "end_line": 1475,
               "doc": ""
             },
             {
               "name": "_test_multi_scope_story_and_full_episode_export_pipeline",
               "sig": "_test_multi_scope_story_and_full_episode_export_pipeline(self, item)",
-              "start_line": 1460,
-              "end_line": 1541,
+              "start_line": 1477,
+              "end_line": 1558,
               "doc": ""
             },
             {
               "name": "_test_audio_export_non_blocking_and_cancellation_pipeline",
               "sig": "_test_audio_export_non_blocking_and_cancellation_pipeline(self, item)",
-              "start_line": 1543,
-              "end_line": 1653,
+              "start_line": 1560,
+              "end_line": 1670,
               "doc": ""
             },
             {
               "name": "_test_modal_dialog_maximizable_import_integrity",
               "sig": "_test_modal_dialog_maximizable_import_integrity(self, item)",
-              "start_line": 1655,
-              "end_line": 1698,
+              "start_line": 1672,
+              "end_line": 1715,
               "doc": ""
             }
           ]
@@ -2703,7 +2703,7 @@
     },
     "export/dialog.py": {
       "path": "export/dialog.py",
-      "lines": 1441,
+      "lines": 1462,
       "summary": "Unified Export Dialog for Radio & TV Story Segmenter.",
       "exports": null,
       "classes": [
@@ -2713,7 +2713,7 @@
             "QDialog"
           ],
           "start_line": 61,
-          "end_line": 1441,
+          "end_line": 1462,
           "doc": "Unified Export Center supporting Local Files and dynamic plugin destinations.",
           "methods": [
             {
@@ -2734,175 +2734,175 @@
               "name": "_build_destinations_layout",
               "sig": "_build_destinations_layout(self)",
               "start_line": 240,
-              "end_line": 385,
+              "end_line": 406,
               "doc": "Construct destination radio buttons in customized user order."
             },
             {
               "name": "_on_reorder_destinations",
               "sig": "_on_reorder_destinations(self)",
-              "start_line": 387,
-              "end_line": 406,
+              "start_line": 408,
+              "end_line": 427,
               "doc": "Open reorder dialog and rebuild layout on change."
             },
             {
               "name": "_create_local_page",
               "sig": "_create_local_page(self)",
-              "start_line": 408,
-              "end_line": 766,
+              "start_line": 429,
+              "end_line": 787,
               "doc": ""
             },
             {
               "name": "_on_location_radio_toggled",
               "sig": "_on_location_radio_toggled(self)",
-              "start_line": 768,
-              "end_line": 771,
+              "start_line": 789,
+              "end_line": 792,
               "doc": ""
             },
             {
               "name": "_browse_custom_export_location",
               "sig": "_browse_custom_export_location(self)",
-              "start_line": 773,
-              "end_line": 778,
+              "start_line": 794,
+              "end_line": 799,
               "doc": ""
             },
             {
               "name": "_create_timeline_page",
               "sig": "_create_timeline_page(self)",
-              "start_line": 780,
-              "end_line": 942,
+              "start_line": 801,
+              "end_line": 963,
               "doc": ""
             },
             {
               "name": "_on_timeline_location_radio_toggled",
               "sig": "_on_timeline_location_radio_toggled(self)",
-              "start_line": 944,
-              "end_line": 947,
+              "start_line": 965,
+              "end_line": 968,
               "doc": ""
             },
             {
               "name": "_browse_custom_timeline_location",
               "sig": "_browse_custom_timeline_location(self)",
-              "start_line": 949,
-              "end_line": 954,
+              "start_line": 970,
+              "end_line": 975,
               "doc": ""
             },
             {
               "name": "_toggle_all_sections",
               "sig": "_toggle_all_sections(self)",
-              "start_line": 956,
-              "end_line": 970,
+              "start_line": 977,
+              "end_line": 991,
               "doc": ""
             },
             {
               "name": "_update_export_button_label",
               "sig": "_update_export_button_label(self)",
-              "start_line": 972,
-              "end_line": 985,
+              "start_line": 993,
+              "end_line": 1006,
               "doc": ""
             },
             {
               "name": "_on_dest_changed",
               "sig": "_on_dest_changed(self)",
-              "start_line": 987,
-              "end_line": 995,
+              "start_line": 1008,
+              "end_line": 1016,
               "doc": ""
             },
             {
               "name": "_on_scope_changed",
               "sig": "_on_scope_changed(self)",
-              "start_line": 997,
-              "end_line": 1008,
+              "start_line": 1018,
+              "end_line": 1029,
               "doc": ""
             },
             {
               "name": "_open_id3_editor",
               "sig": "_open_id3_editor(self)",
-              "start_line": 1010,
-              "end_line": 1020,
+              "start_line": 1031,
+              "end_line": 1041,
               "doc": "Open the ID3 Tag Editor for MP3 files."
             },
             {
               "name": "_copy_youtube_chapters",
               "sig": "_copy_youtube_chapters(self)",
-              "start_line": 1022,
-              "end_line": 1038,
+              "start_line": 1043,
+              "end_line": 1059,
               "doc": ""
             },
             {
               "name": "_load_saved_options",
               "sig": "_load_saved_options(self)",
-              "start_line": 1040,
-              "end_line": 1120,
+              "start_line": 1061,
+              "end_line": 1141,
               "doc": ""
             },
             {
               "name": "save_options_to_settings",
               "sig": "save_options_to_settings(self, as_default)",
-              "start_line": 1122,
-              "end_line": 1173,
+              "start_line": 1143,
+              "end_line": 1194,
               "doc": ""
             },
             {
               "name": "_handle_accept",
               "sig": "_handle_accept(self)",
-              "start_line": 1175,
-              "end_line": 1243,
+              "start_line": 1196,
+              "end_line": 1264,
               "doc": ""
             },
             {
               "name": "get_result",
               "sig": "get_result(self)",
-              "start_line": 1245,
-              "end_line": 1349,
+              "start_line": 1266,
+              "end_line": 1370,
               "doc": ""
             },
             {
               "name": "_persist_plugin_draft_states",
               "sig": "_persist_plugin_draft_states(self)",
-              "start_line": 1351,
-              "end_line": 1359,
+              "start_line": 1372,
+              "end_line": 1380,
               "doc": "Persist any unsaved plugin destination edits (such as WordPress post drafts) back to the project."
             },
             {
               "name": "done",
               "sig": "done(self, r)",
-              "start_line": 1361,
-              "end_line": 1363,
+              "start_line": 1382,
+              "end_line": 1384,
               "doc": ""
             },
             {
               "name": "toggle_float_mode",
               "sig": "toggle_float_mode(self, pinned)",
-              "start_line": 1365,
-              "end_line": 1381,
+              "start_line": 1386,
+              "end_line": 1402,
               "doc": "Toggle whether the non-modal floating window stays pinned on top of other windows."
             },
             {
               "name": "set_scope_and_destination",
               "sig": "set_scope_and_destination(self, scope, dest_id)",
-              "start_line": 1383,
-              "end_line": 1394,
+              "start_line": 1404,
+              "end_line": 1415,
               "doc": "Update export scope and active destination tab on an open modeless export window."
             },
             {
               "name": "refresh_from_main_window",
               "sig": "refresh_from_main_window(self)",
-              "start_line": 1396,
-              "end_line": 1418,
+              "start_line": 1417,
+              "end_line": 1439,
               "doc": "Synchronize post items, excerpts, and story lists from the main window without losing draft edits."
             },
             {
               "name": "_toggle_maximize",
               "sig": "_toggle_maximize(self)",
-              "start_line": 1420,
-              "end_line": 1428,
+              "start_line": 1441,
+              "end_line": 1449,
               "doc": ""
             },
             {
               "name": "changeEvent",
               "sig": "changeEvent(self, event)",
-              "start_line": 1430,
-              "end_line": 1441,
+              "start_line": 1451,
+              "end_line": 1462,
               "doc": ""
             }
           ]
@@ -6807,7 +6807,7 @@
     },
     "plugins/wordpress/export_destination.py": {
       "path": "plugins/wordpress/export_destination.py",
-      "lines": 631,
+      "lines": 650,
       "summary": "WordPress Export Destination for UnifiedExportDialog.",
       "exports": [
         "WordPressExportDestination",
@@ -6837,7 +6837,7 @@
             "ExportDestination"
           ],
           "start_line": 36,
-          "end_line": 510,
+          "end_line": 529,
           "doc": "Export destination handler for WordPress REST API Draft Posts.",
           "methods": [
             {
@@ -6890,31 +6890,38 @@
               "doc": ""
             },
             {
+              "name": "_ensure_tab_widget",
+              "sig": "_ensure_tab_widget(self)",
+              "start_line": 76,
+              "end_line": 92,
+              "doc": "Defensive resolver to bind tab_widget from cached dialog entries if unlinked."
+            },
+            {
               "name": "on_scope_changed",
               "sig": "on_scope_changed(self, scope, stories)",
-              "start_line": 76,
-              "end_line": 78,
+              "start_line": 94,
+              "end_line": 97,
               "doc": ""
             },
             {
               "name": "validate",
               "sig": "validate(self)",
-              "start_line": 80,
-              "end_line": 96,
+              "start_line": 99,
+              "end_line": 115,
               "doc": ""
             },
             {
               "name": "get_export_data",
               "sig": "get_export_data(self)",
-              "start_line": 98,
-              "end_line": 117,
+              "start_line": 117,
+              "end_line": 136,
               "doc": ""
             },
             {
               "name": "execute_export",
               "sig": "execute_export(self, main_window, export_data, progress_dialog)",
-              "start_line": 119,
-              "end_line": 510,
+              "start_line": 138,
+              "end_line": 529,
               "doc": ""
             }
           ]
@@ -6924,43 +6931,43 @@
           "bases": [
             "QDialog"
           ],
-          "start_line": 513,
-          "end_line": 593,
+          "start_line": 532,
+          "end_line": 612,
           "doc": "Full-featured WordPress post & story metadata editor dialog.",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, parent, main_window, target_story_index)",
-              "start_line": 516,
-              "end_line": 572,
+              "start_line": 535,
+              "end_line": 591,
               "doc": ""
             },
             {
               "name": "_on_save_clicked",
               "sig": "_on_save_clicked(self)",
-              "start_line": 574,
-              "end_line": 579,
+              "start_line": 593,
+              "end_line": 598,
               "doc": ""
             },
             {
               "name": "_on_close_clicked",
               "sig": "_on_close_clicked(self)",
-              "start_line": 581,
-              "end_line": 583,
+              "start_line": 600,
+              "end_line": 602,
               "doc": ""
             },
             {
               "name": "_on_save_and_close",
               "sig": "_on_save_and_close(self)",
-              "start_line": 585,
-              "end_line": 586,
+              "start_line": 604,
+              "end_line": 605,
               "doc": ""
             },
             {
               "name": "done",
               "sig": "done(self, r)",
-              "start_line": 588,
-              "end_line": 593,
+              "start_line": 607,
+              "end_line": 612,
               "doc": ""
             }
           ]
@@ -8040,7 +8047,7 @@
     },
     "plugins/youtube/export_destination.py": {
       "path": "plugins/youtube/export_destination.py",
-      "lines": 594,
+      "lines": 613,
       "summary": "YouTube Export Destination for UnifiedExportDialog with Zero-Auth Manual Publishing.",
       "exports": null,
       "classes": [
@@ -8173,7 +8180,7 @@
             "ExportDestination"
           ],
           "start_line": 532,
-          "end_line": 594,
+          "end_line": 613,
           "doc": "Export destination handler for YouTube Zero-Auth Manual Publishing.",
           "methods": [
             {
@@ -8191,31 +8198,38 @@
               "doc": ""
             },
             {
+              "name": "_ensure_tab_widget",
+              "sig": "_ensure_tab_widget(self)",
+              "start_line": 549,
+              "end_line": 565,
+              "doc": "Defensive resolver to bind tab_widget from cached dialog entries if unlinked."
+            },
+            {
               "name": "on_scope_changed",
               "sig": "on_scope_changed(self, scope, stories)",
-              "start_line": 549,
-              "end_line": 551,
+              "start_line": 567,
+              "end_line": 570,
               "doc": ""
             },
             {
               "name": "validate",
               "sig": "validate(self)",
-              "start_line": 553,
-              "end_line": 559,
+              "start_line": 572,
+              "end_line": 578,
               "doc": ""
             },
             {
               "name": "get_export_data",
               "sig": "get_export_data(self)",
-              "start_line": 561,
-              "end_line": 588,
+              "start_line": 580,
+              "end_line": 607,
               "doc": ""
             },
             {
               "name": "execute_export",
               "sig": "execute_export(self, main_window, export_data, progress_dialog)",
-              "start_line": 590,
-              "end_line": 594,
+              "start_line": 609,
+              "end_line": 613,
               "doc": ""
             }
           ]
@@ -15258,7 +15272,7 @@
     },
     "transcript_editor.py": {
       "path": "transcript_editor.py",
-      "lines": 866,
+      "lines": 870,
       "summary": "transcript_editor.py - Interactive Transcript Editor & Viewer Components",
       "exports": [
         "FindReplaceDialog",
@@ -15277,7 +15291,7 @@
             "QTextEdit"
           ],
           "start_line": 116,
-          "end_line": 866,
+          "end_line": 870,
           "doc": "",
           "methods": [
             {
@@ -15424,7 +15438,7 @@
               "name": "keyPressEvent",
               "sig": "keyPressEvent(self, event)",
               "start_line": 638,
-              "end_line": 866,
+              "end_line": 870,
               "doc": ""
             }
           ]
@@ -15972,7 +15986,7 @@
     "transcript_story.py": {
       "path": "transcript_story.py",
       "lines": 852,
-      "summary": "Radio & TV Segmenter v3.9.71-beta \u2014 transcript story responsibilities.",
+      "summary": "Radio & TV Segmenter v3.9.72-beta \u2014 transcript story responsibilities.",
       "exports": [
         "TranscriptStoryMixin",
         "Story",
@@ -16622,7 +16636,7 @@
     },
     "ui_dialog_launchers.py": {
       "path": "ui_dialog_launchers.py",
-      "lines": 371,
+      "lines": 370,
       "summary": "Dialog launchers and external modal helpers for Radio & TV Story Segmenter.",
       "exports": null,
       "classes": [
@@ -16630,7 +16644,7 @@
           "name": "UiDialogLaunchersMixin",
           "bases": [],
           "start_line": 25,
-          "end_line": 369,
+          "end_line": 368,
           "doc": "Mixin providing dialog launcher methods for shortcuts, benchmarks, diagnostics, and plugins.",
           "methods": [
             {
@@ -16644,70 +16658,70 @@
               "name": "open_find_dialog",
               "sig": "open_find_dialog(self)",
               "start_line": 44,
-              "end_line": 47,
+              "end_line": 79,
               "doc": "Display the Find and Replace dialog window pre-populated with search term."
             },
             {
               "name": "open_find_replace",
               "sig": "open_find_replace(self)",
-              "start_line": 49,
-              "end_line": 84,
+              "start_line": 81,
+              "end_line": 83,
               "doc": "Display the Find and Replace dialog window (alias for open_find_dialog)."
             },
             {
               "name": "show_shortcuts_dialog",
               "sig": "show_shortcuts_dialog(self)",
-              "start_line": 87,
-              "end_line": 268,
+              "start_line": 86,
+              "end_line": 267,
               "doc": "Display a searchable, dynamically generated reference table of all active shortcuts."
             },
             {
               "name": "show_diagnostic_test_bench",
               "sig": "show_diagnostic_test_bench(self)",
-              "start_line": 270,
-              "end_line": 282,
+              "start_line": 269,
+              "end_line": 281,
               "doc": "Open the interactive System Diagnostic Test Bench dialog."
             },
             {
               "name": "show_performance_benchmark",
               "sig": "show_performance_benchmark(self)",
-              "start_line": 284,
-              "end_line": 296,
+              "start_line": 283,
+              "end_line": 295,
               "doc": "Open the interactive System Performance & Speed Benchmark dialog."
             },
             {
               "name": "open_plugins_manager",
               "sig": "open_plugins_manager(self)",
-              "start_line": 298,
-              "end_line": 305,
+              "start_line": 297,
+              "end_line": 304,
               "doc": "Open the Plugin Manager dialog to enable, disable, or inspect plugins."
             },
             {
               "name": "open_id3_tag_editor",
               "sig": "open_id3_tag_editor(self, mp3_path)",
-              "start_line": 307,
-              "end_line": 319,
+              "start_line": 306,
+              "end_line": 318,
               "doc": "Open the ID3 Tag Editor dialog to view and edit MP3 audio metadata."
             },
             {
               "name": "open_youtube_publish_dialog",
               "sig": "open_youtube_publish_dialog(self, story)",
-              "start_line": 322,
-              "end_line": 345,
+              "start_line": 321,
+              "end_line": 344,
               "doc": "Open the YouTube video publishing dialog or export view from the YouTube plugin."
             },
             {
               "name": "open_wordpress_publish_dialog",
               "sig": "open_wordpress_publish_dialog(self, story)",
-              "start_line": 347,
-              "end_line": 363,
+              "start_line": 346,
+              "end_line": 362,
               "doc": "Open the WordPress direct publish dialog from the WordPress plugin."
             },
             {
               "name": "open_loudness_normalization_dialog",
               "sig": "open_loudness_normalization_dialog(self)",
-              "start_line": 365,
-              "end_line": 369,
+              "start_line": 364,
+              "end_line": 368,
               "doc": "Open the Audio Loudness Normalization & Telemetry modal dialog."
             }
           ]

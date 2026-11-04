@@ -174,6 +174,8 @@ class DiagnosticCloudAndSystemTestsMixin:
                 raise AssertionError("Missing candidate unexpectedly reported as existing")
 
         # 3. Verify empty project dirty prompt bypass
+        from PySide6.QtWidgets import QApplication
+        _app = QApplication.instance() or QApplication(sys.argv)
         from project_state_mixin import ProjectStateMixin
         from media_batch import MediaBatchMixin
         from playback_preferences import PlaybackPreferencesMixin

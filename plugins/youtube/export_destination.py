@@ -533,25 +533,44 @@ class YouTubeExportDestination(ExportDestination):
     """Export destination handler for YouTube Zero-Auth Manual Publishing."""
 
     def __init__(self, plugin: Any = None):
+        self.plugin = plugin
+        self.tab_widget: Optional[YouTubeExportTabWidget] = None
         super().__init__(
             id="youtube",
             title="YouTube Video Publisher",
             description="Zero-auth manual publishing package for YouTube Studio with MP4 video, thumbnail, chapters, and .srt subtitles.",
             icon="youtube",
         )
-        self.plugin = plugin
-        self.tab_widget: Optional[YouTubeExportTabWidget] = None
 
     def create_widget(self, parent: Any, main_window: Any) -> Any:
         self.tab_widget = YouTubeExportTabWidget(parent, main_window)
         return self.tab_widget
 
+    def _ensure_tab_widget(self) -> Optional[YouTubeExportTabWidget]:
+        """Defensive resolver to bind tab_widget from cached dialog entries if unlinked."""
+        tab = getattr(self, "tab_widget", None)
+        if tab:
+            return tab
+        tab = getattr(self, "widget", None)
+        if tab and hasattr(tab, "yt_title_edit"):
+            self.tab_widget = tab
+            return self.tab_widget
+        if hasattr(self, "plugin") and getattr(self.plugin, "app", None):
+            active_dlg = getattr(self.plugin.app, "_active_export_dialog", None)
+            if active_dlg and hasattr(active_dlg, "_dest_entries"):
+                for entry in active_dlg._dest_entries:
+                    if entry.get("id") == "youtube" and entry.get("page"):
+                        self.tab_widget = entry["page"]
+                        return self.tab_widget
+        return self.tab_widget
+
     def on_scope_changed(self, scope: str, stories: list) -> None:
-        if self.tab_widget:
-            self.tab_widget.populate_metadata()
+        tab = self._ensure_tab_widget()
+        if tab:
+            tab.populate_metadata()
 
     def validate(self) -> Tuple[bool, str]:
-        if not self.tab_widget:
+        if not self._ensure_tab_widget():
             return False, "YouTube tab not initialized."
         title = self.tab_widget.yt_title_edit.text().strip()
         if not title:
@@ -559,7 +578,7 @@ class YouTubeExportDestination(ExportDestination):
         return True, ""
 
     def get_export_data(self) -> Dict[str, Any]:
-        if not self.tab_widget:
+        if not self._ensure_tab_widget():
             return {}
         w = self.tab_widget
         thumb_mode = "none"

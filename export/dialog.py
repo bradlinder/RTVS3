@@ -280,10 +280,15 @@ class UnifiedExportDialog(QDialog):
         for dest in registered_dests:
             # Check if page already exists or create new
             page = None
+            dest_obj = dest
             for entry in getattr(self, "_dest_entries", []):
-                if entry["id"] == dest.id and entry.get("page"):
-                    page = entry["page"]
+                if entry["id"] == dest.id:
+                    if entry.get("page"):
+                        page = entry["page"]
+                    if entry.get("dest_obj"):
+                        dest_obj = entry["dest_obj"]
                     break
+
             if page is None:
                 try:
                     page = dest.create_widget(self.stacked_widget, self.main_window)
@@ -292,20 +297,36 @@ class UnifiedExportDialog(QDialog):
                     else:
                         continue
                 except Exception as exc:
-                    print(f"[EXPORT] Warning: Failed to initialize export destination '{getattr(dest, 'id', 'unknown')}': {exc}")
+                    print(f"[EXPORT] Warning: Failed to initialize export destination '{getattr(dest_obj, 'id', 'unknown')}': {exc}")
                     continue
+            else:
+                # Guarantee destination instance references the existing page
+                if hasattr(dest_obj, "tab_widget") and dest_obj.tab_widget is None:
+                    dest_obj.tab_widget = page
+                if hasattr(dest, "tab_widget") and dest.tab_widget is None:
+                    dest.tab_widget = page
+                if hasattr(dest_obj, "widget") and getattr(dest_obj, "widget", None) is None:
+                    try:
+                        dest_obj.widget = page
+                    except Exception:
+                        pass
+                if hasattr(dest, "widget") and getattr(dest, "widget", None) is None:
+                    try:
+                        dest.widget = page
+                    except Exception:
+                        pass
 
-            clean_t = dest.title.replace("&&", "&")
+            clean_t = dest_obj.title.replace("&&", "&")
             radio = QRadioButton(clean_t)
             raw_entries.append({
-                "id": dest.id,
+                "id": dest_obj.id,
                 "title": clean_t,
                 "clean_title": clean_t,
                 "radio": radio,
                 "page": page,
-                "dest_obj": dest,
+                "dest_obj": dest_obj,
             })
-            self._plugin_destinations.append((radio, dest, page))
+            self._plugin_destinations.append((radio, dest_obj, page))
 
         # Order entries according to user preferences
         order = get_export_destinations_order()
