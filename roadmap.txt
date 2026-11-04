@@ -94,7 +94,7 @@ TABLE OF CONTENTS & STATUS OVERVIEW
    [ ] 5.4 Burned-in Subtitles & Platform Safe Zone Enforcement (`plugins/social_reel/reel_subtitles.py`)
    [ ] 5.5 Unified Export Integration & Social Reel Diagnostic Tests (`export/dialog.py`, `test_runner.py`)
 
-6. Current Release: Export Destination Reordering Synchronization & Plugin Tab Binding Hardening (`export/dialog.py`, `plugins/wordpress/export_destination.py`, `plugins/youtube/export_destination.py`, `diagnostic_export_tests.py`) [x] [COMPLETED in v3.9.77-beta]
+6. Current Release: Export Destination Reordering Synchronization & Plugin Tab Binding Hardening (`export/dialog.py`, `plugins/wordpress/export_destination.py`, `plugins/youtube/export_destination.py`, `diagnostic_export_tests.py`) [x] [COMPLETED in v3.9.78-beta]
    [x] 6.1 Eliminate Reordering Widget Desynchronization: Preserve existing destination objects (`entry['dest_obj']`) in `_build_destinations_layout()` and guarantee bidirectional rebinding of `tab_widget` and `widget` to cached QWidget pages when reordering destinations.
    [x] 6.2 Defensive Unlinked Widget Resolvers: Added `_ensure_tab_widget()` fallback in `WordPressExportDestination` and `YouTubeExportDestination` to resolve cached tab instances from active dialog entries before validation or data export.
    [x] 6.3 Early Destination Constructor Initialization: Set destination attributes prior to `super().__init__()` for reliable property evaluation during base class initialization.
@@ -147,22 +147,25 @@ DETAILED MILESTONE SPECIFICATIONS
 - Target Release: v4.3.0 (Optional / Planned)
 - Technical References: Subsystem architecture, plugin manifest, and FFmpeg filtergraph pipeline specifications are detailed in `ARCHITECTURE.md` (Section 6).
 
-6. CURRENT RELEASE: USER DOCUMENTATION, ZERO-HALLUCINATION SCREENSHOTS & HELP MENU INTEGRATION:
+6. CURRENT RELEASE: NATIVE IN-APP DOCUMENTATION VIEWER & COMPREHENSIVE USER GUIDES:
+- Purpose: Deliver the interactive desktop documentation reader dialog, inline image rendering, and complete guide library.
+- Target Release: v3.9.78-beta (Current Release)
+- Technical References & Implementation Details:
+  * [x] In-App Documentation Reader Dialog: Implemented native `UserGuideDialog` with sidebar navigation, zoom controls, and theme integration (`user_guide_dialog.py`).
+  * [x] Inline Screenshot Rendering: Resolved relative image paths to absolute URIs for direct rendering inside `QTextBrowser` without external tools.
+  * [x] Comprehensive Guide Library: Authored `getting_started_and_workflow.md`, `wordpress_exporting.md` (Application Passwords, scopes, credentials), `youtube_features.md` (chapter lists), and `export_formats.md` (DAWs, documents, audio).
+  * [x] Distribution Packaging: Added `--add-data docs` in `build_installer.py` ensuring offline availability in packaged releases.
+  * Release Logs: Documented in `CHANGELOG.md` under `## v3.9.78-beta`.
+
+7. PREVIOUS RELEASE: USER DOCUMENTATION, ZERO-HALLUCINATION SCREENSHOTS & HELP MENU INTEGRATION:
 - Purpose: Deliver the Video Shows & YouTube publishing guide, programmatic screenshot generator, and in-app Help menu integration.
-- Target Release: v3.9.77-beta (Current Release)
+- Target Release: v3.9.77-beta (Previous Release)
 - Technical References & Implementation Details:
   * [x] Video Shows & YouTube Publishing Guide: Authored comprehensive guide detailing hybrid workflows, YouTube URL parsing, and Gutenberg 16:9 embeds (`docs/guides/video_shows_and_youtube_publishing.md`).
   * [x] Zero-Hallucination Programmatic Screenshots: Implemented native off-screen Qt rendering script to generate pixel-accurate PNGs directly from application widgets (`scripts/capture_guide_screenshots.py`).
   * [x] In-App Help Menu Integration: Added "User Guides & Documentation..." (`Shift+F2`) to the desktop Help menu (`ui_menus.py`, `playback_preferences.py`).
   * [x] Standardized Documentation Policy: Formalized Section 16 in `AGENTS.md` establishing the Three-Tier Documentation Cadence and Zero-Hallucination Invariant.
   * Release Logs: Documented in `CHANGELOG.md` under `## v3.9.77-beta`.
-
-7. PREVIOUS RELEASE: TIMELINE & STORY CONTEXT MENU TRANSIENT PARENT TOP-LEVEL NORMALIZATION:
-- Purpose: Ensure menus and tooltips reference the top-level QMainWindow, eliminating QWidgetWindow transient parent warnings.
-- Target Release: v3.9.76-beta (Previous Release)
-- Technical References & Implementation Details:
-  * [x] Top-Level Window Parenting: Configured `show_timeline_context_menu`, `show_selection_context_menu`, and story list context menus to pass `canvas.window()` / `self.window()` to `QMenu` instead of child canvas widgets (`timeline_context_menus.py`, `story_widgets.py`).
-  * [x] Tooltip Transient Target: Updated timeline tooltip invocations to target `self.window()` (`timeline_widgets.py`).
   * [x] Elimination of Transient Parent Warning: Ensured Qt's `QWindow::setTransientParent` evaluates true top-level windows when child widgets acquire native Win32 `HWND` handles during OLE drag-and-drop.
   * Release Logs: Documented in `CHANGELOG.md` under `## v3.9.76-beta`.
   * Release Logs: Documented in `CHANGELOG.md` under `## v3.9.75-beta`.

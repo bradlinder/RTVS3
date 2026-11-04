@@ -30,7 +30,7 @@ else:
 
 INTERNAL_APP_ID = "RadioTVStorySegmenter"
 APP_DISPLAY_NAME = "Radio & TV Segmenter"
-PROJECT_VERSION = "3.9.77-beta"
+PROJECT_VERSION = "3.9.78-beta"
 DEFAULT_GITHUB_REPO = "bradlinder/RTVS3"
 
 

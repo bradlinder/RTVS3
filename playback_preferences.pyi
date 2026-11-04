@@ -61,7 +61,7 @@ class PlaybackPreferencesMixin(ThemePreferencesMixin, PlaybackControllerMixin, P
     def open_diagnostic_log_folder(self):
         ...
 
-    def open_user_documentation(self):
+    def open_user_documentation(self, guide_id: str=...):
         ...
 
     def show_about_dialog(self):

@@ -491,16 +491,17 @@ class PlaybackPreferencesMixin(ThemePreferencesMixin, PlaybackControllerMixin, P
         except Exception as exc:
             QMessageBox.critical(self, "Diagnostics", f"Could not open the diagnostic log folder.\n\n{exc}")
 
-    def open_user_documentation(self):
-        """Open the local user guides and documentation."""
-        from pathlib import Path
-        from PySide6.QtGui import QDesktopServices
-        from PySide6.QtCore import QUrl
-        guide_path = Path(__file__).resolve().parent / "docs" / "guides" / "video_shows_and_youtube_publishing.md"
-        if not guide_path.exists():
-            guide_path = Path(__file__).resolve().parent / "docs" / "README.md"
-        if guide_path.exists():
-            QDesktopServices.openUrl(QUrl.fromLocalFile(str(guide_path)))
+    def open_user_documentation(self, guide_id: str = "workflow"):
+        """Display the in-app User Guides & Documentation dialog."""
+        from user_guide_dialog import UserGuideDialog
+        if not hasattr(self, "_user_guide_dialog") or self._user_guide_dialog is None:
+            self._user_guide_dialog = UserGuideDialog(self, initial_guide_id=guide_id)
+        else:
+            if guide_id:
+                self._user_guide_dialog._load_guide_by_id(guide_id)
+        self._user_guide_dialog.show()
+        self._user_guide_dialog.raise_()
+        self._user_guide_dialog.activateWindow()
 
     def show_about_dialog(self):
         about_text = (

@@ -59,7 +59,7 @@ try:
 except ImportError as e:
     print(f"[BUILD] Warning: Could not import prs_shared ({e}), using fallback values")
     APP_DISPLAY_NAME = "Radio & TV Segmenter"
-    PROJECT_VERSION = "3.9.77-beta"
+    PROJECT_VERSION = "3.9.78-beta"
 except Exception as e:
     print(f"[BUILD] Unexpected error importing prs_shared: {type(e).__name__}: {e}")
     raise
@@ -855,6 +855,8 @@ def main() -> None:
         doc_file = ROOT / doc
         if doc_file.exists():
             doc_flags.extend(["--add-data", f"{doc_file}{os.pathsep}."])
+    if (ROOT / "docs").exists():
+        doc_flags.extend(["--add-data", f"{ROOT / 'docs'}{os.pathsep}docs"])
 
     runtime_hook = ROOT / "installer" / "pyinstaller" / "torch_dll_hook.py"
 

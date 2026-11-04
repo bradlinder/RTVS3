@@ -124,6 +124,19 @@ def main():
     list_widget = wp_widget.wp_posts_list
     capture_widget(list_widget, images_dir / "wordpress_posts_list_badges.png", QSize(320, 480))
 
+    # 4. Capture WordPress Credentials & Preferences Page
+    from plugins.wordpress.client import WordPressPreferencesPage
+    pref_page = WordPressPreferencesPage()
+    pref_page.url_edit.setText("https://example-news-station.com")
+    pref_page.user_edit.setText("newsroom_editor")
+    pref_page.pass_edit.setText("abcd efgh ijkl mnop")
+    capture_widget(pref_page, images_dir / "wordpress_preferences_credentials.png", QSize(680, 520))
+
+    # 5. Capture Unified Export Dialog Overview
+    from export.dialog import UnifiedExportDialog
+    exp_dlg = UnifiedExportDialog(None, mock_win)
+    capture_widget(exp_dlg, images_dir / "unified_export_dialog.png", QSize(820, 560))
+
     print("\nAll documentation screenshots successfully generated.")
 
 
