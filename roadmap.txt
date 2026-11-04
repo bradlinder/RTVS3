@@ -94,7 +94,7 @@ TABLE OF CONTENTS & STATUS OVERVIEW
    [ ] 5.4 Burned-in Subtitles & Platform Safe Zone Enforcement (`plugins/social_reel/reel_subtitles.py`)
    [ ] 5.5 Unified Export Integration & Social Reel Diagnostic Tests (`export/dialog.py`, `test_runner.py`)
 
-6. Current Release: Export Destination Reordering Synchronization & Plugin Tab Binding Hardening (`export/dialog.py`, `plugins/wordpress/export_destination.py`, `plugins/youtube/export_destination.py`, `diagnostic_export_tests.py`) [x] [COMPLETED in v3.9.72-beta]
+6. Current Release: Export Destination Reordering Synchronization & Plugin Tab Binding Hardening (`export/dialog.py`, `plugins/wordpress/export_destination.py`, `plugins/youtube/export_destination.py`, `diagnostic_export_tests.py`) [x] [COMPLETED in v3.9.73-beta]
    [x] 6.1 Eliminate Reordering Widget Desynchronization: Preserve existing destination objects (`entry['dest_obj']`) in `_build_destinations_layout()` and guarantee bidirectional rebinding of `tab_widget` and `widget` to cached QWidget pages when reordering destinations.
    [x] 6.2 Defensive Unlinked Widget Resolvers: Added `_ensure_tab_widget()` fallback in `WordPressExportDestination` and `YouTubeExportDestination` to resolve cached tab instances from active dialog entries before validation or data export.
    [x] 6.3 Early Destination Constructor Initialization: Set destination attributes prior to `super().__init__()` for reliable property evaluation during base class initialization.
@@ -147,18 +147,20 @@ DETAILED MILESTONE SPECIFICATIONS
 - Target Release: v4.3.0 (Optional / Planned)
 - Technical References: Subsystem architecture, plugin manifest, and FFmpeg filtergraph pipeline specifications are detailed in `ARCHITECTURE.md` (Section 6).
 
-6. CURRENT RELEASE: FIND & REPLACE DATA-MODEL SYNCHRONIZATION & SPEAKER REVERSION IMMUNITY:
-- Purpose: Fix architectural defect where Find & Replace modified only the Qt presentation buffer without mutating project segments or speaker names, causing any subsequent speaker rename or render_transcript() call to revert all corrections.
-- Target Release: v3.9.71-beta (Current Release)
+6. CURRENT RELEASE: YOUTUBE VIDEO EMBED FOR WORDPRESS EXPORTS:
+- Purpose: Responsive YouTube iframe Gutenberg blocks, video project audio inclusion defaults, left-hand post list indicators, and cross-plugin settings synchronization.
+- Target Release: v3.9.73-beta (Current Release)
 - Technical References & Implementation Details:
-  * [x] Data-Model Backed Replacements: Directly mutate transcript["segments"], words, and full transcript text with automatic word-level timestamp alignment via sync_segment_words().
-  * [x] Speaker Alias & Glossary Synchronization: Synchronize speaker display aliases in speaker_names and custom_speakers_glossary with user-configurable "Include Speakers" option.
-  * [x] Project State Undo/Redo & Persistence: Commit discrete ProjectStateCommand undo snapshots before replacements, mark project dirty, and update window title.
-  * [x] Speaker Re-render Immunity: Eliminate reversion bug where subsequent speaker label changes or speaker manager actions re-rendered the unedited data model.
-  * [x] Automated Diagnostic Verification: Added diagnostic test Find and Replace Project Synchronization and Undo in diagnostic_editor_tests.py.
-  * Release Logs: Documented in `CHANGELOG.md` under `## v3.9.71-beta`.
+  * [x] Dedicated Submodule Architecture: Extracted YouTube embed UI, extraction, block generation, and list label formatting to `plugins/wordpress/youtube_embed.py`.
+  * [x] Universal YouTube URL Extraction: Added `extract_youtube_video_id()` supporting watch, short, embed, live, shorts, and YouTube Studio URLs.
+  * [x] Gutenberg 16:9 Custom HTML Embed: Built responsive `iframe` block (`rel=0`, `start`, `end`) preventing oEmbed failures on scheduled/unlisted videos.
+  * [x] Video Source Audio Inclusion Defaults & Warning: Defaulted `include_audio = False` and `is_podcast = False` for video projects, with user prompt if audio is enabled.
+  * [x] Left-Hand Post List Badges & Tooltips: Added badges (Authors, Categories, Podcast, Audio, YouTube, Image) and rich multi-line tooltips.
+  * [x] Preferences Synchronization: Added shared `wp_yt_stop_at_story_end` and `wp_yt_embed_placement` to WordPress and YouTube preferences dialogs.
+  * [x] Automated Diagnostic Verification: Added `_test_wordpress_youtube_video_embed` in `diagnostic_export_tests.py`.
+  * Release Logs: Documented in `CHANGELOG.md` under `## v3.9.73-beta`.
 
-7. PREVIOUS RELEASE: VERSION SOURCE-OF-TRUTH HARMONIZATION & UPDATER DESYNC RESOLUTION:
-- Purpose: Harmonize PROJECT_VERSION across core_utils.py, prs_shared.py, updater.py, and RadioTVSegmenter.py, eliminating the split source of truth between the main window title bar and the Check for Updates dialog.
-- Target Release: v3.9.70-beta (Previous Release)
-- Technical References: Full implementation details are documented in `CHANGELOG.md` under `## v3.9.70-beta`.
+7. PREVIOUS RELEASE: EXPORT DESTINATION REORDERING SYNCHRONIZATION & PLUGIN TAB BINDING HARDENING:
+- Purpose: Eliminate 'WordPress Tab Not Initialized' reordering defect, add defensive page resolvers, and guarantee early destination constructor initialization.
+- Target Release: v3.9.72-beta (Previous Release)
+- Technical References: Full implementation details are documented in `CHANGELOG.md` under `## v3.9.72-beta`.

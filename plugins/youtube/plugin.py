@@ -159,6 +159,39 @@ class YouTubeSettingsDialog(QDialog):
 
         layout.addWidget(opts_group)
 
+        # WordPress Embed Integration Defaults
+        wp_yt_group = QGroupBox("WordPress Video Embed Integration Defaults")
+        wp_yt_layout = QVBoxLayout(wp_yt_group)
+        wp_yt_layout.setSpacing(6)
+
+        self.cb_wp_stop_at_end = QCheckBox("Default: Stop embedded YouTube videos at the end of each story in WordPress exports")
+        self.cb_wp_stop_at_end.setChecked(
+            str(self.settings.value("wp_yt_stop_at_story_end", "false")).lower() in ("true", "1", "yes")
+        )
+        wp_yt_layout.addWidget(self.cb_wp_stop_at_end)
+
+        wp_pos_row = QHBoxLayout()
+        wp_pos_lbl = QLabel("Default YouTube Video Embed Placement in WordPress Posts:")
+        self.wp_yt_pos_button_group = QButtonGroup(self)
+        self.rad_wp_yt_top = QRadioButton("Place at top of post (above transcript)")
+        self.rad_wp_yt_bottom = QRadioButton("Place at bottom of post (below transcript)")
+        self.wp_yt_pos_button_group.addButton(self.rad_wp_yt_top)
+        self.wp_yt_pos_button_group.addButton(self.rad_wp_yt_bottom)
+
+        saved_pos = str(self.settings.value("wp_yt_embed_placement", "top") or "top").lower()
+        if saved_pos == "bottom":
+            self.rad_wp_yt_bottom.setChecked(True)
+        else:
+            self.rad_wp_yt_top.setChecked(True)
+
+        wp_pos_row.addWidget(wp_pos_lbl)
+        wp_pos_row.addWidget(self.rad_wp_yt_top)
+        wp_pos_row.addWidget(self.rad_wp_yt_bottom)
+        wp_pos_row.addStretch()
+        wp_yt_layout.addLayout(wp_pos_row)
+
+        layout.addWidget(wp_yt_group)
+
         # Bottom Buttons
         btn_layout = QHBoxLayout()
         btn_layout.addStretch()
@@ -183,6 +216,10 @@ class YouTubeSettingsDialog(QDialog):
         self.settings.setValue("export_yt_open_browser", self.cb_browser.isChecked())
         self.settings.setValue("export_yt_subtitles", self.cb_subtitles.isChecked())
         self.settings.setValue("export_yt_open_folder", self.cb_folder.isChecked())
+        if hasattr(self, "cb_wp_stop_at_end"):
+            self.settings.setValue("wp_yt_stop_at_story_end", self.cb_wp_stop_at_end.isChecked())
+        if hasattr(self, "rad_wp_yt_bottom"):
+            self.settings.setValue("wp_yt_embed_placement", "bottom" if self.rad_wp_yt_bottom.isChecked() else "top")
         self.settings.sync()
         self.accept()
 

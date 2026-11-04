@@ -504,8 +504,19 @@ class DiagnosticCloudAndSystemTestsMixin:
             if updater.is_version_newer("3.7.5-beta", "3.7.6-beta"):
                 raise AssertionError("is_version_newer('3.7.5-beta', '3.7.6-beta') reported True incorrectly")
 
+            # Validate that generated Python helper script syntax compiles cleanly
+            import inspect, re
+            src = inspect.getsource(updater.launch_and_install)
+            m = re.search(r'python_helper_code = \((.*?)\n        \)', src, re.DOTALL)
+            if m:
+                curr_pid = 1234
+                path = Path(tmp_installer)
+                log_path = Path(tmp_dir) / "update.log"
+                code_str = eval('(' + m.group(1) + ')')
+                compile(code_str, '<rtvs_update_helper.py>', 'exec')
+
         item.status = "PASS"
-        item.message = "Detached update helper script architecture, parameter guards, and logging validated"
+        item.message = "Detached update helper script architecture, script syntax compilation, and logging validated"
 
     def _test_temporary_cache_management_and_storage_inspection(self, item: DiagnosticItem):
         """Validates cache usage stats calculation, preview categorization, and cache purging."""

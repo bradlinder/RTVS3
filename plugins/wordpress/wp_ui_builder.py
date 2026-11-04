@@ -353,7 +353,12 @@ def setup_wp_tab_ui(self: Any):
         "When enabled, uploads audio recordings to the WordPress Media Library and embeds an audio player in each post. "
         "When disabled, exports only transcript text (and featured images, when selected), omitting audio file uploads."
     )
-    saved_inc_audio = str(self.settings.value("wp_include_audio", "true")).lower() in ("true", "1", "yes")
+    is_video_proj = bool(getattr(self, "_is_video_project", False) or getattr(self.main_window, "current_media_is_video", False))
+    default_inc_audio = "false" if is_video_proj else "true"
+    saved_inc_audio = str(self.settings.value("wp_include_audio", default_inc_audio)).lower() in ("true", "1", "yes")
+    # If this is a video project and no explicit user override is stored, default to unchecked
+    if is_video_proj and not self.settings.contains("wp_include_audio"):
+        saved_inc_audio = False
     self.wp_cb_include_audio.setChecked(saved_inc_audio)
     self.wp_cb_include_audio.toggled.connect(self._on_wp_include_audio_toggled)
     media_section_layout.addWidget(self.wp_cb_include_audio)
@@ -370,6 +375,13 @@ def setup_wp_tab_ui(self: Any):
     self.wp_cb_apply_fades.setEnabled(self.wp_cb_include_audio.isChecked())
     media_section_layout.addWidget(self.wp_cb_apply_fades)
     self.wp_media_section.add_layout(media_section_layout)
+
+    # YouTube Video Embed section container
+    self.wp_youtube_container_widget = QWidget()
+    youtube_wrapper_layout = QVBoxLayout(self.wp_youtube_container_widget)
+    youtube_wrapper_layout.setContentsMargins(0, 0, 0, 0)
+    from plugins.wordpress.youtube_embed import setup_wp_youtube_ui
+    setup_wp_youtube_ui(self, youtube_wrapper_layout)
 
     # Castos Seriously Simple Podcasting section container
     self.wp_castos_container_widget = QWidget()
@@ -616,6 +628,7 @@ def setup_wp_tab_ui(self: Any):
         t3_layout.setContentsMargins(8, 8, 8, 8)
         t3_layout.setSpacing(8)
         t3_layout.addWidget(self.wp_thumb_section)
+        t3_layout.addWidget(self.wp_youtube_container_widget)
         t3_layout.addWidget(self.wp_media_section)
         t3_layout.addWidget(self.wp_castos_container_widget)
         t3_layout.addStretch()
@@ -652,13 +665,14 @@ def setup_wp_tab_ui(self: Any):
         split_layout.setContentsMargins(0, 0, 0, 0)
         split_layout.setSpacing(12)
 
-        # Left Column: Title, Excerpt, Custom Notice, Thumbnail, Media
+        # Left Column: Title, Excerpt, Custom Notice, Thumbnail, YouTube, Media
         left_col = QVBoxLayout()
         left_col.setSpacing(8)
         left_col.addLayout(post_title_row)
         left_col.addLayout(excerpt_box)
         left_col.addWidget(self.wp_custom_section)
         left_col.addWidget(self.wp_thumb_section)
+        left_col.addWidget(self.wp_youtube_container_widget)
         left_col.addWidget(self.wp_media_section)
         left_col.addStretch()
         split_layout.addLayout(left_col, 3)
@@ -682,6 +696,7 @@ def setup_wp_tab_ui(self: Any):
         editor_layout.addLayout(excerpt_box)
         editor_layout.addLayout(tax_container)
         editor_layout.addWidget(self.wp_thumb_section)
+        editor_layout.addWidget(self.wp_youtube_container_widget)
         editor_layout.addWidget(self.wp_media_section)
         editor_layout.addWidget(self.wp_castos_container_widget)
         editor_layout.addWidget(self.wp_custom_section)

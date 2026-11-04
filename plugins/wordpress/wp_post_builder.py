@@ -128,6 +128,11 @@ def build_wp_post_items(
             "season": season_val,
             "podcast_episode_number": ep_num_val,
             "episode_number": ep_num_val,
+            "youtube_url": str(wp_meta.get("youtube_url") or ""),
+            "youtube_video_id": str(wp_meta.get("youtube_video_id") or ""),
+            "youtube_use_story_time": bool(wp_meta.get("youtube_use_story_time", True)),
+            "youtube_stop_at_end": bool(wp_meta.get("youtube_stop_at_end", False)),
+            "youtube_placement": str(wp_meta.get("youtube_placement") or "top"),
         }
         existing = existing_by_start.get((item["task_label"], item["start"])) or existing_by_start.get(item["start"])
         if existing:
@@ -166,6 +171,16 @@ def build_wp_post_items(
                 ep_ex = existing.get("podcast_episode_number") if existing.get("podcast_episode_number") is not None else existing.get("episode_number")
                 item["podcast_episode_number"] = ep_ex
                 item["episode_number"] = ep_ex
+            if "youtube_url" in existing:
+                item["youtube_url"] = str(existing.get("youtube_url") or "")
+            if "youtube_video_id" in existing:
+                item["youtube_video_id"] = str(existing.get("youtube_video_id") or "")
+            if "youtube_use_story_time" in existing:
+                item["youtube_use_story_time"] = bool(existing.get("youtube_use_story_time", True))
+            if "youtube_stop_at_end" in existing:
+                item["youtube_stop_at_end"] = bool(existing.get("youtube_stop_at_end", False))
+            if "youtube_placement" in existing:
+                item["youtube_placement"] = str(existing.get("youtube_placement") or "top")
         return item
 
     def build_full_item() -> Dict[str, Any]:
@@ -177,6 +192,8 @@ def build_wp_post_items(
         wp_meta = proj_meta.get("wordpress", {}) if isinstance(proj_meta.get("wordpress"), dict) else {}
         season_val = wp_meta.get("podcast_season") if wp_meta.get("podcast_season") is not None else wp_meta.get("season")
         ep_num_val = wp_meta.get("podcast_episode_number") if wp_meta.get("podcast_episode_number") is not None else wp_meta.get("episode_number")
+        is_video = bool(getattr(main_window, "current_media_is_video", False))
+        default_is_podcast = False if is_video else True
         item: Dict[str, Any] = {
             "task_label": "Full Episode",
             "title": wp_meta.get("title") or proj_meta.get("title") or base_name,
@@ -196,7 +213,7 @@ def build_wp_post_items(
             "tags": list(wp_meta.get("tags") or proj_meta.get("tags") or []),
             "featured_image": wp_meta.get("featured_image") if wp_meta.get("featured_image") is not None else proj_meta.get("featured_image"),
             "featured_image_mode": wp_meta.get("featured_image_mode") or proj_meta.get("featured_image_mode") or "none",
-            "is_podcast": bool(wp_meta.get("is_podcast", True)),
+            "is_podcast": bool(wp_meta.get("is_podcast", default_is_podcast)),
             "podcast_feed": str(wp_meta.get("podcast_feed") or "default"),
             "podcast_feed_id": wp_meta.get("podcast_feed_id"),
             "podcast_feed_ids": list(wp_meta.get("podcast_feed_ids") or ([int(wp_meta.get("podcast_feed_id"))] if wp_meta.get("podcast_feed_id") else [])),
@@ -206,6 +223,11 @@ def build_wp_post_items(
             "season": season_val,
             "podcast_episode_number": ep_num_val,
             "episode_number": ep_num_val,
+            "youtube_url": str(wp_meta.get("youtube_url") or ""),
+            "youtube_video_id": str(wp_meta.get("youtube_video_id") or ""),
+            "youtube_use_story_time": bool(wp_meta.get("youtube_use_story_time", True)),
+            "youtube_stop_at_end": bool(wp_meta.get("youtube_stop_at_end", False)),
+            "youtube_placement": str(wp_meta.get("youtube_placement") or "top"),
         }
         existing = existing_by_start.get("full")
         is_full_existing = bool(existing and (existing.get("task_label") == "Full Episode" or existing.get("start") is None))
@@ -238,6 +260,16 @@ def build_wp_post_items(
                     ep_ex = existing.get("podcast_episode_number") if existing.get("podcast_episode_number") is not None else existing.get("episode_number")
                     item["podcast_episode_number"] = ep_ex
                     item["episode_number"] = ep_ex
+                if "youtube_url" in existing:
+                    item["youtube_url"] = str(existing.get("youtube_url") or "")
+                if "youtube_video_id" in existing:
+                    item["youtube_video_id"] = str(existing.get("youtube_video_id") or "")
+                if "youtube_use_story_time" in existing:
+                    item["youtube_use_story_time"] = bool(existing.get("youtube_use_story_time", True))
+                if "youtube_stop_at_end" in existing:
+                    item["youtube_stop_at_end"] = bool(existing.get("youtube_stop_at_end", False))
+                if "youtube_placement" in existing:
+                    item["youtube_placement"] = str(existing.get("youtube_placement") or "top")
             item["author_ids"] = list(existing.get("author_ids", item["author_ids"]))
             item["author_term_ids"] = list(existing.get("author_term_ids", item["author_term_ids"]))
             item["category_ids"] = list(existing.get("category_ids", item["category_ids"]))

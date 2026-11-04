@@ -1000,6 +1000,34 @@ class WordPressSettingsDialog(QDialog):
 
         layout.addWidget(custom_group)
 
+        # YouTube Video Embed Defaults
+        yt_group = QGroupBox("YouTube Video Embed Defaults")
+        ytg_layout = QVBoxLayout(yt_group)
+        self.chk_wp_yt_stop_at_end = QCheckBox("Default: Stop embedded YouTube videos at the end of each story in WordPress exports")
+        self.chk_wp_yt_stop_at_end.setChecked(
+            str(self.settings.value("wp_yt_stop_at_story_end", "false")).lower() in ("true", "1", "yes")
+        )
+        ytg_layout.addWidget(self.chk_wp_yt_stop_at_end)
+
+        yt_pos_row = QHBoxLayout()
+        yt_pos_lbl = QLabel("Default YouTube Video Embed Placement in WordPress Posts:")
+        self.wp_yt_pos_button_group = QButtonGroup(self)
+        self.rad_wp_yt_pos_top = QRadioButton("Place at top of post (above transcript)")
+        self.rad_wp_yt_pos_bottom = QRadioButton("Place at bottom of post (below transcript)")
+        self.wp_yt_pos_button_group.addButton(self.rad_wp_yt_pos_top)
+        self.wp_yt_pos_button_group.addButton(self.rad_wp_yt_pos_bottom)
+        saved_yt_pos = str(self.settings.value("wp_yt_embed_placement", "top") or "top").lower()
+        if saved_yt_pos == "bottom":
+            self.rad_wp_yt_pos_bottom.setChecked(True)
+        else:
+            self.rad_wp_yt_pos_top.setChecked(True)
+        yt_pos_row.addWidget(yt_pos_lbl)
+        yt_pos_row.addWidget(self.rad_wp_yt_pos_top)
+        yt_pos_row.addWidget(self.rad_wp_yt_pos_bottom)
+        yt_pos_row.addStretch()
+        ytg_layout.addLayout(yt_pos_row)
+        layout.addWidget(yt_group)
+
         # Export View Layout Preference
         layout_group = QGroupBox("Export Configuration View Layout")
         lg_layout = QVBoxLayout(layout_group)
@@ -1076,6 +1104,10 @@ class WordPressSettingsDialog(QDialog):
         self.settings.setValue("wp_custom_text_pos", "bottom" if self.rad_pos_bottom.isChecked() else "top")
         self.settings.setValue("wp_custom_text_no_snippet", self.chk_no_snippet.isChecked())
         self.settings.setValue("wp_custom_text_no_excerpt", self.chk_no_excerpt.isChecked())
+        if hasattr(self, "chk_wp_yt_stop_at_end"):
+            self.settings.setValue("wp_yt_stop_at_story_end", self.chk_wp_yt_stop_at_end.isChecked())
+        if hasattr(self, "rad_wp_yt_pos_bottom"):
+            self.settings.setValue("wp_yt_embed_placement", "bottom" if self.rad_wp_yt_pos_bottom.isChecked() else "top")
 
         if hasattr(self, "layout_style_combo") and self.layout_style_combo:
             style_val = self.layout_style_combo.currentData() or "tabs"
@@ -1192,6 +1224,34 @@ class WordPressPreferencesPage(QWidget):
 
         layout.addWidget(custom_group)
 
+        # YouTube Video Embed Defaults
+        yt_group = QGroupBox("YouTube Video Embed Defaults")
+        ytg_layout = QVBoxLayout(yt_group)
+        self.chk_wp_yt_stop_at_end = QCheckBox("Default: Stop embedded YouTube videos at the end of each story in WordPress exports")
+        self.chk_wp_yt_stop_at_end.setChecked(
+            str(self.settings.value("wp_yt_stop_at_story_end", "false")).lower() in ("true", "1", "yes")
+        )
+        ytg_layout.addWidget(self.chk_wp_yt_stop_at_end)
+
+        yt_pos_row = QHBoxLayout()
+        yt_pos_lbl = QLabel("Default YouTube Video Embed Placement in WordPress Posts:")
+        self.wp_yt_pos_button_group = QButtonGroup(self)
+        self.rad_wp_yt_pos_top = QRadioButton("Place at top of post (above transcript)")
+        self.rad_wp_yt_pos_bottom = QRadioButton("Place at bottom of post (below transcript)")
+        self.wp_yt_pos_button_group.addButton(self.rad_wp_yt_pos_top)
+        self.wp_yt_pos_button_group.addButton(self.rad_wp_yt_pos_bottom)
+        saved_yt_pos = str(self.settings.value("wp_yt_embed_placement", "top") or "top").lower()
+        if saved_yt_pos == "bottom":
+            self.rad_wp_yt_pos_bottom.setChecked(True)
+        else:
+            self.rad_wp_yt_pos_top.setChecked(True)
+        yt_pos_row.addWidget(yt_pos_lbl)
+        yt_pos_row.addWidget(self.rad_wp_yt_pos_top)
+        yt_pos_row.addWidget(self.rad_wp_yt_pos_bottom)
+        yt_pos_row.addStretch()
+        ytg_layout.addLayout(yt_pos_row)
+        layout.addWidget(yt_group)
+
         # Export View Layout Preference
         layout_group = QGroupBox("Export Configuration View Layout")
         lg_layout = QVBoxLayout(layout_group)
@@ -1259,6 +1319,10 @@ class WordPressPreferencesPage(QWidget):
         self.settings.setValue("wp_custom_text_pos", "bottom" if self.rad_pos_bottom.isChecked() else "top")
         self.settings.setValue("wp_custom_text_no_snippet", self.chk_no_snippet.isChecked())
         self.settings.setValue("wp_custom_text_no_excerpt", self.chk_no_excerpt.isChecked())
+        if hasattr(self, "chk_wp_yt_stop_at_end"):
+            self.settings.setValue("wp_yt_stop_at_story_end", self.chk_wp_yt_stop_at_end.isChecked())
+        if hasattr(self, "rad_wp_yt_pos_bottom"):
+            self.settings.setValue("wp_yt_embed_placement", "bottom" if self.rad_wp_yt_pos_bottom.isChecked() else "top")
 
         if hasattr(self, "layout_style_combo") and self.layout_style_combo:
             style_val = self.layout_style_combo.currentData() or "tabs"
@@ -1396,6 +1460,10 @@ def execute_wordpress_upload(
     podcast_episode_type: str = "full",
     podcast_season: str | int | None = None,
     podcast_episode_number: str | int | None = None,
+    youtube_url: str = "",
+    youtube_stop_at_end: bool = False,
+    youtube_placement: str = "top",
+    youtube_use_story_time: bool = True,
 ) -> dict:
     """Extract media clip, upload to WordPress media library, and create draft post."""
     def report_progress(step: int, description: str) -> None:
@@ -1533,6 +1601,29 @@ def execute_wordpress_upload(
             content_parts.append(
                 f'<!-- wp:audio -->\n<figure class="wp-block-audio"><audio controls src="{media_url}"></audio></figure>\n<!-- /wp:audio -->'
             )
+
+    # Optional YouTube Video Embed Block
+    yt_embed_block = ""
+    if youtube_url:
+        from plugins.wordpress.youtube_embed import build_youtube_embed_block, extract_youtube_video_id
+        vid_id, url_t = extract_youtube_video_id(youtube_url)
+        if vid_id:
+            st_param = None
+            if youtube_use_story_time and start is not None:
+                st_param = float(start)
+            elif url_t is not None and url_t > 0:
+                st_param = float(url_t)
+
+            en_param = float(end) if (youtube_stop_at_end and end is not None) else None
+            yt_embed_block = build_youtube_embed_block(
+                video_id=vid_id,
+                start_sec=st_param,
+                end_sec=en_param,
+                stop_at_end=youtube_stop_at_end,
+            )
+            # If top placement, insert player at top of content_parts (immediately following any local audio/video player)
+            if youtube_placement != "bottom":
+                content_parts.append(yt_embed_block)
 
     # Parent Episode Cross-Linking Notice (if provided and enabled)
     parent_notice_html = ""
@@ -1768,6 +1859,17 @@ def execute_wordpress_upload(
     elif es_blocks:
         content_parts.extend(es_blocks)
 
+    # If bottom placement, append YouTube video embed block after transcript
+    if yt_embed_block and youtube_placement == "bottom":
+        content_parts.append(yt_embed_block)
+
+    # Calculate top media players offset for header notices
+    top_media_offset = 0
+    if media_url:
+        top_media_offset += 1
+    if yt_embed_block and youtube_placement != "bottom":
+        top_media_offset += 1
+
     # Optional Custom Notice Text
     settings = QSettings(INTERNAL_APP_ID, INTERNAL_APP_ID)
     custom_text = str(settings.value("wp_custom_text", "") or "").strip()
@@ -1787,7 +1889,7 @@ def execute_wordpress_upload(
             f'</div>\n<!-- /wp:paragraph -->'
         )
         if custom_pos == "top":
-            insert_idx = 1 if media_url and len(content_parts) > 0 else 0
+            insert_idx = min(len(content_parts), top_media_offset)
             content_parts.insert(insert_idx, custom_html)
         else:
             content_parts.append(custom_html)
@@ -1797,10 +1899,8 @@ def execute_wordpress_upload(
         if parent_episode_pos == "bottom":
             content_parts.append(parent_notice_html)
         else:
-            # Place right after media player (and custom top notice if any)
-            insert_idx = 0
-            if media_url and len(content_parts) > 0:
-                insert_idx += 1
+            # Place right after media player(s) (and custom top notice if any)
+            insert_idx = min(len(content_parts), top_media_offset)
             if custom_text and custom_pos == "top" and len(content_parts) > insert_idx:
                 insert_idx += 1
             content_parts.insert(insert_idx, parent_notice_html)

@@ -414,6 +414,111 @@ class DiagnosticExportTestsMixin:
             except Exception:
                 pass
 
+    def _test_wordpress_youtube_video_embed(self, item: DiagnosticItem):
+        """Verify YouTube URL parsing, iframe block generation, video project defaults, and Gutenberg placement."""
+        from plugins.wordpress.youtube_embed import (
+            extract_youtube_video_id,
+            build_youtube_embed_block,
+        )
+
+        # 1. URL extraction & timestamp tests
+        url_cases = [
+            ("https://www.youtube.com/watch?v=dQw4w9WgXcQ", ("dQw4w9WgXcQ", None)),
+            ("https://www.youtube.com/watch?v=dQw4w9WgXcQ&t=125s", ("dQw4w9WgXcQ", 125)),
+            ("https://youtu.be/dQw4w9WgXcQ?t=2m5s", ("dQw4w9WgXcQ", 125)),
+            ("https://www.youtube.com/embed/dQw4w9WgXcQ?start=90", ("dQw4w9WgXcQ", 90)),
+            ("https://www.youtube.com/live/dQw4w9WgXcQ", ("dQw4w9WgXcQ", None)),
+            ("https://www.youtube.com/shorts/dQw4w9WgXcQ", ("dQw4w9WgXcQ", None)),
+            ("https://studio.youtube.com/video/dQw4w9WgXcQ/edit", ("dQw4w9WgXcQ", None)),
+            ("dQw4w9WgXcQ", ("dQw4w9WgXcQ", None)),
+        ]
+        for url, expected in url_cases:
+            res_id, res_t = extract_youtube_video_id(url)
+            if (res_id, res_t) != expected:
+                raise AssertionError(f"extract_youtube_video_id('{url}') failed: got ({res_id}, {res_t}), expected {expected}")
+
+        # 2. Embed block generation
+        block_top = build_youtube_embed_block("dQw4w9WgXcQ", start_sec=75.4, end_sec=180.2, stop_at_end=True)
+        if "<!-- wp:html -->" not in block_top or "<!-- /wp:html -->" not in block_top:
+            raise AssertionError(f"Expected Gutenberg HTML block wrappers: {block_top}")
+        if "https://www.youtube.com/embed/dQw4w9WgXcQ?rel=0&amp;start=75&amp;end=180" not in block_top:
+            raise AssertionError(f"Expected start and end query params: {block_top}")
+        if "rtvs-youtube-embed" not in block_top or "padding-bottom:56.25%" not in block_top:
+            raise AssertionError(f"Expected responsive 16:9 container styling: {block_top}")
+
+        # 3. Test video source defaults in post builder
+        from plugins.wordpress.wp_post_builder import build_wp_post_items
+        class VideoMainWindow:
+            def __init__(self):
+                self.audio_file = "video_show.mp4"
+                self.current_media_is_video = True
+                self.stories = []
+                self.project_metadata = {"title": "Evening News Broadcast"}
+                self.duration = 600.0
+                self.current_position = 0.0
+
+            def _get_transcript_text_slice(self, start, end):
+                return "Video episode transcript."
+
+        v_win = VideoMainWindow()
+        items = build_wp_post_items(v_win, "full", "en", [])
+        if not items:
+            raise AssertionError("Failed to build posts for video project")
+        full_item = items[0]
+        if full_item.get("is_podcast") is not False:
+            raise AssertionError(f"Expected video project to default is_podcast=False, got {full_item.get('is_podcast')}")
+
+        # 4. Content assembly placement (top vs bottom) in execute_wordpress_upload
+        from plugins.wordpress.client import execute_wordpress_upload
+        captured = []
+        class MockClient:
+            site_url = "https://example.com"
+            def create_post(self, title, content, **kwargs):
+                captured.append(content)
+                return {"id": 101, "link": f"https://example.com/?p=101"}
+
+        m_client = MockClient()
+        v_win.transcript = [{"start": 0.0, "end": 60.0, "text": "Video segment.", "speaker": "Anchor"}]
+
+        # Top placement test
+        execute_wordpress_upload(
+            main_window=v_win,
+            client=m_client,
+            post_title="Top Placement Test",
+            include_audio=False,
+            youtube_url="https://youtu.be/dQw4w9WgXcQ",
+            youtube_placement="top",
+            youtube_use_story_time=True,
+            start=10.0,
+            end=40.0,
+        )
+        top_content = captured[-1]
+        yt_idx = top_content.find("rtvs-youtube-embed")
+        text_idx = top_content.find("Video segment.")
+        if yt_idx == -1 or text_idx == -1 or yt_idx >= text_idx:
+            raise AssertionError(f"YouTube player was not placed at top (above transcript): {top_content}")
+
+        # Bottom placement test
+        execute_wordpress_upload(
+            main_window=v_win,
+            client=m_client,
+            post_title="Bottom Placement Test",
+            include_audio=False,
+            youtube_url="https://youtu.be/dQw4w9WgXcQ",
+            youtube_placement="bottom",
+            youtube_use_story_time=True,
+            start=10.0,
+            end=40.0,
+        )
+        bottom_content = captured[-1]
+        yt_idx_b = bottom_content.find("rtvs-youtube-embed")
+        text_idx_b = bottom_content.find("Video segment.")
+        if yt_idx_b == -1 or text_idx_b == -1 or yt_idx_b <= text_idx_b:
+            raise AssertionError(f"YouTube player was not placed at bottom (below transcript): {bottom_content}")
+
+        item.status = "PASS"
+        item.message = "YouTube embed URL extraction, iframe generation, video project defaults, and placement verified"
+
     def _test_multi_format_line_break_and_paragraph_parity(self, item: DiagnosticItem):
         try:
             import project_export

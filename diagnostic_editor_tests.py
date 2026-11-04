@@ -76,6 +76,8 @@ class DiagnosticEditorTestsMixin:
                 self.project_dirty = False
                 self.rendered_calls = 0
                 self.saved_calls = 0
+                self._search_match_index = -1
+                self._search_match_ranges = []
 
             def _capture_project_state(self):
                 return {

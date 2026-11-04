@@ -77,6 +77,9 @@ class WordPressExportTabWidget(QWidget):
     def _apply_thumbnails_to_selected_stories(self):
         ...
 
+    def _bulk_apply_to_selected(self, *keys: str):
+        ...
+
     def _apply_authors_to_all_posts(self):
         ...
 
@@ -84,6 +87,9 @@ class WordPressExportTabWidget(QWidget):
         ...
 
     def _apply_thumbnails_to_all_posts(self):
+        ...
+
+    def _bulk_apply_to_all(self, *keys: str):
         ...
 
     def _apply_podcast_to_selected_stories(self):

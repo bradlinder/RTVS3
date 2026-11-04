@@ -62,6 +62,25 @@ class WordPressExportTabWidget(QWidget):
         setup_wp_tab_ui(self)
 
     def _on_wp_include_audio_toggled(self, checked: bool):
+        if getattr(self, "_syncing_post_editor", False):
+            self.settings.setValue("wp_include_audio", checked)
+            return
+
+        if checked and getattr(self, "_is_video_project", False) and not os.environ.get("RTVS_TEST_MODE"):
+            reply = QMessageBox.question(
+                self,
+                "Extract Audio from Video",
+                "The current project uses a video file as its source. Are you sure you want to extract, upload, and embed MP3 audio files in your WordPress posts?",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                QMessageBox.StandardButton.No,
+            )
+            if reply != QMessageBox.StandardButton.Yes:
+                self.wp_cb_include_audio.blockSignals(True)
+                self.wp_cb_include_audio.setChecked(False)
+                self.wp_cb_include_audio.blockSignals(False)
+                self.settings.setValue("wp_include_audio", False)
+                return
+
         self.settings.setValue("wp_include_audio", checked)
         if not checked:
             has_pod = any(p.get("is_podcast") for p in getattr(self, "wp_post_items", []))
@@ -73,6 +92,10 @@ class WordPressExportTabWidget(QWidget):
                     "Podcast Audio File Required",
                     "One or more posts are designated as a Podcast Episode. Seriously Simple Podcasting (Castos) requires an audio file upload to populate the episode file field and RSS feed.",
                 )
+
+        if hasattr(self, "wp_posts_list"):
+            for idx in range(self.wp_posts_list.count()):
+                self._update_post_list_item_label(idx)
 
     def _update_wp_conn_status(self):
         url = str(self.settings.value("wp_site_url", "") or "").rstrip("/")
@@ -179,44 +202,19 @@ class WordPressExportTabWidget(QWidget):
         return [i for i in indices if i >= 0]
 
     def _apply_authors_to_selected_stories(self):
-        if not (0 <= self._current_post_index < len(self.wp_post_items)):
-            return
-        current_auth_ids = list(self.wp_post_items[self._current_post_index].get("author_ids", []))
-        current_term_ids = list(self.wp_post_items[self._current_post_index].get("author_term_ids", []))
-        selected_indices = self._get_selected_story_indices()
-        stories = getattr(self.main_window, "stories", []) or []
-        if not selected_indices:
-            QMessageBox.information(self, "No Stories Selected", "Please select one or more stories in the story list.")
-            return
-
-        applied = 0
-        for idx in selected_indices:
-            if 0 <= idx < len(stories):
-                st = stories[idx]
-                if not hasattr(st, "metadata") or st.metadata is None:
-                    st.metadata = {}
-                wp_meta = st.metadata.setdefault("wordpress", {})
-                wp_meta["author_ids"] = list(current_auth_ids)
-                wp_meta["author_term_ids"] = list(current_term_ids)
-                applied += 1
-
-        for post in self.wp_post_items:
-            for idx in selected_indices:
-                if 0 <= idx < len(stories) and post.get("start") == stories[idx].start:
-                    post["author_ids"] = list(current_auth_ids)
-                    post["author_term_ids"] = list(current_term_ids)
-
-        for i in range(len(self.wp_post_items)):
-            self._update_post_list_item_label(i)
-
-        if hasattr(self.main_window, "set_unsaved_changes"):
-            self.main_window.set_unsaved_changes(True)
-        QMessageBox.information(self, "Applied Authors", f"Applied author selection to {applied} selected stories.")
+        self._bulk_apply_to_selected("author_ids", "author_term_ids")
 
     def _apply_categories_to_selected_stories(self):
+        self._bulk_apply_to_selected("category_ids")
+
+    def _apply_thumbnails_to_selected_stories(self):
+        self._bulk_apply_to_selected("featured_image", "featured_image_mode", "frame_pos")
+
+    def _bulk_apply_to_selected(self, *keys: str):
         if not (0 <= self._current_post_index < len(self.wp_post_items)):
             return
-        current_cat_ids = list(self.wp_post_items[self._current_post_index].get("category_ids", []))
+        cur_post = self.wp_post_items[self._current_post_index]
+        vals = {k: cur_post.get(k) for k in keys}
         selected_indices = self._get_selected_story_indices()
         stories = getattr(self.main_window, "stories", []) or []
         if not selected_indices:
@@ -230,116 +228,51 @@ class WordPressExportTabWidget(QWidget):
                 if not hasattr(st, "metadata") or st.metadata is None:
                     st.metadata = {}
                 wp_meta = st.metadata.setdefault("wordpress", {})
-                wp_meta["category_ids"] = list(current_cat_ids)
+                for k, v in vals.items():
+                    wp_meta[k] = list(v) if isinstance(v, list) else v
                 applied += 1
 
         for post in self.wp_post_items:
             for idx in selected_indices:
                 if 0 <= idx < len(stories) and post.get("start") == stories[idx].start:
-                    post["category_ids"] = list(current_cat_ids)
+                    for k, v in vals.items():
+                        post[k] = list(v) if isinstance(v, list) else v
 
         for i in range(len(self.wp_post_items)):
             self._update_post_list_item_label(i)
-
         if hasattr(self.main_window, "set_unsaved_changes"):
             self.main_window.set_unsaved_changes(True)
-        QMessageBox.information(self, "Applied Categories", f"Applied category selection to {applied} selected stories.")
-
-    def _apply_thumbnails_to_selected_stories(self):
-        if not (0 <= self._current_post_index < len(self.wp_post_items)):
-            return
-        current_img = self.wp_post_items[self._current_post_index].get("featured_image")
-        current_mode = self.wp_post_items[self._current_post_index].get("featured_image_mode", "none")
-        current_pos = self.wp_post_items[self._current_post_index].get("frame_pos")
-        selected_indices = self._get_selected_story_indices()
-        stories = getattr(self.main_window, "stories", []) or []
-        if not selected_indices:
-            QMessageBox.information(self, "No Stories Selected", "Please select one or more stories in the story list.")
-            return
-
-        applied = 0
-        for idx in selected_indices:
-            if 0 <= idx < len(stories):
-                st = stories[idx]
-                if not hasattr(st, "metadata") or st.metadata is None:
-                    st.metadata = {}
-                wp_meta = st.metadata.setdefault("wordpress", {})
-                wp_meta["featured_image"] = current_img
-                wp_meta["featured_image_mode"] = current_mode
-                wp_meta["frame_pos"] = current_pos
-                applied += 1
-
-        for post in self.wp_post_items:
-            for idx in selected_indices:
-                if 0 <= idx < len(stories) and post.get("start") == stories[idx].start:
-                    post["featured_image"] = current_img
-                    post["featured_image_mode"] = current_mode
-                    post["frame_pos"] = current_pos
-
-        if hasattr(self.main_window, "set_unsaved_changes"):
-            self.main_window.set_unsaved_changes(True)
-        QMessageBox.information(self, "Applied Thumbnails", f"Applied thumbnail settings to {applied} selected stories.")
+        QMessageBox.information(self, "Settings Applied", f"Applied settings to {applied} selected stories.")
 
     def _apply_authors_to_all_posts(self):
-        if not (0 <= self._current_post_index < len(self.wp_post_items)):
-            return
-        current_auth_ids = list(self.wp_post_items[self._current_post_index].get("author_ids", []))
-        current_term_ids = list(self.wp_post_items[self._current_post_index].get("author_term_ids", []))
-        for post in self.wp_post_items:
-            post["author_ids"] = list(current_auth_ids)
-            post["author_term_ids"] = list(current_term_ids)
-        stories = getattr(self.main_window, "stories", []) or []
-        for st in stories:
-            if not hasattr(st, "metadata") or st.metadata is None:
-                st.metadata = {}
-            wp_meta = st.metadata.setdefault("wordpress", {})
-            wp_meta["author_ids"] = list(current_auth_ids)
-            wp_meta["author_term_ids"] = list(current_term_ids)
-        for idx in range(len(self.wp_post_items)):
-            self._update_post_list_item_label(idx)
-        if hasattr(self.main_window, "set_unsaved_changes"):
-            self.main_window.set_unsaved_changes(True)
-        QMessageBox.information(self, "Applied Authors", f"Assigned author selection to all {len(self.wp_post_items)} posts.")
+        self._bulk_apply_to_all("author_ids", "author_term_ids")
 
     def _apply_categories_to_all_posts(self):
+        self._bulk_apply_to_all("category_ids")
+
+    def _apply_thumbnails_to_all_posts(self):
+        self._bulk_apply_to_all("featured_image", "featured_image_mode", "frame_pos")
+
+    def _bulk_apply_to_all(self, *keys: str):
         if not (0 <= self._current_post_index < len(self.wp_post_items)):
             return
-        current_cat_ids = list(self.wp_post_items[self._current_post_index].get("category_ids", []))
+        cur_post = self.wp_post_items[self._current_post_index]
+        vals = {k: cur_post.get(k) for k in keys}
         for post in self.wp_post_items:
-            post["category_ids"] = list(current_cat_ids)
+            for k, v in vals.items():
+                post[k] = list(v) if isinstance(v, list) else v
         stories = getattr(self.main_window, "stories", []) or []
         for st in stories:
             if not hasattr(st, "metadata") or st.metadata is None:
                 st.metadata = {}
             wp_meta = st.metadata.setdefault("wordpress", {})
-            wp_meta["category_ids"] = list(current_cat_ids)
+            for k, v in vals.items():
+                wp_meta[k] = list(v) if isinstance(v, list) else v
         for idx in range(len(self.wp_post_items)):
             self._update_post_list_item_label(idx)
         if hasattr(self.main_window, "set_unsaved_changes"):
             self.main_window.set_unsaved_changes(True)
-        QMessageBox.information(self, "Applied Categories", f"Assigned category selection to all {len(self.wp_post_items)} posts.")
-
-    def _apply_thumbnails_to_all_posts(self):
-        if not (0 <= self._current_post_index < len(self.wp_post_items)):
-            return
-        current_img = self.wp_post_items[self._current_post_index].get("featured_image")
-        current_mode = self.wp_post_items[self._current_post_index].get("featured_image_mode", "none")
-        current_pos = self.wp_post_items[self._current_post_index].get("frame_pos")
-        for post in self.wp_post_items:
-            post["featured_image"] = current_img
-            post["featured_image_mode"] = current_mode
-            post["frame_pos"] = current_pos
-        stories = getattr(self.main_window, "stories", []) or []
-        for st in stories:
-            if not hasattr(st, "metadata") or st.metadata is None:
-                st.metadata = {}
-            wp_meta = st.metadata.setdefault("wordpress", {})
-            wp_meta["featured_image"] = current_img
-            wp_meta["featured_image_mode"] = current_mode
-            wp_meta["frame_pos"] = current_pos
-        if hasattr(self.main_window, "set_unsaved_changes"):
-            self.main_window.set_unsaved_changes(True)
-        QMessageBox.information(self, "Applied Thumbnails", f"Applied thumbnail settings to all {len(self.wp_post_items)} posts.")
+        QMessageBox.information(self, "Settings Applied", f"Assigned settings to all {len(self.wp_post_items)} posts.")
 
     def _apply_podcast_to_selected_stories(self):
         if not (0 <= self._current_post_index < len(self.wp_post_items)):
@@ -417,6 +350,8 @@ class WordPressExportTabWidget(QWidget):
             wp_meta["tags"] = list(post.get("tags") or [])
             from plugins.wordpress.castos import copy_podcast_meta
             copy_podcast_meta(wp_meta, post)
+            from plugins.wordpress.youtube_embed import sync_youtube_to_meta
+            sync_youtube_to_meta(wp_meta, post)
         else:
             stories = getattr(self.main_window, "stories", []) or []
             target_story = None
@@ -472,6 +407,8 @@ class WordPressExportTabWidget(QWidget):
                 wp_meta["tags"] = list(post.get("tags") or [])
                 from plugins.wordpress.castos import copy_podcast_meta
                 copy_podcast_meta(wp_meta, post)
+                from plugins.wordpress.youtube_embed import sync_youtube_to_meta
+                sync_youtube_to_meta(wp_meta, post)
 
                 # Update main window story list display
                 if hasattr(self.main_window, "refresh_story_list"):
@@ -515,19 +452,12 @@ class WordPressExportTabWidget(QWidget):
     def _update_post_list_item_label(self, idx: int):
         if not (0 <= idx < len(self.wp_post_items)) or not hasattr(self, "wp_posts_list") or idx >= self.wp_posts_list.count():
             return
-        post = self.wp_post_items[idx]
-        title = post.get("title") or post.get("task_label", f"Post {idx + 1}")
-        n_auths = len(post.get("author_ids", [])) + len(post.get("author_term_ids", []))
-        n_cats = len(post.get("category_ids", []))
-        meta_sub = []
-        if n_auths:
-            meta_sub.append(f"{n_auths} author" + ("s" if n_auths > 1 else ""))
-        if n_cats:
-            meta_sub.append(f"{n_cats} cat" + ("s" if n_cats > 1 else ""))
-        if post.get("is_podcast"):
-            meta_sub.append("Podcast")
-        meta_str = f" ({', '.join(meta_sub)})" if meta_sub else ""
-        self.wp_posts_list.item(idx).setText(f"{post.get('task_label', 'Post')}: {title}{meta_str}")
+        from plugins.wordpress.youtube_embed import format_post_list_label_and_tooltip
+        label_text, tooltip_text = format_post_list_label_and_tooltip(self, idx)
+        item = self.wp_posts_list.item(idx)
+        if item:
+            item.setText(label_text)
+            item.setToolTip(tooltip_text)
 
     def _on_wp_post_selection_changed(self, row: int):
         if row < 0 or row >= len(self.wp_post_items):
@@ -708,6 +638,9 @@ class WordPressExportTabWidget(QWidget):
 
         from plugins.wordpress.castos import load_castos_from_post
         load_castos_from_post(self, post)
+
+        from plugins.wordpress.youtube_embed import load_youtube_from_post
+        load_youtube_from_post(self, post)
 
     def _on_wp_thumb_mode_changed(self):
         if self._syncing_post_editor or not (0 <= self._current_post_index < len(self.wp_post_items)):

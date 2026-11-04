@@ -404,6 +404,10 @@ class WordPressExportDestination(ExportDestination):
                         podcast_episode_type=str(post.get("podcast_episode_type") or "full"),
                         podcast_season=post.get("podcast_season"),
                         podcast_episode_number=post.get("podcast_episode_number"),
+                        youtube_url=post.get("youtube_url") or "",
+                        youtube_stop_at_end=bool(post.get("youtube_stop_at_end", False)),
+                        youtube_placement=str(post.get("youtube_placement") or "top"),
+                        youtube_use_story_time=bool(post.get("youtube_use_story_time", True)),
                     )
                     if post_data and isinstance(post_data, dict):
                         if hasattr(main_window, "update_processing_progress"):

@@ -258,6 +258,11 @@ class DiagnosticEngine(
                 "Validates WordPress upload post content generation, dict transcript extraction, range filtering, Spanish translation integration, and robust media guid resolution",
             ),
             DiagnosticItem(
+                "WordPress YouTube Video Embed",
+                "Subtitles & Export Formats",
+                "Validates YouTube video URL parsing across all variants, responsive Gutenberg HTML iframe block creation, video project defaults, and top/bottom placement",
+            ),
+            DiagnosticItem(
                 "Multi-Format Line Break & Paragraph Parity",
                 "Subtitles & Export Formats",
                 "Validates line break frequency and paragraph structure consistency between in-app transcript view and export formats (WordPress, DOCX, TXT, Subtitles)",
