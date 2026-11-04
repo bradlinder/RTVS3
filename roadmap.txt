@@ -94,7 +94,7 @@ TABLE OF CONTENTS & STATUS OVERVIEW
    [ ] 5.4 Burned-in Subtitles & Platform Safe Zone Enforcement (`plugins/social_reel/reel_subtitles.py`)
    [ ] 5.5 Unified Export Integration & Social Reel Diagnostic Tests (`export/dialog.py`, `test_runner.py`)
 
-6. Current Release: Export Destination Reordering Synchronization & Plugin Tab Binding Hardening (`export/dialog.py`, `plugins/wordpress/export_destination.py`, `plugins/youtube/export_destination.py`, `diagnostic_export_tests.py`) [x] [COMPLETED in v3.9.75-beta]
+6. Current Release: Export Destination Reordering Synchronization & Plugin Tab Binding Hardening (`export/dialog.py`, `plugins/wordpress/export_destination.py`, `plugins/youtube/export_destination.py`, `diagnostic_export_tests.py`) [x] [COMPLETED in v3.9.76-beta]
    [x] 6.1 Eliminate Reordering Widget Desynchronization: Preserve existing destination objects (`entry['dest_obj']`) in `_build_destinations_layout()` and guarantee bidirectional rebinding of `tab_widget` and `widget` to cached QWidget pages when reordering destinations.
    [x] 6.2 Defensive Unlinked Widget Resolvers: Added `_ensure_tab_widget()` fallback in `WordPressExportDestination` and `YouTubeExportDestination` to resolve cached tab instances from active dialog entries before validation or data export.
    [x] 6.3 Early Destination Constructor Initialization: Set destination attributes prior to `super().__init__()` for reliable property evaluation during base class initialization.
@@ -147,20 +147,21 @@ DETAILED MILESTONE SPECIFICATIONS
 - Target Release: v4.3.0 (Optional / Planned)
 - Technical References: Subsystem architecture, plugin manifest, and FFmpeg filtergraph pipeline specifications are detailed in `ARCHITECTURE.md` (Section 6).
 
-6. CURRENT RELEASE: INTERACTIVE TRANSCRIPT OFFSET SANITIZATION & OUT-OF-RANGE CURSOR PREVENTION:
+6. CURRENT RELEASE: TIMELINE & STORY CONTEXT MENU TRANSIENT PARENT TOP-LEVEL NORMALIZATION:
+- Purpose: Ensure menus and tooltips reference the top-level QMainWindow, eliminating QWidgetWindow transient parent warnings.
+- Target Release: v3.9.76-beta (Current Release)
+- Technical References & Implementation Details:
+  * [x] Top-Level Window Parenting: Configured `show_timeline_context_menu`, `show_selection_context_menu`, and story list context menus to pass `canvas.window()` / `self.window()` to `QMenu` instead of child canvas widgets (`timeline_context_menus.py`, `story_widgets.py`).
+  * [x] Tooltip Transient Target: Updated timeline tooltip invocations to target `self.window()` (`timeline_widgets.py`).
+  * [x] Elimination of Transient Parent Warning: Ensured Qt's `QWindow::setTransientParent` evaluates true top-level windows when child widgets acquire native Win32 `HWND` handles during OLE drag-and-drop.
+  * Release Logs: Documented in `CHANGELOG.md` under `## v3.9.76-beta`.
+
+7. PREVIOUS RELEASE: INTERACTIVE TRANSCRIPT OFFSET SANITIZATION & OUT-OF-RANGE CURSOR PREVENTION:
 - Purpose: Reset word mappings on editor clear and clamp timeline drag/selection cursor operations within document bounds.
-- Target Release: v3.9.75-beta (Current Release)
+- Target Release: v3.9.75-beta (Previous Release)
 - Technical References & Implementation Details:
   * [x] Comprehensive Editor State Reset: Overrode `InteractiveTranscriptEdit.clear()` to purge `char_timestamp_map`, `anchor_ranges`, `time_anchor_index`, and extra selections when clearing documents or loading media (`transcript_editor.py`).
   * [x] Timeline Drag & Selection Bounds Clamping: Added early-exit guards in `handle_timeline_selection_range_changed` when no active transcript exists or when the document character count is <= 1, clamping character ranges within valid document bounds (`story_crud_mixin.py`).
   * [x] ExtraSelection Cursor Positioning Guards: Guarded cursor positioning across timeline selection spans, saved selections, and playback word highlights with strict `0 <= pos < doc_len` boundary checks (`transcript_timeline_sync_mixin.py`, `transcript_selection_mixin.py`, `transcript_playback_highlight_mixin.py`, `transcript_navigation_mixin.py`).
   * Release Logs: Documented in `CHANGELOG.md` under `## v3.9.75-beta`.
-
-7. PREVIOUS RELEASE: WORDPRESS EXPORT MEDIA TAB, AUDIO FADES INTERLOCK & MACOS VIDEO PREVIEW RESTORATION:
-- Purpose: Rename Media tab, synchronize audio inclusion with fades toggle, and resolve macOS AVPlayer black box preview issue.
-- Target Release: v3.9.74-beta (Previous Release)
-- Technical References & Implementation Details:
-  * [x] Renamed Tab to 'Media': Updated WordPress export UI and preferences from "Podcast & Media" to "Media" (`plugins/wordpress/wp_ui_builder.py`, `client.py`, `youtube_embed.py`).
-  * [x] Audio Fades Safety Interlock: Automatically uncheck and persist "Apply audio fades" when "Include audio files in WordPress export" is unchecked (`plugins/wordpress/wp_tab_widget.py`).
-  * [x] macOS Video Preview Restoration: Pre-initialize `video_preview_dialog` and attach `player.setVideoOutput(video_preview_widget)` during startup before media load, add native Cocoa window attributes (`WA_NativeWindow`, `WA_DontCreateNativeAncestors`), auto-refresh frame seek on show, and bind finished signal to menu checkable state (`playback_controller.py`, `RadioTVSegmenter.py`).
   * Release Logs: Documented in `CHANGELOG.md` under `## v3.9.74-beta`.

@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-04 15:44:06",
+  "generated_at": "2026-11-04 15:51:15",
   "total_files": 158,
   "files": {
     "RadioTVSegmenter.py": {
       "path": "RadioTVSegmenter.py",
       "lines": 663,
-      "summary": "Radio & TV Segmenter \u2014 v3.9.75-beta",
+      "summary": "Radio & TV Segmenter \u2014 v3.9.76-beta",
       "exports": null,
       "classes": [
         {
@@ -13857,7 +13857,7 @@
     },
     "story_widgets.py": {
       "path": "story_widgets.py",
-      "lines": 531,
+      "lines": 532,
       "summary": "Radio & TV Story Segmenter \u2014 Story Sidebar Widgets, Item Delegates, and Undo Commands.",
       "exports": null,
       "classes": [
@@ -14101,7 +14101,7 @@
             "QListWidget"
           ],
           "start_line": 424,
-          "end_line": 531,
+          "end_line": 532,
           "doc": "QListWidget subclass for story segmentation list with right-click context menu and drag-drop support.",
           "methods": [
             {
@@ -14143,14 +14143,14 @@
               "name": "_show_context_menu",
               "sig": "_show_context_menu(self, pos)",
               "start_line": 465,
-              "end_line": 520,
+              "end_line": 521,
               "doc": ""
             },
             {
               "name": "adjust_height_to_contents",
               "sig": "adjust_height_to_contents(self, min_h, max_h)",
-              "start_line": 522,
-              "end_line": 531,
+              "start_line": 523,
+              "end_line": 532,
               "doc": "Dynamically size the list widget to only fit the number of stories."
             }
           ]
@@ -14901,7 +14901,7 @@
     },
     "timeline_widgets.py": {
       "path": "timeline_widgets.py",
-      "lines": 974,
+      "lines": 975,
       "summary": "Radio & TV Story Segmenter \u2014 Timeline Ruler, Track Views, Playhead, Overview & Canvas Widgets.",
       "exports": null,
       "classes": [
@@ -14911,7 +14911,7 @@
             "QWidget"
           ],
           "start_line": 60,
-          "end_line": 854,
+          "end_line": 855,
           "doc": "",
           "methods": [
             {
@@ -15149,56 +15149,56 @@
               "name": "mouseMoveEvent",
               "sig": "mouseMoveEvent(self, event)",
               "start_line": 547,
-              "end_line": 673,
+              "end_line": 674,
               "doc": ""
             },
             {
               "name": "mouseReleaseEvent",
               "sig": "mouseReleaseEvent(self, event)",
-              "start_line": 675,
-              "end_line": 745,
+              "start_line": 676,
+              "end_line": 746,
               "doc": ""
             },
             {
               "name": "_show_timeline_context_menu",
               "sig": "_show_timeline_context_menu(self, global_pos, pos_x)",
-              "start_line": 747,
-              "end_line": 748,
+              "start_line": 748,
+              "end_line": 749,
               "doc": ""
             },
             {
               "name": "_show_selection_context_menu",
               "sig": "_show_selection_context_menu(self, global_pos)",
-              "start_line": 750,
-              "end_line": 751,
+              "start_line": 751,
+              "end_line": 752,
               "doc": ""
             },
             {
               "name": "keyPressEvent",
               "sig": "keyPressEvent(self, event)",
-              "start_line": 753,
-              "end_line": 834,
+              "start_line": 754,
+              "end_line": 835,
               "doc": ""
             },
             {
               "name": "set_thumbnail_position",
               "sig": "set_thumbnail_position(self, position)",
-              "start_line": 836,
-              "end_line": 840,
+              "start_line": 837,
+              "end_line": 841,
               "doc": ""
             },
             {
               "name": "render_waveform_buffer",
               "sig": "render_waveform_buffer(self, width, height)",
-              "start_line": 842,
-              "end_line": 843,
+              "start_line": 843,
+              "end_line": 844,
               "doc": ""
             },
             {
               "name": "paintEvent",
               "sig": "paintEvent(self, event)",
-              "start_line": 846,
-              "end_line": 854,
+              "start_line": 847,
+              "end_line": 855,
               "doc": ""
             }
           ]
@@ -15208,85 +15208,85 @@
           "bases": [
             "QWidget"
           ],
-          "start_line": 857,
-          "end_line": 972,
+          "start_line": 858,
+          "end_line": 973,
           "doc": "",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, parent, tokens)",
-              "start_line": 860,
-              "end_line": 897,
+              "start_line": 861,
+              "end_line": 898,
               "doc": ""
             },
             {
               "name": "set_is_video",
               "sig": "set_is_video(self, is_video)",
-              "start_line": 899,
-              "end_line": 901,
+              "start_line": 900,
+              "end_line": 902,
               "doc": ""
             },
             {
               "name": "set_background_generation_active",
               "sig": "set_background_generation_active(self, task_name, active)",
-              "start_line": 903,
-              "end_line": 905,
+              "start_line": 904,
+              "end_line": 906,
               "doc": ""
             },
             {
               "name": "dragEnterEvent",
               "sig": "dragEnterEvent(self, event)",
-              "start_line": 907,
-              "end_line": 914,
+              "start_line": 908,
+              "end_line": 915,
               "doc": ""
             },
             {
               "name": "dragMoveEvent",
               "sig": "dragMoveEvent(self, event)",
-              "start_line": 916,
-              "end_line": 923,
+              "start_line": 917,
+              "end_line": 924,
               "doc": ""
             },
             {
               "name": "dragLeaveEvent",
               "sig": "dragLeaveEvent(self, event)",
-              "start_line": 925,
-              "end_line": 926,
+              "start_line": 926,
+              "end_line": 927,
               "doc": ""
             },
             {
               "name": "dropEvent",
               "sig": "dropEvent(self, event)",
-              "start_line": 928,
-              "end_line": 936,
+              "start_line": 929,
+              "end_line": 937,
               "doc": ""
             },
             {
               "name": "update_scrollbar_range",
               "sig": "update_scrollbar_range(self)",
-              "start_line": 938,
-              "end_line": 947,
+              "start_line": 939,
+              "end_line": 948,
               "doc": ""
             },
             {
               "name": "update_scrollbar_from_canvas",
               "sig": "update_scrollbar_from_canvas(self, offset)",
-              "start_line": 949,
-              "end_line": 957,
+              "start_line": 950,
+              "end_line": 958,
               "doc": ""
             },
             {
               "name": "update_canvas_from_scrollbar",
               "sig": "update_canvas_from_scrollbar(self, val)",
-              "start_line": 959,
-              "end_line": 969,
+              "start_line": 960,
+              "end_line": 970,
               "doc": ""
             },
             {
               "name": "__getattr__",
               "sig": "__getattr__(self, name)",
-              "start_line": 971,
-              "end_line": 972,
+              "start_line": 972,
+              "end_line": 973,
               "doc": ""
             }
           ]
@@ -16121,7 +16121,7 @@
     "transcript_story.py": {
       "path": "transcript_story.py",
       "lines": 852,
-      "summary": "Radio & TV Segmenter v3.9.75-beta \u2014 transcript story responsibilities.",
+      "summary": "Radio & TV Segmenter v3.9.76-beta \u2014 transcript story responsibilities.",
       "exports": [
         "TranscriptStoryMixin",
         "Story",

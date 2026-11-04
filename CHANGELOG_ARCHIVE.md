@@ -1,5 +1,15 @@
 # Changelog Archive (Historical Releases: v1.1 – v3.8.9-beta.19)
 
+## v3.9.74-beta
+- **WordPress Export Media Tab, Audio Fades Safety Interlock & macOS Video Preview Restoration (`plugins/wordpress/wp_ui_builder.py`, `plugins/wordpress/wp_tab_widget.py`, `plugins/wordpress/client.py`, `plugins/wordpress/youtube_embed.py`, `playback_controller.py`, `RadioTVSegmenter.py`)**:
+  - **Renamed Tab to 'Media' (`plugins/wordpress/wp_ui_builder.py`, `client.py`, `youtube_embed.py`)**: Renamed the WordPress export and preferences tab from `"Podcast & Media"` to `"Media"` for concise, descriptive navigation across standard audio, podcast, and video embedding workflows.
+  - **Audio Fades Safety Interlock (`plugins/wordpress/wp_tab_widget.py`)**: Synchronized the "Apply audio fades" checkbox (`wp_cb_apply_fades`) with the "Include audio files in WordPress export" checkbox (`wp_cb_include_audio`). When audio inclusion is unchecked, audio fades are automatically unchecked and saved as disabled in user settings to avoid invalid fade processing states when no audio is exported.
+  - **macOS Video Preview Window Restoration (`playback_controller.py`, `RadioTVSegmenter.py`)**:
+    - **Early Video Sink Initialization**: Pre-initialized the floating `video_preview_dialog` and `video_preview_widget` during application startup (`RadioTVSegmenter.py`) and pre-attached `player.setVideoOutput(video_preview_widget)` before media sources are loaded (`player.setSource()`), resolving the macOS Qt 6 / AVFoundation backend defect where late-bound video sinks caused `AVPlayer` to default to an audio-only pipeline and display a black preview box.
+    - **Native Window Embedding on Cocoa**: Added `Qt.WidgetAttribute.WA_NativeWindow` and `WA_DontCreateNativeAncestors` attributes to `QVideoWidget` to ensure proper Cocoa `NSView` and `CALayer` hierarchy initialization on macOS.
+    - **Seek/Frame Refresh on Preview Show**: Added automatic position re-seek and widget update when un-hiding the preview while paused, forcing `CALayer` to immediately render the current video frame.
+    - **Window Close & Menu Action Synchronization**: Connected dialog finished signal to uncheck the "Video Preview Window" menu action (`video_preview_action`) when the dialog is closed via the OS window titlebar button.
+
 ## v3.9.73-beta
 - **YouTube Video Embed for WordPress Exports (`plugins/wordpress/youtube_embed.py`, `plugins/wordpress/wp_ui_builder.py`, `plugins/wordpress/wp_tab_widget.py`, `plugins/wordpress/wp_post_builder.py`, `plugins/wordpress/client.py`, `plugins/wordpress/export_destination.py`, `plugins/youtube/plugin.py`, `diagnostic_export_tests.py`)**:
   - **Dedicated Submodule Architecture (`plugins/wordpress/youtube_embed.py`)**: Extracted all YouTube video embed URL parsing, Gutenberg iframe generator, UI setup, state persistence, and list formatting into a dedicated submodule to preserve strict modularity and keep `wp_tab_widget.py` (929 lines) comfortably under the 1,000-line ceiling.

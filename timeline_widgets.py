@@ -664,7 +664,8 @@ class TimelineCanvas(QWidget):
             if tooltip_text:
                 if tooltip_text != getattr(self, "_last_tooltip_text", ""):
                     self._last_tooltip_text = tooltip_text
-                    QToolTip.showText(event.globalPosition().toPoint(), tooltip_text, self)
+                    top_win = self.window() if hasattr(self, "window") else self
+                    QToolTip.showText(event.globalPosition().toPoint(), tooltip_text, top_win or self)
             else:
                 if getattr(self, "_last_tooltip_text", ""):
                     self._last_tooltip_text = ""

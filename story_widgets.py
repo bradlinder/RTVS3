@@ -472,7 +472,8 @@ class StoryListWidget(QListWidget):
         if not self.selectedItems():
             return
 
-        menu = QMenu(self)
+        top_win = self.window() if hasattr(self, "window") else self
+        menu = QMenu(top_win or self)
 
         audition_act = QAction("Audition Story Playback", self)
         audition_act.triggered.connect(lambda: parent.audition_story(self.currentRow()))

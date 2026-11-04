@@ -10,7 +10,7 @@ from PySide6.QtWidgets import QMenu, QWidget
 def show_timeline_context_menu(canvas: Any, global_pos: QPoint, pos_x: float):
     """Display the primary right-click context menu on the timeline canvas."""
     win = canvas.window()
-    menu = QMenu(canvas)
+    menu = QMenu(win if win is not None else canvas)
     width = canvas.width()
     time = max(0, min(canvas.duration, canvas.x_to_time(pos_x, width)))
     story_idx = canvas.find_story_at_time(time)
@@ -74,7 +74,7 @@ def show_selection_context_menu(canvas: Any, global_pos: QPoint):
     is_music = getattr(win, "story_detection_mode", "voice") == "music"
     is_es = getattr(win, "language", "en") == "es"
     term = ("Canción" if is_es else "Song") if is_music else ("Historia" if is_es else "Story")
-    menu = QMenu(canvas)
+    menu = QMenu(win if win is not None else canvas)
     add_action = menu.addAction(f"{('Agregar' if is_es else 'Add')} {term} {('desde la selección' if is_es else 'from Selection')}")
     clear_action = menu.addAction("Borrar selección" if is_es else "Clear Selection")
 
