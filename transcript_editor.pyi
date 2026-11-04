@@ -26,6 +26,9 @@ class InteractiveTranscriptEdit(TranscriptContextMenuMixin, TranscriptFormatting
     def __init__(self, parent=...):
         ...
 
+    def clear(self):
+        ...
+
     def lock_scroll_position(self, v_val: int, h_val: int=..., duration_ms: int=...):
         ...
 

@@ -190,6 +190,23 @@ class InteractiveTranscriptEdit(
             self.verticalScrollBar().rangeChanged.connect(self._on_v_range_changed)
             self.verticalScrollBar().sliderPressed.connect(self._release_scroll_lock)
 
+    def clear(self):
+        """Clear document text and reset all word maps, anchors, and extra selections."""
+        self.char_timestamp_map = []
+        self.anchor_ranges = {}
+        self.time_anchor_index = []
+        self.time_anchor_starts = []
+        self.active_highlight_anchor = None
+        self.last_active_highlight_anchor = None
+        self._playback_highlight_selection = None
+        self.timeline_selection_span = None
+        self.saved_selections = []
+        self._search_highlight_selections = []
+        if hasattr(self, "selection_bubble") and self.selection_bubble:
+            self.selection_bubble.hide()
+        self.setExtraSelections([])
+        super().clear()
+
     def lock_scroll_position(self, v_val: int, h_val: int = 0, duration_ms: int = 400):
         """Pin vertical and horizontal scrollbars to exact pixel values during layout reflows.
         Automatically detaches when the layout stabilizes or when the user manually scrolls."""

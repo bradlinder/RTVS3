@@ -541,6 +541,11 @@ class StoryCrudMixin:
         if not hasattr(self, "transcript_view"):
             return
 
+        if not getattr(self, "transcript", None):
+            if hasattr(self.transcript_view, "set_timeline_selection_span"):
+                self.transcript_view.set_timeline_selection_span(None, None)
+            return
+
         if start_time is None or end_time is None:
             if hasattr(self.transcript_view, "set_timeline_selection_span"):
                 self.transcript_view.set_timeline_selection_span(None, None)
@@ -548,6 +553,13 @@ class StoryCrudMixin:
             if cursor.hasSelection():
                 cursor.clearSelection()
                 self.transcript_view.setTextCursor(cursor)
+            return
+
+        doc = self.transcript_view.document()
+        doc_len = doc.characterCount() if doc else 0
+        if doc_len <= 1:
+            if hasattr(self.transcript_view, "set_timeline_selection_span"):
+                self.transcript_view.set_timeline_selection_span(None, None)
             return
 
         s = min(float(start_time), float(end_time))
@@ -570,9 +582,15 @@ class StoryCrudMixin:
             if w_start <= e:
                 last_char = c_end
 
-        if first_char is not None and last_char is not None and last_char > first_char:
+        if (
+            first_char is not None
+            and last_char is not None
+            and last_char > first_char
+            and 0 <= first_char < doc_len
+        ):
+            safe_last_char = min(last_char, doc_len - 1)
             if hasattr(self.transcript_view, "set_timeline_selection_span"):
-                self.transcript_view.set_timeline_selection_span(first_char, last_char)
+                self.transcript_view.set_timeline_selection_span(first_char, safe_last_char)
             cursor = self.transcript_view.textCursor()
             cursor.clearSelection()
             cursor.setPosition(first_char)

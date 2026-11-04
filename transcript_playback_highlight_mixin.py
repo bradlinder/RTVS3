@@ -234,12 +234,13 @@ class TranscriptPlaybackHighlightMixin:
             return
 
         doc = self.document()
+        doc_len = doc.characterCount() if doc else 0
         positions = self.anchor_ranges.get(target_anchor)
         if not positions:
             self.rebuild_anchor_index()
             positions = self.anchor_ranges.get(target_anchor)
 
-        if not positions:
+        if not positions or positions[0] >= doc_len or positions[1] > doc_len or positions[0] >= positions[1]:
             self.clear_highlight()
             return
 

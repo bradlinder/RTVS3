@@ -1,13 +1,13 @@
 # Repository Symbol Index & API Map
 
-> Generated: 2026-11-04 15:33:42 | Total Files: 158
+> Generated: 2026-11-04 15:44:06 | Total Files: 158
 > Use `python scripts/generate_symbol_index.py --outline <file>` for exact line numbers.
 
 ## Modules Overview
 
 | Module | Lines | Summary | Primary Classes / Functions |
 | :--- | :---: | :--- | :--- |
-| `RadioTVSegmenter.py` | 663 | Radio & TV Segmenter — v3.9.74-beta | `MainWindow`, `main()` |
+| `RadioTVSegmenter.py` | 663 | Radio & TV Segmenter — v3.9.75-beta | `MainWindow`, `main()` |
 | `audio_normalization.py` | 541 | Radio & TV Story Segmenter — Audio Loudness Probing & Nor... | `LoudnessReport`, `AudioLoudnessProbeWorker`, `parse_ebur128_summary()`, `probe_media_duration_seconds()` *(+3 more)* |
 | `background_workers.py` | 1015 | Radio & TV Story Segmenter — Background Worker Threads & ... | `StoryAutoDetectWorker`, `WaveformWorker`, `VideoThumbnailWorker`, `get_waveform_peak_cache_path()` *(+6 more)* |
 | `backup_manager.py` | 622 | Unified State Serialization, Local, and Google Drive Clou... | `compute_data_checksum()`, `serialize_preferences()`, `serialize_keyboard_shortcuts()`, `serialize_glossary()` *(+7 more)* |
@@ -119,7 +119,7 @@
 | `speaker_identity.py` | 260 | Radio & TV Segmenter | `VoiceMatch`, `cosine_similarity()`, `normalize_vector()`, `centroid()` *(+3 more)* |
 | `speaker_palette.py` | 148 | Accessible adaptive speaker color palette for Radio & TV ... | `SpeakerColor`, `SpeakerColorAssigner`, `get_speaker_index()`, `get_speaker_color()` *(+3 more)* |
 | `speaker_profiles.py` | 630 | speaker_profiles.py — Persistent Station Voice Profile Ma... | `StationVoiceProfile`, `StationVoiceProfileStore`, `ManageVoiceProfilesDialog` |
-| `story_crud_mixin.py` | 814 | Radio & TV Story Segmenter — Story CRUD & Timeline Select... | `StoryCrudMixin` |
+| `story_crud_mixin.py` | 832 | Radio & TV Story Segmenter — Story CRUD & Timeline Select... | `StoryCrudMixin` |
 | `story_detection_processing.py` | 206 | Story boundary detection processing mixin for Radio & TV ... | `StoryDetectionProcessingMixin` |
 | `story_fades_dialog.py` | 213 | story_fades_dialog.py — Dialog for fine-grained audio fad... | `StoryFadesDialog` |
 | `story_metadata_dialog.py` | 307 | Radio & TV Story Segmenter — Universal Story & Post Metad... | `StoryMetadataDialog`, `generate_story_excerpt()` |
@@ -138,15 +138,15 @@
 | `timeline_widgets.py` | 974 | Radio & TV Story Segmenter — Timeline Ruler, Track Views,... | `TimelineCanvas`, `TimelineWidget` |
 | `transcript_cleaner.py` | 216 | Radio & TV Segmenter — Transcript cleaning, loop collapsi... | `collapse_repeating_ngrams()`, `strip_hallucination_phrases()`, `trim_trailing_degenerate_tail()`, `scrub_transcript_segments()` *(+1 more)* |
 | `transcript_context_menu_mixin.py` | 415 | Radio & TV Story Segmenter — Interactive Transcript Conte... | `TranscriptContextMenuMixin` |
-| `transcript_editor.py` | 870 | transcript_editor.py - Interactive Transcript Editor & Vi... | `InteractiveTranscriptEdit` |
+| `transcript_editor.py` | 887 | transcript_editor.py - Interactive Transcript Editor & Vi... | `InteractiveTranscriptEdit` |
 | `transcript_editor_dialogs.py` | 677 | transcript_editor_dialogs.py - Dialog and floating toolba... | `FindReplaceDialog`, `TranscriptSelectionBubble` |
 | `transcript_formatting_mixin.py` | 340 | Radio & TV Story Segmenter — Interactive Transcript Forma... | `TranscriptFormattingMixin` |
-| `transcript_navigation_mixin.py` | 299 | transcript_navigation_mixin.py - Timestamp discovery, car... | `TranscriptNavigationMixin` |
-| `transcript_playback_highlight_mixin.py` | 276 | Radio & TV Story Segmenter — Interactive Transcript Playb... | `TranscriptPlaybackHighlightMixin` |
-| `transcript_selection_mixin.py` | 466 | transcript_selection_mixin.py - Multi-selection, timeline... | `TranscriptSelectionMixin` |
-| `transcript_story.py` | 852 | Radio & TV Segmenter v3.9.74-beta — transcript story resp... | `TranscriptStoryMixin` |
+| `transcript_navigation_mixin.py` | 300 | transcript_navigation_mixin.py - Timestamp discovery, car... | `TranscriptNavigationMixin` |
+| `transcript_playback_highlight_mixin.py` | 277 | Radio & TV Story Segmenter — Interactive Transcript Playb... | `TranscriptPlaybackHighlightMixin` |
+| `transcript_selection_mixin.py` | 473 | transcript_selection_mixin.py - Multi-selection, timeline... | `TranscriptSelectionMixin` |
+| `transcript_story.py` | 852 | Radio & TV Segmenter v3.9.75-beta — transcript story resp... | `TranscriptStoryMixin` |
 | `transcript_styles.py` | 104 | transcript_styles.py - Transcript view stylesheets and da... | `transcript_text_view_stylesheet()`, `clean_dark_mode_clipboard_html()` |
-| `transcript_timeline_sync_mixin.py` | 634 | Radio & TV Story Segmenter — Transcript Timeline & Playba... | `TranscriptTimelineSyncMixin` |
+| `transcript_timeline_sync_mixin.py` | 642 | Radio & TV Story Segmenter — Transcript Timeline & Playba... | `TranscriptTimelineSyncMixin` |
 | `transcription_processing.py` | 579 | Transcription background process management for Radio & T... | `TranscriptionProcessingMixin` |
 | `translation.py` | 923 | Radio & TV Segmenter — Local Translation Mixin. | `TranslationEnvSetupWorker`, `TranslationMixin` |
 | `ui_dialog_launchers.py` | 370 | Dialog launchers and external modal helpers for Radio & T... | `UiDialogLaunchersMixin` |
@@ -169,7 +169,7 @@
 ## Detailed Symbol Catalog
 
 ### `RadioTVSegmenter.py` (663 lines)
-*Radio & TV Segmenter — v3.9.74-beta*
+*Radio & TV Segmenter — v3.9.75-beta*
 - **class `MainWindow(ModelManagementMixin, MediaBatchMixin, PlaybackPreferencesMixin, UiLayoutMixin, ProcessingMixin, TranslationMixin, TranscriptStoryMixin, ProjectExportMixin, GpuAccelerationMixin, QMainWindow)`** (lines 160–560):
   *Main application window for Radio & TV Segmenter.*
   - `__init__(self)` [L178-L355]
@@ -2323,9 +2323,9 @@
   - `_on_export(self)` [L572-L600]
   - `_on_import(self)` [L602-L630]
 
-### `story_crud_mixin.py` (814 lines)
+### `story_crud_mixin.py` (832 lines)
 *Radio & TV Story Segmenter — Story CRUD & Timeline Selection Mixin.*
-- **class `StoryCrudMixin`** (lines 46–814):
+- **class `StoryCrudMixin`** (lines 46–832):
   *Mixin providing story list UI management, CRUD operations, and fade handling.*
   - `refresh_story_list(self)` [L49-L92]
   - `handle_new_story_started(self, start_time, end_time)` [L94-L104]
@@ -2341,16 +2341,16 @@
   - `add_selection_to_story(self)` [L397-L508]
   - `play_transcript_selection(self)` [L510-L529]
   - `select_all_stories(self)` [L531-L538]
-  - `handle_timeline_selection_range_changed(self, start_time, end_time)` [L540-L583]
-  - `add_story_from_range(self, start_time, end_time)` [L585-L619]
-  - `add_story_from_active_selection(self)` [L621-L638]
-  - `open_story_fades_dialog(self, story_index)` [L640-L682]
-  - `apply_fades_to_selected_stories(self, fade_in, fade_out, fade_curve)` [L684-L717]
-  - `remove_fades_from_selected_stories(self)` [L719-L720]
-  - `set_fade_curve_for_selected_stories(self, curve_type)` [L722-L745]
-  - `open_story_metadata_dialog(self, target_story_index, modal)` [L747-L780]
-  - `_notify_floating_dialogs(self)` [L782-L796] — *Refresh any open non-modal export, metadata, or speaker management floating windows after main window edits.*
-  - `_close_floating_dialogs(self, persist_drafts)` [L798-L814] — *Persist drafts and close any active non-modal floating windows on project close or shutdown.*
+  - `handle_timeline_selection_range_changed(self, start_time, end_time)` [L540-L601]
+  - `add_story_from_range(self, start_time, end_time)` [L603-L637]
+  - `add_story_from_active_selection(self)` [L639-L656]
+  - `open_story_fades_dialog(self, story_index)` [L658-L700]
+  - `apply_fades_to_selected_stories(self, fade_in, fade_out, fade_curve)` [L702-L735]
+  - `remove_fades_from_selected_stories(self)` [L737-L738]
+  - `set_fade_curve_for_selected_stories(self, curve_type)` [L740-L763]
+  - `open_story_metadata_dialog(self, target_story_index, modal)` [L765-L798]
+  - `_notify_floating_dialogs(self)` [L800-L814] — *Refresh any open non-modal export, metadata, or speaker management floating windows after main window edits.*
+  - `_close_floating_dialogs(self, persist_drafts)` [L816-L832] — *Persist drafts and close any active non-modal floating windows on project close or shutdown.*
 
 ### `story_detection_processing.py` (206 lines)
 *Story boundary detection processing mixin for Radio & TV Story Segmenter.*
@@ -2682,31 +2682,32 @@
   - `_on_bubble_export(self)` [L75-L80]
   - `show_context_menu(self, position)` [L82-L415]
 
-### `transcript_editor.py` (870 lines)
+### `transcript_editor.py` (887 lines)
 *transcript_editor.py - Interactive Transcript Editor & Viewer Components*
 - **Public Exports (`__all__`)**: FindReplaceDialog, TranscriptSelectionBubble, transcript_text_view_stylesheet, clean_dark_mode_clipboard_html, InteractiveTranscriptEdit
-- **class `InteractiveTranscriptEdit(TranscriptContextMenuMixin, TranscriptFormattingMixin, TranscriptTimelineSyncMixin, QTextEdit)`** (lines 116–870):
+- **class `InteractiveTranscriptEdit(TranscriptContextMenuMixin, TranscriptFormattingMixin, TranscriptTimelineSyncMixin, QTextEdit)`** (lines 116–887):
   - `__init__(self, parent)` [L129-L191]
-  - `lock_scroll_position(self, v_val, h_val, duration_ms)` [L193-L214] — *Pin vertical and horizontal scrollbars to exact pixel values during layout reflows.*
-  - `_release_scroll_lock(self)` [L216-L219]
-  - `_on_v_range_changed(self, min_val, max_val)` [L221-L225]
-  - `focusInEvent(self, event)` [L227-L243]
-  - `_enforce_scroll_after_focus(self, target_v, target_h)` [L245-L251]
-  - `createMimeDataFromSelection(self)` [L253-L267] — *Clean dark-mode white/light plain text colors to black (#000000) when copying.*
-  - `wheelEvent(self, event)` [L269-L275]
-  - `event(self, e)` [L277-L326]
-  - `paintEvent(self, event)` [L328-L391]
-  - `dragEnterEvent(self, event)` [L393-L397]
-  - `dragMoveEvent(self, event)` [L399-L403]
-  - `dropEvent(self, event)` [L405-L415]
-  - `apply_theme_style(self, mode)` [L417-L420]
-  - `set_font_scale(self, scale)` [L422-L432] — *Set transcript font scale without affecting the rest of the UI.*
-  - `set_editing_mode(self, enabled)` [L434-L450]
-  - `mousePressEvent(self, event)` [L452-L492]
-  - `mouseMoveEvent(self, event)` [L494-L542]
-  - `leaveEvent(self, event)` [L544-L548]
-  - `mouseReleaseEvent(self, event)` [L550-L636]
-  - `keyPressEvent(self, event)` [L638-L870]
+  - `clear(self)` [L193-L208] — *Clear document text and reset all word maps, anchors, and extra selections.*
+  - `lock_scroll_position(self, v_val, h_val, duration_ms)` [L210-L231] — *Pin vertical and horizontal scrollbars to exact pixel values during layout reflows.*
+  - `_release_scroll_lock(self)` [L233-L236]
+  - `_on_v_range_changed(self, min_val, max_val)` [L238-L242]
+  - `focusInEvent(self, event)` [L244-L260]
+  - `_enforce_scroll_after_focus(self, target_v, target_h)` [L262-L268]
+  - `createMimeDataFromSelection(self)` [L270-L284] — *Clean dark-mode white/light plain text colors to black (#000000) when copying.*
+  - `wheelEvent(self, event)` [L286-L292]
+  - `event(self, e)` [L294-L343]
+  - `paintEvent(self, event)` [L345-L408]
+  - `dragEnterEvent(self, event)` [L410-L414]
+  - `dragMoveEvent(self, event)` [L416-L420]
+  - `dropEvent(self, event)` [L422-L432]
+  - `apply_theme_style(self, mode)` [L434-L437]
+  - `set_font_scale(self, scale)` [L439-L449] — *Set transcript font scale without affecting the rest of the UI.*
+  - `set_editing_mode(self, enabled)` [L451-L467]
+  - `mousePressEvent(self, event)` [L469-L509]
+  - `mouseMoveEvent(self, event)` [L511-L559]
+  - `leaveEvent(self, event)` [L561-L565]
+  - `mouseReleaseEvent(self, event)` [L567-L653]
+  - `keyPressEvent(self, event)` [L655-L887]
 
 ### `transcript_editor_dialogs.py` (677 lines)
 *transcript_editor_dialogs.py - Dialog and floating toolbar components for transcript editing.*
@@ -2744,9 +2745,9 @@
   - `clear_formatting(self)` [L301-L328]
   - `get_current_formatting(self)` [L330-L340]
 
-### `transcript_navigation_mixin.py` (299 lines)
+### `transcript_navigation_mixin.py` (300 lines)
 *transcript_navigation_mixin.py - Timestamp discovery, caret positioning, anchor indexing, and playback highlighting.*
-- **class `TranscriptNavigationMixin`** (lines 34–299):
+- **class `TranscriptNavigationMixin`** (lines 34–300):
   *Mixin managing time anchor indexing, cursor timestamp discovery, and live playback highlighting.*
   - `_nearest_word_anchor(self, cursor)` [L37-L70] — *Return the word anchor nearest the actual QTextDocument cursor.*
   - `get_timestamp_at_cursor(self, cursor)` [L72-L92]
@@ -2757,11 +2758,11 @@
   - `rebuild_anchor_index(self)` [L173-L220] — *Index transcript anchors once so playback highlighting is O(1) lookup,*
   - `set_time_anchor_index(self, entries)` [L222-L224]
   - `clear_highlight(self)` [L226-L233]
-  - `highlight_word_at_time(self, seconds, transcript_data, auto_scroll)` [L235-L299]
+  - `highlight_word_at_time(self, seconds, transcript_data, auto_scroll)` [L235-L300]
 
-### `transcript_playback_highlight_mixin.py` (276 lines)
+### `transcript_playback_highlight_mixin.py` (277 lines)
 *Radio & TV Story Segmenter — Interactive Transcript Playback Highlighting Mixin.*
-- **class `TranscriptPlaybackHighlightMixin`** (lines 24–276):
+- **class `TranscriptPlaybackHighlightMixin`** (lines 24–277):
   *Mixin managing real-time audio playback word synchronization and time anchors.*
   - `_nearest_word_anchor(self, cursor)` [L27-L59] — *Return the word anchor nearest the actual QTextDocument cursor.*
   - `get_timestamp_at_cursor(self, cursor)` [L61-L80]
@@ -2772,11 +2773,11 @@
   - `rebuild_anchor_index(self)` [L158-L205] — *Index transcript anchors once so playback highlighting is O(1) lookup,*
   - `set_time_anchor_index(self, entries)` [L207-L209]
   - `clear_highlight(self)` [L211-L217]
-  - `highlight_word_at_time(self, seconds, transcript_data, auto_scroll)` [L219-L276]
+  - `highlight_word_at_time(self, seconds, transcript_data, auto_scroll)` [L219-L277]
 
-### `transcript_selection_mixin.py` (466 lines)
+### `transcript_selection_mixin.py` (473 lines)
 *transcript_selection_mixin.py - Multi-selection, timeline spans, comment ranges, and bubble actions.*
-- **class `TranscriptSelectionMixin`** (lines 31–466):
+- **class `TranscriptSelectionMixin`** (lines 31–473):
   *Mixin managing selection state, multi-select accumulation, comment highlights,*
   - `set_selection_mode(self, mode)` [L35-L39]
   - `set_char_timestamp_map(self, mapping)` [L41-L42]
@@ -2786,19 +2787,19 @@
   - `get_selected_time_range(self)` [L85-L98]
   - `get_all_selected_story_ranges(self)` [L100-L121] — *Returns a list of dicts: [{'start_time': float, 'end_time': float, 'text': str, ...}, ...]*
   - `select_comment_range(self, seg_idx)` [L123-L168] — *Navigate and select the exact comment text range in the transcript view.*
-  - `update_extra_selections(self)` [L170-L295]
-  - `set_search_highlights(self, ranges, active_idx)` [L297-L333] — *Highlight all search matches across transcript with prominent active match.*
-  - `clear_search_highlights(self)` [L335-L338] — *Clear all search match highlights from transcript.*
-  - `set_timeline_selection_span(self, start_char, end_char)` [L340-L345]
-  - `_on_selection_completed(self, cursor)` [L347-L423]
-  - `_on_bubble_play(self)` [L425-L430]
-  - `_on_bubble_story(self)` [L432-L437]
-  - `_on_bubble_note(self)` [L439-L452]
-  - `_on_bubble_cut(self)` [L454-L459]
-  - `_on_bubble_export(self)` [L461-L466]
+  - `update_extra_selections(self)` [L170-L302]
+  - `set_search_highlights(self, ranges, active_idx)` [L304-L340] — *Highlight all search matches across transcript with prominent active match.*
+  - `clear_search_highlights(self)` [L342-L345] — *Clear all search match highlights from transcript.*
+  - `set_timeline_selection_span(self, start_char, end_char)` [L347-L352]
+  - `_on_selection_completed(self, cursor)` [L354-L430]
+  - `_on_bubble_play(self)` [L432-L437]
+  - `_on_bubble_story(self)` [L439-L444]
+  - `_on_bubble_note(self)` [L446-L459]
+  - `_on_bubble_cut(self)` [L461-L466]
+  - `_on_bubble_export(self)` [L468-L473]
 
 ### `transcript_story.py` (852 lines)
-*Radio & TV Segmenter v3.9.74-beta — transcript story responsibilities.*
+*Radio & TV Segmenter v3.9.75-beta — transcript story responsibilities.*
 - **Public Exports (`__all__`)**: TranscriptStoryMixin, Story, SetStoriesCommand, SelectStoriesCommand, StoryBoundaryChangeCommand, StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin, ChangeSpeakerDialog, VoiceProfileMatchDialog, StoryFadesDialog, SpeakerManagerDialog, FADE_CURVE_TABLES, get_fade_curve_factors
 - **class `TranscriptStoryMixin(StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin)`** (lines 63–851):
   - `render_transcript(self)` [L64-L467]
@@ -2818,9 +2819,9 @@
   - `transcript_text_view_stylesheet(mode, font_size)` [L19-L62] — *Shared visual treatment for transcript-style views.*
   - `clean_dark_mode_clipboard_html(raw_html)` [L65-L104] — *Normalize plain text font colors to black (#000000) for external pasting.*
 
-### `transcript_timeline_sync_mixin.py` (634 lines)
+### `transcript_timeline_sync_mixin.py` (642 lines)
 *Radio & TV Story Segmenter — Transcript Timeline & Playback Synchronization Mixin.*
-- **class `TranscriptTimelineSyncMixin`** (lines 34–634):
+- **class `TranscriptTimelineSyncMixin`** (lines 34–642):
   *Mixin for audio timecode synchronization, anchor indexing, and playback highlighting.*
   - `set_selection_mode(self, mode)` [L37-L41]
   - `set_char_timestamp_map(self, mapping)` [L43-L44]
@@ -2830,21 +2831,21 @@
   - `get_selected_time_range(self)` [L87-L100]
   - `get_all_selected_story_ranges(self)` [L102-L122]
   - `select_comment_range(self, seg_idx)` [L124-L168]
-  - `update_extra_selections(self)` [L170-L290]
-  - `set_search_highlights(self, ranges, active_idx)` [L292-L328] — *Highlight all search matches across transcript with prominent active match.*
-  - `clear_search_highlights(self)` [L330-L333] — *Clear all search match highlights from transcript.*
-  - `set_timeline_selection_span(self, start_char, end_char)` [L335-L340]
-  - `_on_selection_completed(self, cursor)` [L342-L362]
-  - `_nearest_word_anchor(self, cursor)` [L364-L395]
-  - `get_timestamp_at_cursor(self, cursor)` [L397-L416]
-  - `get_block_start_timestamp(self, cursor)` [L418-L433]
-  - `get_block_end_timestamp(self, cursor)` [L435-L453]
-  - `get_segment_index_at_cursor(self, cursor)` [L455-L474]
-  - `move_cursor_to_segment_start(self, seg_idx)` [L476-L491]
-  - `rebuild_anchor_index(self)` [L493-L538]
-  - `set_time_anchor_index(self, entries)` [L540-L542]
-  - `clear_highlight(self)` [L544-L550]
-  - `highlight_word_at_time(self, seconds, transcript_data, auto_scroll)` [L552-L634]
+  - `update_extra_selections(self)` [L170-L297]
+  - `set_search_highlights(self, ranges, active_idx)` [L299-L335] — *Highlight all search matches across transcript with prominent active match.*
+  - `clear_search_highlights(self)` [L337-L340] — *Clear all search match highlights from transcript.*
+  - `set_timeline_selection_span(self, start_char, end_char)` [L342-L347]
+  - `_on_selection_completed(self, cursor)` [L349-L369]
+  - `_nearest_word_anchor(self, cursor)` [L371-L402]
+  - `get_timestamp_at_cursor(self, cursor)` [L404-L423]
+  - `get_block_start_timestamp(self, cursor)` [L425-L440]
+  - `get_block_end_timestamp(self, cursor)` [L442-L460]
+  - `get_segment_index_at_cursor(self, cursor)` [L462-L481]
+  - `move_cursor_to_segment_start(self, seg_idx)` [L483-L498]
+  - `rebuild_anchor_index(self)` [L500-L545]
+  - `set_time_anchor_index(self, entries)` [L547-L549]
+  - `clear_highlight(self)` [L551-L557]
+  - `highlight_word_at_time(self, seconds, transcript_data, auto_scroll)` [L559-L642]
 
 ### `transcription_processing.py` (579 lines)
 *Transcription background process management for Radio & TV Story Segmenter.*

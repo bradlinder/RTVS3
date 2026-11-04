@@ -250,23 +250,27 @@ class TranscriptSelectionMixin:
                             extras.append(extra)
 
         # Section / Timeline Selection Overlay (Rendered BEFORE playback word so active word stays visible on top)
+        doc = self.document()
+        doc_len = doc.characterCount() if doc else 0
+
         if getattr(self, "timeline_selection_span", None) is not None:
             s_char, e_char = self.timeline_selection_span
-            fmt = QTextCharFormat()
-            if getattr(self, "current_theme", "dark") == "light":
-                fmt.setBackground(QColor(186, 215, 255, 170))
-                fmt.setForeground(QColor(15, 23, 42))
-            else:
-                fmt.setBackground(QColor(40, 105, 215, 170))
-                fmt.setForeground(QColor(255, 255, 255))
+            if 0 <= s_char < doc_len and 0 <= e_char <= doc_len and s_char < e_char:
+                fmt = QTextCharFormat()
+                if getattr(self, "current_theme", "dark") == "light":
+                    fmt.setBackground(QColor(186, 215, 255, 170))
+                    fmt.setForeground(QColor(15, 23, 42))
+                else:
+                    fmt.setBackground(QColor(40, 105, 215, 170))
+                    fmt.setForeground(QColor(255, 255, 255))
 
-            extra = QTextEdit.ExtraSelection()
-            extra.format = fmt
-            cursor = QTextCursor(self.document())
-            cursor.setPosition(s_char)
-            cursor.setPosition(e_char, QTextCursor.MoveMode.KeepAnchor)
-            extra.cursor = cursor
-            extras.append(extra)
+                extra = QTextEdit.ExtraSelection()
+                extra.format = fmt
+                cursor = QTextCursor(doc)
+                cursor.setPosition(s_char)
+                cursor.setPosition(e_char, QTextCursor.MoveMode.KeepAnchor)
+                extra.cursor = cursor
+                extras.append(extra)
 
         if hasattr(self, "saved_selections") and self.saved_selections:
             fmt = QTextCharFormat()
@@ -278,13 +282,16 @@ class TranscriptSelectionMixin:
                 fmt.setForeground(QColor(255, 255, 255))
 
             for sel in self.saved_selections:
-                extra = QTextEdit.ExtraSelection()
-                extra.format = fmt
-                cursor = QTextCursor(self.document())
-                cursor.setPosition(sel["start_char"])
-                cursor.setPosition(sel["end_char"], QTextCursor.MoveMode.KeepAnchor)
-                extra.cursor = cursor
-                extras.append(extra)
+                sc = sel.get("start_char", 0)
+                ec = sel.get("end_char", 0)
+                if 0 <= sc < doc_len and 0 <= ec <= doc_len and sc < ec:
+                    extra = QTextEdit.ExtraSelection()
+                    extra.format = fmt
+                    cursor = QTextCursor(doc)
+                    cursor.setPosition(sc)
+                    cursor.setPosition(ec, QTextCursor.MoveMode.KeepAnchor)
+                    extra.cursor = cursor
+                    extras.append(extra)
 
         if getattr(self, "_search_highlight_selections", None):
             extras.extend(self._search_highlight_selections)
