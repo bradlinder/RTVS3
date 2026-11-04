@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-04 15:51:15",
-  "total_files": 158,
+  "generated_at": "2026-11-04 15:56:59",
+  "total_files": 159,
   "files": {
     "RadioTVSegmenter.py": {
       "path": "RadioTVSegmenter.py",
       "lines": 663,
-      "summary": "Radio & TV Segmenter \u2014 v3.9.76-beta",
+      "summary": "Radio & TV Segmenter \u2014 v3.9.77-beta",
       "exports": null,
       "classes": [
         {
@@ -4892,7 +4892,7 @@
     },
     "playback_preferences.py": {
       "path": "playback_preferences.py",
-      "lines": 803,
+      "lines": 814,
       "summary": "Radio & TV Story Segmenter \u2014 Playback Preferences & Application Facade.",
       "exports": [
         "PlaybackPreferencesMixin",
@@ -4913,7 +4913,7 @@
             "ProjectStateMixin"
           ],
           "start_line": 51,
-          "end_line": 803,
+          "end_line": 814,
           "doc": "Aggregates all playback, preferences, styling, and application lifecycle mixins.",
           "methods": [
             {
@@ -5001,94 +5001,101 @@
               "doc": ""
             },
             {
+              "name": "open_user_documentation",
+              "sig": "open_user_documentation(self)",
+              "start_line": 494,
+              "end_line": 503,
+              "doc": "Open the local user guides and documentation."
+            },
+            {
               "name": "show_about_dialog",
               "sig": "show_about_dialog(self)",
-              "start_line": 494,
-              "end_line": 533,
+              "start_line": 505,
+              "end_line": 544,
               "doc": ""
             },
             {
               "name": "check_for_updates",
               "sig": "check_for_updates(self, interactive)",
-              "start_line": 535,
-              "end_line": 546,
+              "start_line": 546,
+              "end_line": 557,
               "doc": "Open the Check for Updates dialog to query GitHub releases and install updates."
             },
             {
               "name": "trigger_silent_update_check",
               "sig": "trigger_silent_update_check(self)",
-              "start_line": 548,
-              "end_line": 573,
+              "start_line": 559,
+              "end_line": 584,
               "doc": "Perform a background update check without showing UI unless an update is found."
             },
             {
               "name": "apply_audio_output_device",
               "sig": "apply_audio_output_device(self, device_name, volume)",
-              "start_line": 575,
-              "end_line": 599,
+              "start_line": 586,
+              "end_line": 610,
               "doc": "Apply selected audio output device and volume to the active player."
             },
             {
               "name": "show_licenses_dialog",
               "sig": "show_licenses_dialog(self)",
-              "start_line": 601,
-              "end_line": 640,
+              "start_line": 612,
+              "end_line": 651,
               "doc": ""
             },
             {
               "name": "on_expected_speakers_changed",
               "sig": "on_expected_speakers_changed(self, value)",
-              "start_line": 642,
-              "end_line": 653,
+              "start_line": 653,
+              "end_line": 664,
               "doc": "Kept as a public hook in case a future toolbar control adjusts the expected-speakers hint directly."
             },
             {
               "name": "on_diarization_sensitivity_changed",
               "sig": "on_diarization_sensitivity_changed(self, value)",
-              "start_line": 655,
-              "end_line": 666,
+              "start_line": 666,
+              "end_line": 677,
               "doc": "Public hook for adjusting speaker separation sensitivity."
             },
             {
               "name": "update_auto_save_timer",
               "sig": "update_auto_save_timer(self)",
-              "start_line": 668,
-              "end_line": 672,
+              "start_line": 679,
+              "end_line": 683,
               "doc": ""
             },
             {
               "name": "prompt_set_whisper_model",
               "sig": "prompt_set_whisper_model(self)",
-              "start_line": 674,
-              "end_line": 677,
+              "start_line": 685,
+              "end_line": 688,
               "doc": ""
             },
             {
               "name": "prompt_set_skip_seconds",
               "sig": "prompt_set_skip_seconds(self)",
-              "start_line": 679,
-              "end_line": 693,
+              "start_line": 690,
+              "end_line": 704,
               "doc": ""
             },
             {
               "name": "prompt_set_auto_detect_thresholds",
               "sig": "prompt_set_auto_detect_thresholds(self)",
-              "start_line": 695,
-              "end_line": 761,
+              "start_line": 706,
+              "end_line": 772,
               "doc": ""
             },
             {
               "name": "prompt_set_auto_save",
               "sig": "prompt_set_auto_save(self)",
-              "start_line": 763,
-              "end_line": 781,
+              "start_line": 774,
+              "end_line": 792,
               "doc": ""
             },
             {
               "name": "trigger_auto_save",
               "sig": "trigger_auto_save(self)",
-              "start_line": 783,
-              "end_line": 803,
+              "start_line": 794,
+              "end_line": 814,
               "doc": ""
             }
           ]
@@ -11542,6 +11549,60 @@
         }
       ]
     },
+    "scripts/capture_guide_screenshots.py": {
+      "path": "scripts/capture_guide_screenshots.py",
+      "lines": 131,
+      "summary": "Programmatic headless screenshot generator for RTVS3 user guides.",
+      "exports": null,
+      "classes": [
+        {
+          "name": "MockCaptureMainWindow",
+          "bases": [],
+          "start_line": 24,
+          "end_line": 69,
+          "doc": "Mock main window providing realistic project data for guide screenshots.",
+          "methods": [
+            {
+              "name": "__init__",
+              "sig": "__init__(self)",
+              "start_line": 26,
+              "end_line": 63,
+              "doc": ""
+            },
+            {
+              "name": "_get_transcript_text_slice",
+              "sig": "_get_transcript_text_slice(self, start, end)",
+              "start_line": 65,
+              "end_line": 66,
+              "doc": ""
+            },
+            {
+              "name": "get_effective_story_author_and_category_ids",
+              "sig": "get_effective_story_author_and_category_ids(self, story_idx)",
+              "start_line": 68,
+              "end_line": 69,
+              "doc": ""
+            }
+          ]
+        }
+      ],
+      "functions": [
+        {
+          "name": "capture_widget",
+          "sig": "capture_widget(widget, output_path, size)",
+          "start_line": 72,
+          "end_line": 84,
+          "doc": "Render a QWidget to a high-resolution PNG image file."
+        },
+        {
+          "name": "main",
+          "sig": "main()",
+          "start_line": 87,
+          "end_line": 127,
+          "doc": ""
+        }
+      ]
+    },
     "scripts/dev_check.py": {
       "path": "scripts/dev_check.py",
       "lines": 154,
@@ -16121,7 +16182,7 @@
     "transcript_story.py": {
       "path": "transcript_story.py",
       "lines": 852,
-      "summary": "Radio & TV Segmenter v3.9.76-beta \u2014 transcript story responsibilities.",
+      "summary": "Radio & TV Segmenter v3.9.77-beta \u2014 transcript story responsibilities.",
       "exports": [
         "TranscriptStoryMixin",
         "Story",
@@ -16999,7 +17060,7 @@
     },
     "ui_menus.py": {
       "path": "ui_menus.py",
-      "lines": 814,
+      "lines": 820,
       "summary": "Main application menu bar and action assembly for Radio & TV Story Segmenter.",
       "exports": null,
       "classes": [
@@ -17032,63 +17093,63 @@
           "name": "UiMenusMixin",
           "bases": [],
           "start_line": 78,
-          "end_line": 813,
+          "end_line": 819,
           "doc": "Mixin providing menu construction, action shortcut wiring, and menu synchronization.",
           "methods": [
             {
               "name": "build_menus",
               "sig": "build_menus(self)",
               "start_line": 80,
-              "end_line": 657,
+              "end_line": 663,
               "doc": "Construct the main application menu bar and associated keyboard shortcuts."
             },
             {
               "name": "apply_user_shortcuts",
               "sig": "apply_user_shortcuts(self)",
-              "start_line": 659,
-              "end_line": 664,
+              "start_line": 665,
+              "end_line": 670,
               "doc": "Rebind all menu actions and application shortcuts according to user preferences."
             },
             {
               "name": "_refresh_recent_projects_menu",
               "sig": "_refresh_recent_projects_menu(self)",
-              "start_line": 666,
-              "end_line": 694,
+              "start_line": 672,
+              "end_line": 700,
               "doc": "Update recent projects submenu items based on user settings store."
             },
             {
               "name": "_check_external_dependencies",
               "sig": "_check_external_dependencies(self)",
-              "start_line": 696,
-              "end_line": 710,
+              "start_line": 702,
+              "end_line": 716,
               "doc": "Check bundled media tools and record actionable diagnostics."
             },
             {
               "name": "_sync_undo_redo_actions",
               "sig": "_sync_undo_redo_actions(self)",
-              "start_line": 712,
-              "end_line": 721,
+              "start_line": 718,
+              "end_line": 727,
               "doc": "Synchronize undo/redo action states with QUndoStack."
             },
             {
               "name": "_remember_directory",
               "sig": "_remember_directory(self, path)",
-              "start_line": 723,
-              "end_line": 733,
+              "start_line": 729,
+              "end_line": 739,
               "doc": "Persist directory of chosen file to improve user file dialog experience."
             },
             {
               "name": "update_processing_menu_status",
               "sig": "update_processing_menu_status(self)",
-              "start_line": 736,
-              "end_line": 759,
+              "start_line": 742,
+              "end_line": 765,
               "doc": "Update label annotations on Tools actions reflecting pipeline stage completion."
             },
             {
               "name": "refresh_plugin_menus",
               "sig": "refresh_plugin_menus(self)",
-              "start_line": 762,
-              "end_line": 813,
+              "start_line": 768,
+              "end_line": 819,
               "doc": "Dynamically populate plugin export actions, tools menu actions, and core UI controls."
             }
           ]

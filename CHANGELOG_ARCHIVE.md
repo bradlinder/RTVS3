@@ -1,5 +1,11 @@
 # Changelog Archive (Historical Releases: v1.1 – v3.8.9-beta.19)
 
+## v3.9.75-beta
+- **Interactive Transcript Offset Sanitization & Out-of-Range Cursor Prevention (`transcript_editor.py`, `story_crud_mixin.py`, `transcript_timeline_sync_mixin.py`, `transcript_selection_mixin.py`, `transcript_playback_highlight_mixin.py`, `transcript_navigation_mixin.py`)**:
+  - **Comprehensive Editor State Reset (`transcript_editor.py`)**: Overrode `InteractiveTranscriptEdit.clear()` to completely purge `char_timestamp_map`, `anchor_ranges`, `time_anchor_index`, `time_anchor_starts`, `timeline_selection_span`, and cached extra selections when clearing documents or loading new media, ensuring stale word character positions from prior projects are eliminated.
+  - **Timeline Scrubbing & Selection Bounds Clamping (`story_crud_mixin.py`)**: Added early-exit guards in `handle_timeline_selection_range_changed` when no active transcript exists or when the document character count is <= 1 (empty document). Enforced document length boundary checks (`doc.characterCount()`) to clamp `first_char` and `last_char` within valid ranges, eliminating Qt's `QTextCursor::setPosition: Position out of range` console warnings.
+  - **ExtraSelection Cursor Positioning Bounds Guards (`transcript_timeline_sync_mixin.py`, `transcript_selection_mixin.py`, `transcript_playback_highlight_mixin.py`, `transcript_navigation_mixin.py`)**: Wrapped cursor positioning for timeline selection spans, saved selections, and playback word highlights with strict `0 <= pos < doc_len` boundary validation.
+
 ## v3.9.74-beta
 - **WordPress Export Media Tab, Audio Fades Safety Interlock & macOS Video Preview Restoration (`plugins/wordpress/wp_ui_builder.py`, `plugins/wordpress/wp_tab_widget.py`, `plugins/wordpress/client.py`, `plugins/wordpress/youtube_embed.py`, `playback_controller.py`, `RadioTVSegmenter.py`)**:
   - **Renamed Tab to 'Media' (`plugins/wordpress/wp_ui_builder.py`, `client.py`, `youtube_embed.py`)**: Renamed the WordPress export and preferences tab from `"Podcast & Media"` to `"Media"` for concise, descriptive navigation across standard audio, podcast, and video embedding workflows.

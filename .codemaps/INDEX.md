@@ -1,13 +1,13 @@
 # Repository Symbol Index & API Map
 
-> Generated: 2026-11-04 15:51:15 | Total Files: 158
+> Generated: 2026-11-04 15:56:59 | Total Files: 159
 > Use `python scripts/generate_symbol_index.py --outline <file>` for exact line numbers.
 
 ## Modules Overview
 
 | Module | Lines | Summary | Primary Classes / Functions |
 | :--- | :---: | :--- | :--- |
-| `RadioTVSegmenter.py` | 663 | Radio & TV Segmenter — v3.9.76-beta | `MainWindow`, `main()` |
+| `RadioTVSegmenter.py` | 663 | Radio & TV Segmenter — v3.9.77-beta | `MainWindow`, `main()` |
 | `audio_normalization.py` | 541 | Radio & TV Story Segmenter — Audio Loudness Probing & Nor... | `LoudnessReport`, `AudioLoudnessProbeWorker`, `parse_ebur128_summary()`, `probe_media_duration_seconds()` *(+3 more)* |
 | `background_workers.py` | 1015 | Radio & TV Story Segmenter — Background Worker Threads & ... | `StoryAutoDetectWorker`, `WaveformWorker`, `VideoThumbnailWorker`, `get_waveform_peak_cache_path()` *(+6 more)* |
 | `backup_manager.py` | 622 | Unified State Serialization, Local, and Google Drive Clou... | `compute_data_checksum()`, `serialize_preferences()`, `serialize_keyboard_shortcuts()`, `serialize_glossary()` *(+7 more)* |
@@ -53,7 +53,7 @@
 | `model_install_workers.py` | 189 | Radio & TV Segmenter — Model Download and Installation Ba... | `WhisperModelInstallWorker`, `DiarizationModelInstallWorker`, `get_diarization_model_dir()`, `is_diarization_model_available()` |
 | `model_management.py` | 989 | Radio & TV Segmenter v1.1.1 — model management responsibi... | `_DummyTranslationWorker`, `ModelManagementMixin` |
 | `playback_controller.py` | 630 | Radio & TV Story Segmenter — Media Player Transport & Pla... | `PlaybackControllerMixin` |
-| `playback_preferences.py` | 803 | Radio & TV Story Segmenter — Playback Preferences & Appli... | `PlaybackPreferencesMixin` |
+| `playback_preferences.py` | 814 | Radio & TV Story Segmenter — Playback Preferences & Appli... | `PlaybackPreferencesMixin` |
 | `plugin_base.py` | 205 | Radio & TV Segmenter — Plugin Base Interfaces and Manifest. | `PluginManifest`, `BasePlugin`, `ExportDestination` |
 | `plugin_dialogs.py` | 447 | GitHub plugins dialogs, batch download workers, and Plugi... | `GitHubPluginsWorker`, `GitHubDownloadWorker`, `GitHubBatchDownloadWorker`, `GitHubPluginsDialog` *(+1 more)* |
 | `plugins/__init__.py` | 6 | Radio & TV Segmenter — Plugin Architecture Package. | - |
@@ -100,6 +100,7 @@
 | `radio_tv_story_segmenter_worker.py` | 226 | Radio & TV Story Segmenter — AI Background Subprocess Wor... | `main()` |
 | `roadmap_manager.py` | 259 | roadmap_manager.py — Automated Roadmap & N-1 Sliding-Wind... | `RoadmapManager`, `get_current_app_version()`, `main()` |
 | `runtime_manager.py` | 1037 |  | `RuntimeManager`, `register_process()`, `unregister_process()`, `kill_all_subprocesses()` *(+1 more)* |
+| `scripts/capture_guide_screenshots.py` | 131 | Programmatic headless screenshot generator for RTVS3 user... | `MockCaptureMainWindow`, `capture_widget()`, `main()` |
 | `scripts/dev_check.py` | 154 | scripts/dev_check.py - Ultra-Fast Pre-Flight Development ... | `check_syntax()`, `check_typing_stubs()`, `check_preview_sync()`, `check_modular_budget()` *(+2 more)* |
 | `scripts/generate_pyi_stubs.py` | 214 | generate_pyi_stubs.py — Automated Interface Typing Stub (... | `StubTransformer`, `generate_stub_source()`, `get_large_modules()`, `generate_stub_file()` *(+1 more)* |
 | `scripts/generate_symbol_index.py` | 380 | generate_symbol_index.py — Fast AST Symbol Indexer & Repo... | `parse_function_signature()`, `analyze_file()`, `scan_repository()`, `generate_index_markdown()` *(+4 more)* |
@@ -144,14 +145,14 @@
 | `transcript_navigation_mixin.py` | 300 | transcript_navigation_mixin.py - Timestamp discovery, car... | `TranscriptNavigationMixin` |
 | `transcript_playback_highlight_mixin.py` | 277 | Radio & TV Story Segmenter — Interactive Transcript Playb... | `TranscriptPlaybackHighlightMixin` |
 | `transcript_selection_mixin.py` | 473 | transcript_selection_mixin.py - Multi-selection, timeline... | `TranscriptSelectionMixin` |
-| `transcript_story.py` | 852 | Radio & TV Segmenter v3.9.76-beta — transcript story resp... | `TranscriptStoryMixin` |
+| `transcript_story.py` | 852 | Radio & TV Segmenter v3.9.77-beta — transcript story resp... | `TranscriptStoryMixin` |
 | `transcript_styles.py` | 104 | transcript_styles.py - Transcript view stylesheets and da... | `transcript_text_view_stylesheet()`, `clean_dark_mode_clipboard_html()` |
 | `transcript_timeline_sync_mixin.py` | 642 | Radio & TV Story Segmenter — Transcript Timeline & Playba... | `TranscriptTimelineSyncMixin` |
 | `transcription_processing.py` | 579 | Transcription background process management for Radio & T... | `TranscriptionProcessingMixin` |
 | `translation.py` | 923 | Radio & TV Segmenter — Local Translation Mixin. | `TranslationEnvSetupWorker`, `TranslationMixin` |
 | `ui_dialog_launchers.py` | 370 | Dialog launchers and external modal helpers for Radio & T... | `UiDialogLaunchersMixin` |
 | `ui_layout.py` | 1090 | Radio & TV Segmenter — UI Layout & Menu Construction Mixin. | `UiLayoutMixin` |
-| `ui_menus.py` | 814 | Main application menu bar and action assembly for Radio &... | `PersistentMenu`, `UiMenusMixin` |
+| `ui_menus.py` | 820 | Main application menu bar and action assembly for Radio &... | `PersistentMenu`, `UiMenusMixin` |
 | `updater.py` | 1549 | Update manager and GitHub release installer for Radio & T... | `CheckUpdateWorker`, `DownloadUpdateWorker`, `CheckUpdateDialog`, `UpdaterMixin` *(+9 more)* |
 | `utils/__init__.py` | 36 | Utility modules for Radio & TV Story Segmenter. | - |
 | `utils/constants.py` | 41 | Application constants and environment configuration. | - |
@@ -169,7 +170,7 @@
 ## Detailed Symbol Catalog
 
 ### `RadioTVSegmenter.py` (663 lines)
-*Radio & TV Segmenter — v3.9.76-beta*
+*Radio & TV Segmenter — v3.9.77-beta*
 - **class `MainWindow(ModelManagementMixin, MediaBatchMixin, PlaybackPreferencesMixin, UiLayoutMixin, ProcessingMixin, TranslationMixin, TranscriptStoryMixin, ProjectExportMixin, GpuAccelerationMixin, QMainWindow)`** (lines 160–560):
   *Main application window for Radio & TV Segmenter.*
   - `__init__(self)` [L178-L355]
@@ -971,10 +972,10 @@
   - `_on_fade_timer_tick(self)` [L622-L624]
   - `audio_duration_changed(self, duration)` [L626-L630]
 
-### `playback_preferences.py` (803 lines)
+### `playback_preferences.py` (814 lines)
 *Radio & TV Story Segmenter — Playback Preferences & Application Facade.*
 - **Public Exports (`__all__`)**: PlaybackPreferencesMixin, RestoreSelectedSettingsDialog, ThemePreferencesMixin, PlaybackControllerMixin, PreferencesDialogMixin, PreferencesResetMixin, ProjectStateMixin
-- **class `PlaybackPreferencesMixin(ThemePreferencesMixin, PlaybackControllerMixin, PreferencesDialogMixin, ProjectStateMixin)`** (lines 51–803):
+- **class `PlaybackPreferencesMixin(ThemePreferencesMixin, PlaybackControllerMixin, PreferencesDialogMixin, ProjectStateMixin)`** (lines 51–814):
   *Aggregates all playback, preferences, styling, and application lifecycle mixins.*
   - `_install_diagnostic_logging(self)` [L54-L181] — *Install startup-safe diagnostics that never depend on the GUI widgets.*
   - `export_activity_log(self)` [L183-L216] — *Export session activity log entries to a timestamped plain-text file.*
@@ -988,19 +989,20 @@
   - `trigger_find_next(self)` [L413-L443] — *Find Next shortcut (Ctrl+G) handler: advances to next search match in transcript.*
   - `trigger_find_prev(self)` [L445-L475] — *Find Previous shortcut (Ctrl+Shift+G) handler: retreats to previous search match in transcript.*
   - `open_diagnostic_log_folder(self)` [L477-L492]
-  - `show_about_dialog(self)` [L494-L533]
-  - `check_for_updates(self, interactive)` [L535-L546] — *Open the Check for Updates dialog to query GitHub releases and install updates.*
-  - `trigger_silent_update_check(self)` [L548-L573] — *Perform a background update check without showing UI unless an update is found.*
-  - `apply_audio_output_device(self, device_name, volume)` [L575-L599] — *Apply selected audio output device and volume to the active player.*
-  - `show_licenses_dialog(self)` [L601-L640]
-  - `on_expected_speakers_changed(self, value)` [L642-L653] — *Kept as a public hook in case a future toolbar control adjusts the expected-speakers hint directly.*
-  - `on_diarization_sensitivity_changed(self, value)` [L655-L666] — *Public hook for adjusting speaker separation sensitivity.*
-  - `update_auto_save_timer(self)` [L668-L672]
-  - `prompt_set_whisper_model(self)` [L674-L677]
-  - `prompt_set_skip_seconds(self)` [L679-L693]
-  - `prompt_set_auto_detect_thresholds(self)` [L695-L761]
-  - `prompt_set_auto_save(self)` [L763-L781]
-  - `trigger_auto_save(self)` [L783-L803]
+  - `open_user_documentation(self)` [L494-L503] — *Open the local user guides and documentation.*
+  - `show_about_dialog(self)` [L505-L544]
+  - `check_for_updates(self, interactive)` [L546-L557] — *Open the Check for Updates dialog to query GitHub releases and install updates.*
+  - `trigger_silent_update_check(self)` [L559-L584] — *Perform a background update check without showing UI unless an update is found.*
+  - `apply_audio_output_device(self, device_name, volume)` [L586-L610] — *Apply selected audio output device and volume to the active player.*
+  - `show_licenses_dialog(self)` [L612-L651]
+  - `on_expected_speakers_changed(self, value)` [L653-L664] — *Kept as a public hook in case a future toolbar control adjusts the expected-speakers hint directly.*
+  - `on_diarization_sensitivity_changed(self, value)` [L666-L677] — *Public hook for adjusting speaker separation sensitivity.*
+  - `update_auto_save_timer(self)` [L679-L683]
+  - `prompt_set_whisper_model(self)` [L685-L688]
+  - `prompt_set_skip_seconds(self)` [L690-L704]
+  - `prompt_set_auto_detect_thresholds(self)` [L706-L772]
+  - `prompt_set_auto_save(self)` [L774-L792]
+  - `trigger_auto_save(self)` [L794-L814]
 
 ### `plugin_base.py` (205 lines)
 *Radio & TV Segmenter — Plugin Base Interfaces and Manifest.*
@@ -2033,6 +2035,17 @@
   - `detect_nvidia_gpu()` [L329-L343] — *Best-effort check for a usable NVIDIA GPU on this machine, so the*
   - `_remove_macos_quarantine(target_path)` [L346-L360] — *Strip Gatekeeper com.apple.quarantine attribute on macOS for standalone executables.*
 
+### `scripts/capture_guide_screenshots.py` (131 lines)
+*Programmatic headless screenshot generator for RTVS3 user guides.*
+- **class `MockCaptureMainWindow`** (lines 24–69):
+  *Mock main window providing realistic project data for guide screenshots.*
+  - `__init__(self)` [L26-L63]
+  - `_get_transcript_text_slice(self, start, end)` [L65-L66]
+  - `get_effective_story_author_and_category_ids(self, story_idx)` [L68-L69]
+- **Functions**:
+  - `capture_widget(widget, output_path, size)` [L72-L84] — *Render a QWidget to a high-resolution PNG image file.*
+  - `main()` [L87-L127]
+
 ### `scripts/dev_check.py` (154 lines)
 *scripts/dev_check.py - Ultra-Fast Pre-Flight Development & AI Safety Gate*
 - **Functions**:
@@ -2799,7 +2812,7 @@
   - `_on_bubble_export(self)` [L468-L473]
 
 ### `transcript_story.py` (852 lines)
-*Radio & TV Segmenter v3.9.76-beta — transcript story responsibilities.*
+*Radio & TV Segmenter v3.9.77-beta — transcript story responsibilities.*
 - **Public Exports (`__all__`)**: TranscriptStoryMixin, Story, SetStoriesCommand, SelectStoriesCommand, StoryBoundaryChangeCommand, StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin, ChangeSpeakerDialog, VoiceProfileMatchDialog, StoryFadesDialog, SpeakerManagerDialog, FADE_CURVE_TABLES, get_fade_curve_factors
 - **class `TranscriptStoryMixin(StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin)`** (lines 63–851):
   - `render_transcript(self)` [L64-L467]
@@ -2938,22 +2951,22 @@
   - `setup_plugin_story_extensions(self)` [L1054-L1076] — *Populate plugin-provided widgets in the story panel.*
   - `notify_story_selection_to_plugins(self, selected_story)` [L1078-L1086] — *Notify all enabled plugins when the active story selection changes.*
 
-### `ui_menus.py` (814 lines)
+### `ui_menus.py` (820 lines)
 *Main application menu bar and action assembly for Radio & TV Story Segmenter.*
 - **class `PersistentMenu(QMenu)`** (lines 50–73):
   *A QMenu subclass that stays open when checkable toggle options are activated,*
   - `addMenu(self, *args, **kwargs)` [L54-L59]
   - `mouseReleaseEvent(self, event)` [L61-L73]
-- **class `UiMenusMixin`** (lines 78–813):
+- **class `UiMenusMixin`** (lines 78–819):
   *Mixin providing menu construction, action shortcut wiring, and menu synchronization.*
-  - `build_menus(self)` [L80-L657] — *Construct the main application menu bar and associated keyboard shortcuts.*
-  - `apply_user_shortcuts(self)` [L659-L664] — *Rebind all menu actions and application shortcuts according to user preferences.*
-  - `_refresh_recent_projects_menu(self)` [L666-L694] — *Update recent projects submenu items based on user settings store.*
-  - `_check_external_dependencies(self)` [L696-L710] — *Check bundled media tools and record actionable diagnostics.*
-  - `_sync_undo_redo_actions(self)` [L712-L721] — *Synchronize undo/redo action states with QUndoStack.*
-  - `_remember_directory(self, path)` [L723-L733] — *Persist directory of chosen file to improve user file dialog experience.*
-  - `update_processing_menu_status(self)` [L736-L759] — *Update label annotations on Tools actions reflecting pipeline stage completion.*
-  - `refresh_plugin_menus(self)` [L762-L813] — *Dynamically populate plugin export actions, tools menu actions, and core UI controls.*
+  - `build_menus(self)` [L80-L663] — *Construct the main application menu bar and associated keyboard shortcuts.*
+  - `apply_user_shortcuts(self)` [L665-L670] — *Rebind all menu actions and application shortcuts according to user preferences.*
+  - `_refresh_recent_projects_menu(self)` [L672-L700] — *Update recent projects submenu items based on user settings store.*
+  - `_check_external_dependencies(self)` [L702-L716] — *Check bundled media tools and record actionable diagnostics.*
+  - `_sync_undo_redo_actions(self)` [L718-L727] — *Synchronize undo/redo action states with QUndoStack.*
+  - `_remember_directory(self, path)` [L729-L739] — *Persist directory of chosen file to improve user file dialog experience.*
+  - `update_processing_menu_status(self)` [L742-L765] — *Update label annotations on Tools actions reflecting pipeline stage completion.*
+  - `refresh_plugin_menus(self)` [L768-L819] — *Dynamically populate plugin export actions, tools menu actions, and core UI controls.*
 
 ### `updater.py` (1549 lines)
 *Update manager and GitHub release installer for Radio & TV Segmenter.*

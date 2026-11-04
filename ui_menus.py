@@ -621,6 +621,12 @@ class UiMenusMixin:
         self.shortcuts_help_action = shortcuts_act
         help_menu.addAction(shortcuts_act)
 
+        guide_act = QAction("&User Guides & Documentation...", self)
+        guide_act.setShortcut(platform_seq("Shift+F2"))
+        guide_act.triggered.connect(self.open_user_documentation)
+        self.user_guide_action = guide_act
+        help_menu.addAction(guide_act)
+
         help_menu.addSeparator()
 
         about_act = QAction("&About Radio & TV Story Segmenter", self)

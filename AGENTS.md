@@ -253,3 +253,20 @@ Instead, the agent MUST actively perform deep, adversarial code-level inspection
 - **Strict Prohibition on Automatic Git Push & Build Workflow Triggers**:
   - All git commits made by the agent remain strictly local to the local repository.
   - The agent must NEVER execute `git push`, push git tags (`git push origin <tag>`), or trigger remote GitHub Actions CI/CD workflows unless the user explicitly requests a remote push in that specific prompt. Remote deployment and release builds are managed manually by the user.
+
+## 16. User Documentation & Feature Guide Maintenance Policy
+- **Three-Tier Documentation Cadence**:
+  - **Tier 1: Minor Bug Fixes & Internal Refactorings**:
+    - Do NOT update user documentation, feature guides, or manuals.
+    - Log changes strictly within `CHANGELOG.md` and `roadmap.txt` to minimize token overhead and prevent documentation thrashing.
+  - **Tier 2: Major Feature Introductions & End-to-End Workflow Changes**:
+    - When a significant user-facing feature or complex multi-stage workflow is introduced (e.g. YouTube video embeds for WordPress exports, multi-model diarization pipelines, batch audio processing centers):
+      * Author or update a dedicated, step-by-step markdown guide in `docs/guides/` (e.g., `docs/guides/video_shows_and_youtube_publishing.md`).
+      * Index the new guide in `docs/README.md`.
+      * Connect the guide into the in-app **Help** menu so users can access it directly from the desktop interface.
+  - **Tier 3: Milestone & Major Version Releases (e.g., v4.0)**:
+    - Perform a comprehensive audit and synchronization pass across all guides, the master user manual (`docs/USER_GUIDE.md`), and plugin documentation.
+- **Zero-Hallucination Visual Asset Invariant**:
+  - NEVER use generative AI to fabricate or hallucinate screenshots or UI mockups for documentation.
+  - All screenshots and illustrations MUST be programmatically captured from the actual running PySide6 application using native headless/off-screen capture scripts (e.g. `scripts/capture_guide_screenshots.py` using `widget.grab()`).
+  - Store captured images under `docs/images/` using clean PNG format with descriptive filenames.
