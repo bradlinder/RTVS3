@@ -188,7 +188,7 @@ def build_youtube_embed_block(
 
 
 def setup_wp_youtube_ui(tab_widget: Any, parent_layout: QVBoxLayout) -> None:
-    """Construct the 'YouTube Video Embed' CollapsibleSection inside the Podcast & Media tab."""
+    """Construct the 'YouTube Video Embed' CollapsibleSection inside the Media tab."""
     tab_widget.wp_youtube_section = CollapsibleSection("YouTube Video Embed", tab_widget, is_expanded=True)
     yt_layout = QVBoxLayout()
     yt_layout.setContentsMargins(4, 4, 4, 4)

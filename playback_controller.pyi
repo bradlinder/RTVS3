@@ -10,11 +10,14 @@ from PySide6.QtWidgets import QApplication, QDialog, QVBoxLayout, QLineEdit, QTe
 from PySide6.QtMultimedia import QMediaPlayer
 from PySide6.QtMultimediaWidgets import QVideoWidget
 from prs_shared import format_time, calculate_fade_curve_factor, calculate_fade_out_factor, InteractiveTranscriptEdit
-from core_utils import apply_window_titlebar_theme
+from core_utils import apply_window_titlebar_theme, make_dialog_maximizable
 
 class PlaybackControllerMixin:
 
     def is_video_file(self, path):
+        ...
+
+    def _ensure_video_preview_dialog(self):
         ...
 
     def update_video_preview_state(self):

@@ -1,13 +1,13 @@
 # Repository Symbol Index & API Map
 
-> Generated: 2026-11-04 20:13:19 | Total Files: 158
+> Generated: 2026-11-04 15:33:42 | Total Files: 158
 > Use `python scripts/generate_symbol_index.py --outline <file>` for exact line numbers.
 
 ## Modules Overview
 
 | Module | Lines | Summary | Primary Classes / Functions |
 | :--- | :---: | :--- | :--- |
-| `RadioTVSegmenter.py` | 658 | Radio & TV Segmenter — v3.9.73-beta | `MainWindow`, `main()` |
+| `RadioTVSegmenter.py` | 663 | Radio & TV Segmenter — v3.9.74-beta | `MainWindow`, `main()` |
 | `audio_normalization.py` | 541 | Radio & TV Story Segmenter — Audio Loudness Probing & Nor... | `LoudnessReport`, `AudioLoudnessProbeWorker`, `parse_ebur128_summary()`, `probe_media_duration_seconds()` *(+3 more)* |
 | `background_workers.py` | 1015 | Radio & TV Story Segmenter — Background Worker Threads & ... | `StoryAutoDetectWorker`, `WaveformWorker`, `VideoThumbnailWorker`, `get_waveform_peak_cache_path()` *(+6 more)* |
 | `backup_manager.py` | 622 | Unified State Serialization, Local, and Google Drive Clou... | `compute_data_checksum()`, `serialize_preferences()`, `serialize_keyboard_shortcuts()`, `serialize_glossary()` *(+7 more)* |
@@ -52,7 +52,7 @@
 | `media_batch.py` | 1861 | Radio & TV Segmenter v1.1.1 — media batch responsibilities. | `MediaBatchMixin` |
 | `model_install_workers.py` | 189 | Radio & TV Segmenter — Model Download and Installation Ba... | `WhisperModelInstallWorker`, `DiarizationModelInstallWorker`, `get_diarization_model_dir()`, `is_diarization_model_available()` |
 | `model_management.py` | 989 | Radio & TV Segmenter v1.1.1 — model management responsibi... | `_DummyTranslationWorker`, `ModelManagementMixin` |
-| `playback_controller.py` | 587 | Radio & TV Story Segmenter — Media Player Transport & Pla... | `PlaybackControllerMixin` |
+| `playback_controller.py` | 630 | Radio & TV Story Segmenter — Media Player Transport & Pla... | `PlaybackControllerMixin` |
 | `playback_preferences.py` | 803 | Radio & TV Story Segmenter — Playback Preferences & Appli... | `PlaybackPreferencesMixin` |
 | `plugin_base.py` | 205 | Radio & TV Segmenter — Plugin Base Interfaces and Manifest. | `PluginManifest`, `BasePlugin`, `ExportDestination` |
 | `plugin_dialogs.py` | 447 | GitHub plugins dialogs, batch download workers, and Plugi... | `GitHubPluginsWorker`, `GitHubDownloadWorker`, `GitHubBatchDownloadWorker`, `GitHubPluginsDialog` *(+1 more)* |
@@ -75,7 +75,7 @@
 | `plugins/wordpress/plugin.py` | 897 | WordPress Publisher Plugin for Radio & TV Segmenter. | `WordPressPublishDialog`, `WordPressPublishWorker`, `WordPressStoryMetadataWidget`, `Plugin` *(+1 more)* |
 | `plugins/wordpress/wordpress_dialog.py` | 886 | WordPress Export Tab Widget and Post Metadata Dialog. | `WordPressExportTabWidget`, `WordPressPostMetadataDialog`, `generate_wp_excerpt()`, `capture_video_frame()` |
 | `plugins/wordpress/wp_post_builder.py` | 319 | Post item builder, transcript slicing, and video frame ex... | `capture_video_frame()`, `get_primary_text_slice()`, `build_wp_post_items()` |
-| `plugins/wordpress/wp_tab_widget.py` | 928 | WordPress export tab configuration widget and preview con... | `WordPressExportTabWidget` |
+| `plugins/wordpress/wp_tab_widget.py` | 931 | WordPress export tab configuration widget and preview con... | `WordPressExportTabWidget` |
 | `plugins/wordpress/wp_ui_builder.py` | 746 | UI layout construction and widget setup for WordPressExpo... | `setup_wp_tab_ui()` |
 | `plugins/wordpress/youtube_embed.py` | 557 | YouTube Video Embed helpers, Gutenberg iframe generator, ... | `extract_youtube_video_id()`, `build_youtube_embed_block()`, `setup_wp_youtube_ui()`, `update_youtube_status_label()` *(+3 more)* |
 | `plugins/youtube/__init__.py` | 9 | YouTube Video Publisher Plugin for Radio & TV Segmenter. | - |
@@ -144,7 +144,7 @@
 | `transcript_navigation_mixin.py` | 299 | transcript_navigation_mixin.py - Timestamp discovery, car... | `TranscriptNavigationMixin` |
 | `transcript_playback_highlight_mixin.py` | 276 | Radio & TV Story Segmenter — Interactive Transcript Playb... | `TranscriptPlaybackHighlightMixin` |
 | `transcript_selection_mixin.py` | 466 | transcript_selection_mixin.py - Multi-selection, timeline... | `TranscriptSelectionMixin` |
-| `transcript_story.py` | 852 | Radio & TV Segmenter v3.9.73-beta — transcript story resp... | `TranscriptStoryMixin` |
+| `transcript_story.py` | 852 | Radio & TV Segmenter v3.9.74-beta — transcript story resp... | `TranscriptStoryMixin` |
 | `transcript_styles.py` | 104 | transcript_styles.py - Transcript view stylesheets and da... | `transcript_text_view_stylesheet()`, `clean_dark_mode_clipboard_html()` |
 | `transcript_timeline_sync_mixin.py` | 634 | Radio & TV Story Segmenter — Transcript Timeline & Playba... | `TranscriptTimelineSyncMixin` |
 | `transcription_processing.py` | 579 | Transcription background process management for Radio & T... | `TranscriptionProcessingMixin` |
@@ -168,21 +168,21 @@
 
 ## Detailed Symbol Catalog
 
-### `RadioTVSegmenter.py` (658 lines)
-*Radio & TV Segmenter — v3.9.73-beta*
-- **class `MainWindow(ModelManagementMixin, MediaBatchMixin, PlaybackPreferencesMixin, UiLayoutMixin, ProcessingMixin, TranslationMixin, TranscriptStoryMixin, ProjectExportMixin, GpuAccelerationMixin, QMainWindow)`** (lines 160–555):
+### `RadioTVSegmenter.py` (663 lines)
+*Radio & TV Segmenter — v3.9.74-beta*
+- **class `MainWindow(ModelManagementMixin, MediaBatchMixin, PlaybackPreferencesMixin, UiLayoutMixin, ProcessingMixin, TranslationMixin, TranscriptStoryMixin, ProjectExportMixin, GpuAccelerationMixin, QMainWindow)`** (lines 160–560):
   *Main application window for Radio & TV Segmenter.*
-  - `__init__(self)` [L178-L350]
-  - `_setup_shortcuts_and_actions(self)` [L352-L399] — *Register customizable QShortcut and QAction objects on MainWindow.*
-  - `handle_external_open_request(self, file_path)` [L401-L426] — *Called when another instance attempts to open a project file in single-instance mode.*
-  - `load_persistent_settings(self)` [L428-L500] — *Loads all persistent user preferences from QSettings into MainWindow attributes.*
-  - `toggle_transcript_auto_scroll(self, checked)` [L502-L512] — *Toggle transcript auto-scrolling during playback and persist setting.*
-  - `changeEvent(self, event)` [L514-L521] — *Handle window state changes (e.g. maximize, restore, minimize) safely.*
-  - `dragEnterEvent(self, event)` [L523-L530]
-  - `dragMoveEvent(self, event)` [L532-L539]
-  - `dropEvent(self, event)` [L541-L555]
+  - `__init__(self)` [L178-L355]
+  - `_setup_shortcuts_and_actions(self)` [L357-L404] — *Register customizable QShortcut and QAction objects on MainWindow.*
+  - `handle_external_open_request(self, file_path)` [L406-L431] — *Called when another instance attempts to open a project file in single-instance mode.*
+  - `load_persistent_settings(self)` [L433-L505] — *Loads all persistent user preferences from QSettings into MainWindow attributes.*
+  - `toggle_transcript_auto_scroll(self, checked)` [L507-L517] — *Toggle transcript auto-scrolling during playback and persist setting.*
+  - `changeEvent(self, event)` [L519-L526] — *Handle window state changes (e.g. maximize, restore, minimize) safely.*
+  - `dragEnterEvent(self, event)` [L528-L535]
+  - `dragMoveEvent(self, event)` [L537-L544]
+  - `dropEvent(self, event)` [L546-L560]
 - **Functions**:
-  - `main()` [L558-L654]
+  - `main()` [L563-L659]
 
 ### `audio_normalization.py` (541 lines)
 *Radio & TV Story Segmenter — Audio Loudness Probing & Normalization Engine.*
@@ -940,35 +940,36 @@
   - `_translation_worker_class()` [L46-L56] — *Load translation implementation dynamically without hard-importing from plugins.*
   - `_translation_plugin_installed(self)` [L58-L64]
 
-### `playback_controller.py` (587 lines)
+### `playback_controller.py` (630 lines)
 *Radio & TV Story Segmenter — Media Player Transport & Playback Controller.*
-- **class `PlaybackControllerMixin`** (lines 25–587):
+- **class `PlaybackControllerMixin`** (lines 25–630):
   *Provides audio/video media player transport, scrubbing, and fade controls.*
   - `is_video_file(self, path)` [L28-L33]
-  - `update_video_preview_state(self)` [L35-L39]
-  - `toggle_video_preview(self, checked)` [L41-L62]
-  - `handle_scrub_position(self, seconds)` [L64-L67]
-  - `execute_scrub_seek(self)` [L69-L76]
-  - `eventFilter(self, watched, event)` [L78-L272]
-  - `_is_text_entry_focused(self)` [L274-L289] — *Return True if a text entry widget or editable transcript currently has focus.*
-  - `_matches_shortcut(self, event, action_id, default_seq)` [L291-L335] — *Return True if key event matches user configured shortcut for action_id.*
-  - `_toggle_follow_playhead(self)` [L337-L343] — *Toggle automatic timeline view scrolling following the audio playhead.*
-  - `mark_story_start_point(self)` [L345-L359] — *Mark start point at current playhead position.*
-  - `mark_story_end_point(self)` [L361-L378] — *Mark end point at current playhead position and create story if valid range.*
-  - `get_segment_index_at_time(self, target_time)` [L380-L388] — *Find transcript segment index active at target_time.*
-  - `split_current_segment_at_playhead(self)` [L390-L395] — *Split the transcript segment active at current playhead position.*
-  - `merge_current_segment_with_next(self)` [L397-L404] — *Merge the transcript segment active at current playhead with following segment.*
-  - `set_skip_seconds_from_ui(self, value)` [L406-L416]
-  - `set_playback_rate(self, rate)` [L418-L430]
-  - `toggle_play(self)` [L432-L456]
-  - `stop_audio(self)` [L458-L468]
-  - `seek_to(self, seconds)` [L470-L484]
-  - `seek_relative(self, delta_seconds)` [L486-L492]
-  - `audio_position_changed(self, position)` [L494-L501]
-  - `get_fade_volume_factor_at_time(self, t)` [L503-L546] — *Calculate the real-time audio volume fade factor [0.0, 1.0] for position `t`.*
-  - `update_realtime_fade_volume(self)` [L548-L577] — *Modulate QAudioOutput volume in real-time according to story fade envelopes.*
-  - `_on_fade_timer_tick(self)` [L579-L581]
-  - `audio_duration_changed(self, duration)` [L583-L587]
+  - `_ensure_video_preview_dialog(self)` [L35-L64] — *Lazily initialize the floating video preview dialog and video sink widget.*
+  - `update_video_preview_state(self)` [L66-L77]
+  - `toggle_video_preview(self, checked)` [L79-L105]
+  - `handle_scrub_position(self, seconds)` [L107-L110]
+  - `execute_scrub_seek(self)` [L112-L119]
+  - `eventFilter(self, watched, event)` [L121-L315]
+  - `_is_text_entry_focused(self)` [L317-L332] — *Return True if a text entry widget or editable transcript currently has focus.*
+  - `_matches_shortcut(self, event, action_id, default_seq)` [L334-L378] — *Return True if key event matches user configured shortcut for action_id.*
+  - `_toggle_follow_playhead(self)` [L380-L386] — *Toggle automatic timeline view scrolling following the audio playhead.*
+  - `mark_story_start_point(self)` [L388-L402] — *Mark start point at current playhead position.*
+  - `mark_story_end_point(self)` [L404-L421] — *Mark end point at current playhead position and create story if valid range.*
+  - `get_segment_index_at_time(self, target_time)` [L423-L431] — *Find transcript segment index active at target_time.*
+  - `split_current_segment_at_playhead(self)` [L433-L438] — *Split the transcript segment active at current playhead position.*
+  - `merge_current_segment_with_next(self)` [L440-L447] — *Merge the transcript segment active at current playhead with following segment.*
+  - `set_skip_seconds_from_ui(self, value)` [L449-L459]
+  - `set_playback_rate(self, rate)` [L461-L473]
+  - `toggle_play(self)` [L475-L499]
+  - `stop_audio(self)` [L501-L511]
+  - `seek_to(self, seconds)` [L513-L527]
+  - `seek_relative(self, delta_seconds)` [L529-L535]
+  - `audio_position_changed(self, position)` [L537-L544]
+  - `get_fade_volume_factor_at_time(self, t)` [L546-L589] — *Calculate the real-time audio volume fade factor [0.0, 1.0] for position `t`.*
+  - `update_realtime_fade_volume(self)` [L591-L620] — *Modulate QAudioOutput volume in real-time according to story fade envelopes.*
+  - `_on_fade_timer_tick(self)` [L622-L624]
+  - `audio_duration_changed(self, duration)` [L626-L630]
 
 ### `playback_preferences.py` (803 lines)
 *Radio & TV Story Segmenter — Playback Preferences & Application Facade.*
@@ -1423,61 +1424,61 @@
   - `get_primary_text_slice(main_window, primary_lang, st_start, st_end)` [L38-L67] — *Extract transcript or translated text for the specified time slice.*
   - `build_wp_post_items(main_window, scope, primary_lang, existing_items)` [L70-L319] — *Build the list of WordPress post definitions according to the export scope.*
 
-### `plugins/wordpress/wp_tab_widget.py` (928 lines)
+### `plugins/wordpress/wp_tab_widget.py` (931 lines)
 *WordPress export tab configuration widget and preview controller.*
-- **class `WordPressExportTabWidget(QWidget)`** (lines 37–927):
+- **class `WordPressExportTabWidget(QWidget)`** (lines 37–930):
   *Configuration and preview panel for WordPress Draft Posts.*
   - `__init__(self, parent, main_window, metadata_editor_mode)` [L40-L59]
   - `_setup_ui(self)` [L61-L62]
-  - `_on_wp_include_audio_toggled(self, checked)` [L64-L98]
-  - `_update_wp_conn_status(self)` [L100-L108]
-  - `_open_wp_settings(self)` [L110-L114]
-  - `_filter_authors_list(self, text)` [L116-L120]
-  - `_filter_categories_list(self, text)` [L122-L126]
-  - `_sync_to_proj(self, idx)` [L128-L130]
-  - `_on_title_edited(self, text)` [L132-L137]
-  - `_on_excerpt_edited(self)` [L139-L143]
-  - `_auto_generate_current_excerpt(self)` [L145-L153]
-  - `_autofill_all_excerpts(self)` [L155-L162]
-  - `_on_author_item_changed(self, item)` [L164-L172]
-  - `_on_category_item_changed(self, item)` [L174-L181]
-  - `_clear_current_authors(self)` [L183-L189]
-  - `_clear_current_categories(self)` [L191-L196]
-  - `_get_selected_story_indices(self)` [L198-L202]
-  - `_apply_authors_to_selected_stories(self)` [L204-L205]
-  - `_apply_categories_to_selected_stories(self)` [L207-L208]
-  - `_apply_thumbnails_to_selected_stories(self)` [L210-L211]
-  - `_bulk_apply_to_selected(self, *keys)` [L213-L245]
-  - `_apply_authors_to_all_posts(self)` [L247-L248]
-  - `_apply_categories_to_all_posts(self)` [L250-L251]
-  - `_apply_thumbnails_to_all_posts(self)` [L253-L254]
-  - `_bulk_apply_to_all(self, *keys)` [L256-L275]
-  - `_apply_podcast_to_selected_stories(self)` [L277-L307]
-  - `_apply_podcast_to_all_posts(self)` [L309-L324]
-  - `_sync_post_to_project(self, idx)` [L326-L431]
-  - `save_all_posts_to_project(self)` [L433-L450] — *Persist all post metadata and export options back into stories and project_metadata.*
-  - `_update_post_list_item_label(self, idx)` [L452-L460]
-  - `_on_wp_post_selection_changed(self, row)` [L462-L465]
-  - `_get_editor_checked_authors(self)` [L467-L483]
-  - `_set_editor_checked_authors(self, author_ids, author_term_ids)` [L485-L503]
-  - `_get_editor_checked_categories(self)` [L505-L513]
-  - `_set_editor_checked_categories(self, cat_ids)` [L515-L523]
-  - `_get_wp_post_bounds(self, post_index)` [L525-L534]
-  - `_sync_wp_slider_to_pos(self, pos)` [L536-L546]
-  - `_on_wp_slider_value_changed(self, val)` [L548-L556]
-  - `_on_wp_scrub_timer_timeout(self)` [L558-L562]
-  - `_on_wp_step(self, delta_secs)` [L564-L572]
-  - `_on_wp_sync_playhead(self)` [L574-L581]
-  - `_load_post_editor_state(self, index)` [L583-L643]
-  - `_on_wp_thumb_mode_changed(self)` [L645-L680]
-  - `_capture_wp_frame(self, pos)` [L682-L716]
-  - `_on_wp_browse_thumb(self)` [L718-L736]
-  - `_cleanup_temp_files(self)` [L738-L747] — *Purge temporary frame grabs and preview images.*
-  - `closeEvent(self, event)` [L749-L757] — *Persist current post state and clean up temp files on widget/dialog closure.*
-  - `rebuild_post_items(self, scope)` [L759-L797]
-  - `_populate_wp_export_metadata(self, force_refresh)` [L799-L866]
-  - `_refresh_castos_feeds(self)` [L868-L893]
-  - `_refresh_wp_metadata(self)` [L895-L927]
+  - `_on_wp_include_audio_toggled(self, checked)` [L64-L101]
+  - `_update_wp_conn_status(self)` [L103-L111]
+  - `_open_wp_settings(self)` [L113-L117]
+  - `_filter_authors_list(self, text)` [L119-L123]
+  - `_filter_categories_list(self, text)` [L125-L129]
+  - `_sync_to_proj(self, idx)` [L131-L133]
+  - `_on_title_edited(self, text)` [L135-L140]
+  - `_on_excerpt_edited(self)` [L142-L146]
+  - `_auto_generate_current_excerpt(self)` [L148-L156]
+  - `_autofill_all_excerpts(self)` [L158-L165]
+  - `_on_author_item_changed(self, item)` [L167-L175]
+  - `_on_category_item_changed(self, item)` [L177-L184]
+  - `_clear_current_authors(self)` [L186-L192]
+  - `_clear_current_categories(self)` [L194-L199]
+  - `_get_selected_story_indices(self)` [L201-L205]
+  - `_apply_authors_to_selected_stories(self)` [L207-L208]
+  - `_apply_categories_to_selected_stories(self)` [L210-L211]
+  - `_apply_thumbnails_to_selected_stories(self)` [L213-L214]
+  - `_bulk_apply_to_selected(self, *keys)` [L216-L248]
+  - `_apply_authors_to_all_posts(self)` [L250-L251]
+  - `_apply_categories_to_all_posts(self)` [L253-L254]
+  - `_apply_thumbnails_to_all_posts(self)` [L256-L257]
+  - `_bulk_apply_to_all(self, *keys)` [L259-L278]
+  - `_apply_podcast_to_selected_stories(self)` [L280-L310]
+  - `_apply_podcast_to_all_posts(self)` [L312-L327]
+  - `_sync_post_to_project(self, idx)` [L329-L434]
+  - `save_all_posts_to_project(self)` [L436-L453] — *Persist all post metadata and export options back into stories and project_metadata.*
+  - `_update_post_list_item_label(self, idx)` [L455-L463]
+  - `_on_wp_post_selection_changed(self, row)` [L465-L468]
+  - `_get_editor_checked_authors(self)` [L470-L486]
+  - `_set_editor_checked_authors(self, author_ids, author_term_ids)` [L488-L506]
+  - `_get_editor_checked_categories(self)` [L508-L516]
+  - `_set_editor_checked_categories(self, cat_ids)` [L518-L526]
+  - `_get_wp_post_bounds(self, post_index)` [L528-L537]
+  - `_sync_wp_slider_to_pos(self, pos)` [L539-L549]
+  - `_on_wp_slider_value_changed(self, val)` [L551-L559]
+  - `_on_wp_scrub_timer_timeout(self)` [L561-L565]
+  - `_on_wp_step(self, delta_secs)` [L567-L575]
+  - `_on_wp_sync_playhead(self)` [L577-L584]
+  - `_load_post_editor_state(self, index)` [L586-L646]
+  - `_on_wp_thumb_mode_changed(self)` [L648-L683]
+  - `_capture_wp_frame(self, pos)` [L685-L719]
+  - `_on_wp_browse_thumb(self)` [L721-L739]
+  - `_cleanup_temp_files(self)` [L741-L750] — *Purge temporary frame grabs and preview images.*
+  - `closeEvent(self, event)` [L752-L760] — *Persist current post state and clean up temp files on widget/dialog closure.*
+  - `rebuild_post_items(self, scope)` [L762-L800]
+  - `_populate_wp_export_metadata(self, force_refresh)` [L802-L869]
+  - `_refresh_castos_feeds(self)` [L871-L896]
+  - `_refresh_wp_metadata(self)` [L898-L930]
 
 ### `plugins/wordpress/wp_ui_builder.py` (746 lines)
 *UI layout construction and widget setup for WordPressExportTabWidget.*
@@ -1489,7 +1490,7 @@
 - **Functions**:
   - `extract_youtube_video_id(url_or_id)` [L28-L141] — *Extract the clean 11-character YouTube Video ID and optional start timestamp (seconds).*
   - `build_youtube_embed_block(video_id, start_sec, end_sec, stop_at_end)` [L144-L187] — *Generate a responsive Gutenberg HTML embed block for a YouTube video.*
-  - `setup_wp_youtube_ui(tab_widget, parent_layout)` [L190-L270] — *Construct the 'YouTube Video Embed' CollapsibleSection inside the Podcast & Media tab.*
+  - `setup_wp_youtube_ui(tab_widget, parent_layout)` [L190-L270] — *Construct the 'YouTube Video Embed' CollapsibleSection inside the Media tab.*
   - `_get_current_post(tab_widget)` [L273-L279]
   - `update_youtube_status_label(tab_widget)` [L282-L334] — *Refresh the dynamic status preview line below the YouTube URL input.*
   - `load_youtube_from_post(tab_widget, post)` [L337-L385] — *Populate YouTube controls from the given post dictionary.*
@@ -2797,7 +2798,7 @@
   - `_on_bubble_export(self)` [L461-L466]
 
 ### `transcript_story.py` (852 lines)
-*Radio & TV Segmenter v3.9.73-beta — transcript story responsibilities.*
+*Radio & TV Segmenter v3.9.74-beta — transcript story responsibilities.*
 - **Public Exports (`__all__`)**: TranscriptStoryMixin, Story, SetStoriesCommand, SelectStoriesCommand, StoryBoundaryChangeCommand, StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin, ChangeSpeakerDialog, VoiceProfileMatchDialog, StoryFadesDialog, SpeakerManagerDialog, FADE_CURVE_TABLES, get_fade_curve_factors
 - **class `TranscriptStoryMixin(StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin)`** (lines 63–851):
   - `render_transcript(self)` [L64-L467]

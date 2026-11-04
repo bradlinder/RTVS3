@@ -17,7 +17,7 @@ from PySide6.QtMultimedia import QMediaPlayer
 from PySide6.QtMultimediaWidgets import QVideoWidget
 
 from prs_shared import format_time, calculate_fade_curve_factor, calculate_fade_out_factor, InteractiveTranscriptEdit
-from core_utils import apply_window_titlebar_theme
+from core_utils import apply_window_titlebar_theme, make_dialog_maximizable
 
 logger = logging.getLogger(__name__)
 
@@ -32,33 +32,76 @@ class PlaybackControllerMixin:
             ".ogv", ".vob", ".asf", ".rm", ".rmvb"
         }
 
+    def _ensure_video_preview_dialog(self):
+        """Lazily initialize the floating video preview dialog and video sink widget."""
+        if getattr(self, "video_preview_dialog", None) is not None:
+            return self.video_preview_dialog
+        try:
+            self.video_preview_dialog = QDialog(self)
+            self.video_preview_dialog.setWindowTitle("Video Preview — Radio & TV Story Segmenter")
+            make_dialog_maximizable(self.video_preview_dialog)
+            self.video_preview_dialog.setMinimumSize(320, 180)
+            self.video_preview_dialog.resize(720, 405)
+            layout = QVBoxLayout(self.video_preview_dialog)
+            layout.setContentsMargins(0, 0, 0, 0)
+            self.video_preview_widget = QVideoWidget(self.video_preview_dialog)
+            # On macOS Cocoa, native window attributes ensure proper NSView/CALayer embedding for AVPlayerLayer
+            self.video_preview_widget.setAttribute(Qt.WidgetAttribute.WA_NativeWindow, True)
+            self.video_preview_widget.setAttribute(Qt.WidgetAttribute.WA_DontCreateNativeAncestors, True)
+            layout.addWidget(self.video_preview_widget)
+            if hasattr(self, "player") and self.player is not None:
+                self.player.setVideoOutput(self.video_preview_widget)
+            apply_window_titlebar_theme(self.video_preview_dialog, getattr(self, "theme_mode", None))
+
+            def _on_closed(*_args):
+                if getattr(self, "video_preview_action", None) and self.video_preview_action.isChecked():
+                    self.video_preview_action.setChecked(False)
+
+            self.video_preview_dialog.finished.connect(_on_closed)
+            return self.video_preview_dialog
+        except Exception as e:
+            logger.warning("Failed to initialize video preview dialog: %s", e)
+            return None
+
     def update_video_preview_state(self):
         if self.video_preview_action is not None:
             self.video_preview_action.setEnabled(bool(self.current_media_is_video))
-        if not self.current_media_is_video and self.video_preview_dialog is not None:
+        if self.current_media_is_video:
+            self._ensure_video_preview_dialog()
+            if hasattr(self, "player") and self.player is not None and getattr(self, "video_preview_widget", None) is not None:
+                try:
+                    self.player.setVideoOutput(self.video_preview_widget)
+                except Exception:
+                    pass
+        elif self.video_preview_dialog is not None:
             self.video_preview_dialog.hide()
 
     def toggle_video_preview(self, checked=None):
         if not self.current_media_is_video:
             return
-        if self.video_preview_dialog is None:
-            self.video_preview_dialog = QDialog(self)
-            self.video_preview_dialog.setWindowTitle("Video Preview — Radio & TV Story Segmenter")
-            self.video_preview_dialog.resize(720, 405)
-            layout = QVBoxLayout(self.video_preview_dialog)
-            self.video_preview_widget = QVideoWidget(self.video_preview_dialog)
-            layout.addWidget(self.video_preview_widget)
-            self.player.setVideoOutput(self.video_preview_widget)
-        visible = self.video_preview_dialog.isVisible()
+        dlg = self._ensure_video_preview_dialog()
+        if dlg is None:
+            return
+        visible = dlg.isVisible()
         if checked is None:
             checked = not visible
         if checked:
-            self.video_preview_dialog.show()
-            self.video_preview_dialog.raise_()
-            self.video_preview_dialog.activateWindow()
+            dlg.show()
+            dlg.raise_()
+            dlg.activateWindow()
+            if hasattr(self, "player") and self.player is not None and getattr(self, "video_preview_widget", None) is not None:
+                try:
+                    self.player.setVideoOutput(self.video_preview_widget)
+                    if self.player.playbackState() != QMediaPlayer.PlaybackState.PlayingState:
+                        curr_pos = max(0, self.player.position())
+                        self.player.setPosition(curr_pos)
+                    if hasattr(self.video_preview_widget, "update"):
+                        self.video_preview_widget.update()
+                except Exception as e:
+                    logger.debug("Video preview refresh notice: %s", e)
         else:
-            self.video_preview_dialog.hide()
-        if self.video_preview_action is not None:
+            dlg.hide()
+        if self.video_preview_action is not None and self.video_preview_action.isChecked() != bool(checked):
             self.video_preview_action.setChecked(bool(checked))
 
     def handle_scrub_position(self, seconds):

@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-04 20:13:19",
+  "generated_at": "2026-11-04 15:33:42",
   "total_files": 158,
   "files": {
     "RadioTVSegmenter.py": {
       "path": "RadioTVSegmenter.py",
-      "lines": 658,
-      "summary": "Radio & TV Segmenter \u2014 v3.9.73-beta",
+      "lines": 663,
+      "summary": "Radio & TV Segmenter \u2014 v3.9.74-beta",
       "exports": null,
       "classes": [
         {
@@ -23,70 +23,70 @@
             "QMainWindow"
           ],
           "start_line": 160,
-          "end_line": 555,
+          "end_line": 560,
           "doc": "Main application window for Radio & TV Segmenter.",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self)",
               "start_line": 178,
-              "end_line": 350,
+              "end_line": 355,
               "doc": ""
             },
             {
               "name": "_setup_shortcuts_and_actions",
               "sig": "_setup_shortcuts_and_actions(self)",
-              "start_line": 352,
-              "end_line": 399,
+              "start_line": 357,
+              "end_line": 404,
               "doc": "Register customizable QShortcut and QAction objects on MainWindow."
             },
             {
               "name": "handle_external_open_request",
               "sig": "handle_external_open_request(self, file_path)",
-              "start_line": 401,
-              "end_line": 426,
+              "start_line": 406,
+              "end_line": 431,
               "doc": "Called when another instance attempts to open a project file in single-instance mode."
             },
             {
               "name": "load_persistent_settings",
               "sig": "load_persistent_settings(self)",
-              "start_line": 428,
-              "end_line": 500,
+              "start_line": 433,
+              "end_line": 505,
               "doc": "Loads all persistent user preferences from QSettings into MainWindow attributes."
             },
             {
               "name": "toggle_transcript_auto_scroll",
               "sig": "toggle_transcript_auto_scroll(self, checked)",
-              "start_line": 502,
-              "end_line": 512,
+              "start_line": 507,
+              "end_line": 517,
               "doc": "Toggle transcript auto-scrolling during playback and persist setting."
             },
             {
               "name": "changeEvent",
               "sig": "changeEvent(self, event)",
-              "start_line": 514,
-              "end_line": 521,
+              "start_line": 519,
+              "end_line": 526,
               "doc": "Handle window state changes (e.g. maximize, restore, minimize) safely."
             },
             {
               "name": "dragEnterEvent",
               "sig": "dragEnterEvent(self, event)",
-              "start_line": 523,
-              "end_line": 530,
+              "start_line": 528,
+              "end_line": 535,
               "doc": ""
             },
             {
               "name": "dragMoveEvent",
               "sig": "dragMoveEvent(self, event)",
-              "start_line": 532,
-              "end_line": 539,
+              "start_line": 537,
+              "end_line": 544,
               "doc": ""
             },
             {
               "name": "dropEvent",
               "sig": "dropEvent(self, event)",
-              "start_line": 541,
-              "end_line": 555,
+              "start_line": 546,
+              "end_line": 560,
               "doc": ""
             }
           ]
@@ -96,8 +96,8 @@
         {
           "name": "main",
           "sig": "main()",
-          "start_line": 558,
-          "end_line": 654,
+          "start_line": 563,
+          "end_line": 659,
           "doc": ""
         }
       ]
@@ -4692,7 +4692,7 @@
     },
     "playback_controller.py": {
       "path": "playback_controller.py",
-      "lines": 587,
+      "lines": 630,
       "summary": "Radio & TV Story Segmenter \u2014 Media Player Transport & Playback Controller.",
       "exports": null,
       "classes": [
@@ -4700,7 +4700,7 @@
           "name": "PlaybackControllerMixin",
           "bases": [],
           "start_line": 25,
-          "end_line": 587,
+          "end_line": 630,
           "doc": "Provides audio/video media player transport, scrubbing, and fade controls.",
           "methods": [
             {
@@ -4711,171 +4711,178 @@
               "doc": ""
             },
             {
+              "name": "_ensure_video_preview_dialog",
+              "sig": "_ensure_video_preview_dialog(self)",
+              "start_line": 35,
+              "end_line": 64,
+              "doc": "Lazily initialize the floating video preview dialog and video sink widget."
+            },
+            {
               "name": "update_video_preview_state",
               "sig": "update_video_preview_state(self)",
-              "start_line": 35,
-              "end_line": 39,
+              "start_line": 66,
+              "end_line": 77,
               "doc": ""
             },
             {
               "name": "toggle_video_preview",
               "sig": "toggle_video_preview(self, checked)",
-              "start_line": 41,
-              "end_line": 62,
+              "start_line": 79,
+              "end_line": 105,
               "doc": ""
             },
             {
               "name": "handle_scrub_position",
               "sig": "handle_scrub_position(self, seconds)",
-              "start_line": 64,
-              "end_line": 67,
+              "start_line": 107,
+              "end_line": 110,
               "doc": ""
             },
             {
               "name": "execute_scrub_seek",
               "sig": "execute_scrub_seek(self)",
-              "start_line": 69,
-              "end_line": 76,
+              "start_line": 112,
+              "end_line": 119,
               "doc": ""
             },
             {
               "name": "eventFilter",
               "sig": "eventFilter(self, watched, event)",
-              "start_line": 78,
-              "end_line": 272,
+              "start_line": 121,
+              "end_line": 315,
               "doc": ""
             },
             {
               "name": "_is_text_entry_focused",
               "sig": "_is_text_entry_focused(self)",
-              "start_line": 274,
-              "end_line": 289,
+              "start_line": 317,
+              "end_line": 332,
               "doc": "Return True if a text entry widget or editable transcript currently has focus."
             },
             {
               "name": "_matches_shortcut",
               "sig": "_matches_shortcut(self, event, action_id, default_seq)",
-              "start_line": 291,
-              "end_line": 335,
+              "start_line": 334,
+              "end_line": 378,
               "doc": "Return True if key event matches user configured shortcut for action_id."
             },
             {
               "name": "_toggle_follow_playhead",
               "sig": "_toggle_follow_playhead(self)",
-              "start_line": 337,
-              "end_line": 343,
+              "start_line": 380,
+              "end_line": 386,
               "doc": "Toggle automatic timeline view scrolling following the audio playhead."
             },
             {
               "name": "mark_story_start_point",
               "sig": "mark_story_start_point(self)",
-              "start_line": 345,
-              "end_line": 359,
+              "start_line": 388,
+              "end_line": 402,
               "doc": "Mark start point at current playhead position."
             },
             {
               "name": "mark_story_end_point",
               "sig": "mark_story_end_point(self)",
-              "start_line": 361,
-              "end_line": 378,
+              "start_line": 404,
+              "end_line": 421,
               "doc": "Mark end point at current playhead position and create story if valid range."
             },
             {
               "name": "get_segment_index_at_time",
               "sig": "get_segment_index_at_time(self, target_time)",
-              "start_line": 380,
-              "end_line": 388,
+              "start_line": 423,
+              "end_line": 431,
               "doc": "Find transcript segment index active at target_time."
             },
             {
               "name": "split_current_segment_at_playhead",
               "sig": "split_current_segment_at_playhead(self)",
-              "start_line": 390,
-              "end_line": 395,
+              "start_line": 433,
+              "end_line": 438,
               "doc": "Split the transcript segment active at current playhead position."
             },
             {
               "name": "merge_current_segment_with_next",
               "sig": "merge_current_segment_with_next(self)",
-              "start_line": 397,
-              "end_line": 404,
+              "start_line": 440,
+              "end_line": 447,
               "doc": "Merge the transcript segment active at current playhead with following segment."
             },
             {
               "name": "set_skip_seconds_from_ui",
               "sig": "set_skip_seconds_from_ui(self, value)",
-              "start_line": 406,
-              "end_line": 416,
+              "start_line": 449,
+              "end_line": 459,
               "doc": ""
             },
             {
               "name": "set_playback_rate",
               "sig": "set_playback_rate(self, rate)",
-              "start_line": 418,
-              "end_line": 430,
+              "start_line": 461,
+              "end_line": 473,
               "doc": ""
             },
             {
               "name": "toggle_play",
               "sig": "toggle_play(self)",
-              "start_line": 432,
-              "end_line": 456,
+              "start_line": 475,
+              "end_line": 499,
               "doc": ""
             },
             {
               "name": "stop_audio",
               "sig": "stop_audio(self)",
-              "start_line": 458,
-              "end_line": 468,
+              "start_line": 501,
+              "end_line": 511,
               "doc": ""
             },
             {
               "name": "seek_to",
               "sig": "seek_to(self, seconds)",
-              "start_line": 470,
-              "end_line": 484,
+              "start_line": 513,
+              "end_line": 527,
               "doc": ""
             },
             {
               "name": "seek_relative",
               "sig": "seek_relative(self, delta_seconds)",
-              "start_line": 486,
-              "end_line": 492,
+              "start_line": 529,
+              "end_line": 535,
               "doc": ""
             },
             {
               "name": "audio_position_changed",
               "sig": "audio_position_changed(self, position)",
-              "start_line": 494,
-              "end_line": 501,
+              "start_line": 537,
+              "end_line": 544,
               "doc": ""
             },
             {
               "name": "get_fade_volume_factor_at_time",
               "sig": "get_fade_volume_factor_at_time(self, t)",
-              "start_line": 503,
-              "end_line": 546,
+              "start_line": 546,
+              "end_line": 589,
               "doc": "Calculate the real-time audio volume fade factor [0.0, 1.0] for position `t`."
             },
             {
               "name": "update_realtime_fade_volume",
               "sig": "update_realtime_fade_volume(self)",
-              "start_line": 548,
-              "end_line": 577,
+              "start_line": 591,
+              "end_line": 620,
               "doc": "Modulate QAudioOutput volume in real-time according to story fade envelopes."
             },
             {
               "name": "_on_fade_timer_tick",
               "sig": "_on_fade_timer_tick(self)",
-              "start_line": 579,
-              "end_line": 581,
+              "start_line": 622,
+              "end_line": 624,
               "doc": ""
             },
             {
               "name": "audio_duration_changed",
               "sig": "audio_duration_changed(self, duration)",
-              "start_line": 583,
-              "end_line": 587,
+              "start_line": 626,
+              "end_line": 630,
               "doc": ""
             }
           ]
@@ -7667,7 +7674,7 @@
     },
     "plugins/wordpress/wp_tab_widget.py": {
       "path": "plugins/wordpress/wp_tab_widget.py",
-      "lines": 928,
+      "lines": 931,
       "summary": "WordPress export tab configuration widget and preview controller.",
       "exports": null,
       "classes": [
@@ -7677,7 +7684,7 @@
             "QWidget"
           ],
           "start_line": 37,
-          "end_line": 927,
+          "end_line": 930,
           "doc": "Configuration and preview panel for WordPress Draft Posts.",
           "methods": [
             {
@@ -7698,343 +7705,343 @@
               "name": "_on_wp_include_audio_toggled",
               "sig": "_on_wp_include_audio_toggled(self, checked)",
               "start_line": 64,
-              "end_line": 98,
+              "end_line": 101,
               "doc": ""
             },
             {
               "name": "_update_wp_conn_status",
               "sig": "_update_wp_conn_status(self)",
-              "start_line": 100,
-              "end_line": 108,
+              "start_line": 103,
+              "end_line": 111,
               "doc": ""
             },
             {
               "name": "_open_wp_settings",
               "sig": "_open_wp_settings(self)",
-              "start_line": 110,
-              "end_line": 114,
+              "start_line": 113,
+              "end_line": 117,
               "doc": ""
             },
             {
               "name": "_filter_authors_list",
               "sig": "_filter_authors_list(self, text)",
-              "start_line": 116,
-              "end_line": 120,
+              "start_line": 119,
+              "end_line": 123,
               "doc": ""
             },
             {
               "name": "_filter_categories_list",
               "sig": "_filter_categories_list(self, text)",
-              "start_line": 122,
-              "end_line": 126,
+              "start_line": 125,
+              "end_line": 129,
               "doc": ""
             },
             {
               "name": "_sync_to_proj",
               "sig": "_sync_to_proj(self, idx)",
-              "start_line": 128,
-              "end_line": 130,
+              "start_line": 131,
+              "end_line": 133,
               "doc": ""
             },
             {
               "name": "_on_title_edited",
               "sig": "_on_title_edited(self, text)",
-              "start_line": 132,
-              "end_line": 137,
+              "start_line": 135,
+              "end_line": 140,
               "doc": ""
             },
             {
               "name": "_on_excerpt_edited",
               "sig": "_on_excerpt_edited(self)",
-              "start_line": 139,
-              "end_line": 143,
+              "start_line": 142,
+              "end_line": 146,
               "doc": ""
             },
             {
               "name": "_auto_generate_current_excerpt",
               "sig": "_auto_generate_current_excerpt(self)",
-              "start_line": 145,
-              "end_line": 153,
+              "start_line": 148,
+              "end_line": 156,
               "doc": ""
             },
             {
               "name": "_autofill_all_excerpts",
               "sig": "_autofill_all_excerpts(self)",
-              "start_line": 155,
-              "end_line": 162,
+              "start_line": 158,
+              "end_line": 165,
               "doc": ""
             },
             {
               "name": "_on_author_item_changed",
               "sig": "_on_author_item_changed(self, item)",
-              "start_line": 164,
-              "end_line": 172,
+              "start_line": 167,
+              "end_line": 175,
               "doc": ""
             },
             {
               "name": "_on_category_item_changed",
               "sig": "_on_category_item_changed(self, item)",
-              "start_line": 174,
-              "end_line": 181,
+              "start_line": 177,
+              "end_line": 184,
               "doc": ""
             },
             {
               "name": "_clear_current_authors",
               "sig": "_clear_current_authors(self)",
-              "start_line": 183,
-              "end_line": 189,
+              "start_line": 186,
+              "end_line": 192,
               "doc": ""
             },
             {
               "name": "_clear_current_categories",
               "sig": "_clear_current_categories(self)",
-              "start_line": 191,
-              "end_line": 196,
+              "start_line": 194,
+              "end_line": 199,
               "doc": ""
             },
             {
               "name": "_get_selected_story_indices",
               "sig": "_get_selected_story_indices(self)",
-              "start_line": 198,
-              "end_line": 202,
+              "start_line": 201,
+              "end_line": 205,
               "doc": ""
             },
             {
               "name": "_apply_authors_to_selected_stories",
               "sig": "_apply_authors_to_selected_stories(self)",
-              "start_line": 204,
-              "end_line": 205,
-              "doc": ""
-            },
-            {
-              "name": "_apply_categories_to_selected_stories",
-              "sig": "_apply_categories_to_selected_stories(self)",
               "start_line": 207,
               "end_line": 208,
               "doc": ""
             },
             {
-              "name": "_apply_thumbnails_to_selected_stories",
-              "sig": "_apply_thumbnails_to_selected_stories(self)",
+              "name": "_apply_categories_to_selected_stories",
+              "sig": "_apply_categories_to_selected_stories(self)",
               "start_line": 210,
               "end_line": 211,
               "doc": ""
             },
             {
+              "name": "_apply_thumbnails_to_selected_stories",
+              "sig": "_apply_thumbnails_to_selected_stories(self)",
+              "start_line": 213,
+              "end_line": 214,
+              "doc": ""
+            },
+            {
               "name": "_bulk_apply_to_selected",
               "sig": "_bulk_apply_to_selected(self, *keys)",
-              "start_line": 213,
-              "end_line": 245,
+              "start_line": 216,
+              "end_line": 248,
               "doc": ""
             },
             {
               "name": "_apply_authors_to_all_posts",
               "sig": "_apply_authors_to_all_posts(self)",
-              "start_line": 247,
-              "end_line": 248,
-              "doc": ""
-            },
-            {
-              "name": "_apply_categories_to_all_posts",
-              "sig": "_apply_categories_to_all_posts(self)",
               "start_line": 250,
               "end_line": 251,
               "doc": ""
             },
             {
-              "name": "_apply_thumbnails_to_all_posts",
-              "sig": "_apply_thumbnails_to_all_posts(self)",
+              "name": "_apply_categories_to_all_posts",
+              "sig": "_apply_categories_to_all_posts(self)",
               "start_line": 253,
               "end_line": 254,
               "doc": ""
             },
             {
+              "name": "_apply_thumbnails_to_all_posts",
+              "sig": "_apply_thumbnails_to_all_posts(self)",
+              "start_line": 256,
+              "end_line": 257,
+              "doc": ""
+            },
+            {
               "name": "_bulk_apply_to_all",
               "sig": "_bulk_apply_to_all(self, *keys)",
-              "start_line": 256,
-              "end_line": 275,
+              "start_line": 259,
+              "end_line": 278,
               "doc": ""
             },
             {
               "name": "_apply_podcast_to_selected_stories",
               "sig": "_apply_podcast_to_selected_stories(self)",
-              "start_line": 277,
-              "end_line": 307,
+              "start_line": 280,
+              "end_line": 310,
               "doc": ""
             },
             {
               "name": "_apply_podcast_to_all_posts",
               "sig": "_apply_podcast_to_all_posts(self)",
-              "start_line": 309,
-              "end_line": 324,
+              "start_line": 312,
+              "end_line": 327,
               "doc": ""
             },
             {
               "name": "_sync_post_to_project",
               "sig": "_sync_post_to_project(self, idx)",
-              "start_line": 326,
-              "end_line": 431,
+              "start_line": 329,
+              "end_line": 434,
               "doc": ""
             },
             {
               "name": "save_all_posts_to_project",
               "sig": "save_all_posts_to_project(self)",
-              "start_line": 433,
-              "end_line": 450,
+              "start_line": 436,
+              "end_line": 453,
               "doc": "Persist all post metadata and export options back into stories and project_metadata."
             },
             {
               "name": "_update_post_list_item_label",
               "sig": "_update_post_list_item_label(self, idx)",
-              "start_line": 452,
-              "end_line": 460,
+              "start_line": 455,
+              "end_line": 463,
               "doc": ""
             },
             {
               "name": "_on_wp_post_selection_changed",
               "sig": "_on_wp_post_selection_changed(self, row)",
-              "start_line": 462,
-              "end_line": 465,
+              "start_line": 465,
+              "end_line": 468,
               "doc": ""
             },
             {
               "name": "_get_editor_checked_authors",
               "sig": "_get_editor_checked_authors(self)",
-              "start_line": 467,
-              "end_line": 483,
+              "start_line": 470,
+              "end_line": 486,
               "doc": ""
             },
             {
               "name": "_set_editor_checked_authors",
               "sig": "_set_editor_checked_authors(self, author_ids, author_term_ids)",
-              "start_line": 485,
-              "end_line": 503,
+              "start_line": 488,
+              "end_line": 506,
               "doc": ""
             },
             {
               "name": "_get_editor_checked_categories",
               "sig": "_get_editor_checked_categories(self)",
-              "start_line": 505,
-              "end_line": 513,
+              "start_line": 508,
+              "end_line": 516,
               "doc": ""
             },
             {
               "name": "_set_editor_checked_categories",
               "sig": "_set_editor_checked_categories(self, cat_ids)",
-              "start_line": 515,
-              "end_line": 523,
+              "start_line": 518,
+              "end_line": 526,
               "doc": ""
             },
             {
               "name": "_get_wp_post_bounds",
               "sig": "_get_wp_post_bounds(self, post_index)",
-              "start_line": 525,
-              "end_line": 534,
+              "start_line": 528,
+              "end_line": 537,
               "doc": ""
             },
             {
               "name": "_sync_wp_slider_to_pos",
               "sig": "_sync_wp_slider_to_pos(self, pos)",
-              "start_line": 536,
-              "end_line": 546,
+              "start_line": 539,
+              "end_line": 549,
               "doc": ""
             },
             {
               "name": "_on_wp_slider_value_changed",
               "sig": "_on_wp_slider_value_changed(self, val)",
-              "start_line": 548,
-              "end_line": 556,
+              "start_line": 551,
+              "end_line": 559,
               "doc": ""
             },
             {
               "name": "_on_wp_scrub_timer_timeout",
               "sig": "_on_wp_scrub_timer_timeout(self)",
-              "start_line": 558,
-              "end_line": 562,
+              "start_line": 561,
+              "end_line": 565,
               "doc": ""
             },
             {
               "name": "_on_wp_step",
               "sig": "_on_wp_step(self, delta_secs)",
-              "start_line": 564,
-              "end_line": 572,
+              "start_line": 567,
+              "end_line": 575,
               "doc": ""
             },
             {
               "name": "_on_wp_sync_playhead",
               "sig": "_on_wp_sync_playhead(self)",
-              "start_line": 574,
-              "end_line": 581,
+              "start_line": 577,
+              "end_line": 584,
               "doc": ""
             },
             {
               "name": "_load_post_editor_state",
               "sig": "_load_post_editor_state(self, index)",
-              "start_line": 583,
-              "end_line": 643,
+              "start_line": 586,
+              "end_line": 646,
               "doc": ""
             },
             {
               "name": "_on_wp_thumb_mode_changed",
               "sig": "_on_wp_thumb_mode_changed(self)",
-              "start_line": 645,
-              "end_line": 680,
+              "start_line": 648,
+              "end_line": 683,
               "doc": ""
             },
             {
               "name": "_capture_wp_frame",
               "sig": "_capture_wp_frame(self, pos)",
-              "start_line": 682,
-              "end_line": 716,
+              "start_line": 685,
+              "end_line": 719,
               "doc": ""
             },
             {
               "name": "_on_wp_browse_thumb",
               "sig": "_on_wp_browse_thumb(self)",
-              "start_line": 718,
-              "end_line": 736,
+              "start_line": 721,
+              "end_line": 739,
               "doc": ""
             },
             {
               "name": "_cleanup_temp_files",
               "sig": "_cleanup_temp_files(self)",
-              "start_line": 738,
-              "end_line": 747,
+              "start_line": 741,
+              "end_line": 750,
               "doc": "Purge temporary frame grabs and preview images."
             },
             {
               "name": "closeEvent",
               "sig": "closeEvent(self, event)",
-              "start_line": 749,
-              "end_line": 757,
+              "start_line": 752,
+              "end_line": 760,
               "doc": "Persist current post state and clean up temp files on widget/dialog closure."
             },
             {
               "name": "rebuild_post_items",
               "sig": "rebuild_post_items(self, scope)",
-              "start_line": 759,
-              "end_line": 797,
+              "start_line": 762,
+              "end_line": 800,
               "doc": ""
             },
             {
               "name": "_populate_wp_export_metadata",
               "sig": "_populate_wp_export_metadata(self, force_refresh)",
-              "start_line": 799,
-              "end_line": 866,
+              "start_line": 802,
+              "end_line": 869,
               "doc": ""
             },
             {
               "name": "_refresh_castos_feeds",
               "sig": "_refresh_castos_feeds(self)",
-              "start_line": 868,
-              "end_line": 893,
+              "start_line": 871,
+              "end_line": 896,
               "doc": ""
             },
             {
               "name": "_refresh_wp_metadata",
               "sig": "_refresh_wp_metadata(self)",
-              "start_line": 895,
-              "end_line": 927,
+              "start_line": 898,
+              "end_line": 930,
               "doc": ""
             }
           ]
@@ -8084,7 +8091,7 @@
           "sig": "setup_wp_youtube_ui(tab_widget, parent_layout)",
           "start_line": 190,
           "end_line": 270,
-          "doc": "Construct the 'YouTube Video Embed' CollapsibleSection inside the Podcast & Media tab."
+          "doc": "Construct the 'YouTube Video Embed' CollapsibleSection inside the Media tab."
         },
         {
           "name": "_get_current_post",
@@ -16107,7 +16114,7 @@
     "transcript_story.py": {
       "path": "transcript_story.py",
       "lines": 852,
-      "summary": "Radio & TV Segmenter v3.9.73-beta \u2014 transcript story responsibilities.",
+      "summary": "Radio & TV Segmenter v3.9.74-beta \u2014 transcript story responsibilities.",
       "exports": [
         "TranscriptStoryMixin",
         "Story",

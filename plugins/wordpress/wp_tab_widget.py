@@ -83,6 +83,9 @@ class WordPressExportTabWidget(QWidget):
 
         self.settings.setValue("wp_include_audio", checked)
         if not checked:
+            if hasattr(self, "wp_cb_apply_fades") and self.wp_cb_apply_fades:
+                self.wp_cb_apply_fades.setChecked(False)
+                self.settings.setValue("wp_apply_audio_fades", False)
             has_pod = any(p.get("is_podcast") for p in getattr(self, "wp_post_items", []))
             if hasattr(self, "wp_cb_is_podcast") and self.wp_cb_is_podcast.isChecked():
                 has_pod = True

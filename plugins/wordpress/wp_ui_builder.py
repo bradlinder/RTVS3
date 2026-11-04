@@ -636,7 +636,7 @@ def setup_wp_tab_ui(self: Any):
         t3_outer = QVBoxLayout(tab_media)
         t3_outer.setContentsMargins(0, 0, 0, 0)
         t3_outer.addWidget(tab_media_scroll)
-        self.wp_editor_tabs.addTab(tab_media, "Podcast && Media")
+        self.wp_editor_tabs.addTab(tab_media, "Media")
 
         # Tab 4: Publishing & Formatting (Transcript languages & Episode cross-linking)
         if not getattr(self, "metadata_editor_mode", False):

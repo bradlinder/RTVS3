@@ -1040,7 +1040,7 @@ class WordPressSettingsDialog(QDialog):
 
         lg_form = QFormLayout()
         self.layout_style_combo = QComboBox()
-        self.layout_style_combo.addItem("Tabs: Post Content | Authors & Taxonomy | Podcast & Media | Publishing & Formatting (Recommended)", "tabs")
+        self.layout_style_combo.addItem("Tabs: Post Content | Authors & Taxonomy | Media | Publishing & Formatting (Recommended)", "tabs")
         self.layout_style_combo.addItem("Split Two-Column: Post Content & Thumbnail | Authors & Categories", "split")
         self.layout_style_combo.addItem("Classic Vertical Accordion", "classic")
 
@@ -1264,7 +1264,7 @@ class WordPressPreferencesPage(QWidget):
 
         lg_form = QFormLayout()
         self.layout_style_combo = QComboBox()
-        self.layout_style_combo.addItem("Tabs: Post Content | Authors & Taxonomy | Podcast & Media | Publishing & Formatting (Recommended)", "tabs")
+        self.layout_style_combo.addItem("Tabs: Post Content | Authors & Taxonomy | Media | Publishing & Formatting (Recommended)", "tabs")
         self.layout_style_combo.addItem("Split Two-Column: Post Content & Thumbnail | Authors & Categories", "split")
         self.layout_style_combo.addItem("Classic Vertical Accordion", "classic")
 

@@ -94,7 +94,7 @@ TABLE OF CONTENTS & STATUS OVERVIEW
    [ ] 5.4 Burned-in Subtitles & Platform Safe Zone Enforcement (`plugins/social_reel/reel_subtitles.py`)
    [ ] 5.5 Unified Export Integration & Social Reel Diagnostic Tests (`export/dialog.py`, `test_runner.py`)
 
-6. Current Release: Export Destination Reordering Synchronization & Plugin Tab Binding Hardening (`export/dialog.py`, `plugins/wordpress/export_destination.py`, `plugins/youtube/export_destination.py`, `diagnostic_export_tests.py`) [x] [COMPLETED in v3.9.73-beta]
+6. Current Release: Export Destination Reordering Synchronization & Plugin Tab Binding Hardening (`export/dialog.py`, `plugins/wordpress/export_destination.py`, `plugins/youtube/export_destination.py`, `diagnostic_export_tests.py`) [x] [COMPLETED in v3.9.74-beta]
    [x] 6.1 Eliminate Reordering Widget Desynchronization: Preserve existing destination objects (`entry['dest_obj']`) in `_build_destinations_layout()` and guarantee bidirectional rebinding of `tab_widget` and `widget` to cached QWidget pages when reordering destinations.
    [x] 6.2 Defensive Unlinked Widget Resolvers: Added `_ensure_tab_widget()` fallback in `WordPressExportDestination` and `YouTubeExportDestination` to resolve cached tab instances from active dialog entries before validation or data export.
    [x] 6.3 Early Destination Constructor Initialization: Set destination attributes prior to `super().__init__()` for reliable property evaluation during base class initialization.
@@ -147,9 +147,18 @@ DETAILED MILESTONE SPECIFICATIONS
 - Target Release: v4.3.0 (Optional / Planned)
 - Technical References: Subsystem architecture, plugin manifest, and FFmpeg filtergraph pipeline specifications are detailed in `ARCHITECTURE.md` (Section 6).
 
-6. CURRENT RELEASE: YOUTUBE VIDEO EMBED FOR WORDPRESS EXPORTS:
+6. CURRENT RELEASE: WORDPRESS EXPORT MEDIA TAB, AUDIO FADES INTERLOCK & MACOS VIDEO PREVIEW RESTORATION:
+- Purpose: Rename Media tab, synchronize audio inclusion with fades toggle, and resolve macOS AVPlayer black box preview issue.
+- Target Release: v3.9.74-beta (Current Release)
+- Technical References & Implementation Details:
+  * [x] Renamed Tab to 'Media': Updated WordPress export UI and preferences from "Podcast & Media" to "Media" (`plugins/wordpress/wp_ui_builder.py`, `client.py`, `youtube_embed.py`).
+  * [x] Audio Fades Safety Interlock: Automatically uncheck and persist "Apply audio fades" when "Include audio files in WordPress export" is unchecked (`plugins/wordpress/wp_tab_widget.py`).
+  * [x] macOS Video Preview Restoration: Pre-initialize `video_preview_dialog` and attach `player.setVideoOutput(video_preview_widget)` during startup before media load, add native Cocoa window attributes (`WA_NativeWindow`, `WA_DontCreateNativeAncestors`), auto-refresh frame seek on show, and bind finished signal to menu checkable state (`playback_controller.py`, `RadioTVSegmenter.py`).
+  * Release Logs: Documented in `CHANGELOG.md` under `## v3.9.74-beta`.
+
+7. PREVIOUS RELEASE: YOUTUBE VIDEO EMBED FOR WORDPRESS EXPORTS:
 - Purpose: Responsive YouTube iframe Gutenberg blocks, video project audio inclusion defaults, left-hand post list indicators, and cross-plugin settings synchronization.
-- Target Release: v3.9.73-beta (Current Release)
+- Target Release: v3.9.73-beta (Previous Release)
 - Technical References & Implementation Details:
   * [x] Dedicated Submodule Architecture: Extracted YouTube embed UI, extraction, block generation, and list label formatting to `plugins/wordpress/youtube_embed.py`.
   * [x] Universal YouTube URL Extraction: Added `extract_youtube_video_id()` supporting watch, short, embed, live, shorts, and YouTube Studio URLs.
@@ -159,8 +168,3 @@ DETAILED MILESTONE SPECIFICATIONS
   * [x] Preferences Synchronization: Added shared `wp_yt_stop_at_story_end` and `wp_yt_embed_placement` to WordPress and YouTube preferences dialogs.
   * [x] Automated Diagnostic Verification: Added `_test_wordpress_youtube_video_embed` in `diagnostic_export_tests.py`.
   * Release Logs: Documented in `CHANGELOG.md` under `## v3.9.73-beta`.
-
-7. PREVIOUS RELEASE: EXPORT DESTINATION REORDERING SYNCHRONIZATION & PLUGIN TAB BINDING HARDENING:
-- Purpose: Eliminate 'WordPress Tab Not Initialized' reordering defect, add defensive page resolvers, and guarantee early destination constructor initialization.
-- Target Release: v3.9.72-beta (Previous Release)
-- Technical References: Full implementation details are documented in `CHANGELOG.md` under `## v3.9.72-beta`.

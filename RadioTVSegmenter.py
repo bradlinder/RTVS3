@@ -1,4 +1,4 @@
-"""Radio & TV Segmenter — v3.9.73-beta
+"""Radio & TV Segmenter — v3.9.74-beta
 
 This is the thin application composition root. UI/processing responsibilities
 are implemented in focused mixins so future changes can target smaller files
@@ -314,6 +314,11 @@ class MainWindow(
         self.video_preview_widget = None
         self.video_preview_action = None
         self.current_media_is_video = False
+        if hasattr(self, "_ensure_video_preview_dialog"):
+            try:
+                self._ensure_video_preview_dialog()
+            except Exception:
+                pass
         self.video_thumbnail_thread = None
         self.video_thumbnail_worker = None
         self.video_thumbnail_dir = None
