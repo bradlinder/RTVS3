@@ -61,7 +61,7 @@ from export.reorder_dialog import (
 class UnifiedExportDialog(QDialog):
     """Unified Export Center supporting Local Files and dynamic plugin destinations."""
 
-    def __init__(self, main_window: Any, initial_scope: str = "full", initial_dest: Optional[str] = None, parent: Optional[QWidget] = None):
+    def __init__(self, main_window: Any, initial_scope: Optional[str] = None, initial_dest: Optional[str] = None, parent: Optional[QWidget] = None):
         super().__init__(parent)
         self.main_window = main_window
         self._is_floating = True
@@ -164,7 +164,22 @@ class UnifiedExportDialog(QDialog):
         self.scope_combo.addItem("Full Episode", "full")
         self.scope_combo.addItem(f"Full Episode & All {term_plural}", "full_and_all_stories")
 
-        idx = self.scope_combo.findData(initial_scope)
+        valid_scopes = ("selected_stories", "all_stories", "full", "full_and_all_stories")
+        if not isinstance(initial_scope, str) or initial_scope not in valid_scopes:
+            initial_scope = None
+
+        if not initial_scope:
+            proj_meta = getattr(self.main_window, "project_metadata", None)
+            saved_proj_scope = proj_meta.get("last_export_scope") if isinstance(proj_meta, dict) else None
+            if saved_proj_scope in valid_scopes:
+                initial_scope = saved_proj_scope
+            else:
+                settings = QSettings(INTERNAL_APP_ID, INTERNAL_APP_ID)
+                saved_default_scope = str(settings.value("export_opt_default_scope", "") or "").strip()
+                if saved_default_scope in valid_scopes:
+                    initial_scope = saved_default_scope
+
+        idx = self.scope_combo.findData(initial_scope) if initial_scope else -1
         if idx >= 0:
             self.scope_combo.setCurrentIndex(idx)
         else:
@@ -1198,10 +1213,17 @@ class UnifiedExportDialog(QDialog):
         scope_data = self.scope_combo.currentData()
         if scope_data:
             settings.setValue("export_opt_default_scope", str(scope_data))
+            proj_meta = getattr(self.main_window, "project_metadata", None)
+            if isinstance(proj_meta, dict):
+                proj_meta["last_export_scope"] = str(scope_data)
 
         for entry in getattr(self, "_dest_entries", []):
             if entry.get("radio") and entry["radio"].isChecked():
-                settings.setValue("export_opt_default_dest", str(entry.get("id", "")))
+                dest_id = str(entry.get("id", ""))
+                settings.setValue("export_opt_default_dest", dest_id)
+                proj_meta = getattr(self.main_window, "project_metadata", None)
+                if isinstance(proj_meta, dict):
+                    proj_meta["last_export_dest"] = dest_id
                 break
 
         settings.sync()

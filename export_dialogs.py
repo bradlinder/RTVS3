@@ -80,20 +80,15 @@ class ExportDialogsMixin:
             except Exception:
                 pass
 
-        existing = getattr(self, "_active_export_dialog", None)
-        if existing is not None and existing.isVisible():
-            existing.set_scope_and_destination(scope=initial_scope, dest_id=initial_dest)
-            existing.refresh_from_main_window()
-            if existing.isMinimized():
-                existing.showNormal()
-            existing.raise_()
-            existing.activateWindow()
-            return existing
+        valid_scopes = ("selected_stories", "all_stories", "full", "full_and_all_stories")
+        if not isinstance(initial_scope, str) or initial_scope not in valid_scopes:
+            initial_scope = None
+        if not isinstance(initial_dest, str) or not initial_dest.strip():
+            initial_dest = None
 
         if initial_scope is None:
             proj_meta = getattr(self, "project_metadata", None)
             saved_proj_scope = proj_meta.get("last_export_scope") if isinstance(proj_meta, dict) else None
-            valid_scopes = ("selected_stories", "all_stories", "full", "full_and_all_stories")
             
             # Tier 1: Project session memory (if active for current project)
             if saved_proj_scope in valid_scopes:
@@ -113,6 +108,28 @@ class ExportDialogsMixin:
                         initial_scope = "all_stories"
                     else:
                         initial_scope = "full"
+
+        if not initial_dest:
+            proj_meta = getattr(self, "project_metadata", None)
+            if isinstance(proj_meta, dict):
+                saved_proj_dest = proj_meta.get("last_export_dest")
+                if isinstance(saved_proj_dest, str) and saved_proj_dest.strip():
+                    initial_dest = saved_proj_dest.strip()
+            if not initial_dest:
+                settings = QSettings(INTERNAL_APP_ID, INTERNAL_APP_ID)
+                saved_default_dest = str(settings.value("export_opt_default_dest", "") or "").strip()
+                if saved_default_dest:
+                    initial_dest = saved_default_dest
+
+        existing = getattr(self, "_active_export_dialog", None)
+        if existing is not None and existing.isVisible():
+            existing.set_scope_and_destination(scope=initial_scope, dest_id=initial_dest)
+            existing.refresh_from_main_window()
+            if existing.isMinimized():
+                existing.showNormal()
+            existing.raise_()
+            existing.activateWindow()
+            return existing
 
         dialog = UnifiedExportDialog(self, initial_scope=initial_scope, initial_dest=initial_dest)
         self._active_export_dialog = dialog
@@ -142,6 +159,11 @@ class ExportDialogsMixin:
         """Execute the selected export operation after UnifiedExportDialog is accepted."""
         dest = result.get("destination", "local")
         scope = result.get("scope", "full")
+
+        proj_meta = getattr(self, "project_metadata", None)
+        if isinstance(proj_meta, dict):
+            proj_meta["last_export_scope"] = scope
+            proj_meta["last_export_dest"] = dest
 
         if dest == "local":
             formats = result.get("formats", {})

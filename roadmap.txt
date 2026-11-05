@@ -94,18 +94,18 @@ TABLE OF CONTENTS & STATUS OVERVIEW
    [ ] 5.4 Burned-in Subtitles & Platform Safe Zone Enforcement (`plugins/social_reel/reel_subtitles.py`)
    [ ] 5.5 Unified Export Integration & Social Reel Diagnostic Tests (`export/dialog.py`, `test_runner.py`)
 
-6. Current Release: WordPress Post List Indicator Placement & Story Duplicate Title Elimination (plugins/wordpress/wp_post_builder.py, plugins/wordpress/youtube_embed.py, plugins/wordpress/wp_tab_widget.py, scripts/capture_guide_screenshots.py) [x] [COMPLETED in v3.9.85-beta]
-   [x] 6.1 Story Duplicate Title Elimination: Fixed wp_post_builder.py so task_label is cleanly 'Story N' without baking in story headlines.
-   [x] 6.2 Start-of-Title Indicator Placement: Positioned media badges ([YT], [Pod], [A], [Img]) immediately after 'Story N' or 'Full Episode' and before the headline.
-   [x] 6.3 Defensive Legacy Prefix Normalization: Normalized legacy cached projects with split colons so existing sessions load without duplicate headlines.
-   [x] 6.4 Editor Header Synchronization: Updated post settings header to cleanly display 'Post Settings: Story N: Title' in real time.
-   [x] 6.5 Catch-Up Plugin Synchronization: Synchronized plugins/wordpress/manifest.json to v3.9.84-beta.
+6. Current Release: Export Scope Default Persistence & Qt Signal Signature Defense (export/dialog.py, export_dialogs.py, ui_layout.py, ui_menus.py, diagnostic_export_tests.py) [x] [COMPLETED in v3.9.86-beta]
+   [x] 6.1 Qt Signal Signature Guard: Neutralized QPushButton.clicked and QAction.triggered boolean False payloads with lambda wrappers and type guards.
+   [x] 6.2 Autonomous Dialog Scope Resolution: Added QSettings export_opt_default_scope fallback directly inside UnifiedExportDialog.__init__.
+   [x] 6.3 Modeless Reopen Scope Sync: Ensured reopened and unminimized export dialogs update to resolved scope and destination defaults.
+   [x] 6.4 Project Session & Default Sync: Synchronized save_options_to_settings and _dispatch_unified_export_result to update project metadata.
+   [x] 6.5 Automated Regression Suite: Added tests in diagnostic_export_tests.py covering boolean signal resilience and direct dialog scope resolution.
 
-7. Previous Release: User Guide Screenshot Alignment, Correct Media Tab Captures & Dedicated Tab Previews (scripts/capture_guide_screenshots.py, docs/guides/wordpress_exporting.md, docs/images/, embedded_guides.py) [x] [COMPLETED in v3.9.83-beta]
-   [x] 7.1 Media Tab Index Correction: Fixed screenshot generator tab index from 3 to 2 so wordpress_export_media_tab.png accurately shows YouTube and media options.
-   [x] 7.2 Dedicated 4-Tab Screenshots: Captured pixel-accurate 850px screenshots for Post Content, Authors & Taxonomy, Media, and Publishing & Formatting tabs.
-   [x] 7.3 In-Guide Image Alignment: Embedded each screenshot directly under its corresponding tab section in wordpress_exporting.md.
-   [x] 7.4 Embedded Guides Synchronization: Synchronized all compile-time fallbacks in embedded_guides.py with the new image references.
+7. Previous Release: Export Scope Default Persistence & 3-Tier Precedence Resolution (export/dialog.py, export_dialogs.py, diagnostic_export_tests.py) [x] [COMPLETED in v3.9.85-beta]
+   [x] 7.1 Saved Default Scope Persistence: Implemented export_opt_default_scope and export_opt_default_dest persistence in save_options_to_settings.
+   [x] 7.2 3-Tier Scope Resolution: Added precedence hierarchy (Tier 1: Project session memory, Tier 2: QSettings default, Tier 3: Selection fallback).
+   [x] 7.3 Destination Tab Fallback: Added fallback resolution for export_opt_default_dest in UnifiedExportDialog.
+   [x] 7.4 Automated Regression Coverage: Added unit tests validating QSettings persistence for full_and_all_stories.
 ================================================================================
 DETAILED MILESTONE SPECIFICATIONS
 ================================================================================

@@ -194,6 +194,20 @@ class DiagnosticExportTestsMixin:
                 dlg2.close()
                 dlg2.deleteLater()
 
+                # Test resilience against Qt QPushButton.clicked / QAction.triggered boolean signal trap (passing False)
+                dlg_signal = mock_widget.main_window.open_unified_export_dialog(False, modal=False)
+                if dlg_signal.scope_combo.currentData() != "full_and_all_stories":
+                    raise AssertionError(f"open_unified_export_dialog(False) failed to guard boolean signal parameter, got '{dlg_signal.scope_combo.currentData()}'")
+                dlg_signal.close()
+                dlg_signal.deleteLater()
+
+            # Test direct UnifiedExportDialog instantiation picking up saved default from QSettings
+            dlg_direct = UnifiedExportDialog(mock_widget.main_window)
+            if dlg_direct.scope_combo.currentData() != "full_and_all_stories":
+                raise AssertionError(f"UnifiedExportDialog() direct instantiation failed to use saved default scope, got '{dlg_direct.scope_combo.currentData()}'")
+            dlg_direct.close()
+            dlg_direct.deleteLater()
+
             exp_dlg.close()
 
             meta_dlg = StoryMetadataDialog(None, main_window=mock_widget.main_window, target_story_index=0)

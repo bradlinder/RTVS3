@@ -11,7 +11,7 @@ from export.reorder_dialog import DEFAULT_EXPORT_DESTINATIONS_ORDER, _get_export
 
 class UnifiedExportDialog(QDialog):
 
-    def __init__(self, main_window: Any, initial_scope: str=..., initial_dest: Optional[str]=..., parent: Optional[QWidget]=...):
+    def __init__(self, main_window: Any, initial_scope: Optional[str]=..., initial_dest: Optional[str]=..., parent: Optional[QWidget]=...):
         ...
 
     def showEvent(self, event):

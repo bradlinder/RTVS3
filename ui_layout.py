@@ -617,7 +617,7 @@ class UiLayoutMixin(UiMenusMixin, UiDialogLaunchersMixin):
         self.export_stories_btn = QPushButton("Export...", self)
         self.export_stories_btn.setObjectName("export_stories_btn")
         self.export_stories_btn.setToolTip("Export full episode, selected stories, or external formats")
-        self.export_stories_btn.clicked.connect(self.open_unified_export_dialog)
+        self.export_stories_btn.clicked.connect(lambda: self.open_unified_export_dialog())
         story_action_row2.addWidget(self.export_stories_btn)
         
         stories_box_layout.addLayout(story_btns_row)

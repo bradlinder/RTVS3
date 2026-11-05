@@ -154,7 +154,7 @@ class UiMenusMixin:
         # 4. Export & Batch Processing
         export_act = QAction("&Export...", self)
         export_act.setShortcut(platform_seq("Ctrl+E"))
-        export_act.triggered.connect(self.open_unified_export_dialog)
+        export_act.triggered.connect(lambda: self.open_unified_export_dialog())
         self.export_action = export_act
         file_menu.addAction(export_act)
 
