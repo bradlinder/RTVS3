@@ -248,5 +248,26 @@ class DiagnosticEditorTestsMixin:
         assert 'test_dir_names = {"tests", "testing", "test", "benchmark", "benchmarks", "sample_files"}' in build_text, "test_dir_names in build_installer.py pruned docs"
         assert 'shutil.copytree(docs_source, docs_dest, dirs_exist_ok=True)' in build_text, "build_installer.py missing docs copytree step"
 
+        # 6. Verify responsive image scaling on compact viewports
+        from user_guide_dialog import ResponsiveTextBrowser
+        from PySide6.QtGui import QTextCursor
+        test_browser = ResponsiveTextBrowser()
+        test_browser.resize(320, 480)
+        test_browser.show()
+        QApplication.processEvents()
+        badges_img = docs_dir / "images" / "wordpress_posts_list_badges.png"
+        if badges_img.exists():
+            test_browser.setMarkdown(f"![Badges]({badges_img.as_uri()})")
+            test_browser.scale_images_to_viewport()
+            avail = max(160, test_browser.viewport().width() - 44)
+            cur = QTextCursor(test_browser.document())
+            while not cur.atEnd():
+                cur.movePosition(QTextCursor.NextCharacter, QTextCursor.KeepAnchor)
+                fmt = cur.charFormat()
+                if fmt.isImageFormat():
+                    assert fmt.toImageFormat().width() <= avail + 1.0, f"Image width {fmt.toImageFormat().width()} exceeds viewport available width {avail}"
+                cur.clearSelection()
+        test_browser.close()
+
         item.status = "PASS"
-        item.message = "User guide resolution, embedded fallbacks, and installer bundling invariants verified"
+        item.message = "User guide resolution, embedded fallbacks, responsive scaling, and installer packaging invariants verified"

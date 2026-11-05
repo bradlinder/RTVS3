@@ -78,8 +78,10 @@ def capture_widget(widget: QWidget, output_path: Path, size: QSize = None):
     widget.adjustSize()
     QApplication.processEvents()
 
-    # Grab raster pixmap from native widget backing store
+    # Grab raster pixmap from native widget backing store and cap max width to 850px
     pixmap = widget.grab()
+    if pixmap.width() > 850:
+        pixmap = pixmap.scaledToWidth(850, Qt.TransformationMode.SmoothTransformation)
     pixmap.save(str(output_path), "PNG")
     print(f"[OK] Saved screenshot: {output_path} ({pixmap.width()}x{pixmap.height()})")
 

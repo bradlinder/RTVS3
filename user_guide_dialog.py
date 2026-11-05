@@ -12,8 +12,16 @@ import tempfile
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from PySide6.QtCore import Qt, QUrl
-from PySide6.QtGui import QAction, QColor, QDesktopServices, QFont, QKeySequence
+from PySide6.QtCore import QSize, Qt, QUrl
+from PySide6.QtGui import (
+    QAction,
+    QColor,
+    QDesktopServices,
+    QFont,
+    QImageReader,
+    QKeySequence,
+    QTextCursor,
+)
 from PySide6.QtWidgets import (
     QDialog,
     QDialogButtonBox,
@@ -34,6 +42,65 @@ from core_utils import (
     get_active_theme_mode,
     make_dialog_maximizable,
 )
+
+
+class ResponsiveTextBrowser(QTextBrowser):
+    """QTextBrowser subclass that responsively scales embedded images to viewport width."""
+
+    def __init__(self, parent: Optional[QWidget] = None):
+        super().__init__(parent)
+        self._image_cache: Dict[str, QSize] = {}
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        self.scale_images_to_viewport()
+
+    def scale_images_to_viewport(self):
+        doc = self.document()
+        if not doc:
+            return
+
+        # Viewport width minus document padding margins
+        avail_width = max(160, self.viewport().width() - 44)
+        cursor = QTextCursor(doc)
+        doc.blockSignals(True)
+        cursor.beginEditBlock()
+        try:
+            while not cursor.atEnd():
+                cursor.movePosition(QTextCursor.NextCharacter, QTextCursor.KeepAnchor)
+                fmt = cursor.charFormat()
+                if fmt.isImageFormat():
+                    img_fmt = fmt.toImageFormat()
+                    name = img_fmt.name()
+                    if name not in self._image_cache:
+                        local_path = QUrl(name).toLocalFile() if name.startswith("file:") else name
+                        reader = QImageReader(local_path)
+                        sz = reader.size()
+                        if not sz.isValid() or sz.width() <= 0:
+                            sz = QSize(int(img_fmt.width()) or 600, int(img_fmt.height()) or 400)
+                        self._image_cache[name] = sz
+
+                    orig_sz = self._image_cache[name]
+                    orig_w = orig_sz.width()
+                    orig_h = orig_sz.height()
+
+                    if orig_w > avail_width:
+                        scale = avail_width / orig_w
+                        target_w = float(avail_width)
+                        target_h = float(max(1, int(orig_h * scale)))
+                    else:
+                        target_w = float(orig_w)
+                        target_h = float(orig_h)
+
+                    if img_fmt.width() != target_w or img_fmt.height() != target_h:
+                        img_fmt.setWidth(target_w)
+                        img_fmt.setHeight(target_h)
+                        cursor.setCharFormat(img_fmt)
+
+                cursor.clearSelection()
+        finally:
+            cursor.endEditBlock()
+            doc.blockSignals(False)
 
 
 class UserGuideDialog(QDialog):
@@ -195,7 +262,7 @@ class UserGuideDialog(QDialog):
         splitter.addWidget(sidebar_widget)
 
         # Right Pane: Rich Text Browser
-        self.browser = QTextBrowser(splitter)
+        self.browser = ResponsiveTextBrowser(splitter)
         self.browser.setOpenExternalLinks(True)
         self.browser.setReadOnly(True)
         self.browser.setSearchPaths([
@@ -208,6 +275,7 @@ class UserGuideDialog(QDialog):
 
         splitter.addWidget(self.browser)
         splitter.setSizes([260, 740])
+        splitter.splitterMoved.connect(lambda pos, idx: self.browser.scale_images_to_viewport())
         main_layout.addWidget(splitter, 1)
 
         # Bottom Button Box
@@ -325,6 +393,7 @@ class UserGuideDialog(QDialog):
 
         # Render CommonMark markdown directly into QTextBrowser
         self.browser.setMarkdown(resolved_md)
+        self.browser.scale_images_to_viewport()
 
         # Scroll to top of the document
         self.browser.verticalScrollBar().setValue(0)
@@ -347,15 +416,18 @@ class UserGuideDialog(QDialog):
     def _zoom_in(self):
         self.browser.zoomIn(1)
         self.current_zoom += 1
+        self.browser.scale_images_to_viewport()
 
     def _zoom_out(self):
         self.browser.zoomOut(1)
         self.current_zoom -= 1
+        self.browser.scale_images_to_viewport()
 
     def _reset_zoom(self):
         if self.current_zoom != 0:
             self.browser.zoomOut(self.current_zoom) if self.current_zoom > 0 else self.browser.zoomIn(-self.current_zoom)
             self.current_zoom = 0
+            self.browser.scale_images_to_viewport()
 
     def _open_in_external_browser(self):
         """Export the current guide as a self-contained styled HTML file and launch the system web browser."""

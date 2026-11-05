@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-05 09:46:21",
+  "generated_at": "2026-11-05 10:15:49",
   "total_files": 161,
   "files": {
     "RadioTVSegmenter.py": {
       "path": "RadioTVSegmenter.py",
       "lines": 663,
-      "summary": "Radio & TV Segmenter \u2014 v3.9.80-beta",
+      "summary": "Radio & TV Segmenter \u2014 v3.9.81-beta",
       "exports": null,
       "classes": [
         {
@@ -2101,7 +2101,7 @@
     },
     "diagnostic_editor_tests.py": {
       "path": "diagnostic_editor_tests.py",
-      "lines": 252,
+      "lines": 273,
       "summary": "Diagnostic editor and find-replace tests for Radio & TV Story Segmenter.",
       "exports": null,
       "classes": [
@@ -2109,7 +2109,7 @@
           "name": "DiagnosticEditorTestsMixin",
           "bases": [],
           "start_line": 11,
-          "end_line": 252,
+          "end_line": 273,
           "doc": "Diagnostic suite for transcript editor, find-replace, and speaker synchronization.",
           "methods": [
             {
@@ -2123,7 +2123,7 @@
               "name": "_test_in_app_user_guides_and_documentation_viewer",
               "sig": "_test_in_app_user_guides_and_documentation_viewer(self, item)",
               "start_line": 204,
-              "end_line": 252,
+              "end_line": 273,
               "doc": "Validates in-app user guide resolution, fallback to embedded content, and bundling invariants."
             }
           ]
@@ -11588,7 +11588,7 @@
     },
     "scripts/capture_guide_screenshots.py": {
       "path": "scripts/capture_guide_screenshots.py",
-      "lines": 144,
+      "lines": 146,
       "summary": "Programmatic headless screenshot generator for RTVS3 user guides.",
       "exports": null,
       "classes": [
@@ -11628,14 +11628,14 @@
           "name": "capture_widget",
           "sig": "capture_widget(widget, output_path, size)",
           "start_line": 72,
-          "end_line": 84,
+          "end_line": 86,
           "doc": "Render a QWidget to a high-resolution PNG image file."
         },
         {
           "name": "main",
           "sig": "main()",
-          "start_line": 87,
-          "end_line": 140,
+          "start_line": 89,
+          "end_line": 142,
           "doc": ""
         }
       ]
@@ -16219,7 +16219,7 @@
     "transcript_story.py": {
       "path": "transcript_story.py",
       "lines": 852,
-      "summary": "Radio & TV Segmenter v3.9.80-beta \u2014 transcript story responsibilities.",
+      "summary": "Radio & TV Segmenter v3.9.81-beta \u2014 transcript story responsibilities.",
       "exports": [
         "TranscriptStoryMixin",
         "Story",
@@ -17514,101 +17514,133 @@
     },
     "user_guide_dialog.py": {
       "path": "user_guide_dialog.py",
-      "lines": 478,
+      "lines": 550,
       "summary": "Radio & TV Story Segmenter \u2014 In-App User Guide & Documentation Viewer Dialog.",
       "exports": null,
       "classes": [
+        {
+          "name": "ResponsiveTextBrowser",
+          "bases": [
+            "QTextBrowser"
+          ],
+          "start_line": 47,
+          "end_line": 103,
+          "doc": "QTextBrowser subclass that responsively scales embedded images to viewport width.",
+          "methods": [
+            {
+              "name": "__init__",
+              "sig": "__init__(self, parent)",
+              "start_line": 50,
+              "end_line": 52,
+              "doc": ""
+            },
+            {
+              "name": "resizeEvent",
+              "sig": "resizeEvent(self, event)",
+              "start_line": 54,
+              "end_line": 56,
+              "doc": ""
+            },
+            {
+              "name": "scale_images_to_viewport",
+              "sig": "scale_images_to_viewport(self)",
+              "start_line": 58,
+              "end_line": 103,
+              "doc": ""
+            }
+          ]
+        },
         {
           "name": "UserGuideDialog",
           "bases": [
             "QDialog"
           ],
-          "start_line": 39,
-          "end_line": 478,
+          "start_line": 106,
+          "end_line": 550,
           "doc": "In-app reader dialog displaying rich user guides with inline screenshots.",
           "methods": [
             {
               "name": "_find_docs_dir",
               "sig": "_find_docs_dir()",
-              "start_line": 76,
-              "end_line": 110,
+              "start_line": 143,
+              "end_line": 177,
               "doc": "Locate the docs directory across frozen executables, installed dirs, and dev trees."
             },
             {
               "name": "__init__",
               "sig": "__init__(self, parent, initial_guide_id)",
-              "start_line": 112,
-              "end_line": 128,
+              "start_line": 179,
+              "end_line": 195,
               "doc": ""
             },
             {
               "name": "_setup_ui",
               "sig": "_setup_ui(self)",
-              "start_line": 130,
-              "end_line": 232,
+              "start_line": 197,
+              "end_line": 300,
               "doc": ""
             },
             {
               "name": "_apply_browser_stylesheet",
               "sig": "_apply_browser_stylesheet(self)",
-              "start_line": 234,
-              "end_line": 268,
+              "start_line": 302,
+              "end_line": 336,
               "doc": ""
             },
             {
               "name": "_resolve_image_urls",
               "sig": "_resolve_image_urls(self, markdown_text)",
-              "start_line": 270,
-              "end_line": 286,
+              "start_line": 338,
+              "end_line": 354,
               "doc": "Replace relative image paths in markdown with absolute file URIs for instant rendering."
             },
             {
               "name": "_load_guide_by_id",
               "sig": "_load_guide_by_id(self, guide_id)",
-              "start_line": 288,
-              "end_line": 339,
+              "start_line": 356,
+              "end_line": 408,
               "doc": ""
             },
             {
               "name": "_on_topic_selected",
               "sig": "_on_topic_selected(self, row)",
-              "start_line": 341,
-              "end_line": 345,
+              "start_line": 410,
+              "end_line": 414,
               "doc": ""
             },
             {
               "name": "_zoom_in",
               "sig": "_zoom_in(self)",
-              "start_line": 347,
-              "end_line": 349,
+              "start_line": 416,
+              "end_line": 419,
               "doc": ""
             },
             {
               "name": "_zoom_out",
               "sig": "_zoom_out(self)",
-              "start_line": 351,
-              "end_line": 353,
+              "start_line": 421,
+              "end_line": 424,
               "doc": ""
             },
             {
               "name": "_reset_zoom",
               "sig": "_reset_zoom(self)",
-              "start_line": 355,
-              "end_line": 358,
+              "start_line": 426,
+              "end_line": 430,
               "doc": ""
             },
             {
               "name": "_open_in_external_browser",
               "sig": "_open_in_external_browser(self)",
-              "start_line": 360,
-              "end_line": 433,
+              "start_line": 432,
+              "end_line": 505,
               "doc": "Export the current guide as a self-contained styled HTML file and launch the system web browser."
             },
             {
               "name": "_build_dynamic_shortcuts_guide",
               "sig": "_build_dynamic_shortcuts_guide(self)",
-              "start_line": 435,
-              "end_line": 478,
+              "start_line": 507,
+              "end_line": 550,
               "doc": "Build dynamic keyboard shortcut documentation from active settings."
             }
           ]

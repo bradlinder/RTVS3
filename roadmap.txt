@@ -94,18 +94,19 @@ TABLE OF CONTENTS & STATUS OVERVIEW
    [ ] 5.4 Burned-in Subtitles & Platform Safe Zone Enforcement (`plugins/social_reel/reel_subtitles.py`)
    [ ] 5.5 Unified Export Integration & Social Reel Diagnostic Tests (`export/dialog.py`, `test_runner.py`)
 
-6. Current Release: In-App User Guides Program Directory Packaging & Hardcoded Embedded Fallbacks (user_guide_dialog.py, embedded_guides.py, build_installer.py, diagnostic_editor_tests.py) [x] [COMPLETED in v3.9.80-beta]
-   [x] 6.1 Application Program Directory Installation: Bundled the docs/ hierarchy directly into dist/RadioTVSegmenter/docs/ so Windows Setup places it into {app}\docs\.
-   [x] 6.2 Pruning Protection: Refined build_installer.py cleanup rules to protect internal user guides while pruning third-party documentation inside site-packages.
-   [x] 6.3 Multi-Candidate Path Resolution: Added _find_docs_dir() scanning installed app roots, PyInstaller runtime extraction dirs, and macOS bundle resources.
-   [x] 6.4 Compile-Time Embedded Fallbacks: Embedded full markdown copies of all 5 core guides in embedded_guides.py to eliminate 'Guide Not Found' errors even without disk files.
-   [x] 6.5 Automated Verification: Added diagnostic item In-App User Guides and Documentation Viewer in diagnostic_editor_tests.py.
+6. Current Release: Responsive User Guide Image Scaling & High-DPI Screenshot Downsampling (user_guide_dialog.py, docs/images/, scripts/capture_guide_screenshots.py, diagnostic_editor_tests.py) [x] [COMPLETED in v3.9.81-beta]
+   [x] 6.1 Responsive Image Resizing: Implemented ResponsiveTextBrowser subclass scaling embedded screenshots dynamically to fit available viewport width.
+   [x] 6.2 Proportional Aspect Clamping: Maintained natural aspect ratio while preventing horizontal scrollbar overflow on compact windows and low-res displays.
+   [x] 6.3 Real-Time Splitter & Zoom Hooking: Hooked scale_images_to_viewport() to splitter dragging, document loading, and zoom actions.
+   [x] 6.4 High-DPI Screenshot Downsampling: Resampled guide screenshots to max width 850px using Lanczos antialiasing and added auto-scaling to capture script.
+   [x] 6.5 Automated Verification: Added responsive viewport width assertions to In-App User Guides test in diagnostic_editor_tests.py.
 
-7. Previous Release: WordPress YouTube Embed Dynamic Auto-Dimming & Control State Synchronization (plugins/wordpress/youtube_embed.py, diagnostic_export_tests.py) [x] [COMPLETED in v3.9.79-beta]
-   [x] 7.1 Context-Aware Auto-Dimming: Automatically disabled placement radios and story timecode checkboxes when YouTube URL is empty or invalid.
-   [x] 7.2 Dynamic State Illumination: Instantly illuminated options upon entering a valid YouTube link or video ID.
-   [x] 7.3 Status Guidance & Disabled Tooltips: Added dynamic helper instructions and contextual disabled tooltips.
-   [x] 7.4 Automated Regression Suite: Verified state transitions in _test_wordpress_youtube_video_embed.
+7. Previous Release: In-App User Guides Program Directory Packaging & Hardcoded Embedded Fallbacks (user_guide_dialog.py, embedded_guides.py, build_installer.py, diagnostic_editor_tests.py) [x] [COMPLETED in v3.9.80-beta]
+   [x] 7.1 Application Program Directory Installation: Bundled docs/ hierarchy directly into dist/RadioTVSegmenter/docs/ for {app}\docs\ installation.
+   [x] 7.2 Pruning Protection: Refined build_installer.py to protect internal user guides while pruning third-party documentation inside site-packages.
+   [x] 7.3 Multi-Candidate Path Resolution: Added _find_docs_dir() scanning installed roots, PyInstaller runtime extraction dirs, and macOS bundle resources.
+   [x] 7.4 Compile-Time Embedded Fallbacks: Embedded full markdown copies of all 5 core guides in embedded_guides.py.
+   [x] 7.5 Automated Regression Suite: Verified guide loading and fallbacks in diagnostic_editor_tests.py.
 ================================================================================
 DETAILED MILESTONE SPECIFICATIONS
 ================================================================================
@@ -147,9 +148,20 @@ DETAILED MILESTONE SPECIFICATIONS
 - Target Release: v4.3.0 (Optional / Planned)
 - Technical References: Subsystem architecture, plugin manifest, and FFmpeg filtergraph pipeline specifications are detailed in `ARCHITECTURE.md` (Section 6).
 
-6. CURRENT RELEASE: IN-APP USER GUIDES PROGRAM DIRECTORY PACKAGING & HARDCODED EMBEDDED FALLBACKS:
+6. CURRENT RELEASE: RESPONSIVE USER GUIDE IMAGE SCALING & HIGH-DPI SCREENSHOT DOWNSAMPLING:
+- Purpose: Automatically scale embedded documentation images to fit smaller window viewports and downsample oversized high-DPI screenshots to prevent overflow.
+- Target Release: v3.9.81-beta (Current Release)
+- Technical References & Implementation Details:
+  * [x] ResponsiveTextBrowser: Subclassed QTextBrowser in user_guide_dialog.py with scale_images_to_viewport() adapting images dynamically to viewport width.
+  * [x] Proportional Clamping: Preserved natural aspect ratios while capping at natural size on wide screens and downscaling on narrow viewports.
+  * [x] Splitter & Zoom Synchronization: Hooked image scaling to splitter move events and zoom controls.
+  * [x] High-DPI Screenshot Downsampling: Scaled docs/images/*.png to max width 850px using Lanczos resampling; capped capture_guide_screenshots.py.
+  * [x] Automated Regression Suite: Added responsive viewport width assertions in diagnostic_editor_tests.py.
+  * Release Logs: Documented in CHANGELOG.md under ## v3.9.81-beta.
+
+7. PREVIOUS RELEASE: IN-APP USER GUIDES PROGRAM DIRECTORY PACKAGING & HARDCODED EMBEDDED FALLBACKS:
 - Purpose: Ensure user guides and screenshot images are reliably located in the installed program directory and provide compile-time hardcoded fallback content so 'Guide Not Found' errors never occur.
-- Target Release: v3.9.80-beta (Current Release)
+- Target Release: v3.9.80-beta (Previous Release)
 - Technical References & Implementation Details:
   * [x] Program Directory Installation: Updated build_installer.py to copy ROOT / 'docs' directly into app_root / 'docs', ensuring Inno Setup delivers all guides and images to {app}\docs\.
   * [x] Bundled Runtime Pruning Protection: Updated prune_unneeded_bundled_files() to protect application documentation while restricting pruning to third-party docs under site-packages.
@@ -157,13 +169,3 @@ DETAILED MILESTONE SPECIFICATIONS
   * [x] Hardcoded Embedded Guide Catalog: Created embedded_guides.py containing full compile-time markdown fallbacks for all user guides.
   * [x] Automated Regression Suite: Added In-App User Guides and Documentation Viewer in diagnostic_editor_tests.py.
   * Release Logs: Documented in CHANGELOG.md under ## v3.9.80-beta.
-
-7. PREVIOUS RELEASE: WORDPRESS YOUTUBE EMBED DYNAMIC AUTO-DIMMING & CONTROL STATE SYNCHRONIZATION:
-- Purpose: Eliminate user ambiguity around empty YouTube URLs by automatically graying out placement radios and story timecode options when no video is attached.
-- Target Release: v3.9.79-beta (Previous Release)
-- Technical References & Implementation Details:
-  * [x] Context-Aware Auto-Dimming: Implemented _set_youtube_controls_enabled() in plugins/wordpress/youtube_embed.py.
-  * [x] Real-Time State Illumination: Dynamically re-enabled controls immediately upon detecting a valid video ID.
-  * [x] Status Guidance & Disabled Tooltips: Configured dynamic status guidance and tooltips.
-  * [x] Automated Regression Suite: Expanded _test_wordpress_youtube_video_embed in diagnostic_export_tests.py.
-  * Release Logs: Documented in CHANGELOG.md under ## v3.9.79-beta.

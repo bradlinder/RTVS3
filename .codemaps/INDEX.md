@@ -1,13 +1,13 @@
 # Repository Symbol Index & API Map
 
-> Generated: 2026-11-05 09:46:21 | Total Files: 161
+> Generated: 2026-11-05 10:15:49 | Total Files: 161
 > Use `python scripts/generate_symbol_index.py --outline <file>` for exact line numbers.
 
 ## Modules Overview
 
 | Module | Lines | Summary | Primary Classes / Functions |
 | :--- | :---: | :--- | :--- |
-| `RadioTVSegmenter.py` | 663 | Radio & TV Segmenter — v3.9.80-beta | `MainWindow`, `main()` |
+| `RadioTVSegmenter.py` | 663 | Radio & TV Segmenter — v3.9.81-beta | `MainWindow`, `main()` |
 | `audio_normalization.py` | 541 | Radio & TV Story Segmenter — Audio Loudness Probing & Nor... | `LoudnessReport`, `AudioLoudnessProbeWorker`, `parse_ebur128_summary()`, `probe_media_duration_seconds()` *(+3 more)* |
 | `background_workers.py` | 1015 | Radio & TV Story Segmenter — Background Worker Threads & ... | `StoryAutoDetectWorker`, `WaveformWorker`, `VideoThumbnailWorker`, `get_waveform_peak_cache_path()` *(+6 more)* |
 | `backup_manager.py` | 622 | Unified State Serialization, Local, and Google Drive Clou... | `compute_data_checksum()`, `serialize_preferences()`, `serialize_keyboard_shortcuts()`, `serialize_glossary()` *(+7 more)* |
@@ -26,7 +26,7 @@
 | `diagnostic_cloud_and_system_tests.py` | 1313 | Diagnostic test bench suite component. | `DiagnosticCloudAndSystemTestsMixin` |
 | `diagnostic_core_tests.py` | 826 | Diagnostic test bench suite component. | `DiagnosticCoreTestsMixin` |
 | `diagnostic_dialog.py` | 288 | PySide6 Graphical Test Bench Dialog for Radio & TV Story ... | `create_diagnostic_dialog()` |
-| `diagnostic_editor_tests.py` | 252 | Diagnostic editor and find-replace tests for Radio & TV S... | `DiagnosticEditorTestsMixin` |
+| `diagnostic_editor_tests.py` | 273 | Diagnostic editor and find-replace tests for Radio & TV S... | `DiagnosticEditorTestsMixin` |
 | `diagnostic_export_tests.py` | 1862 | Diagnostic test bench suite component. | `DiagnosticExportTestsMixin` |
 | `diagnostic_helpers.py` | 151 | Helper fixtures, module resolvers, and DiagnosticItem for... | `DiagnosticItem`, `generate_synthetic_wav()` |
 | `diagnostic_loudness_tests.py` | 391 | Radio & TV Story Segmenter — Diagnostic Loudness Normaliz... | `DiagnosticLoudnessTestsMixin` |
@@ -101,7 +101,7 @@
 | `radio_tv_story_segmenter_worker.py` | 226 | Radio & TV Story Segmenter — AI Background Subprocess Wor... | `main()` |
 | `roadmap_manager.py` | 259 | roadmap_manager.py — Automated Roadmap & N-1 Sliding-Wind... | `RoadmapManager`, `get_current_app_version()`, `main()` |
 | `runtime_manager.py` | 1037 |  | `RuntimeManager`, `register_process()`, `unregister_process()`, `kill_all_subprocesses()` *(+1 more)* |
-| `scripts/capture_guide_screenshots.py` | 144 | Programmatic headless screenshot generator for RTVS3 user... | `MockCaptureMainWindow`, `capture_widget()`, `main()` |
+| `scripts/capture_guide_screenshots.py` | 146 | Programmatic headless screenshot generator for RTVS3 user... | `MockCaptureMainWindow`, `capture_widget()`, `main()` |
 | `scripts/dev_check.py` | 154 | scripts/dev_check.py - Ultra-Fast Pre-Flight Development ... | `check_syntax()`, `check_typing_stubs()`, `check_preview_sync()`, `check_modular_budget()` *(+2 more)* |
 | `scripts/generate_pyi_stubs.py` | 214 | generate_pyi_stubs.py — Automated Interface Typing Stub (... | `StubTransformer`, `generate_stub_source()`, `get_large_modules()`, `generate_stub_file()` *(+1 more)* |
 | `scripts/generate_symbol_index.py` | 380 | generate_symbol_index.py — Fast AST Symbol Indexer & Repo... | `parse_function_signature()`, `analyze_file()`, `scan_repository()`, `generate_index_markdown()` *(+4 more)* |
@@ -146,7 +146,7 @@
 | `transcript_navigation_mixin.py` | 300 | transcript_navigation_mixin.py - Timestamp discovery, car... | `TranscriptNavigationMixin` |
 | `transcript_playback_highlight_mixin.py` | 277 | Radio & TV Story Segmenter — Interactive Transcript Playb... | `TranscriptPlaybackHighlightMixin` |
 | `transcript_selection_mixin.py` | 473 | transcript_selection_mixin.py - Multi-selection, timeline... | `TranscriptSelectionMixin` |
-| `transcript_story.py` | 852 | Radio & TV Segmenter v3.9.80-beta — transcript story resp... | `TranscriptStoryMixin` |
+| `transcript_story.py` | 852 | Radio & TV Segmenter v3.9.81-beta — transcript story resp... | `TranscriptStoryMixin` |
 | `transcript_styles.py` | 104 | transcript_styles.py - Transcript view stylesheets and da... | `transcript_text_view_stylesheet()`, `clean_dark_mode_clipboard_html()` |
 | `transcript_timeline_sync_mixin.py` | 642 | Radio & TV Story Segmenter — Transcript Timeline & Playba... | `TranscriptTimelineSyncMixin` |
 | `transcription_processing.py` | 579 | Transcription background process management for Radio & T... | `TranscriptionProcessingMixin` |
@@ -155,7 +155,7 @@
 | `ui_layout.py` | 1090 | Radio & TV Segmenter — UI Layout & Menu Construction Mixin. | `UiLayoutMixin` |
 | `ui_menus.py` | 820 | Main application menu bar and action assembly for Radio &... | `PersistentMenu`, `UiMenusMixin` |
 | `updater.py` | 1549 | Update manager and GitHub release installer for Radio & T... | `CheckUpdateWorker`, `DownloadUpdateWorker`, `CheckUpdateDialog`, `UpdaterMixin` *(+9 more)* |
-| `user_guide_dialog.py` | 478 | Radio & TV Story Segmenter — In-App User Guide & Document... | `UserGuideDialog` |
+| `user_guide_dialog.py` | 550 | Radio & TV Story Segmenter — In-App User Guide & Document... | `ResponsiveTextBrowser`, `UserGuideDialog` |
 | `utils/__init__.py` | 36 | Utility modules for Radio & TV Story Segmenter. | - |
 | `utils/constants.py` | 41 | Application constants and environment configuration. | - |
 | `utils/time_format.py` | 19 | Time formatting and parsing utilities. | - |
@@ -172,7 +172,7 @@
 ## Detailed Symbol Catalog
 
 ### `RadioTVSegmenter.py` (663 lines)
-*Radio & TV Segmenter — v3.9.80-beta*
+*Radio & TV Segmenter — v3.9.81-beta*
 - **class `MainWindow(ModelManagementMixin, MediaBatchMixin, PlaybackPreferencesMixin, UiLayoutMixin, ProcessingMixin, TranslationMixin, TranscriptStoryMixin, ProjectExportMixin, GpuAccelerationMixin, QMainWindow)`** (lines 160–560):
   *Main application window for Radio & TV Segmenter.*
   - `__init__(self)` [L178-L355]
@@ -514,12 +514,12 @@
 - **Functions**:
   - `create_diagnostic_dialog(parent, include_dev_tests)` [L16-L288] — *Builds the Diagnostic Test Bench Qt Dialog.*
 
-### `diagnostic_editor_tests.py` (252 lines)
+### `diagnostic_editor_tests.py` (273 lines)
 *Diagnostic editor and find-replace tests for Radio & TV Story Segmenter.*
-- **class `DiagnosticEditorTestsMixin`** (lines 11–252):
+- **class `DiagnosticEditorTestsMixin`** (lines 11–273):
   *Diagnostic suite for transcript editor, find-replace, and speaker synchronization.*
   - `_test_find_and_replace_project_synchronization_and_undo(self, item)` [L14-L202] — *Validates that Find & Replace updates segments, word timings, speaker aliases,*
-  - `_test_in_app_user_guides_and_documentation_viewer(self, item)` [L204-L252] — *Validates in-app user guide resolution, fallback to embedded content, and bundling invariants.*
+  - `_test_in_app_user_guides_and_documentation_viewer(self, item)` [L204-L273] — *Validates in-app user guide resolution, fallback to embedded content, and bundling invariants.*
 
 ### `diagnostic_export_tests.py` (1862 lines)
 *Diagnostic test bench suite component.*
@@ -2045,7 +2045,7 @@
   - `detect_nvidia_gpu()` [L329-L343] — *Best-effort check for a usable NVIDIA GPU on this machine, so the*
   - `_remove_macos_quarantine(target_path)` [L346-L360] — *Strip Gatekeeper com.apple.quarantine attribute on macOS for standalone executables.*
 
-### `scripts/capture_guide_screenshots.py` (144 lines)
+### `scripts/capture_guide_screenshots.py` (146 lines)
 *Programmatic headless screenshot generator for RTVS3 user guides.*
 - **class `MockCaptureMainWindow`** (lines 24–69):
   *Mock main window providing realistic project data for guide screenshots.*
@@ -2053,8 +2053,8 @@
   - `_get_transcript_text_slice(self, start, end)` [L65-L66]
   - `get_effective_story_author_and_category_ids(self, story_idx)` [L68-L69]
 - **Functions**:
-  - `capture_widget(widget, output_path, size)` [L72-L84] — *Render a QWidget to a high-resolution PNG image file.*
-  - `main()` [L87-L140]
+  - `capture_widget(widget, output_path, size)` [L72-L86] — *Render a QWidget to a high-resolution PNG image file.*
+  - `main()` [L89-L142]
 
 ### `scripts/dev_check.py` (154 lines)
 *scripts/dev_check.py - Ultra-Fast Pre-Flight Development & AI Safety Gate*
@@ -2822,7 +2822,7 @@
   - `_on_bubble_export(self)` [L468-L473]
 
 ### `transcript_story.py` (852 lines)
-*Radio & TV Segmenter v3.9.80-beta — transcript story responsibilities.*
+*Radio & TV Segmenter v3.9.81-beta — transcript story responsibilities.*
 - **Public Exports (`__all__`)**: TranscriptStoryMixin, Story, SetStoriesCommand, SelectStoriesCommand, StoryBoundaryChangeCommand, StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin, ChangeSpeakerDialog, VoiceProfileMatchDialog, StoryFadesDialog, SpeakerManagerDialog, FADE_CURVE_TABLES, get_fade_curve_factors
 - **class `TranscriptStoryMixin(StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin)`** (lines 63–851):
   - `render_transcript(self)` [L64-L467]
@@ -3024,22 +3024,27 @@
   - `launch_and_install(file_path, parent)` [L402-L714]
   - `cleanup_old_installers(max_to_keep, force_all)` [L778-L837] — *Clean up old downloaded application update installers from AppData/updates directory.*
 
-### `user_guide_dialog.py` (478 lines)
+### `user_guide_dialog.py` (550 lines)
 *Radio & TV Story Segmenter — In-App User Guide & Documentation Viewer Dialog.*
-- **class `UserGuideDialog(QDialog)`** (lines 39–478):
+- **class `ResponsiveTextBrowser(QTextBrowser)`** (lines 47–103):
+  *QTextBrowser subclass that responsively scales embedded images to viewport width.*
+  - `__init__(self, parent)` [L50-L52]
+  - `resizeEvent(self, event)` [L54-L56]
+  - `scale_images_to_viewport(self)` [L58-L103]
+- **class `UserGuideDialog(QDialog)`** (lines 106–550):
   *In-app reader dialog displaying rich user guides with inline screenshots.*
-  - `_find_docs_dir()` [L76-L110] — *Locate the docs directory across frozen executables, installed dirs, and dev trees.*
-  - `__init__(self, parent, initial_guide_id)` [L112-L128]
-  - `_setup_ui(self)` [L130-L232]
-  - `_apply_browser_stylesheet(self)` [L234-L268]
-  - `_resolve_image_urls(self, markdown_text)` [L270-L286] — *Replace relative image paths in markdown with absolute file URIs for instant rendering.*
-  - `_load_guide_by_id(self, guide_id)` [L288-L339]
-  - `_on_topic_selected(self, row)` [L341-L345]
-  - `_zoom_in(self)` [L347-L349]
-  - `_zoom_out(self)` [L351-L353]
-  - `_reset_zoom(self)` [L355-L358]
-  - `_open_in_external_browser(self)` [L360-L433] — *Export the current guide as a self-contained styled HTML file and launch the system web browser.*
-  - `_build_dynamic_shortcuts_guide(self)` [L435-L478] — *Build dynamic keyboard shortcut documentation from active settings.*
+  - `_find_docs_dir()` [L143-L177] — *Locate the docs directory across frozen executables, installed dirs, and dev trees.*
+  - `__init__(self, parent, initial_guide_id)` [L179-L195]
+  - `_setup_ui(self)` [L197-L300]
+  - `_apply_browser_stylesheet(self)` [L302-L336]
+  - `_resolve_image_urls(self, markdown_text)` [L338-L354] — *Replace relative image paths in markdown with absolute file URIs for instant rendering.*
+  - `_load_guide_by_id(self, guide_id)` [L356-L408]
+  - `_on_topic_selected(self, row)` [L410-L414]
+  - `_zoom_in(self)` [L416-L419]
+  - `_zoom_out(self)` [L421-L424]
+  - `_reset_zoom(self)` [L426-L430]
+  - `_open_in_external_browser(self)` [L432-L505] — *Export the current guide as a self-contained styled HTML file and launch the system web browser.*
+  - `_build_dynamic_shortcuts_guide(self)` [L507-L550] — *Build dynamic keyboard shortcut documentation from active settings.*
 
 ### `utils/__init__.py` (36 lines)
 *Utility modules for Radio & TV Story Segmenter.*
