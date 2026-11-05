@@ -517,7 +517,48 @@ class DiagnosticExportTestsMixin:
             raise AssertionError(f"YouTube player was not placed at bottom (below transcript): {bottom_content}")
 
         item.status = "PASS"
-        item.message = "YouTube embed URL extraction, iframe generation, video project defaults, and placement verified"
+        # 5. Dynamic UI auto-dimming verification (Option A)
+        from plugins.wordpress.youtube_embed import update_youtube_status_label
+        from PySide6.QtWidgets import QApplication, QLabel, QLineEdit, QCheckBox, QRadioButton
+        _ = QApplication.instance() or QApplication([])
+
+        class MockTab:
+            def __init__(self):
+                self.wp_post_items = [{"youtube_url": ""}]
+                self._current_post_index = 0
+                self.wp_yt_status_label = QLabel()
+                self.wp_yt_url_edit = QLineEdit()
+                self.wp_cb_yt_use_story_time = QCheckBox()
+                self.wp_cb_yt_stop_at_end = QCheckBox()
+                self.wp_yt_pos_label = QLabel()
+                self.wp_rad_yt_pos_top = QRadioButton()
+                self.wp_rad_yt_pos_bottom = QRadioButton()
+
+        tab = MockTab()
+        # When empty, controls must be disabled
+        tab.wp_yt_url_edit.setText("")
+        update_youtube_status_label(tab)
+        if tab.wp_rad_yt_pos_top.isEnabled() or tab.wp_rad_yt_pos_bottom.isEnabled():
+            raise AssertionError("Expected placement radios to be disabled when YouTube URL is blank")
+        if tab.wp_cb_yt_use_story_time.isEnabled() or tab.wp_cb_yt_stop_at_end.isEnabled():
+            raise AssertionError("Expected story timestamp checkboxes to be disabled when YouTube URL is blank")
+
+        # When valid URL is set, controls must be enabled
+        tab.wp_yt_url_edit.setText("https://youtu.be/dQw4w9WgXcQ")
+        update_youtube_status_label(tab)
+        if not tab.wp_rad_yt_pos_top.isEnabled() or not tab.wp_rad_yt_pos_bottom.isEnabled():
+            raise AssertionError("Expected placement radios to be enabled when valid YouTube URL is present")
+        if not tab.wp_cb_yt_use_story_time.isEnabled() or not tab.wp_cb_yt_stop_at_end.isEnabled():
+            raise AssertionError("Expected story timestamp checkboxes to be enabled when valid YouTube URL is present")
+
+        # When URL is cleared back to blank, controls must be disabled again
+        tab.wp_yt_url_edit.setText("")
+        update_youtube_status_label(tab)
+        if tab.wp_rad_yt_pos_top.isEnabled() or tab.wp_rad_yt_pos_bottom.isEnabled():
+            raise AssertionError("Expected placement radios to be disabled again when YouTube URL is cleared")
+
+        item.status = "PASS"
+        item.message = "YouTube embed URL extraction, iframe generation, video project defaults, placement, and auto-dimming verified"
 
     def _test_multi_format_line_break_and_paragraph_parity(self, item: DiagnosticItem):
         try:

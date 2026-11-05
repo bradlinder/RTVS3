@@ -94,18 +94,17 @@ TABLE OF CONTENTS & STATUS OVERVIEW
    [ ] 5.4 Burned-in Subtitles & Platform Safe Zone Enforcement (`plugins/social_reel/reel_subtitles.py`)
    [ ] 5.5 Unified Export Integration & Social Reel Diagnostic Tests (`export/dialog.py`, `test_runner.py`)
 
-6. Current Release: Export Destination Reordering Synchronization & Plugin Tab Binding Hardening (`export/dialog.py`, `plugins/wordpress/export_destination.py`, `plugins/youtube/export_destination.py`, `diagnostic_export_tests.py`) [x] [COMPLETED in v3.9.78-beta]
-   [x] 6.1 Eliminate Reordering Widget Desynchronization: Preserve existing destination objects (`entry['dest_obj']`) in `_build_destinations_layout()` and guarantee bidirectional rebinding of `tab_widget` and `widget` to cached QWidget pages when reordering destinations.
-   [x] 6.2 Defensive Unlinked Widget Resolvers: Added `_ensure_tab_widget()` fallback in `WordPressExportDestination` and `YouTubeExportDestination` to resolve cached tab instances from active dialog entries before validation or data export.
-   [x] 6.3 Early Destination Constructor Initialization: Set destination attributes prior to `super().__init__()` for reliable property evaluation during base class initialization.
-   [x] 6.4 Automated Interface & Reconnection Verification: Added dynamic unlinked widget reconnection test to `diagnostic_export_tests.py`.
+6. Current Release: WordPress YouTube Embed Dynamic Auto-Dimming & Control State Synchronization (plugins/wordpress/youtube_embed.py, diagnostic_export_tests.py) [x] [COMPLETED in v3.9.79-beta]
+   [x] 6.1 Context-Aware Auto-Dimming: Automatically disable (gray out) placement radio buttons and story timestamp start/stop checkboxes whenever the YouTube URL field is empty or contains an invalid URL/ID.
+   [x] 6.2 Real-Time Control State Illumination: Instantly activate and illuminate placement options when a valid YouTube URL or Video ID is pasted/typed into the field.
+   [x] 6.3 Clear Status Guidance & Disabled Tooltips: Updated status label below the input with clear instructions and contextual disabled-state tooltips on radio buttons and checkboxes.
+   [x] 6.4 Automated Verification: Added dynamic enable/disable transitions across empty, valid, and cleared URL states to _test_wordpress_youtube_video_embed in diagnostic_export_tests.py.
 
-7. Previous Release: Find & Replace Data-Model Synchronization & Speaker Reversion Immunity (`transcript_editor_dialogs.py`, `ui_dialog_launchers.py`, `diagnostic_editor_tests.py`) [x] [COMPLETED in v3.9.71-beta]
-   [x] 7.1 Data-Model Backed Replacements: Directly mutate transcript["segments"], words, and full transcript text with automatic word-level timestamp alignment via sync_segment_words().
-   [x] 7.2 Speaker Alias & Glossary Synchronization: Synchronize speaker display aliases in speaker_names and custom_speakers_glossary with user-configurable "Include Speakers" option.
-   [x] 7.3 Project State Undo/Redo & Persistence: Commit discrete ProjectStateCommand undo snapshots before replacements, mark project dirty, and update window title.
-   [x] 7.4 Speaker Re-render Immunity: Eliminate reversion bug where subsequent speaker label changes or speaker manager actions re-rendered the unedited data model.
-
+7. Previous Release: Native In-App Documentation Viewer & Comprehensive User Guides (user_guide_dialog.py, playback_preferences.py, docs/guides/, uild_installer.py) [x] [COMPLETED in v3.9.78-beta]
+   [x] 7.1 Native In-App Documentation Reader: Created interactive desktop reader dialog (UserGuideDialog) with topic navigation, zoom controls, and theme integration.
+   [x] 7.2 Inline Screenshot Rendering: Resolved relative image paths to absolute URIs for direct rendering inside QTextBrowser without external tools.
+   [x] 7.3 Comprehensive Multi-Guide Library: Authored getting_started_and_workflow.md, wordpress_exporting.md, youtube_features.md, and export_formats.md.
+   [x] 7.4 Distribution Packaging: Added docs/ hierarchy to PyInstaller bundle via build_installer.py.
 ================================================================================
 DETAILED MILESTONE SPECIFICATIONS
 ================================================================================
@@ -147,26 +146,22 @@ DETAILED MILESTONE SPECIFICATIONS
 - Target Release: v4.3.0 (Optional / Planned)
 - Technical References: Subsystem architecture, plugin manifest, and FFmpeg filtergraph pipeline specifications are detailed in `ARCHITECTURE.md` (Section 6).
 
-6. CURRENT RELEASE: NATIVE IN-APP DOCUMENTATION VIEWER & COMPREHENSIVE USER GUIDES:
-- Purpose: Deliver the interactive desktop documentation reader dialog, inline image rendering, and complete guide library.
-- Target Release: v3.9.78-beta (Current Release)
+6. CURRENT RELEASE: WORDPRESS YOUTUBE EMBED DYNAMIC AUTO-DIMMING & CONTROL STATE SYNCHRONIZATION:
+- Purpose: Eliminate user ambiguity around empty YouTube URLs by automatically graying out placement radios and story timecode options when no video is attached.
+- Target Release: v3.9.79-beta (Current Release)
 - Technical References & Implementation Details:
-  * [x] In-App Documentation Reader Dialog: Implemented native `UserGuideDialog` with sidebar navigation, zoom controls, and theme integration (`user_guide_dialog.py`).
-  * [x] Inline Screenshot Rendering: Resolved relative image paths to absolute URIs for direct rendering inside `QTextBrowser` without external tools.
-  * [x] Comprehensive Guide Library: Authored `getting_started_and_workflow.md`, `wordpress_exporting.md` (Application Passwords, scopes, credentials), `youtube_features.md` (chapter lists), and `export_formats.md` (DAWs, documents, audio).
-  * [x] Distribution Packaging: Added `--add-data docs` in `build_installer.py` ensuring offline availability in packaged releases.
-  * Release Logs: Documented in `CHANGELOG.md` under `## v3.9.78-beta`.
+  * [x] Context-Aware Auto-Dimming: Implemented _set_youtube_controls_enabled() in plugins/wordpress/youtube_embed.py to disable placement radios and story timestamp checkboxes on empty/invalid input.
+  * [x] Real-Time State Illumination: Connected _on_youtube_url_changed and update_youtube_status_label to dynamically re-enable controls immediately upon detecting a valid 11-char video ID.
+  * [x] Status Guidance & Disabled Tooltips: Configured dynamic status guidance and tooltips informing users to enter a URL to configure placement.
+  * [x] Automated Regression Suite: Expanded _test_wordpress_youtube_video_embed in diagnostic_export_tests.py verifying disabled/enabled/disabled state transitions.
+  * Release Logs: Documented in CHANGELOG.md under ## v3.9.79-beta.
 
-7. PREVIOUS RELEASE: USER DOCUMENTATION, ZERO-HALLUCINATION SCREENSHOTS & HELP MENU INTEGRATION:
-- Purpose: Deliver the Video Shows & YouTube publishing guide, programmatic screenshot generator, and in-app Help menu integration.
-- Target Release: v3.9.77-beta (Previous Release)
+7. PREVIOUS RELEASE: NATIVE IN-APP DOCUMENTATION VIEWER & COMPREHENSIVE USER GUIDES:
+- Purpose: Deliver the interactive desktop documentation reader dialog, inline image rendering, and complete guide library.
+- Target Release: v3.9.78-beta (Previous Release)
 - Technical References & Implementation Details:
-  * [x] Video Shows & YouTube Publishing Guide: Authored comprehensive guide detailing hybrid workflows, YouTube URL parsing, and Gutenberg 16:9 embeds (`docs/guides/video_shows_and_youtube_publishing.md`).
-  * [x] Zero-Hallucination Programmatic Screenshots: Implemented native off-screen Qt rendering script to generate pixel-accurate PNGs directly from application widgets (`scripts/capture_guide_screenshots.py`).
-  * [x] In-App Help Menu Integration: Added "User Guides & Documentation..." (`Shift+F2`) to the desktop Help menu (`ui_menus.py`, `playback_preferences.py`).
-  * [x] Standardized Documentation Policy: Formalized Section 16 in `AGENTS.md` establishing the Three-Tier Documentation Cadence and Zero-Hallucination Invariant.
-  * Release Logs: Documented in `CHANGELOG.md` under `## v3.9.77-beta`.
-  * [x] Elimination of Transient Parent Warning: Ensured Qt's `QWindow::setTransientParent` evaluates true top-level windows when child widgets acquire native Win32 `HWND` handles during OLE drag-and-drop.
-  * Release Logs: Documented in `CHANGELOG.md` under `## v3.9.76-beta`.
-  * Release Logs: Documented in `CHANGELOG.md` under `## v3.9.75-beta`.
-  * Release Logs: Documented in `CHANGELOG.md` under `## v3.9.74-beta`.
+  * [x] In-App Documentation Reader Dialog: Implemented native UserGuideDialog with sidebar navigation, zoom controls, and theme integration (user_guide_dialog.py).
+  * [x] Inline Screenshot Rendering: Resolved relative image paths to absolute URIs for direct rendering inside QTextBrowser without external tools.
+  * [x] Comprehensive Guide Library: Authored getting_started_and_workflow.md, wordpress_exporting.md, youtube_features.md, and export_formats.md.
+  * [x] Distribution Packaging: Added --add-data docs in uild_installer.py ensuring offline availability in packaged releases.
+  * Release Logs: Documented in CHANGELOG.md under ## v3.9.78-beta.

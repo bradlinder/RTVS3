@@ -1,5 +1,12 @@
 # Changelog
 
+## v3.9.79-beta
+- **WordPress YouTube Embed Dynamic Auto-Dimming & Control State Synchronization (`plugins/wordpress/youtube_embed.py`, `diagnostic_export_tests.py`)**:
+  - **Context-Aware Auto-Dimming**: Automatically disables (grays out) the YouTube Video Placement radio buttons ("Place at top" / "Place at bottom") and story start/stop timestamp checkboxes whenever the YouTube URL field is empty or contains an invalid URL/ID.
+  - **Dynamic State Synchronization**: Entering or pasting a valid YouTube link instantly activates and illuminates all placement and story timecode options, providing real-time visual feedback and eliminating ambiguity regarding empty URL handling.
+  - **Status Label Guidance & Tooltips**: Updated dynamic status label below the URL box to clearly guide users (`No YouTube video attached. (Enter a YouTube URL above to configure embed options)`), accompanied by descriptive disabled-state tooltips on all placement controls.
+  - **Automated Regression Suite**: Expanded diagnostic test `WordPress YouTube Video Embed` in `diagnostic_export_tests.py` with end-to-end assertions verifying dynamic enable/disable transitions across blank, valid, and cleared URL states.
+
 ## v3.9.78-beta
 - **Native In-App Documentation Viewer & Comprehensive User Guides (`user_guide_dialog.py`, `playback_preferences.py`, `docs/guides/`, `build_installer.py`)**:
   - **Native In-App Documentation Reader (`user_guide_dialog.py`)**: Created an interactive desktop reader dialog (`UserGuideDialog`) featuring topic navigation, zoom controls (`Ctrl++` / `Ctrl+-`), dark/light theme synchronization, and an optional "Open in Web Browser" export.
@@ -10,10 +17,3 @@
     - **YouTube Features & Chapter Generation (`docs/guides/youtube_features.md`)**: Generating and copying timestamped chapter lists for YouTube video descriptions, and embedding timestamped clips into articles.
     - **Export Formats & DAW Integration (`docs/guides/export_formats.md`)**: Split audio cuts with fades, Word/PDF documents, REAPER DAW projects, and video EDL/XML timelines.
   - **Installer Packaging Directive (`build_installer.py`)**: Packaged the `docs/` hierarchy into PyInstaller distribution bundles so guides and screenshots are available offline in frozen application builds.
-
-## v3.9.77-beta
-- **User Documentation, Automated Zero-Hallucination Screenshots & Help Menu Integration (`docs/guides/video_shows_and_youtube_publishing.md`, `scripts/capture_guide_screenshots.py`, `ui_menus.py`, `playback_preferences.py`, `AGENTS.md`)**:
-  - **Comprehensive Video Shows & YouTube Publishing Guide (`docs/guides/video_shows_and_youtube_publishing.md`)**: Authored an end-to-end user guide explaining the hybrid local media / YouTube hosting workflow, step-by-step export walkthrough, YouTube URL format compatibility reference, and 16:9 mobile-responsive Gutenberg iframe block architectures.
-  - **Programmatic Zero-Hallucination Screenshot Engine (`scripts/capture_guide_screenshots.py`)**: Built an automated off-screen Qt rendering script that captures pixel-accurate PNG screenshots (`wordpress_export_media_tab.png`, `wordpress_export_content_tab.png`, `wordpress_posts_list_badges.png`, `wordpress_preferences_credentials.png`, `unified_export_dialog.png`) directly from native widgets, guaranteeing zero AI visual hallucination in technical documentation.
-  - **In-App Help Menu Integration (`ui_menus.py`, `playback_preferences.py`)**: Added "User Guides & Documentation..." (`Shift+F2`) to the **Help** menu, launching the user's native system viewer or default browser to local guides and repository docs via `QDesktopServices.openUrl()`.
-  - **Standardized Documentation Policy (`AGENTS.md`)**: Formalized Section 16 defining the Three-Tier Documentation Cadence (Tier 1 Changelog/Roadmap sync, Tier 2 Feature Guide creation, Tier 3 Master Manual audits) and the Zero-Hallucination Visual Asset Invariant.

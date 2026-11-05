@@ -246,6 +246,7 @@ def setup_wp_youtube_ui(tab_widget: Any, parent_layout: QVBoxLayout) -> None:
     pos_row = QHBoxLayout()
     pos_lbl = QLabel("Video Placement:")
     pos_lbl.setStyleSheet("font-size: 11px; font-weight: bold;")
+    tab_widget.wp_yt_pos_label = pos_lbl
     pos_row.addWidget(pos_lbl)
 
     tab_widget.wp_yt_pos_group = QButtonGroup(tab_widget)
@@ -268,6 +269,7 @@ def setup_wp_youtube_ui(tab_widget: Any, parent_layout: QVBoxLayout) -> None:
 
     tab_widget.wp_youtube_section.add_layout(yt_layout)
     parent_layout.addWidget(tab_widget.wp_youtube_section)
+    _set_youtube_controls_enabled(tab_widget, False)
 
 
 def _get_current_post(tab_widget: Any) -> Optional[Dict[str, Any]]:
@@ -279,6 +281,46 @@ def _get_current_post(tab_widget: Any) -> Optional[Dict[str, Any]]:
     return None
 
 
+def _set_youtube_controls_enabled(tab_widget: Any, enabled: bool) -> None:
+    """Enable or disable YouTube embed options based on whether a valid video URL is present."""
+    for attr in (
+        "wp_cb_yt_use_story_time",
+        "wp_cb_yt_stop_at_end",
+        "wp_yt_pos_label",
+        "wp_rad_yt_pos_top",
+        "wp_rad_yt_pos_bottom",
+    ):
+        w = getattr(tab_widget, attr, None)
+        if w is not None and hasattr(w, "setEnabled"):
+            w.setEnabled(enabled)
+
+    if hasattr(tab_widget, "wp_rad_yt_pos_top") and hasattr(tab_widget, "wp_rad_yt_pos_bottom"):
+        if enabled:
+            tab_widget.wp_rad_yt_pos_top.setToolTip("Place the responsive YouTube video embed above the transcript")
+            tab_widget.wp_rad_yt_pos_bottom.setToolTip("Place the responsive YouTube video embed below the transcript")
+        else:
+            hint = "Enter a valid YouTube URL above to configure video placement."
+            tab_widget.wp_rad_yt_pos_top.setToolTip(hint)
+            tab_widget.wp_rad_yt_pos_bottom.setToolTip(hint)
+
+    if hasattr(tab_widget, "wp_cb_yt_use_story_time"):
+        if enabled:
+            tab_widget.wp_cb_yt_use_story_time.setToolTip(
+                "When checked, embeds the video starting at this story's start time in the broadcast. "
+                "When unchecked on a custom single-story URL, starts playback at 0:00 (or the explicit timestamp in the URL)."
+            )
+        else:
+            tab_widget.wp_cb_yt_use_story_time.setToolTip("Enter a valid YouTube URL above to configure story timestamp start.")
+
+    if hasattr(tab_widget, "wp_cb_yt_stop_at_end"):
+        if enabled:
+            tab_widget.wp_cb_yt_stop_at_end.setToolTip(
+                "When checked, appends an end timestamp to the YouTube embed parameter so playback stops when this story concludes."
+            )
+        else:
+            tab_widget.wp_cb_yt_stop_at_end.setToolTip("Enter a valid YouTube URL above to configure story timestamp end.")
+
+
 def update_youtube_status_label(tab_widget: Any) -> None:
     """Refresh the dynamic status preview line below the YouTube URL input."""
     if not hasattr(tab_widget, "wp_yt_status_label") or not tab_widget.wp_yt_status_label:
@@ -286,19 +328,24 @@ def update_youtube_status_label(tab_widget: Any) -> None:
     post = _get_current_post(tab_widget)
     if not post:
         tab_widget.wp_yt_status_label.setText("No post selected.")
+        _set_youtube_controls_enabled(tab_widget, False)
         return
 
     url = (tab_widget.wp_yt_url_edit.text() if hasattr(tab_widget, "wp_yt_url_edit") else "").strip()
     if not url:
-        tab_widget.wp_yt_status_label.setText("No YouTube video attached.")
+        tab_widget.wp_yt_status_label.setText("No YouTube video attached. (Enter a YouTube URL above to configure embed options)")
         tab_widget.wp_yt_status_label.setStyleSheet("color: #64748b; font-size: 11px;")
+        _set_youtube_controls_enabled(tab_widget, False)
         return
 
     vid_id, url_t = extract_youtube_video_id(url)
     if not vid_id:
         tab_widget.wp_yt_status_label.setText("Invalid YouTube URL or ID.")
         tab_widget.wp_yt_status_label.setStyleSheet("color: #f87171; font-size: 11px;")
+        _set_youtube_controls_enabled(tab_widget, False)
         return
+
+    _set_youtube_controls_enabled(tab_widget, True)
 
     use_story_time = tab_widget.wp_cb_yt_use_story_time.isChecked() if hasattr(tab_widget, "wp_cb_yt_use_story_time") else True
     stop_at_end = tab_widget.wp_cb_yt_stop_at_end.isChecked() if hasattr(tab_widget, "wp_cb_yt_stop_at_end") else False

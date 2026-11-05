@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-04 16:08:43",
+  "generated_at": "2026-11-04 20:32:17",
   "total_files": 160,
   "files": {
     "RadioTVSegmenter.py": {
       "path": "RadioTVSegmenter.py",
       "lines": 663,
-      "summary": "Radio & TV Segmenter \u2014 v3.9.78-beta",
+      "summary": "Radio & TV Segmenter \u2014 v3.9.79-beta",
       "exports": null,
       "classes": [
         {
@@ -2126,7 +2126,7 @@
     },
     "diagnostic_export_tests.py": {
       "path": "diagnostic_export_tests.py",
-      "lines": 1821,
+      "lines": 1862,
       "summary": "Diagnostic test bench suite component.",
       "exports": null,
       "classes": [
@@ -2134,7 +2134,7 @@
           "name": "DiagnosticExportTestsMixin",
           "bases": [],
           "start_line": 26,
-          "end_line": 1820,
+          "end_line": 1861,
           "doc": "",
           "methods": [
             {
@@ -2155,84 +2155,84 @@
               "name": "_test_wordpress_youtube_video_embed",
               "sig": "_test_wordpress_youtube_video_embed(self, item)",
               "start_line": 417,
-              "end_line": 520,
+              "end_line": 561,
               "doc": "Verify YouTube URL parsing, iframe block generation, video project defaults, and Gutenberg placement."
             },
             {
               "name": "_test_multi_format_line_break_and_paragraph_parity",
               "sig": "_test_multi_format_line_break_and_paragraph_parity(self, item)",
-              "start_line": 522,
-              "end_line": 627,
+              "start_line": 563,
+              "end_line": 668,
               "doc": ""
             },
             {
               "name": "_test_wordpress_multi_story_upload_and_ui_pluralization",
               "sig": "_test_wordpress_multi_story_upload_and_ui_pluralization(self, item)",
-              "start_line": 629,
-              "end_line": 853,
+              "start_line": 670,
+              "end_line": 894,
               "doc": ""
             },
             {
               "name": "_test_gutenberg_html_structural_hygiene_audit",
               "sig": "_test_gutenberg_html_structural_hygiene_audit(self, item)",
-              "start_line": 855,
-              "end_line": 891,
+              "start_line": 896,
+              "end_line": 932,
               "doc": ""
             },
             {
               "name": "_test_export_scope_delta_and_gap_integrity_audit",
               "sig": "_test_export_scope_delta_and_gap_integrity_audit(self, item)",
-              "start_line": 893,
-              "end_line": 944,
+              "start_line": 934,
+              "end_line": 985,
               "doc": ""
             },
             {
               "name": "_test_export_destination_interface_contract_verification",
               "sig": "_test_export_destination_interface_contract_verification(self, item)",
-              "start_line": 946,
-              "end_line": 982,
+              "start_line": 987,
+              "end_line": 1023,
               "doc": ""
             },
             {
               "name": "_test_multi_story_media_payload_disambiguation_test",
               "sig": "_test_multi_story_media_payload_disambiguation_test(self, item)",
-              "start_line": 984,
-              "end_line": 1022,
+              "start_line": 1025,
+              "end_line": 1063,
               "doc": ""
             },
             {
               "name": "_test_wordpress_audio_inclusion_toggle_and_error_resilience",
               "sig": "_test_wordpress_audio_inclusion_toggle_and_error_resilience(self, item)",
-              "start_line": 1024,
-              "end_line": 1350,
+              "start_line": 1065,
+              "end_line": 1391,
               "doc": ""
             },
             {
               "name": "_test_wordpress_castos_podcast_integration",
               "sig": "_test_wordpress_castos_podcast_integration(self, item)",
-              "start_line": 1352,
-              "end_line": 1580,
+              "start_line": 1393,
+              "end_line": 1621,
               "doc": ""
             },
             {
               "name": "_test_multi_scope_story_and_full_episode_export_pipeline",
               "sig": "_test_multi_scope_story_and_full_episode_export_pipeline(self, item)",
-              "start_line": 1582,
-              "end_line": 1663,
+              "start_line": 1623,
+              "end_line": 1704,
               "doc": ""
             },
             {
               "name": "_test_audio_export_non_blocking_and_cancellation_pipeline",
               "sig": "_test_audio_export_non_blocking_and_cancellation_pipeline(self, item)",
-              "start_line": 1665,
-              "end_line": 1775,
+              "start_line": 1706,
+              "end_line": 1816,
               "doc": ""
             },
             {
               "name": "_test_modal_dialog_maximizable_import_integrity",
               "sig": "_test_modal_dialog_maximizable_import_integrity(self, item)",
-              "start_line": 1777,
-              "end_line": 1820,
+              "start_line": 1818,
+              "end_line": 1861,
               "doc": ""
             }
           ]
@@ -8074,7 +8074,7 @@
     },
     "plugins/wordpress/youtube_embed.py": {
       "path": "plugins/wordpress/youtube_embed.py",
-      "lines": 557,
+      "lines": 604,
       "summary": "YouTube Video Embed helpers, Gutenberg iframe generator, and UI setup for WordPress export.",
       "exports": null,
       "classes": [],
@@ -8097,77 +8097,84 @@
           "name": "setup_wp_youtube_ui",
           "sig": "setup_wp_youtube_ui(tab_widget, parent_layout)",
           "start_line": 190,
-          "end_line": 270,
+          "end_line": 272,
           "doc": "Construct the 'YouTube Video Embed' CollapsibleSection inside the Media tab."
         },
         {
           "name": "_get_current_post",
           "sig": "_get_current_post(tab_widget)",
-          "start_line": 273,
-          "end_line": 279,
+          "start_line": 275,
+          "end_line": 281,
           "doc": ""
+        },
+        {
+          "name": "_set_youtube_controls_enabled",
+          "sig": "_set_youtube_controls_enabled(tab_widget, enabled)",
+          "start_line": 284,
+          "end_line": 321,
+          "doc": "Enable or disable YouTube embed options based on whether a valid video URL is present."
         },
         {
           "name": "update_youtube_status_label",
           "sig": "update_youtube_status_label(tab_widget)",
-          "start_line": 282,
-          "end_line": 334,
+          "start_line": 324,
+          "end_line": 381,
           "doc": "Refresh the dynamic status preview line below the YouTube URL input."
         },
         {
           "name": "load_youtube_from_post",
           "sig": "load_youtube_from_post(tab_widget, post)",
-          "start_line": 337,
-          "end_line": 385,
+          "start_line": 384,
+          "end_line": 432,
           "doc": "Populate YouTube controls from the given post dictionary."
         },
         {
           "name": "sync_youtube_to_meta",
           "sig": "sync_youtube_to_meta(target_meta, post)",
-          "start_line": 388,
-          "end_line": 396,
+          "start_line": 435,
+          "end_line": 443,
           "doc": "Sync YouTube embed settings from post to target_meta dictionary."
         },
         {
           "name": "_on_youtube_url_changed",
           "sig": "_on_youtube_url_changed(tab_widget, text)",
-          "start_line": 399,
-          "end_line": 441,
+          "start_line": 446,
+          "end_line": 488,
           "doc": ""
         },
         {
           "name": "_on_youtube_apply_all_toggled",
           "sig": "_on_youtube_apply_all_toggled(tab_widget, checked)",
-          "start_line": 444,
-          "end_line": 448,
+          "start_line": 491,
+          "end_line": 495,
           "doc": ""
         },
         {
           "name": "_on_youtube_use_story_time_toggled",
           "sig": "_on_youtube_use_story_time_toggled(tab_widget, checked)",
-          "start_line": 451,
-          "end_line": 461,
+          "start_line": 498,
+          "end_line": 508,
           "doc": ""
         },
         {
           "name": "_on_youtube_stop_at_end_toggled",
           "sig": "_on_youtube_stop_at_end_toggled(tab_widget, checked)",
-          "start_line": 464,
-          "end_line": 474,
+          "start_line": 511,
+          "end_line": 521,
           "doc": ""
         },
         {
           "name": "_on_youtube_placement_toggled",
           "sig": "_on_youtube_placement_toggled(tab_widget, placement)",
-          "start_line": 477,
-          "end_line": 487,
+          "start_line": 524,
+          "end_line": 534,
           "doc": ""
         },
         {
           "name": "format_post_list_label_and_tooltip",
           "sig": "format_post_list_label_and_tooltip(tab_widget, idx)",
-          "start_line": 490,
-          "end_line": 557,
+          "start_line": 537,
+          "end_line": 604,
           "doc": "Return formatted label text and rich multi-line tooltip for an item in wp_posts_list."
         }
       ]
@@ -16182,7 +16189,7 @@
     "transcript_story.py": {
       "path": "transcript_story.py",
       "lines": 852,
-      "summary": "Radio & TV Segmenter v3.9.78-beta \u2014 transcript story responsibilities.",
+      "summary": "Radio & TV Segmenter v3.9.79-beta \u2014 transcript story responsibilities.",
       "exports": [
         "TranscriptStoryMixin",
         "Story",

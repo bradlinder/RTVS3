@@ -1,13 +1,13 @@
 # Repository Symbol Index & API Map
 
-> Generated: 2026-11-04 16:08:43 | Total Files: 160
+> Generated: 2026-11-04 20:32:17 | Total Files: 160
 > Use `python scripts/generate_symbol_index.py --outline <file>` for exact line numbers.
 
 ## Modules Overview
 
 | Module | Lines | Summary | Primary Classes / Functions |
 | :--- | :---: | :--- | :--- |
-| `RadioTVSegmenter.py` | 663 | Radio & TV Segmenter — v3.9.78-beta | `MainWindow`, `main()` |
+| `RadioTVSegmenter.py` | 663 | Radio & TV Segmenter — v3.9.79-beta | `MainWindow`, `main()` |
 | `audio_normalization.py` | 541 | Radio & TV Story Segmenter — Audio Loudness Probing & Nor... | `LoudnessReport`, `AudioLoudnessProbeWorker`, `parse_ebur128_summary()`, `probe_media_duration_seconds()` *(+3 more)* |
 | `background_workers.py` | 1015 | Radio & TV Story Segmenter — Background Worker Threads & ... | `StoryAutoDetectWorker`, `WaveformWorker`, `VideoThumbnailWorker`, `get_waveform_peak_cache_path()` *(+6 more)* |
 | `backup_manager.py` | 622 | Unified State Serialization, Local, and Google Drive Clou... | `compute_data_checksum()`, `serialize_preferences()`, `serialize_keyboard_shortcuts()`, `serialize_glossary()` *(+7 more)* |
@@ -27,7 +27,7 @@
 | `diagnostic_core_tests.py` | 826 | Diagnostic test bench suite component. | `DiagnosticCoreTestsMixin` |
 | `diagnostic_dialog.py` | 288 | PySide6 Graphical Test Bench Dialog for Radio & TV Story ... | `create_diagnostic_dialog()` |
 | `diagnostic_editor_tests.py` | 202 | Diagnostic editor and find-replace tests for Radio & TV S... | `DiagnosticEditorTestsMixin` |
-| `diagnostic_export_tests.py` | 1821 | Diagnostic test bench suite component. | `DiagnosticExportTestsMixin` |
+| `diagnostic_export_tests.py` | 1862 | Diagnostic test bench suite component. | `DiagnosticExportTestsMixin` |
 | `diagnostic_helpers.py` | 151 | Helper fixtures, module resolvers, and DiagnosticItem for... | `DiagnosticItem`, `generate_synthetic_wav()` |
 | `diagnostic_loudness_tests.py` | 391 | Radio & TV Story Segmenter — Diagnostic Loudness Normaliz... | `DiagnosticLoudnessTestsMixin` |
 | `diagnostic_selector.py` | 191 | Smart Diagnostic Test Selector for Radio & TV Story Segme... | `get_modified_files()`, `has_git_changes()`, `detect_changed_tokens()`, `select_diagnostic_items()` |
@@ -77,7 +77,7 @@
 | `plugins/wordpress/wp_post_builder.py` | 319 | Post item builder, transcript slicing, and video frame ex... | `capture_video_frame()`, `get_primary_text_slice()`, `build_wp_post_items()` |
 | `plugins/wordpress/wp_tab_widget.py` | 931 | WordPress export tab configuration widget and preview con... | `WordPressExportTabWidget` |
 | `plugins/wordpress/wp_ui_builder.py` | 746 | UI layout construction and widget setup for WordPressExpo... | `setup_wp_tab_ui()` |
-| `plugins/wordpress/youtube_embed.py` | 557 | YouTube Video Embed helpers, Gutenberg iframe generator, ... | `extract_youtube_video_id()`, `build_youtube_embed_block()`, `setup_wp_youtube_ui()`, `update_youtube_status_label()` *(+3 more)* |
+| `plugins/wordpress/youtube_embed.py` | 604 | YouTube Video Embed helpers, Gutenberg iframe generator, ... | `extract_youtube_video_id()`, `build_youtube_embed_block()`, `setup_wp_youtube_ui()`, `update_youtube_status_label()` *(+3 more)* |
 | `plugins/youtube/__init__.py` | 9 | YouTube Video Publisher Plugin for Radio & TV Segmenter. | - |
 | `plugins/youtube/export_destination.py` | 613 | YouTube Export Destination for UnifiedExportDialog with Z... | `YouTubeExportTabWidget`, `YouTubeExportDestination`, `capture_video_frame()` |
 | `plugins/youtube/guide_dialog.py` | 147 | Interactive Assisted Upload Guide Dialog for YouTube Studio. | `YouTubeAssistedUploadGuideDialog` |
@@ -145,7 +145,7 @@
 | `transcript_navigation_mixin.py` | 300 | transcript_navigation_mixin.py - Timestamp discovery, car... | `TranscriptNavigationMixin` |
 | `transcript_playback_highlight_mixin.py` | 277 | Radio & TV Story Segmenter — Interactive Transcript Playb... | `TranscriptPlaybackHighlightMixin` |
 | `transcript_selection_mixin.py` | 473 | transcript_selection_mixin.py - Multi-selection, timeline... | `TranscriptSelectionMixin` |
-| `transcript_story.py` | 852 | Radio & TV Segmenter v3.9.78-beta — transcript story resp... | `TranscriptStoryMixin` |
+| `transcript_story.py` | 852 | Radio & TV Segmenter v3.9.79-beta — transcript story resp... | `TranscriptStoryMixin` |
 | `transcript_styles.py` | 104 | transcript_styles.py - Transcript view stylesheets and da... | `transcript_text_view_stylesheet()`, `clean_dark_mode_clipboard_html()` |
 | `transcript_timeline_sync_mixin.py` | 642 | Radio & TV Story Segmenter — Transcript Timeline & Playba... | `TranscriptTimelineSyncMixin` |
 | `transcription_processing.py` | 579 | Transcription background process management for Radio & T... | `TranscriptionProcessingMixin` |
@@ -171,7 +171,7 @@
 ## Detailed Symbol Catalog
 
 ### `RadioTVSegmenter.py` (663 lines)
-*Radio & TV Segmenter — v3.9.78-beta*
+*Radio & TV Segmenter — v3.9.79-beta*
 - **class `MainWindow(ModelManagementMixin, MediaBatchMixin, PlaybackPreferencesMixin, UiLayoutMixin, ProcessingMixin, TranslationMixin, TranscriptStoryMixin, ProjectExportMixin, GpuAccelerationMixin, QMainWindow)`** (lines 160–560):
   *Main application window for Radio & TV Segmenter.*
   - `__init__(self)` [L178-L355]
@@ -519,23 +519,23 @@
   *Diagnostic suite for transcript editor, find-replace, and speaker synchronization.*
   - `_test_find_and_replace_project_synchronization_and_undo(self, item)` [L14-L202] — *Validates that Find & Replace updates segments, word timings, speaker aliases,*
 
-### `diagnostic_export_tests.py` (1821 lines)
+### `diagnostic_export_tests.py` (1862 lines)
 *Diagnostic test bench suite component.*
-- **class `DiagnosticExportTestsMixin`** (lines 26–1820):
+- **class `DiagnosticExportTestsMixin`** (lines 26–1861):
   - `_test_wordpress_export_scope_post_builder(self, item)` [L27-L202]
   - `_test_wordpress_export_content_and_transcript_formatter(self, item)` [L204-L415]
-  - `_test_wordpress_youtube_video_embed(self, item)` [L417-L520] — *Verify YouTube URL parsing, iframe block generation, video project defaults, and Gutenberg placement.*
-  - `_test_multi_format_line_break_and_paragraph_parity(self, item)` [L522-L627]
-  - `_test_wordpress_multi_story_upload_and_ui_pluralization(self, item)` [L629-L853]
-  - `_test_gutenberg_html_structural_hygiene_audit(self, item)` [L855-L891]
-  - `_test_export_scope_delta_and_gap_integrity_audit(self, item)` [L893-L944]
-  - `_test_export_destination_interface_contract_verification(self, item)` [L946-L982]
-  - `_test_multi_story_media_payload_disambiguation_test(self, item)` [L984-L1022]
-  - `_test_wordpress_audio_inclusion_toggle_and_error_resilience(self, item)` [L1024-L1350]
-  - `_test_wordpress_castos_podcast_integration(self, item)` [L1352-L1580]
-  - `_test_multi_scope_story_and_full_episode_export_pipeline(self, item)` [L1582-L1663]
-  - `_test_audio_export_non_blocking_and_cancellation_pipeline(self, item)` [L1665-L1775]
-  - `_test_modal_dialog_maximizable_import_integrity(self, item)` [L1777-L1820]
+  - `_test_wordpress_youtube_video_embed(self, item)` [L417-L561] — *Verify YouTube URL parsing, iframe block generation, video project defaults, and Gutenberg placement.*
+  - `_test_multi_format_line_break_and_paragraph_parity(self, item)` [L563-L668]
+  - `_test_wordpress_multi_story_upload_and_ui_pluralization(self, item)` [L670-L894]
+  - `_test_gutenberg_html_structural_hygiene_audit(self, item)` [L896-L932]
+  - `_test_export_scope_delta_and_gap_integrity_audit(self, item)` [L934-L985]
+  - `_test_export_destination_interface_contract_verification(self, item)` [L987-L1023]
+  - `_test_multi_story_media_payload_disambiguation_test(self, item)` [L1025-L1063]
+  - `_test_wordpress_audio_inclusion_toggle_and_error_resilience(self, item)` [L1065-L1391]
+  - `_test_wordpress_castos_podcast_integration(self, item)` [L1393-L1621]
+  - `_test_multi_scope_story_and_full_episode_export_pipeline(self, item)` [L1623-L1704]
+  - `_test_audio_export_non_blocking_and_cancellation_pipeline(self, item)` [L1706-L1816]
+  - `_test_modal_dialog_maximizable_import_integrity(self, item)` [L1818-L1861]
 
 ### `diagnostic_helpers.py` (151 lines)
 *Helper fixtures, module resolvers, and DiagnosticItem for test runner.*
@@ -1488,22 +1488,23 @@
 - **Functions**:
   - `setup_wp_tab_ui(self)` [L36-L746] — *Construct all controls, forms, sliders, list widgets, and tabbed panels for the WordPress export tab.*
 
-### `plugins/wordpress/youtube_embed.py` (557 lines)
+### `plugins/wordpress/youtube_embed.py` (604 lines)
 *YouTube Video Embed helpers, Gutenberg iframe generator, and UI setup for WordPress export.*
 - **Functions**:
   - `extract_youtube_video_id(url_or_id)` [L28-L141] — *Extract the clean 11-character YouTube Video ID and optional start timestamp (seconds).*
   - `build_youtube_embed_block(video_id, start_sec, end_sec, stop_at_end)` [L144-L187] — *Generate a responsive Gutenberg HTML embed block for a YouTube video.*
-  - `setup_wp_youtube_ui(tab_widget, parent_layout)` [L190-L270] — *Construct the 'YouTube Video Embed' CollapsibleSection inside the Media tab.*
-  - `_get_current_post(tab_widget)` [L273-L279]
-  - `update_youtube_status_label(tab_widget)` [L282-L334] — *Refresh the dynamic status preview line below the YouTube URL input.*
-  - `load_youtube_from_post(tab_widget, post)` [L337-L385] — *Populate YouTube controls from the given post dictionary.*
-  - `sync_youtube_to_meta(target_meta, post)` [L388-L396] — *Sync YouTube embed settings from post to target_meta dictionary.*
-  - `_on_youtube_url_changed(tab_widget, text)` [L399-L441]
-  - `_on_youtube_apply_all_toggled(tab_widget, checked)` [L444-L448]
-  - `_on_youtube_use_story_time_toggled(tab_widget, checked)` [L451-L461]
-  - `_on_youtube_stop_at_end_toggled(tab_widget, checked)` [L464-L474]
-  - `_on_youtube_placement_toggled(tab_widget, placement)` [L477-L487]
-  - `format_post_list_label_and_tooltip(tab_widget, idx)` [L490-L557] — *Return formatted label text and rich multi-line tooltip for an item in wp_posts_list.*
+  - `setup_wp_youtube_ui(tab_widget, parent_layout)` [L190-L272] — *Construct the 'YouTube Video Embed' CollapsibleSection inside the Media tab.*
+  - `_get_current_post(tab_widget)` [L275-L281]
+  - `_set_youtube_controls_enabled(tab_widget, enabled)` [L284-L321] — *Enable or disable YouTube embed options based on whether a valid video URL is present.*
+  - `update_youtube_status_label(tab_widget)` [L324-L381] — *Refresh the dynamic status preview line below the YouTube URL input.*
+  - `load_youtube_from_post(tab_widget, post)` [L384-L432] — *Populate YouTube controls from the given post dictionary.*
+  - `sync_youtube_to_meta(target_meta, post)` [L435-L443] — *Sync YouTube embed settings from post to target_meta dictionary.*
+  - `_on_youtube_url_changed(tab_widget, text)` [L446-L488]
+  - `_on_youtube_apply_all_toggled(tab_widget, checked)` [L491-L495]
+  - `_on_youtube_use_story_time_toggled(tab_widget, checked)` [L498-L508]
+  - `_on_youtube_stop_at_end_toggled(tab_widget, checked)` [L511-L521]
+  - `_on_youtube_placement_toggled(tab_widget, placement)` [L524-L534]
+  - `format_post_list_label_and_tooltip(tab_widget, idx)` [L537-L604] — *Return formatted label text and rich multi-line tooltip for an item in wp_posts_list.*
 
 ### `plugins/youtube/__init__.py` (9 lines)
 *YouTube Video Publisher Plugin for Radio & TV Segmenter.*
@@ -2813,7 +2814,7 @@
   - `_on_bubble_export(self)` [L468-L473]
 
 ### `transcript_story.py` (852 lines)
-*Radio & TV Segmenter v3.9.78-beta — transcript story responsibilities.*
+*Radio & TV Segmenter v3.9.79-beta — transcript story responsibilities.*
 - **Public Exports (`__all__`)**: TranscriptStoryMixin, Story, SetStoriesCommand, SelectStoriesCommand, StoryBoundaryChangeCommand, StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin, ChangeSpeakerDialog, VoiceProfileMatchDialog, StoryFadesDialog, SpeakerManagerDialog, FADE_CURVE_TABLES, get_fade_curve_factors
 - **class `TranscriptStoryMixin(StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin)`** (lines 63–851):
   - `render_transcript(self)` [L64-L467]
