@@ -1,20 +1,17 @@
 # Changelog
 
+## v3.9.83-beta
+- **User Guide Screenshot Alignment, Correct Media Tab Captures & Dedicated Tab Previews (`scripts/capture_guide_screenshots.py`, `docs/guides/wordpress_exporting.md`, `docs/images/`, `embedded_guides.py`)**:
+  - **Media Tab Capture Correction (`scripts/capture_guide_screenshots.py`, `docs/images/wordpress_export_media_tab.png`)**: Corrected tab index in the automated screenshot generator from index 3 (Publishing & Formatting) to index 2 (the actual Media tab). `wordpress_export_media_tab.png` now accurately displays the YouTube video link input, 16:9 placement controls, featured image grabber, and audio/podcast attachment options.
+  - **Dedicated Screenshots for Every Editor Tab (`docs/images/`)**: Added dedicated, pixel-accurate screenshots for all WordPress post configuration tabs:
+    - `wordpress_export_content_tab.png`: Tab 1 (Post Content) showing Title, Excerpt, and Custom Notice.
+    - `wordpress_export_taxonomy_tab.png`: Tab 2 (Authors & Taxonomy) showing Author and Category lists with filters.
+    - `wordpress_export_media_tab.png`: Tab 3 (Media) showing YouTube link, Thumbnail grabber, and Audio settings.
+    - `wordpress_export_publishing_tab.png`: Tab 4 (Publishing & Formatting) showing Languages and Episode Cross-Linking.
+  - **Documentation Placement Synchronized (`docs/guides/wordpress_exporting.md`, `embedded_guides.py`)**: Aligned image markdown embeds so each tab's screenshot appears directly beneath its own dedicated heading.
+
 ## v3.9.82-beta
 - **WordPress Post List Expandable Sidebar, Compact Prefix Indicators & Documentation Accuracy Overhaul (`plugins/wordpress/wp_ui_builder.py`, `plugins/wordpress/youtube_embed.py`, `plugins/wordpress/manifest.json`, `docs/guides/`, `embedded_guides.py`)**:
   - **Compact Start-of-Title Prefix Badges (`plugins/wordpress/youtube_embed.py`)**: Moved media and post indicators from the end of the story title to compact prefix badges directly following the story number (e.g. `Story 1 [YT, A]: Demonstrators...` or `Story 2 [Pod]: A shuttle...`). Ensures post type indicators (`[YT]` = YouTube embed, `[Pod]` = Podcast RSS enclosure, `[A]` = MP3 audio cut, `[Img]` = Featured thumbnail) are immediately visible within the first 15 characters without being pushed offscreen by long headlines.
   - **Expandable Post List Sidebar (`plugins/wordpress/wp_ui_builder.py`)**: Upgraded `wp_posts_container` from a fixed-width `QHBoxLayout` with a 220px maximum cap to a horizontal `QSplitter`. Users can freely drag the splitter divider to expand the sidebar or narrow it to their preference.
-  - **User Guide Accuracy Audit (`docs/guides/`, `embedded_guides.py`)**: Thoroughly audited and corrected all 5 user guides to accurately describe current UI controls, tab titles, and workflows:
-    - **WordPress Exporting & Setup (`docs/guides/wordpress_exporting.md`)**: Corrected all 4 tab names to `Post Content`, `Authors & Taxonomy`, `Media`, and `Publishing & Formatting`. Documented the `Generate from Story` excerpt button, auto-dimmed YouTube embed controls, and new `[YT]` / `[Pod]` / `[A]` prefix badges.
-    - **YouTube Features & Chapter Generation (`docs/guides/youtube_features.md`)**: Documented the instant `Ctrl+Shift+Y` clipboard copy shortcut alongside the Unified Export tracklist option, and accurately mapped the `Media` tab embed controls.
-    - **Video Shows & YouTube Publishing (`docs/guides/video_shows_and_youtube_publishing.md`)**: Corrected top destination radio button (`WordPress Draft Post`) and tab references (`Media` tab).
-    - **Export Formats & DAW Integration (`docs/guides/export_formats.md`)**: Correctly aligned the 4 export destinations (Local Files, WordPress Draft Post, Timeline & DAW Interchange, YouTube Video Publisher).
-    - **Getting Started & Workflow (`docs/guides/getting_started_and_workflow.md`)**: Corrected menu item locations, including `File > Batch Processing...` (`Ctrl+Shift+B`) and `Tools > Multi-Stage Processing...` (`Ctrl+R`).
-
-## v3.9.81-beta
-- **Responsive User Guide Image Scaling & High-DPI Screenshot Downsampling (`user_guide_dialog.py`, `scripts/capture_guide_screenshots.py`, `docs/images/`, `diagnostic_editor_tests.py`)**:
-  - **Dynamic Responsive Image Resizing (`user_guide_dialog.py`)**: Built `ResponsiveTextBrowser`, a custom `QTextBrowser` subclass that automatically scales embedded guide screenshots to fit the available viewport width whenever the dialog or splitter is resized. Prevents horizontal scrollbars and eliminates image clipping on compact windows and low-resolution displays (e.g. 1366x768).
-  - **Proportional Dimension Clamping**: Preserves exact natural aspect ratios when scaling down to fit smaller viewports while capping images at their natural size when the content pane is widened, ensuring screenshots never stretch or pixelate.
-  - **Real-Time Splitter & Zoom Hooking**: Bound `scale_images_to_viewport()` to splitter dragging, document loading, and zoom controls (`Zoom +`, `Zoom -`, `Reset Zoom`), ensuring images instantly re-adapt as users adjust layout preferences.
-  - **High-DPI Screenshot Asset Downsampling (`docs/images/`, `scripts/capture_guide_screenshots.py`)**: Downsampled oversized high-DPI screenshots (previously up to 2040x1440) using high-fidelity Lanczos antialiasing to a standardized maximum width of 850px. Updated `capture_guide_screenshots.py` with automatic 850px smooth scaling for future asset captures.
-  - **Automated Regression Suite (`diagnostic_editor_tests.py`)**: Expanded `In-App User Guides and Documentation Viewer` to verify responsive image scaling, asserting image widths adapt within viewport boundaries when tested on narrow viewports.
+  - **User Guide Accuracy Audit (`docs/guides/`, `embedded_guides.py`)**: Thoroughly audited and corrected all 5 user guides to accurately describe current UI controls, tab titles, and workflows.

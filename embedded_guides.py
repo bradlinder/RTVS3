@@ -162,6 +162,9 @@ Configure each post across the 4 editor tabs:
 - **Custom Notice / Disclaimer**: An optional notice (e.g., *"This story aired on Radio One on Nov 4"*) prepended or appended to the article.
 
 ### Tab 2: Authors & Taxonomy
+
+![WordPress Authors & Taxonomy Tab](../images/wordpress_export_taxonomy_tab.png)
+
 - **Authors**: Search, filter, and select registered WordPress authors to assign bylines.
 - **Categories**: Search, filter, and assign one or more WordPress categories (e.g., *News*, *Interviews*, *Local*).
 - **Tags**: Enter comma-separated tag keywords.
@@ -182,6 +185,9 @@ Configure each post across the 4 editor tabs:
 - **Podcast Enclosure**: Check this to format the audio upload with Castos or standard RSS podcast enclosures so aggregator plugins detect the episode.
 
 ### Tab 4: Publishing & Formatting
+
+![WordPress Publishing & Formatting Tab](../images/wordpress_export_publishing_tab.png)
+
 - **Transcript Languages**: Select your primary spoken language and choose any translated languages to append to the post draft.
 - **Episode Cross-Linking**: Automatically insert hyperlinks back to the full broadcast master post or related story segments.
 

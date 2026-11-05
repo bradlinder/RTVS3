@@ -70,12 +70,13 @@ class MockCaptureMainWindow:
 
 
 def capture_widget(widget: QWidget, output_path: Path, size: QSize = None):
-    """Render a QWidget to a high-resolution PNG image file."""
+    """Render a QWidget to a high-resolution PNG image file capped at max 850px width."""
     output_path.parent.mkdir(parents=True, exist_ok=True)
+    widget.show()
     if size:
         widget.resize(size)
-    widget.show()
-    widget.adjustSize()
+    else:
+        widget.adjustSize()
     QApplication.processEvents()
 
     # Grab raster pixmap from native widget backing store and cap max width to 850px
@@ -95,7 +96,6 @@ def main():
     images_dir = ROOT_DIR / "docs" / "images"
     mock_win = MockCaptureMainWindow()
 
-    # 1. Capture WordPress Export Panel - Media Tab
     wp_widget = WordPressExportTabWidget(None, mock_win)
     wp_widget.rebuild_post_items(scope="all_stories")
 
@@ -109,35 +109,41 @@ def main():
         post["author_names"] = ["Alex Mercer"]
         post["category_names"] = ["Technology", "Interviews"]
 
-    # Select Story 1 in list and switch to the "Media" tab (index 3)
     wp_widget.wp_posts_list.setCurrentRow(1)
-    wp_widget.wp_editor_tabs.setCurrentIndex(3)
     wp_widget._load_post_editor_state(1)
 
-    # Capture Media tab in WordPress Export
-    wp_widget.resize(920, 680)
-    capture_widget(wp_widget, images_dir / "wordpress_export_media_tab.png", QSize(920, 680))
+    # 1. Capture Media Tab (Index 2 - YouTube Video Link, Featured Image, Audio & Podcast)
+    wp_widget.wp_editor_tabs.setCurrentIndex(2)
+    capture_widget(wp_widget, images_dir / "wordpress_export_media_tab.png", QSize(850, 620))
 
-    # 2. Capture Content Tab (with Title, Excerpt, Gutenberg Notice)
+    # 2. Capture Post Content Tab (Index 0 - Title, Excerpt, Custom Notice)
     wp_widget.wp_editor_tabs.setCurrentIndex(0)
-    capture_widget(wp_widget, images_dir / "wordpress_export_content_tab.png", QSize(920, 680))
+    capture_widget(wp_widget, images_dir / "wordpress_export_content_tab.png", QSize(850, 620))
 
-    # 3. Capture Post List Close-up
+    # 3. Capture Authors & Taxonomy Tab (Index 1 - Authors, Categories, Tags)
+    wp_widget.wp_editor_tabs.setCurrentIndex(1)
+    capture_widget(wp_widget, images_dir / "wordpress_export_taxonomy_tab.png", QSize(850, 620))
+
+    # 4. Capture Publishing & Formatting Tab (Index 3 - Languages & Cross-Linking)
+    wp_widget.wp_editor_tabs.setCurrentIndex(3)
+    capture_widget(wp_widget, images_dir / "wordpress_export_publishing_tab.png", QSize(850, 620))
+
+    # 5. Capture Post List Close-up with Prefix Badges ([YT], [Pod], [A], [Img])
     list_widget = wp_widget.wp_posts_list
-    capture_widget(list_widget, images_dir / "wordpress_posts_list_badges.png", QSize(320, 480))
+    capture_widget(list_widget, images_dir / "wordpress_posts_list_badges.png", QSize(320, 260))
 
-    # 4. Capture WordPress Credentials & Preferences Page
+    # 6. Capture WordPress Credentials & Preferences Page
     from plugins.wordpress.client import WordPressPreferencesPage
     pref_page = WordPressPreferencesPage()
     pref_page.url_edit.setText("https://example-news-station.com")
     pref_page.user_edit.setText("newsroom_editor")
     pref_page.pass_edit.setText("abcd efgh ijkl mnop")
-    capture_widget(pref_page, images_dir / "wordpress_preferences_credentials.png", QSize(680, 520))
+    capture_widget(pref_page, images_dir / "wordpress_preferences_credentials.png", QSize(800, 560))
 
-    # 5. Capture Unified Export Dialog Overview
+    # 7. Capture Unified Export Dialog Overview
     from export.dialog import UnifiedExportDialog
     exp_dlg = UnifiedExportDialog(None, mock_win)
-    capture_widget(exp_dlg, images_dir / "unified_export_dialog.png", QSize(820, 560))
+    capture_widget(exp_dlg, images_dir / "unified_export_dialog.png", QSize(850, 620))
 
     print("\nAll documentation screenshots successfully generated.")
 

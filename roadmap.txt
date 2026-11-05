@@ -94,19 +94,18 @@ TABLE OF CONTENTS & STATUS OVERVIEW
    [ ] 5.4 Burned-in Subtitles & Platform Safe Zone Enforcement (`plugins/social_reel/reel_subtitles.py`)
    [ ] 5.5 Unified Export Integration & Social Reel Diagnostic Tests (`export/dialog.py`, `test_runner.py`)
 
-6. Current Release: WordPress Post List Expandable Sidebar, Compact Prefix Indicators & Documentation Accuracy Overhaul (plugins/wordpress/wp_ui_builder.py, plugins/wordpress/youtube_embed.py, docs/guides/, embedded_guides.py) [x] [COMPLETED in v3.9.82-beta]
-   [x] 6.1 Compact Prefix Badges: Placed media indicators ([YT], [Pod], [A], [Img]) directly after the story label for guaranteed visibility.
-   [x] 6.2 Expandable Sidebar QSplitter: Converted wp_posts_container to horizontal QSplitter without maximum width cap.
-   [x] 6.3 Comprehensive User Guide Audit: Aligned all 5 guides with exact UI element names (Post Content, Authors & Taxonomy, Media, Publishing & Formatting).
-   [x] 6.4 Shortcut & Menu Alignment: Corrected Ctrl+Shift+Y, File > Batch Processing..., and Tools > Multi-Stage Processing... references.
-   [x] 6.5 Catch-Up Plugin Synchronization: Synchronized plugins/wordpress/manifest.json to v3.9.82-beta.
+6. Current Release: User Guide Screenshot Alignment, Correct Media Tab Captures & Dedicated Tab Previews (scripts/capture_guide_screenshots.py, docs/guides/wordpress_exporting.md, docs/images/, embedded_guides.py) [x] [COMPLETED in v3.9.83-beta]
+   [x] 6.1 Media Tab Index Correction: Fixed screenshot generator tab index from 3 to 2 so wordpress_export_media_tab.png accurately shows YouTube and media options.
+   [x] 6.2 Dedicated 4-Tab Screenshots: Captured pixel-accurate 850px screenshots for Post Content, Authors & Taxonomy, Media, and Publishing & Formatting tabs.
+   [x] 6.3 In-Guide Image Alignment: Embedded each screenshot directly under its corresponding tab section in wordpress_exporting.md.
+   [x] 6.4 Embedded Guides Synchronization: Synchronized all compile-time fallbacks in embedded_guides.py with the new image references.
 
-7. Previous Release: Responsive User Guide Image Scaling & High-DPI Screenshot Downsampling (user_guide_dialog.py, docs/images/, scripts/capture_guide_screenshots.py, diagnostic_editor_tests.py) [x] [COMPLETED in v3.9.81-beta]
-   [x] 7.1 Responsive Image Resizing: Implemented ResponsiveTextBrowser subclass scaling embedded screenshots dynamically to fit available viewport width.
-   [x] 7.2 Proportional Aspect Clamping: Maintained natural aspect ratio while preventing horizontal scrollbar overflow on compact windows and low-res displays.
-   [x] 7.3 Real-Time Splitter & Zoom Hooking: Hooked scale_images_to_viewport() to splitter dragging, document loading, and zoom actions.
-   [x] 7.4 High-DPI Screenshot Downsampling: Resampled guide screenshots to max width 850px using Lanczos antialiasing and added auto-scaling to capture script.
-   [x] 7.5 Automated Verification: Added responsive viewport width assertions in diagnostic_editor_tests.py.
+7. Previous Release: WordPress Post List Expandable Sidebar, Compact Prefix Indicators & Documentation Accuracy Overhaul (plugins/wordpress/wp_ui_builder.py, plugins/wordpress/youtube_embed.py, docs/guides/, embedded_guides.py) [x] [COMPLETED in v3.9.82-beta]
+   [x] 7.1 Compact Prefix Badges: Placed media indicators ([YT], [Pod], [A], [Img]) directly after the story label for guaranteed visibility.
+   [x] 7.2 Expandable Sidebar QSplitter: Converted wp_posts_container to horizontal QSplitter without maximum width cap.
+   [x] 7.3 Comprehensive User Guide Audit: Aligned all 5 guides with exact UI element names (Post Content, Authors & Taxonomy, Media, Publishing & Formatting).
+   [x] 7.4 Shortcut & Menu Alignment: Corrected Ctrl+Shift+Y, File > Batch Processing..., and Tools > Multi-Stage Processing... references.
+   [x] 7.5 Catch-Up Plugin Synchronization: Synchronized plugins/wordpress/manifest.json to v3.9.82-beta.
 ================================================================================
 DETAILED MILESTONE SPECIFICATIONS
 ================================================================================
@@ -148,23 +147,22 @@ DETAILED MILESTONE SPECIFICATIONS
 - Target Release: v4.3.0 (Optional / Planned)
 - Technical References: Subsystem architecture, plugin manifest, and FFmpeg filtergraph pipeline specifications are detailed in `ARCHITECTURE.md` (Section 6).
 
-6. CURRENT RELEASE: WORDPRESS POST LIST EXPANDABLE SIDEBAR, COMPACT PREFIX INDICATORS & DOCUMENTATION ACCURACY OVERHAUL:
+6. CURRENT RELEASE: USER GUIDE SCREENSHOT ALIGNMENT, CORRECT MEDIA TAB CAPTURES & DEDICATED TAB PREVIEWS:
+- Purpose: Fix screenshot tab index in capture_guide_screenshots.py so wordpress_export_media_tab.png shows the actual Media tab rather than Publishing & Formatting, capture dedicated images for all 4 editor tabs, and align documentation image placement.
+- Target Release: v3.9.83-beta (Current Release)
+- Technical References & Implementation Details:
+  * [x] Screenshot Script Correction: Switched tab index to 2 in capture_guide_screenshots.py to capture actual Media tab with YouTube link and embed settings.
+  * [x] Dedicated Tab Previews: Added wordpress_export_taxonomy_tab.png and wordpress_export_publishing_tab.png.
+  * [x] In-Guide Alignment: Embedded each screenshot directly under its corresponding section in docs/guides/wordpress_exporting.md.
+  * [x] Embedded Guides Sync: Updated embedded_guides.py with identical image paths and text.
+  * Release Logs: Documented in CHANGELOG.md under ## v3.9.83-beta.
+
+7. PREVIOUS RELEASE: WORDPRESS POST LIST EXPANDABLE SIDEBAR, COMPACT PREFIX INDICATORS & DOCUMENTATION ACCURACY OVERHAUL:
 - Purpose: Guarantee post type indicators are always visible regardless of sidebar width, make post list expandable via QSplitter, and ensure all user guides accurately reflect current UI labels and workflows.
-- Target Release: v3.9.82-beta (Current Release)
+- Target Release: v3.9.82-beta (Previous Release)
 - Technical References & Implementation Details:
   * [x] Compact Prefix Indicators: Positioned [YT], [Pod], [A], [Img] right after the story number in format_post_list_label_and_tooltip() in plugins/wordpress/youtube_embed.py.
   * [x] Expandable QSplitter: Converted wp_posts_container to QSplitter in plugins/wordpress/wp_ui_builder.py, removing 220px max cap.
   * [x] Documentation Overhaul: Corrected tab names (Post Content, Authors & Taxonomy, Media, Publishing & Formatting) and menu references across all 5 guides and embedded_guides.py.
   * [x] Plugin Catch-Up: Updated plugins/wordpress/manifest.json to v3.9.82-beta.
   * Release Logs: Documented in CHANGELOG.md under ## v3.9.82-beta.
-
-7. PREVIOUS RELEASE: RESPONSIVE USER GUIDE IMAGE SCALING & HIGH-DPI SCREENSHOT DOWNSAMPLING:
-- Purpose: Automatically scale embedded documentation images to fit smaller window viewports and downsample oversized high-DPI screenshots to prevent overflow.
-- Target Release: v3.9.81-beta (Previous Release)
-- Technical References & Implementation Details:
-  * [x] ResponsiveTextBrowser: Subclassed QTextBrowser in user_guide_dialog.py with scale_images_to_viewport() adapting images dynamically to viewport width.
-  * [x] Proportional Clamping: Preserved natural aspect ratios while capping at natural size on wide screens and downscaling on narrow viewports.
-  * [x] Splitter & Zoom Synchronization: Hooked image scaling to splitter move events and zoom controls.
-  * [x] High-DPI Screenshot Downsampling: Scaled docs/images/*.png to max width 850px using Lanczos resampling; capped capture_guide_screenshots.py.
-  * [x] Automated Regression Suite: Added responsive viewport width assertions in diagnostic_editor_tests.py.
-  * Release Logs: Documented in CHANGELOG.md under ## v3.9.81-beta.

@@ -1,5 +1,13 @@
 # Changelog Archive (Historical Releases: v1.1 – v3.8.9-beta.19)
 
+## v3.9.81-beta
+- **Responsive User Guide Image Scaling & High-DPI Screenshot Downsampling (`user_guide_dialog.py`, `scripts/capture_guide_screenshots.py`, `docs/images/`, `diagnostic_editor_tests.py`)**:
+  - **Dynamic Responsive Image Resizing (`user_guide_dialog.py`)**: Built `ResponsiveTextBrowser`, a custom `QTextBrowser` subclass that automatically scales embedded guide screenshots to fit the available viewport width whenever the dialog or splitter is resized. Prevents horizontal scrollbars and eliminates image clipping on compact windows and low-resolution displays (e.g. 1366x768).
+  - **Proportional Dimension Clamping**: Preserves exact natural aspect ratios when scaling down to fit smaller viewports while capping images at their natural size when the content pane is widened, ensuring screenshots never stretch or pixelate.
+  - **Real-Time Splitter & Zoom Hooking**: Bound `scale_images_to_viewport()` to splitter dragging, document loading, and zoom controls (`Zoom +`, `Zoom -`, `Reset Zoom`), ensuring images instantly re-adapt as users adjust layout preferences.
+  - **High-DPI Screenshot Asset Downsampling (`docs/images/`, `scripts/capture_guide_screenshots.py`)**: Downsampled oversized high-DPI screenshots (previously up to 2040x1440) using high-fidelity Lanczos antialiasing to a standardized maximum width of 850px. Updated `capture_guide_screenshots.py` with automatic 850px smooth scaling for future asset captures.
+  - **Automated Regression Suite (`diagnostic_editor_tests.py`)**: Expanded `In-App User Guides and Documentation Viewer` to verify responsive image scaling, asserting image widths adapt within viewport boundaries when tested on narrow viewports.
+
 ## v3.9.80-beta
 - **In-App User Guides Program Directory Packaging & Hardcoded Embedded Fallbacks (`user_guide_dialog.py`, `embedded_guides.py`, `build_installer.py`, `installer/Windows/RadioTVStorySegmenter.iss`, `diagnostic_editor_tests.py`)**:
   - **Application Program Directory Installation (`build_installer.py`, `RadioTVStorySegmenter.iss`)**: Explicitly bundled the entire `docs/` hierarchy (user guides and screenshot images) into `dist/RadioTVSegmenter/docs/` during stage 2 packaging. When installed via the Windows Setup wizard, documentation is placed directly into `{app}\docs\` (`C:\Program Files\Radio & TV Segmenter\docs\`).
