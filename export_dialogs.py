@@ -11,7 +11,7 @@ import os
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
-from PySide6.QtCore import Qt, QUrl
+from PySide6.QtCore import Qt, QUrl, QSettings
 from PySide6.QtGui import QDesktopServices
 from PySide6.QtWidgets import (
     QApplication,
@@ -27,7 +27,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
 )
 
-from core_utils import safe_filename
+from core_utils import safe_filename, INTERNAL_APP_ID
 from export.dialog import UnifiedExportDialog
 
 
@@ -92,17 +92,27 @@ class ExportDialogsMixin:
 
         if initial_scope is None:
             proj_meta = getattr(self, "project_metadata", None)
-            saved_scope = proj_meta.get("last_export_scope") if isinstance(proj_meta, dict) else None
-            if saved_scope in ("selected_stories", "all_stories", "full", "full_and_all_stories"):
-                initial_scope = saved_scope
+            saved_proj_scope = proj_meta.get("last_export_scope") if isinstance(proj_meta, dict) else None
+            valid_scopes = ("selected_stories", "all_stories", "full", "full_and_all_stories")
+            
+            # Tier 1: Project session memory (if active for current project)
+            if saved_proj_scope in valid_scopes:
+                initial_scope = saved_proj_scope
             else:
-                sel = getattr(self, "current_selected_story_indices", [])
-                if sel:
-                    initial_scope = "selected_stories"
-                elif getattr(self, "stories", []):
-                    initial_scope = "all_stories"
+                # Tier 2: User saved application default from "Save Options as Default"
+                settings = QSettings(INTERNAL_APP_ID, INTERNAL_APP_ID)
+                saved_default_scope = str(settings.value("export_opt_default_scope", "") or "").strip()
+                if saved_default_scope in valid_scopes:
+                    initial_scope = saved_default_scope
                 else:
-                    initial_scope = "full"
+                    # Tier 3: Dynamic fallback based on active selection and timeline
+                    sel = getattr(self, "current_selected_story_indices", [])
+                    if sel:
+                        initial_scope = "selected_stories"
+                    elif getattr(self, "stories", []):
+                        initial_scope = "all_stories"
+                    else:
+                        initial_scope = "full"
 
         dialog = UnifiedExportDialog(self, initial_scope=initial_scope, initial_dest=initial_dest)
         self._active_export_dialog = dialog

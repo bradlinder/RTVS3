@@ -61,7 +61,11 @@ class ResponsiveTextBrowser(QTextBrowser):
             return
 
         # Viewport width minus document padding margins
-        avail_width = max(160, self.viewport().width() - 44)
+        try:
+            vp_width = self.viewport().width()
+            avail_width = max(160, int(vp_width) - 44)
+        except (TypeError, ValueError, AttributeError, Exception):
+            avail_width = 800
         cursor = QTextCursor(doc)
         doc.blockSignals(True)
         cursor.beginEditBlock()

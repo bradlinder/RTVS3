@@ -259,7 +259,11 @@ class DiagnosticEditorTestsMixin:
         if badges_img.exists():
             test_browser.setMarkdown(f"![Badges]({badges_img.as_uri()})")
             test_browser.scale_images_to_viewport()
-            avail = max(160, test_browser.viewport().width() - 44)
+            try:
+                raw_w = test_browser.viewport().width()
+                avail = max(160, int(raw_w) - 44)
+            except (TypeError, ValueError, AttributeError, Exception):
+                avail = 800
             cur = QTextCursor(test_browser.document())
             while not cur.atEnd():
                 cur.movePosition(QTextCursor.NextCharacter, QTextCursor.KeepAnchor)

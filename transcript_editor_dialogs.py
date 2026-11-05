@@ -229,8 +229,11 @@ class FindReplaceDialog(QDialog):
         # Advance via parent match tracker if active and no custom case/word flags
         flags = self.get_flags()
         if not self.case_checkbox.isChecked() and not (getattr(self, "whole_word_checkbox", None) and self.whole_word_checkbox.isChecked()):
-            if parent and hasattr(parent, "_search_match_ranges") and parent._search_match_ranges:
-                parent._search_match_index = (parent._search_match_index + 1) % len(parent._search_match_ranges)
+            if parent and hasattr(parent, "_search_match_ranges") and isinstance(getattr(parent, "_search_match_ranges", None), list) and parent._search_match_ranges:
+                curr_idx = getattr(parent, "_search_match_index", 0)
+                if not isinstance(curr_idx, int):
+                    curr_idx = 0
+                parent._search_match_index = (curr_idx + 1) % len(parent._search_match_ranges)
                 parent._sync_search_match_ui(scroll_to_match=True)
                 self._update_local_match_count()
                 return True
@@ -267,8 +270,11 @@ class FindReplaceDialog(QDialog):
 
         flags = self.get_flags() | QTextDocument.FindFlag.FindBackward
         if not self.case_checkbox.isChecked() and not (getattr(self, "whole_word_checkbox", None) and self.whole_word_checkbox.isChecked()):
-            if parent and hasattr(parent, "_search_match_ranges") and parent._search_match_ranges:
-                parent._search_match_index = (parent._search_match_index - 1) % len(parent._search_match_ranges)
+            if parent and hasattr(parent, "_search_match_ranges") and isinstance(getattr(parent, "_search_match_ranges", None), list) and parent._search_match_ranges:
+                curr_idx = getattr(parent, "_search_match_index", 0)
+                if not isinstance(curr_idx, int):
+                    curr_idx = 0
+                parent._search_match_index = (curr_idx - 1) % len(parent._search_match_ranges)
                 parent._sync_search_match_ui(scroll_to_match=True)
                 self._update_local_match_count()
                 return True

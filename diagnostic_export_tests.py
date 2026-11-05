@@ -171,6 +171,29 @@ class DiagnosticExportTestsMixin:
             exp_dlg = UnifiedExportDialog(mock_widget.main_window, initial_scope="all_stories")
             if exp_dlg.windowModality() != Qt.WindowModality.NonModal or not hasattr(exp_dlg, "float_btn") or not hasattr(exp_dlg, "refresh_btn"):
                 raise AssertionError("UnifiedExportDialog missing NonModal floating controls")
+            
+            # Verify saving options as default persists export_opt_default_scope
+            idx_full_all = exp_dlg.scope_combo.findData("full_and_all_stories")
+            if idx_full_all >= 0:
+                exp_dlg.scope_combo.setCurrentIndex(idx_full_all)
+            exp_dlg.save_options_to_settings(as_default=False)
+            
+            from PySide6.QtCore import QSettings
+            from core_utils import INTERNAL_APP_ID
+            test_settings = QSettings(INTERNAL_APP_ID, INTERNAL_APP_ID)
+            if test_settings.value("export_opt_default_scope") != "full_and_all_stories":
+                raise AssertionError(f"Expected default scope 'full_and_all_stories', got '{test_settings.value('export_opt_default_scope')}'")
+
+            # Verify 3-tier precedence in open_unified_export_dialog:
+            # When project_metadata has no scope, it must pick up the saved default
+            if hasattr(mock_widget.main_window, "open_unified_export_dialog"):
+                mock_widget.main_window.project_metadata = {}
+                dlg2 = mock_widget.main_window.open_unified_export_dialog(modal=False)
+                if dlg2.scope_combo.currentData() != "full_and_all_stories":
+                    raise AssertionError(f"open_unified_export_dialog failed to use saved default scope, got '{dlg2.scope_combo.currentData()}'")
+                dlg2.close()
+                dlg2.deleteLater()
+
             exp_dlg.close()
 
             meta_dlg = StoryMetadataDialog(None, main_window=mock_widget.main_window, target_story_index=0)

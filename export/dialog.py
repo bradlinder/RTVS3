@@ -225,6 +225,11 @@ class UnifiedExportDialog(QDialog):
         proj_meta = getattr(self.main_window, "project_metadata", None)
         if not initial_dest and isinstance(proj_meta, dict):
             initial_dest = proj_meta.get("last_export_dest")
+        if not initial_dest:
+            settings = QSettings(INTERNAL_APP_ID, INTERNAL_APP_ID)
+            saved_default_dest = str(settings.value("export_opt_default_dest", "") or "").strip()
+            if saved_default_dest:
+                initial_dest = saved_default_dest
         if initial_dest:
             for entry in self._dest_entries:
                 if entry["id"] == initial_dest:
@@ -1188,6 +1193,16 @@ class UnifiedExportDialog(QDialog):
         tl_custom_dir = self.tl_custom_path_edit.text().strip()
         if tl_custom_dir:
             settings.setValue("export_opt_tl_custom_dir", tl_custom_dir)
+
+        # Export Scope & Active Destination
+        scope_data = self.scope_combo.currentData()
+        if scope_data:
+            settings.setValue("export_opt_default_scope", str(scope_data))
+
+        for entry in getattr(self, "_dest_entries", []):
+            if entry.get("radio") and entry["radio"].isChecked():
+                settings.setValue("export_opt_default_dest", str(entry.get("id", "")))
+                break
 
         settings.sync()
         if as_default:

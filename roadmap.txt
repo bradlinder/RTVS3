@@ -94,7 +94,7 @@ TABLE OF CONTENTS & STATUS OVERVIEW
    [ ] 5.4 Burned-in Subtitles & Platform Safe Zone Enforcement (`plugins/social_reel/reel_subtitles.py`)
    [ ] 5.5 Unified Export Integration & Social Reel Diagnostic Tests (`export/dialog.py`, `test_runner.py`)
 
-6. Current Release: WordPress Post List Indicator Placement & Story Duplicate Title Elimination (plugins/wordpress/wp_post_builder.py, plugins/wordpress/youtube_embed.py, plugins/wordpress/wp_tab_widget.py, scripts/capture_guide_screenshots.py) [x] [COMPLETED in v3.9.84-beta]
+6. Current Release: WordPress Post List Indicator Placement & Story Duplicate Title Elimination (plugins/wordpress/wp_post_builder.py, plugins/wordpress/youtube_embed.py, plugins/wordpress/wp_tab_widget.py, scripts/capture_guide_screenshots.py) [x] [COMPLETED in v3.9.85-beta]
    [x] 6.1 Story Duplicate Title Elimination: Fixed wp_post_builder.py so task_label is cleanly 'Story N' without baking in story headlines.
    [x] 6.2 Start-of-Title Indicator Placement: Positioned media badges ([YT], [Pod], [A], [Img]) immediately after 'Story N' or 'Full Episode' and before the headline.
    [x] 6.3 Defensive Legacy Prefix Normalization: Normalized legacy cached projects with split colons so existing sessions load without duplicate headlines.
@@ -147,22 +147,22 @@ DETAILED MILESTONE SPECIFICATIONS
 - Target Release: v4.3.0 (Optional / Planned)
 - Technical References: Subsystem architecture, plugin manifest, and FFmpeg filtergraph pipeline specifications are detailed in `ARCHITECTURE.md` (Section 6).
 
-6. CURRENT RELEASE: USER GUIDE SCREENSHOT ALIGNMENT, CORRECT MEDIA TAB CAPTURES & DEDICATED TAB PREVIEWS:
-- Purpose: Fix screenshot tab index in capture_guide_screenshots.py so wordpress_export_media_tab.png shows the actual Media tab rather than Publishing & Formatting, capture dedicated images for all 4 editor tabs, and align documentation image placement.
-- Target Release: v3.9.83-beta (Current Release)
+6. CURRENT RELEASE: EXPORT SCOPE DEFAULT PERSISTENCE & 3-TIER PRECEDENCE RESOLUTION:
+- Purpose: Ensure 'Save Options as Default' persists the user's chosen export scope and destination tab to QSettings, and implement predictable 3-tier precedence honoring project memory, saved defaults, and dynamic fallback.
+- Target Release: v3.9.85-beta (Current Release)
 - Technical References & Implementation Details:
-  * [x] Screenshot Script Correction: Switched tab index to 2 in capture_guide_screenshots.py to capture actual Media tab with YouTube link and embed settings.
-  * [x] Dedicated Tab Previews: Added wordpress_export_taxonomy_tab.png and wordpress_export_publishing_tab.png.
-  * [x] In-Guide Alignment: Embedded each screenshot directly under its corresponding section in docs/guides/wordpress_exporting.md.
-  * [x] Embedded Guides Sync: Updated embedded_guides.py with identical image paths and text.
-  * Release Logs: Documented in CHANGELOG.md under ## v3.9.83-beta.
+  * [x] Export Scope & Destination Default Persistence: Updated save_options_to_settings() in export/dialog.py to write export_opt_default_scope and export_opt_default_dest to QSettings.
+  * [x] 3-Tier Precedence Resolution: Implemented Tier 1 (project session memory), Tier 2 (user saved QSettings default), and Tier 3 (timeline fallback) in export_dialogs.py:open_unified_export_dialog().
+  * [x] Default Destination Fallback: Added QSettings fallback in UnifiedExportDialog so opening export without a project-specific tab restores user's preferred panel.
+  * [x] Automated Diagnostic Verification: Expanded _test_wordpress_export_scope_post_builder in diagnostic_export_tests.py asserting full_and_all_stories persistence and 3-tier resolution.
+  * Release Logs: Documented in CHANGELOG.md under ## v3.9.85-beta.
 
-7. PREVIOUS RELEASE: WORDPRESS POST LIST EXPANDABLE SIDEBAR, COMPACT PREFIX INDICATORS & DOCUMENTATION ACCURACY OVERHAUL:
-- Purpose: Guarantee post type indicators are always visible regardless of sidebar width, make post list expandable via QSplitter, and ensure all user guides accurately reflect current UI labels and workflows.
-- Target Release: v3.9.82-beta (Previous Release)
+7. PREVIOUS RELEASE: WORDPRESS POST LIST INDICATOR PLACEMENT & STORY DUPLICATE TITLE ELIMINATION:
+- Purpose: Position media badges ([A], [Img], [YT], [Pod]) at start of post labels and eliminate duplicate story titles in task labels.
+- Target Release: v3.9.84-beta (Previous Release)
 - Technical References & Implementation Details:
-  * [x] Compact Prefix Indicators: Positioned [YT], [Pod], [A], [Img] right after the story number in format_post_list_label_and_tooltip() in plugins/wordpress/youtube_embed.py.
-  * [x] Expandable QSplitter: Converted wp_posts_container to QSplitter in plugins/wordpress/wp_ui_builder.py, removing 220px max cap.
-  * [x] Documentation Overhaul: Corrected tab names (Post Content, Authors & Taxonomy, Media, Publishing & Formatting) and menu references across all 5 guides and embedded_guides.py.
-  * [x] Plugin Catch-Up: Updated plugins/wordpress/manifest.json to v3.9.82-beta.
-  * Release Logs: Documented in CHANGELOG.md under ## v3.9.82-beta.
+  * [x] Start-of-Title Indicator Placement: Positioned media badges directly after item identifier and before headline in format_post_list_label_and_tooltip().
+  * [x] Duplicate Story Title Bug Fix: Standardized task_label to clean identifiers ('Story 1') in wp_post_builder.py, removing redundant concatenated titles.
+  * [x] Defensive Prefix Normalization: Stripped redundant title prefixes from legacy task labels.
+  * [x] Updated Documentation Screenshots: Regenerated wordpress_posts_list_badges.png with clean badges.
+  * Release Logs: Documented in CHANGELOG.md under ## v3.9.84-beta.
