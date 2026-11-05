@@ -48,6 +48,9 @@ CASTOS_META_EPISODE_NUMBER = "episode_number"
 # WordPress Taxonomy and Shortcode
 CASTOS_TAXONOMY_SERIES = "series"
 CASTOS_TAXONOMY_SERIES_FALLBACK = "podcast_series"
+# Note: [ss_player] is the Seriously Simple Podcasting legacy compact player shortcode.
+# When omitted from post content, SSP dynamically injects the modern rich Castos V2
+# player widget (with artwork, dark mode, episode title, and controls) via its the_content filter.
 CASTOS_SHORTCODE = "[ss_player]"
 CASTOS_PLAYER_BLOCK = '<!-- wp:shortcode -->\n[ss_player]\n<!-- /wp:shortcode -->'
 

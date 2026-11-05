@@ -1589,10 +1589,12 @@ def execute_wordpress_upload(
     is_video = bool(getattr(main_window, "current_media_is_video", False))
     if media_url:
         if is_podcast:
-            # Podcast Episode: Display embedded Castos player; omit standard <!-- wp:audio --> block
-            content_parts.append(
-                '<!-- wp:shortcode -->\n[ss_player]\n<!-- /wp:shortcode -->'
-            )
+            # Podcast Episode: Seriously Simple Podcasting (Castos) dynamically injects
+            # the rich Castos player (with series artwork, episode title, dark mode skin,
+            # and controls) via its the_content filter based on the post's podcast metadata.
+            # Omitting manual audio / shortcode blocks ensures SSP displays its rich player
+            # rather than falling back to the legacy compact [ss_player] HTML5 bar.
+            pass
         elif is_video:
             content_parts.append(
                 f'<!-- wp:video -->\n<figure class="wp-block-video"><video controls src="{media_url}"></video></figure>\n<!-- /wp:video -->'

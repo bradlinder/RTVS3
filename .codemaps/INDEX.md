@@ -1,13 +1,13 @@
 # Repository Symbol Index & API Map
 
-> Generated: 2026-11-05 13:43:20 | Total Files: 161
+> Generated: 2026-11-05 17:12:05 | Total Files: 161
 > Use `python scripts/generate_symbol_index.py --outline <file>` for exact line numbers.
 
 ## Modules Overview
 
 | Module | Lines | Summary | Primary Classes / Functions |
 | :--- | :---: | :--- | :--- |
-| `RadioTVSegmenter.py` | 663 | Radio & TV Segmenter — v3.9.86-beta | `MainWindow`, `main()` |
+| `RadioTVSegmenter.py` | 663 | Radio & TV Segmenter — v3.9.87-beta | `MainWindow`, `main()` |
 | `audio_normalization.py` | 541 | Radio & TV Story Segmenter — Audio Loudness Probing & Nor... | `LoudnessReport`, `AudioLoudnessProbeWorker`, `parse_ebur128_summary()`, `probe_media_duration_seconds()` *(+3 more)* |
 | `background_workers.py` | 1015 | Radio & TV Story Segmenter — Background Worker Threads & ... | `StoryAutoDetectWorker`, `WaveformWorker`, `VideoThumbnailWorker`, `get_waveform_peak_cache_path()` *(+6 more)* |
 | `backup_manager.py` | 622 | Unified State Serialization, Local, and Google Drive Clou... | `compute_data_checksum()`, `serialize_preferences()`, `serialize_keyboard_shortcuts()`, `serialize_glossary()` *(+7 more)* |
@@ -70,8 +70,8 @@
 | `plugins/translation/worker.py` | 678 | Translation plugin worker. | `TranslationWorker` |
 | `plugins/version_utils.py` | 30 | Version parsing and semantic comparison utilities for the... | `parse_plugin_version_tuple()`, `is_newer_plugin_version()` |
 | `plugins/wordpress/__init__.py` | 6 | WordPress Publisher Plugin for Radio & TV Segmenter. | - |
-| `plugins/wordpress/castos.py` | 722 | Seriously Simple Podcasting (Castos) integration for Word... | `format_castos_duration()`, `build_castos_post_meta()`, `copy_podcast_meta()`, `fetch_castos_feeds()` *(+5 more)* |
-| `plugins/wordpress/client.py` | 1987 | WordPress Plugin — Client, Credential Storage, and Upload... | `WordPressClient`, `WordPressSettingsDialog`, `WordPressPreferencesPage`, `format_rich_text_to_html()` *(+6 more)* |
+| `plugins/wordpress/castos.py` | 725 | Seriously Simple Podcasting (Castos) integration for Word... | `format_castos_duration()`, `build_castos_post_meta()`, `copy_podcast_meta()`, `fetch_castos_feeds()` *(+5 more)* |
+| `plugins/wordpress/client.py` | 1989 | WordPress Plugin — Client, Credential Storage, and Upload... | `WordPressClient`, `WordPressSettingsDialog`, `WordPressPreferencesPage`, `format_rich_text_to_html()` *(+6 more)* |
 | `plugins/wordpress/export_destination.py` | 654 | WordPress Export Destination for UnifiedExportDialog. | `WordPressExportDestination`, `WordPressPostMetadataDialog` |
 | `plugins/wordpress/plugin.py` | 897 | WordPress Publisher Plugin for Radio & TV Segmenter. | `WordPressPublishDialog`, `WordPressPublishWorker`, `WordPressStoryMetadataWidget`, `Plugin` *(+1 more)* |
 | `plugins/wordpress/wordpress_dialog.py` | 886 | WordPress Export Tab Widget and Post Metadata Dialog. | `WordPressExportTabWidget`, `WordPressPostMetadataDialog`, `generate_wp_excerpt()`, `capture_video_frame()` |
@@ -146,7 +146,7 @@
 | `transcript_navigation_mixin.py` | 300 | transcript_navigation_mixin.py - Timestamp discovery, car... | `TranscriptNavigationMixin` |
 | `transcript_playback_highlight_mixin.py` | 277 | Radio & TV Story Segmenter — Interactive Transcript Playb... | `TranscriptPlaybackHighlightMixin` |
 | `transcript_selection_mixin.py` | 473 | transcript_selection_mixin.py - Multi-selection, timeline... | `TranscriptSelectionMixin` |
-| `transcript_story.py` | 852 | Radio & TV Segmenter v3.9.86-beta — transcript story resp... | `TranscriptStoryMixin` |
+| `transcript_story.py` | 852 | Radio & TV Segmenter v3.9.87-beta — transcript story resp... | `TranscriptStoryMixin` |
 | `transcript_styles.py` | 104 | transcript_styles.py - Transcript view stylesheets and da... | `transcript_text_view_stylesheet()`, `clean_dark_mode_clipboard_html()` |
 | `transcript_timeline_sync_mixin.py` | 642 | Radio & TV Story Segmenter — Transcript Timeline & Playba... | `TranscriptTimelineSyncMixin` |
 | `transcription_processing.py` | 579 | Transcription background process management for Radio & T... | `TranscriptionProcessingMixin` |
@@ -172,7 +172,7 @@
 ## Detailed Symbol Catalog
 
 ### `RadioTVSegmenter.py` (663 lines)
-*Radio & TV Segmenter — v3.9.86-beta*
+*Radio & TV Segmenter — v3.9.87-beta*
 - **class `MainWindow(ModelManagementMixin, MediaBatchMixin, PlaybackPreferencesMixin, UiLayoutMixin, ProcessingMixin, TranslationMixin, TranscriptStoryMixin, ProjectExportMixin, GpuAccelerationMixin, QMainWindow)`** (lines 160–560):
   *Main application window for Radio & TV Segmenter.*
   - `__init__(self)` [L178-L355]
@@ -1244,21 +1244,21 @@
 *WordPress Publisher Plugin for Radio & TV Segmenter.*
 - **Public Exports (`__all__`)**: Plugin
 
-### `plugins/wordpress/castos.py` (722 lines)
+### `plugins/wordpress/castos.py` (725 lines)
 *Seriously Simple Podcasting (Castos) integration for WordPress export.*
 - **Public Exports (`__all__`)**: SS_PODCAST_AUDIO_FILE, SS_PODCAST_AUDIO_FILE_ID, SS_PODCAST_DURATION, SS_PODCAST_FILESIZE, SS_PODCAST_FEED, SS_PODCAST_EPISODE_TYPE, SS_PODCAST_SEASON, SS_PODCAST_EPISODE_NUMBER, CASTOS_META_AUDIO_FILE, CASTOS_META_AUDIO_FILE_ID, CASTOS_META_DURATION, CASTOS_META_FILESIZE, CASTOS_META_EPISODE_TYPE, CASTOS_META_SEASON, CASTOS_META_EPISODE_NUMBER, CASTOS_TAXONOMY_SERIES, CASTOS_TAXONOMY_SERIES_FALLBACK, CASTOS_SHORTCODE, CASTOS_PLAYER_BLOCK, DEFAULT_FEED_SLUG, DEFAULT_FEED_NAME, format_castos_duration, build_castos_post_meta, copy_podcast_meta, fetch_castos_feeds, sanitize_castos_feeds, setup_castos_ui, populate_castos_feeds_combo, sync_castos_to_post, load_castos_from_post
 - **Functions**:
-  - `format_castos_duration(seconds)` [L58-L69] — *Format duration in seconds into HH:MM:SS for podcast RSS metadata.*
-  - `build_castos_post_meta(audio_url, attachment_id, duration_seconds, filesize_bytes, feed_slug, episode_type, season, episode_number)` [L72-L140] — *Build the dictionary of Seriously Simple Podcasting post meta keys.*
-  - `copy_podcast_meta(target, src)` [L143-L158] — *Copy Seriously Simple Podcasting metadata fields from src to target dictionary.*
-  - `fetch_castos_feeds(client)` [L161-L307] — *Query WordPress REST API for Seriously Simple Podcasting series/feeds.*
-  - `sanitize_castos_feeds(feeds)` [L310-L324] — *Filter out non-podcast/author items and ensure valid feed structures.*
-  - `setup_castos_ui(tab_widget, editor_layout)` [L327-L503] — *Build and insert the Castos Seriously Simple Podcasting section into the post editor layout.*
-  - `populate_castos_feeds_combo(tab_widget, feeds)` [L506-L543] — *Populate the podcast feed list and combo with discovered series/feeds.*
-  - `sync_castos_to_post(tab_widget, post)` [L546-L609] — *Extract Castos UI state and write into post dictionary.*
-  - `load_castos_from_post(tab_widget, post)` [L612-L688] — *Set Castos UI controls from post dictionary.*
+  - `format_castos_duration(seconds)` [L61-L72] — *Format duration in seconds into HH:MM:SS for podcast RSS metadata.*
+  - `build_castos_post_meta(audio_url, attachment_id, duration_seconds, filesize_bytes, feed_slug, episode_type, season, episode_number)` [L75-L143] — *Build the dictionary of Seriously Simple Podcasting post meta keys.*
+  - `copy_podcast_meta(target, src)` [L146-L161] — *Copy Seriously Simple Podcasting metadata fields from src to target dictionary.*
+  - `fetch_castos_feeds(client)` [L164-L310] — *Query WordPress REST API for Seriously Simple Podcasting series/feeds.*
+  - `sanitize_castos_feeds(feeds)` [L313-L327] — *Filter out non-podcast/author items and ensure valid feed structures.*
+  - `setup_castos_ui(tab_widget, editor_layout)` [L330-L506] — *Build and insert the Castos Seriously Simple Podcasting section into the post editor layout.*
+  - `populate_castos_feeds_combo(tab_widget, feeds)` [L509-L546] — *Populate the podcast feed list and combo with discovered series/feeds.*
+  - `sync_castos_to_post(tab_widget, post)` [L549-L612] — *Extract Castos UI state and write into post dictionary.*
+  - `load_castos_from_post(tab_widget, post)` [L615-L691] — *Set Castos UI controls from post dictionary.*
 
-### `plugins/wordpress/client.py` (1987 lines)
+### `plugins/wordpress/client.py` (1989 lines)
 *WordPress Plugin — Client, Credential Storage, and Upload Engine.*
 - **class `WordPressClient`** (lines 342–913):
   *Client for WordPress REST API using Application Passwords.*
@@ -1301,7 +1301,7 @@
   - `get_wp_client()` [L1130-L1138] — *Instantiate WordPressClient from stored settings if configured.*
   - `_group_segments_into_paragraphs(segments, min_words)` [L1344-L1392] — *Group consecutive segments with same speaker into natural paragraph blocks.*
   - `_build_audio_fade_filter(duration, fade_in, fade_out, fade_curve)` [L1395-L1423] — *Construct FFmpeg afade audio filter chain for story clips.*
-  - `execute_wordpress_upload(main_window, client, post_title, post_excerpt, start, end, task_label, include_english, include_spanish, spanish_presentation, primary_language, author_ids, author_term_ids, category_ids, show_completion_dialog, media_filename, progress_callback, featured_image_path, parent_episode_info, link_parent_episode, parent_episode_template, parent_episode_pos, include_audio, fade_in, fade_out, fade_curve, apply_fades, accordion_pos, is_podcast, podcast_feed, podcast_feed_id, podcast_feed_ids, podcast_feeds, podcast_episode_type, podcast_season, podcast_episode_number, youtube_url, youtube_stop_at_end, youtube_placement, youtube_use_story_time)` [L1426-L1987] — *Extract media clip, upload to WordPress media library, and create draft post.*
+  - `execute_wordpress_upload(main_window, client, post_title, post_excerpt, start, end, task_label, include_english, include_spanish, spanish_presentation, primary_language, author_ids, author_term_ids, category_ids, show_completion_dialog, media_filename, progress_callback, featured_image_path, parent_episode_info, link_parent_episode, parent_episode_template, parent_episode_pos, include_audio, fade_in, fade_out, fade_curve, apply_fades, accordion_pos, is_podcast, podcast_feed, podcast_feed_id, podcast_feed_ids, podcast_feeds, podcast_episode_type, podcast_season, podcast_episode_number, youtube_url, youtube_stop_at_end, youtube_placement, youtube_use_story_time)` [L1426-L1989] — *Extract media clip, upload to WordPress media library, and create draft post.*
 
 ### `plugins/wordpress/export_destination.py` (654 lines)
 *WordPress Export Destination for UnifiedExportDialog.*
@@ -2822,7 +2822,7 @@
   - `_on_bubble_export(self)` [L468-L473]
 
 ### `transcript_story.py` (852 lines)
-*Radio & TV Segmenter v3.9.86-beta — transcript story responsibilities.*
+*Radio & TV Segmenter v3.9.87-beta — transcript story responsibilities.*
 - **Public Exports (`__all__`)**: TranscriptStoryMixin, Story, SetStoriesCommand, SelectStoriesCommand, StoryBoundaryChangeCommand, StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin, ChangeSpeakerDialog, VoiceProfileMatchDialog, StoryFadesDialog, SpeakerManagerDialog, FADE_CURVE_TABLES, get_fade_curve_factors
 - **class `TranscriptStoryMixin(StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin)`** (lines 63–851):
   - `render_transcript(self)` [L64-L467]

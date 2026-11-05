@@ -1,5 +1,12 @@
 # Changelog
 
+## v3.9.87-beta
+- **Seriously Simple Podcasting (Castos) Rich Player Auto-Injection (plugins/wordpress/client.py, plugins/wordpress/castos.py, diagnostic_export_tests.py, plugins/wordpress/manifest.json)**:
+  - **Castos V2 Rich Player Auto-Injection (plugins/wordpress/client.py)**: Resolved an issue where exporting a post designated as a Castos Podcast Episode resulted in a simple browser audio bar (\wp-audio-shortcode\ + plain meta links) instead of the rich Castos V2 player widget (with series cover artwork, episode title, dark mode skin, and playback controls).
+  - **Legacy \[ss_player]\ Shortcode Elimination**: Removed the hardcoded \[ss_player]\ shortcode block from post content generation for podcast posts. In Seriously Simple Podcasting, \[ss_player]\ explicitly renders the legacy compact audio bar and suppresses SSP's automatic dynamic rich player injection. Omitting manual player shortcodes/blocks when \is_podcast=True\ allows Seriously Simple Podcasting to dynamically inject the rich, branded Castos V2 player at the site's configured player location (*Above content*), matching the October 21 episode layout.
+  - **Regression Test Bench Alignment (\diagnostic_export_tests.py\)**: Updated the WordPress export diagnostic test to verify that podcast posts omit both standard \<!-- wp:audio -->\ blocks and legacy \[ss_player]\ shortcodes, guaranteeing uninterrupted rich Castos player rendering.
+  - **Plugin Version Synchronization (\plugins/wordpress/manifest.json\)**: Synchronized the WordPress plugin manifest version to .9.87-beta\ in compliance with lazy catch-up policy.
+
 ## v3.9.86-beta
 - **Export Scope Default Persistence & Qt Signal Signature Defense (`export/dialog.py`, `export_dialogs.py`, `ui_layout.py`, `ui_menus.py`, `diagnostic_export_tests.py`)**:
   - **Qt Boolean Signal Trap Resolution (`export_dialogs.py`, `ui_layout.py`, `ui_menus.py`)**: Fixed a subtle bug where clicking the main window's "Export..." button (`QPushButton.clicked`) or choosing File > Export... (`QAction.triggered`) emitted Qt's default boolean checked state (`False`). Because `open_unified_export_dialog` took `initial_scope` as its first parameter, it received `False`, causing `initial_scope is None` checks to fail and silently bypass `QSettings` saved defaults in favor of dynamic story selection fallbacks. Lambda wrappers and defensive type guards (`not isinstance(initial_scope, str)`) now neutralize unexpected signal payloads.
@@ -7,13 +14,3 @@
   - **Modeless Reopen Synchronization (`export_dialogs.py`)**: Reordered resolution in `open_unified_export_dialog` so `initial_scope` and `initial_dest` defaults are fully resolved before checking existing active/visible dialogs, allowing reopened or unminimized windows to update cleanly to current preferences.
   - **Project & Default Synchronization (`export/dialog.py`, `export_dialogs.py`)**: Synchronized `save_options_to_settings()` and `_dispatch_unified_export_result()` so clicking "Save Options as Default" or completing an export records `last_export_scope` and `last_export_dest` into active project metadata as well as global settings.
   - **Automated Regression Suite (`diagnostic_export_tests.py`)**: Expanded `WordPress Export Scope Post Builder` to test boolean signal parameter resilience (`open_unified_export_dialog(False)`), direct `UnifiedExportDialog` instantiation default retrieval, and QSettings round-trip persistence.
-
-## v3.9.85-beta
-- **Export Scope Default Persistence & 3-Tier Precedence Resolution (`export/dialog.py`, `export_dialogs.py`, `diagnostic_export_tests.py`)**:
-  - **Saved Default Export Scope Persistence (`export/dialog.py`)**: Updated `save_options_to_settings()` so clicking "Save Options as Default" writes the currently active Export Scope (`export_opt_default_scope`) and Destination Tab (`export_opt_default_dest`) into application `QSettings`.
-  - **3-Tier Scope Resolution (`export_dialogs.py`)**: Implemented a predictable 3-tier precedence hierarchy in `open_unified_export_dialog()`:
-    1. **Tier 1 (Active Project Session Memory)**: Honors `project_metadata["last_export_scope"]` if previously used in the active project file.
-    2. **Tier 2 (User Saved Global Default)**: Evaluates `QSettings("export_opt_default_scope")` when launching export on a new or unconfigured project, ensuring user preferences (such as *Full Episode & All Stories*) apply automatically.
-    3. **Tier 3 (Dynamic Selection Fallback)**: Falls back to *Selected Stories* (if rows are selected on the timeline) or *All Stories* only when no project memory and no saved default exist.
-  - **Destination Tab Default Fallback (`export/dialog.py`)**: Added fallback resolution to `export_opt_default_dest` in `UnifiedExportDialog` so opening export without a project-specific destination restores the user's preferred default export panel.
-  - **Automated Regression Verification (`diagnostic_export_tests.py`)**: Expanded the diagnostic suite with end-to-end assertions verifying that setting scope to `full_and_all_stories` and saving defaults persists the preference and automatically restores it upon reopening.

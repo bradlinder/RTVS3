@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-05 13:43:20",
+  "generated_at": "2026-11-05 17:12:05",
   "total_files": 161,
   "files": {
     "RadioTVSegmenter.py": {
       "path": "RadioTVSegmenter.py",
       "lines": 663,
-      "summary": "Radio & TV Segmenter \u2014 v3.9.86-beta",
+      "summary": "Radio & TV Segmenter \u2014 v3.9.87-beta",
       "exports": null,
       "classes": [
         {
@@ -6469,7 +6469,7 @@
     },
     "plugins/wordpress/castos.py": {
       "path": "plugins/wordpress/castos.py",
-      "lines": 722,
+      "lines": 725,
       "summary": "Seriously Simple Podcasting (Castos) integration for WordPress export.",
       "exports": [
         "SS_PODCAST_AUDIO_FILE",
@@ -6508,71 +6508,71 @@
         {
           "name": "format_castos_duration",
           "sig": "format_castos_duration(seconds)",
-          "start_line": 58,
-          "end_line": 69,
+          "start_line": 61,
+          "end_line": 72,
           "doc": "Format duration in seconds into HH:MM:SS for podcast RSS metadata."
         },
         {
           "name": "build_castos_post_meta",
           "sig": "build_castos_post_meta(audio_url, attachment_id, duration_seconds, filesize_bytes, feed_slug, episode_type, season, episode_number)",
-          "start_line": 72,
-          "end_line": 140,
+          "start_line": 75,
+          "end_line": 143,
           "doc": "Build the dictionary of Seriously Simple Podcasting post meta keys."
         },
         {
           "name": "copy_podcast_meta",
           "sig": "copy_podcast_meta(target, src)",
-          "start_line": 143,
-          "end_line": 158,
+          "start_line": 146,
+          "end_line": 161,
           "doc": "Copy Seriously Simple Podcasting metadata fields from src to target dictionary."
         },
         {
           "name": "fetch_castos_feeds",
           "sig": "fetch_castos_feeds(client)",
-          "start_line": 161,
-          "end_line": 307,
+          "start_line": 164,
+          "end_line": 310,
           "doc": "Query WordPress REST API for Seriously Simple Podcasting series/feeds."
         },
         {
           "name": "sanitize_castos_feeds",
           "sig": "sanitize_castos_feeds(feeds)",
-          "start_line": 310,
-          "end_line": 324,
+          "start_line": 313,
+          "end_line": 327,
           "doc": "Filter out non-podcast/author items and ensure valid feed structures."
         },
         {
           "name": "setup_castos_ui",
           "sig": "setup_castos_ui(tab_widget, editor_layout)",
-          "start_line": 327,
-          "end_line": 503,
+          "start_line": 330,
+          "end_line": 506,
           "doc": "Build and insert the Castos Seriously Simple Podcasting section into the post editor layout."
         },
         {
           "name": "populate_castos_feeds_combo",
           "sig": "populate_castos_feeds_combo(tab_widget, feeds)",
-          "start_line": 506,
-          "end_line": 543,
+          "start_line": 509,
+          "end_line": 546,
           "doc": "Populate the podcast feed list and combo with discovered series/feeds."
         },
         {
           "name": "sync_castos_to_post",
           "sig": "sync_castos_to_post(tab_widget, post)",
-          "start_line": 546,
-          "end_line": 609,
+          "start_line": 549,
+          "end_line": 612,
           "doc": "Extract Castos UI state and write into post dictionary."
         },
         {
           "name": "load_castos_from_post",
           "sig": "load_castos_from_post(tab_widget, post)",
-          "start_line": 612,
-          "end_line": 688,
+          "start_line": 615,
+          "end_line": 691,
           "doc": "Set Castos UI controls from post dictionary."
         }
       ]
     },
     "plugins/wordpress/client.py": {
       "path": "plugins/wordpress/client.py",
-      "lines": 1987,
+      "lines": 1989,
       "summary": "WordPress Plugin \u2014 Client, Credential Storage, and Upload Engine.",
       "exports": null,
       "classes": [
@@ -6851,7 +6851,7 @@
           "name": "execute_wordpress_upload",
           "sig": "execute_wordpress_upload(main_window, client, post_title, post_excerpt, start, end, task_label, include_english, include_spanish, spanish_presentation, primary_language, author_ids, author_term_ids, category_ids, show_completion_dialog, media_filename, progress_callback, featured_image_path, parent_episode_info, link_parent_episode, parent_episode_template, parent_episode_pos, include_audio, fade_in, fade_out, fade_curve, apply_fades, accordion_pos, is_podcast, podcast_feed, podcast_feed_id, podcast_feed_ids, podcast_feeds, podcast_episode_type, podcast_season, podcast_episode_number, youtube_url, youtube_stop_at_end, youtube_placement, youtube_use_story_time)",
           "start_line": 1426,
-          "end_line": 1987,
+          "end_line": 1989,
           "doc": "Extract media clip, upload to WordPress media library, and create draft post."
         }
       ]
@@ -16219,7 +16219,7 @@
     "transcript_story.py": {
       "path": "transcript_story.py",
       "lines": 852,
-      "summary": "Radio & TV Segmenter v3.9.86-beta \u2014 transcript story responsibilities.",
+      "summary": "Radio & TV Segmenter v3.9.87-beta \u2014 transcript story responsibilities.",
       "exports": [
         "TranscriptStoryMixin",
         "Story",

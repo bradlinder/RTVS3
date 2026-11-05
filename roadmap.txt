@@ -94,18 +94,18 @@ TABLE OF CONTENTS & STATUS OVERVIEW
    [ ] 5.4 Burned-in Subtitles & Platform Safe Zone Enforcement (`plugins/social_reel/reel_subtitles.py`)
    [ ] 5.5 Unified Export Integration & Social Reel Diagnostic Tests (`export/dialog.py`, `test_runner.py`)
 
-6. Current Release: Export Scope Default Persistence & Qt Signal Signature Defense (export/dialog.py, export_dialogs.py, ui_layout.py, ui_menus.py, diagnostic_export_tests.py) [x] [COMPLETED in v3.9.86-beta]
-   [x] 6.1 Qt Signal Signature Guard: Neutralized QPushButton.clicked and QAction.triggered boolean False payloads with lambda wrappers and type guards.
-   [x] 6.2 Autonomous Dialog Scope Resolution: Added QSettings export_opt_default_scope fallback directly inside UnifiedExportDialog.__init__.
-   [x] 6.3 Modeless Reopen Scope Sync: Ensured reopened and unminimized export dialogs update to resolved scope and destination defaults.
-   [x] 6.4 Project Session & Default Sync: Synchronized save_options_to_settings and _dispatch_unified_export_result to update project metadata.
-   [x] 6.5 Automated Regression Suite: Added tests in diagnostic_export_tests.py covering boolean signal resilience and direct dialog scope resolution.
+6. Current Release: Seriously Simple Podcasting (Castos) Rich Player Auto-Injection (plugins/wordpress/client.py, plugins/wordpress/castos.py, diagnostic_export_tests.py) [x] [COMPLETED in v3.9.87-beta]
+   [x] 6.1 Castos V2 Rich Player Auto-Injection: Resolved issue where podcast posts displayed a simple HTML5 audio player rather than the rich Castos V2 widget.
+   [x] 6.2 Legacy [ss_player] Shortcode Elimination: Omitted [ss_player] shortcodes for podcast posts so Seriously Simple Podcasting automatically injects its rich player via the_content filter.
+   [x] 6.3 Test Bench Synchronization: Updated diagnostic_export_tests.py to assert both standard wp:audio and legacy [ss_player] shortcodes are omitted from podcast posts.
+   [x] 6.4 Plugin Manifest Synchronization: Bumped WordPress plugin version to 3.9.87-beta under lazy catch-up policy.
 
-7. Previous Release: Export Scope Default Persistence & 3-Tier Precedence Resolution (export/dialog.py, export_dialogs.py, diagnostic_export_tests.py) [x] [COMPLETED in v3.9.85-beta]
-   [x] 7.1 Saved Default Scope Persistence: Implemented export_opt_default_scope and export_opt_default_dest persistence in save_options_to_settings.
-   [x] 7.2 3-Tier Scope Resolution: Added precedence hierarchy (Tier 1: Project session memory, Tier 2: QSettings default, Tier 3: Selection fallback).
-   [x] 7.3 Destination Tab Fallback: Added fallback resolution for export_opt_default_dest in UnifiedExportDialog.
-   [x] 7.4 Automated Regression Coverage: Added unit tests validating QSettings persistence for full_and_all_stories.
+7. Previous Release: Export Scope Default Persistence & Qt Signal Signature Defense (export/dialog.py, export_dialogs.py, ui_layout.py, ui_menus.py, diagnostic_export_tests.py) [x] [COMPLETED in v3.9.86-beta]
+   [x] 7.1 Qt Signal Signature Guard: Neutralized QPushButton.clicked and QAction.triggered boolean False payloads with lambda wrappers and type guards.
+   [x] 7.2 Autonomous Dialog Scope Resolution: Added QSettings export_opt_default_scope fallback directly inside UnifiedExportDialog.__init__.
+   [x] 7.3 Modeless Reopen Scope Sync: Ensured reopened and unminimized export dialogs update to resolved scope and destination defaults.
+   [x] 7.4 Project Session & Default Sync: Synchronized save_options_to_settings and _dispatch_unified_export_result to update project metadata.
+   [x] 7.5 Automated Regression Suite: Added tests in diagnostic_export_tests.py covering boolean signal resilience and direct dialog scope resolution.
 ================================================================================
 DETAILED MILESTONE SPECIFICATIONS
 ================================================================================
@@ -147,22 +147,23 @@ DETAILED MILESTONE SPECIFICATIONS
 - Target Release: v4.3.0 (Optional / Planned)
 - Technical References: Subsystem architecture, plugin manifest, and FFmpeg filtergraph pipeline specifications are detailed in `ARCHITECTURE.md` (Section 6).
 
-6. CURRENT RELEASE: EXPORT SCOPE DEFAULT PERSISTENCE & 3-TIER PRECEDENCE RESOLUTION:
-- Purpose: Ensure 'Save Options as Default' persists the user's chosen export scope and destination tab to QSettings, and implement predictable 3-tier precedence honoring project memory, saved defaults, and dynamic fallback.
-- Target Release: v3.9.85-beta (Current Release)
+6. CURRENT RELEASE: SERIOUSLY SIMPLE PODCASTING (CASTOS) RICH PLAYER AUTO-INJECTION:
+- Purpose: Ensure WordPress export posts designated as podcast episodes automatically render the rich Castos V2 player with series artwork, episode title, dark mode skin, and playback controls.
+- Target Release: v3.9.87-beta (Current Release)
 - Technical References & Implementation Details:
-  * [x] Export Scope & Destination Default Persistence: Updated save_options_to_settings() in export/dialog.py to write export_opt_default_scope and export_opt_default_dest to QSettings.
-  * [x] 3-Tier Precedence Resolution: Implemented Tier 1 (project session memory), Tier 2 (user saved QSettings default), and Tier 3 (timeline fallback) in export_dialogs.py:open_unified_export_dialog().
-  * [x] Default Destination Fallback: Added QSettings fallback in UnifiedExportDialog so opening export without a project-specific tab restores user's preferred panel.
-  * [x] Automated Diagnostic Verification: Expanded _test_wordpress_export_scope_post_builder in diagnostic_export_tests.py asserting full_and_all_stories persistence and 3-tier resolution.
-  * Release Logs: Documented in CHANGELOG.md under ## v3.9.85-beta.
+  * [x] Castos V2 Rich Player Auto-Injection: Omitted manual [ss_player] shortcode blocks from post content when is_podcast=True in plugins/wordpress/client.py. Seriously Simple Podcasting automatically detects podcast episode metadata and dynamically injects its rich player widget via the_content filter.
+  * [x] Suppression Bug Fix: Fixed legacy compact player fallback where [ss_player] was rendering basic HTML5 audio tags and suppressing SSP's automated rich widget injection.
+  * [x] Test Bench Synchronization: Updated diagnostic_export_tests.py to assert that both standard wp:audio and legacy [ss_player] shortcodes are omitted from podcast post content.
+  * [x] Plugin Manifest Catch-Up: Updated plugins/wordpress/manifest.json to v3.9.87-beta.
+  * Release Logs: Documented in CHANGELOG.md under ## v3.9.87-beta.
 
-7. PREVIOUS RELEASE: WORDPRESS POST LIST INDICATOR PLACEMENT & STORY DUPLICATE TITLE ELIMINATION:
-- Purpose: Position media badges ([A], [Img], [YT], [Pod]) at start of post labels and eliminate duplicate story titles in task labels.
-- Target Release: v3.9.84-beta (Previous Release)
+7. PREVIOUS RELEASE: EXPORT SCOPE DEFAULT PERSISTENCE & QT SIGNAL SIGNATURE DEFENSE:
+- Purpose: Ensure export scope defaults persist reliably from settings and protect open_unified_export_dialog from QPushButton/QAction boolean signal payloads.
+- Target Release: v3.9.86-beta (Previous Release)
 - Technical References & Implementation Details:
-  * [x] Start-of-Title Indicator Placement: Positioned media badges directly after item identifier and before headline in format_post_list_label_and_tooltip().
-  * [x] Duplicate Story Title Bug Fix: Standardized task_label to clean identifiers ('Story 1') in wp_post_builder.py, removing redundant concatenated titles.
-  * [x] Defensive Prefix Normalization: Stripped redundant title prefixes from legacy task labels.
-  * [x] Updated Documentation Screenshots: Regenerated wordpress_posts_list_badges.png with clean badges.
-  * Release Logs: Documented in CHANGELOG.md under ## v3.9.84-beta.
+  * [x] Qt Signal Signature Defense: Neutralized QPushButton.clicked and QAction.triggered boolean payloads with lambda wrappers and type guards.
+  * [x] Autonomous Dialog Scope Resolution: Added QSettings fallback directly inside UnifiedExportDialog.__init__.
+  * [x] Modeless Reopen Synchronization: Ensured reopened and unminimized export dialogs update to resolved scope and destination defaults.
+  * [x] Project Session & Default Sync: Synchronized save_options_to_settings and _dispatch_unified_export_result to update project metadata.
+  * [x] Automated Regression Suite: Added tests in diagnostic_export_tests.py covering boolean signal resilience and direct dialog scope resolution.
+  * Release Logs: Documented in CHANGELOG.md under ## v3.9.86-beta.

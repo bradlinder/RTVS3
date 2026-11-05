@@ -1616,8 +1616,8 @@ class DiagnosticExportTestsMixin:
             pod_content = client_pod.created_posts[0]["content"]["rendered"]
             if "<!-- wp:audio -->" in pod_content or "<audio" in pod_content:
                 raise AssertionError(f"Standard wp:audio block unexpectedly present in podcast post:\n{pod_content}")
-            if "[ss_player]" not in pod_content:
-                raise AssertionError(f"Castos player shortcode [ss_player] missing from podcast post:\n{pod_content}")
+            if "[ss_player]" in pod_content:
+                raise AssertionError(f"Legacy compact [ss_player] shortcode unexpectedly present in podcast post:\n{pod_content}")
 
             sent_kwargs = client_pod.created_posts[0]["kwargs"]
             sent_meta = sent_kwargs.get("meta")
