@@ -15,20 +15,26 @@ YouTube automatically divides videos into chapters along the video player scrub 
 
 RTVS3 guarantees all three rules are satisfied automatically.
 
-### How to Generate & Copy Chapters:
+### Two Ways to Generate & Copy Chapters:
+
+#### Method A: Instant Clipboard Copy (Recommended)
 1. Open your episode in RTVS3 and ensure stories have been detected or created.
-2. Go to **File > Unified Export...** (or press **Ctrl+E**).
-3. Select **YouTube Chapters** (or text export options).
-4. Review the formatted preview:
+2. Press **Ctrl+Shift+Y** (or go to **File > Copy YouTube Chapters to Clipboard**).
+3. The chapter list is copied to your clipboard immediately:
    ```text
    00:00 - Introduction & Cold Open
    02:25 - Deep Dive: Renewable Energy Grid Tech
    07:40 - Battery Chemistry Breakdown
    10:15 - Audience Q&A and Credits
    ```
-5. Click **Copy to Clipboard**.
-6. Open your video in **YouTube Studio** (`studio.youtube.com`), navigate to the **Details** tab, and paste the chapters directly into the **Description** box.
-7. Click **Save**. YouTube will automatically draw chapter markers on your video.
+4. Open your video in **YouTube Studio** (`studio.youtube.com`), navigate to the **Details** tab, and paste the chapters directly into the **Description** box.
+5. Click **Save**. YouTube will automatically draw chapter markers on your video scrub bar.
+
+#### Method B: Unified Export Center (.txt File)
+1. Press **Ctrl+E** (or go to **File > Export...**).
+2. Select **Local Files (Media & Transcript)** at the top.
+3. Check **Tracklist / YouTube Chapters (.txt)** under document exports.
+4. Click **Export Selected Formats** to save the formatted chapter file to disk.
 
 ---
 
@@ -36,8 +42,8 @@ RTVS3 guarantees all three rules are satisfied automatically.
 
 When publishing articles about individual segments of a show, you can embed the main YouTube video so that it starts and stops at the exact moment of each story:
 
-1. In RTVS3, open **File > Unified Export...** and select **WordPress**.
-2. Select a story in the post list, then click the **Media** tab.
+1. In RTVS3, open **File > Export...** (**Ctrl+E**) and select **WordPress Draft Post**.
+2. Select a story in the **Posts to Export:** list, then click the **Media** tab (Tab 3).
 3. In the **YouTube Video Link** field, paste your YouTube video URL:
    - Supports standard watch URLs (`https://www.youtube.com/watch?v=...`)
    - Short links (`https://youtu.be/...`)
@@ -56,6 +62,6 @@ When publishing articles about individual segments of a show, you can embed the 
 
 If you have the **YouTube Publisher** plugin enabled:
 1. Configure your Google OAuth credentials in **Settings > Preferences... > YouTube Publisher**.
-2. Go to **File > Unified Export...** and select **YouTube Upload**.
+2. Go to **File > Export...** (**Ctrl+E**) and select the **YouTube Video Publisher** radio button at top.
 3. Set your video title, description, category, privacy status (*Public*, *Unlisted*, or *Private*), and thumbnail.
 4. RTVS3 uploads your video directly to your YouTube channel with chapters pre-populated in the description.

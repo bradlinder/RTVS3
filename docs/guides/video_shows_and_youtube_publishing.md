@@ -31,20 +31,20 @@ Drag and drop your video file directly onto the timeline canvas or press **Ctrl+
 - Press **Ctrl+Shift+V** (**View > Video Preview Window**) to open the resizable floating video preview window.
 
 ### Step 2: Transcribe, Diarize & Detect Stories
-1. Click **Transcribe & Diarize** (or press **Ctrl+T**) to generate word-level aligned transcripts.
-2. Click **Auto-Detect Stories** (or press **Ctrl+D**) to detect story boundaries based on topic changes, natural speech pauses, or speaker transitions.
+1. Click **Transcribe Audio...** (**Ctrl+T**) or use the Multi-Stage Pipeline (**Ctrl+R**) to generate word-level aligned transcripts and speaker turns.
+2. Click **Detect Stories...** (**Ctrl+Shift+A**) to detect story boundaries based on topic changes, natural speech pauses, or speaker transitions.
 3. Review stories on the timeline: you can zoom in up to 300x, drag boundaries, and adjust audio fades.
 
 ### Step 3: Open Unified Export to WordPress
-Press **Ctrl+E** (**File > Unified Export...**) and select **WordPress** from the left-hand destinations list.
+Press **Ctrl+E** (**File > Export...**) and select the **WordPress Draft Post** radio button from the **Export Destination** bar at the top.
 
 ### Step 4: Configure the "Media" Tab
-Select a story (or your full episode) from the left-hand post list, then switch to the **Media** tab:
+Select a story (or your full episode) from the left-hand **Posts to Export:** list, then switch to the **Media** tab (Tab 3):
 
 ![WordPress Export Media Tab](../images/wordpress_export_media_tab.png)
 
 1. **Enter YouTube Video Link**:
-   Paste the base URL of your video show. RTVS3 supports all standard link formats (see [URL Compatibility](#3-youtube-url-compatibility-reference)).
+   Paste the base URL of your video show. RTVS3 supports all standard link formats (see [URL Compatibility](#3-youtube-url-compatibility-reference)). Controls automatically illuminate when a valid URL is provided.
 2. **Stop Video at Story End**:
    - **Checked (Recommended)**: The YouTube player will pause playback when the story concludes (`?end=XXX`), encouraging readers to continue through your article or explore other stories.
    - **Unchecked**: The video will start at the story's beginning (`?start=XXX`) and continue playing the remainder of the episode.
@@ -58,19 +58,21 @@ For video projects, **Include audio files in WordPress export** defaults to unch
 - If you uncheck audio inclusion, **Apply audio fades** is automatically unchecked and bypassed.
 - If you explicitly check audio inclusion on a video file, RTVS3 displays a brief confirmation dialog to ensure you intended to produce a hybrid video + audio podcast post.
 
-### Step 6: Inspect Post Badges & Content
-In the left-hand post list, each item displays badges summarizing its assigned attributes:
+### Step 6: Inspect Post Prefix Indicators & Tooltips
+In the left-hand **Posts to Export:** list, each item displays compact prefix badges right after the story number:
 
 ![WordPress Post List Badges](../images/wordpress_posts_list_badges.png)
 
-- **`[YouTube]`**: Indicates an active YouTube embed link is configured with timestamp offsets.
-- **`[Podcast]`**: Indicates the post is configured as an audio podcast episode with enclosure tags.
-- **`[Audio]`**: Indicates an MP3 audio cut will be uploaded to the WordPress media library.
-- **`[Image]`**: Indicates an extracted video thumbnail frame or featured image will be attached.
+- **`[YT]`**: Indicates an active YouTube embed link is configured with timestamp offsets.
+- **`[Pod]`**: Indicates the post is configured as an audio podcast episode with enclosure tags.
+- **`[A]`**: Indicates an MP3 audio cut will be uploaded to the WordPress media library.
+- **`[Img]`**: Indicates an extracted video thumbnail frame or featured image will be attached.
+- **Example**: `Story 1 [YT]: Demonstrators push for more funding...`
+- Drag the splitter between the post list and editor tabs to expand the sidebar as desired.
 - Hover over any post in the list to view a multi-line tooltip detailing exact start/end timestamps, author IDs, category tags, and embed settings.
 
 ### Step 7: Export to WordPress
-Click **Export to WordPress**. RTVS3 authenticates via the WordPress REST API and creates draft posts for all selected stories.
+Click **Export to WordPress Drafts...**. RTVS3 authenticates via the WordPress REST API and creates draft posts for all selected stories.
 
 ---
 

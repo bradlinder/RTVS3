@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-05 10:15:49",
+  "generated_at": "2026-11-05 10:25:26",
   "total_files": 161,
   "files": {
     "RadioTVSegmenter.py": {
       "path": "RadioTVSegmenter.py",
       "lines": 663,
-      "summary": "Radio & TV Segmenter \u2014 v3.9.81-beta",
+      "summary": "Radio & TV Segmenter \u2014 v3.9.82-beta",
       "exports": null,
       "classes": [
         {
@@ -2627,7 +2627,7 @@
     },
     "embedded_guides.py": {
       "path": "embedded_guides.py",
-      "lines": 444,
+      "lines": 473,
       "summary": "Radio & TV Story Segmenter \u2014 Built-In Embedded User Guides & Documentation.",
       "exports": null,
       "classes": [],
@@ -2635,15 +2635,15 @@
         {
           "name": "get_embedded_guide",
           "sig": "get_embedded_guide(guide_id)",
-          "start_line": 437,
-          "end_line": 439,
+          "start_line": 466,
+          "end_line": 468,
           "doc": "Retrieve embedded markdown text for a guide topic ID, if available."
         },
         {
           "name": "get_all_embedded_guide_ids",
           "sig": "get_all_embedded_guide_ids()",
-          "start_line": 442,
-          "end_line": 444,
+          "start_line": 471,
+          "end_line": 473,
           "doc": "Return all guide IDs provided as embedded fallback content."
         }
       ]
@@ -8088,7 +8088,7 @@
     },
     "plugins/wordpress/wp_ui_builder.py": {
       "path": "plugins/wordpress/wp_ui_builder.py",
-      "lines": 746,
+      "lines": 748,
       "summary": "UI layout construction and widget setup for WordPressExportTabWidget.",
       "exports": null,
       "classes": [],
@@ -8097,14 +8097,14 @@
           "name": "setup_wp_tab_ui",
           "sig": "setup_wp_tab_ui(self)",
           "start_line": 36,
-          "end_line": 746,
+          "end_line": 748,
           "doc": "Construct all controls, forms, sliders, list widgets, and tabbed panels for the WordPress export tab."
         }
       ]
     },
     "plugins/wordpress/youtube_embed.py": {
       "path": "plugins/wordpress/youtube_embed.py",
-      "lines": 604,
+      "lines": 601,
       "summary": "YouTube Video Embed helpers, Gutenberg iframe generator, and UI setup for WordPress export.",
       "exports": null,
       "classes": [],
@@ -8204,7 +8204,7 @@
           "name": "format_post_list_label_and_tooltip",
           "sig": "format_post_list_label_and_tooltip(tab_widget, idx)",
           "start_line": 537,
-          "end_line": 604,
+          "end_line": 601,
           "doc": "Return formatted label text and rich multi-line tooltip for an item in wp_posts_list."
         }
       ]
@@ -16219,7 +16219,7 @@
     "transcript_story.py": {
       "path": "transcript_story.py",
       "lines": 852,
-      "summary": "Radio & TV Segmenter v3.9.81-beta \u2014 transcript story responsibilities.",
+      "summary": "Radio & TV Segmenter v3.9.82-beta \u2014 transcript story responsibilities.",
       "exports": [
         "TranscriptStoryMixin",
         "Story",

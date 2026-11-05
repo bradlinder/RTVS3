@@ -551,22 +551,19 @@ def format_post_list_label_and_tooltip(tab_widget: Any, idx: int) -> Tuple[str, 
     img_mode = post.get("featured_image_mode", "none")
     has_img = bool(img_mode in ("grab", "file") and post.get("featured_image"))
 
-    badges = []
-    if n_auths:
-        badges.append(f"{n_auths} author" + ("s" if n_auths > 1 else ""))
-    if n_cats:
-        badges.append(f"{n_cats} cat" + ("s" if n_cats > 1 else ""))
-    if is_podcast:
-        badges.append("Podcast")
-    elif inc_audio:
-        badges.append("Audio")
+    # Compact prefix tags at the start of the title for guaranteed visibility
+    prefix_tags = []
     if has_yt:
-        badges.append("YouTube")
+        prefix_tags.append("YT")
+    if is_podcast:
+        prefix_tags.append("Pod")
+    elif inc_audio:
+        prefix_tags.append("A")
     if has_img:
-        badges.append("Image")
+        prefix_tags.append("Img")
 
-    badge_str = f" ({', '.join(badges)})" if badges else ""
-    label_text = f"{task_label}: {title}{badge_str}"
+    tag_str = f" [{', '.join(prefix_tags)}]" if prefix_tags else ""
+    label_text = f"{task_label}{tag_str}: {title}"
 
     # Build rich hover tooltip
     tt_lines = [f"<b>{html.escape(title)}</b>"]

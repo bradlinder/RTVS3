@@ -9,7 +9,7 @@ This guide covers the core workflow of Radio & TV Story Segmenter: loading media
 You can load media into RTVS3 in several ways:
 - **Drag-and-Drop**: Drag any supported audio or video file directly onto the timeline canvas or into the transcript area.
 - **File Menu**: Go to **File > Open Media...** (or press **Ctrl+O**).
-- **Recent Projects**: Go to **File > Open Recent...** to quickly reopen past files.
+- **Recent Projects**: Go to **File > Recent Projects** to quickly reopen past files.
 
 ### Supported File Formats:
 - **Audio**: MP3, WAV, FLAC, M4A, AAC, OGG, OPUS, AIFF, WMA.
@@ -36,7 +36,7 @@ When media is loaded:
 
 RTVS3 uses state-of-the-art AI speech models running locally on your computer to convert spoken audio into aligned text.
 
-1. Click **Transcribe & Diarize** (or press **Ctrl+T**).
+1. Click **Transcribe Audio...** (**Ctrl+T**) or **Detect Speakers...** (**Ctrl+D**), or launch the full pipeline via **Tools > Multi-Stage Processing...** (**Ctrl+R**).
 2. Choose your language (e.g., English, Spanish, or Auto-Detect) and Whisper model size (Tiny, Base, Small, Medium, Large).
 3. The processing panel shows live progress through each stage:
    - **VAD (Voice Activity Detection)**: Isolates spoken speech from background silence or noise.
@@ -50,9 +50,9 @@ RTVS3 uses state-of-the-art AI speech models running locally on your computer to
 The center panel features an interactive transcript editor:
 - **Karaoke Word Tracking**: Words light up in yellow as audio plays so you can follow along.
 - **Click to Seek**: Click any timestamp `[00:00]` or word to instantly jump playback to that second.
-- **Assign Speaker Names**: Double-click any speaker header to rename it across the entire project (e.g. changing *Speaker 1* to *Jane Doe*).
+- **Assign Speaker Names**: Double-click any speaker header to rename it across the entire project (e.g. changing *Speaker 1* to *Jane Doe*), or open the Speaker Manager (**Ctrl+Alt+S**).
 - **Find & Replace**: Press **Ctrl+F** to search and replace words. Check **Include Speakers** to update spoken dialogue and speaker headers simultaneously.
-- **Edit Mode**: Press **Ctrl+E** while focused on the transcript (or click the pencil icon) to edit spoken text directly.
+- **Edit Mode**: Press **Ctrl+E** while focused on the transcript (or click **Edit Transcript**) to edit spoken text directly.
 
 ---
 
@@ -61,24 +61,22 @@ The center panel features an interactive transcript editor:
 RTVS3 organizes broadcasts into distinct, individual stories that can be exported separately or together.
 
 ### Automatic Story Detection:
-Click **Auto-Detect Stories** (or press **Ctrl+D**). The engine analyzes topic boundaries, speech pauses, and speaker turns to segment your episode automatically.
+Click **Detect Stories...** (or press **Ctrl+Shift+A**). The engine analyzes topic boundaries, speech pauses, and speaker turns to segment your episode automatically.
 
 ### Manual Story Creation:
-1. **Right-click and drag** across any region on the timeline waveform to draw a selection.
-2. Right-click the highlighted region and choose **Add Story from Selection**.
+1. Press `[` to mark a story start and `]` to mark a story end at the current playhead position.
+2. Or **right-click and drag** across any region on the timeline waveform to draw a selection, then right-click and choose **Add Story from Selection**.
 3. A new story appears in the right-hand **Stories** panel.
 
 ### Adjusting Story Boundaries & Fades:
 - **Move Boundaries**: Click and drag the left or right edge handle of any story box on the timeline.
 - **Audio Fades**: Drag the fade handle at the top corners of a story to set fade-in and fade-out durations (e.g., 1.5 seconds) with linear, exponential, or S-curve shapes.
-- **Story Metadata**: Right-click a story in the Stories list and select **Story & Post Metadata...** to edit its title, summary, author, and categories.
+- **Story Metadata**: Select a story in the Stories list and click **Story Metadata...** to edit its title, summary, author, and categories.
 
 ---
 
-## 6. Batch Processing Center
+## 6. Unified Export & Batch Processing
 
-If you have multiple episodes or audio files to process:
-1. Go to **Tools > Batch Processing Center...** (or press **Ctrl+Shift+B**).
-2. Drag and drop a folder or list of media files into the queue.
-3. Configure your desired pipeline (e.g., Transcribe + Diarize + Story Detect + Export).
-4. Click **Start Batch**. RTVS3 processes each file sequentially in the background.
+- **Unified Export Center**: Press **Ctrl+E** (**File > Export...**) to export split audio cuts, Word/PDF cue sheets, WordPress draft posts, or DAW timelines.
+- **Copy YouTube Chapters**: Press **Ctrl+Shift+Y** (**File > Copy YouTube Chapters to Clipboard**) to copy formatted chapter markers instantly.
+- **Batch Processing Center**: Go to **File > Batch Processing...** (**Ctrl+Shift+B**) to queue and process multiple episodes or media files sequentially in the background.

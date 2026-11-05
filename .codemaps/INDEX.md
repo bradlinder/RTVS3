@@ -1,13 +1,13 @@
 # Repository Symbol Index & API Map
 
-> Generated: 2026-11-05 10:15:49 | Total Files: 161
+> Generated: 2026-11-05 10:25:26 | Total Files: 161
 > Use `python scripts/generate_symbol_index.py --outline <file>` for exact line numbers.
 
 ## Modules Overview
 
 | Module | Lines | Summary | Primary Classes / Functions |
 | :--- | :---: | :--- | :--- |
-| `RadioTVSegmenter.py` | 663 | Radio & TV Segmenter — v3.9.81-beta | `MainWindow`, `main()` |
+| `RadioTVSegmenter.py` | 663 | Radio & TV Segmenter — v3.9.82-beta | `MainWindow`, `main()` |
 | `audio_normalization.py` | 541 | Radio & TV Story Segmenter — Audio Loudness Probing & Nor... | `LoudnessReport`, `AudioLoudnessProbeWorker`, `parse_ebur128_summary()`, `probe_media_duration_seconds()` *(+3 more)* |
 | `background_workers.py` | 1015 | Radio & TV Story Segmenter — Background Worker Threads & ... | `StoryAutoDetectWorker`, `WaveformWorker`, `VideoThumbnailWorker`, `get_waveform_peak_cache_path()` *(+6 more)* |
 | `backup_manager.py` | 622 | Unified State Serialization, Local, and Google Drive Clou... | `compute_data_checksum()`, `serialize_preferences()`, `serialize_keyboard_shortcuts()`, `serialize_glossary()` *(+7 more)* |
@@ -33,7 +33,7 @@
 | `diagnostic_selector.py` | 191 | Smart Diagnostic Test Selector for Radio & TV Story Segme... | `get_modified_files()`, `has_git_changes()`, `detect_changed_tokens()`, `select_diagnostic_items()` |
 | `dialogs.py` | 433 | Radio & TV Story Segmenter — Audio Loudness Normalization... | `AudioLoudnessNormalizationDialog` |
 | `diarization_processing.py` | 769 | Speaker diarization process management for Radio & TV Sto... | `DiarizationProcessingMixin` |
-| `embedded_guides.py` | 444 | Radio & TV Story Segmenter — Built-In Embedded User Guide... | `get_embedded_guide()`, `get_all_embedded_guide_ids()` |
+| `embedded_guides.py` | 473 | Radio & TV Story Segmenter — Built-In Embedded User Guide... | `get_embedded_guide()`, `get_all_embedded_guide_ids()` |
 | `export/__init__.py` | 67 | Export package for Radio & TV Story Segmenter. | - |
 | `export/audio.py` | 287 | Radio & TV Story Segmenter — Broadcast Audio Rendering & ... | `build_audio_fade_filter()`, `export_audio_track()`, `extract_audio_clip()` |
 | `export/daw.py` | 37 | DAW and NLE timeline interchange formatters for Radio & T... | - |
@@ -77,8 +77,8 @@
 | `plugins/wordpress/wordpress_dialog.py` | 886 | WordPress Export Tab Widget and Post Metadata Dialog. | `WordPressExportTabWidget`, `WordPressPostMetadataDialog`, `generate_wp_excerpt()`, `capture_video_frame()` |
 | `plugins/wordpress/wp_post_builder.py` | 319 | Post item builder, transcript slicing, and video frame ex... | `capture_video_frame()`, `get_primary_text_slice()`, `build_wp_post_items()` |
 | `plugins/wordpress/wp_tab_widget.py` | 931 | WordPress export tab configuration widget and preview con... | `WordPressExportTabWidget` |
-| `plugins/wordpress/wp_ui_builder.py` | 746 | UI layout construction and widget setup for WordPressExpo... | `setup_wp_tab_ui()` |
-| `plugins/wordpress/youtube_embed.py` | 604 | YouTube Video Embed helpers, Gutenberg iframe generator, ... | `extract_youtube_video_id()`, `build_youtube_embed_block()`, `setup_wp_youtube_ui()`, `update_youtube_status_label()` *(+3 more)* |
+| `plugins/wordpress/wp_ui_builder.py` | 748 | UI layout construction and widget setup for WordPressExpo... | `setup_wp_tab_ui()` |
+| `plugins/wordpress/youtube_embed.py` | 601 | YouTube Video Embed helpers, Gutenberg iframe generator, ... | `extract_youtube_video_id()`, `build_youtube_embed_block()`, `setup_wp_youtube_ui()`, `update_youtube_status_label()` *(+3 more)* |
 | `plugins/youtube/__init__.py` | 9 | YouTube Video Publisher Plugin for Radio & TV Segmenter. | - |
 | `plugins/youtube/export_destination.py` | 613 | YouTube Export Destination for UnifiedExportDialog with Z... | `YouTubeExportTabWidget`, `YouTubeExportDestination`, `capture_video_frame()` |
 | `plugins/youtube/guide_dialog.py` | 147 | Interactive Assisted Upload Guide Dialog for YouTube Studio. | `YouTubeAssistedUploadGuideDialog` |
@@ -146,7 +146,7 @@
 | `transcript_navigation_mixin.py` | 300 | transcript_navigation_mixin.py - Timestamp discovery, car... | `TranscriptNavigationMixin` |
 | `transcript_playback_highlight_mixin.py` | 277 | Radio & TV Story Segmenter — Interactive Transcript Playb... | `TranscriptPlaybackHighlightMixin` |
 | `transcript_selection_mixin.py` | 473 | transcript_selection_mixin.py - Multi-selection, timeline... | `TranscriptSelectionMixin` |
-| `transcript_story.py` | 852 | Radio & TV Segmenter v3.9.81-beta — transcript story resp... | `TranscriptStoryMixin` |
+| `transcript_story.py` | 852 | Radio & TV Segmenter v3.9.82-beta — transcript story resp... | `TranscriptStoryMixin` |
 | `transcript_styles.py` | 104 | transcript_styles.py - Transcript view stylesheets and da... | `transcript_text_view_stylesheet()`, `clean_dark_mode_clipboard_html()` |
 | `transcript_timeline_sync_mixin.py` | 642 | Radio & TV Story Segmenter — Transcript Timeline & Playba... | `TranscriptTimelineSyncMixin` |
 | `transcription_processing.py` | 579 | Transcription background process management for Radio & T... | `TranscriptionProcessingMixin` |
@@ -172,7 +172,7 @@
 ## Detailed Symbol Catalog
 
 ### `RadioTVSegmenter.py` (663 lines)
-*Radio & TV Segmenter — v3.9.81-beta*
+*Radio & TV Segmenter — v3.9.82-beta*
 - **class `MainWindow(ModelManagementMixin, MediaBatchMixin, PlaybackPreferencesMixin, UiLayoutMixin, ProcessingMixin, TranslationMixin, TranscriptStoryMixin, ProjectExportMixin, GpuAccelerationMixin, QMainWindow)`** (lines 160–560):
   *Main application window for Radio & TV Segmenter.*
   - `__init__(self)` [L178-L355]
@@ -606,11 +606,11 @@
   - `speaker_at_time(self, start, end)` [L730-L763]
   - `get_effective_speaker_name(self, seg_idx, segment)` [L765-L769]
 
-### `embedded_guides.py` (444 lines)
+### `embedded_guides.py` (473 lines)
 *Radio & TV Story Segmenter — Built-In Embedded User Guides & Documentation.*
 - **Functions**:
-  - `get_embedded_guide(guide_id)` [L437-L439] — *Retrieve embedded markdown text for a guide topic ID, if available.*
-  - `get_all_embedded_guide_ids()` [L442-L444] — *Return all guide IDs provided as embedded fallback content.*
+  - `get_embedded_guide(guide_id)` [L466-L468] — *Retrieve embedded markdown text for a guide topic ID, if available.*
+  - `get_all_embedded_guide_ids()` [L471-L473] — *Return all guide IDs provided as embedded fallback content.*
 
 ### `export/__init__.py` (67 lines)
 *Export package for Radio & TV Story Segmenter.*
@@ -1491,12 +1491,12 @@
   - `_refresh_castos_feeds(self)` [L871-L896]
   - `_refresh_wp_metadata(self)` [L898-L930]
 
-### `plugins/wordpress/wp_ui_builder.py` (746 lines)
+### `plugins/wordpress/wp_ui_builder.py` (748 lines)
 *UI layout construction and widget setup for WordPressExportTabWidget.*
 - **Functions**:
-  - `setup_wp_tab_ui(self)` [L36-L746] — *Construct all controls, forms, sliders, list widgets, and tabbed panels for the WordPress export tab.*
+  - `setup_wp_tab_ui(self)` [L36-L748] — *Construct all controls, forms, sliders, list widgets, and tabbed panels for the WordPress export tab.*
 
-### `plugins/wordpress/youtube_embed.py` (604 lines)
+### `plugins/wordpress/youtube_embed.py` (601 lines)
 *YouTube Video Embed helpers, Gutenberg iframe generator, and UI setup for WordPress export.*
 - **Functions**:
   - `extract_youtube_video_id(url_or_id)` [L28-L141] — *Extract the clean 11-character YouTube Video ID and optional start timestamp (seconds).*
@@ -1512,7 +1512,7 @@
   - `_on_youtube_use_story_time_toggled(tab_widget, checked)` [L498-L508]
   - `_on_youtube_stop_at_end_toggled(tab_widget, checked)` [L511-L521]
   - `_on_youtube_placement_toggled(tab_widget, placement)` [L524-L534]
-  - `format_post_list_label_and_tooltip(tab_widget, idx)` [L537-L604] — *Return formatted label text and rich multi-line tooltip for an item in wp_posts_list.*
+  - `format_post_list_label_and_tooltip(tab_widget, idx)` [L537-L601] — *Return formatted label text and rich multi-line tooltip for an item in wp_posts_list.*
 
 ### `plugins/youtube/__init__.py` (9 lines)
 *YouTube Video Publisher Plugin for Radio & TV Segmenter.*
@@ -2822,7 +2822,7 @@
   - `_on_bubble_export(self)` [L468-L473]
 
 ### `transcript_story.py` (852 lines)
-*Radio & TV Segmenter v3.9.81-beta — transcript story responsibilities.*
+*Radio & TV Segmenter v3.9.82-beta — transcript story responsibilities.*
 - **Public Exports (`__all__`)**: TranscriptStoryMixin, Story, SetStoriesCommand, SelectStoriesCommand, StoryBoundaryChangeCommand, StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin, ChangeSpeakerDialog, VoiceProfileMatchDialog, StoryFadesDialog, SpeakerManagerDialog, FADE_CURVE_TABLES, get_fade_curve_factors
 - **class `TranscriptStoryMixin(StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin)`** (lines 63–851):
   - `render_transcript(self)` [L64-L467]

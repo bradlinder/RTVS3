@@ -63,9 +63,9 @@ def setup_wp_tab_ui(self: Any):
     wp_notice.setWordWrap(True)
     self.wp_info_section.add_widget(wp_notice)
 
-    # Master-Detail Container for Posts
-    self.wp_posts_container = QHBoxLayout()
-    self.wp_posts_container.setSpacing(12)
+    # Master-Detail Container for Posts (Expandable QSplitter)
+    self.wp_posts_container = QSplitter(Qt.Orientation.Horizontal)
+    self.wp_posts_container.setChildrenCollapsible(False)
 
     # Left Nav: Post selector
     self.wp_post_nav_widget = QWidget()
@@ -75,7 +75,6 @@ def setup_wp_tab_ui(self: Any):
     nav_label = QLabel("<b>Posts to Export:</b>")
     self.wp_posts_list = QListWidget()
     self.wp_posts_list.setMinimumWidth(160)
-    self.wp_posts_list.setMaximumWidth(220)
     self.wp_autofill_all_excerpts_btn = QPushButton("Auto-fill All Excerpts")
     self.wp_autofill_all_excerpts_btn.setToolTip("Auto-generate snippet (≤55 words) from transcript for every post")
     self.wp_autofill_all_excerpts_btn.clicked.connect(self._autofill_all_excerpts)
@@ -704,8 +703,11 @@ def setup_wp_tab_ui(self: Any):
             editor_layout.addWidget(self.wp_lang_section)
             editor_layout.addWidget(self.wp_crosslink_section)
 
-    self.wp_posts_container.addWidget(self.wp_post_editor_widget, 1)
-    self.wp_info_section.add_layout(self.wp_posts_container)
+    self.wp_posts_container.addWidget(self.wp_post_editor_widget)
+    self.wp_posts_container.setSizes([260, 680])
+    self.wp_posts_container.setStretchFactor(0, 0)
+    self.wp_posts_container.setStretchFactor(1, 1)
+    self.wp_info_section.add_widget(self.wp_posts_container)
 
     self.wp_posts_list.currentRowChanged.connect(self._on_wp_post_selection_changed)
 

@@ -39,70 +39,79 @@ You can save your WordPress credentials in preferences so you only need to enter
 
 ---
 
-## 3. Configuring WordPress Post Drafts
+## 3. Opening WordPress Export in the Unified Export Center
 
-When your episode has been segmented into stories, open the export dialog by pressing **Ctrl+E** (**File > Unified Export...**) and select **WordPress** on the left.
+When your broadcast media has been segmented into stories, open the export panel:
+1. Press **Ctrl+E** (or go to **File > Export...**).
+2. In the **Export Destination** bar at the top, select the **WordPress Draft Post** radio button.
 
 ![WordPress Content Tab](../images/wordpress_export_content_tab.png)
 
 ### Choosing Export Scope:
-In the top-right toolbar, choose which posts you want to generate:
-- **Full Episode**: Generates one post containing the complete episode transcript.
+In the **Export Scope** dropdown, choose which posts you want to generate:
 - **All Stories**: Generates separate draft posts for every detected story.
-- **Selected Stories**: Generates drafts only for the stories currently highlighted in the Stories list.
-- **Full and All Stories**: Generates one master episode post plus individual story posts.
+- **Selected Stories**: Generates drafts only for the stories currently highlighted in the Stories panel.
+- **Full Broadcast**: Generates one post containing the complete episode transcript.
+- **Full Broadcast and All Stories**: Generates one master episode post plus individual story posts.
 
 ---
 
-## 4. Customizing Individual Post Details
+## 4. Customizing Individual Post Details Across the 4 Tabs
 
-Select any post from the left-hand post list to customize its attributes across the 4 editor tabs:
+Under **WordPress Post Configuration**, select any post in the left-hand **Posts to Export:** list. The divider between the post list and the editor pane is an expandable splitter that you can drag to widen the sidebar.
 
-### 1. Content Tab
-- **Title**: The headline of the WordPress draft.
-- **Excerpt**: A concise summary of the story used for article previews, RSS feeds, and social cards.
-- **Custom Disclaimer**: An optional notice (e.g., *"This story aired on Radio One on Nov 4"*) prepended or appended to the article.
+Configure each post across the 4 editor tabs:
 
-### 2. Organization Tab
-- **Authors**: Assign one or more registered WordPress authors to the post.
-- **Categories**: Select WordPress categories (e.g., *News*, *Interviews*, *Local*).
-- **Tags**: Add comma-separated tag keywords.
+### Tab 1: Post Content
+- **Post Title**: The headline of the WordPress draft post.
+- **Post Excerpt / Teaser**: A concise summary of the story used for article previews, RSS feeds, and social cards. Click **Generate from Story** to automatically extract a snippet (≤55 words) from the transcript.
+- **Custom Notice / Disclaimer**: An optional notice (e.g., *"This story aired on Radio One on Nov 4"*) prepended or appended to the article.
 
-### 3. Media & Images Tab
-- **Featured Image**: Choose an extracted video thumbnail frame or custom image to set as the post's featured banner.
+### Tab 2: Authors & Taxonomy
+- **Authors**: Search, filter, and select registered WordPress authors to assign bylines.
+- **Categories**: Search, filter, and assign one or more WordPress categories (e.g., *News*, *Interviews*, *Local*).
+- **Tags**: Enter comma-separated tag keywords.
 
-### 4. Media Tab
+### Tab 3: Media
 
 ![WordPress Media Tab](../images/wordpress_export_media_tab.png)
 
-- **YouTube Video Link**: Paste a YouTube watch link, short link, or studio edit link. RTVS3 calculates story start and end timestamps automatically.
-- **Stop Video at Story End**: When checked, the player stops when the segment finishes.
-- **Embed Placement**: Choose whether the responsive 16:9 player appears at the **Top** (above transcript) or **Bottom** (below transcript).
+- **Featured Image**: Choose a captured video thumbnail frame, custom image file, or disabled.
+- **YouTube Video Link**: Paste a YouTube watch link, short link, or studio URL.
+  - **Context-Aware Auto-Dimming**: Controls automatically dim when the URL field is empty and illuminate as soon as a valid video link is detected.
+  - **Stop Video at Story End**: When checked, the embedded player automatically pauses playback when the segment concludes.
+  - **Embed Placement**: Choose whether the responsive 16:9 player appears at the **Top** (above transcript) or **Bottom** (below transcript).
 - **Include Audio Files**:
-  - For audio radio projects, checking this extracts an MP3 cut and uploads it to the WordPress Media Library.
+  - For radio and audio projects, checking this extracts a 128 kbps MP3 cut and uploads it to the WordPress Media Library.
   - For video shows, this defaults to unchecked because the YouTube embed already provides full audio.
-  - If unchecked, audio fade processing is automatically bypassed.
-- **Podcast Enclosure**: Check this to format the audio upload with standard RSS podcast enclosures so podcast aggregator plugins (such as Seriously Simple Podcasting or PowerPress) detect the episode.
+  - **Apply Audio Fades**: Automatically rendered on the MP3 cut if audio inclusion is enabled.
+- **Podcast Enclosure**: Check this to format the audio upload with Castos or standard RSS podcast enclosures so aggregator plugins detect the episode.
+
+### Tab 4: Publishing & Formatting
+- **Transcript Languages**: Select your primary spoken language and choose any translated languages to append to the post draft.
+- **Episode Cross-Linking**: Automatically insert hyperlinks back to the full broadcast master post or related story segments.
 
 ---
 
-## 5. Left-Hand Post List Badges & Tooltips
+## 5. Left-Hand Post List Prefix Indicators & Tooltips
 
-As you configure posts, the left-hand list displays compact badges showing exactly what each post will contain:
+In the **Posts to Export:** list, compact prefix tags appear immediately after the story number so you can verify each post's configuration at a glance, even when the sidebar is narrow:
 
 ![WordPress Post List Badges](../images/wordpress_posts_list_badges.png)
 
-- **`[YouTube]`**: A responsive YouTube embed with story timestamps is enabled.
-- **`[Podcast]`**: Podcast RSS enclosure tags are configured.
-- **`[Audio]`**: An MP3 audio file will be uploaded.
-- **`[Image]`**: A featured image or video thumbnail will be uploaded.
-- Hover your mouse over any post in the list to view a multi-line tooltip detailing exact start/end seconds, author names, and categories.
+- **`[YT]`**: A responsive YouTube embed with story timestamps is attached.
+- **`[Pod]`**: Podcast RSS enclosure tags are configured.
+- **`[A]`**: An MP3 audio cut will be uploaded.
+- **`[Img]`**: A featured image or video thumbnail will be uploaded.
+- **Example**: `Story 1 [YT, A]: Demonstrators push for more funding...`
+- **Hover Tooltips**: Hover your mouse over any post in the list to view a multi-line tooltip detailing exact start/end timecodes, author names, and category tags.
+- **Resizable Sidebar**: Drag the vertical splitter bar between the post list and the editor tabs to expand or shrink the sidebar.
 
 ---
 
 ## 6. Uploading Drafts to WordPress
 
-Click **Export to WordPress** at the bottom of the dialog:
-- RTVS3 uploads media files and creates **Draft** posts on your WordPress site.
+Click **Export to WordPress Drafts...** at the bottom of the dialog:
+- RTVS3 authenticates via the WordPress REST API and creates **Draft** posts on your WordPress site.
 - Posts are created in draft status so you or your editorial team can review and preview them before publishing them live to the public.
 - When upload completes, a clickable link takes you directly to the WordPress post editor.
