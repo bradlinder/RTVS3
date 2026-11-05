@@ -83,6 +83,8 @@ def build_wp_post_items(
         st_key = old_item.get("start")
         task_lbl = old_item.get("task_label", "")
         existing_by_start[(task_lbl, st_key)] = old_item
+        clean_lbl = task_lbl.split(":", 1)[0].strip() if ":" in task_lbl and task_lbl.lower().startswith("story ") else task_lbl
+        existing_by_start[(clean_lbl, st_key)] = old_item
         if st_key is not None:
             existing_by_start[st_key] = old_item
         if task_lbl == "Full Episode" or st_key is None:
@@ -100,7 +102,7 @@ def build_wp_post_items(
         ep_num_val = wp_meta.get("podcast_episode_number") if wp_meta.get("podcast_episode_number") is not None else wp_meta.get("episode_number")
 
         item: Dict[str, Any] = {
-            "task_label": f"Story {idx + 1}" + (f": {st.title}" if getattr(st, "title", None) else ""),
+            "task_label": f"Story {idx + 1}",
             "title": wp_meta.get("title") or st_title,
             "excerpt": wp_meta.get("excerpt") or st_meta.get("excerpt") or default_excerpt,
             "start": getattr(st, "start", None),

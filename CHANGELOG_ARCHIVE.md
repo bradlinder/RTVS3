@@ -1,5 +1,11 @@
 # Changelog Archive (Historical Releases: v1.1 – v3.8.9-beta.19)
 
+## v3.9.82-beta
+- **WordPress Post List Expandable Sidebar, Compact Prefix Indicators & Documentation Accuracy Overhaul (`plugins/wordpress/wp_ui_builder.py`, `plugins/wordpress/youtube_embed.py`, `plugins/wordpress/manifest.json`, `docs/guides/`, `embedded_guides.py`)**:
+  - **Compact Start-of-Title Prefix Badges (`plugins/wordpress/youtube_embed.py`)**: Moved media and post indicators from the end of the story title to compact prefix badges directly following the story number (e.g. `Story 1 [YT, A]: Demonstrators...` or `Story 2 [Pod]: A shuttle...`). Ensures post type indicators (`[YT]` = YouTube embed, `[Pod]` = Podcast RSS enclosure, `[A]` = MP3 audio cut, `[Img]` = Featured thumbnail) are immediately visible within the first 15 characters without being pushed offscreen by long headlines.
+  - **Expandable Post List Sidebar (`plugins/wordpress/wp_ui_builder.py`)**: Upgraded `wp_posts_container` from a fixed-width `QHBoxLayout` with a 220px maximum cap to a horizontal `QSplitter`. Users can freely drag the splitter divider to expand the sidebar or narrow it to their preference.
+  - **User Guide Accuracy Audit (`docs/guides/`, `embedded_guides.py`)**: Thoroughly audited and corrected all 5 user guides to accurately describe current UI controls, tab titles, and workflows.
+
 ## v3.9.81-beta
 - **Responsive User Guide Image Scaling & High-DPI Screenshot Downsampling (`user_guide_dialog.py`, `scripts/capture_guide_screenshots.py`, `docs/images/`, `diagnostic_editor_tests.py`)**:
   - **Dynamic Responsive Image Resizing (`user_guide_dialog.py`)**: Built `ResponsiveTextBrowser`, a custom `QTextBrowser` subclass that automatically scales embedded guide screenshots to fit the available viewport width whenever the dialog or splitter is resized. Prevents horizontal scrollbars and eliminates image clipping on compact windows and low-resolution displays (e.g. 1366x768).

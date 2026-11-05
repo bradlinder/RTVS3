@@ -540,8 +540,12 @@ def format_post_list_label_and_tooltip(tab_widget: Any, idx: int) -> Tuple[str, 
         return "", ""
 
     post = tab_widget.wp_post_items[idx]
-    task_label = post.get("task_label") or f"Post {idx + 1}"
-    title = post.get("title") or task_label
+    raw_task_label = post.get("task_label") or f"Story {idx + 1}"
+    if ":" in raw_task_label and (raw_task_label.lower().startswith("story ") or raw_task_label.lower().startswith("post ")):
+        prefix = raw_task_label.split(":", 1)[0].strip()
+    else:
+        prefix = raw_task_label
+    title = post.get("title") or prefix
 
     n_auths = len(post.get("author_ids", [])) + len(post.get("author_term_ids", []))
     n_cats = len(post.get("category_ids", []))
@@ -563,7 +567,10 @@ def format_post_list_label_and_tooltip(tab_widget: Any, idx: int) -> Tuple[str, 
         prefix_tags.append("Img")
 
     tag_str = f" [{', '.join(prefix_tags)}]" if prefix_tags else ""
-    label_text = f"{task_label}{tag_str}: {title}"
+    if title and title != prefix:
+        label_text = f"{prefix}{tag_str}: {title}"
+    else:
+        label_text = f"{prefix}{tag_str}"
 
     # Build rich hover tooltip
     tt_lines = [f"<b>{html.escape(title)}</b>"]

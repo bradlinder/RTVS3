@@ -136,6 +136,14 @@ class WordPressExportTabWidget(QWidget):
         if self._syncing_post_editor or not (0 <= self._current_post_index < len(self.wp_post_items)):
             return
         self.wp_post_items[self._current_post_index]["title"] = text.strip()
+        task_lbl = self.wp_post_items[self._current_post_index].get('task_label', 'Post')
+        clean_lbl = task_lbl.split(":", 1)[0].strip() if ":" in task_lbl and task_lbl.lower().startswith("story ") else task_lbl
+        t_val = text.strip()
+        if t_val and t_val != clean_lbl and clean_lbl.startswith("Story "):
+            header_str = f"{clean_lbl}: {t_val}"
+        else:
+            header_str = clean_lbl
+        self.wp_current_post_header.setText(f"<b>Post Settings: {html.escape(header_str)}</b>")
         self._update_post_list_item_label(self._current_post_index)
         self._sync_to_proj(self._current_post_index)
 
@@ -590,7 +598,14 @@ class WordPressExportTabWidget(QWidget):
         post = self.wp_post_items[index]
 
         self._syncing_post_editor = True
-        self.wp_current_post_header.setText(f"<b>Post Settings: {html.escape(post.get('task_label', 'Post'))}</b>")
+        task_lbl = post.get('task_label', 'Post')
+        clean_lbl = task_lbl.split(":", 1)[0].strip() if ":" in task_lbl and task_lbl.lower().startswith("story ") else task_lbl
+        t_val = post.get("title")
+        if t_val and t_val != clean_lbl and clean_lbl.startswith("Story "):
+            header_str = f"{clean_lbl}: {t_val}"
+        else:
+            header_str = clean_lbl
+        self.wp_current_post_header.setText(f"<b>Post Settings: {html.escape(header_str)}</b>")
         self.wp_title_edit.setText(post.get("title", ""))
         self.wp_excerpt_edit.setPlainText(post.get("excerpt", ""))
 
