@@ -1,13 +1,13 @@
 # Repository Symbol Index & API Map
 
-> Generated: 2026-11-04 20:32:17 | Total Files: 160
+> Generated: 2026-11-05 09:46:21 | Total Files: 161
 > Use `python scripts/generate_symbol_index.py --outline <file>` for exact line numbers.
 
 ## Modules Overview
 
 | Module | Lines | Summary | Primary Classes / Functions |
 | :--- | :---: | :--- | :--- |
-| `RadioTVSegmenter.py` | 663 | Radio & TV Segmenter — v3.9.79-beta | `MainWindow`, `main()` |
+| `RadioTVSegmenter.py` | 663 | Radio & TV Segmenter — v3.9.80-beta | `MainWindow`, `main()` |
 | `audio_normalization.py` | 541 | Radio & TV Story Segmenter — Audio Loudness Probing & Nor... | `LoudnessReport`, `AudioLoudnessProbeWorker`, `parse_ebur128_summary()`, `probe_media_duration_seconds()` *(+3 more)* |
 | `background_workers.py` | 1015 | Radio & TV Story Segmenter — Background Worker Threads & ... | `StoryAutoDetectWorker`, `WaveformWorker`, `VideoThumbnailWorker`, `get_waveform_peak_cache_path()` *(+6 more)* |
 | `backup_manager.py` | 622 | Unified State Serialization, Local, and Google Drive Clou... | `compute_data_checksum()`, `serialize_preferences()`, `serialize_keyboard_shortcuts()`, `serialize_glossary()` *(+7 more)* |
@@ -17,7 +17,7 @@
 | `benchmark_engine.py` | 903 | benchmark_engine.py - Core High-Precision Performance Ben... | `BenchmarkEngine` |
 | `benchmark_models.py` | 457 | benchmark_models.py - Benchmark Data Models, Audio Genera... | `BenchmarkMetric`, `ProcessingEstimates`, `get_app_data_dir()`, `get_candidate_sample_audio_paths()` *(+9 more)* |
 | `bootstrap.py` | 385 | Install-safe startup environment configuration for Radio ... | `NullWriter`, `init_null_streams_and_hf_env()`, `patch_av_open()`, `app_data_dir()` *(+7 more)* |
-| `build_installer.py` | 1081 | Build the installable Radio & TV Segmenter application wi... | `exe_name()`, `find_tool()`, `check_cpu_only_torch()`, `torch_windows_binary_flags()` *(+8 more)* |
+| `build_installer.py` | 1094 | Build the installable Radio & TV Segmenter application wi... | `exe_name()`, `find_tool()`, `check_cpu_only_torch()`, `torch_windows_binary_flags()` *(+8 more)* |
 | `bump_version.py` | 513 | bump_version.py — Automated Version Synchronization Engine | `normalize_version()`, `get_current_version()`, `compute_bump()`, `detect_modified_plugins()` *(+3 more)* |
 | `cache_manager.py` | 685 | Radio & TV Segmenter — Cache management, disk usage scann... | `ClearCacheDialog`, `register_active_thumbnail_dir()`, `unregister_active_thumbnail_dir()`, `get_active_thumbnail_dirs()` *(+3 more)* |
 | `comment_widgets.py` | 350 | comment_widgets.py - Range-Anchored Comments Panel & Comm... | `CommentEditorDialog`, `CommentCardWidget`, `CommentsPanel` |
@@ -26,13 +26,14 @@
 | `diagnostic_cloud_and_system_tests.py` | 1313 | Diagnostic test bench suite component. | `DiagnosticCloudAndSystemTestsMixin` |
 | `diagnostic_core_tests.py` | 826 | Diagnostic test bench suite component. | `DiagnosticCoreTestsMixin` |
 | `diagnostic_dialog.py` | 288 | PySide6 Graphical Test Bench Dialog for Radio & TV Story ... | `create_diagnostic_dialog()` |
-| `diagnostic_editor_tests.py` | 202 | Diagnostic editor and find-replace tests for Radio & TV S... | `DiagnosticEditorTestsMixin` |
+| `diagnostic_editor_tests.py` | 252 | Diagnostic editor and find-replace tests for Radio & TV S... | `DiagnosticEditorTestsMixin` |
 | `diagnostic_export_tests.py` | 1862 | Diagnostic test bench suite component. | `DiagnosticExportTestsMixin` |
 | `diagnostic_helpers.py` | 151 | Helper fixtures, module resolvers, and DiagnosticItem for... | `DiagnosticItem`, `generate_synthetic_wav()` |
 | `diagnostic_loudness_tests.py` | 391 | Radio & TV Story Segmenter — Diagnostic Loudness Normaliz... | `DiagnosticLoudnessTestsMixin` |
 | `diagnostic_selector.py` | 191 | Smart Diagnostic Test Selector for Radio & TV Story Segme... | `get_modified_files()`, `has_git_changes()`, `detect_changed_tokens()`, `select_diagnostic_items()` |
 | `dialogs.py` | 433 | Radio & TV Story Segmenter — Audio Loudness Normalization... | `AudioLoudnessNormalizationDialog` |
 | `diarization_processing.py` | 769 | Speaker diarization process management for Radio & TV Sto... | `DiarizationProcessingMixin` |
+| `embedded_guides.py` | 444 | Radio & TV Story Segmenter — Built-In Embedded User Guide... | `get_embedded_guide()`, `get_all_embedded_guide_ids()` |
 | `export/__init__.py` | 67 | Export package for Radio & TV Story Segmenter. | - |
 | `export/audio.py` | 287 | Radio & TV Story Segmenter — Broadcast Audio Rendering & ... | `build_audio_fade_filter()`, `export_audio_track()`, `extract_audio_clip()` |
 | `export/daw.py` | 37 | DAW and NLE timeline interchange formatters for Radio & T... | - |
@@ -145,7 +146,7 @@
 | `transcript_navigation_mixin.py` | 300 | transcript_navigation_mixin.py - Timestamp discovery, car... | `TranscriptNavigationMixin` |
 | `transcript_playback_highlight_mixin.py` | 277 | Radio & TV Story Segmenter — Interactive Transcript Playb... | `TranscriptPlaybackHighlightMixin` |
 | `transcript_selection_mixin.py` | 473 | transcript_selection_mixin.py - Multi-selection, timeline... | `TranscriptSelectionMixin` |
-| `transcript_story.py` | 852 | Radio & TV Segmenter v3.9.79-beta — transcript story resp... | `TranscriptStoryMixin` |
+| `transcript_story.py` | 852 | Radio & TV Segmenter v3.9.80-beta — transcript story resp... | `TranscriptStoryMixin` |
 | `transcript_styles.py` | 104 | transcript_styles.py - Transcript view stylesheets and da... | `transcript_text_view_stylesheet()`, `clean_dark_mode_clipboard_html()` |
 | `transcript_timeline_sync_mixin.py` | 642 | Radio & TV Story Segmenter — Transcript Timeline & Playba... | `TranscriptTimelineSyncMixin` |
 | `transcription_processing.py` | 579 | Transcription background process management for Radio & T... | `TranscriptionProcessingMixin` |
@@ -154,7 +155,7 @@
 | `ui_layout.py` | 1090 | Radio & TV Segmenter — UI Layout & Menu Construction Mixin. | `UiLayoutMixin` |
 | `ui_menus.py` | 820 | Main application menu bar and action assembly for Radio &... | `PersistentMenu`, `UiMenusMixin` |
 | `updater.py` | 1549 | Update manager and GitHub release installer for Radio & T... | `CheckUpdateWorker`, `DownloadUpdateWorker`, `CheckUpdateDialog`, `UpdaterMixin` *(+9 more)* |
-| `user_guide_dialog.py` | 421 | Radio & TV Story Segmenter — In-App User Guide & Document... | `UserGuideDialog` |
+| `user_guide_dialog.py` | 478 | Radio & TV Story Segmenter — In-App User Guide & Document... | `UserGuideDialog` |
 | `utils/__init__.py` | 36 | Utility modules for Radio & TV Story Segmenter. | - |
 | `utils/constants.py` | 41 | Application constants and environment configuration. | - |
 | `utils/time_format.py` | 19 | Time formatting and parsing utilities. | - |
@@ -171,7 +172,7 @@
 ## Detailed Symbol Catalog
 
 ### `RadioTVSegmenter.py` (663 lines)
-*Radio & TV Segmenter — v3.9.79-beta*
+*Radio & TV Segmenter — v3.9.80-beta*
 - **class `MainWindow(ModelManagementMixin, MediaBatchMixin, PlaybackPreferencesMixin, UiLayoutMixin, ProcessingMixin, TranslationMixin, TranscriptStoryMixin, ProjectExportMixin, GpuAccelerationMixin, QMainWindow)`** (lines 160–560):
   *Main application window for Radio & TV Segmenter.*
   - `__init__(self)` [L178-L355]
@@ -340,7 +341,7 @@
   - `ensure_keyring_runtime()` [L351-L377] — *Ensure keyring (and pywin32-ctypes on Windows) is installed for secure credential storage.*
   - `check_and_install_core()` [L379-L382] — *Backward-compatible startup dependency check.*
 
-### `build_installer.py` (1081 lines)
+### `build_installer.py` (1094 lines)
 *Build the installable Radio & TV Segmenter application with PyInstaller.*
 - **Functions**:
   - `exe_name(base)` [L105-L106]
@@ -349,12 +350,12 @@
   - `torch_windows_binary_flags()` [L218-L246]
   - `run(cmd)` [L249-L274]
   - `provision_optional_runtime_tools(app_root)` [L277-L357]
-  - `prune_unneeded_bundled_files(app_root)` [L360-L489]
-  - `sync_installer_scripts(project_version)` [L492-L505] — *Ensure Inno Setup and other installer packaging scripts match PROJECT_VERSION.*
-  - `compile_windows_installer(project_version)` [L508-L543] — *Compile the Windows Inno Setup installer executable if ISCC is installed.*
-  - `parse_build_args()` [L546-L621]
-  - `package_plugins(app_root, include_wp, include_yt, include_tr)` [L624-L692] — *Package plugins into standalone .zip release artifacts in dist/plugins/*
-  - `main()` [L695-L1077]
+  - `prune_unneeded_bundled_files(app_root)` [L360-L492]
+  - `sync_installer_scripts(project_version)` [L495-L508] — *Ensure Inno Setup and other installer packaging scripts match PROJECT_VERSION.*
+  - `compile_windows_installer(project_version)` [L511-L546] — *Compile the Windows Inno Setup installer executable if ISCC is installed.*
+  - `parse_build_args()` [L549-L624]
+  - `package_plugins(app_root, include_wp, include_yt, include_tr)` [L627-L695] — *Package plugins into standalone .zip release artifacts in dist/plugins/*
+  - `main()` [L698-L1090]
 
 ### `bump_version.py` (513 lines)
 *bump_version.py — Automated Version Synchronization Engine*
@@ -513,11 +514,12 @@
 - **Functions**:
   - `create_diagnostic_dialog(parent, include_dev_tests)` [L16-L288] — *Builds the Diagnostic Test Bench Qt Dialog.*
 
-### `diagnostic_editor_tests.py` (202 lines)
+### `diagnostic_editor_tests.py` (252 lines)
 *Diagnostic editor and find-replace tests for Radio & TV Story Segmenter.*
-- **class `DiagnosticEditorTestsMixin`** (lines 11–202):
+- **class `DiagnosticEditorTestsMixin`** (lines 11–252):
   *Diagnostic suite for transcript editor, find-replace, and speaker synchronization.*
   - `_test_find_and_replace_project_synchronization_and_undo(self, item)` [L14-L202] — *Validates that Find & Replace updates segments, word timings, speaker aliases,*
+  - `_test_in_app_user_guides_and_documentation_viewer(self, item)` [L204-L252] — *Validates in-app user guide resolution, fallback to embedded content, and bundling invariants.*
 
 ### `diagnostic_export_tests.py` (1862 lines)
 *Diagnostic test bench suite component.*
@@ -603,6 +605,12 @@
   - `_ensure_diar_speaker_index(self)` [L698-L728]
   - `speaker_at_time(self, start, end)` [L730-L763]
   - `get_effective_speaker_name(self, seg_idx, segment)` [L765-L769]
+
+### `embedded_guides.py` (444 lines)
+*Radio & TV Story Segmenter — Built-In Embedded User Guides & Documentation.*
+- **Functions**:
+  - `get_embedded_guide(guide_id)` [L437-L439] — *Retrieve embedded markdown text for a guide topic ID, if available.*
+  - `get_all_embedded_guide_ids()` [L442-L444] — *Return all guide IDs provided as embedded fallback content.*
 
 ### `export/__init__.py` (67 lines)
 *Export package for Radio & TV Story Segmenter.*
@@ -2814,7 +2822,7 @@
   - `_on_bubble_export(self)` [L468-L473]
 
 ### `transcript_story.py` (852 lines)
-*Radio & TV Segmenter v3.9.79-beta — transcript story responsibilities.*
+*Radio & TV Segmenter v3.9.80-beta — transcript story responsibilities.*
 - **Public Exports (`__all__`)**: TranscriptStoryMixin, Story, SetStoriesCommand, SelectStoriesCommand, StoryBoundaryChangeCommand, StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin, ChangeSpeakerDialog, VoiceProfileMatchDialog, StoryFadesDialog, SpeakerManagerDialog, FADE_CURVE_TABLES, get_fade_curve_factors
 - **class `TranscriptStoryMixin(StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin)`** (lines 63–851):
   - `render_transcript(self)` [L64-L467]
@@ -3016,21 +3024,22 @@
   - `launch_and_install(file_path, parent)` [L402-L714]
   - `cleanup_old_installers(max_to_keep, force_all)` [L778-L837] — *Clean up old downloaded application update installers from AppData/updates directory.*
 
-### `user_guide_dialog.py` (421 lines)
+### `user_guide_dialog.py` (478 lines)
 *Radio & TV Story Segmenter — In-App User Guide & Documentation Viewer Dialog.*
-- **class `UserGuideDialog(QDialog)`** (lines 38–421):
+- **class `UserGuideDialog(QDialog)`** (lines 39–478):
   *In-app reader dialog displaying rich user guides with inline screenshots.*
-  - `__init__(self, parent, initial_guide_id)` [L74-L89]
-  - `_setup_ui(self)` [L91-L192]
-  - `_apply_browser_stylesheet(self)` [L194-L228]
-  - `_resolve_image_urls(self, markdown_text)` [L230-L244] — *Replace relative image paths in markdown with absolute file URIs for instant rendering.*
-  - `_load_guide_by_id(self, guide_id)` [L246-L282]
-  - `_on_topic_selected(self, row)` [L284-L288]
-  - `_zoom_in(self)` [L290-L292]
-  - `_zoom_out(self)` [L294-L296]
-  - `_reset_zoom(self)` [L298-L301]
-  - `_open_in_external_browser(self)` [L303-L376] — *Export the current guide as a self-contained styled HTML file and launch the system web browser.*
-  - `_build_dynamic_shortcuts_guide(self)` [L378-L421] — *Build dynamic keyboard shortcut documentation from active settings.*
+  - `_find_docs_dir()` [L76-L110] — *Locate the docs directory across frozen executables, installed dirs, and dev trees.*
+  - `__init__(self, parent, initial_guide_id)` [L112-L128]
+  - `_setup_ui(self)` [L130-L232]
+  - `_apply_browser_stylesheet(self)` [L234-L268]
+  - `_resolve_image_urls(self, markdown_text)` [L270-L286] — *Replace relative image paths in markdown with absolute file URIs for instant rendering.*
+  - `_load_guide_by_id(self, guide_id)` [L288-L339]
+  - `_on_topic_selected(self, row)` [L341-L345]
+  - `_zoom_in(self)` [L347-L349]
+  - `_zoom_out(self)` [L351-L353]
+  - `_reset_zoom(self)` [L355-L358]
+  - `_open_in_external_browser(self)` [L360-L433] — *Export the current guide as a self-contained styled HTML file and launch the system web browser.*
+  - `_build_dynamic_shortcuts_guide(self)` [L435-L478] — *Build dynamic keyboard shortcut documentation from active settings.*
 
 ### `utils/__init__.py` (36 lines)
 *Utility modules for Radio & TV Story Segmenter.*

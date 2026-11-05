@@ -94,17 +94,18 @@ TABLE OF CONTENTS & STATUS OVERVIEW
    [ ] 5.4 Burned-in Subtitles & Platform Safe Zone Enforcement (`plugins/social_reel/reel_subtitles.py`)
    [ ] 5.5 Unified Export Integration & Social Reel Diagnostic Tests (`export/dialog.py`, `test_runner.py`)
 
-6. Current Release: WordPress YouTube Embed Dynamic Auto-Dimming & Control State Synchronization (plugins/wordpress/youtube_embed.py, diagnostic_export_tests.py) [x] [COMPLETED in v3.9.79-beta]
-   [x] 6.1 Context-Aware Auto-Dimming: Automatically disable (gray out) placement radio buttons and story timestamp start/stop checkboxes whenever the YouTube URL field is empty or contains an invalid URL/ID.
-   [x] 6.2 Real-Time Control State Illumination: Instantly activate and illuminate placement options when a valid YouTube URL or Video ID is pasted/typed into the field.
-   [x] 6.3 Clear Status Guidance & Disabled Tooltips: Updated status label below the input with clear instructions and contextual disabled-state tooltips on radio buttons and checkboxes.
-   [x] 6.4 Automated Verification: Added dynamic enable/disable transitions across empty, valid, and cleared URL states to _test_wordpress_youtube_video_embed in diagnostic_export_tests.py.
+6. Current Release: In-App User Guides Program Directory Packaging & Hardcoded Embedded Fallbacks (user_guide_dialog.py, embedded_guides.py, build_installer.py, diagnostic_editor_tests.py) [x] [COMPLETED in v3.9.80-beta]
+   [x] 6.1 Application Program Directory Installation: Bundled the docs/ hierarchy directly into dist/RadioTVSegmenter/docs/ so Windows Setup places it into {app}\docs\.
+   [x] 6.2 Pruning Protection: Refined build_installer.py cleanup rules to protect internal user guides while pruning third-party documentation inside site-packages.
+   [x] 6.3 Multi-Candidate Path Resolution: Added _find_docs_dir() scanning installed app roots, PyInstaller runtime extraction dirs, and macOS bundle resources.
+   [x] 6.4 Compile-Time Embedded Fallbacks: Embedded full markdown copies of all 5 core guides in embedded_guides.py to eliminate 'Guide Not Found' errors even without disk files.
+   [x] 6.5 Automated Verification: Added diagnostic item In-App User Guides and Documentation Viewer in diagnostic_editor_tests.py.
 
-7. Previous Release: Native In-App Documentation Viewer & Comprehensive User Guides (user_guide_dialog.py, playback_preferences.py, docs/guides/, uild_installer.py) [x] [COMPLETED in v3.9.78-beta]
-   [x] 7.1 Native In-App Documentation Reader: Created interactive desktop reader dialog (UserGuideDialog) with topic navigation, zoom controls, and theme integration.
-   [x] 7.2 Inline Screenshot Rendering: Resolved relative image paths to absolute URIs for direct rendering inside QTextBrowser without external tools.
-   [x] 7.3 Comprehensive Multi-Guide Library: Authored getting_started_and_workflow.md, wordpress_exporting.md, youtube_features.md, and export_formats.md.
-   [x] 7.4 Distribution Packaging: Added docs/ hierarchy to PyInstaller bundle via build_installer.py.
+7. Previous Release: WordPress YouTube Embed Dynamic Auto-Dimming & Control State Synchronization (plugins/wordpress/youtube_embed.py, diagnostic_export_tests.py) [x] [COMPLETED in v3.9.79-beta]
+   [x] 7.1 Context-Aware Auto-Dimming: Automatically disabled placement radios and story timecode checkboxes when YouTube URL is empty or invalid.
+   [x] 7.2 Dynamic State Illumination: Instantly illuminated options upon entering a valid YouTube link or video ID.
+   [x] 7.3 Status Guidance & Disabled Tooltips: Added dynamic helper instructions and contextual disabled tooltips.
+   [x] 7.4 Automated Regression Suite: Verified state transitions in _test_wordpress_youtube_video_embed.
 ================================================================================
 DETAILED MILESTONE SPECIFICATIONS
 ================================================================================
@@ -146,22 +147,23 @@ DETAILED MILESTONE SPECIFICATIONS
 - Target Release: v4.3.0 (Optional / Planned)
 - Technical References: Subsystem architecture, plugin manifest, and FFmpeg filtergraph pipeline specifications are detailed in `ARCHITECTURE.md` (Section 6).
 
-6. CURRENT RELEASE: WORDPRESS YOUTUBE EMBED DYNAMIC AUTO-DIMMING & CONTROL STATE SYNCHRONIZATION:
-- Purpose: Eliminate user ambiguity around empty YouTube URLs by automatically graying out placement radios and story timecode options when no video is attached.
-- Target Release: v3.9.79-beta (Current Release)
+6. CURRENT RELEASE: IN-APP USER GUIDES PROGRAM DIRECTORY PACKAGING & HARDCODED EMBEDDED FALLBACKS:
+- Purpose: Ensure user guides and screenshot images are reliably located in the installed program directory and provide compile-time hardcoded fallback content so 'Guide Not Found' errors never occur.
+- Target Release: v3.9.80-beta (Current Release)
 - Technical References & Implementation Details:
-  * [x] Context-Aware Auto-Dimming: Implemented _set_youtube_controls_enabled() in plugins/wordpress/youtube_embed.py to disable placement radios and story timestamp checkboxes on empty/invalid input.
-  * [x] Real-Time State Illumination: Connected _on_youtube_url_changed and update_youtube_status_label to dynamically re-enable controls immediately upon detecting a valid 11-char video ID.
-  * [x] Status Guidance & Disabled Tooltips: Configured dynamic status guidance and tooltips informing users to enter a URL to configure placement.
-  * [x] Automated Regression Suite: Expanded _test_wordpress_youtube_video_embed in diagnostic_export_tests.py verifying disabled/enabled/disabled state transitions.
-  * Release Logs: Documented in CHANGELOG.md under ## v3.9.79-beta.
+  * [x] Program Directory Installation: Updated build_installer.py to copy ROOT / 'docs' directly into app_root / 'docs', ensuring Inno Setup delivers all guides and images to {app}\docs\.
+  * [x] Bundled Runtime Pruning Protection: Updated prune_unneeded_bundled_files() to protect application documentation while restricting pruning to third-party docs under site-packages.
+  * [x] Resilient Multi-Candidate Path Resolution: Added _find_docs_dir() in user_guide_dialog.py to resolve docs across sys.executable, _MEIPASS, macOS Resources, and local directories.
+  * [x] Hardcoded Embedded Guide Catalog: Created embedded_guides.py containing full compile-time markdown fallbacks for all user guides.
+  * [x] Automated Regression Suite: Added In-App User Guides and Documentation Viewer in diagnostic_editor_tests.py.
+  * Release Logs: Documented in CHANGELOG.md under ## v3.9.80-beta.
 
-7. PREVIOUS RELEASE: NATIVE IN-APP DOCUMENTATION VIEWER & COMPREHENSIVE USER GUIDES:
-- Purpose: Deliver the interactive desktop documentation reader dialog, inline image rendering, and complete guide library.
-- Target Release: v3.9.78-beta (Previous Release)
+7. PREVIOUS RELEASE: WORDPRESS YOUTUBE EMBED DYNAMIC AUTO-DIMMING & CONTROL STATE SYNCHRONIZATION:
+- Purpose: Eliminate user ambiguity around empty YouTube URLs by automatically graying out placement radios and story timecode options when no video is attached.
+- Target Release: v3.9.79-beta (Previous Release)
 - Technical References & Implementation Details:
-  * [x] In-App Documentation Reader Dialog: Implemented native UserGuideDialog with sidebar navigation, zoom controls, and theme integration (user_guide_dialog.py).
-  * [x] Inline Screenshot Rendering: Resolved relative image paths to absolute URIs for direct rendering inside QTextBrowser without external tools.
-  * [x] Comprehensive Guide Library: Authored getting_started_and_workflow.md, wordpress_exporting.md, youtube_features.md, and export_formats.md.
-  * [x] Distribution Packaging: Added --add-data docs in uild_installer.py ensuring offline availability in packaged releases.
-  * Release Logs: Documented in CHANGELOG.md under ## v3.9.78-beta.
+  * [x] Context-Aware Auto-Dimming: Implemented _set_youtube_controls_enabled() in plugins/wordpress/youtube_embed.py.
+  * [x] Real-Time State Illumination: Dynamically re-enabled controls immediately upon detecting a valid video ID.
+  * [x] Status Guidance & Disabled Tooltips: Configured dynamic status guidance and tooltips.
+  * [x] Automated Regression Suite: Expanded _test_wordpress_youtube_video_embed in diagnostic_export_tests.py.
+  * Release Logs: Documented in CHANGELOG.md under ## v3.9.79-beta.

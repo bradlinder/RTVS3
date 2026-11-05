@@ -200,3 +200,53 @@ class DiagnosticEditorTestsMixin:
 
         item.status = "PASS"
         item.message = "Find & Replace correctly updates data model, speaker aliases, syncs word alignments, and survives speaker changes"
+
+    def _test_in_app_user_guides_and_documentation_viewer(self, item: DiagnosticItem):
+        """Validates in-app user guide resolution, fallback to embedded content, and bundling invariants."""
+        import sys
+        from pathlib import Path
+        from PySide6.QtWidgets import QApplication
+
+        app = QApplication.instance()
+        if app is None:
+            app = QApplication(sys.argv[:1] + ["-platform", "offscreen"])
+
+        from user_guide_dialog import UserGuideDialog
+        from embedded_guides import EMBEDDED_GUIDES, get_embedded_guide, get_all_embedded_guide_ids
+
+        # 1. Verify embedded guide definitions
+        expected_ids = {"workflow", "wordpress", "youtube", "video_shows", "export_formats"}
+        assert expected_ids.issubset(set(get_all_embedded_guide_ids())), f"Missing embedded guides: {expected_ids - set(get_all_embedded_guide_ids())}"
+        for gid in expected_ids:
+            content = get_embedded_guide(gid)
+            assert content and len(content) > 100, f"Embedded guide '{gid}' content too short or missing"
+
+        # 2. Verify docs directory resolution
+        docs_dir = UserGuideDialog._find_docs_dir()
+        assert docs_dir.exists(), f"Resolved docs dir '{docs_dir}' does not exist"
+        assert (docs_dir / "guides").is_dir(), f"Resolved docs dir '{docs_dir}' missing 'guides' folder"
+
+        # 3. Verify dialog instantiation and live disk loading
+        dialog = UserGuideDialog(initial_guide_id="workflow")
+        for guide in UserGuideDialog.GUIDE_CATALOG:
+            dialog._load_guide_by_id(guide["id"])
+            assert dialog.current_guide_content, f"Empty content for guide '{guide['id']}'"
+            assert "Guide Not Found" not in dialog.current_guide_content, f"Guide Not Found error encountered for '{guide['id']}'"
+
+        # 4. Verify embedded fallback resilience when disk files are absent
+        dialog.docs_dir = Path("/nonexistent/directory/rtvs_test_docs")
+        dialog.root_dir = Path("/nonexistent/directory/rtvs_test_root")
+        for guide in UserGuideDialog.GUIDE_CATALOG:
+            dialog._load_guide_by_id(guide["id"])
+            assert dialog.current_guide_content, f"Fallback failed for '{guide['id']}'"
+            assert "Guide Not Found" not in dialog.current_guide_content, f"Embedded fallback did not catch missing disk file for '{guide['id']}'"
+
+        dialog.close()
+
+        # 5. Verify build installer script invariants
+        build_text = Path("build_installer.py").read_text(encoding="utf-8")
+        assert 'test_dir_names = {"tests", "testing", "test", "benchmark", "benchmarks", "sample_files"}' in build_text, "test_dir_names in build_installer.py pruned docs"
+        assert 'shutil.copytree(docs_source, docs_dest, dirs_exist_ok=True)' in build_text, "build_installer.py missing docs copytree step"
+
+        item.status = "PASS"
+        item.message = "User guide resolution, embedded fallbacks, and installer bundling invariants verified"

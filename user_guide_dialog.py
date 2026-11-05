@@ -28,6 +28,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from embedded_guides import get_embedded_guide
 from core_utils import (
     apply_window_titlebar_theme,
     get_active_theme_mode,
@@ -71,6 +72,43 @@ class UserGuideDialog(QDialog):
         },
     ]
 
+    @staticmethod
+    def _find_docs_dir() -> Path:
+        """Locate the docs directory across frozen executables, installed dirs, and dev trees."""
+        candidates: List[Path] = []
+
+        # 1. Next to sys.executable (e.g. C:\Program Files\Radio & TV Segmenter\docs)
+        if getattr(sys, "frozen", False):
+            exe_dir = Path(sys.executable).resolve().parent
+            candidates.append(exe_dir / "docs")
+            candidates.append(exe_dir / "_internal" / "docs")
+            # macOS .app bundle Contents/Resources/docs
+            candidates.append(exe_dir.parent / "Resources" / "docs")
+
+        # 2. PyInstaller temporary/bundled extraction directory (_MEIPASS)
+        meipass = getattr(sys, "_MEIPASS", None)
+        if meipass:
+            candidates.append(Path(meipass) / "docs")
+
+        # 3. Source repository locations relative to this file
+        current_dir = Path(__file__).resolve().parent
+        candidates.append(current_dir / "docs")
+        candidates.append(current_dir.parent / "docs")
+
+        # 4. Current working directory
+        candidates.append(Path.cwd() / "docs")
+
+        # Prioritize candidates that contain the guides subdirectory
+        for c in candidates:
+            if c.is_dir() and (c / "guides").is_dir():
+                return c
+
+        for c in candidates:
+            if c.is_dir():
+                return c
+
+        return current_dir / "docs"
+
     def __init__(self, parent: Optional[QWidget] = None, initial_guide_id: str = "workflow"):
         super().__init__(parent)
         self.setWindowTitle("User Guides & Documentation — Radio & TV Story Segmenter")
@@ -78,7 +116,8 @@ class UserGuideDialog(QDialog):
         self.resize(1020, 720)
         self.setMinimumSize(740, 500)
 
-        self.root_dir = Path(__file__).resolve().parent
+        self.docs_dir = self._find_docs_dir()
+        self.root_dir = self.docs_dir.parent if self.docs_dir.name == "docs" else self.docs_dir
         self.theme_mode = get_active_theme_mode("dark")
         self.current_zoom = 0
         self.current_guide_content = ""
@@ -160,9 +199,10 @@ class UserGuideDialog(QDialog):
         self.browser.setOpenExternalLinks(True)
         self.browser.setReadOnly(True)
         self.browser.setSearchPaths([
+            str(self.docs_dir / "images"),
+            str(self.docs_dir / "guides"),
+            str(self.docs_dir),
             str(self.root_dir / "docs" / "images"),
-            str(self.root_dir / "docs" / "guides"),
-            str(self.root_dir / "docs"),
         ])
         self._apply_browser_stylesheet()
 
@@ -229,7 +269,9 @@ class UserGuideDialog(QDialog):
 
     def _resolve_image_urls(self, markdown_text: str) -> str:
         """Replace relative image paths in markdown with absolute file URIs for instant rendering."""
-        images_dir = (self.root_dir / "docs" / "images").resolve()
+        images_dir = (self.docs_dir / "images").resolve()
+        if not images_dir.exists():
+            images_dir = (self.root_dir / "docs" / "images").resolve()
 
         def _replace_img(match):
             alt_text = match.group(1)
@@ -248,20 +290,35 @@ class UserGuideDialog(QDialog):
         if not guide:
             guide = self.GUIDE_CATALOG[0]
 
-        file_path = self.root_dir / guide["path"]
         self.current_guide_title = guide["title"]
         self.guide_heading_label.setText(guide["title"])
 
-        if file_path.exists():
+        # Try resolving file on disk across candidate locations
+        target_name = Path(guide["path"]).name
+        candidates = [
+            self.docs_dir / "guides" / target_name,
+            self.docs_dir / guide["path"],
+            self.root_dir / guide["path"],
+            self.docs_dir / target_name,
+        ]
+
+        file_path = next((c for c in candidates if c.is_file()), None)
+        raw_text = None
+        if file_path:
             try:
                 raw_text = file_path.read_text(encoding="utf-8")
-            except Exception as e:
-                raw_text = f"# Error Loading Guide\n\nCould not read guide file `{file_path}`: {e}"
-        else:
+            except Exception:
+                raw_text = None
+
+        if not raw_text:
             if guide["id"] == "shortcuts":
                 raw_text = self._build_dynamic_shortcuts_guide()
             else:
-                raw_text = f"# Guide Not Found\n\nThe guide at `{guide['path']}` could not be located."
+                embedded = get_embedded_guide(guide["id"])
+                if embedded:
+                    raw_text = embedded
+                else:
+                    raw_text = f"# Guide Not Found\n\nThe guide at `{guide['path']}` could not be located."
 
         self.current_guide_content = raw_text
         resolved_md = self._resolve_image_urls(raw_text)

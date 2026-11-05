@@ -59,7 +59,7 @@ try:
 except ImportError as e:
     print(f"[BUILD] Warning: Could not import prs_shared ({e}), using fallback values")
     APP_DISPLAY_NAME = "Radio & TV Segmenter"
-    PROJECT_VERSION = "3.9.79-beta"
+    PROJECT_VERSION = "3.9.80-beta"
 except Exception as e:
     print(f"[BUILD] Unexpected error importing prs_shared: {type(e).__name__}: {e}")
     raise
@@ -407,7 +407,7 @@ def prune_unneeded_bundled_files(app_root: Path) -> None:
                 shutil.rmtree(target, ignore_errors=True)
 
     pruned_files = 0
-    test_dir_names = {"tests", "testing", "test", "benchmark", "benchmarks", "docs", "doc", "sample_files"}
+    test_dir_names = {"tests", "testing", "test", "benchmark", "benchmarks", "sample_files"}
     dist_info_junk = {"RECORD", "INSTALLER", "REQUESTED", "WHEEL", "direct_url.json"}
     for base in internal_dirs:
         if not base.exists():
@@ -422,8 +422,11 @@ def prune_unneeded_bundled_files(app_root: Path) -> None:
                 elif item.name in dist_info_junk and ".dist-info" in str(item):
                     item.unlink(missing_ok=True)
                     pruned_files += 1
-            elif item.is_dir() and item.name.lower() in test_dir_names:
-                shutil.rmtree(item, ignore_errors=True)
+            elif item.is_dir():
+                if item.name.lower() in test_dir_names:
+                    shutil.rmtree(item, ignore_errors=True)
+                elif item.name.lower() in ("doc", "docs") and "site-packages" in item.parts:
+                    shutil.rmtree(item, ignore_errors=True)
 
     if pruned_files:
         print(f"[BUILD] Pruned {pruned_files} debug/stub/source files from bundle.")
@@ -932,6 +935,16 @@ def main() -> None:
                 resources_bundle = app_root.parent / "Resources"
                 resources_bundle.mkdir(parents=True, exist_ok=True)
                 shutil.copy2(doc_file, resources_bundle / doc)
+
+    # Bundle documentation and user guides directly into the application directory
+    docs_source = ROOT / "docs"
+    docs_dest = app_root / "docs"
+    if docs_source.exists():
+        shutil.copytree(docs_source, docs_dest, dirs_exist_ok=True)
+        print(f"[BUILD] Bundled documentation & user guides into {docs_dest}")
+        if sys.platform == "darwin":
+            resources_docs = app_root.parent / "Resources" / "docs"
+            shutil.copytree(docs_source, resources_docs, dirs_exist_ok=True)
 
     # Bundle plugins based on selected build target and options
     print("\n" + "="*70, flush=True)

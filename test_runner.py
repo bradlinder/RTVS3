@@ -488,6 +488,11 @@ class DiagnosticEngine(
                 "Core Logic & File I/O",
                 "Validates Find & Replace data-model synchronization across segments, word alignments, speaker aliases, undo stack, and speaker change immunity",
             ),
+            DiagnosticItem(
+                "In-App User Guides and Documentation Viewer",
+                "Core Logic & File I/O",
+                "Validates documentation directory resolution, embedded guide fallbacks, and installer packaging invariants",
+            ),
         ]
 
     def run_all(self, stop_requested_fn: Optional[Callable[[], bool]] = None) -> List[DiagnosticItem]:

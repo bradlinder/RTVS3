@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-04 20:32:17",
-  "total_files": 160,
+  "generated_at": "2026-11-05 09:46:21",
+  "total_files": 161,
   "files": {
     "RadioTVSegmenter.py": {
       "path": "RadioTVSegmenter.py",
       "lines": 663,
-      "summary": "Radio & TV Segmenter \u2014 v3.9.79-beta",
+      "summary": "Radio & TV Segmenter \u2014 v3.9.80-beta",
       "exports": null,
       "classes": [
         {
@@ -1038,7 +1038,7 @@
     },
     "build_installer.py": {
       "path": "build_installer.py",
-      "lines": 1081,
+      "lines": 1094,
       "summary": "Build the installable Radio & TV Segmenter application with PyInstaller.",
       "exports": null,
       "classes": [],
@@ -1089,42 +1089,42 @@
           "name": "prune_unneeded_bundled_files",
           "sig": "prune_unneeded_bundled_files(app_root)",
           "start_line": 360,
-          "end_line": 489,
+          "end_line": 492,
           "doc": ""
         },
         {
           "name": "sync_installer_scripts",
           "sig": "sync_installer_scripts(project_version)",
-          "start_line": 492,
-          "end_line": 505,
+          "start_line": 495,
+          "end_line": 508,
           "doc": "Ensure Inno Setup and other installer packaging scripts match PROJECT_VERSION."
         },
         {
           "name": "compile_windows_installer",
           "sig": "compile_windows_installer(project_version)",
-          "start_line": 508,
-          "end_line": 543,
+          "start_line": 511,
+          "end_line": 546,
           "doc": "Compile the Windows Inno Setup installer executable if ISCC is installed."
         },
         {
           "name": "parse_build_args",
           "sig": "parse_build_args()",
-          "start_line": 546,
-          "end_line": 621,
+          "start_line": 549,
+          "end_line": 624,
           "doc": ""
         },
         {
           "name": "package_plugins",
           "sig": "package_plugins(app_root, include_wp, include_yt, include_tr)",
-          "start_line": 624,
-          "end_line": 692,
+          "start_line": 627,
+          "end_line": 695,
           "doc": "Package plugins into standalone .zip release artifacts in dist/plugins/"
         },
         {
           "name": "main",
           "sig": "main()",
-          "start_line": 695,
-          "end_line": 1077,
+          "start_line": 698,
+          "end_line": 1090,
           "doc": ""
         }
       ]
@@ -2101,7 +2101,7 @@
     },
     "diagnostic_editor_tests.py": {
       "path": "diagnostic_editor_tests.py",
-      "lines": 202,
+      "lines": 252,
       "summary": "Diagnostic editor and find-replace tests for Radio & TV Story Segmenter.",
       "exports": null,
       "classes": [
@@ -2109,7 +2109,7 @@
           "name": "DiagnosticEditorTestsMixin",
           "bases": [],
           "start_line": 11,
-          "end_line": 202,
+          "end_line": 252,
           "doc": "Diagnostic suite for transcript editor, find-replace, and speaker synchronization.",
           "methods": [
             {
@@ -2118,6 +2118,13 @@
               "start_line": 14,
               "end_line": 202,
               "doc": "Validates that Find & Replace updates segments, word timings, speaker aliases,"
+            },
+            {
+              "name": "_test_in_app_user_guides_and_documentation_viewer",
+              "sig": "_test_in_app_user_guides_and_documentation_viewer(self, item)",
+              "start_line": 204,
+              "end_line": 252,
+              "doc": "Validates in-app user guide resolution, fallback to embedded content, and bundling invariants."
             }
           ]
         }
@@ -2617,6 +2624,29 @@
         }
       ],
       "functions": []
+    },
+    "embedded_guides.py": {
+      "path": "embedded_guides.py",
+      "lines": 444,
+      "summary": "Radio & TV Story Segmenter \u2014 Built-In Embedded User Guides & Documentation.",
+      "exports": null,
+      "classes": [],
+      "functions": [
+        {
+          "name": "get_embedded_guide",
+          "sig": "get_embedded_guide(guide_id)",
+          "start_line": 437,
+          "end_line": 439,
+          "doc": "Retrieve embedded markdown text for a guide topic ID, if available."
+        },
+        {
+          "name": "get_all_embedded_guide_ids",
+          "sig": "get_all_embedded_guide_ids()",
+          "start_line": 442,
+          "end_line": 444,
+          "doc": "Return all guide IDs provided as embedded fallback content."
+        }
+      ]
     },
     "export/__init__.py": {
       "path": "export/__init__.py",
@@ -16189,7 +16219,7 @@
     "transcript_story.py": {
       "path": "transcript_story.py",
       "lines": 852,
-      "summary": "Radio & TV Segmenter v3.9.79-beta \u2014 transcript story responsibilities.",
+      "summary": "Radio & TV Segmenter v3.9.80-beta \u2014 transcript story responsibilities.",
       "exports": [
         "TranscriptStoryMixin",
         "Story",
@@ -17484,7 +17514,7 @@
     },
     "user_guide_dialog.py": {
       "path": "user_guide_dialog.py",
-      "lines": 421,
+      "lines": 478,
       "summary": "Radio & TV Story Segmenter \u2014 In-App User Guide & Documentation Viewer Dialog.",
       "exports": null,
       "classes": [
@@ -17493,85 +17523,92 @@
           "bases": [
             "QDialog"
           ],
-          "start_line": 38,
-          "end_line": 421,
+          "start_line": 39,
+          "end_line": 478,
           "doc": "In-app reader dialog displaying rich user guides with inline screenshots.",
           "methods": [
             {
+              "name": "_find_docs_dir",
+              "sig": "_find_docs_dir()",
+              "start_line": 76,
+              "end_line": 110,
+              "doc": "Locate the docs directory across frozen executables, installed dirs, and dev trees."
+            },
+            {
               "name": "__init__",
               "sig": "__init__(self, parent, initial_guide_id)",
-              "start_line": 74,
-              "end_line": 89,
+              "start_line": 112,
+              "end_line": 128,
               "doc": ""
             },
             {
               "name": "_setup_ui",
               "sig": "_setup_ui(self)",
-              "start_line": 91,
-              "end_line": 192,
+              "start_line": 130,
+              "end_line": 232,
               "doc": ""
             },
             {
               "name": "_apply_browser_stylesheet",
               "sig": "_apply_browser_stylesheet(self)",
-              "start_line": 194,
-              "end_line": 228,
+              "start_line": 234,
+              "end_line": 268,
               "doc": ""
             },
             {
               "name": "_resolve_image_urls",
               "sig": "_resolve_image_urls(self, markdown_text)",
-              "start_line": 230,
-              "end_line": 244,
+              "start_line": 270,
+              "end_line": 286,
               "doc": "Replace relative image paths in markdown with absolute file URIs for instant rendering."
             },
             {
               "name": "_load_guide_by_id",
               "sig": "_load_guide_by_id(self, guide_id)",
-              "start_line": 246,
-              "end_line": 282,
+              "start_line": 288,
+              "end_line": 339,
               "doc": ""
             },
             {
               "name": "_on_topic_selected",
               "sig": "_on_topic_selected(self, row)",
-              "start_line": 284,
-              "end_line": 288,
+              "start_line": 341,
+              "end_line": 345,
               "doc": ""
             },
             {
               "name": "_zoom_in",
               "sig": "_zoom_in(self)",
-              "start_line": 290,
-              "end_line": 292,
+              "start_line": 347,
+              "end_line": 349,
               "doc": ""
             },
             {
               "name": "_zoom_out",
               "sig": "_zoom_out(self)",
-              "start_line": 294,
-              "end_line": 296,
+              "start_line": 351,
+              "end_line": 353,
               "doc": ""
             },
             {
               "name": "_reset_zoom",
               "sig": "_reset_zoom(self)",
-              "start_line": 298,
-              "end_line": 301,
+              "start_line": 355,
+              "end_line": 358,
               "doc": ""
             },
             {
               "name": "_open_in_external_browser",
               "sig": "_open_in_external_browser(self)",
-              "start_line": 303,
-              "end_line": 376,
+              "start_line": 360,
+              "end_line": 433,
               "doc": "Export the current guide as a self-contained styled HTML file and launch the system web browser."
             },
             {
               "name": "_build_dynamic_shortcuts_guide",
               "sig": "_build_dynamic_shortcuts_guide(self)",
-              "start_line": 378,
-              "end_line": 421,
+              "start_line": 435,
+              "end_line": 478,
               "doc": "Build dynamic keyboard shortcut documentation from active settings."
             }
           ]
