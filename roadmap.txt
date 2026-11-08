@@ -6,7 +6,23 @@
 
 
 
+
+
+
+
+
+
+
+
 RADIO & TV STORY SEGMENTER - DEVELOPMENT ROADMAP & TECHNICAL SPECIFICATION
+
+
+
+
+
+
+
+
 
 
 
@@ -22,6 +38,14 @@ RADIO & TV STORY SEGMENTER - DEVELOPMENT ROADMAP & TECHNICAL SPECIFICATION
 
 
 
+
+
+
+
+
+
+
+
 This document outlines the architectural roadmap and implementation specifications
 
 
@@ -30,7 +54,23 @@ This document outlines the architectural roadmap and implementation specificatio
 
 
 
+
+
+
+
+
+
+
+
 for future versions of the Radio & TV Story Segmenter. Adapted from best-in-class
+
+
+
+
+
+
+
+
 
 
 
@@ -54,7 +94,31 @@ heuristics, modular runtime architectures, and timeline serialization algorithms
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 --------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
 
 
 
@@ -70,7 +134,23 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 
 
 
+
+
+
+
+
+
+
+
 --------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
 
 
 
@@ -86,7 +166,23 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 
 
 
+
+
+
+
+
+
+
+
   release ($N-1$) for baseline context, followed by active upcoming development
+
+
+
+
+
+
+
+
 
 
 
@@ -102,7 +198,23 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 
 
 
+
+
+
+
+
+
+
+
 - Status Notation Policy (Modeled after Social Digest):
+
+
+
+
+
+
+
+
 
 
 
@@ -118,7 +230,23 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 
 
 
+
+
+
+
+
+
+
+
     - [x] Completed item / feature
+
+
+
+
+
+
+
+
 
 
 
@@ -134,7 +262,23 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 
 
 
+
+
+
+
+
+
+
+
     - [ ] Planned / not started item
+
+
+
+
+
+
+
+
 
 
 
@@ -150,7 +294,23 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 
 
 
+
+
+
+
+
+
+
+
   * Mark an item as [x] [COMPLETED] when implementation is finalized, upon user
+
+
+
+
+
+
+
+
 
 
 
@@ -166,7 +326,23 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 
 
 
+
+
+
+
+
+
+
+
 - ARCHITECTURAL DETAILS & CROSS-REFERENCE DIRECTORY:
+
+
+
+
+
+
+
+
 
 
 
@@ -182,7 +358,23 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 
 
 
+
+
+
+
+
+
+
+
     audits, call stacks, repro evidence, and diffs are preserved in dedicated technical documents:
+
+
+
+
+
+
+
+
 
 
 
@@ -198,7 +390,23 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 
 
 
+
+
+
+
+
+
+
+
     - Master Audit Plan & Prioritization: `docs/audit/audit_roadmap.md`
+
+
+
+
+
+
+
+
 
 
 
@@ -214,7 +422,23 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 
 
 
+
+
+
+
+
+
+
+
     - Release Logs & Historical Commits: `CHANGELOG.md`
+
+
+
+
+
+
+
+
 
 
 
@@ -230,7 +454,23 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 
 
 
+
+
+
+
+
+
+
+
   * Whenever the user asks "what's next" (or asks for an update on the roadmap), DO NOT immediately modify code or take action.
+
+
+
+
+
+
+
+
 
 
 
@@ -246,7 +486,23 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 
 
 
+
+
+
+
+
+
+
+
   * STOP and wait for the user to confirm whether they would like to proceed before making any changes.
+
+
+
+
+
+
+
+
 
 
 
@@ -262,7 +518,23 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 
 
 
+
+
+
+
+
+
+
+
     - NEVER combine multiple sub-items in a single response unless requested.
+
+
+
+
+
+
+
+
 
 
 
@@ -278,6 +550,14 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 
 
 
+
+
+
+
+
+
+
+
     - ALWAYS preserve 100% backward compatibility by re-exporting all extracted classes,
 
 
@@ -286,7 +566,23 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 
 
 
+
+
+
+
+
+
+
+
       functions, and constants in the original facade module and `prs_shared.py`.
+
+
+
+
+
+
+
+
 
 
 
@@ -310,7 +606,31 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 --------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
 
 
 
@@ -326,7 +646,23 @@ TABLE OF CONTENTS & STATUS OVERVIEW
 
 
 
+
+
+
+
+
+
+
+
 --------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
 
 
 
@@ -342,7 +678,23 @@ TABLE OF CONTENTS & STATUS OVERVIEW
 
 
 
+
+
+
+
+
+
+
+
    [x] 1.1 24-Action Shortcut Schema Wiring: Add missing `attr_name` bindings in `shortcuts/schema.py` so all actions can be customized in Preferences. [P4-01]
+
+
+
+
+
+
+
+
 
 
 
@@ -358,6 +710,14 @@ TABLE OF CONTENTS & STATUS OVERVIEW
 
 
 
+
+
+
+
+
+
+
+
    [x] 1.3 Debounced Speaker Table Disk Writes: Debounce synchronous full-project gzip writes during inline speaker renaming. [P4-04]
 
 
@@ -366,7 +726,23 @@ TABLE OF CONTENTS & STATUS OVERVIEW
 
 
 
+
+
+
+
+
+
+
+
    [x] 1.4 Story Excerpt Undo/Redo Snapshots: Push undo state before mutating story excerpts. [P6-08]
+
+
+
+
+
+
+
+
 
 
 
@@ -390,7 +766,31 @@ TABLE OF CONTENTS & STATUS OVERVIEW
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 2. Deferred Milestone: Domain Separation & Purpose-Driven Monolithic File Modularization [ ] [DEFERRED / LOWER PRIORITY]
+
+
+
+
+
+
+
+
 
 
 
@@ -406,7 +806,23 @@ TABLE OF CONTENTS & STATUS OVERVIEW
 
 
 
+
+
+
+
+
+
+
+
    [ ] 2.1 Priority 1: Imminent Ceiling Breaches & High-Payoff Domain Decoupling (<1000 lines, high urgency/clean boundaries):
+
+
+
+
+
+
+
+
 
 
 
@@ -422,7 +838,23 @@ TABLE OF CONTENTS & STATUS OVERVIEW
 
 
 
+
+
+
+
+
+
+
+
      * `model_management.py` (989 lines) — Decouple Hugging Face / ONNX weight verification and SHA256 integrity checks from the GUI download progress worker.
+
+
+
+
+
+
+
+
 
 
 
@@ -438,7 +870,23 @@ TABLE OF CONTENTS & STATUS OVERVIEW
 
 
 
+
+
+
+
+
+
+
+
      * `timeline_widgets.py` (974 lines) — Decouple viewport waveform canvas paint events and LOD rendering from mouse scrubbing and selection event handlers.
+
+
+
+
+
+
+
+
 
 
 
@@ -454,7 +902,23 @@ TABLE OF CONTENTS & STATUS OVERVIEW
 
 
 
+
+
+
+
+
+
+
+
      * Incrementally decompose the 9 core legacy monoliths via AST blueprints and facade pattern: `plugins/wordpress/client.py` (1,887 lines), `media_batch.py` (1,848 lines), `prs_shared.py` (1,491 lines), `updater.py` (1,460 lines), `export/dialog.py` (1,441 lines), `processing.py` (1,216 lines), `ui_layout.py` (1,060 lines), `runtime_manager.py` (1,037 lines), `background_workers.py` (1,015 lines), and `voice_profile_dialog.py` (1,006 lines). [P7-01]
+
+
+
+
+
+
+
+
 
 
 
@@ -470,7 +934,23 @@ TABLE OF CONTENTS & STATUS OVERVIEW
 
 
 
+
+
+
+
+
+
+
+
      * Headless ML & Engine Decoupling: Separate background worker loops from low-level model inference in `worker_diarization_engine.py` (902 lines) and `worker_asr_engines.py` (839 lines).
+
+
+
+
+
+
+
+
 
 
 
@@ -486,7 +966,23 @@ TABLE OF CONTENTS & STATUS OVERVIEW
 
 
 
+
+
+
+
+
+
+
+
      * Worker Thread Decoupling from Dialogs: Extract `QThread` workers out of `plugin_dialogs.py` (447 lines), `speaker_dialogs.py` (782 lines), and `plugins/wordpress/wordpress_dialog.py` (886 lines).
+
+
+
+
+
+
+
+
 
 
 
@@ -502,7 +998,23 @@ TABLE OF CONTENTS & STATUS OVERVIEW
 
 
 
+
+
+
+
+
+
+
+
    [ ] 2.4 Priority 4: Monolithic Test Suites & Packaging Tooling (>1,000 lines, dev-only):
+
+
+
+
+
+
+
+
 
 
 
@@ -518,7 +1030,23 @@ TABLE OF CONTENTS & STATUS OVERVIEW
 
 
 
+
+
+
+
+
+
+
+
    [x] 2.5 UI Typography Cleanliness: Remove unrequested emoji symbols (💬, 🟡, 🟢) and decorative checkmarks from buttons and comboboxes. [P6-06]
+
+
+
+
+
+
+
+
 
 
 
@@ -534,7 +1062,23 @@ TABLE OF CONTENTS & STATUS OVERVIEW
 
 
 
+
+
+
+
+
+
+
+
    [x] 2.7 Export Dialog Vestigial Cleanup: Clean orphaned preview set and restore `"timeline"` to fallback reorder list. [P6-09, P6-10]
+
+
+
+
+
+
+
+
 
 
 
@@ -558,7 +1102,31 @@ TABLE OF CONTENTS & STATUS OVERVIEW
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 3. Optional Future Milestone: Interactive Text-Based Media Assembly & Multi-Asset Ripple Editing Engine (`assembly/bin_model.py`, `assembly/clipboard.py`, `assembly/ripple_engine.py`, `transcript_editor.py`, `export/timeline.py`) [PLANNED for v4.2.0] [OPTIONAL] [NOT STARTED]
+
+
+
+
+
+
+
+
 
 
 
@@ -574,7 +1142,23 @@ TABLE OF CONTENTS & STATUS OVERVIEW
 
 
 
+
+
+
+
+
+
+
+
    [ ] 3.2 Dynamic Uncapped Tabbed Document Workspace (`assembly/tab_workspace.py`, `ui_layout.py`)
+
+
+
+
+
+
+
+
 
 
 
@@ -590,7 +1174,23 @@ TABLE OF CONTENTS & STATUS OVERVIEW
 
 
 
+
+
+
+
+
+
+
+
    [ ] 3.4 Non-Destructive Multi-Source Playout Engine (`assembly/playout_engine.py`)
+
+
+
+
+
+
+
+
 
 
 
@@ -606,7 +1206,23 @@ TABLE OF CONTENTS & STATUS OVERVIEW
 
 
 
+
+
+
+
+
+
+
+
    [ ] 3.6 Paper-Cut Story Assembly Workflow (`assembly/paper_cut_mixin.py`)
+
+
+
+
+
+
+
+
 
 
 
@@ -622,7 +1238,23 @@ TABLE OF CONTENTS & STATUS OVERVIEW
 
 
 
+
+
+
+
+
+
+
+
    [ ] 3.8 Word-Level Timecode Sync, NLE Markers & Multi-Track DAW Timeline Export (`export/timeline.py`)
+
+
+
+
+
+
+
+
 
 
 
@@ -646,7 +1278,31 @@ TABLE OF CONTENTS & STATUS OVERVIEW
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 4. Optional Future Milestone: REAPER DAW Companion Bridge & ReaScript Transcript Integration (`reaper_bridge.py`, `transcript_editor_dialogs.py`, `transcript_context_menu_mixin.py`, `scripts/reaper/rtvs_reaper_companion.lua`, `scripts/reaper/rtvs_reaper_dock.lua`, `test_runner.py`) [PLANNED for v4.2.0] [OPTIONAL / PLANNED] [NOT STARTED]
+
+
+
+
+
+
+
+
 
 
 
@@ -662,7 +1318,23 @@ TABLE OF CONTENTS & STATUS OVERVIEW
 
 
 
+
+
+
+
+
+
+
+
    [ ] 4.2 RTVS3 Clip Cue Payload & Sidecar/IPC Emitter (`reaper_bridge.py`)
+
+
+
+
+
+
+
+
 
 
 
@@ -678,7 +1350,23 @@ TABLE OF CONTENTS & STATUS OVERVIEW
 
 
 
+
+
+
+
+
+
+
+
    [ ] 4.4 Take Markers for Speaker Attribution & Word Cues on the REAPER Timeline
+
+
+
+
+
+
+
+
 
 
 
@@ -694,7 +1382,23 @@ TABLE OF CONTENTS & STATUS OVERVIEW
 
 
 
+
+
+
+
+
+
+
+
    [ ] 4.6 Preferences Integration, One-Click Script Installer & Diagnostic Tests (`preferences_dialog.py`, `reaper_bridge.py`, `test_runner.py`)
+
+
+
+
+
+
+
+
 
 
 
@@ -718,7 +1422,31 @@ TABLE OF CONTENTS & STATUS OVERVIEW
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 5. Optional Future Milestone: Social Reel & Short Video Export Plugin (Instagram Reels, YouTube Shorts, TikTok) (`plugins/social_reel/`, `export_media_clipper.py`, `export_dialogs.py`) [PLANNED] [NOT STARTED]
+
+
+
+
+
+
+
+
 
 
 
@@ -734,7 +1462,23 @@ TABLE OF CONTENTS & STATUS OVERVIEW
 
 
 
+
+
+
+
+
+
+
+
    [ ] 5.2 Multi-Source Input & Template Image Configuration (`plugins/social_reel/reel_config.py`, `plugins/social_reel/reel_dialog.py`)
+
+
+
+
+
+
+
+
 
 
 
@@ -750,7 +1494,23 @@ TABLE OF CONTENTS & STATUS OVERVIEW
 
 
 
+
+
+
+
+
+
+
+
    [ ] 5.4 Burned-in Subtitles & Platform Safe Zone Enforcement (`plugins/social_reel/reel_subtitles.py`)
+
+
+
+
+
+
+
+
 
 
 
@@ -774,11 +1534,43 @@ TABLE OF CONTENTS & STATUS OVERVIEW
 
 
 
-6. Current Release: Diagnostic Test Bench Threading Deadlock Fix & User Guide Responsive Test Safety (diagnostic_editor_tests.py) [x] [COMPLETED in v3.9.91-beta]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+6. Current Release: Windows OLE Clipboard & Background Thread Diagnostic Safety (diagnostic_editor_tests.py) [x] [COMPLETED in v3.9.92-beta]
+
+   [x] 6.1 Windows OLE Clipboard Safety: Prevented secondary worker thread clipboard read assertions (OleSetClipboard COM error 0x800401f0) from crashing in-app DiagnosticDialog.
+
+   [x] 6.2 Test Bench Verification: Verified all diagnostic test items run cleanly across both headless test_runner and GUI QThread runner environments.
+
+
+
+7. Previous Release: Diagnostic Test Bench Threading Deadlock Fix & User Guide Responsive Test Safety (diagnostic_editor_tests.py) [x] [COMPLETED in v3.9.91-beta]
+
+
 
    [x] 6.1 Diagnostic Worker Thread Safety: Removed secondary thread widget show() and processEvents() calls in _test_in_app_user_guides_and_documentation_viewer, preventing Qt GUI event loop freeze.
 
+
+
    [x] 6.2 Test Bench Verification: Verified all diagnostic test runners execute cleanly in both headless and GUI QThread runner environments.
+
+
+
+
 
 
 
@@ -786,7 +1578,15 @@ TABLE OF CONTENTS & STATUS OVERVIEW
 
 
 
+
+
+
+
    [x] 6.1 Modular Glossary UI Extraction: Extracted GlossaryDialog into glossary_dialog.py with live search, 6 sorting modes, and 4-column data model (Match case).
+
+
+
+
 
 
 
@@ -794,7 +1594,15 @@ TABLE OF CONTENTS & STATUS OVERVIEW
 
 
 
+
+
+
+
    [x] 6.3 Transcript Context Menu Integration: Added Add Selected Text as Alternate Spelling For... to map transcript selections directly to preferred spellings with live Undo normalization.
+
+
+
+
 
 
 
@@ -802,7 +1610,19 @@ TABLE OF CONTENTS & STATUS OVERVIEW
 
 
 
+
+
+
+
    [x] 6.5 Automated Test Bench: Expanded diagnostic suite verifying contextual normalization, case sensitivity, and glossary dialog filtering/sorting.
+
+
+
+
+
+
+
+
 
 
 
@@ -818,7 +1638,23 @@ TABLE OF CONTENTS & STATUS OVERVIEW
 
 
 
+
+
+
+
+
+
+
+
    [x] 6.1 Timeline Context Menu Parity: Added Audition Story Playback, Story & Post Metadata, and Export Selected Stories with auto-selection on right-click.
+
+
+
+
+
+
+
+
 
 
 
@@ -834,7 +1670,23 @@ TABLE OF CONTENTS & STATUS OVERVIEW
 
 
 
+
+
+
+
+
+
+
+
    [x] 6.3 Transcript Context Menu Parity: Added Audition Story Playback, Story & Post Metadata, and Copy Story Transcript when story selection spans are active.
+
+
+
+
+
+
+
+
 
 
 
@@ -850,7 +1702,23 @@ TABLE OF CONTENTS & STATUS OVERVIEW
 
 
 
+
+
+
+
+
+
+
+
    [x] 6.5 Automated Test Bench: Expanded diagnostic suite verifying context menu building and auto-selection without regressions.
+
+
+
+
+
+
+
+
 
 
 
@@ -866,7 +1734,23 @@ TABLE OF CONTENTS & STATUS OVERVIEW
 
 
 
+
+
+
+
+
+
+
+
    [x] 6.2 Acoustic Interval Overlap Math: Refined start/end boundary matching in handle_timeline_selection_range_changed to prevent adjacent story word bleed.
+
+
+
+
+
+
+
+
 
 
 
@@ -882,7 +1766,23 @@ TABLE OF CONTENTS & STATUS OVERVIEW
 
 
 
+
+
+
+
+
+
+
+
    [x] 6.4 Universal Deselect & Zero-Clutter Esc Routing: Pressing Esc or choosing Clear Selection in Story, Timeline, Transcript, or Edit menu clears active selections without toolbar clutter.
+
+
+
+
+
+
+
+
 
 
 
@@ -898,7 +1798,23 @@ TABLE OF CONTENTS & STATUS OVERVIEW
 
 
 
+
+
+
+
+
+
+
+
    [x] 6.6 REAPER Companion Roadmap Synchronization: Updated Section 4 specifications with unified multi-channel clipboard and automated Take Name / Item Notes mapping.
+
+
+
+
+
+
+
+
 
 
 
@@ -922,7 +1838,31 @@ TABLE OF CONTENTS & STATUS OVERVIEW
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 7. Previous Release: Seriously Simple Podcasting (Castos) Rich Player Auto-Injection (plugins/wordpress/client.py, plugins/wordpress/castos.py, diagnostic_export_tests.py) [x] [COMPLETED in v3.9.87-beta]
+
+
+
+
+
+
+
+
 
 
 
@@ -938,7 +1878,23 @@ TABLE OF CONTENTS & STATUS OVERVIEW
 
 
 
+
+
+
+
+
+
+
+
    [x] 7.2 Legacy [ss_player] Shortcode Elimination: Omitted [ss_player] shortcodes for podcast posts so Seriously Simple Podcasting automatically injects its rich player via the_content filter.
+
+
+
+
+
+
+
+
 
 
 
@@ -954,6 +1910,14 @@ TABLE OF CONTENTS & STATUS OVERVIEW
 
 
 
+
+
+
+
+
+
+
+
    [x] 7.4 Plugin Manifest Synchronization: Bumped WordPress plugin version to 3.9.87-beta under lazy catch-up policy.
 
 
@@ -962,7 +1926,23 @@ TABLE OF CONTENTS & STATUS OVERVIEW
 
 
 
+
+
+
+
+
+
+
+
 ================================================================================
+
+
+
+
+
+
+
+
 
 
 
@@ -978,7 +1958,31 @@ DETAILED MILESTONE SPECIFICATIONS
 
 
 
+
+
+
+
+
+
+
+
 ================================================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1002,7 +2006,23 @@ DETAILED MILESTONE SPECIFICATIONS
 
 
 
+
+
+
+
+
+
+
+
 - Purpose: Wire missing shortcut schema actions to preferences, debounce speaker table I/O, snapshot story excerpt undos, and decouple core modules from plugins.
+
+
+
+
+
+
+
+
 
 
 
@@ -1018,7 +2038,23 @@ DETAILED MILESTONE SPECIFICATIONS
 
 
 
+
+
+
+
+
+
+
+
 - Technical References & Exhaustive Audit Details:
+
+
+
+
+
+
+
+
 
 
 
@@ -1034,6 +2070,14 @@ DETAILED MILESTONE SPECIFICATIONS
 
 
 
+
+
+
+
+
+
+
+
   * Debounced Speaker Table Disk Writes: See `docs/audit/audit_phase4_findings.md` (Item P4-04) for 500ms debounce timer design on full-project gzip saves in `speaker_dialogs.py`.
 
 
@@ -1042,7 +2086,23 @@ DETAILED MILESTONE SPECIFICATIONS
 
 
 
+
+
+
+
+
+
+
+
   * Story Excerpt Undo Snapshots: See `docs/audit/audit_phase6_findings.md` (Item P6-08) for undo stack commit invocations in `ui_layout.py`.
+
+
+
+
+
+
+
+
 
 
 
@@ -1066,7 +2126,31 @@ DETAILED MILESTONE SPECIFICATIONS
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 2. DEFERRED MILESTONE: DOMAIN SEPARATION & PURPOSE-DRIVEN MONOLITHIC FILE MODULARIZATION:
+
+
+
+
+
+
+
+
 
 
 
@@ -1082,7 +2166,23 @@ DETAILED MILESTONE SPECIFICATIONS
 
 
 
+
+
+
+
+
+
+
+
 - Target Release: Deferred
+
+
+
+
+
+
+
+
 
 
 
@@ -1098,7 +2198,23 @@ DETAILED MILESTONE SPECIFICATIONS
 
 
 
+
+
+
+
+
+
+
+
   * Purpose-Driven Prioritized Decomposition Strategy:
+
+
+
+
+
+
+
+
 
 
 
@@ -1114,7 +2230,23 @@ DETAILED MILESTONE SPECIFICATIONS
 
 
 
+
+
+
+
+
+
+
+
     - Priority 2 (Grandfathered Core & Plugin Monoliths >1,000 Lines): See `docs/audit/audit_phase7_findings.md` (Item P7-01) for AST decomposition blueprints of the 9 core modules exceeding 1,000 lines (`plugins/wordpress/client.py`, `media_batch.py`, `prs_shared.py`, `export/dialog.py`, `processing.py`, `runtime_manager.py`, `ui_layout.py`, `background_workers.py`, `voice_profile_dialog.py`). Must be executed with zero-breakage facade re-exports to safeguard wide caller dependencies.
+
+
+
+
+
+
+
+
 
 
 
@@ -1130,7 +2262,23 @@ DETAILED MILESTONE SPECIFICATIONS
 
 
 
+
+
+
+
+
+
+
+
     - Priority 4 (Packaging Scripts & Monolithic Test Suites): Modularity pass for developer-only suites (`diagnostic_export_tests.py` [1,699L], `diagnostic_cloud_and_system_tests.py` [1,267L], `diagnostic_batch_tests.py` [1,067L], and `build_installer.py` [1,079L]).
+
+
+
+
+
+
+
+
 
 
 
@@ -1146,7 +2294,23 @@ DETAILED MILESTONE SPECIFICATIONS
 
 
 
+
+
+
+
+
+
+
+
   * UI Typography Cleanliness: See `docs/audit/audit_phase6_findings.md` (Item P6-06) for emoji and decorative unicode glyph removal in `ui_layout.py` and `preferences_tabs_core.py`.
+
+
+
+
+
+
+
+
 
 
 
@@ -1170,7 +2334,31 @@ DETAILED MILESTONE SPECIFICATIONS
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 3. OPTIONAL FUTURE MILESTONE: INTERACTIVE TEXT-BASED MEDIA ASSEMBLY & MULTI-ASSET RIPPLE EDITING ENGINE:
+
+
+
+
+
+
+
+
 
 
 
@@ -1186,7 +2374,23 @@ DETAILED MILESTONE SPECIFICATIONS
 
 
 
+
+
+
+
+
+
+
+
 - Target Release: v4.2.0 (Optional / Planned)
+
+
+
+
+
+
+
+
 
 
 
@@ -1210,7 +2414,31 @@ DETAILED MILESTONE SPECIFICATIONS
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 4. OPTIONAL FUTURE MILESTONE: REAPER DAW COMPANION BRIDGE & REASCRIPT TRANSCRIPT INTEGRATION:
+
+
+
+
+
+
+
+
 
 
 
@@ -1226,7 +2454,23 @@ DETAILED MILESTONE SPECIFICATIONS
 
 
 
+
+
+
+
+
+
+
+
 - Target Release: v4.2.0 (Optional / Planned)
+
+
+
+
+
+
+
+
 
 
 
@@ -1242,7 +2486,23 @@ DETAILED MILESTONE SPECIFICATIONS
 
 
 
+
+
+
+
+
+
+
+
   * Unified Multi-Channel Clipboard: A single Ctrl+C copies both standard text/HTML (for pasting into Word/Notepad/Google Docs) and REAPER companion audio/cue metadata, with explicit Ctrl+Shift+C shortcut for standalone audio clip copying.
+
+
+
+
+
+
+
+
 
 
 
@@ -1258,7 +2518,23 @@ DETAILED MILESTONE SPECIFICATIONS
 
 
 
+
+
+
+
+
+
+
+
   * Take Markers for Speaker Attribution: Places cues along the item waveform indicating speaker changes and key transcript landmarks.
+
+
+
+
+
+
+
+
 
 
 
@@ -1282,7 +2558,31 @@ DETAILED MILESTONE SPECIFICATIONS
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 5. OPTIONAL FUTURE MILESTONE: SOCIAL REEL & SHORT VIDEO EXPORT PLUGIN:
+
+
+
+
+
+
+
+
 
 
 
@@ -1298,7 +2598,23 @@ DETAILED MILESTONE SPECIFICATIONS
 
 
 
+
+
+
+
+
+
+
+
 - Target Release: v4.3.0 (Optional / Planned)
+
+
+
+
+
+
+
+
 
 
 
@@ -1322,7 +2638,31 @@ DETAILED MILESTONE SPECIFICATIONS
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 6. CURRENT RELEASE: STORY SELECTION TRANSCRIPT HIGHLIGHTING, TIMELINE CONTEXT ACTIONS & PURGE DIALOG FIX:
+
+
+
+
+
+
+
+
 
 
 
@@ -1338,7 +2678,23 @@ DETAILED MILESTONE SPECIFICATIONS
 
 
 
+
+
+
+
+
+
+
+
 - Target Release: v3.9.88-beta (Current Release)
+
+
+
+
+
+
+
+
 
 
 
@@ -1354,7 +2710,23 @@ DETAILED MILESTONE SPECIFICATIONS
 
 
 
+
+
+
+
+
+
+
+
   * [x] Selected Story Transcript Highlighting: Synchronized apply_story_selection_indices in processing.py with handle_timeline_selection_range_changed in story_crud_mixin.py to highlight story character spans with non-destructive ExtraSelection overlays.
+
+
+
+
+
+
+
+
 
 
 
@@ -1370,7 +2742,23 @@ DETAILED MILESTONE SPECIFICATIONS
 
 
 
+
+
+
+
+
+
+
+
   * [x] Timeline Context Actions: Added Copy Story Transcript (Ctrl+C) and Clear Story Selection (Esc) to timeline right-click menus in timeline_context_menus.py.
+
+
+
+
+
+
+
+
 
 
 
@@ -1386,7 +2774,23 @@ DETAILED MILESTONE SPECIFICATIONS
 
 
 
+
+
+
+
+
+
+
+
   * [x] Non-Destructive Smart Copy Routing: Added copy_highlighted_selection in transcript_editor.py, trigger_smart_copy in ui_menus.py, and StoryListWidget keyPressEvent routing Ctrl+C to copy highlighted story text when no manual cursor selection is active.
+
+
+
+
+
+
+
+
 
 
 
@@ -1402,6 +2806,14 @@ DETAILED MILESTONE SPECIFICATIONS
 
 
 
+
+
+
+
+
+
+
+
   * [x] REAPER Companion Roadmap Synchronization: Updated Section 4 specifications with unified multi-channel clipboard and automated Take Name / Item Notes mapping.
 
 
@@ -1410,7 +2822,23 @@ DETAILED MILESTONE SPECIFICATIONS
 
 
 
+
+
+
+
+
+
+
+
   * [x] Automated Diagnostic Suite: Added _test_story_transcript_highlighting_and_smart_copy to diagnostic_editor_tests.py and registered in test_runner.py.
+
+
+
+
+
+
+
+
 
 
 
@@ -1434,7 +2862,31 @@ DETAILED MILESTONE SPECIFICATIONS
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 7. PREVIOUS RELEASE: SERIOUSLY SIMPLE PODCASTING (CASTOS) RICH PLAYER AUTO-INJECTION:
+
+
+
+
+
+
+
+
 
 
 
@@ -1450,7 +2902,23 @@ DETAILED MILESTONE SPECIFICATIONS
 
 
 
+
+
+
+
+
+
+
+
 - Target Release: v3.9.87-beta (Previous Release)
+
+
+
+
+
+
+
+
 
 
 
@@ -1466,7 +2934,23 @@ DETAILED MILESTONE SPECIFICATIONS
 
 
 
+
+
+
+
+
+
+
+
   * [x] Castos V2 Rich Player Auto-Injection: Omitted manual [ss_player] shortcode blocks from post content when is_podcast=True in plugins/wordpress/client.py. Seriously Simple Podcasting automatically detects podcast episode metadata and dynamically injects its rich player widget via the_content filter.
+
+
+
+
+
+
+
+
 
 
 
@@ -1482,7 +2966,23 @@ DETAILED MILESTONE SPECIFICATIONS
 
 
 
+
+
+
+
+
+
+
+
   * [x] Test Bench Synchronization: Updated diagnostic_export_tests.py to assert that both standard wp:audio and legacy [ss_player] shortcodes are omitted from podcast post content.
+
+
+
+
+
+
+
+
 
 
 
@@ -1498,7 +2998,23 @@ DETAILED MILESTONE SPECIFICATIONS
 
 
 
+
+
+
+
+
+
+
+
   * Release Logs: Documented in CHANGELOG.md under ## v3.9.87-beta.
+
+
+
+
+
+
+
+
 
 
 

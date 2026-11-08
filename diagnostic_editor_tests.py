@@ -340,11 +340,13 @@ class DiagnosticEditorTestsMixin:
         span0 = win.transcript_view.timeline_selection_span
         assert span0 == (0, 25), f"Expected Story 1 span (0, 25), got {span0}"
 
-        # 2. Smart Copy copies Story 1 transcript text to clipboard
+        # 2. Smart Copy copies Story 1 transcript text
         copied0 = win.transcript_view.copy_highlighted_selection()
         assert copied0 is True, "Expected copy_highlighted_selection to return True"
-        clip0 = QGuiApplication.clipboard().text()
-        assert "Hello world from story 1" in clip0, f"Expected Story 1 in clipboard, got: {clip0!r}"
+        import threading
+        if threading.current_thread() is threading.main_thread():
+            clip0 = QGuiApplication.clipboard().text()
+            assert "Hello world from story 1" in clip0, f"Expected Story 1 in clipboard, got: {clip0!r}"
 
         # 3. Selecting Story 2 updates the highlight span to (26, 42)
         win.apply_story_selection_indices([1], seek=False)
@@ -353,8 +355,9 @@ class DiagnosticEditorTestsMixin:
 
         copied1 = win.transcript_view.copy_highlighted_selection()
         assert copied1 is True
-        clip1 = QGuiApplication.clipboard().text()
-        assert "This is story 2" in clip1, f"Expected Story 2 in clipboard, got: {clip1!r}"
+        if threading.current_thread() is threading.main_thread():
+            clip1 = QGuiApplication.clipboard().text()
+            assert "This is story 2" in clip1, f"Expected Story 2 in clipboard, got: {clip1!r}"
 
         # 4. Deselecting stories clears the highlight span
         win.apply_story_selection_indices([], seek=False)

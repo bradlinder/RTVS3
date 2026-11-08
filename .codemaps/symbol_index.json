@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-08 15:18:03",
+  "generated_at": "2026-11-08 15:22:14",
   "total_files": 162,
   "files": {
     "RadioTVSegmenter.py": {
       "path": "RadioTVSegmenter.py",
       "lines": 663,
-      "summary": "Radio & TV Segmenter \u2014 v3.9.91-beta",
+      "summary": "Radio & TV Segmenter \u2014 v3.9.92-beta",
       "exports": null,
       "classes": [
         {
@@ -2101,7 +2101,7 @@
     },
     "diagnostic_editor_tests.py": {
       "path": "diagnostic_editor_tests.py",
-      "lines": 455,
+      "lines": 458,
       "summary": "Diagnostic editor and find-replace tests for Radio & TV Story Segmenter.",
       "exports": null,
       "classes": [
@@ -2109,7 +2109,7 @@
           "name": "DiagnosticEditorTestsMixin",
           "bases": [],
           "start_line": 11,
-          "end_line": 454,
+          "end_line": 457,
           "doc": "Diagnostic suite for transcript editor, find-replace, and speaker synchronization.",
           "methods": [
             {
@@ -2130,7 +2130,7 @@
               "name": "_test_story_transcript_highlighting_and_smart_copy",
               "sig": "_test_story_transcript_highlighting_and_smart_copy(self, item)",
               "start_line": 278,
-              "end_line": 454,
+              "end_line": 457,
               "doc": "Validates story selection synchronization with transcript highlight overlay and smart clipboard copying."
             }
           ]
@@ -16442,7 +16442,7 @@
     "transcript_story.py": {
       "path": "transcript_story.py",
       "lines": 852,
-      "summary": "Radio & TV Segmenter v3.9.91-beta \u2014 transcript story responsibilities.",
+      "summary": "Radio & TV Segmenter v3.9.92-beta \u2014 transcript story responsibilities.",
       "exports": [
         "TranscriptStoryMixin",
         "Story",

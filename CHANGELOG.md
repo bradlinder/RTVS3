@@ -1,29 +1,67 @@
 # Changelog
 
+## v3.9.92-beta
+- **Windows OLE Clipboard & Background Thread Diagnostic Safety (diagnostic_editor_tests.py)**:
+  - **Resolved Windows OLE Clipboard Failure (OleSetClipboard 0x800401f0)**: On Windows, the OS clipboard subsystem requires single-threaded apartment (STA) OLE initialization (OleInitialize), which only exists on the main GUI thread. Attempting to query QGuiApplication.clipboard().text() from a secondary worker QThread during the in-app diagnostic suite triggered OleSetClipboard: COM error 0x800401f0: CoInitialize has not been called and an unhandled assertion failure that closed the app.
+  - **Thread-Aware Clipboard Verification**: Maintained full smart-copy method execution on worker threads while restricting OS clipboard read assertions to the main thread (	hreading.current_thread() is threading.main_thread()). Verified all 73 tests now run cleanly from the in-app DiagnosticDialog without crashing.
+
+
+
 ## v3.9.91-beta
+
 - **Diagnostic Test Bench Threading Deadlock Fix (diagnostic_editor_tests.py)**:
+
   - **Secondary Thread Qt Event Loop Safety**: Resolved an issue where running the diagnostic suite from the in-app GUI dialog (DiagnosticDialog) caused the test bench to freeze indefinitely at test 71/73 (*In-App User Guides and Documentation Viewer*).
+
   - **Eliminated Cross-Thread show() and processEvents() Calls**: Removed secondary worker thread calls to 	est_browser.show() and QApplication.processEvents() which blocked the main Qt GUI thread. Verified that viewport width calculation and responsive markdown image scaling function cleanly without requiring modal show calls on secondary threads.
+
+
+
+
 
 
 
 ## v3.9.90-beta
 
+
+
 - **Searchable/Sortable Glossary Dialog, Contextual Proper-Noun Engine & Alternate Spelling Mapping (glossary_dialog.py, media_batch.py, 	erminology.py, 	ranscript_context_menu_mixin.py, diagnostic_editor_tests.py)**:
+
+
 
   - **Modular Glossary Dialog (glossary_dialog.py, media_batch.py)**: Extracted the custom vocabulary/glossary interface into a dedicated UI module (glossary_dialog.py), reducing media_batch.py by over 230 lines in compliance with single responsibility and domain separation rules.
 
+
+
   - **Live Search & Multi-Criteria Sorting (glossary_dialog.py)**: Equipped the glossary table with a real-time search filter and multi-criteria sorting (A-Z/Z-A source, preferred spelling, protected proper-noun priority, and case-sensitive priority) using data-safe row hiding (setRowHidden) to prevent loss of filtered entries during save or export.
+
+
 
   - **4-Column Data Model & Case-Sensitivity (	erminology.py, glossary_dialog.py)**: Added an optional Match case column to protect acronyms and words like US -> U.S. without rewriting lowercase everyday words like us.
 
+
+
   - **Multi-Variant Source & Alternate Spelling Workflows (	erminology.py, glossary_dialog.py, 	ranscript_context_menu_mixin.py)**: Single glossary rows now accept comma-separated alternate spellings (e.g. Kimberlei Davis, Kimberley Davis, Kimberly Davis -> Kimberlei Davis). Added a table context menu with Add Alternate Spelling... and Duplicate Term as New Row.
+
+
 
   - **Transcript Context Mapping (	ranscript_context_menu_mixin.py, media_batch.py)**: Selecting misspelled words in the transcript right-click menu now provides Add Selected Text as Alternate Spelling For... to map directly to preferred spellings and apply normalization to the active project with full Undo support.
 
+
+
   - **Two-Pass Contextual & Phonetic Resolution (	erminology.py)**: Resolved phonetic variants (e.g. Kimberley Davis -> Kimberlei Davis) across timed word token streams, dynamically propagating single-word mentions (Kimberley -> Kimberlei) across that specific project only, guarded against conflicts if another surname (Kimberley Johnson) is present.
 
+
+
   - **Automated Diagnostic Suite (diagnostic_editor_tests.py)**: Expanded unit tests to verify two-pass contextual normalization, case sensitivity, and GlossaryDialog table filtering/sorting without regressions.
+
+
+
+
+
+
+
+
 
 
 
@@ -35,7 +73,15 @@
 
 
 
+
+
+
+
 - **Context Menu Feature Parity & De-Cluttering Across Timeline, Transcript & Story Widgets (	imeline_context_menus.py, 	ranscript_context_menu_mixin.py, story_widgets.py, diagnostic_editor_tests.py)**:
+
+
+
+
 
 
 
@@ -43,7 +89,15 @@
 
 
 
+
+
+
+
   - **Timeline Cache Action Cleanliness (	imeline_context_menus.py)**: Confined Regenerate Waveform and Regenerate Video Thumbnails exclusively to empty timeline space right-clicks. Completely hides Regenerate Video Thumbnails on audio-only projects (rather than showing it disabled), and removed cache regeneration items from the drag-range selection context menu.
+
+
+
+
 
 
 
@@ -51,7 +105,15 @@
 
 
 
+
+
+
+
   - **Transcript Menu Cleanliness & De-Cluttering (	ranscript_context_menu_mixin.py)**: Hides Add Selected Text to Glossary when no manual cursor text is selected; removed redundant window toggle Toggle Comments Sidebar (Ctrl+Alt+C) from both View and Edit modes; eliminated duplicate top-level Remove Highlight in Edit mode and only renders Remove Highlight in the highlight submenu when active highlighting is present on the selected/clicked text.
+
+
+
+
 
 
 
@@ -63,7 +125,19 @@
 
 
 
+
+
+
+
+
+
+
+
 ## v3.9.88-beta
+
+
+
+
 
 
 
@@ -71,7 +145,15 @@
 
 
 
+
+
+
+
   - **Selected Story Transcript Highlighting (`processing.py`, `story_crud_mixin.py`)**: Selecting a story in the sidebar story list, clicking a story region on the timeline canvas, or auditioning playback now automatically synchronizes and non-destructively highlights the story's text span in the interactive transcript view via theme-aware `timeline_selection_span` overlay.
+
+
+
+
 
 
 
@@ -79,7 +161,15 @@
 
 
 
+
+
+
+
   - **Timeline Story Context Actions (`timeline_context_menus.py`, `timeline_widgets.py`)**: Added "Copy Story Transcript (Ctrl+C)" directly to the timeline story right-click context menu, and enabled "Clear Story Selection (Esc)" when stories are active.
+
+
+
+
 
 
 
@@ -87,7 +177,15 @@
 
 
 
+
+
+
+
   - **Non-Destructive Smart Copy Routing (`transcript_editor.py`, `ui_menus.py`, `story_widgets.py`)**: Pressing `Ctrl+C` (or Edit -> Copy) uses a predictable hierarchical resolution: copies manual cursor selection if active; otherwise copies the highlighted story transcript text; normalizes dark-mode HTML to black text for clean pasting into Word, Docs, or email.
+
+
+
+
 
 
 
@@ -95,7 +193,15 @@
 
 
 
+
+
+
+
   - **REAPER DAW Companion Roadmap Update (`roadmap.txt`)**: Updated Milestone 4 specifications with the unified multi-channel clipboard engine, automatically mapping copied story transcripts to REAPER Take Names (Story Title or quote preview), Item Notes (full verbatim transcript), and speaker take markers.
+
+
+
+
 
 
 
@@ -107,7 +213,19 @@
 
 
 
+
+
+
+
+
+
+
+
 ## v3.9.87-beta
+
+
+
+
 
 
 
@@ -115,7 +233,15 @@
 
 
 
+
+
+
+
   - **Castos V2 Rich Player Auto-Injection (plugins/wordpress/client.py)**: Resolved an issue where exporting a post designated as a Castos Podcast Episode resulted in a simple browser audio bar (\wp-audio-shortcode\ + plain meta links) instead of the rich Castos V2 player widget (with series cover artwork, episode title, dark mode skin, and playback controls).
+
+
+
+
 
 
 
@@ -123,11 +249,23 @@
 
 
 
+
+
+
+
   - **Regression Test Bench Alignment (\diagnostic_export_tests.py\)**: Updated the WordPress export diagnostic test to verify that podcast posts omit both standard \<!-- wp:audio -->\ blocks and legacy \[ss_player]\ shortcodes, guaranteeing uninterrupted rich Castos player rendering.
 
 
 
+
+
+
+
   - **Plugin Version Synchronization (\plugins/wordpress/manifest.json\)**: Synchronized the WordPress plugin manifest version to .9.87-beta\ in compliance with lazy catch-up policy.
+
+
+
+
 
 
 
