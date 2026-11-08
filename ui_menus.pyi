@@ -44,3 +44,6 @@ class UiMenusMixin:
 
     def refresh_plugin_menus(self):
         ...
+
+    def trigger_smart_copy(self):
+        ...

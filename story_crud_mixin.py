@@ -577,9 +577,9 @@ class StoryCrudMixin:
             w_start = item[2]
             w_end = item[3] if len(item) >= 4 else w_start
 
-            if w_end >= s and first_char is None:
+            if (w_end > s if e > s else w_end >= s) and first_char is None:
                 first_char = c_start
-            if w_start <= e:
+            if (w_start < e if e > s else w_start <= e):
                 last_char = c_end
 
         if (

@@ -275,3 +275,93 @@ class DiagnosticEditorTestsMixin:
 
         item.status = "PASS"
         item.message = "User guide resolution, embedded fallbacks, responsive scaling, and installer packaging invariants verified"
+
+    def _test_story_transcript_highlighting_and_smart_copy(self, item: DiagnosticItem):
+        """Validates story selection synchronization with transcript highlight overlay and smart clipboard copying."""
+        import sys
+        from PySide6.QtWidgets import QApplication
+        from PySide6.QtGui import QGuiApplication
+        from transcript_editor import InteractiveTranscriptEdit
+        from transcript_story import Story
+        import processing
+        from story_crud_mixin import StoryCrudMixin
+
+        app = QApplication.instance()
+        if app is None:
+            app = QApplication(sys.argv[:1] + ["-platform", "offscreen"])
+
+        class MockTimeline:
+            selection_range = (None, None)
+            def set_stories(self, stories, sel): pass
+
+        class MockWindow(processing.ProcessingMixin, StoryCrudMixin):
+            def __init__(self):
+                self.stories = [
+                    Story(start=0.0, end=10.0, title="Story 1"),
+                    Story(start=10.0, end=20.0, title="Story 2"),
+                ]
+                self.timeline = MockTimeline()
+                self.transcript_view = InteractiveTranscriptEdit(None)
+                self.transcript_view.setPlainText("Hello world from story 1.\nThis is story 2.")
+                self.transcript_view.char_timestamp_map = [
+                    (0, 25, 0.0, 10.0),
+                    (26, 42, 10.0, 20.0),
+                ]
+                self.current_selected_story_indices = []
+                self.is_updating_selection = False
+
+                class MockList:
+                    def blockSignals(self, b): pass
+                    def clearSelection(self): pass
+                    def count(self): return 2
+                    def item(self, i):
+                        class Item:
+                            def setSelected(self, b): pass
+                        return Item()
+                    def setCurrentRow(self, i): pass
+                    def scrollToItem(self, i): pass
+
+                self.story_list = MockList()
+
+                class MockInput:
+                    def setText(self, t): pass
+                    def clear(self): pass
+
+                self.start_input = MockInput()
+                self.end_input = MockInput()
+                self.title_input = MockInput()
+                self.transcript = {"segments": []}
+
+            def seek_to(self, t): pass
+
+        win = MockWindow()
+
+        # 1. Selecting Story 1 highlights the character span (0, 25)
+        win.apply_story_selection_indices([0], seek=False)
+        span0 = win.transcript_view.timeline_selection_span
+        assert span0 == (0, 25), f"Expected Story 1 span (0, 25), got {span0}"
+
+        # 2. Smart Copy copies Story 1 transcript text to clipboard
+        copied0 = win.transcript_view.copy_highlighted_selection()
+        assert copied0 is True, "Expected copy_highlighted_selection to return True"
+        clip0 = QGuiApplication.clipboard().text()
+        assert "Hello world from story 1" in clip0, f"Expected Story 1 in clipboard, got: {clip0!r}"
+
+        # 3. Selecting Story 2 updates the highlight span to (26, 42)
+        win.apply_story_selection_indices([1], seek=False)
+        span1 = win.transcript_view.timeline_selection_span
+        assert span1 == (26, 42), f"Expected Story 2 span (26, 42), got {span1}"
+
+        copied1 = win.transcript_view.copy_highlighted_selection()
+        assert copied1 is True
+        clip1 = QGuiApplication.clipboard().text()
+        assert "This is story 2" in clip1, f"Expected Story 2 in clipboard, got: {clip1!r}"
+
+        # 4. Deselecting stories clears the highlight span
+        win.apply_story_selection_indices([], seek=False)
+        span_none = win.transcript_view.timeline_selection_span
+        assert span_none is None, f"Expected None for cleared span, got {span_none}"
+
+        item.status = "PASS"
+        item.message = "Story transcript highlight synchronization, span interval accuracy, and smart copy verified"
+

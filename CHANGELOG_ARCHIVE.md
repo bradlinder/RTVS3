@@ -1,5 +1,13 @@
 # Changelog Archive (Historical Releases: v1.1 – v3.8.9-beta.19)
 
+## v3.9.86-beta
+- **Export Scope Default Persistence & Qt Signal Signature Defense (`export/dialog.py`, `export_dialogs.py`, `ui_layout.py`, `ui_menus.py`, `diagnostic_export_tests.py`)**:
+  - **Qt Boolean Signal Trap Resolution (`export_dialogs.py`, `ui_layout.py`, `ui_menus.py`)**: Fixed a subtle bug where clicking the main window's "Export..." button (`QPushButton.clicked`) or choosing File > Export... (`QAction.triggered`) emitted Qt's default boolean checked state (`False`). Because `open_unified_export_dialog` took `initial_scope` as its first parameter, it received `False`, causing `initial_scope is None` checks to fail and silently bypass `QSettings` saved defaults in favor of dynamic story selection fallbacks. Lambda wrappers and defensive type guards (`not isinstance(initial_scope, str)`) now neutralize unexpected signal payloads.
+  - **Direct Dialog Fallback Resolution (`export/dialog.py`)**: Added autonomous `QSettings` and project metadata resolution directly inside `UnifiedExportDialog.__init__`. If `initial_scope` is not explicitly provided as a valid scope string, the dialog independently retrieves `export_opt_default_scope` from application settings, ensuring default scopes (e.g. *Full Episode & All Stories*) apply reliably however the dialog is instantiated.
+  - **Modeless Reopen Synchronization (`export_dialogs.py`)**: Reordered resolution in `open_unified_export_dialog` so `initial_scope` and `initial_dest` defaults are fully resolved before checking existing active/visible dialogs, allowing reopened or unminimized windows to update cleanly to current preferences.
+  - **Project & Default Synchronization (`export/dialog.py`, `export_dialogs.py`)**: Synchronized `save_options_to_settings()` and `_dispatch_unified_export_result()` so clicking "Save Options as Default" or completing an export records `last_export_scope` and `last_export_dest` into active project metadata as well as global settings.
+  - **Automated Regression Suite (`diagnostic_export_tests.py`)**: Expanded `WordPress Export Scope Post Builder` to test boolean signal parameter resilience (`open_unified_export_dialog(False)`), direct `UnifiedExportDialog` instantiation default retrieval, and QSettings round-trip persistence.
+
 ## v3.9.85-beta
 - **Export Scope Default Persistence & 3-Tier Precedence Resolution (`export/dialog.py`, `export_dialogs.py`, `diagnostic_export_tests.py`)**:
   - **Saved Default Export Scope Persistence (`export/dialog.py`)**: Updated `save_options_to_settings()` so clicking "Save Options as Default" writes the currently active Export Scope (`export_opt_default_scope`) and Destination Tab (`export_opt_default_dest`) into application `QSettings`.

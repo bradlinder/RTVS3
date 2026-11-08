@@ -80,12 +80,13 @@ TABLE OF CONTENTS & STATUS OVERVIEW
    [ ] 3.9 Automated Diagnostic Test Suite (`test_runner.py`)
 
 4. Optional Future Milestone: REAPER DAW Companion Bridge & ReaScript Transcript Integration (`reaper_bridge.py`, `transcript_editor_dialogs.py`, `transcript_context_menu_mixin.py`, `scripts/reaper/rtvs_reaper_companion.lua`, `scripts/reaper/rtvs_reaper_dock.lua`, `test_runner.py`) [PLANNED for v4.2.0] [OPTIONAL / PLANNED] [NOT STARTED]
-   [ ] 4.1 RTVS3 Clip Cue Payload & Sidecar/IPC Emitter (`reaper_bridge.py`)
-   [ ] 4.2 Interactive Transcript Quick-Action & Shortcut Integration (`transcript_editor_dialogs.py`, `transcript_context_menu_mixin.py`, `shortcuts_manager.py`)
-   [ ] 4.3 Companion ReaScript Timeline Paste & Take Labeling Action (`scripts/reaper/rtvs_reaper_companion.lua`)
-   [ ] 4.4 Optional Dockable ReaImGui Transcript Viewer for REAPER (`scripts/reaper/rtvs_reaper_dock.lua`)
-   [ ] 4.5 Preferences Integration, One-Click Script Installer & Diagnostic Tests (`preferences_dialog.py`, `reaper_bridge.py`, `test_runner.py`)
-   [ ] 4.6 Universal Text-to-WAV Clipboard & Drag-and-Drop Fallback for Other DAWs (`reaper_bridge.py`, `export_media_clipper.py`, `transcript_context_menu_mixin.py`)
+   [ ] 4.1 Unified Multi-Channel Clipboard Engine: Copying stories or transcript selections simultaneously writes plain text, formatted HTML, and REAPER JSON metadata payload.
+   [ ] 4.2 RTVS3 Clip Cue Payload & Sidecar/IPC Emitter (`reaper_bridge.py`)
+   [ ] 4.3 Companion ReaScript Timeline Paste, Take Labeling & Item Notes: Automatically populates REAPER Take Name with Story Title or quote preview, and Item Notes with verbatim transcript text.
+   [ ] 4.4 Take Markers for Speaker Attribution & Word Cues on the REAPER Timeline
+   [ ] 4.5 Optional Dockable ReaImGui Transcript Viewer for REAPER (`scripts/reaper/rtvs_reaper_dock.lua`)
+   [ ] 4.6 Preferences Integration, One-Click Script Installer & Diagnostic Tests (`preferences_dialog.py`, `reaper_bridge.py`, `test_runner.py`)
+   [ ] 4.7 Universal Text-to-WAV Clipboard & Drag-and-Drop Fallback for Other DAWs (`reaper_bridge.py`, `export_media_clipper.py`, `transcript_context_menu_mixin.py`)
 
 5. Optional Future Milestone: Social Reel & Short Video Export Plugin (Instagram Reels, YouTube Shorts, TikTok) (`plugins/social_reel/`, `export_media_clipper.py`, `export_dialogs.py`) [PLANNED] [NOT STARTED]
    [ ] 5.1 Social Reel Plugin Architecture & Manifest (`plugins/social_reel/plugin.py`, `plugins/social_reel/manifest.json`, `plugins/social_reel/export_destination.py`)
@@ -94,18 +95,19 @@ TABLE OF CONTENTS & STATUS OVERVIEW
    [ ] 5.4 Burned-in Subtitles & Platform Safe Zone Enforcement (`plugins/social_reel/reel_subtitles.py`)
    [ ] 5.5 Unified Export Integration & Social Reel Diagnostic Tests (`export/dialog.py`, `test_runner.py`)
 
-6. Current Release: Seriously Simple Podcasting (Castos) Rich Player Auto-Injection (plugins/wordpress/client.py, plugins/wordpress/castos.py, diagnostic_export_tests.py) [x] [COMPLETED in v3.9.87-beta]
-   [x] 6.1 Castos V2 Rich Player Auto-Injection: Resolved issue where podcast posts displayed a simple HTML5 audio player rather than the rich Castos V2 widget.
-   [x] 6.2 Legacy [ss_player] Shortcode Elimination: Omitted [ss_player] shortcodes for podcast posts so Seriously Simple Podcasting automatically injects its rich player via the_content filter.
-   [x] 6.3 Test Bench Synchronization: Updated diagnostic_export_tests.py to assert both standard wp:audio and legacy [ss_player] shortcodes are omitted from podcast posts.
-   [x] 6.4 Plugin Manifest Synchronization: Bumped WordPress plugin version to 3.9.87-beta under lazy catch-up policy.
+6. Current Release: Story Selection Transcript Highlighting & Smart Copy Routing (processing.py, story_crud_mixin.py, transcript_editor.py, story_widgets.py, ui_menus.py, diagnostic_editor_tests.py) [x] [COMPLETED in v3.9.88-beta]
+   [x] 6.1 Story Selection Transcript Highlighting: Synchronized story selection from sidebar, timeline clicks, and playback audition with theme-aware transcript overlay.
+   [x] 6.2 Acoustic Interval Overlap Math: Refined start/end boundary matching in handle_timeline_selection_range_changed to prevent adjacent story word bleed.
+   [x] 6.3 Non-Destructive Smart Copy Routing: Added hierarchical Ctrl+C copying (cursor selection -> highlighted story span -> focused widget) with dark-mode black text normalization.
+   [x] 6.4 Context Menu & Sidebar Key Discovery: Added Copy Story Transcript (Ctrl+C) to story list right-click menu and sidebar keyboard handlers.
+   [x] 6.5 REAPER Companion Roadmap Synchronization: Updated Section 4 specifications with unified multi-channel clipboard and automated Take Name / Item Notes mapping.
+   [x] 6.6 Automated Test Bench: Added _test_story_transcript_highlighting_and_smart_copy to diagnostic test runner.
 
-7. Previous Release: Export Scope Default Persistence & Qt Signal Signature Defense (export/dialog.py, export_dialogs.py, ui_layout.py, ui_menus.py, diagnostic_export_tests.py) [x] [COMPLETED in v3.9.86-beta]
-   [x] 7.1 Qt Signal Signature Guard: Neutralized QPushButton.clicked and QAction.triggered boolean False payloads with lambda wrappers and type guards.
-   [x] 7.2 Autonomous Dialog Scope Resolution: Added QSettings export_opt_default_scope fallback directly inside UnifiedExportDialog.__init__.
-   [x] 7.3 Modeless Reopen Scope Sync: Ensured reopened and unminimized export dialogs update to resolved scope and destination defaults.
-   [x] 7.4 Project Session & Default Sync: Synchronized save_options_to_settings and _dispatch_unified_export_result to update project metadata.
-   [x] 7.5 Automated Regression Suite: Added tests in diagnostic_export_tests.py covering boolean signal resilience and direct dialog scope resolution.
+7. Previous Release: Seriously Simple Podcasting (Castos) Rich Player Auto-Injection (plugins/wordpress/client.py, plugins/wordpress/castos.py, diagnostic_export_tests.py) [x] [COMPLETED in v3.9.87-beta]
+   [x] 7.1 Castos V2 Rich Player Auto-Injection: Resolved issue where podcast posts displayed a simple HTML5 audio player rather than the rich Castos V2 widget.
+   [x] 7.2 Legacy [ss_player] Shortcode Elimination: Omitted [ss_player] shortcodes for podcast posts so Seriously Simple Podcasting automatically injects its rich player via the_content filter.
+   [x] 7.3 Test Bench Synchronization: Updated diagnostic_export_tests.py to assert both standard wp:audio and legacy [ss_player] shortcodes are omitted from podcast posts.
+   [x] 7.4 Plugin Manifest Synchronization: Bumped WordPress plugin version to 3.9.87-beta under lazy catch-up policy.
 ================================================================================
 DETAILED MILESTONE SPECIFICATIONS
 ================================================================================
@@ -138,32 +140,37 @@ DETAILED MILESTONE SPECIFICATIONS
 - Technical References: Full architectural data models, `bin_model.py` schemas, and ripple playout engine specifications are detailed in `ARCHITECTURE.md` (Section 3).
 
 4. OPTIONAL FUTURE MILESTONE: REAPER DAW COMPANION BRIDGE & REASCRIPT TRANSCRIPT INTEGRATION:
-- Purpose: Two-way IPC sidecar bridge allowing RTVS3 transcript selections to be pasted directly into REAPER DAW timelines with take markers and colors.
+- Purpose: Two-way IPC sidecar bridge and unified multi-channel clipboard allowing RTVS3 stories and transcript selections to be pasted directly into REAPER DAW timelines with automated take naming, full transcript item notes, and speaker take markers.
 - Target Release: v4.2.0 (Optional / Planned)
-- Technical References: IPC protocol, ReaScript Lua scripts (`rtvs_reaper_companion.lua`), and ReaImGui dock designs are detailed in `ARCHITECTURE.md` (Section 5).
+- Technical References & Implementation Details:
+  * Unified Multi-Channel Clipboard: A single Ctrl+C copies both standard text/HTML (for pasting into Word/Notepad/Google Docs) and REAPER companion audio/cue metadata, with explicit Ctrl+Shift+C shortcut for standalone audio clip copying.
+  * REAPER Take Name & Item Notes Mapping: Pasted audio media items automatically receive the Story Title (or `[Speaker] "Quote preview..."`) as their Take Name, and the full verbatim transcript in REAPER Item Notes.
+  * Take Markers for Speaker Attribution: Places cues along the item waveform indicating speaker changes and key transcript landmarks.
+  * IPC Protocol & Scripts: ReaScript Lua scripts (`rtvs_reaper_companion.lua`), ReaImGui dock (`rtvs_reaper_dock.lua`), and IPC sidecar bridge detailed in `ARCHITECTURE.md` (Section 5).
 
 5. OPTIONAL FUTURE MILESTONE: SOCIAL REEL & SHORT VIDEO EXPORT PLUGIN:
 - Purpose: Vertical 9:16 video renderer with animated audiograms, platform safe-zone margin enforcement, and burned-in subtitles for social platforms.
 - Target Release: v4.3.0 (Optional / Planned)
 - Technical References: Subsystem architecture, plugin manifest, and FFmpeg filtergraph pipeline specifications are detailed in `ARCHITECTURE.md` (Section 6).
 
-6. CURRENT RELEASE: SERIOUSLY SIMPLE PODCASTING (CASTOS) RICH PLAYER AUTO-INJECTION:
+6. CURRENT RELEASE: STORY SELECTION TRANSCRIPT HIGHLIGHTING & SMART COPY ROUTING:
+- Purpose: Highlight selected stories in the transcript view upon selection (sidebar, timeline click, or audition) and provide smart, non-destructive Ctrl+C copying of story transcripts.
+- Target Release: v3.9.88-beta (Current Release)
+- Technical References & Implementation Details:
+  * [x] Selected Story Transcript Highlighting: Synchronized apply_story_selection_indices in processing.py with handle_timeline_selection_range_changed in story_crud_mixin.py to highlight story character spans with non-destructive ExtraSelection overlays.
+  * [x] Acoustic Interval Boundary Overlap Math: Refined timestamp mapping in story_crud_mixin.py using true mathematical interval overlap (w_end > s and w_start < e), ensuring adjacent stories never bleed bounding words.
+  * [x] Non-Destructive Smart Copy Routing: Added copy_highlighted_selection in transcript_editor.py, trigger_smart_copy in ui_menus.py, and StoryListWidget keyPressEvent routing Ctrl+C to copy highlighted story text when no manual cursor selection is active.
+  * [x] Dark-Mode Black Text Normalization: Formats clipboard HTML using clean_dark_mode_clipboard_html so pasted story transcripts render with clean black text in external document editors.
+  * [x] REAPER Companion Roadmap Synchronization: Updated Section 4 specifications with unified multi-channel clipboard and automated Take Name / Item Notes mapping.
+  * [x] Automated Diagnostic Suite: Added _test_story_transcript_highlighting_and_smart_copy to diagnostic_editor_tests.py and registered in test_runner.py.
+  * Release Logs: Documented in CHANGELOG.md under ## v3.9.88-beta.
+
+7. PREVIOUS RELEASE: SERIOUSLY SIMPLE PODCASTING (CASTOS) RICH PLAYER AUTO-INJECTION:
 - Purpose: Ensure WordPress export posts designated as podcast episodes automatically render the rich Castos V2 player with series artwork, episode title, dark mode skin, and playback controls.
-- Target Release: v3.9.87-beta (Current Release)
+- Target Release: v3.9.87-beta (Previous Release)
 - Technical References & Implementation Details:
   * [x] Castos V2 Rich Player Auto-Injection: Omitted manual [ss_player] shortcode blocks from post content when is_podcast=True in plugins/wordpress/client.py. Seriously Simple Podcasting automatically detects podcast episode metadata and dynamically injects its rich player widget via the_content filter.
   * [x] Suppression Bug Fix: Fixed legacy compact player fallback where [ss_player] was rendering basic HTML5 audio tags and suppressing SSP's automated rich widget injection.
   * [x] Test Bench Synchronization: Updated diagnostic_export_tests.py to assert that both standard wp:audio and legacy [ss_player] shortcodes are omitted from podcast post content.
   * [x] Plugin Manifest Catch-Up: Updated plugins/wordpress/manifest.json to v3.9.87-beta.
   * Release Logs: Documented in CHANGELOG.md under ## v3.9.87-beta.
-
-7. PREVIOUS RELEASE: EXPORT SCOPE DEFAULT PERSISTENCE & QT SIGNAL SIGNATURE DEFENSE:
-- Purpose: Ensure export scope defaults persist reliably from settings and protect open_unified_export_dialog from QPushButton/QAction boolean signal payloads.
-- Target Release: v3.9.86-beta (Previous Release)
-- Technical References & Implementation Details:
-  * [x] Qt Signal Signature Defense: Neutralized QPushButton.clicked and QAction.triggered boolean payloads with lambda wrappers and type guards.
-  * [x] Autonomous Dialog Scope Resolution: Added QSettings fallback directly inside UnifiedExportDialog.__init__.
-  * [x] Modeless Reopen Synchronization: Ensured reopened and unminimized export dialogs update to resolved scope and destination defaults.
-  * [x] Project Session & Default Sync: Synchronized save_options_to_settings and _dispatch_unified_export_result to update project metadata.
-  * [x] Automated Regression Suite: Added tests in diagnostic_export_tests.py covering boolean signal resilience and direct dialog scope resolution.
-  * Release Logs: Documented in CHANGELOG.md under ## v3.9.86-beta.

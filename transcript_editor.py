@@ -52,6 +52,7 @@ try:
         QShortcut,
         QBrush,
         QTextDocument,
+        QTextDocumentFragment,
         QKeyEvent,
         QMouseEvent,
         QWheelEvent,
@@ -282,6 +283,69 @@ class InteractiveTranscriptEdit(
                 cleaned_html = clean_dark_mode_clipboard_html(raw_html)
                 mime_data.setHtml(cleaned_html)
         return mime_data
+
+    def copy_highlighted_selection(self) -> bool:
+        """Copy the active story or timeline selection span to clipboard when no cursor text is selected.
+
+        Preserves rich HTML styling with dark-mode black text normalization, sets plain text,
+        and posts a notification to the main window status bar. Returns True if text was copied.
+        """
+        span = getattr(self, "timeline_selection_span", None)
+        if not span:
+            return False
+        s_char, e_char = span
+        doc = self.document()
+        if not doc:
+            return False
+        doc_len = doc.characterCount()
+        if not (0 <= s_char < doc_len and 0 < e_char <= doc_len and s_char < e_char):
+            return False
+
+        cursor = QTextCursor(doc)
+        cursor.setPosition(s_char)
+        cursor.setPosition(e_char, QTextCursor.MoveMode.KeepAnchor)
+
+        plain_text = ""
+        html_text = ""
+
+        try:
+            fragment = QTextDocumentFragment(cursor)
+            plain_text = fragment.toPlainText().strip()
+            html_text = fragment.toHtml()
+        except Exception:
+            plain_text = cursor.selectedText().strip()
+
+        if not plain_text:
+            return False
+
+        theme = getattr(self, "current_theme", "dark")
+        if theme in ("dark", "high_contrast") and html_text:
+            html_text = clean_dark_mode_clipboard_html(html_text)
+
+        mime_data = QMimeData()
+        mime_data.setText(plain_text)
+        if html_text:
+            mime_data.setHtml(html_text)
+
+        clipboard = QApplication.clipboard()
+        if clipboard:
+            clipboard.setMimeData(mime_data)
+
+        main_win = self.window()
+        if hasattr(main_win, "statusBar") and main_win.statusBar():
+            story_title = ""
+            indices = getattr(main_win, "current_selected_story_indices", [])
+            stories = getattr(main_win, "stories", [])
+            if len(indices) == 1 and 0 <= indices[0] < len(stories):
+                st = stories[indices[0]]
+                story_title = f" for '{st.title}'"
+            elif len(indices) > 1:
+                story_title = f" for {len(indices)} stories"
+            main_win.statusBar().showMessage(
+                f"Copied story transcript{story_title} ({len(plain_text)} characters) to clipboard.",
+                3500,
+            )
+        return True
 
     def wheelEvent(self, event):
         # Manual user scroll cancels any active scroll lock and detaches playback auto-scroll
@@ -660,6 +724,9 @@ class InteractiveTranscriptEdit(
         ):
             if self.textCursor().hasSelection():
                 self.copy()
+                event.accept()
+                return
+            elif self.copy_highlighted_selection():
                 event.accept()
                 return
         # The application owns undo/redo for project edits.  Do this before

@@ -21,6 +21,7 @@ from PySide6.QtGui import (
     QColor,
     QFont,
     QIcon,
+    QKeySequence,
     QPainter,
     QPen,
     QUndoCommand,
@@ -459,6 +460,18 @@ class StoryListWidget(QListWidget):
         if event.key() in (Qt.Key.Key_Delete, Qt.Key.Key_Backspace):
             self.deleteRequested.emit()
             event.accept()
+        elif event.matches(QKeySequence.StandardKey.Copy) or (
+            event.modifiers() & (Qt.KeyboardModifier.ControlModifier | Qt.KeyboardModifier.MetaModifier)
+            and event.key() == Qt.Key.Key_C
+        ):
+            parent = self.parent()
+            while parent and not hasattr(parent, "transcript_view"):
+                parent = parent.parent()
+            if parent and hasattr(parent, "transcript_view") and hasattr(parent.transcript_view, "copy_highlighted_selection"):
+                if parent.transcript_view.copy_highlighted_selection():
+                    event.accept()
+                    return
+            super().keyPressEvent(event)
         else:
             super().keyPressEvent(event)
 
@@ -478,6 +491,10 @@ class StoryListWidget(QListWidget):
         audition_act = QAction("Audition Story Playback", self)
         audition_act.triggered.connect(lambda: parent.audition_story(self.currentRow()))
         menu.addAction(audition_act)
+
+        copy_act = QAction("Copy Story Transcript (Ctrl+C)", self)
+        copy_act.triggered.connect(lambda: parent.transcript_view.copy_highlighted_selection() if hasattr(parent, "transcript_view") else None)
+        menu.addAction(copy_act)
 
         menu.addSeparator()
 

@@ -128,6 +128,12 @@ class TranscriptContextMenuMixin:
             menu.addAction(clear_selection)
 
             menu.addSeparator()
+        elif getattr(self, "timeline_selection_span", None) is not None:
+            copy_span_action = QAction("Copy Story / Highlighted Text", self)
+            copy_span_action.setShortcut(QKeySequence.StandardKey.Copy)
+            copy_span_action.triggered.connect(lambda: getattr(self, "copy_highlighted_selection", lambda: False)())
+            menu.addAction(copy_span_action)
+            menu.addSeparator()
 
         if speaker_target:
             seg_idx, raw_speaker = speaker_target

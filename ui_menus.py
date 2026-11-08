@@ -200,6 +200,11 @@ class UiMenusMixin:
         self.redo_action.setShortcut(platform_seq("Ctrl+Shift+Z"))
         edit_menu.addAction(self.redo_action)
 
+        self.copy_action = QAction("&Copy", self)
+        self.copy_action.setShortcut(QKeySequence.Copy)
+        self.copy_action.triggered.connect(lambda: getattr(self, "trigger_smart_copy", lambda: None)())
+        edit_menu.addAction(self.copy_action)
+
         edit_menu.addSeparator()
 
         add_comment_act = QAction("Add / Edit &Comment...", self)
@@ -817,4 +822,26 @@ class UiMenusMixin:
         # 4. Populate plugin-provided story extensions (e.g. WordPress Post Settings widget)
         if hasattr(self, "setup_plugin_story_extensions"):
             self.setup_plugin_story_extensions()
+
+    def trigger_smart_copy(self):
+        """Smart copy routing: active text cursor selection -> focused widget -> highlighted story transcript."""
+        focus_w = QApplication.focusWidget()
+        if focus_w:
+            if hasattr(focus_w, 'textCursor') and callable(focus_w.textCursor):
+                c = focus_w.textCursor()
+                if c and c.hasSelection():
+                    focus_w.copy()
+                    return
+            if hasattr(focus_w, 'hasSelectedText') and callable(focus_w.hasSelectedText):
+                if focus_w.hasSelectedText():
+                    focus_w.copy()
+                    return
+
+        if hasattr(self, 'transcript_view') and self.transcript_view:
+            if self.transcript_view.textCursor().hasSelection():
+                self.transcript_view.copy()
+                return
+            elif hasattr(self.transcript_view, 'copy_highlighted_selection'):
+                if self.transcript_view.copy_highlighted_selection():
+                    return
 

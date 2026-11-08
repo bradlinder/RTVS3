@@ -474,6 +474,22 @@ class ProcessingMixin(
                 self.notify_story_selection_to_plugins(None)
 
         self.timeline.set_stories(self.stories, selected_rows)
+
+        # Synchronize transcript view highlight with the selected story span
+        if hasattr(self, "transcript_view") and hasattr(self, "handle_timeline_selection_range_changed"):
+            if selected_rows:
+                valid_stories = [self.stories[i] for i in selected_rows if 0 <= i < len(self.stories)]
+                if valid_stories:
+                    st_start = min(s.start for s in valid_stories)
+                    st_end = max(s.end for s in valid_stories)
+                    self.handle_timeline_selection_range_changed(st_start, st_end)
+                else:
+                    self.handle_timeline_selection_range_changed(None, None)
+            else:
+                tl_range = getattr(self.timeline, "selection_range", None) if hasattr(self, "timeline") else None
+                if not tl_range or tl_range[0] is None:
+                    self.handle_timeline_selection_range_changed(None, None)
+
         self.is_updating_selection = False
 
     def on_timeline_story_clicked(self, index):

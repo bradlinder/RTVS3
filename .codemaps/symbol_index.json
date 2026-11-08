@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-05 17:12:05",
+  "generated_at": "2026-11-08 13:02:16",
   "total_files": 161,
   "files": {
     "RadioTVSegmenter.py": {
       "path": "RadioTVSegmenter.py",
       "lines": 663,
-      "summary": "Radio & TV Segmenter \u2014 v3.9.87-beta",
+      "summary": "Radio & TV Segmenter \u2014 v3.9.88-beta",
       "exports": null,
       "classes": [
         {
@@ -2101,7 +2101,7 @@
     },
     "diagnostic_editor_tests.py": {
       "path": "diagnostic_editor_tests.py",
-      "lines": 277,
+      "lines": 367,
       "summary": "Diagnostic editor and find-replace tests for Radio & TV Story Segmenter.",
       "exports": null,
       "classes": [
@@ -2109,7 +2109,7 @@
           "name": "DiagnosticEditorTestsMixin",
           "bases": [],
           "start_line": 11,
-          "end_line": 277,
+          "end_line": 366,
           "doc": "Diagnostic suite for transcript editor, find-replace, and speaker synchronization.",
           "methods": [
             {
@@ -2125,6 +2125,13 @@
               "start_line": 204,
               "end_line": 277,
               "doc": "Validates in-app user guide resolution, fallback to embedded content, and bundling invariants."
+            },
+            {
+              "name": "_test_story_transcript_highlighting_and_smart_copy",
+              "sig": "_test_story_transcript_highlighting_and_smart_copy(self, item)",
+              "start_line": 279,
+              "end_line": 366,
+              "doc": "Validates story selection synchronization with transcript highlight overlay and smart clipboard copying."
             }
           ]
         }
@@ -8928,7 +8935,7 @@
     },
     "processing.py": {
       "path": "processing.py",
-      "lines": 1216,
+      "lines": 1232,
       "summary": "Radio & TV Segmenter v3.3.29 \u2014 processing responsibilities.",
       "exports": null,
       "classes": [
@@ -8972,7 +8979,7 @@
             "StoryDetectionProcessingMixin"
           ],
           "start_line": 92,
-          "end_line": 1215,
+          "end_line": 1231,
           "doc": "",
           "methods": [
             {
@@ -9014,154 +9021,154 @@
               "name": "apply_story_selection_indices",
               "sig": "apply_story_selection_indices(self, selected_rows, seek)",
               "start_line": 410,
-              "end_line": 477,
+              "end_line": 493,
               "doc": ""
             },
             {
               "name": "on_timeline_story_clicked",
               "sig": "on_timeline_story_clicked(self, index)",
-              "start_line": 479,
-              "end_line": 489,
+              "start_line": 495,
+              "end_line": 505,
               "doc": "Handle user clicking a story region directly on the timeline canvas."
             },
             {
               "name": "story_selection_changed",
               "sig": "story_selection_changed(self)",
-              "start_line": 491,
-              "end_line": 508,
+              "start_line": 507,
+              "end_line": 524,
               "doc": ""
             },
             {
               "name": "handle_timeline_multi_selection",
               "sig": "handle_timeline_multi_selection(self, selected_indices)",
-              "start_line": 510,
-              "end_line": 521,
+              "start_line": 526,
+              "end_line": 537,
               "doc": ""
             },
             {
               "name": "set_tools_actions_enabled",
               "sig": "set_tools_actions_enabled(self, enabled)",
-              "start_line": 523,
-              "end_line": 559,
+              "start_line": 539,
+              "end_line": 575,
               "doc": ""
             },
             {
               "name": "stop_story_detection_worker",
               "sig": "stop_story_detection_worker(self, timeout_ms)",
-              "start_line": 561,
-              "end_line": 584,
+              "start_line": 577,
+              "end_line": 600,
               "doc": "Cancel Story Detection and wait for its QThread to finish."
             },
             {
               "name": "stop_all_processing",
               "sig": "stop_all_processing(self, timeout_ms)",
-              "start_line": 586,
-              "end_line": 601,
+              "start_line": 602,
+              "end_line": 617,
               "doc": "Stop every local processing job before changing media/projects or exiting."
             },
             {
               "name": "confirm_stop_processing_for_media_change",
               "sig": "confirm_stop_processing_for_media_change(self)",
-              "start_line": 603,
-              "end_line": 631,
+              "start_line": 619,
+              "end_line": 647,
               "doc": ""
             },
             {
               "name": "worker_thread_finished",
               "sig": "worker_thread_finished(self)",
-              "start_line": 633,
-              "end_line": 635,
+              "start_line": 649,
+              "end_line": 651,
               "doc": ""
             },
             {
               "name": "start_full_auto_pipeline",
               "sig": "start_full_auto_pipeline(self)",
-              "start_line": 637,
-              "end_line": 786,
+              "start_line": 653,
+              "end_line": 802,
               "doc": "Open a chooser for the processing stages to run, then run them in order."
             },
             {
               "name": "_confirm_pipeline_rerun_if_needed",
               "sig": "_confirm_pipeline_rerun_if_needed(self, stages, parent)",
-              "start_line": 788,
-              "end_line": 857,
+              "start_line": 804,
+              "end_line": 873,
               "doc": "Look ahead at stages about to run in a pipeline. If any have already"
             },
             {
               "name": "_run_next_selected_processing",
               "sig": "_run_next_selected_processing(self)",
-              "start_line": 859,
-              "end_line": 939,
+              "start_line": 875,
+              "end_line": 955,
               "doc": ""
             },
             {
               "name": "start_transcribe_and_diarize",
               "sig": "start_transcribe_and_diarize(self)",
-              "start_line": 941,
-              "end_line": 960,
+              "start_line": 957,
+              "end_line": 976,
               "doc": ""
             },
             {
               "name": "_processing_choice",
               "sig": "_processing_choice(self, kind)",
-              "start_line": 962,
-              "end_line": 1001,
+              "start_line": 978,
+              "end_line": 1017,
               "doc": "Return: run, continue, start_over, or cancel based on current state."
             },
             {
               "name": "_worker_command",
               "sig": "_worker_command(self, args)",
-              "start_line": 1003,
-              "end_line": 1022,
+              "start_line": 1019,
+              "end_line": 1038,
               "doc": "Return (executable, args, env_overrides) for the local AI worker,"
             },
             {
               "name": "_resolve_worker_command",
               "sig": "_resolve_worker_command(self, args)",
-              "start_line": 1024,
-              "end_line": 1071,
+              "start_line": 1040,
+              "end_line": 1087,
               "doc": "Return (executable, args, env_overrides) for the local AI worker."
             },
             {
               "name": "_apply_worker_env_overrides",
               "sig": "_apply_worker_env_overrides(self, process, env_overrides)",
-              "start_line": 1074,
-              "end_line": 1110,
+              "start_line": 1090,
+              "end_line": 1126,
               "doc": "Applies extra environment variables (e.g. GPU device selection, SSL certs,"
             },
             {
               "name": "_download_model_and_continue_transcription",
               "sig": "_download_model_and_continue_transcription(self, model_name, label)",
-              "start_line": 1112,
-              "end_line": 1145,
+              "start_line": 1128,
+              "end_line": 1161,
               "doc": "Asynchronously download a missing model with responsive in-dialog progress and auto-resume."
             },
             {
               "name": "_on_transcription_dl_progress",
               "sig": "_on_transcription_dl_progress(self, pct, msg)",
-              "start_line": 1147,
-              "end_line": 1157,
+              "start_line": 1163,
+              "end_line": 1173,
               "doc": ""
             },
             {
               "name": "_on_transcription_dl_cancel",
               "sig": "_on_transcription_dl_cancel(self)",
-              "start_line": 1159,
-              "end_line": 1166,
+              "start_line": 1175,
+              "end_line": 1182,
               "doc": ""
             },
             {
               "name": "_on_transcription_dl_finished",
               "sig": "_on_transcription_dl_finished(self, err)",
-              "start_line": 1168,
-              "end_line": 1201,
+              "start_line": 1184,
+              "end_line": 1217,
               "doc": ""
             },
             {
               "name": "_on_transcription_dl_thread_cleanup",
               "sig": "_on_transcription_dl_thread_cleanup(self)",
-              "start_line": 1203,
-              "end_line": 1215,
+              "start_line": 1219,
+              "end_line": 1231,
               "doc": ""
             }
           ]
@@ -13955,7 +13962,7 @@
     },
     "story_widgets.py": {
       "path": "story_widgets.py",
-      "lines": 532,
+      "lines": 549,
       "summary": "Radio & TV Story Segmenter \u2014 Story Sidebar Widgets, Item Delegates, and Undo Commands.",
       "exports": null,
       "classes": [
@@ -13964,57 +13971,57 @@
           "bases": [
             "QWidget"
           ],
-          "start_line": 59,
-          "end_line": 161,
+          "start_line": 60,
+          "end_line": 162,
           "doc": "Visual selector widget providing interactive card buttons for audio fade curves.",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, parent, button_width, button_height)",
-              "start_line": 64,
-              "end_line": 117,
+              "start_line": 65,
+              "end_line": 118,
               "doc": ""
             },
             {
               "name": "_on_button_toggled",
               "sig": "_on_button_toggled(self, checked)",
-              "start_line": 119,
-              "end_line": 128,
+              "start_line": 120,
+              "end_line": 129,
               "doc": ""
             },
             {
               "name": "currentData",
               "sig": "currentData(self)",
-              "start_line": 130,
-              "end_line": 131,
+              "start_line": 131,
+              "end_line": 132,
               "doc": ""
             },
             {
               "name": "setCurrentData",
               "sig": "setCurrentData(self, curve_type)",
-              "start_line": 133,
-              "end_line": 144,
+              "start_line": 134,
+              "end_line": 145,
               "doc": ""
             },
             {
               "name": "findData",
               "sig": "findData(self, curve_type)",
-              "start_line": 146,
-              "end_line": 151,
+              "start_line": 147,
+              "end_line": 152,
               "doc": ""
             },
             {
               "name": "currentIndex",
               "sig": "currentIndex(self)",
-              "start_line": 153,
-              "end_line": 157,
+              "start_line": 154,
+              "end_line": 158,
               "doc": ""
             },
             {
               "name": "setCurrentIndex",
               "sig": "setCurrentIndex(self, idx)",
-              "start_line": 159,
-              "end_line": 161,
+              "start_line": 160,
+              "end_line": 162,
               "doc": ""
             }
           ]
@@ -14024,36 +14031,36 @@
           "bases": [
             "QUndoCommand"
           ],
-          "start_line": 168,
-          "end_line": 203,
+          "start_line": 169,
+          "end_line": 204,
           "doc": "Discrete undo/redo command for story audio fade-in, fade-out, and curve adjustments.",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, main_window, story_index, old_in, old_out, new_in, new_out, old_curve, new_curve, description)",
-              "start_line": 171,
-              "end_line": 180,
+              "start_line": 172,
+              "end_line": 181,
               "doc": ""
             },
             {
               "name": "undo",
               "sig": "undo(self)",
-              "start_line": 182,
-              "end_line": 187,
+              "start_line": 183,
+              "end_line": 188,
               "doc": ""
             },
             {
               "name": "redo",
               "sig": "redo(self)",
-              "start_line": 189,
-              "end_line": 194,
+              "start_line": 190,
+              "end_line": 195,
               "doc": ""
             },
             {
               "name": "_sync_ui",
               "sig": "_sync_ui(self)",
-              "start_line": 196,
-              "end_line": 203,
+              "start_line": 197,
+              "end_line": 204,
               "doc": ""
             }
           ]
@@ -14063,29 +14070,29 @@
           "bases": [
             "QUndoCommand"
           ],
-          "start_line": 206,
-          "end_line": 230,
+          "start_line": 207,
+          "end_line": 231,
           "doc": "",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, main_window, old_stories, new_stories, description)",
-              "start_line": 207,
-              "end_line": 212,
+              "start_line": 208,
+              "end_line": 213,
               "doc": ""
             },
             {
               "name": "undo",
               "sig": "undo(self)",
-              "start_line": 214,
-              "end_line": 221,
+              "start_line": 215,
+              "end_line": 222,
               "doc": ""
             },
             {
               "name": "redo",
               "sig": "redo(self)",
-              "start_line": 223,
-              "end_line": 230,
+              "start_line": 224,
+              "end_line": 231,
               "doc": ""
             }
           ]
@@ -14095,36 +14102,36 @@
           "bases": [
             "QUndoCommand"
           ],
-          "start_line": 233,
-          "end_line": 268,
+          "start_line": 234,
+          "end_line": 269,
           "doc": "Discrete undo/redo command for story boundary adjustments (start/end times).",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, main_window, story_index, old_start, old_end, new_start, new_end, description)",
-              "start_line": 236,
-              "end_line": 243,
+              "start_line": 237,
+              "end_line": 244,
               "doc": ""
             },
             {
               "name": "undo",
               "sig": "undo(self)",
-              "start_line": 245,
-              "end_line": 249,
+              "start_line": 246,
+              "end_line": 250,
               "doc": ""
             },
             {
               "name": "redo",
               "sig": "redo(self)",
-              "start_line": 251,
-              "end_line": 255,
+              "start_line": 252,
+              "end_line": 256,
               "doc": ""
             },
             {
               "name": "_sync_ui",
               "sig": "_sync_ui(self, start, end)",
-              "start_line": 257,
-              "end_line": 268,
+              "start_line": 258,
+              "end_line": 269,
               "doc": ""
             }
           ]
@@ -14134,29 +14141,29 @@
           "bases": [
             "QUndoCommand"
           ],
-          "start_line": 271,
-          "end_line": 282,
+          "start_line": 272,
+          "end_line": 283,
           "doc": "",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, main_window, old_selection, new_selection, description)",
-              "start_line": 272,
-              "end_line": 276,
+              "start_line": 273,
+              "end_line": 277,
               "doc": ""
             },
             {
               "name": "undo",
               "sig": "undo(self)",
-              "start_line": 278,
-              "end_line": 279,
+              "start_line": 279,
+              "end_line": 280,
               "doc": ""
             },
             {
               "name": "redo",
               "sig": "redo(self)",
-              "start_line": 281,
-              "end_line": 282,
+              "start_line": 282,
+              "end_line": 283,
               "doc": ""
             }
           ]
@@ -14166,29 +14173,29 @@
           "bases": [
             "QStyledItemDelegate"
           ],
-          "start_line": 289,
-          "end_line": 417,
+          "start_line": 290,
+          "end_line": 418,
           "doc": "Renders story items as clean cards with color-coded accent bars, pill badges, and time metadata.",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, parent)",
-              "start_line": 291,
-              "end_line": 292,
+              "start_line": 292,
+              "end_line": 293,
               "doc": ""
             },
             {
               "name": "sizeHint",
               "sig": "sizeHint(self, option, index)",
-              "start_line": 294,
-              "end_line": 296,
+              "start_line": 295,
+              "end_line": 297,
               "doc": ""
             },
             {
               "name": "paint",
               "sig": "paint(self, painter, option, index)",
-              "start_line": 298,
-              "end_line": 417,
+              "start_line": 299,
+              "end_line": 418,
               "doc": ""
             }
           ]
@@ -14198,57 +14205,57 @@
           "bases": [
             "QListWidget"
           ],
-          "start_line": 424,
-          "end_line": 532,
+          "start_line": 425,
+          "end_line": 549,
           "doc": "QListWidget subclass for story segmentation list with right-click context menu and drag-drop support.",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, parent)",
-              "start_line": 431,
-              "end_line": 435,
+              "start_line": 432,
+              "end_line": 436,
               "doc": ""
             },
             {
               "name": "dragEnterEvent",
               "sig": "dragEnterEvent(self, event)",
-              "start_line": 437,
-              "end_line": 441,
+              "start_line": 438,
+              "end_line": 442,
               "doc": ""
             },
             {
               "name": "dragMoveEvent",
               "sig": "dragMoveEvent(self, event)",
-              "start_line": 443,
-              "end_line": 447,
+              "start_line": 444,
+              "end_line": 448,
               "doc": ""
             },
             {
               "name": "dropEvent",
               "sig": "dropEvent(self, event)",
-              "start_line": 449,
-              "end_line": 456,
+              "start_line": 450,
+              "end_line": 457,
               "doc": ""
             },
             {
               "name": "keyPressEvent",
               "sig": "keyPressEvent(self, event)",
-              "start_line": 458,
-              "end_line": 463,
+              "start_line": 459,
+              "end_line": 476,
               "doc": ""
             },
             {
               "name": "_show_context_menu",
               "sig": "_show_context_menu(self, pos)",
-              "start_line": 465,
-              "end_line": 521,
+              "start_line": 478,
+              "end_line": 538,
               "doc": ""
             },
             {
               "name": "adjust_height_to_contents",
               "sig": "adjust_height_to_contents(self, min_h, max_h)",
-              "start_line": 523,
-              "end_line": 532,
+              "start_line": 540,
+              "end_line": 549,
               "doc": "Dynamically size the list widget to only fit the number of stories."
             }
           ]
@@ -14258,15 +14265,15 @@
         {
           "name": "_get_fade_curve_profiles",
           "sig": "_get_fade_curve_profiles()",
-          "start_line": 45,
-          "end_line": 47,
+          "start_line": 46,
+          "end_line": 48,
           "doc": ""
         },
         {
           "name": "_get_fade_curve_icon",
           "sig": "_get_fade_curve_icon(cid, width, height)",
-          "start_line": 50,
-          "end_line": 52,
+          "start_line": 51,
+          "end_line": 53,
           "doc": ""
         }
       ]
@@ -15438,7 +15445,7 @@
     },
     "transcript_context_menu_mixin.py": {
       "path": "transcript_context_menu_mixin.py",
-      "lines": 415,
+      "lines": 421,
       "summary": "Radio & TV Story Segmenter \u2014 Interactive Transcript Context Menu & Bubble Actions Mixin.",
       "exports": null,
       "classes": [
@@ -15446,7 +15453,7 @@
           "name": "TranscriptContextMenuMixin",
           "bases": [],
           "start_line": 36,
-          "end_line": 415,
+          "end_line": 421,
           "doc": "Mixin for context menu construction and selection bubble quick-actions.",
           "methods": [
             {
@@ -15488,7 +15495,7 @@
               "name": "show_context_menu",
               "sig": "show_context_menu(self, position)",
               "start_line": 82,
-              "end_line": 415,
+              "end_line": 421,
               "doc": ""
             }
           ]
@@ -15498,7 +15505,7 @@
     },
     "transcript_editor.py": {
       "path": "transcript_editor.py",
-      "lines": 887,
+      "lines": 954,
       "summary": "transcript_editor.py - Interactive Transcript Editor & Viewer Components",
       "exports": [
         "FindReplaceDialog",
@@ -15516,162 +15523,169 @@
             "TranscriptTimelineSyncMixin",
             "QTextEdit"
           ],
-          "start_line": 116,
-          "end_line": 887,
+          "start_line": 117,
+          "end_line": 954,
           "doc": "",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, parent)",
-              "start_line": 129,
-              "end_line": 191,
+              "start_line": 130,
+              "end_line": 192,
               "doc": ""
             },
             {
               "name": "clear",
               "sig": "clear(self)",
-              "start_line": 193,
-              "end_line": 208,
+              "start_line": 194,
+              "end_line": 209,
               "doc": "Clear document text and reset all word maps, anchors, and extra selections."
             },
             {
               "name": "lock_scroll_position",
               "sig": "lock_scroll_position(self, v_val, h_val, duration_ms)",
-              "start_line": 210,
-              "end_line": 231,
+              "start_line": 211,
+              "end_line": 232,
               "doc": "Pin vertical and horizontal scrollbars to exact pixel values during layout reflows."
             },
             {
               "name": "_release_scroll_lock",
               "sig": "_release_scroll_lock(self)",
-              "start_line": 233,
-              "end_line": 236,
+              "start_line": 234,
+              "end_line": 237,
               "doc": ""
             },
             {
               "name": "_on_v_range_changed",
               "sig": "_on_v_range_changed(self, min_val, max_val)",
-              "start_line": 238,
-              "end_line": 242,
+              "start_line": 239,
+              "end_line": 243,
               "doc": ""
             },
             {
               "name": "focusInEvent",
               "sig": "focusInEvent(self, event)",
-              "start_line": 244,
-              "end_line": 260,
+              "start_line": 245,
+              "end_line": 261,
               "doc": ""
             },
             {
               "name": "_enforce_scroll_after_focus",
               "sig": "_enforce_scroll_after_focus(self, target_v, target_h)",
-              "start_line": 262,
-              "end_line": 268,
+              "start_line": 263,
+              "end_line": 269,
               "doc": ""
             },
             {
               "name": "createMimeDataFromSelection",
               "sig": "createMimeDataFromSelection(self)",
-              "start_line": 270,
-              "end_line": 284,
+              "start_line": 271,
+              "end_line": 285,
               "doc": "Clean dark-mode white/light plain text colors to black (#000000) when copying."
+            },
+            {
+              "name": "copy_highlighted_selection",
+              "sig": "copy_highlighted_selection(self)",
+              "start_line": 287,
+              "end_line": 348,
+              "doc": "Copy the active story or timeline selection span to clipboard when no cursor text is selected."
             },
             {
               "name": "wheelEvent",
               "sig": "wheelEvent(self, event)",
-              "start_line": 286,
-              "end_line": 292,
+              "start_line": 350,
+              "end_line": 356,
               "doc": ""
             },
             {
               "name": "event",
               "sig": "event(self, e)",
-              "start_line": 294,
-              "end_line": 343,
+              "start_line": 358,
+              "end_line": 407,
               "doc": ""
             },
             {
               "name": "paintEvent",
               "sig": "paintEvent(self, event)",
-              "start_line": 345,
-              "end_line": 408,
+              "start_line": 409,
+              "end_line": 472,
               "doc": ""
             },
             {
               "name": "dragEnterEvent",
               "sig": "dragEnterEvent(self, event)",
-              "start_line": 410,
-              "end_line": 414,
+              "start_line": 474,
+              "end_line": 478,
               "doc": ""
             },
             {
               "name": "dragMoveEvent",
               "sig": "dragMoveEvent(self, event)",
-              "start_line": 416,
-              "end_line": 420,
+              "start_line": 480,
+              "end_line": 484,
               "doc": ""
             },
             {
               "name": "dropEvent",
               "sig": "dropEvent(self, event)",
-              "start_line": 422,
-              "end_line": 432,
+              "start_line": 486,
+              "end_line": 496,
               "doc": ""
             },
             {
               "name": "apply_theme_style",
               "sig": "apply_theme_style(self, mode)",
-              "start_line": 434,
-              "end_line": 437,
+              "start_line": 498,
+              "end_line": 501,
               "doc": ""
             },
             {
               "name": "set_font_scale",
               "sig": "set_font_scale(self, scale)",
-              "start_line": 439,
-              "end_line": 449,
+              "start_line": 503,
+              "end_line": 513,
               "doc": "Set transcript font scale without affecting the rest of the UI."
             },
             {
               "name": "set_editing_mode",
               "sig": "set_editing_mode(self, enabled)",
-              "start_line": 451,
-              "end_line": 467,
+              "start_line": 515,
+              "end_line": 531,
               "doc": ""
             },
             {
               "name": "mousePressEvent",
               "sig": "mousePressEvent(self, event)",
-              "start_line": 469,
-              "end_line": 509,
+              "start_line": 533,
+              "end_line": 573,
               "doc": ""
             },
             {
               "name": "mouseMoveEvent",
               "sig": "mouseMoveEvent(self, event)",
-              "start_line": 511,
-              "end_line": 559,
+              "start_line": 575,
+              "end_line": 623,
               "doc": ""
             },
             {
               "name": "leaveEvent",
               "sig": "leaveEvent(self, event)",
-              "start_line": 561,
-              "end_line": 565,
+              "start_line": 625,
+              "end_line": 629,
               "doc": ""
             },
             {
               "name": "mouseReleaseEvent",
               "sig": "mouseReleaseEvent(self, event)",
-              "start_line": 567,
-              "end_line": 653,
+              "start_line": 631,
+              "end_line": 717,
               "doc": ""
             },
             {
               "name": "keyPressEvent",
               "sig": "keyPressEvent(self, event)",
-              "start_line": 655,
-              "end_line": 887,
+              "start_line": 719,
+              "end_line": 954,
               "doc": ""
             }
           ]
@@ -16219,7 +16233,7 @@
     "transcript_story.py": {
       "path": "transcript_story.py",
       "lines": 852,
-      "summary": "Radio & TV Segmenter v3.9.87-beta \u2014 transcript story responsibilities.",
+      "summary": "Radio & TV Segmenter v3.9.88-beta \u2014 transcript story responsibilities.",
       "exports": [
         "TranscriptStoryMixin",
         "Story",
@@ -17097,7 +17111,7 @@
     },
     "ui_menus.py": {
       "path": "ui_menus.py",
-      "lines": 820,
+      "lines": 847,
       "summary": "Main application menu bar and action assembly for Radio & TV Story Segmenter.",
       "exports": null,
       "classes": [
@@ -17130,64 +17144,71 @@
           "name": "UiMenusMixin",
           "bases": [],
           "start_line": 78,
-          "end_line": 819,
+          "end_line": 846,
           "doc": "Mixin providing menu construction, action shortcut wiring, and menu synchronization.",
           "methods": [
             {
               "name": "build_menus",
               "sig": "build_menus(self)",
               "start_line": 80,
-              "end_line": 663,
+              "end_line": 668,
               "doc": "Construct the main application menu bar and associated keyboard shortcuts."
             },
             {
               "name": "apply_user_shortcuts",
               "sig": "apply_user_shortcuts(self)",
-              "start_line": 665,
-              "end_line": 670,
+              "start_line": 670,
+              "end_line": 675,
               "doc": "Rebind all menu actions and application shortcuts according to user preferences."
             },
             {
               "name": "_refresh_recent_projects_menu",
               "sig": "_refresh_recent_projects_menu(self)",
-              "start_line": 672,
-              "end_line": 700,
+              "start_line": 677,
+              "end_line": 705,
               "doc": "Update recent projects submenu items based on user settings store."
             },
             {
               "name": "_check_external_dependencies",
               "sig": "_check_external_dependencies(self)",
-              "start_line": 702,
-              "end_line": 716,
+              "start_line": 707,
+              "end_line": 721,
               "doc": "Check bundled media tools and record actionable diagnostics."
             },
             {
               "name": "_sync_undo_redo_actions",
               "sig": "_sync_undo_redo_actions(self)",
-              "start_line": 718,
-              "end_line": 727,
+              "start_line": 723,
+              "end_line": 732,
               "doc": "Synchronize undo/redo action states with QUndoStack."
             },
             {
               "name": "_remember_directory",
               "sig": "_remember_directory(self, path)",
-              "start_line": 729,
-              "end_line": 739,
+              "start_line": 734,
+              "end_line": 744,
               "doc": "Persist directory of chosen file to improve user file dialog experience."
             },
             {
               "name": "update_processing_menu_status",
               "sig": "update_processing_menu_status(self)",
-              "start_line": 742,
-              "end_line": 765,
+              "start_line": 747,
+              "end_line": 770,
               "doc": "Update label annotations on Tools actions reflecting pipeline stage completion."
             },
             {
               "name": "refresh_plugin_menus",
               "sig": "refresh_plugin_menus(self)",
-              "start_line": 768,
-              "end_line": 819,
+              "start_line": 773,
+              "end_line": 824,
               "doc": "Dynamically populate plugin export actions, tools menu actions, and core UI controls."
+            },
+            {
+              "name": "trigger_smart_copy",
+              "sig": "trigger_smart_copy(self)",
+              "start_line": 826,
+              "end_line": 846,
+              "doc": "Smart copy routing: active text cursor selection -> focused widget -> highlighted story transcript."
             }
           ]
         }

@@ -493,6 +493,11 @@ class DiagnosticEngine(
                 "Core Logic & File I/O",
                 "Validates documentation directory resolution, embedded guide fallbacks, and installer packaging invariants",
             ),
+            DiagnosticItem(
+                "Story Transcript Highlighting and Smart Copy",
+                "Transcript & Speaker Management",
+                "Validates story selection synchronization with transcript highlight overlay, span interval accuracy, and smart clipboard copy",
+            ),
         ]
 
     def run_all(self, stop_requested_fn: Optional[Callable[[], bool]] = None) -> List[DiagnosticItem]:
@@ -754,4 +759,7 @@ def main():
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    code = main()
+    sys.stdout.flush()
+    sys.stderr.flush()
+    os._exit(code)
