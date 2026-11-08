@@ -253,8 +253,7 @@ class DiagnosticEditorTestsMixin:
         from PySide6.QtGui import QTextCursor
         test_browser = ResponsiveTextBrowser()
         test_browser.resize(320, 480)
-        test_browser.show()
-        QApplication.processEvents()
+        # Avoid calling show() or processEvents() in worker threads to prevent Qt GUI deadlock
         badges_img = docs_dir / "images" / "wordpress_posts_list_badges.png"
         if badges_img.exists():
             test_browser.setMarkdown(f"![Badges]({badges_img.as_uri()})")
