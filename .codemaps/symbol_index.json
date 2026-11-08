@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-08 15:22:14",
+  "generated_at": "2026-11-08 15:35:19",
   "total_files": 162,
   "files": {
     "RadioTVSegmenter.py": {
       "path": "RadioTVSegmenter.py",
       "lines": 663,
-      "summary": "Radio & TV Segmenter \u2014 v3.9.92-beta",
+      "summary": "Radio & TV Segmenter \u2014 v3.9.93-beta",
       "exports": null,
       "classes": [
         {
@@ -2085,7 +2085,7 @@
     },
     "diagnostic_dialog.py": {
       "path": "diagnostic_dialog.py",
-      "lines": 288,
+      "lines": 324,
       "summary": "PySide6 Graphical Test Bench Dialog for Radio & TV Story Segmenter.",
       "exports": null,
       "classes": [],
@@ -2094,14 +2094,14 @@
           "name": "create_diagnostic_dialog",
           "sig": "create_diagnostic_dialog(parent, include_dev_tests)",
           "start_line": 16,
-          "end_line": 288,
+          "end_line": 324,
           "doc": "Builds the Diagnostic Test Bench Qt Dialog."
         }
       ]
     },
     "diagnostic_editor_tests.py": {
       "path": "diagnostic_editor_tests.py",
-      "lines": 458,
+      "lines": 464,
       "summary": "Diagnostic editor and find-replace tests for Radio & TV Story Segmenter.",
       "exports": null,
       "classes": [
@@ -2109,7 +2109,7 @@
           "name": "DiagnosticEditorTestsMixin",
           "bases": [],
           "start_line": 11,
-          "end_line": 457,
+          "end_line": 463,
           "doc": "Diagnostic suite for transcript editor, find-replace, and speaker synchronization.",
           "methods": [
             {
@@ -2130,7 +2130,7 @@
               "name": "_test_story_transcript_highlighting_and_smart_copy",
               "sig": "_test_story_transcript_highlighting_and_smart_copy(self, item)",
               "start_line": 278,
-              "end_line": 457,
+              "end_line": 463,
               "doc": "Validates story selection synchronization with transcript highlight overlay and smart clipboard copying."
             }
           ]
@@ -15714,7 +15714,7 @@
     },
     "transcript_editor.py": {
       "path": "transcript_editor.py",
-      "lines": 973,
+      "lines": 978,
       "summary": "transcript_editor.py - Interactive Transcript Editor & Viewer Components",
       "exports": [
         "FindReplaceDialog",
@@ -15733,7 +15733,7 @@
             "QTextEdit"
           ],
           "start_line": 117,
-          "end_line": 973,
+          "end_line": 978,
           "doc": "",
           "methods": [
             {
@@ -15796,105 +15796,105 @@
               "name": "copy_highlighted_selection",
               "sig": "copy_highlighted_selection(self)",
               "start_line": 287,
-              "end_line": 348,
+              "end_line": 353,
               "doc": "Copy the active story or timeline selection span to clipboard when no cursor text is selected."
             },
             {
               "name": "wheelEvent",
               "sig": "wheelEvent(self, event)",
-              "start_line": 350,
-              "end_line": 356,
+              "start_line": 355,
+              "end_line": 361,
               "doc": ""
             },
             {
               "name": "event",
               "sig": "event(self, e)",
-              "start_line": 358,
-              "end_line": 407,
+              "start_line": 363,
+              "end_line": 412,
               "doc": ""
             },
             {
               "name": "paintEvent",
               "sig": "paintEvent(self, event)",
-              "start_line": 409,
-              "end_line": 472,
+              "start_line": 414,
+              "end_line": 477,
               "doc": ""
             },
             {
               "name": "dragEnterEvent",
               "sig": "dragEnterEvent(self, event)",
-              "start_line": 474,
-              "end_line": 478,
+              "start_line": 479,
+              "end_line": 483,
               "doc": ""
             },
             {
               "name": "dragMoveEvent",
               "sig": "dragMoveEvent(self, event)",
-              "start_line": 480,
-              "end_line": 484,
+              "start_line": 485,
+              "end_line": 489,
               "doc": ""
             },
             {
               "name": "dropEvent",
               "sig": "dropEvent(self, event)",
-              "start_line": 486,
-              "end_line": 496,
+              "start_line": 491,
+              "end_line": 501,
               "doc": ""
             },
             {
               "name": "apply_theme_style",
               "sig": "apply_theme_style(self, mode)",
-              "start_line": 498,
-              "end_line": 501,
+              "start_line": 503,
+              "end_line": 506,
               "doc": ""
             },
             {
               "name": "set_font_scale",
               "sig": "set_font_scale(self, scale)",
-              "start_line": 503,
-              "end_line": 513,
+              "start_line": 508,
+              "end_line": 518,
               "doc": "Set transcript font scale without affecting the rest of the UI."
             },
             {
               "name": "set_editing_mode",
               "sig": "set_editing_mode(self, enabled)",
-              "start_line": 515,
-              "end_line": 531,
+              "start_line": 520,
+              "end_line": 536,
               "doc": ""
             },
             {
               "name": "mousePressEvent",
               "sig": "mousePressEvent(self, event)",
-              "start_line": 533,
-              "end_line": 573,
+              "start_line": 538,
+              "end_line": 578,
               "doc": ""
             },
             {
               "name": "mouseMoveEvent",
               "sig": "mouseMoveEvent(self, event)",
-              "start_line": 575,
-              "end_line": 623,
+              "start_line": 580,
+              "end_line": 628,
               "doc": ""
             },
             {
               "name": "leaveEvent",
               "sig": "leaveEvent(self, event)",
-              "start_line": 625,
-              "end_line": 629,
+              "start_line": 630,
+              "end_line": 634,
               "doc": ""
             },
             {
               "name": "mouseReleaseEvent",
               "sig": "mouseReleaseEvent(self, event)",
-              "start_line": 631,
-              "end_line": 717,
+              "start_line": 636,
+              "end_line": 722,
               "doc": ""
             },
             {
               "name": "keyPressEvent",
               "sig": "keyPressEvent(self, event)",
-              "start_line": 719,
-              "end_line": 973,
+              "start_line": 724,
+              "end_line": 978,
               "doc": ""
             }
           ]
@@ -16442,7 +16442,7 @@
     "transcript_story.py": {
       "path": "transcript_story.py",
       "lines": 852,
-      "summary": "Radio & TV Segmenter v3.9.92-beta \u2014 transcript story responsibilities.",
+      "summary": "Radio & TV Segmenter v3.9.93-beta \u2014 transcript story responsibilities.",
       "exports": [
         "TranscriptStoryMixin",
         "Story",

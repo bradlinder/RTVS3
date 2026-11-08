@@ -322,14 +322,19 @@ class InteractiveTranscriptEdit(
         if theme in ("dark", "high_contrast") and html_text:
             html_text = clean_dark_mode_clipboard_html(html_text)
 
-        mime_data = QMimeData()
-        mime_data.setText(plain_text)
-        if html_text:
-            mime_data.setHtml(html_text)
+        self._last_copied_text = plain_text
+        self._last_copied_html = html_text
 
-        clipboard = QApplication.clipboard()
-        if clipboard:
-            clipboard.setMimeData(mime_data)
+        app = QApplication.instance()
+        from PySide6.QtCore import QThread
+        if app is not None and QThread.currentThread() == app.thread():
+            mime_data = QMimeData()
+            mime_data.setText(plain_text)
+            if html_text:
+                mime_data.setHtml(html_text)
+            clipboard = QApplication.clipboard()
+            if clipboard:
+                clipboard.setMimeData(mime_data)
 
         main_win = self.window()
         if hasattr(main_win, "statusBar") and main_win.statusBar():

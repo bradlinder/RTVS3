@@ -187,7 +187,7 @@ class DiagnosticCloudAndSystemTestsMixin:
                 self.stories = []
                 self.project_dirty = True
                 from PySide6.QtWidgets import QListWidget
-                self.activity_list = QListWidget()
+                self.activity_list = type("_MockList", (), {"_items": [], "addItem": lambda s, t: s._items.append(str(t)), "count": lambda s: len(s._items), "takeItem": lambda s, i: s._items.pop(i) if 0 <= i < len(s._items) else None, "scrollToBottom": lambda s: None})()
                 self.settings_store = None
             def update_window_title(self):
                 pass

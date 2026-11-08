@@ -1550,7 +1550,15 @@ TABLE OF CONTENTS & STATUS OVERVIEW
 
 
 
-6. Current Release: Windows OLE Clipboard & Background Thread Diagnostic Safety (diagnostic_editor_tests.py) [x] [COMPLETED in v3.9.92-beta]
+6. Current Release: In-App Diagnostic Test Bench GUI Thread Affinity & Clipboard Teardown Fix (diagnostic_dialog.py, transcript_editor.py, diagnostic_editor_tests.py, diagnostic_cloud_and_system_tests.py) [x] [COMPLETED in v3.9.93-beta]
+
+   [x] 6.1 Main-Thread Dispatch for GUI Widget & Clipboard Diagnostics: Routed DiagnosticEditorTestsMixin tests from TestRunnerWorker to the main GUI thread via BlockingQueuedConnection, eliminating cross-thread QWidget/QBasicTimer::stop errors and post-run GC crashes.
+
+   [x] 6.2 Main-Thread Guard for OS Clipboard Writes: Guarded clipboard.setMimeData(mime_data) in InteractiveTranscriptEdit.copy_highlighted_selection() with QThread.currentThread() == app.thread() to eliminate Windows OleSetClipboard 0x800401f0 errors.
+
+   [x] 6.3 Headless Activity Probe & Safe QThread Teardown: Replaced QListWidget in EmptyProjectProbe with a headless mock list and tied on_diagnostics_finished to worker_thread.finished.
+
+7. Previous Release: Windows OLE Clipboard & Background Thread Diagnostic Safety (diagnostic_editor_tests.py) [x] [COMPLETED in v3.9.92-beta]
 
    [x] 6.1 Windows OLE Clipboard Safety: Prevented secondary worker thread clipboard read assertions (OleSetClipboard COM error 0x800401f0) from crashing in-app DiagnosticDialog.
 

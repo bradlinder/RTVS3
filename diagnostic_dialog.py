@@ -24,26 +24,42 @@ def create_diagnostic_dialog(parent=None, include_dev_tests: Optional[bool] = No
     from PySide6.QtGui import QColor, QFont, QIcon
 
     from test_runner import DiagnosticEngine, DiagnosticItem, generate_diagnostic_report
+    from diagnostic_editor_tests import DiagnosticEditorTestsMixin
 
     class TestRunnerWorker(QObject):
         item_updated = Signal(object)
+        dispatch_on_main_thread = Signal(object)
         finished = Signal()
 
         def __init__(self, engine: DiagnosticEngine):
             super().__init__()
             self.engine = engine
             self._is_stopped = False
+            self._orig_dispatch_test = self.engine._dispatch_test
 
         def stop(self):
             self._is_stopped = True
 
+        def _thread_safe_dispatch(self, item: DiagnosticItem):
+            clean_name = self.engine._normalize_name(item.name)
+            method_name = f"_test_{clean_name}"
+            if hasattr(DiagnosticEditorTestsMixin, method_name):
+                item._main_thread_exc = None
+                self.dispatch_on_main_thread.emit(item)
+                if getattr(item, "_main_thread_exc", None) is not None:
+                    raise item._main_thread_exc
+            else:
+                self._orig_dispatch_test(item)
+
         def run(self):
             try:
                 self.engine.on_update = lambda it: self.item_updated.emit(it)
+                self.engine._dispatch_test = self._thread_safe_dispatch
                 self.engine.run_all(stop_requested_fn=lambda: self._is_stopped)
             except Exception:
                 pass
             finally:
+                self.engine._dispatch_test = self._orig_dispatch_test
                 self.finished.emit()
 
     class DiagnosticDialog(QDialog):
@@ -172,12 +188,25 @@ def create_diagnostic_dialog(parent=None, include_dev_tests: Optional[bool] = No
 
             self.worker_thread.started.connect(self.worker.run)
             self.worker.item_updated.connect(self.on_item_updated)
-            self.worker.finished.connect(self.on_diagnostics_finished)
+            self.worker.dispatch_on_main_thread.connect(
+                self._execute_item_on_main_thread,
+                Qt.ConnectionType.BlockingQueuedConnection,
+            )
             self.worker.finished.connect(self.worker_thread.quit)
             self.worker.finished.connect(self.worker.deleteLater)
+            self.worker_thread.finished.connect(self.on_diagnostics_finished)
             self.worker_thread.finished.connect(self.worker_thread.deleteLater)
 
             self.worker_thread.start()
+
+        def _execute_item_on_main_thread(self, item: DiagnosticItem):
+            try:
+                if self.worker is not None:
+                    self.worker._orig_dispatch_test(item)
+                else:
+                    self.engine._dispatch_test(item)
+            except Exception as exc:
+                item._main_thread_exc = exc
 
         def stop_diagnostics(self):
             if self.worker is not None:
@@ -261,7 +290,7 @@ def create_diagnostic_dialog(parent=None, include_dev_tests: Optional[bool] = No
                         f"Could not write diagnostic report to file:\n{exc}"
                     )
 
-        def closeEvent(self, event):
+        def _cleanup_worker_thread(self):
             try:
                 if self.worker_thread is not None:
                     is_running = False
@@ -277,12 +306,19 @@ def create_diagnostic_dialog(parent=None, include_dev_tests: Optional[bool] = No
                             except RuntimeError:
                                 pass
                         self.worker_thread.quit()
-                        self.worker_thread.wait(1000)
+                        self.worker_thread.wait(2000)
             except Exception:
                 pass
             finally:
                 self.worker = None
                 self.worker_thread = None
-                event.accept()
+
+        def done(self, result):
+            self._cleanup_worker_thread()
+            super().done(result)
+
+        def closeEvent(self, event):
+            self._cleanup_worker_thread()
+            event.accept()
 
     return DiagnosticDialog(parent, include_dev_tests=include_dev_tests)

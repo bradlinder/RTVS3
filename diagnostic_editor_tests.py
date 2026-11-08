@@ -343,8 +343,11 @@ class DiagnosticEditorTestsMixin:
         # 2. Smart Copy copies Story 1 transcript text
         copied0 = win.transcript_view.copy_highlighted_selection()
         assert copied0 is True, "Expected copy_highlighted_selection to return True"
-        import threading
-        if threading.current_thread() is threading.main_thread():
+        assert "Hello world from story 1" in getattr(win.transcript_view, "_last_copied_text", ""), (
+            f"Expected Story 1 in _last_copied_text, got: {getattr(win.transcript_view, '_last_copied_text', '')!r}"
+        )
+        from PySide6.QtCore import QThread
+        if app is not None and QThread.currentThread() == app.thread():
             clip0 = QGuiApplication.clipboard().text()
             assert "Hello world from story 1" in clip0, f"Expected Story 1 in clipboard, got: {clip0!r}"
 
@@ -355,7 +358,10 @@ class DiagnosticEditorTestsMixin:
 
         copied1 = win.transcript_view.copy_highlighted_selection()
         assert copied1 is True
-        if threading.current_thread() is threading.main_thread():
+        assert "This is story 2" in getattr(win.transcript_view, "_last_copied_text", ""), (
+            f"Expected Story 2 in _last_copied_text, got: {getattr(win.transcript_view, '_last_copied_text', '')!r}"
+        )
+        if app is not None and QThread.currentThread() == app.thread():
             clip1 = QGuiApplication.clipboard().text()
             assert "This is story 2" in clip1, f"Expected Story 2 in clipboard, got: {clip1!r}"
 
