@@ -129,19 +129,44 @@ class TranscriptContextMenuMixin:
 
             menu.addSeparator()
         elif getattr(self, "timeline_selection_span", None) is not None:
-            copy_span_action = QAction("Copy Story / Highlighted Text", self)
-            copy_span_action.setShortcut(QKeySequence.StandardKey.Copy)
-            copy_span_action.triggered.connect(lambda: getattr(self, "copy_highlighted_selection", lambda: False)())
-            menu.addAction(copy_span_action)
+            sel_indices = getattr(main_win, "current_selected_story_indices", []) or []
+            active_story_idx = sel_indices[0] if len(sel_indices) == 1 else None
 
-            clear_span_action = QAction("Clear Selection", self)
-            clear_span_action.setShortcut(QKeySequence("Esc"))
-            clear_span_action.triggered.connect(lambda: (
-                getattr(main_win, "apply_story_selection_indices", lambda x: None)([])
-                if getattr(main_win, "current_selected_story_indices", None)
-                else self.clear_all_selections()
-            ))
-            menu.addAction(clear_span_action)
+            if active_story_idx is not None:
+                if hasattr(main_win, "audition_story"):
+                    audition_span_act = QAction("Audition Story Playback", self)
+                    audition_span_act.triggered.connect(lambda _, idx=active_story_idx: main_win.audition_story(idx))
+                    menu.addAction(audition_span_act)
+
+                copy_span_action = QAction("Copy Story Transcript", self)
+                copy_span_action.setShortcut(QKeySequence.StandardKey.Copy)
+                copy_span_action.triggered.connect(lambda: getattr(self, "copy_highlighted_selection", lambda: False)())
+                menu.addAction(copy_span_action)
+
+                if hasattr(main_win, "open_story_metadata_dialog"):
+                    meta_span_act = QAction("Story & Post Metadata...", self)
+                    meta_span_act.triggered.connect(lambda _, idx=active_story_idx: main_win.open_story_metadata_dialog(idx))
+                    menu.addAction(meta_span_act)
+
+                clear_span_action = QAction("Clear Selection", self)
+                clear_span_action.setShortcut(QKeySequence("Esc"))
+                clear_span_action.triggered.connect(lambda: getattr(main_win, "apply_story_selection_indices", lambda x: None)([]))
+                menu.addAction(clear_span_action)
+            else:
+                copy_span_action = QAction("Copy Highlighted Text", self)
+                copy_span_action.setShortcut(QKeySequence.StandardKey.Copy)
+                copy_span_action.triggered.connect(lambda: getattr(self, "copy_highlighted_selection", lambda: False)())
+                menu.addAction(copy_span_action)
+
+                clear_span_action = QAction("Clear Selection", self)
+                clear_span_action.setShortcut(QKeySequence("Esc"))
+                clear_span_action.triggered.connect(lambda: (
+                    getattr(main_win, "apply_story_selection_indices", lambda x: None)([])
+                    if getattr(main_win, "current_selected_story_indices", None)
+                    else self.clear_all_selections()
+                ))
+                menu.addAction(clear_span_action)
+
             menu.addSeparator()
 
         if speaker_target:
@@ -269,15 +294,15 @@ class TranscriptContextMenuMixin:
         ]
 
         if not getattr(self, "is_editing_mode", False):
-            add_vocab = QAction("Add Selected Text to Glossary", menu)
-            add_vocab.setEnabled(self.has_active_selection())
-            def _add_vocab_from_selection():
-                ranges = self.get_all_selected_story_ranges()
-                txt = ranges[0]["text"] if ranges else self.textCursor().selectedText()
-                if hasattr(main_win, "add_to_glossary"):
-                    main_win.add_to_glossary(txt)
-            add_vocab.triggered.connect(_add_vocab_from_selection)
-            menu.addAction(add_vocab)
+            if self.has_active_selection():
+                add_vocab = QAction("Add Selected Text to Glossary", menu)
+                def _add_vocab_from_selection():
+                    ranges = self.get_all_selected_story_ranges()
+                    txt = ranges[0]["text"] if ranges else self.textCursor().selectedText()
+                    if hasattr(main_win, "add_to_glossary"):
+                        main_win.add_to_glossary(txt)
+                add_vocab.triggered.connect(_add_vocab_from_selection)
+                menu.addAction(add_vocab)
 
             edit_comment_act = QAction(f"{comment_title}\tCtrl+M", menu)
             edit_comment_act.triggered.connect(
@@ -326,13 +351,10 @@ class TranscriptContextMenuMixin:
                     lbl_text += " (Current)"
                 act = hl_menu.addAction(lbl_text)
                 act.triggered.connect(lambda _, c=hex_code: self.toggle_highlight(c, force_apply=True))
-            hl_menu.addSeparator()
-            act_rem_hl = hl_menu.addAction("Remove Highlight")
-            act_rem_hl.triggered.connect(self.remove_highlight)
-
-            toggle_comments_act = QAction("Toggle Comments Sidebar\tCtrl+Alt+C", menu)
-            toggle_comments_act.triggered.connect(lambda: getattr(main_win, "toggle_comments_panel", lambda: None)())
-            menu.addAction(toggle_comments_act)
+            if active_hl_hex:
+                hl_menu.addSeparator()
+                act_rem_hl = hl_menu.addAction("Remove Highlight")
+                act_rem_hl.triggered.connect(self.remove_highlight)
 
             menu.addSeparator()
             edit_action = QAction("Edit Transcript\tF2", menu)
@@ -383,9 +405,10 @@ class TranscriptContextMenuMixin:
                     lbl_text += " (Current)"
                 act = hl_menu.addAction(lbl_text)
                 act.triggered.connect(lambda _, c=hex_code: self.toggle_highlight(c, force_apply=True))
-            hl_menu.addSeparator()
-            act_rem_hl = hl_menu.addAction("Remove Highlight")
-            act_rem_hl.triggered.connect(self.remove_highlight)
+            if active_hl_hex:
+                hl_menu.addSeparator()
+                act_rem_hl = hl_menu.addAction("Remove Highlight")
+                act_rem_hl.triggered.connect(self.remove_highlight)
 
             act_clear = fmt_menu.addAction("Clear Formatting\tCtrl+\\")
             act_clear.triggered.connect(self.clear_formatting)
@@ -408,14 +431,6 @@ class TranscriptContextMenuMixin:
                     lambda _, s=target_seg: getattr(main_win, "delete_segment_comment", lambda x: None)(s)
                 )
                 menu.addAction(del_comment_act)
-
-            rem_hl_act = QAction("Remove Highlight", menu)
-            rem_hl_act.triggered.connect(self.remove_highlight)
-            menu.addAction(rem_hl_act)
-
-            toggle_comments_act = QAction("Toggle Comments Sidebar\tCtrl+Alt+C", menu)
-            toggle_comments_act.triggered.connect(lambda: getattr(main_win, "toggle_comments_panel", lambda: None)())
-            menu.addAction(toggle_comments_act)
 
             menu.addSeparator()
             find_action = QAction("Find and Replace...\tCtrl+F", menu)

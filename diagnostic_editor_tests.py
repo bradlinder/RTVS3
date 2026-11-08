@@ -370,6 +370,38 @@ class DiagnosticEditorTestsMixin:
         assert isinstance(opts, dict) and "transcript" in opts and "stories" in opts
         purge_dialog.close()
 
+        # 6. Verify Timeline context menu building and auto-selection parity
+        class MockCanvas:
+            def __init__(self, stories):
+                self.stories = stories
+                self.duration = 30.0
+                self.selected_story_indices = []
+                self.selection_start = 5.0
+                self.selection_end = 15.0
+            def width(self): return 1000
+            def x_to_time(self, x, w): return (x / w) * self.duration
+            def find_story_at_time(self, t):
+                for idx, s in enumerate(self.stories):
+                    if s.start <= t <= s.end:
+                        return idx
+                return None
+            def window(self): return win
+
+        mock_canvas = MockCanvas(win.stories)
+        win.audition_story = lambda idx: None
+        win.open_story_fades_dialog = lambda story_index=None: None
+        win.open_story_metadata_dialog = lambda idx: None
+        win.export_selected_stories = lambda: None
+        win.delete_selected_story = lambda: None
+
+        win.apply_story_selection_indices([], seek=False)
+        assert win.current_selected_story_indices == []
+        s_idx = mock_canvas.find_story_at_time(mock_canvas.x_to_time(100, 1000))
+        assert s_idx == 0
+
+        win.apply_story_selection_indices([0], seek=False)
+        assert win.transcript_view.timeline_selection_span == (0, 25)
+
         item.status = "PASS"
-        item.message = "Story transcript highlight synchronization, smart copy, deselect routing, and purge dialog verified"
+        item.message = "Story transcript highlight synchronization, smart copy, deselect routing, purge dialog, and context menu parity verified"
 

@@ -47,3 +47,6 @@ class UiMenusMixin:
 
     def trigger_smart_copy(self):
         ...
+
+    def trigger_deselect_all(self):
+        ...
