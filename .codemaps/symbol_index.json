@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-08 15:42:45",
+  "generated_at": "2026-11-08 15:46:33",
   "total_files": 162,
   "files": {
     "RadioTVSegmenter.py": {
       "path": "RadioTVSegmenter.py",
       "lines": 663,
-      "summary": "Radio & TV Segmenter \u2014 v3.9.94-beta",
+      "summary": "Radio & TV Segmenter \u2014 v3.9.88-beta",
       "exports": null,
       "classes": [
         {
@@ -16442,7 +16442,7 @@
     "transcript_story.py": {
       "path": "transcript_story.py",
       "lines": 852,
-      "summary": "Radio & TV Segmenter v3.9.94-beta \u2014 transcript story responsibilities.",
+      "summary": "Radio & TV Segmenter v3.9.88-beta \u2014 transcript story responsibilities.",
       "exports": [
         "TranscriptStoryMixin",
         "Story",
