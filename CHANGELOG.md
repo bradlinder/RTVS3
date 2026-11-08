@@ -1,5 +1,10 @@
 # Changelog
 
+## v3.9.94-beta
+- **Diagnostic Test Bench Name Polish & Artifact Cleanup (test_runner.py)**:
+  - **Replaced Mockup/Historical Test Names**: Renamed Option C Muted Silver Fog Light Theme and Dark Mode Clipboard Formatting to UI Theme Palettes and Clipboard Rich Text Formatting and Story Transcript Highlighting and Smart Copy to Story Highlighting, Smart Copy & Glossary Engine to reflect current capabilities.
+  - **Backward-Compatible Dispatch Aliasing**: Added alias mapping in DiagnosticEngine._dispatch_test so existing CLI filters and test runner invocations continue functioning seamlessly.
+
 ## v3.9.93-beta
 - **In-App Diagnostic Test Bench GUI Thread Affinity & Clipboard Teardown Fix (`diagnostic_dialog.py`, `transcript_editor.py`, `diagnostic_editor_tests.py`, `diagnostic_cloud_and_system_tests.py`)**:
   - **Main-Thread Dispatch for GUI Widget & Clipboard Diagnostics (`diagnostic_dialog.py`)**: Routed `DiagnosticEditorTestsMixin` test items from `TestRunnerWorker` to the main Qt GUI thread via a `Qt.ConnectionType.BlockingQueuedConnection` slot (`_execute_item_on_main_thread`). Eliminates all cross-thread `QWidget` instantiations, `QBasicTimer::stop: Failed. Possibly trying to stop from a different thread` errors, and post-run garbage collection crashes when running diagnostics inside `DiagnosticDialog`.

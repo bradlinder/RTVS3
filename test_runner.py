@@ -429,7 +429,7 @@ class DiagnosticEngine(
                 "Validates unified state serialization (preferences, shortcuts, glossary, plugins), SHA-256 cryptographic verification, and local archive roundtrip integrity",
             ),
             DiagnosticItem(
-                "Option C Muted Silver Fog Light Theme and Dark Mode Clipboard Formatting",
+                "UI Theme Palettes and Clipboard Rich Text Formatting",
                 "Core Logic & File I/O",
                 "Validates Option C muted low-contrast silver/fog palette and dark-mode clipboard rich styling (black plain text, blue speaker labels, highlight backgrounds and text)",
             ),
@@ -494,7 +494,7 @@ class DiagnosticEngine(
                 "Validates documentation directory resolution, embedded guide fallbacks, and installer packaging invariants",
             ),
             DiagnosticItem(
-                "Story Transcript Highlighting and Smart Copy",
+                "Story Highlighting, Smart Copy & Glossary Engine",
                 "Transcript & Speaker Management",
                 "Validates story selection synchronization with transcript highlight overlay, span interval accuracy, and smart clipboard copy",
             ),
@@ -541,7 +541,12 @@ class DiagnosticEngine(
     def _dispatch_test(self, item: DiagnosticItem):
         clean_name = self._normalize_name(item.name)
         method_name = f"_test_{clean_name}"
-        handler = getattr(self, method_name, None)
+        aliases = {
+            '_test_ui_theme_palettes_and_clipboard_rich_text_formatting': '_test_option_c_muted_silver_fog_light_theme_and_dark_mode_clipboard_formatting',
+            '_test_story_highlighting_smart_copy_and_glossary_engine': '_test_story_transcript_highlighting_and_smart_copy',
+        }
+        target_name = aliases.get(method_name, method_name)
+        handler = getattr(self, target_name, None)
         if handler:
             handler(item)
         else:

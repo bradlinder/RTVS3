@@ -1550,7 +1550,7 @@ TABLE OF CONTENTS & STATUS OVERVIEW
 
 
 
-6. Current Release: In-App Diagnostic Test Bench GUI Thread Affinity & Clipboard Teardown Fix (diagnostic_dialog.py, transcript_editor.py, diagnostic_editor_tests.py, diagnostic_cloud_and_system_tests.py) [x] [COMPLETED in v3.9.93-beta]
+6. Current Release: In-App Diagnostic Test Bench GUI Thread Affinity & Clipboard Teardown Fix (diagnostic_dialog.py, transcript_editor.py, diagnostic_editor_tests.py, diagnostic_cloud_and_system_tests.py) [x] [COMPLETED in v3.9.94-beta]
 
    [x] 6.1 Main-Thread Dispatch for GUI Widget & Clipboard Diagnostics: Routed DiagnosticEditorTestsMixin tests from TestRunnerWorker to the main GUI thread via BlockingQueuedConnection, eliminating cross-thread QWidget/QBasicTimer::stop errors and post-run GC crashes.
 
