@@ -95,13 +95,14 @@ TABLE OF CONTENTS & STATUS OVERVIEW
    [ ] 5.4 Burned-in Subtitles & Platform Safe Zone Enforcement (`plugins/social_reel/reel_subtitles.py`)
    [ ] 5.5 Unified Export Integration & Social Reel Diagnostic Tests (`export/dialog.py`, `test_runner.py`)
 
-6. Current Release: Story Selection Transcript Highlighting & Smart Copy Routing (processing.py, story_crud_mixin.py, transcript_editor.py, story_widgets.py, ui_menus.py, diagnostic_editor_tests.py) [x] [COMPLETED in v3.9.88-beta]
+6. Current Release: Story Selection Transcript Highlighting, Timeline Context Actions & Purge Dialog Fix (processing.py, story_crud_mixin.py, transcript_editor.py, story_widgets.py, timeline_context_menus.py, project_data_purge_dialog.py, diagnostic_editor_tests.py) [x] [COMPLETED in v3.9.88-beta]
    [x] 6.1 Story Selection Transcript Highlighting: Synchronized story selection from sidebar, timeline clicks, and playback audition with theme-aware transcript overlay.
    [x] 6.2 Acoustic Interval Overlap Math: Refined start/end boundary matching in handle_timeline_selection_range_changed to prevent adjacent story word bleed.
-   [x] 6.3 Non-Destructive Smart Copy Routing: Added hierarchical Ctrl+C copying (cursor selection -> highlighted story span -> focused widget) with dark-mode black text normalization.
-   [x] 6.4 Context Menu & Sidebar Key Discovery: Added Copy Story Transcript (Ctrl+C) to story list right-click menu and sidebar keyboard handlers.
-   [x] 6.5 REAPER Companion Roadmap Synchronization: Updated Section 4 specifications with unified multi-channel clipboard and automated Take Name / Item Notes mapping.
-   [x] 6.6 Automated Test Bench: Added _test_story_transcript_highlighting_and_smart_copy to diagnostic test runner.
+   [x] 6.3 Timeline Context Actions: Added Copy Story Transcript (Ctrl+C) and Clear Story Selection (Esc) to timeline canvas right-click menus.
+   [x] 6.4 Universal Deselect & Zero-Clutter Esc Routing: Pressing Esc or choosing Clear Selection in Story, Timeline, Transcript, or Edit menu clears active selections without toolbar clutter.
+   [x] 6.5 Project Data Purge Dialog NameError Fix: Added missing QGroupBox import to project_data_purge_dialog.py resolving runtime crash on Edit > Clear / Purge Project Data...
+   [x] 6.6 REAPER Companion Roadmap Synchronization: Updated Section 4 specifications with unified multi-channel clipboard and automated Take Name / Item Notes mapping.
+   [x] 6.7 Automated Test Bench: Expanded diagnostic suite verifying story selection synchronization, smart copy, deselect routing, and purge dialog instantiation.
 
 7. Previous Release: Seriously Simple Podcasting (Castos) Rich Player Auto-Injection (plugins/wordpress/client.py, plugins/wordpress/castos.py, diagnostic_export_tests.py) [x] [COMPLETED in v3.9.87-beta]
    [x] 7.1 Castos V2 Rich Player Auto-Injection: Resolved issue where podcast posts displayed a simple HTML5 audio player rather than the rich Castos V2 widget.
@@ -153,14 +154,16 @@ DETAILED MILESTONE SPECIFICATIONS
 - Target Release: v4.3.0 (Optional / Planned)
 - Technical References: Subsystem architecture, plugin manifest, and FFmpeg filtergraph pipeline specifications are detailed in `ARCHITECTURE.md` (Section 6).
 
-6. CURRENT RELEASE: STORY SELECTION TRANSCRIPT HIGHLIGHTING & SMART COPY ROUTING:
-- Purpose: Highlight selected stories in the transcript view upon selection (sidebar, timeline click, or audition) and provide smart, non-destructive Ctrl+C copying of story transcripts.
+6. CURRENT RELEASE: STORY SELECTION TRANSCRIPT HIGHLIGHTING, TIMELINE CONTEXT ACTIONS & PURGE DIALOG FIX:
+- Purpose: Highlight selected stories in the transcript view upon selection, provide smart Ctrl+C copying from timeline and story list, enable zero-clutter Esc deselect routing, and fix Project Data Purge dialog NameError crash.
 - Target Release: v3.9.88-beta (Current Release)
 - Technical References & Implementation Details:
   * [x] Selected Story Transcript Highlighting: Synchronized apply_story_selection_indices in processing.py with handle_timeline_selection_range_changed in story_crud_mixin.py to highlight story character spans with non-destructive ExtraSelection overlays.
   * [x] Acoustic Interval Boundary Overlap Math: Refined timestamp mapping in story_crud_mixin.py using true mathematical interval overlap (w_end > s and w_start < e), ensuring adjacent stories never bleed bounding words.
+  * [x] Timeline Context Actions: Added Copy Story Transcript (Ctrl+C) and Clear Story Selection (Esc) to timeline right-click menus in timeline_context_menus.py.
+  * [x] Universal Deselect Routing: Wired Escape (Esc) key and Clear Selection context actions across Timeline, Story List, Transcript, and Edit > Deselect All without screen clutter.
   * [x] Non-Destructive Smart Copy Routing: Added copy_highlighted_selection in transcript_editor.py, trigger_smart_copy in ui_menus.py, and StoryListWidget keyPressEvent routing Ctrl+C to copy highlighted story text when no manual cursor selection is active.
-  * [x] Dark-Mode Black Text Normalization: Formats clipboard HTML using clean_dark_mode_clipboard_html so pasted story transcripts render with clean black text in external document editors.
+  * [x] Project Data Purge Dialog NameError Fix: Added missing QGroupBox import to project_data_purge_dialog.py, resolving NameError crash when opening Edit > Clear / Purge Project Data...
   * [x] REAPER Companion Roadmap Synchronization: Updated Section 4 specifications with unified multi-channel clipboard and automated Take Name / Item Notes mapping.
   * [x] Automated Diagnostic Suite: Added _test_story_transcript_highlighting_and_smart_copy to diagnostic_editor_tests.py and registered in test_runner.py.
   * Release Logs: Documented in CHANGELOG.md under ## v3.9.88-beta.

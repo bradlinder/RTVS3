@@ -1,16 +1,15 @@
 # Changelog
 
 ## v3.9.88-beta
-- **Story Selection Transcript Highlighting & Smart Copy Routing (`processing.py`, `story_crud_mixin.py`, `transcript_editor.py`, `story_widgets.py`, `transcript_context_menu_mixin.py`, `ui_menus.py`, `diagnostic_editor_tests.py`, `roadmap.txt`)**:
+- **Story Selection Transcript Highlighting, Timeline Context Actions, Universal Deselect & Purge Dialog Fix (`processing.py`, `story_crud_mixin.py`, `transcript_editor.py`, `story_widgets.py`, `timeline_context_menus.py`, `timeline_widgets.py`, `transcript_context_menu_mixin.py`, `ui_menus.py`, `project_data_purge_dialog.py`, `diagnostic_editor_tests.py`, `roadmap.txt`)**:
   - **Selected Story Transcript Highlighting (`processing.py`, `story_crud_mixin.py`)**: Selecting a story in the sidebar story list, clicking a story region on the timeline canvas, or auditioning playback now automatically synchronizes and non-destructively highlights the story's text span in the interactive transcript view via theme-aware `timeline_selection_span` overlay.
   - **Acoustic Interval Boundary Accuracy (`story_crud_mixin.py`)**: Refined timestamp mapping in `handle_timeline_selection_range_changed` using true mathematical interval overlap (`w_end > s` and `w_start < e`), preventing abutting words at the exact boundary of adjacent stories from bleeding into neighboring selections.
-  - **Non-Destructive Smart Copy Routing (`transcript_editor.py`, `ui_menus.py`, `story_widgets.py`)**: Pressing `Ctrl+C` (or Edit -> Copy) now uses a predictable hierarchical resolution:
-    1. If the user has manually selected text with the cursor, it copies the manual selection.
-    2. If no cursor text is selected, but a Story or Timeline range is highlighted, it automatically extracts and copies the highlighted story's transcript text.
-    3. Normalizes rich HTML with dark-mode black text conversion for seamless pasting into Google Docs, Word, or email.
-  - **Story List & Context Menu Discovery (`story_widgets.py`, `transcript_context_menu_mixin.py`)**: Added "Copy Story Transcript (Ctrl+C)" to the story list right-click context menu and enabled `Ctrl+C` directly when the story sidebar has keyboard focus.
+  - **Timeline Story Context Actions (`timeline_context_menus.py`, `timeline_widgets.py`)**: Added "Copy Story Transcript (Ctrl+C)" directly to the timeline story right-click context menu, and enabled "Clear Story Selection (Esc)" when stories are active.
+  - **Universal Deselect & Zero-Clutter Selection Clearing (`timeline_widgets.py`, `story_widgets.py`, `transcript_editor.py`, `ui_menus.py`)**: Pressing `Esc` (or selecting `Clear Selection` / `Edit > Deselect All`) instantly deselects active stories, clears timeline ranges, and removes the transcript highlight overlay across all views with zero button clutter.
+  - **Non-Destructive Smart Copy Routing (`transcript_editor.py`, `ui_menus.py`, `story_widgets.py`)**: Pressing `Ctrl+C` (or Edit -> Copy) uses a predictable hierarchical resolution: copies manual cursor selection if active; otherwise copies the highlighted story transcript text; normalizes dark-mode HTML to black text for clean pasting into Word, Docs, or email.
+  - **Project Data Purge Dialog NameError Fix (`project_data_purge_dialog.py`)**: Added missing `QGroupBox` import to `PySide6.QtWidgets` imports in `project_data_purge_dialog.py`, resolving a runtime `NameError` crash when opening Edit > Clear / Purge Project Data...
   - **REAPER DAW Companion Roadmap Update (`roadmap.txt`)**: Updated Milestone 4 specifications with the unified multi-channel clipboard engine, automatically mapping copied story transcripts to REAPER Take Names (Story Title or quote preview), Item Notes (full verbatim transcript), and speaker take markers.
-  - **Automated Diagnostic Suite (`diagnostic_editor_tests.py`, `test_runner.py`)**: Added `_test_story_transcript_highlighting_and_smart_copy` verifying story selection synchronization, interval boundary accuracy, and smart clipboard copying.
+  - **Automated Diagnostic Suite (`diagnostic_editor_tests.py`, `test_runner.py`)**: Expanded `_test_story_transcript_highlighting_and_smart_copy` verifying story selection synchronization, interval boundary accuracy, smart clipboard copying, and purge dialog initialization.
 
 ## v3.9.87-beta
 - **Seriously Simple Podcasting (Castos) Rich Player Auto-Injection (plugins/wordpress/client.py, plugins/wordpress/castos.py, diagnostic_export_tests.py, plugins/wordpress/manifest.json)**:

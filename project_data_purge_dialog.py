@@ -7,6 +7,7 @@ from PySide6.QtWidgets import (
     QDialog,
     QDialogButtonBox,
     QFrame,
+    QGroupBox,
     QHBoxLayout,
     QLabel,
     QPushButton,
@@ -46,9 +47,9 @@ class ProjectDataPurgeDialog(QDialog):
 
         # Warning banner
         warning_box = QLabel(
-            "⚠️ Los datos seleccionados se eliminarán de la memoria de la sesión actual."
+            "Los datos seleccionados se eliminarán de la memoria de la sesión actual."
             if self.is_es else
-            "⚠️ Selected data components will be cleared from the active session memory."
+            "Selected data components will be cleared from the active session memory."
         )
         warning_box.setWordWrap(True)
         warning_box.setStyleSheet(

@@ -20,13 +20,23 @@ def show_timeline_context_menu(canvas: Any, global_pos: QPoint, pos_x: float):
     term = ("Canción" if is_es else "Song") if is_music else ("Historia" if is_es else "Story")
 
     select_action = None
+    copy_action = None
     fades_action = None
     delete_action = None
+    clear_action = None
+
+    has_selected_stories = bool(getattr(canvas, "selected_story_indices", None) or getattr(win, "current_selected_story_indices", None))
+
     if story_idx is not None and 0 <= story_idx < len(canvas.stories):
         select_action = menu.addAction(f"{('Seleccionar' if is_es else 'Select')} {term} #{story_idx + 1}")
+        copy_action = menu.addAction(f"{('Copiar transcripción' if is_es else 'Copy Story Transcript')} (Ctrl+C)")
         if hasattr(win, "open_story_fades_dialog"):
             fades_action = menu.addAction("Ajustar fundidos de audio..." if is_es else "Set Audio Fades...")
         delete_action = menu.addAction(f"{('Eliminar' if is_es else 'Delete')} {term} #{story_idx + 1}")
+        menu.addSeparator()
+
+    if has_selected_stories:
+        clear_action = menu.addAction("Deseleccionar historia (Esc)" if is_es else "Clear Story Selection (Esc)")
         menu.addSeparator()
 
     has_audio = bool(getattr(win, "audio_file", None))
@@ -51,6 +61,11 @@ def show_timeline_context_menu(canvas: Any, global_pos: QPoint, pos_x: float):
     if story_idx is not None and 0 <= story_idx < len(canvas.stories):
         if select_action and selected == select_action:
             canvas.storyClicked.emit(story_idx)
+        elif copy_action and selected == copy_action:
+            if hasattr(win, "apply_story_selection_indices"):
+                win.apply_story_selection_indices([story_idx], seek=False)
+            if hasattr(win, "transcript_view") and hasattr(win.transcript_view, "copy_highlighted_selection"):
+                win.transcript_view.copy_highlighted_selection()
         elif fades_action and selected == fades_action:
             if hasattr(win, "open_story_fades_dialog"):
                 win.open_story_fades_dialog(story_index=story_idx)
@@ -58,6 +73,9 @@ def show_timeline_context_menu(canvas: Any, global_pos: QPoint, pos_x: float):
             if hasattr(win, "apply_story_selection_indices") and hasattr(win, "delete_selected_story"):
                 win.apply_story_selection_indices([story_idx], seek=False)
                 win.delete_selected_story()
+    if clear_action and selected == clear_action:
+        if hasattr(win, "apply_story_selection_indices"):
+            win.apply_story_selection_indices([])
     if regen_wf_act and selected == regen_wf_act:
         win.regenerate_waveform()
     elif regen_th_act and selected == regen_th_act:

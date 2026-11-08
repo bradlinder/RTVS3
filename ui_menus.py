@@ -205,6 +205,11 @@ class UiMenusMixin:
         self.copy_action.triggered.connect(lambda: getattr(self, "trigger_smart_copy", lambda: None)())
         edit_menu.addAction(self.copy_action)
 
+        self.deselect_action = QAction("&Deselect All", self)
+        self.deselect_action.setShortcut(QKeySequence("Esc"))
+        self.deselect_action.triggered.connect(lambda: getattr(self, "trigger_deselect_all", lambda: None)())
+        edit_menu.addAction(self.deselect_action)
+
         edit_menu.addSeparator()
 
         add_comment_act = QAction("Add / Edit &Comment...", self)
@@ -844,4 +849,17 @@ class UiMenusMixin:
             elif hasattr(self.transcript_view, 'copy_highlighted_selection'):
                 if self.transcript_view.copy_highlighted_selection():
                     return
+
+    def trigger_deselect_all(self):
+        """Clear all active selections across stories, timeline range, and transcript."""
+        if hasattr(self, "apply_story_selection_indices"):
+            self.apply_story_selection_indices([])
+        if hasattr(self, "timeline") and self.timeline:
+            self.timeline.selection_start = None
+            self.timeline.selection_end = None
+            if hasattr(self.timeline, "selectionRangeChanged"):
+                self.timeline.selectionRangeChanged.emit(None, None)
+            self.timeline.update()
+        if hasattr(self, "transcript_view") and self.transcript_view:
+            self.transcript_view.clear_all_selections()
 

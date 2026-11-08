@@ -362,6 +362,14 @@ class DiagnosticEditorTestsMixin:
         span_none = win.transcript_view.timeline_selection_span
         assert span_none is None, f"Expected None for cleared span, got {span_none}"
 
+        # 5. Verify ProjectDataPurgeDialog instantiates cleanly without QGroupBox NameError
+        from project_data_purge_dialog import ProjectDataPurgeDialog
+        purge_dialog = ProjectDataPurgeDialog(None)
+        assert purge_dialog.windowTitle() == "Clear / Purge Project Data"
+        opts = purge_dialog.get_purge_options()
+        assert isinstance(opts, dict) and "transcript" in opts and "stories" in opts
+        purge_dialog.close()
+
         item.status = "PASS"
-        item.message = "Story transcript highlight synchronization, span interval accuracy, and smart copy verified"
+        item.message = "Story transcript highlight synchronization, smart copy, deselect routing, and purge dialog verified"
 

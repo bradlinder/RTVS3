@@ -729,6 +729,25 @@ class InteractiveTranscriptEdit(
             elif self.copy_highlighted_selection():
                 event.accept()
                 return
+
+        if event.key() == Qt.Key.Key_Escape:
+            main_win = self.window()
+            cleared = False
+            if self.textCursor().hasSelection():
+                cursor = self.textCursor()
+                cursor.clearSelection()
+                self.setTextCursor(cursor)
+                cleared = True
+            if getattr(self, "timeline_selection_span", None) is not None:
+                self.timeline_selection_span = None
+                self.update_extra_selections()
+                cleared = True
+            if hasattr(main_win, "apply_story_selection_indices") and getattr(main_win, "current_selected_story_indices", None):
+                main_win.apply_story_selection_indices([])
+                cleared = True
+            if cleared:
+                event.accept()
+                return
         # The application owns undo/redo for project edits.  Do this before
         # QTextEdit's native undo stack so Ctrl+Z / Ctrl+Shift+Z is consistent
         # with speaker-label, story and other project-state operations.

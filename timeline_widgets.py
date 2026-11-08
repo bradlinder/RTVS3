@@ -788,6 +788,22 @@ class TimelineCanvas(QWidget):
                 event.accept()
                 return
 
+        if event.key() == Qt.Key.Key_Escape:
+            main_win = self.window()
+            cleared = False
+            if self.selection_start is not None or self.selection_end is not None:
+                self.selection_start = None
+                self.selection_end = None
+                self.selectionRangeChanged.emit(None, None)
+                self.update()
+                cleared = True
+            if hasattr(main_win, "apply_story_selection_indices") and getattr(main_win, "current_selected_story_indices", None):
+                main_win.apply_story_selection_indices([])
+                cleared = True
+            if cleared:
+                event.accept()
+                return
+
         if event.key() in (Qt.Key.Key_Plus, Qt.Key.Key_Equal):
             self.set_zoom(self.zoom_level * 1.2)
             event.accept()

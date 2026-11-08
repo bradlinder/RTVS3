@@ -460,6 +460,17 @@ class StoryListWidget(QListWidget):
         if event.key() in (Qt.Key.Key_Delete, Qt.Key.Key_Backspace):
             self.deleteRequested.emit()
             event.accept()
+        elif event.key() == Qt.Key.Key_Escape:
+            parent = self.parent()
+            while parent and not hasattr(parent, "apply_story_selection_indices"):
+                parent = parent.parent()
+            if parent and hasattr(parent, "apply_story_selection_indices"):
+                parent.apply_story_selection_indices([])
+                event.accept()
+                return
+            self.clearSelection()
+            event.accept()
+            return
         elif event.matches(QKeySequence.StandardKey.Copy) or (
             event.modifiers() & (Qt.KeyboardModifier.ControlModifier | Qt.KeyboardModifier.MetaModifier)
             and event.key() == Qt.Key.Key_C
@@ -495,6 +506,10 @@ class StoryListWidget(QListWidget):
         copy_act = QAction("Copy Story Transcript (Ctrl+C)", self)
         copy_act.triggered.connect(lambda: parent.transcript_view.copy_highlighted_selection() if hasattr(parent, "transcript_view") else None)
         menu.addAction(copy_act)
+
+        clear_act = QAction("Clear Selection (Esc)", self)
+        clear_act.triggered.connect(lambda: parent.apply_story_selection_indices([]) if hasattr(parent, "apply_story_selection_indices") else self.clearSelection())
+        menu.addAction(clear_act)
 
         menu.addSeparator()
 

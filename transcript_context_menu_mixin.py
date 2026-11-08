@@ -133,6 +133,15 @@ class TranscriptContextMenuMixin:
             copy_span_action.setShortcut(QKeySequence.StandardKey.Copy)
             copy_span_action.triggered.connect(lambda: getattr(self, "copy_highlighted_selection", lambda: False)())
             menu.addAction(copy_span_action)
+
+            clear_span_action = QAction("Clear Selection", self)
+            clear_span_action.setShortcut(QKeySequence("Esc"))
+            clear_span_action.triggered.connect(lambda: (
+                getattr(main_win, "apply_story_selection_indices", lambda x: None)([])
+                if getattr(main_win, "current_selected_story_indices", None)
+                else self.clear_all_selections()
+            ))
+            menu.addAction(clear_span_action)
             menu.addSeparator()
 
         if speaker_target:
