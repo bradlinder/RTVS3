@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-08 13:36:26",
-  "total_files": 161,
+  "generated_at": "2026-11-08 15:10:34",
+  "total_files": 162,
   "files": {
     "RadioTVSegmenter.py": {
       "path": "RadioTVSegmenter.py",
       "lines": 663,
-      "summary": "Radio & TV Segmenter \u2014 v3.9.89-beta",
+      "summary": "Radio & TV Segmenter \u2014 v3.9.90-beta",
       "exports": null,
       "classes": [
         {
@@ -2101,7 +2101,7 @@
     },
     "diagnostic_editor_tests.py": {
       "path": "diagnostic_editor_tests.py",
-      "lines": 407,
+      "lines": 456,
       "summary": "Diagnostic editor and find-replace tests for Radio & TV Story Segmenter.",
       "exports": null,
       "classes": [
@@ -2109,7 +2109,7 @@
           "name": "DiagnosticEditorTestsMixin",
           "bases": [],
           "start_line": 11,
-          "end_line": 406,
+          "end_line": 455,
           "doc": "Diagnostic suite for transcript editor, find-replace, and speaker synchronization.",
           "methods": [
             {
@@ -2130,7 +2130,7 @@
               "name": "_test_story_transcript_highlighting_and_smart_copy",
               "sig": "_test_story_transcript_highlighting_and_smart_copy(self, item)",
               "start_line": 279,
-              "end_line": 406,
+              "end_line": 455,
               "doc": "Validates story selection synchronization with transcript highlight overlay and smart clipboard copying."
             }
           ]
@@ -3744,6 +3744,124 @@
       ],
       "functions": []
     },
+    "glossary_dialog.py": {
+      "path": "glossary_dialog.py",
+      "lines": 484,
+      "summary": "Custom Vocabulary & Glossary Dialog.",
+      "exports": null,
+      "classes": [
+        {
+          "name": "GlossaryDialog",
+          "bases": [
+            "QDialog"
+          ],
+          "start_line": 46,
+          "end_line": 484,
+          "doc": "Dialog for editing persistent terminology, proper nouns, and alternate spellings.",
+          "methods": [
+            {
+              "name": "__init__",
+              "sig": "__init__(self, parent)",
+              "start_line": 49,
+              "end_line": 54,
+              "doc": ""
+            },
+            {
+              "name": "_init_ui",
+              "sig": "_init_ui(self)",
+              "start_line": 56,
+              "end_line": 186,
+              "doc": ""
+            },
+            {
+              "name": "_populate_table",
+              "sig": "_populate_table(self, entries)",
+              "start_line": 188,
+              "end_line": 194,
+              "doc": ""
+            },
+            {
+              "name": "_insert_entry_row",
+              "sig": "_insert_entry_row(self, entry, row_idx)",
+              "start_line": 196,
+              "end_line": 218,
+              "doc": ""
+            },
+            {
+              "name": "add_row",
+              "sig": "add_row(self, source_val, preferred_val, dnt_val, mc_val)",
+              "start_line": 220,
+              "end_line": 231,
+              "doc": ""
+            },
+            {
+              "name": "remove_rows",
+              "sig": "remove_rows(self)",
+              "start_line": 233,
+              "end_line": 240,
+              "doc": ""
+            },
+            {
+              "name": "_apply_filter",
+              "sig": "_apply_filter(self, query)",
+              "start_line": 242,
+              "end_line": 253,
+              "doc": ""
+            },
+            {
+              "name": "_on_sort_changed",
+              "sig": "_on_sort_changed(self, index)",
+              "start_line": 255,
+              "end_line": 259,
+              "doc": ""
+            },
+            {
+              "name": "_show_context_menu",
+              "sig": "_show_context_menu(self, pos)",
+              "start_line": 261,
+              "end_line": 320,
+              "doc": ""
+            },
+            {
+              "name": "get_current_table_entries",
+              "sig": "get_current_table_entries(self)",
+              "start_line": 322,
+              "end_line": 354,
+              "doc": "Collect all table rows including hidden ones without data loss."
+            },
+            {
+              "name": "_apply_to_current_transcript",
+              "sig": "_apply_to_current_transcript(self)",
+              "start_line": 356,
+              "end_line": 375,
+              "doc": ""
+            },
+            {
+              "name": "save_glossary",
+              "sig": "save_glossary(self)",
+              "start_line": 377,
+              "end_line": 391,
+              "doc": ""
+            },
+            {
+              "name": "export_glossary_file",
+              "sig": "export_glossary_file(self)",
+              "start_line": 393,
+              "end_line": 429,
+              "doc": ""
+            },
+            {
+              "name": "import_glossary_file",
+              "sig": "import_glossary_file(self)",
+              "start_line": 431,
+              "end_line": 484,
+              "doc": ""
+            }
+          ]
+        }
+      ],
+      "functions": []
+    },
     "gpu_acceleration.py": {
       "path": "gpu_acceleration.py",
       "lines": 276,
@@ -4007,7 +4125,7 @@
     },
     "media_batch.py": {
       "path": "media_batch.py",
-      "lines": 1861,
+      "lines": 1709,
       "summary": "Radio & TV Segmenter v1.1.1 \u2014 media batch responsibilities.",
       "exports": null,
       "classes": [
@@ -4015,7 +4133,7 @@
           "name": "MediaBatchMixin",
           "bases": [],
           "start_line": 21,
-          "end_line": 1861,
+          "end_line": 1709,
           "doc": "",
           "methods": [
             {
@@ -4253,140 +4371,154 @@
               "name": "open_glossary_dialog",
               "sig": "open_glossary_dialog(self)",
               "start_line": 996,
-              "end_line": 1234,
+              "end_line": 1000,
               "doc": "Edit persistent terminology used by every ASR and translation backend."
             },
             {
               "name": "_save_glossary",
               "sig": "_save_glossary(self)",
-              "start_line": 1236,
-              "end_line": 1237,
+              "start_line": 1002,
+              "end_line": 1003,
               "doc": ""
+            },
+            {
+              "name": "apply_glossary_to_current_transcript",
+              "sig": "apply_glossary_to_current_transcript(self, entries)",
+              "start_line": 1005,
+              "end_line": 1037,
+              "doc": "Apply glossary rules and contextual name resolution to the active transcript with Undo support."
             },
             {
               "name": "add_to_glossary",
               "sig": "add_to_glossary(self, text)",
-              "start_line": 1239,
-              "end_line": 1250,
+              "start_line": 1039,
+              "end_line": 1053,
               "doc": ""
+            },
+            {
+              "name": "prompt_add_alternate_spelling",
+              "sig": "prompt_add_alternate_spelling(self, alternate_text)",
+              "start_line": 1055,
+              "end_line": 1098,
+              "doc": "Prompt user for the preferred glossary spelling that `alternate_text` should map to."
             },
             {
               "name": "apply_glossary_to_whisper_context",
               "sig": "apply_glossary_to_whisper_context(self)",
-              "start_line": 1252,
-              "end_line": 1263,
+              "start_line": 1100,
+              "end_line": 1111,
               "doc": ""
             },
             {
               "name": "add_custom_speaker_to_glossary",
               "sig": "add_custom_speaker_to_glossary(self, name)",
-              "start_line": 1265,
-              "end_line": 1267,
+              "start_line": 1113,
+              "end_line": 1115,
               "doc": ""
             },
             {
               "name": "set_language",
               "sig": "set_language(self, language, persist)",
-              "start_line": 1269,
-              "end_line": 1290,
+              "start_line": 1117,
+              "end_line": 1138,
               "doc": ""
             },
             {
               "name": "_apply_localization",
               "sig": "_apply_localization(self)",
-              "start_line": 1292,
-              "end_line": 1329,
+              "start_line": 1140,
+              "end_line": 1177,
               "doc": ""
             },
             {
               "name": "update_story_segment_terminology",
               "sig": "update_story_segment_terminology(self)",
-              "start_line": 1331,
-              "end_line": 1435,
+              "start_line": 1179,
+              "end_line": 1283,
               "doc": "Update all user-facing labels and tooltips to use 'Song' in Music mode and 'Story' in Voice mode."
             },
             {
               "name": "open_document",
               "sig": "open_document(self)",
-              "start_line": 1437,
-              "end_line": 1491,
+              "start_line": 1285,
+              "end_line": 1339,
               "doc": ""
             },
             {
               "name": "export_text_file",
               "sig": "export_text_file(self)",
-              "start_line": 1493,
-              "end_line": 1501,
+              "start_line": 1341,
+              "end_line": 1349,
               "doc": ""
             },
             {
               "name": "open_media",
               "sig": "open_media(self)",
-              "start_line": 1503,
-              "end_line": 1512,
+              "start_line": 1351,
+              "end_line": 1360,
               "doc": ""
             },
             {
               "name": "prepare_for_new_media",
               "sig": "prepare_for_new_media(self)",
-              "start_line": 1514,
-              "end_line": 1547,
+              "start_line": 1362,
+              "end_line": 1395,
               "doc": "Checks for unsaved changes before loading new media."
             },
             {
               "name": "_batch_media_error",
               "sig": "_batch_media_error(self, message)",
-              "start_line": 1549,
-              "end_line": 1571,
+              "start_line": 1397,
+              "end_line": 1419,
               "doc": ""
             },
             {
               "name": "_get_batch_project_target_path",
               "sig": "_get_batch_project_target_path(self, base_name)",
-              "start_line": 1573,
-              "end_line": 1600,
+              "start_line": 1421,
+              "end_line": 1448,
               "doc": "Determines consistent target .rtvs project file path during batch processing."
             },
             {
               "name": "_batch_save_project_file",
               "sig": "_batch_save_project_file(self)",
-              "start_line": 1602,
-              "end_line": 1617,
+              "start_line": 1450,
+              "end_line": 1465,
               "doc": "Saves project .rtvs to dedicated directory structure during batch processing."
             },
             {
               "name": "_batch_export_current",
               "sig": "_batch_export_current(self)",
-              "start_line": 1619,
-              "end_line": 1703,
+              "start_line": 1467,
+              "end_line": 1551,
               "doc": "Handles automatic export or project saving during batch processing."
             },
             {
               "name": "load_media_file",
               "sig": "load_media_file(self, filename, source, restore_adjacent_project)",
-              "start_line": 1705,
-              "end_line": 1820,
+              "start_line": 1553,
+              "end_line": 1668,
               "doc": ""
             },
             {
               "name": "update_active_media_source",
               "sig": "update_active_media_source(self)",
-              "start_line": 1822,
-              "end_line": 1855,
+              "start_line": 1670,
+              "end_line": 1703,
               "doc": "Update media player source and refresh waveform when normalization state changes."
             },
             {
               "name": "open_audio",
               "sig": "open_audio(self)",
-              "start_line": 1857,
-              "end_line": 1858,
+              "start_line": 1705,
+              "end_line": 1706,
               "doc": ""
             },
             {
               "name": "handle_media_drop",
               "sig": "handle_media_drop(self, filename)",
-              "start_line": 1860,
-              "end_line": 1861,
+              "start_line": 1708,
+              "end_line": 1709,
               "doc": ""
             }
           ]
@@ -14331,86 +14463,163 @@
     },
     "terminology.py": {
       "path": "terminology.py",
-      "lines": 275,
+      "lines": 882,
       "summary": "Model-independent terminology and glossary support.",
       "exports": null,
       "classes": [],
       "functions": [
         {
+          "name": "split_source_variants",
+          "sig": "split_source_variants(source_raw, preferred, match_case)",
+          "start_line": 35,
+          "end_line": 65,
+          "doc": "Split a source field (comma/semicolon separated or list) into unique variants."
+        },
+        {
+          "name": "format_source_variants",
+          "sig": "format_source_variants(variants, match_case)",
+          "start_line": 68,
+          "end_line": 74,
+          "doc": "Format a sequence of source variants into a clean comma-separated string."
+        },
+        {
           "name": "parse_glossary",
           "sig": "parse_glossary(raw)",
-          "start_line": 19,
-          "end_line": 67,
+          "start_line": 77,
+          "end_line": 138,
           "doc": "Return normalized glossary entries while accepting legacy list strings."
+        },
+        {
+          "name": "expand_glossary_rules",
+          "sig": "expand_glossary_rules(glossary)",
+          "start_line": 141,
+          "end_line": 181,
+          "doc": "Expand multi-variant glossary entries into atomic replacement rules (longest source first)."
+        },
+        {
+          "name": "sort_glossary_entries",
+          "sig": "sort_glossary_entries(entries, mode)",
+          "start_line": 184,
+          "end_line": 227,
+          "doc": "Return glossary entries sorted for UI presentation without mutating replacement order."
+        },
+        {
+          "name": "add_alternate_spelling",
+          "sig": "add_alternate_spelling(raw_glossary, preferred_term, alternate_spelling, do_not_translate, match_case)",
+          "start_line": 230,
+          "end_line": 278,
+          "doc": "Add one or more alternate spellings for a preferred glossary term."
         },
         {
           "name": "load_glossary",
           "sig": "load_glossary(settings_store)",
-          "start_line": 70,
-          "end_line": 78,
+          "start_line": 281,
+          "end_line": 289,
           "doc": "Load the shared glossary from the application's QSettings object."
         },
         {
           "name": "_replace_term",
-          "sig": "_replace_term(text, source, preferred)",
-          "start_line": 81,
-          "end_line": 89,
+          "sig": "_replace_term(text, source, preferred, match_case)",
+          "start_line": 292,
+          "end_line": 306,
           "doc": ""
         },
         {
           "name": "normalize_text",
           "sig": "normalize_text(text, glossary)",
-          "start_line": 92,
-          "end_line": 99,
+          "start_line": 309,
+          "end_line": 322,
           "doc": "Canonicalize glossary terms without changing surrounding punctuation."
+        },
+        {
+          "name": "_phonetic_name_skeleton",
+          "sig": "_phonetic_name_skeleton(token)",
+          "start_line": 325,
+          "end_line": 349,
+          "doc": "Compute a normalized phonetic skeleton for English/Latin proper-noun comparison."
+        },
+        {
+          "name": "_name_token_similarity",
+          "sig": "_name_token_similarity(a, b)",
+          "start_line": 352,
+          "end_line": 374,
+          "doc": "Return orthographic + phonetic similarity [0.0, 1.0] between two name tokens."
+        },
+        {
+          "name": "_split_word_affixes",
+          "sig": "_split_word_affixes(raw_word)",
+          "start_line": 377,
+          "end_line": 387,
+          "doc": "Split a timed word token into (leading_punct_and_space, core_word, trailing_punct)."
+        },
+        {
+          "name": "_has_sentence_break",
+          "sig": "_has_sentence_break(trail)",
+          "start_line": 390,
+          "end_line": 392,
+          "doc": "Return True if trailing punctuation marks a clause/sentence boundary."
+        },
+        {
+          "name": "_discover_project_contextual_rules",
+          "sig": "_discover_project_contextual_rules(segments, base_entries, expanded_rules)",
+          "start_line": 395,
+          "end_line": 585,
+          "doc": "Two-pass project-scoped proper-noun discovery and single-word co-reference resolution."
+        },
+        {
+          "name": "_normalize_timed_words",
+          "sig": "_normalize_timed_words(words, rules)",
+          "start_line": 588,
+          "end_line": 658,
+          "doc": "Apply both multi-word and single-word glossary rules across timed word dicts."
         },
         {
           "name": "normalize_transcript",
           "sig": "normalize_transcript(transcript, glossary)",
-          "start_line": 102,
-          "end_line": 144,
+          "start_line": 661,
+          "end_line": 713,
           "doc": "Normalize transcript text and word labels for every ASR backend."
         },
         {
           "name": "translation_rules",
           "sig": "translation_rules(glossary)",
-          "start_line": 147,
-          "end_line": 150,
+          "start_line": 716,
+          "end_line": 719,
           "doc": "Return only entries explicitly marked as protected for translation."
         },
         {
           "name": "replace_term",
-          "sig": "replace_term(text, source, preferred)",
-          "start_line": 153,
-          "end_line": 155,
+          "sig": "replace_term(text, source, preferred, match_case)",
+          "start_line": 722,
+          "end_line": 729,
           "doc": "Public replacement helper for translation workers."
         },
         {
           "name": "split_protected_text",
           "sig": "split_protected_text(text, glossary)",
-          "start_line": 158,
-          "end_line": 192,
+          "start_line": 732,
+          "end_line": 782,
           "doc": "Split text into translatable and protected pieces."
         },
         {
           "name": "export_glossary_to_json",
           "sig": "export_glossary_to_json(glossary)",
-          "start_line": 195,
-          "end_line": 198,
+          "start_line": 785,
+          "end_line": 788,
           "doc": "Serialize glossary entries to formatted JSON string."
         },
         {
           "name": "export_glossary_to_csv",
           "sig": "export_glossary_to_csv(glossary)",
-          "start_line": 201,
-          "end_line": 216,
+          "start_line": 791,
+          "end_line": 807,
           "doc": "Serialize glossary entries to standard CSV string."
         },
         {
           "name": "import_glossary_from_text",
           "sig": "import_glossary_from_text(raw_text)",
-          "start_line": 219,
-          "end_line": 274,
+          "start_line": 810,
+          "end_line": 882,
           "doc": "Parse glossary entries from JSON, CSV, TSV, or plain text lines."
         }
       ]
@@ -15445,7 +15654,7 @@
     },
     "transcript_context_menu_mixin.py": {
       "path": "transcript_context_menu_mixin.py",
-      "lines": 445,
+      "lines": 454,
       "summary": "Radio & TV Story Segmenter \u2014 Interactive Transcript Context Menu & Bubble Actions Mixin.",
       "exports": null,
       "classes": [
@@ -15453,7 +15662,7 @@
           "name": "TranscriptContextMenuMixin",
           "bases": [],
           "start_line": 36,
-          "end_line": 445,
+          "end_line": 454,
           "doc": "Mixin for context menu construction and selection bubble quick-actions.",
           "methods": [
             {
@@ -15495,7 +15704,7 @@
               "name": "show_context_menu",
               "sig": "show_context_menu(self, position)",
               "start_line": 82,
-              "end_line": 445,
+              "end_line": 454,
               "doc": ""
             }
           ]
@@ -16233,7 +16442,7 @@
     "transcript_story.py": {
       "path": "transcript_story.py",
       "lines": 852,
-      "summary": "Radio & TV Segmenter v3.9.89-beta \u2014 transcript story responsibilities.",
+      "summary": "Radio & TV Segmenter v3.9.90-beta \u2014 transcript story responsibilities.",
       "exports": [
         "TranscriptStoryMixin",
         "Story",

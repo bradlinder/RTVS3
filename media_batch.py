@@ -995,259 +995,107 @@ class MediaBatchMixin:
 
     def open_glossary_dialog(self):
         """Edit persistent terminology used by every ASR and translation backend."""
-        is_es = (getattr(self, "language", "en") == "es")
-
-        title = "Vocabulario personalizado / glosario" if is_es else "Custom Vocabulary / Glossary"
-        desc = (
-            "Defina la forma preferida de cada término. Marque 'No traducir' para nombres propios, programas o marcas que deben conservarse exactamente en las traducciones."
-            if is_es else
-            "Define the preferred spelling for each term. Check 'Don't translate' for proper nouns, program names, brands, or other terms that must remain unchanged in translations."
-        )
-        source_text = "Término de origen" if is_es else "Source term"
-        preferred_text = "Ortografía preferida" if is_es else "Preferred spelling"
-        dnt_text = "No traducir" if is_es else "Don't translate"
-        add_text = "Añadir término" if is_es else "Add Term"
-        remove_text = "Eliminar seleccionado" if is_es else "Remove Selected"
-        save_text = "Guardar" if is_es else "Save"
-        cancel_text = "Cancelar" if is_es else "Cancel"
-        example_text = (
-            "Ejemplo: atrévete → Atrévete" if is_es else
-            "Example: atrevete → Atrévete"
-        )
-
-        dialog = QDialog(self)
-        dialog.setWindowTitle(title)
-        dialog.resize(760, 500)
-        layout = QVBoxLayout(dialog)
-
-        help_label = QLabel(desc)
-        help_label.setWordWrap(True)
-        layout.addWidget(help_label)
-        example_label = QLabel(example_text)
-        example_label.setStyleSheet("color: palette(mid); font-style: italic;")
-        layout.addWidget(example_label)
-
-        table = QTableWidget(0, 3)
-        table.setHorizontalHeaderLabels([source_text, preferred_text, dnt_text])
-        table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
-        table.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
-        table.setAlternatingRowColors(True)
-        table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
-        table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
-        table.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
-
-        from terminology import parse_glossary
-        entries = parse_glossary(getattr(self, "glossary", []))
-        for entry in entries:
-            row = table.rowCount()
-            table.insertRow(row)
-            table.setItem(row, 0, QTableWidgetItem(str(entry["source"])))
-            table.setItem(row, 1, QTableWidgetItem(str(entry["preferred"])))
-            check = QTableWidgetItem()
-            check.setFlags(check.flags() | Qt.ItemFlag.ItemIsUserCheckable)
-            check.setCheckState(Qt.CheckState.Checked if entry.get("do_not_translate", True) else Qt.CheckState.Unchecked)
-            table.setItem(row, 2, check)
-        layout.addWidget(table, 1)
-
-        import_text = "Importar..." if is_es else "Import..."
-        export_text = "Exportar..." if is_es else "Export..."
-
-        row_buttons = QHBoxLayout()
-        add = QPushButton(add_text)
-        remove = QPushButton(remove_text)
-        import_btn = QPushButton(import_text)
-        export_btn = QPushButton(export_text)
-        row_buttons.addWidget(add)
-        row_buttons.addWidget(remove)
-        row_buttons.addSpacing(12)
-        row_buttons.addWidget(import_btn)
-        row_buttons.addWidget(export_btn)
-        row_buttons.addStretch()
-        layout.addLayout(row_buttons)
-
-        buttons = QHBoxLayout()
-        buttons.addStretch()
-        cancel = QPushButton(cancel_text)
-        save = QPushButton(save_text)
-        buttons.addWidget(cancel)
-        buttons.addWidget(save)
-        layout.addLayout(buttons)
-
-        def add_row(source_val="", preferred_val="", dnt_val=True):
-            row = table.rowCount()
-            table.insertRow(row)
-            table.setItem(row, 0, QTableWidgetItem(source_val))
-            table.setItem(row, 1, QTableWidgetItem(preferred_val))
-            check = QTableWidgetItem()
-            check.setFlags(check.flags() | Qt.ItemFlag.ItemIsUserCheckable)
-            check.setCheckState(Qt.CheckState.Checked if dnt_val else Qt.CheckState.Unchecked)
-            table.setItem(row, 2, check)
-            table.setCurrentCell(row, 0)
-            if not source_val and not preferred_val:
-                table.editItem(table.item(row, 0))
-
-        def remove_rows():
-            rows = sorted({index.row() for index in table.selectionModel().selectedRows()}, reverse=True)
-            for row in rows:
-                table.removeRow(row)
-
-        def get_current_table_entries():
-            entries_out = []
-            seen = set()
-            for row in range(table.rowCount()):
-                source_item = table.item(row, 0)
-                preferred_item = table.item(row, 1)
-                source = (source_item.text() if source_item else "").strip()
-                preferred = (preferred_item.text() if preferred_item else "").strip()
-                if not source and not preferred:
-                    continue
-                if not source:
-                    source = preferred
-                if not preferred:
-                    preferred = source
-                key = (source.casefold(), preferred.casefold())
-                if key in seen:
-                    continue
-                seen.add(key)
-                check = table.item(row, 2)
-                protected = bool(check and check.checkState() == Qt.CheckState.Checked)
-                entries_out.append({
-                    "source": source,
-                    "preferred": preferred,
-                    "do_not_translate": protected,
-                })
-            return entries_out
-
-        def export_glossary_file():
-            from terminology import export_glossary_to_json, export_glossary_to_csv
-            entries = get_current_table_entries()
-            if not entries:
-                QMessageBox.information(
-                    dialog,
-                    "Export Glossary" if not is_es else "Exportar glosario",
-                    "There are no glossary entries to export." if not is_es else "No hay términos en el glosario para exportar."
-                )
-                return
-            file_path, selected_filter = QFileDialog.getSaveFileName(
-                dialog,
-                "Export Custom Vocabulary / Glossary" if not is_es else "Exportar vocabulario personalizado / glosario",
-                "glossary.json",
-                "JSON Files (*.json);;CSV Files (*.csv);;All Files (*)"
-            )
-            if not file_path:
-                return
-            try:
-                if file_path.lower().endswith(".csv"):
-                    content = export_glossary_to_csv(entries)
-                else:
-                    content = export_glossary_to_json(entries)
-                with open(file_path, "w", encoding="utf-8") as f:
-                    f.write(content)
-                QMessageBox.information(
-                    dialog,
-                    "Export Complete" if not is_es else "Exportación completada",
-                    f"Successfully exported {len(entries)} glossary entries to:\n{file_path}"
-                    if not is_es else
-                    f"Se exportaron con éxito {len(entries)} términos a:\n{file_path}"
-                )
-            except Exception as e:
-                QMessageBox.critical(
-                    dialog,
-                    "Export Error" if not is_es else "Error de exportación",
-                    f"Failed to export glossary:\n{e}"
-                )
-
-        def import_glossary_file():
-            from terminology import import_glossary_from_text
-            file_path, _ = QFileDialog.getOpenFileName(
-                dialog,
-                "Import Custom Vocabulary / Glossary" if not is_es else "Importar vocabulario personalizado / glosario",
-                "",
-                "Glossary Files (*.json *.csv *.tsv *.txt);;All Files (*)"
-            )
-            if not file_path:
-                return
-            try:
-                with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
-                    content = f.read()
-                imported = import_glossary_from_text(content)
-                if not imported:
-                    QMessageBox.warning(
-                        dialog,
-                        "Import Glossary" if not is_es else "Importar glosario",
-                        "No valid glossary entries found in the selected file." if not is_es else "No se encontraron términos válidos en el archivo seleccionado."
-                    )
-                    return
-                # Merge into table
-                existing_keys = set()
-                for r in range(table.rowCount()):
-                    s_item = table.item(r, 0)
-                    p_item = table.item(r, 1)
-                    s_txt = (s_item.text() if s_item else "").strip().casefold()
-                    p_txt = (p_item.text() if p_item else "").strip().casefold()
-                    existing_keys.add((s_txt, p_txt))
-
-                added_count = 0
-                for entry in imported:
-                    s = str(entry.get("source", "")).strip()
-                    p = str(entry.get("preferred", "")).strip()
-                    dnt = bool(entry.get("do_not_translate", True))
-                    if not s and not p:
-                        continue
-                    if not s:
-                        s = p
-                    if not p:
-                        p = s
-                    key = (s.casefold(), p.casefold())
-                    if key not in existing_keys:
-                        existing_keys.add(key)
-                        add_row(s, p, dnt)
-                        added_count += 1
-                QMessageBox.information(
-                    dialog,
-                    "Import Complete" if not is_es else "Importación completada",
-                    f"Imported {added_count} new entries from:\n{file_path}"
-                    if not is_es else
-                    f"Se importaron {added_count} nuevos términos de:\n{file_path}"
-                )
-            except Exception as e:
-                QMessageBox.critical(
-                    dialog,
-                    "Import Error" if not is_es else "Error de importación",
-                    f"Failed to import glossary:\n{e}"
-                )
-
-        def save_glossary():
-            entries_out = get_current_table_entries()
-            self.glossary = entries_out
-            self._save_glossary()
-            self.apply_glossary_to_whisper_context()
-            self.statusBar().showMessage("Glossary saved" if not is_es else "Glosario guardado")
-            dialog.accept()
-
-        add.clicked.connect(lambda: add_row("", "", True))
-        remove.clicked.connect(remove_rows)
-        import_btn.clicked.connect(import_glossary_file)
-        export_btn.clicked.connect(export_glossary_file)
-        save.clicked.connect(save_glossary)
-        cancel.clicked.connect(dialog.reject)
+        from glossary_dialog import GlossaryDialog
+        dialog = GlossaryDialog(self)
         dialog.exec()
 
     def _save_glossary(self):
         self.settings_store.setValue("glossary", json.dumps(self.glossary, ensure_ascii=False))
 
+    def apply_glossary_to_current_transcript(self, entries=None) -> bool:
+        """Apply glossary rules and contextual name resolution to the active transcript with Undo support."""
+        if not getattr(self, "transcript", None) or not isinstance(self.transcript, dict):
+            return False
+        if not self.transcript.get("segments"):
+            return False
+        from terminology import normalize_transcript
+        if hasattr(self, "flush_pending_transcript_undo"):
+            self.flush_pending_transcript_undo()
+        before_state = self._capture_project_state() if hasattr(self, "_capture_project_state") else None
+        active_glossary = entries if entries is not None else getattr(self, "glossary", [])
+        normalized = normalize_transcript(self.transcript, active_glossary)
+        if normalized == self.transcript:
+            return False
+        self.transcript = normalized
+        self.project_dirty = True
+        if before_state is not None and hasattr(self, "_commit_project_state_change"):
+            self._commit_project_state_change(before_state, "Apply Glossary to Transcript")
+        if hasattr(self, "render_transcript"):
+            self.render_transcript()
+        if hasattr(self, "update_window_title"):
+            self.update_window_title()
+        if getattr(self, "project_file", None) and hasattr(self, "save_project"):
+            try:
+                self.save_project()
+            except Exception:
+                pass
+        if hasattr(self, "statusBar") and self.statusBar():
+            is_es = getattr(self, "language", "en") == "es"
+            self.statusBar().showMessage(
+                "Glosario aplicado a la transcripción actual" if is_es else "Applied glossary to current transcript"
+            )
+        return True
+
     def add_to_glossary(self, text):
         text = str(text or "").strip().strip(".,!?;:()[]{}\"'“”‘’")
         if not text:
             return
-        from terminology import parse_glossary
+        from terminology import parse_glossary, expand_glossary_rules
         entries = parse_glossary(self.glossary)
-        if text.casefold() not in {str(x["source"]).casefold() for x in entries}:
-            entries.append({"source": text, "preferred": text, "do_not_translate": True})
-            self.glossary = entries
+        existing_sources = {str(r["source"]).casefold() for r in expand_glossary_rules(entries)}
+        if text.casefold() not in existing_sources:
+            entries.append({"source": text, "preferred": text, "do_not_translate": True, "match_case": False})
+            self.glossary = parse_glossary(entries)
             self._save_glossary()
             self.apply_glossary_to_whisper_context()
-            self.statusBar().showMessage(f"Added to glossary: {text}")
+            self.apply_glossary_to_current_transcript(self.glossary)
+            if hasattr(self, "statusBar") and self.statusBar():
+                self.statusBar().showMessage(f"Added to glossary: {text}")
+
+    def prompt_add_alternate_spelling(self, alternate_text: str):
+        """Prompt user for the preferred glossary spelling that `alternate_text` should map to."""
+        from PySide6.QtWidgets import QInputDialog
+        alt = str(alternate_text or "").strip().strip(".,!?;:()[]{}\"'“”‘’")
+        if not alt:
+            return
+        from terminology import parse_glossary, add_alternate_spelling, sort_glossary_entries
+        is_es = getattr(self, "language", "en") == "es"
+        entries = sort_glossary_entries(parse_glossary(getattr(self, "glossary", [])), mode="preferred_asc")
+        preferred_choices = []
+        seen_pref = set()
+        for entry in entries:
+            p = str(entry.get("preferred", "")).strip()
+            if p and p.casefold() not in seen_pref:
+                seen_pref.add(p.casefold())
+                preferred_choices.append(p)
+
+        title = "Añadir ortografía alternativa" if is_es else "Add Alternate Spelling to Glossary"
+        label = (
+            f"Seleccione o escriba la ortografía preferida para '{alt}':"
+            if is_es else
+            f"Select or type the preferred spelling for '{alt}':"
+        )
+        preferred_term, ok = QInputDialog.getItem(
+            self,
+            title,
+            label,
+            preferred_choices if preferred_choices else [alt],
+            0,
+            True,
+        )
+        if not ok or not str(preferred_term or "").strip():
+            return
+        pref_clean = str(preferred_term).strip()
+        self.glossary = add_alternate_spelling(
+            getattr(self, "glossary", []),
+            preferred_term=pref_clean,
+            alternate_spelling=alt,
+        )
+        self._save_glossary()
+        self.apply_glossary_to_whisper_context()
+        self.apply_glossary_to_current_transcript(self.glossary)
+        if hasattr(self, "statusBar") and self.statusBar():
+            self.statusBar().showMessage(f"Mapped '{alt}' -> '{pref_clean}' in glossary")
 
     def apply_glossary_to_whisper_context(self):
         # Whisper can use the glossary as contextual vocabulary, but this is

@@ -1,0 +1,73 @@
+# terminology.pyi — Typing and Interface Stub for terminology
+from __future__ import annotations
+from __future__ import annotations
+from difflib import SequenceMatcher
+import json
+import re
+from typing import Any, Iterable
+
+def split_source_variants(source_raw: Any, preferred: str=..., match_case: bool=...) -> list[str]:
+    ...
+
+def format_source_variants(variants: Iterable[str], match_case: bool=...) -> str:
+    ...
+
+def parse_glossary(raw: Any) -> list[dict[str, Any]]:
+    ...
+
+def expand_glossary_rules(glossary: Any) -> list[dict[str, Any]]:
+    ...
+
+def sort_glossary_entries(entries: Iterable[dict[str, Any]], mode: str=...) -> list[dict[str, Any]]:
+    ...
+
+def add_alternate_spelling(raw_glossary: Any, preferred_term: str, alternate_spelling: str, do_not_translate: bool=..., match_case: bool=...) -> list[dict[str, Any]]:
+    ...
+
+def load_glossary(settings_store=...) -> list[dict[str, Any]]:
+    ...
+
+def _replace_term(text: str, source: str, preferred: str, match_case: bool=...) -> str:
+    ...
+
+def normalize_text(text: str, glossary: Iterable[dict[str, Any]]) -> str:
+    ...
+
+def _phonetic_name_skeleton(token: str) -> str:
+    ...
+
+def _name_token_similarity(a: str, b: str) -> float:
+    ...
+
+def _split_word_affixes(raw_word: str) -> tuple[str, str, str]:
+    ...
+
+def _has_sentence_break(trail: str) -> bool:
+    ...
+
+def _discover_project_contextual_rules(segments: list[Any], base_entries: list[dict[str, Any]], expanded_rules: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    ...
+
+def _normalize_timed_words(words: list[Any], rules: list[dict[str, Any]]) -> list[Any]:
+    ...
+
+def normalize_transcript(transcript: dict[str, Any], glossary=...) -> dict[str, Any]:
+    ...
+
+def translation_rules(glossary=...) -> list[dict[str, Any]]:
+    ...
+
+def replace_term(text: str, source: str, preferred: str, match_case: bool=...) -> str:
+    ...
+
+def split_protected_text(text: str, glossary=...) -> list[tuple[str, bool]]:
+    ...
+
+def export_glossary_to_json(glossary: list[dict[str, Any]]) -> str:
+    ...
+
+def export_glossary_to_csv(glossary: list[dict[str, Any]]) -> str:
+    ...
+
+def import_glossary_from_text(raw_text: str) -> list[dict[str, Any]]:
+    ...

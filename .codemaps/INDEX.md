@@ -1,13 +1,13 @@
 # Repository Symbol Index & API Map
 
-> Generated: 2026-11-08 13:36:26 | Total Files: 161
+> Generated: 2026-11-08 15:10:34 | Total Files: 162
 > Use `python scripts/generate_symbol_index.py --outline <file>` for exact line numbers.
 
 ## Modules Overview
 
 | Module | Lines | Summary | Primary Classes / Functions |
 | :--- | :---: | :--- | :--- |
-| `RadioTVSegmenter.py` | 663 | Radio & TV Segmenter — v3.9.89-beta | `MainWindow`, `main()` |
+| `RadioTVSegmenter.py` | 663 | Radio & TV Segmenter — v3.9.90-beta | `MainWindow`, `main()` |
 | `audio_normalization.py` | 541 | Radio & TV Story Segmenter — Audio Loudness Probing & Nor... | `LoudnessReport`, `AudioLoudnessProbeWorker`, `parse_ebur128_summary()`, `probe_media_duration_seconds()` *(+3 more)* |
 | `background_workers.py` | 1015 | Radio & TV Story Segmenter — Background Worker Threads & ... | `StoryAutoDetectWorker`, `WaveformWorker`, `VideoThumbnailWorker`, `get_waveform_peak_cache_path()` *(+6 more)* |
 | `backup_manager.py` | 622 | Unified State Serialization, Local, and Google Drive Clou... | `compute_data_checksum()`, `serialize_preferences()`, `serialize_keyboard_shortcuts()`, `serialize_glossary()` *(+7 more)* |
@@ -26,7 +26,7 @@
 | `diagnostic_cloud_and_system_tests.py` | 1313 | Diagnostic test bench suite component. | `DiagnosticCloudAndSystemTestsMixin` |
 | `diagnostic_core_tests.py` | 826 | Diagnostic test bench suite component. | `DiagnosticCoreTestsMixin` |
 | `diagnostic_dialog.py` | 288 | PySide6 Graphical Test Bench Dialog for Radio & TV Story ... | `create_diagnostic_dialog()` |
-| `diagnostic_editor_tests.py` | 407 | Diagnostic editor and find-replace tests for Radio & TV S... | `DiagnosticEditorTestsMixin` |
+| `diagnostic_editor_tests.py` | 456 | Diagnostic editor and find-replace tests for Radio & TV S... | `DiagnosticEditorTestsMixin` |
 | `diagnostic_export_tests.py` | 1899 | Diagnostic test bench suite component. | `DiagnosticExportTestsMixin` |
 | `diagnostic_helpers.py` | 151 | Helper fixtures, module resolvers, and DiagnosticItem for... | `DiagnosticItem`, `generate_synthetic_wav()` |
 | `diagnostic_loudness_tests.py` | 391 | Radio & TV Story Segmenter — Diagnostic Loudness Normaliz... | `DiagnosticLoudnessTestsMixin` |
@@ -47,10 +47,11 @@
 | `export_documents.py` | 776 | Radio & TV Story Segmenter — Document, Transcript & Timel... | `ExportDocumentsMixin` |
 | `export_media_clipper.py` | 337 | Radio & TV Story Segmenter — Media Clipper & Audio Track ... | `ExportMediaClipperMixin` |
 | `export_story_pipeline.py` | 964 | Radio & TV Story Segmenter — Story & Full Episode Export ... | `ExportStoryPipelineMixin` |
+| `glossary_dialog.py` | 484 | Custom Vocabulary & Glossary Dialog. | `GlossaryDialog` |
 | `gpu_acceleration.py` | 276 | Radio & TV Segmenter v1.1.1 — optional GPU acceleration r... | `GpuAccelerationInstallWorker`, `GpuAccelerationMixin` |
 | `id3_editor.py` | 704 | ID3 Tag Editor module for Radio & TV Segmenter. | `ID3TagEditorDialog`, `read_id3_tags()`, `write_id3_tags()` |
 | `installer/pyinstaller/torch_dll_hook.py` | 70 | PyInstaller runtime hook for Windows ML/native DLL resolu... | - |
-| `media_batch.py` | 1861 | Radio & TV Segmenter v1.1.1 — media batch responsibilities. | `MediaBatchMixin` |
+| `media_batch.py` | 1709 | Radio & TV Segmenter v1.1.1 — media batch responsibilities. | `MediaBatchMixin` |
 | `model_install_workers.py` | 189 | Radio & TV Segmenter — Model Download and Installation Ba... | `WhisperModelInstallWorker`, `DiarizationModelInstallWorker`, `get_diarization_model_dir()`, `is_diarization_model_available()` |
 | `model_management.py` | 989 | Radio & TV Segmenter v1.1.1 — model management responsibi... | `_DummyTranslationWorker`, `ModelManagementMixin` |
 | `playback_controller.py` | 630 | Radio & TV Story Segmenter — Media Player Transport & Pla... | `PlaybackControllerMixin` |
@@ -128,7 +129,7 @@
 | `story_model.py` | 262 | Radio & TV Story Segmenter — Story Model, Boundaries & Un... | `Story`, `SetStoriesCommand`, `StoryBoundaryChangeCommand`, `SelectStoriesCommand` *(+3 more)* |
 | `story_widgets.py` | 564 | Radio & TV Story Segmenter — Story Sidebar Widgets, Item ... | `FadeCurveVisualSelector`, `StoryFadesChangeCommand`, `SetStoriesCommand`, `StoryBoundaryChangeCommand` *(+3 more)* |
 | `sync.py` | 161 | 2-Way Synchronization Engine for Radio & TV Story Segmenter. | `get_current_version()`, `run_cmd()`, `cmd_status()`, `cmd_pull()` *(+2 more)* |
-| `terminology.py` | 275 | Model-independent terminology and glossary support. | `parse_glossary()`, `load_glossary()`, `normalize_text()`, `normalize_transcript()` *(+6 more)* |
+| `terminology.py` | 882 | Model-independent terminology and glossary support. | `split_source_variants()`, `format_source_variants()`, `parse_glossary()`, `expand_glossary_rules()` *(+11 more)* |
 | `theme_preferences.py` | 596 | Radio & TV Story Segmenter — Theme Preferences & Styling ... | `ThemePreferencesMixin` |
 | `theme_qss.py` | 330 | Targeted QSS for the Radio & TV Segmenter visual design s... | - |
 | `theme_tokens.py` | 307 | Theme Tokens for Radio & TV Story Segmenter. | `ThemeTokens`, `theme_tokens_for_mode()` |
@@ -139,14 +140,14 @@
 | `timeline_snap.py` | 119 | Timeline snapping algorithms, edge detection, and collisi... | `snap_time()`, `find_edge_at_pos()`, `find_fade_handle_at_pos()`, `find_story_at_time()` *(+1 more)* |
 | `timeline_widgets.py` | 991 | Radio & TV Story Segmenter — Timeline Ruler, Track Views,... | `TimelineCanvas`, `TimelineWidget` |
 | `transcript_cleaner.py` | 216 | Radio & TV Segmenter — Transcript cleaning, loop collapsi... | `collapse_repeating_ngrams()`, `strip_hallucination_phrases()`, `trim_trailing_degenerate_tail()`, `scrub_transcript_segments()` *(+1 more)* |
-| `transcript_context_menu_mixin.py` | 445 | Radio & TV Story Segmenter — Interactive Transcript Conte... | `TranscriptContextMenuMixin` |
+| `transcript_context_menu_mixin.py` | 454 | Radio & TV Story Segmenter — Interactive Transcript Conte... | `TranscriptContextMenuMixin` |
 | `transcript_editor.py` | 973 | transcript_editor.py - Interactive Transcript Editor & Vi... | `InteractiveTranscriptEdit` |
 | `transcript_editor_dialogs.py` | 683 | transcript_editor_dialogs.py - Dialog and floating toolba... | `FindReplaceDialog`, `TranscriptSelectionBubble` |
 | `transcript_formatting_mixin.py` | 340 | Radio & TV Story Segmenter — Interactive Transcript Forma... | `TranscriptFormattingMixin` |
 | `transcript_navigation_mixin.py` | 300 | transcript_navigation_mixin.py - Timestamp discovery, car... | `TranscriptNavigationMixin` |
 | `transcript_playback_highlight_mixin.py` | 277 | Radio & TV Story Segmenter — Interactive Transcript Playb... | `TranscriptPlaybackHighlightMixin` |
 | `transcript_selection_mixin.py` | 473 | transcript_selection_mixin.py - Multi-selection, timeline... | `TranscriptSelectionMixin` |
-| `transcript_story.py` | 852 | Radio & TV Segmenter v3.9.89-beta — transcript story resp... | `TranscriptStoryMixin` |
+| `transcript_story.py` | 852 | Radio & TV Segmenter v3.9.90-beta — transcript story resp... | `TranscriptStoryMixin` |
 | `transcript_styles.py` | 104 | transcript_styles.py - Transcript view stylesheets and da... | `transcript_text_view_stylesheet()`, `clean_dark_mode_clipboard_html()` |
 | `transcript_timeline_sync_mixin.py` | 642 | Radio & TV Story Segmenter — Transcript Timeline & Playba... | `TranscriptTimelineSyncMixin` |
 | `transcription_processing.py` | 579 | Transcription background process management for Radio & T... | `TranscriptionProcessingMixin` |
@@ -172,7 +173,7 @@
 ## Detailed Symbol Catalog
 
 ### `RadioTVSegmenter.py` (663 lines)
-*Radio & TV Segmenter — v3.9.89-beta*
+*Radio & TV Segmenter — v3.9.90-beta*
 - **class `MainWindow(ModelManagementMixin, MediaBatchMixin, PlaybackPreferencesMixin, UiLayoutMixin, ProcessingMixin, TranslationMixin, TranscriptStoryMixin, ProjectExportMixin, GpuAccelerationMixin, QMainWindow)`** (lines 160–560):
   *Main application window for Radio & TV Segmenter.*
   - `__init__(self)` [L178-L355]
@@ -514,13 +515,13 @@
 - **Functions**:
   - `create_diagnostic_dialog(parent, include_dev_tests)` [L16-L288] — *Builds the Diagnostic Test Bench Qt Dialog.*
 
-### `diagnostic_editor_tests.py` (407 lines)
+### `diagnostic_editor_tests.py` (456 lines)
 *Diagnostic editor and find-replace tests for Radio & TV Story Segmenter.*
-- **class `DiagnosticEditorTestsMixin`** (lines 11–406):
+- **class `DiagnosticEditorTestsMixin`** (lines 11–455):
   *Diagnostic suite for transcript editor, find-replace, and speaker synchronization.*
   - `_test_find_and_replace_project_synchronization_and_undo(self, item)` [L14-L202] — *Validates that Find & Replace updates segments, word timings, speaker aliases,*
   - `_test_in_app_user_guides_and_documentation_viewer(self, item)` [L204-L277] — *Validates in-app user guide resolution, fallback to embedded content, and bundling invariants.*
-  - `_test_story_transcript_highlighting_and_smart_copy(self, item)` [L279-L406] — *Validates story selection synchronization with transcript highlight overlay and smart clipboard copying.*
+  - `_test_story_transcript_highlighting_and_smart_copy(self, item)` [L279-L455] — *Validates story selection synchronization with transcript highlight overlay and smart clipboard copying.*
 
 ### `diagnostic_export_tests.py` (1899 lines)
 *Diagnostic test bench suite component.*
@@ -798,6 +799,25 @@
   - `perform_stories_export(self, target_stories, custom_formats, custom_base, custom_options, directory, show_completion, is_custom_location)` [L936-L958]
   - `export_youtube_manual_package(self, export_data)` [L960-L964] — *Render and package zero-auth manual YouTube export (MP4, thumbnail, SRT, metadata .txt).*
 
+### `glossary_dialog.py` (484 lines)
+*Custom Vocabulary & Glossary Dialog.*
+- **class `GlossaryDialog(QDialog)`** (lines 46–484):
+  *Dialog for editing persistent terminology, proper nouns, and alternate spellings.*
+  - `__init__(self, parent)` [L49-L54]
+  - `_init_ui(self)` [L56-L186]
+  - `_populate_table(self, entries)` [L188-L194]
+  - `_insert_entry_row(self, entry, row_idx)` [L196-L218]
+  - `add_row(self, source_val, preferred_val, dnt_val, mc_val)` [L220-L231]
+  - `remove_rows(self)` [L233-L240]
+  - `_apply_filter(self, query)` [L242-L253]
+  - `_on_sort_changed(self, index)` [L255-L259]
+  - `_show_context_menu(self, pos)` [L261-L320]
+  - `get_current_table_entries(self)` [L322-L354] — *Collect all table rows including hidden ones without data loss.*
+  - `_apply_to_current_transcript(self)` [L356-L375]
+  - `save_glossary(self)` [L377-L391]
+  - `export_glossary_file(self)` [L393-L429]
+  - `import_glossary_file(self)` [L431-L484]
+
 ### `gpu_acceleration.py` (276 lines)
 *Radio & TV Segmenter v1.1.1 — optional GPU acceleration responsibilities.*
 - **class `GpuAccelerationInstallWorker(QObject)`** (lines 19–47):
@@ -841,9 +861,9 @@
 ### `installer/pyinstaller/torch_dll_hook.py` (70 lines)
 *PyInstaller runtime hook for Windows ML/native DLL resolution.*
 
-### `media_batch.py` (1861 lines)
+### `media_batch.py` (1709 lines)
 *Radio & TV Segmenter v1.1.1 — media batch responsibilities.*
-- **class `MediaBatchMixin`** (lines 21–1861):
+- **class `MediaBatchMixin`** (lines 21–1709):
   - `probe_media_duration(self, path)` [L22-L36] — *Probe duration locally so video timelines can be populated immediately.*
   - `_track_worker_thread(self, thread)` [L38-L50] — *Keep a strong reference to active worker threads so Python GC never destroys them while executing.*
   - `stop_waveform_worker(self, timeout_ms)` [L52-L83] — *Stop the current waveform worker completely before replacing it or closing.*
@@ -877,26 +897,28 @@
   - `choose_default_project_directory(self)` [L927-L942]
   - `open_document_path(self, path)` [L944-L979]
   - `open_clear_cache_dialog(self)` [L981-L994]
-  - `open_glossary_dialog(self)` [L996-L1234] — *Edit persistent terminology used by every ASR and translation backend.*
-  - `_save_glossary(self)` [L1236-L1237]
-  - `add_to_glossary(self, text)` [L1239-L1250]
-  - `apply_glossary_to_whisper_context(self)` [L1252-L1263]
-  - `add_custom_speaker_to_glossary(self, name)` [L1265-L1267]
-  - `set_language(self, language, persist)` [L1269-L1290]
-  - `_apply_localization(self)` [L1292-L1329]
-  - `update_story_segment_terminology(self)` [L1331-L1435] — *Update all user-facing labels and tooltips to use 'Song' in Music mode and 'Story' in Voice mode.*
-  - `open_document(self)` [L1437-L1491]
-  - `export_text_file(self)` [L1493-L1501]
-  - `open_media(self)` [L1503-L1512]
-  - `prepare_for_new_media(self)` [L1514-L1547] — *Checks for unsaved changes before loading new media.*
-  - `_batch_media_error(self, message)` [L1549-L1571]
-  - `_get_batch_project_target_path(self, base_name)` [L1573-L1600] — *Determines consistent target .rtvs project file path during batch processing.*
-  - `_batch_save_project_file(self)` [L1602-L1617] — *Saves project .rtvs to dedicated directory structure during batch processing.*
-  - `_batch_export_current(self)` [L1619-L1703] — *Handles automatic export or project saving during batch processing.*
-  - `load_media_file(self, filename, source, restore_adjacent_project)` [L1705-L1820]
-  - `update_active_media_source(self)` [L1822-L1855] — *Update media player source and refresh waveform when normalization state changes.*
-  - `open_audio(self)` [L1857-L1858]
-  - `handle_media_drop(self, filename)` [L1860-L1861]
+  - `open_glossary_dialog(self)` [L996-L1000] — *Edit persistent terminology used by every ASR and translation backend.*
+  - `_save_glossary(self)` [L1002-L1003]
+  - `apply_glossary_to_current_transcript(self, entries)` [L1005-L1037] — *Apply glossary rules and contextual name resolution to the active transcript with Undo support.*
+  - `add_to_glossary(self, text)` [L1039-L1053]
+  - `prompt_add_alternate_spelling(self, alternate_text)` [L1055-L1098] — *Prompt user for the preferred glossary spelling that `alternate_text` should map to.*
+  - `apply_glossary_to_whisper_context(self)` [L1100-L1111]
+  - `add_custom_speaker_to_glossary(self, name)` [L1113-L1115]
+  - `set_language(self, language, persist)` [L1117-L1138]
+  - `_apply_localization(self)` [L1140-L1177]
+  - `update_story_segment_terminology(self)` [L1179-L1283] — *Update all user-facing labels and tooltips to use 'Song' in Music mode and 'Story' in Voice mode.*
+  - `open_document(self)` [L1285-L1339]
+  - `export_text_file(self)` [L1341-L1349]
+  - `open_media(self)` [L1351-L1360]
+  - `prepare_for_new_media(self)` [L1362-L1395] — *Checks for unsaved changes before loading new media.*
+  - `_batch_media_error(self, message)` [L1397-L1419]
+  - `_get_batch_project_target_path(self, base_name)` [L1421-L1448] — *Determines consistent target .rtvs project file path during batch processing.*
+  - `_batch_save_project_file(self)` [L1450-L1465] — *Saves project .rtvs to dedicated directory structure during batch processing.*
+  - `_batch_export_current(self)` [L1467-L1551] — *Handles automatic export or project saving during batch processing.*
+  - `load_media_file(self, filename, source, restore_adjacent_project)` [L1553-L1668]
+  - `update_active_media_source(self)` [L1670-L1703] — *Update media player source and refresh waveform when normalization state changes.*
+  - `open_audio(self)` [L1705-L1706]
+  - `handle_media_drop(self, filename)` [L1708-L1709]
 
 ### `model_install_workers.py` (189 lines)
 *Radio & TV Segmenter — Model Download and Installation Background Workers.*
@@ -2509,20 +2531,31 @@
   - `cmd_push(commit_msg)` [L102-L137] — *Stage all changes, commit, and push to GitHub.*
   - `main()` [L140-L157]
 
-### `terminology.py` (275 lines)
+### `terminology.py` (882 lines)
 *Model-independent terminology and glossary support.*
 - **Functions**:
-  - `parse_glossary(raw)` [L19-L67] — *Return normalized glossary entries while accepting legacy list strings.*
-  - `load_glossary(settings_store)` [L70-L78] — *Load the shared glossary from the application's QSettings object.*
-  - `_replace_term(text, source, preferred)` [L81-L89]
-  - `normalize_text(text, glossary)` [L92-L99] — *Canonicalize glossary terms without changing surrounding punctuation.*
-  - `normalize_transcript(transcript, glossary)` [L102-L144] — *Normalize transcript text and word labels for every ASR backend.*
-  - `translation_rules(glossary)` [L147-L150] — *Return only entries explicitly marked as protected for translation.*
-  - `replace_term(text, source, preferred)` [L153-L155] — *Public replacement helper for translation workers.*
-  - `split_protected_text(text, glossary)` [L158-L192] — *Split text into translatable and protected pieces.*
-  - `export_glossary_to_json(glossary)` [L195-L198] — *Serialize glossary entries to formatted JSON string.*
-  - `export_glossary_to_csv(glossary)` [L201-L216] — *Serialize glossary entries to standard CSV string.*
-  - `import_glossary_from_text(raw_text)` [L219-L274] — *Parse glossary entries from JSON, CSV, TSV, or plain text lines.*
+  - `split_source_variants(source_raw, preferred, match_case)` [L35-L65] — *Split a source field (comma/semicolon separated or list) into unique variants.*
+  - `format_source_variants(variants, match_case)` [L68-L74] — *Format a sequence of source variants into a clean comma-separated string.*
+  - `parse_glossary(raw)` [L77-L138] — *Return normalized glossary entries while accepting legacy list strings.*
+  - `expand_glossary_rules(glossary)` [L141-L181] — *Expand multi-variant glossary entries into atomic replacement rules (longest source first).*
+  - `sort_glossary_entries(entries, mode)` [L184-L227] — *Return glossary entries sorted for UI presentation without mutating replacement order.*
+  - `add_alternate_spelling(raw_glossary, preferred_term, alternate_spelling, do_not_translate, match_case)` [L230-L278] — *Add one or more alternate spellings for a preferred glossary term.*
+  - `load_glossary(settings_store)` [L281-L289] — *Load the shared glossary from the application's QSettings object.*
+  - `_replace_term(text, source, preferred, match_case)` [L292-L306]
+  - `normalize_text(text, glossary)` [L309-L322] — *Canonicalize glossary terms without changing surrounding punctuation.*
+  - `_phonetic_name_skeleton(token)` [L325-L349] — *Compute a normalized phonetic skeleton for English/Latin proper-noun comparison.*
+  - `_name_token_similarity(a, b)` [L352-L374] — *Return orthographic + phonetic similarity [0.0, 1.0] between two name tokens.*
+  - `_split_word_affixes(raw_word)` [L377-L387] — *Split a timed word token into (leading_punct_and_space, core_word, trailing_punct).*
+  - `_has_sentence_break(trail)` [L390-L392] — *Return True if trailing punctuation marks a clause/sentence boundary.*
+  - `_discover_project_contextual_rules(segments, base_entries, expanded_rules)` [L395-L585] — *Two-pass project-scoped proper-noun discovery and single-word co-reference resolution.*
+  - `_normalize_timed_words(words, rules)` [L588-L658] — *Apply both multi-word and single-word glossary rules across timed word dicts.*
+  - `normalize_transcript(transcript, glossary)` [L661-L713] — *Normalize transcript text and word labels for every ASR backend.*
+  - `translation_rules(glossary)` [L716-L719] — *Return only entries explicitly marked as protected for translation.*
+  - `replace_term(text, source, preferred, match_case)` [L722-L729] — *Public replacement helper for translation workers.*
+  - `split_protected_text(text, glossary)` [L732-L782] — *Split text into translatable and protected pieces.*
+  - `export_glossary_to_json(glossary)` [L785-L788] — *Serialize glossary entries to formatted JSON string.*
+  - `export_glossary_to_csv(glossary)` [L791-L807] — *Serialize glossary entries to standard CSV string.*
+  - `import_glossary_from_text(raw_text)` [L810-L882] — *Parse glossary entries from JSON, CSV, TSV, or plain text lines.*
 
 ### `theme_preferences.py` (596 lines)
 *Radio & TV Story Segmenter — Theme Preferences & Styling Engine.*
@@ -2695,16 +2728,16 @@
   - `scrub_transcript_segments(segments, collapse_loops)` [L124-L202] — *Comprehensive scrubber for transcript segment lists:*
   - `scrub_transcript(transcript)` [L205-L216] — *Clean and sanitize a complete transcript payload dictionary.*
 
-### `transcript_context_menu_mixin.py` (445 lines)
+### `transcript_context_menu_mixin.py` (454 lines)
 *Radio & TV Story Segmenter — Interactive Transcript Context Menu & Bubble Actions Mixin.*
-- **class `TranscriptContextMenuMixin`** (lines 36–445):
+- **class `TranscriptContextMenuMixin`** (lines 36–454):
   *Mixin for context menu construction and selection bubble quick-actions.*
   - `_on_bubble_play(self)` [L39-L44]
   - `_on_bubble_story(self)` [L46-L51]
   - `_on_bubble_note(self)` [L53-L66]
   - `_on_bubble_cut(self)` [L68-L73]
   - `_on_bubble_export(self)` [L75-L80]
-  - `show_context_menu(self, position)` [L82-L445]
+  - `show_context_menu(self, position)` [L82-L454]
 
 ### `transcript_editor.py` (973 lines)
 *transcript_editor.py - Interactive Transcript Editor & Viewer Components*
@@ -2824,7 +2857,7 @@
   - `_on_bubble_export(self)` [L468-L473]
 
 ### `transcript_story.py` (852 lines)
-*Radio & TV Segmenter v3.9.89-beta — transcript story responsibilities.*
+*Radio & TV Segmenter v3.9.90-beta — transcript story responsibilities.*
 - **Public Exports (`__all__`)**: TranscriptStoryMixin, Story, SetStoriesCommand, SelectStoriesCommand, StoryBoundaryChangeCommand, StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin, ChangeSpeakerDialog, VoiceProfileMatchDialog, StoryFadesDialog, SpeakerManagerDialog, FADE_CURVE_TABLES, get_fade_curve_factors
 - **class `TranscriptStoryMixin(StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin)`** (lines 63–851):
   - `render_transcript(self)` [L64-L467]

@@ -402,6 +402,55 @@ class DiagnosticEditorTestsMixin:
         win.apply_story_selection_indices([0], seek=False)
         assert win.transcript_view.timeline_selection_span == (0, 25)
 
+        # 7. Verify Terminology Two-Pass Contextual & Case-Sensitive Normalization
+        import terminology as term_mod
+        sample_glossary = [
+            {"source": "Kimberlei Davis", "preferred": "Kimberlei Davis", "do_not_translate": True, "match_case": False},
+            {"source": "US", "preferred": "U.S.", "do_not_translate": True, "match_case": True},
+        ]
+        test_tr = {
+            "segments": [
+                {"text": "Tell us about US policy from Kimberley Davis.", "words": [{"word": "Tell"}, {"word": "us"}, {"word": "about"}, {"word": "US"}, {"word": "policy"}, {"word": "from"}, {"word": "Kimberley"}, {"word": "Davis."}]},
+                {"text": "Thank you, Kimberley.", "words": [{"word": "Thank"}, {"word": "you,"}, {"word": "Kimberley."}]}
+            ]
+        }
+        norm_tr = term_mod.normalize_transcript(test_tr, sample_glossary)
+        # Match case check: 'us' untouched, 'US' -> 'U.S.'
+        assert "Tell us about U.S. policy" in norm_tr["segments"][0]["text"], f"Unexpected text: {norm_tr['segments'][0]['text']}"
+        # Contextual check: 'Kimberley Davis' -> 'Kimberlei Davis', and standalone 'Kimberley' -> 'Kimberlei'
+        assert "Kimberlei Davis" in norm_tr["segments"][0]["text"]
+        assert "Thank you, Kimberlei." in norm_tr["segments"][1]["text"]
+
+        # Ambiguity guard check: Kimberley Johnson must NOT become Kimberlei
+        conflict_tr = {
+            "segments": [
+                {"text": "Kimberley Davis met Kimberley Johnson.", "words": [{"word": "Kimberley"}, {"word": "Davis"}, {"word": "met"}, {"word": "Kimberley"}, {"word": "Johnson."}]},
+                {"text": "Kimberley spoke.", "words": [{"word": "Kimberley"}, {"word": "spoke."}]}
+            ]
+        }
+        norm_conf = term_mod.normalize_transcript(conflict_tr, sample_glossary)
+        assert "Kimberlei Davis met Kimberley Johnson." in norm_conf["segments"][0]["text"]
+        assert "Kimberley spoke." in norm_conf["segments"][1]["text"]
+
+        # 8. Verify GlossaryDialog instantiation, columns, filter, and sorting
+        from glossary_dialog import GlossaryDialog
+        win.glossary = [
+            {"source": "PhillyCAM", "preferred": "PhillyCAM", "do_not_translate": True, "match_case": False},
+            {"source": "atrevete", "preferred": "Atrévete", "do_not_translate": True, "match_case": False},
+            {"source": "US", "preferred": "U.S.", "do_not_translate": True, "match_case": True},
+        ]
+        gloss_diag = GlossaryDialog(win)
+        assert gloss_diag.table.columnCount() == 4
+        assert gloss_diag.table.rowCount() == 3
+        # Verify real-time row hiding filter without data loss
+        gloss_diag.search_input.setText("atrevete")
+        hidden_states = [gloss_diag.table.isRowHidden(r) for r in range(gloss_diag.table.rowCount())]
+        assert hidden_states.count(False) == 1
+        assert len(gloss_diag.get_current_table_entries()) == 3
+        gloss_diag.search_input.clear()
+        assert not any(gloss_diag.table.isRowHidden(r) for r in range(gloss_diag.table.rowCount()))
+        gloss_diag.close()
+
         item.status = "PASS"
-        item.message = "Story transcript highlight synchronization, smart copy, deselect routing, purge dialog, and context menu parity verified"
+        item.message = "Story transcript highlight synchronization, smart copy, deselect routing, purge dialog, terminology two-pass engine, and glossary dialog verified"
 

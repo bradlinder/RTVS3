@@ -1,27 +1,64 @@
 # Changelog
 
+## v3.9.90-beta
+- **Searchable/Sortable Glossary Dialog, Contextual Proper-Noun Engine & Alternate Spelling Mapping (glossary_dialog.py, media_batch.py, 	erminology.py, 	ranscript_context_menu_mixin.py, diagnostic_editor_tests.py)**:
+  - **Modular Glossary Dialog (glossary_dialog.py, media_batch.py)**: Extracted the custom vocabulary/glossary interface into a dedicated UI module (glossary_dialog.py), reducing media_batch.py by over 230 lines in compliance with single responsibility and domain separation rules.
+  - **Live Search & Multi-Criteria Sorting (glossary_dialog.py)**: Equipped the glossary table with a real-time search filter and multi-criteria sorting (A-Z/Z-A source, preferred spelling, protected proper-noun priority, and case-sensitive priority) using data-safe row hiding (setRowHidden) to prevent loss of filtered entries during save or export.
+  - **4-Column Data Model & Case-Sensitivity (	erminology.py, glossary_dialog.py)**: Added an optional Match case column to protect acronyms and words like US -> U.S. without rewriting lowercase everyday words like us.
+  - **Multi-Variant Source & Alternate Spelling Workflows (	erminology.py, glossary_dialog.py, 	ranscript_context_menu_mixin.py)**: Single glossary rows now accept comma-separated alternate spellings (e.g. Kimberlei Davis, Kimberley Davis, Kimberly Davis -> Kimberlei Davis). Added a table context menu with Add Alternate Spelling... and Duplicate Term as New Row.
+  - **Transcript Context Mapping (	ranscript_context_menu_mixin.py, media_batch.py)**: Selecting misspelled words in the transcript right-click menu now provides Add Selected Text as Alternate Spelling For... to map directly to preferred spellings and apply normalization to the active project with full Undo support.
+  - **Two-Pass Contextual & Phonetic Resolution (	erminology.py)**: Resolved phonetic variants (e.g. Kimberley Davis -> Kimberlei Davis) across timed word token streams, dynamically propagating single-word mentions (Kimberley -> Kimberlei) across that specific project only, guarded against conflicts if another surname (Kimberley Johnson) is present.
+  - **Automated Diagnostic Suite (diagnostic_editor_tests.py)**: Expanded unit tests to verify two-pass contextual normalization, case sensitivity, and GlossaryDialog table filtering/sorting without regressions.
+
+
+
 ## v3.9.89-beta
+
 - **Context Menu Feature Parity & De-Cluttering Across Timeline, Transcript & Story Widgets (	imeline_context_menus.py, 	ranscript_context_menu_mixin.py, story_widgets.py, diagnostic_editor_tests.py)**:
+
   - **Timeline Context Menu Feature Parity (	imeline_context_menus.py)**: Right-clicking a story block on the timeline now automatically selects it if not already selected. Added Audition Story Playback, Story & Post Metadata..., and Export Selected Stories... directly to the timeline right-click context menu with standardized wording (Audio Fades... and Clear Selection (Esc)), matching the Stories Sidebar workflow.
+
   - **Timeline Cache Action Cleanliness (	imeline_context_menus.py)**: Confined Regenerate Waveform and Regenerate Video Thumbnails exclusively to empty timeline space right-clicks. Completely hides Regenerate Video Thumbnails on audio-only projects (rather than showing it disabled), and removed cache regeneration items from the drag-range selection context menu.
+
   - **Transcript Context Menu Parity & Streamlining (	ranscript_context_menu_mixin.py)**: When a story selection highlight is active in the transcript view, right-clicking now offers Audition Story Playback, Story & Post Metadata..., Copy Story Transcript (Ctrl+C), and Clear Selection (Esc).
+
   - **Transcript Menu Cleanliness & De-Cluttering (	ranscript_context_menu_mixin.py)**: Hides Add Selected Text to Glossary when no manual cursor text is selected; removed redundant window toggle Toggle Comments Sidebar (Ctrl+Alt+C) from both View and Edit modes; eliminated duplicate top-level Remove Highlight in Edit mode and only renders Remove Highlight in the highlight submenu when active highlighting is present on the selected/clicked text.
+
   - **Automated Diagnostic Suite (diagnostic_editor_tests.py)**: Expanded _test_story_transcript_highlighting_and_smart_copy to verify story auto-selection on timeline right-click and context menu building without regressions.
 
+
+
 ## v3.9.88-beta
+
 - **Story Selection Transcript Highlighting, Timeline Context Actions, Universal Deselect & Purge Dialog Fix (`processing.py`, `story_crud_mixin.py`, `transcript_editor.py`, `story_widgets.py`, `timeline_context_menus.py`, `timeline_widgets.py`, `transcript_context_menu_mixin.py`, `ui_menus.py`, `project_data_purge_dialog.py`, `diagnostic_editor_tests.py`, `roadmap.txt`)**:
+
   - **Selected Story Transcript Highlighting (`processing.py`, `story_crud_mixin.py`)**: Selecting a story in the sidebar story list, clicking a story region on the timeline canvas, or auditioning playback now automatically synchronizes and non-destructively highlights the story's text span in the interactive transcript view via theme-aware `timeline_selection_span` overlay.
+
   - **Acoustic Interval Boundary Accuracy (`story_crud_mixin.py`)**: Refined timestamp mapping in `handle_timeline_selection_range_changed` using true mathematical interval overlap (`w_end > s` and `w_start < e`), preventing abutting words at the exact boundary of adjacent stories from bleeding into neighboring selections.
+
   - **Timeline Story Context Actions (`timeline_context_menus.py`, `timeline_widgets.py`)**: Added "Copy Story Transcript (Ctrl+C)" directly to the timeline story right-click context menu, and enabled "Clear Story Selection (Esc)" when stories are active.
+
   - **Universal Deselect & Zero-Clutter Selection Clearing (`timeline_widgets.py`, `story_widgets.py`, `transcript_editor.py`, `ui_menus.py`)**: Pressing `Esc` (or selecting `Clear Selection` / `Edit > Deselect All`) instantly deselects active stories, clears timeline ranges, and removes the transcript highlight overlay across all views with zero button clutter.
+
   - **Non-Destructive Smart Copy Routing (`transcript_editor.py`, `ui_menus.py`, `story_widgets.py`)**: Pressing `Ctrl+C` (or Edit -> Copy) uses a predictable hierarchical resolution: copies manual cursor selection if active; otherwise copies the highlighted story transcript text; normalizes dark-mode HTML to black text for clean pasting into Word, Docs, or email.
+
   - **Project Data Purge Dialog NameError Fix (`project_data_purge_dialog.py`)**: Added missing `QGroupBox` import to `PySide6.QtWidgets` imports in `project_data_purge_dialog.py`, resolving a runtime `NameError` crash when opening Edit > Clear / Purge Project Data...
+
   - **REAPER DAW Companion Roadmap Update (`roadmap.txt`)**: Updated Milestone 4 specifications with the unified multi-channel clipboard engine, automatically mapping copied story transcripts to REAPER Take Names (Story Title or quote preview), Item Notes (full verbatim transcript), and speaker take markers.
+
   - **Automated Diagnostic Suite (`diagnostic_editor_tests.py`, `test_runner.py`)**: Expanded `_test_story_transcript_highlighting_and_smart_copy` verifying story selection synchronization, interval boundary accuracy, smart clipboard copying, and purge dialog initialization.
 
+
+
 ## v3.9.87-beta
+
 - **Seriously Simple Podcasting (Castos) Rich Player Auto-Injection (plugins/wordpress/client.py, plugins/wordpress/castos.py, diagnostic_export_tests.py, plugins/wordpress/manifest.json)**:
+
   - **Castos V2 Rich Player Auto-Injection (plugins/wordpress/client.py)**: Resolved an issue where exporting a post designated as a Castos Podcast Episode resulted in a simple browser audio bar (\wp-audio-shortcode\ + plain meta links) instead of the rich Castos V2 player widget (with series cover artwork, episode title, dark mode skin, and playback controls).
+
   - **Legacy \[ss_player]\ Shortcode Elimination**: Removed the hardcoded \[ss_player]\ shortcode block from post content generation for podcast posts. In Seriously Simple Podcasting, \[ss_player]\ explicitly renders the legacy compact audio bar and suppresses SSP's automatic dynamic rich player injection. Omitting manual player shortcodes/blocks when \is_podcast=True\ allows Seriously Simple Podcasting to dynamically inject the rich, branded Castos V2 player at the site's configured player location (*Above content*), matching the October 21 episode layout.
+
   - **Regression Test Bench Alignment (\diagnostic_export_tests.py\)**: Updated the WordPress export diagnostic test to verify that podcast posts omit both standard \<!-- wp:audio -->\ blocks and legacy \[ss_player]\ shortcodes, guaranteeing uninterrupted rich Castos player rendering.
+
   - **Plugin Version Synchronization (\plugins/wordpress/manifest.json\)**: Synchronized the WordPress plugin manifest version to .9.87-beta\ in compliance with lazy catch-up policy.
+

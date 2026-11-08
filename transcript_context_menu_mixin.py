@@ -304,6 +304,15 @@ class TranscriptContextMenuMixin:
                 add_vocab.triggered.connect(_add_vocab_from_selection)
                 menu.addAction(add_vocab)
 
+                add_alt_spelling_act = QAction("Add Selected Text as Alternate Spelling For...", menu)
+                def _add_alt_from_selection():
+                    ranges = self.get_all_selected_story_ranges()
+                    txt = ranges[0]["text"] if ranges else self.textCursor().selectedText()
+                    if hasattr(main_win, "prompt_add_alternate_spelling"):
+                        main_win.prompt_add_alternate_spelling(txt)
+                add_alt_spelling_act.triggered.connect(_add_alt_from_selection)
+                menu.addAction(add_alt_spelling_act)
+
             edit_comment_act = QAction(f"{comment_title}\tCtrl+M", menu)
             edit_comment_act.triggered.connect(
                 lambda _, s=target_seg: getattr(

@@ -115,7 +115,13 @@ class MediaBatchMixin:
     def _save_glossary(self):
         ...
 
+    def apply_glossary_to_current_transcript(self, entries=...) -> bool:
+        ...
+
     def add_to_glossary(self, text):
+        ...
+
+    def prompt_add_alternate_spelling(self, alternate_text: str):
         ...
 
     def apply_glossary_to_whisper_context(self):
