@@ -95,6 +95,7 @@ from core_utils import (
     ffmpeg_path,
     ffprobe_path,
     format_time,
+    format_clock_duration,
     parse_time,
     safe_filename,
     is_sentence_end,

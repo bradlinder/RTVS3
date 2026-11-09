@@ -1,5 +1,11 @@
 # Changelog Archive (Historical Releases: v1.1 – v3.8.9-beta.19)
 
+## v3.9.87-beta
+- **Seriously Simple Podcasting (Castos) Rich Player Auto-Injection (plugins/wordpress/client.py, plugins/wordpress/castos.py, diagnostic_export_tests.py, plugins/wordpress/manifest.json)**:
+  - **Castos V2 Rich Player Auto-Injection (plugins/wordpress/client.py)**: Resolved an issue where exporting a post designated as a Castos Podcast Episode resulted in a simple browser audio bar instead of the rich Castos V2 player widget.
+  - **Legacy [ss_player] Shortcode Elimination**: Removed the hardcoded shortcode block to allow Seriously Simple Podcasting to dynamically inject the rich, branded Castos V2 player.
+  - **Regression Test Bench Alignment & Plugin Version Sync**: Updated diagnostic tests and bumped WordPress plugin manifest to v3.9.87-beta.
+
 ## v3.9.86-beta
 - **Export Scope Default Persistence & Qt Signal Signature Defense (`export/dialog.py`, `export_dialogs.py`, `ui_layout.py`, `ui_menus.py`, `diagnostic_export_tests.py`)**:
   - **Qt Boolean Signal Trap Resolution (`export_dialogs.py`, `ui_layout.py`, `ui_menus.py`)**: Fixed a subtle bug where clicking the main window's "Export..." button (`QPushButton.clicked`) or choosing File > Export... (`QAction.triggered`) emitted Qt's default boolean checked state (`False`). Because `open_unified_export_dialog` took `initial_scope` as its first parameter, it received `False`, causing `initial_scope is None` checks to fail and silently bypass `QSettings` saved defaults in favor of dynamic story selection fallbacks. Lambda wrappers and defensive type guards (`not isinstance(initial_scope, str)`) now neutralize unexpected signal payloads.

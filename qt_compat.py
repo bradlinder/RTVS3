@@ -86,6 +86,12 @@ class DynamicMock(metaclass=MockClassMeta):
     def windowModality(self):
         return getattr(self, "_modality", 0)
 
+    def setWindowTitle(self, title):
+        self._window_title = str(title)
+
+    def windowTitle(self):
+        return getattr(self, "_window_title", "")
+
     def accept(self):
         pass
 
@@ -481,6 +487,50 @@ class DummyQApplication:
     def topLevelWidgets() -> list:
         return []
 
+    @staticmethod
+    def thread() -> Any:
+        return None
+
+    @staticmethod
+    def clipboard() -> Any:
+        return DummyClipboard()
+
+
+class DummyQMimeData(DynamicMock):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._text = ""
+        self._html = ""
+
+    def setText(self, val):
+        self._text = str(val)
+
+    def text(self):
+        return getattr(self, "_text", "")
+
+    def setHtml(self, val):
+        self._html = str(val)
+
+    def html(self):
+        return getattr(self, "_html", "")
+
+
+class DummyClipboard(DynamicMock):
+    _text = ""
+
+    def setText(self, val):
+        DummyClipboard._text = str(val)
+
+    def text(self):
+        return getattr(DummyClipboard, "_text", "")
+
+    def setMimeData(self, mime):
+        t = mime.text() if hasattr(mime, "text") else ""
+        if isinstance(t, str):
+            DummyClipboard._text = t
+        elif hasattr(mime, "_text"):
+            DummyClipboard._text = str(mime._text)
+
 
 class DummyQTimer(DynamicMock):
     def __init__(self, *args, **kwargs):
@@ -533,6 +583,94 @@ class DummyQLineEdit(DynamicMock):
 
     def selectAll(self):
         pass
+
+
+class DummyQLabel(DynamicMock):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._text = str(args[0]) if args and isinstance(args[0], (str, int, float)) else ""
+        self._tooltip = ""
+
+    def setText(self, val):
+        self._text = str(val)
+
+    def text(self, *a, **k):
+        return getattr(self, "_text", "")
+
+    def setToolTip(self, val):
+        self._tooltip = str(val)
+
+    def toolTip(self, *a, **k):
+        return getattr(self, "_tooltip", "")
+
+
+class DummyQListWidgetItem(DynamicMock):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._text = str(args[0]) if args and isinstance(args[0], (str, int, float)) else ""
+        self._tooltip = ""
+        self._data = {}
+
+    def setText(self, val):
+        self._text = str(val)
+
+    def text(self, *a, **k):
+        return getattr(self, "_text", "")
+
+    def setToolTip(self, val):
+        self._tooltip = str(val)
+
+    def toolTip(self, *a, **k):
+        return getattr(self, "_tooltip", "")
+
+    def setData(self, role, val):
+        self._data[role] = val
+
+    def data(self, role):
+        return self._data.get(role)
+
+
+class DummyQListWidget(DynamicMock):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._items = []
+
+    def addItem(self, item):
+        if isinstance(item, str):
+            item = DummyQListWidgetItem(item)
+        self._items.append(item)
+
+    def count(self):
+        return len(self._items)
+
+    def item(self, idx):
+        if 0 <= idx < len(self._items):
+            return self._items[idx]
+        return None
+
+    def clear(self):
+        self._items.clear()
+
+
+class DummyQTextEdit(DynamicMock):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._text = str(args[0]) if args and isinstance(args[0], (str, int, float)) else ""
+
+    def setPlainText(self, val):
+        self._text = str(val)
+
+    def toPlainText(self):
+        return getattr(self, "_text", "")
+
+    def setText(self, val):
+        self._text = str(val)
+
+    def toHtml(self):
+        return getattr(self, "_text", "")
+
+    def setHtml(self, val):
+        self._text = str(val)
 
 
 class DummyQFont:
@@ -738,12 +876,19 @@ def _ensure_pyside6_fallback(force: bool = False) -> bool:
     pyside6_mod.QtGui.QUndoCommand = type("QUndoCommand", (), {"__init__": lambda self, *a, **k: None, "redo": lambda self: None, "undo": lambda self: None})
     pyside6_mod.QtWidgets.QMessageBox = DummyQMessageBox
     pyside6_mod.QtWidgets.QApplication = DummyQApplication
+    pyside6_mod.QtGui.QGuiApplication = DummyQApplication
     pyside6_mod.QtCore.QCoreApplication = DummyQApplication
+    pyside6_mod.QtCore.QMimeData = DummyQMimeData
     pyside6_mod.QtWidgets.QHeaderView = DummyQHeaderView
     pyside6_mod.QtWidgets.QAbstractItemView = DummyQAbstractItemView
     pyside6_mod.QtWidgets.QStyledItemDelegate = DummyQStyledItemDelegate
     pyside6_mod.QtWidgets.QAbstractItemDelegate = DummyQStyledItemDelegate
     pyside6_mod.QtWidgets.QLineEdit = DummyQLineEdit
+    pyside6_mod.QtWidgets.QLabel = DummyQLabel
+    pyside6_mod.QtWidgets.QListWidgetItem = DummyQListWidgetItem
+    pyside6_mod.QtWidgets.QListWidget = DummyQListWidget
+    pyside6_mod.QtWidgets.QTextEdit = DummyQTextEdit
+    pyside6_mod.QtWidgets.QPlainTextEdit = DummyQTextEdit
     pyside6_mod.QtWidgets.QComboBox = DummyQComboBox
     pyside6_mod.QtWidgets.QDoubleSpinBox = DummyQDoubleSpinBox
     pyside6_mod.QtWidgets.QSpinBox = DummyQSpinBox
@@ -761,6 +906,10 @@ __all__ = [
     "DummyQHeaderView",
     "DummyQAbstractItemView",
     "DummyQLineEdit",
+    "DummyQLabel",
+    "DummyQListWidgetItem",
+    "DummyQListWidget",
+    "DummyQTextEdit",
     "DummyQComboBox",
     "DummyQDoubleSpinBox",
     "DummyQSpinBox",

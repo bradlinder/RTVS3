@@ -248,8 +248,9 @@ class TranscriptTimelineSyncMixin:
         doc = self.document()
         doc_len = doc.characterCount() if doc else 0
 
-        if getattr(self, "timeline_selection_span", None) is not None:
-            s_char, e_char = self.timeline_selection_span
+        tl_span = getattr(self, "timeline_selection_span", None)
+        if isinstance(tl_span, (tuple, list)) and len(tl_span) == 2:
+            s_char, e_char = tl_span
             if 0 <= s_char < doc_len and 0 <= e_char <= doc_len and s_char < e_char:
                 fmt = QTextCharFormat()
                 if getattr(self, "current_theme", "dark") == "light":

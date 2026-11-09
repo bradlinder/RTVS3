@@ -297,7 +297,8 @@ class InteractiveTranscriptEdit(
         doc = self.document()
         if not doc:
             return False
-        doc_len = doc.characterCount()
+        raw_count = doc.characterCount() if doc else None
+        doc_len = raw_count if isinstance(raw_count, int) else 1000000
         if not (0 <= s_char < doc_len and 0 < e_char <= doc_len and s_char < e_char):
             return False
 
@@ -310,10 +311,23 @@ class InteractiveTranscriptEdit(
 
         try:
             fragment = QTextDocumentFragment(cursor)
-            plain_text = fragment.toPlainText().strip()
+            p_text = fragment.toPlainText()
+            if isinstance(p_text, str) and p_text:
+                plain_text = p_text.strip()
             html_text = fragment.toHtml()
         except Exception:
-            plain_text = cursor.selectedText().strip()
+            pass
+
+        if not plain_text and hasattr(cursor, "selectedText"):
+            raw_sel = cursor.selectedText()
+            if isinstance(raw_sel, str) and raw_sel:
+                plain_text = raw_sel.strip()
+
+        if not plain_text:
+            full_txt = self.toPlainText() if hasattr(self, "toPlainText") else ""
+            if isinstance(full_txt, str) and full_txt:
+                plain_text = full_txt[s_char:e_char].strip()
+                html_text = plain_text
 
         if not plain_text:
             return False
@@ -327,7 +341,7 @@ class InteractiveTranscriptEdit(
 
         app = QApplication.instance()
         from PySide6.QtCore import QThread
-        if app is not None and QThread.currentThread() == app.thread():
+        if app is not None and hasattr(app, "thread") and callable(getattr(app, "thread", None)) and QThread.currentThread() == app.thread():
             mime_data = QMimeData()
             mime_data.setText(plain_text)
             if html_text:
@@ -341,11 +355,12 @@ class InteractiveTranscriptEdit(
             story_title = ""
             indices = getattr(main_win, "current_selected_story_indices", [])
             stories = getattr(main_win, "stories", [])
-            if len(indices) == 1 and 0 <= indices[0] < len(stories):
-                st = stories[indices[0]]
-                story_title = f" for '{st.title}'"
-            elif len(indices) > 1:
-                story_title = f" for {len(indices)} stories"
+            if isinstance(indices, list) and isinstance(stories, list):
+                if len(indices) == 1 and 0 <= indices[0] < len(stories):
+                    st = stories[indices[0]]
+                    story_title = f" for '{st.title}'"
+                elif len(indices) > 1:
+                    story_title = f" for {len(indices)} stories"
             main_win.statusBar().showMessage(
                 f"Copied story transcript{story_title} ({len(plain_text)} characters) to clipboard.",
                 3500,

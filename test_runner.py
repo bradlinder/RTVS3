@@ -498,6 +498,11 @@ class DiagnosticEngine(
                 "Transcript & Speaker Management",
                 "Validates story selection synchronization with transcript highlight overlay, span interval accuracy, and smart clipboard copy",
             ),
+            DiagnosticItem(
+                "Story Duration Visibility & Header Aggregation",
+                "Story & Boundary Detection",
+                "Validates clock duration formatting, two-line sidebar story list items, and header multi-selection duration counter",
+            ),
         ]
 
     def run_all(self, stop_requested_fn: Optional[Callable[[], bool]] = None) -> List[DiagnosticItem]:
@@ -532,7 +537,7 @@ class DiagnosticEngine(
     def _normalize_name(self, name: str) -> str:
         s = name.lower()
         s = s.replace("&", "and")
-        for ch in [" ", "(", ")", ".", "-", "/"]:
+        for ch in [",", " ", "(", ")", ".", "-", "/"]:
             s = s.replace(ch, "_")
         while "__" in s:
             s = s.replace("__", "_")

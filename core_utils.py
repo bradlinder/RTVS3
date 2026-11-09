@@ -586,6 +586,32 @@ def format_time(seconds, include_millis=True):
         return f"{minutes:02d}:{secs:02d}"
 
 
+def format_clock_duration(seconds: float, include_millis: bool = False) -> str:
+    """Format duration in seconds as clock time string (e.g. '02:30' or '02:30.5')."""
+    try:
+        seconds = max(0.0, float(seconds if seconds is not None else 0.0))
+    except (ValueError, TypeError):
+        seconds = 0.0
+    hours = int(seconds // 3600)
+    minutes = int((seconds % 3600) // 60)
+    secs = int(seconds % 60)
+    tenth = int(round((seconds - int(seconds)) * 10))
+    if tenth >= 10:
+        secs += 1
+        tenth = 0
+        if secs >= 60:
+            minutes += 1
+            secs = 0
+            if minutes >= 60:
+                hours += 1
+                minutes = 0
+
+    base = f"{hours:02d}:{minutes:02d}:{secs:02d}" if hours else f"{minutes:02d}:{secs:02d}"
+    if include_millis:
+        return f"{base}.{tenth}"
+    return base
+
+
 def parse_time(value):
     value = str(value).strip()
     try:

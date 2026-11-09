@@ -491,6 +491,8 @@ class ProcessingMixin(
                     self.handle_timeline_selection_range_changed(None, None)
 
         self.is_updating_selection = False
+        if hasattr(self, "update_stories_header"):
+            self.update_stories_header()
 
     def on_timeline_story_clicked(self, index):
         """Handle user clicking a story region directly on the timeline canvas."""

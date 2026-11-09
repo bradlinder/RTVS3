@@ -1182,7 +1182,9 @@ class MediaBatchMixin:
         is_es = (getattr(self, "language", "en") == "es")
 
         # Header: "Stories" vs "Songs" (or "Historias" vs "Canciones")
-        if hasattr(self, "stories_header") and self.stories_header is not None:
+        if hasattr(self, "update_stories_header"):
+            self.update_stories_header()
+        elif hasattr(self, "stories_header") and self.stories_header is not None:
             if is_music:
                 self.stories_header.setText("Canciones" if is_es else "Songs")
             else:

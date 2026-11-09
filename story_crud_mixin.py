@@ -38,13 +38,61 @@ except ImportError:
         QTextEdit,
     )
 
-from core_utils import INTERNAL_APP_ID, format_time, parse_time
+from core_utils import INTERNAL_APP_ID, format_time, format_clock_duration, parse_time
 from story_model import Story, SetStoriesCommand, StoryBoundaryChangeCommand
 from story_fades_dialog import StoryFadesDialog
 
 
 class StoryCrudMixin:
     """Mixin providing story list UI management, CRUD operations, and fade handling."""
+
+    def update_stories_header(self):
+        """Update Stories section header label and tooltip with selection count and duration."""
+        if not hasattr(self, "stories_header") or self.stories_header is None:
+            return
+
+        is_music = (getattr(self, "story_detection_mode", "voice") == "music")
+        is_es = (getattr(self, "language", "en") == "es")
+
+        if is_music:
+            base_label = "Canciones" if is_es else "Songs"
+            sing_term = "canción" if is_es else "song"
+            plur_term = "canciones" if is_es else "songs"
+        else:
+            base_label = "Historias" if is_es else "Stories"
+            sing_term = "historia" if is_es else "story"
+            plur_term = "historias" if is_es else "stories"
+
+        stories = getattr(self, "stories", []) or []
+        selected_indices = getattr(self, "current_selected_story_indices", []) or []
+        valid_indices = [idx for idx in selected_indices if 0 <= idx < len(stories)]
+
+        if not valid_indices:
+            self.stories_header.setText(base_label)
+            total_count = len(stories)
+            if is_es:
+                self.stories_header.setToolTip(f"{base_label} ({total_count} en total)")
+            else:
+                self.stories_header.setToolTip(f"{base_label} ({total_count} total)")
+        elif len(valid_indices) == 1:
+            idx = valid_indices[0]
+            story = stories[idx]
+            dur = max(0.0, float(story.end) - float(story.start))
+            clock_dur = format_clock_duration(dur, include_millis=True)
+            self.stories_header.setText(f"{base_label} (1) — [{clock_dur}]")
+            if is_es:
+                self.stories_header.setToolTip(f"1 {sing_term} seleccionada: #{idx + 1} '{story.title}' — Duración: {clock_dur}")
+            else:
+                self.stories_header.setToolTip(f"1 {sing_term} selected: #{idx + 1} '{story.title}' — Duration: {clock_dur}")
+        else:
+            total_dur = sum(max(0.0, float(stories[i].end) - float(stories[i].start)) for i in valid_indices)
+            clock_dur = format_clock_duration(total_dur, include_millis=True)
+            count = len(valid_indices)
+            self.stories_header.setText(f"{base_label} ({count}) — [{clock_dur}]")
+            if is_es:
+                self.stories_header.setToolTip(f"{count} {plur_term} seleccionadas — Duración total: {clock_dur}")
+            else:
+                self.stories_header.setToolTip(f"{count} {plur_term} selected — Total Duration: {clock_dur}")
 
     def refresh_story_list(self):
         selected_indices = list(self.current_selected_story_indices)
@@ -62,6 +110,8 @@ class StoryCrudMixin:
             fin = getattr(story, "fade_in", 0.0)
             fout = getattr(story, "fade_out", 0.0)
             fcurve = getattr(story, "fade_curve", "linear") or "linear"
+            st_len = max(0.0, float(story.end) - float(story.start))
+            clock_dur = format_clock_duration(st_len, include_millis=True)
 
             fade_parts = []
             if fin > 0:
@@ -70,12 +120,12 @@ class StoryCrudMixin:
                 fade_parts.append(f"Out:{fout:.1f}s")
             fade_badge = f"  [{' '.join(fade_parts)}]" if fade_parts else ""
 
-            text = f"{index}. {format_time(story.start)} – {format_time(story.end)}  {story.title}{fade_badge}"
+            text = f"{index}. {format_time(story.start)} – {format_time(story.end)}  {story.title}{fade_badge}\n   [{clock_dur}]"
             item = QListWidgetItem(text)
             curve_name = curve_labels.get(fcurve, fcurve.capitalize())
             fade_info = f"Fade-In: {fin:.2f}s | Fade-Out: {fout:.2f}s ({curve_name} Curve)" if (fin > 0 or fout > 0) else "No Fades Applied"
 
-            item.setToolTip(f"Story #{index}: {story.title}\nTime Range: {format_time(story.start)} – {format_time(story.end)}\n{fade_info}")
+            item.setToolTip(f"Story #{index}: {story.title}\nTime Range: {format_time(story.start)} – {format_time(story.end)} (Duration: {clock_dur})\n{fade_info}")
             item.setData(Qt.ItemDataRole.UserRole, story.to_dict())
             self.story_list.addItem(item)
 
@@ -87,6 +137,8 @@ class StoryCrudMixin:
         self.timeline.set_stories(self.stories, selected_indices)
         if hasattr(self, "update_story_list_height"):
             self.update_story_list_height()
+        if hasattr(self, "update_stories_header"):
+            self.update_stories_header()
         if hasattr(self, "notify_story_selection_to_plugins"):
             st = self.stories[selected_indices[0]] if (len(selected_indices) == 1 and 0 <= selected_indices[0] < len(self.stories)) else None
             self.notify_story_selection_to_plugins(st)
@@ -114,8 +166,12 @@ class StoryCrudMixin:
                 last_idx = self.story_list.count() - 1
                 item = self.story_list.item(last_idx)
                 if item:
-                    item.setText(f"{len(self.stories)}. {format_time(story.start)} – {format_time(story.end)}  {story.title}")
+                    st_len = max(0.0, float(story.end) - float(story.start))
+                    clock_dur = format_clock_duration(st_len, include_millis=True)
+                    item.setText(f"{len(self.stories)}. {format_time(story.start)} – {format_time(story.end)}  {story.title}\n   [{clock_dur}]")
                     item.setData(Qt.ItemDataRole.UserRole, story.to_dict())
+            if hasattr(self, "update_stories_header"):
+                self.update_stories_header()
 
     def handle_drag_story_region(self, index: int, start_time: float, end_time: float):
         if not self.pre_drag_stories_snapshot:
@@ -130,6 +186,8 @@ class StoryCrudMixin:
             else:
                 self.start_input.setText(format_time(story.start))
                 self.end_input.setText(format_time(story.end))
+                if hasattr(self, "update_stories_header"):
+                    self.update_stories_header()
 
     def audition_story(self, index: int):
         if not (0 <= index < len(self.stories)):
@@ -556,7 +614,8 @@ class StoryCrudMixin:
             return
 
         doc = self.transcript_view.document()
-        doc_len = doc.characterCount() if doc else 0
+        raw_count = doc.characterCount() if doc else None
+        doc_len = raw_count if isinstance(raw_count, int) else 1000000
         if doc_len <= 1:
             if hasattr(self.transcript_view, "set_timeline_selection_span"):
                 self.transcript_view.set_timeline_selection_span(None, None)
