@@ -1,13 +1,13 @@
 # Repository Symbol Index & API Map
 
-> Generated: 2026-11-09 16:21:44 | Total Files: 162
+> Generated: 2026-11-09 16:40:31 | Total Files: 162
 > Use `python scripts/generate_symbol_index.py --outline <file>` for exact line numbers.
 
 ## Modules Overview
 
 | Module | Lines | Summary | Primary Classes / Functions |
 | :--- | :---: | :--- | :--- |
-| `RadioTVSegmenter.py` | 663 | Radio & TV Segmenter — v3.9.89-beta | `MainWindow`, `main()` |
+| `RadioTVSegmenter.py` | 663 | Radio & TV Segmenter — v3.9.90-beta | `MainWindow`, `main()` |
 | `audio_normalization.py` | 541 | Radio & TV Story Segmenter — Audio Loudness Probing & Nor... | `LoudnessReport`, `AudioLoudnessProbeWorker`, `parse_ebur128_summary()`, `probe_media_duration_seconds()` *(+3 more)* |
 | `background_workers.py` | 1015 | Radio & TV Story Segmenter — Background Worker Threads & ... | `StoryAutoDetectWorker`, `WaveformWorker`, `VideoThumbnailWorker`, `get_waveform_peak_cache_path()` *(+6 more)* |
 | `backup_manager.py` | 622 | Unified State Serialization, Local, and Google Drive Clou... | `compute_data_checksum()`, `serialize_preferences()`, `serialize_keyboard_shortcuts()`, `serialize_glossary()` *(+7 more)* |
@@ -26,7 +26,7 @@
 | `diagnostic_cloud_and_system_tests.py` | 1313 | Diagnostic test bench suite component. | `DiagnosticCloudAndSystemTestsMixin` |
 | `diagnostic_core_tests.py` | 826 | Diagnostic test bench suite component. | `DiagnosticCoreTestsMixin` |
 | `diagnostic_dialog.py` | 324 | PySide6 Graphical Test Bench Dialog for Radio & TV Story ... | `create_diagnostic_dialog()` |
-| `diagnostic_editor_tests.py` | 623 | Diagnostic editor and find-replace tests for Radio & TV S... | `DiagnosticEditorTestsMixin` |
+| `diagnostic_editor_tests.py` | 638 | Diagnostic editor and find-replace tests for Radio & TV S... | `DiagnosticEditorTestsMixin` |
 | `diagnostic_export_tests.py` | 1899 | Diagnostic test bench suite component. | `DiagnosticExportTestsMixin` |
 | `diagnostic_helpers.py` | 151 | Helper fixtures, module resolvers, and DiagnosticItem for... | `DiagnosticItem`, `generate_synthetic_wav()` |
 | `diagnostic_loudness_tests.py` | 391 | Radio & TV Story Segmenter — Diagnostic Loudness Normaliz... | `DiagnosticLoudnessTestsMixin` |
@@ -122,11 +122,11 @@
 | `speaker_identity.py` | 260 | Radio & TV Segmenter | `VoiceMatch`, `cosine_similarity()`, `normalize_vector()`, `centroid()` *(+3 more)* |
 | `speaker_palette.py` | 148 | Accessible adaptive speaker color palette for Radio & TV ... | `SpeakerColor`, `SpeakerColorAssigner`, `get_speaker_index()`, `get_speaker_color()` *(+3 more)* |
 | `speaker_profiles.py` | 630 | speaker_profiles.py — Persistent Station Voice Profile Ma... | `StationVoiceProfile`, `StationVoiceProfileStore`, `ManageVoiceProfilesDialog` |
-| `story_crud_mixin.py` | 911 | Radio & TV Story Segmenter — Story CRUD & Timeline Select... | `StoryCrudMixin` |
+| `story_crud_mixin.py` | 919 | Radio & TV Story Segmenter — Story CRUD & Timeline Select... | `StoryCrudMixin` |
 | `story_detection_processing.py` | 206 | Story boundary detection processing mixin for Radio & TV ... | `StoryDetectionProcessingMixin` |
-| `story_fades_dialog.py` | 213 | story_fades_dialog.py — Dialog for fine-grained audio fad... | `StoryFadesDialog` |
+| `story_fades_dialog.py` | 215 | story_fades_dialog.py — Dialog for fine-grained audio fad... | `StoryFadesDialog` |
 | `story_metadata_dialog.py` | 307 | Radio & TV Story Segmenter — Universal Story & Post Metad... | `StoryMetadataDialog`, `generate_story_excerpt()` |
-| `story_model.py` | 262 | Radio & TV Story Segmenter — Story Model, Boundaries & Un... | `Story`, `SetStoriesCommand`, `StoryBoundaryChangeCommand`, `SelectStoriesCommand` *(+3 more)* |
+| `story_model.py` | 273 | Radio & TV Story Segmenter — Story Model, Boundaries & Un... | `Story`, `SetStoriesCommand`, `StoryBoundaryChangeCommand`, `SelectStoriesCommand` *(+3 more)* |
 | `story_widgets.py` | 564 | Radio & TV Story Segmenter — Story Sidebar Widgets, Item ... | `FadeCurveVisualSelector`, `StoryFadesChangeCommand`, `SetStoriesCommand`, `StoryBoundaryChangeCommand` *(+3 more)* |
 | `sync.py` | 161 | 2-Way Synchronization Engine for Radio & TV Story Segmenter. | `get_current_version()`, `run_cmd()`, `cmd_status()`, `cmd_pull()` *(+2 more)* |
 | `terminology.py` | 882 | Model-independent terminology and glossary support. | `split_source_variants()`, `format_source_variants()`, `parse_glossary()`, `expand_glossary_rules()` *(+11 more)* |
@@ -147,7 +147,7 @@
 | `transcript_navigation_mixin.py` | 300 | transcript_navigation_mixin.py - Timestamp discovery, car... | `TranscriptNavigationMixin` |
 | `transcript_playback_highlight_mixin.py` | 277 | Radio & TV Story Segmenter — Interactive Transcript Playb... | `TranscriptPlaybackHighlightMixin` |
 | `transcript_selection_mixin.py` | 473 | transcript_selection_mixin.py - Multi-selection, timeline... | `TranscriptSelectionMixin` |
-| `transcript_story.py` | 852 | Radio & TV Segmenter v3.9.89-beta — transcript story resp... | `TranscriptStoryMixin` |
+| `transcript_story.py` | 852 | Radio & TV Segmenter v3.9.90-beta — transcript story resp... | `TranscriptStoryMixin` |
 | `transcript_styles.py` | 104 | transcript_styles.py - Transcript view stylesheets and da... | `transcript_text_view_stylesheet()`, `clean_dark_mode_clipboard_html()` |
 | `transcript_timeline_sync_mixin.py` | 643 | Radio & TV Story Segmenter — Transcript Timeline & Playba... | `TranscriptTimelineSyncMixin` |
 | `transcription_processing.py` | 579 | Transcription background process management for Radio & T... | `TranscriptionProcessingMixin` |
@@ -173,7 +173,7 @@
 ## Detailed Symbol Catalog
 
 ### `RadioTVSegmenter.py` (663 lines)
-*Radio & TV Segmenter — v3.9.89-beta*
+*Radio & TV Segmenter — v3.9.90-beta*
 - **class `MainWindow(ModelManagementMixin, MediaBatchMixin, PlaybackPreferencesMixin, UiLayoutMixin, ProcessingMixin, TranslationMixin, TranscriptStoryMixin, ProjectExportMixin, GpuAccelerationMixin, QMainWindow)`** (lines 160–560):
   *Main application window for Radio & TV Segmenter.*
   - `__init__(self)` [L178-L355]
@@ -516,14 +516,14 @@
 - **Functions**:
   - `create_diagnostic_dialog(parent, include_dev_tests)` [L16-L324] — *Builds the Diagnostic Test Bench Qt Dialog.*
 
-### `diagnostic_editor_tests.py` (623 lines)
+### `diagnostic_editor_tests.py` (638 lines)
 *Diagnostic editor and find-replace tests for Radio & TV Story Segmenter.*
-- **class `DiagnosticEditorTestsMixin`** (lines 11–621):
+- **class `DiagnosticEditorTestsMixin`** (lines 11–636):
   *Diagnostic suite for transcript editor, find-replace, and speaker synchronization.*
   - `_test_find_and_replace_project_synchronization_and_undo(self, item)` [L14-L209] — *Validates that Find & Replace updates segments, word timings, speaker aliases,*
   - `_test_in_app_user_guides_and_documentation_viewer(self, item)` [L211-L283] — *Validates in-app user guide resolution, fallback to embedded content, and bundling invariants.*
   - `_test_story_transcript_highlighting_and_smart_copy(self, item)` [L285-L475] — *Validates story selection synchronization with transcript highlight overlay and smart clipboard copying.*
-  - `_test_story_duration_visibility_and_header_aggregation(self, item)` [L477-L621] — *Validates story clock duration formatting, 2-line sidebar item format, and multi-selection header aggregation.*
+  - `_test_story_duration_visibility_and_header_aggregation(self, item)` [L477-L636] — *Validates story clock duration formatting, 2-line sidebar item format, and multi-selection header aggregation.*
 
 ### `diagnostic_export_tests.py` (1899 lines)
 *Diagnostic test bench suite component.*
@@ -2412,36 +2412,36 @@
   - `_on_export(self)` [L572-L600]
   - `_on_import(self)` [L602-L630]
 
-### `story_crud_mixin.py` (911 lines)
+### `story_crud_mixin.py` (919 lines)
 *Radio & TV Story Segmenter — Story CRUD & Timeline Selection Mixin.*
-- **class `StoryCrudMixin`** (lines 46–911):
+- **class `StoryCrudMixin`** (lines 46–919):
   *Mixin providing story list UI management, CRUD operations, and fade handling.*
   - `update_stories_header(self)` [L49-L95] — *Update Stories section header label and tooltip with selection count and duration.*
   - `update_story_form_duration(self)` [L97-L111] — *Update Duration field in the story edit form below Range.*
-  - `refresh_story_list(self)` [L113-L162]
-  - `handle_new_story_started(self, start_time, end_time)` [L164-L174]
-  - `handle_new_story_updated(self, start_time, end_time)` [L176-L192]
-  - `handle_drag_story_region(self, index, start_time, end_time)` [L194-L210]
-  - `audition_story(self, index)` [L212-L235]
-  - `handle_drag_finished(self)` [L237-L266]
-  - `update_selected_story(self)` [L268-L326]
-  - `delete_selected_story(self)` [L328-L359]
-  - `get_current_interaction_time(self, for_boundary)` [L361-L379]
-  - `set_selected_story_start(self)` [L381-L426]
-  - `set_selected_story_end(self)` [L428-L473]
-  - `add_selection_to_story(self)` [L475-L586]
-  - `play_transcript_selection(self)` [L588-L607]
-  - `select_all_stories(self)` [L609-L616]
-  - `handle_timeline_selection_range_changed(self, start_time, end_time)` [L618-L680]
-  - `add_story_from_range(self, start_time, end_time)` [L682-L716]
-  - `add_story_from_active_selection(self)` [L718-L735]
-  - `open_story_fades_dialog(self, story_index)` [L737-L779]
-  - `apply_fades_to_selected_stories(self, fade_in, fade_out, fade_curve)` [L781-L814]
-  - `remove_fades_from_selected_stories(self)` [L816-L817]
-  - `set_fade_curve_for_selected_stories(self, curve_type)` [L819-L842]
-  - `open_story_metadata_dialog(self, target_story_index, modal)` [L844-L877]
-  - `_notify_floating_dialogs(self)` [L879-L893] — *Refresh any open non-modal export, metadata, or speaker management floating windows after main window edits.*
-  - `_close_floating_dialogs(self, persist_drafts)` [L895-L911] — *Persist drafts and close any active non-modal floating windows on project close or shutdown.*
+  - `refresh_story_list(self)` [L113-L170]
+  - `handle_new_story_started(self, start_time, end_time)` [L172-L182]
+  - `handle_new_story_updated(self, start_time, end_time)` [L184-L200]
+  - `handle_drag_story_region(self, index, start_time, end_time)` [L202-L218]
+  - `audition_story(self, index)` [L220-L243]
+  - `handle_drag_finished(self)` [L245-L274]
+  - `update_selected_story(self)` [L276-L334]
+  - `delete_selected_story(self)` [L336-L367]
+  - `get_current_interaction_time(self, for_boundary)` [L369-L387]
+  - `set_selected_story_start(self)` [L389-L434]
+  - `set_selected_story_end(self)` [L436-L481]
+  - `add_selection_to_story(self)` [L483-L594]
+  - `play_transcript_selection(self)` [L596-L615]
+  - `select_all_stories(self)` [L617-L624]
+  - `handle_timeline_selection_range_changed(self, start_time, end_time)` [L626-L688]
+  - `add_story_from_range(self, start_time, end_time)` [L690-L724]
+  - `add_story_from_active_selection(self)` [L726-L743]
+  - `open_story_fades_dialog(self, story_index)` [L745-L787]
+  - `apply_fades_to_selected_stories(self, fade_in, fade_out, fade_curve)` [L789-L822]
+  - `remove_fades_from_selected_stories(self)` [L824-L825]
+  - `set_fade_curve_for_selected_stories(self, curve_type)` [L827-L850]
+  - `open_story_metadata_dialog(self, target_story_index, modal)` [L852-L885]
+  - `_notify_floating_dialogs(self)` [L887-L901] — *Refresh any open non-modal export, metadata, or speaker management floating windows after main window edits.*
+  - `_close_floating_dialogs(self, persist_drafts)` [L903-L919] — *Persist drafts and close any active non-modal floating windows on project close or shutdown.*
 
 ### `story_detection_processing.py` (206 lines)
 *Story boundary detection processing mixin for Radio & TV Story Segmenter.*
@@ -2451,20 +2451,20 @@
   - `auto_detect_finished(self, new_stories)` [L88-L159]
   - `auto_detect_error(self, message)` [L161-L205]
 
-### `story_fades_dialog.py` (213 lines)
+### `story_fades_dialog.py` (215 lines)
 *story_fades_dialog.py — Dialog for fine-grained audio fade-in, fade-out, and curve adjustment.*
 - **Public Exports (`__all__`)**: StoryFadesDialog
-- **class `StoryFadesDialog(QDialog)`** (lines 18–211):
+- **class `StoryFadesDialog(QDialog)`** (lines 18–213):
   *Dialog for fine-grained numerical adjustment of audio fade-in and fade-out durations.*
   - `__init__(self, parent, story, story_index)` [L21-L38]
-  - `_init_ui(self)` [L40-L127]
-  - `_on_enable_fades_toggled(self, checked)` [L129-L138]
-  - `_sync_fades_preference(self)` [L140-L150]
-  - `apply_current(self)` [L152-L175]
-  - `accept(self)` [L177-L179]
-  - `reject(self)` [L181-L203]
-  - `_restore_defaults(self)` [L205-L208]
-  - `get_fades(self)` [L210-L211]
+  - `_init_ui(self)` [L40-L129]
+  - `_on_enable_fades_toggled(self, checked)` [L131-L140]
+  - `_sync_fades_preference(self)` [L142-L152]
+  - `apply_current(self)` [L154-L177]
+  - `accept(self)` [L179-L181]
+  - `reject(self)` [L183-L205]
+  - `_restore_defaults(self)` [L207-L210]
+  - `get_fades(self)` [L212-L213]
 
 ### `story_metadata_dialog.py` (307 lines)
 *Radio & TV Story Segmenter — Universal Story & Post Metadata Architecture.*
@@ -2487,35 +2487,35 @@
   - `_get_metadata_theme_mode()` [L47-L49] — *Retrieve active theme mode ('light', 'dark', or 'high_contrast').*
   - `generate_story_excerpt(text, max_words)` [L52-L63] — *Generate a clean, readable excerpt of up to max_words from transcript text.*
 
-### `story_model.py` (262 lines)
+### `story_model.py` (273 lines)
 *Radio & TV Story Segmenter — Story Model, Boundaries & Undo Commands.*
-- **class `Story`** (lines 67–151):
+- **class `Story`** (lines 67–162):
   *Represents a segmented radio or TV news/broadcast story with boundaries and fade metadata.*
-  - `__init__(self, start, end, title, suggestion, metadata, fade_in, fade_out, fade_curve)` [L70-L112]
-  - `duration(self)` [L115-L116]
-  - `to_dict(self)` [L118-L130]
-  - `from_dict(cls, data)` [L133-L148]
-  - `__repr__(self)` [L150-L151]
-- **class `SetStoriesCommand(QUndoCommand)`** (lines 179–204):
+  - `__init__(self, start, end, title, suggestion, metadata, fade_in, fade_out, fade_curve)` [L70-L123]
+  - `duration(self)` [L126-L127]
+  - `to_dict(self)` [L129-L141]
+  - `from_dict(cls, data)` [L144-L159]
+  - `__repr__(self)` [L161-L162]
+- **class `SetStoriesCommand(QUndoCommand)`** (lines 190–215):
   *Undo/redo command for wholesale updates to the project's story list.*
-  - `__init__(self, main_window, old_stories, new_stories, description)` [L182-L186]
-  - `undo(self)` [L188-L195]
-  - `redo(self)` [L197-L204]
-- **class `StoryBoundaryChangeCommand(QUndoCommand)`** (lines 207–244):
+  - `__init__(self, main_window, old_stories, new_stories, description)` [L193-L197]
+  - `undo(self)` [L199-L206]
+  - `redo(self)` [L208-L215]
+- **class `StoryBoundaryChangeCommand(QUndoCommand)`** (lines 218–255):
   *Discrete undo/redo command for story boundary adjustments (start/end times).*
-  - `__init__(self, main_window, story_index, old_start, old_end, new_start, new_end, description)` [L210-L217]
-  - `undo(self)` [L219-L223]
-  - `redo(self)` [L225-L229]
-  - `_sync_ui(self, start, end)` [L231-L244]
-- **class `SelectStoriesCommand(QUndoCommand)`** (lines 247–262):
+  - `__init__(self, main_window, story_index, old_start, old_end, new_start, new_end, description)` [L221-L228]
+  - `undo(self)` [L230-L234]
+  - `redo(self)` [L236-L240]
+  - `_sync_ui(self, start, end)` [L242-L255]
+- **class `SelectStoriesCommand(QUndoCommand)`** (lines 258–273):
   *Undo/redo command for active story selection index changes.*
-  - `__init__(self, main_window, old_selection, new_selection, description)` [L250-L254]
-  - `undo(self)` [L256-L258]
-  - `redo(self)` [L260-L262]
+  - `__init__(self, main_window, old_selection, new_selection, description)` [L261-L265]
+  - `undo(self)` [L267-L269]
+  - `redo(self)` [L271-L273]
 - **Functions**:
   - `get_fade_curve_factors(progress, curve)` [L54-L64] — *Calculate gain factor (0.0 to 1.0) given normalized fade progress (0.0 to 1.0).*
-  - `validate_story_boundaries(start, end, media_duration)` [L154-L163] — *Clamp and ensure start < end within [0.0, media_duration].*
-  - `check_story_overlap(stories)` [L166-L176] — *Return pairs of story indices that temporally overlap.*
+  - `validate_story_boundaries(start, end, media_duration)` [L165-L174] — *Clamp and ensure start < end within [0.0, media_duration].*
+  - `check_story_overlap(stories)` [L177-L187] — *Return pairs of story indices that temporally overlap.*
 
 ### `story_widgets.py` (564 lines)
 *Radio & TV Story Segmenter — Story Sidebar Widgets, Item Delegates, and Undo Commands.*
@@ -2905,7 +2905,7 @@
   - `_on_bubble_export(self)` [L468-L473]
 
 ### `transcript_story.py` (852 lines)
-*Radio & TV Segmenter v3.9.89-beta — transcript story responsibilities.*
+*Radio & TV Segmenter v3.9.90-beta — transcript story responsibilities.*
 - **Public Exports (`__all__`)**: TranscriptStoryMixin, Story, SetStoriesCommand, SelectStoriesCommand, StoryBoundaryChangeCommand, StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin, ChangeSpeakerDialog, VoiceProfileMatchDialog, StoryFadesDialog, SpeakerManagerDialog, FADE_CURVE_TABLES, get_fade_curve_factors
 - **class `TranscriptStoryMixin(StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin)`** (lines 63–851):
   - `render_transcript(self)` [L64-L467]

@@ -122,6 +122,8 @@ class StoryCrudMixin:
             "exponential": "Exponential",
         }
 
+        fades_enabled = bool(getattr(self, "enable_audio_fades", False))
+
         for index, story in enumerate(self.stories, start=1):
             fin = getattr(story, "fade_in", 0.0)
             fout = getattr(story, "fade_out", 0.0)
@@ -130,16 +132,22 @@ class StoryCrudMixin:
             clock_dur = format_clock_duration(st_len, include_millis=True)
 
             fade_parts = []
-            if fin > 0:
-                fade_parts.append(f"Fade In: {fin:.1f}s")
-            if fout > 0:
-                fade_parts.append(f"Fade Out: {fout:.1f}s")
+            if fades_enabled:
+                if fin > 0:
+                    fade_parts.append(f"Fade In: {fin:.1f}s")
+                if fout > 0:
+                    fade_parts.append(f"Fade Out: {fout:.1f}s")
             fade_badge = f"  [{' | '.join(fade_parts)}]" if fade_parts else ""
 
             text = f"{index}. {format_time(story.start)} – {format_time(story.end)}  {story.title}{fade_badge}"
             item = QListWidgetItem(text)
             curve_name = curve_labels.get(fcurve, fcurve.capitalize())
-            fade_info = f"Fade-In: {fin:.2f}s | Fade-Out: {fout:.2f}s ({curve_name} Curve)" if (fin > 0 or fout > 0) else "No Fades Applied"
+            if fades_enabled and (fin > 0 or fout > 0):
+                fade_info = f"Fade-In: {fin:.2f}s | Fade-Out: {fout:.2f}s ({curve_name} Curve)"
+            elif fades_enabled:
+                fade_info = "No Fades Applied"
+            else:
+                fade_info = "Audio Fades: Disabled (Enable in Story Settings)"
 
             item.setToolTip(f"Story #{index}: {story.title}\nTime Range: {format_time(story.start)} – {format_time(story.end)} (Duration: {clock_dur})\n{fade_info}")
             item.setData(Qt.ItemDataRole.UserRole, story.to_dict())

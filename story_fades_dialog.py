@@ -89,6 +89,8 @@ class StoryFadesDialog(QDialog):
         form_layout.addRow("Fade Curve Profile:", self.fade_curve_combo)
 
         layout.addWidget(form_group)
+        form_group.setEnabled(fades_enabled)
+        self.enable_fades_cb.toggled.connect(form_group.setEnabled)
 
         preset_layout = QHBoxLayout()
         preset_label = QLabel("Presets:", self)

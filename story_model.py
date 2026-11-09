@@ -84,23 +84,34 @@ class Story:
         self.suggestion = bool(suggestion)
         self.metadata = dict(metadata) if isinstance(metadata, dict) else {}
 
+        fades_enabled = False
+        settings = None
+        try:
+            settings = QSettings(INTERNAL_APP_ID, INTERNAL_APP_ID)
+            fades_val = settings.value("enable_audio_fades", "false")
+            fades_enabled = str(fades_val).strip().lower() in {"1", "true", "yes"}
+        except Exception:
+            fades_enabled = False
+
         if fade_in is not None:
             self.fade_in = max(0.0, float(fade_in))
-        else:
+        elif fades_enabled and settings is not None:
             try:
-                settings = QSettings(INTERNAL_APP_ID, INTERNAL_APP_ID)
                 self.fade_in = max(0.0, float(settings.value("default_fade_in_duration", 0.0)))
             except Exception:
                 self.fade_in = 0.0
+        else:
+            self.fade_in = 0.0
 
         if fade_out is not None:
             self.fade_out = max(0.0, float(fade_out))
-        else:
+        elif fades_enabled and settings is not None:
             try:
-                settings = QSettings(INTERNAL_APP_ID, INTERNAL_APP_ID)
                 self.fade_out = max(0.0, float(settings.value("default_fade_out_duration", 1.0)))
             except Exception:
                 self.fade_out = 1.0
+        else:
+            self.fade_out = 0.0
 
         if fade_curve is not None:
             self.fade_curve = str(fade_curve)

@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-09 16:21:44",
+  "generated_at": "2026-11-09 16:40:31",
   "total_files": 162,
   "files": {
     "RadioTVSegmenter.py": {
       "path": "RadioTVSegmenter.py",
       "lines": 663,
-      "summary": "Radio & TV Segmenter \u2014 v3.9.89-beta",
+      "summary": "Radio & TV Segmenter \u2014 v3.9.90-beta",
       "exports": null,
       "classes": [
         {
@@ -2108,7 +2108,7 @@
     },
     "diagnostic_editor_tests.py": {
       "path": "diagnostic_editor_tests.py",
-      "lines": 623,
+      "lines": 638,
       "summary": "Diagnostic editor and find-replace tests for Radio & TV Story Segmenter.",
       "exports": null,
       "classes": [
@@ -2116,7 +2116,7 @@
           "name": "DiagnosticEditorTestsMixin",
           "bases": [],
           "start_line": 11,
-          "end_line": 621,
+          "end_line": 636,
           "doc": "Diagnostic suite for transcript editor, find-replace, and speaker synchronization.",
           "methods": [
             {
@@ -2144,7 +2144,7 @@
               "name": "_test_story_duration_visibility_and_header_aggregation",
               "sig": "_test_story_duration_visibility_and_header_aggregation(self, item)",
               "start_line": 477,
-              "end_line": 621,
+              "end_line": 636,
               "doc": "Validates story clock duration formatting, 2-line sidebar item format, and multi-selection header aggregation."
             }
           ]
@@ -13802,7 +13802,7 @@
     },
     "story_crud_mixin.py": {
       "path": "story_crud_mixin.py",
-      "lines": 911,
+      "lines": 919,
       "summary": "Radio & TV Story Segmenter \u2014 Story CRUD & Timeline Selection Mixin.",
       "exports": null,
       "classes": [
@@ -13810,7 +13810,7 @@
           "name": "StoryCrudMixin",
           "bases": [],
           "start_line": 46,
-          "end_line": 911,
+          "end_line": 919,
           "doc": "Mixin providing story list UI management, CRUD operations, and fade handling.",
           "methods": [
             {
@@ -13831,168 +13831,168 @@
               "name": "refresh_story_list",
               "sig": "refresh_story_list(self)",
               "start_line": 113,
-              "end_line": 162,
+              "end_line": 170,
               "doc": ""
             },
             {
               "name": "handle_new_story_started",
               "sig": "handle_new_story_started(self, start_time, end_time)",
-              "start_line": 164,
-              "end_line": 174,
+              "start_line": 172,
+              "end_line": 182,
               "doc": ""
             },
             {
               "name": "handle_new_story_updated",
               "sig": "handle_new_story_updated(self, start_time, end_time)",
-              "start_line": 176,
-              "end_line": 192,
+              "start_line": 184,
+              "end_line": 200,
               "doc": ""
             },
             {
               "name": "handle_drag_story_region",
               "sig": "handle_drag_story_region(self, index, start_time, end_time)",
-              "start_line": 194,
-              "end_line": 210,
+              "start_line": 202,
+              "end_line": 218,
               "doc": ""
             },
             {
               "name": "audition_story",
               "sig": "audition_story(self, index)",
-              "start_line": 212,
-              "end_line": 235,
+              "start_line": 220,
+              "end_line": 243,
               "doc": ""
             },
             {
               "name": "handle_drag_finished",
               "sig": "handle_drag_finished(self)",
-              "start_line": 237,
-              "end_line": 266,
+              "start_line": 245,
+              "end_line": 274,
               "doc": ""
             },
             {
               "name": "update_selected_story",
               "sig": "update_selected_story(self)",
-              "start_line": 268,
-              "end_line": 326,
+              "start_line": 276,
+              "end_line": 334,
               "doc": ""
             },
             {
               "name": "delete_selected_story",
               "sig": "delete_selected_story(self)",
-              "start_line": 328,
-              "end_line": 359,
+              "start_line": 336,
+              "end_line": 367,
               "doc": ""
             },
             {
               "name": "get_current_interaction_time",
               "sig": "get_current_interaction_time(self, for_boundary)",
-              "start_line": 361,
-              "end_line": 379,
+              "start_line": 369,
+              "end_line": 387,
               "doc": ""
             },
             {
               "name": "set_selected_story_start",
               "sig": "set_selected_story_start(self)",
-              "start_line": 381,
-              "end_line": 426,
+              "start_line": 389,
+              "end_line": 434,
               "doc": ""
             },
             {
               "name": "set_selected_story_end",
               "sig": "set_selected_story_end(self)",
-              "start_line": 428,
-              "end_line": 473,
+              "start_line": 436,
+              "end_line": 481,
               "doc": ""
             },
             {
               "name": "add_selection_to_story",
               "sig": "add_selection_to_story(self)",
-              "start_line": 475,
-              "end_line": 586,
+              "start_line": 483,
+              "end_line": 594,
               "doc": ""
             },
             {
               "name": "play_transcript_selection",
               "sig": "play_transcript_selection(self)",
-              "start_line": 588,
-              "end_line": 607,
+              "start_line": 596,
+              "end_line": 615,
               "doc": ""
             },
             {
               "name": "select_all_stories",
               "sig": "select_all_stories(self)",
-              "start_line": 609,
-              "end_line": 616,
+              "start_line": 617,
+              "end_line": 624,
               "doc": ""
             },
             {
               "name": "handle_timeline_selection_range_changed",
               "sig": "handle_timeline_selection_range_changed(self, start_time, end_time)",
-              "start_line": 618,
-              "end_line": 680,
+              "start_line": 626,
+              "end_line": 688,
               "doc": ""
             },
             {
               "name": "add_story_from_range",
               "sig": "add_story_from_range(self, start_time, end_time)",
-              "start_line": 682,
-              "end_line": 716,
+              "start_line": 690,
+              "end_line": 724,
               "doc": ""
             },
             {
               "name": "add_story_from_active_selection",
               "sig": "add_story_from_active_selection(self)",
-              "start_line": 718,
-              "end_line": 735,
+              "start_line": 726,
+              "end_line": 743,
               "doc": ""
             },
             {
               "name": "open_story_fades_dialog",
               "sig": "open_story_fades_dialog(self, story_index)",
-              "start_line": 737,
-              "end_line": 779,
+              "start_line": 745,
+              "end_line": 787,
               "doc": ""
             },
             {
               "name": "apply_fades_to_selected_stories",
               "sig": "apply_fades_to_selected_stories(self, fade_in, fade_out, fade_curve)",
-              "start_line": 781,
-              "end_line": 814,
+              "start_line": 789,
+              "end_line": 822,
               "doc": ""
             },
             {
               "name": "remove_fades_from_selected_stories",
               "sig": "remove_fades_from_selected_stories(self)",
-              "start_line": 816,
-              "end_line": 817,
+              "start_line": 824,
+              "end_line": 825,
               "doc": ""
             },
             {
               "name": "set_fade_curve_for_selected_stories",
               "sig": "set_fade_curve_for_selected_stories(self, curve_type)",
-              "start_line": 819,
-              "end_line": 842,
+              "start_line": 827,
+              "end_line": 850,
               "doc": ""
             },
             {
               "name": "open_story_metadata_dialog",
               "sig": "open_story_metadata_dialog(self, target_story_index, modal)",
-              "start_line": 844,
-              "end_line": 877,
+              "start_line": 852,
+              "end_line": 885,
               "doc": ""
             },
             {
               "name": "_notify_floating_dialogs",
               "sig": "_notify_floating_dialogs(self)",
-              "start_line": 879,
-              "end_line": 893,
+              "start_line": 887,
+              "end_line": 901,
               "doc": "Refresh any open non-modal export, metadata, or speaker management floating windows after main window edits."
             },
             {
               "name": "_close_floating_dialogs",
               "sig": "_close_floating_dialogs(self, persist_drafts)",
-              "start_line": 895,
-              "end_line": 911,
+              "start_line": 903,
+              "end_line": 919,
               "doc": "Persist drafts and close any active non-modal floating windows on project close or shutdown."
             }
           ]
@@ -14048,7 +14048,7 @@
     },
     "story_fades_dialog.py": {
       "path": "story_fades_dialog.py",
-      "lines": 213,
+      "lines": 215,
       "summary": "story_fades_dialog.py \u2014 Dialog for fine-grained audio fade-in, fade-out, and curve adjustment.",
       "exports": [
         "StoryFadesDialog"
@@ -14060,7 +14060,7 @@
             "QDialog"
           ],
           "start_line": 18,
-          "end_line": 211,
+          "end_line": 213,
           "doc": "Dialog for fine-grained numerical adjustment of audio fade-in and fade-out durations.",
           "methods": [
             {
@@ -14074,56 +14074,56 @@
               "name": "_init_ui",
               "sig": "_init_ui(self)",
               "start_line": 40,
-              "end_line": 127,
+              "end_line": 129,
               "doc": ""
             },
             {
               "name": "_on_enable_fades_toggled",
               "sig": "_on_enable_fades_toggled(self, checked)",
-              "start_line": 129,
-              "end_line": 138,
+              "start_line": 131,
+              "end_line": 140,
               "doc": ""
             },
             {
               "name": "_sync_fades_preference",
               "sig": "_sync_fades_preference(self)",
-              "start_line": 140,
-              "end_line": 150,
+              "start_line": 142,
+              "end_line": 152,
               "doc": ""
             },
             {
               "name": "apply_current",
               "sig": "apply_current(self)",
-              "start_line": 152,
-              "end_line": 175,
+              "start_line": 154,
+              "end_line": 177,
               "doc": ""
             },
             {
               "name": "accept",
               "sig": "accept(self)",
-              "start_line": 177,
-              "end_line": 179,
+              "start_line": 179,
+              "end_line": 181,
               "doc": ""
             },
             {
               "name": "reject",
               "sig": "reject(self)",
-              "start_line": 181,
-              "end_line": 203,
+              "start_line": 183,
+              "end_line": 205,
               "doc": ""
             },
             {
               "name": "_restore_defaults",
               "sig": "_restore_defaults(self)",
-              "start_line": 205,
-              "end_line": 208,
+              "start_line": 207,
+              "end_line": 210,
               "doc": ""
             },
             {
               "name": "get_fades",
               "sig": "get_fades(self)",
-              "start_line": 210,
-              "end_line": 211,
+              "start_line": 212,
+              "end_line": 213,
               "doc": ""
             }
           ]
@@ -14259,7 +14259,7 @@
     },
     "story_model.py": {
       "path": "story_model.py",
-      "lines": 262,
+      "lines": 273,
       "summary": "Radio & TV Story Segmenter \u2014 Story Model, Boundaries & Undo Commands.",
       "exports": null,
       "classes": [
@@ -14267,42 +14267,42 @@
           "name": "Story",
           "bases": [],
           "start_line": 67,
-          "end_line": 151,
+          "end_line": 162,
           "doc": "Represents a segmented radio or TV news/broadcast story with boundaries and fade metadata.",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, start, end, title, suggestion, metadata, fade_in, fade_out, fade_curve)",
               "start_line": 70,
-              "end_line": 112,
+              "end_line": 123,
               "doc": ""
             },
             {
               "name": "duration",
               "sig": "duration(self)",
-              "start_line": 115,
-              "end_line": 116,
+              "start_line": 126,
+              "end_line": 127,
               "doc": ""
             },
             {
               "name": "to_dict",
               "sig": "to_dict(self)",
-              "start_line": 118,
-              "end_line": 130,
+              "start_line": 129,
+              "end_line": 141,
               "doc": ""
             },
             {
               "name": "from_dict",
               "sig": "from_dict(cls, data)",
-              "start_line": 133,
-              "end_line": 148,
+              "start_line": 144,
+              "end_line": 159,
               "doc": ""
             },
             {
               "name": "__repr__",
               "sig": "__repr__(self)",
-              "start_line": 150,
-              "end_line": 151,
+              "start_line": 161,
+              "end_line": 162,
               "doc": ""
             }
           ]
@@ -14312,29 +14312,29 @@
           "bases": [
             "QUndoCommand"
           ],
-          "start_line": 179,
-          "end_line": 204,
+          "start_line": 190,
+          "end_line": 215,
           "doc": "Undo/redo command for wholesale updates to the project's story list.",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, main_window, old_stories, new_stories, description)",
-              "start_line": 182,
-              "end_line": 186,
+              "start_line": 193,
+              "end_line": 197,
               "doc": ""
             },
             {
               "name": "undo",
               "sig": "undo(self)",
-              "start_line": 188,
-              "end_line": 195,
+              "start_line": 199,
+              "end_line": 206,
               "doc": ""
             },
             {
               "name": "redo",
               "sig": "redo(self)",
-              "start_line": 197,
-              "end_line": 204,
+              "start_line": 208,
+              "end_line": 215,
               "doc": ""
             }
           ]
@@ -14344,36 +14344,36 @@
           "bases": [
             "QUndoCommand"
           ],
-          "start_line": 207,
-          "end_line": 244,
+          "start_line": 218,
+          "end_line": 255,
           "doc": "Discrete undo/redo command for story boundary adjustments (start/end times).",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, main_window, story_index, old_start, old_end, new_start, new_end, description)",
-              "start_line": 210,
-              "end_line": 217,
+              "start_line": 221,
+              "end_line": 228,
               "doc": ""
             },
             {
               "name": "undo",
               "sig": "undo(self)",
-              "start_line": 219,
-              "end_line": 223,
+              "start_line": 230,
+              "end_line": 234,
               "doc": ""
             },
             {
               "name": "redo",
               "sig": "redo(self)",
-              "start_line": 225,
-              "end_line": 229,
+              "start_line": 236,
+              "end_line": 240,
               "doc": ""
             },
             {
               "name": "_sync_ui",
               "sig": "_sync_ui(self, start, end)",
-              "start_line": 231,
-              "end_line": 244,
+              "start_line": 242,
+              "end_line": 255,
               "doc": ""
             }
           ]
@@ -14383,29 +14383,29 @@
           "bases": [
             "QUndoCommand"
           ],
-          "start_line": 247,
-          "end_line": 262,
+          "start_line": 258,
+          "end_line": 273,
           "doc": "Undo/redo command for active story selection index changes.",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, main_window, old_selection, new_selection, description)",
-              "start_line": 250,
-              "end_line": 254,
+              "start_line": 261,
+              "end_line": 265,
               "doc": ""
             },
             {
               "name": "undo",
               "sig": "undo(self)",
-              "start_line": 256,
-              "end_line": 258,
+              "start_line": 267,
+              "end_line": 269,
               "doc": ""
             },
             {
               "name": "redo",
               "sig": "redo(self)",
-              "start_line": 260,
-              "end_line": 262,
+              "start_line": 271,
+              "end_line": 273,
               "doc": ""
             }
           ]
@@ -14422,15 +14422,15 @@
         {
           "name": "validate_story_boundaries",
           "sig": "validate_story_boundaries(start, end, media_duration)",
-          "start_line": 154,
-          "end_line": 163,
+          "start_line": 165,
+          "end_line": 174,
           "doc": "Clamp and ensure start < end within [0.0, media_duration]."
         },
         {
           "name": "check_story_overlap",
           "sig": "check_story_overlap(stories)",
-          "start_line": 166,
-          "end_line": 176,
+          "start_line": 177,
+          "end_line": 187,
           "doc": "Return pairs of story indices that temporally overlap."
         }
       ]
@@ -16806,7 +16806,7 @@
     "transcript_story.py": {
       "path": "transcript_story.py",
       "lines": 852,
-      "summary": "Radio & TV Segmenter v3.9.89-beta \u2014 transcript story responsibilities.",
+      "summary": "Radio & TV Segmenter v3.9.90-beta \u2014 transcript story responsibilities.",
       "exports": [
         "TranscriptStoryMixin",
         "Story",

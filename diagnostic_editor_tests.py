@@ -553,16 +553,31 @@ class DiagnosticEditorTestsMixin:
         assert host.stories_header.text() == "Historias (2) — [03:45.5]"
         assert "2 historias seleccionadas" in host.stories_header.toolTip()
 
-        # 7. Test refresh_story_list single-line item formatting and Fade Out language
+        # 7. Test refresh_story_list single-line item formatting and Fade Out language honoring enable_audio_fades
         host.stories[0].fade_out = 1.0
+
+        # Case A: Audio fades disabled (default) -> fade badge MUST NOT appear on list item
+        host.enable_audio_fades = False
         host.refresh_story_list()
         assert host.story_list.count() == 3
         item0 = host.story_list.item(0)
         assert item0 is not None
         assert "\n" not in item0.text(), f"Expected single line for story item, got: {item0.text()}"
         assert "Lead Story" in item0.text()
-        assert "[Fade Out: 1.0s]" in item0.text()
-        assert "Duration: 02:30.5" in item0.toolTip()
+        assert "[Fade Out: 1.0s]" not in item0.text(), f"Fade badge should be suppressed when audio fades are disabled: {item0.text()}"
+        assert "Audio Fades: Disabled" in item0.toolTip()
+
+        # Verify new story created while audio fades disabled defaults to 0.0s fade_in and fade_out
+        fresh_story = Story(start=10.0, end=20.0, title="Fresh Story")
+        assert fresh_story.fade_out == 0.0, f"Expected 0.0s fade_out for new story when fades disabled, got: {fresh_story.fade_out}"
+        assert fresh_story.fade_in == 0.0
+
+        # Case B: Audio fades enabled -> fade badge appears cleanly
+        host.enable_audio_fades = True
+        host.refresh_story_list()
+        item0_enabled = host.story_list.item(0)
+        assert "[Fade Out: 1.0s]" in item0_enabled.text(), f"Expected fade badge when audio fades enabled, got: {item0_enabled.text()}"
+        assert "Fade-Out: 1.00s" in item0_enabled.toolTip()
 
         # 8. Test timeline hover readout and selection drag duration formatting
         from timeline_snap import (
