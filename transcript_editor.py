@@ -762,6 +762,15 @@ class InteractiveTranscriptEdit(
                 self.timeline_selection_span = None
                 self.update_extra_selections()
                 cleared = True
+            if hasattr(main_win, "timeline") and main_win.timeline:
+                tl = main_win.timeline
+                canv = getattr(tl, "canvas", tl)
+                if getattr(canv, "selection_start", None) is not None or getattr(canv, "selection_end", None) is not None:
+                    if hasattr(tl, "clear_selection_range"):
+                        tl.clear_selection_range()
+                    elif hasattr(canv, "clear_selection_range"):
+                        canv.clear_selection_range()
+                    cleared = True
             if hasattr(main_win, "apply_story_selection_indices") and getattr(main_win, "current_selected_story_indices", None):
                 main_win.apply_story_selection_indices([])
                 cleared = True

@@ -93,7 +93,7 @@ TABLE OF CONTENTS & STATUS OVERVIEW
    [ ] 5.4 Burned-in Subtitles & Platform Safe Zone Enforcement (`plugins/social_reel/reel_subtitles.py`)
    [ ] 5.5 Unified Export Integration & Social Reel Diagnostic Tests (`export/dialog.py`, `test_runner.py`)
 
-6. Current Release: Searchable/Sortable Glossary, Story Highlighting, Context Menus & Diagnostic Thread Safety (glossary_dialog.py, terminology.py, transcript_editor.py, diagnostic_dialog.py) [x] [COMPLETED in v3.9.90-beta]
+6. Current Release: Searchable/Sortable Glossary, Story Highlighting, Context Menus & Diagnostic Thread Safety (glossary_dialog.py, terminology.py, transcript_editor.py, diagnostic_dialog.py) [x] [COMPLETED in v3.9.91-beta]
    [x] 6.1 Modular Glossary Dialog & Live Search: Extracted GlossaryDialog into glossary_dialog.py with real-time text filtering, 6 sorting modes, and 4-column data model (Match case).
    [x] 6.2 Alternate Spellings & Two-Pass Engine: Comma-separated alternate spellings, transcript Add Selected Text as Alternate Spelling For..., and project-scoped single-word co-reference normalization.
    [x] 6.3 Story Selection Transcript Highlighting & Smart Copy: Synchronized story overlays, Ctrl+C smart copy, universal Esc deselect, and context menu parity across timeline and transcript views.

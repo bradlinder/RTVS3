@@ -855,11 +855,16 @@ class UiMenusMixin:
         if hasattr(self, "apply_story_selection_indices"):
             self.apply_story_selection_indices([])
         if hasattr(self, "timeline") and self.timeline:
-            self.timeline.selection_start = None
-            self.timeline.selection_end = None
-            if hasattr(self.timeline, "selectionRangeChanged"):
-                self.timeline.selectionRangeChanged.emit(None, None)
-            self.timeline.update()
+            if hasattr(self.timeline, "clear_selection_range"):
+                self.timeline.clear_selection_range()
+            elif hasattr(getattr(self.timeline, "canvas", None), "clear_selection_range"):
+                self.timeline.canvas.clear_selection_range()
+            else:
+                self.timeline.selection_start = None
+                self.timeline.selection_end = None
+                if hasattr(self.timeline, "selectionRangeChanged"):
+                    self.timeline.selectionRangeChanged.emit(None, None)
+                self.timeline.update()
         if hasattr(self, "transcript_view") and self.transcript_view:
             self.transcript_view.clear_all_selections()
 

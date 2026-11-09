@@ -582,6 +582,16 @@ SHORTCUT_DEFINITIONS: List[ShortcutDef] = [
         attr_name="id3_editor_action",
     ),
     ShortcutDef(
+        action_id="deselect_all",
+        name="Deselect All / Clear Selection",
+        category="Story & Segment Editing",
+        default_seq="Esc",
+        default_mac="Esc",
+        description="Clear active story selections, timeline selection range, or transcript selection",
+        attr_name="deselect_action",
+        is_custom_event=True,
+    ),
+    ShortcutDef(
         action_id="delete_selected_story",
         name="Delete Selected Story",
         category="Story & Segment Editing",

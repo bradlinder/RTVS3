@@ -521,11 +521,14 @@ Radio & TV Story Segmenter provides extensive keyboard control across timeline s
 | Action | Shortcut (Windows/Linux) | Shortcut (macOS) | Description |
 | :--- | :--- | :--- | :--- |
 | **Play / Pause** | `Space` | `Space` | Toggle audio playback at playhead position. |
-| **Stop** | `Esc` | `Esc` | Stop playback and return playhead to start. |
-| **Seek Backward (Small)** | `Left Arrow` | `Left Arrow` | Jump backward 2 seconds. |
-| **Seek Forward (Small)** | `Right Arrow` | `Right Arrow` | Jump forward 2 seconds. |
-| **Seek Backward (Large)** | `Shift + Left` | `Shift + Left` | Jump backward 10 seconds. |
-| **Seek Forward (Large)** | `Shift + Right` | `Shift + Right` | Jump forward 10 seconds. |
+| **Skip Backward (Short)** | `Left Arrow` | `Left Arrow` | Jump backward 5 seconds (configurable). |
+| **Skip Forward (Short)** | `Right Arrow` | `Right Arrow` | Jump forward 5 seconds (configurable). |
+| **Jump Backward (Medium)** | `Shift + Left` | `Shift + Left` | Jump backward 15 seconds. |
+| **Jump Forward (Medium)** | `Shift + Right` | `Shift + Right` | Jump forward 15 seconds. |
+| **Jump Backward (Long)** | `Ctrl + Left` | `Cmd + Left` | Jump backward 30 seconds. |
+| **Jump Forward (Long)** | `Ctrl + Right` | `Cmd + Right` | Jump forward 30 seconds. |
+| **Seek to Start** | `Home` | `Home` | Return playhead to start of audio (00:00.0). |
+| **Seek to End** | `End` | `End` | Move playhead to end of audio file. |
 | **Timeline Zoom In** | `+` / `Ctrl + Wheel` | `+` / `Cmd + Wheel` | Zoom into waveform timeline up to 300x. |
 | **Timeline Zoom Out** | `-` / `Ctrl + Wheel` | `-` / `Cmd + Wheel` | Zoom out toward episode overview. |
 
@@ -537,8 +540,11 @@ Radio & TV Story Segmenter provides extensive keyboard control across timeline s
 | :--- | :--- | :--- | :--- |
 | **Mark Story Start** | `[` | `[` | Set story in-point at current playhead position. |
 | **Mark Story End** | `]` | `]` | Set story out-point and create story segment. |
-| **Auto-Detect Stories** | `Ctrl + D` | `Cmd + D` | Run AI topic and pause boundary detection. |
-| **Transcribe & Diarize** | `Ctrl + T` | `Cmd + T` | Run speech transcription and speaker recognition. |
+| **Deselect All / Clear Selection** | `Esc` | `Esc` | Clear active story selections, timeline selection range, or transcript selection. |
+| **Auto-Detect Stories** | `Ctrl + Shift + A` | `Cmd + Shift + A` | Run AI topic and pause boundary detection. |
+| **Transcribe Audio** | `Ctrl + T` | `Cmd + T` | Run speech-to-text transcription. |
+| **Detect Speakers (Diarization)** | `Ctrl + D` | `Cmd + D` | Run AI speaker clustering and identification. |
+| **Audio Fades & Crossfades** | `Ctrl + Shift + F` | `Cmd + Shift + F` | Configure story volume fade curves. |
 | **Unified Export Center** | `Ctrl + E` | `Cmd + E` | Open export panel for audio, docs, and WordPress. |
 | **Video Preview Window** | `Ctrl + Shift + V` | `Cmd + Shift + V` | Open floating, synchronized video player. |
 
@@ -549,6 +555,9 @@ Radio & TV Story Segmenter provides extensive keyboard control across timeline s
 | Action | Shortcut (Windows/Linux) | Shortcut (macOS) | Description |
 | :--- | :--- | :--- | :--- |
 | **Find & Replace** | `Ctrl + F` | `Cmd + F` | Open modeless Find and Replace dialog. |
-| **Toggle Edit Mode** | `Ctrl + E` | `Cmd + E` | Toggle between viewing and direct text editing. |
-| **Word Highlighting** | `Click Word` | `Click Word` | Seek audio playback directly to spoken word. |
+| **Toggle Proofreading / Edit Mode** | `F2` | `F2` | Toggle between viewing and direct text editing. |
+| **Split Speaker Segment** | `Shift + Enter` | `Shift + Enter` | Split dialogue turn and insert speaker at cursor. |
+| **Split Segment at Playhead** | `Ctrl + K` | `Cmd + K` | Cut active segment at current playback timestamp. |
+| **Merge with Next Segment** | `Ctrl + J` | `Cmd + J` | Combine current segment with following turn. |
+| **Word Highlighting & Seek** | `Click Word` | `Click Word` | Seek audio playback directly to spoken word. |
 """

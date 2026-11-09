@@ -295,6 +295,13 @@ class TimelineCanvas(QWidget):
             self.scrollOffsetChanged.emit(self.scroll_offset)
             self.pixmap_dirty = True
 
+    def clear_selection_range(self):
+        """Clear active timeline drag selection range without affecting committed stories."""
+        self.selection_start = None
+        self.selection_end = None
+        self.selectionRangeChanged.emit(None, None)
+        self.update()
+
     def set_transcript_selection_range(self, start, end):
         if start is None or end is None:
             self.transcript_selection_range = None
@@ -795,10 +802,7 @@ class TimelineCanvas(QWidget):
             main_win = self.window()
             cleared = False
             if self.selection_start is not None or self.selection_end is not None:
-                self.selection_start = None
-                self.selection_end = None
-                self.selectionRangeChanged.emit(None, None)
-                self.update()
+                self.clear_selection_range()
                 cleared = True
             if hasattr(main_win, "apply_story_selection_indices") and getattr(main_win, "current_selected_story_indices", None):
                 main_win.apply_story_selection_indices([])

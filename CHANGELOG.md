@@ -1,5 +1,11 @@
 # Changelog
 
+## v3.9.91-beta
+- **Universal Esc Selection Clearance & Keyboard Shortcut Documentation Alignment (timeline_widgets.py, ui_menus.py, story_widgets.py, transcript_editor.py, shortcuts/schema.py, user_guide_dialog.py)**:
+  - **Universal Esc Selection Clearance (timeline_widgets.py, ui_menus.py, story_widgets.py, transcript_editor.py)**: Added dedicated TimelineCanvas.clear_selection_range() and wired the Esc key across the timeline canvas, story sidebar list, transcript editor, and global Edit > Deselect All menu action to immediately clear uncommitted drag selection ranges identically to the right-click context menu.
+  - **Shortcuts Registry & Preferences Integration (shortcuts/schema.py)**: Registered deselect_all ('Deselect All / Clear Selection', default Esc) in SHORTCUT_DEFINITIONS under Story & Segment Editing, enabling searchability in Help > Keyboard Shortcuts Reference (F1) and user customization in Preferences > Keyboard Shortcuts (F8).
+  - **In-App User Guide Alignment (user_guide_dialog.py)**: Synchronized keyboard shortcuts documentation in the in-app user guide viewer with actual application bindings—removed phantom Stop (Esc) entry, added Seek to Start (Home) and Seek to End (End), corrected Auto-Detect Stories (Ctrl+Shift+A), Detect Speakers (Ctrl+D), and Toggle Edit Mode (F2), and updated jump distances to 5s/15s/30s defaults.
+
 ## v3.9.90-beta
 - **Audio Fades State Synchronization & Suppression Fix (story_model.py, story_crud_mixin.py, story_fades_dialog.py, diagnostic_editor_tests.py)**:
   - **Honor Audio Fades Enabled Setting on New Stories (story_model.py)**: Corrected an issue where newly created stories were unconditionally assigned a default `1.0s` fade out duration even when audio fades were disabled. `Story.__init__` now checks `enable_audio_fades` from application settings, ensuring new stories default to `0.0s` fades whenever audio fades are turned off.

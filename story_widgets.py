@@ -462,9 +462,13 @@ class StoryListWidget(QListWidget):
             event.accept()
         elif event.key() == Qt.Key.Key_Escape:
             parent = self.parent()
-            while parent and not hasattr(parent, "apply_story_selection_indices"):
+            while parent and not hasattr(parent, "trigger_deselect_all") and not hasattr(parent, "apply_story_selection_indices"):
                 parent = parent.parent()
-            if parent and hasattr(parent, "apply_story_selection_indices"):
+            if parent and hasattr(parent, "trigger_deselect_all"):
+                parent.trigger_deselect_all()
+                event.accept()
+                return
+            elif parent and hasattr(parent, "apply_story_selection_indices"):
                 parent.apply_story_selection_indices([])
                 event.accept()
                 return

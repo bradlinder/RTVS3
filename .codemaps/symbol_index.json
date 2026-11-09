@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-09 16:40:31",
+  "generated_at": "2026-11-09 13:22:59",
   "total_files": 162,
   "files": {
     "RadioTVSegmenter.py": {
       "path": "RadioTVSegmenter.py",
       "lines": 663,
-      "summary": "Radio & TV Segmenter \u2014 v3.9.90-beta",
+      "summary": "Radio & TV Segmenter \u2014 v3.9.91-beta",
       "exports": null,
       "classes": [
         {
@@ -12771,7 +12771,7 @@
     },
     "shortcuts/schema.py": {
       "path": "shortcuts/schema.py",
-      "lines": 858,
+      "lines": 868,
       "summary": "shortcuts/schema.py \u2014 Shortcut definitions, dataclass models, and string helpers.",
       "exports": null,
       "classes": [
@@ -14437,7 +14437,7 @@
     },
     "story_widgets.py": {
       "path": "story_widgets.py",
-      "lines": 564,
+      "lines": 568,
       "summary": "Radio & TV Story Segmenter \u2014 Story Sidebar Widgets, Item Delegates, and Undo Commands.",
       "exports": null,
       "classes": [
@@ -14681,7 +14681,7 @@
             "QListWidget"
           ],
           "start_line": 425,
-          "end_line": 564,
+          "end_line": 568,
           "doc": "QListWidget subclass for story segmentation list with right-click context menu and drag-drop support.",
           "methods": [
             {
@@ -14716,21 +14716,21 @@
               "name": "keyPressEvent",
               "sig": "keyPressEvent(self, event)",
               "start_line": 459,
-              "end_line": 487,
+              "end_line": 491,
               "doc": ""
             },
             {
               "name": "_show_context_menu",
               "sig": "_show_context_menu(self, pos)",
-              "start_line": 489,
-              "end_line": 553,
+              "start_line": 493,
+              "end_line": 557,
               "doc": ""
             },
             {
               "name": "adjust_height_to_contents",
               "sig": "adjust_height_to_contents(self, min_h, max_h)",
-              "start_line": 555,
-              "end_line": 564,
+              "start_line": 559,
+              "end_line": 568,
               "doc": "Dynamically size the list widget to only fit the number of stories."
             }
           ]
@@ -15579,7 +15579,7 @@
     },
     "timeline_widgets.py": {
       "path": "timeline_widgets.py",
-      "lines": 994,
+      "lines": 998,
       "summary": "Radio & TV Story Segmenter \u2014 Timeline Ruler, Track Views, Playhead, Overview & Canvas Widgets.",
       "exports": null,
       "classes": [
@@ -15589,7 +15589,7 @@
             "QWidget"
           ],
           "start_line": 59,
-          "end_line": 874,
+          "end_line": 878,
           "doc": "",
           "methods": [
             {
@@ -15691,192 +15691,199 @@
               "doc": ""
             },
             {
-              "name": "set_transcript_selection_range",
-              "sig": "set_transcript_selection_range(self, start, end)",
+              "name": "clear_selection_range",
+              "sig": "clear_selection_range(self)",
               "start_line": 298,
               "end_line": 303,
+              "doc": "Clear active timeline drag selection range without affecting committed stories."
+            },
+            {
+              "name": "set_transcript_selection_range",
+              "sig": "set_transcript_selection_range(self, start, end)",
+              "start_line": 305,
+              "end_line": 310,
               "doc": ""
             },
             {
               "name": "set_stories",
               "sig": "set_stories(self, stories, selected_indices)",
-              "start_line": 305,
-              "end_line": 309,
+              "start_line": 312,
+              "end_line": 316,
               "doc": ""
             },
             {
               "name": "set_waveform_peaks",
               "sig": "set_waveform_peaks(self, peaks, levels)",
-              "start_line": 311,
-              "end_line": 322,
+              "start_line": 318,
+              "end_line": 329,
               "doc": ""
             },
             {
               "name": "set_timeline_views",
               "sig": "set_timeline_views(self, show_waveform, show_thumbnails)",
-              "start_line": 324,
-              "end_line": 328,
+              "start_line": 331,
+              "end_line": 335,
               "doc": ""
             },
             {
               "name": "set_video_thumbnails",
               "sig": "set_video_thumbnails(self, thumbnails)",
-              "start_line": 330,
-              "end_line": 337,
+              "start_line": 337,
+              "end_line": 344,
               "doc": ""
             },
             {
               "name": "set_skip_seconds",
               "sig": "set_skip_seconds(self, seconds)",
-              "start_line": 339,
-              "end_line": 340,
+              "start_line": 346,
+              "end_line": 347,
               "doc": ""
             },
             {
               "name": "visible_duration",
               "sig": "visible_duration(self)",
-              "start_line": 342,
-              "end_line": 343,
+              "start_line": 349,
+              "end_line": 350,
               "doc": ""
             },
             {
               "name": "clamp_scroll_offset",
               "sig": "clamp_scroll_offset(self)",
-              "start_line": 345,
-              "end_line": 348,
+              "start_line": 352,
+              "end_line": 355,
               "doc": ""
             },
             {
               "name": "time_to_x",
               "sig": "time_to_x(self, time_val, width)",
-              "start_line": 350,
-              "end_line": 353,
+              "start_line": 357,
+              "end_line": 360,
               "doc": ""
             },
             {
               "name": "x_to_time",
               "sig": "x_to_time(self, x_val, width)",
-              "start_line": 355,
-              "end_line": 357,
+              "start_line": 362,
+              "end_line": 364,
               "doc": ""
             },
             {
               "name": "snap_time",
               "sig": "snap_time(self, raw_time, exclude_story_idx, width, pixel_threshold)",
-              "start_line": 359,
-              "end_line": 360,
+              "start_line": 366,
+              "end_line": 367,
               "doc": ""
             },
             {
               "name": "find_edge_at_pos",
               "sig": "find_edge_at_pos(self, pos_x, width)",
-              "start_line": 364,
-              "end_line": 365,
+              "start_line": 371,
+              "end_line": 372,
               "doc": ""
             },
             {
               "name": "find_fade_handle_at_pos",
               "sig": "find_fade_handle_at_pos(self, pos_x, pos_y, width)",
-              "start_line": 367,
-              "end_line": 368,
+              "start_line": 374,
+              "end_line": 375,
               "doc": ""
             },
             {
               "name": "find_story_at_time",
               "sig": "find_story_at_time(self, time)",
-              "start_line": 370,
-              "end_line": 371,
+              "start_line": 377,
+              "end_line": 378,
               "doc": ""
             },
             {
               "name": "is_near_playhead",
               "sig": "is_near_playhead(self, pos_x, width)",
-              "start_line": 373,
-              "end_line": 374,
+              "start_line": 380,
+              "end_line": 381,
               "doc": ""
             },
             {
               "name": "set_zoom",
               "sig": "set_zoom(self, new_zoom, center_x, focus_time)",
-              "start_line": 376,
-              "end_line": 402,
+              "start_line": 383,
+              "end_line": 409,
               "doc": ""
             },
             {
               "name": "resizeEvent",
               "sig": "resizeEvent(self, event)",
-              "start_line": 404,
-              "end_line": 406,
+              "start_line": 411,
+              "end_line": 413,
               "doc": ""
             },
             {
               "name": "wheelEvent",
               "sig": "wheelEvent(self, event)",
-              "start_line": 408,
-              "end_line": 458,
+              "start_line": 415,
+              "end_line": 465,
               "doc": ""
             },
             {
               "name": "mousePressEvent",
               "sig": "mousePressEvent(self, event)",
-              "start_line": 460,
-              "end_line": 544,
+              "start_line": 467,
+              "end_line": 551,
               "doc": ""
             },
             {
               "name": "mouseMoveEvent",
               "sig": "mouseMoveEvent(self, event)",
-              "start_line": 546,
-              "end_line": 677,
+              "start_line": 553,
+              "end_line": 684,
               "doc": ""
             },
             {
               "name": "mouseReleaseEvent",
               "sig": "mouseReleaseEvent(self, event)",
-              "start_line": 679,
-              "end_line": 749,
+              "start_line": 686,
+              "end_line": 756,
               "doc": ""
             },
             {
               "name": "_show_timeline_context_menu",
               "sig": "_show_timeline_context_menu(self, global_pos, pos_x)",
-              "start_line": 751,
-              "end_line": 752,
+              "start_line": 758,
+              "end_line": 759,
               "doc": ""
             },
             {
               "name": "_show_selection_context_menu",
               "sig": "_show_selection_context_menu(self, global_pos)",
-              "start_line": 754,
-              "end_line": 755,
+              "start_line": 761,
+              "end_line": 762,
               "doc": ""
             },
             {
               "name": "keyPressEvent",
               "sig": "keyPressEvent(self, event)",
-              "start_line": 757,
-              "end_line": 854,
+              "start_line": 764,
+              "end_line": 858,
               "doc": ""
             },
             {
               "name": "set_thumbnail_position",
               "sig": "set_thumbnail_position(self, position)",
-              "start_line": 856,
-              "end_line": 860,
+              "start_line": 860,
+              "end_line": 864,
               "doc": ""
             },
             {
               "name": "render_waveform_buffer",
               "sig": "render_waveform_buffer(self, width, height)",
-              "start_line": 862,
-              "end_line": 863,
+              "start_line": 866,
+              "end_line": 867,
               "doc": ""
             },
             {
               "name": "paintEvent",
               "sig": "paintEvent(self, event)",
-              "start_line": 866,
-              "end_line": 874,
+              "start_line": 870,
+              "end_line": 878,
               "doc": ""
             }
           ]
@@ -15886,85 +15893,85 @@
           "bases": [
             "QWidget"
           ],
-          "start_line": 877,
-          "end_line": 992,
+          "start_line": 881,
+          "end_line": 996,
           "doc": "",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, parent, tokens)",
-              "start_line": 880,
-              "end_line": 917,
+              "start_line": 884,
+              "end_line": 921,
               "doc": ""
             },
             {
               "name": "set_is_video",
               "sig": "set_is_video(self, is_video)",
-              "start_line": 919,
-              "end_line": 921,
-              "doc": ""
-            },
-            {
-              "name": "set_background_generation_active",
-              "sig": "set_background_generation_active(self, task_name, active)",
               "start_line": 923,
               "end_line": 925,
               "doc": ""
             },
             {
+              "name": "set_background_generation_active",
+              "sig": "set_background_generation_active(self, task_name, active)",
+              "start_line": 927,
+              "end_line": 929,
+              "doc": ""
+            },
+            {
               "name": "dragEnterEvent",
               "sig": "dragEnterEvent(self, event)",
-              "start_line": 927,
-              "end_line": 934,
+              "start_line": 931,
+              "end_line": 938,
               "doc": ""
             },
             {
               "name": "dragMoveEvent",
               "sig": "dragMoveEvent(self, event)",
-              "start_line": 936,
-              "end_line": 943,
+              "start_line": 940,
+              "end_line": 947,
               "doc": ""
             },
             {
               "name": "dragLeaveEvent",
               "sig": "dragLeaveEvent(self, event)",
-              "start_line": 945,
-              "end_line": 946,
+              "start_line": 949,
+              "end_line": 950,
               "doc": ""
             },
             {
               "name": "dropEvent",
               "sig": "dropEvent(self, event)",
-              "start_line": 948,
-              "end_line": 956,
+              "start_line": 952,
+              "end_line": 960,
               "doc": ""
             },
             {
               "name": "update_scrollbar_range",
               "sig": "update_scrollbar_range(self)",
-              "start_line": 958,
-              "end_line": 967,
+              "start_line": 962,
+              "end_line": 971,
               "doc": ""
             },
             {
               "name": "update_scrollbar_from_canvas",
               "sig": "update_scrollbar_from_canvas(self, offset)",
-              "start_line": 969,
-              "end_line": 977,
+              "start_line": 973,
+              "end_line": 981,
               "doc": ""
             },
             {
               "name": "update_canvas_from_scrollbar",
               "sig": "update_canvas_from_scrollbar(self, val)",
-              "start_line": 979,
-              "end_line": 989,
+              "start_line": 983,
+              "end_line": 993,
               "doc": ""
             },
             {
               "name": "__getattr__",
               "sig": "__getattr__(self, name)",
-              "start_line": 991,
-              "end_line": 992,
+              "start_line": 995,
+              "end_line": 996,
               "doc": ""
             }
           ]
@@ -16078,7 +16085,7 @@
     },
     "transcript_editor.py": {
       "path": "transcript_editor.py",
-      "lines": 993,
+      "lines": 1002,
       "summary": "transcript_editor.py - Interactive Transcript Editor & Viewer Components",
       "exports": [
         "FindReplaceDialog",
@@ -16097,7 +16104,7 @@
             "QTextEdit"
           ],
           "start_line": 117,
-          "end_line": 993,
+          "end_line": 1002,
           "doc": "",
           "methods": [
             {
@@ -16258,7 +16265,7 @@
               "name": "keyPressEvent",
               "sig": "keyPressEvent(self, event)",
               "start_line": 739,
-              "end_line": 993,
+              "end_line": 1002,
               "doc": ""
             }
           ]
@@ -16806,7 +16813,7 @@
     "transcript_story.py": {
       "path": "transcript_story.py",
       "lines": 852,
-      "summary": "Radio & TV Segmenter v3.9.90-beta \u2014 transcript story responsibilities.",
+      "summary": "Radio & TV Segmenter v3.9.91-beta \u2014 transcript story responsibilities.",
       "exports": [
         "TranscriptStoryMixin",
         "Story",
@@ -17684,7 +17691,7 @@
     },
     "ui_menus.py": {
       "path": "ui_menus.py",
-      "lines": 865,
+      "lines": 870,
       "summary": "Main application menu bar and action assembly for Radio & TV Story Segmenter.",
       "exports": null,
       "classes": [
@@ -17717,7 +17724,7 @@
           "name": "UiMenusMixin",
           "bases": [],
           "start_line": 78,
-          "end_line": 864,
+          "end_line": 869,
           "doc": "Mixin providing menu construction, action shortcut wiring, and menu synchronization.",
           "methods": [
             {
@@ -17787,7 +17794,7 @@
               "name": "trigger_deselect_all",
               "sig": "trigger_deselect_all(self)",
               "start_line": 853,
-              "end_line": 864,
+              "end_line": 869,
               "doc": "Clear all active selections across stories, timeline range, and transcript."
             }
           ]
@@ -18115,7 +18122,7 @@
     },
     "user_guide_dialog.py": {
       "path": "user_guide_dialog.py",
-      "lines": 554,
+      "lines": 563,
       "summary": "Radio & TV Story Segmenter \u2014 In-App User Guide & Documentation Viewer Dialog.",
       "exports": null,
       "classes": [
@@ -18157,7 +18164,7 @@
             "QDialog"
           ],
           "start_line": 110,
-          "end_line": 554,
+          "end_line": 563,
           "doc": "In-app reader dialog displaying rich user guides with inline screenshots.",
           "methods": [
             {
@@ -18241,7 +18248,7 @@
               "name": "_build_dynamic_shortcuts_guide",
               "sig": "_build_dynamic_shortcuts_guide(self)",
               "start_line": 511,
-              "end_line": 554,
+              "end_line": 563,
               "doc": "Build dynamic keyboard shortcut documentation from active settings."
             }
           ]

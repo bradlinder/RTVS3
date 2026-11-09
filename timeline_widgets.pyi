@@ -80,6 +80,9 @@ class TimelineCanvas(QWidget):
     def ensure_position_visible(self, target_time):
         ...
 
+    def clear_selection_range(self):
+        ...
+
     def set_transcript_selection_range(self, start, end):
         ...
 
