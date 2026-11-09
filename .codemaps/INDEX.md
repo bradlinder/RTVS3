@@ -1,13 +1,13 @@
 # Repository Symbol Index & API Map
 
-> Generated: 2026-11-08 15:46:33 | Total Files: 162
+> Generated: 2026-11-09 16:21:44 | Total Files: 162
 > Use `python scripts/generate_symbol_index.py --outline <file>` for exact line numbers.
 
 ## Modules Overview
 
 | Module | Lines | Summary | Primary Classes / Functions |
 | :--- | :---: | :--- | :--- |
-| `RadioTVSegmenter.py` | 663 | Radio & TV Segmenter — v3.9.88-beta | `MainWindow`, `main()` |
+| `RadioTVSegmenter.py` | 663 | Radio & TV Segmenter — v3.9.89-beta | `MainWindow`, `main()` |
 | `audio_normalization.py` | 541 | Radio & TV Story Segmenter — Audio Loudness Probing & Nor... | `LoudnessReport`, `AudioLoudnessProbeWorker`, `parse_ebur128_summary()`, `probe_media_duration_seconds()` *(+3 more)* |
 | `background_workers.py` | 1015 | Radio & TV Story Segmenter — Background Worker Threads & ... | `StoryAutoDetectWorker`, `WaveformWorker`, `VideoThumbnailWorker`, `get_waveform_peak_cache_path()` *(+6 more)* |
 | `backup_manager.py` | 622 | Unified State Serialization, Local, and Google Drive Clou... | `compute_data_checksum()`, `serialize_preferences()`, `serialize_keyboard_shortcuts()`, `serialize_glossary()` *(+7 more)* |
@@ -21,12 +21,12 @@
 | `bump_version.py` | 513 | bump_version.py — Automated Version Synchronization Engine | `normalize_version()`, `get_current_version()`, `compute_bump()`, `detect_modified_plugins()` *(+3 more)* |
 | `cache_manager.py` | 685 | Radio & TV Segmenter — Cache management, disk usage scann... | `ClearCacheDialog`, `register_active_thumbnail_dir()`, `unregister_active_thumbnail_dir()`, `get_active_thumbnail_dirs()` *(+3 more)* |
 | `comment_widgets.py` | 350 | comment_widgets.py - Range-Anchored Comments Panel & Comm... | `CommentEditorDialog`, `CommentCardWidget`, `CommentsPanel` |
-| `core_utils.py` | 666 | Radio & TV Segmenter — Core filesystem, path, timing, and... | `safe_process_events()`, `get_active_theme_mode()`, `apply_window_titlebar_theme()`, `make_dialog_maximizable()` *(+22 more)* |
+| `core_utils.py` | 692 | Radio & TV Segmenter — Core filesystem, path, timing, and... | `safe_process_events()`, `get_active_theme_mode()`, `apply_window_titlebar_theme()`, `make_dialog_maximizable()` *(+23 more)* |
 | `diagnostic_batch_tests.py` | 1076 | Diagnostic test bench suite component. | `DiagnosticBatchTestsMixin` |
 | `diagnostic_cloud_and_system_tests.py` | 1313 | Diagnostic test bench suite component. | `DiagnosticCloudAndSystemTestsMixin` |
 | `diagnostic_core_tests.py` | 826 | Diagnostic test bench suite component. | `DiagnosticCoreTestsMixin` |
 | `diagnostic_dialog.py` | 324 | PySide6 Graphical Test Bench Dialog for Radio & TV Story ... | `create_diagnostic_dialog()` |
-| `diagnostic_editor_tests.py` | 464 | Diagnostic editor and find-replace tests for Radio & TV S... | `DiagnosticEditorTestsMixin` |
+| `diagnostic_editor_tests.py` | 623 | Diagnostic editor and find-replace tests for Radio & TV S... | `DiagnosticEditorTestsMixin` |
 | `diagnostic_export_tests.py` | 1899 | Diagnostic test bench suite component. | `DiagnosticExportTestsMixin` |
 | `diagnostic_helpers.py` | 151 | Helper fixtures, module resolvers, and DiagnosticItem for... | `DiagnosticItem`, `generate_synthetic_wav()` |
 | `diagnostic_loudness_tests.py` | 391 | Radio & TV Story Segmenter — Diagnostic Loudness Normaliz... | `DiagnosticLoudnessTestsMixin` |
@@ -51,7 +51,7 @@
 | `gpu_acceleration.py` | 276 | Radio & TV Segmenter v1.1.1 — optional GPU acceleration r... | `GpuAccelerationInstallWorker`, `GpuAccelerationMixin` |
 | `id3_editor.py` | 704 | ID3 Tag Editor module for Radio & TV Segmenter. | `ID3TagEditorDialog`, `read_id3_tags()`, `write_id3_tags()` |
 | `installer/pyinstaller/torch_dll_hook.py` | 70 | PyInstaller runtime hook for Windows ML/native DLL resolu... | - |
-| `media_batch.py` | 1709 | Radio & TV Segmenter v1.1.1 — media batch responsibilities. | `MediaBatchMixin` |
+| `media_batch.py` | 1711 | Radio & TV Segmenter v1.1.1 — media batch responsibilities. | `MediaBatchMixin` |
 | `model_install_workers.py` | 189 | Radio & TV Segmenter — Model Download and Installation Ba... | `WhisperModelInstallWorker`, `DiarizationModelInstallWorker`, `get_diarization_model_dir()`, `is_diarization_model_available()` |
 | `model_management.py` | 989 | Radio & TV Segmenter v1.1.1 — model management responsibi... | `_DummyTranslationWorker`, `ModelManagementMixin` |
 | `playback_controller.py` | 630 | Radio & TV Story Segmenter — Media Player Transport & Pla... | `PlaybackControllerMixin` |
@@ -91,14 +91,14 @@
 | `preferences_tabs_media.py` | 656 | Radio & TV Story Segmenter — Preferences Modal Media & Wo... | `build_playback_timeline_tab()`, `build_detection_tab()`, `build_batch_tab()`, `build_cleanup_tab()` *(+1 more)* |
 | `preview_manager.py` | 270 | AI Studio Web Preview Manager for Radio & TV Story Segmen... | `get_project_version()`, `restore_preview()`, `sync_version()`, `main()` |
 | `process_lifecycle.py` | 191 | Radio & TV Segmenter — Subprocess tracking and OS-level j... | `init_child_process_job_isolation()`, `bind_subprocess_to_job()`, `register_process()`, `unregister_process()` *(+2 more)* |
-| `processing.py` | 1232 | Radio & TV Segmenter v3.3.29 — processing responsibilities. | `RuntimeSetupWorker`, `ProcessingMixin` |
+| `processing.py` | 1238 | Radio & TV Segmenter v3.3.29 — processing responsibilities. | `RuntimeSetupWorker`, `ProcessingMixin` |
 | `project_data_purge_dialog.py` | 169 | Modal dialog allowing users to selectively clear/purge pr... | `ProjectDataPurgeDialog` |
 | `project_export.py` | 454 | Radio & TV Story Segmenter — Unified Project & Media Expo... | `ProjectExportMixin` |
 | `project_lifecycle.py` | 864 | Radio & TV Story Segmenter — Project Lifecycle & Persiste... | `ProjectLifecycleMixin` |
 | `project_serialization.py` | 126 | Radio & TV Segmenter — Project file serialization and saf... | `sanitize_project_data_for_storage()`, `serialize_rtvs_project()`, `deserialize_rtvs_project()`, `read_rtvs_project_file()` *(+1 more)* |
 | `project_state_mixin.py` | 361 | Radio & TV Story Segmenter — Project State, Undo/Redo & P... | `ProjectStateMixin` |
-| `prs_shared.py` | 1491 |  | `ProjectMetadataDict`, `ResizableTextEdit`, `CollapsibleSection`, `ExportDialog` *(+8 more)* |
-| `qt_compat.py` | 768 | Radio & TV Segmenter — Headless Qt / PySide6 Compatibilit... | `MockClassMeta`, `DynamicMock`, `MockModule`, `_DummyQtMeta` *(+16 more)* |
+| `prs_shared.py` | 1492 |  | `ProjectMetadataDict`, `ResizableTextEdit`, `CollapsibleSection`, `ExportDialog` *(+8 more)* |
+| `qt_compat.py` | 917 | Radio & TV Segmenter — Headless Qt / PySide6 Compatibilit... | `MockClassMeta`, `DynamicMock`, `MockModule`, `_DummyQtMeta` *(+22 more)* |
 | `radio_tv_story_segmenter_worker.py` | 226 | Radio & TV Story Segmenter — AI Background Subprocess Wor... | `main()` |
 | `roadmap_manager.py` | 259 | roadmap_manager.py — Automated Roadmap & N-1 Sliding-Wind... | `RoadmapManager`, `get_current_app_version()`, `main()` |
 | `runtime_manager.py` | 1037 |  | `RuntimeManager`, `register_process()`, `unregister_process()`, `kill_all_subprocesses()` *(+1 more)* |
@@ -122,7 +122,7 @@
 | `speaker_identity.py` | 260 | Radio & TV Segmenter | `VoiceMatch`, `cosine_similarity()`, `normalize_vector()`, `centroid()` *(+3 more)* |
 | `speaker_palette.py` | 148 | Accessible adaptive speaker color palette for Radio & TV ... | `SpeakerColor`, `SpeakerColorAssigner`, `get_speaker_index()`, `get_speaker_color()` *(+3 more)* |
 | `speaker_profiles.py` | 630 | speaker_profiles.py — Persistent Station Voice Profile Ma... | `StationVoiceProfile`, `StationVoiceProfileStore`, `ManageVoiceProfilesDialog` |
-| `story_crud_mixin.py` | 832 | Radio & TV Story Segmenter — Story CRUD & Timeline Select... | `StoryCrudMixin` |
+| `story_crud_mixin.py` | 911 | Radio & TV Story Segmenter — Story CRUD & Timeline Select... | `StoryCrudMixin` |
 | `story_detection_processing.py` | 206 | Story boundary detection processing mixin for Radio & TV ... | `StoryDetectionProcessingMixin` |
 | `story_fades_dialog.py` | 213 | story_fades_dialog.py — Dialog for fine-grained audio fad... | `StoryFadesDialog` |
 | `story_metadata_dialog.py` | 307 | Radio & TV Story Segmenter — Universal Story & Post Metad... | `StoryMetadataDialog`, `generate_story_excerpt()` |
@@ -137,23 +137,23 @@
 | `timeline_overview.py` | 351 | Timeline Resize Handle and Overview Navigation Bar widgets. | `TimelineResizeHandle`, `TimelineOverviewBar` |
 | `timeline_overview_widget.py` | 372 | Timeline overview bar, mini-map navigator, and resize han... | `TimelineResizeHandle`, `TimelineOverviewBar` |
 | `timeline_painter.py` | 419 | Timeline canvas rendering engine, waveform drawing, and p... | `render_waveform_buffer()`, `paint_timeline_canvas()` |
-| `timeline_snap.py` | 119 | Timeline snapping algorithms, edge detection, and collisi... | `snap_time()`, `find_edge_at_pos()`, `find_fade_handle_at_pos()`, `find_story_at_time()` *(+1 more)* |
-| `timeline_widgets.py` | 991 | Radio & TV Story Segmenter — Timeline Ruler, Track Views,... | `TimelineCanvas`, `TimelineWidget` |
+| `timeline_snap.py` | 195 | Timeline snapping algorithms, edge detection, and collisi... | `snap_time()`, `find_edge_at_pos()`, `find_fade_handle_at_pos()`, `find_story_at_time()` *(+4 more)* |
+| `timeline_widgets.py` | 994 | Radio & TV Story Segmenter — Timeline Ruler, Track Views,... | `TimelineCanvas`, `TimelineWidget` |
 | `transcript_cleaner.py` | 216 | Radio & TV Segmenter — Transcript cleaning, loop collapsi... | `collapse_repeating_ngrams()`, `strip_hallucination_phrases()`, `trim_trailing_degenerate_tail()`, `scrub_transcript_segments()` *(+1 more)* |
 | `transcript_context_menu_mixin.py` | 454 | Radio & TV Story Segmenter — Interactive Transcript Conte... | `TranscriptContextMenuMixin` |
-| `transcript_editor.py` | 978 | transcript_editor.py - Interactive Transcript Editor & Vi... | `InteractiveTranscriptEdit` |
+| `transcript_editor.py` | 993 | transcript_editor.py - Interactive Transcript Editor & Vi... | `InteractiveTranscriptEdit` |
 | `transcript_editor_dialogs.py` | 683 | transcript_editor_dialogs.py - Dialog and floating toolba... | `FindReplaceDialog`, `TranscriptSelectionBubble` |
 | `transcript_formatting_mixin.py` | 340 | Radio & TV Story Segmenter — Interactive Transcript Forma... | `TranscriptFormattingMixin` |
 | `transcript_navigation_mixin.py` | 300 | transcript_navigation_mixin.py - Timestamp discovery, car... | `TranscriptNavigationMixin` |
 | `transcript_playback_highlight_mixin.py` | 277 | Radio & TV Story Segmenter — Interactive Transcript Playb... | `TranscriptPlaybackHighlightMixin` |
 | `transcript_selection_mixin.py` | 473 | transcript_selection_mixin.py - Multi-selection, timeline... | `TranscriptSelectionMixin` |
-| `transcript_story.py` | 852 | Radio & TV Segmenter v3.9.88-beta — transcript story resp... | `TranscriptStoryMixin` |
+| `transcript_story.py` | 852 | Radio & TV Segmenter v3.9.89-beta — transcript story resp... | `TranscriptStoryMixin` |
 | `transcript_styles.py` | 104 | transcript_styles.py - Transcript view stylesheets and da... | `transcript_text_view_stylesheet()`, `clean_dark_mode_clipboard_html()` |
-| `transcript_timeline_sync_mixin.py` | 642 | Radio & TV Story Segmenter — Transcript Timeline & Playba... | `TranscriptTimelineSyncMixin` |
+| `transcript_timeline_sync_mixin.py` | 643 | Radio & TV Story Segmenter — Transcript Timeline & Playba... | `TranscriptTimelineSyncMixin` |
 | `transcription_processing.py` | 579 | Transcription background process management for Radio & T... | `TranscriptionProcessingMixin` |
 | `translation.py` | 923 | Radio & TV Segmenter — Local Translation Mixin. | `TranslationEnvSetupWorker`, `TranslationMixin` |
 | `ui_dialog_launchers.py` | 370 | Dialog launchers and external modal helpers for Radio & T... | `UiDialogLaunchersMixin` |
-| `ui_layout.py` | 1090 | Radio & TV Segmenter — UI Layout & Menu Construction Mixin. | `UiLayoutMixin` |
+| `ui_layout.py` | 1097 | Radio & TV Segmenter — UI Layout & Menu Construction Mixin. | `UiLayoutMixin` |
 | `ui_menus.py` | 865 | Main application menu bar and action assembly for Radio &... | `PersistentMenu`, `UiMenusMixin` |
 | `updater.py` | 1549 | Update manager and GitHub release installer for Radio & T... | `CheckUpdateWorker`, `DownloadUpdateWorker`, `CheckUpdateDialog`, `UpdaterMixin` *(+9 more)* |
 | `user_guide_dialog.py` | 554 | Radio & TV Story Segmenter — In-App User Guide & Document... | `ResponsiveTextBrowser`, `UserGuideDialog` |
@@ -173,7 +173,7 @@
 ## Detailed Symbol Catalog
 
 ### `RadioTVSegmenter.py` (663 lines)
-*Radio & TV Segmenter — v3.9.88-beta*
+*Radio & TV Segmenter — v3.9.89-beta*
 - **class `MainWindow(ModelManagementMixin, MediaBatchMixin, PlaybackPreferencesMixin, UiLayoutMixin, ProcessingMixin, TranslationMixin, TranscriptStoryMixin, ProjectExportMixin, GpuAccelerationMixin, QMainWindow)`** (lines 160–560):
   *Main application window for Radio & TV Segmenter.*
   - `__init__(self)` [L178-L355]
@@ -410,7 +410,7 @@
   - `set_comments(self, segments)` [L302-L337] — *Populate the comment cards from transcript segments.*
   - `highlight_segment(self, target_seg_idx)` [L339-L350] — *Visually flash/highlight a specific comment card.*
 
-### `core_utils.py` (666 lines)
+### `core_utils.py` (692 lines)
 *Radio & TV Segmenter — Core filesystem, path, timing, and hash utilities.*
 - **Functions**:
   - `safe_process_events()` [L37-L46] — *Safely process pending Qt GUI events only when called from the main GUI thread.*
@@ -437,11 +437,12 @@
   - `ffprobe_path()` [L539-L540]
   - `format_byte_size(num_bytes)` [L543-L566] — *Format byte quantities into human-readable strings.*
   - `format_time(seconds, include_millis)` [L569-L586]
-  - `parse_time(value)` [L589-L605]
-  - `safe_filename(text)` [L608-L624]
-  - `is_sentence_end(text)` [L627-L628]
-  - `calculate_fade_curve_factor(u, fcurve)` [L631-L642] — *Calculate normalized fade-in multiplier (0.0 to 1.0) given progress `u` in [0, 1].*
-  - `calculate_fade_out_factor(u, fcurve)` [L645-L665] — *Calculate normalized fade-out multiplier (1.0 to 0.0) given progress `u` from 0.0 (fade start) to 1.0 (silence).*
+  - `format_clock_duration(seconds, include_millis)` [L589-L612] — *Format duration in seconds as clock time string (e.g. '02:30' or '02:30.5').*
+  - `parse_time(value)` [L615-L631]
+  - `safe_filename(text)` [L634-L650]
+  - `is_sentence_end(text)` [L653-L654]
+  - `calculate_fade_curve_factor(u, fcurve)` [L657-L668] — *Calculate normalized fade-in multiplier (0.0 to 1.0) given progress `u` in [0, 1].*
+  - `calculate_fade_out_factor(u, fcurve)` [L671-L691] — *Calculate normalized fade-out multiplier (1.0 to 0.0) given progress `u` from 0.0 (fade start) to 1.0 (silence).*
 
 ### `diagnostic_batch_tests.py` (1076 lines)
 *Diagnostic test bench suite component.*
@@ -515,13 +516,14 @@
 - **Functions**:
   - `create_diagnostic_dialog(parent, include_dev_tests)` [L16-L324] — *Builds the Diagnostic Test Bench Qt Dialog.*
 
-### `diagnostic_editor_tests.py` (464 lines)
+### `diagnostic_editor_tests.py` (623 lines)
 *Diagnostic editor and find-replace tests for Radio & TV Story Segmenter.*
-- **class `DiagnosticEditorTestsMixin`** (lines 11–463):
+- **class `DiagnosticEditorTestsMixin`** (lines 11–621):
   *Diagnostic suite for transcript editor, find-replace, and speaker synchronization.*
-  - `_test_find_and_replace_project_synchronization_and_undo(self, item)` [L14-L202] — *Validates that Find & Replace updates segments, word timings, speaker aliases,*
-  - `_test_in_app_user_guides_and_documentation_viewer(self, item)` [L204-L276] — *Validates in-app user guide resolution, fallback to embedded content, and bundling invariants.*
-  - `_test_story_transcript_highlighting_and_smart_copy(self, item)` [L278-L463] — *Validates story selection synchronization with transcript highlight overlay and smart clipboard copying.*
+  - `_test_find_and_replace_project_synchronization_and_undo(self, item)` [L14-L209] — *Validates that Find & Replace updates segments, word timings, speaker aliases,*
+  - `_test_in_app_user_guides_and_documentation_viewer(self, item)` [L211-L283] — *Validates in-app user guide resolution, fallback to embedded content, and bundling invariants.*
+  - `_test_story_transcript_highlighting_and_smart_copy(self, item)` [L285-L475] — *Validates story selection synchronization with transcript highlight overlay and smart clipboard copying.*
+  - `_test_story_duration_visibility_and_header_aggregation(self, item)` [L477-L621] — *Validates story clock duration formatting, 2-line sidebar item format, and multi-selection header aggregation.*
 
 ### `diagnostic_export_tests.py` (1899 lines)
 *Diagnostic test bench suite component.*
@@ -861,9 +863,9 @@
 ### `installer/pyinstaller/torch_dll_hook.py` (70 lines)
 *PyInstaller runtime hook for Windows ML/native DLL resolution.*
 
-### `media_batch.py` (1709 lines)
+### `media_batch.py` (1711 lines)
 *Radio & TV Segmenter v1.1.1 — media batch responsibilities.*
-- **class `MediaBatchMixin`** (lines 21–1709):
+- **class `MediaBatchMixin`** (lines 21–1711):
   - `probe_media_duration(self, path)` [L22-L36] — *Probe duration locally so video timelines can be populated immediately.*
   - `_track_worker_thread(self, thread)` [L38-L50] — *Keep a strong reference to active worker threads so Python GC never destroys them while executing.*
   - `stop_waveform_worker(self, timeout_ms)` [L52-L83] — *Stop the current waveform worker completely before replacing it or closing.*
@@ -906,19 +908,19 @@
   - `add_custom_speaker_to_glossary(self, name)` [L1113-L1115]
   - `set_language(self, language, persist)` [L1117-L1138]
   - `_apply_localization(self)` [L1140-L1177]
-  - `update_story_segment_terminology(self)` [L1179-L1283] — *Update all user-facing labels and tooltips to use 'Song' in Music mode and 'Story' in Voice mode.*
-  - `open_document(self)` [L1285-L1339]
-  - `export_text_file(self)` [L1341-L1349]
-  - `open_media(self)` [L1351-L1360]
-  - `prepare_for_new_media(self)` [L1362-L1395] — *Checks for unsaved changes before loading new media.*
-  - `_batch_media_error(self, message)` [L1397-L1419]
-  - `_get_batch_project_target_path(self, base_name)` [L1421-L1448] — *Determines consistent target .rtvs project file path during batch processing.*
-  - `_batch_save_project_file(self)` [L1450-L1465] — *Saves project .rtvs to dedicated directory structure during batch processing.*
-  - `_batch_export_current(self)` [L1467-L1551] — *Handles automatic export or project saving during batch processing.*
-  - `load_media_file(self, filename, source, restore_adjacent_project)` [L1553-L1668]
-  - `update_active_media_source(self)` [L1670-L1703] — *Update media player source and refresh waveform when normalization state changes.*
-  - `open_audio(self)` [L1705-L1706]
-  - `handle_media_drop(self, filename)` [L1708-L1709]
+  - `update_story_segment_terminology(self)` [L1179-L1285] — *Update all user-facing labels and tooltips to use 'Song' in Music mode and 'Story' in Voice mode.*
+  - `open_document(self)` [L1287-L1341]
+  - `export_text_file(self)` [L1343-L1351]
+  - `open_media(self)` [L1353-L1362]
+  - `prepare_for_new_media(self)` [L1364-L1397] — *Checks for unsaved changes before loading new media.*
+  - `_batch_media_error(self, message)` [L1399-L1421]
+  - `_get_batch_project_target_path(self, base_name)` [L1423-L1450] — *Determines consistent target .rtvs project file path during batch processing.*
+  - `_batch_save_project_file(self)` [L1452-L1467] — *Saves project .rtvs to dedicated directory structure during batch processing.*
+  - `_batch_export_current(self)` [L1469-L1553] — *Handles automatic export or project saving during batch processing.*
+  - `load_media_file(self, filename, source, restore_adjacent_project)` [L1555-L1670]
+  - `update_active_media_source(self)` [L1672-L1705] — *Update media player source and refresh waveform when normalization state changes.*
+  - `open_audio(self)` [L1707-L1708]
+  - `handle_media_drop(self, filename)` [L1710-L1711]
 
 ### `model_install_workers.py` (189 lines)
 *Radio & TV Segmenter — Model Download and Installation Background Workers.*
@@ -1669,41 +1671,41 @@
   - `get_registered_processes()` [L152-L154] — *Return a snapshot list of currently registered processes.*
   - `terminate_all_registered_processes()` [L160-L184] — *Terminate and wait on all active child processes upon application close.*
 
-### `processing.py` (1232 lines)
+### `processing.py` (1238 lines)
 *Radio & TV Segmenter v3.3.29 — processing responsibilities.*
 - **class `RuntimeSetupWorker(QThread)`** (lines 56–85):
   *Runs runtime_manager.ensure_environment() off the GUI thread, so that*
   - `__init__(self, runtime_mgr, feature, parent, ensure_kwargs)` [L64-L69]
   - `cancel(self)` [L71-L72]
   - `run(self)` [L74-L85]
-- **class `ProcessingMixin(TranscriptionProcessingMixin, DiarizationProcessingMixin, StoryDetectionProcessingMixin)`** (lines 92–1231):
+- **class `ProcessingMixin(TranscriptionProcessingMixin, DiarizationProcessingMixin, StoryDetectionProcessingMixin)`** (lines 92–1237):
   - `_ensure_runtime_environment_responsive(self, feature, **ensure_kwargs)` [L103-L193] — *Make sure the isolated venv for `feature` is ready before*
   - `cancel_current_process(self)` [L195-L329]
   - `update_skip_stage_button_visibility(self)` [L331-L341] — *Show or hide the 'Skip Stage' button based on active pipeline state.*
   - `skip_current_pipeline_stage(self)` [L343-L391] — *Cancel the active pipeline stage and advance directly to the next queued stage.*
   - `commit_story_change(self, old_stories, new_stories, description)` [L393-L408]
-  - `apply_story_selection_indices(self, selected_rows, seek)` [L410-L493]
-  - `on_timeline_story_clicked(self, index)` [L495-L505] — *Handle user clicking a story region directly on the timeline canvas.*
-  - `story_selection_changed(self)` [L507-L524]
-  - `handle_timeline_multi_selection(self, selected_indices)` [L526-L537]
-  - `set_tools_actions_enabled(self, enabled)` [L539-L575]
-  - `stop_story_detection_worker(self, timeout_ms)` [L577-L600] — *Cancel Story Detection and wait for its QThread to finish.*
-  - `stop_all_processing(self, timeout_ms)` [L602-L617] — *Stop every local processing job before changing media/projects or exiting.*
-  - `confirm_stop_processing_for_media_change(self)` [L619-L647]
-  - `worker_thread_finished(self)` [L649-L651]
-  - `start_full_auto_pipeline(self)` [L653-L802] — *Open a chooser for the processing stages to run, then run them in order.*
-  - `_confirm_pipeline_rerun_if_needed(self, stages, parent)` [L804-L873] — *Look ahead at stages about to run in a pipeline. If any have already*
-  - `_run_next_selected_processing(self)` [L875-L955]
-  - `start_transcribe_and_diarize(self)` [L957-L976]
-  - `_processing_choice(self, kind)` [L978-L1017] — *Return: run, continue, start_over, or cancel based on current state.*
-  - `_worker_command(self, args)` [L1019-L1038] — *Return (executable, args, env_overrides) for the local AI worker,*
-  - `_resolve_worker_command(self, args)` [L1040-L1087] — *Return (executable, args, env_overrides) for the local AI worker.*
-  - `_apply_worker_env_overrides(self, process, env_overrides)` [L1090-L1126] — *Applies extra environment variables (e.g. GPU device selection, SSL certs,*
-  - `_download_model_and_continue_transcription(self, model_name, label)` [L1128-L1161] — *Asynchronously download a missing model with responsive in-dialog progress and auto-resume.*
-  - `_on_transcription_dl_progress(self, pct, msg)` [L1163-L1173]
-  - `_on_transcription_dl_cancel(self)` [L1175-L1182]
-  - `_on_transcription_dl_finished(self, err)` [L1184-L1217]
-  - `_on_transcription_dl_thread_cleanup(self)` [L1219-L1231]
+  - `apply_story_selection_indices(self, selected_rows, seek)` [L410-L499]
+  - `on_timeline_story_clicked(self, index)` [L501-L511] — *Handle user clicking a story region directly on the timeline canvas.*
+  - `story_selection_changed(self)` [L513-L530]
+  - `handle_timeline_multi_selection(self, selected_indices)` [L532-L543]
+  - `set_tools_actions_enabled(self, enabled)` [L545-L581]
+  - `stop_story_detection_worker(self, timeout_ms)` [L583-L606] — *Cancel Story Detection and wait for its QThread to finish.*
+  - `stop_all_processing(self, timeout_ms)` [L608-L623] — *Stop every local processing job before changing media/projects or exiting.*
+  - `confirm_stop_processing_for_media_change(self)` [L625-L653]
+  - `worker_thread_finished(self)` [L655-L657]
+  - `start_full_auto_pipeline(self)` [L659-L808] — *Open a chooser for the processing stages to run, then run them in order.*
+  - `_confirm_pipeline_rerun_if_needed(self, stages, parent)` [L810-L879] — *Look ahead at stages about to run in a pipeline. If any have already*
+  - `_run_next_selected_processing(self)` [L881-L961]
+  - `start_transcribe_and_diarize(self)` [L963-L982]
+  - `_processing_choice(self, kind)` [L984-L1023] — *Return: run, continue, start_over, or cancel based on current state.*
+  - `_worker_command(self, args)` [L1025-L1044] — *Return (executable, args, env_overrides) for the local AI worker,*
+  - `_resolve_worker_command(self, args)` [L1046-L1093] — *Return (executable, args, env_overrides) for the local AI worker.*
+  - `_apply_worker_env_overrides(self, process, env_overrides)` [L1096-L1132] — *Applies extra environment variables (e.g. GPU device selection, SSL certs,*
+  - `_download_model_and_continue_transcription(self, model_name, label)` [L1134-L1167] — *Asynchronously download a missing model with responsive in-dialog progress and auto-resume.*
+  - `_on_transcription_dl_progress(self, pct, msg)` [L1169-L1179]
+  - `_on_transcription_dl_cancel(self)` [L1181-L1188]
+  - `_on_transcription_dl_finished(self, err)` [L1190-L1223]
+  - `_on_transcription_dl_thread_cleanup(self)` [L1225-L1237]
 
 ### `project_data_purge_dialog.py` (169 lines)
 *Modal dialog allowing users to selectively clear/purge project components.*
@@ -1777,82 +1779,82 @@
   - `update_window_title(self)` [L342-L352]
   - `is_project_empty(self)` [L354-L361] — *Returns True if the current workspace has no loaded audio, project file, transcript text, or stories.*
 
-### `prs_shared.py` (1491 lines)
+### `prs_shared.py` (1492 lines)
 - **class `ProjectMetadataDict(dict)`** (lines 30–45):
   *Dictionary subclass supporting both dict key access and attribute access for project metadata.*
   - `__getattr__(self, name)` [L32-L36]
   - `__setattr__(self, name, value)` [L38-L39]
   - `__delattr__(self, name)` [L41-L45]
-- **class `ResizableTextEdit(QWidget)`** (lines 487–634):
+- **class `ResizableTextEdit(QWidget)`** (lines 488–635):
   *Multi-line text editor defaulted to ~2 lines of height with a drag handle for vertical expansion.*
-  - `__init__(self, text, parent)` [L490-L529]
-  - `_grip_press(self, event)` [L531-L539]
-  - `_grip_move(self, event)` [L541-L559]
-  - `_grip_release(self, event)` [L561-L563]
-  - `sizeHint(self)` [L565-L566]
-  - `minimumSizeHint(self)` [L568-L569]
-  - `toPlainText(self)` [L571-L572]
-  - `setPlainText(self, text)` [L574-L575]
-  - `setText(self, text)` [L577-L578]
-  - `text(self)` [L580-L581]
-  - `clear(self)` [L583-L584]
-  - `setPlaceholderText(self, text)` [L586-L587]
-  - `placeholderText(self)` [L589-L590]
-  - `setToolTip(self, tip)` [L592-L593]
-  - `setAcceptRichText(self, accept)` [L595-L596]
-  - `setTabChangesFocus(self, tab)` [L598-L599]
-  - `setEnabled(self, enabled)` [L601-L604]
-  - `setReadOnly(self, ro)` [L606-L607]
-  - `isReadOnly(self)` [L609-L610]
-  - `setFocus(self, *args, **kwargs)` [L612-L613]
-  - `hasFocus(self)` [L615-L616]
-  - `document(self)` [L618-L619]
-  - `textCursor(self)` [L621-L622]
-  - `setTextCursor(self, cursor)` [L624-L625]
-  - `__getattr__(self, name)` [L627-L630]
-  - `textChanged(self)` [L633-L634]
-- **class `CollapsibleSection(QWidget)`** (lines 637–804):
+  - `__init__(self, text, parent)` [L491-L530]
+  - `_grip_press(self, event)` [L532-L540]
+  - `_grip_move(self, event)` [L542-L560]
+  - `_grip_release(self, event)` [L562-L564]
+  - `sizeHint(self)` [L566-L567]
+  - `minimumSizeHint(self)` [L569-L570]
+  - `toPlainText(self)` [L572-L573]
+  - `setPlainText(self, text)` [L575-L576]
+  - `setText(self, text)` [L578-L579]
+  - `text(self)` [L581-L582]
+  - `clear(self)` [L584-L585]
+  - `setPlaceholderText(self, text)` [L587-L588]
+  - `placeholderText(self)` [L590-L591]
+  - `setToolTip(self, tip)` [L593-L594]
+  - `setAcceptRichText(self, accept)` [L596-L597]
+  - `setTabChangesFocus(self, tab)` [L599-L600]
+  - `setEnabled(self, enabled)` [L602-L605]
+  - `setReadOnly(self, ro)` [L607-L608]
+  - `isReadOnly(self)` [L610-L611]
+  - `setFocus(self, *args, **kwargs)` [L613-L614]
+  - `hasFocus(self)` [L616-L617]
+  - `document(self)` [L619-L620]
+  - `textCursor(self)` [L622-L623]
+  - `setTextCursor(self, cursor)` [L625-L626]
+  - `__getattr__(self, name)` [L628-L631]
+  - `textChanged(self)` [L634-L635]
+- **class `CollapsibleSection(QWidget)`** (lines 638–805):
   *A clean, collapsible and expandable section widget with a styled toggle button,*
-  - `__init__(self, title, parent, is_expanded, subtitle)` [L644-L673]
-  - `_update_ui(self)` [L675-L773]
-  - `refresh_theme(self)` [L775-L777] — *Re-render header and container styling when application theme changes.*
-  - `_on_btn_clicked(self)` [L779-L780]
-  - `set_expanded(self, expanded)` [L782-L787]
-  - `is_expanded(self)` [L789-L790]
-  - `set_title(self, title)` [L792-L794]
-  - `set_subtitle(self, subtitle)` [L796-L798]
-  - `add_widget(self, widget)` [L800-L801]
-  - `add_layout(self, layout)` [L803-L804]
-- **class `ExportDialog(QDialog)`** (lines 914–1003):
-  - `__init__(self, parent, has_media, default_name)` [L915-L923]
-  - `init_ui(self)` [L925-L991]
-  - `get_settings(self)` [L993-L1003]
-- **class `Story`** (lines 1164–1242):
-  - `__init__(self, start, end, title, suggestion, metadata, fade_in, fade_out, fade_curve)` [L1165-L1210]
-  - `to_dict(self)` [L1212-L1224]
-  - `from_dict(cls, data)` [L1227-L1242]
-- **class `ProjectStateCommand(QUndoCommand)`** (lines 1252–1276):
+  - `__init__(self, title, parent, is_expanded, subtitle)` [L645-L674]
+  - `_update_ui(self)` [L676-L774]
+  - `refresh_theme(self)` [L776-L778] — *Re-render header and container styling when application theme changes.*
+  - `_on_btn_clicked(self)` [L780-L781]
+  - `set_expanded(self, expanded)` [L783-L788]
+  - `is_expanded(self)` [L790-L791]
+  - `set_title(self, title)` [L793-L795]
+  - `set_subtitle(self, subtitle)` [L797-L799]
+  - `add_widget(self, widget)` [L801-L802]
+  - `add_layout(self, layout)` [L804-L805]
+- **class `ExportDialog(QDialog)`** (lines 915–1004):
+  - `__init__(self, parent, has_media, default_name)` [L916-L924]
+  - `init_ui(self)` [L926-L992]
+  - `get_settings(self)` [L994-L1004]
+- **class `Story`** (lines 1165–1243):
+  - `__init__(self, start, end, title, suggestion, metadata, fade_in, fade_out, fade_curve)` [L1166-L1211]
+  - `to_dict(self)` [L1213-L1225]
+  - `from_dict(cls, data)` [L1228-L1243]
+- **class `ProjectStateCommand(QUndoCommand)`** (lines 1253–1277):
   *Undo/redo a complete editable project state.*
-  - `__init__(self, main_window, before_state, after_state, description)` [L1259-L1267]
-  - `undo(self)` [L1269-L1270]
-  - `redo(self)` [L1272-L1276]
+  - `__init__(self, main_window, before_state, after_state, description)` [L1260-L1268]
+  - `undo(self)` [L1270-L1271]
+  - `redo(self)` [L1273-L1277]
 - **Functions**:
   - `_ensure_runtime_bin_on_path()` [L49-L68] — *Ensure bundled runtime/bin (ffmpeg/ffprobe) is on PATH in frozen builds.*
-  - `platform_seq(key_str)` [L829-L838] — *Return a QKeySequence adapted for macOS vs Windows/Linux.*
-  - `get_app_icon()` [L840-L886] — *Return the application QIcon loaded from bundled resources or fallback to empty.*
-  - `get_license_file_path(filename)` [L888-L906] — *Return the path to a licensing or notice file, checking bundle and source paths.*
-  - `create_fade_curve_pixmap(curve_type, width, height, is_selected, accent_color, bg_color)` [L1047-L1139] — *Render a high-DPI visual curve representation showing the volume attenuation shape.*
-  - `create_fade_curve_icon(curve_type, width, height)` [L1142-L1157] — *Return a QIcon containing visual render of the specified audio fade curve.*
-  - `read_document_text(path)` [L1314-L1380]
-  - `__getattr__(name)` [L1467-L1484] — *Lazy resolver for extracted UI and worker components to eliminate circular import chains.*
+  - `platform_seq(key_str)` [L830-L839] — *Return a QKeySequence adapted for macOS vs Windows/Linux.*
+  - `get_app_icon()` [L841-L887] — *Return the application QIcon loaded from bundled resources or fallback to empty.*
+  - `get_license_file_path(filename)` [L889-L907] — *Return the path to a licensing or notice file, checking bundle and source paths.*
+  - `create_fade_curve_pixmap(curve_type, width, height, is_selected, accent_color, bg_color)` [L1048-L1140] — *Render a high-DPI visual curve representation showing the volume attenuation shape.*
+  - `create_fade_curve_icon(curve_type, width, height)` [L1143-L1158] — *Return a QIcon containing visual render of the specified audio fade curve.*
+  - `read_document_text(path)` [L1315-L1381]
+  - `__getattr__(name)` [L1468-L1485] — *Lazy resolver for extracted UI and worker components to eliminate circular import chains.*
 
-### `qt_compat.py` (768 lines)
+### `qt_compat.py` (917 lines)
 *Radio & TV Segmenter — Headless Qt / PySide6 Compatibility Engine.*
-- **Public Exports (`__all__`)**: MockModule, DummyQt, DummyQSettings, DummyQMessageBox, DummyQApplication, DummyQTimer, DummyQHeaderView, DummyQAbstractItemView, DummyQLineEdit, DummyQComboBox, DummyQDoubleSpinBox, DummyQSpinBox, _ensure_pyside6_fallback
+- **Public Exports (`__all__`)**: MockModule, DummyQt, DummyQSettings, DummyQMessageBox, DummyQApplication, DummyQTimer, DummyQHeaderView, DummyQAbstractItemView, DummyQLineEdit, DummyQLabel, DummyQListWidgetItem, DummyQListWidget, DummyQTextEdit, DummyQComboBox, DummyQDoubleSpinBox, DummyQSpinBox, _ensure_pyside6_fallback
 - **class `MockClassMeta(type)`** (lines 17–23):
   *Metaclass allowing class-level attributes, static methods, and constructor calls to mock gracefully.*
   - `__getattr__(cls, attr)` [L20-L23]
-- **class `DynamicMock`** (lines 26–304):
+- **class `DynamicMock`** (lines 26–310):
   - `__init__(self, *args, **kwargs)` [L27-L36]
   - `column(self)` [L38-L39]
   - `row(self)` [L41-L42]
@@ -1871,147 +1873,188 @@
   - `hide(self)` [L80-L81]
   - `setWindowModality(self, modality)` [L83-L84]
   - `windowModality(self)` [L86-L87]
-  - `accept(self)` [L89-L90]
-  - `reject(self)` [L92-L93]
-  - `exec_(self)` [L95-L96]
-  - `exec(self)` [L98-L99]
-  - `__int__(self)` [L101-L102]
-  - `__index__(self)` [L104-L105]
-  - `__float__(self)` [L107-L108]
-  - `__or__(self, other)` [L110-L116]
-  - `__ror__(self, other)` [L118-L119]
-  - `__and__(self, other)` [L121-L127]
-  - `__rand__(self, other)` [L129-L130]
-  - `__invert__(self)` [L132-L133]
-  - `__xor__(self, other)` [L135-L136]
-  - `__contains__(self, item)` [L138-L139]
-  - `count(self, *a, **k)` [L141-L142]
-  - `__ge__(self, other)` [L144-L148]
-  - `__gt__(self, other)` [L150-L154]
-  - `__le__(self, other)` [L156-L160]
-  - `__lt__(self, other)` [L162-L166]
-  - `__iter__(self)` [L168-L169]
-  - `__setitem__(self, key, val)` [L171-L174]
-  - `__getitem__(self, key)` [L176-L180]
-  - `setFlags(self, flags)` [L182-L183]
-  - `flags(self)` [L185-L186]
-  - `setRowCount(self, count)` [L188-L189]
-  - `rowCount(self, *a, **k)` [L191-L192]
-  - `setText(self, val)` [L194-L198]
-  - `text(self, *a, **k)` [L200-L201]
-  - `setData(self, role, val)` [L203-L206]
-  - `data(self, role)` [L208-L209]
-  - `setItem(self, row, col, item)` [L211-L218]
-  - `item(self, row, col)` [L220-L224]
-  - `setCurrentCell(self, row, col)` [L226-L228]
-  - `currentRow(self)` [L230-L231]
-  - `currentColumn(self)` [L233-L234]
-  - `setItemDelegateForColumn(self, col, delegate)` [L236-L246]
-  - `itemDelegateForColumn(self, col)` [L248-L249]
-  - `addTab(self, widget, label)` [L251-L256]
-  - `editItem(self, item)` [L258-L277]
-  - `findChild(self, cls, *args, **kwargs)` [L279-L286]
-  - `installEventFilter(self, filter_obj)` [L288-L291]
-  - `removeEventFilter(self, filter_obj)` [L293-L295]
-  - `value(self, *args, **kwargs)` [L297-L304]
-- **class `MockModule(ModuleType)`** (lines 307–327):
+  - `setWindowTitle(self, title)` [L89-L90]
+  - `windowTitle(self)` [L92-L93]
+  - `accept(self)` [L95-L96]
+  - `reject(self)` [L98-L99]
+  - `exec_(self)` [L101-L102]
+  - `exec(self)` [L104-L105]
+  - `__int__(self)` [L107-L108]
+  - `__index__(self)` [L110-L111]
+  - `__float__(self)` [L113-L114]
+  - `__or__(self, other)` [L116-L122]
+  - `__ror__(self, other)` [L124-L125]
+  - `__and__(self, other)` [L127-L133]
+  - `__rand__(self, other)` [L135-L136]
+  - `__invert__(self)` [L138-L139]
+  - `__xor__(self, other)` [L141-L142]
+  - `__contains__(self, item)` [L144-L145]
+  - `count(self, *a, **k)` [L147-L148]
+  - `__ge__(self, other)` [L150-L154]
+  - `__gt__(self, other)` [L156-L160]
+  - `__le__(self, other)` [L162-L166]
+  - `__lt__(self, other)` [L168-L172]
+  - `__iter__(self)` [L174-L175]
+  - `__setitem__(self, key, val)` [L177-L180]
+  - `__getitem__(self, key)` [L182-L186]
+  - `setFlags(self, flags)` [L188-L189]
+  - `flags(self)` [L191-L192]
+  - `setRowCount(self, count)` [L194-L195]
+  - `rowCount(self, *a, **k)` [L197-L198]
+  - `setText(self, val)` [L200-L204]
+  - `text(self, *a, **k)` [L206-L207]
+  - `setData(self, role, val)` [L209-L212]
+  - `data(self, role)` [L214-L215]
+  - `setItem(self, row, col, item)` [L217-L224]
+  - `item(self, row, col)` [L226-L230]
+  - `setCurrentCell(self, row, col)` [L232-L234]
+  - `currentRow(self)` [L236-L237]
+  - `currentColumn(self)` [L239-L240]
+  - `setItemDelegateForColumn(self, col, delegate)` [L242-L252]
+  - `itemDelegateForColumn(self, col)` [L254-L255]
+  - `addTab(self, widget, label)` [L257-L262]
+  - `editItem(self, item)` [L264-L283]
+  - `findChild(self, cls, *args, **kwargs)` [L285-L292]
+  - `installEventFilter(self, filter_obj)` [L294-L297]
+  - `removeEventFilter(self, filter_obj)` [L299-L301]
+  - `value(self, *args, **kwargs)` [L303-L310]
+- **class `MockModule(ModuleType)`** (lines 313–333):
   *Dynamic mock module that automatically manufactures nested mock classes and attributes.*
-  - `__init__(self, name)` [L310-L315]
-  - `__getattr__(self, name)` [L317-L327]
-- **class `_DummyQtMeta(type)`** (lines 330–332):
-  - `__getattr__(cls, name)` [L331-L332]
-- **class `DummyQt`** (lines 335–368):
+  - `__init__(self, name)` [L316-L321]
+  - `__getattr__(self, name)` [L323-L333]
+- **class `_DummyQtMeta(type)`** (lines 336–338):
+  - `__getattr__(cls, name)` [L337-L338]
+- **class `DummyQt`** (lines 341–374):
   *Mock Qt namespace constants.*
-- **class `DummyQEvent(DynamicMock)`** (lines 371–382):
-  - `__init__(self, *args, **kwargs)` [L377-L379]
-  - `type(self)` [L381-L382]
-- **class `DummyQKeyEvent(DynamicMock)`** (lines 385–395):
-  - `__init__(self, *args, **kwargs)` [L386-L389]
-  - `type(self)` [L391-L392]
-  - `key(self)` [L394-L395]
-- **class `DummyQSettings`** (lines 398–424):
+- **class `DummyQEvent(DynamicMock)`** (lines 377–388):
+  - `__init__(self, *args, **kwargs)` [L383-L385]
+  - `type(self)` [L387-L388]
+- **class `DummyQKeyEvent(DynamicMock)`** (lines 391–401):
+  - `__init__(self, *args, **kwargs)` [L392-L395]
+  - `type(self)` [L397-L398]
+  - `key(self)` [L400-L401]
+- **class `DummyQSettings`** (lines 404–430):
   *In-memory dictionary-backed QSettings fallback.*
-  - `__init__(self, *a, **k)` [L402-L403]
-  - `value(self, k, d)` [L405-L406]
-  - `setValue(self, k, v)` [L408-L409]
-  - `remove(self, k)` [L411-L412]
-  - `clear(self)` [L414-L415]
-  - `sync(self)` [L417-L418]
-  - `beginGroup(self, *a)` [L420-L421]
-  - `endGroup(self)` [L423-L424]
-- **class `DummyQMessageBox`** (lines 427–445):
+  - `__init__(self, *a, **k)` [L408-L409]
+  - `value(self, k, d)` [L411-L412]
+  - `setValue(self, k, v)` [L414-L415]
+  - `remove(self, k)` [L417-L418]
+  - `clear(self)` [L420-L421]
+  - `sync(self)` [L423-L424]
+  - `beginGroup(self, *a)` [L426-L427]
+  - `endGroup(self)` [L429-L430]
+- **class `DummyQMessageBox`** (lines 433–451):
   *Non-blocking headless QMessageBox stub.*
-  - `information(*args, **kwargs)` [L432-L433]
-  - `warning(*args, **kwargs)` [L436-L437]
-  - `critical(*args, **kwargs)` [L440-L441]
-  - `question(*args, **kwargs)` [L444-L445]
-- **class `DummyQApplication`** (lines 448–482):
+  - `information(*args, **kwargs)` [L438-L439]
+  - `warning(*args, **kwargs)` [L442-L443]
+  - `critical(*args, **kwargs)` [L446-L447]
+  - `question(*args, **kwargs)` [L450-L451]
+- **class `DummyQApplication`** (lines 454–496):
   *Headless QApplication stub.*
-  - `__init__(self, *args, **kwargs)` [L452-L453]
-  - `processEvents(cls)` [L456-L463]
-  - `sendEvent(cls, receiver, event)` [L466-L474]
-  - `instance()` [L477-L478]
-  - `topLevelWidgets()` [L481-L482]
-- **class `DummyQTimer(DynamicMock)`** (lines 485–498):
-  - `__init__(self, *args, **kwargs)` [L486-L488]
-  - `start(self, *a, **k)` [L490-L491]
-  - `stop(self)` [L493-L494]
-  - `singleShot(ms, callback)` [L497-L498]
-- **class `DummyQHeaderView`** (lines 501–502):
-- **class `DummyQAbstractItemView`** (lines 505–509):
-- **class `DummyQStyledItemDelegate(DynamicMock)`** (lines 512–518):
-  - `__init__(self, *args, **kwargs)` [L515-L518]
-- **class `DummyQLineEdit(DynamicMock)`** (lines 521–535):
-  - `__init__(self, *args, **kwargs)` [L524-L526]
-  - `setText(self, val)` [L528-L529]
-  - `text(self, *a, **k)` [L531-L532]
-  - `selectAll(self)` [L534-L535]
-- **class `DummyQFont`** (lines 538–542):
-  - `__init__(self, *args, **kwargs)` [L541-L542]
-- **class `DummySignal`** (lines 545–564):
-  - `__init__(self, *args, **kwargs)` [L546-L547]
-  - `connect(self, callback)` [L549-L551]
-  - `disconnect(self, callback)` [L553-L557]
-  - `emit(self, *args, **kwargs)` [L559-L564]
-- **class `DummyQComboBox(DynamicMock)`** (lines 567–632):
-  - `__init__(self, *args, **kwargs)` [L568-L572]
-  - `addItem(self, text, userData)` [L574-L575]
-  - `addItems(self, texts)` [L577-L579]
-  - `count(self)` [L581-L582]
-  - `itemData(self, index, role)` [L584-L587]
-  - `itemText(self, index)` [L589-L592]
-  - `currentIndex(self)` [L594-L595]
-  - `setCurrentIndex(self, index)` [L597-L598]
-  - `findData(self, data, role)` [L600-L604]
-  - `findText(self, text)` [L606-L611]
-  - `currentText(self)` [L613-L615]
-  - `currentData(self, role)` [L617-L619]
-  - `clear(self)` [L621-L623]
-  - `setEnabled(self, val)` [L625-L626]
-  - `isEnabled(self)` [L628-L629]
-  - `setStyleSheet(self, val)` [L631-L632]
-- **class `DummyQDoubleSpinBox`** (lines 635–663):
-  - `__init__(self, *args, **kwargs)` [L636-L638]
-  - `value(self)` [L640-L641]
-  - `setValue(self, v)` [L643-L645]
-  - `setRange(self, mn, mx)` [L647-L648]
-  - `setSingleStep(self, s)` [L650-L651]
-  - `setSuffix(self, s)` [L653-L654]
-  - `setEnabled(self, val)` [L656-L657]
-  - `isEnabled(self)` [L659-L660]
-  - `setStyleSheet(self, val)` [L662-L663]
-- **class `DummyQSpinBox`** (lines 666–694):
-  - `__init__(self, *args, **kwargs)` [L667-L669]
-  - `value(self)` [L671-L672]
-  - `setValue(self, v)` [L674-L676]
-  - `setRange(self, mn, mx)` [L678-L679]
-  - `setSingleStep(self, s)` [L681-L682]
-  - `setSuffix(self, s)` [L684-L685]
-  - `setEnabled(self, val)` [L687-L688]
-  - `isEnabled(self)` [L690-L691]
-  - `setStyleSheet(self, val)` [L693-L694]
+  - `__init__(self, *args, **kwargs)` [L458-L459]
+  - `processEvents(cls)` [L462-L469]
+  - `sendEvent(cls, receiver, event)` [L472-L480]
+  - `instance()` [L483-L484]
+  - `topLevelWidgets()` [L487-L488]
+  - `thread()` [L491-L492]
+  - `clipboard()` [L495-L496]
+- **class `DummyQMimeData(DynamicMock)`** (lines 499–515):
+  - `__init__(self, *args, **kwargs)` [L500-L503]
+  - `setText(self, val)` [L505-L506]
+  - `text(self)` [L508-L509]
+  - `setHtml(self, val)` [L511-L512]
+  - `html(self)` [L514-L515]
+- **class `DummyClipboard(DynamicMock)`** (lines 518–532):
+  - `setText(self, val)` [L521-L522]
+  - `text(self)` [L524-L525]
+  - `setMimeData(self, mime)` [L527-L532]
+- **class `DummyQTimer(DynamicMock)`** (lines 535–548):
+  - `__init__(self, *args, **kwargs)` [L536-L538]
+  - `start(self, *a, **k)` [L540-L541]
+  - `stop(self)` [L543-L544]
+  - `singleShot(ms, callback)` [L547-L548]
+- **class `DummyQHeaderView`** (lines 551–552):
+- **class `DummyQAbstractItemView`** (lines 555–559):
+- **class `DummyQStyledItemDelegate(DynamicMock)`** (lines 562–568):
+  - `__init__(self, *args, **kwargs)` [L565-L568]
+- **class `DummyQLineEdit(DynamicMock)`** (lines 571–585):
+  - `__init__(self, *args, **kwargs)` [L574-L576]
+  - `setText(self, val)` [L578-L579]
+  - `text(self, *a, **k)` [L581-L582]
+  - `selectAll(self)` [L584-L585]
+- **class `DummyQLabel(DynamicMock)`** (lines 588–604):
+  - `__init__(self, *args, **kwargs)` [L589-L592]
+  - `setText(self, val)` [L594-L595]
+  - `text(self, *a, **k)` [L597-L598]
+  - `setToolTip(self, val)` [L600-L601]
+  - `toolTip(self, *a, **k)` [L603-L604]
+- **class `DummyQListWidgetItem(DynamicMock)`** (lines 607–630):
+  - `__init__(self, *args, **kwargs)` [L608-L612]
+  - `setText(self, val)` [L614-L615]
+  - `text(self, *a, **k)` [L617-L618]
+  - `setToolTip(self, val)` [L620-L621]
+  - `toolTip(self, *a, **k)` [L623-L624]
+  - `setData(self, role, val)` [L626-L627]
+  - `data(self, role)` [L629-L630]
+- **class `DummyQListWidget(DynamicMock)`** (lines 633–652):
+  - `__init__(self, *args, **kwargs)` [L634-L636]
+  - `addItem(self, item)` [L638-L641]
+  - `count(self)` [L643-L644]
+  - `item(self, idx)` [L646-L649]
+  - `clear(self)` [L651-L652]
+- **class `DummyQTextEdit(DynamicMock)`** (lines 655–673):
+  - `__init__(self, *args, **kwargs)` [L656-L658]
+  - `setPlainText(self, val)` [L660-L661]
+  - `toPlainText(self)` [L663-L664]
+  - `setText(self, val)` [L666-L667]
+  - `toHtml(self)` [L669-L670]
+  - `setHtml(self, val)` [L672-L673]
+- **class `DummyQFont`** (lines 676–680):
+  - `__init__(self, *args, **kwargs)` [L679-L680]
+- **class `DummySignal`** (lines 683–702):
+  - `__init__(self, *args, **kwargs)` [L684-L685]
+  - `connect(self, callback)` [L687-L689]
+  - `disconnect(self, callback)` [L691-L695]
+  - `emit(self, *args, **kwargs)` [L697-L702]
+- **class `DummyQComboBox(DynamicMock)`** (lines 705–770):
+  - `__init__(self, *args, **kwargs)` [L706-L710]
+  - `addItem(self, text, userData)` [L712-L713]
+  - `addItems(self, texts)` [L715-L717]
+  - `count(self)` [L719-L720]
+  - `itemData(self, index, role)` [L722-L725]
+  - `itemText(self, index)` [L727-L730]
+  - `currentIndex(self)` [L732-L733]
+  - `setCurrentIndex(self, index)` [L735-L736]
+  - `findData(self, data, role)` [L738-L742]
+  - `findText(self, text)` [L744-L749]
+  - `currentText(self)` [L751-L753]
+  - `currentData(self, role)` [L755-L757]
+  - `clear(self)` [L759-L761]
+  - `setEnabled(self, val)` [L763-L764]
+  - `isEnabled(self)` [L766-L767]
+  - `setStyleSheet(self, val)` [L769-L770]
+- **class `DummyQDoubleSpinBox`** (lines 773–801):
+  - `__init__(self, *args, **kwargs)` [L774-L776]
+  - `value(self)` [L778-L779]
+  - `setValue(self, v)` [L781-L783]
+  - `setRange(self, mn, mx)` [L785-L786]
+  - `setSingleStep(self, s)` [L788-L789]
+  - `setSuffix(self, s)` [L791-L792]
+  - `setEnabled(self, val)` [L794-L795]
+  - `isEnabled(self)` [L797-L798]
+  - `setStyleSheet(self, val)` [L800-L801]
+- **class `DummyQSpinBox`** (lines 804–832):
+  - `__init__(self, *args, **kwargs)` [L805-L807]
+  - `value(self)` [L809-L810]
+  - `setValue(self, v)` [L812-L814]
+  - `setRange(self, mn, mx)` [L816-L817]
+  - `setSingleStep(self, s)` [L819-L820]
+  - `setSuffix(self, s)` [L822-L823]
+  - `setEnabled(self, val)` [L825-L826]
+  - `isEnabled(self)` [L828-L829]
+  - `setStyleSheet(self, val)` [L831-L832]
 - **Functions**:
-  - `_ensure_pyside6_fallback(force)` [L697-L751] — *Ensures PySide6 modules are importable, installing the zero-dependency mock shim if unavailable.*
+  - `_ensure_pyside6_fallback(force)` [L835-L896] — *Ensures PySide6 modules are importable, installing the zero-dependency mock shim if unavailable.*
 
 ### `radio_tv_story_segmenter_worker.py` (226 lines)
 *Radio & TV Story Segmenter — AI Background Subprocess Worker Facade.*
@@ -2369,34 +2412,36 @@
   - `_on_export(self)` [L572-L600]
   - `_on_import(self)` [L602-L630]
 
-### `story_crud_mixin.py` (832 lines)
+### `story_crud_mixin.py` (911 lines)
 *Radio & TV Story Segmenter — Story CRUD & Timeline Selection Mixin.*
-- **class `StoryCrudMixin`** (lines 46–832):
+- **class `StoryCrudMixin`** (lines 46–911):
   *Mixin providing story list UI management, CRUD operations, and fade handling.*
-  - `refresh_story_list(self)` [L49-L92]
-  - `handle_new_story_started(self, start_time, end_time)` [L94-L104]
-  - `handle_new_story_updated(self, start_time, end_time)` [L106-L118]
-  - `handle_drag_story_region(self, index, start_time, end_time)` [L120-L132]
-  - `audition_story(self, index)` [L134-L157]
-  - `handle_drag_finished(self)` [L159-L188]
-  - `update_selected_story(self)` [L190-L248]
-  - `delete_selected_story(self)` [L250-L281]
-  - `get_current_interaction_time(self, for_boundary)` [L283-L301]
-  - `set_selected_story_start(self)` [L303-L348]
-  - `set_selected_story_end(self)` [L350-L395]
-  - `add_selection_to_story(self)` [L397-L508]
-  - `play_transcript_selection(self)` [L510-L529]
-  - `select_all_stories(self)` [L531-L538]
-  - `handle_timeline_selection_range_changed(self, start_time, end_time)` [L540-L601]
-  - `add_story_from_range(self, start_time, end_time)` [L603-L637]
-  - `add_story_from_active_selection(self)` [L639-L656]
-  - `open_story_fades_dialog(self, story_index)` [L658-L700]
-  - `apply_fades_to_selected_stories(self, fade_in, fade_out, fade_curve)` [L702-L735]
-  - `remove_fades_from_selected_stories(self)` [L737-L738]
-  - `set_fade_curve_for_selected_stories(self, curve_type)` [L740-L763]
-  - `open_story_metadata_dialog(self, target_story_index, modal)` [L765-L798]
-  - `_notify_floating_dialogs(self)` [L800-L814] — *Refresh any open non-modal export, metadata, or speaker management floating windows after main window edits.*
-  - `_close_floating_dialogs(self, persist_drafts)` [L816-L832] — *Persist drafts and close any active non-modal floating windows on project close or shutdown.*
+  - `update_stories_header(self)` [L49-L95] — *Update Stories section header label and tooltip with selection count and duration.*
+  - `update_story_form_duration(self)` [L97-L111] — *Update Duration field in the story edit form below Range.*
+  - `refresh_story_list(self)` [L113-L162]
+  - `handle_new_story_started(self, start_time, end_time)` [L164-L174]
+  - `handle_new_story_updated(self, start_time, end_time)` [L176-L192]
+  - `handle_drag_story_region(self, index, start_time, end_time)` [L194-L210]
+  - `audition_story(self, index)` [L212-L235]
+  - `handle_drag_finished(self)` [L237-L266]
+  - `update_selected_story(self)` [L268-L326]
+  - `delete_selected_story(self)` [L328-L359]
+  - `get_current_interaction_time(self, for_boundary)` [L361-L379]
+  - `set_selected_story_start(self)` [L381-L426]
+  - `set_selected_story_end(self)` [L428-L473]
+  - `add_selection_to_story(self)` [L475-L586]
+  - `play_transcript_selection(self)` [L588-L607]
+  - `select_all_stories(self)` [L609-L616]
+  - `handle_timeline_selection_range_changed(self, start_time, end_time)` [L618-L680]
+  - `add_story_from_range(self, start_time, end_time)` [L682-L716]
+  - `add_story_from_active_selection(self)` [L718-L735]
+  - `open_story_fades_dialog(self, story_index)` [L737-L779]
+  - `apply_fades_to_selected_stories(self, fade_in, fade_out, fade_curve)` [L781-L814]
+  - `remove_fades_from_selected_stories(self)` [L816-L817]
+  - `set_fade_curve_for_selected_stories(self, curve_type)` [L819-L842]
+  - `open_story_metadata_dialog(self, target_story_index, modal)` [L844-L877]
+  - `_notify_floating_dialogs(self)` [L879-L893] — *Refresh any open non-modal export, metadata, or speaker management floating windows after main window edits.*
+  - `_close_floating_dialogs(self, persist_drafts)` [L895-L911] — *Persist drafts and close any active non-modal floating windows on project close or shutdown.*
 
 ### `story_detection_processing.py` (206 lines)
 *Story boundary detection processing mixin for Radio & TV Story Segmenter.*
@@ -2653,71 +2698,74 @@
   - `render_waveform_buffer(canvas, width, height)` [L32-L195] — *Render background waveform peaks and video thumbnail strip onto an offscreen QPixmap.*
   - `paint_timeline_canvas(canvas, painter, event)` [L198-L419] — *Execute full timeline paint pipeline onto the canvas QPainter.*
 
-### `timeline_snap.py` (119 lines)
+### `timeline_snap.py` (195 lines)
 *Timeline snapping algorithms, edge detection, and collision hit-testing.*
 - **Functions**:
-  - `snap_time(canvas, raw_time, exclude_story_idx, width, pixel_threshold)` [L7-L58] — *Snap raw_time to nearby story boundaries, playhead, or selection anchors if within pixel_threshold pixels.*
-  - `find_edge_at_pos(canvas, pos_x, width)` [L61-L71] — *Determine if pos_x is hovering over a story segment start or end boundary edge.*
-  - `find_fade_handle_at_pos(canvas, pos_x, pos_y, width)` [L74-L101] — *Hit-test tactile fade-in and fade-out envelope handles near the top edge of story blocks.*
-  - `find_story_at_time(canvas, time)` [L104-L113] — *Return the index of the story enclosing `time`, picking the most specific (shortest) if overlapping.*
-  - `is_near_playhead(canvas, pos_x, width)` [L116-L119] — *Check if pos_x is within grab distance of the active playhead cursor.*
+  - `snap_time(canvas, raw_time, exclude_story_idx, width, pixel_threshold)` [L9-L60] — *Snap raw_time to nearby story boundaries, playhead, or selection anchors if within pixel_threshold pixels.*
+  - `find_edge_at_pos(canvas, pos_x, width)` [L63-L73] — *Determine if pos_x is hovering over a story segment start or end boundary edge.*
+  - `find_fade_handle_at_pos(canvas, pos_x, pos_y, width)` [L76-L103] — *Hit-test tactile fade-in and fade-out envelope handles near the top edge of story blocks.*
+  - `find_story_at_time(canvas, time)` [L106-L115] — *Return the index of the story enclosing `time`, picking the most specific (shortest) if overlapping.*
+  - `is_near_playhead(canvas, pos_x, width)` [L118-L121] — *Check if pos_x is within grab distance of the active playhead cursor.*
+  - `get_timeline_hover_info(canvas, pos_x, pos_y, width)` [L124-L174] — *Calculate tooltip and status bar readout for canvas hover interactions.*
+  - `format_selection_drag_info(start, end)` [L177-L185] — *Format tooltip and status bar readout for live selection dragging.*
+  - `format_edge_drag_info(story, edge_type, current_time)` [L188-L195] — *Format tooltip and status bar readout for live edge dragging.*
 
-### `timeline_widgets.py` (991 lines)
+### `timeline_widgets.py` (994 lines)
 *Radio & TV Story Segmenter — Timeline Ruler, Track Views, Playhead, Overview & Canvas Widgets.*
-- **class `TimelineCanvas(QWidget)`** (lines 60–871):
-  - `__init__(self, parent, tokens)` [L80-L170]
-  - `set_is_video(self, is_video)` [L172-L175]
-  - `set_background_generation_active(self, task_name, active)` [L177-L196] — *Set generation state for 'waveform' or 'thumbnails'.*
-  - `_activate_background_banner(self)` [L198-L203]
-  - `_update_background_status_text(self)` [L205-L218]
-  - `dragEnterEvent(self, event)` [L220-L227]
-  - `dragMoveEvent(self, event)` [L229-L236]
-  - `dragLeaveEvent(self, event)` [L238-L239]
-  - `dropEvent(self, event)` [L241-L249]
-  - `set_audio_filename(self, filename)` [L251-L254]
-  - `set_duration(self, duration)` [L256-L264]
-  - `set_position(self, position)` [L266-L269]
-  - `set_playing_state(self, is_playing)` [L271-L272]
-  - `ensure_position_visible(self, target_time)` [L274-L297]
-  - `set_transcript_selection_range(self, start, end)` [L299-L304]
-  - `set_stories(self, stories, selected_indices)` [L306-L310]
-  - `set_waveform_peaks(self, peaks, levels)` [L312-L323]
-  - `set_timeline_views(self, show_waveform, show_thumbnails)` [L325-L329]
-  - `set_video_thumbnails(self, thumbnails)` [L331-L338]
-  - `set_skip_seconds(self, seconds)` [L340-L341]
-  - `visible_duration(self)` [L343-L344]
-  - `clamp_scroll_offset(self)` [L346-L349]
-  - `time_to_x(self, time_val, width)` [L351-L354]
-  - `x_to_time(self, x_val, width)` [L356-L358]
-  - `snap_time(self, raw_time, exclude_story_idx, width, pixel_threshold)` [L360-L361]
-  - `find_edge_at_pos(self, pos_x, width)` [L363-L364]
-  - `find_fade_handle_at_pos(self, pos_x, pos_y, width)` [L368-L369]
-  - `find_story_at_time(self, time)` [L371-L372]
-  - `is_near_playhead(self, pos_x, width)` [L374-L375]
-  - `set_zoom(self, new_zoom, center_x, focus_time)` [L377-L403]
-  - `resizeEvent(self, event)` [L405-L407]
-  - `wheelEvent(self, event)` [L409-L459]
-  - `mousePressEvent(self, event)` [L461-L545]
-  - `mouseMoveEvent(self, event)` [L547-L674]
-  - `mouseReleaseEvent(self, event)` [L676-L746]
-  - `_show_timeline_context_menu(self, global_pos, pos_x)` [L748-L749]
-  - `_show_selection_context_menu(self, global_pos)` [L751-L752]
-  - `keyPressEvent(self, event)` [L754-L851]
-  - `set_thumbnail_position(self, position)` [L853-L857]
-  - `render_waveform_buffer(self, width, height)` [L859-L860]
-  - `paintEvent(self, event)` [L863-L871]
-- **class `TimelineWidget(QWidget)`** (lines 874–989):
-  - `__init__(self, parent, tokens)` [L877-L914]
-  - `set_is_video(self, is_video)` [L916-L918]
-  - `set_background_generation_active(self, task_name, active)` [L920-L922]
-  - `dragEnterEvent(self, event)` [L924-L931]
-  - `dragMoveEvent(self, event)` [L933-L940]
-  - `dragLeaveEvent(self, event)` [L942-L943]
-  - `dropEvent(self, event)` [L945-L953]
-  - `update_scrollbar_range(self)` [L955-L964]
-  - `update_scrollbar_from_canvas(self, offset)` [L966-L974]
-  - `update_canvas_from_scrollbar(self, val)` [L976-L986]
-  - `__getattr__(self, name)` [L988-L989]
+- **class `TimelineCanvas(QWidget)`** (lines 59–874):
+  - `__init__(self, parent, tokens)` [L79-L169]
+  - `set_is_video(self, is_video)` [L171-L174]
+  - `set_background_generation_active(self, task_name, active)` [L176-L195] — *Set generation state for 'waveform' or 'thumbnails'.*
+  - `_activate_background_banner(self)` [L197-L202]
+  - `_update_background_status_text(self)` [L204-L217]
+  - `dragEnterEvent(self, event)` [L219-L226]
+  - `dragMoveEvent(self, event)` [L228-L235]
+  - `dragLeaveEvent(self, event)` [L237-L238]
+  - `dropEvent(self, event)` [L240-L248]
+  - `set_audio_filename(self, filename)` [L250-L253]
+  - `set_duration(self, duration)` [L255-L263]
+  - `set_position(self, position)` [L265-L268]
+  - `set_playing_state(self, is_playing)` [L270-L271]
+  - `ensure_position_visible(self, target_time)` [L273-L296]
+  - `set_transcript_selection_range(self, start, end)` [L298-L303]
+  - `set_stories(self, stories, selected_indices)` [L305-L309]
+  - `set_waveform_peaks(self, peaks, levels)` [L311-L322]
+  - `set_timeline_views(self, show_waveform, show_thumbnails)` [L324-L328]
+  - `set_video_thumbnails(self, thumbnails)` [L330-L337]
+  - `set_skip_seconds(self, seconds)` [L339-L340]
+  - `visible_duration(self)` [L342-L343]
+  - `clamp_scroll_offset(self)` [L345-L348]
+  - `time_to_x(self, time_val, width)` [L350-L353]
+  - `x_to_time(self, x_val, width)` [L355-L357]
+  - `snap_time(self, raw_time, exclude_story_idx, width, pixel_threshold)` [L359-L360]
+  - `find_edge_at_pos(self, pos_x, width)` [L364-L365]
+  - `find_fade_handle_at_pos(self, pos_x, pos_y, width)` [L367-L368]
+  - `find_story_at_time(self, time)` [L370-L371]
+  - `is_near_playhead(self, pos_x, width)` [L373-L374]
+  - `set_zoom(self, new_zoom, center_x, focus_time)` [L376-L402]
+  - `resizeEvent(self, event)` [L404-L406]
+  - `wheelEvent(self, event)` [L408-L458]
+  - `mousePressEvent(self, event)` [L460-L544]
+  - `mouseMoveEvent(self, event)` [L546-L677]
+  - `mouseReleaseEvent(self, event)` [L679-L749]
+  - `_show_timeline_context_menu(self, global_pos, pos_x)` [L751-L752]
+  - `_show_selection_context_menu(self, global_pos)` [L754-L755]
+  - `keyPressEvent(self, event)` [L757-L854]
+  - `set_thumbnail_position(self, position)` [L856-L860]
+  - `render_waveform_buffer(self, width, height)` [L862-L863]
+  - `paintEvent(self, event)` [L866-L874]
+- **class `TimelineWidget(QWidget)`** (lines 877–992):
+  - `__init__(self, parent, tokens)` [L880-L917]
+  - `set_is_video(self, is_video)` [L919-L921]
+  - `set_background_generation_active(self, task_name, active)` [L923-L925]
+  - `dragEnterEvent(self, event)` [L927-L934]
+  - `dragMoveEvent(self, event)` [L936-L943]
+  - `dragLeaveEvent(self, event)` [L945-L946]
+  - `dropEvent(self, event)` [L948-L956]
+  - `update_scrollbar_range(self)` [L958-L967]
+  - `update_scrollbar_from_canvas(self, offset)` [L969-L977]
+  - `update_canvas_from_scrollbar(self, val)` [L979-L989]
+  - `__getattr__(self, name)` [L991-L992]
 
 ### `transcript_cleaner.py` (216 lines)
 *Radio & TV Segmenter — Transcript cleaning, loop collapsing, and hallucination scrubbing.*
@@ -2739,10 +2787,10 @@
   - `_on_bubble_export(self)` [L75-L80]
   - `show_context_menu(self, position)` [L82-L454]
 
-### `transcript_editor.py` (978 lines)
+### `transcript_editor.py` (993 lines)
 *transcript_editor.py - Interactive Transcript Editor & Viewer Components*
 - **Public Exports (`__all__`)**: FindReplaceDialog, TranscriptSelectionBubble, transcript_text_view_stylesheet, clean_dark_mode_clipboard_html, InteractiveTranscriptEdit
-- **class `InteractiveTranscriptEdit(TranscriptContextMenuMixin, TranscriptFormattingMixin, TranscriptTimelineSyncMixin, QTextEdit)`** (lines 117–978):
+- **class `InteractiveTranscriptEdit(TranscriptContextMenuMixin, TranscriptFormattingMixin, TranscriptTimelineSyncMixin, QTextEdit)`** (lines 117–993):
   - `__init__(self, parent)` [L130-L192]
   - `clear(self)` [L194-L209] — *Clear document text and reset all word maps, anchors, and extra selections.*
   - `lock_scroll_position(self, v_val, h_val, duration_ms)` [L211-L232] — *Pin vertical and horizontal scrollbars to exact pixel values during layout reflows.*
@@ -2751,21 +2799,21 @@
   - `focusInEvent(self, event)` [L245-L261]
   - `_enforce_scroll_after_focus(self, target_v, target_h)` [L263-L269]
   - `createMimeDataFromSelection(self)` [L271-L285] — *Clean dark-mode white/light plain text colors to black (#000000) when copying.*
-  - `copy_highlighted_selection(self)` [L287-L353] — *Copy the active story or timeline selection span to clipboard when no cursor text is selected.*
-  - `wheelEvent(self, event)` [L355-L361]
-  - `event(self, e)` [L363-L412]
-  - `paintEvent(self, event)` [L414-L477]
-  - `dragEnterEvent(self, event)` [L479-L483]
-  - `dragMoveEvent(self, event)` [L485-L489]
-  - `dropEvent(self, event)` [L491-L501]
-  - `apply_theme_style(self, mode)` [L503-L506]
-  - `set_font_scale(self, scale)` [L508-L518] — *Set transcript font scale without affecting the rest of the UI.*
-  - `set_editing_mode(self, enabled)` [L520-L536]
-  - `mousePressEvent(self, event)` [L538-L578]
-  - `mouseMoveEvent(self, event)` [L580-L628]
-  - `leaveEvent(self, event)` [L630-L634]
-  - `mouseReleaseEvent(self, event)` [L636-L722]
-  - `keyPressEvent(self, event)` [L724-L978]
+  - `copy_highlighted_selection(self)` [L287-L368] — *Copy the active story or timeline selection span to clipboard when no cursor text is selected.*
+  - `wheelEvent(self, event)` [L370-L376]
+  - `event(self, e)` [L378-L427]
+  - `paintEvent(self, event)` [L429-L492]
+  - `dragEnterEvent(self, event)` [L494-L498]
+  - `dragMoveEvent(self, event)` [L500-L504]
+  - `dropEvent(self, event)` [L506-L516]
+  - `apply_theme_style(self, mode)` [L518-L521]
+  - `set_font_scale(self, scale)` [L523-L533] — *Set transcript font scale without affecting the rest of the UI.*
+  - `set_editing_mode(self, enabled)` [L535-L551]
+  - `mousePressEvent(self, event)` [L553-L593]
+  - `mouseMoveEvent(self, event)` [L595-L643]
+  - `leaveEvent(self, event)` [L645-L649]
+  - `mouseReleaseEvent(self, event)` [L651-L737]
+  - `keyPressEvent(self, event)` [L739-L993]
 
 ### `transcript_editor_dialogs.py` (683 lines)
 *transcript_editor_dialogs.py - Dialog and floating toolbar components for transcript editing.*
@@ -2857,7 +2905,7 @@
   - `_on_bubble_export(self)` [L468-L473]
 
 ### `transcript_story.py` (852 lines)
-*Radio & TV Segmenter v3.9.88-beta — transcript story responsibilities.*
+*Radio & TV Segmenter v3.9.89-beta — transcript story responsibilities.*
 - **Public Exports (`__all__`)**: TranscriptStoryMixin, Story, SetStoriesCommand, SelectStoriesCommand, StoryBoundaryChangeCommand, StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin, ChangeSpeakerDialog, VoiceProfileMatchDialog, StoryFadesDialog, SpeakerManagerDialog, FADE_CURVE_TABLES, get_fade_curve_factors
 - **class `TranscriptStoryMixin(StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin)`** (lines 63–851):
   - `render_transcript(self)` [L64-L467]
@@ -2877,9 +2925,9 @@
   - `transcript_text_view_stylesheet(mode, font_size)` [L19-L62] — *Shared visual treatment for transcript-style views.*
   - `clean_dark_mode_clipboard_html(raw_html)` [L65-L104] — *Normalize plain text font colors to black (#000000) for external pasting.*
 
-### `transcript_timeline_sync_mixin.py` (642 lines)
+### `transcript_timeline_sync_mixin.py` (643 lines)
 *Radio & TV Story Segmenter — Transcript Timeline & Playback Synchronization Mixin.*
-- **class `TranscriptTimelineSyncMixin`** (lines 34–642):
+- **class `TranscriptTimelineSyncMixin`** (lines 34–643):
   *Mixin for audio timecode synchronization, anchor indexing, and playback highlighting.*
   - `set_selection_mode(self, mode)` [L37-L41]
   - `set_char_timestamp_map(self, mapping)` [L43-L44]
@@ -2889,21 +2937,21 @@
   - `get_selected_time_range(self)` [L87-L100]
   - `get_all_selected_story_ranges(self)` [L102-L122]
   - `select_comment_range(self, seg_idx)` [L124-L168]
-  - `update_extra_selections(self)` [L170-L297]
-  - `set_search_highlights(self, ranges, active_idx)` [L299-L335] — *Highlight all search matches across transcript with prominent active match.*
-  - `clear_search_highlights(self)` [L337-L340] — *Clear all search match highlights from transcript.*
-  - `set_timeline_selection_span(self, start_char, end_char)` [L342-L347]
-  - `_on_selection_completed(self, cursor)` [L349-L369]
-  - `_nearest_word_anchor(self, cursor)` [L371-L402]
-  - `get_timestamp_at_cursor(self, cursor)` [L404-L423]
-  - `get_block_start_timestamp(self, cursor)` [L425-L440]
-  - `get_block_end_timestamp(self, cursor)` [L442-L460]
-  - `get_segment_index_at_cursor(self, cursor)` [L462-L481]
-  - `move_cursor_to_segment_start(self, seg_idx)` [L483-L498]
-  - `rebuild_anchor_index(self)` [L500-L545]
-  - `set_time_anchor_index(self, entries)` [L547-L549]
-  - `clear_highlight(self)` [L551-L557]
-  - `highlight_word_at_time(self, seconds, transcript_data, auto_scroll)` [L559-L642]
+  - `update_extra_selections(self)` [L170-L298]
+  - `set_search_highlights(self, ranges, active_idx)` [L300-L336] — *Highlight all search matches across transcript with prominent active match.*
+  - `clear_search_highlights(self)` [L338-L341] — *Clear all search match highlights from transcript.*
+  - `set_timeline_selection_span(self, start_char, end_char)` [L343-L348]
+  - `_on_selection_completed(self, cursor)` [L350-L370]
+  - `_nearest_word_anchor(self, cursor)` [L372-L403]
+  - `get_timestamp_at_cursor(self, cursor)` [L405-L424]
+  - `get_block_start_timestamp(self, cursor)` [L426-L441]
+  - `get_block_end_timestamp(self, cursor)` [L443-L461]
+  - `get_segment_index_at_cursor(self, cursor)` [L463-L482]
+  - `move_cursor_to_segment_start(self, seg_idx)` [L484-L499]
+  - `rebuild_anchor_index(self)` [L501-L546]
+  - `set_time_anchor_index(self, entries)` [L548-L550]
+  - `clear_highlight(self)` [L552-L558]
+  - `highlight_word_at_time(self, seconds, transcript_data, auto_scroll)` [L560-L643]
 
 ### `transcription_processing.py` (579 lines)
 *Transcription background process management for Radio & TV Story Segmenter.*
@@ -2975,26 +3023,26 @@
   - `open_wordpress_publish_dialog(self, story)` [L346-L362] — *Open the WordPress direct publish dialog from the WordPress plugin.*
   - `open_loudness_normalization_dialog(self)` [L364-L368] — *Open the Audio Loudness Normalization & Telemetry modal dialog.*
 
-### `ui_layout.py` (1090 lines)
+### `ui_layout.py` (1097 lines)
 *Radio & TV Segmenter — UI Layout & Menu Construction Mixin.*
-- **class `UiLayoutMixin(UiMenusMixin, UiDialogLaunchersMixin)`** (lines 58–1086):
+- **class `UiLayoutMixin(UiMenusMixin, UiDialogLaunchersMixin)`** (lines 58–1093):
   *Mixin class providing UI construction, menu assembly, and UI event binding.*
-  - `build_ui(self)` [L60-L762] — *Build and assemble all central widgets, layouts, and panels.*
-  - `filter_transcript_search(self, target)` [L764-L781] — *Highlight and focus next occurrence of search term in transcript text view.*
-  - `toggle_transcript_editing_mode(self, *args, **kwargs)` [L783-L805] — *Toggle between Viewing Mode (navigation/click-to-seek) and Editing Mode (text editing).*
-  - `_on_transcript_editing_mode_changed(self, is_editing)` [L807-L842] — *Respond to changes in transcript edit vs view mode.*
-  - `_sync_format_toolbar_buttons(self)` [L844-L864]
-  - `_on_toolbar_split_speaker(self)` [L866-L873]
-  - `_apply_transcript_font_scale(self, scale, persist)` [L875-L899] — *Apply a transcript-only font scale and optionally persist it.*
-  - `_on_font_size_combo_changed(self, index)` [L901-L905]
-  - `adjust_transcript_font_size(self, direction)` [L907-L909] — *Increase or decrease transcript font size by one 5% step.*
-  - `reset_transcript_font_size(self)` [L911-L913] — *Restore the default transcript font size.*
-  - `update_story_list_height(self)` [L915-L930] — *Size the story list to fit the current number of stories, leaving space for metadata and export fields.*
-  - `auto_generate_selected_story_excerpt(self)` [L932-L977] — *Auto-generate an excerpt from the story transcript text for the currently selected story.*
-  - `_on_story_excerpt_text_changed(self)` [L979-L997] — *Synchronize excerpt edits from the inline editor into story metadata.*
-  - `toggle_maximize_stories_panel(self)` [L999-L1052] — *Toggle maximize/restore of the stories panel across the full application window.*
-  - `setup_plugin_story_extensions(self)` [L1054-L1076] — *Populate plugin-provided widgets in the story panel.*
-  - `notify_story_selection_to_plugins(self, selected_story)` [L1078-L1086] — *Notify all enabled plugins when the active story selection changes.*
+  - `build_ui(self)` [L60-L769] — *Build and assemble all central widgets, layouts, and panels.*
+  - `filter_transcript_search(self, target)` [L771-L788] — *Highlight and focus next occurrence of search term in transcript text view.*
+  - `toggle_transcript_editing_mode(self, *args, **kwargs)` [L790-L812] — *Toggle between Viewing Mode (navigation/click-to-seek) and Editing Mode (text editing).*
+  - `_on_transcript_editing_mode_changed(self, is_editing)` [L814-L849] — *Respond to changes in transcript edit vs view mode.*
+  - `_sync_format_toolbar_buttons(self)` [L851-L871]
+  - `_on_toolbar_split_speaker(self)` [L873-L880]
+  - `_apply_transcript_font_scale(self, scale, persist)` [L882-L906] — *Apply a transcript-only font scale and optionally persist it.*
+  - `_on_font_size_combo_changed(self, index)` [L908-L912]
+  - `adjust_transcript_font_size(self, direction)` [L914-L916] — *Increase or decrease transcript font size by one 5% step.*
+  - `reset_transcript_font_size(self)` [L918-L920] — *Restore the default transcript font size.*
+  - `update_story_list_height(self)` [L922-L937] — *Size the story list to fit the current number of stories, leaving space for metadata and export fields.*
+  - `auto_generate_selected_story_excerpt(self)` [L939-L984] — *Auto-generate an excerpt from the story transcript text for the currently selected story.*
+  - `_on_story_excerpt_text_changed(self)` [L986-L1004] — *Synchronize excerpt edits from the inline editor into story metadata.*
+  - `toggle_maximize_stories_panel(self)` [L1006-L1059] — *Toggle maximize/restore of the stories panel across the full application window.*
+  - `setup_plugin_story_extensions(self)` [L1061-L1083] — *Populate plugin-provided widgets in the story panel.*
+  - `notify_story_selection_to_plugins(self, selected_story)` [L1085-L1093] — *Notify all enabled plugins when the active story selection changes.*
 
 ### `ui_menus.py` (865 lines)
 *Main application menu bar and action assembly for Radio & TV Story Segmenter.*

@@ -543,6 +543,13 @@ class UiLayoutMixin(UiMenusMixin, UiDialogLaunchersMixin):
 
         form_layout.addRow("Range:", times_layout)
 
+        self.duration_input = QLineEdit(self)
+        self.duration_input.setObjectName("story_duration_input")
+        self.duration_input.setReadOnly(True)
+        self.duration_input.setPlaceholderText("00:00.0")
+        self.duration_input.setToolTip("Duration of the active story in clock format")
+        form_layout.addRow("Duration:", self.duration_input)
+
         self.author_input = QLineEdit(self)
         self.author_input.setPlaceholderText("Story author / reporter / contributor")
         self.author_input.editingFinished.connect(self.update_selected_story)
@@ -917,17 +924,17 @@ class UiLayoutMixin(UiMenusMixin, UiDialogLaunchersMixin):
         if not hasattr(self, "story_list") or self.story_list is None:
             return
         cnt = self.story_list.count()
-        row_h = self.story_list.sizeHintForRow(0) if cnt > 0 and self.story_list.sizeHintForRow(0) > 0 else 42
-        content_h = max(70, cnt * row_h + self.story_list.frameWidth() * 2 + 8)
+        row_h = self.story_list.sizeHintForRow(0) if cnt > 0 and self.story_list.sizeHintForRow(0) > 0 else 28
+        content_h = max(65, cnt * row_h + self.story_list.frameWidth() * 2 + 8)
         if getattr(self, "_stories_panel_maximized", False):
             # When maximized across the full window, only size the list as large as needed
             # to show the stories (capping at 240px if there are dozens), reserving the rest for metadata
             target_h = min(240, content_h)
             self.story_list.setFixedHeight(target_h)
         else:
-            target_h = min(200, content_h)
+            target_h = min(180, content_h)
             self.story_list.setMaximumHeight(target_h)
-            self.story_list.setMinimumHeight(70)
+            self.story_list.setMinimumHeight(65)
 
     def auto_generate_selected_story_excerpt(self):
         """Auto-generate an excerpt from the story transcript text for the currently selected story."""

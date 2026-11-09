@@ -17,7 +17,7 @@ from waveform_envelope import WaveformEnvelope, build_waveform_pyramid
 from timeline_overview_widget import TimelineResizeHandle, TimelineOverviewBar
 from timeline_painter import _FADE_STEPS, _FADE_IN_CURVE_TABLES, _FADE_OUT_CURVE_TABLES, render_waveform_buffer as _render_waveform_buffer_impl, paint_timeline_canvas as _paint_timeline_canvas_impl
 from timeline_context_menus import show_timeline_context_menu, show_selection_context_menu
-from timeline_snap import snap_time as _snap_time_impl, find_edge_at_pos as _find_edge_impl, find_fade_handle_at_pos as _find_fade_impl, find_story_at_time as _find_story_impl, is_near_playhead as _is_near_playhead_impl
+from timeline_snap import snap_time as _snap_time_impl, find_edge_at_pos as _find_edge_impl, find_fade_handle_at_pos as _find_fade_impl, find_story_at_time as _find_story_impl, is_near_playhead as _is_near_playhead_impl, get_timeline_hover_info as _get_timeline_hover_impl, format_selection_drag_info as _format_sel_drag_impl, format_edge_drag_info as _format_edge_drag_impl
 
 class TimelineCanvas(QWidget):
     positionClicked = ...
@@ -112,10 +112,10 @@ class TimelineCanvas(QWidget):
 
     def snap_time(self, raw_time: float, exclude_story_idx: int=..., width: int=..., pixel_threshold: int=...) -> float:
         ...
+    FADE_HANDLE_THRESHOLD = ...
 
     def find_edge_at_pos(self, pos_x, width):
         ...
-    FADE_HANDLE_THRESHOLD = ...
 
     def find_fade_handle_at_pos(self, pos_x, pos_y, width):
         ...

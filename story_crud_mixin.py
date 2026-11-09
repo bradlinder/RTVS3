@@ -94,6 +94,22 @@ class StoryCrudMixin:
             else:
                 self.stories_header.setToolTip(f"{count} {plur_term} selected — Total Duration: {clock_dur}")
 
+    def update_story_form_duration(self):
+        """Update Duration field in the story edit form below Range."""
+        if not hasattr(self, "duration_input") or self.duration_input is None:
+            return
+        selected = getattr(self, "current_selected_story_indices", []) or []
+        stories = getattr(self, "stories", []) or []
+        if len(selected) == 1 and 0 <= selected[0] < len(stories):
+            story = stories[selected[0]]
+            dur = max(0.0, float(story.end) - float(story.start))
+            self.duration_input.setText(format_clock_duration(dur, include_millis=True))
+        elif len(selected) > 1:
+            total_dur = sum(max(0.0, float(stories[i].end) - float(stories[i].start)) for i in selected if 0 <= i < len(stories))
+            self.duration_input.setText(format_clock_duration(total_dur, include_millis=True))
+        else:
+            self.duration_input.clear()
+
     def refresh_story_list(self):
         selected_indices = list(self.current_selected_story_indices)
         self.story_list.blockSignals(True)
@@ -115,12 +131,12 @@ class StoryCrudMixin:
 
             fade_parts = []
             if fin > 0:
-                fade_parts.append(f"In:{fin:.1f}s")
+                fade_parts.append(f"Fade In: {fin:.1f}s")
             if fout > 0:
-                fade_parts.append(f"Out:{fout:.1f}s")
-            fade_badge = f"  [{' '.join(fade_parts)}]" if fade_parts else ""
+                fade_parts.append(f"Fade Out: {fout:.1f}s")
+            fade_badge = f"  [{' | '.join(fade_parts)}]" if fade_parts else ""
 
-            text = f"{index}. {format_time(story.start)} – {format_time(story.end)}  {story.title}{fade_badge}\n   [{clock_dur}]"
+            text = f"{index}. {format_time(story.start)} – {format_time(story.end)}  {story.title}{fade_badge}"
             item = QListWidgetItem(text)
             curve_name = curve_labels.get(fcurve, fcurve.capitalize())
             fade_info = f"Fade-In: {fin:.2f}s | Fade-Out: {fout:.2f}s ({curve_name} Curve)" if (fin > 0 or fout > 0) else "No Fades Applied"
@@ -139,6 +155,8 @@ class StoryCrudMixin:
             self.update_story_list_height()
         if hasattr(self, "update_stories_header"):
             self.update_stories_header()
+        if hasattr(self, "update_story_form_duration"):
+            self.update_story_form_duration()
         if hasattr(self, "notify_story_selection_to_plugins"):
             st = self.stories[selected_indices[0]] if (len(selected_indices) == 1 and 0 <= selected_indices[0] < len(self.stories)) else None
             self.notify_story_selection_to_plugins(st)
@@ -166,10 +184,10 @@ class StoryCrudMixin:
                 last_idx = self.story_list.count() - 1
                 item = self.story_list.item(last_idx)
                 if item:
-                    st_len = max(0.0, float(story.end) - float(story.start))
-                    clock_dur = format_clock_duration(st_len, include_millis=True)
-                    item.setText(f"{len(self.stories)}. {format_time(story.start)} – {format_time(story.end)}  {story.title}\n   [{clock_dur}]")
+                    item.setText(f"{len(self.stories)}. {format_time(story.start)} – {format_time(story.end)}  {story.title}")
                     item.setData(Qt.ItemDataRole.UserRole, story.to_dict())
+            if hasattr(self, "update_story_form_duration"):
+                self.update_story_form_duration()
             if hasattr(self, "update_stories_header"):
                 self.update_stories_header()
 
@@ -186,6 +204,8 @@ class StoryCrudMixin:
             else:
                 self.start_input.setText(format_time(story.start))
                 self.end_input.setText(format_time(story.end))
+                if hasattr(self, "update_story_form_duration"):
+                    self.update_story_form_duration()
                 if hasattr(self, "update_stories_header"):
                     self.update_stories_header()
 

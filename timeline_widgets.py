@@ -50,11 +50,10 @@ from timeline_painter import (
 )
 from timeline_context_menus import show_timeline_context_menu, show_selection_context_menu
 from timeline_snap import (
-    snap_time as _snap_time_impl,
-    find_edge_at_pos as _find_edge_impl,
-    find_fade_handle_at_pos as _find_fade_impl,
-    find_story_at_time as _find_story_impl,
-    is_near_playhead as _is_near_playhead_impl,
+    snap_time as _snap_time_impl, find_edge_at_pos as _find_edge_impl,
+    find_fade_handle_at_pos as _find_fade_impl, find_story_at_time as _find_story_impl,
+    is_near_playhead as _is_near_playhead_impl, get_timeline_hover_info as _get_timeline_hover_impl,
+    format_selection_drag_info as _format_sel_drag_impl, format_edge_drag_info as _format_edge_drag_impl,
 )
 
 class TimelineCanvas(QWidget):
@@ -360,10 +359,10 @@ class TimelineCanvas(QWidget):
     def snap_time(self, raw_time: float, exclude_story_idx: int = None, width: int = None, pixel_threshold: int = 10) -> float:
         return _snap_time_impl(self, raw_time, exclude_story_idx, width, pixel_threshold)
 
+    FADE_HANDLE_THRESHOLD = 12
+
     def find_edge_at_pos(self, pos_x, width):
         return _find_edge_impl(self, pos_x, width)
-
-    FADE_HANDLE_THRESHOLD = 12
 
     def find_fade_handle_at_pos(self, pos_x, pos_y, width):
         return _find_fade_impl(self, pos_x, pos_y, width)
@@ -587,6 +586,12 @@ class TimelineCanvas(QWidget):
             e = max(self.selection_start, self.selection_end)
             self.selectionRangeChanged.emit(s, e)
             self.update()
+
+            tip_text, stat_text = _format_sel_drag_impl(s, e)
+            top_win = self.window() if hasattr(self, "window") else self
+            QToolTip.showText(event.globalPosition().toPoint(), tip_text, top_win or self)
+            if hasattr(top_win, "statusBar") and top_win.statusBar():
+                top_win.statusBar().showMessage(stat_text)
             event.accept()
             return
 
@@ -636,6 +641,12 @@ class TimelineCanvas(QWidget):
                     self._cached_story_snap_points = [(i, float(s.start), float(s.end)) for i, s in enumerate(self.stories)]
                 self.update()
 
+                tip_text, stat_text = _format_edge_drag_impl(story, edge_type, curr_time)
+                top_win = self.window() if hasattr(self, "window") else self
+                QToolTip.showText(event.globalPosition().toPoint(), tip_text, top_win or self)
+                if hasattr(top_win, "statusBar") and top_win.statusBar():
+                    top_win.statusBar().showMessage(stat_text)
+
             event.accept()
             return
 
@@ -649,23 +660,15 @@ class TimelineCanvas(QWidget):
             self.unsetCursor()
 
         if not (self.is_panning or self.is_left_down or self.is_right_dragging or self.active_edge_target or self.active_fade_target):
-            tooltip_text = ""
-            if fade_hit:
-                idx, f_type = fade_hit
-                if 0 <= idx < len(self.stories):
-                    f_dur = getattr(self.stories[idx], f_type, 0.0)
-                    f_name = "Fade-In" if f_type == "fade_in" else "Fade-Out"
-                    tooltip_text = f"{self.stories[idx].title} ({f_name}: {f_dur:.2f}s)\nDrag handle horizontally to adjust audio fade"
-            elif edge_hit:
-                idx, edge_type = edge_hit
-                title = self.stories[idx].title if 0 <= idx < len(self.stories) else f"Story #{idx+1}"
-                tooltip_text = f"{title} ({edge_type.capitalize()} Boundary)\nRight-click and drag to adjust"
+            tooltip_text, status_text = _get_timeline_hover_impl(self, pos_x, pos_y, width)
 
             if tooltip_text:
                 if tooltip_text != getattr(self, "_last_tooltip_text", ""):
                     self._last_tooltip_text = tooltip_text
                     top_win = self.window() if hasattr(self, "window") else self
                     QToolTip.showText(event.globalPosition().toPoint(), tooltip_text, top_win or self)
+                    if status_text and hasattr(top_win, "statusBar") and top_win.statusBar():
+                        top_win.statusBar().showMessage(status_text)
             else:
                 if getattr(self, "_last_tooltip_text", ""):
                     self._last_tooltip_text = ""

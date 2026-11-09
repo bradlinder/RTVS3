@@ -500,6 +500,10 @@ class DiagnosticEditorTestsMixin:
                 self.current_selected_story_indices = []
                 self.stories_header = QLabel("Stories")
                 self.story_list = QListWidget()
+                from PySide6.QtWidgets import QLineEdit
+                self.duration_input = QLineEdit()
+                self.start_input = QLineEdit()
+                self.end_input = QLineEdit()
                 self.story_detection_mode = "voice"
                 self.language = "en"
                 class DummyTimeline:
@@ -508,24 +512,30 @@ class DiagnosticEditorTestsMixin:
 
         host = MockStoryHost()
 
-        # 3. Test idle header state (0 selected)
+        # 3. Test idle header state and duration field (0 selected)
         host.update_stories_header()
+        host.update_story_form_duration()
         assert host.stories_header.text() == "Stories"
         assert "3 total" in host.stories_header.toolTip()
+        assert host.duration_input.text() == ""
 
         # 4. Test single story selected
         host.current_selected_story_indices = [0]
         host.update_stories_header()
+        host.update_story_form_duration()
         assert host.stories_header.text() == "Stories (1) — [02:30.5]"
         assert "Lead Story" in host.stories_header.toolTip()
         assert "02:30.5" in host.stories_header.toolTip()
+        assert host.duration_input.text() == "02:30.5"
 
         # 5. Test multi-selection duration aggregation (150.5s + 75.0s = 225.5s -> 03:45.5)
         host.current_selected_story_indices = [0, 1]
         host.update_stories_header()
+        host.update_story_form_duration()
         assert host.stories_header.text() == "Stories (2) — [03:45.5]"
         assert "2 stories selected" in host.stories_header.toolTip()
         assert "03:45.5" in host.stories_header.toolTip()
+        assert host.duration_input.text() == "03:45.5"
 
         # 6. Test Music and Spanish terminology pluralization
         host.story_detection_mode = "music"
@@ -543,18 +553,71 @@ class DiagnosticEditorTestsMixin:
         assert host.stories_header.text() == "Historias (2) — [03:45.5]"
         assert "2 historias seleccionadas" in host.stories_header.toolTip()
 
-        # 7. Test refresh_story_list 2-line item formatting
+        # 7. Test refresh_story_list single-line item formatting and Fade Out language
+        host.stories[0].fade_out = 1.0
         host.refresh_story_list()
         assert host.story_list.count() == 3
         item0 = host.story_list.item(0)
         assert item0 is not None
-        lines = item0.text().split("\n")
-        assert len(lines) == 2, f"Expected 2 lines for story item, got: {item0.text()}"
-        assert "Lead Story" in lines[0]
-        assert "[02:30.5]" in lines[1]
+        assert "\n" not in item0.text(), f"Expected single line for story item, got: {item0.text()}"
+        assert "Lead Story" in item0.text()
+        assert "[Fade Out: 1.0s]" in item0.text()
         assert "Duration: 02:30.5" in item0.toolTip()
 
+        # 8. Test timeline hover readout and selection drag duration formatting
+        from timeline_snap import (
+            get_timeline_hover_info,
+            format_selection_drag_info,
+            format_edge_drag_info,
+        )
+
+        class MockCanvas:
+            def __init__(self, stories):
+                self.stories = stories
+                self.duration = 600.0
+                self.scroll_offset = 0.0
+                self.zoom = 1.0
+                self.selection_start = None
+                self.selection_end = None
+                self.EDGE_HANDLE_THRESHOLD = 5
+                self.FADE_HANDLE_THRESHOLD = 12
+                self.RULER_HEIGHT = 20
+                self.show_audio_fades = True
+                self.enable_magnetic_snapping = False
+            def width(self): return 1000
+            def visible_duration(self): return 600.0
+            def x_to_time(self, x, w): return (x / max(1, w)) * 600.0
+            def time_to_x(self, t, w): return int((t / 600.0) * w)
+
+        canvas = MockCanvas(host.stories)
+
+        # Hover over body of Story #1 (start=10.0, end=160.5 -> duration 150.5s = 02:30.5)
+        # At width=1000, t=50.0s is at x=83.33
+        tip, stat = get_timeline_hover_info(canvas, pos_x=83.0, pos_y=50.0, width=1000)
+        assert "Story #1: Lead Story" in tip, f"Unexpected tooltip: {tip}"
+        assert "Duration: 02:30.5" in tip, f"Missing clock duration in tooltip: {tip}"
+        assert "02:30.5" in stat, f"Missing duration in status bar: {stat}"
+
+        # Selection hover when no story is under cursor (gap between story 1 and 2: 245s to 300s)
+        canvas.selection_start = 260.0
+        canvas.selection_end = 280.0
+        tip, stat = get_timeline_hover_info(canvas, pos_x=450.0, pos_y=50.0, width=1000)
+        assert "Selection: 00:20.0" in tip, f"Unexpected selection tooltip: {tip}"
+        assert "Selection: 00:20.0" in stat, f"Unexpected selection status: {stat}"
+
+        # Live selection drag formatting (e.g. 15.0s drag from 5.0 to 20.0)
+        sel_tip, sel_stat = format_selection_drag_info(5.0, 20.0)
+        assert "Selection: 00:15.0" in sel_tip
+        assert "00:05.000 – 00:20.000" in sel_tip
+        assert "Selection: 00:15.0 [00:05.000 – 00:20.000]" == sel_stat
+
+        # Live edge drag formatting
+        edge_tip, edge_stat = format_edge_drag_info(host.stories[0], "start", 15.0)
+        assert "Lead Story (Start Edge)" in edge_tip
+        assert "Duration: 02:30.5" in edge_tip
+        assert "Lead Story (Start): 00:15.000 (Duration: 02:30.5)" == edge_stat
+
         item.status = "PASS"
-        item.message = "Story clock duration formatting, 2-line list item layout, and multi-selection header counter/duration verified"
+        item.message = "Story clock duration field below Range, Fade Out badge language, timeline hover tooltips, and selection drag indicators verified"
 
 

@@ -1,10 +1,13 @@
 # Changelog
 
-## v3.9.89-beta (In Progress)
-- **Story Duration Visibility & Selection Indicators — Phase 1 (core_utils.py, prs_shared.py, story_crud_mixin.py, processing.py, media_batch.py, ui_layout.py, diagnostic_editor_tests.py)**:
-  - **Sidebar Story Duration Subtitle (1.1)**: Display story length in clock format (e.g. `[02:30.5]` or `00:02:30`) on a dedicated second subtitle line below the time range in the Stories sidebar list (`story_crud_mixin.py`, `ui_layout.py`). Expanded list item row height and container min/max bounds to prevent vertical clipping on compact viewports.
+## v3.9.89-beta
+- **Story Duration Visibility, Edit Form Placement & Timeline Selection Indicators (core_utils.py, prs_shared.py, story_crud_mixin.py, timeline_widgets.py, timeline_snap.py, ui_layout.py, diagnostic_editor_tests.py)**:
+  - **Story Edit Form Duration Field (1.1)**: Added a dedicated read-only `Duration:` field (`self.duration_input`) placed directly below `Range:` in the story edit form. Dynamically displays story duration in clock format (`02:30.5`) on single selection, aggregate duration on multi-selection, and clears when unselected (`ui_layout.py`, `story_crud_mixin.py`, `processing.py`).
+  - **Single-Line Story List & Audio Fade Badge Polish (1.1)**: Maintained clean single-line story list items without vertical clutter, and updated fade badge language from cryptic abbreviations (`[Out:1.0s]`) to explicit wording (`[Fade In: 0.5s | Fade Out: 1.0s]`).
+  - **Timeline Story Body Hover Readout (1.2)**: Hovering over the main body of a story block on the waveform canvas displays a clean tooltip and status bar readout showing Story Title, time range, and clock duration (`timeline_widgets.py`, `timeline_snap.py`).
+  - **Live Selection Drag & Hover Duration Indicator (1.3)**: Real-time duration clock readout in tooltip and status bar while drawing or resizing selection regions, or dragging story boundary handles on the timeline.
   - **Multi-Selection Total Duration Header Counter (1.4)**: Real-time aggregate duration readout in the Stories sidebar header (`stories_header`) reflecting current single- or multi-story selection (`Stories (1) — [02:30.5]`, `Stories (3) — [07:14.2]`). Supports music terminology (`Songs`) and Spanish localization (`Historias`, `Canciones`).
-  - **Duration Formatting & Regression Suite (1.5 Phase 1)**: Added `format_clock_duration(seconds, include_millis)` to `core_utils.py` and automated diagnostic test `Story Duration Visibility & Header Aggregation` in `diagnostic_editor_tests.py`.
+  - **Diagnostic Regression Suite (1.5)**: Automated unit and headless assertions for duration string formatting, edit form field updates, single-line list rendering, timeline hover tooltips, and live drag indicators in `diagnostic_editor_tests.py`.
 
 ## v3.9.88-beta
 - **Searchable/Sortable Glossary Dialog, Contextual Terminology Engine & Alternate Spelling Mapping (glossary_dialog.py, media_batch.py, terminology.py, transcript_context_menu_mixin.py)**:

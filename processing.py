@@ -432,6 +432,8 @@ class ProcessingMixin(
                 story = self.stories[idx]
                 self.start_input.setText(format_time(story.start))
                 self.end_input.setText(format_time(story.end))
+                if hasattr(self, "update_story_form_duration"):
+                    self.update_story_form_duration()
                 self.title_input.setText(story.title)
                 if hasattr(self, "author_input"):
                     meta = getattr(story, "metadata", {}) or {}
@@ -461,6 +463,8 @@ class ProcessingMixin(
         else:
             self.start_input.clear()
             self.end_input.clear()
+            if hasattr(self, "update_story_form_duration"):
+                self.update_story_form_duration()
             self.title_input.clear()
             if hasattr(self, "author_input"):
                 self.author_input.clear()

@@ -2,11 +2,17 @@
 from __future__ import annotations
 from __future__ import annotations
 from typing import Any, List, Optional
-from core_utils import INTERNAL_APP_ID, format_time, parse_time
+from core_utils import INTERNAL_APP_ID, format_time, format_clock_duration, parse_time
 from story_model import Story, SetStoriesCommand, StoryBoundaryChangeCommand
 from story_fades_dialog import StoryFadesDialog
 
 class StoryCrudMixin:
+
+    def update_stories_header(self):
+        ...
+
+    def update_story_form_duration(self):
+        ...
 
     def refresh_story_list(self):
         ...

@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-08 15:46:33",
+  "generated_at": "2026-11-09 16:21:44",
   "total_files": 162,
   "files": {
     "RadioTVSegmenter.py": {
       "path": "RadioTVSegmenter.py",
       "lines": 663,
-      "summary": "Radio & TV Segmenter \u2014 v3.9.88-beta",
+      "summary": "Radio & TV Segmenter \u2014 v3.9.89-beta",
       "exports": null,
       "classes": [
         {
@@ -1434,7 +1434,7 @@
     },
     "core_utils.py": {
       "path": "core_utils.py",
-      "lines": 666,
+      "lines": 692,
       "summary": "Radio & TV Segmenter \u2014 Core filesystem, path, timing, and hash utilities.",
       "exports": null,
       "classes": [],
@@ -1608,38 +1608,45 @@
           "doc": ""
         },
         {
+          "name": "format_clock_duration",
+          "sig": "format_clock_duration(seconds, include_millis)",
+          "start_line": 589,
+          "end_line": 612,
+          "doc": "Format duration in seconds as clock time string (e.g. '02:30' or '02:30.5')."
+        },
+        {
           "name": "parse_time",
           "sig": "parse_time(value)",
-          "start_line": 589,
-          "end_line": 605,
+          "start_line": 615,
+          "end_line": 631,
           "doc": ""
         },
         {
           "name": "safe_filename",
           "sig": "safe_filename(text)",
-          "start_line": 608,
-          "end_line": 624,
+          "start_line": 634,
+          "end_line": 650,
           "doc": ""
         },
         {
           "name": "is_sentence_end",
           "sig": "is_sentence_end(text)",
-          "start_line": 627,
-          "end_line": 628,
+          "start_line": 653,
+          "end_line": 654,
           "doc": ""
         },
         {
           "name": "calculate_fade_curve_factor",
           "sig": "calculate_fade_curve_factor(u, fcurve)",
-          "start_line": 631,
-          "end_line": 642,
+          "start_line": 657,
+          "end_line": 668,
           "doc": "Calculate normalized fade-in multiplier (0.0 to 1.0) given progress `u` in [0, 1]."
         },
         {
           "name": "calculate_fade_out_factor",
           "sig": "calculate_fade_out_factor(u, fcurve)",
-          "start_line": 645,
-          "end_line": 665,
+          "start_line": 671,
+          "end_line": 691,
           "doc": "Calculate normalized fade-out multiplier (1.0 to 0.0) given progress `u` from 0.0 (fade start) to 1.0 (silence)."
         }
       ]
@@ -2101,7 +2108,7 @@
     },
     "diagnostic_editor_tests.py": {
       "path": "diagnostic_editor_tests.py",
-      "lines": 464,
+      "lines": 623,
       "summary": "Diagnostic editor and find-replace tests for Radio & TV Story Segmenter.",
       "exports": null,
       "classes": [
@@ -2109,29 +2116,36 @@
           "name": "DiagnosticEditorTestsMixin",
           "bases": [],
           "start_line": 11,
-          "end_line": 463,
+          "end_line": 621,
           "doc": "Diagnostic suite for transcript editor, find-replace, and speaker synchronization.",
           "methods": [
             {
               "name": "_test_find_and_replace_project_synchronization_and_undo",
               "sig": "_test_find_and_replace_project_synchronization_and_undo(self, item)",
               "start_line": 14,
-              "end_line": 202,
+              "end_line": 209,
               "doc": "Validates that Find & Replace updates segments, word timings, speaker aliases,"
             },
             {
               "name": "_test_in_app_user_guides_and_documentation_viewer",
               "sig": "_test_in_app_user_guides_and_documentation_viewer(self, item)",
-              "start_line": 204,
-              "end_line": 276,
+              "start_line": 211,
+              "end_line": 283,
               "doc": "Validates in-app user guide resolution, fallback to embedded content, and bundling invariants."
             },
             {
               "name": "_test_story_transcript_highlighting_and_smart_copy",
               "sig": "_test_story_transcript_highlighting_and_smart_copy(self, item)",
-              "start_line": 278,
-              "end_line": 463,
+              "start_line": 285,
+              "end_line": 475,
               "doc": "Validates story selection synchronization with transcript highlight overlay and smart clipboard copying."
+            },
+            {
+              "name": "_test_story_duration_visibility_and_header_aggregation",
+              "sig": "_test_story_duration_visibility_and_header_aggregation(self, item)",
+              "start_line": 477,
+              "end_line": 621,
+              "doc": "Validates story clock duration formatting, 2-line sidebar item format, and multi-selection header aggregation."
             }
           ]
         }
@@ -4125,7 +4139,7 @@
     },
     "media_batch.py": {
       "path": "media_batch.py",
-      "lines": 1709,
+      "lines": 1711,
       "summary": "Radio & TV Segmenter v1.1.1 \u2014 media batch responsibilities.",
       "exports": null,
       "classes": [
@@ -4133,7 +4147,7 @@
           "name": "MediaBatchMixin",
           "bases": [],
           "start_line": 21,
-          "end_line": 1709,
+          "end_line": 1711,
           "doc": "",
           "methods": [
             {
@@ -4434,91 +4448,91 @@
               "name": "update_story_segment_terminology",
               "sig": "update_story_segment_terminology(self)",
               "start_line": 1179,
-              "end_line": 1283,
+              "end_line": 1285,
               "doc": "Update all user-facing labels and tooltips to use 'Song' in Music mode and 'Story' in Voice mode."
             },
             {
               "name": "open_document",
               "sig": "open_document(self)",
-              "start_line": 1285,
-              "end_line": 1339,
+              "start_line": 1287,
+              "end_line": 1341,
               "doc": ""
             },
             {
               "name": "export_text_file",
               "sig": "export_text_file(self)",
-              "start_line": 1341,
-              "end_line": 1349,
+              "start_line": 1343,
+              "end_line": 1351,
               "doc": ""
             },
             {
               "name": "open_media",
               "sig": "open_media(self)",
-              "start_line": 1351,
-              "end_line": 1360,
+              "start_line": 1353,
+              "end_line": 1362,
               "doc": ""
             },
             {
               "name": "prepare_for_new_media",
               "sig": "prepare_for_new_media(self)",
-              "start_line": 1362,
-              "end_line": 1395,
+              "start_line": 1364,
+              "end_line": 1397,
               "doc": "Checks for unsaved changes before loading new media."
             },
             {
               "name": "_batch_media_error",
               "sig": "_batch_media_error(self, message)",
-              "start_line": 1397,
-              "end_line": 1419,
+              "start_line": 1399,
+              "end_line": 1421,
               "doc": ""
             },
             {
               "name": "_get_batch_project_target_path",
               "sig": "_get_batch_project_target_path(self, base_name)",
-              "start_line": 1421,
-              "end_line": 1448,
+              "start_line": 1423,
+              "end_line": 1450,
               "doc": "Determines consistent target .rtvs project file path during batch processing."
             },
             {
               "name": "_batch_save_project_file",
               "sig": "_batch_save_project_file(self)",
-              "start_line": 1450,
-              "end_line": 1465,
+              "start_line": 1452,
+              "end_line": 1467,
               "doc": "Saves project .rtvs to dedicated directory structure during batch processing."
             },
             {
               "name": "_batch_export_current",
               "sig": "_batch_export_current(self)",
-              "start_line": 1467,
-              "end_line": 1551,
+              "start_line": 1469,
+              "end_line": 1553,
               "doc": "Handles automatic export or project saving during batch processing."
             },
             {
               "name": "load_media_file",
               "sig": "load_media_file(self, filename, source, restore_adjacent_project)",
-              "start_line": 1553,
-              "end_line": 1668,
+              "start_line": 1555,
+              "end_line": 1670,
               "doc": ""
             },
             {
               "name": "update_active_media_source",
               "sig": "update_active_media_source(self)",
-              "start_line": 1670,
-              "end_line": 1703,
+              "start_line": 1672,
+              "end_line": 1705,
               "doc": "Update media player source and refresh waveform when normalization state changes."
             },
             {
               "name": "open_audio",
               "sig": "open_audio(self)",
-              "start_line": 1705,
-              "end_line": 1706,
+              "start_line": 1707,
+              "end_line": 1708,
               "doc": ""
             },
             {
               "name": "handle_media_drop",
               "sig": "handle_media_drop(self, filename)",
-              "start_line": 1708,
-              "end_line": 1709,
+              "start_line": 1710,
+              "end_line": 1711,
               "doc": ""
             }
           ]
@@ -9067,7 +9081,7 @@
     },
     "processing.py": {
       "path": "processing.py",
-      "lines": 1232,
+      "lines": 1238,
       "summary": "Radio & TV Segmenter v3.3.29 \u2014 processing responsibilities.",
       "exports": null,
       "classes": [
@@ -9111,7 +9125,7 @@
             "StoryDetectionProcessingMixin"
           ],
           "start_line": 92,
-          "end_line": 1231,
+          "end_line": 1237,
           "doc": "",
           "methods": [
             {
@@ -9153,154 +9167,154 @@
               "name": "apply_story_selection_indices",
               "sig": "apply_story_selection_indices(self, selected_rows, seek)",
               "start_line": 410,
-              "end_line": 493,
+              "end_line": 499,
               "doc": ""
             },
             {
               "name": "on_timeline_story_clicked",
               "sig": "on_timeline_story_clicked(self, index)",
-              "start_line": 495,
-              "end_line": 505,
+              "start_line": 501,
+              "end_line": 511,
               "doc": "Handle user clicking a story region directly on the timeline canvas."
             },
             {
               "name": "story_selection_changed",
               "sig": "story_selection_changed(self)",
-              "start_line": 507,
-              "end_line": 524,
+              "start_line": 513,
+              "end_line": 530,
               "doc": ""
             },
             {
               "name": "handle_timeline_multi_selection",
               "sig": "handle_timeline_multi_selection(self, selected_indices)",
-              "start_line": 526,
-              "end_line": 537,
+              "start_line": 532,
+              "end_line": 543,
               "doc": ""
             },
             {
               "name": "set_tools_actions_enabled",
               "sig": "set_tools_actions_enabled(self, enabled)",
-              "start_line": 539,
-              "end_line": 575,
+              "start_line": 545,
+              "end_line": 581,
               "doc": ""
             },
             {
               "name": "stop_story_detection_worker",
               "sig": "stop_story_detection_worker(self, timeout_ms)",
-              "start_line": 577,
-              "end_line": 600,
+              "start_line": 583,
+              "end_line": 606,
               "doc": "Cancel Story Detection and wait for its QThread to finish."
             },
             {
               "name": "stop_all_processing",
               "sig": "stop_all_processing(self, timeout_ms)",
-              "start_line": 602,
-              "end_line": 617,
+              "start_line": 608,
+              "end_line": 623,
               "doc": "Stop every local processing job before changing media/projects or exiting."
             },
             {
               "name": "confirm_stop_processing_for_media_change",
               "sig": "confirm_stop_processing_for_media_change(self)",
-              "start_line": 619,
-              "end_line": 647,
+              "start_line": 625,
+              "end_line": 653,
               "doc": ""
             },
             {
               "name": "worker_thread_finished",
               "sig": "worker_thread_finished(self)",
-              "start_line": 649,
-              "end_line": 651,
+              "start_line": 655,
+              "end_line": 657,
               "doc": ""
             },
             {
               "name": "start_full_auto_pipeline",
               "sig": "start_full_auto_pipeline(self)",
-              "start_line": 653,
-              "end_line": 802,
+              "start_line": 659,
+              "end_line": 808,
               "doc": "Open a chooser for the processing stages to run, then run them in order."
             },
             {
               "name": "_confirm_pipeline_rerun_if_needed",
               "sig": "_confirm_pipeline_rerun_if_needed(self, stages, parent)",
-              "start_line": 804,
-              "end_line": 873,
+              "start_line": 810,
+              "end_line": 879,
               "doc": "Look ahead at stages about to run in a pipeline. If any have already"
             },
             {
               "name": "_run_next_selected_processing",
               "sig": "_run_next_selected_processing(self)",
-              "start_line": 875,
-              "end_line": 955,
+              "start_line": 881,
+              "end_line": 961,
               "doc": ""
             },
             {
               "name": "start_transcribe_and_diarize",
               "sig": "start_transcribe_and_diarize(self)",
-              "start_line": 957,
-              "end_line": 976,
+              "start_line": 963,
+              "end_line": 982,
               "doc": ""
             },
             {
               "name": "_processing_choice",
               "sig": "_processing_choice(self, kind)",
-              "start_line": 978,
-              "end_line": 1017,
+              "start_line": 984,
+              "end_line": 1023,
               "doc": "Return: run, continue, start_over, or cancel based on current state."
             },
             {
               "name": "_worker_command",
               "sig": "_worker_command(self, args)",
-              "start_line": 1019,
-              "end_line": 1038,
+              "start_line": 1025,
+              "end_line": 1044,
               "doc": "Return (executable, args, env_overrides) for the local AI worker,"
             },
             {
               "name": "_resolve_worker_command",
               "sig": "_resolve_worker_command(self, args)",
-              "start_line": 1040,
-              "end_line": 1087,
+              "start_line": 1046,
+              "end_line": 1093,
               "doc": "Return (executable, args, env_overrides) for the local AI worker."
             },
             {
               "name": "_apply_worker_env_overrides",
               "sig": "_apply_worker_env_overrides(self, process, env_overrides)",
-              "start_line": 1090,
-              "end_line": 1126,
+              "start_line": 1096,
+              "end_line": 1132,
               "doc": "Applies extra environment variables (e.g. GPU device selection, SSL certs,"
             },
             {
               "name": "_download_model_and_continue_transcription",
               "sig": "_download_model_and_continue_transcription(self, model_name, label)",
-              "start_line": 1128,
-              "end_line": 1161,
+              "start_line": 1134,
+              "end_line": 1167,
               "doc": "Asynchronously download a missing model with responsive in-dialog progress and auto-resume."
             },
             {
               "name": "_on_transcription_dl_progress",
               "sig": "_on_transcription_dl_progress(self, pct, msg)",
-              "start_line": 1163,
-              "end_line": 1173,
+              "start_line": 1169,
+              "end_line": 1179,
               "doc": ""
             },
             {
               "name": "_on_transcription_dl_cancel",
               "sig": "_on_transcription_dl_cancel(self)",
-              "start_line": 1175,
-              "end_line": 1182,
+              "start_line": 1181,
+              "end_line": 1188,
               "doc": ""
             },
             {
               "name": "_on_transcription_dl_finished",
               "sig": "_on_transcription_dl_finished(self, err)",
-              "start_line": 1184,
-              "end_line": 1217,
+              "start_line": 1190,
+              "end_line": 1223,
               "doc": ""
             },
             {
               "name": "_on_transcription_dl_thread_cleanup",
               "sig": "_on_transcription_dl_thread_cleanup(self)",
-              "start_line": 1219,
-              "end_line": 1231,
+              "start_line": 1225,
+              "end_line": 1237,
               "doc": ""
             }
           ]
@@ -9731,7 +9745,7 @@
     },
     "prs_shared.py": {
       "path": "prs_shared.py",
-      "lines": 1491,
+      "lines": 1492,
       "summary": "",
       "exports": null,
       "classes": [
@@ -9772,190 +9786,190 @@
           "bases": [
             "QWidget"
           ],
-          "start_line": 487,
-          "end_line": 634,
+          "start_line": 488,
+          "end_line": 635,
           "doc": "Multi-line text editor defaulted to ~2 lines of height with a drag handle for vertical expansion.",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, text, parent)",
-              "start_line": 490,
-              "end_line": 529,
+              "start_line": 491,
+              "end_line": 530,
               "doc": ""
             },
             {
               "name": "_grip_press",
               "sig": "_grip_press(self, event)",
-              "start_line": 531,
-              "end_line": 539,
+              "start_line": 532,
+              "end_line": 540,
               "doc": ""
             },
             {
               "name": "_grip_move",
               "sig": "_grip_move(self, event)",
-              "start_line": 541,
-              "end_line": 559,
+              "start_line": 542,
+              "end_line": 560,
               "doc": ""
             },
             {
               "name": "_grip_release",
               "sig": "_grip_release(self, event)",
-              "start_line": 561,
-              "end_line": 563,
+              "start_line": 562,
+              "end_line": 564,
               "doc": ""
             },
             {
               "name": "sizeHint",
               "sig": "sizeHint(self)",
-              "start_line": 565,
-              "end_line": 566,
+              "start_line": 566,
+              "end_line": 567,
               "doc": ""
             },
             {
               "name": "minimumSizeHint",
               "sig": "minimumSizeHint(self)",
-              "start_line": 568,
-              "end_line": 569,
+              "start_line": 569,
+              "end_line": 570,
               "doc": ""
             },
             {
               "name": "toPlainText",
               "sig": "toPlainText(self)",
-              "start_line": 571,
-              "end_line": 572,
+              "start_line": 572,
+              "end_line": 573,
               "doc": ""
             },
             {
               "name": "setPlainText",
               "sig": "setPlainText(self, text)",
-              "start_line": 574,
-              "end_line": 575,
+              "start_line": 575,
+              "end_line": 576,
               "doc": ""
             },
             {
               "name": "setText",
               "sig": "setText(self, text)",
-              "start_line": 577,
-              "end_line": 578,
+              "start_line": 578,
+              "end_line": 579,
               "doc": ""
             },
             {
               "name": "text",
               "sig": "text(self)",
-              "start_line": 580,
-              "end_line": 581,
+              "start_line": 581,
+              "end_line": 582,
               "doc": ""
             },
             {
               "name": "clear",
               "sig": "clear(self)",
-              "start_line": 583,
-              "end_line": 584,
+              "start_line": 584,
+              "end_line": 585,
               "doc": ""
             },
             {
               "name": "setPlaceholderText",
               "sig": "setPlaceholderText(self, text)",
-              "start_line": 586,
-              "end_line": 587,
+              "start_line": 587,
+              "end_line": 588,
               "doc": ""
             },
             {
               "name": "placeholderText",
               "sig": "placeholderText(self)",
-              "start_line": 589,
-              "end_line": 590,
+              "start_line": 590,
+              "end_line": 591,
               "doc": ""
             },
             {
               "name": "setToolTip",
               "sig": "setToolTip(self, tip)",
-              "start_line": 592,
-              "end_line": 593,
+              "start_line": 593,
+              "end_line": 594,
               "doc": ""
             },
             {
               "name": "setAcceptRichText",
               "sig": "setAcceptRichText(self, accept)",
-              "start_line": 595,
-              "end_line": 596,
+              "start_line": 596,
+              "end_line": 597,
               "doc": ""
             },
             {
               "name": "setTabChangesFocus",
               "sig": "setTabChangesFocus(self, tab)",
-              "start_line": 598,
-              "end_line": 599,
+              "start_line": 599,
+              "end_line": 600,
               "doc": ""
             },
             {
               "name": "setEnabled",
               "sig": "setEnabled(self, enabled)",
-              "start_line": 601,
-              "end_line": 604,
+              "start_line": 602,
+              "end_line": 605,
               "doc": ""
             },
             {
               "name": "setReadOnly",
               "sig": "setReadOnly(self, ro)",
-              "start_line": 606,
-              "end_line": 607,
+              "start_line": 607,
+              "end_line": 608,
               "doc": ""
             },
             {
               "name": "isReadOnly",
               "sig": "isReadOnly(self)",
-              "start_line": 609,
-              "end_line": 610,
+              "start_line": 610,
+              "end_line": 611,
               "doc": ""
             },
             {
               "name": "setFocus",
               "sig": "setFocus(self, *args, **kwargs)",
-              "start_line": 612,
-              "end_line": 613,
+              "start_line": 613,
+              "end_line": 614,
               "doc": ""
             },
             {
               "name": "hasFocus",
               "sig": "hasFocus(self)",
-              "start_line": 615,
-              "end_line": 616,
+              "start_line": 616,
+              "end_line": 617,
               "doc": ""
             },
             {
               "name": "document",
               "sig": "document(self)",
-              "start_line": 618,
-              "end_line": 619,
+              "start_line": 619,
+              "end_line": 620,
               "doc": ""
             },
             {
               "name": "textCursor",
               "sig": "textCursor(self)",
-              "start_line": 621,
-              "end_line": 622,
+              "start_line": 622,
+              "end_line": 623,
               "doc": ""
             },
             {
               "name": "setTextCursor",
               "sig": "setTextCursor(self, cursor)",
-              "start_line": 624,
-              "end_line": 625,
+              "start_line": 625,
+              "end_line": 626,
               "doc": ""
             },
             {
               "name": "__getattr__",
               "sig": "__getattr__(self, name)",
-              "start_line": 627,
-              "end_line": 630,
+              "start_line": 628,
+              "end_line": 631,
               "doc": ""
             },
             {
               "name": "textChanged",
               "sig": "textChanged(self)",
-              "start_line": 633,
-              "end_line": 634,
+              "start_line": 634,
+              "end_line": 635,
               "doc": ""
             }
           ]
@@ -9965,78 +9979,78 @@
           "bases": [
             "QWidget"
           ],
-          "start_line": 637,
-          "end_line": 804,
+          "start_line": 638,
+          "end_line": 805,
           "doc": "A clean, collapsible and expandable section widget with a styled toggle button,",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, title, parent, is_expanded, subtitle)",
-              "start_line": 644,
-              "end_line": 673,
+              "start_line": 645,
+              "end_line": 674,
               "doc": ""
             },
             {
               "name": "_update_ui",
               "sig": "_update_ui(self)",
-              "start_line": 675,
-              "end_line": 773,
+              "start_line": 676,
+              "end_line": 774,
               "doc": ""
             },
             {
               "name": "refresh_theme",
               "sig": "refresh_theme(self)",
-              "start_line": 775,
-              "end_line": 777,
+              "start_line": 776,
+              "end_line": 778,
               "doc": "Re-render header and container styling when application theme changes."
             },
             {
               "name": "_on_btn_clicked",
               "sig": "_on_btn_clicked(self)",
-              "start_line": 779,
-              "end_line": 780,
+              "start_line": 780,
+              "end_line": 781,
               "doc": ""
             },
             {
               "name": "set_expanded",
               "sig": "set_expanded(self, expanded)",
-              "start_line": 782,
-              "end_line": 787,
+              "start_line": 783,
+              "end_line": 788,
               "doc": ""
             },
             {
               "name": "is_expanded",
               "sig": "is_expanded(self)",
-              "start_line": 789,
-              "end_line": 790,
+              "start_line": 790,
+              "end_line": 791,
               "doc": ""
             },
             {
               "name": "set_title",
               "sig": "set_title(self, title)",
-              "start_line": 792,
-              "end_line": 794,
+              "start_line": 793,
+              "end_line": 795,
               "doc": ""
             },
             {
               "name": "set_subtitle",
               "sig": "set_subtitle(self, subtitle)",
-              "start_line": 796,
-              "end_line": 798,
+              "start_line": 797,
+              "end_line": 799,
               "doc": ""
             },
             {
               "name": "add_widget",
               "sig": "add_widget(self, widget)",
-              "start_line": 800,
-              "end_line": 801,
+              "start_line": 801,
+              "end_line": 802,
               "doc": ""
             },
             {
               "name": "add_layout",
               "sig": "add_layout(self, layout)",
-              "start_line": 803,
-              "end_line": 804,
+              "start_line": 804,
+              "end_line": 805,
               "doc": ""
             }
           ]
@@ -10046,29 +10060,29 @@
           "bases": [
             "QDialog"
           ],
-          "start_line": 914,
-          "end_line": 1003,
+          "start_line": 915,
+          "end_line": 1004,
           "doc": "",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, parent, has_media, default_name)",
-              "start_line": 915,
-              "end_line": 923,
+              "start_line": 916,
+              "end_line": 924,
               "doc": ""
             },
             {
               "name": "init_ui",
               "sig": "init_ui(self)",
-              "start_line": 925,
-              "end_line": 991,
+              "start_line": 926,
+              "end_line": 992,
               "doc": ""
             },
             {
               "name": "get_settings",
               "sig": "get_settings(self)",
-              "start_line": 993,
-              "end_line": 1003,
+              "start_line": 994,
+              "end_line": 1004,
               "doc": ""
             }
           ]
@@ -10076,29 +10090,29 @@
         {
           "name": "Story",
           "bases": [],
-          "start_line": 1164,
-          "end_line": 1242,
+          "start_line": 1165,
+          "end_line": 1243,
           "doc": "",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, start, end, title, suggestion, metadata, fade_in, fade_out, fade_curve)",
-              "start_line": 1165,
-              "end_line": 1210,
+              "start_line": 1166,
+              "end_line": 1211,
               "doc": ""
             },
             {
               "name": "to_dict",
               "sig": "to_dict(self)",
-              "start_line": 1212,
-              "end_line": 1224,
+              "start_line": 1213,
+              "end_line": 1225,
               "doc": ""
             },
             {
               "name": "from_dict",
               "sig": "from_dict(cls, data)",
-              "start_line": 1227,
-              "end_line": 1242,
+              "start_line": 1228,
+              "end_line": 1243,
               "doc": ""
             }
           ]
@@ -10108,29 +10122,29 @@
           "bases": [
             "QUndoCommand"
           ],
-          "start_line": 1252,
-          "end_line": 1276,
+          "start_line": 1253,
+          "end_line": 1277,
           "doc": "Undo/redo a complete editable project state.",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, main_window, before_state, after_state, description)",
-              "start_line": 1259,
-              "end_line": 1267,
+              "start_line": 1260,
+              "end_line": 1268,
               "doc": ""
             },
             {
               "name": "undo",
               "sig": "undo(self)",
-              "start_line": 1269,
-              "end_line": 1270,
+              "start_line": 1270,
+              "end_line": 1271,
               "doc": ""
             },
             {
               "name": "redo",
               "sig": "redo(self)",
-              "start_line": 1272,
-              "end_line": 1276,
+              "start_line": 1273,
+              "end_line": 1277,
               "doc": ""
             }
           ]
@@ -10147,57 +10161,57 @@
         {
           "name": "platform_seq",
           "sig": "platform_seq(key_str)",
-          "start_line": 829,
-          "end_line": 838,
+          "start_line": 830,
+          "end_line": 839,
           "doc": "Return a QKeySequence adapted for macOS vs Windows/Linux."
         },
         {
           "name": "get_app_icon",
           "sig": "get_app_icon()",
-          "start_line": 840,
-          "end_line": 886,
+          "start_line": 841,
+          "end_line": 887,
           "doc": "Return the application QIcon loaded from bundled resources or fallback to empty."
         },
         {
           "name": "get_license_file_path",
           "sig": "get_license_file_path(filename)",
-          "start_line": 888,
-          "end_line": 906,
+          "start_line": 889,
+          "end_line": 907,
           "doc": "Return the path to a licensing or notice file, checking bundle and source paths."
         },
         {
           "name": "create_fade_curve_pixmap",
           "sig": "create_fade_curve_pixmap(curve_type, width, height, is_selected, accent_color, bg_color)",
-          "start_line": 1047,
-          "end_line": 1139,
+          "start_line": 1048,
+          "end_line": 1140,
           "doc": "Render a high-DPI visual curve representation showing the volume attenuation shape."
         },
         {
           "name": "create_fade_curve_icon",
           "sig": "create_fade_curve_icon(curve_type, width, height)",
-          "start_line": 1142,
-          "end_line": 1157,
+          "start_line": 1143,
+          "end_line": 1158,
           "doc": "Return a QIcon containing visual render of the specified audio fade curve."
         },
         {
           "name": "read_document_text",
           "sig": "read_document_text(path)",
-          "start_line": 1314,
-          "end_line": 1380,
+          "start_line": 1315,
+          "end_line": 1381,
           "doc": ""
         },
         {
           "name": "__getattr__",
           "sig": "__getattr__(name)",
-          "start_line": 1467,
-          "end_line": 1484,
+          "start_line": 1468,
+          "end_line": 1485,
           "doc": "Lazy resolver for extracted UI and worker components to eliminate circular import chains."
         }
       ]
     },
     "qt_compat.py": {
       "path": "qt_compat.py",
-      "lines": 768,
+      "lines": 917,
       "summary": "Radio & TV Segmenter \u2014 Headless Qt / PySide6 Compatibility Engine.",
       "exports": [
         "MockModule",
@@ -10209,6 +10223,10 @@
         "DummyQHeaderView",
         "DummyQAbstractItemView",
         "DummyQLineEdit",
+        "DummyQLabel",
+        "DummyQListWidgetItem",
+        "DummyQListWidget",
+        "DummyQTextEdit",
         "DummyQComboBox",
         "DummyQDoubleSpinBox",
         "DummyQSpinBox",
@@ -10237,7 +10255,7 @@
           "name": "DynamicMock",
           "bases": [],
           "start_line": 26,
-          "end_line": 304,
+          "end_line": 310,
           "doc": "",
           "methods": [
             {
@@ -10367,304 +10385,318 @@
               "doc": ""
             },
             {
-              "name": "accept",
-              "sig": "accept(self)",
+              "name": "setWindowTitle",
+              "sig": "setWindowTitle(self, title)",
               "start_line": 89,
               "end_line": 90,
               "doc": ""
             },
             {
-              "name": "reject",
-              "sig": "reject(self)",
+              "name": "windowTitle",
+              "sig": "windowTitle(self)",
               "start_line": 92,
               "end_line": 93,
               "doc": ""
             },
             {
-              "name": "exec_",
-              "sig": "exec_(self)",
+              "name": "accept",
+              "sig": "accept(self)",
               "start_line": 95,
               "end_line": 96,
               "doc": ""
             },
             {
-              "name": "exec",
-              "sig": "exec(self)",
+              "name": "reject",
+              "sig": "reject(self)",
               "start_line": 98,
               "end_line": 99,
               "doc": ""
             },
             {
-              "name": "__int__",
-              "sig": "__int__(self)",
+              "name": "exec_",
+              "sig": "exec_(self)",
               "start_line": 101,
               "end_line": 102,
               "doc": ""
             },
             {
-              "name": "__index__",
-              "sig": "__index__(self)",
+              "name": "exec",
+              "sig": "exec(self)",
               "start_line": 104,
               "end_line": 105,
               "doc": ""
             },
             {
-              "name": "__float__",
-              "sig": "__float__(self)",
+              "name": "__int__",
+              "sig": "__int__(self)",
               "start_line": 107,
               "end_line": 108,
               "doc": ""
             },
             {
+              "name": "__index__",
+              "sig": "__index__(self)",
+              "start_line": 110,
+              "end_line": 111,
+              "doc": ""
+            },
+            {
+              "name": "__float__",
+              "sig": "__float__(self)",
+              "start_line": 113,
+              "end_line": 114,
+              "doc": ""
+            },
+            {
               "name": "__or__",
               "sig": "__or__(self, other)",
-              "start_line": 110,
-              "end_line": 116,
+              "start_line": 116,
+              "end_line": 122,
               "doc": ""
             },
             {
               "name": "__ror__",
               "sig": "__ror__(self, other)",
-              "start_line": 118,
-              "end_line": 119,
+              "start_line": 124,
+              "end_line": 125,
               "doc": ""
             },
             {
               "name": "__and__",
               "sig": "__and__(self, other)",
-              "start_line": 121,
-              "end_line": 127,
+              "start_line": 127,
+              "end_line": 133,
               "doc": ""
             },
             {
               "name": "__rand__",
               "sig": "__rand__(self, other)",
-              "start_line": 129,
-              "end_line": 130,
-              "doc": ""
-            },
-            {
-              "name": "__invert__",
-              "sig": "__invert__(self)",
-              "start_line": 132,
-              "end_line": 133,
-              "doc": ""
-            },
-            {
-              "name": "__xor__",
-              "sig": "__xor__(self, other)",
               "start_line": 135,
               "end_line": 136,
               "doc": ""
             },
             {
-              "name": "__contains__",
-              "sig": "__contains__(self, item)",
+              "name": "__invert__",
+              "sig": "__invert__(self)",
               "start_line": 138,
               "end_line": 139,
               "doc": ""
             },
             {
-              "name": "count",
-              "sig": "count(self, *a, **k)",
+              "name": "__xor__",
+              "sig": "__xor__(self, other)",
               "start_line": 141,
               "end_line": 142,
               "doc": ""
             },
             {
-              "name": "__ge__",
-              "sig": "__ge__(self, other)",
+              "name": "__contains__",
+              "sig": "__contains__(self, item)",
               "start_line": 144,
+              "end_line": 145,
+              "doc": ""
+            },
+            {
+              "name": "count",
+              "sig": "count(self, *a, **k)",
+              "start_line": 147,
               "end_line": 148,
               "doc": ""
             },
             {
-              "name": "__gt__",
-              "sig": "__gt__(self, other)",
+              "name": "__ge__",
+              "sig": "__ge__(self, other)",
               "start_line": 150,
               "end_line": 154,
               "doc": ""
             },
             {
-              "name": "__le__",
-              "sig": "__le__(self, other)",
+              "name": "__gt__",
+              "sig": "__gt__(self, other)",
               "start_line": 156,
               "end_line": 160,
               "doc": ""
             },
             {
-              "name": "__lt__",
-              "sig": "__lt__(self, other)",
+              "name": "__le__",
+              "sig": "__le__(self, other)",
               "start_line": 162,
               "end_line": 166,
               "doc": ""
             },
             {
+              "name": "__lt__",
+              "sig": "__lt__(self, other)",
+              "start_line": 168,
+              "end_line": 172,
+              "doc": ""
+            },
+            {
               "name": "__iter__",
               "sig": "__iter__(self)",
-              "start_line": 168,
-              "end_line": 169,
+              "start_line": 174,
+              "end_line": 175,
               "doc": ""
             },
             {
               "name": "__setitem__",
               "sig": "__setitem__(self, key, val)",
-              "start_line": 171,
-              "end_line": 174,
+              "start_line": 177,
+              "end_line": 180,
               "doc": ""
             },
             {
               "name": "__getitem__",
               "sig": "__getitem__(self, key)",
-              "start_line": 176,
-              "end_line": 180,
+              "start_line": 182,
+              "end_line": 186,
               "doc": ""
             },
             {
               "name": "setFlags",
               "sig": "setFlags(self, flags)",
-              "start_line": 182,
-              "end_line": 183,
-              "doc": ""
-            },
-            {
-              "name": "flags",
-              "sig": "flags(self)",
-              "start_line": 185,
-              "end_line": 186,
-              "doc": ""
-            },
-            {
-              "name": "setRowCount",
-              "sig": "setRowCount(self, count)",
               "start_line": 188,
               "end_line": 189,
               "doc": ""
             },
             {
-              "name": "rowCount",
-              "sig": "rowCount(self, *a, **k)",
+              "name": "flags",
+              "sig": "flags(self)",
               "start_line": 191,
               "end_line": 192,
               "doc": ""
             },
             {
+              "name": "setRowCount",
+              "sig": "setRowCount(self, count)",
+              "start_line": 194,
+              "end_line": 195,
+              "doc": ""
+            },
+            {
+              "name": "rowCount",
+              "sig": "rowCount(self, *a, **k)",
+              "start_line": 197,
+              "end_line": 198,
+              "doc": ""
+            },
+            {
               "name": "setText",
               "sig": "setText(self, val)",
-              "start_line": 194,
-              "end_line": 198,
+              "start_line": 200,
+              "end_line": 204,
               "doc": ""
             },
             {
               "name": "text",
               "sig": "text(self, *a, **k)",
-              "start_line": 200,
-              "end_line": 201,
+              "start_line": 206,
+              "end_line": 207,
               "doc": ""
             },
             {
               "name": "setData",
               "sig": "setData(self, role, val)",
-              "start_line": 203,
-              "end_line": 206,
+              "start_line": 209,
+              "end_line": 212,
               "doc": ""
             },
             {
               "name": "data",
               "sig": "data(self, role)",
-              "start_line": 208,
-              "end_line": 209,
+              "start_line": 214,
+              "end_line": 215,
               "doc": ""
             },
             {
               "name": "setItem",
               "sig": "setItem(self, row, col, item)",
-              "start_line": 211,
-              "end_line": 218,
+              "start_line": 217,
+              "end_line": 224,
               "doc": ""
             },
             {
               "name": "item",
               "sig": "item(self, row, col)",
-              "start_line": 220,
-              "end_line": 224,
+              "start_line": 226,
+              "end_line": 230,
               "doc": ""
             },
             {
               "name": "setCurrentCell",
               "sig": "setCurrentCell(self, row, col)",
-              "start_line": 226,
-              "end_line": 228,
+              "start_line": 232,
+              "end_line": 234,
               "doc": ""
             },
             {
               "name": "currentRow",
               "sig": "currentRow(self)",
-              "start_line": 230,
-              "end_line": 231,
+              "start_line": 236,
+              "end_line": 237,
               "doc": ""
             },
             {
               "name": "currentColumn",
               "sig": "currentColumn(self)",
-              "start_line": 233,
-              "end_line": 234,
+              "start_line": 239,
+              "end_line": 240,
               "doc": ""
             },
             {
               "name": "setItemDelegateForColumn",
               "sig": "setItemDelegateForColumn(self, col, delegate)",
-              "start_line": 236,
-              "end_line": 246,
+              "start_line": 242,
+              "end_line": 252,
               "doc": ""
             },
             {
               "name": "itemDelegateForColumn",
               "sig": "itemDelegateForColumn(self, col)",
-              "start_line": 248,
-              "end_line": 249,
+              "start_line": 254,
+              "end_line": 255,
               "doc": ""
             },
             {
               "name": "addTab",
               "sig": "addTab(self, widget, label)",
-              "start_line": 251,
-              "end_line": 256,
+              "start_line": 257,
+              "end_line": 262,
               "doc": ""
             },
             {
               "name": "editItem",
               "sig": "editItem(self, item)",
-              "start_line": 258,
-              "end_line": 277,
+              "start_line": 264,
+              "end_line": 283,
               "doc": ""
             },
             {
               "name": "findChild",
               "sig": "findChild(self, cls, *args, **kwargs)",
-              "start_line": 279,
-              "end_line": 286,
+              "start_line": 285,
+              "end_line": 292,
               "doc": ""
             },
             {
               "name": "installEventFilter",
               "sig": "installEventFilter(self, filter_obj)",
-              "start_line": 288,
-              "end_line": 291,
+              "start_line": 294,
+              "end_line": 297,
               "doc": ""
             },
             {
               "name": "removeEventFilter",
               "sig": "removeEventFilter(self, filter_obj)",
-              "start_line": 293,
-              "end_line": 295,
+              "start_line": 299,
+              "end_line": 301,
               "doc": ""
             },
             {
               "name": "value",
               "sig": "value(self, *args, **kwargs)",
-              "start_line": 297,
-              "end_line": 304,
+              "start_line": 303,
+              "end_line": 310,
               "doc": ""
             }
           ]
@@ -10674,22 +10706,22 @@
           "bases": [
             "ModuleType"
           ],
-          "start_line": 307,
-          "end_line": 327,
+          "start_line": 313,
+          "end_line": 333,
           "doc": "Dynamic mock module that automatically manufactures nested mock classes and attributes.",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, name)",
-              "start_line": 310,
-              "end_line": 315,
+              "start_line": 316,
+              "end_line": 321,
               "doc": ""
             },
             {
               "name": "__getattr__",
               "sig": "__getattr__(self, name)",
-              "start_line": 317,
-              "end_line": 327,
+              "start_line": 323,
+              "end_line": 333,
               "doc": ""
             }
           ]
@@ -10699,15 +10731,15 @@
           "bases": [
             "type"
           ],
-          "start_line": 330,
-          "end_line": 332,
+          "start_line": 336,
+          "end_line": 338,
           "doc": "",
           "methods": [
             {
               "name": "__getattr__",
               "sig": "__getattr__(cls, name)",
-              "start_line": 331,
-              "end_line": 332,
+              "start_line": 337,
+              "end_line": 338,
               "doc": ""
             }
           ]
@@ -10715,8 +10747,8 @@
         {
           "name": "DummyQt",
           "bases": [],
-          "start_line": 335,
-          "end_line": 368,
+          "start_line": 341,
+          "end_line": 374,
           "doc": "Mock Qt namespace constants.",
           "methods": []
         },
@@ -10725,22 +10757,22 @@
           "bases": [
             "DynamicMock"
           ],
-          "start_line": 371,
-          "end_line": 382,
+          "start_line": 377,
+          "end_line": 388,
           "doc": "",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, *args, **kwargs)",
-              "start_line": 377,
-              "end_line": 379,
+              "start_line": 383,
+              "end_line": 385,
               "doc": ""
             },
             {
               "name": "type",
               "sig": "type(self)",
-              "start_line": 381,
-              "end_line": 382,
+              "start_line": 387,
+              "end_line": 388,
               "doc": ""
             }
           ]
@@ -10750,29 +10782,29 @@
           "bases": [
             "DynamicMock"
           ],
-          "start_line": 385,
-          "end_line": 395,
+          "start_line": 391,
+          "end_line": 401,
           "doc": "",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, *args, **kwargs)",
-              "start_line": 386,
-              "end_line": 389,
+              "start_line": 392,
+              "end_line": 395,
               "doc": ""
             },
             {
               "name": "type",
               "sig": "type(self)",
-              "start_line": 391,
-              "end_line": 392,
+              "start_line": 397,
+              "end_line": 398,
               "doc": ""
             },
             {
               "name": "key",
               "sig": "key(self)",
-              "start_line": 394,
-              "end_line": 395,
+              "start_line": 400,
+              "end_line": 401,
               "doc": ""
             }
           ]
@@ -10780,64 +10812,64 @@
         {
           "name": "DummyQSettings",
           "bases": [],
-          "start_line": 398,
-          "end_line": 424,
+          "start_line": 404,
+          "end_line": 430,
           "doc": "In-memory dictionary-backed QSettings fallback.",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, *a, **k)",
-              "start_line": 402,
-              "end_line": 403,
-              "doc": ""
-            },
-            {
-              "name": "value",
-              "sig": "value(self, k, d)",
-              "start_line": 405,
-              "end_line": 406,
-              "doc": ""
-            },
-            {
-              "name": "setValue",
-              "sig": "setValue(self, k, v)",
               "start_line": 408,
               "end_line": 409,
               "doc": ""
             },
             {
-              "name": "remove",
-              "sig": "remove(self, k)",
+              "name": "value",
+              "sig": "value(self, k, d)",
               "start_line": 411,
               "end_line": 412,
               "doc": ""
             },
             {
-              "name": "clear",
-              "sig": "clear(self)",
+              "name": "setValue",
+              "sig": "setValue(self, k, v)",
               "start_line": 414,
               "end_line": 415,
               "doc": ""
             },
             {
-              "name": "sync",
-              "sig": "sync(self)",
+              "name": "remove",
+              "sig": "remove(self, k)",
               "start_line": 417,
               "end_line": 418,
               "doc": ""
             },
             {
-              "name": "beginGroup",
-              "sig": "beginGroup(self, *a)",
+              "name": "clear",
+              "sig": "clear(self)",
               "start_line": 420,
               "end_line": 421,
               "doc": ""
             },
             {
-              "name": "endGroup",
-              "sig": "endGroup(self)",
+              "name": "sync",
+              "sig": "sync(self)",
               "start_line": 423,
               "end_line": 424,
+              "doc": ""
+            },
+            {
+              "name": "beginGroup",
+              "sig": "beginGroup(self, *a)",
+              "start_line": 426,
+              "end_line": 427,
+              "doc": ""
+            },
+            {
+              "name": "endGroup",
+              "sig": "endGroup(self)",
+              "start_line": 429,
+              "end_line": 430,
               "doc": ""
             }
           ]
@@ -10845,36 +10877,36 @@
         {
           "name": "DummyQMessageBox",
           "bases": [],
-          "start_line": 427,
-          "end_line": 445,
+          "start_line": 433,
+          "end_line": 451,
           "doc": "Non-blocking headless QMessageBox stub.",
           "methods": [
             {
               "name": "information",
               "sig": "information(*args, **kwargs)",
-              "start_line": 432,
-              "end_line": 433,
+              "start_line": 438,
+              "end_line": 439,
               "doc": ""
             },
             {
               "name": "warning",
               "sig": "warning(*args, **kwargs)",
-              "start_line": 436,
-              "end_line": 437,
+              "start_line": 442,
+              "end_line": 443,
               "doc": ""
             },
             {
               "name": "critical",
               "sig": "critical(*args, **kwargs)",
-              "start_line": 440,
-              "end_line": 441,
+              "start_line": 446,
+              "end_line": 447,
               "doc": ""
             },
             {
               "name": "question",
               "sig": "question(*args, **kwargs)",
-              "start_line": 444,
-              "end_line": 445,
+              "start_line": 450,
+              "end_line": 451,
               "doc": ""
             }
           ]
@@ -10882,43 +10914,135 @@
         {
           "name": "DummyQApplication",
           "bases": [],
-          "start_line": 448,
-          "end_line": 482,
+          "start_line": 454,
+          "end_line": 496,
           "doc": "Headless QApplication stub.",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, *args, **kwargs)",
-              "start_line": 452,
-              "end_line": 453,
+              "start_line": 458,
+              "end_line": 459,
               "doc": ""
             },
             {
               "name": "processEvents",
               "sig": "processEvents(cls)",
-              "start_line": 456,
-              "end_line": 463,
+              "start_line": 462,
+              "end_line": 469,
               "doc": ""
             },
             {
               "name": "sendEvent",
               "sig": "sendEvent(cls, receiver, event)",
-              "start_line": 466,
-              "end_line": 474,
+              "start_line": 472,
+              "end_line": 480,
               "doc": ""
             },
             {
               "name": "instance",
               "sig": "instance()",
-              "start_line": 477,
-              "end_line": 478,
+              "start_line": 483,
+              "end_line": 484,
               "doc": ""
             },
             {
               "name": "topLevelWidgets",
               "sig": "topLevelWidgets()",
-              "start_line": 481,
-              "end_line": 482,
+              "start_line": 487,
+              "end_line": 488,
+              "doc": ""
+            },
+            {
+              "name": "thread",
+              "sig": "thread()",
+              "start_line": 491,
+              "end_line": 492,
+              "doc": ""
+            },
+            {
+              "name": "clipboard",
+              "sig": "clipboard()",
+              "start_line": 495,
+              "end_line": 496,
+              "doc": ""
+            }
+          ]
+        },
+        {
+          "name": "DummyQMimeData",
+          "bases": [
+            "DynamicMock"
+          ],
+          "start_line": 499,
+          "end_line": 515,
+          "doc": "",
+          "methods": [
+            {
+              "name": "__init__",
+              "sig": "__init__(self, *args, **kwargs)",
+              "start_line": 500,
+              "end_line": 503,
+              "doc": ""
+            },
+            {
+              "name": "setText",
+              "sig": "setText(self, val)",
+              "start_line": 505,
+              "end_line": 506,
+              "doc": ""
+            },
+            {
+              "name": "text",
+              "sig": "text(self)",
+              "start_line": 508,
+              "end_line": 509,
+              "doc": ""
+            },
+            {
+              "name": "setHtml",
+              "sig": "setHtml(self, val)",
+              "start_line": 511,
+              "end_line": 512,
+              "doc": ""
+            },
+            {
+              "name": "html",
+              "sig": "html(self)",
+              "start_line": 514,
+              "end_line": 515,
+              "doc": ""
+            }
+          ]
+        },
+        {
+          "name": "DummyClipboard",
+          "bases": [
+            "DynamicMock"
+          ],
+          "start_line": 518,
+          "end_line": 532,
+          "doc": "",
+          "methods": [
+            {
+              "name": "setText",
+              "sig": "setText(self, val)",
+              "start_line": 521,
+              "end_line": 522,
+              "doc": ""
+            },
+            {
+              "name": "text",
+              "sig": "text(self)",
+              "start_line": 524,
+              "end_line": 525,
+              "doc": ""
+            },
+            {
+              "name": "setMimeData",
+              "sig": "setMimeData(self, mime)",
+              "start_line": 527,
+              "end_line": 532,
               "doc": ""
             }
           ]
@@ -10928,36 +11052,36 @@
           "bases": [
             "DynamicMock"
           ],
-          "start_line": 485,
-          "end_line": 498,
+          "start_line": 535,
+          "end_line": 548,
           "doc": "",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, *args, **kwargs)",
-              "start_line": 486,
-              "end_line": 488,
+              "start_line": 536,
+              "end_line": 538,
               "doc": ""
             },
             {
               "name": "start",
               "sig": "start(self, *a, **k)",
-              "start_line": 490,
-              "end_line": 491,
+              "start_line": 540,
+              "end_line": 541,
               "doc": ""
             },
             {
               "name": "stop",
               "sig": "stop(self)",
-              "start_line": 493,
-              "end_line": 494,
+              "start_line": 543,
+              "end_line": 544,
               "doc": ""
             },
             {
               "name": "singleShot",
               "sig": "singleShot(ms, callback)",
-              "start_line": 497,
-              "end_line": 498,
+              "start_line": 547,
+              "end_line": 548,
               "doc": ""
             }
           ]
@@ -10965,16 +11089,16 @@
         {
           "name": "DummyQHeaderView",
           "bases": [],
-          "start_line": 501,
-          "end_line": 502,
+          "start_line": 551,
+          "end_line": 552,
           "doc": "",
           "methods": []
         },
         {
           "name": "DummyQAbstractItemView",
           "bases": [],
-          "start_line": 505,
-          "end_line": 509,
+          "start_line": 555,
+          "end_line": 559,
           "doc": "",
           "methods": []
         },
@@ -10983,15 +11107,15 @@
           "bases": [
             "DynamicMock"
           ],
-          "start_line": 512,
-          "end_line": 518,
+          "start_line": 562,
+          "end_line": 568,
           "doc": "",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, *args, **kwargs)",
-              "start_line": 515,
-              "end_line": 518,
+              "start_line": 565,
+              "end_line": 568,
               "doc": ""
             }
           ]
@@ -11001,36 +11125,241 @@
           "bases": [
             "DynamicMock"
           ],
-          "start_line": 521,
-          "end_line": 535,
+          "start_line": 571,
+          "end_line": 585,
           "doc": "",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, *args, **kwargs)",
-              "start_line": 524,
-              "end_line": 526,
+              "start_line": 574,
+              "end_line": 576,
               "doc": ""
             },
             {
               "name": "setText",
               "sig": "setText(self, val)",
-              "start_line": 528,
-              "end_line": 529,
+              "start_line": 578,
+              "end_line": 579,
               "doc": ""
             },
             {
               "name": "text",
               "sig": "text(self, *a, **k)",
-              "start_line": 531,
-              "end_line": 532,
+              "start_line": 581,
+              "end_line": 582,
               "doc": ""
             },
             {
               "name": "selectAll",
               "sig": "selectAll(self)",
-              "start_line": 534,
-              "end_line": 535,
+              "start_line": 584,
+              "end_line": 585,
+              "doc": ""
+            }
+          ]
+        },
+        {
+          "name": "DummyQLabel",
+          "bases": [
+            "DynamicMock"
+          ],
+          "start_line": 588,
+          "end_line": 604,
+          "doc": "",
+          "methods": [
+            {
+              "name": "__init__",
+              "sig": "__init__(self, *args, **kwargs)",
+              "start_line": 589,
+              "end_line": 592,
+              "doc": ""
+            },
+            {
+              "name": "setText",
+              "sig": "setText(self, val)",
+              "start_line": 594,
+              "end_line": 595,
+              "doc": ""
+            },
+            {
+              "name": "text",
+              "sig": "text(self, *a, **k)",
+              "start_line": 597,
+              "end_line": 598,
+              "doc": ""
+            },
+            {
+              "name": "setToolTip",
+              "sig": "setToolTip(self, val)",
+              "start_line": 600,
+              "end_line": 601,
+              "doc": ""
+            },
+            {
+              "name": "toolTip",
+              "sig": "toolTip(self, *a, **k)",
+              "start_line": 603,
+              "end_line": 604,
+              "doc": ""
+            }
+          ]
+        },
+        {
+          "name": "DummyQListWidgetItem",
+          "bases": [
+            "DynamicMock"
+          ],
+          "start_line": 607,
+          "end_line": 630,
+          "doc": "",
+          "methods": [
+            {
+              "name": "__init__",
+              "sig": "__init__(self, *args, **kwargs)",
+              "start_line": 608,
+              "end_line": 612,
+              "doc": ""
+            },
+            {
+              "name": "setText",
+              "sig": "setText(self, val)",
+              "start_line": 614,
+              "end_line": 615,
+              "doc": ""
+            },
+            {
+              "name": "text",
+              "sig": "text(self, *a, **k)",
+              "start_line": 617,
+              "end_line": 618,
+              "doc": ""
+            },
+            {
+              "name": "setToolTip",
+              "sig": "setToolTip(self, val)",
+              "start_line": 620,
+              "end_line": 621,
+              "doc": ""
+            },
+            {
+              "name": "toolTip",
+              "sig": "toolTip(self, *a, **k)",
+              "start_line": 623,
+              "end_line": 624,
+              "doc": ""
+            },
+            {
+              "name": "setData",
+              "sig": "setData(self, role, val)",
+              "start_line": 626,
+              "end_line": 627,
+              "doc": ""
+            },
+            {
+              "name": "data",
+              "sig": "data(self, role)",
+              "start_line": 629,
+              "end_line": 630,
+              "doc": ""
+            }
+          ]
+        },
+        {
+          "name": "DummyQListWidget",
+          "bases": [
+            "DynamicMock"
+          ],
+          "start_line": 633,
+          "end_line": 652,
+          "doc": "",
+          "methods": [
+            {
+              "name": "__init__",
+              "sig": "__init__(self, *args, **kwargs)",
+              "start_line": 634,
+              "end_line": 636,
+              "doc": ""
+            },
+            {
+              "name": "addItem",
+              "sig": "addItem(self, item)",
+              "start_line": 638,
+              "end_line": 641,
+              "doc": ""
+            },
+            {
+              "name": "count",
+              "sig": "count(self)",
+              "start_line": 643,
+              "end_line": 644,
+              "doc": ""
+            },
+            {
+              "name": "item",
+              "sig": "item(self, idx)",
+              "start_line": 646,
+              "end_line": 649,
+              "doc": ""
+            },
+            {
+              "name": "clear",
+              "sig": "clear(self)",
+              "start_line": 651,
+              "end_line": 652,
+              "doc": ""
+            }
+          ]
+        },
+        {
+          "name": "DummyQTextEdit",
+          "bases": [
+            "DynamicMock"
+          ],
+          "start_line": 655,
+          "end_line": 673,
+          "doc": "",
+          "methods": [
+            {
+              "name": "__init__",
+              "sig": "__init__(self, *args, **kwargs)",
+              "start_line": 656,
+              "end_line": 658,
+              "doc": ""
+            },
+            {
+              "name": "setPlainText",
+              "sig": "setPlainText(self, val)",
+              "start_line": 660,
+              "end_line": 661,
+              "doc": ""
+            },
+            {
+              "name": "toPlainText",
+              "sig": "toPlainText(self)",
+              "start_line": 663,
+              "end_line": 664,
+              "doc": ""
+            },
+            {
+              "name": "setText",
+              "sig": "setText(self, val)",
+              "start_line": 666,
+              "end_line": 667,
+              "doc": ""
+            },
+            {
+              "name": "toHtml",
+              "sig": "toHtml(self)",
+              "start_line": 669,
+              "end_line": 670,
+              "doc": ""
+            },
+            {
+              "name": "setHtml",
+              "sig": "setHtml(self, val)",
+              "start_line": 672,
+              "end_line": 673,
               "doc": ""
             }
           ]
@@ -11038,15 +11367,15 @@
         {
           "name": "DummyQFont",
           "bases": [],
-          "start_line": 538,
-          "end_line": 542,
+          "start_line": 676,
+          "end_line": 680,
           "doc": "",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, *args, **kwargs)",
-              "start_line": 541,
-              "end_line": 542,
+              "start_line": 679,
+              "end_line": 680,
               "doc": ""
             }
           ]
@@ -11054,36 +11383,36 @@
         {
           "name": "DummySignal",
           "bases": [],
-          "start_line": 545,
-          "end_line": 564,
+          "start_line": 683,
+          "end_line": 702,
           "doc": "",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, *args, **kwargs)",
-              "start_line": 546,
-              "end_line": 547,
+              "start_line": 684,
+              "end_line": 685,
               "doc": ""
             },
             {
               "name": "connect",
               "sig": "connect(self, callback)",
-              "start_line": 549,
-              "end_line": 551,
+              "start_line": 687,
+              "end_line": 689,
               "doc": ""
             },
             {
               "name": "disconnect",
               "sig": "disconnect(self, callback)",
-              "start_line": 553,
-              "end_line": 557,
+              "start_line": 691,
+              "end_line": 695,
               "doc": ""
             },
             {
               "name": "emit",
               "sig": "emit(self, *args, **kwargs)",
-              "start_line": 559,
-              "end_line": 564,
+              "start_line": 697,
+              "end_line": 702,
               "doc": ""
             }
           ]
@@ -11093,120 +11422,120 @@
           "bases": [
             "DynamicMock"
           ],
-          "start_line": 567,
-          "end_line": 632,
+          "start_line": 705,
+          "end_line": 770,
           "doc": "",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, *args, **kwargs)",
-              "start_line": 568,
-              "end_line": 572,
+              "start_line": 706,
+              "end_line": 710,
               "doc": ""
             },
             {
               "name": "addItem",
               "sig": "addItem(self, text, userData)",
-              "start_line": 574,
-              "end_line": 575,
+              "start_line": 712,
+              "end_line": 713,
               "doc": ""
             },
             {
               "name": "addItems",
               "sig": "addItems(self, texts)",
-              "start_line": 577,
-              "end_line": 579,
+              "start_line": 715,
+              "end_line": 717,
               "doc": ""
             },
             {
               "name": "count",
               "sig": "count(self)",
-              "start_line": 581,
-              "end_line": 582,
+              "start_line": 719,
+              "end_line": 720,
               "doc": ""
             },
             {
               "name": "itemData",
               "sig": "itemData(self, index, role)",
-              "start_line": 584,
-              "end_line": 587,
+              "start_line": 722,
+              "end_line": 725,
               "doc": ""
             },
             {
               "name": "itemText",
               "sig": "itemText(self, index)",
-              "start_line": 589,
-              "end_line": 592,
+              "start_line": 727,
+              "end_line": 730,
               "doc": ""
             },
             {
               "name": "currentIndex",
               "sig": "currentIndex(self)",
-              "start_line": 594,
-              "end_line": 595,
+              "start_line": 732,
+              "end_line": 733,
               "doc": ""
             },
             {
               "name": "setCurrentIndex",
               "sig": "setCurrentIndex(self, index)",
-              "start_line": 597,
-              "end_line": 598,
+              "start_line": 735,
+              "end_line": 736,
               "doc": ""
             },
             {
               "name": "findData",
               "sig": "findData(self, data, role)",
-              "start_line": 600,
-              "end_line": 604,
+              "start_line": 738,
+              "end_line": 742,
               "doc": ""
             },
             {
               "name": "findText",
               "sig": "findText(self, text)",
-              "start_line": 606,
-              "end_line": 611,
+              "start_line": 744,
+              "end_line": 749,
               "doc": ""
             },
             {
               "name": "currentText",
               "sig": "currentText(self)",
-              "start_line": 613,
-              "end_line": 615,
+              "start_line": 751,
+              "end_line": 753,
               "doc": ""
             },
             {
               "name": "currentData",
               "sig": "currentData(self, role)",
-              "start_line": 617,
-              "end_line": 619,
+              "start_line": 755,
+              "end_line": 757,
               "doc": ""
             },
             {
               "name": "clear",
               "sig": "clear(self)",
-              "start_line": 621,
-              "end_line": 623,
+              "start_line": 759,
+              "end_line": 761,
               "doc": ""
             },
             {
               "name": "setEnabled",
               "sig": "setEnabled(self, val)",
-              "start_line": 625,
-              "end_line": 626,
+              "start_line": 763,
+              "end_line": 764,
               "doc": ""
             },
             {
               "name": "isEnabled",
               "sig": "isEnabled(self)",
-              "start_line": 628,
-              "end_line": 629,
+              "start_line": 766,
+              "end_line": 767,
               "doc": ""
             },
             {
               "name": "setStyleSheet",
               "sig": "setStyleSheet(self, val)",
-              "start_line": 631,
-              "end_line": 632,
+              "start_line": 769,
+              "end_line": 770,
               "doc": ""
             }
           ]
@@ -11214,71 +11543,71 @@
         {
           "name": "DummyQDoubleSpinBox",
           "bases": [],
-          "start_line": 635,
-          "end_line": 663,
+          "start_line": 773,
+          "end_line": 801,
           "doc": "",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, *args, **kwargs)",
-              "start_line": 636,
-              "end_line": 638,
+              "start_line": 774,
+              "end_line": 776,
               "doc": ""
             },
             {
               "name": "value",
               "sig": "value(self)",
-              "start_line": 640,
-              "end_line": 641,
+              "start_line": 778,
+              "end_line": 779,
               "doc": ""
             },
             {
               "name": "setValue",
               "sig": "setValue(self, v)",
-              "start_line": 643,
-              "end_line": 645,
+              "start_line": 781,
+              "end_line": 783,
               "doc": ""
             },
             {
               "name": "setRange",
               "sig": "setRange(self, mn, mx)",
-              "start_line": 647,
-              "end_line": 648,
+              "start_line": 785,
+              "end_line": 786,
               "doc": ""
             },
             {
               "name": "setSingleStep",
               "sig": "setSingleStep(self, s)",
-              "start_line": 650,
-              "end_line": 651,
+              "start_line": 788,
+              "end_line": 789,
               "doc": ""
             },
             {
               "name": "setSuffix",
               "sig": "setSuffix(self, s)",
-              "start_line": 653,
-              "end_line": 654,
+              "start_line": 791,
+              "end_line": 792,
               "doc": ""
             },
             {
               "name": "setEnabled",
               "sig": "setEnabled(self, val)",
-              "start_line": 656,
-              "end_line": 657,
+              "start_line": 794,
+              "end_line": 795,
               "doc": ""
             },
             {
               "name": "isEnabled",
               "sig": "isEnabled(self)",
-              "start_line": 659,
-              "end_line": 660,
+              "start_line": 797,
+              "end_line": 798,
               "doc": ""
             },
             {
               "name": "setStyleSheet",
               "sig": "setStyleSheet(self, val)",
-              "start_line": 662,
-              "end_line": 663,
+              "start_line": 800,
+              "end_line": 801,
               "doc": ""
             }
           ]
@@ -11286,71 +11615,71 @@
         {
           "name": "DummyQSpinBox",
           "bases": [],
-          "start_line": 666,
-          "end_line": 694,
+          "start_line": 804,
+          "end_line": 832,
           "doc": "",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, *args, **kwargs)",
-              "start_line": 667,
-              "end_line": 669,
+              "start_line": 805,
+              "end_line": 807,
               "doc": ""
             },
             {
               "name": "value",
               "sig": "value(self)",
-              "start_line": 671,
-              "end_line": 672,
+              "start_line": 809,
+              "end_line": 810,
               "doc": ""
             },
             {
               "name": "setValue",
               "sig": "setValue(self, v)",
-              "start_line": 674,
-              "end_line": 676,
+              "start_line": 812,
+              "end_line": 814,
               "doc": ""
             },
             {
               "name": "setRange",
               "sig": "setRange(self, mn, mx)",
-              "start_line": 678,
-              "end_line": 679,
+              "start_line": 816,
+              "end_line": 817,
               "doc": ""
             },
             {
               "name": "setSingleStep",
               "sig": "setSingleStep(self, s)",
-              "start_line": 681,
-              "end_line": 682,
+              "start_line": 819,
+              "end_line": 820,
               "doc": ""
             },
             {
               "name": "setSuffix",
               "sig": "setSuffix(self, s)",
-              "start_line": 684,
-              "end_line": 685,
+              "start_line": 822,
+              "end_line": 823,
               "doc": ""
             },
             {
               "name": "setEnabled",
               "sig": "setEnabled(self, val)",
-              "start_line": 687,
-              "end_line": 688,
+              "start_line": 825,
+              "end_line": 826,
               "doc": ""
             },
             {
               "name": "isEnabled",
               "sig": "isEnabled(self)",
-              "start_line": 690,
-              "end_line": 691,
+              "start_line": 828,
+              "end_line": 829,
               "doc": ""
             },
             {
               "name": "setStyleSheet",
               "sig": "setStyleSheet(self, val)",
-              "start_line": 693,
-              "end_line": 694,
+              "start_line": 831,
+              "end_line": 832,
               "doc": ""
             }
           ]
@@ -11360,8 +11689,8 @@
         {
           "name": "_ensure_pyside6_fallback",
           "sig": "_ensure_pyside6_fallback(force)",
-          "start_line": 697,
-          "end_line": 751,
+          "start_line": 835,
+          "end_line": 896,
           "doc": "Ensures PySide6 modules are importable, installing the zero-dependency mock shim if unavailable."
         }
       ]
@@ -13473,7 +13802,7 @@
     },
     "story_crud_mixin.py": {
       "path": "story_crud_mixin.py",
-      "lines": 832,
+      "lines": 911,
       "summary": "Radio & TV Story Segmenter \u2014 Story CRUD & Timeline Selection Mixin.",
       "exports": null,
       "classes": [
@@ -13481,175 +13810,189 @@
           "name": "StoryCrudMixin",
           "bases": [],
           "start_line": 46,
-          "end_line": 832,
+          "end_line": 911,
           "doc": "Mixin providing story list UI management, CRUD operations, and fade handling.",
           "methods": [
             {
+              "name": "update_stories_header",
+              "sig": "update_stories_header(self)",
+              "start_line": 49,
+              "end_line": 95,
+              "doc": "Update Stories section header label and tooltip with selection count and duration."
+            },
+            {
+              "name": "update_story_form_duration",
+              "sig": "update_story_form_duration(self)",
+              "start_line": 97,
+              "end_line": 111,
+              "doc": "Update Duration field in the story edit form below Range."
+            },
+            {
               "name": "refresh_story_list",
               "sig": "refresh_story_list(self)",
-              "start_line": 49,
-              "end_line": 92,
+              "start_line": 113,
+              "end_line": 162,
               "doc": ""
             },
             {
               "name": "handle_new_story_started",
               "sig": "handle_new_story_started(self, start_time, end_time)",
-              "start_line": 94,
-              "end_line": 104,
+              "start_line": 164,
+              "end_line": 174,
               "doc": ""
             },
             {
               "name": "handle_new_story_updated",
               "sig": "handle_new_story_updated(self, start_time, end_time)",
-              "start_line": 106,
-              "end_line": 118,
+              "start_line": 176,
+              "end_line": 192,
               "doc": ""
             },
             {
               "name": "handle_drag_story_region",
               "sig": "handle_drag_story_region(self, index, start_time, end_time)",
-              "start_line": 120,
-              "end_line": 132,
+              "start_line": 194,
+              "end_line": 210,
               "doc": ""
             },
             {
               "name": "audition_story",
               "sig": "audition_story(self, index)",
-              "start_line": 134,
-              "end_line": 157,
+              "start_line": 212,
+              "end_line": 235,
               "doc": ""
             },
             {
               "name": "handle_drag_finished",
               "sig": "handle_drag_finished(self)",
-              "start_line": 159,
-              "end_line": 188,
+              "start_line": 237,
+              "end_line": 266,
               "doc": ""
             },
             {
               "name": "update_selected_story",
               "sig": "update_selected_story(self)",
-              "start_line": 190,
-              "end_line": 248,
+              "start_line": 268,
+              "end_line": 326,
               "doc": ""
             },
             {
               "name": "delete_selected_story",
               "sig": "delete_selected_story(self)",
-              "start_line": 250,
-              "end_line": 281,
+              "start_line": 328,
+              "end_line": 359,
               "doc": ""
             },
             {
               "name": "get_current_interaction_time",
               "sig": "get_current_interaction_time(self, for_boundary)",
-              "start_line": 283,
-              "end_line": 301,
+              "start_line": 361,
+              "end_line": 379,
               "doc": ""
             },
             {
               "name": "set_selected_story_start",
               "sig": "set_selected_story_start(self)",
-              "start_line": 303,
-              "end_line": 348,
+              "start_line": 381,
+              "end_line": 426,
               "doc": ""
             },
             {
               "name": "set_selected_story_end",
               "sig": "set_selected_story_end(self)",
-              "start_line": 350,
-              "end_line": 395,
+              "start_line": 428,
+              "end_line": 473,
               "doc": ""
             },
             {
               "name": "add_selection_to_story",
               "sig": "add_selection_to_story(self)",
-              "start_line": 397,
-              "end_line": 508,
+              "start_line": 475,
+              "end_line": 586,
               "doc": ""
             },
             {
               "name": "play_transcript_selection",
               "sig": "play_transcript_selection(self)",
-              "start_line": 510,
-              "end_line": 529,
+              "start_line": 588,
+              "end_line": 607,
               "doc": ""
             },
             {
               "name": "select_all_stories",
               "sig": "select_all_stories(self)",
-              "start_line": 531,
-              "end_line": 538,
+              "start_line": 609,
+              "end_line": 616,
               "doc": ""
             },
             {
               "name": "handle_timeline_selection_range_changed",
               "sig": "handle_timeline_selection_range_changed(self, start_time, end_time)",
-              "start_line": 540,
-              "end_line": 601,
+              "start_line": 618,
+              "end_line": 680,
               "doc": ""
             },
             {
               "name": "add_story_from_range",
               "sig": "add_story_from_range(self, start_time, end_time)",
-              "start_line": 603,
-              "end_line": 637,
+              "start_line": 682,
+              "end_line": 716,
               "doc": ""
             },
             {
               "name": "add_story_from_active_selection",
               "sig": "add_story_from_active_selection(self)",
-              "start_line": 639,
-              "end_line": 656,
+              "start_line": 718,
+              "end_line": 735,
               "doc": ""
             },
             {
               "name": "open_story_fades_dialog",
               "sig": "open_story_fades_dialog(self, story_index)",
-              "start_line": 658,
-              "end_line": 700,
+              "start_line": 737,
+              "end_line": 779,
               "doc": ""
             },
             {
               "name": "apply_fades_to_selected_stories",
               "sig": "apply_fades_to_selected_stories(self, fade_in, fade_out, fade_curve)",
-              "start_line": 702,
-              "end_line": 735,
+              "start_line": 781,
+              "end_line": 814,
               "doc": ""
             },
             {
               "name": "remove_fades_from_selected_stories",
               "sig": "remove_fades_from_selected_stories(self)",
-              "start_line": 737,
-              "end_line": 738,
+              "start_line": 816,
+              "end_line": 817,
               "doc": ""
             },
             {
               "name": "set_fade_curve_for_selected_stories",
               "sig": "set_fade_curve_for_selected_stories(self, curve_type)",
-              "start_line": 740,
-              "end_line": 763,
+              "start_line": 819,
+              "end_line": 842,
               "doc": ""
             },
             {
               "name": "open_story_metadata_dialog",
               "sig": "open_story_metadata_dialog(self, target_story_index, modal)",
-              "start_line": 765,
-              "end_line": 798,
+              "start_line": 844,
+              "end_line": 877,
               "doc": ""
             },
             {
               "name": "_notify_floating_dialogs",
               "sig": "_notify_floating_dialogs(self)",
-              "start_line": 800,
-              "end_line": 814,
+              "start_line": 879,
+              "end_line": 893,
               "doc": "Refresh any open non-modal export, metadata, or speaker management floating windows after main window edits."
             },
             {
               "name": "_close_floating_dialogs",
               "sig": "_close_floating_dialogs(self, persist_drafts)",
-              "start_line": 816,
-              "end_line": 832,
+              "start_line": 895,
+              "end_line": 911,
               "doc": "Persist drafts and close any active non-modal floating windows on project close or shutdown."
             }
           ]
@@ -15171,7 +15514,7 @@
     },
     "timeline_snap.py": {
       "path": "timeline_snap.py",
-      "lines": 119,
+      "lines": 195,
       "summary": "Timeline snapping algorithms, edge detection, and collision hit-testing.",
       "exports": null,
       "classes": [],
@@ -15179,43 +15522,64 @@
         {
           "name": "snap_time",
           "sig": "snap_time(canvas, raw_time, exclude_story_idx, width, pixel_threshold)",
-          "start_line": 7,
-          "end_line": 58,
+          "start_line": 9,
+          "end_line": 60,
           "doc": "Snap raw_time to nearby story boundaries, playhead, or selection anchors if within pixel_threshold pixels."
         },
         {
           "name": "find_edge_at_pos",
           "sig": "find_edge_at_pos(canvas, pos_x, width)",
-          "start_line": 61,
-          "end_line": 71,
+          "start_line": 63,
+          "end_line": 73,
           "doc": "Determine if pos_x is hovering over a story segment start or end boundary edge."
         },
         {
           "name": "find_fade_handle_at_pos",
           "sig": "find_fade_handle_at_pos(canvas, pos_x, pos_y, width)",
-          "start_line": 74,
-          "end_line": 101,
+          "start_line": 76,
+          "end_line": 103,
           "doc": "Hit-test tactile fade-in and fade-out envelope handles near the top edge of story blocks."
         },
         {
           "name": "find_story_at_time",
           "sig": "find_story_at_time(canvas, time)",
-          "start_line": 104,
-          "end_line": 113,
+          "start_line": 106,
+          "end_line": 115,
           "doc": "Return the index of the story enclosing `time`, picking the most specific (shortest) if overlapping."
         },
         {
           "name": "is_near_playhead",
           "sig": "is_near_playhead(canvas, pos_x, width)",
-          "start_line": 116,
-          "end_line": 119,
+          "start_line": 118,
+          "end_line": 121,
           "doc": "Check if pos_x is within grab distance of the active playhead cursor."
+        },
+        {
+          "name": "get_timeline_hover_info",
+          "sig": "get_timeline_hover_info(canvas, pos_x, pos_y, width)",
+          "start_line": 124,
+          "end_line": 174,
+          "doc": "Calculate tooltip and status bar readout for canvas hover interactions."
+        },
+        {
+          "name": "format_selection_drag_info",
+          "sig": "format_selection_drag_info(start, end)",
+          "start_line": 177,
+          "end_line": 185,
+          "doc": "Format tooltip and status bar readout for live selection dragging."
+        },
+        {
+          "name": "format_edge_drag_info",
+          "sig": "format_edge_drag_info(story, edge_type, current_time)",
+          "start_line": 188,
+          "end_line": 195,
+          "doc": "Format tooltip and status bar readout for live edge dragging."
         }
       ]
     },
     "timeline_widgets.py": {
       "path": "timeline_widgets.py",
-      "lines": 991,
+      "lines": 994,
       "summary": "Radio & TV Story Segmenter \u2014 Timeline Ruler, Track Views, Playhead, Overview & Canvas Widgets.",
       "exports": null,
       "classes": [
@@ -15224,295 +15588,295 @@
           "bases": [
             "QWidget"
           ],
-          "start_line": 60,
-          "end_line": 871,
+          "start_line": 59,
+          "end_line": 874,
           "doc": "",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, parent, tokens)",
-              "start_line": 80,
-              "end_line": 170,
+              "start_line": 79,
+              "end_line": 169,
               "doc": ""
             },
             {
               "name": "set_is_video",
               "sig": "set_is_video(self, is_video)",
-              "start_line": 172,
-              "end_line": 175,
+              "start_line": 171,
+              "end_line": 174,
               "doc": ""
             },
             {
               "name": "set_background_generation_active",
               "sig": "set_background_generation_active(self, task_name, active)",
-              "start_line": 177,
-              "end_line": 196,
+              "start_line": 176,
+              "end_line": 195,
               "doc": "Set generation state for 'waveform' or 'thumbnails'."
             },
             {
               "name": "_activate_background_banner",
               "sig": "_activate_background_banner(self)",
-              "start_line": 198,
-              "end_line": 203,
+              "start_line": 197,
+              "end_line": 202,
               "doc": ""
             },
             {
               "name": "_update_background_status_text",
               "sig": "_update_background_status_text(self)",
-              "start_line": 205,
-              "end_line": 218,
+              "start_line": 204,
+              "end_line": 217,
               "doc": ""
             },
             {
               "name": "dragEnterEvent",
               "sig": "dragEnterEvent(self, event)",
-              "start_line": 220,
-              "end_line": 227,
+              "start_line": 219,
+              "end_line": 226,
               "doc": ""
             },
             {
               "name": "dragMoveEvent",
               "sig": "dragMoveEvent(self, event)",
-              "start_line": 229,
-              "end_line": 236,
+              "start_line": 228,
+              "end_line": 235,
               "doc": ""
             },
             {
               "name": "dragLeaveEvent",
               "sig": "dragLeaveEvent(self, event)",
-              "start_line": 238,
-              "end_line": 239,
+              "start_line": 237,
+              "end_line": 238,
               "doc": ""
             },
             {
               "name": "dropEvent",
               "sig": "dropEvent(self, event)",
-              "start_line": 241,
-              "end_line": 249,
+              "start_line": 240,
+              "end_line": 248,
               "doc": ""
             },
             {
               "name": "set_audio_filename",
               "sig": "set_audio_filename(self, filename)",
-              "start_line": 251,
-              "end_line": 254,
+              "start_line": 250,
+              "end_line": 253,
               "doc": ""
             },
             {
               "name": "set_duration",
               "sig": "set_duration(self, duration)",
-              "start_line": 256,
-              "end_line": 264,
+              "start_line": 255,
+              "end_line": 263,
               "doc": ""
             },
             {
               "name": "set_position",
               "sig": "set_position(self, position)",
-              "start_line": 266,
-              "end_line": 269,
+              "start_line": 265,
+              "end_line": 268,
               "doc": ""
             },
             {
               "name": "set_playing_state",
               "sig": "set_playing_state(self, is_playing)",
-              "start_line": 271,
-              "end_line": 272,
+              "start_line": 270,
+              "end_line": 271,
               "doc": ""
             },
             {
               "name": "ensure_position_visible",
               "sig": "ensure_position_visible(self, target_time)",
-              "start_line": 274,
-              "end_line": 297,
+              "start_line": 273,
+              "end_line": 296,
               "doc": ""
             },
             {
               "name": "set_transcript_selection_range",
               "sig": "set_transcript_selection_range(self, start, end)",
-              "start_line": 299,
-              "end_line": 304,
+              "start_line": 298,
+              "end_line": 303,
               "doc": ""
             },
             {
               "name": "set_stories",
               "sig": "set_stories(self, stories, selected_indices)",
-              "start_line": 306,
-              "end_line": 310,
+              "start_line": 305,
+              "end_line": 309,
               "doc": ""
             },
             {
               "name": "set_waveform_peaks",
               "sig": "set_waveform_peaks(self, peaks, levels)",
-              "start_line": 312,
-              "end_line": 323,
+              "start_line": 311,
+              "end_line": 322,
               "doc": ""
             },
             {
               "name": "set_timeline_views",
               "sig": "set_timeline_views(self, show_waveform, show_thumbnails)",
-              "start_line": 325,
-              "end_line": 329,
+              "start_line": 324,
+              "end_line": 328,
               "doc": ""
             },
             {
               "name": "set_video_thumbnails",
               "sig": "set_video_thumbnails(self, thumbnails)",
-              "start_line": 331,
-              "end_line": 338,
+              "start_line": 330,
+              "end_line": 337,
               "doc": ""
             },
             {
               "name": "set_skip_seconds",
               "sig": "set_skip_seconds(self, seconds)",
-              "start_line": 340,
-              "end_line": 341,
+              "start_line": 339,
+              "end_line": 340,
               "doc": ""
             },
             {
               "name": "visible_duration",
               "sig": "visible_duration(self)",
-              "start_line": 343,
-              "end_line": 344,
+              "start_line": 342,
+              "end_line": 343,
               "doc": ""
             },
             {
               "name": "clamp_scroll_offset",
               "sig": "clamp_scroll_offset(self)",
-              "start_line": 346,
-              "end_line": 349,
+              "start_line": 345,
+              "end_line": 348,
               "doc": ""
             },
             {
               "name": "time_to_x",
               "sig": "time_to_x(self, time_val, width)",
-              "start_line": 351,
-              "end_line": 354,
+              "start_line": 350,
+              "end_line": 353,
               "doc": ""
             },
             {
               "name": "x_to_time",
               "sig": "x_to_time(self, x_val, width)",
-              "start_line": 356,
-              "end_line": 358,
+              "start_line": 355,
+              "end_line": 357,
               "doc": ""
             },
             {
               "name": "snap_time",
               "sig": "snap_time(self, raw_time, exclude_story_idx, width, pixel_threshold)",
-              "start_line": 360,
-              "end_line": 361,
+              "start_line": 359,
+              "end_line": 360,
               "doc": ""
             },
             {
               "name": "find_edge_at_pos",
               "sig": "find_edge_at_pos(self, pos_x, width)",
-              "start_line": 363,
-              "end_line": 364,
+              "start_line": 364,
+              "end_line": 365,
               "doc": ""
             },
             {
               "name": "find_fade_handle_at_pos",
               "sig": "find_fade_handle_at_pos(self, pos_x, pos_y, width)",
-              "start_line": 368,
-              "end_line": 369,
+              "start_line": 367,
+              "end_line": 368,
               "doc": ""
             },
             {
               "name": "find_story_at_time",
               "sig": "find_story_at_time(self, time)",
-              "start_line": 371,
-              "end_line": 372,
+              "start_line": 370,
+              "end_line": 371,
               "doc": ""
             },
             {
               "name": "is_near_playhead",
               "sig": "is_near_playhead(self, pos_x, width)",
-              "start_line": 374,
-              "end_line": 375,
+              "start_line": 373,
+              "end_line": 374,
               "doc": ""
             },
             {
               "name": "set_zoom",
               "sig": "set_zoom(self, new_zoom, center_x, focus_time)",
-              "start_line": 377,
-              "end_line": 403,
+              "start_line": 376,
+              "end_line": 402,
               "doc": ""
             },
             {
               "name": "resizeEvent",
               "sig": "resizeEvent(self, event)",
-              "start_line": 405,
-              "end_line": 407,
+              "start_line": 404,
+              "end_line": 406,
               "doc": ""
             },
             {
               "name": "wheelEvent",
               "sig": "wheelEvent(self, event)",
-              "start_line": 409,
-              "end_line": 459,
+              "start_line": 408,
+              "end_line": 458,
               "doc": ""
             },
             {
               "name": "mousePressEvent",
               "sig": "mousePressEvent(self, event)",
-              "start_line": 461,
-              "end_line": 545,
+              "start_line": 460,
+              "end_line": 544,
               "doc": ""
             },
             {
               "name": "mouseMoveEvent",
               "sig": "mouseMoveEvent(self, event)",
-              "start_line": 547,
-              "end_line": 674,
+              "start_line": 546,
+              "end_line": 677,
               "doc": ""
             },
             {
               "name": "mouseReleaseEvent",
               "sig": "mouseReleaseEvent(self, event)",
-              "start_line": 676,
-              "end_line": 746,
+              "start_line": 679,
+              "end_line": 749,
               "doc": ""
             },
             {
               "name": "_show_timeline_context_menu",
               "sig": "_show_timeline_context_menu(self, global_pos, pos_x)",
-              "start_line": 748,
-              "end_line": 749,
-              "doc": ""
-            },
-            {
-              "name": "_show_selection_context_menu",
-              "sig": "_show_selection_context_menu(self, global_pos)",
               "start_line": 751,
               "end_line": 752,
               "doc": ""
             },
             {
+              "name": "_show_selection_context_menu",
+              "sig": "_show_selection_context_menu(self, global_pos)",
+              "start_line": 754,
+              "end_line": 755,
+              "doc": ""
+            },
+            {
               "name": "keyPressEvent",
               "sig": "keyPressEvent(self, event)",
-              "start_line": 754,
-              "end_line": 851,
+              "start_line": 757,
+              "end_line": 854,
               "doc": ""
             },
             {
               "name": "set_thumbnail_position",
               "sig": "set_thumbnail_position(self, position)",
-              "start_line": 853,
-              "end_line": 857,
+              "start_line": 856,
+              "end_line": 860,
               "doc": ""
             },
             {
               "name": "render_waveform_buffer",
               "sig": "render_waveform_buffer(self, width, height)",
-              "start_line": 859,
-              "end_line": 860,
+              "start_line": 862,
+              "end_line": 863,
               "doc": ""
             },
             {
               "name": "paintEvent",
               "sig": "paintEvent(self, event)",
-              "start_line": 863,
-              "end_line": 871,
+              "start_line": 866,
+              "end_line": 874,
               "doc": ""
             }
           ]
@@ -15522,85 +15886,85 @@
           "bases": [
             "QWidget"
           ],
-          "start_line": 874,
-          "end_line": 989,
+          "start_line": 877,
+          "end_line": 992,
           "doc": "",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, parent, tokens)",
-              "start_line": 877,
-              "end_line": 914,
+              "start_line": 880,
+              "end_line": 917,
               "doc": ""
             },
             {
               "name": "set_is_video",
               "sig": "set_is_video(self, is_video)",
-              "start_line": 916,
-              "end_line": 918,
+              "start_line": 919,
+              "end_line": 921,
               "doc": ""
             },
             {
               "name": "set_background_generation_active",
               "sig": "set_background_generation_active(self, task_name, active)",
-              "start_line": 920,
-              "end_line": 922,
+              "start_line": 923,
+              "end_line": 925,
               "doc": ""
             },
             {
               "name": "dragEnterEvent",
               "sig": "dragEnterEvent(self, event)",
-              "start_line": 924,
-              "end_line": 931,
+              "start_line": 927,
+              "end_line": 934,
               "doc": ""
             },
             {
               "name": "dragMoveEvent",
               "sig": "dragMoveEvent(self, event)",
-              "start_line": 933,
-              "end_line": 940,
+              "start_line": 936,
+              "end_line": 943,
               "doc": ""
             },
             {
               "name": "dragLeaveEvent",
               "sig": "dragLeaveEvent(self, event)",
-              "start_line": 942,
-              "end_line": 943,
+              "start_line": 945,
+              "end_line": 946,
               "doc": ""
             },
             {
               "name": "dropEvent",
               "sig": "dropEvent(self, event)",
-              "start_line": 945,
-              "end_line": 953,
+              "start_line": 948,
+              "end_line": 956,
               "doc": ""
             },
             {
               "name": "update_scrollbar_range",
               "sig": "update_scrollbar_range(self)",
-              "start_line": 955,
-              "end_line": 964,
+              "start_line": 958,
+              "end_line": 967,
               "doc": ""
             },
             {
               "name": "update_scrollbar_from_canvas",
               "sig": "update_scrollbar_from_canvas(self, offset)",
-              "start_line": 966,
-              "end_line": 974,
+              "start_line": 969,
+              "end_line": 977,
               "doc": ""
             },
             {
               "name": "update_canvas_from_scrollbar",
               "sig": "update_canvas_from_scrollbar(self, val)",
-              "start_line": 976,
-              "end_line": 986,
+              "start_line": 979,
+              "end_line": 989,
               "doc": ""
             },
             {
               "name": "__getattr__",
               "sig": "__getattr__(self, name)",
-              "start_line": 988,
-              "end_line": 989,
+              "start_line": 991,
+              "end_line": 992,
               "doc": ""
             }
           ]
@@ -15714,7 +16078,7 @@
     },
     "transcript_editor.py": {
       "path": "transcript_editor.py",
-      "lines": 978,
+      "lines": 993,
       "summary": "transcript_editor.py - Interactive Transcript Editor & Viewer Components",
       "exports": [
         "FindReplaceDialog",
@@ -15733,7 +16097,7 @@
             "QTextEdit"
           ],
           "start_line": 117,
-          "end_line": 978,
+          "end_line": 993,
           "doc": "",
           "methods": [
             {
@@ -15796,105 +16160,105 @@
               "name": "copy_highlighted_selection",
               "sig": "copy_highlighted_selection(self)",
               "start_line": 287,
-              "end_line": 353,
+              "end_line": 368,
               "doc": "Copy the active story or timeline selection span to clipboard when no cursor text is selected."
             },
             {
               "name": "wheelEvent",
               "sig": "wheelEvent(self, event)",
-              "start_line": 355,
-              "end_line": 361,
+              "start_line": 370,
+              "end_line": 376,
               "doc": ""
             },
             {
               "name": "event",
               "sig": "event(self, e)",
-              "start_line": 363,
-              "end_line": 412,
+              "start_line": 378,
+              "end_line": 427,
               "doc": ""
             },
             {
               "name": "paintEvent",
               "sig": "paintEvent(self, event)",
-              "start_line": 414,
-              "end_line": 477,
+              "start_line": 429,
+              "end_line": 492,
               "doc": ""
             },
             {
               "name": "dragEnterEvent",
               "sig": "dragEnterEvent(self, event)",
-              "start_line": 479,
-              "end_line": 483,
+              "start_line": 494,
+              "end_line": 498,
               "doc": ""
             },
             {
               "name": "dragMoveEvent",
               "sig": "dragMoveEvent(self, event)",
-              "start_line": 485,
-              "end_line": 489,
+              "start_line": 500,
+              "end_line": 504,
               "doc": ""
             },
             {
               "name": "dropEvent",
               "sig": "dropEvent(self, event)",
-              "start_line": 491,
-              "end_line": 501,
+              "start_line": 506,
+              "end_line": 516,
               "doc": ""
             },
             {
               "name": "apply_theme_style",
               "sig": "apply_theme_style(self, mode)",
-              "start_line": 503,
-              "end_line": 506,
+              "start_line": 518,
+              "end_line": 521,
               "doc": ""
             },
             {
               "name": "set_font_scale",
               "sig": "set_font_scale(self, scale)",
-              "start_line": 508,
-              "end_line": 518,
+              "start_line": 523,
+              "end_line": 533,
               "doc": "Set transcript font scale without affecting the rest of the UI."
             },
             {
               "name": "set_editing_mode",
               "sig": "set_editing_mode(self, enabled)",
-              "start_line": 520,
-              "end_line": 536,
+              "start_line": 535,
+              "end_line": 551,
               "doc": ""
             },
             {
               "name": "mousePressEvent",
               "sig": "mousePressEvent(self, event)",
-              "start_line": 538,
-              "end_line": 578,
+              "start_line": 553,
+              "end_line": 593,
               "doc": ""
             },
             {
               "name": "mouseMoveEvent",
               "sig": "mouseMoveEvent(self, event)",
-              "start_line": 580,
-              "end_line": 628,
+              "start_line": 595,
+              "end_line": 643,
               "doc": ""
             },
             {
               "name": "leaveEvent",
               "sig": "leaveEvent(self, event)",
-              "start_line": 630,
-              "end_line": 634,
+              "start_line": 645,
+              "end_line": 649,
               "doc": ""
             },
             {
               "name": "mouseReleaseEvent",
               "sig": "mouseReleaseEvent(self, event)",
-              "start_line": 636,
-              "end_line": 722,
+              "start_line": 651,
+              "end_line": 737,
               "doc": ""
             },
             {
               "name": "keyPressEvent",
               "sig": "keyPressEvent(self, event)",
-              "start_line": 724,
-              "end_line": 978,
+              "start_line": 739,
+              "end_line": 993,
               "doc": ""
             }
           ]
@@ -16442,7 +16806,7 @@
     "transcript_story.py": {
       "path": "transcript_story.py",
       "lines": 852,
-      "summary": "Radio & TV Segmenter v3.9.88-beta \u2014 transcript story responsibilities.",
+      "summary": "Radio & TV Segmenter v3.9.89-beta \u2014 transcript story responsibilities.",
       "exports": [
         "TranscriptStoryMixin",
         "Story",
@@ -16571,7 +16935,7 @@
     },
     "transcript_timeline_sync_mixin.py": {
       "path": "transcript_timeline_sync_mixin.py",
-      "lines": 642,
+      "lines": 643,
       "summary": "Radio & TV Story Segmenter \u2014 Transcript Timeline & Playback Synchronization Mixin.",
       "exports": null,
       "classes": [
@@ -16579,7 +16943,7 @@
           "name": "TranscriptTimelineSyncMixin",
           "bases": [],
           "start_line": 34,
-          "end_line": 642,
+          "end_line": 643,
           "doc": "Mixin for audio timecode synchronization, anchor indexing, and playback highlighting.",
           "methods": [
             {
@@ -16642,105 +17006,105 @@
               "name": "update_extra_selections",
               "sig": "update_extra_selections(self)",
               "start_line": 170,
-              "end_line": 297,
+              "end_line": 298,
               "doc": ""
             },
             {
               "name": "set_search_highlights",
               "sig": "set_search_highlights(self, ranges, active_idx)",
-              "start_line": 299,
-              "end_line": 335,
+              "start_line": 300,
+              "end_line": 336,
               "doc": "Highlight all search matches across transcript with prominent active match."
             },
             {
               "name": "clear_search_highlights",
               "sig": "clear_search_highlights(self)",
-              "start_line": 337,
-              "end_line": 340,
+              "start_line": 338,
+              "end_line": 341,
               "doc": "Clear all search match highlights from transcript."
             },
             {
               "name": "set_timeline_selection_span",
               "sig": "set_timeline_selection_span(self, start_char, end_char)",
-              "start_line": 342,
-              "end_line": 347,
+              "start_line": 343,
+              "end_line": 348,
               "doc": ""
             },
             {
               "name": "_on_selection_completed",
               "sig": "_on_selection_completed(self, cursor)",
-              "start_line": 349,
-              "end_line": 369,
+              "start_line": 350,
+              "end_line": 370,
               "doc": ""
             },
             {
               "name": "_nearest_word_anchor",
               "sig": "_nearest_word_anchor(self, cursor)",
-              "start_line": 371,
-              "end_line": 402,
+              "start_line": 372,
+              "end_line": 403,
               "doc": ""
             },
             {
               "name": "get_timestamp_at_cursor",
               "sig": "get_timestamp_at_cursor(self, cursor)",
-              "start_line": 404,
-              "end_line": 423,
+              "start_line": 405,
+              "end_line": 424,
               "doc": ""
             },
             {
               "name": "get_block_start_timestamp",
               "sig": "get_block_start_timestamp(self, cursor)",
-              "start_line": 425,
-              "end_line": 440,
+              "start_line": 426,
+              "end_line": 441,
               "doc": ""
             },
             {
               "name": "get_block_end_timestamp",
               "sig": "get_block_end_timestamp(self, cursor)",
-              "start_line": 442,
-              "end_line": 460,
+              "start_line": 443,
+              "end_line": 461,
               "doc": ""
             },
             {
               "name": "get_segment_index_at_cursor",
               "sig": "get_segment_index_at_cursor(self, cursor)",
-              "start_line": 462,
-              "end_line": 481,
+              "start_line": 463,
+              "end_line": 482,
               "doc": ""
             },
             {
               "name": "move_cursor_to_segment_start",
               "sig": "move_cursor_to_segment_start(self, seg_idx)",
-              "start_line": 483,
-              "end_line": 498,
+              "start_line": 484,
+              "end_line": 499,
               "doc": ""
             },
             {
               "name": "rebuild_anchor_index",
               "sig": "rebuild_anchor_index(self)",
-              "start_line": 500,
-              "end_line": 545,
+              "start_line": 501,
+              "end_line": 546,
               "doc": ""
             },
             {
               "name": "set_time_anchor_index",
               "sig": "set_time_anchor_index(self, entries)",
-              "start_line": 547,
-              "end_line": 549,
+              "start_line": 548,
+              "end_line": 550,
               "doc": ""
             },
             {
               "name": "clear_highlight",
               "sig": "clear_highlight(self)",
-              "start_line": 551,
-              "end_line": 557,
+              "start_line": 552,
+              "end_line": 558,
               "doc": ""
             },
             {
               "name": "highlight_word_at_time",
               "sig": "highlight_word_at_time(self, seconds, transcript_data, auto_scroll)",
-              "start_line": 559,
-              "end_line": 642,
+              "start_line": 560,
+              "end_line": 643,
               "doc": ""
             }
           ]
@@ -17187,7 +17551,7 @@
     },
     "ui_layout.py": {
       "path": "ui_layout.py",
-      "lines": 1090,
+      "lines": 1097,
       "summary": "Radio & TV Segmenter \u2014 UI Layout & Menu Construction Mixin.",
       "exports": null,
       "classes": [
@@ -17198,119 +17562,119 @@
             "UiDialogLaunchersMixin"
           ],
           "start_line": 58,
-          "end_line": 1086,
+          "end_line": 1093,
           "doc": "Mixin class providing UI construction, menu assembly, and UI event binding.",
           "methods": [
             {
               "name": "build_ui",
               "sig": "build_ui(self)",
               "start_line": 60,
-              "end_line": 762,
+              "end_line": 769,
               "doc": "Build and assemble all central widgets, layouts, and panels."
             },
             {
               "name": "filter_transcript_search",
               "sig": "filter_transcript_search(self, target)",
-              "start_line": 764,
-              "end_line": 781,
+              "start_line": 771,
+              "end_line": 788,
               "doc": "Highlight and focus next occurrence of search term in transcript text view."
             },
             {
               "name": "toggle_transcript_editing_mode",
               "sig": "toggle_transcript_editing_mode(self, *args, **kwargs)",
-              "start_line": 783,
-              "end_line": 805,
+              "start_line": 790,
+              "end_line": 812,
               "doc": "Toggle between Viewing Mode (navigation/click-to-seek) and Editing Mode (text editing)."
             },
             {
               "name": "_on_transcript_editing_mode_changed",
               "sig": "_on_transcript_editing_mode_changed(self, is_editing)",
-              "start_line": 807,
-              "end_line": 842,
+              "start_line": 814,
+              "end_line": 849,
               "doc": "Respond to changes in transcript edit vs view mode."
             },
             {
               "name": "_sync_format_toolbar_buttons",
               "sig": "_sync_format_toolbar_buttons(self)",
-              "start_line": 844,
-              "end_line": 864,
+              "start_line": 851,
+              "end_line": 871,
               "doc": ""
             },
             {
               "name": "_on_toolbar_split_speaker",
               "sig": "_on_toolbar_split_speaker(self)",
-              "start_line": 866,
-              "end_line": 873,
+              "start_line": 873,
+              "end_line": 880,
               "doc": ""
             },
             {
               "name": "_apply_transcript_font_scale",
               "sig": "_apply_transcript_font_scale(self, scale, persist)",
-              "start_line": 875,
-              "end_line": 899,
+              "start_line": 882,
+              "end_line": 906,
               "doc": "Apply a transcript-only font scale and optionally persist it."
             },
             {
               "name": "_on_font_size_combo_changed",
               "sig": "_on_font_size_combo_changed(self, index)",
-              "start_line": 901,
-              "end_line": 905,
+              "start_line": 908,
+              "end_line": 912,
               "doc": ""
             },
             {
               "name": "adjust_transcript_font_size",
               "sig": "adjust_transcript_font_size(self, direction)",
-              "start_line": 907,
-              "end_line": 909,
+              "start_line": 914,
+              "end_line": 916,
               "doc": "Increase or decrease transcript font size by one 5% step."
             },
             {
               "name": "reset_transcript_font_size",
               "sig": "reset_transcript_font_size(self)",
-              "start_line": 911,
-              "end_line": 913,
+              "start_line": 918,
+              "end_line": 920,
               "doc": "Restore the default transcript font size."
             },
             {
               "name": "update_story_list_height",
               "sig": "update_story_list_height(self)",
-              "start_line": 915,
-              "end_line": 930,
+              "start_line": 922,
+              "end_line": 937,
               "doc": "Size the story list to fit the current number of stories, leaving space for metadata and export fields."
             },
             {
               "name": "auto_generate_selected_story_excerpt",
               "sig": "auto_generate_selected_story_excerpt(self)",
-              "start_line": 932,
-              "end_line": 977,
+              "start_line": 939,
+              "end_line": 984,
               "doc": "Auto-generate an excerpt from the story transcript text for the currently selected story."
             },
             {
               "name": "_on_story_excerpt_text_changed",
               "sig": "_on_story_excerpt_text_changed(self)",
-              "start_line": 979,
-              "end_line": 997,
+              "start_line": 986,
+              "end_line": 1004,
               "doc": "Synchronize excerpt edits from the inline editor into story metadata."
             },
             {
               "name": "toggle_maximize_stories_panel",
               "sig": "toggle_maximize_stories_panel(self)",
-              "start_line": 999,
-              "end_line": 1052,
+              "start_line": 1006,
+              "end_line": 1059,
               "doc": "Toggle maximize/restore of the stories panel across the full application window."
             },
             {
               "name": "setup_plugin_story_extensions",
               "sig": "setup_plugin_story_extensions(self)",
-              "start_line": 1054,
-              "end_line": 1076,
+              "start_line": 1061,
+              "end_line": 1083,
               "doc": "Populate plugin-provided widgets in the story panel."
             },
             {
               "name": "notify_story_selection_to_plugins",
               "sig": "notify_story_selection_to_plugins(self, selected_story)",
-              "start_line": 1078,
-              "end_line": 1086,
+              "start_line": 1085,
+              "end_line": 1093,
               "doc": "Notify all enabled plugins when the active story selection changes."
             }
           ]

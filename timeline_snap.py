@@ -3,6 +3,8 @@ from __future__ import annotations
 
 from typing import Any, Optional, Tuple
 
+from core_utils import format_clock_duration, format_time
+
 
 def snap_time(
     canvas: Any,
@@ -117,3 +119,77 @@ def is_near_playhead(canvas: Any, pos_x: float, width: int) -> bool:
     """Check if pos_x is within grab distance of the active playhead cursor."""
     cursor_x = canvas.time_to_x(canvas.position, width)
     return abs(pos_x - cursor_x) <= canvas.CURSOR_GRAB_THRESHOLD
+
+
+def get_timeline_hover_info(canvas: Any, pos_x: float, pos_y: float, width: int) -> Tuple[str, str]:
+    """Calculate tooltip and status bar readout for canvas hover interactions.
+
+    Returns:
+        (tooltip_text, status_text) tuple.
+    """
+    fade_hit = find_fade_handle_at_pos(canvas, pos_x, pos_y, width)
+    if fade_hit:
+        idx, f_type = fade_hit
+        if 0 <= idx < len(getattr(canvas, "stories", [])):
+            story = canvas.stories[idx]
+            f_dur = getattr(story, f_type, 0.0)
+            f_name = "Fade-In" if f_type == "fade_in" else "Fade-Out"
+            tooltip_text = f"{story.title} ({f_name}: {f_dur:.2f}s)\nDrag handle horizontally to adjust audio fade"
+            status_text = f"{story.title} — {f_name}: {f_dur:.2f}s (Drag handle horizontally to adjust)"
+            return tooltip_text, status_text
+
+    edge_hit = find_edge_at_pos(canvas, pos_x, width)
+    if edge_hit:
+        idx, edge_type = edge_hit
+        stories = getattr(canvas, "stories", [])
+        title = stories[idx].title if 0 <= idx < len(stories) else f"Story #{idx+1}"
+        tooltip_text = f"{title} ({edge_type.capitalize()} Boundary)\nRight-click and drag to adjust"
+        status_text = f"{title} — {edge_type.capitalize()} Boundary (Right-click and drag to adjust)"
+        return tooltip_text, status_text
+
+    # Story body hover
+    time_at_cursor = canvas.x_to_time(pos_x, width)
+    story_idx = find_story_at_time(canvas, time_at_cursor)
+    if story_idx is not None and 0 <= story_idx < len(getattr(canvas, "stories", [])):
+        story = canvas.stories[story_idx]
+        dur = max(0.0, float(story.end) - float(story.start))
+        clock_dur = format_clock_duration(dur, include_millis=True)
+        tooltip_text = f"Story #{story_idx+1}: {story.title}\n{format_time(story.start)} – {format_time(story.end)} (Duration: {clock_dur})"
+        status_text = f"Story #{story_idx+1}: {story.title} [{format_time(story.start)} – {format_time(story.end)}] (Duration: {clock_dur})"
+        return tooltip_text, status_text
+
+    # Selection region hover
+    sel_start = getattr(canvas, "selection_start", None)
+    sel_end = getattr(canvas, "selection_end", None)
+    if sel_start is not None and sel_end is not None:
+        s = min(float(sel_start), float(sel_end))
+        e = max(float(sel_start), float(sel_end))
+        if (e - s) >= 0.05 and s <= time_at_cursor <= e:
+            sel_dur = max(0.0, e - s)
+            clock_dur = format_clock_duration(sel_dur, include_millis=True)
+            tooltip_text = f"Selection: {clock_dur}\n{format_time(s)} – {format_time(e)}"
+            status_text = f"Selection: {clock_dur} [{format_time(s)} – {format_time(e)}]"
+            return tooltip_text, status_text
+
+    return "", ""
+
+
+def format_selection_drag_info(start: float, end: float) -> Tuple[str, str]:
+    """Format tooltip and status bar readout for live selection dragging."""
+    s = min(start, end)
+    e = max(start, end)
+    dur = max(0.0, e - s)
+    clock_dur = format_clock_duration(dur, include_millis=True)
+    tooltip_text = f"Selection: {clock_dur}\n{format_time(s)} – {format_time(e)}"
+    status_text = f"Selection: {clock_dur} [{format_time(s)} – {format_time(e)}]"
+    return tooltip_text, status_text
+
+
+def format_edge_drag_info(story: Any, edge_type: str, current_time: float) -> Tuple[str, str]:
+    """Format tooltip and status bar readout for live edge dragging."""
+    dur = max(0.0, float(story.end) - float(story.start))
+    clock_dur = format_clock_duration(dur, include_millis=True)
+    edge_cap = edge_type.capitalize()
+    tooltip_text = f"{story.title} ({edge_cap} Edge)\nDuration: {clock_dur} ({format_time(story.start)} – {format_time(story.end)})"
+    status_text = f"{story.title} ({edge_cap}): {format_time(current_time)} (Duration: {clock_dur})"
+    return tooltip_text, status_text
