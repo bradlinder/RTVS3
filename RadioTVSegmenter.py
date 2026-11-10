@@ -1,4 +1,4 @@
-"""Radio & TV Segmenter — v3.9.92-beta
+"""Radio & TV Segmenter — v3.9.93-beta
 
 This is the thin application composition root. UI/processing responsibilities
 are implemented in focused mixins so future changes can target smaller files
@@ -461,6 +461,7 @@ class MainWindow(
         self.silence_threshold = float(s.value("silence_threshold", 3.0) or 3.0)
         self.lead_in_padding = float(s.value("lead_in_padding", 0.5) or 0.5)
         self.story_detection_mode = str(s.value("story_detection_mode", "voice") or "voice")
+        self.ui_vocabulary_mode = str(s.value("ui_vocabulary_mode", "auto") or "auto")
         self.expected_speakers = str(s.value("default_expected_speakers", "auto") or "auto")
         self.diarization_sensitivity = str(s.value("diarization_sensitivity", "normal") or "normal")
         try:

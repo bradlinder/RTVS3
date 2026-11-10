@@ -2,7 +2,7 @@
 from __future__ import annotations
 from __future__ import annotations
 from typing import Any, List, Optional
-from core_utils import INTERNAL_APP_ID, format_time, format_clock_duration, parse_time
+from core_utils import INTERNAL_APP_ID, format_time, format_clock_duration, parse_time, get_story_vocabulary
 from story_model import Story, SetStoriesCommand, StoryBoundaryChangeCommand
 from story_fades_dialog import StoryFadesDialog
 

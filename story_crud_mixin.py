@@ -38,7 +38,7 @@ except ImportError:
         QTextEdit,
     )
 
-from core_utils import INTERNAL_APP_ID, format_time, format_clock_duration, parse_time
+from core_utils import INTERNAL_APP_ID, format_time, format_clock_duration, parse_time, get_story_vocabulary
 from story_model import Story, SetStoriesCommand, StoryBoundaryChangeCommand
 from story_fades_dialog import StoryFadesDialog
 
@@ -51,17 +51,11 @@ class StoryCrudMixin:
         if not hasattr(self, "stories_header") or self.stories_header is None:
             return
 
-        is_music = (getattr(self, "story_detection_mode", "voice") == "music")
-        is_es = (getattr(self, "language", "en") == "es")
-
-        if is_music:
-            base_label = "Canciones" if is_es else "Songs"
-            sing_term = "canción" if is_es else "song"
-            plur_term = "canciones" if is_es else "songs"
-        else:
-            base_label = "Historias" if is_es else "Stories"
-            sing_term = "historia" if is_es else "story"
-            plur_term = "historias" if is_es else "stories"
+        vocab = get_story_vocabulary(self)
+        is_es = vocab.is_es
+        base_label = vocab.plural
+        sing_term = vocab.singular_lower
+        plur_term = vocab.plural_lower
 
         stories = getattr(self, "stories", []) or []
         selected_indices = getattr(self, "current_selected_story_indices", []) or []
@@ -171,8 +165,8 @@ class StoryCrudMixin:
 
     def handle_new_story_started(self, start_time: float, end_time: float):
         self.pre_drag_stories_snapshot = [Story.from_dict(s.to_dict()) for s in self.stories]
-        is_music = (getattr(self, "story_detection_mode", "voice") == "music")
-        default_title = "Untitled Song" if is_music else "Untitled Story"
+        vocab = get_story_vocabulary(self)
+        default_title = f"{vocab.singular} sin título" if vocab.is_es else f"Untitled {vocab.singular}"
         story = Story(start=start_time, end=end_time, title=default_title)
         self.stories.append(story)
         self.refresh_story_list()
@@ -344,9 +338,9 @@ class StoryCrudMixin:
         if not selected_rows:
             return
 
-        is_music = (getattr(self, "story_detection_mode", "voice") == "music")
-        term = "Song" if is_music else "Story"
-        term_plural = "Songs" if is_music else "Stories"
+        vocab = get_story_vocabulary(self)
+        term = vocab.singular
+        term_plural = vocab.plural
 
         old_stories = [Story.from_dict(s.to_dict()) for s in self.stories]
         new_stories = [Story.from_dict(s.to_dict()) for s in self.stories]
@@ -496,9 +490,9 @@ class StoryCrudMixin:
                 )
                 return
 
-        is_music = (getattr(self, "story_detection_mode", "voice") == "music")
-        term = "Song" if is_music else "Story"
-        term_plural = "Songs" if is_music else "Stories"
+        vocab = get_story_vocabulary(self)
+        term = vocab.singular
+        term_plural = vocab.plural
 
         if len(ranges) > 1:
             old_stories = [Story.from_dict(s.to_dict()) for s in getattr(self, "stories", [])]

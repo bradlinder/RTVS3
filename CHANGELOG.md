@@ -1,5 +1,32 @@
 # Changelog
 
+## v3.9.93-beta
+- **Cosmetic Vocabulary Setting ("Stories" / "Clips" / "Segments" / "Songs") (`core_utils.py`, `prs_shared.py`, `preferences_tabs_core.py`, `preferences_dialog.py`, `preferences_reset.py`, `preferences_reset_dialog.py`, `media_batch.py`, `story_crud_mixin.py`, `timeline_context_menus.py`, `export/dialog.py`, `diagnostic_editor_tests.py`)**:
+  - **Centralized Vocabulary Helper (`core_utils.py`, `prs_shared.py`)**:
+    - Created lightweight `StoryVocabulary(NamedTuple)` and `get_story_vocabulary(win_or_settings, language=None)` in `core_utils.py`, re-exported in `prs_shared.py`.
+    - Supports 5 user modes: `"auto"` (default; resolves dynamically to Songs in Music detection mode, Stories in Voice mode), `"stories"`, `"clips"`, `"segments"`, and `"songs"`.
+    - Fully localized for English and Spanish with proper grammatical gender, noun inflection, and capitalization (`Historia`/`Historias`, `Clip`/`Clips`, `Segmento`/`Segmentos`, `Canción`/`Canciones`).
+    - 100% backward compatible: underlying project file schemas, undo/redo stacks, and serialization formats remain intact while presentation terminology updates dynamically.
+  - **Preferences Vocabulary Selector (`preferences_tabs_core.py`, `preferences_dialog.py`)**:
+    - Added user-configurable **UI Vocabulary / Terminology** dropdown in Preferences under the General tab with clear bilingual labels.
+    - Persisted to `QSettings` (`ui_vocabulary_mode`) and cached on `self.ui_vocabulary_mode`.
+    - Saving preferences immediately refreshes main window sidebar buttons and headers without requiring an application restart.
+  - **Preferences Reset Parity (`preferences_reset.py`, `preferences_reset_dialog.py`)**:
+    - Registered `ui_vocabulary_mode` under the General Appearance category to cleanly reset to `"auto"` when restoring defaults.
+  - **Live Dynamic Relabeling Across Sidebar & Menus (`media_batch.py`, `story_crud_mixin.py`)**:
+    - Centralized `update_story_segment_terminology()` dynamically relabels:
+      - Sidebar header count & duration (`Stories (2) — [03:45.5]`, `Clips (2) — [03:45.5]`, `Segments (2) — [03:45.5]`, `Songs (2) — [03:45.5]`).
+      - Primary action buttons: `Add Story/Clip/Segment/Song`, `Set Start`, `Set End`.
+      - Metadata button: `Story/Clip/Segment/Song Metadata...`.
+      - Settings button: `Story/Clip/Segment/Song Settings`.
+      - Title input placeholder: `Story headline / title`, `Clip title / description`, `Segment title / headline`, `Song title / track name`.
+      - Action tooltips and menu actions (`Detect Stories/Clips/Segments/Songs`, `Stories/Clips/Segments/Songs Panel`).
+  - **Timeline Context Menus & Export Dialog Alignment (`timeline_context_menus.py`, `export/dialog.py`)**:
+    - Right-click canvas menus update dynamically: `Add Story/Clip/Segment/Song from Selection`.
+    - `UnifiedExportDialog` export scope combo labels adapt dynamically: `Selected Stories/Clips/Segments/Songs`, `All Stories/Clips/Segments/Songs`, `Full Episode & All Stories/Clips/Segments/Songs`.
+  - **Diagnostic Test Bench Coverage (`diagnostic_editor_tests.py`)**:
+    - Automated unit tests asserting vocabulary resolution across all 4 modes in English and Spanish, live UI sidebar header updates, and settings reset parity.
+
 ## v3.9.92-beta
 - **Universal User Guide Search Engine (`user_guide_dialog.py`, `user_guide_dialog.pyi`)**:
   - **Global Cross-Topic Search**: Transformed the User Guide search from a single-section filter into a universal search engine across all 10 topics in the guide catalog.
@@ -33,10 +60,4 @@
   - **Dedicated Ctrl+Shift+C Audio Clip Shortcut & Clean Ctrl+C Decoupling**: Decoupled WAV audio clip rendering from standard `Ctrl+C` into a dedicated `Ctrl+Shift+C` shortcut (`Copy Selection as Audio Clip`, registered in `shortcuts/schema.py`, `transcript_context_menu_mixin.py`, and `timeline_context_menus.py`). Standard `Ctrl+C` now remains strictly text-friendly (with REAPER JSON cue sidecar) without attaching `CF_HDROP` / `QUrl` file drop data.
   - **Universal Text-to-WAV Clipboard & Drag-and-Drop Fallback**: Added `render_temp_daw_wav_clip()` and `copy_selection_as_daw_wav_clip()` which attach temporary uncompressed WAV slices (`CF_HDROP`) directly to the unified `Ctrl+C` clipboard alongside transcript text for direct pasting into REAPER, Adobe Audition, Premiere Pro, and DaVinci Resolve.
   - **Speaker Color-Coding Preference & Formatted Item Notes**: Added user preference checkbox **Apply speaker color coding to pasted DAW clips** under Preferences (`reaper_color_items`, default: true) allowing users to toggle whether pasted REAPER items inherit speaker colors or default track coloring.
-  - **Standalone Background Live Auto-Sync & Manual Sync Actions (`scripts/reaper/rtvs_reaper_auto_sync.lua`, `scripts/reaper/rtvs_reaper_sync.lua`)**: Created zero-dependency background watcher script that runs via `reaper.defer()` and monitors media item boundaries every 0.35s with REAPER toolbar button toggle state, plus a one-shot manual sync action `rtvs_reaper_sync.lua`.
-
-## v3.9.91-beta
-- **Universal Esc Selection Clearance & Keyboard Shortcut Documentation Alignment (timeline_widgets.py, ui_menus.py, story_widgets.py, transcript_editor.py, shortcuts/schema.py, user_guide_dialog.py)**:
-  - **Universal Esc Selection Clearance (timeline_widgets.py, ui_menus.py, story_widgets.py, transcript_editor.py)**: Added dedicated TimelineCanvas.clear_selection_range() and wired the Esc key across the timeline canvas, story sidebar list, transcript editor, and global Edit > Deselect All menu action to immediately clear uncommitted drag selection ranges identically to the right-click context menu.
-  - **Shortcuts Registry & Preferences Integration (shortcuts/schema.py)**: Registered deselect_all ('Deselect All / Clear Selection', default Esc) in SHORTCUT_DEFINITIONS under Story & Segment Editing, enabling searchability in Help > Keyboard Shortcuts Reference (F1) and user customization in Preferences > Keyboard Shortcuts (F8).
-  - **In-App User Guide Alignment (user_guide_dialog.py)**: Synchronized keyboard shortcuts documentation in the in-app user guide viewer with actual application bindings.
+   - **Standalone Background Live Auto-Sync & Manual Sync Actions (`scripts/reaper/rtvs_reaper_auto_sync.lua`, `scripts/reaper/rtvs_reaper_sync.lua`)**: Created zero-dependency background watcher script that runs via `reaper.defer()` and monitors media item boundaries every 0.35s with REAPER toolbar button toggle state, plus a one-shot manual sync action `rtvs_reaper_sync.lua`.

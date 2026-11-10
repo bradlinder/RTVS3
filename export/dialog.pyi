@@ -4,7 +4,7 @@ from __future__ import annotations
 import os
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
-from prs_shared import INTERNAL_APP_ID, CollapsibleSection, format_time, safe_filename, make_dialog_maximizable
+from prs_shared import INTERNAL_APP_ID, CollapsibleSection, format_time, safe_filename, make_dialog_maximizable, get_story_vocabulary
 from core_utils import apply_window_titlebar_theme, get_active_theme_mode
 from plugin_base import ExportDestination
 from export.reorder_dialog import DEFAULT_EXPORT_DESTINATIONS_ORDER, _get_export_theme_mode, get_export_destinations_order, save_export_destinations_order, ReorderExportDestinationsDialog

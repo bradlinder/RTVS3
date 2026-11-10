@@ -38,25 +38,20 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 --------------------------------------------------------------------------------
 TABLE OF CONTENTS & STATUS OVERVIEW
 --------------------------------------------------------------------------------
-1. Immediate Predecessor Release: Searchable/Sortable Glossary, Story Highlighting, Context Menus & Diagnostic Thread Safety (glossary_dialog.py, terminology.py, transcript_editor.py, diagnostic_dialog.py) [x] [COMPLETED in v3.9.91-beta]
-   [x] 1.1 Universal Esc Selection Clearance: Added dedicated clear_selection_range() across timeline canvas, story sidebar, transcript editor, and global Edit > Deselect All menu.
-   [x] 1.2 Searchable/Sortable Glossary Engine: Full terminology glossary dialog with live filtering, sortable tables, and story transcript highlighting.
-   [x] 1.3 Context Menu & Diagnostic Thread Safety: Reinforced thread affinity and Qt signal isolation across diagnostic runners and transcript context menus.
+1. Immediate Predecessor Release: REAPER DAW Companion Bridge, True Sentence Cues, Universal Search & Timeline Export (`reaper_bridge.py`, `export/timeline.py`, `user_guide_dialog.py`, `preferences_tab_daw.py`, `preferences_dialog.py`, `scripts/reaper/rtvs_reaper_companion.lua`, `docs/guides/reaper_and_daw_integration.md`, `embedded_guides.py`) [x] [COMPLETED in v3.9.92-beta]
+   [x] 1.1 Unified Multi-Channel Clipboard Engine: Single `Ctrl+C` copy across Transcript and Timeline views simultaneously writes plain text, formatted HTML, and REAPER JSON metadata payload; dedicated `Ctrl+Shift+C` renders temporary WAV clips.
+   [x] 1.2 Companion ReaScript Suite: Full Lua script set (`rtvs_reaper_companion.lua`, `rtvs_reaper_auto_sync.lua`, `rtvs_reaper_sync.lua`, `rtvs_reaper_dock.lua`) for instant timeline pasting, non-destructive live trim/split auto-sync, and dockable transcript browser.
+   [x] 1.3 True Sentence-Only Take Marker Cues: Replaced silence pause heuristic with pre-computed canonical grammatical sentence boundaries (`latest_transcript_index.json`), eliminating mid-sentence split markers in REAPER.
+   [x] 1.4 Dedicated Preferences Tab (External Audio & Video Editors): Extracted all DAW, REAPER companion, and universal WAV clipboard settings into a dedicated, clean preferences panel (`preferences_tab_daw.py`) with search and reset integration.
+   [x] 1.5 Universal User Guide Search Engine: Global cross-topic search engine with real-time match badges across all guide topics, auto-switching, and cyclic Next/Prev navigation.
+   [x] 1.6 Native REAPER (.rpp) Timeline Export Options: Added user-configurable options in the Timeline & DAW Interchange export dialog for embedding transcript Item Notes (`<NOTES`), Take Markers (`TKM`), and speaker color coding (`COLOR`).
+   [x] 1.7 Diagnostic Regression Verification: All REAPER, Export, User Guide, and Preferences diagnostic test benches passing 100%.
 
-2. Active Release: REAPER DAW Companion Bridge, True Sentence Cues, Universal Search & Timeline Export (`reaper_bridge.py`, `export/timeline.py`, `user_guide_dialog.py`, `preferences_tab_daw.py`, `preferences_dialog.py`, `scripts/reaper/rtvs_reaper_companion.lua`, `docs/guides/reaper_and_daw_integration.md`, `embedded_guides.py`) [x] [COMPLETED in v3.9.92-beta]
-   [x] 2.1 Unified Multi-Channel Clipboard Engine: Single `Ctrl+C` copy across Transcript and Timeline views simultaneously writes plain text, formatted HTML, and REAPER JSON metadata payload; dedicated `Ctrl+Shift+C` renders temporary WAV clips.
-   [x] 2.2 Companion ReaScript Suite: Full Lua script set (`rtvs_reaper_companion.lua`, `rtvs_reaper_auto_sync.lua`, `rtvs_reaper_sync.lua`, `rtvs_reaper_dock.lua`) for instant timeline pasting, non-destructive live trim/split auto-sync, and dockable transcript browser.
-   [x] 2.3 True Sentence-Only Take Marker Cues: Replaced silence pause heuristic with pre-computed canonical grammatical sentence boundaries (`latest_transcript_index.json`), eliminating mid-sentence split markers in REAPER.
-   [x] 2.4 Dedicated Preferences Tab (External Audio & Video Editors): Extracted all DAW, REAPER companion, and universal WAV clipboard settings into a dedicated, clean preferences panel (`preferences_tab_daw.py`) with search and reset integration.
-   [x] 2.5 Universal User Guide Search Engine: Global cross-topic search engine with real-time match badges across all guide topics, auto-switching, and cyclic Next/Prev navigation.
-   [x] 2.6 Native REAPER (.rpp) Timeline Export Options: Added user-configurable options in the Timeline & DAW Interchange export dialog for embedding transcript Item Notes (`<NOTES`), Take Markers (`TKM`), and speaker color coding (`COLOR`).
-   [x] 2.7 Diagnostic Regression Verification: All REAPER, Export, User Guide, and Preferences diagnostic test benches passing 100%.
-
-3. Upcoming Milestone: Cosmetic Vocabulary Setting ("Stories" / "Clips" / "Segments" / "Songs") (`preferences_tabs_core.py`, `preferences_dialog.py`, `story_crud_mixin.py`, `ui_menus.py`, `timeline_context_menus.py`, `export/dialog.py`, `test_runner.py`) [ ] [PLANNED] [NOT STARTED]
-   [ ] 3.1 Preferences Vocabulary Selector: Add a user-configurable Cosmetic Vocabulary dropdown in Preferences (`"Auto (Stories / Songs by Detection Mode)"`, `"Stories"`, `"Clips"`, `"Segments"`, `"Songs"`) persisted to `QSettings` (`ui_vocabulary_mode`).
-   [ ] 3.2 Centralized Vocabulary Resolver Helper: Create a unified terminology helper returning singular/plural localized UI nouns (`Story`/`Stories`, `Clip`/`Clips`, `Segment`/`Segments`, `Song`/`Songs` + Spanish equivalents) without altering underlying data schemas or behavioral logic.
-   [ ] 3.3 Dynamic UI Relabeling Across Sidebar, Menus & Export: Wire the vocabulary resolver into the right-hand sidebar header, CRUD buttons (`Add Story/Clip`, `Set Start/End`, `Metadata...`), timeline/transcript context menus, and `UnifiedExportDialog` scope labels.
-   [ ] 3.4 Diagnostic Regression Tests: Automated unit and headless assertions verifying live UI label switching across all vocabulary options and settings reset parity.
+2. Active Release: Cosmetic Vocabulary Setting ("Stories" / "Clips" / "Segments" / "Songs") (`core_utils.py`, `prs_shared.py`, `preferences_tabs_core.py`, `preferences_dialog.py`, `preferences_reset.py`, `preferences_reset_dialog.py`, `media_batch.py`, `story_crud_mixin.py`, `timeline_context_menus.py`, `export/dialog.py`, `diagnostic_editor_tests.py`) [x] [COMPLETED in v3.9.93-beta]
+   [x] 2.1 Centralized Vocabulary Resolver Helper: Created unified terminology helper (`core_utils.py`, `prs_shared.py`) returning singular/plural localized UI nouns (`Story`/`Stories`, `Clip`/`Clips`, `Segment`/`Segments`, `Song`/`Songs` + Spanish equivalents) without altering underlying data schemas or behavioral logic.
+   [x] 2.2 Preferences Vocabulary Selector: Added a user-configurable Cosmetic Vocabulary dropdown in Preferences (`"Auto (Stories / Songs by Detection Mode)"`, `"Stories"`, `"Clips"`, `"Segments"`, `"Songs"`) persisted to `QSettings` (`ui_vocabulary_mode`).
+   [x] 2.3 Dynamic UI Relabeling Across Sidebar, Menus & Export: Wired vocabulary helper into `update_story_segment_terminology()` to dynamically update right-hand sidebar header, CRUD buttons (`Add Story/Clip/Segment/Song`, `Set Start/End`, `Metadata...`, `Settings`), title placeholder, context menus, and `UnifiedExportDialog` export scope combo labels.
+   [x] 2.4 Diagnostic Regression Tests: Automated unit and headless assertions verifying live UI label switching across all vocabulary options and settings reset parity in `diagnostic_editor_tests.py`.
 
 4. Deferred Milestone: Domain Separation & Purpose-Driven Monolithic File Modularization [ ] [DEFERRED / LOWER PRIORITY]
    - *Purpose*: Systematic architectural refactoring prioritizing **file purpose, single responsibility, and domain cohesion** alongside line count reduction (<800 lines target, 1,000 lines ceiling), systematically decoupling grandfathered multi-domain monoliths into focused submodules with 100% backward-compatible facade re-exports.
@@ -101,18 +96,9 @@ TABLE OF CONTENTS & STATUS OVERVIEW
 DETAILED MILESTONE SPECIFICATIONS
 ================================================================================
 
-1. IMMEDIATE PREDECESSOR RELEASE: SEARCHABLE/SORTABLE GLOSSARY, STORY HIGHLIGHTING, CONTEXT MENUS & DIAGNOSTIC THREAD SAFETY:
-- Purpose: Deliver the modular GlossaryDialog with real-time search and sorting, alternate spelling normalization, transcript story selection highlighting, smart copy, and main-thread test dispatch.
-- Target Release: v3.9.91-beta (Immediate Predecessor Release)
-- Technical References & Implementation Details:
-  * [x] Modular Glossary Dialog & Live Search: Extracted GlossaryDialog into glossary_dialog.py with real-time text filtering, 6 sorting modes, and 4-column data model (Match case).
-  * [x] Alternate Spellings & Two-Pass Engine: Comma-separated alternate spellings, transcript Add Selected Text as Alternate Spelling For..., and project-scoped single-word co-reference normalization.
-  * [x] Story Selection Transcript Highlighting & Smart Copy: Synchronized story overlays, Ctrl+C smart copy, universal Esc deselect, and context menu parity across timeline and transcript views.
-  * [x] Diagnostic Test Bench Threading & Clipboard Fix: Main-thread GUI test dispatch via BlockingQueuedConnection, Windows OleSetClipboard STA guards, and polished test titles.
-
-2. CURRENT RELEASE: REAPER DAW COMPANION BRIDGE & REASCRIPT TRANSCRIPT INTEGRATION:
+1. IMMEDIATE PREDECESSOR RELEASE: REAPER DAW COMPANION BRIDGE & REASCRIPT TRANSCRIPT INTEGRATION:
 - Purpose: Two-way IPC sidecar bridge allowing RTVS3 transcript selections to be pasted directly into REAPER DAW timelines with take markers, speaker colors, and ReaImGui browser dock.
-- Target Release: v3.9.92-beta (Current Release)
+- Target Release: v3.9.92-beta (Immediate Predecessor Release)
 - Technical References: `reaper_bridge.py`, `scripts/reaper/rtvs_reaper_companion.lua`, `scripts/reaper/rtvs_reaper_dock.lua`.
 - Implementation Details:
   * [x] Unified Multi-Channel Clipboard Engine: Plain text, HTML, and application/x-rtvs-reaper-cue+json QMimeData.
@@ -123,10 +109,16 @@ DETAILED MILESTONE SPECIFICATIONS
   * [x] Preferences Integration & One-Click Installer: Preferences > External Audio & Video Editors controls and automated script installation to REAPER directory.
   * [x] Universal Text-to-WAV Clipboard Fallback: Temporary uncompressed WAV generation to OS clipboard (CF_HDROP) for non-REAPER DAWs.
 
-3. UPCOMING MILESTONE: COSMETIC VOCABULARY SETTING ("STORIES" / "CLIPS" / "SEGMENTS" / "SONGS"):
+2. ACTIVE RELEASE: COSMETIC VOCABULARY SETTING ("STORIES" / "CLIPS" / "SEGMENTS" / "SONGS"):
 - Purpose: Allow users to customize how timeline story/clip regions are labeled across the UI ("Stories", "Clips", "Segments", "Songs", or automatic by detection mode) from Preferences without changing underlying behavior or data compatibility.
-- Target Release: v3.9.93-beta (Planned)
-- Technical References: `preferences_tabs_core.py`, `story_crud_mixin.py`, `ui_menus.py`, `timeline_context_menus.py`, `export/dialog.py`.
+- Target Release: v3.9.93-beta (Active Release)
+- Technical References & Implementation Details:
+  * [x] Centralized Vocabulary Helper: Created `StoryVocabulary(NamedTuple)` and `get_story_vocabulary(win_or_settings, language=None)` in `core_utils.py` (re-exported in `prs_shared.py`), supporting 5 modes ("auto", "stories", "clips", "segments", "songs") in English and Spanish with zero schema mutations.
+  * [x] Preferences Vocabulary Selector: Added "UI Vocabulary / Terminology" dropdown to Preferences General tab (`preferences_tabs_core.py`), persisting to `QSettings` (`ui_vocabulary_mode`) and instantly updating main window widgets without requiring restart (`preferences_dialog.py`).
+  * [x] Preferences Reset Parity: Registered `ui_vocabulary_mode` under General Appearance in `preferences_reset.py` and `preferences_reset_dialog.py` to reset cleanly to `"auto"`.
+  * [x] Dynamic Live UI Relabeling: Wired `update_story_segment_terminology()` across sidebar header, CRUD buttons (`Add Story/Clip/Segment/Song`, `Set Start/End`, `Metadata...`, `Settings`), title placeholder, tooltips, and actions (`media_batch.py`, `story_crud_mixin.py`).
+  * [x] Context Menus & Export Alignment: Right-click timeline menus (`timeline_context_menus.py`) and `UnifiedExportDialog` scope combobox (`export/dialog.py`) dynamically reflect the active vocabulary.
+  * [x] Automated Diagnostic Coverage: Comprehensive regression assertions in `diagnostic_editor_tests.py` verifying vocabulary resolution, live UI updates, and reset parity.
 
 4. DEFERRED MILESTONE: DOMAIN SEPARATION & PURPOSE-DRIVEN MONOLITHIC FILE MODULARIZATION:
 - Purpose: Systematic architectural refactoring prioritizing file purpose and single responsibility (<800 lines target, 1,000 lines ceiling).

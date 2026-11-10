@@ -46,6 +46,7 @@ from prs_shared import (
     format_time,
     safe_filename,
     make_dialog_maximizable,
+    get_story_vocabulary,
 )
 from core_utils import apply_window_titlebar_theme, get_active_theme_mode
 from plugin_base import ExportDestination
@@ -155,8 +156,8 @@ class UnifiedExportDialog(QDialog):
         self.dest_button_group = QButtonGroup(self)
 
         # Scope Selection
-        is_music = getattr(self.main_window, "story_detection_mode", "voice") == "music"
-        term_plural = "Songs" if is_music else "Stories"
+        vocab = get_story_vocabulary(self.main_window)
+        term_plural = vocab.plural
         self.scope_section = CollapsibleSection("Export Scope", self, is_expanded=True)
         self.scope_combo = QComboBox()
         self.scope_combo.addItem(f"Selected {term_plural}", "selected_stories")

@@ -552,7 +552,7 @@ class DiagnosticEditorTestsMixin:
         assert "03:45.5" in host.stories_header.toolTip()
         assert host.duration_input.text() == "03:45.5"
 
-        # 6. Test Music and Spanish terminology pluralization
+        # 6. Test Music, Spanish, and Cosmetic Vocabulary modes (stories/clips/segments/songs)
         host.story_detection_mode = "music"
         host.update_stories_header()
         assert host.stories_header.text() == "Songs (2) — [03:45.5]"
@@ -567,6 +567,39 @@ class DiagnosticEditorTestsMixin:
         host.update_stories_header()
         assert host.stories_header.text() == "Historias (2) — [03:45.5]"
         assert "2 historias seleccionadas" in host.stories_header.toolTip()
+
+        # Cosmetic vocabulary modes: clips, segments, songs, stories
+        host.language = "en"
+        host.ui_vocabulary_mode = "clips"
+        host.update_stories_header()
+        assert host.stories_header.text() == "Clips (2) — [03:45.5]"
+        assert "2 clips selected" in host.stories_header.toolTip()
+
+        host.ui_vocabulary_mode = "segments"
+        host.update_stories_header()
+        assert host.stories_header.text() == "Segments (2) — [03:45.5]"
+        assert "2 segments selected" in host.stories_header.toolTip()
+
+        host.language = "es"
+        host.ui_vocabulary_mode = "clips"
+        host.update_stories_header()
+        assert host.stories_header.text() == "Clips (2) — [03:45.5]"
+        assert "2 clips seleccionadas" in host.stories_header.toolTip()
+
+        host.ui_vocabulary_mode = "segments"
+        host.update_stories_header()
+        assert host.stories_header.text() == "Segmentos (2) — [03:45.5]"
+        assert "2 segmentos seleccionadas" in host.stories_header.toolTip()
+
+        from core_utils import get_story_vocabulary
+        v_clip = get_story_vocabulary({"ui_vocabulary_mode": "clips", "language": "en"})
+        assert v_clip.singular == "Clip" and v_clip.plural == "Clips" and v_clip.add_label == "Add Clip"
+        v_seg = get_story_vocabulary({"ui_vocabulary_mode": "segments", "language": "es"})
+        assert v_seg.singular == "Segmento" and v_seg.plural == "Segmentos" and v_seg.add_label == "Agregar segmento"
+
+        # Reset host
+        host.ui_vocabulary_mode = "auto"
+        host.language = "en"
 
         # 7. Test refresh_story_list single-line item formatting and Fade Out language honoring enable_audio_fades
         host.stories[0].fade_out = 1.0

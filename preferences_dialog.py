@@ -432,6 +432,14 @@ class PreferencesDialogMixin(PreferencesResetMixin):
                 if new_lang and new_lang != getattr(self, "language", "en"):
                     self.set_language(new_lang, persist=True)
 
+            vocab_combo = live_widgets.get("vocab_combo")
+            if vocab_combo:
+                new_vocab = str(vocab_combo.currentData() or "auto")
+                self.ui_vocabulary_mode = new_vocab
+                self.settings_store.setValue("ui_vocabulary_mode", new_vocab)
+                if hasattr(self, "update_story_segment_terminology"):
+                    self.update_story_segment_terminology()
+
             startup_combo = live_widgets.get("startup_combo")
             if startup_combo:
                 new_startup = startup_combo.currentData()

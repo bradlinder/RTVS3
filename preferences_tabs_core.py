@@ -49,6 +49,21 @@ def build_general_tab(win, dialog, live_widgets, add_custom_defaults_btn) -> QWi
     gen_form.addRow("UI Language / Idioma:", lang_combo)
     live_widgets["lang_combo"] = lang_combo
 
+    vocab_combo = QComboBox()
+    vocab_combo.addItem("Auto (Stories / Songs by Detection Mode)", "auto")
+    vocab_combo.addItem("Stories (Historias)", "stories")
+    vocab_combo.addItem("Clips", "clips")
+    vocab_combo.addItem("Segments (Segmentos)", "segments")
+    vocab_combo.addItem("Songs (Canciones)", "songs")
+    curr_vocab = getattr(
+        win, "ui_vocabulary_mode",
+        str(win.settings_store.value("ui_vocabulary_mode", "auto") or "auto")
+    )
+    idx_v = vocab_combo.findData(curr_vocab)
+    vocab_combo.setCurrentIndex(idx_v if idx_v >= 0 else 0)
+    gen_form.addRow("UI Vocabulary / Terminology:", vocab_combo)
+    live_widgets["vocab_combo"] = vocab_combo
+
     startup_combo = QComboBox()
     startup_combo.addItem("Open last project", "last")
     startup_combo.addItem("Start new project", "new")

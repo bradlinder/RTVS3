@@ -1177,112 +1177,96 @@ class MediaBatchMixin:
         self.update_story_segment_terminology()
 
     def update_story_segment_terminology(self):
-        """Update all user-facing labels and tooltips to use 'Song' in Music mode and 'Story' in Voice mode."""
-        is_music = (getattr(self, "story_detection_mode", "voice") == "music")
-        is_es = (getattr(self, "language", "en") == "es")
+        """Update all user-facing labels and tooltips using active vocabulary settings."""
+        vocab = get_story_vocabulary(self)
+        is_es = vocab.is_es
 
-        # Header: "Stories" vs "Songs" (or "Historias" vs "Canciones")
+        # Header: "Stories" / "Clips" / "Segments" / "Songs" (or Spanish)
         if hasattr(self, "update_stories_header"):
             self.update_stories_header()
         elif hasattr(self, "stories_header") and self.stories_header is not None:
-            if is_music:
-                self.stories_header.setText("Canciones" if is_es else "Songs")
-            else:
-                self.stories_header.setText("Historias" if is_es else "Stories")
+            self.stories_header.setText(vocab.plural)
 
-        # Add Story / Song Button
+        # Add Story / Clip / Segment / Song Button
         if hasattr(self, "add_story_btn") and self.add_story_btn is not None:
-            if is_music:
-                self.add_story_btn.setText("Agregar canción" if is_es else "Add Song")
-                self.add_story_btn.setToolTip(
-                    "Agregar canción desde la selección activa de la línea de tiempo o transcripción" if is_es
-                    else "Add song from active timeline selection or highlighted transcript text"
-                )
-            else:
-                self.add_story_btn.setText("Agregar historia" if is_es else "Add Story")
-                self.add_story_btn.setToolTip(
-                    "Agregar historia desde la selección activa de la línea de tiempo o transcripción" if is_es
-                    else "Add story from active timeline selection or highlighted transcript text"
-                )
+            self.add_story_btn.setText(vocab.add_label)
+            self.add_story_btn.setToolTip(
+                f"Agregar {vocab.singular_lower} desde la selección activa de la línea de tiempo o transcripción" if is_es
+                else f"Add {vocab.singular_lower} from active timeline selection or highlighted transcript text"
+            )
 
-        # Set Story / Song Start Button
+        # Set Story / Clip / Segment / Song Start Button
         if hasattr(self, "set_story_start_btn") and self.set_story_start_btn is not None:
-            if is_music:
-                self.set_story_start_btn.setText("Fijar inicio de canción" if is_es else "Set Song Start")
-                self.set_story_start_btn.setToolTip(
-                    "Fijar inicio de la canción seleccionada a la posición actual de transcripción o línea de tiempo" if is_es
-                    else "Set start time of selected song to current transcript or timeline position"
-                )
-            else:
-                self.set_story_start_btn.setText("Fijar inicio de historia" if is_es else "Set Story Start")
-                self.set_story_start_btn.setToolTip(
-                    "Fijar inicio de la historia seleccionada a la posición actual de transcripción o línea de tiempo" if is_es
-                    else "Set start time of selected story to current transcript or timeline position"
-                )
+            self.set_story_start_btn.setText(vocab.set_start)
+            self.set_story_start_btn.setToolTip(
+                f"Fijar inicio de la {vocab.singular_lower} seleccionada a la posición actual de transcripción o línea de tiempo" if is_es
+                else f"Set start time of selected {vocab.singular_lower} to current transcript or timeline position"
+            )
 
-        # Set Story / Song End Button
+        # Set Story / Clip / Segment / Song End Button
         if hasattr(self, "set_story_end_btn") and self.set_story_end_btn is not None:
-            if is_music:
-                self.set_story_end_btn.setText("Fijar fin de canción" if is_es else "Set Song End")
-                self.set_story_end_btn.setToolTip(
-                    "Fijar fin de la canción seleccionada a la posición actual de transcripción o línea de tiempo" if is_es
-                    else "Set end time of selected song to current transcript or timeline position"
-                )
-            else:
-                self.set_story_end_btn.setText("Fijar fin de historia" if is_es else "Set Story End")
-                self.set_story_end_btn.setToolTip(
-                    "Fijar fin de la historia seleccionada a la posición actual de transcripción o línea de tiempo" if is_es
-                    else "Set end time of selected story to current transcript or timeline position"
-                )
+            self.set_story_end_btn.setText(vocab.set_end)
+            self.set_story_end_btn.setToolTip(
+                f"Fijar fin de la {vocab.singular_lower} seleccionada a la posición actual de transcripción o línea de tiempo" if is_es
+                else f"Set end time of selected {vocab.singular_lower} to current transcript or timeline position"
+            )
+
+        # Story Metadata Button
+        if hasattr(self, "story_metadata_btn") and self.story_metadata_btn is not None:
+            self.story_metadata_btn.setText(vocab.metadata_btn)
+            self.story_metadata_btn.setToolTip(
+                f"Configurar títulos, autores, categorías, extractos e imágenes destacadas para {vocab.plural_lower} y el episodio completo" if is_es
+                else f"Configure titles, authors, categories, excerpts, and featured images for all {vocab.plural_lower} and full episode"
+            )
+
+        # Story Settings / Popout Button
+        if hasattr(self, "popout_stories_btn") and self.popout_stories_btn is not None:
+            self.popout_stories_btn.setText(vocab.settings_btn)
 
         # Title / Headline input placeholder
         if hasattr(self, "title_input") and self.title_input is not None:
-            if is_music:
+            if vocab.mode == "songs":
                 self.title_input.setPlaceholderText("Título de la canción / pista" if is_es else "Song title / track name")
+            elif vocab.mode == "clips":
+                self.title_input.setPlaceholderText("Título / descripción del clip" if is_es else "Clip title / description")
+            elif vocab.mode == "segments":
+                self.title_input.setPlaceholderText("Título / titular del segmento" if is_es else "Segment title / headline")
             else:
                 self.title_input.setPlaceholderText("Título / titular de la historia" if is_es else "Story headline / title")
 
         # Select All Tooltip
         if hasattr(self, "select_all_stories_btn") and self.select_all_stories_btn is not None:
-            if is_music:
-                self.select_all_stories_btn.setToolTip("Seleccionar todas las canciones de la lista" if is_es else "Select all songs in the list")
-            else:
-                self.select_all_stories_btn.setToolTip("Seleccionar todas las historias de la lista" if is_es else "Select all stories in the list")
+            self.select_all_stories_btn.setToolTip(
+                f"Seleccionar todas las {vocab.plural_lower} de la lista" if is_es
+                else f"Select all {vocab.plural_lower} in the list"
+            )
 
         # Delete Tooltip
         if hasattr(self, "delete_story_btn") and self.delete_story_btn is not None:
-            if is_music:
-                self.delete_story_btn.setToolTip("Eliminar canción(es) seleccionada(s)" if is_es else "Delete selected song(s)")
-            else:
-                self.delete_story_btn.setToolTip("Eliminar historia(s) seleccionada(s)" if is_es else "Delete selected story/stories")
+            self.delete_story_btn.setToolTip(
+                f"Eliminar {vocab.singular_lower}(s) seleccionada(s)" if is_es
+                else f"Delete selected {vocab.singular_lower}(s)"
+            )
 
         # Export Tooltip
         if hasattr(self, "export_stories_btn") and self.export_stories_btn is not None:
-            if is_music:
-                self.export_stories_btn.setToolTip("Exportar episodio o canciones seleccionadas" if is_es else "Export full episode, selected songs, or draft to WordPress")
-            else:
-                self.export_stories_btn.setToolTip("Exportar episodio o historias seleccionadas" if is_es else "Export full episode, selected stories, or draft to WordPress")
+            self.export_stories_btn.setToolTip(
+                f"Exportar episodio o {vocab.plural_lower} seleccionadas" if is_es
+                else f"Export full episode, selected {vocab.plural_lower}, or draft to WordPress"
+            )
 
-        # Tools Menu: Detect Stories / Detect Songs
+        # Tools Menu: Detect Stories / Clips / Segments / Songs
         if hasattr(self, "auto_detect_action") and self.auto_detect_action is not None:
             has_stories = hasattr(self, "processing_status") and bool(self.processing_status.get("stories"))
-            if is_music:
-                if is_es:
-                    self.auto_detect_action.setText("&Detectar canciones (Completado)" if has_stories else "&Detectar canciones...")
-                else:
-                    self.auto_detect_action.setText("Detect Songs (Complete)" if has_stories else "&Detect Songs...")
+            action_base = vocab.detect_action
+            if is_es:
+                self.auto_detect_action.setText(f"&{action_base} (Completado)" if has_stories else f"&{action_base}...")
             else:
-                if is_es:
-                    self.auto_detect_action.setText("&Detectar historias (Completado)" if has_stories else "&Detectar historias...")
-                else:
-                    self.auto_detect_action.setText("Detect Stories (Complete)" if has_stories else "&Detect Stories...")
+                self.auto_detect_action.setText(f"{action_base} (Complete)" if has_stories else f"&{action_base}...")
 
-        # View Menu: Stories Panel / Songs Panel
+        # View Menu: Stories Panel / Clips Panel / Segments Panel / Songs Panel
         if hasattr(self, "toggle_stories_action") and self.toggle_stories_action is not None:
-            if is_music:
-                self.toggle_stories_action.setText("&Panel de canciones" if is_es else "&Songs Panel")
-            else:
-                self.toggle_stories_action.setText("&Panel de historias" if is_es else "&Stories Panel")
+            self.toggle_stories_action.setText(f"&{vocab.panel_title}")
 
     def open_document(self):
         filters = (

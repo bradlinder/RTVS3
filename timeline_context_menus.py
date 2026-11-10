@@ -6,6 +6,8 @@ from typing import Any
 from PySide6.QtCore import QPoint
 from PySide6.QtWidgets import QMenu, QWidget
 
+from core_utils import get_story_vocabulary
+
 
 def show_timeline_context_menu(canvas: Any, global_pos: QPoint, pos_x: float):
     """Display the primary right-click context menu on the timeline canvas."""
@@ -15,9 +17,8 @@ def show_timeline_context_menu(canvas: Any, global_pos: QPoint, pos_x: float):
     time = max(0, min(canvas.duration, canvas.x_to_time(pos_x, width)))
     story_idx = canvas.find_story_at_time(time)
 
-    is_music = getattr(win, "story_detection_mode", "voice") == "music"
-    is_es = getattr(win, "language", "en") == "es"
-    term = ("Canción" if is_es else "Song") if is_music else ("Historia" if is_es else "Story")
+    vocab = get_story_vocabulary(win)
+    term = vocab.singular
 
     audition_action = None
     copy_action = None
@@ -140,9 +141,9 @@ def show_selection_context_menu(canvas: Any, global_pos: QPoint):
     s = min(canvas.selection_start, canvas.selection_end)
     e = max(canvas.selection_start, canvas.selection_end)
     win = canvas.window()
-    is_music = getattr(win, "story_detection_mode", "voice") == "music"
-    is_es = getattr(win, "language", "en") == "es"
-    term = ("Canción" if is_es else "Song") if is_music else ("Historia" if is_es else "Story")
+    vocab = get_story_vocabulary(win)
+    is_es = vocab.is_es
+    term = vocab.singular
     menu = QMenu(win if win is not None else canvas)
     add_action = menu.addAction(f"{('Agregar' if is_es else 'Add')} {term} {('desde la selección' if is_es else 'from Selection')}")
     copy_action = menu.addAction("Copiar selección (Ctrl+C)" if is_es else "Copy Selection (Ctrl+C)")
