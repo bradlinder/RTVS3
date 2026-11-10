@@ -14,6 +14,11 @@
     - Propagated exact FFmpeg failure causes (`error_message`) to `MediaBatchMixin._waveform_finished()` so network access denials, unreachable shares, or corrupt audio streams log explicit actionable error messages rather than silently failing with "produced no audio data".
   - **Diagnostic Test Bench Menu Traversal Guard (`diagnostic_editor_tests.py`)**:
     - Added automated context-menu building verification across English and Spanish in `_test_story_highlighting_smart_copy_and_glossary_engine`, guaranteeing all action labels, dynamic vocabulary interpolations, and locale variables are exercised in CI.
+  - **Progressive Streaming Waveform Rendering (`background_workers.py`, `media_batch.py`, `timeline_widgets.py`, `timeline_painter.py`, `diagnostic_editor_tests.py`)**:
+    - Added real-time rate-limited waveform peak streaming via `WaveformWorker.progress` signal (`Signal(list, float, int)`), emitting partial peak arrays every ~250ms during extraction.
+    - Updated `timeline_painter.py` to index progressive peaks by absolute time math (`eff_pps = progressive_pps / (4 ** level_index)`), rendering peaks left-to-right along the center baseline at their exact timeline ruler coordinates as frames decode over SMB network shares.
+    - Added live percentage completion badge to the timeline background status banner (`Generating audio waveform ({pct}%)...`).
+    - Added comprehensive regression unit test in `diagnostic_editor_tests.py` verifying partial peak rendering, percentage badge updates, and clean state restoration upon completion.
 
 ## v3.9.94-beta
 - **Universal "Segment" Terminology & Display Title Standardization (`core_utils.py`, `preferences_tabs_core.py`, `preferences_dialog.py`, `preferences_reset.py`, `preferences_reset_dialog.py`, `preferences_tabs_media.py`, `RadioTVSegmenter.py`, `transcript_context_menu_mixin.py`, `transcript_editor_dialogs.py`, `story_widgets.py`, `ui_layout.py`, `media_batch.py`, `timeline_snap.py`, `ui_menus.py`, `story_metadata_dialog.py`, `shortcuts/schema.py`, `diagnostic_editor_tests.py`)**:
