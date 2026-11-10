@@ -194,7 +194,7 @@ class ShortcutsManager(QObject):
             "fmt_strikethrough": ("fmt_strike_btn", "Strikethrough"),
             "fmt_highlight": ("transcript_highlight_btn", "Highlight Selected Text"),
             "fmt_clear": ("fmt_clear_btn", "Clear Formatting"),
-            "split_speaker": ("fmt_split_btn", "Split Speaker Segment at Cursor"),
+            "split_speaker": ("fmt_split_btn", "Split Speaker Block at Cursor"),
             "play_pause": ("play_pause_btn", "Play / Pause playback"),
             "mark_story_start": ("set_story_start_btn", "Set start time of selected story"),
             "mark_story_end": ("set_story_end_btn", "Set end time of selected story"),

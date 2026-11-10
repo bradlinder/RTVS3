@@ -26,6 +26,9 @@
     - `UnifiedExportDialog` export scope combo labels adapt dynamically: `Selected Stories/Clips/Segments/Songs`, `All Stories/Clips/Segments/Songs`, `Full Episode & All Stories/Clips/Segments/Songs`.
   - **Diagnostic Test Bench Coverage (`diagnostic_editor_tests.py`)**:
     - Automated unit tests asserting vocabulary resolution across all 4 modes in English and Spanish, live UI sidebar header updates, and settings reset parity.
+  - **Transcript Speech Unit Disambiguation (Block vs. Segment) (`shortcuts/schema.py`, `shortcuts/manager.py`, `RadioTVSegmenter.py`, `ui_layout.py`, `transcript_story.py`, `voice_profile_dialog.py`, `speaker_profiles.py`, `user_guide_dialog.py`)**:
+    - Renamed speech/transcript segment actions, dialog prompts, and table headers to **"Block" / "Speaker Block"** (`Split Speaker Block`, `Split Block at Playhead`, `Merge with Next Block`, `Comment for Block X`, `Voice Profile Blocks table column`).
+    - Eliminates terminology collision between ASR speech turns in the transcript and curated broadcast/program segments on the timeline.
 
 ## v3.9.92-beta
 - **Universal User Guide Search Engine (`user_guide_dialog.py`, `user_guide_dialog.pyi`)**:

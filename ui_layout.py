@@ -413,7 +413,7 @@ class UiLayoutMixin(UiMenusMixin, UiDialogLaunchersMixin):
         self.fmt_split_btn = QToolButton(self.transcript_format_toolbar)
         self.fmt_split_btn.setText("Split Speaker")
         self.fmt_split_btn.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        self.fmt_split_btn.setToolTip("Split speaker segment at cursor (Shift+Enter)")
+        self.fmt_split_btn.setToolTip("Split speaker block at cursor (Shift+Enter)")
         self.fmt_split_btn.setStyleSheet("padding: 2px 6px;")
         self.fmt_split_btn.clicked.connect(self._on_toolbar_split_speaker)
         fmt_layout.addWidget(self.fmt_split_btn)
@@ -748,7 +748,7 @@ class UiLayoutMixin(UiMenusMixin, UiDialogLaunchersMixin):
         self.fmt_clear_action.triggered.connect(lambda: getattr(self.transcript_view, "clear_formatting", lambda: None)())
         self.addAction(self.fmt_clear_action)
 
-        self.fmt_split_action = QAction("Split Speaker Segment", self)
+        self.fmt_split_action = QAction("Split Speaker Block", self)
         self.fmt_split_action.setShortcut(platform_seq("Shift+Return"))
         self.fmt_split_action.setShortcutContext(Qt.ShortcutContext.ApplicationShortcut)
         self.fmt_split_action.triggered.connect(self._on_toolbar_split_speaker)

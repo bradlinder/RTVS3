@@ -839,8 +839,8 @@ Radio & TV Story Segmenter provides extensive keyboard control across timeline s
 | :--- | :--- | :--- | :--- |
 | **Find & Replace** | `Ctrl + F` | `Cmd + F` | Open modeless Find and Replace dialog. |
 | **Toggle Proofreading / Edit Mode** | `F2` | `F2` | Toggle between viewing and direct text editing. |
-| **Split Speaker Segment** | `Shift + Enter` | `Shift + Enter` | Split dialogue turn and insert speaker at cursor. |
-| **Split Segment at Playhead** | `Ctrl + K` | `Cmd + K` | Cut active segment at current playback timestamp. |
-| **Merge with Next Segment** | `Ctrl + J` | `Cmd + J` | Combine current segment with following turn. |
+| **Split Speaker Block** | `Shift + Enter` | `Shift + Enter` | Split dialogue turn and insert speaker at cursor. |
+| **Split Block at Playhead** | `Ctrl + K` | `Cmd + K` | Cut active transcript block at current playback timestamp. |
+| **Merge with Next Block** | `Ctrl + J` | `Cmd + J` | Combine current transcript block with following turn. |
 | **Word Highlighting & Seek** | `Click Word` | `Click Word` | Seek audio playback directly to spoken word. |
 """

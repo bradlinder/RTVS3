@@ -388,8 +388,8 @@ class MainWindow(
             "mark_story_start_action": ("Mark Story Start", self.mark_story_start_point),
             "mark_story_end_action": ("Mark Story End", self.mark_story_end_point),
             "delete_story_action": ("Delete Story", self.delete_selected_story),
-            "split_segment_action": ("Split Segment", self.split_current_segment_at_playhead),
-            "merge_segments_action": ("Merge Segments", self.merge_current_segment_with_next),
+            "split_segment_action": ("Split Block", self.split_current_segment_at_playhead),
+            "merge_segments_action": ("Merge Blocks", self.merge_current_segment_with_next),
             "zoom_in_action": ("Timeline Zoom In", lambda: getattr(getattr(self, "timeline", None), "canvas", None) and self.timeline.canvas.set_zoom(self.timeline.canvas.zoom_level * 1.2)),
             "zoom_out_action": ("Timeline Zoom Out", lambda: getattr(getattr(self, "timeline", None), "canvas", None) and self.timeline.canvas.set_zoom(self.timeline.canvas.zoom_level / 1.2)),
         }

@@ -601,7 +601,7 @@ If you have the free **ReaImGui** extension installed in REAPER (available via R
 2. A floating panel appears that can be docked anywhere in your REAPER workspace (e.g., beside the Mixer or below the Track Control Panel).
 3. **Features of the Dock**:
    - **Real-Time Story Browser**: Lists all stories defined in your active RTVS3 project with exact durations. Click **Insert** next to any story to place it directly at the REAPER edit cursor.
-   - **Transcript Segment Search**: Type any word or phrase into the search box to filter speech segments across the entire episode. Click **Insert** next to any speech line to place that exact quote.
+   - **Transcript Block Search**: Type any word or phrase into the search box to filter speech blocks across the entire episode. Click **Insert** next to any speech line to place that exact quote.
    - **Paste Copied Clip**: One-click button to paste the active clipboard cue.
    - **Sync Trimmed Clips**: Forces an immediate re-sync of all trimmed or split clips on the timeline with the current transcript index.
 

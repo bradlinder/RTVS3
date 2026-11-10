@@ -698,7 +698,7 @@ class TranscriptStoryMixin(StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsM
         if not sel_text:
             sel_text = seg.get("comment_selected_text", "")
 
-        prompt = f"Comment for Segment {seg_idx + 1} ({format_time(seg.get('start', 0.0))}):"
+        prompt = f"Comment for Block {seg_idx + 1} ({format_time(seg.get('start', 0.0))}):"
         if sel_text:
             disp_quote = sel_text if len(sel_text) <= 80 else sel_text[:77] + "..."
             prompt = f'Comment for selection: "{disp_quote}"'

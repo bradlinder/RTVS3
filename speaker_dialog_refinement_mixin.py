@@ -129,7 +129,7 @@ class SpeakerDialogRefinementMixin:
 
     def prompt_refine_speaker_run(self, start_idx: int = -1, end_idx: int = -1):
         if not getattr(self, "transcript", None) or "segments" not in self.transcript:
-            QMessageBox.information(self, "No Transcript", "Project has no transcript segments.")
+            QMessageBox.information(self, "No Transcript", "Project has no transcript blocks.")
             return
 
         segments = self.transcript.get("segments", [])

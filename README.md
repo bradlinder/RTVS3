@@ -164,9 +164,9 @@ All keyboard shortcuts can be viewed at any time by pressing <kbd>F1</kbd> (or <
 | **Story & Segment Editing** | ID3 Tag Editor (MP3)... | `Ctrl+Shift+I` | `Cmd+Shift+I` | Open ID3v2 metadata tag editor for broadcast episode and podcast tagging |
 | **Story & Segment Editing** | Delete Selected Story | `Delete` | `Backspace` | Remove currently highlighted story cut from project |
 | **Story & Segment Editing** | Toggle Proofreading / Edit Mode | `F2` | `F2` | Toggle between viewing and proofreading edit mode |
-| **Story & Segment Editing** | Split Speaker Segment | `Shift+Return` | `Shift+Return` | Split current segment at cursor position and insert a new speaker turn |
-| **Story & Segment Editing** | Split Segment at Playhead | `Ctrl+K` | `Cmd+K` | Split the highlighted transcript segment into two pieces at playhead timestamp |
-| **Story & Segment Editing** | Merge with Next Segment | `Ctrl+J` | `Cmd+J` | Combine selected transcript segment with following segment |
+| **Story & Segment Editing** | Split Speaker Block | `Shift+Return` | `Shift+Return` | Split current block at cursor position and insert a new speaker turn |
+| **Story & Segment Editing** | Split Block at Playhead | `Ctrl+K` | `Cmd+K` | Split the highlighted transcript block into two pieces at playhead timestamp |
+| **Story & Segment Editing** | Merge with Next Block | `Ctrl+J` | `Cmd+J` | Combine selected transcript block with following block |
 | **Story & Segment Editing** | Undo | `Ctrl+Z` | `Cmd+Z` | Undo previous transcript or story edit |
 | **Story & Segment Editing** | Redo | `Ctrl+Shift+Z` | `Cmd+Shift+Z` | Redo previously undone edit |
 | **Search & Transcript Tools** | Find in Transcript... | `Ctrl+F` | `Cmd+F` | Open Find and Replace dialog pre-filled with search term |

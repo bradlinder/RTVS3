@@ -605,7 +605,7 @@ class VoiceProfileMatchDialog(QDialog):
         self.table = QTableWidget(self)
         self.table.setColumnCount(5)
         self.table.setHorizontalHeaderLabels([
-            "Reassign", "Segment", "Current Speaker", "Acoustic Match", "Transcript Preview"
+            "Reassign", "Block", "Current Speaker", "Acoustic Match", "Transcript Preview"
         ])
         self.table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
         self.table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
@@ -743,7 +743,7 @@ class VoiceProfileMatchDialog(QDialog):
                 st_str = format_time(turn["start"])
                 en_str = format_time(turn["end"])
                 seg_item = QTableWidgetItem(f"#{seg_id + 1} ({st_str} – {en_str})")
-                seg_item.setToolTip(f"Segment #{seg_id + 1}\nStart: {turn['start']:.2f}s, End: {turn['end']:.2f}s")
+                seg_item.setToolTip(f"Block #{seg_id + 1}\nStart: {turn['start']:.2f}s, End: {turn['end']:.2f}s")
                 self.table.setItem(row_idx, 1, seg_item)
 
                 spk_item = QTableWidgetItem(turn["speaker"])

@@ -512,7 +512,7 @@ class VoiceProfileOpsMixin:
             QMessageBox.information(
                 self,
                 "Empty Transcript",
-                "Project has no speech segments to match voice profiles against.",
+                "Project has no speech blocks to match voice profiles against.",
             )
             return
 

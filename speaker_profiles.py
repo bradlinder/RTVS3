@@ -449,7 +449,7 @@ class ManageVoiceProfilesDialog(QDialog):
             return
         segs = self.main_win.transcript.get("segments", [])
         if not segs:
-            QMessageBox.information(self, "Empty Transcript", "No transcript segments found to match.")
+            QMessageBox.information(self, "Empty Transcript", "No transcript blocks found to match.")
             return
 
         # Score segments with embeddings
@@ -466,7 +466,7 @@ class ManageVoiceProfilesDialog(QDialog):
             QMessageBox.information(
                 self,
                 "No Matches Found",
-                f"No transcript segments matched '{prof.name}' above 75% similarity.",
+                f"No transcript blocks matched '{prof.name}' above 75% similarity.",
             )
             return
 
