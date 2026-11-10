@@ -8,17 +8,17 @@ This guide walks through the end-to-end workflow for transcribing, segmenting, a
 
 Publishing video shows to WordPress often involves a friction point: uploading full multi-gigabyte `.mp4` video files directly to WordPress web hosts can quickly exhaust server storage, exceed PHP upload limits, and result in sluggish mobile streaming.
 
-Radio & TV Story Segmenter provides a streamlined **hybrid video workflow**:
-1. **Local Media Processing**: You work directly with your original high-resolution video file (`.mp4`, `.mov`, `.mkv`, `.webm`) on your local machine for rapid transcription, speaker diarization, story boundary detection, and timeline scrubbing.
+Radio & TV Segmenter provides a streamlined **hybrid video workflow**:
+1. **Local Media Processing**: You work directly with your original high-resolution video file (`.mp4`, `.mov`, `.mkv`, `.webm`) on your local machine for rapid transcription, speaker diarization, segment boundary detection, and timeline scrubbing.
 2. **Video Hosting on YouTube**: You upload your full episode to YouTube (as unlisted, scheduled, or public).
-3. **Automated Timestamped Embeds in WordPress**: By simply pasting your base YouTube link into the WordPress export dialog, the application automatically computes the start and end offsets for every segment and injects mobile-responsive, 16:9 Gutenberg iframe blocks (`<!-- wp:html -->`) directly into each story's post draft.
+3. **Automated Timestamped Embeds in WordPress**: By simply pasting your base YouTube link into the WordPress export dialog, the application automatically computes the start and end offsets for every segment and injects mobile-responsive, 16:9 Gutenberg iframe blocks (`<!-- wp:html -->`) directly into each segment's post draft.
 
 ```mermaid
 flowchart LR
-    A["Local Video File<br>(.mp4 / .mov)"] --> B["RTVS3 Local Processing<br>Transcription & Stories"]
+    A["Local Video File<br>(.mp4 / .mov)"] --> B["RTVS3 Local Processing<br>Transcription & Segments"]
     C["YouTube Video<br>(Public / Unlisted)"] --> D["WordPress Export Panel<br>Media Tab"]
     B --> D
-    D --> E["WordPress Post Drafts<br>Responsive 16:9 Embeds<br>Exact Story Timestamps"]
+    D --> E["WordPress Post Drafts<br>Responsive 16:9 Embeds<br>Exact Segment Timestamps"]
 ```
 
 ---
@@ -30,10 +30,10 @@ Drag and drop your video file directly onto the timeline canvas or press **Ctrl+
 - RTVS3 automatically generates multi-resolution waveform pyramids and a video thumbnail filmstrip along the timeline ruler.
 - Press **Ctrl+Shift+V** (**View > Video Preview Window**) to open the resizable floating video preview window.
 
-### Step 2: Transcribe, Diarize & Detect Stories
+### Step 2: Transcribe, Diarize & Detect Segments
 1. Click **Transcribe Audio...** (**Ctrl+T**) or use the Multi-Stage Pipeline (**Ctrl+R**) to generate word-level aligned transcripts and speaker turns.
-2. Click **Detect Stories...** (**Ctrl+Shift+A**) to detect story boundaries based on topic changes, natural speech pauses, or speaker transitions.
-3. Review stories on the timeline: you can zoom in up to 300x, drag boundaries, and adjust audio fades.
+2. Click **Detect Segments...** (**Ctrl+Shift+A**) to detect segment boundaries based on topic changes, natural speech pauses, or speaker transitions.
+3. Review segments on the timeline: you can zoom in up to 300x, drag boundaries, and adjust audio fades.
 
 ### Step 3: Open Unified Export to WordPress
 Press **Ctrl+E** (**File > Export...**) and select the **WordPress Draft Post** radio button from the **Export Destination** bar at the top.

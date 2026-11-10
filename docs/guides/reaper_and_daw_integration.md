@@ -1,12 +1,12 @@
 # REAPER & Digital Audio Workstation (DAW) Live Bridge
 
-This guide explains how to configure and use the real-time copy/paste integration between **Radio & TV Story Segmenter (RTVS3)** and **Cockos REAPER DAW** (as well as other DAWs and video editors such as Adobe Audition, Premiere Pro, and DaVinci Resolve).
+This guide explains how to configure and use the real-time copy/paste integration between **Radio & TV Segmenter (RTVS3)** and **Cockos REAPER DAW** (as well as other DAWs and video editors such as Adobe Audition, Premiere Pro, and DaVinci Resolve).
 
 ---
 
 ## 1. Architectural Overview
 
-Radio & TV Story Segmenter and digital audio workstations serve complementary roles in modern broadcast and podcast production:
+Radio & TV Segmenter and digital audio workstations serve complementary roles in modern broadcast and podcast production:
 - **RTVS3**: Speech intelligence, automated transcription, speaker diarization, story boundary detection, and rapid quote logging.
 - **REAPER / DAWs**: Multi-track assembly, fine audio leveling, noise reduction, music ducking, equalization, and final broadcast mastering.
 

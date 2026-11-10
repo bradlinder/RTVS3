@@ -1,6 +1,6 @@
 # Export Formats & DAW Integration Guide
 
-Radio & TV Story Segmenter provides a versatile Unified Export Center (`Ctrl+E` or `File > Export...`) supporting broadcast audio cuts, document reports, digital audio workstation (DAW) timelines, and video editing interchange formats.
+Radio & TV Segmenter provides a versatile Unified Export Center (`Ctrl+E` or `File > Export...`) supporting broadcast audio cuts, document reports, digital audio workstation (DAW) timelines, and video editing interchange formats.
 
 ![Unified Export Dialog](../images/unified_export_dialog.png)
 

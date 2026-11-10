@@ -11,7 +11,7 @@ from typing import Dict, List, Optional
 EMBEDDED_GUIDES: Dict[str, str] = {
     "workflow": """# Getting Started & Essential Workflow
 
-This guide covers the core workflow of Radio & TV Story Segmenter: loading media, generating transcripts, detecting stories, editing speaker labels, and navigating the interactive timeline.
+This guide covers the core workflow of Radio & TV Segmenter: loading media, generating transcripts, detecting segments, editing speaker labels, and navigating the interactive timeline.
 
 ---
 
@@ -39,7 +39,7 @@ When media is loaded:
 - **Scrubbing**: Click and drag anywhere along the timeline ruler or waveform.
 - **Zooming**: Use **Ctrl + Mouse Wheel** over the timeline, or press the **+** and **-** zoom buttons. You can zoom from full-episode overview down to a fraction of a second (300x zoom) for precise edits.
 - **Playback Speed**: Adjust the speed dropdown between **0.5x** and **3.0x** to listen at your preferred pace.
-- **Volume & Fades**: Use the master volume slider. Enable **Audio Fades** to preview real-time volume fade-ins and fade-outs on segmented stories.
+- **Volume & Fades**: Use the master volume slider. Enable **Audio Fades** to preview real-time volume fade-ins and fade-outs on segments.
 
 ---
 
@@ -67,22 +67,22 @@ The center panel features an interactive transcript editor:
 
 ---
 
-## 5. Story Segmentation
+## 5. Segment Creation & Editing
 
-RTVS3 organizes broadcasts into distinct, individual stories that can be exported separately or together.
+RTVS3 organizes broadcasts into distinct, individual segments that can be exported separately or together.
 
-### Automatic Story Detection:
-Click **Detect Stories...** (or press **Ctrl+Shift+A**). The engine analyzes topic boundaries, speech pauses, and speaker turns to segment your episode automatically.
+### Automatic Segment Detection:
+Click **Detect Segments...** (or press **Ctrl+Shift+A**). The engine analyzes topic boundaries, speech pauses, and speaker turns to segment your episode automatically.
 
-### Manual Story Creation:
-1. Press `[` to mark a story start and `]` to mark a story end at the current playhead position.
-2. Or **right-click and drag** across any region on the timeline waveform to draw a selection, then right-click and choose **Add Story from Selection**.
-3. A new story appears in the right-hand **Stories** panel.
+### Manual Segment Creation:
+1. Press `[` to mark a segment start and `]` to mark a segment end at the current playhead position.
+2. Or **right-click and drag** across any region on the timeline waveform to draw a selection, then right-click and choose **Add Segment from Selection**.
+3. A new segment appears in the right-hand **Segments** panel.
 
-### Adjusting Story Boundaries & Fades:
-- **Move Boundaries**: Click and drag the left or right edge handle of any story box on the timeline.
-- **Audio Fades**: Drag the fade handle at the top corners of a story to set fade-in and fade-out durations (e.g., 1.5 seconds) with linear, exponential, or S-curve shapes.
-- **Story Metadata**: Select a story in the Stories list and click **Story Metadata...** to edit its title, summary, author, and categories.
+### Adjusting Segment Boundaries & Fades:
+- **Move Boundaries**: Click and drag the left or right edge handle of any segment box on the timeline.
+- **Audio Fades**: Drag the fade handle at the top corners of a segment to set fade-in and fade-out durations (e.g., 1.5 seconds) with linear, exponential, or S-curve shapes.
+- **Segment Metadata**: Select a segment in the Segments list and click **Segment Metadata...** to edit its title, summary, author, and categories.
 
 ---
 
@@ -294,17 +294,17 @@ This guide walks through the end-to-end workflow for transcribing, segmenting, a
 
 Publishing video shows to WordPress often involves a friction point: uploading full multi-gigabyte `.mp4` video files directly to WordPress web hosts can quickly exhaust server storage, exceed PHP upload limits, and result in sluggish mobile streaming.
 
-Radio & TV Story Segmenter provides a streamlined **hybrid video workflow**:
-1. **Local Media Processing**: You work directly with your original high-resolution video file (`.mp4`, `.mov`, `.mkv`, `.webm`) on your local machine for rapid transcription, speaker diarization, story boundary detection, and timeline scrubbing.
+Radio & TV Segmenter provides a streamlined **hybrid video workflow**:
+1. **Local Media Processing**: You work directly with your original high-resolution video file (`.mp4`, `.mov`, `.mkv`, `.webm`) on your local machine for rapid transcription, speaker diarization, segment boundary detection, and timeline scrubbing.
 2. **Video Hosting on YouTube**: You upload your full episode to YouTube (as unlisted, scheduled, or public).
 3. **Automated Timestamped Embeds in WordPress**: By simply pasting your base YouTube link into the WordPress export dialog, the application automatically computes the start and end offsets for every segment and injects mobile-responsive, 16:9 Gutenberg iframe blocks (`<!-- wp:html -->`) directly into each story's post draft.
 
 ```mermaid
 flowchart LR
-    A["Local Video File<br>(.mp4 / .mov)"] --> B["RTVS3 Local Processing<br>Transcription & Stories"]
+    A["Local Video File<br>(.mp4 / .mov)"] --> B["RTVS3 Local Processing<br>Transcription & Segments"]
     C["YouTube Video<br>(Public / Unlisted)"] --> D["WordPress Export Panel<br>Media Tab"]
     B --> D
-    D --> E["WordPress Post Drafts<br>Responsive 16:9 Embeds<br>Exact Story Timestamps"]
+    D --> E["WordPress Post Drafts<br>Responsive 16:9 Embeds<br>Exact Segment Timestamps"]
 ```
 
 ---
@@ -316,10 +316,10 @@ Drag and drop your video file directly onto the timeline canvas or press **Ctrl+
 - RTVS3 automatically generates multi-resolution waveform pyramids and a video thumbnail filmstrip along the timeline ruler.
 - Press **Ctrl+Shift+V** (**View > Video Preview Window**) to open the resizable floating video preview window.
 
-### Step 2: Transcribe, Diarize & Detect Stories
+### Step 2: Transcribe, Diarize & Detect Segments
 1. Click **Transcribe Audio...** (**Ctrl+T**) or use the Multi-Stage Pipeline (**Ctrl+R**) to generate word-level aligned transcripts and speaker turns.
-2. Click **Detect Stories...** (**Ctrl+Shift+A**) to detect story boundaries based on topic changes, natural speech pauses, or speaker transitions.
-3. Review stories on the timeline: you can zoom in up to 300x, drag boundaries, and adjust audio fades.
+2. Click **Detect Segments...** (**Ctrl+Shift+A**) to detect segment boundaries based on topic changes, natural speech pauses, or speaker transitions.
+3. Review segments on the timeline: you can zoom in up to 300x, drag boundaries, and adjust audio fades.
 
 ### Step 3: Open Unified Export to WordPress
 Press **Ctrl+E** (**File > Export...**) and select the **WordPress Draft Post** radio button from the **Export Destination** bar at the top.
@@ -412,13 +412,13 @@ These settings are also mirrored in the **YouTube Publisher** plugin preferences
 """,
     "reaper_bridge": r"""# REAPER & Digital Audio Workstation (DAW) Live Bridge
 
-This guide explains how to configure and use the real-time copy/paste integration between **Radio & TV Story Segmenter (RTVS3)** and **Cockos REAPER DAW** (as well as other DAWs and video editors such as Adobe Audition, Premiere Pro, and DaVinci Resolve).
+This guide explains how to configure and use the real-time copy/paste integration between **Radio & TV Segmenter (RTVS3)** and **Cockos REAPER DAW** (as well as other DAWs and video editors such as Adobe Audition, Premiere Pro, and DaVinci Resolve).
 
 ---
 
 ## 1. Architectural Overview
 
-Radio & TV Story Segmenter and digital audio workstations serve complementary roles in modern broadcast and podcast production:
+Radio & TV Segmenter and digital audio workstations serve complementary roles in modern broadcast and podcast production:
 - **RTVS3**: Speech intelligence, automated transcription, speaker diarization, story boundary detection, and rapid quote logging.
 - **REAPER / DAWs**: Multi-track assembly, fine audio leveling, noise reduction, music ducking, equalization, and final broadcast mastering.
 
@@ -640,7 +640,7 @@ If you work in digital audio workstations or non-linear video editors other than
 """,
     "export_formats": """# Export Formats & DAW Integration Guide
 
-Radio & TV Story Segmenter provides a versatile Unified Export Center (`Ctrl+E` or `File > Export...`) supporting broadcast audio cuts, document reports, digital audio workstation (DAW) timelines, and video editing interchange formats.
+Radio & TV Segmenter provides a versatile Unified Export Center (`Ctrl+E` or `File > Export...`) supporting broadcast audio cuts, document reports, digital audio workstation (DAW) timelines, and video editing interchange formats.
 
 ![Unified Export Dialog](../images/unified_export_dialog.png)
 

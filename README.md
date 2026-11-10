@@ -1,6 +1,6 @@
-# Radio & TV Story Segmenter v3
+# Radio & TV Segmenter v3
 
-Radio & TV Story Segmenter is a cross-platform desktop application built with Python and PySide6. Designed for broadcast journalists, audio producers, podcasters, and researchers, it transcribes long-form audio and video recordings, labels distinct speakers, translates text across languages, and segments programs into independent, publishable stories.
+Radio & TV Segmenter is a cross-platform desktop application built with Python and PySide6. Designed for broadcast journalists, audio producers, podcasters, and researchers, it transcribes long-form audio and video recordings, labels distinct speakers, translates text across languages, and segments programs into independent, publishable segments.
 
 ---
 
@@ -72,7 +72,7 @@ Run_RadioTVSegmenter.bat
 
 1. Load Media: Drag and drop an audio or video file onto the timeline canvas or select File -> Open Media...
 2. Process Pipeline: Use Tools -> Multi-Stage Processing... (Ctrl+R / Cmd+R) to run transcription, speaker detection, and automated story segmentation in sequence.
-3. Refine Segments: Highlight text in the transcript or drag region handles on the timeline, then click Add Story to create segment boundaries.
+3. Refine Segments: Highlight text in the transcript or drag region handles on the timeline, then click Add Segment to create segment boundaries.
 
 ### REAPER DAW & Digital Audio Workstation Live Bridge
 
@@ -85,7 +85,7 @@ RTVS3 features a real-time, two-way bridge connecting speech intelligence direct
 * **Dynamic Trim, Extend & Split Auto-Sync**:
   - Dragging the left or right edges of a clip in REAPER to expand or tighten context, or splitting a clip (`S`), automatically updates the Item Notes transcript, Take Name timecodes, and Take Markers in real time!
 * **Dockable ReaImGui Browser (`rtvs_reaper_dock.lua`)**:
-  - Search speech segments, browse segmented stories, and insert clips directly onto the timeline from within REAPER.
+  - Search speech segments, browse segments, and insert clips directly onto the timeline from within REAPER.
 * **Universal WAV Audio Clipboard for Other DAWs**:
   - Enable *Render temporary WAV audio clip to OS file clipboard* in Preferences to paste lossless audio slices directly into Adobe Audition, Premiere Pro, and DaVinci Resolve via standard `Ctrl+V`.
 * **Timeline Project Exports**:
@@ -95,7 +95,7 @@ RTVS3 features a real-time, two-way bridge connecting speech intelligence direct
 
 ### WordPress Direct Publishing
 
-* Pushes selected segmented stories and transcribed body copy directly to WordPress sites via the REST API.
+* Pushes selected segments and transcribed body copy directly to WordPress sites via the REST API.
 * Setup & Authentication:
 1. In WordPress Admin, navigate to Users -> Profile.
 2. Scroll down to Application Passwords, enter a descriptive name (e.g., StorySegmenter), and click Add New Application Password.
@@ -130,7 +130,7 @@ All keyboard shortcuts can be viewed at any time by pressing <kbd>F1</kbd> (or <
 | **File & Project** | Exit Application | `Ctrl+Q` | `Cmd+Q` | Close the application |
 | **AI Pipeline & Tools** | Transcribe Audio... | `Ctrl+T` | `Cmd+T` | Run automated speech-to-text transcription on loaded media |
 | **AI Pipeline & Tools** | Detect Speakers (Diarization)... | `Ctrl+D` | `Cmd+D` | Perform speaker diarization and voice cluster detection |
-| **AI Pipeline & Tools** | Detect Stories... | `Ctrl+Shift+A` | `Cmd+Shift+A` | Automatically segment recording into stories or songs based on pauses |
+| **AI Pipeline & Tools** | Detect Segments... | `Ctrl+Shift+A` | `Cmd+Shift+A` | Automatically segment recording into segments based on pauses |
 | **AI Pipeline & Tools** | Translate Transcript... | `Ctrl+Shift+L` | `Cmd+Shift+L` | Translate transcript text into Spanish or target language |
 | **AI Pipeline & Tools** | Multi-Stage Processing Pipeline... | `Ctrl+R` | `Cmd+R` | Execute automated multi-model transcription, diarization, and story segmentation |
 | **AI Pipeline & Tools** | Regenerate Waveform | `Ctrl+Shift+W` | `Cmd+Shift+W` | Rebuild audio peak envelope cache for the timeline |
@@ -138,7 +138,7 @@ All keyboard shortcuts can be viewed at any time by pressing <kbd>F1</kbd> (or <
 | **AI Pipeline & Tools** | Normalize Audio Loudness... | `Ctrl+Alt+N` | `Cmd+Alt+N` | Analyze and normalize broadcast loudness according to EBU R128 / ITU BS.1770 |
 | **Panels & Views** | Toggle Timeline Panel | `Alt+1` | `Ctrl+Alt+1` | Show or hide the audio/video timeline and waveform panel |
 | **Panels & Views** | Toggle Transcript Panel | `Alt+2` | `Ctrl+Alt+2` | Show or hide the interactive text transcript panel |
-| **Panels & Views** | Toggle Stories Panel | `Alt+3` | `Ctrl+Alt+3` | Show or hide the story cuts and segment list panel |
+| **Panels & Views** | Toggle Segments Panel | `Alt+3` | `Ctrl+Alt+3` | Show or hide the segment list panel |
 | **Panels & Views** | Toggle Activity History Panel | `Alt+4` | `Ctrl+Alt+4` | Show or hide the background job and activity log panel |
 | **Panels & Views** | Toggle Comments Sidebar | `Ctrl+Alt+C` | `Cmd+Alt+C` | Show or hide the editorial comments and annotations sidebar |
 | **Panels & Views** | Show Comment Highlights | `Ctrl+Alt+H` | `Cmd+Alt+H` | Toggle yellow editorial comment highlight overlays in transcript |
@@ -201,7 +201,7 @@ The web preview in Google AI Studio is configured to serve as the live, interact
 
 ## Third-Party Notices & License
 
-Radio & TV Story Segmenter is released under the MIT License.
+Radio & TV Segmenter is released under the MIT License.
 
 This application incorporates or interfaces with several open source libraries and pre-trained models:
 

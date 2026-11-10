@@ -189,7 +189,7 @@ class UserGuideDialog(QDialog):
 
     def __init__(self, parent: Optional[QWidget] = None, initial_guide_id: str = "workflow"):
         super().__init__(parent)
-        self.setWindowTitle("User Guides & Documentation — Radio & TV Story Segmenter")
+        self.setWindowTitle("User Guides & Documentation — Radio & TV Segmenter")
         make_dialog_maximizable(self)
         self.resize(1020, 720)
         self.setMinimumSize(740, 500)
@@ -795,7 +795,7 @@ class UserGuideDialog(QDialog):
         """Build dynamic keyboard shortcut documentation from active settings."""
         return """# Keyboard Shortcuts & Controls
 
-Radio & TV Story Segmenter provides extensive keyboard control across timeline scrubbing, audio playback, transcript editing, and story segmentation.
+Radio & TV Segmenter provides extensive keyboard control across timeline scrubbing, audio playback, transcript editing, and segment editing.
 
 ---
 
@@ -817,17 +817,17 @@ Radio & TV Story Segmenter provides extensive keyboard control across timeline s
 
 ---
 
-## 2. Story Segmentation & Editing
+## 2. Segment Editing & Detection
 
 | Action | Shortcut (Windows/Linux) | Shortcut (macOS) | Description |
 | :--- | :--- | :--- | :--- |
-| **Mark Story Start** | `[` | `[` | Set story in-point at current playhead position. |
-| **Mark Story End** | `]` | `]` | Set story out-point and create story segment. |
-| **Deselect All / Clear Selection** | `Esc` | `Esc` | Clear active story selections, timeline selection range, or transcript selection. |
-| **Auto-Detect Stories** | `Ctrl + Shift + A` | `Cmd + Shift + A` | Run AI topic and pause boundary detection. |
+| **Mark Segment Start** | `[` | `[` | Set segment in-point at current playhead position. |
+| **Mark Segment End** | `]` | `]` | Set segment out-point and create segment. |
+| **Deselect All / Clear Selection** | `Esc` | `Esc` | Clear active segment selections, timeline selection range, or transcript selection. |
+| **Detect Segments** | `Ctrl + Shift + A` | `Cmd + Shift + A` | Run AI topic and pause boundary detection. |
 | **Transcribe Audio** | `Ctrl + T` | `Cmd + T` | Run speech-to-text transcription. |
 | **Detect Speakers (Diarization)** | `Ctrl + D` | `Cmd + D` | Run AI speaker clustering and identification. |
-| **Audio Fades & Crossfades** | `Ctrl + Shift + F` | `Cmd + Shift + F` | Configure story volume fade curves. |
+| **Audio Fades & Crossfades** | `Ctrl + Shift + F` | `Cmd + Shift + F` | Configure segment volume fade curves. |
 | **Unified Export Center** | `Ctrl + E` | `Cmd + E` | Open export panel for audio, docs, and WordPress. |
 | **Video Preview Window** | `Ctrl + Shift + V` | `Cmd + Shift + V` | Open floating, synchronized video player. |
 
