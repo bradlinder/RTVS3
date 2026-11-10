@@ -1,5 +1,20 @@
 # Changelog
 
+## v3.9.95-beta
+- **Windows Post-Update Elevation De-escalation & Context Menu Hardening (`installer/Windows/RadioTVStorySegmenter.iss`, `timeline_context_menus.py`, `background_workers.py`, `media_batch.py`, `diagnostic_editor_tests.py`)**:
+  - **Inno Setup Standard-User Post-Install Execution (`installer/Windows/RadioTVStorySegmenter.iss`)**:
+    - Replaced `{win}\explorer.exe` invocation with Inno Setup's native `runasoriginaluser` directive on the postinstall `[Run]` command (`Flags: nowait postinstall skipifsilent runasoriginaluser`).
+    - Eliminates Windows UAC split-token elevation lockout on post-update launches: newly updated applications consistently run within the interactive user session, preserving immediate access to mapped network drives, SMB shares (`\\Server\Share`), network credentials, and Windows Explorer drag-and-drop without requiring an application restart.
+  - **Timeline Context Menu Localization Fix (`timeline_context_menus.py`)**:
+    - Resolved `NameError: name 'is_es' is not defined` in `show_timeline_context_menu` by properly assigning `is_es = vocab.is_es`.
+    - Restored right-click context menu functionality on empty timeline canvas areas and story blocks across English and Spanish locales.
+    - Added optional `exec_menu: bool = True` parameter to both `show_timeline_context_menu()` and `show_selection_context_menu()` allowing headless verification and automated testing without opening blocking modal loops.
+  - **Waveform Worker Network & File Error Reporting (`background_workers.py`, `media_batch.py`)**:
+    - Configured FFmpeg subprocess stderr capture in `WaveformWorker` (`-v error`, `stderr=subprocess.PIPE`).
+    - Propagated exact FFmpeg failure causes (`error_message`) to `MediaBatchMixin._waveform_finished()` so network access denials, unreachable shares, or corrupt audio streams log explicit actionable error messages rather than silently failing with "produced no audio data".
+  - **Diagnostic Test Bench Menu Traversal Guard (`diagnostic_editor_tests.py`)**:
+    - Added automated context-menu building verification across English and Spanish in `_test_story_highlighting_smart_copy_and_glossary_engine`, guaranteeing all action labels, dynamic vocabulary interpolations, and locale variables are exercised in CI.
+
 ## v3.9.94-beta
 - **Universal "Segment" Terminology & Display Title Standardization (`core_utils.py`, `preferences_tabs_core.py`, `preferences_dialog.py`, `preferences_reset.py`, `preferences_reset_dialog.py`, `preferences_tabs_media.py`, `RadioTVSegmenter.py`, `transcript_context_menu_mixin.py`, `transcript_editor_dialogs.py`, `story_widgets.py`, `ui_layout.py`, `media_batch.py`, `timeline_snap.py`, `ui_menus.py`, `story_metadata_dialog.py`, `shortcuts/schema.py`, `diagnostic_editor_tests.py`)**:
   - **Universal "Segment" Terminology Standardization (`core_utils.py`)**:
@@ -23,33 +38,3 @@
     - Help menu updated to `&About Radio & TV Segmenter` to match `APP_DISPLAY_NAME = "Radio & TV Segmenter"`, while keeping `INTERNAL_APP_ID = "RadioTVStorySegmenter"` intact for QSettings stability.
   - **Keyboard Shortcut Registry Alignment (`shortcuts/schema.py`, `RadioTVSegmenter.py`)**:
     - Shortcut action labels updated to `Play Current Segment Only`, `Mark Segment In-Point ([)`, `Mark Segment Out-Point (])`, and `Delete Selected Segment` while keeping underlying `action_id` keys identical.
-
-## v3.9.93-beta
-- **Cosmetic Vocabulary Setting ("Stories" / "Clips" / "Segments" / "Songs") (`core_utils.py`, `prs_shared.py`, `preferences_tabs_core.py`, `preferences_dialog.py`, `preferences_reset.py`, `preferences_reset_dialog.py`, `media_batch.py`, `story_crud_mixin.py`, `timeline_context_menus.py`, `export/dialog.py`, `diagnostic_editor_tests.py`)**:
-  - **Centralized Vocabulary Helper (`core_utils.py`, `prs_shared.py`)**:
-    - Created lightweight `StoryVocabulary(NamedTuple)` and `get_story_vocabulary(win_or_settings, language=None)` in `core_utils.py`, re-exported in `prs_shared.py`.
-    - Supports 5 user modes: `"auto"` (default; resolves dynamically to Songs in Music detection mode, Stories in Voice mode), `"stories"`, `"clips"`, `"segments"`, and `"songs"`.
-    - Fully localized for English and Spanish with proper grammatical gender, noun inflection, and capitalization (`Historia`/`Historias`, `Clip`/`Clips`, `Segmento`/`Segmentos`, `Canción`/`Canciones`).
-    - 100% backward compatible: underlying project file schemas, undo/redo stacks, and serialization formats remain intact while presentation terminology updates dynamically.
-  - **Preferences Vocabulary Selector (`preferences_tabs_core.py`, `preferences_dialog.py`)**:
-    - Added user-configurable **UI Vocabulary / Terminology** dropdown in Preferences under the General tab with clear bilingual labels.
-    - Persisted to `QSettings` (`ui_vocabulary_mode`) and cached on `self.ui_vocabulary_mode`.
-    - Saving preferences immediately refreshes main window sidebar buttons and headers without requiring an application restart.
-  - **Preferences Reset Parity (`preferences_reset.py`, `preferences_reset_dialog.py`)**:
-    - Registered `ui_vocabulary_mode` under the General Appearance category to cleanly reset to `"auto"` when restoring defaults.
-  - **Live Dynamic Relabeling Across Sidebar & Menus (`media_batch.py`, `story_crud_mixin.py`)**:
-    - Centralized `update_story_segment_terminology()` dynamically relabels:
-      - Sidebar header count & duration (`Stories (2) — [03:45.5]`, `Clips (2) — [03:45.5]`, `Segments (2) — [03:45.5]`, `Songs (2) — [03:45.5]`).
-      - Primary action buttons: `Add Story/Clip/Segment/Song`, `Set Start`, `Set End`.
-      - Metadata button: `Story/Clip/Segment/Song Metadata...`.
-      - Settings button: `Story/Clip/Segment/Song Settings`.
-      - Title input placeholder: `Story headline / title`, `Clip title / description`, `Segment title / headline`, `Song title / track name`.
-      - Action tooltips and menu actions (`Detect Stories/Clips/Segments/Songs`, `Stories/Clips/Segments/Songs Panel`).
-  - **Timeline Context Menus & Export Dialog Alignment (`timeline_context_menus.py`, `export/dialog.py`)**:
-    - Right-click canvas menus update dynamically: `Add Story/Clip/Segment/Song from Selection`.
-    - `UnifiedExportDialog` export scope combo labels adapt dynamically: `Selected Stories/Clips/Segments/Songs`, `All Stories/Clips/Segments/Songs`, `Full Episode & All Stories/Clips/Segments/Songs`.
-  - **Diagnostic Test Bench Coverage (`diagnostic_editor_tests.py`)**:
-    - Automated unit tests asserting vocabulary resolution across all 4 modes in English and Spanish, live UI sidebar header updates, and settings reset parity.
-  - **Transcript Speech Unit Disambiguation (Block vs. Segment) (`shortcuts/schema.py`, `shortcuts/manager.py`, `RadioTVSegmenter.py`, `ui_layout.py`, `transcript_story.py`, `voice_profile_dialog.py`, `speaker_profiles.py`, `user_guide_dialog.py`)**:
-    - Renamed speech/transcript segment actions, dialog prompts, and table headers to **"Block" / "Speaker Block"** (`Split Speaker Block`, `Split Block at Playhead`, `Merge with Next Block`, `Comment for Block X`, `Voice Profile Blocks table column`).
-    - Eliminates terminology collision between ASR speech turns in the transcript and curated broadcast/program segments on the timeline.

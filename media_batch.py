@@ -275,6 +275,7 @@ class MediaBatchMixin:
         self._track_worker_thread(thread)
 
         thread.started.connect(worker.run)
+        worker.progress.connect(self._waveform_progress)
         worker.finished.connect(self._waveform_finished)
         worker.finished.connect(thread.quit)
         thread.finished.connect(self._waveform_thread_finished)
@@ -284,6 +285,16 @@ class MediaBatchMixin:
             except Exception:
                 pass
         thread.start()
+
+    def _waveform_progress(self, partial_peaks, pps, pct):
+        worker = self.sender()
+        if worker is not None and worker is not getattr(self, "wf_worker", None):
+            return
+        if hasattr(self, "timeline"):
+            try:
+                self.timeline.set_progressive_waveform_peaks(partial_peaks, pps, pct)
+            except Exception:
+                pass
 
     def _waveform_finished(self, peaks, cancelled=False):
         if hasattr(self, "timeline"):
@@ -298,7 +309,11 @@ class MediaBatchMixin:
         if peaks:
             self.log_activity(f"[WAVEFORM] Waveform generation complete ({len(peaks):,} peaks).")
         else:
-            self.log_activity("[ERROR] Waveform generation produced no audio data. The media may not contain a readable audio stream.")
+            err_msg = getattr(getattr(self, "wf_worker", None), "error_message", "")
+            if err_msg:
+                self.log_activity(f"[ERROR] Waveform generation failed: {err_msg}")
+            else:
+                self.log_activity("[ERROR] Waveform generation produced no audio data. The media may not contain a readable audio stream or network path is unreachable.")
 
     def _waveform_thread_finished(self):
         thread = self.sender()

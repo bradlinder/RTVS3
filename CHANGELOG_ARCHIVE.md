@@ -1,3 +1,33 @@
+## v3.9.93-beta
+- **Cosmetic Vocabulary Setting ("Stories" / "Clips" / "Segments" / "Songs") (`core_utils.py`, `prs_shared.py`, `preferences_tabs_core.py`, `preferences_dialog.py`, `preferences_reset.py`, `preferences_reset_dialog.py`, `media_batch.py`, `story_crud_mixin.py`, `timeline_context_menus.py`, `export/dialog.py`, `diagnostic_editor_tests.py`)**:
+  - **Centralized Vocabulary Helper (`core_utils.py`, `prs_shared.py`)**:
+    - Created lightweight `StoryVocabulary(NamedTuple)` and `get_story_vocabulary(win_or_settings, language=None)` in `core_utils.py`, re-exported in `prs_shared.py`.
+    - Supports 5 user modes: `"auto"` (default; resolves dynamically to Songs in Music detection mode, Stories in Voice mode), `"stories"`, `"clips"`, `"segments"`, and `"songs"`.
+    - Fully localized for English and Spanish with proper grammatical gender, noun inflection, and capitalization (`Historia`/`Historias`, `Clip`/`Clips`, `Segmento`/`Segmentos`, `Canción`/`Canciones`).
+    - 100% backward compatible: underlying project file schemas, undo/redo stacks, and serialization formats remain intact while presentation terminology updates dynamically.
+  - **Preferences Vocabulary Selector (`preferences_tabs_core.py`, `preferences_dialog.py`)**:
+    - Added user-configurable **UI Vocabulary / Terminology** dropdown in Preferences under the General tab with clear bilingual labels.
+    - Persisted to `QSettings` (`ui_vocabulary_mode`) and cached on `self.ui_vocabulary_mode`.
+    - Saving preferences immediately refreshes main window sidebar buttons and headers without requiring an application restart.
+  - **Preferences Reset Parity (`preferences_reset.py`, `preferences_reset_dialog.py`)**:
+    - Registered `ui_vocabulary_mode` under the General Appearance category to cleanly reset to `"auto"` when restoring defaults.
+  - **Live Dynamic Relabeling Across Sidebar & Menus (`media_batch.py`, `story_crud_mixin.py`)**:
+    - Centralized `update_story_segment_terminology()` dynamically relabels:
+      - Sidebar header count & duration (`Stories (2) — [03:45.5]`, `Clips (2) — [03:45.5]`, `Segments (2) — [03:45.5]`, `Songs (2) — [03:45.5]`).
+      - Primary action buttons: `Add Story/Clip/Segment/Song`, `Set Start`, `Set End`.
+      - Metadata button: `Story/Clip/Segment/Song Metadata...`.
+      - Settings button: `Story/Clip/Segment/Song Settings`.
+      - Title input placeholder: `Story headline / title`, `Clip title / description`, `Segment title / headline`, `Song title / track name`.
+      - Action tooltips and menu actions (`Detect Stories/Clips/Segments/Songs`, `Stories/Clips/Segments/Songs Panel`).
+  - **Timeline Context Menus & Export Dialog Alignment (`timeline_context_menus.py`, `export/dialog.py`)**:
+    - Right-click canvas menus update dynamically: `Add Story/Clip/Segment/Song from Selection`.
+    - `UnifiedExportDialog` export scope combo labels adapt dynamically: `Selected Stories/Clips/Segments/Songs`, `All Stories/Clips/Segments/Songs`, `Full Episode & All Stories/Clips/Segments/Songs`.
+  - **Diagnostic Test Bench Coverage (`diagnostic_editor_tests.py`)**:
+    - Automated unit tests asserting vocabulary resolution across all 4 modes in English and Spanish, live UI sidebar header updates, and settings reset parity.
+  - **Transcript Speech Unit Disambiguation (Block vs. Segment) (`shortcuts/schema.py`, `shortcuts/manager.py`, `RadioTVSegmenter.py`, `ui_layout.py`, `transcript_story.py`, `voice_profile_dialog.py`, `speaker_profiles.py`, `user_guide_dialog.py`)**:
+    - Renamed speech/transcript segment actions, dialog prompts, and table headers to **"Block" / "Speaker Block"** (`Split Speaker Block`, `Split Block at Playhead`, `Merge with Next Block`, `Comment for Block X`, `Voice Profile Blocks table column`).
+    - Eliminates terminology collision between ASR speech turns in the transcript and curated broadcast/program segments on the timeline.
+
 ## v3.9.92-beta
 - **Universal User Guide Search Engine (`user_guide_dialog.py`, `user_guide_dialog.pyi`)**:
   - **Global Cross-Topic Search**: Transformed the User Guide search from a single-section filter into a universal search engine across all 10 topics in the guide catalog.

@@ -432,6 +432,46 @@ class DiagnosticEditorTestsMixin:
         win.apply_story_selection_indices([0], seek=False)
         assert win.transcript_view.timeline_selection_span == (0, 25)
 
+        # 6b. Verify timeline and selection context menus build cleanly in EN and ES without NameError
+        from timeline_context_menus import show_timeline_context_menu, show_selection_context_menu
+        from PySide6.QtCore import QPoint
+
+        mock_canvas.selection_start = 1.0
+        mock_canvas.selection_end = 5.0
+        for lang in ("en", "es"):
+            win.language = lang
+            m_story = show_timeline_context_menu(mock_canvas, QPoint(50, 50), 100.0, exec_menu=False)
+            assert m_story is not None and len(m_story.actions()) > 0
+            m_empty = show_timeline_context_menu(mock_canvas, QPoint(50, 50), 999.0, exec_menu=False)
+            assert m_empty is not None and len(m_empty.actions()) > 0
+            m_sel = show_selection_context_menu(mock_canvas, QPoint(50, 50), exec_menu=False)
+            assert m_sel is not None and len(m_sel.actions()) > 0
+
+        # 6c. Verify progressive waveform streaming on TimelineCanvas and timeline_painter
+        from timeline_widgets import TimelineCanvas
+        from timeline_painter import render_waveform_buffer
+        tl_canvas = TimelineCanvas(win)
+        tl_canvas.duration = 60.0
+        tl_canvas.resize(800, 120)
+        partial_peaks = [0.2 + 0.1 * (i % 5) for i in range(100)]
+        tl_canvas.set_background_generation_active("waveform", True)
+        tl_canvas.set_progressive_waveform_peaks(partial_peaks, pps=100.0, pct=10)
+        assert tl_canvas.waveform_pps == 100.0
+        assert tl_canvas.waveform_progress_pct == 10
+        assert "10%" in tl_canvas.background_status_text
+        pix = render_waveform_buffer(tl_canvas, 800, 120)
+        assert pix is not None and not pix.isNull()
+
+        # When completed, set_waveform_peaks resets pps and progress pct
+        tl_canvas.set_background_generation_active("waveform", False)
+        tl_canvas.set_waveform_peaks(partial_peaks * 10)
+        assert tl_canvas.waveform_pps is None
+        assert tl_canvas.waveform_progress_pct is None
+        assert tl_canvas.background_status_text == ""
+        pix_full = render_waveform_buffer(tl_canvas, 800, 120)
+        assert pix_full is not None and not pix_full.isNull()
+        tl_canvas.deleteLater()
+
         # 7. Verify Terminology Two-Pass Contextual & Case-Sensitive Normalization
         import terminology as term_mod
         sample_glossary = [

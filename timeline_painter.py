@@ -153,6 +153,11 @@ def render_waveform_buffer(canvas: Any, width: int, height: int) -> QPixmap:
             painter.restore()
 
     if canvas.show_waveform and canvas.waveform_peaks and waveform_height > 0:
+        progressive_pps = getattr(canvas, "waveform_pps", None)
+        if progressive_pps:
+            painter.setPen(canvas.tokens.pen(canvas.tokens.waveform_baseline, 1))
+            painter.drawLine(QPointF(0, middle_y), QPointF(width, middle_y))
+
         painter.setPen(canvas.tokens.pen(canvas.tokens.waveform_stroke, 1.0))
         levels = canvas.waveform_levels or [canvas.waveform_peaks]
         total_pixel_width = max(width, int(width * canvas.zoom_level))
@@ -163,15 +168,21 @@ def render_waveform_buffer(canvas: Any, width: int, height: int) -> QPixmap:
         total_peaks = len(peaks)
         dur = max(0.001, canvas.duration)
         waveform_lines = []
+        eff_pps = (progressive_pps / (4 ** level_index)) if progressive_pps else None
         for x in range(width):
             t0 = canvas.x_to_time(x, width)
             t1 = canvas.x_to_time(x + 1, width)
-            start_idx = int((t0 / dur) * total_peaks)
-            end_idx = int((t1 / dur) * total_peaks)
-            end_idx = max(start_idx + 1, end_idx)
-            start_idx = max(0, min(total_peaks, start_idx))
-            end_idx = max(0, min(total_peaks, end_idx))
-            if start_idx >= total_peaks or end_idx <= start_idx:
+            if eff_pps:
+                start_idx = int(t0 * eff_pps)
+                end_idx = int(t1 * eff_pps)
+            else:
+                start_idx = int((t0 / dur) * total_peaks)
+                end_idx = int((t1 / dur) * total_peaks)
+            start_idx = max(0, start_idx)
+            if start_idx >= total_peaks:
+                continue
+            end_idx = max(start_idx + 1, min(total_peaks, end_idx))
+            if end_idx <= start_idx:
                 continue
 
             peak_slice = peaks[start_idx:end_idx]

@@ -99,6 +99,8 @@ class TimelineCanvas(QWidget):
         self.stories = []
         self.waveform_peaks = []
         self.waveform_levels = []
+        self.waveform_pps = None
+        self.waveform_progress_pct = None
         self.video_thumbnails = []
         self.is_video = False
         self.show_waveform = True
@@ -205,7 +207,10 @@ class TimelineCanvas(QWidget):
         is_es = getattr(win, "language", "en") == "es"
         labels = []
         if "waveform" in self.active_background_tasks:
-            labels.append("forma de onda" if is_es else "audio waveform")
+            wf_lbl = "forma de onda" if is_es else "audio waveform"
+            if getattr(self, "waveform_progress_pct", None):
+                wf_lbl += f" ({self.waveform_progress_pct}%)"
+            labels.append(wf_lbl)
         if "thumbnails" in self.active_background_tasks:
             labels.append("miniaturas de video" if is_es else "video thumbnails")
         if labels:
@@ -216,22 +221,20 @@ class TimelineCanvas(QWidget):
             self.background_status_text = ""
 
     def dragEnterEvent(self, event):
-        paths = extract_dropped_file_paths(event.mimeData())
-        if paths:
+        if extract_dropped_file_paths(event.mimeData()):
             event.setDropAction(Qt.DropAction.CopyAction)
             event.acceptProposedAction()
             event.accept()
-            return
-        event.ignore()
+        else:
+            event.ignore()
 
     def dragMoveEvent(self, event):
-        paths = extract_dropped_file_paths(event.mimeData())
-        if paths:
+        if extract_dropped_file_paths(event.mimeData()):
             event.setDropAction(Qt.DropAction.CopyAction)
             event.acceptProposedAction()
             event.accept()
-            return
-        event.ignore()
+        else:
+            event.ignore()
 
     def dragLeaveEvent(self, event):
         event.accept()
@@ -243,8 +246,8 @@ class TimelineCanvas(QWidget):
             event.setDropAction(Qt.DropAction.CopyAction)
             event.acceptProposedAction()
             event.accept()
-            return
-        event.ignore()
+        else:
+            event.ignore()
 
     def set_audio_filename(self, filename):
         self.audio_file_name = filename
@@ -302,10 +305,7 @@ class TimelineCanvas(QWidget):
         self.update()
 
     def set_transcript_selection_range(self, start, end):
-        if start is None or end is None:
-            self.transcript_selection_range = None
-        else:
-            self.transcript_selection_range = (max(0.0, float(start)), min(self.duration, float(end)))
+        self.transcript_selection_range = None if (start is None or end is None) else (max(0.0, float(start)), min(self.duration, float(end)))
         self.update()
 
     def set_stories(self, stories, selected_indices=None):
@@ -316,14 +316,23 @@ class TimelineCanvas(QWidget):
 
     def set_waveform_peaks(self, peaks, levels=None):
         self.waveform_peaks = peaks or []
+        self.waveform_pps = None
+        self.waveform_progress_pct = None
         if levels is not None:
             self.waveform_levels = levels
-        elif hasattr(peaks, "waveform_levels") and peaks.waveform_levels:
+        elif getattr(peaks, "waveform_levels", None):
             self.waveform_levels = peaks.waveform_levels
-        elif self.waveform_peaks:
-            self.waveform_levels = build_waveform_pyramid(self.waveform_peaks)
         else:
-            self.waveform_levels = []
+            self.waveform_levels = build_waveform_pyramid(self.waveform_peaks) if self.waveform_peaks else []
+        self.pixmap_dirty = True
+        self.update()
+
+    def set_progressive_waveform_peaks(self, peaks, pps: float, pct: int = 0):
+        self.waveform_peaks = peaks or []
+        self.waveform_levels = [self.waveform_peaks]
+        self.waveform_pps = float(pps) if pps > 0 else None
+        self.waveform_progress_pct = int(pct) if pct > 0 else None
+        self._update_background_status_text()
         self.pixmap_dirty = True
         self.update()
 
@@ -334,11 +343,7 @@ class TimelineCanvas(QWidget):
         self.update()
 
     def set_video_thumbnails(self, thumbnails):
-        self.video_thumbnails = []
-        for timestamp, filename in thumbnails or []:
-            pix = QPixmap(str(filename))
-            if not pix.isNull():
-                self.video_thumbnails.append((float(timestamp), pix))
+        self.video_thumbnails = [(float(t), pix) for t, f in (thumbnails or []) if not (pix := QPixmap(str(f))).isNull()]
         self.pixmap_dirty = True
         self.update()
 
@@ -870,7 +875,6 @@ class TimelineCanvas(QWidget):
     def render_waveform_buffer(self, width, height):
         return _render_waveform_buffer_impl(self, width, height)
 
-
     def paintEvent(self, event):
         painter = QPainter(self)
         if not painter.isActive():
@@ -904,13 +908,10 @@ class TimelineWidget(QWidget):
         layout.addWidget(self.resize_handle)
 
         settings = QSettings(INTERNAL_APP_ID, INTERNAL_APP_ID)
-        saved_h = settings.value("timeline_height", 140)
         try:
-            saved_h = int(saved_h)
+            self.setFixedHeight(max(90, min(500, int(settings.value("timeline_height", 140)))))
         except (ValueError, TypeError):
-            saved_h = 140
-        saved_h = max(90, min(500, saved_h))
-        self.setFixedHeight(saved_h)
+            self.setFixedHeight(140)
 
         self.canvas.scrollOffsetChanged.connect(self.update_scrollbar_from_canvas)
         self.canvas.mediaDropped.connect(self.mediaDropped.emit)
@@ -933,22 +934,20 @@ class TimelineWidget(QWidget):
             self.canvas.set_background_generation_active(task_name, active)
 
     def dragEnterEvent(self, event):
-        paths = extract_dropped_file_paths(event.mimeData())
-        if paths:
+        if extract_dropped_file_paths(event.mimeData()):
             event.setDropAction(Qt.DropAction.CopyAction)
             event.acceptProposedAction()
             event.accept()
-            return
-        event.ignore()
+        else:
+            event.ignore()
 
     def dragMoveEvent(self, event):
-        paths = extract_dropped_file_paths(event.mimeData())
-        if paths:
+        if extract_dropped_file_paths(event.mimeData()):
             event.setDropAction(Qt.DropAction.CopyAction)
             event.acceptProposedAction()
             event.accept()
-            return
-        event.ignore()
+        else:
+            event.ignore()
 
     def dragLeaveEvent(self, event):
         event.accept()
@@ -960,8 +959,8 @@ class TimelineWidget(QWidget):
             event.setDropAction(Qt.DropAction.CopyAction)
             event.acceptProposedAction()
             event.accept()
-            return
-        event.ignore()
+        else:
+            event.ignore()
 
     def update_scrollbar_range(self):
         self.is_internal_scrollbar_update = True

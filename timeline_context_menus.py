@@ -9,15 +9,17 @@ from PySide6.QtWidgets import QMenu, QWidget
 from core_utils import get_story_vocabulary
 
 
-def show_timeline_context_menu(canvas: Any, global_pos: QPoint, pos_x: float):
+def show_timeline_context_menu(canvas: Any, global_pos: QPoint, pos_x: float, exec_menu: bool = True):
     """Display the primary right-click context menu on the timeline canvas."""
     win = canvas.window()
-    menu = QMenu(win if win is not None else canvas)
+    menu_parent = win if (win is not None and isinstance(win, QWidget)) else (canvas if isinstance(canvas, QWidget) else None)
+    menu = QMenu(menu_parent)
     width = canvas.width()
     time = max(0, min(canvas.duration, canvas.x_to_time(pos_x, width)))
     story_idx = canvas.find_story_at_time(time)
 
     vocab = get_story_vocabulary(win)
+    is_es = vocab.is_es
     term = vocab.singular
 
     audition_action = None
@@ -96,6 +98,9 @@ def show_timeline_context_menu(canvas: Any, global_pos: QPoint, pos_x: float):
     if not menu.actions():
         return
 
+    if not exec_menu:
+        return menu
+
     selected = menu.exec(global_pos)
     if story_idx is not None and 0 <= story_idx < len(canvas.stories):
         if audition_action and selected == audition_action:
@@ -134,7 +139,7 @@ def show_timeline_context_menu(canvas: Any, global_pos: QPoint, pos_x: float):
             win.regenerate_video_thumbnails()
 
 
-def show_selection_context_menu(canvas: Any, global_pos: QPoint):
+def show_selection_context_menu(canvas: Any, global_pos: QPoint, exec_menu: bool = True):
     """Display the range selection context menu on the timeline canvas."""
     if canvas.selection_start is None or canvas.selection_end is None:
         return
@@ -144,11 +149,15 @@ def show_selection_context_menu(canvas: Any, global_pos: QPoint):
     vocab = get_story_vocabulary(win)
     is_es = vocab.is_es
     term = vocab.singular
-    menu = QMenu(win if win is not None else canvas)
+    menu_parent = win if (win is not None and isinstance(win, QWidget)) else (canvas if isinstance(canvas, QWidget) else None)
+    menu = QMenu(menu_parent)
     add_action = menu.addAction(f"{('Agregar' if is_es else 'Add')} {term} {('desde la selección' if is_es else 'from Selection')}")
     copy_action = menu.addAction("Copiar selección (Ctrl+C)" if is_es else "Copy Selection (Ctrl+C)")
     copy_wav_action = menu.addAction("Copiar clip de audio (Ctrl+Shift+C)" if is_es else "Copy Selection as Audio Clip (Ctrl+Shift+C)")
     clear_action = menu.addAction("Borrar selección (Esc)" if is_es else "Clear Selection (Esc)")
+
+    if not exec_menu:
+        return menu
 
     selected = menu.exec(global_pos)
     if selected == add_action:

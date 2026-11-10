@@ -24,6 +24,7 @@ import subprocess
 import sys
 import tempfile
 import threading
+import time
 from math import gcd
 from pathlib import Path
 from typing import Optional, List, Dict, Any, Tuple
@@ -676,12 +677,14 @@ def invalidate_waveform_peak_cache(audio_file, project_file=None):
 
 class WaveformWorker(QObject):
     finished = Signal(list, bool)
+    progress = Signal(list, float, int)
 
     def __init__(self, audio_file, points_per_second=WAVEFORM_POINTS_PER_SECOND, project_file=None):
         super().__init__()
         self.audio_file = str(audio_file)
         self.points_per_second = points_per_second
         self.project_file = project_file
+        self.error_message = ""
         self._cancel_event = threading.Event()
         self._process = None
 
@@ -722,12 +725,12 @@ class WaveformWorker(QObject):
                 ffmpeg_path() or "ffmpeg", "-vn", "-i", self.audio_file,
                 "-f", "s16le", "-ac", "1",
                 "-ar", str(WAVEFORM_ANALYSIS_RATE),
-                "-v", "quiet", "pipe:1",
+                "-v", "error", "pipe:1",
             ]
             process = subprocess.Popen(
                 cmd,
                 stdout=subprocess.PIPE,
-                stderr=subprocess.DEVNULL,
+                stderr=subprocess.PIPE,
                 bufsize=1024 * 1024,
                 creationflags=creationflags,
             )
@@ -739,6 +742,9 @@ class WaveformWorker(QObject):
             samples_in_peak = 0
             peak_value = 0
             leftover_samples = np.empty(0, dtype=np.int16) if (HAVE_NUMPY and np is not None) else None
+            last_progress_time = time.perf_counter()
+            last_progress_count = 0
+            expected_total_peaks = int(duration * effective_pps) if (duration and duration > 0) else 0
 
             while True:
                 if self._cancel_event.is_set():
@@ -789,11 +795,23 @@ class WaveformWorker(QObject):
                                 samples_in_peak = 0
                                 peak_value = 0
 
+                now = time.perf_counter()
+                if (now - last_progress_time >= 0.25) and (len(peaks) > last_progress_count + int(effective_pps)):
+                    last_progress_time = now
+                    last_progress_count = len(peaks)
+                    pct = min(99, int((len(peaks) / max(1, expected_total_peaks)) * 100)) if expected_total_peaks > 0 else 0
+                    self.progress.emit(list(peaks), float(effective_pps), pct)
+
             return_code = process.wait()
             if self._cancel_event.is_set():
                 self.finished.emit([], True)
                 return
             if return_code != 0:
+                try:
+                    raw_err = process.stderr.read() if process.stderr else b""
+                    self.error_message = raw_err.decode("utf-8", errors="replace").strip()
+                except Exception:
+                    pass
                 self.finished.emit([], False)
                 return
 

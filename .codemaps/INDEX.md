@@ -1,15 +1,15 @@
 # Repository Symbol Index & API Map
 
-> Generated: 2026-11-10 14:16:06 | Total Files: 164
+> Generated: 2026-11-10 11:03:19 | Total Files: 164
 > Use `python scripts/generate_symbol_index.py --outline <file>` for exact line numbers.
 
 ## Modules Overview
 
 | Module | Lines | Summary | Primary Classes / Functions |
 | :--- | :---: | :--- | :--- |
-| `RadioTVSegmenter.py` | 664 | Radio & TV Segmenter — v3.9.94-beta | `MainWindow`, `main()` |
+| `RadioTVSegmenter.py` | 664 | Radio & TV Segmenter — v3.9.95-beta | `MainWindow`, `main()` |
 | `audio_normalization.py` | 541 | Radio & TV Story Segmenter — Audio Loudness Probing & Nor... | `LoudnessReport`, `AudioLoudnessProbeWorker`, `parse_ebur128_summary()`, `probe_media_duration_seconds()` *(+3 more)* |
-| `background_workers.py` | 1015 | Radio & TV Story Segmenter — Background Worker Threads & ... | `StoryAutoDetectWorker`, `WaveformWorker`, `VideoThumbnailWorker`, `get_waveform_peak_cache_path()` *(+6 more)* |
+| `background_workers.py` | 1021 | Radio & TV Story Segmenter — Background Worker Threads & ... | `StoryAutoDetectWorker`, `WaveformWorker`, `VideoThumbnailWorker`, `get_waveform_peak_cache_path()` *(+6 more)* |
 | `backup_manager.py` | 622 | Unified State Serialization, Local, and Google Drive Clou... | `compute_data_checksum()`, `serialize_preferences()`, `serialize_keyboard_shortcuts()`, `serialize_glossary()` *(+7 more)* |
 | `batch_dialog.py` | 702 | Radio & TV Story Segmenter — Batch Processing Dialog & Dr... | `BatchFileListWidget`, `BatchProcessingDialog` |
 | `benchmark.py` | 216 | Radio & TV Story Segmenter — Performance & Speed Benchmar... | `run_cli_benchmark()`, `main()` |
@@ -26,7 +26,7 @@
 | `diagnostic_cloud_and_system_tests.py` | 1313 | Diagnostic test bench suite component. | `DiagnosticCloudAndSystemTestsMixin` |
 | `diagnostic_core_tests.py` | 880 | Diagnostic test bench suite component. | `DiagnosticCoreTestsMixin` |
 | `diagnostic_dialog.py` | 324 | PySide6 Graphical Test Bench Dialog for Radio & TV Story ... | `create_diagnostic_dialog()` |
-| `diagnostic_editor_tests.py` | 863 | Diagnostic editor and find-replace tests for Radio & TV S... | `DiagnosticEditorTestsMixin` |
+| `diagnostic_editor_tests.py` | 878 | Diagnostic editor and find-replace tests for Radio & TV S... | `DiagnosticEditorTestsMixin` |
 | `diagnostic_export_tests.py` | 1899 | Diagnostic test bench suite component. | `DiagnosticExportTestsMixin` |
 | `diagnostic_helpers.py` | 151 | Helper fixtures, module resolvers, and DiagnosticItem for... | `DiagnosticItem`, `generate_synthetic_wav()` |
 | `diagnostic_loudness_tests.py` | 391 | Radio & TV Story Segmenter — Diagnostic Loudness Normaliz... | `DiagnosticLoudnessTestsMixin` |
@@ -51,7 +51,7 @@
 | `gpu_acceleration.py` | 276 | Radio & TV Segmenter v1.1.1 — optional GPU acceleration r... | `GpuAccelerationInstallWorker`, `GpuAccelerationMixin` |
 | `id3_editor.py` | 704 | ID3 Tag Editor module for Radio & TV Segmenter. | `ID3TagEditorDialog`, `read_id3_tags()`, `write_id3_tags()` |
 | `installer/pyinstaller/torch_dll_hook.py` | 70 | PyInstaller runtime hook for Windows ML/native DLL resolu... | - |
-| `media_batch.py` | 1692 | Radio & TV Segmenter v1.1.1 — media batch responsibilities. | `MediaBatchMixin` |
+| `media_batch.py` | 1696 | Radio & TV Segmenter v1.1.1 — media batch responsibilities. | `MediaBatchMixin` |
 | `model_install_workers.py` | 189 | Radio & TV Segmenter — Model Download and Installation Ba... | `WhisperModelInstallWorker`, `DiarizationModelInstallWorker`, `get_diarization_model_dir()`, `is_diarization_model_available()` |
 | `model_management.py` | 989 | Radio & TV Segmenter v1.1.1 — model management responsibi... | `_DummyTranslationWorker`, `ModelManagementMixin` |
 | `playback_controller.py` | 630 | Radio & TV Story Segmenter — Media Player Transport & Pla... | `PlaybackControllerMixin` |
@@ -135,7 +135,7 @@
 | `theme_preferences.py` | 596 | Radio & TV Story Segmenter — Theme Preferences & Styling ... | `ThemePreferencesMixin` |
 | `theme_qss.py` | 330 | Targeted QSS for the Radio & TV Segmenter visual design s... | - |
 | `theme_tokens.py` | 307 | Theme Tokens for Radio & TV Story Segmenter. | `ThemeTokens`, `theme_tokens_for_mode()` |
-| `timeline_context_menus.py` | 166 | Context menu builders and event handlers for the timeline... | `show_timeline_context_menu()`, `show_selection_context_menu()` |
+| `timeline_context_menus.py` | 175 | Context menu builders and event handlers for the timeline... | `show_timeline_context_menu()`, `show_selection_context_menu()` |
 | `timeline_overview.py` | 351 | Timeline Resize Handle and Overview Navigation Bar widgets. | `TimelineResizeHandle`, `TimelineOverviewBar` |
 | `timeline_overview_widget.py` | 372 | Timeline overview bar, mini-map navigator, and resize han... | `TimelineResizeHandle`, `TimelineOverviewBar` |
 | `timeline_painter.py` | 419 | Timeline canvas rendering engine, waveform drawing, and p... | `render_waveform_buffer()`, `paint_timeline_canvas()` |
@@ -149,7 +149,7 @@
 | `transcript_navigation_mixin.py` | 300 | transcript_navigation_mixin.py - Timestamp discovery, car... | `TranscriptNavigationMixin` |
 | `transcript_playback_highlight_mixin.py` | 277 | Radio & TV Story Segmenter — Interactive Transcript Playb... | `TranscriptPlaybackHighlightMixin` |
 | `transcript_selection_mixin.py` | 473 | transcript_selection_mixin.py - Multi-selection, timeline... | `TranscriptSelectionMixin` |
-| `transcript_story.py` | 852 | Radio & TV Segmenter v3.9.94-beta — transcript story resp... | `TranscriptStoryMixin` |
+| `transcript_story.py` | 852 | Radio & TV Segmenter v3.9.95-beta — transcript story resp... | `TranscriptStoryMixin` |
 | `transcript_styles.py` | 104 | transcript_styles.py - Transcript view stylesheets and da... | `transcript_text_view_stylesheet()`, `clean_dark_mode_clipboard_html()` |
 | `transcript_timeline_sync_mixin.py` | 643 | Radio & TV Story Segmenter — Transcript Timeline & Playba... | `TranscriptTimelineSyncMixin` |
 | `transcription_processing.py` | 579 | Transcription background process management for Radio & T... | `TranscriptionProcessingMixin` |
@@ -175,7 +175,7 @@
 ## Detailed Symbol Catalog
 
 ### `RadioTVSegmenter.py` (664 lines)
-*Radio & TV Segmenter — v3.9.94-beta*
+*Radio & TV Segmenter — v3.9.95-beta*
 - **class `MainWindow(ModelManagementMixin, MediaBatchMixin, PlaybackPreferencesMixin, UiLayoutMixin, ProcessingMixin, TranslationMixin, TranscriptStoryMixin, ProjectExportMixin, GpuAccelerationMixin, QMainWindow)`** (lines 160–561):
   *Main application window for Radio & TV Segmenter.*
   - `__init__(self)` [L178-L355]
@@ -208,7 +208,7 @@
   - `normalize_audio_sidecar(media_path, report, target_lufs, max_true_peak, quiet_threshold_lufs, quiet_threshold_dbfs, timeout)` [L346-L461] — *Non-destructively generate a normalized 16 kHz mono WAV sidecar.*
   - `get_effective_audio_for_processing(media_path, settings_store, project_metadata)` [L464-L541] — *Return the audio path to feed into ASR or diarization.*
 
-### `background_workers.py` (1015 lines)
+### `background_workers.py` (1021 lines)
 *Radio & TV Story Segmenter — Background Worker Threads & Waveform Cache Helpers.*
 - **class `StoryAutoDetectWorker(QObject)`** (lines 92–459):
   - `__init__(self, audio_file, silence_threshold, lead_in_padding, audio_duration, transcript_segments, whisper_model, detection_mode, **kwargs)` [L103-L122]
@@ -216,22 +216,22 @@
   - `_emit_progress(self, message, percent)` [L127-L141]
   - `_is_real_speech(self, text)` [L143-L149]
   - `run(self)` [L151-L459]
-- **class `WaveformWorker(QObject)`** (lines 677–825):
-  - `__init__(self, audio_file, points_per_second, project_file)` [L680-L686]
-  - `cancel(self)` [L688-L696] — *Thread-safe cancellation request; also stops the FFmpeg child process.*
-  - `run(self)` [L698-L825] — *Build a compact peak envelope without loading the whole recording into RAM.*
-- **class `VideoThumbnailWorker(QObject)`** (lines 945–1004):
-  - `__init__(self, media_path, duration, output_dir, count)` [L949-L956]
-  - `cancel(self)` [L958-L965]
-  - `run(self)` [L967-L1004]
+- **class `WaveformWorker(QObject)`** (lines 677–831):
+  - `__init__(self, audio_file, points_per_second, project_file)` [L680-L687]
+  - `cancel(self)` [L689-L697] — *Thread-safe cancellation request; also stops the FFmpeg child process.*
+  - `run(self)` [L699-L831] — *Build a compact peak envelope without loading the whole recording into RAM.*
+- **class `VideoThumbnailWorker(QObject)`** (lines 951–1010):
+  - `__init__(self, media_path, duration, output_dir, count)` [L955-L962]
+  - `cancel(self)` [L964-L971]
+  - `run(self)` [L973-L1010]
 - **Functions**:
   - `get_waveform_peak_cache_path(audio_file, project_file)` [L483-L537] — *Return local project or appdata path for waveform peak binary cache file.*
   - `read_waveform_peak_cache(audio_file, points_per_second, project_file)` [L542-L611] — *Read cached waveform peak envelope from binary cache.*
   - `write_waveform_peak_cache(audio_file, peaks, points_per_second, project_file, levels)` [L613-L651] — *Write waveform peak envelope and multi-resolution mipmapped levels to binary cache with atomic rename.*
   - `invalidate_waveform_peak_cache(audio_file, project_file)` [L654-L674] — *Delete any cached waveform peak binary file for audio_file, including legacy paths.*
-  - `get_video_thumbnail_cache_dir(media_file, project_file)` [L832-L871] — *Return the deterministic thumbnail cache directory for a media file, associating with project if available.*
-  - `read_video_thumbnail_cache(media_file, duration, project_file)` [L874-L916] — *Read pre-extracted video thumbnail items [(timestamp, image_path), ...] from disk cache.*
-  - `invalidate_video_thumbnail_cache(media_file, project_file)` [L919-L942] — *Delete the thumbnail cache directory for a given media file.*
+  - `get_video_thumbnail_cache_dir(media_file, project_file)` [L838-L877] — *Return the deterministic thumbnail cache directory for a media file, associating with project if available.*
+  - `read_video_thumbnail_cache(media_file, duration, project_file)` [L880-L922] — *Read pre-extracted video thumbnail items [(timestamp, image_path), ...] from disk cache.*
+  - `invalidate_video_thumbnail_cache(media_file, project_file)` [L925-L948] — *Delete the thumbnail cache directory for a given media file.*
 
 ### `backup_manager.py` (622 lines)
 *Unified State Serialization, Local, and Google Drive Cloud Backup & Restore Engine.*
@@ -520,15 +520,15 @@
 - **Functions**:
   - `create_diagnostic_dialog(parent, include_dev_tests)` [L16-L324] — *Builds the Diagnostic Test Bench Qt Dialog.*
 
-### `diagnostic_editor_tests.py` (863 lines)
+### `diagnostic_editor_tests.py` (878 lines)
 *Diagnostic editor and find-replace tests for Radio & TV Story Segmenter.*
-- **class `DiagnosticEditorTestsMixin`** (lines 11–862):
+- **class `DiagnosticEditorTestsMixin`** (lines 11–877):
   *Diagnostic suite for transcript editor, find-replace, and speaker synchronization.*
   - `_test_find_and_replace_project_synchronization_and_undo(self, item)` [L14-L209] — *Validates that Find & Replace updates segments, word timings, speaker aliases,*
   - `_test_in_app_user_guides_and_documentation_viewer(self, item)` [L211-L298] — *Validates in-app user guide resolution, fallback to embedded content, and bundling invariants.*
-  - `_test_story_transcript_highlighting_and_smart_copy(self, item)` [L300-L490] — *Validates story selection synchronization with transcript highlight overlay and smart clipboard copying.*
-  - `_test_story_duration_visibility_and_header_aggregation(self, item)` [L492-L660] — *Validates story clock duration formatting, 2-line sidebar item format, and multi-selection header aggregation.*
-  - `_test_reaper_daw_companion_and_universal_clipboard_pipeline(self, item)` [L662-L862] — *Validates REAPER DAW clip cue JSON schema, sidecar emission, Lua script syntax,*
+  - `_test_story_transcript_highlighting_and_smart_copy(self, item)` [L300-L505] — *Validates story selection synchronization with transcript highlight overlay and smart clipboard copying.*
+  - `_test_story_duration_visibility_and_header_aggregation(self, item)` [L507-L675] — *Validates story clock duration formatting, 2-line sidebar item format, and multi-selection header aggregation.*
+  - `_test_reaper_daw_companion_and_universal_clipboard_pipeline(self, item)` [L677-L877] — *Validates REAPER DAW clip cue JSON schema, sidecar emission, Lua script syntax,*
 
 ### `diagnostic_export_tests.py` (1899 lines)
 *Diagnostic test bench suite component.*
@@ -868,9 +868,9 @@
 ### `installer/pyinstaller/torch_dll_hook.py` (70 lines)
 *PyInstaller runtime hook for Windows ML/native DLL resolution.*
 
-### `media_batch.py` (1692 lines)
+### `media_batch.py` (1696 lines)
 *Radio & TV Segmenter v1.1.1 — media batch responsibilities.*
-- **class `MediaBatchMixin`** (lines 21–1692):
+- **class `MediaBatchMixin`** (lines 21–1696):
   - `probe_media_duration(self, path)` [L22-L36] — *Probe duration locally so video timelines can be populated immediately.*
   - `_track_worker_thread(self, thread)` [L38-L50] — *Keep a strong reference to active worker threads so Python GC never destroys them while executing.*
   - `stop_waveform_worker(self, timeout_ms)` [L52-L83] — *Stop the current waveform worker completely before replacing it or closing.*
@@ -881,51 +881,51 @@
   - `regenerate_waveform(self)` [L192-L213] — *Force recalculation of waveform peaks by clearing disk cache and restarting generation.*
   - `regenerate_video_thumbnails(self)` [L215-L228] — *Force regeneration of video filmstrip thumbnails.*
   - `load_waveform_async(self, force_regenerate)` [L230-L286]
-  - `_waveform_finished(self, peaks, cancelled)` [L288-L301]
-  - `_waveform_thread_finished(self)` [L303-L307]
-  - `open_batch_processing_dialog(self)` [L309-L414]
-  - `_batch_next_media(self)` [L416-L533]
-  - `_batch_next_document(self)` [L535-L563]
-  - `_batch_document_error(self, msg)` [L565-L574] — *Handles document batch translation errors safely.*
-  - `_load_user_preferences(self)` [L576-L659]
-  - `set_thumbnail_position(self, position)` [L661-L665]
-  - `_remember_saved_project(self, path)` [L667-L698] — *Remember only projects that have actually been saved.*
-  - `_dialog_directory(self, fallback)` [L700-L712]
-  - `_remember_open_directory(self, path)` [L714-L721]
-  - `_sync_startup_project_actions(self)` [L723-L729] — *Synchronize the Project Settings startup radio/check actions.*
-  - `set_startup_project_mode(self, mode)` [L731-L737] — *Set the startup project policy.*
-  - `restore_last_opened(self)` [L739-L879] — *Apply startup policy and offer recovery from a newer autosave snapshot.*
-  - `toggle_speaker_labels(self, checked)` [L881-L886]
-  - `toggle_colorize_speaker_labels(self, checked)` [L888-L895]
-  - `toggle_timestamps(self, checked)` [L897-L904]
-  - `toggle_milliseconds(self, checked)` [L906-L913]
-  - `toggle_waveform_view(self, checked)` [L915-L919]
-  - `toggle_thumbnail_view(self, checked)` [L921-L925]
-  - `choose_default_project_directory(self)` [L927-L942]
-  - `open_document_path(self, path)` [L944-L979]
-  - `open_clear_cache_dialog(self)` [L981-L994]
-  - `open_glossary_dialog(self)` [L996-L1000] — *Edit persistent terminology used by every ASR and translation backend.*
-  - `_save_glossary(self)` [L1002-L1003]
-  - `apply_glossary_to_current_transcript(self, entries)` [L1005-L1037] — *Apply glossary rules and contextual name resolution to the active transcript with Undo support.*
-  - `add_to_glossary(self, text)` [L1039-L1053]
-  - `prompt_add_alternate_spelling(self, alternate_text)` [L1055-L1098] — *Prompt user for the preferred glossary spelling that `alternate_text` should map to.*
-  - `apply_glossary_to_whisper_context(self)` [L1100-L1111]
-  - `add_custom_speaker_to_glossary(self, name)` [L1113-L1115]
-  - `set_language(self, language, persist)` [L1117-L1138]
-  - `_apply_localization(self)` [L1140-L1177]
-  - `update_story_segment_terminology(self)` [L1179-L1266] — *Update all user-facing labels and tooltips using active vocabulary settings.*
-  - `open_document(self)` [L1268-L1322]
-  - `export_text_file(self)` [L1324-L1332]
-  - `open_media(self)` [L1334-L1343]
-  - `prepare_for_new_media(self)` [L1345-L1378] — *Checks for unsaved changes before loading new media.*
-  - `_batch_media_error(self, message)` [L1380-L1402]
-  - `_get_batch_project_target_path(self, base_name)` [L1404-L1431] — *Determines consistent target .rtvs project file path during batch processing.*
-  - `_batch_save_project_file(self)` [L1433-L1448] — *Saves project .rtvs to dedicated directory structure during batch processing.*
-  - `_batch_export_current(self)` [L1450-L1534] — *Handles automatic export or project saving during batch processing.*
-  - `load_media_file(self, filename, source, restore_adjacent_project)` [L1536-L1651]
-  - `update_active_media_source(self)` [L1653-L1686] — *Update media player source and refresh waveform when normalization state changes.*
-  - `open_audio(self)` [L1688-L1689]
-  - `handle_media_drop(self, filename)` [L1691-L1692]
+  - `_waveform_finished(self, peaks, cancelled)` [L288-L305]
+  - `_waveform_thread_finished(self)` [L307-L311]
+  - `open_batch_processing_dialog(self)` [L313-L418]
+  - `_batch_next_media(self)` [L420-L537]
+  - `_batch_next_document(self)` [L539-L567]
+  - `_batch_document_error(self, msg)` [L569-L578] — *Handles document batch translation errors safely.*
+  - `_load_user_preferences(self)` [L580-L663]
+  - `set_thumbnail_position(self, position)` [L665-L669]
+  - `_remember_saved_project(self, path)` [L671-L702] — *Remember only projects that have actually been saved.*
+  - `_dialog_directory(self, fallback)` [L704-L716]
+  - `_remember_open_directory(self, path)` [L718-L725]
+  - `_sync_startup_project_actions(self)` [L727-L733] — *Synchronize the Project Settings startup radio/check actions.*
+  - `set_startup_project_mode(self, mode)` [L735-L741] — *Set the startup project policy.*
+  - `restore_last_opened(self)` [L743-L883] — *Apply startup policy and offer recovery from a newer autosave snapshot.*
+  - `toggle_speaker_labels(self, checked)` [L885-L890]
+  - `toggle_colorize_speaker_labels(self, checked)` [L892-L899]
+  - `toggle_timestamps(self, checked)` [L901-L908]
+  - `toggle_milliseconds(self, checked)` [L910-L917]
+  - `toggle_waveform_view(self, checked)` [L919-L923]
+  - `toggle_thumbnail_view(self, checked)` [L925-L929]
+  - `choose_default_project_directory(self)` [L931-L946]
+  - `open_document_path(self, path)` [L948-L983]
+  - `open_clear_cache_dialog(self)` [L985-L998]
+  - `open_glossary_dialog(self)` [L1000-L1004] — *Edit persistent terminology used by every ASR and translation backend.*
+  - `_save_glossary(self)` [L1006-L1007]
+  - `apply_glossary_to_current_transcript(self, entries)` [L1009-L1041] — *Apply glossary rules and contextual name resolution to the active transcript with Undo support.*
+  - `add_to_glossary(self, text)` [L1043-L1057]
+  - `prompt_add_alternate_spelling(self, alternate_text)` [L1059-L1102] — *Prompt user for the preferred glossary spelling that `alternate_text` should map to.*
+  - `apply_glossary_to_whisper_context(self)` [L1104-L1115]
+  - `add_custom_speaker_to_glossary(self, name)` [L1117-L1119]
+  - `set_language(self, language, persist)` [L1121-L1142]
+  - `_apply_localization(self)` [L1144-L1181]
+  - `update_story_segment_terminology(self)` [L1183-L1270] — *Update all user-facing labels and tooltips using active vocabulary settings.*
+  - `open_document(self)` [L1272-L1326]
+  - `export_text_file(self)` [L1328-L1336]
+  - `open_media(self)` [L1338-L1347]
+  - `prepare_for_new_media(self)` [L1349-L1382] — *Checks for unsaved changes before loading new media.*
+  - `_batch_media_error(self, message)` [L1384-L1406]
+  - `_get_batch_project_target_path(self, base_name)` [L1408-L1435] — *Determines consistent target .rtvs project file path during batch processing.*
+  - `_batch_save_project_file(self)` [L1437-L1452] — *Saves project .rtvs to dedicated directory structure during batch processing.*
+  - `_batch_export_current(self)` [L1454-L1538] — *Handles automatic export or project saving during batch processing.*
+  - `load_media_file(self, filename, source, restore_adjacent_project)` [L1540-L1655]
+  - `update_active_media_source(self)` [L1657-L1690] — *Update media player source and refresh waveform when normalization state changes.*
+  - `open_audio(self)` [L1692-L1693]
+  - `handle_media_drop(self, filename)` [L1695-L1696]
 
 ### `model_install_workers.py` (189 lines)
 *Radio & TV Segmenter — Model Download and Installation Background Workers.*
@@ -2667,11 +2667,11 @@
 - **Functions**:
   - `theme_tokens_for_mode(mode)` [L297-L307] — *Return the ThemeTokens preset matching a Preferences theme_mode value*
 
-### `timeline_context_menus.py` (166 lines)
+### `timeline_context_menus.py` (175 lines)
 *Context menu builders and event handlers for the timeline canvas.*
 - **Functions**:
-  - `show_timeline_context_menu(canvas, global_pos, pos_x)` [L12-L134] — *Display the primary right-click context menu on the timeline canvas.*
-  - `show_selection_context_menu(canvas, global_pos)` [L137-L166] — *Display the range selection context menu on the timeline canvas.*
+  - `show_timeline_context_menu(canvas, global_pos, pos_x, exec_menu)` [L12-L139] — *Display the primary right-click context menu on the timeline canvas.*
+  - `show_selection_context_menu(canvas, global_pos, exec_menu)` [L142-L175] — *Display the range selection context menu on the timeline canvas.*
 
 ### `timeline_overview.py` (351 lines)
 *Timeline Resize Handle and Overview Navigation Bar widgets.*
@@ -2941,7 +2941,7 @@
   - `_on_bubble_export(self)` [L468-L473]
 
 ### `transcript_story.py` (852 lines)
-*Radio & TV Segmenter v3.9.94-beta — transcript story responsibilities.*
+*Radio & TV Segmenter v3.9.95-beta — transcript story responsibilities.*
 - **Public Exports (`__all__`)**: TranscriptStoryMixin, Story, SetStoriesCommand, SelectStoriesCommand, StoryBoundaryChangeCommand, StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin, ChangeSpeakerDialog, VoiceProfileMatchDialog, StoryFadesDialog, SpeakerManagerDialog, FADE_CURVE_TABLES, get_fade_curve_factors
 - **class `TranscriptStoryMixin(StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin)`** (lines 63–851):
   - `render_transcript(self)` [L64-L467]
