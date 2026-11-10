@@ -93,6 +93,9 @@ TABLE OF CONTENTS & STATUS OVERVIEW
    [ ] 6.4 Burned-in Subtitles & Platform Safe Zone Enforcement (`plugins/social_reel/reel_subtitles.py`)
    [ ] 6.5 Unified Export Integration & Social Reel Diagnostic Tests (`export/dialog.py`, `test_runner.py`)
 
+7. Optional Future Milestone: Drupal Publishing & Export Plugin (`plugins/drupal/`, `export_destination.py`) [PLANNED / ON HOLD] [NOT STARTED]
+   [ ] 7.1 Drupal JSON:API Integration & Content Modeling: Direct publishing of segmented stories, transcripts, formatted HTML bodies, and audio/media file uploads to Drupal sites via the core JSON:API module (`/jsonapi/node/{bundle}`) with configurable authentication (Basic Auth / API Key / OAuth2) and bundle/field mapping. Detailed architectural planning deferred pending target site specifications.
+
 ================================================================================
 DETAILED MILESTONE SPECIFICATIONS
 ================================================================================
@@ -134,3 +137,13 @@ DETAILED MILESTONE SPECIFICATIONS
 - Purpose: Vertical 9:16 video renderer with animated audiograms, platform safe-zone margin enforcement, and burned-in subtitles for social platforms.
 - Target Release: v4.3.0 (Optional / Planned)
 - Technical References: Subsystem architecture, plugin manifest, and FFmpeg filtergraph pipeline specifications in `ARCHITECTURE.md` (Section 6).
+
+7. OPTIONAL FUTURE MILESTONE: DRUPAL PUBLISHING & EXPORT PLUGIN:
+- Purpose: Direct publishing of segmented stories, transcripts, HTML notes, and audio media to Drupal installations via Drupal's core JSON:API module.
+- Target Release: Future / Planned (On hold pending target site specifications)
+- Technical References: `plugins/drupal/`, modeled on `plugins/wordpress/` export destination architecture.
+- Implementation Notes:
+  * [ ] Core JSON:API Client: Handle JSON:API 1.0 specification envelopes (`attributes`, `relationships`) for node and file/media entities.
+  * [ ] Authentication Adapters: Support HTTP Basic Authentication (`basic_auth`), API Key (`key_auth`), and OAuth2 Bearer tokens.
+  * [ ] Content Type & Field Mapping: Dynamic bundle discovery (`GET /jsonapi/`) with flexible field mapping (Body, Summary, Tags, Media/Audio).
+  * [ ] Note: Detailed implementation planning deferred until target Drupal site requirements and content types are defined.
