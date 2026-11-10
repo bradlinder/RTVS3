@@ -75,7 +75,7 @@ class StoryCrudMixin:
             clock_dur = format_clock_duration(dur, include_millis=True)
             self.stories_header.setText(f"{base_label} (1) — [{clock_dur}]")
             if is_es:
-                self.stories_header.setToolTip(f"1 {sing_term} seleccionada: #{idx + 1} '{story.title}' — Duración: {clock_dur}")
+                self.stories_header.setToolTip(f"1 {sing_term} seleccionado: #{idx + 1} '{story.title}' — Duración: {clock_dur}")
             else:
                 self.stories_header.setToolTip(f"1 {sing_term} selected: #{idx + 1} '{story.title}' — Duration: {clock_dur}")
         else:
@@ -84,7 +84,7 @@ class StoryCrudMixin:
             count = len(valid_indices)
             self.stories_header.setText(f"{base_label} ({count}) — [{clock_dur}]")
             if is_es:
-                self.stories_header.setToolTip(f"{count} {plur_term} seleccionadas — Duración total: {clock_dur}")
+                self.stories_header.setToolTip(f"{count} {plur_term} seleccionados — Duración total: {clock_dur}")
             else:
                 self.stories_header.setToolTip(f"{count} {plur_term} selected — Total Duration: {clock_dur}")
 

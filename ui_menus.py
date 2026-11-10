@@ -639,7 +639,7 @@ class UiMenusMixin:
 
         help_menu.addSeparator()
 
-        about_act = QAction("&About Radio & TV Story Segmenter", self)
+        about_act = QAction("&About Radio & TV Segmenter", self)
         about_act.setShortcut(platform_seq("Shift+F1"))
         about_act.triggered.connect(self.show_about_dialog)
         self.about_action = about_act
@@ -761,18 +761,11 @@ class UiMenusMixin:
         if hasattr(self, "diarize_action"):
             self.diarize_action.setText("Detect Speakers (Complete)" if has_diarization else "Detect Speakers...")
         if hasattr(self, "auto_detect_action"):
-            is_music = (getattr(self, "story_detection_mode", "voice") == "music")
             is_es = (getattr(self, "language", "en") == "es")
-            if is_music:
-                if is_es:
-                    self.auto_detect_action.setText("&Detectar canciones (Completado)" if has_stories else "&Detectar canciones...")
-                else:
-                    self.auto_detect_action.setText("Detect Songs (Complete)" if has_stories else "&Detect Songs...")
+            if is_es:
+                self.auto_detect_action.setText("&Detectar segmentos (Completado)" if has_stories else "&Detectar segmentos...")
             else:
-                if is_es:
-                    self.auto_detect_action.setText("&Detectar historias (Completado)" if has_stories else "&Detectar historias...")
-                else:
-                    self.auto_detect_action.setText("Detect Stories (Complete)" if has_stories else "&Detect Stories...")
+                self.auto_detect_action.setText("Detect Segments (Complete)" if has_stories else "&Detect Segments...")
 
 
     def refresh_plugin_menus(self):

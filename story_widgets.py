@@ -338,9 +338,8 @@ class StoryCardDelegate(QStyledItemDelegate):
 
             # Story Data
             story_data = index.data(Qt.ItemDataRole.UserRole)
-            is_music = getattr(win, "story_detection_mode", "voice") == "music"
             is_es = getattr(win, "language", "en") == "es"
-            badge_prefix = ("Canción" if is_es else "Song") if is_music else ("Historia" if is_es else "Story")
+            badge_prefix = "Segmento" if is_es else "Segment"
 
             if isinstance(story_data, dict):
                 title = story_data.get("title", f"{badge_prefix} {row + 1}")
@@ -412,7 +411,7 @@ class StoryCardDelegate(QStyledItemDelegate):
             # Fallback safe card painting
             painter.fillRect(option.rect, QColor("#1e222a"))
             painter.setPen(QColor("#ffffff"))
-            raw_text = index.data(Qt.ItemDataRole.DisplayRole) or f"Story {index.row() + 1}"
+            raw_text = index.data(Qt.ItemDataRole.DisplayRole) or f"Segment {index.row() + 1}"
             painter.drawText(option.rect.adjusted(8, 0, -8, 0), Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft, str(raw_text))
         finally:
             painter.restore()
@@ -503,11 +502,11 @@ class StoryListWidget(QListWidget):
         top_win = self.window() if hasattr(self, "window") else self
         menu = QMenu(top_win or self)
 
-        audition_act = QAction("Audition Story Playback", self)
+        audition_act = QAction("Audition Segment Playback", self)
         audition_act.triggered.connect(lambda: parent.audition_story(self.currentRow()))
         menu.addAction(audition_act)
 
-        copy_act = QAction("Copy Story Transcript (Ctrl+C)", self)
+        copy_act = QAction("Copy Segment Transcript (Ctrl+C)", self)
         copy_act.triggered.connect(lambda: parent.transcript_view.copy_highlighted_selection() if hasattr(parent, "transcript_view") else None)
         menu.addAction(copy_act)
 
@@ -523,11 +522,11 @@ class StoryListWidget(QListWidget):
 
         menu.addSeparator()
 
-        meta_act = QAction("Story & Post Metadata...", self)
+        meta_act = QAction("Segment & Post Metadata...", self)
         meta_act.triggered.connect(lambda: parent.open_story_metadata_dialog(self.currentRow()) if hasattr(parent, "open_story_metadata_dialog") else None)
         menu.addAction(meta_act)
 
-        export_act = QAction("Export Selected Stories...", self)
+        export_act = QAction("Export Selected Segments...", self)
         export_act.triggered.connect(lambda: self.exportRequested.emit())
         menu.addAction(export_act)
 
@@ -550,7 +549,7 @@ class StoryListWidget(QListWidget):
 
         menu.addSeparator()
 
-        del_act = QAction("Delete Selected Story", self)
+        del_act = QAction("Delete Selected Segment", self)
         del_act.triggered.connect(lambda: self.deleteRequested.emit())
         menu.addAction(del_act)
 

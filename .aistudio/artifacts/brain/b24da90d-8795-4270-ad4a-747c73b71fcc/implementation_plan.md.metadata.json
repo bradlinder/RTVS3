@@ -1,0 +1,6 @@
+{
+  "summary":  "Implementation plan to standardize timeline regions universally as \"Segment\" / \"Segments\" across the entire application, remove the Preferences vocabulary switcher and context-dependent Stories/Songs label switching, retain the Voice vs. Music audio detection algorithm choice, and unify the display title to \"Radio & TV Segmenter\".",
+  "updatedAt":  "2026-11-10T13:57:16.174287989Z",
+  "requestFeedback":  true,
+  "userFacing":  true
+}

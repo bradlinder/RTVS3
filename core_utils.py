@@ -31,7 +31,7 @@ else:
 
 INTERNAL_APP_ID = "RadioTVStorySegmenter"
 APP_DISPLAY_NAME = "Radio & TV Segmenter"
-PROJECT_VERSION = "3.9.93-beta"
+PROJECT_VERSION = "3.9.94-beta"
 DEFAULT_GITHUB_REPO = "bradlinder/RTVS3"
 
 
@@ -709,87 +709,54 @@ class StoryVocabulary(NamedTuple):
 
 
 def get_story_vocabulary(win_or_settings: Any = None, language: Optional[str] = None) -> StoryVocabulary:
-    """Resolve active UI vocabulary nouns and action labels for timeline story/clip segments.
+    """Resolve active UI vocabulary nouns and action labels for timeline segments.
 
-    Supported Modes (configured in Preferences under ui_vocabulary_mode):
-    - "auto" (default): dynamically resolves to "songs" in Music detection mode, "stories" in Voice mode
-    - "stories": always uses Story / Stories (default broadcast terminology)
-    - "clips": always uses Clip / Clips (production/DAW terminology)
-    - "segments": always uses Segment / Segments (generic chapter terminology)
-    - "songs": always uses Song / Songs (music track terminology)
+    Standardized on Segment / Segments universally across the entire application
+    (Segmento / Segmentos in Spanish).
     """
-    mode_raw, det_mode, lang_raw = "auto", "voice", language
-
-    if win_or_settings is not None:
+    lang_raw = language
+    if lang_raw is None and win_or_settings is not None:
         if isinstance(win_or_settings, dict):
-            mode_raw = win_or_settings.get("ui_vocabulary_mode", "auto") or "auto"
-            det_mode = win_or_settings.get("story_detection_mode", "voice") or "voice"
-            if lang_raw is None:
-                lang_raw = win_or_settings.get("language", "en")
-        elif isinstance(win_or_settings, str):
-            mode_raw = win_or_settings
-        else:
-            if hasattr(win_or_settings, "ui_vocabulary_mode"):
-                mode_raw = getattr(win_or_settings, "ui_vocabulary_mode", "auto") or "auto"
+            lang_raw = win_or_settings.get("language", "en")
+        elif not isinstance(win_or_settings, str):
+            if hasattr(win_or_settings, "language"):
+                lang_raw = getattr(win_or_settings, "language", "en")
             elif hasattr(win_or_settings, "value"):
                 try:
-                    mode_raw = win_or_settings.value("ui_vocabulary_mode", "auto") or "auto"
+                    lang_raw = win_or_settings.value("language", "en")
                 except Exception:
-                    mode_raw = "auto"
-
-            if hasattr(win_or_settings, "story_detection_mode"):
-                det_mode = getattr(win_or_settings, "story_detection_mode", "voice") or "voice"
-            elif hasattr(win_or_settings, "value"):
-                try:
-                    det_mode = win_or_settings.value("story_detection_mode", "voice") or "voice"
-                except Exception:
-                    det_mode = "voice"
-
-            if lang_raw is None:
-                if hasattr(win_or_settings, "language"):
-                    lang_raw = getattr(win_or_settings, "language", "en")
-                elif hasattr(win_or_settings, "value"):
-                    try:
-                        lang_raw = win_or_settings.value("language", "en")
-                    except Exception:
-                        lang_raw = "en"
-    else:
+                    lang_raw = "en"
+    if lang_raw is None:
         try:
             from PySide6.QtCore import QSettings
             settings = QSettings(INTERNAL_APP_ID, INTERNAL_APP_ID)
-            mode_raw = settings.value("ui_vocabulary_mode", "auto") or "auto"
-            det_mode = settings.value("story_detection_mode", "voice") or "voice"
-            lang_raw = lang_raw or (settings.value("language", "en") or "en")
+            lang_raw = settings.value("language", "en") or "en"
         except Exception:
             pass
-
-    mode_key = str(mode_raw).strip().lower()
-    if mode_key not in {"stories", "clips", "segments", "songs"}:
-        mode_key = "songs" if str(det_mode).strip().lower() == "music" else "stories"
 
     is_es = str(lang_raw or "en").strip().lower() == "es"
 
     if is_es:
-        terms_map = {
-            "stories": ("historia", "historias", "Historia", "Historias", "Agregar historia", "Fijar inicio de historia", "Fijar fin de historia", "Metadatos de historia...", "Ajustes de historias", "Detectar historias", "Panel de historias"),
-            "clips": ("clip", "clips", "Clip", "Clips", "Agregar clip", "Fijar inicio de clip", "Fijar fin de clip", "Metadatos de clip...", "Ajustes de clips", "Detectar clips", "Panel de clips"),
-            "segments": ("segmento", "segmentos", "Segmento", "Segmentos", "Agregar segmento", "Fijar inicio de segmento", "Fijar fin de segmento", "Metadatos de segmento...", "Ajustes de segmentos", "Detectar segmentos", "Panel de segmentos"),
-            "songs": ("canción", "canciones", "Canción", "Canciones", "Agregar canción", "Fijar inicio de canción", "Fijar fin de canción", "Metadatos de canción...", "Ajustes de canciones", "Detectar canciones", "Panel de canciones"),
-        }
+        sing_l, plur_l, sing_c, plur_c = "segmento", "segmentos", "Segmento", "Segmentos"
+        add_l = "Agregar segmento"
+        set_s = "Fijar inicio de segmento"
+        set_e = "Fijar fin de segmento"
+        meta_b = "Metadatos de segmento..."
+        set_b = "Ajustes de segmentos"
+        det_a = "Detectar segmentos"
+        pan_t = "Panel de segmentos"
     else:
-        terms_map = {
-            "stories": ("story", "stories", "Story", "Stories", "Add Story", "Set Story Start", "Set Story End", "Story Metadata...", "Story Settings", "Detect Stories", "Stories Panel"),
-            "clips": ("clip", "clips", "Clip", "Clips", "Add Clip", "Set Clip Start", "Set Clip End", "Clip Metadata...", "Clip Settings", "Detect Clips", "Clips Panel"),
-            "segments": ("segment", "segments", "Segment", "Segments", "Add Segment", "Set Segment Start", "Set Segment End", "Segment Metadata...", "Segment Settings", "Detect Segments", "Segments Panel"),
-            "songs": ("song", "songs", "Song", "Songs", "Add Song", "Set Song Start", "Set Song End", "Song Metadata...", "Song Settings", "Detect Songs", "Songs Panel"),
-        }
-
-    sing_l, plur_l, sing_c, plur_c, add_l, set_s, set_e, meta_b, set_b, det_a, pan_t = terms_map.get(
-        mode_key, terms_map["stories"]
-    )
+        sing_l, plur_l, sing_c, plur_c = "segment", "segments", "Segment", "Segments"
+        add_l = "Add Segment"
+        set_s = "Set Segment Start"
+        set_e = "Set Segment End"
+        meta_b = "Segment Metadata..."
+        set_b = "Segment Settings"
+        det_a = "Detect Segments"
+        pan_t = "Segments Panel"
 
     return StoryVocabulary(
-        mode=mode_key,
+        mode="segments",
         singular=sing_c,
         plural=plur_c,
         singular_lower=sing_l,

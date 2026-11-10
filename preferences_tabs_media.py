@@ -150,14 +150,14 @@ def build_detection_tab(win, dialog, live_widgets, add_custom_defaults_btn) -> Q
 
     det_mode_combo = QComboBox()
     det_mode_combo.addItem("Voice / Speech (Standard Dialog Pauses)", "voice")
-    det_mode_combo.addItem("Music / Songs (Music Programs & Song Breaks)", "music")
+    det_mode_combo.addItem("Music / Track Breaks (Music Programs)", "music")
     curr_det_mode = str(getattr(win, "story_detection_mode", "voice") or "voice")
     idx = det_mode_combo.findData(curr_det_mode)
     det_mode_combo.setCurrentIndex(idx if idx >= 0 else 0)
     det_mode_combo.setToolTip(
         "Detection Basis:\n"
         "• Voice Mode: Segments audio based on silences and pauses in spoken dialogue.\n"
-        "• Music Mode: Designed for music programs. Detects songs; sets song boundaries when a track ends and there is silence, dialog only, or non-musical sounds for the threshold duration."
+        "• Music Mode: Designed for music programs. Detects song tracks; sets segment boundaries when a track ends and there is silence, dialog only, or non-musical sounds for the threshold duration."
     )
     det_form.addRow("Detection Basis / Mode:", det_mode_combo)
     live_widgets["det_mode_combo"] = det_mode_combo

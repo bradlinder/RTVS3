@@ -1,13 +1,13 @@
 # Repository Symbol Index & API Map
 
-> Generated: 2026-11-10 11:21:57 | Total Files: 164
+> Generated: 2026-11-10 14:16:06 | Total Files: 164
 > Use `python scripts/generate_symbol_index.py --outline <file>` for exact line numbers.
 
 ## Modules Overview
 
 | Module | Lines | Summary | Primary Classes / Functions |
 | :--- | :---: | :--- | :--- |
-| `RadioTVSegmenter.py` | 664 | Radio & TV Segmenter — v3.9.93-beta | `MainWindow`, `main()` |
+| `RadioTVSegmenter.py` | 664 | Radio & TV Segmenter — v3.9.94-beta | `MainWindow`, `main()` |
 | `audio_normalization.py` | 541 | Radio & TV Story Segmenter — Audio Loudness Probing & Nor... | `LoudnessReport`, `AudioLoudnessProbeWorker`, `parse_ebur128_summary()`, `probe_media_duration_seconds()` *(+3 more)* |
 | `background_workers.py` | 1015 | Radio & TV Story Segmenter — Background Worker Threads & ... | `StoryAutoDetectWorker`, `WaveformWorker`, `VideoThumbnailWorker`, `get_waveform_peak_cache_path()` *(+6 more)* |
 | `backup_manager.py` | 622 | Unified State Serialization, Local, and Google Drive Clou... | `compute_data_checksum()`, `serialize_preferences()`, `serialize_keyboard_shortcuts()`, `serialize_glossary()` *(+7 more)* |
@@ -21,12 +21,12 @@
 | `bump_version.py` | 513 | bump_version.py — Automated Version Synchronization Engine | `normalize_version()`, `get_current_version()`, `compute_bump()`, `detect_modified_plugins()` *(+3 more)* |
 | `cache_manager.py` | 685 | Radio & TV Segmenter — Cache management, disk usage scann... | `ClearCacheDialog`, `register_active_thumbnail_dir()`, `unregister_active_thumbnail_dir()`, `get_active_thumbnail_dirs()` *(+3 more)* |
 | `comment_widgets.py` | 350 | comment_widgets.py - Range-Anchored Comments Panel & Comm... | `CommentEditorDialog`, `CommentCardWidget`, `CommentsPanel` |
-| `core_utils.py` | 806 | Radio & TV Segmenter — Core filesystem, path, timing, and... | `StoryVocabulary`, `safe_process_events()`, `get_active_theme_mode()`, `apply_window_titlebar_theme()` *(+25 more)* |
+| `core_utils.py` | 773 | Radio & TV Segmenter — Core filesystem, path, timing, and... | `StoryVocabulary`, `safe_process_events()`, `get_active_theme_mode()`, `apply_window_titlebar_theme()` *(+25 more)* |
 | `diagnostic_batch_tests.py` | 1076 | Diagnostic test bench suite component. | `DiagnosticBatchTestsMixin` |
 | `diagnostic_cloud_and_system_tests.py` | 1313 | Diagnostic test bench suite component. | `DiagnosticCloudAndSystemTestsMixin` |
 | `diagnostic_core_tests.py` | 880 | Diagnostic test bench suite component. | `DiagnosticCoreTestsMixin` |
 | `diagnostic_dialog.py` | 324 | PySide6 Graphical Test Bench Dialog for Radio & TV Story ... | `create_diagnostic_dialog()` |
-| `diagnostic_editor_tests.py` | 887 | Diagnostic editor and find-replace tests for Radio & TV S... | `DiagnosticEditorTestsMixin` |
+| `diagnostic_editor_tests.py` | 863 | Diagnostic editor and find-replace tests for Radio & TV S... | `DiagnosticEditorTestsMixin` |
 | `diagnostic_export_tests.py` | 1899 | Diagnostic test bench suite component. | `DiagnosticExportTestsMixin` |
 | `diagnostic_helpers.py` | 151 | Helper fixtures, module resolvers, and DiagnosticItem for... | `DiagnosticItem`, `generate_synthetic_wav()` |
 | `diagnostic_loudness_tests.py` | 391 | Radio & TV Story Segmenter — Diagnostic Loudness Normaliz... | `DiagnosticLoudnessTestsMixin` |
@@ -51,7 +51,7 @@
 | `gpu_acceleration.py` | 276 | Radio & TV Segmenter v1.1.1 — optional GPU acceleration r... | `GpuAccelerationInstallWorker`, `GpuAccelerationMixin` |
 | `id3_editor.py` | 704 | ID3 Tag Editor module for Radio & TV Segmenter. | `ID3TagEditorDialog`, `read_id3_tags()`, `write_id3_tags()` |
 | `installer/pyinstaller/torch_dll_hook.py` | 70 | PyInstaller runtime hook for Windows ML/native DLL resolu... | - |
-| `media_batch.py` | 1695 | Radio & TV Segmenter v1.1.1 — media batch responsibilities. | `MediaBatchMixin` |
+| `media_batch.py` | 1692 | Radio & TV Segmenter v1.1.1 — media batch responsibilities. | `MediaBatchMixin` |
 | `model_install_workers.py` | 189 | Radio & TV Segmenter — Model Download and Installation Ba... | `WhisperModelInstallWorker`, `DiarizationModelInstallWorker`, `get_diarization_model_dir()`, `is_diarization_model_available()` |
 | `model_management.py` | 989 | Radio & TV Segmenter v1.1.1 — model management responsibi... | `_DummyTranslationWorker`, `ModelManagementMixin` |
 | `playback_controller.py` | 630 | Radio & TV Story Segmenter — Media Player Transport & Pla... | `PlaybackControllerMixin` |
@@ -84,11 +84,11 @@
 | `plugins/youtube/export_destination.py` | 613 | YouTube Export Destination for UnifiedExportDialog with Z... | `YouTubeExportTabWidget`, `YouTubeExportDestination`, `capture_video_frame()` |
 | `plugins/youtube/guide_dialog.py` | 147 | Interactive Assisted Upload Guide Dialog for YouTube Studio. | `YouTubeAssistedUploadGuideDialog` |
 | `plugins/youtube/plugin.py` | 261 | YouTube Video Publisher Plugin for Radio & TV Segmenter. | `YouTubeSettingsDialog`, `Plugin`, `capture_video_frame()` |
-| `preferences_dialog.py` | 890 | Radio & TV Story Segmenter — Preferences Modal Dialog. | `PreferencesDialogMixin` |
-| `preferences_reset.py` | 680 | Radio & TV Story Segmenter — Preferences Reset & Factory ... | `RestoreSelectedSettingsDialog`, `PreferencesResetMixin` |
-| `preferences_reset_dialog.py` | 639 | Radio & TV Segmenter — Preferences reset and factory defa... | `RestoreSelectedSettingsDialog`, `PreferencesResetMixin` |
+| `preferences_dialog.py` | 881 | Radio & TV Story Segmenter — Preferences Modal Dialog. | `PreferencesDialogMixin` |
+| `preferences_reset.py` | 674 | Radio & TV Story Segmenter — Preferences Reset & Factory ... | `RestoreSelectedSettingsDialog`, `PreferencesResetMixin` |
+| `preferences_reset_dialog.py` | 633 | Radio & TV Segmenter — Preferences reset and factory defa... | `RestoreSelectedSettingsDialog`, `PreferencesResetMixin` |
 | `preferences_tab_daw.py` | 138 | preferences_tab_daw.py — External Audio & Video Editors P... | `build_external_editors_tab()` |
-| `preferences_tabs_core.py` | 638 | Radio & TV Story Segmenter — Preferences Modal Core Tab B... | `build_general_tab()`, `build_shortcuts_tab()`, `build_audio_hardware_tab()`, `build_updates_tab()` *(+2 more)* |
+| `preferences_tabs_core.py` | 623 | Radio & TV Story Segmenter — Preferences Modal Core Tab B... | `build_general_tab()`, `build_shortcuts_tab()`, `build_audio_hardware_tab()`, `build_updates_tab()` *(+2 more)* |
 | `preferences_tabs_media.py` | 657 | Radio & TV Story Segmenter — Preferences Modal Media & Wo... | `build_playback_timeline_tab()`, `build_detection_tab()`, `build_batch_tab()`, `build_cleanup_tab()` *(+1 more)* |
 | `preview_manager.py` | 270 | AI Studio Web Preview Manager for Radio & TV Story Segmen... | `get_project_version()`, `restore_preview()`, `sync_version()`, `main()` |
 | `process_lifecycle.py` | 191 | Radio & TV Segmenter — Subprocess tracking and OS-level j... | `init_child_process_job_isolation()`, `bind_subprocess_to_job()`, `register_process()`, `unregister_process()` *(+2 more)* |
@@ -129,7 +129,7 @@
 | `story_fades_dialog.py` | 215 | story_fades_dialog.py — Dialog for fine-grained audio fad... | `StoryFadesDialog` |
 | `story_metadata_dialog.py` | 307 | Radio & TV Story Segmenter — Universal Story & Post Metad... | `StoryMetadataDialog`, `generate_story_excerpt()` |
 | `story_model.py` | 273 | Radio & TV Story Segmenter — Story Model, Boundaries & Un... | `Story`, `SetStoriesCommand`, `StoryBoundaryChangeCommand`, `SelectStoriesCommand` *(+3 more)* |
-| `story_widgets.py` | 568 | Radio & TV Story Segmenter — Story Sidebar Widgets, Item ... | `FadeCurveVisualSelector`, `StoryFadesChangeCommand`, `SetStoriesCommand`, `StoryBoundaryChangeCommand` *(+3 more)* |
+| `story_widgets.py` | 567 | Radio & TV Story Segmenter — Story Sidebar Widgets, Item ... | `FadeCurveVisualSelector`, `StoryFadesChangeCommand`, `SetStoriesCommand`, `StoryBoundaryChangeCommand` *(+3 more)* |
 | `sync.py` | 161 | 2-Way Synchronization Engine for Radio & TV Story Segmenter. | `get_current_version()`, `run_cmd()`, `cmd_status()`, `cmd_pull()` *(+2 more)* |
 | `terminology.py` | 882 | Model-independent terminology and glossary support. | `split_source_variants()`, `format_source_variants()`, `parse_glossary()`, `expand_glossary_rules()` *(+11 more)* |
 | `theme_preferences.py` | 596 | Radio & TV Story Segmenter — Theme Preferences & Styling ... | `ThemePreferencesMixin` |
@@ -142,21 +142,21 @@
 | `timeline_snap.py` | 195 | Timeline snapping algorithms, edge detection, and collisi... | `snap_time()`, `find_edge_at_pos()`, `find_fade_handle_at_pos()`, `find_story_at_time()` *(+4 more)* |
 | `timeline_widgets.py` | 999 | Radio & TV Story Segmenter — Timeline Ruler, Track Views,... | `TimelineCanvas`, `TimelineWidget` |
 | `transcript_cleaner.py` | 216 | Radio & TV Segmenter — Transcript cleaning, loop collapsi... | `collapse_repeating_ngrams()`, `strip_hallucination_phrases()`, `trim_trailing_degenerate_tail()`, `scrub_transcript_segments()` *(+1 more)* |
-| `transcript_context_menu_mixin.py` | 730 | Radio & TV Story Segmenter — Interactive Transcript Conte... | `TranscriptContextMenuMixin` |
+| `transcript_context_menu_mixin.py` | 737 | Radio & TV Story Segmenter — Interactive Transcript Conte... | `TranscriptContextMenuMixin` |
 | `transcript_editor.py` | 945 | transcript_editor.py - Interactive Transcript Editor & Vi... | `InteractiveTranscriptEdit` |
 | `transcript_editor_dialogs.py` | 683 | transcript_editor_dialogs.py - Dialog and floating toolba... | `FindReplaceDialog`, `TranscriptSelectionBubble` |
 | `transcript_formatting_mixin.py` | 340 | Radio & TV Story Segmenter — Interactive Transcript Forma... | `TranscriptFormattingMixin` |
 | `transcript_navigation_mixin.py` | 300 | transcript_navigation_mixin.py - Timestamp discovery, car... | `TranscriptNavigationMixin` |
 | `transcript_playback_highlight_mixin.py` | 277 | Radio & TV Story Segmenter — Interactive Transcript Playb... | `TranscriptPlaybackHighlightMixin` |
 | `transcript_selection_mixin.py` | 473 | transcript_selection_mixin.py - Multi-selection, timeline... | `TranscriptSelectionMixin` |
-| `transcript_story.py` | 852 | Radio & TV Segmenter v3.9.93-beta — transcript story resp... | `TranscriptStoryMixin` |
+| `transcript_story.py` | 852 | Radio & TV Segmenter v3.9.94-beta — transcript story resp... | `TranscriptStoryMixin` |
 | `transcript_styles.py` | 104 | transcript_styles.py - Transcript view stylesheets and da... | `transcript_text_view_stylesheet()`, `clean_dark_mode_clipboard_html()` |
 | `transcript_timeline_sync_mixin.py` | 643 | Radio & TV Story Segmenter — Transcript Timeline & Playba... | `TranscriptTimelineSyncMixin` |
 | `transcription_processing.py` | 579 | Transcription background process management for Radio & T... | `TranscriptionProcessingMixin` |
 | `translation.py` | 923 | Radio & TV Segmenter — Local Translation Mixin. | `TranslationEnvSetupWorker`, `TranslationMixin` |
 | `ui_dialog_launchers.py` | 370 | Dialog launchers and external modal helpers for Radio & T... | `UiDialogLaunchersMixin` |
 | `ui_layout.py` | 1097 | Radio & TV Segmenter — UI Layout & Menu Construction Mixin. | `UiLayoutMixin` |
-| `ui_menus.py` | 870 | Main application menu bar and action assembly for Radio &... | `PersistentMenu`, `UiMenusMixin` |
+| `ui_menus.py` | 863 | Main application menu bar and action assembly for Radio &... | `PersistentMenu`, `UiMenusMixin` |
 | `updater.py` | 1549 | Update manager and GitHub release installer for Radio & T... | `CheckUpdateWorker`, `DownloadUpdateWorker`, `CheckUpdateDialog`, `UpdaterMixin` *(+9 more)* |
 | `user_guide_dialog.py` | 846 | Radio & TV Story Segmenter — In-App User Guide & Document... | `ResponsiveTextBrowser`, `UserGuideDialog` |
 | `utils/__init__.py` | 36 | Utility modules for Radio & TV Story Segmenter. | - |
@@ -175,7 +175,7 @@
 ## Detailed Symbol Catalog
 
 ### `RadioTVSegmenter.py` (664 lines)
-*Radio & TV Segmenter — v3.9.93-beta*
+*Radio & TV Segmenter — v3.9.94-beta*
 - **class `MainWindow(ModelManagementMixin, MediaBatchMixin, PlaybackPreferencesMixin, UiLayoutMixin, ProcessingMixin, TranslationMixin, TranscriptStoryMixin, ProjectExportMixin, GpuAccelerationMixin, QMainWindow)`** (lines 160–561):
   *Main application window for Radio & TV Segmenter.*
   - `__init__(self)` [L178-L355]
@@ -412,7 +412,7 @@
   - `set_comments(self, segments)` [L302-L337] — *Populate the comment cards from transcript segments.*
   - `highlight_segment(self, target_seg_idx)` [L339-L350] — *Visually flash/highlight a specific comment card.*
 
-### `core_utils.py` (806 lines)
+### `core_utils.py` (773 lines)
 *Radio & TV Segmenter — Core filesystem, path, timing, and hash utilities.*
 - **class `StoryVocabulary(NamedTuple)`** (lines 695–708):
 - **Functions**:
@@ -446,7 +446,7 @@
   - `is_sentence_end(text)` [L654-L655]
   - `calculate_fade_curve_factor(u, fcurve)` [L658-L669] — *Calculate normalized fade-in multiplier (0.0 to 1.0) given progress `u` in [0, 1].*
   - `calculate_fade_out_factor(u, fcurve)` [L672-L692] — *Calculate normalized fade-out multiplier (1.0 to 0.0) given progress `u` from 0.0 (fade start) to 1.0 (silence).*
-  - `get_story_vocabulary(win_or_settings, language)` [L711-L805] — *Resolve active UI vocabulary nouns and action labels for timeline story/clip segments.*
+  - `get_story_vocabulary(win_or_settings, language)` [L711-L772] — *Resolve active UI vocabulary nouns and action labels for timeline segments.*
 
 ### `diagnostic_batch_tests.py` (1076 lines)
 *Diagnostic test bench suite component.*
@@ -520,15 +520,15 @@
 - **Functions**:
   - `create_diagnostic_dialog(parent, include_dev_tests)` [L16-L324] — *Builds the Diagnostic Test Bench Qt Dialog.*
 
-### `diagnostic_editor_tests.py` (887 lines)
+### `diagnostic_editor_tests.py` (863 lines)
 *Diagnostic editor and find-replace tests for Radio & TV Story Segmenter.*
-- **class `DiagnosticEditorTestsMixin`** (lines 11–886):
+- **class `DiagnosticEditorTestsMixin`** (lines 11–862):
   *Diagnostic suite for transcript editor, find-replace, and speaker synchronization.*
   - `_test_find_and_replace_project_synchronization_and_undo(self, item)` [L14-L209] — *Validates that Find & Replace updates segments, word timings, speaker aliases,*
   - `_test_in_app_user_guides_and_documentation_viewer(self, item)` [L211-L298] — *Validates in-app user guide resolution, fallback to embedded content, and bundling invariants.*
   - `_test_story_transcript_highlighting_and_smart_copy(self, item)` [L300-L490] — *Validates story selection synchronization with transcript highlight overlay and smart clipboard copying.*
-  - `_test_story_duration_visibility_and_header_aggregation(self, item)` [L492-L684] — *Validates story clock duration formatting, 2-line sidebar item format, and multi-selection header aggregation.*
-  - `_test_reaper_daw_companion_and_universal_clipboard_pipeline(self, item)` [L686-L886] — *Validates REAPER DAW clip cue JSON schema, sidecar emission, Lua script syntax,*
+  - `_test_story_duration_visibility_and_header_aggregation(self, item)` [L492-L660] — *Validates story clock duration formatting, 2-line sidebar item format, and multi-selection header aggregation.*
+  - `_test_reaper_daw_companion_and_universal_clipboard_pipeline(self, item)` [L662-L862] — *Validates REAPER DAW clip cue JSON schema, sidecar emission, Lua script syntax,*
 
 ### `diagnostic_export_tests.py` (1899 lines)
 *Diagnostic test bench suite component.*
@@ -868,9 +868,9 @@
 ### `installer/pyinstaller/torch_dll_hook.py` (70 lines)
 *PyInstaller runtime hook for Windows ML/native DLL resolution.*
 
-### `media_batch.py` (1695 lines)
+### `media_batch.py` (1692 lines)
 *Radio & TV Segmenter v1.1.1 — media batch responsibilities.*
-- **class `MediaBatchMixin`** (lines 21–1695):
+- **class `MediaBatchMixin`** (lines 21–1692):
   - `probe_media_duration(self, path)` [L22-L36] — *Probe duration locally so video timelines can be populated immediately.*
   - `_track_worker_thread(self, thread)` [L38-L50] — *Keep a strong reference to active worker threads so Python GC never destroys them while executing.*
   - `stop_waveform_worker(self, timeout_ms)` [L52-L83] — *Stop the current waveform worker completely before replacing it or closing.*
@@ -913,19 +913,19 @@
   - `add_custom_speaker_to_glossary(self, name)` [L1113-L1115]
   - `set_language(self, language, persist)` [L1117-L1138]
   - `_apply_localization(self)` [L1140-L1177]
-  - `update_story_segment_terminology(self)` [L1179-L1269] — *Update all user-facing labels and tooltips using active vocabulary settings.*
-  - `open_document(self)` [L1271-L1325]
-  - `export_text_file(self)` [L1327-L1335]
-  - `open_media(self)` [L1337-L1346]
-  - `prepare_for_new_media(self)` [L1348-L1381] — *Checks for unsaved changes before loading new media.*
-  - `_batch_media_error(self, message)` [L1383-L1405]
-  - `_get_batch_project_target_path(self, base_name)` [L1407-L1434] — *Determines consistent target .rtvs project file path during batch processing.*
-  - `_batch_save_project_file(self)` [L1436-L1451] — *Saves project .rtvs to dedicated directory structure during batch processing.*
-  - `_batch_export_current(self)` [L1453-L1537] — *Handles automatic export or project saving during batch processing.*
-  - `load_media_file(self, filename, source, restore_adjacent_project)` [L1539-L1654]
-  - `update_active_media_source(self)` [L1656-L1689] — *Update media player source and refresh waveform when normalization state changes.*
-  - `open_audio(self)` [L1691-L1692]
-  - `handle_media_drop(self, filename)` [L1694-L1695]
+  - `update_story_segment_terminology(self)` [L1179-L1266] — *Update all user-facing labels and tooltips using active vocabulary settings.*
+  - `open_document(self)` [L1268-L1322]
+  - `export_text_file(self)` [L1324-L1332]
+  - `open_media(self)` [L1334-L1343]
+  - `prepare_for_new_media(self)` [L1345-L1378] — *Checks for unsaved changes before loading new media.*
+  - `_batch_media_error(self, message)` [L1380-L1402]
+  - `_get_batch_project_target_path(self, base_name)` [L1404-L1431] — *Determines consistent target .rtvs project file path during batch processing.*
+  - `_batch_save_project_file(self)` [L1433-L1448] — *Saves project .rtvs to dedicated directory structure during batch processing.*
+  - `_batch_export_current(self)` [L1450-L1534] — *Handles automatic export or project saving during batch processing.*
+  - `load_media_file(self, filename, source, restore_adjacent_project)` [L1536-L1651]
+  - `update_active_media_source(self)` [L1653-L1686] — *Update media player source and refresh waveform when normalization state changes.*
+  - `open_audio(self)` [L1688-L1689]
+  - `handle_media_drop(self, filename)` [L1691-L1692]
 
 ### `model_install_workers.py` (189 lines)
 *Radio & TV Segmenter — Model Download and Installation Background Workers.*
@@ -1607,13 +1607,13 @@
 - **Functions**:
   - `capture_video_frame(video_path, timestamp, output_path)` [L45-L60]
 
-### `preferences_dialog.py` (890 lines)
+### `preferences_dialog.py` (881 lines)
 *Radio & TV Story Segmenter — Preferences Modal Dialog.*
-- **class `PreferencesDialogMixin(PreferencesResetMixin)`** (lines 32–890):
+- **class `PreferencesDialogMixin(PreferencesResetMixin)`** (lines 32–881):
   *Provides the main open_preferences_dialog method and settings persistence.*
-  - `open_preferences_dialog(self, initial_category, modal)` [L35-L890] — *Open the multi-category Preferences dialog as a non-modal floating inspector.*
+  - `open_preferences_dialog(self, initial_category, modal)` [L35-L881] — *Open the multi-category Preferences dialog as a non-modal floating inspector.*
 
-### `preferences_reset.py` (680 lines)
+### `preferences_reset.py` (674 lines)
 *Radio & TV Story Segmenter — Preferences Reset & Factory Defaults Engine.*
 - **class `RestoreSelectedSettingsDialog(QDialog)`** (lines 21–165):
   *Presents users with a list of customizable settings that can be restored to defaults.*
@@ -1621,12 +1621,12 @@
   - `_select_all(self)` [L128-L130]
   - `_deselect_all(self)` [L132-L134]
   - `_handle_reset(self)` [L136-L165]
-- **class `PreferencesResetMixin`** (lines 168–680):
+- **class `PreferencesResetMixin`** (lines 168–674):
   *Provides methods for resetting settings to defaults across all app categories.*
-  - `apply_settings_reset(self, selected_ids, live_widgets)` [L171-L669] — *Apply factory default settings to the requested categories and update live widgets if present.*
-  - `open_restore_system_defaults_dialog(self)` [L671-L680] — *Open the Restore System Defaults dialog directly from Settings menu or Backup & Restore Center.*
+  - `apply_settings_reset(self, selected_ids, live_widgets)` [L171-L663] — *Apply factory default settings to the requested categories and update live widgets if present.*
+  - `open_restore_system_defaults_dialog(self)` [L665-L674] — *Open the Restore System Defaults dialog directly from Settings menu or Backup & Restore Center.*
 
-### `preferences_reset_dialog.py` (639 lines)
+### `preferences_reset_dialog.py` (633 lines)
 *Radio & TV Segmenter — Preferences reset and factory default restore engine.*
 - **class `RestoreSelectedSettingsDialog(QDialog)`** (lines 20–163):
   *Presents users with a list of customizable settings that can be restored to defaults.*
@@ -1634,25 +1634,25 @@
   - `_select_all(self)` [L126-L128]
   - `_deselect_all(self)` [L130-L132]
   - `_handle_reset(self)` [L134-L163]
-- **class `PreferencesResetMixin`** (lines 166–638):
+- **class `PreferencesResetMixin`** (lines 166–632):
   *Mixin providing settings reset and restore dialog actions.*
-  - `apply_settings_reset(self, selected_ids, live_widgets)` [L169-L627] — *Apply factory default settings to the requested categories and update live widgets if present.*
-  - `open_restore_system_defaults_dialog(self)` [L629-L638] — *Open the Restore System Defaults dialog directly from Settings menu or Backup & Restore Center.*
+  - `apply_settings_reset(self, selected_ids, live_widgets)` [L169-L621] — *Apply factory default settings to the requested categories and update live widgets if present.*
+  - `open_restore_system_defaults_dialog(self)` [L623-L632] — *Open the Restore System Defaults dialog directly from Settings menu or Backup & Restore Center.*
 
 ### `preferences_tab_daw.py` (138 lines)
 *preferences_tab_daw.py — External Audio & Video Editors Preferences Tab.*
 - **Functions**:
   - `build_external_editors_tab(win, dialog, live_widgets, add_custom_defaults_btn)` [L22-L138] — *Construct the External Audio & Video Editors preferences tab.*
 
-### `preferences_tabs_core.py` (638 lines)
+### `preferences_tabs_core.py` (623 lines)
 *Radio & TV Story Segmenter — Preferences Modal Core Tab Builders.*
 - **Functions**:
-  - `build_general_tab(win, dialog, live_widgets, add_custom_defaults_btn)` [L26-L202]
-  - `build_shortcuts_tab(win, dialog, live_widgets)` [L205-L213]
-  - `build_audio_hardware_tab(win, dialog, live_widgets, add_custom_defaults_btn)` [L216-L359]
-  - `build_updates_tab(win, dialog, live_widgets, add_custom_defaults_btn)` [L362-L401]
-  - `build_ai_models_tab(win, dialog, live_widgets, add_custom_defaults_btn)` [L404-L527]
-  - `build_gpu_tab(win, dialog, live_widgets, add_custom_defaults_btn)` [L530-L638]
+  - `build_general_tab(win, dialog, live_widgets, add_custom_defaults_btn)` [L26-L187]
+  - `build_shortcuts_tab(win, dialog, live_widgets)` [L190-L198]
+  - `build_audio_hardware_tab(win, dialog, live_widgets, add_custom_defaults_btn)` [L201-L344]
+  - `build_updates_tab(win, dialog, live_widgets, add_custom_defaults_btn)` [L347-L386]
+  - `build_ai_models_tab(win, dialog, live_widgets, add_custom_defaults_btn)` [L389-L512]
+  - `build_gpu_tab(win, dialog, live_widgets, add_custom_defaults_btn)` [L515-L623]
 
 ### `preferences_tabs_media.py` (657 lines)
 *Radio & TV Story Segmenter — Preferences Modal Media & Workflow Tab Builders.*
@@ -2550,7 +2550,7 @@
   - `validate_story_boundaries(start, end, media_duration)` [L165-L174] — *Clamp and ensure start < end within [0.0, media_duration].*
   - `check_story_overlap(stories)` [L177-L187] — *Return pairs of story indices that temporally overlap.*
 
-### `story_widgets.py` (568 lines)
+### `story_widgets.py` (567 lines)
 *Radio & TV Story Segmenter — Story Sidebar Widgets, Item Delegates, and Undo Commands.*
 - **class `FadeCurveVisualSelector(QWidget)`** (lines 60–162):
   *Visual selector widget providing interactive card buttons for audio fade curves.*
@@ -2581,20 +2581,20 @@
   - `__init__(self, main_window, old_selection, new_selection, description)` [L273-L277]
   - `undo(self)` [L279-L280]
   - `redo(self)` [L282-L283]
-- **class `StoryCardDelegate(QStyledItemDelegate)`** (lines 290–418):
+- **class `StoryCardDelegate(QStyledItemDelegate)`** (lines 290–417):
   *Renders story items as clean cards with color-coded accent bars, pill badges, and time metadata.*
   - `__init__(self, parent)` [L292-L293]
   - `sizeHint(self, option, index)` [L295-L297]
-  - `paint(self, painter, option, index)` [L299-L418]
-- **class `StoryListWidget(QListWidget)`** (lines 425–568):
+  - `paint(self, painter, option, index)` [L299-L417]
+- **class `StoryListWidget(QListWidget)`** (lines 424–567):
   *QListWidget subclass for story segmentation list with right-click context menu and drag-drop support.*
-  - `__init__(self, parent)` [L432-L436]
-  - `dragEnterEvent(self, event)` [L438-L442]
-  - `dragMoveEvent(self, event)` [L444-L448]
-  - `dropEvent(self, event)` [L450-L457]
-  - `keyPressEvent(self, event)` [L459-L491]
-  - `_show_context_menu(self, pos)` [L493-L557]
-  - `adjust_height_to_contents(self, min_h, max_h)` [L559-L568] — *Dynamically size the list widget to only fit the number of stories.*
+  - `__init__(self, parent)` [L431-L435]
+  - `dragEnterEvent(self, event)` [L437-L441]
+  - `dragMoveEvent(self, event)` [L443-L447]
+  - `dropEvent(self, event)` [L449-L456]
+  - `keyPressEvent(self, event)` [L458-L490]
+  - `_show_context_menu(self, pos)` [L492-L556]
+  - `adjust_height_to_contents(self, min_h, max_h)` [L558-L567] — *Dynamically size the list widget to only fit the number of stories.*
 - **Functions**:
   - `_get_fade_curve_profiles()` [L46-L48]
   - `_get_fade_curve_icon(cid, width, height)` [L51-L53]
@@ -2810,19 +2810,19 @@
   - `scrub_transcript_segments(segments, collapse_loops)` [L124-L202] — *Comprehensive scrubber for transcript segment lists:*
   - `scrub_transcript(transcript)` [L205-L216] — *Clean and sanitize a complete transcript payload dictionary.*
 
-### `transcript_context_menu_mixin.py` (730 lines)
+### `transcript_context_menu_mixin.py` (737 lines)
 *Radio & TV Story Segmenter — Interactive Transcript Context Menu & Bubble Actions Mixin.*
-- **class `TranscriptContextMenuMixin`** (lines 48–729):
+- **class `TranscriptContextMenuMixin`** (lines 48–736):
   *Mixin for context menu construction and selection bubble quick-actions.*
   - `_on_bubble_play(self)` [L51-L56]
   - `_on_bubble_story(self)` [L58-L63]
   - `_on_bubble_note(self)` [L65-L78]
   - `_on_bubble_cut(self)` [L80-L85]
   - `_on_bubble_export(self)` [L87-L92]
-  - `show_context_menu(self, position)` [L94-L481]
-  - `copy_highlighted_selection(self)` [L483-L612] — *Copy the active story or timeline selection span to clipboard when no cursor text is selected.*
-  - `copy_selection_for_reaper(self)` [L614-L679] — *Explicitly build and copy REAPER DAW clip cue payload for the active text or story selection.*
-  - `copy_selection_as_daw_wav(self)` [L681-L729] — *Render temporary WAV audio clip and copy it to the OS clipboard (CF_HDROP) for any DAW.*
+  - `show_context_menu(self, position)` [L94-L488]
+  - `copy_highlighted_selection(self)` [L490-L619] — *Copy the active story or timeline selection span to clipboard when no cursor text is selected.*
+  - `copy_selection_for_reaper(self)` [L621-L686] — *Explicitly build and copy REAPER DAW clip cue payload for the active text or story selection.*
+  - `copy_selection_as_daw_wav(self)` [L688-L736] — *Render temporary WAV audio clip and copy it to the OS clipboard (CF_HDROP) for any DAW.*
 
 ### `transcript_editor.py` (945 lines)
 *transcript_editor.py - Interactive Transcript Editor & Viewer Components*
@@ -2941,7 +2941,7 @@
   - `_on_bubble_export(self)` [L468-L473]
 
 ### `transcript_story.py` (852 lines)
-*Radio & TV Segmenter v3.9.93-beta — transcript story responsibilities.*
+*Radio & TV Segmenter v3.9.94-beta — transcript story responsibilities.*
 - **Public Exports (`__all__`)**: TranscriptStoryMixin, Story, SetStoriesCommand, SelectStoriesCommand, StoryBoundaryChangeCommand, StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin, ChangeSpeakerDialog, VoiceProfileMatchDialog, StoryFadesDialog, SpeakerManagerDialog, FADE_CURVE_TABLES, get_fade_curve_factors
 - **class `TranscriptStoryMixin(StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin)`** (lines 63–851):
   - `render_transcript(self)` [L64-L467]
@@ -3080,13 +3080,13 @@
   - `setup_plugin_story_extensions(self)` [L1061-L1083] — *Populate plugin-provided widgets in the story panel.*
   - `notify_story_selection_to_plugins(self, selected_story)` [L1085-L1093] — *Notify all enabled plugins when the active story selection changes.*
 
-### `ui_menus.py` (870 lines)
+### `ui_menus.py` (863 lines)
 *Main application menu bar and action assembly for Radio & TV Story Segmenter.*
 - **class `PersistentMenu(QMenu)`** (lines 50–73):
   *A QMenu subclass that stays open when checkable toggle options are activated,*
   - `addMenu(self, *args, **kwargs)` [L54-L59]
   - `mouseReleaseEvent(self, event)` [L61-L73]
-- **class `UiMenusMixin`** (lines 78–869):
+- **class `UiMenusMixin`** (lines 78–862):
   *Mixin providing menu construction, action shortcut wiring, and menu synchronization.*
   - `build_menus(self)` [L80-L673] — *Construct the main application menu bar and associated keyboard shortcuts.*
   - `apply_user_shortcuts(self)` [L675-L680] — *Rebind all menu actions and application shortcuts according to user preferences.*
@@ -3094,10 +3094,10 @@
   - `_check_external_dependencies(self)` [L712-L726] — *Check bundled media tools and record actionable diagnostics.*
   - `_sync_undo_redo_actions(self)` [L728-L737] — *Synchronize undo/redo action states with QUndoStack.*
   - `_remember_directory(self, path)` [L739-L749] — *Persist directory of chosen file to improve user file dialog experience.*
-  - `update_processing_menu_status(self)` [L752-L775] — *Update label annotations on Tools actions reflecting pipeline stage completion.*
-  - `refresh_plugin_menus(self)` [L778-L829] — *Dynamically populate plugin export actions, tools menu actions, and core UI controls.*
-  - `trigger_smart_copy(self)` [L831-L851] — *Smart copy routing: active text cursor selection -> focused widget -> highlighted story transcript.*
-  - `trigger_deselect_all(self)` [L853-L869] — *Clear all active selections across stories, timeline range, and transcript.*
+  - `update_processing_menu_status(self)` [L752-L768] — *Update label annotations on Tools actions reflecting pipeline stage completion.*
+  - `refresh_plugin_menus(self)` [L771-L822] — *Dynamically populate plugin export actions, tools menu actions, and core UI controls.*
+  - `trigger_smart_copy(self)` [L824-L844] — *Smart copy routing: active text cursor selection -> focused widget -> highlighted story transcript.*
+  - `trigger_deselect_all(self)` [L846-L862] — *Clear all active selections across stories, timeline range, and transcript.*
 
 ### `updater.py` (1549 lines)
 *Update manager and GitHub release installer for Radio & TV Segmenter.*

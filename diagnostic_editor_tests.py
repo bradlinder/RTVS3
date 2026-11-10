@@ -513,7 +513,7 @@ class DiagnosticEditorTestsMixin:
                     Story(start=300.0, end=600.0, title="Deep Dive"),
                 ]
                 self.current_selected_story_indices = []
-                self.stories_header = QLabel("Stories")
+                self.stories_header = QLabel("Segments")
                 self.story_list = QListWidget()
                 from PySide6.QtWidgets import QLineEdit
                 self.duration_input = QLineEdit()
@@ -530,7 +530,7 @@ class DiagnosticEditorTestsMixin:
         # 3. Test idle header state and duration field (0 selected)
         host.update_stories_header()
         host.update_story_form_duration()
-        assert host.stories_header.text() == "Stories"
+        assert host.stories_header.text() == "Segments"
         assert "3 total" in host.stories_header.toolTip()
         assert host.duration_input.text() == ""
 
@@ -538,7 +538,7 @@ class DiagnosticEditorTestsMixin:
         host.current_selected_story_indices = [0]
         host.update_stories_header()
         host.update_story_form_duration()
-        assert host.stories_header.text() == "Stories (1) — [02:30.5]"
+        assert host.stories_header.text() == "Segments (1) — [02:30.5]"
         assert "Lead Story" in host.stories_header.toolTip()
         assert "02:30.5" in host.stories_header.toolTip()
         assert host.duration_input.text() == "02:30.5"
@@ -547,58 +547,34 @@ class DiagnosticEditorTestsMixin:
         host.current_selected_story_indices = [0, 1]
         host.update_stories_header()
         host.update_story_form_duration()
-        assert host.stories_header.text() == "Stories (2) — [03:45.5]"
-        assert "2 stories selected" in host.stories_header.toolTip()
+        assert host.stories_header.text() == "Segments (2) — [03:45.5]"
+        assert "2 segments selected" in host.stories_header.toolTip()
         assert "03:45.5" in host.stories_header.toolTip()
         assert host.duration_input.text() == "03:45.5"
 
-        # 6. Test Music, Spanish, and Cosmetic Vocabulary modes (stories/clips/segments/songs)
+        # 6. Test Universal Segments in Music and Spanish modes
         host.story_detection_mode = "music"
-        host.update_stories_header()
-        assert host.stories_header.text() == "Songs (2) — [03:45.5]"
-        assert "2 songs selected" in host.stories_header.toolTip()
-
-        host.language = "es"
-        host.update_stories_header()
-        assert host.stories_header.text() == "Canciones (2) — [03:45.5]"
-        assert "2 canciones seleccionadas" in host.stories_header.toolTip()
-
-        host.story_detection_mode = "voice"
-        host.update_stories_header()
-        assert host.stories_header.text() == "Historias (2) — [03:45.5]"
-        assert "2 historias seleccionadas" in host.stories_header.toolTip()
-
-        # Cosmetic vocabulary modes: clips, segments, songs, stories
-        host.language = "en"
-        host.ui_vocabulary_mode = "clips"
-        host.update_stories_header()
-        assert host.stories_header.text() == "Clips (2) — [03:45.5]"
-        assert "2 clips selected" in host.stories_header.toolTip()
-
-        host.ui_vocabulary_mode = "segments"
         host.update_stories_header()
         assert host.stories_header.text() == "Segments (2) — [03:45.5]"
         assert "2 segments selected" in host.stories_header.toolTip()
 
         host.language = "es"
-        host.ui_vocabulary_mode = "clips"
-        host.update_stories_header()
-        assert host.stories_header.text() == "Clips (2) — [03:45.5]"
-        assert "2 clips seleccionadas" in host.stories_header.toolTip()
-
-        host.ui_vocabulary_mode = "segments"
         host.update_stories_header()
         assert host.stories_header.text() == "Segmentos (2) — [03:45.5]"
-        assert "2 segmentos seleccionadas" in host.stories_header.toolTip()
+        assert "2 segmentos seleccionados" in host.stories_header.toolTip()
+
+        host.story_detection_mode = "voice"
+        host.update_stories_header()
+        assert host.stories_header.text() == "Segmentos (2) — [03:45.5]"
+        assert "2 segmentos seleccionados" in host.stories_header.toolTip()
 
         from core_utils import get_story_vocabulary
-        v_clip = get_story_vocabulary({"ui_vocabulary_mode": "clips", "language": "en"})
-        assert v_clip.singular == "Clip" and v_clip.plural == "Clips" and v_clip.add_label == "Add Clip"
-        v_seg = get_story_vocabulary({"ui_vocabulary_mode": "segments", "language": "es"})
-        assert v_seg.singular == "Segmento" and v_seg.plural == "Segmentos" and v_seg.add_label == "Agregar segmento"
+        v_en = get_story_vocabulary(language="en")
+        assert v_en.singular == "Segment" and v_en.plural == "Segments" and v_en.add_label == "Add Segment"
+        v_es = get_story_vocabulary(language="es")
+        assert v_es.singular == "Segmento" and v_es.plural == "Segmentos" and v_es.add_label == "Agregar segmento"
 
         # Reset host
-        host.ui_vocabulary_mode = "auto"
         host.language = "en"
 
         # 7. Test refresh_story_list single-line item formatting and Fade Out language honoring enable_audio_fades
@@ -657,7 +633,7 @@ class DiagnosticEditorTestsMixin:
         # Hover over body of Story #1 (start=10.0, end=160.5 -> duration 150.5s = 02:30.5)
         # At width=1000, t=50.0s is at x=83.33
         tip, stat = get_timeline_hover_info(canvas, pos_x=83.0, pos_y=50.0, width=1000)
-        assert "Story #1: Lead Story" in tip, f"Unexpected tooltip: {tip}"
+        assert "Segment #1: Lead Story" in tip, f"Unexpected tooltip: {tip}"
         assert "Duration: 02:30.5" in tip, f"Missing clock duration in tooltip: {tip}"
         assert "02:30.5" in stat, f"Missing duration in status bar: {stat}"
 

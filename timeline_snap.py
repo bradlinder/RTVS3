@@ -142,7 +142,7 @@ def get_timeline_hover_info(canvas: Any, pos_x: float, pos_y: float, width: int)
     if edge_hit:
         idx, edge_type = edge_hit
         stories = getattr(canvas, "stories", [])
-        title = stories[idx].title if 0 <= idx < len(stories) else f"Story #{idx+1}"
+        title = stories[idx].title if 0 <= idx < len(stories) else f"Segment #{idx+1}"
         tooltip_text = f"{title} ({edge_type.capitalize()} Boundary)\nRight-click and drag to adjust"
         status_text = f"{title} — {edge_type.capitalize()} Boundary (Right-click and drag to adjust)"
         return tooltip_text, status_text
@@ -154,8 +154,8 @@ def get_timeline_hover_info(canvas: Any, pos_x: float, pos_y: float, width: int)
         story = canvas.stories[story_idx]
         dur = max(0.0, float(story.end) - float(story.start))
         clock_dur = format_clock_duration(dur, include_millis=True)
-        tooltip_text = f"Story #{story_idx+1}: {story.title}\n{format_time(story.start)} – {format_time(story.end)} (Duration: {clock_dur})"
-        status_text = f"Story #{story_idx+1}: {story.title} [{format_time(story.start)} – {format_time(story.end)}] (Duration: {clock_dur})"
+        tooltip_text = f"Segment #{story_idx+1}: {story.title}\n{format_time(story.start)} – {format_time(story.end)} (Duration: {clock_dur})"
+        status_text = f"Segment #{story_idx+1}: {story.title} [{format_time(story.start)} – {format_time(story.end)}] (Duration: {clock_dur})"
         return tooltip_text, status_text
 
     # Selection region hover

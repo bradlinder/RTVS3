@@ -1,4 +1,4 @@
-"""Radio & TV Segmenter — v3.9.93-beta
+"""Radio & TV Segmenter — v3.9.94-beta
 
 This is the thin application composition root. UI/processing responsibilities
 are implemented in focused mixins so future changes can target smaller files
@@ -383,11 +383,11 @@ class MainWindow(
             "jump_forward_long_action": ("Jump Forward Long", lambda: self.seek_relative(30)),
             "jump_to_start_action": ("Jump to Start", lambda: self.seek_to(0)),
             "jump_to_end_action": ("Jump to End", lambda: self.seek_to(getattr(self, "duration", 0))),
-            "play_current_story_action": ("Play Current Story", lambda: self.audition_story(list(self.current_selected_story_indices)[0]) if getattr(self, "current_selected_story_indices", None) and hasattr(self, "audition_story") else None),
+            "play_current_story_action": ("Play Current Segment", lambda: self.audition_story(list(self.current_selected_story_indices)[0]) if getattr(self, "current_selected_story_indices", None) and hasattr(self, "audition_story") else None),
             "toggle_follow_playhead_action": ("Toggle Follow Playhead", self._toggle_follow_playhead),
-            "mark_story_start_action": ("Mark Story Start", self.mark_story_start_point),
-            "mark_story_end_action": ("Mark Story End", self.mark_story_end_point),
-            "delete_story_action": ("Delete Story", self.delete_selected_story),
+            "mark_story_start_action": ("Mark Segment Start", self.mark_story_start_point),
+            "mark_story_end_action": ("Mark Segment End", self.mark_story_end_point),
+            "delete_story_action": ("Delete Segment", self.delete_selected_story),
             "split_segment_action": ("Split Block", self.split_current_segment_at_playhead),
             "merge_segments_action": ("Merge Blocks", self.merge_current_segment_with_next),
             "zoom_in_action": ("Timeline Zoom In", lambda: getattr(getattr(self, "timeline", None), "canvas", None) and self.timeline.canvas.set_zoom(self.timeline.canvas.zoom_level * 1.2)),
@@ -461,7 +461,7 @@ class MainWindow(
         self.silence_threshold = float(s.value("silence_threshold", 3.0) or 3.0)
         self.lead_in_padding = float(s.value("lead_in_padding", 0.5) or 0.5)
         self.story_detection_mode = str(s.value("story_detection_mode", "voice") or "voice")
-        self.ui_vocabulary_mode = str(s.value("ui_vocabulary_mode", "auto") or "auto")
+        self.ui_vocabulary_mode = "segments"
         self.expected_speakers = str(s.value("default_expected_speakers", "auto") or "auto")
         self.diarization_sensitivity = str(s.value("diarization_sensitivity", "normal") or "normal")
         try:

@@ -80,7 +80,7 @@ class StoryMetadataDialog(QDialog):
         self._stay_on_top = False
         self._syncing_from_main = False
 
-        self.setWindowTitle("Story Settings & Metadata")
+        self.setWindowTitle("Segment Settings & Metadata")
         self.setWindowModality(Qt.WindowModality.NonModal)
         self.setAttribute(Qt.WidgetAttribute.WA_QuitOnClose, False)
         self.setWindowFlags(
@@ -130,8 +130,8 @@ class StoryMetadataDialog(QDialog):
         header_layout.setSpacing(8)
 
         info_label = QLabel(
-            "<b>Story Settings & Metadata</b> — Configure titles, authors, categories, "
-            "excerpts, featured images, and podcast metadata for full episodes and individual stories.",
+            "<b>Segment Settings & Metadata</b> — Configure titles, authors, categories, "
+            "excerpts, featured images, and podcast metadata for full episodes and individual segments.",
             self
         )
         info_label.setWordWrap(True)
@@ -161,7 +161,7 @@ class StoryMetadataDialog(QDialog):
             main_layout.addWidget(self.tab_widget, 1)
         else:
             fallback = QLabel(
-                "WordPress export plugin is unavailable or disabled. Story metadata settings require the WordPress plugin.",
+                "WordPress export plugin is unavailable or disabled. Segment metadata settings require the WordPress plugin.",
                 self
             )
             fallback.setAlignment(Qt.AlignmentFlag.AlignCenter)

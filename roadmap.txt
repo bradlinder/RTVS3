@@ -38,21 +38,21 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 --------------------------------------------------------------------------------
 TABLE OF CONTENTS & STATUS OVERVIEW
 --------------------------------------------------------------------------------
-1. Immediate Predecessor Release: REAPER DAW Companion Bridge, True Sentence Cues, Universal Search & Timeline Export (`reaper_bridge.py`, `export/timeline.py`, `user_guide_dialog.py`, `preferences_tab_daw.py`, `preferences_dialog.py`, `scripts/reaper/rtvs_reaper_companion.lua`, `docs/guides/reaper_and_daw_integration.md`, `embedded_guides.py`) [x] [COMPLETED in v3.9.92-beta]
-   [x] 1.1 Unified Multi-Channel Clipboard Engine: Single `Ctrl+C` copy across Transcript and Timeline views simultaneously writes plain text, formatted HTML, and REAPER JSON metadata payload; dedicated `Ctrl+Shift+C` renders temporary WAV clips.
-   [x] 1.2 Companion ReaScript Suite: Full Lua script set (`rtvs_reaper_companion.lua`, `rtvs_reaper_auto_sync.lua`, `rtvs_reaper_sync.lua`, `rtvs_reaper_dock.lua`) for instant timeline pasting, non-destructive live trim/split auto-sync, and dockable transcript browser.
-   [x] 1.3 True Sentence-Only Take Marker Cues: Replaced silence pause heuristic with pre-computed canonical grammatical sentence boundaries (`latest_transcript_index.json`), eliminating mid-sentence split markers in REAPER.
-   [x] 1.4 Dedicated Preferences Tab (External Audio & Video Editors): Extracted all DAW, REAPER companion, and universal WAV clipboard settings into a dedicated, clean preferences panel (`preferences_tab_daw.py`) with search and reset integration.
-   [x] 1.5 Universal User Guide Search Engine: Global cross-topic search engine with real-time match badges across all guide topics, auto-switching, and cyclic Next/Prev navigation.
-   [x] 1.6 Native REAPER (.rpp) Timeline Export Options: Added user-configurable options in the Timeline & DAW Interchange export dialog for embedding transcript Item Notes (`<NOTES`), Take Markers (`TKM`), and speaker color coding (`COLOR`).
-   [x] 1.7 Diagnostic Regression Verification: All REAPER, Export, User Guide, and Preferences diagnostic test benches passing 100%.
+1. Immediate Predecessor Release: Cosmetic Vocabulary Setting & Block vs. Segment Disambiguation (`core_utils.py`, `prs_shared.py`, `preferences_tabs_core.py`, `shortcuts/schema.py`, `diagnostic_editor_tests.py`) [x] [COMPLETED in v3.9.93-beta]
+   [x] 1.1 Centralized Vocabulary Resolver Helper: Created unified terminology helper (`core_utils.py`, `prs_shared.py`) returning singular/plural localized UI nouns (`Story`/`Stories`, `Clip`/`Clips`, `Segment`/`Segments`, `Song`/`Songs` + Spanish equivalents).
+   [x] 1.2 Preferences Vocabulary Selector: Added a user-configurable Cosmetic Vocabulary dropdown in Preferences (`ui_vocabulary_mode`).
+   [x] 1.3 Dynamic UI Relabeling Across Sidebar, Menus & Export: Wired vocabulary helper into `update_story_segment_terminology()` across right-hand sidebar, buttons, title placeholder, context menus, and export scope.
+   [x] 1.4 Diagnostic Regression Tests: Automated unit and headless assertions verifying live UI label switching across all vocabulary options and settings reset parity.
+   [x] 1.5 Transcript Speech Unit Disambiguation (Block vs. Segment): Renamed speech/transcript segment actions, dialog prompts, and table headers to "Block" / "Speaker Block" (`Split Speaker Block`, `Split Block at Playhead`, `Merge with Next Block`, `Comment for Block X`, `Voice Profile Blocks column`) to eliminate terminology collision with timeline segments.
 
-2. Active Release: Cosmetic Vocabulary Setting ("Stories" / "Clips" / "Segments" / "Songs") (`core_utils.py`, `prs_shared.py`, `preferences_tabs_core.py`, `preferences_dialog.py`, `preferences_reset.py`, `preferences_reset_dialog.py`, `media_batch.py`, `story_crud_mixin.py`, `timeline_context_menus.py`, `export/dialog.py`, `diagnostic_editor_tests.py`) [x] [COMPLETED in v3.9.93-beta]
-   [x] 2.1 Centralized Vocabulary Resolver Helper: Created unified terminology helper (`core_utils.py`, `prs_shared.py`) returning singular/plural localized UI nouns (`Story`/`Stories`, `Clip`/`Clips`, `Segment`/`Segments`, `Song`/`Songs` + Spanish equivalents) without altering underlying data schemas or behavioral logic.
-   [x] 2.2 Preferences Vocabulary Selector: Added a user-configurable Cosmetic Vocabulary dropdown in Preferences (`"Auto (Stories / Songs by Detection Mode)"`, `"Stories"`, `"Clips"`, `"Segments"`, `"Songs"`) persisted to `QSettings` (`ui_vocabulary_mode`).
-   [x] 2.3 Dynamic UI Relabeling Across Sidebar, Menus & Export: Wired vocabulary helper into `update_story_segment_terminology()` to dynamically update right-hand sidebar header, CRUD buttons (`Add Story/Clip/Segment/Song`, `Set Start/End`, `Metadata...`, `Settings`), title placeholder, context menus, and `UnifiedExportDialog` export scope combo labels.
-   [x] 2.4 Diagnostic Regression Tests: Automated unit and headless assertions verifying live UI label switching across all vocabulary options and settings reset parity in `diagnostic_editor_tests.py`.
-   [x] 2.5 Transcript Speech Unit Disambiguation (Block vs. Segment): Renamed speech/transcript segment actions, dialog prompts, and table headers to "Block" / "Speaker Block" (`Split Speaker Block`, `Split Block at Playhead`, `Merge with Next Block`, `Comment for Block X`, `Voice Profile Blocks column`) to eliminate terminology collision with timeline segments.
+2. Active Release: Universal "Segment" Terminology & Display Title Standardization (`core_utils.py`, `preferences_tabs_core.py`, `preferences_dialog.py`, `preferences_reset.py`, `preferences_tabs_media.py`, `RadioTVSegmenter.py`, `transcript_context_menu_mixin.py`, `transcript_editor_dialogs.py`, `story_widgets.py`, `ui_layout.py`, `media_batch.py`, `timeline_snap.py`, `ui_menus.py`, `story_metadata_dialog.py`, `shortcuts/schema.py`, `diagnostic_editor_tests.py`) [x] [COMPLETED in v3.9.94-beta]
+   [x] 2.1 Universal "Segment" Terminology Standardization: Streamlined `get_story_vocabulary()` in `core_utils.py` to permanently and universally resolve timeline entries to Segment / Segments (Segmento / Segmentos in Spanish), reducing file by 34 lines (<800 lines target).
+   [x] 2.2 Preferences Vocabulary Simplification: Removed redundant `ui_vocabulary_mode` dropdown from Preferences General tab and decoupled vocabulary logic from preference saving and factory resets.
+   [x] 2.3 Acoustic Detection Mode Retention: Retained Voice vs. Music acoustic boundary detection algorithm in Preferences while updating labels to "Music / Track Breaks (Music Programs)" and tooltips to consistently reference segment boundaries.
+   [x] 2.4 Interactive Transcript Context Menu & Bubble Alignment: Right-click transcript context menu updated to "Add Selected Text to New Segment", "Audition Segment Playback", "Copy Segment Transcript", "Copy Segment as Audio Clip", and "Segment & Post Metadata..."; floating bubble updated to "+ Segment".
+   [x] 2.5 Sidebar, Timeline & Dialog Terminology Polish: Story card delegates badge items as "Segment 1", "Segment 2"; sidebar context menu, waveform hover tooltips, form placeholders, metadata dialog, and Tools menu all updated to Segment terminology.
+   [x] 2.6 Application Display Title Update: Help menu updated to "&About Radio & TV Segmenter" to match APP_DISPLAY_NAME = "Radio & TV Segmenter", keeping INTERNAL_APP_ID = "RadioTVStorySegmenter" intact.
+   [x] 2.7 Shortcut Registry Alignment & Tests: Updated shortcut display labels in `shortcuts/schema.py` and `RadioTVSegmenter.py`; all automated test benches updated and passing.
 
 4. Deferred Milestone: Domain Separation & Purpose-Driven Monolithic File Modularization [ ] [DEFERRED / LOWER PRIORITY]
    - *Purpose*: Systematic architectural refactoring prioritizing **file purpose, single responsibility, and domain cohesion** alongside line count reduction (<800 lines target, 1,000 lines ceiling), systematically decoupling grandfathered multi-domain monoliths into focused submodules with 100% backward-compatible facade re-exports.
@@ -97,29 +97,28 @@ TABLE OF CONTENTS & STATUS OVERVIEW
 DETAILED MILESTONE SPECIFICATIONS
 ================================================================================
 
-1. IMMEDIATE PREDECESSOR RELEASE: REAPER DAW COMPANION BRIDGE & REASCRIPT TRANSCRIPT INTEGRATION:
-- Purpose: Two-way IPC sidecar bridge allowing RTVS3 transcript selections to be pasted directly into REAPER DAW timelines with take markers, speaker colors, and ReaImGui browser dock.
-- Target Release: v3.9.92-beta (Immediate Predecessor Release)
-- Technical References: `reaper_bridge.py`, `scripts/reaper/rtvs_reaper_companion.lua`, `scripts/reaper/rtvs_reaper_dock.lua`.
+1. IMMEDIATE PREDECESSOR RELEASE: COSMETIC VOCABULARY SETTING & BLOCK VS. SEGMENT DISAMBIGUATION:
+- Purpose: Introduced customizable terminology mode, disambiguated transcript speech turns into Blocks, and ensured zero-schema-mutation backward compatibility.
+- Target Release: v3.9.93-beta (Immediate Predecessor Release)
+- Technical References: `core_utils.py`, `prs_shared.py`, `preferences_tabs_core.py`, `preferences_dialog.py`, `shortcuts/schema.py`.
 - Implementation Details:
-  * [x] Unified Multi-Channel Clipboard Engine: Plain text, HTML, and application/x-rtvs-reaper-cue+json QMimeData.
-  * [x] RTVS3 Clip Cue Payload & Sidecar/IPC Emitter: Atomic %LOCALAPPDATA% and %TEMP% sidecars with relative offset math.
-  * [x] Companion ReaScript Paste, Take Labeling & Item Notes: Pure-Lua JSON decoder, media take insertion at playhead, verbatim transcript notes.
-  * [x] Take Markers: Speaker attribution and optional word cues directly on the timeline take.
-  * [x] Dockable ReaImGui Transcript Viewer: Real-time search, story filtering, and one-click playhead insertion.
-  * [x] Preferences Integration & One-Click Installer: Preferences > External Audio & Video Editors controls and automated script installation to REAPER directory.
-  * [x] Universal Text-to-WAV Clipboard Fallback: Temporary uncompressed WAV generation to OS clipboard (CF_HDROP) for non-REAPER DAWs.
+  * [x] Centralized Vocabulary Helper: Created `StoryVocabulary(NamedTuple)` and `get_story_vocabulary()` in `core_utils.py`.
+  * [x] Preferences Vocabulary Selector: Added "UI Vocabulary / Terminology" dropdown to Preferences General tab.
+  * [x] Dynamic Live UI Relabeling: Wired `update_story_segment_terminology()` across sidebar header, CRUD buttons, and tooltips.
+  * [x] Transcript Speech Unit Disambiguation (Block vs. Segment): Renamed speech turns to "Block" / "Speaker Block" across shortcuts, dialogs, and menus.
+  * [x] Automated Diagnostic Coverage: Unit and headless regression tests in `diagnostic_editor_tests.py`.
 
-2. ACTIVE RELEASE: COSMETIC VOCABULARY SETTING ("STORIES" / "CLIPS" / "SEGMENTS" / "SONGS"):
-- Purpose: Allow users to customize how timeline story/clip regions are labeled across the UI ("Stories", "Clips", "Segments", "Songs", or automatic by detection mode) from Preferences without changing underlying behavior or data compatibility.
-- Target Release: v3.9.93-beta (Active Release)
+2. ACTIVE RELEASE: UNIVERSAL "SEGMENT" TERMINOLOGY & DISPLAY TITLE STANDARDIZATION:
+- Purpose: Standardize on "Segment / Segments" as universal terminology across the application, remove the Preferences vocabulary switcher, retain the Voice vs. Music acoustic boundary algorithm, and update the display title to "Radio & TV Segmenter".
+- Target Release: v3.9.94-beta (Active Release)
 - Technical References & Implementation Details:
-  * [x] Centralized Vocabulary Helper: Created `StoryVocabulary(NamedTuple)` and `get_story_vocabulary(win_or_settings, language=None)` in `core_utils.py` (re-exported in `prs_shared.py`), supporting 5 modes ("auto", "stories", "clips", "segments", "songs") in English and Spanish with zero schema mutations.
-  * [x] Preferences Vocabulary Selector: Added "UI Vocabulary / Terminology" dropdown to Preferences General tab (`preferences_tabs_core.py`), persisting to `QSettings` (`ui_vocabulary_mode`) and instantly updating main window widgets without requiring restart (`preferences_dialog.py`).
-  * [x] Preferences Reset Parity: Registered `ui_vocabulary_mode` under General Appearance in `preferences_reset.py` and `preferences_reset_dialog.py` to reset cleanly to `"auto"`.
-  * [x] Dynamic Live UI Relabeling: Wired `update_story_segment_terminology()` across sidebar header, CRUD buttons (`Add Story/Clip/Segment/Song`, `Set Start/End`, `Metadata...`, `Settings`), title placeholder, tooltips, and actions (`media_batch.py`, `story_crud_mixin.py`).
-  * [x] Context Menus & Export Alignment: Right-click timeline menus (`timeline_context_menus.py`) and `UnifiedExportDialog` scope combobox (`export/dialog.py`) dynamically reflect the active vocabulary.
-  * [x] Automated Diagnostic Coverage: Comprehensive regression assertions in `diagnostic_editor_tests.py` verifying vocabulary resolution, live UI updates, and reset parity.
+  * [x] Universal "Segment" Terminology Standardization: Streamlined `get_story_vocabulary()` in `core_utils.py` to permanently resolve to Segment / Segments (Segmento / Segmentos in Spanish), reducing file by 34 lines.
+  * [x] Preferences Vocabulary Simplification: Removed `ui_vocabulary_mode` dropdown from Preferences General tab, save routine, and factory resets.
+  * [x] Acoustic Detection Mode Retention: Retained Voice vs. Music acoustic boundary detection algorithm in Preferences while updating labels to "Music / Track Breaks (Music Programs)" and tooltips to consistently reference segment boundaries.
+  * [x] Interactive Transcript Context Menu & Bubble Alignment: Right-click transcript context menu updated to "Add Selected Text to New Segment", "Audition Segment Playback", "Copy Segment Transcript", "Copy Segment as Audio Clip", and "Segment & Post Metadata..."; floating bubble updated to "+ Segment".
+  * [x] Sidebar, Timeline & Dialog Terminology Polish: Story card delegates badge items as "Segment 1", "Segment 2"; sidebar context menu, waveform hover tooltips, form placeholders, metadata dialog, and Tools menu all updated to Segment terminology.
+  * [x] Application Display Title Update: Help menu updated to "&About Radio & TV Segmenter" to match APP_DISPLAY_NAME = "Radio & TV Segmenter", keeping INTERNAL_APP_ID = "RadioTVStorySegmenter" intact.
+  * [x] Shortcut Registry Alignment & Tests: Updated shortcut display labels in `shortcuts/schema.py` and `RadioTVSegmenter.py`; all automated test benches updated and passing.
 
 4. DEFERRED MILESTONE: DOMAIN SEPARATION & PURPOSE-DRIVEN MONOLITHIC FILE MODULARIZATION:
 - Purpose: Systematic architectural refactoring prioritizing file purpose and single responsibility (<800 lines target, 1,000 lines ceiling).

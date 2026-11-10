@@ -130,7 +130,12 @@ class TranscriptContextMenuMixin:
 
             ranges = self.get_all_selected_story_ranges()
             count = len(ranges)
-            title = f"Add Selected Sections to New Stories ({count})" if count > 1 else "Add Selected Text to New Story"
+            from core_utils import get_story_vocabulary
+            vocab = get_story_vocabulary(main_win)
+            if vocab.is_es:
+                title = f"Agregar secciones seleccionadas a nuevos segmentos ({count})" if count > 1 else "Agregar texto seleccionado a nuevo segmento"
+            else:
+                title = f"Add Selected Sections to New Segments ({count})" if count > 1 else "Add Selected Text to New Segment"
             add_selection = QAction(title, self)
             add_selection.triggered.connect(lambda: getattr(main_win, "add_selection_to_story", lambda: None)())
             menu.addAction(add_selection)
@@ -150,23 +155,25 @@ class TranscriptContextMenuMixin:
             active_story_idx = sel_indices[0] if len(sel_indices) == 1 else None
 
             if active_story_idx is not None:
+                from core_utils import get_story_vocabulary
+                vocab = get_story_vocabulary(main_win)
                 if hasattr(main_win, "audition_story"):
-                    audition_span_act = QAction("Audition Story Playback", self)
+                    audition_span_act = QAction(f"Audition {vocab.singular} Playback" if not vocab.is_es else f"Escuchar {vocab.singular_lower}", self)
                     audition_span_act.triggered.connect(lambda _, idx=active_story_idx: main_win.audition_story(idx))
                     menu.addAction(audition_span_act)
 
-                copy_span_action = QAction("Copy Story Transcript", self)
+                copy_span_action = QAction(f"Copy {vocab.singular} Transcript" if not vocab.is_es else f"Copiar transcripción de {vocab.singular_lower}", self)
                 copy_span_action.setShortcut(QKeySequence.StandardKey.Copy)
                 copy_span_action.triggered.connect(lambda: getattr(self, "copy_highlighted_selection", lambda: False)())
                 menu.addAction(copy_span_action)
 
-                copy_story_audio_action = QAction("Copy Story as Audio Clip", self)
+                copy_story_audio_action = QAction(f"Copy {vocab.singular} as Audio Clip" if not vocab.is_es else f"Copiar {vocab.singular_lower} como clip de audio", self)
                 copy_story_audio_action.setShortcut(QKeySequence("Ctrl+Shift+C"))
                 copy_story_audio_action.triggered.connect(self.copy_selection_as_daw_wav)
                 menu.addAction(copy_story_audio_action)
 
                 if hasattr(main_win, "open_story_metadata_dialog"):
-                    meta_span_act = QAction("Story & Post Metadata...", self)
+                    meta_span_act = QAction(f"{vocab.singular} & Post Metadata..." if not vocab.is_es else f"Metadatos de {vocab.singular_lower} y publicación...", self)
                     meta_span_act.triggered.connect(lambda _, idx=active_story_idx: main_win.open_story_metadata_dialog(idx))
                     menu.addAction(meta_span_act)
 
@@ -552,7 +559,7 @@ class TranscriptContextMenuMixin:
                 st_sec = getattr(story_obj, "start", None)
                 en_sec = getattr(story_obj, "end", None)
             elif len(indices) > 1:
-                story_title = f" for {len(indices)} stories"
+                story_title = f" for {len(indices)} segments"
 
         # 2. Timeline drag selection range priority
         if st_sec is None or en_sec is None:
@@ -606,7 +613,7 @@ class TranscriptContextMenuMixin:
 
         if hasattr(main_win, "statusBar") and main_win.statusBar():
             main_win.statusBar().showMessage(
-                f"Copied story transcript{story_title} ({len(plain_text)} characters) to clipboard.",
+                f"Copied segment transcript{story_title} ({len(plain_text)} characters) to clipboard.",
                 3500,
             )
         return True

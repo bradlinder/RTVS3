@@ -1225,14 +1225,11 @@ class MediaBatchMixin:
 
         # Title / Headline input placeholder
         if hasattr(self, "title_input") and self.title_input is not None:
-            if vocab.mode == "songs":
-                self.title_input.setPlaceholderText("Título de la canción / pista" if is_es else "Song title / track name")
-            elif vocab.mode == "clips":
-                self.title_input.setPlaceholderText("Título / descripción del clip" if is_es else "Clip title / description")
-            elif vocab.mode == "segments":
-                self.title_input.setPlaceholderText("Título / titular del segmento" if is_es else "Segment title / headline")
-            else:
-                self.title_input.setPlaceholderText("Título / titular de la historia" if is_es else "Story headline / title")
+            self.title_input.setPlaceholderText("Título / titular del segmento" if is_es else "Segment title / headline")
+
+        # Author input placeholder
+        if hasattr(self, "author_input") and self.author_input is not None:
+            self.author_input.setPlaceholderText("Autor / reportero / colaborador del segmento" if is_es else "Segment author / reporter / contributor")
 
         # Select All Tooltip
         if hasattr(self, "select_all_stories_btn") and self.select_all_stories_btn is not None:

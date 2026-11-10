@@ -177,7 +177,6 @@ class PreferencesResetMixin:
         if "general_appearance" in selected_set:
             self.settings_store.setValue("theme_mode", "dark")
             self.settings_store.setValue("startup_project_mode", "last")
-            self.settings_store.setValue("ui_vocabulary_mode", "auto")
             self.settings_store.setValue("single_instance_mode", "single")
             self.settings_store.setValue("show_floating_selection_toolbar", "true")
             self.settings_store.setValue("open_comments_on_launch", "false")
@@ -190,7 +189,6 @@ class PreferencesResetMixin:
             self.show_timestamps = True
             self.show_milliseconds = False
             self.startup_project_mode = "last"
-            self.ui_vocabulary_mode = "auto"
             if hasattr(self, "set_theme"):
                 try:
                     self.set_theme("dark")
@@ -224,10 +222,6 @@ class PreferencesResetMixin:
                 idx = lw["theme_combo"].findText("dark")
                 if idx >= 0:
                     lw["theme_combo"].setCurrentIndex(idx)
-            if "vocab_combo" in lw and lw["vocab_combo"]:
-                idx_v = lw["vocab_combo"].findData("auto")
-                if idx_v >= 0:
-                    lw["vocab_combo"].setCurrentIndex(idx_v)
             if "startup_combo" in lw and lw["startup_combo"]:
                 idx = lw["startup_combo"].findData("last")
                 if idx >= 0:

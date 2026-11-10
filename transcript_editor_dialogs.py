@@ -626,8 +626,8 @@ class TranscriptSelectionBubble(QFrame):
         layout.addWidget(self.play_btn)
 
         self.story_btn = QToolButton(self)
-        self.story_btn.setText("+ Story")
-        self.story_btn.setToolTip("Create a new story cut from highlighted text (Enter)")
+        self.story_btn.setText("+ Segment")
+        self.story_btn.setToolTip("Create a new segment cut from highlighted text (Enter)")
         self.story_btn.clicked.connect(self.storyRequested.emit)
         layout.addWidget(self.story_btn)
 

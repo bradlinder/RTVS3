@@ -524,7 +524,7 @@ class UiLayoutMixin(UiMenusMixin, UiDialogLaunchersMixin):
         form_layout.setSpacing(4)
 
         self.title_input = QLineEdit(self)
-        self.title_input.setPlaceholderText("Story headline / title")
+        self.title_input.setPlaceholderText("Segment title / headline")
         self.title_input.editingFinished.connect(self.update_selected_story)
         form_layout.addRow("Title:", self.title_input)
 
@@ -547,11 +547,11 @@ class UiLayoutMixin(UiMenusMixin, UiDialogLaunchersMixin):
         self.duration_input.setObjectName("story_duration_input")
         self.duration_input.setReadOnly(True)
         self.duration_input.setPlaceholderText("00:00.0")
-        self.duration_input.setToolTip("Duration of the active story in clock format")
+        self.duration_input.setToolTip("Duration of the active segment in clock format")
         form_layout.addRow("Duration:", self.duration_input)
 
         self.author_input = QLineEdit(self)
-        self.author_input.setPlaceholderText("Story author / reporter / contributor")
+        self.author_input.setPlaceholderText("Segment author / reporter / contributor")
         self.author_input.editingFinished.connect(self.update_selected_story)
         form_layout.addRow("Author:", self.author_input)
 

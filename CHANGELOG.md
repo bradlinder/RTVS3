@@ -1,5 +1,29 @@
 # Changelog
 
+## v3.9.94-beta
+- **Universal "Segment" Terminology & Display Title Standardization (`core_utils.py`, `preferences_tabs_core.py`, `preferences_dialog.py`, `preferences_reset.py`, `preferences_reset_dialog.py`, `preferences_tabs_media.py`, `RadioTVSegmenter.py`, `transcript_context_menu_mixin.py`, `transcript_editor_dialogs.py`, `story_widgets.py`, `ui_layout.py`, `media_batch.py`, `timeline_snap.py`, `ui_menus.py`, `story_metadata_dialog.py`, `shortcuts/schema.py`, `diagnostic_editor_tests.py`)**:
+  - **Universal "Segment" Terminology Standardization (`core_utils.py`)**:
+    - Streamlined `get_story_vocabulary()` to permanently and universally resolve timeline entries to **Segment / Segments** (`Segmento / Segmentos` in Spanish), eliminating multi-mode switching and reducing `core_utils.py` by 34 lines (down to 773 lines, safely within the 800-line modularity threshold).
+    - Preserved `StoryVocabulary` structure and underlying object schemas for 100% backward compatibility with existing `.rtvs` project files and undo/redo history.
+  - **Preferences Vocabulary Simplification (`preferences_tabs_core.py`, `preferences_dialog.py`, `preferences_reset.py`, `preferences_reset_dialog.py`)**:
+    - Removed the redundant `UI Vocabulary / Terminology` dropdown from Preferences General tab and decoupled vocabulary logic from preference saving and factory resets.
+  - **Acoustic Detection Mode Retention (`preferences_tabs_media.py`)**:
+    - Retained the Voice vs. Music acoustic boundary detection algorithm in Preferences while updating labels to **Music / Track Breaks (Music Programs)** and tooltips to consistently reference segment boundaries rather than switching terminology to "Songs".
+  - **Interactive Transcript & Floating Bubble Alignment (`transcript_context_menu_mixin.py`, `transcript_editor_dialogs.py`)**:
+    - Right-click transcript context menu updated to dynamically reflect `Add Selected Text to New Segment` (or `Add Selected Sections to New Segments ({count})`), `Audition Segment Playback`, `Copy Segment Transcript`, `Copy Segment as Audio Clip`, and `Segment & Post Metadata...`.
+    - Floating selection bubble button updated from `+ Story` to `+ Segment` with matching tooltip.
+  - **Sidebar, Timeline & Dialog Terminology Polish (`story_widgets.py`, `timeline_snap.py`, `ui_layout.py`, `media_batch.py`, `story_metadata_dialog.py`, `ui_menus.py`)**:
+    - Story card delegates and fallback text now badge items as `Segment 1`, `Segment 2` (or `Segmento 1`, `Segmento 2`).
+    - Sidebar right-click menu actions updated to `Audition Segment Playback`, `Copy Segment Transcript (Ctrl+C)`, `Export Selected Segments...`, `Segment & Post Metadata...`, and `Delete Selected Segment`.
+    - Waveform hover tooltips updated from `Story #N:` to `Segment #N:`.
+    - Form placeholders updated to `Segment title / headline` and `Segment author / reporter / contributor`.
+    - Floating metadata dialog updated to `Segment Settings & Metadata`.
+    - Tools menu simplified to `Detect Segments (Complete)` / `&Detect Segments...` (or `&Detectar segmentos`), removing dynamic song switching.
+  - **Display Title Update (`ui_menus.py`, `core_utils.py`)**:
+    - Help menu updated to `&About Radio & TV Segmenter` to match `APP_DISPLAY_NAME = "Radio & TV Segmenter"`, while keeping `INTERNAL_APP_ID = "RadioTVStorySegmenter"` intact for QSettings stability.
+  - **Keyboard Shortcut Registry Alignment (`shortcuts/schema.py`, `RadioTVSegmenter.py`)**:
+    - Shortcut action labels updated to `Play Current Segment Only`, `Mark Segment In-Point ([)`, `Mark Segment Out-Point (])`, and `Delete Selected Segment` while keeping underlying `action_id` keys identical.
+
 ## v3.9.93-beta
 - **Cosmetic Vocabulary Setting ("Stories" / "Clips" / "Segments" / "Songs") (`core_utils.py`, `prs_shared.py`, `preferences_tabs_core.py`, `preferences_dialog.py`, `preferences_reset.py`, `preferences_reset_dialog.py`, `media_batch.py`, `story_crud_mixin.py`, `timeline_context_menus.py`, `export/dialog.py`, `diagnostic_editor_tests.py`)**:
   - **Centralized Vocabulary Helper (`core_utils.py`, `prs_shared.py`)**:
@@ -29,38 +53,3 @@
   - **Transcript Speech Unit Disambiguation (Block vs. Segment) (`shortcuts/schema.py`, `shortcuts/manager.py`, `RadioTVSegmenter.py`, `ui_layout.py`, `transcript_story.py`, `voice_profile_dialog.py`, `speaker_profiles.py`, `user_guide_dialog.py`)**:
     - Renamed speech/transcript segment actions, dialog prompts, and table headers to **"Block" / "Speaker Block"** (`Split Speaker Block`, `Split Block at Playhead`, `Merge with Next Block`, `Comment for Block X`, `Voice Profile Blocks table column`).
     - Eliminates terminology collision between ASR speech turns in the transcript and curated broadcast/program segments on the timeline.
-
-## v3.9.92-beta
-- **Universal User Guide Search Engine (`user_guide_dialog.py`, `user_guide_dialog.pyi`)**:
-  - **Global Cross-Topic Search**: Transformed the User Guide search from a single-section filter into a universal search engine across all 10 topics in the guide catalog.
-  - **Real-Time Match Badges & Auto-Switching**: Displays real-time match counters next to topic titles in the sidebar (e.g., `Export Formats (4)`); automatically switches the active view to the first matching section if the currently selected section has zero occurrences.
-  - **Seamless Cross-Topic Navigation**: Next (<kbd>Enter</kbd> / `Find Next`) and Previous (<kbd>Shift+Enter</kbd> / `Find Prev`) navigate within the active topic and cyclically jump across section boundaries to subsequent matching topics.
-  - **Match Status Header**: Displays current search location: `"Match X / Y in section (Z across guide)"`.
-- **True Sentence-Only Take Marker Cues (`reaper_bridge.py`, `scripts/reaper/rtvs_reaper_companion.lua`)**:
-  - **Canonical Pre-Computed Sentence Index (`latest_transcript_index.json`)**: Pre-computes and exports a canonical `sentences` list assembled strictly from word-level and segment-level punctuation (`.`, `?`, `!`, `...`) with abbreviation suppression. REAPER companion script now directly references these canonical sentences when trimming or extending media items, guaranteeing 100% sentence-boundary parity between RTVS and the DAW.
-  - **Elimination of Silence Gap False Positives**: Removed artificial 1.5-second silence break triggers from sentence cue detection in both Python and Lua. Natural pauses within a speaker's sentence (e.g. between "pointing fingers at" and "each other about who has the") no longer create mid-sentence take markers on the REAPER timeline.
-- **Dedicated "External Audio & Video Editors" Preferences Tab (`preferences_tab_daw.py`, `preferences_dialog.py`, `preferences_tabs_media.py`, `preferences_reset.py`)**:
-  - **Modular Settings Decoupling (`preferences_tab_daw.py`)**: Extracted all DAW & REAPER companion configuration out of the general "Playback & Timeline" tab into a dedicated, modular sidebar panel in Preferences (`preferences_tab_daw.py`, 138 lines).
-  - **Line Budget & Cohesion Polish**: Reduced `preferences_tabs_media.py` by 80 lines (from 737 to 657 lines), safely below single-responsibility thresholds, and decoupled playback transport options from external software integration.
-  - **Search & Navigation Aliases**: Added real-time category search indexing, keyboard navigation, and deep-linking aliases (`"daw"`, `"reaper"`, `"nle"`, `"external"`) in `preferences_dialog.py`.
-  - **Settings Reset Category**: Added dedicated reset category `external_editors` in `preferences_reset.py` for restoring factory defaults.
-- **In-App & Standalone User Guides Alignment (`docs/guides/reaper_and_daw_integration.md`, `embedded_guides.py`)**:
-  - Synchronized documentation navigation to point to **Settings > Preferences... > External Audio & Video Editors**.
-  - Documented true sentence cue take marker behavior, <kbd>Ctrl+C</kbd> (clean text + REAPER JSON sidecar) vs. <kbd>Ctrl+Shift+C</kbd> (rendered WAV file clip) shortcut separation, and ReaScript installation paths.
-- **Native REAPER (.rpp) Timeline Export Options (`export/dialog.py`, `export/timeline.py`, `export_documents.py`, `reaper_bridge.py`)**:
-  - **Customizable REAPER Export Section**: Added an expandable "Cockos REAPER (.rpp) Options" collapsible section in `UnifiedExportDialog` on the Timeline & DAW Interchange export page.
-  - **Embedded Item Notes (`<NOTES`)**: Optional checkbox to serialize formatted speech-turn transcript paragraphs directly into REAPER item notes.
-  - **Embedded Take Markers (`TKM`)**: Optional checkbox to embed take markers on timeline items with configurable detail: `Speaker Changes Only` or `Speaker Changes + Sentence Cues` (with 6-word phrase previews).
-  - **Speaker Color-Coding (`COLOR`)**: Optional checkbox to tint timeline items and take markers to match voice profile colors instead of story track colors.
-  - **Clean Defaults & Settings Persistence**: All REAPER enhancements default to unchecked (preserving standard DAW interchange files) and automatically persist to `QSettings`.
-- **REAPER DAW Companion Bridge & ReaScript Transcript Integration (`reaper_bridge.py`, `transcript_editor.py`, `transcript_context_menu_mixin.py`, `timeline_widgets.py`, `timeline_context_menus.py`, `preferences_tabs_media.py`, `preferences_dialog.py`, `scripts/reaper/rtvs_reaper_companion.lua`, `scripts/reaper/rtvs_reaper_dock.lua`, `diagnostic_editor_tests.py`, `test_runner.py`)**:
-  - **Unified Multi-Channel Clipboard & Sidecar/IPC Emitter**: Created `reaper_bridge.py` (`populate_unified_copy_mimedata`) supporting `application/x-rtvs-reaper-cue+json`, `text/uri-list` (`CF_HDROP`), plain text, and dark-mode-normalized HTML in a single unified `Ctrl+C` copy action across both the Transcript and Timeline views. Emits dual atomic sidecars (`%LOCALAPPDATA%/RadioTVStorySegmenter/reaper_ipc/latest_clip_cue.json` and `%TEMP%/rtvs3_reaper_cue.json`) with exact story or timeline selection boundaries.
-  - **Transcript Editor Budget Guard & Clean Context Menu**: Extracted `copy_highlighted_selection` from `transcript_editor.py` into `transcript_context_menu_mixin.py`, keeping `transcript_editor.py` (939 lines) and `timeline_widgets.py` (996 lines) safely below the 1,000-line ceiling while consolidating copy actions into a single uncluttered `Copy (Ctrl+C)` entry controlled via Preferences.
-  - **Companion ReaScript Timeline Paste, Take Labeling & Item Notes**: Built `rtvs_reaper_companion.lua` featuring a zero-dependency pure-Lua JSON parser. Automatically inserts the source media item at the REAPER edit cursor, aligns take start offsets, sets non-destructive fade-ins/outs, names the take with the story title or quote preview, sets item notes with verbatim transcript text, and applies speaker color coding.
-  - **Configurable 3-Way Take Markers & Live Trim/Extend/Split Auto-Sync**: Added a 3-way Take Marker Style selector (`Speaker Changes Only`, `Speaker Changes + Sentence Cues` with 6-word phrase previews, or `None`) and implemented `RTVS3.sync_trimmed_or_split_items()` in Lua so non-destructively dragging clip edges or splitting clips (`S`) in REAPER automatically re-slices the transcript, updates Item Notes (`P_NOTES`), updates the Take Name range, and refreshes Take Markers.
-  - **Dockable ReaImGui Transcript & Story Browser**: Created `rtvs_reaper_dock.lua`, an immediate-mode dockable panel in REAPER that polls RTVS3 transcript and story indices in real-time, auto-syncs trimmed or split timeline clips every 0.5s, provides search filtering across segments and stories, and enables one-click insertion at the playhead.
-  - **Preferences Integration & One-Click Script Installer**: Added "DAW & REAPER Companion Integration" section in Preferences with auto-emission toggles, 3-way marker style dropdown, universal WAV clipboard option, and a one-click installer copying Lua scripts into `%APPDATA%/REAPER/Scripts/RTVS3`.
-  - **Dedicated Ctrl+Shift+C Audio Clip Shortcut & Clean Ctrl+C Decoupling**: Decoupled WAV audio clip rendering from standard `Ctrl+C` into a dedicated `Ctrl+Shift+C` shortcut (`Copy Selection as Audio Clip`, registered in `shortcuts/schema.py`, `transcript_context_menu_mixin.py`, and `timeline_context_menus.py`). Standard `Ctrl+C` now remains strictly text-friendly (with REAPER JSON cue sidecar) without attaching `CF_HDROP` / `QUrl` file drop data.
-  - **Universal Text-to-WAV Clipboard & Drag-and-Drop Fallback**: Added `render_temp_daw_wav_clip()` and `copy_selection_as_daw_wav_clip()` which attach temporary uncompressed WAV slices (`CF_HDROP`) directly to the unified `Ctrl+C` clipboard alongside transcript text for direct pasting into REAPER, Adobe Audition, Premiere Pro, and DaVinci Resolve.
-  - **Speaker Color-Coding Preference & Formatted Item Notes**: Added user preference checkbox **Apply speaker color coding to pasted DAW clips** under Preferences (`reaper_color_items`, default: true) allowing users to toggle whether pasted REAPER items inherit speaker colors or default track coloring.
-   - **Standalone Background Live Auto-Sync & Manual Sync Actions (`scripts/reaper/rtvs_reaper_auto_sync.lua`, `scripts/reaper/rtvs_reaper_sync.lua`)**: Created zero-dependency background watcher script that runs via `reaper.defer()` and monitors media item boundaries every 0.35s with REAPER toolbar button toggle state, plus a one-shot manual sync action `rtvs_reaper_sync.lua`.
