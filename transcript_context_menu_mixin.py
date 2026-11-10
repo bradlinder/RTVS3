@@ -9,26 +9,38 @@ Provides:
 from __future__ import annotations
 from typing import Any, Dict, List, Optional, Tuple
 
+from reaper_bridge import (
+    build_reaper_cue_payload,
+    attach_reaper_cue_to_mimedata,
+    write_reaper_sidecar_cue,
+)
+from transcript_styles import clean_dark_mode_clipboard_html
+
 try:
-    from PySide6.QtCore import Qt
+    from PySide6.QtCore import Qt, QThread
     from PySide6.QtGui import (
         QAction,
         QKeySequence,
         QTextCursor,
+        QTextDocumentFragment,
     )
     from PySide6.QtWidgets import (
+        QApplication,
         QMenu,
     )
+    from PySide6.QtCore import QMimeData
 except ImportError:
     from qt_compat import _ensure_pyside6_fallback
     _ensure_pyside6_fallback()
-    from PySide6.QtCore import Qt
+    from PySide6.QtCore import Qt, QThread, QMimeData
     from PySide6.QtGui import (
         QAction,
         QKeySequence,
         QTextCursor,
+        QTextDocumentFragment,
     )
     from PySide6.QtWidgets import (
+        QApplication,
         QMenu,
     )
 
@@ -111,6 +123,11 @@ class TranscriptContextMenuMixin:
             copy_action.triggered.connect(self.copy)
             menu.addAction(copy_action)
 
+            copy_audio_action = QAction("Copy as Audio Clip", self)
+            copy_audio_action.setShortcut(QKeySequence("Ctrl+Shift+C"))
+            copy_audio_action.triggered.connect(self.copy_selection_as_daw_wav)
+            menu.addAction(copy_audio_action)
+
             ranges = self.get_all_selected_story_ranges()
             count = len(ranges)
             title = f"Add Selected Sections to New Stories ({count})" if count > 1 else "Add Selected Text to New Story"
@@ -143,6 +160,11 @@ class TranscriptContextMenuMixin:
                 copy_span_action.triggered.connect(lambda: getattr(self, "copy_highlighted_selection", lambda: False)())
                 menu.addAction(copy_span_action)
 
+                copy_story_audio_action = QAction("Copy Story as Audio Clip", self)
+                copy_story_audio_action.setShortcut(QKeySequence("Ctrl+Shift+C"))
+                copy_story_audio_action.triggered.connect(self.copy_selection_as_daw_wav)
+                menu.addAction(copy_story_audio_action)
+
                 if hasattr(main_win, "open_story_metadata_dialog"):
                     meta_span_act = QAction("Story & Post Metadata...", self)
                     meta_span_act.triggered.connect(lambda _, idx=active_story_idx: main_win.open_story_metadata_dialog(idx))
@@ -157,6 +179,11 @@ class TranscriptContextMenuMixin:
                 copy_span_action.setShortcut(QKeySequence.StandardKey.Copy)
                 copy_span_action.triggered.connect(lambda: getattr(self, "copy_highlighted_selection", lambda: False)())
                 menu.addAction(copy_span_action)
+
+                copy_span_audio_action = QAction("Copy Selection as Audio Clip", self)
+                copy_span_audio_action.setShortcut(QKeySequence("Ctrl+Shift+C"))
+                copy_span_audio_action.triggered.connect(self.copy_selection_as_daw_wav)
+                menu.addAction(copy_span_audio_action)
 
                 clear_span_action = QAction("Clear Selection", self)
                 clear_span_action.setShortcut(QKeySequence("Esc"))
@@ -452,3 +479,252 @@ class TranscriptContextMenuMixin:
             menu.addAction(exit_action)
 
         menu.exec(self.mapToGlobal(position))
+
+    def copy_highlighted_selection(self) -> bool:
+        """Copy the active story or timeline selection span to clipboard when no cursor text is selected.
+
+        Preserves rich HTML styling with dark-mode black text normalization, sets plain text,
+        attaches REAPER DAW clip cue payload, and posts a notification to the main window status bar.
+        Returns True if text was copied.
+        """
+        span = getattr(self, "timeline_selection_span", None)
+        if not span:
+            return False
+        s_char, e_char = span
+        doc = self.document()
+        if not doc:
+            return False
+        raw_count = doc.characterCount() if doc else None
+        doc_len = raw_count if isinstance(raw_count, int) else 1000000
+        if not (0 <= s_char < doc_len and 0 < e_char <= doc_len and s_char < e_char):
+            return False
+
+        cursor = QTextCursor(doc)
+        cursor.setPosition(s_char)
+        cursor.setPosition(e_char, QTextCursor.MoveMode.KeepAnchor)
+
+        plain_text = ""
+        html_text = ""
+
+        try:
+            fragment = QTextDocumentFragment(cursor)
+            p_text = fragment.toPlainText()
+            if isinstance(p_text, str) and p_text:
+                plain_text = p_text.strip()
+            html_text = fragment.toHtml()
+        except Exception:
+            pass
+
+        if not plain_text and hasattr(cursor, "selectedText"):
+            raw_sel = cursor.selectedText()
+            if isinstance(raw_sel, str) and raw_sel:
+                plain_text = raw_sel.strip()
+
+        if not plain_text:
+            full_txt = self.toPlainText() if hasattr(self, "toPlainText") else ""
+            if isinstance(full_txt, str) and full_txt:
+                plain_text = full_txt[s_char:e_char].strip()
+                html_text = plain_text
+
+        if not plain_text:
+            return False
+
+        theme = getattr(self, "current_theme", "dark")
+        if theme in ("dark", "high_contrast") and html_text:
+            html_text = clean_dark_mode_clipboard_html(html_text)
+
+        self._last_copied_text = plain_text
+        self._last_copied_html = html_text
+
+        main_win = self.window()
+        story_obj = None
+        story_title = ""
+        st_sec = None
+        en_sec = None
+
+        # 1. Exact Story boundary priority
+        indices = getattr(main_win, "current_selected_story_indices", [])
+        stories = getattr(main_win, "stories", [])
+        if isinstance(indices, list) and isinstance(stories, list):
+            if len(indices) == 1 and 0 <= indices[0] < len(stories):
+                story_obj = stories[indices[0]]
+                story_title = f" for '{story_obj.title}'"
+                st_sec = getattr(story_obj, "start", None)
+                en_sec = getattr(story_obj, "end", None)
+            elif len(indices) > 1:
+                story_title = f" for {len(indices)} stories"
+
+        # 2. Timeline drag selection range priority
+        if st_sec is None or en_sec is None:
+            tl = getattr(main_win, "timeline", None)
+            if tl is not None:
+                sel_st = getattr(tl, "selection_start", None)
+                sel_en = getattr(tl, "selection_end", None)
+                if sel_st is None or sel_en is None:
+                    canvas = getattr(tl, "canvas", None)
+                    if canvas is not None:
+                        sel_st = getattr(canvas, "selection_start", None)
+                        sel_en = getattr(canvas, "selection_end", None)
+                if sel_st is not None and sel_en is not None and sel_en != sel_st:
+                    st_sec = min(float(sel_st), float(sel_en))
+                    en_sec = max(float(sel_st), float(sel_en))
+
+        # 3. Fall back to character span timestamp mapping
+        if st_sec is None or en_sec is None:
+            if hasattr(self, "get_time_range_for_char_span"):
+                time_range = self.get_time_range_for_char_span(s_char, e_char)
+                if time_range and len(time_range) == 2 and time_range[1] > time_range[0]:
+                    st_sec, en_sec = time_range
+
+        app = QApplication.instance()
+        if app is not None and hasattr(app, "thread") and callable(getattr(app, "thread", None)) and QThread.currentThread() == app.thread():
+            mime_data = QMimeData()
+            mime_data.setText(plain_text)
+            if html_text:
+                mime_data.setHtml(html_text)
+
+            # Unified multi-channel attachment (REAPER cue & optional DAW WAV)
+            if st_sec is not None and en_sec is not None and en_sec > st_sec:
+                try:
+                    from reaper_bridge import populate_unified_copy_mimedata
+                    populate_unified_copy_mimedata(
+                        main_win=main_win,
+                        mime_data=mime_data,
+                        start_sec=st_sec,
+                        end_sec=en_sec,
+                        plain_text=plain_text,
+                        title=getattr(story_obj, "title", ""),
+                        clip_type="story" if story_obj is not None else "selection",
+                        story_obj=story_obj,
+                    )
+                except Exception as exc:
+                    logger.warning(f"Failed to populate unified copy payload: {exc}")
+
+            clipboard = QApplication.clipboard()
+            if clipboard:
+                clipboard.setMimeData(mime_data)
+
+        if hasattr(main_win, "statusBar") and main_win.statusBar():
+            main_win.statusBar().showMessage(
+                f"Copied story transcript{story_title} ({len(plain_text)} characters) to clipboard.",
+                3500,
+            )
+        return True
+
+    def copy_selection_for_reaper(self) -> bool:
+        """Explicitly build and copy REAPER DAW clip cue payload for the active text or story selection."""
+        main_win = self.window()
+        plain_text = ""
+        st_sec = 0.0
+        en_sec = 0.0
+        story_obj = None
+        title = ""
+
+        # 1. Active cursor text selection
+        if self.has_active_selection():
+            cursor = self.textCursor()
+            plain_text = cursor.selectedText().strip()
+            time_range = self.get_selected_time_range()
+            if time_range and len(time_range) == 2 and time_range[1] > time_range[0]:
+                st_sec, en_sec = time_range
+        # 2. Timeline story selection span
+        elif getattr(self, "timeline_selection_span", None) is not None:
+            span = getattr(self, "timeline_selection_span")
+            time_range = self.get_time_range_for_char_span(span[0], span[1])
+            if time_range and len(time_range) == 2 and time_range[1] > time_range[0]:
+                st_sec, en_sec = time_range
+            indices = getattr(main_win, "current_selected_story_indices", [])
+            stories = getattr(main_win, "stories", [])
+            if isinstance(indices, list) and isinstance(stories, list) and len(indices) == 1:
+                if 0 <= indices[0] < len(stories):
+                    story_obj = stories[indices[0]]
+                    title = getattr(story_obj, "title", "")
+            cursor = QTextCursor(self.document())
+            cursor.setPosition(span[0])
+            cursor.setPosition(span[1], QTextCursor.MoveMode.KeepAnchor)
+            plain_text = cursor.selectedText().strip()
+
+        if en_sec <= st_sec or not plain_text:
+            if hasattr(main_win, "statusBar") and main_win.statusBar():
+                main_win.statusBar().showMessage("No active time range found for REAPER clip cue.", 3000)
+            return False
+
+        app = QApplication.instance()
+        if app is not None and hasattr(app, "thread") and callable(getattr(app, "thread", None)) and QThread.currentThread() == app.thread():
+            mime_data = QMimeData()
+            mime_data.setText(plain_text)
+            try:
+                payload = build_reaper_cue_payload(
+                    main_win=main_win,
+                    start_sec=st_sec,
+                    end_sec=en_sec,
+                    plain_text=plain_text,
+                    title=title,
+                    clip_type="story" if story_obj is not None else "selection",
+                    story_obj=story_obj,
+                )
+                attach_reaper_cue_to_mimedata(mime_data, payload)
+            except Exception as exc:
+                logger.warning(f"Failed to build REAPER cue: {exc}")
+
+            clipboard = QApplication.clipboard()
+            if clipboard:
+                clipboard.setMimeData(mime_data)
+
+        if hasattr(main_win, "statusBar") and main_win.statusBar():
+            main_win.statusBar().showMessage(
+                f"Copied REAPER DAW clip cue for '{title or plain_text[:30]}' ({st_sec:.1f}s - {en_sec:.1f}s) to clipboard & sidecar.",
+                4000,
+            )
+        return True
+
+    def copy_selection_as_daw_wav(self) -> bool:
+        """Render temporary WAV audio clip and copy it to the OS clipboard (CF_HDROP) for any DAW."""
+        main_win = self.window()
+        plain_text = ""
+        st_sec = 0.0
+        en_sec = 0.0
+        story_obj = None
+        title = ""
+
+        # 1. Active cursor text selection
+        if self.has_active_selection():
+            cursor = self.textCursor()
+            plain_text = cursor.selectedText().strip()
+            time_range = self.get_selected_time_range()
+            if time_range and len(time_range) == 2 and time_range[1] > time_range[0]:
+                st_sec, en_sec = time_range
+        # 2. Timeline story selection span
+        elif getattr(self, "timeline_selection_span", None) is not None:
+            span = getattr(self, "timeline_selection_span")
+            time_range = self.get_time_range_for_char_span(span[0], span[1])
+            if time_range and len(time_range) == 2 and time_range[1] > time_range[0]:
+                st_sec, en_sec = time_range
+            indices = getattr(main_win, "current_selected_story_indices", [])
+            stories = getattr(main_win, "stories", [])
+            if isinstance(indices, list) and isinstance(stories, list) and len(indices) == 1:
+                if 0 <= indices[0] < len(stories):
+                    story_obj = stories[indices[0]]
+                    title = getattr(story_obj, "title", "")
+            cursor = QTextCursor(self.document())
+            cursor.setPosition(span[0])
+            cursor.setPosition(span[1], QTextCursor.MoveMode.KeepAnchor)
+            plain_text = cursor.selectedText().strip()
+
+        if en_sec <= st_sec or not plain_text:
+            if hasattr(main_win, "statusBar") and main_win.statusBar():
+                main_win.statusBar().showMessage("No active time range found to render DAW audio clip.", 3000)
+            return False
+
+        from reaper_bridge import copy_selection_as_daw_wav_clip
+        wav_path = copy_selection_as_daw_wav_clip(
+            main_win=main_win,
+            start_sec=st_sec,
+            end_sec=en_sec,
+            plain_text=plain_text,
+            html_text="",
+            title=title,
+            story_obj=story_obj,
+        )
+        return wav_path is not None
+

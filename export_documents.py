@@ -410,7 +410,19 @@ class ExportDocumentsMixin:
         mode = unselected_audio_mode if unselected_audio_mode is not None else self._get_unselected_audio_mode_pref()
         tot_dur = float(getattr(self, "duration", 0.0) or getattr(self, "audio_duration", 0.0) or 0.0)
         media_name = audio_file.name if audio_file else ""
-        content = generate_reaper_project(stories, media_name, base, apply_fades=True, total_duration=tot_dur, unselected_audio_mode=mode)
+        content = generate_reaper_project(
+            stories,
+            media_name,
+            base,
+            apply_fades=True,
+            total_duration=tot_dur,
+            unselected_audio_mode=mode,
+            main_win=self,
+            reaper_include_notes=bool(getattr(self, "_reaper_include_notes", False)),
+            reaper_include_markers=bool(getattr(self, "_reaper_include_markers", False)),
+            reaper_marker_style=str(getattr(self, "_reaper_marker_style", "speakers")),
+            reaper_speaker_colors=bool(getattr(self, "_reaper_speaker_colors", False)),
+        )
         with open(save_path, "w", encoding="utf-8") as f:
             f.write(content)
         if hasattr(self, "log_activity"):
@@ -635,6 +647,11 @@ class ExportDocumentsMixin:
                 track_name=track_name,
                 scope=scope,
                 all_stories=all_stories,
+                main_win=self,
+                reaper_include_notes=bool(options.get("reaper_include_notes", False)),
+                reaper_include_markers=bool(options.get("reaper_include_markers", False)),
+                reaper_marker_style=str(options.get("reaper_marker_style", "speakers")),
+                reaper_speaker_colors=bool(options.get("reaper_speaker_colors", False)),
             )
             with open(rpp_file, "w", encoding="utf-8") as f:
                 f.write(content)

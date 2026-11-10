@@ -215,7 +215,61 @@ class DiagnosticCoreTestsMixin:
         if 'MARKER 2 95.500000 "Segment B" 1' not in rpp or 'MARKER 2 230.000000 "" 1' not in rpp:
             raise AssertionError("Missing REAPER Region 2 paired definition")
         item.status = "PASS"
-        item.message = "REAPER .rpp timeline S-expressions, item blocks, and region markers verified"
+        # Verify optional take notes, take markers, and speaker colors
+        class DummyWin:
+            def __init__(self):
+                self.transcript = {
+                    "segments": [
+                        {
+                            "start": 5.0,
+                            "end": 15.0,
+                            "text": "Welcome to our story segment.",
+                            "words": [
+                                {"word": "Welcome", "start": 5.0, "end": 6.0},
+                                {"word": "to", "start": 6.0, "end": 6.5},
+                                {"word": "our", "start": 6.5, "end": 7.0},
+                                {"word": "story", "start": 7.0, "end": 8.0},
+                                {"word": "segment.", "start": 8.0, "end": 9.0},
+                            ],
+                            "speaker": "Anchor",
+                        },
+                        {
+                            "start": 20.0,
+                            "end": 35.0,
+                            "text": "Reporting live from the courthouse.",
+                            "words": [
+                                {"word": "Reporting", "start": 20.0, "end": 22.0},
+                                {"word": "live", "start": 22.0, "end": 23.0},
+                                {"word": "from", "start": 23.0, "end": 24.0},
+                                {"word": "the", "start": 24.0, "end": 25.0},
+                                {"word": "courthouse.", "start": 25.0, "end": 27.0},
+                            ],
+                            "speaker": "Reporter",
+                        },
+                    ]
+                }
+                self.speaker_colors = {"Anchor": "#3b82f6", "Reporter": "#ef4444"}
+                self.min_words_per_paragraph = 40
+                self.silence_threshold = 3.0
+
+        win = DummyWin()
+        rpp_with_features = generate_reaper_project(
+            stories,
+            "audio.wav",
+            "Test Project",
+            main_win=win,
+            reaper_include_notes=True,
+            reaper_include_markers=True,
+            reaper_marker_style="sentences",
+            reaper_speaker_colors=True,
+        )
+        if "TKM " not in rpp_with_features:
+            raise AssertionError("Missing TKM take marker in RPP when reaper_include_markers=True")
+        if "Anchor: Welcome to our story segment." not in rpp_with_features:
+            raise AssertionError("Missing item notes with transcript when reaper_include_notes=True")
+
+        item.status = "PASS"
+        item.message = "REAPER .rpp timeline S-expressions, item blocks, take markers, and notes verified"
 
     def _test_magix_samplitude_edl_v1_5_export(self, item: DiagnosticItem):
         mod = _resolve_export_daw_module()

@@ -250,7 +250,22 @@ class DiagnosticEditorTestsMixin:
 
         dialog.close()
 
-        # 5. Verify build installer script invariants
+        # 5. Verify search indexing, navigation, and cross-topic badges
+        search_dialog = UserGuideDialog(initial_guide_id="reaper_bridge")
+        search_dialog.search_input.setText("reaper")
+        assert len(search_dialog._search_matches) > 0, "Search query 'reaper' found 0 matches in REAPER guide"
+        initial_match_idx = search_dialog._search_match_index
+        search_dialog._find_next_match()
+        assert search_dialog._search_match_index != initial_match_idx, "Next match did not advance index"
+        search_dialog._find_prev_match()
+        assert search_dialog._search_match_index == initial_match_idx, "Prev match did not reverse index"
+        assert search_dialog.match_count_label.text() != "", "Match count label was empty during active search"
+        search_dialog.search_input.clear()
+        assert len(search_dialog._search_matches) == 0, "Clearing search did not clear matches"
+        assert search_dialog.match_count_label.text() == "", "Match count label did not clear"
+        search_dialog.close()
+
+        # 6. Verify build installer script invariants
         build_text = Path("build_installer.py").read_text(encoding="utf-8")
         assert 'test_dir_names = {"tests", "testing", "test", "benchmark", "benchmarks", "sample_files"}' in build_text, "test_dir_names in build_installer.py pruned docs"
         assert 'shutil.copytree(docs_source, docs_dest, dirs_exist_ok=True)' in build_text, "build_installer.py missing docs copytree step"
@@ -635,4 +650,205 @@ class DiagnosticEditorTestsMixin:
         item.status = "PASS"
         item.message = "Story clock duration field below Range, Fade Out badge language, timeline hover tooltips, and selection drag indicators verified"
 
+    def _test_reaper_daw_companion_and_universal_clipboard_pipeline(self, item: DiagnosticItem):
+        """Validates REAPER DAW clip cue JSON schema, sidecar emission, Lua script syntax,
+        QMimeData multi-channel attachments, and one-click script installer.
+        """
+        import json
+        import tempfile
+        from pathlib import Path
+        from reaper_bridge import (
+            build_reaper_cue_payload,
+            write_reaper_sidecar_cue,
+            write_reaper_transcript_index,
+            get_reaper_ipc_paths,
+            get_reaper_index_paths,
+            get_bundled_lua_scripts,
+            install_reaper_scripts_to_resource_path,
+            REAPER_CUE_MIME,
+        )
+
+        # Preserve any live user IPC files on disk so diagnostic tests never overwrite an active REAPER session
+        preserved_ipc = {}
+        for ipc_p in list(get_reaper_ipc_paths()) + list(get_reaper_index_paths()):
+            try:
+                if ipc_p.is_file():
+                    preserved_ipc[ipc_p] = ipc_p.read_bytes()
+            except Exception:
+                pass
+
+        class MockStory:
+            def __init__(self, title, start, end, fade_in=0.5, fade_out=1.0):
+                self.title = title
+                self.start = start
+                self.end = end
+                self.fade_in = fade_in
+                self.fade_out = fade_out
+                self.fade_curve = "linear"
+
+        class MockMainWindow:
+            def __init__(self):
+                self.audio_file = r"C:\Media\interview.wav"
+                self.project_file = r"C:\Media\interview.rtvs"
+                self.stories = [
+                    MockStory("Lead Headline", 10.0, 70.0, 0.5, 1.0),
+                    MockStory("City Council", 80.0, 140.0, 0.25, 0.75),
+                ]
+                self.transcript = {
+                    "segments": [
+                        {
+                            "id": 0,
+                            "start": 10.0,
+                            "end": 40.0,
+                            "speaker": "SPEAKER_00",
+                            "text": "Mayor announced the new budget transit proposal today.",
+                            "words": [
+                                {"word": "Mayor", "start": 10.0, "end": 10.5},
+                                {"word": "announced", "start": 10.6, "end": 11.2},
+                                {"word": "transit", "start": 11.3, "end": 12.0},
+                            ],
+                        },
+                        {
+                            "id": 1,
+                            "start": 40.0,
+                            "end": 70.0,
+                            "speaker": "SPEAKER_01",
+                            "text": "The funding expands light rail operations across the county.",
+                            "words": [
+                                {"word": "funding", "start": 40.0, "end": 40.8},
+                                {"word": "expands", "start": 40.9, "end": 41.5},
+                            ],
+                        },
+                    ]
+                }
+                self.speaker_names = {"SPEAKER_00": "Mayor Bradley", "SPEAKER_01": "Council Member"}
+                self.segment_speaker_overrides = {}
+                self.settings_store = None
+
+        win = MockMainWindow()
+
+        # 1. Verify build_reaper_cue_payload schema and relative offset math
+        payload = build_reaper_cue_payload(
+            main_win=win,
+            start_sec=10.0,
+            end_sec=70.0,
+            plain_text="[00:10.0] Mayor Bradley: Mayor announced the new budget transit proposal today.",
+            title="Lead Headline",
+            clip_type="story",
+            story_obj=win.stories[0],
+            include_word_cues=True,
+        )
+
+        assert payload["schema_version"] == "1.0", f"Unexpected schema version: {payload.get('schema_version')}"
+        assert payload["clip_type"] == "story"
+        assert payload["title"] == "Lead Headline"
+        assert "Lead Headline [00:10.0 - 01:10.0]" in payload["take_name"], f"Bad take_name: {payload.get('take_name')}"
+        assert payload["start_sec"] == 10.0
+        assert payload["end_sec"] == 70.0
+        assert payload["duration_sec"] == 60.0
+        assert payload["fade_in_sec"] == 0.5
+        assert payload["fade_out_sec"] == 1.0
+
+        # Verify speakers turn boundaries
+        speakers = payload["speakers"]
+        assert len(speakers) == 2, f"Expected 2 speaker turns, got {len(speakers)}"
+        assert speakers[0]["speaker"] == "Mayor Bradley"
+        assert speakers[0]["rel_offset_sec"] == 0.0
+        assert speakers[0]["abs_start_sec"] == 10.0
+        assert speakers[1]["speaker"] == "Council Member"
+        assert speakers[1]["rel_offset_sec"] == 30.0
+        assert speakers[1]["abs_start_sec"] == 40.0
+
+        # Verify word cues relative offsets
+        words = payload["word_cues"]
+        assert len(words) == 5, f"Expected 5 word cues, got {len(words)}"
+        assert words[0]["word"] == "Mayor"
+        assert words[0]["rel_offset_sec"] == 0.0
+        assert words[2]["word"] == "transit"
+        assert words[2]["rel_offset_sec"] == 1.3
+        assert words[3]["word"] == "funding"
+        assert words[3]["rel_offset_sec"] == 30.0
+
+        # 2. Verify sidecar file atomic emission
+        emitted_paths = write_reaper_sidecar_cue(payload)
+        assert len(emitted_paths) >= 1, "Failed to write sidecar cue files"
+        for p in emitted_paths:
+            assert p.is_file() and p.stat().st_size > 0, f"Emitted sidecar does not exist or empty: {p}"
+            with open(p, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                assert data["schema_version"] == "1.0"
+                assert data["take_name"] == payload["take_name"]
+
+        # 2b. Verify 3-way marker_style modes ('sentences' and 'none')
+        sent_payload = build_reaper_cue_payload(
+            main_win=win, start_sec=10.0, end_sec=70.0,
+            plain_text="Test", title="Lead Headline", marker_style="sentences",
+        )
+        assert sent_payload["marker_style"] == "sentences"
+        assert len(sent_payload["sentence_cues"]) == 2
+        assert "Mayor announced the new budget transit..." in sent_payload["sentence_cues"][0]["preview"]
+
+        none_payload = build_reaper_cue_payload(
+            main_win=win, start_sec=10.0, end_sec=70.0,
+            plain_text="Test", title="Lead Headline", marker_style="none",
+        )
+        assert none_payload["marker_style"] == "none"
+        assert len(none_payload["speakers"]) == 0
+        assert len(none_payload["sentence_cues"]) == 0
+
+        # 3. Verify transcript index emission (including word-level timings for live trim/split sync)
+        idx_paths = write_reaper_transcript_index(win)
+        assert len(idx_paths) >= 1, "Failed to write transcript index files"
+        for ip in idx_paths:
+            assert ip.is_file() and ip.stat().st_size > 0
+            with open(ip, "r", encoding="utf-8") as f:
+                idx_data = json.load(f)
+                assert len(idx_data["stories"]) == 2
+                assert len(idx_data["segments"]) == 2
+                assert idx_data["stories"][0]["title"] == "Lead Headline"
+                assert idx_data["segments"][0]["speaker"] == "Mayor Bradley"
+                assert len(idx_data["segments"][0].get("words", [])) == 3
+
+        # 4. Verify Lua scripts exist and include live trim/split sync & marker style handlers
+        bundled_lua = get_bundled_lua_scripts()
+        assert "rtvs_reaper_companion.lua" in bundled_lua, "rtvs_reaper_companion.lua missing from bundled scripts"
+        assert "rtvs_reaper_dock.lua" in bundled_lua, "rtvs_reaper_dock.lua missing from bundled scripts"
+
+        for lua_name, lua_path in bundled_lua.items():
+            assert lua_path.is_file() and lua_path.stat().st_size > 100, f"Lua script {lua_name} empty"
+            with open(lua_path, "r", encoding="utf-8") as lf:
+                content = lf.read()
+                assert "reaper" in content, f"{lua_name} missing reaper API references"
+                assert "@description" in content, f"{lua_name} missing ReaPack description header"
+                assert "sync_trimmed_or_split_items" in content, f"{lua_name} missing live trim/split sync handler"
+
+        # 4b. Verify note paragraph formatting and color coding flag
+        norm_plain = payload["plain_text"].replace("\r\n", "\n")
+        assert "\n\n" in norm_plain, "Expected paragraph break in plain_text"
+        assert "[00:10.0] Mayor Bradley:\n" in norm_plain
+        assert "[00:40.0] Council Member:\n" in norm_plain
+        assert payload.get("apply_speaker_color") is True
+
+        # 5. Verify one-click script installer to mock REAPER directory
+        with tempfile.TemporaryDirectory() as tmp_reaper_root:
+            mock_dest = Path(tmp_reaper_root) / "Scripts" / "RTVS3"
+            success, msg, installed = install_reaper_scripts_to_resource_path(
+                parent_widget=None,
+                target_dir=mock_dest,
+            )
+            assert success is True, f"Script installer failed: {msg}"
+            assert len(installed) == 4, f"Expected 4 installed files, got {len(installed)}"
+            assert (mock_dest / "rtvs_reaper_companion.lua").is_file()
+            assert (mock_dest / "rtvs_reaper_auto_sync.lua").is_file()
+            assert (mock_dest / "rtvs_reaper_sync.lua").is_file()
+            assert (mock_dest / "rtvs_reaper_dock.lua").is_file()
+
+        for ipc_p, raw_bytes in preserved_ipc.items():
+            try:
+                ipc_p.write_bytes(raw_bytes)
+            except Exception:
+                pass
+
+        item.status = "PASS"
+        item.message = "REAPER DAW cue schema, JSON sidecars, Lua companion scripts, and script installer verified"
 

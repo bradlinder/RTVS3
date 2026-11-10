@@ -244,8 +244,14 @@ def _build_reaper_track_block(
     clips: List[Dict[str, Any]],
     source_type: str,
     media_name_only: str,
+    main_win: Any = None,
+    reaper_include_notes: bool = False,
+    reaper_include_markers: bool = False,
+    reaper_marker_style: str = "speakers",
+    reaper_speaker_colors: bool = False,
+    precomputed_sentences: Optional[List[Dict[str, Any]]] = None,
 ) -> List[str]:
-    """Generate a clean Cockos REAPER <TRACK block with media items, fades, colors, and source offsets."""
+    """Generate a clean Cockos REAPER <TRACK block with media items, fades, colors, notes, markers, and source offsets."""
     track_guid = f"{{{str(uuid.uuid4()).upper()}}}"
     clean_track_name = track_name.replace('"', "'")
 
@@ -259,6 +265,11 @@ def _build_reaper_track_block(
         '    IPHASE 0',
     ]
 
+    has_extra_reaper_features = bool(
+        (reaper_include_notes or reaper_include_markers or reaper_speaker_colors)
+        and (main_win is not None or precomputed_sentences is not None)
+    )
+
     for clip in clips:
         start = clip["start"]
         end = clip["end"]
@@ -271,6 +282,26 @@ def _build_reaper_track_block(
         c_in = _reaper_fade_curve_index(clip.get("fade_curve", "linear"))
         c_out = _reaper_fade_curve_index(clip.get("fade_curve", "linear"))
         color_val = clip.get("color_val", 0)
+
+        clip_data: Dict[str, Any] = {}
+        if has_extra_reaper_features and clip.get("is_story", True):
+            try:
+                from reaper_bridge import get_reaper_clip_notes_and_markers
+                clip_data = get_reaper_clip_notes_and_markers(
+                    main_win=main_win,
+                    start_sec=start,
+                    end_sec=end,
+                    marker_style=reaper_marker_style,
+                    apply_speaker_color=reaper_speaker_colors,
+                    include_notes=reaper_include_notes,
+                    include_markers=reaper_include_markers,
+                    precomputed_sentences=precomputed_sentences,
+                )
+            except Exception:
+                clip_data = {}
+
+        if reaper_speaker_colors and clip_data.get("primary_color", 0) > 0:
+            color_val = clip_data["primary_color"]
 
         item_lines = [
             '    <ITEM',
@@ -290,11 +321,30 @@ def _build_reaper_track_block(
             f'      IGUID {item_guid}',
             f'      NAME "{title}"',
             f'      SOFFS {start:.6f}',
+        ])
+
+        take_markers = clip_data.get("markers", [])
+        if reaper_include_markers and take_markers:
+            for m in take_markers:
+                m_off = float(m.get("rel_offset_sec", 0.0))
+                m_name = str(m.get("name", "")).replace('"', "'")
+                m_col = int(m.get("color", 0) or 0)
+                item_lines.append(f'      TKM {m_off:.6f} "{m_name}" {m_col} 0')
+
+        item_lines.extend([
             f'      <SOURCE {source_type}',
             f'        FILE "{media_name_only}"',
             '      >',
-            '    >',
         ])
+
+        notes_text = str(clip_data.get("notes", "") or "").strip()
+        if reaper_include_notes and notes_text:
+            item_lines.append('      <NOTES')
+            for n_line in notes_text.splitlines():
+                item_lines.append(f'        |{n_line}')
+            item_lines.append('      >')
+
+        item_lines.append('    >')
         lines.extend(item_lines)
 
     lines.append('  >')  # Close TRACK
@@ -312,6 +362,11 @@ def generate_reaper_project(
     track_name: str = "Segmented Stories",
     scope: str = "all_stories",
     all_stories: Optional[list] = None,
+    main_win: Any = None,
+    reaper_include_notes: bool = False,
+    reaper_include_markers: bool = False,
+    reaper_marker_style: str = "speakers",
+    reaper_speaker_colors: bool = False,
 ) -> str:
     """Generate a clean, warning-free Cockos REAPER project file (.rpp) with scope-aware tracks, fades, and regions."""
     norm_scope = str(scope or "all_stories").lower().strip()
@@ -331,6 +386,14 @@ def generate_reaper_project(
     else:
         source_type = "WAVE"
 
+    precomputed_sentences = None
+    if (reaper_include_notes or reaper_include_markers or reaper_speaker_colors) and main_win is not None:
+        try:
+            from reaper_bridge import _extract_formatted_transcript_sentences
+            precomputed_sentences = _extract_formatted_transcript_sentences(main_win)
+        except Exception:
+            precomputed_sentences = []
+
     lines: List[str] = [
         '<REAPER_PROJECT 0.1 "7.0/OSX64" 1710000000',
         '  RIPPLE 0',
@@ -343,24 +406,33 @@ def generate_reaper_project(
         f'  <NOTES\n    |{clean_proj_title} - Exported from Radio & TV Story Segmenter\n  >',
     ]
 
+    track_extra_kwargs = {
+        "main_win": main_win,
+        "reaper_include_notes": reaper_include_notes,
+        "reaper_include_markers": reaper_include_markers,
+        "reaper_marker_style": reaper_marker_style,
+        "reaper_speaker_colors": reaper_speaker_colors,
+        "precomputed_sentences": precomputed_sentences,
+    }
+
     if norm_scope == "full_and_all_stories":
         # Two tracks: Track 1 = Full Episode with story splits; Track 2 = Story Cuts
         full_clips = build_timeline_clips(
             stories, total_duration, unselected_audio_mode, apply_fades, scope="full", all_stories=all_stories
         )
-        lines.extend(_build_reaper_track_block("Full Episode (Splits)", full_clips, source_type, media_name_only))
+        lines.extend(_build_reaper_track_block("Full Episode (Splits)", full_clips, source_type, media_name_only, **track_extra_kwargs))
 
         story_clips = build_timeline_clips(
             stories, total_duration, unselected_audio_mode="exclude", apply_fades=apply_fades, scope="all_stories", all_stories=all_stories
         )
-        lines.extend(_build_reaper_track_block("Story Cuts", story_clips, source_type, media_name_only))
+        lines.extend(_build_reaper_track_block("Story Cuts", story_clips, source_type, media_name_only, **track_extra_kwargs))
 
     elif norm_scope == "full":
         # One track: Full Episode with story splits spanning 0:00 to total_duration
         full_clips = build_timeline_clips(
             stories, total_duration, unselected_audio_mode, apply_fades, scope="full", all_stories=all_stories
         )
-        lines.extend(_build_reaper_track_block("Full Episode (Splits)", full_clips, source_type, media_name_only))
+        lines.extend(_build_reaper_track_block("Full Episode (Splits)", full_clips, source_type, media_name_only, **track_extra_kwargs))
 
     else:
         # One track: Isolated story clips
@@ -368,7 +440,7 @@ def generate_reaper_project(
             stories, total_duration, unselected_audio_mode, apply_fades, scope="all_stories", all_stories=all_stories
         )
         t_name = track_name or "Segmented Stories"
-        lines.extend(_build_reaper_track_block(t_name, story_clips, source_type, media_name_only))
+        lines.extend(_build_reaper_track_block(t_name, story_clips, source_type, media_name_only, **track_extra_kwargs))
 
     # Generate paired color-coded REAPER Regions for each story across the timeline matching RTVS story selection colors
     stories_for_regions = all_stories if (norm_scope in ("full", "full_and_all_stories") and all_stories) else (stories or [])

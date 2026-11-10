@@ -9,6 +9,7 @@ from core_utils import make_dialog_maximizable, apply_window_titlebar_theme, get
 from preferences_reset import RestoreSelectedSettingsDialog, PreferencesResetMixin
 from preferences_tabs_core import build_general_tab, build_shortcuts_tab, build_audio_hardware_tab, build_updates_tab, build_ai_models_tab, build_gpu_tab
 from preferences_tabs_media import build_playback_timeline_tab, build_detection_tab, build_batch_tab, build_cleanup_tab, build_youtube_tab
+from preferences_tab_daw import build_external_editors_tab
 
 class PreferencesDialogMixin(PreferencesResetMixin):
 

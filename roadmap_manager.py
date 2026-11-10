@@ -90,9 +90,9 @@ class RoadmapManager:
             ver = v_match.group(1) if v_match else None
             entry["version"] = ver
 
-            if "Previous" in entry_type:
+            if "Previous" in entry_type or "Immediate Predecessor" in entry_type:
                 info["prev_version"] = ver
-            elif "Current" in entry_type:
+            elif "Current" in entry_type or "Active" in entry_type:
                 info["current_version"] = ver
             else:
                 info["upcoming_milestones"].append(entry)
@@ -111,12 +111,12 @@ class RoadmapManager:
             return False, [info["error"]]
 
         # 1. Verify Previous Release is present
-        prev_entries = [e for e in info["entries"] if "Previous" in e["type"]]
+        prev_entries = [e for e in info["entries"] if "Previous" in e["type"] or "Immediate Predecessor" in e["type"]]
         if not prev_entries:
             issues.append("Missing Previous Release ($N-1$) in Table of Contents.")
 
         # 2. Verify Current Release is present
-        cur_entries = [e for e in info["entries"] if "Current" in e["type"]]
+        cur_entries = [e for e in info["entries"] if "Current" in e["type"] or "Active" in e["type"]]
         if not cur_entries:
             issues.append("Missing Current Release ($N$) in Table of Contents.")
         else:

@@ -269,104 +269,41 @@ class InteractiveTranscriptEdit(
             h_bar.setValue(target_h)
 
     def createMimeDataFromSelection(self):
-        """Clean dark-mode white/light plain text colors to black (#000000) when copying.
+        """Clean dark-mode white/light plain text colors to black (#000000) and attach REAPER cues when copying.
 
         Preserves rich styling such as blue speaker labels, highlight backgrounds and text,
         bold, italic, underline, and timestamps so pasting into Word, Google Docs, or email
-        pastes as clean, readable black text rather than invisible white-on-white text.
+        pastes as clean, readable black text, while also emitting REAPER DAW clip cue payloads.
         """
         mime_data = super().createMimeDataFromSelection()
-        if mime_data is not None and mime_data.hasHtml():
-            theme = getattr(self, "current_theme", "dark")
-            if theme in ("dark", "high_contrast"):
-                raw_html = mime_data.html()
-                cleaned_html = clean_dark_mode_clipboard_html(raw_html)
-                mime_data.setHtml(cleaned_html)
+        if mime_data is not None:
+            if mime_data.hasHtml():
+                theme = getattr(self, "current_theme", "dark")
+                if theme in ("dark", "high_contrast"):
+                    raw_html = mime_data.html()
+                    cleaned_html = clean_dark_mode_clipboard_html(raw_html)
+                    mime_data.setHtml(cleaned_html)
+
+            # Populate unified multi-channel payload (text, HTML, REAPER cue, and optional WAV)
+            try:
+                time_range = None
+                if hasattr(self, "get_selected_time_range"):
+                    time_range = self.get_selected_time_range()
+                if time_range and len(time_range) == 2 and time_range[1] > time_range[0]:
+                    from reaper_bridge import populate_unified_copy_mimedata
+                    main_win = self.window()
+                    plain_txt = mime_data.text() if mime_data.hasText() else ""
+                    populate_unified_copy_mimedata(
+                        main_win=main_win,
+                        mime_data=mime_data,
+                        start_sec=time_range[0],
+                        end_sec=time_range[1],
+                        plain_text=plain_txt,
+                        clip_type="selection",
+                    )
+            except Exception:
+                pass
         return mime_data
-
-    def copy_highlighted_selection(self) -> bool:
-        """Copy the active story or timeline selection span to clipboard when no cursor text is selected.
-
-        Preserves rich HTML styling with dark-mode black text normalization, sets plain text,
-        and posts a notification to the main window status bar. Returns True if text was copied.
-        """
-        span = getattr(self, "timeline_selection_span", None)
-        if not span:
-            return False
-        s_char, e_char = span
-        doc = self.document()
-        if not doc:
-            return False
-        raw_count = doc.characterCount() if doc else None
-        doc_len = raw_count if isinstance(raw_count, int) else 1000000
-        if not (0 <= s_char < doc_len and 0 < e_char <= doc_len and s_char < e_char):
-            return False
-
-        cursor = QTextCursor(doc)
-        cursor.setPosition(s_char)
-        cursor.setPosition(e_char, QTextCursor.MoveMode.KeepAnchor)
-
-        plain_text = ""
-        html_text = ""
-
-        try:
-            fragment = QTextDocumentFragment(cursor)
-            p_text = fragment.toPlainText()
-            if isinstance(p_text, str) and p_text:
-                plain_text = p_text.strip()
-            html_text = fragment.toHtml()
-        except Exception:
-            pass
-
-        if not plain_text and hasattr(cursor, "selectedText"):
-            raw_sel = cursor.selectedText()
-            if isinstance(raw_sel, str) and raw_sel:
-                plain_text = raw_sel.strip()
-
-        if not plain_text:
-            full_txt = self.toPlainText() if hasattr(self, "toPlainText") else ""
-            if isinstance(full_txt, str) and full_txt:
-                plain_text = full_txt[s_char:e_char].strip()
-                html_text = plain_text
-
-        if not plain_text:
-            return False
-
-        theme = getattr(self, "current_theme", "dark")
-        if theme in ("dark", "high_contrast") and html_text:
-            html_text = clean_dark_mode_clipboard_html(html_text)
-
-        self._last_copied_text = plain_text
-        self._last_copied_html = html_text
-
-        app = QApplication.instance()
-        from PySide6.QtCore import QThread
-        if app is not None and hasattr(app, "thread") and callable(getattr(app, "thread", None)) and QThread.currentThread() == app.thread():
-            mime_data = QMimeData()
-            mime_data.setText(plain_text)
-            if html_text:
-                mime_data.setHtml(html_text)
-            clipboard = QApplication.clipboard()
-            if clipboard:
-                clipboard.setMimeData(mime_data)
-
-        main_win = self.window()
-        if hasattr(main_win, "statusBar") and main_win.statusBar():
-            story_title = ""
-            indices = getattr(main_win, "current_selected_story_indices", [])
-            stories = getattr(main_win, "stories", [])
-            if isinstance(indices, list) and isinstance(stories, list):
-                if len(indices) == 1 and 0 <= indices[0] < len(stories):
-                    st = stories[indices[0]]
-                    story_title = f" for '{st.title}'"
-                elif len(indices) > 1:
-                    story_title = f" for {len(indices)} stories"
-            main_win.statusBar().showMessage(
-                f"Copied story transcript{story_title} ({len(plain_text)} characters) to clipboard.",
-                3500,
-            )
-        return True
-
     def wheelEvent(self, event):
         # Manual user scroll cancels any active scroll lock and detaches playback auto-scroll
         self._release_scroll_lock()
@@ -737,18 +674,24 @@ class InteractiveTranscriptEdit(
         super().mouseReleaseEvent(event)
 
     def keyPressEvent(self, event):
-        # Allow standard Copy (Ctrl+C / Cmd+C) in both viewing and editing modes
-        if event.matches(QKeySequence.StandardKey.Copy) or (
+        # Allow standard Copy (Ctrl+C) and Audio Clip Copy (Ctrl+Shift+C) in both viewing and editing modes
+        is_ctrl_c = event.matches(QKeySequence.StandardKey.Copy) or (
             event.modifiers() & (Qt.KeyboardModifier.ControlModifier | Qt.KeyboardModifier.MetaModifier)
             and event.key() == Qt.Key.Key_C
-        ):
-            if self.textCursor().hasSelection():
-                self.copy()
-                event.accept()
-                return
-            elif self.copy_highlighted_selection():
-                event.accept()
-                return
+        )
+        if is_ctrl_c:
+            if event.modifiers() & Qt.KeyboardModifier.ShiftModifier:
+                if hasattr(self, "copy_selection_as_daw_wav") and self.copy_selection_as_daw_wav():
+                    event.accept()
+                    return
+            else:
+                if self.textCursor().hasSelection():
+                    self.copy()
+                    event.accept()
+                    return
+                elif self.copy_highlighted_selection():
+                    event.accept()
+                    return
 
         if event.key() == Qt.Key.Key_Escape:
             main_win = self.window()

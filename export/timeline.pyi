@@ -29,10 +29,10 @@ def _get_story_end(s: Any, start_val: float) -> float:
 def build_timeline_clips(stories: list, total_duration: float=..., unselected_audio_mode: str=..., apply_fades: bool=..., scope: str=..., all_stories: Optional[list]=...) -> List[Dict[str, Any]]:
     ...
 
-def _build_reaper_track_block(track_name: str, clips: List[Dict[str, Any]], source_type: str, media_name_only: str) -> List[str]:
+def _build_reaper_track_block(track_name: str, clips: List[Dict[str, Any]], source_type: str, media_name_only: str, main_win: Any=..., reaper_include_notes: bool=..., reaper_include_markers: bool=..., reaper_marker_style: str=..., reaper_speaker_colors: bool=..., precomputed_sentences: Optional[List[Dict[str, Any]]]=...) -> List[str]:
     ...
 
-def generate_reaper_project(stories: list, media_filename: str=..., project_title: str=..., apply_fades: bool=..., sample_rate: int=..., total_duration: float=..., unselected_audio_mode: str=..., track_name: str=..., scope: str=..., all_stories: Optional[list]=...) -> str:
+def generate_reaper_project(stories: list, media_filename: str=..., project_title: str=..., apply_fades: bool=..., sample_rate: int=..., total_duration: float=..., unselected_audio_mode: str=..., track_name: str=..., scope: str=..., all_stories: Optional[list]=..., main_win: Any=..., reaper_include_notes: bool=..., reaper_include_markers: bool=..., reaper_marker_style: str=..., reaper_speaker_colors: bool=...) -> str:
     ...
 
 def generate_samplitude_edl(stories: list, media_filename: str=..., project_title: str=..., sample_rate: int=..., apply_fades: bool=..., total_duration: float=..., unselected_audio_mode: str=..., track_name: str=..., scope: str=..., all_stories: Optional[list]=...) -> str:

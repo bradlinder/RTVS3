@@ -74,13 +74,22 @@ Run_RadioTVSegmenter.bat
 2. Process Pipeline: Use Tools -> Multi-Stage Processing... (Ctrl+R / Cmd+R) to run transcription, speaker detection, and automated story segmentation in sequence.
 3. Refine Segments: Highlight text in the transcript or drag region handles on the timeline, then click Add Story to create segment boundaries.
 
-### Cockos Reaper DAW (EDL Marker Export)
+### REAPER DAW & Digital Audio Workstation Live Bridge
 
-* Exports selected stories and timeline cuts into a standard EDL (.edl) edit decision list compatible with Reaper and Samplitude.
-* Import into Reaper:
-1. Open Cockos Reaper.
-2. Choose File -> Open Project or Item -> Open Items in Editor.
-3. Select the generated .edl file. Segments will map onto the timeline with speaker markers preserved.
+RTVS3 features a real-time, two-way bridge connecting speech intelligence directly to **Cockos REAPER DAW** and other NLEs:
+
+* **Instant Copy/Paste with Verbatim Transcripts**:
+  1. Highlight dialogue in the transcript or drag a selection on the timeline, then press standard **Ctrl+C**.
+  2. Switch to REAPER and trigger the companion ReaScript (`rtvs_reaper_companion.lua`) via your assigned shortcut (e.g. `Alt+V`).
+  3. The clip is placed at your edit cursor with zero generation loss (non-destructively referencing the master audio), color-coded by speaker, with take markers applied and the full verbatim transcript injected into REAPER's native **Item Notes (`P_NOTES`)**.
+* **Dynamic Trim, Extend & Split Auto-Sync**:
+  - Dragging the left or right edges of a clip in REAPER to expand or tighten context, or splitting a clip (`S`), automatically updates the Item Notes transcript, Take Name timecodes, and Take Markers in real time!
+* **Dockable ReaImGui Browser (`rtvs_reaper_dock.lua`)**:
+  - Search speech segments, browse segmented stories, and insert clips directly onto the timeline from within REAPER.
+* **Universal WAV Audio Clipboard for Other DAWs**:
+  - Enable *Render temporary WAV audio clip to OS file clipboard* in Preferences to paste lossless audio slices directly into Adobe Audition, Premiere Pro, and DaVinci Resolve via standard `Ctrl+V`.
+* **Timeline Project Exports**:
+  - In addition to live copy/paste, RTVS3 exports native REAPER project files (`.rpp`), Final Cut Pro XML, and CMX 3600 EDL files via the Unified Export Center (`Ctrl+E`).
 
 
 

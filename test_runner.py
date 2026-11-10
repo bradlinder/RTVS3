@@ -503,6 +503,11 @@ class DiagnosticEngine(
                 "Story & Boundary Detection",
                 "Validates clock duration formatting, two-line sidebar story list items, and header multi-selection duration counter",
             ),
+            DiagnosticItem(
+                "REAPER DAW Companion and Universal Clipboard Pipeline",
+                "Project & Export Formats",
+                "Validates REAPER DAW clip cue JSON schema, sidecar emission, Lua script syntax, QMimeData multi-channel attachments, and one-click script installer",
+            ),
         ]
 
     def run_all(self, stop_requested_fn: Optional[Callable[[], bool]] = None) -> List[DiagnosticItem]:

@@ -24,6 +24,7 @@ from preferences_tabs_media import (
     build_playback_timeline_tab, build_detection_tab, build_batch_tab,
     build_cleanup_tab, build_youtube_tab
 )
+from preferences_tab_daw import build_external_editors_tab
 
 logger = logging.getLogger(__name__)
 
@@ -137,8 +138,8 @@ class PreferencesDialogMixin(PreferencesResetMixin):
         cat_list.setFixedWidth(175)
         categories = [
             "General", "Keyboard Shortcuts", "Audio Settings", "Updates & GitHub",
-            "AI Models", "GPU Acceleration", "Playback & Timeline", "Detection",
-            "Batch Processing", "Cleanup Data"
+            "AI Models", "GPU Acceleration", "Playback & Timeline", "External Audio & Video Editors",
+            "Detection", "Batch Processing", "Cleanup Data"
         ]
         show_wp = hasattr(self, "plugin_manager") and self.plugin_manager and self.plugin_manager.is_plugin_enabled("wordpress")
         show_yt = hasattr(self, "plugin_manager") and self.plugin_manager and self.plugin_manager.is_plugin_enabled("youtube")
@@ -194,6 +195,7 @@ class PreferencesDialogMixin(PreferencesResetMixin):
 
         # Build Media & Processing Tabs
         stack.addWidget(build_playback_timeline_tab(self, dialog, live_widgets, _add_custom_defaults_btn))
+        stack.addWidget(build_external_editors_tab(self, dialog, live_widgets, _add_custom_defaults_btn))
         stack.addWidget(build_detection_tab(self, dialog, live_widgets, _add_custom_defaults_btn))
         stack.addWidget(build_batch_tab(self, dialog, live_widgets, _add_custom_defaults_btn))
         stack.addWidget(build_cleanup_tab(self, dialog, live_widgets, _add_custom_defaults_btn))
@@ -342,6 +344,12 @@ class PreferencesDialogMixin(PreferencesResetMixin):
             "gpu acceleration": "gpu acceleration",
             "playback": "playback & timeline",
             "timeline": "playback & timeline",
+            "external": "external audio & video editors",
+            "editors": "external audio & video editors",
+            "daw": "external audio & video editors",
+            "reaper": "external audio & video editors",
+            "nle": "external audio & video editors",
+            "external audio & video editors": "external audio & video editors",
             "detection": "detection",
             "detect": "detection",
             "batch": "batch processing",
@@ -706,6 +714,23 @@ class PreferencesDialogMixin(PreferencesResetMixin):
                 self.timeline.canvas.update()
             if hasattr(self, "story_list"):
                 self.story_list.viewport().update()
+
+            # Save DAW & REAPER Companion Integration
+            reaper_auto_sidecar_chk = live_widgets.get("reaper_auto_sidecar_chk")
+            reaper_color_items_chk = live_widgets.get("reaper_color_items_chk")
+            reaper_marker_style_combo = live_widgets.get("reaper_marker_style_combo")
+            daw_wav_clipboard_chk = live_widgets.get("daw_wav_clipboard_chk")
+            if reaper_auto_sidecar_chk:
+                self.settings_store.setValue("reaper_auto_sidecar", "true" if reaper_auto_sidecar_chk.isChecked() else "false")
+            if reaper_color_items_chk:
+                self.settings_store.setValue("reaper_color_items", "true" if reaper_color_items_chk.isChecked() else "false")
+            if reaper_marker_style_combo:
+                style_val = str(reaper_marker_style_combo.currentData() or "speakers")
+                self.settings_store.setValue("reaper_marker_style", style_val)
+                # Keep legacy setting synchronized for backward compatibility
+                self.settings_store.setValue("reaper_include_word_markers", "true" if style_val == "sentences" else "false")
+            if daw_wav_clipboard_chk:
+                self.settings_store.setValue("daw_wav_clipboard", "true" if daw_wav_clipboard_chk.isChecked() else "false")
 
             # Save Detection
             det_mode_combo = live_widgets.get("det_mode_combo")

@@ -40,8 +40,9 @@ def show_timeline_context_menu(canvas: Any, global_pos: QPoint, pos_x: float):
         if hasattr(win, "audition_story"):
             audition_action = menu.addAction("Escuchar historia" if is_es else "Audition Story Playback")
 
-        # 2. Copy Story Transcript (Ctrl+C)
+        # 2. Copy Story Transcript (Ctrl+C) & Audio Clip (Ctrl+Shift+C)
         copy_action = menu.addAction(f"{('Copiar transcripción' if is_es else 'Copy Story Transcript')} (Ctrl+C)")
+        copy_wav_action = menu.addAction(f"{('Copiar clip de audio' if is_es else 'Copy Story as Audio Clip')} (Ctrl+Shift+C)")
 
         # 3. Clear Selection (Esc)
         clear_action = menu.addAction("Borrar selección (Esc)" if is_es else "Clear Selection (Esc)")
@@ -102,6 +103,9 @@ def show_timeline_context_menu(canvas: Any, global_pos: QPoint, pos_x: float):
         elif copy_action and selected == copy_action:
             if hasattr(win, "transcript_view") and hasattr(win.transcript_view, "copy_highlighted_selection"):
                 win.transcript_view.copy_highlighted_selection()
+        elif copy_wav_action and selected == copy_wav_action:
+            if hasattr(win, "transcript_view") and hasattr(win.transcript_view, "copy_selection_as_daw_wav"):
+                win.transcript_view.copy_selection_as_daw_wav()
         elif clear_action and selected == clear_action:
             if hasattr(win, "apply_story_selection_indices"):
                 win.apply_story_selection_indices([])
@@ -141,11 +145,19 @@ def show_selection_context_menu(canvas: Any, global_pos: QPoint):
     term = ("Canción" if is_es else "Song") if is_music else ("Historia" if is_es else "Story")
     menu = QMenu(win if win is not None else canvas)
     add_action = menu.addAction(f"{('Agregar' if is_es else 'Add')} {term} {('desde la selección' if is_es else 'from Selection')}")
-    clear_action = menu.addAction("Borrar selección" if is_es else "Clear Selection")
+    copy_action = menu.addAction("Copiar selección (Ctrl+C)" if is_es else "Copy Selection (Ctrl+C)")
+    copy_wav_action = menu.addAction("Copiar clip de audio (Ctrl+Shift+C)" if is_es else "Copy Selection as Audio Clip (Ctrl+Shift+C)")
+    clear_action = menu.addAction("Borrar selección (Esc)" if is_es else "Clear Selection (Esc)")
 
     selected = menu.exec(global_pos)
     if selected == add_action:
         canvas.storyCreatedFromSelection.emit(s, e)
+    elif selected == copy_action:
+        if hasattr(win, "transcript_view") and hasattr(win.transcript_view, "copy_highlighted_selection"):
+            win.transcript_view.copy_highlighted_selection()
+    elif selected == copy_wav_action:
+        if hasattr(win, "transcript_view") and hasattr(win.transcript_view, "copy_selection_as_daw_wav"):
+            win.transcript_view.copy_selection_as_daw_wav()
     elif selected == clear_action:
         canvas.selection_start = None
         canvas.selection_end = None

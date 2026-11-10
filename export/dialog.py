@@ -944,7 +944,56 @@ class UnifiedExportDialog(QDialog):
 
         tl_layout.addWidget(self.tl_params_section)
 
-        # 3. Location & Filename Section
+        # 3. Cockos REAPER Options Section
+        self.tl_reaper_section = CollapsibleSection(
+            "Cockos REAPER (.rpp) Options",
+            self,
+            is_expanded=True,
+            subtitle="Take Notes, Take Markers, Speaker Colors",
+        )
+        self.tl_cb_reaper_notes = QCheckBox("Include formatted transcript as Item Notes")
+        self.tl_cb_reaper_notes.setToolTip("Embed formatted speaker paragraphs and timestamps directly into REAPER item notes (<NOTES).")
+        self.tl_cb_reaper_notes.setChecked(False)
+
+        self.tl_cb_reaper_markers = QCheckBox("Include Take Markers on timeline clips")
+        self.tl_cb_reaper_markers.setToolTip("Embed take markers directly on clip takes in the REAPER project file.")
+        self.tl_cb_reaper_markers.setChecked(False)
+
+        mk_row = QHBoxLayout()
+        mk_row.setSpacing(8)
+        lbl_mk = QLabel("Take Marker Detail:")
+        if tl_theme_mode == "light":
+            lbl_mk.setStyleSheet("color: #545b66; font-size: 12px; font-weight: 500;")
+        elif tl_theme_mode == "high_contrast":
+            lbl_mk.setStyleSheet("color: #ffffff; font-size: 12px; font-weight: 500;")
+        else:
+            lbl_mk.setStyleSheet("color: #94a3b8; font-size: 12px; font-weight: 500;")
+        mk_row.addWidget(lbl_mk)
+        self.tl_reaper_marker_style_combo = QComboBox()
+        self.tl_reaper_marker_style_combo.addItem("Speaker Changes Only", "speakers")
+        self.tl_reaper_marker_style_combo.addItem("Speaker Changes + Sentence Cues", "sentences")
+        self.tl_reaper_marker_style_combo.setToolTip("Choose whether REAPER take markers mark only speaker turns or individual sentences.")
+        self.tl_reaper_marker_style_combo.setEnabled(False)
+        mk_row.addWidget(self.tl_reaper_marker_style_combo)
+        mk_row.addStretch()
+
+        self.tl_cb_reaper_markers.toggled.connect(self.tl_reaper_marker_style_combo.setEnabled)
+
+        self.tl_cb_reaper_speaker_colors = QCheckBox("Apply speaker color coding to items and markers")
+        self.tl_cb_reaper_speaker_colors.setToolTip("Tint REAPER timeline items and take markers using voice profile colors instead of story track colors.")
+        self.tl_cb_reaper_speaker_colors.setChecked(False)
+
+        self.tl_reaper_section.add_widget(self.tl_cb_reaper_notes)
+        self.tl_reaper_section.add_widget(self.tl_cb_reaper_markers)
+        self.tl_reaper_section.add_layout(mk_row)
+        self.tl_reaper_section.add_widget(self.tl_cb_reaper_speaker_colors)
+
+        self.tl_cb_rpp.toggled.connect(self.tl_reaper_section.setEnabled)
+        self.tl_reaper_section.setEnabled(self.tl_cb_rpp.isChecked())
+
+        tl_layout.addWidget(self.tl_reaper_section)
+
+        # 4. Location & Filename Section
         self.tl_loc_section = CollapsibleSection("Export Location & Base Filename", self, is_expanded=True)
         fn_row = QHBoxLayout()
         fn_row.addWidget(QLabel("Base Filename:"))
@@ -1151,6 +1200,15 @@ class UnifiedExportDialog(QDialog):
             self.tl_unselected_combo.setCurrentIndex(idx_unsel)
 
         self.tl_cb_apply_fades.setChecked(str(settings.value("export_opt_tl_apply_fades", "true")).lower() in {"1", "true", "yes"})
+        self.tl_cb_reaper_notes.setChecked(str(settings.value("export_opt_tl_reaper_include_notes", "false")).lower() in {"1", "true", "yes"})
+        self.tl_cb_reaper_markers.setChecked(str(settings.value("export_opt_tl_reaper_include_markers", "false")).lower() in {"1", "true", "yes"})
+        tl_mk_style = str(settings.value("export_opt_tl_reaper_marker_style", "speakers")).lower().strip()
+        idx_mk_style = self.tl_reaper_marker_style_combo.findData(tl_mk_style)
+        if idx_mk_style >= 0:
+            self.tl_reaper_marker_style_combo.setCurrentIndex(idx_mk_style)
+        self.tl_reaper_marker_style_combo.setEnabled(self.tl_cb_reaper_markers.isChecked())
+        self.tl_cb_reaper_speaker_colors.setChecked(str(settings.value("export_opt_tl_reaper_speaker_colors", "false")).lower() in {"1", "true", "yes"})
+        self.tl_reaper_section.setEnabled(self.tl_cb_rpp.isChecked())
 
         use_tl_custom = str(settings.value("export_opt_tl_custom_loc_enabled", "false")).lower() in {"1", "true", "yes"}
         saved_tl_custom_dir = str(settings.value("export_opt_tl_custom_dir", "") or "").strip()
@@ -1204,6 +1262,10 @@ class UnifiedExportDialog(QDialog):
         settings.setValue("export_opt_tl_sample_rate", self.tl_sample_rate_combo.currentData())
         settings.setValue("export_opt_tl_unselected_mode", self.tl_unselected_combo.currentData())
         settings.setValue("export_opt_tl_apply_fades", self.tl_cb_apply_fades.isChecked())
+        settings.setValue("export_opt_tl_reaper_include_notes", self.tl_cb_reaper_notes.isChecked())
+        settings.setValue("export_opt_tl_reaper_include_markers", self.tl_cb_reaper_markers.isChecked())
+        settings.setValue("export_opt_tl_reaper_marker_style", self.tl_reaper_marker_style_combo.currentData())
+        settings.setValue("export_opt_tl_reaper_speaker_colors", self.tl_cb_reaper_speaker_colors.isChecked())
         settings.setValue("export_opt_tl_custom_loc_enabled", self.tl_loc_radio_custom.isChecked())
         tl_custom_dir = self.tl_custom_path_edit.text().strip()
         if tl_custom_dir:
@@ -1377,6 +1439,10 @@ class UnifiedExportDialog(QDialog):
                 "sample_rate": sample_rate,
                 "apply_audio_fades": apply_fades,
                 "unselected_audio_mode": unsel_mode,
+                "reaper_include_notes": self.tl_cb_reaper_notes.isChecked(),
+                "reaper_include_markers": self.tl_cb_reaper_markers.isChecked(),
+                "reaper_marker_style": self.tl_reaper_marker_style_combo.currentData() or "speakers",
+                "reaper_speaker_colors": self.tl_cb_reaper_speaker_colors.isChecked(),
             }
             base = safe_filename(self.tl_filename_edit.text().strip() or "timeline_export")
             export_dir = None

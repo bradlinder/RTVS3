@@ -1,13 +1,13 @@
 # Repository Symbol Index & API Map
 
-> Generated: 2026-11-09 13:22:59 | Total Files: 162
+> Generated: 2026-11-09 19:11:37 | Total Files: 164
 > Use `python scripts/generate_symbol_index.py --outline <file>` for exact line numbers.
 
 ## Modules Overview
 
 | Module | Lines | Summary | Primary Classes / Functions |
 | :--- | :---: | :--- | :--- |
-| `RadioTVSegmenter.py` | 663 | Radio & TV Segmenter — v3.9.91-beta | `MainWindow`, `main()` |
+| `RadioTVSegmenter.py` | 663 | Radio & TV Segmenter — v3.9.92-beta | `MainWindow`, `main()` |
 | `audio_normalization.py` | 541 | Radio & TV Story Segmenter — Audio Loudness Probing & Nor... | `LoudnessReport`, `AudioLoudnessProbeWorker`, `parse_ebur128_summary()`, `probe_media_duration_seconds()` *(+3 more)* |
 | `background_workers.py` | 1015 | Radio & TV Story Segmenter — Background Worker Threads & ... | `StoryAutoDetectWorker`, `WaveformWorker`, `VideoThumbnailWorker`, `get_waveform_peak_cache_path()` *(+6 more)* |
 | `backup_manager.py` | 622 | Unified State Serialization, Local, and Google Drive Clou... | `compute_data_checksum()`, `serialize_preferences()`, `serialize_keyboard_shortcuts()`, `serialize_glossary()` *(+7 more)* |
@@ -24,27 +24,27 @@
 | `core_utils.py` | 692 | Radio & TV Segmenter — Core filesystem, path, timing, and... | `safe_process_events()`, `get_active_theme_mode()`, `apply_window_titlebar_theme()`, `make_dialog_maximizable()` *(+23 more)* |
 | `diagnostic_batch_tests.py` | 1076 | Diagnostic test bench suite component. | `DiagnosticBatchTestsMixin` |
 | `diagnostic_cloud_and_system_tests.py` | 1313 | Diagnostic test bench suite component. | `DiagnosticCloudAndSystemTestsMixin` |
-| `diagnostic_core_tests.py` | 826 | Diagnostic test bench suite component. | `DiagnosticCoreTestsMixin` |
+| `diagnostic_core_tests.py` | 880 | Diagnostic test bench suite component. | `DiagnosticCoreTestsMixin` |
 | `diagnostic_dialog.py` | 324 | PySide6 Graphical Test Bench Dialog for Radio & TV Story ... | `create_diagnostic_dialog()` |
-| `diagnostic_editor_tests.py` | 638 | Diagnostic editor and find-replace tests for Radio & TV S... | `DiagnosticEditorTestsMixin` |
+| `diagnostic_editor_tests.py` | 854 | Diagnostic editor and find-replace tests for Radio & TV S... | `DiagnosticEditorTestsMixin` |
 | `diagnostic_export_tests.py` | 1899 | Diagnostic test bench suite component. | `DiagnosticExportTestsMixin` |
 | `diagnostic_helpers.py` | 151 | Helper fixtures, module resolvers, and DiagnosticItem for... | `DiagnosticItem`, `generate_synthetic_wav()` |
 | `diagnostic_loudness_tests.py` | 391 | Radio & TV Story Segmenter — Diagnostic Loudness Normaliz... | `DiagnosticLoudnessTestsMixin` |
 | `diagnostic_selector.py` | 191 | Smart Diagnostic Test Selector for Radio & TV Story Segme... | `get_modified_files()`, `has_git_changes()`, `detect_changed_tokens()`, `select_diagnostic_items()` |
 | `dialogs.py` | 433 | Radio & TV Story Segmenter — Audio Loudness Normalization... | `AudioLoudnessNormalizationDialog` |
 | `diarization_processing.py` | 769 | Speaker diarization process management for Radio & TV Sto... | `DiarizationProcessingMixin` |
-| `embedded_guides.py` | 479 | Radio & TV Story Segmenter — Built-In Embedded User Guide... | `get_embedded_guide()`, `get_all_embedded_guide_ids()` |
+| `embedded_guides.py` | 720 | Radio & TV Story Segmenter — Built-In Embedded User Guide... | `get_embedded_guide()`, `get_all_embedded_guide_ids()` |
 | `export/__init__.py` | 67 | Export package for Radio & TV Story Segmenter. | - |
 | `export/audio.py` | 287 | Radio & TV Story Segmenter — Broadcast Audio Rendering & ... | `build_audio_fade_filter()`, `export_audio_track()`, `extract_audio_clip()` |
 | `export/daw.py` | 37 | DAW and NLE timeline interchange formatters for Radio & T... | - |
-| `export/dialog.py` | 1499 | Unified Export Dialog for Radio & TV Story Segmenter. | `UnifiedExportDialog` |
+| `export/dialog.py` | 1565 | Unified Export Dialog for Radio & TV Story Segmenter. | `UnifiedExportDialog` |
 | `export/docx.py` | 541 | Word (.docx) export formatter for Radio & TV Story Segmen... | `inject_native_comments_to_docx()`, `create_story_docx()` |
 | `export/pdf.py` | 369 | PDF export formatter for Radio & TV Story Segmenter. | `TranscriptPdfWriter` |
 | `export/reorder_dialog.py` | 255 | export/reorder_dialog.py — Dialog for customizing the dis... | `ReorderExportDestinationsDialog`, `get_export_destinations_order()`, `save_export_destinations_order()` |
 | `export/subtitles.py` | 222 | Subtitle and timeline formatters for Radio & TV Story Seg... | `format_subtitle_timestamp()`, `format_srt_timestamp()`, `format_vtt_timestamp()`, `format_cue_timestamp()` *(+9 more)* |
-| `export/timeline.py` | 801 | Multi-Platform Timeline and DAW Interchange Engine for Ra... | `reaper_color_from_hex()`, `format_edl_timestamp()`, `build_timeline_clips()`, `generate_reaper_project()` *(+8 more)* |
+| `export/timeline.py` | 873 | Multi-Platform Timeline and DAW Interchange Engine for Ra... | `reaper_color_from_hex()`, `format_edl_timestamp()`, `build_timeline_clips()`, `generate_reaper_project()` *(+8 more)* |
 | `export_dialogs.py` | 447 | Radio & TV Story Segmenter — Export Dialogs & Scope Selec... | `ExportDialogsMixin`, `show_export_completion_dialog()` |
-| `export_documents.py` | 776 | Radio & TV Story Segmenter — Document, Transcript & Timel... | `ExportDocumentsMixin` |
+| `export_documents.py` | 793 | Radio & TV Story Segmenter — Document, Transcript & Timel... | `ExportDocumentsMixin` |
 | `export_media_clipper.py` | 337 | Radio & TV Story Segmenter — Media Clipper & Audio Track ... | `ExportMediaClipperMixin` |
 | `export_story_pipeline.py` | 964 | Radio & TV Story Segmenter — Story & Full Episode Export ... | `ExportStoryPipelineMixin` |
 | `glossary_dialog.py` | 484 | Custom Vocabulary & Glossary Dialog. | `GlossaryDialog` |
@@ -84,11 +84,12 @@
 | `plugins/youtube/export_destination.py` | 613 | YouTube Export Destination for UnifiedExportDialog with Z... | `YouTubeExportTabWidget`, `YouTubeExportDestination`, `capture_video_frame()` |
 | `plugins/youtube/guide_dialog.py` | 147 | Interactive Assisted Upload Guide Dialog for YouTube Studio. | `YouTubeAssistedUploadGuideDialog` |
 | `plugins/youtube/plugin.py` | 261 | YouTube Video Publisher Plugin for Radio & TV Segmenter. | `YouTubeSettingsDialog`, `Plugin`, `capture_video_frame()` |
-| `preferences_dialog.py` | 857 | Radio & TV Story Segmenter — Preferences Modal Dialog. | `PreferencesDialogMixin` |
-| `preferences_reset.py` | 650 | Radio & TV Story Segmenter — Preferences Reset & Factory ... | `RestoreSelectedSettingsDialog`, `PreferencesResetMixin` |
+| `preferences_dialog.py` | 882 | Radio & TV Story Segmenter — Preferences Modal Dialog. | `PreferencesDialogMixin` |
+| `preferences_reset.py` | 669 | Radio & TV Story Segmenter — Preferences Reset & Factory ... | `RestoreSelectedSettingsDialog`, `PreferencesResetMixin` |
 | `preferences_reset_dialog.py` | 629 | Radio & TV Segmenter — Preferences reset and factory defa... | `RestoreSelectedSettingsDialog`, `PreferencesResetMixin` |
+| `preferences_tab_daw.py` | 138 | preferences_tab_daw.py — External Audio & Video Editors P... | `build_external_editors_tab()` |
 | `preferences_tabs_core.py` | 623 | Radio & TV Story Segmenter — Preferences Modal Core Tab B... | `build_general_tab()`, `build_shortcuts_tab()`, `build_audio_hardware_tab()`, `build_updates_tab()` *(+2 more)* |
-| `preferences_tabs_media.py` | 656 | Radio & TV Story Segmenter — Preferences Modal Media & Wo... | `build_playback_timeline_tab()`, `build_detection_tab()`, `build_batch_tab()`, `build_cleanup_tab()` *(+1 more)* |
+| `preferences_tabs_media.py` | 657 | Radio & TV Story Segmenter — Preferences Modal Media & Wo... | `build_playback_timeline_tab()`, `build_detection_tab()`, `build_batch_tab()`, `build_cleanup_tab()` *(+1 more)* |
 | `preview_manager.py` | 270 | AI Studio Web Preview Manager for Radio & TV Story Segmen... | `get_project_version()`, `restore_preview()`, `sync_version()`, `main()` |
 | `process_lifecycle.py` | 191 | Radio & TV Segmenter — Subprocess tracking and OS-level j... | `init_child_process_job_isolation()`, `bind_subprocess_to_job()`, `register_process()`, `unregister_process()` *(+2 more)* |
 | `processing.py` | 1238 | Radio & TV Segmenter v3.3.29 — processing responsibilities. | `RuntimeSetupWorker`, `ProcessingMixin` |
@@ -100,6 +101,7 @@
 | `prs_shared.py` | 1492 |  | `ProjectMetadataDict`, `ResizableTextEdit`, `CollapsibleSection`, `ExportDialog` *(+8 more)* |
 | `qt_compat.py` | 917 | Radio & TV Segmenter — Headless Qt / PySide6 Compatibilit... | `MockClassMeta`, `DynamicMock`, `MockModule`, `_DummyQtMeta` *(+22 more)* |
 | `radio_tv_story_segmenter_worker.py` | 226 | Radio & TV Story Segmenter — AI Background Subprocess Wor... | `main()` |
+| `reaper_bridge.py` | 962 | reaper_bridge.py — REAPER DAW Companion Bridge & Inter-Pr... | `get_reaper_ipc_paths()`, `reaper_color_from_hex()`, `get_reaper_clip_notes_and_markers()`, `build_reaper_cue_payload()` *(+10 more)* |
 | `roadmap_manager.py` | 259 | roadmap_manager.py — Automated Roadmap & N-1 Sliding-Wind... | `RoadmapManager`, `get_current_app_version()`, `main()` |
 | `runtime_manager.py` | 1037 |  | `RuntimeManager`, `register_process()`, `unregister_process()`, `kill_all_subprocesses()` *(+1 more)* |
 | `scripts/capture_guide_screenshots.py` | 152 | Programmatic headless screenshot generator for RTVS3 user... | `MockCaptureMainWindow`, `capture_widget()`, `main()` |
@@ -112,7 +114,7 @@
 | `shortcuts/definitions.py` | 22 | shortcuts/definitions.py — Shortcut definitions and schem... | - |
 | `shortcuts/dialogs.py` | 623 | shortcuts/dialogs.py — Preferences page for keyboard shor... | `KeyboardShortcutsPage` |
 | `shortcuts/manager.py` | 216 | shortcuts/manager.py — Core ShortcutsManager coordinator ... | `ShortcutsManager` |
-| `shortcuts/schema.py` | 868 | shortcuts/schema.py — Shortcut definitions, dataclass mod... | `ShortcutDef`, `get_platform_default()`, `format_sequence_display()`, `normalize_sequence_string()` |
+| `shortcuts/schema.py` | 878 | shortcuts/schema.py — Shortcut definitions, dataclass mod... | `ShortcutDef`, `get_platform_default()`, `format_sequence_display()`, `normalize_sequence_string()` |
 | `shortcuts/widgets.py` | 151 | shortcuts/widgets.py — Interactive Key Sequence Recorder ... | `KeySequenceRecorderEdit` |
 | `shortcuts_manager.py` | 30 | Shortcuts Manager for Radio & TV Story Segmenter (Compati... | - |
 | `snapshot_manager.py` | 276 | Snapshot Manager for Radio & TV Story Segmenter | `load_manifest()`, `save_manifest()`, `get_current_project_version()`, `ensure_git_repo()` *(+4 more)* |
@@ -133,21 +135,21 @@
 | `theme_preferences.py` | 596 | Radio & TV Story Segmenter — Theme Preferences & Styling ... | `ThemePreferencesMixin` |
 | `theme_qss.py` | 330 | Targeted QSS for the Radio & TV Segmenter visual design s... | - |
 | `theme_tokens.py` | 307 | Theme Tokens for Radio & TV Story Segmenter. | `ThemeTokens`, `theme_tokens_for_mode()` |
-| `timeline_context_menus.py` | 153 | Context menu builders and event handlers for the timeline... | `show_timeline_context_menu()`, `show_selection_context_menu()` |
+| `timeline_context_menus.py` | 165 | Context menu builders and event handlers for the timeline... | `show_timeline_context_menu()`, `show_selection_context_menu()` |
 | `timeline_overview.py` | 351 | Timeline Resize Handle and Overview Navigation Bar widgets. | `TimelineResizeHandle`, `TimelineOverviewBar` |
 | `timeline_overview_widget.py` | 372 | Timeline overview bar, mini-map navigator, and resize han... | `TimelineResizeHandle`, `TimelineOverviewBar` |
 | `timeline_painter.py` | 419 | Timeline canvas rendering engine, waveform drawing, and p... | `render_waveform_buffer()`, `paint_timeline_canvas()` |
 | `timeline_snap.py` | 195 | Timeline snapping algorithms, edge detection, and collisi... | `snap_time()`, `find_edge_at_pos()`, `find_fade_handle_at_pos()`, `find_story_at_time()` *(+4 more)* |
-| `timeline_widgets.py` | 998 | Radio & TV Story Segmenter — Timeline Ruler, Track Views,... | `TimelineCanvas`, `TimelineWidget` |
+| `timeline_widgets.py` | 999 | Radio & TV Story Segmenter — Timeline Ruler, Track Views,... | `TimelineCanvas`, `TimelineWidget` |
 | `transcript_cleaner.py` | 216 | Radio & TV Segmenter — Transcript cleaning, loop collapsi... | `collapse_repeating_ngrams()`, `strip_hallucination_phrases()`, `trim_trailing_degenerate_tail()`, `scrub_transcript_segments()` *(+1 more)* |
-| `transcript_context_menu_mixin.py` | 454 | Radio & TV Story Segmenter — Interactive Transcript Conte... | `TranscriptContextMenuMixin` |
-| `transcript_editor.py` | 1002 | transcript_editor.py - Interactive Transcript Editor & Vi... | `InteractiveTranscriptEdit` |
+| `transcript_context_menu_mixin.py` | 730 | Radio & TV Story Segmenter — Interactive Transcript Conte... | `TranscriptContextMenuMixin` |
+| `transcript_editor.py` | 945 | transcript_editor.py - Interactive Transcript Editor & Vi... | `InteractiveTranscriptEdit` |
 | `transcript_editor_dialogs.py` | 683 | transcript_editor_dialogs.py - Dialog and floating toolba... | `FindReplaceDialog`, `TranscriptSelectionBubble` |
 | `transcript_formatting_mixin.py` | 340 | Radio & TV Story Segmenter — Interactive Transcript Forma... | `TranscriptFormattingMixin` |
 | `transcript_navigation_mixin.py` | 300 | transcript_navigation_mixin.py - Timestamp discovery, car... | `TranscriptNavigationMixin` |
 | `transcript_playback_highlight_mixin.py` | 277 | Radio & TV Story Segmenter — Interactive Transcript Playb... | `TranscriptPlaybackHighlightMixin` |
 | `transcript_selection_mixin.py` | 473 | transcript_selection_mixin.py - Multi-selection, timeline... | `TranscriptSelectionMixin` |
-| `transcript_story.py` | 852 | Radio & TV Segmenter v3.9.91-beta — transcript story resp... | `TranscriptStoryMixin` |
+| `transcript_story.py` | 852 | Radio & TV Segmenter v3.9.92-beta — transcript story resp... | `TranscriptStoryMixin` |
 | `transcript_styles.py` | 104 | transcript_styles.py - Transcript view stylesheets and da... | `transcript_text_view_stylesheet()`, `clean_dark_mode_clipboard_html()` |
 | `transcript_timeline_sync_mixin.py` | 643 | Radio & TV Story Segmenter — Transcript Timeline & Playba... | `TranscriptTimelineSyncMixin` |
 | `transcription_processing.py` | 579 | Transcription background process management for Radio & T... | `TranscriptionProcessingMixin` |
@@ -156,7 +158,7 @@
 | `ui_layout.py` | 1097 | Radio & TV Segmenter — UI Layout & Menu Construction Mixin. | `UiLayoutMixin` |
 | `ui_menus.py` | 870 | Main application menu bar and action assembly for Radio &... | `PersistentMenu`, `UiMenusMixin` |
 | `updater.py` | 1549 | Update manager and GitHub release installer for Radio & T... | `CheckUpdateWorker`, `DownloadUpdateWorker`, `CheckUpdateDialog`, `UpdaterMixin` *(+9 more)* |
-| `user_guide_dialog.py` | 563 | Radio & TV Story Segmenter — In-App User Guide & Document... | `ResponsiveTextBrowser`, `UserGuideDialog` |
+| `user_guide_dialog.py` | 846 | Radio & TV Story Segmenter — In-App User Guide & Document... | `ResponsiveTextBrowser`, `UserGuideDialog` |
 | `utils/__init__.py` | 36 | Utility modules for Radio & TV Story Segmenter. | - |
 | `utils/constants.py` | 41 | Application constants and environment configuration. | - |
 | `utils/time_format.py` | 19 | Time formatting and parsing utilities. | - |
@@ -173,7 +175,7 @@
 ## Detailed Symbol Catalog
 
 ### `RadioTVSegmenter.py` (663 lines)
-*Radio & TV Segmenter — v3.9.91-beta*
+*Radio & TV Segmenter — v3.9.92-beta*
 - **class `MainWindow(ModelManagementMixin, MediaBatchMixin, PlaybackPreferencesMixin, UiLayoutMixin, ProcessingMixin, TranslationMixin, TranscriptStoryMixin, ProjectExportMixin, GpuAccelerationMixin, QMainWindow)`** (lines 160–560):
   *Main application window for Radio & TV Segmenter.*
   - `__init__(self)` [L178-L355]
@@ -482,9 +484,9 @@
   - `_test_multi_tier_mipmapped_waveform_peak_cache_serialization(self, item)` [L1261-L1298] — *Validates Version 2 .peaks binary cache read/write with 4x/16x/64x LOD pyramid levels and transparent Version 1 upgrade.*
   - `_test_speed_listening_proofreading_rate_and_context_controls(self, item)` [L1300-L1311] — *Validates playback speed rates (0.75x to 2.0x), WSOLA pitch preservation parameters, and proofreading pre-roll configuration.*
 
-### `diagnostic_core_tests.py` (826 lines)
+### `diagnostic_core_tests.py` (880 lines)
 *Diagnostic test bench suite component.*
-- **class `DiagnosticCoreTestsMixin`** (lines 26–825):
+- **class `DiagnosticCoreTestsMixin`** (lines 26–879):
   - `_test_time_parsing_and_formatting(self, item)` [L27-L65]
   - `_test_project_serialization_round_trip(self, item)` [L67-L95]
   - `_test_waveform_peak_cache_generator(self, item)` [L97-L122]
@@ -493,37 +495,38 @@
   - `_test_webvtt_vtt_formatting(self, item)` [L144-L152]
   - `_test_red_book_cue_sheet_generation(self, item)` [L154-L170]
   - `_test_youtube_chapter_markers(self, item)` [L172-L188]
-  - `_test_cockos_reaper_project_rpp_generator(self, item)` [L190-L218]
-  - `_test_magix_samplitude_edl_v1_5_export(self, item)` [L220-L249]
-  - `_test_pytorch_and_torch_native_extensions(self, item)` [L251-L260]
-  - `_test_ctranslate2_acceleration_engine(self, item)` [L262-L271]
-  - `_test_sherpa_onnx_and_onnx_runtime_engine(self, item)` [L273-L282]
-  - `_test_directml_and_gpu_device_enumeration(self, item)` [L284-L308]
-  - `_test_hugging_face_and_cdn_connectivity(self, item)` [L310-L327]
-  - `_test_model_directory_storage_and_permissions(self, item)` [L329-L339]
-  - `_test_safe_archive_extraction_sandbox(self, item)` [L341-L361]
-  - `_test_story_boundary_detection_pipeline(self, item)` [L363-L394]
-  - `_test_music_vs_voice_mode_filtering(self, item)` [L396-L408]
-  - `_test_silero_neural_vad_initialization(self, item)` [L410-L418]
-  - `_test_wespeaker_diarization_architecture(self, item)` [L420-L427]
-  - `_test_translation_plugin_architecture_invariants(self, item)` [L429-L441]
-  - `_test_speaker_reassignment_contiguous_turn_logic(self, item)` [L443-L495]
-  - `_test_daw_timeline_interchange_and_gap_handling(self, item)` [L497-L613]
-  - `_test_quick_sample_audio_preview_and_speaker_manager_dialog_invariants(self, item)` [L615-L825]
+  - `_test_cockos_reaper_project_rpp_generator(self, item)` [L190-L272]
+  - `_test_magix_samplitude_edl_v1_5_export(self, item)` [L274-L303]
+  - `_test_pytorch_and_torch_native_extensions(self, item)` [L305-L314]
+  - `_test_ctranslate2_acceleration_engine(self, item)` [L316-L325]
+  - `_test_sherpa_onnx_and_onnx_runtime_engine(self, item)` [L327-L336]
+  - `_test_directml_and_gpu_device_enumeration(self, item)` [L338-L362]
+  - `_test_hugging_face_and_cdn_connectivity(self, item)` [L364-L381]
+  - `_test_model_directory_storage_and_permissions(self, item)` [L383-L393]
+  - `_test_safe_archive_extraction_sandbox(self, item)` [L395-L415]
+  - `_test_story_boundary_detection_pipeline(self, item)` [L417-L448]
+  - `_test_music_vs_voice_mode_filtering(self, item)` [L450-L462]
+  - `_test_silero_neural_vad_initialization(self, item)` [L464-L472]
+  - `_test_wespeaker_diarization_architecture(self, item)` [L474-L481]
+  - `_test_translation_plugin_architecture_invariants(self, item)` [L483-L495]
+  - `_test_speaker_reassignment_contiguous_turn_logic(self, item)` [L497-L549]
+  - `_test_daw_timeline_interchange_and_gap_handling(self, item)` [L551-L667]
+  - `_test_quick_sample_audio_preview_and_speaker_manager_dialog_invariants(self, item)` [L669-L879]
 
 ### `diagnostic_dialog.py` (324 lines)
 *PySide6 Graphical Test Bench Dialog for Radio & TV Story Segmenter.*
 - **Functions**:
   - `create_diagnostic_dialog(parent, include_dev_tests)` [L16-L324] — *Builds the Diagnostic Test Bench Qt Dialog.*
 
-### `diagnostic_editor_tests.py` (638 lines)
+### `diagnostic_editor_tests.py` (854 lines)
 *Diagnostic editor and find-replace tests for Radio & TV Story Segmenter.*
-- **class `DiagnosticEditorTestsMixin`** (lines 11–636):
+- **class `DiagnosticEditorTestsMixin`** (lines 11–853):
   *Diagnostic suite for transcript editor, find-replace, and speaker synchronization.*
   - `_test_find_and_replace_project_synchronization_and_undo(self, item)` [L14-L209] — *Validates that Find & Replace updates segments, word timings, speaker aliases,*
-  - `_test_in_app_user_guides_and_documentation_viewer(self, item)` [L211-L283] — *Validates in-app user guide resolution, fallback to embedded content, and bundling invariants.*
-  - `_test_story_transcript_highlighting_and_smart_copy(self, item)` [L285-L475] — *Validates story selection synchronization with transcript highlight overlay and smart clipboard copying.*
-  - `_test_story_duration_visibility_and_header_aggregation(self, item)` [L477-L636] — *Validates story clock duration formatting, 2-line sidebar item format, and multi-selection header aggregation.*
+  - `_test_in_app_user_guides_and_documentation_viewer(self, item)` [L211-L298] — *Validates in-app user guide resolution, fallback to embedded content, and bundling invariants.*
+  - `_test_story_transcript_highlighting_and_smart_copy(self, item)` [L300-L490] — *Validates story selection synchronization with transcript highlight overlay and smart clipboard copying.*
+  - `_test_story_duration_visibility_and_header_aggregation(self, item)` [L492-L651] — *Validates story clock duration formatting, 2-line sidebar item format, and multi-selection header aggregation.*
+  - `_test_reaper_daw_companion_and_universal_clipboard_pipeline(self, item)` [L653-L853] — *Validates REAPER DAW clip cue JSON schema, sidecar emission, Lua script syntax,*
 
 ### `diagnostic_export_tests.py` (1899 lines)
 *Diagnostic test bench suite component.*
@@ -610,11 +613,11 @@
   - `speaker_at_time(self, start, end)` [L730-L763]
   - `get_effective_speaker_name(self, seg_idx, segment)` [L765-L769]
 
-### `embedded_guides.py` (479 lines)
+### `embedded_guides.py` (720 lines)
 *Radio & TV Story Segmenter — Built-In Embedded User Guides & Documentation.*
 - **Functions**:
-  - `get_embedded_guide(guide_id)` [L472-L474] — *Retrieve embedded markdown text for a guide topic ID, if available.*
-  - `get_all_embedded_guide_ids()` [L477-L479] — *Return all guide IDs provided as embedded fallback content.*
+  - `get_embedded_guide(guide_id)` [L713-L715] — *Retrieve embedded markdown text for a guide topic ID, if available.*
+  - `get_all_embedded_guide_ids()` [L718-L720] — *Return all guide IDs provided as embedded fallback content.*
 
 ### `export/__init__.py` (67 lines)
 *Export package for Radio & TV Story Segmenter.*
@@ -632,9 +635,9 @@
 *DAW and NLE timeline interchange formatters for Radio & TV Story Segmenter.*
 - **Public Exports (`__all__`)**: format_edl_timestamp, build_timeline_clips, generate_reaper_project, generate_samplitude_edl, generate_fcp7_xml, generate_audition_xml, generate_fcpxml, generate_aaf_interchange, generate_hindenburg_session, generate_audacity_labels, generate_cue_sheet, generate_daw_marker_csv
 
-### `export/dialog.py` (1499 lines)
+### `export/dialog.py` (1565 lines)
 *Unified Export Dialog for Radio & TV Story Segmenter.*
-- **class `UnifiedExportDialog(QDialog)`** (lines 61–1499):
+- **class `UnifiedExportDialog(QDialog)`** (lines 61–1565):
   *Unified Export Center supporting Local Files and dynamic plugin destinations.*
   - `__init__(self, main_window, initial_scope, initial_dest, parent)` [L64-L254]
   - `showEvent(self, event)` [L256-L258]
@@ -643,26 +646,26 @@
   - `_create_local_page(self)` [L449-L807]
   - `_on_location_radio_toggled(self)` [L809-L812]
   - `_browse_custom_export_location(self)` [L814-L819]
-  - `_create_timeline_page(self)` [L821-L983]
-  - `_on_timeline_location_radio_toggled(self)` [L985-L988]
-  - `_browse_custom_timeline_location(self)` [L990-L995]
-  - `_toggle_all_sections(self)` [L997-L1011]
-  - `_update_export_button_label(self)` [L1013-L1026]
-  - `_on_dest_changed(self)` [L1028-L1036]
-  - `_on_scope_changed(self)` [L1038-L1049]
-  - `_open_id3_editor(self)` [L1051-L1061] — *Open the ID3 Tag Editor for MP3 files.*
-  - `_copy_youtube_chapters(self)` [L1063-L1079]
-  - `_load_saved_options(self)` [L1081-L1161]
-  - `save_options_to_settings(self, as_default)` [L1163-L1231]
-  - `_handle_accept(self)` [L1233-L1301]
-  - `get_result(self)` [L1303-L1407]
-  - `_persist_plugin_draft_states(self)` [L1409-L1417] — *Persist any unsaved plugin destination edits (such as WordPress post drafts) back to the project.*
-  - `done(self, r)` [L1419-L1421]
-  - `toggle_float_mode(self, pinned)` [L1423-L1439] — *Toggle whether the non-modal floating window stays pinned on top of other windows.*
-  - `set_scope_and_destination(self, scope, dest_id)` [L1441-L1452] — *Update export scope and active destination tab on an open modeless export window.*
-  - `refresh_from_main_window(self)` [L1454-L1476] — *Synchronize post items, excerpts, and story lists from the main window without losing draft edits.*
-  - `_toggle_maximize(self)` [L1478-L1486]
-  - `changeEvent(self, event)` [L1488-L1499]
+  - `_create_timeline_page(self)` [L821-L1032]
+  - `_on_timeline_location_radio_toggled(self)` [L1034-L1037]
+  - `_browse_custom_timeline_location(self)` [L1039-L1044]
+  - `_toggle_all_sections(self)` [L1046-L1060]
+  - `_update_export_button_label(self)` [L1062-L1075]
+  - `_on_dest_changed(self)` [L1077-L1085]
+  - `_on_scope_changed(self)` [L1087-L1098]
+  - `_open_id3_editor(self)` [L1100-L1110] — *Open the ID3 Tag Editor for MP3 files.*
+  - `_copy_youtube_chapters(self)` [L1112-L1128]
+  - `_load_saved_options(self)` [L1130-L1219]
+  - `save_options_to_settings(self, as_default)` [L1221-L1293]
+  - `_handle_accept(self)` [L1295-L1363]
+  - `get_result(self)` [L1365-L1473]
+  - `_persist_plugin_draft_states(self)` [L1475-L1483] — *Persist any unsaved plugin destination edits (such as WordPress post drafts) back to the project.*
+  - `done(self, r)` [L1485-L1487]
+  - `toggle_float_mode(self, pinned)` [L1489-L1505] — *Toggle whether the non-modal floating window stays pinned on top of other windows.*
+  - `set_scope_and_destination(self, scope, dest_id)` [L1507-L1518] — *Update export scope and active destination tab on an open modeless export window.*
+  - `refresh_from_main_window(self)` [L1520-L1542] — *Synchronize post items, excerpts, and story lists from the main window without losing draft edits.*
+  - `_toggle_maximize(self)` [L1544-L1552]
+  - `changeEvent(self, event)` [L1554-L1565]
 
 ### `export/docx.py` (541 lines)
 *Word (.docx) export formatter for Radio & TV Story Segmenter.*
@@ -719,7 +722,7 @@
   - `generate_srt_content(blocks, include_speakers, clean_text_fn)` [L206-L212] — *Generate SubRip (.srt) subtitle content from blocks.*
   - `generate_vtt_content(blocks, include_speakers, clean_text_fn)` [L215-L221] — *Generate WebVTT (.vtt) subtitle content from blocks.*
 
-### `export/timeline.py` (801 lines)
+### `export/timeline.py` (873 lines)
 *Multi-Platform Timeline and DAW Interchange Engine for Radio & TV Story Segmenter.*
 - **Functions**:
   - `_xml_escape(text)` [L24-L35] — *Escape special XML characters for well-formed interchange output.*
@@ -729,16 +732,16 @@
   - `_get_story_start(s)` [L96-L101]
   - `_get_story_end(s, start_val)` [L104-L109]
   - `build_timeline_clips(stories, total_duration, unselected_audio_mode, apply_fades, scope, all_stories)` [L112-L239] — *Build an ordered list of timeline clips, supporting Full Episode continuous splits and story cuts.*
-  - `_build_reaper_track_block(track_name, clips, source_type, media_name_only)` [L242-L301] — *Generate a clean Cockos REAPER <TRACK block with media items, fades, colors, and source offsets.*
-  - `generate_reaper_project(stories, media_filename, project_title, apply_fades, sample_rate, total_duration, unselected_audio_mode, track_name, scope, all_stories)` [L304-L387] — *Generate a clean, warning-free Cockos REAPER project file (.rpp) with scope-aware tracks, fades, and regions.*
-  - `generate_samplitude_edl(stories, media_filename, project_title, sample_rate, apply_fades, total_duration, unselected_audio_mode, track_name, scope, all_stories)` [L390-L441] — *Generate a standard Magix Samplitude EDL (v1.5) broadcast edit decision list.*
-  - `generate_fcp7_xml(stories, media_filename, project_title, sample_rate, total_duration, unselected_audio_mode, track_name, scope, all_stories)` [L444-L531] — *Generate Final Cut Pro 7 XML (xmeml v5) interchange format for Premiere Pro and Audition.*
-  - `generate_fcpxml(stories, media_filename, project_title, sample_rate, total_duration, unselected_audio_mode, track_name, scope, all_stories)` [L538-L594] — *Generate Apple Final Cut Pro X XML (.fcpxml) format for FCPX, DaVinci Resolve, and Logic Pro.*
-  - `generate_aaf_interchange(stories, media_filename, project_title, sample_rate, total_duration, unselected_audio_mode, track_name, scope, all_stories)` [L597-L667] — *Generate Universal AAF XML Interchange format (.aaf) for Avid Media Composer and Pro Tools.*
-  - `generate_hindenburg_session(stories, media_filename, project_title, sample_rate, total_duration, unselected_audio_mode, track_name, apply_fades, scope, all_stories)` [L670-L747] — *Generate a Hindenburg Broadcast Session (.nhx) for Hindenburg Journalist and Broadcaster.*
-  - `generate_audacity_labels(stories, total_duration, unselected_audio_mode, scope, all_stories)` [L750-L762] — *Generate an Audacity Label Track (.txt) import file.*
-  - `generate_cue_sheet(stories, media_filename, project_title, total_duration)` [L765-L776] — *Generate a standard Red Book Audio CD CUE sheet (.cue).*
-  - `generate_daw_marker_csv(stories, total_duration, unselected_audio_mode, scope, all_stories)` [L779-L801] — *Generate a Universal DAW & NLE Marker List (.csv) format.*
+  - `_build_reaper_track_block(track_name, clips, source_type, media_name_only, main_win, reaper_include_notes, reaper_include_markers, reaper_marker_style, reaper_speaker_colors, precomputed_sentences)` [L242-L351] — *Generate a clean Cockos REAPER <TRACK block with media items, fades, colors, notes, markers, and source offsets.*
+  - `generate_reaper_project(stories, media_filename, project_title, apply_fades, sample_rate, total_duration, unselected_audio_mode, track_name, scope, all_stories, main_win, reaper_include_notes, reaper_include_markers, reaper_marker_style, reaper_speaker_colors)` [L354-L459] — *Generate a clean, warning-free Cockos REAPER project file (.rpp) with scope-aware tracks, fades, and regions.*
+  - `generate_samplitude_edl(stories, media_filename, project_title, sample_rate, apply_fades, total_duration, unselected_audio_mode, track_name, scope, all_stories)` [L462-L513] — *Generate a standard Magix Samplitude EDL (v1.5) broadcast edit decision list.*
+  - `generate_fcp7_xml(stories, media_filename, project_title, sample_rate, total_duration, unselected_audio_mode, track_name, scope, all_stories)` [L516-L603] — *Generate Final Cut Pro 7 XML (xmeml v5) interchange format for Premiere Pro and Audition.*
+  - `generate_fcpxml(stories, media_filename, project_title, sample_rate, total_duration, unselected_audio_mode, track_name, scope, all_stories)` [L610-L666] — *Generate Apple Final Cut Pro X XML (.fcpxml) format for FCPX, DaVinci Resolve, and Logic Pro.*
+  - `generate_aaf_interchange(stories, media_filename, project_title, sample_rate, total_duration, unselected_audio_mode, track_name, scope, all_stories)` [L669-L739] — *Generate Universal AAF XML Interchange format (.aaf) for Avid Media Composer and Pro Tools.*
+  - `generate_hindenburg_session(stories, media_filename, project_title, sample_rate, total_duration, unselected_audio_mode, track_name, apply_fades, scope, all_stories)` [L742-L819] — *Generate a Hindenburg Broadcast Session (.nhx) for Hindenburg Journalist and Broadcaster.*
+  - `generate_audacity_labels(stories, total_duration, unselected_audio_mode, scope, all_stories)` [L822-L834] — *Generate an Audacity Label Track (.txt) import file.*
+  - `generate_cue_sheet(stories, media_filename, project_title, total_duration)` [L837-L848] — *Generate a standard Red Book Audio CD CUE sheet (.cue).*
+  - `generate_daw_marker_csv(stories, total_duration, unselected_audio_mode, scope, all_stories)` [L851-L873] — *Generate a Universal DAW & NLE Marker List (.csv) format.*
 
 ### `export_dialogs.py` (447 lines)
 *Radio & TV Story Segmenter — Export Dialogs & Scope Selection Interface.*
@@ -753,9 +756,9 @@
 - **Functions**:
   - `show_export_completion_dialog(parent, title, message, export_path)` [L34-L50] — *Displays export completion with an actionable 'Open Folder' button (Milestone 3.11).*
 
-### `export_documents.py` (776 lines)
+### `export_documents.py` (793 lines)
 *Radio & TV Story Segmenter — Document, Transcript & Timeline Interchange Exporter.*
-- **class `ExportDocumentsMixin`** (lines 49–776):
+- **class `ExportDocumentsMixin`** (lines 49–793):
   *Provides document formatting, subtitle generation, and DAW interchange exports.*
   - `_subtitle_timestamp(self, seconds, vtt)` [L52-L62]
   - `write_subtitles(self, blocks, path, fmt, include_speakers)` [L64-L80]
@@ -769,13 +772,13 @@
   - `export_cue_sheet(self, destination_path)` [L314-L346] — *Export story/song segments to a standard .cue sheet.*
   - `export_tracklist(self, destination_path)` [L348-L378] — *Export story/song segments as YouTube chapters / tracklist formatted text.*
   - `_get_unselected_audio_mode_pref(self)` [L380-L385]
-  - `export_reaper_project(self, destination_path, unselected_audio_mode)` [L387-L420] — *Export story segments as a Cockos REAPER project file (.rpp).*
-  - `export_samplitude_edl(self, destination_path, unselected_audio_mode)` [L422-L455] — *Export story segments as a Magix Samplitude EDL (v1.5) broadcast edit decision list.*
-  - `export_audacity_labels(self, destination_path, unselected_audio_mode)` [L457-L489] — *Export story segments as an Audacity Label Track (.txt).*
-  - `export_audition_xml(self, destination_path, unselected_audio_mode)` [L491-L524] — *Export story segments as Adobe Audition / Final Cut Pro XML (.xml).*
-  - `export_daw_marker_csv(self, destination_path, unselected_audio_mode)` [L526-L558] — *Export story segments as a Universal DAW Marker List (.csv).*
-  - `copy_youtube_chapters_to_clipboard(self)` [L560-L577] — *Format story segments as YouTube chapters and copy them directly to the system clipboard.*
-  - `export_timeline_interchange(self, formats, base, options, directory, scope, is_custom_location)` [L579-L776] — *Export multi-platform timeline and DAW interchange project files.*
+  - `export_reaper_project(self, destination_path, unselected_audio_mode)` [L387-L432] — *Export story segments as a Cockos REAPER project file (.rpp).*
+  - `export_samplitude_edl(self, destination_path, unselected_audio_mode)` [L434-L467] — *Export story segments as a Magix Samplitude EDL (v1.5) broadcast edit decision list.*
+  - `export_audacity_labels(self, destination_path, unselected_audio_mode)` [L469-L501] — *Export story segments as an Audacity Label Track (.txt).*
+  - `export_audition_xml(self, destination_path, unselected_audio_mode)` [L503-L536] — *Export story segments as Adobe Audition / Final Cut Pro XML (.xml).*
+  - `export_daw_marker_csv(self, destination_path, unselected_audio_mode)` [L538-L570] — *Export story segments as a Universal DAW Marker List (.csv).*
+  - `copy_youtube_chapters_to_clipboard(self)` [L572-L589] — *Format story segments as YouTube chapters and copy them directly to the system clipboard.*
+  - `export_timeline_interchange(self, formats, base, options, directory, scope, is_custom_location)` [L591-L793] — *Export multi-platform timeline and DAW interchange project files.*
 
 ### `export_media_clipper.py` (337 lines)
 *Radio & TV Story Segmenter — Media Clipper & Audio Track Renderer.*
@@ -1602,24 +1605,24 @@
 - **Functions**:
   - `capture_video_frame(video_path, timestamp, output_path)` [L45-L60]
 
-### `preferences_dialog.py` (857 lines)
+### `preferences_dialog.py` (882 lines)
 *Radio & TV Story Segmenter — Preferences Modal Dialog.*
-- **class `PreferencesDialogMixin(PreferencesResetMixin)`** (lines 31–857):
+- **class `PreferencesDialogMixin(PreferencesResetMixin)`** (lines 32–882):
   *Provides the main open_preferences_dialog method and settings persistence.*
-  - `open_preferences_dialog(self, initial_category, modal)` [L34-L857] — *Open the multi-category Preferences dialog as a non-modal floating inspector.*
+  - `open_preferences_dialog(self, initial_category, modal)` [L35-L882] — *Open the multi-category Preferences dialog as a non-modal floating inspector.*
 
-### `preferences_reset.py` (650 lines)
+### `preferences_reset.py` (669 lines)
 *Radio & TV Story Segmenter — Preferences Reset & Factory Defaults Engine.*
-- **class `RestoreSelectedSettingsDialog(QDialog)`** (lines 21–164):
+- **class `RestoreSelectedSettingsDialog(QDialog)`** (lines 21–165):
   *Presents users with a list of customizable settings that can be restored to defaults.*
-  - `__init__(self, parent, on_restore_selected)` [L42-L125]
-  - `_select_all(self)` [L127-L129]
-  - `_deselect_all(self)` [L131-L133]
-  - `_handle_reset(self)` [L135-L164]
-- **class `PreferencesResetMixin`** (lines 167–650):
+  - `__init__(self, parent, on_restore_selected)` [L43-L126]
+  - `_select_all(self)` [L128-L130]
+  - `_deselect_all(self)` [L132-L134]
+  - `_handle_reset(self)` [L136-L165]
+- **class `PreferencesResetMixin`** (lines 168–669):
   *Provides methods for resetting settings to defaults across all app categories.*
-  - `apply_settings_reset(self, selected_ids, live_widgets)` [L170-L639] — *Apply factory default settings to the requested categories and update live widgets if present.*
-  - `open_restore_system_defaults_dialog(self)` [L641-L650] — *Open the Restore System Defaults dialog directly from Settings menu or Backup & Restore Center.*
+  - `apply_settings_reset(self, selected_ids, live_widgets)` [L171-L658] — *Apply factory default settings to the requested categories and update live widgets if present.*
+  - `open_restore_system_defaults_dialog(self)` [L660-L669] — *Open the Restore System Defaults dialog directly from Settings menu or Backup & Restore Center.*
 
 ### `preferences_reset_dialog.py` (629 lines)
 *Radio & TV Segmenter — Preferences reset and factory default restore engine.*
@@ -1634,6 +1637,11 @@
   - `apply_settings_reset(self, selected_ids, live_widgets)` [L169-L617] — *Apply factory default settings to the requested categories and update live widgets if present.*
   - `open_restore_system_defaults_dialog(self)` [L619-L628] — *Open the Restore System Defaults dialog directly from Settings menu or Backup & Restore Center.*
 
+### `preferences_tab_daw.py` (138 lines)
+*preferences_tab_daw.py — External Audio & Video Editors Preferences Tab.*
+- **Functions**:
+  - `build_external_editors_tab(win, dialog, live_widgets, add_custom_defaults_btn)` [L22-L138] — *Construct the External Audio & Video Editors preferences tab.*
+
 ### `preferences_tabs_core.py` (623 lines)
 *Radio & TV Story Segmenter — Preferences Modal Core Tab Builders.*
 - **Functions**:
@@ -1644,14 +1652,14 @@
   - `build_ai_models_tab(win, dialog, live_widgets, add_custom_defaults_btn)` [L389-L512]
   - `build_gpu_tab(win, dialog, live_widgets, add_custom_defaults_btn)` [L515-L623]
 
-### `preferences_tabs_media.py` (656 lines)
+### `preferences_tabs_media.py` (657 lines)
 *Radio & TV Story Segmenter — Preferences Modal Media & Workflow Tab Builders.*
 - **Functions**:
-  - `build_playback_timeline_tab(win, dialog, live_widgets, add_custom_defaults_btn)` [L22-L142]
-  - `build_detection_tab(win, dialog, live_widgets, add_custom_defaults_btn)` [L145-L244]
-  - `build_batch_tab(win, dialog, live_widgets, add_custom_defaults_btn)` [L247-L370]
-  - `build_cleanup_tab(win, dialog, live_widgets, add_custom_defaults_btn)` [L373-L571]
-  - `build_youtube_tab(win, dialog, live_widgets, add_custom_defaults_btn)` [L574-L656]
+  - `build_playback_timeline_tab(win, dialog, live_widgets, add_custom_defaults_btn)` [L22-L143]
+  - `build_detection_tab(win, dialog, live_widgets, add_custom_defaults_btn)` [L146-L245]
+  - `build_batch_tab(win, dialog, live_widgets, add_custom_defaults_btn)` [L248-L371]
+  - `build_cleanup_tab(win, dialog, live_widgets, add_custom_defaults_btn)` [L374-L572]
+  - `build_youtube_tab(win, dialog, live_widgets, add_custom_defaults_btn)` [L575-L657]
 
 ### `preview_manager.py` (270 lines)
 *AI Studio Web Preview Manager for Radio & TV Story Segmenter.*
@@ -2062,6 +2070,29 @@
 - **Functions**:
   - `main(argv)` [L117-L222]
 
+### `reaper_bridge.py` (962 lines)
+*reaper_bridge.py — REAPER DAW Companion Bridge & Inter-Process Cue Emitter.*
+- **Functions**:
+  - `get_reaper_ipc_paths()` [L26-L46] — *Return the list of standard sidecar IPC file destinations.*
+  - `reaper_color_from_hex(hex_str)` [L49-L60] — *Convert #RRGGBB hex color to Cockos REAPER custom color integer (0x1000000 | 0x1RRGGBB).*
+  - `_fmt_clock(secs)` [L63-L67] — *Format seconds into MM:SS.S clock timecode.*
+  - `_hex_to_rgb(hex_str)` [L70-L78] — *Convert hex color (#RRGGBB) to (R, G, B) tuple.*
+  - `_is_sentence_terminator(text)` [L88-L107] — *Check whether a text fragment ends with terminal sentence punctuation (., ?, !, ...).*
+  - `_build_phrase_preview(text, fallback_spk)` [L110-L121] — *Build a concise, readable 6-word phrase preview for REAPER take markers.*
+  - `_extract_formatted_transcript_sentences(main_win)` [L125-L315] — *Build formatted grammatical sentences (with word timings and paragraph flags) matching RTVS transcript view.*
+  - `get_reaper_clip_notes_and_markers(main_win, start_sec, end_sec, marker_style, apply_speaker_color, include_notes, include_markers, precomputed_sentences)` [L318-L419] — *Extract formatted transcript notes, take markers, and colors for a clip in an exported REAPER project.*
+  - `build_reaper_cue_payload(main_win, start_sec, end_sec, plain_text, title, clip_type, story_obj, include_word_cues, rendered_wav_path, marker_style)` [L422-L570] — *Construct a standardized cross-language cue dictionary conforming to the 1.0 schema.*
+  - `get_reaper_index_paths()` [L573-L587] — *Return IPC file paths for the full transcript and stories index used by the ReaImGui Dock.*
+  - `write_reaper_transcript_index(main_win, precomputed_sentences)` [L590-L647] — *Emit the formatted project stories and sentence-level transcript index for REAPER companion scripts.*
+  - `write_reaper_sidecar_cue(payload)` [L650-L669] — *Atomically write the cue payload JSON to all IPC sidecar locations.*
+  - `attach_reaper_cue_to_mimedata(mime_data, payload)` [L672-L683] — *Encode cue payload as UTF-8 JSON into QMimeData and write atomic IPC sidecar.*
+  - `get_default_reaper_scripts_dir()` [L686-L700] — *Return the standard platform-specific default REAPER Scripts/RTVS3 directory.*
+  - `get_bundled_lua_scripts()` [L703-L716] — *Find the bundled RTVS3 ReaScript Lua files.*
+  - `install_reaper_scripts_to_resource_path(parent_widget, target_dir)` [L719-L794] — *Copy the RTVS3 ReaScript companion and dock scripts to the REAPER Scripts directory.*
+  - `render_temp_daw_wav_clip(main_win, start_sec, end_sec, title)` [L797-L838] — *Render a temporary uncompressed WAV slice of the selected range for universal DAW clipboard paste.*
+  - `copy_selection_as_daw_wav_clip(main_win, start_sec, end_sec, plain_text, html_text, title, story_obj)` [L841-L898] — *Render a temp WAV audio slice and attach it to the OS file clipboard (CF_HDROP / URLs)*
+  - `populate_unified_copy_mimedata(main_win, mime_data, start_sec, end_sec, plain_text, title, clip_type, story_obj)` [L901-L961] — *Populates QMimeData with REAPER JSON cue payloads and optional WAV file attachments*
+
 ### `roadmap_manager.py` (259 lines)
 *roadmap_manager.py — Automated Roadmap & N-1 Sliding-Window Management Engine*
 - **class `RoadmapManager`** (lines 45–205):
@@ -2239,7 +2270,7 @@
   - `find_conflict(self, candidate_seq, excluding_action_id)` [L128-L144] — *Check if candidate_seq is already bound to another action.*
   - `apply_to_window(self, window)` [L146-L216] — *Update shortcuts on all QAction and QShortcut objects on MainWindow,*
 
-### `shortcuts/schema.py` (868 lines)
+### `shortcuts/schema.py` (878 lines)
 *shortcuts/schema.py — Shortcut definitions, dataclass models, and string helpers.*
 - **class `ShortcutDef`** (lines 13–22):
 - **Functions**:
@@ -2634,11 +2665,11 @@
 - **Functions**:
   - `theme_tokens_for_mode(mode)` [L297-L307] — *Return the ThemeTokens preset matching a Preferences theme_mode value*
 
-### `timeline_context_menus.py` (153 lines)
+### `timeline_context_menus.py` (165 lines)
 *Context menu builders and event handlers for the timeline canvas.*
 - **Functions**:
-  - `show_timeline_context_menu(canvas, global_pos, pos_x)` [L10-L129] — *Display the primary right-click context menu on the timeline canvas.*
-  - `show_selection_context_menu(canvas, global_pos)` [L132-L153] — *Display the range selection context menu on the timeline canvas.*
+  - `show_timeline_context_menu(canvas, global_pos, pos_x)` [L10-L133] — *Display the primary right-click context menu on the timeline canvas.*
+  - `show_selection_context_menu(canvas, global_pos)` [L136-L165] — *Display the range selection context menu on the timeline canvas.*
 
 ### `timeline_overview.py` (351 lines)
 *Timeline Resize Handle and Overview Navigation Bar widgets.*
@@ -2710,63 +2741,63 @@
   - `format_selection_drag_info(start, end)` [L177-L185] — *Format tooltip and status bar readout for live selection dragging.*
   - `format_edge_drag_info(story, edge_type, current_time)` [L188-L195] — *Format tooltip and status bar readout for live edge dragging.*
 
-### `timeline_widgets.py` (998 lines)
+### `timeline_widgets.py` (999 lines)
 *Radio & TV Story Segmenter — Timeline Ruler, Track Views, Playhead, Overview & Canvas Widgets.*
-- **class `TimelineCanvas(QWidget)`** (lines 59–878):
-  - `__init__(self, parent, tokens)` [L79-L169]
-  - `set_is_video(self, is_video)` [L171-L174]
-  - `set_background_generation_active(self, task_name, active)` [L176-L195] — *Set generation state for 'waveform' or 'thumbnails'.*
-  - `_activate_background_banner(self)` [L197-L202]
-  - `_update_background_status_text(self)` [L204-L217]
-  - `dragEnterEvent(self, event)` [L219-L226]
-  - `dragMoveEvent(self, event)` [L228-L235]
-  - `dragLeaveEvent(self, event)` [L237-L238]
-  - `dropEvent(self, event)` [L240-L248]
-  - `set_audio_filename(self, filename)` [L250-L253]
-  - `set_duration(self, duration)` [L255-L263]
-  - `set_position(self, position)` [L265-L268]
-  - `set_playing_state(self, is_playing)` [L270-L271]
-  - `ensure_position_visible(self, target_time)` [L273-L296]
-  - `clear_selection_range(self)` [L298-L303] — *Clear active timeline drag selection range without affecting committed stories.*
-  - `set_transcript_selection_range(self, start, end)` [L305-L310]
-  - `set_stories(self, stories, selected_indices)` [L312-L316]
-  - `set_waveform_peaks(self, peaks, levels)` [L318-L329]
-  - `set_timeline_views(self, show_waveform, show_thumbnails)` [L331-L335]
-  - `set_video_thumbnails(self, thumbnails)` [L337-L344]
-  - `set_skip_seconds(self, seconds)` [L346-L347]
-  - `visible_duration(self)` [L349-L350]
-  - `clamp_scroll_offset(self)` [L352-L355]
-  - `time_to_x(self, time_val, width)` [L357-L360]
-  - `x_to_time(self, x_val, width)` [L362-L364]
-  - `snap_time(self, raw_time, exclude_story_idx, width, pixel_threshold)` [L366-L367]
-  - `find_edge_at_pos(self, pos_x, width)` [L371-L372]
-  - `find_fade_handle_at_pos(self, pos_x, pos_y, width)` [L374-L375]
-  - `find_story_at_time(self, time)` [L377-L378]
-  - `is_near_playhead(self, pos_x, width)` [L380-L381]
-  - `set_zoom(self, new_zoom, center_x, focus_time)` [L383-L409]
-  - `resizeEvent(self, event)` [L411-L413]
-  - `wheelEvent(self, event)` [L415-L465]
-  - `mousePressEvent(self, event)` [L467-L551]
-  - `mouseMoveEvent(self, event)` [L553-L684]
-  - `mouseReleaseEvent(self, event)` [L686-L756]
-  - `_show_timeline_context_menu(self, global_pos, pos_x)` [L758-L759]
-  - `_show_selection_context_menu(self, global_pos)` [L761-L762]
-  - `keyPressEvent(self, event)` [L764-L858]
-  - `set_thumbnail_position(self, position)` [L860-L864]
-  - `render_waveform_buffer(self, width, height)` [L866-L867]
-  - `paintEvent(self, event)` [L870-L878]
-- **class `TimelineWidget(QWidget)`** (lines 881–996):
-  - `__init__(self, parent, tokens)` [L884-L921]
-  - `set_is_video(self, is_video)` [L923-L925]
-  - `set_background_generation_active(self, task_name, active)` [L927-L929]
-  - `dragEnterEvent(self, event)` [L931-L938]
-  - `dragMoveEvent(self, event)` [L940-L947]
-  - `dragLeaveEvent(self, event)` [L949-L950]
-  - `dropEvent(self, event)` [L952-L960]
-  - `update_scrollbar_range(self)` [L962-L971]
-  - `update_scrollbar_from_canvas(self, offset)` [L973-L981]
-  - `update_canvas_from_scrollbar(self, val)` [L983-L993]
-  - `__getattr__(self, name)` [L995-L996]
+- **class `TimelineCanvas(QWidget)`** (lines 58–882):
+  - `__init__(self, parent, tokens)` [L78-L168]
+  - `set_is_video(self, is_video)` [L170-L173]
+  - `set_background_generation_active(self, task_name, active)` [L175-L194] — *Set generation state for 'waveform' or 'thumbnails'.*
+  - `_activate_background_banner(self)` [L196-L201]
+  - `_update_background_status_text(self)` [L203-L216]
+  - `dragEnterEvent(self, event)` [L218-L225]
+  - `dragMoveEvent(self, event)` [L227-L234]
+  - `dragLeaveEvent(self, event)` [L236-L237]
+  - `dropEvent(self, event)` [L239-L247]
+  - `set_audio_filename(self, filename)` [L249-L252]
+  - `set_duration(self, duration)` [L254-L262]
+  - `set_position(self, position)` [L264-L267]
+  - `set_playing_state(self, is_playing)` [L269-L270]
+  - `ensure_position_visible(self, target_time)` [L272-L295]
+  - `clear_selection_range(self)` [L297-L302] — *Clear active timeline drag selection range without affecting committed stories.*
+  - `set_transcript_selection_range(self, start, end)` [L304-L309]
+  - `set_stories(self, stories, selected_indices)` [L311-L315]
+  - `set_waveform_peaks(self, peaks, levels)` [L317-L328]
+  - `set_timeline_views(self, show_waveform, show_thumbnails)` [L330-L334]
+  - `set_video_thumbnails(self, thumbnails)` [L336-L343]
+  - `set_skip_seconds(self, seconds)` [L345-L346]
+  - `visible_duration(self)` [L348-L349]
+  - `clamp_scroll_offset(self)` [L351-L354]
+  - `time_to_x(self, time_val, width)` [L356-L359]
+  - `x_to_time(self, x_val, width)` [L361-L363]
+  - `snap_time(self, raw_time, exclude_story_idx, width, pixel_threshold)` [L365-L366]
+  - `find_edge_at_pos(self, pos_x, width)` [L370-L371]
+  - `find_fade_handle_at_pos(self, pos_x, pos_y, width)` [L373-L374]
+  - `find_story_at_time(self, time)` [L376-L377]
+  - `is_near_playhead(self, pos_x, width)` [L379-L380]
+  - `set_zoom(self, new_zoom, center_x, focus_time)` [L382-L408]
+  - `resizeEvent(self, event)` [L410-L412]
+  - `wheelEvent(self, event)` [L414-L464]
+  - `mousePressEvent(self, event)` [L466-L550]
+  - `mouseMoveEvent(self, event)` [L552-L683]
+  - `mouseReleaseEvent(self, event)` [L685-L755]
+  - `_show_timeline_context_menu(self, global_pos, pos_x)` [L757-L758]
+  - `_show_selection_context_menu(self, global_pos)` [L760-L761]
+  - `keyPressEvent(self, event)` [L763-L862]
+  - `set_thumbnail_position(self, position)` [L864-L868]
+  - `render_waveform_buffer(self, width, height)` [L870-L871]
+  - `paintEvent(self, event)` [L874-L882]
+- **class `TimelineWidget(QWidget)`** (lines 885–998):
+  - `__init__(self, parent, tokens)` [L888-L925]
+  - `set_is_video(self, is_video)` [L927-L929]
+  - `set_background_generation_active(self, task_name, active)` [L931-L933]
+  - `dragEnterEvent(self, event)` [L935-L942]
+  - `dragMoveEvent(self, event)` [L944-L951]
+  - `dragLeaveEvent(self, event)` [L953-L954]
+  - `dropEvent(self, event)` [L956-L964]
+  - `update_scrollbar_range(self)` [L966-L975]
+  - `update_scrollbar_from_canvas(self, offset)` [L977-L984]
+  - `update_canvas_from_scrollbar(self, val)` [L986-L995]
+  - `__getattr__(self, name)` [L997-L998]
 
 ### `transcript_cleaner.py` (216 lines)
 *Radio & TV Segmenter — Transcript cleaning, loop collapsing, and hallucination scrubbing.*
@@ -2777,21 +2808,24 @@
   - `scrub_transcript_segments(segments, collapse_loops)` [L124-L202] — *Comprehensive scrubber for transcript segment lists:*
   - `scrub_transcript(transcript)` [L205-L216] — *Clean and sanitize a complete transcript payload dictionary.*
 
-### `transcript_context_menu_mixin.py` (454 lines)
+### `transcript_context_menu_mixin.py` (730 lines)
 *Radio & TV Story Segmenter — Interactive Transcript Context Menu & Bubble Actions Mixin.*
-- **class `TranscriptContextMenuMixin`** (lines 36–454):
+- **class `TranscriptContextMenuMixin`** (lines 48–729):
   *Mixin for context menu construction and selection bubble quick-actions.*
-  - `_on_bubble_play(self)` [L39-L44]
-  - `_on_bubble_story(self)` [L46-L51]
-  - `_on_bubble_note(self)` [L53-L66]
-  - `_on_bubble_cut(self)` [L68-L73]
-  - `_on_bubble_export(self)` [L75-L80]
-  - `show_context_menu(self, position)` [L82-L454]
+  - `_on_bubble_play(self)` [L51-L56]
+  - `_on_bubble_story(self)` [L58-L63]
+  - `_on_bubble_note(self)` [L65-L78]
+  - `_on_bubble_cut(self)` [L80-L85]
+  - `_on_bubble_export(self)` [L87-L92]
+  - `show_context_menu(self, position)` [L94-L481]
+  - `copy_highlighted_selection(self)` [L483-L612] — *Copy the active story or timeline selection span to clipboard when no cursor text is selected.*
+  - `copy_selection_for_reaper(self)` [L614-L679] — *Explicitly build and copy REAPER DAW clip cue payload for the active text or story selection.*
+  - `copy_selection_as_daw_wav(self)` [L681-L729] — *Render temporary WAV audio clip and copy it to the OS clipboard (CF_HDROP) for any DAW.*
 
-### `transcript_editor.py` (1002 lines)
+### `transcript_editor.py` (945 lines)
 *transcript_editor.py - Interactive Transcript Editor & Viewer Components*
 - **Public Exports (`__all__`)**: FindReplaceDialog, TranscriptSelectionBubble, transcript_text_view_stylesheet, clean_dark_mode_clipboard_html, InteractiveTranscriptEdit
-- **class `InteractiveTranscriptEdit(TranscriptContextMenuMixin, TranscriptFormattingMixin, TranscriptTimelineSyncMixin, QTextEdit)`** (lines 117–1002):
+- **class `InteractiveTranscriptEdit(TranscriptContextMenuMixin, TranscriptFormattingMixin, TranscriptTimelineSyncMixin, QTextEdit)`** (lines 117–945):
   - `__init__(self, parent)` [L130-L192]
   - `clear(self)` [L194-L209] — *Clear document text and reset all word maps, anchors, and extra selections.*
   - `lock_scroll_position(self, v_val, h_val, duration_ms)` [L211-L232] — *Pin vertical and horizontal scrollbars to exact pixel values during layout reflows.*
@@ -2799,22 +2833,21 @@
   - `_on_v_range_changed(self, min_val, max_val)` [L239-L243]
   - `focusInEvent(self, event)` [L245-L261]
   - `_enforce_scroll_after_focus(self, target_v, target_h)` [L263-L269]
-  - `createMimeDataFromSelection(self)` [L271-L285] — *Clean dark-mode white/light plain text colors to black (#000000) when copying.*
-  - `copy_highlighted_selection(self)` [L287-L368] — *Copy the active story or timeline selection span to clipboard when no cursor text is selected.*
-  - `wheelEvent(self, event)` [L370-L376]
-  - `event(self, e)` [L378-L427]
-  - `paintEvent(self, event)` [L429-L492]
-  - `dragEnterEvent(self, event)` [L494-L498]
-  - `dragMoveEvent(self, event)` [L500-L504]
-  - `dropEvent(self, event)` [L506-L516]
-  - `apply_theme_style(self, mode)` [L518-L521]
-  - `set_font_scale(self, scale)` [L523-L533] — *Set transcript font scale without affecting the rest of the UI.*
-  - `set_editing_mode(self, enabled)` [L535-L551]
-  - `mousePressEvent(self, event)` [L553-L593]
-  - `mouseMoveEvent(self, event)` [L595-L643]
-  - `leaveEvent(self, event)` [L645-L649]
-  - `mouseReleaseEvent(self, event)` [L651-L737]
-  - `keyPressEvent(self, event)` [L739-L1002]
+  - `createMimeDataFromSelection(self)` [L271-L306] — *Clean dark-mode white/light plain text colors to black (#000000) and attach REAPER cues when copying.*
+  - `wheelEvent(self, event)` [L307-L313]
+  - `event(self, e)` [L315-L364]
+  - `paintEvent(self, event)` [L366-L429]
+  - `dragEnterEvent(self, event)` [L431-L435]
+  - `dragMoveEvent(self, event)` [L437-L441]
+  - `dropEvent(self, event)` [L443-L453]
+  - `apply_theme_style(self, mode)` [L455-L458]
+  - `set_font_scale(self, scale)` [L460-L470] — *Set transcript font scale without affecting the rest of the UI.*
+  - `set_editing_mode(self, enabled)` [L472-L488]
+  - `mousePressEvent(self, event)` [L490-L530]
+  - `mouseMoveEvent(self, event)` [L532-L580]
+  - `leaveEvent(self, event)` [L582-L586]
+  - `mouseReleaseEvent(self, event)` [L588-L674]
+  - `keyPressEvent(self, event)` [L676-L945]
 
 ### `transcript_editor_dialogs.py` (683 lines)
 *transcript_editor_dialogs.py - Dialog and floating toolbar components for transcript editing.*
@@ -2906,7 +2939,7 @@
   - `_on_bubble_export(self)` [L468-L473]
 
 ### `transcript_story.py` (852 lines)
-*Radio & TV Segmenter v3.9.91-beta — transcript story responsibilities.*
+*Radio & TV Segmenter v3.9.92-beta — transcript story responsibilities.*
 - **Public Exports (`__all__`)**: TranscriptStoryMixin, Story, SetStoriesCommand, SelectStoriesCommand, StoryBoundaryChangeCommand, StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin, ChangeSpeakerDialog, VoiceProfileMatchDialog, StoryFadesDialog, SpeakerManagerDialog, FADE_CURVE_TABLES, get_fade_curve_factors
 - **class `TranscriptStoryMixin(StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin)`** (lines 63–851):
   - `render_transcript(self)` [L64-L467]
@@ -3110,27 +3143,37 @@
   - `launch_and_install(file_path, parent)` [L402-L714]
   - `cleanup_old_installers(max_to_keep, force_all)` [L778-L837] — *Clean up old downloaded application update installers from AppData/updates directory.*
 
-### `user_guide_dialog.py` (563 lines)
+### `user_guide_dialog.py` (846 lines)
 *Radio & TV Story Segmenter — In-App User Guide & Documentation Viewer Dialog.*
-- **class `ResponsiveTextBrowser(QTextBrowser)`** (lines 47–107):
+- **class `ResponsiveTextBrowser(QTextBrowser)`** (lines 49–109):
   *QTextBrowser subclass that responsively scales embedded images to viewport width.*
-  - `__init__(self, parent)` [L50-L52]
-  - `resizeEvent(self, event)` [L54-L56]
-  - `scale_images_to_viewport(self)` [L58-L107]
-- **class `UserGuideDialog(QDialog)`** (lines 110–563):
+  - `__init__(self, parent)` [L52-L54]
+  - `resizeEvent(self, event)` [L56-L58]
+  - `scale_images_to_viewport(self)` [L60-L109]
+- **class `UserGuideDialog(QDialog)`** (lines 112–846):
   *In-app reader dialog displaying rich user guides with inline screenshots.*
-  - `_find_docs_dir()` [L147-L181] — *Locate the docs directory across frozen executables, installed dirs, and dev trees.*
-  - `__init__(self, parent, initial_guide_id)` [L183-L199]
-  - `_setup_ui(self)` [L201-L304]
-  - `_apply_browser_stylesheet(self)` [L306-L340]
-  - `_resolve_image_urls(self, markdown_text)` [L342-L358] — *Replace relative image paths in markdown with absolute file URIs for instant rendering.*
-  - `_load_guide_by_id(self, guide_id)` [L360-L412]
-  - `_on_topic_selected(self, row)` [L414-L418]
-  - `_zoom_in(self)` [L420-L423]
-  - `_zoom_out(self)` [L425-L428]
-  - `_reset_zoom(self)` [L430-L434]
-  - `_open_in_external_browser(self)` [L436-L509] — *Export the current guide as a self-contained styled HTML file and launch the system web browser.*
-  - `_build_dynamic_shortcuts_guide(self)` [L511-L563] — *Build dynamic keyboard shortcut documentation from active settings.*
+  - `_find_docs_dir()` [L154-L188] — *Locate the docs directory across frozen executables, installed dirs, and dev trees.*
+  - `__init__(self, parent, initial_guide_id)` [L190-L208]
+  - `_setup_ui(self)` [L210-L362]
+  - `_apply_browser_stylesheet(self)` [L364-L408]
+  - `_resolve_image_urls(self, markdown_text)` [L410-L426] — *Replace relative image paths in markdown with absolute file URIs for instant rendering.*
+  - `_load_guide_by_id(self, guide_id)` [L428-L486]
+  - `_on_topic_selected(self, row)` [L488-L492]
+  - `_focus_search(self)` [L494-L496]
+  - `_get_guide_raw_text(self, guide_id)` [L498-L518]
+  - `_update_cross_topic_badges(self, query)` [L520-L560]
+  - `_on_search_query_changed(self, text)` [L562-L565]
+  - `_execute_in_doc_search(self, query, other_matches_count)` [L567-L606]
+  - `_update_match_label(self)` [L608-L617]
+  - `_highlight_matches(self, scroll)` [L619-L646]
+  - `_find_next_match(self)` [L648-L669]
+  - `_find_prev_match(self)` [L671-L692]
+  - `keyPressEvent(self, event)` [L694-L701]
+  - `_zoom_in(self)` [L703-L706]
+  - `_zoom_out(self)` [L708-L711]
+  - `_reset_zoom(self)` [L713-L717]
+  - `_open_in_external_browser(self)` [L719-L792] — *Export the current guide as a self-contained styled HTML file and launch the system web browser.*
+  - `_build_dynamic_shortcuts_guide(self)` [L794-L846] — *Build dynamic keyboard shortcut documentation from active settings.*
 
 ### `utils/__init__.py` (36 lines)
 *Utility modules for Radio & TV Story Segmenter.*

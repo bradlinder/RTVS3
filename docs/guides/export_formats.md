@@ -40,9 +40,22 @@ Share transcripts and show rundowns with editorial staff and producers:
 
 ## 4. Broadcast DAW & Video Editor Timelines
 
-Select **Timeline & DAW Interchange** to export non-destructive multi-track timelines directly into professional audio and video editing software:
+Select **Timeline & DAW Interchange** or use RTVS3's live clipboard bridges to assemble and edit in professional audio workstations and NLEs:
 
-- **Cockos REAPER DAW (.rpp)**:
+### Real-Time REAPER & DAW Live Bridge (Recommended)
+Rather than manually exporting files, you can copy selections directly from RTVS3 into your DAW:
+- **Cockos REAPER Live Companion Bridge**:
+  - Press standard **Ctrl+C** on any transcript or timeline selection in RTVS3.
+  - In REAPER, trigger `Script: rtvs_reaper_companion.lua` (assignable to a shortcut) to paste the clip immediately at the edit cursor.
+  - Features zero-generation sample-accurate referencing of the master media, verbatim transcripts in **Item Notes (`P_NOTES`)**, speaker color coding, non-destructive fades, customizable take markers, and dynamic transcript auto-sync when clips are trimmed or split on the REAPER timeline.
+  - Includes an optional dockable ReaImGui browser (`rtvs_reaper_dock.lua`) for searching and inserting quotes live from within REAPER.
+  - See the dedicated **[REAPER & DAW Live Bridge Guide](reaper_and_daw_integration.md)** for full step-by-step setup instructions.
+- **Universal Audio Clipboard for Other DAWs (Audition, Premiere, DaVinci Resolve)**:
+  - Enable **Render temporary WAV audio clip to OS file clipboard** in **Settings > Preferences... > Playback & Timeline**.
+  - When copying in RTVS3, a lossless uncompressed WAV slice is attached to the OS file clipboard (`CF_HDROP`), allowing direct **Ctrl+V** pasting onto timeline tracks in Adobe Audition, Premiere Pro, DaVinci Resolve, and Pro Tools.
+
+### Timeline File Exports:
+- **Cockos REAPER Project (.rpp)**:
   - Generates full REAPER project files with each story arranged on separate tracks or color-coded regions with take markers.
   - Automatically translates audio volume fades into native REAPER fade handles.
 - **Final Cut Pro XML & Adobe Premiere Pro**:

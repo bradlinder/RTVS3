@@ -1,7 +1,6 @@
 # timeline_widgets.pyi — Typing and Interface Stub for timeline_widgets
 from __future__ import annotations
 from __future__ import annotations
-import bisect
 from bisect import bisect_left, bisect_right
 import math
 from pathlib import Path

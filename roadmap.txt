@@ -38,21 +38,19 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 --------------------------------------------------------------------------------
 TABLE OF CONTENTS & STATUS OVERVIEW
 --------------------------------------------------------------------------------
-1. Active Release: Story Duration Visibility & Timeline Selection Length Indicators (`story_crud_mixin.py`, `timeline_widgets.py`, `timeline_snap.py`, `ui_layout.py`, `test_runner.py`) [x] [COMPLETED in v3.9.89-beta]
-   [x] 1.1 Story Edit Form Duration Field & Fade Badges: Dedicated read-only "Duration:" field directly below "Range:" in the story edit form showing clock format (e.g. `02:30.5`), clean single-line story list items, and clear "Fade In / Fade Out" badge language.
-   [x] 1.2 Timeline Story Body Hover Readout: Hovering over the main body of a story on the timeline displays a clean tooltip and status bar readout with Story Title, range, and clock duration.
-   [x] 1.3 Live Selection Drag & Hover Duration Indicator: Real-time duration clock readout in tooltip and status bar while drawing or adjusting selection regions or dragging story boundaries on the timeline.
-   [x] 1.4 Multi-Selection Total Duration Header: Display aggregate duration readout in the Stories sidebar header for all currently selected stories (single selection: `Stories (1) — [02:30.5]`, multi-selection: `Stories (3) — [07:14.2]`).
-   [x] 1.5 Diagnostic Regression Tests: Automated unit and headless assertions for duration string formatting, story edit form updates, timeline hover tooltips, and live drag indicators.
+1. Immediate Predecessor Release: Searchable/Sortable Glossary, Story Highlighting, Context Menus & Diagnostic Thread Safety (glossary_dialog.py, terminology.py, transcript_editor.py, diagnostic_dialog.py) [x] [COMPLETED in v3.9.91-beta]
+   [x] 1.1 Universal Esc Selection Clearance: Added dedicated clear_selection_range() across timeline canvas, story sidebar, transcript editor, and global Edit > Deselect All menu.
+   [x] 1.2 Searchable/Sortable Glossary Engine: Full terminology glossary dialog with live filtering, sortable tables, and story transcript highlighting.
+   [x] 1.3 Context Menu & Diagnostic Thread Safety: Reinforced thread affinity and Qt signal isolation across diagnostic runners and transcript context menus.
 
-2. Milestone: REAPER DAW Companion Bridge & ReaScript Transcript Integration (`reaper_bridge.py`, `transcript_editor_dialogs.py`, `transcript_context_menu_mixin.py`, `scripts/reaper/rtvs_reaper_companion.lua`, `scripts/reaper/rtvs_reaper_dock.lua`, `test_runner.py`) [PLANNED for v4.2.0] [OPTIONAL / PLANNED] [NOT STARTED]
-   [ ] 2.1 Unified Multi-Channel Clipboard Engine: Copying stories or transcript selections simultaneously writes plain text, formatted HTML, and REAPER JSON metadata payload.
-   [ ] 2.2 RTVS3 Clip Cue Payload & Sidecar/IPC Emitter (`reaper_bridge.py`)
-   [ ] 2.3 Companion ReaScript Timeline Paste, Take Labeling & Item Notes: Automatically populates REAPER Take Name with Story Title or quote preview, and Item Notes with verbatim transcript text.
-   [ ] 2.4 Take Markers for Speaker Attribution & Word Cues on the REAPER Timeline
-   [ ] 2.5 Optional Dockable ReaImGui Transcript Viewer for REAPER (`scripts/reaper/rtvs_reaper_dock.lua`)
-   [ ] 2.6 Preferences Integration, One-Click Script Installer & Diagnostic Tests (`preferences_dialog.py`, `reaper_bridge.py`, `test_runner.py`)
-   [ ] 2.7 Universal Text-to-WAV Clipboard & Drag-and-Drop Fallback for Other DAWs (`reaper_bridge.py`, `export_media_clipper.py`, `transcript_context_menu_mixin.py`)
+2. Active Release: REAPER DAW Companion Bridge, True Sentence Cues, Universal Search & Timeline Export (`reaper_bridge.py`, `export/timeline.py`, `user_guide_dialog.py`, `preferences_tab_daw.py`, `preferences_dialog.py`, `scripts/reaper/rtvs_reaper_companion.lua`, `docs/guides/reaper_and_daw_integration.md`, `embedded_guides.py`) [x] [COMPLETED in v3.9.92-beta]
+   [x] 2.1 Unified Multi-Channel Clipboard Engine: Single `Ctrl+C` copy across Transcript and Timeline views simultaneously writes plain text, formatted HTML, and REAPER JSON metadata payload; dedicated `Ctrl+Shift+C` renders temporary WAV clips.
+   [x] 2.2 Companion ReaScript Suite: Full Lua script set (`rtvs_reaper_companion.lua`, `rtvs_reaper_auto_sync.lua`, `rtvs_reaper_sync.lua`, `rtvs_reaper_dock.lua`) for instant timeline pasting, non-destructive live trim/split auto-sync, and dockable transcript browser.
+   [x] 2.3 True Sentence-Only Take Marker Cues: Replaced silence pause heuristic with pre-computed canonical grammatical sentence boundaries (`latest_transcript_index.json`), eliminating mid-sentence split markers in REAPER.
+   [x] 2.4 Dedicated Preferences Tab (External Audio & Video Editors): Extracted all DAW, REAPER companion, and universal WAV clipboard settings into a dedicated, clean preferences panel (`preferences_tab_daw.py`) with search and reset integration.
+   [x] 2.5 Universal User Guide Search Engine: Global cross-topic search engine with real-time match badges across all guide topics, auto-switching, and cyclic Next/Prev navigation.
+   [x] 2.6 Native REAPER (.rpp) Timeline Export Options: Added user-configurable options in the Timeline & DAW Interchange export dialog for embedding transcript Item Notes (`<NOTES`), Take Markers (`TKM`), and speaker color coding (`COLOR`).
+   [x] 2.7 Diagnostic Regression Verification: All REAPER, Export, User Guide, and Preferences diagnostic test benches passing 100%.
 
 3. Deferred Milestone: Domain Separation & Purpose-Driven Monolithic File Modularization [ ] [DEFERRED / LOWER PRIORITY]
    - *Purpose*: Systematic architectural refactoring prioritizing **file purpose, single responsibility, and domain cohesion** alongside line count reduction (<800 lines target, 1,000 lines ceiling), systematically decoupling grandfathered multi-domain monoliths into focused submodules with 100% backward-compatible facade re-exports.
@@ -93,7 +91,7 @@ TABLE OF CONTENTS & STATUS OVERVIEW
    [ ] 5.4 Burned-in Subtitles & Platform Safe Zone Enforcement (`plugins/social_reel/reel_subtitles.py`)
    [ ] 5.5 Unified Export Integration & Social Reel Diagnostic Tests (`export/dialog.py`, `test_runner.py`)
 
-6. Current Release: Searchable/Sortable Glossary, Story Highlighting, Context Menus & Diagnostic Thread Safety (glossary_dialog.py, terminology.py, transcript_editor.py, diagnostic_dialog.py) [x] [COMPLETED in v3.9.91-beta]
+6. Previous Release: Searchable/Sortable Glossary, Story Highlighting, Context Menus & Diagnostic Thread Safety (glossary_dialog.py, terminology.py, transcript_editor.py, diagnostic_dialog.py) [x] [COMPLETED in v3.9.91-beta]
    [x] 6.1 Modular Glossary Dialog & Live Search: Extracted GlossaryDialog into glossary_dialog.py with real-time text filtering, 6 sorting modes, and 4-column data model (Match case).
    [x] 6.2 Alternate Spellings & Two-Pass Engine: Comma-separated alternate spellings, transcript Add Selected Text as Alternate Spelling For..., and project-scoped single-word co-reference normalization.
    [x] 6.3 Story Selection Transcript Highlighting & Smart Copy: Synchronized story overlays, Ctrl+C smart copy, universal Esc deselect, and context menu parity across timeline and transcript views.
@@ -111,10 +109,18 @@ DETAILED MILESTONE SPECIFICATIONS
 - Target Release: v3.9.89-beta (Planned)
 - Technical References: `story_crud_mixin.py`, `timeline_widgets.py`, `ui_layout.py`.
 
-2. MILESTONE: REAPER DAW COMPANION BRIDGE & REASCRIPT TRANSCRIPT INTEGRATION:
-- Purpose: Two-way IPC sidecar bridge allowing RTVS3 transcript selections to be pasted directly into REAPER DAW timelines with take markers and colors.
-- Target Release: v4.2.0 (Optional / Planned)
-- Technical References: IPC protocol, ReaScript Lua scripts (`rtvs_reaper_companion.lua`), and ReaImGui dock designs in `ARCHITECTURE.md` (Section 5).
+2. CURRENT RELEASE: REAPER DAW COMPANION BRIDGE & REASCRIPT TRANSCRIPT INTEGRATION:
+- Purpose: Two-way IPC sidecar bridge allowing RTVS3 transcript selections to be pasted directly into REAPER DAW timelines with take markers, speaker colors, and ReaImGui browser dock.
+- Target Release: v3.9.92-beta (Current Release)
+- Technical References: `reaper_bridge.py`, `scripts/reaper/rtvs_reaper_companion.lua`, `scripts/reaper/rtvs_reaper_dock.lua`.
+- Implementation Details:
+  * [x] Unified Multi-Channel Clipboard Engine: Plain text, HTML, and application/x-rtvs-reaper-cue+json QMimeData.
+  * [x] RTVS3 Clip Cue Payload & Sidecar/IPC Emitter: Atomic %LOCALAPPDATA% and %TEMP% sidecars with relative offset math.
+  * [x] Companion ReaScript Paste, Take Labeling & Item Notes: Pure-Lua JSON decoder, media take insertion at playhead, verbatim transcript notes.
+  * [x] Take Markers: Speaker attribution and optional word cues directly on the timeline take.
+  * [x] Dockable ReaImGui Transcript Viewer: Real-time search, story filtering, and one-click playhead insertion.
+  * [x] Preferences Integration & One-Click Installer: Preferences > Playback & Timeline controls and automated script installation to REAPER directory.
+  * [x] Universal Text-to-WAV Clipboard Fallback: Temporary uncompressed WAV generation to OS clipboard (CF_HDROP) for non-REAPER DAWs.
 
 3. DEFERRED MILESTONE: DOMAIN SEPARATION & PURPOSE-DRIVEN MONOLITHIC FILE MODULARIZATION:
 - Purpose: Systematic architectural refactoring prioritizing file purpose and single responsibility (<800 lines target, 1,000 lines ceiling).

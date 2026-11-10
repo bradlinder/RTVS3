@@ -137,6 +137,7 @@ def build_playback_timeline_tab(win, dialog, live_widgets, add_custom_defaults_b
     _update_fades_options_visibility(enable_fades_chk.isChecked())
 
     play_layout.addLayout(play_form)
+
     add_custom_defaults_btn(play_layout, "Playback & Timeline", ["playback_timeline", "audio_fades"])
     play_layout.addStretch()
     return page_play

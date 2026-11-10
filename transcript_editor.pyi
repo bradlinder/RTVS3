@@ -47,9 +47,6 @@ class InteractiveTranscriptEdit(TranscriptContextMenuMixin, TranscriptFormatting
     def createMimeDataFromSelection(self):
         ...
 
-    def copy_highlighted_selection(self) -> bool:
-        ...
-
     def wheelEvent(self, event):
         ...
 

@@ -32,6 +32,7 @@ class RestoreSelectedSettingsDialog(QDialog):
         ("gpu_acceleration", "Hardware / GPU Acceleration", "GPU and DirectML hardware acceleration settings."),
         ("playback_timeline", "Playback & Timeline Display", "Skip duration (5s), waveform visibility, thumbnail strip, and transcript selection mode."),
         ("audio_fades", "Audio Fades & Fade Curve Defaults", "Enable audio fades (disabled), fade audio preview (disabled), default fade-in duration (0.0s), default fade-out duration (1.0s), and default fade curve (linear)."),
+        ("external_editors", "External Audio & Video Editors", "REAPER Companion bridge integration, take marker styles (sentence cues), speaker item coloring, and WAV clipboard rendering for non-REAPER DAWs."),
         ("detection_diarization", "Story Detection & Diarization Defaults", "Detection basis/mode (Voice), silence gap threshold / speech detection length (3.0s), lead-in padding (0.5s), default expected speakers (auto), speaker estimate prompt (enabled), separation sensitivity (normal), and speaker sample preview length (3.0s)."),
         ("batch_processing", "Batch Processing Tool Options", "Batch tasks (transcribe, diarize, detect stories), output formats, and batch custom directory."),
         ("export_options", "Export Window: Formats & Content Options", "Export formats (TXT, DOCX, Media enabled; SRT, VTT disabled) and content options (speakers, timestamps, languages)."),
@@ -493,6 +494,24 @@ class PreferencesResetMixin:
                 lw["fade_out_spin"].setValue(1.0)
             if "fade_curve_combo" in lw and lw["fade_curve_combo"]:
                 lw["fade_curve_combo"].setCurrentData("linear")
+
+        # 8c. External Audio & Video Editors / REAPER Companion
+        if "reaper_companion" in selected_set or "external_editors" in selected_set or "daw_wav_clipboard" in selected_set:
+            self.settings_store.setValue("reaper_auto_sidecar", "true")
+            self.settings_store.setValue("reaper_color_items", "true")
+            self.settings_store.setValue("reaper_marker_style", "speakers")
+            self.settings_store.setValue("reaper_include_word_markers", "false")
+            self.settings_store.setValue("daw_wav_clipboard", "false")
+            if "reaper_auto_sidecar_chk" in lw and lw["reaper_auto_sidecar_chk"]:
+                lw["reaper_auto_sidecar_chk"].setChecked(True)
+            if "reaper_color_items_chk" in lw and lw["reaper_color_items_chk"]:
+                lw["reaper_color_items_chk"].setChecked(True)
+            if "reaper_marker_style_combo" in lw and lw["reaper_marker_style_combo"]:
+                idx_rms = lw["reaper_marker_style_combo"].findData("speakers")
+                if idx_rms >= 0:
+                    lw["reaper_marker_style_combo"].setCurrentIndex(idx_rms)
+            if "daw_wav_clipboard_chk" in lw and lw["daw_wav_clipboard_chk"]:
+                lw["daw_wav_clipboard_chk"].setChecked(False)
 
         # 9. Story Detection & Diarization
         if "detection_diarization" in selected_set:

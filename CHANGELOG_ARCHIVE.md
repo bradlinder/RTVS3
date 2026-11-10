@@ -1,3 +1,25 @@
+## v3.9.91-beta
+- **Universal Esc Selection Clearance & Keyboard Shortcut Documentation Alignment (timeline_widgets.py, ui_menus.py, story_widgets.py, transcript_editor.py, shortcuts/schema.py, user_guide_dialog.py)**:
+  - **Universal Esc Selection Clearance (timeline_widgets.py, ui_menus.py, story_widgets.py, transcript_editor.py)**: Added dedicated TimelineCanvas.clear_selection_range() and wired the Esc key across the timeline canvas, story sidebar list, transcript editor, and global Edit > Deselect All menu action to immediately clear uncommitted drag selection ranges identically to the right-click context menu.
+  - **Shortcuts Registry & Preferences Integration (shortcuts/schema.py)**: Registered deselect_all ('Deselect All / Clear Selection', default Esc) in SHORTCUT_DEFINITIONS under Story & Segment Editing, enabling searchability in Help > Keyboard Shortcuts Reference (F1) and user customization in Preferences > Keyboard Shortcuts (F8).
+  - **In-App User Guide Alignment (user_guide_dialog.py)**: Synchronized keyboard shortcuts documentation in the in-app user guide viewer with actual application bindings—removed phantom Stop (Esc) entry, added Seek to Start (Home) and Seek to End (End), corrected Auto-Detect Stories (Ctrl+Shift+A), Detect Speakers (Ctrl+D), and Toggle Edit Mode (F2), and updated jump distances to 5s/15s/30s defaults.
+
+## v3.9.90-beta
+- **Audio Fades State Synchronization & Suppression Fix (story_model.py, story_crud_mixin.py, story_fades_dialog.py, diagnostic_editor_tests.py)**:
+  - **Honor Audio Fades Enabled Setting on New Stories (story_model.py)**: Corrected an issue where newly created stories were unconditionally assigned a default `1.0s` fade out duration even when audio fades were disabled. `Story.__init__` now checks `enable_audio_fades` from application settings, ensuring new stories default to `0.0s` fades whenever audio fades are turned off.
+  - **Suppress Fade Badges When Audio Fades Disabled (story_crud_mixin.py)**: Guarded the sidebar story list badge display by `enable_audio_fades`. When audio fades are disabled, `[Fade Out: 1.0s]` badges are suppressed completely from list items and tooltips indicate `Audio Fades: Disabled`.
+  - **Interactive Dialog State Linking (story_fades_dialog.py)**: Linked the enable/disable checkbox directly to the fade duration and profile form group, providing immediate visual feedback when audio fades are toggled.
+  - **Regression Verification (diagnostic_editor_tests.py)**: Added automated test coverage verifying that new stories created with audio fades disabled have `0.0s` fades and that list items suppress fade badges until audio fades are explicitly enabled.
+
+## v3.9.89-beta
+- **Story Duration Visibility, Edit Form Placement & Timeline Selection Indicators (core_utils.py, prs_shared.py, story_crud_mixin.py, timeline_widgets.py, timeline_snap.py, ui_layout.py, diagnostic_editor_tests.py)**:
+  - **Story Edit Form Duration Field (1.1)**: Added a dedicated read-only `Duration:` field (`self.duration_input`) placed directly below `Range:` in the story edit form. Dynamically displays story duration in clock format (`02:30.5`) on single selection, aggregate duration on multi-selection, and clears when unselected (`ui_layout.py`, `story_crud_mixin.py`, `processing.py`).
+  - **Single-Line Story List & Audio Fade Badge Polish (1.1)**: Maintained clean single-line story list items without vertical clutter, and updated fade badge language from cryptic abbreviations (`[Out:1.0s]`) to explicit wording (`[Fade In: 0.5s | Fade Out: 1.0s]`).
+  - **Timeline Story Body Hover Readout (1.2)**: Hovering over the main body of a story block on the waveform canvas displays a clean tooltip and status bar readout showing Story Title, time range, and clock duration (`timeline_widgets.py`, `timeline_snap.py`).
+  - **Live Selection Drag & Hover Duration Indicator (1.3)**: Real-time duration clock readout in tooltip and status bar while drawing or resizing selection regions, or dragging story boundary handles on the timeline.
+  - **Multi-Selection Total Duration Header Counter (1.4)**: Real-time aggregate duration readout in the Stories sidebar header (`stories_header`) reflecting current single- or multi-story selection (`Stories (1) — [02:30.5]`, `Stories (3) — [07:14.2]`). Supports music terminology (`Songs`) and Spanish localization (`Historias`, `Canciones`).
+  - **Diagnostic Regression Suite (1.5)**: Automated unit and headless assertions for duration string formatting, edit form field updates, single-line list rendering, timeline hover tooltips, and live drag indicators in `diagnostic_editor_tests.py`.
+
 # Changelog Archive (Historical Releases: v1.1 – v3.8.9-beta.19)
 
 ## v3.9.88-beta

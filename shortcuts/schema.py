@@ -582,6 +582,16 @@ SHORTCUT_DEFINITIONS: List[ShortcutDef] = [
         attr_name="id3_editor_action",
     ),
     ShortcutDef(
+        action_id="copy_selection_as_audio_clip",
+        name="Copy Selection as Audio Clip",
+        category="Story & Segment Editing",
+        default_seq="Ctrl+Shift+C",
+        default_mac="Meta+Shift+C",
+        description="Render a temporary WAV audio clip of the active selection and copy it to the OS clipboard (CF_HDROP) for non-REAPER DAWs",
+        attr_name="copy_audio_clip_action",
+        is_custom_event=True,
+    ),
+    ShortcutDef(
         action_id="deselect_all",
         name="Deselect All / Clear Selection",
         category="Story & Segment Editing",

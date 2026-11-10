@@ -12,7 +12,6 @@ Contains:
 
 from __future__ import annotations
 
-import bisect
 from bisect import bisect_left, bisect_right
 import math
 from pathlib import Path
@@ -762,35 +761,41 @@ class TimelineCanvas(QWidget):
         show_selection_context_menu(self, global_pos)
 
     def keyPressEvent(self, event):
-        if event.matches(QKeySequence.StandardKey.Undo):
-            main_win = self.window()
-            if hasattr(main_win, "undo_stack"):
-                main_win.undo_stack.undo()
+        main_win = self.window()
+        if event.matches(QKeySequence.StandardKey.Copy):
+            tview = getattr(main_win, "transcript_view", None)
+            is_shift = bool(event.modifiers() & Qt.KeyboardModifier.ShiftModifier)
+            fn_name = "copy_selection_as_daw_wav" if is_shift else "copy_highlighted_selection"
+            fn = getattr(tview, fn_name, None)
+            if fn and fn():
                 event.accept()
                 return
 
-        if event.matches(QKeySequence.StandardKey.Redo):
-            main_win = self.window()
-            if hasattr(main_win, "undo_stack"):
-                main_win.undo_stack.redo()
+        undo_stack = getattr(main_win, "undo_stack", None)
+        if undo_stack:
+            if event.matches(QKeySequence.StandardKey.Undo):
+                undo_stack.undo()
+                event.accept()
+                return
+            if event.matches(QKeySequence.StandardKey.Redo):
+                undo_stack.redo()
                 event.accept()
                 return
 
         if event.key() in (Qt.Key.Key_Delete, Qt.Key.Key_Backspace):
-            main_win = self.window()
             # If there is a selected/highlighted story, delete it directly from the timeline
             if hasattr(main_win, "delete_selected_story") and getattr(main_win, "current_selected_story_indices", None):
                 main_win.delete_selected_story()
                 event.accept()
                 return
-            elif self.selected_story_indices and hasattr(main_win, "delete_selected_story"):
+            if self.selected_story_indices and hasattr(main_win, "delete_selected_story"):
                 if hasattr(main_win, "apply_story_selection_indices"):
                     main_win.apply_story_selection_indices(self.selected_story_indices, seek=False)
                 main_win.delete_selected_story()
                 event.accept()
                 return
             # If there is an active timeline drag selection range without a selected story, clear it
-            elif self.selection_start is not None or self.selection_end is not None:
+            if self.selection_start is not None or self.selection_end is not None:
                 self.selection_start = None
                 self.selection_end = None
                 self.selectionRangeChanged.emit(None, None)
@@ -799,7 +804,6 @@ class TimelineCanvas(QWidget):
                 return
 
         if event.key() == Qt.Key.Key_Escape:
-            main_win = self.window()
             cleared = False
             if self.selection_start is not None or self.selection_end is not None:
                 self.clear_selection_range()
@@ -973,7 +977,6 @@ class TimelineWidget(QWidget):
     def update_scrollbar_from_canvas(self, offset):
         if self.is_internal_scrollbar_update:
             return
-
         self.is_internal_scrollbar_update = True
         try:
             self.scrollbar.setValue(int(offset * 1000))
@@ -983,7 +986,6 @@ class TimelineWidget(QWidget):
     def update_canvas_from_scrollbar(self, val):
         if self.is_internal_scrollbar_update:
             return
-
         self.is_internal_scrollbar_update = True
         try:
             self.canvas.scroll_offset = val / 1000.0
@@ -994,5 +996,4 @@ class TimelineWidget(QWidget):
 
     def __getattr__(self, name):
         return getattr(self.canvas, name)
-
 

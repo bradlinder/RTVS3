@@ -27,11 +27,13 @@ from PySide6.QtWidgets import (
     QDialogButtonBox,
     QHBoxLayout,
     QLabel,
+    QLineEdit,
     QListWidget,
     QListWidgetItem,
     QPushButton,
     QSplitter,
     QTextBrowser,
+    QTextEdit,
     QVBoxLayout,
     QWidget,
 )
@@ -132,6 +134,11 @@ class UserGuideDialog(QDialog):
             "path": "docs/guides/video_shows_and_youtube_publishing.md",
         },
         {
+            "id": "reaper_bridge",
+            "title": "REAPER & DAW Live Bridge",
+            "path": "docs/guides/reaper_and_daw_integration.md",
+        },
+        {
             "id": "export_formats",
             "title": "Export Formats & DAW Integration",
             "path": "docs/guides/export_formats.md",
@@ -193,6 +200,8 @@ class UserGuideDialog(QDialog):
         self.current_zoom = 0
         self.current_guide_content = ""
         self.current_guide_title = ""
+        self._search_matches: List[QTextCursor] = []
+        self._search_match_index: int = -1
 
         self._setup_ui()
         self._load_guide_by_id(initial_guide_id)
@@ -237,6 +246,40 @@ class UserGuideDialog(QDialog):
         header_bar.addWidget(self.browser_btn)
 
         main_layout.addLayout(header_bar)
+
+        # Search Bar Strip (Filter & In-Document Find)
+        search_bar = QHBoxLayout()
+        search_bar.setContentsMargins(0, 0, 0, 0)
+        search_bar.setSpacing(6)
+
+        search_lbl = QLabel("Search:")
+        search_lbl_font = search_lbl.font()
+        search_lbl_font.setBold(True)
+        search_lbl.setFont(search_lbl_font)
+        search_bar.addWidget(search_lbl)
+
+        self.search_input = QLineEdit(self)
+        self.search_input.setPlaceholderText("Search documentation (Ctrl+F)...")
+        self.search_input.setClearButtonEnabled(True)
+        self.search_input.textChanged.connect(self._on_search_query_changed)
+        self.search_input.returnPressed.connect(self._find_next_match)
+        search_bar.addWidget(self.search_input, 1)
+
+        self.match_count_label = QLabel("")
+        self.match_count_label.setStyleSheet("color: #94a3b8; font-size: 12px; padding: 0 4px;")
+        search_bar.addWidget(self.match_count_label)
+
+        self.find_prev_btn = QPushButton("Prev")
+        self.find_prev_btn.setToolTip("Previous match (Shift+Enter or Shift+F3)")
+        self.find_prev_btn.clicked.connect(self._find_prev_match)
+        search_bar.addWidget(self.find_prev_btn)
+
+        self.find_next_btn = QPushButton("Next")
+        self.find_next_btn.setToolTip("Next match (Enter or F3)")
+        self.find_next_btn.clicked.connect(self._find_next_match)
+        search_bar.addWidget(self.find_next_btn)
+
+        main_layout.addLayout(search_bar)
 
         # Splitter: Topics Sidebar + Content Browser
         splitter = QSplitter(Qt.Orientation.Horizontal, self)
@@ -303,6 +346,21 @@ class UserGuideDialog(QDialog):
         zoom_reset_act.triggered.connect(self._reset_zoom)
         self.addAction(zoom_reset_act)
 
+        find_act = QAction(self)
+        find_act.setShortcut(QKeySequence.StandardKey.Find)
+        find_act.triggered.connect(self._focus_search)
+        self.addAction(find_act)
+
+        find_next_act = QAction(self)
+        find_next_act.setShortcut(QKeySequence("F3"))
+        find_next_act.triggered.connect(self._find_next_match)
+        self.addAction(find_next_act)
+
+        find_prev_act = QAction(self)
+        find_prev_act.setShortcut(QKeySequence("Shift+F3"))
+        find_prev_act.triggered.connect(self._find_prev_match)
+        self.addAction(find_prev_act)
+
     def _apply_browser_stylesheet(self):
         is_dark = (self.theme_mode == "dark")
         bg_color = "#1e293b" if is_dark else "#ffffff"
@@ -328,6 +386,16 @@ class UserGuideDialog(QDialog):
                 background-color: #2563eb;
                 color: #ffffff;
                 font-weight: bold;
+            }}
+            QLineEdit {{
+                background-color: {sidebar_bg};
+                color: {text_color};
+                border: 1px solid {border_color};
+                border-radius: 4px;
+                padding: 4px 8px;
+            }}
+            QLineEdit:focus {{
+                border: 1px solid #2563eb;
             }}
             QTextBrowser {{
                 background-color: {bg_color};
@@ -411,11 +479,226 @@ class UserGuideDialog(QDialog):
                 self.topics_list.blockSignals(False)
                 break
 
+        # Re-apply active search query to the newly loaded topic
+        if hasattr(self, "search_input") and self.search_input.text().strip():
+            query = self.search_input.text().strip()
+            other_cnt = self._update_cross_topic_badges(query)
+            self._execute_in_doc_search(query, other_cnt)
+
     def _on_topic_selected(self, row: int):
         if row < 0 or row >= len(self.GUIDE_CATALOG):
             return
         guide_id = self.GUIDE_CATALOG[row]["id"]
         self._load_guide_by_id(guide_id)
+
+    def _focus_search(self):
+        self.search_input.setFocus()
+        self.search_input.selectAll()
+
+    def _get_guide_raw_text(self, guide_id: str) -> str:
+        if guide_id == "shortcuts":
+            return self._build_dynamic_shortcuts_guide()
+        guide = next((g for g in self.GUIDE_CATALOG if g["id"] == guide_id), None)
+        if not guide:
+            return ""
+        target_name = Path(guide["path"]).name
+        candidates = [
+            self.docs_dir / "guides" / target_name,
+            self.docs_dir / guide["path"],
+            self.root_dir / guide["path"],
+            self.docs_dir / target_name,
+        ]
+        file_path = next((c for c in candidates if c.is_file()), None)
+        if file_path:
+            try:
+                return file_path.read_text(encoding="utf-8")
+            except Exception:
+                pass
+        embedded = get_embedded_guide(guide_id)
+        return embedded or ""
+
+    def _update_cross_topic_badges(self, query: str) -> int:
+        q_lower = query.lower()
+        other_matches = 0
+        total_matches = 0
+        cur_row = self.topics_list.currentRow()
+        cur_id = self.GUIDE_CATALOG[cur_row]["id"] if 0 <= cur_row < len(self.GUIDE_CATALOG) else ""
+        first_match_row = None
+
+        for row in range(self.topics_list.count()):
+            item = self.topics_list.item(row)
+            g_id = item.data(Qt.ItemDataRole.UserRole)
+            guide = next((g for g in self.GUIDE_CATALOG if g["id"] == g_id), None)
+            base_title = guide["title"] if guide else ""
+            if not q_lower:
+                item.setText(base_title)
+            else:
+                raw_txt = self._get_guide_raw_text(g_id)
+                cnt = raw_txt.lower().count(q_lower)
+                total_matches += cnt
+                if cnt > 0:
+                    item.setText(f"{base_title} ({cnt})")
+                    if first_match_row is None:
+                        first_match_row = row
+                    if g_id != cur_id:
+                        other_matches += cnt
+                else:
+                    item.setText(base_title)
+
+        self._total_guide_matches = total_matches
+
+        # Universal search: if current topic has 0 matches, auto-switch to first topic with matches
+        if q_lower and total_matches > 0 and (total_matches - other_matches) == 0:
+            if first_match_row is not None and first_match_row != cur_row:
+                self.topics_list.blockSignals(True)
+                self.topics_list.setCurrentRow(first_match_row)
+                self.topics_list.blockSignals(False)
+                new_id = self.GUIDE_CATALOG[first_match_row]["id"]
+                self._load_guide_by_id(new_id)
+                return total_matches - self._get_guide_raw_text(new_id).lower().count(q_lower)
+
+        return other_matches
+
+    def _on_search_query_changed(self, text: str):
+        query = text.strip()
+        other_cnt = self._update_cross_topic_badges(query)
+        self._execute_in_doc_search(query, other_cnt)
+
+    def _execute_in_doc_search(self, query: str, other_matches_count: int = 0):
+        if not query:
+            self._search_matches = []
+            self._search_match_index = -1
+            self.browser.setExtraSelections([])
+            self.match_count_label.setText("")
+            return
+
+        doc = self.browser.document()
+        if not doc:
+            return
+
+        matches: List[QTextCursor] = []
+        cursor = QTextCursor(doc)
+        while not cursor.isNull() and not cursor.atEnd():
+            cursor = doc.find(query, cursor)
+            if not cursor.isNull():
+                matches.append(QTextCursor(cursor))
+
+        self._search_matches = matches
+        if matches:
+            target_idx = getattr(self, "_target_match_index", None)
+            if target_idx == -1:
+                self._search_match_index = len(matches) - 1
+            elif isinstance(target_idx, int) and 0 <= target_idx < len(matches):
+                self._search_match_index = target_idx
+            else:
+                self._search_match_index = 0
+            self._target_match_index = None
+            self._highlight_matches(scroll=True)
+            self._update_match_label()
+        else:
+            self._search_match_index = -1
+            self._target_match_index = None
+            self.browser.setExtraSelections([])
+            total_across = getattr(self, "_total_guide_matches", 0)
+            if total_across > 0:
+                self.match_count_label.setText(f"0 in section ({total_across} across guide)")
+            else:
+                self.match_count_label.setText("No matches")
+
+    def _update_match_label(self):
+        if not self._search_matches or self._search_match_index < 0:
+            return
+        total_across = getattr(self, "_total_guide_matches", len(self._search_matches))
+        if total_across > len(self._search_matches):
+            self.match_count_label.setText(
+                f"{self._search_match_index + 1} / {len(self._search_matches)} in section ({total_across} across guide)"
+            )
+        else:
+            self.match_count_label.setText(f"{self._search_match_index + 1} / {len(self._search_matches)}")
+
+    def _highlight_matches(self, scroll: bool = True):
+        if not self._search_matches or self._search_match_index < 0:
+            self.browser.setExtraSelections([])
+            return
+
+        is_dark = (self.theme_mode == "dark")
+        bg_match = QColor("#854d0e") if is_dark else QColor("#fef08a")
+        bg_current = QColor("#ca8a04") if is_dark else QColor("#f59e0b")
+        fg_current = QColor("#ffffff") if is_dark else QColor("#000000")
+
+        selections: List[QTextEdit.ExtraSelection] = []
+        for idx, cur in enumerate(self._search_matches):
+            sel = QTextEdit.ExtraSelection()
+            sel.cursor = cur
+            if idx == self._search_match_index:
+                sel.format.setBackground(bg_current)
+                sel.format.setForeground(fg_current)
+                sel.format.setFontWeight(QFont.Weight.Bold)
+            else:
+                sel.format.setBackground(bg_match)
+            selections.append(sel)
+
+        self.browser.setExtraSelections(selections)
+
+        if scroll and 0 <= self._search_match_index < len(self._search_matches):
+            cur = self._search_matches[self._search_match_index]
+            self.browser.setTextCursor(cur)
+            self.browser.ensureCursorVisible()
+
+    def _find_next_match(self):
+        query = self.search_input.text().strip()
+        if not query:
+            return
+
+        cur_row = self.topics_list.currentRow()
+        if self._search_matches and self._search_match_index < len(self._search_matches) - 1:
+            self._search_match_index += 1
+            self._highlight_matches(scroll=True)
+            self._update_match_label()
+            return
+
+        # Advance cyclically to the next topic containing matches
+        num_topics = self.topics_list.count()
+        for step in range(1, num_topics + 1):
+            next_row = (cur_row + step) % num_topics
+            g_id = self.GUIDE_CATALOG[next_row]["id"]
+            cnt = self._get_guide_raw_text(g_id).lower().count(query.lower())
+            if cnt > 0:
+                self._target_match_index = 0
+                self.topics_list.setCurrentRow(next_row)
+                return
+
+    def _find_prev_match(self):
+        query = self.search_input.text().strip()
+        if not query:
+            return
+
+        cur_row = self.topics_list.currentRow()
+        if self._search_matches and self._search_match_index > 0:
+            self._search_match_index -= 1
+            self._highlight_matches(scroll=True)
+            self._update_match_label()
+            return
+
+        # Move backwards cyclically to the previous topic containing matches
+        num_topics = self.topics_list.count()
+        for step in range(1, num_topics + 1):
+            prev_row = (cur_row - step) % num_topics
+            g_id = self.GUIDE_CATALOG[prev_row]["id"]
+            cnt = self._get_guide_raw_text(g_id).lower().count(query.lower())
+            if cnt > 0:
+                self._target_match_index = -1
+                self.topics_list.setCurrentRow(prev_row)
+                return
+
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key.Key_Escape:
+            if hasattr(self, "search_input") and self.search_input.text():
+                self.search_input.clear()
+                self.browser.setFocus()
+                event.accept()
+                return
+        super().keyPressEvent(event)
 
     def _zoom_in(self):
         self.browser.zoomIn(1)
