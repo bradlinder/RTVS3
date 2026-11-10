@@ -52,62 +52,63 @@ TABLE OF CONTENTS & STATUS OVERVIEW
    [x] 2.6 Native REAPER (.rpp) Timeline Export Options: Added user-configurable options in the Timeline & DAW Interchange export dialog for embedding transcript Item Notes (`<NOTES`), Take Markers (`TKM`), and speaker color coding (`COLOR`).
    [x] 2.7 Diagnostic Regression Verification: All REAPER, Export, User Guide, and Preferences diagnostic test benches passing 100%.
 
-3. Deferred Milestone: Domain Separation & Purpose-Driven Monolithic File Modularization [ ] [DEFERRED / LOWER PRIORITY]
+3. Upcoming Milestone: Cosmetic Vocabulary Setting ("Stories" / "Clips" / "Segments" / "Songs") (`preferences_tabs_core.py`, `preferences_dialog.py`, `story_crud_mixin.py`, `ui_menus.py`, `timeline_context_menus.py`, `export/dialog.py`, `test_runner.py`) [ ] [PLANNED] [NOT STARTED]
+   [ ] 3.1 Preferences Vocabulary Selector: Add a user-configurable Cosmetic Vocabulary dropdown in Preferences (`"Auto (Stories / Songs by Detection Mode)"`, `"Stories"`, `"Clips"`, `"Segments"`, `"Songs"`) persisted to `QSettings` (`ui_vocabulary_mode`).
+   [ ] 3.2 Centralized Vocabulary Resolver Helper: Create a unified terminology helper returning singular/plural localized UI nouns (`Story`/`Stories`, `Clip`/`Clips`, `Segment`/`Segments`, `Song`/`Songs` + Spanish equivalents) without altering underlying data schemas or behavioral logic.
+   [ ] 3.3 Dynamic UI Relabeling Across Sidebar, Menus & Export: Wire the vocabulary resolver into the right-hand sidebar header, CRUD buttons (`Add Story/Clip`, `Set Start/End`, `Metadata...`), timeline/transcript context menus, and `UnifiedExportDialog` scope labels.
+   [ ] 3.4 Diagnostic Regression Tests: Automated unit and headless assertions verifying live UI label switching across all vocabulary options and settings reset parity.
+
+4. Deferred Milestone: Domain Separation & Purpose-Driven Monolithic File Modularization [ ] [DEFERRED / LOWER PRIORITY]
    - *Purpose*: Systematic architectural refactoring prioritizing **file purpose, single responsibility, and domain cohesion** alongside line count reduction (<800 lines target, 1,000 lines ceiling), systematically decoupling grandfathered multi-domain monoliths into focused submodules with 100% backward-compatible facade re-exports.
-   [ ] 3.1 Priority 1: Imminent Ceiling Breaches & High-Payoff Domain Decoupling (<1000 lines, high urgency/clean boundaries):
+   [ ] 4.1 Priority 1: Imminent Ceiling Breaches & High-Payoff Domain Decoupling (<1000 lines, high urgency/clean boundaries):
      * `project_lifecycle.py` (992 lines) — Imminent ceiling breach (<10 lines from 1,000 ceiling). Decouple project session dirty-state tracking from disk gzip compression and waveform peak caching (`project_state.py`, `project_cache.py`).
      * `model_management.py` (989 lines) — Decouple Hugging Face / ONNX weight verification and SHA256 integrity checks from the GUI download progress worker.
      * `audio_normalization.py` (541 lines) — Triple-domain sprawl resolution: decouple loudness DSP normalization math (`normalization_engine.py`) from background `QThread` workers (`normalization_worker.py`) and data parameters.
      * `timeline_widgets.py` (974 lines) — Decouple viewport waveform canvas paint events and LOD rendering from mouse scrubbing and selection event handlers.
-   [ ] 3.2 Priority 2: Grandfathered Legacy Monoliths (>1,000 lines, wide caller blast radius):
+   [ ] 4.2 Priority 2: Grandfathered Legacy Monoliths (>1,000 lines, wide caller blast radius):
      * Incrementally decompose the 9 core legacy monoliths via AST blueprints and facade pattern: `plugins/wordpress/client.py` (1,887 lines), `media_batch.py` (1,848 lines), `prs_shared.py` (1,491 lines), `updater.py` (1,460 lines), `export/dialog.py` (1,441 lines), `processing.py` (1,216 lines), `ui_layout.py` (1,060 lines), `runtime_manager.py` (1,037 lines), `background_workers.py` (1,015 lines), and `voice_profile_dialog.py` (1,006 lines). [P7-01]
-   [ ] 3.3 Priority 3: Secondary Warning Zone & Worker/UI Decoupling (800–965 lines & multi-domain plugins):
+   [ ] 4.3 Priority 3: Secondary Warning Zone & Worker/UI Decoupling (800–965 lines & multi-domain plugins):
      * Headless ML & Engine Decoupling: Separate background worker loops from low-level model inference in `worker_diarization_engine.py` (902 lines) and `worker_asr_engines.py` (839 lines).
      * Pipeline & Presentation Decoupling: Modularize `export_story_pipeline.py` (964 lines), `translation.py` (923 lines), `transcript_editor.py` (862 lines), `transcript_story.py` (847 lines), `shortcuts/schema.py` (858 lines), and `ui_menus.py` (809 lines).
      * Worker Thread Decoupling from Dialogs: Extract `QThread` workers out of `plugin_dialogs.py` (447 lines), `speaker_dialogs.py` (782 lines), and `plugins/wordpress/wordpress_dialog.py` (886 lines).
      * Model & Export Tab Decoupling: Extract `ManageVoiceProfilesDialog` from `speaker_profiles.py` (630 lines), and separate Qt UI tabs from API publishing in `plugins/youtube/export_destination.py` (594 lines) and `plugins/wordpress/export_destination.py` (631 lines).
-   [ ] 3.4 Priority 4: Monolithic Test Suites & Packaging Tooling (>1,000 lines, dev-only):
+   [ ] 4.4 Priority 4: Monolithic Test Suites & Packaging Tooling (>1,000 lines, dev-only):
      * Split monolithic 1,000+ line test suites and installers into modular packages: `diagnostic_export_tests.py` (1,699 lines), `diagnostic_cloud_and_system_tests.py` (1,267 lines), `diagnostic_batch_tests.py` (1,067 lines), and `build_installer.py` (1,079 lines).
-   [x] 3.5 UI Typography Cleanliness: Remove unrequested emoji symbols and decorative checkmarks from buttons and comboboxes. [P6-06]
-   [x] 3.6 PDF Proportional Font Word-Wrap Accuracy: Refine Helvetica character width measurement tables in `export/pdf.py`. [P6-07]
-   [x] 3.7 Export Dialog Vestigial Cleanup: Clean orphaned preview set and restore `"timeline"` to fallback reorder list. [P6-09, P6-10]
-   [x] 3.8 Changelog Archive Roll: Prune older changelog entries into `CHANGELOG_ARCHIVE.md`. [P7-06]
+   [x] 4.5 UI Typography Cleanliness: Remove unrequested emoji symbols and decorative checkmarks from buttons and comboboxes. [P6-06]
+   [x] 4.6 PDF Proportional Font Word-Wrap Accuracy: Refine Helvetica character width measurement tables in `export/pdf.py`. [P6-07]
+   [x] 4.7 Export Dialog Vestigial Cleanup: Clean orphaned preview set and restore `"timeline"` to fallback reorder list. [P6-09, P6-10]
+   [x] 4.8 Changelog Archive Roll: Prune older changelog entries into `CHANGELOG_ARCHIVE.md`. [P7-06]
 
-4. Optional Future Milestone: Interactive Text-Based Media Assembly & Multi-Asset Ripple Editing Engine (`assembly/bin_model.py`, `assembly/clipboard.py`, `assembly/ripple_engine.py`, `transcript_editor.py`, `export/timeline.py`) [PLANNED for v4.2.0] [OPTIONAL] [NOT STARTED]
-   [ ] 4.1 Multi-Asset Project Container & Media Bin Submodule (`assembly/bin_model.py`, `project_lifecycle.py`)
-   [ ] 4.2 Dynamic Uncapped Tabbed Document Workspace (`assembly/tab_workspace.py`, `ui_layout.py`)
-   [ ] 4.3 Rich Media Clipboard Engine (`assembly/clipboard.py` — `application/x-rtvs-clip+json`)
-   [ ] 4.4 Non-Destructive Multi-Source Playout Engine (`assembly/playout_engine.py`)
-   [ ] 4.5 Text-Driven Audio/Video Ripple Cut Engine (`assembly/ripple_engine.py`)
-   [ ] 4.6 Paper-Cut Story Assembly Workflow (`assembly/paper_cut_mixin.py`)
-   [ ] 4.7 Document Revisions & Snapshot Version History (`assembly/revision_history.py`)
-   [ ] 4.8 Word-Level Timecode Sync, NLE Markers & Multi-Track DAW Timeline Export (`export/timeline.py`)
-   [ ] 4.9 Automated Diagnostic Test Suite (`test_runner.py`)
+5. Optional Future Milestone: Interactive Text-Based Media Assembly & Multi-Asset Ripple Editing Engine (`assembly/bin_model.py`, `assembly/clipboard.py`, `assembly/ripple_engine.py`, `transcript_editor.py`, `export/timeline.py`) [PLANNED for v4.2.0] [OPTIONAL] [NOT STARTED]
+   [ ] 5.1 Multi-Asset Project Container & Media Bin Submodule (`assembly/bin_model.py`, `project_lifecycle.py`)
+   [ ] 5.2 Dynamic Uncapped Tabbed Document Workspace (`assembly/tab_workspace.py`, `ui_layout.py`)
+   [ ] 5.3 Rich Media Clipboard Engine (`assembly/clipboard.py` — `application/x-rtvs-clip+json`)
+   [ ] 5.4 Non-Destructive Multi-Source Playout Engine (`assembly/playout_engine.py`)
+   [ ] 5.5 Text-Driven Audio/Video Ripple Cut Engine (`assembly/ripple_engine.py`)
+   [ ] 5.6 Paper-Cut Story Assembly Workflow (`assembly/paper_cut_mixin.py`)
+   [ ] 5.7 Document Revisions & Snapshot Version History (`assembly/revision_history.py`)
+   [ ] 5.8 Word-Level Timecode Sync, NLE Markers & Multi-Track DAW Timeline Export (`export/timeline.py`)
+   [ ] 5.9 Automated Diagnostic Test Suite (`test_runner.py`)
 
-5. Optional Future Milestone: Social Reel & Short Video Export Plugin (Instagram Reels, YouTube Shorts, TikTok) (`plugins/social_reel/`, `export_media_clipper.py`, `export_dialogs.py`) [PLANNED] [NOT STARTED]
-   [ ] 5.1 Social Reel Plugin Architecture & Manifest (`plugins/social_reel/plugin.py`, `plugins/social_reel/manifest.json`, `plugins/social_reel/export_destination.py`)
-   [ ] 5.2 Multi-Source Input & Template Image Configuration (`plugins/social_reel/reel_config.py`, `plugins/social_reel/reel_dialog.py`)
-   [ ] 5.3 9:16 Vertical Video Compositor & Audiogram Pipeline (`plugins/social_reel/reel_renderer.py`, `export_media_clipper.py`)
-   [ ] 5.4 Burned-in Subtitles & Platform Safe Zone Enforcement (`plugins/social_reel/reel_subtitles.py`)
-   [ ] 5.5 Unified Export Integration & Social Reel Diagnostic Tests (`export/dialog.py`, `test_runner.py`)
-
-6. Previous Release: Searchable/Sortable Glossary, Story Highlighting, Context Menus & Diagnostic Thread Safety (glossary_dialog.py, terminology.py, transcript_editor.py, diagnostic_dialog.py) [x] [COMPLETED in v3.9.91-beta]
-   [x] 6.1 Modular Glossary Dialog & Live Search: Extracted GlossaryDialog into glossary_dialog.py with real-time text filtering, 6 sorting modes, and 4-column data model (Match case).
-   [x] 6.2 Alternate Spellings & Two-Pass Engine: Comma-separated alternate spellings, transcript Add Selected Text as Alternate Spelling For..., and project-scoped single-word co-reference normalization.
-   [x] 6.3 Story Selection Transcript Highlighting & Smart Copy: Synchronized story overlays, Ctrl+C smart copy, universal Esc deselect, and context menu parity across timeline and transcript views.
-   [x] 6.4 Diagnostic Test Bench Threading & Clipboard Fix: Main-thread GUI test dispatch via BlockingQueuedConnection, Windows OleSetClipboard STA guards, and polished test titles.
-
-7. Previous Release: Castos WordPress Exporter Shortcode Cleanup (plugins/wordpress/client.py) [x] [COMPLETED in v3.9.87-beta]
-   [x] 7.1 Castos Exporter Optimization: Removed redundant legacy [ss_player] shortcode from WordPress Castos podcast episode payloads.
+6. Optional Future Milestone: Social Reel & Short Video Export Plugin (Instagram Reels, YouTube Shorts, TikTok) (`plugins/social_reel/`, `export_media_clipper.py`, `export_dialogs.py`) [PLANNED] [NOT STARTED]
+   [ ] 6.1 Social Reel Plugin Architecture & Manifest (`plugins/social_reel/plugin.py`, `plugins/social_reel/manifest.json`, `plugins/social_reel/export_destination.py`)
+   [ ] 6.2 Multi-Source Input & Template Image Configuration (`plugins/social_reel/reel_config.py`, `plugins/social_reel/reel_dialog.py`)
+   [ ] 6.3 9:16 Vertical Video Compositor & Audiogram Pipeline (`plugins/social_reel/reel_renderer.py`, `export_media_clipper.py`)
+   [ ] 6.4 Burned-in Subtitles & Platform Safe Zone Enforcement (`plugins/social_reel/reel_subtitles.py`)
+   [ ] 6.5 Unified Export Integration & Social Reel Diagnostic Tests (`export/dialog.py`, `test_runner.py`)
 
 ================================================================================
 DETAILED MILESTONE SPECIFICATIONS
 ================================================================================
 
-1. UPCOMING RELEASE: STORY DURATION VISIBILITY & TIMELINE SELECTION LENGTH INDICATORS:
-- Purpose: Provide immediate visual feedback on story length and selection duration in clock format (e.g. `[02:30.5]`), both on a dedicated subtitle line in the sidebar story list and upon timeline hover/selection drag.
-- Target Release: v3.9.89-beta (Planned)
-- Technical References: `story_crud_mixin.py`, `timeline_widgets.py`, `ui_layout.py`.
+1. IMMEDIATE PREDECESSOR RELEASE: SEARCHABLE/SORTABLE GLOSSARY, STORY HIGHLIGHTING, CONTEXT MENUS & DIAGNOSTIC THREAD SAFETY:
+- Purpose: Deliver the modular GlossaryDialog with real-time search and sorting, alternate spelling normalization, transcript story selection highlighting, smart copy, and main-thread test dispatch.
+- Target Release: v3.9.91-beta (Immediate Predecessor Release)
+- Technical References & Implementation Details:
+  * [x] Modular Glossary Dialog & Live Search: Extracted GlossaryDialog into glossary_dialog.py with real-time text filtering, 6 sorting modes, and 4-column data model (Match case).
+  * [x] Alternate Spellings & Two-Pass Engine: Comma-separated alternate spellings, transcript Add Selected Text as Alternate Spelling For..., and project-scoped single-word co-reference normalization.
+  * [x] Story Selection Transcript Highlighting & Smart Copy: Synchronized story overlays, Ctrl+C smart copy, universal Esc deselect, and context menu parity across timeline and transcript views.
+  * [x] Diagnostic Test Bench Threading & Clipboard Fix: Main-thread GUI test dispatch via BlockingQueuedConnection, Windows OleSetClipboard STA guards, and polished test titles.
 
 2. CURRENT RELEASE: REAPER DAW COMPANION BRIDGE & REASCRIPT TRANSCRIPT INTEGRATION:
 - Purpose: Two-way IPC sidecar bridge allowing RTVS3 transcript selections to be pasted directly into REAPER DAW timelines with take markers, speaker colors, and ReaImGui browser dock.
@@ -119,38 +120,25 @@ DETAILED MILESTONE SPECIFICATIONS
   * [x] Companion ReaScript Paste, Take Labeling & Item Notes: Pure-Lua JSON decoder, media take insertion at playhead, verbatim transcript notes.
   * [x] Take Markers: Speaker attribution and optional word cues directly on the timeline take.
   * [x] Dockable ReaImGui Transcript Viewer: Real-time search, story filtering, and one-click playhead insertion.
-  * [x] Preferences Integration & One-Click Installer: Preferences > Playback & Timeline controls and automated script installation to REAPER directory.
+  * [x] Preferences Integration & One-Click Installer: Preferences > External Audio & Video Editors controls and automated script installation to REAPER directory.
   * [x] Universal Text-to-WAV Clipboard Fallback: Temporary uncompressed WAV generation to OS clipboard (CF_HDROP) for non-REAPER DAWs.
 
-3. DEFERRED MILESTONE: DOMAIN SEPARATION & PURPOSE-DRIVEN MONOLITHIC FILE MODULARIZATION:
+3. UPCOMING MILESTONE: COSMETIC VOCABULARY SETTING ("STORIES" / "CLIPS" / "SEGMENTS" / "SONGS"):
+- Purpose: Allow users to customize how timeline story/clip regions are labeled across the UI ("Stories", "Clips", "Segments", "Songs", or automatic by detection mode) from Preferences without changing underlying behavior or data compatibility.
+- Target Release: v3.9.93-beta (Planned)
+- Technical References: `preferences_tabs_core.py`, `story_crud_mixin.py`, `ui_menus.py`, `timeline_context_menus.py`, `export/dialog.py`.
+
+4. DEFERRED MILESTONE: DOMAIN SEPARATION & PURPOSE-DRIVEN MONOLITHIC FILE MODULARIZATION:
 - Purpose: Systematic architectural refactoring prioritizing file purpose and single responsibility (<800 lines target, 1,000 lines ceiling).
 - Target Release: Deferred / Lower Priority
 - Technical References: `scripts/modular_audit.py`, `project_lifecycle.py`, `model_management.py`.
 
-4. OPTIONAL FUTURE MILESTONE: INTERACTIVE TEXT-BASED MEDIA ASSEMBLY & MULTI-ASSET RIPPLE EDITING ENGINE:
+5. OPTIONAL FUTURE MILESTONE: INTERACTIVE TEXT-BASED MEDIA ASSEMBLY & MULTI-ASSET RIPPLE EDITING ENGINE:
 - Purpose: Multi-document tabbed workspace allowing non-destructive audio/video assembly, text-based ripple cutting, and rich media clipboard interchange.
 - Target Release: v4.2.0 (Optional / Planned)
 - Technical References: Full architectural data models, `bin_model.py` schemas, and ripple playout engine specifications in `ARCHITECTURE.md` (Section 3).
 
-5. OPTIONAL FUTURE MILESTONE: SOCIAL REEL & SHORT VIDEO EXPORT PLUGIN:
+6. OPTIONAL FUTURE MILESTONE: SOCIAL REEL & SHORT VIDEO EXPORT PLUGIN:
 - Purpose: Vertical 9:16 video renderer with animated audiograms, platform safe-zone margin enforcement, and burned-in subtitles for social platforms.
 - Target Release: v4.3.0 (Optional / Planned)
 - Technical References: Subsystem architecture, plugin manifest, and FFmpeg filtergraph pipeline specifications in `ARCHITECTURE.md` (Section 6).
-
-6. CURRENT RELEASE: SEARCHABLE/SORTABLE GLOSSARY, STORY HIGHLIGHTING, CONTEXT MENUS & DIAGNOSTIC THREAD SAFETY:
-- Purpose: Deliver the modular GlossaryDialog with real-time search and sorting, alternate spelling normalization, transcript story selection highlighting, smart copy, and main-thread test dispatch.
-- Target Release: v3.9.88-beta (Current Release)
-- Technical References & Implementation Details:
-  * [x] Modular Glossary Dialog & Live Search: Extracted GlossaryDialog into glossary_dialog.py with real-time text filtering, 6 sorting modes, and 4-column data model (Match case).
-  * [x] Alternate Spellings & Two-Pass Engine: Comma-separated alternate spellings, transcript Add Selected Text as Alternate Spelling For..., and project-scoped single-word co-reference normalization.
-  * [x] Story Selection Transcript Highlighting & Smart Copy: Synchronized story overlays, Ctrl+C smart copy, universal Esc deselect, and context menu parity across timeline and transcript views.
-  * [x] Diagnostic Test Bench Threading & Clipboard Fix: Main-thread GUI test dispatch via BlockingQueuedConnection, Windows OleSetClipboard STA guards, and polished test titles.
-  * Release Logs: Documented in CHANGELOG.md under ## v3.9.88-beta.
-
-7. PREVIOUS RELEASE: CASTOS WORDPRESS EXPORTER SHORTCODE CLEANUP:
-- Purpose: Remove redundant legacy [ss_player] shortcodes from post content to allow Seriously Simple Podcasting to dynamically inject the rich Castos V2 player widget.
-- Target Release: v3.9.87-beta (Previous Release)
-- Technical References & Implementation Details:
-  * [x] Castos Exporter Optimization: Removed redundant legacy [ss_player] shortcode from WordPress Castos podcast episode payloads in plugins/wordpress/client.py.
-  * [x] Diagnostic Test Invariant: Updated diagnostic tests to verify podcast posts omit standard audio blocks and legacy player shortcodes.
-  * Release Logs: Documented in CHANGELOG.md under ## v3.9.87-beta.
