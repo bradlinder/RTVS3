@@ -850,6 +850,11 @@ class Plugin(BasePlugin):
         from plugins.wordpress.export_destination import WordPressExportDestination
         return [WordPressExportDestination(self)]
 
+    def get_file_open_actions(self) -> List[tuple[str, Callable]]:
+        return [
+            ("Open Existing WordPress Episode...", self.open_load_existing_episode_dialog),
+        ]
+
     def get_export_actions(self) -> List[tuple[str, Callable]]:
         def _open_export():
             if hasattr(self.app, "open_unified_export_dialog"):
@@ -858,7 +863,12 @@ class Plugin(BasePlugin):
                 self.open_publish_dialog(parent=self.app)
         return [
             ("Publish to WordPress...", _open_export),
+            ("Load Existing WordPress Episode...", self.open_load_existing_episode_dialog),
         ]
+
+    def open_load_existing_episode_dialog(self) -> None:
+        from plugins.wordpress.episode_updater import prompt_load_existing_wp_episode_dialog
+        prompt_load_existing_wp_episode_dialog(self.app, parent=self.app)
 
     def get_story_actions(self, story: Any = None) -> List[tuple[str, Callable]]:
         return [

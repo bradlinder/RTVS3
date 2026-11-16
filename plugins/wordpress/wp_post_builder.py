@@ -135,6 +135,13 @@ def build_wp_post_items(
             "youtube_use_story_time": bool(wp_meta.get("youtube_use_story_time", True)),
             "youtube_stop_at_end": bool(wp_meta.get("youtube_stop_at_end", False)),
             "youtube_placement": str(wp_meta.get("youtube_placement") or "top"),
+            "existing_post_url": str(wp_meta.get("existing_post_url") or ""),
+            "existing_post_id": wp_meta.get("existing_post_id"),
+            "existing_post_slug": str(wp_meta.get("existing_post_slug") or ""),
+            "existing_post_status": str(wp_meta.get("existing_post_status") or ""),
+            "existing_post_date": str(wp_meta.get("existing_post_date") or ""),
+            "replace_existing_audio": bool(wp_meta.get("replace_existing_audio", False)),
+            "excerpt_from_existing": bool(wp_meta.get("excerpt_from_existing", False)),
         }
         existing = existing_by_start.get((item["task_label"], item["start"])) or existing_by_start.get(item["start"])
         if existing:
@@ -183,6 +190,9 @@ def build_wp_post_items(
                 item["youtube_stop_at_end"] = bool(existing.get("youtube_stop_at_end", False))
             if "youtube_placement" in existing:
                 item["youtube_placement"] = str(existing.get("youtube_placement") or "top")
+            for k in ("existing_post_url", "existing_post_id", "existing_post_slug", "existing_post_status", "existing_post_date", "replace_existing_audio", "excerpt_from_existing"):
+                if k in existing:
+                    item[k] = existing[k]
         return item
 
     def build_full_item() -> Dict[str, Any]:
@@ -230,6 +240,13 @@ def build_wp_post_items(
             "youtube_use_story_time": bool(wp_meta.get("youtube_use_story_time", True)),
             "youtube_stop_at_end": bool(wp_meta.get("youtube_stop_at_end", False)),
             "youtube_placement": str(wp_meta.get("youtube_placement") or "top"),
+            "existing_post_url": str(wp_meta.get("existing_post_url") or ""),
+            "existing_post_id": wp_meta.get("existing_post_id"),
+            "existing_post_slug": str(wp_meta.get("existing_post_slug") or ""),
+            "existing_post_status": str(wp_meta.get("existing_post_status") or ""),
+            "existing_post_date": str(wp_meta.get("existing_post_date") or ""),
+            "replace_existing_audio": bool(wp_meta.get("replace_existing_audio", False)),
+            "excerpt_from_existing": bool(wp_meta.get("excerpt_from_existing", False)),
         }
         existing = existing_by_start.get("full")
         is_full_existing = bool(existing and (existing.get("task_label") == "Full Episode" or existing.get("start") is None))
@@ -272,6 +289,9 @@ def build_wp_post_items(
                     item["youtube_stop_at_end"] = bool(existing.get("youtube_stop_at_end", False))
                 if "youtube_placement" in existing:
                     item["youtube_placement"] = str(existing.get("youtube_placement") or "top")
+                for k in ("existing_post_url", "existing_post_id", "existing_post_slug", "existing_post_status", "existing_post_date", "replace_existing_audio", "excerpt_from_existing"):
+                    if k in existing:
+                        item[k] = existing[k]
             item["author_ids"] = list(existing.get("author_ids", item["author_ids"]))
             item["author_term_ids"] = list(existing.get("author_term_ids", item["author_term_ids"]))
             item["category_ids"] = list(existing.get("category_ids", item["category_ids"]))

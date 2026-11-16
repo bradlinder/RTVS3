@@ -20,6 +20,7 @@ This guide covers the core workflow of Radio & TV Segmenter: loading media, gene
 You can load media into RTVS3 in several ways:
 - **Drag-and-Drop**: Drag any supported audio or video file directly onto the timeline canvas or into the transcript area.
 - **File Menu**: Go to **File > Open Media...** (or press **Ctrl+O**).
+- **Existing WordPress / Podcast Episode**: Go to **File > Open Existing WordPress Episode...** to paste an older WordPress episode URL, automatically fetch its original publication date, title, and show-notes excerpt, and either download the episode's MP3 directly from WordPress or pair it with a local audio file on your computer.
 - **Recent Projects**: Go to **File > Recent Projects** to quickly reopen past files.
 
 ### Supported File Formats:
@@ -133,13 +134,28 @@ You can save your WordPress credentials in preferences so you only need to enter
 
 ---
 
-## 3. Opening WordPress Export in the Unified Export Center
+## 3. Opening WordPress Export & Choosing a Workflow Mode
 
-When your broadcast media has been segmented into stories, open the export panel:
-1. Press **Ctrl+E** (or go to **File > Export...**).
-2. In the **Export Destination** bar at the top, select the **WordPress Draft Post** radio button.
+When starting a backfill project from an older episode—or after segmenting a new broadcast—you can begin in two ways:
+
+- **Starting a Backfill Project from the File Menu (`File > Open Existing WordPress Episode...`)**:
+  1. Go to **File > Open Existing WordPress Episode...** at the top of the File menu (also available under **File > Publishing & Plugins**).
+  2. Paste an existing WordPress episode URL or a direct `.mp3` URL and click **Fetch Info** to preview its Post ID, original publication date, and detected MP3 enclosure.
+  3. Choose whether to **Download and load MP3 from WordPress episode / URL** or **Use local audio file from computer** (`Browse...`), then click **Load Episode**. RTVS3 loads the audio and pre-configures your project in **Update Existing Episode & Backfill Stories** mode with the episode's original date, title, authors, categories, and preserved excerpt.
+- **Opening the WordPress Export Panel (`Ctrl+E` / `File > Export...`)**:
+  1. Press **Ctrl+E** (or go to **File > Export...**).
+  2. In the **Export Destination** bar at the top, select **WordPress Draft Post**.
 
 ![WordPress Content Tab](../images/wordpress_export_content_tab.png)
+
+### Choosing Workflow Mode & Publication Date:
+At the top of **WordPress Post Configuration**, select a **Workflow Mode**:
+- **Create New Episode & Stories (Default)**: Creates new WordPress posts (defaulting to **Draft** status) for your episode and/or selected stories.
+- **Update Existing Episode & Backfill Stories**: Updates an existing episode page in-place by URL without changing its permalink slug, Post ID (`<guid>`), or **Published** status; preserves its existing MP3 file and Seriously Simple Podcasting (Castos) RSS feed metadata (`Replace existing Full Episode MP3 file and Seriously Simple Podcasting metadata` unchecked by default); moves any existing page text into the WordPress **Excerpt** field (preserving podcast show notes and archive teasers); replaces the page body with the formatted transcript and linked story index; and creates backdated **Draft** posts with segmented MP3 clips for each individual story. Keep **Include audio files for new Story clips (existing Full Episode MP3 preserved)** checked on the **Media** tab so the new Story posts receive audio players without re-uploading the Full Episode MP3.
+
+In **both modes**, use the shared scheduling & status bar:
+- **Publication Date**: Enter a custom date/time (`YYYY-MM-DD` or `YYYY-MM-DD HH:MM`) to apply to the Full Episode and all Stories in the export, or leave blank to use the current date and time. In Update mode, this auto-fills with the fetched episode's original publication date.
+- **Full Episode / Stories Status**: Choose `Draft` or `Published` independently for the Full Episode (defaults to **Published (Keep Live)** in Update mode) and Story posts (defaults to **Draft**). When a live Full Episode links to draft stories in its *Stories in this Episode* Table of Contents, RTVS3 automatically assigns clean story slugs and canonical `{site_url}/{slug}/` links instead of temporary `?p=` draft preview URLs.
 
 ### Choosing Export Scope:
 In the **Export Scope** dropdown, choose which posts you want to generate:
@@ -166,7 +182,7 @@ Configure each post across the 4 editor tabs:
 ![WordPress Authors & Taxonomy Tab](../images/wordpress_export_taxonomy_tab.png)
 
 - **Authors**: Search, filter, and select registered WordPress authors to assign bylines.
-- **Categories**: Search, filter, and assign one or more WordPress categories (e.g., *News*, *Interviews*, *Local*).
+- **Categories**: Search, filter, and assign one or more WordPress categories (e.g., *News*, *Interviews*, *Local*). When editing a Story, check **Apply to all stories (excludes Full Episode)** to copy your selected Story categories across every Story without altering the Full Episode's categories.
 - **Tags**: Enter comma-separated tag keywords.
 
 ### Tab 3: Media
@@ -209,12 +225,12 @@ In the **Posts to Export:** list, compact prefix tags appear immediately after t
 
 ---
 
-## 6. Uploading Drafts to WordPress
+## 6. Uploading Drafts or Updating Existing Episodes on WordPress
 
-Click **Export to WordPress Drafts...** at the bottom of the dialog:
-- RTVS3 authenticates via the WordPress REST API and creates **Draft** posts on your WordPress site.
-- Posts are created in draft status so you or your editorial team can review and preview them before publishing them live to the public.
-- When upload completes, a clickable link takes you directly to the WordPress post editor.
+Click **Export to WordPress Drafts...** (or **Update Episode & Export Story Drafts...** in Update mode) at the bottom of the dialog:
+- In **Create New Episode & Stories** mode, RTVS3 authenticates via the WordPress REST API and creates **Draft** posts (or uses your selected status and optional **Publication Date**) so your editorial team can review them before publishing.
+- In **Update Existing Episode & Backfill Stories** mode, RTVS3 updates the existing Full Episode post in place—keeping its original URL, **Published** status, MP3 file, and Seriously Simple Podcasting feed metadata untouched while moving original page text into the **Excerpt**—and creates backdated Story drafts with their own segmented MP3 cuts and transcripts.
+- When upload completes, the summary lists every created or updated Post ID, status, and link.
 """,
     "youtube": """# YouTube Features & Chapter Generation Guide
 

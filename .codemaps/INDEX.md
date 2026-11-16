@@ -1,15 +1,15 @@
 # Repository Symbol Index & API Map
 
-> Generated: 2026-11-10 11:03:19 | Total Files: 164
+> Generated: 2026-11-16 12:58:06 | Total Files: 165
 > Use `python scripts/generate_symbol_index.py --outline <file>` for exact line numbers.
 
 ## Modules Overview
 
 | Module | Lines | Summary | Primary Classes / Functions |
 | :--- | :---: | :--- | :--- |
-| `RadioTVSegmenter.py` | 664 | Radio & TV Segmenter — v3.9.95-beta | `MainWindow`, `main()` |
+| `RadioTVSegmenter.py` | 664 | Radio & TV Segmenter — v3.9.96-beta | `MainWindow`, `main()` |
 | `audio_normalization.py` | 541 | Radio & TV Story Segmenter — Audio Loudness Probing & Nor... | `LoudnessReport`, `AudioLoudnessProbeWorker`, `parse_ebur128_summary()`, `probe_media_duration_seconds()` *(+3 more)* |
-| `background_workers.py` | 1021 | Radio & TV Story Segmenter — Background Worker Threads & ... | `StoryAutoDetectWorker`, `WaveformWorker`, `VideoThumbnailWorker`, `get_waveform_peak_cache_path()` *(+6 more)* |
+| `background_workers.py` | 1033 | Radio & TV Story Segmenter — Background Worker Threads & ... | `StoryAutoDetectWorker`, `WaveformWorker`, `VideoThumbnailWorker`, `get_waveform_peak_cache_path()` *(+6 more)* |
 | `backup_manager.py` | 622 | Unified State Serialization, Local, and Google Drive Clou... | `compute_data_checksum()`, `serialize_preferences()`, `serialize_keyboard_shortcuts()`, `serialize_glossary()` *(+7 more)* |
 | `batch_dialog.py` | 702 | Radio & TV Story Segmenter — Batch Processing Dialog & Dr... | `BatchFileListWidget`, `BatchProcessingDialog` |
 | `benchmark.py` | 216 | Radio & TV Story Segmenter — Performance & Speed Benchmar... | `run_cli_benchmark()`, `main()` |
@@ -26,14 +26,14 @@
 | `diagnostic_cloud_and_system_tests.py` | 1313 | Diagnostic test bench suite component. | `DiagnosticCloudAndSystemTestsMixin` |
 | `diagnostic_core_tests.py` | 880 | Diagnostic test bench suite component. | `DiagnosticCoreTestsMixin` |
 | `diagnostic_dialog.py` | 324 | PySide6 Graphical Test Bench Dialog for Radio & TV Story ... | `create_diagnostic_dialog()` |
-| `diagnostic_editor_tests.py` | 878 | Diagnostic editor and find-replace tests for Radio & TV S... | `DiagnosticEditorTestsMixin` |
-| `diagnostic_export_tests.py` | 1899 | Diagnostic test bench suite component. | `DiagnosticExportTestsMixin` |
+| `diagnostic_editor_tests.py` | 903 | Diagnostic editor and find-replace tests for Radio & TV S... | `DiagnosticEditorTestsMixin` |
+| `diagnostic_export_tests.py` | 2084 | Diagnostic test bench suite component. | `DiagnosticExportTestsMixin` |
 | `diagnostic_helpers.py` | 151 | Helper fixtures, module resolvers, and DiagnosticItem for... | `DiagnosticItem`, `generate_synthetic_wav()` |
 | `diagnostic_loudness_tests.py` | 391 | Radio & TV Story Segmenter — Diagnostic Loudness Normaliz... | `DiagnosticLoudnessTestsMixin` |
 | `diagnostic_selector.py` | 191 | Smart Diagnostic Test Selector for Radio & TV Story Segme... | `get_modified_files()`, `has_git_changes()`, `detect_changed_tokens()`, `select_diagnostic_items()` |
 | `dialogs.py` | 433 | Radio & TV Story Segmenter — Audio Loudness Normalization... | `AudioLoudnessNormalizationDialog` |
 | `diarization_processing.py` | 769 | Speaker diarization process management for Radio & TV Sto... | `DiarizationProcessingMixin` |
-| `embedded_guides.py` | 720 | Radio & TV Story Segmenter — Built-In Embedded User Guide... | `get_embedded_guide()`, `get_all_embedded_guide_ids()` |
+| `embedded_guides.py` | 736 | Radio & TV Story Segmenter — Built-In Embedded User Guide... | `get_embedded_guide()`, `get_all_embedded_guide_ids()` |
 | `export/__init__.py` | 67 | Export package for Radio & TV Story Segmenter. | - |
 | `export/audio.py` | 287 | Radio & TV Story Segmenter — Broadcast Audio Rendering & ... | `build_audio_fade_filter()`, `export_audio_track()`, `extract_audio_clip()` |
 | `export/daw.py` | 37 | DAW and NLE timeline interchange formatters for Radio & T... | - |
@@ -51,12 +51,12 @@
 | `gpu_acceleration.py` | 276 | Radio & TV Segmenter v1.1.1 — optional GPU acceleration r... | `GpuAccelerationInstallWorker`, `GpuAccelerationMixin` |
 | `id3_editor.py` | 704 | ID3 Tag Editor module for Radio & TV Segmenter. | `ID3TagEditorDialog`, `read_id3_tags()`, `write_id3_tags()` |
 | `installer/pyinstaller/torch_dll_hook.py` | 70 | PyInstaller runtime hook for Windows ML/native DLL resolu... | - |
-| `media_batch.py` | 1696 | Radio & TV Segmenter v1.1.1 — media batch responsibilities. | `MediaBatchMixin` |
+| `media_batch.py` | 1707 | Radio & TV Segmenter v1.1.1 — media batch responsibilities. | `MediaBatchMixin` |
 | `model_install_workers.py` | 189 | Radio & TV Segmenter — Model Download and Installation Ba... | `WhisperModelInstallWorker`, `DiarizationModelInstallWorker`, `get_diarization_model_dir()`, `is_diarization_model_available()` |
 | `model_management.py` | 989 | Radio & TV Segmenter v1.1.1 — model management responsibi... | `_DummyTranslationWorker`, `ModelManagementMixin` |
 | `playback_controller.py` | 630 | Radio & TV Story Segmenter — Media Player Transport & Pla... | `PlaybackControllerMixin` |
 | `playback_preferences.py` | 815 | Radio & TV Story Segmenter — Playback Preferences & Appli... | `PlaybackPreferencesMixin` |
-| `plugin_base.py` | 205 | Radio & TV Segmenter — Plugin Base Interfaces and Manifest. | `PluginManifest`, `BasePlugin`, `ExportDestination` |
+| `plugin_base.py` | 209 | Radio & TV Segmenter — Plugin Base Interfaces and Manifest. | `PluginManifest`, `BasePlugin`, `ExportDestination` |
 | `plugin_dialogs.py` | 447 | GitHub plugins dialogs, batch download workers, and Plugi... | `GitHubPluginsWorker`, `GitHubDownloadWorker`, `GitHubBatchDownloadWorker`, `GitHubPluginsDialog` *(+1 more)* |
 | `plugins/__init__.py` | 6 | Radio & TV Segmenter — Plugin Architecture Package. | - |
 | `plugins/base.py` | 6 | Radio & TV Segmenter — Plugin Base Interfaces and Manifes... | - |
@@ -72,13 +72,14 @@
 | `plugins/version_utils.py` | 30 | Version parsing and semantic comparison utilities for the... | `parse_plugin_version_tuple()`, `is_newer_plugin_version()` |
 | `plugins/wordpress/__init__.py` | 6 | WordPress Publisher Plugin for Radio & TV Segmenter. | - |
 | `plugins/wordpress/castos.py` | 725 | Seriously Simple Podcasting (Castos) integration for Word... | `format_castos_duration()`, `build_castos_post_meta()`, `copy_podcast_meta()`, `fetch_castos_feeds()` *(+5 more)* |
-| `plugins/wordpress/client.py` | 1989 | WordPress Plugin — Client, Credential Storage, and Upload... | `WordPressClient`, `WordPressSettingsDialog`, `WordPressPreferencesPage`, `format_rich_text_to_html()` *(+6 more)* |
-| `plugins/wordpress/export_destination.py` | 654 | WordPress Export Destination for UnifiedExportDialog. | `WordPressExportDestination`, `WordPressPostMetadataDialog` |
-| `plugins/wordpress/plugin.py` | 897 | WordPress Publisher Plugin for Radio & TV Segmenter. | `WordPressPublishDialog`, `WordPressPublishWorker`, `WordPressStoryMetadataWidget`, `Plugin` *(+1 more)* |
+| `plugins/wordpress/client.py` | 2078 | WordPress Plugin — Client, Credential Storage, and Upload... | `WordPressClient`, `WordPressSettingsDialog`, `WordPressPreferencesPage`, `format_rich_text_to_html()` *(+6 more)* |
+| `plugins/wordpress/episode_updater.py` | 999 | WordPress Existing Episode Lookup, Backfill Mode, Date Sc... | `LoadWordPressEpisodeDialog`, `extract_slug_or_id_from_url()`, `clean_html_to_plain_excerpt()`, `build_story_slug()` *(+9 more)* |
+| `plugins/wordpress/export_destination.py` | 774 | WordPress Export Destination for UnifiedExportDialog. | `WordPressExportDestination`, `WordPressPostMetadataDialog` |
+| `plugins/wordpress/plugin.py` | 907 | WordPress Publisher Plugin for Radio & TV Segmenter. | `WordPressPublishDialog`, `WordPressPublishWorker`, `WordPressStoryMetadataWidget`, `Plugin` *(+1 more)* |
 | `plugins/wordpress/wordpress_dialog.py` | 886 | WordPress Export Tab Widget and Post Metadata Dialog. | `WordPressExportTabWidget`, `WordPressPostMetadataDialog`, `generate_wp_excerpt()`, `capture_video_frame()` |
-| `plugins/wordpress/wp_post_builder.py` | 321 | Post item builder, transcript slicing, and video frame ex... | `capture_video_frame()`, `get_primary_text_slice()`, `build_wp_post_items()` |
-| `plugins/wordpress/wp_tab_widget.py` | 946 | WordPress export tab configuration widget and preview con... | `WordPressExportTabWidget` |
-| `plugins/wordpress/wp_ui_builder.py` | 748 | UI layout construction and widget setup for WordPressExpo... | `setup_wp_tab_ui()` |
+| `plugins/wordpress/wp_post_builder.py` | 341 | Post item builder, transcript slicing, and video frame ex... | `capture_video_frame()`, `get_primary_text_slice()`, `build_wp_post_items()` |
+| `plugins/wordpress/wp_tab_widget.py` | 993 | WordPress export tab configuration widget and preview con... | `WordPressExportTabWidget` |
+| `plugins/wordpress/wp_ui_builder.py` | 762 | UI layout construction and widget setup for WordPressExpo... | `setup_wp_tab_ui()` |
 | `plugins/wordpress/youtube_embed.py` | 608 | YouTube Video Embed helpers, Gutenberg iframe generator, ... | `extract_youtube_video_id()`, `build_youtube_embed_block()`, `setup_wp_youtube_ui()`, `update_youtube_status_label()` *(+3 more)* |
 | `plugins/youtube/__init__.py` | 9 | YouTube Video Publisher Plugin for Radio & TV Segmenter. | - |
 | `plugins/youtube/export_destination.py` | 613 | YouTube Export Destination for UnifiedExportDialog with Z... | `YouTubeExportTabWidget`, `YouTubeExportDestination`, `capture_video_frame()` |
@@ -138,9 +139,9 @@
 | `timeline_context_menus.py` | 175 | Context menu builders and event handlers for the timeline... | `show_timeline_context_menu()`, `show_selection_context_menu()` |
 | `timeline_overview.py` | 351 | Timeline Resize Handle and Overview Navigation Bar widgets. | `TimelineResizeHandle`, `TimelineOverviewBar` |
 | `timeline_overview_widget.py` | 372 | Timeline overview bar, mini-map navigator, and resize han... | `TimelineResizeHandle`, `TimelineOverviewBar` |
-| `timeline_painter.py` | 419 | Timeline canvas rendering engine, waveform drawing, and p... | `render_waveform_buffer()`, `paint_timeline_canvas()` |
+| `timeline_painter.py` | 430 | Timeline canvas rendering engine, waveform drawing, and p... | `render_waveform_buffer()`, `paint_timeline_canvas()` |
 | `timeline_snap.py` | 195 | Timeline snapping algorithms, edge detection, and collisi... | `snap_time()`, `find_edge_at_pos()`, `find_fade_handle_at_pos()`, `find_story_at_time()` *(+4 more)* |
-| `timeline_widgets.py` | 999 | Radio & TV Story Segmenter — Timeline Ruler, Track Views,... | `TimelineCanvas`, `TimelineWidget` |
+| `timeline_widgets.py` | 998 | Radio & TV Story Segmenter — Timeline Ruler, Track Views,... | `TimelineCanvas`, `TimelineWidget` |
 | `transcript_cleaner.py` | 216 | Radio & TV Segmenter — Transcript cleaning, loop collapsi... | `collapse_repeating_ngrams()`, `strip_hallucination_phrases()`, `trim_trailing_degenerate_tail()`, `scrub_transcript_segments()` *(+1 more)* |
 | `transcript_context_menu_mixin.py` | 737 | Radio & TV Story Segmenter — Interactive Transcript Conte... | `TranscriptContextMenuMixin` |
 | `transcript_editor.py` | 945 | transcript_editor.py - Interactive Transcript Editor & Vi... | `InteractiveTranscriptEdit` |
@@ -149,14 +150,14 @@
 | `transcript_navigation_mixin.py` | 300 | transcript_navigation_mixin.py - Timestamp discovery, car... | `TranscriptNavigationMixin` |
 | `transcript_playback_highlight_mixin.py` | 277 | Radio & TV Story Segmenter — Interactive Transcript Playb... | `TranscriptPlaybackHighlightMixin` |
 | `transcript_selection_mixin.py` | 473 | transcript_selection_mixin.py - Multi-selection, timeline... | `TranscriptSelectionMixin` |
-| `transcript_story.py` | 852 | Radio & TV Segmenter v3.9.95-beta — transcript story resp... | `TranscriptStoryMixin` |
+| `transcript_story.py` | 852 | Radio & TV Segmenter v3.9.96-beta — transcript story resp... | `TranscriptStoryMixin` |
 | `transcript_styles.py` | 104 | transcript_styles.py - Transcript view stylesheets and da... | `transcript_text_view_stylesheet()`, `clean_dark_mode_clipboard_html()` |
 | `transcript_timeline_sync_mixin.py` | 643 | Radio & TV Story Segmenter — Transcript Timeline & Playba... | `TranscriptTimelineSyncMixin` |
 | `transcription_processing.py` | 579 | Transcription background process management for Radio & T... | `TranscriptionProcessingMixin` |
 | `translation.py` | 923 | Radio & TV Segmenter — Local Translation Mixin. | `TranslationEnvSetupWorker`, `TranslationMixin` |
 | `ui_dialog_launchers.py` | 370 | Dialog launchers and external modal helpers for Radio & T... | `UiDialogLaunchersMixin` |
 | `ui_layout.py` | 1097 | Radio & TV Segmenter — UI Layout & Menu Construction Mixin. | `UiLayoutMixin` |
-| `ui_menus.py` | 863 | Main application menu bar and action assembly for Radio &... | `PersistentMenu`, `UiMenusMixin` |
+| `ui_menus.py` | 883 | Main application menu bar and action assembly for Radio &... | `PersistentMenu`, `UiMenusMixin` |
 | `updater.py` | 1549 | Update manager and GitHub release installer for Radio & T... | `CheckUpdateWorker`, `DownloadUpdateWorker`, `CheckUpdateDialog`, `UpdaterMixin` *(+9 more)* |
 | `user_guide_dialog.py` | 846 | Radio & TV Story Segmenter — In-App User Guide & Document... | `ResponsiveTextBrowser`, `UserGuideDialog` |
 | `utils/__init__.py` | 36 | Utility modules for Radio & TV Story Segmenter. | - |
@@ -175,7 +176,7 @@
 ## Detailed Symbol Catalog
 
 ### `RadioTVSegmenter.py` (664 lines)
-*Radio & TV Segmenter — v3.9.95-beta*
+*Radio & TV Segmenter — v3.9.96-beta*
 - **class `MainWindow(ModelManagementMixin, MediaBatchMixin, PlaybackPreferencesMixin, UiLayoutMixin, ProcessingMixin, TranslationMixin, TranscriptStoryMixin, ProjectExportMixin, GpuAccelerationMixin, QMainWindow)`** (lines 160–561):
   *Main application window for Radio & TV Segmenter.*
   - `__init__(self)` [L178-L355]
@@ -208,30 +209,30 @@
   - `normalize_audio_sidecar(media_path, report, target_lufs, max_true_peak, quiet_threshold_lufs, quiet_threshold_dbfs, timeout)` [L346-L461] — *Non-destructively generate a normalized 16 kHz mono WAV sidecar.*
   - `get_effective_audio_for_processing(media_path, settings_store, project_metadata)` [L464-L541] — *Return the audio path to feed into ASR or diarization.*
 
-### `background_workers.py` (1021 lines)
+### `background_workers.py` (1033 lines)
 *Radio & TV Story Segmenter — Background Worker Threads & Waveform Cache Helpers.*
-- **class `StoryAutoDetectWorker(QObject)`** (lines 92–459):
-  - `__init__(self, audio_file, silence_threshold, lead_in_padding, audio_duration, transcript_segments, whisper_model, detection_mode, **kwargs)` [L103-L122]
-  - `cancel(self)` [L124-L125]
-  - `_emit_progress(self, message, percent)` [L127-L141]
-  - `_is_real_speech(self, text)` [L143-L149]
-  - `run(self)` [L151-L459]
-- **class `WaveformWorker(QObject)`** (lines 677–831):
-  - `__init__(self, audio_file, points_per_second, project_file)` [L680-L687]
-  - `cancel(self)` [L689-L697] — *Thread-safe cancellation request; also stops the FFmpeg child process.*
-  - `run(self)` [L699-L831] — *Build a compact peak envelope without loading the whole recording into RAM.*
-- **class `VideoThumbnailWorker(QObject)`** (lines 951–1010):
-  - `__init__(self, media_path, duration, output_dir, count)` [L955-L962]
-  - `cancel(self)` [L964-L971]
-  - `run(self)` [L973-L1010]
+- **class `StoryAutoDetectWorker(QObject)`** (lines 93–460):
+  - `__init__(self, audio_file, silence_threshold, lead_in_padding, audio_duration, transcript_segments, whisper_model, detection_mode, **kwargs)` [L104-L123]
+  - `cancel(self)` [L125-L126]
+  - `_emit_progress(self, message, percent)` [L128-L142]
+  - `_is_real_speech(self, text)` [L144-L150]
+  - `run(self)` [L152-L460]
+- **class `WaveformWorker(QObject)`** (lines 678–843):
+  - `__init__(self, audio_file, points_per_second, project_file)` [L682-L689]
+  - `cancel(self)` [L691-L699] — *Thread-safe cancellation request; also stops the FFmpeg child process.*
+  - `run(self)` [L701-L843] — *Build a compact peak envelope without loading the whole recording into RAM.*
+- **class `VideoThumbnailWorker(QObject)`** (lines 963–1022):
+  - `__init__(self, media_path, duration, output_dir, count)` [L967-L974]
+  - `cancel(self)` [L976-L983]
+  - `run(self)` [L985-L1022]
 - **Functions**:
-  - `get_waveform_peak_cache_path(audio_file, project_file)` [L483-L537] — *Return local project or appdata path for waveform peak binary cache file.*
-  - `read_waveform_peak_cache(audio_file, points_per_second, project_file)` [L542-L611] — *Read cached waveform peak envelope from binary cache.*
-  - `write_waveform_peak_cache(audio_file, peaks, points_per_second, project_file, levels)` [L613-L651] — *Write waveform peak envelope and multi-resolution mipmapped levels to binary cache with atomic rename.*
-  - `invalidate_waveform_peak_cache(audio_file, project_file)` [L654-L674] — *Delete any cached waveform peak binary file for audio_file, including legacy paths.*
-  - `get_video_thumbnail_cache_dir(media_file, project_file)` [L838-L877] — *Return the deterministic thumbnail cache directory for a media file, associating with project if available.*
-  - `read_video_thumbnail_cache(media_file, duration, project_file)` [L880-L922] — *Read pre-extracted video thumbnail items [(timestamp, image_path), ...] from disk cache.*
-  - `invalidate_video_thumbnail_cache(media_file, project_file)` [L925-L948] — *Delete the thumbnail cache directory for a given media file.*
+  - `get_waveform_peak_cache_path(audio_file, project_file)` [L484-L538] — *Return local project or appdata path for waveform peak binary cache file.*
+  - `read_waveform_peak_cache(audio_file, points_per_second, project_file)` [L543-L612] — *Read cached waveform peak envelope from binary cache.*
+  - `write_waveform_peak_cache(audio_file, peaks, points_per_second, project_file, levels)` [L614-L652] — *Write waveform peak envelope and multi-resolution mipmapped levels to binary cache with atomic rename.*
+  - `invalidate_waveform_peak_cache(audio_file, project_file)` [L655-L675] — *Delete any cached waveform peak binary file for audio_file, including legacy paths.*
+  - `get_video_thumbnail_cache_dir(media_file, project_file)` [L850-L889] — *Return the deterministic thumbnail cache directory for a media file, associating with project if available.*
+  - `read_video_thumbnail_cache(media_file, duration, project_file)` [L892-L934] — *Read pre-extracted video thumbnail items [(timestamp, image_path), ...] from disk cache.*
+  - `invalidate_video_thumbnail_cache(media_file, project_file)` [L937-L960] — *Delete the thumbnail cache directory for a given media file.*
 
 ### `backup_manager.py` (622 lines)
 *Unified State Serialization, Local, and Google Drive Cloud Backup & Restore Engine.*
@@ -520,33 +521,33 @@
 - **Functions**:
   - `create_diagnostic_dialog(parent, include_dev_tests)` [L16-L324] — *Builds the Diagnostic Test Bench Qt Dialog.*
 
-### `diagnostic_editor_tests.py` (878 lines)
+### `diagnostic_editor_tests.py` (903 lines)
 *Diagnostic editor and find-replace tests for Radio & TV Story Segmenter.*
-- **class `DiagnosticEditorTestsMixin`** (lines 11–877):
+- **class `DiagnosticEditorTestsMixin`** (lines 11–902):
   *Diagnostic suite for transcript editor, find-replace, and speaker synchronization.*
   - `_test_find_and_replace_project_synchronization_and_undo(self, item)` [L14-L209] — *Validates that Find & Replace updates segments, word timings, speaker aliases,*
   - `_test_in_app_user_guides_and_documentation_viewer(self, item)` [L211-L298] — *Validates in-app user guide resolution, fallback to embedded content, and bundling invariants.*
-  - `_test_story_transcript_highlighting_and_smart_copy(self, item)` [L300-L505] — *Validates story selection synchronization with transcript highlight overlay and smart clipboard copying.*
-  - `_test_story_duration_visibility_and_header_aggregation(self, item)` [L507-L675] — *Validates story clock duration formatting, 2-line sidebar item format, and multi-selection header aggregation.*
-  - `_test_reaper_daw_companion_and_universal_clipboard_pipeline(self, item)` [L677-L877] — *Validates REAPER DAW clip cue JSON schema, sidecar emission, Lua script syntax,*
+  - `_test_story_transcript_highlighting_and_smart_copy(self, item)` [L300-L530] — *Validates story selection synchronization with transcript highlight overlay and smart clipboard copying.*
+  - `_test_story_duration_visibility_and_header_aggregation(self, item)` [L532-L700] — *Validates story clock duration formatting, 2-line sidebar item format, and multi-selection header aggregation.*
+  - `_test_reaper_daw_companion_and_universal_clipboard_pipeline(self, item)` [L702-L902] — *Validates REAPER DAW clip cue JSON schema, sidecar emission, Lua script syntax,*
 
-### `diagnostic_export_tests.py` (1899 lines)
+### `diagnostic_export_tests.py` (2084 lines)
 *Diagnostic test bench suite component.*
-- **class `DiagnosticExportTestsMixin`** (lines 26–1898):
+- **class `DiagnosticExportTestsMixin`** (lines 26–2083):
   - `_test_wordpress_export_scope_post_builder(self, item)` [L27-L239]
   - `_test_wordpress_export_content_and_transcript_formatter(self, item)` [L241-L452]
   - `_test_wordpress_youtube_video_embed(self, item)` [L454-L598] — *Verify YouTube URL parsing, iframe block generation, video project defaults, and Gutenberg placement.*
   - `_test_multi_format_line_break_and_paragraph_parity(self, item)` [L600-L705]
-  - `_test_wordpress_multi_story_upload_and_ui_pluralization(self, item)` [L707-L931]
-  - `_test_gutenberg_html_structural_hygiene_audit(self, item)` [L933-L969]
-  - `_test_export_scope_delta_and_gap_integrity_audit(self, item)` [L971-L1022]
-  - `_test_export_destination_interface_contract_verification(self, item)` [L1024-L1060]
-  - `_test_multi_story_media_payload_disambiguation_test(self, item)` [L1062-L1100]
-  - `_test_wordpress_audio_inclusion_toggle_and_error_resilience(self, item)` [L1102-L1428]
-  - `_test_wordpress_castos_podcast_integration(self, item)` [L1430-L1658]
-  - `_test_multi_scope_story_and_full_episode_export_pipeline(self, item)` [L1660-L1741]
-  - `_test_audio_export_non_blocking_and_cancellation_pipeline(self, item)` [L1743-L1853]
-  - `_test_modal_dialog_maximizable_import_integrity(self, item)` [L1855-L1898]
+  - `_test_wordpress_multi_story_upload_and_ui_pluralization(self, item)` [L707-L995]
+  - `_test_gutenberg_html_structural_hygiene_audit(self, item)` [L997-L1033]
+  - `_test_export_scope_delta_and_gap_integrity_audit(self, item)` [L1035-L1086]
+  - `_test_export_destination_interface_contract_verification(self, item)` [L1088-L1124]
+  - `_test_multi_story_media_payload_disambiguation_test(self, item)` [L1126-L1164]
+  - `_test_wordpress_audio_inclusion_toggle_and_error_resilience(self, item)` [L1166-L1492]
+  - `_test_wordpress_castos_podcast_integration(self, item)` [L1494-L1843]
+  - `_test_multi_scope_story_and_full_episode_export_pipeline(self, item)` [L1845-L1926]
+  - `_test_audio_export_non_blocking_and_cancellation_pipeline(self, item)` [L1928-L2038]
+  - `_test_modal_dialog_maximizable_import_integrity(self, item)` [L2040-L2083]
 
 ### `diagnostic_helpers.py` (151 lines)
 *Helper fixtures, module resolvers, and DiagnosticItem for test runner.*
@@ -615,11 +616,11 @@
   - `speaker_at_time(self, start, end)` [L730-L763]
   - `get_effective_speaker_name(self, seg_idx, segment)` [L765-L769]
 
-### `embedded_guides.py` (720 lines)
+### `embedded_guides.py` (736 lines)
 *Radio & TV Story Segmenter — Built-In Embedded User Guides & Documentation.*
 - **Functions**:
-  - `get_embedded_guide(guide_id)` [L713-L715] — *Retrieve embedded markdown text for a guide topic ID, if available.*
-  - `get_all_embedded_guide_ids()` [L718-L720] — *Return all guide IDs provided as embedded fallback content.*
+  - `get_embedded_guide(guide_id)` [L729-L731] — *Retrieve embedded markdown text for a guide topic ID, if available.*
+  - `get_all_embedded_guide_ids()` [L734-L736] — *Return all guide IDs provided as embedded fallback content.*
 
 ### `export/__init__.py` (67 lines)
 *Export package for Radio & TV Story Segmenter.*
@@ -868,9 +869,9 @@
 ### `installer/pyinstaller/torch_dll_hook.py` (70 lines)
 *PyInstaller runtime hook for Windows ML/native DLL resolution.*
 
-### `media_batch.py` (1696 lines)
+### `media_batch.py` (1707 lines)
 *Radio & TV Segmenter v1.1.1 — media batch responsibilities.*
-- **class `MediaBatchMixin`** (lines 21–1696):
+- **class `MediaBatchMixin`** (lines 21–1707):
   - `probe_media_duration(self, path)` [L22-L36] — *Probe duration locally so video timelines can be populated immediately.*
   - `_track_worker_thread(self, thread)` [L38-L50] — *Keep a strong reference to active worker threads so Python GC never destroys them while executing.*
   - `stop_waveform_worker(self, timeout_ms)` [L52-L83] — *Stop the current waveform worker completely before replacing it or closing.*
@@ -880,52 +881,53 @@
   - `stop_video_thumbnail_worker(self, timeout_ms)` [L160-L190]
   - `regenerate_waveform(self)` [L192-L213] — *Force recalculation of waveform peaks by clearing disk cache and restarting generation.*
   - `regenerate_video_thumbnails(self)` [L215-L228] — *Force regeneration of video filmstrip thumbnails.*
-  - `load_waveform_async(self, force_regenerate)` [L230-L286]
-  - `_waveform_finished(self, peaks, cancelled)` [L288-L305]
-  - `_waveform_thread_finished(self)` [L307-L311]
-  - `open_batch_processing_dialog(self)` [L313-L418]
-  - `_batch_next_media(self)` [L420-L537]
-  - `_batch_next_document(self)` [L539-L567]
-  - `_batch_document_error(self, msg)` [L569-L578] — *Handles document batch translation errors safely.*
-  - `_load_user_preferences(self)` [L580-L663]
-  - `set_thumbnail_position(self, position)` [L665-L669]
-  - `_remember_saved_project(self, path)` [L671-L702] — *Remember only projects that have actually been saved.*
-  - `_dialog_directory(self, fallback)` [L704-L716]
-  - `_remember_open_directory(self, path)` [L718-L725]
-  - `_sync_startup_project_actions(self)` [L727-L733] — *Synchronize the Project Settings startup radio/check actions.*
-  - `set_startup_project_mode(self, mode)` [L735-L741] — *Set the startup project policy.*
-  - `restore_last_opened(self)` [L743-L883] — *Apply startup policy and offer recovery from a newer autosave snapshot.*
-  - `toggle_speaker_labels(self, checked)` [L885-L890]
-  - `toggle_colorize_speaker_labels(self, checked)` [L892-L899]
-  - `toggle_timestamps(self, checked)` [L901-L908]
-  - `toggle_milliseconds(self, checked)` [L910-L917]
-  - `toggle_waveform_view(self, checked)` [L919-L923]
-  - `toggle_thumbnail_view(self, checked)` [L925-L929]
-  - `choose_default_project_directory(self)` [L931-L946]
-  - `open_document_path(self, path)` [L948-L983]
-  - `open_clear_cache_dialog(self)` [L985-L998]
-  - `open_glossary_dialog(self)` [L1000-L1004] — *Edit persistent terminology used by every ASR and translation backend.*
-  - `_save_glossary(self)` [L1006-L1007]
-  - `apply_glossary_to_current_transcript(self, entries)` [L1009-L1041] — *Apply glossary rules and contextual name resolution to the active transcript with Undo support.*
-  - `add_to_glossary(self, text)` [L1043-L1057]
-  - `prompt_add_alternate_spelling(self, alternate_text)` [L1059-L1102] — *Prompt user for the preferred glossary spelling that `alternate_text` should map to.*
-  - `apply_glossary_to_whisper_context(self)` [L1104-L1115]
-  - `add_custom_speaker_to_glossary(self, name)` [L1117-L1119]
-  - `set_language(self, language, persist)` [L1121-L1142]
-  - `_apply_localization(self)` [L1144-L1181]
-  - `update_story_segment_terminology(self)` [L1183-L1270] — *Update all user-facing labels and tooltips using active vocabulary settings.*
-  - `open_document(self)` [L1272-L1326]
-  - `export_text_file(self)` [L1328-L1336]
-  - `open_media(self)` [L1338-L1347]
-  - `prepare_for_new_media(self)` [L1349-L1382] — *Checks for unsaved changes before loading new media.*
-  - `_batch_media_error(self, message)` [L1384-L1406]
-  - `_get_batch_project_target_path(self, base_name)` [L1408-L1435] — *Determines consistent target .rtvs project file path during batch processing.*
-  - `_batch_save_project_file(self)` [L1437-L1452] — *Saves project .rtvs to dedicated directory structure during batch processing.*
-  - `_batch_export_current(self)` [L1454-L1538] — *Handles automatic export or project saving during batch processing.*
-  - `load_media_file(self, filename, source, restore_adjacent_project)` [L1540-L1655]
-  - `update_active_media_source(self)` [L1657-L1690] — *Update media player source and refresh waveform when normalization state changes.*
-  - `open_audio(self)` [L1692-L1693]
-  - `handle_media_drop(self, filename)` [L1695-L1696]
+  - `load_waveform_async(self, force_regenerate)` [L230-L287]
+  - `_waveform_progress(self, partial_peaks, pps, pct)` [L289-L297]
+  - `_waveform_finished(self, peaks, cancelled)` [L299-L316]
+  - `_waveform_thread_finished(self)` [L318-L322]
+  - `open_batch_processing_dialog(self)` [L324-L429]
+  - `_batch_next_media(self)` [L431-L548]
+  - `_batch_next_document(self)` [L550-L578]
+  - `_batch_document_error(self, msg)` [L580-L589] — *Handles document batch translation errors safely.*
+  - `_load_user_preferences(self)` [L591-L674]
+  - `set_thumbnail_position(self, position)` [L676-L680]
+  - `_remember_saved_project(self, path)` [L682-L713] — *Remember only projects that have actually been saved.*
+  - `_dialog_directory(self, fallback)` [L715-L727]
+  - `_remember_open_directory(self, path)` [L729-L736]
+  - `_sync_startup_project_actions(self)` [L738-L744] — *Synchronize the Project Settings startup radio/check actions.*
+  - `set_startup_project_mode(self, mode)` [L746-L752] — *Set the startup project policy.*
+  - `restore_last_opened(self)` [L754-L894] — *Apply startup policy and offer recovery from a newer autosave snapshot.*
+  - `toggle_speaker_labels(self, checked)` [L896-L901]
+  - `toggle_colorize_speaker_labels(self, checked)` [L903-L910]
+  - `toggle_timestamps(self, checked)` [L912-L919]
+  - `toggle_milliseconds(self, checked)` [L921-L928]
+  - `toggle_waveform_view(self, checked)` [L930-L934]
+  - `toggle_thumbnail_view(self, checked)` [L936-L940]
+  - `choose_default_project_directory(self)` [L942-L957]
+  - `open_document_path(self, path)` [L959-L994]
+  - `open_clear_cache_dialog(self)` [L996-L1009]
+  - `open_glossary_dialog(self)` [L1011-L1015] — *Edit persistent terminology used by every ASR and translation backend.*
+  - `_save_glossary(self)` [L1017-L1018]
+  - `apply_glossary_to_current_transcript(self, entries)` [L1020-L1052] — *Apply glossary rules and contextual name resolution to the active transcript with Undo support.*
+  - `add_to_glossary(self, text)` [L1054-L1068]
+  - `prompt_add_alternate_spelling(self, alternate_text)` [L1070-L1113] — *Prompt user for the preferred glossary spelling that `alternate_text` should map to.*
+  - `apply_glossary_to_whisper_context(self)` [L1115-L1126]
+  - `add_custom_speaker_to_glossary(self, name)` [L1128-L1130]
+  - `set_language(self, language, persist)` [L1132-L1153]
+  - `_apply_localization(self)` [L1155-L1192]
+  - `update_story_segment_terminology(self)` [L1194-L1281] — *Update all user-facing labels and tooltips using active vocabulary settings.*
+  - `open_document(self)` [L1283-L1337]
+  - `export_text_file(self)` [L1339-L1347]
+  - `open_media(self)` [L1349-L1358]
+  - `prepare_for_new_media(self)` [L1360-L1393] — *Checks for unsaved changes before loading new media.*
+  - `_batch_media_error(self, message)` [L1395-L1417]
+  - `_get_batch_project_target_path(self, base_name)` [L1419-L1446] — *Determines consistent target .rtvs project file path during batch processing.*
+  - `_batch_save_project_file(self)` [L1448-L1463] — *Saves project .rtvs to dedicated directory structure during batch processing.*
+  - `_batch_export_current(self)` [L1465-L1549] — *Handles automatic export or project saving during batch processing.*
+  - `load_media_file(self, filename, source, restore_adjacent_project)` [L1551-L1666]
+  - `update_active_media_source(self)` [L1668-L1701] — *Update media player source and refresh waveform when normalization state changes.*
+  - `open_audio(self)` [L1703-L1704]
+  - `handle_media_drop(self, filename)` [L1706-L1707]
 
 ### `model_install_workers.py` (189 lines)
 *Radio & TV Segmenter — Model Download and Installation Background Workers.*
@@ -1043,13 +1045,13 @@
   - `prompt_set_auto_save(self)` [L775-L793]
   - `trigger_auto_save(self)` [L795-L815]
 
-### `plugin_base.py` (205 lines)
+### `plugin_base.py` (209 lines)
 *Radio & TV Segmenter — Plugin Base Interfaces and Manifest.*
 - **class `PluginManifest`** (lines 11–63):
   *Metadata describing a plugin, parsed from manifest.json.*
   - `from_dict(cls, data)` [L33-L53]
   - `from_file(cls, path)` [L56-L63]
-- **class `BasePlugin`** (lines 66–166):
+- **class `BasePlugin`** (lines 66–170):
   *Base class for all Radio & TV Segmenter plugins.*
   - `__init__(self, manifest, app)` [L77-L80]
   - `id(self)` [L83-L84]
@@ -1062,24 +1064,25 @@
   - `on_unload(self)` [L116-L118] — *Called when plugin is about to be unloaded or application closes.*
   - `on_enable(self)` [L120-L122] — *Called when the user enables the plugin.*
   - `on_disable(self)` [L124-L126] — *Called when the user disables the plugin.*
-  - `get_export_actions(self)` [L128-L130] — *Return list of (Action Label, callback_function) for Export menu.*
-  - `get_export_destinations(self)` [L132-L134] — *Return list of ExportDestination providers to embed into UnifiedExportDialog.*
-  - `get_tools_actions(self)` [L136-L138] — *Return list of (Action Label, callback_function) for Tools menu.*
-  - `get_story_actions(self, story)` [L140-L142] — *Return list of (Action Label, callback_function) for story context menu.*
-  - `create_story_metadata_widget(self, parent)` [L144-L146] — *Return a QWidget to be embedded into the Stories panel for metadata editing, or None.*
-  - `on_story_selected(self, story)` [L148-L150] — *Called when active story selection changes in the main editor.*
-  - `get_preferences_widget(self, parent)` [L152-L154] — *Return a QWidget to be embedded into the Preferences dialog, or None.*
-  - `save_preferences(self, widget)` [L156-L158] — *Called when the user saves the Preferences dialog.*
-  - `on_project_loaded(self, project_data)` [L160-L162] — *Called when an .rtvs project is loaded. Allows reading plugin metadata.*
-  - `on_project_saving(self, project_data)` [L164-L166] — *Called before an .rtvs project is saved. Allows injecting plugin metadata.*
-- **class `ExportDestination`** (lines 169–205):
+  - `get_file_open_actions(self)` [L128-L130] — *Return list of (Action Label, callback_function) for top Media Input section of File menu.*
+  - `get_export_actions(self)` [L132-L134] — *Return list of (Action Label, callback_function) for Export menu.*
+  - `get_export_destinations(self)` [L136-L138] — *Return list of ExportDestination providers to embed into UnifiedExportDialog.*
+  - `get_tools_actions(self)` [L140-L142] — *Return list of (Action Label, callback_function) for Tools menu.*
+  - `get_story_actions(self, story)` [L144-L146] — *Return list of (Action Label, callback_function) for story context menu.*
+  - `create_story_metadata_widget(self, parent)` [L148-L150] — *Return a QWidget to be embedded into the Stories panel for metadata editing, or None.*
+  - `on_story_selected(self, story)` [L152-L154] — *Called when active story selection changes in the main editor.*
+  - `get_preferences_widget(self, parent)` [L156-L158] — *Return a QWidget to be embedded into the Preferences dialog, or None.*
+  - `save_preferences(self, widget)` [L160-L162] — *Called when the user saves the Preferences dialog.*
+  - `on_project_loaded(self, project_data)` [L164-L166] — *Called when an .rtvs project is loaded. Allows reading plugin metadata.*
+  - `on_project_saving(self, project_data)` [L168-L170] — *Called before an .rtvs project is saved. Allows injecting plugin metadata.*
+- **class `ExportDestination`** (lines 173–209):
   *Base class for plugin-provided export destinations in UnifiedExportDialog.*
-  - `__init__(self, id, title, description, icon, button_label)` [L172-L185]
-  - `create_widget(self, parent, main_window)` [L187-L189] — *Create the configuration and preview widget embedded into the destination tab.*
-  - `on_scope_changed(self, scope, stories)` [L191-L193] — *Called when export scope changes in the dialog (full, selected, all).*
-  - `validate(self)` [L195-L197] — *Validate destination settings before export begins. Returns (ok, error_msg).*
-  - `get_export_data(self)` [L199-L201] — *Collect export parameters to include in the final dialog result.*
-  - `execute_export(self, main_window, export_data, progress_dialog)` [L203-L205] — *Execute the export action for this destination.*
+  - `__init__(self, id, title, description, icon, button_label)` [L176-L189]
+  - `create_widget(self, parent, main_window)` [L191-L193] — *Create the configuration and preview widget embedded into the destination tab.*
+  - `on_scope_changed(self, scope, stories)` [L195-L197] — *Called when export scope changes in the dialog (full, selected, all).*
+  - `validate(self)` [L199-L201] — *Validate destination settings before export begins. Returns (ok, error_msg).*
+  - `get_export_data(self)` [L203-L205] — *Collect export parameters to include in the final dialog result.*
+  - `execute_export(self, main_window, export_data, progress_dialog)` [L207-L209] — *Execute the export action for this destination.*
 
 ### `plugin_dialogs.py` (447 lines)
 *GitHub plugins dialogs, batch download workers, and PluginManagerDialog.*
@@ -1288,36 +1291,36 @@
   - `sync_castos_to_post(tab_widget, post)` [L549-L612] — *Extract Castos UI state and write into post dictionary.*
   - `load_castos_from_post(tab_widget, post)` [L615-L691] — *Set Castos UI controls from post dictionary.*
 
-### `plugins/wordpress/client.py` (1989 lines)
+### `plugins/wordpress/client.py` (2078 lines)
 *WordPress Plugin — Client, Credential Storage, and Upload Engine.*
-- **class `WordPressClient`** (lines 342–913):
+- **class `WordPressClient`** (lines 342–953):
   *Client for WordPress REST API using Application Passwords.*
   - `__init__(self, site_url, username, password)` [L345-L357]
   - `is_configured(self)` [L359-L366] — *Return True if site_url, username, and password are all non-empty and non-placeholder.*
   - `_get_auth(self)` [L368-L369]
-  - `_discover_canonical_base(self)` [L371-L382] — *Pre-detect canonical site URL and REST base to prevent redirect failures.*
-  - `_is_safe_redirect(self, current_url, next_url)` [L384-L393] — *Verify redirect does not cross domains or downgrade from HTTPS to HTTP.*
-  - `_get_request(self, url, params, headers, timeout)` [L395-L426] — *Issue an HTTP GET with manual redirect protection and authentication.*
-  - `_post_request(self, url, json_data, headers, timeout)` [L428-L455] — *Issue an HTTP POST with manual redirect protection to keep POST method & Auth header.*
-  - `_post_multipart(self, url, path, upload_filename, mime_type, timeout)` [L457-L483] — *Issue a multipart file POST with manual redirect protection.*
-  - `test_connection(self)` [L485-L508] — *Test credentials against /wp/v2/users/me or /wp/v2/posts.*
-  - `get_categories(self)` [L510-L526] — *Fetch post categories from WordPress.*
-  - `get_authors(self)` [L528-L625] — *Fetch PublishPress Authors profiles, including guest authors without users.*
-  - `upload_media(self, file_path, filename)` [L627-L681] — *Upload media using WordPress's standard multipart API, with raw fallback.*
-  - `get_podcast_feeds(self)` [L683-L686] — *Fetch Seriously Simple Podcasting feeds/series or return default feed.*
-  - `create_post(self, title, content, excerpt, status, category_ids, author_ids, author_term_ids, featured_media_id, meta, podcast_series)` [L688-L860] — *Create a post in WordPress.*
-  - `update_post(self, post_id, content, title, excerpt, status, category_ids, featured_media_id, meta, podcast_series)` [L862-L913] — *Update an existing post in WordPress.*
-- **class `WordPressSettingsDialog(QDialog)`** (lines 916–1127):
+  - `_discover_canonical_base(self)` [L371-L384] — *Pre-detect canonical site URL and REST base to prevent redirect failures.*
+  - `_is_safe_redirect(self, current_url, next_url)` [L386-L395] — *Verify redirect does not cross domains or downgrade from HTTPS to HTTP.*
+  - `_get_request(self, url, params, headers, timeout)` [L397-L428] — *Issue an HTTP GET with manual redirect protection and authentication.*
+  - `_post_request(self, url, json_data, headers, timeout)` [L430-L457] — *Issue an HTTP POST with manual redirect protection to keep POST method & Auth header.*
+  - `_post_multipart(self, url, path, upload_filename, mime_type, timeout)` [L459-L485] — *Issue a multipart file POST with manual redirect protection.*
+  - `test_connection(self)` [L487-L510] — *Test credentials against /wp/v2/users/me or /wp/v2/posts.*
+  - `get_categories(self)` [L512-L528] — *Fetch post categories from WordPress.*
+  - `get_authors(self)` [L530-L627] — *Fetch PublishPress Authors profiles, including guest authors without users.*
+  - `upload_media(self, file_path, filename)` [L629-L683] — *Upload media using WordPress's standard multipart API, with raw fallback.*
+  - `get_podcast_feeds(self)` [L685-L688] — *Fetch Seriously Simple Podcasting feeds/series or return default feed.*
+  - `create_post(self, title, content, excerpt, status, category_ids, author_ids, author_term_ids, featured_media_id, meta, podcast_series, date, slug)` [L690-L868] — *Create a post in WordPress.*
+  - `update_post(self, post_id, content, title, excerpt, status, category_ids, featured_media_id, meta, podcast_series, author_ids, author_term_ids, date, slug)` [L870-L953] — *Update an existing post in WordPress.*
+- **class `WordPressSettingsDialog(QDialog)`** (lines 956–1167):
   *Dialog for entering and testing WordPress site credentials.*
-  - `__init__(self, parent)` [L919-L1071]
-  - `_test_connection(self)` [L1073-L1094]
-  - `_save_settings(self)` [L1096-L1127]
-- **class `WordPressPreferencesPage(QWidget)`** (lines 1141–1341):
+  - `__init__(self, parent)` [L959-L1111]
+  - `_test_connection(self)` [L1113-L1134]
+  - `_save_settings(self)` [L1136-L1167]
+- **class `WordPressPreferencesPage(QWidget)`** (lines 1181–1381):
   *Preferences page widget for WordPress integration inside the application Preferences dialog.*
-  - `__init__(self, parent, app)` [L1144-L1148]
-  - `setup_ui(self)` [L1150-L1285]
-  - `_test_connection(self)` [L1287-L1306]
-  - `save_preferences(self, dialog)` [L1308-L1341]
+  - `__init__(self, parent, app)` [L1184-L1188]
+  - `setup_ui(self)` [L1190-L1325]
+  - `_test_connection(self)` [L1327-L1346]
+  - `save_preferences(self, dialog)` [L1348-L1381]
 - **Functions**:
   - `_get_keyring()` [L49-L55] — *Safely return keyring module if available.*
   - `_get_wp_fallback_cipher()` [L58-L72] — *Best-effort symmetric cipher bound to this machine, used only for*
@@ -1328,37 +1331,73 @@
   - `build_episode_stories_toc(stories)` [L279-L314] — *Build a Gutenberg Table of Contents block listing all stories in the episode.*
   - `generate_wp_excerpt(text, max_words)` [L317-L327] — *Generate a clean WordPress-style post excerpt from text (standard 55 words).*
   - `is_wp_auth_error(err)` [L330-L339] — *Check if an error string or exception indicates an authentication or credential failure.*
-  - `get_wp_client()` [L1130-L1138] — *Instantiate WordPressClient from stored settings if configured.*
-  - `_group_segments_into_paragraphs(segments, min_words)` [L1344-L1392] — *Group consecutive segments with same speaker into natural paragraph blocks.*
-  - `_build_audio_fade_filter(duration, fade_in, fade_out, fade_curve)` [L1395-L1423] — *Construct FFmpeg afade audio filter chain for story clips.*
-  - `execute_wordpress_upload(main_window, client, post_title, post_excerpt, start, end, task_label, include_english, include_spanish, spanish_presentation, primary_language, author_ids, author_term_ids, category_ids, show_completion_dialog, media_filename, progress_callback, featured_image_path, parent_episode_info, link_parent_episode, parent_episode_template, parent_episode_pos, include_audio, fade_in, fade_out, fade_curve, apply_fades, accordion_pos, is_podcast, podcast_feed, podcast_feed_id, podcast_feed_ids, podcast_feeds, podcast_episode_type, podcast_season, podcast_episode_number, youtube_url, youtube_stop_at_end, youtube_placement, youtube_use_story_time)` [L1426-L1989] — *Extract media clip, upload to WordPress media library, and create draft post.*
+  - `get_wp_client()` [L1170-L1178] — *Instantiate WordPressClient from stored settings if configured.*
+  - `_group_segments_into_paragraphs(segments, min_words)` [L1384-L1432] — *Group consecutive segments with same speaker into natural paragraph blocks.*
+  - `_build_audio_fade_filter(duration, fade_in, fade_out, fade_curve)` [L1435-L1463] — *Construct FFmpeg afade audio filter chain for story clips.*
+  - `execute_wordpress_upload(main_window, client, post_title, post_excerpt, start, end, task_label, include_english, include_spanish, spanish_presentation, primary_language, author_ids, author_term_ids, category_ids, show_completion_dialog, media_filename, progress_callback, featured_image_path, parent_episode_info, link_parent_episode, parent_episode_template, parent_episode_pos, include_audio, fade_in, fade_out, fade_curve, apply_fades, accordion_pos, is_podcast, podcast_feed, podcast_feed_id, podcast_feed_ids, podcast_feeds, podcast_episode_type, podcast_season, podcast_episode_number, youtube_url, youtube_stop_at_end, youtube_placement, youtube_use_story_time, existing_post_id, replace_existing_audio_and_podcast, post_status, publication_date, post_slug)` [L1466-L2078] — *Extract media clip, upload to WordPress media library, and create or update a post.*
 
-### `plugins/wordpress/export_destination.py` (654 lines)
+### `plugins/wordpress/episode_updater.py` (999 lines)
+*WordPress Existing Episode Lookup, Backfill Mode, Date Scheduling & MP3 Import.*
+- **Public Exports (`__all__`)**: MODE_NEW_EPISODE, MODE_UPDATE_EXISTING, extract_slug_or_id_from_url, clean_html_to_plain_excerpt, build_story_slug, normalize_wp_iso_date, format_wp_date_for_input, resolve_wp_post_from_url, download_wp_episode_audio, apply_fetched_post_to_tab, load_episode_updater_from_post, setup_wp_mode_and_date_ui, LoadWordPressEpisodeDialog, prompt_load_existing_wp_episode_dialog
+- **class `LoadWordPressEpisodeDialog(QDialog)`** (lines 830–975):
+  *Dialog for starting or updating a project from an existing WordPress/podcast episode URL.*
+  - `__init__(self, main_window, parent)` [L833-L891]
+  - `_sync_local_row_enabled(self)` [L893-L896]
+  - `_on_browse_local(self)` [L898-L907]
+  - `_resolve_target(self, url)` [L909-L922]
+  - `_on_fetch_clicked(self)` [L924-L939]
+  - `_on_load_clicked(self)` [L941-L975]
+- **Functions**:
+  - `extract_slug_or_id_from_url(url_or_id)` [L39-L69] — *Parse a WordPress post URL, query URL, numeric ID, or slug into (post_id, slug).*
+  - `clean_html_to_plain_excerpt(raw_html)` [L72-L89] — *Convert WordPress HTML/block content into clean plain text for post excerpts.*
+  - `build_story_slug(title)` [L92-L98] — *Build a clean URL-safe WordPress slug from a post title.*
+  - `normalize_wp_iso_date(date_str)` [L101-L136] — *Normalize a user-entered date/time string into WordPress ISO-8601 format (YYYY-MM-DDTHH:MM:SS).*
+  - `format_wp_date_for_input(iso_date)` [L139-L150] — *Format a WordPress ISO-8601 date string for compact UI display (YYYY-MM-DD HH:MM).*
+  - `_extract_audio_url_from_post_payload(post, html_fallback)` [L153-L192] — *Locate the episode MP3 URL from WordPress REST metadata, enclosures, or rendered HTML.*
+  - `_parse_wp_post_json(post, client, fallback_url)` [L195-L274] — *Normalize a WordPress REST post dictionary and extract Option B excerpt & audio URL.*
+  - `resolve_wp_post_from_url(client, url_or_id)` [L277-L336] — *Fetch an existing WordPress post by URL, slug, or ID via the WordPress REST API.*
+  - `_resolve_download_dir(main_window, target_dir)` [L339-L363] — *Choose a writable directory for downloaded WordPress episode audio files.*
+  - `download_wp_episode_audio(post_info, main_window, target_dir)` [L366-L398] — *Download the MP3 file associated with an existing WordPress episode post.*
+  - `_refresh_dialog_export_button(tab_widget)` [L401-L404]
+  - `_is_update_mode(tab_widget)` [L407-L409]
+  - `_get_current_tab_post(tab_widget)` [L412-L417]
+  - `sync_wp_audio_checkbox_label(tab_widget)` [L420-L434] — *Update the Media tab audio checkbox wording so Update mode clarifies that only new Story clips upload audio.*
+  - `_sync_mode_visibility(tab_widget)` [L437-L456] — *Update visibility of the Existing Episode panel and default status dropdowns.*
+  - `load_episode_updater_from_post(tab_widget, post)` [L459-L499] — *Synchronize mode, URL, publication date, and status controls from project and post data.*
+  - `_update_existing_status_label(tab_widget, post)` [L502-L521]
+  - `_copy_fetched_post_fields(target, post_info)` [L524-L541] — *Apply normalized WordPress post metadata onto a post item or project wp_meta dict.*
+  - `apply_fetched_post_to_tab(tab_widget, post_info, target_idx)` [L544-L572] — *Populate tab_widget's target post (default: current or Full Episode) with fetched WP post data.*
+  - `_populate_project_from_fetched_post(main_window, post_info)` [L575-L599] — *Store fetched WordPress post details into main_window.project_metadata for Update mode.*
+  - `_get_configured_client(parent_widget)` [L602-L618]
+  - `setup_wp_mode_and_date_ui(tab_widget, parent_section)` [L621-L827] — *Build workflow mode toggle, existing post URL lookup, publication date, and status controls.*
+  - `prompt_load_existing_wp_episode_dialog(main_window, parent)` [L978-L981] — *Launch the Load Existing WordPress Episode dialog and return True if accepted.*
+
+### `plugins/wordpress/export_destination.py` (774 lines)
 *WordPress Export Destination for UnifiedExportDialog.*
 - **Public Exports (`__all__`)**: WordPressExportDestination, WordPressExportTabWidget, WordPressPostMetadataDialog, capture_video_frame, build_wp_post_items, build_episode_stories_toc, format_parent_episode_notice, is_wp_auth_error, SS_PODCAST_AUDIO_FILE, SS_PODCAST_AUDIO_FILE_ID, SS_PODCAST_DURATION, SS_PODCAST_FILESIZE, SS_PODCAST_FEED, SS_PODCAST_EPISODE_TYPE, CASTOS_SHORTCODE, CASTOS_PLAYER_BLOCK, build_castos_post_meta, format_castos_duration, fetch_castos_feeds
-- **class `WordPressExportDestination(ExportDestination)`** (lines 36–533):
+- **class `WordPressExportDestination(ExportDestination)`** (lines 36–653):
   *Export destination handler for WordPress REST API Draft Posts.*
   - `__init__(self, plugin)` [L39-L47]
-  - `button_label(self)` [L50-L55]
-  - `button_label(self, val)` [L58-L59]
-  - `get_export_button_label(self)` [L61-L62]
-  - `widget(self)` [L65-L66]
-  - `widget(self, val)` [L69-L70]
-  - `create_widget(self, parent, main_window)` [L72-L74]
-  - `_ensure_tab_widget(self)` [L76-L92] — *Defensive resolver to bind tab_widget from cached dialog entries if unlinked.*
-  - `on_scope_changed(self, scope, stories)` [L94-L97]
-  - `validate(self)` [L99-L115]
-  - `get_export_data(self)` [L117-L136]
-  - `execute_export(self, main_window, export_data, progress_dialog)` [L138-L533]
-- **class `WordPressPostMetadataDialog(QDialog)`** (lines 536–616):
+  - `button_label(self)` [L50-L60]
+  - `button_label(self, val)` [L63-L64]
+  - `get_export_button_label(self)` [L66-L67]
+  - `widget(self)` [L70-L71]
+  - `widget(self, val)` [L74-L75]
+  - `create_widget(self, parent, main_window)` [L77-L79]
+  - `_ensure_tab_widget(self)` [L81-L97] — *Defensive resolver to bind tab_widget from cached dialog entries if unlinked.*
+  - `on_scope_changed(self, scope, stories)` [L99-L102]
+  - `validate(self)` [L104-L140]
+  - `get_export_data(self)` [L142-L168]
+  - `execute_export(self, main_window, export_data, progress_dialog)` [L170-L653]
+- **class `WordPressPostMetadataDialog(QDialog)`** (lines 656–736):
   *Full-featured WordPress post & story metadata editor dialog.*
-  - `__init__(self, parent, main_window, target_story_index)` [L539-L595]
-  - `_on_save_clicked(self)` [L597-L602]
-  - `_on_close_clicked(self)` [L604-L606]
-  - `_on_save_and_close(self)` [L608-L609]
-  - `done(self, r)` [L611-L616]
+  - `__init__(self, parent, main_window, target_story_index)` [L659-L715]
+  - `_on_save_clicked(self)` [L717-L722]
+  - `_on_close_clicked(self)` [L724-L726]
+  - `_on_save_and_close(self)` [L728-L729]
+  - `done(self, r)` [L731-L736]
 
-### `plugins/wordpress/plugin.py` (897 lines)
+### `plugins/wordpress/plugin.py` (907 lines)
 *WordPress Publisher Plugin for Radio & TV Segmenter.*
 - **class `WordPressPublishDialog(QDialog)`** (lines 91–517):
   *Publish a story or project to WordPress with featured image selection.*
@@ -1388,18 +1427,20 @@
   - `_load_current_target_metadata(self)` [L738-L791]
   - `_open_post_settings_dialog(self)` [L793-L799]
   - `_on_refresh_taxonomy(self)` [L801-L836]
-- **class `Plugin(BasePlugin)`** (lines 839–896):
+- **class `Plugin(BasePlugin)`** (lines 839–906):
   *WordPress Plugin implementation hooking into RTVS.*
   - `__init__(self, manifest, app)` [L842-L844]
   - `on_load(self)` [L846-L847]
   - `get_export_destinations(self)` [L849-L851]
-  - `get_export_actions(self)` [L853-L861]
-  - `get_story_actions(self, story)` [L863-L867]
-  - `create_story_metadata_widget(self, parent)` [L869-L871]
-  - `on_story_selected(self, story)` [L873-L874]
-  - `get_preferences_widget(self, parent)` [L876-L878]
-  - `open_publish_dialog(self, parent, story)` [L880-L882]
-  - `open_post_metadata_dialog(self, parent, story)` [L884-L896]
+  - `get_file_open_actions(self)` [L853-L856]
+  - `get_export_actions(self)` [L858-L867]
+  - `open_load_existing_episode_dialog(self)` [L869-L871]
+  - `get_story_actions(self, story)` [L873-L877]
+  - `create_story_metadata_widget(self, parent)` [L879-L881]
+  - `on_story_selected(self, story)` [L883-L884]
+  - `get_preferences_widget(self, parent)` [L886-L888]
+  - `open_publish_dialog(self, parent, story)` [L890-L892]
+  - `open_post_metadata_dialog(self, parent, story)` [L894-L906]
 - **Functions**:
   - `capture_video_frame(video_path, timestamp, output_path, timeout)` [L66-L88] — *Extract a high quality single frame from a video using fast seeking FFmpeg.*
 
@@ -1458,16 +1499,16 @@
   - `generate_wp_excerpt(transcript_words, start_t, end_t)` [L59-L61]
   - `capture_video_frame(video_path, timestamp, output_path)` [L64-L76]
 
-### `plugins/wordpress/wp_post_builder.py` (321 lines)
+### `plugins/wordpress/wp_post_builder.py` (341 lines)
 *Post item builder, transcript slicing, and video frame extraction for WordPress export.*
 - **Functions**:
   - `capture_video_frame(video_path, timestamp, output_path, timeout)` [L13-L35] — *Capture a single frame from video at timestamp using ffmpeg.*
   - `get_primary_text_slice(main_window, primary_lang, st_start, st_end)` [L38-L67] — *Extract transcript or translated text for the specified time slice.*
-  - `build_wp_post_items(main_window, scope, primary_lang, existing_items)` [L70-L321] — *Build the list of WordPress post definitions according to the export scope.*
+  - `build_wp_post_items(main_window, scope, primary_lang, existing_items)` [L70-L341] — *Build the list of WordPress post definitions according to the export scope.*
 
-### `plugins/wordpress/wp_tab_widget.py` (946 lines)
+### `plugins/wordpress/wp_tab_widget.py` (993 lines)
 *WordPress export tab configuration widget and preview controller.*
-- **class `WordPressExportTabWidget(QWidget)`** (lines 37–945):
+- **class `WordPressExportTabWidget(QWidget)`** (lines 37–992):
   *Configuration and preview panel for WordPress Draft Posts.*
   - `__init__(self, parent, main_window, metadata_editor_mode)` [L40-L59]
   - `_setup_ui(self)` [L61-L62]
@@ -1478,53 +1519,55 @@
   - `_filter_categories_list(self, text)` [L125-L129]
   - `_sync_to_proj(self, idx)` [L131-L133]
   - `_on_title_edited(self, text)` [L135-L148]
-  - `_on_excerpt_edited(self)` [L150-L154]
-  - `_auto_generate_current_excerpt(self)` [L156-L164]
-  - `_autofill_all_excerpts(self)` [L166-L173]
-  - `_on_author_item_changed(self, item)` [L175-L183]
-  - `_on_category_item_changed(self, item)` [L185-L192]
-  - `_clear_current_authors(self)` [L194-L200]
-  - `_clear_current_categories(self)` [L202-L207]
-  - `_get_selected_story_indices(self)` [L209-L213]
-  - `_apply_authors_to_selected_stories(self)` [L215-L216]
-  - `_apply_categories_to_selected_stories(self)` [L218-L219]
-  - `_apply_thumbnails_to_selected_stories(self)` [L221-L222]
-  - `_bulk_apply_to_selected(self, *keys)` [L224-L256]
-  - `_apply_authors_to_all_posts(self)` [L258-L259]
-  - `_apply_categories_to_all_posts(self)` [L261-L262]
-  - `_apply_thumbnails_to_all_posts(self)` [L264-L265]
-  - `_bulk_apply_to_all(self, *keys)` [L267-L286]
-  - `_apply_podcast_to_selected_stories(self)` [L288-L318]
-  - `_apply_podcast_to_all_posts(self)` [L320-L335]
-  - `_sync_post_to_project(self, idx)` [L337-L442]
-  - `save_all_posts_to_project(self)` [L444-L461] — *Persist all post metadata and export options back into stories and project_metadata.*
-  - `_update_post_list_item_label(self, idx)` [L463-L471]
-  - `_on_wp_post_selection_changed(self, row)` [L473-L476]
-  - `_get_editor_checked_authors(self)` [L478-L494]
-  - `_set_editor_checked_authors(self, author_ids, author_term_ids)` [L496-L514]
-  - `_get_editor_checked_categories(self)` [L516-L524]
-  - `_set_editor_checked_categories(self, cat_ids)` [L526-L534]
-  - `_get_wp_post_bounds(self, post_index)` [L536-L545]
-  - `_sync_wp_slider_to_pos(self, pos)` [L547-L557]
-  - `_on_wp_slider_value_changed(self, val)` [L559-L567]
-  - `_on_wp_scrub_timer_timeout(self)` [L569-L573]
-  - `_on_wp_step(self, delta_secs)` [L575-L583]
-  - `_on_wp_sync_playhead(self)` [L585-L592]
-  - `_load_post_editor_state(self, index)` [L594-L661]
-  - `_on_wp_thumb_mode_changed(self)` [L663-L698]
-  - `_capture_wp_frame(self, pos)` [L700-L734]
-  - `_on_wp_browse_thumb(self)` [L736-L754]
-  - `_cleanup_temp_files(self)` [L756-L765] — *Purge temporary frame grabs and preview images.*
-  - `closeEvent(self, event)` [L767-L775] — *Persist current post state and clean up temp files on widget/dialog closure.*
-  - `rebuild_post_items(self, scope)` [L777-L815]
-  - `_populate_wp_export_metadata(self, force_refresh)` [L817-L884]
-  - `_refresh_castos_feeds(self)` [L886-L911]
-  - `_refresh_wp_metadata(self)` [L913-L945]
+  - `_on_excerpt_edited(self)` [L150-L155]
+  - `_auto_generate_current_excerpt(self)` [L157-L165]
+  - `_autofill_all_excerpts(self)` [L167-L178]
+  - `_on_author_item_changed(self, item)` [L180-L188]
+  - `_sync_categories_to_all_stories(self, cat_ids)` [L190-L197] — *Copy category_ids to every Story item in wp_post_items without altering Full Episode.*
+  - `_on_cats_apply_all_stories_toggled(self, checked)` [L199-L206]
+  - `_on_category_item_changed(self, item)` [L208-L217]
+  - `_clear_current_authors(self)` [L219-L225]
+  - `_clear_current_categories(self)` [L227-L235]
+  - `_get_selected_story_indices(self)` [L237-L241]
+  - `_apply_authors_to_selected_stories(self)` [L243-L244]
+  - `_apply_categories_to_selected_stories(self)` [L246-L247]
+  - `_apply_thumbnails_to_selected_stories(self)` [L249-L250]
+  - `_bulk_apply_to_selected(self, *keys)` [L252-L284]
+  - `_apply_authors_to_all_posts(self)` [L286-L287]
+  - `_apply_categories_to_all_posts(self)` [L289-L290]
+  - `_apply_thumbnails_to_all_posts(self)` [L292-L293]
+  - `_bulk_apply_to_all(self, *keys)` [L295-L314]
+  - `_apply_podcast_to_selected_stories(self)` [L316-L346]
+  - `_apply_podcast_to_all_posts(self)` [L348-L363]
+  - `_sync_post_to_project(self, idx)` [L365-L476]
+  - `save_all_posts_to_project(self)` [L478-L503] — *Persist all post metadata and export options back into stories and project_metadata.*
+  - `_update_post_list_item_label(self, idx)` [L505-L513]
+  - `_on_wp_post_selection_changed(self, row)` [L515-L518]
+  - `_get_editor_checked_authors(self)` [L520-L536]
+  - `_set_editor_checked_authors(self, author_ids, author_term_ids)` [L538-L556]
+  - `_get_editor_checked_categories(self)` [L558-L566]
+  - `_set_editor_checked_categories(self, cat_ids)` [L568-L576]
+  - `_get_wp_post_bounds(self, post_index)` [L578-L587]
+  - `_sync_wp_slider_to_pos(self, pos)` [L589-L599]
+  - `_on_wp_slider_value_changed(self, val)` [L601-L609]
+  - `_on_wp_scrub_timer_timeout(self)` [L611-L615]
+  - `_on_wp_step(self, delta_secs)` [L617-L625]
+  - `_on_wp_sync_playhead(self)` [L627-L634]
+  - `_load_post_editor_state(self, index)` [L636-L708]
+  - `_on_wp_thumb_mode_changed(self)` [L710-L745]
+  - `_capture_wp_frame(self, pos)` [L747-L781]
+  - `_on_wp_browse_thumb(self)` [L783-L801]
+  - `_cleanup_temp_files(self)` [L803-L812] — *Purge temporary frame grabs and preview images.*
+  - `closeEvent(self, event)` [L814-L822] — *Persist current post state and clean up temp files on widget/dialog closure.*
+  - `rebuild_post_items(self, scope)` [L824-L862]
+  - `_populate_wp_export_metadata(self, force_refresh)` [L864-L931]
+  - `_refresh_castos_feeds(self)` [L933-L958]
+  - `_refresh_wp_metadata(self)` [L960-L992]
 
-### `plugins/wordpress/wp_ui_builder.py` (748 lines)
+### `plugins/wordpress/wp_ui_builder.py` (762 lines)
 *UI layout construction and widget setup for WordPressExportTabWidget.*
 - **Functions**:
-  - `setup_wp_tab_ui(self)` [L36-L748] — *Construct all controls, forms, sliders, list widgets, and tabbed panels for the WordPress export tab.*
+  - `setup_wp_tab_ui(self)` [L36-L762] — *Construct all controls, forms, sliders, list widgets, and tabbed panels for the WordPress export tab.*
 
 ### `plugins/wordpress/youtube_embed.py` (608 lines)
 *YouTube Video Embed helpers, Gutenberg iframe generator, and UI setup for WordPress export.*
@@ -2725,11 +2768,11 @@
   - `setSingleStep(self, step)` [L368-L369]
   - `setValue(self, val)` [L371-L372]
 
-### `timeline_painter.py` (419 lines)
+### `timeline_painter.py` (430 lines)
 *Timeline canvas rendering engine, waveform drawing, and paint pipeline.*
 - **Functions**:
-  - `render_waveform_buffer(canvas, width, height)` [L32-L195] — *Render background waveform peaks and video thumbnail strip onto an offscreen QPixmap.*
-  - `paint_timeline_canvas(canvas, painter, event)` [L198-L419] — *Execute full timeline paint pipeline onto the canvas QPainter.*
+  - `render_waveform_buffer(canvas, width, height)` [L32-L206] — *Render background waveform peaks and video thumbnail strip onto an offscreen QPixmap.*
+  - `paint_timeline_canvas(canvas, painter, event)` [L209-L430] — *Execute full timeline paint pipeline onto the canvas QPainter.*
 
 ### `timeline_snap.py` (195 lines)
 *Timeline snapping algorithms, edge detection, and collision hit-testing.*
@@ -2743,63 +2786,64 @@
   - `format_selection_drag_info(start, end)` [L177-L185] — *Format tooltip and status bar readout for live selection dragging.*
   - `format_edge_drag_info(story, edge_type, current_time)` [L188-L195] — *Format tooltip and status bar readout for live edge dragging.*
 
-### `timeline_widgets.py` (999 lines)
+### `timeline_widgets.py` (998 lines)
 *Radio & TV Story Segmenter — Timeline Ruler, Track Views, Playhead, Overview & Canvas Widgets.*
-- **class `TimelineCanvas(QWidget)`** (lines 58–882):
-  - `__init__(self, parent, tokens)` [L78-L168]
-  - `set_is_video(self, is_video)` [L170-L173]
-  - `set_background_generation_active(self, task_name, active)` [L175-L194] — *Set generation state for 'waveform' or 'thumbnails'.*
-  - `_activate_background_banner(self)` [L196-L201]
-  - `_update_background_status_text(self)` [L203-L216]
-  - `dragEnterEvent(self, event)` [L218-L225]
-  - `dragMoveEvent(self, event)` [L227-L234]
-  - `dragLeaveEvent(self, event)` [L236-L237]
-  - `dropEvent(self, event)` [L239-L247]
-  - `set_audio_filename(self, filename)` [L249-L252]
-  - `set_duration(self, duration)` [L254-L262]
-  - `set_position(self, position)` [L264-L267]
-  - `set_playing_state(self, is_playing)` [L269-L270]
-  - `ensure_position_visible(self, target_time)` [L272-L295]
-  - `clear_selection_range(self)` [L297-L302] — *Clear active timeline drag selection range without affecting committed stories.*
-  - `set_transcript_selection_range(self, start, end)` [L304-L309]
+- **class `TimelineCanvas(QWidget)`** (lines 58–886):
+  - `__init__(self, parent, tokens)` [L78-L170]
+  - `set_is_video(self, is_video)` [L172-L175]
+  - `set_background_generation_active(self, task_name, active)` [L177-L196] — *Set generation state for 'waveform' or 'thumbnails'.*
+  - `_activate_background_banner(self)` [L198-L203]
+  - `_update_background_status_text(self)` [L205-L221]
+  - `dragEnterEvent(self, event)` [L223-L229]
+  - `dragMoveEvent(self, event)` [L231-L237]
+  - `dragLeaveEvent(self, event)` [L239-L240]
+  - `dropEvent(self, event)` [L242-L250]
+  - `set_audio_filename(self, filename)` [L252-L255]
+  - `set_duration(self, duration)` [L257-L265]
+  - `set_position(self, position)` [L267-L270]
+  - `set_playing_state(self, is_playing)` [L272-L273]
+  - `ensure_position_visible(self, target_time)` [L275-L298]
+  - `clear_selection_range(self)` [L300-L305] — *Clear active timeline drag selection range without affecting committed stories.*
+  - `set_transcript_selection_range(self, start, end)` [L307-L309]
   - `set_stories(self, stories, selected_indices)` [L311-L315]
   - `set_waveform_peaks(self, peaks, levels)` [L317-L328]
-  - `set_timeline_views(self, show_waveform, show_thumbnails)` [L330-L334]
-  - `set_video_thumbnails(self, thumbnails)` [L336-L343]
-  - `set_skip_seconds(self, seconds)` [L345-L346]
-  - `visible_duration(self)` [L348-L349]
-  - `clamp_scroll_offset(self)` [L351-L354]
-  - `time_to_x(self, time_val, width)` [L356-L359]
-  - `x_to_time(self, x_val, width)` [L361-L363]
-  - `snap_time(self, raw_time, exclude_story_idx, width, pixel_threshold)` [L365-L366]
-  - `find_edge_at_pos(self, pos_x, width)` [L370-L371]
-  - `find_fade_handle_at_pos(self, pos_x, pos_y, width)` [L373-L374]
-  - `find_story_at_time(self, time)` [L376-L377]
-  - `is_near_playhead(self, pos_x, width)` [L379-L380]
-  - `set_zoom(self, new_zoom, center_x, focus_time)` [L382-L408]
-  - `resizeEvent(self, event)` [L410-L412]
-  - `wheelEvent(self, event)` [L414-L464]
-  - `mousePressEvent(self, event)` [L466-L550]
-  - `mouseMoveEvent(self, event)` [L552-L683]
-  - `mouseReleaseEvent(self, event)` [L685-L755]
-  - `_show_timeline_context_menu(self, global_pos, pos_x)` [L757-L758]
-  - `_show_selection_context_menu(self, global_pos)` [L760-L761]
-  - `keyPressEvent(self, event)` [L763-L862]
-  - `set_thumbnail_position(self, position)` [L864-L868]
-  - `render_waveform_buffer(self, width, height)` [L870-L871]
-  - `paintEvent(self, event)` [L874-L882]
-- **class `TimelineWidget(QWidget)`** (lines 885–998):
-  - `__init__(self, parent, tokens)` [L888-L925]
-  - `set_is_video(self, is_video)` [L927-L929]
-  - `set_background_generation_active(self, task_name, active)` [L931-L933]
-  - `dragEnterEvent(self, event)` [L935-L942]
-  - `dragMoveEvent(self, event)` [L944-L951]
-  - `dragLeaveEvent(self, event)` [L953-L954]
-  - `dropEvent(self, event)` [L956-L964]
-  - `update_scrollbar_range(self)` [L966-L975]
-  - `update_scrollbar_from_canvas(self, offset)` [L977-L984]
-  - `update_canvas_from_scrollbar(self, val)` [L986-L995]
-  - `__getattr__(self, name)` [L997-L998]
+  - `set_progressive_waveform_peaks(self, peaks, pps, pct)` [L330-L337]
+  - `set_timeline_views(self, show_waveform, show_thumbnails)` [L339-L343]
+  - `set_video_thumbnails(self, thumbnails)` [L345-L348]
+  - `set_skip_seconds(self, seconds)` [L350-L351]
+  - `visible_duration(self)` [L353-L354]
+  - `clamp_scroll_offset(self)` [L356-L359]
+  - `time_to_x(self, time_val, width)` [L361-L364]
+  - `x_to_time(self, x_val, width)` [L366-L368]
+  - `snap_time(self, raw_time, exclude_story_idx, width, pixel_threshold)` [L370-L371]
+  - `find_edge_at_pos(self, pos_x, width)` [L375-L376]
+  - `find_fade_handle_at_pos(self, pos_x, pos_y, width)` [L378-L379]
+  - `find_story_at_time(self, time)` [L381-L382]
+  - `is_near_playhead(self, pos_x, width)` [L384-L385]
+  - `set_zoom(self, new_zoom, center_x, focus_time)` [L387-L413]
+  - `resizeEvent(self, event)` [L415-L417]
+  - `wheelEvent(self, event)` [L419-L469]
+  - `mousePressEvent(self, event)` [L471-L555]
+  - `mouseMoveEvent(self, event)` [L557-L688]
+  - `mouseReleaseEvent(self, event)` [L690-L760]
+  - `_show_timeline_context_menu(self, global_pos, pos_x)` [L762-L763]
+  - `_show_selection_context_menu(self, global_pos)` [L765-L766]
+  - `keyPressEvent(self, event)` [L768-L867]
+  - `set_thumbnail_position(self, position)` [L869-L873]
+  - `render_waveform_buffer(self, width, height)` [L875-L876]
+  - `paintEvent(self, event)` [L878-L886]
+- **class `TimelineWidget(QWidget)`** (lines 889–997):
+  - `__init__(self, parent, tokens)` [L892-L926]
+  - `set_is_video(self, is_video)` [L928-L930]
+  - `set_background_generation_active(self, task_name, active)` [L932-L934]
+  - `dragEnterEvent(self, event)` [L936-L942]
+  - `dragMoveEvent(self, event)` [L944-L950]
+  - `dragLeaveEvent(self, event)` [L952-L953]
+  - `dropEvent(self, event)` [L955-L963]
+  - `update_scrollbar_range(self)` [L965-L974]
+  - `update_scrollbar_from_canvas(self, offset)` [L976-L983]
+  - `update_canvas_from_scrollbar(self, val)` [L985-L994]
+  - `__getattr__(self, name)` [L996-L997]
 
 ### `transcript_cleaner.py` (216 lines)
 *Radio & TV Segmenter — Transcript cleaning, loop collapsing, and hallucination scrubbing.*
@@ -2941,7 +2985,7 @@
   - `_on_bubble_export(self)` [L468-L473]
 
 ### `transcript_story.py` (852 lines)
-*Radio & TV Segmenter v3.9.95-beta — transcript story responsibilities.*
+*Radio & TV Segmenter v3.9.96-beta — transcript story responsibilities.*
 - **Public Exports (`__all__`)**: TranscriptStoryMixin, Story, SetStoriesCommand, SelectStoriesCommand, StoryBoundaryChangeCommand, StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin, ChangeSpeakerDialog, VoiceProfileMatchDialog, StoryFadesDialog, SpeakerManagerDialog, FADE_CURVE_TABLES, get_fade_curve_factors
 - **class `TranscriptStoryMixin(StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin)`** (lines 63–851):
   - `render_transcript(self)` [L64-L467]
@@ -3080,24 +3124,24 @@
   - `setup_plugin_story_extensions(self)` [L1061-L1083] — *Populate plugin-provided widgets in the story panel.*
   - `notify_story_selection_to_plugins(self, selected_story)` [L1085-L1093] — *Notify all enabled plugins when the active story selection changes.*
 
-### `ui_menus.py` (863 lines)
+### `ui_menus.py` (883 lines)
 *Main application menu bar and action assembly for Radio & TV Story Segmenter.*
 - **class `PersistentMenu(QMenu)`** (lines 50–73):
   *A QMenu subclass that stays open when checkable toggle options are activated,*
   - `addMenu(self, *args, **kwargs)` [L54-L59]
   - `mouseReleaseEvent(self, event)` [L61-L73]
-- **class `UiMenusMixin`** (lines 78–862):
+- **class `UiMenusMixin`** (lines 78–882):
   *Mixin providing menu construction, action shortcut wiring, and menu synchronization.*
-  - `build_menus(self)` [L80-L673] — *Construct the main application menu bar and associated keyboard shortcuts.*
-  - `apply_user_shortcuts(self)` [L675-L680] — *Rebind all menu actions and application shortcuts according to user preferences.*
-  - `_refresh_recent_projects_menu(self)` [L682-L710] — *Update recent projects submenu items based on user settings store.*
-  - `_check_external_dependencies(self)` [L712-L726] — *Check bundled media tools and record actionable diagnostics.*
-  - `_sync_undo_redo_actions(self)` [L728-L737] — *Synchronize undo/redo action states with QUndoStack.*
-  - `_remember_directory(self, path)` [L739-L749] — *Persist directory of chosen file to improve user file dialog experience.*
-  - `update_processing_menu_status(self)` [L752-L768] — *Update label annotations on Tools actions reflecting pipeline stage completion.*
-  - `refresh_plugin_menus(self)` [L771-L822] — *Dynamically populate plugin export actions, tools menu actions, and core UI controls.*
-  - `trigger_smart_copy(self)` [L824-L844] — *Smart copy routing: active text cursor selection -> focused widget -> highlighted story transcript.*
-  - `trigger_deselect_all(self)` [L846-L862] — *Clear all active selections across stories, timeline range, and transcript.*
+  - `build_menus(self)` [L80-L675] — *Construct the main application menu bar and associated keyboard shortcuts.*
+  - `apply_user_shortcuts(self)` [L677-L682] — *Rebind all menu actions and application shortcuts according to user preferences.*
+  - `_refresh_recent_projects_menu(self)` [L684-L712] — *Update recent projects submenu items based on user settings store.*
+  - `_check_external_dependencies(self)` [L714-L728] — *Check bundled media tools and record actionable diagnostics.*
+  - `_sync_undo_redo_actions(self)` [L730-L739] — *Synchronize undo/redo action states with QUndoStack.*
+  - `_remember_directory(self, path)` [L741-L751] — *Persist directory of chosen file to improve user file dialog experience.*
+  - `update_processing_menu_status(self)` [L754-L770] — *Update label annotations on Tools actions reflecting pipeline stage completion.*
+  - `refresh_plugin_menus(self)` [L773-L842] — *Dynamically populate plugin export actions, tools menu actions, and core UI controls.*
+  - `trigger_smart_copy(self)` [L844-L864] — *Smart copy routing: active text cursor selection -> focused widget -> highlighted story transcript.*
+  - `trigger_deselect_all(self)` [L866-L882] — *Clear all active selections across stories, timeline range, and transcript.*
 
 ### `updater.py` (1549 lines)
 *Update manager and GitHub release installer for Radio & TV Segmenter.*

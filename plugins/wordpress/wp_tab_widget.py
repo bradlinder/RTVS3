@@ -151,6 +151,7 @@ class WordPressExportTabWidget(QWidget):
         if self._syncing_post_editor or not (0 <= self._current_post_index < len(self.wp_post_items)):
             return
         self.wp_post_items[self._current_post_index]["excerpt"] = self.wp_excerpt_edit.toPlainText().strip()
+        self.wp_post_items[self._current_post_index]["_excerpt_user_edited"] = True
         self._sync_to_proj(self._current_post_index)
 
     def _auto_generate_current_excerpt(self):
@@ -164,7 +165,11 @@ class WordPressExportTabWidget(QWidget):
         self._sync_to_proj(self._current_post_index)
 
     def _autofill_all_excerpts(self):
+        is_upd = hasattr(self, "wp_rad_mode_update") and self.wp_rad_mode_update.isChecked()
         for idx, post in enumerate(self.wp_post_items):
+            is_parent = (post.get("task_label") == "Full Episode") or (post.get("start") is None)
+            if is_parent and (is_upd or post.get("excerpt_from_existing") or post.get("existing_post_url")) and str(post.get("excerpt") or "").strip():
+                continue
             raw_text = self.main_window._get_transcript_text_slice(post.get("start"), post.get("end")) if hasattr(self.main_window, "_get_transcript_text_slice") else ""
             post["excerpt"] = generate_wp_excerpt(raw_text, 55)
             self._sync_to_proj(idx)
@@ -182,6 +187,24 @@ class WordPressExportTabWidget(QWidget):
         self._update_post_list_item_label(self._current_post_index)
         self._sync_to_proj(self._current_post_index)
 
+    def _sync_categories_to_all_stories(self, cat_ids: List[int]) -> None:
+        """Copy category_ids to every Story item in wp_post_items without altering Full Episode."""
+        for i, p in enumerate(self.wp_post_items):
+            if p.get("is_parent_episode"):
+                continue
+            p["category_ids"] = list(cat_ids)
+            self._update_post_list_item_label(i)
+            self._sync_to_proj(i)
+
+    def _on_cats_apply_all_stories_toggled(self, checked: bool):
+        if hasattr(self, "settings"):
+            self.settings.setValue("wp_cats_apply_all_stories", bool(checked))
+        if not checked or self._syncing_post_editor or not (0 <= self._current_post_index < len(self.wp_post_items)):
+            return
+        post = self.wp_post_items[self._current_post_index]
+        if not post.get("is_parent_episode"):
+            self._sync_categories_to_all_stories(list(post.get("category_ids") or []))
+
     def _on_category_item_changed(self, item):
         if self._syncing_post_editor or not (0 <= self._current_post_index < len(self.wp_post_items)):
             return
@@ -190,6 +213,8 @@ class WordPressExportTabWidget(QWidget):
         post["category_ids"] = cat_ids
         self._update_post_list_item_label(self._current_post_index)
         self._sync_to_proj(self._current_post_index)
+        if not post.get("is_parent_episode") and getattr(self, "wp_cb_cats_apply_stories", None) and self.wp_cb_cats_apply_stories.isChecked():
+            self._sync_categories_to_all_stories(cat_ids)
 
     def _clear_current_authors(self):
         self._set_editor_checked_authors([], [])
@@ -202,9 +227,12 @@ class WordPressExportTabWidget(QWidget):
     def _clear_current_categories(self):
         self._set_editor_checked_categories([])
         if 0 <= self._current_post_index < len(self.wp_post_items):
-            self.wp_post_items[self._current_post_index]["category_ids"] = []
+            post = self.wp_post_items[self._current_post_index]
+            post["category_ids"] = []
             self._update_post_list_item_label(self._current_post_index)
             self._sync_to_proj(self._current_post_index)
+            if not post.get("is_parent_episode") and getattr(self, "wp_cb_cats_apply_stories", None) and self.wp_cb_cats_apply_stories.isChecked():
+                self._sync_categories_to_all_stories([])
 
     def _get_selected_story_indices(self) -> List[int]:
         indices = list(getattr(self.main_window, "current_selected_story_indices", []) or [])
@@ -359,6 +387,9 @@ class WordPressExportTabWidget(QWidget):
             wp_meta["status"] = post.get("status", "draft")
             wp_meta["slug"] = post.get("slug", "")
             wp_meta["tags"] = list(post.get("tags") or [])
+            for ex_k in ("existing_post_url", "existing_post_id", "existing_post_slug", "existing_post_status", "existing_post_date", "replace_existing_audio", "excerpt_from_existing"):
+                if ex_k in post:
+                    wp_meta[ex_k] = post[ex_k]
             from plugins.wordpress.castos import copy_podcast_meta
             copy_podcast_meta(wp_meta, post)
             from plugins.wordpress.youtube_embed import sync_youtube_to_meta
@@ -416,6 +447,9 @@ class WordPressExportTabWidget(QWidget):
                 wp_meta["status"] = post.get("status", "draft")
                 wp_meta["slug"] = post.get("slug", "")
                 wp_meta["tags"] = list(post.get("tags") or [])
+                for ex_k in ("existing_post_url", "existing_post_id", "existing_post_slug", "existing_post_status", "existing_post_date", "replace_existing_audio", "excerpt_from_existing"):
+                    if ex_k in post:
+                        wp_meta[ex_k] = post[ex_k]
                 from plugins.wordpress.castos import copy_podcast_meta
                 copy_podcast_meta(wp_meta, post)
                 from plugins.wordpress.youtube_embed import sync_youtube_to_meta
@@ -454,6 +488,14 @@ class WordPressExportTabWidget(QWidget):
             wp_meta["custom_notice"] = self.wp_custom_text_edit.toPlainText().strip()
         if hasattr(self, "wp_rad_pos_top") and self.wp_rad_pos_top:
             wp_meta["notice_placement"] = "top" if self.wp_rad_pos_top.isChecked() else "bottom"
+        if hasattr(self, "wp_rad_mode_update") and self.wp_rad_mode_update:
+            wp_meta["export_mode"] = "update_existing" if self.wp_rad_mode_update.isChecked() else "new_episode"
+        if hasattr(self, "wp_pub_date_edit") and self.wp_pub_date_edit:
+            wp_meta["publication_date"] = self.wp_pub_date_edit.text().strip()
+        if hasattr(self, "wp_full_status_combo") and self.wp_full_status_combo:
+            wp_meta["full_episode_status"] = self.wp_full_status_combo.currentData() or "draft"
+        if hasattr(self, "wp_story_status_combo") and self.wp_story_status_combo:
+            wp_meta["story_status"] = self.wp_story_status_combo.currentData() or "draft"
         if hasattr(self.main_window, "save_project"):
             try:
                 self.main_window.save_project()
@@ -653,12 +695,17 @@ class WordPressExportTabWidget(QWidget):
 
         self._set_editor_checked_authors(post.get("author_ids", []), post.get("author_term_ids", []))
         self._set_editor_checked_categories(post.get("category_ids", []))
+        if hasattr(self, "wp_cb_cats_apply_stories"):
+            self.wp_cb_cats_apply_stories.setVisible(not bool(post.get("is_parent_episode")))
 
         from plugins.wordpress.castos import load_castos_from_post
         load_castos_from_post(self, post)
 
         from plugins.wordpress.youtube_embed import load_youtube_from_post
         load_youtube_from_post(self, post)
+
+        from plugins.wordpress.episode_updater import load_episode_updater_from_post
+        load_episode_updater_from_post(self, post)
 
     def _on_wp_thumb_mode_changed(self):
         if self._syncing_post_editor or not (0 <= self._current_post_index < len(self.wp_post_items)):

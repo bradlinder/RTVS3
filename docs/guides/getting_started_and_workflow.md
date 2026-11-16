@@ -9,6 +9,7 @@ This guide covers the core workflow of Radio & TV Segmenter: loading media, gene
 You can load media into RTVS3 in several ways:
 - **Drag-and-Drop**: Drag any supported audio or video file directly onto the timeline canvas or into the transcript area.
 - **File Menu**: Go to **File > Open Media...** (or press **Ctrl+O**).
+- **Existing WordPress / Podcast Episode**: Go to **File > Open Existing WordPress Episode...** to paste an older WordPress episode URL, automatically fetch its original publication date, title, and show-notes excerpt, and either download the episode's MP3 directly from WordPress or pair it with a local audio file on your computer.
 - **Recent Projects**: Go to **File > Recent Projects** to quickly reopen past files.
 
 ### Supported File Formats:

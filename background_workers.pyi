@@ -11,6 +11,7 @@ import subprocess
 import sys
 import tempfile
 import threading
+import time
 from math import gcd
 from pathlib import Path
 from typing import Optional, List, Dict, Any, Tuple
@@ -56,6 +57,7 @@ def invalidate_waveform_peak_cache(audio_file, project_file=...):
 
 class WaveformWorker(QObject):
     finished = ...
+    progress = ...
 
     def __init__(self, audio_file, points_per_second=..., project_file=...):
         ...

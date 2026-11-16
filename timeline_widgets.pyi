@@ -91,6 +91,9 @@ class TimelineCanvas(QWidget):
     def set_waveform_peaks(self, peaks, levels=...):
         ...
 
+    def set_progressive_waveform_peaks(self, peaks, pps: float, pct: int=...):
+        ...
+
     def set_timeline_views(self, show_waveform=..., show_thumbnails=...):
         ...
 

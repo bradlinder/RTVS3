@@ -89,6 +89,8 @@ class UiMenusMixin:
         # in show_shortcuts_dialog() and the README.
         # ==========================================
         file_menu = menubar.addMenu("&File")
+        self.file_menu = file_menu
+        self.plugin_file_open_actions = []
 
         # 1. Media Input
         open_media_act = QAction("&Open Media...", self)
@@ -107,7 +109,7 @@ class UiMenusMixin:
         self.open_doc_action = open_doc_act
         file_menu.addAction(open_doc_act)
 
-        file_menu.addSeparator()
+        self.file_media_separator = file_menu.addSeparator()
 
         # 2. Project Creation & Loading
         new_proj_act = QAction("&New Project", self)
@@ -772,6 +774,24 @@ class UiMenusMixin:
         """Dynamically populate plugin export actions, tools menu actions, and core UI controls."""
         if not hasattr(self, "plugin_manager"):
             return
+
+        # 0. Refresh File -> Media Input plugin actions (e.g. Open Existing WordPress Episode...)
+        if hasattr(self, "file_menu") and hasattr(self, "file_media_separator"):
+            for act in getattr(self, "plugin_file_open_actions", []):
+                self.file_menu.removeAction(act)
+            self.plugin_file_open_actions = []
+            for p in self.plugin_manager.plugins.values():
+                is_p_enabled = getattr(p, "is_enabled", True)
+                if callable(is_p_enabled):
+                    is_p_enabled = is_p_enabled()
+                if is_p_enabled and self.plugin_manager.is_plugin_enabled(p.id):
+                    get_open = getattr(p, "get_file_open_actions", None)
+                    if callable(get_open):
+                        for label, callback in get_open():
+                            act = QAction(label, self)
+                            act.triggered.connect(callback)
+                            self.file_menu.insertAction(self.file_media_separator, act)
+                            self.plugin_file_open_actions.append(act)
 
         # 1. Refresh Export & Publishing menu
         if hasattr(self, "plugins_export_menu"):

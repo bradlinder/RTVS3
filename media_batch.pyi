@@ -40,6 +40,9 @@ class MediaBatchMixin:
     def load_waveform_async(self, force_regenerate: bool=...):
         ...
 
+    def _waveform_progress(self, partial_peaks, pps, pct):
+        ...
+
     def _waveform_finished(self, peaks, cancelled=...):
         ...
 

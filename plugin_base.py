@@ -125,6 +125,10 @@ class BasePlugin:
         """Called when the user disables the plugin."""
         pass
 
+    def get_file_open_actions(self) -> List[tuple[str, Callable]]:
+        """Return list of (Action Label, callback_function) for top Media Input section of File menu."""
+        return []
+
     def get_export_actions(self) -> List[tuple[str, Callable]]:
         """Return list of (Action Label, callback_function) for Export menu."""
         return []

@@ -51,6 +51,11 @@ class WordPressExportDestination(ExportDestination):
         tab = getattr(self, "tab_widget", None) or self._ensure_tab_widget()
         if tab and hasattr(tab, "wp_post_items") and tab.wp_post_items:
             count = len(tab.wp_post_items)
+            is_upd = (hasattr(tab, "wp_rad_mode_update") and tab.wp_rad_mode_update.isChecked()) or any(
+                p.get("existing_post_id") or p.get("existing_post_url") for p in tab.wp_post_items
+            )
+            if is_upd:
+                return "Update Episode & Export Story Drafts..." if count > 1 else "Update Existing WordPress Post"
             return "Export to WordPress Drafts..." if count > 1 else "Export to WordPress Draft"
         return "Export to WordPress Draft"
 
@@ -112,12 +117,33 @@ class WordPressExportDestination(ExportDestination):
             return False, "Please select at least one language for WordPress export (English or Spanish)."
         if not w.wp_post_items:
             return False, "No posts configured for WordPress export."
+        if hasattr(w, "wp_pub_date_edit"):
+            pub_raw = w.wp_pub_date_edit.text().strip()
+            if pub_raw:
+                from plugins.wordpress.episode_updater import normalize_wp_iso_date
+                try:
+                    normalize_wp_iso_date(pub_raw)
+                except ValueError as date_exc:
+                    return False, str(date_exc)
+        if hasattr(w, "wp_rad_mode_update") and w.wp_rad_mode_update.isChecked():
+            ui_url = w.wp_existing_url_edit.text().strip() if hasattr(w, "wp_existing_url_edit") else ""
+            has_parent = any(
+                (p.get("task_label") == "Full Episode" or p.get("start") is None)
+                for p in w.wp_post_items
+            )
+            has_target = bool(ui_url) or any(
+                p.get("existing_post_url") or p.get("existing_post_id")
+                for p in w.wp_post_items
+            )
+            if has_parent and not has_target:
+                return False, "Please enter the Existing Post URL to update (or switch Workflow Mode to 'Create New Episode & Stories')."
         return True, ""
 
     def get_export_data(self) -> Dict[str, Any]:
         if not self._ensure_tab_widget():
             return {}
         w = self.tab_widget
+        is_upd = hasattr(w, "wp_rad_mode_update") and w.wp_rad_mode_update.isChecked()
         return {
             "wp_posts": list(w.wp_post_items),
             "include_english": w.wp_cb_en.isChecked(),
@@ -133,6 +159,12 @@ class WordPressExportDestination(ExportDestination):
             "update_parent_toc": w.wp_cb_update_parent_toc.isChecked() if hasattr(w, "wp_cb_update_parent_toc") else True,
             "include_audio": w.wp_cb_include_audio.isChecked() if hasattr(w, "wp_cb_include_audio") else True,
             "apply_audio_fades": w.wp_cb_apply_fades.isChecked() if hasattr(w, "wp_cb_apply_fades") else True,
+            "export_mode": "update_existing" if is_upd else "new_episode",
+            "publication_date": w.wp_pub_date_edit.text().strip() if hasattr(w, "wp_pub_date_edit") else "",
+            "full_episode_status": (w.wp_full_status_combo.currentData() or ("publish" if is_upd else "draft")) if hasattr(w, "wp_full_status_combo") else ("publish" if is_upd else "draft"),
+            "story_status": (w.wp_story_status_combo.currentData() or "draft") if hasattr(w, "wp_story_status_combo") else "draft",
+            "replace_existing_audio": w.wp_cb_replace_existing_audio.isChecked() if hasattr(w, "wp_cb_replace_existing_audio") else False,
+            "existing_post_url": w.wp_existing_url_edit.text().strip() if hasattr(w, "wp_existing_url_edit") else "",
         }
 
     def execute_export(self, main_window: Any, export_data: Dict[str, Any], progress_dialog: Any = None) -> bool:
@@ -297,8 +329,71 @@ class WordPressExportDestination(ExportDestination):
         ordered_wp_posts = deduped
         total_posts = len(ordered_wp_posts)
 
-        # Check if any post is designated as a podcast episode while audio inclusion is disabled
-        has_podcast_posts = any(p.get("is_podcast") for p in ordered_wp_posts)
+        from plugins.wordpress.episode_updater import build_story_slug, resolve_wp_post_from_url
+
+        export_mode = str(export_data.get("export_mode") or wp_meta.get("export_mode") or "new_episode").strip()
+        pub_date_raw = str(export_data.get("publication_date") or wp_meta.get("publication_date") or "").strip()
+        explicit_full_status = export_data.get("full_episode_status")
+        full_status = str(explicit_full_status or wp_meta.get("full_episode_status") or ("publish" if export_mode == "update_existing" else "draft")).strip()
+        story_status = str(export_data.get("story_status") or wp_meta.get("story_status") or "draft").strip()
+        fallback_existing_url = str(export_data.get("existing_post_url") or wp_meta.get("existing_post_url") or "").strip()
+
+        # Auto-resolve any existing WordPress post URLs prior to exporting
+        unresolved_targets = []
+        for idx_p, post in enumerate(ordered_wp_posts):
+            is_par = (post in parent_posts) if parent_posts else _is_parent(post, idx_p)
+            if is_par and export_mode == "update_existing" and not post.get("existing_post_url") and fallback_existing_url:
+                post["existing_post_url"] = fallback_existing_url
+            ex_url = str(post.get("existing_post_url") or "").strip()
+            if ex_url and not post.get("existing_post_id"):
+                try:
+                    resolved = resolve_wp_post_from_url(client, ex_url)
+                    post["existing_post_id"] = resolved["id"]
+                    post["existing_post_url"] = resolved["url"]
+                    post["existing_post_slug"] = resolved["slug"]
+                    post["existing_post_status"] = resolved["status"]
+                    post["existing_post_date"] = resolved["date_display"]
+                    if not pub_date_raw and resolved.get("date_display"):
+                        pub_date_raw = resolved["date_display"]
+                    if not post.get("title") and resolved.get("title"):
+                        post["title"] = resolved["title"]
+                    # Option B: preserve original post body text in Excerpt unless manually overridden
+                    if resolved.get("excerpt") and not post.get("_excerpt_user_edited") and not post.get("excerpt_from_existing"):
+                        post["excerpt"] = resolved["excerpt"]
+                        post["excerpt_from_existing"] = True
+                    if not post.get("author_ids") and resolved.get("author_ids"):
+                        post["author_ids"] = list(resolved["author_ids"])
+                    if not post.get("author_term_ids") and resolved.get("author_term_ids"):
+                        post["author_term_ids"] = list(resolved["author_term_ids"])
+                    if not post.get("category_ids") and resolved.get("category_ids"):
+                        post["category_ids"] = list(resolved["category_ids"])
+                    if is_par:
+                        parent_episode_info = {
+                            "id": resolved["id"],
+                            "title": post.get("title") or resolved.get("title") or "Full Episode",
+                            "link": resolved["url"],
+                        }
+                        parent_episode_post_id = resolved["id"]
+                        if not explicit_full_status and resolved.get("status"):
+                            full_status = resolved["status"]
+                except Exception as res_exc:
+                    unresolved_targets.append((post, str(res_exc)))
+
+        if unresolved_targets:
+            for failed_p, err_str in unresolved_targets:
+                failed_posts.append({
+                    "title": failed_p.get("title") or "Existing WordPress Post",
+                    "error": f"Could not resolve existing post URL '{failed_p.get('existing_post_url')}': {err_str}",
+                })
+            failed_set = {id(fp) for fp, _ in unresolved_targets}
+            ordered_wp_posts = [p for p in ordered_wp_posts if id(p) not in failed_set]
+            total_posts = len(ordered_wp_posts)
+
+        # Check if any post requiring a new audio upload is designated as a podcast episode while audio inclusion is disabled
+        has_podcast_posts = any(
+            p.get("is_podcast") and not (p.get("existing_post_id") and not p.get("replace_existing_audio", False))
+            for p in ordered_wp_posts
+        )
         if has_podcast_posts and not inc_audio:
             reply = QMessageBox.question(
                 parent_widget or main_window,
@@ -367,6 +462,15 @@ class WordPressExportDestination(ExportDestination):
                         st_fade_curve = str(getattr(matching_st, "fade_curve", "linear") or "linear")
 
                 try:
+                    post_existing_id = post.get("existing_post_id")
+                    is_updating_post = bool(post_existing_id and int(post_existing_id) > 0)
+                    post_replace_audio = bool(post.get("replace_existing_audio", False)) if is_updating_post else True
+                    effective_inc_audio = (inc_audio and post_replace_audio) if is_updating_post else inc_audio
+                    target_status = full_status if is_parent_episode else story_status
+                    if is_updating_post and is_parent_episode and not explicit_full_status and post.get("existing_post_status"):
+                        target_status = str(post.get("existing_post_status"))
+                    target_slug = build_story_slug(post_title) if (not is_parent_episode and not is_updating_post) else None
+
                     post_data = execute_wordpress_upload(
                         main_window=main_window,
                         client=client,
@@ -390,7 +494,7 @@ class WordPressExportDestination(ExportDestination):
                         link_parent_episode=link_parent if not is_parent_episode else False,
                         parent_episode_template=parent_template,
                         parent_episode_pos=parent_pos,
-                        include_audio=inc_audio,
+                        include_audio=effective_inc_audio,
                         fade_in=st_fade_in,
                         fade_out=st_fade_out,
                         fade_curve=st_fade_curve,
@@ -408,6 +512,11 @@ class WordPressExportDestination(ExportDestination):
                         youtube_stop_at_end=bool(post.get("youtube_stop_at_end", False)),
                         youtube_placement=str(post.get("youtube_placement") or "top"),
                         youtube_use_story_time=bool(post.get("youtube_use_story_time", True)),
+                        existing_post_id=post_existing_id,
+                        replace_existing_audio_and_podcast=post_replace_audio,
+                        post_status=target_status,
+                        publication_date=pub_date_raw,
+                        post_slug=target_slug,
                     )
                     if post_data and isinstance(post_data, dict):
                         if hasattr(main_window, "update_processing_progress"):
@@ -420,9 +529,11 @@ class WordPressExportDestination(ExportDestination):
                             "id": post_id,
                             "link": post_link,
                             "is_podcast": bool(post.get("is_podcast", False)),
+                            "updated_existing": is_updating_post,
+                            "status": post_data.get("_status") or target_status,
                         })
 
-                        if is_parent_episode and (parent_episode_info is None or not parent_episode_info.get("link")):
+                        if is_parent_episode:
                             parent_episode_info = {
                                 "id": post_id,
                                 "title": post_title,
@@ -440,10 +551,14 @@ class WordPressExportDestination(ExportDestination):
                                     main_window.project_metadata["wordpress"]["podcast_feed"] = post.get("podcast_feed", "default")
                                     main_window.project_metadata["wordpress"]["podcast_episode_type"] = post.get("podcast_episode_type", "full")
                         elif not is_parent_episode:
+                            toc_link = post_link
+                            story_slug_res = post_data.get("slug") or target_slug
+                            if ("?p=" in toc_link or "&p=" in toc_link) and story_slug_res and full_status == "publish":
+                                toc_link = f"{client.site_url.rstrip('/')}/{story_slug_res}/"
                             story_posts.append({
                                 "id": post_id,
                                 "title": post_title,
-                                "link": post_link,
+                                "link": toc_link,
                                 "start": post.get("start"),
                                 "end": post.get("end"),
                             })
@@ -479,22 +594,27 @@ class WordPressExportDestination(ExportDestination):
             if created_posts and not failed_posts:
                 if len(created_posts) == 1:
                     p = created_posts[0]
+                    action_txt = "updated" if p.get("updated_existing") else "created"
+                    status_txt = str(p.get("status") or "draft").capitalize()
                     QMessageBox.information(
                         parent_widget,
                         "WordPress Export Complete",
-                        f"Draft post created successfully on {client.site_url}!\n\n"
+                        f"Post {action_txt} successfully on {client.site_url}!\n\n"
                         f"Post Title: {p['title']}\n"
                         f"Post ID: {p['id']}\n"
-                        f"Status: Draft\n"
-                        f"Preview Link: {p['link']}",
+                        f"Status: {status_txt}\n"
+                        f"Link: {p['link']}",
                     )
                 else:
-                    posts_summary = "\n".join([f"  #{p['id']}: {p['title']}" for p in created_posts])
+                    posts_summary = "\n".join([
+                        f"  #{p['id']} ({'Updated' if p.get('updated_existing') else 'Created'}, {str(p.get('status') or 'draft').capitalize()}): {p['title']}"
+                        for p in created_posts
+                    ])
                     QMessageBox.information(
                         parent_widget,
                         "WordPress Export Complete",
-                        f"All {len(created_posts)} stories have been posted successfully as drafts to {client.site_url}!\n\n"
-                        f"Created Posts:\n{posts_summary}",
+                        f"Completed {len(created_posts)} WordPress posts on {client.site_url}!\n\n"
+                        f"Posts:\n{posts_summary}",
                     )
             elif created_posts and failed_posts:
                 success_summary = "\n".join([f"  #{p['id']}: {p['title']}" for p in created_posts])

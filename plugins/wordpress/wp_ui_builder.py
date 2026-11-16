@@ -63,6 +63,9 @@ def setup_wp_tab_ui(self: Any):
     wp_notice.setWordWrap(True)
     self.wp_info_section.add_widget(wp_notice)
 
+    from plugins.wordpress.episode_updater import setup_wp_mode_and_date_ui
+    setup_wp_mode_and_date_ui(self, self.wp_info_section)
+
     # Master-Detail Container for Posts (Expandable QSplitter)
     self.wp_posts_container = QSplitter(Qt.Orientation.Horizontal)
     self.wp_posts_container.setChildrenCollapsible(False)
@@ -235,6 +238,15 @@ def setup_wp_tab_ui(self: Any):
         self.wp_category_list.setMinimumHeight(140)
     self.wp_category_list.itemChanged.connect(self._on_category_item_changed)
     cat_col.addWidget(self.wp_category_list, 1)
+
+    self.wp_cb_cats_apply_stories = QCheckBox("Apply to all stories (excludes Full Episode)")
+    self.wp_cb_cats_apply_stories.setToolTip(
+        "When checked while editing a Story, any category changes automatically apply to all other Stories without altering the Full Episode's categories."
+    )
+    saved_cats_apply = str(self.settings.value("wp_cats_apply_all_stories", "false")).lower() in ("true", "1", "yes")
+    self.wp_cb_cats_apply_stories.setChecked(saved_cats_apply)
+    self.wp_cb_cats_apply_stories.toggled.connect(self._on_cats_apply_all_stories_toggled)
+    cat_col.addWidget(self.wp_cb_cats_apply_stories)
     tax_container.addLayout(cat_col, 1)
 
     # Featured Image Section (Thumbnail)
@@ -361,6 +373,8 @@ def setup_wp_tab_ui(self: Any):
     self.wp_cb_include_audio.setChecked(saved_inc_audio)
     self.wp_cb_include_audio.toggled.connect(self._on_wp_include_audio_toggled)
     media_section_layout.addWidget(self.wp_cb_include_audio)
+    from plugins.wordpress.episode_updater import sync_wp_audio_checkbox_label
+    sync_wp_audio_checkbox_label(self)
 
     self.wp_cb_apply_fades = QCheckBox("Apply audio fades to story clips (fade-in & fade-out)")
     self.wp_cb_apply_fades.setToolTip(

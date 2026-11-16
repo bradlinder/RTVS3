@@ -914,6 +914,70 @@ class DiagnosticExportTestsMixin:
             # Verify project_metadata stored the parent episode info
             if not mw_c.project_metadata.get("wordpress", {}).get("parent_episode"):
                 raise AssertionError("project_metadata['wordpress']['parent_episode'] was not set")
+
+            # Test D: End-to-end Update Existing Episode & Backfill Stories with auto-resolve, Option B excerpt, & clean TOC slugs
+            d_created = []
+            d_updated = []
+
+            class DummyBackfillDestClient:
+                site_url = "https://rss.phillycam.org"
+                api_base = "https://rss.phillycam.org/wp-json/wp/v2"
+                def upload_media(self, file_path, filename=None):
+                    return {"id": 200, "source_url": f"https://rss.phillycam.org/wp-content/uploads/{filename or 'clip.mp3'}"}
+                def _get_request(self, url, params=None, headers=None, timeout=30):
+                    if params and params.get("slug") == "april-29-2026":
+                        return type("Resp", (), {
+                            "status_code": 200,
+                            "json": lambda *a, **k: [{
+                                "id": 777,
+                                "link": "https://rss.phillycam.org/april-29-2026/",
+                                "slug": "april-29-2026",
+                                "status": "publish",
+                                "date": "2026-04-29T14:00:00",
+                                "title": {"raw": "April 29 Show", "rendered": "April 29 Show"},
+                                "excerpt": {"raw": "", "rendered": ""},
+                                "content": {"raw": "<p>Original show notes text.</p>", "rendered": "<p>Original show notes text.</p>"},
+                            }],
+                        })()
+                    return type("Resp", (), {"status_code": 404, "text": "Not found", "json": lambda *a, **k: []})()
+                def create_post(self, title, content, excerpt="", status="draft", **kwargs):
+                    pid = 800 + len(d_created)
+                    d_created.append({"id": pid, "title": title, "content": content, "status": status, "kwargs": kwargs})
+                    return {"id": pid, "link": f"https://rss.phillycam.org/?p={pid}", "slug": kwargs.get("slug", "")}
+                def update_post(self, post_id, content=None, **kwargs):
+                    d_updated.append({"id": post_id, "content": content, "kwargs": kwargs})
+                    return {"id": post_id, "link": "https://rss.phillycam.org/april-29-2026/", "slug": "april-29-2026"}
+
+            wp_dest_mod.WordPressClient = lambda *a, **k: DummyBackfillDestClient()
+            mw_d = DummyMW("")
+            post_items_d = [
+                {"task_label": "Full Episode", "title": "April 29 Show", "start": None, "end": None, "excerpt": "", "is_parent_episode": True, "existing_post_url": "https://rss.phillycam.org/april-29-2026/", "replace_existing_audio": False, "is_podcast": True},
+                {"task_label": "Story 1", "title": "Story One Title", "start": 0.0, "end": 50.0, "excerpt": "", "is_parent_episode": False},
+            ]
+            dest_obj.widget = DummyWpWidget(post_items_d)
+            res_d = dest_obj.execute_export(mw_d, {
+                "wp_posts": post_items_d,
+                "export_mode": "update_existing",
+                "include_english": True,
+                "include_spanish": False,
+                "include_audio": False,
+                "link_parent_episode": True,
+                "parent_episode_pos": "bottom",
+                "update_parent_toc": True,
+                "show_completion_dialog": False,
+            })
+            if not res_d:
+                raise AssertionError("Update Existing Episode export returned False")
+            if len(d_updated) < 2 or d_updated[0]["id"] != 777:
+                raise AssertionError(f"Expected initial update + TOC update on Post #777, got {d_updated}")
+            if d_updated[0]["kwargs"].get("excerpt") != "Original show notes text.":
+                raise AssertionError(f"Option B excerpt not moved from existing post body: {d_updated[0]}")
+            if d_updated[0]["kwargs"].get("status") != "publish" or d_updated[0]["kwargs"].get("date") != "2026-04-29T14:00:00":
+                raise AssertionError(f"Full episode status/date mismatch: {d_updated[0]}")
+            if len(d_created) != 1 or d_created[0]["status"] != "draft" or d_created[0]["kwargs"].get("date") != "2026-04-29T14:00:00":
+                raise AssertionError(f"Backdated story draft mismatch: {d_created}")
+            if "https://rss.phillycam.org/story-one-title/" not in (d_updated[-1]["content"] or ""):
+                raise AssertionError(f"TOC on live episode must link to clean story slug URL instead of ?p= draft link: {d_updated[-1]['content']}")
         finally:
             if orig_wp_client_cls:
                 wp_dest_mod.WordPressClient = orig_wp_client_cls
@@ -1646,6 +1710,127 @@ class DiagnosticExportTestsMixin:
             std_kwargs = client_std.created_posts[0]["kwargs"]
             if std_kwargs.get("meta"):
                 raise AssertionError(f"Castos podcast meta unexpectedly present in standard export: {std_kwargs}")
+
+            # 4. Test WordPress Episode Backfill / Update Mode, Option B Excerpt, & Publication Date
+            from plugins.wordpress.episode_updater import (
+                extract_slug_or_id_from_url,
+                clean_html_to_plain_excerpt,
+                build_story_slug,
+                normalize_wp_iso_date,
+                resolve_wp_post_from_url,
+            )
+
+            if extract_slug_or_id_from_url("https://rss.phillycam.org/april-29-2026/") != (None, "april-29-2026"):
+                raise AssertionError("Failed to extract slug from WordPress episode URL")
+            if extract_slug_or_id_from_url("https://rss.phillycam.org/?p=456") != (456, ""):
+                raise AssertionError("Failed to extract numeric post ID from query URL")
+            if normalize_wp_iso_date("2026-04-29") != "2026-04-29T09:00:00":
+                raise AssertionError("Date-only normalization failed")
+            if normalize_wp_iso_date("2026-04-29 14:30") != "2026-04-29T14:30:00":
+                raise AssertionError("Date+time normalization failed")
+            if normalize_wp_iso_date("") is not None:
+                raise AssertionError("Blank date should normalize to None")
+            if build_story_slug("City Council Budget Hearing!") != "city-council-budget-hearing":
+                raise AssertionError("Story slug generation mismatch")
+            if clean_html_to_plain_excerpt("<p>Hello &amp; welcome</p><audio src='x.mp3'></audio>") != "Hello & welcome":
+                raise AssertionError("HTML cleanup for Option B excerpt mismatch")
+
+            class MockBackfillClient(MockCastosClient):
+                def __init__(self):
+                    super().__init__()
+                    self.updated_calls = []
+
+                def _get_request(self, url, params=None, headers=None, timeout=30):
+                    if params and params.get("slug") == "april-29-2026":
+                        return type("Resp", (), {
+                            "status_code": 200,
+                            "json": lambda *a, **k: [{
+                                "id": 555,
+                                "link": "https://rss.phillycam.org/april-29-2026/",
+                                "slug": "april-29-2026",
+                                "status": "publish",
+                                "date": "2026-04-29T14:00:00",
+                                "title": {"raw": "April 29, 2026 Broadcast", "rendered": "April 29, 2026 Broadcast"},
+                                "excerpt": {"raw": "", "rendered": ""},
+                                "content": {
+                                    "raw": "<p>Original episode show notes for podcast feed.</p><audio src='https://rss.phillycam.org/wp-content/uploads/ep.mp3'></audio>",
+                                    "rendered": "<p>Original episode show notes for podcast feed.</p><audio src='https://rss.phillycam.org/wp-content/uploads/ep.mp3'></audio>",
+                                },
+                                "categories": [12],
+                                "author": 3,
+                            }],
+                        })()
+                    return type("Resp", (), {"status_code": 404, "text": "Not Found", "json": lambda *a, **k: []})()
+
+                def update_post(self, post_id, **kwargs):
+                    self.updated_calls.append((post_id, kwargs))
+                    return {"id": post_id, "link": "https://rss.phillycam.org/april-29-2026/", "slug": "april-29-2026", "status": kwargs.get("status", "publish")}
+
+            client_upd = MockBackfillClient()
+            resolved = resolve_wp_post_from_url(client_upd, "https://rss.phillycam.org/april-29-2026/")
+            if resolved["id"] != 555 or resolved["status"] != "publish" or resolved["date_display"] != "2026-04-29 14:00":
+                raise AssertionError(f"Unexpected resolved post metadata: {resolved}")
+            if resolved["audio_url"] != "https://rss.phillycam.org/wp-content/uploads/ep.mp3":
+                raise AssertionError(f"Unexpected resolved audio URL: {resolved}")
+            if resolved["excerpt"] != "Original episode show notes for podcast feed.":
+                raise AssertionError(f"Option B excerpt extraction mismatch: {resolved['excerpt']}")
+
+            # 4a. Update existing Full Episode preserving MP3, Castos metadata, and published status
+            upd_post = wp_client.execute_wordpress_upload(
+                main_window=win_pod,
+                client=client_upd,
+                post_title=resolved["title"],
+                post_excerpt=resolved["excerpt"],
+                include_audio=True,
+                is_podcast=True,
+                existing_post_id=555,
+                replace_existing_audio_and_podcast=False,
+                post_status="publish",
+                publication_date="2026-04-29 14:00",
+            )
+            if not upd_post or upd_post.get("id") != 555:
+                raise AssertionError(f"Expected updated post 555, got {upd_post}")
+            if client_upd.created_posts:
+                raise AssertionError("Update Existing Episode mode must not call create_post")
+            if client_upd.uploaded_files:
+                raise AssertionError(f"Expected zero media uploads when preserving existing MP3, got {client_upd.uploaded_files}")
+            if not client_upd.updated_calls:
+                raise AssertionError("Expected client.update_post to be called")
+            _, upd_kw = client_upd.updated_calls[0]
+            if "meta" in upd_kw or "podcast_series" in upd_kw:
+                raise AssertionError(f"Castos meta/series must not be overwritten when preserving existing podcast audio: {upd_kw}")
+            if upd_kw.get("status") != "publish" or upd_kw.get("date") != "2026-04-29T14:00:00":
+                raise AssertionError(f"Unexpected status/date on existing post update: {upd_kw}")
+            if "<!-- wp:audio -->" in upd_kw.get("content", ""):
+                raise AssertionError("Duplicate wp:audio block should not be injected when preserving existing episode player")
+
+            # 4b. Create backdated Story draft with clean slug and uploaded story audio clip
+            def fake_sub_write(cmd, *a, **k):
+                Path(cmd[-1]).write_bytes(b"ID3FakeMP3Data")
+                return type("Res", (), {"returncode": 0, "stderr": ""})()
+
+            wp_client.subprocess.run = fake_sub_write
+            client_story = MockBackfillClient()
+            story_res = wp_client.execute_wordpress_upload(
+                main_window=win_pod,
+                client=client_story,
+                post_title="Story 1 Backdated",
+                post_excerpt="Story excerpt.",
+                start=0.0,
+                end=5.0,
+                include_audio=True,
+                is_podcast=False,
+                post_status="draft",
+                publication_date="2026-04-29 14:00",
+                post_slug="story-1-slug",
+            )
+            if not story_res or len(client_story.uploaded_files) != 1:
+                raise AssertionError(f"Expected 1 story audio upload, got {client_story.uploaded_files}")
+            st_kw = client_story.created_posts[0]["kwargs"]
+            if st_kw.get("date") != "2026-04-29T14:00:00" or st_kw.get("slug") != "story-1-slug":
+                raise AssertionError(f"Unexpected story date/slug kwargs: {st_kw}")
+            if "<!-- wp:audio -->" not in client_story.created_posts[0]["content"]["rendered"]:
+                raise AssertionError("Story post missing wp:audio block")
 
         finally:
             wp_client.subprocess.run = orig_sub_run

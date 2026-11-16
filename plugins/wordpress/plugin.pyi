@@ -107,7 +107,13 @@ class Plugin(BasePlugin):
     def get_export_destinations(self) -> List[Any]:
         ...
 
+    def get_file_open_actions(self) -> List[tuple[str, Callable]]:
+        ...
+
     def get_export_actions(self) -> List[tuple[str, Callable]]:
+        ...
+
+    def open_load_existing_episode_dialog(self) -> None:
         ...
 
     def get_story_actions(self, story: Any=...) -> List[tuple[str, Callable]]:
