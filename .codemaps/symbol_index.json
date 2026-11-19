@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-19 14:33:06",
+  "generated_at": "2026-11-19 15:29:09",
   "total_files": 165,
   "files": {
     "RadioTVSegmenter.py": {
       "path": "RadioTVSegmenter.py",
       "lines": 664,
-      "summary": "Radio & TV Segmenter \u2014 v3.9.98-beta",
+      "summary": "Radio & TV Segmenter \u2014 v3.9.99-beta",
       "exports": null,
       "classes": [
         {
@@ -204,7 +204,7 @@
     },
     "background_workers.py": {
       "path": "background_workers.py",
-      "lines": 1033,
+      "lines": 1044,
       "summary": "Radio & TV Story Segmenter \u2014 Background Worker Threads & Waveform Cache Helpers.",
       "exports": null,
       "classes": [
@@ -259,29 +259,29 @@
           "bases": [
             "QObject"
           ],
-          "start_line": 678,
-          "end_line": 843,
+          "start_line": 689,
+          "end_line": 854,
           "doc": "",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, audio_file, points_per_second, project_file)",
-              "start_line": 682,
-              "end_line": 689,
+              "start_line": 693,
+              "end_line": 700,
               "doc": ""
             },
             {
               "name": "cancel",
               "sig": "cancel(self)",
-              "start_line": 691,
-              "end_line": 699,
+              "start_line": 702,
+              "end_line": 710,
               "doc": "Thread-safe cancellation request; also stops the FFmpeg child process."
             },
             {
               "name": "run",
               "sig": "run(self)",
-              "start_line": 701,
-              "end_line": 843,
+              "start_line": 712,
+              "end_line": 854,
               "doc": "Build a compact peak envelope without loading the whole recording into RAM."
             }
           ]
@@ -291,29 +291,29 @@
           "bases": [
             "QObject"
           ],
-          "start_line": 963,
-          "end_line": 1022,
+          "start_line": 974,
+          "end_line": 1033,
           "doc": "",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, media_path, duration, output_dir, count)",
-              "start_line": 967,
-              "end_line": 974,
+              "start_line": 978,
+              "end_line": 985,
               "doc": ""
             },
             {
               "name": "cancel",
               "sig": "cancel(self)",
-              "start_line": 976,
-              "end_line": 983,
+              "start_line": 987,
+              "end_line": 994,
               "doc": ""
             },
             {
               "name": "run",
               "sig": "run(self)",
-              "start_line": 985,
-              "end_line": 1022,
+              "start_line": 996,
+              "end_line": 1033,
               "doc": ""
             }
           ]
@@ -335,38 +335,45 @@
           "doc": "Read cached waveform peak envelope from binary cache."
         },
         {
-          "name": "write_waveform_peak_cache",
-          "sig": "write_waveform_peak_cache(audio_file, peaks, points_per_second, project_file, levels)",
+          "name": "_pack_f32",
+          "sig": "_pack_f32(values)",
           "start_line": 614,
-          "end_line": 652,
+          "end_line": 618,
+          "doc": ""
+        },
+        {
+          "name": "write_waveform_peak_cache",
+          "sig": "write_waveform_peak_cache(audio_file, peaks, points_per_second, project_file, levels, skip_if_exists)",
+          "start_line": 621,
+          "end_line": 663,
           "doc": "Write waveform peak envelope and multi-resolution mipmapped levels to binary cache with atomic rename."
         },
         {
           "name": "invalidate_waveform_peak_cache",
           "sig": "invalidate_waveform_peak_cache(audio_file, project_file)",
-          "start_line": 655,
-          "end_line": 675,
+          "start_line": 666,
+          "end_line": 686,
           "doc": "Delete any cached waveform peak binary file for audio_file, including legacy paths."
         },
         {
           "name": "get_video_thumbnail_cache_dir",
           "sig": "get_video_thumbnail_cache_dir(media_file, project_file)",
-          "start_line": 850,
-          "end_line": 889,
+          "start_line": 861,
+          "end_line": 900,
           "doc": "Return the deterministic thumbnail cache directory for a media file, associating with project if available."
         },
         {
           "name": "read_video_thumbnail_cache",
           "sig": "read_video_thumbnail_cache(media_file, duration, project_file)",
-          "start_line": 892,
-          "end_line": 934,
+          "start_line": 903,
+          "end_line": 945,
           "doc": "Read pre-extracted video thumbnail items [(timestamp, image_path), ...] from disk cache."
         },
         {
           "name": "invalidate_video_thumbnail_cache",
           "sig": "invalidate_video_thumbnail_cache(media_file, project_file)",
-          "start_line": 937,
-          "end_line": 960,
+          "start_line": 948,
+          "end_line": 971,
           "doc": "Delete the thumbnail cache directory for a given media file."
         }
       ]
@@ -2126,7 +2133,7 @@
     },
     "diagnostic_editor_tests.py": {
       "path": "diagnostic_editor_tests.py",
-      "lines": 903,
+      "lines": 992,
       "summary": "Diagnostic editor and find-replace tests for Radio & TV Story Segmenter.",
       "exports": null,
       "classes": [
@@ -2134,7 +2141,7 @@
           "name": "DiagnosticEditorTestsMixin",
           "bases": [],
           "start_line": 11,
-          "end_line": 902,
+          "end_line": 991,
           "doc": "Diagnostic suite for transcript editor, find-replace, and speaker synchronization.",
           "methods": [
             {
@@ -2155,21 +2162,21 @@
               "name": "_test_story_transcript_highlighting_and_smart_copy",
               "sig": "_test_story_transcript_highlighting_and_smart_copy(self, item)",
               "start_line": 300,
-              "end_line": 530,
+              "end_line": 619,
               "doc": "Validates story selection synchronization with transcript highlight overlay and smart clipboard copying."
             },
             {
               "name": "_test_story_duration_visibility_and_header_aggregation",
               "sig": "_test_story_duration_visibility_and_header_aggregation(self, item)",
-              "start_line": 532,
-              "end_line": 700,
+              "start_line": 621,
+              "end_line": 789,
               "doc": "Validates story clock duration formatting, 2-line sidebar item format, and multi-selection header aggregation."
             },
             {
               "name": "_test_reaper_daw_companion_and_universal_clipboard_pipeline",
               "sig": "_test_reaper_daw_companion_and_universal_clipboard_pipeline(self, item)",
-              "start_line": 702,
-              "end_line": 902,
+              "start_line": 791,
+              "end_line": 991,
               "doc": "Validates REAPER DAW clip cue JSON schema, sidecar emission, Lua script syntax,"
             }
           ]
@@ -2179,7 +2186,7 @@
     },
     "diagnostic_export_tests.py": {
       "path": "diagnostic_export_tests.py",
-      "lines": 2304,
+      "lines": 2314,
       "summary": "Diagnostic test bench suite component.",
       "exports": null,
       "classes": [
@@ -2187,7 +2194,7 @@
           "name": "DiagnosticExportTestsMixin",
           "bases": [],
           "start_line": 26,
-          "end_line": 2303,
+          "end_line": 2313,
           "doc": "",
           "methods": [
             {
@@ -2264,35 +2271,35 @@
               "name": "_test_wordpress_featured_image_caption_and_alt_text",
               "sig": "_test_wordpress_featured_image_caption_and_alt_text(self, item)",
               "start_line": 1496,
-              "end_line": 1711,
+              "end_line": 1721,
               "doc": "Verify Featured Image caption & alt_text across WordPressClient, post builder, tab UI, and PublishWorker."
             },
             {
               "name": "_test_wordpress_castos_podcast_integration",
               "sig": "_test_wordpress_castos_podcast_integration(self, item)",
-              "start_line": 1714,
-              "end_line": 2063,
+              "start_line": 1724,
+              "end_line": 2073,
               "doc": ""
             },
             {
               "name": "_test_multi_scope_story_and_full_episode_export_pipeline",
               "sig": "_test_multi_scope_story_and_full_episode_export_pipeline(self, item)",
-              "start_line": 2065,
-              "end_line": 2146,
+              "start_line": 2075,
+              "end_line": 2156,
               "doc": ""
             },
             {
               "name": "_test_audio_export_non_blocking_and_cancellation_pipeline",
               "sig": "_test_audio_export_non_blocking_and_cancellation_pipeline(self, item)",
-              "start_line": 2148,
-              "end_line": 2258,
+              "start_line": 2158,
+              "end_line": 2268,
               "doc": ""
             },
             {
               "name": "_test_modal_dialog_maximizable_import_integrity",
               "sig": "_test_modal_dialog_maximizable_import_integrity(self, item)",
-              "start_line": 2260,
-              "end_line": 2303,
+              "start_line": 2270,
+              "end_line": 2313,
               "doc": ""
             }
           ]
@@ -8177,7 +8184,7 @@
     },
     "plugins/wordpress/wp_tab_widget.py": {
       "path": "plugins/wordpress/wp_tab_widget.py",
-      "lines": 996,
+      "lines": 997,
       "summary": "WordPress export tab configuration widget and preview controller.",
       "exports": null,
       "classes": [
@@ -8187,7 +8194,7 @@
             "QWidget"
           ],
           "start_line": 37,
-          "end_line": 995,
+          "end_line": 996,
           "doc": "Configuration and preview panel for WordPress Draft Posts.",
           "methods": [
             {
@@ -8395,184 +8402,184 @@
             },
             {
               "name": "_sync_post_to_project",
-              "sig": "_sync_post_to_project(self, idx)",
+              "sig": "_sync_post_to_project(self, idx, log_reason)",
               "start_line": 367,
-              "end_line": 472,
+              "end_line": 473,
               "doc": ""
             },
             {
               "name": "save_all_posts_to_project",
               "sig": "save_all_posts_to_project(self)",
-              "start_line": 474,
-              "end_line": 499,
+              "start_line": 475,
+              "end_line": 500,
               "doc": "Persist all post metadata and export options back into stories and project_metadata."
             },
             {
               "name": "_update_post_list_item_label",
               "sig": "_update_post_list_item_label(self, idx)",
-              "start_line": 501,
-              "end_line": 509,
+              "start_line": 502,
+              "end_line": 510,
               "doc": ""
             },
             {
               "name": "_on_wp_post_selection_changed",
               "sig": "_on_wp_post_selection_changed(self, row)",
-              "start_line": 511,
-              "end_line": 514,
+              "start_line": 512,
+              "end_line": 515,
               "doc": ""
             },
             {
               "name": "_get_editor_checked_authors",
               "sig": "_get_editor_checked_authors(self)",
-              "start_line": 516,
-              "end_line": 532,
+              "start_line": 517,
+              "end_line": 533,
               "doc": ""
             },
             {
               "name": "_set_editor_checked_authors",
               "sig": "_set_editor_checked_authors(self, author_ids, author_term_ids)",
-              "start_line": 534,
-              "end_line": 552,
+              "start_line": 535,
+              "end_line": 553,
               "doc": ""
             },
             {
               "name": "_get_editor_checked_categories",
               "sig": "_get_editor_checked_categories(self)",
-              "start_line": 554,
-              "end_line": 562,
+              "start_line": 555,
+              "end_line": 563,
               "doc": ""
             },
             {
               "name": "_set_editor_checked_categories",
               "sig": "_set_editor_checked_categories(self, cat_ids)",
-              "start_line": 564,
-              "end_line": 572,
+              "start_line": 565,
+              "end_line": 573,
               "doc": ""
             },
             {
               "name": "_get_wp_post_bounds",
               "sig": "_get_wp_post_bounds(self, post_index)",
-              "start_line": 574,
-              "end_line": 583,
+              "start_line": 575,
+              "end_line": 584,
               "doc": ""
             },
             {
               "name": "_sync_wp_slider_to_pos",
               "sig": "_sync_wp_slider_to_pos(self, pos)",
-              "start_line": 585,
-              "end_line": 595,
+              "start_line": 586,
+              "end_line": 596,
               "doc": ""
             },
             {
               "name": "_on_wp_slider_value_changed",
               "sig": "_on_wp_slider_value_changed(self, val)",
-              "start_line": 597,
-              "end_line": 605,
+              "start_line": 598,
+              "end_line": 606,
               "doc": ""
             },
             {
               "name": "_on_wp_scrub_timer_timeout",
               "sig": "_on_wp_scrub_timer_timeout(self)",
-              "start_line": 607,
-              "end_line": 611,
+              "start_line": 608,
+              "end_line": 612,
               "doc": ""
             },
             {
               "name": "_on_wp_step",
               "sig": "_on_wp_step(self, delta_secs)",
-              "start_line": 613,
-              "end_line": 621,
+              "start_line": 614,
+              "end_line": 622,
               "doc": ""
             },
             {
               "name": "_on_wp_sync_playhead",
               "sig": "_on_wp_sync_playhead(self)",
-              "start_line": 623,
-              "end_line": 630,
+              "start_line": 624,
+              "end_line": 631,
               "doc": ""
             },
             {
               "name": "_load_post_editor_state",
               "sig": "_load_post_editor_state(self, index)",
-              "start_line": 632,
-              "end_line": 707,
+              "start_line": 633,
+              "end_line": 708,
               "doc": ""
             },
             {
               "name": "_on_wp_thumb_mode_changed",
               "sig": "_on_wp_thumb_mode_changed(self)",
-              "start_line": 709,
-              "end_line": 747,
+              "start_line": 710,
+              "end_line": 748,
               "doc": ""
             },
             {
               "name": "_on_wp_thumb_meta_changed",
               "sig": "_on_wp_thumb_meta_changed(self)",
-              "start_line": 749,
-              "end_line": 756,
+              "start_line": 750,
+              "end_line": 757,
               "doc": ""
             },
             {
               "name": "_capture_wp_frame",
               "sig": "_capture_wp_frame(self, pos)",
-              "start_line": 758,
-              "end_line": 792,
+              "start_line": 759,
+              "end_line": 793,
               "doc": ""
             },
             {
               "name": "_on_wp_browse_thumb",
               "sig": "_on_wp_browse_thumb(self)",
-              "start_line": 794,
-              "end_line": 813,
+              "start_line": 795,
+              "end_line": 814,
               "doc": ""
             },
             {
               "name": "_cleanup_temp_files",
               "sig": "_cleanup_temp_files(self)",
-              "start_line": 815,
-              "end_line": 824,
+              "start_line": 816,
+              "end_line": 825,
               "doc": "Purge temporary frame grabs and preview images."
             },
             {
               "name": "closeEvent",
               "sig": "closeEvent(self, event)",
-              "start_line": 826,
-              "end_line": 834,
+              "start_line": 827,
+              "end_line": 835,
               "doc": "Persist current post state and clean up temp files on widget/dialog closure."
             },
             {
               "name": "rebuild_post_items",
               "sig": "rebuild_post_items(self, scope)",
-              "start_line": 836,
-              "end_line": 874,
+              "start_line": 837,
+              "end_line": 875,
               "doc": ""
             },
             {
               "name": "_populate_wp_export_metadata",
               "sig": "_populate_wp_export_metadata(self, force_refresh)",
-              "start_line": 876,
-              "end_line": 943,
+              "start_line": 877,
+              "end_line": 944,
               "doc": ""
             },
             {
               "name": "_prompt_wp_credentials",
               "sig": "_prompt_wp_credentials(self, title, message)",
-              "start_line": 945,
-              "end_line": 958,
+              "start_line": 946,
+              "end_line": 959,
               "doc": ""
             },
             {
               "name": "_refresh_castos_feeds",
               "sig": "_refresh_castos_feeds(self)",
-              "start_line": 960,
-              "end_line": 977,
+              "start_line": 961,
+              "end_line": 978,
               "doc": ""
             },
             {
               "name": "_refresh_wp_metadata",
               "sig": "_refresh_wp_metadata(self)",
-              "start_line": 979,
-              "end_line": 995,
+              "start_line": 980,
+              "end_line": 996,
               "doc": ""
             }
           ]
@@ -9788,7 +9795,7 @@
     },
     "project_lifecycle.py": {
       "path": "project_lifecycle.py",
-      "lines": 864,
+      "lines": 876,
       "summary": "Radio & TV Story Segmenter \u2014 Project Lifecycle & Persistence Management.",
       "exports": [
         "ProjectLifecycleMixin",
@@ -9799,7 +9806,7 @@
           "name": "ProjectLifecycleMixin",
           "bases": [],
           "start_line": 46,
-          "end_line": 860,
+          "end_line": 872,
           "doc": "Provides project lifecycle and persistence methods for MainWindow.",
           "methods": [
             {
@@ -9834,77 +9841,77 @@
               "name": "_write_project_file",
               "sig": "_write_project_file(self, file_path)",
               "start_line": 231,
-              "end_line": 294,
+              "end_line": 300,
               "doc": "Writes project state dictionary directly to disk."
             },
             {
               "name": "prepare_export_directories",
               "sig": "prepare_export_directories(self, target_base_dir, default_name, prompt_user)",
-              "start_line": 296,
-              "end_line": 357,
+              "start_line": 302,
+              "end_line": 363,
               "doc": "Resolves project export subfolders (Transcripts, Media)."
             },
             {
               "name": "get_default_save_directory",
               "sig": "get_default_save_directory(self)",
-              "start_line": 359,
-              "end_line": 372,
+              "start_line": 365,
+              "end_line": 378,
               "doc": "Returns target base directory based on preferences and loaded media."
             },
             {
               "name": "validate_project_data",
               "sig": "validate_project_data(self, data)",
-              "start_line": 374,
-              "end_line": 432,
+              "start_line": 380,
+              "end_line": 438,
               "doc": "Return a list of structural project-data problems before saving."
             },
             {
               "name": "save_project_as",
               "sig": "save_project_as(self)",
-              "start_line": 434,
-              "end_line": 478,
+              "start_line": 440,
+              "end_line": 484,
               "doc": ""
             },
             {
               "name": "save_project",
               "sig": "save_project(self, force)",
-              "start_line": 480,
-              "end_line": 568,
+              "start_line": 486,
+              "end_line": 580,
               "doc": ""
             },
             {
               "name": "open_backup_restore_dialog",
               "sig": "open_backup_restore_dialog(self)",
-              "start_line": 570,
-              "end_line": 577,
+              "start_line": 582,
+              "end_line": 589,
               "doc": "Opens the unified Backup & Restore Center dialog."
             },
             {
               "name": "load_project_file",
               "sig": "load_project_file(self, filename, prompt, preserve_media)",
-              "start_line": 579,
-              "end_line": 697,
+              "start_line": 591,
+              "end_line": 709,
               "doc": ""
             },
             {
               "name": "load_project",
               "sig": "load_project(self, filename)",
-              "start_line": 699,
-              "end_line": 713,
+              "start_line": 711,
+              "end_line": 725,
               "doc": ""
             },
             {
               "name": "open_purge_project_data_dialog",
               "sig": "open_purge_project_data_dialog(self)",
-              "start_line": 715,
-              "end_line": 727,
+              "start_line": 727,
+              "end_line": 739,
               "doc": "Open the modal dialog allowing users to selectively wipe project data."
             },
             {
               "name": "purge_project_data",
               "sig": "purge_project_data(self, purge_transcript, purge_translations, purge_speakers, purge_stories, purge_media)",
-              "start_line": 729,
-              "end_line": 860,
+              "start_line": 741,
+              "end_line": 872,
               "doc": "Selectively wipe project components while preserving user undo history."
             }
           ]
@@ -16078,7 +16085,7 @@
     },
     "timeline_widgets.py": {
       "path": "timeline_widgets.py",
-      "lines": 998,
+      "lines": 971,
       "summary": "Radio & TV Story Segmenter \u2014 Timeline Ruler, Track Views, Playhead, Overview & Canvas Widgets.",
       "exports": null,
       "classes": [
@@ -16087,309 +16094,316 @@
           "bases": [
             "QWidget"
           ],
-          "start_line": 58,
-          "end_line": 886,
+          "start_line": 71,
+          "end_line": 883,
           "doc": "",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, parent, tokens)",
-              "start_line": 78,
-              "end_line": 170,
+              "start_line": 91,
+              "end_line": 180,
               "doc": ""
             },
             {
               "name": "set_is_video",
               "sig": "set_is_video(self, is_video)",
-              "start_line": 172,
-              "end_line": 175,
+              "start_line": 182,
+              "end_line": 185,
               "doc": ""
             },
             {
               "name": "set_background_generation_active",
               "sig": "set_background_generation_active(self, task_name, active)",
-              "start_line": 177,
-              "end_line": 196,
+              "start_line": 187,
+              "end_line": 206,
               "doc": "Set generation state for 'waveform' or 'thumbnails'."
             },
             {
               "name": "_activate_background_banner",
               "sig": "_activate_background_banner(self)",
-              "start_line": 198,
-              "end_line": 203,
+              "start_line": 208,
+              "end_line": 213,
               "doc": ""
             },
             {
               "name": "_update_background_status_text",
               "sig": "_update_background_status_text(self)",
-              "start_line": 205,
-              "end_line": 221,
+              "start_line": 215,
+              "end_line": 231,
               "doc": ""
             },
             {
               "name": "dragEnterEvent",
               "sig": "dragEnterEvent(self, event)",
-              "start_line": 223,
-              "end_line": 229,
+              "start_line": 233,
+              "end_line": 233,
               "doc": ""
             },
             {
               "name": "dragMoveEvent",
               "sig": "dragMoveEvent(self, event)",
-              "start_line": 231,
-              "end_line": 237,
+              "start_line": 234,
+              "end_line": 234,
               "doc": ""
             },
             {
               "name": "dragLeaveEvent",
               "sig": "dragLeaveEvent(self, event)",
-              "start_line": 239,
-              "end_line": 240,
+              "start_line": 235,
+              "end_line": 235,
               "doc": ""
             },
             {
               "name": "dropEvent",
               "sig": "dropEvent(self, event)",
-              "start_line": 242,
-              "end_line": 250,
+              "start_line": 236,
+              "end_line": 236,
               "doc": ""
             },
             {
               "name": "set_audio_filename",
               "sig": "set_audio_filename(self, filename)",
-              "start_line": 252,
-              "end_line": 255,
+              "start_line": 238,
+              "end_line": 241,
               "doc": ""
             },
             {
               "name": "set_duration",
               "sig": "set_duration(self, duration)",
-              "start_line": 257,
-              "end_line": 265,
+              "start_line": 243,
+              "end_line": 251,
               "doc": ""
             },
             {
               "name": "set_position",
               "sig": "set_position(self, position)",
-              "start_line": 267,
-              "end_line": 270,
+              "start_line": 253,
+              "end_line": 256,
               "doc": ""
             },
             {
               "name": "set_playing_state",
               "sig": "set_playing_state(self, is_playing)",
-              "start_line": 272,
-              "end_line": 273,
+              "start_line": 258,
+              "end_line": 259,
               "doc": ""
             },
             {
               "name": "ensure_position_visible",
               "sig": "ensure_position_visible(self, target_time)",
-              "start_line": 275,
-              "end_line": 298,
+              "start_line": 261,
+              "end_line": 284,
               "doc": ""
             },
             {
               "name": "clear_selection_range",
               "sig": "clear_selection_range(self)",
-              "start_line": 300,
-              "end_line": 305,
+              "start_line": 286,
+              "end_line": 291,
               "doc": "Clear active timeline drag selection range without affecting committed stories."
             },
             {
               "name": "set_transcript_selection_range",
               "sig": "set_transcript_selection_range(self, start, end)",
-              "start_line": 307,
-              "end_line": 309,
+              "start_line": 293,
+              "end_line": 295,
               "doc": ""
             },
             {
               "name": "set_stories",
               "sig": "set_stories(self, stories, selected_indices)",
-              "start_line": 311,
-              "end_line": 315,
+              "start_line": 297,
+              "end_line": 301,
               "doc": ""
             },
             {
               "name": "set_waveform_peaks",
               "sig": "set_waveform_peaks(self, peaks, levels)",
-              "start_line": 317,
-              "end_line": 328,
+              "start_line": 303,
+              "end_line": 314,
               "doc": ""
             },
             {
               "name": "set_progressive_waveform_peaks",
               "sig": "set_progressive_waveform_peaks(self, peaks, pps, pct)",
-              "start_line": 330,
-              "end_line": 337,
+              "start_line": 316,
+              "end_line": 323,
               "doc": ""
             },
             {
               "name": "set_timeline_views",
               "sig": "set_timeline_views(self, show_waveform, show_thumbnails)",
-              "start_line": 339,
-              "end_line": 343,
+              "start_line": 325,
+              "end_line": 329,
               "doc": ""
             },
             {
               "name": "set_video_thumbnails",
               "sig": "set_video_thumbnails(self, thumbnails)",
-              "start_line": 345,
-              "end_line": 348,
+              "start_line": 331,
+              "end_line": 334,
               "doc": ""
             },
             {
               "name": "set_skip_seconds",
               "sig": "set_skip_seconds(self, seconds)",
-              "start_line": 350,
-              "end_line": 351,
+              "start_line": 336,
+              "end_line": 337,
               "doc": ""
             },
             {
               "name": "visible_duration",
               "sig": "visible_duration(self)",
-              "start_line": 353,
-              "end_line": 354,
+              "start_line": 339,
+              "end_line": 340,
               "doc": ""
             },
             {
               "name": "clamp_scroll_offset",
               "sig": "clamp_scroll_offset(self)",
-              "start_line": 356,
-              "end_line": 359,
+              "start_line": 342,
+              "end_line": 345,
               "doc": ""
             },
             {
               "name": "time_to_x",
               "sig": "time_to_x(self, time_val, width)",
-              "start_line": 361,
-              "end_line": 364,
+              "start_line": 347,
+              "end_line": 350,
               "doc": ""
             },
             {
               "name": "x_to_time",
               "sig": "x_to_time(self, x_val, width)",
-              "start_line": 366,
-              "end_line": 368,
+              "start_line": 352,
+              "end_line": 354,
               "doc": ""
             },
             {
               "name": "snap_time",
               "sig": "snap_time(self, raw_time, exclude_story_idx, width, pixel_threshold)",
-              "start_line": 370,
-              "end_line": 371,
+              "start_line": 356,
+              "end_line": 357,
               "doc": ""
             },
             {
               "name": "find_edge_at_pos",
               "sig": "find_edge_at_pos(self, pos_x, width)",
-              "start_line": 375,
-              "end_line": 376,
+              "start_line": 361,
+              "end_line": 362,
               "doc": ""
             },
             {
               "name": "find_fade_handle_at_pos",
               "sig": "find_fade_handle_at_pos(self, pos_x, pos_y, width)",
-              "start_line": 378,
-              "end_line": 379,
+              "start_line": 364,
+              "end_line": 365,
               "doc": ""
             },
             {
               "name": "find_story_at_time",
               "sig": "find_story_at_time(self, time)",
-              "start_line": 381,
-              "end_line": 382,
+              "start_line": 367,
+              "end_line": 368,
               "doc": ""
             },
             {
               "name": "is_near_playhead",
               "sig": "is_near_playhead(self, pos_x, width)",
-              "start_line": 384,
-              "end_line": 385,
+              "start_line": 370,
+              "end_line": 371,
               "doc": ""
             },
             {
               "name": "set_zoom",
               "sig": "set_zoom(self, new_zoom, center_x, focus_time)",
-              "start_line": 387,
-              "end_line": 413,
+              "start_line": 373,
+              "end_line": 399,
               "doc": ""
             },
             {
               "name": "resizeEvent",
               "sig": "resizeEvent(self, event)",
-              "start_line": 415,
-              "end_line": 417,
+              "start_line": 401,
+              "end_line": 403,
               "doc": ""
             },
             {
               "name": "wheelEvent",
               "sig": "wheelEvent(self, event)",
-              "start_line": 419,
-              "end_line": 469,
+              "start_line": 405,
+              "end_line": 455,
               "doc": ""
             },
             {
               "name": "mousePressEvent",
               "sig": "mousePressEvent(self, event)",
-              "start_line": 471,
-              "end_line": 555,
+              "start_line": 457,
+              "end_line": 537,
               "doc": ""
             },
             {
               "name": "mouseMoveEvent",
               "sig": "mouseMoveEvent(self, event)",
-              "start_line": 557,
-              "end_line": 688,
+              "start_line": 539,
+              "end_line": 676,
               "doc": ""
             },
             {
               "name": "mouseReleaseEvent",
               "sig": "mouseReleaseEvent(self, event)",
-              "start_line": 690,
-              "end_line": 760,
+              "start_line": 678,
+              "end_line": 750,
+              "doc": ""
+            },
+            {
+              "name": "_check_right_drag",
+              "sig": "_check_right_drag(self, pos_x)",
+              "start_line": 752,
+              "end_line": 757,
               "doc": ""
             },
             {
               "name": "_show_timeline_context_menu",
               "sig": "_show_timeline_context_menu(self, global_pos, pos_x)",
-              "start_line": 762,
-              "end_line": 763,
+              "start_line": 759,
+              "end_line": 760,
               "doc": ""
             },
             {
               "name": "_show_selection_context_menu",
               "sig": "_show_selection_context_menu(self, global_pos)",
-              "start_line": 765,
-              "end_line": 766,
+              "start_line": 762,
+              "end_line": 763,
               "doc": ""
             },
             {
               "name": "keyPressEvent",
               "sig": "keyPressEvent(self, event)",
-              "start_line": 768,
-              "end_line": 867,
+              "start_line": 765,
+              "end_line": 864,
               "doc": ""
             },
             {
               "name": "set_thumbnail_position",
               "sig": "set_thumbnail_position(self, position)",
-              "start_line": 869,
-              "end_line": 873,
+              "start_line": 866,
+              "end_line": 870,
               "doc": ""
             },
             {
               "name": "render_waveform_buffer",
               "sig": "render_waveform_buffer(self, width, height)",
-              "start_line": 875,
-              "end_line": 876,
+              "start_line": 872,
+              "end_line": 873,
               "doc": ""
             },
             {
               "name": "paintEvent",
               "sig": "paintEvent(self, event)",
-              "start_line": 878,
-              "end_line": 886,
+              "start_line": 875,
+              "end_line": 883,
               "doc": ""
             }
           ]
@@ -16399,91 +16413,99 @@
           "bases": [
             "QWidget"
           ],
-          "start_line": 889,
-          "end_line": 997,
+          "start_line": 886,
+          "end_line": 970,
           "doc": "",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, parent, tokens)",
-              "start_line": 892,
-              "end_line": 926,
+              "start_line": 889,
+              "end_line": 923,
               "doc": ""
             },
             {
               "name": "set_is_video",
               "sig": "set_is_video(self, is_video)",
-              "start_line": 928,
-              "end_line": 930,
+              "start_line": 925,
+              "end_line": 927,
               "doc": ""
             },
             {
               "name": "set_background_generation_active",
               "sig": "set_background_generation_active(self, task_name, active)",
-              "start_line": 932,
-              "end_line": 934,
+              "start_line": 929,
+              "end_line": 931,
               "doc": ""
             },
             {
               "name": "dragEnterEvent",
               "sig": "dragEnterEvent(self, event)",
-              "start_line": 936,
-              "end_line": 942,
+              "start_line": 933,
+              "end_line": 933,
               "doc": ""
             },
             {
               "name": "dragMoveEvent",
               "sig": "dragMoveEvent(self, event)",
-              "start_line": 944,
-              "end_line": 950,
+              "start_line": 934,
+              "end_line": 934,
               "doc": ""
             },
             {
               "name": "dragLeaveEvent",
               "sig": "dragLeaveEvent(self, event)",
-              "start_line": 952,
-              "end_line": 953,
+              "start_line": 935,
+              "end_line": 935,
               "doc": ""
             },
             {
               "name": "dropEvent",
               "sig": "dropEvent(self, event)",
-              "start_line": 955,
-              "end_line": 963,
+              "start_line": 936,
+              "end_line": 936,
               "doc": ""
             },
             {
               "name": "update_scrollbar_range",
               "sig": "update_scrollbar_range(self)",
-              "start_line": 965,
-              "end_line": 974,
+              "start_line": 938,
+              "end_line": 947,
               "doc": ""
             },
             {
               "name": "update_scrollbar_from_canvas",
               "sig": "update_scrollbar_from_canvas(self, offset)",
-              "start_line": 976,
-              "end_line": 983,
+              "start_line": 949,
+              "end_line": 956,
               "doc": ""
             },
             {
               "name": "update_canvas_from_scrollbar",
               "sig": "update_canvas_from_scrollbar(self, val)",
-              "start_line": 985,
-              "end_line": 994,
+              "start_line": 958,
+              "end_line": 967,
               "doc": ""
             },
             {
               "name": "__getattr__",
               "sig": "__getattr__(self, name)",
-              "start_line": 996,
-              "end_line": 997,
+              "start_line": 969,
+              "end_line": 970,
               "doc": ""
             }
           ]
         }
       ],
-      "functions": []
+      "functions": [
+        {
+          "name": "_handle_media_drag_event",
+          "sig": "_handle_media_drag_event(event, drop_signal)",
+          "start_line": 59,
+          "end_line": 68,
+          "doc": ""
+        }
+      ]
     },
     "transcript_cleaner.py": {
       "path": "transcript_cleaner.py",
@@ -17333,7 +17355,7 @@
     "transcript_story.py": {
       "path": "transcript_story.py",
       "lines": 852,
-      "summary": "Radio & TV Segmenter v3.9.98-beta \u2014 transcript story responsibilities.",
+      "summary": "Radio & TV Segmenter v3.9.99-beta \u2014 transcript story responsibilities.",
       "exports": [
         "TranscriptStoryMixin",
         "Story",
@@ -17462,7 +17484,7 @@
     },
     "transcript_timeline_sync_mixin.py": {
       "path": "transcript_timeline_sync_mixin.py",
-      "lines": 643,
+      "lines": 655,
       "summary": "Radio & TV Story Segmenter \u2014 Transcript Timeline & Playback Synchronization Mixin.",
       "exports": null,
       "classes": [
@@ -17470,7 +17492,7 @@
           "name": "TranscriptTimelineSyncMixin",
           "bases": [],
           "start_line": 34,
-          "end_line": 643,
+          "end_line": 655,
           "doc": "Mixin for audio timecode synchronization, anchor indexing, and playback highlighting.",
           "methods": [
             {
@@ -17561,77 +17583,77 @@
               "name": "_on_selection_completed",
               "sig": "_on_selection_completed(self, cursor)",
               "start_line": 350,
-              "end_line": 370,
+              "end_line": 382,
               "doc": ""
             },
             {
               "name": "_nearest_word_anchor",
               "sig": "_nearest_word_anchor(self, cursor)",
-              "start_line": 372,
-              "end_line": 403,
+              "start_line": 384,
+              "end_line": 415,
               "doc": ""
             },
             {
               "name": "get_timestamp_at_cursor",
               "sig": "get_timestamp_at_cursor(self, cursor)",
-              "start_line": 405,
-              "end_line": 424,
+              "start_line": 417,
+              "end_line": 436,
               "doc": ""
             },
             {
               "name": "get_block_start_timestamp",
               "sig": "get_block_start_timestamp(self, cursor)",
-              "start_line": 426,
-              "end_line": 441,
+              "start_line": 438,
+              "end_line": 453,
               "doc": ""
             },
             {
               "name": "get_block_end_timestamp",
               "sig": "get_block_end_timestamp(self, cursor)",
-              "start_line": 443,
-              "end_line": 461,
+              "start_line": 455,
+              "end_line": 473,
               "doc": ""
             },
             {
               "name": "get_segment_index_at_cursor",
               "sig": "get_segment_index_at_cursor(self, cursor)",
-              "start_line": 463,
-              "end_line": 482,
+              "start_line": 475,
+              "end_line": 494,
               "doc": ""
             },
             {
               "name": "move_cursor_to_segment_start",
               "sig": "move_cursor_to_segment_start(self, seg_idx)",
-              "start_line": 484,
-              "end_line": 499,
+              "start_line": 496,
+              "end_line": 511,
               "doc": ""
             },
             {
               "name": "rebuild_anchor_index",
               "sig": "rebuild_anchor_index(self)",
-              "start_line": 501,
-              "end_line": 546,
+              "start_line": 513,
+              "end_line": 558,
               "doc": ""
             },
             {
               "name": "set_time_anchor_index",
               "sig": "set_time_anchor_index(self, entries)",
-              "start_line": 548,
-              "end_line": 550,
+              "start_line": 560,
+              "end_line": 562,
               "doc": ""
             },
             {
               "name": "clear_highlight",
               "sig": "clear_highlight(self)",
-              "start_line": 552,
-              "end_line": 558,
+              "start_line": 564,
+              "end_line": 570,
               "doc": ""
             },
             {
               "name": "highlight_word_at_time",
               "sig": "highlight_word_at_time(self, seconds, transcript_data, auto_scroll)",
-              "start_line": 560,
-              "end_line": 643,
+              "start_line": 572,
+              "end_line": 655,
               "doc": ""
             }
           ]
@@ -17729,7 +17751,7 @@
     },
     "translation.py": {
       "path": "translation.py",
-      "lines": 923,
+      "lines": 922,
       "summary": "Radio & TV Segmenter \u2014 Local Translation Mixin.",
       "exports": null,
       "classes": [
@@ -17769,189 +17791,189 @@
           "name": "TranslationMixin",
           "bases": [],
           "start_line": 132,
-          "end_line": 923,
+          "end_line": 922,
           "doc": "Mixin class managing transcript translation, language toggling, and worker lifecycle.",
           "methods": [
             {
               "name": "source_language_code",
               "sig": "source_language_code(self)",
               "start_line": 135,
-              "end_line": 169,
+              "end_line": 168,
               "doc": "Return the source language code for translation."
             },
             {
               "name": "target_language_code",
               "sig": "target_language_code(self)",
-              "start_line": 171,
-              "end_line": 179,
+              "start_line": 170,
+              "end_line": 178,
               "doc": "Return the target language code for translation (see source_language_code)."
             },
             {
               "name": "translation_key",
               "sig": "translation_key(self, from_code, to_code)",
-              "start_line": 181,
-              "end_line": 183,
+              "start_line": 180,
+              "end_line": 182,
               "doc": "Generate standardized dictionary key for language translation pair."
             },
             {
               "name": "get_translation_item",
               "sig": "get_translation_item(self, from_code, to_code)",
-              "start_line": 185,
-              "end_line": 194,
+              "start_line": 184,
+              "end_line": 193,
               "doc": "Return a current translation for an explicit language pair."
             },
             {
               "name": "translation_export_spec",
               "sig": "translation_export_spec(self, options)",
-              "start_line": 196,
-              "end_line": 209,
+              "start_line": 195,
+              "end_line": 208,
               "doc": "Return (source, target, suffix) for batch translation exports."
             },
             {
               "name": "translation_is_current",
               "sig": "translation_is_current(self, key)",
-              "start_line": 211,
-              "end_line": 225,
+              "start_line": 210,
+              "end_line": 224,
               "doc": "Check if translation for the given key exists, has content, and is not stale."
             },
             {
               "name": "has_spanish_translation",
               "sig": "has_spanish_translation(self)",
-              "start_line": 227,
-              "end_line": 233,
+              "start_line": 226,
+              "end_line": 232,
               "doc": "Check if an English-to-Spanish translation is available."
             },
             {
               "name": "get_spanish_translation_item",
               "sig": "get_spanish_translation_item(self)",
-              "start_line": 235,
-              "end_line": 255,
+              "start_line": 234,
+              "end_line": 254,
               "doc": "Return the translation dictionary for en-es or es-en if present."
             },
             {
               "name": "mark_stale_translations",
               "sig": "mark_stale_translations(self)",
-              "start_line": 257,
-              "end_line": 264,
+              "start_line": 256,
+              "end_line": 263,
               "doc": "Mark all existing translations as stale when transcript text changes."
             },
             {
               "name": "update_translation_language_selector",
               "sig": "update_translation_language_selector(self)",
-              "start_line": 266,
-              "end_line": 327,
+              "start_line": 265,
+              "end_line": 326,
               "doc": "Update translation UI selector states (tabs / combobox / actions)."
             },
             {
               "name": "change_translation_display",
               "sig": "change_translation_display(self, mode)",
-              "start_line": 329,
-              "end_line": 347,
+              "start_line": 328,
+              "end_line": 346,
               "doc": "Change the active translation display mode ('en', 'es', or 'split')."
             },
             {
               "name": "render_translation_view",
               "sig": "render_translation_view(self)",
-              "start_line": 349,
-              "end_line": 351,
+              "start_line": 348,
+              "end_line": 350,
               "doc": "Re-render transcript or translation view based on current display settings."
             },
             {
               "name": "check_translation_models_async",
               "sig": "check_translation_models_async(self)",
-              "start_line": 353,
-              "end_line": 368,
+              "start_line": 352,
+              "end_line": 367,
               "doc": "Asynchronously verify if required translation models are installed."
             },
             {
               "name": "_cleanup_translation_env_thread",
               "sig": "_cleanup_translation_env_thread(self)",
-              "start_line": 370,
-              "end_line": 390,
+              "start_line": 369,
+              "end_line": 389,
               "doc": ""
             },
             {
               "name": "_on_translation_env_progress",
               "sig": "_on_translation_env_progress(self, percent_or_msg, message)",
-              "start_line": 392,
-              "end_line": 405,
+              "start_line": 391,
+              "end_line": 404,
               "doc": ""
             },
             {
               "name": "stop_translation_worker",
               "sig": "stop_translation_worker(self, timeout_ms)",
-              "start_line": 407,
-              "end_line": 460,
+              "start_line": 406,
+              "end_line": 459,
               "doc": ""
             },
             {
               "name": "_start_translation_runtime_request",
               "sig": "_start_translation_runtime_request(self, request, on_finished)",
-              "start_line": 462,
-              "end_line": 548,
+              "start_line": 461,
+              "end_line": 547,
               "doc": "Run translation code in the plugin-owned isolated Python environment."
             },
             {
               "name": "_on_translation_env_setup_finished",
               "sig": "_on_translation_env_setup_finished(self, error)",
-              "start_line": 550,
-              "end_line": 593,
+              "start_line": 549,
+              "end_line": 592,
               "doc": ""
             },
             {
               "name": "_launch_translation_process",
               "sig": "_launch_translation_process(self, request, on_finished, python_exe, entry)",
-              "start_line": 595,
-              "end_line": 722,
+              "start_line": 594,
+              "end_line": 721,
               "doc": ""
             },
             {
               "name": "start_translation",
               "sig": "start_translation(self, from_code, to_code, install_if_missing)",
-              "start_line": 724,
-              "end_line": 798,
+              "start_line": 723,
+              "end_line": 797,
               "doc": "Start local translation in the translation plugin's isolated runtime."
             },
             {
               "name": "_on_translation_progress",
               "sig": "_on_translation_progress(self, percent, message)",
-              "start_line": 800,
-              "end_line": 810,
+              "start_line": 799,
+              "end_line": 809,
               "doc": "Handle progress updates from _translation_worker_class()."
             },
             {
               "name": "_on_translation_finished",
               "sig": "_on_translation_finished(self, translated_transcript, translation_key)",
-              "start_line": 812,
-              "end_line": 864,
+              "start_line": 811,
+              "end_line": 863,
               "doc": "Handle successful translation results."
             },
             {
               "name": "_on_translation_cancelled",
               "sig": "_on_translation_cancelled(self, results, translation_key)",
-              "start_line": 866,
-              "end_line": 878,
+              "start_line": 865,
+              "end_line": 877,
               "doc": "Handle translation worker cancellation."
             },
             {
               "name": "_on_translation_error",
               "sig": "_on_translation_error(self, error_message)",
-              "start_line": 880,
-              "end_line": 914,
+              "start_line": 879,
+              "end_line": 913,
               "doc": "Handle translation worker failures."
             },
             {
               "name": "_on_translation_thread_finished",
               "sig": "_on_translation_thread_finished(self)",
-              "start_line": 916,
-              "end_line": 919,
+              "start_line": 915,
+              "end_line": 918,
               "doc": "Clean up thread reference."
             },
             {
               "name": "_translation_thread_finished",
               "sig": "_translation_thread_finished(self)",
-              "start_line": 921,
-              "end_line": 923,
+              "start_line": 920,
+              "end_line": 922,
               "doc": "Alias for _on_translation_thread_finished."
             }
           ]

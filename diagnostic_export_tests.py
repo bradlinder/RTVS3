@@ -1661,6 +1661,14 @@ class DiagnosticExportTestsMixin:
                     self.project_metadata = {}
                     self.stories = [DummyStory(0.0, 10.0, "Story One"), DummyStory(10.0, 20.0, "Story Two")]
                     self.current_selected_story_indices = [1]
+                    self.refresh_calls = 0
+                    self.dirty_reasons = []
+
+                def refresh_story_list(self):
+                    self.refresh_calls += 1
+
+                def mark_project_dirty(self, reason=None):
+                    self.dirty_reasons.append(reason)
 
             tab_mw = TabDummyMainWin()
             tab = WordPressExportTabWidget(None, tab_mw)
@@ -1685,6 +1693,8 @@ class DiagnosticExportTestsMixin:
             assert not tab.wp_img_meta_widget.isHidden(), "Metadata inputs must show in grab mode"
             tab.wp_thumb_caption_edit.setText("Story 1 Caption")
             tab.wp_thumb_alt_edit.setText("Story 1 Alt")
+            assert tab_mw.refresh_calls == 0, f"Typing caption/alt must not trigger refresh_story_list, got {tab_mw.refresh_calls}"
+            assert "Update WordPress Metadata" not in tab_mw.dirty_reasons, f"Typing must not emit log_reason dirty notifications: {tab_mw.dirty_reasons}"
 
             # Verify post switching & rebuild persistence
             rebuilt = build_wp_post_items(tab_mw, scope="full_and_all_stories")

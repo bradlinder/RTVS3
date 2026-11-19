@@ -49,7 +49,10 @@ from timeline_widgets import WaveformEnvelope, build_waveform_pyramid
 def read_waveform_peak_cache(audio_file, points_per_second=..., project_file=...):
     ...
 
-def write_waveform_peak_cache(audio_file, peaks, points_per_second=..., project_file=..., levels=...):
+def _pack_f32(values) -> bytes:
+    ...
+
+def write_waveform_peak_cache(audio_file, peaks, points_per_second=..., project_file=..., levels=..., skip_if_exists=...):
     ...
 
 def invalidate_waveform_peak_cache(audio_file, project_file=...):

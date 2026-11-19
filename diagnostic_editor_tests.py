@@ -450,7 +450,7 @@ class DiagnosticEditorTestsMixin:
         # 6c. Verify progressive waveform streaming on TimelineCanvas and timeline_painter
         from timeline_widgets import TimelineCanvas
         from timeline_painter import render_waveform_buffer
-        tl_canvas = TimelineCanvas(win)
+        tl_canvas = TimelineCanvas(None)
         tl_canvas.duration = 60.0
         tl_canvas.resize(800, 120)
         partial_peaks = [0.2 + 0.1 * (i % 5) for i in range(100)]
@@ -471,6 +471,95 @@ class DiagnosticEditorTestsMixin:
         pix_full = render_waveform_buffer(tl_canvas, 800, 120)
         assert pix_full is not None and not pix_full.isNull()
         tl_canvas.deleteLater()
+
+        # 6d. Verify floating selection toolbar stays hidden when disabled and positions viewport-locally when enabled
+        from PySide6.QtWidgets import QWidget
+        from PySide6.QtGui import QTextCursor
+        from transcript_editor import InteractiveTranscriptEdit
+
+        host_w = QWidget()
+        host_w.show_floating_selection_toolbar = False
+        tv = InteractiveTranscriptEdit(host_w)
+        tv.resize(900, 300)
+        tv.viewport().resize(900, 300)
+        tv.setPlainText("Hello world from story 1.")
+        tv.char_timestamp_map = [(0, 25, 0.0, 10.0)]
+        cur = QTextCursor(tv.document())
+        cur.setPosition(0)
+        cur.setPosition(11, QTextCursor.MoveMode.KeepAnchor)
+        tv.setTextCursor(cur)
+        tv._on_selection_completed(cur)
+        assert tv.selection_bubble.isHidden() is True, "Floating selection toolbar must stay hidden when disabled"
+
+        host_w.show_floating_selection_toolbar = True
+        tv.is_editing_mode = False
+        tv._on_selection_completed(cur)
+        assert not tv.selection_bubble.isHidden(), "Floating selection toolbar must appear when enabled"
+        b_geom = tv.selection_bubble.geometry()
+        assert b_geom.x() >= 8 and b_geom.y() >= 4, f"Bubble should use viewport-local coordinates, got {b_geom}"
+        assert b_geom.x() + b_geom.width() <= tv.viewport().width() + 20, f"Bubble overflowed viewport width: {b_geom}"
+        host_w.deleteLater()
+
+        # 6e. Verify timeline right-click context menu on fade handles, segment edges, and minor jitter
+        from PySide6.QtCore import Qt, QEvent, QPointF
+        from PySide6.QtGui import QMouseEvent
+        from timeline_widgets import TimelineCanvas
+        from transcript_story import Story
+
+        tl_rc = TimelineCanvas(None)
+        tl_rc.resize(1000, 120)
+        tl_rc.duration = 1800.0
+        tl_rc.show_audio_fades = True
+        tl_rc.stories = [Story(start=100.0, end=400.0, title="Seg 1", fade_in=5.0, fade_out=5.0)]
+        menu_calls = []
+        drag_fin = []
+        tl_rc._show_timeline_context_menu = lambda gpos, px: menu_calls.append(px)
+        tl_rc.dragOperationFinished.connect(lambda: drag_fin.append(True))
+
+        def _send_rclick(x1, y1, x2=None, y2=None):
+            if x2 is None:
+                x2, y2 = x1, y1
+            p1 = QPointF(float(x1), float(y1))
+            p2 = QPointF(float(x2), float(y2))
+            tl_rc.mousePressEvent(QMouseEvent(QEvent.Type.MouseButtonPress, p1, p1, Qt.MouseButton.RightButton, Qt.MouseButton.RightButton, Qt.KeyboardModifier.NoModifier))
+            if (x2, y2) != (x1, y1):
+                tl_rc.mouseMoveEvent(QMouseEvent(QEvent.Type.MouseMove, p2, p2, Qt.MouseButton.NoButton, Qt.MouseButton.RightButton, Qt.KeyboardModifier.NoModifier))
+            tl_rc.mouseReleaseEvent(QMouseEvent(QEvent.Type.MouseButtonRelease, p2, p2, Qt.MouseButton.RightButton, Qt.MouseButton.NoButton, Qt.KeyboardModifier.NoModifier))
+
+        _send_rclick(tl_rc.time_to_x(105.0, 1000), TimelineCanvas.RULER_HEIGHT + 5)
+        assert len(menu_calls) == 1, f"Right-click near fade handle should open menu, got {len(menu_calls)}"
+
+        _send_rclick(tl_rc.time_to_x(100.0, 1000), TimelineCanvas.RULER_HEIGHT + 40)
+        assert len(menu_calls) == 2 and len(drag_fin) == 0, f"Right-click near edge without drag should open menu ({len(menu_calls)}), drags={len(drag_fin)}"
+
+        _send_rclick(200.0, 60.0, 202.0, 60.0)
+        assert len(menu_calls) == 3 and tl_rc.selection_start is None, f"2px jitter during right-click should open menu ({len(menu_calls)}), sel={tl_rc.selection_start}"
+        tl_rc.deleteLater()
+
+        # 6f. Verify skip_if_exists skips redundant .peaks rewrites when cache is valid and newer than audio
+        import os
+        import tempfile
+        from background_workers import (
+            get_waveform_peak_cache_path,
+            read_waveform_peak_cache,
+            write_waveform_peak_cache,
+        )
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            audio_p = os.path.join(tmpdir, "audio.wav")
+            proj_p = os.path.join(tmpdir, "proj.rtvs")
+            with open(audio_p, "wb") as fh:
+                fh.write(b"RIFFdemo")
+            with open(proj_p, "w", encoding="utf-8") as fh:
+                fh.write("{}")
+            write_waveform_peak_cache(audio_p, [0.1, 0.5, 0.9, 0.2], project_file=proj_p, skip_if_exists=True)
+            cache_p = get_waveform_peak_cache_path(audio_p, project_file=proj_p)
+            assert os.path.exists(cache_p), "Expected waveform .peaks cache to be written initially"
+            first_mtime = os.stat(cache_p).st_mtime_ns
+            write_waveform_peak_cache(audio_p, [0.9, 0.9, 0.9, 0.9], project_file=proj_p, skip_if_exists=True)
+            assert os.stat(cache_p).st_mtime_ns == first_mtime, "skip_if_exists should avoid rewriting valid .peaks cache"
+            cached_peaks = read_waveform_peak_cache(audio_p, project_file=proj_p)
+            assert len(cached_peaks) == 4 and all(abs(a - b) < 1e-5 for a, b in zip(cached_peaks, [0.1, 0.5, 0.9, 0.2])), f"Cached peaks unexpectedly overwritten: {cached_peaks}"
 
         # 7. Verify Terminology Two-Pass Contextual & Case-Sensitive Normalization
         import terminology as term_mod

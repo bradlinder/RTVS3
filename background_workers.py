@@ -611,7 +611,14 @@ def read_waveform_peak_cache(audio_file, points_per_second=WAVEFORM_POINTS_PER_S
             continue
     return None
 
-def write_waveform_peak_cache(audio_file, peaks, points_per_second=WAVEFORM_POINTS_PER_SECOND, project_file=None, levels=None):
+def _pack_f32(values) -> bytes:
+    if HAVE_NUMPY and np is not None:
+        return np.asarray(values, dtype="<f4").ravel().tobytes()
+    vals = values.tolist() if hasattr(values, "tolist") else list(values)
+    return struct.pack(f"<{len(vals)}f", *vals)
+
+
+def write_waveform_peak_cache(audio_file, peaks, points_per_second=WAVEFORM_POINTS_PER_SECOND, project_file=None, levels=None, skip_if_exists=False):
     """
     Write waveform peak envelope and multi-resolution mipmapped levels to binary cache with atomic rename.
     Format (Version 2):
@@ -629,6 +636,10 @@ def write_waveform_peak_cache(audio_file, peaks, points_per_second=WAVEFORM_POIN
         cache_path = get_waveform_peak_cache_path(audio_file, project_file=project_file)
         if not cache_path:
             return
+        if skip_if_exists and cache_path.exists() and cache_path.stat().st_size > 18:
+            audio_p = Path(audio_file)
+            if not audio_p.exists() or cache_path.stat().st_mtime >= audio_p.stat().st_mtime:
+                return
         cache_path.parent.mkdir(parents=True, exist_ok=True)
         tmp_path = cache_path.with_name(cache_path.name + ".tmp")
         count = len(peaks)
@@ -638,13 +649,13 @@ def write_waveform_peak_cache(audio_file, peaks, points_per_second=WAVEFORM_POIN
         with open(tmp_path, "wb") as f:
             f.write(PEAKS_MAGIC)
             f.write(struct.pack("<HfI", PEAKS_VERSION, float(points_per_second), count))
-            f.write(struct.pack(f"<{count}f", *peaks))
+            f.write(_pack_f32(peaks))
             # Write mipmapped levels
             f.write(struct.pack("<H", len(sublevels)))
             for sub in sublevels:
-                sub_list = sub.tolist() if hasattr(sub, "tolist") else list(sub)
-                f.write(struct.pack("<I", len(sub_list)))
-                f.write(struct.pack(f"<{len(sub_list)}f", *sub_list))
+                sub_len = len(sub)
+                f.write(struct.pack("<I", sub_len))
+                f.write(_pack_f32(sub))
             f.flush()
             os.fsync(f.fileno())
         safe_replace(tmp_path, cache_path)

@@ -278,7 +278,13 @@ class ProjectLifecycleMixin:
 
         if self.audio_file and getattr(self, "timeline", None) and getattr(self.timeline, "waveform_peaks", None):
             try:
-                write_waveform_peak_cache(self.audio_file, self.timeline.waveform_peaks, project_file=destination)
+                write_waveform_peak_cache(
+                    self.audio_file,
+                    self.timeline.waveform_peaks,
+                    project_file=destination,
+                    levels=getattr(self.timeline, "waveform_levels", None),
+                    skip_if_exists=True,
+                )
             except Exception:
                 pass
 
@@ -520,7 +526,13 @@ class ProjectLifecycleMixin:
 
             if self.audio_file and getattr(self, "timeline", None) and getattr(self.timeline, "waveform_peaks", None):
                 try:
-                    write_waveform_peak_cache(self.audio_file, self.timeline.waveform_peaks, project_file=self.project_file)
+                    write_waveform_peak_cache(
+                        self.audio_file,
+                        self.timeline.waveform_peaks,
+                        project_file=self.project_file,
+                        levels=getattr(self.timeline, "waveform_levels", None),
+                        skip_if_exists=True,
+                    )
                 except Exception:
                     pass
 

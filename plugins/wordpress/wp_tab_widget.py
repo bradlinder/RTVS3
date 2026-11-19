@@ -364,7 +364,7 @@ class WordPressExportTabWidget(QWidget):
             self.main_window.set_unsaved_changes(True)
         QMessageBox.information(self, "Applied Podcast Settings", f"Assigned podcast settings to all {len(self.wp_post_items)} posts.")
 
-    def _sync_post_to_project(self, idx: int):
+    def _sync_post_to_project(self, idx: int, log_reason: bool = False):
         if not (0 <= idx < len(self.wp_post_items)):
             return
         post = self.wp_post_items[idx]
@@ -413,6 +413,8 @@ class WordPressExportTabWidget(QWidget):
             if target_story:
                 if not hasattr(target_story, "metadata") or target_story.metadata is None:
                     target_story.metadata = {}
+                prev_title = target_story.title
+                prev_author = target_story.metadata.get("author", "")
                 wp_meta = target_story.metadata.setdefault("wordpress", {})
                 new_title = post.get("title", "")
                 wp_meta["title"] = new_title
@@ -451,8 +453,7 @@ class WordPressExportTabWidget(QWidget):
                 from plugins.wordpress.youtube_embed import sync_youtube_to_meta
                 sync_youtube_to_meta(wp_meta, post)
 
-                # Update main window story list display
-                if hasattr(self.main_window, "refresh_story_list"):
+                if (target_story.title != prev_title or target_story.metadata.get("author", "") != prev_author) and hasattr(self.main_window, "refresh_story_list"):
                     self.main_window.refresh_story_list()
 
                 # If this target story is currently active in the main window, update its UI fields
@@ -467,14 +468,14 @@ class WordPressExportTabWidget(QWidget):
                         self.main_window.author_input.setText(target_story.metadata.get("author", "") or "")
 
         if hasattr(self.main_window, "mark_project_dirty"):
-            self.main_window.mark_project_dirty("Update WordPress Metadata")
+            self.main_window.mark_project_dirty("Update WordPress Metadata" if log_reason else None)
         elif hasattr(self.main_window, "set_unsaved_changes"):
             self.main_window.set_unsaved_changes(True)
 
     def save_all_posts_to_project(self):
         """Persist all post metadata and export options back into stories and project_metadata."""
         for idx in range(len(self.wp_post_items)):
-            self._sync_post_to_project(idx)
+            self._sync_post_to_project(idx, log_reason=False)
         proj_meta = getattr(self.main_window, "project_metadata", None)
         if not isinstance(proj_meta, dict):
             proj_meta = {}

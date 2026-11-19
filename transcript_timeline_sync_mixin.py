@@ -363,11 +363,23 @@ class TranscriptTimelineSyncMixin:
         if hasattr(main_win, "timeline"):
             main_win.timeline.set_transcript_selection_range(time_range[0], time_range[1])
 
-        if hasattr(self, "selection_bubble"):
-            sel_rect = self.cursorRect(cursor)
-            bubble_pos = self.mapToGlobal(sel_rect.topLeft())
-            self.selection_bubble.move(bubble_pos.x(), max(10, bubble_pos.y() - 40))
+        show_floating = str(
+            getattr(main_win, "show_floating_selection_toolbar", getattr(self, "show_floating_selection_toolbar", True))
+        ).lower() in {"1", "true", "yes"}
+        if hasattr(self, "selection_bubble") and not getattr(self, "is_editing_mode", False) and show_floating:
+            c_rect = self.cursorRect(cursor)
+            bubble_hint = self.selection_bubble.sizeHint()
+            b_w = max(336, bubble_hint.width() + 16)
+            b_h = max(34, bubble_hint.height())
+            max_bx = max(8, self.viewport().width() - b_w - 8)
+            bx = max(8, min(max_bx, c_rect.center().x() - b_w // 2))
+            by = max(4, c_rect.top() - b_h - 6)
+            self.selection_bubble.setFixedSize(b_w, b_h)
+            self.selection_bubble.setGeometry(bx, by, b_w, b_h)
             self.selection_bubble.show()
+            self.selection_bubble.raise_()
+        elif hasattr(self, "selection_bubble"):
+            self.selection_bubble.hide()
 
     def _nearest_word_anchor(self, cursor):
         pos = cursor.position()

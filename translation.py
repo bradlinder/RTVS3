@@ -165,7 +165,6 @@ class TranslationMixin:
             return "es"
             
         detected = meta_lang or trans_lang or curr_mode
-        self.log_activity(f"[DEBUG] source_language_code: meta_lang={meta_lang}, trans_lang={trans_lang}, curr_mode={curr_mode}, detected={detected}")
         return "es" if detected.startswith("es") else "en"
 
     def target_language_code(self) -> str:

@@ -18,6 +18,9 @@ from timeline_painter import _FADE_STEPS, _FADE_IN_CURVE_TABLES, _FADE_OUT_CURVE
 from timeline_context_menus import show_timeline_context_menu, show_selection_context_menu
 from timeline_snap import snap_time as _snap_time_impl, find_edge_at_pos as _find_edge_impl, find_fade_handle_at_pos as _find_fade_impl, find_story_at_time as _find_story_impl, is_near_playhead as _is_near_playhead_impl, get_timeline_hover_info as _get_timeline_hover_impl, format_selection_drag_info as _format_sel_drag_impl, format_edge_drag_info as _format_edge_drag_impl
 
+def _handle_media_drag_event(event, drop_signal=...):
+    ...
+
 class TimelineCanvas(QWidget):
     positionClicked = ...
     scrubPositionChanged = ...
@@ -147,6 +150,9 @@ class TimelineCanvas(QWidget):
         ...
 
     def mouseReleaseEvent(self, event):
+        ...
+
+    def _check_right_drag(self, pos_x: float) -> bool:
         ...
 
     def _show_timeline_context_menu(self, global_pos, pos_x):

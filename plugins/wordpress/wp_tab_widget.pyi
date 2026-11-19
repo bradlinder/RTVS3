@@ -105,7 +105,7 @@ class WordPressExportTabWidget(QWidget):
     def _apply_podcast_to_all_posts(self):
         ...
 
-    def _sync_post_to_project(self, idx: int):
+    def _sync_post_to_project(self, idx: int, log_reason: bool=...):
         ...
 
     def save_all_posts_to_project(self):

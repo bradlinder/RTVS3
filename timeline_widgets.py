@@ -55,6 +55,19 @@ from timeline_snap import (
     format_selection_drag_info as _format_sel_drag_impl, format_edge_drag_info as _format_edge_drag_impl,
 )
 
+
+def _handle_media_drag_event(event, drop_signal=None):
+    paths = extract_dropped_file_paths(event.mimeData())
+    if paths:
+        if drop_signal is not None:
+            drop_signal.emit(paths[0])
+        event.setDropAction(Qt.DropAction.CopyAction)
+        event.acceptProposedAction()
+        event.accept()
+    else:
+        event.ignore()
+
+
 class TimelineCanvas(QWidget):
     positionClicked = Signal(float)
     scrubPositionChanged = Signal(float)
@@ -120,12 +133,9 @@ class TimelineCanvas(QWidget):
 
         self.is_left_down = False
         self.is_scrubbing = False
-        self.left_down_x = 0
-        self.has_dragged = False
-        self.selection_start_time = 0.0
-
-        self.is_box_selecting = False
-        self.box_start_time = 0.0
+        self._right_down_x = None
+        self._right_drag_moved = False
+        self._right_started_new_selection = False
 
         self.active_edge_target = None
 
@@ -220,34 +230,10 @@ class TimelineCanvas(QWidget):
         else:
             self.background_status_text = ""
 
-    def dragEnterEvent(self, event):
-        if extract_dropped_file_paths(event.mimeData()):
-            event.setDropAction(Qt.DropAction.CopyAction)
-            event.acceptProposedAction()
-            event.accept()
-        else:
-            event.ignore()
-
-    def dragMoveEvent(self, event):
-        if extract_dropped_file_paths(event.mimeData()):
-            event.setDropAction(Qt.DropAction.CopyAction)
-            event.acceptProposedAction()
-            event.accept()
-        else:
-            event.ignore()
-
-    def dragLeaveEvent(self, event):
-        event.accept()
-
-    def dropEvent(self, event):
-        paths = extract_dropped_file_paths(event.mimeData())
-        if paths:
-            self.mediaDropped.emit(paths[0])
-            event.setDropAction(Qt.DropAction.CopyAction)
-            event.acceptProposedAction()
-            event.accept()
-        else:
-            event.ignore()
+    def dragEnterEvent(self, event): _handle_media_drag_event(event)
+    def dragMoveEvent(self, event): _handle_media_drag_event(event)
+    def dragLeaveEvent(self, event): event.accept()
+    def dropEvent(self, event): _handle_media_drag_event(event, self.mediaDropped)
 
     def set_audio_filename(self, filename):
         self.audio_file_name = filename
@@ -481,45 +467,43 @@ class TimelineCanvas(QWidget):
             event.accept()
             return
 
-        # --- FADE ENVELOPE HANDLE INTERACTION ---
-        fade_hit = self.find_fade_handle_at_pos(pos_x, event.position().y(), width)
-        if fade_hit:
-            self.active_fade_target = fade_hit
-            idx, f_type = fade_hit
-            self._fade_drag_start_val = getattr(self.stories[idx], f_type, 0.0)
-            self.setCursor(Qt.CursorShape.SizeHorCursor)
-            event.accept()
-            return
+        # --- FADE ENVELOPE HANDLE INTERACTION (Left-click drag only) ---
+        if event.button() == Qt.MouseButton.LeftButton:
+            fade_hit = self.find_fade_handle_at_pos(pos_x, event.position().y(), width)
+            if fade_hit:
+                self.active_fade_target = fade_hit
+                idx, f_type = fade_hit
+                self._fade_drag_start_val = getattr(self.stories[idx], f_type, 0.0)
+                self.setCursor(Qt.CursorShape.SizeHorCursor)
+                event.accept()
+                return
 
         # --- RIGHT-CLICK: Drag Selection, Handle Adjustments, or Context Menu ---
         if event.button() == Qt.MouseButton.RightButton:
             curr_t = max(0.0, min(self.duration, self.x_to_time(pos_x, width)))
+            self._right_down_x = pos_x
+            self._right_drag_moved = False
+            self._right_started_new_selection = False
 
-            # Check if clicking a handle on an existing right-click selection
             if self.selection_start is not None and self.selection_end is not None:
                 x_start = self.time_to_x(self.selection_start, width)
                 x_end = self.time_to_x(self.selection_end, width)
-                x_min = min(x_start, x_end)
-                x_max = max(x_start, x_end)
-
-                if abs(pos_x - x_min) <= self.EDGE_HANDLE_THRESHOLD:
-                    self.active_selection_handle = "start" if x_start <= x_end else "end"
+                x_min, x_max = min(x_start, x_end), max(x_start, x_end)
+                near_min = abs(pos_x - x_min) <= self.EDGE_HANDLE_THRESHOLD
+                near_max = abs(pos_x - x_max) <= self.EDGE_HANDLE_THRESHOLD
+                if near_min or near_max:
+                    self.active_selection_handle = (
+                        ("start" if x_start <= x_end else "end") if near_min else ("end" if x_start <= x_end else "start")
+                    )
                     self.is_right_dragging = True
                     self.setCursor(Qt.CursorShape.SizeHorCursor)
                     event.accept()
                     return
-                elif abs(pos_x - x_max) <= self.EDGE_HANDLE_THRESHOLD:
-                    self.active_selection_handle = "end" if x_start <= x_end else "start"
-                    self.is_right_dragging = True
-                    self.setCursor(Qt.CursorShape.SizeHorCursor)
-                    event.accept()
-                    return
-                elif x_min < pos_x < x_max:
+                if x_min < pos_x < x_max:
                     self._show_selection_context_menu(event.globalPosition().toPoint() if hasattr(event, "globalPosition") else event.globalPos())
                     event.accept()
                     return
 
-            # Check if grabbing an existing story edge
             edge_hit = self.find_edge_at_pos(pos_x, width)
             if edge_hit:
                 self.active_edge_target = edge_hit
@@ -527,13 +511,11 @@ class TimelineCanvas(QWidget):
                 event.accept()
                 return
 
-            # Otherwise, begin drawing a new selection region
+            self._right_started_new_selection = True
             self.selection_start = curr_t
             self.selection_end = curr_t
             self.active_selection_handle = "end"
             self.is_right_dragging = True
-            self.selectionRangeChanged.emit(self.selection_start, self.selection_end)
-            self.update()
             event.accept()
             return
 
@@ -586,6 +568,9 @@ class TimelineCanvas(QWidget):
 
         # --- RIGHT-CLICK DRAG: Update Selection Region and Handles ---
         if self.is_right_dragging:
+            if not self._check_right_drag(pos_x):
+                event.accept()
+                return
             raw_time = max(0.0, min(self.duration, self.x_to_time(pos_x, width)))
             curr_time = self.snap_time(raw_time, width=width)
             if self.active_selection_handle == "start":
@@ -633,6 +618,9 @@ class TimelineCanvas(QWidget):
             return
 
         if self.active_edge_target:
+            if not self._check_right_drag(pos_x):
+                event.accept()
+                return
             idx, edge_type = self.active_edge_target
             if 0 <= idx < len(self.stories):
                 raw_time = max(0, min(self.duration, self.x_to_time(pos_x, width)))
@@ -719,33 +707,35 @@ class TimelineCanvas(QWidget):
 
         # --- RIGHT-CLICK RELEASE: Finalize Selection Boundaries ---
         if event.button() == Qt.MouseButton.RightButton:
+            gpos = event.globalPosition().toPoint() if hasattr(event, "globalPosition") else event.globalPos()
             if self.is_right_dragging:
                 self.is_right_dragging = False
                 self.active_selection_handle = None
                 self.unsetCursor()
-                if self.selection_start is not None and self.selection_end is not None:
-                    if abs(self.selection_start - self.selection_end) < 0.05:
+                if not self._right_drag_moved:
+                    if self._right_started_new_selection:
                         self.selection_start = None
                         self.selection_end = None
                         self.selectionRangeChanged.emit(None, None)
                         self.update()
-                        gpos = event.globalPosition().toPoint() if hasattr(event, "globalPosition") else event.globalPos()
                         self._show_timeline_context_menu(gpos, event.position().x())
-                        event.accept()
-                        return
                     else:
-                        s = min(self.selection_start, self.selection_end)
-                        e = max(self.selection_start, self.selection_end)
-                        self.selection_start, self.selection_end = s, e
-                        self.selectionRangeChanged.emit(s, e)
-                self.update()
+                        self._show_selection_context_menu(gpos)
+                elif self.selection_start is not None and self.selection_end is not None:
+                    s, e = min(self.selection_start, self.selection_end), max(self.selection_start, self.selection_end)
+                    self.selection_start, self.selection_end = s, e
+                    self.selectionRangeChanged.emit(s, e)
+                    self.update()
                 event.accept()
                 return
 
             if self.active_edge_target:
                 self.active_edge_target = None
                 self.unsetCursor()
-                self.dragOperationFinished.emit()
+                if self._right_drag_moved:
+                    self.dragOperationFinished.emit()
+                else:
+                    self._show_timeline_context_menu(gpos, event.position().x())
                 event.accept()
                 return
 
@@ -758,6 +748,13 @@ class TimelineCanvas(QWidget):
                 return
 
         super().mouseReleaseEvent(event)
+
+    def _check_right_drag(self, pos_x: float) -> bool:
+        if not self._right_drag_moved:
+            if self._right_down_x is not None and abs(pos_x - self._right_down_x) < 5.0:
+                return False
+            self._right_drag_moved = True
+        return True
 
     def _show_timeline_context_menu(self, global_pos, pos_x):
         show_timeline_context_menu(self, global_pos, pos_x)
@@ -933,34 +930,10 @@ class TimelineWidget(QWidget):
         if hasattr(self, "canvas") and hasattr(self.canvas, "set_background_generation_active"):
             self.canvas.set_background_generation_active(task_name, active)
 
-    def dragEnterEvent(self, event):
-        if extract_dropped_file_paths(event.mimeData()):
-            event.setDropAction(Qt.DropAction.CopyAction)
-            event.acceptProposedAction()
-            event.accept()
-        else:
-            event.ignore()
-
-    def dragMoveEvent(self, event):
-        if extract_dropped_file_paths(event.mimeData()):
-            event.setDropAction(Qt.DropAction.CopyAction)
-            event.acceptProposedAction()
-            event.accept()
-        else:
-            event.ignore()
-
-    def dragLeaveEvent(self, event):
-        event.accept()
-
-    def dropEvent(self, event):
-        paths = extract_dropped_file_paths(event.mimeData())
-        if paths:
-            self.mediaDropped.emit(paths[0])
-            event.setDropAction(Qt.DropAction.CopyAction)
-            event.acceptProposedAction()
-            event.accept()
-        else:
-            event.ignore()
+    def dragEnterEvent(self, event): _handle_media_drag_event(event)
+    def dragMoveEvent(self, event): _handle_media_drag_event(event)
+    def dragLeaveEvent(self, event): event.accept()
+    def dropEvent(self, event): _handle_media_drag_event(event, self.mediaDropped)
 
     def update_scrollbar_range(self):
         self.is_internal_scrollbar_update = True

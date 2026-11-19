@@ -38,16 +38,17 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 --------------------------------------------------------------------------------
 TABLE OF CONTENTS & STATUS OVERVIEW
 --------------------------------------------------------------------------------
-1. Immediate Predecessor Release: WordPress Featured Image Caption & Alt Text Support (`plugins/wordpress/client.py`, `plugins/wordpress/wp_post_builder.py`, `plugins/wordpress/wp_ui_builder.py`, `plugins/wordpress/wp_tab_widget.py`, `plugins/wordpress/export_destination.py`, `plugins/wordpress/plugin.py`, `plugins/wordpress/youtube_embed.py`, `diagnostic_export_tests.py`) [x] [COMPLETED in v3.9.97-beta]
-   [x] 1.1 WordPress REST Media Metadata Client: Added `WordPressClient.update_media_metadata(media_id, caption=..., alt_text=...)` (`client.py`), extended `upload_media()` with optional `caption`/`alt_text` kwargs, and updated `execute_wordpress_upload()` to publish attachment captions & alt text non-fatally right after uploading the featured image.
-   [x] 1.2 Export Dialog UI, Persistence & Bulk Operations: Added separate **Caption** and **Alt Text** fields under Featured Image (`wp_ui_builder.py`) shown for both custom image files (`"file"`) and video frame grabs (`"grab"`), wired project sync via `sync_featured_image_meta()` (`wp_post_builder.py`, `wp_tab_widget.py`), bulk copy actions, and hover tooltip indicators (`youtube_embed.py`).
-   [x] 1.3 Quick Single-Post Publish Dialog & Runners: Added matching Caption/Alt Text fields and worker publishing in `WordPressPublishDialog` / `WordPressPublishWorker` (`plugin.py`), passed caption/alt text from `WordPressExportDestination` (`export_destination.py`), and displayed caption status in `WordPressStoryMetadataWidget`.
-   [x] 1.4 Automated Diagnostic Tests: Added `_test_wordpress_featured_image_caption_and_alt_text` (`diagnostic_export_tests.py`) covering REST endpoint calls/fallbacks, warning resilience, UI visibility modes, project rebuild persistence, bulk apply, and publish worker delegation.
+1. Immediate Predecessor Release: CI Plugin Bundling on Tag Releases & Plugin Manager Update Check Fix (`.github/workflows/build.yml`, `plugins/manager_dialog.py`, `diagnostic_cloud_and_system_tests.py`) [x] [COMPLETED in v3.9.98-beta]
+   [x] 1.1 GitHub Actions Tag-Push Plugin Bundling Fix: Replaced `inputs.plugin_* != false` with `${{ github.event_name == 'push' || inputs.plugin_* }}` across all 4 build jobs (`build-plugins`, `build-windows`, `build-macos`, `build-linux`) in `.github/workflows/build.yml` so tag-triggered releases always bundle WordPress, YouTube, Translation, and GDocs plugins instead of coercing `null != false` to `false`.
+   [x] 1.2 Plugin Manager Dialog Missing Imports & Worker Retention: Added missing `import sys` and `GitHubPluginsWorker` import in `plugins/manager_dialog.py` (fixing `NameError` in `check_for_plugin_updates()` and `on_open_folder()`), and retained active worker references (`_update_check_worker`, `_batch_update_worker`).
+   [x] 1.3 Automated CI & Dialog Regression Guard: Extended `_test_plugin_interface_sandbox_testing` (`diagnostic_cloud_and_system_tests.py`) to verify `.github/workflows/build.yml` plugin env expressions on tag pushes and exercise `PluginManagerDialog.check_for_plugin_updates()` and `on_open_folder()`.
 
-2. Active Release: CI Plugin Bundling on Tag Releases & Plugin Manager Update Check Fix (`.github/workflows/build.yml`, `plugins/manager_dialog.py`, `diagnostic_cloud_and_system_tests.py`) [x] [COMPLETED in v3.9.98-beta]
-   [x] 2.1 GitHub Actions Tag-Push Plugin Bundling Fix: Replaced `inputs.plugin_* != false` with `${{ github.event_name == 'push' || inputs.plugin_* }}` across all 4 build jobs (`build-plugins`, `build-windows`, `build-macos`, `build-linux`) in `.github/workflows/build.yml` so tag-triggered releases always bundle WordPress, YouTube, Translation, and GDocs plugins instead of coercing `null != false` to `false`.
-   [x] 2.2 Plugin Manager Dialog Missing Imports & Worker Retention: Added missing `import sys` and `GitHubPluginsWorker` import in `plugins/manager_dialog.py` (fixing `NameError` in `check_for_plugin_updates()` and `on_open_folder()`), and retained active worker references (`_update_check_worker`, `_batch_update_worker`).
-   [x] 2.3 Automated CI & Dialog Regression Guard: Extended `_test_plugin_interface_sandbox_testing` (`diagnostic_cloud_and_system_tests.py`) to verify `.github/workflows/build.yml` plugin env expressions on tag pushes and exercise `PluginManagerDialog.check_for_plugin_updates()` and `on_open_folder()`.
+2. Active Release: UX Responsiveness, Timeline Right-Click Context Menu & Floating Toolbar Fixes (`transcript_timeline_sync_mixin.py`, `timeline_widgets.py`, `background_workers.py`, `project_lifecycle.py`, `plugins/wordpress/wp_tab_widget.py`, `translation.py`, `diagnostic_editor_tests.py`, `diagnostic_export_tests.py`) [x] [COMPLETED in v3.9.99-beta]
+   [x] 2.1 Floating Selection Toolbar Guard & Viewport Positioning (`transcript_timeline_sync_mixin.py`): Enforced `show_floating_selection_toolbar` preference and `not is_editing_mode` inside `_on_selection_completed()`, hiding the bubble when disabled and positioning it using viewport-local coordinates when enabled.
+   [x] 2.2 Timeline Right-Click Dead Zones & Drag Hysteresis (`timeline_widgets.py`): Restricted fade handle capture to left-clicks so right-clicks near fade handles reach the context menu, added 5px right-drag hysteresis (`_check_right_drag`) before starting edge/range drags, opened context menus on clean right-release, and extracted shared `_handle_media_drag_event()`.
+   [x] 2.3 Waveform `.peaks` Cache Save Fast-Path (`background_workers.py`, `project_lifecycle.py`): Added `_pack_f32()` NumPy fast path and `skip_if_exists=True` valid/fresh cache check in `write_waveform_peak_cache()` to stop synchronous `.peaks` rewrites and `os.fsync()` during every `save_project()`.
+   [x] 2.4 WordPress Metadata Keystroke Debouncing & Debug Log Cleanup (`plugins/wordpress/wp_tab_widget.py`, `translation.py`): Gated `refresh_story_list()` strictly on actual story `title`/`author` mutations, suppressed `[PROJECT] Update WordPress Metadata` log spam on keystrokes (`log_reason: bool = False`), and removed verbose `[DEBUG] source_language_code` logging.
+   [x] 2.5 Automated Regression Coverage (`diagnostic_editor_tests.py`, `diagnostic_export_tests.py`): Added headless Qt & unit regression checks 6d/6e/6f and WordPress caption/alt non-refresh assertions (plus fixed pre-existing `TimelineCanvas(win)` parent `TypeError` in `6c`).
 
 4. Deferred Milestone: Domain Separation & Purpose-Driven Monolithic File Modularization [ ] [DEFERRED / LOWER PRIORITY]
    - *Purpose*: Systematic architectural refactoring prioritizing **file purpose, single responsibility, and domain cohesion** alongside line count reduction (<800 lines target, 1,000 lines ceiling), systematically decoupling grandfathered multi-domain monoliths into focused submodules with 100% backward-compatible facade re-exports.
@@ -95,24 +96,25 @@ TABLE OF CONTENTS & STATUS OVERVIEW
 DETAILED MILESTONE SPECIFICATIONS
 ================================================================================
 
-1. IMMEDIATE PREDECESSOR RELEASE: WORDPRESS FEATURED IMAGE CAPTION & ALT TEXT SUPPORT:
-- Purpose: Allow setting WordPress Media Library `caption` and `alt_text` metadata on uploaded featured images (both custom image files and video frame grabs) in the WordPress export dialog and single-post publish dialog.
-- Target Release: v3.9.97-beta (Immediate Predecessor Release)
-- Technical References: `plugins/wordpress/client.py`, `plugins/wordpress/wp_post_builder.py`, `plugins/wordpress/wp_ui_builder.py`, `plugins/wordpress/wp_tab_widget.py`, `plugins/wordpress/export_destination.py`, `plugins/wordpress/plugin.py`, `plugins/wordpress/youtube_embed.py`, `diagnostic_export_tests.py`.
-- Implementation Details:
-  * [x] REST Media Metadata Client (`client.py`): Added `WordPressClient.update_media_metadata()` targeting `/wp/v2/media/{id}` with `?rest_route=` fallback, extended `upload_media()`, and added `featured_image_caption` / `featured_image_alt_text` kwargs to `execute_wordpress_upload()` with non-fatal warning handling.
-  * [x] UI, Persistence & Bulk Actions (`wp_ui_builder.py`, `wp_tab_widget.py`, `wp_post_builder.py`, `youtube_embed.py`): Added **Caption** and **Alt Text** inputs revealed for both custom file and video frame grab modes, synced via `sync_featured_image_meta()`, bulk apply helpers, and post hover tooltips.
-  * [x] Single-Post Quick Publish & Runners (`plugin.py`, `export_destination.py`): Added Caption/Alt Text inputs and worker metadata updates to `WordPressPublishDialog` / `WordPressPublishWorker`, plus caption status in `WordPressStoryMetadataWidget`.
-  * [x] Automated Diagnostics (`diagnostic_export_tests.py`): Added `_test_wordpress_featured_image_caption_and_alt_text`.
-
-2. ACTIVE RELEASE: CI PLUGIN BUNDLING ON TAG RELEASES & PLUGIN MANAGER UPDATE CHECK FIX:
+1. IMMEDIATE PREDECESSOR RELEASE: CI PLUGIN BUNDLING ON TAG RELEASES & PLUGIN MANAGER UPDATE CHECK FIX:
 - Purpose: Ensure tag-triggered GitHub Actions releases always package and bundle all plugins into desktop installers, and eliminate `NameError` crashes in `PluginManagerDialog`.
-- Target Release: v3.9.98-beta (Active Release)
+- Target Release: v3.9.98-beta (Immediate Predecessor Release)
 - Technical References: `.github/workflows/build.yml`, `plugins/manager_dialog.py`, `diagnostic_cloud_and_system_tests.py`.
 - Implementation Details:
   * [x] CI Tag-Release Plugin Env Expressions (`.github/workflows/build.yml`): Replaced `inputs.plugin_* != false` (which coerced `null != false` to `false` on tag pushes) with `${{ github.event_name == 'push' || inputs.plugin_* }}` across `build-plugins`, `build-windows`, `build-macos`, and `build-linux`.
   * [x] Plugin Manager Dialog Fixes (`plugins/manager_dialog.py`): Imported `sys` and `GitHubPluginsWorker`, and stored worker references (`_update_check_worker`, `_batch_update_worker`).
-  * [x] Regression Coverage (`diagnostic_cloud_and_system_tests.py`): Extended `_test_plugin_interface_sandbox_testing` to guard CI build expressions and `PluginManagerDialog` handlers.
+  * [x] Regression Coverage (`diagnostic_cloud_and_system_tests.py`): Extended `_test_plugin_interface_sandbox_testing` to verify CI build expressions and `PluginManagerDialog` handlers.
+
+2. ACTIVE RELEASE: UX RESPONSIVENESS, TIMELINE RIGHT-CLICK CONTEXT MENU & FLOATING TOOLBAR FIXES:
+- Purpose: Eliminate dead zones on timeline right-click (e.g., adjusting fades near handles or edges), honor the disabled floating selection toolbar preference, remove UI-thread save `.peaks` rebuild lag, stop WordPress per-keystroke list refreshes/logging, and silence `[DEBUG] source_language_code` log spam.
+- Target Release: v3.9.99-beta (Active Release)
+- Technical References: `transcript_timeline_sync_mixin.py`, `timeline_widgets.py`, `background_workers.py`, `project_lifecycle.py`, `plugins/wordpress/wp_tab_widget.py`, `translation.py`, `diagnostic_editor_tests.py`, `diagnostic_export_tests.py`.
+- Implementation Details:
+  * [x] Floating Selection Toolbar Guard & Viewport Positioning (`transcript_timeline_sync_mixin.py`): Enforced `show_floating_selection_toolbar` and `not is_editing_mode`, and positioned `selection_bubble` using viewport-local coordinates.
+  * [x] Timeline Right-Click Dead Zones & Hysteresis (`timeline_widgets.py`): Restricted fade handles to left-click, added 5px right-drag hysteresis (`_check_right_drag`), opened context menus on clean right-release, and extracted shared `_handle_media_drag_event()`.
+  * [x] Waveform `.peaks` Save Fast-Path (`background_workers.py`, `project_lifecycle.py`): Added `_pack_f32()` NumPy fast path and `skip_if_exists=True` valid cache bypass during `save_project()`.
+  * [x] WordPress Keystroke Debounce & Translation Log Cleanup (`plugins/wordpress/wp_tab_widget.py`, `translation.py`): Gated `refresh_story_list()` on actual title/author edits, added `log_reason: bool = False`, and removed verbose `[DEBUG] source_language_code` logging.
+  * [x] Automated Regression Coverage (`diagnostic_editor_tests.py`, `diagnostic_export_tests.py`): Added regression checks 6d/6e/6f, updated 6c `TimelineCanvas(None)`, and verified WordPress caption/alt typing triggers zero story refreshes or metadata log reasons.
 
 4. DEFERRED MILESTONE: DOMAIN SEPARATION & PURPOSE-DRIVEN MONOLITHIC FILE MODULARIZATION:
 - Purpose: Systematic architectural refactoring prioritizing file purpose and single responsibility (<800 lines target, 1,000 lines ceiling).
