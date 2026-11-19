@@ -1,13 +1,13 @@
 # Repository Symbol Index & API Map
 
-> Generated: 2026-11-18 20:53:51 | Total Files: 165
+> Generated: 2026-11-19 14:33:06 | Total Files: 165
 > Use `python scripts/generate_symbol_index.py --outline <file>` for exact line numbers.
 
 ## Modules Overview
 
 | Module | Lines | Summary | Primary Classes / Functions |
 | :--- | :---: | :--- | :--- |
-| `RadioTVSegmenter.py` | 664 | Radio & TV Segmenter — v3.9.97-beta | `MainWindow`, `main()` |
+| `RadioTVSegmenter.py` | 664 | Radio & TV Segmenter — v3.9.98-beta | `MainWindow`, `main()` |
 | `audio_normalization.py` | 541 | Radio & TV Story Segmenter — Audio Loudness Probing & Nor... | `LoudnessReport`, `AudioLoudnessProbeWorker`, `parse_ebur128_summary()`, `probe_media_duration_seconds()` *(+3 more)* |
 | `background_workers.py` | 1033 | Radio & TV Story Segmenter — Background Worker Threads & ... | `StoryAutoDetectWorker`, `WaveformWorker`, `VideoThumbnailWorker`, `get_waveform_peak_cache_path()` *(+6 more)* |
 | `backup_manager.py` | 622 | Unified State Serialization, Local, and Google Drive Clou... | `compute_data_checksum()`, `serialize_preferences()`, `serialize_keyboard_shortcuts()`, `serialize_glossary()` *(+7 more)* |
@@ -23,7 +23,7 @@
 | `comment_widgets.py` | 350 | comment_widgets.py - Range-Anchored Comments Panel & Comm... | `CommentEditorDialog`, `CommentCardWidget`, `CommentsPanel` |
 | `core_utils.py` | 773 | Radio & TV Segmenter — Core filesystem, path, timing, and... | `StoryVocabulary`, `safe_process_events()`, `get_active_theme_mode()`, `apply_window_titlebar_theme()` *(+25 more)* |
 | `diagnostic_batch_tests.py` | 1076 | Diagnostic test bench suite component. | `DiagnosticBatchTestsMixin` |
-| `diagnostic_cloud_and_system_tests.py` | 1313 | Diagnostic test bench suite component. | `DiagnosticCloudAndSystemTestsMixin` |
+| `diagnostic_cloud_and_system_tests.py` | 1402 | Diagnostic test bench suite component. | `DiagnosticCloudAndSystemTestsMixin` |
 | `diagnostic_core_tests.py` | 880 | Diagnostic test bench suite component. | `DiagnosticCoreTestsMixin` |
 | `diagnostic_dialog.py` | 324 | PySide6 Graphical Test Bench Dialog for Radio & TV Story ... | `create_diagnostic_dialog()` |
 | `diagnostic_editor_tests.py` | 903 | Diagnostic editor and find-replace tests for Radio & TV S... | `DiagnosticEditorTestsMixin` |
@@ -63,7 +63,7 @@
 | `plugins/github_dialog.py` | 580 | GitHub plugins browser and installer dialog with multi-se... | `GitHubPluginsDialog` |
 | `plugins/installer_workers.py` | 293 | Background QThread workers for querying, downloading, and... | `GitHubPluginsWorker`, `GitHubDownloadWorker`, `GitHubBatchDownloadWorker`, `get_official_plugins_catalog()` |
 | `plugins/manager.py` | 657 | Radio & TV Segmenter — Plugin Manager and Discovery Engine. | `PluginManager`, `parse_plugin_version_tuple()`, `is_newer_plugin_version()` |
-| `plugins/manager_dialog.py` | 529 | Plugin and Add-On Manager Dialog for inspecting, enabling... | `PluginManagerDialog` |
+| `plugins/manager_dialog.py` | 532 | Plugin and Add-On Manager Dialog for inspecting, enabling... | `PluginManagerDialog` |
 | `plugins/translation/__init__.py` | 9 | Language Translation Plugin for Radio & TV Segmenter. | - |
 | `plugins/translation/plugin.py` | 58 | Language Translation Plugin for Radio & TV Segmenter. | `Plugin` |
 | `plugins/translation/runtime_entry.py` | 49 | CLI entry point for the isolated translation runtime. | `emit()`, `main()` |
@@ -150,7 +150,7 @@
 | `transcript_navigation_mixin.py` | 300 | transcript_navigation_mixin.py - Timestamp discovery, car... | `TranscriptNavigationMixin` |
 | `transcript_playback_highlight_mixin.py` | 277 | Radio & TV Story Segmenter — Interactive Transcript Playb... | `TranscriptPlaybackHighlightMixin` |
 | `transcript_selection_mixin.py` | 473 | transcript_selection_mixin.py - Multi-selection, timeline... | `TranscriptSelectionMixin` |
-| `transcript_story.py` | 852 | Radio & TV Segmenter v3.9.97-beta — transcript story resp... | `TranscriptStoryMixin` |
+| `transcript_story.py` | 852 | Radio & TV Segmenter v3.9.98-beta — transcript story resp... | `TranscriptStoryMixin` |
 | `transcript_styles.py` | 104 | transcript_styles.py - Transcript view stylesheets and da... | `transcript_text_view_stylesheet()`, `clean_dark_mode_clipboard_html()` |
 | `transcript_timeline_sync_mixin.py` | 643 | Radio & TV Story Segmenter — Transcript Timeline & Playba... | `TranscriptTimelineSyncMixin` |
 | `transcription_processing.py` | 579 | Transcription background process management for Radio & T... | `TranscriptionProcessingMixin` |
@@ -176,7 +176,7 @@
 ## Detailed Symbol Catalog
 
 ### `RadioTVSegmenter.py` (664 lines)
-*Radio & TV Segmenter — v3.9.97-beta*
+*Radio & TV Segmenter — v3.9.98-beta*
 - **class `MainWindow(ModelManagementMixin, MediaBatchMixin, PlaybackPreferencesMixin, UiLayoutMixin, ProcessingMixin, TranslationMixin, TranscriptStoryMixin, ProjectExportMixin, GpuAccelerationMixin, QMainWindow)`** (lines 160–561):
   *Main application window for Radio & TV Segmenter.*
   - `__init__(self)` [L178-L355]
@@ -465,27 +465,27 @@
   - `_test_interactive_transcript_editing_and_split_join_unit_tests(self, item)` [L924-L1031]
   - `_test_exporter_structure_invariant_tests(self, item)` [L1033-L1075]
 
-### `diagnostic_cloud_and_system_tests.py` (1313 lines)
+### `diagnostic_cloud_and_system_tests.py` (1402 lines)
 *Diagnostic test bench suite component.*
-- **class `DiagnosticCloudAndSystemTestsMixin`** (lines 26–1311):
-  - `_test_plugin_interface_sandbox_testing(self, item)` [L27-L105]
-  - `_test_project_file_integrity_and_portable_path_resolution(self, item)` [L107-L212]
-  - `_test_acoustic_voice_profile_matcher(self, item)` [L214-L476]
-  - `_test_windows_detached_update_helper_architecture(self, item)` [L478-L519] — *Validates update helper architecture: helper script generation, exit polling, and logging.*
-  - `_test_temporary_cache_management_and_storage_inspection(self, item)` [L521-L620] — *Validates cache usage stats calculation, preview categorization, and cache purging.*
-  - `_test_youtube_data_api_and_direct_video_upload_engine(self, item)` [L622-L700] — *Validates YouTube Zero-Auth manual export packaging (MP4, thumbnail, SRT, metadata .txt with chapters & speakers).*
-  - `_test_multiprocessing_freeze_support_and_spawn_intercept(self, item)` [L702-L723] — *Validates that frozen process spawn intercepts -c invocations from resource_tracker and multiprocessing.*
-  - `_resolve_worker_cmd(self)` [L725-L739] — *Resolves the executable and arguments to launch the AI background worker.*
-  - `_test_ai_worker_subprocess_execution_and_ipc_handshake(self, item)` [L741-L807] — *Spawns the AI worker binary in an isolated subprocess, verifying IPC hello handshake and self-test.*
-  - `_test_frozen_subprocess_multiprocessing_spawn_protocol(self, item)` [L809-L847] — *Spawns the AI worker executable with Python -c to verify multiprocessing resource tracker interception.*
-  - `_test_comprehensive_local_and_cloud_backup_and_restore_engine(self, item)` [L849-L961] — *Validates state serialization, SHA-256 verification, local backup roundtrip, and cloud payload integrity.*
-  - `_test_option_c_muted_silver_fog_light_theme_and_dark_mode_clipboard_formatting(self, item)` [L963-L1016] — *Validates Option C muted low-contrast silver/fog palette and dark-mode clipboard rich styling.*
-  - `_test_windows_ci_build_and_packaging_optimization_invariants(self, item)` [L1018-L1050] — *Validates Inno Setup compression parameters, Stage 3 PyInstaller optimizations, and CI settings.*
-  - `_test_roadmap_n_1_sliding_window_and_status_integrity(self, item)` [L1052-L1071] — *Validates roadmap.txt N-1 sliding window retention, status indicator syntax, and version sync.*
-  - `_test_source_file_modularity_and_1000_line_budget_invariant(self, item)` [L1073-L1142] — *Validates that recently decomposed modules adhere to the 1,000-line modular budget,*
-  - `_test_station_voice_profiles_store_and_matching_engine(self, item)` [L1144-L1259] — *Validates StationVoiceProfileStore persistence, vector normalization, profile addition, matching logic, and JSON export/import.*
-  - `_test_multi_tier_mipmapped_waveform_peak_cache_serialization(self, item)` [L1261-L1298] — *Validates Version 2 .peaks binary cache read/write with 4x/16x/64x LOD pyramid levels and transparent Version 1 upgrade.*
-  - `_test_speed_listening_proofreading_rate_and_context_controls(self, item)` [L1300-L1311] — *Validates playback speed rates (0.75x to 2.0x), WSOLA pitch preservation parameters, and proofreading pre-roll configuration.*
+- **class `DiagnosticCloudAndSystemTestsMixin`** (lines 26–1400):
+  - `_test_plugin_interface_sandbox_testing(self, item)` [L27-L194]
+  - `_test_project_file_integrity_and_portable_path_resolution(self, item)` [L196-L301]
+  - `_test_acoustic_voice_profile_matcher(self, item)` [L303-L565]
+  - `_test_windows_detached_update_helper_architecture(self, item)` [L567-L608] — *Validates update helper architecture: helper script generation, exit polling, and logging.*
+  - `_test_temporary_cache_management_and_storage_inspection(self, item)` [L610-L709] — *Validates cache usage stats calculation, preview categorization, and cache purging.*
+  - `_test_youtube_data_api_and_direct_video_upload_engine(self, item)` [L711-L789] — *Validates YouTube Zero-Auth manual export packaging (MP4, thumbnail, SRT, metadata .txt with chapters & speakers).*
+  - `_test_multiprocessing_freeze_support_and_spawn_intercept(self, item)` [L791-L812] — *Validates that frozen process spawn intercepts -c invocations from resource_tracker and multiprocessing.*
+  - `_resolve_worker_cmd(self)` [L814-L828] — *Resolves the executable and arguments to launch the AI background worker.*
+  - `_test_ai_worker_subprocess_execution_and_ipc_handshake(self, item)` [L830-L896] — *Spawns the AI worker binary in an isolated subprocess, verifying IPC hello handshake and self-test.*
+  - `_test_frozen_subprocess_multiprocessing_spawn_protocol(self, item)` [L898-L936] — *Spawns the AI worker executable with Python -c to verify multiprocessing resource tracker interception.*
+  - `_test_comprehensive_local_and_cloud_backup_and_restore_engine(self, item)` [L938-L1050] — *Validates state serialization, SHA-256 verification, local backup roundtrip, and cloud payload integrity.*
+  - `_test_option_c_muted_silver_fog_light_theme_and_dark_mode_clipboard_formatting(self, item)` [L1052-L1105] — *Validates Option C muted low-contrast silver/fog palette and dark-mode clipboard rich styling.*
+  - `_test_windows_ci_build_and_packaging_optimization_invariants(self, item)` [L1107-L1139] — *Validates Inno Setup compression parameters, Stage 3 PyInstaller optimizations, and CI settings.*
+  - `_test_roadmap_n_1_sliding_window_and_status_integrity(self, item)` [L1141-L1160] — *Validates roadmap.txt N-1 sliding window retention, status indicator syntax, and version sync.*
+  - `_test_source_file_modularity_and_1000_line_budget_invariant(self, item)` [L1162-L1231] — *Validates that recently decomposed modules adhere to the 1,000-line modular budget,*
+  - `_test_station_voice_profiles_store_and_matching_engine(self, item)` [L1233-L1348] — *Validates StationVoiceProfileStore persistence, vector normalization, profile addition, matching logic, and JSON export/import.*
+  - `_test_multi_tier_mipmapped_waveform_peak_cache_serialization(self, item)` [L1350-L1387] — *Validates Version 2 .peaks binary cache read/write with 4x/16x/64x LOD pyramid levels and transparent Version 1 upgrade.*
+  - `_test_speed_listening_proofreading_rate_and_context_controls(self, item)` [L1389-L1400] — *Validates playback speed rates (0.75x to 2.0x), WSOLA pitch preservation parameters, and proofreading pre-roll configuration.*
 
 ### `diagnostic_core_tests.py` (880 lines)
 *Diagnostic test bench suite component.*
@@ -1196,27 +1196,27 @@
   - `parse_plugin_version_tuple(version_str)` [L22-L37] — *Parse plugin version string into comparable numerical components and a stability weight.*
   - `is_newer_plugin_version(new_version, current_version)` [L40-L44] — *Returns True if new_version is strictly newer than current_version.*
 
-### `plugins/manager_dialog.py` (529 lines)
+### `plugins/manager_dialog.py` (532 lines)
 *Plugin and Add-On Manager Dialog for inspecting, enabling, and installing add-ons.*
-- **class `PluginManagerDialog(QDialog)`** (lines 40–529):
+- **class `PluginManagerDialog(QDialog)`** (lines 41–532):
   *GUI Dialog for viewing, managing, enabling, installing, and removing plugins with multi-selection.*
-  - `__init__(self, manager, parent)` [L43-L51]
-  - `setup_ui(self)` [L53-L163]
-  - `on_download_github(self)` [L165-L176]
-  - `select_all_plugins(self)` [L178-L179]
-  - `deselect_all_plugins(self)` [L181-L182]
-  - `get_selected_plugin_ids(self)` [L184-L197] — *Returns the list of plugin_ids selected via multi-row selection.*
-  - `refresh_list(self)` [L199-L244]
-  - `on_toggle_plugin(self, plugin_id, state)` [L246-L254]
-  - `on_selection_changed(self)` [L256-L282]
-  - `configure_selected_plugin(self)` [L284-L305]
-  - `enable_selected_plugins(self)` [L307-L320]
-  - `disable_selected_plugins(self)` [L322-L335]
-  - `uninstall_selected_plugins(self)` [L337-L361]
-  - `on_install_addon(self)` [L363-L400]
-  - `check_for_plugin_updates(self)` [L402-L481] — *Checks GitHub for newer versions of installed plugins without updating the core app.*
-  - `run_batch_plugin_updates(self, update_items)` [L483-L517] — *Downloads and installs a batch of plugin updates.*
-  - `on_open_folder(self)` [L519-L529]
+  - `__init__(self, manager, parent)` [L44-L52]
+  - `setup_ui(self)` [L54-L164]
+  - `on_download_github(self)` [L166-L177]
+  - `select_all_plugins(self)` [L179-L180]
+  - `deselect_all_plugins(self)` [L182-L183]
+  - `get_selected_plugin_ids(self)` [L185-L198] — *Returns the list of plugin_ids selected via multi-row selection.*
+  - `refresh_list(self)` [L200-L245]
+  - `on_toggle_plugin(self, plugin_id, state)` [L247-L255]
+  - `on_selection_changed(self)` [L257-L283]
+  - `configure_selected_plugin(self)` [L285-L306]
+  - `enable_selected_plugins(self)` [L308-L321]
+  - `disable_selected_plugins(self)` [L323-L336]
+  - `uninstall_selected_plugins(self)` [L338-L362]
+  - `on_install_addon(self)` [L364-L401]
+  - `check_for_plugin_updates(self)` [L403-L483] — *Checks GitHub for newer versions of installed plugins without updating the core app.*
+  - `run_batch_plugin_updates(self, update_items)` [L485-L520] — *Downloads and installs a batch of plugin updates.*
+  - `on_open_folder(self)` [L522-L532]
 
 ### `plugins/translation/__init__.py` (9 lines)
 *Language Translation Plugin for Radio & TV Segmenter.*
@@ -2990,7 +2990,7 @@
   - `_on_bubble_export(self)` [L468-L473]
 
 ### `transcript_story.py` (852 lines)
-*Radio & TV Segmenter v3.9.97-beta — transcript story responsibilities.*
+*Radio & TV Segmenter v3.9.98-beta — transcript story responsibilities.*
 - **Public Exports (`__all__`)**: TranscriptStoryMixin, Story, SetStoriesCommand, SelectStoriesCommand, StoryBoundaryChangeCommand, StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin, ChangeSpeakerDialog, VoiceProfileMatchDialog, StoryFadesDialog, SpeakerManagerDialog, FADE_CURVE_TABLES, get_fade_curve_factors
 - **class `TranscriptStoryMixin(StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin)`** (lines 63–851):
   - `render_transcript(self)` [L64-L467]

@@ -101,8 +101,97 @@ class DiagnosticCloudAndSystemTestsMixin:
             if real_wp.id != "wordpress" or real_wp.category != "export":
                 raise AssertionError(f"Invalid wordpress manifest attributes: id={real_wp.id}, cat={real_wp.category}")
 
+        # 5. CI Workflow Plugin Bundling Guard (.github/workflows/build.yml)
+        build_yml = Path(".github/workflows/build.yml")
+        if build_yml.is_file():
+            yml_text = build_yml.read_text(encoding="utf-8")
+            for bad_expr in (
+                "inputs.plugin_wordpress != false",
+                "inputs.plugin_youtube != false",
+                "inputs.plugin_translation != false",
+                "inputs.plugin_gdocs != false",
+            ):
+                if bad_expr in yml_text:
+                    raise AssertionError(f"CI build.yml still contains tag-breaking expression '{bad_expr}'")
+            expected_wp = "BUILD_PLUGIN_WORDPRESS: ${{ github.event_name == 'push' || inputs.plugin_wordpress }}"
+            wp_hits = yml_text.count(expected_wp)
+            if wp_hits != 4:
+                raise AssertionError(f"Expected 4 occurrences of '{expected_wp}' in build.yml, found {wp_hits}")
+
+        # 6. PluginManagerDialog Import & Handler Guard (GitHubPluginsWorker, sys)
+        import os
+        import subprocess
+        import tempfile
+        import plugins.manager_dialog as mgr_dlg_mod
+        from PySide6.QtCore import Signal, QObject
+        from PySide6.QtWidgets import QApplication, QProgressDialog
+        _app = QApplication.instance() or QApplication([])
+        if not hasattr(mgr_dlg_mod, "GitHubPluginsWorker"):
+            raise AssertionError("plugins.manager_dialog missing GitHubPluginsWorker import")
+        if not hasattr(mgr_dlg_mod, "sys"):
+            raise AssertionError("plugins.manager_dialog missing sys import")
+
+        with tempfile.TemporaryDirectory() as tmp_pdir:
+            class FakeSignal:
+                def __init__(self):
+                    self._cbs = []
+                def connect(self, cb):
+                    self._cbs.append(cb)
+
+            class DummyUpdateWorker:
+                def __init__(self, repo, parent=None):
+                    self.repo = repo
+                    self.parent_obj = parent
+                    self.finished = FakeSignal()
+                    self.started = False
+                def start(self):
+                    self.started = True
+
+            class DummyMgr:
+                def __init__(self):
+                    self.manifests = {"wordpress": real_wp if wp_manifest_file.exists() else PluginManifest.from_dict({"id": "wordpress", "name": "WP", "version": "1.0", "description": "d", "author": "a", "entry_point": "p:P"})}
+                    self.plugin_paths = {"wordpress": Path(tmp_pdir)}
+                    self.plugins = {}
+                    self.app = None
+                def discover_plugins(self):
+                    return self.manifests
+                def is_plugin_enabled(self, pid):
+                    return True
+                def ensure_packaged_addons(self):
+                    pass
+                def get_user_plugins_dir(self):
+                    return Path(tmp_pdir)
+
+            dlg_stub = mgr_dlg_mod.PluginManagerDialog(DummyMgr())
+
+            orig_worker = mgr_dlg_mod.GitHubPluginsWorker
+            orig_prog_show = QProgressDialog.show
+            orig_startfile = getattr(os, "startfile", None)
+            orig_popen = subprocess.Popen
+            opened_targets = []
+            try:
+                mgr_dlg_mod.GitHubPluginsWorker = DummyUpdateWorker
+                QProgressDialog.show = lambda self: None
+                if hasattr(os, "startfile"):
+                    os.startfile = lambda path: opened_targets.append(str(path))
+                subprocess.Popen = lambda cmd, *a, **k: opened_targets.append(str(cmd))
+                dlg_stub.check_for_plugin_updates()
+                if not getattr(dlg_stub, "_update_check_worker", None) or not dlg_stub._update_check_worker.started:
+                    raise AssertionError("check_for_plugin_updates did not start GitHubPluginsWorker")
+                dlg_stub.on_open_folder()
+                if not opened_targets:
+                    raise AssertionError("on_open_folder did not open user plugins directory")
+            finally:
+                mgr_dlg_mod.GitHubPluginsWorker = orig_worker
+                QProgressDialog.show = orig_prog_show
+                if orig_startfile is not None:
+                    os.startfile = orig_startfile
+                subprocess.Popen = orig_popen
+                dlg_stub.close()
+                dlg_stub.deleteLater()
+
         item.status = "PASS"
-        item.message = "Plugin manifest, lifecycle hooks, and export payload sandboxing validated (youtube & wordpress verified)"
+        item.message = "Plugin manifest, lifecycle hooks, CI plugin bundling, and manager dialog handlers validated"
 
     def _test_project_file_integrity_and_portable_path_resolution(self, item: DiagnosticItem):
         try:

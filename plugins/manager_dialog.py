@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import os
 import shutil
+import sys
 import tempfile
 import zipfile
 from pathlib import Path
@@ -30,7 +31,7 @@ from PySide6.QtWidgets import (
 )
 
 from prs_shared import PROJECT_VERSION, get_github_repo, safe_extract_zip, verify_file_sha256
-from plugins.installer_workers import GitHubBatchDownloadWorker
+from plugins.installer_workers import GitHubPluginsWorker, GitHubBatchDownloadWorker
 from plugins.github_dialog import GitHubPluginsDialog
 from plugins.version_utils import is_newer_plugin_version
 
@@ -426,6 +427,7 @@ class PluginManagerDialog(QDialog):
 
         repo = get_github_repo()
         worker = GitHubPluginsWorker(repo, self)
+        self._update_check_worker = worker
 
         def on_check_finished(success: bool, catalog: list, note: str):
             progress.close()
@@ -490,6 +492,7 @@ class PluginManagerDialog(QDialog):
         progress.show()
 
         batch_worker = GitHubBatchDownloadWorker(update_items, self.manager, enable_after=True, parent=self)
+        self._batch_update_worker = batch_worker
 
         def on_progress(pct, msg):
             progress.setValue(pct)

@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-18 20:53:51",
+  "generated_at": "2026-11-19 14:33:06",
   "total_files": 165,
   "files": {
     "RadioTVSegmenter.py": {
       "path": "RadioTVSegmenter.py",
       "lines": 664,
-      "summary": "Radio & TV Segmenter \u2014 v3.9.97-beta",
+      "summary": "Radio & TV Segmenter \u2014 v3.9.98-beta",
       "exports": null,
       "classes": [
         {
@@ -1773,7 +1773,7 @@
     },
     "diagnostic_cloud_and_system_tests.py": {
       "path": "diagnostic_cloud_and_system_tests.py",
-      "lines": 1313,
+      "lines": 1402,
       "summary": "Diagnostic test bench suite component.",
       "exports": null,
       "classes": [
@@ -1781,133 +1781,133 @@
           "name": "DiagnosticCloudAndSystemTestsMixin",
           "bases": [],
           "start_line": 26,
-          "end_line": 1311,
+          "end_line": 1400,
           "doc": "",
           "methods": [
             {
               "name": "_test_plugin_interface_sandbox_testing",
               "sig": "_test_plugin_interface_sandbox_testing(self, item)",
               "start_line": 27,
-              "end_line": 105,
+              "end_line": 194,
               "doc": ""
             },
             {
               "name": "_test_project_file_integrity_and_portable_path_resolution",
               "sig": "_test_project_file_integrity_and_portable_path_resolution(self, item)",
-              "start_line": 107,
-              "end_line": 212,
+              "start_line": 196,
+              "end_line": 301,
               "doc": ""
             },
             {
               "name": "_test_acoustic_voice_profile_matcher",
               "sig": "_test_acoustic_voice_profile_matcher(self, item)",
-              "start_line": 214,
-              "end_line": 476,
+              "start_line": 303,
+              "end_line": 565,
               "doc": ""
             },
             {
               "name": "_test_windows_detached_update_helper_architecture",
               "sig": "_test_windows_detached_update_helper_architecture(self, item)",
-              "start_line": 478,
-              "end_line": 519,
+              "start_line": 567,
+              "end_line": 608,
               "doc": "Validates update helper architecture: helper script generation, exit polling, and logging."
             },
             {
               "name": "_test_temporary_cache_management_and_storage_inspection",
               "sig": "_test_temporary_cache_management_and_storage_inspection(self, item)",
-              "start_line": 521,
-              "end_line": 620,
+              "start_line": 610,
+              "end_line": 709,
               "doc": "Validates cache usage stats calculation, preview categorization, and cache purging."
             },
             {
               "name": "_test_youtube_data_api_and_direct_video_upload_engine",
               "sig": "_test_youtube_data_api_and_direct_video_upload_engine(self, item)",
-              "start_line": 622,
-              "end_line": 700,
+              "start_line": 711,
+              "end_line": 789,
               "doc": "Validates YouTube Zero-Auth manual export packaging (MP4, thumbnail, SRT, metadata .txt with chapters & speakers)."
             },
             {
               "name": "_test_multiprocessing_freeze_support_and_spawn_intercept",
               "sig": "_test_multiprocessing_freeze_support_and_spawn_intercept(self, item)",
-              "start_line": 702,
-              "end_line": 723,
+              "start_line": 791,
+              "end_line": 812,
               "doc": "Validates that frozen process spawn intercepts -c invocations from resource_tracker and multiprocessing."
             },
             {
               "name": "_resolve_worker_cmd",
               "sig": "_resolve_worker_cmd(self)",
-              "start_line": 725,
-              "end_line": 739,
+              "start_line": 814,
+              "end_line": 828,
               "doc": "Resolves the executable and arguments to launch the AI background worker."
             },
             {
               "name": "_test_ai_worker_subprocess_execution_and_ipc_handshake",
               "sig": "_test_ai_worker_subprocess_execution_and_ipc_handshake(self, item)",
-              "start_line": 741,
-              "end_line": 807,
+              "start_line": 830,
+              "end_line": 896,
               "doc": "Spawns the AI worker binary in an isolated subprocess, verifying IPC hello handshake and self-test."
             },
             {
               "name": "_test_frozen_subprocess_multiprocessing_spawn_protocol",
               "sig": "_test_frozen_subprocess_multiprocessing_spawn_protocol(self, item)",
-              "start_line": 809,
-              "end_line": 847,
+              "start_line": 898,
+              "end_line": 936,
               "doc": "Spawns the AI worker executable with Python -c to verify multiprocessing resource tracker interception."
             },
             {
               "name": "_test_comprehensive_local_and_cloud_backup_and_restore_engine",
               "sig": "_test_comprehensive_local_and_cloud_backup_and_restore_engine(self, item)",
-              "start_line": 849,
-              "end_line": 961,
+              "start_line": 938,
+              "end_line": 1050,
               "doc": "Validates state serialization, SHA-256 verification, local backup roundtrip, and cloud payload integrity."
             },
             {
               "name": "_test_option_c_muted_silver_fog_light_theme_and_dark_mode_clipboard_formatting",
               "sig": "_test_option_c_muted_silver_fog_light_theme_and_dark_mode_clipboard_formatting(self, item)",
-              "start_line": 963,
-              "end_line": 1016,
+              "start_line": 1052,
+              "end_line": 1105,
               "doc": "Validates Option C muted low-contrast silver/fog palette and dark-mode clipboard rich styling."
             },
             {
               "name": "_test_windows_ci_build_and_packaging_optimization_invariants",
               "sig": "_test_windows_ci_build_and_packaging_optimization_invariants(self, item)",
-              "start_line": 1018,
-              "end_line": 1050,
+              "start_line": 1107,
+              "end_line": 1139,
               "doc": "Validates Inno Setup compression parameters, Stage 3 PyInstaller optimizations, and CI settings."
             },
             {
               "name": "_test_roadmap_n_1_sliding_window_and_status_integrity",
               "sig": "_test_roadmap_n_1_sliding_window_and_status_integrity(self, item)",
-              "start_line": 1052,
-              "end_line": 1071,
+              "start_line": 1141,
+              "end_line": 1160,
               "doc": "Validates roadmap.txt N-1 sliding window retention, status indicator syntax, and version sync."
             },
             {
               "name": "_test_source_file_modularity_and_1000_line_budget_invariant",
               "sig": "_test_source_file_modularity_and_1000_line_budget_invariant(self, item)",
-              "start_line": 1073,
-              "end_line": 1142,
+              "start_line": 1162,
+              "end_line": 1231,
               "doc": "Validates that recently decomposed modules adhere to the 1,000-line modular budget,"
             },
             {
               "name": "_test_station_voice_profiles_store_and_matching_engine",
               "sig": "_test_station_voice_profiles_store_and_matching_engine(self, item)",
-              "start_line": 1144,
-              "end_line": 1259,
+              "start_line": 1233,
+              "end_line": 1348,
               "doc": "Validates StationVoiceProfileStore persistence, vector normalization, profile addition, matching logic, and JSON export/import."
             },
             {
               "name": "_test_multi_tier_mipmapped_waveform_peak_cache_serialization",
               "sig": "_test_multi_tier_mipmapped_waveform_peak_cache_serialization(self, item)",
-              "start_line": 1261,
-              "end_line": 1298,
+              "start_line": 1350,
+              "end_line": 1387,
               "doc": "Validates Version 2 .peaks binary cache read/write with 4x/16x/64x LOD pyramid levels and transparent Version 1 upgrade."
             },
             {
               "name": "_test_speed_listening_proofreading_rate_and_context_controls",
               "sig": "_test_speed_listening_proofreading_rate_and_context_controls(self, item)",
-              "start_line": 1300,
-              "end_line": 1311,
+              "start_line": 1389,
+              "end_line": 1400,
               "doc": "Validates playback speed rates (0.75x to 2.0x), WSOLA pitch preservation parameters, and proofreading pre-roll configuration."
             }
           ]
@@ -6227,7 +6227,7 @@
     },
     "plugins/manager_dialog.py": {
       "path": "plugins/manager_dialog.py",
-      "lines": 529,
+      "lines": 532,
       "summary": "Plugin and Add-On Manager Dialog for inspecting, enabling, and installing add-ons.",
       "exports": null,
       "classes": [
@@ -6236,127 +6236,127 @@
           "bases": [
             "QDialog"
           ],
-          "start_line": 40,
-          "end_line": 529,
+          "start_line": 41,
+          "end_line": 532,
           "doc": "GUI Dialog for viewing, managing, enabling, installing, and removing plugins with multi-selection.",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, manager, parent)",
-              "start_line": 43,
-              "end_line": 51,
+              "start_line": 44,
+              "end_line": 52,
               "doc": ""
             },
             {
               "name": "setup_ui",
               "sig": "setup_ui(self)",
-              "start_line": 53,
-              "end_line": 163,
+              "start_line": 54,
+              "end_line": 164,
               "doc": ""
             },
             {
               "name": "on_download_github",
               "sig": "on_download_github(self)",
-              "start_line": 165,
-              "end_line": 176,
+              "start_line": 166,
+              "end_line": 177,
               "doc": ""
             },
             {
               "name": "select_all_plugins",
               "sig": "select_all_plugins(self)",
-              "start_line": 178,
-              "end_line": 179,
+              "start_line": 179,
+              "end_line": 180,
               "doc": ""
             },
             {
               "name": "deselect_all_plugins",
               "sig": "deselect_all_plugins(self)",
-              "start_line": 181,
-              "end_line": 182,
+              "start_line": 182,
+              "end_line": 183,
               "doc": ""
             },
             {
               "name": "get_selected_plugin_ids",
               "sig": "get_selected_plugin_ids(self)",
-              "start_line": 184,
-              "end_line": 197,
+              "start_line": 185,
+              "end_line": 198,
               "doc": "Returns the list of plugin_ids selected via multi-row selection."
             },
             {
               "name": "refresh_list",
               "sig": "refresh_list(self)",
-              "start_line": 199,
-              "end_line": 244,
+              "start_line": 200,
+              "end_line": 245,
               "doc": ""
             },
             {
               "name": "on_toggle_plugin",
               "sig": "on_toggle_plugin(self, plugin_id, state)",
-              "start_line": 246,
-              "end_line": 254,
+              "start_line": 247,
+              "end_line": 255,
               "doc": ""
             },
             {
               "name": "on_selection_changed",
               "sig": "on_selection_changed(self)",
-              "start_line": 256,
-              "end_line": 282,
+              "start_line": 257,
+              "end_line": 283,
               "doc": ""
             },
             {
               "name": "configure_selected_plugin",
               "sig": "configure_selected_plugin(self)",
-              "start_line": 284,
-              "end_line": 305,
+              "start_line": 285,
+              "end_line": 306,
               "doc": ""
             },
             {
               "name": "enable_selected_plugins",
               "sig": "enable_selected_plugins(self)",
-              "start_line": 307,
-              "end_line": 320,
+              "start_line": 308,
+              "end_line": 321,
               "doc": ""
             },
             {
               "name": "disable_selected_plugins",
               "sig": "disable_selected_plugins(self)",
-              "start_line": 322,
-              "end_line": 335,
+              "start_line": 323,
+              "end_line": 336,
               "doc": ""
             },
             {
               "name": "uninstall_selected_plugins",
               "sig": "uninstall_selected_plugins(self)",
-              "start_line": 337,
-              "end_line": 361,
+              "start_line": 338,
+              "end_line": 362,
               "doc": ""
             },
             {
               "name": "on_install_addon",
               "sig": "on_install_addon(self)",
-              "start_line": 363,
-              "end_line": 400,
+              "start_line": 364,
+              "end_line": 401,
               "doc": ""
             },
             {
               "name": "check_for_plugin_updates",
               "sig": "check_for_plugin_updates(self)",
-              "start_line": 402,
-              "end_line": 481,
+              "start_line": 403,
+              "end_line": 483,
               "doc": "Checks GitHub for newer versions of installed plugins without updating the core app."
             },
             {
               "name": "run_batch_plugin_updates",
               "sig": "run_batch_plugin_updates(self, update_items)",
-              "start_line": 483,
-              "end_line": 517,
+              "start_line": 485,
+              "end_line": 520,
               "doc": "Downloads and installs a batch of plugin updates."
             },
             {
               "name": "on_open_folder",
               "sig": "on_open_folder(self)",
-              "start_line": 519,
-              "end_line": 529,
+              "start_line": 522,
+              "end_line": 532,
               "doc": ""
             }
           ]
@@ -17333,7 +17333,7 @@
     "transcript_story.py": {
       "path": "transcript_story.py",
       "lines": 852,
-      "summary": "Radio & TV Segmenter v3.9.97-beta \u2014 transcript story responsibilities.",
+      "summary": "Radio & TV Segmenter v3.9.98-beta \u2014 transcript story responsibilities.",
       "exports": [
         "TranscriptStoryMixin",
         "Story",

@@ -101,10 +101,10 @@ jobs:
         env:
           BUILD_VERSION: ${{ steps.get_version.outputs.version }}
           BUILD_TARGET: 'plugins'
-          BUILD_PLUGIN_WORDPRESS: ${{ inputs.plugin_wordpress != false }}
-          BUILD_PLUGIN_YOUTUBE: ${{ inputs.plugin_youtube != false }}
-          BUILD_PLUGIN_TRANSLATION: ${{ inputs.plugin_translation != false }}
-          BUILD_PLUGIN_GDOCS: ${{ inputs.plugin_gdocs != false }}
+          BUILD_PLUGIN_WORDPRESS: ${{ github.event_name == 'push' || inputs.plugin_wordpress }}
+          BUILD_PLUGIN_YOUTUBE: ${{ github.event_name == 'push' || inputs.plugin_youtube }}
+          BUILD_PLUGIN_TRANSLATION: ${{ github.event_name == 'push' || inputs.plugin_translation }}
+          BUILD_PLUGIN_GDOCS: ${{ github.event_name == 'push' || inputs.plugin_gdocs }}
         run: python3 build_installer.py --target plugins
 
       - name: Stage Plugins Artifacts
@@ -220,10 +220,10 @@ jobs:
         env:
           BUILD_VERSION: ${{ steps.get_version.outputs.version }}
           BUILD_TARGET: 'all'
-          BUILD_PLUGIN_WORDPRESS: ${{ inputs.plugin_wordpress != false }}
-          BUILD_PLUGIN_YOUTUBE: ${{ inputs.plugin_youtube != false }}
-          BUILD_PLUGIN_TRANSLATION: ${{ inputs.plugin_translation != false }}
-          BUILD_PLUGIN_GDOCS: ${{ inputs.plugin_gdocs != false }}
+          BUILD_PLUGIN_WORDPRESS: ${{ github.event_name == 'push' || inputs.plugin_wordpress }}
+          BUILD_PLUGIN_YOUTUBE: ${{ github.event_name == 'push' || inputs.plugin_youtube }}
+          BUILD_PLUGIN_TRANSLATION: ${{ github.event_name == 'push' || inputs.plugin_translation }}
+          BUILD_PLUGIN_GDOCS: ${{ github.event_name == 'push' || inputs.plugin_gdocs }}
         run: python build_installer.py --no-installer
 
       - name: Compile Inno Setup Installer
@@ -362,10 +362,10 @@ jobs:
         env:
           BUILD_VERSION: ${{ steps.get_version.outputs.version }}
           BUILD_TARGET: 'all'
-          BUILD_PLUGIN_WORDPRESS: ${{ inputs.plugin_wordpress != false }}
-          BUILD_PLUGIN_YOUTUBE: ${{ inputs.plugin_youtube != false }}
-          BUILD_PLUGIN_TRANSLATION: ${{ inputs.plugin_translation != false }}
-          BUILD_PLUGIN_GDOCS: ${{ inputs.plugin_gdocs != false }}
+          BUILD_PLUGIN_WORDPRESS: ${{ github.event_name == 'push' || inputs.plugin_wordpress }}
+          BUILD_PLUGIN_YOUTUBE: ${{ github.event_name == 'push' || inputs.plugin_youtube }}
+          BUILD_PLUGIN_TRANSLATION: ${{ github.event_name == 'push' || inputs.plugin_translation }}
+          BUILD_PLUGIN_GDOCS: ${{ github.event_name == 'push' || inputs.plugin_gdocs }}
         run: python3 build_installer.py
 
       - name: Package .app into .dmg
@@ -480,10 +480,10 @@ jobs:
         env:
           BUILD_VERSION: ${{ steps.get_version.outputs.version }}
           BUILD_TARGET: 'all'
-          BUILD_PLUGIN_WORDPRESS: ${{ inputs.plugin_wordpress != false }}
-          BUILD_PLUGIN_YOUTUBE: ${{ inputs.plugin_youtube != false }}
-          BUILD_PLUGIN_TRANSLATION: ${{ inputs.plugin_translation != false }}
-          BUILD_PLUGIN_GDOCS: ${{ inputs.plugin_gdocs != false }}
+          BUILD_PLUGIN_WORDPRESS: ${{ github.event_name == 'push' || inputs.plugin_wordpress }}
+          BUILD_PLUGIN_YOUTUBE: ${{ github.event_name == 'push' || inputs.plugin_youtube }}
+          BUILD_PLUGIN_TRANSLATION: ${{ github.event_name == 'push' || inputs.plugin_translation }}
+          BUILD_PLUGIN_GDOCS: ${{ github.event_name == 'push' || inputs.plugin_gdocs }}
         run: python3 build_installer.py
 
       - name: Package Debian (.deb) & Distributable Tarball (.tar.gz)
