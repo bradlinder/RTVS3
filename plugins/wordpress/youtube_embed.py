@@ -596,6 +596,12 @@ def format_post_list_label_and_tooltip(tab_widget: Any, idx: int) -> Tuple[str, 
 
     if has_img:
         tt_lines.append(f"Featured Image: Attached ({img_mode})")
+        img_cap = str(post.get("featured_image_caption") or "").strip()
+        img_alt = str(post.get("featured_image_alt_text") or "").strip()
+        if img_cap:
+            tt_lines.append(f"Image Caption: {html.escape(img_cap)}")
+        if img_alt:
+            tt_lines.append(f"Image Alt Text: {html.escape(img_alt)}")
     else:
         tt_lines.append("Featured Image: None")
 

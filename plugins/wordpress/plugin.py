@@ -224,6 +224,23 @@ class WordPressPublishDialog(QDialog):
         self.preview_label.setText("No Image Preview")
         img_layout.addWidget(self.preview_label)
 
+        src_meta = getattr(self.story, "metadata", None) if self.story else getattr(self.app, "project_metadata", None)
+        wp_img_meta = src_meta.get("wordpress", {}) if isinstance(src_meta, dict) and isinstance(src_meta.get("wordpress"), dict) else {}
+
+        self.img_meta_widget = QWidget()
+        img_meta_form = QFormLayout(self.img_meta_widget)
+        img_meta_form.setContentsMargins(0, 4, 0, 0)
+        img_meta_form.setSpacing(6)
+        self.img_caption_edit = QLineEdit()
+        self.img_caption_edit.setPlaceholderText("Optional WordPress Media Library caption (e.g. photo credit)")
+        self.img_caption_edit.setText(str(wp_img_meta.get("featured_image_caption") or ""))
+        img_meta_form.addRow("Caption:", self.img_caption_edit)
+        self.img_alt_edit = QLineEdit()
+        self.img_alt_edit.setPlaceholderText("Optional accessibility alt text describing the image")
+        self.img_alt_edit.setText(str(wp_img_meta.get("featured_image_alt_text") or ""))
+        img_meta_form.addRow("Alt Text:", self.img_alt_edit)
+        img_layout.addWidget(self.img_meta_widget)
+
         # Logic for radio toggles
         has_video = bool(getattr(self.app, "current_media_is_video", False) and getattr(self.app, "audio_file", None))
         self.rad_frame_grab.setEnabled(has_video)
@@ -231,6 +248,7 @@ class WordPressPublishDialog(QDialog):
             self.rad_frame_grab.setChecked(True)
         else:
             self.rad_no_img.setChecked(True)
+        self.img_meta_widget.setVisible(not self.rad_no_img.isChecked())
 
         self.rad_no_img.toggled.connect(self.on_image_mode_changed)
         self.rad_frame_grab.toggled.connect(self.on_image_mode_changed)
@@ -341,6 +359,8 @@ class WordPressPublishDialog(QDialog):
             self.rad_frame_grab.setText(f"Grab frame from video (at {format_time(pos)})")
 
     def on_image_mode_changed(self):
+        if hasattr(self, "img_meta_widget"):
+            self.img_meta_widget.setVisible(not self.rad_no_img.isChecked())
         if self.rad_no_img.isChecked():
             self.browse_btn.setEnabled(False)
             self.preview_label.clear()
@@ -468,7 +488,12 @@ class WordPressPublishDialog(QDialog):
                 excerpt = generate_wp_excerpt(content)
 
         # Run background publish
-        worker = WordPressPublishWorker(client, title, formatted_content, excerpt, status, img_to_upload)
+        img_caption = self.img_caption_edit.text().strip() if hasattr(self, "img_caption_edit") else ""
+        img_alt = self.img_alt_edit.text().strip() if hasattr(self, "img_alt_edit") else ""
+        worker = WordPressPublishWorker(
+            client, title, formatted_content, excerpt, status, img_to_upload,
+            image_caption=img_caption, image_alt_text=img_alt,
+        )
         worker.finished_signal.connect(self.on_publish_finished)
         self._worker_thread = worker
         worker.start()
@@ -520,7 +545,17 @@ class WordPressPublishDialog(QDialog):
 class WordPressPublishWorker(QThread):
     finished_signal = Signal(bool, str, object)
 
-    def __init__(self, client: WordPressClient, title: str, content: str, excerpt: str, status: str, image_path: Optional[str]):
+    def __init__(
+        self,
+        client: WordPressClient,
+        title: str,
+        content: str,
+        excerpt: str,
+        status: str,
+        image_path: Optional[str],
+        image_caption: str = "",
+        image_alt_text: str = "",
+    ):
         super().__init__()
         self.client = client
         self.title = title
@@ -528,6 +563,8 @@ class WordPressPublishWorker(QThread):
         self.excerpt = excerpt
         self.status = status
         self.image_path = image_path
+        self.image_caption = str(image_caption or "")
+        self.image_alt_text = str(image_alt_text or "")
 
     def run(self):
         try:
@@ -535,6 +572,17 @@ class WordPressPublishWorker(QThread):
             if self.image_path and Path(self.image_path).exists():
                 upload_res = self.client.upload_media(self.image_path)
                 featured_media_id = upload_res.get("id")
+                cap = self.image_caption.strip()
+                alt = self.image_alt_text.strip()
+                if featured_media_id and (cap or alt) and hasattr(self.client, "update_media_metadata"):
+                    try:
+                        self.client.update_media_metadata(
+                            int(featured_media_id),
+                            caption=cap or None,
+                            alt_text=alt or None,
+                        )
+                    except Exception:
+                        pass
 
             # Create post
             post_res = self.client.create_post(
@@ -778,11 +826,12 @@ class WordPressStoryMetadataWidget(QGroupBox):
         mode = wp_meta.get("featured_image_mode", "none")
         img = wp_meta.get("featured_image")
         pos = wp_meta.get("frame_pos")
-        if mode == "video_frame":
+        cap_suffix = " (with caption)" if str(wp_meta.get("featured_image_caption") or "").strip() else ""
+        if mode in ("grab", "video_frame"):
             time_str = format_time(pos, include_millis=True) if pos is not None else ""
-            self.thumb_lbl.setText(f"<b>Featured Image:</b> Video Frame @ {time_str}")
+            self.thumb_lbl.setText(f"<b>Featured Image:</b> Video Frame @ {time_str}{cap_suffix}")
         elif mode == "file" and img:
-            self.thumb_lbl.setText(f"<b>Featured Image:</b> File ({Path(img).name})")
+            self.thumb_lbl.setText(f"<b>Featured Image:</b> File ({Path(img).name}){cap_suffix}")
         else:
             self.thumb_lbl.setText("<b>Featured Image:</b> None")
 

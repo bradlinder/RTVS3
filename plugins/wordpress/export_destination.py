@@ -489,6 +489,8 @@ class WordPressExportDestination(ExportDestination):
                         show_completion_dialog=False,
                         media_filename=media_filename,
                         featured_image_path=post.get("featured_image"),
+                        featured_image_caption=str(post.get("featured_image_caption") or ""),
+                        featured_image_alt_text=str(post.get("featured_image_alt_text") or ""),
                         progress_callback=wp_progress,
                         parent_episode_info=parent_episode_info if not is_parent_episode else None,
                         link_parent_episode=link_parent if not is_parent_episode else False,

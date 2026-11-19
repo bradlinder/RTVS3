@@ -1,3 +1,23 @@
+## v3.9.95-beta
+- **Windows Post-Update Elevation De-escalation & Context Menu Hardening (`installer/Windows/RadioTVStorySegmenter.iss`, `timeline_context_menus.py`, `background_workers.py`, `media_batch.py`, `diagnostic_editor_tests.py`)**:
+  - **Inno Setup Standard-User Post-Install Execution (`installer/Windows/RadioTVStorySegmenter.iss`)**:
+    - Replaced `{win}\explorer.exe` invocation with Inno Setup's native `runasoriginaluser` directive on the postinstall `[Run]` command (`Flags: nowait postinstall skipifsilent runasoriginaluser`).
+    - Eliminates Windows UAC split-token elevation lockout on post-update launches: newly updated applications consistently run within the interactive user session, preserving immediate access to mapped network drives, SMB shares (`\\Server\Share`), network credentials, and Windows Explorer drag-and-drop without requiring an application restart.
+  - **Timeline Context Menu Localization Fix (`timeline_context_menus.py`)**:
+    - Resolved `NameError: name 'is_es' is not defined` in `show_timeline_context_menu` by properly assigning `is_es = vocab.is_es`.
+    - Restored right-click context menu functionality on empty timeline canvas areas and story blocks across English and Spanish locales.
+    - Added optional `exec_menu: bool = True` parameter to both `show_timeline_context_menu()` and `show_selection_context_menu()` allowing headless verification and automated testing without opening blocking modal loops.
+  - **Waveform Worker Network & File Error Reporting (`background_workers.py`, `media_batch.py`)**:
+    - Configured FFmpeg subprocess stderr capture in `WaveformWorker` (`-v error`, `stderr=subprocess.PIPE`).
+    - Propagated exact FFmpeg failure causes (`error_message`) to `MediaBatchMixin._waveform_finished()` so network access denials, unreachable shares, or corrupt audio streams log explicit actionable error messages rather than silently failing with "produced no audio data".
+  - **Diagnostic Test Bench Menu Traversal Guard (`diagnostic_editor_tests.py`)**:
+    - Added automated context-menu building verification across English and Spanish in `_test_story_highlighting_smart_copy_and_glossary_engine`, guaranteeing all action labels, dynamic vocabulary interpolations, and locale variables are exercised in CI.
+  - **Progressive Streaming Waveform Rendering (`background_workers.py`, `media_batch.py`, `timeline_widgets.py`, `timeline_painter.py`, `diagnostic_editor_tests.py`)**:
+    - Added real-time rate-limited waveform peak streaming via `WaveformWorker.progress` signal (`Signal(list, float, int)`), emitting partial peak arrays every ~250ms during extraction.
+    - Updated `timeline_painter.py` to index progressive peaks by absolute time math (`eff_pps = progressive_pps / (4 ** level_index)`), rendering peaks left-to-right along the center baseline at their exact timeline ruler coordinates as frames decode over SMB network shares.
+    - Added live percentage completion badge to the timeline background status banner (`Generating audio waveform ({pct}%)...`).
+    - Added comprehensive regression unit test in `diagnostic_editor_tests.py` verifying partial peak rendering, percentage badge updates, and clean state restoration upon completion.
+
 ## v3.9.94-beta
 - **Universal "Segment" Terminology & Display Title Standardization (`core_utils.py`, `preferences_tabs_core.py`, `preferences_dialog.py`, `preferences_reset.py`, `preferences_reset_dialog.py`, `preferences_tabs_media.py`, `RadioTVSegmenter.py`, `transcript_context_menu_mixin.py`, `transcript_editor_dialogs.py`, `story_widgets.py`, `ui_layout.py`, `media_batch.py`, `timeline_snap.py`, `ui_menus.py`, `story_metadata_dialog.py`, `shortcuts/schema.py`, `diagnostic_editor_tests.py`)**:
   - **Universal "Segment" Terminology Standardization (`core_utils.py`)**:

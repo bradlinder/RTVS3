@@ -61,7 +61,7 @@ class WordPressPublishDialog(QDialog):
 class WordPressPublishWorker(QThread):
     finished_signal = ...
 
-    def __init__(self, client: WordPressClient, title: str, content: str, excerpt: str, status: str, image_path: Optional[str]):
+    def __init__(self, client: WordPressClient, title: str, content: str, excerpt: str, status: str, image_path: Optional[str], image_caption: str=..., image_alt_text: str=...):
         ...
 
     def run(self):

@@ -1487,9 +1487,229 @@ class DiagnosticExportTestsMixin:
 
         # Execute Castos podcast integration check
         self._test_wordpress_castos_podcast_integration(item)
+        # Execute Featured Image Caption & Alt Text integration check
+        self._test_wordpress_featured_image_caption_and_alt_text(item)
 
         item.status = "PASS"
-        item.message = "WordPress audio inclusion toggle, error resilience, and Castos podcast integration verified"
+        item.message = "WordPress audio inclusion toggle, error resilience, Castos podcast, and image caption/alt integration verified"
+
+    def _test_wordpress_featured_image_caption_and_alt_text(self, item: DiagnosticItem):
+        """Verify Featured Image caption & alt_text across WordPressClient, post builder, tab UI, and PublishWorker."""
+        import tempfile
+        from pathlib import Path
+        from PySide6.QtWidgets import QApplication, QMessageBox
+        _app = QApplication.instance() or QApplication([])
+        import plugins.wordpress.client as wp_client
+        from plugins.wordpress.wp_post_builder import build_wp_post_items, sync_featured_image_meta
+        from plugins.wordpress.wp_tab_widget import WordPressExportTabWidget
+        from plugins.wordpress.plugin import WordPressPublishWorker
+
+        # 1. WordPressClient.update_media_metadata primary, fallback, and no-op behavior
+        calls = []
+
+        class FakeResp:
+            def __init__(self, status_code, data=None, text=""):
+                self.status_code = status_code
+                self._data = data or {}
+                self.text = text
+
+            def json(self):
+                return self._data
+
+        client = wp_client.WordPressClient("https://example.org", "editor", "app-pw")
+        client._post_request = lambda url, json_data=None, headers=None, timeout=30: (
+            calls.append((url, json_data))
+            or FakeResp(200, {"id": 77, "caption": {"raw": json_data.get("caption", "")}, "alt_text": json_data.get("alt_text", "")})
+        )
+        res_primary = client.update_media_metadata(77, caption="Photo: Jane Doe", alt_text="Mayor speaking at podium")
+        assert calls[-1][0] == "https://example.org/wp-json/wp/v2/media/77", f"Unexpected endpoint: {calls[-1][0]}"
+        assert calls[-1][1] == {"caption": "Photo: Jane Doe", "alt_text": "Mayor speaking at podium"}
+        assert res_primary.get("id") == 77
+
+        # No-op when both caption and alt_text are None
+        pre_count = len(calls)
+        noop_res = client.update_media_metadata(77)
+        assert len(calls) == pre_count and noop_res == {"id": 77}
+
+        # Fallback to ?rest_route=/wp/v2/media/77 when primary fails
+        calls.clear()
+
+        def fallback_post(url, json_data=None, headers=None, timeout=30):
+            calls.append((url, json_data))
+            if "rest_route" in url:
+                return FakeResp(200, {"id": 77, "caption": json_data.get("caption")})
+            return FakeResp(404, text="Not found")
+
+        client._post_request = fallback_post
+        res_fb = client.update_media_metadata(77, caption="Fallback caption")
+        assert len(calls) == 2 and "rest_route=/wp/v2/media/77" in calls[1][0]
+        assert res_fb.get("id") == 77
+
+        # 2. WordPressClient.upload_media(..., caption=..., alt_text=...) delegates to update_media_metadata
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tf:
+            tf.write(b"\x89PNG\r\n\x1a\n")
+            tmp_img = tf.name
+
+        try:
+            meta_calls = []
+            client._post_multipart = lambda *a, **k: FakeResp(201, {"id": 88, "source_url": "https://example.org/img.png"})
+            client.update_media_metadata = lambda mid, caption=None, alt_text=None: (
+                meta_calls.append((mid, caption, alt_text)) or {"id": mid, "caption": caption, "alt_text": alt_text}
+            )
+            up_res = client.upload_media(tmp_img, caption="Studio still", alt_text="Host at mic")
+            assert meta_calls == [(88, "Studio still", "Host at mic")], f"Unexpected upload_media delegation: {meta_calls}"
+            assert up_res.get("caption") == "Studio still"
+
+            # 3. execute_wordpress_upload metadata behavior & warning resilience
+            class DummyMainWin:
+                def __init__(self):
+                    self.audio_file = None
+                    self.duration = 20.0
+                    self.stories = []
+                    self.logs = []
+                    self.transcript_segments = [{"start": 0.0, "end": 5.0, "speaker": "Host", "text": "Hello world"}]
+
+                def get_effective_speaker_name(self, idx, seg):
+                    return "Host"
+
+                def _get_transcript_text_slice(self, start, end):
+                    return "Hello world"
+
+                def transcript_for_range(self, start, end):
+                    return self.transcript_segments
+
+                def clean_export_text(self, text, current_speaker=""):
+                    return text
+
+                def log_activity(self, msg, **kwargs):
+                    self.logs.append(str(msg))
+
+            class UploadMockClient:
+                def __init__(self, fail_meta=False):
+                    self.site_url = "https://example.org"
+                    self.api_base = f"{self.site_url}/wp-json/wp/v2"
+                    self.fail_meta = fail_meta
+                    self.meta_updates = []
+                    self.created = []
+
+                def upload_media(self, file_path, filename=None):
+                    return {"id": 91, "source_url": "https://example.org/thumb.png"}
+
+                def update_media_metadata(self, media_id, caption=None, alt_text=None):
+                    if self.fail_meta:
+                        raise RuntimeError("Simulated metadata failure")
+                    self.meta_updates.append((media_id, caption, alt_text))
+                    return {"id": media_id}
+
+                def create_post(self, title, content, excerpt="", status="draft", featured_media_id=None, **kwargs):
+                    post = {"id": 301, "title": title, "featured_media": featured_media_id, "status": status}
+                    self.created.append(post)
+                    return post
+
+            mw_ok = DummyMainWin()
+            c_ok = UploadMockClient(fail_meta=False)
+            post_ok = wp_client.execute_wordpress_upload(
+                mw_ok, c_ok, post_title="Cap Post", include_audio=False,
+                featured_image_path=tmp_img,
+                featured_image_caption="  Credit: City Hall  ",
+                featured_image_alt_text="  City Hall exterior  ",
+            )
+            assert c_ok.meta_updates == [(91, "Credit: City Hall", "City Hall exterior")], f"Unexpected meta_updates: {c_ok.meta_updates}"
+            assert post_ok.get("featured_media") == 91
+
+            c_empty = UploadMockClient(fail_meta=False)
+            wp_client.execute_wordpress_upload(
+                mw_ok, c_empty, post_title="Empty Meta Post", include_audio=False,
+                featured_image_path=tmp_img,
+            )
+            assert c_empty.meta_updates == [], "update_media_metadata must not run when caption and alt_text are empty"
+
+            mw_warn = DummyMainWin()
+            c_fail = UploadMockClient(fail_meta=True)
+            post_warn = wp_client.execute_wordpress_upload(
+                mw_warn, c_fail, post_title="Warn Resilience Post", include_audio=False,
+                featured_image_path=tmp_img, featured_image_caption="Will warn",
+            )
+            assert post_warn.get("featured_media") == 91, "Post creation must keep featured_media even if metadata update fails"
+            assert any("setting caption/alt text failed" in m for m in mw_warn.logs), f"Missing warning log: {mw_warn.logs}"
+
+            # 4. WordPressPublishWorker metadata propagation
+            c_worker = UploadMockClient(fail_meta=False)
+            worker = WordPressPublishWorker(
+                c_worker, "Worker Post", "<p>Body</p>", "Ex", "draft", tmp_img,
+                image_caption="Worker Caption", image_alt_text="Worker Alt",
+            )
+            worker.run()
+            assert c_worker.meta_updates == [(91, "Worker Caption", "Worker Alt")], f"Worker failed to update metadata: {c_worker.meta_updates}"
+
+            # 5. post builder + sync_featured_image_meta + WordPressExportTabWidget UI
+            class DummyStory:
+                def __init__(self, start, end, title):
+                    self.start = start
+                    self.end = end
+                    self.title = title
+                    self.fade_in = 0.0
+                    self.fade_out = 0.0
+                    self.fade_curve = "linear"
+                    self.metadata = {}
+
+            class TabDummyMainWin(DummyMainWin):
+                def __init__(self):
+                    super().__init__()
+                    self.audio_file = tmp_img
+                    self.current_media_is_video = True
+                    self.project_metadata = {}
+                    self.stories = [DummyStory(0.0, 10.0, "Story One"), DummyStory(10.0, 20.0, "Story Two")]
+                    self.current_selected_story_indices = [1]
+
+            tab_mw = TabDummyMainWin()
+            tab = WordPressExportTabWidget(None, tab_mw)
+            tab.rebuild_post_items("full_and_all_stories")
+            assert len(tab.wp_post_items) == 3, f"Expected 3 post items, got {len(tab.wp_post_items)}"
+            tab._load_post_editor_state(0)
+            assert tab.wp_img_meta_widget.isHidden(), "Metadata inputs must be hidden in None mode"
+
+            tab.wp_rad_thumb_file.setChecked(True)
+            assert not tab.wp_img_meta_widget.isHidden(), "Metadata inputs must show in custom file mode"
+            tab.wp_thumb_caption_edit.setText("Episode Caption")
+            tab.wp_thumb_alt_edit.setText("Episode Alt")
+            assert tab.wp_post_items[0]["featured_image_caption"] == "Episode Caption"
+            assert tab.wp_post_items[0]["featured_image_alt_text"] == "Episode Alt"
+            assert tab_mw.project_metadata["wordpress"]["featured_image_caption"] == "Episode Caption"
+            assert tab_mw.project_metadata["wordpress"]["featured_image_alt_text"] == "Episode Alt"
+
+            # Verify video frame grab mode also reveals metadata inputs
+            tab._load_post_editor_state(1)
+            assert tab.wp_img_meta_widget.isHidden(), "Story 1 starts in None mode with hidden metadata widget"
+            tab.wp_rad_thumb_grab.setChecked(True)
+            assert not tab.wp_img_meta_widget.isHidden(), "Metadata inputs must show in grab mode"
+            tab.wp_thumb_caption_edit.setText("Story 1 Caption")
+            tab.wp_thumb_alt_edit.setText("Story 1 Alt")
+
+            # Verify post switching & rebuild persistence
+            rebuilt = build_wp_post_items(tab_mw, scope="full_and_all_stories")
+            assert rebuilt[0]["featured_image_caption"] == "Episode Caption"
+            assert rebuilt[1]["featured_image_caption"] == "Story 1 Caption"
+            assert rebuilt[1]["featured_image_alt_text"] == "Story 1 Alt"
+
+            # Bulk apply to selected & all stories (stub modal QMessageBox.information)
+            orig_info = QMessageBox.information
+            QMessageBox.information = lambda *a, **k: QMessageBox.StandardButton.Ok
+            try:
+                tab._apply_thumbnails_to_selected_stories()
+                assert tab_mw.stories[1].metadata["wordpress"]["featured_image_caption"] == "Story 1 Caption"
+                assert tab_mw.stories[1].metadata["wordpress"]["featured_image_alt_text"] == "Story 1 Alt"
+                tab._apply_thumbnails_to_all_posts()
+                assert tab.wp_post_items[2]["featured_image_caption"] == "Story 1 Caption"
+            finally:
+                QMessageBox.information = orig_info
+            tab.close()
+        finally:
+            try:
+                Path(tmp_img).unlink(missing_ok=True)
+            except Exception:
+                pass
+
 
     def _test_wordpress_castos_podcast_integration(self, item: DiagnosticItem):
         import plugins.wordpress.client as wp_client

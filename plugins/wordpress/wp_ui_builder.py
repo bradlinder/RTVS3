@@ -349,6 +349,31 @@ def setup_wp_tab_ui(self: Any):
     wp_thumb_layout.addWidget(self.wp_thumb_preview_label, stretch=1)
     self.wp_thumb_section.add_layout(wp_thumb_layout)
 
+    self.wp_img_meta_widget = QWidget()
+    wp_img_meta_form = QFormLayout(self.wp_img_meta_widget)
+    wp_img_meta_form.setContentsMargins(0, 6, 0, 0)
+    wp_img_meta_form.setSpacing(6)
+
+    self.wp_thumb_caption_edit = QLineEdit()
+    self.wp_thumb_caption_edit.setPlaceholderText("Optional WordPress Media Library caption (e.g. photo credit)")
+    self.wp_thumb_caption_edit.setToolTip(
+        "Sets the WordPress Media Library caption field for the uploaded featured image. "
+        "Basic HTML (such as credit links) is supported by WordPress."
+    )
+    wp_img_meta_form.addRow("Caption:", self.wp_thumb_caption_edit)
+
+    self.wp_thumb_alt_edit = QLineEdit()
+    self.wp_thumb_alt_edit.setPlaceholderText("Optional accessibility alt text describing the image")
+    self.wp_thumb_alt_edit.setToolTip(
+        "Sets the WordPress Media Library alt_text field for screen readers and SEO."
+    )
+    wp_img_meta_form.addRow("Alt Text:", self.wp_thumb_alt_edit)
+
+    self.wp_img_meta_widget.setVisible(False)
+    self.wp_thumb_section.add_widget(self.wp_img_meta_widget)
+    self.wp_thumb_caption_edit.textChanged.connect(self._on_wp_thumb_meta_changed)
+    self.wp_thumb_alt_edit.textChanged.connect(self._on_wp_thumb_meta_changed)
+
     self.wp_rad_thumb_none.toggled.connect(self._on_wp_thumb_mode_changed)
     self.wp_rad_thumb_grab.toggled.connect(self._on_wp_thumb_mode_changed)
     self.wp_rad_thumb_file.toggled.connect(self._on_wp_thumb_mode_changed)

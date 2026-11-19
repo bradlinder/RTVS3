@@ -626,7 +626,13 @@ class WordPressClient:
                 pass
         return authors
 
-    def upload_media(self, file_path: str, filename: str | None = None) -> dict:
+    def upload_media(
+        self,
+        file_path: str,
+        filename: str | None = None,
+        caption: str | None = None,
+        alt_text: str | None = None,
+    ) -> dict:
         """Upload media using WordPress's standard multipart API, with raw fallback."""
         import mimetypes
         import requests
@@ -648,12 +654,14 @@ class WordPressClient:
         ]
 
         errors = []
+        uploaded_item = None
         for url in endpoints:
             # Multipart upload with redirect protection
             try:
                 resp = self._post_multipart(url, path, upload_filename, mime_type, timeout=180)
                 if resp.status_code in (200, 201):
-                    return resp.json()
+                    uploaded_item = resp.json()
+                    break
                 errors.append(f"multipart {url} HTTP {resp.status_code}: {resp.text[:300]}")
             except Exception as exc:
                 errors.append(f"multipart {url} exception: {exc}")
@@ -675,12 +683,54 @@ class WordPressClient:
                         timeout=180,
                     )
                 if resp.status_code in (200, 201):
-                    return resp.json()
+                    uploaded_item = resp.json()
+                    break
                 errors.append(f"raw {url} HTTP {resp.status_code}: {resp.text[:300]}")
             except Exception as exc:
                 errors.append(f"raw {url} exception: {exc}")
 
-        raise RuntimeError("WordPress Media upload failed (" + "; ".join(errors) + ")")
+        if uploaded_item is None:
+            raise RuntimeError("WordPress Media upload failed (" + "; ".join(errors) + ")")
+
+        if isinstance(uploaded_item, dict) and uploaded_item.get("id") and (caption or alt_text):
+            return self.update_media_metadata(
+                int(uploaded_item["id"]),
+                caption=caption if caption else None,
+                alt_text=alt_text if alt_text else None,
+            )
+        return uploaded_item
+
+    def update_media_metadata(
+        self,
+        media_id: int,
+        caption: str | None = None,
+        alt_text: str | None = None,
+    ) -> dict:
+        """Update caption and alt_text fields on an existing WordPress Media Library attachment."""
+        payload: dict[str, Any] = {}
+        if caption is not None:
+            payload["caption"] = str(caption)
+        if alt_text is not None:
+            payload["alt_text"] = str(alt_text)
+        if not payload:
+            return {"id": int(media_id)}
+
+        pid = int(media_id)
+        endpoints = [
+            f"{self.api_base}/media/{pid}",
+            f"{self.site_url}/?rest_route=/wp/v2/media/{pid}",
+        ]
+        last_error = ""
+        for url in endpoints:
+            try:
+                resp = self._post_request(url, json_data=payload, timeout=30)
+                if resp.status_code in (200, 201):
+                    return resp.json()
+                last_error = f"HTTP {resp.status_code}: {resp.text[:300]}"
+            except Exception as exc:
+                last_error = str(exc)
+
+        raise RuntimeError(f"WordPress Media metadata update failed ({last_error})")
 
     def get_podcast_feeds(self) -> list[dict]:
         """Fetch Seriously Simple Podcasting feeds/series or return default feed."""
@@ -1509,6 +1559,8 @@ def execute_wordpress_upload(
     post_status: str = "draft",
     publication_date: str | None = None,
     post_slug: str | None = None,
+    featured_image_caption: str = "",
+    featured_image_alt_text: str = "",
 ) -> dict:
     """Extract media clip, upload to WordPress media library, and create or update a post."""
     def report_progress(step: int, description: str) -> None:
@@ -1540,6 +1592,21 @@ def execute_wordpress_upload(
         except Exception as exc:
             if hasattr(main_window, "log_activity"):
                 main_window.log_activity(f"[WORDPRESS WARNING] Failed to upload featured image: {exc}")
+
+        img_caption = str(featured_image_caption or "").strip()
+        img_alt = str(featured_image_alt_text or "").strip()
+        if featured_media_id and (img_caption or img_alt) and hasattr(client, "update_media_metadata"):
+            try:
+                client.update_media_metadata(
+                    int(featured_media_id),
+                    caption=img_caption or None,
+                    alt_text=img_alt or None,
+                )
+            except Exception as meta_exc:
+                if hasattr(main_window, "log_activity"):
+                    main_window.log_activity(
+                        f"[WORDPRESS WARNING] Featured image uploaded (ID {featured_media_id}), but setting caption/alt text failed: {meta_exc}"
+                    )
 
     # Prepare media file (if include_audio enabled, audio exists, and not preserving existing post audio)
     if skip_audio_for_existing:

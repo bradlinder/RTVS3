@@ -31,11 +31,13 @@ from plugins.wordpress.client import (
     _get_wp_password,
     is_wp_auth_error,
 )
-from plugins.wordpress.wp_post_builder import capture_video_frame, build_wp_post_items
+from plugins.wordpress.wp_post_builder import capture_video_frame, build_wp_post_items, sync_featured_image_meta
 from plugins.wordpress.wp_ui_builder import setup_wp_tab_ui
 
 class WordPressExportTabWidget(QWidget):
     """Configuration and preview panel for WordPress Draft Posts."""
+
+    _THUMB_SYNC_KEYS = ("featured_image", "featured_image_mode", "featured_image_caption", "featured_image_alt_text", "frame_pos")
 
     def __init__(self, parent: QWidget, main_window: Any, metadata_editor_mode: bool = False):
         super().__init__(parent)
@@ -247,7 +249,7 @@ class WordPressExportTabWidget(QWidget):
         self._bulk_apply_to_selected("category_ids")
 
     def _apply_thumbnails_to_selected_stories(self):
-        self._bulk_apply_to_selected("featured_image", "featured_image_mode", "frame_pos")
+        self._bulk_apply_to_selected(*self._THUMB_SYNC_KEYS)
 
     def _bulk_apply_to_selected(self, *keys: str):
         if not (0 <= self._current_post_index < len(self.wp_post_items)):
@@ -290,7 +292,7 @@ class WordPressExportTabWidget(QWidget):
         self._bulk_apply_to_all("category_ids")
 
     def _apply_thumbnails_to_all_posts(self):
-        self._bulk_apply_to_all("featured_image", "featured_image_mode", "frame_pos")
+        self._bulk_apply_to_all(*self._THUMB_SYNC_KEYS)
 
     def _bulk_apply_to_all(self, *keys: str):
         if not (0 <= self._current_post_index < len(self.wp_post_items)):
@@ -381,9 +383,7 @@ class WordPressExportTabWidget(QWidget):
             wp_meta["author_ids"] = list(post.get("author_ids") or [])
             wp_meta["author_term_ids"] = list(post.get("author_term_ids") or [])
             wp_meta["category_ids"] = list(post.get("category_ids") or [])
-            wp_meta["featured_image"] = post.get("featured_image")
-            wp_meta["featured_image_mode"] = post.get("featured_image_mode", "none")
-            wp_meta["frame_pos"] = post.get("frame_pos")
+            sync_featured_image_meta(wp_meta, post)
             wp_meta["status"] = post.get("status", "draft")
             wp_meta["slug"] = post.get("slug", "")
             wp_meta["tags"] = list(post.get("tags") or [])
@@ -439,11 +439,7 @@ class WordPressExportTabWidget(QWidget):
                 wp_meta["author_ids"] = list(post.get("author_ids") or [])
                 wp_meta["author_term_ids"] = list(post.get("author_term_ids") or [])
                 wp_meta["category_ids"] = list(post.get("category_ids") or [])
-                wp_meta["featured_image"] = post.get("featured_image")
-                wp_meta["featured_image_mode"] = post.get("featured_image_mode", "none")
-                target_story.metadata["featured_image"] = post.get("featured_image")
-                target_story.metadata["featured_image_mode"] = post.get("featured_image_mode", "none")
-                wp_meta["frame_pos"] = post.get("frame_pos")
+                sync_featured_image_meta(wp_meta, post, target_story.metadata)
                 wp_meta["status"] = post.get("status", "draft")
                 wp_meta["slug"] = post.get("slug", "")
                 wp_meta["tags"] = list(post.get("tags") or [])
@@ -691,6 +687,9 @@ class WordPressExportTabWidget(QWidget):
             self.wp_thumb_preview_label.clear()
             self.wp_thumb_preview_label.setText("No Thumbnail")
 
+        self.wp_thumb_caption_edit.setText(str(post.get("featured_image_caption") or ""))
+        self.wp_thumb_alt_edit.setText(str(post.get("featured_image_alt_text") or ""))
+        self.wp_img_meta_widget.setVisible((mode == "grab" and self._is_video_project) or (mode == "file" and bool(img)))
         self._syncing_post_editor = False
 
         self._set_editor_checked_authors(post.get("author_ids", []), post.get("author_term_ids", []))
@@ -714,6 +713,7 @@ class WordPressExportTabWidget(QWidget):
         if self.wp_rad_thumb_none.isChecked():
             self.wp_scrub_widget.setVisible(False)
             self.wp_browse_widget.setVisible(False)
+            self.wp_img_meta_widget.setVisible(False)
             self.wp_thumb_path_label.setText("No image selected")
             self.wp_thumb_preview_label.clear()
             self.wp_thumb_preview_label.setText("No Thumbnail")
@@ -724,6 +724,7 @@ class WordPressExportTabWidget(QWidget):
         elif self.wp_rad_thumb_grab.isChecked():
             self.wp_browse_widget.setVisible(False)
             self.wp_scrub_widget.setVisible(True)
+            self.wp_img_meta_widget.setVisible(True)
             if post.get("frame_pos") is None:
                 t_min, _ = self._get_wp_post_bounds()
                 post["frame_pos"] = t_min
@@ -732,6 +733,7 @@ class WordPressExportTabWidget(QWidget):
         elif self.wp_rad_thumb_file.isChecked():
             self.wp_scrub_widget.setVisible(False)
             self.wp_browse_widget.setVisible(True)
+            self.wp_img_meta_widget.setVisible(True)
             custom_path = post.get("featured_image")
             if custom_path and Path(custom_path).exists() and post.get("featured_image_mode") == "file":
                 self.wp_thumb_path_label.setText(Path(custom_path).name)
@@ -743,6 +745,15 @@ class WordPressExportTabWidget(QWidget):
                 self.wp_thumb_preview_label.setText("No Image\nSelected")
             if hasattr(self, "_sync_post_to_project"):
                 self._sync_post_to_project(self._current_post_index)
+
+    def _on_wp_thumb_meta_changed(self):
+        if self._syncing_post_editor or not (0 <= self._current_post_index < len(self.wp_post_items)):
+            return
+        post = self.wp_post_items[self._current_post_index]
+        post["featured_image_caption"] = self.wp_thumb_caption_edit.text()
+        post["featured_image_alt_text"] = self.wp_thumb_alt_edit.text()
+        self._update_post_list_item_label(self._current_post_index)
+        self._sync_to_proj(self._current_post_index)
 
     def _capture_wp_frame(self, pos=None):
         if not (0 <= self._current_post_index < len(self.wp_post_items)):
@@ -794,6 +805,7 @@ class WordPressExportTabWidget(QWidget):
             post["featured_image"] = fn
             post["featured_image_mode"] = "file"
             self.wp_rad_thumb_file.setChecked(True)
+            self.wp_img_meta_widget.setVisible(True)
             self.wp_thumb_path_label.setText(Path(fn).name)
             pix = QPixmap(fn).scaled(160, 90, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
             self.wp_thumb_preview_label.setPixmap(pix)
@@ -930,20 +942,27 @@ class WordPressExportTabWidget(QWidget):
                 self.wp_category_list.addItem(item)
         self.wp_category_list.blockSignals(False)
 
+    def _prompt_wp_credentials(
+        self,
+        title: str = "WordPress Credentials Required",
+        message: str = "WordPress site connection is not configured or missing login credentials.",
+    ) -> None:
+        reply = QMessageBox.question(
+            self,
+            title,
+            f"{message}\n\nWould you like to enter or correct your website URL and login details now?",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.Yes,
+        )
+        if reply == QMessageBox.StandardButton.Yes:
+            self._open_wp_settings()
+
     def _refresh_castos_feeds(self):
         from plugins.wordpress.client import get_wp_client
         from plugins.wordpress.castos import populate_castos_feeds_combo
         client = get_wp_client()
         if not client or not client.is_configured():
-            reply = QMessageBox.question(
-                self,
-                "WordPress Credentials Required",
-                "WordPress site connection is not configured or missing login credentials.\n\nWould you like to enter or correct your website URL and login details now?",
-                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
-                QMessageBox.StandardButton.Yes,
-            )
-            if reply == QMessageBox.StandardButton.Yes:
-                self._open_wp_settings()
+            self._prompt_wp_credentials()
             return
 
         feeds = []
@@ -961,29 +980,13 @@ class WordPressExportTabWidget(QWidget):
         from plugins.wordpress.client import get_wp_client
         client = get_wp_client()
         if not client or not client.is_configured():
-            reply = QMessageBox.question(
-                self,
-                "WordPress Credentials Required",
-                "WordPress site connection is not configured or missing login credentials.\n\nWould you like to enter or correct your website URL and login details now?",
-                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
-                QMessageBox.StandardButton.Yes,
-            )
-            if reply == QMessageBox.StandardButton.Yes:
-                self._open_wp_settings()
+            self._prompt_wp_credentials()
             return
 
         if not os.environ.get("RTVS_TEST_MODE"):
             ok, test_msg = client.test_connection()
             if not ok:
-                reply = QMessageBox.question(
-                    self,
-                    "WordPress Connection Failed",
-                    f"Could not connect to WordPress:\n{test_msg}\n\nWould you like to enter or correct your website URL and login details now?",
-                    QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
-                    QMessageBox.StandardButton.Yes,
-                )
-                if reply == QMessageBox.StandardButton.Yes:
-                    self._open_wp_settings()
+                self._prompt_wp_credentials("WordPress Connection Failed", f"Could not connect to WordPress:\n{test_msg}")
                 return
 
         self._populate_wp_export_metadata(force_refresh=True)

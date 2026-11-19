@@ -120,6 +120,8 @@ def build_wp_post_items(
             "tags": list(wp_meta.get("tags") or st_meta.get("tags") or []),
             "featured_image": wp_meta.get("featured_image") if wp_meta.get("featured_image") is not None else st_meta.get("featured_image"),
             "featured_image_mode": wp_meta.get("featured_image_mode") or st_meta.get("featured_image_mode") or "none",
+            "featured_image_caption": str(wp_meta.get("featured_image_caption") if wp_meta.get("featured_image_caption") is not None else (st_meta.get("featured_image_caption") or "")),
+            "featured_image_alt_text": str(wp_meta.get("featured_image_alt_text") if wp_meta.get("featured_image_alt_text") is not None else (st_meta.get("featured_image_alt_text") or "")),
             "is_podcast": bool(wp_meta.get("is_podcast", False)),
             "podcast_feed": str(wp_meta.get("podcast_feed") or "default"),
             "podcast_feed_id": wp_meta.get("podcast_feed_id"),
@@ -152,6 +154,10 @@ def build_wp_post_items(
             item["category_ids"] = list(existing.get("category_ids", item["category_ids"]))
             item["featured_image"] = existing.get("featured_image", item["featured_image"])
             item["featured_image_mode"] = existing.get("featured_image_mode", item["featured_image_mode"])
+            if "featured_image_caption" in existing:
+                item["featured_image_caption"] = str(existing.get("featured_image_caption") or "")
+            if "featured_image_alt_text" in existing:
+                item["featured_image_alt_text"] = str(existing.get("featured_image_alt_text") or "")
             item["frame_pos"] = existing.get("frame_pos", item["frame_pos"])
             item["story_index"] = idx
             if "fade_in" in existing and existing["fade_in"] is not None:
@@ -225,6 +231,8 @@ def build_wp_post_items(
             "tags": list(wp_meta.get("tags") or proj_meta.get("tags") or []),
             "featured_image": wp_meta.get("featured_image") if wp_meta.get("featured_image") is not None else proj_meta.get("featured_image"),
             "featured_image_mode": wp_meta.get("featured_image_mode") or proj_meta.get("featured_image_mode") or "none",
+            "featured_image_caption": str(wp_meta.get("featured_image_caption") if wp_meta.get("featured_image_caption") is not None else (proj_meta.get("featured_image_caption") or "")),
+            "featured_image_alt_text": str(wp_meta.get("featured_image_alt_text") if wp_meta.get("featured_image_alt_text") is not None else (proj_meta.get("featured_image_alt_text") or "")),
             "is_podcast": bool(wp_meta.get("is_podcast", default_is_podcast)),
             "podcast_feed": str(wp_meta.get("podcast_feed") or "default"),
             "podcast_feed_id": wp_meta.get("podcast_feed_id"),
@@ -297,6 +305,10 @@ def build_wp_post_items(
             item["category_ids"] = list(existing.get("category_ids", item["category_ids"]))
             item["featured_image"] = existing.get("featured_image", item["featured_image"])
             item["featured_image_mode"] = existing.get("featured_image_mode", item["featured_image_mode"])
+            if "featured_image_caption" in existing:
+                item["featured_image_caption"] = str(existing.get("featured_image_caption") or "")
+            if "featured_image_alt_text" in existing:
+                item["featured_image_alt_text"] = str(existing.get("featured_image_alt_text") or "")
             item["frame_pos"] = existing.get("frame_pos", item["frame_pos"])
         return item
 
@@ -330,6 +342,8 @@ def build_wp_post_items(
             "category_ids": [],
             "featured_image": None,
             "featured_image_mode": "none",
+            "featured_image_caption": "",
+            "featured_image_alt_text": "",
             "is_podcast": False,
             "podcast_feed": "default",
             "podcast_feed_id": None,
@@ -339,3 +353,25 @@ def build_wp_post_items(
         })
 
     return new_items
+
+
+def sync_featured_image_meta(
+    wp_meta: Dict[str, Any],
+    post: Dict[str, Any],
+    container_meta: Optional[Dict[str, Any]] = None,
+) -> None:
+    """Persist featured image path, mode, caption, alt text, and frame position into project metadata."""
+    img = post.get("featured_image")
+    mode = post.get("featured_image_mode", "none")
+    caption = str(post.get("featured_image_caption") or "")
+    alt_text = str(post.get("featured_image_alt_text") or "")
+    wp_meta["featured_image"] = img
+    wp_meta["featured_image_mode"] = mode
+    wp_meta["featured_image_caption"] = caption
+    wp_meta["featured_image_alt_text"] = alt_text
+    wp_meta["frame_pos"] = post.get("frame_pos")
+    if isinstance(container_meta, dict):
+        container_meta["featured_image"] = img
+        container_meta["featured_image_mode"] = mode
+        container_meta["featured_image_caption"] = caption
+        container_meta["featured_image_alt_text"] = alt_text

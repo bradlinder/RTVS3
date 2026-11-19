@@ -78,7 +78,10 @@ class WordPressClient:
     def get_authors(self) -> list[dict]:
         ...
 
-    def upload_media(self, file_path: str, filename: str | None=...) -> dict:
+    def upload_media(self, file_path: str, filename: str | None=..., caption: str | None=..., alt_text: str | None=...) -> dict:
+        ...
+
+    def update_media_metadata(self, media_id: int, caption: str | None=..., alt_text: str | None=...) -> dict:
         ...
 
     def get_podcast_feeds(self) -> list[dict]:
@@ -124,5 +127,5 @@ def _group_segments_into_paragraphs(segments: list, min_words: int=...) -> list:
 def _build_audio_fade_filter(duration: float, fade_in: float=..., fade_out: float=..., fade_curve: str=...) -> list[str]:
     ...
 
-def execute_wordpress_upload(main_window: Any, client: WordPressClient, post_title: str=..., post_excerpt: str=..., start: float | None=..., end: float | None=..., task_label: str=..., include_english: bool=..., include_spanish: bool=..., spanish_presentation: str=..., primary_language: str=..., author_ids: list[int] | None=..., author_term_ids: list[int] | None=..., category_ids: list[int] | None=..., show_completion_dialog: bool=..., media_filename: str | None=..., progress_callback=..., featured_image_path: str | None=..., parent_episode_info: dict | None=..., link_parent_episode: bool=..., parent_episode_template: str=..., parent_episode_pos: str=..., include_audio: bool=..., fade_in: float=..., fade_out: float=..., fade_curve: str=..., apply_fades: bool=..., accordion_pos: str=..., is_podcast: bool=..., podcast_feed: str=..., podcast_feed_id: int | None=..., podcast_feed_ids: list[int] | None=..., podcast_feeds: list[str] | None=..., podcast_episode_type: str=..., podcast_season: str | int | None=..., podcast_episode_number: str | int | None=..., youtube_url: str=..., youtube_stop_at_end: bool=..., youtube_placement: str=..., youtube_use_story_time: bool=..., existing_post_id: int | None=..., replace_existing_audio_and_podcast: bool=..., post_status: str=..., publication_date: str | None=..., post_slug: str | None=...) -> dict:
+def execute_wordpress_upload(main_window: Any, client: WordPressClient, post_title: str=..., post_excerpt: str=..., start: float | None=..., end: float | None=..., task_label: str=..., include_english: bool=..., include_spanish: bool=..., spanish_presentation: str=..., primary_language: str=..., author_ids: list[int] | None=..., author_term_ids: list[int] | None=..., category_ids: list[int] | None=..., show_completion_dialog: bool=..., media_filename: str | None=..., progress_callback=..., featured_image_path: str | None=..., parent_episode_info: dict | None=..., link_parent_episode: bool=..., parent_episode_template: str=..., parent_episode_pos: str=..., include_audio: bool=..., fade_in: float=..., fade_out: float=..., fade_curve: str=..., apply_fades: bool=..., accordion_pos: str=..., is_podcast: bool=..., podcast_feed: str=..., podcast_feed_id: int | None=..., podcast_feed_ids: list[int] | None=..., podcast_feeds: list[str] | None=..., podcast_episode_type: str=..., podcast_season: str | int | None=..., podcast_episode_number: str | int | None=..., youtube_url: str=..., youtube_stop_at_end: bool=..., youtube_placement: str=..., youtube_use_story_time: bool=..., existing_post_id: int | None=..., replace_existing_audio_and_podcast: bool=..., post_status: str=..., publication_date: str | None=..., post_slug: str | None=..., featured_image_caption: str=..., featured_image_alt_text: str=...) -> dict:
     ...

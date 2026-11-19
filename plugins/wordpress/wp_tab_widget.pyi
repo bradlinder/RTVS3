@@ -12,10 +12,11 @@ from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import QApplication, QCheckBox, QFileDialog, QListWidgetItem, QMessageBox, QWidget
 from prs_shared import INTERNAL_APP_ID, format_time, safe_filename
 from plugins.wordpress.client import WordPressClient, WordPressSettingsDialog, generate_wp_excerpt, _get_wp_password, is_wp_auth_error
-from plugins.wordpress.wp_post_builder import capture_video_frame, build_wp_post_items
+from plugins.wordpress.wp_post_builder import capture_video_frame, build_wp_post_items, sync_featured_image_meta
 from plugins.wordpress.wp_ui_builder import setup_wp_tab_ui
 
 class WordPressExportTabWidget(QWidget):
+    _THUMB_SYNC_KEYS = ...
 
     def __init__(self, parent: QWidget, main_window: Any, metadata_editor_mode: bool=...):
         ...
@@ -152,6 +153,9 @@ class WordPressExportTabWidget(QWidget):
     def _on_wp_thumb_mode_changed(self):
         ...
 
+    def _on_wp_thumb_meta_changed(self):
+        ...
+
     def _capture_wp_frame(self, pos=...):
         ...
 
@@ -168,6 +172,9 @@ class WordPressExportTabWidget(QWidget):
         ...
 
     def _populate_wp_export_metadata(self, force_refresh: bool=...):
+        ...
+
+    def _prompt_wp_credentials(self, title: str=..., message: str=...) -> None:
         ...
 
     def _refresh_castos_feeds(self):
