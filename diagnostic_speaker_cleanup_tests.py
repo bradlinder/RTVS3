@@ -500,11 +500,43 @@ class DiagnosticSpeakerCleanupTestsMixin:
                     raise AssertionError(
                         f"WordPressPublishDialog.{_wp_attr} did not resolve spellcheck main_window via plugin.app"
                     )
+
+            # Verify horizontal scroll estimation uses cursorPositionAt on overflowing QLineEdit text
+            from spellcheck_widgets import _compute_line_edit_scroll_offset
+
+            class _FakeRect:
+                def width(self):
+                    return 100
+
+                def height(self):
+                    return 24
+
+                def top(self):
+                    return 0
+
+            class _FakeFM:
+                def horizontalAdvance(self, s):
+                    return len(s) * 8
+
+            class _FakeLE:
+                def cursorPosition(self):
+                    return 0
+
+                def cursorPositionAt(self, _pt):
+                    return 12
+
+            long_text = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+            off = _compute_line_edit_scroll_offset(_FakeLE(), long_text, _FakeFM(), _FakeRect(), 4)
+            if off != 96:
+                raise AssertionError(f"Expected scroll offset 96 from cursorPositionAt(12), got {off}")
+            short_off = _compute_line_edit_scroll_offset(_FakeLE(), "Short", _FakeFM(), _FakeRect(), 4)
+            if short_off != 0:
+                raise AssertionError(f"Expected 0 scroll offset for short text, got {short_off}")
         finally:
             clear_session_ignored_words()
 
         item.status = "PASS"
         item.message = (
             f"Offline spellcheck ({checker.backend_name}), Glossary/speaker add & removal sync, "
-            "case-preserving suggestions, QLineEdit/QTextEdit replacement, and WordPressPublishDialog wiring verified"
+            "scroll-offset anchor, QLineEdit/QTextEdit replacement, and WordPressPublishDialog wiring verified"
         )

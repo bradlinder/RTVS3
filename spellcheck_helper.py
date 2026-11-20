@@ -17,10 +17,13 @@ Architectural invariants:
 
 from __future__ import annotations
 
+import logging
 import re
 import threading
 from dataclasses import dataclass
 from typing import Any, Iterable, Iterator, List, Optional, Sequence, Set, Tuple
+
+_logger = logging.getLogger(__name__)
 
 try:
     from spellchecker import SpellChecker as _PySpellChecker  # type: ignore
@@ -413,7 +416,7 @@ def collect_allowlist_words(
                 if loaded:
                     raw_glossary_sources.append(loaded)
             except Exception:
-                pass
+                _logger.debug("Optional settings glossary load skipped during allowlist collection", exc_info=True)
 
     if raw_glossary_sources:
         try:
@@ -464,7 +467,7 @@ def collect_allowlist_words(
                     if pname:
                         candidate_speakers.append(str(pname))
             except Exception:
-                pass
+                _logger.warning("Failed reading voice profiles for spellcheck allowlist", exc_info=True)
 
     for raw_name in candidate_speakers:
         cleaned = str(raw_name or "").strip()
@@ -735,7 +738,7 @@ class OfflineSpellChecker:
                     if len(ranked) >= max_suggestions:
                         return ranked
             except Exception:
-                pass
+                _logger.warning("pyspellchecker suggestion lookup failed", exc_info=True)
             return ranked[:max_suggestions]
 
         # 3. Pure-Python fallback: distance 1 then distance 2 against core vocabulary

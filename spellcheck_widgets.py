@@ -68,6 +68,7 @@ def _spell_underline_color() -> QColor:
         from core_utils import get_active_theme_mode
         mode = get_active_theme_mode("dark")
     except Exception:
+        _logger.debug("Failed reading active theme mode; defaulting to dark underline color", exc_info=True)
         mode = "dark"
     if mode == "light":
         return QColor("#dc2626")
@@ -101,6 +102,7 @@ def add_word_to_glossary(word: str, main_window: Any = None) -> bool:
                 main_window.add_to_glossary(cleaned)
                 persisted = True
             except Exception:
+                _logger.warning("Failed persisting word via main_window.add_to_glossary", exc_info=True)
                 persisted = False
 
         if not persisted:
@@ -131,6 +133,7 @@ def add_word_to_glossary(word: str, main_window: Any = None) -> bool:
                     main_window.apply_glossary_to_whisper_context()
                 persisted = True
             except Exception:
+                _logger.warning("Failed persisting word directly into main_window glossary", exc_info=True)
                 persisted = False
 
     # Only fall back to process-wide session ignore when no Glossary persistence exists
@@ -161,6 +164,36 @@ class SpellCheckHighlighter(QSyntaxHighlighter):
             length = max(0, issue.end - issue.start)
             if length > 0:
                 self.setFormat(issue.start, length, self._format)
+
+
+def _compute_line_edit_scroll_offset(
+    line_edit: Any,
+    text: str,
+    font_metrics: Any,
+    contents_rect: Any,
+    inner_left: int,
+) -> int:
+    """Compute horizontal pixel scroll offset for a single-line QLineEdit.
+
+    Uses `cursorPositionAt()` on the left visible edge so underlines stay
+    aligned when scrolled left/right or after the input loses focus.
+    """
+    total_w = int(font_metrics.horizontalAdvance(text))
+    avail_w = int(contents_rect.width()) - 4
+    if total_w <= max(0, avail_w):
+        return 0
+    if hasattr(line_edit, "cursorPositionAt"):
+        try:
+            mid_y = int(contents_rect.top() + contents_rect.height() / 2)
+            left_idx = int(line_edit.cursorPositionAt(QPoint(inner_left, mid_y)))
+            left_idx = max(0, min(len(text), left_idx))
+            return int(font_metrics.horizontalAdvance(text[:left_idx]))
+        except Exception:
+            _logger.debug("cursorPositionAt scroll probe failed; using cursor fallback", exc_info=True)
+    cursor_x = int(font_metrics.horizontalAdvance(text[: int(line_edit.cursorPosition())]))
+    if cursor_x > int(contents_rect.width()) - 8:
+        return cursor_x - (int(contents_rect.width()) - 8)
+    return 0
 
 
 class _LineEditSpellOverlay(QWidget):
@@ -205,12 +238,7 @@ class _LineEditSpellOverlay(QWidget):
         fm = QFontMetrics(le.font())
         # Account for internal horizontal padding (Qt adds ~2px horizontal margin inside contents)
         inner_left = contents.left() + 2
-        total_w = fm.horizontalAdvance(text)
-        scroll_offset = 0
-        if total_w > contents.width() - 4:
-            cursor_x = fm.horizontalAdvance(text[: le.cursorPosition()])
-            if cursor_x > contents.width() - 8:
-                scroll_offset = cursor_x - (contents.width() - 8)
+        scroll_offset = _compute_line_edit_scroll_offset(le, text, fm, contents, inner_left)
 
         baseline_y = contents.top() + (contents.height() + fm.ascent() - fm.descent()) / 2.0 + 2.0
         baseline_y = min(float(contents.bottom() - 1), baseline_y)
@@ -289,12 +317,12 @@ class SpellCheckController(QObject):
                 try:
                     w.textChanged.connect(self._on_line_edit_changed)
                 except Exception:
-                    pass
+                    _logger.debug("Failed connecting textChanged for spellcheck overlay", exc_info=True)
             if hasattr(w, "cursorPositionChanged"):
                 try:
                     w.cursorPositionChanged.connect(self._on_line_edit_cursor_changed)
                 except Exception:
-                    pass
+                    _logger.debug("Failed connecting cursorPositionChanged for spellcheck overlay", exc_info=True)
             self._recompute_line_edit_issues()
         else:
             if _is_real_qt_widget(w) and hasattr(w, "document"):
@@ -305,7 +333,7 @@ class SpellCheckController(QObject):
                 w.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
                 w.customContextMenuRequested.connect(self._on_context_menu_requested)
             except Exception:
-                pass
+                _logger.warning("Failed wiring custom context menu for spellcheck", exc_info=True)
 
     def eventFilter(self, obj: Any, event: Any) -> bool:
         if obj is self.widget and self._overlay is not None and event is not None:
@@ -315,7 +343,7 @@ class SpellCheckController(QObject):
                     self._overlay.setGeometry(self.widget.rect())
                     self._overlay.update()
             except Exception:
-                pass
+                _logger.debug("Spellcheck overlay eventFilter error", exc_info=True)
         return False
 
     def _on_line_edit_changed(self, *_args: Any) -> None:
@@ -365,7 +393,7 @@ class SpellCheckController(QObject):
                 self.highlighter.refresh_format()
                 self.highlighter.rehighlight()
             except Exception:
-                pass
+                _logger.debug("Failed rehighlighting QTextEdit spellcheck", exc_info=True)
 
     def apply_suggestion(self, issue: SpellIssue, replacement: str, block_offset: int = 0) -> bool:
         """Replace the misspelled `issue` span with `replacement` in the attached widget."""
@@ -392,13 +420,13 @@ class SpellCheckController(QObject):
                     try:
                         w.setCursorPosition(abs_start + len(replacement))
                     except Exception:
-                        pass
+                        _logger.debug("Failed updating cursor position after suggestion apply", exc_info=True)
                 # Emit textEdited so listeners like _on_title_edited stay synchronized
                 if hasattr(w, "textEdited") and hasattr(w.textEdited, "emit"):
                     try:
                         w.textEdited.emit(new_text)
                     except Exception:
-                        pass
+                        _logger.debug("Failed emitting textEdited after suggestion apply", exc_info=True)
             self._recompute_line_edit_issues()
             if self._overlay is not None:
                 self._overlay.update()
@@ -499,7 +527,11 @@ class SpellCheckController(QObject):
             menu.insertSeparator(first_action)
 
         global_pos = w.mapToGlobal(pos) if hasattr(w, "mapToGlobal") else pos
-        menu.exec(global_pos)
+        try:
+            menu.exec(global_pos)
+        finally:
+            if hasattr(menu, "deleteLater"):
+                menu.deleteLater()
 
     def ignore_word(self, word: str) -> None:
         """Ignore `word` for the remainder of the session and refresh all editors."""
@@ -546,7 +578,7 @@ def attach_spellcheck(
         if target is not widget:
             widget._spellcheck_controller = controller
     except Exception:
-        pass
+        _logger.debug("Could not cache _spellcheck_controller attribute on widget", exc_info=True)
     return controller
 
 
