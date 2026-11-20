@@ -1,13 +1,13 @@
 # Repository Symbol Index & API Map
 
-> Generated: 2026-11-20 12:27:33 | Total Files: 168
+> Generated: 2026-11-20 17:59:56 | Total Files: 170
 > Use `python scripts/generate_symbol_index.py --outline <file>` for exact line numbers.
 
 ## Modules Overview
 
 | Module | Lines | Summary | Primary Classes / Functions |
 | :--- | :---: | :--- | :--- |
-| `RadioTVSegmenter.py` | 684 | Radio & TV Segmenter — v3.10.2-beta | `MainWindow`, `main()` |
+| `RadioTVSegmenter.py` | 684 | Radio & TV Segmenter — v3.10.3-beta | `MainWindow`, `main()` |
 | `audio_normalization.py` | 541 | Radio & TV Story Segmenter — Audio Loudness Probing & Nor... | `LoudnessReport`, `AudioLoudnessProbeWorker`, `parse_ebur128_summary()`, `probe_media_duration_seconds()` *(+3 more)* |
 | `background_workers.py` | 1051 | Radio & TV Story Segmenter — Background Worker Threads & ... | `StoryAutoDetectWorker`, `WaveformWorker`, `VideoThumbnailWorker`, `get_waveform_peak_cache_path()` *(+6 more)* |
 | `backup_manager.py` | 622 | Unified State Serialization, Local, and Google Drive Clou... | `compute_data_checksum()`, `serialize_preferences()`, `serialize_keyboard_shortcuts()`, `serialize_glossary()` *(+7 more)* |
@@ -17,7 +17,7 @@
 | `benchmark_engine.py` | 903 | benchmark_engine.py - Core High-Precision Performance Ben... | `BenchmarkEngine` |
 | `benchmark_models.py` | 457 | benchmark_models.py - Benchmark Data Models, Audio Genera... | `BenchmarkMetric`, `ProcessingEstimates`, `get_app_data_dir()`, `get_candidate_sample_audio_paths()` *(+9 more)* |
 | `bootstrap.py` | 385 | Install-safe startup environment configuration for Radio ... | `NullWriter`, `init_null_streams_and_hf_env()`, `patch_av_open()`, `app_data_dir()` *(+7 more)* |
-| `build_installer.py` | 1094 | Build the installable Radio & TV Segmenter application wi... | `exe_name()`, `find_tool()`, `check_cpu_only_torch()`, `torch_windows_binary_flags()` *(+8 more)* |
+| `build_installer.py` | 1099 | Build the installable Radio & TV Segmenter application wi... | `exe_name()`, `find_tool()`, `check_cpu_only_torch()`, `torch_windows_binary_flags()` *(+8 more)* |
 | `bump_version.py` | 513 | bump_version.py — Automated Version Synchronization Engine | `normalize_version()`, `get_current_version()`, `compute_bump()`, `detect_modified_plugins()` *(+3 more)* |
 | `cache_manager.py` | 685 | Radio & TV Segmenter — Cache management, disk usage scann... | `ClearCacheDialog`, `register_active_thumbnail_dir()`, `unregister_active_thumbnail_dir()`, `get_active_thumbnail_dirs()` *(+3 more)* |
 | `comment_widgets.py` | 350 | comment_widgets.py - Range-Anchored Comments Panel & Comm... | `CommentEditorDialog`, `CommentCardWidget`, `CommentsPanel` |
@@ -31,7 +31,7 @@
 | `diagnostic_helpers.py` | 151 | Helper fixtures, module resolvers, and DiagnosticItem for... | `DiagnosticItem`, `generate_synthetic_wav()` |
 | `diagnostic_loudness_tests.py` | 391 | Radio & TV Story Segmenter — Diagnostic Loudness Normaliz... | `DiagnosticLoudnessTestsMixin` |
 | `diagnostic_selector.py` | 191 | Smart Diagnostic Test Selector for Radio & TV Story Segme... | `get_modified_files()`, `has_git_changes()`, `detect_changed_tokens()`, `select_diagnostic_items()` |
-| `diagnostic_speaker_cleanup_tests.py` | 342 | Diagnostic tests for Phase 2 features: minimum story leng... | `DiagnosticSpeakerCleanupTestsMixin` |
+| `diagnostic_speaker_cleanup_tests.py` | 510 | Diagnostic tests for Phase 2 features: minimum story leng... | `DiagnosticSpeakerCleanupTestsMixin` |
 | `dialogs.py` | 433 | Radio & TV Story Segmenter — Audio Loudness Normalization... | `AudioLoudnessNormalizationDialog` |
 | `diarization_processing.py` | 772 | Speaker diarization process management for Radio & TV Sto... | `DiarizationProcessingMixin` |
 | `embedded_guides.py` | 735 | Radio & TV Story Segmenter — Built-In Embedded User Guide... | `get_embedded_guide()`, `get_all_embedded_guide_ids()` |
@@ -48,11 +48,11 @@
 | `export_documents.py` | 793 | Radio & TV Story Segmenter — Document, Transcript & Timel... | `ExportDocumentsMixin` |
 | `export_media_clipper.py` | 337 | Radio & TV Story Segmenter — Media Clipper & Audio Track ... | `ExportMediaClipperMixin` |
 | `export_story_pipeline.py` | 964 | Radio & TV Story Segmenter — Story & Full Episode Export ... | `ExportStoryPipelineMixin` |
-| `glossary_dialog.py` | 484 | Custom Vocabulary & Glossary Dialog. | `GlossaryDialog` |
+| `glossary_dialog.py` | 490 | Custom Vocabulary & Glossary Dialog. | `GlossaryDialog` |
 | `gpu_acceleration.py` | 276 | Radio & TV Segmenter v1.1.1 — optional GPU acceleration r... | `GpuAccelerationInstallWorker`, `GpuAccelerationMixin` |
 | `id3_editor.py` | 704 | ID3 Tag Editor module for Radio & TV Segmenter. | `ID3TagEditorDialog`, `read_id3_tags()`, `write_id3_tags()` |
 | `installer/pyinstaller/torch_dll_hook.py` | 70 | PyInstaller runtime hook for Windows ML/native DLL resolu... | - |
-| `media_batch.py` | 1707 | Radio & TV Segmenter v1.1.1 — media batch responsibilities. | `MediaBatchMixin` |
+| `media_batch.py` | 1719 | Radio & TV Segmenter v1.1.1 — media batch responsibilities. | `MediaBatchMixin` |
 | `model_install_workers.py` | 189 | Radio & TV Segmenter — Model Download and Installation Ba... | `WhisperModelInstallWorker`, `DiarizationModelInstallWorker`, `get_diarization_model_dir()`, `is_diarization_model_available()` |
 | `model_management.py` | 989 | Radio & TV Segmenter v1.1.1 — model management responsibi... | `_DummyTranslationWorker`, `ModelManagementMixin` |
 | `playback_controller.py` | 630 | Radio & TV Story Segmenter — Media Player Transport & Pla... | `PlaybackControllerMixin` |
@@ -76,11 +76,11 @@
 | `plugins/wordpress/client.py` | 2145 | WordPress Plugin — Client, Credential Storage, and Upload... | `WordPressClient`, `WordPressSettingsDialog`, `WordPressPreferencesPage`, `format_rich_text_to_html()` *(+6 more)* |
 | `plugins/wordpress/episode_updater.py` | 999 | WordPress Existing Episode Lookup, Backfill Mode, Date Sc... | `LoadWordPressEpisodeDialog`, `extract_slug_or_id_from_url()`, `clean_html_to_plain_excerpt()`, `build_story_slug()` *(+9 more)* |
 | `plugins/wordpress/export_destination.py` | 776 | WordPress Export Destination for UnifiedExportDialog. | `WordPressExportDestination`, `WordPressPostMetadataDialog` |
-| `plugins/wordpress/plugin.py` | 956 | WordPress Publisher Plugin for Radio & TV Segmenter. | `WordPressPublishDialog`, `WordPressPublishWorker`, `WordPressStoryMetadataWidget`, `Plugin` *(+1 more)* |
-| `plugins/wordpress/wordpress_dialog.py` | 886 | WordPress Export Tab Widget and Post Metadata Dialog. | `WordPressExportTabWidget`, `WordPressPostMetadataDialog`, `generate_wp_excerpt()`, `capture_video_frame()` |
+| `plugins/wordpress/plugin.py` | 983 | WordPress Publisher Plugin for Radio & TV Segmenter. | `WordPressPublishDialog`, `WordPressPublishWorker`, `WordPressStoryMetadataWidget`, `Plugin` *(+1 more)* |
+| `plugins/wordpress/wordpress_dialog.py` | 909 | WordPress Export Tab Widget and Post Metadata Dialog. | `WordPressExportTabWidget`, `WordPressPostMetadataDialog`, `generate_wp_excerpt()`, `capture_video_frame()` |
 | `plugins/wordpress/wp_post_builder.py` | 377 | Post item builder, transcript slicing, and video frame ex... | `capture_video_frame()`, `get_primary_text_slice()`, `build_wp_post_items()`, `sync_featured_image_meta()` |
 | `plugins/wordpress/wp_tab_widget.py` | 997 | WordPress export tab configuration widget and preview con... | `WordPressExportTabWidget` |
-| `plugins/wordpress/wp_ui_builder.py` | 787 | UI layout construction and widget setup for WordPressExpo... | `setup_wp_tab_ui()` |
+| `plugins/wordpress/wp_ui_builder.py` | 807 | UI layout construction and widget setup for WordPressExpo... | `setup_wp_tab_ui()` |
 | `plugins/wordpress/youtube_embed.py` | 614 | YouTube Video Embed helpers, Gutenberg iframe generator, ... | `extract_youtube_video_id()`, `build_youtube_embed_block()`, `setup_wp_youtube_ui()`, `update_youtube_status_label()` *(+3 more)* |
 | `plugins/youtube/__init__.py` | 9 | YouTube Video Publisher Plugin for Radio & TV Segmenter. | - |
 | `plugins/youtube/export_destination.py` | 613 | YouTube Export Destination for UnifiedExportDialog with Z... | `YouTubeExportTabWidget`, `YouTubeExportDestination`, `capture_video_frame()` |
@@ -101,7 +101,7 @@
 | `project_serialization.py` | 126 | Radio & TV Segmenter — Project file serialization and saf... | `sanitize_project_data_for_storage()`, `serialize_rtvs_project()`, `deserialize_rtvs_project()`, `read_rtvs_project_file()` *(+1 more)* |
 | `project_state_mixin.py` | 364 | Radio & TV Story Segmenter — Project State, Undo/Redo & P... | `ProjectStateMixin` |
 | `prs_shared.py` | 1494 |  | `ProjectMetadataDict`, `ResizableTextEdit`, `CollapsibleSection`, `ExportDialog` *(+8 more)* |
-| `qt_compat.py` | 917 | Radio & TV Segmenter — Headless Qt / PySide6 Compatibilit... | `MockClassMeta`, `DynamicMock`, `MockModule`, `_DummyQtMeta` *(+22 more)* |
+| `qt_compat.py` | 962 | Radio & TV Segmenter — Headless Qt / PySide6 Compatibilit... | `MockClassMeta`, `DynamicMock`, `MockModule`, `_DummyQtMeta` *(+23 more)* |
 | `radio_tv_story_segmenter_worker.py` | 226 | Radio & TV Story Segmenter — AI Background Subprocess Wor... | `main()` |
 | `reaper_bridge.py` | 962 | reaper_bridge.py — REAPER DAW Companion Bridge & Inter-Pr... | `get_reaper_ipc_paths()`, `reaper_color_from_hex()`, `get_reaper_clip_notes_and_markers()`, `build_reaper_cue_payload()` *(+10 more)* |
 | `roadmap_manager.py` | 259 | roadmap_manager.py — Automated Roadmap & N-1 Sliding-Wind... | `RoadmapManager`, `get_current_app_version()`, `main()` |
@@ -121,17 +121,19 @@
 | `shortcuts_manager.py` | 30 | Shortcuts Manager for Radio & TV Story Segmenter (Compati... | - |
 | `snapshot_manager.py` | 276 | Snapshot Manager for Radio & TV Story Segmenter | `load_manifest()`, `save_manifest()`, `get_current_project_version()`, `ensure_git_repo()` *(+4 more)* |
 | `speaker_dialog_refinement_mixin.py` | 555 | Radio & TV Story Segmenter — Speaker Dialog Refinement & ... | `SpeakerDialogRefinementMixin` |
-| `speaker_dialogs.py` | 891 | speaker_dialogs.py — Dialogs for speaker renaming, turn a... | `ChangeSpeakerDialog`, `SpeakerNameDelegate`, `SpeakerManagerDialog` |
-| `speaker_editing_mixin.py` | 629 | Radio & TV Story Segmenter — Speaker Label, Renaming & Se... | `SpeakerEditingMixin` |
+| `speaker_dialogs.py` | 897 | speaker_dialogs.py — Dialogs for speaker renaming, turn a... | `ChangeSpeakerDialog`, `SpeakerNameDelegate`, `SpeakerManagerDialog` |
+| `speaker_editing_mixin.py` | 635 | Radio & TV Story Segmenter — Speaker Label, Renaming & Se... | `SpeakerEditingMixin` |
 | `speaker_identity.py` | 260 | Radio & TV Segmenter | `VoiceMatch`, `cosine_similarity()`, `normalize_vector()`, `centroid()` *(+3 more)* |
 | `speaker_name_cleanup_dialog.py` | 295 | speaker_name_cleanup_dialog.py — Modal review dialog for ... | `SpeakerNameCleanupDialog` |
 | `speaker_name_matcher.py` | 583 | speaker_name_matcher.py — Headless phonetic and fuzzy cle... | `SpeakerNameCandidate`, `is_generic_speaker_label()`, `is_generic_role_label()`, `preserve_case_replace()` *(+7 more)* |
 | `speaker_palette.py` | 148 | Accessible adaptive speaker color palette for Radio & TV ... | `SpeakerColor`, `SpeakerColorAssigner`, `get_speaker_index()`, `get_speaker_color()` *(+3 more)* |
 | `speaker_profiles.py` | 630 | speaker_profiles.py — Persistent Station Voice Profile Ma... | `StationVoiceProfile`, `StationVoiceProfileStore`, `ManageVoiceProfilesDialog` |
+| `spellcheck_helper.py` | 776 | spellcheck_helper.py — Headless Tier 1 Offline Spellcheck... | `SpellIssue`, `OfflineSpellChecker`, `is_pyspellchecker_available()`, `match_case()` *(+5 more)* |
+| `spellcheck_widgets.py` | 568 | spellcheck_widgets.py — Inline Qt Spellcheck Highlighting... | `SpellCheckHighlighter`, `_LineEditSpellOverlay`, `SpellCheckController`, `add_word_to_glossary()` *(+2 more)* |
 | `story_crud_mixin.py` | 931 | Radio & TV Story Segmenter — Story CRUD & Timeline Select... | `StoryCrudMixin` |
 | `story_detection_processing.py` | 213 | Story boundary detection processing mixin for Radio & TV ... | `StoryDetectionProcessingMixin` |
 | `story_fades_dialog.py` | 215 | story_fades_dialog.py — Dialog for fine-grained audio fad... | `StoryFadesDialog` |
-| `story_metadata_dialog.py` | 307 | Radio & TV Story Segmenter — Universal Story & Post Metad... | `StoryMetadataDialog`, `generate_story_excerpt()` |
+| `story_metadata_dialog.py` | 313 | Radio & TV Story Segmenter — Universal Story & Post Metad... | `StoryMetadataDialog`, `generate_story_excerpt()` |
 | `story_model.py` | 273 | Radio & TV Story Segmenter — Story Model, Boundaries & Un... | `Story`, `SetStoriesCommand`, `StoryBoundaryChangeCommand`, `SelectStoriesCommand` *(+3 more)* |
 | `story_widgets.py` | 576 | Radio & TV Story Segmenter — Story Sidebar Widgets, Item ... | `FadeCurveVisualSelector`, `StoryFadesChangeCommand`, `SetStoriesCommand`, `StoryBoundaryChangeCommand` *(+3 more)* |
 | `sync.py` | 161 | 2-Way Synchronization Engine for Radio & TV Story Segmenter. | `get_current_version()`, `run_cmd()`, `cmd_status()`, `cmd_pull()` *(+2 more)* |
@@ -153,13 +155,13 @@
 | `transcript_navigation_mixin.py` | 300 | transcript_navigation_mixin.py - Timestamp discovery, car... | `TranscriptNavigationMixin` |
 | `transcript_playback_highlight_mixin.py` | 277 | Radio & TV Story Segmenter — Interactive Transcript Playb... | `TranscriptPlaybackHighlightMixin` |
 | `transcript_selection_mixin.py` | 473 | transcript_selection_mixin.py - Multi-selection, timeline... | `TranscriptSelectionMixin` |
-| `transcript_story.py` | 852 | Radio & TV Segmenter v3.10.2-beta — transcript story resp... | `TranscriptStoryMixin` |
+| `transcript_story.py` | 852 | Radio & TV Segmenter v3.10.3-beta — transcript story resp... | `TranscriptStoryMixin` |
 | `transcript_styles.py` | 104 | transcript_styles.py - Transcript view stylesheets and da... | `transcript_text_view_stylesheet()`, `clean_dark_mode_clipboard_html()` |
 | `transcript_timeline_sync_mixin.py` | 655 | Radio & TV Story Segmenter — Transcript Timeline & Playba... | `TranscriptTimelineSyncMixin` |
 | `transcription_processing.py` | 579 | Transcription background process management for Radio & T... | `TranscriptionProcessingMixin` |
 | `translation.py` | 922 | Radio & TV Segmenter — Local Translation Mixin. | `TranslationEnvSetupWorker`, `TranslationMixin` |
 | `ui_dialog_launchers.py` | 370 | Dialog launchers and external modal helpers for Radio & T... | `UiDialogLaunchersMixin` |
-| `ui_layout.py` | 1097 | Radio & TV Segmenter — UI Layout & Menu Construction Mixin. | `UiLayoutMixin` |
+| `ui_layout.py` | 1103 | Radio & TV Segmenter — UI Layout & Menu Construction Mixin. | `UiLayoutMixin` |
 | `ui_menus.py` | 883 | Main application menu bar and action assembly for Radio &... | `PersistentMenu`, `UiMenusMixin` |
 | `updater.py` | 1549 | Update manager and GitHub release installer for Radio & T... | `CheckUpdateWorker`, `DownloadUpdateWorker`, `CheckUpdateDialog`, `UpdaterMixin` *(+9 more)* |
 | `user_guide_dialog.py` | 846 | Radio & TV Story Segmenter — In-App User Guide & Document... | `ResponsiveTextBrowser`, `UserGuideDialog` |
@@ -179,7 +181,7 @@
 ## Detailed Symbol Catalog
 
 ### `RadioTVSegmenter.py` (684 lines)
-*Radio & TV Segmenter — v3.10.2-beta*
+*Radio & TV Segmenter — v3.10.3-beta*
 - **class `MainWindow(ModelManagementMixin, MediaBatchMixin, PlaybackPreferencesMixin, UiLayoutMixin, ProcessingMixin, TranslationMixin, TranscriptStoryMixin, ProjectExportMixin, GpuAccelerationMixin, QMainWindow)`** (lines 160–581):
   *Main application window for Radio & TV Segmenter.*
   - `__init__(self)` [L178-L355]
@@ -349,7 +351,7 @@
   - `ensure_keyring_runtime()` [L351-L377] — *Ensure keyring (and pywin32-ctypes on Windows) is installed for secure credential storage.*
   - `check_and_install_core()` [L379-L382] — *Backward-compatible startup dependency check.*
 
-### `build_installer.py` (1094 lines)
+### `build_installer.py` (1099 lines)
 *Build the installable Radio & TV Segmenter application with PyInstaller.*
 - **Functions**:
   - `exe_name(base)` [L105-L106]
@@ -363,7 +365,7 @@
   - `compile_windows_installer(project_version)` [L511-L546] — *Compile the Windows Inno Setup installer executable if ISCC is installed.*
   - `parse_build_args()` [L549-L624]
   - `package_plugins(app_root, include_wp, include_yt, include_tr)` [L627-L695] — *Package plugins into standalone .zip release artifacts in dist/plugins/*
-  - `main()` [L698-L1090]
+  - `main()` [L698-L1095]
 
 ### `bump_version.py` (513 lines)
 *bump_version.py — Automated Version Synchronization Engine*
@@ -582,14 +584,15 @@
   - `detect_changed_tokens(root_dir)` [L64-L136] — *Return a set of lowercase module stems and plugin names from the most recently edited files.*
   - `select_diagnostic_items(engine, items, filter_expr, changed_only)` [L139-L191] — *Filter diagnostic items by explicit `--filter` keywords and/or `--changed` git diff analysis.*
 
-### `diagnostic_speaker_cleanup_tests.py` (342 lines)
+### `diagnostic_speaker_cleanup_tests.py` (510 lines)
 *Diagnostic tests for Phase 2 features: minimum story length, guest-name cleanup, and Station Voices.*
-- **class `DiagnosticSpeakerCleanupTestsMixin`** (lines 13–342):
+- **class `DiagnosticSpeakerCleanupTestsMixin`** (lines 13–510):
   *Mixin for Phase 2 regression diagnostics (story length, name cleanup, Station Voices).*
   - `_ensure_qt_app(self)` [L16-L21]
-  - `_test_minimum_story_length_filtering_and_preferences(self, item)` [L23-L115]
-  - `_test_guest_name_proper_noun_cleanup_and_preserve_case(self, item)` [L117-L249]
-  - `_test_station_voice_checkbox_and_threshold_normalization(self, item)` [L251-L342]
+  - `_test_minimum_story_length_filtering_and_preferences(self, item)` [L23-L124]
+  - `_test_guest_name_proper_noun_cleanup_and_preserve_case(self, item)` [L126-L258]
+  - `_test_station_voice_checkbox_and_threshold_normalization(self, item)` [L260-L351]
+  - `_test_offline_spellcheck_and_metadata_terminology_alignment(self, item)` [L353-L510]
 
 ### `dialogs.py` (433 lines)
 *Radio & TV Story Segmenter — Audio Loudness Normalization & Telemetry Dialog.*
@@ -821,9 +824,9 @@
   - `perform_stories_export(self, target_stories, custom_formats, custom_base, custom_options, directory, show_completion, is_custom_location)` [L936-L958]
   - `export_youtube_manual_package(self, export_data)` [L960-L964] — *Render and package zero-auth manual YouTube export (MP4, thumbnail, SRT, metadata .txt).*
 
-### `glossary_dialog.py` (484 lines)
+### `glossary_dialog.py` (490 lines)
 *Custom Vocabulary & Glossary Dialog.*
-- **class `GlossaryDialog(QDialog)`** (lines 46–484):
+- **class `GlossaryDialog(QDialog)`** (lines 46–490):
   *Dialog for editing persistent terminology, proper nouns, and alternate spellings.*
   - `__init__(self, parent)` [L49-L54]
   - `_init_ui(self)` [L56-L186]
@@ -836,9 +839,9 @@
   - `_show_context_menu(self, pos)` [L261-L320]
   - `get_current_table_entries(self)` [L322-L354] — *Collect all table rows including hidden ones without data loss.*
   - `_apply_to_current_transcript(self)` [L356-L375]
-  - `save_glossary(self)` [L377-L391]
-  - `export_glossary_file(self)` [L393-L429]
-  - `import_glossary_file(self)` [L431-L484]
+  - `save_glossary(self)` [L377-L397]
+  - `export_glossary_file(self)` [L399-L435]
+  - `import_glossary_file(self)` [L437-L490]
 
 ### `gpu_acceleration.py` (276 lines)
 *Radio & TV Segmenter v1.1.1 — optional GPU acceleration responsibilities.*
@@ -883,9 +886,9 @@
 ### `installer/pyinstaller/torch_dll_hook.py` (70 lines)
 *PyInstaller runtime hook for Windows ML/native DLL resolution.*
 
-### `media_batch.py` (1707 lines)
+### `media_batch.py` (1719 lines)
 *Radio & TV Segmenter v1.1.1 — media batch responsibilities.*
-- **class `MediaBatchMixin`** (lines 21–1707):
+- **class `MediaBatchMixin`** (lines 21–1719):
   - `probe_media_duration(self, path)` [L22-L36] — *Probe duration locally so video timelines can be populated immediately.*
   - `_track_worker_thread(self, thread)` [L38-L50] — *Keep a strong reference to active worker threads so Python GC never destroys them while executing.*
   - `stop_waveform_worker(self, timeout_ms)` [L52-L83] — *Stop the current waveform worker completely before replacing it or closing.*
@@ -921,27 +924,27 @@
   - `open_document_path(self, path)` [L959-L994]
   - `open_clear_cache_dialog(self)` [L996-L1009]
   - `open_glossary_dialog(self)` [L1011-L1015] — *Edit persistent terminology used by every ASR and translation backend.*
-  - `_save_glossary(self)` [L1017-L1018]
-  - `apply_glossary_to_current_transcript(self, entries)` [L1020-L1052] — *Apply glossary rules and contextual name resolution to the active transcript with Undo support.*
-  - `add_to_glossary(self, text)` [L1054-L1068]
-  - `prompt_add_alternate_spelling(self, alternate_text)` [L1070-L1113] — *Prompt user for the preferred glossary spelling that `alternate_text` should map to.*
-  - `apply_glossary_to_whisper_context(self)` [L1115-L1126]
-  - `add_custom_speaker_to_glossary(self, name)` [L1128-L1130]
-  - `set_language(self, language, persist)` [L1132-L1153]
-  - `_apply_localization(self)` [L1155-L1192]
-  - `update_story_segment_terminology(self)` [L1194-L1281] — *Update all user-facing labels and tooltips using active vocabulary settings.*
-  - `open_document(self)` [L1283-L1337]
-  - `export_text_file(self)` [L1339-L1347]
-  - `open_media(self)` [L1349-L1358]
-  - `prepare_for_new_media(self)` [L1360-L1393] — *Checks for unsaved changes before loading new media.*
-  - `_batch_media_error(self, message)` [L1395-L1417]
-  - `_get_batch_project_target_path(self, base_name)` [L1419-L1446] — *Determines consistent target .rtvs project file path during batch processing.*
-  - `_batch_save_project_file(self)` [L1448-L1463] — *Saves project .rtvs to dedicated directory structure during batch processing.*
-  - `_batch_export_current(self)` [L1465-L1549] — *Handles automatic export or project saving during batch processing.*
-  - `load_media_file(self, filename, source, restore_adjacent_project)` [L1551-L1666]
-  - `update_active_media_source(self)` [L1668-L1701] — *Update media player source and refresh waveform when normalization state changes.*
-  - `open_audio(self)` [L1703-L1704]
-  - `handle_media_drop(self, filename)` [L1706-L1707]
+  - `_save_glossary(self)` [L1017-L1024]
+  - `apply_glossary_to_current_transcript(self, entries)` [L1026-L1058] — *Apply glossary rules and contextual name resolution to the active transcript with Undo support.*
+  - `add_to_glossary(self, text)` [L1060-L1080]
+  - `prompt_add_alternate_spelling(self, alternate_text)` [L1082-L1125] — *Prompt user for the preferred glossary spelling that `alternate_text` should map to.*
+  - `apply_glossary_to_whisper_context(self)` [L1127-L1138]
+  - `add_custom_speaker_to_glossary(self, name)` [L1140-L1142]
+  - `set_language(self, language, persist)` [L1144-L1165]
+  - `_apply_localization(self)` [L1167-L1204]
+  - `update_story_segment_terminology(self)` [L1206-L1293] — *Update all user-facing labels and tooltips using active vocabulary settings.*
+  - `open_document(self)` [L1295-L1349]
+  - `export_text_file(self)` [L1351-L1359]
+  - `open_media(self)` [L1361-L1370]
+  - `prepare_for_new_media(self)` [L1372-L1405] — *Checks for unsaved changes before loading new media.*
+  - `_batch_media_error(self, message)` [L1407-L1429]
+  - `_get_batch_project_target_path(self, base_name)` [L1431-L1458] — *Determines consistent target .rtvs project file path during batch processing.*
+  - `_batch_save_project_file(self)` [L1460-L1475] — *Saves project .rtvs to dedicated directory structure during batch processing.*
+  - `_batch_export_current(self)` [L1477-L1561] — *Handles automatic export or project saving during batch processing.*
+  - `load_media_file(self, filename, source, restore_adjacent_project)` [L1563-L1678]
+  - `update_active_media_source(self)` [L1680-L1713] — *Update media player source and refresh waveform when normalization state changes.*
+  - `open_audio(self)` [L1715-L1716]
+  - `handle_media_drop(self, filename)` [L1718-L1719]
 
 ### `model_install_workers.py` (189 lines)
 *Radio & TV Segmenter — Model Download and Installation Background Workers.*
@@ -1412,104 +1415,104 @@
   - `_on_save_and_close(self)` [L730-L731]
   - `done(self, r)` [L733-L738]
 
-### `plugins/wordpress/plugin.py` (956 lines)
+### `plugins/wordpress/plugin.py` (983 lines)
 *WordPress Publisher Plugin for Radio & TV Segmenter.*
-- **class `WordPressPublishDialog(QDialog)`** (lines 91–542):
+- **class `WordPressPublishDialog(QDialog)`** (lines 91–569):
   *Publish a story or project to WordPress with featured image selection.*
   - `__init__(self, plugin, parent, story)` [L94-L109]
-  - `setup_ui(self)` [L111-L281]
-  - `load_custom_text_settings(self)` [L283-L296] — *Load persistent custom text defaults from application settings.*
-  - `save_custom_text_defaults(self)` [L298-L304] — *Save active custom text, placement, and exclusion settings as persistent defaults.*
-  - `load_metadata(self)` [L306-L347]
-  - `do_capture_frame(self)` [L349-L359]
-  - `on_image_mode_changed(self)` [L361-L378]
-  - `on_browse_image(self)` [L380-L391]
-  - `on_configure_credentials(self)` [L393-L399]
-  - `on_publish(self)` [L401-L499]
-  - `on_publish_finished(self, success, msg, post_data)` [L501-L535]
-  - `closeEvent(self, event)` [L537-L542]
-- **class `WordPressPublishWorker(QThread)`** (lines 545–605):
-  - `__init__(self, client, title, content, excerpt, status, image_path, image_caption, image_alt_text)` [L548-L567]
-  - `run(self)` [L569-L605]
-- **class `WordPressStoryMetadataWidget(QGroupBox)`** (lines 608–885):
+  - `setup_ui(self)` [L111-L308]
+  - `load_custom_text_settings(self)` [L310-L323] — *Load persistent custom text defaults from application settings.*
+  - `save_custom_text_defaults(self)` [L325-L331] — *Save active custom text, placement, and exclusion settings as persistent defaults.*
+  - `load_metadata(self)` [L333-L374]
+  - `do_capture_frame(self)` [L376-L386]
+  - `on_image_mode_changed(self)` [L388-L405]
+  - `on_browse_image(self)` [L407-L418]
+  - `on_configure_credentials(self)` [L420-L426]
+  - `on_publish(self)` [L428-L526]
+  - `on_publish_finished(self, success, msg, post_data)` [L528-L562]
+  - `closeEvent(self, event)` [L564-L569]
+- **class `WordPressPublishWorker(QThread)`** (lines 572–632):
+  - `__init__(self, client, title, content, excerpt, status, image_path, image_caption, image_alt_text)` [L575-L594]
+  - `run(self)` [L596-L632]
+- **class `WordPressStoryMetadataWidget(QGroupBox)`** (lines 635–912):
   *Clean, compact WordPress metadata launcher & inspector embedded in the Stories sidebar.*
-  - `__init__(self, plugin, parent)` [L611-L623]
-  - `setup_ui(self)` [L625-L713]
-  - `refresh_targets_dropdown(self)` [L715-L738] — *Populate target_combo with Full Episode and all current project stories.*
-  - `_on_target_changed(self, index)` [L740-L758]
-  - `set_story(self, story)` [L760-L772] — *Called when user selects a story in the story list or timeline.*
-  - `_get_active_wp_metadata(self)` [L774-L784]
-  - `_load_current_target_metadata(self)` [L786-L840]
-  - `_open_post_settings_dialog(self)` [L842-L848]
-  - `_on_refresh_taxonomy(self)` [L850-L885]
-- **class `Plugin(BasePlugin)`** (lines 888–955):
+  - `__init__(self, plugin, parent)` [L638-L650]
+  - `setup_ui(self)` [L652-L740]
+  - `refresh_targets_dropdown(self)` [L742-L765] — *Populate target_combo with Full Episode and all current project stories.*
+  - `_on_target_changed(self, index)` [L767-L785]
+  - `set_story(self, story)` [L787-L799] — *Called when user selects a story in the story list or timeline.*
+  - `_get_active_wp_metadata(self)` [L801-L811]
+  - `_load_current_target_metadata(self)` [L813-L867]
+  - `_open_post_settings_dialog(self)` [L869-L875]
+  - `_on_refresh_taxonomy(self)` [L877-L912]
+- **class `Plugin(BasePlugin)`** (lines 915–982):
   *WordPress Plugin implementation hooking into RTVS.*
-  - `__init__(self, manifest, app)` [L891-L893]
-  - `on_load(self)` [L895-L896]
-  - `get_export_destinations(self)` [L898-L900]
-  - `get_file_open_actions(self)` [L902-L905]
-  - `get_export_actions(self)` [L907-L916]
-  - `open_load_existing_episode_dialog(self)` [L918-L920]
-  - `get_story_actions(self, story)` [L922-L926]
-  - `create_story_metadata_widget(self, parent)` [L928-L930]
-  - `on_story_selected(self, story)` [L932-L933]
-  - `get_preferences_widget(self, parent)` [L935-L937]
-  - `open_publish_dialog(self, parent, story)` [L939-L941]
-  - `open_post_metadata_dialog(self, parent, story)` [L943-L955]
+  - `__init__(self, manifest, app)` [L918-L920]
+  - `on_load(self)` [L922-L923]
+  - `get_export_destinations(self)` [L925-L927]
+  - `get_file_open_actions(self)` [L929-L932]
+  - `get_export_actions(self)` [L934-L943]
+  - `open_load_existing_episode_dialog(self)` [L945-L947]
+  - `get_story_actions(self, story)` [L949-L953]
+  - `create_story_metadata_widget(self, parent)` [L955-L957]
+  - `on_story_selected(self, story)` [L959-L960]
+  - `get_preferences_widget(self, parent)` [L962-L964]
+  - `open_publish_dialog(self, parent, story)` [L966-L968]
+  - `open_post_metadata_dialog(self, parent, story)` [L970-L982]
 - **Functions**:
   - `capture_video_frame(video_path, timestamp, output_path, timeout)` [L66-L88] — *Extract a high quality single frame from a video using fast seeking FFmpeg.*
 
-### `plugins/wordpress/wordpress_dialog.py` (886 lines)
+### `plugins/wordpress/wordpress_dialog.py` (909 lines)
 *WordPress Export Tab Widget and Post Metadata Dialog.*
-- **class `WordPressExportTabWidget(QWidget)`** (lines 79–843):
+- **class `WordPressExportTabWidget(QWidget)`** (lines 79–855):
   *Configuration and preview panel for WordPress Draft Posts.*
   - `__init__(self, parent, main_window, metadata_editor_mode)` [L82-L101]
-  - `_setup_ui(self)` [L103-L318]
-  - `update_wp_pres_visibility(self)` [L320-L321]
-  - `_update_wp_conn_status(self)` [L323-L324]
-  - `_open_wp_settings(self)` [L326-L329]
-  - `_filter_authors_list(self, text)` [L331-L332]
-  - `_filter_categories_list(self, text)` [L334-L335]
-  - `_on_title_edited(self, text)` [L337-L342]
-  - `_on_excerpt_edited(self)` [L344-L348]
-  - `_auto_generate_current_excerpt(self)` [L350-L359]
-  - `_autofill_all_excerpts(self)` [L361-L368]
-  - `_on_author_item_changed(self, item)` [L370-L376]
-  - `_on_category_item_changed(self, item)` [L378-L383]
-  - `_clear_current_authors(self)` [L385-L391]
-  - `_clear_current_categories(self)` [L393-L399]
-  - `_get_selected_story_indices(self)` [L401-L406]
-  - `_apply_authors_to_selected_stories(self)` [L408-L416]
-  - `_apply_categories_to_selected_stories(self)` [L418-L425]
-  - `_apply_thumbnails_to_selected_stories(self)` [L427-L448]
-  - `_apply_authors_to_all_posts(self)` [L450-L455]
-  - `_apply_categories_to_all_posts(self)` [L457-L461]
-  - `_apply_thumbnails_to_all_posts(self)` [L463-L482]
-  - `_sync_post_to_project(self, idx)` [L484-L485]
-  - `save_all_posts_to_project(self)` [L487-L488]
-  - `_update_post_list_item_label(self, idx)` [L490-L494]
-  - `_on_wp_post_selection_changed(self, row)` [L496-L500]
-  - `_get_editor_checked_authors(self)` [L502-L514]
-  - `_set_editor_checked_authors(self, author_ids, author_term_ids)` [L516-L526]
-  - `_get_editor_checked_categories(self)` [L528-L536]
-  - `_set_editor_checked_categories(self, cat_ids)` [L538-L547]
-  - `_get_wp_post_bounds(self, post_index)` [L549-L554]
-  - `_sync_wp_slider_to_pos(self, pos)` [L556-L564]
-  - `_on_wp_slider_value_changed(self, val)` [L566-L575]
-  - `_on_wp_scrub_timer_timeout(self)` [L577-L579]
-  - `_on_wp_step(self, delta_secs)` [L581-L590]
-  - `_on_wp_sync_playhead(self)` [L592-L601]
-  - `_load_post_editor_state(self, index)` [L603-L634]
-  - `_on_wp_thumb_mode_changed(self)` [L636-L651]
-  - `_capture_wp_frame(self, pos)` [L653-L671]
-  - `_on_wp_browse_thumb(self)` [L673-L686]
-  - `rebuild_post_items(self, scope)` [L688-L803]
-  - `_populate_wp_export_metadata(self, force_refresh)` [L805-L839]
-  - `_refresh_wp_metadata(self)` [L841-L843]
-- **class `WordPressPostMetadataDialog(QDialog)`** (lines 846–886):
+  - `_setup_ui(self)` [L103-L330]
+  - `update_wp_pres_visibility(self)` [L332-L333]
+  - `_update_wp_conn_status(self)` [L335-L336]
+  - `_open_wp_settings(self)` [L338-L341]
+  - `_filter_authors_list(self, text)` [L343-L344]
+  - `_filter_categories_list(self, text)` [L346-L347]
+  - `_on_title_edited(self, text)` [L349-L354]
+  - `_on_excerpt_edited(self)` [L356-L360]
+  - `_auto_generate_current_excerpt(self)` [L362-L371]
+  - `_autofill_all_excerpts(self)` [L373-L380]
+  - `_on_author_item_changed(self, item)` [L382-L388]
+  - `_on_category_item_changed(self, item)` [L390-L395]
+  - `_clear_current_authors(self)` [L397-L403]
+  - `_clear_current_categories(self)` [L405-L411]
+  - `_get_selected_story_indices(self)` [L413-L418]
+  - `_apply_authors_to_selected_stories(self)` [L420-L428]
+  - `_apply_categories_to_selected_stories(self)` [L430-L437]
+  - `_apply_thumbnails_to_selected_stories(self)` [L439-L460]
+  - `_apply_authors_to_all_posts(self)` [L462-L467]
+  - `_apply_categories_to_all_posts(self)` [L469-L473]
+  - `_apply_thumbnails_to_all_posts(self)` [L475-L494]
+  - `_sync_post_to_project(self, idx)` [L496-L497]
+  - `save_all_posts_to_project(self)` [L499-L500]
+  - `_update_post_list_item_label(self, idx)` [L502-L506]
+  - `_on_wp_post_selection_changed(self, row)` [L508-L512]
+  - `_get_editor_checked_authors(self)` [L514-L526]
+  - `_set_editor_checked_authors(self, author_ids, author_term_ids)` [L528-L538]
+  - `_get_editor_checked_categories(self)` [L540-L548]
+  - `_set_editor_checked_categories(self, cat_ids)` [L550-L559]
+  - `_get_wp_post_bounds(self, post_index)` [L561-L566]
+  - `_sync_wp_slider_to_pos(self, pos)` [L568-L576]
+  - `_on_wp_slider_value_changed(self, val)` [L578-L587]
+  - `_on_wp_scrub_timer_timeout(self)` [L589-L591]
+  - `_on_wp_step(self, delta_secs)` [L593-L602]
+  - `_on_wp_sync_playhead(self)` [L604-L613]
+  - `_load_post_editor_state(self, index)` [L615-L646]
+  - `_on_wp_thumb_mode_changed(self)` [L648-L663]
+  - `_capture_wp_frame(self, pos)` [L665-L683]
+  - `_on_wp_browse_thumb(self)` [L685-L698]
+  - `rebuild_post_items(self, scope)` [L700-L815]
+  - `_populate_wp_export_metadata(self, force_refresh)` [L817-L851]
+  - `_refresh_wp_metadata(self)` [L853-L855]
+- **class `WordPressPostMetadataDialog(QDialog)`** (lines 858–909):
   *Dialog for editing WordPress post metadata for an individual story.*
-  - `__init__(self, parent, main_window, target_story_index)` [L849-L883]
-  - `_on_save_and_close(self)` [L885-L886]
+  - `__init__(self, parent, main_window, target_story_index)` [L861-L906]
+  - `_on_save_and_close(self)` [L908-L909]
 - **Functions**:
   - `generate_wp_excerpt(transcript_words, start_t, end_t)` [L59-L61]
   - `capture_video_frame(video_path, timestamp, output_path)` [L64-L76]
@@ -1582,10 +1585,10 @@
   - `_refresh_castos_feeds(self)` [L961-L978]
   - `_refresh_wp_metadata(self)` [L980-L996]
 
-### `plugins/wordpress/wp_ui_builder.py` (787 lines)
+### `plugins/wordpress/wp_ui_builder.py` (807 lines)
 *UI layout construction and widget setup for WordPressExportTabWidget.*
 - **Functions**:
-  - `setup_wp_tab_ui(self)` [L36-L787] — *Construct all controls, forms, sliders, list widgets, and tabbed panels for the WordPress export tab.*
+  - `setup_wp_tab_ui(self)` [L36-L807] — *Construct all controls, forms, sliders, list widgets, and tabbed panels for the WordPress export tab.*
 
 ### `plugins/wordpress/youtube_embed.py` (614 lines)
 *YouTube Video Embed helpers, Gutenberg iframe generator, and UI setup for WordPress export.*
@@ -1925,7 +1928,7 @@
   - `read_document_text(path)` [L1317-L1383]
   - `__getattr__(name)` [L1470-L1487] — *Lazy resolver for extracted UI and worker components to eliminate circular import chains.*
 
-### `qt_compat.py` (917 lines)
+### `qt_compat.py` (962 lines)
 *Radio & TV Segmenter — Headless Qt / PySide6 Compatibility Engine.*
 - **Public Exports (`__all__`)**: MockModule, DummyQt, DummyQSettings, DummyQMessageBox, DummyQApplication, DummyQTimer, DummyQHeaderView, DummyQAbstractItemView, DummyQLineEdit, DummyQLabel, DummyQListWidgetItem, DummyQListWidget, DummyQTextEdit, DummyQComboBox, DummyQDoubleSpinBox, DummyQSpinBox, _ensure_pyside6_fallback
 - **class `MockClassMeta(type)`** (lines 17–23):
@@ -2110,28 +2113,38 @@
   - `setEnabled(self, val)` [L763-L764]
   - `isEnabled(self)` [L766-L767]
   - `setStyleSheet(self, val)` [L769-L770]
-- **class `DummyQDoubleSpinBox`** (lines 773–801):
-  - `__init__(self, *args, **kwargs)` [L774-L776]
-  - `value(self)` [L778-L779]
-  - `setValue(self, v)` [L781-L783]
-  - `setRange(self, mn, mx)` [L785-L786]
-  - `setSingleStep(self, s)` [L788-L789]
-  - `setSuffix(self, s)` [L791-L792]
-  - `setEnabled(self, val)` [L794-L795]
-  - `isEnabled(self)` [L797-L798]
-  - `setStyleSheet(self, val)` [L800-L801]
-- **class `DummyQSpinBox`** (lines 804–832):
-  - `__init__(self, *args, **kwargs)` [L805-L807]
-  - `value(self)` [L809-L810]
-  - `setValue(self, v)` [L812-L814]
-  - `setRange(self, mn, mx)` [L816-L817]
-  - `setSingleStep(self, s)` [L819-L820]
-  - `setSuffix(self, s)` [L822-L823]
-  - `setEnabled(self, val)` [L825-L826]
-  - `isEnabled(self)` [L828-L829]
-  - `setStyleSheet(self, val)` [L831-L832]
+- **class `DummyQDoubleSpinBox`** (lines 773–815):
+  - `__init__(self, *args, **kwargs)` [L774-L778]
+  - `value(self)` [L780-L781]
+  - `setValue(self, v)` [L783-L785]
+  - `setRange(self, mn, mx)` [L787-L788]
+  - `setSingleStep(self, s)` [L790-L791]
+  - `setDecimals(self, prec)` [L793-L794]
+  - `decimals(self)` [L796-L797]
+  - `setSuffix(self, s)` [L799-L800]
+  - `setToolTip(self, tip)` [L802-L803]
+  - `toolTip(self)` [L805-L806]
+  - `setEnabled(self, val)` [L808-L809]
+  - `isEnabled(self)` [L811-L812]
+  - `setStyleSheet(self, val)` [L814-L815]
+- **class `DummyQSpinBox`** (lines 818–853):
+  - `__init__(self, *args, **kwargs)` [L819-L822]
+  - `value(self)` [L824-L825]
+  - `setValue(self, v)` [L827-L829]
+  - `setRange(self, mn, mx)` [L831-L832]
+  - `setSingleStep(self, s)` [L834-L835]
+  - `setSuffix(self, s)` [L837-L838]
+  - `setToolTip(self, tip)` [L840-L841]
+  - `toolTip(self)` [L843-L844]
+  - `setEnabled(self, val)` [L846-L847]
+  - `isEnabled(self)` [L849-L850]
+  - `setStyleSheet(self, val)` [L852-L853]
+- **class `DummyQFormLayout(DynamicMock)`** (lines 856–876):
+  - `__init__(self, *args, **kwargs)` [L857-L859]
+  - `addRow(self, label_or_widget, field)` [L861-L870]
+  - `labelForField(self, field)` [L872-L876]
 - **Functions**:
-  - `_ensure_pyside6_fallback(force)` [L835-L896] — *Ensures PySide6 modules are importable, installing the zero-dependency mock shim if unavailable.*
+  - `_ensure_pyside6_fallback(force)` [L879-L941] — *Ensures PySide6 modules are importable, installing the zero-dependency mock shim if unavailable.*
 
 ### `radio_tv_story_segmenter_worker.py` (226 lines)
 *Radio & TV Story Segmenter — AI Background Subprocess Worker Facade.*
@@ -2389,7 +2402,7 @@
   - `open_speaker_manager_dialog(self, modal)` [L473-L499]
   - `merge_contiguous_speaker_segments(self)` [L501-L555]
 
-### `speaker_dialogs.py` (891 lines)
+### `speaker_dialogs.py` (897 lines)
 *speaker_dialogs.py — Dialogs for speaker renaming, turn assignment, and cluster management.*
 - **Public Exports (`__all__`)**: ChangeSpeakerDialog, SpeakerManagerDialog, SpeakerNameDelegate
 - **class `ChangeSpeakerDialog(QDialog)`** (lines 25–111):
@@ -2404,7 +2417,7 @@
   - `__init__(self, dialog)` [L138-L140]
   - `createEditor(self, parent, option, index)` [L142-L167]
   - `eventFilter(self, editor, event)` [L169-L202]
-- **class `SpeakerManagerDialog(QDialog)`** (lines 205–891):
+- **class `SpeakerManagerDialog(QDialog)`** (lines 205–897):
   *Manager dialog for inspecting, aliasing, and merging detected speaker clusters.*
   - `__init__(self, parent)` [L208-L261]
   - `_is_gui_thread(self)` [L263-L271] — *Check whether execution is on the main Qt GUI thread.*
@@ -2422,24 +2435,24 @@
   - `_start_inline_edit_on_row(self, row)` [L668-L676]
   - `_on_table_item_changed(self, item)` [L678-L700]
   - `_rename_speaker(self, current_name, raw_id)` [L702-L710]
-  - `_apply_speaker_rename(self, current_name, target, raw_id)` [L712-L754]
-  - `_merge_speaker_into(self, source_name)` [L756-L783]
-  - `_on_quick_merge(self)` [L785-L810]
-  - `_on_toggle_station_voice(self, speaker_name, checked, checkbox)` [L812-L837]
-  - `_on_fix_speaker_names(self)` [L839-L846]
-  - `_on_open_voice_profiles(self)` [L848-L852]
-  - `reject(self)` [L854-L857]
-  - `accept(self)` [L859-L862]
-  - `closeEvent(self, event)` [L864-L867]
-  - `toggle_float_mode(self, pinned)` [L869-L885] — *Toggle whether the non-modal floating window stays pinned on top of other windows.*
-  - `changeEvent(self, event)` [L887-L891]
+  - `_apply_speaker_rename(self, current_name, target, raw_id)` [L712-L760]
+  - `_merge_speaker_into(self, source_name)` [L762-L789]
+  - `_on_quick_merge(self)` [L791-L816]
+  - `_on_toggle_station_voice(self, speaker_name, checked, checkbox)` [L818-L843]
+  - `_on_fix_speaker_names(self)` [L845-L852]
+  - `_on_open_voice_profiles(self)` [L854-L858]
+  - `reject(self)` [L860-L863]
+  - `accept(self)` [L865-L868]
+  - `closeEvent(self, event)` [L870-L873]
+  - `toggle_float_mode(self, pinned)` [L875-L891] — *Toggle whether the non-modal floating window stays pinned on top of other windows.*
+  - `changeEvent(self, event)` [L893-L897]
 - **Functions**:
   - `_is_gui_thread()` [L114-L122] — *Check whether execution is on the main Qt GUI thread.*
   - `_should_init_audio_preview()` [L125-L132]
 
-### `speaker_editing_mixin.py` (629 lines)
+### `speaker_editing_mixin.py` (635 lines)
 *Radio & TV Story Segmenter — Speaker Label, Renaming & Segment Editing Mixin.*
-- **class `SpeakerEditingMixin(SpeakerDialogRefinementMixin)`** (lines 54–629):
+- **class `SpeakerEditingMixin(SpeakerDialogRefinementMixin)`** (lines 54–635):
   *Mixin for speaker labeling, splitting, renaming, and dialog turn refinement.*
   - `handle_insert_speaker_request(self, seg_idx, split_time, speaker_name)` [L57-L61]
   - `add_speaker_label_at(self, seg_idx, split_time, name)` [L63-L177]
@@ -2447,11 +2460,11 @@
   - `prompt_rename_custom_speaker(self, old_name)` [L286-L307]
   - `display_speaker(self, speaker)` [L309-L323]
   - `get_all_known_speakers(self)` [L325-L355]
-  - `execute_speaker_rename(self, seg_idx, raw_speaker, target_name)` [L357-L508]
-  - `prompt_rename_speaker(self, seg_idx, speaker)` [L510-L511]
-  - `remove_speaker_label_at_segment(self, seg_idx)` [L513-L596]
-  - `register_confirmed_speaker_turn(self, seg_idx, speaker_name)` [L598-L626]
-  - `register_confirmed_speaker_sample(self, seg_idx, speaker_name)` [L628-L629]
+  - `execute_speaker_rename(self, seg_idx, raw_speaker, target_name)` [L357-L514]
+  - `prompt_rename_speaker(self, seg_idx, speaker)` [L516-L517]
+  - `remove_speaker_label_at_segment(self, seg_idx)` [L519-L602]
+  - `register_confirmed_speaker_turn(self, seg_idx, speaker_name)` [L604-L632]
+  - `register_confirmed_speaker_sample(self, seg_idx, speaker_name)` [L634-L635]
 
 ### `speaker_identity.py` (260 lines)
 *Radio & TV Segmenter*
@@ -2549,6 +2562,72 @@
   - `_on_export(self)` [L572-L600]
   - `_on_import(self)` [L602-L630]
 
+### `spellcheck_helper.py` (776 lines)
+*spellcheck_helper.py — Headless Tier 1 Offline Spellcheck Engine.*
+- **Public Exports (`__all__`)**: SpellIssue, OfflineSpellChecker, is_pyspellchecker_available, collect_allowlist_words, iter_checkable_words, match_case, ignore_word_for_session, get_session_ignored_words, clear_session_ignored_words
+- **class `SpellIssue`** (lines 32–37):
+  *Represents a single misspelled word span in a text string.*
+- **class `OfflineSpellChecker`** (lines 578–763):
+  *Lightweight offline spellchecker seeded with Glossary + Speaker allowlists.*
+  - `__init__(self, custom_words, main_window, use_pyspellchecker)` [L581-L599]
+  - `backend_name(self)` [L602-L604] — *Return active backend name: `'pyspellchecker'` or `'fallback'`.*
+  - `refresh_from_window(self, main_window)` [L606-L613] — *Reload Glossary terms and confirmed speaker names from `main_window`.*
+  - `add_words(self, words)` [L615-L620] — *Add one or more words/phrases to this instance's explicit allowlist.*
+  - `is_word_known(self, word)` [L622-L657] — *Return True if `word` is valid English or present in allowlist / session ignores.*
+  - `find_misspelled_spans(self, text)` [L659-L677] — *Return all misspelled word spans in `text` in left-to-right order.*
+  - `find_issue_at(self, text, char_index)` [L679-L686] — *Return the `SpellIssue` covering `char_index` (inclusive of boundaries), if any.*
+  - `get_suggestions(self, word, max_suggestions)` [L688-L763] — *Return up to `max_suggestions` spelling suggestions preserving input case.*
+- **Functions**:
+  - `is_pyspellchecker_available()` [L312-L314] — *Return True if the `pyspellchecker` library is importable.*
+  - `_get_base_pyspellchecker()` [L317-L328] — *Return a cached read-only `pyspellchecker.SpellChecker` instance if available.*
+  - `_normalize_apostrophe(word)` [L331-L332]
+  - `_extract_word_tokens(text)` [L335-L351] — *Extract lowercase alphabetic tokens (plus full hyphenated form) from a phrase.*
+  - `match_case(source_word, suggestion)` [L354-L362] — *Apply the capitalization pattern of `source_word` onto `suggestion`.*
+  - `ignore_word_for_session(word)` [L365-L371] — *Add `word` to the process-wide session ignore list.*
+  - `get_session_ignored_words()` [L374-L377] — *Return a copy of the session-ignored lowercase words.*
+  - `clear_session_ignored_words()` [L380-L383] — *Clear the process-wide session ignore list (primarily for tests).*
+  - `collect_allowlist_words(main_window, glossary, speaker_names, extra_words)` [L386-L480] — *Build a lowercase word allowlist from custom Glossary preferred terms*
+  - `_edits1(word)` [L483-L491] — *All strings one Levenshtein edit away from `word`.*
+  - `_fallback_stem_matches(word, vocab)` [L494-L525] — *Check regular English inflections against the fallback vocabulary.*
+  - `_is_camel_or_mixed_brand(token)` [L528-L534] — *Skip internal-capital identifiers like WordPress, YouTube, iPhone, PySide.*
+  - `iter_checkable_words(text)` [L537-L575] — *Yield `(word, start, end)` spans in `text` that should be spellchecked.*
+
+### `spellcheck_widgets.py` (568 lines)
+*spellcheck_widgets.py — Inline Qt Spellcheck Highlighting & Context Menu UI.*
+- **Public Exports (`__all__`)**: SpellCheckHighlighter, SpellCheckController, attach_spellcheck, refresh_all_spellcheckers, add_word_to_glossary
+- **class `SpellCheckHighlighter(QSyntaxHighlighter)`** (lines 146–163):
+  *QSyntaxHighlighter drawing red spellcheck underlines in QTextEdit / QPlainTextEdit.*
+  - `__init__(self, document, spellchecker)` [L149-L152]
+  - `refresh_format(self)` [L154-L155]
+  - `highlightBlock(self, text)` [L157-L163]
+- **class `_LineEditSpellOverlay(QWidget)`** (lines 166–249):
+  *Mouse-transparent overlay painting wavy red underlines onto a QLineEdit.*
+  - `__init__(self, line_edit, controller)` [L169-L177]
+  - `paintEvent(self, event)` [L179-L249]
+- **class `SpellCheckController(QObject)`** (lines 252–507):
+  *Coordinates inline spellcheck highlighting and context menus on a text widget.*
+  - `__init__(self, widget, main_window, spellchecker)` [L255-L271]
+  - `_detect_line_edit(widget)` [L274-L277]
+  - `_install(self)` [L279-L308]
+  - `eventFilter(self, obj, event)` [L310-L319]
+  - `_on_line_edit_changed(self, *_args)` [L321-L324]
+  - `_on_line_edit_cursor_changed(self, *_args)` [L326-L328]
+  - `_recompute_line_edit_issues(self)` [L330-L333]
+  - `_get_widget_text(self)` [L335-L345]
+  - `get_issues(self)` [L347-L349] — *Return current misspelled `SpellIssue` spans for the attached widget.*
+  - `refresh(self, main_window, added_word)` [L351-L368] — *Refresh allowlist from Glossary/speakers and re-run inline highlighting.*
+  - `apply_suggestion(self, issue, replacement, block_offset)` [L370-L427] — *Replace the misspelled `issue` span with `replacement` in the attached widget.*
+  - `_locate_issue_at_point(self, pos)` [L429-L451] — *Return `(SpellIssue, block_start_offset)` for a widget-local click position.*
+  - `_on_context_menu_requested(self, pos)` [L453-L502]
+  - `ignore_word(self, word)` [L504-L507] — *Ignore `word` for the remainder of the session and refresh all editors.*
+- **Functions**:
+  - `_is_real_qt_widget(widget)` [L57-L62] — *Return True when running under real PySide6 rather than qt_compat mocks.*
+  - `_spell_underline_color()` [L65-L76] — *Select an accessible red underline color for the active application theme.*
+  - `_make_misspelled_char_format()` [L79-L88]
+  - `add_word_to_glossary(word, main_window)` [L91-L143] — *Persist `word` to the application's custom Glossary and refresh spellcheckers.*
+  - `attach_spellcheck(widget, main_window, spellchecker)` [L510-L550] — *Attach Tier 1 offline spellchecking to a QLineEdit, QTextEdit, QPlainTextEdit,*
+  - `refresh_all_spellcheckers(main_window, added_word)` [L553-L559] — *Re-sync Glossary/speaker allowlists and re-highlight every attached editor.*
+
 ### `story_crud_mixin.py` (931 lines)
 *Radio & TV Story Segmenter — Story CRUD & Timeline Selection Mixin.*
 - **class `StoryCrudMixin`** (lines 46–931):
@@ -2603,9 +2682,9 @@
   - `_restore_defaults(self)` [L207-L210]
   - `get_fades(self)` [L212-L213]
 
-### `story_metadata_dialog.py` (307 lines)
+### `story_metadata_dialog.py` (313 lines)
 *Radio & TV Story Segmenter — Universal Story & Post Metadata Architecture.*
-- **class `StoryMetadataDialog(QDialog)`** (lines 66–307):
+- **class `StoryMetadataDialog(QDialog)`** (lines 66–313):
   *Universal non-modal dialog for inspecting and editing post and story metadata across the project.*
   - `__init__(self, parent, main_window, target_story_index)` [L69-L105]
   - `_init_ui(self)` [L107-L207]
@@ -2617,9 +2696,9 @@
   - `_on_close_clicked(self)` [L250-L252]
   - `_on_save_and_close(self)` [L254-L255]
   - `toggle_float_mode(self, pinned)` [L257-L273] — *Toggle whether the non-modal floating window stays pinned on top of other windows.*
-  - `refresh_from_main_window(self, target_story_index)` [L275-L295] — *Synchronize stories, excerpts, and transcript changes from the main window.*
-  - `changeEvent(self, event)` [L297-L300]
-  - `done(self, r)` [L302-L307]
+  - `refresh_from_main_window(self, target_story_index)` [L275-L301] — *Synchronize stories, excerpts, and transcript changes from the main window.*
+  - `changeEvent(self, event)` [L303-L306]
+  - `done(self, r)` [L308-L313]
 - **Functions**:
   - `_get_metadata_theme_mode()` [L47-L49] — *Retrieve active theme mode ('light', 'dark', or 'high_contrast').*
   - `generate_story_excerpt(text, max_words)` [L52-L63] — *Generate a clean, readable excerpt of up to max_words from transcript text.*
@@ -3056,7 +3135,7 @@
   - `_on_bubble_export(self)` [L468-L473]
 
 ### `transcript_story.py` (852 lines)
-*Radio & TV Segmenter v3.10.2-beta — transcript story responsibilities.*
+*Radio & TV Segmenter v3.10.3-beta — transcript story responsibilities.*
 - **Public Exports (`__all__`)**: TranscriptStoryMixin, Story, SetStoriesCommand, SelectStoriesCommand, StoryBoundaryChangeCommand, StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin, ChangeSpeakerDialog, VoiceProfileMatchDialog, StoryFadesDialog, SpeakerManagerDialog, FADE_CURVE_TABLES, get_fade_curve_factors
 - **class `TranscriptStoryMixin(StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin)`** (lines 63–851):
   - `render_transcript(self)` [L64-L467]
@@ -3174,26 +3253,26 @@
   - `open_wordpress_publish_dialog(self, story)` [L346-L362] — *Open the WordPress direct publish dialog from the WordPress plugin.*
   - `open_loudness_normalization_dialog(self)` [L364-L368] — *Open the Audio Loudness Normalization & Telemetry modal dialog.*
 
-### `ui_layout.py` (1097 lines)
+### `ui_layout.py` (1103 lines)
 *Radio & TV Segmenter — UI Layout & Menu Construction Mixin.*
-- **class `UiLayoutMixin(UiMenusMixin, UiDialogLaunchersMixin)`** (lines 58–1093):
+- **class `UiLayoutMixin(UiMenusMixin, UiDialogLaunchersMixin)`** (lines 58–1099):
   *Mixin class providing UI construction, menu assembly, and UI event binding.*
-  - `build_ui(self)` [L60-L769] — *Build and assemble all central widgets, layouts, and panels.*
-  - `filter_transcript_search(self, target)` [L771-L788] — *Highlight and focus next occurrence of search term in transcript text view.*
-  - `toggle_transcript_editing_mode(self, *args, **kwargs)` [L790-L812] — *Toggle between Viewing Mode (navigation/click-to-seek) and Editing Mode (text editing).*
-  - `_on_transcript_editing_mode_changed(self, is_editing)` [L814-L849] — *Respond to changes in transcript edit vs view mode.*
-  - `_sync_format_toolbar_buttons(self)` [L851-L871]
-  - `_on_toolbar_split_speaker(self)` [L873-L880]
-  - `_apply_transcript_font_scale(self, scale, persist)` [L882-L906] — *Apply a transcript-only font scale and optionally persist it.*
-  - `_on_font_size_combo_changed(self, index)` [L908-L912]
-  - `adjust_transcript_font_size(self, direction)` [L914-L916] — *Increase or decrease transcript font size by one 5% step.*
-  - `reset_transcript_font_size(self)` [L918-L920] — *Restore the default transcript font size.*
-  - `update_story_list_height(self)` [L922-L937] — *Size the story list to fit the current number of stories, leaving space for metadata and export fields.*
-  - `auto_generate_selected_story_excerpt(self)` [L939-L984] — *Auto-generate an excerpt from the story transcript text for the currently selected story.*
-  - `_on_story_excerpt_text_changed(self)` [L986-L1004] — *Synchronize excerpt edits from the inline editor into story metadata.*
-  - `toggle_maximize_stories_panel(self)` [L1006-L1059] — *Toggle maximize/restore of the stories panel across the full application window.*
-  - `setup_plugin_story_extensions(self)` [L1061-L1083] — *Populate plugin-provided widgets in the story panel.*
-  - `notify_story_selection_to_plugins(self, selected_story)` [L1085-L1093] — *Notify all enabled plugins when the active story selection changes.*
+  - `build_ui(self)` [L60-L775] — *Build and assemble all central widgets, layouts, and panels.*
+  - `filter_transcript_search(self, target)` [L777-L794] — *Highlight and focus next occurrence of search term in transcript text view.*
+  - `toggle_transcript_editing_mode(self, *args, **kwargs)` [L796-L818] — *Toggle between Viewing Mode (navigation/click-to-seek) and Editing Mode (text editing).*
+  - `_on_transcript_editing_mode_changed(self, is_editing)` [L820-L855] — *Respond to changes in transcript edit vs view mode.*
+  - `_sync_format_toolbar_buttons(self)` [L857-L877]
+  - `_on_toolbar_split_speaker(self)` [L879-L886]
+  - `_apply_transcript_font_scale(self, scale, persist)` [L888-L912] — *Apply a transcript-only font scale and optionally persist it.*
+  - `_on_font_size_combo_changed(self, index)` [L914-L918]
+  - `adjust_transcript_font_size(self, direction)` [L920-L922] — *Increase or decrease transcript font size by one 5% step.*
+  - `reset_transcript_font_size(self)` [L924-L926] — *Restore the default transcript font size.*
+  - `update_story_list_height(self)` [L928-L943] — *Size the story list to fit the current number of stories, leaving space for metadata and export fields.*
+  - `auto_generate_selected_story_excerpt(self)` [L945-L990] — *Auto-generate an excerpt from the story transcript text for the currently selected story.*
+  - `_on_story_excerpt_text_changed(self)` [L992-L1010] — *Synchronize excerpt edits from the inline editor into story metadata.*
+  - `toggle_maximize_stories_panel(self)` [L1012-L1065] — *Toggle maximize/restore of the stories panel across the full application window.*
+  - `setup_plugin_story_extensions(self)` [L1067-L1089] — *Populate plugin-provided widgets in the story panel.*
+  - `notify_story_selection_to_plugins(self, selected_story)` [L1091-L1099] — *Notify all enabled plugins when the active story selection changes.*
 
 ### `ui_menus.py` (883 lines)
 *Main application menu bar and action assembly for Radio & TV Story Segmenter.*

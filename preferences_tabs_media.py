@@ -192,10 +192,10 @@ def build_detection_tab(win, dialog, live_widgets, add_custom_defaults_btn) -> Q
     min_story_spin.setValue(min_story_val)
     min_story_spin.setSuffix(" sec")
     min_story_spin.setToolTip(
-        "Ignore detected story segments shorter than this duration (e.g., set to 30-45 sec "
+        "Ignore detected segments shorter than this duration (e.g., set to 30-45 sec "
         "for broadcast magazine shows to avoid false splits on short pauses or interjections). Default: 3.0 sec."
     )
-    det_form.addRow("Minimum Story Length:", min_story_spin)
+    det_form.addRow("Minimum Segment Length:", min_story_spin)
     live_widgets["min_story_spin"] = min_story_spin
 
     expected_speakers_combo = QComboBox()

@@ -185,6 +185,18 @@ class WordPressExportTabWidget(QWidget):
         ex_layout.addWidget(self.wp_excerpt_edit)
         self.form_layout.addRow(excerpt_box)
 
+        try:
+            from spellcheck_helper import OfflineSpellChecker
+            from spellcheck_widgets import attach_spellcheck
+
+            _mw = getattr(self, "main_window", None)
+            _sp = OfflineSpellChecker(main_window=_mw)
+            attach_spellcheck(self.wp_title_edit, main_window=_mw, spellchecker=_sp)
+            attach_spellcheck(self.wp_excerpt_edit, main_window=_mw, spellchecker=_sp)
+        except Exception:
+            import logging
+            logging.getLogger(__name__).warning("Failed to attach WordPress dialog spellcheckers", exc_info=True)
+
         tax_row = QHBoxLayout()
         
         auth_box = QVBoxLayout()
@@ -869,6 +881,17 @@ class WordPressPostMetadataDialog(QDialog):
 
         self.excerpt_edit = ResizableTextEdit(self)
         form.addRow("Excerpt / Subtitle:", self.excerpt_edit)
+
+        try:
+            from spellcheck_helper import OfflineSpellChecker
+            from spellcheck_widgets import attach_spellcheck
+
+            _sp = OfflineSpellChecker(main_window=self.main_window)
+            attach_spellcheck(self.title_edit, main_window=self.main_window, spellchecker=_sp)
+            attach_spellcheck(self.excerpt_edit, main_window=self.main_window, spellchecker=_sp)
+        except Exception:
+            import logging
+            logging.getLogger(__name__).warning("Failed to attach post metadata spellcheckers", exc_info=True)
 
         layout.addLayout(form)
 

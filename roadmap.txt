@@ -38,83 +38,67 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 --------------------------------------------------------------------------------
 TABLE OF CONTENTS & STATUS OVERVIEW
 --------------------------------------------------------------------------------
-1. Immediate Predecessor Release: Phase 1.1 — Diarization Outlier Consolidation, 1.5s Embedding Windows & Run Processing Partial-Stage Fix (`worker_diarization_clustering.py`, `worker_diarization_engine.py`, `processing.py`, `diagnostic_core_tests.py`) [x] [COMPLETED in v3.10.1-beta]
-   [x] 1.1 Micro-Cluster Absorption & Centroid Merging (`worker_diarization_clustering.py`): Added `_sensitivity_centroid_merge_threshold()` and `consolidate_speaker_clusters()`, absorbing noise/outlier micro-clusters into nearest major speakers and merging near-duplicate centroids before applying `min_speakers`/`max_speakers` bounds.
-   [x] 1.2 1.5s Transcript-Guided Windows & Sensitivity Pass-Through (`worker_diarization_engine.py`): Passed `embedding_window=1.5, embedding_step=0.75` to `extract_embeddings_batched()` and `sensitivity=sensitivity` into `cluster_speakers_ahc()` in `run_transcript_guided_diarization()`.
-   [x] 1.3 Run Processing Existing-Data Preservation (`processing.py`): Treated loaded partial transcript/diarization data identically to completed stages when saving `pipeline_opt_*` checkbox defaults so unchecking loaded stages does not disable them on future new episodes.
-   [x] 1.4 Automated Regression Coverage (`diagnostic_core_tests.py`): Added 60-vector outlier absorption verification in `_test_wespeaker_diarization_architecture` and existing-data `pipeline_opt_*` preservation checks in `_test_project_serialization_round_trip`.
+1. Immediate Predecessor Release: Phase 2 — Adjustable Minimum Story Length, Guest Name & Proper-Noun Cleanup Pipeline, and Save to Station Voices Checkboxes (`RadioTVSegmenter.py`, `preferences_tabs_media.py`, `preferences_dialog.py`, `preferences_reset.py`, `preferences_reset_dialog.py`, `story_detection_processing.py`, `background_workers.py`, `worker_story_engine.py`, `speaker_name_matcher.py`, `speaker_name_cleanup_dialog.py`, `transcript_editor_dialogs.py`, `speaker_dialogs.py`, `speaker_editing_mixin.py`, `voice_profile_ops_mixin.py`, `diarization_processing.py`, `diagnostic_speaker_cleanup_tests.py`, `test_runner.py`) [x] [COMPLETED in v3.10.2-beta]
+   [x] 1.1 Adjustable Minimum Story Length (`RadioTVSegmenter.py`, `preferences_tabs_media.py`, `preferences_dialog.py`, `preferences_reset.py`, `preferences_reset_dialog.py`, `story_detection_processing.py`, `background_workers.py`, `worker_story_engine.py`): Added `Minimum Story Length:` (`min_story_duration`, 0.0-600.0 sec, default 3.0s) in Preferences > Story Detection & Diarization, persisted in `QSettings` with Reset-to-Defaults support, and applied across both `StoryAutoDetectWorker` and `detect_story_boundaries()`.
+   [x] 1.2 Guest Name & Proper-Noun Cleanup Pipeline (`speaker_name_matcher.py`, `speaker_name_cleanup_dialog.py`, `transcript_editor_dialogs.py`, `speaker_dialogs.py`): Added headless phonetic/Soundex proper-noun matching, `preserve_case_replace()`, modal `SpeakerNameCleanupDialog` (`Fix Speaker Names...`) with editable suggestions, Glossary syncing, and grouped Undo, plus `Preserve Case`, whitespace `Trim` warning, and `Add to Glossary` inside `FindReplaceDialog`.
+   [x] 1.3 Save to Station Voices Checkboxes & Threshold Fix (`RadioTVSegmenter.py`, `diarization_processing.py`, `preferences_tabs_media.py`, `voice_profile_ops_mixin.py`, `speaker_dialogs.py`, `speaker_editing_mixin.py`): Fixed `voice_profile_auto_match_threshold` (`78` -> `0.78` instead of clamping to `0.99`), added shared Station Voices save/remove helpers, added opt-in checkbox to `ChangeSpeakerDialog` + per-row `Station Voice` toggle column to `SpeakerManagerDialog`, and added offscreen test-mode `QMediaPlayer` init guard.
+   [x] 1.4 Automated Regression Coverage (`diagnostic_speaker_cleanup_tests.py`, `test_runner.py`): Added `DiagnosticSpeakerCleanupTestsMixin` covering minimum story length filtering/preferences, 9/9 real guest-name misspellings + Preserve Case/Trim/Glossary/Undo, and Station Voice checkboxes + `78->0.78` normalization.
 
-2. Active Release: Phase 2 — Adjustable Minimum Story Length, Guest Name & Proper-Noun Cleanup Pipeline, and Save to Station Voices Checkboxes (`RadioTVSegmenter.py`, `preferences_tabs_media.py`, `preferences_dialog.py`, `preferences_reset.py`, `preferences_reset_dialog.py`, `story_detection_processing.py`, `background_workers.py`, `worker_story_engine.py`, `speaker_name_matcher.py`, `speaker_name_cleanup_dialog.py`, `transcript_editor_dialogs.py`, `speaker_dialogs.py`, `speaker_editing_mixin.py`, `voice_profile_ops_mixin.py`, `diarization_processing.py`, `diagnostic_speaker_cleanup_tests.py`, `test_runner.py`) [x] [COMPLETED in v3.10.2-beta]
-   [x] 2.1 Adjustable Minimum Story Length (`RadioTVSegmenter.py`, `preferences_tabs_media.py`, `preferences_dialog.py`, `preferences_reset.py`, `preferences_reset_dialog.py`, `story_detection_processing.py`, `background_workers.py`, `worker_story_engine.py`): Added `Minimum Story Length:` (`min_story_duration`, 0.0-600.0 sec, default 3.0s) in Preferences > Story Detection & Diarization, persisted in `QSettings` with Reset-to-Defaults support, and applied across both `StoryAutoDetectWorker` and `detect_story_boundaries()`.
-   [x] 2.2 Guest Name & Proper-Noun Cleanup Pipeline (`speaker_name_matcher.py`, `speaker_name_cleanup_dialog.py`, `transcript_editor_dialogs.py`, `speaker_dialogs.py`): Added headless phonetic/Soundex proper-noun matching, `preserve_case_replace()`, modal `SpeakerNameCleanupDialog` (`Fix Speaker Names...`) with editable suggestions, Glossary syncing, and grouped Undo, plus `Preserve Case`, whitespace `Trim` warning, and `Add to Glossary` inside `FindReplaceDialog`.
-   [x] 2.3 Save to Station Voices Checkboxes & Threshold Fix (`RadioTVSegmenter.py`, `diarization_processing.py`, `preferences_tabs_media.py`, `voice_profile_ops_mixin.py`, `speaker_dialogs.py`, `speaker_editing_mixin.py`): Fixed `voice_profile_auto_match_threshold` (`78` -> `0.78` instead of clamping to `0.99`), added shared Station Voices save/remove helpers, added opt-in checkbox to `ChangeSpeakerDialog` + per-row `Station Voice` toggle column to `SpeakerManagerDialog`, and added offscreen test-mode `QMediaPlayer` init guard.
-   [x] 2.4 Automated Regression Coverage (`diagnostic_speaker_cleanup_tests.py`, `test_runner.py`): Added `DiagnosticSpeakerCleanupTestsMixin` covering minimum story length filtering/preferences, 9/9 real guest-name misspellings + Preserve Case/Trim/Glossary/Undo, and Station Voice checkboxes + `78->0.78` normalization.
+2. Active Release: Phase 3 — Tier 1 Offline Spellcheck & Minimum Segment Length Terminology Alignment (`spellcheck_helper.py`, `spellcheck_widgets.py`, `preferences_tabs_media.py`, `story_detection_processing.py`, `installer/requirements.txt`, `build_installer.py`, `plugins/wordpress/wp_ui_builder.py`, `plugins/wordpress/plugin.py`, `plugins/wordpress/wordpress_dialog.py`, `plugins/wordpress/manifest.json`, `ui_layout.py`, `story_metadata_dialog.py`, `media_batch.py`, `glossary_dialog.py`, `speaker_editing_mixin.py`, `speaker_dialogs.py`, `qt_compat.py`, `diagnostic_speaker_cleanup_tests.py`, `test_runner.py`) [x] [COMPLETED in v3.10.3-beta]
+   [x] 2.1 Minimum Segment Length Terminology Alignment (`preferences_tabs_media.py`, `story_detection_processing.py`): Renamed the `"Minimum Story Length:"` preference label and tooltip wording to `"Minimum Segment Length:"` while preserving the existing `min_story_duration` QSettings key, and aligned detection log wording.
+   [x] 2.2 Tier 1 Offline Spellcheck Engine (`spellcheck_helper.py`, `installer/requirements.txt`, `build_installer.py`): Added headless pure-Python `OfflineSpellChecker` using `pyspellchecker` when installed plus a compact fallback English/broadcast dictionary, dynamically rebuilding allowlists from Glossary preferred terms and confirmed speaker names on refresh, with case-preserving suggestions and PyInstaller packaging in `build_installer.py`.
+   [x] 2.3 WordPress & Segment Metadata Spellcheck UI (`spellcheck_widgets.py`, `plugins/wordpress/wp_ui_builder.py`, `plugins/wordpress/plugin.py`, `plugins/wordpress/wordpress_dialog.py`, `ui_layout.py`, `story_metadata_dialog.py`, `media_batch.py`, `glossary_dialog.py`, `speaker_editing_mixin.py`, `speaker_dialogs.py`): Added inline red spellcheck underlines (`SpellCheckHighlighter` for `QTextEdit`/`QPlainTextEdit`, transparent paint overlay for `QLineEdit`) and native right-click menus with bold suggestions, `"Add '<word>' to Glossary"`, and `"Ignore '<word>' (This Session)"` across WordPress fields (Title, Excerpt, Custom Notice, Image Caption, Alt Text) and Segment Title/Metadata inputs, refreshing live on Glossary saves and speaker renames.
+   [x] 2.4 Automated Regression Coverage (`diagnostic_speaker_cleanup_tests.py`, `test_runner.py`, `qt_compat.py`): Added headless diagnostic coverage verifying typo detection, Glossary/speaker add & removal un-allowlisting, case-preserving suggestions, QLineEdit/QTextEdit replacement, `WordPressPublishDialog` wiring via `plugin.app`, and the `"Minimum Segment Length:"` preference label.
 
-3. Planned Next Release: Phase 3 — Tier 1 Offline Spellcheck & Minimum Segment Length Terminology Alignment (`preferences_tabs_media.py`, `plugins/wordpress/wp_tab_widget.py`, `story_widgets.py`, `spellcheck_helper.py`, `requirements.txt`, `build_installer.py`, `test_runner.py`) [ ] [PLANNED for v3.10.3-beta] [NOT STARTED]
-   [ ] 3.1 Minimum Segment Length Terminology Alignment (`preferences_tabs_media.py`, `story_detection_processing.py`): Rename the "Minimum Story Length" preference label and tooltips to "Minimum Segment Length" to align with the application's segment vocabulary.
-   [ ] 3.2 Tier 1 Offline Spellcheck Engine (`spellcheck_helper.py`, `requirements.txt`, `build_installer.py`): Add lightweight offline spellchecking via `pyspellchecker` integrated with custom Glossary terms and confirmed speaker names so proper nouns are never flagged as typos.
-   [ ] 3.3 WordPress & Segment Metadata Spellcheck UI (`plugins/wordpress/wp_tab_widget.py`, `story_widgets.py`, `ui_dialogs.py`): Enable inline red-underline typo highlighting and right-click spelling suggestions / "Add to Glossary" on WordPress publishing fields (Title, Excerpt, Image Caption, Alt Text) and Segment/Story Title & Metadata editors.
-   [ ] 3.4 Automated Regression Coverage (`test_runner.py`): Add headless diagnostic tests verifying offline spellcheck detection, glossary/speaker-name exclusion, suggestion application, and the "Minimum Segment Length" preference label.
-
-4. Deferred Milestone: Domain Separation & Purpose-Driven Monolithic File Modularization [ ] [DEFERRED / LOWER PRIORITY]
+3. Deferred Milestone: Domain Separation & Purpose-Driven Monolithic File Modularization [ ] [DEFERRED / LOWER PRIORITY]
    - *Purpose*: Systematic architectural refactoring prioritizing **file purpose, single responsibility, and domain cohesion** alongside line count reduction (<800 lines target, 1,000 lines ceiling), systematically decoupling grandfathered multi-domain monoliths into focused submodules with 100% backward-compatible facade re-exports.
-   [ ] 4.1 Priority 1: Imminent Ceiling Breaches & High-Payoff Domain Decoupling (<1000 lines, high urgency/clean boundaries):
+   [ ] 3.1 Priority 1: Imminent Ceiling Breaches & High-Payoff Domain Decoupling (<1000 lines, high urgency/clean boundaries):
      * `project_lifecycle.py` (992 lines) — Imminent ceiling breach (<10 lines from 1,000 ceiling). Decouple project session dirty-state tracking from disk gzip compression and waveform peak caching (`project_state.py`, `project_cache.py`).
      * `model_management.py` (989 lines) — Decouple Hugging Face / ONNX weight verification and SHA256 integrity checks from the GUI download progress worker.
      * `audio_normalization.py` (541 lines) — Triple-domain sprawl resolution: decouple loudness DSP normalization math (`normalization_engine.py`) from background `QThread` workers (`normalization_worker.py`) and data parameters.
      * `timeline_widgets.py` (974 lines) — Decouple viewport waveform canvas paint events and LOD rendering from mouse scrubbing and selection event handlers.
-   [ ] 4.2 Priority 2: Grandfathered Legacy Monoliths (>1,000 lines, wide caller blast radius):
+   [ ] 3.2 Priority 2: Grandfathered Legacy Monoliths (>1,000 lines, wide caller blast radius):
      * Incrementally decompose the 9 core legacy monoliths via AST blueprints and facade pattern: `plugins/wordpress/client.py` (1,887 lines), `media_batch.py` (1,848 lines), `prs_shared.py` (1,491 lines), `updater.py` (1,460 lines), `export/dialog.py` (1,441 lines), `processing.py` (1,216 lines), `ui_layout.py` (1,060 lines), `runtime_manager.py` (1,037 lines), `background_workers.py` (1,015 lines), and `voice_profile_dialog.py` (1,006 lines). [P7-01]
-   [ ] 4.3 Priority 3: Secondary Warning Zone & Worker/UI Decoupling (800–965 lines & multi-domain plugins):
+   [ ] 3.3 Priority 3: Secondary Warning Zone & Worker/UI Decoupling (800–965 lines & multi-domain plugins):
      * Headless ML & Engine Decoupling: Separate background worker loops from low-level model inference in `worker_diarization_engine.py` (902 lines) and `worker_asr_engines.py` (839 lines).
      * Pipeline & Presentation Decoupling: Modularize `export_story_pipeline.py` (964 lines), `translation.py` (923 lines), `transcript_editor.py` (862 lines), `transcript_story.py` (847 lines), `shortcuts/schema.py` (858 lines), and `ui_menus.py` (809 lines).
      * Worker Thread Decoupling from Dialogs: Extract `QThread` workers out of `plugin_dialogs.py` (447 lines), `speaker_dialogs.py` (782 lines), and `plugins/wordpress/wordpress_dialog.py` (886 lines).
      * Model & Export Tab Decoupling: Extract `ManageVoiceProfilesDialog` from `speaker_profiles.py` (630 lines), and separate Qt UI tabs from API publishing in `plugins/youtube/export_destination.py` (594 lines) and `plugins/wordpress/export_destination.py` (631 lines).
-   [ ] 4.4 Priority 4: Monolithic Test Suites & Packaging Tooling (>1,000 lines, dev-only):
+   [ ] 3.4 Priority 4: Monolithic Test Suites & Packaging Tooling (>1,000 lines, dev-only):
      * Split monolithic 1,000+ line test suites and installers into modular packages: `diagnostic_export_tests.py` (1,699 lines), `diagnostic_cloud_and_system_tests.py` (1,267 lines), `diagnostic_batch_tests.py` (1,067 lines), and `build_installer.py` (1,079 lines).
-   [x] 4.5 UI Typography Cleanliness: Remove unrequested emoji symbols and decorative checkmarks from buttons and comboboxes. [P6-06]
-   [x] 4.6 PDF Proportional Font Word-Wrap Accuracy: Refine Helvetica character width measurement tables in `export/pdf.py`. [P6-07]
-   [x] 4.7 Export Dialog Vestigial Cleanup: Clean orphaned preview set and restore `"timeline"` to fallback reorder list. [P6-09, P6-10]
-   [x] 4.8 Changelog Archive Roll: Prune older changelog entries into `CHANGELOG_ARCHIVE.md`. [P7-06]
+   [x] 3.5 UI Typography Cleanliness: Remove unrequested emoji symbols and decorative checkmarks from buttons and comboboxes. [P6-06]
+   [x] 3.6 PDF Proportional Font Word-Wrap Accuracy: Refine Helvetica character width measurement tables in `export/pdf.py`. [P6-07]
+   [x] 3.7 Export Dialog Vestigial Cleanup: Clean orphaned preview set and restore `"timeline"` to fallback reorder list. [P6-09, P6-10]
+   [x] 3.8 Changelog Archive Roll: Prune older changelog entries into `CHANGELOG_ARCHIVE.md`. [P7-06]
 
-5. Optional Future Milestone: Interactive Text-Based Media Assembly & Multi-Asset Ripple Editing Engine (`assembly/bin_model.py`, `assembly/clipboard.py`, `assembly/ripple_engine.py`, `transcript_editor.py`, `export/timeline.py`) [PLANNED for v4.2.0] [OPTIONAL] [NOT STARTED]
-   [ ] 5.1 Multi-Asset Project Container & Media Bin Submodule (`assembly/bin_model.py`, `project_lifecycle.py`)
-   [ ] 5.2 Dynamic Uncapped Tabbed Document Workspace (`assembly/tab_workspace.py`, `ui_layout.py`)
-   [ ] 5.3 Rich Media Clipboard Engine (`assembly/clipboard.py` — `application/x-rtvs-clip+json`)
-   [ ] 5.4 Non-Destructive Multi-Source Playout Engine (`assembly/playout_engine.py`)
-   [ ] 5.5 Text-Driven Audio/Video Ripple Cut Engine (`assembly/ripple_engine.py`)
-   [ ] 5.6 Paper-Cut Story Assembly Workflow (`assembly/paper_cut_mixin.py`)
-   [ ] 5.7 Document Revisions & Snapshot Version History (`assembly/revision_history.py`)
-   [ ] 5.8 Word-Level Timecode Sync, NLE Markers & Multi-Track DAW Timeline Export (`export/timeline.py`)
-   [ ] 5.9 Automated Diagnostic Test Suite (`test_runner.py`)
+4. Optional Future Milestone: Interactive Text-Based Media Assembly & Multi-Asset Ripple Editing Engine (`assembly/bin_model.py`, `assembly/clipboard.py`, `assembly/ripple_engine.py`, `transcript_editor.py`, `export/timeline.py`) [PLANNED for v4.2.0] [OPTIONAL] [NOT STARTED]
+   [ ] 4.1 Multi-Asset Project Container & Media Bin Submodule (`assembly/bin_model.py`, `project_lifecycle.py`)
+   [ ] 4.2 Dynamic Uncapped Tabbed Document Workspace (`assembly/tab_workspace.py`, `ui_layout.py`)
+   [ ] 4.3 Rich Media Clipboard Engine (`assembly/clipboard.py` — `application/x-rtvs-clip+json`)
+   [ ] 4.4 Non-Destructive Multi-Source Playout Engine (`assembly/playout_engine.py`)
+   [ ] 4.5 Text-Driven Audio/Video Ripple Cut Engine (`assembly/ripple_engine.py`)
+   [ ] 4.6 Paper-Cut Story Assembly Workflow (`assembly/paper_cut_mixin.py`)
+   [ ] 4.7 Document Revisions & Snapshot Version History (`assembly/revision_history.py`)
+   [ ] 4.8 Word-Level Timecode Sync, NLE Markers & Multi-Track DAW Timeline Export (`export/timeline.py`)
+   [ ] 4.9 Automated Diagnostic Test Suite (`test_runner.py`)
 
-6. Optional Future Milestone: Social Reel & Short Video Export Plugin (Instagram Reels, YouTube Shorts, TikTok) (`plugins/social_reel/`, `export_media_clipper.py`, `export_dialogs.py`) [PLANNED] [NOT STARTED]
-   [ ] 6.1 Social Reel Plugin Architecture & Manifest (`plugins/social_reel/plugin.py`, `plugins/social_reel/manifest.json`, `plugins/social_reel/export_destination.py`)
-   [ ] 6.2 Multi-Source Input & Template Image Configuration (`plugins/social_reel/reel_config.py`, `plugins/social_reel/reel_dialog.py`)
-   [ ] 6.3 9:16 Vertical Video Compositor & Audiogram Pipeline (`plugins/social_reel/reel_renderer.py`, `export_media_clipper.py`)
-   [ ] 6.4 Burned-in Subtitles & Platform Safe Zone Enforcement (`plugins/social_reel/reel_subtitles.py`)
-   [ ] 6.5 Unified Export Integration & Social Reel Diagnostic Tests (`export/dialog.py`, `test_runner.py`)
+5. Optional Future Milestone: Social Reel & Short Video Export Plugin (Instagram Reels, YouTube Shorts, TikTok) (`plugins/social_reel/`, `export_media_clipper.py`, `export_dialogs.py`) [PLANNED] [NOT STARTED]
+   [ ] 5.1 Social Reel Plugin Architecture & Manifest (`plugins/social_reel/plugin.py`, `plugins/social_reel/manifest.json`, `plugins/social_reel/export_destination.py`)
+   [ ] 5.2 Multi-Source Input & Template Image Configuration (`plugins/social_reel/reel_config.py`, `plugins/social_reel/reel_dialog.py`)
+   [ ] 5.3 9:16 Vertical Video Compositor & Audiogram Pipeline (`plugins/social_reel/reel_renderer.py`, `export_media_clipper.py`)
+   [ ] 5.4 Burned-in Subtitles & Platform Safe Zone Enforcement (`plugins/social_reel/reel_subtitles.py`)
+   [ ] 5.5 Unified Export Integration & Social Reel Diagnostic Tests (`export/dialog.py`, `test_runner.py`)
 
-7. Optional Future Milestone: Drupal Publishing & Export Plugin (`plugins/drupal/`, `export_destination.py`) [PLANNED / ON HOLD] [NOT STARTED]
-   [ ] 7.1 Drupal JSON:API Integration & Content Modeling: Direct publishing of segmented stories, transcripts, formatted HTML bodies, and audio/media file uploads to Drupal sites via the core JSON:API module (`/jsonapi/node/{bundle}`) with configurable authentication (Basic Auth / API Key / OAuth2) and bundle/field mapping. Detailed architectural planning deferred pending target site specifications.
+6. Optional Future Milestone: Drupal Publishing & Export Plugin (`plugins/drupal/`, `export_destination.py`) [PLANNED / ON HOLD] [NOT STARTED]
+   [ ] 6.1 Drupal JSON:API Integration & Content Modeling: Direct publishing of segmented stories, transcripts, formatted HTML bodies, and audio/media file uploads to Drupal sites via the core JSON:API module (`/jsonapi/node/{bundle}`) with configurable authentication (Basic Auth / API Key / OAuth2) and bundle/field mapping. Detailed architectural planning deferred pending target site specifications.
 
 ================================================================================
 DETAILED MILESTONE SPECIFICATIONS
 ================================================================================
 
-1. IMMEDIATE PREDECESSOR RELEASE: PHASE 1.1 — DIARIZATION OUTLIER CONSOLIDATION, 1.5S EMBEDDING WINDOWS & RUN PROCESSING PARTIAL-STAGE FIX:
-- Purpose: Prevent 20-speaker over-splitting on 2-speaker interviews by absorbing outlier micro-clusters and merging near-duplicate centroids, widen transcript-guided windows to 1.5s/0.75s, and preserve Run Processing defaults when unchecking loaded partial stages.
-- Target Release: v3.10.1-beta (Immediate Predecessor Release)
-- Technical References: `worker_diarization_clustering.py`, `worker_diarization_engine.py`, `processing.py`, `diagnostic_core_tests.py`.
-- Implementation Details:
-  * [x] Micro-Cluster Absorption & Centroid Merging (`worker_diarization_clustering.py`): Added `_sensitivity_centroid_merge_threshold()` and `consolidate_speaker_clusters()` inside `cluster_speakers_ahc()` before enforcing `min_speakers`/`max_speakers`.
-  * [x] 1.5s Transcript-Guided Windows & Sensitivity Pass-Through (`worker_diarization_engine.py`): Passed `embedding_window=1.5, embedding_step=0.75` and `sensitivity=sensitivity` in `run_transcript_guided_diarization()`.
-  * [x] Run Processing Existing-Data Preservation (`processing.py`): Used `existing_map` (loaded data or completed status) when saving `pipeline_opt_*` stage defaults.
-  * [x] Automated Regression Coverage (`diagnostic_core_tests.py`): Verified 60-vector outlier absorption and existing-data `pipeline_opt_*` preservation.
-
-2. ACTIVE RELEASE: PHASE 2 — ADJUSTABLE MINIMUM STORY LENGTH, GUEST NAME & PROPER-NOUN CLEANUP PIPELINE & SAVE TO STATION VOICES:
+1. IMMEDIATE PREDECESSOR RELEASE: PHASE 2 — ADJUSTABLE MINIMUM STORY LENGTH, GUEST NAME & PROPER-NOUN CLEANUP PIPELINE & SAVE TO STATION VOICES:
 - Purpose: Prevent short interjections from splitting magazine shows via configurable Minimum Story Length, streamline guest-name cleanup with phonetic matching + Preserve Case + Glossary integration, fix the Station Voice `78 -> 0.99` threshold launch bug, and add one-click Save to Station Voices checkboxes.
-- Target Release: v3.10.2-beta (Active Release)
+- Target Release: v3.10.2-beta (Immediate Predecessor Release)
 - Technical References: `RadioTVSegmenter.py`, `preferences_tabs_media.py`, `preferences_dialog.py`, `preferences_reset.py`, `preferences_reset_dialog.py`, `story_detection_processing.py`, `background_workers.py`, `worker_story_engine.py`, `speaker_name_matcher.py`, `speaker_name_cleanup_dialog.py`, `transcript_editor_dialogs.py`, `speaker_dialogs.py`, `speaker_editing_mixin.py`, `voice_profile_ops_mixin.py`, `diarization_processing.py`, `diagnostic_speaker_cleanup_tests.py`, `test_runner.py`.
 - Implementation Details:
   * [x] Adjustable Minimum Story Length (`RadioTVSegmenter.py`, `preferences_tabs_media.py`, `preferences_dialog.py`, `preferences_reset.py`, `preferences_reset_dialog.py`, `story_detection_processing.py`, `background_workers.py`, `worker_story_engine.py`): Added `Minimum Story Length:` (`min_story_duration`, default `3.0s`) in Preferences > Story Detection & Diarization and enforced it across both `StoryAutoDetectWorker` and `detect_story_boundaries()`.
@@ -122,32 +106,32 @@ DETAILED MILESTONE SPECIFICATIONS
   * [x] Save to Station Voices & Threshold Normalization (`RadioTVSegmenter.py`, `diarization_processing.py`, `preferences_tabs_media.py`, `voice_profile_ops_mixin.py`, `speaker_dialogs.py`, `speaker_editing_mixin.py`): Fixed `voice_profile_auto_match_threshold` (`78 -> 0.78`), added opt-in checkbox in `ChangeSpeakerDialog` + per-row `Station Voice` toggle column in `SpeakerManagerDialog`, and added offscreen test-mode `QMediaPlayer` teardown guard.
   * [x] Automated Regression Coverage (`diagnostic_speaker_cleanup_tests.py`, `test_runner.py`): Added `DiagnosticSpeakerCleanupTestsMixin` covering story length filtering, 9/9 real broadcast name misspellings + Preserve Case/Glossary/Undo, and Station Voice checkboxes + `78->0.78` normalization.
 
-3. PLANNED NEXT RELEASE: PHASE 3 — TIER 1 OFFLINE SPELLCHECK & MINIMUM SEGMENT LENGTH TERMINOLOGY ALIGNMENT:
+2. ACTIVE RELEASE: PHASE 3 — TIER 1 OFFLINE SPELLCHECK & MINIMUM SEGMENT LENGTH TERMINOLOGY ALIGNMENT:
 - Purpose: Align the minimum duration preference label with "Minimum Segment Length" terminology and add lightweight offline spellchecking (`pyspellchecker`) to WordPress publishing and segment metadata fields without adding runtime overhead to full-transcript rendering.
-- Target Release: v3.10.3-beta (Planned / Not Started)
-- Technical References: `preferences_tabs_media.py`, `plugins/wordpress/wp_tab_widget.py`, `story_widgets.py`, `spellcheck_helper.py`, `requirements.txt`, `build_installer.py`, `test_runner.py`.
+- Target Release: v3.10.3-beta (Active Release)
+- Technical References: `spellcheck_helper.py`, `spellcheck_widgets.py`, `preferences_tabs_media.py`, `story_detection_processing.py`, `installer/requirements.txt`, `build_installer.py`, `plugins/wordpress/wp_ui_builder.py`, `plugins/wordpress/plugin.py`, `plugins/wordpress/wordpress_dialog.py`, `plugins/wordpress/manifest.json`, `ui_layout.py`, `story_metadata_dialog.py`, `media_batch.py`, `glossary_dialog.py`, `speaker_editing_mixin.py`, `speaker_dialogs.py`, `qt_compat.py`, `diagnostic_speaker_cleanup_tests.py`, `test_runner.py`.
 - Implementation Details:
-  * [ ] Minimum Segment Length Label Rename (`preferences_tabs_media.py`): Rename "Minimum Story Length:" label and tooltip wording to "Minimum Segment Length:" while preserving the existing `min_story_duration` QSettings key for backward compatibility.
-  * [ ] Tier 1 Offline Spellcheck Core (`spellcheck_helper.py`, `requirements.txt`, `build_installer.py`): Pure-Python `pyspellchecker` wrapper seeded with user Glossary terms and confirmed project speaker names.
-  * [ ] Metadata Field Spellcheck Integration (`plugins/wordpress/wp_tab_widget.py`, `story_widgets.py`): Highlight misspellings and offer right-click corrections / "Add to Glossary" on WordPress Title, Excerpt, Caption, Alt Text, and Segment Title/Metadata inputs.
-  * [ ] Automated Diagnostic Tests (`test_runner.py`): Verify spellcheck suggestions, proper-noun/glossary allowlisting, and renamed preference label.
+  * [x] Minimum Segment Length Label Rename (`preferences_tabs_media.py`, `story_detection_processing.py`): Renamed `"Minimum Story Length:"` label and tooltip wording to `"Minimum Segment Length:"` while preserving the existing `min_story_duration` QSettings key for backward compatibility, and aligned detection log wording.
+  * [x] Tier 1 Offline Spellcheck Core (`spellcheck_helper.py`, `installer/requirements.txt`, `build_installer.py`): Headless pure-Python `OfflineSpellChecker` using `pyspellchecker` (with compact fallback dictionary), dynamically rebuilding allowlists from Glossary terms and confirmed project speaker names on refresh, plus PyInstaller bundle integration (`collect_all_packages` + hidden imports).
+  * [x] Metadata Field Spellcheck Integration (`spellcheck_widgets.py`, `plugins/wordpress/wp_ui_builder.py`, `plugins/wordpress/plugin.py`, `plugins/wordpress/wordpress_dialog.py`, `ui_layout.py`, `story_metadata_dialog.py`, `media_batch.py`, `glossary_dialog.py`, `speaker_editing_mixin.py`, `speaker_dialogs.py`): Inline red spellcheck underlines (`QSyntaxHighlighter` for `QTextEdit`/`QPlainTextEdit`, transparent overlay for `QLineEdit`) and right-click suggestions / `"Add '<word>' to Glossary"` / `"Ignore '<word>' (This Session)"` on WordPress Title, Excerpt, Custom Notice, Image Caption, Alt Text, and Segment Title/Metadata inputs, with live refresh across `GlossaryDialog`, `_save_glossary()`, and speaker renames.
+  * [x] Automated Diagnostic Tests (`diagnostic_speaker_cleanup_tests.py`, `test_runner.py`, `qt_compat.py`): Verified typo detection, Glossary/speaker add & removal un-allowlisting, case-preserving suggestions, QLineEdit/QTextEdit replacement, `WordPressPublishDialog` wiring via `plugin.app`, and the `"Minimum Segment Length:"` preference label.
 
-4. DEFERRED MILESTONE: DOMAIN SEPARATION & PURPOSE-DRIVEN MONOLITHIC FILE MODULARIZATION:
+3. DEFERRED MILESTONE: DOMAIN SEPARATION & PURPOSE-DRIVEN MONOLITHIC FILE MODULARIZATION:
 - Purpose: Systematic architectural refactoring prioritizing file purpose and single responsibility (<800 lines target, 1,000 lines ceiling).
 - Target Release: Deferred / Lower Priority
 - Technical References: `scripts/modular_audit.py`, `project_lifecycle.py`, `model_management.py`.
 
-5. OPTIONAL FUTURE MILESTONE: INTERACTIVE TEXT-BASED MEDIA ASSEMBLY & MULTI-ASSET RIPPLE EDITING ENGINE:
+4. OPTIONAL FUTURE MILESTONE: INTERACTIVE TEXT-BASED MEDIA ASSEMBLY & MULTI-ASSET RIPPLE EDITING ENGINE:
 - Purpose: Multi-document tabbed workspace allowing non-destructive audio/video assembly, text-based ripple cutting, and rich media clipboard interchange.
 - Target Release: v4.2.0 (Optional / Planned)
 - Technical References: Full architectural data models, `bin_model.py` schemas, and ripple playout engine specifications in `ARCHITECTURE.md` (Section 3).
 
-6. OPTIONAL FUTURE MILESTONE: SOCIAL REEL & SHORT VIDEO EXPORT PLUGIN:
+5. OPTIONAL FUTURE MILESTONE: SOCIAL REEL & SHORT VIDEO EXPORT PLUGIN:
 - Purpose: Vertical 9:16 video renderer with animated audiograms, platform safe-zone margin enforcement, and burned-in subtitles for social platforms.
 - Target Release: v4.3.0 (Optional / Planned)
 - Technical References: Subsystem architecture, plugin manifest, and FFmpeg filtergraph pipeline specifications in `ARCHITECTURE.md` (Section 6).
 
-7. OPTIONAL FUTURE MILESTONE: DRUPAL PUBLISHING & EXPORT PLUGIN:
+6. OPTIONAL FUTURE MILESTONE: DRUPAL PUBLISHING & EXPORT PLUGIN:
 - Purpose: Direct publishing of segmented stories, transcripts, HTML notes, and audio media to Drupal installations via Drupal's core JSON:API module.
 - Target Release: Future / Planned (On hold pending target site specifications)
 - Technical References: `plugins/drupal/`, modeled on `plugins/wordpress/` export destination architecture.

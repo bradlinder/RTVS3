@@ -526,6 +526,12 @@ class UiLayoutMixin(UiMenusMixin, UiDialogLaunchersMixin):
         self.title_input = QLineEdit(self)
         self.title_input.setPlaceholderText("Segment title / headline")
         self.title_input.editingFinished.connect(self.update_selected_story)
+        try:
+            from spellcheck_widgets import attach_spellcheck
+            attach_spellcheck(self.title_input, main_window=self)
+        except Exception:
+            import logging
+            logging.getLogger(__name__).warning("Failed to attach segment title spellchecker", exc_info=True)
         form_layout.addRow("Title:", self.title_input)
 
         times_layout = QHBoxLayout()

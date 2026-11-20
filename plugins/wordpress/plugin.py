@@ -149,6 +149,20 @@ class WordPressPublishDialog(QDialog):
         self.custom_text_edit.setMaximumHeight(65)
         custom_layout.addWidget(self.custom_text_edit)
 
+        try:
+            from spellcheck_helper import OfflineSpellChecker
+            from spellcheck_widgets import attach_spellcheck
+
+            _dlg_dict = getattr(self, "__dict__", {})
+            _mw = _dlg_dict.get("main_window") or _dlg_dict.get("app") or self.parent()
+            _sp = OfflineSpellChecker(main_window=_mw)
+            self._spellchecker = _sp
+            for _field in (self.title_edit, self.excerpt_edit, self.custom_text_edit):
+                attach_spellcheck(_field, main_window=_mw, spellchecker=_sp)
+        except Exception:
+            import logging
+            logging.getLogger(__name__).warning("Failed to attach WordPress publish spellcheckers", exc_info=True)
+
         pos_row = QHBoxLayout()
         self.pos_button_group = QButtonGroup(self)
         self.rad_pos_top = QRadioButton("Place at top of post")
@@ -240,6 +254,19 @@ class WordPressPublishDialog(QDialog):
         self.img_alt_edit.setText(str(wp_img_meta.get("featured_image_alt_text") or ""))
         img_meta_form.addRow("Alt Text:", self.img_alt_edit)
         img_layout.addWidget(self.img_meta_widget)
+
+        try:
+            from spellcheck_helper import OfflineSpellChecker
+            from spellcheck_widgets import attach_spellcheck
+
+            _dlg_dict = getattr(self, "__dict__", {})
+            _mw = _dlg_dict.get("main_window") or _dlg_dict.get("app") or self.parent()
+            _sp = getattr(self, "_spellchecker", None) or OfflineSpellChecker(main_window=_mw)
+            for _img_field in (self.img_caption_edit, self.img_alt_edit):
+                attach_spellcheck(_img_field, main_window=_mw, spellchecker=_sp)
+        except Exception:
+            import logging
+            logging.getLogger(__name__).warning("Failed to attach WordPress image metadata spellcheckers", exc_info=True)
 
         # Logic for radio toggles
         has_video = bool(getattr(self.app, "current_media_is_video", False) and getattr(self.app, "audio_file", None))

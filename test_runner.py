@@ -525,6 +525,11 @@ class DiagnosticEngine(
                 "Audio Diarization & VAD",
                 "Validates voice_profile_auto_match_threshold 78->0.78 normalization, Save to Station Voices checkboxes, and profile add/remove lifecycle",
             ),
+            DiagnosticItem(
+                "Offline Spellcheck and Metadata Terminology Alignment",
+                "Transcript & Speaker Management",
+                "Validates Tier 1 offline spellcheck detection, Glossary/speaker allowlisting, case-preserving suggestions, QLineEdit/QTextEdit replacement, and Add-to-Glossary sync",
+            ),
         ]
 
     def run_all(self, stop_requested_fn: Optional[Callable[[], bool]] = None) -> List[DiagnosticItem]:

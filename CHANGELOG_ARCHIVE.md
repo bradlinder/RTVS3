@@ -1,3 +1,14 @@
+## v3.10.1-beta
+- **Phase 1.1: Diarization Outlier Consolidation, 1.5s Embedding Windows & Run Processing Partial-Stage Fix (`worker_diarization_clustering.py`, `worker_diarization_engine.py`, `processing.py`, `diagnostic_core_tests.py`)**:
+  - **Micro-Cluster Absorption & Centroid Merging (`worker_diarization_clustering.py`)**:
+    - Added `_sensitivity_centroid_merge_threshold()` and `consolidate_speaker_clusters()`, absorbing small noise/outlier micro-clusters into nearest major speaker centroids and iteratively merging near-duplicate centroids *before* enforcing `min_speakers`/`max_speakers` in `cluster_speakers_ahc()`, eliminating 20-speaker over-splitting on 2-speaker interviews.
+  - **1.5s Transcript-Guided Windows & Sensitivity Pass-Through (`worker_diarization_engine.py`)**:
+    - Updated `run_transcript_guided_diarization()` to pass `embedding_window=1.5, embedding_step=0.75` to `extract_embeddings_batched()` for cleaner speaker embeddings and faster CPU inference, and passed `sensitivity=sensitivity` into `cluster_speakers_ahc()`.
+  - **Run Processing Existing-Data Preservation (`processing.py`)**:
+    - Updated `start_full_auto_pipeline()` so unchecking any stage that already has loaded transcript or diarization data (`existing_map`) does not overwrite `pipeline_opt_*` to `false` for future fresh episodes.
+  - **Regression Coverage (`diagnostic_core_tests.py`)**:
+    - Added a 60-vector outlier-absorption test in `_test_wespeaker_diarization_architecture` and existing-data `pipeline_opt_*` preservation assertions in `_test_project_serialization_round_trip`.
+
 ## v3.10.0-beta
 - **Phase 1: Diarization Sensitivity & Speedup, Debounced Micro-Edit Saves, Run Processing Memory & Google Docs Remnant Cleanup (`worker_diarization_clustering.py`, `worker_diarization_engine.py`, `processing.py`, `project_lifecycle.py`, `project_export.py`, `story_widgets.py`, `story_crud_mixin.py`, `speaker_editing_mixin.py`, `speaker_dialog_refinement_mixin.py`, `voice_profile_ops_mixin.py`, `project_state_mixin.py`, `RadioTVSegmenter.py`, `export/reorder_dialog.py`, `preferences_tabs_media.py`, `embedded_guides.py`, `.github/workflows/build.yml`, `diagnostic_core_tests.py`, `diagnostic_cloud_and_system_tests.py`, `diagnostic_batch_tests.py`)**:
   - **Diarization Sensitivity, Double-Windowing & Progress Fixes (`worker_diarization_clustering.py`, `worker_diarization_engine.py`)**:

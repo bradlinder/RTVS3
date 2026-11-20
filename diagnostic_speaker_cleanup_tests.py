@@ -100,6 +100,15 @@ class DiagnosticSpeakerCleanupTestsMixin:
             spin = live_widgets.get("min_story_spin")
             if spin is None or abs(float(spin.value()) - 35.0) > 1e-6:
                 raise AssertionError(f"Expected min_story_spin=35.0, got {getattr(spin, 'value', lambda: None)()}")
+            # Verify Phase 3.1 "Minimum Segment Length:" label alignment
+            label_text = getattr(spin, "_form_row_label", None)
+            if label_text is None and hasattr(page, "findChildren"):
+                from PySide6.QtWidgets import QLabel
+                labels = [lbl.text() for lbl in page.findChildren(QLabel) if hasattr(lbl, "text")]
+                if any("Minimum Segment Length:" in t for t in labels):
+                    label_text = "Minimum Segment Length:"
+            if label_text != "Minimum Segment Length:":
+                raise AssertionError(f"Expected 'Minimum Segment Length:' preference label, got {label_text!r}")
             thresh_spin = live_widgets.get("voice_match_thresh_spin")
             if thresh_spin is None or int(thresh_spin.value()) != 78:
                 raise AssertionError(f"Expected 0.78 threshold to render as 78%, got {getattr(thresh_spin, 'value', lambda: None)()}")
@@ -112,7 +121,7 @@ class DiagnosticSpeakerCleanupTestsMixin:
             app.processEvents()
 
         item.status = "PASS"
-        item.message = "Minimum story length filter (3s / 30s / fallback) and Preferences spinbox verified"
+        item.message = "Minimum Segment Length label, filter (3s / 30s / fallback), and Preferences spinbox verified"
 
     def _test_guest_name_proper_noun_cleanup_and_preserve_case(self, item: DiagnosticItem):
         app = self._ensure_qt_app()
@@ -340,3 +349,162 @@ class DiagnosticSpeakerCleanupTestsMixin:
 
         item.status = "PASS"
         item.message = "Station Voices checkboxes, threshold 78->0.78 normalization, and save/remove lifecycle verified"
+
+    def _test_offline_spellcheck_and_metadata_terminology_alignment(self, item: DiagnosticItem):
+        self._ensure_qt_app()
+        from PySide6.QtWidgets import QLineEdit, QTextEdit
+        from spellcheck_helper import (
+            OfflineSpellChecker,
+            clear_session_ignored_words,
+            collect_allowlist_words,
+        )
+        from spellcheck_widgets import add_word_to_glossary, attach_spellcheck
+
+        clear_session_ignored_words()
+        try:
+            class _MockSpellWindow:
+                def __init__(self):
+                    self.glossary = [
+                        {"source": "Kuram", "preferred": "Khurram Ghayas", "do_not_translate": True},
+                        {"source": "Krivet", "preferred": "Krivet", "do_not_translate": True},
+                    ]
+                    self.speaker_names = {
+                        "SPEAKER_00": "Raquel Ramseur-Webb",
+                        "SPEAKER_01": "Speaker 1",
+                    }
+                    self.custom_speakers_glossary = ["Ainsley Wynn Eakins"]
+                    self.saved_glossary_calls = 0
+
+                def _save_glossary(self):
+                    self.saved_glossary_calls += 1
+
+                def apply_glossary_to_whisper_context(self):
+                    pass
+
+            mw = _MockSpellWindow()
+
+            allowlist = collect_allowlist_words(main_window=mw)
+            for expected_ok in ("khurram", "ghayas", "krivet", "raquel", "ramseur-webb", "ramseur", "webb", "ainsley"):
+                if expected_ok not in allowlist:
+                    raise AssertionError(f"Expected '{expected_ok}' in spellcheck allowlist, got missing")
+            if "kuram" in allowlist:
+                raise AssertionError("Misspelled glossary source 'Kuram' must NOT be allowlisted")
+
+            checker = OfflineSpellChecker(main_window=mw)
+
+            # 1. Confirm proper nouns, HTML tags, URLs, shortcodes, acronyms, and brand names are NOT flagged
+            clean_text = (
+                'Interview with Khurram Ghayas, Raquel Ramseur-Webb, and Krivet on NPR '
+                '<a href="https://example.com">WordPress</a> [audio mp3="clip.mp3"] 128kbps.'
+            )
+            clean_issues = checker.find_misspelled_spans(clean_text)
+            if clean_issues:
+                raise AssertionError(f"Expected zero issues for allowlisted/HTML/URL text, got {clean_issues}")
+
+            # 2. Confirm genuine misspellings ARE detected with case-preserving suggestions
+            typo_text = "Teh broadcst intervew with Khurram Ghayas and Kuram."
+            issues = checker.find_misspelled_spans(typo_text)
+            flagged = [iss.word for iss in issues]
+            for must_flag in ("Teh", "broadcst", "intervew", "Kuram"):
+                if must_flag not in flagged:
+                    raise AssertionError(f"Expected '{must_flag}' to be flagged as misspelled, got {flagged}")
+            if "Khurram" in flagged or "Ghayas" in flagged:
+                raise AssertionError(f"Confirmed Glossary term must not be flagged: {flagged}")
+
+            teh_sugs = checker.get_suggestions("Teh", max_suggestions=5)
+            if not teh_sugs or "The" not in teh_sugs:
+                raise AssertionError(f"Expected case-preserving suggestion 'The' for 'Teh', got {teh_sugs}")
+
+            broad_sugs = checker.get_suggestions("broadcst", max_suggestions=5)
+            if not broad_sugs or "broadcast" not in broad_sugs:
+                raise AssertionError(f"Expected 'broadcast' suggestion for 'broadcst', got {broad_sugs}")
+
+            # 3. Verify UI attachment + suggestion application on QLineEdit and QTextEdit + Add to Glossary sync
+            title_edit = QLineEdit()
+            title_edit.setText("Teh broadcst headline with Zylophonia")
+            excerpt_edit = QTextEdit()
+            excerpt_edit.setPlainText("Summary of Zylophonia intervew.")
+
+            title_ctrl = attach_spellcheck(title_edit, main_window=mw, spellchecker=checker)
+            excerpt_ctrl = attach_spellcheck(excerpt_edit, main_window=mw, spellchecker=checker)
+            if title_ctrl is None or excerpt_ctrl is None:
+                raise AssertionError("attach_spellcheck failed to return SpellCheckController")
+
+            title_issues = title_ctrl.get_issues()
+            teh_issue = next((i for i in title_issues if i.word == "Teh"), None)
+            if teh_issue is None:
+                raise AssertionError(f"Expected 'Teh' issue on QLineEdit, got {title_issues}")
+
+            if not title_ctrl.apply_suggestion(teh_issue, "The"):
+                raise AssertionError("apply_suggestion returned False on QLineEdit")
+            if not title_edit.text().startswith("The broadcst"):
+                raise AssertionError(f"Expected QLineEdit text updated to 'The broadcst...', got {title_edit.text()!r}")
+
+            excerpt_issues = excerpt_ctrl.get_issues()
+            int_issue = next((i for i in excerpt_issues if i.word == "intervew"), None)
+            if int_issue is None:
+                raise AssertionError(f"Expected 'intervew' issue on QTextEdit, got {excerpt_issues}")
+            if not excerpt_ctrl.apply_suggestion(int_issue, "interview"):
+                raise AssertionError("apply_suggestion returned False on QTextEdit")
+            if "interview" not in excerpt_edit.toPlainText():
+                raise AssertionError(f"Expected QTextEdit updated with 'interview', got {excerpt_edit.toPlainText()!r}")
+
+            # Add custom term to Glossary -> persists & clears underline across BOTH widgets
+            add_word_to_glossary("Zylophonia", main_window=mw)
+            if mw.saved_glossary_calls < 1:
+                raise AssertionError("Expected add_word_to_glossary to persist via _save_glossary()")
+            if not any(
+                isinstance(e, dict) and str(e.get("preferred", "")).lower() == "zylophonia"
+                for e in mw.glossary
+            ):
+                raise AssertionError(f"Expected 'Zylophonia' saved in glossary, got {mw.glossary}")
+
+            remaining_title = [i.word for i in title_ctrl.get_issues()]
+            remaining_excerpt = [i.word for i in excerpt_ctrl.get_issues()]
+            if "Zylophonia" in remaining_title or "Zylophonia" in remaining_excerpt:
+                raise AssertionError(
+                    f"'Zylophonia' remained flagged after Add to Glossary: title={remaining_title}, excerpt={remaining_excerpt}"
+                )
+
+            # Removing a term from Glossary + refreshing must un-allowlist it again
+            from spellcheck_widgets import refresh_all_spellcheckers
+            mw.glossary = [e for e in mw.glossary if str(e.get("preferred", "")).lower() != "zylophonia"]
+            refresh_all_spellcheckers(main_window=mw)
+            after_del_title = [i.word for i in title_ctrl.get_issues()]
+            after_del_excerpt = [i.word for i in excerpt_ctrl.get_issues()]
+            if "Zylophonia" not in after_del_title or "Zylophonia" not in after_del_excerpt:
+                raise AssertionError(
+                    f"Expected 'Zylophonia' re-flagged after Glossary removal, got title={after_del_title}, excerpt={after_del_excerpt}"
+                )
+
+            # Renaming a confirmed speaker + refreshing must un-allowlist removed name and allowlist new name
+            mw.speaker_names["SPEAKER_00"] = "Zaphod Quimby"
+            refresh_all_spellcheckers(main_window=mw)
+            checker.refresh_from_window(mw)
+            if checker.is_word_known("Ramseur"):
+                raise AssertionError("Removed speaker 'Ramseur' should no longer be allowlisted after speaker rename")
+            if not checker.is_word_known("Quimby"):
+                raise AssertionError("New speaker surname 'Quimby' should be allowlisted after speaker rename")
+
+            # Verify WordPressPublishDialog resolves main_window via plugin.app when parent=None
+            from plugins.wordpress.plugin import WordPressPublishDialog
+
+            class _MockWpPlugin:
+                def __init__(self, app_obj):
+                    self.app = app_obj
+
+            wp_dlg = WordPressPublishDialog(_MockWpPlugin(mw), parent=None)
+            for _wp_attr in ("title_edit", "excerpt_edit", "custom_text_edit", "img_caption_edit", "img_alt_edit"):
+                wp_ctrl = getattr(wp_dlg, _wp_attr).__dict__.get("_spellcheck_controller")
+                if wp_ctrl is None or getattr(wp_ctrl, "main_window", None) is not mw:
+                    raise AssertionError(
+                        f"WordPressPublishDialog.{_wp_attr} did not resolve spellcheck main_window via plugin.app"
+                    )
+        finally:
+            clear_session_ignored_words()
+
+        item.status = "PASS"
+        item.message = (
+            f"Offline spellcheck ({checker.backend_name}), Glossary/speaker add & removal sync, "
+            "case-preserving suggestions, QLineEdit/QTextEdit replacement, and WordPressPublishDialog wiring verified"
+        )

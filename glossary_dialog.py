@@ -384,6 +384,12 @@ class GlossaryDialog(QDialog):
                 self.main_win.apply_glossary_to_whisper_context()
             if self.auto_apply_cb.isChecked() and hasattr(self.main_win, "apply_glossary_to_current_transcript"):
                 self.main_win.apply_glossary_to_current_transcript(entries_out)
+            try:
+                from spellcheck_widgets import refresh_all_spellcheckers
+                refresh_all_spellcheckers(main_window=self.main_win)
+            except Exception:
+                import logging
+                logging.getLogger(__name__).warning("Failed to refresh spellcheckers from GlossaryDialog", exc_info=True)
             if hasattr(self.main_win, "statusBar") and self.main_win.statusBar():
                 self.main_win.statusBar().showMessage(
                     "Glosario guardado" if self.is_es else "Glossary saved"

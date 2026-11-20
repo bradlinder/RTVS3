@@ -750,6 +750,12 @@ class SpeakerManagerDialog(QDialog):
             self.main_win._commit_project_state_change(before_state, f"Rename Speaker: {current_name} → {target}")
 
         self.main_win.render_transcript()
+        try:
+            from spellcheck_widgets import refresh_all_spellcheckers
+            refresh_all_spellcheckers(main_window=self.main_win)
+        except Exception:
+            import logging
+            logging.getLogger(__name__).warning("Failed to refresh spellcheckers after SpeakerManager rename", exc_info=True)
         self._schedule_debounced_save()
         self._populate()
 

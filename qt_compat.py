@@ -773,6 +773,8 @@ class DummyQComboBox(DynamicMock):
 class DummyQDoubleSpinBox:
     def __init__(self, *args, **kwargs):
         self._val = 0.0
+        self._decimals = 2
+        self._tooltip = ""
         self.valueChanged = DummySignal()
 
     def value(self) -> float:
@@ -788,8 +790,20 @@ class DummyQDoubleSpinBox:
     def setSingleStep(self, s: float):
         pass
 
+    def setDecimals(self, prec: int):
+        self._decimals = int(prec)
+
+    def decimals(self) -> int:
+        return int(self._decimals)
+
     def setSuffix(self, s: str):
         pass
+
+    def setToolTip(self, tip: str):
+        self._tooltip = str(tip)
+
+    def toolTip(self) -> str:
+        return str(self._tooltip)
 
     def setEnabled(self, val):
         pass
@@ -804,6 +818,7 @@ class DummyQDoubleSpinBox:
 class DummyQSpinBox:
     def __init__(self, *args, **kwargs):
         self._val = 0
+        self._tooltip = ""
         self.valueChanged = DummySignal()
 
     def value(self) -> int:
@@ -822,6 +837,12 @@ class DummyQSpinBox:
     def setSuffix(self, s: str):
         pass
 
+    def setToolTip(self, tip: str):
+        self._tooltip = str(tip)
+
+    def toolTip(self) -> str:
+        return str(self._tooltip)
+
     def setEnabled(self, val):
         pass
 
@@ -830,6 +851,29 @@ class DummyQSpinBox:
 
     def setStyleSheet(self, val):
         pass
+
+
+class DummyQFormLayout(DynamicMock):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._rows = []
+
+    def addRow(self, label_or_widget, field=None):
+        if field is not None:
+            lbl = DummyQLabel(label_or_widget) if isinstance(label_or_widget, str) else label_or_widget
+            self._rows.append((lbl, field))
+            try:
+                field._form_row_label = lbl.text() if hasattr(lbl, "text") else str(label_or_widget)
+            except Exception:
+                pass
+        else:
+            self._rows.append((None, label_or_widget))
+
+    def labelForField(self, field):
+        for lbl, fld in self._rows:
+            if fld is field:
+                return lbl
+        return None
 
 
 def _ensure_pyside6_fallback(force: bool = False) -> bool:
@@ -892,6 +936,7 @@ def _ensure_pyside6_fallback(force: bool = False) -> bool:
     pyside6_mod.QtWidgets.QComboBox = DummyQComboBox
     pyside6_mod.QtWidgets.QDoubleSpinBox = DummyQDoubleSpinBox
     pyside6_mod.QtWidgets.QSpinBox = DummyQSpinBox
+    pyside6_mod.QtWidgets.QFormLayout = DummyQFormLayout
 
     return False
 

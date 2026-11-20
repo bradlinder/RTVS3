@@ -59,7 +59,7 @@ try:
 except ImportError as e:
     print(f"[BUILD] Warning: Could not import prs_shared ({e}), using fallback values")
     APP_DISPLAY_NAME = "Radio & TV Segmenter"
-    PROJECT_VERSION = "3.10.2-beta"
+    PROJECT_VERSION = "3.10.3-beta"
 except Exception as e:
     print(f"[BUILD] Unexpected error importing prs_shared: {type(e).__name__}: {e}")
     raise
@@ -757,6 +757,7 @@ def main() -> None:
         "faster_whisper", "ctranslate2", "huggingface_hub", "soundfile",
         "diarize", "silero_vad", "wespeakerruntime", "onnxruntime", "sherpa_onnx",
         "keyring", "docx", "pypdf", "numpy", "scipy", "sklearn", "torchaudio", "certifi",
+        "spellchecker",
     ]
     collect_flags = []
     import importlib.util
@@ -770,6 +771,7 @@ def main() -> None:
         "numpy", "scipy", "scikit-learn", "torch", "torchaudio",
         "silero_vad", "onnxruntime", "wespeakerruntime", "diarize",
         "sherpa-onnx", "ctranslate2", "faster_whisper", "soundfile",
+        "pyspellchecker",
     ]:
         found_name = None
         for candidate in (meta, meta.replace("_", "-"), meta.replace("-", "_")):
@@ -811,6 +813,9 @@ def main() -> None:
         "--hidden-import", "diarize.vad",
         "--hidden-import", "diarize.utils",
         "--hidden-import", "wespeakerruntime",
+        "--hidden-import", "spellchecker",
+        "--hidden-import", "spellcheck_helper",
+        "--hidden-import", "spellcheck_widgets",
         "--hidden-import", "core_utils",
         "--hidden-import", "transcript_cleaner",
         "--hidden-import", "project_serialization",

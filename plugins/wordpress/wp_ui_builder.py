@@ -783,5 +783,25 @@ def setup_wp_tab_ui(self: Any):
 
     self._update_wp_conn_status()
 
+    # Tier 1 Offline Spellcheck on WordPress publishing metadata fields
+    try:
+        from spellcheck_helper import OfflineSpellChecker
+        from spellcheck_widgets import attach_spellcheck
+
+        _main_win = getattr(self, "main_window", None)
+        _wp_spell = OfflineSpellChecker(main_window=_main_win)
+        for _w in (
+            getattr(self, "wp_title_edit", None),
+            getattr(self, "wp_excerpt_edit", None),
+            getattr(self, "wp_custom_text_edit", None),
+            getattr(self, "wp_thumb_caption_edit", None),
+            getattr(self, "wp_thumb_alt_edit", None),
+        ):
+            if _w is not None:
+                attach_spellcheck(_w, main_window=_main_win, spellchecker=_wp_spell)
+    except Exception:
+        import logging
+        logging.getLogger(__name__).warning("Failed to attach WordPress tab spellcheckers", exc_info=True)
+
     wp_scroll.setWidget(wp_scroll_content)
     wp_page_layout.addWidget(wp_scroll)

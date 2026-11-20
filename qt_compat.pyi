@@ -565,7 +565,19 @@ class DummyQDoubleSpinBox:
     def setSingleStep(self, s: float):
         ...
 
+    def setDecimals(self, prec: int):
+        ...
+
+    def decimals(self) -> int:
+        ...
+
     def setSuffix(self, s: str):
+        ...
+
+    def setToolTip(self, tip: str):
+        ...
+
+    def toolTip(self) -> str:
         ...
 
     def setEnabled(self, val):
@@ -597,6 +609,12 @@ class DummyQSpinBox:
     def setSuffix(self, s: str):
         ...
 
+    def setToolTip(self, tip: str):
+        ...
+
+    def toolTip(self) -> str:
+        ...
+
     def setEnabled(self, val):
         ...
 
@@ -604,6 +622,17 @@ class DummyQSpinBox:
         ...
 
     def setStyleSheet(self, val):
+        ...
+
+class DummyQFormLayout(DynamicMock):
+
+    def __init__(self, *args, **kwargs):
+        ...
+
+    def addRow(self, label_or_widget, field=...):
+        ...
+
+    def labelForField(self, field):
         ...
 
 def _ensure_pyside6_fallback(force: bool=...) -> bool:

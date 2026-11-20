@@ -1,5 +1,19 @@
 # Changelog
 
+## v3.10.3-beta
+- **Phase 3: Tier 1 Offline Spellcheck & Minimum Segment Length Terminology Alignment (`spellcheck_helper.py`, `spellcheck_widgets.py`, `preferences_tabs_media.py`, `story_detection_processing.py`, `installer/requirements.txt`, `build_installer.py`, `plugins/wordpress/wp_ui_builder.py`, `plugins/wordpress/plugin.py`, `plugins/wordpress/wordpress_dialog.py`, `plugins/wordpress/manifest.json`, `ui_layout.py`, `story_metadata_dialog.py`, `media_batch.py`, `glossary_dialog.py`, `speaker_editing_mixin.py`, `speaker_dialogs.py`, `qt_compat.py`, `diagnostic_speaker_cleanup_tests.py`, `test_runner.py`)**:
+  - **Minimum Segment Length Terminology Alignment (`preferences_tabs_media.py`, `story_detection_processing.py`)**:
+    - Renamed the `"Minimum Story Length:"` preference label and tooltip wording in **Preferences > Story Detection & Diarization** to `"Minimum Segment Length:"` while preserving the `min_story_duration` `QSettings` key for full backward compatibility, and aligned story-detection log output (`Min Segment Length:`).
+  - **Tier 1 Offline Spellcheck Engine (`spellcheck_helper.py`, `installer/requirements.txt`, `build_installer.py`)**:
+    - Created 100% headless pure-Python `spellcheck_helper.py` (`OfflineSpellChecker`, `SpellIssue`, `collect_allowlist_words`, `match_case`) powered by `pyspellchecker` when installed with a compact English + broadcast fallback dictionary.
+    - Automatically seeds the allowlist from custom Glossary preferred terms and confirmed project speaker names (rebuilding window-derived terms on `refresh_from_window()` so removed glossary/speaker terms are immediately un-allowlisted while ignoring generic `Speaker 1`/`Unknown` placeholders, URLs, emails, ALL-CAPS acronyms, and numeric tokens), with case-preserving spelling suggestions and session-level ignore tracking.
+    - Added `pyspellchecker>=0.8.0,<1` to `installer/requirements.txt` and PyInstaller packaging hooks (`collect_all_packages`, metadata copy, hidden imports) in `build_installer.py`.
+  - **WordPress & Segment Metadata Spellcheck UI (`spellcheck_widgets.py`, `plugins/wordpress/wp_ui_builder.py`, `plugins/wordpress/plugin.py`, `plugins/wordpress/wordpress_dialog.py`, `ui_layout.py`, `story_metadata_dialog.py`, `media_batch.py`, `glossary_dialog.py`, `speaker_editing_mixin.py`, `speaker_dialogs.py`)**:
+    - Created dedicated SRP-compliant `spellcheck_widgets.py` providing inline red spellcheck underlines (`SpellCheckHighlighter` for `QTextEdit`/`QPlainTextEdit`, transparent paint overlay for `QLineEdit`) and native right-click context menus with bold suggestions, `"Add '<word>' to Glossary"`, and `"Ignore '<word>' (This Session)"`.
+    - Wired spellcheck into WordPress Title, Excerpt, Custom Notice, Image Caption, and Alt Text across `WordPressExportTabWidget`/`StoryMetadataDialog`, `WordPressPublishDialog` (resolving main window via `self.app`), and `WordPressPostMetadataDialog`, plus Segment Title inputs (`ui_layout.py`), with live refresh across attached editors on `_save_glossary()`, `GlossaryDialog.save_glossary()`, and speaker renames.
+  - **Automated Regression Verification (`diagnostic_speaker_cleanup_tests.py`, `test_runner.py`, `qt_compat.py`)**:
+    - Added `Offline Spellcheck and Metadata Terminology Alignment` diagnostic test covering typo detection, Glossary/speaker add and removal un-allowlisting, case-preserving suggestions, QLineEdit/QTextEdit replacement, `WordPressPublishDialog` wiring via `plugin.app`, and the `"Minimum Segment Length:"` preference label.
+
 ## v3.10.2-beta
 - **Phase 2: Adjustable Minimum Story Length, Guest Name & Proper-Noun Cleanup Pipeline & Save to Station Voices (`RadioTVSegmenter.py`, `preferences_tabs_media.py`, `preferences_dialog.py`, `preferences_reset.py`, `preferences_reset_dialog.py`, `story_detection_processing.py`, `background_workers.py`, `worker_story_engine.py`, `speaker_name_matcher.py`, `speaker_name_cleanup_dialog.py`, `transcript_editor_dialogs.py`, `speaker_dialogs.py`, `speaker_editing_mixin.py`, `voice_profile_ops_mixin.py`, `diarization_processing.py`, `diagnostic_speaker_cleanup_tests.py`, `test_runner.py`)**:
   - **Adjustable Minimum Story Length (`RadioTVSegmenter.py`, `preferences_tabs_media.py`, `preferences_dialog.py`, `preferences_reset.py`, `preferences_reset_dialog.py`, `story_detection_processing.py`, `background_workers.py`, `worker_story_engine.py`)**:
@@ -13,14 +27,3 @@
     - Added shared `save_speaker_to_station_voices()` / `remove_speaker_from_station_voices()` helpers on `VoiceProfileOpsMixin` (reusing cached segment embeddings first), an opt-in **Save to Station Voices** checkbox inside `ChangeSpeakerDialog`, a per-row **Station Voice** column toggle in `SpeakerManagerDialog`, and an offscreen `QMediaPlayer` teardown guard for headless test runs.
   - **Automated Regression Verification (`diagnostic_speaker_cleanup_tests.py`, `test_runner.py`)**:
     - Added `DiagnosticSpeakerCleanupTestsMixin` covering `min_story_duration` filtering & Preferences spinbox, 9 real broadcast guest-name misspellings + stopword suppression + Preserve Case + Trim/Glossary/Undo, and Station Voice checkboxes + `78 -> 0.78` threshold normalization.
-
-## v3.10.1-beta
-- **Phase 1.1: Diarization Outlier Consolidation, 1.5s Embedding Windows & Run Processing Partial-Stage Fix (`worker_diarization_clustering.py`, `worker_diarization_engine.py`, `processing.py`, `diagnostic_core_tests.py`)**:
-  - **Micro-Cluster Absorption & Centroid Merging (`worker_diarization_clustering.py`)**:
-    - Added `_sensitivity_centroid_merge_threshold()` and `consolidate_speaker_clusters()`, absorbing small noise/outlier micro-clusters into nearest major speaker centroids and iteratively merging near-duplicate centroids *before* enforcing `min_speakers`/`max_speakers` in `cluster_speakers_ahc()`, eliminating 20-speaker over-splitting on 2-speaker interviews.
-  - **1.5s Transcript-Guided Windows & Sensitivity Pass-Through (`worker_diarization_engine.py`)**:
-    - Updated `run_transcript_guided_diarization()` to pass `embedding_window=1.5, embedding_step=0.75` to `extract_embeddings_batched()` for cleaner speaker embeddings and faster CPU inference, and passed `sensitivity=sensitivity` into `cluster_speakers_ahc()`.
-  - **Run Processing Existing-Data Preservation (`processing.py`)**:
-    - Updated `start_full_auto_pipeline()` so unchecking any stage that already has loaded transcript or diarization data (`existing_map`) does not overwrite `pipeline_opt_*` to `false` for future fresh episodes.
-  - **Regression Coverage (`diagnostic_core_tests.py`)**:
-    - Added a 60-vector outlier-absorption test in `_test_wespeaker_diarization_architecture` and existing-data `pipeline_opt_*` preservation assertions in `_test_project_serialization_round_trip`.

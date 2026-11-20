@@ -1016,6 +1016,12 @@ class MediaBatchMixin:
 
     def _save_glossary(self):
         self.settings_store.setValue("glossary", json.dumps(self.glossary, ensure_ascii=False))
+        try:
+            from spellcheck_widgets import refresh_all_spellcheckers
+            refresh_all_spellcheckers(main_window=self)
+        except Exception:
+            import logging
+            logging.getLogger(__name__).warning("Failed to refresh spellcheckers after glossary save", exc_info=True)
 
     def apply_glossary_to_current_transcript(self, entries=None) -> bool:
         """Apply glossary rules and contextual name resolution to the active transcript with Undo support."""
@@ -1064,6 +1070,12 @@ class MediaBatchMixin:
             self._save_glossary()
             self.apply_glossary_to_whisper_context()
             self.apply_glossary_to_current_transcript(self.glossary)
+            try:
+                from spellcheck_widgets import refresh_all_spellcheckers
+                refresh_all_spellcheckers(main_window=self)
+            except Exception:
+                import logging
+                logging.getLogger(__name__).warning("Failed to refresh spellcheckers after add_to_glossary", exc_info=True)
             if hasattr(self, "statusBar") and self.statusBar():
                 self.statusBar().showMessage(f"Added to glossary: {text}")
 

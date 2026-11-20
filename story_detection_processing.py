@@ -50,7 +50,7 @@ class StoryDetectionProcessingMixin:
             min_story_duration = 3.0
         self.log_activity(
             f"[{'SONG' if is_music else 'STORY'} DETECT] Started {term.lower()} detection "
-            f"(Mode: {mode_str}, Threshold: {self.silence_threshold}s, Min Length: {min_story_duration:.1f}s)"
+            f"(Mode: {mode_str}, Threshold: {self.silence_threshold}s, Min Segment Length: {min_story_duration:.1f}s)"
         )
 
         self.story_job_token += 1

@@ -491,6 +491,12 @@ class SpeakerEditingMixin(SpeakerDialogRefinementMixin):
             self.transcript_view.lock_scroll_position(v_scroll_before, h_scroll_before, duration_ms=400)
 
         self.render_transcript()
+        try:
+            from spellcheck_widgets import refresh_all_spellcheckers
+            refresh_all_spellcheckers(main_window=self)
+        except Exception:
+            import logging
+            logging.getLogger(__name__).warning("Failed to refresh spellcheckers after speaker rename", exc_info=True)
         if hasattr(self, "schedule_project_save"):
             self.schedule_project_save()
         else:

@@ -291,6 +291,12 @@ class StoryMetadataDialog(QDialog):
                 self.tab_widget.rebuild_post_items()
             if self.tab_widget and hasattr(self.tab_widget, "wp_posts_list") and 0 <= cur_row < self.tab_widget.wp_posts_list.count():
                 self.tab_widget.wp_posts_list.setCurrentRow(cur_row)
+            try:
+                from spellcheck_widgets import refresh_all_spellcheckers
+                refresh_all_spellcheckers(main_window=self.main_window)
+            except Exception:
+                import logging
+                logging.getLogger(__name__).warning("Failed to refresh spellcheckers from metadata dialog", exc_info=True)
         finally:
             self._syncing_from_main = False
 

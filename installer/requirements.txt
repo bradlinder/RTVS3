@@ -42,3 +42,5 @@ scipy>=1.11.0,<1.15.0
 scikit-learn>=1.4.0,<1.6.0
 # Speaker diarization ONNX voice embedding engine (WeSpeaker ResNet34-LM)
 wespeakerruntime>=1.0.0,<2.0.0
+# Tier 1 offline spellcheck for WordPress and Segment metadata fields
+pyspellchecker>=0.8.0,<1
