@@ -709,12 +709,15 @@ class ProcessingMixin(
 
         boxes = []
         complete_map = {}
+        existing_map = {}
         user_toggled = set()
         for key, label, data in choices:
             row = QHBoxLayout()
             cb = QCheckBox(label)
             is_complete = bool(self.processing_status.get(key, False))
             complete_map[key] = is_complete
+            has_data = bool(data.get("segments")) if isinstance(data, dict) and key in ("transcription", "diarization") else bool(data)
+            existing_map[key] = bool(is_complete or has_data)
 
             if key == "translation":
                 from_c = self.source_language_code()
@@ -819,7 +822,7 @@ class ProcessingMixin(
                 return
             dialog.accept()
             self._save_pipeline_stage_prefs(
-                [(k, cb.isChecked(), complete_map.get(k, False), k in user_toggled) for k, cb in boxes]
+                [(k, cb.isChecked(), existing_map.get(k, False), k in user_toggled) for k, cb in boxes]
             )
             self.pipeline_queue = list(selected)
             self.pipeline_total_stages = len(selected)

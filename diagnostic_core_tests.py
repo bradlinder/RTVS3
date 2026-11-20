@@ -131,6 +131,8 @@ class DiagnosticCoreTestsMixin:
             assert pm.settings_store.data.get("pipeline_opt_translation") == "false" and "pipeline_opt_transcription" not in pm.settings_store.data
             ProcessingMixin._save_pipeline_stage_prefs(pm, [("transcription", True, True, True)])
             assert pm.settings_store.data.get("pipeline_opt_transcription") == "true"
+            ProcessingMixin._save_pipeline_stage_prefs(pm, [("transcription", False, True, False)])
+            assert pm.settings_store.data.get("pipeline_opt_transcription") == "true"
 
         item.status = "PASS"
         item.message = "Project state serialized and re-read with 100% data fidelity"
@@ -533,11 +535,15 @@ class DiagnosticCoreTestsMixin:
         labels_hi, _ = cluster_speakers_ahc(embs, distance_threshold=_sensitivity_distance_threshold("high"))
         labels_lo, _ = cluster_speakers_ahc(embs, distance_threshold=_sensitivity_distance_threshold("low"))
         assert len(np.unique(labels_hi)) == 2 and len(np.unique(labels_lo)) == 1
+        noise = np.eye(256, dtype=np.float32)[2:12]
+        noisy_embs = np.vstack([np.tile(v_a, (25, 1)), np.tile(v_b, (25, 1)), noise])
+        noisy_lbls, _ = cluster_speakers_ahc(noisy_embs, max_speakers=8, distance_threshold=0.58, sensitivity="high")
+        assert len(np.unique(noisy_lbls)) == 2, f"Expected 2 speakers after outlier absorption, got {len(np.unique(noisy_lbls))}"
 
         from diarize.utils import SubSegment
         captured, cb_msgs = [], []
         orig_extract, prev_sens = eng.extract_embeddings_batched, os.environ.get("PRS_DIARIZATION_SENSITIVITY")
-        def _mock_extract(_wav, segs, batch_size=32, min_segment_duration=0.4, progress_callback=None):
+        def _mock_extract(_wav, segs, batch_size=32, min_segment_duration=0.4, progress_callback=None, *args, **kwargs):
             captured.extend(segs)
             if progress_callback: progress_callback(1, 2); progress_callback(2, 2)
             return np.vstack([v_a, v_a]), [SubSegment(start=0.0, end=6.0, parent_idx=0), SubSegment(start=6.0, end=12.0, parent_idx=0)]

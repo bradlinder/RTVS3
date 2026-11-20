@@ -56,6 +56,73 @@ def _sensitivity_distance_threshold(sensitivity: Optional[str] = None) -> float:
     return sens_map.get(sens_env, 0.68)
 
 
+def _sensitivity_centroid_merge_threshold(sensitivity: Optional[str] = None) -> float:
+    """Post-clustering centroid cosine-distance threshold calibrated for WeSpeaker embeddings."""
+    raw = sensitivity if sensitivity else os.environ.get("PRS_DIARIZATION_SENSITIVITY", "normal")
+    sens_env = str(raw).strip().lower()
+    sens_map = {"low": 0.40, "normal": 0.36, "high": 0.32, "very_high": 0.26, "ultra": 0.20}
+    return sens_map.get(sens_env, 0.36)
+
+
+def consolidate_speaker_clusters(
+    embeddings,
+    labels,
+    min_fraction: float = 0.02,
+    max_min_cluster: int = 25,
+    centroid_merge_dist: Optional[float] = None,
+):
+    """Absorb noisy micro-clusters into nearest major speakers and merge redundant centroids."""
+    import numpy as np
+
+    labels_arr = np.array(labels, dtype=int).copy()
+    n = len(embeddings)
+    if n < 2:
+        return labels_arr
+
+    norms = np.linalg.norm(embeddings, axis=1, keepdims=True)
+    norms[norms == 0] = 1.0
+    Xn = embeddings / norms
+
+    if n >= 20:
+        uniq, counts = np.unique(labels_arr, return_counts=True)
+        eff_min = min(max(3, int(round(n * min_fraction))), int(max_min_cluster))
+        major = [int(u) for u, c in zip(uniq, counts) if int(c) >= eff_min]
+        if not major:
+            major = [int(uniq[int(np.argmax(counts))])]
+
+        if len(major) < len(uniq):
+            mc = np.vstack([Xn[labels_arr == m].mean(axis=0) for m in major])
+            mc /= np.maximum(1e-9, np.linalg.norm(mc, axis=1, keepdims=True))
+            major_set = set(major)
+            for i in range(n):
+                if int(labels_arr[i]) not in major_set:
+                    labels_arr[i] = major[int(np.argmax(Xn[i] @ mc.T))]
+
+        cm_dist = float(centroid_merge_dist) if centroid_merge_dist is not None else _sensitivity_centroid_merge_threshold()
+        while True:
+            uniq_cur = sorted(int(u) for u in np.unique(labels_arr))
+            if len(uniq_cur) <= 1:
+                break
+            cents = np.vstack([Xn[labels_arr == u].mean(axis=0) for u in uniq_cur])
+            cents /= np.maximum(1e-9, np.linalg.norm(cents, axis=1, keepdims=True))
+            dists = 1.0 - (cents @ cents.T)
+            np.fill_diagonal(dists, 2.0)
+            i, j = divmod(int(np.argmin(dists)), len(uniq_cur))
+            if dists[i, j] < cm_dist:
+                labels_arr[labels_arr == uniq_cur[j]] = uniq_cur[i]
+            else:
+                break
+
+        uniq_cur = sorted(int(u) for u in np.unique(labels_arr))
+        if len(uniq_cur) > 1:
+            cents = np.vstack([Xn[labels_arr == u].mean(axis=0) for u in uniq_cur])
+            cents /= np.maximum(1e-9, np.linalg.norm(cents, axis=1, keepdims=True))
+            labels_arr = np.array([uniq_cur[idx] for idx in np.argmax(Xn @ cents.T, axis=1)], dtype=int)
+
+    _, inv = np.unique(labels_arr, return_inverse=True)
+    return inv
+
+
 def merge_adjacent_diarization_segments(segments, max_gap: float = SHORT_FRAGMENT_MERGE_THRESHOLD):
     """Merge consecutive diarization segments from the same speaker separated by < max_gap seconds."""
     if not segments:
@@ -86,6 +153,7 @@ def cluster_speakers_ahc(
     max_speakers: int = 20,
     num_speakers: Optional[int] = None,
     distance_threshold: Optional[float] = None,
+    sensitivity: Optional[str] = None,
 ):
     """Cluster speaker embeddings with O(N^2) cosine AHC, honoring sensitivity and speaker bounds."""
     import numpy as np
@@ -99,8 +167,13 @@ def cluster_speakers_ahc(
     if num_speakers is not None:
         return fast_cluster_ahc(embeddings, k=int(num_speakers)), None
 
-    thresh = float(distance_threshold) if distance_threshold is not None else _sensitivity_distance_threshold()
+    thresh = float(distance_threshold) if distance_threshold is not None else _sensitivity_distance_threshold(sensitivity)
     labels = fast_cluster_ahc(embeddings, k=None, distance_threshold=thresh)
+    labels = consolidate_speaker_clusters(
+        embeddings,
+        labels,
+        centroid_merge_dist=_sensitivity_centroid_merge_threshold(sensitivity),
+    )
     k_found = int(len(np.unique(labels)))
     if min_speakers and k_found < int(min_speakers) and n >= int(min_speakers):
         labels = fast_cluster_ahc(embeddings, k=int(min_speakers))

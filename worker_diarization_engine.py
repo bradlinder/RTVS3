@@ -518,6 +518,8 @@ def run_transcript_guided_diarization(
         primary_speech_segments,
         batch_size=32,
         min_segment_duration=0.4,
+        embedding_window=1.5,
+        embedding_step=0.75,
         progress_callback=_emb_progress if progress_callback else None,
     )
 
@@ -543,6 +545,7 @@ def run_transcript_guided_diarization(
     labels, estimation_details = cluster_speakers_ahc(
         embeddings,
         distance_threshold=_sensitivity_distance_threshold(sensitivity),
+        sensitivity=sensitivity,
         **cluster_kwargs,
     )
 

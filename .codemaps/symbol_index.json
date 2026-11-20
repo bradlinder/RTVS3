@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-20 11:19:34",
+  "generated_at": "2026-11-20 11:37:45",
   "total_files": 165,
   "files": {
     "RadioTVSegmenter.py": {
       "path": "RadioTVSegmenter.py",
       "lines": 676,
-      "summary": "Radio & TV Segmenter \u2014 v3.10.0-beta",
+      "summary": "Radio & TV Segmenter \u2014 v3.10.1-beta",
       "exports": null,
       "classes": [
         {
@@ -1924,7 +1924,7 @@
     },
     "diagnostic_core_tests.py": {
       "path": "diagnostic_core_tests.py",
-      "lines": 957,
+      "lines": 963,
       "summary": "Diagnostic test bench suite component.",
       "exports": null,
       "classes": [
@@ -1932,7 +1932,7 @@
           "name": "DiagnosticCoreTestsMixin",
           "bases": [],
           "start_line": 26,
-          "end_line": 956,
+          "end_line": 962,
           "doc": "",
           "methods": [
             {
@@ -1946,168 +1946,168 @@
               "name": "_test_project_serialization_round_trip",
               "sig": "_test_project_serialization_round_trip(self, item)",
               "start_line": 67,
-              "end_line": 136,
+              "end_line": 138,
               "doc": ""
             },
             {
               "name": "_test_waveform_peak_cache_generator",
               "sig": "_test_waveform_peak_cache_generator(self, item)",
-              "start_line": 138,
-              "end_line": 163,
+              "start_line": 140,
+              "end_line": 165,
               "doc": ""
             },
             {
               "name": "_test_process_lifecycle_and_subprocess_lock",
               "sig": "_test_process_lifecycle_and_subprocess_lock(self, item)",
-              "start_line": 165,
-              "end_line": 171,
+              "start_line": 167,
+              "end_line": 173,
               "doc": ""
             },
             {
               "name": "_test_subrip_srt_timestamp_formatting",
               "sig": "_test_subrip_srt_timestamp_formatting(self, item)",
-              "start_line": 173,
-              "end_line": 183,
+              "start_line": 175,
+              "end_line": 185,
               "doc": ""
             },
             {
               "name": "_test_webvtt_vtt_formatting",
               "sig": "_test_webvtt_vtt_formatting(self, item)",
-              "start_line": 185,
-              "end_line": 193,
+              "start_line": 187,
+              "end_line": 195,
               "doc": ""
             },
             {
               "name": "_test_red_book_cue_sheet_generation",
               "sig": "_test_red_book_cue_sheet_generation(self, item)",
-              "start_line": 195,
-              "end_line": 211,
+              "start_line": 197,
+              "end_line": 213,
               "doc": ""
             },
             {
               "name": "_test_youtube_chapter_markers",
               "sig": "_test_youtube_chapter_markers(self, item)",
-              "start_line": 213,
-              "end_line": 229,
+              "start_line": 215,
+              "end_line": 231,
               "doc": ""
             },
             {
               "name": "_test_cockos_reaper_project_rpp_generator",
               "sig": "_test_cockos_reaper_project_rpp_generator(self, item)",
-              "start_line": 231,
-              "end_line": 313,
+              "start_line": 233,
+              "end_line": 315,
               "doc": ""
             },
             {
               "name": "_test_magix_samplitude_edl_v1_5_export",
               "sig": "_test_magix_samplitude_edl_v1_5_export(self, item)",
-              "start_line": 315,
-              "end_line": 344,
+              "start_line": 317,
+              "end_line": 346,
               "doc": ""
             },
             {
               "name": "_test_pytorch_and_torch_native_extensions",
               "sig": "_test_pytorch_and_torch_native_extensions(self, item)",
-              "start_line": 346,
-              "end_line": 355,
+              "start_line": 348,
+              "end_line": 357,
               "doc": ""
             },
             {
               "name": "_test_ctranslate2_acceleration_engine",
               "sig": "_test_ctranslate2_acceleration_engine(self, item)",
-              "start_line": 357,
-              "end_line": 366,
+              "start_line": 359,
+              "end_line": 368,
               "doc": ""
             },
             {
               "name": "_test_sherpa_onnx_and_onnx_runtime_engine",
               "sig": "_test_sherpa_onnx_and_onnx_runtime_engine(self, item)",
-              "start_line": 368,
-              "end_line": 377,
+              "start_line": 370,
+              "end_line": 379,
               "doc": ""
             },
             {
               "name": "_test_directml_and_gpu_device_enumeration",
               "sig": "_test_directml_and_gpu_device_enumeration(self, item)",
-              "start_line": 379,
-              "end_line": 403,
+              "start_line": 381,
+              "end_line": 405,
               "doc": ""
             },
             {
               "name": "_test_hugging_face_and_cdn_connectivity",
               "sig": "_test_hugging_face_and_cdn_connectivity(self, item)",
-              "start_line": 405,
-              "end_line": 422,
+              "start_line": 407,
+              "end_line": 424,
               "doc": ""
             },
             {
               "name": "_test_model_directory_storage_and_permissions",
               "sig": "_test_model_directory_storage_and_permissions(self, item)",
-              "start_line": 424,
-              "end_line": 434,
+              "start_line": 426,
+              "end_line": 436,
               "doc": ""
             },
             {
               "name": "_test_safe_archive_extraction_sandbox",
               "sig": "_test_safe_archive_extraction_sandbox(self, item)",
-              "start_line": 436,
-              "end_line": 456,
+              "start_line": 438,
+              "end_line": 458,
               "doc": ""
             },
             {
               "name": "_test_story_boundary_detection_pipeline",
               "sig": "_test_story_boundary_detection_pipeline(self, item)",
-              "start_line": 458,
-              "end_line": 489,
+              "start_line": 460,
+              "end_line": 491,
               "doc": ""
             },
             {
               "name": "_test_music_vs_voice_mode_filtering",
               "sig": "_test_music_vs_voice_mode_filtering(self, item)",
-              "start_line": 491,
-              "end_line": 503,
+              "start_line": 493,
+              "end_line": 505,
               "doc": ""
             },
             {
               "name": "_test_silero_neural_vad_initialization",
               "sig": "_test_silero_neural_vad_initialization(self, item)",
-              "start_line": 505,
-              "end_line": 513,
+              "start_line": 507,
+              "end_line": 515,
               "doc": ""
             },
             {
               "name": "_test_wespeaker_diarization_architecture",
               "sig": "_test_wespeaker_diarization_architecture(self, item)",
-              "start_line": 515,
-              "end_line": 558,
+              "start_line": 517,
+              "end_line": 564,
               "doc": ""
             },
             {
               "name": "_test_translation_plugin_architecture_invariants",
               "sig": "_test_translation_plugin_architecture_invariants(self, item)",
-              "start_line": 560,
-              "end_line": 572,
+              "start_line": 566,
+              "end_line": 578,
               "doc": ""
             },
             {
               "name": "_test_speaker_reassignment_contiguous_turn_logic",
               "sig": "_test_speaker_reassignment_contiguous_turn_logic(self, item)",
-              "start_line": 574,
-              "end_line": 626,
+              "start_line": 580,
+              "end_line": 632,
               "doc": ""
             },
             {
               "name": "_test_daw_timeline_interchange_and_gap_handling",
               "sig": "_test_daw_timeline_interchange_and_gap_handling(self, item)",
-              "start_line": 628,
-              "end_line": 744,
+              "start_line": 634,
+              "end_line": 750,
               "doc": ""
             },
             {
               "name": "_test_quick_sample_audio_preview_and_speaker_manager_dialog_invariants",
               "sig": "_test_quick_sample_audio_preview_and_speaker_manager_dialog_invariants(self, item)",
-              "start_line": 746,
-              "end_line": 956,
+              "start_line": 752,
+              "end_line": 962,
               "doc": ""
             }
           ]
@@ -9445,7 +9445,7 @@
     },
     "processing.py": {
       "path": "processing.py",
-      "lines": 1270,
+      "lines": 1273,
       "summary": "Radio & TV Segmenter v3.3.29 \u2014 processing responsibilities.",
       "exports": null,
       "classes": [
@@ -9489,7 +9489,7 @@
             "StoryDetectionProcessingMixin"
           ],
           "start_line": 92,
-          "end_line": 1269,
+          "end_line": 1272,
           "doc": "",
           "methods": [
             {
@@ -9608,91 +9608,91 @@
               "name": "start_full_auto_pipeline",
               "sig": "start_full_auto_pipeline(self)",
               "start_line": 685,
-              "end_line": 840,
+              "end_line": 843,
               "doc": "Open a chooser for the processing stages to run, then run them in order."
             },
             {
               "name": "_confirm_pipeline_rerun_if_needed",
               "sig": "_confirm_pipeline_rerun_if_needed(self, stages, parent)",
-              "start_line": 842,
-              "end_line": 911,
+              "start_line": 845,
+              "end_line": 914,
               "doc": "Look ahead at stages about to run in a pipeline. If any have already"
             },
             {
               "name": "_run_next_selected_processing",
               "sig": "_run_next_selected_processing(self)",
-              "start_line": 913,
-              "end_line": 993,
+              "start_line": 916,
+              "end_line": 996,
               "doc": ""
             },
             {
               "name": "start_transcribe_and_diarize",
               "sig": "start_transcribe_and_diarize(self)",
-              "start_line": 995,
-              "end_line": 1014,
+              "start_line": 998,
+              "end_line": 1017,
               "doc": ""
             },
             {
               "name": "_processing_choice",
               "sig": "_processing_choice(self, kind)",
-              "start_line": 1016,
-              "end_line": 1055,
+              "start_line": 1019,
+              "end_line": 1058,
               "doc": "Return: run, continue, start_over, or cancel based on current state."
             },
             {
               "name": "_worker_command",
               "sig": "_worker_command(self, args)",
-              "start_line": 1057,
-              "end_line": 1076,
+              "start_line": 1060,
+              "end_line": 1079,
               "doc": "Return (executable, args, env_overrides) for the local AI worker,"
             },
             {
               "name": "_resolve_worker_command",
               "sig": "_resolve_worker_command(self, args)",
-              "start_line": 1078,
-              "end_line": 1125,
+              "start_line": 1081,
+              "end_line": 1128,
               "doc": "Return (executable, args, env_overrides) for the local AI worker."
             },
             {
               "name": "_apply_worker_env_overrides",
               "sig": "_apply_worker_env_overrides(self, process, env_overrides)",
-              "start_line": 1128,
-              "end_line": 1164,
+              "start_line": 1131,
+              "end_line": 1167,
               "doc": "Applies extra environment variables (e.g. GPU device selection, SSL certs,"
             },
             {
               "name": "_download_model_and_continue_transcription",
               "sig": "_download_model_and_continue_transcription(self, model_name, label)",
-              "start_line": 1166,
-              "end_line": 1199,
+              "start_line": 1169,
+              "end_line": 1202,
               "doc": "Asynchronously download a missing model with responsive in-dialog progress and auto-resume."
             },
             {
               "name": "_on_transcription_dl_progress",
               "sig": "_on_transcription_dl_progress(self, pct, msg)",
-              "start_line": 1201,
-              "end_line": 1211,
+              "start_line": 1204,
+              "end_line": 1214,
               "doc": ""
             },
             {
               "name": "_on_transcription_dl_cancel",
               "sig": "_on_transcription_dl_cancel(self)",
-              "start_line": 1213,
-              "end_line": 1220,
+              "start_line": 1216,
+              "end_line": 1223,
               "doc": ""
             },
             {
               "name": "_on_transcription_dl_finished",
               "sig": "_on_transcription_dl_finished(self, err)",
-              "start_line": 1222,
-              "end_line": 1255,
+              "start_line": 1225,
+              "end_line": 1258,
               "doc": ""
             },
             {
               "name": "_on_transcription_dl_thread_cleanup",
               "sig": "_on_transcription_dl_thread_cleanup(self)",
-              "start_line": 1257,
-              "end_line": 1269,
+              "start_line": 1260,
+              "end_line": 1272,
               "doc": ""
             }
           ]
@@ -17404,7 +17404,7 @@
     "transcript_story.py": {
       "path": "transcript_story.py",
       "lines": 852,
-      "summary": "Radio & TV Segmenter v3.10.0-beta \u2014 transcript story responsibilities.",
+      "summary": "Radio & TV Segmenter v3.10.1-beta \u2014 transcript story responsibilities.",
       "exports": [
         "TranscriptStoryMixin",
         "Story",
@@ -19424,7 +19424,7 @@
     },
     "worker_diarization_clustering.py": {
       "path": "worker_diarization_clustering.py",
-      "lines": 355,
+      "lines": 428,
       "summary": "worker_diarization_clustering.py - Speaker Clustering, Centroid Matching & Math Helpers.",
       "exports": null,
       "classes": [],
@@ -19451,52 +19451,66 @@
           "doc": "Cosine-distance clustering threshold derived from PRS_DIARIZATION_SENSITIVITY."
         },
         {
+          "name": "_sensitivity_centroid_merge_threshold",
+          "sig": "_sensitivity_centroid_merge_threshold(sensitivity)",
+          "start_line": 59,
+          "end_line": 64,
+          "doc": "Post-clustering centroid cosine-distance threshold calibrated for WeSpeaker embeddings."
+        },
+        {
+          "name": "consolidate_speaker_clusters",
+          "sig": "consolidate_speaker_clusters(embeddings, labels, min_fraction, max_min_cluster, centroid_merge_dist)",
+          "start_line": 67,
+          "end_line": 123,
+          "doc": "Absorb noisy micro-clusters into nearest major speakers and merge redundant centroids."
+        },
+        {
           "name": "merge_adjacent_diarization_segments",
           "sig": "merge_adjacent_diarization_segments(segments, max_gap)",
-          "start_line": 59,
-          "end_line": 80,
+          "start_line": 126,
+          "end_line": 147,
           "doc": "Merge consecutive diarization segments from the same speaker separated by < max_gap seconds."
         },
         {
           "name": "cluster_speakers_ahc",
-          "sig": "cluster_speakers_ahc(embeddings, min_speakers, max_speakers, num_speakers, distance_threshold)",
-          "start_line": 83,
-          "end_line": 109,
+          "sig": "cluster_speakers_ahc(embeddings, min_speakers, max_speakers, num_speakers, distance_threshold, sensitivity)",
+          "start_line": 150,
+          "end_line": 182,
           "doc": "Cluster speaker embeddings with O(N^2) cosine AHC, honoring sensitivity and speaker bounds."
         },
         {
           "name": "fast_cluster_ahc",
           "sig": "fast_cluster_ahc(embeddings, k, distance_threshold)",
-          "start_line": 112,
-          "end_line": 168,
+          "start_line": 185,
+          "end_line": 241,
           "doc": "Agglomerative Hierarchical Clustering with cosine metric and average linkage (O(N^2))."
         },
         {
           "name": "apply_clustering_patches",
           "sig": "apply_clustering_patches()",
-          "start_line": 171,
-          "end_line": 208,
+          "start_line": 244,
+          "end_line": 281,
           "doc": "Globally monkey-patch SpectralClustering and diarize.clustering to use O(N^2) AHC."
         },
         {
           "name": "assign_short_segments_to_centroids",
           "sig": "assign_short_segments_to_centroids(short_segments, audio_path, centroids, label_values, raw_segments, min_confidence, get_wespeaker_model_fn, safe_tensor_fn)",
-          "start_line": 211,
-          "end_line": 327,
+          "start_line": 284,
+          "end_line": 400,
           "doc": "Extract acoustic embeddings for short segments (< 0.8s) with symmetric context padding,"
         },
         {
           "name": "_calculate_embedding_for_interval",
           "sig": "_calculate_embedding_for_interval(start, end, subsegments, embeddings)",
-          "start_line": 330,
-          "end_line": 355,
+          "start_line": 403,
+          "end_line": 428,
           "doc": "Compute unit-normalized 256-dimensional embedding vector for an interval [start, end]."
         }
       ]
     },
     "worker_diarization_engine.py": {
       "path": "worker_diarization_engine.py",
-      "lines": 950,
+      "lines": 953,
       "summary": "worker_diarization_engine.py - Speaker Diarization, Neural VAD & Embedding Pipeline.",
       "exports": null,
       "classes": [],
@@ -19568,14 +19582,14 @@
           "name": "run_transcript_guided_diarization",
           "sig": "run_transcript_guided_diarization(normalized_wav, transcript_file, expected_speakers, sensitivity, progress_callback)",
           "start_line": 452,
-          "end_line": 587,
+          "end_line": 590,
           "doc": "Execute transcript-guided speaker diarization directly from sentence boundaries."
         },
         {
           "name": "diarize",
           "sig": "diarize(audio_file, expected_speakers, transcript_file, sensitivity)",
-          "start_line": 590,
-          "end_line": 950,
+          "start_line": 593,
+          "end_line": 953,
           "doc": "Execute complete speaker diarization pipeline on an audio media file."
         }
       ]
