@@ -29,19 +29,19 @@ class DiagnosticCloudAndSystemTestsMixin:
 
         # 1. PluginManifest validation
         raw_manifest = {
-            "id": "gdocs_exporter",
-            "name": "Google Docs Exporter",
+            "id": "custom_exporter",
+            "name": "Custom Exporter",
             "version": "1.0.0",
             "category": "export",
             "author": "Radio & TV Segmenter Team",
             "min_app_version": "3.6.0",
         }
         manifest = PluginManifest.from_dict(raw_manifest)
-        if manifest.id != "gdocs_exporter" or manifest.category != "export":
+        if manifest.id != "custom_exporter" or manifest.category != "export":
             raise AssertionError("PluginManifest failed to parse dictionary attributes")
 
         # 2. BasePlugin lifecycle hooks
-        class MockGDocsPlugin(BasePlugin):
+        class MockCustomPlugin(BasePlugin):
             def __init__(self, m):
                 super().__init__(m)
                 self.loaded = False
@@ -54,7 +54,7 @@ class DiagnosticCloudAndSystemTestsMixin:
             def on_disable(self):
                 self.enabled_state = False
 
-        plugin = MockGDocsPlugin(manifest)
+        plugin = MockCustomPlugin(manifest)
         if not plugin.on_load() or not plugin.loaded:
             raise AssertionError("Plugin on_load hook failed")
         plugin.set_enabled(False)
@@ -64,7 +64,7 @@ class DiagnosticCloudAndSystemTestsMixin:
         if not plugin.enabled_state or not plugin.is_enabled:
             raise AssertionError("Plugin set_enabled(True) did not trigger on_enable hook")
 
-        # 3. Google Docs export payload serialization & comment anchoring validation
+        # 3. Structured export payload serialization & comment anchoring validation
         doc_payload = {
             "title": "Episode 101 - Studio Broadcast",
             "paragraphs": [
@@ -101,7 +101,7 @@ class DiagnosticCloudAndSystemTestsMixin:
             if real_wp.id != "wordpress" or real_wp.category != "export":
                 raise AssertionError(f"Invalid wordpress manifest attributes: id={real_wp.id}, cat={real_wp.category}")
 
-        # 5. CI Workflow Plugin Bundling Guard (.github/workflows/build.yml)
+        # 5. CI Workflow Plugin Bundling Guard (.github/workflows/build.yml) & Google Docs UI cleanup
         build_yml = Path(".github/workflows/build.yml")
         if build_yml.is_file():
             yml_text = build_yml.read_text(encoding="utf-8")
@@ -109,14 +109,21 @@ class DiagnosticCloudAndSystemTestsMixin:
                 "inputs.plugin_wordpress != false",
                 "inputs.plugin_youtube != false",
                 "inputs.plugin_translation != false",
-                "inputs.plugin_gdocs != false",
             ):
                 if bad_expr in yml_text:
                     raise AssertionError(f"CI build.yml still contains tag-breaking expression '{bad_expr}'")
+            if "plugin_gdocs" in yml_text or "BUILD_PLUGIN_GDOCS" in yml_text:
+                raise AssertionError("CI build.yml still contains removed plugin_gdocs / BUILD_PLUGIN_GDOCS entries")
             expected_wp = "BUILD_PLUGIN_WORDPRESS: ${{ github.event_name == 'push' || inputs.plugin_wordpress }}"
             wp_hits = yml_text.count(expected_wp)
             if wp_hits != 4:
                 raise AssertionError(f"Expected 4 occurrences of '{expected_wp}' in build.yml, found {wp_hits}")
+
+        for ui_path in (Path("export/reorder_dialog.py"), Path("preferences_tabs_media.py")):
+            if ui_path.is_file():
+                ui_text = ui_path.read_text(encoding="utf-8")
+                if "Google Docs" in ui_text:
+                    raise AssertionError(f"{ui_path} still references removed Google Docs destination")
 
         # 6. PluginManagerDialog Import & Handler Guard (GitHubPluginsWorker, sys)
         import os

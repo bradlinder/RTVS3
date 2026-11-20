@@ -1,5 +1,21 @@
 # Changelog
 
+## v3.10.0-beta
+- **Phase 1: Diarization Sensitivity & Speedup, Debounced Micro-Edit Saves, Run Processing Memory & Google Docs Remnant Cleanup (`worker_diarization_clustering.py`, `worker_diarization_engine.py`, `processing.py`, `project_lifecycle.py`, `project_export.py`, `story_widgets.py`, `story_crud_mixin.py`, `speaker_editing_mixin.py`, `speaker_dialog_refinement_mixin.py`, `voice_profile_ops_mixin.py`, `project_state_mixin.py`, `RadioTVSegmenter.py`, `export/reorder_dialog.py`, `preferences_tabs_media.py`, `embedded_guides.py`, `.github/workflows/build.yml`, `diagnostic_core_tests.py`, `diagnostic_cloud_and_system_tests.py`, `diagnostic_batch_tests.py`)**:
+  - **Diarization Sensitivity, Double-Windowing & Progress Fixes (`worker_diarization_clustering.py`, `worker_diarization_engine.py`)**:
+    - Passed `sensitivity` cleanly through `run_transcript_guided_diarization()` without resetting `PRS_DIARIZATION_SENSITIVITY` to `"normal"`, fixed missing `diarize._merge_adjacent_segments` import + 3-arg `_build_diarization_segments()` call (replacing with `merge_adjacent_diarization_segments()`), and eliminated redundant 3.0s/1.5s double-windowing on segments > 6s.
+    - Added `cluster_speakers_ahc()` (patched into `diarize.clustering` via `apply_clustering_patches()`) to honor sensitivity thresholds in auto mode and bypass multi-model GMM BIC stalls.
+    - Wired live window progress into `extract_embeddings_batched()` and standalone VAD fallback so the ticker no longer prematurely reports clustering while extraction is still running.
+  - **Run Processing Stage Persistence (`processing.py`)**:
+    - Saved and restored `pipeline_opt_*` checkbox preferences in `QSettings` (defaulting `Translate Transcript` off on first run unless Spanish export or batch translation is enabled) without clobbering already-completed stage defaults.
+  - **Debounced Micro-Edit Saves & `.rtvs.backup` Throttling (`project_lifecycle.py`, `project_export.py`, `story_widgets.py`, `story_crud_mixin.py`, `speaker_editing_mixin.py`, `speaker_dialog_refinement_mixin.py`, `voice_profile_ops_mixin.py`, `project_state_mixin.py`)**:
+    - Added `schedule_project_save()`, `flush_pending_project_save()`, and `cancel_pending_project_save()` (1.5s single-shot coalescing for saved `.rtvs` projects), flushed cleanly before close/load prompts while keeping explicit saves immediate.
+    - Throttled `.rtvs.backup` rotation (`RECOVERY_BACKUP_MIN_INTERVAL_SEC = 300.0`) so recovery backups happen at most once per 5 minutes per project instead of on every drag.
+  - **Google Docs Export Cleanup (`RadioTVSegmenter.py`, `export/reorder_dialog.py`, `preferences_tabs_media.py`, `embedded_guides.py`, `.github/workflows/build.yml`)**:
+    - Scrubbed stale `gdocs` / `plugin_enabled_gdocs` keys from `QSettings` on startup, cleaned destination-order tooltips and guide bullets, and removed dead `plugin_gdocs` / `BUILD_PLUGIN_GDOCS` hooks from CI build workflows.
+  - **Regression Tests (`diagnostic_core_tests.py`, `diagnostic_cloud_and_system_tests.py`, `diagnostic_batch_tests.py`)**:
+    - Extended `_test_wespeaker_diarization_architecture` and `_test_project_serialization_round_trip` for sensitivity clustering, single-pass transcript-guided diarization, debounced saves, backup throttling, and `ProcessingMixin` checkbox persistence, and updated CI/UI Google Docs removal checks.
+
 ## v3.9.99-beta
 - **UX Responsiveness, Timeline Right-Click Dead Zones & Floating Toolbar Fixes (`transcript_timeline_sync_mixin.py`, `timeline_widgets.py`, `background_workers.py`, `project_lifecycle.py`, `plugins/wordpress/wp_tab_widget.py`, `translation.py`, `diagnostic_editor_tests.py`, `diagnostic_export_tests.py`)**:
   - **Floating Selection Toolbar Guard & Positioning (`transcript_timeline_sync_mixin.py`)**:
@@ -14,14 +30,3 @@
     - Removed per-lookup `[DEBUG] source_language_code` log spam from `translation.py`.
   - **Regression Verification (`diagnostic_editor_tests.py`, `diagnostic_export_tests.py`)**:
     - Added automated checks covering floating toolbar enable/disable + viewport geometry (`6d`), timeline right-click menus over fade handles, edges, and 2px jitter (`6e`), `skip_if_exists` peak cache preservation (`6f`), and zero `refresh_story_list` / `log_reason` triggers during WordPress caption/alt typing (plus updated `6c` `TimelineCanvas(None)` parentage for real PySide6 compatibility).
-
-## v3.9.98-beta
-- **CI Tag-Release Plugin Bundling Fix & Plugin Manager Update Check Hardening (`.github/workflows/build.yml`, `plugins/manager_dialog.py`, `diagnostic_cloud_and_system_tests.py`)**:
-  - **GitHub Actions Tag-Push Plugin Bundling (`.github/workflows/build.yml`)**:
-    - Fixed all four build jobs (`build-plugins`, `build-windows`, `build-macos`, `build-linux`) where `BUILD_PLUGIN_*` environment variables used `${{ inputs.plugin_* != false }}` — which evaluated to `false` on `push: tags` releases because `inputs.*` is `null` and GitHub Actions coerces `null != false` to `false`, causing plugins (including WordPress, YouTube, and Translation) to be omitted from tag-triggered installers.
-    - Updated `BUILD_PLUGIN_WORDPRESS`, `BUILD_PLUGIN_YOUTUBE`, `BUILD_PLUGIN_TRANSLATION`, and `BUILD_PLUGIN_GDOCS` across all 4 jobs to `${{ github.event_name == 'push' || inputs.plugin_* }}` so tag releases always bundle all plugins while preserving manual `workflow_dispatch` toggles.
-  - **Plugin Manager Update & Open Folder Fix (`plugins/manager_dialog.py`)**:
-    - Added missing `import sys` (required by `on_open_folder()` platform checks) and missing `GitHubPluginsWorker` import from `plugins.installer_workers` (resolving `NameError: name 'GitHubPluginsWorker' is not defined` in `check_for_plugin_updates()`).
-    - Retained strong references to active background worker instances (`_update_check_worker`, `_batch_update_worker`).
-  - **Regression Verification (`diagnostic_cloud_and_system_tests.py`)**:
-    - Added assertions in `_test_plugin_interface_sandbox_testing` verifying that `.github/workflows/build.yml` never regresses to `inputs.plugin_* != false` and validating `PluginManagerDialog.check_for_plugin_updates()` and `on_open_folder()` without `NameError`.

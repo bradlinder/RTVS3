@@ -690,7 +690,6 @@ Share transcripts and show rundowns with editorial staff and producers:
 - **Plain Text (.txt) & Markdown (.md)**: Clean text files ideal for note-taking apps, summaries, and web publishing.
 - **Tracklist / YouTube Chapters (.txt)**: Formatted timestamped chapter lists ready for YouTube video descriptions (also accessible instantly via **Ctrl+Shift+Y**).
 - **Red Book Cue Sheet (.cue)**: Playout automation index files.
-- **Google Docs & Sheets**: Directly creates formatted Google Docs articles and Google Sheets rundown schedules via Google Drive integration.
 
 ---
 

@@ -485,7 +485,10 @@ class VoiceProfileOpsMixin:
             self.log_activity(
                 f"[SPEAKER] Voice Identification: {count} confirmed turn(s) assigned to '{target_name}'."
             )
-        self.save_project()
+        if hasattr(self, "schedule_project_save"):
+            self.schedule_project_save()
+        else:
+            self.save_project()
         self.render_transcript()
         if hasattr(self, "statusBar") and self.statusBar():
             self.statusBar().showMessage(

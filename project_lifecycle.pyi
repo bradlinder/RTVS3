@@ -5,9 +5,10 @@ import json
 import os
 import shutil
 import sys
+import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
-from PySide6.QtCore import QDir, QTime, QUrl, Qt
+from PySide6.QtCore import QDir, QTime, QTimer, QUrl, Qt
 from PySide6.QtWidgets import QCheckBox, QDialog, QFileDialog, QGroupBox, QHBoxLayout, QInputDialog, QLabel, QLineEdit, QMessageBox, QPushButton, QVBoxLayout
 from prs_shared import PROJECT_VERSION, cleanup_old_thumbnail_cache, read_rtvs_project_file, safe_filename, write_rtvs_project_file, write_waveform_peak_cache, make_dialog_maximizable, ProjectMetadataDict
 from transcript_story import Story
@@ -40,6 +41,18 @@ class ProjectLifecycleMixin:
         ...
 
     def save_project_as(self) -> bool:
+        ...
+
+    def schedule_project_save(self, delay_ms: int=...):
+        ...
+
+    def _run_debounced_save(self):
+        ...
+
+    def cancel_pending_project_save(self):
+        ...
+
+    def flush_pending_project_save(self) -> bool:
         ...
 
     def save_project(self, force=...):

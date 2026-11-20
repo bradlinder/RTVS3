@@ -130,7 +130,10 @@ class SpeakerEditingMixin(SpeakerDialogRefinementMixin):
 
             if hasattr(self, "add_custom_speaker_to_glossary"):
                 self.add_custom_speaker_to_glossary(name)
-            self.save_project()
+            if hasattr(self, "schedule_project_save"):
+                self.schedule_project_save()
+            else:
+                self.save_project()
             self.render_transcript()
             return True
 
@@ -161,7 +164,10 @@ class SpeakerEditingMixin(SpeakerDialogRefinementMixin):
 
             if hasattr(self, "add_custom_speaker_to_glossary"):
                 self.add_custom_speaker_to_glossary(name)
-            self.save_project()
+            if hasattr(self, "schedule_project_save"):
+                self.schedule_project_save()
+            else:
+                self.save_project()
             self.render_transcript()
             return True
 
@@ -269,7 +275,10 @@ class SpeakerEditingMixin(SpeakerDialogRefinementMixin):
         self.register_confirmed_speaker_turn(seg_idx, left_speaker)
         self.register_confirmed_speaker_turn(seg_idx + 1, right_speaker)
         
-        self.save_project()
+        if hasattr(self, "schedule_project_save"):
+            self.schedule_project_save()
+        else:
+            self.save_project()
         self.render_transcript()
         return True
 
@@ -291,7 +300,10 @@ class SpeakerEditingMixin(SpeakerDialogRefinementMixin):
             if before_state is not None and hasattr(self, "_commit_project_state_change"):
                 self._commit_project_state_change(before_state, f"Rename Speaker: {old_name} → {new_name.strip()}")
             self.render_transcript()
-            self.save_project()
+            if hasattr(self, "schedule_project_save"):
+                self.schedule_project_save()
+            else:
+                self.save_project()
 
     def display_speaker(self, speaker):
         if speaker is None:
@@ -457,7 +469,10 @@ class SpeakerEditingMixin(SpeakerDialogRefinementMixin):
             self.transcript_view.lock_scroll_position(v_scroll_before, h_scroll_before, duration_ms=400)
 
         self.render_transcript()
-        self.save_project()
+        if hasattr(self, "schedule_project_save"):
+            self.schedule_project_save()
+        else:
+            self.save_project()
         if hasattr(self, "statusBar") and self.statusBar():
             self.statusBar().showMessage(f"Updated speaker to: {target_name}")
 
@@ -540,7 +555,10 @@ class SpeakerEditingMixin(SpeakerDialogRefinementMixin):
                 f"Remove Speaker Label: {removed_name} → {target_name} (turn at #{seg_idx + 1})"
             )
 
-        self.save_project()
+        if hasattr(self, "schedule_project_save"):
+            self.schedule_project_save()
+        else:
+            self.save_project()
         self.render_transcript()
         if hasattr(self, "statusBar") and self.statusBar():
             self.statusBar().showMessage(f"Removed '{removed_name}' label at {format_time(segments[seg_idx].get('start', 0))}.")

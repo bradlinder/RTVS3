@@ -265,7 +265,10 @@ class StoryCrudMixin:
                 new_stories = [Story.from_dict(s.to_dict()) for s in self.stories]
                 self.commit_story_change(old_stories, new_stories, "Adjust Story Selection")
                 self.refresh_story_list()
-                self.save_project()
+                if hasattr(self, "schedule_project_save"):
+                    self.schedule_project_save()
+                else:
+                    self.save_project()
 
     def update_selected_story(self):
         selected_rows = list(self.current_selected_story_indices)
@@ -425,7 +428,10 @@ class StoryCrudMixin:
             self.refresh_story_list()
             self.apply_story_selection_indices([index], seek=True)
             self.mark_project_dirty(desc)
-            self.save_project()
+            if hasattr(self, "schedule_project_save"):
+                self.schedule_project_save()
+            else:
+                self.save_project()
 
     def set_selected_story_end(self):
         selected_rows = list(self.current_selected_story_indices)
@@ -472,7 +478,10 @@ class StoryCrudMixin:
             self.refresh_story_list()
             self.apply_story_selection_indices([index], seek=False)
             self.mark_project_dirty(desc)
-            self.save_project()
+            if hasattr(self, "schedule_project_save"):
+                self.schedule_project_save()
+            else:
+                self.save_project()
 
     def add_selection_to_story(self):
         if not hasattr(self, "transcript_view"):
@@ -778,7 +787,10 @@ class StoryCrudMixin:
                 if hasattr(self, "timeline"):
                     self.timeline.set_stories(self.stories, self.current_selected_story_indices)
                     self.timeline.update()
-                self.save_project()
+                if hasattr(self, "schedule_project_save"):
+                    self.schedule_project_save()
+                else:
+                    self.save_project()
 
     def apply_fades_to_selected_stories(self, fade_in: Optional[float] = None, fade_out: Optional[float] = None, fade_curve: Optional[str] = None):
         if not hasattr(self, "stories") or not self.stories:
@@ -813,7 +825,10 @@ class StoryCrudMixin:
             if hasattr(self, "timeline"):
                 self.timeline.set_stories(self.stories, self.current_selected_story_indices)
                 self.timeline.update()
-            self.save_project()
+            if hasattr(self, "schedule_project_save"):
+                self.schedule_project_save()
+            else:
+                self.save_project()
 
     def remove_fades_from_selected_stories(self):
         self.apply_fades_to_selected_stories(fade_in=0.0, fade_out=0.0)
@@ -841,7 +856,10 @@ class StoryCrudMixin:
             if hasattr(self, "timeline"):
                 self.timeline.set_stories(self.stories, self.current_selected_story_indices)
                 self.timeline.update()
-            self.save_project()
+            if hasattr(self, "schedule_project_save"):
+                self.schedule_project_save()
+            else:
+                self.save_project()
 
     def open_story_metadata_dialog(self, target_story_index: Optional[int] = None, modal: bool = False):
         from story_metadata_dialog import StoryMetadataDialog

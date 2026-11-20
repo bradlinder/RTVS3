@@ -389,7 +389,7 @@ class DiagnosticBatchTestsMixin:
                 pass
 
         item.status = "PASS"
-        item.message = "YouTube and Google Docs auth email methods, WordPress story panel exclusion, and export dialog guards verified"
+        item.message = "YouTube export, removed Google Docs plugin check, WordPress story panel exclusion, and export dialog guards verified"
 
     def _test_pdf_transcript_export_and_bold_speaker_labels(self, item: DiagnosticItem):
         from export.pdf import TranscriptPdfWriter

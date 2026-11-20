@@ -40,7 +40,9 @@ from worker_diarization_clustering import (
     _sensitivity_distance_threshold,
     apply_clustering_patches,
     assign_short_segments_to_centroids,
+    cluster_speakers_ahc,
     fast_cluster_ahc,
+    merge_adjacent_diarization_segments,
 )
 
 # Callback for IPC message emission; default to stdout JSON
@@ -451,15 +453,14 @@ def run_transcript_guided_diarization(
     normalized_wav,
     transcript_file,
     expected_speakers="auto",
-    sensitivity="normal",
+    sensitivity=None,
     progress_callback=None,
 ):
     """Execute transcript-guided speaker diarization directly from sentence boundaries."""
     import json
     import numpy as np
     from diarize.utils import SpeechSegment
-    from diarize.clustering import cluster_speakers
-    from diarize import _RawSegment, _merge_adjacent_segments, DiarizeResult
+    from diarize import _RawSegment, DiarizeResult, _build_diarization_segments
 
     if sensitivity:
         os.environ["PRS_DIARIZATION_SENSITIVITY"] = str(sensitivity)
@@ -490,12 +491,6 @@ def run_transcript_guided_diarization(
 
         if dur < 0.8:
             short_speech_segments.append(SpeechSegment(start=st, end=en))
-        elif dur > 6.0:
-            curr_start = st
-            while curr_start + 1.0 < en:
-                curr_end = min(curr_start + 3.0, en)
-                primary_speech_segments.append(SpeechSegment(start=curr_start, end=curr_end))
-                curr_start += 1.5
         else:
             primary_speech_segments.append(SpeechSegment(start=st, end=en))
 
@@ -506,16 +501,29 @@ def run_transcript_guided_diarization(
     if progress_callback:
         progress_callback(45, "Extracting acoustic embeddings from transcript boundaries...")
 
+    _last_emb_report = [0.0]
+
+    def _emb_progress(done: int, total: int):
+        if not progress_callback or not total:
+            return
+        now_t = time.monotonic()
+        if done < total and (now_t - _last_emb_report[0]) < 0.5:
+            return
+        _last_emb_report[0] = now_t
+        pct = 45 + int(31.0 * min(1.0, float(done) / float(total)))
+        progress_callback(min(76, pct), f"Extracting speaker signatures ({done}/{total} windows)...")
+
     embeddings, subsegments = extract_embeddings_batched(
         normalized_wav,
         primary_speech_segments,
         batch_size=32,
         min_segment_duration=0.4,
+        progress_callback=_emb_progress if progress_callback else None,
     )
 
     if len(embeddings) == 0:
         raw_segments = [_RawSegment(start=s["start"], end=s["end"], speaker="SPEAKER_00") for s in valid_segments]
-        merged = _merge_adjacent_segments(raw_segments)
+        merged = merge_adjacent_diarization_segments(raw_segments)
         return DiarizeResult(
             segments=merged,
             audio_path=str(normalized_wav),
@@ -530,14 +538,13 @@ def run_transcript_guided_diarization(
         cluster_kwargs["min_speakers"] = 3
 
     if progress_callback:
-        progress_callback(78, "Grouping speaker signatures with fast AHC...")
+        progress_callback(78, "Clustering speaker signatures (fast AHC)...")
 
-    try:
-        labels, estimation_details = cluster_speakers(
-            embeddings, distance_threshold=_sensitivity_distance_threshold(), **cluster_kwargs
-        )
-    except TypeError:
-        labels, estimation_details = cluster_speakers(embeddings, **cluster_kwargs)
+    labels, estimation_details = cluster_speakers_ahc(
+        embeddings,
+        distance_threshold=_sensitivity_distance_threshold(sensitivity),
+        **cluster_kwargs,
+    )
 
     unique_labels = sorted(np.unique(labels))
     centroids_list = []
@@ -554,8 +561,7 @@ def run_transcript_guided_diarization(
 
     centroids = np.array(centroids_list)
 
-    from diarize import _build_diarization_segments
-    raw_segments = _build_diarization_segments(primary_speech_segments, subsegments, labels, embeddings)
+    raw_segments = _build_diarization_segments(primary_speech_segments, subsegments, labels)
 
     if short_speech_segments:
         short_assigned = assign_short_segments_to_centroids(
@@ -570,7 +576,7 @@ def run_transcript_guided_diarization(
         raw_segments.extend(short_assigned)
         raw_segments.sort(key=lambda s: s.start)
 
-    merged = _merge_adjacent_segments(raw_segments)
+    merged = merge_adjacent_diarization_segments(raw_segments)
     audio_dur = max((s.end for s in merged), default=valid_segments[-1]["end"])
 
     return DiarizeResult(
@@ -706,6 +712,14 @@ def diarize(audio_file, expected_speakers="auto", transcript_file=None, sensitiv
         _emit("progress", percent=42, message="Extracting batched speaker acoustic embeddings...")
 
         stop_ticker = threading.Event()
+        diar_stage = ["extracting"]
+        last_real_progress = [0.0]
+
+        def _tg_progress(p, msg):
+            last_real_progress[0] = time.time()
+            if "clustering" in str(msg).lower():
+                diar_stage[0] = "clustering"
+            _emit("progress", percent=p, message=msg)
 
         def ticker():
             clustering_start_t = None
@@ -713,23 +727,23 @@ def diarize(audio_file, expected_speakers="auto", transcript_file=None, sensitiv
 
             while not stop_ticker.wait(1.5):
                 now = time.time()
+                if (now - last_real_progress[0]) < 3.0:
+                    continue
                 elapsed_str = _format_elapsed(diarization_start_time)
-
-                time_since_tqdm = now - global_last_tqdm_time[0] if global_last_tqdm_time[0] > 0 else 999.0
-                is_clustering = global_tqdm_completed[0] or (time_since_tqdm > 3.0 and curr_pct >= 70)
+                is_clustering = (diar_stage[0] == "clustering") or global_tqdm_completed[0]
 
                 if is_clustering:
                     if clustering_start_t is None:
                         clustering_start_t = now
 
                     c_elapsed = now - clustering_start_t
-                    asymptotic_target = 75 + int(19.0 * (1.0 - math.exp(-c_elapsed / 120.0)))
+                    asymptotic_target = 78 + int(16.0 * (1.0 - math.exp(-c_elapsed / 120.0)))
                     curr_pct = max(curr_pct, min(94, asymptotic_target))
 
                     _emit(
                         "progress",
                         percent=curr_pct,
-                        message=f"Clustering speaker signatures (AHC O(N^2) - {elapsed_str} elapsed)..."
+                        message=f"Clustering speaker signatures (AHC - {elapsed_str} elapsed)..."
                     )
                 else:
                     if curr_pct < 74:
@@ -751,7 +765,8 @@ def diarize(audio_file, expected_speakers="auto", transcript_file=None, sensitiv
                         normalized_wav,
                         transcript_file,
                         expected_speakers=expected_speakers,
-                        progress_callback=lambda p, msg: _emit("progress", percent=p, message=msg),
+                        sensitivity=sensitivity,
+                        progress_callback=_tg_progress,
                     )
                 except Exception as tg_exc:
                     _emit(
@@ -761,6 +776,9 @@ def diarize(audio_file, expected_speakers="auto", transcript_file=None, sensitiv
                     result = None
 
             if result is None:
+                if sensitivity:
+                    os.environ["PRS_DIARIZATION_SENSITIVITY"] = str(sensitivity)
+                diar_stage[0] = "extracting"
                 kwargs = {}
                 if expected_speakers == "2":
                     kwargs["num_speakers"] = 2
@@ -783,7 +801,37 @@ def diarize(audio_file, expected_speakers="auto", transcript_file=None, sensitiv
                 call_kwargs = dict(kwargs)
                 if accepts_distance_threshold:
                     call_kwargs["distance_threshold"] = _sensitivity_distance_threshold(sensitivity)
-                result = diarize_fn(str(normalized_wav), **call_kwargs)
+
+                _last_vad_emb = [0.0]
+
+                def _vad_emb_progress(done: int, total: int):
+                    if not total:
+                        return
+                    now_t = time.monotonic()
+                    if done < total and (now_t - _last_vad_emb[0]) < 0.5:
+                        return
+                    _last_vad_emb[0] = now_t
+                    pct = 42 + int(32.0 * min(1.0, float(done) / float(total)))
+                    _tg_progress(min(74, pct), f"Extracting speaker signatures ({done}/{total} windows)...")
+                    if done >= total:
+                        diar_stage[0] = "clustering"
+
+                def _tracked_extract_embeddings(audio_path, speech_segments, *args, **ek_kwargs):
+                    if "progress_callback" not in ek_kwargs or ek_kwargs["progress_callback"] is None:
+                        ek_kwargs["progress_callback"] = _vad_emb_progress
+                    return extract_embeddings_batched(audio_path, speech_segments, *args, **ek_kwargs)
+
+                diarize.embeddings.extract_embeddings = _tracked_extract_embeddings
+                diarize.extract_embeddings = _tracked_extract_embeddings
+                if hasattr(diarize_fn, "__globals__"):
+                    diarize_fn.__globals__["extract_embeddings"] = _tracked_extract_embeddings
+                try:
+                    result = diarize_fn(str(normalized_wav), **call_kwargs)
+                finally:
+                    diarize.embeddings.extract_embeddings = extract_embeddings_batched
+                    diarize.extract_embeddings = extract_embeddings_batched
+                    if hasattr(diarize_fn, "__globals__"):
+                        diarize_fn.__globals__["extract_embeddings"] = extract_embeddings_batched
         finally:
             stop_ticker.set()
             ticker_thread.join(timeout=1.0)

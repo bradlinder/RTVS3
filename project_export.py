@@ -299,6 +299,8 @@ class ProjectExportMixin(
         is_empty = self.is_project_empty() if hasattr(self, "is_project_empty") else (
             not getattr(self, "audio_file", None) and not getattr(self, "project_file", None)
         )
+        if getattr(self, "_debounced_save_pending", False) and getattr(self, "project_file", None) and not getattr(self, "batch_active", False):
+            self.flush_pending_project_save()
         if getattr(self, "project_dirty", False) and not getattr(self, "batch_active", False) and not is_empty:
             reply = QMessageBox.question(
                 self,
@@ -318,6 +320,8 @@ class ProjectExportMixin(
                     return
             elif reply == QMessageBox.StandardButton.Discard:
                 self.project_dirty = False
+                if hasattr(self, "cancel_pending_project_save"):
+                    self.cancel_pending_project_save()
 
         try:
             if hasattr(self, "cleanup_transcription_process"):

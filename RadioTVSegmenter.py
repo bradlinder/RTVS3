@@ -1,4 +1,4 @@
-"""Radio & TV Segmenter — v3.9.99-beta
+"""Radio & TV Segmenter — v3.10.0-beta
 
 This is the thin application composition root. UI/processing responsibilities
 are implemented in focused mixins so future changes can target smaller files
@@ -504,6 +504,18 @@ class MainWindow(
 
         from speaker_profiles import StationVoiceProfileStore
         self.voice_profile_store = StationVoiceProfileStore()
+
+        # Scrub deprecated Google Docs export keys from QSettings
+        for deprecated_key in ("plugin_enabled_gdocs", "plugins/gdocs/enabled", "plugins/gdocs/uninstalled"):
+            s.remove(deprecated_key)
+        if str(s.value("export_opt_default_dest", "") or "").strip().lower() == "gdocs":
+            s.setValue("export_opt_default_dest", "local")
+        raw_order = s.value("export_destinations_order", None)
+        if isinstance(raw_order, list) and any(str(x).strip().lower() == "gdocs" for x in raw_order):
+            s.setValue("export_destinations_order", [str(x) for x in raw_order if str(x).strip().lower() != "gdocs"])
+        elif isinstance(raw_order, str) and "gdocs" in raw_order.lower():
+            cleaned = [x.strip() for x in raw_order.split(",") if x.strip() and x.strip().lower() != "gdocs"]
+            s.setValue("export_destinations_order", cleaned)
 
     def toggle_transcript_auto_scroll(self, checked: bool):
         """Toggle transcript auto-scrolling during playback and persist setting."""

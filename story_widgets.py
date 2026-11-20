@@ -166,6 +166,16 @@ class FadeCurveVisualSelector(QWidget):
 # Story Undo / Redo Commands
 # ============================================================
 
+def _trigger_project_save(main_window) -> None:
+    """Queue a debounced save when supported, falling back to immediate save."""
+    if main_window is None:
+        return
+    if hasattr(main_window, "schedule_project_save"):
+        main_window.schedule_project_save()
+    elif hasattr(main_window, "save_project"):
+        main_window.save_project()
+
+
 class StoryFadesChangeCommand(QUndoCommand):
     """Discrete undo/redo command for story audio fade-in, fade-out, and curve adjustments."""
 
@@ -200,8 +210,7 @@ class StoryFadesChangeCommand(QUndoCommand):
         if hasattr(self.main_window, "timeline"):
             self.main_window.timeline.set_stories(self.main_window.stories, self.main_window.current_selected_story_indices)
             self.main_window.timeline.update()
-        if hasattr(self.main_window, "save_project"):
-            self.main_window.save_project()
+        _trigger_project_save(self.main_window)
 
 
 class SetStoriesCommand(QUndoCommand):
@@ -219,7 +228,7 @@ class SetStoriesCommand(QUndoCommand):
         if hasattr(self.main_window, "timeline"):
             self.main_window.timeline.set_stories(self.main_window.stories, self.main_window.current_selected_story_indices)
             self.main_window.timeline.update()
-        self.main_window.save_project()
+        _trigger_project_save(self.main_window)
 
     def redo(self):
         from prs_shared import Story
@@ -228,7 +237,7 @@ class SetStoriesCommand(QUndoCommand):
         if hasattr(self.main_window, "timeline"):
             self.main_window.timeline.set_stories(self.main_window.stories, self.main_window.current_selected_story_indices)
             self.main_window.timeline.update()
-        self.main_window.save_project()
+        _trigger_project_save(self.main_window)
 
 
 class StoryBoundaryChangeCommand(QUndoCommand):
@@ -266,7 +275,7 @@ class StoryBoundaryChangeCommand(QUndoCommand):
             if hasattr(self.main_window, "end_input"):
                 self.main_window.end_input.setText(format_time(end))
         self.main_window.mark_project_dirty(self.text())
-        self.main_window.save_project()
+        _trigger_project_save(self.main_window)
 
 
 class SelectStoriesCommand(QUndoCommand):

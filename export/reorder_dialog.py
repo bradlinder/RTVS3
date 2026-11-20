@@ -197,7 +197,7 @@ class ReorderExportDestinationsDialog(QDialog):
 
         btn_col.addSpacing(10)
         self.reset_btn = QPushButton("Reset Default")
-        self.reset_btn.setToolTip("Reset order to: Local, WordPress, Google Docs, YouTube Studio")
+        self.reset_btn.setToolTip("Reset order to: Local, Timeline & DAW, WordPress, YouTube Studio")
         self.reset_btn.clicked.connect(self._reset_default)
         btn_col.addWidget(self.reset_btn)
 

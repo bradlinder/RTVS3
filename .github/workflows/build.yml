@@ -30,10 +30,6 @@ on:
         description: 'Include Plugin: Language Translation'
         type: boolean
         default: true
-      plugin_gdocs:
-        description: 'Include Plugin: Google Docs & Drive Exporter'
-        type: boolean
-        default: true
       create_release:
         description: 'Publish as a GitHub Release'
         type: boolean
@@ -64,8 +60,7 @@ jobs:
       github.event_name == 'push' ||
       inputs.plugin_wordpress ||
       inputs.plugin_youtube ||
-      inputs.plugin_translation ||
-      inputs.plugin_gdocs
+      inputs.plugin_translation
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -104,7 +99,6 @@ jobs:
           BUILD_PLUGIN_WORDPRESS: ${{ github.event_name == 'push' || inputs.plugin_wordpress }}
           BUILD_PLUGIN_YOUTUBE: ${{ github.event_name == 'push' || inputs.plugin_youtube }}
           BUILD_PLUGIN_TRANSLATION: ${{ github.event_name == 'push' || inputs.plugin_translation }}
-          BUILD_PLUGIN_GDOCS: ${{ github.event_name == 'push' || inputs.plugin_gdocs }}
         run: python3 build_installer.py --target plugins
 
       - name: Stage Plugins Artifacts
@@ -223,7 +217,6 @@ jobs:
           BUILD_PLUGIN_WORDPRESS: ${{ github.event_name == 'push' || inputs.plugin_wordpress }}
           BUILD_PLUGIN_YOUTUBE: ${{ github.event_name == 'push' || inputs.plugin_youtube }}
           BUILD_PLUGIN_TRANSLATION: ${{ github.event_name == 'push' || inputs.plugin_translation }}
-          BUILD_PLUGIN_GDOCS: ${{ github.event_name == 'push' || inputs.plugin_gdocs }}
         run: python build_installer.py --no-installer
 
       - name: Compile Inno Setup Installer
@@ -365,7 +358,6 @@ jobs:
           BUILD_PLUGIN_WORDPRESS: ${{ github.event_name == 'push' || inputs.plugin_wordpress }}
           BUILD_PLUGIN_YOUTUBE: ${{ github.event_name == 'push' || inputs.plugin_youtube }}
           BUILD_PLUGIN_TRANSLATION: ${{ github.event_name == 'push' || inputs.plugin_translation }}
-          BUILD_PLUGIN_GDOCS: ${{ github.event_name == 'push' || inputs.plugin_gdocs }}
         run: python3 build_installer.py
 
       - name: Package .app into .dmg
@@ -483,7 +475,6 @@ jobs:
           BUILD_PLUGIN_WORDPRESS: ${{ github.event_name == 'push' || inputs.plugin_wordpress }}
           BUILD_PLUGIN_YOUTUBE: ${{ github.event_name == 'push' || inputs.plugin_youtube }}
           BUILD_PLUGIN_TRANSLATION: ${{ github.event_name == 'push' || inputs.plugin_translation }}
-          BUILD_PLUGIN_GDOCS: ${{ github.event_name == 'push' || inputs.plugin_gdocs }}
         run: python3 build_installer.py
 
       - name: Package Debian (.deb) & Distributable Tarball (.tar.gz)

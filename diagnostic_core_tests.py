@@ -91,6 +91,47 @@ class DiagnosticCoreTestsMixin:
             if loaded["stories"][0]["title"] != "Headline News":
                 raise AssertionError("Story title mismatch after roundtrip")
 
+            from PySide6.QtWidgets import QApplication
+            from project_lifecycle import ProjectLifecycleMixin
+            from processing import ProcessingMixin
+
+            if QApplication.instance() is None:
+                QApplication(sys.argv[:1] + ["-platform", "offscreen"])
+
+            class _FakeStore:
+                def __init__(self, initial=None):
+                    self.data = dict(initial or {})
+                def value(self, k, default=None): return self.data.get(k, default)
+                def setValue(self, k, v): self.data[k] = v
+
+            class _FakeLC(ProjectLifecycleMixin):
+                def __init__(self, pf):
+                    self.audio_file, self.project_file, self.timeline = str(Path(tmp_dir) / "a.wav"), pf, None
+                    self.transcript, self.project_dirty, self.save_in_progress = {"text": "Hi", "segments": []}, False, False
+                    self._is_closing, self.batch_active, self.settings_store, self.logs = False, False, _FakeStore(), []
+                def statusBar(self): return type("SB", (), {"showMessage": lambda *a, **k: None})()
+                def log_activity(self, msg, **kw): self.logs.append(str(msg))
+                def project_data(self): return dict(sample_project)
+                def validate_project_data(self, _d): return []
+                def _remember_saved_project(self, _p): pass
+
+            deb_path = Path(tmp_dir) / "debounce_test.rtvs"
+            lc = _FakeLC(deb_path)
+            lc.schedule_project_save(50); lc.schedule_project_save(50)
+            assert getattr(lc, "_debounced_save_pending", False) and not deb_path.exists()
+            assert lc.flush_pending_project_save() and deb_path.exists() and not lc._debounced_save_pending
+            assert lc.save_project(force=True) and lc.save_project(force=True)
+            assert sum("recovery backup" in m for m in lc.logs) == 1
+            lc.schedule_project_save(50); lc.cancel_pending_project_save()
+            assert not lc._debounced_save_pending
+
+            pm = type("PM", (), {"settings_store": _FakeStore({"export_opt_include_es": "false"})})()
+            assert ProcessingMixin._get_pipeline_stage_default(pm, "translation", model_installed=True) is False
+            ProcessingMixin._save_pipeline_stage_prefs(pm, [("translation", False, False, False), ("transcription", False, True, False)])
+            assert pm.settings_store.data.get("pipeline_opt_translation") == "false" and "pipeline_opt_transcription" not in pm.settings_store.data
+            ProcessingMixin._save_pipeline_stage_prefs(pm, [("transcription", True, True, True)])
+            assert pm.settings_store.data.get("pipeline_opt_transcription") == "true"
+
         item.status = "PASS"
         item.message = "Project state serialized and re-read with 100% data fidelity"
 
@@ -479,6 +520,42 @@ class DiagnosticCoreTestsMixin:
         except ImportError:
             item.status = "WARNING"
             item.message = "WeSpeaker ONNX runtime not present in current environment (Optional for core CPU testing)"
+
+        import numpy as np
+        import worker_diarization_engine as eng
+        from worker_diarization_clustering import _sensitivity_distance_threshold, cluster_speakers_ahc
+
+        assert _sensitivity_distance_threshold("high") == 0.58
+        assert _sensitivity_distance_threshold("normal") == 0.68
+        v_a = np.zeros(256, dtype=np.float32); v_a[0] = 1.0
+        v_b = np.zeros(256, dtype=np.float32); v_b[0] = 0.35; v_b[1] = math.sqrt(1.0 - 0.35 * 0.35)
+        embs = np.vstack([v_a, v_a, v_a, v_b, v_b, v_b])
+        labels_hi, _ = cluster_speakers_ahc(embs, distance_threshold=_sensitivity_distance_threshold("high"))
+        labels_lo, _ = cluster_speakers_ahc(embs, distance_threshold=_sensitivity_distance_threshold("low"))
+        assert len(np.unique(labels_hi)) == 2 and len(np.unique(labels_lo)) == 1
+
+        from diarize.utils import SubSegment
+        captured, cb_msgs = [], []
+        orig_extract, prev_sens = eng.extract_embeddings_batched, os.environ.get("PRS_DIARIZATION_SENSITIVITY")
+        def _mock_extract(_wav, segs, batch_size=32, min_segment_duration=0.4, progress_callback=None):
+            captured.extend(segs)
+            if progress_callback: progress_callback(1, 2); progress_callback(2, 2)
+            return np.vstack([v_a, v_a]), [SubSegment(start=0.0, end=6.0, parent_idx=0), SubSegment(start=6.0, end=12.0, parent_idx=0)]
+        eng.extract_embeddings_batched = _mock_extract
+        try:
+            with tempfile.TemporaryDirectory() as td:
+                tr_p = Path(td) / "tr.json"
+                tr_p.write_text(json.dumps({"segments": [{"start": 0.0, "end": 12.0, "text": "Long single segment."}]}), encoding="utf-8")
+                res = eng.run_transcript_guided_diarization(str(Path(td) / "a.wav"), str(tr_p), sensitivity="high", progress_callback=lambda p, m: cb_msgs.append((p, m)))
+            assert len(captured) == 1 and (captured[0].start, captured[0].end) == (0.0, 12.0)
+            assert os.environ.get("PRS_DIARIZATION_SENSITIVITY") == "high"
+            assert any("Extracting" in m for _, m in cb_msgs) and any("Clustering" in m for _, m in cb_msgs)
+            assert res is not None and len(res.segments) >= 1
+        finally:
+            eng.extract_embeddings_batched = orig_extract
+            if prev_sens is None: os.environ.pop("PRS_DIARIZATION_SENSITIVITY", None)
+            else: os.environ["PRS_DIARIZATION_SENSITIVITY"] = prev_sens
+        item.message = f"{item.message}; sensitivity, AHC clustering, and transcript-guided diarization verified"
 
     def _test_translation_plugin_architecture_invariants(self, item: DiagnosticItem):
         plugin_worker = Path("plugins") / "translation" / "worker.py"

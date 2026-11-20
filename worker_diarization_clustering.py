@@ -45,14 +45,68 @@ def _normalize_speaker_labels(segments: List[Dict[str, Any]]) -> List[Dict[str, 
     return segments
 
 
-def _sensitivity_distance_threshold() -> float:
+def _sensitivity_distance_threshold(sensitivity: Optional[str] = None) -> float:
     """Cosine-distance clustering threshold derived from PRS_DIARIZATION_SENSITIVITY.
     Shared by fast_cluster_ahc() and diarize(), so the sensitivity setting means
     the same thing regardless of which code path runs the clustering.
     """
-    sens_env = os.environ.get("PRS_DIARIZATION_SENSITIVITY", "normal").strip().lower()
+    raw = sensitivity if sensitivity else os.environ.get("PRS_DIARIZATION_SENSITIVITY", "normal")
+    sens_env = str(raw).strip().lower()
     sens_map = {"low": 0.78, "normal": 0.68, "high": 0.58, "very_high": 0.48, "ultra": 0.38}
     return sens_map.get(sens_env, 0.68)
+
+
+def merge_adjacent_diarization_segments(segments, max_gap: float = SHORT_FRAGMENT_MERGE_THRESHOLD):
+    """Merge consecutive diarization segments from the same speaker separated by < max_gap seconds."""
+    if not segments:
+        return []
+    ordered = sorted(segments, key=lambda s: float(s.start))
+    merged = [[float(ordered[0].start), float(ordered[0].end), str(ordered[0].speaker)]]
+    for seg in ordered[1:]:
+        s_start = float(seg.start)
+        s_end = float(seg.end)
+        s_spk = str(seg.speaker)
+        prev = merged[-1]
+        if s_spk == prev[2] and (s_start - prev[1]) < max_gap:
+            prev[1] = max(prev[1], s_end)
+        else:
+            merged.append([s_start, s_end, s_spk])
+
+    try:
+        from diarize.utils import Segment
+        return [Segment(start=st, end=en, speaker=spk) for st, en, spk in merged]
+    except Exception:
+        from types import SimpleNamespace
+        return [SimpleNamespace(start=st, end=en, speaker=spk) for st, en, spk in merged]
+
+
+def cluster_speakers_ahc(
+    embeddings,
+    min_speakers: int = 1,
+    max_speakers: int = 20,
+    num_speakers: Optional[int] = None,
+    distance_threshold: Optional[float] = None,
+):
+    """Cluster speaker embeddings with O(N^2) cosine AHC, honoring sensitivity and speaker bounds."""
+    import numpy as np
+
+    n = len(embeddings)
+    if n == 0:
+        return np.array([], dtype=int), None
+    if n == 1:
+        return np.zeros(1, dtype=int), None
+
+    if num_speakers is not None:
+        return fast_cluster_ahc(embeddings, k=int(num_speakers)), None
+
+    thresh = float(distance_threshold) if distance_threshold is not None else _sensitivity_distance_threshold()
+    labels = fast_cluster_ahc(embeddings, k=None, distance_threshold=thresh)
+    k_found = int(len(np.unique(labels)))
+    if min_speakers and k_found < int(min_speakers) and n >= int(min_speakers):
+        labels = fast_cluster_ahc(embeddings, k=int(min_speakers))
+    elif max_speakers and k_found > int(max_speakers):
+        labels = fast_cluster_ahc(embeddings, k=int(max_speakers))
+    return labels, None
 
 
 def fast_cluster_ahc(embeddings, k=None, distance_threshold=None):
@@ -140,12 +194,16 @@ def apply_clustering_patches():
     try:
         import diarize.clustering
         diarize.clustering.cluster_spectral = fast_cluster_ahc
+        diarize.clustering.cluster_speakers = cluster_speakers_ahc
     except Exception:
         pass
 
     try:
         import diarize
         diarize.cluster_spectral = fast_cluster_ahc
+        diarize.cluster_speakers = cluster_speakers_ahc
+        if hasattr(diarize, "diarize") and hasattr(diarize.diarize, "__globals__"):
+            diarize.diarize.__globals__["cluster_speakers"] = cluster_speakers_ahc
     except Exception:
         pass
 

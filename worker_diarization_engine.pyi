@@ -13,7 +13,7 @@ import time
 import traceback
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
-from worker_diarization_clustering import SHORT_FRAGMENT_MERGE_THRESHOLD, _calculate_embedding_for_interval, _normalize_expected_speakers, _normalize_speaker_labels, _sensitivity_distance_threshold, apply_clustering_patches, assign_short_segments_to_centroids, fast_cluster_ahc
+from worker_diarization_clustering import SHORT_FRAGMENT_MERGE_THRESHOLD, _calculate_embedding_for_interval, _normalize_expected_speakers, _normalize_speaker_labels, _sensitivity_distance_threshold, apply_clustering_patches, assign_short_segments_to_centroids, cluster_speakers_ahc, fast_cluster_ahc, merge_adjacent_diarization_segments
 _EMIT_FN: Optional[Callable[..., None]] = ...
 
 def set_emit_callback(fn: Callable[..., None]):

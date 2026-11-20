@@ -656,6 +656,32 @@ class ProcessingMixin(
         self.thread = None
         self.worker = None
 
+    def _get_pipeline_stage_default(self, key: str, model_installed: bool = True) -> bool:
+        """Return remembered Run Processing checkbox state for a stage."""
+        store = getattr(self, "settings_store", None)
+        if store is not None:
+            saved = store.value(f"pipeline_opt_{key}", None)
+            if saved is not None:
+                val = str(saved).strip().lower() in {"1", "true", "yes"}
+                return bool(val and model_installed) if key == "translation" else val
+
+        if key == "translation":
+            if not model_installed or store is None:
+                return False
+            include_es = str(store.value("export_opt_include_es", "false")).strip().lower() in {"1", "true", "yes"}
+            batch_tr = str(store.value("batch_opt_proc_translate", "false")).strip().lower() in {"1", "true", "yes"}
+            return bool(include_es or batch_tr)
+        return True
+
+    def _save_pipeline_stage_prefs(self, stage_states) -> None:
+        """Persist user-chosen Run Processing checkbox defaults without clobbering already-complete stages."""
+        store = getattr(self, "settings_store", None)
+        if store is None:
+            return
+        for key, is_checked, is_complete, user_toggled in stage_states:
+            if (not is_complete) or (user_toggled and is_checked):
+                store.setValue(f"pipeline_opt_{key}", "true" if is_checked else "false")
+
     def start_full_auto_pipeline(self):
         """Open a chooser for the processing stages to run, then run them in order."""
         if not self.audio_file:
@@ -682,13 +708,15 @@ class ProcessingMixin(
             choices.append(("translation", "Translate Transcript", self.translations))
 
         boxes = []
+        complete_map = {}
+        user_toggled = set()
         for key, label, data in choices:
             row = QHBoxLayout()
             cb = QCheckBox(label)
             is_complete = bool(self.processing_status.get(key, False))
+            complete_map[key] = is_complete
 
             if key == "translation":
-                # Only check translation by default if the required translation model is already installed
                 from_c = self.source_language_code()
                 to_c = self.target_language_code()
                 var = getattr(self, "translation_model_variant", "tiny")
@@ -699,7 +727,7 @@ class ProcessingMixin(
                 except Exception:
                     pass
                 model_installed = bool(w_cls and w_cls.model_is_installed(from_c, to_c, var))
-                cb.setChecked(model_installed and not is_complete)
+                cb.setChecked(self._get_pipeline_stage_default(key, model_installed=model_installed) and not is_complete)
                 if not model_installed:
                     state = "Model Not Installed"
                 elif is_complete:
@@ -709,7 +737,7 @@ class ProcessingMixin(
                 else:
                     state = "Not Started"
             else:
-                cb.setChecked(not is_complete)
+                cb.setChecked(self._get_pipeline_stage_default(key, model_installed=True) and not is_complete)
                 if is_complete:
                     state = "Complete"
                 elif data:
@@ -717,6 +745,7 @@ class ProcessingMixin(
                 else:
                     state = "Not Started"
 
+            cb.toggled.connect(lambda _checked, k=key: user_toggled.add(k))
             row.addWidget(cb)
             row.addStretch()
             row.addWidget(QLabel(state))
@@ -789,6 +818,9 @@ class ProcessingMixin(
             if not self._confirm_pipeline_rerun_if_needed(selected, parent=dialog):
                 return
             dialog.accept()
+            self._save_pipeline_stage_prefs(
+                [(k, cb.isChecked(), complete_map.get(k, False), k in user_toggled) for k, cb in boxes]
+            )
             self.pipeline_queue = list(selected)
             self.pipeline_total_stages = len(selected)
             self.pipeline_all_stages = list(selected)

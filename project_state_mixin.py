@@ -295,7 +295,10 @@ class ProjectStateMixin:
             self.update_window_title()
             if getattr(self, "project_file", None):
                 try:
-                    self.save_project()
+                    if hasattr(self, "schedule_project_save"):
+                        self.schedule_project_save()
+                    else:
+                        self.save_project()
                 except Exception:
                     pass
             if hasattr(self, "_notify_floating_dialogs"):

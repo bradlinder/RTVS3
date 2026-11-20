@@ -121,7 +121,10 @@ class SpeakerDialogRefinementMixin:
                 self._commit_project_state_change(before_state, f"Refine Dialog: {spk_a} vs {spk_b}")
             self._diar_index_key = None
             self.render_transcript()
-            self.save_project()
+            if hasattr(self, "schedule_project_save"):
+                self.schedule_project_save()
+            else:
+                self.save_project()
             if hasattr(self, "statusBar") and self.statusBar():
                 self.statusBar().showMessage(
                     f"Refined {reassigned} turn(s) between '{spk_a}' and '{spk_b}'.", 4000
@@ -456,7 +459,10 @@ class SpeakerDialogRefinementMixin:
         if before_state is not None and hasattr(self, "_commit_project_state_change"):
             self._commit_project_state_change(before_state, f"Merge Speaker '{source}' into '{target}'")
 
-        self.save_project()
+        if hasattr(self, "schedule_project_save"):
+            self.schedule_project_save()
+        else:
+            self.save_project()
         self.render_transcript()
         if hasattr(self, "timeline"):
             self.timeline.update()
@@ -541,6 +547,9 @@ class SpeakerDialogRefinementMixin:
             self._commit_project_state_change(before_state, "Merge Contiguous Turns")
 
         self.render_transcript()
-        self.save_project()
+        if hasattr(self, "schedule_project_save"):
+            self.schedule_project_save()
+        else:
+            self.save_project()
         if hasattr(self, "statusBar") and self.statusBar():
             self.statusBar().showMessage("Merged contiguous speaker turns.")

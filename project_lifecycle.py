@@ -9,10 +9,11 @@ import json
 import os
 import shutil
 import sys
+import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
-from PySide6.QtCore import QDir, QTime, QUrl, Qt
+from PySide6.QtCore import QDir, QTime, QTimer, QUrl, Qt
 from PySide6.QtWidgets import (
     QCheckBox,
     QDialog,
@@ -42,6 +43,8 @@ from transcript_story import Story
 
 from project_data_purge_dialog import ProjectDataPurgeDialog
 
+RECOVERY_BACKUP_MIN_INTERVAL_SEC = 300.0
+
 
 class ProjectLifecycleMixin:
     """Provides project lifecycle and persistence methods for MainWindow."""
@@ -50,6 +53,8 @@ class ProjectLifecycleMixin:
         is_empty = self.is_project_empty() if hasattr(self, "is_project_empty") else (
             not getattr(self, "audio_file", None) and not getattr(self, "project_file", None)
         )
+        if prompt and getattr(self, "_debounced_save_pending", False) and getattr(self, "project_file", None):
+            self.flush_pending_project_save()
         if prompt and getattr(self, "project_dirty", False) and not is_empty:
             answer = QMessageBox.question(
                 self,
@@ -64,6 +69,7 @@ class ProjectLifecycleMixin:
                 if not self.save_project(force=True):
                     return False
             self.project_dirty = False
+            self.cancel_pending_project_save()
 
         try:
             if hasattr(self, "stop_video_thumbnail_worker") and not self.stop_video_thumbnail_worker():
@@ -107,6 +113,9 @@ class ProjectLifecycleMixin:
         self.duration = 0
         self.current_position = 0
         self.project_dirty = False
+        self.cancel_pending_project_save()
+        self._last_backup_project_key = None
+        self._last_backup_monotonic = 0.0
 
         if hasattr(self, "undo_stack") and self.undo_stack:
             self.undo_stack.clear()
@@ -483,7 +492,56 @@ class ProjectLifecycleMixin:
         self.project_file = target_path
         return bool(self.save_project(force=True))
 
+    def schedule_project_save(self, delay_ms: int = 1500):
+        """Schedule a coalesced disk save after interactive micro-edits without prompting on unsaved projects."""
+        if hasattr(self, "mark_project_dirty"):
+            self.mark_project_dirty(reason=None)
+        else:
+            self.project_dirty = True
+            if hasattr(self, "update_window_title"):
+                self.update_window_title()
+        if not getattr(self, "project_file", None):
+            return
+        self._debounced_save_pending = True
+        timer = getattr(self, "_debounced_save_timer", None)
+        if timer is None:
+            try:
+                timer = QTimer(self)
+            except TypeError:
+                timer = QTimer()
+            timer.setSingleShot(True)
+            timer.timeout.connect(self._run_debounced_save)
+            self._debounced_save_timer = timer
+        timer.start(max(50, int(delay_ms)))
+
+    def _run_debounced_save(self):
+        if not getattr(self, "_debounced_save_pending", False):
+            return
+        self._debounced_save_pending = False
+        if getattr(self, "_is_closing", False) or not getattr(self, "project_file", None):
+            return
+        self.save_project(force=False)
+
+    def cancel_pending_project_save(self):
+        """Cancel any queued debounced save timer without writing to disk."""
+        timer = getattr(self, "_debounced_save_timer", None)
+        if timer is not None and timer.isActive():
+            timer.stop()
+        self._debounced_save_pending = False
+
+    def flush_pending_project_save(self) -> bool:
+        """Immediately execute any pending debounced project save."""
+        timer = getattr(self, "_debounced_save_timer", None)
+        if timer is not None and timer.isActive():
+            timer.stop()
+        if getattr(self, "_debounced_save_pending", False):
+            self._debounced_save_pending = False
+            if getattr(self, "project_file", None):
+                return bool(self.save_project(force=True))
+        return True
+
     def save_project(self, force=True):
+        self.cancel_pending_project_save()
         if not self.audio_file and not self.transcript:
             return False
         if not self.project_file:
@@ -547,9 +605,20 @@ class ProjectLifecycleMixin:
                 return False
 
             if self.project_file.exists():
-                shutil.copy2(self.project_file, backup_file)
-                if hasattr(self, "log_activity"):
-                    self.log_activity(f"[PROJECT] Previous project saved as recovery backup: {backup_file.name}", mark_dirty=False)
+                proj_key = str(self.project_file.resolve())
+                now_mono = time.monotonic()
+                last_key = getattr(self, "_last_backup_project_key", None)
+                last_ts = float(getattr(self, "_last_backup_monotonic", 0.0) or 0.0)
+                min_interval = float(
+                    getattr(self, "recovery_backup_min_interval_sec", RECOVERY_BACKUP_MIN_INTERVAL_SEC)
+                )
+                need_backup = (not backup_file.exists()) or (proj_key != last_key) or ((now_mono - last_ts) >= min_interval)
+                if need_backup:
+                    shutil.copy2(self.project_file, backup_file)
+                    self._last_backup_project_key = proj_key
+                    self._last_backup_monotonic = now_mono
+                    if hasattr(self, "log_activity"):
+                        self.log_activity(f"[PROJECT] Previous project saved as recovery backup: {backup_file.name}", mark_dirty=False)
 
             write_rtvs_project_file(self.project_file, data)
             try:
@@ -597,6 +666,8 @@ class ProjectLifecycleMixin:
         is_empty = self.is_project_empty() if hasattr(self, "is_project_empty") else (
             not getattr(self, "audio_file", None) and not getattr(self, "project_file", None)
         )
+        if not preserve_media and prompt and getattr(self, "_debounced_save_pending", False) and getattr(self, "project_file", None):
+            self.flush_pending_project_save()
         if not preserve_media and prompt and getattr(self, "project_dirty", False) and not is_empty:
             answer = QMessageBox.question(
                 self,
@@ -649,6 +720,8 @@ class ProjectLifecycleMixin:
                     self.update_video_preview_state()
 
         self.project_file = project_path
+        self._last_backup_project_key = None
+        self._last_backup_monotonic = 0.0
         self.duration = float(data.get("duration", 0.0) or 0.0)
         self.transcript = data.get("transcript")
         self.transcript_notes = data.get("transcript_notes", "")

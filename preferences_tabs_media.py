@@ -328,7 +328,7 @@ def build_batch_tab(win, dialog, live_widgets, add_custom_defaults_btn) -> QWidg
     live_widgets["batch_time_chk"] = batch_time_chk
 
     reorder_dest_btn = QPushButton("Customize Export Destinations Order…")
-    reorder_dest_btn.setToolTip("Customize the default display order of destinations in the Export dialog (Local Files, WordPress, Google Docs, YouTube Studio).")
+    reorder_dest_btn.setToolTip("Customize the default display order of destinations in the Export dialog (Local Files, Timeline & DAW, WordPress, YouTube Studio).")
     def _on_reorder_dest_prefs():
         try:
             from export.dialog import ReorderExportDestinationsDialog
