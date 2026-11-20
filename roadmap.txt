@@ -50,6 +50,12 @@ TABLE OF CONTENTS & STATUS OVERVIEW
    [x] 2.3 Save to Station Voices Checkboxes & Threshold Fix (`RadioTVSegmenter.py`, `diarization_processing.py`, `preferences_tabs_media.py`, `voice_profile_ops_mixin.py`, `speaker_dialogs.py`, `speaker_editing_mixin.py`): Fixed `voice_profile_auto_match_threshold` (`78` -> `0.78` instead of clamping to `0.99`), added shared Station Voices save/remove helpers, added opt-in checkbox to `ChangeSpeakerDialog` + per-row `Station Voice` toggle column to `SpeakerManagerDialog`, and added offscreen test-mode `QMediaPlayer` init guard.
    [x] 2.4 Automated Regression Coverage (`diagnostic_speaker_cleanup_tests.py`, `test_runner.py`): Added `DiagnosticSpeakerCleanupTestsMixin` covering minimum story length filtering/preferences, 9/9 real guest-name misspellings + Preserve Case/Trim/Glossary/Undo, and Station Voice checkboxes + `78->0.78` normalization.
 
+3. Planned Next Release: Phase 3 — Tier 1 Offline Spellcheck & Minimum Segment Length Terminology Alignment (`preferences_tabs_media.py`, `plugins/wordpress/wp_tab_widget.py`, `story_widgets.py`, `spellcheck_helper.py`, `requirements.txt`, `build_installer.py`, `test_runner.py`) [ ] [PLANNED for v3.10.3-beta] [NOT STARTED]
+   [ ] 3.1 Minimum Segment Length Terminology Alignment (`preferences_tabs_media.py`, `story_detection_processing.py`): Rename the "Minimum Story Length" preference label and tooltips to "Minimum Segment Length" to align with the application's segment vocabulary.
+   [ ] 3.2 Tier 1 Offline Spellcheck Engine (`spellcheck_helper.py`, `requirements.txt`, `build_installer.py`): Add lightweight offline spellchecking via `pyspellchecker` integrated with custom Glossary terms and confirmed speaker names so proper nouns are never flagged as typos.
+   [ ] 3.3 WordPress & Segment Metadata Spellcheck UI (`plugins/wordpress/wp_tab_widget.py`, `story_widgets.py`, `ui_dialogs.py`): Enable inline red-underline typo highlighting and right-click spelling suggestions / "Add to Glossary" on WordPress publishing fields (Title, Excerpt, Image Caption, Alt Text) and Segment/Story Title & Metadata editors.
+   [ ] 3.4 Automated Regression Coverage (`test_runner.py`): Add headless diagnostic tests verifying offline spellcheck detection, glossary/speaker-name exclusion, suggestion application, and the "Minimum Segment Length" preference label.
+
 4. Deferred Milestone: Domain Separation & Purpose-Driven Monolithic File Modularization [ ] [DEFERRED / LOWER PRIORITY]
    - *Purpose*: Systematic architectural refactoring prioritizing **file purpose, single responsibility, and domain cohesion** alongside line count reduction (<800 lines target, 1,000 lines ceiling), systematically decoupling grandfathered multi-domain monoliths into focused submodules with 100% backward-compatible facade re-exports.
    [ ] 4.1 Priority 1: Imminent Ceiling Breaches & High-Payoff Domain Decoupling (<1000 lines, high urgency/clean boundaries):
@@ -115,6 +121,16 @@ DETAILED MILESTONE SPECIFICATIONS
   * [x] Guest Name & Proper-Noun Cleanup Pipeline (`speaker_name_matcher.py`, `speaker_name_cleanup_dialog.py`, `transcript_editor_dialogs.py`, `speaker_dialogs.py`): Created headless phonetic/Soundex proper-noun matcher + modal `SpeakerNameCleanupDialog`, and added `Preserve Case`, whitespace `Trim` banner, `Add to Glossary`, and `Fix Speaker Names...` to `FindReplaceDialog` & `SpeakerManagerDialog`.
   * [x] Save to Station Voices & Threshold Normalization (`RadioTVSegmenter.py`, `diarization_processing.py`, `preferences_tabs_media.py`, `voice_profile_ops_mixin.py`, `speaker_dialogs.py`, `speaker_editing_mixin.py`): Fixed `voice_profile_auto_match_threshold` (`78 -> 0.78`), added opt-in checkbox in `ChangeSpeakerDialog` + per-row `Station Voice` toggle column in `SpeakerManagerDialog`, and added offscreen test-mode `QMediaPlayer` teardown guard.
   * [x] Automated Regression Coverage (`diagnostic_speaker_cleanup_tests.py`, `test_runner.py`): Added `DiagnosticSpeakerCleanupTestsMixin` covering story length filtering, 9/9 real broadcast name misspellings + Preserve Case/Glossary/Undo, and Station Voice checkboxes + `78->0.78` normalization.
+
+3. PLANNED NEXT RELEASE: PHASE 3 — TIER 1 OFFLINE SPELLCHECK & MINIMUM SEGMENT LENGTH TERMINOLOGY ALIGNMENT:
+- Purpose: Align the minimum duration preference label with "Minimum Segment Length" terminology and add lightweight offline spellchecking (`pyspellchecker`) to WordPress publishing and segment metadata fields without adding runtime overhead to full-transcript rendering.
+- Target Release: v3.10.3-beta (Planned / Not Started)
+- Technical References: `preferences_tabs_media.py`, `plugins/wordpress/wp_tab_widget.py`, `story_widgets.py`, `spellcheck_helper.py`, `requirements.txt`, `build_installer.py`, `test_runner.py`.
+- Implementation Details:
+  * [ ] Minimum Segment Length Label Rename (`preferences_tabs_media.py`): Rename "Minimum Story Length:" label and tooltip wording to "Minimum Segment Length:" while preserving the existing `min_story_duration` QSettings key for backward compatibility.
+  * [ ] Tier 1 Offline Spellcheck Core (`spellcheck_helper.py`, `requirements.txt`, `build_installer.py`): Pure-Python `pyspellchecker` wrapper seeded with user Glossary terms and confirmed project speaker names.
+  * [ ] Metadata Field Spellcheck Integration (`plugins/wordpress/wp_tab_widget.py`, `story_widgets.py`): Highlight misspellings and offer right-click corrections / "Add to Glossary" on WordPress Title, Excerpt, Caption, Alt Text, and Segment Title/Metadata inputs.
+  * [ ] Automated Diagnostic Tests (`test_runner.py`): Verify spellcheck suggestions, proper-noun/glossary allowlisting, and renamed preference label.
 
 4. DEFERRED MILESTONE: DOMAIN SEPARATION & PURPOSE-DRIVEN MONOLITHIC FILE MODULARIZATION:
 - Purpose: Systematic architectural refactoring prioritizing file purpose and single responsibility (<800 lines target, 1,000 lines ceiling).
