@@ -47,6 +47,7 @@ except ImportError:
 from core_utils import INTERNAL_APP_ID, format_time, make_dialog_maximizable
 from speaker_dialogs import ChangeSpeakerDialog, SpeakerManagerDialog
 from speaker_dialog_refinement_mixin import SpeakerDialogRefinementMixin
+from speaker_name_matcher import is_generic_speaker_label
 
 
 
@@ -390,7 +391,24 @@ class SpeakerEditingMixin(SpeakerDialogRefinementMixin):
                 self.transcript_view.lock_scroll_position(v_scroll_before, h_scroll_before, duration_ms=200)
             return
 
-        spk_dlg = ChangeSpeakerDialog(current_name, target_name, seg_idx=seg_idx, parent=self)
+        show_vp = (
+            bool(getattr(self, "enable_voice_profiles", True))
+            and not is_generic_speaker_label(target_name)
+            and hasattr(self, "save_speaker_to_station_voices")
+        )
+        already_vp = bool(
+            show_vp
+            and hasattr(self, "is_speaker_saved_to_station_voices")
+            and self.is_speaker_saved_to_station_voices(target_name)
+        )
+        spk_dlg = ChangeSpeakerDialog(
+            current_name,
+            target_name,
+            seg_idx=seg_idx,
+            parent=self,
+            show_save_voice_profile=show_vp,
+            already_saved_voice_profile=already_vp,
+        )
         spk_dlg.exec()
         if spk_dlg.choice not in ("all", "subsequent", "single"):
             if hasattr(self, "transcript_view") and self.transcript_view:
@@ -400,6 +418,7 @@ class SpeakerEditingMixin(SpeakerDialogRefinementMixin):
         if hasattr(self, "flush_pending_transcript_undo"):
             self.flush_pending_transcript_undo()
         before_state = self._capture_project_state() if hasattr(self, "_capture_project_state") else None
+        affected_indices: List[int] = []
 
         if spk_dlg.choice == "all":
             if raw_speaker:
@@ -411,6 +430,7 @@ class SpeakerEditingMixin(SpeakerDialogRefinementMixin):
                     override_key = f"SEG_{idx}_SPEAKER"
                     self.speaker_names[override_key] = target_name
                     self.segment_speaker_overrides[idx] = override_key
+                    affected_indices.append(idx)
         elif spk_dlg.choice == "subsequent":
             if hasattr(self, "add_custom_speaker_to_glossary"):
                 self.add_custom_speaker_to_glossary(target_name)
@@ -420,6 +440,7 @@ class SpeakerEditingMixin(SpeakerDialogRefinementMixin):
                     override_key = f"SEG_{idx}_SPEAKER"
                     self.speaker_names[override_key] = target_name
                     self.segment_speaker_overrides[idx] = override_key
+                    affected_indices.append(idx)
 
             if getattr(self, "diarization", None) and isinstance(self.diarization, dict):
                 sec_start = float(segments[start_seg_idx].get("start", 0.0))
@@ -448,6 +469,7 @@ class SpeakerEditingMixin(SpeakerDialogRefinementMixin):
                 override_key = f"SEG_{idx}_SPEAKER"
                 self.speaker_names[override_key] = target_name
                 self.segment_speaker_overrides[idx] = override_key
+                affected_indices.append(idx)
 
             if getattr(self, "diarization", None) and isinstance(self.diarization, dict):
                 sec_start = float(segments[section_indices[0]].get("start", 0.0))
@@ -473,8 +495,17 @@ class SpeakerEditingMixin(SpeakerDialogRefinementMixin):
             self.schedule_project_save()
         else:
             self.save_project()
+
+        status_msg = f"Updated speaker to: {target_name}"
+        if getattr(spk_dlg, "save_to_station_voices", False) and hasattr(self, "save_speaker_to_station_voices"):
+            saved_prof = self.save_speaker_to_station_voices(target_name, seg_indices=affected_indices)
+            if saved_prof is not None:
+                status_msg = f"Updated speaker to {target_name} and saved to Station Voices"
+            else:
+                status_msg = f"Updated speaker to {target_name} (no audio voiceprint available to save)"
+
         if hasattr(self, "statusBar") and self.statusBar():
-            self.statusBar().showMessage(f"Updated speaker to: {target_name}")
+            self.statusBar().showMessage(status_msg)
 
     def prompt_rename_speaker(self, seg_idx, speaker):
         self.execute_speaker_rename(seg_idx, speaker, "__NEW__")

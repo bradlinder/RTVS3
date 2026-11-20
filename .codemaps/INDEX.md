@@ -1,15 +1,15 @@
 # Repository Symbol Index & API Map
 
-> Generated: 2026-11-20 11:37:45 | Total Files: 165
+> Generated: 2026-11-20 12:27:33 | Total Files: 168
 > Use `python scripts/generate_symbol_index.py --outline <file>` for exact line numbers.
 
 ## Modules Overview
 
 | Module | Lines | Summary | Primary Classes / Functions |
 | :--- | :---: | :--- | :--- |
-| `RadioTVSegmenter.py` | 676 | Radio & TV Segmenter — v3.10.1-beta | `MainWindow`, `main()` |
+| `RadioTVSegmenter.py` | 684 | Radio & TV Segmenter — v3.10.2-beta | `MainWindow`, `main()` |
 | `audio_normalization.py` | 541 | Radio & TV Story Segmenter — Audio Loudness Probing & Nor... | `LoudnessReport`, `AudioLoudnessProbeWorker`, `parse_ebur128_summary()`, `probe_media_duration_seconds()` *(+3 more)* |
-| `background_workers.py` | 1044 | Radio & TV Story Segmenter — Background Worker Threads & ... | `StoryAutoDetectWorker`, `WaveformWorker`, `VideoThumbnailWorker`, `get_waveform_peak_cache_path()` *(+6 more)* |
+| `background_workers.py` | 1051 | Radio & TV Story Segmenter — Background Worker Threads & ... | `StoryAutoDetectWorker`, `WaveformWorker`, `VideoThumbnailWorker`, `get_waveform_peak_cache_path()` *(+6 more)* |
 | `backup_manager.py` | 622 | Unified State Serialization, Local, and Google Drive Clou... | `compute_data_checksum()`, `serialize_preferences()`, `serialize_keyboard_shortcuts()`, `serialize_glossary()` *(+7 more)* |
 | `batch_dialog.py` | 702 | Radio & TV Story Segmenter — Batch Processing Dialog & Dr... | `BatchFileListWidget`, `BatchProcessingDialog` |
 | `benchmark.py` | 216 | Radio & TV Story Segmenter — Performance & Speed Benchmar... | `run_cli_benchmark()`, `main()` |
@@ -31,8 +31,9 @@
 | `diagnostic_helpers.py` | 151 | Helper fixtures, module resolvers, and DiagnosticItem for... | `DiagnosticItem`, `generate_synthetic_wav()` |
 | `diagnostic_loudness_tests.py` | 391 | Radio & TV Story Segmenter — Diagnostic Loudness Normaliz... | `DiagnosticLoudnessTestsMixin` |
 | `diagnostic_selector.py` | 191 | Smart Diagnostic Test Selector for Radio & TV Story Segme... | `get_modified_files()`, `has_git_changes()`, `detect_changed_tokens()`, `select_diagnostic_items()` |
+| `diagnostic_speaker_cleanup_tests.py` | 342 | Diagnostic tests for Phase 2 features: minimum story leng... | `DiagnosticSpeakerCleanupTestsMixin` |
 | `dialogs.py` | 433 | Radio & TV Story Segmenter — Audio Loudness Normalization... | `AudioLoudnessNormalizationDialog` |
-| `diarization_processing.py` | 769 | Speaker diarization process management for Radio & TV Sto... | `DiarizationProcessingMixin` |
+| `diarization_processing.py` | 772 | Speaker diarization process management for Radio & TV Sto... | `DiarizationProcessingMixin` |
 | `embedded_guides.py` | 735 | Radio & TV Story Segmenter — Built-In Embedded User Guide... | `get_embedded_guide()`, `get_all_embedded_guide_ids()` |
 | `export/__init__.py` | 67 | Export package for Radio & TV Story Segmenter. | - |
 | `export/audio.py` | 287 | Radio & TV Story Segmenter — Broadcast Audio Rendering & ... | `build_audio_fade_filter()`, `export_audio_track()`, `extract_audio_clip()` |
@@ -85,12 +86,12 @@
 | `plugins/youtube/export_destination.py` | 613 | YouTube Export Destination for UnifiedExportDialog with Z... | `YouTubeExportTabWidget`, `YouTubeExportDestination`, `capture_video_frame()` |
 | `plugins/youtube/guide_dialog.py` | 147 | Interactive Assisted Upload Guide Dialog for YouTube Studio. | `YouTubeAssistedUploadGuideDialog` |
 | `plugins/youtube/plugin.py` | 261 | YouTube Video Publisher Plugin for Radio & TV Segmenter. | `YouTubeSettingsDialog`, `Plugin`, `capture_video_frame()` |
-| `preferences_dialog.py` | 881 | Radio & TV Story Segmenter — Preferences Modal Dialog. | `PreferencesDialogMixin` |
-| `preferences_reset.py` | 674 | Radio & TV Story Segmenter — Preferences Reset & Factory ... | `RestoreSelectedSettingsDialog`, `PreferencesResetMixin` |
-| `preferences_reset_dialog.py` | 633 | Radio & TV Segmenter — Preferences reset and factory defa... | `RestoreSelectedSettingsDialog`, `PreferencesResetMixin` |
+| `preferences_dialog.py` | 885 | Radio & TV Story Segmenter — Preferences Modal Dialog. | `PreferencesDialogMixin` |
+| `preferences_reset.py` | 678 | Radio & TV Story Segmenter — Preferences Reset & Factory ... | `RestoreSelectedSettingsDialog`, `PreferencesResetMixin` |
+| `preferences_reset_dialog.py` | 637 | Radio & TV Segmenter — Preferences reset and factory defa... | `RestoreSelectedSettingsDialog`, `PreferencesResetMixin` |
 | `preferences_tab_daw.py` | 138 | preferences_tab_daw.py — External Audio & Video Editors P... | `build_external_editors_tab()` |
 | `preferences_tabs_core.py` | 623 | Radio & TV Story Segmenter — Preferences Modal Core Tab B... | `build_general_tab()`, `build_shortcuts_tab()`, `build_audio_hardware_tab()`, `build_updates_tab()` *(+2 more)* |
-| `preferences_tabs_media.py` | 657 | Radio & TV Story Segmenter — Preferences Modal Media & Wo... | `build_playback_timeline_tab()`, `build_detection_tab()`, `build_batch_tab()`, `build_cleanup_tab()` *(+1 more)* |
+| `preferences_tabs_media.py` | 683 | Radio & TV Story Segmenter — Preferences Modal Media & Wo... | `build_playback_timeline_tab()`, `build_detection_tab()`, `build_batch_tab()`, `build_cleanup_tab()` *(+1 more)* |
 | `preview_manager.py` | 270 | AI Studio Web Preview Manager for Radio & TV Story Segmen... | `get_project_version()`, `restore_preview()`, `sync_version()`, `main()` |
 | `process_lifecycle.py` | 191 | Radio & TV Segmenter — Subprocess tracking and OS-level j... | `init_child_process_job_isolation()`, `bind_subprocess_to_job()`, `register_process()`, `unregister_process()` *(+2 more)* |
 | `processing.py` | 1273 | Radio & TV Segmenter v3.3.29 — processing responsibilities. | `RuntimeSetupWorker`, `ProcessingMixin` |
@@ -120,13 +121,15 @@
 | `shortcuts_manager.py` | 30 | Shortcuts Manager for Radio & TV Story Segmenter (Compati... | - |
 | `snapshot_manager.py` | 276 | Snapshot Manager for Radio & TV Story Segmenter | `load_manifest()`, `save_manifest()`, `get_current_project_version()`, `ensure_git_repo()` *(+4 more)* |
 | `speaker_dialog_refinement_mixin.py` | 555 | Radio & TV Story Segmenter — Speaker Dialog Refinement & ... | `SpeakerDialogRefinementMixin` |
-| `speaker_dialogs.py` | 782 | speaker_dialogs.py — Dialogs for speaker renaming, turn a... | `ChangeSpeakerDialog`, `SpeakerNameDelegate`, `SpeakerManagerDialog` |
-| `speaker_editing_mixin.py` | 598 | Radio & TV Story Segmenter — Speaker Label, Renaming & Se... | `SpeakerEditingMixin` |
+| `speaker_dialogs.py` | 891 | speaker_dialogs.py — Dialogs for speaker renaming, turn a... | `ChangeSpeakerDialog`, `SpeakerNameDelegate`, `SpeakerManagerDialog` |
+| `speaker_editing_mixin.py` | 629 | Radio & TV Story Segmenter — Speaker Label, Renaming & Se... | `SpeakerEditingMixin` |
 | `speaker_identity.py` | 260 | Radio & TV Segmenter | `VoiceMatch`, `cosine_similarity()`, `normalize_vector()`, `centroid()` *(+3 more)* |
+| `speaker_name_cleanup_dialog.py` | 295 | speaker_name_cleanup_dialog.py — Modal review dialog for ... | `SpeakerNameCleanupDialog` |
+| `speaker_name_matcher.py` | 583 | speaker_name_matcher.py — Headless phonetic and fuzzy cle... | `SpeakerNameCandidate`, `is_generic_speaker_label()`, `is_generic_role_label()`, `preserve_case_replace()` *(+7 more)* |
 | `speaker_palette.py` | 148 | Accessible adaptive speaker color palette for Radio & TV ... | `SpeakerColor`, `SpeakerColorAssigner`, `get_speaker_index()`, `get_speaker_color()` *(+3 more)* |
 | `speaker_profiles.py` | 630 | speaker_profiles.py — Persistent Station Voice Profile Ma... | `StationVoiceProfile`, `StationVoiceProfileStore`, `ManageVoiceProfilesDialog` |
 | `story_crud_mixin.py` | 931 | Radio & TV Story Segmenter — Story CRUD & Timeline Select... | `StoryCrudMixin` |
-| `story_detection_processing.py` | 206 | Story boundary detection processing mixin for Radio & TV ... | `StoryDetectionProcessingMixin` |
+| `story_detection_processing.py` | 213 | Story boundary detection processing mixin for Radio & TV ... | `StoryDetectionProcessingMixin` |
 | `story_fades_dialog.py` | 215 | story_fades_dialog.py — Dialog for fine-grained audio fad... | `StoryFadesDialog` |
 | `story_metadata_dialog.py` | 307 | Radio & TV Story Segmenter — Universal Story & Post Metad... | `StoryMetadataDialog`, `generate_story_excerpt()` |
 | `story_model.py` | 273 | Radio & TV Story Segmenter — Story Model, Boundaries & Un... | `Story`, `SetStoriesCommand`, `StoryBoundaryChangeCommand`, `SelectStoriesCommand` *(+3 more)* |
@@ -145,12 +148,12 @@
 | `transcript_cleaner.py` | 216 | Radio & TV Segmenter — Transcript cleaning, loop collapsi... | `collapse_repeating_ngrams()`, `strip_hallucination_phrases()`, `trim_trailing_degenerate_tail()`, `scrub_transcript_segments()` *(+1 more)* |
 | `transcript_context_menu_mixin.py` | 737 | Radio & TV Story Segmenter — Interactive Transcript Conte... | `TranscriptContextMenuMixin` |
 | `transcript_editor.py` | 945 | transcript_editor.py - Interactive Transcript Editor & Vi... | `InteractiveTranscriptEdit` |
-| `transcript_editor_dialogs.py` | 683 | transcript_editor_dialogs.py - Dialog and floating toolba... | `FindReplaceDialog`, `TranscriptSelectionBubble` |
+| `transcript_editor_dialogs.py` | 808 | transcript_editor_dialogs.py - Dialog and floating toolba... | `FindReplaceDialog`, `TranscriptSelectionBubble` |
 | `transcript_formatting_mixin.py` | 340 | Radio & TV Story Segmenter — Interactive Transcript Forma... | `TranscriptFormattingMixin` |
 | `transcript_navigation_mixin.py` | 300 | transcript_navigation_mixin.py - Timestamp discovery, car... | `TranscriptNavigationMixin` |
 | `transcript_playback_highlight_mixin.py` | 277 | Radio & TV Story Segmenter — Interactive Transcript Playb... | `TranscriptPlaybackHighlightMixin` |
 | `transcript_selection_mixin.py` | 473 | transcript_selection_mixin.py - Multi-selection, timeline... | `TranscriptSelectionMixin` |
-| `transcript_story.py` | 852 | Radio & TV Segmenter v3.10.1-beta — transcript story resp... | `TranscriptStoryMixin` |
+| `transcript_story.py` | 852 | Radio & TV Segmenter v3.10.2-beta — transcript story resp... | `TranscriptStoryMixin` |
 | `transcript_styles.py` | 104 | transcript_styles.py - Transcript view stylesheets and da... | `transcript_text_view_stylesheet()`, `clean_dark_mode_clipboard_html()` |
 | `transcript_timeline_sync_mixin.py` | 655 | Radio & TV Story Segmenter — Transcript Timeline & Playba... | `TranscriptTimelineSyncMixin` |
 | `transcription_processing.py` | 579 | Transcription background process management for Radio & T... | `TranscriptionProcessingMixin` |
@@ -164,32 +167,32 @@
 | `utils/constants.py` | 41 | Application constants and environment configuration. | - |
 | `utils/time_format.py` | 19 | Time formatting and parsing utilities. | - |
 | `voice_profile_dialog.py` | 1006 | voice_profile_dialog.py — Dialog for finding and reassign... | `VoiceProfileMatchDialog` |
-| `voice_profile_ops_mixin.py` | 588 | Radio & TV Story Segmenter — Voice Profile Matching & Emb... | `VoiceProfileOpsMixin` |
+| `voice_profile_ops_mixin.py` | 730 | Radio & TV Story Segmenter — Voice Profile Matching & Emb... | `VoiceProfileOpsMixin` |
 | `waveform_envelope.py` | 55 | Waveform envelope data structures, downsampling pyramids,... | `WaveformEnvelope`, `build_waveform_pyramid()` |
 | `worker_asr_engines.py` | 839 | worker_asr_engines.py - Faster-Whisper, CTranslate2 & She... | `set_emit_callback()`, `get_optimal_transcription_threads()`, `get_app_data_dir_pure()`, `get_models_storage_dir_pure()` *(+4 more)* |
 | `worker_clustering.py` | 448 | worker_clustering.py - Acoustic clustering, VAD pause bri... | `normalize_audio_for_diarization()`, `configure_optimal_pytorch_threads()`, `fast_cluster_ahc()`, `apply_clustering_patches()` *(+2 more)* |
 | `worker_diarization_clustering.py` | 428 | worker_diarization_clustering.py - Speaker Clustering, Ce... | `consolidate_speaker_clusters()`, `merge_adjacent_diarization_segments()`, `cluster_speakers_ahc()`, `fast_cluster_ahc()` *(+2 more)* |
 | `worker_diarization_engine.py` | 953 | worker_diarization_engine.py - Speaker Diarization, Neura... | `set_emit_callback()`, `normalize_audio_for_diarization()`, `configure_optimal_pytorch_threads()`, `extract_embeddings_batched()` *(+3 more)* |
 | `worker_ipc.py` | 216 | worker_ipc.py - Subprocess IPC protocol, environment setu... | `emit()`, `emit_hello()` |
-| `worker_story_engine.py` | 388 | worker_story_engine.py - Acoustic & Lexical Story Boundar... | `is_real_speech()`, `detect_story_boundaries()` |
+| `worker_story_engine.py` | 396 | worker_story_engine.py - Acoustic & Lexical Story Boundar... | `is_real_speech()`, `detect_story_boundaries()` |
 
 ## Detailed Symbol Catalog
 
-### `RadioTVSegmenter.py` (676 lines)
-*Radio & TV Segmenter — v3.10.1-beta*
-- **class `MainWindow(ModelManagementMixin, MediaBatchMixin, PlaybackPreferencesMixin, UiLayoutMixin, ProcessingMixin, TranslationMixin, TranscriptStoryMixin, ProjectExportMixin, GpuAccelerationMixin, QMainWindow)`** (lines 160–573):
+### `RadioTVSegmenter.py` (684 lines)
+*Radio & TV Segmenter — v3.10.2-beta*
+- **class `MainWindow(ModelManagementMixin, MediaBatchMixin, PlaybackPreferencesMixin, UiLayoutMixin, ProcessingMixin, TranslationMixin, TranscriptStoryMixin, ProjectExportMixin, GpuAccelerationMixin, QMainWindow)`** (lines 160–581):
   *Main application window for Radio & TV Segmenter.*
   - `__init__(self)` [L178-L355]
   - `_setup_shortcuts_and_actions(self)` [L357-L404] — *Register customizable QShortcut and QAction objects on MainWindow.*
   - `handle_external_open_request(self, file_path)` [L406-L431] — *Called when another instance attempts to open a project file in single-instance mode.*
-  - `load_persistent_settings(self)` [L433-L518] — *Loads all persistent user preferences from QSettings into MainWindow attributes.*
-  - `toggle_transcript_auto_scroll(self, checked)` [L520-L530] — *Toggle transcript auto-scrolling during playback and persist setting.*
-  - `changeEvent(self, event)` [L532-L539] — *Handle window state changes (e.g. maximize, restore, minimize) safely.*
-  - `dragEnterEvent(self, event)` [L541-L548]
-  - `dragMoveEvent(self, event)` [L550-L557]
-  - `dropEvent(self, event)` [L559-L573]
+  - `load_persistent_settings(self)` [L433-L526] — *Loads all persistent user preferences from QSettings into MainWindow attributes.*
+  - `toggle_transcript_auto_scroll(self, checked)` [L528-L538] — *Toggle transcript auto-scrolling during playback and persist setting.*
+  - `changeEvent(self, event)` [L540-L547] — *Handle window state changes (e.g. maximize, restore, minimize) safely.*
+  - `dragEnterEvent(self, event)` [L549-L556]
+  - `dragMoveEvent(self, event)` [L558-L565]
+  - `dropEvent(self, event)` [L567-L581]
 - **Functions**:
-  - `main()` [L576-L672]
+  - `main()` [L584-L680]
 
 ### `audio_normalization.py` (541 lines)
 *Radio & TV Story Segmenter — Audio Loudness Probing & Normalization Engine.*
@@ -209,31 +212,31 @@
   - `normalize_audio_sidecar(media_path, report, target_lufs, max_true_peak, quiet_threshold_lufs, quiet_threshold_dbfs, timeout)` [L346-L461] — *Non-destructively generate a normalized 16 kHz mono WAV sidecar.*
   - `get_effective_audio_for_processing(media_path, settings_store, project_metadata)` [L464-L541] — *Return the audio path to feed into ASR or diarization.*
 
-### `background_workers.py` (1044 lines)
+### `background_workers.py` (1051 lines)
 *Radio & TV Story Segmenter — Background Worker Threads & Waveform Cache Helpers.*
-- **class `StoryAutoDetectWorker(QObject)`** (lines 93–460):
-  - `__init__(self, audio_file, silence_threshold, lead_in_padding, audio_duration, transcript_segments, whisper_model, detection_mode, **kwargs)` [L104-L123]
-  - `cancel(self)` [L125-L126]
-  - `_emit_progress(self, message, percent)` [L128-L142]
-  - `_is_real_speech(self, text)` [L144-L150]
-  - `run(self)` [L152-L460]
-- **class `WaveformWorker(QObject)`** (lines 689–854):
-  - `__init__(self, audio_file, points_per_second, project_file)` [L693-L700]
-  - `cancel(self)` [L702-L710] — *Thread-safe cancellation request; also stops the FFmpeg child process.*
-  - `run(self)` [L712-L854] — *Build a compact peak envelope without loading the whole recording into RAM.*
-- **class `VideoThumbnailWorker(QObject)`** (lines 974–1033):
-  - `__init__(self, media_path, duration, output_dir, count)` [L978-L985]
-  - `cancel(self)` [L987-L994]
-  - `run(self)` [L996-L1033]
+- **class `StoryAutoDetectWorker(QObject)`** (lines 93–467):
+  - `__init__(self, audio_file, silence_threshold, lead_in_padding, audio_duration, transcript_segments, whisper_model, detection_mode, min_story_duration, **kwargs)` [L104-L128]
+  - `cancel(self)` [L130-L131]
+  - `_emit_progress(self, message, percent)` [L133-L147]
+  - `_is_real_speech(self, text)` [L149-L155]
+  - `run(self)` [L157-L467]
+- **class `WaveformWorker(QObject)`** (lines 696–861):
+  - `__init__(self, audio_file, points_per_second, project_file)` [L700-L707]
+  - `cancel(self)` [L709-L717] — *Thread-safe cancellation request; also stops the FFmpeg child process.*
+  - `run(self)` [L719-L861] — *Build a compact peak envelope without loading the whole recording into RAM.*
+- **class `VideoThumbnailWorker(QObject)`** (lines 981–1040):
+  - `__init__(self, media_path, duration, output_dir, count)` [L985-L992]
+  - `cancel(self)` [L994-L1001]
+  - `run(self)` [L1003-L1040]
 - **Functions**:
-  - `get_waveform_peak_cache_path(audio_file, project_file)` [L484-L538] — *Return local project or appdata path for waveform peak binary cache file.*
-  - `read_waveform_peak_cache(audio_file, points_per_second, project_file)` [L543-L612] — *Read cached waveform peak envelope from binary cache.*
-  - `_pack_f32(values)` [L614-L618]
-  - `write_waveform_peak_cache(audio_file, peaks, points_per_second, project_file, levels, skip_if_exists)` [L621-L663] — *Write waveform peak envelope and multi-resolution mipmapped levels to binary cache with atomic rename.*
-  - `invalidate_waveform_peak_cache(audio_file, project_file)` [L666-L686] — *Delete any cached waveform peak binary file for audio_file, including legacy paths.*
-  - `get_video_thumbnail_cache_dir(media_file, project_file)` [L861-L900] — *Return the deterministic thumbnail cache directory for a media file, associating with project if available.*
-  - `read_video_thumbnail_cache(media_file, duration, project_file)` [L903-L945] — *Read pre-extracted video thumbnail items [(timestamp, image_path), ...] from disk cache.*
-  - `invalidate_video_thumbnail_cache(media_file, project_file)` [L948-L971] — *Delete the thumbnail cache directory for a given media file.*
+  - `get_waveform_peak_cache_path(audio_file, project_file)` [L491-L545] — *Return local project or appdata path for waveform peak binary cache file.*
+  - `read_waveform_peak_cache(audio_file, points_per_second, project_file)` [L550-L619] — *Read cached waveform peak envelope from binary cache.*
+  - `_pack_f32(values)` [L621-L625]
+  - `write_waveform_peak_cache(audio_file, peaks, points_per_second, project_file, levels, skip_if_exists)` [L628-L670] — *Write waveform peak envelope and multi-resolution mipmapped levels to binary cache with atomic rename.*
+  - `invalidate_waveform_peak_cache(audio_file, project_file)` [L673-L693] — *Delete any cached waveform peak binary file for audio_file, including legacy paths.*
+  - `get_video_thumbnail_cache_dir(media_file, project_file)` [L868-L907] — *Return the deterministic thumbnail cache directory for a media file, associating with project if available.*
+  - `read_video_thumbnail_cache(media_file, duration, project_file)` [L910-L952] — *Read pre-extracted video thumbnail items [(timestamp, image_path), ...] from disk cache.*
+  - `invalidate_video_thumbnail_cache(media_file, project_file)` [L955-L978] — *Delete the thumbnail cache directory for a given media file.*
 
 ### `backup_manager.py` (622 lines)
 *Unified State Serialization, Local, and Google Drive Cloud Backup & Restore Engine.*
@@ -579,6 +582,15 @@
   - `detect_changed_tokens(root_dir)` [L64-L136] — *Return a set of lowercase module stems and plugin names from the most recently edited files.*
   - `select_diagnostic_items(engine, items, filter_expr, changed_only)` [L139-L191] — *Filter diagnostic items by explicit `--filter` keywords and/or `--changed` git diff analysis.*
 
+### `diagnostic_speaker_cleanup_tests.py` (342 lines)
+*Diagnostic tests for Phase 2 features: minimum story length, guest-name cleanup, and Station Voices.*
+- **class `DiagnosticSpeakerCleanupTestsMixin`** (lines 13–342):
+  *Mixin for Phase 2 regression diagnostics (story length, name cleanup, Station Voices).*
+  - `_ensure_qt_app(self)` [L16-L21]
+  - `_test_minimum_story_length_filtering_and_preferences(self, item)` [L23-L115]
+  - `_test_guest_name_proper_noun_cleanup_and_preserve_case(self, item)` [L117-L249]
+  - `_test_station_voice_checkbox_and_threshold_normalization(self, item)` [L251-L342]
+
 ### `dialogs.py` (433 lines)
 *Radio & TV Story Segmenter — Audio Loudness Normalization & Telemetry Dialog.*
 - **Public Exports (`__all__`)**: AudioLoudnessNormalizationDialog
@@ -600,9 +612,9 @@
   - `apply_normalization(self)` [L336-L409]
   - `reset_to_original(self)` [L411-L433]
 
-### `diarization_processing.py` (769 lines)
+### `diarization_processing.py` (772 lines)
 *Speaker diarization process management for Radio & TV Story Segmenter.*
-- **class `DiarizationProcessingMixin`** (lines 24–769):
+- **class `DiarizationProcessingMixin`** (lines 24–772):
   - `on_diarization_process_error(self, error)` [L25-L79] — *Handles QProcess execution errors for the diarization process.*
   - `start_diarization(self)` [L81-L278]
   - `on_diarization_output(self, force_flush)` [L280-L383]
@@ -611,12 +623,12 @@
   - `cleanup_diarization_process(self)` [L441-L475]
   - `diarization_progress(self, message, percent)` [L477-L478]
   - `diarization_finished(self, result)` [L480-L519]
-  - `_apply_diarization_result(self, result)` [L521-L641]
-  - `diarization_error(self, message)` [L643-L689]
-  - `_diar_segments_cache_key(self)` [L692-L696]
-  - `_ensure_diar_speaker_index(self)` [L698-L728]
-  - `speaker_at_time(self, start, end)` [L730-L763]
-  - `get_effective_speaker_name(self, seg_idx, segment)` [L765-L769]
+  - `_apply_diarization_result(self, result)` [L521-L644]
+  - `diarization_error(self, message)` [L646-L692]
+  - `_diar_segments_cache_key(self)` [L695-L699]
+  - `_ensure_diar_speaker_index(self)` [L701-L731]
+  - `speaker_at_time(self, start, end)` [L733-L766]
+  - `get_effective_speaker_name(self, seg_idx, segment)` [L768-L772]
 
 ### `embedded_guides.py` (735 lines)
 *Radio & TV Story Segmenter — Built-In Embedded User Guides & Documentation.*
@@ -1656,13 +1668,13 @@
 - **Functions**:
   - `capture_video_frame(video_path, timestamp, output_path)` [L45-L60]
 
-### `preferences_dialog.py` (881 lines)
+### `preferences_dialog.py` (885 lines)
 *Radio & TV Story Segmenter — Preferences Modal Dialog.*
-- **class `PreferencesDialogMixin(PreferencesResetMixin)`** (lines 32–881):
+- **class `PreferencesDialogMixin(PreferencesResetMixin)`** (lines 32–885):
   *Provides the main open_preferences_dialog method and settings persistence.*
-  - `open_preferences_dialog(self, initial_category, modal)` [L35-L881] — *Open the multi-category Preferences dialog as a non-modal floating inspector.*
+  - `open_preferences_dialog(self, initial_category, modal)` [L35-L885] — *Open the multi-category Preferences dialog as a non-modal floating inspector.*
 
-### `preferences_reset.py` (674 lines)
+### `preferences_reset.py` (678 lines)
 *Radio & TV Story Segmenter — Preferences Reset & Factory Defaults Engine.*
 - **class `RestoreSelectedSettingsDialog(QDialog)`** (lines 21–165):
   *Presents users with a list of customizable settings that can be restored to defaults.*
@@ -1670,12 +1682,12 @@
   - `_select_all(self)` [L128-L130]
   - `_deselect_all(self)` [L132-L134]
   - `_handle_reset(self)` [L136-L165]
-- **class `PreferencesResetMixin`** (lines 168–674):
+- **class `PreferencesResetMixin`** (lines 168–678):
   *Provides methods for resetting settings to defaults across all app categories.*
-  - `apply_settings_reset(self, selected_ids, live_widgets)` [L171-L663] — *Apply factory default settings to the requested categories and update live widgets if present.*
-  - `open_restore_system_defaults_dialog(self)` [L665-L674] — *Open the Restore System Defaults dialog directly from Settings menu or Backup & Restore Center.*
+  - `apply_settings_reset(self, selected_ids, live_widgets)` [L171-L667] — *Apply factory default settings to the requested categories and update live widgets if present.*
+  - `open_restore_system_defaults_dialog(self)` [L669-L678] — *Open the Restore System Defaults dialog directly from Settings menu or Backup & Restore Center.*
 
-### `preferences_reset_dialog.py` (633 lines)
+### `preferences_reset_dialog.py` (637 lines)
 *Radio & TV Segmenter — Preferences reset and factory default restore engine.*
 - **class `RestoreSelectedSettingsDialog(QDialog)`** (lines 20–163):
   *Presents users with a list of customizable settings that can be restored to defaults.*
@@ -1683,10 +1695,10 @@
   - `_select_all(self)` [L126-L128]
   - `_deselect_all(self)` [L130-L132]
   - `_handle_reset(self)` [L134-L163]
-- **class `PreferencesResetMixin`** (lines 166–632):
+- **class `PreferencesResetMixin`** (lines 166–636):
   *Mixin providing settings reset and restore dialog actions.*
-  - `apply_settings_reset(self, selected_ids, live_widgets)` [L169-L621] — *Apply factory default settings to the requested categories and update live widgets if present.*
-  - `open_restore_system_defaults_dialog(self)` [L623-L632] — *Open the Restore System Defaults dialog directly from Settings menu or Backup & Restore Center.*
+  - `apply_settings_reset(self, selected_ids, live_widgets)` [L169-L625] — *Apply factory default settings to the requested categories and update live widgets if present.*
+  - `open_restore_system_defaults_dialog(self)` [L627-L636] — *Open the Restore System Defaults dialog directly from Settings menu or Backup & Restore Center.*
 
 ### `preferences_tab_daw.py` (138 lines)
 *preferences_tab_daw.py — External Audio & Video Editors Preferences Tab.*
@@ -1703,14 +1715,14 @@
   - `build_ai_models_tab(win, dialog, live_widgets, add_custom_defaults_btn)` [L389-L512]
   - `build_gpu_tab(win, dialog, live_widgets, add_custom_defaults_btn)` [L515-L623]
 
-### `preferences_tabs_media.py` (657 lines)
+### `preferences_tabs_media.py` (683 lines)
 *Radio & TV Story Segmenter — Preferences Modal Media & Workflow Tab Builders.*
 - **Functions**:
   - `build_playback_timeline_tab(win, dialog, live_widgets, add_custom_defaults_btn)` [L22-L143]
-  - `build_detection_tab(win, dialog, live_widgets, add_custom_defaults_btn)` [L146-L245]
-  - `build_batch_tab(win, dialog, live_widgets, add_custom_defaults_btn)` [L248-L371]
-  - `build_cleanup_tab(win, dialog, live_widgets, add_custom_defaults_btn)` [L374-L572]
-  - `build_youtube_tab(win, dialog, live_widgets, add_custom_defaults_btn)` [L575-L657]
+  - `build_detection_tab(win, dialog, live_widgets, add_custom_defaults_btn)` [L146-L271]
+  - `build_batch_tab(win, dialog, live_widgets, add_custom_defaults_btn)` [L274-L397]
+  - `build_cleanup_tab(win, dialog, live_widgets, add_custom_defaults_btn)` [L400-L598]
+  - `build_youtube_tab(win, dialog, live_widgets, add_custom_defaults_btn)` [L601-L683]
 
 ### `preview_manager.py` (270 lines)
 *AI Studio Web Preview Manager for Radio & TV Story Segmenter.*
@@ -2377,65 +2389,69 @@
   - `open_speaker_manager_dialog(self, modal)` [L473-L499]
   - `merge_contiguous_speaker_segments(self)` [L501-L555]
 
-### `speaker_dialogs.py` (782 lines)
+### `speaker_dialogs.py` (891 lines)
 *speaker_dialogs.py — Dialogs for speaker renaming, turn assignment, and cluster management.*
 - **Public Exports (`__all__`)**: ChangeSpeakerDialog, SpeakerManagerDialog, SpeakerNameDelegate
-- **class `ChangeSpeakerDialog(QDialog)`** (lines 23–82):
+- **class `ChangeSpeakerDialog(QDialog)`** (lines 25–111):
   *Dialog prompting whether to apply a speaker name change to all instances or a single turn.*
-  - `__init__(self, current_name, target_name, seg_idx, parent)` [L26-L70]
-  - `_on_all(self)` [L72-L74]
-  - `_on_subsequent(self)` [L76-L78]
-  - `_on_single(self)` [L80-L82]
-- **class `SpeakerNameDelegate(QStyledItemDelegate)`** (lines 96–163):
+  - `__init__(self, current_name, target_name, seg_idx, parent, show_save_voice_profile, already_saved_voice_profile)` [L28-L95]
+  - `_on_all(self)` [L97-L99]
+  - `_on_subsequent(self)` [L101-L103]
+  - `_on_single(self)` [L105-L107]
+  - `save_to_station_voices(self)` [L110-L111]
+- **class `SpeakerNameDelegate(QStyledItemDelegate)`** (lines 135–202):
   *Delegate for inline double-click editing of speaker names with Tab progression.*
-  - `__init__(self, dialog)` [L99-L101]
-  - `createEditor(self, parent, option, index)` [L103-L128]
-  - `eventFilter(self, editor, event)` [L130-L163]
-- **class `SpeakerManagerDialog(QDialog)`** (lines 166–782):
+  - `__init__(self, dialog)` [L138-L140]
+  - `createEditor(self, parent, option, index)` [L142-L167]
+  - `eventFilter(self, editor, event)` [L169-L202]
+- **class `SpeakerManagerDialog(QDialog)`** (lines 205–891):
   *Manager dialog for inspecting, aliasing, and merging detected speaker clusters.*
-  - `__init__(self, parent)` [L169-L221]
-  - `_is_gui_thread(self)` [L223-L231] — *Check whether execution is on the main Qt GUI thread.*
-  - `_get_audio_source_url(self)` [L233-L248]
-  - `_get_sample_duration(self)` [L250-L258] — *Retrieve the configured speaker sample preview duration in seconds (default 3.0s).*
-  - `_find_speaker_sample_range(self, speaker_name)` [L260-L288] — *Resolve a clean representative utterance (start_s, duration_s) for the speaker cluster.*
-  - `_play_speaker_sample(self, speaker_name)` [L290-L333] — *Play a non-blocking 3-second sample for the specified speaker without altering timeline state.*
-  - `_stop_sample_playback(self)` [L335-L349] — *Cease any active sample audio playback and reset UI button text.*
-  - `_on_preview_playback_state_changed(self, state)` [L351-L354]
-  - `_on_preview_media_status_changed(self, status)` [L356-L362]
-  - `_init_ui(self)` [L364-L454]
-  - `_schedule_debounced_save(self)` [L456-L459] — *Schedule a debounced full-project save 500ms after the last speaker rename.*
-  - `_flush_debounced_save(self)` [L461-L466] — *Immediately execute any pending debounced project save.*
-  - `_populate(self)` [L468-L593]
-  - `_start_inline_edit_on_row(self, row)` [L595-L603]
-  - `_on_table_item_changed(self, item)` [L605-L627]
-  - `_rename_speaker(self, current_name, raw_id)` [L629-L637]
-  - `_apply_speaker_rename(self, current_name, target, raw_id)` [L639-L681]
-  - `_merge_speaker_into(self, source_name)` [L683-L710]
-  - `_on_quick_merge(self)` [L712-L737]
-  - `_on_open_voice_profiles(self)` [L739-L743]
-  - `reject(self)` [L745-L748]
-  - `accept(self)` [L750-L753]
-  - `closeEvent(self, event)` [L755-L758]
-  - `toggle_float_mode(self, pinned)` [L760-L776] — *Toggle whether the non-modal floating window stays pinned on top of other windows.*
-  - `changeEvent(self, event)` [L778-L782]
+  - `__init__(self, parent)` [L208-L261]
+  - `_is_gui_thread(self)` [L263-L271] — *Check whether execution is on the main Qt GUI thread.*
+  - `_get_audio_source_url(self)` [L273-L288]
+  - `_get_sample_duration(self)` [L290-L298] — *Retrieve the configured speaker sample preview duration in seconds (default 3.0s).*
+  - `_find_speaker_sample_range(self, speaker_name)` [L300-L328] — *Resolve a clean representative utterance (start_s, duration_s) for the speaker cluster.*
+  - `_play_speaker_sample(self, speaker_name)` [L330-L373] — *Play a non-blocking 3-second sample for the specified speaker without altering timeline state.*
+  - `_stop_sample_playback(self)` [L375-L389] — *Cease any active sample audio playback and reset UI button text.*
+  - `_on_preview_playback_state_changed(self, state)` [L391-L394]
+  - `_on_preview_media_status_changed(self, status)` [L396-L402]
+  - `_init_ui(self)` [L404-L500]
+  - `_schedule_debounced_save(self)` [L502-L505] — *Schedule a debounced full-project save 500ms after the last speaker rename.*
+  - `_flush_debounced_save(self)` [L507-L512] — *Immediately execute any pending debounced project save.*
+  - `_populate(self)` [L514-L666]
+  - `_start_inline_edit_on_row(self, row)` [L668-L676]
+  - `_on_table_item_changed(self, item)` [L678-L700]
+  - `_rename_speaker(self, current_name, raw_id)` [L702-L710]
+  - `_apply_speaker_rename(self, current_name, target, raw_id)` [L712-L754]
+  - `_merge_speaker_into(self, source_name)` [L756-L783]
+  - `_on_quick_merge(self)` [L785-L810]
+  - `_on_toggle_station_voice(self, speaker_name, checked, checkbox)` [L812-L837]
+  - `_on_fix_speaker_names(self)` [L839-L846]
+  - `_on_open_voice_profiles(self)` [L848-L852]
+  - `reject(self)` [L854-L857]
+  - `accept(self)` [L859-L862]
+  - `closeEvent(self, event)` [L864-L867]
+  - `toggle_float_mode(self, pinned)` [L869-L885] — *Toggle whether the non-modal floating window stays pinned on top of other windows.*
+  - `changeEvent(self, event)` [L887-L891]
 - **Functions**:
-  - `_is_gui_thread()` [L85-L93] — *Check whether execution is on the main Qt GUI thread.*
+  - `_is_gui_thread()` [L114-L122] — *Check whether execution is on the main Qt GUI thread.*
+  - `_should_init_audio_preview()` [L125-L132]
 
-### `speaker_editing_mixin.py` (598 lines)
+### `speaker_editing_mixin.py` (629 lines)
 *Radio & TV Story Segmenter — Speaker Label, Renaming & Segment Editing Mixin.*
-- **class `SpeakerEditingMixin(SpeakerDialogRefinementMixin)`** (lines 53–598):
+- **class `SpeakerEditingMixin(SpeakerDialogRefinementMixin)`** (lines 54–629):
   *Mixin for speaker labeling, splitting, renaming, and dialog turn refinement.*
-  - `handle_insert_speaker_request(self, seg_idx, split_time, speaker_name)` [L56-L60]
-  - `add_speaker_label_at(self, seg_idx, split_time, name)` [L62-L176]
-  - `split_segment_at_time(self, seg_idx, split_time, new_speaker_name)` [L178-L283]
-  - `prompt_rename_custom_speaker(self, old_name)` [L285-L306]
-  - `display_speaker(self, speaker)` [L308-L322]
-  - `get_all_known_speakers(self)` [L324-L354]
-  - `execute_speaker_rename(self, seg_idx, raw_speaker, target_name)` [L356-L477]
-  - `prompt_rename_speaker(self, seg_idx, speaker)` [L479-L480]
-  - `remove_speaker_label_at_segment(self, seg_idx)` [L482-L565]
-  - `register_confirmed_speaker_turn(self, seg_idx, speaker_name)` [L567-L595]
-  - `register_confirmed_speaker_sample(self, seg_idx, speaker_name)` [L597-L598]
+  - `handle_insert_speaker_request(self, seg_idx, split_time, speaker_name)` [L57-L61]
+  - `add_speaker_label_at(self, seg_idx, split_time, name)` [L63-L177]
+  - `split_segment_at_time(self, seg_idx, split_time, new_speaker_name)` [L179-L284]
+  - `prompt_rename_custom_speaker(self, old_name)` [L286-L307]
+  - `display_speaker(self, speaker)` [L309-L323]
+  - `get_all_known_speakers(self)` [L325-L355]
+  - `execute_speaker_rename(self, seg_idx, raw_speaker, target_name)` [L357-L508]
+  - `prompt_rename_speaker(self, seg_idx, speaker)` [L510-L511]
+  - `remove_speaker_label_at_segment(self, seg_idx)` [L513-L596]
+  - `register_confirmed_speaker_turn(self, seg_idx, speaker_name)` [L598-L626]
+  - `register_confirmed_speaker_sample(self, seg_idx, speaker_name)` [L628-L629]
 
 ### `speaker_identity.py` (260 lines)
 *Radio & TV Segmenter*
@@ -2448,6 +2464,39 @@
   - `robust_reference_profile(seed_vectors, candidate_vectors, *, max_samples, min_samples, seed_similarity)` [L120-L210] — *Build a speaker profile without blindly averaging an existing cluster.*
   - `compare_against_profiles(vector, target_profile, competitor_profiles)` [L213-L239] — *Compare a candidate against the target speaker and all competing profiles.*
   - `is_confident_match(result, *, threshold, margin, has_competitors)` [L242-L260] — *Require both:*
+
+### `speaker_name_cleanup_dialog.py` (295 lines)
+*speaker_name_cleanup_dialog.py — Modal review dialog for bulk speaker/guest name cleanup.*
+- **Public Exports (`__all__`)**: SpeakerNameCleanupDialog
+- **class `SpeakerNameCleanupDialog(QDialog)`** (lines 53–295):
+  *Review and apply misspelled guest/host name fixes against confirmed speakers.*
+  - `__init__(self, main_win, parent)` [L56-L137]
+  - `_set_all_checked(self, checked)` [L139-L141]
+  - `rescan(self)` [L143-L214]
+  - `_apply_selected(self)` [L216-L295]
+
+### `speaker_name_matcher.py` (583 lines)
+*speaker_name_matcher.py — Headless phonetic and fuzzy cleanup for guest and speaker names.*
+- **Public Exports (`__all__`)**: SpeakerNameCandidate, apply_bulk_text_replacements, consonant_skeleton, extract_confirmed_speaker_names, find_misspelled_speaker_names, is_generic_role_label, is_generic_speaker_label, name_similarity, phonetic_norm, phonetic_soundex, preserve_case_replace
+- **class `SpeakerNameCandidate`** (lines 108–115):
+- **Functions**:
+  - `is_generic_speaker_label(name)` [L118-L126] — *Return True if a speaker label is empty, numeric, or an auto-generated placeholder.*
+  - `is_generic_role_label(name)` [L129-L133] — *Return True for placeholder speaker IDs or generic role words like 'Host' or 'Guest'.*
+  - `preserve_case_replace(matched, replacement)` [L136-L155] — *Preserve uppercase/title-case style when replacing matched text with a proper noun.*
+  - `_ascii_letters_lower(text)` [L158-L161]
+  - `phonetic_norm(token)` [L164-L187] — *Normalize English/broadcast ASR consonant & vowel spellings to a canonical phonetic key.*
+  - `_voice_neutral(pnorm)` [L190-L192] — *Map voiced consonants to their unvoiced counterparts for final-stop resilience (e.g. Fahad/fahat).*
+  - `consonant_skeleton(token)` [L195-L202] — *Keep initial letter plus non-vowel skeleton after phonetic normalization.*
+  - `phonetic_soundex(token)` [L205-L223] — *Compute Soundex over phonetic_norm(token) so C/K/Q and PH/F share buckets.*
+  - `name_similarity(candidate, target)` [L226-L259] — *Return [0.0, 1.0] similarity blending spelling, phonetic folding, consonant skeleton, and Soundex.*
+  - `extract_confirmed_speaker_names(main_win)` [L262-L293] — *Collect confirmed non-generic speaker display names from a project window or state object.*
+  - `_split_name_parts(name)` [L296-L297]
+  - `_make_context_snippet(text, start, end, radius)` [L300-L308]
+  - `_span_overlaps(span, covered)` [L311-L313]
+  - `_needs_case_or_spelling_fix(found_phrase, target_name)` [L316-L322]
+  - `_phrase_similarity(found_words, target_parts)` [L325-L339]
+  - `find_misspelled_speaker_names(segments, confirmed_names, min_score)` [L342-L502] — *Scan transcript segments for likely ASR misspellings of confirmed speaker names.*
+  - `apply_bulk_text_replacements(segments, replacements, preserve_case, sync_words_cb, transcript, translations)` [L505-L583] — *Apply whole-word replacements across transcript segments, full text, and translations.*
 
 ### `speaker_palette.py` (148 lines)
 *Accessible adaptive speaker color palette for Radio & TV Story Segmenter.*
@@ -2531,13 +2580,13 @@
   - `_notify_floating_dialogs(self)` [L899-L913] — *Refresh any open non-modal export, metadata, or speaker management floating windows after main window edits.*
   - `_close_floating_dialogs(self, persist_drafts)` [L915-L931] — *Persist drafts and close any active non-modal floating windows on project close or shutdown.*
 
-### `story_detection_processing.py` (206 lines)
+### `story_detection_processing.py` (213 lines)
 *Story boundary detection processing mixin for Radio & TV Story Segmenter.*
-- **class `StoryDetectionProcessingMixin`** (lines 19–205):
-  - `start_auto_detect_stories(self)` [L20-L83]
-  - `auto_detect_progress(self, message, percent)` [L85-L86]
-  - `auto_detect_finished(self, new_stories)` [L88-L159]
-  - `auto_detect_error(self, message)` [L161-L205]
+- **class `StoryDetectionProcessingMixin`** (lines 19–212):
+  - `start_auto_detect_stories(self)` [L20-L90]
+  - `auto_detect_progress(self, message, percent)` [L92-L93]
+  - `auto_detect_finished(self, new_stories)` [L95-L166]
+  - `auto_detect_error(self, message)` [L168-L212]
 
 ### `story_fades_dialog.py` (215 lines)
 *story_fades_dialog.py — Dialog for fine-grained audio fade-in, fade-out, and curve adjustment.*
@@ -2911,27 +2960,33 @@
   - `mouseReleaseEvent(self, event)` [L588-L674]
   - `keyPressEvent(self, event)` [L676-L945]
 
-### `transcript_editor_dialogs.py` (683 lines)
+### `transcript_editor_dialogs.py` (808 lines)
 *transcript_editor_dialogs.py - Dialog and floating toolbar components for transcript editing.*
-- **class `FindReplaceDialog(QDialog)`** (lines 50–599):
+- **class `FindReplaceDialog(QDialog)`** (lines 53–724):
   *Modeless find-and-replace dialog for QTextEdit / InteractiveTranscriptEdit.*
-  - `__init__(self, text_edit, parent)` [L53-L149]
-  - `keyPressEvent(self, event)` [L151-L177]
-  - `_on_find_text_changed(self, text)` [L179-L182]
-  - `_update_local_match_count(self)` [L184-L194]
-  - `_sync_parent_search(self, target)` [L196-L200]
-  - `main_window(self)` [L203-L211]
-  - `get_flags(self)` [L213-L219]
-  - `find_next(self)` [L221-L261]
-  - `find_prev(self)` [L263-L308]
-  - `replace(self)` [L310-L453]
-  - `replace_all(self)` [L455-L569]
-  - `_fallback_widget_replace(self, replacement)` [L571-L575]
-  - `_fallback_widget_replace_all(self, target, replacement)` [L577-L599]
-- **class `TranscriptSelectionBubble(QFrame)`** (lines 602–683):
+  - `__init__(self, text_edit, parent)` [L56-L191]
+  - `keyPressEvent(self, event)` [L193-L219]
+  - `_on_find_text_changed(self, text)` [L221-L225]
+  - `_update_replace_field_helpers(self, *_args)` [L227-L237]
+  - `_on_trim_replace_text(self)` [L239-L240]
+  - `_on_add_to_glossary(self)` [L242-L271]
+  - `_on_open_fix_speaker_names(self)` [L273-L280]
+  - `_format_replacement(self, matched_text, replacement)` [L282-L285]
+  - `_trigger_project_save(self, main_win)` [L287-L291]
+  - `_update_local_match_count(self)` [L293-L303]
+  - `_sync_parent_search(self, target)` [L305-L309]
+  - `main_window(self)` [L312-L320]
+  - `get_flags(self)` [L322-L328]
+  - `find_next(self)` [L330-L370]
+  - `find_prev(self)` [L372-L417]
+  - `replace(self)` [L419-L564]
+  - `replace_all(self)` [L566-L694]
+  - `_fallback_widget_replace(self, replacement)` [L696-L700]
+  - `_fallback_widget_replace_all(self, target, replacement)` [L702-L724]
+- **class `TranscriptSelectionBubble(QFrame)`** (lines 727–808):
   *Floating quick-action toolbar on transcript selection (Milestone 3.12).*
-  - `__init__(self, parent)` [L611-L678]
-  - `_emit_comment(self)` [L680-L683]
+  - `__init__(self, parent)` [L736-L803]
+  - `_emit_comment(self)` [L805-L808]
 
 ### `transcript_formatting_mixin.py` (340 lines)
 *Radio & TV Story Segmenter — Interactive Transcript Formatting Mixin.*
@@ -3001,7 +3056,7 @@
   - `_on_bubble_export(self)` [L468-L473]
 
 ### `transcript_story.py` (852 lines)
-*Radio & TV Segmenter v3.10.1-beta — transcript story responsibilities.*
+*Radio & TV Segmenter v3.10.2-beta — transcript story responsibilities.*
 - **Public Exports (`__all__`)**: TranscriptStoryMixin, Story, SetStoriesCommand, SelectStoriesCommand, StoryBoundaryChangeCommand, StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin, ChangeSpeakerDialog, VoiceProfileMatchDialog, StoryFadesDialog, SpeakerManagerDialog, FADE_CURVE_TABLES, get_fade_curve_factors
 - **class `TranscriptStoryMixin(StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin)`** (lines 63–851):
   - `render_transcript(self)` [L64-L467]
@@ -3279,9 +3334,9 @@
   - `eventFilter(self, watched, event)` [L970-L988] — *Intercept Spacebar on the table widget for playback and Return/Enter/X for checkbox toggling.*
   - `keyPressEvent(self, event)` [L990-L1004]
 
-### `voice_profile_ops_mixin.py` (588 lines)
+### `voice_profile_ops_mixin.py` (730 lines)
 *Radio & TV Story Segmenter — Voice Profile Matching & Embedding Extraction Mixin.*
-- **class `VoiceProfileOpsMixin`** (lines 45–588):
+- **class `VoiceProfileOpsMixin`** (lines 45–730):
   *Mixin for acoustic voice profile matching, WeSpeaker embeddings, and voice training.*
   - `get_segment_embedding(self, seg_idx)` [L48-L163] — *Retrieve a genuine 256-dimensional acoustic embedding for this segment.*
   - `get_composite_embedding(self, seg_indices)` [L165-L175]
@@ -3289,7 +3344,13 @@
   - `find_matching_voice_turns(self, ref_seg_idx, threshold, scope_cluster_only, ref_seg_indices, target_name, cached_candidates)` [L251-L401] — *Find transcript turns acoustically matching a verified voice.*
   - `match_acoustic_voice_profile(self, ref_seg_idx, target_speaker, threshold, scope_cluster_only, selected_indices, ref_seg_indices)` [L403-L497]
   - `teach_voice_profile_dialog(self, seg_idx, raw_speaker, prompt_new_speaker)` [L499-L579]
-  - `open_manage_voice_profiles_dialog(self)` [L581-L588]
+  - `_get_station_voice_store(self)` [L581-L587]
+  - `is_speaker_saved_to_station_voices(self, speaker_name)` [L589-L595]
+  - `_collect_speaker_segment_indices(self, speaker_name)` [L597-L610]
+  - `has_speaker_voice_embedding_source(self, speaker_name, seg_indices)` [L612-L632]
+  - `save_speaker_to_station_voices(self, speaker_name, seg_indices, allow_extract)` [L634-L708]
+  - `remove_speaker_from_station_voices(self, speaker_name)` [L710-L724]
+  - `open_manage_voice_profiles_dialog(self)` [L726-L730]
 
 ### `waveform_envelope.py` (55 lines)
 *Waveform envelope data structures, downsampling pyramids, and cache helpers.*
@@ -3367,9 +3428,9 @@
   - `_setup_windows_dll_directories()` [L85-L195] — *Register native DLL directories (PyTorch, CTranslate2, ONNX Runtime, etc.)*
   - `_safe_tensor_from_numpy(arr)` [L198-L216] — *Safely convert a numpy float32 array into a PyTorch tensor.*
 
-### `worker_story_engine.py` (388 lines)
+### `worker_story_engine.py` (396 lines)
 *worker_story_engine.py - Acoustic & Lexical Story Boundary Detection Engine.*
 - **Functions**:
   - `is_real_speech(text)` [L41-L48] — *Return True if text represents actual spoken words rather than music/sound tokens.*
-  - `detect_story_boundaries(audio_file, silence_threshold, lead_in_padding, audio_duration, transcript_segments, whisper_model, detection_mode, is_cancelled_fn, progress_callback)` [L51-L388] — *Execute acoustic and lexical story boundary detection on an audio file.*
+  - `detect_story_boundaries(audio_file, silence_threshold, lead_in_padding, audio_duration, transcript_segments, whisper_model, detection_mode, min_story_duration, is_cancelled_fn, progress_callback)` [L51-L396] — *Execute acoustic and lexical story boundary detection on an audio file.*
 

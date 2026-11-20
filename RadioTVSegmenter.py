@@ -1,4 +1,4 @@
-"""Radio & TV Segmenter — v3.10.1-beta
+"""Radio & TV Segmenter — v3.10.2-beta
 
 This is the thin application composition root. UI/processing responsibilities
 are implemented in focused mixins so future changes can target smaller files
@@ -460,6 +460,11 @@ class MainWindow(
             self.master_volume = 1.0
         self.silence_threshold = float(s.value("silence_threshold", 3.0) or 3.0)
         self.lead_in_padding = float(s.value("lead_in_padding", 0.5) or 0.5)
+        try:
+            raw_min_story = s.value("min_story_duration", 3.0)
+            self.min_story_duration = max(0.0, min(600.0, float(raw_min_story if raw_min_story is not None else 3.0)))
+        except (TypeError, ValueError):
+            self.min_story_duration = 3.0
         self.story_detection_mode = str(s.value("story_detection_mode", "voice") or "voice")
         self.ui_vocabulary_mode = "segments"
         self.expected_speakers = str(s.value("default_expected_speakers", "auto") or "auto")
@@ -490,7 +495,10 @@ class MainWindow(
         self.startup_project_mode = str(s.value("startup_project_mode", "last") or "last")
         self.enable_voice_profiles = str(s.value("enable_voice_profiles", "true")).lower() in {"1", "true", "yes"}
         try:
-            self.voice_profile_auto_match_threshold = max(0.50, min(0.99, float(s.value("voice_profile_auto_match_threshold", 0.78))))
+            raw_vp_thresh = float(s.value("voice_profile_auto_match_threshold", 0.78))
+            if raw_vp_thresh > 1.0:
+                raw_vp_thresh /= 100.0
+            self.voice_profile_auto_match_threshold = max(0.50, min(0.99, raw_vp_thresh))
         except Exception:
             self.voice_profile_auto_match_threshold = 0.78
         try:

@@ -735,6 +735,7 @@ class PreferencesDialogMixin(PreferencesResetMixin):
             det_mode_combo = live_widgets.get("det_mode_combo")
             gap_spin = live_widgets.get("gap_spin")
             pad_spin = live_widgets.get("pad_spin")
+            min_story_spin = live_widgets.get("min_story_spin")
             expected_speakers_combo = live_widgets.get("expected_speakers_combo")
             sensitivity_combo = live_widgets.get("sensitivity_combo")
             ask_speakers_chk = live_widgets.get("ask_speakers_chk")
@@ -753,6 +754,9 @@ class PreferencesDialogMixin(PreferencesResetMixin):
             if pad_spin:
                 self.lead_in_padding = pad_spin.value()
                 self.settings_store.setValue("lead_in_padding", self.lead_in_padding)
+            if min_story_spin:
+                self.min_story_duration = float(min_story_spin.value())
+                self.settings_store.setValue("min_story_duration", self.min_story_duration)
             if expected_speakers_combo:
                 self.expected_speakers = str(expected_speakers_combo.currentData() or "auto")
                 self.settings_store.setValue("default_expected_speakers", self.expected_speakers)

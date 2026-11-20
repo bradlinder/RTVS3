@@ -178,6 +178,26 @@ def build_detection_tab(win, dialog, live_widgets, add_custom_defaults_btn) -> Q
     det_form.addRow("Lead-In Padding:", pad_spin)
     live_widgets["pad_spin"] = pad_spin
 
+    min_story_spin = QDoubleSpinBox()
+    min_story_spin.setRange(0.0, 600.0)
+    min_story_spin.setSingleStep(5.0)
+    min_story_spin.setDecimals(1)
+    try:
+        raw_min_story = win.settings_store.value(
+            "min_story_duration", getattr(win, "min_story_duration", 3.0)
+        )
+        min_story_val = max(0.0, min(600.0, float(raw_min_story if raw_min_story is not None else 3.0)))
+    except (TypeError, ValueError):
+        min_story_val = 3.0
+    min_story_spin.setValue(min_story_val)
+    min_story_spin.setSuffix(" sec")
+    min_story_spin.setToolTip(
+        "Ignore detected story segments shorter than this duration (e.g., set to 30-45 sec "
+        "for broadcast magazine shows to avoid false splits on short pauses or interjections). Default: 3.0 sec."
+    )
+    det_form.addRow("Minimum Story Length:", min_story_spin)
+    live_widgets["min_story_spin"] = min_story_spin
+
     expected_speakers_combo = QComboBox()
     expected_speakers_combo.addItem("Auto-Detect", "auto")
     expected_speakers_combo.addItem("1 Speaker (Solo Fast-Path)", "1")
@@ -233,7 +253,13 @@ def build_detection_tab(win, dialog, live_widgets, add_custom_defaults_btn) -> Q
 
     voice_match_thresh_spin = QSpinBox()
     voice_match_thresh_spin.setRange(50, 99)
-    voice_match_thresh_spin.setValue(int(float(win.settings_store.value("voice_profile_auto_match_threshold", 78) or 78)))
+    try:
+        raw_vp_pct = float(win.settings_store.value("voice_profile_auto_match_threshold", 78) or 78)
+    except (TypeError, ValueError):
+        raw_vp_pct = 78.0
+    if raw_vp_pct <= 1.0:
+        raw_vp_pct *= 100.0
+    voice_match_thresh_spin.setValue(int(round(max(50.0, min(99.0, raw_vp_pct)))))
     voice_match_thresh_spin.setSuffix("%")
     voice_match_thresh_spin.setToolTip("Minimum acoustic similarity score (75-85% optimal) required to automatically associate a detected speaker cluster with a known voice profile.")
     det_form.addRow("Voice Profile Auto-Match Threshold:", voice_match_thresh_spin)

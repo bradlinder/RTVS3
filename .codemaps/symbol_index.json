@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-20 11:37:45",
-  "total_files": 165,
+  "generated_at": "2026-11-20 12:27:33",
+  "total_files": 168,
   "files": {
     "RadioTVSegmenter.py": {
       "path": "RadioTVSegmenter.py",
-      "lines": 676,
-      "summary": "Radio & TV Segmenter \u2014 v3.10.1-beta",
+      "lines": 684,
+      "summary": "Radio & TV Segmenter \u2014 v3.10.2-beta",
       "exports": null,
       "classes": [
         {
@@ -23,7 +23,7 @@
             "QMainWindow"
           ],
           "start_line": 160,
-          "end_line": 573,
+          "end_line": 581,
           "doc": "Main application window for Radio & TV Segmenter.",
           "methods": [
             {
@@ -51,42 +51,42 @@
               "name": "load_persistent_settings",
               "sig": "load_persistent_settings(self)",
               "start_line": 433,
-              "end_line": 518,
+              "end_line": 526,
               "doc": "Loads all persistent user preferences from QSettings into MainWindow attributes."
             },
             {
               "name": "toggle_transcript_auto_scroll",
               "sig": "toggle_transcript_auto_scroll(self, checked)",
-              "start_line": 520,
-              "end_line": 530,
+              "start_line": 528,
+              "end_line": 538,
               "doc": "Toggle transcript auto-scrolling during playback and persist setting."
             },
             {
               "name": "changeEvent",
               "sig": "changeEvent(self, event)",
-              "start_line": 532,
-              "end_line": 539,
+              "start_line": 540,
+              "end_line": 547,
               "doc": "Handle window state changes (e.g. maximize, restore, minimize) safely."
             },
             {
               "name": "dragEnterEvent",
               "sig": "dragEnterEvent(self, event)",
-              "start_line": 541,
-              "end_line": 548,
+              "start_line": 549,
+              "end_line": 556,
               "doc": ""
             },
             {
               "name": "dragMoveEvent",
               "sig": "dragMoveEvent(self, event)",
-              "start_line": 550,
-              "end_line": 557,
+              "start_line": 558,
+              "end_line": 565,
               "doc": ""
             },
             {
               "name": "dropEvent",
               "sig": "dropEvent(self, event)",
-              "start_line": 559,
-              "end_line": 573,
+              "start_line": 567,
+              "end_line": 581,
               "doc": ""
             }
           ]
@@ -96,8 +96,8 @@
         {
           "name": "main",
           "sig": "main()",
-          "start_line": 576,
-          "end_line": 672,
+          "start_line": 584,
+          "end_line": 680,
           "doc": ""
         }
       ]
@@ -204,7 +204,7 @@
     },
     "background_workers.py": {
       "path": "background_workers.py",
-      "lines": 1044,
+      "lines": 1051,
       "summary": "Radio & TV Story Segmenter \u2014 Background Worker Threads & Waveform Cache Helpers.",
       "exports": null,
       "classes": [
@@ -214,42 +214,42 @@
             "QObject"
           ],
           "start_line": 93,
-          "end_line": 460,
+          "end_line": 467,
           "doc": "",
           "methods": [
             {
               "name": "__init__",
-              "sig": "__init__(self, audio_file, silence_threshold, lead_in_padding, audio_duration, transcript_segments, whisper_model, detection_mode, **kwargs)",
+              "sig": "__init__(self, audio_file, silence_threshold, lead_in_padding, audio_duration, transcript_segments, whisper_model, detection_mode, min_story_duration, **kwargs)",
               "start_line": 104,
-              "end_line": 123,
+              "end_line": 128,
               "doc": ""
             },
             {
               "name": "cancel",
               "sig": "cancel(self)",
-              "start_line": 125,
-              "end_line": 126,
+              "start_line": 130,
+              "end_line": 131,
               "doc": ""
             },
             {
               "name": "_emit_progress",
               "sig": "_emit_progress(self, message, percent)",
-              "start_line": 128,
-              "end_line": 142,
+              "start_line": 133,
+              "end_line": 147,
               "doc": ""
             },
             {
               "name": "_is_real_speech",
               "sig": "_is_real_speech(self, text)",
-              "start_line": 144,
-              "end_line": 150,
+              "start_line": 149,
+              "end_line": 155,
               "doc": ""
             },
             {
               "name": "run",
               "sig": "run(self)",
-              "start_line": 152,
-              "end_line": 460,
+              "start_line": 157,
+              "end_line": 467,
               "doc": ""
             }
           ]
@@ -259,29 +259,29 @@
           "bases": [
             "QObject"
           ],
-          "start_line": 689,
-          "end_line": 854,
+          "start_line": 696,
+          "end_line": 861,
           "doc": "",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, audio_file, points_per_second, project_file)",
-              "start_line": 693,
-              "end_line": 700,
+              "start_line": 700,
+              "end_line": 707,
               "doc": ""
             },
             {
               "name": "cancel",
               "sig": "cancel(self)",
-              "start_line": 702,
-              "end_line": 710,
+              "start_line": 709,
+              "end_line": 717,
               "doc": "Thread-safe cancellation request; also stops the FFmpeg child process."
             },
             {
               "name": "run",
               "sig": "run(self)",
-              "start_line": 712,
-              "end_line": 854,
+              "start_line": 719,
+              "end_line": 861,
               "doc": "Build a compact peak envelope without loading the whole recording into RAM."
             }
           ]
@@ -291,29 +291,29 @@
           "bases": [
             "QObject"
           ],
-          "start_line": 974,
-          "end_line": 1033,
+          "start_line": 981,
+          "end_line": 1040,
           "doc": "",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, media_path, duration, output_dir, count)",
-              "start_line": 978,
-              "end_line": 985,
+              "start_line": 985,
+              "end_line": 992,
               "doc": ""
             },
             {
               "name": "cancel",
               "sig": "cancel(self)",
-              "start_line": 987,
-              "end_line": 994,
+              "start_line": 994,
+              "end_line": 1001,
               "doc": ""
             },
             {
               "name": "run",
               "sig": "run(self)",
-              "start_line": 996,
-              "end_line": 1033,
+              "start_line": 1003,
+              "end_line": 1040,
               "doc": ""
             }
           ]
@@ -323,57 +323,57 @@
         {
           "name": "get_waveform_peak_cache_path",
           "sig": "get_waveform_peak_cache_path(audio_file, project_file)",
-          "start_line": 484,
-          "end_line": 538,
+          "start_line": 491,
+          "end_line": 545,
           "doc": "Return local project or appdata path for waveform peak binary cache file."
         },
         {
           "name": "read_waveform_peak_cache",
           "sig": "read_waveform_peak_cache(audio_file, points_per_second, project_file)",
-          "start_line": 543,
-          "end_line": 612,
+          "start_line": 550,
+          "end_line": 619,
           "doc": "Read cached waveform peak envelope from binary cache."
         },
         {
           "name": "_pack_f32",
           "sig": "_pack_f32(values)",
-          "start_line": 614,
-          "end_line": 618,
+          "start_line": 621,
+          "end_line": 625,
           "doc": ""
         },
         {
           "name": "write_waveform_peak_cache",
           "sig": "write_waveform_peak_cache(audio_file, peaks, points_per_second, project_file, levels, skip_if_exists)",
-          "start_line": 621,
-          "end_line": 663,
+          "start_line": 628,
+          "end_line": 670,
           "doc": "Write waveform peak envelope and multi-resolution mipmapped levels to binary cache with atomic rename."
         },
         {
           "name": "invalidate_waveform_peak_cache",
           "sig": "invalidate_waveform_peak_cache(audio_file, project_file)",
-          "start_line": 666,
-          "end_line": 686,
+          "start_line": 673,
+          "end_line": 693,
           "doc": "Delete any cached waveform peak binary file for audio_file, including legacy paths."
         },
         {
           "name": "get_video_thumbnail_cache_dir",
           "sig": "get_video_thumbnail_cache_dir(media_file, project_file)",
-          "start_line": 861,
-          "end_line": 900,
+          "start_line": 868,
+          "end_line": 907,
           "doc": "Return the deterministic thumbnail cache directory for a media file, associating with project if available."
         },
         {
           "name": "read_video_thumbnail_cache",
           "sig": "read_video_thumbnail_cache(media_file, duration, project_file)",
-          "start_line": 903,
-          "end_line": 945,
+          "start_line": 910,
+          "end_line": 952,
           "doc": "Read pre-extracted video thumbnail items [(timestamp, image_path), ...] from disk cache."
         },
         {
           "name": "invalidate_video_thumbnail_cache",
           "sig": "invalidate_video_thumbnail_cache(media_file, project_file)",
-          "start_line": 948,
-          "end_line": 971,
+          "start_line": 955,
+          "end_line": 978,
           "doc": "Delete the thumbnail cache directory for a given media file."
         }
       ]
@@ -2442,6 +2442,52 @@
         }
       ]
     },
+    "diagnostic_speaker_cleanup_tests.py": {
+      "path": "diagnostic_speaker_cleanup_tests.py",
+      "lines": 342,
+      "summary": "Diagnostic tests for Phase 2 features: minimum story length, guest-name cleanup, and Station Voices.",
+      "exports": null,
+      "classes": [
+        {
+          "name": "DiagnosticSpeakerCleanupTestsMixin",
+          "bases": [],
+          "start_line": 13,
+          "end_line": 342,
+          "doc": "Mixin for Phase 2 regression diagnostics (story length, name cleanup, Station Voices).",
+          "methods": [
+            {
+              "name": "_ensure_qt_app",
+              "sig": "_ensure_qt_app(self)",
+              "start_line": 16,
+              "end_line": 21,
+              "doc": ""
+            },
+            {
+              "name": "_test_minimum_story_length_filtering_and_preferences",
+              "sig": "_test_minimum_story_length_filtering_and_preferences(self, item)",
+              "start_line": 23,
+              "end_line": 115,
+              "doc": ""
+            },
+            {
+              "name": "_test_guest_name_proper_noun_cleanup_and_preserve_case",
+              "sig": "_test_guest_name_proper_noun_cleanup_and_preserve_case(self, item)",
+              "start_line": 117,
+              "end_line": 249,
+              "doc": ""
+            },
+            {
+              "name": "_test_station_voice_checkbox_and_threshold_normalization",
+              "sig": "_test_station_voice_checkbox_and_threshold_normalization(self, item)",
+              "start_line": 251,
+              "end_line": 342,
+              "doc": ""
+            }
+          ]
+        }
+      ],
+      "functions": []
+    },
     "dialogs.py": {
       "path": "dialogs.py",
       "lines": 433,
@@ -2571,7 +2617,7 @@
     },
     "diarization_processing.py": {
       "path": "diarization_processing.py",
-      "lines": 769,
+      "lines": 772,
       "summary": "Speaker diarization process management for Radio & TV Story Segmenter.",
       "exports": null,
       "classes": [
@@ -2579,7 +2625,7 @@
           "name": "DiarizationProcessingMixin",
           "bases": [],
           "start_line": 24,
-          "end_line": 769,
+          "end_line": 772,
           "doc": "",
           "methods": [
             {
@@ -2642,42 +2688,42 @@
               "name": "_apply_diarization_result",
               "sig": "_apply_diarization_result(self, result)",
               "start_line": 521,
-              "end_line": 641,
+              "end_line": 644,
               "doc": ""
             },
             {
               "name": "diarization_error",
               "sig": "diarization_error(self, message)",
-              "start_line": 643,
-              "end_line": 689,
+              "start_line": 646,
+              "end_line": 692,
               "doc": ""
             },
             {
               "name": "_diar_segments_cache_key",
               "sig": "_diar_segments_cache_key(self)",
-              "start_line": 692,
-              "end_line": 696,
+              "start_line": 695,
+              "end_line": 699,
               "doc": ""
             },
             {
               "name": "_ensure_diar_speaker_index",
               "sig": "_ensure_diar_speaker_index(self)",
-              "start_line": 698,
-              "end_line": 728,
+              "start_line": 701,
+              "end_line": 731,
               "doc": ""
             },
             {
               "name": "speaker_at_time",
               "sig": "speaker_at_time(self, start, end)",
-              "start_line": 730,
-              "end_line": 763,
+              "start_line": 733,
+              "end_line": 766,
               "doc": ""
             },
             {
               "name": "get_effective_speaker_name",
               "sig": "get_effective_speaker_name(self, seg_idx, segment)",
-              "start_line": 765,
-              "end_line": 769,
+              "start_line": 768,
+              "end_line": 772,
               "doc": ""
             }
           ]
@@ -9077,7 +9123,7 @@
     },
     "preferences_dialog.py": {
       "path": "preferences_dialog.py",
-      "lines": 881,
+      "lines": 885,
       "summary": "Radio & TV Story Segmenter \u2014 Preferences Modal Dialog.",
       "exports": null,
       "classes": [
@@ -9087,14 +9133,14 @@
             "PreferencesResetMixin"
           ],
           "start_line": 32,
-          "end_line": 881,
+          "end_line": 885,
           "doc": "Provides the main open_preferences_dialog method and settings persistence.",
           "methods": [
             {
               "name": "open_preferences_dialog",
               "sig": "open_preferences_dialog(self, initial_category, modal)",
               "start_line": 35,
-              "end_line": 881,
+              "end_line": 885,
               "doc": "Open the multi-category Preferences dialog as a non-modal floating inspector."
             }
           ]
@@ -9104,7 +9150,7 @@
     },
     "preferences_reset.py": {
       "path": "preferences_reset.py",
-      "lines": 674,
+      "lines": 678,
       "summary": "Radio & TV Story Segmenter \u2014 Preferences Reset & Factory Defaults Engine.",
       "exports": null,
       "classes": [
@@ -9151,21 +9197,21 @@
           "name": "PreferencesResetMixin",
           "bases": [],
           "start_line": 168,
-          "end_line": 674,
+          "end_line": 678,
           "doc": "Provides methods for resetting settings to defaults across all app categories.",
           "methods": [
             {
               "name": "apply_settings_reset",
               "sig": "apply_settings_reset(self, selected_ids, live_widgets)",
               "start_line": 171,
-              "end_line": 663,
+              "end_line": 667,
               "doc": "Apply factory default settings to the requested categories and update live widgets if present."
             },
             {
               "name": "open_restore_system_defaults_dialog",
               "sig": "open_restore_system_defaults_dialog(self)",
-              "start_line": 665,
-              "end_line": 674,
+              "start_line": 669,
+              "end_line": 678,
               "doc": "Open the Restore System Defaults dialog directly from Settings menu or Backup & Restore Center."
             }
           ]
@@ -9175,7 +9221,7 @@
     },
     "preferences_reset_dialog.py": {
       "path": "preferences_reset_dialog.py",
-      "lines": 633,
+      "lines": 637,
       "summary": "Radio & TV Segmenter \u2014 Preferences reset and factory default restore engine.",
       "exports": null,
       "classes": [
@@ -9222,21 +9268,21 @@
           "name": "PreferencesResetMixin",
           "bases": [],
           "start_line": 166,
-          "end_line": 632,
+          "end_line": 636,
           "doc": "Mixin providing settings reset and restore dialog actions.",
           "methods": [
             {
               "name": "apply_settings_reset",
               "sig": "apply_settings_reset(self, selected_ids, live_widgets)",
               "start_line": 169,
-              "end_line": 621,
+              "end_line": 625,
               "doc": "Apply factory default settings to the requested categories and update live widgets if present."
             },
             {
               "name": "open_restore_system_defaults_dialog",
               "sig": "open_restore_system_defaults_dialog(self)",
-              "start_line": 623,
-              "end_line": 632,
+              "start_line": 627,
+              "end_line": 636,
               "doc": "Open the Restore System Defaults dialog directly from Settings menu or Backup & Restore Center."
             }
           ]
@@ -9313,7 +9359,7 @@
     },
     "preferences_tabs_media.py": {
       "path": "preferences_tabs_media.py",
-      "lines": 657,
+      "lines": 683,
       "summary": "Radio & TV Story Segmenter \u2014 Preferences Modal Media & Workflow Tab Builders.",
       "exports": null,
       "classes": [],
@@ -9329,28 +9375,28 @@
           "name": "build_detection_tab",
           "sig": "build_detection_tab(win, dialog, live_widgets, add_custom_defaults_btn)",
           "start_line": 146,
-          "end_line": 245,
+          "end_line": 271,
           "doc": ""
         },
         {
           "name": "build_batch_tab",
           "sig": "build_batch_tab(win, dialog, live_widgets, add_custom_defaults_btn)",
-          "start_line": 248,
-          "end_line": 371,
+          "start_line": 274,
+          "end_line": 397,
           "doc": ""
         },
         {
           "name": "build_cleanup_tab",
           "sig": "build_cleanup_tab(win, dialog, live_widgets, add_custom_defaults_btn)",
-          "start_line": 374,
-          "end_line": 572,
+          "start_line": 400,
+          "end_line": 598,
           "doc": ""
         },
         {
           "name": "build_youtube_tab",
           "sig": "build_youtube_tab(win, dialog, live_widgets, add_custom_defaults_btn)",
-          "start_line": 575,
-          "end_line": 657,
+          "start_line": 601,
+          "end_line": 683,
           "doc": ""
         }
       ]
@@ -13591,7 +13637,7 @@
     },
     "speaker_dialogs.py": {
       "path": "speaker_dialogs.py",
-      "lines": 782,
+      "lines": 891,
       "summary": "speaker_dialogs.py \u2014 Dialogs for speaker renaming, turn assignment, and cluster management.",
       "exports": [
         "ChangeSpeakerDialog",
@@ -13604,36 +13650,43 @@
           "bases": [
             "QDialog"
           ],
-          "start_line": 23,
-          "end_line": 82,
+          "start_line": 25,
+          "end_line": 111,
           "doc": "Dialog prompting whether to apply a speaker name change to all instances or a single turn.",
           "methods": [
             {
               "name": "__init__",
-              "sig": "__init__(self, current_name, target_name, seg_idx, parent)",
-              "start_line": 26,
-              "end_line": 70,
+              "sig": "__init__(self, current_name, target_name, seg_idx, parent, show_save_voice_profile, already_saved_voice_profile)",
+              "start_line": 28,
+              "end_line": 95,
               "doc": ""
             },
             {
               "name": "_on_all",
               "sig": "_on_all(self)",
-              "start_line": 72,
-              "end_line": 74,
+              "start_line": 97,
+              "end_line": 99,
               "doc": ""
             },
             {
               "name": "_on_subsequent",
               "sig": "_on_subsequent(self)",
-              "start_line": 76,
-              "end_line": 78,
+              "start_line": 101,
+              "end_line": 103,
               "doc": ""
             },
             {
               "name": "_on_single",
               "sig": "_on_single(self)",
-              "start_line": 80,
-              "end_line": 82,
+              "start_line": 105,
+              "end_line": 107,
+              "doc": ""
+            },
+            {
+              "name": "save_to_station_voices",
+              "sig": "save_to_station_voices(self)",
+              "start_line": 110,
+              "end_line": 111,
               "doc": ""
             }
           ]
@@ -13643,29 +13696,29 @@
           "bases": [
             "QStyledItemDelegate"
           ],
-          "start_line": 96,
-          "end_line": 163,
+          "start_line": 135,
+          "end_line": 202,
           "doc": "Delegate for inline double-click editing of speaker names with Tab progression.",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, dialog)",
-              "start_line": 99,
-              "end_line": 101,
+              "start_line": 138,
+              "end_line": 140,
               "doc": ""
             },
             {
               "name": "createEditor",
               "sig": "createEditor(self, parent, option, index)",
-              "start_line": 103,
-              "end_line": 128,
+              "start_line": 142,
+              "end_line": 167,
               "doc": ""
             },
             {
               "name": "eventFilter",
               "sig": "eventFilter(self, editor, event)",
-              "start_line": 130,
-              "end_line": 163,
+              "start_line": 169,
+              "end_line": 202,
               "doc": ""
             }
           ]
@@ -13675,183 +13728,197 @@
           "bases": [
             "QDialog"
           ],
-          "start_line": 166,
-          "end_line": 782,
+          "start_line": 205,
+          "end_line": 891,
           "doc": "Manager dialog for inspecting, aliasing, and merging detected speaker clusters.",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, parent)",
-              "start_line": 169,
-              "end_line": 221,
+              "start_line": 208,
+              "end_line": 261,
               "doc": ""
             },
             {
               "name": "_is_gui_thread",
               "sig": "_is_gui_thread(self)",
-              "start_line": 223,
-              "end_line": 231,
+              "start_line": 263,
+              "end_line": 271,
               "doc": "Check whether execution is on the main Qt GUI thread."
             },
             {
               "name": "_get_audio_source_url",
               "sig": "_get_audio_source_url(self)",
-              "start_line": 233,
-              "end_line": 248,
+              "start_line": 273,
+              "end_line": 288,
               "doc": ""
             },
             {
               "name": "_get_sample_duration",
               "sig": "_get_sample_duration(self)",
-              "start_line": 250,
-              "end_line": 258,
+              "start_line": 290,
+              "end_line": 298,
               "doc": "Retrieve the configured speaker sample preview duration in seconds (default 3.0s)."
             },
             {
               "name": "_find_speaker_sample_range",
               "sig": "_find_speaker_sample_range(self, speaker_name)",
-              "start_line": 260,
-              "end_line": 288,
+              "start_line": 300,
+              "end_line": 328,
               "doc": "Resolve a clean representative utterance (start_s, duration_s) for the speaker cluster."
             },
             {
               "name": "_play_speaker_sample",
               "sig": "_play_speaker_sample(self, speaker_name)",
-              "start_line": 290,
-              "end_line": 333,
+              "start_line": 330,
+              "end_line": 373,
               "doc": "Play a non-blocking 3-second sample for the specified speaker without altering timeline state."
             },
             {
               "name": "_stop_sample_playback",
               "sig": "_stop_sample_playback(self)",
-              "start_line": 335,
-              "end_line": 349,
+              "start_line": 375,
+              "end_line": 389,
               "doc": "Cease any active sample audio playback and reset UI button text."
             },
             {
               "name": "_on_preview_playback_state_changed",
               "sig": "_on_preview_playback_state_changed(self, state)",
-              "start_line": 351,
-              "end_line": 354,
+              "start_line": 391,
+              "end_line": 394,
               "doc": ""
             },
             {
               "name": "_on_preview_media_status_changed",
               "sig": "_on_preview_media_status_changed(self, status)",
-              "start_line": 356,
-              "end_line": 362,
+              "start_line": 396,
+              "end_line": 402,
               "doc": ""
             },
             {
               "name": "_init_ui",
               "sig": "_init_ui(self)",
-              "start_line": 364,
-              "end_line": 454,
+              "start_line": 404,
+              "end_line": 500,
               "doc": ""
             },
             {
               "name": "_schedule_debounced_save",
               "sig": "_schedule_debounced_save(self)",
-              "start_line": 456,
-              "end_line": 459,
+              "start_line": 502,
+              "end_line": 505,
               "doc": "Schedule a debounced full-project save 500ms after the last speaker rename."
             },
             {
               "name": "_flush_debounced_save",
               "sig": "_flush_debounced_save(self)",
-              "start_line": 461,
-              "end_line": 466,
+              "start_line": 507,
+              "end_line": 512,
               "doc": "Immediately execute any pending debounced project save."
             },
             {
               "name": "_populate",
               "sig": "_populate(self)",
-              "start_line": 468,
-              "end_line": 593,
+              "start_line": 514,
+              "end_line": 666,
               "doc": ""
             },
             {
               "name": "_start_inline_edit_on_row",
               "sig": "_start_inline_edit_on_row(self, row)",
-              "start_line": 595,
-              "end_line": 603,
+              "start_line": 668,
+              "end_line": 676,
               "doc": ""
             },
             {
               "name": "_on_table_item_changed",
               "sig": "_on_table_item_changed(self, item)",
-              "start_line": 605,
-              "end_line": 627,
+              "start_line": 678,
+              "end_line": 700,
               "doc": ""
             },
             {
               "name": "_rename_speaker",
               "sig": "_rename_speaker(self, current_name, raw_id)",
-              "start_line": 629,
-              "end_line": 637,
+              "start_line": 702,
+              "end_line": 710,
               "doc": ""
             },
             {
               "name": "_apply_speaker_rename",
               "sig": "_apply_speaker_rename(self, current_name, target, raw_id)",
-              "start_line": 639,
-              "end_line": 681,
+              "start_line": 712,
+              "end_line": 754,
               "doc": ""
             },
             {
               "name": "_merge_speaker_into",
               "sig": "_merge_speaker_into(self, source_name)",
-              "start_line": 683,
-              "end_line": 710,
+              "start_line": 756,
+              "end_line": 783,
               "doc": ""
             },
             {
               "name": "_on_quick_merge",
               "sig": "_on_quick_merge(self)",
-              "start_line": 712,
-              "end_line": 737,
+              "start_line": 785,
+              "end_line": 810,
+              "doc": ""
+            },
+            {
+              "name": "_on_toggle_station_voice",
+              "sig": "_on_toggle_station_voice(self, speaker_name, checked, checkbox)",
+              "start_line": 812,
+              "end_line": 837,
+              "doc": ""
+            },
+            {
+              "name": "_on_fix_speaker_names",
+              "sig": "_on_fix_speaker_names(self)",
+              "start_line": 839,
+              "end_line": 846,
               "doc": ""
             },
             {
               "name": "_on_open_voice_profiles",
               "sig": "_on_open_voice_profiles(self)",
-              "start_line": 739,
-              "end_line": 743,
+              "start_line": 848,
+              "end_line": 852,
               "doc": ""
             },
             {
               "name": "reject",
               "sig": "reject(self)",
-              "start_line": 745,
-              "end_line": 748,
+              "start_line": 854,
+              "end_line": 857,
               "doc": ""
             },
             {
               "name": "accept",
               "sig": "accept(self)",
-              "start_line": 750,
-              "end_line": 753,
+              "start_line": 859,
+              "end_line": 862,
               "doc": ""
             },
             {
               "name": "closeEvent",
               "sig": "closeEvent(self, event)",
-              "start_line": 755,
-              "end_line": 758,
+              "start_line": 864,
+              "end_line": 867,
               "doc": ""
             },
             {
               "name": "toggle_float_mode",
               "sig": "toggle_float_mode(self, pinned)",
-              "start_line": 760,
-              "end_line": 776,
+              "start_line": 869,
+              "end_line": 885,
               "doc": "Toggle whether the non-modal floating window stays pinned on top of other windows."
             },
             {
               "name": "changeEvent",
               "sig": "changeEvent(self, event)",
-              "start_line": 778,
-              "end_line": 782,
+              "start_line": 887,
+              "end_line": 891,
               "doc": ""
             }
           ]
@@ -13861,15 +13928,22 @@
         {
           "name": "_is_gui_thread",
           "sig": "_is_gui_thread()",
-          "start_line": 85,
-          "end_line": 93,
+          "start_line": 114,
+          "end_line": 122,
           "doc": "Check whether execution is on the main Qt GUI thread."
+        },
+        {
+          "name": "_should_init_audio_preview",
+          "sig": "_should_init_audio_preview()",
+          "start_line": 125,
+          "end_line": 132,
+          "doc": ""
         }
       ]
     },
     "speaker_editing_mixin.py": {
       "path": "speaker_editing_mixin.py",
-      "lines": 598,
+      "lines": 629,
       "summary": "Radio & TV Story Segmenter \u2014 Speaker Label, Renaming & Segment Editing Mixin.",
       "exports": null,
       "classes": [
@@ -13878,85 +13952,85 @@
           "bases": [
             "SpeakerDialogRefinementMixin"
           ],
-          "start_line": 53,
-          "end_line": 598,
+          "start_line": 54,
+          "end_line": 629,
           "doc": "Mixin for speaker labeling, splitting, renaming, and dialog turn refinement.",
           "methods": [
             {
               "name": "handle_insert_speaker_request",
               "sig": "handle_insert_speaker_request(self, seg_idx, split_time, speaker_name)",
-              "start_line": 56,
-              "end_line": 60,
+              "start_line": 57,
+              "end_line": 61,
               "doc": ""
             },
             {
               "name": "add_speaker_label_at",
               "sig": "add_speaker_label_at(self, seg_idx, split_time, name)",
-              "start_line": 62,
-              "end_line": 176,
+              "start_line": 63,
+              "end_line": 177,
               "doc": ""
             },
             {
               "name": "split_segment_at_time",
               "sig": "split_segment_at_time(self, seg_idx, split_time, new_speaker_name)",
-              "start_line": 178,
-              "end_line": 283,
+              "start_line": 179,
+              "end_line": 284,
               "doc": ""
             },
             {
               "name": "prompt_rename_custom_speaker",
               "sig": "prompt_rename_custom_speaker(self, old_name)",
-              "start_line": 285,
-              "end_line": 306,
+              "start_line": 286,
+              "end_line": 307,
               "doc": ""
             },
             {
               "name": "display_speaker",
               "sig": "display_speaker(self, speaker)",
-              "start_line": 308,
-              "end_line": 322,
+              "start_line": 309,
+              "end_line": 323,
               "doc": ""
             },
             {
               "name": "get_all_known_speakers",
               "sig": "get_all_known_speakers(self)",
-              "start_line": 324,
-              "end_line": 354,
+              "start_line": 325,
+              "end_line": 355,
               "doc": ""
             },
             {
               "name": "execute_speaker_rename",
               "sig": "execute_speaker_rename(self, seg_idx, raw_speaker, target_name)",
-              "start_line": 356,
-              "end_line": 477,
+              "start_line": 357,
+              "end_line": 508,
               "doc": ""
             },
             {
               "name": "prompt_rename_speaker",
               "sig": "prompt_rename_speaker(self, seg_idx, speaker)",
-              "start_line": 479,
-              "end_line": 480,
+              "start_line": 510,
+              "end_line": 511,
               "doc": ""
             },
             {
               "name": "remove_speaker_label_at_segment",
               "sig": "remove_speaker_label_at_segment(self, seg_idx)",
-              "start_line": 482,
-              "end_line": 565,
+              "start_line": 513,
+              "end_line": 596,
               "doc": ""
             },
             {
               "name": "register_confirmed_speaker_turn",
               "sig": "register_confirmed_speaker_turn(self, seg_idx, speaker_name)",
-              "start_line": 567,
-              "end_line": 595,
+              "start_line": 598,
+              "end_line": 626,
               "doc": ""
             },
             {
               "name": "register_confirmed_speaker_sample",
               "sig": "register_confirmed_speaker_sample(self, seg_idx, speaker_name)",
-              "start_line": 597,
-              "end_line": 598,
+              "start_line": 628,
+              "end_line": 629,
               "doc": ""
             }
           ]
@@ -14028,6 +14102,205 @@
           "start_line": 242,
           "end_line": 260,
           "doc": "Require both:"
+        }
+      ]
+    },
+    "speaker_name_cleanup_dialog.py": {
+      "path": "speaker_name_cleanup_dialog.py",
+      "lines": 295,
+      "summary": "speaker_name_cleanup_dialog.py \u2014 Modal review dialog for bulk speaker/guest name cleanup.",
+      "exports": [
+        "SpeakerNameCleanupDialog"
+      ],
+      "classes": [
+        {
+          "name": "SpeakerNameCleanupDialog",
+          "bases": [
+            "QDialog"
+          ],
+          "start_line": 53,
+          "end_line": 295,
+          "doc": "Review and apply misspelled guest/host name fixes against confirmed speakers.",
+          "methods": [
+            {
+              "name": "__init__",
+              "sig": "__init__(self, main_win, parent)",
+              "start_line": 56,
+              "end_line": 137,
+              "doc": ""
+            },
+            {
+              "name": "_set_all_checked",
+              "sig": "_set_all_checked(self, checked)",
+              "start_line": 139,
+              "end_line": 141,
+              "doc": ""
+            },
+            {
+              "name": "rescan",
+              "sig": "rescan(self)",
+              "start_line": 143,
+              "end_line": 214,
+              "doc": ""
+            },
+            {
+              "name": "_apply_selected",
+              "sig": "_apply_selected(self)",
+              "start_line": 216,
+              "end_line": 295,
+              "doc": ""
+            }
+          ]
+        }
+      ],
+      "functions": []
+    },
+    "speaker_name_matcher.py": {
+      "path": "speaker_name_matcher.py",
+      "lines": 583,
+      "summary": "speaker_name_matcher.py \u2014 Headless phonetic and fuzzy cleanup for guest and speaker names.",
+      "exports": [
+        "SpeakerNameCandidate",
+        "apply_bulk_text_replacements",
+        "consonant_skeleton",
+        "extract_confirmed_speaker_names",
+        "find_misspelled_speaker_names",
+        "is_generic_role_label",
+        "is_generic_speaker_label",
+        "name_similarity",
+        "phonetic_norm",
+        "phonetic_soundex",
+        "preserve_case_replace"
+      ],
+      "classes": [
+        {
+          "name": "SpeakerNameCandidate",
+          "bases": [],
+          "start_line": 108,
+          "end_line": 115,
+          "doc": "",
+          "methods": []
+        }
+      ],
+      "functions": [
+        {
+          "name": "is_generic_speaker_label",
+          "sig": "is_generic_speaker_label(name)",
+          "start_line": 118,
+          "end_line": 126,
+          "doc": "Return True if a speaker label is empty, numeric, or an auto-generated placeholder."
+        },
+        {
+          "name": "is_generic_role_label",
+          "sig": "is_generic_role_label(name)",
+          "start_line": 129,
+          "end_line": 133,
+          "doc": "Return True for placeholder speaker IDs or generic role words like 'Host' or 'Guest'."
+        },
+        {
+          "name": "preserve_case_replace",
+          "sig": "preserve_case_replace(matched, replacement)",
+          "start_line": 136,
+          "end_line": 155,
+          "doc": "Preserve uppercase/title-case style when replacing matched text with a proper noun."
+        },
+        {
+          "name": "_ascii_letters_lower",
+          "sig": "_ascii_letters_lower(text)",
+          "start_line": 158,
+          "end_line": 161,
+          "doc": ""
+        },
+        {
+          "name": "phonetic_norm",
+          "sig": "phonetic_norm(token)",
+          "start_line": 164,
+          "end_line": 187,
+          "doc": "Normalize English/broadcast ASR consonant & vowel spellings to a canonical phonetic key."
+        },
+        {
+          "name": "_voice_neutral",
+          "sig": "_voice_neutral(pnorm)",
+          "start_line": 190,
+          "end_line": 192,
+          "doc": "Map voiced consonants to their unvoiced counterparts for final-stop resilience (e.g. Fahad/fahat)."
+        },
+        {
+          "name": "consonant_skeleton",
+          "sig": "consonant_skeleton(token)",
+          "start_line": 195,
+          "end_line": 202,
+          "doc": "Keep initial letter plus non-vowel skeleton after phonetic normalization."
+        },
+        {
+          "name": "phonetic_soundex",
+          "sig": "phonetic_soundex(token)",
+          "start_line": 205,
+          "end_line": 223,
+          "doc": "Compute Soundex over phonetic_norm(token) so C/K/Q and PH/F share buckets."
+        },
+        {
+          "name": "name_similarity",
+          "sig": "name_similarity(candidate, target)",
+          "start_line": 226,
+          "end_line": 259,
+          "doc": "Return [0.0, 1.0] similarity blending spelling, phonetic folding, consonant skeleton, and Soundex."
+        },
+        {
+          "name": "extract_confirmed_speaker_names",
+          "sig": "extract_confirmed_speaker_names(main_win)",
+          "start_line": 262,
+          "end_line": 293,
+          "doc": "Collect confirmed non-generic speaker display names from a project window or state object."
+        },
+        {
+          "name": "_split_name_parts",
+          "sig": "_split_name_parts(name)",
+          "start_line": 296,
+          "end_line": 297,
+          "doc": ""
+        },
+        {
+          "name": "_make_context_snippet",
+          "sig": "_make_context_snippet(text, start, end, radius)",
+          "start_line": 300,
+          "end_line": 308,
+          "doc": ""
+        },
+        {
+          "name": "_span_overlaps",
+          "sig": "_span_overlaps(span, covered)",
+          "start_line": 311,
+          "end_line": 313,
+          "doc": ""
+        },
+        {
+          "name": "_needs_case_or_spelling_fix",
+          "sig": "_needs_case_or_spelling_fix(found_phrase, target_name)",
+          "start_line": 316,
+          "end_line": 322,
+          "doc": ""
+        },
+        {
+          "name": "_phrase_similarity",
+          "sig": "_phrase_similarity(found_words, target_parts)",
+          "start_line": 325,
+          "end_line": 339,
+          "doc": ""
+        },
+        {
+          "name": "find_misspelled_speaker_names",
+          "sig": "find_misspelled_speaker_names(segments, confirmed_names, min_score)",
+          "start_line": 342,
+          "end_line": 502,
+          "doc": "Scan transcript segments for likely ASR misspellings of confirmed speaker names."
+        },
+        {
+          "name": "apply_bulk_text_replacements",
+          "sig": "apply_bulk_text_replacements(segments, replacements, preserve_case, sync_words_cb, transcript, translations)",
+          "start_line": 505,
+          "end_line": 583,
+          "doc": "Apply whole-word replacements across transcript segments, full text, and translations."
         }
       ]
     },
@@ -14550,7 +14823,7 @@
     },
     "story_detection_processing.py": {
       "path": "story_detection_processing.py",
-      "lines": 206,
+      "lines": 213,
       "summary": "Story boundary detection processing mixin for Radio & TV Story Segmenter.",
       "exports": null,
       "classes": [
@@ -14558,35 +14831,35 @@
           "name": "StoryDetectionProcessingMixin",
           "bases": [],
           "start_line": 19,
-          "end_line": 205,
+          "end_line": 212,
           "doc": "",
           "methods": [
             {
               "name": "start_auto_detect_stories",
               "sig": "start_auto_detect_stories(self)",
               "start_line": 20,
-              "end_line": 83,
+              "end_line": 90,
               "doc": ""
             },
             {
               "name": "auto_detect_progress",
               "sig": "auto_detect_progress(self, message, percent)",
-              "start_line": 85,
-              "end_line": 86,
+              "start_line": 92,
+              "end_line": 93,
               "doc": ""
             },
             {
               "name": "auto_detect_finished",
               "sig": "auto_detect_finished(self, new_stories)",
-              "start_line": 88,
-              "end_line": 159,
+              "start_line": 95,
+              "end_line": 166,
               "doc": ""
             },
             {
               "name": "auto_detect_error",
               "sig": "auto_detect_error(self, message)",
-              "start_line": 161,
-              "end_line": 205,
+              "start_line": 168,
+              "end_line": 212,
               "doc": ""
             }
           ]
@@ -16866,7 +17139,7 @@
     },
     "transcript_editor_dialogs.py": {
       "path": "transcript_editor_dialogs.py",
-      "lines": 683,
+      "lines": 808,
       "summary": "transcript_editor_dialogs.py - Dialog and floating toolbar components for transcript editing.",
       "exports": null,
       "classes": [
@@ -16875,99 +17148,141 @@
           "bases": [
             "QDialog"
           ],
-          "start_line": 50,
-          "end_line": 599,
+          "start_line": 53,
+          "end_line": 724,
           "doc": "Modeless find-and-replace dialog for QTextEdit / InteractiveTranscriptEdit.",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, text_edit, parent)",
-              "start_line": 53,
-              "end_line": 149,
+              "start_line": 56,
+              "end_line": 191,
               "doc": ""
             },
             {
               "name": "keyPressEvent",
               "sig": "keyPressEvent(self, event)",
-              "start_line": 151,
-              "end_line": 177,
+              "start_line": 193,
+              "end_line": 219,
               "doc": ""
             },
             {
               "name": "_on_find_text_changed",
               "sig": "_on_find_text_changed(self, text)",
-              "start_line": 179,
-              "end_line": 182,
+              "start_line": 221,
+              "end_line": 225,
+              "doc": ""
+            },
+            {
+              "name": "_update_replace_field_helpers",
+              "sig": "_update_replace_field_helpers(self, *_args)",
+              "start_line": 227,
+              "end_line": 237,
+              "doc": ""
+            },
+            {
+              "name": "_on_trim_replace_text",
+              "sig": "_on_trim_replace_text(self)",
+              "start_line": 239,
+              "end_line": 240,
+              "doc": ""
+            },
+            {
+              "name": "_on_add_to_glossary",
+              "sig": "_on_add_to_glossary(self)",
+              "start_line": 242,
+              "end_line": 271,
+              "doc": ""
+            },
+            {
+              "name": "_on_open_fix_speaker_names",
+              "sig": "_on_open_fix_speaker_names(self)",
+              "start_line": 273,
+              "end_line": 280,
+              "doc": ""
+            },
+            {
+              "name": "_format_replacement",
+              "sig": "_format_replacement(self, matched_text, replacement)",
+              "start_line": 282,
+              "end_line": 285,
+              "doc": ""
+            },
+            {
+              "name": "_trigger_project_save",
+              "sig": "_trigger_project_save(self, main_win)",
+              "start_line": 287,
+              "end_line": 291,
               "doc": ""
             },
             {
               "name": "_update_local_match_count",
               "sig": "_update_local_match_count(self)",
-              "start_line": 184,
-              "end_line": 194,
+              "start_line": 293,
+              "end_line": 303,
               "doc": ""
             },
             {
               "name": "_sync_parent_search",
               "sig": "_sync_parent_search(self, target)",
-              "start_line": 196,
-              "end_line": 200,
+              "start_line": 305,
+              "end_line": 309,
               "doc": ""
             },
             {
               "name": "main_window",
               "sig": "main_window(self)",
-              "start_line": 203,
-              "end_line": 211,
+              "start_line": 312,
+              "end_line": 320,
               "doc": ""
             },
             {
               "name": "get_flags",
               "sig": "get_flags(self)",
-              "start_line": 213,
-              "end_line": 219,
+              "start_line": 322,
+              "end_line": 328,
               "doc": ""
             },
             {
               "name": "find_next",
               "sig": "find_next(self)",
-              "start_line": 221,
-              "end_line": 261,
+              "start_line": 330,
+              "end_line": 370,
               "doc": ""
             },
             {
               "name": "find_prev",
               "sig": "find_prev(self)",
-              "start_line": 263,
-              "end_line": 308,
+              "start_line": 372,
+              "end_line": 417,
               "doc": ""
             },
             {
               "name": "replace",
               "sig": "replace(self)",
-              "start_line": 310,
-              "end_line": 453,
+              "start_line": 419,
+              "end_line": 564,
               "doc": ""
             },
             {
               "name": "replace_all",
               "sig": "replace_all(self)",
-              "start_line": 455,
-              "end_line": 569,
+              "start_line": 566,
+              "end_line": 694,
               "doc": ""
             },
             {
               "name": "_fallback_widget_replace",
               "sig": "_fallback_widget_replace(self, replacement)",
-              "start_line": 571,
-              "end_line": 575,
+              "start_line": 696,
+              "end_line": 700,
               "doc": ""
             },
             {
               "name": "_fallback_widget_replace_all",
               "sig": "_fallback_widget_replace_all(self, target, replacement)",
-              "start_line": 577,
-              "end_line": 599,
+              "start_line": 702,
+              "end_line": 724,
               "doc": ""
             }
           ]
@@ -16977,22 +17292,22 @@
           "bases": [
             "QFrame"
           ],
-          "start_line": 602,
-          "end_line": 683,
+          "start_line": 727,
+          "end_line": 808,
           "doc": "Floating quick-action toolbar on transcript selection (Milestone 3.12).",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, parent)",
-              "start_line": 611,
-              "end_line": 678,
+              "start_line": 736,
+              "end_line": 803,
               "doc": ""
             },
             {
               "name": "_emit_comment",
               "sig": "_emit_comment(self)",
-              "start_line": 680,
-              "end_line": 683,
+              "start_line": 805,
+              "end_line": 808,
               "doc": ""
             }
           ]
@@ -17404,7 +17719,7 @@
     "transcript_story.py": {
       "path": "transcript_story.py",
       "lines": 852,
-      "summary": "Radio & TV Segmenter v3.10.1-beta \u2014 transcript story responsibilities.",
+      "summary": "Radio & TV Segmenter v3.10.2-beta \u2014 transcript story responsibilities.",
       "exports": [
         "TranscriptStoryMixin",
         "Story",
@@ -19164,7 +19479,7 @@
     },
     "voice_profile_ops_mixin.py": {
       "path": "voice_profile_ops_mixin.py",
-      "lines": 588,
+      "lines": 730,
       "summary": "Radio & TV Story Segmenter \u2014 Voice Profile Matching & Embedding Extraction Mixin.",
       "exports": null,
       "classes": [
@@ -19172,7 +19487,7 @@
           "name": "VoiceProfileOpsMixin",
           "bases": [],
           "start_line": 45,
-          "end_line": 588,
+          "end_line": 730,
           "doc": "Mixin for acoustic voice profile matching, WeSpeaker embeddings, and voice training.",
           "methods": [
             {
@@ -19218,10 +19533,52 @@
               "doc": ""
             },
             {
+              "name": "_get_station_voice_store",
+              "sig": "_get_station_voice_store(self)",
+              "start_line": 581,
+              "end_line": 587,
+              "doc": ""
+            },
+            {
+              "name": "is_speaker_saved_to_station_voices",
+              "sig": "is_speaker_saved_to_station_voices(self, speaker_name)",
+              "start_line": 589,
+              "end_line": 595,
+              "doc": ""
+            },
+            {
+              "name": "_collect_speaker_segment_indices",
+              "sig": "_collect_speaker_segment_indices(self, speaker_name)",
+              "start_line": 597,
+              "end_line": 610,
+              "doc": ""
+            },
+            {
+              "name": "has_speaker_voice_embedding_source",
+              "sig": "has_speaker_voice_embedding_source(self, speaker_name, seg_indices)",
+              "start_line": 612,
+              "end_line": 632,
+              "doc": ""
+            },
+            {
+              "name": "save_speaker_to_station_voices",
+              "sig": "save_speaker_to_station_voices(self, speaker_name, seg_indices, allow_extract)",
+              "start_line": 634,
+              "end_line": 708,
+              "doc": ""
+            },
+            {
+              "name": "remove_speaker_from_station_voices",
+              "sig": "remove_speaker_from_station_voices(self, speaker_name)",
+              "start_line": 710,
+              "end_line": 724,
+              "doc": ""
+            },
+            {
               "name": "open_manage_voice_profiles_dialog",
               "sig": "open_manage_voice_profiles_dialog(self)",
-              "start_line": 581,
-              "end_line": 588,
+              "start_line": 726,
+              "end_line": 730,
               "doc": ""
             }
           ]
@@ -19647,7 +20004,7 @@
     },
     "worker_story_engine.py": {
       "path": "worker_story_engine.py",
-      "lines": 388,
+      "lines": 396,
       "summary": "worker_story_engine.py - Acoustic & Lexical Story Boundary Detection Engine.",
       "exports": null,
       "classes": [],
@@ -19661,9 +20018,9 @@
         },
         {
           "name": "detect_story_boundaries",
-          "sig": "detect_story_boundaries(audio_file, silence_threshold, lead_in_padding, audio_duration, transcript_segments, whisper_model, detection_mode, is_cancelled_fn, progress_callback)",
+          "sig": "detect_story_boundaries(audio_file, silence_threshold, lead_in_padding, audio_duration, transcript_segments, whisper_model, detection_mode, min_story_duration, is_cancelled_fn, progress_callback)",
           "start_line": 51,
-          "end_line": 388,
+          "end_line": 396,
           "doc": "Execute acoustic and lexical story boundary detection on an audio file."
         }
       ]

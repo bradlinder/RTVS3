@@ -56,6 +56,7 @@ def detect_story_boundaries(
     transcript_segments: Optional[List[Dict[str, Any]]] = None,
     whisper_model: str = "parakeet-onnx",
     detection_mode: str = "voice",
+    min_story_duration: float = 3.0,
     is_cancelled_fn: Optional[Callable[[], bool]] = None,
     progress_callback: Optional[Callable[[str, int], None]] = None,
 ) -> List[Story]:
@@ -69,6 +70,7 @@ def detect_story_boundaries(
         transcript_segments: Optional list of transcript segments for lexical guidance.
         whisper_model: Model name for acoustic tuning.
         detection_mode: 'voice' for broadcast speech/news, 'music' for song segmentation.
+        min_story_duration: Minimum allowed story/song duration (seconds); shorter segments are ignored.
         is_cancelled_fn: Callback returning True if operation was cancelled by user.
         progress_callback: Callback receiving (message, percent) updates.
 
@@ -97,6 +99,10 @@ def detect_story_boundaries(
     audio_duration = float(audio_duration or 0.0)
     transcript_segments = transcript_segments or []
     detection_mode = str(detection_mode or "voice").strip().lower()
+    try:
+        min_story_dur_val = max(0.0, float(min_story_duration if min_story_duration is not None else 3.0))
+    except (TypeError, ValueError):
+        min_story_dur_val = 3.0
 
     _emit("[Step 1/2] Detecting speech activity...", 25)
 
@@ -342,10 +348,11 @@ def detect_story_boundaries(
                 round(len(frame_is_music) * frame_dur, 2),
             ))
 
+        min_music_dur = max(5.0, min_story_dur_val)
         for idx, (mst, met) in enumerate(music_intervals):
             st = max(0.0, mst - lead_in_padding)
             et = min(total_dur, met + min(0.3, lead_in_padding))
-            if et - st >= 5.0:
+            if et - st >= min_music_dur:
                 detected_stories.append(Story(
                     start=round(st, 2),
                     end=round(et, 2),
@@ -373,8 +380,9 @@ def detect_story_boundaries(
 
         story_ends.append(max(float(speech_timestamps[-1]["end"]), total_dur))
 
+        min_voice_dur = max(0.5, min_story_dur_val)
         for idx, (st, et) in enumerate(zip(story_starts, story_ends)):
-            if et - st >= 3.0:  # Minimum story duration filter
+            if et - st >= min_voice_dur:  # Minimum story duration filter
                 detected_stories.append(Story(
                     start=round(st, 2),
                     end=round(et, 2),

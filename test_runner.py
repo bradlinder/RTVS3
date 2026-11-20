@@ -54,6 +54,7 @@ from diagnostic_batch_tests import DiagnosticBatchTestsMixin
 from diagnostic_cloud_and_system_tests import DiagnosticCloudAndSystemTestsMixin
 from diagnostic_loudness_tests import DiagnosticLoudnessTestsMixin
 from diagnostic_editor_tests import DiagnosticEditorTestsMixin
+from diagnostic_speaker_cleanup_tests import DiagnosticSpeakerCleanupTestsMixin
 
 
 # ---------------------------------------------------------------------------
@@ -67,6 +68,7 @@ class DiagnosticEngine(
     DiagnosticCloudAndSystemTestsMixin,
     DiagnosticLoudnessTestsMixin,
     DiagnosticEditorTestsMixin,
+    DiagnosticSpeakerCleanupTestsMixin,
 ):
     """Executes tests across Core File Formats, Subtitle Generators, AI Runtimes,
     and Download Pipelines with optional progress reporting.
@@ -507,6 +509,21 @@ class DiagnosticEngine(
                 "REAPER DAW Companion and Universal Clipboard Pipeline",
                 "Project & Export Formats",
                 "Validates REAPER DAW clip cue JSON schema, sidecar emission, Lua script syntax, QMimeData multi-channel attachments, and one-click script installer",
+            ),
+            DiagnosticItem(
+                "Minimum Story Length Filtering and Preferences",
+                "Story & Boundary Detection",
+                "Validates configurable min_story_duration filtering, single-story fallback, and Story Detection Preferences spinbox",
+            ),
+            DiagnosticItem(
+                "Guest Name Proper-Noun Cleanup and Preserve Case",
+                "Transcript & Speaker Management",
+                "Validates broadcast phonetic speaker-name matching, stopword suppression, Preserve Case, Trim warning, Glossary sync, and grouped Undo",
+            ),
+            DiagnosticItem(
+                "Station Voice Checkbox and Threshold Normalization",
+                "Audio Diarization & VAD",
+                "Validates voice_profile_auto_match_threshold 78->0.78 normalization, Save to Station Voices checkboxes, and profile add/remove lifecycle",
             ),
         ]
 

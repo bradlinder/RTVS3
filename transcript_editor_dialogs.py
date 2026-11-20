@@ -47,6 +47,9 @@ except ImportError:
     )
 
 
+from speaker_name_matcher import preserve_case_replace
+
+
 class FindReplaceDialog(QDialog):
     """Modeless find-and-replace dialog for QTextEdit / InteractiveTranscriptEdit."""
 
@@ -56,7 +59,7 @@ class FindReplaceDialog(QDialog):
         self._custom_parent = parent
         self.text_edit = text_edit
         self.setWindowTitle("Find and Replace")
-        self.setFixedWidth(420)
+        self.setMinimumWidth(500)
 
         layout = QVBoxLayout(self)
         form = QFormLayout()
@@ -76,15 +79,35 @@ class FindReplaceDialog(QDialog):
         form.addRow("Replace with:", self.replace_input)
         layout.addLayout(form)
 
+        self.whitespace_warn_widget = QWidget(self)
+        warn_lay = QHBoxLayout(self.whitespace_warn_widget)
+        warn_lay.setContentsMargins(2, 0, 2, 0)
+        warn_lay.setSpacing(8)
+        self.whitespace_warn_label = QLabel("Replace text has leading or trailing spaces.", self.whitespace_warn_widget)
+        self.whitespace_warn_label.setStyleSheet("color: #f59e0b; font-size: 11px;")
+        self.trim_replace_btn = QPushButton("Trim", self.whitespace_warn_widget)
+        self.trim_replace_btn.setMaximumWidth(64)
+        self.trim_replace_btn.clicked.connect(self._on_trim_replace_text)
+        warn_lay.addWidget(self.whitespace_warn_label, 1)
+        warn_lay.addWidget(self.trim_replace_btn)
+        self.whitespace_warn_widget.setVisible(False)
+        layout.addWidget(self.whitespace_warn_widget)
+
         options_layout = QHBoxLayout()
         self.case_checkbox = QCheckBox("Match Case")
         self.whole_word_checkbox = QCheckBox("Whole Word")
         self.speakers_checkbox = QCheckBox("Include Speakers")
         self.speakers_checkbox.setChecked(True)
         self.speakers_checkbox.setToolTip("Also replace occurrences matching speaker display aliases")
+        self.preserve_case_checkbox = QCheckBox("Preserve Case")
+        self.preserve_case_checkbox.setChecked(True)
+        self.preserve_case_checkbox.setToolTip(
+            "Match ALL CAPS / Title Case from the found text (e.g. ife -> Iffy also replaces IFE -> IFFY)"
+        )
         options_layout.addWidget(self.case_checkbox)
         options_layout.addWidget(self.whole_word_checkbox)
         options_layout.addWidget(self.speakers_checkbox)
+        options_layout.addWidget(self.preserve_case_checkbox)
         layout.addLayout(options_layout)
 
         btn_layout = QHBoxLayout()
@@ -107,7 +130,26 @@ class FindReplaceDialog(QDialog):
         btn_layout.addWidget(self.replace_all_btn)
         layout.addLayout(btn_layout)
 
+        tools_layout = QHBoxLayout()
+        self.add_glossary_btn = QPushButton("Add to Glossary", self)
+        self.add_glossary_btn.setToolTip("Save this Find -> Replace pair to the persistent custom Glossary")
+        self.add_glossary_btn.setEnabled(False)
+        self.add_glossary_btn.clicked.connect(self._on_add_to_glossary)
+        self.fix_names_btn = QPushButton("Fix Speaker Names...", self)
+        self.fix_names_btn.setToolTip("Scan transcript for misspellings of confirmed speaker/guest names")
+        self.fix_names_btn.clicked.connect(self._on_open_fix_speaker_names)
+        tools_layout.addWidget(self.add_glossary_btn)
+        tools_layout.addWidget(self.fix_names_btn)
+        tools_layout.addStretch()
+        layout.addLayout(tools_layout)
+
+        self.status_label = QLabel("", self)
+        self.status_label.setStyleSheet("color: #94a3b8; font-size: 11px;")
+        self.status_label.setVisible(False)
+        layout.addWidget(self.status_label)
+
         self.find_input.textChanged.connect(self._on_find_text_changed)
+        self.replace_input.textChanged.connect(self._update_replace_field_helpers)
 
         orig_find_key_press = self.find_input.keyPressEvent
         def _find_input_key_press(event):
@@ -180,6 +222,73 @@ class FindReplaceDialog(QDialog):
         target = text.strip()
         self._sync_parent_search(target)
         self._update_local_match_count()
+        self._update_replace_field_helpers()
+
+    def _update_replace_field_helpers(self, *_args):
+        repl_raw = self.replace_input.text()
+        has_edge_ws = bool(repl_raw) and (repl_raw != repl_raw.strip())
+        if hasattr(self, "whitespace_warn_widget"):
+            self.whitespace_warn_widget.setVisible(has_edge_ws)
+        if hasattr(self, "add_glossary_btn"):
+            find_clean = self.find_input.text().strip()
+            repl_clean = repl_raw.strip()
+            self.add_glossary_btn.setEnabled(
+                bool(find_clean and repl_clean and find_clean.casefold() != repl_clean.casefold())
+            )
+
+    def _on_trim_replace_text(self):
+        self.replace_input.setText(self.replace_input.text().strip())
+
+    def _on_add_to_glossary(self):
+        find_clean = self.find_input.text().strip()
+        repl_clean = self.replace_input.text().strip()
+        if not find_clean or not repl_clean or find_clean.casefold() == repl_clean.casefold():
+            return
+        main_win = self.main_window
+        if not main_win:
+            return
+        try:
+            from terminology import add_alternate_spelling
+            entries = getattr(main_win, "glossary", [])
+            main_win.glossary = add_alternate_spelling(
+                entries,
+                preferred_term=repl_clean,
+                alternate_spelling=find_clean,
+            )
+            if hasattr(main_win, "_save_glossary"):
+                main_win._save_glossary()
+            if hasattr(main_win, "apply_glossary_to_whisper_context"):
+                main_win.apply_glossary_to_whisper_context()
+            msg = f"Saved '{find_clean}' -> '{repl_clean}' to Glossary."
+            if hasattr(self, "status_label"):
+                self.status_label.setText(msg)
+                self.status_label.setVisible(True)
+            if hasattr(main_win, "statusBar") and callable(main_win.statusBar) and main_win.statusBar():
+                main_win.statusBar().showMessage(msg)
+        except Exception as exc:
+            if hasattr(self, "status_label"):
+                self.status_label.setText(f"Could not save to Glossary: {exc}")
+                self.status_label.setVisible(True)
+
+    def _on_open_fix_speaker_names(self):
+        main_win = self.main_window
+        if not main_win:
+            return
+        from speaker_name_cleanup_dialog import SpeakerNameCleanupDialog
+        dlg = SpeakerNameCleanupDialog(main_win, parent=self)
+        dlg.exec()
+        self._update_local_match_count()
+
+    def _format_replacement(self, matched_text: str, replacement: str) -> str:
+        if getattr(self, "preserve_case_checkbox", None) and self.preserve_case_checkbox.isChecked():
+            return preserve_case_replace(matched_text, replacement)
+        return replacement
+
+    def _trigger_project_save(self, main_win: Any) -> None:
+        if hasattr(main_win, "schedule_project_save"):
+            main_win.schedule_project_save()
+        elif hasattr(main_win, "save_project"):
+            main_win.save_project()
 
     def _update_local_match_count(self):
         parent = self.parent()
@@ -358,7 +467,7 @@ class FindReplaceDialog(QDialog):
             before_state = main_win._capture_project_state() if hasattr(main_win, "_capture_project_state") else None
             curr_name = main_win.display_speaker(raw_spk) if hasattr(main_win, "display_speaker") else sel_text
             pattern = re.compile(re.escape(target), 0 if case_sensitive else re.IGNORECASE)
-            new_spk_name = pattern.sub(lambda m: replacement, curr_name, count=1)
+            new_spk_name = pattern.sub(lambda m: self._format_replacement(m.group(0), replacement), curr_name, count=1)
 
             if hasattr(main_win, "speaker_names"):
                 if raw_spk:
@@ -374,8 +483,7 @@ class FindReplaceDialog(QDialog):
                 main_win._commit_project_state_change(before_state, f"Replace Speaker Name: '{target}' → '{replacement}'")
             if hasattr(main_win, "render_transcript"):
                 main_win.render_transcript()
-            if hasattr(main_win, "save_project"):
-                main_win.save_project()
+            self._trigger_project_save(main_win)
             if hasattr(main_win, "mark_project_dirty"):
                 main_win.mark_project_dirty(f"Replace Speaker Name: '{target}' → '{replacement}'")
             self.find_next()
@@ -421,13 +529,13 @@ class FindReplaceDialog(QDialog):
                 w_obj = words[target_word_idx]
                 w_text = w_obj.get("word", "")
                 if pattern.search(w_text):
-                    w_obj["word"] = pattern.sub(lambda m: replacement, w_text, count=1)
+                    w_obj["word"] = pattern.sub(lambda m: self._format_replacement(m.group(0), replacement), w_text, count=1)
                     replaced_in_word = True
                     seg["text"] = " ".join(w.get("word", "") for w in words)
 
             if not replaced_in_word:
                 old_text = seg.get("text", "")
-                new_text, n = pattern.subn(lambda m: replacement, old_text, count=1)
+                new_text, n = pattern.subn(lambda m: self._format_replacement(m.group(0), replacement), old_text, count=1)
                 seg["text"] = new_text
                 if hasattr(main_win, "sync_segment_words"):
                     main_win.sync_segment_words(seg, new_text)
@@ -436,14 +544,17 @@ class FindReplaceDialog(QDialog):
 
             # Sync full transcript text string if present
             if "text" in main_win.transcript and isinstance(main_win.transcript["text"], str):
-                main_win.transcript["text"] = pattern.sub(lambda m: replacement, main_win.transcript["text"], count=1)
+                main_win.transcript["text"] = pattern.sub(
+                    lambda m: self._format_replacement(m.group(0), replacement),
+                    main_win.transcript["text"],
+                    count=1,
+                )
 
             if before_state is not None and hasattr(main_win, "_commit_project_state_change"):
                 main_win._commit_project_state_change(before_state, f"Replace: '{target}' → '{replacement}'")
             if hasattr(main_win, "render_transcript"):
                 main_win.render_transcript()
-            if hasattr(main_win, "save_project"):
-                main_win.save_project()
+            self._trigger_project_save(main_win)
             if hasattr(main_win, "mark_project_dirty"):
                 main_win.mark_project_dirty(f"Replace: '{target}' → '{replacement}'")
 
@@ -487,7 +598,7 @@ class FindReplaceDialog(QDialog):
         for seg in segments:
             text = seg.get("text", "")
             if text and regex.search(text):
-                new_text, n = regex.subn(lambda m: replacement, text)
+                new_text, n = regex.subn(lambda m: self._format_replacement(m.group(0), replacement), text)
                 if n > 0:
                     count += n
                     seg["text"] = new_text
@@ -496,7 +607,10 @@ class FindReplaceDialog(QDialog):
 
         # 2. Replace in full transcript text string if present
         if "text" in transcript and isinstance(transcript["text"], str):
-            new_full_text, _ = regex.subn(lambda m: replacement, transcript["text"])
+            new_full_text, _ = regex.subn(
+                lambda m: self._format_replacement(m.group(0), replacement),
+                transcript["text"],
+            )
             transcript["text"] = new_full_text
 
         # 3. Replace in translation segments if present
@@ -508,11 +622,17 @@ class FindReplaceDialog(QDialog):
                     for t_seg in t_segs:
                         t_text = t_seg.get("text", "")
                         if t_text and regex.search(t_text):
-                            new_t_text, n = regex.subn(lambda m: replacement, t_text)
+                            new_t_text, n = regex.subn(
+                                lambda m: self._format_replacement(m.group(0), replacement),
+                                t_text,
+                            )
                             if n > 0:
                                 t_seg["text"] = new_t_text
                     if "text" in t_item and isinstance(t_item["text"], str):
-                        new_t_full, _ = regex.subn(lambda m: replacement, t_item["text"])
+                        new_t_full, _ = regex.subn(
+                            lambda m: self._format_replacement(m.group(0), replacement),
+                            t_item["text"],
+                        )
                         t_item["text"] = new_t_full
 
         # 4. Replace in speaker names if enabled
@@ -522,7 +642,10 @@ class FindReplaceDialog(QDialog):
             for k in list(spk_names.keys()):
                 old_spk = spk_names[k]
                 if isinstance(old_spk, str) and regex.search(old_spk):
-                    new_spk, n = regex.subn(lambda m: replacement, old_spk)
+                    new_spk, n = regex.subn(
+                        lambda m: self._format_replacement(m.group(0), replacement),
+                        old_spk,
+                    )
                     if n > 0:
                         spk_names[k] = new_spk
                         spk_count += n
@@ -534,7 +657,10 @@ class FindReplaceDialog(QDialog):
                 new_glossary = []
                 for g in glossary:
                     if isinstance(g, str) and regex.search(g):
-                        new_g, _ = regex.subn(lambda m: replacement, g)
+                        new_g, _ = regex.subn(
+                            lambda m: self._format_replacement(m.group(0), replacement),
+                            g,
+                        )
                         new_glossary.append(new_g)
                     else:
                         new_glossary.append(g)
@@ -550,8 +676,7 @@ class FindReplaceDialog(QDialog):
                 main_win.mark_project_dirty(f"Replace All: '{target}' → '{replacement}'")
             if hasattr(main_win, "render_transcript"):
                 main_win.render_transcript()
-            if hasattr(main_win, "save_project"):
-                main_win.save_project()
+            self._trigger_project_save(main_win)
 
             if hasattr(main_win, "_on_transcript_search_text_changed"):
                 main_win._on_transcript_search_text_changed(target)
@@ -571,7 +696,7 @@ class FindReplaceDialog(QDialog):
     def _fallback_widget_replace(self, replacement: str):
         cursor = self.text_edit.textCursor()
         if cursor.hasSelection():
-            cursor.insertText(replacement)
+            cursor.insertText(self._format_replacement(cursor.selectedText(), replacement))
         self.find_next()
 
     def _fallback_widget_replace_all(self, target: str, replacement: str):
@@ -584,7 +709,7 @@ class FindReplaceDialog(QDialog):
         flags = self.get_flags()
         while self.text_edit.find(target, flags):
             match_cursor = self.text_edit.textCursor()
-            match_cursor.insertText(replacement)
+            match_cursor.insertText(self._format_replacement(match_cursor.selectedText(), replacement))
             count += 1
 
         cursor.endEditBlock()

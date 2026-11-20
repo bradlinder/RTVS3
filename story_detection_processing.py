@@ -43,8 +43,14 @@ class StoryDetectionProcessingMixin:
         self.progress.show()
         self.cancel_button.show()
         mode_str = str(getattr(self, "story_detection_mode", "voice") or "voice").capitalize()
+        raw_min_story = getattr(self, "min_story_duration", 3.0)
+        try:
+            min_story_duration = max(0.0, float(raw_min_story if raw_min_story is not None else 3.0))
+        except (TypeError, ValueError):
+            min_story_duration = 3.0
         self.log_activity(
-            f"[{'SONG' if is_music else 'STORY'} DETECT] Started {term.lower()} detection (Mode: {mode_str}, Threshold: {self.silence_threshold}s)"
+            f"[{'SONG' if is_music else 'STORY'} DETECT] Started {term.lower()} detection "
+            f"(Mode: {mode_str}, Threshold: {self.silence_threshold}s, Min Length: {min_story_duration:.1f}s)"
         )
 
         self.story_job_token += 1
@@ -66,6 +72,7 @@ class StoryDetectionProcessingMixin:
             transcript_segments=transcript_segments,
             whisper_model=getattr(self, "whisper_model", "parakeet-onnx"),
             detection_mode=getattr(self, "story_detection_mode", "voice"),
+            min_story_duration=min_story_duration,
         )
         self.worker.moveToThread(self.thread)
         self.worker._job_token = job_token

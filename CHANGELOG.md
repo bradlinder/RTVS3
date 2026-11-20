@@ -1,5 +1,19 @@
 # Changelog
 
+## v3.10.2-beta
+- **Phase 2: Adjustable Minimum Story Length, Guest Name & Proper-Noun Cleanup Pipeline & Save to Station Voices (`RadioTVSegmenter.py`, `preferences_tabs_media.py`, `preferences_dialog.py`, `preferences_reset.py`, `preferences_reset_dialog.py`, `story_detection_processing.py`, `background_workers.py`, `worker_story_engine.py`, `speaker_name_matcher.py`, `speaker_name_cleanup_dialog.py`, `transcript_editor_dialogs.py`, `speaker_dialogs.py`, `speaker_editing_mixin.py`, `voice_profile_ops_mixin.py`, `diarization_processing.py`, `diagnostic_speaker_cleanup_tests.py`, `test_runner.py`)**:
+  - **Adjustable Minimum Story Length (`RadioTVSegmenter.py`, `preferences_tabs_media.py`, `preferences_dialog.py`, `preferences_reset.py`, `preferences_reset_dialog.py`, `story_detection_processing.py`, `background_workers.py`, `worker_story_engine.py`)**:
+    - Added `Minimum Story Length:` (`min_story_duration`, `0.0–600.0 sec`, default `3.0 sec`) to **Preferences > Story Detection & Diarization**, persisted via `QSettings` with reset-to-defaults support, and enforced in both `StoryAutoDetectWorker` and `detect_story_boundaries()` (keeping the full-episode fallback if every candidate segment is shorter).
+  - **Guest Name & Proper-Noun Cleanup Pipeline (`speaker_name_matcher.py`, `speaker_name_cleanup_dialog.py`, `transcript_editor_dialogs.py`, `speaker_dialogs.py`)**:
+    - Created pure-Python `speaker_name_matcher.py` providing broadcast phonetic normalization, Soundex/skeleton matching against confirmed speakers, common-word suppression, `preserve_case_replace()` (`ife -> Iffy` also handles `IFE -> IFFY`), and bulk replacement with word-timing sync.
+    - Created modal `SpeakerNameCleanupDialog` (`Fix Speaker Names...`) accessible from both `Find and Replace` and `Manage Speakers`, with editable `Replace With` cells, optional Glossary saving (`add_alternate_spelling`), and single-step grouped Undo.
+    - Upgraded `FindReplaceDialog` with **Preserve Case** (on by default), trailing/leading whitespace warning banner + one-click **Trim** button, **Add to Glossary**, and **Fix Speaker Names...**.
+  - **Save to Station Voices & `78 -> 0.78` Auto-Match Fix (`RadioTVSegmenter.py`, `diarization_processing.py`, `preferences_tabs_media.py`, `voice_profile_ops_mixin.py`, `speaker_dialogs.py`, `speaker_editing_mixin.py`)**:
+    - Fixed `voice_profile_auto_match_threshold` (`78` saved by Preferences was previously clamped to `0.99` on launch instead of `0.78`).
+    - Added shared `save_speaker_to_station_voices()` / `remove_speaker_from_station_voices()` helpers on `VoiceProfileOpsMixin` (reusing cached segment embeddings first), an opt-in **Save to Station Voices** checkbox inside `ChangeSpeakerDialog`, a per-row **Station Voice** column toggle in `SpeakerManagerDialog`, and an offscreen `QMediaPlayer` teardown guard for headless test runs.
+  - **Automated Regression Verification (`diagnostic_speaker_cleanup_tests.py`, `test_runner.py`)**:
+    - Added `DiagnosticSpeakerCleanupTestsMixin` covering `min_story_duration` filtering & Preferences spinbox, 9 real broadcast guest-name misspellings + stopword suppression + Preserve Case + Trim/Glossary/Undo, and Station Voice checkboxes + `78 -> 0.78` threshold normalization.
+
 ## v3.10.1-beta
 - **Phase 1.1: Diarization Outlier Consolidation, 1.5s Embedding Windows & Run Processing Partial-Stage Fix (`worker_diarization_clustering.py`, `worker_diarization_engine.py`, `processing.py`, `diagnostic_core_tests.py`)**:
   - **Micro-Cluster Absorption & Centroid Merging (`worker_diarization_clustering.py`)**:
@@ -10,19 +24,3 @@
     - Updated `start_full_auto_pipeline()` so unchecking any stage that already has loaded transcript or diarization data (`existing_map`) does not overwrite `pipeline_opt_*` to `false` for future fresh episodes.
   - **Regression Coverage (`diagnostic_core_tests.py`)**:
     - Added a 60-vector outlier-absorption test in `_test_wespeaker_diarization_architecture` and existing-data `pipeline_opt_*` preservation assertions in `_test_project_serialization_round_trip`.
-
-## v3.10.0-beta
-- **Phase 1: Diarization Sensitivity & Speedup, Debounced Micro-Edit Saves, Run Processing Memory & Google Docs Remnant Cleanup (`worker_diarization_clustering.py`, `worker_diarization_engine.py`, `processing.py`, `project_lifecycle.py`, `project_export.py`, `story_widgets.py`, `story_crud_mixin.py`, `speaker_editing_mixin.py`, `speaker_dialog_refinement_mixin.py`, `voice_profile_ops_mixin.py`, `project_state_mixin.py`, `RadioTVSegmenter.py`, `export/reorder_dialog.py`, `preferences_tabs_media.py`, `embedded_guides.py`, `.github/workflows/build.yml`, `diagnostic_core_tests.py`, `diagnostic_cloud_and_system_tests.py`, `diagnostic_batch_tests.py`)**:
-  - **Diarization Sensitivity, Double-Windowing & Progress Fixes (`worker_diarization_clustering.py`, `worker_diarization_engine.py`)**:
-    - Passed `sensitivity` cleanly through `run_transcript_guided_diarization()` without resetting `PRS_DIARIZATION_SENSITIVITY` to `"normal"`, fixed missing `diarize._merge_adjacent_segments` import + 3-arg `_build_diarization_segments()` call (replacing with `merge_adjacent_diarization_segments()`), and eliminated redundant 3.0s/1.5s double-windowing on segments > 6s.
-    - Added `cluster_speakers_ahc()` (patched into `diarize.clustering` via `apply_clustering_patches()`) to honor sensitivity thresholds in auto mode and bypass multi-model GMM BIC stalls.
-    - Wired live window progress into `extract_embeddings_batched()` and standalone VAD fallback so the ticker no longer prematurely reports clustering while extraction is still running.
-  - **Run Processing Stage Persistence (`processing.py`)**:
-    - Saved and restored `pipeline_opt_*` checkbox preferences in `QSettings` (defaulting `Translate Transcript` off on first run unless Spanish export or batch translation is enabled) without clobbering already-completed stage defaults.
-  - **Debounced Micro-Edit Saves & `.rtvs.backup` Throttling (`project_lifecycle.py`, `project_export.py`, `story_widgets.py`, `story_crud_mixin.py`, `speaker_editing_mixin.py`, `speaker_dialog_refinement_mixin.py`, `voice_profile_ops_mixin.py`, `project_state_mixin.py`)**:
-    - Added `schedule_project_save()`, `flush_pending_project_save()`, and `cancel_pending_project_save()` (1.5s single-shot coalescing for saved `.rtvs` projects), flushed cleanly before close/load prompts while keeping explicit saves immediate.
-    - Throttled `.rtvs.backup` rotation (`RECOVERY_BACKUP_MIN_INTERVAL_SEC = 300.0`) so recovery backups happen at most once per 5 minutes per project instead of on every drag.
-  - **Google Docs Export Cleanup (`RadioTVSegmenter.py`, `export/reorder_dialog.py`, `preferences_tabs_media.py`, `embedded_guides.py`, `.github/workflows/build.yml`)**:
-    - Scrubbed stale `gdocs` / `plugin_enabled_gdocs` keys from `QSettings` on startup, cleaned destination-order tooltips and guide bullets, and removed dead `plugin_gdocs` / `BUILD_PLUGIN_GDOCS` hooks from CI build workflows.
-  - **Regression Tests (`diagnostic_core_tests.py`, `diagnostic_cloud_and_system_tests.py`, `diagnostic_batch_tests.py`)**:
-    - Extended `_test_wespeaker_diarization_architecture` and `_test_project_serialization_round_trip` for sensitivity clustering, single-pass transcript-guided diarization, debounced saves, backup throttling, and `ProcessingMixin` checkbox persistence, and updated CI/UI Google Docs removal checks.

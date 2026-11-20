@@ -110,6 +110,7 @@ class StoryAutoDetectWorker(QObject):
         transcript_segments=None,
         whisper_model="parakeet-onnx",
         detection_mode="voice",
+        min_story_duration=3.0,
         **kwargs,
     ):
         super().__init__()
@@ -120,6 +121,10 @@ class StoryAutoDetectWorker(QObject):
         self.transcript_segments = transcript_segments or []
         self.whisper_model = whisper_model or "parakeet-onnx"
         self.detection_mode = str(detection_mode or "voice").strip().lower()
+        try:
+            self.min_story_duration = max(0.0, float(min_story_duration if min_story_duration is not None else 3.0))
+        except (TypeError, ValueError):
+            self.min_story_duration = 3.0
         self._is_cancelled = False
 
     def cancel(self):
@@ -409,10 +414,11 @@ class StoryAutoDetectWorker(QObject):
                         round(len(frame_is_music) * frame_dur, 2)
                     ))
 
+                min_music_dur = max(5.0, getattr(self, "min_story_duration", 3.0))
                 for idx, (mst, met) in enumerate(music_intervals):
                     st = max(0.0, mst - self.lead_in_padding)
                     et = min(total_dur, met + min(0.3, self.lead_in_padding))
-                    if et - st >= 5.0:
+                    if et - st >= min_music_dur:
                         detected_stories.append(Story(
                             start=round(st, 2),
                             end=round(et, 2),
@@ -441,8 +447,9 @@ class StoryAutoDetectWorker(QObject):
 
                 story_ends.append(max(float(speech_timestamps[-1]["end"]), total_dur))
 
+                min_voice_dur = max(0.5, getattr(self, "min_story_duration", 3.0))
                 for idx, (st, et) in enumerate(zip(story_starts, story_ends)):
-                    if et - st >= 3.0:  # Minimum story duration filter
+                    if et - st >= min_voice_dur:  # Minimum story duration filter
                         detected_stories.append(Story(
                             start=round(st, 2),
                             end=round(et, 2),

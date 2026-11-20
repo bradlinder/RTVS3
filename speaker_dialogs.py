@@ -2,8 +2,9 @@
 from __future__ import annotations
 
 import html
+import os
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import Any, List, Optional, Tuple
 
 from PySide6.QtCore import Qt, QTimer, QSettings, QUrl, QEvent
 from PySide6.QtGui import QColor, QBrush, QFont
@@ -17,13 +18,22 @@ from PySide6.QtWidgets import (
 
 from prs_shared import format_time, parse_time, INTERNAL_APP_ID
 from core_utils import make_dialog_maximizable, apply_window_titlebar_theme, get_active_theme_mode
+from speaker_name_matcher import is_generic_speaker_label
 
 __all__ = ["ChangeSpeakerDialog", "SpeakerManagerDialog", "SpeakerNameDelegate"]
 
 class ChangeSpeakerDialog(QDialog):
     """Dialog prompting whether to apply a speaker name change to all instances or a single turn."""
 
-    def __init__(self, current_name: str, target_name: str, seg_idx: int = -1, parent=None):
+    def __init__(
+        self,
+        current_name: str,
+        target_name: str,
+        seg_idx: int = -1,
+        parent=None,
+        show_save_voice_profile: bool = False,
+        already_saved_voice_profile: bool = False,
+    ):
         super().__init__(parent)
         self.setWindowTitle("Change Speaker")
         self.setMinimumWidth(520)
@@ -41,6 +51,21 @@ class ChangeSpeakerDialog(QDialog):
         prompt_lbl.setWordWrap(True)
         prompt_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(prompt_lbl)
+
+        self.chk_save_station_voice = None
+        if show_save_voice_profile:
+            label = (
+                "Update saved Station Voice profile (auto-recognize in future episodes)"
+                if already_saved_voice_profile
+                else "Save to Station Voices (auto-recognize in future episodes)"
+            )
+            self.chk_save_station_voice = QCheckBox(label, self)
+            self.chk_save_station_voice.setChecked(False)
+            self.chk_save_station_voice.setToolTip(
+                "Save this speaker's acoustic voiceprint so recurring hosts and co-hosts "
+                "are recognized automatically on future recordings"
+            )
+            layout.addWidget(self.chk_save_station_voice)
 
         btn_layout = QHBoxLayout()
         btn_layout.setSpacing(10)
@@ -81,6 +106,10 @@ class ChangeSpeakerDialog(QDialog):
         self.choice = "single"
         self.accept()
 
+    @property
+    def save_to_station_voices(self) -> bool:
+        return bool(self.chk_save_station_voice is not None and self.chk_save_station_voice.isChecked())
+
 
 def _is_gui_thread() -> bool:
     """Check whether execution is on the main Qt GUI thread."""
@@ -91,6 +120,16 @@ def _is_gui_thread() -> bool:
         return app is None or not hasattr(app, "thread") or QThread.currentThread() == app.thread()
     except Exception:
         return True
+
+
+def _should_init_audio_preview() -> bool:
+    if not _is_gui_thread():
+        return False
+    if os.environ.get("RTVS_TEST_MODE") == "1":
+        app = QApplication.instance()
+        if app is not None and hasattr(app, "platformName") and str(app.platformName()).lower() == "offscreen":
+            return False
+    return True
 
 
 class SpeakerNameDelegate(QStyledItemDelegate):
@@ -171,8 +210,8 @@ class SpeakerManagerDialog(QDialog):
         super().__init__(qparent)
         self.main_win = parent
         self.setWindowTitle("Manage Speakers & Detection Clusters")
-        self.resize(880, 520)
-        self.setMinimumSize(800, 460)
+        self.resize(960, 520)
+        self.setMinimumSize(860, 460)
         self.setWindowModality(Qt.WindowModality.NonModal)
         self.setAttribute(Qt.WidgetAttribute.WA_QuitOnClose, False)
         self.setWindowFlags(
@@ -186,6 +225,7 @@ class SpeakerManagerDialog(QDialog):
         apply_window_titlebar_theme(self)
 
         self._sample_buttons = {}
+        self._station_voice_checkboxes = {}
         self._active_sample_speaker = None
         self._pending_play_pos_ms = None
         self._is_populating = False
@@ -195,7 +235,7 @@ class SpeakerManagerDialog(QDialog):
         self._sample_timer.setSingleShot(True)
         self._sample_timer.timeout.connect(self._stop_sample_playback)
 
-        if _is_gui_thread():
+        if _should_init_audio_preview():
             self._preview_audio_output = QAudioOutput(self)
             self._preview_player = QMediaPlayer(self)
             self._preview_player.setAudioOutput(self._preview_audio_output)
@@ -307,13 +347,13 @@ class SpeakerManagerDialog(QDialog):
         pos_ms = int(max(0.0, start_sec) * 1000)
         dur_ms = int(max(0.5, sample_dur) * 1000)
 
-        if hasattr(self.main_win, "master_volume") and self._is_gui_thread():
+        if self._preview_audio_output is not None and hasattr(self.main_win, "master_volume") and self._is_gui_thread():
             try:
                 self._preview_audio_output.setVolume(float(self.main_win.master_volume))
             except Exception:
                 pass
 
-        if self._is_gui_thread():
+        if self._preview_player is not None and self._is_gui_thread():
             if self._preview_player.source() != source_url:
                 self._pending_play_pos_ms = pos_ms
                 self._preview_player.setSource(source_url)
@@ -336,7 +376,7 @@ class SpeakerManagerDialog(QDialog):
         """Cease any active sample audio playback and reset UI button text."""
         self._sample_timer.stop()
         self._pending_play_pos_ms = None
-        if hasattr(self, "_preview_player") and self._is_gui_thread():
+        if getattr(self, "_preview_player", None) is not None and self._is_gui_thread():
             try:
                 self._preview_player.pause()
             except Exception:
@@ -355,7 +395,7 @@ class SpeakerManagerDialog(QDialog):
 
     def _on_preview_media_status_changed(self, status):
         if status in (QMediaPlayer.MediaStatus.LoadedMedia, QMediaPlayer.MediaStatus.BufferedMedia):
-            if self._pending_play_pos_ms is not None:
+            if self._pending_play_pos_ms is not None and self._preview_player is not None:
                 pos = self._pending_play_pos_ms
                 self._pending_play_pos_ms = None
                 self._preview_player.setPosition(pos)
@@ -407,9 +447,9 @@ class SpeakerManagerDialog(QDialog):
         layout.addLayout(hdr_row)
 
         self.table = QTableWidget(self)
-        self.table.setColumnCount(5)
+        self.table.setColumnCount(6)
         self.table.setHorizontalHeaderLabels([
-            "Speaker Name / Alias", "Cluster / Raw ID", "Turns", "Total Duration", "Actions"
+            "Speaker Name / Alias", "Cluster / Raw ID", "Turns", "Total Duration", "Station Voice", "Actions"
         ])
         header_item = self.table.horizontalHeaderItem(0)
         if header_item:
@@ -418,8 +458,9 @@ class SpeakerManagerDialog(QDialog):
         self.table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
         self.table.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
         self.table.horizontalHeader().setSectionResizeMode(3, QHeaderView.ResizeMode.ResizeToContents)
-        self.table.horizontalHeader().setSectionResizeMode(4, QHeaderView.ResizeMode.Fixed)
-        self.table.setColumnWidth(4, 330)
+        self.table.horizontalHeader().setSectionResizeMode(4, QHeaderView.ResizeMode.ResizeToContents)
+        self.table.horizontalHeader().setSectionResizeMode(5, QHeaderView.ResizeMode.Fixed)
+        self.table.setColumnWidth(5, 330)
         self.table.verticalHeader().setDefaultSectionSize(46)
         self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.table.setEditTriggers(
@@ -435,6 +476,11 @@ class SpeakerManagerDialog(QDialog):
         self.merge_all_btn = QPushButton("Merge Two Speakers...", self)
         self.merge_all_btn.clicked.connect(self._on_quick_merge)
         btn_row.addWidget(self.merge_all_btn)
+
+        self.btn_fix_speaker_names = QPushButton("Fix Speaker Names...", self)
+        self.btn_fix_speaker_names.setToolTip("Scan transcript for misspelled guest/host names against confirmed speakers")
+        self.btn_fix_speaker_names.clicked.connect(self._on_fix_speaker_names)
+        btn_row.addWidget(self.btn_fix_speaker_names)
 
         self.btn_voice_profiles = QPushButton("Manage Voice Profiles...", self)
         self.btn_voice_profiles.setToolTip("Open the persistent station voice profiles library")
@@ -470,12 +516,13 @@ class SpeakerManagerDialog(QDialog):
         try:
             self._stop_sample_playback()
             self._sample_buttons.clear()
+            self._station_voice_checkboxes.clear()
             self.table.setRowCount(0)
             if not self.main_win or not getattr(self.main_win, "transcript", None):
                 return
 
             source_url = self._get_audio_source_url()
-            if source_url and self._is_gui_thread() and self._preview_player.source() != source_url:
+            if source_url and self._preview_player is not None and self._is_gui_thread() and self._preview_player.source() != source_url:
                 self._preview_player.setSource(source_url)
 
             segments = self.main_win.transcript.get("segments", [])
@@ -580,7 +627,33 @@ class SpeakerManagerDialog(QDialog):
                 merge_btn.clicked.connect(lambda _, n=name: self._merge_speaker_into(n))
                 action_layout.addWidget(merge_btn)
 
-                self.table.setCellWidget(row, 4, action_widget)
+                vp_widget = QWidget(self.table)
+                vp_layout = QHBoxLayout(vp_widget)
+                vp_layout.setContentsMargins(0, 0, 0, 0)
+                vp_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+                vp_cb = QCheckBox(vp_widget)
+                if is_generic_speaker_label(name):
+                    vp_cb.setChecked(False)
+                    vp_cb.setEnabled(False)
+                    vp_cb.setToolTip("Rename this speaker before saving to Station Voices")
+                else:
+                    is_saved = bool(
+                        hasattr(self.main_win, "is_speaker_saved_to_station_voices")
+                        and self.main_win.is_speaker_saved_to_station_voices(name)
+                    )
+                    vp_cb.setChecked(is_saved)
+                    vp_cb.setToolTip(
+                        "Save or remove this speaker from persistent Station Voices "
+                        "for automatic recognition on future episodes"
+                    )
+                    vp_cb.toggled.connect(
+                        lambda checked, n=name, cb=vp_cb: self._on_toggle_station_voice(n, checked, cb)
+                    )
+                vp_layout.addWidget(vp_cb)
+                self._station_voice_checkboxes[name] = vp_cb
+                self.table.setCellWidget(row, 4, vp_widget)
+
+                self.table.setCellWidget(row, 5, action_widget)
         finally:
             self._is_populating = False
 
@@ -734,6 +807,42 @@ class SpeakerManagerDialog(QDialog):
             return
 
         self.main_win.merge_speakers(source, target)
+        self._populate()
+
+    def _on_toggle_station_voice(self, speaker_name: str, checked: bool, checkbox: QCheckBox):
+        if self._is_populating or not self.main_win:
+            return
+        if checked:
+            saver = getattr(self.main_win, "save_speaker_to_station_voices", None)
+            prof = saver(speaker_name) if callable(saver) else None
+            if prof is None:
+                checkbox.blockSignals(True)
+                checkbox.setChecked(False)
+                checkbox.blockSignals(False)
+                if os.environ.get("RTVS_TEST_MODE") != "1":
+                    try:
+                        QMessageBox.information(
+                            self,
+                            "Station Voices",
+                            f"Could not save '{speaker_name}' to Station Voices because no voice embeddings or audio media are available yet.",
+                        )
+                    except Exception:
+                        pass
+            elif hasattr(self.main_win, "statusBar") and self.main_win.statusBar():
+                self.main_win.statusBar().showMessage(f"Saved '{speaker_name}' to Station Voices")
+        else:
+            remover = getattr(self.main_win, "remove_speaker_from_station_voices", None)
+            if callable(remover) and remover(speaker_name):
+                if hasattr(self.main_win, "statusBar") and self.main_win.statusBar():
+                    self.main_win.statusBar().showMessage(f"Removed '{speaker_name}' from Station Voices")
+
+    def _on_fix_speaker_names(self):
+        self._stop_sample_playback()
+        if not self.main_win:
+            return
+        from speaker_name_cleanup_dialog import SpeakerNameCleanupDialog
+        dlg = SpeakerNameCleanupDialog(self.main_win, parent=self)
+        dlg.exec()
         self._populate()
 
     def _on_open_voice_profiles(self):

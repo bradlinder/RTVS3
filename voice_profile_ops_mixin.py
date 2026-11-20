@@ -578,11 +578,153 @@ class VoiceProfileOpsMixin:
                 except Exception:
                     pass
 
-    def open_manage_voice_profiles_dialog(self):
-        from speaker_profiles import ManageVoiceProfilesDialog, StationVoiceProfileStore
+    def _get_station_voice_store(self):
+        from speaker_profiles import StationVoiceProfileStore
         store = getattr(self, "voice_profile_store", None)
         if store is None:
             store = StationVoiceProfileStore()
             self.voice_profile_store = store
+        return store
+
+    def is_speaker_saved_to_station_voices(self, speaker_name: str) -> bool:
+        from speaker_name_matcher import is_generic_speaker_label
+        clean_name = str(speaker_name or "").strip()
+        if not clean_name or is_generic_speaker_label(clean_name):
+            return False
+        store = self._get_station_voice_store()
+        return store.find_profile_by_name(clean_name) is not None
+
+    def _collect_speaker_segment_indices(self, speaker_name: str) -> List[int]:
+        clean_name = str(speaker_name or "").strip()
+        if not clean_name or not getattr(self, "transcript", None):
+            return []
+        segments = self.transcript.get("segments", []) if isinstance(self.transcript, dict) else []
+        get_eff = getattr(self, "get_effective_speaker_name", None)
+        matched: List[Tuple[float, int]] = []
+        for idx, seg in enumerate(segments):
+            eff = get_eff(idx, seg) if callable(get_eff) else str(seg.get("speaker", "") or "")
+            if str(eff or "").strip() == clean_name:
+                dur = max(0.0, float(seg.get("end", 0.0)) - float(seg.get("start", 0.0)))
+                matched.append((dur, idx))
+        matched.sort(key=lambda item: -item[0])
+        return [idx for _dur, idx in matched]
+
+    def has_speaker_voice_embedding_source(
+        self,
+        speaker_name: str,
+        seg_indices: Optional[List[int]] = None,
+    ) -> bool:
+        if not getattr(self, "transcript", None):
+            return False
+        segments = self.transcript.get("segments", []) if isinstance(self.transcript, dict) else []
+        target_indices = seg_indices if seg_indices is not None else self._collect_speaker_segment_indices(speaker_name)
+        for idx in target_indices:
+            if 0 <= idx < len(segments):
+                emb = segments[idx].get("embedding")
+                if isinstance(emb, (list, tuple)) and len(emb) == 256:
+                    return True
+        media_path = (
+            getattr(self, "audio_file", None)
+            or getattr(self, "media_file", None)
+            or getattr(self, "current_media_path", None)
+            or getattr(self, "audio_path", None)
+        )
+        return bool(media_path and os.path.exists(str(media_path)))
+
+    def save_speaker_to_station_voices(
+        self,
+        speaker_name: str,
+        seg_indices: Optional[List[int]] = None,
+        allow_extract: bool = True,
+    ):
+        from speaker_name_matcher import is_generic_speaker_label
+        clean_name = str(speaker_name or "").strip()
+        if not clean_name or is_generic_speaker_label(clean_name):
+            return None
+        if not getattr(self, "transcript", None) or not isinstance(self.transcript, dict):
+            return None
+
+        segments = self.transcript.get("segments", [])
+        candidate_indices = (
+            [i for i in seg_indices if 0 <= i < len(segments)]
+            if seg_indices
+            else self._collect_speaker_segment_indices(clean_name)
+        )
+        if not candidate_indices:
+            return None
+
+        candidate_indices = sorted(
+            candidate_indices,
+            key=lambda i: -(max(0.0, float(segments[i].get("end", 0.0)) - float(segments[i].get("start", 0.0)))),
+        )
+
+        # Fast path: reuse cached 256-dim embeddings already attached to segments
+        vectors: List[List[float]] = []
+        for idx in candidate_indices:
+            emb = segments[idx].get("embedding")
+            if isinstance(emb, (list, tuple)) and len(emb) == 256:
+                try:
+                    vectors.append([float(x) for x in emb])
+                except (TypeError, ValueError):
+                    continue
+                if len(vectors) >= 8:
+                    break
+
+        # Fallback path: extract on the fly from media if no cached embeddings exist
+        if not vectors and allow_extract:
+            extracted_tries = 0
+            for idx in candidate_indices:
+                seg = segments[idx]
+                dur = float(seg.get("end", 0.0)) - float(seg.get("start", 0.0))
+                if dur < 0.8 and extracted_tries > 0:
+                    continue
+                emb = self.get_segment_embedding(idx)
+                extracted_tries += 1
+                if emb:
+                    vectors.append(emb)
+                if len(vectors) >= 3 or extracted_tries >= 4:
+                    break
+
+        if not vectors:
+            return None
+
+        vec = centroid(vectors)
+        if not vec:
+            return None
+
+        store = self._get_station_voice_store()
+        src = Path(self.audio_file).name if getattr(self, "audio_file", None) else ""
+        prof = store.add_or_update_profile(
+            name=clean_name,
+            vector=vec,
+            sample_count=len(vectors),
+            source_media=src,
+        )
+        if prof and hasattr(self, "log_activity"):
+            self.log_activity(
+                f"[VOICE PROFILES] Saved '{prof.name}' to Station Voices ({len(vectors)} sample(s)).",
+                mark_dirty=False,
+            )
+        return prof
+
+    def remove_speaker_from_station_voices(self, speaker_name: str) -> bool:
+        clean_name = str(speaker_name or "").strip()
+        if not clean_name:
+            return False
+        store = self._get_station_voice_store()
+        prof = store.find_profile_by_name(clean_name)
+        if prof is None:
+            return False
+        removed = bool(store.remove_profile(prof.id))
+        if removed and hasattr(self, "log_activity"):
+            self.log_activity(
+                f"[VOICE PROFILES] Removed '{prof.name}' from Station Voices.",
+                mark_dirty=False,
+            )
+        return removed
+
+    def open_manage_voice_profiles_dialog(self):
+        from speaker_profiles import ManageVoiceProfilesDialog
+        store = self._get_station_voice_store()
         dialog = ManageVoiceProfilesDialog(parent=self, store=store)
         dialog.exec()

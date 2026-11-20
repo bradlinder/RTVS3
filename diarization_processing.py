@@ -602,6 +602,9 @@ class DiarizationProcessingMixin:
                     profiles = vp_store.list_profiles()
                     if profiles:
                         thresh = float(getattr(self, "voice_profile_auto_match_threshold", 0.78) or 0.78)
+                        if thresh > 1.0:
+                            thresh /= 100.0
+                        thresh = max(0.50, min(0.99, thresh))
                         matched_counts = {}
                         for t_idx, t_seg in enumerate(self.transcript["segments"]):
                             emb = t_seg.get("embedding")

@@ -523,6 +523,7 @@ class PreferencesResetMixin:
             self.settings_store.setValue("story_detection_mode", "voice")
             self.settings_store.setValue("silence_threshold", 3.0)
             self.settings_store.setValue("lead_in_padding", 0.5)
+            self.settings_store.setValue("min_story_duration", 3.0)
             self.settings_store.setValue("default_expected_speakers", "auto")
             self.settings_store.setValue("ask_expected_speakers", True)
             self.settings_store.setValue("diarization_sensitivity", "normal")
@@ -530,6 +531,7 @@ class PreferencesResetMixin:
             self.story_detection_mode = "voice"
             self.silence_threshold = 3.0
             self.lead_in_padding = 0.5
+            self.min_story_duration = 3.0
             self.expected_speakers = "auto"
             self.diarization_sensitivity = "normal"
             self.speaker_sample_duration = 3.0
@@ -546,6 +548,8 @@ class PreferencesResetMixin:
                 lw["gap_spin"].setValue(3.0)
             if "pad_spin" in lw and lw["pad_spin"]:
                 lw["pad_spin"].setValue(0.5)
+            if "min_story_spin" in lw and lw["min_story_spin"]:
+                lw["min_story_spin"].setValue(3.0)
             if "expected_speakers_combo" in lw and lw["expected_speakers_combo"]:
                 idx = lw["expected_speakers_combo"].findData("auto")
                 if idx >= 0:
