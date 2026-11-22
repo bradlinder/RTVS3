@@ -70,7 +70,7 @@ def _ensure_runtime_bin_on_path():
 _ensure_runtime_bin_on_path()
 
 # Re-exports from Phase 1 modularization (core_utils, transcript_cleaner, project_serialization, process_lifecycle)
-PROJECT_VERSION = "3.10.6-beta"
+PROJECT_VERSION = "3.10.7-beta"
 from core_utils import (
     INTERNAL_APP_ID,
     APP_DISPLAY_NAME,
@@ -151,10 +151,10 @@ from audio_normalization import (
     parse_ebur128_summary,
     probe_media_duration_seconds,
     probe_media_loudness,
-    AudioLoudnessProbeWorker,
     normalize_audio_sidecar,
     get_effective_audio_for_processing,
 )
+from audio_normalization_worker import AudioLoudnessProbeWorker
 
 try:
     from docx import Document

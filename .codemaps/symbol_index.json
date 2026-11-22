@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-22 14:20:27",
+  "generated_at": "2026-11-22 14:28:59",
   "total_files": 173,
   "files": {
     "RadioTVSegmenter.py": {
       "path": "RadioTVSegmenter.py",
       "lines": 684,
-      "summary": "Radio & TV Segmenter \u2014 v3.10.6-beta",
+      "summary": "Radio & TV Segmenter \u2014 v3.10.7-beta",
       "exports": null,
       "classes": [
         {
@@ -104,55 +104,23 @@
     },
     "audio_normalization.py": {
       "path": "audio_normalization.py",
-      "lines": 541,
+      "lines": 474,
       "summary": "Radio & TV Story Segmenter \u2014 Audio Loudness Probing & Normalization Engine.",
       "exports": null,
       "classes": [
         {
           "name": "LoudnessReport",
           "bases": [],
-          "start_line": 60,
-          "end_line": 73,
+          "start_line": 31,
+          "end_line": 44,
           "doc": "Telemetry report representing measured loudness and peak metrics for an audio file.",
           "methods": [
             {
               "name": "to_dict",
               "sig": "to_dict(self)",
-              "start_line": 72,
-              "end_line": 73,
+              "start_line": 43,
+              "end_line": 44,
               "doc": ""
-            }
-          ]
-        },
-        {
-          "name": "AudioLoudnessProbeWorker",
-          "bases": [
-            "QThread"
-          ],
-          "start_line": 301,
-          "end_line": 343,
-          "doc": "Background worker thread to probe audio loudness without freezing Qt GUI.",
-          "methods": [
-            {
-              "name": "__init__",
-              "sig": "__init__(self, media_path, target_lufs, quiet_threshold_lufs, quiet_threshold_dbfs, timeout, parent)",
-              "start_line": 307,
-              "end_line": 322,
-              "doc": ""
-            },
-            {
-              "name": "cancel",
-              "sig": "cancel(self)",
-              "start_line": 324,
-              "end_line": 326,
-              "doc": "Request worker cancellation."
-            },
-            {
-              "name": "run",
-              "sig": "run(self)",
-              "start_line": 328,
-              "end_line": 343,
-              "doc": "Execute non-blocking probe in background."
             }
           ]
         }
@@ -161,46 +129,96 @@
         {
           "name": "_safe_float",
           "sig": "_safe_float(val_str, default)",
-          "start_line": 76,
-          "end_line": 91,
+          "start_line": 47,
+          "end_line": 62,
           "doc": "Parse string to float with safe handling for -inf, inf, nan."
         },
         {
           "name": "parse_ebur128_summary",
           "sig": "parse_ebur128_summary(stderr_text)",
-          "start_line": 94,
-          "end_line": 124,
+          "start_line": 65,
+          "end_line": 95,
           "doc": "Parse FFmpeg ebur128 filter output to extract I (LUFS), LRA (LU), and Peak (dBTP/dBFS)."
         },
         {
           "name": "probe_media_duration_seconds",
           "sig": "probe_media_duration_seconds(media_path, timeout)",
-          "start_line": 127,
-          "end_line": 156,
+          "start_line": 98,
+          "end_line": 127,
           "doc": "Fast probe of total media duration in seconds via ffprobe."
         },
         {
           "name": "probe_media_loudness",
           "sig": "probe_media_loudness(media_path, target_lufs, quiet_threshold_lufs, quiet_threshold_dbfs, timeout)",
-          "start_line": 159,
-          "end_line": 298,
+          "start_line": 130,
+          "end_line": 269,
           "doc": "Measure loudness (LUFS), dynamic range (LRA), and peak (dBTP) of an audio/video file."
         },
         {
           "name": "normalize_audio_sidecar",
           "sig": "normalize_audio_sidecar(media_path, report, target_lufs, max_true_peak, quiet_threshold_lufs, quiet_threshold_dbfs, timeout)",
-          "start_line": 346,
-          "end_line": 461,
+          "start_line": 272,
+          "end_line": 387,
           "doc": "Non-destructively generate a normalized 16 kHz mono WAV sidecar."
         },
         {
           "name": "get_effective_audio_for_processing",
           "sig": "get_effective_audio_for_processing(media_path, settings_store, project_metadata)",
-          "start_line": 464,
-          "end_line": 541,
+          "start_line": 390,
+          "end_line": 467,
           "doc": "Return the audio path to feed into ASR or diarization."
+        },
+        {
+          "name": "__getattr__",
+          "sig": "__getattr__(name)",
+          "start_line": 470,
+          "end_line": 474,
+          "doc": ""
         }
       ]
+    },
+    "audio_normalization_worker.py": {
+      "path": "audio_normalization_worker.py",
+      "lines": 89,
+      "summary": "Background QThread worker for non-blocking EBU R128 loudness probing.",
+      "exports": [
+        "AudioLoudnessProbeWorker"
+      ],
+      "classes": [
+        {
+          "name": "AudioLoudnessProbeWorker",
+          "bases": [
+            "QThread"
+          ],
+          "start_line": 44,
+          "end_line": 86,
+          "doc": "Background worker thread to probe audio loudness without freezing Qt GUI.",
+          "methods": [
+            {
+              "name": "__init__",
+              "sig": "__init__(self, media_path, target_lufs, quiet_threshold_lufs, quiet_threshold_dbfs, timeout, parent)",
+              "start_line": 50,
+              "end_line": 65,
+              "doc": ""
+            },
+            {
+              "name": "cancel",
+              "sig": "cancel(self)",
+              "start_line": 67,
+              "end_line": 69,
+              "doc": "Request worker cancellation."
+            },
+            {
+              "name": "run",
+              "sig": "run(self)",
+              "start_line": 71,
+              "end_line": 86,
+              "doc": "Execute non-blocking probe in background."
+            }
+          ]
+        }
+      ],
+      "functions": []
     },
     "background_workers.py": {
       "path": "background_workers.py",
@@ -2368,7 +2386,7 @@
     },
     "diagnostic_loudness_tests.py": {
       "path": "diagnostic_loudness_tests.py",
-      "lines": 391,
+      "lines": 404,
       "summary": "Radio & TV Story Segmenter \u2014 Diagnostic Loudness Normalization & Auto-Boost Test Suite.",
       "exports": null,
       "classes": [
@@ -2376,28 +2394,28 @@
           "name": "DiagnosticLoudnessTestsMixin",
           "bases": [],
           "start_line": 16,
-          "end_line": 390,
+          "end_line": 403,
           "doc": "Diagnostic tests for Smart Hybrid Audio Loudness Probing & Normalization.",
           "methods": [
             {
               "name": "_test_smart_hybrid_audio_loudness_probing",
               "sig": "_test_smart_hybrid_audio_loudness_probing(self, item)",
               "start_line": 19,
-              "end_line": 87,
+              "end_line": 100,
               "doc": "Validates fast multi-window EBU R128 loudness & peak probing across synthetic test media."
             },
             {
               "name": "_test_two_tier_hybrid_audio_loudness_normalization",
               "sig": "_test_two_tier_hybrid_audio_loudness_normalization(self, item)",
-              "start_line": 89,
-              "end_line": 183,
+              "start_line": 102,
+              "end_line": 196,
               "doc": "Validates conditional bypass, Tier 1 linear gain + limiter, Tier 2 leveler, and integration."
             },
             {
               "name": "_test_audio_loudness_preferences_and_manual_normalization_dialog",
               "sig": "_test_audio_loudness_preferences_and_manual_normalization_dialog(self, item)",
-              "start_line": 185,
-              "end_line": 390,
+              "start_line": 198,
+              "end_line": 403,
               "doc": "Validates Preferences persistence and manual normalization dialog telemetry."
             }
           ]
@@ -5650,196 +5668,6 @@
               "start_line": 207,
               "end_line": 209,
               "doc": "Execute the export action for this destination."
-            }
-          ]
-        }
-      ],
-      "functions": []
-    },
-    "plugin_dialogs.py": {
-      "path": "plugin_dialogs.py",
-      "lines": 447,
-      "summary": "GitHub plugins dialogs, batch download workers, and PluginManagerDialog.",
-      "exports": null,
-      "classes": [
-        {
-          "name": "GitHubPluginsWorker",
-          "bases": [
-            "QThread"
-          ],
-          "start_line": 42,
-          "end_line": 91,
-          "doc": "Fetches list of available plugins from GitHub release assets and official catalog.",
-          "methods": [
-            {
-              "name": "__init__",
-              "sig": "__init__(self, repo, parent)",
-              "start_line": 46,
-              "end_line": 48,
-              "doc": ""
-            },
-            {
-              "name": "run",
-              "sig": "run(self)",
-              "start_line": 50,
-              "end_line": 91,
-              "doc": ""
-            }
-          ]
-        },
-        {
-          "name": "GitHubDownloadWorker",
-          "bases": [
-            "QThread"
-          ],
-          "start_line": 94,
-          "end_line": 152,
-          "doc": "Downloads and installs a `.rtvs-addon` plugin package from GitHub releases.",
-          "methods": [
-            {
-              "name": "__init__",
-              "sig": "__init__(self, plugin_meta, plugins_dir, repo, parent)",
-              "start_line": 98,
-              "end_line": 102,
-              "doc": ""
-            },
-            {
-              "name": "run",
-              "sig": "run(self)",
-              "start_line": 104,
-              "end_line": 152,
-              "doc": ""
-            }
-          ]
-        },
-        {
-          "name": "GitHubBatchDownloadWorker",
-          "bases": [
-            "QThread"
-          ],
-          "start_line": 155,
-          "end_line": 203,
-          "doc": "Batch installs all missing or outdated official plugins.",
-          "methods": [
-            {
-              "name": "__init__",
-              "sig": "__init__(self, plugins_to_install, plugins_dir, repo, parent)",
-              "start_line": 160,
-              "end_line": 164,
-              "doc": ""
-            },
-            {
-              "name": "run",
-              "sig": "run(self)",
-              "start_line": 166,
-              "end_line": 203,
-              "doc": ""
-            }
-          ]
-        },
-        {
-          "name": "GitHubPluginsDialog",
-          "bases": [
-            "QDialog"
-          ],
-          "start_line": 206,
-          "end_line": 295,
-          "doc": "Browse and install official and community plugins from GitHub releases.",
-          "methods": [
-            {
-              "name": "__init__",
-              "sig": "__init__(self, plugin_manager, parent)",
-              "start_line": 209,
-              "end_line": 241,
-              "doc": ""
-            },
-            {
-              "name": "fetch_catalog",
-              "sig": "fetch_catalog(self)",
-              "start_line": 243,
-              "end_line": 248,
-              "doc": ""
-            },
-            {
-              "name": "on_catalog_fetched",
-              "sig": "on_catalog_fetched(self, success, catalog, err)",
-              "start_line": 250,
-              "end_line": 256,
-              "doc": ""
-            },
-            {
-              "name": "populate_table",
-              "sig": "populate_table(self)",
-              "start_line": 258,
-              "end_line": 273,
-              "doc": ""
-            },
-            {
-              "name": "install_plugin",
-              "sig": "install_plugin(self, meta)",
-              "start_line": 275,
-              "end_line": 285,
-              "doc": ""
-            },
-            {
-              "name": "on_installed",
-              "sig": "on_installed(self, success, pid, msg)",
-              "start_line": 287,
-              "end_line": 295,
-              "doc": ""
-            }
-          ]
-        },
-        {
-          "name": "PluginManagerDialog",
-          "bases": [
-            "QDialog"
-          ],
-          "start_line": 298,
-          "end_line": 447,
-          "doc": "Main management dialog for discovering, enabling, disabling, installing, and removing plugins.",
-          "methods": [
-            {
-              "name": "__init__",
-              "sig": "__init__(self, plugin_manager, parent)",
-              "start_line": 301,
-              "end_line": 351,
-              "doc": ""
-            },
-            {
-              "name": "refresh_list",
-              "sig": "refresh_list(self)",
-              "start_line": 353,
-              "end_line": 367,
-              "doc": ""
-            },
-            {
-              "name": "on_selection_changed",
-              "sig": "on_selection_changed(self)",
-              "start_line": 369,
-              "end_line": 398,
-              "doc": ""
-            },
-            {
-              "name": "on_enable_toggled",
-              "sig": "on_enable_toggled(self, enabled)",
-              "start_line": 400,
-              "end_line": 410,
-              "doc": ""
-            },
-            {
-              "name": "install_local_addon",
-              "sig": "install_local_addon(self)",
-              "start_line": 412,
-              "end_line": 442,
-              "doc": ""
-            },
-            {
-              "name": "browse_github_catalog",
-              "sig": "browse_github_catalog(self)",
-              "start_line": 444,
-              "end_line": 447,
-              "doc": ""
             }
           ]
         }
@@ -13090,50 +12918,50 @@
     },
     "scripts/modular_audit.py": {
       "path": "scripts/modular_audit.py",
-      "lines": 779,
+      "lines": 777,
       "summary": "scripts/modular_audit.py \u2014 AST Decomposition Suggester & Modular Budget Guard.",
       "exports": null,
       "classes": [
         {
           "name": "ModuleStructure",
           "bases": [],
-          "start_line": 84,
-          "end_line": 257,
+          "start_line": 82,
+          "end_line": 255,
           "doc": "Detailed structural metrics extracted from a Python module.",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, file_path)",
-              "start_line": 87,
-              "end_line": 104,
+              "start_line": 85,
+              "end_line": 102,
               "doc": ""
             },
             {
               "name": "_analyze",
               "sig": "_analyze(self)",
-              "start_line": 106,
-              "end_line": 180,
+              "start_line": 104,
+              "end_line": 178,
               "doc": ""
             },
             {
               "name": "_extract_class_info",
               "sig": "_extract_class_info(self, node, lines)",
-              "start_line": 182,
-              "end_line": 210,
+              "start_line": 180,
+              "end_line": 208,
               "doc": ""
             },
             {
               "name": "_extract_func_info",
               "sig": "_extract_func_info(self, node, lines)",
-              "start_line": 212,
-              "end_line": 221,
+              "start_line": 210,
+              "end_line": 219,
               "doc": ""
             },
             {
               "name": "_classify_domain",
               "sig": "_classify_domain(name, bases, method_names)",
-              "start_line": 224,
-              "end_line": 257,
+              "start_line": 222,
+              "end_line": 255,
               "doc": "Classifies a class or function into a logical domain based on naming and signatures."
             }
           ]
@@ -13141,36 +12969,36 @@
         {
           "name": "DecompositionPlan",
           "bases": [],
-          "start_line": 264,
-          "end_line": 426,
+          "start_line": 262,
+          "end_line": 424,
           "doc": "Proposed modular decomposition plan for a monolithic source file.",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, structure)",
-              "start_line": 267,
-              "end_line": 275,
+              "start_line": 265,
+              "end_line": 273,
               "doc": ""
             },
             {
               "name": "_classify_method_domain",
               "sig": "_classify_method_domain(m_name)",
-              "start_line": 278,
-              "end_line": 288,
+              "start_line": 276,
+              "end_line": 286,
               "doc": ""
             },
             {
               "name": "_build_plan",
               "sig": "_build_plan(self)",
-              "start_line": 290,
-              "end_line": 393,
+              "start_line": 288,
+              "end_line": 391,
               "doc": ""
             },
             {
               "name": "render_markdown_blueprint",
               "sig": "render_markdown_blueprint(self)",
-              "start_line": 395,
-              "end_line": 426,
+              "start_line": 393,
+              "end_line": 424,
               "doc": ""
             }
           ]
@@ -13180,43 +13008,43 @@
         {
           "name": "scan_repository",
           "sig": "scan_repository(root_dir)",
-          "start_line": 433,
-          "end_line": 445,
+          "start_line": 431,
+          "end_line": 443,
           "doc": "Scans all Python modules in the repository, excluding build/venv directories."
         },
         {
           "name": "print_audit_report",
           "sig": "print_audit_report(structures, warn_threshold, hard_ceiling, sort_by)",
-          "start_line": 448,
-          "end_line": 489,
+          "start_line": 446,
+          "end_line": 487,
           "doc": "Prints a formatted terminal table showing modularity compliance."
         },
         {
           "name": "check_budget_guard",
           "sig": "check_budget_guard(structures, hard_ceiling, warn_threshold, exempt_paths)",
-          "start_line": 492,
-          "end_line": 525,
+          "start_line": 490,
+          "end_line": 523,
           "doc": "Programmatic budget check suitable for test runner and CI pipelines."
         },
         {
           "name": "check_single_responsibility",
           "sig": "check_single_responsibility(structure, strict)",
-          "start_line": 528,
-          "end_line": 616,
+          "start_line": 526,
+          "end_line": 614,
           "doc": "Analyzes AST domain classification to verify Single Responsibility & Domain Separation."
         },
         {
           "name": "print_srp_report",
           "sig": "print_srp_report(results, strict)",
-          "start_line": 619,
-          "end_line": 663,
+          "start_line": 617,
+          "end_line": 661,
           "doc": "Prints a structured terminal report for Single Responsibility & Domain Separation."
         },
         {
           "name": "main",
           "sig": "main()",
-          "start_line": 666,
-          "end_line": 775,
+          "start_line": 664,
+          "end_line": 773,
           "doc": ""
         }
       ]
@@ -18327,7 +18155,7 @@
     "transcript_story.py": {
       "path": "transcript_story.py",
       "lines": 852,
-      "summary": "Radio & TV Segmenter v3.10.6-beta \u2014 transcript story responsibilities.",
+      "summary": "Radio & TV Segmenter v3.10.7-beta \u2014 transcript story responsibilities.",
       "exports": [
         "TranscriptStoryMixin",
         "Story",

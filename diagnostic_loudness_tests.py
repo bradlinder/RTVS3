@@ -81,6 +81,19 @@ class DiagnosticLoudnessTestsMixin:
             worker.cancel()
             assert worker._canceled is True
 
+            import ast
+            import audio_normalization
+            import prs_shared
+            from audio_normalization_worker import AudioLoudnessProbeWorker as _DirectWorker
+            assert AudioLoudnessProbeWorker is _DirectWorker, "audio_normalization lazy facade mismatch"
+            assert prs_shared.AudioLoudnessProbeWorker is _DirectWorker, "prs_shared AudioLoudnessProbeWorker mismatch"
+            an_tree = ast.parse(Path(audio_normalization.__file__).read_text(encoding="utf-8"))
+            for node in ast.walk(an_tree):
+                if isinstance(node, ast.Import) and any("PySide6" in a.name for a in node.names):
+                    raise AssertionError("audio_normalization.py must not import PySide6")
+                if isinstance(node, ast.ImportFrom) and "PySide6" in str(node.module or ""):
+                    raise AssertionError("audio_normalization.py must not import PySide6")
+
             item.status = "PASS"
             item.message = f"EBU R128 loudness probe verified (I={report.integrated_lufs:.1f} LUFS, Peak={report.true_peak_dbtp:.1f} dBFS, is_quiet={report.is_quiet})"
         finally:

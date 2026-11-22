@@ -1,14 +1,15 @@
 # Repository Symbol Index & API Map
 
-> Generated: 2026-11-22 14:20:27 | Total Files: 173
+> Generated: 2026-11-22 14:28:59 | Total Files: 173
 > Use `python scripts/generate_symbol_index.py --outline <file>` for exact line numbers.
 
 ## Modules Overview
 
 | Module | Lines | Summary | Primary Classes / Functions |
 | :--- | :---: | :--- | :--- |
-| `RadioTVSegmenter.py` | 684 | Radio & TV Segmenter — v3.10.6-beta | `MainWindow`, `main()` |
-| `audio_normalization.py` | 541 | Radio & TV Story Segmenter — Audio Loudness Probing & Nor... | `LoudnessReport`, `AudioLoudnessProbeWorker`, `parse_ebur128_summary()`, `probe_media_duration_seconds()` *(+3 more)* |
+| `RadioTVSegmenter.py` | 684 | Radio & TV Segmenter — v3.10.7-beta | `MainWindow`, `main()` |
+| `audio_normalization.py` | 474 | Radio & TV Story Segmenter — Audio Loudness Probing & Nor... | `LoudnessReport`, `parse_ebur128_summary()`, `probe_media_duration_seconds()`, `probe_media_loudness()` *(+2 more)* |
+| `audio_normalization_worker.py` | 89 | Background QThread worker for non-blocking EBU R128 loudn... | `AudioLoudnessProbeWorker` |
 | `background_workers.py` | 1051 | Radio & TV Story Segmenter — Background Worker Threads & ... | `StoryAutoDetectWorker`, `WaveformWorker`, `VideoThumbnailWorker`, `get_waveform_peak_cache_path()` *(+6 more)* |
 | `backup_manager.py` | 622 | Unified State Serialization, Local, and Google Drive Clou... | `compute_data_checksum()`, `serialize_preferences()`, `serialize_keyboard_shortcuts()`, `serialize_glossary()` *(+7 more)* |
 | `batch_dialog.py` | 702 | Radio & TV Story Segmenter — Batch Processing Dialog & Dr... | `BatchFileListWidget`, `BatchProcessingDialog` |
@@ -29,7 +30,7 @@
 | `diagnostic_editor_tests.py` | 992 | Diagnostic editor and find-replace tests for Radio & TV S... | `DiagnosticEditorTestsMixin` |
 | `diagnostic_export_tests.py` | 2314 | Diagnostic test bench suite component. | `DiagnosticExportTestsMixin` |
 | `diagnostic_helpers.py` | 151 | Helper fixtures, module resolvers, and DiagnosticItem for... | `DiagnosticItem`, `generate_synthetic_wav()` |
-| `diagnostic_loudness_tests.py` | 391 | Radio & TV Story Segmenter — Diagnostic Loudness Normaliz... | `DiagnosticLoudnessTestsMixin` |
+| `diagnostic_loudness_tests.py` | 404 | Radio & TV Story Segmenter — Diagnostic Loudness Normaliz... | `DiagnosticLoudnessTestsMixin` |
 | `diagnostic_selector.py` | 191 | Smart Diagnostic Test Selector for Radio & TV Story Segme... | `get_modified_files()`, `has_git_changes()`, `detect_changed_tokens()`, `select_diagnostic_items()` |
 | `diagnostic_speaker_cleanup_tests.py` | 586 | Diagnostic tests for Phase 2 features: minimum story leng... | `DiagnosticSpeakerCleanupTestsMixin` |
 | `diagnostic_wordpress_tests.py` | 109 | Diagnostic tests for WordPress PublishPress Author mappin... | `DiagnosticWordPressTestsMixin` |
@@ -59,7 +60,6 @@
 | `playback_controller.py` | 630 | Radio & TV Story Segmenter — Media Player Transport & Pla... | `PlaybackControllerMixin` |
 | `playback_preferences.py` | 815 | Radio & TV Story Segmenter — Playback Preferences & Appli... | `PlaybackPreferencesMixin` |
 | `plugin_base.py` | 209 | Radio & TV Segmenter — Plugin Base Interfaces and Manifest. | `PluginManifest`, `BasePlugin`, `ExportDestination` |
-| `plugin_dialogs.py` | 447 | GitHub plugins dialogs, batch download workers, and Plugi... | `GitHubPluginsWorker`, `GitHubDownloadWorker`, `GitHubBatchDownloadWorker`, `GitHubPluginsDialog` *(+1 more)* |
 | `plugins/__init__.py` | 6 | Radio & TV Segmenter — Plugin Architecture Package. | - |
 | `plugins/base.py` | 6 | Radio & TV Segmenter — Plugin Base Interfaces and Manifes... | - |
 | `plugins/github_dialog.py` | 580 | GitHub plugins browser and installer dialog with multi-se... | `GitHubPluginsDialog` |
@@ -113,7 +113,7 @@
 | `scripts/generate_pyi_stubs.py` | 214 | generate_pyi_stubs.py — Automated Interface Typing Stub (... | `StubTransformer`, `generate_stub_source()`, `get_large_modules()`, `generate_stub_file()` *(+1 more)* |
 | `scripts/generate_symbol_index.py` | 380 | generate_symbol_index.py — Fast AST Symbol Indexer & Repo... | `parse_function_signature()`, `analyze_file()`, `scan_repository()`, `generate_index_markdown()` *(+4 more)* |
 | `scripts/log_summary.py` | 150 | log_summary.py — Compact Error & Exception Extraction Engine | `is_project_frame()`, `extract_log_summary()`, `main()` |
-| `scripts/modular_audit.py` | 779 | scripts/modular_audit.py — AST Decomposition Suggester & ... | `ModuleStructure`, `DecompositionPlan`, `scan_repository()`, `print_audit_report()` *(+4 more)* |
+| `scripts/modular_audit.py` | 777 | scripts/modular_audit.py — AST Decomposition Suggester & ... | `ModuleStructure`, `DecompositionPlan`, `scan_repository()`, `print_audit_report()` *(+4 more)* |
 | `shortcuts/__init__.py` | 26 | shortcuts package — Modular Keyboard Shortcuts Management... | - |
 | `shortcuts/definitions.py` | 22 | shortcuts/definitions.py — Shortcut definitions and schem... | - |
 | `shortcuts/dialogs.py` | 623 | shortcuts/dialogs.py — Preferences page for keyboard shor... | `KeyboardShortcutsPage` |
@@ -158,7 +158,7 @@
 | `transcript_navigation_mixin.py` | 300 | transcript_navigation_mixin.py - Timestamp discovery, car... | `TranscriptNavigationMixin` |
 | `transcript_playback_highlight_mixin.py` | 277 | Radio & TV Story Segmenter — Interactive Transcript Playb... | `TranscriptPlaybackHighlightMixin` |
 | `transcript_selection_mixin.py` | 473 | transcript_selection_mixin.py - Multi-selection, timeline... | `TranscriptSelectionMixin` |
-| `transcript_story.py` | 852 | Radio & TV Segmenter v3.10.6-beta — transcript story resp... | `TranscriptStoryMixin` |
+| `transcript_story.py` | 852 | Radio & TV Segmenter v3.10.7-beta — transcript story resp... | `TranscriptStoryMixin` |
 | `transcript_styles.py` | 104 | transcript_styles.py - Transcript view stylesheets and da... | `transcript_text_view_stylesheet()`, `clean_dark_mode_clipboard_html()` |
 | `transcript_timeline_sync_mixin.py` | 655 | Radio & TV Story Segmenter — Transcript Timeline & Playba... | `TranscriptTimelineSyncMixin` |
 | `transcription_processing.py` | 579 | Transcription background process management for Radio & T... | `TranscriptionProcessingMixin` |
@@ -184,7 +184,7 @@
 ## Detailed Symbol Catalog
 
 ### `RadioTVSegmenter.py` (684 lines)
-*Radio & TV Segmenter — v3.10.6-beta*
+*Radio & TV Segmenter — v3.10.7-beta*
 - **class `MainWindow(ModelManagementMixin, MediaBatchMixin, PlaybackPreferencesMixin, UiLayoutMixin, ProcessingMixin, TranslationMixin, TranscriptStoryMixin, ProjectExportMixin, GpuAccelerationMixin, QMainWindow)`** (lines 160–581):
   *Main application window for Radio & TV Segmenter.*
   - `__init__(self)` [L178-L355]
@@ -199,23 +199,28 @@
 - **Functions**:
   - `main()` [L584-L680]
 
-### `audio_normalization.py` (541 lines)
+### `audio_normalization.py` (474 lines)
 *Radio & TV Story Segmenter — Audio Loudness Probing & Normalization Engine.*
-- **class `LoudnessReport`** (lines 60–73):
+- **class `LoudnessReport`** (lines 31–44):
   *Telemetry report representing measured loudness and peak metrics for an audio file.*
-  - `to_dict(self)` [L72-L73]
-- **class `AudioLoudnessProbeWorker(QThread)`** (lines 301–343):
-  *Background worker thread to probe audio loudness without freezing Qt GUI.*
-  - `__init__(self, media_path, target_lufs, quiet_threshold_lufs, quiet_threshold_dbfs, timeout, parent)` [L307-L322]
-  - `cancel(self)` [L324-L326] — *Request worker cancellation.*
-  - `run(self)` [L328-L343] — *Execute non-blocking probe in background.*
+  - `to_dict(self)` [L43-L44]
 - **Functions**:
-  - `_safe_float(val_str, default)` [L76-L91] — *Parse string to float with safe handling for -inf, inf, nan.*
-  - `parse_ebur128_summary(stderr_text)` [L94-L124] — *Parse FFmpeg ebur128 filter output to extract I (LUFS), LRA (LU), and Peak (dBTP/dBFS).*
-  - `probe_media_duration_seconds(media_path, timeout)` [L127-L156] — *Fast probe of total media duration in seconds via ffprobe.*
-  - `probe_media_loudness(media_path, target_lufs, quiet_threshold_lufs, quiet_threshold_dbfs, timeout)` [L159-L298] — *Measure loudness (LUFS), dynamic range (LRA), and peak (dBTP) of an audio/video file.*
-  - `normalize_audio_sidecar(media_path, report, target_lufs, max_true_peak, quiet_threshold_lufs, quiet_threshold_dbfs, timeout)` [L346-L461] — *Non-destructively generate a normalized 16 kHz mono WAV sidecar.*
-  - `get_effective_audio_for_processing(media_path, settings_store, project_metadata)` [L464-L541] — *Return the audio path to feed into ASR or diarization.*
+  - `_safe_float(val_str, default)` [L47-L62] — *Parse string to float with safe handling for -inf, inf, nan.*
+  - `parse_ebur128_summary(stderr_text)` [L65-L95] — *Parse FFmpeg ebur128 filter output to extract I (LUFS), LRA (LU), and Peak (dBTP/dBFS).*
+  - `probe_media_duration_seconds(media_path, timeout)` [L98-L127] — *Fast probe of total media duration in seconds via ffprobe.*
+  - `probe_media_loudness(media_path, target_lufs, quiet_threshold_lufs, quiet_threshold_dbfs, timeout)` [L130-L269] — *Measure loudness (LUFS), dynamic range (LRA), and peak (dBTP) of an audio/video file.*
+  - `normalize_audio_sidecar(media_path, report, target_lufs, max_true_peak, quiet_threshold_lufs, quiet_threshold_dbfs, timeout)` [L272-L387] — *Non-destructively generate a normalized 16 kHz mono WAV sidecar.*
+  - `get_effective_audio_for_processing(media_path, settings_store, project_metadata)` [L390-L467] — *Return the audio path to feed into ASR or diarization.*
+  - `__getattr__(name)` [L470-L474]
+
+### `audio_normalization_worker.py` (89 lines)
+*Background QThread worker for non-blocking EBU R128 loudness probing.*
+- **Public Exports (`__all__`)**: AudioLoudnessProbeWorker
+- **class `AudioLoudnessProbeWorker(QThread)`** (lines 44–86):
+  *Background worker thread to probe audio loudness without freezing Qt GUI.*
+  - `__init__(self, media_path, target_lufs, quiet_threshold_lufs, quiet_threshold_dbfs, timeout, parent)` [L50-L65]
+  - `cancel(self)` [L67-L69] — *Request worker cancellation.*
+  - `run(self)` [L71-L86] — *Execute non-blocking probe in background.*
 
 ### `background_workers.py` (1051 lines)
 *Radio & TV Story Segmenter — Background Worker Threads & Waveform Cache Helpers.*
@@ -571,13 +576,13 @@
   - `_resolve_export_subtitles_module()` [L95-L117] — *Resolves export.subtitles whether running from source, package, or frozen binary.*
   - `_resolve_export_daw_module()` [L120-L142] — *Resolves export.daw whether running from source, package, or frozen binary.*
 
-### `diagnostic_loudness_tests.py` (391 lines)
+### `diagnostic_loudness_tests.py` (404 lines)
 *Radio & TV Story Segmenter — Diagnostic Loudness Normalization & Auto-Boost Test Suite.*
-- **class `DiagnosticLoudnessTestsMixin`** (lines 16–390):
+- **class `DiagnosticLoudnessTestsMixin`** (lines 16–403):
   *Diagnostic tests for Smart Hybrid Audio Loudness Probing & Normalization.*
-  - `_test_smart_hybrid_audio_loudness_probing(self, item)` [L19-L87] — *Validates fast multi-window EBU R128 loudness & peak probing across synthetic test media.*
-  - `_test_two_tier_hybrid_audio_loudness_normalization(self, item)` [L89-L183] — *Validates conditional bypass, Tier 1 linear gain + limiter, Tier 2 leveler, and integration.*
-  - `_test_audio_loudness_preferences_and_manual_normalization_dialog(self, item)` [L185-L390] — *Validates Preferences persistence and manual normalization dialog telemetry.*
+  - `_test_smart_hybrid_audio_loudness_probing(self, item)` [L19-L100] — *Validates fast multi-window EBU R128 loudness & peak probing across synthetic test media.*
+  - `_test_two_tier_hybrid_audio_loudness_normalization(self, item)` [L102-L196] — *Validates conditional bypass, Tier 1 linear gain + limiter, Tier 2 leveler, and integration.*
+  - `_test_audio_loudness_preferences_and_manual_normalization_dialog(self, item)` [L198-L403] — *Validates Preferences persistence and manual normalization dialog telemetry.*
 
 ### `diagnostic_selector.py` (191 lines)
 *Smart Diagnostic Test Selector for Radio & TV Story Segmenter.*
@@ -1109,37 +1114,6 @@
   - `validate(self)` [L199-L201] — *Validate destination settings before export begins. Returns (ok, error_msg).*
   - `get_export_data(self)` [L203-L205] — *Collect export parameters to include in the final dialog result.*
   - `execute_export(self, main_window, export_data, progress_dialog)` [L207-L209] — *Execute the export action for this destination.*
-
-### `plugin_dialogs.py` (447 lines)
-*GitHub plugins dialogs, batch download workers, and PluginManagerDialog.*
-- **class `GitHubPluginsWorker(QThread)`** (lines 42–91):
-  *Fetches list of available plugins from GitHub release assets and official catalog.*
-  - `__init__(self, repo, parent)` [L46-L48]
-  - `run(self)` [L50-L91]
-- **class `GitHubDownloadWorker(QThread)`** (lines 94–152):
-  *Downloads and installs a `.rtvs-addon` plugin package from GitHub releases.*
-  - `__init__(self, plugin_meta, plugins_dir, repo, parent)` [L98-L102]
-  - `run(self)` [L104-L152]
-- **class `GitHubBatchDownloadWorker(QThread)`** (lines 155–203):
-  *Batch installs all missing or outdated official plugins.*
-  - `__init__(self, plugins_to_install, plugins_dir, repo, parent)` [L160-L164]
-  - `run(self)` [L166-L203]
-- **class `GitHubPluginsDialog(QDialog)`** (lines 206–295):
-  *Browse and install official and community plugins from GitHub releases.*
-  - `__init__(self, plugin_manager, parent)` [L209-L241]
-  - `fetch_catalog(self)` [L243-L248]
-  - `on_catalog_fetched(self, success, catalog, err)` [L250-L256]
-  - `populate_table(self)` [L258-L273]
-  - `install_plugin(self, meta)` [L275-L285]
-  - `on_installed(self, success, pid, msg)` [L287-L295]
-- **class `PluginManagerDialog(QDialog)`** (lines 298–447):
-  *Main management dialog for discovering, enabling, disabling, installing, and removing plugins.*
-  - `__init__(self, plugin_manager, parent)` [L301-L351]
-  - `refresh_list(self)` [L353-L367]
-  - `on_selection_changed(self)` [L369-L398]
-  - `on_enable_toggled(self, enabled)` [L400-L410]
-  - `install_local_addon(self)` [L412-L442]
-  - `browse_github_catalog(self)` [L444-L447]
 
 ### `plugins/__init__.py` (6 lines)
 *Radio & TV Segmenter — Plugin Architecture Package.*
@@ -2298,28 +2272,28 @@
   - `extract_log_summary(raw_log)` [L42-L128] — *Extract a high-density summary from a raw log or traceback string.*
   - `main()` [L130-L147]
 
-### `scripts/modular_audit.py` (779 lines)
+### `scripts/modular_audit.py` (777 lines)
 *scripts/modular_audit.py — AST Decomposition Suggester & Modular Budget Guard.*
-- **class `ModuleStructure`** (lines 84–257):
+- **class `ModuleStructure`** (lines 82–255):
   *Detailed structural metrics extracted from a Python module.*
-  - `__init__(self, file_path)` [L87-L104]
-  - `_analyze(self)` [L106-L180]
-  - `_extract_class_info(self, node, lines)` [L182-L210]
-  - `_extract_func_info(self, node, lines)` [L212-L221]
-  - `_classify_domain(name, bases, method_names)` [L224-L257] — *Classifies a class or function into a logical domain based on naming and signatures.*
-- **class `DecompositionPlan`** (lines 264–426):
+  - `__init__(self, file_path)` [L85-L102]
+  - `_analyze(self)` [L104-L178]
+  - `_extract_class_info(self, node, lines)` [L180-L208]
+  - `_extract_func_info(self, node, lines)` [L210-L219]
+  - `_classify_domain(name, bases, method_names)` [L222-L255] — *Classifies a class or function into a logical domain based on naming and signatures.*
+- **class `DecompositionPlan`** (lines 262–424):
   *Proposed modular decomposition plan for a monolithic source file.*
-  - `__init__(self, structure)` [L267-L275]
-  - `_classify_method_domain(m_name)` [L278-L288]
-  - `_build_plan(self)` [L290-L393]
-  - `render_markdown_blueprint(self)` [L395-L426]
+  - `__init__(self, structure)` [L265-L273]
+  - `_classify_method_domain(m_name)` [L276-L286]
+  - `_build_plan(self)` [L288-L391]
+  - `render_markdown_blueprint(self)` [L393-L424]
 - **Functions**:
-  - `scan_repository(root_dir)` [L433-L445] — *Scans all Python modules in the repository, excluding build/venv directories.*
-  - `print_audit_report(structures, warn_threshold, hard_ceiling, sort_by)` [L448-L489] — *Prints a formatted terminal table showing modularity compliance.*
-  - `check_budget_guard(structures, hard_ceiling, warn_threshold, exempt_paths)` [L492-L525] — *Programmatic budget check suitable for test runner and CI pipelines.*
-  - `check_single_responsibility(structure, strict)` [L528-L616] — *Analyzes AST domain classification to verify Single Responsibility & Domain Separation.*
-  - `print_srp_report(results, strict)` [L619-L663] — *Prints a structured terminal report for Single Responsibility & Domain Separation.*
-  - `main()` [L666-L775]
+  - `scan_repository(root_dir)` [L431-L443] — *Scans all Python modules in the repository, excluding build/venv directories.*
+  - `print_audit_report(structures, warn_threshold, hard_ceiling, sort_by)` [L446-L487] — *Prints a formatted terminal table showing modularity compliance.*
+  - `check_budget_guard(structures, hard_ceiling, warn_threshold, exempt_paths)` [L490-L523] — *Programmatic budget check suitable for test runner and CI pipelines.*
+  - `check_single_responsibility(structure, strict)` [L526-L614] — *Analyzes AST domain classification to verify Single Responsibility & Domain Separation.*
+  - `print_srp_report(results, strict)` [L617-L661] — *Prints a structured terminal report for Single Responsibility & Domain Separation.*
+  - `main()` [L664-L773]
 
 ### `shortcuts/__init__.py` (26 lines)
 *shortcuts package — Modular Keyboard Shortcuts Management Subsystem.*
@@ -3164,7 +3138,7 @@
   - `_on_bubble_export(self)` [L468-L473]
 
 ### `transcript_story.py` (852 lines)
-*Radio & TV Segmenter v3.10.6-beta — transcript story responsibilities.*
+*Radio & TV Segmenter v3.10.7-beta — transcript story responsibilities.*
 - **Public Exports (`__all__`)**: TranscriptStoryMixin, Story, SetStoriesCommand, SelectStoriesCommand, StoryBoundaryChangeCommand, StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin, ChangeSpeakerDialog, VoiceProfileMatchDialog, StoryFadesDialog, SpeakerManagerDialog, FADE_CURVE_TABLES, get_fade_curve_factors
 - **class `TranscriptStoryMixin(StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin)`** (lines 63–851):
   - `render_transcript(self)` [L64-L467]
