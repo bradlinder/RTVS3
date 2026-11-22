@@ -28,7 +28,7 @@ flowchart LR
 ### Step 1: Open Your Video Media
 Drag and drop your video file directly onto the timeline canvas or press **Ctrl+O** (**File > Open Media...**).
 - RTVS3 automatically generates multi-resolution waveform pyramids and a video thumbnail filmstrip along the timeline ruler.
-- Press **Ctrl+Shift+V** (**View > Video Preview Window**) to open the resizable floating video preview window.
+- Press **Ctrl+Shift+V** (**View > Timeline > Video Preview Window**) to open the resizable floating video preview window.
 
 ### Step 2: Transcribe, Diarize & Detect Segments
 1. Click **Transcribe Audio...** (**Ctrl+T**) or use the Multi-Stage Pipeline (**Ctrl+R**) to generate word-level aligned transcripts and speaker turns.
@@ -39,18 +39,18 @@ Drag and drop your video file directly onto the timeline canvas or press **Ctrl+
 Press **Ctrl+E** (**File > Export...**) and select the **WordPress Draft Post** radio button from the **Export Destination** bar at the top.
 
 ### Step 4: Configure the "Media" Tab
-Select a story (or your full episode) from the left-hand **Posts to Export:** list, then switch to the **Media** tab (Tab 3):
+Select a segment (or your full episode) from the left-hand **Posts to Export:** list, then switch to the **Media** tab (Tab 3):
 
 ![WordPress Export Media Tab](../images/wordpress_export_media_tab.png)
 
 1. **Enter YouTube Video Link**:
    Paste the base URL of your video show. RTVS3 supports all standard link formats (see [URL Compatibility](#3-youtube-url-compatibility-reference)). Controls automatically illuminate when a valid URL is provided.
 2. **Stop Video at Story End**:
-   - **Checked (Recommended)**: The YouTube player will pause playback when the story concludes (`?end=XXX`), encouraging readers to continue through your article or explore other stories.
-   - **Unchecked**: The video will start at the story's beginning (`?start=XXX`) and continue playing the remainder of the episode.
+   - **Checked (Recommended)**: The YouTube player will pause playback when the segment concludes (`?end=XXX`), encouraging readers to continue through your article or explore other segments.
+   - **Unchecked**: The video will start at the segment's beginning (`?start=XXX`) and continue playing the remainder of the episode.
 3. **Embed Placement**:
    - **Top (Default)**: Inserts the video player above your transcript text, placing the video prominently beneath the post title.
-   - **Bottom**: Places the video player below the story transcript and excerpt.
+   - **Bottom**: Places the video player below the segment transcript and excerpt.
 
 ### Step 5: Review Audio & Podcast Options
 For video projects, **Include audio files in WordPress export** defaults to unchecked:
@@ -59,7 +59,7 @@ For video projects, **Include audio files in WordPress export** defaults to unch
 - If you explicitly check audio inclusion on a video file, RTVS3 displays a brief confirmation dialog to ensure you intended to produce a hybrid video + audio podcast post.
 
 ### Step 6: Inspect Post Prefix Indicators & Tooltips
-In the left-hand **Posts to Export:** list, each item displays compact prefix badges right after the story number:
+In the left-hand **Posts to Export:** list, each item displays compact prefix badges right after the segment label:
 
 ![WordPress Post List Badges](../images/wordpress_posts_list_badges.png)
 
@@ -72,7 +72,7 @@ In the left-hand **Posts to Export:** list, each item displays compact prefix ba
 - Hover over any post in the list to view a multi-line tooltip detailing exact start/end timestamps, author IDs, category tags, and embed settings.
 
 ### Step 7: Export to WordPress
-Click **Export to WordPress Drafts...**. RTVS3 authenticates via the WordPress REST API and creates draft posts for all selected stories.
+Click **Export to WordPress Drafts...**. RTVS3 authenticates via the WordPress REST API and creates draft posts for all selected segments.
 
 ---
 
@@ -118,8 +118,8 @@ RTVS3 generates standards-compliant Gutenberg Custom HTML blocks (`<!-- wp:html 
 In earlier versions, the video preview dialog was lazily created after the media file was already loaded. On macOS Qt 6 with AVFoundation, `AVPlayer` configured an audio-only pipeline if no video sink was attached before `setSource()`. In **v3.9.74-beta** and later, RTVS3 pre-initializes the floating video dialog and attaches `setVideoOutput()` at startup, ensuring macOS Cocoa properly maps the `AVPlayerLayer`.
 
 ### Q: Can I set default YouTube embed options so I don't have to configure them every time?
-Yes. Go to **Settings > Preferences...** (or press **Ctrl+,**), navigate to the **WordPress** tab, and configure your defaults under **YouTube Video Embed Defaults**:
+Yes. Go to **Settings > Preferences...** (or press **Ctrl+P** / **Cmd+P** on macOS), navigate to the **WordPress** tab, and configure your defaults under **YouTube Video Embed Defaults**:
 - **Default Stop Video at Story End**
 - **Default Embed Placement (Top vs. Bottom)**
 
-These settings are also mirrored in the **YouTube Publisher** plugin preferences.
+These settings are also mirrored under **Settings > Preferences... > YouTube**.

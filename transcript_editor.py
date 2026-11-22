@@ -674,7 +674,15 @@ class InteractiveTranscriptEdit(
         super().mouseReleaseEvent(event)
 
     def keyPressEvent(self, event):
-        # Allow standard Copy (Ctrl+C) and Audio Clip Copy (Ctrl+Shift+C) in both viewing and editing modes
+        # Allow standard Copy (Ctrl+C) and Audio Clip Copy (Ctrl+Shift+C or customized shortcut) in both viewing and editing modes
+        main_win = self.window()
+        if hasattr(main_win, "_matches_shortcut") and main_win._matches_shortcut(
+            event, "copy_selection_as_audio_clip", "Ctrl+Shift+C"
+        ):
+            if hasattr(self, "copy_selection_as_daw_wav") and self.copy_selection_as_daw_wav():
+                event.accept()
+                return
+
         is_ctrl_c = event.matches(QKeySequence.StandardKey.Copy) or (
             event.modifiers() & (Qt.KeyboardModifier.ControlModifier | Qt.KeyboardModifier.MetaModifier)
             and event.key() == Qt.Key.Key_C

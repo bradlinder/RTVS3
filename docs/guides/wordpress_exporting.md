@@ -25,7 +25,7 @@ To communicate securely with your WordPress site without sharing your master acc
 
 You can save your WordPress credentials in preferences so you only need to enter them once:
 
-1. In RTVS3, go to **Settings > Preferences...** (or press **Ctrl+,**).
+1. In RTVS3, go to **Settings > Preferences...** (or press **Ctrl+P** / **Cmd+P** on macOS).
 2. Click the **WordPress** tab on the left.
 
 ![WordPress Preferences Credentials](../images/wordpress_preferences_credentials.png)
@@ -64,10 +64,10 @@ In **both modes**, use the shared scheduling & status bar:
 
 ### Choosing Export Scope:
 In the **Export Scope** dropdown, choose which posts you want to generate:
-- **All Stories**: Generates separate draft posts for every detected story.
-- **Selected Stories**: Generates drafts only for the stories currently highlighted in the Stories panel.
-- **Full Broadcast**: Generates one post containing the complete episode transcript.
-- **Full Broadcast and All Stories**: Generates one master episode post plus individual story posts.
+- **Selected Segments**: Generates drafts only for the segments currently highlighted in the Segments panel.
+- **All Segments**: Generates separate draft posts for every detected segment.
+- **Full Episode**: Generates one post containing the complete episode transcript.
+- **Full Episode & All Segments**: Generates one master episode post plus individual segment posts.
 
 ---
 
@@ -79,22 +79,23 @@ Configure each post across the 4 editor tabs:
 
 ### Tab 1: Post Content
 - **Post Title**: The headline of the WordPress draft post.
-- **Post Excerpt / Teaser**: A concise summary of the story used for article previews, RSS feeds, and social cards. Click **Generate from Story** to automatically extract a snippet (≤55 words) from the transcript.
-- **Custom Notice / Disclaimer**: An optional notice (e.g., *"This story aired on Radio One on Nov 4"*) prepended or appended to the article.
+- **Post Excerpt / Teaser**: A concise summary of the segment used for article previews, RSS feeds, and social cards. Click **Generate from Story** to automatically extract a snippet (≤55 words) from the transcript.
+- **Custom Notice / Disclaimer**: An optional notice (e.g., *"This segment aired on Radio One on Nov 4"*) prepended or appended to the article.
+- **Offline Spellcheck**: Title, Excerpt, and Custom Notice fields underline unrecognized words automatically; right-click any flagged word for suggestions, **Add '<word>' to Glossary**, or **Ignore (This Session)** (Glossary terms and confirmed project speakers are allowlisted).
 
 ### Tab 2: Authors & Taxonomy
 
 ![WordPress Authors & Taxonomy Tab](../images/wordpress_export_taxonomy_tab.png)
 
-- **Authors**: Search, filter, and select registered WordPress authors to assign bylines.
-- **Categories**: Search, filter, and assign one or more WordPress categories (e.g., *News*, *Interviews*, *Local*). When editing a Story, check **Apply to all stories (excludes Full Episode)** to copy your selected Story categories across every Story without altering the Full Episode's categories.
+- **Authors**: Search, filter, and check registered **WordPress Users** and **PublishPress Guest Authors** to assign bylines (you can mix WordPress Users and Guest Authors cleanly on the same post). When updating an existing post, checking one or more authors overwrites the post's existing authors, whereas leaving Authors unchecked preserves the authors already assigned on WordPress.
+- **Categories**: Search, filter, and assign one or more WordPress categories (e.g., *News*, *Interviews*, *Local*). When editing a segment, check **Apply to all stories (excludes Full Episode)** to copy your selected categories across every segment without altering the Full Episode's categories.
 - **Tags**: Enter comma-separated tag keywords.
 
 ### Tab 3: Media
 
 ![WordPress Media Tab](../images/wordpress_export_media_tab.png)
 
-- **Featured Image**: Choose a captured video thumbnail frame, custom image file, or disabled.
+- **Featured Image, Caption & Alt Text**: Choose a captured video thumbnail frame, custom image file, or disabled, and optionally set an image **Caption** and **Alt Text** (with offline spellcheck and bulk apply across posts).
 - **YouTube Video Link**: Paste a YouTube watch link, short link, or studio URL.
   - **Context-Aware Auto-Dimming**: Controls automatically dim when the URL field is empty and illuminate as soon as a valid video link is detected.
   - **Stop Video at Story End**: When checked, the embedded player automatically pauses playback when the segment concludes.

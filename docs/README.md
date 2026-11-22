@@ -8,11 +8,12 @@ Welcome to the documentation library for Radio & TV Segmenter (RTVS3).
 
 | Guide | Description |
 | :--- | :--- |
-| [Getting Started & Essential Workflow](guides/getting_started_and_workflow.md) | Loading media, playback controls, AI transcription, speaker renaming, and segment editing. |
-| [WordPress Exporting & Setup](guides/wordpress_exporting.md) | Creating WordPress Application Passwords, entering credentials, configuring post drafts, audio enclosures, and media embeds. |
-| [YouTube Features & Chapter Generation](guides/youtube_features.md) | Generating YouTube video chapters, copying to clipboard, and embedding timestamped clips into articles. |
+| [Getting Started & Essential Workflow](guides/getting_started_and_workflow.md) | Loading media/documents, playback controls, AI transcription, voice profiles, spellcheck, loudness normalization, and segment editing. |
+| [WordPress Exporting & Setup](guides/wordpress_exporting.md) | Creating WordPress Application Passwords, entering credentials, configuring post drafts, WP/Guest authors, audio enclosures, and media embeds. |
+| [YouTube Features & Chapter Generation](guides/youtube_features.md) | Generating YouTube video chapters, copying to clipboard, embedding timestamped clips, and Zero-Auth Assisted Studio publishing. |
 | [Video Shows & YouTube Publishing](guides/video_shows_and_youtube_publishing.md) | End-to-end walkthrough for transcribing, segmenting, and publishing video shows with responsive 16:9 players. |
-| [Export Formats & DAW Integration](guides/export_formats.md) | Exporting split audio cuts with fades, Word/PDF documents, REAPER DAW projects, and video EDL/XML timelines. |
+| [REAPER & DAW Live Bridge](guides/reaper_and_daw_integration.md) | Real-time copy/paste bridge, trim/split auto-sync ReaScripts, and `Ctrl+Shift+C` universal WAV clipboard for Audition, Premiere, and Resolve. |
+| [Export Formats & DAW Integration](guides/export_formats.md) | Exporting split audio cuts with fades, Word/PDF documents, REAPER DAW projects, and NLE timeline interchange formats. |
 | [Version Control & Release Workflow](VERSION_CONTROL_GUIDE.md) | Standard Git branching workflows and release procedures for developers and maintainers. |
 
 ---

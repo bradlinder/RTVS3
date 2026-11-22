@@ -725,8 +725,86 @@ class DiagnosticSpeakerCleanupTestsMixin:
             if backup_def is None or backup_def.name != "Backup & Restore Settings..." or backup_def.attr_name != "backup_restore_action":
                 raise AssertionError(f"Shortcut definition mismatch for backup_restore: {backup_def!r}")
 
+            from pathlib import Path as _Path
+            from shortcuts.schema import ACTION_ALIASES
+            from user_guide_dialog import UserGuideDialog
+            import embedded_guides
+
+            # 1. Zero duplicate non-empty default_seq across SHORTCUT_DEFINITIONS
+            seen_seqs = {}
+            for d in SHORTCUT_DEFINITIONS:
+                if d.default_seq:
+                    norm_seq = d.default_seq.strip().lower()
+                    if norm_seq in seen_seqs:
+                        raise AssertionError(
+                            f"Shortcut collision for {d.default_seq!r}: {seen_seqs[norm_seq]!r} and {d.action_id!r}"
+                        )
+                    seen_seqs[norm_seq] = d.action_id
+
+            # 2. Every menu QAction with a non-empty shortcut has a matching attr_name in SHORTCUT_DEFINITIONS
+            schema_attrs = {d.attr_name for d in SHORTCUT_DEFINITIONS if d.attr_name}
+            for act_id_key in seen_actions:
+                pass
+            missing_menu_shortcuts = []
+            for bar_act in win.menuBar().actions():
+                def _check_menu_shortcuts(m):
+                    for a in m.actions():
+                        if a.isSeparator():
+                            continue
+                        if a.menu() is not None:
+                            _check_menu_shortcuts(a.menu())
+                            continue
+                        if not a.shortcut().isEmpty():
+                            matched = any(getattr(win, aname, None) is a for aname in schema_attrs)
+                            if not matched:
+                                missing_menu_shortcuts.append((a.text(), a.shortcut().toString()))
+                if bar_act.menu() is not None:
+                    _check_menu_shortcuts(bar_act.menu())
+            if missing_menu_shortcuts:
+                raise AssertionError(f"Menu QActions with shortcuts missing from SHORTCUT_DEFINITIONS: {missing_menu_shortcuts}")
+
+            # 3. Verify delete_story alias & newly registered formatting/help/menu shortcuts
+            if ACTION_ALIASES.get("delete_story") != "delete_selected_story":
+                raise AssertionError(f"ACTION_ALIASES['delete_story'] mismatch: {ACTION_ALIASES.get('delete_story')!r}")
+            by_id = {d.action_id: d for d in SHORTCUT_DEFINITIONS}
+            for req_id, expected_seq in (
+                ("fmt_strikethrough", "Alt+Shift+5"),
+                ("fmt_highlight", "Ctrl+Shift+H"),
+                ("copy_text", "Ctrl+C"),
+                ("customize_shortcuts", "F8"),
+                ("user_guides", "Shift+F2"),
+            ):
+                if req_id not in by_id or by_id[req_id].default_seq != expected_seq:
+                    raise AssertionError(f"Missing or mismatched shortcut schema entry {req_id!r}: {by_id.get(req_id)!r}")
+
+            # 4. Verify dynamic UserGuideDialog shortcuts page renders live schema shortcuts
+            shortcuts_md = UserGuideDialog._build_dynamic_shortcuts_guide(win)
+            for token in ("Alt+Shift+5", "Ctrl+Alt+N", "Ctrl+Shift+C", "F8", "Shift+F2", "Ctrl+P", "F2"):
+                if token not in shortcuts_md:
+                    raise AssertionError(f"Dynamic shortcuts guide missing expected shortcut token {token!r}")
+
+            # 5. Verify embedded_guides.py matches docs/guides/*.md and has zero stale strings
+            guide_files = {
+                "workflow": "docs/guides/getting_started_and_workflow.md",
+                "wordpress": "docs/guides/wordpress_exporting.md",
+                "youtube": "docs/guides/youtube_features.md",
+                "video_youtube": "docs/guides/video_shows_and_youtube_publishing.md",
+                "reaper_bridge": "docs/guides/reaper_and_daw_integration.md",
+                "export_formats": "docs/guides/export_formats.md",
+            }
+            stale_tokens = ("Ctrl+,", "File > Batch Processing", "View > Video Preview Window", "Settings > Manage Plugins", "Google Docs & Sheets")
+            root_dir = _Path(__file__).resolve().parent
+            for gid, rel in guide_files.items():
+                disk_text = (root_dir / rel).read_text(encoding="utf-8").replace("\r\n", "\n").rstrip("\n")
+                emb_text = (embedded_guides.get_embedded_guide(gid) or "").replace("\r\n", "\n").rstrip("\n")
+                if disk_text != emb_text:
+                    raise AssertionError(f"embedded_guides[{gid!r}] is out of sync with {rel}")
+                for bad in stale_tokens:
+                    if bad in disk_text:
+                        raise AssertionError(f"Stale documentation token {bad!r} found in {rel}")
+
             item.status = "PASS"
-            item.message = "Main menu deduplication, Qt && escaping, checkable View->Theme state, and shortcut metadata verified"
+            item.message = "Main menu deduplication, Qt && escaping, checkable View->Theme state, shortcuts schema, dynamic guide, and docs sync verified"
         finally:
             win.close()
             win.deleteLater()

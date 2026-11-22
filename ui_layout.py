@@ -735,7 +735,7 @@ class UiLayoutMixin(UiMenusMixin, UiDialogLaunchersMixin):
         self.addAction(self.fmt_underline_action)
 
         self.fmt_strike_action = QAction("Strikethrough Text", self)
-        self.fmt_strike_action.setShortcut(platform_seq("Ctrl+K"))
+        self.fmt_strike_action.setShortcut(platform_seq("Alt+Shift+5"))
         self.fmt_strike_action.setShortcutContext(Qt.ShortcutContext.ApplicationShortcut)
         self.fmt_strike_action.triggered.connect(lambda: getattr(self.transcript_view, "toggle_strikethrough", lambda: None)())
         self.addAction(self.fmt_strike_action)

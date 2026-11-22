@@ -1,7 +1,7 @@
-"""Unified State Serialization, Local, and Google Drive Cloud Backup & Restore Engine.
+"""Unified State Serialization & Local Backup & Restore Engine.
 
-Provides cryptographically verified backup archiving (SHA-256), local archive export/import,
-and 1-click Google Drive cloud backup and restoration for Radio & TV Story Segmenter.
+Provides cryptographically verified settings backup archiving (SHA-256)
+and local archive export/import (.rtvs-settings) for Radio & TV Segmenter.
 """
 from __future__ import annotations
 
@@ -24,7 +24,7 @@ except ImportError:
         from prs_shared import INTERNAL_APP_ID, make_dialog_maximizable, PROJECT_VERSION
     except Exception:
         INTERNAL_APP_ID = "RadioTVStorySegmenter"
-        PROJECT_VERSION = "3.10.8-beta"
+        PROJECT_VERSION = "3.10.9-beta"
         def make_dialog_maximizable(dlg): pass
 
 logger = logging.getLogger(__name__)

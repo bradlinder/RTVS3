@@ -71,6 +71,7 @@ ACTION_ALIASES = {
     "set_story_end": "mark_story_end",
     "mark_story_in": "mark_story_start",
     "mark_story_out": "mark_story_end",
+    "delete_story": "delete_selected_story",
     # Legacy export & project aliases
     "export": "export_unified",
     "export_stories": "export_unified",
@@ -219,6 +220,15 @@ SHORTCUT_DEFINITIONS: List[ShortcutDef] = [
         attr_name="pref_action",
     ),
     ShortcutDef(
+        action_id="customize_shortcuts",
+        name="Customize Keyboard Shortcuts...",
+        category="File & Project",
+        default_seq="F8",
+        default_mac="F8",
+        description="Open Preferences directly on the Keyboard Shortcuts page",
+        attr_name="shortcuts_pref_action",
+    ),
+    ShortcutDef(
         action_id="manage_plugins",
         name="Manage Plugins & Add-ons...",
         category="File & Project",
@@ -269,11 +279,11 @@ SHORTCUT_DEFINITIONS: List[ShortcutDef] = [
     ),
     ShortcutDef(
         action_id="detect_stories",
-        name="Detect Stories...",
+        name="Detect Segments...",
         category="AI Pipeline & Tools",
         default_seq="Ctrl+Shift+A",
         default_mac="Meta+Shift+A",
-        description="Automatically segment recording into stories or songs based on pauses",
+        description="Automatically divide recording into segments or songs based on topic shifts and pauses",
         attr_name="auto_detect_action",
     ),
     ShortcutDef(
@@ -291,7 +301,7 @@ SHORTCUT_DEFINITIONS: List[ShortcutDef] = [
         category="AI Pipeline & Tools",
         default_seq="Ctrl+R",
         default_mac="Meta+R",
-        description="Execute automated multi-model transcription, diarization, and story segmentation",
+        description="Execute automated multi-model transcription, diarization, and segment detection",
         attr_name="transcribe_diarize_detect_action",
     ),
     ShortcutDef(
@@ -345,11 +355,11 @@ SHORTCUT_DEFINITIONS: List[ShortcutDef] = [
     ),
     ShortcutDef(
         action_id="toggle_stories",
-        name="Toggle Stories Panel",
+        name="Toggle Segments Panel",
         category="Panels & Views",
         default_seq="Alt+3",
         default_mac="Ctrl+Alt+3",
-        description="Show or hide the story cuts and segment list panel",
+        description="Show or hide the segment list panel",
         attr_name="toggle_stories_action",
     ),
     ShortcutDef(
@@ -592,6 +602,15 @@ SHORTCUT_DEFINITIONS: List[ShortcutDef] = [
         is_custom_event=True,
     ),
     ShortcutDef(
+        action_id="copy_text",
+        name="Copy",
+        category="Story & Segment Editing",
+        default_seq="Ctrl+C",
+        default_mac="Meta+C",
+        description="Copy selected transcript text or active segment transcript (with REAPER DAW IPC cues)",
+        attr_name="copy_action",
+    ),
+    ShortcutDef(
         action_id="deselect_all",
         name="Deselect All / Clear Selection",
         category="Story & Segment Editing",
@@ -655,7 +674,7 @@ SHORTCUT_DEFINITIONS: List[ShortcutDef] = [
         category="Story & Segment Editing",
         default_seq="Ctrl+Z",
         default_mac="Meta+Z",
-        description="Undo previous transcript or story edit",
+        description="Undo previous transcript or segment edit",
         attr_name="undo_action",
     ),
     ShortcutDef(
@@ -744,6 +763,24 @@ SHORTCUT_DEFINITIONS: List[ShortcutDef] = [
         default_mac="Meta+U",
         description="Toggle underline formatting on selected transcript text",
         attr_name="fmt_underline_action",
+    ),
+    ShortcutDef(
+        action_id="fmt_strikethrough",
+        name="Strikethrough Text",
+        category="Search & Transcript Tools",
+        default_seq="Alt+Shift+5",
+        default_mac="Alt+Shift+5",
+        description="Toggle strikethrough formatting on selected transcript text",
+        attr_name="fmt_strike_action",
+    ),
+    ShortcutDef(
+        action_id="fmt_highlight",
+        name="Highlight Text",
+        category="Search & Transcript Tools",
+        default_seq="Ctrl+Shift+H",
+        default_mac="Meta+Shift+H",
+        description="Highlight selected transcript text with the active marker color",
+        attr_name="fmt_highlight_action",
     ),
     ShortcutDef(
         action_id="fmt_clear",
@@ -847,6 +884,15 @@ SHORTCUT_DEFINITIONS: List[ShortcutDef] = [
         default_mac="Meta+?",
         description="Open interactive keyboard shortcuts reference table",
         attr_name="shortcuts_help_action",
+    ),
+    ShortcutDef(
+        action_id="user_guides",
+        name="User Guides & Documentation...",
+        category="Help & Diagnostics",
+        default_seq="Shift+F2",
+        default_mac="Shift+F2",
+        description="Open built-in user guides, workflow walkthroughs, and shortcut documentation",
+        attr_name="user_guide_action",
     ),
     ShortcutDef(
         action_id="about",

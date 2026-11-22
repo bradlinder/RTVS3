@@ -282,7 +282,7 @@ class PlaybackControllerMixin:
                 event.accept()
                 return True
 
-            if self._matches_shortcut(event, "delete_story", "Delete"):
+            if self._matches_shortcut(event, "delete_selected_story", "Delete"):
                 if hasattr(self, "delete_selected_story"):
                     self.delete_selected_story()
                     event.accept()

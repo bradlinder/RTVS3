@@ -340,7 +340,7 @@ class UiDialogLaunchersMixin:
             self,
             "YouTube Plugin Required",
             "The YouTube Video Publisher plugin is not enabled or not loaded.\n"
-            "You can enable it under Settings > Manage Plugins & Add-ons.",
+            "You can enable it under Tools > Manage Plugins & Add-ons...",
         )
 
     def open_wordpress_publish_dialog(self, story=None):
@@ -358,7 +358,7 @@ class UiDialogLaunchersMixin:
             self,
             "WordPress Plugin Required",
             "The WordPress Publisher plugin is not enabled or not loaded.\n"
-            "You can enable it under Settings > Manage Plugins & Add-ons.",
+            "You can enable it under Tools > Manage Plugins & Add-ons...",
         )
 
     def open_loudness_normalization_dialog(self):

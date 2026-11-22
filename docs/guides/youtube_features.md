@@ -1,12 +1,12 @@
 # YouTube Features & Chapter Generation Guide
 
-This guide explains how to use RTVS3's YouTube features: generating video chapters for YouTube video descriptions, configuring the YouTube upload plugin, and embedding timestamped video clips into WordPress articles.
+This guide explains how to use RTVS3's YouTube features: generating video chapters for YouTube video descriptions, preparing Zero-Auth Assisted Studio uploads, and embedding timestamped video clips into WordPress articles.
 
 ---
 
 ## 1. Generating YouTube Chapter Lists
 
-YouTube automatically divides videos into chapters along the video player scrub bar when timestamps are included in the video description. RTVS3 converts your segmented stories directly into YouTube-formatted chapters with one click.
+YouTube automatically divides videos into chapters along the video player scrub bar when timestamps are included in the video description. RTVS3 converts your detected segments directly into YouTube-formatted chapters with one click.
 
 ### Requirements for YouTube Video Chapters:
 - The first chapter must begin at `00:00` (or `0:00`).
@@ -18,7 +18,7 @@ RTVS3 guarantees all three rules are satisfied automatically.
 ### Two Ways to Generate & Copy Chapters:
 
 #### Method A: Instant Clipboard Copy (Recommended)
-1. Open your episode in RTVS3 and ensure stories have been detected or created.
+1. Open your episode in RTVS3 and ensure segments have been detected or created.
 2. Press **Ctrl+Shift+Y** (or go to **File > Copy YouTube Chapters to Clipboard**).
 3. The chapter list is copied to your clipboard immediately:
    ```text
@@ -32,7 +32,7 @@ RTVS3 guarantees all three rules are satisfied automatically.
 
 #### Method B: Unified Export Center (.txt File)
 1. Press **Ctrl+E** (or go to **File > Export...**).
-2. Select **Local Files (Media & Transcript)** at the top.
+2. Select **Local Files (Media & Transcripts)** at the top.
 3. Check **Tracklist / YouTube Chapters (.txt)** under document exports.
 4. Click **Export Selected Formats** to save the formatted chapter file to disk.
 
@@ -40,10 +40,10 @@ RTVS3 guarantees all three rules are satisfied automatically.
 
 ## 2. Embedding YouTube Video Segments in WordPress
 
-When publishing articles about individual segments of a show, you can embed the main YouTube video so that it starts and stops at the exact moment of each story:
+When publishing articles about individual segments of a show, you can embed the main YouTube video so that it starts and stops at the exact moment of each segment:
 
 1. In RTVS3, open **File > Export...** (**Ctrl+E**) and select **WordPress Draft Post**.
-2. Select a story in the **Posts to Export:** list, then click the **Media** tab (Tab 3).
+2. Select a segment in the **Posts to Export:** list, then click the **Media** tab (Tab 3).
 3. In the **YouTube Video Link** field, paste your YouTube video URL:
    - Supports standard watch URLs (`https://www.youtube.com/watch?v=...`)
    - Short links (`https://youtu.be/...`)
@@ -58,10 +58,10 @@ When publishing articles about individual segments of a show, you can embed the 
 
 ---
 
-## 3. Direct YouTube Video Upload Plugin
+## 3. Zero-Auth YouTube Assisted Upload Plugin
 
-If you have the **YouTube Publisher** plugin enabled:
-1. Configure your Google OAuth credentials in **Settings > Preferences... > YouTube Publisher**.
-2. Go to **File > Export...** (**Ctrl+E**) and select the **YouTube Video Publisher** radio button at top.
-3. Set your video title, description, category, privacy status (*Public*, *Unlisted*, or *Private*), and thumbnail.
-4. RTVS3 uploads your video directly to your YouTube channel with chapters pre-populated in the description.
+The **YouTube Video Publisher** plugin uses a **Zero-Auth Assisted Upload** workflow that requires no Google OAuth client secrets or cloud API tokens:
+1. Optional: Configure default privacy, category, and embed preferences under **Settings > Preferences... > YouTube** (**Ctrl+P**).
+2. Go to **File > Export...** (**Ctrl+E**) and select **YouTube Video Publisher** in the **Export Destination** bar (or launch from **File > Publishing & Plugins**).
+3. Set your video title, description (auto-populated with YouTube chapter markers), tags, privacy status (*Public*, *Unlisted*, or *Private*), and thumbnail.
+4. Click export to package your local MP4/thumbnail/`.srt` deliverables, copy the formatted video metadata and chapter markers to the clipboard, and open YouTube Studio in your browser for quick drag-and-drop upload.

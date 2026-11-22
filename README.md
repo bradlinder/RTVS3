@@ -6,18 +6,19 @@ Radio & TV Segmenter is a cross-platform desktop application built with Python a
 
 ## Features
 
-* Automated Speech Transcription: Powered by faster-whisper (CTranslate2) with local Whisper models from tiny up to large-v3.
-* Speaker Diarization: Uses diarize (Silero VAD + WeSpeaker ONNX embeddings) to detect and attribute speakers across multi-person interviews and panel segments without requiring heavy PyTorch dependencies in the core application.
-* Bilingual Translation: Direct in-app Spanish/English translation using local Helsinki-NLP MarianMT transformer models with sentence-level alignment via an isolated plugin runtime.
-* Interactive Transcript Editor: Click-to-seek playback navigation, inline text correction, customizable font scaling, and speaker reattribution tools.
-* Visual Waveform Timeline: Synchronized timeline with zoom, scrub markers, region selection, and optional video thumbnail strips.
-* Hardware Acceleration: Optional NVIDIA CUDA acceleration (Windows) for faster-whisper and diarization via an on-demand download, keeping the default application CPU-first and lightweight across platforms.
+* Automated Speech Transcription: Powered by faster-whisper (CTranslate2) with local Whisper models (tiny through large-v3) and fast `sherpa-onnx` Parakeet TDT support.
+* Speaker Diarization & Station Voice Profiles: Uses Silero VAD + WeSpeaker ONNX (`wespeakerruntime`) to attribute speakers without heavy PyTorch dependencies in core, with persistent **Station Voice Profiles**, opt-in **Save to Station Voices**, and **Fix Speaker Names...** cleanup.
+* Bilingual Translation: Direct in-app Spanish/English translation using local Helsinki-NLP MarianMT / CTranslate2 models via an isolated plugin runtime.
+* Interactive Transcript Editor & Offline Spellcheck: Click-to-seek playback navigation, inline text correction, editorial comments (`Ctrl+M`), inline red-underline offline spellcheck with **Glossary & Custom Vocabulary** (`Ctrl+Alt+V`) allowlisting, and customizable font scaling.
+* Broadcast Loudness Probing & Normalization: Non-destructive EBU R128 / ITU BS.1770 loudness analysis (`Tools > Normalize Audio Loudness...`, `Ctrl+Alt+N`) and optional auto-boost.
+* Visual Waveform Timeline: Synchronized timeline with zoom up to 300x, scrub markers, region selection, and optional video thumbnail strips.
+* Hardware Acceleration: Optional NVIDIA CUDA acceleration (Windows) for faster-whisper transcription via an on-demand download, keeping the default application CPU-first and lightweight across platforms.
 * Multi-Format Publishing & Exports:
-  * Standard Subtitles (SRT, VTT)
-  * Plain and annotated transcripts (TXT, Markdown, CSV)
-  * Cockos Reaper Digital Audio Workstation project markers (EDL)
-  * WordPress REST API direct draft/post creation
-  * Audio segment extractions sliced directly through FFmpeg
+  * Standard Subtitles (`SRT`, `VTT`) and Red Book CUE (`CUE`)
+  * Documents & transcripts (`TXT`, `DOCX`, `PDF`, YouTube Chapter `.txt`)
+  * Broadcast timelines (`REAPER .rpp`, `FCP 7 .xml`, `FCP X .fcpxml`, Universal `.aaf`, `Magix Samplitude .edl`, `Hindenburg .nhx`, `Audacity .txt`, `DAW .csv`)
+  * WordPress REST API & PublishPress Authors direct draft/update publishing + Zero-Auth YouTube Studio export packages
+  * Audio segment extractions sliced directly through FFmpeg with fades and ID3v2 tagging (`Ctrl+Shift+I`)
 
 
 
@@ -27,9 +28,9 @@ Radio & TV Segmenter is a cross-platform desktop application built with Python a
 
 ### 1. Prerequisites
 
-* Python: 3.10 to 3.12 (64-bit recommended)
+* Python: 3.10 to 3.12+ (64-bit recommended)
 * FFmpeg: Must be installed and accessible in your system PATH (or placed in the project root directory).
-* Node.js 18+ & npm: (Optional) Only required if building the integrated React/Vite transcript preview components.
+* Node.js 18+: (Optional) Only required if running the zero-dependency `node server.js` status preview container.
 
 ### 2. Environment Configuration
 
@@ -50,7 +51,7 @@ pip install -r installer/requirements.txt
 
 The base application is CPU-first by design to keep download and install footprints minimal and universally compatible across platforms. Diarization (WeSpeaker ONNX) and Translation (CTranslate2 INT8) run exclusively on optimized CPU backends with zero CUDA bloat. On Windows systems equipped with a supported NVIDIA GPU, you can optionally download and enable a dedicated CUDA-accelerated Whisper transcription environment:
 1. Open the application.
-2. Go to **Settings > GPU Acceleration (NVIDIA CUDA)...**
+2. Go to **Settings > GPU Acceleration Settings...** (`Ctrl+Alt+G`)
 3. Click **Download and Install** to provision the isolated CUDA runtime.
 4. Check **Use GPU acceleration when available**.
 
@@ -68,11 +69,11 @@ Run_RadioTVSegmenter.bat
 
 ## Workflows & Export Integrations
 
-### Segmenting Stories
+### Segmenting Broadcasts
 
-1. Load Media: Drag and drop an audio or video file onto the timeline canvas or select File -> Open Media...
-2. Process Pipeline: Use Tools -> Multi-Stage Processing... (Ctrl+R / Cmd+R) to run transcription, speaker detection, and automated story segmentation in sequence.
-3. Refine Segments: Highlight text in the transcript or drag region handles on the timeline, then click Add Segment to create segment boundaries.
+1. Load Media: Drag and drop an audio or video file onto the timeline canvas or select **File > Open Media...** (`Ctrl+O`) or **File > Open Document...** (`Ctrl+Alt+O`).
+2. Process Pipeline: Use **Tools > Multi-Stage Processing...** (`Ctrl+R` / `Cmd+R`) to run transcription, speaker detection, and automated segment detection in sequence.
+3. Refine Segments: Highlight text in the transcript or drag region handles on the timeline, mark in/out points with `[` and `]`, or click **Add Segment**.
 
 ### REAPER DAW & Digital Audio Workstation Live Bridge
 
@@ -86,20 +87,18 @@ RTVS3 features a real-time, two-way bridge connecting speech intelligence direct
   - Dragging the left or right edges of a clip in REAPER to expand or tighten context, or splitting a clip (`S`), automatically updates the Item Notes transcript, Take Name timecodes, and Take Markers in real time!
 * **Dockable ReaImGui Browser (`rtvs_reaper_dock.lua`)**:
   - Search speech segments, browse segments, and insert clips directly onto the timeline from within REAPER.
-* **Universal WAV Audio Clipboard for Other DAWs**:
-  - Enable *Render temporary WAV audio clip to OS file clipboard* in Preferences to paste lossless audio slices directly into Adobe Audition, Premiere Pro, and DaVinci Resolve via standard `Ctrl+V`.
+* **Universal WAV Audio Clipboard for Other DAWs (`Ctrl+Shift+C`)**:
+  - Enable **Enable WAV audio clip rendering (Ctrl+Shift+C) for non-REAPER DAWs** under **Settings > Preferences... > External Audio & Video Editors**, then press **Ctrl+Shift+C** to paste lossless WAV slices directly into Adobe Audition, Premiere Pro, DaVinci Resolve, and Pro Tools via **Ctrl+V**.
 * **Timeline Project Exports**:
-  - In addition to live copy/paste, RTVS3 exports native REAPER project files (`.rpp`), Final Cut Pro XML, and CMX 3600 EDL files via the Unified Export Center (`Ctrl+E`).
+  - In addition to live copy/paste, RTVS3 exports native REAPER project files (`.rpp`), Final Cut Pro 7/X XML (`.xml` / `.fcpxml`), Universal AAF (`.aaf`), Magix Samplitude EDL v1.5 (`.edl`), Hindenburg (`.nhx`), Audacity labels, Red Book CUE, and CSV tables via the Unified Export Center (`Ctrl+E`).
 
+### WordPress & PublishPress Direct Publishing
 
-
-### WordPress Direct Publishing
-
-* Pushes selected segments and transcribed body copy directly to WordPress sites via the REST API.
+* Pushes selected segments and full episodes directly to WordPress sites via the REST API, supporting both **WordPress Users** (`author`) and **PublishPress Guest Authors** (`ppma_author`, with overwrite-on-checked and preserve-on-empty semantics on updates), Featured Image **Caption & Alt Text**, and inline **Offline Spellcheck**.
 * Setup & Authentication:
-1. In WordPress Admin, navigate to Users -> Profile.
-2. Scroll down to Application Passwords, enter a descriptive name (e.g., StorySegmenter), and click Add New Application Password.
-3. Copy the 24-character generated password (with spaces) into the application's WordPress Export dialog along with your site URL and username. Note: Your regular login password is not accepted by the REST API.
+1. In WordPress Admin, navigate to **Users -> Profile**.
+2. Scroll down to **Application Passwords**, enter a descriptive name (e.g., `RTVS3 Desktop`), and click **Add New Application Password**.
+3. Copy the 24-character generated password into **Settings > Preferences... > WordPress** (`Ctrl+P` / `Cmd+P`) along with your Site URL and Username. Note: Your regular login password is not accepted by the REST API.
 
 
 
@@ -122,17 +121,18 @@ All keyboard shortcuts can be viewed at any time by pressing <kbd>F1</kbd> (or <
 | **File & Project** | Unified Export Center... | `Ctrl+E` | `Cmd+E` | Open the Unified Export Center for audio, text, transcripts, and plugins |
 | **File & Project** | Copy YouTube Chapters to Clipboard | `Ctrl+Shift+Y` | `Cmd+Shift+Y` | Copy zero-based timestamps and story headlines formatted for YouTube descriptions |
 | **File & Project** | Batch Processing... | `Ctrl+Shift+B` | `Cmd+Shift+B` | Open Batch Audio / Video Transcription and Diarization Manager |
-| **File & Project** | Backup & Restore... | *Unassigned* | *Unassigned* | Open project snapshot backup and restore manager |
+| **File & Project** | Backup & Restore Settings... | *Unassigned* | *Unassigned* | Backup or restore application settings, keyboard shortcuts, glossary, and plugins |
 | **File & Project** | Manage AI Models... | `Ctrl+Alt+M` | `Cmd+Alt+M` | Download, delete, verify, and monitor Whisper and ASR neural weights |
 | **File & Project** | Preferences... | `Ctrl+P` | `Cmd+P` | Open application settings, audio playback, theming, and shortcuts |
+| **File & Project** | Customize Keyboard Shortcuts... | `F8` | `F8` | Open Preferences directly on the Keyboard Shortcuts page |
 | **File & Project** | Manage Plugins & Add-ons... | `Ctrl+Shift+X` | `Cmd+Shift+X` | Enable, disable, or inspect external plugins and integrations |
 | **File & Project** | GPU Acceleration Settings... | `Ctrl+Alt+G` | `Cmd+Alt+G` | Configure CUDA, ROCm, or DirectML GPU hardware acceleration |
 | **File & Project** | Exit Application | `Ctrl+Q` | `Cmd+Q` | Close the application |
 | **AI Pipeline & Tools** | Transcribe Audio... | `Ctrl+T` | `Cmd+T` | Run automated speech-to-text transcription on loaded media |
 | **AI Pipeline & Tools** | Detect Speakers (Diarization)... | `Ctrl+D` | `Cmd+D` | Perform speaker diarization and voice cluster detection |
-| **AI Pipeline & Tools** | Detect Segments... | `Ctrl+Shift+A` | `Cmd+Shift+A` | Automatically segment recording into segments based on pauses |
+| **AI Pipeline & Tools** | Detect Segments... | `Ctrl+Shift+A` | `Cmd+Shift+A` | Automatically divide recording into segments or songs based on topic shifts and pauses |
 | **AI Pipeline & Tools** | Translate Transcript... | `Ctrl+Shift+L` | `Cmd+Shift+L` | Translate transcript text into Spanish or target language |
-| **AI Pipeline & Tools** | Multi-Stage Processing Pipeline... | `Ctrl+R` | `Cmd+R` | Execute automated multi-model transcription, diarization, and story segmentation |
+| **AI Pipeline & Tools** | Multi-Stage Processing Pipeline... | `Ctrl+R` | `Cmd+R` | Execute automated multi-model transcription, diarization, and segment detection |
 | **AI Pipeline & Tools** | Regenerate Waveform | `Ctrl+Shift+W` | `Cmd+Shift+W` | Rebuild audio peak envelope cache for the timeline |
 | **AI Pipeline & Tools** | Regenerate Video Thumbnails | `Ctrl+Shift+T` | `Cmd+Shift+T` | Extract new frame thumbnails across video duration |
 | **AI Pipeline & Tools** | Normalize Audio Loudness... | `Ctrl+Alt+N` | `Cmd+Alt+N` | Analyze and normalize broadcast loudness according to EBU R128 / ITU BS.1770 |
@@ -156,18 +156,21 @@ All keyboard shortcuts can be viewed at any time by pressing <kbd>F1</kbd> (or <
 | **Playback & Transport** | Jump Forward (30s) | `Ctrl+Right` | `Cmd+Right` | Advance audio playhead by long jump distance (default 30s) |
 | **Playback & Transport** | Seek to Start | `Home` | `Home` | Seek playhead to 00:00:00 |
 | **Playback & Transport** | Seek to End | `End` | `End` | Seek playhead to the end of the loaded media |
-| **Playback & Transport** | Play Current Story Only | `Ctrl+Alt+Space` | `Cmd+Alt+Space` | Play selected story block from in-point to out-point then stop |
+| **Playback & Transport** | Play Current Segment Only | `Ctrl+Alt+Space` | `Cmd+Alt+Space` | Play selected segment from in-point to out-point then stop |
 | **Playback & Transport** | Toggle Auto-Follow Playhead | `Ctrl+F12` | `Cmd+F12` | Enable or disable automatic timeline scrolling following the playhead |
-| **Story & Segment Editing** | Mark Story In-Point ([) | `[` | `[` | Set the beginning timestamp of a new story segment at current playhead |
-| **Story & Segment Editing** | Mark Story Out-Point (]) | `]` | `]` | Set the ending timestamp of the current story segment at playhead and save story |
+| **Story & Segment Editing** | Mark Segment In-Point ([) | `[` | `[` | Set the beginning timestamp of a new segment at current playhead |
+| **Story & Segment Editing** | Mark Segment Out-Point (]) | `]` | `]` | Set the ending timestamp of the current segment at playhead and save segment |
 | **Story & Segment Editing** | Audio Fades & Crossfades... | `Ctrl+Shift+F` | `Cmd+Shift+F` | Configure audio fade-in, fade-out, crossfade curves, and ducking parameters |
 | **Story & Segment Editing** | ID3 Tag Editor (MP3)... | `Ctrl+Shift+I` | `Cmd+Shift+I` | Open ID3v2 metadata tag editor for broadcast episode and podcast tagging |
-| **Story & Segment Editing** | Delete Selected Story | `Delete` | `Backspace` | Remove currently highlighted story cut from project |
+| **Story & Segment Editing** | Copy Selection as Audio Clip | `Ctrl+Shift+C` | `Cmd+Shift+C` | Render a temporary WAV audio clip of the active selection and copy it to the OS clipboard (CF_HDROP) for non-REAPER DAWs |
+| **Story & Segment Editing** | Copy | `Ctrl+C` | `Cmd+C` | Copy selected transcript text or active segment transcript (with REAPER DAW IPC cues) |
+| **Story & Segment Editing** | Deselect All / Clear Selection | `Esc` | `Esc` | Clear active segment selections, timeline selection range, or transcript selection |
+| **Story & Segment Editing** | Delete Selected Segment | `Delete` | `Backspace` | Remove currently highlighted segment from project |
 | **Story & Segment Editing** | Toggle Proofreading / Edit Mode | `F2` | `F2` | Toggle between viewing and proofreading edit mode |
 | **Story & Segment Editing** | Split Speaker Block | `Shift+Return` | `Shift+Return` | Split current block at cursor position and insert a new speaker turn |
 | **Story & Segment Editing** | Split Block at Playhead | `Ctrl+K` | `Cmd+K` | Split the highlighted transcript block into two pieces at playhead timestamp |
 | **Story & Segment Editing** | Merge with Next Block | `Ctrl+J` | `Cmd+J` | Combine selected transcript block with following block |
-| **Story & Segment Editing** | Undo | `Ctrl+Z` | `Cmd+Z` | Undo previous transcript or story edit |
+| **Story & Segment Editing** | Undo | `Ctrl+Z` | `Cmd+Z` | Undo previous transcript or segment edit |
 | **Story & Segment Editing** | Redo | `Ctrl+Shift+Z` | `Cmd+Shift+Z` | Redo previously undone edit |
 | **Search & Transcript Tools** | Find in Transcript... | `Ctrl+F` | `Cmd+F` | Open Find and Replace dialog pre-filled with search term |
 | **Search & Transcript Tools** | Find Next Occurrence | `Ctrl+G` | `Cmd+G` | Jump to next occurrence of search term in transcript |
@@ -177,6 +180,8 @@ All keyboard shortcuts can be viewed at any time by pressing <kbd>F1</kbd> (or <
 | **Search & Transcript Tools** | Bold Text | `Ctrl+B` | `Cmd+B` | Toggle bold formatting on selected transcript text |
 | **Search & Transcript Tools** | Italic Text | `Ctrl+I` | `Cmd+I` | Toggle italic formatting on selected transcript text |
 | **Search & Transcript Tools** | Underline Text | `Ctrl+U` | `Cmd+U` | Toggle underline formatting on selected transcript text |
+| **Search & Transcript Tools** | Strikethrough Text | `Alt+Shift+5` | `Alt+Shift+5` | Toggle strikethrough formatting on selected transcript text |
+| **Search & Transcript Tools** | Highlight Text | `Ctrl+Shift+H` | `Cmd+Shift+H` | Highlight selected transcript text with the active marker color |
 | **Search & Transcript Tools** | Clear Text Formatting | `Ctrl+\` | `Cmd+\` | Remove rich formatting and color styles from selected transcript text |
 | **Search & Transcript Tools** | Increase Transcript Text Size | `Ctrl++` | `Cmd++` | Increase transcript display font size by 1 point |
 | **Search & Transcript Tools** | Decrease Transcript Text Size | `Ctrl+-` | `Cmd+-` | Decrease transcript display font size by 1 point |
@@ -187,6 +192,7 @@ All keyboard shortcuts can be viewed at any time by pressing <kbd>F1</kbd> (or <
 | **Help & Diagnostics** | Run Diagnostic Test Bench... | `Ctrl+Shift+D` | `Cmd+Shift+D` | Execute automated self-tests across all application engines and plugins |
 | **Help & Diagnostics** | Check for Updates... | `Ctrl+Alt+U` | `Cmd+Alt+U` | Check GitHub releases for new versions and patches |
 | **Help & Diagnostics** | Keyboard Shortcuts Reference | `F1` | `Cmd+?` | Open interactive keyboard shortcuts reference table |
+| **Help & Diagnostics** | User Guides & Documentation... | `Shift+F2` | `Shift+F2` | Open built-in user guides, workflow walkthroughs, and shortcut documentation |
 | **Help & Diagnostics** | About Application | `Shift+F1` | `Shift+F1` | Display version, build, and system diagnostic overview |
 | **Help & Diagnostics** | Open Diagnostic Log Folder | `Ctrl+Shift+K` | `Cmd+Shift+K` | Open the application diagnostic logs directory in file explorer |
 | **Help & Diagnostics** | Third-Party Licenses | `Ctrl+Shift+F1` | `Cmd+Shift+F1` | View open-source licenses and attribution disclosures |
@@ -195,7 +201,7 @@ All keyboard shortcuts can be viewed at any time by pressing <kbd>F1</kbd> (or <
 
 ## AI Studio Web Preview
 
-The web preview in Google AI Studio is configured to serve as the live, interactive **Changelog & Release Notes Viewer** for the project (sourced from `CHANGELOG.md`). It provides search, version filtering, collapsible release cards, and markdown copying capabilities for desktop application updates.
+The web preview in Google AI Studio runs via the zero-dependency `node server.js` inspector on port 3000 (synchronized with `prs_shared.py` via `python preview_manager.py --sync`), displaying the live application status and version card without npm packages or Vite builds.
 
 ---
 

@@ -792,55 +792,54 @@ class UserGuideDialog(QDialog):
             QMessageBox.warning(self, "Browser View", f"Could not open external browser: {e}")
 
     def _build_dynamic_shortcuts_guide(self) -> str:
-        """Build dynamic keyboard shortcut documentation from active settings."""
-        return """# Keyboard Shortcuts & Controls
+        """Build complete keyboard shortcut documentation dynamically from active schema & user bindings."""
+        from collections import OrderedDict
+        from shortcuts.schema import SHORTCUT_DEFINITIONS, format_sequence_display
 
-Radio & TV Segmenter provides extensive keyboard control across timeline scrubbing, audio playback, transcript editing, and segment editing.
+        shortcuts_mgr = getattr(self.parent(), "shortcuts_manager", None) if self.parent() is not None else None
+        grouped: "OrderedDict[str, list]" = OrderedDict()
+        for defn in SHORTCUT_DEFINITIONS:
+            win_raw = (
+                shortcuts_mgr.get_current_shortcut(defn.action_id)
+                if shortcuts_mgr is not None and hasattr(shortcuts_mgr, "get_current_shortcut")
+                else defn.default_seq
+            )
+            mac_raw = defn.default_mac or (win_raw.replace("Ctrl+", "Meta+") if win_raw else "")
+            if sys.platform == "darwin" and shortcuts_mgr is not None and win_raw:
+                mac_raw = win_raw
+                win_raw = defn.default_seq
+            win_disp = f"`{format_sequence_display(win_raw)}`" if win_raw else "_Unassigned_"
+            mac_disp = f"`{format_sequence_display(mac_raw)}`" if mac_raw else "_Unassigned_"
+            grouped.setdefault(defn.category, []).append((defn.name, win_disp, mac_disp, defn.description))
 
----
+        lines = [
+            "# Keyboard Shortcuts & Controls",
+            "",
+            "Radio & TV Segmenter supports customizable keyboard shortcuts across file management, AI pipeline processing, timeline navigation, transcript editing, and help dialogs.",
+            "",
+            "> **Tip**: Customize any binding under **Settings > Customize Keyboard Shortcuts...** (**F8**).",
+        ]
+        for idx, (category, rows) in enumerate(grouped.items(), start=1):
+            lines.extend([
+                "",
+                "---",
+                "",
+                f"## {idx}. {category}",
+                "",
+                "| Action | Shortcut (Windows/Linux) | Shortcut (macOS) | Description |",
+                "| :--- | :--- | :--- | :--- |",
+            ])
+            for name, win_disp, mac_disp, desc in rows:
+                lines.append(f"| **{name}** | {win_disp} | {mac_disp} | {desc} |")
 
-## 1. Transport & Playback Shortcuts
-
-| Action | Shortcut (Windows/Linux) | Shortcut (macOS) | Description |
-| :--- | :--- | :--- | :--- |
-| **Play / Pause** | `Space` | `Space` | Toggle audio playback at playhead position. |
-| **Skip Backward (Short)** | `Left Arrow` | `Left Arrow` | Jump backward 5 seconds (configurable). |
-| **Skip Forward (Short)** | `Right Arrow` | `Right Arrow` | Jump forward 5 seconds (configurable). |
-| **Jump Backward (Medium)** | `Shift + Left` | `Shift + Left` | Jump backward 15 seconds. |
-| **Jump Forward (Medium)** | `Shift + Right` | `Shift + Right` | Jump forward 15 seconds. |
-| **Jump Backward (Long)** | `Ctrl + Left` | `Cmd + Left` | Jump backward 30 seconds. |
-| **Jump Forward (Long)** | `Ctrl + Right` | `Cmd + Right` | Jump forward 30 seconds. |
-| **Seek to Start** | `Home` | `Home` | Return playhead to start of audio (00:00.0). |
-| **Seek to End** | `End` | `End` | Move playhead to end of audio file. |
-| **Timeline Zoom In** | `+` / `Ctrl + Wheel` | `+` / `Cmd + Wheel` | Zoom into waveform timeline up to 300x. |
-| **Timeline Zoom Out** | `-` / `Ctrl + Wheel` | `-` / `Cmd + Wheel` | Zoom out toward episode overview. |
-
----
-
-## 2. Segment Editing & Detection
-
-| Action | Shortcut (Windows/Linux) | Shortcut (macOS) | Description |
-| :--- | :--- | :--- | :--- |
-| **Mark Segment Start** | `[` | `[` | Set segment in-point at current playhead position. |
-| **Mark Segment End** | `]` | `]` | Set segment out-point and create segment. |
-| **Deselect All / Clear Selection** | `Esc` | `Esc` | Clear active segment selections, timeline selection range, or transcript selection. |
-| **Detect Segments** | `Ctrl + Shift + A` | `Cmd + Shift + A` | Run AI topic and pause boundary detection. |
-| **Transcribe Audio** | `Ctrl + T` | `Cmd + T` | Run speech-to-text transcription. |
-| **Detect Speakers (Diarization)** | `Ctrl + D` | `Cmd + D` | Run AI speaker clustering and identification. |
-| **Audio Fades & Crossfades** | `Ctrl + Shift + F` | `Cmd + Shift + F` | Configure segment volume fade curves. |
-| **Unified Export Center** | `Ctrl + E` | `Cmd + E` | Open export panel for audio, docs, and WordPress. |
-| **Video Preview Window** | `Ctrl + Shift + V` | `Cmd + Shift + V` | Open floating, synchronized video player. |
-
----
-
-## 3. Transcript Editor Controls
-
-| Action | Shortcut (Windows/Linux) | Shortcut (macOS) | Description |
-| :--- | :--- | :--- | :--- |
-| **Find & Replace** | `Ctrl + F` | `Cmd + F` | Open modeless Find and Replace dialog. |
-| **Toggle Proofreading / Edit Mode** | `F2` | `F2` | Toggle between viewing and direct text editing. |
-| **Split Speaker Block** | `Shift + Enter` | `Shift + Enter` | Split dialogue turn and insert speaker at cursor. |
-| **Split Block at Playhead** | `Ctrl + K` | `Cmd + K` | Cut active transcript block at current playback timestamp. |
-| **Merge with Next Block** | `Ctrl + J` | `Cmd + J` | Combine current transcript block with following turn. |
-| **Word Highlighting & Seek** | `Click Word` | `Click Word` | Seek audio playback directly to spoken word. |
-"""
+        lines.extend([
+            "",
+            "---",
+            "",
+            f"## {len(grouped) + 1}. Mouse & Timeline Controls",
+            "",
+            "- **Click Word in Transcript**: Seek audio playback directly to that spoken word.",
+            "- **Drag Waveform Ruler / Canvas**: Scrub playhead or paint an active time selection range.",
+            "- **Ctrl + Mouse Wheel** (**Cmd + Mouse Wheel** on macOS): Zoom timeline smoothly up to 300x.",
+        ])
+        return "\n".join(lines) + "\n"

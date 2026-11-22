@@ -1,4 +1,4 @@
-Radio & TV Story Segmenter v3.2.4 Build Notes
+Radio & TV Segmenter v3.10.9-beta Build Notes
 
 Windows builds produce the main desktop GUI and a dedicated `workers\prs_worker.exe`
 AI worker, sharing a unified runtime. Build-time self-tests smoke-test PyTorch/torch._C,
@@ -6,13 +6,13 @@ CTranslate2, Silero VAD, and WeSpeaker ONNX (`wespeakerruntime`). Heavy machine 
 (CTranslate2 / Hugging Face MarianMT & NLLB) is isolated within `plugins/translation/`.
 
 ===============================================================================
-Radio & TV Story Segmenter - Build & Environment Setup Instructions
+Radio & TV Segmenter - Build & Environment Setup Instructions
 ===============================================================================
 
 1. SYSTEM PREREQUISITES
 -------------------------------------------------------------------------------
-- Python 3.10 to 3.12 (64-bit recommended)
-- Node.js 18+ and npm (required for building web preview assets)
+- Python 3.10 to 3.12+ (64-bit recommended)
+- Node.js 18+ (only required for running the zero-dependency `node server.js` status preview)
 - FFmpeg installed and accessible in your system PATH (or in the app root directory)
 - Git
 
@@ -21,7 +21,7 @@ Radio & TV Story Segmenter - Build & Environment Setup Instructions
 The core application, speaker diarization (WeSpeaker ONNX), and machine translation
 (CTranslate2 INT8) are CPU-first and CUDA-free across all operating systems.
 On Windows systems with an NVIDIA GPU, an isolated CUDA environment for Whisper
-transcription can be downloaded on demand directly from Settings > GPU Acceleration (NVIDIA CUDA)...
+transcription can be downloaded on demand directly from Settings > GPU Acceleration Settings...
 No manual PyTorch or CUDA driver installation is required in the base environment.
 
 3. PYTHON VIRTUAL ENVIRONMENT & DEPENDENCIES
@@ -43,13 +43,11 @@ Install core application requirements:
 Heavy machine translation (OPUS-MT / Transformers) runs in an isolated,
 on-demand runtime managed automatically by the application (see plugins/translation).
 
-4. BUILDING FRONTEND ASSETS (Vite + React)
+4. AI STUDIO WEB STATUS PREVIEW (ZERO-DEPENDENCY NODE.JS)
 -------------------------------------------------------------------------------
-If working with web/transcript preview components:
-    npm install
-    npm run build
-
-This outputs bundled assets into the distribution web root.
+The web preview container runs a zero-dependency Node.js HTTP status card (`node server.js` on port 3000).
+Do NOT run `npm install` or scaffold React/Vite bundles. To restore or sync version metadata:
+    python preview_manager.py --sync
 
 5. RUNNING THE APPLICATION LOCALLY
 -------------------------------------------------------------------------------

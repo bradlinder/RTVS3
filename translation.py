@@ -726,7 +726,7 @@ class TranslationMixin:
             from_code = self.source_language_code()
             to_code = self.target_language_code()
         if hasattr(self, "plugin_manager") and not self.plugin_manager.is_plugin_enabled("translation"):
-            QMessageBox.warning(self, "Plugin Disabled", "The Language Translation plugin is currently disabled.\nYou can enable it in Settings > Manage Plugins & Add-ons.")
+            QMessageBox.warning(self, "Plugin Disabled", "The Language Translation plugin is currently disabled.\nYou can enable it in Tools > Manage Plugins & Add-ons...")
             return
         if getattr(self, "translation_process", None) is not None:
             QMessageBox.information(self, "Translation Busy", "A translation task is already running.")

@@ -196,11 +196,10 @@ class ShortcutsManager(QObject):
             "fmt_clear": ("fmt_clear_btn", "Clear Formatting"),
             "split_speaker": ("fmt_split_btn", "Split Speaker Block at Cursor"),
             "play_pause": ("play_pause_btn", "Play / Pause playback"),
-            "mark_story_start": ("set_story_start_btn", "Set start time of selected story"),
-            "mark_story_end": ("set_story_end_btn", "Set end time of selected story"),
-            "set_story_start": ("set_story_start_btn", "Set start time of selected story"),
-            "set_story_end": ("set_story_end_btn", "Set end time of selected story"),
-            "add_story": ("add_story_btn", "Add story from active selection"),
+            "mark_story_start": ("set_story_start_btn", "Set start time of selected segment"),
+            "mark_story_end": ("set_story_end_btn", "Set end time of selected segment"),
+            "set_story_start": ("set_story_start_btn", "Set start time of selected segment"),
+            "set_story_end": ("set_story_end_btn", "Set end time of selected segment"),
             "export_stories": ("export_stories_btn", "Unified Export"),
         }
 

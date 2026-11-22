@@ -31,8 +31,9 @@ This document defines the core architectural rules, module boundaries, and machi
 - Long-running operations must run via dedicated `QThread` workers or modal progress handlers.
 
 ### 4. AI Studio Web Preview Guard
-- The root web scaffolding (`package.json`, `index.html`, `vite.config.ts`, `src/App.tsx`) powers the AI Studio live preview container on port 3000 (serving the interactive changelog).
-- Desktop packaging scripts (`build_installer.py`, Inno Setup, GitHub Actions) ignore the web files, keeping the shipped desktop application lightweight and native.
+- The root preview files (`server.js`, `package.json`, `metadata.json`, `index.html`) run a **zero-dependency Node HTTP server** on port 3000 displaying the live application status & version inspector synchronized with `prs_shared.py` (`python preview_manager.py --sync`).
+- Desktop packaging scripts (`build_installer.py`, Inno Setup, GitHub Actions) ignore the web preview files, keeping the shipped desktop application lightweight and native.
+- Never install Vite, React, or external npm packages for the web preview container.
 
 ### 5. Single Responsibility & Desktop Domain Separation
 - **Every Python module must adhere strictly to a single architectural domain**:
@@ -48,20 +49,28 @@ This document defines the core architectural rules, module boundaries, and machi
 ## 3. Directory Layout Overview
 
 ```text
-├── RadioTVSegmenter.py              # Main desktop GUI application entry point
-├── prs_shared.py                    # Shared types, UI widgets, constants & branding
-├── processing.py                    # Audio transcription, diarization & worker dispatch
-├── runtime_manager.py               # Python venv creation, uv management & runtime verification
-├── project_export.py                # Broadcast audio, subtitle & document export engines
+├── RadioTVSegmenter.py               # Main desktop GUI application entry point
+├── prs_shared.py                     # Shared types, UI widgets, constants & branding
+├── processing.py                     # Audio transcription, diarization & worker dispatch
+├── runtime_manager.py                # Python venv creation, uv management & runtime verification
+├── audio_normalization.py            # Headless EBU R128 loudness probe & normalization engine
+├── audio_normalization_worker.py     # Non-blocking QThread loudness probing worker
+├── speaker_profiles.py               # Pure-Python persistent acoustic Station Voice profile store
+├── speaker_profiles_dialog.py        # Qt Manage Voice Profiles dialog
+├── spellcheck_helper.py              # Offline spellcheck engine & Glossary/speaker allowlist
+├── spellcheck_widgets.py             # Inline QLineEdit/QTextEdit spellcheck underlines & context menus
+├── export/                           # Modularized export dialog & format engines (DOCX, PDF, timeline, etc.)
+├── shortcuts/                        # Keyboard shortcut schema registry, preferences & manager
 ├── radio_tv_story_segmenter_worker.py # Standalone background AI worker (prs_worker)
-├── plugins/                         # Isolated modular add-ons
-│   ├── manager.py                   # Plugin discovery, dynamic loading & update sync
-│   ├── wordpress/                   # WordPress REST API publisher add-on
-│   ├── youtube/                     # YouTube Studio video publisher add-on
-│   └── translation/                 # Local neural machine translation add-on
-├── installer/                       # Packaging scripts & Inno Setup configs
-├── roadmap.txt                      # Future version specifications & milestones
-└── CHANGELOG.md                     # Source-of-truth release history
+├── plugins/                          # Isolated modular add-ons
+│   ├── manager.py                    # Plugin discovery, dynamic loading & update sync
+│   ├── wordpress/                    # WordPress REST API & PublishPress Authors publisher add-on
+│   ├── youtube/                      # YouTube chapter generator & Zero-Auth assisted upload add-on
+│   └── translation/                  # Local neural machine translation add-on
+├── docs/                             # Markdown user guides (mirrored in embedded_guides.py)
+├── installer/                        # Packaging scripts & Inno Setup configs
+├── roadmap.txt                       # Active release (N) & predecessor (N-1) specifications
+└── CHANGELOG.md                      # Source-of-truth N / N-1 release notes (older entries in CHANGELOG_ARCHIVE.md)
 ```
 
 ---

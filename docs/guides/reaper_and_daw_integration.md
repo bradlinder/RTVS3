@@ -7,14 +7,14 @@ This guide explains how to configure and use the real-time copy/paste integratio
 ## 1. Architectural Overview
 
 Radio & TV Segmenter and digital audio workstations serve complementary roles in modern broadcast and podcast production:
-- **RTVS3**: Speech intelligence, automated transcription, speaker diarization, story boundary detection, and rapid quote logging.
+- **RTVS3**: Speech intelligence, automated transcription, speaker diarization, segment boundary detection, and rapid quote logging.
 - **REAPER / DAWs**: Multi-track assembly, fine audio leveling, noise reduction, music ducking, equalization, and final broadcast mastering.
 
 Rather than forcing users to export files and manually re-import them, RTVS3 provides a **unified multi-channel clipboard and real-time IPC bridge**:
 
 ```mermaid
 flowchart TD
-    A["RTVS3 Transcript or Timeline<br>(Ctrl+C Copy)"] --> B["Unified QMimeData & Sidecar Emitter"]
+    A["RTVS3 Transcript or Timeline<br>(Ctrl+C REAPER / Ctrl+Shift+C WAV)"] --> B["Unified QMimeData & Sidecar Emitter"]
     B --> C["REAPER DAW Bridge<br>(ReaScript Lua Companion)"]
     B --> D["Universal WAV Clipboard<br>(CF_HDROP / text/uri-list)"]
     C --> E["REAPER Timeline Clip<br>• Zero-Generation Sample Alignment<br>• Verbatim Transcript in Item Notes<br>• Speaker Colors & Take Markers<br>• Dynamic Trim/Split Live Auto-Sync"]
@@ -26,7 +26,7 @@ flowchart TD
 2. **Verbatim Transcript in Item Notes**: Full speaker-attributed dialogue is automatically injected into REAPER's native **Item Notes (`P_NOTES`)**, keeping the spoken transcript permanently attached to the audio block wherever it is moved on the timeline.
 3. **Take Markers**: Visual markers placed directly on the media take indicate speaker turns or concise sentence cues.
 4. **Dynamic Trim, Extend & Split Auto-Sync**: If you drag the edges of an inserted clip in REAPER to expand or trim context, or split a clip into multiple pieces with `S`, the transcript in Item Notes, the Take Name timecode range, and Take Markers automatically update to match the new boundaries.
-5. **Universal Audio Clipboard Fallback**: For other audio and video editors (Audition, DaVinci Resolve, Premiere), RTVS3 can automatically render temporary lossless WAV slices to the OS clipboard on `Ctrl+C`.
+5. **Universal Audio Clipboard (`Ctrl+Shift+C`)**: For other audio and video editors (Audition, DaVinci Resolve, Premiere), press **Ctrl+Shift+C** when **Enable WAV audio clip rendering (Ctrl+Shift+C) for non-REAPER DAWs** is enabled under **Settings > Preferences... > External Audio & Video Editors** to render a temporary lossless WAV slice to the OS clipboard.
 
 ---
 
@@ -36,10 +36,10 @@ RTVS3 bundles four native ReaScript Lua scripts:
 - **`rtvs_reaper_companion.lua`**: Fast one-key action to paste the latest copied RTVS3 selection at the REAPER edit cursor.
 - **`rtvs_reaper_auto_sync.lua`**: Continuous background watcher that monitors the timeline and automatically updates Item Notes, Take Names, and Take Markers whenever you drag clip edges or split items (`S`).
 - **`rtvs_reaper_sync.lua`**: Manual one-shot action to immediately scan and refresh all trimmed/split clips on the timeline.
-- **`rtvs_reaper_dock.lua`**: Optional dockable ReaImGui browser panel inside REAPER to search, browse, and insert stories or segments with live polling.
+- **`rtvs_reaper_dock.lua`**: Optional dockable ReaImGui browser panel inside REAPER to search, browse, and insert segments with live polling.
 
 ### Step 1: Install Scripts from RTVS3 Preferences
-1. In RTVS3, go to **Settings > Preferences...** (or press **Ctrl+,**).
+1. In RTVS3, go to **Settings > Preferences...** (or press **Ctrl+P** / **Cmd+P** on macOS).
 2. Click the **External Audio & Video Editors** tab on the left sidebar.
 3. Review the **REAPER DAW Companion Bridge** settings.
 4. Click **Install REAPER Companion Scripts...**.
@@ -48,18 +48,18 @@ RTVS3 bundles four native ReaScript Lua scripts:
    - **macOS**: `~/Library/Application Support/REAPER/Scripts/RTVS3`
    - **Linux**: `~/.config/REAPER/Scripts/RTVS3`
    *(If using a portable REAPER installation, you can browse to select its directory).*
-6. Click **Install Scripts**. The installer copies `rtvs_reaper_companion.lua` and `rtvs_reaper_dock.lua` into your REAPER scripts folder.
+6. Click **Install Scripts**. The installer copies all four `.lua` scripts (`rtvs_reaper_companion.lua`, `rtvs_reaper_auto_sync.lua`, `rtvs_reaper_sync.lua`, and `rtvs_reaper_dock.lua`) into your REAPER scripts folder.
 
 ### Step 2: Register the Script in REAPER's Action List
 1. Open **Cockos REAPER**.
 2. Press `?` (or go to **Actions > Show action list...**).
 3. In the bottom-right corner, click **New action... > Load ReaScript...**.
-4. Browse to your `Scripts/RTVS3` directory and select all scripts:
+4. Browse to your `Scripts/RTVS3` directory and select all 4 scripts:
    - `rtvs_reaper_companion.lua`
    - `rtvs_reaper_auto_sync.lua`
    - `rtvs_reaper_sync.lua`
    - `rtvs_reaper_dock.lua`
-5. Click **Open**. Both scripts are now registered in REAPER's action list.
+5. Click **Open**. All 4 scripts are now registered in REAPER's action list.
 
 ### Step 3: Assign a Keyboard Shortcut in REAPER (Recommended)
 1. In REAPER's Action List, search for `RTVS3` in the filter box.
@@ -188,7 +188,7 @@ If you have the free **ReaImGui** extension installed in REAPER (available via R
 1. In REAPER, run **`Script: rtvs_reaper_dock.lua`**.
 2. A floating panel appears that can be docked anywhere in your REAPER workspace (e.g., beside the Mixer or below the Track Control Panel).
 3. **Features of the Dock**:
-   - **Real-Time Story Browser**: Lists all stories defined in your active RTVS3 project with exact durations. Click **Insert** next to any story to place it directly at the REAPER edit cursor.
+   - **Real-Time Segment Browser**: Lists all segments defined in your active RTVS3 project with exact durations. Click **Insert** next to any segment to place it directly at the REAPER edit cursor.
    - **Transcript Segment Search**: Type any word or phrase into the search box to filter speech segments across the entire episode. Click **Insert** next to any speech line to place that exact quote.
    - **Paste Copied Clip**: One-click button to paste the active clipboard cue.
    - **Sync Trimmed Clips**: Forces an immediate re-sync of all trimmed or split clips on the timeline with the current transcript index.
@@ -203,8 +203,8 @@ If you work in digital audio workstations or non-linear video editors other than
    - Standard `Ctrl+C` copies plain text, formatted HTML, and the lightweight REAPER JSON cue payload.
    - It **never** attaches file URLs to the OS clipboard, ensuring pasting into chat windows, browsers, Google Docs, and emails always pastes clean text without triggering unexpected file uploads.
 2. **Dedicated `Ctrl+Shift+C` (Copy Selection as Audio Clip)**:
-   - When you specifically want to copy an audio file to paste into an external NLE or DAW, press **Ctrl+Shift+C** (or right-click and choose **Copy as Audio Clip** / **Copy Story as Audio Clip**).
-   - RTVS3 rapidly renders a lossless, 16-bit uncompressed WAV slice of the exact selection (with any configured story audio volume fades applied) to a temporary cache file.
+   - When **Enable WAV audio clip rendering (Ctrl+Shift+C) for non-REAPER DAWs** is enabled under **Settings > Preferences... > External Audio & Video Editors**, press **Ctrl+Shift+C** (or right-click and choose **Copy as Audio Clip** / **Copy Segment as Audio Clip**).
+   - RTVS3 rapidly renders a lossless, 16-bit uncompressed WAV slice of the exact selection (with any configured segment audio volume fades applied) to a temporary cache file.
    - It attaches this file to the operating system's native file clipboard (`CF_HDROP` / `text/uri-list`).
 3. Switch to **Adobe Audition**, **Adobe Premiere Pro**, **DaVinci Resolve**, or **Pro Tools**, and press **Ctrl+V** on any audio track. The trimmed audio file is immediately pasted onto your timeline.
 
@@ -213,8 +213,8 @@ If you work in digital audio workstations or non-linear video editors other than
 ## 9. Troubleshooting & Common Questions
 
 ### Q: REAPER shows "No RTVS3 clip cue sidecar file found" when running the companion script.
-- **Cause**: No text or story has been copied yet in RTVS3, or automatic sidecar emission is disabled.
-- **Fix**: Open RTVS3, highlight dialogue or select a story, and press **Ctrl+C**. In RTVS3 **Preferences > External Audio & Video Editors**, ensure **Automatically emit REAPER DAW clip cues when copying transcript text or stories** is checked.
+- **Cause**: No text or segment has been copied yet in RTVS3, or automatic sidecar emission is disabled.
+- **Fix**: Open RTVS3, highlight dialogue or select a segment, and press **Ctrl+C**. In RTVS3 **Settings > Preferences... > External Audio & Video Editors**, ensure REAPER DAW clip cue emission is enabled.
 
 ### Q: How do I view Item Notes in REAPER?
 - Right-click any media item in REAPER and select **Item notes**. Alternatively, enable **Media item buttons: Notes** under REAPER's **Options > Preferences > Appearance > Media**.

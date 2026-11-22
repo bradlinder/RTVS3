@@ -20,8 +20,9 @@ This guide covers the core workflow of Radio & TV Segmenter: loading media, gene
 You can load media into RTVS3 in several ways:
 - **Drag-and-Drop**: Drag any supported audio or video file directly onto the timeline canvas or into the transcript area.
 - **File Menu**: Go to **File > Open Media...** (or press **Ctrl+O**).
+- **Import Existing Document**: Go to **File > Open Document...** (**Ctrl+Alt+O**) to bring `.txt`, `.docx`, `.pdf`, `.html`, or `.md` transcripts into the workspace for editing or segmenting.
 - **Existing WordPress / Podcast Episode**: Go to **File > Open Existing WordPress Episode...** to paste an older WordPress episode URL, automatically fetch its original publication date, title, and show-notes excerpt, and either download the episode's MP3 directly from WordPress or pair it with a local audio file on your computer.
-- **Recent Projects**: Go to **File > Recent Projects** to quickly reopen past files.
+- **Recent Projects**: Go to **File > Recent Projects** to quickly reopen past `.rtvs` project files.
 
 ### Supported File Formats:
 - **Audio**: MP3, WAV, FLAC, M4A, AAC, OGG, OPUS, AIFF, WMA.
@@ -30,7 +31,8 @@ You can load media into RTVS3 in several ways:
 When media is loaded:
 - RTVS3 automatically generates a multi-resolution waveform pyramid on the timeline.
 - For video files, a thumbnail filmstrip is generated above the timeline tracks.
-- Press **Ctrl+Shift+V** (**View > Video Preview Window**) to open a floating video player that synchronizes with timeline scrubbing.
+- Press **Ctrl+Shift+V** (**View > Timeline > Video Preview Window**) to open a floating video player that synchronizes with timeline scrubbing.
+- **Broadcast Loudness Normalization**: Press **Ctrl+Alt+N** (**Tools > Normalize Audio Loudness...**) to inspect EBU R128 / ITU BS.1770 metrics (Integrated LUFS, LRA, True Peak) with non-destructive boost preview, or configure automatic normalization in **Settings > Preferences... > Audio Settings**.
 
 ---
 
@@ -40,7 +42,7 @@ When media is loaded:
 - **Scrubbing**: Click and drag anywhere along the timeline ruler or waveform.
 - **Zooming**: Use **Ctrl + Mouse Wheel** over the timeline, or press the **+** and **-** zoom buttons. You can zoom from full-episode overview down to a fraction of a second (300x zoom) for precise edits.
 - **Playback Speed**: Adjust the speed dropdown between **0.5x** and **3.0x** to listen at your preferred pace.
-- **Volume & Fades**: Use the master volume slider. Enable **Audio Fades** to preview real-time volume fade-ins and fade-outs on segments.
+- **Volume & Fades**: Use the master volume slider. Configure **Audio Fades** (**Ctrl+Shift+F**) to preview real-time volume fade-ins and fade-outs on segments.
 
 ---
 
@@ -49,22 +51,26 @@ When media is loaded:
 RTVS3 uses state-of-the-art AI speech models running locally on your computer to convert spoken audio into aligned text.
 
 1. Click **Transcribe Audio...** (**Ctrl+T**) or **Detect Speakers...** (**Ctrl+D**), or launch the full pipeline via **Tools > Multi-Stage Processing...** (**Ctrl+R**).
-2. Choose your language (e.g., English, Spanish, or Auto-Detect) and Whisper model size (Tiny, Base, Small, Medium, Large).
-3. The processing panel shows live progress through each stage:
+2. Choose your ASR engine and language (English, Spanish, or Auto-Detect): **faster-whisper** models (Tiny, Base, Small, Medium, Large) or **Parakeet TDT** (`sherpa-onnx`) for ultra-fast local English transcription.
+3. Tune **Minimum Segment Length** and diarization defaults under **Settings > Preferences... > Detection**.
+4. The processing panel shows live progress through each stage:
    - **VAD (Voice Activity Detection)**: Isolates spoken speech from background silence or noise.
-   - **Transcription**: Generates word-level aligned text with accurate timestamps.
-   - **Diarization**: Distinguishes between different speakers (*Speaker 1*, *Speaker 2*, etc.).
+   - **Transcription**: Generates word-level aligned text with accurate timestamps, optionally seeded with your **Glossary & Custom Vocabulary...** (**Ctrl+Alt+V**).
+   - **Diarization**: Distinguishes between speakers (*Speaker 1*, *Speaker 2*, etc.) and can auto-tag recurring hosts using saved **Station Voice Profiles**.
 
 ---
 
-## 4. Editing Transcripts & Assigning Speakers
+## 4. Editing Transcripts, Speakers & Editorial Comments
 
 The center panel features an interactive transcript editor:
 - **Karaoke Word Tracking**: Words light up in yellow as audio plays so you can follow along.
 - **Click to Seek**: Click any timestamp `[00:00]` or word to instantly jump playback to that second.
-- **Assign Speaker Names**: Double-click any speaker header to rename it across the entire project (e.g. changing *Speaker 1* to *Jane Doe*), or open the Speaker Manager (**Ctrl+Alt+S**).
-- **Find & Replace**: Press **Ctrl+F** to search and replace words. Check **Include Speakers** to update spoken dialogue and speaker headers simultaneously.
-- **Edit Mode**: Press **Ctrl+E** while focused on the transcript (or click **Edit Transcript**) to edit spoken text directly.
+- **Assign & Clean Up Speaker Names**: Double-click any speaker header to rename it across the project (check **Save to Station Voices** when assigning recurring hosts), or open **Tools > Voice Profile Tools**:
+  - **Manage Speakers & Detection Clusters...**: Audit speaker durations, rename/merge duplicate clusters, toggle per-speaker **Station Voice** profiles, and run **Fix Speaker Names...** (with *Preserve Case*, whitespace **Trim**, **Add to Glossary**, and grouped Undo).
+  - **Manage Voice Profiles...**, **Teach / Match Voice Across Project...**, and **Refine Rapid Dialog Turns (A/B Classifier)...**: Save, rename, or match persistent host voices across broadcasts.
+- **Find & Replace**: Press **Ctrl+F** to search and replace words. Check **Include Speakers** (or launch **Fix Speaker Names...**) to clean up speaker labels too.
+- **Edit Mode & Rich Formatting**: Press **F2** (**View > Transcript > Edit Transcript Mode**) to edit spoken text directly; press **Ctrl+M** to attach **Editorial Comments** (**View > Comments Sidebar Panel** / `Ctrl+Alt+C`, highlights in **View > Transcript > Show Comment Highlights** / `Ctrl+Alt+H`).
+- **Offline Spellcheck & Glossary**: Segment titles and WordPress metadata fields highlight unrecognized words automatically. Right-click any underlined word for spelling suggestions, **Add '<word>' to Glossary**, or **Ignore (This Session)** (Glossary terms and confirmed speaker names are allowlisted automatically).
 
 ---
 
@@ -73,7 +79,7 @@ The center panel features an interactive transcript editor:
 RTVS3 organizes broadcasts into distinct, individual segments that can be exported separately or together.
 
 ### Automatic Segment Detection:
-Click **Detect Segments...** (or press **Ctrl+Shift+A**). The engine analyzes topic boundaries, speech pauses, and speaker turns to segment your episode automatically.
+Press **Ctrl+Shift+A** (**Tools > Detect Segments...**). The engine analyzes topic boundaries, speech pauses, and speaker turns to segment your episode automatically.
 
 ### Manual Segment Creation:
 1. Press `[` to mark a segment start and `]` to mark a segment end at the current playhead position.
@@ -83,15 +89,16 @@ Click **Detect Segments...** (or press **Ctrl+Shift+A**). The engine analyzes to
 ### Adjusting Segment Boundaries & Fades:
 - **Move Boundaries**: Click and drag the left or right edge handle of any segment box on the timeline.
 - **Audio Fades**: Drag the fade handle at the top corners of a segment to set fade-in and fade-out durations (e.g., 1.5 seconds) with linear, exponential, or S-curve shapes.
-- **Segment Metadata**: Select a segment in the Segments list and click **Segment Metadata...** to edit its title, summary, author, and categories.
+- **Segment Metadata & ID3 Tags**: Select a segment to edit its title, summary, author, and categories, or press **Ctrl+Shift+I** (**Tools > ID3 Tag Editor (MP3)...**) to embed broadcast MP3 metadata and artwork.
 
 ---
 
-## 6. Unified Export & Batch Processing
+## 6. Unified Export, Batch Processing & Maintenance
 
 - **Unified Export Center**: Press **Ctrl+E** (**File > Export...**) to export split audio cuts, Word/PDF cue sheets, WordPress draft posts, or DAW timelines.
 - **Copy YouTube Chapters**: Press **Ctrl+Shift+Y** (**File > Copy YouTube Chapters to Clipboard**) to copy formatted chapter markers instantly.
-- **Batch Processing Center**: Go to **File > Batch Processing...** (**Ctrl+Shift+B**) to queue and process multiple episodes or media files sequentially in the background.
+- **Batch Processing Center**: Go to **Tools > Batch Processing...** (**Ctrl+Shift+B**) to queue and process multiple episodes or media files sequentially in the background.
+- **Settings, Shortcuts & Maintenance**: Customize hotkeys under **Settings > Customize Keyboard Shortcuts...** (**F8**), back up/restore settings via **Settings > Backup & Restore Settings...**, free cached waveforms/sidecars via **Tools > Clear Temporary Cache...**, or selectively reset open project data under **Edit > Clear / Purge Project Data...**.
 """,
     "wordpress": """# WordPress Exporting & Setup Guide
 
@@ -120,7 +127,7 @@ To communicate securely with your WordPress site without sharing your master acc
 
 You can save your WordPress credentials in preferences so you only need to enter them once:
 
-1. In RTVS3, go to **Settings > Preferences...** (or press **Ctrl+,**).
+1. In RTVS3, go to **Settings > Preferences...** (or press **Ctrl+P** / **Cmd+P** on macOS).
 2. Click the **WordPress** tab on the left.
 
 ![WordPress Preferences Credentials](../images/wordpress_preferences_credentials.png)
@@ -159,10 +166,10 @@ In **both modes**, use the shared scheduling & status bar:
 
 ### Choosing Export Scope:
 In the **Export Scope** dropdown, choose which posts you want to generate:
-- **All Stories**: Generates separate draft posts for every detected story.
-- **Selected Stories**: Generates drafts only for the stories currently highlighted in the Stories panel.
-- **Full Broadcast**: Generates one post containing the complete episode transcript.
-- **Full Broadcast and All Stories**: Generates one master episode post plus individual story posts.
+- **Selected Segments**: Generates drafts only for the segments currently highlighted in the Segments panel.
+- **All Segments**: Generates separate draft posts for every detected segment.
+- **Full Episode**: Generates one post containing the complete episode transcript.
+- **Full Episode & All Segments**: Generates one master episode post plus individual segment posts.
 
 ---
 
@@ -174,22 +181,23 @@ Configure each post across the 4 editor tabs:
 
 ### Tab 1: Post Content
 - **Post Title**: The headline of the WordPress draft post.
-- **Post Excerpt / Teaser**: A concise summary of the story used for article previews, RSS feeds, and social cards. Click **Generate from Story** to automatically extract a snippet (≤55 words) from the transcript.
-- **Custom Notice / Disclaimer**: An optional notice (e.g., *"This story aired on Radio One on Nov 4"*) prepended or appended to the article.
+- **Post Excerpt / Teaser**: A concise summary of the segment used for article previews, RSS feeds, and social cards. Click **Generate from Story** to automatically extract a snippet (≤55 words) from the transcript.
+- **Custom Notice / Disclaimer**: An optional notice (e.g., *"This segment aired on Radio One on Nov 4"*) prepended or appended to the article.
+- **Offline Spellcheck**: Title, Excerpt, and Custom Notice fields underline unrecognized words automatically; right-click any flagged word for suggestions, **Add '<word>' to Glossary**, or **Ignore (This Session)** (Glossary terms and confirmed project speakers are allowlisted).
 
 ### Tab 2: Authors & Taxonomy
 
 ![WordPress Authors & Taxonomy Tab](../images/wordpress_export_taxonomy_tab.png)
 
-- **Authors**: Search, filter, and select registered WordPress authors to assign bylines.
-- **Categories**: Search, filter, and assign one or more WordPress categories (e.g., *News*, *Interviews*, *Local*). When editing a Story, check **Apply to all stories (excludes Full Episode)** to copy your selected Story categories across every Story without altering the Full Episode's categories.
+- **Authors**: Search, filter, and check registered **WordPress Users** and **PublishPress Guest Authors** to assign bylines (you can mix WordPress Users and Guest Authors cleanly on the same post). When updating an existing post, checking one or more authors overwrites the post's existing authors, whereas leaving Authors unchecked preserves the authors already assigned on WordPress.
+- **Categories**: Search, filter, and assign one or more WordPress categories (e.g., *News*, *Interviews*, *Local*). When editing a segment, check **Apply to all stories (excludes Full Episode)** to copy your selected categories across every segment without altering the Full Episode's categories.
 - **Tags**: Enter comma-separated tag keywords.
 
 ### Tab 3: Media
 
 ![WordPress Media Tab](../images/wordpress_export_media_tab.png)
 
-- **Featured Image**: Choose a captured video thumbnail frame, custom image file, or disabled.
+- **Featured Image, Caption & Alt Text**: Choose a captured video thumbnail frame, custom image file, or disabled, and optionally set an image **Caption** and **Alt Text** (with offline spellcheck and bulk apply across posts).
 - **YouTube Video Link**: Paste a YouTube watch link, short link, or studio URL.
   - **Context-Aware Auto-Dimming**: Controls automatically dim when the URL field is empty and illuminate as soon as a valid video link is detected.
   - **Stop Video at Story End**: When checked, the embedded player automatically pauses playback when the segment concludes.
@@ -234,13 +242,13 @@ Click **Export to WordPress Drafts...** (or **Update Episode & Export Story Draf
 """,
     "youtube": """# YouTube Features & Chapter Generation Guide
 
-This guide explains how to use RTVS3's YouTube features: generating video chapters for YouTube video descriptions, configuring the YouTube upload plugin, and embedding timestamped video clips into WordPress articles.
+This guide explains how to use RTVS3's YouTube features: generating video chapters for YouTube video descriptions, preparing Zero-Auth Assisted Studio uploads, and embedding timestamped video clips into WordPress articles.
 
 ---
 
 ## 1. Generating YouTube Chapter Lists
 
-YouTube automatically divides videos into chapters along the video player scrub bar when timestamps are included in the video description. RTVS3 converts your segmented stories directly into YouTube-formatted chapters with one click.
+YouTube automatically divides videos into chapters along the video player scrub bar when timestamps are included in the video description. RTVS3 converts your detected segments directly into YouTube-formatted chapters with one click.
 
 ### Requirements for YouTube Video Chapters:
 - The first chapter must begin at `00:00` (or `0:00`).
@@ -252,7 +260,7 @@ RTVS3 guarantees all three rules are satisfied automatically.
 ### Two Ways to Generate & Copy Chapters:
 
 #### Method A: Instant Clipboard Copy (Recommended)
-1. Open your episode in RTVS3 and ensure stories have been detected or created.
+1. Open your episode in RTVS3 and ensure segments have been detected or created.
 2. Press **Ctrl+Shift+Y** (or go to **File > Copy YouTube Chapters to Clipboard**).
 3. The chapter list is copied to your clipboard immediately:
    ```text
@@ -266,7 +274,7 @@ RTVS3 guarantees all three rules are satisfied automatically.
 
 #### Method B: Unified Export Center (.txt File)
 1. Press **Ctrl+E** (or go to **File > Export...**).
-2. Select **Local Files (Media & Transcript)** at the top.
+2. Select **Local Files (Media & Transcripts)** at the top.
 3. Check **Tracklist / YouTube Chapters (.txt)** under document exports.
 4. Click **Export Selected Formats** to save the formatted chapter file to disk.
 
@@ -274,10 +282,10 @@ RTVS3 guarantees all three rules are satisfied automatically.
 
 ## 2. Embedding YouTube Video Segments in WordPress
 
-When publishing articles about individual segments of a show, you can embed the main YouTube video so that it starts and stops at the exact moment of each story:
+When publishing articles about individual segments of a show, you can embed the main YouTube video so that it starts and stops at the exact moment of each segment:
 
 1. In RTVS3, open **File > Export...** (**Ctrl+E**) and select **WordPress Draft Post**.
-2. Select a story in the **Posts to Export:** list, then click the **Media** tab (Tab 3).
+2. Select a segment in the **Posts to Export:** list, then click the **Media** tab (Tab 3).
 3. In the **YouTube Video Link** field, paste your YouTube video URL:
    - Supports standard watch URLs (`https://www.youtube.com/watch?v=...`)
    - Short links (`https://youtu.be/...`)
@@ -292,15 +300,15 @@ When publishing articles about individual segments of a show, you can embed the 
 
 ---
 
-## 3. Direct YouTube Video Upload Plugin
+## 3. Zero-Auth YouTube Assisted Upload Plugin
 
-If you have the **YouTube Publisher** plugin enabled:
-1. Configure your Google OAuth credentials in **Settings > Preferences... > YouTube Publisher**.
-2. Go to **File > Export...** (**Ctrl+E**) and select the **YouTube Video Publisher** radio button at top.
-3. Set your video title, description, category, privacy status (*Public*, *Unlisted*, or *Private*), and thumbnail.
-4. RTVS3 uploads your video directly to your YouTube channel with chapters pre-populated in the description.
+The **YouTube Video Publisher** plugin uses a **Zero-Auth Assisted Upload** workflow that requires no Google OAuth client secrets or cloud API tokens:
+1. Optional: Configure default privacy, category, and embed preferences under **Settings > Preferences... > YouTube** (**Ctrl+P**).
+2. Go to **File > Export...** (**Ctrl+E**) and select **YouTube Video Publisher** in the **Export Destination** bar (or launch from **File > Publishing & Plugins**).
+3. Set your video title, description (auto-populated with YouTube chapter markers), tags, privacy status (*Public*, *Unlisted*, or *Private*), and thumbnail.
+4. Click export to package your local MP4/thumbnail/`.srt` deliverables, copy the formatted video metadata and chapter markers to the clipboard, and open YouTube Studio in your browser for quick drag-and-drop upload.
 """,
-    "video_shows": """# Video Shows & YouTube Publishing Guide
+    "video_youtube": """# Video Shows & YouTube Publishing Guide
 
 This guide walks through the end-to-end workflow for transcribing, segmenting, and publishing video shows to WordPress with responsive, timestamp-synchronized YouTube video embeds.
 
@@ -313,7 +321,7 @@ Publishing video shows to WordPress often involves a friction point: uploading f
 Radio & TV Segmenter provides a streamlined **hybrid video workflow**:
 1. **Local Media Processing**: You work directly with your original high-resolution video file (`.mp4`, `.mov`, `.mkv`, `.webm`) on your local machine for rapid transcription, speaker diarization, segment boundary detection, and timeline scrubbing.
 2. **Video Hosting on YouTube**: You upload your full episode to YouTube (as unlisted, scheduled, or public).
-3. **Automated Timestamped Embeds in WordPress**: By simply pasting your base YouTube link into the WordPress export dialog, the application automatically computes the start and end offsets for every segment and injects mobile-responsive, 16:9 Gutenberg iframe blocks (`<!-- wp:html -->`) directly into each story's post draft.
+3. **Automated Timestamped Embeds in WordPress**: By simply pasting your base YouTube link into the WordPress export dialog, the application automatically computes the start and end offsets for every segment and injects mobile-responsive, 16:9 Gutenberg iframe blocks (`<!-- wp:html -->`) directly into each segment's post draft.
 
 ```mermaid
 flowchart LR
@@ -330,7 +338,7 @@ flowchart LR
 ### Step 1: Open Your Video Media
 Drag and drop your video file directly onto the timeline canvas or press **Ctrl+O** (**File > Open Media...**).
 - RTVS3 automatically generates multi-resolution waveform pyramids and a video thumbnail filmstrip along the timeline ruler.
-- Press **Ctrl+Shift+V** (**View > Video Preview Window**) to open the resizable floating video preview window.
+- Press **Ctrl+Shift+V** (**View > Timeline > Video Preview Window**) to open the resizable floating video preview window.
 
 ### Step 2: Transcribe, Diarize & Detect Segments
 1. Click **Transcribe Audio...** (**Ctrl+T**) or use the Multi-Stage Pipeline (**Ctrl+R**) to generate word-level aligned transcripts and speaker turns.
@@ -341,18 +349,18 @@ Drag and drop your video file directly onto the timeline canvas or press **Ctrl+
 Press **Ctrl+E** (**File > Export...**) and select the **WordPress Draft Post** radio button from the **Export Destination** bar at the top.
 
 ### Step 4: Configure the "Media" Tab
-Select a story (or your full episode) from the left-hand **Posts to Export:** list, then switch to the **Media** tab (Tab 3):
+Select a segment (or your full episode) from the left-hand **Posts to Export:** list, then switch to the **Media** tab (Tab 3):
 
 ![WordPress Export Media Tab](../images/wordpress_export_media_tab.png)
 
 1. **Enter YouTube Video Link**:
    Paste the base URL of your video show. RTVS3 supports all standard link formats (see [URL Compatibility](#3-youtube-url-compatibility-reference)). Controls automatically illuminate when a valid URL is provided.
 2. **Stop Video at Story End**:
-   - **Checked (Recommended)**: The YouTube player will pause playback when the story concludes (`?end=XXX`), encouraging readers to continue through your article or explore other stories.
-   - **Unchecked**: The video will start at the story's beginning (`?start=XXX`) and continue playing the remainder of the episode.
+   - **Checked (Recommended)**: The YouTube player will pause playback when the segment concludes (`?end=XXX`), encouraging readers to continue through your article or explore other segments.
+   - **Unchecked**: The video will start at the segment's beginning (`?start=XXX`) and continue playing the remainder of the episode.
 3. **Embed Placement**:
    - **Top (Default)**: Inserts the video player above your transcript text, placing the video prominently beneath the post title.
-   - **Bottom**: Places the video player below the story transcript and excerpt.
+   - **Bottom**: Places the video player below the segment transcript and excerpt.
 
 ### Step 5: Review Audio & Podcast Options
 For video projects, **Include audio files in WordPress export** defaults to unchecked:
@@ -361,7 +369,7 @@ For video projects, **Include audio files in WordPress export** defaults to unch
 - If you explicitly check audio inclusion on a video file, RTVS3 displays a brief confirmation dialog to ensure you intended to produce a hybrid video + audio podcast post.
 
 ### Step 6: Inspect Post Prefix Indicators & Tooltips
-In the left-hand **Posts to Export:** list, each item displays compact prefix badges right after the story number:
+In the left-hand **Posts to Export:** list, each item displays compact prefix badges right after the segment label:
 
 ![WordPress Post List Badges](../images/wordpress_posts_list_badges.png)
 
@@ -374,7 +382,7 @@ In the left-hand **Posts to Export:** list, each item displays compact prefix ba
 - Hover over any post in the list to view a multi-line tooltip detailing exact start/end timestamps, author IDs, category tags, and embed settings.
 
 ### Step 7: Export to WordPress
-Click **Export to WordPress Drafts...**. RTVS3 authenticates via the WordPress REST API and creates draft posts for all selected stories.
+Click **Export to WordPress Drafts...**. RTVS3 authenticates via the WordPress REST API and creates draft posts for all selected segments.
 
 ---
 
@@ -420,13 +428,13 @@ RTVS3 generates standards-compliant Gutenberg Custom HTML blocks (`<!-- wp:html 
 In earlier versions, the video preview dialog was lazily created after the media file was already loaded. On macOS Qt 6 with AVFoundation, `AVPlayer` configured an audio-only pipeline if no video sink was attached before `setSource()`. In **v3.9.74-beta** and later, RTVS3 pre-initializes the floating video dialog and attaches `setVideoOutput()` at startup, ensuring macOS Cocoa properly maps the `AVPlayerLayer`.
 
 ### Q: Can I set default YouTube embed options so I don't have to configure them every time?
-Yes. Go to **Settings > Preferences...** (or press **Ctrl+,**), navigate to the **WordPress** tab, and configure your defaults under **YouTube Video Embed Defaults**:
+Yes. Go to **Settings > Preferences...** (or press **Ctrl+P** / **Cmd+P** on macOS), navigate to the **WordPress** tab, and configure your defaults under **YouTube Video Embed Defaults**:
 - **Default Stop Video at Story End**
 - **Default Embed Placement (Top vs. Bottom)**
 
-These settings are also mirrored in the **YouTube Publisher** plugin preferences.
+These settings are also mirrored under **Settings > Preferences... > YouTube**.
 """,
-    "reaper_bridge": r"""# REAPER & Digital Audio Workstation (DAW) Live Bridge
+    "reaper_bridge": """# REAPER & Digital Audio Workstation (DAW) Live Bridge
 
 This guide explains how to configure and use the real-time copy/paste integration between **Radio & TV Segmenter (RTVS3)** and **Cockos REAPER DAW** (as well as other DAWs and video editors such as Adobe Audition, Premiere Pro, and DaVinci Resolve).
 
@@ -435,14 +443,14 @@ This guide explains how to configure and use the real-time copy/paste integratio
 ## 1. Architectural Overview
 
 Radio & TV Segmenter and digital audio workstations serve complementary roles in modern broadcast and podcast production:
-- **RTVS3**: Speech intelligence, automated transcription, speaker diarization, story boundary detection, and rapid quote logging.
+- **RTVS3**: Speech intelligence, automated transcription, speaker diarization, segment boundary detection, and rapid quote logging.
 - **REAPER / DAWs**: Multi-track assembly, fine audio leveling, noise reduction, music ducking, equalization, and final broadcast mastering.
 
 Rather than forcing users to export files and manually re-import them, RTVS3 provides a **unified multi-channel clipboard and real-time IPC bridge**:
 
 ```mermaid
 flowchart TD
-    A["RTVS3 Transcript or Timeline<br>(Ctrl+C Copy)"] --> B["Unified QMimeData & Sidecar Emitter"]
+    A["RTVS3 Transcript or Timeline<br>(Ctrl+C REAPER / Ctrl+Shift+C WAV)"] --> B["Unified QMimeData & Sidecar Emitter"]
     B --> C["REAPER DAW Bridge<br>(ReaScript Lua Companion)"]
     B --> D["Universal WAV Clipboard<br>(CF_HDROP / text/uri-list)"]
     C --> E["REAPER Timeline Clip<br>• Zero-Generation Sample Alignment<br>• Verbatim Transcript in Item Notes<br>• Speaker Colors & Take Markers<br>• Dynamic Trim/Split Live Auto-Sync"]
@@ -454,7 +462,7 @@ flowchart TD
 2. **Verbatim Transcript in Item Notes**: Full speaker-attributed dialogue is automatically injected into REAPER's native **Item Notes (`P_NOTES`)**, keeping the spoken transcript permanently attached to the audio block wherever it is moved on the timeline.
 3. **Take Markers**: Visual markers placed directly on the media take indicate speaker turns or concise sentence cues.
 4. **Dynamic Trim, Extend & Split Auto-Sync**: If you drag the edges of an inserted clip in REAPER to expand or trim context, or split a clip into multiple pieces with `S`, the transcript in Item Notes, the Take Name timecode range, and Take Markers automatically update to match the new boundaries.
-5. **Universal Audio Clipboard Fallback**: For other audio and video editors (Audition, DaVinci Resolve, Premiere), RTVS3 can automatically render temporary lossless WAV slices to the OS clipboard on `Ctrl+C`.
+5. **Universal Audio Clipboard (`Ctrl+Shift+C`)**: For other audio and video editors (Audition, DaVinci Resolve, Premiere), press **Ctrl+Shift+C** when **Enable WAV audio clip rendering (Ctrl+Shift+C) for non-REAPER DAWs** is enabled under **Settings > Preferences... > External Audio & Video Editors** to render a temporary lossless WAV slice to the OS clipboard.
 
 ---
 
@@ -464,30 +472,30 @@ RTVS3 bundles four native ReaScript Lua scripts:
 - **`rtvs_reaper_companion.lua`**: Fast one-key action to paste the latest copied RTVS3 selection at the REAPER edit cursor.
 - **`rtvs_reaper_auto_sync.lua`**: Continuous background watcher that monitors the timeline and automatically updates Item Notes, Take Names, and Take Markers whenever you drag clip edges or split items (`S`).
 - **`rtvs_reaper_sync.lua`**: Manual one-shot action to immediately scan and refresh all trimmed/split clips on the timeline.
-- **`rtvs_reaper_dock.lua`**: Optional dockable ReaImGui browser panel inside REAPER to search, browse, and insert stories or segments with live polling.
+- **`rtvs_reaper_dock.lua`**: Optional dockable ReaImGui browser panel inside REAPER to search, browse, and insert segments with live polling.
 
 ### Step 1: Install Scripts from RTVS3 Preferences
-1. In RTVS3, go to **Settings > Preferences...** (or press **Ctrl+,**).
+1. In RTVS3, go to **Settings > Preferences...** (or press **Ctrl+P** / **Cmd+P** on macOS).
 2. Click the **External Audio & Video Editors** tab on the left sidebar.
 3. Review the **REAPER DAW Companion Bridge** settings.
 4. Click **Install REAPER Companion Scripts...**.
 5. RTVS3 automatically detects your REAPER resource directory:
-   - **Windows**: `%APPDATA%\REAPER\Scripts\RTVS3`
+   - **Windows**: `%APPDATA%\\REAPER\\Scripts\\RTVS3`
    - **macOS**: `~/Library/Application Support/REAPER/Scripts/RTVS3`
    - **Linux**: `~/.config/REAPER/Scripts/RTVS3`
    *(If using a portable REAPER installation, you can browse to select its directory).*
-6. Click **Install Scripts**. The installer copies `rtvs_reaper_companion.lua` and `rtvs_reaper_dock.lua` into your REAPER scripts folder.
+6. Click **Install Scripts**. The installer copies all four `.lua` scripts (`rtvs_reaper_companion.lua`, `rtvs_reaper_auto_sync.lua`, `rtvs_reaper_sync.lua`, and `rtvs_reaper_dock.lua`) into your REAPER scripts folder.
 
 ### Step 2: Register the Script in REAPER's Action List
 1. Open **Cockos REAPER**.
 2. Press `?` (or go to **Actions > Show action list...**).
 3. In the bottom-right corner, click **New action... > Load ReaScript...**.
-4. Browse to your `Scripts/RTVS3` directory and select all scripts:
+4. Browse to your `Scripts/RTVS3` directory and select all 4 scripts:
    - `rtvs_reaper_companion.lua`
    - `rtvs_reaper_auto_sync.lua`
    - `rtvs_reaper_sync.lua`
    - `rtvs_reaper_dock.lua`
-5. Click **Open**. Both scripts are now registered in REAPER's action list.
+5. Click **Open**. All 4 scripts are now registered in REAPER's action list.
 
 ### Step 3: Assign a Keyboard Shortcut in REAPER (Recommended)
 1. In REAPER's Action List, search for `RTVS3` in the filter box.
@@ -616,8 +624,8 @@ If you have the free **ReaImGui** extension installed in REAPER (available via R
 1. In REAPER, run **`Script: rtvs_reaper_dock.lua`**.
 2. A floating panel appears that can be docked anywhere in your REAPER workspace (e.g., beside the Mixer or below the Track Control Panel).
 3. **Features of the Dock**:
-   - **Real-Time Story Browser**: Lists all stories defined in your active RTVS3 project with exact durations. Click **Insert** next to any story to place it directly at the REAPER edit cursor.
-   - **Transcript Block Search**: Type any word or phrase into the search box to filter speech blocks across the entire episode. Click **Insert** next to any speech line to place that exact quote.
+   - **Real-Time Segment Browser**: Lists all segments defined in your active RTVS3 project with exact durations. Click **Insert** next to any segment to place it directly at the REAPER edit cursor.
+   - **Transcript Segment Search**: Type any word or phrase into the search box to filter speech segments across the entire episode. Click **Insert** next to any speech line to place that exact quote.
    - **Paste Copied Clip**: One-click button to paste the active clipboard cue.
    - **Sync Trimmed Clips**: Forces an immediate re-sync of all trimmed or split clips on the timeline with the current transcript index.
 
@@ -631,8 +639,8 @@ If you work in digital audio workstations or non-linear video editors other than
    - Standard `Ctrl+C` copies plain text, formatted HTML, and the lightweight REAPER JSON cue payload.
    - It **never** attaches file URLs to the OS clipboard, ensuring pasting into chat windows, browsers, Google Docs, and emails always pastes clean text without triggering unexpected file uploads.
 2. **Dedicated `Ctrl+Shift+C` (Copy Selection as Audio Clip)**:
-   - When you specifically want to copy an audio file to paste into an external NLE or DAW, press **Ctrl+Shift+C** (or right-click and choose **Copy as Audio Clip** / **Copy Story as Audio Clip**).
-   - RTVS3 rapidly renders a lossless, 16-bit uncompressed WAV slice of the exact selection (with any configured story audio volume fades applied) to a temporary cache file.
+   - When **Enable WAV audio clip rendering (Ctrl+Shift+C) for non-REAPER DAWs** is enabled under **Settings > Preferences... > External Audio & Video Editors**, press **Ctrl+Shift+C** (or right-click and choose **Copy as Audio Clip** / **Copy Segment as Audio Clip**).
+   - RTVS3 rapidly renders a lossless, 16-bit uncompressed WAV slice of the exact selection (with any configured segment audio volume fades applied) to a temporary cache file.
    - It attaches this file to the operating system's native file clipboard (`CF_HDROP` / `text/uri-list`).
 3. Switch to **Adobe Audition**, **Adobe Premiere Pro**, **DaVinci Resolve**, or **Pro Tools**, and press **Ctrl+V** on any audio track. The trimmed audio file is immediately pasted onto your timeline.
 
@@ -641,8 +649,8 @@ If you work in digital audio workstations or non-linear video editors other than
 ## 9. Troubleshooting & Common Questions
 
 ### Q: REAPER shows "No RTVS3 clip cue sidecar file found" when running the companion script.
-- **Cause**: No text or story has been copied yet in RTVS3, or automatic sidecar emission is disabled.
-- **Fix**: Open RTVS3, highlight dialogue or select a story, and press **Ctrl+C**. In RTVS3 **Preferences > External Audio & Video Editors**, ensure **Automatically emit REAPER DAW clip cues when copying transcript text or stories** is checked.
+- **Cause**: No text or segment has been copied yet in RTVS3, or automatic sidecar emission is disabled.
+- **Fix**: Open RTVS3, highlight dialogue or select a segment, and press **Ctrl+C**. In RTVS3 **Settings > Preferences... > External Audio & Video Editors**, ensure REAPER DAW clip cue emission is enabled.
 
 ### Q: How do I view Item Notes in REAPER?
 - Right-click any media item in REAPER and select **Item notes**. Alternatively, enable **Media item buttons: Notes** under REAPER's **Options > Preferences > Appearance > Media**.
@@ -664,32 +672,33 @@ Radio & TV Segmenter provides a versatile Unified Export Center (`Ctrl+E` or `Fi
 
 ## 1. Export Destinations Overview
 
-At the top of the Unified Export Center, choose between 4 primary export destinations:
-1. **Local Files (Media & Transcript)**: Split audio cuts, Word/PDF cue sheets, subtitles, and chapter tracklists saved directly to disk.
-2. **WordPress Draft Post**: Multi-story draft posts with Gutenberg audio players, taxonomy, and responsive YouTube video embeds.
+At the top of the Unified Export Center, choose between the available export destinations:
+1. **Local Files (Media & Transcripts)**: Split audio cuts, Word/PDF cue sheets, subtitles, and chapter tracklists saved directly to disk.
+2. **WordPress Draft Post**: Multi-segment draft posts with Gutenberg audio players, taxonomy/authors, and responsive YouTube video embeds.
 3. **Timeline & DAW Interchange**: Non-destructive multi-track project sequences for digital audio workstations and NLEs.
-4. **YouTube Video Publisher**: Video upload to YouTube with metadata and automated description chapters.
+4. **YouTube Video Publisher**: Zero-Auth assisted YouTube export packages (MP4, thumbnail, captions, and clipboard chapters for YouTube Studio).
 
 ---
 
 ## 2. Split Audio Cuts with Real-Time Fades
 
-Under **Local Files (Media & Transcript)**, export each detected story as an independent audio file for broadcast syndication, podcasting, or archiving:
+Under **Local Files (Media & Transcripts)**, export each detected segment as an independent audio file for broadcast syndication, podcasting, or archiving:
 - **Formats**: MP3 (configurable bitrate), WAV (lossless 16/24-bit), FLAC, M4A, OGG.
-- **Audio Fades**: Automatically renders user-defined fade-in and fade-out volume curves into each cut.
-- **ID3 Metadata**: Automatically embeds episode title, artist, year, track numbers, and cover art into exported MP3 and FLAC files.
-- **Naming Patterns**: Automatically names files based on story titles, episode numbers, and dates (e.g. `2026-11-04_Story01_EnergyGrid.mp3`).
+- **Loudness & Audio Fades**: Automatically renders user-defined fade-in and fade-out volume curves into each cut, and pairs with **Tools > Normalize Audio Loudness...** (**Ctrl+Alt+N**) or automatic EBU R128 boost in **Preferences > Audio Settings**.
+- **ID3 Metadata**: Automatically embeds episode title, artist, year, track numbers, and cover art into exported MP3 and FLAC files (also editable standalone via **Ctrl+Shift+I**).
+- **Naming Patterns**: Automatically names files based on segment titles, episode numbers, and dates (e.g. `2026-11-04_Segment01_EnergyGrid.mp3`).
 
 ---
 
 ## 3. Document & Report Exports
 
 Share transcripts and show rundowns with editorial staff and producers:
-- **Microsoft Word (.docx)**: Styled documents with headings, timestamps, speaker headers, and story excerpt blocks.
+- **Microsoft Word (.docx)**: Styled documents with headings, timestamps, speaker headers, and segment excerpt blocks.
 - **Adobe PDF (.pdf)**: High-resolution broadcast cue sheets with exact timecode alignment and speaker tags.
-- **Plain Text (.txt) & Markdown (.md)**: Clean text files ideal for note-taking apps, summaries, and web publishing.
+- **Plain Text (.txt)**: Clean transcripts with optional speaker headers, timestamps, and editorial notes.
 - **Tracklist / YouTube Chapters (.txt)**: Formatted timestamped chapter lists ready for YouTube video descriptions (also accessible instantly via **Ctrl+Shift+Y**).
-- **Red Book Cue Sheet (.cue)**: Playout automation index files.
+- **Subtitles & Captions (.srt, .vtt)**: Synchronized SubRip and WebVTT caption files with speaker labels for YouTube, Vimeo, and video players.
+- **Red Book Cue Sheet (.cue)**: Playout automation index files (available under Timeline & DAW Interchange).
 
 ---
 
@@ -706,21 +715,20 @@ Rather than manually exporting files, you can copy selections directly from RTVS
   - Includes an optional dockable ReaImGui browser (`rtvs_reaper_dock.lua`) for searching and inserting quotes live from within REAPER.
   - See the dedicated **[REAPER & DAW Live Bridge Guide](reaper_and_daw_integration.md)** for full step-by-step setup instructions.
 - **Universal Audio Clipboard for Other DAWs (Audition, Premiere, DaVinci Resolve)**:
-  - Enable **Render temporary WAV audio clip to OS file clipboard** in **Settings > Preferences... > Playback & Timeline**.
-  - When copying in RTVS3, a lossless uncompressed WAV slice is attached to the OS file clipboard (`CF_HDROP`), allowing direct **Ctrl+V** pasting onto timeline tracks in Adobe Audition, Premiere Pro, DaVinci Resolve, and Pro Tools.
+  - Enable **Enable WAV audio clip rendering (Ctrl+Shift+C) for non-REAPER DAWs** under **Settings > Preferences... > External Audio & Video Editors**.
+  - Press **Ctrl+Shift+C** (or right-click and choose **Copy as Audio Clip**) to attach a lossless uncompressed WAV slice to the OS file clipboard (`CF_HDROP` / `text/uri-list`), allowing direct **Ctrl+V** pasting into Adobe Audition, Premiere Pro, DaVinci Resolve, and Pro Tools.
 
 ### Timeline File Exports:
 - **Cockos REAPER Project (.rpp)**:
-  - Generates full REAPER project files with each story arranged on separate tracks or color-coded regions with take markers.
-  - Automatically translates audio volume fades into native REAPER fade handles.
-- **Final Cut Pro XML & Adobe Premiere Pro**:
-  - Exports timeline sequences with markers, split clips, and synchronized audio channels.
-- **CMX 3600 EDL (Edit Decision List)**:
-  - Industry-standard interchange format compatible with Avid Media Composer, DaVinci Resolve, and broadcast playout automation.
-- **Magix Samplitude EDL (v1.5)**:
-  - Multi-track timeline cues compatible with Samplitude and Sequoia broadcast workstations.
-- **Subtitles & Captions (.srt, .vtt)**:
-  - Generates synchronized SubRip (`.srt`) and WebVTT (`.vtt`) caption files with speaker labels for YouTube, Vimeo, and video players.
+  - Generates full REAPER project files with each segment arranged on tracks or color-coded regions with take markers and native REAPER fade handles.
+- **Final Cut Pro 7 XML (.xml) & Final Cut Pro X (.fcpxml)**:
+  - Exports timeline sequences compatible with Final Cut Pro and Adobe Premiere Pro with markers, split clips, and synchronized audio channels.
+- **Universal AAF (.aaf)**:
+  - Broadcast NLE/DAW interchange compatible with Avid Media Composer, Pro Tools, and DaVinci Resolve.
+- **Magix Samplitude EDL (.edl v1.5) & Hindenburg (.nhx)**:
+  - Multi-track timeline and broadcast audio journalism interchange formats.
+- **Audacity Labels (.txt), Red Book CUE (.cue) & Timecode CSV (.csv)**:
+  - Region labels, CD/playout track cues, and spreadsheet/automation tables with optional **SubRip (.srt)** / **WebVTT (.vtt)** subtitle files.
 """,
 }
 

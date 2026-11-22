@@ -117,6 +117,12 @@ class TranscriptContextMenuMixin:
         menu = self.createStandardContextMenu() if getattr(self, "is_editing_mode", False) else QMenu(self)
         main_win = self.window()
 
+        shortcuts_mgr = getattr(main_win, "shortcuts_manager", None)
+        audio_clip_seq = (
+            shortcuts_mgr.get_current_shortcut("copy_selection_as_audio_clip")
+            if shortcuts_mgr is not None and hasattr(shortcuts_mgr, "get_current_shortcut")
+            else "Ctrl+Shift+C"
+        )
         if self.has_active_selection():
             copy_action = QAction("Copy", self)
             copy_action.setShortcut(QKeySequence.StandardKey.Copy)
@@ -124,7 +130,8 @@ class TranscriptContextMenuMixin:
             menu.addAction(copy_action)
 
             copy_audio_action = QAction("Copy as Audio Clip", self)
-            copy_audio_action.setShortcut(QKeySequence("Ctrl+Shift+C"))
+            if audio_clip_seq:
+                copy_audio_action.setShortcut(QKeySequence(audio_clip_seq))
             copy_audio_action.triggered.connect(self.copy_selection_as_daw_wav)
             menu.addAction(copy_audio_action)
 
@@ -168,12 +175,13 @@ class TranscriptContextMenuMixin:
                 menu.addAction(copy_span_action)
 
                 copy_story_audio_action = QAction(f"Copy {vocab.singular} as Audio Clip" if not vocab.is_es else f"Copiar {vocab.singular_lower} como clip de audio", self)
-                copy_story_audio_action.setShortcut(QKeySequence("Ctrl+Shift+C"))
+                if audio_clip_seq:
+                    copy_story_audio_action.setShortcut(QKeySequence(audio_clip_seq))
                 copy_story_audio_action.triggered.connect(self.copy_selection_as_daw_wav)
                 menu.addAction(copy_story_audio_action)
 
                 if hasattr(main_win, "open_story_metadata_dialog"):
-                    meta_span_act = QAction(f"{vocab.singular} & Post Metadata..." if not vocab.is_es else f"Metadatos de {vocab.singular_lower} y publicación...", self)
+                    meta_span_act = QAction(f"{vocab.singular} && Post Metadata..." if not vocab.is_es else f"Metadatos de {vocab.singular_lower} y publicación...", self)
                     meta_span_act.triggered.connect(lambda _, idx=active_story_idx: main_win.open_story_metadata_dialog(idx))
                     menu.addAction(meta_span_act)
 
@@ -188,7 +196,8 @@ class TranscriptContextMenuMixin:
                 menu.addAction(copy_span_action)
 
                 copy_span_audio_action = QAction("Copy Selection as Audio Clip", self)
-                copy_span_audio_action.setShortcut(QKeySequence("Ctrl+Shift+C"))
+                if audio_clip_seq:
+                    copy_span_audio_action.setShortcut(QKeySequence(audio_clip_seq))
                 copy_span_audio_action.triggered.connect(self.copy_selection_as_daw_wav)
                 menu.addAction(copy_span_audio_action)
 
