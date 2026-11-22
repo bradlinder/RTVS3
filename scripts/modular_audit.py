@@ -57,7 +57,6 @@ GRANDFATHERED_LEGACY_MODULES = {
     "build_installer.py",
     "background_workers.py",
     "speaker_dialogs.py",
-    "speaker_profiles.py",
     "plugin_dialogs.py",
     "audio_normalization.py",
     "worker_asr_engines.py",

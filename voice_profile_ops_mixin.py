@@ -724,7 +724,7 @@ class VoiceProfileOpsMixin:
         return removed
 
     def open_manage_voice_profiles_dialog(self):
-        from speaker_profiles import ManageVoiceProfilesDialog
+        from speaker_profiles_dialog import ManageVoiceProfilesDialog
         store = self._get_station_voice_store()
         dialog = ManageVoiceProfilesDialog(parent=self, store=store)
         dialog.exec()

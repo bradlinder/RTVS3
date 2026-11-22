@@ -347,6 +347,18 @@ class DiagnosticSpeakerCleanupTestsMixin:
                 del mgr
                 app.processEvents()
 
+        import ast
+        import speaker_profiles
+        from speaker_profiles_dialog import ManageVoiceProfilesDialog as _DirectDlg
+        if getattr(speaker_profiles, "ManageVoiceProfilesDialog", None) is not _DirectDlg:
+            raise AssertionError("Lazy facade speaker_profiles.ManageVoiceProfilesDialog mismatch")
+        sp_tree = ast.parse(Path(speaker_profiles.__file__).read_text(encoding="utf-8"))
+        for node in ast.walk(sp_tree):
+            if isinstance(node, ast.Import) and any("PySide6" in a.name for a in node.names):
+                raise AssertionError("speaker_profiles.py must not import PySide6")
+            if isinstance(node, ast.ImportFrom) and "PySide6" in str(node.module or ""):
+                raise AssertionError("speaker_profiles.py must not import PySide6")
+
         item.status = "PASS"
         item.message = "Station Voices checkboxes, threshold 78->0.78 normalization, and save/remove lifecycle verified"
 

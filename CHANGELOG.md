@@ -1,5 +1,14 @@
 # Changelog
 
+## v3.10.5-beta
+- **Milestone 3.3 Modularization: Extract `ManageVoiceProfilesDialog` from `speaker_profiles.py` (`speaker_profiles.py`, `speaker_profiles_dialog.py`, `voice_profile_ops_mixin.py`, `scripts/modular_audit.py`, `diagnostic_speaker_cleanup_tests.py`)**:
+  - **Pure Qt UI Extraction (`speaker_profiles_dialog.py`, `voice_profile_ops_mixin.py`)**:
+    - Extracted `ManageVoiceProfilesDialog` verbatim into dedicated `speaker_profiles_dialog.py` and updated `VoiceProfileOpsMixin.open_manage_voice_profiles_dialog()` to import directly from `speaker_profiles_dialog` for static PyInstaller tracing.
+  - **100% Qt-Free Headless Model & Store (`speaker_profiles.py`, `scripts/modular_audit.py`)**:
+    - Removed all `PySide6` and UI imports from `speaker_profiles.py` (`249` lines), sourcing `get_app_data_dir` and `safe_replace` directly from `core_utils`, adding a lazy `__getattr__` backward-compatibility shim for `ManageVoiceProfilesDialog`, and removing `speaker_profiles.py` from `GRANDFATHERED_LEGACY_MODULES` (`8 -> 7` legacy exemptions).
+  - **Verification (`diagnostic_speaker_cleanup_tests.py`)**:
+    - Added AST zero-`PySide6` import check on `speaker_profiles.py` and lazy facade identity check in `_test_station_voice_checkbox_and_threshold_normalization`.
+
 ## v3.10.4-beta
 - **WordPress User vs. PublishPress Guest Author Mapping Fix (`plugins/wordpress/authors.py`, `plugins/wordpress/wp_tab_widget.py`, `plugins/wordpress/wordpress_dialog.py`, `plugins/wordpress/plugin.py`, `plugins/wordpress/youtube_embed.py`, `plugins/wordpress/export_destination.py`, `plugins/wordpress/client.py`, `plugins/wordpress/manifest.json`, `diagnostic_wordpress_tests.py`, `test_runner.py`)**:
   - **Shared Author Mapping Helper (`plugins/wordpress/authors.py`)**:
@@ -11,17 +20,3 @@
     - Fixed `create_post()` duplicate-commit fallback parameter names (`author_ids`, `author_term_ids`, `category_ids`, `podcast_series`) and added a best-effort `ppma_author` follow-up `POST` when `update_post()` strips `ppma_author` on strict endpoints.
   - **Plugin Catch-Up & Regression Verification (`plugins/wordpress/manifest.json`, `diagnostic_wordpress_tests.py`, `test_runner.py`)**:
     - Bumped `plugins/wordpress/manifest.json` from `3.10.3-beta` to `3.10.4-beta` and added `_test_wordpress_publishpress_author_mapping_and_update_semantics` covering mixed User+Guest, multi-User, Guest-only, standard WP User, legacy `.rtvs` expansion, and overwrite vs. preserve semantics.
-
-## v3.10.3-beta
-- **Phase 3: Tier 1 Offline Spellcheck & Minimum Segment Length Terminology Alignment (`spellcheck_helper.py`, `spellcheck_widgets.py`, `preferences_tabs_media.py`, `story_detection_processing.py`, `installer/requirements.txt`, `build_installer.py`, `plugins/wordpress/wp_ui_builder.py`, `plugins/wordpress/plugin.py`, `plugins/wordpress/wordpress_dialog.py`, `plugins/wordpress/manifest.json`, `ui_layout.py`, `story_metadata_dialog.py`, `media_batch.py`, `glossary_dialog.py`, `speaker_editing_mixin.py`, `speaker_dialogs.py`, `qt_compat.py`, `diagnostic_speaker_cleanup_tests.py`, `test_runner.py`)**:
-  - **Minimum Segment Length Terminology Alignment (`preferences_tabs_media.py`, `story_detection_processing.py`)**:
-    - Renamed the `"Minimum Story Length:"` preference label and tooltip wording in **Preferences > Story Detection & Diarization** to `"Minimum Segment Length:"` while preserving the `min_story_duration` `QSettings` key for full backward compatibility, and aligned story-detection log output (`Min Segment Length:`).
-  - **Tier 1 Offline Spellcheck Engine (`spellcheck_helper.py`, `installer/requirements.txt`, `build_installer.py`)**:
-    - Created 100% headless pure-Python `spellcheck_helper.py` (`OfflineSpellChecker`, `SpellIssue`, `collect_allowlist_words`, `match_case`) powered by `pyspellchecker` when installed with a compact English + broadcast fallback dictionary.
-    - Automatically seeds the allowlist from custom Glossary preferred terms and confirmed project speaker names (rebuilding window-derived terms on `refresh_from_window()` so removed glossary/speaker terms are immediately un-allowlisted while ignoring generic `Speaker 1`/`Unknown` placeholders, URLs, emails, ALL-CAPS acronyms, and numeric tokens), with case-preserving spelling suggestions and session-level ignore tracking.
-    - Added `pyspellchecker>=0.8.0,<1` to `installer/requirements.txt` and PyInstaller packaging hooks (`collect_all_packages`, metadata copy, hidden imports) in `build_installer.py`.
-  - **WordPress & Segment Metadata Spellcheck UI (`spellcheck_widgets.py`, `plugins/wordpress/wp_ui_builder.py`, `plugins/wordpress/plugin.py`, `plugins/wordpress/wordpress_dialog.py`, `ui_layout.py`, `story_metadata_dialog.py`, `media_batch.py`, `glossary_dialog.py`, `speaker_editing_mixin.py`, `speaker_dialogs.py`)**:
-    - Created dedicated SRP-compliant `spellcheck_widgets.py` providing inline red spellcheck underlines (`SpellCheckHighlighter` for `QTextEdit`/`QPlainTextEdit`, transparent paint overlay for `QLineEdit`) and native right-click context menus with bold suggestions, `"Add '<word>' to Glossary"`, and `"Ignore '<word>' (This Session)"`.
-    - Wired spellcheck into WordPress Title, Excerpt, Custom Notice, Image Caption, and Alt Text across `WordPressExportTabWidget`/`StoryMetadataDialog`, `WordPressPublishDialog` (resolving main window via `self.app`), and `WordPressPostMetadataDialog`, plus Segment Title inputs (`ui_layout.py`), with live refresh across attached editors on `_save_glossary()`, `GlossaryDialog.save_glossary()`, and speaker renames.
-  - **Automated Regression Verification (`diagnostic_speaker_cleanup_tests.py`, `test_runner.py`, `qt_compat.py`)**:
-    - Added `Offline Spellcheck and Metadata Terminology Alignment` diagnostic test covering typo detection, Glossary/speaker add and removal un-allowlisting, case-preserving suggestions, QLineEdit/QTextEdit replacement, `WordPressPublishDialog` wiring via `plugin.app`, and the `"Minimum Segment Length:"` preference label.

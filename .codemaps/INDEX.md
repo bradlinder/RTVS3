@@ -1,13 +1,13 @@
 # Repository Symbol Index & API Map
 
-> Generated: 2026-11-22 13:48:11 | Total Files: 172
+> Generated: 2026-11-22 14:12:07 | Total Files: 173
 > Use `python scripts/generate_symbol_index.py --outline <file>` for exact line numbers.
 
 ## Modules Overview
 
 | Module | Lines | Summary | Primary Classes / Functions |
 | :--- | :---: | :--- | :--- |
-| `RadioTVSegmenter.py` | 684 | Radio & TV Segmenter — v3.10.4-beta | `MainWindow`, `main()` |
+| `RadioTVSegmenter.py` | 684 | Radio & TV Segmenter — v3.10.5-beta | `MainWindow`, `main()` |
 | `audio_normalization.py` | 541 | Radio & TV Story Segmenter — Audio Loudness Probing & Nor... | `LoudnessReport`, `AudioLoudnessProbeWorker`, `parse_ebur128_summary()`, `probe_media_duration_seconds()` *(+3 more)* |
 | `background_workers.py` | 1051 | Radio & TV Story Segmenter — Background Worker Threads & ... | `StoryAutoDetectWorker`, `WaveformWorker`, `VideoThumbnailWorker`, `get_waveform_peak_cache_path()` *(+6 more)* |
 | `backup_manager.py` | 622 | Unified State Serialization, Local, and Google Drive Clou... | `compute_data_checksum()`, `serialize_preferences()`, `serialize_keyboard_shortcuts()`, `serialize_glossary()` *(+7 more)* |
@@ -31,7 +31,7 @@
 | `diagnostic_helpers.py` | 151 | Helper fixtures, module resolvers, and DiagnosticItem for... | `DiagnosticItem`, `generate_synthetic_wav()` |
 | `diagnostic_loudness_tests.py` | 391 | Radio & TV Story Segmenter — Diagnostic Loudness Normaliz... | `DiagnosticLoudnessTestsMixin` |
 | `diagnostic_selector.py` | 191 | Smart Diagnostic Test Selector for Radio & TV Story Segme... | `get_modified_files()`, `has_git_changes()`, `detect_changed_tokens()`, `select_diagnostic_items()` |
-| `diagnostic_speaker_cleanup_tests.py` | 542 | Diagnostic tests for Phase 2 features: minimum story leng... | `DiagnosticSpeakerCleanupTestsMixin` |
+| `diagnostic_speaker_cleanup_tests.py` | 554 | Diagnostic tests for Phase 2 features: minimum story leng... | `DiagnosticSpeakerCleanupTestsMixin` |
 | `diagnostic_wordpress_tests.py` | 109 | Diagnostic tests for WordPress PublishPress Author mappin... | `DiagnosticWordPressTestsMixin` |
 | `dialogs.py` | 433 | Radio & TV Story Segmenter — Audio Loudness Normalization... | `AudioLoudnessNormalizationDialog` |
 | `diarization_processing.py` | 772 | Speaker diarization process management for Radio & TV Sto... | `DiarizationProcessingMixin` |
@@ -113,7 +113,7 @@
 | `scripts/generate_pyi_stubs.py` | 214 | generate_pyi_stubs.py — Automated Interface Typing Stub (... | `StubTransformer`, `generate_stub_source()`, `get_large_modules()`, `generate_stub_file()` *(+1 more)* |
 | `scripts/generate_symbol_index.py` | 380 | generate_symbol_index.py — Fast AST Symbol Indexer & Repo... | `parse_function_signature()`, `analyze_file()`, `scan_repository()`, `generate_index_markdown()` *(+4 more)* |
 | `scripts/log_summary.py` | 150 | log_summary.py — Compact Error & Exception Extraction Engine | `is_project_frame()`, `extract_log_summary()`, `main()` |
-| `scripts/modular_audit.py` | 780 | scripts/modular_audit.py — AST Decomposition Suggester & ... | `ModuleStructure`, `DecompositionPlan`, `scan_repository()`, `print_audit_report()` *(+4 more)* |
+| `scripts/modular_audit.py` | 779 | scripts/modular_audit.py — AST Decomposition Suggester & ... | `ModuleStructure`, `DecompositionPlan`, `scan_repository()`, `print_audit_report()` *(+4 more)* |
 | `shortcuts/__init__.py` | 26 | shortcuts package — Modular Keyboard Shortcuts Management... | - |
 | `shortcuts/definitions.py` | 22 | shortcuts/definitions.py — Shortcut definitions and schem... | - |
 | `shortcuts/dialogs.py` | 623 | shortcuts/dialogs.py — Preferences page for keyboard shor... | `KeyboardShortcutsPage` |
@@ -129,7 +129,8 @@
 | `speaker_name_cleanup_dialog.py` | 295 | speaker_name_cleanup_dialog.py — Modal review dialog for ... | `SpeakerNameCleanupDialog` |
 | `speaker_name_matcher.py` | 583 | speaker_name_matcher.py — Headless phonetic and fuzzy cle... | `SpeakerNameCandidate`, `is_generic_speaker_label()`, `is_generic_role_label()`, `preserve_case_replace()` *(+7 more)* |
 | `speaker_palette.py` | 148 | Accessible adaptive speaker color palette for Radio & TV ... | `SpeakerColor`, `SpeakerColorAssigner`, `get_speaker_index()`, `get_speaker_color()` *(+3 more)* |
-| `speaker_profiles.py` | 630 | speaker_profiles.py — Persistent Station Voice Profile Ma... | `StationVoiceProfile`, `StationVoiceProfileStore`, `ManageVoiceProfilesDialog` |
+| `speaker_profiles.py` | 249 | speaker_profiles.py — Persistent Station Voice Profile Ma... | `StationVoiceProfile`, `StationVoiceProfileStore` |
+| `speaker_profiles_dialog.py` | 415 | speaker_profiles_dialog.py — UI management dialog for per... | `ManageVoiceProfilesDialog` |
 | `spellcheck_helper.py` | 779 | spellcheck_helper.py — Headless Tier 1 Offline Spellcheck... | `SpellIssue`, `OfflineSpellChecker`, `is_pyspellchecker_available()`, `match_case()` *(+5 more)* |
 | `spellcheck_widgets.py` | 600 | spellcheck_widgets.py — Inline Qt Spellcheck Highlighting... | `SpellCheckHighlighter`, `_LineEditSpellOverlay`, `SpellCheckController`, `add_word_to_glossary()` *(+2 more)* |
 | `story_crud_mixin.py` | 931 | Radio & TV Story Segmenter — Story CRUD & Timeline Select... | `StoryCrudMixin` |
@@ -157,7 +158,7 @@
 | `transcript_navigation_mixin.py` | 300 | transcript_navigation_mixin.py - Timestamp discovery, car... | `TranscriptNavigationMixin` |
 | `transcript_playback_highlight_mixin.py` | 277 | Radio & TV Story Segmenter — Interactive Transcript Playb... | `TranscriptPlaybackHighlightMixin` |
 | `transcript_selection_mixin.py` | 473 | transcript_selection_mixin.py - Multi-selection, timeline... | `TranscriptSelectionMixin` |
-| `transcript_story.py` | 852 | Radio & TV Segmenter v3.10.4-beta — transcript story resp... | `TranscriptStoryMixin` |
+| `transcript_story.py` | 852 | Radio & TV Segmenter v3.10.5-beta — transcript story resp... | `TranscriptStoryMixin` |
 | `transcript_styles.py` | 104 | transcript_styles.py - Transcript view stylesheets and da... | `transcript_text_view_stylesheet()`, `clean_dark_mode_clipboard_html()` |
 | `transcript_timeline_sync_mixin.py` | 655 | Radio & TV Story Segmenter — Transcript Timeline & Playba... | `TranscriptTimelineSyncMixin` |
 | `transcription_processing.py` | 579 | Transcription background process management for Radio & T... | `TranscriptionProcessingMixin` |
@@ -183,7 +184,7 @@
 ## Detailed Symbol Catalog
 
 ### `RadioTVSegmenter.py` (684 lines)
-*Radio & TV Segmenter — v3.10.4-beta*
+*Radio & TV Segmenter — v3.10.5-beta*
 - **class `MainWindow(ModelManagementMixin, MediaBatchMixin, PlaybackPreferencesMixin, UiLayoutMixin, ProcessingMixin, TranslationMixin, TranscriptStoryMixin, ProjectExportMixin, GpuAccelerationMixin, QMainWindow)`** (lines 160–581):
   *Main application window for Radio & TV Segmenter.*
   - `__init__(self)` [L178-L355]
@@ -586,15 +587,15 @@
   - `detect_changed_tokens(root_dir)` [L64-L136] — *Return a set of lowercase module stems and plugin names from the most recently edited files.*
   - `select_diagnostic_items(engine, items, filter_expr, changed_only)` [L139-L191] — *Filter diagnostic items by explicit `--filter` keywords and/or `--changed` git diff analysis.*
 
-### `diagnostic_speaker_cleanup_tests.py` (542 lines)
+### `diagnostic_speaker_cleanup_tests.py` (554 lines)
 *Diagnostic tests for Phase 2 features: minimum story length, guest-name cleanup, and Station Voices.*
-- **class `DiagnosticSpeakerCleanupTestsMixin`** (lines 13–542):
+- **class `DiagnosticSpeakerCleanupTestsMixin`** (lines 13–554):
   *Mixin for Phase 2 regression diagnostics (story length, name cleanup, Station Voices).*
   - `_ensure_qt_app(self)` [L16-L21]
   - `_test_minimum_story_length_filtering_and_preferences(self, item)` [L23-L124]
   - `_test_guest_name_proper_noun_cleanup_and_preserve_case(self, item)` [L126-L258]
-  - `_test_station_voice_checkbox_and_threshold_normalization(self, item)` [L260-L351]
-  - `_test_offline_spellcheck_and_metadata_terminology_alignment(self, item)` [L353-L542]
+  - `_test_station_voice_checkbox_and_threshold_normalization(self, item)` [L260-L363]
+  - `_test_offline_spellcheck_and_metadata_terminology_alignment(self, item)` [L365-L554]
 
 ### `diagnostic_wordpress_tests.py` (109 lines)
 *Diagnostic tests for WordPress PublishPress Author mapping and update semantics.*
@@ -2297,28 +2298,28 @@
   - `extract_log_summary(raw_log)` [L42-L128] — *Extract a high-density summary from a raw log or traceback string.*
   - `main()` [L130-L147]
 
-### `scripts/modular_audit.py` (780 lines)
+### `scripts/modular_audit.py` (779 lines)
 *scripts/modular_audit.py — AST Decomposition Suggester & Modular Budget Guard.*
-- **class `ModuleStructure`** (lines 85–258):
+- **class `ModuleStructure`** (lines 84–257):
   *Detailed structural metrics extracted from a Python module.*
-  - `__init__(self, file_path)` [L88-L105]
-  - `_analyze(self)` [L107-L181]
-  - `_extract_class_info(self, node, lines)` [L183-L211]
-  - `_extract_func_info(self, node, lines)` [L213-L222]
-  - `_classify_domain(name, bases, method_names)` [L225-L258] — *Classifies a class or function into a logical domain based on naming and signatures.*
-- **class `DecompositionPlan`** (lines 265–427):
+  - `__init__(self, file_path)` [L87-L104]
+  - `_analyze(self)` [L106-L180]
+  - `_extract_class_info(self, node, lines)` [L182-L210]
+  - `_extract_func_info(self, node, lines)` [L212-L221]
+  - `_classify_domain(name, bases, method_names)` [L224-L257] — *Classifies a class or function into a logical domain based on naming and signatures.*
+- **class `DecompositionPlan`** (lines 264–426):
   *Proposed modular decomposition plan for a monolithic source file.*
-  - `__init__(self, structure)` [L268-L276]
-  - `_classify_method_domain(m_name)` [L279-L289]
-  - `_build_plan(self)` [L291-L394]
-  - `render_markdown_blueprint(self)` [L396-L427]
+  - `__init__(self, structure)` [L267-L275]
+  - `_classify_method_domain(m_name)` [L278-L288]
+  - `_build_plan(self)` [L290-L393]
+  - `render_markdown_blueprint(self)` [L395-L426]
 - **Functions**:
-  - `scan_repository(root_dir)` [L434-L446] — *Scans all Python modules in the repository, excluding build/venv directories.*
-  - `print_audit_report(structures, warn_threshold, hard_ceiling, sort_by)` [L449-L490] — *Prints a formatted terminal table showing modularity compliance.*
-  - `check_budget_guard(structures, hard_ceiling, warn_threshold, exempt_paths)` [L493-L526] — *Programmatic budget check suitable for test runner and CI pipelines.*
-  - `check_single_responsibility(structure, strict)` [L529-L617] — *Analyzes AST domain classification to verify Single Responsibility & Domain Separation.*
-  - `print_srp_report(results, strict)` [L620-L664] — *Prints a structured terminal report for Single Responsibility & Domain Separation.*
-  - `main()` [L667-L776]
+  - `scan_repository(root_dir)` [L433-L445] — *Scans all Python modules in the repository, excluding build/venv directories.*
+  - `print_audit_report(structures, warn_threshold, hard_ceiling, sort_by)` [L448-L489] — *Prints a formatted terminal table showing modularity compliance.*
+  - `check_budget_guard(structures, hard_ceiling, warn_threshold, exempt_paths)` [L492-L525] — *Programmatic budget check suitable for test runner and CI pipelines.*
+  - `check_single_responsibility(structure, strict)` [L528-L616] — *Analyzes AST domain classification to verify Single Responsibility & Domain Separation.*
+  - `print_srp_report(results, strict)` [L619-L663] — *Prints a structured terminal report for Single Responsibility & Domain Separation.*
+  - `main()` [L666-L775]
 
 ### `shortcuts/__init__.py` (26 lines)
 *shortcuts package — Modular Keyboard Shortcuts Management Subsystem.*
@@ -2552,35 +2553,42 @@
   - `get_speaker_rgb(speaker, dark_mode, index)` [L106-L109] — *Return (R, G, B) integer tuple in 0..255 range.*
   - `get_speaker_pdf_rgb(speaker, index)` [L112-L115] — *Return (r, g, b) float tuple in 0.0..1.0 range suitable for PDF content streams.*
 
-### `speaker_profiles.py` (630 lines)
+### `speaker_profiles.py` (249 lines)
 *speaker_profiles.py — Persistent Station Voice Profile Manager & Storage Engine.*
-- **class `StationVoiceProfile`** (lines 67–96):
-  - `to_dict(self)` [L77-L78]
-  - `from_dict(cls, data)` [L81-L96]
-- **class `StationVoiceProfileStore`** (lines 99–274):
+- **Public Exports (`__all__`)**: StationVoiceProfile, StationVoiceProfileStore, ManageVoiceProfilesDialog
+- **class `StationVoiceProfile`** (lines 34–63):
+  - `to_dict(self)` [L44-L45]
+  - `from_dict(cls, data)` [L48-L63]
+- **class `StationVoiceProfileStore`** (lines 66–241):
   *Persistent storage manager for recurring station voice acoustic profiles.*
-  - `__init__(self, storage_dir)` [L102-L109]
-  - `get_profiles_file_path(self)` [L111-L112]
-  - `load(self)` [L114-L132]
-  - `save(self)` [L134-L150]
-  - `list_profiles(self)` [L152-L153]
-  - `get_profile(self, profile_id)` [L155-L156]
-  - `find_profile_by_name(self, name)` [L158-L163]
-  - `add_or_update_profile(self, name, vector, sample_count, notes, source_media, profile_id)` [L165-L224]
-  - `remove_profile(self, profile_id)` [L226-L231]
-  - `clear(self)` [L233-L235]
-  - `match_vector(self, vector, threshold, min_margin)` [L237-L274] — *Compare an unknown candidate vector against all saved voice profiles.*
-- **class `ManageVoiceProfilesDialog(QDialog)`** (lines 277–630):
+  - `__init__(self, storage_dir)` [L69-L76]
+  - `get_profiles_file_path(self)` [L78-L79]
+  - `load(self)` [L81-L99]
+  - `save(self)` [L101-L117]
+  - `list_profiles(self)` [L119-L120]
+  - `get_profile(self, profile_id)` [L122-L123]
+  - `find_profile_by_name(self, name)` [L125-L130]
+  - `add_or_update_profile(self, name, vector, sample_count, notes, source_media, profile_id)` [L132-L191]
+  - `remove_profile(self, profile_id)` [L193-L198]
+  - `clear(self)` [L200-L202]
+  - `match_vector(self, vector, threshold, min_margin)` [L204-L241] — *Compare an unknown candidate vector against all saved voice profiles.*
+- **Functions**:
+  - `__getattr__(name)` [L245-L249]
+
+### `speaker_profiles_dialog.py` (415 lines)
+*speaker_profiles_dialog.py — UI management dialog for persistent Station Voice Profiles.*
+- **Public Exports (`__all__`)**: ManageVoiceProfilesDialog
+- **class `ManageVoiceProfilesDialog(QDialog)`** (lines 62–415):
   *Management dialog for inspecting, auditing, adding, or deleting persistent station voice profiles.*
-  - `__init__(self, parent, store, main_win)` [L280-L291]
-  - `_init_ui(self)` [L293-L350]
-  - `_populate_table(self)` [L352-L417]
-  - `_on_rename(self, profile_id, old_name)` [L419-L432]
-  - `_on_delete(self, profile_id, name)` [L434-L444]
-  - `_on_match_project(self, prof)` [L446-L503]
-  - `_on_add_from_active_turn(self)` [L505-L570]
-  - `_on_export(self)` [L572-L600]
-  - `_on_import(self)` [L602-L630]
+  - `__init__(self, parent, store, main_win)` [L65-L76]
+  - `_init_ui(self)` [L78-L135]
+  - `_populate_table(self)` [L137-L202]
+  - `_on_rename(self, profile_id, old_name)` [L204-L217]
+  - `_on_delete(self, profile_id, name)` [L219-L229]
+  - `_on_match_project(self, prof)` [L231-L288]
+  - `_on_add_from_active_turn(self)` [L290-L355]
+  - `_on_export(self)` [L357-L385]
+  - `_on_import(self)` [L387-L415]
 
 ### `spellcheck_helper.py` (779 lines)
 *spellcheck_helper.py — Headless Tier 1 Offline Spellcheck Engine.*
@@ -3156,7 +3164,7 @@
   - `_on_bubble_export(self)` [L468-L473]
 
 ### `transcript_story.py` (852 lines)
-*Radio & TV Segmenter v3.10.4-beta — transcript story responsibilities.*
+*Radio & TV Segmenter v3.10.5-beta — transcript story responsibilities.*
 - **Public Exports (`__all__`)**: TranscriptStoryMixin, Story, SetStoriesCommand, SelectStoriesCommand, StoryBoundaryChangeCommand, StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin, ChangeSpeakerDialog, VoiceProfileMatchDialog, StoryFadesDialog, SpeakerManagerDialog, FADE_CURVE_TABLES, get_fade_curve_factors
 - **class `TranscriptStoryMixin(StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin)`** (lines 63–851):
   - `render_transcript(self)` [L64-L467]

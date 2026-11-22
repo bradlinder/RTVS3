@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-22 13:48:11",
-  "total_files": 172,
+  "generated_at": "2026-11-22 14:12:07",
+  "total_files": 173,
   "files": {
     "RadioTVSegmenter.py": {
       "path": "RadioTVSegmenter.py",
       "lines": 684,
-      "summary": "Radio & TV Segmenter \u2014 v3.10.4-beta",
+      "summary": "Radio & TV Segmenter \u2014 v3.10.5-beta",
       "exports": null,
       "classes": [
         {
@@ -2444,7 +2444,7 @@
     },
     "diagnostic_speaker_cleanup_tests.py": {
       "path": "diagnostic_speaker_cleanup_tests.py",
-      "lines": 542,
+      "lines": 554,
       "summary": "Diagnostic tests for Phase 2 features: minimum story length, guest-name cleanup, and Station Voices.",
       "exports": null,
       "classes": [
@@ -2452,7 +2452,7 @@
           "name": "DiagnosticSpeakerCleanupTestsMixin",
           "bases": [],
           "start_line": 13,
-          "end_line": 542,
+          "end_line": 554,
           "doc": "Mixin for Phase 2 regression diagnostics (story length, name cleanup, Station Voices).",
           "methods": [
             {
@@ -2480,14 +2480,14 @@
               "name": "_test_station_voice_checkbox_and_threshold_normalization",
               "sig": "_test_station_voice_checkbox_and_threshold_normalization(self, item)",
               "start_line": 260,
-              "end_line": 351,
+              "end_line": 363,
               "doc": ""
             },
             {
               "name": "_test_offline_spellcheck_and_metadata_terminology_alignment",
               "sig": "_test_offline_spellcheck_and_metadata_terminology_alignment(self, item)",
-              "start_line": 353,
-              "end_line": 542,
+              "start_line": 365,
+              "end_line": 554,
               "doc": ""
             }
           ]
@@ -13090,50 +13090,50 @@
     },
     "scripts/modular_audit.py": {
       "path": "scripts/modular_audit.py",
-      "lines": 780,
+      "lines": 779,
       "summary": "scripts/modular_audit.py \u2014 AST Decomposition Suggester & Modular Budget Guard.",
       "exports": null,
       "classes": [
         {
           "name": "ModuleStructure",
           "bases": [],
-          "start_line": 85,
-          "end_line": 258,
+          "start_line": 84,
+          "end_line": 257,
           "doc": "Detailed structural metrics extracted from a Python module.",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, file_path)",
-              "start_line": 88,
-              "end_line": 105,
+              "start_line": 87,
+              "end_line": 104,
               "doc": ""
             },
             {
               "name": "_analyze",
               "sig": "_analyze(self)",
-              "start_line": 107,
-              "end_line": 181,
+              "start_line": 106,
+              "end_line": 180,
               "doc": ""
             },
             {
               "name": "_extract_class_info",
               "sig": "_extract_class_info(self, node, lines)",
-              "start_line": 183,
-              "end_line": 211,
+              "start_line": 182,
+              "end_line": 210,
               "doc": ""
             },
             {
               "name": "_extract_func_info",
               "sig": "_extract_func_info(self, node, lines)",
-              "start_line": 213,
-              "end_line": 222,
+              "start_line": 212,
+              "end_line": 221,
               "doc": ""
             },
             {
               "name": "_classify_domain",
               "sig": "_classify_domain(name, bases, method_names)",
-              "start_line": 225,
-              "end_line": 258,
+              "start_line": 224,
+              "end_line": 257,
               "doc": "Classifies a class or function into a logical domain based on naming and signatures."
             }
           ]
@@ -13141,36 +13141,36 @@
         {
           "name": "DecompositionPlan",
           "bases": [],
-          "start_line": 265,
-          "end_line": 427,
+          "start_line": 264,
+          "end_line": 426,
           "doc": "Proposed modular decomposition plan for a monolithic source file.",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, structure)",
-              "start_line": 268,
-              "end_line": 276,
+              "start_line": 267,
+              "end_line": 275,
               "doc": ""
             },
             {
               "name": "_classify_method_domain",
               "sig": "_classify_method_domain(m_name)",
-              "start_line": 279,
-              "end_line": 289,
+              "start_line": 278,
+              "end_line": 288,
               "doc": ""
             },
             {
               "name": "_build_plan",
               "sig": "_build_plan(self)",
-              "start_line": 291,
-              "end_line": 394,
+              "start_line": 290,
+              "end_line": 393,
               "doc": ""
             },
             {
               "name": "render_markdown_blueprint",
               "sig": "render_markdown_blueprint(self)",
-              "start_line": 396,
-              "end_line": 427,
+              "start_line": 395,
+              "end_line": 426,
               "doc": ""
             }
           ]
@@ -13180,43 +13180,43 @@
         {
           "name": "scan_repository",
           "sig": "scan_repository(root_dir)",
-          "start_line": 434,
-          "end_line": 446,
+          "start_line": 433,
+          "end_line": 445,
           "doc": "Scans all Python modules in the repository, excluding build/venv directories."
         },
         {
           "name": "print_audit_report",
           "sig": "print_audit_report(structures, warn_threshold, hard_ceiling, sort_by)",
-          "start_line": 449,
-          "end_line": 490,
+          "start_line": 448,
+          "end_line": 489,
           "doc": "Prints a formatted terminal table showing modularity compliance."
         },
         {
           "name": "check_budget_guard",
           "sig": "check_budget_guard(structures, hard_ceiling, warn_threshold, exempt_paths)",
-          "start_line": 493,
-          "end_line": 526,
+          "start_line": 492,
+          "end_line": 525,
           "doc": "Programmatic budget check suitable for test runner and CI pipelines."
         },
         {
           "name": "check_single_responsibility",
           "sig": "check_single_responsibility(structure, strict)",
-          "start_line": 529,
-          "end_line": 617,
+          "start_line": 528,
+          "end_line": 616,
           "doc": "Analyzes AST domain classification to verify Single Responsibility & Domain Separation."
         },
         {
           "name": "print_srp_report",
           "sig": "print_srp_report(results, strict)",
-          "start_line": 620,
-          "end_line": 664,
+          "start_line": 619,
+          "end_line": 663,
           "doc": "Prints a structured terminal report for Single Responsibility & Domain Separation."
         },
         {
           "name": "main",
           "sig": "main()",
-          "start_line": 667,
-          "end_line": 776,
+          "start_line": 666,
+          "end_line": 775,
           "doc": ""
         }
       ]
@@ -14601,29 +14601,33 @@
     },
     "speaker_profiles.py": {
       "path": "speaker_profiles.py",
-      "lines": 630,
+      "lines": 249,
       "summary": "speaker_profiles.py \u2014 Persistent Station Voice Profile Manager & Storage Engine.",
-      "exports": null,
+      "exports": [
+        "StationVoiceProfile",
+        "StationVoiceProfileStore",
+        "ManageVoiceProfilesDialog"
+      ],
       "classes": [
         {
           "name": "StationVoiceProfile",
           "bases": [],
-          "start_line": 67,
-          "end_line": 96,
+          "start_line": 34,
+          "end_line": 63,
           "doc": "",
           "methods": [
             {
               "name": "to_dict",
               "sig": "to_dict(self)",
-              "start_line": 77,
-              "end_line": 78,
+              "start_line": 44,
+              "end_line": 45,
               "doc": ""
             },
             {
               "name": "from_dict",
               "sig": "from_dict(cls, data)",
-              "start_line": 81,
-              "end_line": 96,
+              "start_line": 48,
+              "end_line": 63,
               "doc": ""
             }
           ]
@@ -14631,159 +14635,178 @@
         {
           "name": "StationVoiceProfileStore",
           "bases": [],
-          "start_line": 99,
-          "end_line": 274,
+          "start_line": 66,
+          "end_line": 241,
           "doc": "Persistent storage manager for recurring station voice acoustic profiles.",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, storage_dir)",
-              "start_line": 102,
-              "end_line": 109,
+              "start_line": 69,
+              "end_line": 76,
               "doc": ""
             },
             {
               "name": "get_profiles_file_path",
               "sig": "get_profiles_file_path(self)",
-              "start_line": 111,
-              "end_line": 112,
+              "start_line": 78,
+              "end_line": 79,
               "doc": ""
             },
             {
               "name": "load",
               "sig": "load(self)",
-              "start_line": 114,
-              "end_line": 132,
+              "start_line": 81,
+              "end_line": 99,
               "doc": ""
             },
             {
               "name": "save",
               "sig": "save(self)",
-              "start_line": 134,
-              "end_line": 150,
+              "start_line": 101,
+              "end_line": 117,
               "doc": ""
             },
             {
               "name": "list_profiles",
               "sig": "list_profiles(self)",
-              "start_line": 152,
-              "end_line": 153,
+              "start_line": 119,
+              "end_line": 120,
               "doc": ""
             },
             {
               "name": "get_profile",
               "sig": "get_profile(self, profile_id)",
-              "start_line": 155,
-              "end_line": 156,
+              "start_line": 122,
+              "end_line": 123,
               "doc": ""
             },
             {
               "name": "find_profile_by_name",
               "sig": "find_profile_by_name(self, name)",
-              "start_line": 158,
-              "end_line": 163,
+              "start_line": 125,
+              "end_line": 130,
               "doc": ""
             },
             {
               "name": "add_or_update_profile",
               "sig": "add_or_update_profile(self, name, vector, sample_count, notes, source_media, profile_id)",
-              "start_line": 165,
-              "end_line": 224,
+              "start_line": 132,
+              "end_line": 191,
               "doc": ""
             },
             {
               "name": "remove_profile",
               "sig": "remove_profile(self, profile_id)",
-              "start_line": 226,
-              "end_line": 231,
+              "start_line": 193,
+              "end_line": 198,
               "doc": ""
             },
             {
               "name": "clear",
               "sig": "clear(self)",
-              "start_line": 233,
-              "end_line": 235,
+              "start_line": 200,
+              "end_line": 202,
               "doc": ""
             },
             {
               "name": "match_vector",
               "sig": "match_vector(self, vector, threshold, min_margin)",
-              "start_line": 237,
-              "end_line": 274,
+              "start_line": 204,
+              "end_line": 241,
               "doc": "Compare an unknown candidate vector against all saved voice profiles."
             }
           ]
-        },
+        }
+      ],
+      "functions": [
+        {
+          "name": "__getattr__",
+          "sig": "__getattr__(name)",
+          "start_line": 245,
+          "end_line": 249,
+          "doc": ""
+        }
+      ]
+    },
+    "speaker_profiles_dialog.py": {
+      "path": "speaker_profiles_dialog.py",
+      "lines": 415,
+      "summary": "speaker_profiles_dialog.py \u2014 UI management dialog for persistent Station Voice Profiles.",
+      "exports": [
+        "ManageVoiceProfilesDialog"
+      ],
+      "classes": [
         {
           "name": "ManageVoiceProfilesDialog",
           "bases": [
             "QDialog"
           ],
-          "start_line": 277,
-          "end_line": 630,
+          "start_line": 62,
+          "end_line": 415,
           "doc": "Management dialog for inspecting, auditing, adding, or deleting persistent station voice profiles.",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, parent, store, main_win)",
-              "start_line": 280,
-              "end_line": 291,
+              "start_line": 65,
+              "end_line": 76,
               "doc": ""
             },
             {
               "name": "_init_ui",
               "sig": "_init_ui(self)",
-              "start_line": 293,
-              "end_line": 350,
+              "start_line": 78,
+              "end_line": 135,
               "doc": ""
             },
             {
               "name": "_populate_table",
               "sig": "_populate_table(self)",
-              "start_line": 352,
-              "end_line": 417,
+              "start_line": 137,
+              "end_line": 202,
               "doc": ""
             },
             {
               "name": "_on_rename",
               "sig": "_on_rename(self, profile_id, old_name)",
-              "start_line": 419,
-              "end_line": 432,
+              "start_line": 204,
+              "end_line": 217,
               "doc": ""
             },
             {
               "name": "_on_delete",
               "sig": "_on_delete(self, profile_id, name)",
-              "start_line": 434,
-              "end_line": 444,
+              "start_line": 219,
+              "end_line": 229,
               "doc": ""
             },
             {
               "name": "_on_match_project",
               "sig": "_on_match_project(self, prof)",
-              "start_line": 446,
-              "end_line": 503,
+              "start_line": 231,
+              "end_line": 288,
               "doc": ""
             },
             {
               "name": "_on_add_from_active_turn",
               "sig": "_on_add_from_active_turn(self)",
-              "start_line": 505,
-              "end_line": 570,
+              "start_line": 290,
+              "end_line": 355,
               "doc": ""
             },
             {
               "name": "_on_export",
               "sig": "_on_export(self)",
-              "start_line": 572,
-              "end_line": 600,
+              "start_line": 357,
+              "end_line": 385,
               "doc": ""
             },
             {
               "name": "_on_import",
               "sig": "_on_import(self)",
-              "start_line": 602,
-              "end_line": 630,
+              "start_line": 387,
+              "end_line": 415,
               "doc": ""
             }
           ]
@@ -18304,7 +18327,7 @@
     "transcript_story.py": {
       "path": "transcript_story.py",
       "lines": 852,
-      "summary": "Radio & TV Segmenter v3.10.4-beta \u2014 transcript story responsibilities.",
+      "summary": "Radio & TV Segmenter v3.10.5-beta \u2014 transcript story responsibilities.",
       "exports": [
         "TranscriptStoryMixin",
         "Story",
