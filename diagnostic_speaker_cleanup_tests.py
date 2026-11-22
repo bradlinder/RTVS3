@@ -347,6 +347,38 @@ class DiagnosticSpeakerCleanupTestsMixin:
                 del mgr
                 app.processEvents()
 
+            from PySide6.QtWidgets import QPushButton as _QPushButton
+            from speaker_profiles_dialog import ManageVoiceProfilesDialog as _DirectDlg
+            if vp_win.save_speaker_to_station_voices("Brad Host", allow_extract=False) is None:
+                raise AssertionError("Failed to re-save voice profile for ManageVoiceProfilesDialog layout test")
+            vp_dlg = _DirectDlg(store=store)
+            try:
+                if vp_dlg.table.rowCount() < 1:
+                    raise AssertionError("ManageVoiceProfilesDialog should display saved profile row")
+                turns_item = vp_dlg.table.item(0, 1)
+                if turns_item is None or turns_item.text() != "1 turn":
+                    raise AssertionError(f"Expected singular '1 turn' label, got {turns_item.text() if turns_item else None!r}")
+                action_w = vp_dlg.table.cellWidget(0, 4)
+                if action_w is None:
+                    raise AssertionError("ManageVoiceProfilesDialog Actions cell widget missing")
+                if vp_dlg.table.columnWidth(4) < action_w.sizeHint().width():
+                    raise AssertionError(
+                        f"Actions column too narrow ({vp_dlg.table.columnWidth(4)} < {action_w.sizeHint().width()})"
+                    )
+                btns = action_w.findChildren(_QPushButton)
+                if len(btns) < 3:
+                    raise AssertionError(f"Expected 3 action buttons, found {len(btns)}")
+                for btn in btns:
+                    if btn.minimumWidth() < btn.sizeHint().width():
+                        raise AssertionError(
+                            f"Action button '{btn.text()}' minimumWidth {btn.minimumWidth()} < sizeHint {btn.sizeHint().width()}"
+                        )
+            finally:
+                vp_dlg.close()
+                vp_dlg.deleteLater()
+                del vp_dlg
+                app.processEvents()
+
         import ast
         import speaker_profiles
         from speaker_profiles_dialog import ManageVoiceProfilesDialog as _DirectDlg

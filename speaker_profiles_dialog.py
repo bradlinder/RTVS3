@@ -67,8 +67,8 @@ class ManageVoiceProfilesDialog(QDialog):
         self.main_win = main_win or parent
         self.store = store or StationVoiceProfileStore()
         self.setWindowTitle("Manage Voice Profiles")
-        self.resize(840, 520)
-        self.setMinimumSize(780, 460)
+        self.resize(900, 520)
+        self.setMinimumSize(820, 460)
         make_dialog_maximizable(self)
         apply_window_titlebar_theme(self)
 
@@ -101,7 +101,7 @@ class ManageVoiceProfilesDialog(QDialog):
         self.table.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
         self.table.horizontalHeader().setSectionResizeMode(3, QHeaderView.ResizeMode.Stretch)
         self.table.horizontalHeader().setSectionResizeMode(4, QHeaderView.ResizeMode.Fixed)
-        self.table.setColumnWidth(4, 210)
+        self.table.setColumnWidth(4, 270)
         self.table.verticalHeader().setDefaultSectionSize(44)
         self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
@@ -145,7 +145,7 @@ class ManageVoiceProfilesDialog(QDialog):
                 color: #f1f5f9;
                 border: 1px solid #475569;
                 border-radius: 4px;
-                padding: 3px 8px;
+                padding: 3px 10px;
                 font-size: 11px;
                 font-weight: 600;
                 min-height: 24px;
@@ -157,6 +157,7 @@ class ManageVoiceProfilesDialog(QDialog):
             }
         """
 
+        max_action_w = 270
         for row, prof in enumerate(profiles):
             self.table.setRowHeight(row, 44)
 
@@ -164,7 +165,8 @@ class ManageVoiceProfilesDialog(QDialog):
             name_item.setData(Qt.ItemDataRole.UserRole, prof.id)
             self.table.setItem(row, 0, name_item)
 
-            samples_item = QTableWidgetItem(f"{prof.sample_count} turns")
+            turn_label = "1 turn" if prof.sample_count == 1 else f"{prof.sample_count} turns"
+            samples_item = QTableWidgetItem(turn_label)
             samples_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
             self.table.setItem(row, 1, samples_item)
 
@@ -180,7 +182,7 @@ class ManageVoiceProfilesDialog(QDialog):
             # Actions
             action_w = QWidget(self)
             action_l = QHBoxLayout(action_w)
-            action_l.setContentsMargins(4, 2, 4, 2)
+            action_l.setContentsMargins(6, 2, 6, 2)
             action_l.setSpacing(6)
 
             rename_btn = QPushButton("Rename", action_w)
@@ -199,7 +201,13 @@ class ManageVoiceProfilesDialog(QDialog):
             del_btn.clicked.connect(lambda _, pid=prof.id, pnm=prof.name: self._on_delete(pid, pnm))
             action_l.addWidget(del_btn)
 
+            for btn in (rename_btn, match_btn, del_btn):
+                btn.setMinimumWidth(btn.sizeHint().width())
+
+            max_action_w = max(max_action_w, action_w.sizeHint().width() + 12)
             self.table.setCellWidget(row, 4, action_w)
+
+        self.table.setColumnWidth(4, max_action_w)
 
     def _on_rename(self, profile_id: str, old_name: str):
         new_name, ok = QInputDialog.getText(

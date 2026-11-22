@@ -1,13 +1,13 @@
 # Repository Symbol Index & API Map
 
-> Generated: 2026-11-22 14:12:07 | Total Files: 173
+> Generated: 2026-11-22 14:20:27 | Total Files: 173
 > Use `python scripts/generate_symbol_index.py --outline <file>` for exact line numbers.
 
 ## Modules Overview
 
 | Module | Lines | Summary | Primary Classes / Functions |
 | :--- | :---: | :--- | :--- |
-| `RadioTVSegmenter.py` | 684 | Radio & TV Segmenter — v3.10.5-beta | `MainWindow`, `main()` |
+| `RadioTVSegmenter.py` | 684 | Radio & TV Segmenter — v3.10.6-beta | `MainWindow`, `main()` |
 | `audio_normalization.py` | 541 | Radio & TV Story Segmenter — Audio Loudness Probing & Nor... | `LoudnessReport`, `AudioLoudnessProbeWorker`, `parse_ebur128_summary()`, `probe_media_duration_seconds()` *(+3 more)* |
 | `background_workers.py` | 1051 | Radio & TV Story Segmenter — Background Worker Threads & ... | `StoryAutoDetectWorker`, `WaveformWorker`, `VideoThumbnailWorker`, `get_waveform_peak_cache_path()` *(+6 more)* |
 | `backup_manager.py` | 622 | Unified State Serialization, Local, and Google Drive Clou... | `compute_data_checksum()`, `serialize_preferences()`, `serialize_keyboard_shortcuts()`, `serialize_glossary()` *(+7 more)* |
@@ -31,7 +31,7 @@
 | `diagnostic_helpers.py` | 151 | Helper fixtures, module resolvers, and DiagnosticItem for... | `DiagnosticItem`, `generate_synthetic_wav()` |
 | `diagnostic_loudness_tests.py` | 391 | Radio & TV Story Segmenter — Diagnostic Loudness Normaliz... | `DiagnosticLoudnessTestsMixin` |
 | `diagnostic_selector.py` | 191 | Smart Diagnostic Test Selector for Radio & TV Story Segme... | `get_modified_files()`, `has_git_changes()`, `detect_changed_tokens()`, `select_diagnostic_items()` |
-| `diagnostic_speaker_cleanup_tests.py` | 554 | Diagnostic tests for Phase 2 features: minimum story leng... | `DiagnosticSpeakerCleanupTestsMixin` |
+| `diagnostic_speaker_cleanup_tests.py` | 586 | Diagnostic tests for Phase 2 features: minimum story leng... | `DiagnosticSpeakerCleanupTestsMixin` |
 | `diagnostic_wordpress_tests.py` | 109 | Diagnostic tests for WordPress PublishPress Author mappin... | `DiagnosticWordPressTestsMixin` |
 | `dialogs.py` | 433 | Radio & TV Story Segmenter — Audio Loudness Normalization... | `AudioLoudnessNormalizationDialog` |
 | `diarization_processing.py` | 772 | Speaker diarization process management for Radio & TV Sto... | `DiarizationProcessingMixin` |
@@ -130,7 +130,7 @@
 | `speaker_name_matcher.py` | 583 | speaker_name_matcher.py — Headless phonetic and fuzzy cle... | `SpeakerNameCandidate`, `is_generic_speaker_label()`, `is_generic_role_label()`, `preserve_case_replace()` *(+7 more)* |
 | `speaker_palette.py` | 148 | Accessible adaptive speaker color palette for Radio & TV ... | `SpeakerColor`, `SpeakerColorAssigner`, `get_speaker_index()`, `get_speaker_color()` *(+3 more)* |
 | `speaker_profiles.py` | 249 | speaker_profiles.py — Persistent Station Voice Profile Ma... | `StationVoiceProfile`, `StationVoiceProfileStore` |
-| `speaker_profiles_dialog.py` | 415 | speaker_profiles_dialog.py — UI management dialog for per... | `ManageVoiceProfilesDialog` |
+| `speaker_profiles_dialog.py` | 423 | speaker_profiles_dialog.py — UI management dialog for per... | `ManageVoiceProfilesDialog` |
 | `spellcheck_helper.py` | 779 | spellcheck_helper.py — Headless Tier 1 Offline Spellcheck... | `SpellIssue`, `OfflineSpellChecker`, `is_pyspellchecker_available()`, `match_case()` *(+5 more)* |
 | `spellcheck_widgets.py` | 600 | spellcheck_widgets.py — Inline Qt Spellcheck Highlighting... | `SpellCheckHighlighter`, `_LineEditSpellOverlay`, `SpellCheckController`, `add_word_to_glossary()` *(+2 more)* |
 | `story_crud_mixin.py` | 931 | Radio & TV Story Segmenter — Story CRUD & Timeline Select... | `StoryCrudMixin` |
@@ -158,7 +158,7 @@
 | `transcript_navigation_mixin.py` | 300 | transcript_navigation_mixin.py - Timestamp discovery, car... | `TranscriptNavigationMixin` |
 | `transcript_playback_highlight_mixin.py` | 277 | Radio & TV Story Segmenter — Interactive Transcript Playb... | `TranscriptPlaybackHighlightMixin` |
 | `transcript_selection_mixin.py` | 473 | transcript_selection_mixin.py - Multi-selection, timeline... | `TranscriptSelectionMixin` |
-| `transcript_story.py` | 852 | Radio & TV Segmenter v3.10.5-beta — transcript story resp... | `TranscriptStoryMixin` |
+| `transcript_story.py` | 852 | Radio & TV Segmenter v3.10.6-beta — transcript story resp... | `TranscriptStoryMixin` |
 | `transcript_styles.py` | 104 | transcript_styles.py - Transcript view stylesheets and da... | `transcript_text_view_stylesheet()`, `clean_dark_mode_clipboard_html()` |
 | `transcript_timeline_sync_mixin.py` | 655 | Radio & TV Story Segmenter — Transcript Timeline & Playba... | `TranscriptTimelineSyncMixin` |
 | `transcription_processing.py` | 579 | Transcription background process management for Radio & T... | `TranscriptionProcessingMixin` |
@@ -184,7 +184,7 @@
 ## Detailed Symbol Catalog
 
 ### `RadioTVSegmenter.py` (684 lines)
-*Radio & TV Segmenter — v3.10.5-beta*
+*Radio & TV Segmenter — v3.10.6-beta*
 - **class `MainWindow(ModelManagementMixin, MediaBatchMixin, PlaybackPreferencesMixin, UiLayoutMixin, ProcessingMixin, TranslationMixin, TranscriptStoryMixin, ProjectExportMixin, GpuAccelerationMixin, QMainWindow)`** (lines 160–581):
   *Main application window for Radio & TV Segmenter.*
   - `__init__(self)` [L178-L355]
@@ -587,15 +587,15 @@
   - `detect_changed_tokens(root_dir)` [L64-L136] — *Return a set of lowercase module stems and plugin names from the most recently edited files.*
   - `select_diagnostic_items(engine, items, filter_expr, changed_only)` [L139-L191] — *Filter diagnostic items by explicit `--filter` keywords and/or `--changed` git diff analysis.*
 
-### `diagnostic_speaker_cleanup_tests.py` (554 lines)
+### `diagnostic_speaker_cleanup_tests.py` (586 lines)
 *Diagnostic tests for Phase 2 features: minimum story length, guest-name cleanup, and Station Voices.*
-- **class `DiagnosticSpeakerCleanupTestsMixin`** (lines 13–554):
+- **class `DiagnosticSpeakerCleanupTestsMixin`** (lines 13–586):
   *Mixin for Phase 2 regression diagnostics (story length, name cleanup, Station Voices).*
   - `_ensure_qt_app(self)` [L16-L21]
   - `_test_minimum_story_length_filtering_and_preferences(self, item)` [L23-L124]
   - `_test_guest_name_proper_noun_cleanup_and_preserve_case(self, item)` [L126-L258]
-  - `_test_station_voice_checkbox_and_threshold_normalization(self, item)` [L260-L363]
-  - `_test_offline_spellcheck_and_metadata_terminology_alignment(self, item)` [L365-L554]
+  - `_test_station_voice_checkbox_and_threshold_normalization(self, item)` [L260-L395]
+  - `_test_offline_spellcheck_and_metadata_terminology_alignment(self, item)` [L397-L586]
 
 ### `diagnostic_wordpress_tests.py` (109 lines)
 *Diagnostic tests for WordPress PublishPress Author mapping and update semantics.*
@@ -2575,20 +2575,20 @@
 - **Functions**:
   - `__getattr__(name)` [L245-L249]
 
-### `speaker_profiles_dialog.py` (415 lines)
+### `speaker_profiles_dialog.py` (423 lines)
 *speaker_profiles_dialog.py — UI management dialog for persistent Station Voice Profiles.*
 - **Public Exports (`__all__`)**: ManageVoiceProfilesDialog
-- **class `ManageVoiceProfilesDialog(QDialog)`** (lines 62–415):
+- **class `ManageVoiceProfilesDialog(QDialog)`** (lines 62–423):
   *Management dialog for inspecting, auditing, adding, or deleting persistent station voice profiles.*
   - `__init__(self, parent, store, main_win)` [L65-L76]
   - `_init_ui(self)` [L78-L135]
-  - `_populate_table(self)` [L137-L202]
-  - `_on_rename(self, profile_id, old_name)` [L204-L217]
-  - `_on_delete(self, profile_id, name)` [L219-L229]
-  - `_on_match_project(self, prof)` [L231-L288]
-  - `_on_add_from_active_turn(self)` [L290-L355]
-  - `_on_export(self)` [L357-L385]
-  - `_on_import(self)` [L387-L415]
+  - `_populate_table(self)` [L137-L210]
+  - `_on_rename(self, profile_id, old_name)` [L212-L225]
+  - `_on_delete(self, profile_id, name)` [L227-L237]
+  - `_on_match_project(self, prof)` [L239-L296]
+  - `_on_add_from_active_turn(self)` [L298-L363]
+  - `_on_export(self)` [L365-L393]
+  - `_on_import(self)` [L395-L423]
 
 ### `spellcheck_helper.py` (779 lines)
 *spellcheck_helper.py — Headless Tier 1 Offline Spellcheck Engine.*
@@ -3164,7 +3164,7 @@
   - `_on_bubble_export(self)` [L468-L473]
 
 ### `transcript_story.py` (852 lines)
-*Radio & TV Segmenter v3.10.5-beta — transcript story responsibilities.*
+*Radio & TV Segmenter v3.10.6-beta — transcript story responsibilities.*
 - **Public Exports (`__all__`)**: TranscriptStoryMixin, Story, SetStoriesCommand, SelectStoriesCommand, StoryBoundaryChangeCommand, StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin, ChangeSpeakerDialog, VoiceProfileMatchDialog, StoryFadesDialog, SpeakerManagerDialog, FADE_CURVE_TABLES, get_fade_curve_factors
 - **class `TranscriptStoryMixin(StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin)`** (lines 63–851):
   - `render_transcript(self)` [L64-L467]
