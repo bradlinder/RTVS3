@@ -537,6 +537,11 @@ class DiagnosticEngine(
                 "Export & Packaging Engines",
                 "Validates mapped WP User and PublishPress Guest Author term_id extraction, existing-post author pre-selection, and update_post overwrite payloads",
             ),
+            DiagnosticItem(
+                "Menu Bar Deduplication and Escaping Integrity",
+                "Transcript & Speaker Management",
+                "Validates main menu bar deduplication, Qt && escaping, checkable theme menu state, and shortcut metadata alignment",
+            ),
         ]
 
     def run_all(self, stop_requested_fn: Optional[Callable[[], bool]] = None) -> List[DiagnosticItem]:

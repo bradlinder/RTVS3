@@ -46,6 +46,7 @@ from prs_shared import (
     platform_seq,
     safe_filename,
 )
+from core_utils import get_story_vocabulary
 
 class PersistentMenu(QMenu):
     """A QMenu subclass that stays open when checkable toggle options are activated,
@@ -153,7 +154,7 @@ class UiMenusMixin:
 
         file_menu.addSeparator()
 
-        # 4. Export & Batch Processing
+        # 4. Export & Publishing
         export_act = QAction("&Export...", self)
         export_act.setShortcut(platform_seq("Ctrl+E"))
         export_act.triggered.connect(lambda: self.open_unified_export_dialog())
@@ -166,19 +167,7 @@ class UiMenusMixin:
         self.copy_yt_chapters_action = copy_yt_act
         file_menu.addAction(copy_yt_act)
 
-        batch_act = QAction("&Batch Processing...", self)
-        batch_act.setShortcut(platform_seq("Ctrl+Shift+B"))
-        batch_act.triggered.connect(self.open_batch_processing_dialog)
-        self.batch_file_action = batch_act
-        self.batch_process_action = batch_act
-        file_menu.addAction(batch_act)
-
-        self.plugins_export_menu = file_menu.addMenu("Publishing & Plugins")
-
-        backup_act = QAction("&Backup & Restore...", self)
-        backup_act.triggered.connect(getattr(self, "open_backup_restore_dialog", lambda: None))
-        self.backup_restore_action = backup_act
-        file_menu.addAction(backup_act)
+        self.plugins_export_menu = file_menu.addMenu("Publishing && Plugins")
 
         file_menu.addSeparator()
 
@@ -277,7 +266,9 @@ class UiMenusMixin:
         self.toggle_transcript_action.toggled.connect(lambda checked: self.transcript_panel.setVisible(checked))
         view_menu.addAction(self.toggle_transcript_action)
 
-        self.toggle_stories_action = QAction("&Stories Panel", self, checkable=True)
+        vocab = get_story_vocabulary(self)
+
+        self.toggle_stories_action = QAction(f"&{vocab.panel_title}", self, checkable=True)
         self.toggle_stories_action.setShortcut(QKeySequence(f"{panel_mod}+3"))
         self.toggle_stories_action.setChecked(True)
         self.toggle_stories_action.toggled.connect(lambda checked: self.stories_panel.setVisible(checked))
@@ -296,13 +287,6 @@ class UiMenusMixin:
         self.toggle_comments_action.toggled.connect(lambda checked: getattr(self, "toggle_show_comments", getattr(self, "toggle_show_notes", lambda c: None))(checked))
         view_menu.addAction(self.toggle_comments_action)
         self.toggle_notes_action = self.toggle_comments_action
-
-        self.toggle_comment_highlights_action = QAction("Show &Comment Highlights", self, checkable=True)
-        self.toggle_comment_highlights_action.setShortcut(platform_seq("Ctrl+Alt+H"))
-        self.toggle_comment_highlights_action.setShortcutContext(Qt.ShortcutContext.ApplicationShortcut)
-        self.toggle_comment_highlights_action.setChecked(str(getattr(self, "show_comment_highlights", True)).lower() in {"1", "true", "yes"})
-        self.toggle_comment_highlights_action.toggled.connect(lambda checked: getattr(self, "toggle_comment_highlights", lambda c: None)(checked))
-        view_menu.addAction(self.toggle_comment_highlights_action)
 
         view_menu.addSeparator()
 
@@ -363,10 +347,15 @@ class UiMenusMixin:
         transcript_menu.addSeparator()
 
         self.transcript_show_comments_action = self.toggle_comments_action
-        transcript_menu.addAction(self.transcript_show_comments_action)
 
+        self.toggle_comment_highlights_action = QAction("Show &Comment Highlights", self, checkable=True)
+        self.toggle_comment_highlights_action.setShortcut(platform_seq("Ctrl+Alt+H"))
+        self.toggle_comment_highlights_action.setShortcutContext(Qt.ShortcutContext.ApplicationShortcut)
+        self.toggle_comment_highlights_action.setChecked(str(getattr(self, "show_comment_highlights", True)).lower() in {"1", "true", "yes"})
+        self.toggle_comment_highlights_action.toggled.connect(lambda checked: getattr(self, "toggle_comment_highlights", lambda c: None)(checked))
+        self.addAction(self.toggle_comment_highlights_action)
         self.transcript_show_highlights_action = self.toggle_comment_highlights_action
-        transcript_menu.addAction(self.transcript_show_highlights_action)
+        transcript_menu.addAction(self.toggle_comment_highlights_action)
 
         self.transcript_edit_mode_action = QAction("&Edit Transcript Mode", self, checkable=True)
         self.transcript_edit_mode_action.setShortcut(platform_seq("F2"))
@@ -404,17 +393,30 @@ class UiMenusMixin:
         view_menu.addSeparator()
 
         theme_menu = view_menu.addMenu("&Theme")
-        dark_theme_act = QAction("&Dark", self)
-        dark_theme_act.triggered.connect(lambda: self.set_theme("dark"))
-        theme_menu.addAction(dark_theme_act)
+        settings_store = getattr(self, "settings_store", None)
+        current_theme = settings_store.value("theme_mode", "dark") if settings_store is not None else "dark"
+        if current_theme not in ("dark", "light", "high_contrast"):
+            current_theme = "dark"
+        self.theme_action_group = QActionGroup(self)
+        self.theme_action_group.setExclusive(True)
 
-        light_theme_act = QAction("&Light", self)
-        light_theme_act.triggered.connect(lambda: self.set_theme("light"))
-        theme_menu.addAction(light_theme_act)
+        self.theme_dark_action = QAction("&Dark", self, checkable=True)
+        self.theme_dark_action.setChecked(current_theme == "dark")
+        self.theme_dark_action.triggered.connect(lambda: self.set_theme("dark"))
+        self.theme_action_group.addAction(self.theme_dark_action)
+        theme_menu.addAction(self.theme_dark_action)
 
-        hc_theme_act = QAction("&High Contrast", self)
-        hc_theme_act.triggered.connect(lambda: self.set_theme("high_contrast"))
-        theme_menu.addAction(hc_theme_act)
+        self.theme_light_action = QAction("&Light", self, checkable=True)
+        self.theme_light_action.setChecked(current_theme == "light")
+        self.theme_light_action.triggered.connect(lambda: self.set_theme("light"))
+        self.theme_action_group.addAction(self.theme_light_action)
+        theme_menu.addAction(self.theme_light_action)
+
+        self.theme_high_contrast_action = QAction("&High Contrast", self, checkable=True)
+        self.theme_high_contrast_action.setChecked(current_theme == "high_contrast")
+        self.theme_high_contrast_action.triggered.connect(lambda: self.set_theme("high_contrast"))
+        self.theme_action_group.addAction(self.theme_high_contrast_action)
+        theme_menu.addAction(self.theme_high_contrast_action)
 
         # ==========================================
         # Tools Menu (AI Pipeline)
@@ -435,7 +437,7 @@ class UiMenusMixin:
         self.diarize_action.triggered.connect(self.start_diarization)
         tools_menu.addAction(self.diarize_action)
 
-        self.auto_detect_action = QAction("&Detect Stories...", self)
+        self.auto_detect_action = QAction(f"&{vocab.detect_action}...", self)
         self.auto_detect_action.setShortcut(platform_seq("Ctrl+Shift+A"))
         self.auto_detect_action.setEnabled(False)
         self.auto_detect_action.triggered.connect(self.start_auto_detect_stories)
@@ -503,8 +505,13 @@ class UiMenusMixin:
 
         tools_menu.addSeparator()
 
-        self.batch_processing_action = self.batch_file_action
-        tools_menu.addAction(self.batch_processing_action)
+        batch_act = QAction("&Batch Processing...", self)
+        batch_act.setShortcut(platform_seq("Ctrl+Shift+B"))
+        batch_act.triggered.connect(self.open_batch_processing_dialog)
+        self.batch_file_action = batch_act
+        self.batch_process_action = batch_act
+        self.batch_processing_action = batch_act
+        tools_menu.addAction(batch_act)
 
         tools_menu.addSeparator()
 
@@ -534,12 +541,6 @@ class UiMenusMixin:
 
         tools_menu.addSeparator()
 
-        self.manage_models_action = QAction("&Manage AI Models...", self)
-        self.manage_models_action.setShortcut(platform_seq("Ctrl+Alt+M"))
-        self.manage_models_action.triggered.connect(self.open_model_cleanup_dialog)
-        self.translation_model_action = self.manage_models_action
-        tools_menu.addAction(self.manage_models_action)
-
         self.manage_plugins_action = QAction("&Manage Plugins && Add-ons...", self)
         self.manage_plugins_action.setShortcut(platform_seq("Ctrl+Shift+X"))
         self.manage_plugins_action.triggered.connect(self.open_plugins_manager)
@@ -568,10 +569,10 @@ class UiMenusMixin:
         self.shortcuts_pref_action = shortcuts_pref_act
         settings_menu.addAction(shortcuts_pref_act)
 
-        clear_cache_settings_act = QAction("Clear &Temporary Cache...", self)
-        clear_cache_settings_act.triggered.connect(self.open_clear_cache_dialog)
-        settings_menu.addAction(clear_cache_settings_act)
-
+        self.manage_models_action = QAction("&Manage AI Models...", self)
+        self.manage_models_action.setShortcut(platform_seq("Ctrl+Alt+M"))
+        self.manage_models_action.triggered.connect(self.open_model_cleanup_dialog)
+        self.translation_model_action = self.manage_models_action
         settings_menu.addAction(self.manage_models_action)
 
         gpu_act = QAction("&GPU Acceleration Settings...", self)
@@ -580,15 +581,16 @@ class UiMenusMixin:
         self.gpu_action = gpu_act
         settings_menu.addAction(gpu_act)
 
-        glossary_act = QAction("&Glossary & Custom Vocabulary...", self)
+        glossary_act = QAction("&Glossary && Custom Vocabulary...", self)
         glossary_act.setShortcut(platform_seq("Ctrl+Alt+V"))
         glossary_act.triggered.connect(self.open_glossary_dialog)
         self.glossary_action = glossary_act
         settings_menu.addAction(glossary_act)
 
-        backup_settings_act = QAction("&Backup & Restore Settings...", self)
+        backup_settings_act = QAction("&Backup && Restore Settings...", self)
         backup_settings_act.triggered.connect(getattr(self, "open_backup_restore_dialog", lambda: None))
         self.backup_settings_action = backup_settings_act
+        self.backup_restore_action = backup_settings_act
         settings_menu.addAction(backup_settings_act)
 
         restore_defaults_act = QAction("&Restore System Defaults...", self)
@@ -613,14 +615,6 @@ class UiMenusMixin:
         self.ui_lang_action_group.addAction(self.ui_lang_es_action)
         self.language_menu.addAction(self.ui_lang_es_action)
 
-        settings_menu.addSeparator()
-
-        update_act = QAction("Check for &Updates...", self)
-        update_act.setShortcut(platform_seq("Ctrl+Alt+U"))
-        update_act.triggered.connect(self.check_for_updates)
-        self.update_action = update_act
-        settings_menu.addAction(update_act)
-
         # ==========================================
         # Help Menu
         # ==========================================
@@ -633,7 +627,7 @@ class UiMenusMixin:
         self.shortcuts_help_action = shortcuts_act
         help_menu.addAction(shortcuts_act)
 
-        guide_act = QAction("&User Guides & Documentation...", self)
+        guide_act = QAction("&User Guides && Documentation...", self)
         guide_act.setShortcut(platform_seq("Shift+F2"))
         guide_act.triggered.connect(self.open_user_documentation)
         self.user_guide_action = guide_act
@@ -641,7 +635,13 @@ class UiMenusMixin:
 
         help_menu.addSeparator()
 
-        about_act = QAction("&About Radio & TV Segmenter", self)
+        update_act = QAction("Check for &Updates...", self)
+        update_act.setShortcut(platform_seq("Ctrl+Alt+U"))
+        update_act.triggered.connect(self.check_for_updates)
+        self.update_action = update_act
+        help_menu.addAction(update_act)
+
+        about_act = QAction("&About Radio && TV Segmenter", self)
         about_act.setShortcut(platform_seq("Shift+F1"))
         about_act.triggered.connect(self.show_about_dialog)
         self.about_action = about_act
@@ -659,7 +659,7 @@ class UiMenusMixin:
         self.test_bench_action = test_bench_act
         help_menu.addAction(test_bench_act)
 
-        benchmark_act = QAction("Run &Feature & Performance Benchmark...", self)
+        benchmark_act = QAction("Run &Feature && Performance Benchmark...", self)
         benchmark_act.setShortcut(platform_seq("Ctrl+Alt+B"))
         benchmark_act.triggered.connect(self.show_performance_benchmark)
         self.benchmark_action = benchmark_act
@@ -763,11 +763,11 @@ class UiMenusMixin:
         if hasattr(self, "diarize_action"):
             self.diarize_action.setText("Detect Speakers (Complete)" if has_diarization else "Detect Speakers...")
         if hasattr(self, "auto_detect_action"):
-            is_es = (getattr(self, "language", "en") == "es")
-            if is_es:
-                self.auto_detect_action.setText("&Detectar segmentos (Completado)" if has_stories else "&Detectar segmentos...")
+            vocab = get_story_vocabulary(self)
+            if vocab.is_es:
+                self.auto_detect_action.setText(f"&{vocab.detect_action} (Completado)" if has_stories else f"&{vocab.detect_action}...")
             else:
-                self.auto_detect_action.setText("Detect Segments (Complete)" if has_stories else "&Detect Segments...")
+                self.auto_detect_action.setText(f"{vocab.detect_action} (Complete)" if has_stories else f"&{vocab.detect_action}...")
 
 
     def refresh_plugin_menus(self):

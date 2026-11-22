@@ -193,11 +193,11 @@ SHORTCUT_DEFINITIONS: List[ShortcutDef] = [
     ),
     ShortcutDef(
         action_id="backup_restore",
-        name="Backup & Restore...",
+        name="Backup & Restore Settings...",
         category="File & Project",
         default_seq="",
         default_mac="",
-        description="Open project snapshot backup and restore manager",
+        description="Backup or restore application settings, keyboard shortcuts, glossary, and plugins",
         attr_name="backup_restore_action",
     ),
     ShortcutDef(

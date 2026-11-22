@@ -10,6 +10,7 @@ from PySide6.QtCore import Qt, QSettings
 from PySide6.QtGui import QAction, QActionGroup, QColor, QFont, QIcon, QKeySequence
 from PySide6.QtWidgets import QApplication, QCheckBox, QColorDialog, QComboBox, QDialog, QFileDialog, QFrame, QHBoxLayout, QHeaderView, QLabel, QLineEdit, QMenu, QMessageBox, QPushButton, QScrollArea, QSlider, QSplitter, QStatusBar, QTableWidget, QTableWidgetItem, QTextEdit, QToolBar, QToolButton, QVBoxLayout, QWidget
 from prs_shared import APP_DISPLAY_NAME, PROJECT_VERSION, ffmpeg_path, ffprobe_path, format_time, platform_seq, safe_filename
+from core_utils import get_story_vocabulary
 
 class PersistentMenu(QMenu):
 

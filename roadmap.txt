@@ -38,15 +38,15 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 --------------------------------------------------------------------------------
 TABLE OF CONTENTS & STATUS OVERVIEW
 --------------------------------------------------------------------------------
-1. Immediate Predecessor Release: `ManageVoiceProfilesDialog` Actions Column Sizing & Polish (`speaker_profiles_dialog.py`, `diagnostic_speaker_cleanup_tests.py`) [x] [COMPLETED in v3.10.6-beta]
-   [x] 1.1 DPI-Aware Actions Column Width (`speaker_profiles_dialog.py`): Widened default/minimum dialog size (`900x520` / `820x460`), increased button horizontal padding (`padding: 3px 10px`) and margins (`6, 2, 6, 2`), enforced `btn.setMinimumWidth(btn.sizeHint().width())` on `Rename`/`Match Project`/`Delete`, and sized Actions column `4` to `max(270, action_w.sizeHint().width() + 12)`.
-   [x] 1.2 Singular/Plural Turn Label Polish (`speaker_profiles_dialog.py`): Displayed `"1 turn"` when `prof.sample_count == 1` instead of `"1 turns"`.
-   [x] 1.3 Layout & Width Regression Assertions (`diagnostic_speaker_cleanup_tests.py`): Verified `"1 turn"` display, `columnWidth(4) >= action_w.sizeHint().width()`, and `btn.minimumWidth() >= btn.sizeHint().width()` in `_test_station_voice_checkbox_and_threshold_normalization`.
+1. Immediate Predecessor Release: Milestone 3.1 & 3.3 — `audio_normalization.py` Worker Extraction & Dead `plugin_dialogs.py` Retirement (`audio_normalization.py`, `audio_normalization_worker.py`, `prs_shared.py`, `scripts/modular_audit.py`, `diagnostic_loudness_tests.py`) [x] [COMPLETED in v3.10.7-beta]
+   [x] 1.1 Retire Orphaned `plugin_dialogs.py` (`plugin_dialogs.py`, `scripts/modular_audit.py`): Removed obsolete `plugin_dialogs.py` (`447` lines; zero callers, superseded by `plugins/installer_workers.py`, `plugins/github_dialog.py`, and `plugins/manager_dialog.py`).
+   [x] 1.2 Extract `AudioLoudnessProbeWorker` (`audio_normalization.py`, `audio_normalization_worker.py`, `prs_shared.py`, `scripts/modular_audit.py`): Moved `AudioLoudnessProbeWorker` and Qt imports verbatim into `audio_normalization_worker.py`, updated `prs_shared.py` direct import for PyInstaller tracing, added lazy `__getattr__` facade on `audio_normalization.py` (`0` Qt imports), and removed both modules from `GRANDFATHERED_LEGACY_MODULES` (`7 -> 5` legacy exemptions).
+   [x] 1.3 Verification (`diagnostic_loudness_tests.py`): Added AST zero-`PySide6` check on `audio_normalization.py` and `AudioLoudnessProbeWorker` identity assertions in `_test_smart_hybrid_audio_loudness_probing`.
 
-2. Active Release: Milestone 3.1 & 3.3 — `audio_normalization.py` Worker Extraction & Dead `plugin_dialogs.py` Retirement (`audio_normalization.py`, `audio_normalization_worker.py`, `prs_shared.py`, `scripts/modular_audit.py`, `diagnostic_loudness_tests.py`) [x] [COMPLETED in v3.10.7-beta]
-   [x] 2.1 Retire Orphaned `plugin_dialogs.py` (`plugin_dialogs.py`, `scripts/modular_audit.py`): Removed obsolete `plugin_dialogs.py` (`447` lines; zero callers, superseded by `plugins/installer_workers.py`, `plugins/github_dialog.py`, and `plugins/manager_dialog.py`).
-   [x] 2.2 Extract `AudioLoudnessProbeWorker` (`audio_normalization.py`, `audio_normalization_worker.py`, `prs_shared.py`, `scripts/modular_audit.py`): Moved `AudioLoudnessProbeWorker` and Qt imports verbatim into `audio_normalization_worker.py`, updated `prs_shared.py` direct import for PyInstaller tracing, added lazy `__getattr__` facade on `audio_normalization.py` (`0` Qt imports), and removed both modules from `GRANDFATHERED_LEGACY_MODULES` (`7 -> 5` legacy exemptions).
-   [x] 2.3 Verification (`diagnostic_loudness_tests.py`): Added AST zero-`PySide6` check on `audio_normalization.py` and `AudioLoudnessProbeWorker` identity assertions in `_test_smart_hybrid_audio_loudness_probing`.
+2. Active Release: Main Menu Bar Deduplication, Qt Ampersand Escaping & Polish (`ui_menus.py`, `theme_preferences.py`, `shortcuts/schema.py`, `diagnostic_speaker_cleanup_tests.py`, `test_runner.py`) [x] [COMPLETED in v3.10.8-beta]
+   [x] 2.1 Deduplicate Menu Bar Items (`ui_menus.py`): Kept `Backup && Restore Settings...` and `Manage AI Models...` only in `Settings`, `Batch Processing...` and `Clear Temporary Cache...` only in `Tools`, `Comments Sidebar Panel` only in top-level `View`, `Show Comment Highlights` only in `View -> Transcript`, and moved `Check for Updates...` to `Help`, while preserving all backward-compatible `QAction` aliases.
+   [x] 2.2 Escape Ampersands & Polish Active State (`ui_menus.py`, `theme_preferences.py`, `shortcuts/schema.py`): Fixed 6 single-ampersand menu labels with `&&`, made `View -> Theme` options exclusive checkable radio items synced with `set_theme()`, aligned initial `Segment` vocabulary labels, and updated `backup_restore` shortcut metadata.
+   [x] 2.3 Menu Integrity Verification (`diagnostic_speaker_cleanup_tests.py`, `test_runner.py`): Added `Menu Bar Deduplication and Escaping Integrity` diagnostic verifying zero duplicate actions, zero unescaped ` & ` strings, single-menu ownership, checkable theme menu state, aliases, and shortcut schema sync.
 
 3. Deferred Milestone: Domain Separation & Purpose-Driven Monolithic File Modularization [ ] [DEFERRED / LOWER PRIORITY]
    - *Purpose*: Systematic architectural refactoring prioritizing **file purpose, single responsibility, and domain cohesion** alongside line count reduction (<800 lines target, 1,000 lines ceiling), systematically decoupling grandfathered multi-domain monoliths into focused submodules with 100% backward-compatible facade re-exports.
@@ -94,23 +94,23 @@ TABLE OF CONTENTS & STATUS OVERVIEW
 DETAILED MILESTONE SPECIFICATIONS
 ================================================================================
 
-1. IMMEDIATE PREDECESSOR RELEASE: `ManageVoiceProfilesDialog` ACTIONS COLUMN SIZING & POLISH:
-- Purpose: Prevent "Match Project" button clipping in `ManageVoiceProfilesDialog` under Windows DPI scaling by computing column width dynamically from rendered button `sizeHint()` values, and polish singular `"1 turn"` display.
-- Target Release: v3.10.6-beta (Immediate Predecessor Release)
-- Technical References: `speaker_profiles_dialog.py`, `diagnostic_speaker_cleanup_tests.py`.
-- Implementation Details:
-  * [x] DPI-Aware Actions Column Width (`speaker_profiles_dialog.py`): Widened default/minimum dialog dimensions (`900x520` / `820x460`), increased button padding (`3px 10px`) and margins (`6, 2, 6, 2`), enforced `btn.setMinimumWidth(btn.sizeHint().width())`, and sized column `4` dynamically to `max(270, action_w.sizeHint().width() + 12)`.
-  * [x] Turn Count Grammar Polish (`speaker_profiles_dialog.py`): Rendered `"1 turn"` for singular sample count instead of `"1 turns"`.
-  * [x] Layout & Width Regression Tests (`diagnostic_speaker_cleanup_tests.py`): Verified `"1 turn"` text, `columnWidth(4) >= action_w.sizeHint().width()`, and `btn.minimumWidth() >= btn.sizeHint().width()` in `_test_station_voice_checkbox_and_threshold_normalization`.
-
-2. ACTIVE RELEASE: MILESTONE 3.1 & 3.3 — `audio_normalization.py` WORKER EXTRACTION & DEAD `plugin_dialogs.py` RETIREMENT:
+1. IMMEDIATE PREDECESSOR RELEASE: MILESTONE 3.1 & 3.3 — `audio_normalization.py` WORKER EXTRACTION & DEAD `plugin_dialogs.py` RETIREMENT:
 - Purpose: Remove orphaned legacy `plugin_dialogs.py` and separate `AudioLoudnessProbeWorker(QThread)` from the pure-Python EBU R128 DSP engine (`audio_normalization.py`), dropping grandfathered SRP exemptions from 7 to 5 with 100% backward compatibility.
-- Target Release: v3.10.7-beta (Active Release)
+- Target Release: v3.10.7-beta (Immediate Predecessor Release)
 - Technical References: `audio_normalization.py`, `audio_normalization_worker.py`, `prs_shared.py`, `scripts/modular_audit.py`, `diagnostic_loudness_tests.py`.
 - Implementation Details:
   * [x] Retire Orphaned `plugin_dialogs.py` (`plugin_dialogs.py`, `scripts/modular_audit.py`): Deleted dead legacy `plugin_dialogs.py` (`447` lines) superseded by `plugins/installer_workers.py`, `plugins/github_dialog.py`, and `plugins/manager_dialog.py`.
   * [x] Extract `AudioLoudnessProbeWorker` (`audio_normalization.py`, `audio_normalization_worker.py`, `prs_shared.py`, `scripts/modular_audit.py`): Moved `AudioLoudnessProbeWorker` and its Qt import shim verbatim into `audio_normalization_worker.py`, updated `prs_shared.py` direct import for PyInstaller tracing, added lazy `__getattr__` facade on `audio_normalization.py` (`0` Qt imports), and removed both modules from `GRANDFATHERED_LEGACY_MODULES` (`7 -> 5`).
   * [x] Automated Regression Coverage (`diagnostic_loudness_tests.py`): Verified zero `PySide6` AST imports in `audio_normalization.py` and `AudioLoudnessProbeWorker` identity across `audio_normalization` and `prs_shared`.
+
+2. ACTIVE RELEASE: MAIN MENU BAR DEDUPLICATION, QT AMPERSAND ESCAPING & POLISH:
+- Purpose: Eliminate duplicate menu items across File/View/Tools/Settings, fix unescaped `&` labels in Qt menus, make `View -> Theme` items checkable and synchronized, align initial Segment vocabulary labels, and sync shortcut schema metadata.
+- Target Release: v3.10.8-beta (Active Release)
+- Technical References: `ui_menus.py`, `theme_preferences.py`, `shortcuts/schema.py`, `diagnostic_speaker_cleanup_tests.py`, `test_runner.py`.
+- Implementation Details:
+  * [x] Menu Deduplication (`ui_menus.py`): Kept `Backup && Restore Settings...` and `Manage AI Models...` only in `Settings`, `Batch Processing...` and `Clear Temporary Cache...` only in `Tools`, `Comments Sidebar Panel` only in top-level `View`, `Show Comment Highlights` only in `View -> Transcript`, and moved `Check for Updates...` into `Help`, while preserving all backward-compatible action aliases.
+  * [x] Escaping, Checkable Theme & Terminology (`ui_menus.py`, `theme_preferences.py`, `shortcuts/schema.py`): Escaped all 6 single-ampersand menu labels with `&&`, added exclusive checkable `theme_*_action` items synced in `set_theme()`, initialized `auto_detect_action`/`toggle_stories_action` via `get_story_vocabulary()`, and updated `backup_restore` shortcut metadata.
+  * [x] Automated Regression Coverage (`diagnostic_speaker_cleanup_tests.py`, `test_runner.py`): Verified menu uniqueness, `&&` escaping, single-menu ownership, checkable theme state, aliases, and shortcut metadata alignment.
 
 3. DEFERRED MILESTONE: DOMAIN SEPARATION & PURPOSE-DRIVEN MONOLITHIC FILE MODULARIZATION:
 - Purpose: Systematic architectural refactoring prioritizing file purpose and single responsibility (<800 lines target, 1,000 lines ceiling).

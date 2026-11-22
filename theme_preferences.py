@@ -24,6 +24,16 @@ class ThemePreferencesMixin:
         if mode not in ("light", "dark", "high_contrast"):
             mode = "dark"
         self.settings_store.setValue("theme_mode", mode)
+        for act_name, key in (
+            ("theme_dark_action", "dark"),
+            ("theme_light_action", "light"),
+            ("theme_high_contrast_action", "high_contrast"),
+        ):
+            act = getattr(self, act_name, None)
+            if act is not None:
+                act.blockSignals(True)
+                act.setChecked(mode == key)
+                act.blockSignals(False)
         self.transcript_view.apply_theme_style(mode)
         translation_style = transcript_text_view_stylesheet(mode)
         for view_name in ("translation_view", "bilingual_english_view", "bilingual_spanish_view"):

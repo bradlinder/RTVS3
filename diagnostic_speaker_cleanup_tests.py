@@ -584,3 +584,150 @@ class DiagnosticSpeakerCleanupTestsMixin:
             f"Offline spellcheck ({checker.backend_name}), Glossary/speaker add & removal sync, "
             "scroll-offset anchor, QLineEdit/QTextEdit replacement, and WordPressPublishDialog wiring verified"
         )
+
+    def _test_menu_bar_deduplication_and_escaping_integrity(self, item: DiagnosticItem):
+        """Validates main menu bar deduplication, Qt && escaping, checkable theme menu state, and shortcut metadata."""
+        import re
+        from PySide6.QtGui import QUndoStack
+        from PySide6.QtWidgets import QApplication, QMainWindow, QWidget
+        from shortcuts.schema import SHORTCUT_DEFINITIONS
+        from ui_menus import UiMenusMixin
+
+        app = QApplication.instance() or QApplication([])
+
+        class _DictSettings:
+            def __init__(self):
+                self._data = {"theme_mode": "light", "language": "en", "recent_projects": []}
+
+            def value(self, key, default=None):
+                return self._data.get(key, default)
+
+            def setValue(self, key, val):
+                self._data[key] = val
+
+        class _DummyMenuWin(QMainWindow, UiMenusMixin):
+            def __init__(self):
+                super().__init__()
+                self.undo_stack = QUndoStack(self)
+                self.settings_store = _DictSettings()
+                self.language = "en"
+                self.show_comments = False
+                self.show_comment_highlights = True
+                self.timeline_show_waveform = True
+                self.timeline_show_thumbnails = True
+                self.show_speaker_labels = True
+                self.colorize_speaker_labels = True
+                self.show_timestamps = True
+                self.show_milliseconds = False
+                self.transcript_auto_scroll = True
+                self.transcript_view = None
+                self.timeline = QWidget(self)
+                self.transcript_panel = QWidget(self)
+                self.stories_panel = QWidget(self)
+                self.activity_panel = QWidget(self)
+
+            def apply_user_shortcuts(self):
+                pass
+
+            def __getattr__(self, name):
+                return lambda *args, **kwargs: None
+
+        win = _DummyMenuWin()
+        try:
+            win.build_menus()
+            seen_actions = {}
+            top_menus = {}
+            submenus_by_path = {}
+            unescaped_re = re.compile(r" & ")
+
+            def _walk_menu(menu, path):
+                title = menu.title()
+                if unescaped_re.search(title):
+                    raise AssertionError(f"Unescaped ampersand in menu title: {title!r}")
+                submenus_by_path[path] = []
+                for act in menu.actions():
+                    if act.isSeparator():
+                        continue
+                    sub = act.menu()
+                    if sub is not None:
+                        _walk_menu(sub, f"{path} -> {sub.title().replace('&', '')}")
+                        continue
+                    txt = act.text()
+                    if unescaped_re.search(txt):
+                        raise AssertionError(f"Unescaped ampersand in action text ({path}): {txt!r}")
+                    if id(act) in seen_actions:
+                        raise AssertionError(
+                            f"Duplicate QAction {txt!r} appears in both {seen_actions[id(act)]!r} and {path!r}"
+                        )
+                    seen_actions[id(act)] = path
+                    submenus_by_path[path].append(txt.replace("&&", "\x00").replace("&", "").replace("\x00", "&"))
+
+            for bar_act in win.menuBar().actions():
+                m = bar_act.menu()
+                if m is not None:
+                    top_name = m.title().replace("&&", "&").replace("&", "")
+                    top_menus[top_name] = m
+                    _walk_menu(m, top_name)
+
+            file_items = submenus_by_path.get("File", [])
+            view_items = submenus_by_path.get("View", [])
+            transcript_items = submenus_by_path.get("View -> Transcript", [])
+            tools_items = submenus_by_path.get("Tools", [])
+            settings_items = submenus_by_path.get("Settings", [])
+            help_items = submenus_by_path.get("Help", [])
+
+            if "Backup & Restore..." in file_items or "Backup & Restore Settings..." in file_items:
+                raise AssertionError(f"Backup & Restore should not appear in File menu: {file_items}")
+            if "Backup & Restore Settings..." not in settings_items:
+                raise AssertionError(f"Backup & Restore Settings... missing from Settings menu: {settings_items}")
+
+            if "Batch Processing..." in file_items or "Batch Processing..." not in tools_items:
+                raise AssertionError(f"Batch Processing... must appear only in Tools (File={file_items}, Tools={tools_items})")
+
+            if "Clear Temporary Cache..." in settings_items or "Clear Temporary Cache..." not in tools_items:
+                raise AssertionError(f"Clear Temporary Cache... must appear only in Tools (Tools={tools_items}, Settings={settings_items})")
+
+            if "Manage AI Models..." in tools_items or "Manage AI Models..." not in settings_items:
+                raise AssertionError(f"Manage AI Models... must appear only in Settings (Tools={tools_items}, Settings={settings_items})")
+
+            if "Check for Updates..." in settings_items or "Check for Updates..." not in help_items:
+                raise AssertionError(f"Check for Updates... must appear only in Help (Settings={settings_items}, Help={help_items})")
+
+            if "Comments Sidebar Panel" not in view_items or "Comments Sidebar Panel" in transcript_items:
+                raise AssertionError(f"Comments Sidebar Panel must appear only in top-level View (View={view_items}, Transcript={transcript_items})")
+
+            if "Show Comment Highlights" in view_items or "Show Comment Highlights" not in transcript_items:
+                raise AssertionError(f"Show Comment Highlights must appear only in View -> Transcript (View={view_items}, Transcript={transcript_items})")
+
+            if win.backup_restore_action is not win.backup_settings_action:
+                raise AssertionError("backup_restore_action alias must point to backup_settings_action")
+            if not (win.batch_file_action is win.batch_process_action is win.batch_processing_action):
+                raise AssertionError("Batch Processing action aliases must point to the same QAction")
+            if win.transcript_show_comments_action is not win.toggle_comments_action:
+                raise AssertionError("transcript_show_comments_action alias mismatch")
+            if win.transcript_show_highlights_action is not win.toggle_comment_highlights_action:
+                raise AssertionError("transcript_show_highlights_action alias mismatch")
+            if win.translation_model_action is not win.manage_models_action:
+                raise AssertionError("translation_model_action alias mismatch")
+
+            theme_acts = (win.theme_dark_action, win.theme_light_action, win.theme_high_contrast_action)
+            if not all(a.isCheckable() and a.actionGroup() is win.theme_action_group for a in theme_acts):
+                raise AssertionError("View -> Theme actions must be checkable members of exclusive theme_action_group")
+            if not win.theme_action_group.isExclusive() or not win.theme_light_action.isChecked() or win.theme_dark_action.isChecked():
+                raise AssertionError("View -> Theme checkmarks failed to reflect active light theme")
+
+            if win.auto_detect_action.text() != "&Detect Segments...":
+                raise AssertionError(f"Expected initial auto_detect_action '&Detect Segments...', got {win.auto_detect_action.text()!r}")
+            if win.toggle_stories_action.text() != "&Segments Panel":
+                raise AssertionError(f"Expected initial toggle_stories_action '&Segments Panel', got {win.toggle_stories_action.text()!r}")
+
+            backup_def = next((d for d in SHORTCUT_DEFINITIONS if d.action_id == "backup_restore"), None)
+            if backup_def is None or backup_def.name != "Backup & Restore Settings..." or backup_def.attr_name != "backup_restore_action":
+                raise AssertionError(f"Shortcut definition mismatch for backup_restore: {backup_def!r}")
+
+            item.status = "PASS"
+            item.message = "Main menu deduplication, Qt && escaping, checkable View->Theme state, and shortcut metadata verified"
+        finally:
+            win.close()
+            win.deleteLater()
+            app.processEvents()

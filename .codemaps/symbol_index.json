@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-22 14:28:59",
+  "generated_at": "2026-11-22 14:42:23",
   "total_files": 173,
   "files": {
     "RadioTVSegmenter.py": {
       "path": "RadioTVSegmenter.py",
       "lines": 684,
-      "summary": "Radio & TV Segmenter \u2014 v3.10.7-beta",
+      "summary": "Radio & TV Segmenter \u2014 v3.10.8-beta",
       "exports": null,
       "classes": [
         {
@@ -2462,7 +2462,7 @@
     },
     "diagnostic_speaker_cleanup_tests.py": {
       "path": "diagnostic_speaker_cleanup_tests.py",
-      "lines": 586,
+      "lines": 725,
       "summary": "Diagnostic tests for Phase 2 features: minimum story length, guest-name cleanup, and Station Voices.",
       "exports": null,
       "classes": [
@@ -2470,7 +2470,7 @@
           "name": "DiagnosticSpeakerCleanupTestsMixin",
           "bases": [],
           "start_line": 13,
-          "end_line": 586,
+          "end_line": 725,
           "doc": "Mixin for Phase 2 regression diagnostics (story length, name cleanup, Station Voices).",
           "methods": [
             {
@@ -2507,6 +2507,13 @@
               "start_line": 397,
               "end_line": 586,
               "doc": ""
+            },
+            {
+              "name": "_test_menu_bar_deduplication_and_escaping_integrity",
+              "sig": "_test_menu_bar_deduplication_and_escaping_integrity(self, item)",
+              "start_line": 588,
+              "end_line": 725,
+              "doc": "Validates main menu bar deduplication, Qt && escaping, checkable theme menu state, and shortcut metadata."
             }
           ]
         }
@@ -16233,7 +16240,7 @@
     },
     "theme_preferences.py": {
       "path": "theme_preferences.py",
-      "lines": 596,
+      "lines": 606,
       "summary": "Radio & TV Story Segmenter \u2014 Theme Preferences & Styling Engine.",
       "exports": null,
       "classes": [
@@ -16241,14 +16248,14 @@
           "name": "ThemePreferencesMixin",
           "bases": [],
           "start_line": 19,
-          "end_line": 596,
+          "end_line": 606,
           "doc": "Provides application theme switching and styling methods.",
           "methods": [
             {
               "name": "set_theme",
               "sig": "set_theme(self, mode)",
               "start_line": 22,
-              "end_line": 596,
+              "end_line": 606,
               "doc": ""
             }
           ]
@@ -18155,7 +18162,7 @@
     "transcript_story.py": {
       "path": "transcript_story.py",
       "lines": 852,
-      "summary": "Radio & TV Segmenter v3.10.7-beta \u2014 transcript story responsibilities.",
+      "summary": "Radio & TV Segmenter v3.10.8-beta \u2014 transcript story responsibilities.",
       "exports": [
         "TranscriptStoryMixin",
         "Story",
@@ -19042,22 +19049,22 @@
           "bases": [
             "QMenu"
           ],
-          "start_line": 50,
-          "end_line": 73,
+          "start_line": 51,
+          "end_line": 74,
           "doc": "A QMenu subclass that stays open when checkable toggle options are activated,",
           "methods": [
             {
               "name": "addMenu",
               "sig": "addMenu(self, *args, **kwargs)",
-              "start_line": 54,
-              "end_line": 59,
+              "start_line": 55,
+              "end_line": 60,
               "doc": ""
             },
             {
               "name": "mouseReleaseEvent",
               "sig": "mouseReleaseEvent(self, event)",
-              "start_line": 61,
-              "end_line": 73,
+              "start_line": 62,
+              "end_line": 74,
               "doc": ""
             }
           ]
@@ -19065,14 +19072,14 @@
         {
           "name": "UiMenusMixin",
           "bases": [],
-          "start_line": 78,
+          "start_line": 79,
           "end_line": 882,
           "doc": "Mixin providing menu construction, action shortcut wiring, and menu synchronization.",
           "methods": [
             {
               "name": "build_menus",
               "sig": "build_menus(self)",
-              "start_line": 80,
+              "start_line": 81,
               "end_line": 675,
               "doc": "Construct the main application menu bar and associated keyboard shortcuts."
             },
