@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-22 15:00:25",
+  "generated_at": "2026-11-22 15:09:21",
   "total_files": 173,
   "files": {
     "RadioTVSegmenter.py": {
       "path": "RadioTVSegmenter.py",
       "lines": 684,
-      "summary": "Radio & TV Segmenter \u2014 v3.10.9-beta",
+      "summary": "Radio & TV Segmenter \u2014 v3.10.10-beta",
       "exports": null,
       "classes": [
         {
@@ -2151,7 +2151,7 @@
     },
     "diagnostic_editor_tests.py": {
       "path": "diagnostic_editor_tests.py",
-      "lines": 992,
+      "lines": 1005,
       "summary": "Diagnostic editor and find-replace tests for Radio & TV Story Segmenter.",
       "exports": null,
       "classes": [
@@ -2159,7 +2159,7 @@
           "name": "DiagnosticEditorTestsMixin",
           "bases": [],
           "start_line": 11,
-          "end_line": 991,
+          "end_line": 1004,
           "doc": "Diagnostic suite for transcript editor, find-replace, and speaker synchronization.",
           "methods": [
             {
@@ -2187,14 +2187,14 @@
               "name": "_test_story_duration_visibility_and_header_aggregation",
               "sig": "_test_story_duration_visibility_and_header_aggregation(self, item)",
               "start_line": 621,
-              "end_line": 789,
+              "end_line": 802,
               "doc": "Validates story clock duration formatting, 2-line sidebar item format, and multi-selection header aggregation."
             },
             {
               "name": "_test_reaper_daw_companion_and_universal_clipboard_pipeline",
               "sig": "_test_reaper_daw_companion_and_universal_clipboard_pipeline(self, item)",
-              "start_line": 791,
-              "end_line": 991,
+              "start_line": 804,
+              "end_line": 1004,
               "doc": "Validates REAPER DAW clip cue JSON schema, sidecar emission, Lua script syntax,"
             }
           ]
@@ -14566,7 +14566,7 @@
     },
     "speaker_profiles_dialog.py": {
       "path": "speaker_profiles_dialog.py",
-      "lines": 423,
+      "lines": 425,
       "summary": "speaker_profiles_dialog.py \u2014 UI management dialog for persistent Station Voice Profiles.",
       "exports": [
         "ManageVoiceProfilesDialog"
@@ -14578,7 +14578,7 @@
             "QDialog"
           ],
           "start_line": 62,
-          "end_line": 423,
+          "end_line": 425,
           "doc": "Management dialog for inspecting, auditing, adding, or deleting persistent station voice profiles.",
           "methods": [
             {
@@ -14599,49 +14599,49 @@
               "name": "_populate_table",
               "sig": "_populate_table(self)",
               "start_line": 137,
-              "end_line": 210,
+              "end_line": 212,
               "doc": ""
             },
             {
               "name": "_on_rename",
               "sig": "_on_rename(self, profile_id, old_name)",
-              "start_line": 212,
-              "end_line": 225,
+              "start_line": 214,
+              "end_line": 227,
               "doc": ""
             },
             {
               "name": "_on_delete",
               "sig": "_on_delete(self, profile_id, name)",
-              "start_line": 227,
-              "end_line": 237,
+              "start_line": 229,
+              "end_line": 239,
               "doc": ""
             },
             {
               "name": "_on_match_project",
               "sig": "_on_match_project(self, prof)",
-              "start_line": 239,
-              "end_line": 296,
+              "start_line": 241,
+              "end_line": 298,
               "doc": ""
             },
             {
               "name": "_on_add_from_active_turn",
               "sig": "_on_add_from_active_turn(self)",
-              "start_line": 298,
-              "end_line": 363,
+              "start_line": 300,
+              "end_line": 365,
               "doc": ""
             },
             {
               "name": "_on_export",
               "sig": "_on_export(self)",
-              "start_line": 365,
-              "end_line": 393,
+              "start_line": 367,
+              "end_line": 395,
               "doc": ""
             },
             {
               "name": "_on_import",
               "sig": "_on_import(self)",
-              "start_line": 395,
-              "end_line": 423,
+              "start_line": 397,
+              "end_line": 425,
               "doc": ""
             }
           ]
@@ -18162,7 +18162,7 @@
     "transcript_story.py": {
       "path": "transcript_story.py",
       "lines": 852,
-      "summary": "Radio & TV Segmenter v3.10.9-beta \u2014 transcript story responsibilities.",
+      "summary": "Radio & TV Segmenter v3.10.10-beta \u2014 transcript story responsibilities.",
       "exports": [
         "TranscriptStoryMixin",
         "Story",

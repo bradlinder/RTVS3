@@ -308,7 +308,7 @@ The **YouTube Video Publisher** plugin uses a **Zero-Auth Assisted Upload** work
 3. Set your video title, description (auto-populated with YouTube chapter markers), tags, privacy status (*Public*, *Unlisted*, or *Private*), and thumbnail.
 4. Click export to package your local MP4/thumbnail/`.srt` deliverables, copy the formatted video metadata and chapter markers to the clipboard, and open YouTube Studio in your browser for quick drag-and-drop upload.
 """,
-    "video_youtube": """# Video Shows & YouTube Publishing Guide
+    "video_shows": """# Video Shows & YouTube Publishing Guide
 
 This guide walks through the end-to-end workflow for transcribing, segmenting, and publishing video shows to WordPress with responsive, timestamp-synchronized YouTube video embeds.
 

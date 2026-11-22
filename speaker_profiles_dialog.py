@@ -201,11 +201,13 @@ class ManageVoiceProfilesDialog(QDialog):
             del_btn.clicked.connect(lambda _, pid=prof.id, pnm=prof.name: self._on_delete(pid, pnm))
             action_l.addWidget(del_btn)
 
+            self.table.setCellWidget(row, 4, action_w)
             for btn in (rename_btn, match_btn, del_btn):
+                btn.ensurePolished()
                 btn.setMinimumWidth(btn.sizeHint().width())
+            action_w.ensurePolished()
 
             max_action_w = max(max_action_w, action_w.sizeHint().width() + 12)
-            self.table.setCellWidget(row, 4, action_w)
 
         self.table.setColumnWidth(4, max_action_w)
 

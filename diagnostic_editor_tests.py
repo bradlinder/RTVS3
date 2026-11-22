@@ -721,7 +721,20 @@ class DiagnosticEditorTestsMixin:
         assert "Audio Fades: Disabled" in item0.toolTip()
 
         # Verify new story created while audio fades disabled defaults to 0.0s fade_in and fade_out
-        fresh_story = Story(start=10.0, end=20.0, title="Fresh Story")
+        import sys as _sys
+        from unittest.mock import patch as _patch
+
+        class _DisabledFadesQSettings:
+            def __init__(self, *args, **kwargs):
+                pass
+
+            def value(self, key, default=None):
+                if key == "enable_audio_fades":
+                    return "false"
+                return default
+
+        with _patch.object(_sys.modules[Story.__module__], "QSettings", _DisabledFadesQSettings):
+            fresh_story = Story(start=10.0, end=20.0, title="Fresh Story")
         assert fresh_story.fade_out == 0.0, f"Expected 0.0s fade_out for new story when fades disabled, got: {fresh_story.fade_out}"
         assert fresh_story.fade_in == 0.0
 

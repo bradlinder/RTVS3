@@ -788,7 +788,7 @@ class DiagnosticSpeakerCleanupTestsMixin:
                 "workflow": "docs/guides/getting_started_and_workflow.md",
                 "wordpress": "docs/guides/wordpress_exporting.md",
                 "youtube": "docs/guides/youtube_features.md",
-                "video_youtube": "docs/guides/video_shows_and_youtube_publishing.md",
+                "video_shows": "docs/guides/video_shows_and_youtube_publishing.md",
                 "reaper_bridge": "docs/guides/reaper_and_daw_integration.md",
                 "export_formats": "docs/guides/export_formats.md",
             }

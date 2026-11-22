@@ -38,15 +38,15 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 --------------------------------------------------------------------------------
 TABLE OF CONTENTS & STATUS OVERVIEW
 --------------------------------------------------------------------------------
-1. Immediate Predecessor Release: Main Menu Bar Deduplication, Qt Ampersand Escaping & Polish (`ui_menus.py`, `theme_preferences.py`, `shortcuts/schema.py`, `diagnostic_speaker_cleanup_tests.py`, `test_runner.py`) [x] [COMPLETED in v3.10.8-beta]
-   [x] 1.1 Deduplicate Menu Bar Items (`ui_menus.py`): Kept `Backup && Restore Settings...` and `Manage AI Models...` only in `Settings`, `Batch Processing...` and `Clear Temporary Cache...` only in `Tools`, `Comments Sidebar Panel` only in top-level `View`, `Show Comment Highlights` only in `View -> Transcript`, and moved `Check for Updates...` to `Help`, while preserving all backward-compatible `QAction` aliases.
-   [x] 1.2 Escape Ampersands & Polish Active State (`ui_menus.py`, `theme_preferences.py`, `shortcuts/schema.py`): Fixed 6 single-ampersand menu labels with `&&`, made `View -> Theme` options exclusive checkable radio items synced with `set_theme()`, aligned initial `Segment` vocabulary labels, and updated `backup_restore` shortcut metadata.
-   [x] 1.3 Menu Integrity Verification (`diagnostic_speaker_cleanup_tests.py`, `test_runner.py`): Added `Menu Bar Deduplication and Escaping Integrity` diagnostic verifying zero duplicate actions, zero unescaped ` & ` strings, single-menu ownership, checkable theme menu state, aliases, and shortcut schema sync.
+1. Immediate Predecessor Release: Keyboard Shortcuts, Dynamic Help Guide & Full Documentation Sync (`ui_layout.py`, `shortcuts/schema.py`, `user_guide_dialog.py`, `docs/guides/*.md`, `embedded_guides.py`, `README.md`, `ARCHITECTURE.md`, `BUILD_INSTRUCTIONS.txt`, `diagnostic_speaker_cleanup_tests.py`) [x] [COMPLETED in v3.10.9-beta]
+   [x] 1.1 Resolve Collisions & Fix Custom Shortcut Lookups (`ui_layout.py`, `shortcuts/schema.py`, `shortcuts/manager.py`, `playback_controller.py`, `transcript_editor.py`, `transcript_context_menu_mixin.py`): Moved Strikethrough from colliding `Ctrl+K` to `Alt+Shift+5`, added missing active shortcuts (`F8`, `Ctrl+C`, `Alt+Shift+5`, `Ctrl+Shift+H`, `Shift+F2`) and `"delete_story"` alias, wired `copy_selection_as_audio_clip` & `delete_selected_story`, and updated stale `Stories` schema strings.
+   [x] 1.2 Dynamic In-App Shortcuts Guide & Accurate Error Prompts (`user_guide_dialog.py`, `ui_dialog_launchers.py`, `translation.py`, `backup_manager.py`): Generated `UserGuideDialog` Shortcuts tab dynamically from `SHORTCUT_DEFINITIONS`, updated stale plugin prompts to `Tools > Manage Plugins & Add-ons...`, and cleaned `backup_manager.py` docstring.
+   [x] 1.3 Full User Guides, Embedded Fallbacks & Repo Docs Sync (`docs/guides/*.md`, `embedded_guides.py`, `docs/README.md`, `README.md`, `ARCHITECTURE.md`, `BUILD_INSTRUCTIONS.txt`, `diagnostic_speaker_cleanup_tests.py`): Fixed wrong shortcuts/menu paths, removed dead Google Drive/YouTube OAuth claims, documented recent v3.10.x features, synchronized `embedded_guides.py` + `README.md` shortcuts table, and added automated test guards.
 
-2. Active Release: Keyboard Shortcuts, Dynamic Help Guide & Full Documentation Sync (`ui_layout.py`, `shortcuts/schema.py`, `user_guide_dialog.py`, `docs/guides/*.md`, `embedded_guides.py`, `README.md`, `ARCHITECTURE.md`, `BUILD_INSTRUCTIONS.txt`, `diagnostic_speaker_cleanup_tests.py`) [x] [COMPLETED in v3.10.9-beta]
-   [x] 2.1 Resolve Collisions & Fix Custom Shortcut Lookups (`ui_layout.py`, `shortcuts/schema.py`, `shortcuts/manager.py`, `playback_controller.py`, `transcript_editor.py`, `transcript_context_menu_mixin.py`): Moved Strikethrough from colliding `Ctrl+K` to `Alt+Shift+5`, added missing active shortcuts (`F8`, `Ctrl+C`, `Alt+Shift+5`, `Ctrl+Shift+H`, `Shift+F2`) and `"delete_story"` alias, wired `copy_selection_as_audio_clip` & `delete_selected_story`, and updated stale `Stories` schema strings.
-   [x] 2.2 Dynamic In-App Shortcuts Guide & Accurate Error Prompts (`user_guide_dialog.py`, `ui_dialog_launchers.py`, `translation.py`, `backup_manager.py`): Generated `UserGuideDialog` Shortcuts tab dynamically from `SHORTCUT_DEFINITIONS`, updated stale plugin prompts to `Tools > Manage Plugins & Add-ons...`, and cleaned `backup_manager.py` docstring.
-   [x] 2.3 Full User Guides, Embedded Fallbacks & Repo Docs Sync (`docs/guides/*.md`, `embedded_guides.py`, `docs/README.md`, `README.md`, `ARCHITECTURE.md`, `BUILD_INSTRUCTIONS.txt`, `diagnostic_speaker_cleanup_tests.py`): Fixed wrong shortcuts/menu paths, removed dead Google Drive/YouTube OAuth claims, documented recent v3.10.x features, synchronized `embedded_guides.py` + `README.md` shortcuts table, and added automated test guards.
+2. Active Release: Diagnostic Parity Fixes (`embedded_guides.py`, `speaker_profiles_dialog.py`, `diagnostic_editor_tests.py`, `diagnostic_speaker_cleanup_tests.py`) [x] [COMPLETED in v3.10.10-beta]
+   [x] 2.1 Fix `video_shows` Embedded Guide Key (`embedded_guides.py`, `diagnostic_speaker_cleanup_tests.py`): Restored `"video_shows"` key in `EMBEDDED_GUIDES` so frozen builds resolve the guide cleanly.
+   [x] 2.2 Live-Theme QSS Polish Timing (`speaker_profiles_dialog.py`): Attached `action_w` via `setCellWidget()` and called `ensurePolished()` before measuring `sizeHint()` / enforcing `setMinimumWidth()`.
+   [x] 2.3 Isolate Real `QSettings` in Fade Test (`diagnostic_editor_tests.py`): Patched `QSettings` around the disabled-fades `Story(...)` check in `_test_story_duration_visibility_and_header_aggregation`.
 
 3. Deferred Milestone: Domain Separation & Purpose-Driven Monolithic File Modularization [ ] [DEFERRED / LOWER PRIORITY]
    - *Purpose*: Systematic architectural refactoring prioritizing **file purpose, single responsibility, and domain cohesion** alongside line count reduction (<800 lines target, 1,000 lines ceiling), systematically decoupling grandfathered multi-domain monoliths into focused submodules with 100% backward-compatible facade re-exports.
@@ -94,23 +94,23 @@ TABLE OF CONTENTS & STATUS OVERVIEW
 DETAILED MILESTONE SPECIFICATIONS
 ================================================================================
 
-1. IMMEDIATE PREDECESSOR RELEASE: MAIN MENU BAR DEDUPLICATION, QT AMPERSAND ESCAPING & POLISH:
-- Purpose: Eliminate duplicate menu items across File/View/Tools/Settings, fix unescaped `&` labels in Qt menus, make `View -> Theme` items checkable and synchronized, align initial Segment vocabulary labels, and sync shortcut schema metadata.
-- Target Release: v3.10.8-beta (Immediate Predecessor Release)
-- Technical References: `ui_menus.py`, `theme_preferences.py`, `shortcuts/schema.py`, `diagnostic_speaker_cleanup_tests.py`, `test_runner.py`.
-- Implementation Details:
-  * [x] Menu Deduplication (`ui_menus.py`): Kept `Backup && Restore Settings...` and `Manage AI Models...` only in `Settings`, `Batch Processing...` and `Clear Temporary Cache...` only in `Tools`, `Comments Sidebar Panel` only in top-level `View`, `Show Comment Highlights` only in `View -> Transcript`, and moved `Check for Updates...` into `Help`, while preserving all backward-compatible action aliases.
-  * [x] Escaping, Checkable Theme & Terminology (`ui_menus.py`, `theme_preferences.py`, `shortcuts/schema.py`): Escaped all 6 single-ampersand menu labels with `&&`, added exclusive checkable `theme_*_action` items synced in `set_theme()`, initialized `auto_detect_action`/`toggle_stories_action` via `get_story_vocabulary()`, and updated `backup_restore` shortcut metadata.
-  * [x] Automated Regression Coverage (`diagnostic_speaker_cleanup_tests.py`, `test_runner.py`): Verified menu uniqueness, `&&` escaping, single-menu ownership, checkable theme state, aliases, and shortcut metadata alignment.
-
-2. ACTIVE RELEASE: KEYBOARD SHORTCUTS, DYNAMIC HELP GUIDE & FULL DOCUMENTATION SYNC:
+1. IMMEDIATE PREDECESSOR RELEASE: KEYBOARD SHORTCUTS, DYNAMIC HELP GUIDE & FULL DOCUMENTATION SYNC:
 - Purpose: Resolve the `Ctrl+K` shortcut collision, fix broken custom shortcut lookups, replace the hardcoded UserGuideDialog shortcuts table with live `SHORTCUT_DEFINITIONS` rendering, and synchronize all 6 guides (`docs/guides/*.md` + `embedded_guides.py`), `docs/README.md`, `README.md`, `ARCHITECTURE.md`, and `BUILD_INSTRUCTIONS.txt`.
-- Target Release: v3.10.9-beta (Active Release)
+- Target Release: v3.10.9-beta (Immediate Predecessor Release)
 - Technical References: `ui_layout.py`, `shortcuts/schema.py`, `shortcuts/manager.py`, `playback_controller.py`, `transcript_editor.py`, `transcript_context_menu_mixin.py`, `user_guide_dialog.py`, `ui_dialog_launchers.py`, `translation.py`, `backup_manager.py`, `docs/guides/*.md`, `embedded_guides.py`, `docs/README.md`, `README.md`, `ARCHITECTURE.md`, `BUILD_INSTRUCTIONS.txt`, `diagnostic_speaker_cleanup_tests.py`.
 - Implementation Details:
   * [x] Collision & Custom Shortcut Fixes (`ui_layout.py`, `shortcuts/schema.py`, `shortcuts/manager.py`, `playback_controller.py`, `transcript_editor.py`, `transcript_context_menu_mixin.py`): Reassigned Strikethrough from `Ctrl+K` to `Alt+Shift+5`, added 5 missing shortcuts (`F8`, `Ctrl+C`, `Alt+Shift+5`, `Ctrl+Shift+H`, `Shift+F2`) and `"delete_story"` alias, wired `copy_selection_as_audio_clip`/`delete_selected_story`, and updated schema strings.
   * [x] Dynamic Help Tab & Prompt Fixes (`user_guide_dialog.py`, `ui_dialog_launchers.py`, `translation.py`, `backup_manager.py`): Rendered `UserGuideDialog` Shortcuts tab dynamically from `SHORTCUT_DEFINITIONS`, fixed plugin menu path hints (`Tools > Manage Plugins & Add-ons...`), and cleaned `backup_manager.py` docstring.
   * [x] Documentation & Guide Sync (`docs/guides/*.md`, `embedded_guides.py`, `docs/README.md`, `README.md`, `ARCHITECTURE.md`, `BUILD_INSTRUCTIONS.txt`, `diagnostic_speaker_cleanup_tests.py`): Fixed all inaccurate shortcuts/menu paths, removed Google Drive/OAuth/nonexistent format claims, documented v3.10.x features, synchronized `embedded_guides.py` and `README.md`, and added automated test assertions.
+
+2. ACTIVE RELEASE: DIAGNOSTIC PARITY FIXES (`embedded_guides.py`, `speaker_profiles_dialog.py`, `diagnostic_editor_tests.py`):
+- Purpose: Resolve the three failures surfaced by the full 81-test Diagnostic Test Bench (`video_shows` key mismatch, QSS polish order in `ManageVoiceProfilesDialog`, and `QSettings` isolation in fade test).
+- Target Release: v3.10.10-beta (Active Release)
+- Technical References: `embedded_guides.py`, `speaker_profiles_dialog.py`, `diagnostic_editor_tests.py`, `diagnostic_speaker_cleanup_tests.py`.
+- Implementation Details:
+  * [x] Restore `video_shows` Embedded Guide Key (`embedded_guides.py`, `diagnostic_speaker_cleanup_tests.py`): Renamed `"video_youtube"` -> `"video_shows"` so frozen builds resolve *Video Shows & YouTube Publishing*.
+  * [x] QSS Polish Timing in Actions Column (`speaker_profiles_dialog.py`): Added `setCellWidget()` + `ensurePolished()` before `sizeHint()` / `setMinimumWidth()` measurement.
+  * [x] Isolate `QSettings` in Story Fade Test (`diagnostic_editor_tests.py`): Mocked disabled fades when asserting default `0.0s` fade-out on fresh `Story` objects.
 
 3. DEFERRED MILESTONE: DOMAIN SEPARATION & PURPOSE-DRIVEN MONOLITHIC FILE MODULARIZATION:
 - Purpose: Systematic architectural refactoring prioritizing file purpose and single responsibility (<800 lines target, 1,000 lines ceiling).
