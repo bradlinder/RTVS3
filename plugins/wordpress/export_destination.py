@@ -30,6 +30,7 @@ from plugins.wordpress.client import (
     format_parent_episode_notice,
     is_wp_auth_error,
 )
+from plugins.wordpress.authors import expand_legacy_author_term_ids
 from plugins.wordpress.wp_post_builder import capture_video_frame, build_wp_post_items
 from plugins.wordpress.wp_tab_widget import WordPressExportTabWidget
 
@@ -361,10 +362,11 @@ class WordPressExportDestination(ExportDestination):
                     if resolved.get("excerpt") and not post.get("_excerpt_user_edited") and not post.get("excerpt_from_existing"):
                         post["excerpt"] = resolved["excerpt"]
                         post["excerpt_from_existing"] = True
-                    if not post.get("author_ids") and resolved.get("author_ids"):
-                        post["author_ids"] = list(resolved["author_ids"])
-                    if not post.get("author_term_ids") and resolved.get("author_term_ids"):
-                        post["author_term_ids"] = list(resolved["author_term_ids"])
+                    if not post.get("author_ids") and not post.get("author_term_ids"):
+                        if resolved.get("author_ids"):
+                            post["author_ids"] = list(resolved["author_ids"])
+                        if resolved.get("author_term_ids"):
+                            post["author_term_ids"] = list(resolved["author_term_ids"])
                     if not post.get("category_ids") and resolved.get("category_ids"):
                         post["category_ids"] = list(resolved["category_ids"])
                     if is_par:
@@ -409,6 +411,16 @@ class WordPressExportDestination(ExportDestination):
                 settings.setValue("wp_include_audio", True)
                 if hasattr(getattr(self, "tab_widget", None), "wp_cb_include_audio"):
                     self.tab_widget.wp_cb_include_audio.setChecked(True)
+
+        cached_authors = list(getattr(getattr(self, "tab_widget", None), "wp_cached_authors_data", None) or [])
+        if not cached_authors:
+            try:
+                import json
+                cached_authors = json.loads(settings.value("wp_cached_authors", "") or "[]")
+                if not isinstance(cached_authors, list):
+                    cached_authors = []
+            except Exception:
+                cached_authors = []
 
         try:
             for idx, post in enumerate(ordered_wp_posts):
@@ -471,6 +483,12 @@ class WordPressExportDestination(ExportDestination):
                         target_status = str(post.get("existing_post_status"))
                     target_slug = build_story_slug(post_title) if (not is_parent_episode and not is_updating_post) else None
 
+                    eff_author_ids, eff_author_term_ids = expand_legacy_author_term_ids(
+                        post.get("author_ids", []),
+                        post.get("author_term_ids", []),
+                        cached_authors,
+                    )
+
                     post_data = execute_wordpress_upload(
                         main_window=main_window,
                         client=client,
@@ -483,8 +501,8 @@ class WordPressExportDestination(ExportDestination):
                         include_spanish=inc_es,
                         spanish_presentation=pres,
                         primary_language=primary,
-                        author_ids=post.get("author_ids", []),
-                        author_term_ids=post.get("author_term_ids", []),
+                        author_ids=eff_author_ids,
+                        author_term_ids=eff_author_term_ids,
                         category_ids=post.get("category_ids", []),
                         show_completion_dialog=False,
                         media_filename=media_filename,

@@ -36,6 +36,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from plugins.wordpress.authors import extract_checked_author_ids, is_author_item_selected
 from prs_shared import (
     INTERNAL_APP_ID,
     CollapsibleSection,
@@ -512,28 +513,21 @@ class WordPressExportTabWidget(QWidget):
         self._load_post_editor_state(row)
 
     def _get_editor_checked_authors(self) -> Tuple[List[int], List[int]]:
-        auth_ids = []
-        auth_term_ids = []
+        checked_dicts = []
         for i in range(self.wp_authors_list.count()):
             item = self.wp_authors_list.item(i)
             if item.checkState() == Qt.CheckState.Checked:
                 data = item.data(Qt.ItemDataRole.UserRole)
                 if isinstance(data, dict):
-                    if "id" in data:
-                        auth_ids.append(int(data["id"]))
-                    if "term_id" in data:
-                        auth_term_ids.append(int(data["term_id"]))
-        return auth_ids, auth_term_ids
+                    checked_dicts.append(data)
+        return extract_checked_author_ids(checked_dicts)
 
     def _set_editor_checked_authors(self, author_ids: List[int], author_term_ids: List[int]):
         self._syncing_post_editor = True
         for i in range(self.wp_authors_list.count()):
             item = self.wp_authors_list.item(i)
             data = item.data(Qt.ItemDataRole.UserRole)
-            checked = False
-            if isinstance(data, dict):
-                if data.get("id") in author_ids or data.get("term_id") in author_term_ids:
-                    checked = True
+            checked = is_author_item_selected(data, author_ids, author_term_ids) if isinstance(data, dict) else False
             item.setCheckState(Qt.CheckState.Checked if checked else Qt.CheckState.Unchecked)
         self._syncing_post_editor = False
 

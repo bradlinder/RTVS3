@@ -23,6 +23,7 @@ from prs_shared import (
     CollapsibleSection,
     format_time,
 )
+from plugins.wordpress.authors import count_selected_authors
 
 
 def extract_youtube_video_id(url_or_id: str) -> Tuple[str, Optional[int]]:
@@ -547,7 +548,7 @@ def format_post_list_label_and_tooltip(tab_widget: Any, idx: int) -> Tuple[str, 
         prefix = raw_task_label
     title = post.get("title") or prefix
 
-    n_auths = len(post.get("author_ids", [])) + len(post.get("author_term_ids", []))
+    n_auths = count_selected_authors(post.get("author_ids", []), post.get("author_term_ids", []))
     n_cats = len(post.get("category_ids", []))
     is_podcast = bool(post.get("is_podcast", False))
     inc_audio = getattr(tab_widget, "wp_cb_include_audio", None) and tab_widget.wp_cb_include_audio.isChecked()

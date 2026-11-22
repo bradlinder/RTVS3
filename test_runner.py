@@ -55,6 +55,7 @@ from diagnostic_cloud_and_system_tests import DiagnosticCloudAndSystemTestsMixin
 from diagnostic_loudness_tests import DiagnosticLoudnessTestsMixin
 from diagnostic_editor_tests import DiagnosticEditorTestsMixin
 from diagnostic_speaker_cleanup_tests import DiagnosticSpeakerCleanupTestsMixin
+from diagnostic_wordpress_tests import DiagnosticWordPressTestsMixin
 
 
 # ---------------------------------------------------------------------------
@@ -69,6 +70,7 @@ class DiagnosticEngine(
     DiagnosticLoudnessTestsMixin,
     DiagnosticEditorTestsMixin,
     DiagnosticSpeakerCleanupTestsMixin,
+    DiagnosticWordPressTestsMixin,
 ):
     """Executes tests across Core File Formats, Subtitle Generators, AI Runtimes,
     and Download Pipelines with optional progress reporting.
@@ -529,6 +531,11 @@ class DiagnosticEngine(
                 "Offline Spellcheck and Metadata Terminology Alignment",
                 "Transcript & Speaker Management",
                 "Validates Tier 1 offline spellcheck detection, Glossary/speaker allowlisting, case-preserving suggestions, QLineEdit/QTextEdit replacement, and Add-to-Glossary sync",
+            ),
+            DiagnosticItem(
+                "WordPress PublishPress Author Mapping and Update Semantics",
+                "Export & Packaging Engines",
+                "Validates mapped WP User and PublishPress Guest Author term_id extraction, existing-post author pre-selection, and update_post overwrite payloads",
             ),
         ]
 

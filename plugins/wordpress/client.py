@@ -829,13 +829,13 @@ class WordPressClient:
                         # Do NOT issue another POST /posts which creates an orphaned duplicate.
                         update_payload: dict[str, Any] = {}
                         if series_ids:
-                            update_payload["series"] = series_ids
+                            update_payload["podcast_series"] = series_ids
                         if category_ids:
-                            update_payload["categories"] = category_ids
+                            update_payload["category_ids"] = category_ids
                         if author_ids:
-                            update_payload["author"] = author_ids[0]
+                            update_payload["author_ids"] = author_ids
                         if author_term_ids:
-                            update_payload["ppma_author"] = [int(x) for x in author_term_ids]
+                            update_payload["author_term_ids"] = [int(x) for x in author_term_ids]
                         if update_payload:
                             try:
                                 self.update_post(created_id, **update_payload)
@@ -995,7 +995,17 @@ class WordPressClient:
                     minimal_payload.pop("ppma_author", None)
                     min_resp = self._post_request(url, json_data=minimal_payload, timeout=30)
                     if min_resp.status_code in (200, 201):
-                        return min_resp.json()
+                        post_json = min_resp.json()
+                        if author_term_ids:
+                            try:
+                                self._post_request(
+                                    f"{self.api_base}/posts/{pid}",
+                                    json_data={"ppma_author": [int(t) for t in author_term_ids]},
+                                    timeout=10,
+                                )
+                            except Exception:
+                                pass
+                        return post_json
                 last_error = f"HTTP {resp.status_code}: {resp.text[:300]}"
             except Exception as exc:
                 last_error = str(exc)

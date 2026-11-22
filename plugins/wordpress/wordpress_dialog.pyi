@@ -12,6 +12,7 @@ from typing import Any, Dict, List, Optional, Tuple
 from PySide6.QtCore import Qt, QTimer, QSettings, QRectF
 from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import QApplication, QButtonGroup, QCheckBox, QComboBox, QDialog, QFileDialog, QFormLayout, QFrame, QGroupBox, QHBoxLayout, QLabel, QLineEdit, QListWidget, QListWidgetItem, QMessageBox, QPushButton, QRadioButton, QScrollArea, QSlider, QVBoxLayout, QWidget
+from plugins.wordpress.authors import extract_checked_author_ids, is_author_item_selected
 from prs_shared import INTERNAL_APP_ID, CollapsibleSection, ResizableTextEdit, ffmpeg_path, format_time, safe_filename
 from plugins.wordpress.client import WordPressClient, generate_wp_excerpt as _client_generate_wp_excerpt, format_rich_text_to_html, format_parent_episode_notice, build_episode_stories_toc, WordPressSettingsDialog, execute_wordpress_upload, _get_wp_password
 

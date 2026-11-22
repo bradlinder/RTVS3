@@ -53,6 +53,7 @@ from prs_shared import (
     safe_filename,
 )
 from plugins.base import BasePlugin, PluginManifest
+from plugins.wordpress.authors import resolve_selected_author_names
 from plugins.wordpress.client import (
     WordPressClient,
     _get_wp_password,
@@ -825,15 +826,11 @@ class WordPressStoryMetadataWidget(QGroupBox):
         # Authors
         raw_auth = self.settings.value("wp_cached_authors", "")
         auth_data = json.loads(raw_auth) if raw_auth else []
-        auth_ids = set(wp_meta.get("author_ids") or [])
-        term_ids = set(wp_meta.get("author_term_ids") or [])
-        matched_authors = []
-        for a in auth_data:
-            if isinstance(a, dict):
-                if not a.get("is_guest") and (a.get("user_id") in auth_ids or a.get("id") in auth_ids):
-                    matched_authors.append(a.get("name", "User"))
-                elif a.get("is_guest") and (a.get("term_id") in term_ids or a.get("id") in term_ids):
-                    matched_authors.append(a.get("name", "Guest"))
+        matched_authors = resolve_selected_author_names(
+            auth_data,
+            wp_meta.get("author_ids") or [],
+            wp_meta.get("author_term_ids") or [],
+        )
         if not matched_authors and self.current_target_mode == "story" and self.current_story:
             st_auth = self.current_story.metadata.get("author")
             if st_auth:

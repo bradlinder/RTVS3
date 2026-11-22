@@ -15,6 +15,7 @@ from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QListWidget, QListWidgetItem, QPushButton, QMessageBox, QGroupBox, QFormLayout, QComboBox, QScrollArea, QTextEdit, QFileDialog, QRadioButton, QButtonGroup, QCheckBox, QProgressBar, QWidget, QSlider, QFrame
 from prs_shared import INTERNAL_APP_ID, PROJECT_VERSION, QSettings, CollapsibleSection, ffmpeg_path, format_time, safe_filename
 from plugins.base import BasePlugin, PluginManifest
+from plugins.wordpress.authors import resolve_selected_author_names
 from plugins.wordpress.client import WordPressClient, _get_wp_password, _set_wp_password, generate_wp_excerpt, WordPressSettingsDialog, execute_wordpress_upload
 
 def capture_video_frame(video_path: str, timestamp: float, output_path: str, timeout: float=...) -> bool:

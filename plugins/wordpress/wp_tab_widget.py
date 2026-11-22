@@ -31,6 +31,11 @@ from plugins.wordpress.client import (
     _get_wp_password,
     is_wp_auth_error,
 )
+from plugins.wordpress.authors import (
+    extract_checked_author_ids,
+    is_author_item_selected,
+    resolve_selected_author_names,
+)
 from plugins.wordpress.wp_post_builder import capture_video_frame, build_wp_post_items, sync_featured_image_meta
 from plugins.wordpress.wp_ui_builder import setup_wp_tab_ui
 
@@ -424,15 +429,11 @@ class WordPressExportTabWidget(QWidget):
                     target_story.title = new_title
 
                 # Resolve and sync author name to Story.metadata["author"]
-                auth_names = []
-                auth_ids_set = set(int(x) for x in (post.get("author_ids") or []))
-                term_ids_set = set(int(x) for x in (post.get("author_term_ids") or []))
-                for a in getattr(self, "wp_cached_authors_data", []):
-                    if isinstance(a, dict):
-                        if not a.get("is_guest") and (a.get("user_id") in auth_ids_set or a.get("id") in auth_ids_set):
-                            auth_names.append(a.get("name", "User"))
-                        elif a.get("is_guest") and (a.get("term_id") in term_ids_set or a.get("id") in term_ids_set):
-                            auth_names.append(a.get("name", "Guest"))
+                auth_names = resolve_selected_author_names(
+                    getattr(self, "wp_cached_authors_data", []),
+                    post.get("author_ids") or [],
+                    post.get("author_term_ids") or [],
+                )
                 if auth_names:
                     target_story.metadata["author"] = ", ".join(auth_names)
                 elif post.get("manual_author"):
@@ -515,40 +516,21 @@ class WordPressExportTabWidget(QWidget):
         self._load_post_editor_state(row)
 
     def _get_editor_checked_authors(self) -> Tuple[List[int], List[int]]:
-        author_ids = []
-        author_term_ids = []
+        checked_dicts = []
         for i in range(self.wp_author_list.count()):
             item = self.wp_author_list.item(i)
             if item.checkState() == Qt.CheckState.Checked:
                 data = item.data(Qt.ItemDataRole.UserRole)
                 if isinstance(data, dict):
-                    if data.get("is_guest"):
-                        tid = data.get("term_id") or data.get("id")
-                        if tid:
-                            author_term_ids.append(int(tid))
-                    else:
-                        uid = data.get("user_id") or data.get("id")
-                        if uid:
-                            author_ids.append(int(uid))
-        return author_ids, author_term_ids
+                    checked_dicts.append(data)
+        return extract_checked_author_ids(checked_dicts)
 
     def _set_editor_checked_authors(self, author_ids: List[int], author_term_ids: List[int]):
         self._syncing_post_editor = True
-        auth_set = set(int(x) for x in (author_ids or []))
-        term_set = set(int(x) for x in (author_term_ids or []))
         for i in range(self.wp_author_list.count()):
             item = self.wp_author_list.item(i)
             data = item.data(Qt.ItemDataRole.UserRole)
-            checked = False
-            if isinstance(data, dict):
-                if data.get("is_guest"):
-                    tid = data.get("term_id") or data.get("id")
-                    if tid and int(tid) in term_set:
-                        checked = True
-                else:
-                    uid = data.get("user_id") or data.get("id")
-                    if uid and int(uid) in auth_set:
-                        checked = True
+            checked = is_author_item_selected(data, author_ids, author_term_ids) if isinstance(data, dict) else False
             item.setCheckState(Qt.CheckState.Checked if checked else Qt.CheckState.Unchecked)
         self._syncing_post_editor = False
 
