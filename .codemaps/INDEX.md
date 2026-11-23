@@ -1,13 +1,13 @@
 # Repository Symbol Index & API Map
 
-> Generated: 2026-11-22 15:09:21 | Total Files: 173
+> Generated: 2026-11-23 09:28:06 | Total Files: 174
 > Use `python scripts/generate_symbol_index.py --outline <file>` for exact line numbers.
 
 ## Modules Overview
 
 | Module | Lines | Summary | Primary Classes / Functions |
 | :--- | :---: | :--- | :--- |
-| `RadioTVSegmenter.py` | 684 | Radio & TV Segmenter — v3.10.10-beta | `MainWindow`, `main()` |
+| `RadioTVSegmenter.py` | 684 | Radio & TV Segmenter — v3.10.11-beta | `MainWindow`, `main()` |
 | `audio_normalization.py` | 474 | Radio & TV Story Segmenter — Audio Loudness Probing & Nor... | `LoudnessReport`, `parse_ebur128_summary()`, `probe_media_duration_seconds()`, `probe_media_loudness()` *(+2 more)* |
 | `audio_normalization_worker.py` | 89 | Background QThread worker for non-blocking EBU R128 loudn... | `AudioLoudnessProbeWorker` |
 | `background_workers.py` | 1051 | Radio & TV Story Segmenter — Background Worker Threads & ... | `StoryAutoDetectWorker`, `WaveformWorker`, `VideoThumbnailWorker`, `get_waveform_peak_cache_path()` *(+6 more)* |
@@ -22,7 +22,7 @@
 | `bump_version.py` | 513 | bump_version.py — Automated Version Synchronization Engine | `normalize_version()`, `get_current_version()`, `compute_bump()`, `detect_modified_plugins()` *(+3 more)* |
 | `cache_manager.py` | 685 | Radio & TV Segmenter — Cache management, disk usage scann... | `ClearCacheDialog`, `register_active_thumbnail_dir()`, `unregister_active_thumbnail_dir()`, `get_active_thumbnail_dirs()` *(+3 more)* |
 | `comment_widgets.py` | 350 | comment_widgets.py - Range-Anchored Comments Panel & Comm... | `CommentEditorDialog`, `CommentCardWidget`, `CommentsPanel` |
-| `core_utils.py` | 773 | Radio & TV Segmenter — Core filesystem, path, timing, and... | `StoryVocabulary`, `safe_process_events()`, `get_active_theme_mode()`, `apply_window_titlebar_theme()` *(+25 more)* |
+| `core_utils.py` | 776 | Radio & TV Segmenter — Core filesystem, path, timing, and... | `StoryVocabulary`, `safe_process_events()`, `get_active_theme_mode()`, `apply_window_titlebar_theme()` *(+24 more)* |
 | `diagnostic_batch_tests.py` | 1076 | Diagnostic test bench suite component. | `DiagnosticBatchTestsMixin` |
 | `diagnostic_cloud_and_system_tests.py` | 1409 | Diagnostic test bench suite component. | `DiagnosticCloudAndSystemTestsMixin` |
 | `diagnostic_core_tests.py` | 963 | Diagnostic test bench suite component. | `DiagnosticCoreTestsMixin` |
@@ -32,7 +32,7 @@
 | `diagnostic_helpers.py` | 151 | Helper fixtures, module resolvers, and DiagnosticItem for... | `DiagnosticItem`, `generate_synthetic_wav()` |
 | `diagnostic_loudness_tests.py` | 404 | Radio & TV Story Segmenter — Diagnostic Loudness Normaliz... | `DiagnosticLoudnessTestsMixin` |
 | `diagnostic_selector.py` | 191 | Smart Diagnostic Test Selector for Radio & TV Story Segme... | `get_modified_files()`, `has_git_changes()`, `detect_changed_tokens()`, `select_diagnostic_items()` |
-| `diagnostic_speaker_cleanup_tests.py` | 811 | Diagnostic tests for Phase 2 features: minimum story leng... | `DiagnosticSpeakerCleanupTestsMixin` |
+| `diagnostic_speaker_cleanup_tests.py` | 937 | Diagnostic tests for Phase 2 features: minimum story leng... | `DiagnosticSpeakerCleanupTestsMixin` |
 | `diagnostic_wordpress_tests.py` | 109 | Diagnostic tests for WordPress PublishPress Author mappin... | `DiagnosticWordPressTestsMixin` |
 | `dialogs.py` | 433 | Radio & TV Story Segmenter — Audio Loudness Normalization... | `AudioLoudnessNormalizationDialog` |
 | `diarization_processing.py` | 772 | Speaker diarization process management for Radio & TV Sto... | `DiarizationProcessingMixin` |
@@ -47,7 +47,7 @@
 | `export/subtitles.py` | 222 | Subtitle and timeline formatters for Radio & TV Story Seg... | `format_subtitle_timestamp()`, `format_srt_timestamp()`, `format_vtt_timestamp()`, `format_cue_timestamp()` *(+9 more)* |
 | `export/timeline.py` | 873 | Multi-Platform Timeline and DAW Interchange Engine for Ra... | `reaper_color_from_hex()`, `format_edl_timestamp()`, `build_timeline_clips()`, `generate_reaper_project()` *(+8 more)* |
 | `export_dialogs.py` | 447 | Radio & TV Story Segmenter — Export Dialogs & Scope Selec... | `ExportDialogsMixin`, `show_export_completion_dialog()` |
-| `export_documents.py` | 793 | Radio & TV Story Segmenter — Document, Transcript & Timel... | `ExportDocumentsMixin` |
+| `export_documents.py` | 796 | Radio & TV Story Segmenter — Document, Transcript & Timel... | `ExportDocumentsMixin` |
 | `export_media_clipper.py` | 337 | Radio & TV Story Segmenter — Media Clipper & Audio Track ... | `ExportMediaClipperMixin` |
 | `export_story_pipeline.py` | 964 | Radio & TV Story Segmenter — Story & Full Episode Export ... | `ExportStoryPipelineMixin` |
 | `glossary_dialog.py` | 490 | Custom Vocabulary & Glossary Dialog. | `GlossaryDialog` |
@@ -75,7 +75,7 @@
 | `plugins/wordpress/__init__.py` | 6 | WordPress Publisher Plugin for Radio & TV Segmenter. | - |
 | `plugins/wordpress/authors.py` | 143 | Pure-Python helpers for WordPress user and PublishPress A... | `extract_checked_author_ids()`, `is_author_item_selected()`, `resolve_selected_author_names()`, `count_selected_authors()` *(+1 more)* |
 | `plugins/wordpress/castos.py` | 725 | Seriously Simple Podcasting (Castos) integration for Word... | `format_castos_duration()`, `build_castos_post_meta()`, `copy_podcast_meta()`, `fetch_castos_feeds()` *(+5 more)* |
-| `plugins/wordpress/client.py` | 2155 | WordPress Plugin — Client, Credential Storage, and Upload... | `WordPressClient`, `WordPressSettingsDialog`, `WordPressPreferencesPage`, `format_rich_text_to_html()` *(+6 more)* |
+| `plugins/wordpress/client.py` | 2169 | WordPress Plugin — Client, Credential Storage, and Upload... | `WordPressClient`, `WordPressSettingsDialog`, `WordPressPreferencesPage`, `format_rich_text_to_html()` *(+6 more)* |
 | `plugins/wordpress/episode_updater.py` | 999 | WordPress Existing Episode Lookup, Backfill Mode, Date Sc... | `LoadWordPressEpisodeDialog`, `extract_slug_or_id_from_url()`, `clean_html_to_plain_excerpt()`, `build_story_slug()` *(+9 more)* |
 | `plugins/wordpress/export_destination.py` | 794 | WordPress Export Destination for UnifiedExportDialog. | `WordPressExportDestination`, `WordPressPostMetadataDialog` |
 | `plugins/wordpress/plugin.py` | 980 | WordPress Publisher Plugin for Radio & TV Segmenter. | `WordPressPublishDialog`, `WordPressPublishWorker`, `WordPressStoryMetadataWidget`, `Plugin` *(+1 more)* |
@@ -105,7 +105,7 @@
 | `prs_shared.py` | 1494 |  | `ProjectMetadataDict`, `ResizableTextEdit`, `CollapsibleSection`, `ExportDialog` *(+8 more)* |
 | `qt_compat.py` | 962 | Radio & TV Segmenter — Headless Qt / PySide6 Compatibilit... | `MockClassMeta`, `DynamicMock`, `MockModule`, `_DummyQtMeta` *(+23 more)* |
 | `radio_tv_story_segmenter_worker.py` | 226 | Radio & TV Story Segmenter — AI Background Subprocess Wor... | `main()` |
-| `reaper_bridge.py` | 962 | reaper_bridge.py — REAPER DAW Companion Bridge & Inter-Pr... | `get_reaper_ipc_paths()`, `reaper_color_from_hex()`, `get_reaper_clip_notes_and_markers()`, `build_reaper_cue_payload()` *(+10 more)* |
+| `reaper_bridge.py` | 939 | reaper_bridge.py — REAPER DAW Companion Bridge & Inter-Pr... | `get_reaper_ipc_paths()`, `reaper_color_from_hex()`, `get_reaper_clip_notes_and_markers()`, `build_reaper_cue_payload()` *(+10 more)* |
 | `roadmap_manager.py` | 259 | roadmap_manager.py — Automated Roadmap & N-1 Sliding-Wind... | `RoadmapManager`, `get_current_app_version()`, `main()` |
 | `runtime_manager.py` | 1037 |  | `RuntimeManager`, `register_process()`, `unregister_process()`, `kill_all_subprocesses()` *(+1 more)* |
 | `scripts/capture_guide_screenshots.py` | 152 | Programmatic headless screenshot generator for RTVS3 user... | `MockCaptureMainWindow`, `capture_widget()`, `main()` |
@@ -114,6 +114,7 @@
 | `scripts/generate_symbol_index.py` | 380 | generate_symbol_index.py — Fast AST Symbol Indexer & Repo... | `parse_function_signature()`, `analyze_file()`, `scan_repository()`, `generate_index_markdown()` *(+4 more)* |
 | `scripts/log_summary.py` | 150 | log_summary.py — Compact Error & Exception Extraction Engine | `is_project_frame()`, `extract_log_summary()`, `main()` |
 | `scripts/modular_audit.py` | 777 | scripts/modular_audit.py — AST Decomposition Suggester & ... | `ModuleStructure`, `DecompositionPlan`, `scan_repository()`, `print_audit_report()` *(+4 more)* |
+| `sentence_boundaries.py` | 140 | Context-aware sentence-boundary and abbreviation detectio... | `is_ambiguous_abbreviation()`, `is_non_terminal_abbreviation()`, `is_sentence_end()` |
 | `shortcuts/__init__.py` | 26 | shortcuts package — Modular Keyboard Shortcuts Management... | - |
 | `shortcuts/definitions.py` | 22 | shortcuts/definitions.py — Shortcut definitions and schem... | - |
 | `shortcuts/dialogs.py` | 623 | shortcuts/dialogs.py — Preferences page for keyboard shor... | `KeyboardShortcutsPage` |
@@ -158,7 +159,7 @@
 | `transcript_navigation_mixin.py` | 300 | transcript_navigation_mixin.py - Timestamp discovery, car... | `TranscriptNavigationMixin` |
 | `transcript_playback_highlight_mixin.py` | 277 | Radio & TV Story Segmenter — Interactive Transcript Playb... | `TranscriptPlaybackHighlightMixin` |
 | `transcript_selection_mixin.py` | 473 | transcript_selection_mixin.py - Multi-selection, timeline... | `TranscriptSelectionMixin` |
-| `transcript_story.py` | 852 | Radio & TV Segmenter v3.10.10-beta — transcript story res... | `TranscriptStoryMixin` |
+| `transcript_story.py` | 856 | Radio & TV Segmenter v3.10.11-beta — transcript story res... | `TranscriptStoryMixin` |
 | `transcript_styles.py` | 104 | transcript_styles.py - Transcript view stylesheets and da... | `transcript_text_view_stylesheet()`, `clean_dark_mode_clipboard_html()` |
 | `transcript_timeline_sync_mixin.py` | 655 | Radio & TV Story Segmenter — Transcript Timeline & Playba... | `TranscriptTimelineSyncMixin` |
 | `transcription_processing.py` | 579 | Transcription background process management for Radio & T... | `TranscriptionProcessingMixin` |
@@ -174,17 +175,17 @@
 | `voice_profile_dialog.py` | 1006 | voice_profile_dialog.py — Dialog for finding and reassign... | `VoiceProfileMatchDialog` |
 | `voice_profile_ops_mixin.py` | 730 | Radio & TV Story Segmenter — Voice Profile Matching & Emb... | `VoiceProfileOpsMixin` |
 | `waveform_envelope.py` | 55 | Waveform envelope data structures, downsampling pyramids,... | `WaveformEnvelope`, `build_waveform_pyramid()` |
-| `worker_asr_engines.py` | 839 | worker_asr_engines.py - Faster-Whisper, CTranslate2 & She... | `set_emit_callback()`, `get_optimal_transcription_threads()`, `get_app_data_dir_pure()`, `get_models_storage_dir_pure()` *(+4 more)* |
-| `worker_clustering.py` | 448 | worker_clustering.py - Acoustic clustering, VAD pause bri... | `normalize_audio_for_diarization()`, `configure_optimal_pytorch_threads()`, `fast_cluster_ahc()`, `apply_clustering_patches()` *(+2 more)* |
-| `worker_diarization_clustering.py` | 428 | worker_diarization_clustering.py - Speaker Clustering, Ce... | `consolidate_speaker_clusters()`, `merge_adjacent_diarization_segments()`, `cluster_speakers_ahc()`, `fast_cluster_ahc()` *(+2 more)* |
-| `worker_diarization_engine.py` | 953 | worker_diarization_engine.py - Speaker Diarization, Neura... | `set_emit_callback()`, `normalize_audio_for_diarization()`, `configure_optimal_pytorch_threads()`, `extract_embeddings_batched()` *(+3 more)* |
+| `worker_asr_engines.py` | 958 | worker_asr_engines.py - Faster-Whisper, CTranslate2 & She... | `set_emit_callback()`, `get_optimal_transcription_threads()`, `get_app_data_dir_pure()`, `get_models_storage_dir_pure()` *(+4 more)* |
+| `worker_clustering.py` | 457 | worker_clustering.py - Acoustic clustering, VAD pause bri... | `normalize_audio_for_diarization()`, `configure_optimal_pytorch_threads()`, `fast_cluster_ahc()`, `apply_clustering_patches()` *(+2 more)* |
+| `worker_diarization_clustering.py` | 434 | worker_diarization_clustering.py - Speaker Clustering, Ce... | `consolidate_speaker_clusters()`, `merge_adjacent_diarization_segments()`, `cluster_speakers_ahc()`, `fast_cluster_ahc()` *(+2 more)* |
+| `worker_diarization_engine.py` | 970 | worker_diarization_engine.py - Speaker Diarization, Neura... | `set_emit_callback()`, `normalize_audio_for_diarization()`, `configure_optimal_pytorch_threads()`, `extract_embeddings_batched()` *(+3 more)* |
 | `worker_ipc.py` | 216 | worker_ipc.py - Subprocess IPC protocol, environment setu... | `emit()`, `emit_hello()` |
 | `worker_story_engine.py` | 396 | worker_story_engine.py - Acoustic & Lexical Story Boundar... | `is_real_speech()`, `detect_story_boundaries()` |
 
 ## Detailed Symbol Catalog
 
 ### `RadioTVSegmenter.py` (684 lines)
-*Radio & TV Segmenter — v3.10.10-beta*
+*Radio & TV Segmenter — v3.10.11-beta*
 - **class `MainWindow(ModelManagementMixin, MediaBatchMixin, PlaybackPreferencesMixin, UiLayoutMixin, ProcessingMixin, TranslationMixin, TranscriptStoryMixin, ProjectExportMixin, GpuAccelerationMixin, QMainWindow)`** (lines 160–581):
   *Main application window for Radio & TV Segmenter.*
   - `__init__(self)` [L178-L355]
@@ -427,9 +428,9 @@
   - `set_comments(self, segments)` [L302-L337] — *Populate the comment cards from transcript segments.*
   - `highlight_segment(self, target_seg_idx)` [L339-L350] — *Visually flash/highlight a specific comment card.*
 
-### `core_utils.py` (773 lines)
+### `core_utils.py` (776 lines)
 *Radio & TV Segmenter — Core filesystem, path, timing, and hash utilities.*
-- **class `StoryVocabulary(NamedTuple)`** (lines 695–708):
+- **class `StoryVocabulary(NamedTuple)`** (lines 698–711):
 - **Functions**:
   - `safe_process_events()` [L38-L47] — *Safely process pending Qt GUI events only when called from the main GUI thread.*
   - `get_active_theme_mode(default)` [L50-L84] — *Retrieve active theme mode ('light', 'dark', or 'high_contrast') with universal multi-scope resolution.*
@@ -458,10 +459,9 @@
   - `format_clock_duration(seconds, include_millis)` [L590-L613] — *Format duration in seconds as clock time string (e.g. '02:30' or '02:30.5').*
   - `parse_time(value)` [L616-L632]
   - `safe_filename(text)` [L635-L651]
-  - `is_sentence_end(text)` [L654-L655]
-  - `calculate_fade_curve_factor(u, fcurve)` [L658-L669] — *Calculate normalized fade-in multiplier (0.0 to 1.0) given progress `u` in [0, 1].*
-  - `calculate_fade_out_factor(u, fcurve)` [L672-L692] — *Calculate normalized fade-out multiplier (1.0 to 0.0) given progress `u` from 0.0 (fade start) to 1.0 (silence).*
-  - `get_story_vocabulary(win_or_settings, language)` [L711-L772] — *Resolve active UI vocabulary nouns and action labels for timeline segments.*
+  - `calculate_fade_curve_factor(u, fcurve)` [L661-L672] — *Calculate normalized fade-in multiplier (0.0 to 1.0) given progress `u` in [0, 1].*
+  - `calculate_fade_out_factor(u, fcurve)` [L675-L695] — *Calculate normalized fade-out multiplier (1.0 to 0.0) given progress `u` from 0.0 (fade start) to 1.0 (silence).*
+  - `get_story_vocabulary(win_or_settings, language)` [L714-L775] — *Resolve active UI vocabulary nouns and action labels for timeline segments.*
 
 ### `diagnostic_batch_tests.py` (1076 lines)
 *Diagnostic test bench suite component.*
@@ -592,9 +592,9 @@
   - `detect_changed_tokens(root_dir)` [L64-L136] — *Return a set of lowercase module stems and plugin names from the most recently edited files.*
   - `select_diagnostic_items(engine, items, filter_expr, changed_only)` [L139-L191] — *Filter diagnostic items by explicit `--filter` keywords and/or `--changed` git diff analysis.*
 
-### `diagnostic_speaker_cleanup_tests.py` (811 lines)
+### `diagnostic_speaker_cleanup_tests.py` (937 lines)
 *Diagnostic tests for Phase 2 features: minimum story length, guest-name cleanup, and Station Voices.*
-- **class `DiagnosticSpeakerCleanupTestsMixin`** (lines 13–811):
+- **class `DiagnosticSpeakerCleanupTestsMixin`** (lines 13–937):
   *Mixin for Phase 2 regression diagnostics (story length, name cleanup, Station Voices).*
   - `_ensure_qt_app(self)` [L16-L21]
   - `_test_minimum_story_length_filtering_and_preferences(self, item)` [L23-L124]
@@ -602,6 +602,7 @@
   - `_test_station_voice_checkbox_and_threshold_normalization(self, item)` [L260-L395]
   - `_test_offline_spellcheck_and_metadata_terminology_alignment(self, item)` [L397-L586]
   - `_test_menu_bar_deduplication_and_escaping_integrity(self, item)` [L588-L811] — *Validates main menu bar deduplication, Qt && escaping, checkable theme menu state, and shortcut metadata.*
+  - `_test_abbreviation_sentence_boundaries_and_parakeet_rescue(self, item)` [L813-L937] — *Validates EN/ES title abbreviations, Parakeet chunk grouping & uncovered-speech tail rescue, diarization gap fallback, and WordPress paragraphing.*
 
 ### `diagnostic_wordpress_tests.py` (109 lines)
 *Diagnostic tests for WordPress PublishPress Author mapping and update semantics.*
@@ -791,29 +792,29 @@
 - **Functions**:
   - `show_export_completion_dialog(parent, title, message, export_path)` [L34-L50] — *Displays export completion with an actionable 'Open Folder' button (Milestone 3.11).*
 
-### `export_documents.py` (793 lines)
+### `export_documents.py` (796 lines)
 *Radio & TV Story Segmenter — Document, Transcript & Timeline Interchange Exporter.*
-- **class `ExportDocumentsMixin`** (lines 49–793):
+- **class `ExportDocumentsMixin`** (lines 49–796):
   *Provides document formatting, subtitle generation, and DAW interchange exports.*
   - `_subtitle_timestamp(self, seconds, vtt)` [L52-L62]
   - `write_subtitles(self, blocks, path, fmt, include_speakers)` [L64-L80]
   - `transcript_for_range(self, start, end)` [L82-L100]
   - `speaker_for_segment(self, segment)` [L102-L111]
   - `clean_export_text(self, text, current_speaker)` [L113-L146]
-  - `build_story_blocks(self, segments)` [L148-L269]
-  - `story_text(self, segments)` [L271-L287]
-  - `add_story_to_docx(self, document, segments)` [L289-L303]
-  - `_get_transcript_text_slice(self, start, end)` [L305-L312]
-  - `export_cue_sheet(self, destination_path)` [L314-L346] — *Export story/song segments to a standard .cue sheet.*
-  - `export_tracklist(self, destination_path)` [L348-L378] — *Export story/song segments as YouTube chapters / tracklist formatted text.*
-  - `_get_unselected_audio_mode_pref(self)` [L380-L385]
-  - `export_reaper_project(self, destination_path, unselected_audio_mode)` [L387-L432] — *Export story segments as a Cockos REAPER project file (.rpp).*
-  - `export_samplitude_edl(self, destination_path, unselected_audio_mode)` [L434-L467] — *Export story segments as a Magix Samplitude EDL (v1.5) broadcast edit decision list.*
-  - `export_audacity_labels(self, destination_path, unselected_audio_mode)` [L469-L501] — *Export story segments as an Audacity Label Track (.txt).*
-  - `export_audition_xml(self, destination_path, unselected_audio_mode)` [L503-L536] — *Export story segments as Adobe Audition / Final Cut Pro XML (.xml).*
-  - `export_daw_marker_csv(self, destination_path, unselected_audio_mode)` [L538-L570] — *Export story segments as a Universal DAW Marker List (.csv).*
-  - `copy_youtube_chapters_to_clipboard(self)` [L572-L589] — *Format story segments as YouTube chapters and copy them directly to the system clipboard.*
-  - `export_timeline_interchange(self, formats, base, options, directory, scope, is_custom_location)` [L591-L793] — *Export multi-platform timeline and DAW interchange project files.*
+  - `build_story_blocks(self, segments)` [L148-L272]
+  - `story_text(self, segments)` [L274-L290]
+  - `add_story_to_docx(self, document, segments)` [L292-L306]
+  - `_get_transcript_text_slice(self, start, end)` [L308-L315]
+  - `export_cue_sheet(self, destination_path)` [L317-L349] — *Export story/song segments to a standard .cue sheet.*
+  - `export_tracklist(self, destination_path)` [L351-L381] — *Export story/song segments as YouTube chapters / tracklist formatted text.*
+  - `_get_unselected_audio_mode_pref(self)` [L383-L388]
+  - `export_reaper_project(self, destination_path, unselected_audio_mode)` [L390-L435] — *Export story segments as a Cockos REAPER project file (.rpp).*
+  - `export_samplitude_edl(self, destination_path, unselected_audio_mode)` [L437-L470] — *Export story segments as a Magix Samplitude EDL (v1.5) broadcast edit decision list.*
+  - `export_audacity_labels(self, destination_path, unselected_audio_mode)` [L472-L504] — *Export story segments as an Audacity Label Track (.txt).*
+  - `export_audition_xml(self, destination_path, unselected_audio_mode)` [L506-L539] — *Export story segments as Adobe Audition / Final Cut Pro XML (.xml).*
+  - `export_daw_marker_csv(self, destination_path, unselected_audio_mode)` [L541-L573] — *Export story segments as a Universal DAW Marker List (.csv).*
+  - `copy_youtube_chapters_to_clipboard(self)` [L575-L592] — *Format story segments as YouTube chapters and copy them directly to the system clipboard.*
+  - `export_timeline_interchange(self, formats, base, options, directory, scope, is_custom_location)` [L594-L796] — *Export multi-platform timeline and DAW interchange project files.*
 
 ### `export_media_clipper.py` (337 lines)
 *Radio & TV Story Segmenter — Media Clipper & Audio Track Renderer.*
@@ -1304,7 +1305,7 @@
   - `sync_castos_to_post(tab_widget, post)` [L549-L612] — *Extract Castos UI state and write into post dictionary.*
   - `load_castos_from_post(tab_widget, post)` [L615-L691] — *Set Castos UI controls from post dictionary.*
 
-### `plugins/wordpress/client.py` (2155 lines)
+### `plugins/wordpress/client.py` (2169 lines)
 *WordPress Plugin — Client, Credential Storage, and Upload Engine.*
 - **class `WordPressClient`** (lines 342–1013):
   *Client for WordPress REST API using Application Passwords.*
@@ -1346,9 +1347,9 @@
   - `generate_wp_excerpt(text, max_words)` [L317-L327] — *Generate a clean WordPress-style post excerpt from text (standard 55 words).*
   - `is_wp_auth_error(err)` [L330-L339] — *Check if an error string or exception indicates an authentication or credential failure.*
   - `get_wp_client()` [L1230-L1238] — *Instantiate WordPressClient from stored settings if configured.*
-  - `_group_segments_into_paragraphs(segments, min_words)` [L1444-L1492] — *Group consecutive segments with same speaker into natural paragraph blocks.*
-  - `_build_audio_fade_filter(duration, fade_in, fade_out, fade_curve)` [L1495-L1523] — *Construct FFmpeg afade audio filter chain for story clips.*
-  - `execute_wordpress_upload(main_window, client, post_title, post_excerpt, start, end, task_label, include_english, include_spanish, spanish_presentation, primary_language, author_ids, author_term_ids, category_ids, show_completion_dialog, media_filename, progress_callback, featured_image_path, parent_episode_info, link_parent_episode, parent_episode_template, parent_episode_pos, include_audio, fade_in, fade_out, fade_curve, apply_fades, accordion_pos, is_podcast, podcast_feed, podcast_feed_id, podcast_feed_ids, podcast_feeds, podcast_episode_type, podcast_season, podcast_episode_number, youtube_url, youtube_stop_at_end, youtube_placement, youtube_use_story_time, existing_post_id, replace_existing_audio_and_podcast, post_status, publication_date, post_slug, featured_image_caption, featured_image_alt_text)` [L1526-L2155] — *Extract media clip, upload to WordPress media library, and create or update a post.*
+  - `_group_segments_into_paragraphs(segments, min_words)` [L1444-L1506] — *Group consecutive segments with same speaker into natural paragraph blocks.*
+  - `_build_audio_fade_filter(duration, fade_in, fade_out, fade_curve)` [L1509-L1537] — *Construct FFmpeg afade audio filter chain for story clips.*
+  - `execute_wordpress_upload(main_window, client, post_title, post_excerpt, start, end, task_label, include_english, include_spanish, spanish_presentation, primary_language, author_ids, author_term_ids, category_ids, show_completion_dialog, media_filename, progress_callback, featured_image_path, parent_episode_info, link_parent_episode, parent_episode_template, parent_episode_pos, include_audio, fade_in, fade_out, fade_curve, apply_fades, accordion_pos, is_podcast, podcast_feed, podcast_feed_id, podcast_feed_ids, podcast_feeds, podcast_episode_type, podcast_season, podcast_episode_number, youtube_url, youtube_stop_at_end, youtube_placement, youtube_use_story_time, existing_post_id, replace_existing_audio_and_podcast, post_status, publication_date, post_slug, featured_image_caption, featured_image_alt_text)` [L1540-L2169] — *Extract media clip, upload to WordPress media library, and create or update a post.*
 
 ### `plugins/wordpress/episode_updater.py` (999 lines)
 *WordPress Existing Episode Lookup, Backfill Mode, Date Scheduling & MP3 Import.*
@@ -2148,28 +2149,28 @@
 - **Functions**:
   - `main(argv)` [L117-L222]
 
-### `reaper_bridge.py` (962 lines)
+### `reaper_bridge.py` (939 lines)
 *reaper_bridge.py — REAPER DAW Companion Bridge & Inter-Process Cue Emitter.*
 - **Functions**:
   - `get_reaper_ipc_paths()` [L26-L46] — *Return the list of standard sidecar IPC file destinations.*
   - `reaper_color_from_hex(hex_str)` [L49-L60] — *Convert #RRGGBB hex color to Cockos REAPER custom color integer (0x1000000 | 0x1RRGGBB).*
   - `_fmt_clock(secs)` [L63-L67] — *Format seconds into MM:SS.S clock timecode.*
   - `_hex_to_rgb(hex_str)` [L70-L78] — *Convert hex color (#RRGGBB) to (R, G, B) tuple.*
-  - `_is_sentence_terminator(text)` [L88-L107] — *Check whether a text fragment ends with terminal sentence punctuation (., ?, !, ...).*
-  - `_build_phrase_preview(text, fallback_spk)` [L110-L121] — *Build a concise, readable 6-word phrase preview for REAPER take markers.*
-  - `_extract_formatted_transcript_sentences(main_win)` [L125-L315] — *Build formatted grammatical sentences (with word timings and paragraph flags) matching RTVS transcript view.*
-  - `get_reaper_clip_notes_and_markers(main_win, start_sec, end_sec, marker_style, apply_speaker_color, include_notes, include_markers, precomputed_sentences)` [L318-L419] — *Extract formatted transcript notes, take markers, and colors for a clip in an exported REAPER project.*
-  - `build_reaper_cue_payload(main_win, start_sec, end_sec, plain_text, title, clip_type, story_obj, include_word_cues, rendered_wav_path, marker_style)` [L422-L570] — *Construct a standardized cross-language cue dictionary conforming to the 1.0 schema.*
-  - `get_reaper_index_paths()` [L573-L587] — *Return IPC file paths for the full transcript and stories index used by the ReaImGui Dock.*
-  - `write_reaper_transcript_index(main_win, precomputed_sentences)` [L590-L647] — *Emit the formatted project stories and sentence-level transcript index for REAPER companion scripts.*
-  - `write_reaper_sidecar_cue(payload)` [L650-L669] — *Atomically write the cue payload JSON to all IPC sidecar locations.*
-  - `attach_reaper_cue_to_mimedata(mime_data, payload)` [L672-L683] — *Encode cue payload as UTF-8 JSON into QMimeData and write atomic IPC sidecar.*
-  - `get_default_reaper_scripts_dir()` [L686-L700] — *Return the standard platform-specific default REAPER Scripts/RTVS3 directory.*
-  - `get_bundled_lua_scripts()` [L703-L716] — *Find the bundled RTVS3 ReaScript Lua files.*
-  - `install_reaper_scripts_to_resource_path(parent_widget, target_dir)` [L719-L794] — *Copy the RTVS3 ReaScript companion and dock scripts to the REAPER Scripts directory.*
-  - `render_temp_daw_wav_clip(main_win, start_sec, end_sec, title)` [L797-L838] — *Render a temporary uncompressed WAV slice of the selected range for universal DAW clipboard paste.*
-  - `copy_selection_as_daw_wav_clip(main_win, start_sec, end_sec, plain_text, html_text, title, story_obj)` [L841-L898] — *Render a temp WAV audio slice and attach it to the OS file clipboard (CF_HDROP / URLs)*
-  - `populate_unified_copy_mimedata(main_win, mime_data, start_sec, end_sec, plain_text, title, clip_type, story_obj)` [L901-L961] — *Populates QMimeData with REAPER JSON cue payloads and optional WAV file attachments*
+  - `_is_sentence_terminator(text, next_word)` [L81-L84] — *Check whether a text fragment ends with terminal sentence punctuation (., ?, !, ...).*
+  - `_build_phrase_preview(text, fallback_spk)` [L87-L98] — *Build a concise, readable 6-word phrase preview for REAPER take markers.*
+  - `_extract_formatted_transcript_sentences(main_win)` [L102-L292] — *Build formatted grammatical sentences (with word timings and paragraph flags) matching RTVS transcript view.*
+  - `get_reaper_clip_notes_and_markers(main_win, start_sec, end_sec, marker_style, apply_speaker_color, include_notes, include_markers, precomputed_sentences)` [L295-L396] — *Extract formatted transcript notes, take markers, and colors for a clip in an exported REAPER project.*
+  - `build_reaper_cue_payload(main_win, start_sec, end_sec, plain_text, title, clip_type, story_obj, include_word_cues, rendered_wav_path, marker_style)` [L399-L547] — *Construct a standardized cross-language cue dictionary conforming to the 1.0 schema.*
+  - `get_reaper_index_paths()` [L550-L564] — *Return IPC file paths for the full transcript and stories index used by the ReaImGui Dock.*
+  - `write_reaper_transcript_index(main_win, precomputed_sentences)` [L567-L624] — *Emit the formatted project stories and sentence-level transcript index for REAPER companion scripts.*
+  - `write_reaper_sidecar_cue(payload)` [L627-L646] — *Atomically write the cue payload JSON to all IPC sidecar locations.*
+  - `attach_reaper_cue_to_mimedata(mime_data, payload)` [L649-L660] — *Encode cue payload as UTF-8 JSON into QMimeData and write atomic IPC sidecar.*
+  - `get_default_reaper_scripts_dir()` [L663-L677] — *Return the standard platform-specific default REAPER Scripts/RTVS3 directory.*
+  - `get_bundled_lua_scripts()` [L680-L693] — *Find the bundled RTVS3 ReaScript Lua files.*
+  - `install_reaper_scripts_to_resource_path(parent_widget, target_dir)` [L696-L771] — *Copy the RTVS3 ReaScript companion and dock scripts to the REAPER Scripts directory.*
+  - `render_temp_daw_wav_clip(main_win, start_sec, end_sec, title)` [L774-L815] — *Render a temporary uncompressed WAV slice of the selected range for universal DAW clipboard paste.*
+  - `copy_selection_as_daw_wav_clip(main_win, start_sec, end_sec, plain_text, html_text, title, story_obj)` [L818-L875] — *Render a temp WAV audio slice and attach it to the OS file clipboard (CF_HDROP / URLs)*
+  - `populate_unified_copy_mimedata(main_win, mime_data, start_sec, end_sec, plain_text, title, clip_type, story_obj)` [L878-L938] — *Populates QMimeData with REAPER JSON cue payloads and optional WAV file attachments*
 
 ### `roadmap_manager.py` (259 lines)
 *roadmap_manager.py — Automated Roadmap & N-1 Sliding-Window Management Engine*
@@ -2295,6 +2296,15 @@
   - `check_single_responsibility(structure, strict)` [L526-L614] — *Analyzes AST domain classification to verify Single Responsibility & Domain Separation.*
   - `print_srp_report(results, strict)` [L617-L661] — *Prints a structured terminal report for Single Responsibility & Domain Separation.*
   - `main()` [L664-L773]
+
+### `sentence_boundaries.py` (140 lines)
+*Context-aware sentence-boundary and abbreviation detection for Radio & TV Segmenter.*
+- **Public Exports (`__all__`)**: ALWAYS_PRE_NOUN_TITLES, CAPITALIZED_PRE_NOUN_TITLES, MID_CLAUSE_CONNECTORS, MONTH_ABBREVS, NUMBER_PREFIX_ABBREVS, AMBIGUOUS_ABBREVS, is_ambiguous_abbreviation, is_non_terminal_abbreviation, is_sentence_end
+- **Functions**:
+  - `_extract_last_word(text)` [L57-L64]
+  - `is_ambiguous_abbreviation(text)` [L67-L75] — *Return True when text ends with a multi-dot acronym or sentence-finalizable abbreviation.*
+  - `is_non_terminal_abbreviation(text, next_word, language)` [L78-L109] — *Return True when a trailing period belongs to a non-terminal abbreviation rather than sentence end.*
+  - `is_sentence_end(text, next_word, language)` [L112-L127] — *Return True if text terminates a sentence, honoring non-terminal abbreviations and titles.*
 
 ### `shortcuts/__init__.py` (26 lines)
 *shortcuts package — Modular Keyboard Shortcuts Management Subsystem.*
@@ -3138,20 +3148,20 @@
   - `_on_bubble_cut(self)` [L461-L466]
   - `_on_bubble_export(self)` [L468-L473]
 
-### `transcript_story.py` (852 lines)
-*Radio & TV Segmenter v3.10.10-beta — transcript story responsibilities.*
+### `transcript_story.py` (856 lines)
+*Radio & TV Segmenter v3.10.11-beta — transcript story responsibilities.*
 - **Public Exports (`__all__`)**: TranscriptStoryMixin, Story, SetStoriesCommand, SelectStoriesCommand, StoryBoundaryChangeCommand, StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin, ChangeSpeakerDialog, VoiceProfileMatchDialog, StoryFadesDialog, SpeakerManagerDialog, FADE_CURVE_TABLES, get_fade_curve_factors
-- **class `TranscriptStoryMixin(StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin)`** (lines 63–851):
-  - `render_transcript(self)` [L64-L467]
-  - `on_transcript_selection_changed(self)` [L469-L501]
-  - `on_transcript_text_changed(self)` [L503-L660]
-  - `transcript_clicked(self, url)` [L662-L678]
-  - `edit_segment_comment_dialog(self, seg_idx, sel_text, start_char, end_char, t_range, covered_indices)` [L680-L761]
-  - `add_comment_from_selection(self)` [L765-L808]
-  - `delete_segment_comment(self, seg_idx)` [L810-L830]
-  - `toggle_comments_panel(self)` [L832-L835]
-  - `toggle_show_comments(self, checked)` [L837-L843]
-  - `toggle_comment_highlights(self, checked)` [L847-L851]
+- **class `TranscriptStoryMixin(StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin)`** (lines 63–855):
+  - `render_transcript(self)` [L64-L471]
+  - `on_transcript_selection_changed(self)` [L473-L505]
+  - `on_transcript_text_changed(self)` [L507-L664]
+  - `transcript_clicked(self, url)` [L666-L682]
+  - `edit_segment_comment_dialog(self, seg_idx, sel_text, start_char, end_char, t_range, covered_indices)` [L684-L765]
+  - `add_comment_from_selection(self)` [L769-L812]
+  - `delete_segment_comment(self, seg_idx)` [L814-L834]
+  - `toggle_comments_panel(self)` [L836-L839]
+  - `toggle_show_comments(self, checked)` [L841-L847]
+  - `toggle_comment_highlights(self, checked)` [L851-L855]
 
 ### `transcript_styles.py` (104 lines)
 *transcript_styles.py - Transcript view stylesheets and dark-mode clipboard styling normalizers.*
@@ -3443,35 +3453,38 @@
 - **Functions**:
   - `build_waveform_pyramid(peaks)` [L22-L55] — *Generate a multi-resolution downsampling pyramid for peaks using vectorized operations.*
 
-### `worker_asr_engines.py` (839 lines)
+### `worker_asr_engines.py` (958 lines)
 *worker_asr_engines.py - Faster-Whisper, CTranslate2 & Sherpa-ONNX ASR Engines.*
 - **Functions**:
-  - `set_emit_callback(fn)` [L30-L33] — *Set custom IPC emitter function.*
-  - `_emit(message_type, **payload)` [L36-L42]
-  - `_patch_av_open()` [L45-L59] — *Monkey-patch PyAV's av.open to strip 'metadata_errors' if passed.*
-  - `get_optimal_transcription_threads()` [L62-L81] — *Calculate optimal CPU threads for faster-whisper / CTranslate2 / ONNX.*
-  - `get_app_data_dir_pure()` [L84-L102] — *Return platform-specific app data directory in pure Python without PySide6.*
-  - `get_models_storage_dir_pure()` [L105-L115] — *Return models storage directory in pure Python without PySide6.*
-  - `is_onnx_model_available(model_name)` [L118-L175] — *Check if sherpa-onnx runtime and target model files exist on disk.*
-  - `transcribe_parakeet_onnx(audio_file, model_name, detected_lang, detected_confidence, initial_prompt, beam_size)` [L178-L506] — *Run installed ONNX models (Parakeet TDT, Spanish FastConformer, Multilingual FastConformer) through sherpa-onnx.*
-  - `probe_audio_language(audio_file, sample_duration, preferred_model)` [L509-L609] — *Run a fast language detection probe using faster-whisper's mel feature extractor.*
-  - `transcribe(audio_file, model_name, initial_prompt, beam_size)` [L612-L839] — *Transcribe media file using either Sherpa-ONNX or Faster-Whisper.*
+  - `set_emit_callback(fn)` [L35-L38] — *Set custom IPC emitter function.*
+  - `_has_speech_energy(audio_slice, sr, rms_db_thresh, peak_db_thresh)` [L41-L65] — *Return True when >=2 half-second sub-windows show active audio above silence.*
+  - `_decode_onnx_chunk_with_rescue(recognizer, samples, c_start, c_end, duration_sec, is_word_boundary_fn)` [L68-L182] — *Decode one acoustic chunk and rescue uncovered speech tails/heads from premature blanking.*
+  - `_group_onnx_words_into_segments(chunk_words, duration_sec, language)` [L185-L228] — *Group word timestamps into readable transcript segments without splitting titles/abbreviations.*
+  - `_emit(message_type, **payload)` [L231-L237]
+  - `_patch_av_open()` [L240-L254] — *Monkey-patch PyAV's av.open to strip 'metadata_errors' if passed.*
+  - `get_optimal_transcription_threads()` [L257-L276] — *Calculate optimal CPU threads for faster-whisper / CTranslate2 / ONNX.*
+  - `get_app_data_dir_pure()` [L279-L297] — *Return platform-specific app data directory in pure Python without PySide6.*
+  - `get_models_storage_dir_pure()` [L300-L310] — *Return models storage directory in pure Python without PySide6.*
+  - `is_onnx_model_available(model_name)` [L313-L370] — *Check if sherpa-onnx runtime and target model files exist on disk.*
+  - `transcribe_parakeet_onnx(audio_file, model_name, detected_lang, detected_confidence, initial_prompt, beam_size)` [L373-L625] — *Run installed ONNX models (Parakeet TDT, Spanish FastConformer, Multilingual FastConformer) through sherpa-onnx.*
+  - `probe_audio_language(audio_file, sample_duration, preferred_model)` [L628-L728] — *Run a fast language detection probe using faster-whisper's mel feature extractor.*
+  - `transcribe(audio_file, model_name, initial_prompt, beam_size)` [L731-L958] — *Transcribe media file using either Sherpa-ONNX or Faster-Whisper.*
 
-### `worker_clustering.py` (448 lines)
+### `worker_clustering.py` (457 lines)
 *worker_clustering.py - Acoustic clustering, VAD pause bridging, and centroid assignments.*
 - **Functions**:
-  - `normalize_audio_for_diarization(source_path)` [L29-L89] — *Extract a normalized 16 kHz mono WAV using the local FFmpeg binary.*
-  - `configure_optimal_pytorch_threads()` [L92-L106] — *Clamp torch's intra-op/inter-op thread pools to match the*
-  - `_normalize_expected_speakers(value)` [L109-L118] — *Map a CLI/UI expected-speakers hint to one of 'auto', '1', '2', '3+'.*
-  - `_normalize_speaker_labels(segments)` [L121-L134] — *Relabel raw diarize-package speaker ids to 'Speaker 1', 'Speaker 2',*
-  - `_sensitivity_distance_threshold()` [L137-L143] — *Cosine-distance clustering threshold derived from PRS_DIARIZATION_SENSITIVITY.*
-  - `fast_cluster_ahc(embeddings, k, distance_threshold)` [L146-L202] — *Agglomerative Hierarchical Clustering with cosine metric and average linkage (O(N^2)).*
-  - `apply_clustering_patches()` [L205-L238] — *Globally monkey-patch SpectralClustering and diarize.clustering to use O(N^2) AHC.*
-  - `run_vad_two_pass(audio_path, threshold, min_speech_duration_ms, min_silence_duration_ms, speech_pad_ms, bridge_pause_threshold_sec)` [L241-L314] — *Silero VAD with Pass 1 Pause Bridging (< 100ms).*
-  - `assign_short_segments_to_centroids(short_segments, audio_path, centroids, label_values, raw_segments, min_confidence, model)` [L317-L420] — *Extract acoustic embeddings for short segments (< 0.8s) with symmetric audio context padding,*
-  - `_calculate_embedding_for_interval(start, end, subsegments, embeddings)` [L423-L448] — *Compute unit-normalized 256-dimensional embedding vector for an interval [start, end].*
+  - `normalize_audio_for_diarization(source_path, apply_bandpass)` [L29-L92] — *Extract a normalized 16 kHz mono WAV using the local FFmpeg binary.*
+  - `configure_optimal_pytorch_threads()` [L95-L109] — *Clamp torch's intra-op/inter-op thread pools to match the*
+  - `_normalize_expected_speakers(value)` [L112-L121] — *Map a CLI/UI expected-speakers hint to one of 'auto', '1', '2', '3+'.*
+  - `_normalize_speaker_labels(segments)` [L124-L137] — *Relabel raw diarize-package speaker ids to 'Speaker 1', 'Speaker 2',*
+  - `_sensitivity_distance_threshold()` [L140-L146] — *Cosine-distance clustering threshold derived from PRS_DIARIZATION_SENSITIVITY.*
+  - `fast_cluster_ahc(embeddings, k, distance_threshold)` [L149-L205] — *Agglomerative Hierarchical Clustering with cosine metric and average linkage (O(N^2)).*
+  - `apply_clustering_patches()` [L208-L241] — *Globally monkey-patch SpectralClustering and diarize.clustering to use O(N^2) AHC.*
+  - `run_vad_two_pass(audio_path, threshold, min_speech_duration_ms, min_silence_duration_ms, speech_pad_ms, bridge_pause_threshold_sec)` [L244-L317] — *Silero VAD with Pass 1 Pause Bridging (< 100ms).*
+  - `assign_short_segments_to_centroids(short_segments, audio_path, centroids, label_values, raw_segments, min_confidence, model)` [L320-L429] — *Extract acoustic embeddings for short segments (< 0.8s) with symmetric audio context padding,*
+  - `_calculate_embedding_for_interval(start, end, subsegments, embeddings)` [L432-L457] — *Compute unit-normalized 256-dimensional embedding vector for an interval [start, end].*
 
-### `worker_diarization_clustering.py` (428 lines)
+### `worker_diarization_clustering.py` (434 lines)
 *worker_diarization_clustering.py - Speaker Clustering, Centroid Matching & Math Helpers.*
 - **Functions**:
   - `_normalize_expected_speakers(value)` [L20-L29] — *Map a CLI/UI expected-speakers hint to one of 'auto', '1', '2', '3+'.*
@@ -3483,23 +3496,23 @@
   - `cluster_speakers_ahc(embeddings, min_speakers, max_speakers, num_speakers, distance_threshold, sensitivity)` [L150-L182] — *Cluster speaker embeddings with O(N^2) cosine AHC, honoring sensitivity and speaker bounds.*
   - `fast_cluster_ahc(embeddings, k, distance_threshold)` [L185-L241] — *Agglomerative Hierarchical Clustering with cosine metric and average linkage (O(N^2)).*
   - `apply_clustering_patches()` [L244-L281] — *Globally monkey-patch SpectralClustering and diarize.clustering to use O(N^2) AHC.*
-  - `assign_short_segments_to_centroids(short_segments, audio_path, centroids, label_values, raw_segments, min_confidence, get_wespeaker_model_fn, safe_tensor_fn)` [L284-L400] — *Extract acoustic embeddings for short segments (< 0.8s) with symmetric context padding,*
-  - `_calculate_embedding_for_interval(start, end, subsegments, embeddings)` [L403-L428] — *Compute unit-normalized 256-dimensional embedding vector for an interval [start, end].*
+  - `assign_short_segments_to_centroids(short_segments, audio_path, centroids, label_values, raw_segments, min_confidence, get_wespeaker_model_fn, safe_tensor_fn)` [L284-L406] — *Extract acoustic embeddings for short segments (< 0.8s) with symmetric context padding,*
+  - `_calculate_embedding_for_interval(start, end, subsegments, embeddings)` [L409-L434] — *Compute unit-normalized 256-dimensional embedding vector for an interval [start, end].*
 
-### `worker_diarization_engine.py` (953 lines)
+### `worker_diarization_engine.py` (970 lines)
 *worker_diarization_engine.py - Speaker Diarization, Neural VAD & Embedding Pipeline.*
 - **Functions**:
-  - `set_emit_callback(fn)` [L52-L55] — *Set custom IPC emitter function.*
-  - `_emit(message_type, **payload)` [L58-L64]
-  - `_safe_tensor_from_numpy(arr)` [L67-L82] — *Safely convert a numpy float32 array into a PyTorch tensor.*
-  - `normalize_audio_for_diarization(source_path)` [L85-L145] — *Extract a normalized 16 kHz mono WAV using the local FFmpeg binary.*
-  - `configure_optimal_pytorch_threads()` [L148-L161] — *Clamp torch's intra-op/inter-op thread pools to match the*
-  - `_diarize_solo_fast_path(audio_file, transcript_file)` [L164-L238] — *Solo fast-path: a single expected speaker means there is nothing to*
-  - `_get_wespeaker_model()` [L246-L254] — *Retrieve or initialize the cached WeSpeaker ONNX model instance.*
-  - `extract_embeddings_batched(audio_path, speech_segments, batch_size, min_segment_duration, embedding_window, embedding_step, progress_callback)` [L257-L376] — *Extract 256-dim speaker embeddings using WeSpeaker ResNet34-LM (ONNX)*
-  - `run_vad_two_pass(audio_path, threshold, min_speech_duration_ms, min_silence_duration_ms, speech_pad_ms, bridge_pause_threshold_sec)` [L379-L449] — *Silero VAD with Pass 1 Pause Bridging (< 100ms).*
-  - `run_transcript_guided_diarization(normalized_wav, transcript_file, expected_speakers, sensitivity, progress_callback)` [L452-L590] — *Execute transcript-guided speaker diarization directly from sentence boundaries.*
-  - `diarize(audio_file, expected_speakers, transcript_file, sensitivity)` [L593-L953] — *Execute complete speaker diarization pipeline on an audio media file.*
+  - `set_emit_callback(fn)` [L53-L56] — *Set custom IPC emitter function.*
+  - `_emit(message_type, **payload)` [L59-L65]
+  - `_safe_tensor_from_numpy(arr)` [L68-L83] — *Safely convert a numpy float32 array into a PyTorch tensor.*
+  - `normalize_audio_for_diarization(source_path, apply_bandpass)` [L86-L149] — *Extract a normalized 16 kHz mono WAV using the local FFmpeg binary.*
+  - `configure_optimal_pytorch_threads()` [L152-L165] — *Clamp torch's intra-op/inter-op thread pools to match the*
+  - `_diarize_solo_fast_path(audio_file, transcript_file)` [L168-L242] — *Solo fast-path: a single expected speaker means there is nothing to*
+  - `_get_wespeaker_model()` [L250-L258] — *Retrieve or initialize the cached WeSpeaker ONNX model instance.*
+  - `extract_embeddings_batched(audio_path, speech_segments, batch_size, min_segment_duration, embedding_window, embedding_step, progress_callback)` [L261-L380] — *Extract 256-dim speaker embeddings using WeSpeaker ResNet34-LM (ONNX)*
+  - `run_vad_two_pass(audio_path, threshold, min_speech_duration_ms, min_silence_duration_ms, speech_pad_ms, bridge_pause_threshold_sec)` [L383-L453] — *Silero VAD with Pass 1 Pause Bridging (< 100ms).*
+  - `run_transcript_guided_diarization(normalized_wav, transcript_file, expected_speakers, sensitivity, progress_callback)` [L456-L607] — *Execute transcript-guided speaker diarization directly from sentence boundaries.*
+  - `diarize(audio_file, expected_speakers, transcript_file, sensitivity)` [L610-L970] — *Execute complete speaker diarization pipeline on an audio media file.*
 
 ### `worker_ipc.py` (216 lines)
 *worker_ipc.py - Subprocess IPC protocol, environment setup, and DLL initialization.*

@@ -1,5 +1,19 @@
 # Changelog
 
+## v3.10.11-beta
+- **Abbreviation-Aware Sentence/Diarization Boundaries & Parakeet Uncovered-Speech Rescue (`sentence_boundaries.py`, `core_utils.py`, `transcript_story.py`, `export_documents.py`, `reaper_bridge.py`, `plugins/wordpress/client.py`, `plugins/wordpress/manifest.json`, `worker_asr_engines.py`, `worker_diarization_engine.py`, `worker_diarization_clustering.py`, `worker_clustering.py`, `diagnostic_speaker_cleanup_tests.py`, `test_runner.py`)**:
+  - **Shared Context-Aware Abbreviation Engine (`sentence_boundaries.py`, `core_utils.py`, `transcript_story.py`, `export_documents.py`, `reaper_bridge.py`, `plugins/wordpress/client.py`, `plugins/wordpress/manifest.json`)**:
+    - Created pure-Python `sentence_boundaries.py` classifying pre-noun titles (`Dr.`, `Mr.`, `Mrs.`, `Prof.`, `Sen.`, `Sra.`, `Sr.`, etc.), initials, mid-clause connectors, month/number prefixes (`Jan. 15`, `No. 5` vs. `"No. I"`), and next-word-sensitive dotted acronyms (`U.S. today` vs. `D.C. Then`).
+    - Wired context-aware `is_sentence_end(text, next_word, language)` across `core_utils.py`, in-app paragraphing (`transcript_story.py`), TXT/DOCX/PDF export (`export_documents.py`), REAPER take cues (`reaper_bridge.py`), and WordPress paragraphing (`plugins/wordpress/client.py`, bumping `plugins/wordpress/manifest.json` to `3.10.11-beta`).
+  - **Unfiltered Parakeet ONNX Audio, Tail/Head Speech Rescue & Abbreviation Chunking (`worker_asr_engines.py`, `worker_diarization_engine.py`, `worker_clustering.py`)**:
+    - Added `apply_bandpass: bool = True` to `normalize_audio_for_diarization()` and disabled the 85–7500 Hz diarization bandpass during Parakeet/FastConformer ASR (`apply_bandpass=False`) so full-bandwidth 16 kHz audio matches its 128-bin mel filterbank.
+    - Added `_decode_onnx_chunk_with_rescue()` and `_has_speech_energy()` to automatically recover trailing/leading speech spans (`>= 2.5s`) dropped by premature TDT blanking on loud→quiet speaker transitions while skipping true silence.
+    - Extracted `_group_onnx_words_into_segments()` using context-aware `is_sentence_end()` and deferring 12-word flushes on non-terminal titles (`"Dr."`, `"Mr."`) so titles stay glued to the following surname.
+  - **Diarization Abbreviation Glue & Edge-to-Edge Gap Fallback (`worker_diarization_engine.py`, `worker_diarization_clustering.py`, `worker_clustering.py`)**:
+    - Merged pre-noun abbreviation segments into adjacent following speech (`gap < 0.45s`) before transcript-guided embedding extraction, and updated `assign_short_segments_to_centroids()` fallback from midpoint distance to nearest edge-to-edge gap.
+  - **Regression Coverage (`diagnostic_speaker_cleanup_tests.py`, `test_runner.py`)**:
+    - Added `Abbreviation Sentence Boundaries and Parakeet Rescue` covering EN/ES title rules, false-positive traps, 12-word boundary glue, tail speech rescue vs. silence skip, `0.00s` edge-gap snapping, and WordPress paragraphing.
+
 ## v3.10.10-beta
 - **Diagnostic Parity Fixes: Embedded Guide Key, Action Button Polish & Story Fade Test Isolation (`embedded_guides.py`, `speaker_profiles_dialog.py`, `diagnostic_editor_tests.py`, `diagnostic_speaker_cleanup_tests.py`)**:
   - **Fix `video_shows` Embedded Guide Lookup (`embedded_guides.py`, `diagnostic_speaker_cleanup_tests.py`)**:
@@ -8,16 +22,3 @@
     - Attached `action_w` to column `4` via `setCellWidget()` and called `ensurePolished()` on each action button and wrapper before reading `sizeHint()` / enforcing `setMinimumWidth()`, eliminating the 2px live-stylesheet measurement drift (`63 < 65`).
   - **Test Isolation (`diagnostic_editor_tests.py`)**:
     - Patched `QSettings` around the disabled-fades `Story(...)` check in `_test_story_duration_visibility_and_header_aggregation` so real user Preferences never trigger a false failure.
-
-## v3.10.9-beta
-- **Keyboard Shortcuts Collision/Wiring Fixes, Dynamic Help Guide & Full Documentation Sync (`ui_layout.py`, `shortcuts/schema.py`, `shortcuts/manager.py`, `playback_controller.py`, `transcript_editor.py`, `transcript_context_menu_mixin.py`, `user_guide_dialog.py`, `ui_dialog_launchers.py`, `translation.py`, `backup_manager.py`, `docs/guides/*.md`, `embedded_guides.py`, `docs/README.md`, `README.md`, `ARCHITECTURE.md`, `BUILD_INSTRUCTIONS.txt`, `diagnostic_speaker_cleanup_tests.py`)**:
-  - **Keyboard Shortcut Collision & Wiring Fixes (`ui_layout.py`, `shortcuts/schema.py`, `shortcuts/manager.py`, `playback_controller.py`, `transcript_editor.py`, `transcript_context_menu_mixin.py`)**:
-    - Resolved `Ctrl+K` collision between **Strikethrough Text** and **Split Block at Playhead** by reassigning `fmt_strike_action` to `Alt+Shift+5`.
-    - Fixed `playback_controller.py` to query `delete_selected_story` (and added `"delete_story"` alias), wired `transcript_editor.py` and `transcript_context_menu_mixin.py` to honor user-customized `copy_selection_as_audio_clip` bindings, and added `customize_shortcuts` (`F8`), `copy_text` (`Ctrl+C`), `fmt_strikethrough` (`Alt+Shift+5`), `fmt_highlight` (`Ctrl+Shift+H`), and `user_guides` (`Shift+F2`) to `SHORTCUT_DEFINITIONS` while updating stale `Stories` schema descriptions.
-  - **Dynamic Shortcuts Tab & Stale Prompt Fixes (`user_guide_dialog.py`, `ui_dialog_launchers.py`, `translation.py`, `backup_manager.py`)**:
-    - Replaced the hardcoded 26-row fallback in `UserGuideDialog._build_dynamic_shortcuts_guide()` with a live generator reading `SHORTCUT_DEFINITIONS` and active user shortcuts.
-    - Updated plugin-disabled prompts in `ui_dialog_launchers.py` and `translation.py` to point to `Tools > Manage Plugins & Add-ons...`, and cleaned up the `backup_manager.py` docstring.
-  - **User Guides, Embedded Fallbacks & Repo Docs Sync (`docs/guides/*.md`, `embedded_guides.py`, `docs/README.md`, `README.md`, `ARCHITECTURE.md`, `BUILD_INSTRUCTIONS.txt`)**:
-    - Fixed wrong shortcuts (`Ctrl+E` → `F2`, `Ctrl+,` → `Ctrl+P`, `Ctrl+Alt+S` Speaker Manager) and moved menu paths across all 6 guides and `embedded_guides.py`, replaced removed Google Drive / OAuth YouTube / nonexistent Markdown & CMX 3600 claims with current Zero-Auth YouTube, PublishPress Authors, Offline Spellcheck, Voice Profile Tools, and Loudness Normalization workflows, and rebuilt `README.md` shortcuts directly from `shortcuts/schema.py`.
-  - **Regression Coverage (`diagnostic_speaker_cleanup_tests.py`)**:
-    - Extended `_test_menu_bar_deduplication_and_escaping_integrity` to enforce zero shortcut collisions, complete `SHORTCUT_DEFINITIONS` menu coverage, dynamic shortcuts guide output, and 1:1 `embedded_guides.py` ↔ `docs/guides/*.md` synchronization.

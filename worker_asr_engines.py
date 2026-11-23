@@ -21,6 +21,11 @@ import traceback
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
+from sentence_boundaries import (
+    is_ambiguous_abbreviation,
+    is_non_terminal_abbreviation,
+    is_sentence_end,
+)
 from worker_diarization_engine import normalize_audio_for_diarization
 
 # Callback for IPC message emission; default to stdout JSON
@@ -31,6 +36,196 @@ def set_emit_callback(fn: Callable[..., None]):
     """Set custom IPC emitter function."""
     global _EMIT_FN
     _EMIT_FN = fn
+
+
+def _has_speech_energy(
+    audio_slice,
+    sr: int = 16000,
+    rms_db_thresh: float = -42.0,
+    peak_db_thresh: float = -26.0,
+) -> bool:
+    """Return True when >=2 half-second sub-windows show active audio above silence."""
+    import math
+    import numpy as np
+
+    if audio_slice is None or len(audio_slice) < int(0.5 * sr):
+        return False
+    win = max(1, int(0.5 * sr))
+    active = 0
+    for off in range(0, len(audio_slice) - win + 1, win):
+        sub = audio_slice[off:off + win]
+        rms = float(np.sqrt(np.mean(np.square(sub, dtype=np.float32))))
+        pk = float(np.max(np.abs(sub)))
+        rms_db = 20.0 * math.log10(max(rms, 1e-9))
+        peak_db = 20.0 * math.log10(max(pk, 1e-9))
+        if rms_db >= rms_db_thresh or peak_db >= peak_db_thresh:
+            active += 1
+            if active >= 2:
+                return True
+    return False
+
+
+def _decode_onnx_chunk_with_rescue(
+    recognizer: Any,
+    samples: Any,
+    c_start: int,
+    c_end: int,
+    duration_sec: float,
+    is_word_boundary_fn: Optional[Callable[[str], bool]] = None,
+) -> Tuple[str, List[Dict[str, Any]]]:
+    """Decode one acoustic chunk and rescue uncovered speech tails/heads from premature blanking."""
+    import numpy as np
+
+    if is_word_boundary_fn is None:
+        is_word_boundary_fn = lambda s: str(s).startswith(("▁", " ", "\t", "\n"))
+
+    chunk_start_sec = c_start / 16000.0
+    chunk_end_sec = c_end / 16000.0
+
+    def _decode_slice(slice_samples, slice_start_sec: float, clamp_end_sec: float):
+        stream = recognizer.create_stream()
+        stream.accept_waveform(16000, slice_samples)
+        recognizer.decode_stream(stream)
+        res = stream.result
+        s_text = str(getattr(res, "text", "") or "").strip()
+        s_tokens = list(getattr(res, "tokens", []) or [])
+        s_ts = list(getattr(res, "timestamps", []) or [])
+        words: List[Dict[str, Any]] = []
+        if s_tokens and s_ts and len(s_tokens) == len(s_ts):
+            if not is_word_boundary_fn(s_tokens[0]):
+                s_tokens[0] = " " + str(s_tokens[0])
+            token_groups = []
+            current = []
+            for tok, ts in zip(s_tokens, s_ts):
+                st_tok = str(tok)
+                abs_ts = round(slice_start_sec + max(0.0, float(ts)), 2)
+                if is_word_boundary_fn(st_tok) and current:
+                    token_groups.append(current)
+                    current = []
+                current.append((st_tok.lstrip("▁ \t\n"), abs_ts))
+            if current:
+                token_groups.append(current)
+            for g_idx, group in enumerate(token_groups):
+                w_txt = "".join(p for p, _ in group).strip()
+                if not w_txt:
+                    continue
+                w_st = min(clamp_end_sec, group[0][1])
+                if g_idx + 1 < len(token_groups):
+                    w_en = min(duration_sec, min(clamp_end_sec, token_groups[g_idx + 1][0][1]))
+                else:
+                    w_en = min(duration_sec, min(clamp_end_sec, w_st + 0.35))
+                if w_en <= w_st:
+                    w_en = min(duration_sec, w_st + 0.05)
+                words.append({"word": w_txt, "start": round(w_st, 2), "end": round(w_en, 2), "probability": 0.95})
+        elif s_text:
+            raw_w = s_text.split()
+            span_end = min(clamp_end_sec, slice_start_sec + len(slice_samples) / 16000.0)
+            step = max(0.05, (span_end - slice_start_sec) / max(1, len(raw_w)))
+            for i, w_txt in enumerate(raw_w):
+                ws = slice_start_sec + i * step
+                we = min(duration_sec, min(clamp_end_sec, slice_start_sec + (i + 1) * step))
+                words.append({"word": w_txt, "start": round(ws, 2), "end": round(we, 2), "probability": 0.95})
+        return s_text, words
+
+    def _norm_tok(w: str) -> str:
+        return str(w or "").strip().lower().strip(".,?!\"'“”‘’()[]")
+
+    c_text, chunk_words = _decode_slice(samples[c_start:c_end], chunk_start_sec, chunk_end_sec)
+    pad_zeros = np.zeros(int(0.35 * 16000), dtype=np.float32)
+
+    # Head rescue if decoder skipped initial speech >= 2.5s
+    if chunk_words and (chunk_words[0]["start"] - chunk_start_sec) >= 2.5:
+        first_st = chunk_words[0]["start"]
+        head_end_samp = min(c_end, int(min(chunk_end_sec, first_st + 0.15) * 16000))
+        head_slice = samples[c_start:head_end_samp]
+        if _has_speech_energy(head_slice):
+            _, head_words = _decode_slice(np.concatenate([head_slice, pad_zeros]), chunk_start_sec, first_st)
+            kept_head = []
+            first_norm = _norm_tok(chunk_words[0]["word"])
+            for hw in head_words:
+                if hw["start"] >= first_st - 0.02:
+                    continue
+                if abs(hw["end"] - first_st) <= 0.3 and _norm_tok(hw["word"]) == first_norm:
+                    continue
+                kept_head.append(hw)
+            if kept_head:
+                chunk_words = kept_head + chunk_words
+
+    # Tail rescue (up to 2 passes) if decoder stopped >= 2.5s early or returned nothing over speech
+    for _ in range(2):
+        last_end = chunk_words[-1]["end"] if chunk_words else chunk_start_sec
+        if (chunk_end_sec - last_end) < 2.5:
+            break
+        tail_start_sec = max(chunk_start_sec, last_end - 0.15) if chunk_words else chunk_start_sec
+        tail_start_samp = int(tail_start_sec * 16000)
+        tail_slice = samples[tail_start_samp:c_end]
+        if not _has_speech_energy(tail_slice):
+            break
+        _, tail_words = _decode_slice(np.concatenate([tail_slice, pad_zeros]), tail_start_sec, chunk_end_sec)
+        appended = False
+        for tw in tail_words:
+            if chunk_words:
+                prev_w = chunk_words[-1]
+                if tw["end"] <= prev_w["end"] + 0.02:
+                    continue
+                if tw["start"] < prev_w["end"] - 0.05:
+                    if abs(tw["start"] - prev_w["start"]) <= 0.35 and _norm_tok(tw["word"]) == _norm_tok(prev_w["word"]):
+                        continue
+                    if tw["start"] < prev_w["end"]:
+                        tw = dict(tw, start=round(prev_w["end"], 2))
+            chunk_words.append(tw)
+            appended = True
+        if not appended or (chunk_words[-1]["end"] - last_end) < 0.5:
+            break
+
+    final_text = " ".join(w["word"] for w in chunk_words).strip() or c_text
+    return final_text, chunk_words
+
+
+def _group_onnx_words_into_segments(
+    chunk_words: List[Dict[str, Any]],
+    duration_sec: float,
+    language: Optional[str] = None,
+) -> List[Dict[str, Any]]:
+    """Group word timestamps into readable transcript segments without splitting titles/abbreviations."""
+    segments: List[Dict[str, Any]] = []
+    current_words: List[Dict[str, Any]] = []
+    n_words = len(chunk_words)
+    for idx, word in enumerate(chunk_words):
+        gap = (word["start"] - current_words[-1]["end"]) if current_words else 0.0
+        current_words.append(word)
+        next_word = chunk_words[idx + 1]["word"] if idx + 1 < n_words else None
+        next_gap = (chunk_words[idx + 1]["start"] - word["end"]) if idx + 1 < n_words else 1.0
+
+        sentence_end = is_sentence_end(word["word"], next_word=next_word, language=language)
+        if sentence_end and next_word is not None and is_ambiguous_abbreviation(word["word"]) and next_gap < 0.25:
+            sentence_end = False
+
+        keep_title_glued = (
+            next_word is not None
+            and next_gap < 0.45
+            and is_non_terminal_abbreviation(word["word"], next_word=next_word, language=language)
+        )
+        too_many = len(current_words) >= 12 and not (keep_title_glued and len(current_words) < 15)
+        long_gap = gap >= 1.0 and len(current_words) > 1
+        if sentence_end or too_many or long_gap:
+            seg_data = {
+                "start": round(current_words[0]["start"], 2),
+                "end": round(min(duration_sec, max(current_words[-1]["end"], current_words[0]["start"] + 0.05)), 2),
+                "text": " ".join(w["word"] for w in current_words),
+                "words": current_words,
+            }
+            segments.append(seg_data)
+            current_words = []
+    if current_words:
+        seg_data = {
+            "start": round(current_words[0]["start"], 2),
+            "end": round(min(duration_sec, max(current_words[-1]["end"], current_words[0]["start"] + 0.05)), 2),
+            "text": " ".join(w["word"] for w in current_words),
+            "words": current_words,
+        }
+        segments.append(seg_data)
+    return segments
 
 
 def _emit(message_type: str, **payload):
@@ -249,7 +444,7 @@ def transcribe_parakeet_onnx(audio_file, model_name="parakeet-onnx", detected_la
     temp_dir = None
     try:
         _emit("progress", percent=10, message=f"Preparing 16 kHz mono audio for {model_name}...")
-        norm_result = normalize_audio_for_diarization(audio_file)
+        norm_result = normalize_audio_for_diarization(audio_file, apply_bandpass=False)
         if isinstance(norm_result[0], tempfile.TemporaryDirectory):
             temp_dir, norm_wav = norm_result[0], norm_result[1]
         else:
@@ -366,9 +561,9 @@ def transcribe_parakeet_onnx(audio_file, model_name="parakeet-onnx", detected_la
         all_segments = []
         all_words = []
         text_parts = []
+        lang_hint = "es" if ("es" in str(model_key).lower() or "spanish" in str(model_key).lower()) else None
 
         for chunk_idx, (c_start, c_end) in enumerate(chunk_indices):
-            chunk_samples = samples[c_start:c_end]
             chunk_start_sec = c_start / 16000.0
             chunk_end_sec = c_end / 16000.0
 
@@ -376,91 +571,15 @@ def transcribe_parakeet_onnx(audio_file, model_name="parakeet-onnx", detected_la
             _emit("progress", percent=pct,
                   message=f"Transcribing with {display_model_name} ({chunk_end_sec:.1f}s / {duration_sec:.1f}s)...")
 
-            stream = recognizer.create_stream()
-            stream.accept_waveform(16000, chunk_samples)
-            recognizer.decode_stream(stream)
-            res = stream.result
-
-            c_text = str(getattr(res, "text", "") or "").strip()
-            c_tokens = list(getattr(res, "tokens", []) or [])
-            c_timestamps = list(getattr(res, "timestamps", []) or [])
-
+            c_text, chunk_words = _decode_onnx_chunk_with_rescue(
+                recognizer, samples, c_start, c_end, duration_sec, is_word_boundary
+            )
             if c_text:
                 text_parts.append(c_text)
 
-            chunk_words = []
-            if c_tokens and c_timestamps and len(c_tokens) == len(c_timestamps):
-                if not is_word_boundary(c_tokens[0]):
-                    c_tokens[0] = " " + str(c_tokens[0])
-
-                token_groups = []
-                current = []
-                for tok, ts in zip(c_tokens, c_timestamps):
-                    s_tok = str(tok)
-                    abs_ts = round(chunk_start_sec + max(0.0, float(ts)), 2)
-                    if is_word_boundary(s_tok) and current:
-                        token_groups.append(current)
-                        current = []
-                    current.append((s_tok.lstrip("▁ \t\n"), abs_ts))
-                if current:
-                    token_groups.append(current)
-
-                for group_idx, group in enumerate(token_groups):
-                    word_text = "".join(part for part, _ in group).strip()
-                    if not word_text:
-                        continue
-                    word_start = group[0][1]
-                    if group_idx + 1 < len(token_groups):
-                        word_end = token_groups[group_idx + 1][0][1]
-                    else:
-                        word_end = min(duration_sec, min(chunk_end_sec, word_start + 0.35))
-                    if word_end <= word_start:
-                        word_end = min(duration_sec, word_start + 0.05)
-                    chunk_words.append({
-                        "word": word_text,
-                        "start": round(word_start, 2),
-                        "end": round(word_end, 2),
-                        "probability": 0.95,
-                    })
-            elif c_text:
-                raw_words = c_text.split()
-                step = max(0.05, (chunk_end_sec - chunk_start_sec) / max(1, len(raw_words)))
-                for i, w in enumerate(raw_words):
-                    w_start = chunk_start_sec + (i * step)
-                    w_end = min(duration_sec, chunk_start_sec + ((i + 1) * step))
-                    chunk_words.append({
-                        "word": w,
-                        "start": round(w_start, 2),
-                        "end": round(w_end, 2),
-                        "probability": 0.95,
-                    })
-
             if chunk_words:
                 all_words.extend(chunk_words)
-                current_words = []
-                for word in chunk_words:
-                    gap = (word["start"] - current_words[-1]["end"]) if current_words else 0.0
-                    current_words.append(word)
-                    sentence_end = word["word"].rstrip().endswith((".", "?", "!"))
-                    too_many = len(current_words) >= 12
-                    long_gap = gap >= 1.0 and len(current_words) > 1
-                    if sentence_end or too_many or long_gap:
-                        seg_data = {
-                            "start": round(current_words[0]["start"], 2),
-                            "end": round(min(duration_sec, max(current_words[-1]["end"], current_words[0]["start"] + 0.05)), 2),
-                            "text": " ".join(w["word"] for w in current_words),
-                            "words": current_words,
-                        }
-                        all_segments.append(seg_data)
-                        _emit("streaming_segment", segment=seg_data)
-                        current_words = []
-                if current_words:
-                    seg_data = {
-                        "start": round(current_words[0]["start"], 2),
-                        "end": round(min(duration_sec, max(current_words[-1]["end"], current_words[0]["start"] + 0.05)), 2),
-                        "text": " ".join(w["word"] for w in current_words),
-                        "words": current_words,
-                    }
+                for seg_data in _group_onnx_words_into_segments(chunk_words, duration_sec, language=lang_hint):
                     all_segments.append(seg_data)
                     _emit("streaming_segment", segment=seg_data)
 

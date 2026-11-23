@@ -1,4 +1,4 @@
-"""Radio & TV Segmenter v3.10.10-beta — transcript story responsibilities.
+"""Radio & TV Segmenter v3.10.11-beta — transcript story responsibilities.
 
 Methods intentionally retain the MainWindow-facing API so behavior remains
 maintaining the established MainWindow-facing API while responsibilities are isolated.
@@ -347,7 +347,11 @@ class TranscriptStoryMixin(StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsM
             speaker_changed = (spk_name != curr_speaker_name)
             prev_token = curr_para_words[-1] if curr_para_words else None
             time_gap = (token["start"] - prev_token["end"]) if prev_token and "end" in prev_token and "start" in token else 0.0
-            prev_word_ended_sentence = prev_token and is_sentence_end(prev_token["word"])
+            prev_word_ended_sentence = prev_token and is_sentence_end(
+                prev_token["word"],
+                next_word=token["word"],
+                language=getattr(self, "language", None),
+            )
             word_count = len(curr_para_words)
 
             silence_thresh = float(getattr(self, "silence_threshold", 3.0) or 3.0)

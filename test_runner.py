@@ -542,6 +542,11 @@ class DiagnosticEngine(
                 "Transcript & Speaker Management",
                 "Validates main menu bar deduplication, Qt && escaping, checkable theme menu state, and shortcut metadata alignment",
             ),
+            DiagnosticItem(
+                "Abbreviation Sentence Boundaries and Parakeet Rescue",
+                "Transcript & Speaker Management",
+                "Validates EN/ES title abbreviations, Parakeet chunk grouping & uncovered-speech tail rescue, diarization gap fallback, and WordPress paragraphing",
+            ),
         ]
 
     def run_all(self, stop_requested_fn: Optional[Callable[[], bool]] = None) -> List[DiagnosticItem]:

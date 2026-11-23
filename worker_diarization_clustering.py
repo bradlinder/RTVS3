@@ -382,12 +382,18 @@ def assign_short_segments_to_centroids(
 
         if not chosen_speaker and raw_segments:
             seg_mid = (start_sec + end_sec) / 2.0
-            best_dist = float("inf")
+            best_key = (float("inf"), float("inf"))
             for raw in raw_segments:
-                raw_mid = (raw.start + raw.end) / 2.0
-                dist = abs(seg_mid - raw_mid)
-                if dist < best_dist:
-                    best_dist = dist
+                if end_sec < raw.start:
+                    edge_gap = raw.start - end_sec
+                elif start_sec > raw.end:
+                    edge_gap = start_sec - raw.end
+                else:
+                    edge_gap = 0.0
+                mid_dist = abs(seg_mid - (raw.start + raw.end) / 2.0)
+                key = (edge_gap, mid_dist)
+                if key < best_key:
+                    best_key = key
                     chosen_speaker = raw.speaker
 
         if not chosen_speaker:

@@ -809,3 +809,129 @@ class DiagnosticSpeakerCleanupTestsMixin:
             win.close()
             win.deleteLater()
             app.processEvents()
+
+    def _test_abbreviation_sentence_boundaries_and_parakeet_rescue(self, item: DiagnosticItem):
+        """Validates EN/ES title abbreviations, Parakeet chunk grouping & uncovered-speech tail rescue, diarization gap fallback, and WordPress paragraphing."""
+        from types import SimpleNamespace
+        from unittest.mock import patch
+        import numpy as np
+        from core_utils import is_sentence_end
+        from plugins.wordpress.client import _group_segments_into_paragraphs
+        from worker_asr_engines import _decode_onnx_chunk_with_rescue, _group_onnx_words_into_segments
+        from worker_diarization_clustering import assign_short_segments_to_centroids
+
+        # 1. Context-aware abbreviation checks & false-positive traps
+        non_terminal = (
+            ("Dr.", "Palmer", None),
+            ("Mr.", "Smith", None),
+            ("Prof.", "Lee", None),
+            ("Sen.", "Warren", None),
+            ("St.", "Louis", None),
+            ("F.", "Kennedy", None),
+            ("Sra.", "López", "es"),
+            ("Sr.", "García", "es"),
+            ("Jan.", "15", None),
+            ("No.", "5", None),
+            ("U.S.", "today", None),
+            ("p.m.", "when", None),
+        )
+        for tok, nxt, lang in non_terminal:
+            if is_sentence_end(tok, next_word=nxt, language=lang):
+                raise AssertionError(f"Expected non-terminal for ({tok!r}, next={nxt!r}, lang={lang!r})")
+
+        terminal = (
+            ("No.", "I", None),
+            ("sec.", "Okay", None),
+            ("sat.", "Then", None),
+            ("sun.", "It", None),
+            ("D.C.", "Then", None),
+            ("p.m.", "The", None),
+            ("done.", "Next", None),
+        )
+        for tok, nxt, lang in terminal:
+            if not is_sentence_end(tok, next_word=nxt, language=lang):
+                raise AssertionError(f"Expected terminal sentence end for ({tok!r}, next={nxt!r}, lang={lang!r})")
+
+        # 2. Parakeet word grouping keeps "Dr." + "Palmer" together (even on 12th word!)
+        words_12 = [
+            {"word": w, "start": round(i * 0.3, 2), "end": round((i + 1) * 0.3, 2)}
+            for i, w in enumerate(["one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "Dr.", "Palmer", "spoke."])
+        ]
+        segs = _group_onnx_words_into_segments(words_12, 10.0)
+        if not any("Dr. Palmer" in s["text"] for s in segs):
+            raise AssertionError(f"Expected 'Dr. Palmer' glued in one segment, got: {[s['text'] for s in segs]}")
+
+        # 3. Uncovered-speech tail rescue recovers dropped speech but skips digital silence
+        sr = 16000
+        t_axis = np.arange(sr * 10, dtype=np.float32) / float(sr)
+        speech_wave = 0.08 * np.sin(2.0 * np.pi * 220.0 * t_axis)
+        mixed = np.concatenate([speech_wave, speech_wave])  # 20s active audio
+        silence_tail = np.concatenate([speech_wave, np.zeros(sr * 10, dtype=np.float32)])
+
+        calls = []
+
+        class _StreamRec:
+            def create_stream(self):
+                class _St:
+                    def accept_waveform(self, _sr, b):
+                        self.b = b
+                return _St()
+
+            def decode_stream(self, stream):
+                n_sec = len(stream.b) / float(sr)
+                calls.append(round(n_sec, 2))
+                if n_sec > 15.0:
+                    # Simulate premature stop at 9.8s leaving 10.2s uncovered
+                    stream.result = SimpleNamespace(
+                        text="First half done.",
+                        tokens=["▁First", "▁half", "▁done."],
+                        timestamps=[0.5, 4.0, 9.5],
+                    )
+                else:
+                    # Simulate rescue pass on uncovered tail
+                    stream.result = SimpleNamespace(
+                        text="Rescued petition.",
+                        tokens=["▁Rescued", "▁petition."],
+                        timestamps=[0.5, 8.0],
+                    )
+
+        calls.clear()
+        txt_rescued, words_rescued = _decode_onnx_chunk_with_rescue(_StreamRec(), mixed, 0, len(mixed), 20.0)
+        if "petition." not in txt_rescued or len(words_rescued) != 5:
+            raise AssertionError(f"Expected rescued tail tokens, got text={txt_rescued!r}, words={len(words_rescued)}")
+
+        calls.clear()
+        txt_silent, words_silent = _decode_onnx_chunk_with_rescue(_StreamRec(), silence_tail, 0, len(silence_tail), 20.0)
+        if len(calls) != 1 or len(words_silent) != 3:
+            raise AssertionError(f"Expected no rescue call on digital silence, calls={calls}, txt={txt_silent!r}")
+
+        # 4. Short-segment fallback snaps to edge-to-edge neighbor (0.00s gap) over wider midpoint distance
+        fake_session = SimpleNamespace(run=lambda **_kw: [[np.zeros(256, dtype=np.float32)]])
+        fake_model = SimpleNamespace(session=fake_session)
+        centroids = np.eye(2, 256, dtype=np.float32)
+        raw_segs = [
+            SimpleNamespace(start=56.01, end=66.04, speaker="SPEAKER_01"),
+            SimpleNamespace(start=66.79, end=72.71, speaker="SPEAKER_00"),
+        ]
+        with patch("soundfile.read", return_value=(np.zeros(sr * 75, dtype=np.float32), sr)):
+            assigned = assign_short_segments_to_centroids(
+                [SimpleNamespace(start=66.46, end=66.79)],
+                "dummy.wav",
+                centroids,
+                [0, 1],
+                raw_segments=raw_segs,
+                get_wespeaker_model_fn=lambda: fake_model,
+            )
+        if len(assigned) != 1 or assigned[0].speaker != "SPEAKER_00":
+            raise AssertionError(f"Expected 0.33s turn with 0.00s gap to snap to SPEAKER_00, got {assigned!r}")
+
+        # 5. WordPress paragraph grouping does not split between "Dr." and "Palmer"
+        wp_blocks = _group_segments_into_paragraphs(
+            [{"speaker": "Gigi", "text": " ".join([f"w{i}" for i in range(44)]) + " Dr. Palmer spoke today."}],
+            min_words=40,
+        )
+        if len(wp_blocks) != 1 or "Dr. Palmer" not in wp_blocks[0]["text"]:
+            raise AssertionError(f"WordPress paragrapher split across 'Dr. Palmer': {wp_blocks!r}")
+
+        item.status = "PASS"
+        item.message = "Abbreviation rules, Parakeet word grouping & tail rescue, diarization gap fallback, and WordPress paragraphing verified"

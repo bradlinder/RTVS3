@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-22 15:09:21",
-  "total_files": 173,
+  "generated_at": "2026-11-23 09:28:06",
+  "total_files": 174,
   "files": {
     "RadioTVSegmenter.py": {
       "path": "RadioTVSegmenter.py",
       "lines": 684,
-      "summary": "Radio & TV Segmenter \u2014 v3.10.10-beta",
+      "summary": "Radio & TV Segmenter \u2014 v3.10.11-beta",
       "exports": null,
       "classes": [
         {
@@ -1459,7 +1459,7 @@
     },
     "core_utils.py": {
       "path": "core_utils.py",
-      "lines": 773,
+      "lines": 776,
       "summary": "Radio & TV Segmenter \u2014 Core filesystem, path, timing, and hash utilities.",
       "exports": null,
       "classes": [
@@ -1468,8 +1468,8 @@
           "bases": [
             "NamedTuple"
           ],
-          "start_line": 695,
-          "end_line": 708,
+          "start_line": 698,
+          "end_line": 711,
           "doc": "",
           "methods": []
         }
@@ -1665,31 +1665,24 @@
           "doc": ""
         },
         {
-          "name": "is_sentence_end",
-          "sig": "is_sentence_end(text)",
-          "start_line": 654,
-          "end_line": 655,
-          "doc": ""
-        },
-        {
           "name": "calculate_fade_curve_factor",
           "sig": "calculate_fade_curve_factor(u, fcurve)",
-          "start_line": 658,
-          "end_line": 669,
+          "start_line": 661,
+          "end_line": 672,
           "doc": "Calculate normalized fade-in multiplier (0.0 to 1.0) given progress `u` in [0, 1]."
         },
         {
           "name": "calculate_fade_out_factor",
           "sig": "calculate_fade_out_factor(u, fcurve)",
-          "start_line": 672,
-          "end_line": 692,
+          "start_line": 675,
+          "end_line": 695,
           "doc": "Calculate normalized fade-out multiplier (1.0 to 0.0) given progress `u` from 0.0 (fade start) to 1.0 (silence)."
         },
         {
           "name": "get_story_vocabulary",
           "sig": "get_story_vocabulary(win_or_settings, language)",
-          "start_line": 711,
-          "end_line": 772,
+          "start_line": 714,
+          "end_line": 775,
           "doc": "Resolve active UI vocabulary nouns and action labels for timeline segments."
         }
       ]
@@ -2462,7 +2455,7 @@
     },
     "diagnostic_speaker_cleanup_tests.py": {
       "path": "diagnostic_speaker_cleanup_tests.py",
-      "lines": 811,
+      "lines": 937,
       "summary": "Diagnostic tests for Phase 2 features: minimum story length, guest-name cleanup, and Station Voices.",
       "exports": null,
       "classes": [
@@ -2470,7 +2463,7 @@
           "name": "DiagnosticSpeakerCleanupTestsMixin",
           "bases": [],
           "start_line": 13,
-          "end_line": 811,
+          "end_line": 937,
           "doc": "Mixin for Phase 2 regression diagnostics (story length, name cleanup, Station Voices).",
           "methods": [
             {
@@ -2514,6 +2507,13 @@
               "start_line": 588,
               "end_line": 811,
               "doc": "Validates main menu bar deduplication, Qt && escaping, checkable theme menu state, and shortcut metadata."
+            },
+            {
+              "name": "_test_abbreviation_sentence_boundaries_and_parakeet_rescue",
+              "sig": "_test_abbreviation_sentence_boundaries_and_parakeet_rescue(self, item)",
+              "start_line": 813,
+              "end_line": 937,
+              "doc": "Validates EN/ES title abbreviations, Parakeet chunk grouping & uncovered-speech tail rescue, diarization gap fallback, and WordPress paragraphing."
             }
           ]
         }
@@ -3617,7 +3617,7 @@
     },
     "export_documents.py": {
       "path": "export_documents.py",
-      "lines": 793,
+      "lines": 796,
       "summary": "Radio & TV Story Segmenter \u2014 Document, Transcript & Timeline Interchange Exporter.",
       "exports": null,
       "classes": [
@@ -3625,7 +3625,7 @@
           "name": "ExportDocumentsMixin",
           "bases": [],
           "start_line": 49,
-          "end_line": 793,
+          "end_line": 796,
           "doc": "Provides document formatting, subtitle generation, and DAW interchange exports.",
           "methods": [
             {
@@ -3667,98 +3667,98 @@
               "name": "build_story_blocks",
               "sig": "build_story_blocks(self, segments)",
               "start_line": 148,
-              "end_line": 269,
+              "end_line": 272,
               "doc": ""
             },
             {
               "name": "story_text",
               "sig": "story_text(self, segments)",
-              "start_line": 271,
-              "end_line": 287,
+              "start_line": 274,
+              "end_line": 290,
               "doc": ""
             },
             {
               "name": "add_story_to_docx",
               "sig": "add_story_to_docx(self, document, segments)",
-              "start_line": 289,
-              "end_line": 303,
+              "start_line": 292,
+              "end_line": 306,
               "doc": ""
             },
             {
               "name": "_get_transcript_text_slice",
               "sig": "_get_transcript_text_slice(self, start, end)",
-              "start_line": 305,
-              "end_line": 312,
+              "start_line": 308,
+              "end_line": 315,
               "doc": ""
             },
             {
               "name": "export_cue_sheet",
               "sig": "export_cue_sheet(self, destination_path)",
-              "start_line": 314,
-              "end_line": 346,
+              "start_line": 317,
+              "end_line": 349,
               "doc": "Export story/song segments to a standard .cue sheet."
             },
             {
               "name": "export_tracklist",
               "sig": "export_tracklist(self, destination_path)",
-              "start_line": 348,
-              "end_line": 378,
+              "start_line": 351,
+              "end_line": 381,
               "doc": "Export story/song segments as YouTube chapters / tracklist formatted text."
             },
             {
               "name": "_get_unselected_audio_mode_pref",
               "sig": "_get_unselected_audio_mode_pref(self)",
-              "start_line": 380,
-              "end_line": 385,
+              "start_line": 383,
+              "end_line": 388,
               "doc": ""
             },
             {
               "name": "export_reaper_project",
               "sig": "export_reaper_project(self, destination_path, unselected_audio_mode)",
-              "start_line": 387,
-              "end_line": 432,
+              "start_line": 390,
+              "end_line": 435,
               "doc": "Export story segments as a Cockos REAPER project file (.rpp)."
             },
             {
               "name": "export_samplitude_edl",
               "sig": "export_samplitude_edl(self, destination_path, unselected_audio_mode)",
-              "start_line": 434,
-              "end_line": 467,
+              "start_line": 437,
+              "end_line": 470,
               "doc": "Export story segments as a Magix Samplitude EDL (v1.5) broadcast edit decision list."
             },
             {
               "name": "export_audacity_labels",
               "sig": "export_audacity_labels(self, destination_path, unselected_audio_mode)",
-              "start_line": 469,
-              "end_line": 501,
+              "start_line": 472,
+              "end_line": 504,
               "doc": "Export story segments as an Audacity Label Track (.txt)."
             },
             {
               "name": "export_audition_xml",
               "sig": "export_audition_xml(self, destination_path, unselected_audio_mode)",
-              "start_line": 503,
-              "end_line": 536,
+              "start_line": 506,
+              "end_line": 539,
               "doc": "Export story segments as Adobe Audition / Final Cut Pro XML (.xml)."
             },
             {
               "name": "export_daw_marker_csv",
               "sig": "export_daw_marker_csv(self, destination_path, unselected_audio_mode)",
-              "start_line": 538,
-              "end_line": 570,
+              "start_line": 541,
+              "end_line": 573,
               "doc": "Export story segments as a Universal DAW Marker List (.csv)."
             },
             {
               "name": "copy_youtube_chapters_to_clipboard",
               "sig": "copy_youtube_chapters_to_clipboard(self)",
-              "start_line": 572,
-              "end_line": 589,
+              "start_line": 575,
+              "end_line": 592,
               "doc": "Format story segments as YouTube chapters and copy them directly to the system clipboard."
             },
             {
               "name": "export_timeline_interchange",
               "sig": "export_timeline_interchange(self, formats, base, options, directory, scope, is_custom_location)",
-              "start_line": 591,
-              "end_line": 793,
+              "start_line": 594,
+              "end_line": 796,
               "doc": "Export multi-platform timeline and DAW interchange project files."
             }
           ]
@@ -6755,7 +6755,7 @@
     },
     "plugins/wordpress/client.py": {
       "path": "plugins/wordpress/client.py",
-      "lines": 2155,
+      "lines": 2169,
       "summary": "WordPress Plugin \u2014 Client, Credential Storage, and Upload Engine.",
       "exports": null,
       "classes": [
@@ -7027,21 +7027,21 @@
           "name": "_group_segments_into_paragraphs",
           "sig": "_group_segments_into_paragraphs(segments, min_words)",
           "start_line": 1444,
-          "end_line": 1492,
+          "end_line": 1506,
           "doc": "Group consecutive segments with same speaker into natural paragraph blocks."
         },
         {
           "name": "_build_audio_fade_filter",
           "sig": "_build_audio_fade_filter(duration, fade_in, fade_out, fade_curve)",
-          "start_line": 1495,
-          "end_line": 1523,
+          "start_line": 1509,
+          "end_line": 1537,
           "doc": "Construct FFmpeg afade audio filter chain for story clips."
         },
         {
           "name": "execute_wordpress_upload",
           "sig": "execute_wordpress_upload(main_window, client, post_title, post_excerpt, start, end, task_label, include_english, include_spanish, spanish_presentation, primary_language, author_ids, author_term_ids, category_ids, show_completion_dialog, media_filename, progress_callback, featured_image_path, parent_episode_info, link_parent_episode, parent_episode_template, parent_episode_pos, include_audio, fade_in, fade_out, fade_curve, apply_fades, accordion_pos, is_podcast, podcast_feed, podcast_feed_id, podcast_feed_ids, podcast_feeds, podcast_episode_type, podcast_season, podcast_episode_number, youtube_url, youtube_stop_at_end, youtube_placement, youtube_use_story_time, existing_post_id, replace_existing_audio_and_podcast, post_status, publication_date, post_slug, featured_image_caption, featured_image_alt_text)",
-          "start_line": 1526,
-          "end_line": 2155,
+          "start_line": 1540,
+          "end_line": 2169,
           "doc": "Extract media clip, upload to WordPress media library, and create or update a post."
         }
       ]
@@ -12202,7 +12202,7 @@
     },
     "reaper_bridge.py": {
       "path": "reaper_bridge.py",
-      "lines": 962,
+      "lines": 939,
       "summary": "reaper_bridge.py \u2014 REAPER DAW Companion Bridge & Inter-Process Cue Emitter.",
       "exports": null,
       "classes": [],
@@ -12237,107 +12237,107 @@
         },
         {
           "name": "_is_sentence_terminator",
-          "sig": "_is_sentence_terminator(text)",
-          "start_line": 88,
-          "end_line": 107,
+          "sig": "_is_sentence_terminator(text, next_word)",
+          "start_line": 81,
+          "end_line": 84,
           "doc": "Check whether a text fragment ends with terminal sentence punctuation (., ?, !, ...)."
         },
         {
           "name": "_build_phrase_preview",
           "sig": "_build_phrase_preview(text, fallback_spk)",
-          "start_line": 110,
-          "end_line": 121,
+          "start_line": 87,
+          "end_line": 98,
           "doc": "Build a concise, readable 6-word phrase preview for REAPER take markers."
         },
         {
           "name": "_extract_formatted_transcript_sentences",
           "sig": "_extract_formatted_transcript_sentences(main_win)",
-          "start_line": 125,
-          "end_line": 315,
+          "start_line": 102,
+          "end_line": 292,
           "doc": "Build formatted grammatical sentences (with word timings and paragraph flags) matching RTVS transcript view."
         },
         {
           "name": "get_reaper_clip_notes_and_markers",
           "sig": "get_reaper_clip_notes_and_markers(main_win, start_sec, end_sec, marker_style, apply_speaker_color, include_notes, include_markers, precomputed_sentences)",
-          "start_line": 318,
-          "end_line": 419,
+          "start_line": 295,
+          "end_line": 396,
           "doc": "Extract formatted transcript notes, take markers, and colors for a clip in an exported REAPER project."
         },
         {
           "name": "build_reaper_cue_payload",
           "sig": "build_reaper_cue_payload(main_win, start_sec, end_sec, plain_text, title, clip_type, story_obj, include_word_cues, rendered_wav_path, marker_style)",
-          "start_line": 422,
-          "end_line": 570,
+          "start_line": 399,
+          "end_line": 547,
           "doc": "Construct a standardized cross-language cue dictionary conforming to the 1.0 schema."
         },
         {
           "name": "get_reaper_index_paths",
           "sig": "get_reaper_index_paths()",
-          "start_line": 573,
-          "end_line": 587,
+          "start_line": 550,
+          "end_line": 564,
           "doc": "Return IPC file paths for the full transcript and stories index used by the ReaImGui Dock."
         },
         {
           "name": "write_reaper_transcript_index",
           "sig": "write_reaper_transcript_index(main_win, precomputed_sentences)",
-          "start_line": 590,
-          "end_line": 647,
+          "start_line": 567,
+          "end_line": 624,
           "doc": "Emit the formatted project stories and sentence-level transcript index for REAPER companion scripts."
         },
         {
           "name": "write_reaper_sidecar_cue",
           "sig": "write_reaper_sidecar_cue(payload)",
-          "start_line": 650,
-          "end_line": 669,
+          "start_line": 627,
+          "end_line": 646,
           "doc": "Atomically write the cue payload JSON to all IPC sidecar locations."
         },
         {
           "name": "attach_reaper_cue_to_mimedata",
           "sig": "attach_reaper_cue_to_mimedata(mime_data, payload)",
-          "start_line": 672,
-          "end_line": 683,
+          "start_line": 649,
+          "end_line": 660,
           "doc": "Encode cue payload as UTF-8 JSON into QMimeData and write atomic IPC sidecar."
         },
         {
           "name": "get_default_reaper_scripts_dir",
           "sig": "get_default_reaper_scripts_dir()",
-          "start_line": 686,
-          "end_line": 700,
+          "start_line": 663,
+          "end_line": 677,
           "doc": "Return the standard platform-specific default REAPER Scripts/RTVS3 directory."
         },
         {
           "name": "get_bundled_lua_scripts",
           "sig": "get_bundled_lua_scripts()",
-          "start_line": 703,
-          "end_line": 716,
+          "start_line": 680,
+          "end_line": 693,
           "doc": "Find the bundled RTVS3 ReaScript Lua files."
         },
         {
           "name": "install_reaper_scripts_to_resource_path",
           "sig": "install_reaper_scripts_to_resource_path(parent_widget, target_dir)",
-          "start_line": 719,
-          "end_line": 794,
+          "start_line": 696,
+          "end_line": 771,
           "doc": "Copy the RTVS3 ReaScript companion and dock scripts to the REAPER Scripts directory."
         },
         {
           "name": "render_temp_daw_wav_clip",
           "sig": "render_temp_daw_wav_clip(main_win, start_sec, end_sec, title)",
-          "start_line": 797,
-          "end_line": 838,
+          "start_line": 774,
+          "end_line": 815,
           "doc": "Render a temporary uncompressed WAV slice of the selected range for universal DAW clipboard paste."
         },
         {
           "name": "copy_selection_as_daw_wav_clip",
           "sig": "copy_selection_as_daw_wav_clip(main_win, start_sec, end_sec, plain_text, html_text, title, story_obj)",
-          "start_line": 841,
-          "end_line": 898,
+          "start_line": 818,
+          "end_line": 875,
           "doc": "Render a temp WAV audio slice and attach it to the OS file clipboard (CF_HDROP / URLs)"
         },
         {
           "name": "populate_unified_copy_mimedata",
           "sig": "populate_unified_copy_mimedata(main_win, mime_data, start_sec, end_sec, plain_text, title, clip_type, story_obj)",
-          "start_line": 901,
-          "end_line": 961,
+          "start_line": 878,
+          "end_line": 938,
           "doc": "Populates QMimeData with REAPER JSON cue payloads and optional WAV file attachments"
         }
       ]
@@ -13053,6 +13053,53 @@
           "start_line": 664,
           "end_line": 773,
           "doc": ""
+        }
+      ]
+    },
+    "sentence_boundaries.py": {
+      "path": "sentence_boundaries.py",
+      "lines": 140,
+      "summary": "Context-aware sentence-boundary and abbreviation detection for Radio & TV Segmenter.",
+      "exports": [
+        "ALWAYS_PRE_NOUN_TITLES",
+        "CAPITALIZED_PRE_NOUN_TITLES",
+        "MID_CLAUSE_CONNECTORS",
+        "MONTH_ABBREVS",
+        "NUMBER_PREFIX_ABBREVS",
+        "AMBIGUOUS_ABBREVS",
+        "is_ambiguous_abbreviation",
+        "is_non_terminal_abbreviation",
+        "is_sentence_end"
+      ],
+      "classes": [],
+      "functions": [
+        {
+          "name": "_extract_last_word",
+          "sig": "_extract_last_word(text)",
+          "start_line": 57,
+          "end_line": 64,
+          "doc": ""
+        },
+        {
+          "name": "is_ambiguous_abbreviation",
+          "sig": "is_ambiguous_abbreviation(text)",
+          "start_line": 67,
+          "end_line": 75,
+          "doc": "Return True when text ends with a multi-dot acronym or sentence-finalizable abbreviation."
+        },
+        {
+          "name": "is_non_terminal_abbreviation",
+          "sig": "is_non_terminal_abbreviation(text, next_word, language)",
+          "start_line": 78,
+          "end_line": 109,
+          "doc": "Return True when a trailing period belongs to a non-terminal abbreviation rather than sentence end."
+        },
+        {
+          "name": "is_sentence_end",
+          "sig": "is_sentence_end(text, next_word, language)",
+          "start_line": 112,
+          "end_line": 127,
+          "doc": "Return True if text terminates a sentence, honoring non-terminal abbreviations and titles."
         }
       ]
     },
@@ -18161,8 +18208,8 @@
     },
     "transcript_story.py": {
       "path": "transcript_story.py",
-      "lines": 852,
-      "summary": "Radio & TV Segmenter v3.10.10-beta \u2014 transcript story responsibilities.",
+      "lines": 856,
+      "summary": "Radio & TV Segmenter v3.10.11-beta \u2014 transcript story responsibilities.",
       "exports": [
         "TranscriptStoryMixin",
         "Story",
@@ -18188,77 +18235,77 @@
             "VoiceProfileOpsMixin"
           ],
           "start_line": 63,
-          "end_line": 851,
+          "end_line": 855,
           "doc": "",
           "methods": [
             {
               "name": "render_transcript",
               "sig": "render_transcript(self)",
               "start_line": 64,
-              "end_line": 467,
+              "end_line": 471,
               "doc": ""
             },
             {
               "name": "on_transcript_selection_changed",
               "sig": "on_transcript_selection_changed(self)",
-              "start_line": 469,
-              "end_line": 501,
+              "start_line": 473,
+              "end_line": 505,
               "doc": ""
             },
             {
               "name": "on_transcript_text_changed",
               "sig": "on_transcript_text_changed(self)",
-              "start_line": 503,
-              "end_line": 660,
+              "start_line": 507,
+              "end_line": 664,
               "doc": ""
             },
             {
               "name": "transcript_clicked",
               "sig": "transcript_clicked(self, url)",
-              "start_line": 662,
-              "end_line": 678,
+              "start_line": 666,
+              "end_line": 682,
               "doc": ""
             },
             {
               "name": "edit_segment_comment_dialog",
               "sig": "edit_segment_comment_dialog(self, seg_idx, sel_text, start_char, end_char, t_range, covered_indices)",
-              "start_line": 680,
-              "end_line": 761,
+              "start_line": 684,
+              "end_line": 765,
               "doc": ""
             },
             {
               "name": "add_comment_from_selection",
               "sig": "add_comment_from_selection(self)",
-              "start_line": 765,
-              "end_line": 808,
+              "start_line": 769,
+              "end_line": 812,
               "doc": ""
             },
             {
               "name": "delete_segment_comment",
               "sig": "delete_segment_comment(self, seg_idx)",
-              "start_line": 810,
-              "end_line": 830,
+              "start_line": 814,
+              "end_line": 834,
               "doc": ""
             },
             {
               "name": "toggle_comments_panel",
               "sig": "toggle_comments_panel(self)",
-              "start_line": 832,
-              "end_line": 835,
+              "start_line": 836,
+              "end_line": 839,
               "doc": ""
             },
             {
               "name": "toggle_show_comments",
               "sig": "toggle_show_comments(self, checked)",
-              "start_line": 837,
-              "end_line": 843,
+              "start_line": 841,
+              "end_line": 847,
               "doc": ""
             },
             {
               "name": "toggle_comment_highlights",
               "sig": "toggle_comment_highlights(self, checked)",
-              "start_line": 847,
-              "end_line": 851,
+              "start_line": 851,
+              "end_line": 855,
               "doc": ""
             }
           ]
@@ -20066,7 +20113,7 @@
     },
     "worker_asr_engines.py": {
       "path": "worker_asr_engines.py",
-      "lines": 839,
+      "lines": 958,
       "summary": "worker_asr_engines.py - Faster-Whisper, CTranslate2 & Sherpa-ONNX ASR Engines.",
       "exports": null,
       "classes": [],
@@ -20074,157 +20121,178 @@
         {
           "name": "set_emit_callback",
           "sig": "set_emit_callback(fn)",
-          "start_line": 30,
-          "end_line": 33,
+          "start_line": 35,
+          "end_line": 38,
           "doc": "Set custom IPC emitter function."
+        },
+        {
+          "name": "_has_speech_energy",
+          "sig": "_has_speech_energy(audio_slice, sr, rms_db_thresh, peak_db_thresh)",
+          "start_line": 41,
+          "end_line": 65,
+          "doc": "Return True when >=2 half-second sub-windows show active audio above silence."
+        },
+        {
+          "name": "_decode_onnx_chunk_with_rescue",
+          "sig": "_decode_onnx_chunk_with_rescue(recognizer, samples, c_start, c_end, duration_sec, is_word_boundary_fn)",
+          "start_line": 68,
+          "end_line": 182,
+          "doc": "Decode one acoustic chunk and rescue uncovered speech tails/heads from premature blanking."
+        },
+        {
+          "name": "_group_onnx_words_into_segments",
+          "sig": "_group_onnx_words_into_segments(chunk_words, duration_sec, language)",
+          "start_line": 185,
+          "end_line": 228,
+          "doc": "Group word timestamps into readable transcript segments without splitting titles/abbreviations."
         },
         {
           "name": "_emit",
           "sig": "_emit(message_type, **payload)",
-          "start_line": 36,
-          "end_line": 42,
+          "start_line": 231,
+          "end_line": 237,
           "doc": ""
         },
         {
           "name": "_patch_av_open",
           "sig": "_patch_av_open()",
-          "start_line": 45,
-          "end_line": 59,
+          "start_line": 240,
+          "end_line": 254,
           "doc": "Monkey-patch PyAV's av.open to strip 'metadata_errors' if passed."
         },
         {
           "name": "get_optimal_transcription_threads",
           "sig": "get_optimal_transcription_threads()",
-          "start_line": 62,
-          "end_line": 81,
+          "start_line": 257,
+          "end_line": 276,
           "doc": "Calculate optimal CPU threads for faster-whisper / CTranslate2 / ONNX."
         },
         {
           "name": "get_app_data_dir_pure",
           "sig": "get_app_data_dir_pure()",
-          "start_line": 84,
-          "end_line": 102,
+          "start_line": 279,
+          "end_line": 297,
           "doc": "Return platform-specific app data directory in pure Python without PySide6."
         },
         {
           "name": "get_models_storage_dir_pure",
           "sig": "get_models_storage_dir_pure()",
-          "start_line": 105,
-          "end_line": 115,
+          "start_line": 300,
+          "end_line": 310,
           "doc": "Return models storage directory in pure Python without PySide6."
         },
         {
           "name": "is_onnx_model_available",
           "sig": "is_onnx_model_available(model_name)",
-          "start_line": 118,
-          "end_line": 175,
+          "start_line": 313,
+          "end_line": 370,
           "doc": "Check if sherpa-onnx runtime and target model files exist on disk."
         },
         {
           "name": "transcribe_parakeet_onnx",
           "sig": "transcribe_parakeet_onnx(audio_file, model_name, detected_lang, detected_confidence, initial_prompt, beam_size)",
-          "start_line": 178,
-          "end_line": 506,
+          "start_line": 373,
+          "end_line": 625,
           "doc": "Run installed ONNX models (Parakeet TDT, Spanish FastConformer, Multilingual FastConformer) through sherpa-onnx."
         },
         {
           "name": "probe_audio_language",
           "sig": "probe_audio_language(audio_file, sample_duration, preferred_model)",
-          "start_line": 509,
-          "end_line": 609,
+          "start_line": 628,
+          "end_line": 728,
           "doc": "Run a fast language detection probe using faster-whisper's mel feature extractor."
         },
         {
           "name": "transcribe",
           "sig": "transcribe(audio_file, model_name, initial_prompt, beam_size)",
-          "start_line": 612,
-          "end_line": 839,
+          "start_line": 731,
+          "end_line": 958,
           "doc": "Transcribe media file using either Sherpa-ONNX or Faster-Whisper."
         }
       ]
     },
     "worker_clustering.py": {
       "path": "worker_clustering.py",
-      "lines": 448,
+      "lines": 457,
       "summary": "worker_clustering.py - Acoustic clustering, VAD pause bridging, and centroid assignments.",
       "exports": null,
       "classes": [],
       "functions": [
         {
           "name": "normalize_audio_for_diarization",
-          "sig": "normalize_audio_for_diarization(source_path)",
+          "sig": "normalize_audio_for_diarization(source_path, apply_bandpass)",
           "start_line": 29,
-          "end_line": 89,
+          "end_line": 92,
           "doc": "Extract a normalized 16 kHz mono WAV using the local FFmpeg binary."
         },
         {
           "name": "configure_optimal_pytorch_threads",
           "sig": "configure_optimal_pytorch_threads()",
-          "start_line": 92,
-          "end_line": 106,
+          "start_line": 95,
+          "end_line": 109,
           "doc": "Clamp torch's intra-op/inter-op thread pools to match the"
         },
         {
           "name": "_normalize_expected_speakers",
           "sig": "_normalize_expected_speakers(value)",
-          "start_line": 109,
-          "end_line": 118,
+          "start_line": 112,
+          "end_line": 121,
           "doc": "Map a CLI/UI expected-speakers hint to one of 'auto', '1', '2', '3+'."
         },
         {
           "name": "_normalize_speaker_labels",
           "sig": "_normalize_speaker_labels(segments)",
-          "start_line": 121,
-          "end_line": 134,
+          "start_line": 124,
+          "end_line": 137,
           "doc": "Relabel raw diarize-package speaker ids to 'Speaker 1', 'Speaker 2',"
         },
         {
           "name": "_sensitivity_distance_threshold",
           "sig": "_sensitivity_distance_threshold()",
-          "start_line": 137,
-          "end_line": 143,
+          "start_line": 140,
+          "end_line": 146,
           "doc": "Cosine-distance clustering threshold derived from PRS_DIARIZATION_SENSITIVITY."
         },
         {
           "name": "fast_cluster_ahc",
           "sig": "fast_cluster_ahc(embeddings, k, distance_threshold)",
-          "start_line": 146,
-          "end_line": 202,
+          "start_line": 149,
+          "end_line": 205,
           "doc": "Agglomerative Hierarchical Clustering with cosine metric and average linkage (O(N^2))."
         },
         {
           "name": "apply_clustering_patches",
           "sig": "apply_clustering_patches()",
-          "start_line": 205,
-          "end_line": 238,
+          "start_line": 208,
+          "end_line": 241,
           "doc": "Globally monkey-patch SpectralClustering and diarize.clustering to use O(N^2) AHC."
         },
         {
           "name": "run_vad_two_pass",
           "sig": "run_vad_two_pass(audio_path, threshold, min_speech_duration_ms, min_silence_duration_ms, speech_pad_ms, bridge_pause_threshold_sec)",
-          "start_line": 241,
-          "end_line": 314,
+          "start_line": 244,
+          "end_line": 317,
           "doc": "Silero VAD with Pass 1 Pause Bridging (< 100ms)."
         },
         {
           "name": "assign_short_segments_to_centroids",
           "sig": "assign_short_segments_to_centroids(short_segments, audio_path, centroids, label_values, raw_segments, min_confidence, model)",
-          "start_line": 317,
-          "end_line": 420,
+          "start_line": 320,
+          "end_line": 429,
           "doc": "Extract acoustic embeddings for short segments (< 0.8s) with symmetric audio context padding,"
         },
         {
           "name": "_calculate_embedding_for_interval",
           "sig": "_calculate_embedding_for_interval(start, end, subsegments, embeddings)",
-          "start_line": 423,
-          "end_line": 448,
+          "start_line": 432,
+          "end_line": 457,
           "doc": "Compute unit-normalized 256-dimensional embedding vector for an interval [start, end]."
         }
       ]
     },
     "worker_diarization_clustering.py": {
       "path": "worker_diarization_clustering.py",
-      "lines": 428,
+      "lines": 434,
       "summary": "worker_diarization_clustering.py - Speaker Clustering, Centroid Matching & Math Helpers.",
       "exports": null,
       "classes": [],
@@ -20296,21 +20364,21 @@
           "name": "assign_short_segments_to_centroids",
           "sig": "assign_short_segments_to_centroids(short_segments, audio_path, centroids, label_values, raw_segments, min_confidence, get_wespeaker_model_fn, safe_tensor_fn)",
           "start_line": 284,
-          "end_line": 400,
+          "end_line": 406,
           "doc": "Extract acoustic embeddings for short segments (< 0.8s) with symmetric context padding,"
         },
         {
           "name": "_calculate_embedding_for_interval",
           "sig": "_calculate_embedding_for_interval(start, end, subsegments, embeddings)",
-          "start_line": 403,
-          "end_line": 428,
+          "start_line": 409,
+          "end_line": 434,
           "doc": "Compute unit-normalized 256-dimensional embedding vector for an interval [start, end]."
         }
       ]
     },
     "worker_diarization_engine.py": {
       "path": "worker_diarization_engine.py",
-      "lines": 953,
+      "lines": 970,
       "summary": "worker_diarization_engine.py - Speaker Diarization, Neural VAD & Embedding Pipeline.",
       "exports": null,
       "classes": [],
@@ -20318,78 +20386,78 @@
         {
           "name": "set_emit_callback",
           "sig": "set_emit_callback(fn)",
-          "start_line": 52,
-          "end_line": 55,
+          "start_line": 53,
+          "end_line": 56,
           "doc": "Set custom IPC emitter function."
         },
         {
           "name": "_emit",
           "sig": "_emit(message_type, **payload)",
-          "start_line": 58,
-          "end_line": 64,
+          "start_line": 59,
+          "end_line": 65,
           "doc": ""
         },
         {
           "name": "_safe_tensor_from_numpy",
           "sig": "_safe_tensor_from_numpy(arr)",
-          "start_line": 67,
-          "end_line": 82,
+          "start_line": 68,
+          "end_line": 83,
           "doc": "Safely convert a numpy float32 array into a PyTorch tensor."
         },
         {
           "name": "normalize_audio_for_diarization",
-          "sig": "normalize_audio_for_diarization(source_path)",
-          "start_line": 85,
-          "end_line": 145,
+          "sig": "normalize_audio_for_diarization(source_path, apply_bandpass)",
+          "start_line": 86,
+          "end_line": 149,
           "doc": "Extract a normalized 16 kHz mono WAV using the local FFmpeg binary."
         },
         {
           "name": "configure_optimal_pytorch_threads",
           "sig": "configure_optimal_pytorch_threads()",
-          "start_line": 148,
-          "end_line": 161,
+          "start_line": 152,
+          "end_line": 165,
           "doc": "Clamp torch's intra-op/inter-op thread pools to match the"
         },
         {
           "name": "_diarize_solo_fast_path",
           "sig": "_diarize_solo_fast_path(audio_file, transcript_file)",
-          "start_line": 164,
-          "end_line": 238,
+          "start_line": 168,
+          "end_line": 242,
           "doc": "Solo fast-path: a single expected speaker means there is nothing to"
         },
         {
           "name": "_get_wespeaker_model",
           "sig": "_get_wespeaker_model()",
-          "start_line": 246,
-          "end_line": 254,
+          "start_line": 250,
+          "end_line": 258,
           "doc": "Retrieve or initialize the cached WeSpeaker ONNX model instance."
         },
         {
           "name": "extract_embeddings_batched",
           "sig": "extract_embeddings_batched(audio_path, speech_segments, batch_size, min_segment_duration, embedding_window, embedding_step, progress_callback)",
-          "start_line": 257,
-          "end_line": 376,
+          "start_line": 261,
+          "end_line": 380,
           "doc": "Extract 256-dim speaker embeddings using WeSpeaker ResNet34-LM (ONNX)"
         },
         {
           "name": "run_vad_two_pass",
           "sig": "run_vad_two_pass(audio_path, threshold, min_speech_duration_ms, min_silence_duration_ms, speech_pad_ms, bridge_pause_threshold_sec)",
-          "start_line": 379,
-          "end_line": 449,
+          "start_line": 383,
+          "end_line": 453,
           "doc": "Silero VAD with Pass 1 Pause Bridging (< 100ms)."
         },
         {
           "name": "run_transcript_guided_diarization",
           "sig": "run_transcript_guided_diarization(normalized_wav, transcript_file, expected_speakers, sensitivity, progress_callback)",
-          "start_line": 452,
-          "end_line": 590,
+          "start_line": 456,
+          "end_line": 607,
           "doc": "Execute transcript-guided speaker diarization directly from sentence boundaries."
         },
         {
           "name": "diarize",
           "sig": "diarize(audio_file, expected_speakers, transcript_file, sensitivity)",
-          "start_line": 593,
-          "end_line": 953,
+          "start_line": 610,
+          "end_line": 970,
           "doc": "Execute complete speaker diarization pipeline on an audio media file."
         }
       ]

@@ -27,3 +27,6 @@ class DiagnosticSpeakerCleanupTestsMixin:
 
     def _test_menu_bar_deduplication_and_escaping_integrity(self, item: DiagnosticItem):
         ...
+
+    def _test_abbreviation_sentence_boundaries_and_parakeet_rescue(self, item: DiagnosticItem):
+        ...

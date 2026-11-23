@@ -23,7 +23,7 @@ def _fmt_clock(secs: float) -> str:
 def _hex_to_rgb(hex_str: str) -> Tuple[int, int, int]:
     ...
 
-def _is_sentence_terminator(text: str) -> bool:
+def _is_sentence_terminator(text: str, next_word: Optional[str]=...) -> bool:
     ...
 
 def _build_phrase_preview(text: str, fallback_spk: str=...) -> str:

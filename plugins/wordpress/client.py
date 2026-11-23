@@ -1449,9 +1449,12 @@ def _group_segments_into_paragraphs(segments: list, min_words: int = 65) -> list
     curr_words = []
     curr_speaker = None
 
-    def is_sentence_end(w: str) -> bool:
-        clean = w.strip().rstrip("\"'’”»)")
-        return bool(clean and clean[-1] in ".?!")
+    try:
+        from core_utils import is_sentence_end
+    except ImportError:
+        def is_sentence_end(w: str, next_word: str = None, language: str = None) -> bool:  # type: ignore
+            clean = str(w or "").strip().rstrip("\"'’”»)")
+            return bool(clean and clean[-1] in ".?!")
 
     def flush():
         nonlocal curr_words, curr_speaker
@@ -1466,15 +1469,16 @@ def _group_segments_into_paragraphs(segments: list, min_words: int = 65) -> list
             })
         curr_words = []
 
+    non_empty_segs = []
     for seg in segments:
-        spk = (seg.get("speaker") or "").strip()
+        t = (seg.get("text") or "").strip()
+        if t:
+            non_empty_segs.append(((seg.get("speaker") or "").strip(), t))
+
+    for seg_i, (spk, text) in enumerate(non_empty_segs):
         # Inherit current speaker over short unassigned gaps
         if not spk and curr_speaker:
             spk = curr_speaker
-
-        text = (seg.get("text") or "").strip()
-        if not text:
-            continue
 
         if curr_speaker is None:
             curr_speaker = spk
@@ -1483,9 +1487,19 @@ def _group_segments_into_paragraphs(segments: list, min_words: int = 65) -> list
             curr_speaker = spk
 
         words = text.split()
-        for w in words:
+        next_seg_first_word = None
+        if seg_i + 1 < len(non_empty_segs):
+            nxt_spk, nxt_text = non_empty_segs[seg_i + 1]
+            eff_nxt_spk = nxt_spk or spk
+            if eff_nxt_spk == curr_speaker:
+                nxt_parts = nxt_text.split()
+                if nxt_parts:
+                    next_seg_first_word = nxt_parts[0]
+
+        for w_idx, w in enumerate(words):
             curr_words.append(w)
-            if len(curr_words) >= min_words and is_sentence_end(w):
+            next_w = words[w_idx + 1] if (w_idx + 1) < len(words) else next_seg_first_word
+            if len(curr_words) >= min_words and is_sentence_end(w, next_word=next_w):
                 flush()
 
     flush()

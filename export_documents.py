@@ -254,7 +254,10 @@ class ExportDocumentsMixin:
 
             speaker_changed = (spk_name != curr_speaker_name)
             word_count_exceeded = (len(curr_para_words) >= MIN_WORDS_PER_PARAGRAPH)
-            prev_word_ended_sentence = curr_para_words and is_sentence_end(curr_para_words[-1]["word"])
+            prev_word_ended_sentence = curr_para_words and is_sentence_end(
+                curr_para_words[-1]["word"],
+                next_word=token["word"],
+            )
 
             if curr_para_words and (speaker_changed or (word_count_exceeded and prev_word_ended_sentence)):
                 flush_para()

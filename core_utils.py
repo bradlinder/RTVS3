@@ -31,7 +31,7 @@ else:
 
 INTERNAL_APP_ID = "RadioTVStorySegmenter"
 APP_DISPLAY_NAME = "Radio & TV Segmenter"
-PROJECT_VERSION = "3.10.10-beta"
+PROJECT_VERSION = "3.10.11-beta"
 DEFAULT_GITHUB_REPO = "bradlinder/RTVS3"
 
 
@@ -651,8 +651,11 @@ def safe_filename(text):
     return text
 
 
-def is_sentence_end(text):
-    return bool(re.search(r"[.!?]+[\"'”’)\]]*$", str(text or "").strip()))
+from sentence_boundaries import (
+    is_ambiguous_abbreviation,
+    is_non_terminal_abbreviation,
+    is_sentence_end,
+)
 
 
 def calculate_fade_curve_factor(u: float, fcurve: str = "linear") -> float:

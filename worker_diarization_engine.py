@@ -32,6 +32,7 @@ try:
 except Exception as _torch_init_err:
     _GLOBAL_TORCH = None
 
+from sentence_boundaries import is_non_terminal_abbreviation
 from worker_diarization_clustering import (
     SHORT_FRAGMENT_MERGE_THRESHOLD,
     _calculate_embedding_for_interval,
@@ -82,7 +83,7 @@ def _safe_tensor_from_numpy(arr):
     return torch.tensor(arr.tolist(), dtype=torch.float32)
 
 
-def normalize_audio_for_diarization(source_path):
+def normalize_audio_for_diarization(source_path, apply_bandpass: bool = True):
     """Extract a normalized 16 kHz mono WAV using the local FFmpeg binary."""
     ffmpeg = None
     filename = "ffmpeg.exe" if os.name == "nt" else "ffmpeg"
@@ -115,12 +116,15 @@ def normalize_audio_for_diarization(source_path):
         "-i", str(source),
         "-vn", "-sn", "-dn",
         "-map", "0:a:0?",
-        "-af", "highpass=f=85,lowpass=f=7500",
+    ]
+    if apply_bandpass:
+        command.extend(["-af", "highpass=f=85,lowpass=f=7500"])
+    command.extend([
         "-ac", "1",
         "-ar", "16000",
         "-c:a", "pcm_s16le",
         str(wav_path),
-    ]
+    ])
     try:
         creationflags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
         result = subprocess.run(
@@ -480,6 +484,19 @@ def run_transcript_guided_diarization(
     valid_segments.sort(key=lambda x: x["start"])
     if not valid_segments:
         return None
+
+    glued_segments = []
+    for cur in valid_segments:
+        if glued_segments:
+            prev = glued_segments[-1]
+            cur_words = str(cur.get("text") or "").strip().split()
+            nxt_w = cur_words[0] if cur_words else None
+            if (cur["start"] - prev["end"]) < 0.45 and is_non_terminal_abbreviation(prev["text"], next_word=nxt_w):
+                prev["end"] = max(prev["end"], cur["end"])
+                prev["text"] = (prev["text"] + " " + cur["text"]).strip()
+                continue
+        glued_segments.append(cur)
+    valid_segments = glued_segments
 
     primary_speech_segments = []
     short_speech_segments = []

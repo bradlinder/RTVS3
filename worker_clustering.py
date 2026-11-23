@@ -26,7 +26,7 @@ from worker_ipc import emit, _safe_tensor_from_numpy
 SHORT_FRAGMENT_MERGE_THRESHOLD = 0.7
 
 
-def normalize_audio_for_diarization(source_path):
+def normalize_audio_for_diarization(source_path, apply_bandpass: bool = True):
     """Extract a normalized 16 kHz mono WAV using the local FFmpeg binary."""
     ffmpeg = None
     filename = "ffmpeg.exe" if os.name == "nt" else "ffmpeg"
@@ -59,12 +59,15 @@ def normalize_audio_for_diarization(source_path):
         "-i", str(source),
         "-vn", "-sn", "-dn",
         "-map", "0:a:0?",
-        "-af", "highpass=f=85,lowpass=f=7500",
+    ]
+    if apply_bandpass:
+        command.extend(["-af", "highpass=f=85,lowpass=f=7500"])
+    command.extend([
         "-ac", "1",
         "-ar", "16000",
         "-c:a", "pcm_s16le",
         str(wav_path),
-    ]
+    ])
     try:
         creationflags = subprocess.CREATE_NO_WINDOW if sys.platform == 'win32' else 0
         result = subprocess.run(
@@ -402,12 +405,18 @@ def assign_short_segments_to_centroids(
 
         if not chosen_speaker and raw_segments:
             seg_mid = (start_sec + end_sec) / 2.0
-            best_dist = float("inf")
+            best_key = (float("inf"), float("inf"))
             for raw in raw_segments:
-                raw_mid = (raw.start + raw.end) / 2.0
-                dist = abs(seg_mid - raw_mid)
-                if dist < best_dist:
-                    best_dist = dist
+                if end_sec < raw.start:
+                    edge_gap = raw.start - end_sec
+                elif start_sec > raw.end:
+                    edge_gap = start_sec - raw.end
+                else:
+                    edge_gap = 0.0
+                mid_dist = abs(seg_mid - (raw.start + raw.end) / 2.0)
+                key = (edge_gap, mid_dist)
+                if key < best_key:
+                    best_key = key
                     chosen_speaker = raw.speaker
 
         if not chosen_speaker:

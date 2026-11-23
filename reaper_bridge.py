@@ -78,33 +78,10 @@ def _hex_to_rgb(hex_str: str) -> Tuple[int, int, int]:
     return (56, 189, 248)
 
 
-_COMMON_ABBREVIATIONS = frozenset({
-    "mr.", "mrs.", "ms.", "dr.", "prof.", "sr.", "jr.", "vs.", "etc.",
-    "e.g.", "i.e.", "u.s.", "inc.", "ltd.", "co.", "corp.", "st.", "ave.", "blvd.",
-    "jan.", "feb.", "mar.", "apr.", "jun.", "jul.", "aug.", "sep.", "sept.", "oct.", "nov.", "dec."
-})
-
-
-def _is_sentence_terminator(text: str) -> bool:
+def _is_sentence_terminator(text: str, next_word: Optional[str] = None) -> bool:
     """Check whether a text fragment ends with terminal sentence punctuation (., ?, !, ...)."""
-    if not text:
-        return False
-    cleaned = text.rstrip(' "\'\u201c\u201d\u2018\u2019)»]')
-    if not cleaned:
-        return False
-    if cleaned.endswith("...") or cleaned.endswith("\u2026"):
-        return True
-    if cleaned.endswith(("?", "!")):
-        return True
-    if cleaned.endswith("."):
-        parts = cleaned.split()
-        last_word = parts[-1].lower() if parts else ""
-        if last_word in _COMMON_ABBREVIATIONS:
-            return False
-        if len(last_word) == 2 and last_word[0].isalpha() and last_word[1] == ".":
-            return False
-        return True
-    return False
+    from core_utils import is_sentence_end
+    return is_sentence_end(text, next_word=next_word)
 
 
 def _build_phrase_preview(text: str, fallback_spk: str = "Speaker") -> str:
