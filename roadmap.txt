@@ -68,6 +68,8 @@ TABLE OF CONTENTS & STATUS OVERVIEW
    [x] 3.6 PDF Proportional Font Word-Wrap Accuracy: Refine Helvetica character width measurement tables in `export/pdf.py`. [P6-07]
    [x] 3.7 Export Dialog Vestigial Cleanup: Clean orphaned preview set and restore `"timeline"` to fallback reorder list. [P6-09, P6-10]
    [x] 3.8 Changelog Archive Roll: Prune older changelog entries into `CHANGELOG_ARCHIVE.md`. [P7-06]
+   [ ] 3.9 WordPress Publishing UI Consolidation & Worker Extraction (`plugins/wordpress/wp_tab_widget.py`, `wp_ui_builder.py`, `wordpress_dialog.py`, `plugin.py`, `wp_workers.py`): Replace duplicated WordPress publishing dialog forms (`wordpress_dialog.py` [903 lines] and `WordPressPublishDialog` in `plugin.py` [980 lines]) with lightweight modal wrappers around the canonical `WordPressExportTabWidget` (`wp_tab_widget.py` [979 lines], `wp_ui_builder.py` [807 lines]), and move background `QThread` workers into `plugins/wordpress/wp_workers.py` to eliminate UI drift, satisfy SRP, and keep every file comfortably under the 1,000-line ceiling while preserving backward-compatible re-exports.
+   [ ] 3.10 Opportunistic Dead-Code & Duplicate-Helper Pruning Policy: Whenever decomposing a monolith under items 3.1–3.4 or modifying a module for a feature/bug fix, prune confirmed dead legacy paths and duplicated helpers in-place rather than relocating bloat into new submodules. Explicitly out of scope (not worth the regression risk): replacing the `QMainWindow` mixin/state architecture, building a generic declarative Qt form wrapper, or rewriting `qt_compat.py` / the diagnostic test suite.
 
 4. Optional Future Milestone: Interactive Text-Based Media Assembly & Multi-Asset Ripple Editing Engine (`assembly/bin_model.py`, `assembly/clipboard.py`, `assembly/ripple_engine.py`, `transcript_editor.py`, `export/timeline.py`) [PLANNED for v4.2.0] [OPTIONAL] [NOT STARTED]
    [ ] 4.1 Multi-Asset Project Container & Media Bin Submodule (`assembly/bin_model.py`, `project_lifecycle.py`)
@@ -113,9 +115,9 @@ DETAILED MILESTONE SPECIFICATIONS
   * [x] Diarization Title Glue & Edge-Gap Fallback (`worker_diarization_engine.py`, `worker_diarization_clustering.py`, `worker_clustering.py`): Glued trailing title intervals before embedding extraction and replaced midpoint fallback with nearest edge-to-edge gap.
 
 3. DEFERRED MILESTONE: DOMAIN SEPARATION & PURPOSE-DRIVEN MONOLITHIC FILE MODULARIZATION:
-- Purpose: Systematic architectural refactoring prioritizing file purpose and single responsibility (<800 lines target, 1,000 lines ceiling).
+- Purpose: Systematic architectural refactoring prioritizing file purpose, single responsibility (<800 lines target, 1,000 lines ceiling), and targeted consolidation of high-drift duplication (e.g., unifying overlapping WordPress publishing UIs and opportunistic dead-code pruning during modularization) without risky full-app architectural rewrites.
 - Target Release: Deferred / Lower Priority
-- Technical References: `scripts/modular_audit.py`, `project_lifecycle.py`, `model_management.py`.
+- Technical References: `scripts/modular_audit.py`, `project_lifecycle.py`, `model_management.py`, `plugins/wordpress/wp_tab_widget.py`, `plugins/wordpress/wordpress_dialog.py`, `plugins/wordpress/plugin.py`.
 
 4. OPTIONAL FUTURE MILESTONE: INTERACTIVE TEXT-BASED MEDIA ASSEMBLY & MULTI-ASSET RIPPLE EDITING ENGINE:
 - Purpose: Multi-document tabbed workspace allowing non-destructive audio/video assembly, text-based ripple cutting, and rich media clipboard interchange.
