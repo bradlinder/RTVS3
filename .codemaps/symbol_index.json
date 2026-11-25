@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-25 12:07:16",
-  "total_files": 193,
+  "generated_at": "2026-11-25 12:38:40",
+  "total_files": 196,
   "files": {
     "RadioTVSegmenter.py": {
       "path": "RadioTVSegmenter.py",
       "lines": 684,
-      "summary": "Radio & TV Segmenter \u2014 v3.10.14-beta",
+      "summary": "Radio & TV Segmenter \u2014 v3.10.15-beta",
       "exports": null,
       "classes": [
         {
@@ -2563,7 +2563,7 @@
     },
     "diagnostics/export_wordpress_media.py": {
       "path": "diagnostics/export_wordpress_media.py",
-      "lines": 603,
+      "lines": 667,
       "summary": "WordPress featured image metadata and Castos podcast diagnostic tests.",
       "exports": null,
       "classes": [
@@ -2571,7 +2571,7 @@
           "name": "DiagnosticExportWordPressMediaMixin",
           "bases": [],
           "start_line": 10,
-          "end_line": 603,
+          "end_line": 667,
           "doc": "",
           "methods": [
             {
@@ -2585,7 +2585,7 @@
               "name": "_test_wordpress_castos_podcast_integration",
               "sig": "_test_wordpress_castos_podcast_integration(self, item)",
               "start_line": 254,
-              "end_line": 603,
+              "end_line": 667,
               "doc": ""
             }
           ]
@@ -2634,7 +2634,7 @@
     },
     "diagnostics/system_runtime_tests.py": {
       "path": "diagnostics/system_runtime_tests.py",
-      "lines": 391,
+      "lines": 395,
       "summary": "System runtime, updater, theme, packaging, roadmap, and modularity diagnostic tests.",
       "exports": null,
       "classes": [
@@ -2642,7 +2642,7 @@
           "name": "DiagnosticSystemRuntimeTestsMixin",
           "bases": [],
           "start_line": 14,
-          "end_line": 391,
+          "end_line": 395,
           "doc": "",
           "methods": [
             {
@@ -2705,7 +2705,7 @@
               "name": "_test_source_file_modularity_and_1000_line_budget_invariant",
               "sig": "_test_source_file_modularity_and_1000_line_budget_invariant(self, item)",
               "start_line": 314,
-              "end_line": 391,
+              "end_line": 395,
               "doc": "Validates that recently decomposed modules adhere to the 1,000-line modular budget,"
             }
           ]
@@ -7488,10 +7488,113 @@
         }
       ]
     },
+    "plugins/wordpress/episode_lookup.py": {
+      "path": "plugins/wordpress/episode_lookup.py",
+      "lines": 443,
+      "summary": "Headless WordPress episode lookup, REST parsing, slug/date helpers, and MP3 download.",
+      "exports": [
+        "MODE_NEW_EPISODE",
+        "MODE_UPDATE_EXISTING",
+        "extract_slug_or_id_from_url",
+        "clean_html_to_plain_excerpt",
+        "build_story_slug",
+        "normalize_wp_iso_date",
+        "format_wp_date_for_input",
+        "resolve_wp_post_from_url",
+        "download_wp_episode_audio"
+      ],
+      "classes": [],
+      "functions": [
+        {
+          "name": "extract_slug_or_id_from_url",
+          "sig": "extract_slug_or_id_from_url(url_or_id)",
+          "start_line": 24,
+          "end_line": 54,
+          "doc": "Parse a WordPress post URL, query URL, numeric ID, or slug into (post_id, slug)."
+        },
+        {
+          "name": "clean_html_to_plain_excerpt",
+          "sig": "clean_html_to_plain_excerpt(raw_html)",
+          "start_line": 57,
+          "end_line": 74,
+          "doc": "Convert WordPress HTML/block content into clean plain text for post excerpts."
+        },
+        {
+          "name": "build_story_slug",
+          "sig": "build_story_slug(title)",
+          "start_line": 77,
+          "end_line": 83,
+          "doc": "Build a clean URL-safe WordPress slug from a post title."
+        },
+        {
+          "name": "normalize_wp_iso_date",
+          "sig": "normalize_wp_iso_date(date_str)",
+          "start_line": 86,
+          "end_line": 121,
+          "doc": "Normalize a user-entered date/time string into WordPress ISO-8601 format (YYYY-MM-DDTHH:MM:SS)."
+        },
+        {
+          "name": "format_wp_date_for_input",
+          "sig": "format_wp_date_for_input(iso_date)",
+          "start_line": 124,
+          "end_line": 135,
+          "doc": "Format a WordPress ISO-8601 date string for compact UI display (YYYY-MM-DD HH:MM)."
+        },
+        {
+          "name": "_extract_audio_url_from_post_payload",
+          "sig": "_extract_audio_url_from_post_payload(post, html_fallback)",
+          "start_line": 138,
+          "end_line": 177,
+          "doc": "Locate the episode MP3 URL from WordPress REST metadata, enclosures, or rendered HTML."
+        },
+        {
+          "name": "_parse_wp_post_json",
+          "sig": "_parse_wp_post_json(post, client, fallback_url)",
+          "start_line": 180,
+          "end_line": 259,
+          "doc": "Normalize a WordPress REST post dictionary and extract Option B excerpt & audio URL."
+        },
+        {
+          "name": "resolve_wp_post_from_url",
+          "sig": "resolve_wp_post_from_url(client, url_or_id)",
+          "start_line": 262,
+          "end_line": 321,
+          "doc": "Fetch an existing WordPress post by URL, slug, or ID via the WordPress REST API."
+        },
+        {
+          "name": "_resolve_download_dir",
+          "sig": "_resolve_download_dir(main_window, target_dir)",
+          "start_line": 324,
+          "end_line": 348,
+          "doc": "Choose a writable directory for downloaded WordPress episode audio files."
+        },
+        {
+          "name": "download_wp_episode_audio",
+          "sig": "download_wp_episode_audio(post_info, main_window, target_dir)",
+          "start_line": 351,
+          "end_line": 383,
+          "doc": "Download the MP3 file associated with an existing WordPress episode post."
+        },
+        {
+          "name": "_copy_fetched_post_fields",
+          "sig": "_copy_fetched_post_fields(target, post_info)",
+          "start_line": 386,
+          "end_line": 403,
+          "doc": "Apply normalized WordPress post metadata onto a post item or project wp_meta dict."
+        },
+        {
+          "name": "_populate_project_from_fetched_post",
+          "sig": "_populate_project_from_fetched_post(main_window, post_info)",
+          "start_line": 406,
+          "end_line": 430,
+          "doc": "Store fetched WordPress post details into main_window.project_metadata for Update mode."
+        }
+      ]
+    },
     "plugins/wordpress/episode_updater.py": {
       "path": "plugins/wordpress/episode_updater.py",
-      "lines": 999,
-      "summary": "WordPress Existing Episode Lookup, Backfill Mode, Date Scheduling & MP3 Import.",
+      "lines": 56,
+      "summary": "Backward-compatible facade for WordPress Existing Episode Lookup, Backfill Mode & MP3 Import.",
       "exports": [
         "MODE_NEW_EPISODE",
         "MODE_UPDATE_EXISTING",
@@ -7505,6 +7608,23 @@
         "apply_fetched_post_to_tab",
         "load_episode_updater_from_post",
         "setup_wp_mode_and_date_ui",
+        "PublicationDateLineEdit",
+        "LoadWordPressEpisodeDialog",
+        "prompt_load_existing_wp_episode_dialog"
+      ],
+      "classes": [],
+      "functions": []
+    },
+    "plugins/wordpress/episode_updater_ui.py": {
+      "path": "plugins/wordpress/episode_updater_ui.py",
+      "lines": 570,
+      "summary": "Qt UI panels and dialog for WordPress existing episode lookup and backfill workflow.",
+      "exports": [
+        "PublicationDateLineEdit",
+        "sync_wp_audio_checkbox_label",
+        "load_episode_updater_from_post",
+        "apply_fetched_post_to_tab",
+        "setup_wp_mode_and_date_ui",
         "LoadWordPressEpisodeDialog",
         "prompt_load_existing_wp_episode_dialog"
       ],
@@ -7514,50 +7634,50 @@
           "bases": [
             "QDialog"
           ],
-          "start_line": 830,
-          "end_line": 975,
+          "start_line": 408,
+          "end_line": 553,
           "doc": "Dialog for starting or updating a project from an existing WordPress/podcast episode URL.",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, main_window, parent)",
-              "start_line": 833,
-              "end_line": 891,
+              "start_line": 411,
+              "end_line": 469,
               "doc": ""
             },
             {
               "name": "_sync_local_row_enabled",
               "sig": "_sync_local_row_enabled(self)",
-              "start_line": 893,
-              "end_line": 896,
+              "start_line": 471,
+              "end_line": 474,
               "doc": ""
             },
             {
               "name": "_on_browse_local",
               "sig": "_on_browse_local(self)",
-              "start_line": 898,
-              "end_line": 907,
+              "start_line": 476,
+              "end_line": 485,
               "doc": ""
             },
             {
               "name": "_resolve_target",
               "sig": "_resolve_target(self, url)",
-              "start_line": 909,
-              "end_line": 922,
+              "start_line": 487,
+              "end_line": 500,
               "doc": ""
             },
             {
               "name": "_on_fetch_clicked",
               "sig": "_on_fetch_clicked(self)",
-              "start_line": 924,
-              "end_line": 939,
+              "start_line": 502,
+              "end_line": 517,
               "doc": ""
             },
             {
               "name": "_on_load_clicked",
               "sig": "_on_load_clicked(self)",
-              "start_line": 941,
-              "end_line": 975,
+              "start_line": 519,
+              "end_line": 553,
               "doc": ""
             }
           ]
@@ -7565,164 +7685,80 @@
       ],
       "functions": [
         {
-          "name": "extract_slug_or_id_from_url",
-          "sig": "extract_slug_or_id_from_url(url_or_id)",
-          "start_line": 39,
-          "end_line": 69,
-          "doc": "Parse a WordPress post URL, query URL, numeric ID, or slug into (post_id, slug)."
-        },
-        {
-          "name": "clean_html_to_plain_excerpt",
-          "sig": "clean_html_to_plain_excerpt(raw_html)",
-          "start_line": 72,
-          "end_line": 89,
-          "doc": "Convert WordPress HTML/block content into clean plain text for post excerpts."
-        },
-        {
-          "name": "build_story_slug",
-          "sig": "build_story_slug(title)",
-          "start_line": 92,
-          "end_line": 98,
-          "doc": "Build a clean URL-safe WordPress slug from a post title."
-        },
-        {
-          "name": "normalize_wp_iso_date",
-          "sig": "normalize_wp_iso_date(date_str)",
-          "start_line": 101,
-          "end_line": 136,
-          "doc": "Normalize a user-entered date/time string into WordPress ISO-8601 format (YYYY-MM-DDTHH:MM:SS)."
-        },
-        {
-          "name": "format_wp_date_for_input",
-          "sig": "format_wp_date_for_input(iso_date)",
-          "start_line": 139,
-          "end_line": 150,
-          "doc": "Format a WordPress ISO-8601 date string for compact UI display (YYYY-MM-DD HH:MM)."
-        },
-        {
-          "name": "_extract_audio_url_from_post_payload",
-          "sig": "_extract_audio_url_from_post_payload(post, html_fallback)",
-          "start_line": 153,
-          "end_line": 192,
-          "doc": "Locate the episode MP3 URL from WordPress REST metadata, enclosures, or rendered HTML."
-        },
-        {
-          "name": "_parse_wp_post_json",
-          "sig": "_parse_wp_post_json(post, client, fallback_url)",
-          "start_line": 195,
-          "end_line": 274,
-          "doc": "Normalize a WordPress REST post dictionary and extract Option B excerpt & audio URL."
-        },
-        {
-          "name": "resolve_wp_post_from_url",
-          "sig": "resolve_wp_post_from_url(client, url_or_id)",
-          "start_line": 277,
-          "end_line": 336,
-          "doc": "Fetch an existing WordPress post by URL, slug, or ID via the WordPress REST API."
-        },
-        {
-          "name": "_resolve_download_dir",
-          "sig": "_resolve_download_dir(main_window, target_dir)",
-          "start_line": 339,
-          "end_line": 363,
-          "doc": "Choose a writable directory for downloaded WordPress episode audio files."
-        },
-        {
-          "name": "download_wp_episode_audio",
-          "sig": "download_wp_episode_audio(post_info, main_window, target_dir)",
-          "start_line": 366,
-          "end_line": 398,
-          "doc": "Download the MP3 file associated with an existing WordPress episode post."
-        },
-        {
           "name": "_refresh_dialog_export_button",
           "sig": "_refresh_dialog_export_button(tab_widget)",
-          "start_line": 401,
-          "end_line": 404,
+          "start_line": 24,
+          "end_line": 27,
           "doc": ""
         },
         {
           "name": "_is_update_mode",
           "sig": "_is_update_mode(tab_widget)",
-          "start_line": 407,
-          "end_line": 409,
+          "start_line": 30,
+          "end_line": 32,
           "doc": ""
         },
         {
           "name": "_get_current_tab_post",
           "sig": "_get_current_tab_post(tab_widget)",
-          "start_line": 412,
-          "end_line": 417,
+          "start_line": 35,
+          "end_line": 40,
           "doc": ""
         },
         {
           "name": "sync_wp_audio_checkbox_label",
           "sig": "sync_wp_audio_checkbox_label(tab_widget)",
-          "start_line": 420,
-          "end_line": 434,
+          "start_line": 43,
+          "end_line": 57,
           "doc": "Update the Media tab audio checkbox wording so Update mode clarifies that only new Story clips upload audio."
         },
         {
           "name": "_sync_mode_visibility",
           "sig": "_sync_mode_visibility(tab_widget)",
-          "start_line": 437,
-          "end_line": 456,
+          "start_line": 60,
+          "end_line": 79,
           "doc": "Update visibility of the Existing Episode panel and default status dropdowns."
         },
         {
           "name": "load_episode_updater_from_post",
           "sig": "load_episode_updater_from_post(tab_widget, post)",
-          "start_line": 459,
-          "end_line": 499,
+          "start_line": 82,
+          "end_line": 122,
           "doc": "Synchronize mode, URL, publication date, and status controls from project and post data."
         },
         {
           "name": "_update_existing_status_label",
           "sig": "_update_existing_status_label(tab_widget, post)",
-          "start_line": 502,
-          "end_line": 521,
+          "start_line": 125,
+          "end_line": 144,
           "doc": ""
-        },
-        {
-          "name": "_copy_fetched_post_fields",
-          "sig": "_copy_fetched_post_fields(target, post_info)",
-          "start_line": 524,
-          "end_line": 541,
-          "doc": "Apply normalized WordPress post metadata onto a post item or project wp_meta dict."
         },
         {
           "name": "apply_fetched_post_to_tab",
           "sig": "apply_fetched_post_to_tab(tab_widget, post_info, target_idx)",
-          "start_line": 544,
-          "end_line": 572,
+          "start_line": 147,
+          "end_line": 175,
           "doc": "Populate tab_widget's target post (default: current or Full Episode) with fetched WP post data."
-        },
-        {
-          "name": "_populate_project_from_fetched_post",
-          "sig": "_populate_project_from_fetched_post(main_window, post_info)",
-          "start_line": 575,
-          "end_line": 599,
-          "doc": "Store fetched WordPress post details into main_window.project_metadata for Update mode."
         },
         {
           "name": "_get_configured_client",
           "sig": "_get_configured_client(parent_widget)",
-          "start_line": 602,
-          "end_line": 618,
+          "start_line": 178,
+          "end_line": 194,
           "doc": ""
         },
         {
           "name": "setup_wp_mode_and_date_ui",
           "sig": "setup_wp_mode_and_date_ui(tab_widget, parent_section)",
-          "start_line": 621,
-          "end_line": 827,
+          "start_line": 197,
+          "end_line": 405,
           "doc": "Build workflow mode toggle, existing post URL lookup, publication date, and status controls."
         },
         {
           "name": "prompt_load_existing_wp_episode_dialog",
           "sig": "prompt_load_existing_wp_episode_dialog(main_window, parent)",
-          "start_line": 978,
-          "end_line": 981,
+          "start_line": 556,
+          "end_line": 559,
           "doc": "Launch the Load Existing WordPress Episode dialog and return True if accepted."
         }
       ]
@@ -8005,6 +8041,208 @@
         }
       ],
       "functions": []
+    },
+    "plugins/wordpress/pub_date_picker.py": {
+      "path": "plugins/wordpress/pub_date_picker.py",
+      "lines": 334,
+      "summary": "Non-focus-stealing click-to-drop-down calendar & time picker for WordPress publication dates.",
+      "exports": [
+        "PublicationDateLineEdit"
+      ],
+      "classes": [
+        {
+          "name": "_PublicationDatePickerPopup",
+          "bases": [
+            "QFrame"
+          ],
+          "start_line": 49,
+          "end_line": 267,
+          "doc": "Frameless, non-focus-stealing calendar and 24-hour time dropdown for PublicationDateLineEdit.",
+          "methods": [
+            {
+              "name": "__init__",
+              "sig": "__init__(self, anchor, parent)",
+              "start_line": 52,
+              "end_line": 105,
+              "doc": ""
+            },
+            {
+              "name": "sync_from_text",
+              "sig": "sync_from_text(self, raw_text)",
+              "start_line": 107,
+              "end_line": 124,
+              "doc": "Align calendar and time widgets to `raw_text`, or today's date/time when blank."
+            },
+            {
+              "name": "_apply_selected_datetime",
+              "sig": "_apply_selected_datetime(self)",
+              "start_line": 126,
+              "end_line": 137,
+              "doc": ""
+            },
+            {
+              "name": "_on_date_clicked",
+              "sig": "_on_date_clicked(self, qdate)",
+              "start_line": 139,
+              "end_line": 146,
+              "doc": ""
+            },
+            {
+              "name": "_on_date_activated",
+              "sig": "_on_date_activated(self, qdate)",
+              "start_line": 148,
+              "end_line": 150,
+              "doc": ""
+            },
+            {
+              "name": "_on_time_changed",
+              "sig": "_on_time_changed(self, *_args)",
+              "start_line": 152,
+              "end_line": 154,
+              "doc": ""
+            },
+            {
+              "name": "_on_now_clicked",
+              "sig": "_on_now_clicked(self)",
+              "start_line": 156,
+              "end_line": 164,
+              "doc": ""
+            },
+            {
+              "name": "_on_clear_clicked",
+              "sig": "_on_clear_clicked(self)",
+              "start_line": 166,
+              "end_line": 170,
+              "doc": ""
+            },
+            {
+              "name": "_on_done_clicked",
+              "sig": "_on_done_clicked(self)",
+              "start_line": 172,
+              "end_line": 175,
+              "doc": ""
+            },
+            {
+              "name": "_install_filters",
+              "sig": "_install_filters(self)",
+              "start_line": 177,
+              "end_line": 187,
+              "doc": ""
+            },
+            {
+              "name": "_remove_filters",
+              "sig": "_remove_filters(self)",
+              "start_line": 189,
+              "end_line": 204,
+              "doc": ""
+            },
+            {
+              "name": "show_for_anchor",
+              "sig": "show_for_anchor(self)",
+              "start_line": 206,
+              "end_line": 231,
+              "doc": "Position below (or above if needed) the anchor QLineEdit without stealing focus."
+            },
+            {
+              "name": "hideEvent",
+              "sig": "hideEvent(self, event)",
+              "start_line": 233,
+              "end_line": 235,
+              "doc": ""
+            },
+            {
+              "name": "keyPressEvent",
+              "sig": "keyPressEvent(self, event)",
+              "start_line": 237,
+              "end_line": 244,
+              "doc": ""
+            },
+            {
+              "name": "eventFilter",
+              "sig": "eventFilter(self, obj, event)",
+              "start_line": 246,
+              "end_line": 267,
+              "doc": ""
+            }
+          ]
+        },
+        {
+          "name": "PublicationDateLineEdit",
+          "bases": [
+            "QLineEdit"
+          ],
+          "start_line": 270,
+          "end_line": 331,
+          "doc": "Editable QLineEdit that opens a non-intrusive calendar/time dropdown on click.",
+          "methods": [
+            {
+              "name": "__init__",
+              "sig": "__init__(self, parent)",
+              "start_line": 273,
+              "end_line": 284,
+              "doc": ""
+            },
+            {
+              "name": "_ensure_popup",
+              "sig": "_ensure_popup(self)",
+              "start_line": 286,
+              "end_line": 289,
+              "doc": ""
+            },
+            {
+              "name": "open_picker",
+              "sig": "open_picker(self)",
+              "start_line": 291,
+              "end_line": 297,
+              "doc": "Open the calendar/time dropdown anchored to this input without stealing focus."
+            },
+            {
+              "name": "close_picker",
+              "sig": "close_picker(self)",
+              "start_line": 299,
+              "end_line": 302,
+              "doc": "Close the dropdown if currently open."
+            },
+            {
+              "name": "_on_text_edited_sync_popup",
+              "sig": "_on_text_edited_sync_popup(self, text)",
+              "start_line": 304,
+              "end_line": 306,
+              "doc": ""
+            },
+            {
+              "name": "mousePressEvent",
+              "sig": "mousePressEvent(self, event)",
+              "start_line": 308,
+              "end_line": 311,
+              "doc": ""
+            },
+            {
+              "name": "keyPressEvent",
+              "sig": "keyPressEvent(self, event)",
+              "start_line": 313,
+              "end_line": 331,
+              "doc": ""
+            }
+          ]
+        }
+      ],
+      "functions": [
+        {
+          "name": "_is_qt_valid",
+          "sig": "_is_qt_valid(obj)",
+          "start_line": 22,
+          "end_line": 31,
+          "doc": "Return False when `obj` is None or its underlying C++ Qt object was deleted."
+        },
+        {
+          "name": "_is_widget_or_descendant",
+          "sig": "_is_widget_or_descendant(candidate, ancestor)",
+          "start_line": 34,
+          "end_line": 46,
+          "doc": "Return True if `candidate` is `ancestor` or nested beneath it in the widget tree."
+        }
+      ]
     },
     "plugins/wordpress/wordpress_dialog.py": {
       "path": "plugins/wordpress/wordpress_dialog.py",
@@ -18291,7 +18529,7 @@
     "transcript_story.py": {
       "path": "transcript_story.py",
       "lines": 856,
-      "summary": "Radio & TV Segmenter v3.10.14-beta \u2014 transcript story responsibilities.",
+      "summary": "Radio & TV Segmenter v3.10.15-beta \u2014 transcript story responsibilities.",
       "exports": [
         "TranscriptStoryMixin",
         "Story",

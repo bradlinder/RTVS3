@@ -1,5 +1,15 @@
 # Changelog
 
+## v3.10.15-beta
+- **WordPress Episode Updater Modularization & Hybrid Date Picker (`plugins/wordpress/episode_updater.py`, `plugins/wordpress/episode_lookup.py`, `plugins/wordpress/episode_updater_ui.py`, `plugins/wordpress/pub_date_picker.py`, `plugins/wordpress/manifest.json`, `diagnostics/export_wordpress_media.py`, `diagnostics/system_runtime_tests.py`)**:
+  - **Headless Lookup Separation (`plugins/wordpress/episode_lookup.py`)**:
+    - Extracted `MODE_NEW_EPISODE`, `MODE_UPDATE_EXISTING`, URL/slug/ID parsing (`extract_slug_or_id_from_url()`), HTML-to-excerpt cleanup (`clean_html_to_plain_excerpt()`), `build_story_slug()`, ISO date normalization (`normalize_wp_iso_date()` / `format_wp_date_for_input()`), REST post resolution (`resolve_wp_post_from_url()`), audio download (`download_wp_episode_audio()`), and project-metadata copy helpers into 100% headless `episode_lookup.py` (443 lines, zero `PySide6` imports).
+  - **Pure Qt Workflow UI, Hybrid Date Picker & Mnemonic Escaping (`plugins/wordpress/episode_updater_ui.py`, `plugins/wordpress/pub_date_picker.py`)**:
+    - Extracted `setup_wp_mode_and_date_ui()`, `LoadWordPressEpisodeDialog`, `prompt_load_existing_wp_episode_dialog()`, and tab synchronization helpers into `episode_updater_ui.py`, fixing single-`&` mnemonic escaping on the workflow mode radio buttons (`Create New Episode && Stories` / `Update Existing Episode && Backfill Stories`) and MP3 download button (`Download && Load Episode MP3`).
+    - Upgraded **Publication Date** into `PublicationDateLineEdit` + `_PublicationDatePickerPopup` (`plugins/wordpress/pub_date_picker.py`): clicking opens a non-focus-stealing calendar and 24-hour time dropdown while leaving the field blank by default and allowing direct typing/pasting at any time.
+  - **Facade, Stub Removal & Catch-Up Packaging (`plugins/wordpress/episode_updater.py`, `plugins/wordpress/manifest.json`, `diagnostics/export_wordpress_media.py`, `diagnostics/system_runtime_tests.py`)**:
+    - Replaced `plugins/wordpress/episode_updater.py` (999 → 54 lines) with a full backward-compatible facade, deleted obsolete `episode_updater.pyi`, bumped `plugins/wordpress/manifest.json` to `3.10.15-beta`, repackaged `wordpress.rtvs-addon`, and added headless/facade/budget assertions.
+
 ## v3.10.14-beta
 - **Milestone 3.9 & 3.10: WordPress Publishing UI Consolidation, Worker Extraction & Dead-Code Pruning (`plugins/wordpress/wp_workers.py`, `plugins/wordpress/wp_publish_dialog.py`, `plugins/wordpress/plugin.py`, `plugins/wordpress/wordpress_dialog.py`, `plugins/wordpress/manifest.json`, `scripts/modular_audit.py`, `diagnostics/export_wordpress_media.py`, `diagnostics/system_runtime_tests.py`)**:
   - **Worker & Dialog Separation (`plugins/wordpress/wp_workers.py`, `plugins/wordpress/wp_publish_dialog.py`)**:
@@ -12,12 +22,3 @@
     - Bumped `plugins/wordpress/manifest.json` to `3.10.14-beta` (leaving untouched plugins unchanged), repackaged `wordpress.rtvs-addon`, and added modular identity, dead-widget exclusion, facade, and budget-guard checks.
   - **Spellcheck Deleted-Widget Lifecycle Fix (`spellcheck_widgets.py`, `diagnostic_speaker_cleanup_tests.py`)**:
     - Added `shiboken6.isValid()` guards (`_is_qt_object_alive()`, `SpellCheckController.is_alive()` / `dispose()`), weakref `destroyed` cleanup hooks, and `RuntimeError` guards across `SpellCheckController`, `_LineEditSpellOverlay.paintEvent()`, `attach_spellcheck()`, and `refresh_all_spellcheckers()`, eliminating stale `Internal C++ object (QLineEdit) already deleted` tracebacks when refreshing after closing dialogs, with deleted-widget regression assertions.
-
-## v3.10.13-beta
-- **Milestone 3.1: `model_management.py` Modularization & `ModelCleanupDialog` Extraction (`model_management.py`, `model_cleanup_dialog.py`, `installer/build_tools/config.py`, `diagnostics/editor_story_ui_tests.py`, `diagnostics/system_runtime_tests.py`)**:
-  - **Pure Qt UI Extraction (`model_cleanup_dialog.py`)**:
-    - Extracted `ModelCleanupDialog`, `WHISPER_MODEL_CATALOG`, `format_directory_size()`, and shared `_stop_and_remove_runtime_env()` helper out of `model_management.py`, preserving all Manage Models controls, progress callbacks, selected-model removal, translation runtime cleanup prompts, and full purge hooks.
-  - **Controller Cleanup & Duplication Pruning (`model_management.py`, `installer/build_tools/config.py`)**:
-    - Reduced `model_management.py` from 989 lines to ~610 lines (well below the 800-line target), pruned unused Qt widget imports, reused `WHISPER_MODEL_CATALOG` and `_stop_and_remove_runtime_env()` in `refresh_whisper_model_chooser()` and `purge_all_data_action()`, kept all `ModelManagementMixin` & `WhisperModelInstallWorker` re-exports intact, removed obsolete `model_management.pyi`, and added `model_cleanup_dialog` to PyInstaller `HIDDEN_IMPORTS`.
-  - **Regression Coverage (`diagnostics/editor_story_ui_tests.py`, `diagnostics/system_runtime_tests.py`)**:
-    - Added `ModelCleanupDialog` instantiation, row/progress/refresh checks and `model_management` re-export assertions, and registered `model_management.py` + `model_cleanup_dialog.py` in modularity budget verification.

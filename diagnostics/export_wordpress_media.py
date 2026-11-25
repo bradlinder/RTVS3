@@ -472,6 +472,9 @@ class DiagnosticExportWordPressMediaMixin:
                 raise AssertionError(f"Castos podcast meta unexpectedly present in standard export: {std_kwargs}")
 
             # 4. Test WordPress Episode Backfill / Update Mode, Option B Excerpt, & Publication Date
+            import plugins.wordpress.episode_updater as wp_ep_facade
+            import plugins.wordpress.episode_lookup as wp_ep_lookup
+            import plugins.wordpress.episode_updater_ui as wp_ep_ui
             from plugins.wordpress.episode_updater import (
                 extract_slug_or_id_from_url,
                 clean_html_to_plain_excerpt,
@@ -479,6 +482,70 @@ class DiagnosticExportWordPressMediaMixin:
                 normalize_wp_iso_date,
                 resolve_wp_post_from_url,
             )
+
+            assert wp_ep_facade.resolve_wp_post_from_url is wp_ep_lookup.resolve_wp_post_from_url
+            assert wp_ep_lookup.resolve_wp_post_from_url.__module__ == "plugins.wordpress.episode_lookup"
+            assert wp_ep_facade.normalize_wp_iso_date is wp_ep_lookup.normalize_wp_iso_date
+            assert wp_ep_facade.LoadWordPressEpisodeDialog is wp_ep_ui.LoadWordPressEpisodeDialog
+            assert wp_ep_ui.LoadWordPressEpisodeDialog.__module__ == "plugins.wordpress.episode_updater_ui"
+            assert wp_ep_facade.setup_wp_mode_and_date_ui is wp_ep_ui.setup_wp_mode_and_date_ui
+            assert wp_ep_facade.prompt_load_existing_wp_episode_dialog is wp_ep_ui.prompt_load_existing_wp_episode_dialog
+            ep_lookup_file = Path("plugins/wordpress/episode_lookup.py")
+            if ep_lookup_file.is_file():
+                assert "PySide6" not in ep_lookup_file.read_text(encoding="utf-8"), (
+                    "Headless plugins/wordpress/episode_lookup.py must not import PySide6"
+                )
+
+            # Verify hybrid PublicationDateLineEdit calendar/time dropdown + direct typing
+            from PySide6.QtCore import QDate, QTime, Qt
+            from PySide6.QtWidgets import QApplication, QVBoxLayout, QWidget
+
+            _qt_app = QApplication.instance() or QApplication([])
+            if getattr(type(QWidget()), "__module__", "").startswith("PySide6."):
+                class _PickerHost(QWidget):
+                    def __init__(self):
+                        super().__init__()
+                        self.main_window = type("MW", (), {"project_metadata": {}})()
+                        self.wp_post_items = []
+                        self._current_post_index = 0
+                        self._syncing_post_editor = False
+                        self._lay = QVBoxLayout(self)
+
+                    def add_widget(self, w):
+                        self._lay.addWidget(w)
+
+                host = _PickerHost()
+                wp_ep_ui.setup_wp_mode_and_date_ui(host, host)
+                try:
+                    assert isinstance(host.wp_pub_date_edit, wp_ep_ui.PublicationDateLineEdit)
+                    assert host.wp_pub_date_edit.text() == "", "Publication Date must default to blank"
+
+                    popup = host.wp_pub_date_edit.open_picker()
+                    assert popup is not None and popup.isVisible(), "Opening calendar popup failed"
+                    assert host.wp_pub_date_edit.text() == "", "Opening popup must keep blank value until user selects a date"
+                    mon_fg_style = popup.calendar.weekdayTextFormat(Qt.DayOfWeek.Monday).foreground().style()
+                    assert popup.calendar.weekdayTextFormat(Qt.DayOfWeek.Saturday).foreground().style() == mon_fg_style
+                    assert popup.calendar.weekdayTextFormat(Qt.DayOfWeek.Sunday).foreground().style() == mon_fg_style
+
+                    popup.time_edit.setTime(QTime(14, 30))
+                    popup.calendar.clicked.emit(QDate(2026, 4, 29))
+                    assert host.wp_pub_date_edit.text() == "2026-04-29 14:30", f"Unexpected picked date: {host.wp_pub_date_edit.text()!r}"
+                    assert host.main_window.project_metadata["wordpress"]["publication_date"] == "2026-04-29 14:30"
+
+                    host.wp_pub_date_edit.setText("2026-05-10 08:15")
+                    host.wp_pub_date_edit.textEdited.emit("2026-05-10 08:15")
+                    assert popup.calendar.selectedDate() == QDate(2026, 5, 10)
+                    assert popup.time_edit.time().hour() == 8 and popup.time_edit.time().minute() == 15
+                    assert host.main_window.project_metadata["wordpress"]["publication_date"] == "2026-05-10 08:15"
+
+                    popup.clear_btn.click()
+                    assert host.wp_pub_date_edit.text() == ""
+                    assert host.main_window.project_metadata["wordpress"]["publication_date"] == ""
+                    assert not popup.isVisible()
+                finally:
+                    host.wp_pub_date_edit.close_picker()
+                    host.close()
+                    host.deleteLater()
 
             if extract_slug_or_id_from_url("https://rss.phillycam.org/april-29-2026/") != (None, "april-29-2026"):
                 raise AssertionError("Failed to extract slug from WordPress episode URL")

@@ -1,13 +1,13 @@
 # Repository Symbol Index & API Map
 
-> Generated: 2026-11-25 12:07:16 | Total Files: 193
+> Generated: 2026-11-25 12:38:40 | Total Files: 196
 > Use `python scripts/generate_symbol_index.py --outline <file>` for exact line numbers.
 
 ## Modules Overview
 
 | Module | Lines | Summary | Primary Classes / Functions |
 | :--- | :---: | :--- | :--- |
-| `RadioTVSegmenter.py` | 684 | Radio & TV Segmenter — v3.10.14-beta | `MainWindow`, `main()` |
+| `RadioTVSegmenter.py` | 684 | Radio & TV Segmenter — v3.10.15-beta | `MainWindow`, `main()` |
 | `audio_normalization.py` | 474 | Radio & TV Story Segmenter — Audio Loudness Probing & Nor... | `LoudnessReport`, `parse_ebur128_summary()`, `probe_media_duration_seconds()`, `probe_media_loudness()` *(+2 more)* |
 | `audio_normalization_worker.py` | 89 | Background QThread worker for non-blocking EBU R128 loudn... | `AudioLoudnessProbeWorker` |
 | `background_workers.py` | 1051 | Radio & TV Story Segmenter — Background Worker Threads & ... | `StoryAutoDetectWorker`, `WaveformWorker`, `VideoThumbnailWorker`, `get_waveform_peak_cache_path()` *(+6 more)* |
@@ -42,9 +42,9 @@
 | `diagnostics/editor_story_ui_tests.py` | 539 | Story transcript highlighting, smart copy, duration & hea... | `DiagnosticEditorStoryUiTestsMixin` |
 | `diagnostics/export_pipeline.py` | 485 | Multi-format export pipeline, scope slicing, and audio ca... | `DiagnosticExportPipelineMixin` |
 | `diagnostics/export_wordpress_core.py` | 579 | WordPress export scope, content formatting, and YouTube e... | `DiagnosticExportWordPressCoreMixin` |
-| `diagnostics/export_wordpress_media.py` | 603 | WordPress featured image metadata and Castos podcast diag... | `DiagnosticExportWordPressMediaMixin` |
+| `diagnostics/export_wordpress_media.py` | 667 | WordPress featured image metadata and Castos podcast diag... | `DiagnosticExportWordPressMediaMixin` |
 | `diagnostics/export_wordpress_upload.py` | 668 | WordPress multi-story upload, Gutenberg hygiene, and audi... | `DiagnosticExportWordPressUploadMixin` |
-| `diagnostics/system_runtime_tests.py` | 391 | System runtime, updater, theme, packaging, roadmap, and m... | `DiagnosticSystemRuntimeTestsMixin` |
+| `diagnostics/system_runtime_tests.py` | 395 | System runtime, updater, theme, packaging, roadmap, and m... | `DiagnosticSystemRuntimeTestsMixin` |
 | `diagnostics/voice_and_media_tests.py` | 438 | Voice profile matching, waveform peak cache, and playback... | `DiagnosticVoiceAndMediaTestsMixin` |
 | `dialogs.py` | 433 | Radio & TV Story Segmenter — Audio Loudness Normalization... | `AudioLoudnessNormalizationDialog` |
 | `diarization_processing.py` | 772 | Speaker diarization process management for Radio & TV Sto... | `DiarizationProcessingMixin` |
@@ -93,9 +93,12 @@
 | `plugins/wordpress/authors.py` | 143 | Pure-Python helpers for WordPress user and PublishPress A... | `extract_checked_author_ids()`, `is_author_item_selected()`, `resolve_selected_author_names()`, `count_selected_authors()` *(+1 more)* |
 | `plugins/wordpress/castos.py` | 725 | Seriously Simple Podcasting (Castos) integration for Word... | `format_castos_duration()`, `build_castos_post_meta()`, `copy_podcast_meta()`, `fetch_castos_feeds()` *(+5 more)* |
 | `plugins/wordpress/client.py` | 2169 | WordPress Plugin — Client, Credential Storage, and Upload... | `WordPressClient`, `WordPressSettingsDialog`, `WordPressPreferencesPage`, `format_rich_text_to_html()` *(+6 more)* |
-| `plugins/wordpress/episode_updater.py` | 999 | WordPress Existing Episode Lookup, Backfill Mode, Date Sc... | `LoadWordPressEpisodeDialog`, `extract_slug_or_id_from_url()`, `clean_html_to_plain_excerpt()`, `build_story_slug()` *(+9 more)* |
+| `plugins/wordpress/episode_lookup.py` | 443 | Headless WordPress episode lookup, REST parsing, slug/dat... | `extract_slug_or_id_from_url()`, `clean_html_to_plain_excerpt()`, `build_story_slug()`, `normalize_wp_iso_date()` *(+3 more)* |
+| `plugins/wordpress/episode_updater.py` | 56 | Backward-compatible facade for WordPress Existing Episode... | - |
+| `plugins/wordpress/episode_updater_ui.py` | 570 | Qt UI panels and dialog for WordPress existing episode lo... | `LoadWordPressEpisodeDialog`, `sync_wp_audio_checkbox_label()`, `load_episode_updater_from_post()`, `apply_fetched_post_to_tab()` *(+2 more)* |
 | `plugins/wordpress/export_destination.py` | 794 | WordPress Export Destination for UnifiedExportDialog. | `WordPressExportDestination`, `WordPressPostMetadataDialog` |
 | `plugins/wordpress/plugin.py` | 89 | WordPress Publisher Plugin for Radio & TV Segmenter. | `Plugin` |
+| `plugins/wordpress/pub_date_picker.py` | 334 | Non-focus-stealing click-to-drop-down calendar & time pic... | `_PublicationDatePickerPopup`, `PublicationDateLineEdit` |
 | `plugins/wordpress/wordpress_dialog.py` | 28 | Backward-compatible facade for legacy WordPress dialog im... | `generate_wp_excerpt()` |
 | `plugins/wordpress/wp_post_builder.py` | 377 | Post item builder, transcript slicing, and video frame ex... | `capture_video_frame()`, `get_primary_text_slice()`, `build_wp_post_items()`, `sync_featured_image_meta()` |
 | `plugins/wordpress/wp_publish_dialog.py` | 524 | WordPress single-story publish dialog with featured image... | `WordPressPublishDialog` |
@@ -178,7 +181,7 @@
 | `transcript_navigation_mixin.py` | 300 | transcript_navigation_mixin.py - Timestamp discovery, car... | `TranscriptNavigationMixin` |
 | `transcript_playback_highlight_mixin.py` | 277 | Radio & TV Story Segmenter — Interactive Transcript Playb... | `TranscriptPlaybackHighlightMixin` |
 | `transcript_selection_mixin.py` | 473 | transcript_selection_mixin.py - Multi-selection, timeline... | `TranscriptSelectionMixin` |
-| `transcript_story.py` | 856 | Radio & TV Segmenter v3.10.14-beta — transcript story res... | `TranscriptStoryMixin` |
+| `transcript_story.py` | 856 | Radio & TV Segmenter v3.10.15-beta — transcript story res... | `TranscriptStoryMixin` |
 | `transcript_styles.py` | 104 | transcript_styles.py - Transcript view stylesheets and da... | `transcript_text_view_stylesheet()`, `clean_dark_mode_clipboard_html()` |
 | `transcript_timeline_sync_mixin.py` | 655 | Radio & TV Story Segmenter — Transcript Timeline & Playba... | `TranscriptTimelineSyncMixin` |
 | `transcription_processing.py` | 579 | Transcription background process management for Radio & T... | `TranscriptionProcessingMixin` |
@@ -204,7 +207,7 @@
 ## Detailed Symbol Catalog
 
 ### `RadioTVSegmenter.py` (684 lines)
-*Radio & TV Segmenter — v3.10.14-beta*
+*Radio & TV Segmenter — v3.10.15-beta*
 - **class `MainWindow(ModelManagementMixin, MediaBatchMixin, PlaybackPreferencesMixin, UiLayoutMixin, ProcessingMixin, TranslationMixin, TranscriptStoryMixin, ProjectExportMixin, GpuAccelerationMixin, QMainWindow)`** (lines 160–581):
   *Main application window for Radio & TV Segmenter.*
   - `__init__(self)` [L178-L355]
@@ -645,11 +648,11 @@
   - `_test_wordpress_export_content_and_transcript_formatter(self, item)` [L223-L433]
   - `_test_wordpress_youtube_video_embed(self, item)` [L435-L579] — *Verify YouTube URL parsing, iframe block generation, video project defaults, and Gutenberg placement.*
 
-### `diagnostics/export_wordpress_media.py` (603 lines)
+### `diagnostics/export_wordpress_media.py` (667 lines)
 *WordPress featured image metadata and Castos podcast diagnostic tests.*
-- **class `DiagnosticExportWordPressMediaMixin`** (lines 10–603):
+- **class `DiagnosticExportWordPressMediaMixin`** (lines 10–667):
   - `_test_wordpress_featured_image_caption_and_alt_text(self, item)` [L11-L252] — *Verify Featured Image caption & alt_text across WordPressClient, post builder, tab UI, and PublishWorker.*
-  - `_test_wordpress_castos_podcast_integration(self, item)` [L254-L603]
+  - `_test_wordpress_castos_podcast_integration(self, item)` [L254-L667]
 
 ### `diagnostics/export_wordpress_upload.py` (668 lines)
 *WordPress multi-story upload, Gutenberg hygiene, and audio toggle diagnostic tests.*
@@ -658,9 +661,9 @@
   - `_test_gutenberg_html_structural_hygiene_audit(self, item)` [L302-L338]
   - `_test_wordpress_audio_inclusion_toggle_and_error_resilience(self, item)` [L340-L668]
 
-### `diagnostics/system_runtime_tests.py` (391 lines)
+### `diagnostics/system_runtime_tests.py` (395 lines)
 *System runtime, updater, theme, packaging, roadmap, and modularity diagnostic tests.*
-- **class `DiagnosticSystemRuntimeTestsMixin`** (lines 14–391):
+- **class `DiagnosticSystemRuntimeTestsMixin`** (lines 14–395):
   - `_test_windows_detached_update_helper_architecture(self, item)` [L15-L55] — *Validates update helper architecture: helper script generation, exit polling, and logging.*
   - `_test_multiprocessing_freeze_support_and_spawn_intercept(self, item)` [L57-L78] — *Validates that frozen process spawn intercepts -c invocations from resource_tracker and multiprocessing.*
   - `_resolve_worker_cmd(self)` [L80-L94] — *Resolves the executable and arguments to launch the AI background worker.*
@@ -669,7 +672,7 @@
   - `_test_option_c_muted_silver_fog_light_theme_and_dark_mode_clipboard_formatting(self, item)` [L204-L257] — *Validates Option C muted low-contrast silver/fog palette and dark-mode clipboard rich styling.*
   - `_test_windows_ci_build_and_packaging_optimization_invariants(self, item)` [L259-L291] — *Validates Inno Setup compression parameters, Stage 3 PyInstaller optimizations, and CI settings.*
   - `_test_roadmap_n_1_sliding_window_and_status_integrity(self, item)` [L293-L312] — *Validates roadmap.txt N-1 sliding window retention, status indicator syntax, and version sync.*
-  - `_test_source_file_modularity_and_1000_line_budget_invariant(self, item)` [L314-L391] — *Validates that recently decomposed modules adhere to the 1,000-line modular budget,*
+  - `_test_source_file_modularity_and_1000_line_budget_invariant(self, item)` [L314-L395] — *Validates that recently decomposed modules adhere to the 1,000-line modular budget,*
 
 ### `diagnostics/voice_and_media_tests.py` (438 lines)
 *Voice profile matching, waveform peak cache, and playback rate diagnostic tests.*
@@ -1464,41 +1467,50 @@
   - `_build_audio_fade_filter(duration, fade_in, fade_out, fade_curve)` [L1509-L1537] — *Construct FFmpeg afade audio filter chain for story clips.*
   - `execute_wordpress_upload(main_window, client, post_title, post_excerpt, start, end, task_label, include_english, include_spanish, spanish_presentation, primary_language, author_ids, author_term_ids, category_ids, show_completion_dialog, media_filename, progress_callback, featured_image_path, parent_episode_info, link_parent_episode, parent_episode_template, parent_episode_pos, include_audio, fade_in, fade_out, fade_curve, apply_fades, accordion_pos, is_podcast, podcast_feed, podcast_feed_id, podcast_feed_ids, podcast_feeds, podcast_episode_type, podcast_season, podcast_episode_number, youtube_url, youtube_stop_at_end, youtube_placement, youtube_use_story_time, existing_post_id, replace_existing_audio_and_podcast, post_status, publication_date, post_slug, featured_image_caption, featured_image_alt_text)` [L1540-L2169] — *Extract media clip, upload to WordPress media library, and create or update a post.*
 
-### `plugins/wordpress/episode_updater.py` (999 lines)
-*WordPress Existing Episode Lookup, Backfill Mode, Date Scheduling & MP3 Import.*
-- **Public Exports (`__all__`)**: MODE_NEW_EPISODE, MODE_UPDATE_EXISTING, extract_slug_or_id_from_url, clean_html_to_plain_excerpt, build_story_slug, normalize_wp_iso_date, format_wp_date_for_input, resolve_wp_post_from_url, download_wp_episode_audio, apply_fetched_post_to_tab, load_episode_updater_from_post, setup_wp_mode_and_date_ui, LoadWordPressEpisodeDialog, prompt_load_existing_wp_episode_dialog
-- **class `LoadWordPressEpisodeDialog(QDialog)`** (lines 830–975):
-  *Dialog for starting or updating a project from an existing WordPress/podcast episode URL.*
-  - `__init__(self, main_window, parent)` [L833-L891]
-  - `_sync_local_row_enabled(self)` [L893-L896]
-  - `_on_browse_local(self)` [L898-L907]
-  - `_resolve_target(self, url)` [L909-L922]
-  - `_on_fetch_clicked(self)` [L924-L939]
-  - `_on_load_clicked(self)` [L941-L975]
+### `plugins/wordpress/episode_lookup.py` (443 lines)
+*Headless WordPress episode lookup, REST parsing, slug/date helpers, and MP3 download.*
+- **Public Exports (`__all__`)**: MODE_NEW_EPISODE, MODE_UPDATE_EXISTING, extract_slug_or_id_from_url, clean_html_to_plain_excerpt, build_story_slug, normalize_wp_iso_date, format_wp_date_for_input, resolve_wp_post_from_url, download_wp_episode_audio
 - **Functions**:
-  - `extract_slug_or_id_from_url(url_or_id)` [L39-L69] — *Parse a WordPress post URL, query URL, numeric ID, or slug into (post_id, slug).*
-  - `clean_html_to_plain_excerpt(raw_html)` [L72-L89] — *Convert WordPress HTML/block content into clean plain text for post excerpts.*
-  - `build_story_slug(title)` [L92-L98] — *Build a clean URL-safe WordPress slug from a post title.*
-  - `normalize_wp_iso_date(date_str)` [L101-L136] — *Normalize a user-entered date/time string into WordPress ISO-8601 format (YYYY-MM-DDTHH:MM:SS).*
-  - `format_wp_date_for_input(iso_date)` [L139-L150] — *Format a WordPress ISO-8601 date string for compact UI display (YYYY-MM-DD HH:MM).*
-  - `_extract_audio_url_from_post_payload(post, html_fallback)` [L153-L192] — *Locate the episode MP3 URL from WordPress REST metadata, enclosures, or rendered HTML.*
-  - `_parse_wp_post_json(post, client, fallback_url)` [L195-L274] — *Normalize a WordPress REST post dictionary and extract Option B excerpt & audio URL.*
-  - `resolve_wp_post_from_url(client, url_or_id)` [L277-L336] — *Fetch an existing WordPress post by URL, slug, or ID via the WordPress REST API.*
-  - `_resolve_download_dir(main_window, target_dir)` [L339-L363] — *Choose a writable directory for downloaded WordPress episode audio files.*
-  - `download_wp_episode_audio(post_info, main_window, target_dir)` [L366-L398] — *Download the MP3 file associated with an existing WordPress episode post.*
-  - `_refresh_dialog_export_button(tab_widget)` [L401-L404]
-  - `_is_update_mode(tab_widget)` [L407-L409]
-  - `_get_current_tab_post(tab_widget)` [L412-L417]
-  - `sync_wp_audio_checkbox_label(tab_widget)` [L420-L434] — *Update the Media tab audio checkbox wording so Update mode clarifies that only new Story clips upload audio.*
-  - `_sync_mode_visibility(tab_widget)` [L437-L456] — *Update visibility of the Existing Episode panel and default status dropdowns.*
-  - `load_episode_updater_from_post(tab_widget, post)` [L459-L499] — *Synchronize mode, URL, publication date, and status controls from project and post data.*
-  - `_update_existing_status_label(tab_widget, post)` [L502-L521]
-  - `_copy_fetched_post_fields(target, post_info)` [L524-L541] — *Apply normalized WordPress post metadata onto a post item or project wp_meta dict.*
-  - `apply_fetched_post_to_tab(tab_widget, post_info, target_idx)` [L544-L572] — *Populate tab_widget's target post (default: current or Full Episode) with fetched WP post data.*
-  - `_populate_project_from_fetched_post(main_window, post_info)` [L575-L599] — *Store fetched WordPress post details into main_window.project_metadata for Update mode.*
-  - `_get_configured_client(parent_widget)` [L602-L618]
-  - `setup_wp_mode_and_date_ui(tab_widget, parent_section)` [L621-L827] — *Build workflow mode toggle, existing post URL lookup, publication date, and status controls.*
-  - `prompt_load_existing_wp_episode_dialog(main_window, parent)` [L978-L981] — *Launch the Load Existing WordPress Episode dialog and return True if accepted.*
+  - `extract_slug_or_id_from_url(url_or_id)` [L24-L54] — *Parse a WordPress post URL, query URL, numeric ID, or slug into (post_id, slug).*
+  - `clean_html_to_plain_excerpt(raw_html)` [L57-L74] — *Convert WordPress HTML/block content into clean plain text for post excerpts.*
+  - `build_story_slug(title)` [L77-L83] — *Build a clean URL-safe WordPress slug from a post title.*
+  - `normalize_wp_iso_date(date_str)` [L86-L121] — *Normalize a user-entered date/time string into WordPress ISO-8601 format (YYYY-MM-DDTHH:MM:SS).*
+  - `format_wp_date_for_input(iso_date)` [L124-L135] — *Format a WordPress ISO-8601 date string for compact UI display (YYYY-MM-DD HH:MM).*
+  - `_extract_audio_url_from_post_payload(post, html_fallback)` [L138-L177] — *Locate the episode MP3 URL from WordPress REST metadata, enclosures, or rendered HTML.*
+  - `_parse_wp_post_json(post, client, fallback_url)` [L180-L259] — *Normalize a WordPress REST post dictionary and extract Option B excerpt & audio URL.*
+  - `resolve_wp_post_from_url(client, url_or_id)` [L262-L321] — *Fetch an existing WordPress post by URL, slug, or ID via the WordPress REST API.*
+  - `_resolve_download_dir(main_window, target_dir)` [L324-L348] — *Choose a writable directory for downloaded WordPress episode audio files.*
+  - `download_wp_episode_audio(post_info, main_window, target_dir)` [L351-L383] — *Download the MP3 file associated with an existing WordPress episode post.*
+  - `_copy_fetched_post_fields(target, post_info)` [L386-L403] — *Apply normalized WordPress post metadata onto a post item or project wp_meta dict.*
+  - `_populate_project_from_fetched_post(main_window, post_info)` [L406-L430] — *Store fetched WordPress post details into main_window.project_metadata for Update mode.*
+
+### `plugins/wordpress/episode_updater.py` (56 lines)
+*Backward-compatible facade for WordPress Existing Episode Lookup, Backfill Mode & MP3 Import.*
+- **Public Exports (`__all__`)**: MODE_NEW_EPISODE, MODE_UPDATE_EXISTING, extract_slug_or_id_from_url, clean_html_to_plain_excerpt, build_story_slug, normalize_wp_iso_date, format_wp_date_for_input, resolve_wp_post_from_url, download_wp_episode_audio, apply_fetched_post_to_tab, load_episode_updater_from_post, setup_wp_mode_and_date_ui, PublicationDateLineEdit, LoadWordPressEpisodeDialog, prompt_load_existing_wp_episode_dialog
+
+### `plugins/wordpress/episode_updater_ui.py` (570 lines)
+*Qt UI panels and dialog for WordPress existing episode lookup and backfill workflow.*
+- **Public Exports (`__all__`)**: PublicationDateLineEdit, sync_wp_audio_checkbox_label, load_episode_updater_from_post, apply_fetched_post_to_tab, setup_wp_mode_and_date_ui, LoadWordPressEpisodeDialog, prompt_load_existing_wp_episode_dialog
+- **class `LoadWordPressEpisodeDialog(QDialog)`** (lines 408–553):
+  *Dialog for starting or updating a project from an existing WordPress/podcast episode URL.*
+  - `__init__(self, main_window, parent)` [L411-L469]
+  - `_sync_local_row_enabled(self)` [L471-L474]
+  - `_on_browse_local(self)` [L476-L485]
+  - `_resolve_target(self, url)` [L487-L500]
+  - `_on_fetch_clicked(self)` [L502-L517]
+  - `_on_load_clicked(self)` [L519-L553]
+- **Functions**:
+  - `_refresh_dialog_export_button(tab_widget)` [L24-L27]
+  - `_is_update_mode(tab_widget)` [L30-L32]
+  - `_get_current_tab_post(tab_widget)` [L35-L40]
+  - `sync_wp_audio_checkbox_label(tab_widget)` [L43-L57] — *Update the Media tab audio checkbox wording so Update mode clarifies that only new Story clips upload audio.*
+  - `_sync_mode_visibility(tab_widget)` [L60-L79] — *Update visibility of the Existing Episode panel and default status dropdowns.*
+  - `load_episode_updater_from_post(tab_widget, post)` [L82-L122] — *Synchronize mode, URL, publication date, and status controls from project and post data.*
+  - `_update_existing_status_label(tab_widget, post)` [L125-L144]
+  - `apply_fetched_post_to_tab(tab_widget, post_info, target_idx)` [L147-L175] — *Populate tab_widget's target post (default: current or Full Episode) with fetched WP post data.*
+  - `_get_configured_client(parent_widget)` [L178-L194]
+  - `setup_wp_mode_and_date_ui(tab_widget, parent_section)` [L197-L405] — *Build workflow mode toggle, existing post URL lookup, publication date, and status controls.*
+  - `prompt_load_existing_wp_episode_dialog(main_window, parent)` [L556-L559] — *Launch the Load Existing WordPress Episode dialog and return True if accepted.*
 
 ### `plugins/wordpress/export_destination.py` (794 lines)
 *WordPress Export Destination for UnifiedExportDialog.*
@@ -1542,6 +1554,39 @@
   - `get_preferences_widget(self, parent)` [L64-L66]
   - `open_publish_dialog(self, parent, story)` [L68-L70]
   - `open_post_metadata_dialog(self, parent, story)` [L72-L81]
+
+### `plugins/wordpress/pub_date_picker.py` (334 lines)
+*Non-focus-stealing click-to-drop-down calendar & time picker for WordPress publication dates.*
+- **Public Exports (`__all__`)**: PublicationDateLineEdit
+- **class `_PublicationDatePickerPopup(QFrame)`** (lines 49–267):
+  *Frameless, non-focus-stealing calendar and 24-hour time dropdown for PublicationDateLineEdit.*
+  - `__init__(self, anchor, parent)` [L52-L105]
+  - `sync_from_text(self, raw_text)` [L107-L124] — *Align calendar and time widgets to `raw_text`, or today's date/time when blank.*
+  - `_apply_selected_datetime(self)` [L126-L137]
+  - `_on_date_clicked(self, qdate)` [L139-L146]
+  - `_on_date_activated(self, qdate)` [L148-L150]
+  - `_on_time_changed(self, *_args)` [L152-L154]
+  - `_on_now_clicked(self)` [L156-L164]
+  - `_on_clear_clicked(self)` [L166-L170]
+  - `_on_done_clicked(self)` [L172-L175]
+  - `_install_filters(self)` [L177-L187]
+  - `_remove_filters(self)` [L189-L204]
+  - `show_for_anchor(self)` [L206-L231] — *Position below (or above if needed) the anchor QLineEdit without stealing focus.*
+  - `hideEvent(self, event)` [L233-L235]
+  - `keyPressEvent(self, event)` [L237-L244]
+  - `eventFilter(self, obj, event)` [L246-L267]
+- **class `PublicationDateLineEdit(QLineEdit)`** (lines 270–331):
+  *Editable QLineEdit that opens a non-intrusive calendar/time dropdown on click.*
+  - `__init__(self, parent)` [L273-L284]
+  - `_ensure_popup(self)` [L286-L289]
+  - `open_picker(self)` [L291-L297] — *Open the calendar/time dropdown anchored to this input without stealing focus.*
+  - `close_picker(self)` [L299-L302] — *Close the dropdown if currently open.*
+  - `_on_text_edited_sync_popup(self, text)` [L304-L306]
+  - `mousePressEvent(self, event)` [L308-L311]
+  - `keyPressEvent(self, event)` [L313-L331]
+- **Functions**:
+  - `_is_qt_valid(obj)` [L22-L31] — *Return False when `obj` is None or its underlying C++ Qt object was deleted.*
+  - `_is_widget_or_descendant(candidate, ancestor)` [L34-L46] — *Return True if `candidate` is `ancestor` or nested beneath it in the widget tree.*
 
 ### `plugins/wordpress/wordpress_dialog.py` (28 lines)
 *Backward-compatible facade for legacy WordPress dialog imports.*
@@ -3215,7 +3260,7 @@
   - `_on_bubble_export(self)` [L468-L473]
 
 ### `transcript_story.py` (856 lines)
-*Radio & TV Segmenter v3.10.14-beta — transcript story responsibilities.*
+*Radio & TV Segmenter v3.10.15-beta — transcript story responsibilities.*
 - **Public Exports (`__all__`)**: TranscriptStoryMixin, Story, SetStoriesCommand, SelectStoriesCommand, StoryBoundaryChangeCommand, StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin, ChangeSpeakerDialog, VoiceProfileMatchDialog, StoryFadesDialog, SpeakerManagerDialog, FADE_CURVE_TABLES, get_fade_curve_factors
 - **class `TranscriptStoryMixin(StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin)`** (lines 63–855):
   - `render_transcript(self)` [L64-L471]

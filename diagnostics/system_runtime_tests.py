@@ -362,6 +362,10 @@ class DiagnosticSystemRuntimeTestsMixin:
             "plugins/wordpress/wordpress_dialog.py",
             "plugins/wordpress/wp_publish_dialog.py",
             "plugins/wordpress/wp_workers.py",
+            "plugins/wordpress/episode_updater.py",
+            "plugins/wordpress/episode_lookup.py",
+            "plugins/wordpress/episode_updater_ui.py",
+            "plugins/wordpress/pub_date_picker.py",
         ]
 
         violations = []
