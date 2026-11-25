@@ -11,6 +11,9 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 
+PROJECT_ROOT = Path(__file__).resolve().parent
+
+
 # ---------------------------------------------------------------------------
 # Synthetic Audio Generator (Zero-Dependency in-memory / wave file fixture)
 # ---------------------------------------------------------------------------
@@ -144,6 +147,7 @@ def _resolve_export_daw_module():
 
 
 __all__ = [
+    "PROJECT_ROOT",
     "generate_synthetic_wav",
     "DiagnosticItem",
     "_resolve_export_subtitles_module",

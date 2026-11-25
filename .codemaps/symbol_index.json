@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-23 09:28:06",
-  "total_files": 174,
+  "generated_at": "2026-11-25 11:14:36",
+  "total_files": 190,
   "files": {
     "RadioTVSegmenter.py": {
       "path": "RadioTVSegmenter.py",
       "lines": 684,
-      "summary": "Radio & TV Segmenter \u2014 v3.10.11-beta",
+      "summary": "Radio & TV Segmenter \u2014 v3.10.12-beta",
       "exports": null,
       "classes": [
         {
@@ -1063,93 +1063,58 @@
     },
     "build_installer.py": {
       "path": "build_installer.py",
-      "lines": 1099,
+      "lines": 445,
       "summary": "Build the installable Radio & TV Segmenter application with PyInstaller.",
       "exports": null,
       "classes": [],
       "functions": [
         {
-          "name": "exe_name",
-          "sig": "exe_name(base)",
-          "start_line": 105,
-          "end_line": 106,
-          "doc": ""
-        },
-        {
           "name": "find_tool",
           "sig": "find_tool(name)",
-          "start_line": 109,
-          "end_line": 172,
-          "doc": ""
-        },
-        {
-          "name": "check_cpu_only_torch",
-          "sig": "check_cpu_only_torch()",
-          "start_line": 175,
-          "end_line": 215,
-          "doc": ""
-        },
-        {
-          "name": "torch_windows_binary_flags",
-          "sig": "torch_windows_binary_flags()",
-          "start_line": 218,
-          "end_line": 246,
+          "start_line": 88,
+          "end_line": 89,
           "doc": ""
         },
         {
           "name": "run",
           "sig": "run(cmd)",
-          "start_line": 249,
-          "end_line": 274,
+          "start_line": 92,
+          "end_line": 93,
           "doc": ""
         },
         {
           "name": "provision_optional_runtime_tools",
           "sig": "provision_optional_runtime_tools(app_root)",
-          "start_line": 277,
-          "end_line": 357,
-          "doc": ""
-        },
-        {
-          "name": "prune_unneeded_bundled_files",
-          "sig": "prune_unneeded_bundled_files(app_root)",
-          "start_line": 360,
-          "end_line": 492,
+          "start_line": 96,
+          "end_line": 102,
           "doc": ""
         },
         {
           "name": "sync_installer_scripts",
           "sig": "sync_installer_scripts(project_version)",
-          "start_line": 495,
-          "end_line": 508,
-          "doc": "Ensure Inno Setup and other installer packaging scripts match PROJECT_VERSION."
+          "start_line": 105,
+          "end_line": 106,
+          "doc": ""
         },
         {
           "name": "compile_windows_installer",
           "sig": "compile_windows_installer(project_version)",
-          "start_line": 511,
-          "end_line": 546,
-          "doc": "Compile the Windows Inno Setup installer executable if ISCC is installed."
-        },
-        {
-          "name": "parse_build_args",
-          "sig": "parse_build_args()",
-          "start_line": 549,
-          "end_line": 624,
+          "start_line": 109,
+          "end_line": 110,
           "doc": ""
         },
         {
           "name": "package_plugins",
           "sig": "package_plugins(app_root, include_wp, include_yt, include_tr)",
-          "start_line": 627,
-          "end_line": 695,
+          "start_line": 113,
+          "end_line": 130,
           "doc": "Package plugins into standalone .zip release artifacts in dist/plugins/"
         },
         {
           "name": "main",
           "sig": "main()",
-          "start_line": 698,
-          "end_line": 1095,
+          "start_line": 133,
+          "end_line": 441,
           "doc": ""
         }
       ]
@@ -1689,246 +1654,50 @@
     },
     "diagnostic_batch_tests.py": {
       "path": "diagnostic_batch_tests.py",
-      "lines": 1076,
-      "summary": "Diagnostic test bench suite component.",
-      "exports": null,
+      "lines": 19,
+      "summary": "Diagnostic batch and editing workflow test bench facade.",
+      "exports": [
+        "DiagnosticBatchTestsMixin",
+        "DiagnosticBatchExportTestsMixin",
+        "DiagnosticEditingWorkflowTestsMixin"
+      ],
       "classes": [
         {
           "name": "DiagnosticBatchTestsMixin",
-          "bases": [],
-          "start_line": 26,
-          "end_line": 1075,
-          "doc": "",
-          "methods": [
-            {
-              "name": "_test_batch_unified_transcripts_directory_export",
-              "sig": "_test_batch_unified_transcripts_directory_export(self, item)",
-              "start_line": 27,
-              "end_line": 200,
-              "doc": ""
-            },
-            {
-              "name": "_test_batch_drag_and_drop_ingestion_and_event_handling",
-              "sig": "_test_batch_drag_and_drop_ingestion_and_event_handling(self, item)",
-              "start_line": 202,
-              "end_line": 320,
-              "doc": ""
-            },
-            {
-              "name": "_test_unified_export_destinations_and_youtube_auth_integrity",
-              "sig": "_test_unified_export_destinations_and_youtube_auth_integrity(self, item)",
-              "start_line": 322,
-              "end_line": 392,
-              "doc": ""
-            },
-            {
-              "name": "_test_pdf_transcript_export_and_bold_speaker_labels",
-              "sig": "_test_pdf_transcript_export_and_bold_speaker_labels(self, item)",
-              "start_line": 394,
-              "end_line": 449,
-              "doc": ""
-            },
-            {
-              "name": "_test_fade_curve_tables_and_auditioning_state",
-              "sig": "_test_fade_curve_tables_and_auditioning_state(self, item)",
-              "start_line": 451,
-              "end_line": 532,
-              "doc": ""
-            },
-            {
-              "name": "_test_translation_routing_and_key_priority_unit_test",
-              "sig": "_test_translation_routing_and_key_priority_unit_test(self, item)",
-              "start_line": 534,
-              "end_line": 647,
-              "doc": ""
-            },
-            {
-              "name": "_test_symmetrical_translation_editing_state_test",
-              "sig": "_test_symmetrical_translation_editing_state_test(self, item)",
-              "start_line": 649,
-              "end_line": 730,
-              "doc": ""
-            },
-            {
-              "name": "_test_interactive_change_speaker_dialogue_flow_test",
-              "sig": "_test_interactive_change_speaker_dialogue_flow_test(self, item)",
-              "start_line": 732,
-              "end_line": 797,
-              "doc": ""
-            },
-            {
-              "name": "_test_story_boundary_validation_and_overlap_test",
-              "sig": "_test_story_boundary_validation_and_overlap_test(self, item)",
-              "start_line": 799,
-              "end_line": 876,
-              "doc": ""
-            },
-            {
-              "name": "_test_audio_subtitle_sync_drift_test",
-              "sig": "_test_audio_subtitle_sync_drift_test(self, item)",
-              "start_line": 878,
-              "end_line": 922,
-              "doc": ""
-            },
-            {
-              "name": "_test_interactive_transcript_editing_and_split_join_unit_tests",
-              "sig": "_test_interactive_transcript_editing_and_split_join_unit_tests(self, item)",
-              "start_line": 924,
-              "end_line": 1031,
-              "doc": ""
-            },
-            {
-              "name": "_test_exporter_structure_invariant_tests",
-              "sig": "_test_exporter_structure_invariant_tests(self, item)",
-              "start_line": 1033,
-              "end_line": 1075,
-              "doc": ""
-            }
-          ]
+          "bases": [
+            "DiagnosticBatchExportTestsMixin",
+            "DiagnosticEditingWorkflowTestsMixin"
+          ],
+          "start_line": 8,
+          "end_line": 12,
+          "doc": "Backward-compatible facade for batch and editing workflow diagnostic tests.",
+          "methods": []
         }
       ],
       "functions": []
     },
     "diagnostic_cloud_and_system_tests.py": {
       "path": "diagnostic_cloud_and_system_tests.py",
-      "lines": 1409,
-      "summary": "Diagnostic test bench suite component.",
-      "exports": null,
+      "lines": 22,
+      "summary": "Diagnostic cloud, voice, and system runtime test bench facade.",
+      "exports": [
+        "DiagnosticCloudAndSystemTestsMixin",
+        "DiagnosticCloudStorageTestsMixin",
+        "DiagnosticVoiceAndMediaTestsMixin",
+        "DiagnosticSystemRuntimeTestsMixin"
+      ],
       "classes": [
         {
           "name": "DiagnosticCloudAndSystemTestsMixin",
-          "bases": [],
-          "start_line": 26,
-          "end_line": 1407,
-          "doc": "",
-          "methods": [
-            {
-              "name": "_test_plugin_interface_sandbox_testing",
-              "sig": "_test_plugin_interface_sandbox_testing(self, item)",
-              "start_line": 27,
-              "end_line": 201,
-              "doc": ""
-            },
-            {
-              "name": "_test_project_file_integrity_and_portable_path_resolution",
-              "sig": "_test_project_file_integrity_and_portable_path_resolution(self, item)",
-              "start_line": 203,
-              "end_line": 308,
-              "doc": ""
-            },
-            {
-              "name": "_test_acoustic_voice_profile_matcher",
-              "sig": "_test_acoustic_voice_profile_matcher(self, item)",
-              "start_line": 310,
-              "end_line": 572,
-              "doc": ""
-            },
-            {
-              "name": "_test_windows_detached_update_helper_architecture",
-              "sig": "_test_windows_detached_update_helper_architecture(self, item)",
-              "start_line": 574,
-              "end_line": 615,
-              "doc": "Validates update helper architecture: helper script generation, exit polling, and logging."
-            },
-            {
-              "name": "_test_temporary_cache_management_and_storage_inspection",
-              "sig": "_test_temporary_cache_management_and_storage_inspection(self, item)",
-              "start_line": 617,
-              "end_line": 716,
-              "doc": "Validates cache usage stats calculation, preview categorization, and cache purging."
-            },
-            {
-              "name": "_test_youtube_data_api_and_direct_video_upload_engine",
-              "sig": "_test_youtube_data_api_and_direct_video_upload_engine(self, item)",
-              "start_line": 718,
-              "end_line": 796,
-              "doc": "Validates YouTube Zero-Auth manual export packaging (MP4, thumbnail, SRT, metadata .txt with chapters & speakers)."
-            },
-            {
-              "name": "_test_multiprocessing_freeze_support_and_spawn_intercept",
-              "sig": "_test_multiprocessing_freeze_support_and_spawn_intercept(self, item)",
-              "start_line": 798,
-              "end_line": 819,
-              "doc": "Validates that frozen process spawn intercepts -c invocations from resource_tracker and multiprocessing."
-            },
-            {
-              "name": "_resolve_worker_cmd",
-              "sig": "_resolve_worker_cmd(self)",
-              "start_line": 821,
-              "end_line": 835,
-              "doc": "Resolves the executable and arguments to launch the AI background worker."
-            },
-            {
-              "name": "_test_ai_worker_subprocess_execution_and_ipc_handshake",
-              "sig": "_test_ai_worker_subprocess_execution_and_ipc_handshake(self, item)",
-              "start_line": 837,
-              "end_line": 903,
-              "doc": "Spawns the AI worker binary in an isolated subprocess, verifying IPC hello handshake and self-test."
-            },
-            {
-              "name": "_test_frozen_subprocess_multiprocessing_spawn_protocol",
-              "sig": "_test_frozen_subprocess_multiprocessing_spawn_protocol(self, item)",
-              "start_line": 905,
-              "end_line": 943,
-              "doc": "Spawns the AI worker executable with Python -c to verify multiprocessing resource tracker interception."
-            },
-            {
-              "name": "_test_comprehensive_local_and_cloud_backup_and_restore_engine",
-              "sig": "_test_comprehensive_local_and_cloud_backup_and_restore_engine(self, item)",
-              "start_line": 945,
-              "end_line": 1057,
-              "doc": "Validates state serialization, SHA-256 verification, local backup roundtrip, and cloud payload integrity."
-            },
-            {
-              "name": "_test_option_c_muted_silver_fog_light_theme_and_dark_mode_clipboard_formatting",
-              "sig": "_test_option_c_muted_silver_fog_light_theme_and_dark_mode_clipboard_formatting(self, item)",
-              "start_line": 1059,
-              "end_line": 1112,
-              "doc": "Validates Option C muted low-contrast silver/fog palette and dark-mode clipboard rich styling."
-            },
-            {
-              "name": "_test_windows_ci_build_and_packaging_optimization_invariants",
-              "sig": "_test_windows_ci_build_and_packaging_optimization_invariants(self, item)",
-              "start_line": 1114,
-              "end_line": 1146,
-              "doc": "Validates Inno Setup compression parameters, Stage 3 PyInstaller optimizations, and CI settings."
-            },
-            {
-              "name": "_test_roadmap_n_1_sliding_window_and_status_integrity",
-              "sig": "_test_roadmap_n_1_sliding_window_and_status_integrity(self, item)",
-              "start_line": 1148,
-              "end_line": 1167,
-              "doc": "Validates roadmap.txt N-1 sliding window retention, status indicator syntax, and version sync."
-            },
-            {
-              "name": "_test_source_file_modularity_and_1000_line_budget_invariant",
-              "sig": "_test_source_file_modularity_and_1000_line_budget_invariant(self, item)",
-              "start_line": 1169,
-              "end_line": 1238,
-              "doc": "Validates that recently decomposed modules adhere to the 1,000-line modular budget,"
-            },
-            {
-              "name": "_test_station_voice_profiles_store_and_matching_engine",
-              "sig": "_test_station_voice_profiles_store_and_matching_engine(self, item)",
-              "start_line": 1240,
-              "end_line": 1355,
-              "doc": "Validates StationVoiceProfileStore persistence, vector normalization, profile addition, matching logic, and JSON export/import."
-            },
-            {
-              "name": "_test_multi_tier_mipmapped_waveform_peak_cache_serialization",
-              "sig": "_test_multi_tier_mipmapped_waveform_peak_cache_serialization(self, item)",
-              "start_line": 1357,
-              "end_line": 1394,
-              "doc": "Validates Version 2 .peaks binary cache read/write with 4x/16x/64x LOD pyramid levels and transparent Version 1 upgrade."
-            },
-            {
-              "name": "_test_speed_listening_proofreading_rate_and_context_controls",
-              "sig": "_test_speed_listening_proofreading_rate_and_context_controls(self, item)",
-              "start_line": 1396,
-              "end_line": 1407,
-              "doc": "Validates playback speed rates (0.75x to 2.0x), WSOLA pitch preservation parameters, and proofreading pre-roll configuration."
-            }
-          ]
+          "bases": [
+            "DiagnosticCloudStorageTestsMixin",
+            "DiagnosticVoiceAndMediaTestsMixin",
+            "DiagnosticSystemRuntimeTestsMixin"
+          ],
+          "start_line": 9,
+          "end_line": 14,
+          "doc": "Backward-compatible facade for cloud, voice, and system runtime diagnostic tests.",
+          "methods": []
         }
       ],
       "functions": []
@@ -2144,185 +1913,62 @@
     },
     "diagnostic_editor_tests.py": {
       "path": "diagnostic_editor_tests.py",
-      "lines": 1005,
-      "summary": "Diagnostic editor and find-replace tests for Radio & TV Story Segmenter.",
-      "exports": null,
+      "lines": 19,
+      "summary": "Diagnostic editor and find-replace test bench facade.",
+      "exports": [
+        "DiagnosticEditorTestsMixin",
+        "DiagnosticEditorGuidesAndDawTestsMixin",
+        "DiagnosticEditorStoryUiTestsMixin"
+      ],
       "classes": [
         {
           "name": "DiagnosticEditorTestsMixin",
-          "bases": [],
-          "start_line": 11,
-          "end_line": 1004,
-          "doc": "Diagnostic suite for transcript editor, find-replace, and speaker synchronization.",
-          "methods": [
-            {
-              "name": "_test_find_and_replace_project_synchronization_and_undo",
-              "sig": "_test_find_and_replace_project_synchronization_and_undo(self, item)",
-              "start_line": 14,
-              "end_line": 209,
-              "doc": "Validates that Find & Replace updates segments, word timings, speaker aliases,"
-            },
-            {
-              "name": "_test_in_app_user_guides_and_documentation_viewer",
-              "sig": "_test_in_app_user_guides_and_documentation_viewer(self, item)",
-              "start_line": 211,
-              "end_line": 298,
-              "doc": "Validates in-app user guide resolution, fallback to embedded content, and bundling invariants."
-            },
-            {
-              "name": "_test_story_transcript_highlighting_and_smart_copy",
-              "sig": "_test_story_transcript_highlighting_and_smart_copy(self, item)",
-              "start_line": 300,
-              "end_line": 619,
-              "doc": "Validates story selection synchronization with transcript highlight overlay and smart clipboard copying."
-            },
-            {
-              "name": "_test_story_duration_visibility_and_header_aggregation",
-              "sig": "_test_story_duration_visibility_and_header_aggregation(self, item)",
-              "start_line": 621,
-              "end_line": 802,
-              "doc": "Validates story clock duration formatting, 2-line sidebar item format, and multi-selection header aggregation."
-            },
-            {
-              "name": "_test_reaper_daw_companion_and_universal_clipboard_pipeline",
-              "sig": "_test_reaper_daw_companion_and_universal_clipboard_pipeline(self, item)",
-              "start_line": 804,
-              "end_line": 1004,
-              "doc": "Validates REAPER DAW clip cue JSON schema, sidecar emission, Lua script syntax,"
-            }
-          ]
+          "bases": [
+            "DiagnosticEditorGuidesAndDawTestsMixin",
+            "DiagnosticEditorStoryUiTestsMixin"
+          ],
+          "start_line": 8,
+          "end_line": 12,
+          "doc": "Backward-compatible facade for editor, guides, and REAPER DAW diagnostic tests.",
+          "methods": []
         }
       ],
       "functions": []
     },
     "diagnostic_export_tests.py": {
       "path": "diagnostic_export_tests.py",
-      "lines": 2314,
-      "summary": "Diagnostic test bench suite component.",
-      "exports": null,
+      "lines": 25,
+      "summary": "Diagnostic export test bench facade aggregating modular test mixins.",
+      "exports": [
+        "DiagnosticExportTestsMixin",
+        "DiagnosticExportWordPressCoreMixin",
+        "DiagnosticExportWordPressUploadMixin",
+        "DiagnosticExportWordPressMediaMixin",
+        "DiagnosticExportPipelineMixin"
+      ],
       "classes": [
         {
           "name": "DiagnosticExportTestsMixin",
-          "bases": [],
-          "start_line": 26,
-          "end_line": 2313,
-          "doc": "",
-          "methods": [
-            {
-              "name": "_test_wordpress_export_scope_post_builder",
-              "sig": "_test_wordpress_export_scope_post_builder(self, item)",
-              "start_line": 27,
-              "end_line": 239,
-              "doc": ""
-            },
-            {
-              "name": "_test_wordpress_export_content_and_transcript_formatter",
-              "sig": "_test_wordpress_export_content_and_transcript_formatter(self, item)",
-              "start_line": 241,
-              "end_line": 452,
-              "doc": ""
-            },
-            {
-              "name": "_test_wordpress_youtube_video_embed",
-              "sig": "_test_wordpress_youtube_video_embed(self, item)",
-              "start_line": 454,
-              "end_line": 598,
-              "doc": "Verify YouTube URL parsing, iframe block generation, video project defaults, and Gutenberg placement."
-            },
-            {
-              "name": "_test_multi_format_line_break_and_paragraph_parity",
-              "sig": "_test_multi_format_line_break_and_paragraph_parity(self, item)",
-              "start_line": 600,
-              "end_line": 705,
-              "doc": ""
-            },
-            {
-              "name": "_test_wordpress_multi_story_upload_and_ui_pluralization",
-              "sig": "_test_wordpress_multi_story_upload_and_ui_pluralization(self, item)",
-              "start_line": 707,
-              "end_line": 995,
-              "doc": ""
-            },
-            {
-              "name": "_test_gutenberg_html_structural_hygiene_audit",
-              "sig": "_test_gutenberg_html_structural_hygiene_audit(self, item)",
-              "start_line": 997,
-              "end_line": 1033,
-              "doc": ""
-            },
-            {
-              "name": "_test_export_scope_delta_and_gap_integrity_audit",
-              "sig": "_test_export_scope_delta_and_gap_integrity_audit(self, item)",
-              "start_line": 1035,
-              "end_line": 1086,
-              "doc": ""
-            },
-            {
-              "name": "_test_export_destination_interface_contract_verification",
-              "sig": "_test_export_destination_interface_contract_verification(self, item)",
-              "start_line": 1088,
-              "end_line": 1124,
-              "doc": ""
-            },
-            {
-              "name": "_test_multi_story_media_payload_disambiguation_test",
-              "sig": "_test_multi_story_media_payload_disambiguation_test(self, item)",
-              "start_line": 1126,
-              "end_line": 1164,
-              "doc": ""
-            },
-            {
-              "name": "_test_wordpress_audio_inclusion_toggle_and_error_resilience",
-              "sig": "_test_wordpress_audio_inclusion_toggle_and_error_resilience(self, item)",
-              "start_line": 1166,
-              "end_line": 1494,
-              "doc": ""
-            },
-            {
-              "name": "_test_wordpress_featured_image_caption_and_alt_text",
-              "sig": "_test_wordpress_featured_image_caption_and_alt_text(self, item)",
-              "start_line": 1496,
-              "end_line": 1721,
-              "doc": "Verify Featured Image caption & alt_text across WordPressClient, post builder, tab UI, and PublishWorker."
-            },
-            {
-              "name": "_test_wordpress_castos_podcast_integration",
-              "sig": "_test_wordpress_castos_podcast_integration(self, item)",
-              "start_line": 1724,
-              "end_line": 2073,
-              "doc": ""
-            },
-            {
-              "name": "_test_multi_scope_story_and_full_episode_export_pipeline",
-              "sig": "_test_multi_scope_story_and_full_episode_export_pipeline(self, item)",
-              "start_line": 2075,
-              "end_line": 2156,
-              "doc": ""
-            },
-            {
-              "name": "_test_audio_export_non_blocking_and_cancellation_pipeline",
-              "sig": "_test_audio_export_non_blocking_and_cancellation_pipeline(self, item)",
-              "start_line": 2158,
-              "end_line": 2268,
-              "doc": ""
-            },
-            {
-              "name": "_test_modal_dialog_maximizable_import_integrity",
-              "sig": "_test_modal_dialog_maximizable_import_integrity(self, item)",
-              "start_line": 2270,
-              "end_line": 2313,
-              "doc": ""
-            }
-          ]
+          "bases": [
+            "DiagnosticExportWordPressCoreMixin",
+            "DiagnosticExportWordPressUploadMixin",
+            "DiagnosticExportWordPressMediaMixin",
+            "DiagnosticExportPipelineMixin"
+          ],
+          "start_line": 10,
+          "end_line": 16,
+          "doc": "Backward-compatible facade for export & WordPress diagnostic tests.",
+          "methods": []
         }
       ],
       "functions": []
     },
     "diagnostic_helpers.py": {
       "path": "diagnostic_helpers.py",
-      "lines": 151,
+      "lines": 155,
       "summary": "Helper fixtures, module resolvers, and DiagnosticItem for test runner.",
       "exports": [
+        "PROJECT_ROOT",
         "generate_synthetic_wav",
         "DiagnosticItem",
         "_resolve_export_subtitles_module",
@@ -2332,22 +1978,22 @@
         {
           "name": "DiagnosticItem",
           "bases": [],
-          "start_line": 67,
-          "end_line": 90,
+          "start_line": 70,
+          "end_line": 93,
           "doc": "Represents the execution outcome of an individual test or diagnostic probe.",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, name, category, description, dev_only)",
-              "start_line": 70,
-              "end_line": 78,
+              "start_line": 73,
+              "end_line": 81,
               "doc": ""
             },
             {
               "name": "to_dict",
               "sig": "to_dict(self)",
-              "start_line": 80,
-              "end_line": 90,
+              "start_line": 83,
+              "end_line": 93,
               "doc": ""
             }
           ]
@@ -2357,22 +2003,22 @@
         {
           "name": "generate_synthetic_wav",
           "sig": "generate_synthetic_wav(duration_seconds, sample_rate, frequencies, output_path)",
-          "start_line": 18,
-          "end_line": 63,
+          "start_line": 21,
+          "end_line": 66,
           "doc": "Generates a multi-frequency synthetic 16kHz mono WAV file in memory or on disk."
         },
         {
           "name": "_resolve_export_subtitles_module",
           "sig": "_resolve_export_subtitles_module()",
-          "start_line": 95,
-          "end_line": 117,
+          "start_line": 98,
+          "end_line": 120,
           "doc": "Resolves export.subtitles whether running from source, package, or frozen binary."
         },
         {
           "name": "_resolve_export_daw_module",
           "sig": "_resolve_export_daw_module()",
-          "start_line": 120,
-          "end_line": 142,
+          "start_line": 123,
+          "end_line": 145,
           "doc": "Resolves export.daw whether running from source, package, or frozen binary."
         }
       ]
@@ -2418,7 +2064,7 @@
     },
     "diagnostic_selector.py": {
       "path": "diagnostic_selector.py",
-      "lines": 191,
+      "lines": 196,
       "summary": "Smart Diagnostic Test Selector for Radio & TV Story Segmenter.",
       "exports": null,
       "classes": [],
@@ -2441,14 +2087,14 @@
           "name": "detect_changed_tokens",
           "sig": "detect_changed_tokens(root_dir)",
           "start_line": 64,
-          "end_line": 136,
+          "end_line": 141,
           "doc": "Return a set of lowercase module stems and plugin names from the most recently edited files."
         },
         {
           "name": "select_diagnostic_items",
           "sig": "select_diagnostic_items(engine, items, filter_expr, changed_only)",
-          "start_line": 139,
-          "end_line": 191,
+          "start_line": 144,
+          "end_line": 196,
           "doc": "Filter diagnostic items by explicit `--filter` keywords and/or `--changed` git diff analysis."
         }
       ]
@@ -2539,6 +2185,574 @@
               "start_line": 10,
               "end_line": 109,
               "doc": ""
+            }
+          ]
+        }
+      ],
+      "functions": []
+    },
+    "diagnostics/__init__.py": {
+      "path": "diagnostics/__init__.py",
+      "lines": 28,
+      "summary": "Modular diagnostic test mixin components for the RTVS Test Runner.",
+      "exports": [
+        "DiagnosticExportWordPressCoreMixin",
+        "DiagnosticExportWordPressUploadMixin",
+        "DiagnosticExportWordPressMediaMixin",
+        "DiagnosticExportPipelineMixin",
+        "DiagnosticCloudStorageTestsMixin",
+        "DiagnosticVoiceAndMediaTestsMixin",
+        "DiagnosticSystemRuntimeTestsMixin",
+        "DiagnosticBatchExportTestsMixin",
+        "DiagnosticEditingWorkflowTestsMixin",
+        "DiagnosticEditorGuidesAndDawTestsMixin",
+        "DiagnosticEditorStoryUiTestsMixin"
+      ],
+      "classes": [],
+      "functions": []
+    },
+    "diagnostics/batch_export_tests.py": {
+      "path": "diagnostics/batch_export_tests.py",
+      "lines": 469,
+      "summary": "Batch processing, drag-and-drop ingestion, PDF, and DAW export structure tests.",
+      "exports": null,
+      "classes": [
+        {
+          "name": "DiagnosticBatchExportTestsMixin",
+          "bases": [],
+          "start_line": 15,
+          "end_line": 469,
+          "doc": "",
+          "methods": [
+            {
+              "name": "_test_batch_unified_transcripts_directory_export",
+              "sig": "_test_batch_unified_transcripts_directory_export(self, item)",
+              "start_line": 16,
+              "end_line": 184,
+              "doc": ""
+            },
+            {
+              "name": "_test_batch_drag_and_drop_ingestion_and_event_handling",
+              "sig": "_test_batch_drag_and_drop_ingestion_and_event_handling(self, item)",
+              "start_line": 186,
+              "end_line": 300,
+              "doc": ""
+            },
+            {
+              "name": "_test_unified_export_destinations_and_youtube_auth_integrity",
+              "sig": "_test_unified_export_destinations_and_youtube_auth_integrity(self, item)",
+              "start_line": 302,
+              "end_line": 369,
+              "doc": ""
+            },
+            {
+              "name": "_test_pdf_transcript_export_and_bold_speaker_labels",
+              "sig": "_test_pdf_transcript_export_and_bold_speaker_labels(self, item)",
+              "start_line": 371,
+              "end_line": 426,
+              "doc": ""
+            },
+            {
+              "name": "_test_exporter_structure_invariant_tests",
+              "sig": "_test_exporter_structure_invariant_tests(self, item)",
+              "start_line": 428,
+              "end_line": 469,
+              "doc": ""
+            }
+          ]
+        }
+      ],
+      "functions": []
+    },
+    "diagnostics/cloud_storage_tests.py": {
+      "path": "diagnostics/cloud_storage_tests.py",
+      "lines": 584,
+      "summary": "Plugin interface, project persistence, cache management, YouTube & backup diagnostic tests.",
+      "exports": null,
+      "classes": [
+        {
+          "name": "DiagnosticCloudStorageTestsMixin",
+          "bases": [],
+          "start_line": 15,
+          "end_line": 584,
+          "doc": "",
+          "methods": [
+            {
+              "name": "_test_plugin_interface_sandbox_testing",
+              "sig": "_test_plugin_interface_sandbox_testing(self, item)",
+              "start_line": 16,
+              "end_line": 187,
+              "doc": ""
+            },
+            {
+              "name": "_test_project_file_integrity_and_portable_path_resolution",
+              "sig": "_test_project_file_integrity_and_portable_path_resolution(self, item)",
+              "start_line": 189,
+              "end_line": 293,
+              "doc": ""
+            },
+            {
+              "name": "_test_temporary_cache_management_and_storage_inspection",
+              "sig": "_test_temporary_cache_management_and_storage_inspection(self, item)",
+              "start_line": 295,
+              "end_line": 394,
+              "doc": "Validates cache usage stats calculation, preview categorization, and cache purging."
+            },
+            {
+              "name": "_test_youtube_data_api_and_direct_video_upload_engine",
+              "sig": "_test_youtube_data_api_and_direct_video_upload_engine(self, item)",
+              "start_line": 396,
+              "end_line": 471,
+              "doc": "Validates YouTube Zero-Auth manual export packaging (MP4, thumbnail, SRT, metadata .txt with chapters & speakers)."
+            },
+            {
+              "name": "_test_comprehensive_local_and_cloud_backup_and_restore_engine",
+              "sig": "_test_comprehensive_local_and_cloud_backup_and_restore_engine(self, item)",
+              "start_line": 473,
+              "end_line": 584,
+              "doc": "Validates state serialization, SHA-256 verification, local backup roundtrip, and cloud payload integrity."
+            }
+          ]
+        }
+      ],
+      "functions": []
+    },
+    "diagnostics/editing_workflow_tests.py": {
+      "path": "diagnostics/editing_workflow_tests.py",
+      "lines": 590,
+      "summary": "Fades, translation routing, speaker dialog flow, story bounds, sync, and split/join tests.",
+      "exports": null,
+      "classes": [
+        {
+          "name": "DiagnosticEditingWorkflowTestsMixin",
+          "bases": [],
+          "start_line": 10,
+          "end_line": 590,
+          "doc": "",
+          "methods": [
+            {
+              "name": "_test_fade_curve_tables_and_auditioning_state",
+              "sig": "_test_fade_curve_tables_and_auditioning_state(self, item)",
+              "start_line": 11,
+              "end_line": 92,
+              "doc": ""
+            },
+            {
+              "name": "_test_translation_routing_and_key_priority_unit_test",
+              "sig": "_test_translation_routing_and_key_priority_unit_test(self, item)",
+              "start_line": 94,
+              "end_line": 207,
+              "doc": ""
+            },
+            {
+              "name": "_test_symmetrical_translation_editing_state_test",
+              "sig": "_test_symmetrical_translation_editing_state_test(self, item)",
+              "start_line": 209,
+              "end_line": 290,
+              "doc": ""
+            },
+            {
+              "name": "_test_interactive_change_speaker_dialogue_flow_test",
+              "sig": "_test_interactive_change_speaker_dialogue_flow_test(self, item)",
+              "start_line": 292,
+              "end_line": 357,
+              "doc": ""
+            },
+            {
+              "name": "_test_story_boundary_validation_and_overlap_test",
+              "sig": "_test_story_boundary_validation_and_overlap_test(self, item)",
+              "start_line": 359,
+              "end_line": 436,
+              "doc": ""
+            },
+            {
+              "name": "_test_audio_subtitle_sync_drift_test",
+              "sig": "_test_audio_subtitle_sync_drift_test(self, item)",
+              "start_line": 438,
+              "end_line": 481,
+              "doc": ""
+            },
+            {
+              "name": "_test_interactive_transcript_editing_and_split_join_unit_tests",
+              "sig": "_test_interactive_transcript_editing_and_split_join_unit_tests(self, item)",
+              "start_line": 483,
+              "end_line": 590,
+              "doc": ""
+            }
+          ]
+        }
+      ],
+      "functions": []
+    },
+    "diagnostics/editor_guides_and_daw_tests.py": {
+      "path": "diagnostics/editor_guides_and_daw_tests.py",
+      "lines": 497,
+      "summary": "Find-replace, user guides viewer, and REAPER DAW companion diagnostic tests.",
+      "exports": null,
+      "classes": [
+        {
+          "name": "DiagnosticEditorGuidesAndDawTestsMixin",
+          "bases": [],
+          "start_line": 13,
+          "end_line": 497,
+          "doc": "",
+          "methods": [
+            {
+              "name": "_test_find_and_replace_project_synchronization_and_undo",
+              "sig": "_test_find_and_replace_project_synchronization_and_undo(self, item)",
+              "start_line": 14,
+              "end_line": 208,
+              "doc": "Validates that Find & Replace updates segments, word timings, speaker aliases,"
+            },
+            {
+              "name": "_test_in_app_user_guides_and_documentation_viewer",
+              "sig": "_test_in_app_user_guides_and_documentation_viewer(self, item)",
+              "start_line": 210,
+              "end_line": 298,
+              "doc": "Validates in-app user guide resolution, fallback to embedded content, and bundling invariants."
+            },
+            {
+              "name": "_test_reaper_daw_companion_and_universal_clipboard_pipeline",
+              "sig": "_test_reaper_daw_companion_and_universal_clipboard_pipeline(self, item)",
+              "start_line": 300,
+              "end_line": 497,
+              "doc": "Validates REAPER DAW clip cue JSON schema, sidecar emission, Lua script syntax,"
+            }
+          ]
+        }
+      ],
+      "functions": []
+    },
+    "diagnostics/editor_story_ui_tests.py": {
+      "path": "diagnostics/editor_story_ui_tests.py",
+      "lines": 508,
+      "summary": "Story transcript highlighting, smart copy, duration & header diagnostic tests.",
+      "exports": null,
+      "classes": [
+        {
+          "name": "DiagnosticEditorStoryUiTestsMixin",
+          "bases": [],
+          "start_line": 9,
+          "end_line": 508,
+          "doc": "",
+          "methods": [
+            {
+              "name": "_test_story_transcript_highlighting_and_smart_copy",
+              "sig": "_test_story_transcript_highlighting_and_smart_copy(self, item)",
+              "start_line": 10,
+              "end_line": 325,
+              "doc": "Validates story selection synchronization with transcript highlight overlay and smart clipboard copying."
+            },
+            {
+              "name": "_test_story_duration_visibility_and_header_aggregation",
+              "sig": "_test_story_duration_visibility_and_header_aggregation(self, item)",
+              "start_line": 327,
+              "end_line": 508,
+              "doc": "Validates story clock duration formatting, 2-line sidebar item format, and multi-selection header aggregation."
+            }
+          ]
+        }
+      ],
+      "functions": []
+    },
+    "diagnostics/export_pipeline.py": {
+      "path": "diagnostics/export_pipeline.py",
+      "lines": 485,
+      "summary": "Multi-format export pipeline, scope slicing, and audio cancellation tests.",
+      "exports": null,
+      "classes": [
+        {
+          "name": "DiagnosticExportPipelineMixin",
+          "bases": [],
+          "start_line": 13,
+          "end_line": 485,
+          "doc": "",
+          "methods": [
+            {
+              "name": "_test_multi_format_line_break_and_paragraph_parity",
+              "sig": "_test_multi_format_line_break_and_paragraph_parity(self, item)",
+              "start_line": 14,
+              "end_line": 119,
+              "doc": ""
+            },
+            {
+              "name": "_test_export_scope_delta_and_gap_integrity_audit",
+              "sig": "_test_export_scope_delta_and_gap_integrity_audit(self, item)",
+              "start_line": 121,
+              "end_line": 172,
+              "doc": ""
+            },
+            {
+              "name": "_test_export_destination_interface_contract_verification",
+              "sig": "_test_export_destination_interface_contract_verification(self, item)",
+              "start_line": 174,
+              "end_line": 210,
+              "doc": ""
+            },
+            {
+              "name": "_test_multi_story_media_payload_disambiguation_test",
+              "sig": "_test_multi_story_media_payload_disambiguation_test(self, item)",
+              "start_line": 212,
+              "end_line": 249,
+              "doc": ""
+            },
+            {
+              "name": "_test_multi_scope_story_and_full_episode_export_pipeline",
+              "sig": "_test_multi_scope_story_and_full_episode_export_pipeline(self, item)",
+              "start_line": 251,
+              "end_line": 332,
+              "doc": ""
+            },
+            {
+              "name": "_test_audio_export_non_blocking_and_cancellation_pipeline",
+              "sig": "_test_audio_export_non_blocking_and_cancellation_pipeline(self, item)",
+              "start_line": 334,
+              "end_line": 443,
+              "doc": ""
+            },
+            {
+              "name": "_test_modal_dialog_maximizable_import_integrity",
+              "sig": "_test_modal_dialog_maximizable_import_integrity(self, item)",
+              "start_line": 445,
+              "end_line": 485,
+              "doc": ""
+            }
+          ]
+        }
+      ],
+      "functions": []
+    },
+    "diagnostics/export_wordpress_core.py": {
+      "path": "diagnostics/export_wordpress_core.py",
+      "lines": 579,
+      "summary": "WordPress export scope, content formatting, and YouTube embed diagnostic tests.",
+      "exports": null,
+      "classes": [
+        {
+          "name": "DiagnosticExportWordPressCoreMixin",
+          "bases": [],
+          "start_line": 9,
+          "end_line": 579,
+          "doc": "",
+          "methods": [
+            {
+              "name": "_test_wordpress_export_scope_post_builder",
+              "sig": "_test_wordpress_export_scope_post_builder(self, item)",
+              "start_line": 10,
+              "end_line": 221,
+              "doc": ""
+            },
+            {
+              "name": "_test_wordpress_export_content_and_transcript_formatter",
+              "sig": "_test_wordpress_export_content_and_transcript_formatter(self, item)",
+              "start_line": 223,
+              "end_line": 433,
+              "doc": ""
+            },
+            {
+              "name": "_test_wordpress_youtube_video_embed",
+              "sig": "_test_wordpress_youtube_video_embed(self, item)",
+              "start_line": 435,
+              "end_line": 579,
+              "doc": "Verify YouTube URL parsing, iframe block generation, video project defaults, and Gutenberg placement."
+            }
+          ]
+        }
+      ],
+      "functions": []
+    },
+    "diagnostics/export_wordpress_media.py": {
+      "path": "diagnostics/export_wordpress_media.py",
+      "lines": 585,
+      "summary": "WordPress featured image metadata and Castos podcast diagnostic tests.",
+      "exports": null,
+      "classes": [
+        {
+          "name": "DiagnosticExportWordPressMediaMixin",
+          "bases": [],
+          "start_line": 10,
+          "end_line": 585,
+          "doc": "",
+          "methods": [
+            {
+              "name": "_test_wordpress_featured_image_caption_and_alt_text",
+              "sig": "_test_wordpress_featured_image_caption_and_alt_text(self, item)",
+              "start_line": 11,
+              "end_line": 234,
+              "doc": "Verify Featured Image caption & alt_text across WordPressClient, post builder, tab UI, and PublishWorker."
+            },
+            {
+              "name": "_test_wordpress_castos_podcast_integration",
+              "sig": "_test_wordpress_castos_podcast_integration(self, item)",
+              "start_line": 236,
+              "end_line": 585,
+              "doc": ""
+            }
+          ]
+        }
+      ],
+      "functions": []
+    },
+    "diagnostics/export_wordpress_upload.py": {
+      "path": "diagnostics/export_wordpress_upload.py",
+      "lines": 668,
+      "summary": "WordPress multi-story upload, Gutenberg hygiene, and audio toggle diagnostic tests.",
+      "exports": null,
+      "classes": [
+        {
+          "name": "DiagnosticExportWordPressUploadMixin",
+          "bases": [],
+          "start_line": 11,
+          "end_line": 668,
+          "doc": "",
+          "methods": [
+            {
+              "name": "_test_wordpress_multi_story_upload_and_ui_pluralization",
+              "sig": "_test_wordpress_multi_story_upload_and_ui_pluralization(self, item)",
+              "start_line": 12,
+              "end_line": 300,
+              "doc": ""
+            },
+            {
+              "name": "_test_gutenberg_html_structural_hygiene_audit",
+              "sig": "_test_gutenberg_html_structural_hygiene_audit(self, item)",
+              "start_line": 302,
+              "end_line": 338,
+              "doc": ""
+            },
+            {
+              "name": "_test_wordpress_audio_inclusion_toggle_and_error_resilience",
+              "sig": "_test_wordpress_audio_inclusion_toggle_and_error_resilience(self, item)",
+              "start_line": 340,
+              "end_line": 668,
+              "doc": ""
+            }
+          ]
+        }
+      ],
+      "functions": []
+    },
+    "diagnostics/system_runtime_tests.py": {
+      "path": "diagnostics/system_runtime_tests.py",
+      "lines": 385,
+      "summary": "System runtime, updater, theme, packaging, roadmap, and modularity diagnostic tests.",
+      "exports": null,
+      "classes": [
+        {
+          "name": "DiagnosticSystemRuntimeTestsMixin",
+          "bases": [],
+          "start_line": 14,
+          "end_line": 385,
+          "doc": "",
+          "methods": [
+            {
+              "name": "_test_windows_detached_update_helper_architecture",
+              "sig": "_test_windows_detached_update_helper_architecture(self, item)",
+              "start_line": 15,
+              "end_line": 55,
+              "doc": "Validates update helper architecture: helper script generation, exit polling, and logging."
+            },
+            {
+              "name": "_test_multiprocessing_freeze_support_and_spawn_intercept",
+              "sig": "_test_multiprocessing_freeze_support_and_spawn_intercept(self, item)",
+              "start_line": 57,
+              "end_line": 78,
+              "doc": "Validates that frozen process spawn intercepts -c invocations from resource_tracker and multiprocessing."
+            },
+            {
+              "name": "_resolve_worker_cmd",
+              "sig": "_resolve_worker_cmd(self)",
+              "start_line": 80,
+              "end_line": 94,
+              "doc": "Resolves the executable and arguments to launch the AI background worker."
+            },
+            {
+              "name": "_test_ai_worker_subprocess_execution_and_ipc_handshake",
+              "sig": "_test_ai_worker_subprocess_execution_and_ipc_handshake(self, item)",
+              "start_line": 96,
+              "end_line": 162,
+              "doc": "Spawns the AI worker binary in an isolated subprocess, verifying IPC hello handshake and self-test."
+            },
+            {
+              "name": "_test_frozen_subprocess_multiprocessing_spawn_protocol",
+              "sig": "_test_frozen_subprocess_multiprocessing_spawn_protocol(self, item)",
+              "start_line": 164,
+              "end_line": 202,
+              "doc": "Spawns the AI worker executable with Python -c to verify multiprocessing resource tracker interception."
+            },
+            {
+              "name": "_test_option_c_muted_silver_fog_light_theme_and_dark_mode_clipboard_formatting",
+              "sig": "_test_option_c_muted_silver_fog_light_theme_and_dark_mode_clipboard_formatting(self, item)",
+              "start_line": 204,
+              "end_line": 257,
+              "doc": "Validates Option C muted low-contrast silver/fog palette and dark-mode clipboard rich styling."
+            },
+            {
+              "name": "_test_windows_ci_build_and_packaging_optimization_invariants",
+              "sig": "_test_windows_ci_build_and_packaging_optimization_invariants(self, item)",
+              "start_line": 259,
+              "end_line": 291,
+              "doc": "Validates Inno Setup compression parameters, Stage 3 PyInstaller optimizations, and CI settings."
+            },
+            {
+              "name": "_test_roadmap_n_1_sliding_window_and_status_integrity",
+              "sig": "_test_roadmap_n_1_sliding_window_and_status_integrity(self, item)",
+              "start_line": 293,
+              "end_line": 312,
+              "doc": "Validates roadmap.txt N-1 sliding window retention, status indicator syntax, and version sync."
+            },
+            {
+              "name": "_test_source_file_modularity_and_1000_line_budget_invariant",
+              "sig": "_test_source_file_modularity_and_1000_line_budget_invariant(self, item)",
+              "start_line": 314,
+              "end_line": 385,
+              "doc": "Validates that recently decomposed modules adhere to the 1,000-line modular budget,"
+            }
+          ]
+        }
+      ],
+      "functions": []
+    },
+    "diagnostics/voice_and_media_tests.py": {
+      "path": "diagnostics/voice_and_media_tests.py",
+      "lines": 438,
+      "summary": "Voice profile matching, waveform peak cache, and playback rate diagnostic tests.",
+      "exports": null,
+      "classes": [
+        {
+          "name": "DiagnosticVoiceAndMediaTestsMixin",
+          "bases": [],
+          "start_line": 13,
+          "end_line": 438,
+          "doc": "",
+          "methods": [
+            {
+              "name": "_test_acoustic_voice_profile_matcher",
+              "sig": "_test_acoustic_voice_profile_matcher(self, item)",
+              "start_line": 14,
+              "end_line": 273,
+              "doc": ""
+            },
+            {
+              "name": "_test_station_voice_profiles_store_and_matching_engine",
+              "sig": "_test_station_voice_profiles_store_and_matching_engine(self, item)",
+              "start_line": 275,
+              "end_line": 388,
+              "doc": "Validates StationVoiceProfileStore persistence, vector normalization, profile addition, matching logic, and JSON export/import."
+            },
+            {
+              "name": "_test_multi_tier_mipmapped_waveform_peak_cache_serialization",
+              "sig": "_test_multi_tier_mipmapped_waveform_peak_cache_serialization(self, item)",
+              "start_line": 390,
+              "end_line": 425,
+              "doc": "Validates Version 2 .peaks binary cache read/write with 4x/16x/64x LOD pyramid levels and transparent Version 1 upgrade."
+            },
+            {
+              "name": "_test_speed_listening_proofreading_rate_and_context_controls",
+              "sig": "_test_speed_listening_proofreading_rate_and_context_controls(self, item)",
+              "start_line": 427,
+              "end_line": 438,
+              "doc": "Validates playback speed rates (0.75x to 2.0x), WSOLA pitch preservation parameters, and proofreading pre-roll configuration."
             }
           ]
         }
@@ -4268,6 +4482,138 @@
           "start_line": 225,
           "end_line": 333,
           "doc": "Writes or updates ID3v2 tags in an MP3 file."
+        }
+      ]
+    },
+    "installer/build_tools/__init__.py": {
+      "path": "installer/build_tools/__init__.py",
+      "lines": 50,
+      "summary": "Modular build utilities for Radio & TV Segmenter PyInstaller & installer packaging.",
+      "exports": [
+        "UV_VERSION",
+        "UV_URLS",
+        "PYSIDE6_USED_SUBMODULES",
+        "PYSIDE6_EXCLUDES",
+        "TEST_AND_BENCHMARK_EXCLUDES",
+        "COLLECT_ALL_PACKAGES",
+        "COPY_METADATA_PACKAGES",
+        "HIDDEN_IMPORTS",
+        "parse_build_args",
+        "exe_name",
+        "find_tool",
+        "check_cpu_only_torch",
+        "torch_windows_binary_flags",
+        "run",
+        "provision_optional_runtime_tools",
+        "prune_unneeded_bundled_files",
+        "sync_installer_scripts",
+        "compile_windows_installer",
+        "package_plugins"
+      ],
+      "classes": [],
+      "functions": []
+    },
+    "installer/build_tools/config.py": {
+      "path": "installer/build_tools/config.py",
+      "lines": 205,
+      "summary": "Build configuration constants and CLI argument parser.",
+      "exports": null,
+      "classes": [],
+      "functions": [
+        {
+          "name": "parse_build_args",
+          "sig": "parse_build_args()",
+          "start_line": 130,
+          "end_line": 205,
+          "doc": "Parse build target, plugin selection, installer, and version CLI flags."
+        }
+      ]
+    },
+    "installer/build_tools/env_checks.py": {
+      "path": "installer/build_tools/env_checks.py",
+      "lines": 188,
+      "summary": "Environment validation, external tool resolution, and subprocess execution helpers.",
+      "exports": null,
+      "classes": [],
+      "functions": [
+        {
+          "name": "exe_name",
+          "sig": "exe_name(base)",
+          "start_line": 15,
+          "end_line": 17,
+          "doc": "Return platform-appropriate executable filename."
+        },
+        {
+          "name": "find_tool",
+          "sig": "find_tool(name, root_dir)",
+          "start_line": 20,
+          "end_line": 84,
+          "doc": "Locate required media runtime tools such as ffmpeg or ffprobe."
+        },
+        {
+          "name": "check_cpu_only_torch",
+          "sig": "check_cpu_only_torch()",
+          "start_line": 87,
+          "end_line": 128,
+          "doc": "Verify the build environment uses CPU-only PyTorch unless explicitly bypassed."
+        },
+        {
+          "name": "torch_windows_binary_flags",
+          "sig": "torch_windows_binary_flags()",
+          "start_line": 131,
+          "end_line": 159,
+          "doc": "Collect explicit Windows PyTorch DLL binary flags for PyInstaller."
+        },
+        {
+          "name": "run",
+          "sig": "run(cmd, cwd)",
+          "start_line": 162,
+          "end_line": 188,
+          "doc": "Execute a build subprocess streaming output line-by-line."
+        }
+      ]
+    },
+    "installer/build_tools/packaging.py": {
+      "path": "installer/build_tools/packaging.py",
+      "lines": 368,
+      "summary": "Bundle pruning, plugin archive packaging, runtime tools, and Windows Inno Setup helpers.",
+      "exports": null,
+      "classes": [],
+      "functions": [
+        {
+          "name": "provision_optional_runtime_tools",
+          "sig": "provision_optional_runtime_tools(app_root, build_dir, uv_version, uv_urls)",
+          "start_line": 23,
+          "end_line": 106,
+          "doc": "Bundle standalone uv binary into optional_runtime/ when explicitly requested."
+        },
+        {
+          "name": "prune_unneeded_bundled_files",
+          "sig": "prune_unneeded_bundled_files(app_root)",
+          "start_line": 109,
+          "end_line": 242,
+          "doc": "Strip CUDA leftovers, development headers, test suites, and software OpenGL bloat."
+        },
+        {
+          "name": "sync_installer_scripts",
+          "sig": "sync_installer_scripts(project_version, root_dir)",
+          "start_line": 245,
+          "end_line": 257,
+          "doc": "Ensure Inno Setup and other installer packaging scripts match PROJECT_VERSION."
+        },
+        {
+          "name": "compile_windows_installer",
+          "sig": "compile_windows_installer(project_version, root_dir)",
+          "start_line": 260,
+          "end_line": 295,
+          "doc": "Compile the Windows Inno Setup installer executable if ISCC is installed."
+        },
+        {
+          "name": "package_plugins",
+          "sig": "package_plugins(app_root, include_wp, include_yt, include_tr, root_dir, dist_dir, project_version)",
+          "start_line": 298,
+          "end_line": 368,
+          "doc": "Package plugins into standalone .zip release artifacts in dist/plugins/"
         }
       ]
     },
@@ -12925,50 +13271,50 @@
     },
     "scripts/modular_audit.py": {
       "path": "scripts/modular_audit.py",
-      "lines": 777,
+      "lines": 773,
       "summary": "scripts/modular_audit.py \u2014 AST Decomposition Suggester & Modular Budget Guard.",
       "exports": null,
       "classes": [
         {
           "name": "ModuleStructure",
           "bases": [],
-          "start_line": 82,
-          "end_line": 255,
+          "start_line": 78,
+          "end_line": 251,
           "doc": "Detailed structural metrics extracted from a Python module.",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, file_path)",
-              "start_line": 85,
-              "end_line": 102,
+              "start_line": 81,
+              "end_line": 98,
               "doc": ""
             },
             {
               "name": "_analyze",
               "sig": "_analyze(self)",
-              "start_line": 104,
-              "end_line": 178,
+              "start_line": 100,
+              "end_line": 174,
               "doc": ""
             },
             {
               "name": "_extract_class_info",
               "sig": "_extract_class_info(self, node, lines)",
-              "start_line": 180,
-              "end_line": 208,
+              "start_line": 176,
+              "end_line": 204,
               "doc": ""
             },
             {
               "name": "_extract_func_info",
               "sig": "_extract_func_info(self, node, lines)",
-              "start_line": 210,
-              "end_line": 219,
+              "start_line": 206,
+              "end_line": 215,
               "doc": ""
             },
             {
               "name": "_classify_domain",
               "sig": "_classify_domain(name, bases, method_names)",
-              "start_line": 222,
-              "end_line": 255,
+              "start_line": 218,
+              "end_line": 251,
               "doc": "Classifies a class or function into a logical domain based on naming and signatures."
             }
           ]
@@ -12976,36 +13322,36 @@
         {
           "name": "DecompositionPlan",
           "bases": [],
-          "start_line": 262,
-          "end_line": 424,
+          "start_line": 258,
+          "end_line": 420,
           "doc": "Proposed modular decomposition plan for a monolithic source file.",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, structure)",
-              "start_line": 265,
-              "end_line": 273,
+              "start_line": 261,
+              "end_line": 269,
               "doc": ""
             },
             {
               "name": "_classify_method_domain",
               "sig": "_classify_method_domain(m_name)",
-              "start_line": 276,
-              "end_line": 286,
+              "start_line": 272,
+              "end_line": 282,
               "doc": ""
             },
             {
               "name": "_build_plan",
               "sig": "_build_plan(self)",
-              "start_line": 288,
-              "end_line": 391,
+              "start_line": 284,
+              "end_line": 387,
               "doc": ""
             },
             {
               "name": "render_markdown_blueprint",
               "sig": "render_markdown_blueprint(self)",
-              "start_line": 393,
-              "end_line": 424,
+              "start_line": 389,
+              "end_line": 420,
               "doc": ""
             }
           ]
@@ -13015,43 +13361,43 @@
         {
           "name": "scan_repository",
           "sig": "scan_repository(root_dir)",
-          "start_line": 431,
-          "end_line": 443,
+          "start_line": 427,
+          "end_line": 439,
           "doc": "Scans all Python modules in the repository, excluding build/venv directories."
         },
         {
           "name": "print_audit_report",
           "sig": "print_audit_report(structures, warn_threshold, hard_ceiling, sort_by)",
-          "start_line": 446,
-          "end_line": 487,
+          "start_line": 442,
+          "end_line": 483,
           "doc": "Prints a formatted terminal table showing modularity compliance."
         },
         {
           "name": "check_budget_guard",
           "sig": "check_budget_guard(structures, hard_ceiling, warn_threshold, exempt_paths)",
-          "start_line": 490,
-          "end_line": 523,
+          "start_line": 486,
+          "end_line": 519,
           "doc": "Programmatic budget check suitable for test runner and CI pipelines."
         },
         {
           "name": "check_single_responsibility",
           "sig": "check_single_responsibility(structure, strict)",
-          "start_line": 526,
-          "end_line": 614,
+          "start_line": 522,
+          "end_line": 610,
           "doc": "Analyzes AST domain classification to verify Single Responsibility & Domain Separation."
         },
         {
           "name": "print_srp_report",
           "sig": "print_srp_report(results, strict)",
-          "start_line": 617,
-          "end_line": 661,
+          "start_line": 613,
+          "end_line": 657,
           "doc": "Prints a structured terminal report for Single Responsibility & Domain Separation."
         },
         {
           "name": "main",
           "sig": "main()",
-          "start_line": 664,
-          "end_line": 773,
+          "start_line": 660,
+          "end_line": 769,
           "doc": ""
         }
       ]
@@ -18209,7 +18555,7 @@
     "transcript_story.py": {
       "path": "transcript_story.py",
       "lines": 856,
-      "summary": "Radio & TV Segmenter v3.10.11-beta \u2014 transcript story responsibilities.",
+      "summary": "Radio & TV Segmenter v3.10.12-beta \u2014 transcript story responsibilities.",
       "exports": [
         "TranscriptStoryMixin",
         "Story",

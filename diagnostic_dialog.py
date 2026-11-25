@@ -6,11 +6,52 @@ inspecting hardware health, and exporting diagnostic reports.
 
 from __future__ import annotations
 
+import inspect
 import time
 from typing import TYPE_CHECKING, Dict, Optional
 
 if TYPE_CHECKING:
     from test_runner import DiagnosticEngine, DiagnosticItem
+
+
+_MAIN_THREAD_TEST_HANDLERS: frozenset[str] = frozenset({
+    "_test_wordpress_export_scope_post_builder",
+    "_test_wordpress_export_content_and_transcript_formatter",
+    "_test_wordpress_youtube_video_embed",
+    "_test_wordpress_audio_inclusion_toggle_and_error_resilience",
+    "_test_wordpress_featured_image_caption_and_alt_text",
+    "_test_quick_sample_audio_preview_and_speaker_manager_dialog_invariants",
+    "_test_plugin_interface_sandbox_testing",
+    "_test_project_file_integrity_and_portable_path_resolution",
+    "_test_audio_loudness_preferences_and_manual_normalization_dialog",
+    "_test_find_and_replace_project_synchronization_and_undo",
+    "_test_in_app_user_guides_and_documentation_viewer",
+    "_test_story_transcript_highlighting_and_smart_copy",
+    "_test_story_duration_visibility_and_header_aggregation",
+    "_test_minimum_story_length_filtering_and_preferences",
+    "_test_guest_name_proper_noun_cleanup_and_preserve_case",
+    "_test_station_voice_checkbox_and_threshold_normalization",
+    "_test_offline_spellcheck_and_metadata_terminology_alignment",
+    "_test_menu_bar_deduplication_and_escaping_integrity",
+})
+
+_GUI_SOURCE_MARKERS = (
+    "QtWidgets",
+    "QtGui",
+    "QApplication",
+    "QDialog",
+    "QWidget",
+    "QMainWindow",
+    "QProgressDialog",
+    "PluginManagerDialog",
+    "WordPressExportTabWidget",
+    "SpeakerManagerDialog",
+    "FindReplaceDialog",
+    "UserGuideDialog",
+    "GlossaryDialog",
+    "ManageVoiceProfilesDialog",
+    "AudioLoudnessNormalizationDialog",
+)
 
 
 def create_diagnostic_dialog(parent=None, include_dev_tests: Optional[bool] = None):
@@ -36,14 +77,35 @@ def create_diagnostic_dialog(parent=None, include_dev_tests: Optional[bool] = No
             self.engine = engine
             self._is_stopped = False
             self._orig_dispatch_test = self.engine._dispatch_test
+            self._main_thread_cache: Dict[str, bool] = {}
 
         def stop(self):
             self._is_stopped = True
 
+        def _needs_main_thread(self, item: DiagnosticItem) -> bool:
+            target_name = self.engine.resolve_test_method_name(item)
+            if target_name in self._main_thread_cache:
+                return self._main_thread_cache[target_name]
+
+            needs_main = (
+                target_name in _MAIN_THREAD_TEST_HANDLERS
+                or hasattr(DiagnosticEditorTestsMixin, target_name)
+            )
+            if not needs_main:
+                handler = getattr(self.engine, target_name, None)
+                if handler is not None:
+                    try:
+                        src = inspect.getsource(handler)
+                        needs_main = any(marker in src for marker in _GUI_SOURCE_MARKERS)
+                    except (OSError, TypeError):
+                        needs_main = False
+            self._main_thread_cache[target_name] = needs_main
+            return needs_main
+
         def _thread_safe_dispatch(self, item: DiagnosticItem):
-            clean_name = self.engine._normalize_name(item.name)
-            method_name = f"_test_{clean_name}"
-            if hasattr(DiagnosticEditorTestsMixin, method_name):
+            if self._is_stopped:
+                return
+            if self._needs_main_thread(item):
                 item._main_thread_exc = None
                 self.dispatch_on_main_thread.emit(item)
                 if getattr(item, "_main_thread_exc", None) is not None:

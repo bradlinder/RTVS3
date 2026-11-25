@@ -54,7 +54,6 @@ GRANDFATHERED_LEGACY_MODULES = {
     "voice_profile_dialog.py",
     "runtime_manager.py",
     "updater.py",
-    "build_installer.py",
     "background_workers.py",
     "speaker_dialogs.py",
     "worker_asr_engines.py",
@@ -67,9 +66,6 @@ GRANDFATHERED_LEGACY_MODULES = {
     "plugins/wordpress/export_destination.py",
     "plugins/youtube/plugin.py",
     "plugins/youtube/export_destination.py",
-    "diagnostic_cloud_and_system_tests.py",
-    "diagnostic_batch_tests.py",
-    "diagnostic_export_tests.py",
     "radio_tv_story_segmenter_worker.py",
     "RadioTVSegmenter.py",
 }

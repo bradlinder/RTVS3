@@ -65,10 +65,10 @@ def check_modular_budget() -> Tuple[bool, str]:
     """Guards against new monolithic files exceeding the 1,000 line ceiling."""
     # Known legacy modules grandfathered pending roadmap modularization (must have .pyi stubs)
     GRANDFATHERED = {
-        "prs_shared.py", "diagnostic_cloud_and_system_tests.py", "processing.py",
-        "diagnostic_batch_tests.py", "media_batch.py", "voice_profile_dialog.py",
-        "runtime_manager.py", "updater.py", "build_installer.py",
-        "diagnostic_export_tests.py", "background_workers.py", "ui_layout.py",
+        "prs_shared.py", "processing.py",
+        "media_batch.py", "voice_profile_dialog.py",
+        "runtime_manager.py", "updater.py",
+        "background_workers.py", "ui_layout.py",
         "plugins/wordpress/client.py", "export/dialog.py"
     }
     

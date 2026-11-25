@@ -84,6 +84,11 @@ def detect_changed_tokens(root_dir: Path = _ROOT_DIR) -> Set[str]:
     # 2. If git detected modified files, populate tokens directly
     for rel in changed_paths:
         p = Path(rel)
+        if p.parts and p.parts[0].lower() == "diagnostics" and p.stem != "__init__":
+            for word in p.stem.lower().split("_"):
+                if word and word not in ("and", "tests", "test", "ui"):
+                    tokens.add(word)
+            continue
         if p.stem.startswith("diagnostic_") and p.stem.endswith("_tests"):
             topic = p.stem.replace("diagnostic_", "").replace("_tests", "")
             for word in topic.split("_"):
@@ -107,7 +112,7 @@ def detect_changed_tokens(root_dir: Path = _ROOT_DIR) -> Set[str]:
     candidates: List[tuple[float, str]] = []
     now = time.time()
     for p in root_dir.rglob("*.py"):
-        if any(part in (".venv", "node_modules", ".git", ".snapshots", ".codemaps", "__pycache__") for part in p.parts):
+        if any(part in (".venv", "node_modules", ".git", ".snapshots", ".codemaps", "__pycache__", "diagnostics") for part in p.parts):
             continue
         if p.name in ignored_names or (p.stem.startswith("diagnostic_") and p.stem.endswith("_tests")):
             continue
@@ -150,8 +155,11 @@ def select_diagnostic_items(
         if keywords:
             filtered = []
             for it in selected:
-                clean_name = engine._normalize_name(it.name)
-                method_name = f"_test_{clean_name}"
+                method_name = (
+                    engine.resolve_test_method_name(it)
+                    if hasattr(engine, "resolve_test_method_name")
+                    else f"_test_{engine._normalize_name(it.name)}"
+                )
                 handler = getattr(engine, method_name, None)
                 src = ""
                 if handler is not None:
@@ -169,8 +177,11 @@ def select_diagnostic_items(
         if tokens:
             matched = []
             for it in selected:
-                clean_name = engine._normalize_name(it.name)
-                method_name = f"_test_{clean_name}"
+                method_name = (
+                    engine.resolve_test_method_name(it)
+                    if hasattr(engine, "resolve_test_method_name")
+                    else f"_test_{engine._normalize_name(it.name)}"
+                )
                 handler = getattr(engine, method_name, None)
                 src = ""
                 if handler is not None:

@@ -1,13 +1,13 @@
 # Repository Symbol Index & API Map
 
-> Generated: 2026-11-23 09:28:06 | Total Files: 174
+> Generated: 2026-11-25 11:14:36 | Total Files: 190
 > Use `python scripts/generate_symbol_index.py --outline <file>` for exact line numbers.
 
 ## Modules Overview
 
 | Module | Lines | Summary | Primary Classes / Functions |
 | :--- | :---: | :--- | :--- |
-| `RadioTVSegmenter.py` | 684 | Radio & TV Segmenter — v3.10.11-beta | `MainWindow`, `main()` |
+| `RadioTVSegmenter.py` | 684 | Radio & TV Segmenter — v3.10.12-beta | `MainWindow`, `main()` |
 | `audio_normalization.py` | 474 | Radio & TV Story Segmenter — Audio Loudness Probing & Nor... | `LoudnessReport`, `parse_ebur128_summary()`, `probe_media_duration_seconds()`, `probe_media_loudness()` *(+2 more)* |
 | `audio_normalization_worker.py` | 89 | Background QThread worker for non-blocking EBU R128 loudn... | `AudioLoudnessProbeWorker` |
 | `background_workers.py` | 1051 | Radio & TV Story Segmenter — Background Worker Threads & ... | `StoryAutoDetectWorker`, `WaveformWorker`, `VideoThumbnailWorker`, `get_waveform_peak_cache_path()` *(+6 more)* |
@@ -18,22 +18,34 @@
 | `benchmark_engine.py` | 903 | benchmark_engine.py - Core High-Precision Performance Ben... | `BenchmarkEngine` |
 | `benchmark_models.py` | 457 | benchmark_models.py - Benchmark Data Models, Audio Genera... | `BenchmarkMetric`, `ProcessingEstimates`, `get_app_data_dir()`, `get_candidate_sample_audio_paths()` *(+9 more)* |
 | `bootstrap.py` | 385 | Install-safe startup environment configuration for Radio ... | `NullWriter`, `init_null_streams_and_hf_env()`, `patch_av_open()`, `app_data_dir()` *(+7 more)* |
-| `build_installer.py` | 1099 | Build the installable Radio & TV Segmenter application wi... | `exe_name()`, `find_tool()`, `check_cpu_only_torch()`, `torch_windows_binary_flags()` *(+8 more)* |
+| `build_installer.py` | 445 | Build the installable Radio & TV Segmenter application wi... | `find_tool()`, `run()`, `provision_optional_runtime_tools()`, `sync_installer_scripts()` *(+3 more)* |
 | `bump_version.py` | 513 | bump_version.py — Automated Version Synchronization Engine | `normalize_version()`, `get_current_version()`, `compute_bump()`, `detect_modified_plugins()` *(+3 more)* |
 | `cache_manager.py` | 685 | Radio & TV Segmenter — Cache management, disk usage scann... | `ClearCacheDialog`, `register_active_thumbnail_dir()`, `unregister_active_thumbnail_dir()`, `get_active_thumbnail_dirs()` *(+3 more)* |
 | `comment_widgets.py` | 350 | comment_widgets.py - Range-Anchored Comments Panel & Comm... | `CommentEditorDialog`, `CommentCardWidget`, `CommentsPanel` |
 | `core_utils.py` | 776 | Radio & TV Segmenter — Core filesystem, path, timing, and... | `StoryVocabulary`, `safe_process_events()`, `get_active_theme_mode()`, `apply_window_titlebar_theme()` *(+24 more)* |
-| `diagnostic_batch_tests.py` | 1076 | Diagnostic test bench suite component. | `DiagnosticBatchTestsMixin` |
-| `diagnostic_cloud_and_system_tests.py` | 1409 | Diagnostic test bench suite component. | `DiagnosticCloudAndSystemTestsMixin` |
+| `diagnostic_batch_tests.py` | 19 | Diagnostic batch and editing workflow test bench facade. | `DiagnosticBatchTestsMixin` |
+| `diagnostic_cloud_and_system_tests.py` | 22 | Diagnostic cloud, voice, and system runtime test bench fa... | `DiagnosticCloudAndSystemTestsMixin` |
 | `diagnostic_core_tests.py` | 963 | Diagnostic test bench suite component. | `DiagnosticCoreTestsMixin` |
 | `diagnostic_dialog.py` | 324 | PySide6 Graphical Test Bench Dialog for Radio & TV Story ... | `create_diagnostic_dialog()` |
-| `diagnostic_editor_tests.py` | 1005 | Diagnostic editor and find-replace tests for Radio & TV S... | `DiagnosticEditorTestsMixin` |
-| `diagnostic_export_tests.py` | 2314 | Diagnostic test bench suite component. | `DiagnosticExportTestsMixin` |
-| `diagnostic_helpers.py` | 151 | Helper fixtures, module resolvers, and DiagnosticItem for... | `DiagnosticItem`, `generate_synthetic_wav()` |
+| `diagnostic_editor_tests.py` | 19 | Diagnostic editor and find-replace test bench facade. | `DiagnosticEditorTestsMixin` |
+| `diagnostic_export_tests.py` | 25 | Diagnostic export test bench facade aggregating modular t... | `DiagnosticExportTestsMixin` |
+| `diagnostic_helpers.py` | 155 | Helper fixtures, module resolvers, and DiagnosticItem for... | `DiagnosticItem`, `generate_synthetic_wav()` |
 | `diagnostic_loudness_tests.py` | 404 | Radio & TV Story Segmenter — Diagnostic Loudness Normaliz... | `DiagnosticLoudnessTestsMixin` |
-| `diagnostic_selector.py` | 191 | Smart Diagnostic Test Selector for Radio & TV Story Segme... | `get_modified_files()`, `has_git_changes()`, `detect_changed_tokens()`, `select_diagnostic_items()` |
+| `diagnostic_selector.py` | 196 | Smart Diagnostic Test Selector for Radio & TV Story Segme... | `get_modified_files()`, `has_git_changes()`, `detect_changed_tokens()`, `select_diagnostic_items()` |
 | `diagnostic_speaker_cleanup_tests.py` | 937 | Diagnostic tests for Phase 2 features: minimum story leng... | `DiagnosticSpeakerCleanupTestsMixin` |
 | `diagnostic_wordpress_tests.py` | 109 | Diagnostic tests for WordPress PublishPress Author mappin... | `DiagnosticWordPressTestsMixin` |
+| `diagnostics/__init__.py` | 28 | Modular diagnostic test mixin components for the RTVS Tes... | - |
+| `diagnostics/batch_export_tests.py` | 469 | Batch processing, drag-and-drop ingestion, PDF, and DAW e... | `DiagnosticBatchExportTestsMixin` |
+| `diagnostics/cloud_storage_tests.py` | 584 | Plugin interface, project persistence, cache management, ... | `DiagnosticCloudStorageTestsMixin` |
+| `diagnostics/editing_workflow_tests.py` | 590 | Fades, translation routing, speaker dialog flow, story bo... | `DiagnosticEditingWorkflowTestsMixin` |
+| `diagnostics/editor_guides_and_daw_tests.py` | 497 | Find-replace, user guides viewer, and REAPER DAW companio... | `DiagnosticEditorGuidesAndDawTestsMixin` |
+| `diagnostics/editor_story_ui_tests.py` | 508 | Story transcript highlighting, smart copy, duration & hea... | `DiagnosticEditorStoryUiTestsMixin` |
+| `diagnostics/export_pipeline.py` | 485 | Multi-format export pipeline, scope slicing, and audio ca... | `DiagnosticExportPipelineMixin` |
+| `diagnostics/export_wordpress_core.py` | 579 | WordPress export scope, content formatting, and YouTube e... | `DiagnosticExportWordPressCoreMixin` |
+| `diagnostics/export_wordpress_media.py` | 585 | WordPress featured image metadata and Castos podcast diag... | `DiagnosticExportWordPressMediaMixin` |
+| `diagnostics/export_wordpress_upload.py` | 668 | WordPress multi-story upload, Gutenberg hygiene, and audi... | `DiagnosticExportWordPressUploadMixin` |
+| `diagnostics/system_runtime_tests.py` | 385 | System runtime, updater, theme, packaging, roadmap, and m... | `DiagnosticSystemRuntimeTestsMixin` |
+| `diagnostics/voice_and_media_tests.py` | 438 | Voice profile matching, waveform peak cache, and playback... | `DiagnosticVoiceAndMediaTestsMixin` |
 | `dialogs.py` | 433 | Radio & TV Story Segmenter — Audio Loudness Normalization... | `AudioLoudnessNormalizationDialog` |
 | `diarization_processing.py` | 772 | Speaker diarization process management for Radio & TV Sto... | `DiarizationProcessingMixin` |
 | `embedded_guides.py` | 743 | Radio & TV Story Segmenter — Built-In Embedded User Guide... | `get_embedded_guide()`, `get_all_embedded_guide_ids()` |
@@ -53,6 +65,10 @@
 | `glossary_dialog.py` | 490 | Custom Vocabulary & Glossary Dialog. | `GlossaryDialog` |
 | `gpu_acceleration.py` | 276 | Radio & TV Segmenter v1.1.1 — optional GPU acceleration r... | `GpuAccelerationInstallWorker`, `GpuAccelerationMixin` |
 | `id3_editor.py` | 704 | ID3 Tag Editor module for Radio & TV Segmenter. | `ID3TagEditorDialog`, `read_id3_tags()`, `write_id3_tags()` |
+| `installer/build_tools/__init__.py` | 50 | Modular build utilities for Radio & TV Segmenter PyInstal... | - |
+| `installer/build_tools/config.py` | 205 | Build configuration constants and CLI argument parser. | `parse_build_args()` |
+| `installer/build_tools/env_checks.py` | 188 | Environment validation, external tool resolution, and sub... | `exe_name()`, `find_tool()`, `check_cpu_only_torch()`, `torch_windows_binary_flags()` *(+1 more)* |
+| `installer/build_tools/packaging.py` | 368 | Bundle pruning, plugin archive packaging, runtime tools, ... | `provision_optional_runtime_tools()`, `prune_unneeded_bundled_files()`, `sync_installer_scripts()`, `compile_windows_installer()` *(+1 more)* |
 | `installer/pyinstaller/torch_dll_hook.py` | 70 | PyInstaller runtime hook for Windows ML/native DLL resolu... | - |
 | `media_batch.py` | 1719 | Radio & TV Segmenter v1.1.1 — media batch responsibilities. | `MediaBatchMixin` |
 | `model_install_workers.py` | 189 | Radio & TV Segmenter — Model Download and Installation Ba... | `WhisperModelInstallWorker`, `DiarizationModelInstallWorker`, `get_diarization_model_dir()`, `is_diarization_model_available()` |
@@ -113,7 +129,7 @@
 | `scripts/generate_pyi_stubs.py` | 214 | generate_pyi_stubs.py — Automated Interface Typing Stub (... | `StubTransformer`, `generate_stub_source()`, `get_large_modules()`, `generate_stub_file()` *(+1 more)* |
 | `scripts/generate_symbol_index.py` | 380 | generate_symbol_index.py — Fast AST Symbol Indexer & Repo... | `parse_function_signature()`, `analyze_file()`, `scan_repository()`, `generate_index_markdown()` *(+4 more)* |
 | `scripts/log_summary.py` | 150 | log_summary.py — Compact Error & Exception Extraction Engine | `is_project_frame()`, `extract_log_summary()`, `main()` |
-| `scripts/modular_audit.py` | 777 | scripts/modular_audit.py — AST Decomposition Suggester & ... | `ModuleStructure`, `DecompositionPlan`, `scan_repository()`, `print_audit_report()` *(+4 more)* |
+| `scripts/modular_audit.py` | 773 | scripts/modular_audit.py — AST Decomposition Suggester & ... | `ModuleStructure`, `DecompositionPlan`, `scan_repository()`, `print_audit_report()` *(+4 more)* |
 | `sentence_boundaries.py` | 140 | Context-aware sentence-boundary and abbreviation detectio... | `is_ambiguous_abbreviation()`, `is_non_terminal_abbreviation()`, `is_sentence_end()` |
 | `shortcuts/__init__.py` | 26 | shortcuts package — Modular Keyboard Shortcuts Management... | - |
 | `shortcuts/definitions.py` | 22 | shortcuts/definitions.py — Shortcut definitions and schem... | - |
@@ -159,7 +175,7 @@
 | `transcript_navigation_mixin.py` | 300 | transcript_navigation_mixin.py - Timestamp discovery, car... | `TranscriptNavigationMixin` |
 | `transcript_playback_highlight_mixin.py` | 277 | Radio & TV Story Segmenter — Interactive Transcript Playb... | `TranscriptPlaybackHighlightMixin` |
 | `transcript_selection_mixin.py` | 473 | transcript_selection_mixin.py - Multi-selection, timeline... | `TranscriptSelectionMixin` |
-| `transcript_story.py` | 856 | Radio & TV Segmenter v3.10.11-beta — transcript story res... | `TranscriptStoryMixin` |
+| `transcript_story.py` | 856 | Radio & TV Segmenter v3.10.12-beta — transcript story res... | `TranscriptStoryMixin` |
 | `transcript_styles.py` | 104 | transcript_styles.py - Transcript view stylesheets and da... | `transcript_text_view_stylesheet()`, `clean_dark_mode_clipboard_html()` |
 | `transcript_timeline_sync_mixin.py` | 655 | Radio & TV Story Segmenter — Transcript Timeline & Playba... | `TranscriptTimelineSyncMixin` |
 | `transcription_processing.py` | 579 | Transcription background process management for Radio & T... | `TranscriptionProcessingMixin` |
@@ -185,7 +201,7 @@
 ## Detailed Symbol Catalog
 
 ### `RadioTVSegmenter.py` (684 lines)
-*Radio & TV Segmenter — v3.10.11-beta*
+*Radio & TV Segmenter — v3.10.12-beta*
 - **class `MainWindow(ModelManagementMixin, MediaBatchMixin, PlaybackPreferencesMixin, UiLayoutMixin, ProcessingMixin, TranslationMixin, TranscriptStoryMixin, ProjectExportMixin, GpuAccelerationMixin, QMainWindow)`** (lines 160–581):
   *Main application window for Radio & TV Segmenter.*
   - `__init__(self)` [L178-L355]
@@ -360,21 +376,16 @@
   - `ensure_keyring_runtime()` [L351-L377] — *Ensure keyring (and pywin32-ctypes on Windows) is installed for secure credential storage.*
   - `check_and_install_core()` [L379-L382] — *Backward-compatible startup dependency check.*
 
-### `build_installer.py` (1099 lines)
+### `build_installer.py` (445 lines)
 *Build the installable Radio & TV Segmenter application with PyInstaller.*
 - **Functions**:
-  - `exe_name(base)` [L105-L106]
-  - `find_tool(name)` [L109-L172]
-  - `check_cpu_only_torch()` [L175-L215]
-  - `torch_windows_binary_flags()` [L218-L246]
-  - `run(cmd)` [L249-L274]
-  - `provision_optional_runtime_tools(app_root)` [L277-L357]
-  - `prune_unneeded_bundled_files(app_root)` [L360-L492]
-  - `sync_installer_scripts(project_version)` [L495-L508] — *Ensure Inno Setup and other installer packaging scripts match PROJECT_VERSION.*
-  - `compile_windows_installer(project_version)` [L511-L546] — *Compile the Windows Inno Setup installer executable if ISCC is installed.*
-  - `parse_build_args()` [L549-L624]
-  - `package_plugins(app_root, include_wp, include_yt, include_tr)` [L627-L695] — *Package plugins into standalone .zip release artifacts in dist/plugins/*
-  - `main()` [L698-L1095]
+  - `find_tool(name)` [L88-L89]
+  - `run(cmd)` [L92-L93]
+  - `provision_optional_runtime_tools(app_root)` [L96-L102]
+  - `sync_installer_scripts(project_version)` [L105-L106]
+  - `compile_windows_installer(project_version)` [L109-L110]
+  - `package_plugins(app_root, include_wp, include_yt, include_tr)` [L113-L130] — *Package plugins into standalone .zip release artifacts in dist/plugins/*
+  - `main()` [L133-L441]
 
 ### `bump_version.py` (513 lines)
 *bump_version.py — Automated Version Synchronization Engine*
@@ -463,43 +474,17 @@
   - `calculate_fade_out_factor(u, fcurve)` [L675-L695] — *Calculate normalized fade-out multiplier (1.0 to 0.0) given progress `u` from 0.0 (fade start) to 1.0 (silence).*
   - `get_story_vocabulary(win_or_settings, language)` [L714-L775] — *Resolve active UI vocabulary nouns and action labels for timeline segments.*
 
-### `diagnostic_batch_tests.py` (1076 lines)
-*Diagnostic test bench suite component.*
-- **class `DiagnosticBatchTestsMixin`** (lines 26–1075):
-  - `_test_batch_unified_transcripts_directory_export(self, item)` [L27-L200]
-  - `_test_batch_drag_and_drop_ingestion_and_event_handling(self, item)` [L202-L320]
-  - `_test_unified_export_destinations_and_youtube_auth_integrity(self, item)` [L322-L392]
-  - `_test_pdf_transcript_export_and_bold_speaker_labels(self, item)` [L394-L449]
-  - `_test_fade_curve_tables_and_auditioning_state(self, item)` [L451-L532]
-  - `_test_translation_routing_and_key_priority_unit_test(self, item)` [L534-L647]
-  - `_test_symmetrical_translation_editing_state_test(self, item)` [L649-L730]
-  - `_test_interactive_change_speaker_dialogue_flow_test(self, item)` [L732-L797]
-  - `_test_story_boundary_validation_and_overlap_test(self, item)` [L799-L876]
-  - `_test_audio_subtitle_sync_drift_test(self, item)` [L878-L922]
-  - `_test_interactive_transcript_editing_and_split_join_unit_tests(self, item)` [L924-L1031]
-  - `_test_exporter_structure_invariant_tests(self, item)` [L1033-L1075]
+### `diagnostic_batch_tests.py` (19 lines)
+*Diagnostic batch and editing workflow test bench facade.*
+- **Public Exports (`__all__`)**: DiagnosticBatchTestsMixin, DiagnosticBatchExportTestsMixin, DiagnosticEditingWorkflowTestsMixin
+- **class `DiagnosticBatchTestsMixin(DiagnosticBatchExportTestsMixin, DiagnosticEditingWorkflowTestsMixin)`** (lines 8–12):
+  *Backward-compatible facade for batch and editing workflow diagnostic tests.*
 
-### `diagnostic_cloud_and_system_tests.py` (1409 lines)
-*Diagnostic test bench suite component.*
-- **class `DiagnosticCloudAndSystemTestsMixin`** (lines 26–1407):
-  - `_test_plugin_interface_sandbox_testing(self, item)` [L27-L201]
-  - `_test_project_file_integrity_and_portable_path_resolution(self, item)` [L203-L308]
-  - `_test_acoustic_voice_profile_matcher(self, item)` [L310-L572]
-  - `_test_windows_detached_update_helper_architecture(self, item)` [L574-L615] — *Validates update helper architecture: helper script generation, exit polling, and logging.*
-  - `_test_temporary_cache_management_and_storage_inspection(self, item)` [L617-L716] — *Validates cache usage stats calculation, preview categorization, and cache purging.*
-  - `_test_youtube_data_api_and_direct_video_upload_engine(self, item)` [L718-L796] — *Validates YouTube Zero-Auth manual export packaging (MP4, thumbnail, SRT, metadata .txt with chapters & speakers).*
-  - `_test_multiprocessing_freeze_support_and_spawn_intercept(self, item)` [L798-L819] — *Validates that frozen process spawn intercepts -c invocations from resource_tracker and multiprocessing.*
-  - `_resolve_worker_cmd(self)` [L821-L835] — *Resolves the executable and arguments to launch the AI background worker.*
-  - `_test_ai_worker_subprocess_execution_and_ipc_handshake(self, item)` [L837-L903] — *Spawns the AI worker binary in an isolated subprocess, verifying IPC hello handshake and self-test.*
-  - `_test_frozen_subprocess_multiprocessing_spawn_protocol(self, item)` [L905-L943] — *Spawns the AI worker executable with Python -c to verify multiprocessing resource tracker interception.*
-  - `_test_comprehensive_local_and_cloud_backup_and_restore_engine(self, item)` [L945-L1057] — *Validates state serialization, SHA-256 verification, local backup roundtrip, and cloud payload integrity.*
-  - `_test_option_c_muted_silver_fog_light_theme_and_dark_mode_clipboard_formatting(self, item)` [L1059-L1112] — *Validates Option C muted low-contrast silver/fog palette and dark-mode clipboard rich styling.*
-  - `_test_windows_ci_build_and_packaging_optimization_invariants(self, item)` [L1114-L1146] — *Validates Inno Setup compression parameters, Stage 3 PyInstaller optimizations, and CI settings.*
-  - `_test_roadmap_n_1_sliding_window_and_status_integrity(self, item)` [L1148-L1167] — *Validates roadmap.txt N-1 sliding window retention, status indicator syntax, and version sync.*
-  - `_test_source_file_modularity_and_1000_line_budget_invariant(self, item)` [L1169-L1238] — *Validates that recently decomposed modules adhere to the 1,000-line modular budget,*
-  - `_test_station_voice_profiles_store_and_matching_engine(self, item)` [L1240-L1355] — *Validates StationVoiceProfileStore persistence, vector normalization, profile addition, matching logic, and JSON export/import.*
-  - `_test_multi_tier_mipmapped_waveform_peak_cache_serialization(self, item)` [L1357-L1394] — *Validates Version 2 .peaks binary cache read/write with 4x/16x/64x LOD pyramid levels and transparent Version 1 upgrade.*
-  - `_test_speed_listening_proofreading_rate_and_context_controls(self, item)` [L1396-L1407] — *Validates playback speed rates (0.75x to 2.0x), WSOLA pitch preservation parameters, and proofreading pre-roll configuration.*
+### `diagnostic_cloud_and_system_tests.py` (22 lines)
+*Diagnostic cloud, voice, and system runtime test bench facade.*
+- **Public Exports (`__all__`)**: DiagnosticCloudAndSystemTestsMixin, DiagnosticCloudStorageTestsMixin, DiagnosticVoiceAndMediaTestsMixin, DiagnosticSystemRuntimeTestsMixin
+- **class `DiagnosticCloudAndSystemTestsMixin(DiagnosticCloudStorageTestsMixin, DiagnosticVoiceAndMediaTestsMixin, DiagnosticSystemRuntimeTestsMixin)`** (lines 9–14):
+  *Backward-compatible facade for cloud, voice, and system runtime diagnostic tests.*
 
 ### `diagnostic_core_tests.py` (963 lines)
 *Diagnostic test bench suite component.*
@@ -535,46 +520,29 @@
 - **Functions**:
   - `create_diagnostic_dialog(parent, include_dev_tests)` [L16-L324] — *Builds the Diagnostic Test Bench Qt Dialog.*
 
-### `diagnostic_editor_tests.py` (1005 lines)
-*Diagnostic editor and find-replace tests for Radio & TV Story Segmenter.*
-- **class `DiagnosticEditorTestsMixin`** (lines 11–1004):
-  *Diagnostic suite for transcript editor, find-replace, and speaker synchronization.*
-  - `_test_find_and_replace_project_synchronization_and_undo(self, item)` [L14-L209] — *Validates that Find & Replace updates segments, word timings, speaker aliases,*
-  - `_test_in_app_user_guides_and_documentation_viewer(self, item)` [L211-L298] — *Validates in-app user guide resolution, fallback to embedded content, and bundling invariants.*
-  - `_test_story_transcript_highlighting_and_smart_copy(self, item)` [L300-L619] — *Validates story selection synchronization with transcript highlight overlay and smart clipboard copying.*
-  - `_test_story_duration_visibility_and_header_aggregation(self, item)` [L621-L802] — *Validates story clock duration formatting, 2-line sidebar item format, and multi-selection header aggregation.*
-  - `_test_reaper_daw_companion_and_universal_clipboard_pipeline(self, item)` [L804-L1004] — *Validates REAPER DAW clip cue JSON schema, sidecar emission, Lua script syntax,*
+### `diagnostic_editor_tests.py` (19 lines)
+*Diagnostic editor and find-replace test bench facade.*
+- **Public Exports (`__all__`)**: DiagnosticEditorTestsMixin, DiagnosticEditorGuidesAndDawTestsMixin, DiagnosticEditorStoryUiTestsMixin
+- **class `DiagnosticEditorTestsMixin(DiagnosticEditorGuidesAndDawTestsMixin, DiagnosticEditorStoryUiTestsMixin)`** (lines 8–12):
+  *Backward-compatible facade for editor, guides, and REAPER DAW diagnostic tests.*
 
-### `diagnostic_export_tests.py` (2314 lines)
-*Diagnostic test bench suite component.*
-- **class `DiagnosticExportTestsMixin`** (lines 26–2313):
-  - `_test_wordpress_export_scope_post_builder(self, item)` [L27-L239]
-  - `_test_wordpress_export_content_and_transcript_formatter(self, item)` [L241-L452]
-  - `_test_wordpress_youtube_video_embed(self, item)` [L454-L598] — *Verify YouTube URL parsing, iframe block generation, video project defaults, and Gutenberg placement.*
-  - `_test_multi_format_line_break_and_paragraph_parity(self, item)` [L600-L705]
-  - `_test_wordpress_multi_story_upload_and_ui_pluralization(self, item)` [L707-L995]
-  - `_test_gutenberg_html_structural_hygiene_audit(self, item)` [L997-L1033]
-  - `_test_export_scope_delta_and_gap_integrity_audit(self, item)` [L1035-L1086]
-  - `_test_export_destination_interface_contract_verification(self, item)` [L1088-L1124]
-  - `_test_multi_story_media_payload_disambiguation_test(self, item)` [L1126-L1164]
-  - `_test_wordpress_audio_inclusion_toggle_and_error_resilience(self, item)` [L1166-L1494]
-  - `_test_wordpress_featured_image_caption_and_alt_text(self, item)` [L1496-L1721] — *Verify Featured Image caption & alt_text across WordPressClient, post builder, tab UI, and PublishWorker.*
-  - `_test_wordpress_castos_podcast_integration(self, item)` [L1724-L2073]
-  - `_test_multi_scope_story_and_full_episode_export_pipeline(self, item)` [L2075-L2156]
-  - `_test_audio_export_non_blocking_and_cancellation_pipeline(self, item)` [L2158-L2268]
-  - `_test_modal_dialog_maximizable_import_integrity(self, item)` [L2270-L2313]
+### `diagnostic_export_tests.py` (25 lines)
+*Diagnostic export test bench facade aggregating modular test mixins.*
+- **Public Exports (`__all__`)**: DiagnosticExportTestsMixin, DiagnosticExportWordPressCoreMixin, DiagnosticExportWordPressUploadMixin, DiagnosticExportWordPressMediaMixin, DiagnosticExportPipelineMixin
+- **class `DiagnosticExportTestsMixin(DiagnosticExportWordPressCoreMixin, DiagnosticExportWordPressUploadMixin, DiagnosticExportWordPressMediaMixin, DiagnosticExportPipelineMixin)`** (lines 10–16):
+  *Backward-compatible facade for export & WordPress diagnostic tests.*
 
-### `diagnostic_helpers.py` (151 lines)
+### `diagnostic_helpers.py` (155 lines)
 *Helper fixtures, module resolvers, and DiagnosticItem for test runner.*
-- **Public Exports (`__all__`)**: generate_synthetic_wav, DiagnosticItem, _resolve_export_subtitles_module, _resolve_export_daw_module
-- **class `DiagnosticItem`** (lines 67–90):
+- **Public Exports (`__all__`)**: PROJECT_ROOT, generate_synthetic_wav, DiagnosticItem, _resolve_export_subtitles_module, _resolve_export_daw_module
+- **class `DiagnosticItem`** (lines 70–93):
   *Represents the execution outcome of an individual test or diagnostic probe.*
-  - `__init__(self, name, category, description, dev_only)` [L70-L78]
-  - `to_dict(self)` [L80-L90]
+  - `__init__(self, name, category, description, dev_only)` [L73-L81]
+  - `to_dict(self)` [L83-L93]
 - **Functions**:
-  - `generate_synthetic_wav(duration_seconds, sample_rate, frequencies, output_path)` [L18-L63] — *Generates a multi-frequency synthetic 16kHz mono WAV file in memory or on disk.*
-  - `_resolve_export_subtitles_module()` [L95-L117] — *Resolves export.subtitles whether running from source, package, or frozen binary.*
-  - `_resolve_export_daw_module()` [L120-L142] — *Resolves export.daw whether running from source, package, or frozen binary.*
+  - `generate_synthetic_wav(duration_seconds, sample_rate, frequencies, output_path)` [L21-L66] — *Generates a multi-frequency synthetic 16kHz mono WAV file in memory or on disk.*
+  - `_resolve_export_subtitles_module()` [L98-L120] — *Resolves export.subtitles whether running from source, package, or frozen binary.*
+  - `_resolve_export_daw_module()` [L123-L145] — *Resolves export.daw whether running from source, package, or frozen binary.*
 
 ### `diagnostic_loudness_tests.py` (404 lines)
 *Radio & TV Story Segmenter — Diagnostic Loudness Normalization & Auto-Boost Test Suite.*
@@ -584,13 +552,13 @@
   - `_test_two_tier_hybrid_audio_loudness_normalization(self, item)` [L102-L196] — *Validates conditional bypass, Tier 1 linear gain + limiter, Tier 2 leveler, and integration.*
   - `_test_audio_loudness_preferences_and_manual_normalization_dialog(self, item)` [L198-L403] — *Validates Preferences persistence and manual normalization dialog telemetry.*
 
-### `diagnostic_selector.py` (191 lines)
+### `diagnostic_selector.py` (196 lines)
 *Smart Diagnostic Test Selector for Radio & TV Story Segmenter.*
 - **Functions**:
   - `get_modified_files(root_dir)` [L29-L56] — *Return relative paths of modified or uncommitted files via git status.*
   - `has_git_changes(root_dir)` [L59-L61] — *Return True if there are modified or uncommitted python or plugin files in git.*
-  - `detect_changed_tokens(root_dir)` [L64-L136] — *Return a set of lowercase module stems and plugin names from the most recently edited files.*
-  - `select_diagnostic_items(engine, items, filter_expr, changed_only)` [L139-L191] — *Filter diagnostic items by explicit `--filter` keywords and/or `--changed` git diff analysis.*
+  - `detect_changed_tokens(root_dir)` [L64-L141] — *Return a set of lowercase module stems and plugin names from the most recently edited files.*
+  - `select_diagnostic_items(engine, items, filter_expr, changed_only)` [L144-L196] — *Filter diagnostic items by explicit `--filter` keywords and/or `--changed` git diff analysis.*
 
 ### `diagnostic_speaker_cleanup_tests.py` (937 lines)
 *Diagnostic tests for Phase 2 features: minimum story length, guest-name cleanup, and Station Voices.*
@@ -609,6 +577,104 @@
 - **class `DiagnosticWordPressTestsMixin`** (lines 7–109):
   *Mixin for WordPress & PublishPress Author mapping regression diagnostics.*
   - `_test_wordpress_publishpress_author_mapping_and_update_semantics(self, item)` [L10-L109]
+
+### `diagnostics/__init__.py` (28 lines)
+*Modular diagnostic test mixin components for the RTVS Test Runner.*
+- **Public Exports (`__all__`)**: DiagnosticExportWordPressCoreMixin, DiagnosticExportWordPressUploadMixin, DiagnosticExportWordPressMediaMixin, DiagnosticExportPipelineMixin, DiagnosticCloudStorageTestsMixin, DiagnosticVoiceAndMediaTestsMixin, DiagnosticSystemRuntimeTestsMixin, DiagnosticBatchExportTestsMixin, DiagnosticEditingWorkflowTestsMixin, DiagnosticEditorGuidesAndDawTestsMixin, DiagnosticEditorStoryUiTestsMixin
+
+### `diagnostics/batch_export_tests.py` (469 lines)
+*Batch processing, drag-and-drop ingestion, PDF, and DAW export structure tests.*
+- **class `DiagnosticBatchExportTestsMixin`** (lines 15–469):
+  - `_test_batch_unified_transcripts_directory_export(self, item)` [L16-L184]
+  - `_test_batch_drag_and_drop_ingestion_and_event_handling(self, item)` [L186-L300]
+  - `_test_unified_export_destinations_and_youtube_auth_integrity(self, item)` [L302-L369]
+  - `_test_pdf_transcript_export_and_bold_speaker_labels(self, item)` [L371-L426]
+  - `_test_exporter_structure_invariant_tests(self, item)` [L428-L469]
+
+### `diagnostics/cloud_storage_tests.py` (584 lines)
+*Plugin interface, project persistence, cache management, YouTube & backup diagnostic tests.*
+- **class `DiagnosticCloudStorageTestsMixin`** (lines 15–584):
+  - `_test_plugin_interface_sandbox_testing(self, item)` [L16-L187]
+  - `_test_project_file_integrity_and_portable_path_resolution(self, item)` [L189-L293]
+  - `_test_temporary_cache_management_and_storage_inspection(self, item)` [L295-L394] — *Validates cache usage stats calculation, preview categorization, and cache purging.*
+  - `_test_youtube_data_api_and_direct_video_upload_engine(self, item)` [L396-L471] — *Validates YouTube Zero-Auth manual export packaging (MP4, thumbnail, SRT, metadata .txt with chapters & speakers).*
+  - `_test_comprehensive_local_and_cloud_backup_and_restore_engine(self, item)` [L473-L584] — *Validates state serialization, SHA-256 verification, local backup roundtrip, and cloud payload integrity.*
+
+### `diagnostics/editing_workflow_tests.py` (590 lines)
+*Fades, translation routing, speaker dialog flow, story bounds, sync, and split/join tests.*
+- **class `DiagnosticEditingWorkflowTestsMixin`** (lines 10–590):
+  - `_test_fade_curve_tables_and_auditioning_state(self, item)` [L11-L92]
+  - `_test_translation_routing_and_key_priority_unit_test(self, item)` [L94-L207]
+  - `_test_symmetrical_translation_editing_state_test(self, item)` [L209-L290]
+  - `_test_interactive_change_speaker_dialogue_flow_test(self, item)` [L292-L357]
+  - `_test_story_boundary_validation_and_overlap_test(self, item)` [L359-L436]
+  - `_test_audio_subtitle_sync_drift_test(self, item)` [L438-L481]
+  - `_test_interactive_transcript_editing_and_split_join_unit_tests(self, item)` [L483-L590]
+
+### `diagnostics/editor_guides_and_daw_tests.py` (497 lines)
+*Find-replace, user guides viewer, and REAPER DAW companion diagnostic tests.*
+- **class `DiagnosticEditorGuidesAndDawTestsMixin`** (lines 13–497):
+  - `_test_find_and_replace_project_synchronization_and_undo(self, item)` [L14-L208] — *Validates that Find & Replace updates segments, word timings, speaker aliases,*
+  - `_test_in_app_user_guides_and_documentation_viewer(self, item)` [L210-L298] — *Validates in-app user guide resolution, fallback to embedded content, and bundling invariants.*
+  - `_test_reaper_daw_companion_and_universal_clipboard_pipeline(self, item)` [L300-L497] — *Validates REAPER DAW clip cue JSON schema, sidecar emission, Lua script syntax,*
+
+### `diagnostics/editor_story_ui_tests.py` (508 lines)
+*Story transcript highlighting, smart copy, duration & header diagnostic tests.*
+- **class `DiagnosticEditorStoryUiTestsMixin`** (lines 9–508):
+  - `_test_story_transcript_highlighting_and_smart_copy(self, item)` [L10-L325] — *Validates story selection synchronization with transcript highlight overlay and smart clipboard copying.*
+  - `_test_story_duration_visibility_and_header_aggregation(self, item)` [L327-L508] — *Validates story clock duration formatting, 2-line sidebar item format, and multi-selection header aggregation.*
+
+### `diagnostics/export_pipeline.py` (485 lines)
+*Multi-format export pipeline, scope slicing, and audio cancellation tests.*
+- **class `DiagnosticExportPipelineMixin`** (lines 13–485):
+  - `_test_multi_format_line_break_and_paragraph_parity(self, item)` [L14-L119]
+  - `_test_export_scope_delta_and_gap_integrity_audit(self, item)` [L121-L172]
+  - `_test_export_destination_interface_contract_verification(self, item)` [L174-L210]
+  - `_test_multi_story_media_payload_disambiguation_test(self, item)` [L212-L249]
+  - `_test_multi_scope_story_and_full_episode_export_pipeline(self, item)` [L251-L332]
+  - `_test_audio_export_non_blocking_and_cancellation_pipeline(self, item)` [L334-L443]
+  - `_test_modal_dialog_maximizable_import_integrity(self, item)` [L445-L485]
+
+### `diagnostics/export_wordpress_core.py` (579 lines)
+*WordPress export scope, content formatting, and YouTube embed diagnostic tests.*
+- **class `DiagnosticExportWordPressCoreMixin`** (lines 9–579):
+  - `_test_wordpress_export_scope_post_builder(self, item)` [L10-L221]
+  - `_test_wordpress_export_content_and_transcript_formatter(self, item)` [L223-L433]
+  - `_test_wordpress_youtube_video_embed(self, item)` [L435-L579] — *Verify YouTube URL parsing, iframe block generation, video project defaults, and Gutenberg placement.*
+
+### `diagnostics/export_wordpress_media.py` (585 lines)
+*WordPress featured image metadata and Castos podcast diagnostic tests.*
+- **class `DiagnosticExportWordPressMediaMixin`** (lines 10–585):
+  - `_test_wordpress_featured_image_caption_and_alt_text(self, item)` [L11-L234] — *Verify Featured Image caption & alt_text across WordPressClient, post builder, tab UI, and PublishWorker.*
+  - `_test_wordpress_castos_podcast_integration(self, item)` [L236-L585]
+
+### `diagnostics/export_wordpress_upload.py` (668 lines)
+*WordPress multi-story upload, Gutenberg hygiene, and audio toggle diagnostic tests.*
+- **class `DiagnosticExportWordPressUploadMixin`** (lines 11–668):
+  - `_test_wordpress_multi_story_upload_and_ui_pluralization(self, item)` [L12-L300]
+  - `_test_gutenberg_html_structural_hygiene_audit(self, item)` [L302-L338]
+  - `_test_wordpress_audio_inclusion_toggle_and_error_resilience(self, item)` [L340-L668]
+
+### `diagnostics/system_runtime_tests.py` (385 lines)
+*System runtime, updater, theme, packaging, roadmap, and modularity diagnostic tests.*
+- **class `DiagnosticSystemRuntimeTestsMixin`** (lines 14–385):
+  - `_test_windows_detached_update_helper_architecture(self, item)` [L15-L55] — *Validates update helper architecture: helper script generation, exit polling, and logging.*
+  - `_test_multiprocessing_freeze_support_and_spawn_intercept(self, item)` [L57-L78] — *Validates that frozen process spawn intercepts -c invocations from resource_tracker and multiprocessing.*
+  - `_resolve_worker_cmd(self)` [L80-L94] — *Resolves the executable and arguments to launch the AI background worker.*
+  - `_test_ai_worker_subprocess_execution_and_ipc_handshake(self, item)` [L96-L162] — *Spawns the AI worker binary in an isolated subprocess, verifying IPC hello handshake and self-test.*
+  - `_test_frozen_subprocess_multiprocessing_spawn_protocol(self, item)` [L164-L202] — *Spawns the AI worker executable with Python -c to verify multiprocessing resource tracker interception.*
+  - `_test_option_c_muted_silver_fog_light_theme_and_dark_mode_clipboard_formatting(self, item)` [L204-L257] — *Validates Option C muted low-contrast silver/fog palette and dark-mode clipboard rich styling.*
+  - `_test_windows_ci_build_and_packaging_optimization_invariants(self, item)` [L259-L291] — *Validates Inno Setup compression parameters, Stage 3 PyInstaller optimizations, and CI settings.*
+  - `_test_roadmap_n_1_sliding_window_and_status_integrity(self, item)` [L293-L312] — *Validates roadmap.txt N-1 sliding window retention, status indicator syntax, and version sync.*
+  - `_test_source_file_modularity_and_1000_line_budget_invariant(self, item)` [L314-L385] — *Validates that recently decomposed modules adhere to the 1,000-line modular budget,*
+
+### `diagnostics/voice_and_media_tests.py` (438 lines)
+*Voice profile matching, waveform peak cache, and playback rate diagnostic tests.*
+- **class `DiagnosticVoiceAndMediaTestsMixin`** (lines 13–438):
+  - `_test_acoustic_voice_profile_matcher(self, item)` [L14-L273]
+  - `_test_station_voice_profiles_store_and_matching_engine(self, item)` [L275-L388] — *Validates StationVoiceProfileStore persistence, vector normalization, profile addition, matching logic, and JSON export/import.*
+  - `_test_multi_tier_mipmapped_waveform_peak_cache_serialization(self, item)` [L390-L425] — *Validates Version 2 .peaks binary cache read/write with 4x/16x/64x LOD pyramid levels and transparent Version 1 upgrade.*
+  - `_test_speed_listening_proofreading_rate_and_context_controls(self, item)` [L427-L438] — *Validates playback speed rates (0.75x to 2.0x), WSOLA pitch preservation parameters, and proofreading pre-roll configuration.*
 
 ### `dialogs.py` (433 lines)
 *Radio & TV Story Segmenter — Audio Loudness Normalization & Telemetry Dialog.*
@@ -898,6 +964,33 @@
   - `_decode_synchsafe(data)` [L70-L74] — *Decode a 4-byte synchsafe integer.*
   - `read_id3_tags(file_path)` [L77-L222] — *Reads ID3 tag metadata from an MP3 file.*
   - `write_id3_tags(file_path, tags)` [L225-L333] — *Writes or updates ID3v2 tags in an MP3 file.*
+
+### `installer/build_tools/__init__.py` (50 lines)
+*Modular build utilities for Radio & TV Segmenter PyInstaller & installer packaging.*
+- **Public Exports (`__all__`)**: UV_VERSION, UV_URLS, PYSIDE6_USED_SUBMODULES, PYSIDE6_EXCLUDES, TEST_AND_BENCHMARK_EXCLUDES, COLLECT_ALL_PACKAGES, COPY_METADATA_PACKAGES, HIDDEN_IMPORTS, parse_build_args, exe_name, find_tool, check_cpu_only_torch, torch_windows_binary_flags, run, provision_optional_runtime_tools, prune_unneeded_bundled_files, sync_installer_scripts, compile_windows_installer, package_plugins
+
+### `installer/build_tools/config.py` (205 lines)
+*Build configuration constants and CLI argument parser.*
+- **Functions**:
+  - `parse_build_args()` [L130-L205] — *Parse build target, plugin selection, installer, and version CLI flags.*
+
+### `installer/build_tools/env_checks.py` (188 lines)
+*Environment validation, external tool resolution, and subprocess execution helpers.*
+- **Functions**:
+  - `exe_name(base)` [L15-L17] — *Return platform-appropriate executable filename.*
+  - `find_tool(name, root_dir)` [L20-L84] — *Locate required media runtime tools such as ffmpeg or ffprobe.*
+  - `check_cpu_only_torch()` [L87-L128] — *Verify the build environment uses CPU-only PyTorch unless explicitly bypassed.*
+  - `torch_windows_binary_flags()` [L131-L159] — *Collect explicit Windows PyTorch DLL binary flags for PyInstaller.*
+  - `run(cmd, cwd)` [L162-L188] — *Execute a build subprocess streaming output line-by-line.*
+
+### `installer/build_tools/packaging.py` (368 lines)
+*Bundle pruning, plugin archive packaging, runtime tools, and Windows Inno Setup helpers.*
+- **Functions**:
+  - `provision_optional_runtime_tools(app_root, build_dir, uv_version, uv_urls)` [L23-L106] — *Bundle standalone uv binary into optional_runtime/ when explicitly requested.*
+  - `prune_unneeded_bundled_files(app_root)` [L109-L242] — *Strip CUDA leftovers, development headers, test suites, and software OpenGL bloat.*
+  - `sync_installer_scripts(project_version, root_dir)` [L245-L257] — *Ensure Inno Setup and other installer packaging scripts match PROJECT_VERSION.*
+  - `compile_windows_installer(project_version, root_dir)` [L260-L295] — *Compile the Windows Inno Setup installer executable if ISCC is installed.*
+  - `package_plugins(app_root, include_wp, include_yt, include_tr, root_dir, dist_dir, project_version)` [L298-L368] — *Package plugins into standalone .zip release artifacts in dist/plugins/*
 
 ### `installer/pyinstaller/torch_dll_hook.py` (70 lines)
 *PyInstaller runtime hook for Windows ML/native DLL resolution.*
@@ -2274,28 +2367,28 @@
   - `extract_log_summary(raw_log)` [L42-L128] — *Extract a high-density summary from a raw log or traceback string.*
   - `main()` [L130-L147]
 
-### `scripts/modular_audit.py` (777 lines)
+### `scripts/modular_audit.py` (773 lines)
 *scripts/modular_audit.py — AST Decomposition Suggester & Modular Budget Guard.*
-- **class `ModuleStructure`** (lines 82–255):
+- **class `ModuleStructure`** (lines 78–251):
   *Detailed structural metrics extracted from a Python module.*
-  - `__init__(self, file_path)` [L85-L102]
-  - `_analyze(self)` [L104-L178]
-  - `_extract_class_info(self, node, lines)` [L180-L208]
-  - `_extract_func_info(self, node, lines)` [L210-L219]
-  - `_classify_domain(name, bases, method_names)` [L222-L255] — *Classifies a class or function into a logical domain based on naming and signatures.*
-- **class `DecompositionPlan`** (lines 262–424):
+  - `__init__(self, file_path)` [L81-L98]
+  - `_analyze(self)` [L100-L174]
+  - `_extract_class_info(self, node, lines)` [L176-L204]
+  - `_extract_func_info(self, node, lines)` [L206-L215]
+  - `_classify_domain(name, bases, method_names)` [L218-L251] — *Classifies a class or function into a logical domain based on naming and signatures.*
+- **class `DecompositionPlan`** (lines 258–420):
   *Proposed modular decomposition plan for a monolithic source file.*
-  - `__init__(self, structure)` [L265-L273]
-  - `_classify_method_domain(m_name)` [L276-L286]
-  - `_build_plan(self)` [L288-L391]
-  - `render_markdown_blueprint(self)` [L393-L424]
+  - `__init__(self, structure)` [L261-L269]
+  - `_classify_method_domain(m_name)` [L272-L282]
+  - `_build_plan(self)` [L284-L387]
+  - `render_markdown_blueprint(self)` [L389-L420]
 - **Functions**:
-  - `scan_repository(root_dir)` [L431-L443] — *Scans all Python modules in the repository, excluding build/venv directories.*
-  - `print_audit_report(structures, warn_threshold, hard_ceiling, sort_by)` [L446-L487] — *Prints a formatted terminal table showing modularity compliance.*
-  - `check_budget_guard(structures, hard_ceiling, warn_threshold, exempt_paths)` [L490-L523] — *Programmatic budget check suitable for test runner and CI pipelines.*
-  - `check_single_responsibility(structure, strict)` [L526-L614] — *Analyzes AST domain classification to verify Single Responsibility & Domain Separation.*
-  - `print_srp_report(results, strict)` [L617-L661] — *Prints a structured terminal report for Single Responsibility & Domain Separation.*
-  - `main()` [L664-L773]
+  - `scan_repository(root_dir)` [L427-L439] — *Scans all Python modules in the repository, excluding build/venv directories.*
+  - `print_audit_report(structures, warn_threshold, hard_ceiling, sort_by)` [L442-L483] — *Prints a formatted terminal table showing modularity compliance.*
+  - `check_budget_guard(structures, hard_ceiling, warn_threshold, exempt_paths)` [L486-L519] — *Programmatic budget check suitable for test runner and CI pipelines.*
+  - `check_single_responsibility(structure, strict)` [L522-L610] — *Analyzes AST domain classification to verify Single Responsibility & Domain Separation.*
+  - `print_srp_report(results, strict)` [L613-L657] — *Prints a structured terminal report for Single Responsibility & Domain Separation.*
+  - `main()` [L660-L769]
 
 ### `sentence_boundaries.py` (140 lines)
 *Context-aware sentence-boundary and abbreviation detection for Radio & TV Segmenter.*
@@ -3149,7 +3242,7 @@
   - `_on_bubble_export(self)` [L468-L473]
 
 ### `transcript_story.py` (856 lines)
-*Radio & TV Segmenter v3.10.11-beta — transcript story responsibilities.*
+*Radio & TV Segmenter v3.10.12-beta — transcript story responsibilities.*
 - **Public Exports (`__all__`)**: TranscriptStoryMixin, Story, SetStoriesCommand, SelectStoriesCommand, StoryBoundaryChangeCommand, StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin, ChangeSpeakerDialog, VoiceProfileMatchDialog, StoryFadesDialog, SpeakerManagerDialog, FADE_CURVE_TABLES, get_fade_curve_factors
 - **class `TranscriptStoryMixin(StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin)`** (lines 63–855):
   - `render_transcript(self)` [L64-L471]

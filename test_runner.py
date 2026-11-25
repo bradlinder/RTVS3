@@ -578,6 +578,11 @@ class DiagnosticEngine(
 
         return self.items
 
+    _TEST_METHOD_ALIASES = {
+        "_test_ui_theme_palettes_and_clipboard_rich_text_formatting": "_test_option_c_muted_silver_fog_light_theme_and_dark_mode_clipboard_formatting",
+        "_test_story_highlighting_smart_copy_and_glossary_engine": "_test_story_transcript_highlighting_and_smart_copy",
+    }
+
     def _normalize_name(self, name: str) -> str:
         s = name.lower()
         s = s.replace("&", "and")
@@ -587,14 +592,17 @@ class DiagnosticEngine(
             s = s.replace("__", "_")
         return s.strip("_")
 
+    def resolve_test_method_name(self, item_or_name: Any) -> str:
+        """Resolve a DiagnosticItem or test name to its `_test_*` handler name."""
+        raw_name = item_or_name.name if hasattr(item_or_name, "name") else str(item_or_name)
+        clean_name = self._normalize_name(raw_name)
+        method_name = f"_test_{clean_name}"
+        return self._TEST_METHOD_ALIASES.get(method_name, method_name)
+
     def _dispatch_test(self, item: DiagnosticItem):
         clean_name = self._normalize_name(item.name)
         method_name = f"_test_{clean_name}"
-        aliases = {
-            '_test_ui_theme_palettes_and_clipboard_rich_text_formatting': '_test_option_c_muted_silver_fog_light_theme_and_dark_mode_clipboard_formatting',
-            '_test_story_highlighting_smart_copy_and_glossary_engine': '_test_story_transcript_highlighting_and_smart_copy',
-        }
-        target_name = aliases.get(method_name, method_name)
+        target_name = self.resolve_test_method_name(item)
         handler = getattr(self, target_name, None)
         if handler:
             handler(item)
