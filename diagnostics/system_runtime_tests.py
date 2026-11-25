@@ -356,6 +356,8 @@ class DiagnosticSystemRuntimeTestsMixin:
             "diagnostic_batch_tests.py",
             "diagnostic_editor_tests.py",
             "build_installer.py",
+            "model_management.py",
+            "model_cleanup_dialog.py",
         ]
 
         violations = []

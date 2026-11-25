@@ -109,6 +109,37 @@ class DiagnosticEditorStoryUiTestsMixin:
         assert isinstance(opts, dict) and "transcript" in opts and "stories" in opts
         purge_dialog.close()
 
+        # 5b. Verify ModelCleanupDialog extraction and model_management facade re-exports
+        import model_management
+        from pathlib import Path
+        from model_cleanup_dialog import ModelCleanupDialog
+        assert hasattr(model_management, "WhisperModelInstallWorker"), "model_management missing WhisperModelInstallWorker re-export"
+        assert hasattr(model_management, "ModelCleanupDialog"), "model_management missing ModelCleanupDialog export"
+
+        class MockModelOwner:
+            def model_cache_path(self, m):
+                return Path("/nonexistent/models") / m
+            def is_whisper_model_available(self, m):
+                return False
+            def cancel_model_installation(self):
+                pass
+            def purge_all_data_action(self, parent_widget=None, on_complete=None):
+                pass
+            def refresh_whisper_model_chooser(self):
+                pass
+            def log_activity(self, msg, mark_dirty=False):
+                pass
+
+        mc_dlg = ModelCleanupDialog(MockModelOwner())
+        assert mc_dlg.windowTitle() == "Manage Models", f"Unexpected title: {mc_dlg.windowTitle()}"
+        assert len(mc_dlg.rows) >= 9, f"Expected >=9 transcription+diarization rows, got {len(mc_dlg.rows)}"
+        mc_dlg.update_install_progress(40, "Downloading...")
+        assert mc_dlg.dlg_progress_bar.value() == 40
+        mc_dlg.hide_install_progress()
+        mc_dlg.refresh_models()
+        mc_dlg.close()
+        mc_dlg.deleteLater()
+
         # 6. Verify Timeline context menu building and auto-selection parity
         class MockCanvas:
             def __init__(self, stories):

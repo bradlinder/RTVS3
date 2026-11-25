@@ -1,3 +1,14 @@
+## v3.10.11-beta
+- **Abbreviation-Aware Sentence/Diarization Boundaries & Parakeet Uncovered-Speech Rescue (`sentence_boundaries.py`, `core_utils.py`, `transcript_story.py`, `export_documents.py`, `reaper_bridge.py`, `plugins/wordpress/client.py`, `plugins/wordpress/manifest.json`, `worker_asr_engines.py`, `worker_diarization_engine.py`, `worker_diarization_clustering.py`, `worker_clustering.py`, `diagnostic_speaker_cleanup_tests.py`, `test_runner.py`)**:
+  - **Shared Context-Aware Abbreviation Engine (`sentence_boundaries.py`, `core_utils.py`, `transcript_story.py`, `export_documents.py`, `reaper_bridge.py`, `plugins/wordpress/client.py`, `plugins/wordpress/manifest.json`)**:
+    - Created pure-Python `sentence_boundaries.py` classifying pre-noun titles (`Dr.`, `Mr.`, `Mrs.`, `Prof.`, `Sen.`, `Sra.`, `Sr.`, etc.), initials, mid-clause connectors, month/number prefixes (`Jan. 15`, `No. 5` vs. `"No. I"`), and next-word-aware acronym rules (`is_sentence_end`), wired across UI, exports, REAPER cues, and WordPress paragraphing (bumping `plugins/wordpress/manifest.json` to `3.10.11-beta`).
+  - **Unfiltered Parakeet ONNX Audio, Tail/Head Speech Rescue & Abbreviation Chunking (`worker_asr_engines.py`, `worker_diarization_engine.py`, `worker_clustering.py`)**:
+    - Added `apply_bandpass: bool = True` to `normalize_audio_for_diarization()` and disabled the 85–7500 Hz diarization bandpass during Parakeet/FastConformer ASR (`apply_bandpass=False`), added `_decode_onnx_chunk_with_rescue()` and `_has_speech_energy()` to recover dropped trailing/leading speech spans (`>= 2.5s`), and extracted `_group_onnx_words_into_segments()` keeping titles glued.
+  - **Diarization Abbreviation Glue & Edge-to-Edge Gap Fallback (`worker_diarization_engine.py`, `worker_diarization_clustering.py`, `worker_clustering.py`)**:
+    - Merged pre-noun abbreviation segments into adjacent following speech (`gap < 0.45s`) before transcript-guided embedding extraction, and updated `assign_short_segments_to_centroids()` fallback from midpoint distance to nearest edge-to-edge gap.
+  - **Regression Coverage (`diagnostic_speaker_cleanup_tests.py`, `test_runner.py`)**:
+    - Added `Abbreviation Sentence Boundaries and Parakeet Rescue` verifying EN/ES rules, false-positive traps, 12-word boundary glue, tail speech rescue vs. silence skip, `0.00s` edge-gap snapping, and WordPress paragraphing.
+
 ## v3.10.10-beta
 - **Diagnostic Parity Fixes: Embedded Guide Key, Action Button Polish & Story Fade Test Isolation (`embedded_guides.py`, `speaker_profiles_dialog.py`, `diagnostic_editor_tests.py`, `diagnostic_speaker_cleanup_tests.py`)**:
   - **Fix `video_shows` Embedded Guide Lookup (`embedded_guides.py`, `diagnostic_speaker_cleanup_tests.py`)**:

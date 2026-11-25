@@ -103,6 +103,7 @@ HIDDEN_IMPORTS = [
     "ui_layout",
     "transcript_story",
     "voice_profile_dialog",
+    "model_cleanup_dialog",
     "speaker_dialogs",
     "story_fades_dialog",
     "shortcuts",

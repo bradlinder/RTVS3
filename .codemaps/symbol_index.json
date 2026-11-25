@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-25 11:14:36",
-  "total_files": 190,
+  "generated_at": "2026-11-25 11:41:57",
+  "total_files": 191,
   "files": {
     "RadioTVSegmenter.py": {
       "path": "RadioTVSegmenter.py",
       "lines": 684,
-      "summary": "Radio & TV Segmenter \u2014 v3.10.12-beta",
+      "summary": "Radio & TV Segmenter \u2014 v3.10.13-beta",
       "exports": null,
       "classes": [
         {
@@ -1897,7 +1897,7 @@
     },
     "diagnostic_dialog.py": {
       "path": "diagnostic_dialog.py",
-      "lines": 324,
+      "lines": 386,
       "summary": "PySide6 Graphical Test Bench Dialog for Radio & TV Story Segmenter.",
       "exports": null,
       "classes": [],
@@ -1905,8 +1905,8 @@
         {
           "name": "create_diagnostic_dialog",
           "sig": "create_diagnostic_dialog(parent, include_dev_tests)",
-          "start_line": 16,
-          "end_line": 324,
+          "start_line": 57,
+          "end_line": 386,
           "doc": "Builds the Diagnostic Test Bench Qt Dialog."
         }
       ]
@@ -2064,7 +2064,7 @@
     },
     "diagnostic_selector.py": {
       "path": "diagnostic_selector.py",
-      "lines": 196,
+      "lines": 202,
       "summary": "Smart Diagnostic Test Selector for Radio & TV Story Segmenter.",
       "exports": null,
       "classes": [],
@@ -2094,7 +2094,7 @@
           "name": "select_diagnostic_items",
           "sig": "select_diagnostic_items(engine, items, filter_expr, changed_only)",
           "start_line": 144,
-          "end_line": 196,
+          "end_line": 202,
           "doc": "Filter diagnostic items by explicit `--filter` keywords and/or `--changed` git diff analysis."
         }
       ]
@@ -2266,7 +2266,7 @@
     },
     "diagnostics/cloud_storage_tests.py": {
       "path": "diagnostics/cloud_storage_tests.py",
-      "lines": 584,
+      "lines": 592,
       "summary": "Plugin interface, project persistence, cache management, YouTube & backup diagnostic tests.",
       "exports": null,
       "classes": [
@@ -2274,42 +2274,42 @@
           "name": "DiagnosticCloudStorageTestsMixin",
           "bases": [],
           "start_line": 15,
-          "end_line": 584,
+          "end_line": 592,
           "doc": "",
           "methods": [
             {
               "name": "_test_plugin_interface_sandbox_testing",
               "sig": "_test_plugin_interface_sandbox_testing(self, item)",
               "start_line": 16,
-              "end_line": 187,
+              "end_line": 195,
               "doc": ""
             },
             {
               "name": "_test_project_file_integrity_and_portable_path_resolution",
               "sig": "_test_project_file_integrity_and_portable_path_resolution(self, item)",
-              "start_line": 189,
-              "end_line": 293,
+              "start_line": 197,
+              "end_line": 301,
               "doc": ""
             },
             {
               "name": "_test_temporary_cache_management_and_storage_inspection",
               "sig": "_test_temporary_cache_management_and_storage_inspection(self, item)",
-              "start_line": 295,
-              "end_line": 394,
+              "start_line": 303,
+              "end_line": 402,
               "doc": "Validates cache usage stats calculation, preview categorization, and cache purging."
             },
             {
               "name": "_test_youtube_data_api_and_direct_video_upload_engine",
               "sig": "_test_youtube_data_api_and_direct_video_upload_engine(self, item)",
-              "start_line": 396,
-              "end_line": 471,
+              "start_line": 404,
+              "end_line": 479,
               "doc": "Validates YouTube Zero-Auth manual export packaging (MP4, thumbnail, SRT, metadata .txt with chapters & speakers)."
             },
             {
               "name": "_test_comprehensive_local_and_cloud_backup_and_restore_engine",
               "sig": "_test_comprehensive_local_and_cloud_backup_and_restore_engine(self, item)",
-              "start_line": 473,
-              "end_line": 584,
+              "start_line": 481,
+              "end_line": 592,
               "doc": "Validates state serialization, SHA-256 verification, local backup roundtrip, and cloud payload integrity."
             }
           ]
@@ -2425,7 +2425,7 @@
     },
     "diagnostics/editor_story_ui_tests.py": {
       "path": "diagnostics/editor_story_ui_tests.py",
-      "lines": 508,
+      "lines": 539,
       "summary": "Story transcript highlighting, smart copy, duration & header diagnostic tests.",
       "exports": null,
       "classes": [
@@ -2433,21 +2433,21 @@
           "name": "DiagnosticEditorStoryUiTestsMixin",
           "bases": [],
           "start_line": 9,
-          "end_line": 508,
+          "end_line": 539,
           "doc": "",
           "methods": [
             {
               "name": "_test_story_transcript_highlighting_and_smart_copy",
               "sig": "_test_story_transcript_highlighting_and_smart_copy(self, item)",
               "start_line": 10,
-              "end_line": 325,
+              "end_line": 356,
               "doc": "Validates story selection synchronization with transcript highlight overlay and smart clipboard copying."
             },
             {
               "name": "_test_story_duration_visibility_and_header_aggregation",
               "sig": "_test_story_duration_visibility_and_header_aggregation(self, item)",
-              "start_line": 327,
-              "end_line": 508,
+              "start_line": 358,
+              "end_line": 539,
               "doc": "Validates story clock duration formatting, 2-line sidebar item format, and multi-selection header aggregation."
             }
           ]
@@ -2634,7 +2634,7 @@
     },
     "diagnostics/system_runtime_tests.py": {
       "path": "diagnostics/system_runtime_tests.py",
-      "lines": 385,
+      "lines": 387,
       "summary": "System runtime, updater, theme, packaging, roadmap, and modularity diagnostic tests.",
       "exports": null,
       "classes": [
@@ -2642,7 +2642,7 @@
           "name": "DiagnosticSystemRuntimeTestsMixin",
           "bases": [],
           "start_line": 14,
-          "end_line": 385,
+          "end_line": 387,
           "doc": "",
           "methods": [
             {
@@ -2705,7 +2705,7 @@
               "name": "_test_source_file_modularity_and_1000_line_budget_invariant",
               "sig": "_test_source_file_modularity_and_1000_line_budget_invariant(self, item)",
               "start_line": 314,
-              "end_line": 385,
+              "end_line": 387,
               "doc": "Validates that recently decomposed modules adhere to the 1,000-line modular budget,"
             }
           ]
@@ -4515,7 +4515,7 @@
     },
     "installer/build_tools/config.py": {
       "path": "installer/build_tools/config.py",
-      "lines": 205,
+      "lines": 206,
       "summary": "Build configuration constants and CLI argument parser.",
       "exports": null,
       "classes": [],
@@ -4523,8 +4523,8 @@
         {
           "name": "parse_build_args",
           "sig": "parse_build_args()",
-          "start_line": 130,
-          "end_line": 205,
+          "start_line": 131,
+          "end_line": 206,
           "doc": "Parse build target, plugin selection, installer, and version CLI flags."
         }
       ]
@@ -5035,6 +5035,102 @@
       ],
       "functions": []
     },
+    "model_cleanup_dialog.py": {
+      "path": "model_cleanup_dialog.py",
+      "lines": 468,
+      "summary": "Manage Models dialog and shared runtime cleanup helpers for Radio & TV Segmenter.",
+      "exports": [
+        "WHISPER_MODEL_CATALOG",
+        "ModelCleanupDialog",
+        "format_directory_size",
+        "_stop_and_remove_runtime_env"
+      ],
+      "classes": [
+        {
+          "name": "ModelCleanupDialog",
+          "bases": [
+            "QDialog"
+          ],
+          "start_line": 63,
+          "end_line": 460,
+          "doc": "Unified local model manager dialog for ASR, diarization, translation, and cache.",
+          "methods": [
+            {
+              "name": "__init__",
+              "sig": "__init__(self, owner, translation_worker_cls_fn, translation_plugin_installed_fn)",
+              "start_line": 66,
+              "end_line": 83,
+              "doc": ""
+            },
+            {
+              "name": "_get_translation_worker_cls",
+              "sig": "_get_translation_worker_cls(self)",
+              "start_line": 85,
+              "end_line": 88,
+              "doc": ""
+            },
+            {
+              "name": "_is_translation_active",
+              "sig": "_is_translation_active(self)",
+              "start_line": 90,
+              "end_line": 93,
+              "doc": ""
+            },
+            {
+              "name": "_build_ui",
+              "sig": "_build_ui(self)",
+              "start_line": 95,
+              "end_line": 328,
+              "doc": ""
+            },
+            {
+              "name": "update_install_progress",
+              "sig": "update_install_progress(self, pct, msg)",
+              "start_line": 330,
+              "end_line": 333,
+              "doc": ""
+            },
+            {
+              "name": "hide_install_progress",
+              "sig": "hide_install_progress(self)",
+              "start_line": 335,
+              "end_line": 336,
+              "doc": ""
+            },
+            {
+              "name": "refresh_models",
+              "sig": "refresh_models(self)",
+              "start_line": 338,
+              "end_line": 379,
+              "doc": ""
+            },
+            {
+              "name": "remove_selected",
+              "sig": "remove_selected(self)",
+              "start_line": 381,
+              "end_line": 460,
+              "doc": ""
+            }
+          ]
+        }
+      ],
+      "functions": [
+        {
+          "name": "format_directory_size",
+          "sig": "format_directory_size(path)",
+          "start_line": 38,
+          "end_line": 44,
+          "doc": "Return total size in MB for files under path, or a fallback string."
+        },
+        {
+          "name": "_stop_and_remove_runtime_env",
+          "sig": "_stop_and_remove_runtime_env(owner, *env_names)",
+          "start_line": 47,
+          "end_line": 60,
+          "doc": "Stop tracked subprocesses and remove one or more isolated runtime environments."
+        }
+      ]
+    },
     "model_install_workers.py": {
       "path": "model_install_workers.py",
       "lines": 189,
@@ -5125,36 +5221,36 @@
     },
     "model_management.py": {
       "path": "model_management.py",
-      "lines": 989,
+      "lines": 621,
       "summary": "Radio & TV Segmenter v1.1.1 \u2014 model management responsibilities.",
       "exports": null,
       "classes": [
         {
           "name": "_DummyTranslationWorker",
           "bases": [],
-          "start_line": 30,
-          "end_line": 43,
+          "start_line": 27,
+          "end_line": 40,
           "doc": "",
           "methods": [
             {
               "name": "model_root",
               "sig": "model_root(cls, variant)",
-              "start_line": 32,
-              "end_line": 34,
+              "start_line": 29,
+              "end_line": 31,
               "doc": ""
             },
             {
               "name": "model_dir",
               "sig": "model_dir(cls, from_code, to_code, variant)",
-              "start_line": 37,
-              "end_line": 38,
+              "start_line": 34,
+              "end_line": 35,
               "doc": ""
             },
             {
               "name": "model_is_installed",
               "sig": "model_is_installed(cls, from_code, to_code, variant)",
-              "start_line": 41,
-              "end_line": 43,
+              "start_line": 38,
+              "end_line": 40,
               "doc": ""
             }
           ]
@@ -5162,190 +5258,190 @@
         {
           "name": "ModelManagementMixin",
           "bases": [],
-          "start_line": 75,
-          "end_line": 989,
+          "start_line": 77,
+          "end_line": 621,
           "doc": "",
           "methods": [
             {
               "name": "model_cache_candidates",
               "sig": "model_cache_candidates(self, model_name)",
-              "start_line": 76,
-              "end_line": 163,
+              "start_line": 78,
+              "end_line": 165,
               "doc": "Return all potential candidate directories where model weights might be stored."
             },
             {
               "name": "model_cache_path",
               "sig": "model_cache_path(self, model_name)",
-              "start_line": 165,
-              "end_line": 177,
+              "start_line": 167,
+              "end_line": 179,
               "doc": ""
             },
             {
               "name": "is_whisper_model_available",
               "sig": "is_whisper_model_available(self, model_name)",
-              "start_line": 179,
-              "end_line": 208,
+              "start_line": 181,
+              "end_line": 210,
               "doc": ""
             },
             {
               "name": "refresh_whisper_model_chooser",
               "sig": "refresh_whisper_model_chooser(self)",
-              "start_line": 210,
-              "end_line": 234,
+              "start_line": 212,
+              "end_line": 226,
               "doc": ""
             },
             {
               "name": "current_whisper_model",
               "sig": "current_whisper_model(self)",
-              "start_line": 236,
-              "end_line": 241,
+              "start_line": 228,
+              "end_line": 233,
               "doc": ""
             },
             {
               "name": "update_whisper_model_tooltip",
               "sig": "update_whisper_model_tooltip(self)",
-              "start_line": 243,
-              "end_line": 249,
+              "start_line": 235,
+              "end_line": 241,
               "doc": ""
             },
             {
               "name": "set_whisper_model_from_ui",
               "sig": "set_whisper_model_from_ui(self, index)",
-              "start_line": 251,
-              "end_line": 265,
+              "start_line": 243,
+              "end_line": 257,
               "doc": ""
             },
             {
               "name": "translation_model_display_name",
               "sig": "translation_model_display_name(self, variant)",
-              "start_line": 267,
-              "end_line": 269,
+              "start_line": 259,
+              "end_line": 261,
               "doc": ""
             },
             {
               "name": "translation_model_root",
               "sig": "translation_model_root(self, variant)",
-              "start_line": 271,
-              "end_line": 272,
+              "start_line": 263,
+              "end_line": 264,
               "doc": ""
             },
             {
               "name": "refresh_translation_model_chooser",
               "sig": "refresh_translation_model_chooser(self)",
-              "start_line": 274,
-              "end_line": 284,
+              "start_line": 266,
+              "end_line": 276,
               "doc": ""
             },
             {
               "name": "set_translation_model_from_ui",
               "sig": "set_translation_model_from_ui(self, index)",
-              "start_line": 286,
-              "end_line": 295,
+              "start_line": 278,
+              "end_line": 287,
               "doc": ""
             },
             {
               "name": "prompt_translation_model",
               "sig": "prompt_translation_model(self)",
-              "start_line": 297,
-              "end_line": 305,
+              "start_line": 289,
+              "end_line": 297,
               "doc": ""
             },
             {
               "name": "open_model_cleanup_dialog",
               "sig": "open_model_cleanup_dialog(self)",
-              "start_line": 307,
-              "end_line": 663,
+              "start_line": 299,
+              "end_line": 306,
               "doc": "Unified local model manager for Whisper and OPUS-MT models."
             },
             {
               "name": "purge_all_data_action",
               "sig": "purge_all_data_action(self, parent_widget, on_complete)",
-              "start_line": 665,
-              "end_line": 737,
+              "start_line": 308,
+              "end_line": 369,
               "doc": "Purge all downloaded AI models, log files, updater cache, and translation runtimes."
             },
             {
               "name": "open_translation_model_manager",
               "sig": "open_translation_model_manager(self)",
-              "start_line": 739,
-              "end_line": 741,
+              "start_line": 371,
+              "end_line": 373,
               "doc": ""
             },
             {
               "name": "install_whisper_model_for_manager",
               "sig": "install_whisper_model_for_manager(self, model_name, dialog)",
-              "start_line": 743,
-              "end_line": 771,
+              "start_line": 375,
+              "end_line": 403,
               "doc": ""
             },
             {
               "name": "cancel_model_installation",
               "sig": "cancel_model_installation(self)",
-              "start_line": 773,
-              "end_line": 778,
+              "start_line": 405,
+              "end_line": 410,
               "doc": ""
             },
             {
               "name": "_on_model_install_progress",
               "sig": "_on_model_install_progress(self, percent, message)",
-              "start_line": 780,
-              "end_line": 790,
+              "start_line": 412,
+              "end_line": 422,
               "doc": ""
             },
             {
               "name": "_install_whisper_model_background",
               "sig": "_install_whisper_model_background(self, model_name)",
-              "start_line": 792,
-              "end_line": 830,
+              "start_line": 424,
+              "end_line": 462,
               "doc": ""
             },
             {
               "name": "_model_install_finished",
               "sig": "_model_install_finished(self, error)",
-              "start_line": 832,
-              "end_line": 833,
+              "start_line": 464,
+              "end_line": 465,
               "doc": ""
             },
             {
               "name": "_model_install_thread_finished",
               "sig": "_model_install_thread_finished(self)",
-              "start_line": 835,
-              "end_line": 889,
+              "start_line": 467,
+              "end_line": 521,
               "doc": ""
             },
             {
               "name": "_poll_model_install",
               "sig": "_poll_model_install(self, dialog)",
-              "start_line": 891,
-              "end_line": 893,
+              "start_line": 523,
+              "end_line": 525,
               "doc": ""
             },
             {
               "name": "install_diarization_model_for_manager",
               "sig": "install_diarization_model_for_manager(self, dialog)",
-              "start_line": 895,
-              "end_line": 923,
+              "start_line": 527,
+              "end_line": 555,
               "doc": "Install or repair the WeSpeaker ResNet34 ONNX diarization voice embedding model."
             },
             {
               "name": "install_translation_models_for_manager",
               "sig": "install_translation_models_for_manager(self, from_code, to_code, variant, dialog)",
-              "start_line": 925,
-              "end_line": 963,
+              "start_line": 557,
+              "end_line": 595,
               "doc": "Install an OPUS-MT model through the translation plugin's isolated runtime."
             },
             {
               "name": "_translation_manager_install_finished",
               "sig": "_translation_manager_install_finished(self, from_code, to_code, variant, dialog)",
-              "start_line": 966,
-              "end_line": 979,
+              "start_line": 598,
+              "end_line": 611,
               "doc": ""
             },
             {
               "name": "_translation_manager_install_error",
               "sig": "_translation_manager_install_error(self, message, dialog)",
-              "start_line": 981,
-              "end_line": 989,
+              "start_line": 613,
+              "end_line": 621,
               "doc": ""
             }
           ]
@@ -5355,15 +5451,15 @@
         {
           "name": "_translation_worker_class",
           "sig": "_translation_worker_class()",
-          "start_line": 46,
-          "end_line": 56,
+          "start_line": 43,
+          "end_line": 53,
           "doc": "Load translation implementation dynamically without hard-importing from plugins."
         },
         {
           "name": "_translation_plugin_installed",
           "sig": "_translation_plugin_installed(self)",
-          "start_line": 58,
-          "end_line": 64,
+          "start_line": 55,
+          "end_line": 61,
           "doc": ""
         }
       ]
@@ -18555,7 +18651,7 @@
     "transcript_story.py": {
       "path": "transcript_story.py",
       "lines": 856,
-      "summary": "Radio & TV Segmenter v3.10.12-beta \u2014 transcript story responsibilities.",
+      "summary": "Radio & TV Segmenter v3.10.13-beta \u2014 transcript story responsibilities.",
       "exports": [
         "TranscriptStoryMixin",
         "Story",

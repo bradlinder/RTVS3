@@ -1,5 +1,14 @@
 # Changelog
 
+## v3.10.13-beta
+- **Milestone 3.1: `model_management.py` Modularization & `ModelCleanupDialog` Extraction (`model_management.py`, `model_cleanup_dialog.py`, `installer/build_tools/config.py`, `diagnostics/editor_story_ui_tests.py`, `diagnostics/system_runtime_tests.py`)**:
+  - **Pure Qt UI Extraction (`model_cleanup_dialog.py`)**:
+    - Extracted `ModelCleanupDialog`, `WHISPER_MODEL_CATALOG`, `format_directory_size()`, and shared `_stop_and_remove_runtime_env()` helper out of `model_management.py`, preserving all Manage Models controls, progress callbacks, selected-model removal, translation runtime cleanup prompts, and full purge hooks.
+  - **Controller Cleanup & Duplication Pruning (`model_management.py`, `installer/build_tools/config.py`)**:
+    - Reduced `model_management.py` from 989 lines to ~610 lines (well below the 800-line target), pruned unused Qt widget imports, reused `WHISPER_MODEL_CATALOG` and `_stop_and_remove_runtime_env()` in `refresh_whisper_model_chooser()` and `purge_all_data_action()`, kept all `ModelManagementMixin` & `WhisperModelInstallWorker` re-exports intact, removed obsolete `model_management.pyi`, and added `model_cleanup_dialog` to PyInstaller `HIDDEN_IMPORTS`.
+  - **Regression Coverage (`diagnostics/editor_story_ui_tests.py`, `diagnostics/system_runtime_tests.py`)**:
+    - Added `ModelCleanupDialog` instantiation, row/progress/refresh checks and `model_management` re-export assertions, and registered `model_management.py` + `model_cleanup_dialog.py` in modularity budget verification.
+
 ## v3.10.12-beta
 - **Milestone 3.4: Modular Diagnostic Test Suites & Installer Packaging Decomposition (`diagnostics/*.py`, `diagnostic_helpers.py`, `diagnostic_selector.py`, `diagnostic_export_tests.py`, `diagnostic_cloud_and_system_tests.py`, `diagnostic_batch_tests.py`, `diagnostic_editor_tests.py`, `installer/build_tools/*.py`, `build_installer.py`, `scripts/modular_audit.py`, `scripts/dev_check.py`)**:
   - **Modular `diagnostics/` Package (`diagnostics/*.py`, `diagnostic_helpers.py`, `diagnostic_selector.py`)**:
@@ -12,17 +21,3 @@
   - **GUI Diagnostic Bench Main-Thread Qt Dispatch Fix (`diagnostic_dialog.py`, `test_runner.py`, `diagnostic_selector.py`, `diagnostics/cloud_storage_tests.py`)**:
     - Extracted shared `DiagnosticEngine.resolve_test_method_name()` in `test_runner.py` (used by both `diagnostic_selector.py` and `diagnostic_dialog.py`).
     - Updated `TestRunnerWorker` in `diagnostic_dialog.py` so every Qt GUI diagnostic test (frozen allowlist + `inspect.getsource` marker scan) dispatches via `BlockingQueuedConnection` to the Qt main thread, preventing `QObject::setParent` cross-thread crashes when `Plugin Interface Sandbox Testing` runs `check_for_plugin_updates()`, and patched `QProgressDialog.forceShow()` in `diagnostics/cloud_storage_tests.py`.
-
-## v3.10.11-beta
-- **Abbreviation-Aware Sentence/Diarization Boundaries & Parakeet Uncovered-Speech Rescue (`sentence_boundaries.py`, `core_utils.py`, `transcript_story.py`, `export_documents.py`, `reaper_bridge.py`, `plugins/wordpress/client.py`, `plugins/wordpress/manifest.json`, `worker_asr_engines.py`, `worker_diarization_engine.py`, `worker_diarization_clustering.py`, `worker_clustering.py`, `diagnostic_speaker_cleanup_tests.py`, `test_runner.py`)**:
-  - **Shared Context-Aware Abbreviation Engine (`sentence_boundaries.py`, `core_utils.py`, `transcript_story.py`, `export_documents.py`, `reaper_bridge.py`, `plugins/wordpress/client.py`, `plugins/wordpress/manifest.json`)**:
-    - Created pure-Python `sentence_boundaries.py` classifying pre-noun titles (`Dr.`, `Mr.`, `Mrs.`, `Prof.`, `Sen.`, `Sra.`, `Sr.`, etc.), initials, mid-clause connectors, month/number prefixes (`Jan. 15`, `No. 5` vs. `"No. I"`), and next-word-sensitive dotted acronyms (`U.S. today` vs. `D.C. Then`).
-    - Wired context-aware `is_sentence_end(text, next_word, language)` across `core_utils.py`, in-app paragraphing (`transcript_story.py`), TXT/DOCX/PDF export (`export_documents.py`), REAPER take cues (`reaper_bridge.py`), and WordPress paragraphing (`plugins/wordpress/client.py`, bumping `plugins/wordpress/manifest.json` to `3.10.11-beta`).
-  - **Unfiltered Parakeet ONNX Audio, Tail/Head Speech Rescue & Abbreviation Chunking (`worker_asr_engines.py`, `worker_diarization_engine.py`, `worker_clustering.py`)**:
-    - Added `apply_bandpass: bool = True` to `normalize_audio_for_diarization()` and disabled the 85–7500 Hz diarization bandpass during Parakeet/FastConformer ASR (`apply_bandpass=False`) so full-bandwidth 16 kHz audio matches its 128-bin mel filterbank.
-    - Added `_decode_onnx_chunk_with_rescue()` and `_has_speech_energy()` to automatically recover trailing/leading speech spans (`>= 2.5s`) dropped by premature TDT blanking on loud→quiet speaker transitions while skipping true silence.
-    - Extracted `_group_onnx_words_into_segments()` using context-aware `is_sentence_end()` and deferring 12-word flushes on non-terminal titles (`"Dr."`, `"Mr."`) so titles stay glued to the following surname.
-  - **Diarization Abbreviation Glue & Edge-to-Edge Gap Fallback (`worker_diarization_engine.py`, `worker_diarization_clustering.py`, `worker_clustering.py`)**:
-    - Merged pre-noun abbreviation segments into adjacent following speech (`gap < 0.45s`) before transcript-guided embedding extraction, and updated `assign_short_segments_to_centroids()` fallback from midpoint distance to nearest edge-to-edge gap.
-  - **Regression Coverage (`diagnostic_speaker_cleanup_tests.py`, `test_runner.py`)**:
-    - Added `Abbreviation Sentence Boundaries and Parakeet Rescue` covering EN/ES title rules, false-positive traps, 12-word boundary glue, tail speech rescue vs. silence skip, `0.00s` edge-gap snapping, and WordPress paragraphing.

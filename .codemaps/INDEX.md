@@ -1,13 +1,13 @@
 # Repository Symbol Index & API Map
 
-> Generated: 2026-11-25 11:14:36 | Total Files: 190
+> Generated: 2026-11-25 11:41:57 | Total Files: 191
 > Use `python scripts/generate_symbol_index.py --outline <file>` for exact line numbers.
 
 ## Modules Overview
 
 | Module | Lines | Summary | Primary Classes / Functions |
 | :--- | :---: | :--- | :--- |
-| `RadioTVSegmenter.py` | 684 | Radio & TV Segmenter — v3.10.12-beta | `MainWindow`, `main()` |
+| `RadioTVSegmenter.py` | 684 | Radio & TV Segmenter — v3.10.13-beta | `MainWindow`, `main()` |
 | `audio_normalization.py` | 474 | Radio & TV Story Segmenter — Audio Loudness Probing & Nor... | `LoudnessReport`, `parse_ebur128_summary()`, `probe_media_duration_seconds()`, `probe_media_loudness()` *(+2 more)* |
 | `audio_normalization_worker.py` | 89 | Background QThread worker for non-blocking EBU R128 loudn... | `AudioLoudnessProbeWorker` |
 | `background_workers.py` | 1051 | Radio & TV Story Segmenter — Background Worker Threads & ... | `StoryAutoDetectWorker`, `WaveformWorker`, `VideoThumbnailWorker`, `get_waveform_peak_cache_path()` *(+6 more)* |
@@ -26,25 +26,25 @@
 | `diagnostic_batch_tests.py` | 19 | Diagnostic batch and editing workflow test bench facade. | `DiagnosticBatchTestsMixin` |
 | `diagnostic_cloud_and_system_tests.py` | 22 | Diagnostic cloud, voice, and system runtime test bench fa... | `DiagnosticCloudAndSystemTestsMixin` |
 | `diagnostic_core_tests.py` | 963 | Diagnostic test bench suite component. | `DiagnosticCoreTestsMixin` |
-| `diagnostic_dialog.py` | 324 | PySide6 Graphical Test Bench Dialog for Radio & TV Story ... | `create_diagnostic_dialog()` |
+| `diagnostic_dialog.py` | 386 | PySide6 Graphical Test Bench Dialog for Radio & TV Story ... | `create_diagnostic_dialog()` |
 | `diagnostic_editor_tests.py` | 19 | Diagnostic editor and find-replace test bench facade. | `DiagnosticEditorTestsMixin` |
 | `diagnostic_export_tests.py` | 25 | Diagnostic export test bench facade aggregating modular t... | `DiagnosticExportTestsMixin` |
 | `diagnostic_helpers.py` | 155 | Helper fixtures, module resolvers, and DiagnosticItem for... | `DiagnosticItem`, `generate_synthetic_wav()` |
 | `diagnostic_loudness_tests.py` | 404 | Radio & TV Story Segmenter — Diagnostic Loudness Normaliz... | `DiagnosticLoudnessTestsMixin` |
-| `diagnostic_selector.py` | 196 | Smart Diagnostic Test Selector for Radio & TV Story Segme... | `get_modified_files()`, `has_git_changes()`, `detect_changed_tokens()`, `select_diagnostic_items()` |
+| `diagnostic_selector.py` | 202 | Smart Diagnostic Test Selector for Radio & TV Story Segme... | `get_modified_files()`, `has_git_changes()`, `detect_changed_tokens()`, `select_diagnostic_items()` |
 | `diagnostic_speaker_cleanup_tests.py` | 937 | Diagnostic tests for Phase 2 features: minimum story leng... | `DiagnosticSpeakerCleanupTestsMixin` |
 | `diagnostic_wordpress_tests.py` | 109 | Diagnostic tests for WordPress PublishPress Author mappin... | `DiagnosticWordPressTestsMixin` |
 | `diagnostics/__init__.py` | 28 | Modular diagnostic test mixin components for the RTVS Tes... | - |
 | `diagnostics/batch_export_tests.py` | 469 | Batch processing, drag-and-drop ingestion, PDF, and DAW e... | `DiagnosticBatchExportTestsMixin` |
-| `diagnostics/cloud_storage_tests.py` | 584 | Plugin interface, project persistence, cache management, ... | `DiagnosticCloudStorageTestsMixin` |
+| `diagnostics/cloud_storage_tests.py` | 592 | Plugin interface, project persistence, cache management, ... | `DiagnosticCloudStorageTestsMixin` |
 | `diagnostics/editing_workflow_tests.py` | 590 | Fades, translation routing, speaker dialog flow, story bo... | `DiagnosticEditingWorkflowTestsMixin` |
 | `diagnostics/editor_guides_and_daw_tests.py` | 497 | Find-replace, user guides viewer, and REAPER DAW companio... | `DiagnosticEditorGuidesAndDawTestsMixin` |
-| `diagnostics/editor_story_ui_tests.py` | 508 | Story transcript highlighting, smart copy, duration & hea... | `DiagnosticEditorStoryUiTestsMixin` |
+| `diagnostics/editor_story_ui_tests.py` | 539 | Story transcript highlighting, smart copy, duration & hea... | `DiagnosticEditorStoryUiTestsMixin` |
 | `diagnostics/export_pipeline.py` | 485 | Multi-format export pipeline, scope slicing, and audio ca... | `DiagnosticExportPipelineMixin` |
 | `diagnostics/export_wordpress_core.py` | 579 | WordPress export scope, content formatting, and YouTube e... | `DiagnosticExportWordPressCoreMixin` |
 | `diagnostics/export_wordpress_media.py` | 585 | WordPress featured image metadata and Castos podcast diag... | `DiagnosticExportWordPressMediaMixin` |
 | `diagnostics/export_wordpress_upload.py` | 668 | WordPress multi-story upload, Gutenberg hygiene, and audi... | `DiagnosticExportWordPressUploadMixin` |
-| `diagnostics/system_runtime_tests.py` | 385 | System runtime, updater, theme, packaging, roadmap, and m... | `DiagnosticSystemRuntimeTestsMixin` |
+| `diagnostics/system_runtime_tests.py` | 387 | System runtime, updater, theme, packaging, roadmap, and m... | `DiagnosticSystemRuntimeTestsMixin` |
 | `diagnostics/voice_and_media_tests.py` | 438 | Voice profile matching, waveform peak cache, and playback... | `DiagnosticVoiceAndMediaTestsMixin` |
 | `dialogs.py` | 433 | Radio & TV Story Segmenter — Audio Loudness Normalization... | `AudioLoudnessNormalizationDialog` |
 | `diarization_processing.py` | 772 | Speaker diarization process management for Radio & TV Sto... | `DiarizationProcessingMixin` |
@@ -66,13 +66,14 @@
 | `gpu_acceleration.py` | 276 | Radio & TV Segmenter v1.1.1 — optional GPU acceleration r... | `GpuAccelerationInstallWorker`, `GpuAccelerationMixin` |
 | `id3_editor.py` | 704 | ID3 Tag Editor module for Radio & TV Segmenter. | `ID3TagEditorDialog`, `read_id3_tags()`, `write_id3_tags()` |
 | `installer/build_tools/__init__.py` | 50 | Modular build utilities for Radio & TV Segmenter PyInstal... | - |
-| `installer/build_tools/config.py` | 205 | Build configuration constants and CLI argument parser. | `parse_build_args()` |
+| `installer/build_tools/config.py` | 206 | Build configuration constants and CLI argument parser. | `parse_build_args()` |
 | `installer/build_tools/env_checks.py` | 188 | Environment validation, external tool resolution, and sub... | `exe_name()`, `find_tool()`, `check_cpu_only_torch()`, `torch_windows_binary_flags()` *(+1 more)* |
 | `installer/build_tools/packaging.py` | 368 | Bundle pruning, plugin archive packaging, runtime tools, ... | `provision_optional_runtime_tools()`, `prune_unneeded_bundled_files()`, `sync_installer_scripts()`, `compile_windows_installer()` *(+1 more)* |
 | `installer/pyinstaller/torch_dll_hook.py` | 70 | PyInstaller runtime hook for Windows ML/native DLL resolu... | - |
 | `media_batch.py` | 1719 | Radio & TV Segmenter v1.1.1 — media batch responsibilities. | `MediaBatchMixin` |
+| `model_cleanup_dialog.py` | 468 | Manage Models dialog and shared runtime cleanup helpers f... | `ModelCleanupDialog`, `format_directory_size()` |
 | `model_install_workers.py` | 189 | Radio & TV Segmenter — Model Download and Installation Ba... | `WhisperModelInstallWorker`, `DiarizationModelInstallWorker`, `get_diarization_model_dir()`, `is_diarization_model_available()` |
-| `model_management.py` | 989 | Radio & TV Segmenter v1.1.1 — model management responsibi... | `_DummyTranslationWorker`, `ModelManagementMixin` |
+| `model_management.py` | 621 | Radio & TV Segmenter v1.1.1 — model management responsibi... | `_DummyTranslationWorker`, `ModelManagementMixin` |
 | `playback_controller.py` | 630 | Radio & TV Story Segmenter — Media Player Transport & Pla... | `PlaybackControllerMixin` |
 | `playback_preferences.py` | 815 | Radio & TV Story Segmenter — Playback Preferences & Appli... | `PlaybackPreferencesMixin` |
 | `plugin_base.py` | 209 | Radio & TV Segmenter — Plugin Base Interfaces and Manifest. | `PluginManifest`, `BasePlugin`, `ExportDestination` |
@@ -175,7 +176,7 @@
 | `transcript_navigation_mixin.py` | 300 | transcript_navigation_mixin.py - Timestamp discovery, car... | `TranscriptNavigationMixin` |
 | `transcript_playback_highlight_mixin.py` | 277 | Radio & TV Story Segmenter — Interactive Transcript Playb... | `TranscriptPlaybackHighlightMixin` |
 | `transcript_selection_mixin.py` | 473 | transcript_selection_mixin.py - Multi-selection, timeline... | `TranscriptSelectionMixin` |
-| `transcript_story.py` | 856 | Radio & TV Segmenter v3.10.12-beta — transcript story res... | `TranscriptStoryMixin` |
+| `transcript_story.py` | 856 | Radio & TV Segmenter v3.10.13-beta — transcript story res... | `TranscriptStoryMixin` |
 | `transcript_styles.py` | 104 | transcript_styles.py - Transcript view stylesheets and da... | `transcript_text_view_stylesheet()`, `clean_dark_mode_clipboard_html()` |
 | `transcript_timeline_sync_mixin.py` | 655 | Radio & TV Story Segmenter — Transcript Timeline & Playba... | `TranscriptTimelineSyncMixin` |
 | `transcription_processing.py` | 579 | Transcription background process management for Radio & T... | `TranscriptionProcessingMixin` |
@@ -201,7 +202,7 @@
 ## Detailed Symbol Catalog
 
 ### `RadioTVSegmenter.py` (684 lines)
-*Radio & TV Segmenter — v3.10.12-beta*
+*Radio & TV Segmenter — v3.10.13-beta*
 - **class `MainWindow(ModelManagementMixin, MediaBatchMixin, PlaybackPreferencesMixin, UiLayoutMixin, ProcessingMixin, TranslationMixin, TranscriptStoryMixin, ProjectExportMixin, GpuAccelerationMixin, QMainWindow)`** (lines 160–581):
   *Main application window for Radio & TV Segmenter.*
   - `__init__(self)` [L178-L355]
@@ -515,10 +516,10 @@
   - `_test_daw_timeline_interchange_and_gap_handling(self, item)` [L634-L750]
   - `_test_quick_sample_audio_preview_and_speaker_manager_dialog_invariants(self, item)` [L752-L962]
 
-### `diagnostic_dialog.py` (324 lines)
+### `diagnostic_dialog.py` (386 lines)
 *PySide6 Graphical Test Bench Dialog for Radio & TV Story Segmenter.*
 - **Functions**:
-  - `create_diagnostic_dialog(parent, include_dev_tests)` [L16-L324] — *Builds the Diagnostic Test Bench Qt Dialog.*
+  - `create_diagnostic_dialog(parent, include_dev_tests)` [L57-L386] — *Builds the Diagnostic Test Bench Qt Dialog.*
 
 ### `diagnostic_editor_tests.py` (19 lines)
 *Diagnostic editor and find-replace test bench facade.*
@@ -552,13 +553,13 @@
   - `_test_two_tier_hybrid_audio_loudness_normalization(self, item)` [L102-L196] — *Validates conditional bypass, Tier 1 linear gain + limiter, Tier 2 leveler, and integration.*
   - `_test_audio_loudness_preferences_and_manual_normalization_dialog(self, item)` [L198-L403] — *Validates Preferences persistence and manual normalization dialog telemetry.*
 
-### `diagnostic_selector.py` (196 lines)
+### `diagnostic_selector.py` (202 lines)
 *Smart Diagnostic Test Selector for Radio & TV Story Segmenter.*
 - **Functions**:
   - `get_modified_files(root_dir)` [L29-L56] — *Return relative paths of modified or uncommitted files via git status.*
   - `has_git_changes(root_dir)` [L59-L61] — *Return True if there are modified or uncommitted python or plugin files in git.*
   - `detect_changed_tokens(root_dir)` [L64-L141] — *Return a set of lowercase module stems and plugin names from the most recently edited files.*
-  - `select_diagnostic_items(engine, items, filter_expr, changed_only)` [L144-L196] — *Filter diagnostic items by explicit `--filter` keywords and/or `--changed` git diff analysis.*
+  - `select_diagnostic_items(engine, items, filter_expr, changed_only)` [L144-L202] — *Filter diagnostic items by explicit `--filter` keywords and/or `--changed` git diff analysis.*
 
 ### `diagnostic_speaker_cleanup_tests.py` (937 lines)
 *Diagnostic tests for Phase 2 features: minimum story length, guest-name cleanup, and Station Voices.*
@@ -591,14 +592,14 @@
   - `_test_pdf_transcript_export_and_bold_speaker_labels(self, item)` [L371-L426]
   - `_test_exporter_structure_invariant_tests(self, item)` [L428-L469]
 
-### `diagnostics/cloud_storage_tests.py` (584 lines)
+### `diagnostics/cloud_storage_tests.py` (592 lines)
 *Plugin interface, project persistence, cache management, YouTube & backup diagnostic tests.*
-- **class `DiagnosticCloudStorageTestsMixin`** (lines 15–584):
-  - `_test_plugin_interface_sandbox_testing(self, item)` [L16-L187]
-  - `_test_project_file_integrity_and_portable_path_resolution(self, item)` [L189-L293]
-  - `_test_temporary_cache_management_and_storage_inspection(self, item)` [L295-L394] — *Validates cache usage stats calculation, preview categorization, and cache purging.*
-  - `_test_youtube_data_api_and_direct_video_upload_engine(self, item)` [L396-L471] — *Validates YouTube Zero-Auth manual export packaging (MP4, thumbnail, SRT, metadata .txt with chapters & speakers).*
-  - `_test_comprehensive_local_and_cloud_backup_and_restore_engine(self, item)` [L473-L584] — *Validates state serialization, SHA-256 verification, local backup roundtrip, and cloud payload integrity.*
+- **class `DiagnosticCloudStorageTestsMixin`** (lines 15–592):
+  - `_test_plugin_interface_sandbox_testing(self, item)` [L16-L195]
+  - `_test_project_file_integrity_and_portable_path_resolution(self, item)` [L197-L301]
+  - `_test_temporary_cache_management_and_storage_inspection(self, item)` [L303-L402] — *Validates cache usage stats calculation, preview categorization, and cache purging.*
+  - `_test_youtube_data_api_and_direct_video_upload_engine(self, item)` [L404-L479] — *Validates YouTube Zero-Auth manual export packaging (MP4, thumbnail, SRT, metadata .txt with chapters & speakers).*
+  - `_test_comprehensive_local_and_cloud_backup_and_restore_engine(self, item)` [L481-L592] — *Validates state serialization, SHA-256 verification, local backup roundtrip, and cloud payload integrity.*
 
 ### `diagnostics/editing_workflow_tests.py` (590 lines)
 *Fades, translation routing, speaker dialog flow, story bounds, sync, and split/join tests.*
@@ -618,11 +619,11 @@
   - `_test_in_app_user_guides_and_documentation_viewer(self, item)` [L210-L298] — *Validates in-app user guide resolution, fallback to embedded content, and bundling invariants.*
   - `_test_reaper_daw_companion_and_universal_clipboard_pipeline(self, item)` [L300-L497] — *Validates REAPER DAW clip cue JSON schema, sidecar emission, Lua script syntax,*
 
-### `diagnostics/editor_story_ui_tests.py` (508 lines)
+### `diagnostics/editor_story_ui_tests.py` (539 lines)
 *Story transcript highlighting, smart copy, duration & header diagnostic tests.*
-- **class `DiagnosticEditorStoryUiTestsMixin`** (lines 9–508):
-  - `_test_story_transcript_highlighting_and_smart_copy(self, item)` [L10-L325] — *Validates story selection synchronization with transcript highlight overlay and smart clipboard copying.*
-  - `_test_story_duration_visibility_and_header_aggregation(self, item)` [L327-L508] — *Validates story clock duration formatting, 2-line sidebar item format, and multi-selection header aggregation.*
+- **class `DiagnosticEditorStoryUiTestsMixin`** (lines 9–539):
+  - `_test_story_transcript_highlighting_and_smart_copy(self, item)` [L10-L356] — *Validates story selection synchronization with transcript highlight overlay and smart clipboard copying.*
+  - `_test_story_duration_visibility_and_header_aggregation(self, item)` [L358-L539] — *Validates story clock duration formatting, 2-line sidebar item format, and multi-selection header aggregation.*
 
 ### `diagnostics/export_pipeline.py` (485 lines)
 *Multi-format export pipeline, scope slicing, and audio cancellation tests.*
@@ -655,9 +656,9 @@
   - `_test_gutenberg_html_structural_hygiene_audit(self, item)` [L302-L338]
   - `_test_wordpress_audio_inclusion_toggle_and_error_resilience(self, item)` [L340-L668]
 
-### `diagnostics/system_runtime_tests.py` (385 lines)
+### `diagnostics/system_runtime_tests.py` (387 lines)
 *System runtime, updater, theme, packaging, roadmap, and modularity diagnostic tests.*
-- **class `DiagnosticSystemRuntimeTestsMixin`** (lines 14–385):
+- **class `DiagnosticSystemRuntimeTestsMixin`** (lines 14–387):
   - `_test_windows_detached_update_helper_architecture(self, item)` [L15-L55] — *Validates update helper architecture: helper script generation, exit polling, and logging.*
   - `_test_multiprocessing_freeze_support_and_spawn_intercept(self, item)` [L57-L78] — *Validates that frozen process spawn intercepts -c invocations from resource_tracker and multiprocessing.*
   - `_resolve_worker_cmd(self)` [L80-L94] — *Resolves the executable and arguments to launch the AI background worker.*
@@ -666,7 +667,7 @@
   - `_test_option_c_muted_silver_fog_light_theme_and_dark_mode_clipboard_formatting(self, item)` [L204-L257] — *Validates Option C muted low-contrast silver/fog palette and dark-mode clipboard rich styling.*
   - `_test_windows_ci_build_and_packaging_optimization_invariants(self, item)` [L259-L291] — *Validates Inno Setup compression parameters, Stage 3 PyInstaller optimizations, and CI settings.*
   - `_test_roadmap_n_1_sliding_window_and_status_integrity(self, item)` [L293-L312] — *Validates roadmap.txt N-1 sliding window retention, status indicator syntax, and version sync.*
-  - `_test_source_file_modularity_and_1000_line_budget_invariant(self, item)` [L314-L385] — *Validates that recently decomposed modules adhere to the 1,000-line modular budget,*
+  - `_test_source_file_modularity_and_1000_line_budget_invariant(self, item)` [L314-L387] — *Validates that recently decomposed modules adhere to the 1,000-line modular budget,*
 
 ### `diagnostics/voice_and_media_tests.py` (438 lines)
 *Voice profile matching, waveform peak cache, and playback rate diagnostic tests.*
@@ -969,10 +970,10 @@
 *Modular build utilities for Radio & TV Segmenter PyInstaller & installer packaging.*
 - **Public Exports (`__all__`)**: UV_VERSION, UV_URLS, PYSIDE6_USED_SUBMODULES, PYSIDE6_EXCLUDES, TEST_AND_BENCHMARK_EXCLUDES, COLLECT_ALL_PACKAGES, COPY_METADATA_PACKAGES, HIDDEN_IMPORTS, parse_build_args, exe_name, find_tool, check_cpu_only_torch, torch_windows_binary_flags, run, provision_optional_runtime_tools, prune_unneeded_bundled_files, sync_installer_scripts, compile_windows_installer, package_plugins
 
-### `installer/build_tools/config.py` (205 lines)
+### `installer/build_tools/config.py` (206 lines)
 *Build configuration constants and CLI argument parser.*
 - **Functions**:
-  - `parse_build_args()` [L130-L205] — *Parse build target, plugin selection, installer, and version CLI flags.*
+  - `parse_build_args()` [L131-L206] — *Parse build target, plugin selection, installer, and version CLI flags.*
 
 ### `installer/build_tools/env_checks.py` (188 lines)
 *Environment validation, external tool resolution, and subprocess execution helpers.*
@@ -1055,6 +1056,23 @@
   - `open_audio(self)` [L1715-L1716]
   - `handle_media_drop(self, filename)` [L1718-L1719]
 
+### `model_cleanup_dialog.py` (468 lines)
+*Manage Models dialog and shared runtime cleanup helpers for Radio & TV Segmenter.*
+- **Public Exports (`__all__`)**: WHISPER_MODEL_CATALOG, ModelCleanupDialog, format_directory_size, _stop_and_remove_runtime_env
+- **class `ModelCleanupDialog(QDialog)`** (lines 63–460):
+  *Unified local model manager dialog for ASR, diarization, translation, and cache.*
+  - `__init__(self, owner, translation_worker_cls_fn, translation_plugin_installed_fn)` [L66-L83]
+  - `_get_translation_worker_cls(self)` [L85-L88]
+  - `_is_translation_active(self)` [L90-L93]
+  - `_build_ui(self)` [L95-L328]
+  - `update_install_progress(self, pct, msg)` [L330-L333]
+  - `hide_install_progress(self)` [L335-L336]
+  - `refresh_models(self)` [L338-L379]
+  - `remove_selected(self)` [L381-L460]
+- **Functions**:
+  - `format_directory_size(path)` [L38-L44] — *Return total size in MB for files under path, or a fallback string.*
+  - `_stop_and_remove_runtime_env(owner, *env_names)` [L47-L60] — *Stop tracked subprocesses and remove one or more isolated runtime environments.*
+
 ### `model_install_workers.py` (189 lines)
 *Radio & TV Segmenter — Model Download and Installation Background Workers.*
 - **class `WhisperModelInstallWorker(QObject)`** (lines 57–140):
@@ -1071,42 +1089,42 @@
   - `get_diarization_model_dir()` [L35-L37] — *Return canonical directory for WeSpeaker ONNX diarization models.*
   - `is_diarization_model_available()` [L40-L54] — *Check if a valid WeSpeaker ONNX model is present in candidate directories.*
 
-### `model_management.py` (989 lines)
+### `model_management.py` (621 lines)
 *Radio & TV Segmenter v1.1.1 — model management responsibilities.*
-- **class `_DummyTranslationWorker`** (lines 30–43):
-  - `model_root(cls, variant)` [L32-L34]
-  - `model_dir(cls, from_code, to_code, variant)` [L37-L38]
-  - `model_is_installed(cls, from_code, to_code, variant)` [L41-L43]
-- **class `ModelManagementMixin`** (lines 75–989):
-  - `model_cache_candidates(self, model_name)` [L76-L163] — *Return all potential candidate directories where model weights might be stored.*
-  - `model_cache_path(self, model_name)` [L165-L177]
-  - `is_whisper_model_available(self, model_name)` [L179-L208]
-  - `refresh_whisper_model_chooser(self)` [L210-L234]
-  - `current_whisper_model(self)` [L236-L241]
-  - `update_whisper_model_tooltip(self)` [L243-L249]
-  - `set_whisper_model_from_ui(self, index)` [L251-L265]
-  - `translation_model_display_name(self, variant)` [L267-L269]
-  - `translation_model_root(self, variant)` [L271-L272]
-  - `refresh_translation_model_chooser(self)` [L274-L284]
-  - `set_translation_model_from_ui(self, index)` [L286-L295]
-  - `prompt_translation_model(self)` [L297-L305]
-  - `open_model_cleanup_dialog(self)` [L307-L663] — *Unified local model manager for Whisper and OPUS-MT models.*
-  - `purge_all_data_action(self, parent_widget, on_complete)` [L665-L737] — *Purge all downloaded AI models, log files, updater cache, and translation runtimes.*
-  - `open_translation_model_manager(self)` [L739-L741]
-  - `install_whisper_model_for_manager(self, model_name, dialog)` [L743-L771]
-  - `cancel_model_installation(self)` [L773-L778]
-  - `_on_model_install_progress(self, percent, message)` [L780-L790]
-  - `_install_whisper_model_background(self, model_name)` [L792-L830]
-  - `_model_install_finished(self, error)` [L832-L833]
-  - `_model_install_thread_finished(self)` [L835-L889]
-  - `_poll_model_install(self, dialog)` [L891-L893]
-  - `install_diarization_model_for_manager(self, dialog)` [L895-L923] — *Install or repair the WeSpeaker ResNet34 ONNX diarization voice embedding model.*
-  - `install_translation_models_for_manager(self, from_code, to_code, variant, dialog)` [L925-L963] — *Install an OPUS-MT model through the translation plugin's isolated runtime.*
-  - `_translation_manager_install_finished(self, from_code, to_code, variant, dialog)` [L966-L979]
-  - `_translation_manager_install_error(self, message, dialog)` [L981-L989]
+- **class `_DummyTranslationWorker`** (lines 27–40):
+  - `model_root(cls, variant)` [L29-L31]
+  - `model_dir(cls, from_code, to_code, variant)` [L34-L35]
+  - `model_is_installed(cls, from_code, to_code, variant)` [L38-L40]
+- **class `ModelManagementMixin`** (lines 77–621):
+  - `model_cache_candidates(self, model_name)` [L78-L165] — *Return all potential candidate directories where model weights might be stored.*
+  - `model_cache_path(self, model_name)` [L167-L179]
+  - `is_whisper_model_available(self, model_name)` [L181-L210]
+  - `refresh_whisper_model_chooser(self)` [L212-L226]
+  - `current_whisper_model(self)` [L228-L233]
+  - `update_whisper_model_tooltip(self)` [L235-L241]
+  - `set_whisper_model_from_ui(self, index)` [L243-L257]
+  - `translation_model_display_name(self, variant)` [L259-L261]
+  - `translation_model_root(self, variant)` [L263-L264]
+  - `refresh_translation_model_chooser(self)` [L266-L276]
+  - `set_translation_model_from_ui(self, index)` [L278-L287]
+  - `prompt_translation_model(self)` [L289-L297]
+  - `open_model_cleanup_dialog(self)` [L299-L306] — *Unified local model manager for Whisper and OPUS-MT models.*
+  - `purge_all_data_action(self, parent_widget, on_complete)` [L308-L369] — *Purge all downloaded AI models, log files, updater cache, and translation runtimes.*
+  - `open_translation_model_manager(self)` [L371-L373]
+  - `install_whisper_model_for_manager(self, model_name, dialog)` [L375-L403]
+  - `cancel_model_installation(self)` [L405-L410]
+  - `_on_model_install_progress(self, percent, message)` [L412-L422]
+  - `_install_whisper_model_background(self, model_name)` [L424-L462]
+  - `_model_install_finished(self, error)` [L464-L465]
+  - `_model_install_thread_finished(self)` [L467-L521]
+  - `_poll_model_install(self, dialog)` [L523-L525]
+  - `install_diarization_model_for_manager(self, dialog)` [L527-L555] — *Install or repair the WeSpeaker ResNet34 ONNX diarization voice embedding model.*
+  - `install_translation_models_for_manager(self, from_code, to_code, variant, dialog)` [L557-L595] — *Install an OPUS-MT model through the translation plugin's isolated runtime.*
+  - `_translation_manager_install_finished(self, from_code, to_code, variant, dialog)` [L598-L611]
+  - `_translation_manager_install_error(self, message, dialog)` [L613-L621]
 - **Functions**:
-  - `_translation_worker_class()` [L46-L56] — *Load translation implementation dynamically without hard-importing from plugins.*
-  - `_translation_plugin_installed(self)` [L58-L64]
+  - `_translation_worker_class()` [L43-L53] — *Load translation implementation dynamically without hard-importing from plugins.*
+  - `_translation_plugin_installed(self)` [L55-L61]
 
 ### `playback_controller.py` (630 lines)
 *Radio & TV Story Segmenter — Media Player Transport & Playback Controller.*
@@ -3242,7 +3260,7 @@
   - `_on_bubble_export(self)` [L468-L473]
 
 ### `transcript_story.py` (856 lines)
-*Radio & TV Segmenter v3.10.12-beta — transcript story responsibilities.*
+*Radio & TV Segmenter v3.10.13-beta — transcript story responsibilities.*
 - **Public Exports (`__all__`)**: TranscriptStoryMixin, Story, SetStoriesCommand, SelectStoriesCommand, StoryBoundaryChangeCommand, StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin, ChangeSpeakerDialog, VoiceProfileMatchDialog, StoryFadesDialog, SpeakerManagerDialog, FADE_CURVE_TABLES, get_fade_curve_factors
 - **class `TranscriptStoryMixin(StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin)`** (lines 63–855):
   - `render_transcript(self)` [L64-L471]
