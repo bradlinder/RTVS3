@@ -262,13 +262,16 @@ class DiagnosticEditorGuidesAndDawTestsMixin:
         assert search_dialog.match_count_label.text() == "", "Match count label did not clear"
         search_dialog.close()
 
-        # 6. Verify build installer script invariants
-        build_text = (PROJECT_ROOT / "build_installer.py").read_text(encoding="utf-8")
-        pkg_path = PROJECT_ROOT / "installer" / "build_tools" / "packaging.py"
-        if pkg_path.is_file():
-            build_text += "\n" + pkg_path.read_text(encoding="utf-8")
-        assert 'test_dir_names = {"tests", "testing", "test", "benchmark", "benchmarks", "sample_files"}' in build_text, "test_dir_names in build_installer.py pruned docs"
-        assert 'shutil.copytree(docs_source, docs_dest, dirs_exist_ok=True)' in build_text, "build_installer.py missing docs copytree step"
+        # 6. Verify build installer script invariants (source mode only; dev scripts are excluded from frozen installers)
+        build_installer_path = PROJECT_ROOT / "build_installer.py"
+        if build_installer_path.is_file():
+            build_text = build_installer_path.read_text(encoding="utf-8")
+            pkg_path = PROJECT_ROOT / "installer" / "build_tools" / "packaging.py"
+            if pkg_path.is_file():
+                build_text += "\n" + pkg_path.read_text(encoding="utf-8")
+            assert 'test_dir_names = {"tests", "testing", "test", "benchmark", "benchmarks", "sample_files"}' in build_text, "test_dir_names in build_installer.py pruned docs"
+            assert 'shutil.copytree(docs_source, docs_dest, dirs_exist_ok=True)' in build_text, "build_installer.py missing docs copytree step"
+            assert 'shutil.copytree(reaper_scripts_source, reaper_scripts_dest, dirs_exist_ok=True)' in build_text, "build_installer.py missing REAPER Lua scripts copytree step"
 
         # 6. Verify responsive image scaling on compact viewports
         from user_guide_dialog import ResponsiveTextBrowser

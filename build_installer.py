@@ -44,7 +44,7 @@ try:
 except ImportError as e:
     print(f"[BUILD] Warning: Could not import prs_shared ({e}), using fallback values")
     APP_DISPLAY_NAME = "Radio & TV Segmenter"
-    PROJECT_VERSION = "3.10.15-beta"
+    PROJECT_VERSION = "3.10.16-beta"
 except Exception as e:
     print(f"[BUILD] Unexpected error importing prs_shared: {type(e).__name__}: {e}")
     raise
@@ -220,6 +220,8 @@ def main() -> None:
             doc_flags.extend(["--add-data", f"{doc_file}{os.pathsep}."])
     if (ROOT / "docs").exists():
         doc_flags.extend(["--add-data", f"{ROOT / 'docs'}{os.pathsep}docs"])
+    if (ROOT / "scripts" / "reaper").exists():
+        doc_flags.extend(["--add-data", f"{ROOT / 'scripts' / 'reaper'}{os.pathsep}scripts/reaper"])
 
     runtime_hook = ROOT / "installer" / "pyinstaller" / "torch_dll_hook.py"
 
@@ -304,6 +306,16 @@ def main() -> None:
         if sys.platform == "darwin":
             resources_docs = app_root.parent / "Resources" / "docs"
             shutil.copytree(docs_source, resources_docs, dirs_exist_ok=True)
+
+    # Bundle REAPER ReaScript Lua companion scripts into the application directory
+    reaper_scripts_source = ROOT / "scripts" / "reaper"
+    reaper_scripts_dest = app_root / "scripts" / "reaper"
+    if reaper_scripts_source.exists():
+        shutil.copytree(reaper_scripts_source, reaper_scripts_dest, dirs_exist_ok=True)
+        print(f"[BUILD] Bundled REAPER companion Lua scripts into {reaper_scripts_dest}")
+        if sys.platform == "darwin":
+            resources_reaper = app_root.parent / "Resources" / "scripts" / "reaper"
+            shutil.copytree(reaper_scripts_source, resources_reaper, dirs_exist_ok=True)
 
     # Bundle plugins based on selected build target and options
     print("\n" + "=" * 70, flush=True)

@@ -1,5 +1,14 @@
 # Changelog
 
+## v3.10.16-beta
+- **Frozen Installer REAPER Lua Script Bundling & Installed-App Diagnostic Bench Parity (`build_installer.py`, `reaper_bridge.py`, `diagnostic_core_tests.py`, `diagnostic_loudness_tests.py`, `diagnostic_speaker_cleanup_tests.py`, `diagnostics/editor_guides_and_daw_tests.py`, `diagnostics/system_runtime_tests.py`)**:
+  - **Bundle REAPER Companion Lua Scripts in Packaged Builds (`build_installer.py`, `reaper_bridge.py`)**:
+    - Added `--add-data` and `shutil.copytree()` bundling for `scripts/reaper/` (`rtvs_reaper_companion.lua`, `rtvs_reaper_sync.lua`, `rtvs_reaper_auto_sync.lua`, `rtvs_reaper_dock.lua`) into packaged Windows/macOS/Linux distributions (`app_root/scripts/reaper` and macOS `Resources/scripts/reaper`).
+    - Updated `reaper_bridge.get_bundled_lua_scripts()` to resolve companion Lua scripts across source trees, PyInstaller `sys._MEIPASS`, frozen `exe_dir/scripts/reaper`, `exe_dir/_internal/scripts/reaper`, and macOS `.app` bundle `Resources/scripts/reaper`, with a build-script regression assertion in `diagnostics/editor_guides_and_daw_tests.py`.
+  - **Frozen-Binary Diagnostic Parity & Live GUI-Thread Timing Fixes (`diagnostic_core_tests.py`, `diagnostic_loudness_tests.py`, `diagnostic_speaker_cleanup_tests.py`, `diagnostics/editor_guides_and_daw_tests.py`, `diagnostics/system_runtime_tests.py`)**:
+    - Guarded `.py` source-file / `inspect.getsource()` AST checks in `system_runtime_tests.py`, `diagnostic_loudness_tests.py`, `editor_guides_and_daw_tests.py`, and `diagnostic_speaker_cleanup_tests.py` when running inside compiled PyInstaller binaries where `.py` sources are packaged inside PYZ archives.
+    - Updated the `SpeakerManagerDialog` Tab-key inline editing progression test in `diagnostic_core_tests.py` to process queued `QTimer.singleShot(0, ...)` events via bounded `QApplication.processEvents()` on live GUI event loops.
+
 ## v3.10.15-beta
 - **WordPress Episode Updater Modularization & Hybrid Date Picker (`plugins/wordpress/episode_updater.py`, `plugins/wordpress/episode_lookup.py`, `plugins/wordpress/episode_updater_ui.py`, `plugins/wordpress/pub_date_picker.py`, `plugins/wordpress/manifest.json`, `diagnostics/export_wordpress_media.py`, `diagnostics/system_runtime_tests.py`)**:
   - **Headless Lookup Separation (`plugins/wordpress/episode_lookup.py`)**:
@@ -9,16 +18,3 @@
     - Upgraded **Publication Date** into `PublicationDateLineEdit` + `_PublicationDatePickerPopup` (`plugins/wordpress/pub_date_picker.py`): clicking opens a non-focus-stealing calendar and 24-hour time dropdown while leaving the field blank by default and allowing direct typing/pasting at any time.
   - **Facade, Stub Removal & Catch-Up Packaging (`plugins/wordpress/episode_updater.py`, `plugins/wordpress/manifest.json`, `diagnostics/export_wordpress_media.py`, `diagnostics/system_runtime_tests.py`)**:
     - Replaced `plugins/wordpress/episode_updater.py` (999 → 54 lines) with a full backward-compatible facade, deleted obsolete `episode_updater.pyi`, bumped `plugins/wordpress/manifest.json` to `3.10.15-beta`, repackaged `wordpress.rtvs-addon`, and added headless/facade/budget assertions.
-
-## v3.10.14-beta
-- **Milestone 3.9 & 3.10: WordPress Publishing UI Consolidation, Worker Extraction & Dead-Code Pruning (`plugins/wordpress/wp_workers.py`, `plugins/wordpress/wp_publish_dialog.py`, `plugins/wordpress/plugin.py`, `plugins/wordpress/wordpress_dialog.py`, `plugins/wordpress/manifest.json`, `scripts/modular_audit.py`, `diagnostics/export_wordpress_media.py`, `diagnostics/system_runtime_tests.py`)**:
-  - **Worker & Dialog Separation (`plugins/wordpress/wp_workers.py`, `plugins/wordpress/wp_publish_dialog.py`)**:
-    - Extracted `WordPressPublishWorker(QThread)` into dedicated headless-worker module `plugins/wordpress/wp_workers.py` (78 lines) and `WordPressPublishDialog(QDialog)` into `plugins/wordpress/wp_publish_dialog.py` (524 lines), preserving all featured image preview, custom notice, credential prompt, and offline spellcheck (`title_edit`, `excerpt_edit`, `custom_text_edit`, `img_caption_edit`, `img_alt_edit`) wiring.
-  - **Opportunistic Dead-Code Pruning & Facades (`plugins/wordpress/plugin.py`, `plugins/wordpress/wordpress_dialog.py`)**:
-    - Pruned confirmed dead `WordPressStoryMetadataWidget` (~274 lines) and duplicated `capture_video_frame()` helper from `plugins/wordpress/plugin.py` (980 → 89 lines), keeping `Plugin.create_story_metadata_widget() -> None` and backward-compatible re-exports intact.
-    - Replaced superseded 903-line `plugins/wordpress/wordpress_dialog.py` duplicate UI with a 28-line compatibility facade re-exporting canonical `WordPressExportTabWidget` (`wp_tab_widget.py`), `WordPressPostMetadataDialog` (`export_destination.py`), `capture_video_frame` (`wp_post_builder.py`), and `generate_wp_excerpt`.
-  - **Audit Cleanup, Plugin Catch-Up & Regression Tests (`scripts/modular_audit.py`, `plugins/wordpress/manifest.json`, `diagnostics/export_wordpress_media.py`, `diagnostics/system_runtime_tests.py`)**:
-    - Removed `plugins/wordpress/plugin.py` and `plugins/wordpress/wordpress_dialog.py` from `GRANDFATHERED_LEGACY_MODULES` (dropping grandfathered SRP collisions from `5` to `4` with zero new violations) and deleted obsolete `plugin.pyi` and `wordpress_dialog.pyi`.
-    - Bumped `plugins/wordpress/manifest.json` to `3.10.14-beta` (leaving untouched plugins unchanged), repackaged `wordpress.rtvs-addon`, and added modular identity, dead-widget exclusion, facade, and budget-guard checks.
-  - **Spellcheck Deleted-Widget Lifecycle Fix (`spellcheck_widgets.py`, `diagnostic_speaker_cleanup_tests.py`)**:
-    - Added `shiboken6.isValid()` guards (`_is_qt_object_alive()`, `SpellCheckController.is_alive()` / `dispose()`), weakref `destroyed` cleanup hooks, and `RuntimeError` guards across `SpellCheckController`, `_LineEditSpellOverlay.paintEvent()`, `attach_spellcheck()`, and `refresh_all_spellcheckers()`, eliminating stale `Internal C++ object (QLineEdit) already deleted` tracebacks when refreshing after closing dialogs, with deleted-widget regression assertions.

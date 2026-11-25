@@ -920,6 +920,12 @@ class DiagnosticCoreTestsMixin:
 
             tab_ev = QKeyEvent(QEvent.Type.KeyPress, Qt.Key.Key_Tab, Qt.KeyboardModifier.NoModifier)
             delegate.eventFilter(editor, tab_ev)
+            qt_app = QApplication.instance()
+            if qt_app is not None:
+                for _ in range(5):
+                    qt_app.processEvents()
+                    if dialog.table.currentRow() == 1:
+                        break
 
             # Verify row 0 was renamed to 'Lead Host' and edit focus advanced to row 1
             if mock_win.get_effective_speaker_name(0, mock_win.transcript["segments"][0]) != "Lead Host":

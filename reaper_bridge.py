@@ -10,6 +10,7 @@ from __future__ import annotations
 import json
 import logging
 import os
+import sys
 import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
@@ -678,8 +679,19 @@ def get_default_reaper_scripts_dir() -> Path:
 
 
 def get_bundled_lua_scripts() -> Dict[str, Path]:
-    """Find the bundled RTVS3 ReaScript Lua files."""
-    base_dir = Path(__file__).resolve().parent / "scripts" / "reaper"
+    """Find the bundled RTVS3 ReaScript Lua files across source and frozen bundles."""
+    candidates: List[Path] = [
+        Path(__file__).resolve().parent / "scripts" / "reaper",
+    ]
+    meipass = getattr(sys, "_MEIPASS", None)
+    if meipass:
+        candidates.append(Path(meipass) / "scripts" / "reaper")
+    if getattr(sys, "frozen", False):
+        exe_dir = Path(sys.executable).resolve().parent
+        candidates.append(exe_dir / "scripts" / "reaper")
+        candidates.append(exe_dir / "_internal" / "scripts" / "reaper")
+        candidates.append(exe_dir.parent / "Resources" / "scripts" / "reaper")
+
     scripts: Dict[str, Path] = {}
     for name in (
         "rtvs_reaper_companion.lua",
@@ -687,9 +699,11 @@ def get_bundled_lua_scripts() -> Dict[str, Path]:
         "rtvs_reaper_auto_sync.lua",
         "rtvs_reaper_dock.lua",
     ):
-        p = base_dir / name
-        if p.is_file():
-            scripts[name] = p
+        for base_dir in candidates:
+            p = base_dir / name
+            if p.is_file():
+                scripts[name] = p
+                break
     return scripts
 
 
