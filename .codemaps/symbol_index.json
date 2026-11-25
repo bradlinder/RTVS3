@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-25 11:41:57",
-  "total_files": 191,
+  "generated_at": "2026-11-25 12:07:16",
+  "total_files": 193,
   "files": {
     "RadioTVSegmenter.py": {
       "path": "RadioTVSegmenter.py",
       "lines": 684,
-      "summary": "Radio & TV Segmenter \u2014 v3.10.13-beta",
+      "summary": "Radio & TV Segmenter \u2014 v3.10.14-beta",
       "exports": null,
       "classes": [
         {
@@ -2101,7 +2101,7 @@
     },
     "diagnostic_speaker_cleanup_tests.py": {
       "path": "diagnostic_speaker_cleanup_tests.py",
-      "lines": 937,
+      "lines": 992,
       "summary": "Diagnostic tests for Phase 2 features: minimum story length, guest-name cleanup, and Station Voices.",
       "exports": null,
       "classes": [
@@ -2109,7 +2109,7 @@
           "name": "DiagnosticSpeakerCleanupTestsMixin",
           "bases": [],
           "start_line": 13,
-          "end_line": 937,
+          "end_line": 992,
           "doc": "Mixin for Phase 2 regression diagnostics (story length, name cleanup, Station Voices).",
           "methods": [
             {
@@ -2144,21 +2144,21 @@
               "name": "_test_offline_spellcheck_and_metadata_terminology_alignment",
               "sig": "_test_offline_spellcheck_and_metadata_terminology_alignment(self, item)",
               "start_line": 397,
-              "end_line": 586,
+              "end_line": 641,
               "doc": ""
             },
             {
               "name": "_test_menu_bar_deduplication_and_escaping_integrity",
               "sig": "_test_menu_bar_deduplication_and_escaping_integrity(self, item)",
-              "start_line": 588,
-              "end_line": 811,
+              "start_line": 643,
+              "end_line": 866,
               "doc": "Validates main menu bar deduplication, Qt && escaping, checkable theme menu state, and shortcut metadata."
             },
             {
               "name": "_test_abbreviation_sentence_boundaries_and_parakeet_rescue",
               "sig": "_test_abbreviation_sentence_boundaries_and_parakeet_rescue(self, item)",
-              "start_line": 813,
-              "end_line": 937,
+              "start_line": 868,
+              "end_line": 992,
               "doc": "Validates EN/ES title abbreviations, Parakeet chunk grouping & uncovered-speech tail rescue, diarization gap fallback, and WordPress paragraphing."
             }
           ]
@@ -2563,7 +2563,7 @@
     },
     "diagnostics/export_wordpress_media.py": {
       "path": "diagnostics/export_wordpress_media.py",
-      "lines": 585,
+      "lines": 603,
       "summary": "WordPress featured image metadata and Castos podcast diagnostic tests.",
       "exports": null,
       "classes": [
@@ -2571,21 +2571,21 @@
           "name": "DiagnosticExportWordPressMediaMixin",
           "bases": [],
           "start_line": 10,
-          "end_line": 585,
+          "end_line": 603,
           "doc": "",
           "methods": [
             {
               "name": "_test_wordpress_featured_image_caption_and_alt_text",
               "sig": "_test_wordpress_featured_image_caption_and_alt_text(self, item)",
               "start_line": 11,
-              "end_line": 234,
+              "end_line": 252,
               "doc": "Verify Featured Image caption & alt_text across WordPressClient, post builder, tab UI, and PublishWorker."
             },
             {
               "name": "_test_wordpress_castos_podcast_integration",
               "sig": "_test_wordpress_castos_podcast_integration(self, item)",
-              "start_line": 236,
-              "end_line": 585,
+              "start_line": 254,
+              "end_line": 603,
               "doc": ""
             }
           ]
@@ -2634,7 +2634,7 @@
     },
     "diagnostics/system_runtime_tests.py": {
       "path": "diagnostics/system_runtime_tests.py",
-      "lines": 387,
+      "lines": 391,
       "summary": "System runtime, updater, theme, packaging, roadmap, and modularity diagnostic tests.",
       "exports": null,
       "classes": [
@@ -2642,7 +2642,7 @@
           "name": "DiagnosticSystemRuntimeTestsMixin",
           "bases": [],
           "start_line": 14,
-          "end_line": 387,
+          "end_line": 391,
           "doc": "",
           "methods": [
             {
@@ -2705,7 +2705,7 @@
               "name": "_test_source_file_modularity_and_1000_line_budget_invariant",
               "sig": "_test_source_file_modularity_and_1000_line_budget_invariant(self, item)",
               "start_line": 314,
-              "end_line": 387,
+              "end_line": 391,
               "doc": "Validates that recently decomposed modules adhere to the 1,000-line modular budget,"
             }
           ]
@@ -7899,668 +7899,131 @@
     },
     "plugins/wordpress/plugin.py": {
       "path": "plugins/wordpress/plugin.py",
-      "lines": 980,
+      "lines": 89,
       "summary": "WordPress Publisher Plugin for Radio & TV Segmenter.",
-      "exports": null,
+      "exports": [
+        "Plugin",
+        "WordPressPublishDialog",
+        "WordPressPublishWorker",
+        "capture_video_frame"
+      ],
       "classes": [
-        {
-          "name": "WordPressPublishDialog",
-          "bases": [
-            "QDialog"
-          ],
-          "start_line": 92,
-          "end_line": 570,
-          "doc": "Publish a story or project to WordPress with featured image selection.",
-          "methods": [
-            {
-              "name": "__init__",
-              "sig": "__init__(self, plugin, parent, story)",
-              "start_line": 95,
-              "end_line": 110,
-              "doc": ""
-            },
-            {
-              "name": "setup_ui",
-              "sig": "setup_ui(self)",
-              "start_line": 112,
-              "end_line": 309,
-              "doc": ""
-            },
-            {
-              "name": "load_custom_text_settings",
-              "sig": "load_custom_text_settings(self)",
-              "start_line": 311,
-              "end_line": 324,
-              "doc": "Load persistent custom text defaults from application settings."
-            },
-            {
-              "name": "save_custom_text_defaults",
-              "sig": "save_custom_text_defaults(self)",
-              "start_line": 326,
-              "end_line": 332,
-              "doc": "Save active custom text, placement, and exclusion settings as persistent defaults."
-            },
-            {
-              "name": "load_metadata",
-              "sig": "load_metadata(self)",
-              "start_line": 334,
-              "end_line": 375,
-              "doc": ""
-            },
-            {
-              "name": "do_capture_frame",
-              "sig": "do_capture_frame(self)",
-              "start_line": 377,
-              "end_line": 387,
-              "doc": ""
-            },
-            {
-              "name": "on_image_mode_changed",
-              "sig": "on_image_mode_changed(self)",
-              "start_line": 389,
-              "end_line": 406,
-              "doc": ""
-            },
-            {
-              "name": "on_browse_image",
-              "sig": "on_browse_image(self)",
-              "start_line": 408,
-              "end_line": 419,
-              "doc": ""
-            },
-            {
-              "name": "on_configure_credentials",
-              "sig": "on_configure_credentials(self)",
-              "start_line": 421,
-              "end_line": 427,
-              "doc": ""
-            },
-            {
-              "name": "on_publish",
-              "sig": "on_publish(self)",
-              "start_line": 429,
-              "end_line": 527,
-              "doc": ""
-            },
-            {
-              "name": "on_publish_finished",
-              "sig": "on_publish_finished(self, success, msg, post_data)",
-              "start_line": 529,
-              "end_line": 563,
-              "doc": ""
-            },
-            {
-              "name": "closeEvent",
-              "sig": "closeEvent(self, event)",
-              "start_line": 565,
-              "end_line": 570,
-              "doc": ""
-            }
-          ]
-        },
-        {
-          "name": "WordPressPublishWorker",
-          "bases": [
-            "QThread"
-          ],
-          "start_line": 573,
-          "end_line": 633,
-          "doc": "",
-          "methods": [
-            {
-              "name": "__init__",
-              "sig": "__init__(self, client, title, content, excerpt, status, image_path, image_caption, image_alt_text)",
-              "start_line": 576,
-              "end_line": 595,
-              "doc": ""
-            },
-            {
-              "name": "run",
-              "sig": "run(self)",
-              "start_line": 597,
-              "end_line": 633,
-              "doc": ""
-            }
-          ]
-        },
-        {
-          "name": "WordPressStoryMetadataWidget",
-          "bases": [
-            "QGroupBox"
-          ],
-          "start_line": 636,
-          "end_line": 909,
-          "doc": "Clean, compact WordPress metadata launcher & inspector embedded in the Stories sidebar.",
-          "methods": [
-            {
-              "name": "__init__",
-              "sig": "__init__(self, plugin, parent)",
-              "start_line": 639,
-              "end_line": 651,
-              "doc": ""
-            },
-            {
-              "name": "setup_ui",
-              "sig": "setup_ui(self)",
-              "start_line": 653,
-              "end_line": 741,
-              "doc": ""
-            },
-            {
-              "name": "refresh_targets_dropdown",
-              "sig": "refresh_targets_dropdown(self)",
-              "start_line": 743,
-              "end_line": 766,
-              "doc": "Populate target_combo with Full Episode and all current project stories."
-            },
-            {
-              "name": "_on_target_changed",
-              "sig": "_on_target_changed(self, index)",
-              "start_line": 768,
-              "end_line": 786,
-              "doc": ""
-            },
-            {
-              "name": "set_story",
-              "sig": "set_story(self, story)",
-              "start_line": 788,
-              "end_line": 800,
-              "doc": "Called when user selects a story in the story list or timeline."
-            },
-            {
-              "name": "_get_active_wp_metadata",
-              "sig": "_get_active_wp_metadata(self)",
-              "start_line": 802,
-              "end_line": 812,
-              "doc": ""
-            },
-            {
-              "name": "_load_current_target_metadata",
-              "sig": "_load_current_target_metadata(self)",
-              "start_line": 814,
-              "end_line": 864,
-              "doc": ""
-            },
-            {
-              "name": "_open_post_settings_dialog",
-              "sig": "_open_post_settings_dialog(self)",
-              "start_line": 866,
-              "end_line": 872,
-              "doc": ""
-            },
-            {
-              "name": "_on_refresh_taxonomy",
-              "sig": "_on_refresh_taxonomy(self)",
-              "start_line": 874,
-              "end_line": 909,
-              "doc": ""
-            }
-          ]
-        },
         {
           "name": "Plugin",
           "bases": [
             "BasePlugin"
           ],
-          "start_line": 912,
-          "end_line": 979,
+          "start_line": 17,
+          "end_line": 81,
           "doc": "WordPress Plugin implementation hooking into RTVS.",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, manifest, app)",
-              "start_line": 915,
-              "end_line": 917,
+              "start_line": 20,
+              "end_line": 21,
               "doc": ""
             },
             {
               "name": "on_load",
               "sig": "on_load(self)",
-              "start_line": 919,
-              "end_line": 920,
+              "start_line": 23,
+              "end_line": 24,
               "doc": ""
             },
             {
               "name": "get_export_destinations",
               "sig": "get_export_destinations(self)",
-              "start_line": 922,
-              "end_line": 924,
+              "start_line": 26,
+              "end_line": 28,
               "doc": ""
             },
             {
               "name": "get_file_open_actions",
               "sig": "get_file_open_actions(self)",
-              "start_line": 926,
-              "end_line": 929,
+              "start_line": 30,
+              "end_line": 33,
               "doc": ""
             },
             {
               "name": "get_export_actions",
               "sig": "get_export_actions(self)",
-              "start_line": 931,
-              "end_line": 940,
+              "start_line": 35,
+              "end_line": 45,
               "doc": ""
             },
             {
               "name": "open_load_existing_episode_dialog",
               "sig": "open_load_existing_episode_dialog(self)",
-              "start_line": 942,
-              "end_line": 944,
+              "start_line": 47,
+              "end_line": 49,
               "doc": ""
             },
             {
               "name": "get_story_actions",
               "sig": "get_story_actions(self, story)",
-              "start_line": 946,
-              "end_line": 950,
+              "start_line": 51,
+              "end_line": 55,
               "doc": ""
             },
             {
               "name": "create_story_metadata_widget",
               "sig": "create_story_metadata_widget(self, parent)",
-              "start_line": 952,
-              "end_line": 954,
+              "start_line": 57,
+              "end_line": 59,
               "doc": ""
             },
             {
               "name": "on_story_selected",
               "sig": "on_story_selected(self, story)",
-              "start_line": 956,
-              "end_line": 957,
+              "start_line": 61,
+              "end_line": 62,
               "doc": ""
             },
             {
               "name": "get_preferences_widget",
               "sig": "get_preferences_widget(self, parent)",
-              "start_line": 959,
-              "end_line": 961,
+              "start_line": 64,
+              "end_line": 66,
               "doc": ""
             },
             {
               "name": "open_publish_dialog",
               "sig": "open_publish_dialog(self, parent, story)",
-              "start_line": 963,
-              "end_line": 965,
+              "start_line": 68,
+              "end_line": 70,
               "doc": ""
             },
             {
               "name": "open_post_metadata_dialog",
               "sig": "open_post_metadata_dialog(self, parent, story)",
-              "start_line": 967,
-              "end_line": 979,
+              "start_line": 72,
+              "end_line": 81,
               "doc": ""
             }
           ]
         }
       ],
-      "functions": [
-        {
-          "name": "capture_video_frame",
-          "sig": "capture_video_frame(video_path, timestamp, output_path, timeout)",
-          "start_line": 67,
-          "end_line": 89,
-          "doc": "Extract a high quality single frame from a video using fast seeking FFmpeg."
-        }
-      ]
+      "functions": []
     },
     "plugins/wordpress/wordpress_dialog.py": {
       "path": "plugins/wordpress/wordpress_dialog.py",
-      "lines": 903,
-      "summary": "WordPress Export Tab Widget and Post Metadata Dialog.",
-      "exports": null,
-      "classes": [
-        {
-          "name": "WordPressExportTabWidget",
-          "bases": [
-            "QWidget"
-          ],
-          "start_line": 80,
-          "end_line": 849,
-          "doc": "Configuration and preview panel for WordPress Draft Posts.",
-          "methods": [
-            {
-              "name": "__init__",
-              "sig": "__init__(self, parent, main_window, metadata_editor_mode)",
-              "start_line": 83,
-              "end_line": 102,
-              "doc": ""
-            },
-            {
-              "name": "_setup_ui",
-              "sig": "_setup_ui(self)",
-              "start_line": 104,
-              "end_line": 331,
-              "doc": ""
-            },
-            {
-              "name": "update_wp_pres_visibility",
-              "sig": "update_wp_pres_visibility(self)",
-              "start_line": 333,
-              "end_line": 334,
-              "doc": ""
-            },
-            {
-              "name": "_update_wp_conn_status",
-              "sig": "_update_wp_conn_status(self)",
-              "start_line": 336,
-              "end_line": 337,
-              "doc": ""
-            },
-            {
-              "name": "_open_wp_settings",
-              "sig": "_open_wp_settings(self)",
-              "start_line": 339,
-              "end_line": 342,
-              "doc": ""
-            },
-            {
-              "name": "_filter_authors_list",
-              "sig": "_filter_authors_list(self, text)",
-              "start_line": 344,
-              "end_line": 345,
-              "doc": ""
-            },
-            {
-              "name": "_filter_categories_list",
-              "sig": "_filter_categories_list(self, text)",
-              "start_line": 347,
-              "end_line": 348,
-              "doc": ""
-            },
-            {
-              "name": "_on_title_edited",
-              "sig": "_on_title_edited(self, text)",
-              "start_line": 350,
-              "end_line": 355,
-              "doc": ""
-            },
-            {
-              "name": "_on_excerpt_edited",
-              "sig": "_on_excerpt_edited(self)",
-              "start_line": 357,
-              "end_line": 361,
-              "doc": ""
-            },
-            {
-              "name": "_auto_generate_current_excerpt",
-              "sig": "_auto_generate_current_excerpt(self)",
-              "start_line": 363,
-              "end_line": 372,
-              "doc": ""
-            },
-            {
-              "name": "_autofill_all_excerpts",
-              "sig": "_autofill_all_excerpts(self)",
-              "start_line": 374,
-              "end_line": 381,
-              "doc": ""
-            },
-            {
-              "name": "_on_author_item_changed",
-              "sig": "_on_author_item_changed(self, item)",
-              "start_line": 383,
-              "end_line": 389,
-              "doc": ""
-            },
-            {
-              "name": "_on_category_item_changed",
-              "sig": "_on_category_item_changed(self, item)",
-              "start_line": 391,
-              "end_line": 396,
-              "doc": ""
-            },
-            {
-              "name": "_clear_current_authors",
-              "sig": "_clear_current_authors(self)",
-              "start_line": 398,
-              "end_line": 404,
-              "doc": ""
-            },
-            {
-              "name": "_clear_current_categories",
-              "sig": "_clear_current_categories(self)",
-              "start_line": 406,
-              "end_line": 412,
-              "doc": ""
-            },
-            {
-              "name": "_get_selected_story_indices",
-              "sig": "_get_selected_story_indices(self)",
-              "start_line": 414,
-              "end_line": 419,
-              "doc": ""
-            },
-            {
-              "name": "_apply_authors_to_selected_stories",
-              "sig": "_apply_authors_to_selected_stories(self)",
-              "start_line": 421,
-              "end_line": 429,
-              "doc": ""
-            },
-            {
-              "name": "_apply_categories_to_selected_stories",
-              "sig": "_apply_categories_to_selected_stories(self)",
-              "start_line": 431,
-              "end_line": 438,
-              "doc": ""
-            },
-            {
-              "name": "_apply_thumbnails_to_selected_stories",
-              "sig": "_apply_thumbnails_to_selected_stories(self)",
-              "start_line": 440,
-              "end_line": 461,
-              "doc": ""
-            },
-            {
-              "name": "_apply_authors_to_all_posts",
-              "sig": "_apply_authors_to_all_posts(self)",
-              "start_line": 463,
-              "end_line": 468,
-              "doc": ""
-            },
-            {
-              "name": "_apply_categories_to_all_posts",
-              "sig": "_apply_categories_to_all_posts(self)",
-              "start_line": 470,
-              "end_line": 474,
-              "doc": ""
-            },
-            {
-              "name": "_apply_thumbnails_to_all_posts",
-              "sig": "_apply_thumbnails_to_all_posts(self)",
-              "start_line": 476,
-              "end_line": 495,
-              "doc": ""
-            },
-            {
-              "name": "_sync_post_to_project",
-              "sig": "_sync_post_to_project(self, idx)",
-              "start_line": 497,
-              "end_line": 498,
-              "doc": ""
-            },
-            {
-              "name": "save_all_posts_to_project",
-              "sig": "save_all_posts_to_project(self)",
-              "start_line": 500,
-              "end_line": 501,
-              "doc": ""
-            },
-            {
-              "name": "_update_post_list_item_label",
-              "sig": "_update_post_list_item_label(self, idx)",
-              "start_line": 503,
-              "end_line": 507,
-              "doc": ""
-            },
-            {
-              "name": "_on_wp_post_selection_changed",
-              "sig": "_on_wp_post_selection_changed(self, row)",
-              "start_line": 509,
-              "end_line": 513,
-              "doc": ""
-            },
-            {
-              "name": "_get_editor_checked_authors",
-              "sig": "_get_editor_checked_authors(self)",
-              "start_line": 515,
-              "end_line": 523,
-              "doc": ""
-            },
-            {
-              "name": "_set_editor_checked_authors",
-              "sig": "_set_editor_checked_authors(self, author_ids, author_term_ids)",
-              "start_line": 525,
-              "end_line": 532,
-              "doc": ""
-            },
-            {
-              "name": "_get_editor_checked_categories",
-              "sig": "_get_editor_checked_categories(self)",
-              "start_line": 534,
-              "end_line": 542,
-              "doc": ""
-            },
-            {
-              "name": "_set_editor_checked_categories",
-              "sig": "_set_editor_checked_categories(self, cat_ids)",
-              "start_line": 544,
-              "end_line": 553,
-              "doc": ""
-            },
-            {
-              "name": "_get_wp_post_bounds",
-              "sig": "_get_wp_post_bounds(self, post_index)",
-              "start_line": 555,
-              "end_line": 560,
-              "doc": ""
-            },
-            {
-              "name": "_sync_wp_slider_to_pos",
-              "sig": "_sync_wp_slider_to_pos(self, pos)",
-              "start_line": 562,
-              "end_line": 570,
-              "doc": ""
-            },
-            {
-              "name": "_on_wp_slider_value_changed",
-              "sig": "_on_wp_slider_value_changed(self, val)",
-              "start_line": 572,
-              "end_line": 581,
-              "doc": ""
-            },
-            {
-              "name": "_on_wp_scrub_timer_timeout",
-              "sig": "_on_wp_scrub_timer_timeout(self)",
-              "start_line": 583,
-              "end_line": 585,
-              "doc": ""
-            },
-            {
-              "name": "_on_wp_step",
-              "sig": "_on_wp_step(self, delta_secs)",
-              "start_line": 587,
-              "end_line": 596,
-              "doc": ""
-            },
-            {
-              "name": "_on_wp_sync_playhead",
-              "sig": "_on_wp_sync_playhead(self)",
-              "start_line": 598,
-              "end_line": 607,
-              "doc": ""
-            },
-            {
-              "name": "_load_post_editor_state",
-              "sig": "_load_post_editor_state(self, index)",
-              "start_line": 609,
-              "end_line": 640,
-              "doc": ""
-            },
-            {
-              "name": "_on_wp_thumb_mode_changed",
-              "sig": "_on_wp_thumb_mode_changed(self)",
-              "start_line": 642,
-              "end_line": 657,
-              "doc": ""
-            },
-            {
-              "name": "_capture_wp_frame",
-              "sig": "_capture_wp_frame(self, pos)",
-              "start_line": 659,
-              "end_line": 677,
-              "doc": ""
-            },
-            {
-              "name": "_on_wp_browse_thumb",
-              "sig": "_on_wp_browse_thumb(self)",
-              "start_line": 679,
-              "end_line": 692,
-              "doc": ""
-            },
-            {
-              "name": "rebuild_post_items",
-              "sig": "rebuild_post_items(self, scope)",
-              "start_line": 694,
-              "end_line": 809,
-              "doc": ""
-            },
-            {
-              "name": "_populate_wp_export_metadata",
-              "sig": "_populate_wp_export_metadata(self, force_refresh)",
-              "start_line": 811,
-              "end_line": 845,
-              "doc": ""
-            },
-            {
-              "name": "_refresh_wp_metadata",
-              "sig": "_refresh_wp_metadata(self)",
-              "start_line": 847,
-              "end_line": 849,
-              "doc": ""
-            }
-          ]
-        },
-        {
-          "name": "WordPressPostMetadataDialog",
-          "bases": [
-            "QDialog"
-          ],
-          "start_line": 852,
-          "end_line": 903,
-          "doc": "Dialog for editing WordPress post metadata for an individual story.",
-          "methods": [
-            {
-              "name": "__init__",
-              "sig": "__init__(self, parent, main_window, target_story_index)",
-              "start_line": 855,
-              "end_line": 900,
-              "doc": ""
-            },
-            {
-              "name": "_on_save_and_close",
-              "sig": "_on_save_and_close(self)",
-              "start_line": 902,
-              "end_line": 903,
-              "doc": ""
-            }
-          ]
-        }
+      "lines": 28,
+      "summary": "Backward-compatible facade for legacy WordPress dialog imports.",
+      "exports": [
+        "WordPressExportTabWidget",
+        "WordPressPostMetadataDialog",
+        "capture_video_frame",
+        "generate_wp_excerpt"
       ],
+      "classes": [],
       "functions": [
         {
           "name": "generate_wp_excerpt",
           "sig": "generate_wp_excerpt(transcript_words, start_t, end_t)",
-          "start_line": 60,
-          "end_line": 62,
-          "doc": ""
-        },
-        {
-          "name": "capture_video_frame",
-          "sig": "capture_video_frame(video_path, timestamp, output_path)",
-          "start_line": 65,
-          "end_line": 77,
-          "doc": ""
+          "start_line": 15,
+          "end_line": 20,
+          "doc": "Legacy wrapper preserving the historical `(transcript_words, start_t, end_t)` signature."
         }
       ]
     },
@@ -8600,6 +8063,119 @@
           "doc": "Persist featured image path, mode, caption, alt text, and frame position into project metadata."
         }
       ]
+    },
+    "plugins/wordpress/wp_publish_dialog.py": {
+      "path": "plugins/wordpress/wp_publish_dialog.py",
+      "lines": 524,
+      "summary": "WordPress single-story publish dialog with featured image and notice options.",
+      "exports": [
+        "WordPressPublishDialog"
+      ],
+      "classes": [
+        {
+          "name": "WordPressPublishDialog",
+          "bases": [
+            "QDialog"
+          ],
+          "start_line": 46,
+          "end_line": 521,
+          "doc": "Publish a story or project to WordPress with featured image selection.",
+          "methods": [
+            {
+              "name": "__init__",
+              "sig": "__init__(self, plugin, parent, story)",
+              "start_line": 49,
+              "end_line": 63,
+              "doc": ""
+            },
+            {
+              "name": "_resolve_spellcheck_context",
+              "sig": "_resolve_spellcheck_context(self)",
+              "start_line": 65,
+              "end_line": 68,
+              "doc": ""
+            },
+            {
+              "name": "setup_ui",
+              "sig": "setup_ui(self)",
+              "start_line": 70,
+              "end_line": 263,
+              "doc": ""
+            },
+            {
+              "name": "load_custom_text_settings",
+              "sig": "load_custom_text_settings(self)",
+              "start_line": 265,
+              "end_line": 278,
+              "doc": "Load persistent custom text defaults from application settings."
+            },
+            {
+              "name": "save_custom_text_defaults",
+              "sig": "save_custom_text_defaults(self)",
+              "start_line": 280,
+              "end_line": 286,
+              "doc": "Save active custom text, placement, and exclusion settings as persistent defaults."
+            },
+            {
+              "name": "load_metadata",
+              "sig": "load_metadata(self)",
+              "start_line": 288,
+              "end_line": 329,
+              "doc": ""
+            },
+            {
+              "name": "do_capture_frame",
+              "sig": "do_capture_frame(self)",
+              "start_line": 331,
+              "end_line": 341,
+              "doc": ""
+            },
+            {
+              "name": "on_image_mode_changed",
+              "sig": "on_image_mode_changed(self)",
+              "start_line": 343,
+              "end_line": 360,
+              "doc": ""
+            },
+            {
+              "name": "on_browse_image",
+              "sig": "on_browse_image(self)",
+              "start_line": 362,
+              "end_line": 373,
+              "doc": ""
+            },
+            {
+              "name": "on_configure_credentials",
+              "sig": "on_configure_credentials(self)",
+              "start_line": 375,
+              "end_line": 380,
+              "doc": ""
+            },
+            {
+              "name": "on_publish",
+              "sig": "on_publish(self)",
+              "start_line": 382,
+              "end_line": 479,
+              "doc": ""
+            },
+            {
+              "name": "on_publish_finished",
+              "sig": "on_publish_finished(self, success, msg, post_data)",
+              "start_line": 481,
+              "end_line": 514,
+              "doc": ""
+            },
+            {
+              "name": "closeEvent",
+              "sig": "closeEvent(self, event)",
+              "start_line": 516,
+              "end_line": 521,
+              "doc": ""
+            }
+          ]
+        }
+      ],
+      "functions": []
     },
     "plugins/wordpress/wp_tab_widget.py": {
       "path": "plugins/wordpress/wp_tab_widget.py",
@@ -9021,6 +8597,42 @@
           "doc": "Construct all controls, forms, sliders, list widgets, and tabbed panels for the WordPress export tab."
         }
       ]
+    },
+    "plugins/wordpress/wp_workers.py": {
+      "path": "plugins/wordpress/wp_workers.py",
+      "lines": 78,
+      "summary": "Background QThread worker for publishing individual WordPress stories.",
+      "exports": [
+        "WordPressPublishWorker"
+      ],
+      "classes": [
+        {
+          "name": "WordPressPublishWorker",
+          "bases": [
+            "QThread"
+          ],
+          "start_line": 13,
+          "end_line": 75,
+          "doc": "Background thread that uploads featured media and publishes a WordPress post.",
+          "methods": [
+            {
+              "name": "__init__",
+              "sig": "__init__(self, client, title, content, excerpt, status, image_path, image_caption, image_alt_text)",
+              "start_line": 18,
+              "end_line": 37,
+              "doc": ""
+            },
+            {
+              "name": "run",
+              "sig": "run(self)",
+              "start_line": 39,
+              "end_line": 75,
+              "doc": ""
+            }
+          ]
+        }
+      ],
+      "functions": []
     },
     "plugins/wordpress/youtube_embed.py": {
       "path": "plugins/wordpress/youtube_embed.py",
@@ -13367,50 +12979,50 @@
     },
     "scripts/modular_audit.py": {
       "path": "scripts/modular_audit.py",
-      "lines": 773,
+      "lines": 771,
       "summary": "scripts/modular_audit.py \u2014 AST Decomposition Suggester & Modular Budget Guard.",
       "exports": null,
       "classes": [
         {
           "name": "ModuleStructure",
           "bases": [],
-          "start_line": 78,
-          "end_line": 251,
+          "start_line": 76,
+          "end_line": 249,
           "doc": "Detailed structural metrics extracted from a Python module.",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, file_path)",
-              "start_line": 81,
-              "end_line": 98,
+              "start_line": 79,
+              "end_line": 96,
               "doc": ""
             },
             {
               "name": "_analyze",
               "sig": "_analyze(self)",
-              "start_line": 100,
-              "end_line": 174,
+              "start_line": 98,
+              "end_line": 172,
               "doc": ""
             },
             {
               "name": "_extract_class_info",
               "sig": "_extract_class_info(self, node, lines)",
-              "start_line": 176,
-              "end_line": 204,
+              "start_line": 174,
+              "end_line": 202,
               "doc": ""
             },
             {
               "name": "_extract_func_info",
               "sig": "_extract_func_info(self, node, lines)",
-              "start_line": 206,
-              "end_line": 215,
+              "start_line": 204,
+              "end_line": 213,
               "doc": ""
             },
             {
               "name": "_classify_domain",
               "sig": "_classify_domain(name, bases, method_names)",
-              "start_line": 218,
-              "end_line": 251,
+              "start_line": 216,
+              "end_line": 249,
               "doc": "Classifies a class or function into a logical domain based on naming and signatures."
             }
           ]
@@ -13418,36 +13030,36 @@
         {
           "name": "DecompositionPlan",
           "bases": [],
-          "start_line": 258,
-          "end_line": 420,
+          "start_line": 256,
+          "end_line": 418,
           "doc": "Proposed modular decomposition plan for a monolithic source file.",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, structure)",
-              "start_line": 261,
-              "end_line": 269,
+              "start_line": 259,
+              "end_line": 267,
               "doc": ""
             },
             {
               "name": "_classify_method_domain",
               "sig": "_classify_method_domain(m_name)",
-              "start_line": 272,
-              "end_line": 282,
+              "start_line": 270,
+              "end_line": 280,
               "doc": ""
             },
             {
               "name": "_build_plan",
               "sig": "_build_plan(self)",
-              "start_line": 284,
-              "end_line": 387,
+              "start_line": 282,
+              "end_line": 385,
               "doc": ""
             },
             {
               "name": "render_markdown_blueprint",
               "sig": "render_markdown_blueprint(self)",
-              "start_line": 389,
-              "end_line": 420,
+              "start_line": 387,
+              "end_line": 418,
               "doc": ""
             }
           ]
@@ -13457,43 +13069,43 @@
         {
           "name": "scan_repository",
           "sig": "scan_repository(root_dir)",
-          "start_line": 427,
-          "end_line": 439,
+          "start_line": 425,
+          "end_line": 437,
           "doc": "Scans all Python modules in the repository, excluding build/venv directories."
         },
         {
           "name": "print_audit_report",
           "sig": "print_audit_report(structures, warn_threshold, hard_ceiling, sort_by)",
-          "start_line": 442,
-          "end_line": 483,
+          "start_line": 440,
+          "end_line": 481,
           "doc": "Prints a formatted terminal table showing modularity compliance."
         },
         {
           "name": "check_budget_guard",
           "sig": "check_budget_guard(structures, hard_ceiling, warn_threshold, exempt_paths)",
-          "start_line": 486,
-          "end_line": 519,
+          "start_line": 484,
+          "end_line": 517,
           "doc": "Programmatic budget check suitable for test runner and CI pipelines."
         },
         {
           "name": "check_single_responsibility",
           "sig": "check_single_responsibility(structure, strict)",
-          "start_line": 522,
-          "end_line": 610,
+          "start_line": 520,
+          "end_line": 608,
           "doc": "Analyzes AST domain classification to verify Single Responsibility & Domain Separation."
         },
         {
           "name": "print_srp_report",
           "sig": "print_srp_report(results, strict)",
-          "start_line": 613,
-          "end_line": 657,
+          "start_line": 611,
+          "end_line": 655,
           "doc": "Prints a structured terminal report for Single Responsibility & Domain Separation."
         },
         {
           "name": "main",
           "sig": "main()",
-          "start_line": 660,
-          "end_line": 769,
+          "start_line": 658,
+          "end_line": 767,
           "doc": ""
         }
       ]
@@ -15324,7 +14936,7 @@
     },
     "spellcheck_widgets.py": {
       "path": "spellcheck_widgets.py",
-      "lines": 600,
+      "lines": 697,
       "summary": "spellcheck_widgets.py \u2014 Inline Qt Spellcheck Highlighting & Context Menu UI.",
       "exports": [
         "SpellCheckHighlighter",
@@ -15339,29 +14951,29 @@
           "bases": [
             "QSyntaxHighlighter"
           ],
-          "start_line": 149,
-          "end_line": 166,
+          "start_line": 175,
+          "end_line": 192,
           "doc": "QSyntaxHighlighter drawing red spellcheck underlines in QTextEdit / QPlainTextEdit.",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, document, spellchecker)",
-              "start_line": 152,
-              "end_line": 155,
+              "start_line": 178,
+              "end_line": 181,
               "doc": ""
             },
             {
               "name": "refresh_format",
               "sig": "refresh_format(self)",
-              "start_line": 157,
-              "end_line": 158,
+              "start_line": 183,
+              "end_line": 184,
               "doc": ""
             },
             {
               "name": "highlightBlock",
               "sig": "highlightBlock(self, text)",
-              "start_line": 160,
-              "end_line": 166,
+              "start_line": 186,
+              "end_line": 192,
               "doc": ""
             }
           ]
@@ -15371,22 +14983,22 @@
           "bases": [
             "QWidget"
           ],
-          "start_line": 199,
-          "end_line": 277,
+          "start_line": 225,
+          "end_line": 305,
           "doc": "Mouse-transparent overlay painting wavy red underlines onto a QLineEdit.",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, line_edit, controller)",
-              "start_line": 202,
-              "end_line": 210,
+              "start_line": 228,
+              "end_line": 236,
               "doc": ""
             },
             {
               "name": "paintEvent",
               "sig": "paintEvent(self, event)",
-              "start_line": 212,
-              "end_line": 277,
+              "start_line": 238,
+              "end_line": 305,
               "doc": ""
             }
           ]
@@ -15396,106 +15008,120 @@
           "bases": [
             "QObject"
           ],
-          "start_line": 280,
-          "end_line": 539,
+          "start_line": 308,
+          "end_line": 631,
           "doc": "Coordinates inline spellcheck highlighting and context menus on a text widget.",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, widget, main_window, spellchecker)",
-              "start_line": 283,
-              "end_line": 299,
+              "start_line": 311,
+              "end_line": 328,
               "doc": ""
+            },
+            {
+              "name": "is_alive",
+              "sig": "is_alive(self)",
+              "start_line": 330,
+              "end_line": 332,
+              "doc": "Return True when both this controller and its attached widget remain valid."
+            },
+            {
+              "name": "dispose",
+              "sig": "dispose(self)",
+              "start_line": 334,
+              "end_line": 350,
+              "doc": "Unregister this controller and break cyclic references after widget teardown."
             },
             {
               "name": "_detect_line_edit",
               "sig": "_detect_line_edit(widget)",
-              "start_line": 302,
-              "end_line": 305,
+              "start_line": 353,
+              "end_line": 356,
               "doc": ""
             },
             {
               "name": "_install",
               "sig": "_install(self)",
-              "start_line": 307,
-              "end_line": 336,
+              "start_line": 358,
+              "end_line": 396,
               "doc": ""
             },
             {
               "name": "eventFilter",
               "sig": "eventFilter(self, obj, event)",
-              "start_line": 338,
-              "end_line": 347,
+              "start_line": 398,
+              "end_line": 412,
               "doc": ""
             },
             {
               "name": "_on_line_edit_changed",
               "sig": "_on_line_edit_changed(self, *_args)",
-              "start_line": 349,
-              "end_line": 352,
+              "start_line": 414,
+              "end_line": 420,
               "doc": ""
             },
             {
               "name": "_on_line_edit_cursor_changed",
               "sig": "_on_line_edit_cursor_changed(self, *_args)",
-              "start_line": 354,
-              "end_line": 356,
+              "start_line": 422,
+              "end_line": 427,
               "doc": ""
             },
             {
               "name": "_recompute_line_edit_issues",
               "sig": "_recompute_line_edit_issues(self)",
-              "start_line": 358,
-              "end_line": 361,
+              "start_line": 429,
+              "end_line": 436,
               "doc": ""
             },
             {
               "name": "_get_widget_text",
               "sig": "_get_widget_text(self)",
-              "start_line": 363,
-              "end_line": 373,
+              "start_line": 438,
+              "end_line": 453,
               "doc": ""
             },
             {
               "name": "get_issues",
               "sig": "get_issues(self)",
-              "start_line": 375,
-              "end_line": 377,
+              "start_line": 455,
+              "end_line": 460,
               "doc": "Return current misspelled `SpellIssue` spans for the attached widget."
             },
             {
               "name": "refresh",
               "sig": "refresh(self, main_window, added_word)",
-              "start_line": 379,
-              "end_line": 396,
+              "start_line": 462,
+              "end_line": 484,
               "doc": "Refresh allowlist from Glossary/speakers and re-run inline highlighting."
             },
             {
               "name": "apply_suggestion",
               "sig": "apply_suggestion(self, issue, replacement, block_offset)",
-              "start_line": 398,
-              "end_line": 455,
+              "start_line": 486,
+              "end_line": 543,
               "doc": "Replace the misspelled `issue` span with `replacement` in the attached widget."
             },
             {
               "name": "_locate_issue_at_point",
               "sig": "_locate_issue_at_point(self, pos)",
-              "start_line": 457,
-              "end_line": 479,
+              "start_line": 545,
+              "end_line": 568,
               "doc": "Return `(SpellIssue, block_start_offset)` for a widget-local click position."
             },
             {
               "name": "_on_context_menu_requested",
               "sig": "_on_context_menu_requested(self, pos)",
-              "start_line": 481,
-              "end_line": 534,
+              "start_line": 570,
+              "end_line": 626,
               "doc": ""
             },
             {
               "name": "ignore_word",
               "sig": "ignore_word(self, word)",
-              "start_line": 536,
-              "end_line": 539,
+              "start_line": 628,
+              "end_line": 631,
               "doc": "Ignore `word` for the remainder of the session and refresh all editors."
             }
           ]
@@ -15503,52 +15129,66 @@
       ],
       "functions": [
         {
+          "name": "_is_qt_object_alive",
+          "sig": "_is_qt_object_alive(obj)",
+          "start_line": 62,
+          "end_line": 71,
+          "doc": "Return False when `obj` is None or its underlying C++ Qt object was deleted."
+        },
+        {
+          "name": "_make_destroyed_cleanup_callback",
+          "sig": "_make_destroyed_cleanup_callback(ctrl_ref)",
+          "start_line": 74,
+          "end_line": 80,
+          "doc": ""
+        },
+        {
           "name": "_is_real_qt_widget",
           "sig": "_is_real_qt_widget(widget)",
-          "start_line": 57,
-          "end_line": 62,
+          "start_line": 83,
+          "end_line": 88,
           "doc": "Return True when running under real PySide6 rather than qt_compat mocks."
         },
         {
           "name": "_spell_underline_color",
           "sig": "_spell_underline_color()",
-          "start_line": 65,
-          "end_line": 77,
+          "start_line": 91,
+          "end_line": 103,
           "doc": "Select an accessible red underline color for the active application theme."
         },
         {
           "name": "_make_misspelled_char_format",
           "sig": "_make_misspelled_char_format()",
-          "start_line": 80,
-          "end_line": 89,
+          "start_line": 106,
+          "end_line": 115,
           "doc": ""
         },
         {
           "name": "add_word_to_glossary",
           "sig": "add_word_to_glossary(word, main_window)",
-          "start_line": 92,
-          "end_line": 146,
+          "start_line": 118,
+          "end_line": 172,
           "doc": "Persist `word` to the application's custom Glossary and refresh spellcheckers."
         },
         {
           "name": "_compute_line_edit_scroll_offset",
           "sig": "_compute_line_edit_scroll_offset(line_edit, text, font_metrics, contents_rect, inner_left)",
-          "start_line": 169,
-          "end_line": 196,
+          "start_line": 195,
+          "end_line": 222,
           "doc": "Compute horizontal pixel scroll offset for a single-line QLineEdit."
         },
         {
           "name": "attach_spellcheck",
           "sig": "attach_spellcheck(widget, main_window, spellchecker)",
-          "start_line": 542,
-          "end_line": 582,
+          "start_line": 634,
+          "end_line": 674,
           "doc": "Attach Tier 1 offline spellchecking to a QLineEdit, QTextEdit, QPlainTextEdit,"
         },
         {
           "name": "refresh_all_spellcheckers",
           "sig": "refresh_all_spellcheckers(main_window, added_word)",
-          "start_line": 585,
-          "end_line": 591,
+          "start_line": 677,
+          "end_line": 688,
           "doc": "Re-sync Glossary/speaker allowlists and re-highlight every attached editor."
         }
       ]
@@ -18651,7 +18291,7 @@
     "transcript_story.py": {
       "path": "transcript_story.py",
       "lines": 856,
-      "summary": "Radio & TV Segmenter v3.10.13-beta \u2014 transcript story responsibilities.",
+      "summary": "Radio & TV Segmenter v3.10.14-beta \u2014 transcript story responsibilities.",
       "exports": [
         "TranscriptStoryMixin",
         "Story",

@@ -538,12 +538,67 @@ class DiagnosticSpeakerCleanupTestsMixin:
                     self.app = app_obj
 
             wp_dlg = WordPressPublishDialog(_MockWpPlugin(mw), parent=None)
-            for _wp_attr in ("title_edit", "excerpt_edit", "custom_text_edit", "img_caption_edit", "img_alt_edit"):
-                wp_ctrl = getattr(wp_dlg, _wp_attr).__dict__.get("_spellcheck_controller")
-                if wp_ctrl is None or getattr(wp_ctrl, "main_window", None) is not mw:
+            try:
+                for _wp_attr in ("title_edit", "excerpt_edit", "custom_text_edit", "img_caption_edit", "img_alt_edit"):
+                    wp_ctrl = getattr(wp_dlg, _wp_attr).__dict__.get("_spellcheck_controller")
+                    if wp_ctrl is None or getattr(wp_ctrl, "main_window", None) is not mw:
+                        raise AssertionError(
+                            f"WordPressPublishDialog.{_wp_attr} did not resolve spellcheck main_window via plugin.app"
+                        )
+            finally:
+                wp_dlg.close()
+                wp_dlg.deleteLater()
+
+            # Verify destroyed/C++-deleted Qt widgets auto-unregister and never raise on global refresh
+            from spellcheck_widgets import _ACTIVE_CONTROLLERS
+            try:
+                import shiboken6
+            except ImportError:
+                shiboken6 = None
+
+            if shiboken6 is not None and getattr(type(title_edit), "__module__", "").startswith("PySide6."):
+                import logging
+
+                ephemeral_le = QLineEdit("teh quick")
+                ephemeral_te = QTextEdit("teh brown")
+                ephemeral_le_ctrl = attach_spellcheck(ephemeral_le, main_window=mw, spellchecker=checker)
+                ephemeral_te_ctrl = attach_spellcheck(ephemeral_te, main_window=mw, spellchecker=checker)
+                assert ephemeral_le_ctrl is not None and ephemeral_le_ctrl.is_alive()
+                assert ephemeral_te_ctrl is not None and ephemeral_te_ctrl.is_alive()
+
+                shiboken6.delete(ephemeral_le)
+                shiboken6.delete(ephemeral_te)
+                if ephemeral_le_ctrl.is_alive() or ephemeral_te_ctrl.is_alive():
+                    raise AssertionError("Deleted Qt widgets must mark SpellCheckController as not alive")
+                if ephemeral_le_ctrl in _ACTIVE_CONTROLLERS or ephemeral_te_ctrl in _ACTIVE_CONTROLLERS:
+                    raise AssertionError("Destroyed signal should remove SpellCheckController from _ACTIVE_CONTROLLERS")
+
+                # Simulate a stale entry remaining in _ACTIVE_CONTROLLERS with a deleted widget pointer
+                ephemeral_le_ctrl.widget = ephemeral_le
+                _ACTIVE_CONTROLLERS.add(ephemeral_le_ctrl)
+                captured_warnings = []
+
+                class _SpellWarnHandler(logging.Handler):
+                    def emit(self, record):
+                        if record.levelno >= logging.WARNING:
+                            captured_warnings.append(record.getMessage())
+
+                sp_logger = logging.getLogger("spellcheck_widgets")
+                warn_handler = _SpellWarnHandler()
+                sp_logger.addHandler(warn_handler)
+                try:
+                    refresh_all_spellcheckers(main_window=mw)
+                finally:
+                    sp_logger.removeHandler(warn_handler)
+
+                if captured_warnings:
                     raise AssertionError(
-                        f"WordPressPublishDialog.{_wp_attr} did not resolve spellcheck main_window via plugin.app"
+                        f"refresh_all_spellcheckers emitted warnings for deleted widget: {captured_warnings}"
                     )
+                if ephemeral_le_ctrl in _ACTIVE_CONTROLLERS or ephemeral_le_ctrl.is_alive():
+                    raise AssertionError("refresh_all_spellcheckers must dispose stale deleted-widget controllers")
+                if ephemeral_le_ctrl._get_widget_text() != "":
+                    raise AssertionError("Deleted controller _get_widget_text() should safely return empty string")
 
             # Verify horizontal scroll estimation uses cursorPositionAt on overflowing QLineEdit text
             from spellcheck_widgets import _compute_line_edit_scroll_offset

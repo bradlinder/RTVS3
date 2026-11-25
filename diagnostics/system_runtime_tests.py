@@ -358,6 +358,10 @@ class DiagnosticSystemRuntimeTestsMixin:
             "build_installer.py",
             "model_management.py",
             "model_cleanup_dialog.py",
+            "plugins/wordpress/plugin.py",
+            "plugins/wordpress/wordpress_dialog.py",
+            "plugins/wordpress/wp_publish_dialog.py",
+            "plugins/wordpress/wp_workers.py",
         ]
 
         violations = []

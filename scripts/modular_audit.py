@@ -61,8 +61,6 @@ GRANDFATHERED_LEGACY_MODULES = {
     "core_utils.py",
     "export/dialog.py",
     "plugins/wordpress/client.py",
-    "plugins/wordpress/plugin.py",
-    "plugins/wordpress/wordpress_dialog.py",
     "plugins/wordpress/export_destination.py",
     "plugins/youtube/plugin.py",
     "plugins/youtube/export_destination.py",

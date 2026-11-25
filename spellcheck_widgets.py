@@ -53,6 +53,32 @@ from spellcheck_helper import (
 _logger = logging.getLogger(__name__)
 _ACTIVE_CONTROLLERS: "weakref.WeakSet[SpellCheckController]" = weakref.WeakSet()
 
+try:
+    from shiboken6 import isValid as _shiboken_is_valid
+except Exception:
+    _shiboken_is_valid = None
+
+
+def _is_qt_object_alive(obj: Any) -> bool:
+    """Return False when `obj` is None or its underlying C++ Qt object was deleted."""
+    if obj is None:
+        return False
+    if _shiboken_is_valid is not None:
+        try:
+            return bool(_shiboken_is_valid(obj))
+        except Exception:
+            return False
+    return True
+
+
+def _make_destroyed_cleanup_callback(ctrl_ref: "weakref.ref[SpellCheckController]"):
+    def _on_destroyed(*_args: Any) -> None:
+        ctrl = ctrl_ref()
+        if ctrl is not None:
+            ctrl.dispose()
+
+    return _on_destroyed
+
 
 def _is_real_qt_widget(widget: Any) -> bool:
     """Return True when running under real PySide6 rather than qt_compat mocks."""
@@ -211,9 +237,11 @@ class _LineEditSpellOverlay(QWidget):
 
     def paintEvent(self, event: Any) -> None:
         le = self._line_edit
-        if le is None or not le.isVisible():
+        if not _is_qt_object_alive(le) or not _is_qt_object_alive(self._controller):
             return
         try:
+            if not le.isVisible():
+                return
             if le.echoMode() != QLineEdit.EchoMode.Normal:
                 return
         except Exception:
@@ -296,7 +324,30 @@ class SpellCheckController(QObject):
         self._cached_issues: List[SpellIssue] = []
 
         self._install()
-        _ACTIVE_CONTROLLERS.add(self)
+        if self.is_alive():
+            _ACTIVE_CONTROLLERS.add(self)
+
+    def is_alive(self) -> bool:
+        """Return True when both this controller and its attached widget remain valid."""
+        return _is_qt_object_alive(self) and _is_qt_object_alive(self.widget)
+
+    def dispose(self) -> None:
+        """Unregister this controller and break cyclic references after widget teardown."""
+        _ACTIVE_CONTROLLERS.discard(self)
+        w = getattr(self, "widget", None)
+        if w is not None:
+            try:
+                w_dict = getattr(w, "__dict__", None)
+                if isinstance(w_dict, dict) and w_dict.get("_spellcheck_controller") is self:
+                    w_dict.pop("_spellcheck_controller", None)
+            except Exception:
+                pass
+        try:
+            self.widget = None
+            self._overlay = None
+            self.highlighter = None
+        except Exception:
+            pass
 
     @staticmethod
     def _detect_line_edit(widget: Any) -> bool:
@@ -306,8 +357,17 @@ class SpellCheckController(QObject):
 
     def _install(self) -> None:
         w = self.widget
-        if w is None:
+        if not _is_qt_object_alive(w):
             return
+
+        cleanup_cb = _make_destroyed_cleanup_callback(weakref.ref(self))
+        for target_obj in (w, self):
+            destroyed_sig = getattr(target_obj, "destroyed", None)
+            if destroyed_sig is not None and hasattr(destroyed_sig, "connect"):
+                try:
+                    destroyed_sig.connect(cleanup_cb)
+                except Exception:
+                    _logger.debug("Failed connecting destroyed signal for spellcheck cleanup", exc_info=True)
 
         if self._is_line_edit:
             if _is_real_qt_widget(w):
@@ -336,48 +396,74 @@ class SpellCheckController(QObject):
                 _logger.warning("Failed wiring custom context menu for spellcheck", exc_info=True)
 
     def eventFilter(self, obj: Any, event: Any) -> bool:
-        if obj is self.widget and self._overlay is not None and event is not None:
+        if not self.is_alive():
+            self.dispose()
+            return False
+        if obj is self.widget and _is_qt_object_alive(self._overlay) and event is not None:
             try:
                 etype = event.type()
                 if etype in (QEvent.Type.Resize, QEvent.Type.FontChange, QEvent.Type.Show):
                     self._overlay.setGeometry(self.widget.rect())
                     self._overlay.update()
+            except RuntimeError:
+                self.dispose()
             except Exception:
                 _logger.debug("Spellcheck overlay eventFilter error", exc_info=True)
         return False
 
     def _on_line_edit_changed(self, *_args: Any) -> None:
+        if not self.is_alive():
+            self.dispose()
+            return
         self._recompute_line_edit_issues()
-        if self._overlay is not None:
+        if _is_qt_object_alive(self._overlay):
             self._overlay.update()
 
     def _on_line_edit_cursor_changed(self, *_args: Any) -> None:
-        if self._overlay is not None:
+        if not self.is_alive():
+            self.dispose()
+            return
+        if _is_qt_object_alive(self._overlay):
             self._overlay.update()
 
     def _recompute_line_edit_issues(self) -> List[SpellIssue]:
+        if not self.is_alive():
+            self.dispose()
+            self._cached_issues = []
+            return []
         text = self._get_widget_text()
         self._cached_issues = self.spellchecker.find_misspelled_spans(text)
         return self._cached_issues
 
     def _get_widget_text(self) -> str:
-        w = self.widget
-        if w is None:
+        if not self.is_alive():
+            self.dispose()
             return ""
-        if self._is_line_edit:
-            return str(w.text() if hasattr(w, "text") else "")
-        if hasattr(w, "toPlainText"):
-            return str(w.toPlainText())
-        if hasattr(w, "text"):
-            return str(w.text())
+        w = self.widget
+        try:
+            if self._is_line_edit:
+                return str(w.text() if hasattr(w, "text") else "")
+            if hasattr(w, "toPlainText"):
+                return str(w.toPlainText())
+            if hasattr(w, "text"):
+                return str(w.text())
+        except RuntimeError:
+            self.dispose()
+            return ""
         return ""
 
     def get_issues(self) -> List[SpellIssue]:
         """Return current misspelled `SpellIssue` spans for the attached widget."""
+        if not self.is_alive():
+            self.dispose()
+            return []
         return self.spellchecker.find_misspelled_spans(self._get_widget_text())
 
     def refresh(self, main_window: Any = None, added_word: Optional[str] = None) -> None:
         """Refresh allowlist from Glossary/speakers and re-run inline highlighting."""
+        if not self.is_alive():
+            self.dispose()
+            return
         if added_word:
             self.spellchecker.add_words([added_word])
         win = main_window if main_window is not None else self.main_window
@@ -386,20 +472,22 @@ class SpellCheckController(QObject):
 
         if self._is_line_edit:
             self._recompute_line_edit_issues()
-            if self._overlay is not None:
+            if _is_qt_object_alive(self._overlay):
                 self._overlay.update()
-        elif self.highlighter is not None:
+        elif _is_qt_object_alive(self.highlighter):
             try:
                 self.highlighter.refresh_format()
                 self.highlighter.rehighlight()
+            except RuntimeError:
+                self.dispose()
             except Exception:
                 _logger.debug("Failed rehighlighting QTextEdit spellcheck", exc_info=True)
 
     def apply_suggestion(self, issue: SpellIssue, replacement: str, block_offset: int = 0) -> bool:
         """Replace the misspelled `issue` span with `replacement` in the attached widget."""
-        w = self.widget
-        if w is None or issue is None:
+        if not self.is_alive() or issue is None:
             return False
+        w = self.widget
 
         abs_start = block_offset + issue.start
         abs_end = block_offset + issue.end
@@ -428,7 +516,7 @@ class SpellCheckController(QObject):
                     except Exception:
                         _logger.debug("Failed emitting textEdited after suggestion apply", exc_info=True)
             self._recompute_line_edit_issues()
-            if self._overlay is not None:
+            if _is_qt_object_alive(self._overlay):
                 self._overlay.update()
             return True
 
@@ -456,9 +544,10 @@ class SpellCheckController(QObject):
 
     def _locate_issue_at_point(self, pos: QPoint) -> Tuple[Optional[SpellIssue], int]:
         """Return `(SpellIssue, block_start_offset)` for a widget-local click position."""
-        w = self.widget
-        if w is None:
+        if not self.is_alive():
+            self.dispose()
             return None, 0
+        w = self.widget
 
         if self._is_line_edit:
             try:
@@ -479,8 +568,11 @@ class SpellCheckController(QObject):
         return None, 0
 
     def _on_context_menu_requested(self, pos: QPoint) -> None:
+        if not self.is_alive():
+            self.dispose()
+            return
         w = self.widget
-        if w is None or not _is_real_qt_widget(w):
+        if not _is_real_qt_widget(w):
             return
 
         # Refresh allowlist lazily right before showing context menu
@@ -562,7 +654,7 @@ def attach_spellcheck(
 
     target_dict = getattr(target, "__dict__", {})
     existing = target_dict.get("_spellcheck_controller") if isinstance(target_dict, dict) else None
-    if isinstance(existing, SpellCheckController):
+    if isinstance(existing, SpellCheckController) and existing.is_alive():
         if main_window is not None and existing.main_window is None:
             existing.main_window = main_window
         existing.refresh(main_window=main_window)
@@ -585,8 +677,13 @@ def attach_spellcheck(
 def refresh_all_spellcheckers(main_window: Any = None, added_word: Optional[str] = None) -> None:
     """Re-sync Glossary/speaker allowlists and re-highlight every attached editor."""
     for controller in list(_ACTIVE_CONTROLLERS):
+        if not controller.is_alive():
+            controller.dispose()
+            continue
         try:
             controller.refresh(main_window=main_window, added_word=added_word)
+        except RuntimeError:
+            controller.dispose()
         except Exception:
             _logger.warning("Failed to refresh spellcheck controller", exc_info=True)
 

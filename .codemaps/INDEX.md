@@ -1,13 +1,13 @@
 # Repository Symbol Index & API Map
 
-> Generated: 2026-11-25 11:41:57 | Total Files: 191
+> Generated: 2026-11-25 12:07:16 | Total Files: 193
 > Use `python scripts/generate_symbol_index.py --outline <file>` for exact line numbers.
 
 ## Modules Overview
 
 | Module | Lines | Summary | Primary Classes / Functions |
 | :--- | :---: | :--- | :--- |
-| `RadioTVSegmenter.py` | 684 | Radio & TV Segmenter — v3.10.13-beta | `MainWindow`, `main()` |
+| `RadioTVSegmenter.py` | 684 | Radio & TV Segmenter — v3.10.14-beta | `MainWindow`, `main()` |
 | `audio_normalization.py` | 474 | Radio & TV Story Segmenter — Audio Loudness Probing & Nor... | `LoudnessReport`, `parse_ebur128_summary()`, `probe_media_duration_seconds()`, `probe_media_loudness()` *(+2 more)* |
 | `audio_normalization_worker.py` | 89 | Background QThread worker for non-blocking EBU R128 loudn... | `AudioLoudnessProbeWorker` |
 | `background_workers.py` | 1051 | Radio & TV Story Segmenter — Background Worker Threads & ... | `StoryAutoDetectWorker`, `WaveformWorker`, `VideoThumbnailWorker`, `get_waveform_peak_cache_path()` *(+6 more)* |
@@ -32,7 +32,7 @@
 | `diagnostic_helpers.py` | 155 | Helper fixtures, module resolvers, and DiagnosticItem for... | `DiagnosticItem`, `generate_synthetic_wav()` |
 | `diagnostic_loudness_tests.py` | 404 | Radio & TV Story Segmenter — Diagnostic Loudness Normaliz... | `DiagnosticLoudnessTestsMixin` |
 | `diagnostic_selector.py` | 202 | Smart Diagnostic Test Selector for Radio & TV Story Segme... | `get_modified_files()`, `has_git_changes()`, `detect_changed_tokens()`, `select_diagnostic_items()` |
-| `diagnostic_speaker_cleanup_tests.py` | 937 | Diagnostic tests for Phase 2 features: minimum story leng... | `DiagnosticSpeakerCleanupTestsMixin` |
+| `diagnostic_speaker_cleanup_tests.py` | 992 | Diagnostic tests for Phase 2 features: minimum story leng... | `DiagnosticSpeakerCleanupTestsMixin` |
 | `diagnostic_wordpress_tests.py` | 109 | Diagnostic tests for WordPress PublishPress Author mappin... | `DiagnosticWordPressTestsMixin` |
 | `diagnostics/__init__.py` | 28 | Modular diagnostic test mixin components for the RTVS Tes... | - |
 | `diagnostics/batch_export_tests.py` | 469 | Batch processing, drag-and-drop ingestion, PDF, and DAW e... | `DiagnosticBatchExportTestsMixin` |
@@ -42,9 +42,9 @@
 | `diagnostics/editor_story_ui_tests.py` | 539 | Story transcript highlighting, smart copy, duration & hea... | `DiagnosticEditorStoryUiTestsMixin` |
 | `diagnostics/export_pipeline.py` | 485 | Multi-format export pipeline, scope slicing, and audio ca... | `DiagnosticExportPipelineMixin` |
 | `diagnostics/export_wordpress_core.py` | 579 | WordPress export scope, content formatting, and YouTube e... | `DiagnosticExportWordPressCoreMixin` |
-| `diagnostics/export_wordpress_media.py` | 585 | WordPress featured image metadata and Castos podcast diag... | `DiagnosticExportWordPressMediaMixin` |
+| `diagnostics/export_wordpress_media.py` | 603 | WordPress featured image metadata and Castos podcast diag... | `DiagnosticExportWordPressMediaMixin` |
 | `diagnostics/export_wordpress_upload.py` | 668 | WordPress multi-story upload, Gutenberg hygiene, and audi... | `DiagnosticExportWordPressUploadMixin` |
-| `diagnostics/system_runtime_tests.py` | 387 | System runtime, updater, theme, packaging, roadmap, and m... | `DiagnosticSystemRuntimeTestsMixin` |
+| `diagnostics/system_runtime_tests.py` | 391 | System runtime, updater, theme, packaging, roadmap, and m... | `DiagnosticSystemRuntimeTestsMixin` |
 | `diagnostics/voice_and_media_tests.py` | 438 | Voice profile matching, waveform peak cache, and playback... | `DiagnosticVoiceAndMediaTestsMixin` |
 | `dialogs.py` | 433 | Radio & TV Story Segmenter — Audio Loudness Normalization... | `AudioLoudnessNormalizationDialog` |
 | `diarization_processing.py` | 772 | Speaker diarization process management for Radio & TV Sto... | `DiarizationProcessingMixin` |
@@ -95,11 +95,13 @@
 | `plugins/wordpress/client.py` | 2169 | WordPress Plugin — Client, Credential Storage, and Upload... | `WordPressClient`, `WordPressSettingsDialog`, `WordPressPreferencesPage`, `format_rich_text_to_html()` *(+6 more)* |
 | `plugins/wordpress/episode_updater.py` | 999 | WordPress Existing Episode Lookup, Backfill Mode, Date Sc... | `LoadWordPressEpisodeDialog`, `extract_slug_or_id_from_url()`, `clean_html_to_plain_excerpt()`, `build_story_slug()` *(+9 more)* |
 | `plugins/wordpress/export_destination.py` | 794 | WordPress Export Destination for UnifiedExportDialog. | `WordPressExportDestination`, `WordPressPostMetadataDialog` |
-| `plugins/wordpress/plugin.py` | 980 | WordPress Publisher Plugin for Radio & TV Segmenter. | `WordPressPublishDialog`, `WordPressPublishWorker`, `WordPressStoryMetadataWidget`, `Plugin` *(+1 more)* |
-| `plugins/wordpress/wordpress_dialog.py` | 903 | WordPress Export Tab Widget and Post Metadata Dialog. | `WordPressExportTabWidget`, `WordPressPostMetadataDialog`, `generate_wp_excerpt()`, `capture_video_frame()` |
+| `plugins/wordpress/plugin.py` | 89 | WordPress Publisher Plugin for Radio & TV Segmenter. | `Plugin` |
+| `plugins/wordpress/wordpress_dialog.py` | 28 | Backward-compatible facade for legacy WordPress dialog im... | `generate_wp_excerpt()` |
 | `plugins/wordpress/wp_post_builder.py` | 377 | Post item builder, transcript slicing, and video frame ex... | `capture_video_frame()`, `get_primary_text_slice()`, `build_wp_post_items()`, `sync_featured_image_meta()` |
+| `plugins/wordpress/wp_publish_dialog.py` | 524 | WordPress single-story publish dialog with featured image... | `WordPressPublishDialog` |
 | `plugins/wordpress/wp_tab_widget.py` | 979 | WordPress export tab configuration widget and preview con... | `WordPressExportTabWidget` |
 | `plugins/wordpress/wp_ui_builder.py` | 807 | UI layout construction and widget setup for WordPressExpo... | `setup_wp_tab_ui()` |
+| `plugins/wordpress/wp_workers.py` | 78 | Background QThread worker for publishing individual WordP... | `WordPressPublishWorker` |
 | `plugins/wordpress/youtube_embed.py` | 615 | YouTube Video Embed helpers, Gutenberg iframe generator, ... | `extract_youtube_video_id()`, `build_youtube_embed_block()`, `setup_wp_youtube_ui()`, `update_youtube_status_label()` *(+3 more)* |
 | `plugins/youtube/__init__.py` | 9 | YouTube Video Publisher Plugin for Radio & TV Segmenter. | - |
 | `plugins/youtube/export_destination.py` | 613 | YouTube Export Destination for UnifiedExportDialog with Z... | `YouTubeExportTabWidget`, `YouTubeExportDestination`, `capture_video_frame()` |
@@ -130,7 +132,7 @@
 | `scripts/generate_pyi_stubs.py` | 214 | generate_pyi_stubs.py — Automated Interface Typing Stub (... | `StubTransformer`, `generate_stub_source()`, `get_large_modules()`, `generate_stub_file()` *(+1 more)* |
 | `scripts/generate_symbol_index.py` | 380 | generate_symbol_index.py — Fast AST Symbol Indexer & Repo... | `parse_function_signature()`, `analyze_file()`, `scan_repository()`, `generate_index_markdown()` *(+4 more)* |
 | `scripts/log_summary.py` | 150 | log_summary.py — Compact Error & Exception Extraction Engine | `is_project_frame()`, `extract_log_summary()`, `main()` |
-| `scripts/modular_audit.py` | 773 | scripts/modular_audit.py — AST Decomposition Suggester & ... | `ModuleStructure`, `DecompositionPlan`, `scan_repository()`, `print_audit_report()` *(+4 more)* |
+| `scripts/modular_audit.py` | 771 | scripts/modular_audit.py — AST Decomposition Suggester & ... | `ModuleStructure`, `DecompositionPlan`, `scan_repository()`, `print_audit_report()` *(+4 more)* |
 | `sentence_boundaries.py` | 140 | Context-aware sentence-boundary and abbreviation detectio... | `is_ambiguous_abbreviation()`, `is_non_terminal_abbreviation()`, `is_sentence_end()` |
 | `shortcuts/__init__.py` | 26 | shortcuts package — Modular Keyboard Shortcuts Management... | - |
 | `shortcuts/definitions.py` | 22 | shortcuts/definitions.py — Shortcut definitions and schem... | - |
@@ -150,7 +152,7 @@
 | `speaker_profiles.py` | 249 | speaker_profiles.py — Persistent Station Voice Profile Ma... | `StationVoiceProfile`, `StationVoiceProfileStore` |
 | `speaker_profiles_dialog.py` | 425 | speaker_profiles_dialog.py — UI management dialog for per... | `ManageVoiceProfilesDialog` |
 | `spellcheck_helper.py` | 779 | spellcheck_helper.py — Headless Tier 1 Offline Spellcheck... | `SpellIssue`, `OfflineSpellChecker`, `is_pyspellchecker_available()`, `match_case()` *(+5 more)* |
-| `spellcheck_widgets.py` | 600 | spellcheck_widgets.py — Inline Qt Spellcheck Highlighting... | `SpellCheckHighlighter`, `_LineEditSpellOverlay`, `SpellCheckController`, `add_word_to_glossary()` *(+2 more)* |
+| `spellcheck_widgets.py` | 697 | spellcheck_widgets.py — Inline Qt Spellcheck Highlighting... | `SpellCheckHighlighter`, `_LineEditSpellOverlay`, `SpellCheckController`, `add_word_to_glossary()` *(+2 more)* |
 | `story_crud_mixin.py` | 931 | Radio & TV Story Segmenter — Story CRUD & Timeline Select... | `StoryCrudMixin` |
 | `story_detection_processing.py` | 213 | Story boundary detection processing mixin for Radio & TV ... | `StoryDetectionProcessingMixin` |
 | `story_fades_dialog.py` | 215 | story_fades_dialog.py — Dialog for fine-grained audio fad... | `StoryFadesDialog` |
@@ -176,7 +178,7 @@
 | `transcript_navigation_mixin.py` | 300 | transcript_navigation_mixin.py - Timestamp discovery, car... | `TranscriptNavigationMixin` |
 | `transcript_playback_highlight_mixin.py` | 277 | Radio & TV Story Segmenter — Interactive Transcript Playb... | `TranscriptPlaybackHighlightMixin` |
 | `transcript_selection_mixin.py` | 473 | transcript_selection_mixin.py - Multi-selection, timeline... | `TranscriptSelectionMixin` |
-| `transcript_story.py` | 856 | Radio & TV Segmenter v3.10.13-beta — transcript story res... | `TranscriptStoryMixin` |
+| `transcript_story.py` | 856 | Radio & TV Segmenter v3.10.14-beta — transcript story res... | `TranscriptStoryMixin` |
 | `transcript_styles.py` | 104 | transcript_styles.py - Transcript view stylesheets and da... | `transcript_text_view_stylesheet()`, `clean_dark_mode_clipboard_html()` |
 | `transcript_timeline_sync_mixin.py` | 655 | Radio & TV Story Segmenter — Transcript Timeline & Playba... | `TranscriptTimelineSyncMixin` |
 | `transcription_processing.py` | 579 | Transcription background process management for Radio & T... | `TranscriptionProcessingMixin` |
@@ -202,7 +204,7 @@
 ## Detailed Symbol Catalog
 
 ### `RadioTVSegmenter.py` (684 lines)
-*Radio & TV Segmenter — v3.10.13-beta*
+*Radio & TV Segmenter — v3.10.14-beta*
 - **class `MainWindow(ModelManagementMixin, MediaBatchMixin, PlaybackPreferencesMixin, UiLayoutMixin, ProcessingMixin, TranslationMixin, TranscriptStoryMixin, ProjectExportMixin, GpuAccelerationMixin, QMainWindow)`** (lines 160–581):
   *Main application window for Radio & TV Segmenter.*
   - `__init__(self)` [L178-L355]
@@ -561,17 +563,17 @@
   - `detect_changed_tokens(root_dir)` [L64-L141] — *Return a set of lowercase module stems and plugin names from the most recently edited files.*
   - `select_diagnostic_items(engine, items, filter_expr, changed_only)` [L144-L202] — *Filter diagnostic items by explicit `--filter` keywords and/or `--changed` git diff analysis.*
 
-### `diagnostic_speaker_cleanup_tests.py` (937 lines)
+### `diagnostic_speaker_cleanup_tests.py` (992 lines)
 *Diagnostic tests for Phase 2 features: minimum story length, guest-name cleanup, and Station Voices.*
-- **class `DiagnosticSpeakerCleanupTestsMixin`** (lines 13–937):
+- **class `DiagnosticSpeakerCleanupTestsMixin`** (lines 13–992):
   *Mixin for Phase 2 regression diagnostics (story length, name cleanup, Station Voices).*
   - `_ensure_qt_app(self)` [L16-L21]
   - `_test_minimum_story_length_filtering_and_preferences(self, item)` [L23-L124]
   - `_test_guest_name_proper_noun_cleanup_and_preserve_case(self, item)` [L126-L258]
   - `_test_station_voice_checkbox_and_threshold_normalization(self, item)` [L260-L395]
-  - `_test_offline_spellcheck_and_metadata_terminology_alignment(self, item)` [L397-L586]
-  - `_test_menu_bar_deduplication_and_escaping_integrity(self, item)` [L588-L811] — *Validates main menu bar deduplication, Qt && escaping, checkable theme menu state, and shortcut metadata.*
-  - `_test_abbreviation_sentence_boundaries_and_parakeet_rescue(self, item)` [L813-L937] — *Validates EN/ES title abbreviations, Parakeet chunk grouping & uncovered-speech tail rescue, diarization gap fallback, and WordPress paragraphing.*
+  - `_test_offline_spellcheck_and_metadata_terminology_alignment(self, item)` [L397-L641]
+  - `_test_menu_bar_deduplication_and_escaping_integrity(self, item)` [L643-L866] — *Validates main menu bar deduplication, Qt && escaping, checkable theme menu state, and shortcut metadata.*
+  - `_test_abbreviation_sentence_boundaries_and_parakeet_rescue(self, item)` [L868-L992] — *Validates EN/ES title abbreviations, Parakeet chunk grouping & uncovered-speech tail rescue, diarization gap fallback, and WordPress paragraphing.*
 
 ### `diagnostic_wordpress_tests.py` (109 lines)
 *Diagnostic tests for WordPress PublishPress Author mapping and update semantics.*
@@ -643,11 +645,11 @@
   - `_test_wordpress_export_content_and_transcript_formatter(self, item)` [L223-L433]
   - `_test_wordpress_youtube_video_embed(self, item)` [L435-L579] — *Verify YouTube URL parsing, iframe block generation, video project defaults, and Gutenberg placement.*
 
-### `diagnostics/export_wordpress_media.py` (585 lines)
+### `diagnostics/export_wordpress_media.py` (603 lines)
 *WordPress featured image metadata and Castos podcast diagnostic tests.*
-- **class `DiagnosticExportWordPressMediaMixin`** (lines 10–585):
-  - `_test_wordpress_featured_image_caption_and_alt_text(self, item)` [L11-L234] — *Verify Featured Image caption & alt_text across WordPressClient, post builder, tab UI, and PublishWorker.*
-  - `_test_wordpress_castos_podcast_integration(self, item)` [L236-L585]
+- **class `DiagnosticExportWordPressMediaMixin`** (lines 10–603):
+  - `_test_wordpress_featured_image_caption_and_alt_text(self, item)` [L11-L252] — *Verify Featured Image caption & alt_text across WordPressClient, post builder, tab UI, and PublishWorker.*
+  - `_test_wordpress_castos_podcast_integration(self, item)` [L254-L603]
 
 ### `diagnostics/export_wordpress_upload.py` (668 lines)
 *WordPress multi-story upload, Gutenberg hygiene, and audio toggle diagnostic tests.*
@@ -656,9 +658,9 @@
   - `_test_gutenberg_html_structural_hygiene_audit(self, item)` [L302-L338]
   - `_test_wordpress_audio_inclusion_toggle_and_error_resilience(self, item)` [L340-L668]
 
-### `diagnostics/system_runtime_tests.py` (387 lines)
+### `diagnostics/system_runtime_tests.py` (391 lines)
 *System runtime, updater, theme, packaging, roadmap, and modularity diagnostic tests.*
-- **class `DiagnosticSystemRuntimeTestsMixin`** (lines 14–387):
+- **class `DiagnosticSystemRuntimeTestsMixin`** (lines 14–391):
   - `_test_windows_detached_update_helper_architecture(self, item)` [L15-L55] — *Validates update helper architecture: helper script generation, exit polling, and logging.*
   - `_test_multiprocessing_freeze_support_and_spawn_intercept(self, item)` [L57-L78] — *Validates that frozen process spawn intercepts -c invocations from resource_tracker and multiprocessing.*
   - `_resolve_worker_cmd(self)` [L80-L94] — *Resolves the executable and arguments to launch the AI background worker.*
@@ -667,7 +669,7 @@
   - `_test_option_c_muted_silver_fog_light_theme_and_dark_mode_clipboard_formatting(self, item)` [L204-L257] — *Validates Option C muted low-contrast silver/fog palette and dark-mode clipboard rich styling.*
   - `_test_windows_ci_build_and_packaging_optimization_invariants(self, item)` [L259-L291] — *Validates Inno Setup compression parameters, Stage 3 PyInstaller optimizations, and CI settings.*
   - `_test_roadmap_n_1_sliding_window_and_status_integrity(self, item)` [L293-L312] — *Validates roadmap.txt N-1 sliding window retention, status indicator syntax, and version sync.*
-  - `_test_source_file_modularity_and_1000_line_budget_invariant(self, item)` [L314-L387] — *Validates that recently decomposed modules adhere to the 1,000-line modular budget,*
+  - `_test_source_file_modularity_and_1000_line_budget_invariant(self, item)` [L314-L391] — *Validates that recently decomposed modules adhere to the 1,000-line modular budget,*
 
 ### `diagnostics/voice_and_media_tests.py` (438 lines)
 *Voice profile matching, waveform peak cache, and playback rate diagnostic tests.*
@@ -1523,107 +1525,29 @@
   - `_on_save_and_close(self)` [L748-L749]
   - `done(self, r)` [L751-L756]
 
-### `plugins/wordpress/plugin.py` (980 lines)
+### `plugins/wordpress/plugin.py` (89 lines)
 *WordPress Publisher Plugin for Radio & TV Segmenter.*
-- **class `WordPressPublishDialog(QDialog)`** (lines 92–570):
-  *Publish a story or project to WordPress with featured image selection.*
-  - `__init__(self, plugin, parent, story)` [L95-L110]
-  - `setup_ui(self)` [L112-L309]
-  - `load_custom_text_settings(self)` [L311-L324] — *Load persistent custom text defaults from application settings.*
-  - `save_custom_text_defaults(self)` [L326-L332] — *Save active custom text, placement, and exclusion settings as persistent defaults.*
-  - `load_metadata(self)` [L334-L375]
-  - `do_capture_frame(self)` [L377-L387]
-  - `on_image_mode_changed(self)` [L389-L406]
-  - `on_browse_image(self)` [L408-L419]
-  - `on_configure_credentials(self)` [L421-L427]
-  - `on_publish(self)` [L429-L527]
-  - `on_publish_finished(self, success, msg, post_data)` [L529-L563]
-  - `closeEvent(self, event)` [L565-L570]
-- **class `WordPressPublishWorker(QThread)`** (lines 573–633):
-  - `__init__(self, client, title, content, excerpt, status, image_path, image_caption, image_alt_text)` [L576-L595]
-  - `run(self)` [L597-L633]
-- **class `WordPressStoryMetadataWidget(QGroupBox)`** (lines 636–909):
-  *Clean, compact WordPress metadata launcher & inspector embedded in the Stories sidebar.*
-  - `__init__(self, plugin, parent)` [L639-L651]
-  - `setup_ui(self)` [L653-L741]
-  - `refresh_targets_dropdown(self)` [L743-L766] — *Populate target_combo with Full Episode and all current project stories.*
-  - `_on_target_changed(self, index)` [L768-L786]
-  - `set_story(self, story)` [L788-L800] — *Called when user selects a story in the story list or timeline.*
-  - `_get_active_wp_metadata(self)` [L802-L812]
-  - `_load_current_target_metadata(self)` [L814-L864]
-  - `_open_post_settings_dialog(self)` [L866-L872]
-  - `_on_refresh_taxonomy(self)` [L874-L909]
-- **class `Plugin(BasePlugin)`** (lines 912–979):
+- **Public Exports (`__all__`)**: Plugin, WordPressPublishDialog, WordPressPublishWorker, capture_video_frame
+- **class `Plugin(BasePlugin)`** (lines 17–81):
   *WordPress Plugin implementation hooking into RTVS.*
-  - `__init__(self, manifest, app)` [L915-L917]
-  - `on_load(self)` [L919-L920]
-  - `get_export_destinations(self)` [L922-L924]
-  - `get_file_open_actions(self)` [L926-L929]
-  - `get_export_actions(self)` [L931-L940]
-  - `open_load_existing_episode_dialog(self)` [L942-L944]
-  - `get_story_actions(self, story)` [L946-L950]
-  - `create_story_metadata_widget(self, parent)` [L952-L954]
-  - `on_story_selected(self, story)` [L956-L957]
-  - `get_preferences_widget(self, parent)` [L959-L961]
-  - `open_publish_dialog(self, parent, story)` [L963-L965]
-  - `open_post_metadata_dialog(self, parent, story)` [L967-L979]
-- **Functions**:
-  - `capture_video_frame(video_path, timestamp, output_path, timeout)` [L67-L89] — *Extract a high quality single frame from a video using fast seeking FFmpeg.*
+  - `__init__(self, manifest, app)` [L20-L21]
+  - `on_load(self)` [L23-L24]
+  - `get_export_destinations(self)` [L26-L28]
+  - `get_file_open_actions(self)` [L30-L33]
+  - `get_export_actions(self)` [L35-L45]
+  - `open_load_existing_episode_dialog(self)` [L47-L49]
+  - `get_story_actions(self, story)` [L51-L55]
+  - `create_story_metadata_widget(self, parent)` [L57-L59]
+  - `on_story_selected(self, story)` [L61-L62]
+  - `get_preferences_widget(self, parent)` [L64-L66]
+  - `open_publish_dialog(self, parent, story)` [L68-L70]
+  - `open_post_metadata_dialog(self, parent, story)` [L72-L81]
 
-### `plugins/wordpress/wordpress_dialog.py` (903 lines)
-*WordPress Export Tab Widget and Post Metadata Dialog.*
-- **class `WordPressExportTabWidget(QWidget)`** (lines 80–849):
-  *Configuration and preview panel for WordPress Draft Posts.*
-  - `__init__(self, parent, main_window, metadata_editor_mode)` [L83-L102]
-  - `_setup_ui(self)` [L104-L331]
-  - `update_wp_pres_visibility(self)` [L333-L334]
-  - `_update_wp_conn_status(self)` [L336-L337]
-  - `_open_wp_settings(self)` [L339-L342]
-  - `_filter_authors_list(self, text)` [L344-L345]
-  - `_filter_categories_list(self, text)` [L347-L348]
-  - `_on_title_edited(self, text)` [L350-L355]
-  - `_on_excerpt_edited(self)` [L357-L361]
-  - `_auto_generate_current_excerpt(self)` [L363-L372]
-  - `_autofill_all_excerpts(self)` [L374-L381]
-  - `_on_author_item_changed(self, item)` [L383-L389]
-  - `_on_category_item_changed(self, item)` [L391-L396]
-  - `_clear_current_authors(self)` [L398-L404]
-  - `_clear_current_categories(self)` [L406-L412]
-  - `_get_selected_story_indices(self)` [L414-L419]
-  - `_apply_authors_to_selected_stories(self)` [L421-L429]
-  - `_apply_categories_to_selected_stories(self)` [L431-L438]
-  - `_apply_thumbnails_to_selected_stories(self)` [L440-L461]
-  - `_apply_authors_to_all_posts(self)` [L463-L468]
-  - `_apply_categories_to_all_posts(self)` [L470-L474]
-  - `_apply_thumbnails_to_all_posts(self)` [L476-L495]
-  - `_sync_post_to_project(self, idx)` [L497-L498]
-  - `save_all_posts_to_project(self)` [L500-L501]
-  - `_update_post_list_item_label(self, idx)` [L503-L507]
-  - `_on_wp_post_selection_changed(self, row)` [L509-L513]
-  - `_get_editor_checked_authors(self)` [L515-L523]
-  - `_set_editor_checked_authors(self, author_ids, author_term_ids)` [L525-L532]
-  - `_get_editor_checked_categories(self)` [L534-L542]
-  - `_set_editor_checked_categories(self, cat_ids)` [L544-L553]
-  - `_get_wp_post_bounds(self, post_index)` [L555-L560]
-  - `_sync_wp_slider_to_pos(self, pos)` [L562-L570]
-  - `_on_wp_slider_value_changed(self, val)` [L572-L581]
-  - `_on_wp_scrub_timer_timeout(self)` [L583-L585]
-  - `_on_wp_step(self, delta_secs)` [L587-L596]
-  - `_on_wp_sync_playhead(self)` [L598-L607]
-  - `_load_post_editor_state(self, index)` [L609-L640]
-  - `_on_wp_thumb_mode_changed(self)` [L642-L657]
-  - `_capture_wp_frame(self, pos)` [L659-L677]
-  - `_on_wp_browse_thumb(self)` [L679-L692]
-  - `rebuild_post_items(self, scope)` [L694-L809]
-  - `_populate_wp_export_metadata(self, force_refresh)` [L811-L845]
-  - `_refresh_wp_metadata(self)` [L847-L849]
-- **class `WordPressPostMetadataDialog(QDialog)`** (lines 852–903):
-  *Dialog for editing WordPress post metadata for an individual story.*
-  - `__init__(self, parent, main_window, target_story_index)` [L855-L900]
-  - `_on_save_and_close(self)` [L902-L903]
+### `plugins/wordpress/wordpress_dialog.py` (28 lines)
+*Backward-compatible facade for legacy WordPress dialog imports.*
+- **Public Exports (`__all__`)**: WordPressExportTabWidget, WordPressPostMetadataDialog, capture_video_frame, generate_wp_excerpt
 - **Functions**:
-  - `generate_wp_excerpt(transcript_words, start_t, end_t)` [L60-L62]
-  - `capture_video_frame(video_path, timestamp, output_path)` [L65-L77]
+  - `generate_wp_excerpt(transcript_words, start_t, end_t)` [L15-L20] — *Legacy wrapper preserving the historical `(transcript_words, start_t, end_t)` signature.*
 
 ### `plugins/wordpress/wp_post_builder.py` (377 lines)
 *Post item builder, transcript slicing, and video frame extraction for WordPress export.*
@@ -1632,6 +1556,25 @@
   - `get_primary_text_slice(main_window, primary_lang, st_start, st_end)` [L38-L67] — *Extract transcript or translated text for the specified time slice.*
   - `build_wp_post_items(main_window, scope, primary_lang, existing_items)` [L70-L355] — *Build the list of WordPress post definitions according to the export scope.*
   - `sync_featured_image_meta(wp_meta, post, container_meta)` [L358-L377] — *Persist featured image path, mode, caption, alt text, and frame position into project metadata.*
+
+### `plugins/wordpress/wp_publish_dialog.py` (524 lines)
+*WordPress single-story publish dialog with featured image and notice options.*
+- **Public Exports (`__all__`)**: WordPressPublishDialog
+- **class `WordPressPublishDialog(QDialog)`** (lines 46–521):
+  *Publish a story or project to WordPress with featured image selection.*
+  - `__init__(self, plugin, parent, story)` [L49-L63]
+  - `_resolve_spellcheck_context(self)` [L65-L68]
+  - `setup_ui(self)` [L70-L263]
+  - `load_custom_text_settings(self)` [L265-L278] — *Load persistent custom text defaults from application settings.*
+  - `save_custom_text_defaults(self)` [L280-L286] — *Save active custom text, placement, and exclusion settings as persistent defaults.*
+  - `load_metadata(self)` [L288-L329]
+  - `do_capture_frame(self)` [L331-L341]
+  - `on_image_mode_changed(self)` [L343-L360]
+  - `on_browse_image(self)` [L362-L373]
+  - `on_configure_credentials(self)` [L375-L380]
+  - `on_publish(self)` [L382-L479]
+  - `on_publish_finished(self, success, msg, post_data)` [L481-L514]
+  - `closeEvent(self, event)` [L516-L521]
 
 ### `plugins/wordpress/wp_tab_widget.py` (979 lines)
 *WordPress export tab configuration widget and preview controller.*
@@ -1697,6 +1640,14 @@
 *UI layout construction and widget setup for WordPressExportTabWidget.*
 - **Functions**:
   - `setup_wp_tab_ui(self)` [L36-L807] — *Construct all controls, forms, sliders, list widgets, and tabbed panels for the WordPress export tab.*
+
+### `plugins/wordpress/wp_workers.py` (78 lines)
+*Background QThread worker for publishing individual WordPress stories.*
+- **Public Exports (`__all__`)**: WordPressPublishWorker
+- **class `WordPressPublishWorker(QThread)`** (lines 13–75):
+  *Background thread that uploads featured media and publishes a WordPress post.*
+  - `__init__(self, client, title, content, excerpt, status, image_path, image_caption, image_alt_text)` [L18-L37]
+  - `run(self)` [L39-L75]
 
 ### `plugins/wordpress/youtube_embed.py` (615 lines)
 *YouTube Video Embed helpers, Gutenberg iframe generator, and UI setup for WordPress export.*
@@ -2385,28 +2336,28 @@
   - `extract_log_summary(raw_log)` [L42-L128] — *Extract a high-density summary from a raw log or traceback string.*
   - `main()` [L130-L147]
 
-### `scripts/modular_audit.py` (773 lines)
+### `scripts/modular_audit.py` (771 lines)
 *scripts/modular_audit.py — AST Decomposition Suggester & Modular Budget Guard.*
-- **class `ModuleStructure`** (lines 78–251):
+- **class `ModuleStructure`** (lines 76–249):
   *Detailed structural metrics extracted from a Python module.*
-  - `__init__(self, file_path)` [L81-L98]
-  - `_analyze(self)` [L100-L174]
-  - `_extract_class_info(self, node, lines)` [L176-L204]
-  - `_extract_func_info(self, node, lines)` [L206-L215]
-  - `_classify_domain(name, bases, method_names)` [L218-L251] — *Classifies a class or function into a logical domain based on naming and signatures.*
-- **class `DecompositionPlan`** (lines 258–420):
+  - `__init__(self, file_path)` [L79-L96]
+  - `_analyze(self)` [L98-L172]
+  - `_extract_class_info(self, node, lines)` [L174-L202]
+  - `_extract_func_info(self, node, lines)` [L204-L213]
+  - `_classify_domain(name, bases, method_names)` [L216-L249] — *Classifies a class or function into a logical domain based on naming and signatures.*
+- **class `DecompositionPlan`** (lines 256–418):
   *Proposed modular decomposition plan for a monolithic source file.*
-  - `__init__(self, structure)` [L261-L269]
-  - `_classify_method_domain(m_name)` [L272-L282]
-  - `_build_plan(self)` [L284-L387]
-  - `render_markdown_blueprint(self)` [L389-L420]
+  - `__init__(self, structure)` [L259-L267]
+  - `_classify_method_domain(m_name)` [L270-L280]
+  - `_build_plan(self)` [L282-L385]
+  - `render_markdown_blueprint(self)` [L387-L418]
 - **Functions**:
-  - `scan_repository(root_dir)` [L427-L439] — *Scans all Python modules in the repository, excluding build/venv directories.*
-  - `print_audit_report(structures, warn_threshold, hard_ceiling, sort_by)` [L442-L483] — *Prints a formatted terminal table showing modularity compliance.*
-  - `check_budget_guard(structures, hard_ceiling, warn_threshold, exempt_paths)` [L486-L519] — *Programmatic budget check suitable for test runner and CI pipelines.*
-  - `check_single_responsibility(structure, strict)` [L522-L610] — *Analyzes AST domain classification to verify Single Responsibility & Domain Separation.*
-  - `print_srp_report(results, strict)` [L613-L657] — *Prints a structured terminal report for Single Responsibility & Domain Separation.*
-  - `main()` [L660-L769]
+  - `scan_repository(root_dir)` [L425-L437] — *Scans all Python modules in the repository, excluding build/venv directories.*
+  - `print_audit_report(structures, warn_threshold, hard_ceiling, sort_by)` [L440-L481] — *Prints a formatted terminal table showing modularity compliance.*
+  - `check_budget_guard(structures, hard_ceiling, warn_threshold, exempt_paths)` [L484-L517] — *Programmatic budget check suitable for test runner and CI pipelines.*
+  - `check_single_responsibility(structure, strict)` [L520-L608] — *Analyzes AST domain classification to verify Single Responsibility & Domain Separation.*
+  - `print_srp_report(results, strict)` [L611-L655] — *Prints a structured terminal report for Single Responsibility & Domain Separation.*
+  - `main()` [L658-L767]
 
 ### `sentence_boundaries.py` (140 lines)
 *Context-aware sentence-boundary and abbreviation detection for Radio & TV Segmenter.*
@@ -2716,42 +2667,46 @@
   - `_is_camel_or_mixed_brand(token)` [L531-L537] — *Skip internal-capital identifiers like WordPress, YouTube, iPhone, PySide.*
   - `iter_checkable_words(text)` [L540-L578] — *Yield `(word, start, end)` spans in `text` that should be spellchecked.*
 
-### `spellcheck_widgets.py` (600 lines)
+### `spellcheck_widgets.py` (697 lines)
 *spellcheck_widgets.py — Inline Qt Spellcheck Highlighting & Context Menu UI.*
 - **Public Exports (`__all__`)**: SpellCheckHighlighter, SpellCheckController, attach_spellcheck, refresh_all_spellcheckers, add_word_to_glossary
-- **class `SpellCheckHighlighter(QSyntaxHighlighter)`** (lines 149–166):
+- **class `SpellCheckHighlighter(QSyntaxHighlighter)`** (lines 175–192):
   *QSyntaxHighlighter drawing red spellcheck underlines in QTextEdit / QPlainTextEdit.*
-  - `__init__(self, document, spellchecker)` [L152-L155]
-  - `refresh_format(self)` [L157-L158]
-  - `highlightBlock(self, text)` [L160-L166]
-- **class `_LineEditSpellOverlay(QWidget)`** (lines 199–277):
+  - `__init__(self, document, spellchecker)` [L178-L181]
+  - `refresh_format(self)` [L183-L184]
+  - `highlightBlock(self, text)` [L186-L192]
+- **class `_LineEditSpellOverlay(QWidget)`** (lines 225–305):
   *Mouse-transparent overlay painting wavy red underlines onto a QLineEdit.*
-  - `__init__(self, line_edit, controller)` [L202-L210]
-  - `paintEvent(self, event)` [L212-L277]
-- **class `SpellCheckController(QObject)`** (lines 280–539):
+  - `__init__(self, line_edit, controller)` [L228-L236]
+  - `paintEvent(self, event)` [L238-L305]
+- **class `SpellCheckController(QObject)`** (lines 308–631):
   *Coordinates inline spellcheck highlighting and context menus on a text widget.*
-  - `__init__(self, widget, main_window, spellchecker)` [L283-L299]
-  - `_detect_line_edit(widget)` [L302-L305]
-  - `_install(self)` [L307-L336]
-  - `eventFilter(self, obj, event)` [L338-L347]
-  - `_on_line_edit_changed(self, *_args)` [L349-L352]
-  - `_on_line_edit_cursor_changed(self, *_args)` [L354-L356]
-  - `_recompute_line_edit_issues(self)` [L358-L361]
-  - `_get_widget_text(self)` [L363-L373]
-  - `get_issues(self)` [L375-L377] — *Return current misspelled `SpellIssue` spans for the attached widget.*
-  - `refresh(self, main_window, added_word)` [L379-L396] — *Refresh allowlist from Glossary/speakers and re-run inline highlighting.*
-  - `apply_suggestion(self, issue, replacement, block_offset)` [L398-L455] — *Replace the misspelled `issue` span with `replacement` in the attached widget.*
-  - `_locate_issue_at_point(self, pos)` [L457-L479] — *Return `(SpellIssue, block_start_offset)` for a widget-local click position.*
-  - `_on_context_menu_requested(self, pos)` [L481-L534]
-  - `ignore_word(self, word)` [L536-L539] — *Ignore `word` for the remainder of the session and refresh all editors.*
+  - `__init__(self, widget, main_window, spellchecker)` [L311-L328]
+  - `is_alive(self)` [L330-L332] — *Return True when both this controller and its attached widget remain valid.*
+  - `dispose(self)` [L334-L350] — *Unregister this controller and break cyclic references after widget teardown.*
+  - `_detect_line_edit(widget)` [L353-L356]
+  - `_install(self)` [L358-L396]
+  - `eventFilter(self, obj, event)` [L398-L412]
+  - `_on_line_edit_changed(self, *_args)` [L414-L420]
+  - `_on_line_edit_cursor_changed(self, *_args)` [L422-L427]
+  - `_recompute_line_edit_issues(self)` [L429-L436]
+  - `_get_widget_text(self)` [L438-L453]
+  - `get_issues(self)` [L455-L460] — *Return current misspelled `SpellIssue` spans for the attached widget.*
+  - `refresh(self, main_window, added_word)` [L462-L484] — *Refresh allowlist from Glossary/speakers and re-run inline highlighting.*
+  - `apply_suggestion(self, issue, replacement, block_offset)` [L486-L543] — *Replace the misspelled `issue` span with `replacement` in the attached widget.*
+  - `_locate_issue_at_point(self, pos)` [L545-L568] — *Return `(SpellIssue, block_start_offset)` for a widget-local click position.*
+  - `_on_context_menu_requested(self, pos)` [L570-L626]
+  - `ignore_word(self, word)` [L628-L631] — *Ignore `word` for the remainder of the session and refresh all editors.*
 - **Functions**:
-  - `_is_real_qt_widget(widget)` [L57-L62] — *Return True when running under real PySide6 rather than qt_compat mocks.*
-  - `_spell_underline_color()` [L65-L77] — *Select an accessible red underline color for the active application theme.*
-  - `_make_misspelled_char_format()` [L80-L89]
-  - `add_word_to_glossary(word, main_window)` [L92-L146] — *Persist `word` to the application's custom Glossary and refresh spellcheckers.*
-  - `_compute_line_edit_scroll_offset(line_edit, text, font_metrics, contents_rect, inner_left)` [L169-L196] — *Compute horizontal pixel scroll offset for a single-line QLineEdit.*
-  - `attach_spellcheck(widget, main_window, spellchecker)` [L542-L582] — *Attach Tier 1 offline spellchecking to a QLineEdit, QTextEdit, QPlainTextEdit,*
-  - `refresh_all_spellcheckers(main_window, added_word)` [L585-L591] — *Re-sync Glossary/speaker allowlists and re-highlight every attached editor.*
+  - `_is_qt_object_alive(obj)` [L62-L71] — *Return False when `obj` is None or its underlying C++ Qt object was deleted.*
+  - `_make_destroyed_cleanup_callback(ctrl_ref)` [L74-L80]
+  - `_is_real_qt_widget(widget)` [L83-L88] — *Return True when running under real PySide6 rather than qt_compat mocks.*
+  - `_spell_underline_color()` [L91-L103] — *Select an accessible red underline color for the active application theme.*
+  - `_make_misspelled_char_format()` [L106-L115]
+  - `add_word_to_glossary(word, main_window)` [L118-L172] — *Persist `word` to the application's custom Glossary and refresh spellcheckers.*
+  - `_compute_line_edit_scroll_offset(line_edit, text, font_metrics, contents_rect, inner_left)` [L195-L222] — *Compute horizontal pixel scroll offset for a single-line QLineEdit.*
+  - `attach_spellcheck(widget, main_window, spellchecker)` [L634-L674] — *Attach Tier 1 offline spellchecking to a QLineEdit, QTextEdit, QPlainTextEdit,*
+  - `refresh_all_spellcheckers(main_window, added_word)` [L677-L688] — *Re-sync Glossary/speaker allowlists and re-highlight every attached editor.*
 
 ### `story_crud_mixin.py` (931 lines)
 *Radio & TV Story Segmenter — Story CRUD & Timeline Selection Mixin.*
@@ -3260,7 +3215,7 @@
   - `_on_bubble_export(self)` [L468-L473]
 
 ### `transcript_story.py` (856 lines)
-*Radio & TV Segmenter v3.10.13-beta — transcript story responsibilities.*
+*Radio & TV Segmenter v3.10.14-beta — transcript story responsibilities.*
 - **Public Exports (`__all__`)**: TranscriptStoryMixin, Story, SetStoriesCommand, SelectStoriesCommand, StoryBoundaryChangeCommand, StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin, ChangeSpeakerDialog, VoiceProfileMatchDialog, StoryFadesDialog, SpeakerManagerDialog, FADE_CURVE_TABLES, get_fade_curve_factors
 - **class `TranscriptStoryMixin(StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin)`** (lines 63–855):
   - `render_transcript(self)` [L64-L471]

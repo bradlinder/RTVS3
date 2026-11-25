@@ -146,7 +146,25 @@ class DiagnosticExportWordPressMediaMixin:
             assert post_warn.get("featured_media") == 91, "Post creation must keep featured_media even if metadata update fails"
             assert any("setting caption/alt text failed" in m for m in mw_warn.logs), f"Missing warning log: {mw_warn.logs}"
 
-            # 4. WordPressPublishWorker metadata propagation
+            # 4. WordPressPublishWorker metadata propagation & modular facade contracts
+            import plugins.wordpress.plugin as wp_plugin_mod
+            import plugins.wordpress.wordpress_dialog as wp_legacy_dlg_mod
+            from plugins.wordpress.wp_workers import WordPressPublishWorker as CanonicalPublishWorker
+            from plugins.wordpress.wp_publish_dialog import WordPressPublishDialog as CanonicalPublishDialog
+            from plugins.wordpress.wp_post_builder import capture_video_frame as canonical_capture_frame
+            from plugins.wordpress.export_destination import WordPressPostMetadataDialog as CanonicalMetaDialog
+
+            assert WordPressPublishWorker is CanonicalPublishWorker, "plugin.WordPressPublishWorker must re-export wp_workers.WordPressPublishWorker"
+            assert CanonicalPublishWorker.__module__ == "plugins.wordpress.wp_workers", f"Unexpected worker module: {CanonicalPublishWorker.__module__}"
+            assert wp_plugin_mod.WordPressPublishDialog is CanonicalPublishDialog, "plugin.WordPressPublishDialog must re-export wp_publish_dialog.WordPressPublishDialog"
+            assert CanonicalPublishDialog.__module__ == "plugins.wordpress.wp_publish_dialog", f"Unexpected dialog module: {CanonicalPublishDialog.__module__}"
+            assert wp_plugin_mod.capture_video_frame is canonical_capture_frame, "plugin.capture_video_frame must re-export wp_post_builder.capture_video_frame"
+            assert wp_legacy_dlg_mod.capture_video_frame is canonical_capture_frame, "wordpress_dialog.capture_video_frame must re-export wp_post_builder.capture_video_frame"
+            assert wp_legacy_dlg_mod.WordPressExportTabWidget is WordPressExportTabWidget, "wordpress_dialog facade must re-export canonical WordPressExportTabWidget"
+            assert wp_legacy_dlg_mod.WordPressPostMetadataDialog is CanonicalMetaDialog, "wordpress_dialog facade must re-export canonical WordPressPostMetadataDialog"
+            assert wp_legacy_dlg_mod.generate_wp_excerpt([{"start": 1.0, "text": "Hello"}, {"start": 2.0, "text": "world"}], 0.0, 5.0) == "Hello world"
+            assert not hasattr(wp_plugin_mod, "WordPressStoryMetadataWidget"), "Dead WordPressStoryMetadataWidget must remain pruned from plugin.py"
+
             c_worker = UploadMockClient(fail_meta=False)
             worker = WordPressPublishWorker(
                 c_worker, "Worker Post", "<p>Body</p>", "Ex", "draft", tmp_img,
