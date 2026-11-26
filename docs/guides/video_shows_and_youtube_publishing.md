@@ -25,8 +25,13 @@ flowchart LR
 
 ## 2. Step-by-Step Workflow
 
-### Step 1: Open Your Video Media
-Drag and drop your video file directly onto the timeline canvas or press **Ctrl+O** (**File > Open Media...**).
+### Step 1: Open Your Video Media (Local File or Existing YouTube URL)
+- **Local Video**: Drag and drop your video file directly onto the timeline canvas or press **Ctrl+O** (**File > Open Media...**).
+- **Existing YouTube Video (Back-Catalog Workflow)**: Go to **File > Open Remote Episode > From YouTube Video...** (**Ctrl+Alt+Y**), paste any YouTube URL, click **Fetch Info**, pick a resolution (default **1080p MP4** for sharp screenshots), and click **Download & Open**.
+  - `yt-dlp` installs and updates automatically on demand into your app-data tools folder and uses RTVS3's bundled FFmpeg to merge streams into MP4.
+  - For unlisted, scheduled, or bot-checked videos, expand **Advanced (Browser Cookies & yt-dlp)** to read cookies from Chrome, Edge, Firefox, or Brave.
+  - If the video already has YouTube chapters, you can check **Import YouTube chapters as initial story markers** to pre-seed your segments.
+  - Downloaded files are stored in the **Managed Remote Media Cache** (default 10 GB LRU cap, adjustable under **Tools > Manage Cached Remote Media...**); your YouTube URL and Video ID are automatically pre-bound for WordPress export (both New Post and Update Existing Post modes).
 - RTVS3 automatically generates multi-resolution waveform pyramids and a video thumbnail filmstrip along the timeline ruler.
 - Press **Ctrl+Shift+V** (**View > Timeline > Video Preview Window**) to open the resizable floating video preview window.
 

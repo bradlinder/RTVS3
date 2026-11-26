@@ -234,27 +234,57 @@ class Plugin(BasePlugin):
         from plugins.youtube.export_destination import YouTubeExportDestination
         return [YouTubeExportDestination(self)]
 
+    def get_remote_open_actions(self) -> List[tuple[str, Callable]]:
+        return [
+            ("From YouTube Video...", self.open_load_youtube_video_dialog),
+        ]
+
+    def get_cache_maintenance_actions(self) -> List[tuple[str, Callable]]:
+        from plugins.youtube.yt_import_dialog import open_yt_dlp_updater_dialog
+        return [
+            ("Check / Update yt-dlp...", open_yt_dlp_updater_dialog),
+        ]
+
+    def can_redownload_remote_source(self, source_meta: Dict[str, Any]) -> bool:
+        return isinstance(source_meta, dict) and str(source_meta.get("provider") or "").strip().lower() == "youtube"
+
+    def redownload_remote_source(self, source_meta: Dict[str, Any], parent: Any = None) -> Optional[Path]:
+        from plugins.youtube.yt_import_dialog import redownload_youtube_source_dialog
+        return redownload_youtube_source_dialog(self.app, source_meta, parent=parent or self.app)
+
     def get_export_actions(self) -> List[tuple[str, Callable]]:
         return [
             ("Publish to YouTube...", self.open_publish_dialog),
         ]
 
     def get_preferences_widget(self, parent=None) -> Any:
-        box = QGroupBox("YouTube Video Publishing", parent)
+        from plugins.youtube.yt_import_dialog import open_yt_dlp_updater_dialog
+        box = QGroupBox("YouTube Video Publishing & Import", parent)
         layout = QVBoxLayout(box)
         lbl = QLabel(
-            "<b>YouTube Video Publisher (Zero-Auth Manual Package)</b><br>"
-            "Packages broadcast videos (or renders audio broadcasts to MP4), custom video thumbnails, "
-            "closed caption (.srt) tracks, and interactive chapter markers for immediate manual upload in YouTube Studio."
+            "<b>YouTube Video Publisher & Importer</b><br>"
+            "Packages broadcast videos (or renders audio broadcasts to MP4), thumbnails, captions (.srt), "
+            "and chapter markers for YouTube Studio, and imports existing YouTube URLs on demand via yt-dlp."
         )
         lbl.setWordWrap(True)
         lbl.setStyleSheet("color: #64748b; font-size: 11px;")
         layout.addWidget(lbl)
 
+        btn_row = QHBoxLayout()
         btn = QPushButton("Configure YouTube Publishing Defaults...")
         btn.clicked.connect(lambda: YouTubeSettingsDialog(parent or self.app).exec())
-        layout.addWidget(btn)
+        btn_row.addWidget(btn)
+
+        ytdlp_btn = QPushButton("Check / Update yt-dlp...")
+        ytdlp_btn.clicked.connect(lambda: open_yt_dlp_updater_dialog(parent or self.app))
+        btn_row.addWidget(ytdlp_btn)
+        btn_row.addStretch()
+        layout.addLayout(btn_row)
         return box
+
+    def open_load_youtube_video_dialog(self):
+        from plugins.youtube.yt_import_dialog import prompt_load_youtube_episode_dialog
+        prompt_load_youtube_episode_dialog(self.app, parent=self.app)
 
     def open_publish_dialog(self):
         if hasattr(self.app, "open_unified_export_dialog"):

@@ -10,7 +10,10 @@ You can load media into RTVS3 in several ways:
 - **Drag-and-Drop**: Drag any supported audio or video file directly onto the timeline canvas or into the transcript area.
 - **File Menu**: Go to **File > Open Media...** (or press **Ctrl+O**).
 - **Import Existing Document**: Go to **File > Open Document...** (**Ctrl+Alt+O**) to bring `.txt`, `.docx`, `.pdf`, `.html`, or `.md` transcripts into the workspace for editing or segmenting.
-- **Existing WordPress / Podcast Episode**: Go to **File > Open Existing WordPress Episode...** to paste an older WordPress episode URL, automatically fetch its original publication date, title, and show-notes excerpt, and either download the episode's MP3 directly from WordPress or pair it with a local audio file on your computer.
+- **Open Remote Episode (YouTube or WordPress)**: Go to **File > Open Remote Episode** to import already-published back-catalog episodes:
+  - **From YouTube Video...** (**Ctrl+Alt+Y**): Paste any YouTube URL to auto-install/use `yt-dlp`, download at selectable quality (defaulting to 1080p MP4 for crisp screenshots), optionally pre-seed YouTube chapters as stories, and auto-bind the YouTube URL for WordPress full-episode and per-story embeds.
+  - **From Existing WordPress Post...**: Paste an older WordPress episode URL to fetch its original publication date, title, and show-notes excerpt and download its MP3 into the Managed Remote Media Cache (or pair with a local audio file).
+  - **Re-download Archived Source Media...**: If a previously cached remote download was cleared to free disk space, reopening its `.rtvs` project keeps all transcripts, stories, and metadata editable and offers 1-click re-download.
 - **Recent Projects**: Go to **File > Recent Projects** to quickly reopen past `.rtvs` project files.
 
 ### Supported File Formats:
@@ -87,4 +90,4 @@ Press **Ctrl+Shift+A** (**Tools > Detect Segments...**). The engine analyzes top
 - **Unified Export Center**: Press **Ctrl+E** (**File > Export...**) to export split audio cuts, Word/PDF cue sheets, WordPress draft posts, or DAW timelines.
 - **Copy YouTube Chapters**: Press **Ctrl+Shift+Y** (**File > Copy YouTube Chapters to Clipboard**) to copy formatted chapter markers instantly.
 - **Batch Processing Center**: Go to **Tools > Batch Processing...** (**Ctrl+Shift+B**) to queue and process multiple episodes or media files sequentially in the background.
-- **Settings, Shortcuts & Maintenance**: Customize hotkeys under **Settings > Customize Keyboard Shortcuts...** (**F8**), back up/restore settings via **Settings > Backup & Restore Settings...**, free cached waveforms/sidecars via **Tools > Clear Temporary Cache...**, or selectively reset open project data under **Edit > Clear / Purge Project Data...**.
+- **Settings, Shortcuts & Maintenance**: Customize hotkeys under **Settings > Customize Keyboard Shortcuts...** (**F8**), back up/restore settings via **Settings > Backup & Restore Settings...**, free cached waveforms/sidecars via **Tools > Clear Temporary Cache...**, inspect/cap/clear downloaded YouTube & WordPress episodes via **Tools > Manage Cached Remote Media...** (or **Settings > Preferences... > Cleanup Data**), or selectively reset open project data under **Edit > Clear / Purge Project Data...**.

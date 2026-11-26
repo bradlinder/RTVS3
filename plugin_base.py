@@ -129,6 +129,22 @@ class BasePlugin:
         """Return list of (Action Label, callback_function) for top Media Input section of File menu."""
         return []
 
+    def get_remote_open_actions(self) -> List[tuple[str, Callable]]:
+        """Return list of (Action Label, callback_function) for File > Open Remote Episode submenu."""
+        return []
+
+    def get_cache_maintenance_actions(self) -> List[tuple[str, Callable]]:
+        """Return list of (Button Label, callback(parent_dialog)) for Manage Cached Remote Media dialog."""
+        return []
+
+    def can_redownload_remote_source(self, source_meta: Dict[str, Any]) -> bool:
+        """Return True if this plugin can re-download the given remote_media_source record."""
+        return False
+
+    def redownload_remote_source(self, source_meta: Dict[str, Any], parent: Any = None) -> Optional[Path]:
+        """Re-download an archived remote media source and return its local Path, or None if cancelled."""
+        return None
+
     def get_export_actions(self) -> List[tuple[str, Callable]]:
         """Return list of (Action Label, callback_function) for Export menu."""
         return []

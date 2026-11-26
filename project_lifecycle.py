@@ -450,19 +450,25 @@ class ProjectLifecycleMixin:
         if not self.audio_file and not self.transcript:
             return False
 
-        # Determine starting folder for the file dialog
+        # Determine starting folder for the file dialog (avoid defaulting inside the hidden AppData remote cache)
+        from remote_media_cache import is_path_inside_cache
         if self.project_file and self.project_file.parent.exists():
             default_dir = str(self.project_file.parent)
-        elif self.audio_file and Path(self.audio_file).parent.exists():
+        elif self.audio_file and Path(self.audio_file).parent.exists() and not is_path_inside_cache(self.audio_file):
             default_dir = str(Path(self.audio_file).parent)
         else:
             default_dir = self.get_default_save_directory()
 
-        # Determine default file name
+        # Determine default file name (prefer clean suggested_project_stem for YouTube/remote imports)
+        suggested_stem = ""
+        if isinstance(getattr(self, "project_metadata", None), dict):
+            suggested_stem = str(self.project_metadata.get("suggested_project_stem") or "").strip()
         if self.project_file:
             default_name = self.project_file.name
             if not default_name.lower().endswith(".rtvs"):
                 default_name = f"{self.project_file.stem}.rtvs"
+        elif suggested_stem:
+            default_name = f"{safe_filename(suggested_stem)}.rtvs"
         elif self.audio_file:
             default_name = f"{safe_filename(Path(self.audio_file).stem)}.rtvs"
         else:
@@ -632,6 +638,13 @@ class ProjectLifecycleMixin:
             saved_time = QTime.currentTime().toString("hh:mm:ss A")
             if hasattr(self, "save_state_label"):
                 self.save_state_label.setText(f"✓ Saved {saved_time}")
+            if self.audio_file and self.project_file:
+                try:
+                    from remote_media_cache import RemoteMediaCacheManager, is_path_inside_cache
+                    if is_path_inside_cache(self.audio_file):
+                        RemoteMediaCacheManager().link_project(self.audio_file, self.project_file)
+                except Exception:
+                    pass
             self.statusBar().showMessage(f"Project saved: {self.project_file.name}")
             return True
         except Exception as exc:
@@ -743,6 +756,25 @@ class ProjectLifecycleMixin:
         self.custom_speakers = [str(s).strip() for s in data.get("custom_speakers", []) if str(s).strip()]
         self.plugins_project_data = data.get("plugins_data", {})
 
+        # If media file was cleared/moved, try resolving via Managed Remote Media Cache key first
+        remote_src = self.project_metadata.get("remote_media_source") if isinstance(self.project_metadata, dict) else None
+        if not preserve_media and not self.audio_file and isinstance(remote_src, dict) and remote_src.get("cache_key"):
+            try:
+                from remote_media_cache import RemoteMediaCacheManager
+                cached_hit = RemoteMediaCacheManager().get_existing_cached_file(str(remote_src["cache_key"]), touch=True)
+                if cached_hit and cached_hit.exists():
+                    self.audio_file = cached_hit
+                    self.current_media_is_video = cached_hit.suffix.lower() in {".mp4", ".mov", ".mkv", ".webm", ".avi"}
+                    self.player.setSource(QUrl.fromLocalFile(str(self.audio_file)))
+                    self.timeline.set_audio_filename(self.audio_file.name)
+                    if hasattr(self, "update_video_preview_state"):
+                        self.update_video_preview_state()
+            except Exception:
+                pass
+
+        if hasattr(self, "redownload_remote_media_action"):
+            self.redownload_remote_media_action.setEnabled(bool(isinstance(remote_src, dict) and remote_src.get("provider")))
+
         self.timeline.set_duration(self.duration)
         self.timeline.set_stories(self.stories)
         self.refresh_story_list()
@@ -778,7 +810,18 @@ class ProjectLifecycleMixin:
         if hasattr(self, "update_window_title"):
             self.update_window_title()
         self._remember_saved_project(str(project_path))
-        self.statusBar().showMessage(f"Project loaded: {project_path.name}")
+        if not self.audio_file and isinstance(remote_src, dict) and remote_src.get("provider"):
+            self.statusBar().showMessage(
+                f"Project loaded (cached media cleared — use File > Open Remote Episode > Re-download Archived Source Media): {project_path.name}"
+            )
+            if not os.environ.get("RTVS_TEST_MODE"):
+                try:
+                    from remote_media_cache_dialog import prompt_redownload_missing_remote_media
+                    prompt_redownload_missing_remote_media(self, remote_src, parent=self)
+                except Exception:
+                    pass
+        else:
+            self.statusBar().showMessage(f"Project loaded: {project_path.name}")
         return True
 
     def load_project(self, filename=None):

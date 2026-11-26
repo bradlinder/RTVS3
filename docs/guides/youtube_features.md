@@ -65,3 +65,16 @@ The **YouTube Video Publisher** plugin uses a **Zero-Auth Assisted Upload** work
 2. Go to **File > Export...** (**Ctrl+E**) and select **YouTube Video Publisher** in the **Export Destination** bar (or launch from **File > Publishing & Plugins**).
 3. Set your video title, description (auto-populated with YouTube chapter markers), tags, privacy status (*Public*, *Unlisted*, or *Private*), and thumbnail.
 4. Click export to package your local MP4/thumbnail/`.srt` deliverables, copy the formatted video metadata and chapter markers to the clipboard, and open YouTube Studio in your browser for quick drag-and-drop upload.
+
+---
+
+## 4. Importing Existing YouTube Videos (Back-Catalog Workflow)
+
+To transcribe, segment, translate, and publish WordPress posts from videos that are already uploaded to YouTube:
+1. Ensure the **YouTube Video Publisher** plugin is enabled under **Tools > Manage Plugins & Add-ons...** (**Ctrl+Shift+X**).
+2. Go to **File > Open Remote Episode > From YouTube Video...** (**Ctrl+Alt+Y**).
+3. Paste any YouTube URL (or 11-character video ID) and click **Fetch Info** to preview title, duration, upload date, estimated size, and any existing YouTube chapters.
+4. Select your preferred download quality (default **1080p Full HD MP4** for crisp frame screenshots, or 720p / 480p / Best Available / Audio Only). If the same video and quality are already in your local cache, RTVS3 opens it immediately without re-downloading.
+5. Optional: Link an existing WordPress post URL right in the import dialog to start in **Update Existing Post** mode, or check **Import YouTube chapters as initial story markers** when chapters are present.
+6. Click **Download & Open**. RTVS3 automatically installs `yt-dlp` on first use (with SHA-256 verification), merges streams via bundled FFmpeg, stores the video in the **Managed Remote Media Cache**, and pre-fills the WordPress **YouTube Video Embed** section across the full episode and all stories.
+7. Manage cache size limits, update `yt-dlp`, or manually free exported videos anytime under **Tools > Manage Cached Remote Media...**. Clearing cached media keeps your `.rtvs` transcript, stories, and embed links intact and allows 1-click re-download if you reopen the project later.

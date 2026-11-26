@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-25 18:38:26",
-  "total_files": 196,
+  "generated_at": "2026-11-26 12:45:26",
+  "total_files": 202,
   "files": {
     "RadioTVSegmenter.py": {
       "path": "RadioTVSegmenter.py",
       "lines": 684,
-      "summary": "Radio & TV Segmenter \u2014 v3.10.16-beta",
+      "summary": "Radio & TV Segmenter \u2014 v3.10.17-beta",
       "exports": null,
       "classes": [
         {
@@ -2759,6 +2759,40 @@
       ],
       "functions": []
     },
+    "diagnostics/youtube_import_cache_tests.py": {
+      "path": "diagnostics/youtube_import_cache_tests.py",
+      "lines": 253,
+      "summary": "Diagnostic tests for YouTube Episode Import, yt-dlp runner, Managed Remote Media Cache, and Shortcut/Guide sync.",
+      "exports": [
+        "DiagnosticYouTubeImportCacheTestsMixin"
+      ],
+      "classes": [
+        {
+          "name": "DiagnosticYouTubeImportCacheTestsMixin",
+          "bases": [],
+          "start_line": 10,
+          "end_line": 250,
+          "doc": "Automated verification mixin for YouTube import & Managed Remote Media Cache.",
+          "methods": [
+            {
+              "name": "_test_youtube_episode_import_and_yt_dlp_provisioning",
+              "sig": "_test_youtube_episode_import_and_yt_dlp_provisioning(self, item)",
+              "start_line": 13,
+              "end_line": 150,
+              "doc": ""
+            },
+            {
+              "name": "_test_managed_remote_media_cache_and_menu_shortcut_sync",
+              "sig": "_test_managed_remote_media_cache_and_menu_shortcut_sync(self, item)",
+              "start_line": 152,
+              "end_line": 250,
+              "doc": ""
+            }
+          ]
+        }
+      ],
+      "functions": []
+    },
     "dialogs.py": {
       "path": "dialogs.py",
       "lines": 433,
@@ -3004,7 +3038,7 @@
     },
     "embedded_guides.py": {
       "path": "embedded_guides.py",
-      "lines": 743,
+      "lines": 28,
       "summary": "Radio & TV Story Segmenter \u2014 Built-In Embedded User Guides & Documentation.",
       "exports": null,
       "classes": [],
@@ -3012,15 +3046,15 @@
         {
           "name": "get_embedded_guide",
           "sig": "get_embedded_guide(guide_id)",
-          "start_line": 736,
-          "end_line": 738,
+          "start_line": 21,
+          "end_line": 23,
           "doc": "Retrieve embedded markdown text for a guide topic ID, if available."
         },
         {
           "name": "get_all_embedded_guide_ids",
           "sig": "get_all_embedded_guide_ids()",
-          "start_line": 741,
-          "end_line": 743,
+          "start_line": 26,
+          "end_line": 28,
           "doc": "Return all guide IDs provided as embedded fallback content."
         }
       ]
@@ -4515,7 +4549,7 @@
     },
     "installer/build_tools/config.py": {
       "path": "installer/build_tools/config.py",
-      "lines": 206,
+      "lines": 208,
       "summary": "Build configuration constants and CLI argument parser.",
       "exports": null,
       "classes": [],
@@ -4523,8 +4557,8 @@
         {
           "name": "parse_build_args",
           "sig": "parse_build_args()",
-          "start_line": 131,
-          "end_line": 206,
+          "start_line": 133,
+          "end_line": 208,
           "doc": "Parse build target, plugin selection, installer, and version CLI flags."
         }
       ]
@@ -4627,7 +4661,7 @@
     },
     "media_batch.py": {
       "path": "media_batch.py",
-      "lines": 1719,
+      "lines": 1737,
       "summary": "Radio & TV Segmenter v1.1.1 \u2014 media batch responsibilities.",
       "exports": null,
       "classes": [
@@ -4635,7 +4669,7 @@
           "name": "MediaBatchMixin",
           "bases": [],
           "start_line": 21,
-          "end_line": 1719,
+          "end_line": 1737,
           "doc": "",
           "methods": [
             {
@@ -4877,157 +4911,171 @@
               "doc": ""
             },
             {
+              "name": "open_manage_cached_media_dialog",
+              "sig": "open_manage_cached_media_dialog(self)",
+              "start_line": 1011,
+              "end_line": 1014,
+              "doc": ""
+            },
+            {
+              "name": "redownload_current_project_remote_media",
+              "sig": "redownload_current_project_remote_media(self)",
+              "start_line": 1016,
+              "end_line": 1027,
+              "doc": ""
+            },
+            {
               "name": "open_glossary_dialog",
               "sig": "open_glossary_dialog(self)",
-              "start_line": 1011,
-              "end_line": 1015,
+              "start_line": 1029,
+              "end_line": 1033,
               "doc": "Edit persistent terminology used by every ASR and translation backend."
             },
             {
               "name": "_save_glossary",
               "sig": "_save_glossary(self)",
-              "start_line": 1017,
-              "end_line": 1024,
+              "start_line": 1035,
+              "end_line": 1042,
               "doc": ""
             },
             {
               "name": "apply_glossary_to_current_transcript",
               "sig": "apply_glossary_to_current_transcript(self, entries)",
-              "start_line": 1026,
-              "end_line": 1058,
+              "start_line": 1044,
+              "end_line": 1076,
               "doc": "Apply glossary rules and contextual name resolution to the active transcript with Undo support."
             },
             {
               "name": "add_to_glossary",
               "sig": "add_to_glossary(self, text)",
-              "start_line": 1060,
-              "end_line": 1080,
+              "start_line": 1078,
+              "end_line": 1098,
               "doc": ""
             },
             {
               "name": "prompt_add_alternate_spelling",
               "sig": "prompt_add_alternate_spelling(self, alternate_text)",
-              "start_line": 1082,
-              "end_line": 1125,
+              "start_line": 1100,
+              "end_line": 1143,
               "doc": "Prompt user for the preferred glossary spelling that `alternate_text` should map to."
             },
             {
               "name": "apply_glossary_to_whisper_context",
               "sig": "apply_glossary_to_whisper_context(self)",
-              "start_line": 1127,
-              "end_line": 1138,
+              "start_line": 1145,
+              "end_line": 1156,
               "doc": ""
             },
             {
               "name": "add_custom_speaker_to_glossary",
               "sig": "add_custom_speaker_to_glossary(self, name)",
-              "start_line": 1140,
-              "end_line": 1142,
+              "start_line": 1158,
+              "end_line": 1160,
               "doc": ""
             },
             {
               "name": "set_language",
               "sig": "set_language(self, language, persist)",
-              "start_line": 1144,
-              "end_line": 1165,
+              "start_line": 1162,
+              "end_line": 1183,
               "doc": ""
             },
             {
               "name": "_apply_localization",
               "sig": "_apply_localization(self)",
-              "start_line": 1167,
-              "end_line": 1204,
+              "start_line": 1185,
+              "end_line": 1222,
               "doc": ""
             },
             {
               "name": "update_story_segment_terminology",
               "sig": "update_story_segment_terminology(self)",
-              "start_line": 1206,
-              "end_line": 1293,
+              "start_line": 1224,
+              "end_line": 1311,
               "doc": "Update all user-facing labels and tooltips using active vocabulary settings."
             },
             {
               "name": "open_document",
               "sig": "open_document(self)",
-              "start_line": 1295,
-              "end_line": 1349,
+              "start_line": 1313,
+              "end_line": 1367,
               "doc": ""
             },
             {
               "name": "export_text_file",
               "sig": "export_text_file(self)",
-              "start_line": 1351,
-              "end_line": 1359,
+              "start_line": 1369,
+              "end_line": 1377,
               "doc": ""
             },
             {
               "name": "open_media",
               "sig": "open_media(self)",
-              "start_line": 1361,
-              "end_line": 1370,
+              "start_line": 1379,
+              "end_line": 1388,
               "doc": ""
             },
             {
               "name": "prepare_for_new_media",
               "sig": "prepare_for_new_media(self)",
-              "start_line": 1372,
-              "end_line": 1405,
+              "start_line": 1390,
+              "end_line": 1423,
               "doc": "Checks for unsaved changes before loading new media."
             },
             {
               "name": "_batch_media_error",
               "sig": "_batch_media_error(self, message)",
-              "start_line": 1407,
-              "end_line": 1429,
+              "start_line": 1425,
+              "end_line": 1447,
               "doc": ""
             },
             {
               "name": "_get_batch_project_target_path",
               "sig": "_get_batch_project_target_path(self, base_name)",
-              "start_line": 1431,
-              "end_line": 1458,
+              "start_line": 1449,
+              "end_line": 1476,
               "doc": "Determines consistent target .rtvs project file path during batch processing."
             },
             {
               "name": "_batch_save_project_file",
               "sig": "_batch_save_project_file(self)",
-              "start_line": 1460,
-              "end_line": 1475,
+              "start_line": 1478,
+              "end_line": 1493,
               "doc": "Saves project .rtvs to dedicated directory structure during batch processing."
             },
             {
               "name": "_batch_export_current",
               "sig": "_batch_export_current(self)",
-              "start_line": 1477,
-              "end_line": 1561,
+              "start_line": 1495,
+              "end_line": 1579,
               "doc": "Handles automatic export or project saving during batch processing."
             },
             {
               "name": "load_media_file",
               "sig": "load_media_file(self, filename, source, restore_adjacent_project)",
-              "start_line": 1563,
-              "end_line": 1678,
+              "start_line": 1581,
+              "end_line": 1696,
               "doc": ""
             },
             {
               "name": "update_active_media_source",
               "sig": "update_active_media_source(self)",
-              "start_line": 1680,
-              "end_line": 1713,
+              "start_line": 1698,
+              "end_line": 1731,
               "doc": "Update media player source and refresh waveform when normalization state changes."
             },
             {
               "name": "open_audio",
               "sig": "open_audio(self)",
-              "start_line": 1715,
-              "end_line": 1716,
+              "start_line": 1733,
+              "end_line": 1734,
               "doc": ""
             },
             {
               "name": "handle_media_drop",
               "sig": "handle_media_drop(self, filename)",
-              "start_line": 1718,
-              "end_line": 1719,
+              "start_line": 1736,
+              "end_line": 1737,
               "doc": ""
             }
           ]
@@ -5879,7 +5927,7 @@
     },
     "plugin_base.py": {
       "path": "plugin_base.py",
-      "lines": 209,
+      "lines": 225,
       "summary": "Radio & TV Segmenter \u2014 Plugin Base Interfaces and Manifest.",
       "exports": null,
       "classes": [
@@ -5910,7 +5958,7 @@
           "name": "BasePlugin",
           "bases": [],
           "start_line": 66,
-          "end_line": 170,
+          "end_line": 186,
           "doc": "Base class for all Radio & TV Segmenter plugins.",
           "methods": [
             {
@@ -5998,73 +6046,101 @@
               "doc": "Return list of (Action Label, callback_function) for top Media Input section of File menu."
             },
             {
-              "name": "get_export_actions",
-              "sig": "get_export_actions(self)",
+              "name": "get_remote_open_actions",
+              "sig": "get_remote_open_actions(self)",
               "start_line": 132,
               "end_line": 134,
+              "doc": "Return list of (Action Label, callback_function) for File > Open Remote Episode submenu."
+            },
+            {
+              "name": "get_cache_maintenance_actions",
+              "sig": "get_cache_maintenance_actions(self)",
+              "start_line": 136,
+              "end_line": 138,
+              "doc": "Return list of (Button Label, callback(parent_dialog)) for Manage Cached Remote Media dialog."
+            },
+            {
+              "name": "can_redownload_remote_source",
+              "sig": "can_redownload_remote_source(self, source_meta)",
+              "start_line": 140,
+              "end_line": 142,
+              "doc": "Return True if this plugin can re-download the given remote_media_source record."
+            },
+            {
+              "name": "redownload_remote_source",
+              "sig": "redownload_remote_source(self, source_meta, parent)",
+              "start_line": 144,
+              "end_line": 146,
+              "doc": "Re-download an archived remote media source and return its local Path, or None if cancelled."
+            },
+            {
+              "name": "get_export_actions",
+              "sig": "get_export_actions(self)",
+              "start_line": 148,
+              "end_line": 150,
               "doc": "Return list of (Action Label, callback_function) for Export menu."
             },
             {
               "name": "get_export_destinations",
               "sig": "get_export_destinations(self)",
-              "start_line": 136,
-              "end_line": 138,
+              "start_line": 152,
+              "end_line": 154,
               "doc": "Return list of ExportDestination providers to embed into UnifiedExportDialog."
             },
             {
               "name": "get_tools_actions",
               "sig": "get_tools_actions(self)",
-              "start_line": 140,
-              "end_line": 142,
+              "start_line": 156,
+              "end_line": 158,
               "doc": "Return list of (Action Label, callback_function) for Tools menu."
             },
             {
               "name": "get_story_actions",
               "sig": "get_story_actions(self, story)",
-              "start_line": 144,
-              "end_line": 146,
+              "start_line": 160,
+              "end_line": 162,
               "doc": "Return list of (Action Label, callback_function) for story context menu."
             },
             {
               "name": "create_story_metadata_widget",
               "sig": "create_story_metadata_widget(self, parent)",
-              "start_line": 148,
-              "end_line": 150,
+              "start_line": 164,
+              "end_line": 166,
               "doc": "Return a QWidget to be embedded into the Stories panel for metadata editing, or None."
             },
             {
               "name": "on_story_selected",
               "sig": "on_story_selected(self, story)",
-              "start_line": 152,
-              "end_line": 154,
+              "start_line": 168,
+              "end_line": 170,
               "doc": "Called when active story selection changes in the main editor."
             },
             {
               "name": "get_preferences_widget",
               "sig": "get_preferences_widget(self, parent)",
-              "start_line": 156,
-              "end_line": 158,
+              "start_line": 172,
+              "end_line": 174,
               "doc": "Return a QWidget to be embedded into the Preferences dialog, or None."
             },
             {
               "name": "save_preferences",
               "sig": "save_preferences(self, widget)",
-              "start_line": 160,
-              "end_line": 162,
+              "start_line": 176,
+              "end_line": 178,
               "doc": "Called when the user saves the Preferences dialog."
             },
             {
               "name": "on_project_loaded",
               "sig": "on_project_loaded(self, project_data)",
-              "start_line": 164,
-              "end_line": 166,
+              "start_line": 180,
+              "end_line": 182,
               "doc": "Called when an .rtvs project is loaded. Allows reading plugin metadata."
             },
             {
               "name": "on_project_saving",
               "sig": "on_project_saving(self, project_data)",
-              "start_line": 168,
-              "end_line": 170,
+              "start_line": 184,
+              "end_line": 186,
               "doc": "Called before an .rtvs project is saved. Allows injecting plugin metadata."
             }
           ]
@@ -6072,50 +6148,50 @@
         {
           "name": "ExportDestination",
           "bases": [],
-          "start_line": 173,
-          "end_line": 209,
+          "start_line": 189,
+          "end_line": 225,
           "doc": "Base class for plugin-provided export destinations in UnifiedExportDialog.",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, id, title, description, icon, button_label)",
-              "start_line": 176,
-              "end_line": 189,
+              "start_line": 192,
+              "end_line": 205,
               "doc": ""
             },
             {
               "name": "create_widget",
               "sig": "create_widget(self, parent, main_window)",
-              "start_line": 191,
-              "end_line": 193,
+              "start_line": 207,
+              "end_line": 209,
               "doc": "Create the configuration and preview widget embedded into the destination tab."
             },
             {
               "name": "on_scope_changed",
               "sig": "on_scope_changed(self, scope, stories)",
-              "start_line": 195,
-              "end_line": 197,
+              "start_line": 211,
+              "end_line": 213,
               "doc": "Called when export scope changes in the dialog (full, selected, all)."
             },
             {
               "name": "validate",
               "sig": "validate(self)",
-              "start_line": 199,
-              "end_line": 201,
+              "start_line": 215,
+              "end_line": 217,
               "doc": "Validate destination settings before export begins. Returns (ok, error_msg)."
             },
             {
               "name": "get_export_data",
               "sig": "get_export_data(self)",
-              "start_line": 203,
-              "end_line": 205,
+              "start_line": 219,
+              "end_line": 221,
               "doc": "Collect export parameters to include in the final dialog result."
             },
             {
               "name": "execute_export",
               "sig": "execute_export(self, main_window, export_data, progress_dialog)",
-              "start_line": 207,
-              "end_line": 209,
+              "start_line": 223,
+              "end_line": 225,
               "doc": "Execute the export action for this destination."
             }
           ]
@@ -7490,7 +7566,7 @@
     },
     "plugins/wordpress/episode_lookup.py": {
       "path": "plugins/wordpress/episode_lookup.py",
-      "lines": 443,
+      "lines": 498,
       "summary": "Headless WordPress episode lookup, REST parsing, slug/date helpers, and MP3 download.",
       "exports": [
         "MODE_NEW_EPISODE",
@@ -7565,28 +7641,28 @@
           "name": "_resolve_download_dir",
           "sig": "_resolve_download_dir(main_window, target_dir)",
           "start_line": 324,
-          "end_line": 348,
+          "end_line": 344,
           "doc": "Choose a writable directory for downloaded WordPress episode audio files."
         },
         {
           "name": "download_wp_episode_audio",
           "sig": "download_wp_episode_audio(post_info, main_window, target_dir)",
-          "start_line": 351,
-          "end_line": 383,
+          "start_line": 347,
+          "end_line": 420,
           "doc": "Download the MP3 file associated with an existing WordPress episode post."
         },
         {
           "name": "_copy_fetched_post_fields",
           "sig": "_copy_fetched_post_fields(target, post_info)",
-          "start_line": 386,
-          "end_line": 403,
+          "start_line": 423,
+          "end_line": 440,
           "doc": "Apply normalized WordPress post metadata onto a post item or project wp_meta dict."
         },
         {
           "name": "_populate_project_from_fetched_post",
           "sig": "_populate_project_from_fetched_post(main_window, post_info)",
-          "start_line": 406,
-          "end_line": 430,
+          "start_line": 443,
+          "end_line": 485,
           "doc": "Store fetched WordPress post details into main_window.project_metadata for Update mode."
         }
       ]
@@ -7765,7 +7841,7 @@
     },
     "plugins/wordpress/export_destination.py": {
       "path": "plugins/wordpress/export_destination.py",
-      "lines": 794,
+      "lines": 837,
       "summary": "WordPress Export Destination for UnifiedExportDialog.",
       "exports": [
         "WordPressExportDestination",
@@ -7795,7 +7871,7 @@
             "ExportDestination"
           ],
           "start_line": 37,
-          "end_line": 673,
+          "end_line": 716,
           "doc": "Export destination handler for WordPress REST API Draft Posts.",
           "methods": [
             {
@@ -7879,7 +7955,7 @@
               "name": "execute_export",
               "sig": "execute_export(self, main_window, export_data, progress_dialog)",
               "start_line": 171,
-              "end_line": 673,
+              "end_line": 716,
               "doc": ""
             }
           ]
@@ -7889,43 +7965,43 @@
           "bases": [
             "QDialog"
           ],
-          "start_line": 676,
-          "end_line": 756,
+          "start_line": 719,
+          "end_line": 799,
           "doc": "Full-featured WordPress post & story metadata editor dialog.",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, parent, main_window, target_story_index)",
-              "start_line": 679,
-              "end_line": 735,
+              "start_line": 722,
+              "end_line": 778,
               "doc": ""
             },
             {
               "name": "_on_save_clicked",
               "sig": "_on_save_clicked(self)",
-              "start_line": 737,
-              "end_line": 742,
+              "start_line": 780,
+              "end_line": 785,
               "doc": ""
             },
             {
               "name": "_on_close_clicked",
               "sig": "_on_close_clicked(self)",
-              "start_line": 744,
-              "end_line": 746,
+              "start_line": 787,
+              "end_line": 789,
               "doc": ""
             },
             {
               "name": "_on_save_and_close",
               "sig": "_on_save_and_close(self)",
-              "start_line": 748,
-              "end_line": 749,
+              "start_line": 791,
+              "end_line": 792,
               "doc": ""
             },
             {
               "name": "done",
               "sig": "done(self, r)",
-              "start_line": 751,
-              "end_line": 756,
+              "start_line": 794,
+              "end_line": 799,
               "doc": ""
             }
           ]
@@ -7935,7 +8011,7 @@
     },
     "plugins/wordpress/plugin.py": {
       "path": "plugins/wordpress/plugin.py",
-      "lines": 89,
+      "lines": 112,
       "summary": "WordPress Publisher Plugin for Radio & TV Segmenter.",
       "exports": [
         "Plugin",
@@ -7950,7 +8026,7 @@
             "BasePlugin"
           ],
           "start_line": 17,
-          "end_line": 81,
+          "end_line": 104,
           "doc": "WordPress Plugin implementation hooking into RTVS.",
           "methods": [
             {
@@ -7982,59 +8058,80 @@
               "doc": ""
             },
             {
+              "name": "get_remote_open_actions",
+              "sig": "get_remote_open_actions(self)",
+              "start_line": 35,
+              "end_line": 38,
+              "doc": ""
+            },
+            {
+              "name": "can_redownload_remote_source",
+              "sig": "can_redownload_remote_source(self, source_meta)",
+              "start_line": 40,
+              "end_line": 41,
+              "doc": ""
+            },
+            {
+              "name": "redownload_remote_source",
+              "sig": "redownload_remote_source(self, source_meta, parent)",
+              "start_line": 43,
+              "end_line": 56,
+              "doc": ""
+            },
+            {
               "name": "get_export_actions",
               "sig": "get_export_actions(self)",
-              "start_line": 35,
-              "end_line": 45,
+              "start_line": 58,
+              "end_line": 68,
               "doc": ""
             },
             {
               "name": "open_load_existing_episode_dialog",
               "sig": "open_load_existing_episode_dialog(self)",
-              "start_line": 47,
-              "end_line": 49,
+              "start_line": 70,
+              "end_line": 72,
               "doc": ""
             },
             {
               "name": "get_story_actions",
               "sig": "get_story_actions(self, story)",
-              "start_line": 51,
-              "end_line": 55,
+              "start_line": 74,
+              "end_line": 78,
               "doc": ""
             },
             {
               "name": "create_story_metadata_widget",
               "sig": "create_story_metadata_widget(self, parent)",
-              "start_line": 57,
-              "end_line": 59,
+              "start_line": 80,
+              "end_line": 82,
               "doc": ""
             },
             {
               "name": "on_story_selected",
               "sig": "on_story_selected(self, story)",
-              "start_line": 61,
-              "end_line": 62,
+              "start_line": 84,
+              "end_line": 85,
               "doc": ""
             },
             {
               "name": "get_preferences_widget",
               "sig": "get_preferences_widget(self, parent)",
-              "start_line": 64,
-              "end_line": 66,
+              "start_line": 87,
+              "end_line": 89,
               "doc": ""
             },
             {
               "name": "open_publish_dialog",
               "sig": "open_publish_dialog(self, parent, story)",
-              "start_line": 68,
-              "end_line": 70,
+              "start_line": 91,
+              "end_line": 93,
               "doc": ""
             },
             {
               "name": "open_post_metadata_dialog",
               "sig": "open_post_metadata_dialog(self, parent, story)",
-              "start_line": 72,
-              "end_line": 81,
+              "start_line": 95,
+              "end_line": 104,
               "doc": ""
             }
           ]
@@ -8822,7 +8919,7 @@
     },
     "plugins/wordpress/wp_ui_builder.py": {
       "path": "plugins/wordpress/wp_ui_builder.py",
-      "lines": 807,
+      "lines": 812,
       "summary": "UI layout construction and widget setup for WordPressExportTabWidget.",
       "exports": null,
       "classes": [],
@@ -8831,7 +8928,7 @@
           "name": "setup_wp_tab_ui",
           "sig": "setup_wp_tab_ui(self)",
           "start_line": 36,
-          "end_line": 807,
+          "end_line": 812,
           "doc": "Construct all controls, forms, sliders, list widgets, and tabbed panels for the WordPress export tab."
         }
       ]
@@ -9251,7 +9348,7 @@
     },
     "plugins/youtube/plugin.py": {
       "path": "plugins/youtube/plugin.py",
-      "lines": 261,
+      "lines": 291,
       "summary": "YouTube Video Publisher Plugin for Radio & TV Segmenter.",
       "exports": null,
       "classes": [
@@ -9293,7 +9390,7 @@
             "BasePlugin"
           ],
           "start_line": 227,
-          "end_line": 261,
+          "end_line": 291,
           "doc": "YouTube Video Publisher plugin hooking into RTVS.",
           "methods": [
             {
@@ -9311,24 +9408,59 @@
               "doc": ""
             },
             {
-              "name": "get_export_actions",
-              "sig": "get_export_actions(self)",
+              "name": "get_remote_open_actions",
+              "sig": "get_remote_open_actions(self)",
               "start_line": 237,
               "end_line": 240,
               "doc": ""
             },
             {
+              "name": "get_cache_maintenance_actions",
+              "sig": "get_cache_maintenance_actions(self)",
+              "start_line": 242,
+              "end_line": 246,
+              "doc": ""
+            },
+            {
+              "name": "can_redownload_remote_source",
+              "sig": "can_redownload_remote_source(self, source_meta)",
+              "start_line": 248,
+              "end_line": 249,
+              "doc": ""
+            },
+            {
+              "name": "redownload_remote_source",
+              "sig": "redownload_remote_source(self, source_meta, parent)",
+              "start_line": 251,
+              "end_line": 253,
+              "doc": ""
+            },
+            {
+              "name": "get_export_actions",
+              "sig": "get_export_actions(self)",
+              "start_line": 255,
+              "end_line": 258,
+              "doc": ""
+            },
+            {
               "name": "get_preferences_widget",
               "sig": "get_preferences_widget(self, parent)",
-              "start_line": 242,
-              "end_line": 257,
+              "start_line": 260,
+              "end_line": 283,
+              "doc": ""
+            },
+            {
+              "name": "open_load_youtube_video_dialog",
+              "sig": "open_load_youtube_video_dialog(self)",
+              "start_line": 285,
+              "end_line": 287,
               "doc": ""
             },
             {
               "name": "open_publish_dialog",
               "sig": "open_publish_dialog(self)",
-              "start_line": 259,
-              "end_line": 261,
+              "start_line": 289,
+              "end_line": 291,
               "doc": ""
             }
           ]
@@ -9343,6 +9475,520 @@
           "doc": ""
         }
       ]
+    },
+    "plugins/youtube/yt_dlp_runner.py": {
+      "path": "plugins/youtube/yt_dlp_runner.py",
+      "lines": 871,
+      "summary": "Headless yt-dlp runtime provisioner, URL parser, metadata prober, and downloader.",
+      "exports": [
+        "DEFAULT_YOUTUBE_QUALITY",
+        "YOUTUBE_QUALITY_PRESETS",
+        "ALLOWED_COOKIE_BROWSERS",
+        "extract_youtube_id_strict",
+        "normalize_quality_preset",
+        "normalize_cookie_browser",
+        "get_format_selector_for_preset",
+        "get_yt_dlp_tools_dir",
+        "get_platform_yt_dlp_asset_name",
+        "get_managed_yt_dlp_path",
+        "find_yt_dlp_binary",
+        "get_yt_dlp_version",
+        "parse_sha256_sums",
+        "install_or_update_yt_dlp",
+        "format_upload_date",
+        "build_youtube_project_stem",
+        "estimate_preset_size_bytes",
+        "parse_youtube_chapters",
+        "parse_yt_dlp_metadata_json",
+        "classify_yt_dlp_error",
+        "parse_yt_dlp_progress_line",
+        "build_yt_dlp_probe_command",
+        "probe_youtube_video",
+        "build_yt_dlp_download_command",
+        "download_youtube_video"
+      ],
+      "classes": [],
+      "functions": [
+        {
+          "name": "_subprocess_creation_flags",
+          "sig": "_subprocess_creation_flags()",
+          "start_line": 63,
+          "end_line": 64,
+          "doc": ""
+        },
+        {
+          "name": "_resolve_app_data_root",
+          "sig": "_resolve_app_data_root()",
+          "start_line": 67,
+          "end_line": 76,
+          "doc": ""
+        },
+        {
+          "name": "_resolve_ffmpeg_location",
+          "sig": "_resolve_ffmpeg_location()",
+          "start_line": 79,
+          "end_line": 94,
+          "doc": "Return the bundled/configured FFmpeg path or directory if available."
+        },
+        {
+          "name": "extract_youtube_id_strict",
+          "sig": "extract_youtube_id_strict(url_or_id)",
+          "start_line": 97,
+          "end_line": 148,
+          "doc": "Validate a YouTube URL or raw 11-char ID and return (video_id, canonical_url)."
+        },
+        {
+          "name": "normalize_quality_preset",
+          "sig": "normalize_quality_preset(preset)",
+          "start_line": 151,
+          "end_line": 154,
+          "doc": ""
+        },
+        {
+          "name": "normalize_cookie_browser",
+          "sig": "normalize_cookie_browser(browser)",
+          "start_line": 157,
+          "end_line": 159,
+          "doc": ""
+        },
+        {
+          "name": "get_format_selector_for_preset",
+          "sig": "get_format_selector_for_preset(preset)",
+          "start_line": 162,
+          "end_line": 189,
+          "doc": "Return (yt-dlp -f format selector, target output extension) for a quality preset."
+        },
+        {
+          "name": "get_yt_dlp_tools_dir",
+          "sig": "get_yt_dlp_tools_dir(base_dir)",
+          "start_line": 192,
+          "end_line": 195,
+          "doc": ""
+        },
+        {
+          "name": "get_platform_yt_dlp_asset_name",
+          "sig": "get_platform_yt_dlp_asset_name(platform_name)",
+          "start_line": 198,
+          "end_line": 204,
+          "doc": ""
+        },
+        {
+          "name": "get_managed_yt_dlp_path",
+          "sig": "get_managed_yt_dlp_path(base_dir, platform_name)",
+          "start_line": 207,
+          "end_line": 210,
+          "doc": ""
+        },
+        {
+          "name": "find_yt_dlp_binary",
+          "sig": "find_yt_dlp_binary(base_dir, allow_system_fallback)",
+          "start_line": 213,
+          "end_line": 225,
+          "doc": "Locate the managed yt-dlp binary, optionally falling back to system PATH."
+        },
+        {
+          "name": "get_yt_dlp_version",
+          "sig": "get_yt_dlp_version(binary_path)",
+          "start_line": 228,
+          "end_line": 246,
+          "doc": "Return the version string reported by `yt-dlp --version`, or empty string."
+        },
+        {
+          "name": "parse_sha256_sums",
+          "sig": "parse_sha256_sums(sums_text, asset_name)",
+          "start_line": 249,
+          "end_line": 261,
+          "doc": "Extract the expected lowercase SHA-256 hex digest for ``asset_name`` from SHA2-256SUMS."
+        },
+        {
+          "name": "_sha256_file",
+          "sig": "_sha256_file(path)",
+          "start_line": 264,
+          "end_line": 272,
+          "doc": ""
+        },
+        {
+          "name": "install_or_update_yt_dlp",
+          "sig": "install_or_update_yt_dlp(base_dir, progress_callback, cancel_check, platform_name)",
+          "start_line": 275,
+          "end_line": 364,
+          "doc": "Download, SHA-256 verify, and install the latest official standalone yt-dlp binary."
+        },
+        {
+          "name": "format_upload_date",
+          "sig": "format_upload_date(raw_yyyymmdd)",
+          "start_line": 367,
+          "end_line": 372,
+          "doc": "Convert yt-dlp upload_date ('20260412') into '2026-04-12'."
+        },
+        {
+          "name": "build_youtube_project_stem",
+          "sig": "build_youtube_project_stem(title, upload_date, video_id)",
+          "start_line": 375,
+          "end_line": 388,
+          "doc": "Build a clean, readable default .rtvs project stem from title + upload date."
+        },
+        {
+          "name": "estimate_preset_size_bytes",
+          "sig": "estimate_preset_size_bytes(info, preset)",
+          "start_line": 391,
+          "end_line": 453,
+          "doc": "Estimate download size in bytes for a quality preset from yt-dlp metadata."
+        },
+        {
+          "name": "parse_youtube_chapters",
+          "sig": "parse_youtube_chapters(info)",
+          "start_line": 456,
+          "end_line": 479,
+          "doc": "Normalize yt-dlp chapters list into [{title, start, end}]."
+        },
+        {
+          "name": "parse_yt_dlp_metadata_json",
+          "sig": "parse_yt_dlp_metadata_json(raw_info, fallback_url)",
+          "start_line": 482,
+          "end_line": 505,
+          "doc": "Normalize raw `yt-dlp --dump-single-json` output into a clean metadata dict."
+        },
+        {
+          "name": "classify_yt_dlp_error",
+          "sig": "classify_yt_dlp_error(stderr_text)",
+          "start_line": 508,
+          "end_line": 586,
+          "doc": "Translate raw yt-dlp error stderr into actionable user-facing guidance."
+        },
+        {
+          "name": "parse_yt_dlp_progress_line",
+          "sig": "parse_yt_dlp_progress_line(line)",
+          "start_line": 596,
+          "end_line": 637,
+          "doc": "Parse a yt-dlp stdout line into structured download/merge progress."
+        },
+        {
+          "name": "build_yt_dlp_probe_command",
+          "sig": "build_yt_dlp_probe_command(yt_dlp_bin, canonical_url, cookies_browser)",
+          "start_line": 640,
+          "end_line": 656,
+          "doc": ""
+        },
+        {
+          "name": "probe_youtube_video",
+          "sig": "probe_youtube_video(url_or_id, yt_dlp_bin, cookies_browser, timeout)",
+          "start_line": 659,
+          "end_line": 699,
+          "doc": "Fetch normalized metadata, chapters, and size estimates for a YouTube video."
+        },
+        {
+          "name": "build_yt_dlp_download_command",
+          "sig": "build_yt_dlp_download_command(yt_dlp_bin, canonical_url, output_base_path, quality_preset, cookies_browser, ffmpeg_location)",
+          "start_line": 702,
+          "end_line": 732,
+          "doc": "Construct a safe argument list for yt-dlp video/audio download."
+        },
+        {
+          "name": "download_youtube_video",
+          "sig": "download_youtube_video(url_or_id, output_dir, filename_stem, quality_preset, yt_dlp_bin, cookies_browser, progress_callback, cancel_check, process_callback)",
+          "start_line": 735,
+          "end_line": 842,
+          "doc": "Download and remux a YouTube video into ``output_dir`` with streaming progress."
+        }
+      ]
+    },
+    "plugins/youtube/yt_import_dialog.py": {
+      "path": "plugins/youtube/yt_import_dialog.py",
+      "lines": 746,
+      "summary": "Qt Dialogs for importing existing YouTube videos, re-downloading archived sources, and updating yt-dlp.",
+      "exports": [
+        "populate_project_from_youtube_import",
+        "LoadYouTubeEpisodeDialog",
+        "open_yt_dlp_updater_dialog",
+        "prompt_load_youtube_episode_dialog",
+        "redownload_youtube_source_dialog"
+      ],
+      "classes": [
+        {
+          "name": "LoadYouTubeEpisodeDialog",
+          "bases": [
+            "QDialog"
+          ],
+          "start_line": 182,
+          "end_line": 628,
+          "doc": "Dialog for fetching, configuring, downloading, and opening an existing YouTube video.",
+          "methods": [
+            {
+              "name": "__init__",
+              "sig": "__init__(self, main_window, parent, initial_url, initial_quality, redownload_mode)",
+              "start_line": 185,
+              "end_line": 214,
+              "doc": ""
+            },
+            {
+              "name": "_build_ui",
+              "sig": "_build_ui(self, initial_url, initial_quality)",
+              "start_line": 216,
+              "end_line": 371,
+              "doc": ""
+            },
+            {
+              "name": "_refresh_yt_dlp_status",
+              "sig": "_refresh_yt_dlp_status(self)",
+              "start_line": 373,
+              "end_line": 380,
+              "doc": ""
+            },
+            {
+              "name": "_set_busy",
+              "sig": "_set_busy(self, busy)",
+              "start_line": 382,
+              "end_line": 391,
+              "doc": ""
+            },
+            {
+              "name": "_refresh_quality_estimate_and_cache",
+              "sig": "_refresh_quality_estimate_and_cache(self)",
+              "start_line": 393,
+              "end_line": 415,
+              "doc": ""
+            },
+            {
+              "name": "_render_meta_summary",
+              "sig": "_render_meta_summary(self)",
+              "start_line": 417,
+              "end_line": 431,
+              "doc": ""
+            },
+            {
+              "name": "_start_probe",
+              "sig": "_start_probe(self)",
+              "start_line": 433,
+              "end_line": 455,
+              "doc": ""
+            },
+            {
+              "name": "_on_probe_finished",
+              "sig": "_on_probe_finished(self, meta)",
+              "start_line": 457,
+              "end_line": 472,
+              "doc": ""
+            },
+            {
+              "name": "_start_download",
+              "sig": "_start_download(self)",
+              "start_line": 474,
+              "end_line": 537,
+              "doc": ""
+            },
+            {
+              "name": "_on_download_finished",
+              "sig": "_on_download_finished(self, result)",
+              "start_line": 539,
+              "end_line": 545,
+              "doc": ""
+            },
+            {
+              "name": "_on_worker_progress",
+              "sig": "_on_worker_progress(self, pct, msg)",
+              "start_line": 547,
+              "end_line": 549,
+              "doc": ""
+            },
+            {
+              "name": "_on_worker_failed",
+              "sig": "_on_worker_failed(self, msg, err_meta)",
+              "start_line": 551,
+              "end_line": 566,
+              "doc": ""
+            },
+            {
+              "name": "_start_yt_dlp_update",
+              "sig": "_start_yt_dlp_update(self, retry_after)",
+              "start_line": 568,
+              "end_line": 598,
+              "doc": ""
+            },
+            {
+              "name": "_on_retry_with_cookies",
+              "sig": "_on_retry_with_cookies(self)",
+              "start_line": 600,
+              "end_line": 611,
+              "doc": ""
+            },
+            {
+              "name": "_cancel_active_workers",
+              "sig": "_cancel_active_workers(self)",
+              "start_line": 613,
+              "end_line": 616,
+              "doc": ""
+            },
+            {
+              "name": "_on_cancel_clicked",
+              "sig": "_on_cancel_clicked(self)",
+              "start_line": 618,
+              "end_line": 624,
+              "doc": ""
+            },
+            {
+              "name": "closeEvent",
+              "sig": "closeEvent(self, event)",
+              "start_line": 626,
+              "end_line": 628,
+              "doc": ""
+            }
+          ]
+        }
+      ],
+      "functions": [
+        {
+          "name": "_trim_youtube_description_for_excerpt",
+          "sig": "_trim_youtube_description_for_excerpt(description, max_chars)",
+          "start_line": 59,
+          "end_line": 69,
+          "doc": "Extract a clean short summary from a YouTube description for the project excerpt."
+        },
+        {
+          "name": "populate_project_from_youtube_import",
+          "sig": "populate_project_from_youtube_import(main_window, video_meta, file_path, quality_preset, cache_key, import_chapters, existing_wp_url)",
+          "start_line": 72,
+          "end_line": 179,
+          "doc": "Populate project metadata, WordPress YouTube embed state, and optional chapters."
+        },
+        {
+          "name": "open_yt_dlp_updater_dialog",
+          "sig": "open_yt_dlp_updater_dialog(parent)",
+          "start_line": 631,
+          "end_line": 677,
+          "doc": "Quick standalone updater dialog triggered from Cache Manager or Preferences."
+        },
+        {
+          "name": "prompt_load_youtube_episode_dialog",
+          "sig": "prompt_load_youtube_episode_dialog(main_window, parent)",
+          "start_line": 680,
+          "end_line": 714,
+          "doc": "Launch the YouTube import dialog, respect unsaved-project guard, and load downloaded media."
+        },
+        {
+          "name": "redownload_youtube_source_dialog",
+          "sig": "redownload_youtube_source_dialog(main_window, source_meta, parent)",
+          "start_line": 717,
+          "end_line": 737,
+          "doc": "Re-download an archived YouTube source for an existing .rtvs project."
+        }
+      ]
+    },
+    "plugins/youtube/yt_import_workers.py": {
+      "path": "plugins/youtube/yt_import_workers.py",
+      "lines": 250,
+      "summary": "Background QThread workers for yt-dlp provisioning, YouTube metadata probing, and video downloads.",
+      "exports": [
+        "YtDlpInstallWorker",
+        "YouTubeProbeWorker",
+        "YouTubeDownloadWorker"
+      ],
+      "classes": [
+        {
+          "name": "YtDlpInstallWorker",
+          "bases": [
+            "QThread"
+          ],
+          "start_line": 30,
+          "end_line": 56,
+          "doc": "Background worker that installs or updates the managed yt-dlp binary.",
+          "methods": [
+            {
+              "name": "__init__",
+              "sig": "__init__(self, parent, base_dir)",
+              "start_line": 37,
+              "end_line": 40,
+              "doc": ""
+            },
+            {
+              "name": "cancel",
+              "sig": "cancel(self)",
+              "start_line": 42,
+              "end_line": 43,
+              "doc": ""
+            },
+            {
+              "name": "run",
+              "sig": "run(self)",
+              "start_line": 45,
+              "end_line": 56,
+              "doc": ""
+            }
+          ]
+        },
+        {
+          "name": "YouTubeProbeWorker",
+          "bases": [
+            "QThread"
+          ],
+          "start_line": 59,
+          "end_line": 109,
+          "doc": "Background worker that ensures yt-dlp is installed and probes YouTube video metadata.",
+          "methods": [
+            {
+              "name": "__init__",
+              "sig": "__init__(self, url_or_id, cookies_browser, parent)",
+              "start_line": 66,
+              "end_line": 75,
+              "doc": ""
+            },
+            {
+              "name": "cancel",
+              "sig": "cancel(self)",
+              "start_line": 77,
+              "end_line": 78,
+              "doc": ""
+            },
+            {
+              "name": "run",
+              "sig": "run(self)",
+              "start_line": 80,
+              "end_line": 109,
+              "doc": ""
+            }
+          ]
+        },
+        {
+          "name": "YouTubeDownloadWorker",
+          "bases": [
+            "QThread"
+          ],
+          "start_line": 112,
+          "end_line": 243,
+          "doc": "Background worker that downloads a YouTube video into the Managed Remote Media Cache.",
+          "methods": [
+            {
+              "name": "__init__",
+              "sig": "__init__(self, url_or_id, video_meta, quality_preset, cookies_browser, force_redownload, cache_cap_gb, protected_paths, parent)",
+              "start_line": 119,
+              "end_line": 139,
+              "doc": ""
+            },
+            {
+              "name": "cancel",
+              "sig": "cancel(self)",
+              "start_line": 141,
+              "end_line": 148,
+              "doc": ""
+            },
+            {
+              "name": "_set_active_proc",
+              "sig": "_set_active_proc(self, proc)",
+              "start_line": 150,
+              "end_line": 151,
+              "doc": ""
+            },
+            {
+              "name": "run",
+              "sig": "run(self)",
+              "start_line": 153,
+              "end_line": 243,
+              "doc": ""
+            }
+          ]
+        }
+      ],
+      "functions": []
     },
     "preferences_dialog.py": {
       "path": "preferences_dialog.py",
@@ -9582,7 +10228,7 @@
     },
     "preferences_tabs_media.py": {
       "path": "preferences_tabs_media.py",
-      "lines": 683,
+      "lines": 692,
       "summary": "Radio & TV Story Segmenter \u2014 Preferences Modal Media & Workflow Tab Builders.",
       "exports": null,
       "classes": [],
@@ -9612,14 +10258,14 @@
           "name": "build_cleanup_tab",
           "sig": "build_cleanup_tab(win, dialog, live_widgets, add_custom_defaults_btn)",
           "start_line": 400,
-          "end_line": 598,
+          "end_line": 607,
           "doc": ""
         },
         {
           "name": "build_youtube_tab",
           "sig": "build_youtube_tab(win, dialog, live_widgets, add_custom_defaults_btn)",
-          "start_line": 601,
-          "end_line": 683,
+          "start_line": 610,
+          "end_line": 692,
           "doc": ""
         }
       ]
@@ -10078,7 +10724,7 @@
     },
     "project_lifecycle.py": {
       "path": "project_lifecycle.py",
-      "lines": 949,
+      "lines": 992,
       "summary": "Radio & TV Story Segmenter \u2014 Project Lifecycle & Persistence Management.",
       "exports": [
         "ProjectLifecycleMixin",
@@ -10089,7 +10735,7 @@
           "name": "ProjectLifecycleMixin",
           "bases": [],
           "start_line": 49,
-          "end_line": 945,
+          "end_line": 988,
           "doc": "Provides project lifecycle and persistence methods for MainWindow.",
           "methods": [
             {
@@ -10152,77 +10798,77 @@
               "name": "save_project_as",
               "sig": "save_project_as(self)",
               "start_line": 449,
-              "end_line": 493,
+              "end_line": 499,
               "doc": ""
             },
             {
               "name": "schedule_project_save",
               "sig": "schedule_project_save(self, delay_ms)",
-              "start_line": 495,
-              "end_line": 515,
+              "start_line": 501,
+              "end_line": 521,
               "doc": "Schedule a coalesced disk save after interactive micro-edits without prompting on unsaved projects."
             },
             {
               "name": "_run_debounced_save",
               "sig": "_run_debounced_save(self)",
-              "start_line": 517,
-              "end_line": 523,
+              "start_line": 523,
+              "end_line": 529,
               "doc": ""
             },
             {
               "name": "cancel_pending_project_save",
               "sig": "cancel_pending_project_save(self)",
-              "start_line": 525,
-              "end_line": 530,
+              "start_line": 531,
+              "end_line": 536,
               "doc": "Cancel any queued debounced save timer without writing to disk."
             },
             {
               "name": "flush_pending_project_save",
               "sig": "flush_pending_project_save(self)",
-              "start_line": 532,
-              "end_line": 541,
+              "start_line": 538,
+              "end_line": 547,
               "doc": "Immediately execute any pending debounced project save."
             },
             {
               "name": "save_project",
               "sig": "save_project(self, force)",
-              "start_line": 543,
-              "end_line": 649,
+              "start_line": 549,
+              "end_line": 662,
               "doc": ""
             },
             {
               "name": "open_backup_restore_dialog",
               "sig": "open_backup_restore_dialog(self)",
-              "start_line": 651,
-              "end_line": 658,
+              "start_line": 664,
+              "end_line": 671,
               "doc": "Opens the unified Backup & Restore Center dialog."
             },
             {
               "name": "load_project_file",
               "sig": "load_project_file(self, filename, prompt, preserve_media)",
-              "start_line": 660,
-              "end_line": 782,
+              "start_line": 673,
+              "end_line": 825,
               "doc": ""
             },
             {
               "name": "load_project",
               "sig": "load_project(self, filename)",
-              "start_line": 784,
-              "end_line": 798,
+              "start_line": 827,
+              "end_line": 841,
               "doc": ""
             },
             {
               "name": "open_purge_project_data_dialog",
               "sig": "open_purge_project_data_dialog(self)",
-              "start_line": 800,
-              "end_line": 812,
+              "start_line": 843,
+              "end_line": 855,
               "doc": "Open the modal dialog allowing users to selectively wipe project data."
             },
             {
               "name": "purge_project_data",
               "sig": "purge_project_data(self, purge_transcript, purge_translations, purge_speakers, purge_stories, purge_media)",
-              "start_line": 814,
-              "end_line": 945,
+              "start_line": 857,
+              "end_line": 988,
               "doc": "Selectively wipe project components while preserving user undo history."
             }
           ]
@@ -12634,6 +13280,343 @@
         }
       ]
     },
+    "remote_media_cache.py": {
+      "path": "remote_media_cache.py",
+      "lines": 610,
+      "summary": "Headless Managed Remote Media Cache for YouTube and WordPress episode downloads.",
+      "exports": [
+        "DEFAULT_CACHE_CAP_GB",
+        "CACHE_CAP_SETTING_KEY",
+        "CACHE_INDEX_FILENAME",
+        "format_bytes_human",
+        "get_remote_media_cache_dir",
+        "is_path_inside_cache",
+        "make_cache_key",
+        "build_remote_media_source_record",
+        "RemoteMediaCacheManager"
+      ],
+      "classes": [
+        {
+          "name": "RemoteMediaCacheManager",
+          "bases": [],
+          "start_line": 151,
+          "end_line": 597,
+          "doc": "Manages cached YouTube and WordPress remote downloads with LRU size limits.",
+          "methods": [
+            {
+              "name": "__init__",
+              "sig": "__init__(self, cache_dir)",
+              "start_line": 154,
+              "end_line": 158,
+              "doc": ""
+            },
+            {
+              "name": "get_provider_dir",
+              "sig": "get_provider_dir(self, provider)",
+              "start_line": 160,
+              "end_line": 167,
+              "doc": "Return a safe subdirectory inside the cache root for a specific provider."
+            },
+            {
+              "name": "load_index",
+              "sig": "load_index(self)",
+              "start_line": 169,
+              "end_line": 211,
+              "doc": "Load and reconcile index.json against actual files on disk."
+            },
+            {
+              "name": "save_index",
+              "sig": "save_index(self)",
+              "start_line": 213,
+              "end_line": 229,
+              "doc": "Atomically persist index.json using temp-file + fsync + os.replace."
+            },
+            {
+              "name": "_normalize_protected_set",
+              "sig": "_normalize_protected_set(self, protected_paths)",
+              "start_line": 231,
+              "end_line": 240,
+              "doc": ""
+            },
+            {
+              "name": "get_entry",
+              "sig": "get_entry(self, cache_key)",
+              "start_line": 242,
+              "end_line": 245,
+              "doc": ""
+            },
+            {
+              "name": "find_entry_by_path",
+              "sig": "find_entry_by_path(self, file_path)",
+              "start_line": 247,
+              "end_line": 258,
+              "doc": ""
+            },
+            {
+              "name": "get_existing_cached_file",
+              "sig": "get_existing_cached_file(self, cache_key, touch)",
+              "start_line": 260,
+              "end_line": 272,
+              "doc": "Return the existing cached Path for ``cache_key`` (instant cache-hit reuse)."
+            },
+            {
+              "name": "register_download",
+              "sig": "register_download(self, cache_key, file_path, provider, source_url, source_id, quality_preset, title, upload_date, project_path)",
+              "start_line": 274,
+              "end_line": 321,
+              "doc": "Register (or update) a downloaded remote file inside the managed cache."
+            },
+            {
+              "name": "mark_accessed",
+              "sig": "mark_accessed(self, file_path_or_key)",
+              "start_line": 323,
+              "end_line": 336,
+              "doc": "Refresh ``last_accessed_at`` for an entry matched by key or path."
+            },
+            {
+              "name": "mark_exported",
+              "sig": "mark_exported(self, file_path_or_key, export_target)",
+              "start_line": 338,
+              "end_line": 357,
+              "doc": "Mark a cached media entry as exported so LRU eviction prefers it first."
+            },
+            {
+              "name": "link_project",
+              "sig": "link_project(self, file_path_or_key, project_path)",
+              "start_line": 359,
+              "end_line": 378,
+              "doc": "Associate a saved `.rtvs` project path with a cached media entry."
+            },
+            {
+              "name": "list_entries",
+              "sig": "list_entries(self)",
+              "start_line": 380,
+              "end_line": 385,
+              "doc": "Return all cached entries sorted newest-accessed first."
+            },
+            {
+              "name": "get_total_size_bytes",
+              "sig": "get_total_size_bytes(self)",
+              "start_line": 387,
+              "end_line": 389,
+              "doc": ""
+            },
+            {
+              "name": "get_stats",
+              "sig": "get_stats(self, cap_gb)",
+              "start_line": 391,
+              "end_line": 410,
+              "doc": ""
+            },
+            {
+              "name": "check_disk_space",
+              "sig": "check_disk_space(self, estimated_bytes, cap_gb)",
+              "start_line": 412,
+              "end_line": 445,
+              "doc": "Check free disk space and cache cap before starting a large download."
+            },
+            {
+              "name": "delete_entry",
+              "sig": "delete_entry(self, cache_key, protected_paths)",
+              "start_line": 447,
+              "end_line": 478,
+              "doc": "Safely delete a single cached file by key, respecting path-jail and active-file guards."
+            },
+            {
+              "name": "enforce_size_cap",
+              "sig": "enforce_size_cap(self, cap_gb, protected_paths)",
+              "start_line": 480,
+              "end_line": 554,
+              "doc": "Evict cached files when total size exceeds ``cap_gb`` (0 or negative = Unlimited)."
+            },
+            {
+              "name": "clear_cache",
+              "sig": "clear_cache(self, exported_only, protected_paths)",
+              "start_line": 556,
+              "end_line": 597,
+              "doc": "Manually clear exported-only or all non-open cached remote media files."
+            }
+          ]
+        }
+      ],
+      "functions": [
+        {
+          "name": "_utc_now_iso",
+          "sig": "_utc_now_iso()",
+          "start_line": 27,
+          "end_line": 28,
+          "doc": ""
+        },
+        {
+          "name": "_parse_iso_ts",
+          "sig": "_parse_iso_ts(val)",
+          "start_line": 31,
+          "end_line": 40,
+          "doc": ""
+        },
+        {
+          "name": "format_bytes_human",
+          "sig": "format_bytes_human(num_bytes)",
+          "start_line": 43,
+          "end_line": 52,
+          "doc": "Format a byte count as a readable size string (e.g. '1.42 GB', '312.5 MB')."
+        },
+        {
+          "name": "_resolve_app_data_root",
+          "sig": "_resolve_app_data_root()",
+          "start_line": 55,
+          "end_line": 65,
+          "doc": "Resolve the writable application data directory without importing Qt."
+        },
+        {
+          "name": "get_remote_media_cache_dir",
+          "sig": "get_remote_media_cache_dir(base_dir)",
+          "start_line": 68,
+          "end_line": 82,
+          "doc": "Return (and create if needed) the managed remote media cache root directory."
+        },
+        {
+          "name": "is_path_inside_cache",
+          "sig": "is_path_inside_cache(file_path, cache_dir)",
+          "start_line": 85,
+          "end_line": 97,
+          "doc": "Strictly verify that ``file_path`` resides inside the managed cache directory."
+        },
+        {
+          "name": "make_cache_key",
+          "sig": "make_cache_key(provider, source_id, quality_preset)",
+          "start_line": 100,
+          "end_line": 107,
+          "doc": "Build a deterministic cache key for a remote source item."
+        },
+        {
+          "name": "build_remote_media_source_record",
+          "sig": "build_remote_media_source_record(provider, source_url, source_id, quality_preset, cached_filename, cache_key, title, upload_date, estimated_size_bytes, extra)",
+          "start_line": 110,
+          "end_line": 148,
+          "doc": "Create a portable `.rtvs` `remote_media_source` metadata dictionary."
+        }
+      ]
+    },
+    "remote_media_cache_dialog.py": {
+      "path": "remote_media_cache_dialog.py",
+      "lines": 441,
+      "summary": "Qt Dialog for inspecting and managing the Managed Remote Media Cache (YouTube & WordPress).",
+      "exports": [
+        "CACHE_CAP_OPTIONS",
+        "get_configured_cache_cap_gb",
+        "ManageCachedMediaDialog",
+        "find_redownload_provider",
+        "reattach_downloaded_media_to_project",
+        "prompt_redownload_missing_remote_media"
+      ],
+      "classes": [
+        {
+          "name": "ManageCachedMediaDialog",
+          "bases": [
+            "QDialog"
+          ],
+          "start_line": 52,
+          "end_line": 338,
+          "doc": "Inspect, cap, and manually prune cached YouTube and WordPress remote downloads.",
+          "methods": [
+            {
+              "name": "__init__",
+              "sig": "__init__(self, parent, main_window, cache_manager)",
+              "start_line": 55,
+              "end_line": 72,
+              "doc": ""
+            },
+            {
+              "name": "_active_protected_paths",
+              "sig": "_active_protected_paths(self)",
+              "start_line": 74,
+              "end_line": 82,
+              "doc": ""
+            },
+            {
+              "name": "_build_ui",
+              "sig": "_build_ui(self)",
+              "start_line": 84,
+              "end_line": 172,
+              "doc": ""
+            },
+            {
+              "name": "_collect_plugin_maintenance_actions",
+              "sig": "_collect_plugin_maintenance_actions(self)",
+              "start_line": 174,
+              "end_line": 190,
+              "doc": ""
+            },
+            {
+              "name": "refresh_table",
+              "sig": "refresh_table(self)",
+              "start_line": 192,
+              "end_line": 242,
+              "doc": ""
+            },
+            {
+              "name": "_on_cap_changed",
+              "sig": "_on_cap_changed(self)",
+              "start_line": 244,
+              "end_line": 257,
+              "doc": ""
+            },
+            {
+              "name": "_on_delete_selected",
+              "sig": "_on_delete_selected(self)",
+              "start_line": 259,
+              "end_line": 300,
+              "doc": ""
+            },
+            {
+              "name": "_on_clear_exported",
+              "sig": "_on_clear_exported(self)",
+              "start_line": 302,
+              "end_line": 319,
+              "doc": ""
+            },
+            {
+              "name": "_on_clear_all",
+              "sig": "_on_clear_all(self)",
+              "start_line": 321,
+              "end_line": 338,
+              "doc": ""
+            }
+          ]
+        }
+      ],
+      "functions": [
+        {
+          "name": "get_configured_cache_cap_gb",
+          "sig": "get_configured_cache_cap_gb(settings_store)",
+          "start_line": 41,
+          "end_line": 49,
+          "doc": "Read the user's configured Remote Media Cache limit in GB (0.0 = Unlimited)."
+        },
+        {
+          "name": "find_redownload_provider",
+          "sig": "find_redownload_provider(main_window, source_meta)",
+          "start_line": 341,
+          "end_line": 357,
+          "doc": "Locate an enabled plugin capable of re-downloading ``source_meta`` (decoupled from plugins/)."
+        },
+        {
+          "name": "reattach_downloaded_media_to_project",
+          "sig": "reattach_downloaded_media_to_project(main_window, media_path)",
+          "start_line": 360,
+          "end_line": 385,
+          "doc": "Bind a newly re-downloaded remote media file onto an already-loaded .rtvs project."
+        },
+        {
+          "name": "prompt_redownload_missing_remote_media",
+          "sig": "prompt_redownload_missing_remote_media(main_window, source_meta, parent)",
+          "start_line": 388,
+          "end_line": 431,
+          "doc": "Offer 1-click re-download when an opened .rtvs project's cached remote media is missing."
+        }
+      ]
+    },
     "roadmap_manager.py": {
       "path": "roadmap_manager.py",
       "lines": 259,
@@ -13709,7 +14692,7 @@
     },
     "shortcuts/schema.py": {
       "path": "shortcuts/schema.py",
-      "lines": 924,
+      "lines": 951,
       "summary": "shortcuts/schema.py \u2014 Shortcut definitions, dataclass models, and string helpers.",
       "exports": null,
       "classes": [
@@ -18529,7 +19512,7 @@
     "transcript_story.py": {
       "path": "transcript_story.py",
       "lines": 856,
-      "summary": "Radio & TV Segmenter v3.10.16-beta \u2014 transcript story responsibilities.",
+      "summary": "Radio & TV Segmenter v3.10.17-beta \u2014 transcript story responsibilities.",
       "exports": [
         "TranscriptStoryMixin",
         "Story",
@@ -19407,7 +20390,7 @@
     },
     "ui_menus.py": {
       "path": "ui_menus.py",
-      "lines": 883,
+      "lines": 923,
       "summary": "Main application menu bar and action assembly for Radio & TV Story Segmenter.",
       "exports": null,
       "classes": [
@@ -19440,77 +20423,77 @@
           "name": "UiMenusMixin",
           "bases": [],
           "start_line": 79,
-          "end_line": 882,
+          "end_line": 922,
           "doc": "Mixin providing menu construction, action shortcut wiring, and menu synchronization.",
           "methods": [
             {
               "name": "build_menus",
               "sig": "build_menus(self)",
               "start_line": 81,
-              "end_line": 675,
+              "end_line": 690,
               "doc": "Construct the main application menu bar and associated keyboard shortcuts."
             },
             {
               "name": "apply_user_shortcuts",
               "sig": "apply_user_shortcuts(self)",
-              "start_line": 677,
-              "end_line": 682,
+              "start_line": 692,
+              "end_line": 697,
               "doc": "Rebind all menu actions and application shortcuts according to user preferences."
             },
             {
               "name": "_refresh_recent_projects_menu",
               "sig": "_refresh_recent_projects_menu(self)",
-              "start_line": 684,
-              "end_line": 712,
+              "start_line": 699,
+              "end_line": 727,
               "doc": "Update recent projects submenu items based on user settings store."
             },
             {
               "name": "_check_external_dependencies",
               "sig": "_check_external_dependencies(self)",
-              "start_line": 714,
-              "end_line": 728,
+              "start_line": 729,
+              "end_line": 743,
               "doc": "Check bundled media tools and record actionable diagnostics."
             },
             {
               "name": "_sync_undo_redo_actions",
               "sig": "_sync_undo_redo_actions(self)",
-              "start_line": 730,
-              "end_line": 739,
+              "start_line": 745,
+              "end_line": 754,
               "doc": "Synchronize undo/redo action states with QUndoStack."
             },
             {
               "name": "_remember_directory",
               "sig": "_remember_directory(self, path)",
-              "start_line": 741,
-              "end_line": 751,
+              "start_line": 756,
+              "end_line": 766,
               "doc": "Persist directory of chosen file to improve user file dialog experience."
             },
             {
               "name": "update_processing_menu_status",
               "sig": "update_processing_menu_status(self)",
-              "start_line": 754,
-              "end_line": 770,
+              "start_line": 769,
+              "end_line": 785,
               "doc": "Update label annotations on Tools actions reflecting pipeline stage completion."
             },
             {
               "name": "refresh_plugin_menus",
               "sig": "refresh_plugin_menus(self)",
-              "start_line": 773,
-              "end_line": 842,
+              "start_line": 788,
+              "end_line": 882,
               "doc": "Dynamically populate plugin export actions, tools menu actions, and core UI controls."
             },
             {
               "name": "trigger_smart_copy",
               "sig": "trigger_smart_copy(self)",
-              "start_line": 844,
-              "end_line": 864,
+              "start_line": 884,
+              "end_line": 904,
               "doc": "Smart copy routing: active text cursor selection -> focused widget -> highlighted story transcript."
             },
             {
               "name": "trigger_deselect_all",
               "sig": "trigger_deselect_all(self)",
-              "start_line": 866,
-              "end_line": 882,
+              "start_line": 906,
+              "end_line": 922,
               "doc": "Clear all active selections across stories, timeline range, and transcript."
             }
           ]

@@ -32,6 +32,29 @@ class Plugin(BasePlugin):
             ("Open Existing WordPress Episode...", self.open_load_existing_episode_dialog),
         ]
 
+    def get_remote_open_actions(self) -> List[tuple[str, Callable]]:
+        return [
+            ("From Existing WordPress Post...", self.open_load_existing_episode_dialog),
+        ]
+
+    def can_redownload_remote_source(self, source_meta: dict) -> bool:
+        return isinstance(source_meta, dict) and str(source_meta.get("provider") or "").strip().lower() == "wordpress"
+
+    def redownload_remote_source(self, source_meta: dict, parent: Any = None):
+        from plugins.wordpress.episode_lookup import download_wp_episode_audio
+        audio_url = str(source_meta.get("audio_url") or source_meta.get("source_url") or "").strip()
+        if not audio_url:
+            return None
+        post_info = {
+            "id": source_meta.get("wp_post_id") or source_meta.get("source_id") or "episode",
+            "slug": source_meta.get("slug") or "",
+            "title": source_meta.get("title") or "WordPress Episode",
+            "url": str(source_meta.get("source_url") or ""),
+            "audio_url": audio_url,
+            "date_display": str(source_meta.get("upload_date") or ""),
+        }
+        return download_wp_episode_audio(post_info, main_window=self.app)
+
     def get_export_actions(self) -> List[tuple[str, Callable]]:
         def _open_export():
             if hasattr(self.app, "open_unified_export_dialog"):

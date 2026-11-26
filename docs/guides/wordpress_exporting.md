@@ -43,10 +43,11 @@ You can save your WordPress credentials in preferences so you only need to enter
 
 When starting a backfill project from an older episode—or after segmenting a new broadcast—you can begin in two ways:
 
-- **Starting a Backfill Project from the File Menu (`File > Open Existing WordPress Episode...`)**:
-  1. Go to **File > Open Existing WordPress Episode...** at the top of the File menu (also available under **File > Publishing & Plugins**).
+- **Starting a Backfill Project from the File Menu (`File > Open Remote Episode > From Existing WordPress Post...`)**:
+  1. Go to **File > Open Remote Episode > From Existing WordPress Post...** at the top of the File menu (also available under **File > Publishing & Plugins**). For already-uploaded YouTube video shows, choose **File > Open Remote Episode > From YouTube Video...** (**Ctrl+Alt+Y**), which also supports linking an existing WordPress post for Update Mode.
   2. Paste an existing WordPress episode URL or a direct `.mp3` URL and click **Fetch Info** to preview its Post ID, original publication date, and detected MP3 enclosure.
-  3. Choose whether to **Download and load MP3 from WordPress episode / URL** or **Use local audio file from computer** (`Browse...`), then click **Load Episode**. RTVS3 loads the audio and pre-configures your project in **Update Existing Episode & Backfill Stories** mode with the episode's original date, title, authors, categories, and preserved excerpt.
+  3. Choose whether to **Download and load MP3 from WordPress episode / URL** (stored in the **Managed Remote Media Cache** with automatic LRU capping and 1-click project re-download) or **Use local audio file from computer** (`Browse...`), then click **Load Episode**. RTVS3 loads the audio and pre-configures your project in **Update Existing Episode & Backfill Stories** mode with the episode's original date, title, authors, categories, and preserved excerpt.
+  4. After exporting to WordPress, cached remote downloads are marked as exported for LRU priority, and the completion dialog offers an optional **Free Cached Media** button if you want to reclaim disk space immediately.
 - **Opening the WordPress Export Panel (`Ctrl+E` / `File > Export...`)**:
   1. Press **Ctrl+E** (or go to **File > Export...**).
   2. In the **Export Destination** bar at the top, select **WordPress Draft Post**.

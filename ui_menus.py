@@ -110,6 +110,15 @@ class UiMenusMixin:
         self.open_doc_action = open_doc_act
         file_menu.addAction(open_doc_act)
 
+        self.open_remote_episode_menu = file_menu.addMenu("Open &Remote Episode")
+        self.open_remote_episode_menu.menuAction().setVisible(False)
+        self.open_remote_youtube_action = None
+        self.open_remote_wordpress_action = None
+        self.redownload_remote_media_action = QAction("Re-download Archived Source Media...", self)
+        self.redownload_remote_media_action.setToolTip("Re-download the cleared YouTube or WordPress source media for the current project.")
+        self.redownload_remote_media_action.setEnabled(False)
+        self.redownload_remote_media_action.triggered.connect(self.redownload_current_project_remote_media)
+
         self.file_media_separator = file_menu.addSeparator()
 
         # 2. Project Creation & Loading
@@ -531,6 +540,12 @@ class UiMenusMixin:
         self.clear_cache_action.triggered.connect(self.open_clear_cache_dialog)
         tools_menu.addAction(self.clear_cache_action)
 
+        self.manage_cached_media_action = QAction("Manage Cached Remote &Media...", self)
+        self.manage_cached_media_action.setToolTip("Inspect, cap, and clear cached YouTube and WordPress remote downloads.")
+        self.manage_cached_media_action.setStatusTip("Inspect, cap, and clear cached YouTube and WordPress remote downloads.")
+        self.manage_cached_media_action.triggered.connect(self.open_manage_cached_media_dialog)
+        tools_menu.addAction(self.manage_cached_media_action)
+
         self.normalize_loudness_action = QAction("&Normalize Audio Loudness...", self)
         self.normalize_loudness_action.setShortcut(platform_seq("Ctrl+Alt+N"))
         self.normalize_loudness_action.setToolTip("Inspect and normalize audio loudness metrics (LUFS, LRA, True Peak) with live gain preview.")
@@ -775,23 +790,48 @@ class UiMenusMixin:
         if not hasattr(self, "plugin_manager"):
             return
 
-        # 0. Refresh File -> Media Input plugin actions (e.g. Open Existing WordPress Episode...)
-        if hasattr(self, "file_menu") and hasattr(self, "file_media_separator"):
-            for act in getattr(self, "plugin_file_open_actions", []):
-                self.file_menu.removeAction(act)
+        # 0. Refresh File -> Open Remote Episode submenu (YouTube, WordPress, etc.)
+        if hasattr(self, "open_remote_episode_menu"):
+            self.open_remote_episode_menu.clear()
             self.plugin_file_open_actions = []
+            self.open_remote_youtube_action = None
+            self.open_remote_wordpress_action = None
             for p in self.plugin_manager.plugins.values():
                 is_p_enabled = getattr(p, "is_enabled", True)
                 if callable(is_p_enabled):
                     is_p_enabled = is_p_enabled()
                 if is_p_enabled and self.plugin_manager.is_plugin_enabled(p.id):
-                    get_open = getattr(p, "get_file_open_actions", None)
-                    if callable(get_open):
-                        for label, callback in get_open():
-                            act = QAction(label, self)
-                            act.triggered.connect(callback)
-                            self.file_menu.insertAction(self.file_media_separator, act)
-                            self.plugin_file_open_actions.append(act)
+                    get_remote = getattr(p, "get_remote_open_actions", None)
+                    entries = get_remote() if callable(get_remote) else []
+                    if not entries:
+                        get_open = getattr(p, "get_file_open_actions", None)
+                        entries = get_open() if callable(get_open) else []
+                    for label, callback in entries:
+                        act = QAction(label, self)
+                        act.triggered.connect(callback)
+                        self.open_remote_episode_menu.addAction(act)
+                        self.plugin_file_open_actions.append(act)
+                        if p.id == "youtube" and self.open_remote_youtube_action is None:
+                            self.open_remote_youtube_action = act
+                        elif p.id == "wordpress" and self.open_remote_wordpress_action is None:
+                            self.open_remote_wordpress_action = act
+
+            if self.plugin_file_open_actions and hasattr(self, "redownload_remote_media_action"):
+                self.open_remote_episode_menu.addSeparator()
+                self.open_remote_episode_menu.addAction(self.redownload_remote_media_action)
+
+            has_remote_src = bool(
+                isinstance(getattr(self, "project_metadata", None), dict)
+                and self.project_metadata.get("remote_media_source")
+            )
+            if hasattr(self, "redownload_remote_media_action"):
+                self.redownload_remote_media_action.setEnabled(has_remote_src)
+            self.open_remote_episode_menu.menuAction().setVisible(bool(self.plugin_file_open_actions))
+            if hasattr(self, "apply_custom_shortcuts"):
+                try:
+                    self.apply_custom_shortcuts()
+                except Exception:
+                    pass
 
         # 1. Refresh Export & Publishing menu
         if hasattr(self, "plugins_export_menu"):

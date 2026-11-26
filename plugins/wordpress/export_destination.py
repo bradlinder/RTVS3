@@ -609,6 +609,19 @@ class WordPressExportDestination(ExportDestination):
             if hasattr(main_window, "cancel_button"):
                 main_window.cancel_button.hide()
 
+        # Mark managed cached remote media as exported for LRU eviction priority
+        cached_entry = None
+        if created_posts and getattr(main_window, "audio_file", None):
+            try:
+                from remote_media_cache import RemoteMediaCacheManager
+                cache_mgr = RemoteMediaCacheManager()
+                found = cache_mgr.find_entry_by_path(main_window.audio_file)
+                if found:
+                    cache_mgr.mark_exported(found["cache_key"], export_target="wordpress")
+                    cached_entry = cache_mgr.get_entry(found["cache_key"])
+            except Exception:
+                cached_entry = None
+
         # Final summaries
         if show_summary_dialog and parent_widget is not None:
             if created_posts and not failed_posts:
@@ -616,26 +629,56 @@ class WordPressExportDestination(ExportDestination):
                     p = created_posts[0]
                     action_txt = "updated" if p.get("updated_existing") else "created"
                     status_txt = str(p.get("status") or "draft").capitalize()
-                    QMessageBox.information(
-                        parent_widget,
-                        "WordPress Export Complete",
+                    summary_text = (
                         f"Post {action_txt} successfully on {client.site_url}!\n\n"
                         f"Post Title: {p['title']}\n"
                         f"Post ID: {p['id']}\n"
                         f"Status: {status_txt}\n"
-                        f"Link: {p['link']}",
+                        f"Link: {p['link']}"
                     )
                 else:
                     posts_summary = "\n".join([
                         f"  #{p['id']} ({'Updated' if p.get('updated_existing') else 'Created'}, {str(p.get('status') or 'draft').capitalize()}): {p['title']}"
                         for p in created_posts
                     ])
-                    QMessageBox.information(
-                        parent_widget,
-                        "WordPress Export Complete",
+                    summary_text = (
                         f"Completed {len(created_posts)} WordPress posts on {client.site_url}!\n\n"
-                        f"Posts:\n{posts_summary}",
+                        f"Posts:\n{posts_summary}"
                     )
+
+                if cached_entry and cached_entry.get("cache_key"):
+                    from remote_media_cache import RemoteMediaCacheManager, format_bytes_human
+                    sz_str = format_bytes_human(cached_entry.get("size_bytes", 0))
+                    box = QMessageBox(parent_widget)
+                    box.setIcon(QMessageBox.Icon.Information)
+                    box.setWindowTitle("WordPress Export Complete")
+                    box.setText(summary_text)
+                    box.setInformativeText(
+                        f"This episode's downloaded source media ({sz_str}) is stored in the Managed Remote Media Cache. "
+                        "You can keep it cached for quick edits or free the disk space now (re-downloadable later when reopening the .rtvs project)."
+                    )
+                    free_btn = box.addButton(f"Free Cached Media ({sz_str})", QMessageBox.ButtonRole.ActionRole)
+                    ok_btn = box.addButton(QMessageBox.StandardButton.Ok)
+                    box.setDefaultButton(ok_btn)
+                    box.exec()
+                    if box.clickedButton() == free_btn:
+                        try:
+                            if hasattr(main_window, "player") and hasattr(main_window.player, "stop"):
+                                main_window.player.stop()
+                            if hasattr(main_window, "player") and hasattr(main_window.player, "setSource"):
+                                from PySide6.QtCore import QUrl
+                                main_window.player.setSource(QUrl())
+                            ok_del, freed_b, del_err = RemoteMediaCacheManager().delete_entry(cached_entry["cache_key"])
+                            if ok_del:
+                                main_window.audio_file = None
+                                if hasattr(main_window, "statusBar"):
+                                    main_window.statusBar().showMessage(f"Freed cached source media ({format_bytes_human(freed_b)}).")
+                            elif del_err:
+                                QMessageBox.warning(parent_widget, "Could Not Free Cached Media", del_err)
+                        except Exception as free_exc:
+                            QMessageBox.warning(parent_widget, "Could Not Free Cached Media", str(free_exc))
+                else:
+                    QMessageBox.information(parent_widget, "WordPress Export Complete", summary_text)
             elif created_posts and failed_posts:
                 success_summary = "\n".join([f"  #{p['id']}: {p['title']}" for p in created_posts])
                 fail_summary = "\n".join([f"  {f['title']}: {f['error']}" for f in failed_posts])

@@ -56,6 +56,7 @@ from diagnostic_loudness_tests import DiagnosticLoudnessTestsMixin
 from diagnostic_editor_tests import DiagnosticEditorTestsMixin
 from diagnostic_speaker_cleanup_tests import DiagnosticSpeakerCleanupTestsMixin
 from diagnostic_wordpress_tests import DiagnosticWordPressTestsMixin
+from diagnostics.youtube_import_cache_tests import DiagnosticYouTubeImportCacheTestsMixin
 
 
 # ---------------------------------------------------------------------------
@@ -71,6 +72,7 @@ class DiagnosticEngine(
     DiagnosticEditorTestsMixin,
     DiagnosticSpeakerCleanupTestsMixin,
     DiagnosticWordPressTestsMixin,
+    DiagnosticYouTubeImportCacheTestsMixin,
 ):
     """Executes tests across Core File Formats, Subtitle Generators, AI Runtimes,
     and Download Pipelines with optional progress reporting.
@@ -546,6 +548,16 @@ class DiagnosticEngine(
                 "Abbreviation Sentence Boundaries and Parakeet Rescue",
                 "Transcript & Speaker Management",
                 "Validates EN/ES title abbreviations, Parakeet chunk grouping & uncovered-speech tail rescue, diarization gap fallback, and WordPress paragraphing",
+            ),
+            DiagnosticItem(
+                "YouTube Episode Import and yt-dlp Provisioning",
+                "Plugin Architecture & Sandboxing",
+                "Validates strict YouTube URL parsing, 1080p H.264/AAC presets, SHA-256 verification, chapter seeding, error recovery, and WordPress New/Update embed pre-population",
+            ),
+            DiagnosticItem(
+                "Managed Remote Media Cache and Menu Shortcut Sync",
+                "Core Logic & File I/O",
+                "Validates Managed Remote Media Cache path-jail safety, exported-first LRU eviction, active-file immunity, remote-open plugin hooks, shortcuts, and user guide parity",
             ),
         ]
 

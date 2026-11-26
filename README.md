@@ -71,7 +71,7 @@ Run_RadioTVSegmenter.bat
 
 ### Segmenting Broadcasts
 
-1. Load Media: Drag and drop an audio or video file onto the timeline canvas or select **File > Open Media...** (`Ctrl+O`) or **File > Open Document...** (`Ctrl+Alt+O`).
+1. Load Media: Drag and drop an audio or video file onto the timeline canvas, select **File > Open Media...** (`Ctrl+O`) or **File > Open Document...** (`Ctrl+Alt+O`), or import back-catalog episodes via **File > Open Remote Episode** (**From YouTube Video...** `Ctrl+Alt+Y` or **From Existing WordPress Post...**).
 2. Process Pipeline: Use **Tools > Multi-Stage Processing...** (`Ctrl+R` / `Cmd+R`) to run transcription, speaker detection, and automated segment detection in sequence.
 3. Refine Segments: Highlight text in the transcript or drag region handles on the timeline, mark in/out points with `[` and `]`, or click **Add Segment**.
 
@@ -112,6 +112,9 @@ All keyboard shortcuts can be viewed at any time by pressing <kbd>F1</kbd> (or <
 | --- | --- | --- | --- | --- |
 | **File & Project** | Open Media... | `Ctrl+O` | `Cmd+O` | Select an audio or video file to open and process |
 | **File & Project** | Open Document... | `Ctrl+Alt+O` | `Cmd+Alt+O` | Import an external text document into transcript workspace |
+| **File & Project** | Open Remote Episode: From YouTube Video... | `Ctrl+Alt+Y` | `Cmd+Alt+Y` | Download and open an existing YouTube video via yt-dlp into the Managed Media Cache |
+| **File & Project** | Open Remote Episode: From Existing WordPress Post... | *Unassigned* | *Unassigned* | Fetch an existing published WordPress episode and download its audio for backfill |
+| **File & Project** | Manage Cached Remote Media... | *Unassigned* | *Unassigned* | Inspect, cap, and clear cached YouTube and WordPress remote downloads |
 | **File & Project** | New Project | `Ctrl+N` | `Cmd+N` | Create a new project session |
 | **File & Project** | Open Project... | `Ctrl+Shift+O` | `Cmd+Shift+O` | Open an existing .rtvs project session |
 | **File & Project** | Close Project | `Ctrl+W` | `Cmd+W` | Close current project session |

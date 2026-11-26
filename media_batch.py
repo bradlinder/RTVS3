@@ -1008,6 +1008,24 @@ class MediaBatchMixin:
         dialog = ClearCacheDialog(self, language=getattr(self, "language", "en"), project_dirs=project_dirs)
         dialog.exec()
 
+    def open_manage_cached_media_dialog(self):
+        from remote_media_cache_dialog import ManageCachedMediaDialog
+        dialog = ManageCachedMediaDialog(parent=self, main_window=self)
+        dialog.exec()
+
+    def redownload_current_project_remote_media(self):
+        meta = getattr(self, "project_metadata", None)
+        remote_src = meta.get("remote_media_source") if isinstance(meta, dict) else None
+        if not isinstance(remote_src, dict) or not remote_src.get("provider"):
+            QMessageBox.information(
+                self,
+                "No Remote Source",
+                "The current project does not have an associated YouTube or WordPress remote media source.",
+            )
+            return False
+        from remote_media_cache_dialog import prompt_redownload_missing_remote_media
+        return prompt_redownload_missing_remote_media(self, remote_src, parent=self)
+
     def open_glossary_dialog(self):
         """Edit persistent terminology used by every ASR and translation backend."""
         from glossary_dialog import GlossaryDialog

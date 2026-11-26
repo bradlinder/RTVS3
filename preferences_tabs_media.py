@@ -462,6 +462,15 @@ def build_cleanup_tab(win, dialog, live_widgets, add_custom_defaults_btn) -> QWi
     clear_cache_btn.clicked.connect(_on_clear_cache)
     cleanup_form.addWidget(clear_cache_btn)
 
+    remote_cache_btn = QPushButton("Manage Cached Remote Media (YouTube && WordPress Downloads)…")
+    remote_cache_btn.setToolTip("Inspect cached YouTube and WordPress episode downloads, configure the automatic cache size cap, update yt-dlp, or manually free disk space.")
+    def _on_manage_remote_cache():
+        from remote_media_cache_dialog import ManageCachedMediaDialog
+        dlg_rc = ManageCachedMediaDialog(parent=dialog, main_window=win)
+        dlg_rc.exec()
+    remote_cache_btn.clicked.connect(_on_manage_remote_cache)
+    cleanup_form.addWidget(remote_cache_btn)
+
     clear_prefs_btn = QPushButton("Clear All User Preferences (Reset Settings to Defaults)…")
     clear_prefs_btn.setToolTip("Reset all user preferences and options back to factory defaults.")
     def _on_clear_prefs():

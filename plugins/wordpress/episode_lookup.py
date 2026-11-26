@@ -329,12 +329,8 @@ def _resolve_download_dir(main_window: Any = None, target_dir: Optional[Path] = 
         return out
 
     try:
-        settings = QSettings(INTERNAL_APP_ID, INTERNAL_APP_ID)
-        default_proj = str(settings.value("default_project_dir", "") or "").strip()
-        if default_proj:
-            candidate = Path(default_proj) / "WordPress_Episodes"
-            candidate.mkdir(parents=True, exist_ok=True)
-            return candidate
+        from remote_media_cache import RemoteMediaCacheManager
+        return RemoteMediaCacheManager().get_provider_dir("wordpress")
     except Exception:
         pass
 
@@ -355,6 +351,13 @@ def download_wp_episode_audio(
 ) -> Path:
     """Download the MP3 file associated with an existing WordPress episode post."""
     import requests
+    from remote_media_cache import (
+        DEFAULT_CACHE_CAP_GB,
+        CACHE_CAP_SETTING_KEY,
+        RemoteMediaCacheManager,
+        is_path_inside_cache,
+        make_cache_key,
+    )
 
     audio_url = str(post_info.get("audio_url") or "").strip()
     if not audio_url:
@@ -363,8 +366,17 @@ def download_wp_episode_audio(
             "Make sure Seriously Simple Podcasting has an audio file assigned, or open a local MP3 file instead."
         )
 
+    post_id_str = str(post_info.get("id") or post_info.get("slug") or "audio").strip()
+    cache_key = make_cache_key("wordpress", post_id_str)
+    cache_mgr = RemoteMediaCacheManager() if target_dir is None else None
+
+    if cache_mgr is not None:
+        cached_hit = cache_mgr.get_existing_cached_file(cache_key, touch=True)
+        if cached_hit is not None:
+            return cached_hit
+
     out_dir = _resolve_download_dir(main_window=main_window, target_dir=target_dir)
-    base = safe_filename(post_info.get("slug") or post_info.get("title") or f"episode_{post_info.get('id', 'audio')}")
+    base = safe_filename(post_info.get("slug") or post_info.get("title") or f"episode_{post_id_str}")
     ext = Path(urlparse(audio_url).path).suffix.lower()
     if ext not in (".mp3", ".wav", ".m4a", ".ogg"):
         ext = ".mp3"
@@ -380,6 +392,31 @@ def download_wp_episode_audio(
             if chunk:
                 f.write(chunk)
     os.replace(tmp_path, dest_path)
+
+    if cache_mgr is not None and is_path_inside_cache(dest_path, cache_mgr.cache_dir):
+        try:
+            cache_mgr.register_download(
+                cache_key=cache_key,
+                file_path=dest_path,
+                provider="wordpress",
+                source_url=str(post_info.get("url") or audio_url),
+                source_id=post_id_str,
+                quality_preset="audio",
+                title=str(post_info.get("title") or dest_path.stem),
+                upload_date=str(post_info.get("date_display") or ""),
+            )
+            settings = QSettings(INTERNAL_APP_ID, INTERNAL_APP_ID)
+            try:
+                cap_gb = float(settings.value(CACHE_CAP_SETTING_KEY, DEFAULT_CACHE_CAP_GB))
+            except (TypeError, ValueError):
+                cap_gb = DEFAULT_CACHE_CAP_GB
+            protected = [str(dest_path)]
+            active_aud = getattr(main_window, "audio_file", None)
+            if active_aud:
+                protected.append(str(active_aud))
+            cache_mgr.enforce_size_cap(cap_gb, protected_paths=protected)
+        except Exception:
+            pass
     return dest_path
 
 
@@ -428,6 +465,24 @@ def _populate_project_from_fetched_post(main_window: Any, post_info: Dict[str, A
         "title": post_info.get("title") or "Full Episode",
         "link": post_info.get("url"),
     }
+    if post_info.get("audio_url"):
+        from remote_media_cache import build_remote_media_source_record, make_cache_key
+        post_id_str = str(post_info.get("id") or post_info.get("slug") or "audio")
+        audio_f = getattr(main_window, "audio_file", None)
+        proj_meta["remote_media_source"] = build_remote_media_source_record(
+            provider="wordpress",
+            source_url=str(post_info.get("url") or post_info.get("audio_url") or ""),
+            source_id=post_id_str,
+            quality_preset="audio",
+            cached_filename=Path(audio_f).name if audio_f else "",
+            cache_key=make_cache_key("wordpress", post_id_str),
+            title=str(post_info.get("title") or ""),
+            upload_date=str(post_info.get("date_display") or ""),
+            extra={
+                "audio_url": str(post_info.get("audio_url") or ""),
+                "slug": str(post_info.get("slug") or ""),
+            },
+        )
 
 
 __all__ = [

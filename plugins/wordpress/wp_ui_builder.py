@@ -390,10 +390,15 @@ def setup_wp_tab_ui(self: Any):
         "When disabled, exports only transcript text (and featured images, when selected), omitting audio file uploads."
     )
     is_video_proj = bool(getattr(self, "_is_video_project", False) or getattr(self.main_window, "current_media_is_video", False))
-    default_inc_audio = "false" if is_video_proj else "true"
+    proj_meta = getattr(self.main_window, "project_metadata", {}) if getattr(self, "main_window", None) else {}
+    wp_proj_meta = proj_meta.get("wordpress", {}) if isinstance(proj_meta, dict) and isinstance(proj_meta.get("wordpress"), dict) else {}
+    remote_src = proj_meta.get("remote_media_source", {}) if isinstance(proj_meta, dict) and isinstance(proj_meta.get("remote_media_source"), dict) else {}
+    is_yt_remote = str(remote_src.get("provider") or "").lower() == "youtube"
+    default_inc_audio = "false" if (is_video_proj or is_yt_remote) else "true"
     saved_inc_audio = str(self.settings.value("wp_include_audio", default_inc_audio)).lower() in ("true", "1", "yes")
-    # If this is a video project and no explicit user override is stored, default to unchecked
-    if is_video_proj and not self.settings.contains("wp_include_audio"):
+    if is_yt_remote and wp_proj_meta.get("include_audio") is False:
+        saved_inc_audio = False
+    elif is_video_proj and not self.settings.contains("wp_include_audio"):
         saved_inc_audio = False
     self.wp_cb_include_audio.setChecked(saved_inc_audio)
     self.wp_cb_include_audio.toggled.connect(self._on_wp_include_audio_toggled)
