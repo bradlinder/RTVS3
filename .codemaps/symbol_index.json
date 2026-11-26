@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-26 12:45:26",
+  "generated_at": "2026-11-26 13:25:49",
   "total_files": 202,
   "files": {
     "RadioTVSegmenter.py": {
       "path": "RadioTVSegmenter.py",
       "lines": 684,
-      "summary": "Radio & TV Segmenter \u2014 v3.10.17-beta",
+      "summary": "Radio & TV Segmenter \u2014 v3.10.18-beta",
       "exports": null,
       "classes": [
         {
@@ -2761,7 +2761,7 @@
     },
     "diagnostics/youtube_import_cache_tests.py": {
       "path": "diagnostics/youtube_import_cache_tests.py",
-      "lines": 253,
+      "lines": 350,
       "summary": "Diagnostic tests for YouTube Episode Import, yt-dlp runner, Managed Remote Media Cache, and Shortcut/Guide sync.",
       "exports": [
         "DiagnosticYouTubeImportCacheTestsMixin"
@@ -2771,21 +2771,21 @@
           "name": "DiagnosticYouTubeImportCacheTestsMixin",
           "bases": [],
           "start_line": 10,
-          "end_line": 250,
+          "end_line": 347,
           "doc": "Automated verification mixin for YouTube import & Managed Remote Media Cache.",
           "methods": [
             {
               "name": "_test_youtube_episode_import_and_yt_dlp_provisioning",
               "sig": "_test_youtube_episode_import_and_yt_dlp_provisioning(self, item)",
               "start_line": 13,
-              "end_line": 150,
+              "end_line": 247,
               "doc": ""
             },
             {
               "name": "_test_managed_remote_media_cache_and_menu_shortcut_sync",
               "sig": "_test_managed_remote_media_cache_and_menu_shortcut_sync(self, item)",
-              "start_line": 152,
-              "end_line": 250,
+              "start_line": 249,
+              "end_line": 347,
               "doc": ""
             }
           ]
@@ -9695,7 +9695,7 @@
     },
     "plugins/youtube/yt_import_dialog.py": {
       "path": "plugins/youtube/yt_import_dialog.py",
-      "lines": 746,
+      "lines": 752,
       "summary": "Qt Dialogs for importing existing YouTube videos, re-downloading archived sources, and updating yt-dlp.",
       "exports": [
         "populate_project_from_youtube_import",
@@ -9710,127 +9710,127 @@
           "bases": [
             "QDialog"
           ],
-          "start_line": 182,
-          "end_line": 628,
+          "start_line": 184,
+          "end_line": 630,
           "doc": "Dialog for fetching, configuring, downloading, and opening an existing YouTube video.",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, main_window, parent, initial_url, initial_quality, redownload_mode)",
-              "start_line": 185,
-              "end_line": 214,
+              "start_line": 187,
+              "end_line": 216,
               "doc": ""
             },
             {
               "name": "_build_ui",
               "sig": "_build_ui(self, initial_url, initial_quality)",
-              "start_line": 216,
-              "end_line": 371,
+              "start_line": 218,
+              "end_line": 373,
               "doc": ""
             },
             {
               "name": "_refresh_yt_dlp_status",
               "sig": "_refresh_yt_dlp_status(self)",
-              "start_line": 373,
-              "end_line": 380,
+              "start_line": 375,
+              "end_line": 382,
               "doc": ""
             },
             {
               "name": "_set_busy",
               "sig": "_set_busy(self, busy)",
-              "start_line": 382,
-              "end_line": 391,
+              "start_line": 384,
+              "end_line": 393,
               "doc": ""
             },
             {
               "name": "_refresh_quality_estimate_and_cache",
               "sig": "_refresh_quality_estimate_and_cache(self)",
-              "start_line": 393,
-              "end_line": 415,
+              "start_line": 395,
+              "end_line": 417,
               "doc": ""
             },
             {
               "name": "_render_meta_summary",
               "sig": "_render_meta_summary(self)",
-              "start_line": 417,
-              "end_line": 431,
+              "start_line": 419,
+              "end_line": 433,
               "doc": ""
             },
             {
               "name": "_start_probe",
               "sig": "_start_probe(self)",
-              "start_line": 433,
-              "end_line": 455,
+              "start_line": 435,
+              "end_line": 457,
               "doc": ""
             },
             {
               "name": "_on_probe_finished",
               "sig": "_on_probe_finished(self, meta)",
-              "start_line": 457,
-              "end_line": 472,
+              "start_line": 459,
+              "end_line": 474,
               "doc": ""
             },
             {
               "name": "_start_download",
               "sig": "_start_download(self)",
-              "start_line": 474,
-              "end_line": 537,
+              "start_line": 476,
+              "end_line": 539,
               "doc": ""
             },
             {
               "name": "_on_download_finished",
               "sig": "_on_download_finished(self, result)",
-              "start_line": 539,
-              "end_line": 545,
+              "start_line": 541,
+              "end_line": 547,
               "doc": ""
             },
             {
               "name": "_on_worker_progress",
               "sig": "_on_worker_progress(self, pct, msg)",
-              "start_line": 547,
-              "end_line": 549,
+              "start_line": 549,
+              "end_line": 551,
               "doc": ""
             },
             {
               "name": "_on_worker_failed",
               "sig": "_on_worker_failed(self, msg, err_meta)",
-              "start_line": 551,
-              "end_line": 566,
+              "start_line": 553,
+              "end_line": 568,
               "doc": ""
             },
             {
               "name": "_start_yt_dlp_update",
               "sig": "_start_yt_dlp_update(self, retry_after)",
-              "start_line": 568,
-              "end_line": 598,
+              "start_line": 570,
+              "end_line": 600,
               "doc": ""
             },
             {
               "name": "_on_retry_with_cookies",
               "sig": "_on_retry_with_cookies(self)",
-              "start_line": 600,
-              "end_line": 611,
+              "start_line": 602,
+              "end_line": 613,
               "doc": ""
             },
             {
               "name": "_cancel_active_workers",
               "sig": "_cancel_active_workers(self)",
-              "start_line": 613,
-              "end_line": 616,
+              "start_line": 615,
+              "end_line": 618,
               "doc": ""
             },
             {
               "name": "_on_cancel_clicked",
               "sig": "_on_cancel_clicked(self)",
-              "start_line": 618,
-              "end_line": 624,
+              "start_line": 620,
+              "end_line": 626,
               "doc": ""
             },
             {
               "name": "closeEvent",
               "sig": "closeEvent(self, event)",
-              "start_line": 626,
-              "end_line": 628,
+              "start_line": 628,
+              "end_line": 630,
               "doc": ""
             }
           ]
@@ -9848,28 +9848,28 @@
           "name": "populate_project_from_youtube_import",
           "sig": "populate_project_from_youtube_import(main_window, video_meta, file_path, quality_preset, cache_key, import_chapters, existing_wp_url)",
           "start_line": 72,
-          "end_line": 179,
+          "end_line": 181,
           "doc": "Populate project metadata, WordPress YouTube embed state, and optional chapters."
         },
         {
           "name": "open_yt_dlp_updater_dialog",
           "sig": "open_yt_dlp_updater_dialog(parent)",
-          "start_line": 631,
-          "end_line": 677,
+          "start_line": 633,
+          "end_line": 679,
           "doc": "Quick standalone updater dialog triggered from Cache Manager or Preferences."
         },
         {
           "name": "prompt_load_youtube_episode_dialog",
           "sig": "prompt_load_youtube_episode_dialog(main_window, parent)",
-          "start_line": 680,
-          "end_line": 714,
+          "start_line": 682,
+          "end_line": 720,
           "doc": "Launch the YouTube import dialog, respect unsaved-project guard, and load downloaded media."
         },
         {
           "name": "redownload_youtube_source_dialog",
           "sig": "redownload_youtube_source_dialog(main_window, source_meta, parent)",
-          "start_line": 717,
-          "end_line": 737,
+          "start_line": 723,
+          "end_line": 743,
           "doc": "Re-download an archived YouTube source for an existing .rtvs project."
         }
       ]
@@ -13500,7 +13500,7 @@
     },
     "remote_media_cache_dialog.py": {
       "path": "remote_media_cache_dialog.py",
-      "lines": 441,
+      "lines": 447,
       "summary": "Qt Dialog for inspecting and managing the Managed Remote Media Cache (YouTube & WordPress).",
       "exports": [
         "CACHE_CAP_OPTIONS",
@@ -13605,14 +13605,14 @@
           "name": "reattach_downloaded_media_to_project",
           "sig": "reattach_downloaded_media_to_project(main_window, media_path)",
           "start_line": 360,
-          "end_line": 385,
+          "end_line": 391,
           "doc": "Bind a newly re-downloaded remote media file onto an already-loaded .rtvs project."
         },
         {
           "name": "prompt_redownload_missing_remote_media",
           "sig": "prompt_redownload_missing_remote_media(main_window, source_meta, parent)",
-          "start_line": 388,
-          "end_line": 431,
+          "start_line": 394,
+          "end_line": 437,
           "doc": "Offer 1-click re-download when an opened .rtvs project's cached remote media is missing."
         }
       ]
@@ -19512,7 +19512,7 @@
     "transcript_story.py": {
       "path": "transcript_story.py",
       "lines": 856,
-      "summary": "Radio & TV Segmenter v3.10.17-beta \u2014 transcript story responsibilities.",
+      "summary": "Radio & TV Segmenter v3.10.18-beta \u2014 transcript story responsibilities.",
       "exports": [
         "TranscriptStoryMixin",
         "Story",

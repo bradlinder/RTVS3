@@ -372,8 +372,14 @@ def reattach_downloaded_media_to_project(main_window: Any, media_path: Path | st
         main_window.player.setSource(QUrl.fromLocalFile(str(p)))
     if hasattr(main_window, "timeline") and hasattr(main_window.timeline, "set_audio_filename"):
         main_window.timeline.set_audio_filename(p.name)
+    if hasattr(main_window, "timeline") and hasattr(main_window.timeline, "set_is_video"):
+        main_window.timeline.set_is_video(main_window.current_media_is_video)
     if hasattr(main_window, "update_video_preview_state"):
         main_window.update_video_preview_state()
+    if hasattr(main_window, "set_tools_actions_enabled"):
+        main_window.set_tools_actions_enabled(True)
+    if hasattr(main_window, "regen_thumbnails_action"):
+        main_window.regen_thumbnails_action.setEnabled(bool(main_window.current_media_is_video))
     if hasattr(main_window, "load_waveform_async"):
         main_window.load_waveform_async()
     if getattr(main_window, "current_media_is_video", False) and hasattr(main_window, "start_video_thumbnail_generation"):

@@ -1,5 +1,14 @@
 # Changelog
 
+## v3.10.18-beta
+- **Fix YouTube Import Media Loading & Archived Media Tool Re-Activation (`plugins/youtube/yt_import_dialog.py`, `plugins/youtube/manifest.json`, `remote_media_cache_dialog.py`, `diagnostics/youtube_import_cache_tests.py`)**:
+  - **Fix Downloaded YouTube Video Not Opening After Download (`plugins/youtube/yt_import_dialog.py`, `plugins/youtube/manifest.json`)**:
+    - Replaced the broken `close_project()` + nonexistent `main_window.load_audio()` sequence in `prompt_load_youtube_episode_dialog()` with `main_window.load_media_file(str(file_path), source="YouTube video URL")`, ensuring downloaded videos immediately open in the media player/timeline with waveform, video thumbnails, and transcription/diarization tools enabled while honoring unsaved-project Save/Discard/Cancel prompts without closing the active project on cancel.
+    - Enabled `redownload_remote_media_action` inside `populate_project_from_youtube_import()` and repackaged `plugins/youtube.rtvs-addon` (`3.10.18-beta`).
+  - **Archived Remote Media Re-Attach Tool Enablement & Regression Tests (`remote_media_cache_dialog.py`, `diagnostics/youtube_import_cache_tests.py`)**:
+    - Updated `reattach_downloaded_media_to_project()` to call `set_tools_actions_enabled(True)`, sync `timeline.set_is_video()`, and enable `regen_thumbnails_action` when restoring cleared remote media onto an existing `.rtvs` project.
+    - Added end-to-end `MainWindow.load_media_file` handoff, cancel-abort safety, and `reattach_downloaded_media_to_project` tool-enablement regression checks to `diagnostics/youtube_import_cache_tests.py`.
+
 ## v3.10.17-beta
 - **YouTube Back-Catalog Episode Import, Managed Remote Media Cache & Consolidated Remote Menu (`remote_media_cache.py`, `remote_media_cache_dialog.py`, `plugins/youtube/yt_dlp_runner.py`, `plugins/youtube/yt_import_workers.py`, `plugins/youtube/yt_import_dialog.py`, `plugins/youtube/plugin.py`, `plugins/wordpress/plugin.py`, `plugins/wordpress/episode_lookup.py`, `plugins/wordpress/wp_ui_builder.py`, `plugins/wordpress/export_destination.py`, `ui_menus.py`, `media_batch.py`, `project_lifecycle.py`, `preferences_tabs_media.py`, `shortcuts/schema.py`, `docs/guides/*.md`, `embedded_guides.py`)**:
   - **YouTube Video Import via Auto-Managed `yt-dlp` (`plugins/youtube/yt_dlp_runner.py`, `yt_import_workers.py`, `yt_import_dialog.py`, `plugin.py`)**:
@@ -10,12 +19,3 @@
     - Saved `remote_media_source` metadata and clean default `.rtvs` project filenames (`YYYY-MM-DD - Title`) while prompting for 1-click re-download when reopening an archived `.rtvs` project whose cached media was cleared.
   - **Menu Consolidation, Shortcuts, Guides & Diagnostics (`ui_menus.py`, `plugin_base.py`, `shortcuts/schema.py`, `docs/guides/*.md`, `embedded_guides.py`, `README.md`, `diagnostics/youtube_import_cache_tests.py`, `installer/build_tools/config.py`)**:
     - Consolidated remote episode importers under **File > Open Remote Episode >** (auto-hidden when no remote plugins are enabled), registered `open_remote_youtube` / `open_remote_wordpress` / `manage_cached_media` shortcuts, synchronized all Markdown guides and `embedded_guides.py`, updated `plugins/youtube` & `plugins/wordpress` manifests/addons to `3.10.17-beta`, added `remote_media_cache` modules to `HIDDEN_IMPORTS`, and added dedicated diagnostic tests.
-
-## v3.10.16-beta
-- **Frozen Installer REAPER Lua Script Bundling & Installed-App Diagnostic Bench Parity (`build_installer.py`, `reaper_bridge.py`, `diagnostic_core_tests.py`, `diagnostic_loudness_tests.py`, `diagnostic_speaker_cleanup_tests.py`, `diagnostics/editor_guides_and_daw_tests.py`, `diagnostics/system_runtime_tests.py`)**:
-  - **Bundle REAPER Companion Lua Scripts in Packaged Builds (`build_installer.py`, `reaper_bridge.py`)**:
-    - Added `--add-data` and `shutil.copytree()` bundling for `scripts/reaper/` (`rtvs_reaper_companion.lua`, `rtvs_reaper_sync.lua`, `rtvs_reaper_auto_sync.lua`, `rtvs_reaper_dock.lua`) into packaged Windows/macOS/Linux distributions (`app_root/scripts/reaper` and macOS `Resources/scripts/reaper`).
-    - Updated `reaper_bridge.get_bundled_lua_scripts()` to resolve companion Lua scripts across source trees, PyInstaller `sys._MEIPASS`, frozen `exe_dir/scripts/reaper`, `exe_dir/_internal/scripts/reaper`, and macOS `.app` bundle `Resources/scripts/reaper`, with a build-script regression assertion in `diagnostics/editor_guides_and_daw_tests.py`.
-  - **Frozen-Binary Diagnostic Parity & Live GUI-Thread Timing Fixes (`diagnostic_core_tests.py`, `diagnostic_loudness_tests.py`, `diagnostic_speaker_cleanup_tests.py`, `diagnostics/editor_guides_and_daw_tests.py`, `diagnostics/system_runtime_tests.py`)**:
-    - Guarded `.py` source-file / `inspect.getsource()` AST checks in `system_runtime_tests.py`, `diagnostic_loudness_tests.py`, `editor_guides_and_daw_tests.py`, and `diagnostic_speaker_cleanup_tests.py` when running inside compiled PyInstaller binaries where `.py` sources are packaged inside PYZ archives.
-    - Updated the `SpeakerManagerDialog` Tab-key inline editing progression test in `diagnostic_core_tests.py` to process queued `QTimer.singleShot(0, ...)` events via bounded `QApplication.processEvents()` on live GUI event loops.

@@ -1,13 +1,13 @@
 # Repository Symbol Index & API Map
 
-> Generated: 2026-11-26 12:45:26 | Total Files: 202
+> Generated: 2026-11-26 13:25:49 | Total Files: 202
 > Use `python scripts/generate_symbol_index.py --outline <file>` for exact line numbers.
 
 ## Modules Overview
 
 | Module | Lines | Summary | Primary Classes / Functions |
 | :--- | :---: | :--- | :--- |
-| `RadioTVSegmenter.py` | 684 | Radio & TV Segmenter — v3.10.17-beta | `MainWindow`, `main()` |
+| `RadioTVSegmenter.py` | 684 | Radio & TV Segmenter — v3.10.18-beta | `MainWindow`, `main()` |
 | `audio_normalization.py` | 474 | Radio & TV Story Segmenter — Audio Loudness Probing & Nor... | `LoudnessReport`, `parse_ebur128_summary()`, `probe_media_duration_seconds()`, `probe_media_loudness()` *(+2 more)* |
 | `audio_normalization_worker.py` | 89 | Background QThread worker for non-blocking EBU R128 loudn... | `AudioLoudnessProbeWorker` |
 | `background_workers.py` | 1051 | Radio & TV Story Segmenter — Background Worker Threads & ... | `StoryAutoDetectWorker`, `WaveformWorker`, `VideoThumbnailWorker`, `get_waveform_peak_cache_path()` *(+6 more)* |
@@ -46,7 +46,7 @@
 | `diagnostics/export_wordpress_upload.py` | 668 | WordPress multi-story upload, Gutenberg hygiene, and audi... | `DiagnosticExportWordPressUploadMixin` |
 | `diagnostics/system_runtime_tests.py` | 401 | System runtime, updater, theme, packaging, roadmap, and m... | `DiagnosticSystemRuntimeTestsMixin` |
 | `diagnostics/voice_and_media_tests.py` | 438 | Voice profile matching, waveform peak cache, and playback... | `DiagnosticVoiceAndMediaTestsMixin` |
-| `diagnostics/youtube_import_cache_tests.py` | 253 | Diagnostic tests for YouTube Episode Import, yt-dlp runne... | `DiagnosticYouTubeImportCacheTestsMixin` |
+| `diagnostics/youtube_import_cache_tests.py` | 350 | Diagnostic tests for YouTube Episode Import, yt-dlp runne... | `DiagnosticYouTubeImportCacheTestsMixin` |
 | `dialogs.py` | 433 | Radio & TV Story Segmenter — Audio Loudness Normalization... | `AudioLoudnessNormalizationDialog` |
 | `diarization_processing.py` | 772 | Speaker diarization process management for Radio & TV Sto... | `DiarizationProcessingMixin` |
 | `embedded_guides.py` | 28 | Radio & TV Story Segmenter — Built-In Embedded User Guide... | `get_embedded_guide()`, `get_all_embedded_guide_ids()` |
@@ -112,7 +112,7 @@
 | `plugins/youtube/guide_dialog.py` | 147 | Interactive Assisted Upload Guide Dialog for YouTube Studio. | `YouTubeAssistedUploadGuideDialog` |
 | `plugins/youtube/plugin.py` | 291 | YouTube Video Publisher Plugin for Radio & TV Segmenter. | `YouTubeSettingsDialog`, `Plugin`, `capture_video_frame()` |
 | `plugins/youtube/yt_dlp_runner.py` | 871 | Headless yt-dlp runtime provisioner, URL parser, metadata... | `extract_youtube_id_strict()`, `normalize_quality_preset()`, `normalize_cookie_browser()`, `get_format_selector_for_preset()` *(+18 more)* |
-| `plugins/youtube/yt_import_dialog.py` | 746 | Qt Dialogs for importing existing YouTube videos, re-down... | `LoadYouTubeEpisodeDialog`, `populate_project_from_youtube_import()`, `open_yt_dlp_updater_dialog()`, `prompt_load_youtube_episode_dialog()` *(+1 more)* |
+| `plugins/youtube/yt_import_dialog.py` | 752 | Qt Dialogs for importing existing YouTube videos, re-down... | `LoadYouTubeEpisodeDialog`, `populate_project_from_youtube_import()`, `open_yt_dlp_updater_dialog()`, `prompt_load_youtube_episode_dialog()` *(+1 more)* |
 | `plugins/youtube/yt_import_workers.py` | 250 | Background QThread workers for yt-dlp provisioning, YouTu... | `YtDlpInstallWorker`, `YouTubeProbeWorker`, `YouTubeDownloadWorker` |
 | `preferences_dialog.py` | 885 | Radio & TV Story Segmenter — Preferences Modal Dialog. | `PreferencesDialogMixin` |
 | `preferences_reset.py` | 678 | Radio & TV Story Segmenter — Preferences Reset & Factory ... | `RestoreSelectedSettingsDialog`, `PreferencesResetMixin` |
@@ -133,7 +133,7 @@
 | `radio_tv_story_segmenter_worker.py` | 226 | Radio & TV Story Segmenter — AI Background Subprocess Wor... | `main()` |
 | `reaper_bridge.py` | 953 | reaper_bridge.py — REAPER DAW Companion Bridge & Inter-Pr... | `get_reaper_ipc_paths()`, `reaper_color_from_hex()`, `get_reaper_clip_notes_and_markers()`, `build_reaper_cue_payload()` *(+10 more)* |
 | `remote_media_cache.py` | 610 | Headless Managed Remote Media Cache for YouTube and WordP... | `RemoteMediaCacheManager`, `format_bytes_human()`, `get_remote_media_cache_dir()`, `is_path_inside_cache()` *(+2 more)* |
-| `remote_media_cache_dialog.py` | 441 | Qt Dialog for inspecting and managing the Managed Remote ... | `ManageCachedMediaDialog`, `get_configured_cache_cap_gb()`, `find_redownload_provider()`, `reattach_downloaded_media_to_project()` *(+1 more)* |
+| `remote_media_cache_dialog.py` | 447 | Qt Dialog for inspecting and managing the Managed Remote ... | `ManageCachedMediaDialog`, `get_configured_cache_cap_gb()`, `find_redownload_provider()`, `reattach_downloaded_media_to_project()` *(+1 more)* |
 | `roadmap_manager.py` | 259 | roadmap_manager.py — Automated Roadmap & N-1 Sliding-Wind... | `RoadmapManager`, `get_current_app_version()`, `main()` |
 | `runtime_manager.py` | 1037 |  | `RuntimeManager`, `register_process()`, `unregister_process()`, `kill_all_subprocesses()` *(+1 more)* |
 | `scripts/capture_guide_screenshots.py` | 152 | Programmatic headless screenshot generator for RTVS3 user... | `MockCaptureMainWindow`, `capture_widget()`, `main()` |
@@ -187,7 +187,7 @@
 | `transcript_navigation_mixin.py` | 300 | transcript_navigation_mixin.py - Timestamp discovery, car... | `TranscriptNavigationMixin` |
 | `transcript_playback_highlight_mixin.py` | 277 | Radio & TV Story Segmenter — Interactive Transcript Playb... | `TranscriptPlaybackHighlightMixin` |
 | `transcript_selection_mixin.py` | 473 | transcript_selection_mixin.py - Multi-selection, timeline... | `TranscriptSelectionMixin` |
-| `transcript_story.py` | 856 | Radio & TV Segmenter v3.10.17-beta — transcript story res... | `TranscriptStoryMixin` |
+| `transcript_story.py` | 856 | Radio & TV Segmenter v3.10.18-beta — transcript story res... | `TranscriptStoryMixin` |
 | `transcript_styles.py` | 104 | transcript_styles.py - Transcript view stylesheets and da... | `transcript_text_view_stylesheet()`, `clean_dark_mode_clipboard_html()` |
 | `transcript_timeline_sync_mixin.py` | 655 | Radio & TV Story Segmenter — Transcript Timeline & Playba... | `TranscriptTimelineSyncMixin` |
 | `transcription_processing.py` | 579 | Transcription background process management for Radio & T... | `TranscriptionProcessingMixin` |
@@ -213,7 +213,7 @@
 ## Detailed Symbol Catalog
 
 ### `RadioTVSegmenter.py` (684 lines)
-*Radio & TV Segmenter — v3.10.17-beta*
+*Radio & TV Segmenter — v3.10.18-beta*
 - **class `MainWindow(ModelManagementMixin, MediaBatchMixin, PlaybackPreferencesMixin, UiLayoutMixin, ProcessingMixin, TranslationMixin, TranscriptStoryMixin, ProjectExportMixin, GpuAccelerationMixin, QMainWindow)`** (lines 160–581):
   *Main application window for Radio & TV Segmenter.*
   - `__init__(self)` [L178-L355]
@@ -688,13 +688,13 @@
   - `_test_multi_tier_mipmapped_waveform_peak_cache_serialization(self, item)` [L390-L425] — *Validates Version 2 .peaks binary cache read/write with 4x/16x/64x LOD pyramid levels and transparent Version 1 upgrade.*
   - `_test_speed_listening_proofreading_rate_and_context_controls(self, item)` [L427-L438] — *Validates playback speed rates (0.75x to 2.0x), WSOLA pitch preservation parameters, and proofreading pre-roll configuration.*
 
-### `diagnostics/youtube_import_cache_tests.py` (253 lines)
+### `diagnostics/youtube_import_cache_tests.py` (350 lines)
 *Diagnostic tests for YouTube Episode Import, yt-dlp runner, Managed Remote Media Cache, and Shortcut/Guide sync.*
 - **Public Exports (`__all__`)**: DiagnosticYouTubeImportCacheTestsMixin
-- **class `DiagnosticYouTubeImportCacheTestsMixin`** (lines 10–250):
+- **class `DiagnosticYouTubeImportCacheTestsMixin`** (lines 10–347):
   *Automated verification mixin for YouTube import & Managed Remote Media Cache.*
-  - `_test_youtube_episode_import_and_yt_dlp_provisioning(self, item)` [L13-L150]
-  - `_test_managed_remote_media_cache_and_menu_shortcut_sync(self, item)` [L152-L250]
+  - `_test_youtube_episode_import_and_yt_dlp_provisioning(self, item)` [L13-L247]
+  - `_test_managed_remote_media_cache_and_menu_shortcut_sync(self, item)` [L249-L347]
 
 ### `dialogs.py` (433 lines)
 *Radio & TV Story Segmenter — Audio Loudness Normalization & Telemetry Dialog.*
@@ -1834,34 +1834,34 @@
   - `build_yt_dlp_download_command(yt_dlp_bin, canonical_url, output_base_path, quality_preset, cookies_browser, ffmpeg_location)` [L702-L732] — *Construct a safe argument list for yt-dlp video/audio download.*
   - `download_youtube_video(url_or_id, output_dir, filename_stem, quality_preset, yt_dlp_bin, cookies_browser, progress_callback, cancel_check, process_callback)` [L735-L842] — *Download and remux a YouTube video into ``output_dir`` with streaming progress.*
 
-### `plugins/youtube/yt_import_dialog.py` (746 lines)
+### `plugins/youtube/yt_import_dialog.py` (752 lines)
 *Qt Dialogs for importing existing YouTube videos, re-downloading archived sources, and updating yt-dlp.*
 - **Public Exports (`__all__`)**: populate_project_from_youtube_import, LoadYouTubeEpisodeDialog, open_yt_dlp_updater_dialog, prompt_load_youtube_episode_dialog, redownload_youtube_source_dialog
-- **class `LoadYouTubeEpisodeDialog(QDialog)`** (lines 182–628):
+- **class `LoadYouTubeEpisodeDialog(QDialog)`** (lines 184–630):
   *Dialog for fetching, configuring, downloading, and opening an existing YouTube video.*
-  - `__init__(self, main_window, parent, initial_url, initial_quality, redownload_mode)` [L185-L214]
-  - `_build_ui(self, initial_url, initial_quality)` [L216-L371]
-  - `_refresh_yt_dlp_status(self)` [L373-L380]
-  - `_set_busy(self, busy)` [L382-L391]
-  - `_refresh_quality_estimate_and_cache(self)` [L393-L415]
-  - `_render_meta_summary(self)` [L417-L431]
-  - `_start_probe(self)` [L433-L455]
-  - `_on_probe_finished(self, meta)` [L457-L472]
-  - `_start_download(self)` [L474-L537]
-  - `_on_download_finished(self, result)` [L539-L545]
-  - `_on_worker_progress(self, pct, msg)` [L547-L549]
-  - `_on_worker_failed(self, msg, err_meta)` [L551-L566]
-  - `_start_yt_dlp_update(self, retry_after)` [L568-L598]
-  - `_on_retry_with_cookies(self)` [L600-L611]
-  - `_cancel_active_workers(self)` [L613-L616]
-  - `_on_cancel_clicked(self)` [L618-L624]
-  - `closeEvent(self, event)` [L626-L628]
+  - `__init__(self, main_window, parent, initial_url, initial_quality, redownload_mode)` [L187-L216]
+  - `_build_ui(self, initial_url, initial_quality)` [L218-L373]
+  - `_refresh_yt_dlp_status(self)` [L375-L382]
+  - `_set_busy(self, busy)` [L384-L393]
+  - `_refresh_quality_estimate_and_cache(self)` [L395-L417]
+  - `_render_meta_summary(self)` [L419-L433]
+  - `_start_probe(self)` [L435-L457]
+  - `_on_probe_finished(self, meta)` [L459-L474]
+  - `_start_download(self)` [L476-L539]
+  - `_on_download_finished(self, result)` [L541-L547]
+  - `_on_worker_progress(self, pct, msg)` [L549-L551]
+  - `_on_worker_failed(self, msg, err_meta)` [L553-L568]
+  - `_start_yt_dlp_update(self, retry_after)` [L570-L600]
+  - `_on_retry_with_cookies(self)` [L602-L613]
+  - `_cancel_active_workers(self)` [L615-L618]
+  - `_on_cancel_clicked(self)` [L620-L626]
+  - `closeEvent(self, event)` [L628-L630]
 - **Functions**:
   - `_trim_youtube_description_for_excerpt(description, max_chars)` [L59-L69] — *Extract a clean short summary from a YouTube description for the project excerpt.*
-  - `populate_project_from_youtube_import(main_window, video_meta, file_path, quality_preset, cache_key, import_chapters, existing_wp_url)` [L72-L179] — *Populate project metadata, WordPress YouTube embed state, and optional chapters.*
-  - `open_yt_dlp_updater_dialog(parent)` [L631-L677] — *Quick standalone updater dialog triggered from Cache Manager or Preferences.*
-  - `prompt_load_youtube_episode_dialog(main_window, parent)` [L680-L714] — *Launch the YouTube import dialog, respect unsaved-project guard, and load downloaded media.*
-  - `redownload_youtube_source_dialog(main_window, source_meta, parent)` [L717-L737] — *Re-download an archived YouTube source for an existing .rtvs project.*
+  - `populate_project_from_youtube_import(main_window, video_meta, file_path, quality_preset, cache_key, import_chapters, existing_wp_url)` [L72-L181] — *Populate project metadata, WordPress YouTube embed state, and optional chapters.*
+  - `open_yt_dlp_updater_dialog(parent)` [L633-L679] — *Quick standalone updater dialog triggered from Cache Manager or Preferences.*
+  - `prompt_load_youtube_episode_dialog(main_window, parent)` [L682-L720] — *Launch the YouTube import dialog, respect unsaved-project guard, and load downloaded media.*
+  - `redownload_youtube_source_dialog(main_window, source_meta, parent)` [L723-L743] — *Re-download an archived YouTube source for an existing .rtvs project.*
 
 ### `plugins/youtube/yt_import_workers.py` (250 lines)
 *Background QThread workers for yt-dlp provisioning, YouTube metadata probing, and video downloads.*
@@ -2421,7 +2421,7 @@
   - `make_cache_key(provider, source_id, quality_preset)` [L100-L107] — *Build a deterministic cache key for a remote source item.*
   - `build_remote_media_source_record(provider, source_url, source_id, quality_preset, cached_filename, cache_key, title, upload_date, estimated_size_bytes, extra)` [L110-L148] — *Create a portable `.rtvs` `remote_media_source` metadata dictionary.*
 
-### `remote_media_cache_dialog.py` (441 lines)
+### `remote_media_cache_dialog.py` (447 lines)
 *Qt Dialog for inspecting and managing the Managed Remote Media Cache (YouTube & WordPress).*
 - **Public Exports (`__all__`)**: CACHE_CAP_OPTIONS, get_configured_cache_cap_gb, ManageCachedMediaDialog, find_redownload_provider, reattach_downloaded_media_to_project, prompt_redownload_missing_remote_media
 - **class `ManageCachedMediaDialog(QDialog)`** (lines 52–338):
@@ -2438,8 +2438,8 @@
 - **Functions**:
   - `get_configured_cache_cap_gb(settings_store)` [L41-L49] — *Read the user's configured Remote Media Cache limit in GB (0.0 = Unlimited).*
   - `find_redownload_provider(main_window, source_meta)` [L341-L357] — *Locate an enabled plugin capable of re-downloading ``source_meta`` (decoupled from plugins/).*
-  - `reattach_downloaded_media_to_project(main_window, media_path)` [L360-L385] — *Bind a newly re-downloaded remote media file onto an already-loaded .rtvs project.*
-  - `prompt_redownload_missing_remote_media(main_window, source_meta, parent)` [L388-L431] — *Offer 1-click re-download when an opened .rtvs project's cached remote media is missing.*
+  - `reattach_downloaded_media_to_project(main_window, media_path)` [L360-L391] — *Bind a newly re-downloaded remote media file onto an already-loaded .rtvs project.*
+  - `prompt_redownload_missing_remote_media(main_window, source_meta, parent)` [L394-L437] — *Offer 1-click re-download when an opened .rtvs project's cached remote media is missing.*
 
 ### `roadmap_manager.py` (259 lines)
 *roadmap_manager.py — Automated Roadmap & N-1 Sliding-Window Management Engine*
@@ -3422,7 +3422,7 @@
   - `_on_bubble_export(self)` [L468-L473]
 
 ### `transcript_story.py` (856 lines)
-*Radio & TV Segmenter v3.10.17-beta — transcript story responsibilities.*
+*Radio & TV Segmenter v3.10.18-beta — transcript story responsibilities.*
 - **Public Exports (`__all__`)**: TranscriptStoryMixin, Story, SetStoriesCommand, SelectStoriesCommand, StoryBoundaryChangeCommand, StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin, ChangeSpeakerDialog, VoiceProfileMatchDialog, StoryFadesDialog, SpeakerManagerDialog, FADE_CURVE_TABLES, get_fade_curve_factors
 - **class `TranscriptStoryMixin(StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin)`** (lines 63–855):
   - `render_transcript(self)` [L64-L471]

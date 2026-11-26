@@ -1,3 +1,12 @@
+## v3.10.16-beta
+- **Frozen Installer REAPER Lua Script Bundling & Installed-App Diagnostic Bench Parity (`build_installer.py`, `reaper_bridge.py`, `diagnostic_core_tests.py`, `diagnostic_loudness_tests.py`, `diagnostic_speaker_cleanup_tests.py`, `diagnostics/editor_guides_and_daw_tests.py`, `diagnostics/system_runtime_tests.py`)**:
+  - **Bundle REAPER Companion Lua Scripts in Packaged Builds (`build_installer.py`, `reaper_bridge.py`)**:
+    - Added `--add-data` and `shutil.copytree()` bundling for `scripts/reaper/` (`rtvs_reaper_companion.lua`, `rtvs_reaper_sync.lua`, `rtvs_reaper_auto_sync.lua`, `rtvs_reaper_dock.lua`) into packaged Windows/macOS/Linux distributions (`app_root/scripts/reaper` and macOS `Resources/scripts/reaper`).
+    - Updated `reaper_bridge.get_bundled_lua_scripts()` to resolve companion Lua scripts across source trees, PyInstaller `sys._MEIPASS`, frozen `exe_dir/scripts/reaper`, `exe_dir/_internal/scripts/reaper`, and macOS `.app` bundle `Resources/scripts/reaper`, with a build-script regression assertion in `diagnostics/editor_guides_and_daw_tests.py`.
+  - **Frozen-Binary Diagnostic Parity & Live GUI-Thread Timing Fixes (`diagnostic_core_tests.py`, `diagnostic_loudness_tests.py`, `diagnostic_speaker_cleanup_tests.py`, `diagnostics/editor_guides_and_daw_tests.py`, `diagnostics/system_runtime_tests.py`)**:
+    - Guarded `.py` source-file / `inspect.getsource()` AST checks in `system_runtime_tests.py`, `diagnostic_loudness_tests.py`, `editor_guides_and_daw_tests.py`, and `diagnostic_speaker_cleanup_tests.py` when running inside compiled PyInstaller binaries where `.py` sources are packaged inside PYZ archives.
+    - Updated the `SpeakerManagerDialog` Tab-key inline editing progression test in `diagnostic_core_tests.py` to process queued `QTimer.singleShot(0, ...)` events via bounded `QApplication.processEvents()` on live GUI event loops.
+
 ## v3.10.15-beta
 - **WordPress Episode Updater Modularization & Hybrid Date Picker (`plugins/wordpress/episode_updater.py`, `plugins/wordpress/episode_lookup.py`, `plugins/wordpress/episode_updater_ui.py`, `plugins/wordpress/pub_date_picker.py`, `plugins/wordpress/manifest.json`, `diagnostics/export_wordpress_media.py`, `diagnostics/system_runtime_tests.py`)**:
   - **Headless Lookup Separation (`plugins/wordpress/episode_lookup.py`)**:

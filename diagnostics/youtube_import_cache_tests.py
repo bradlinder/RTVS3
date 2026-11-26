@@ -146,8 +146,105 @@ class DiagnosticYouTubeImportCacheTestsMixin:
             assert win_upd.project_metadata["wordpress"]["existing_post_url"] == "https://station.example.org/2026/04/city-council/"
             assert win_upd.project_metadata["wordpress"]["youtube_video_id"] == "AbCdEf12345"
 
+            # 8. End-to-end MainWindow media-loader contract for prompt_load_youtube_episode_dialog
+            from unittest.mock import patch
+            from media_batch import MediaBatchMixin
+            import plugins.youtube.yt_import_dialog as yt_dlg_mod
+            from remote_media_cache_dialog import reattach_downloaded_media_to_project
+
+            assert hasattr(MediaBatchMixin, "load_media_file"), "MainWindow must expose load_media_file"
+
+            class _FakeAction:
+                def __init__(self):
+                    self.enabled = False
+                def setEnabled(self, val):
+                    self.enabled = bool(val)
+
+            class _FakeStatusBar:
+                def __init__(self):
+                    self.last_msg = ""
+                def showMessage(self, msg):
+                    self.last_msg = msg
+
+            class _FakeDialog:
+                def __init__(self, *args, **kwargs):
+                    self.download_result = {
+                        "file_path": str(fake_mp4),
+                        "video_meta": meta,
+                        "quality_preset": "1080p",
+                        "cache_key": "youtube:AbCdEf12345:1080p",
+                        "import_chapters": True,
+                        "existing_wp_url": "",
+                        "from_cache": False,
+                    }
+                def exec(self):
+                    return True
+
+            calls = []
+            sb = _FakeStatusBar()
+            redl_act = _FakeAction()
+
+            def _fake_load_media(path_str, source="media load", restore_adjacent_project=False):
+                calls.append(("load_media_file", path_str, source))
+                fake_win.audio_file = Path(path_str)
+                fake_win.project_metadata = ProjectMetadataDict()
+                fake_win.stories = []
+                return True
+
+            def _forbidden_close(prompt=True):
+                calls.append(("close_project", prompt))
+                return True
+
+            fake_win = SimpleNamespace(
+                audio_file=None,
+                project_metadata=ProjectMetadataDict(),
+                stories=[],
+                project_dirty=False,
+                redownload_remote_media_action=redl_act,
+                load_media_file=_fake_load_media,
+                close_project=_forbidden_close,
+                statusBar=lambda: sb,
+            )
+
+            with patch.object(yt_dlg_mod, "LoadYouTubeEpisodeDialog", _FakeDialog):
+                ok = yt_dlg_mod.prompt_load_youtube_episode_dialog(fake_win)
+            assert ok is True
+            assert len(calls) == 1 and calls[0][0] == "load_media_file"
+            assert Path(calls[0][1]) == fake_mp4
+            assert fake_win.audio_file == fake_mp4
+            assert fake_win.project_metadata["remote_media_source"]["video_id"] == "AbCdEf12345"
+            assert len(fake_win.stories) == 2
+            assert redl_act.enabled is True
+            assert "Loaded YouTube video" in sb.last_msg
+
+            # Cancelled unsaved-project prompt inside load_media_file must abort without mutating project state
+            sentinel_meta = ProjectMetadataDict({"title": "Keep Existing Project"})
+            cancel_win = SimpleNamespace(
+                audio_file=Path("existing.mp3"),
+                project_metadata=sentinel_meta,
+                stories=[],
+                load_media_file=lambda *a, **kw: False,
+            )
+            with patch.object(yt_dlg_mod, "LoadYouTubeEpisodeDialog", _FakeDialog):
+                ok_cancel = yt_dlg_mod.prompt_load_youtube_episode_dialog(cancel_win)
+            assert ok_cancel is False
+            assert cancel_win.project_metadata["title"] == "Keep Existing Project"
+            assert "remote_media_source" not in cancel_win.project_metadata
+
+            # Re-attaching re-downloaded media must re-enable processing actions
+            tools_enabled = []
+            reattach_win = SimpleNamespace(
+                audio_file=None,
+                current_media_is_video=False,
+                set_tools_actions_enabled=lambda val: tools_enabled.append(bool(val)),
+            )
+            assert reattach_downloaded_media_to_project(reattach_win, fake_mp4) is True
+            assert reattach_win.audio_file == fake_mp4.resolve()
+            assert reattach_win.current_media_is_video is True
+            assert tools_enabled == [True]
+
         item.status = "PASS"
-        item.message = "YouTube URL validation, 1080p format selection, SHA-256 verification, chapter seeding, error recovery, and WP New/Update wiring verified"
+        item.message = "YouTube URL validation, 1080p format selection, SHA-256 verification, MainWindow load_media_file handoff, chapter seeding, error recovery, and WP New/Update wiring verified"
 
     def _test_managed_remote_media_cache_and_menu_shortcut_sync(self, item):
         from remote_media_cache import (

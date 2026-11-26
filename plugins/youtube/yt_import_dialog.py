@@ -173,6 +173,8 @@ def populate_project_from_youtube_import(
                 if hasattr(main_window, "refresh_story_list"):
                     main_window.refresh_story_list()
 
+    if hasattr(main_window, "redownload_remote_media_action"):
+        main_window.redownload_remote_media_action.setEnabled(True)
     if hasattr(main_window, "project_dirty"):
         main_window.project_dirty = True
     if hasattr(main_window, "update_window_title"):
@@ -689,13 +691,17 @@ def prompt_load_youtube_episode_dialog(main_window: Any, parent: Optional[QWidge
         QMessageBox.warning(parent or main_window, "Media Missing", f"Downloaded media file was not found:\n{file_path}")
         return False
 
-    # Respect unsaved changes before replacing the active project
-    if hasattr(main_window, "close_project"):
-        if not main_window.close_project(prompt=True):
+    # Load the downloaded media into MainWindow (handles unsaved-changes prompt & workspace reset)
+    if hasattr(main_window, "load_media_file"):
+        if not main_window.load_media_file(str(file_path), source="YouTube video URL"):
             return False
-
-    if hasattr(main_window, "load_audio"):
-        main_window.load_audio(str(file_path))
+    else:
+        QMessageBox.critical(
+            parent or main_window,
+            "Media Loader Unavailable",
+            "Could not open the downloaded YouTube video because the main window media loader is unavailable.",
+        )
+        return False
 
     populate_project_from_youtube_import(
         main_window=main_window,
