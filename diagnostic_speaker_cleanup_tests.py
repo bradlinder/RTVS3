@@ -850,15 +850,17 @@ class DiagnosticSpeakerCleanupTestsMixin:
                 "export_formats": "docs/guides/export_formats.md",
             }
             stale_tokens = ("Ctrl+,", "File > Batch Processing", "View > Video Preview Window", "Settings > Manage Plugins", "Google Docs & Sheets")
-            root_dir = _Path(__file__).resolve().parent
+            _cands = [_Path(__file__).resolve().parent] + ([_Path(sys._MEIPASS)] if getattr(sys, "_MEIPASS", None) else []) + ([_Path(sys.executable).resolve().parent, _Path(sys.executable).resolve().parent.parent / "Resources"] if getattr(sys, "frozen", False) else [])
+            root_dir = next((r for r in _cands if (r / "docs" / "guides").is_dir()), None)
             for gid, rel in guide_files.items():
-                disk_text = (root_dir / rel).read_text(encoding="utf-8").replace("\r\n", "\n").rstrip("\n")
                 emb_text = (embedded_guides.get_embedded_guide(gid) or "").replace("\r\n", "\n").rstrip("\n")
-                if disk_text != emb_text:
-                    raise AssertionError(f"embedded_guides[{gid!r}] is out of sync with {rel}")
                 for bad in stale_tokens:
-                    if bad in disk_text:
-                        raise AssertionError(f"Stale documentation token {bad!r} found in {rel}")
+                    if bad in emb_text:
+                        raise AssertionError(f"Stale documentation token {bad!r} found in embedded_guides[{gid!r}]")
+                if root_dir is not None and (root_dir / rel).is_file():
+                    disk_text = (root_dir / rel).read_text(encoding="utf-8").replace("\r\n", "\n").rstrip("\n")
+                    if disk_text != emb_text:
+                        raise AssertionError(f"embedded_guides[{gid!r}] is out of sync with {rel}")
 
             item.status = "PASS"
             item.message = "Main menu deduplication, Qt && escaping, checkable View->Theme state, shortcuts schema, dynamic guide, and docs sync verified"

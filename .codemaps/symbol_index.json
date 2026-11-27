@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-27 21:43:21",
+  "generated_at": "2026-11-27 21:53:17",
   "total_files": 210,
   "files": {
     "RadioTVSegmenter.py": {
       "path": "RadioTVSegmenter.py",
       "lines": 686,
-      "summary": "Radio & TV Segmenter \u2014 v3.10.33-beta",
+      "summary": "Radio & TV Segmenter \u2014 v3.10.34-beta",
       "exports": null,
       "classes": [
         {
@@ -2048,7 +2048,7 @@
     },
     "diagnostic_speaker_cleanup_tests.py": {
       "path": "diagnostic_speaker_cleanup_tests.py",
-      "lines": 994,
+      "lines": 996,
       "summary": "Diagnostic tests for Phase 2 features: minimum story length, guest-name cleanup, and Station Voices.",
       "exports": null,
       "classes": [
@@ -2056,7 +2056,7 @@
           "name": "DiagnosticSpeakerCleanupTestsMixin",
           "bases": [],
           "start_line": 13,
-          "end_line": 994,
+          "end_line": 996,
           "doc": "Mixin for Phase 2 regression diagnostics (story length, name cleanup, Station Voices).",
           "methods": [
             {
@@ -2098,14 +2098,14 @@
               "name": "_test_menu_bar_deduplication_and_escaping_integrity",
               "sig": "_test_menu_bar_deduplication_and_escaping_integrity(self, item)",
               "start_line": 645,
-              "end_line": 868,
+              "end_line": 870,
               "doc": "Validates main menu bar deduplication, Qt && escaping, checkable theme menu state, and shortcut metadata."
             },
             {
               "name": "_test_abbreviation_sentence_boundaries_and_parakeet_rescue",
               "sig": "_test_abbreviation_sentence_boundaries_and_parakeet_rescue(self, item)",
-              "start_line": 870,
-              "end_line": 994,
+              "start_line": 872,
+              "end_line": 996,
               "doc": "Validates EN/ES title abbreviations, Parakeet chunk grouping & uncovered-speech tail rescue, diarization gap fallback, and WordPress paragraphing."
             }
           ]
@@ -2372,7 +2372,7 @@
     },
     "diagnostics/editor_story_ui_tests.py": {
       "path": "diagnostics/editor_story_ui_tests.py",
-      "lines": 876,
+      "lines": 882,
       "summary": "Story transcript highlighting, smart copy, duration & header diagnostic tests.",
       "exports": null,
       "classes": [
@@ -2380,21 +2380,21 @@
           "name": "DiagnosticEditorStoryUiTestsMixin",
           "bases": [],
           "start_line": 10,
-          "end_line": 876,
+          "end_line": 882,
           "doc": "",
           "methods": [
             {
               "name": "_test_story_transcript_highlighting_and_smart_copy",
               "sig": "_test_story_transcript_highlighting_and_smart_copy(self, item)",
               "start_line": 11,
-              "end_line": 693,
+              "end_line": 699,
               "doc": "Validates story selection synchronization with transcript highlight overlay and smart clipboard copying."
             },
             {
               "name": "_test_story_duration_visibility_and_header_aggregation",
               "sig": "_test_story_duration_visibility_and_header_aggregation(self, item)",
-              "start_line": 695,
-              "end_line": 876,
+              "start_line": 701,
+              "end_line": 882,
               "doc": "Validates story clock duration formatting, 2-line sidebar item format, and multi-selection header aggregation."
             }
           ]
@@ -6425,7 +6425,7 @@
     },
     "plugins/github_dialog.py": {
       "path": "plugins/github_dialog.py",
-      "lines": 580,
+      "lines": 613,
       "summary": "GitHub plugins browser and installer dialog with multi-selection.",
       "exports": null,
       "classes": [
@@ -6435,7 +6435,7 @@
             "QDialog"
           ],
           "start_line": 41,
-          "end_line": 579,
+          "end_line": 610,
           "doc": "Browses, downloads, installs, and manages add-ons directly from GitHub releases with multi-selection.",
           "methods": [
             {
@@ -6576,6 +6576,27 @@
               "sig": "uninstall_plugin(self, plugin_id, plugin_name)",
               "start_line": 567,
               "end_line": 579,
+              "doc": ""
+            },
+            {
+              "name": "_cleanup_workers",
+              "sig": "_cleanup_workers(self)",
+              "start_line": 581,
+              "end_line": 602,
+              "doc": ""
+            },
+            {
+              "name": "reject",
+              "sig": "reject(self)",
+              "start_line": 604,
+              "end_line": 606,
+              "doc": ""
+            },
+            {
+              "name": "closeEvent",
+              "sig": "closeEvent(self, event)",
+              "start_line": 608,
+              "end_line": 610,
               "doc": ""
             }
           ]
@@ -6866,7 +6887,7 @@
     },
     "plugins/manager_dialog.py": {
       "path": "plugins/manager_dialog.py",
-      "lines": 532,
+      "lines": 566,
       "summary": "Plugin and Add-On Manager Dialog for inspecting, enabling, and installing add-ons.",
       "exports": null,
       "classes": [
@@ -6876,7 +6897,7 @@
             "QDialog"
           ],
           "start_line": 41,
-          "end_line": 532,
+          "end_line": 563,
           "doc": "GUI Dialog for viewing, managing, enabling, installing, and removing plugins with multi-selection.",
           "methods": [
             {
@@ -6996,6 +7017,27 @@
               "sig": "on_open_folder(self)",
               "start_line": 522,
               "end_line": 532,
+              "doc": ""
+            },
+            {
+              "name": "_cleanup_workers",
+              "sig": "_cleanup_workers(self)",
+              "start_line": 534,
+              "end_line": 555,
+              "doc": ""
+            },
+            {
+              "name": "reject",
+              "sig": "reject(self)",
+              "start_line": 557,
+              "end_line": 559,
+              "doc": ""
+            },
+            {
+              "name": "closeEvent",
+              "sig": "closeEvent(self, event)",
+              "start_line": 561,
+              "end_line": 563,
               "doc": ""
             }
           ]
@@ -8715,7 +8757,7 @@
     },
     "plugins/wordpress/wp_tab_widget.py": {
       "path": "plugins/wordpress/wp_tab_widget.py",
-      "lines": 1003,
+      "lines": 998,
       "summary": "WordPress export tab configuration widget and preview controller.",
       "exports": null,
       "classes": [
@@ -8725,420 +8767,420 @@
             "QWidget"
           ],
           "start_line": 43,
-          "end_line": 1002,
+          "end_line": 997,
           "doc": "Configuration and preview panel for WordPress Draft Posts.",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, parent, main_window, metadata_editor_mode)",
               "start_line": 55,
-              "end_line": 79,
+              "end_line": 76,
               "doc": ""
             },
             {
               "name": "_setup_ui",
               "sig": "_setup_ui(self)",
-              "start_line": 81,
-              "end_line": 82,
+              "start_line": 78,
+              "end_line": 79,
               "doc": ""
             },
             {
               "name": "_on_wp_include_audio_toggled",
               "sig": "_on_wp_include_audio_toggled(self, checked)",
-              "start_line": 84,
-              "end_line": 121,
+              "start_line": 81,
+              "end_line": 118,
               "doc": ""
             },
             {
               "name": "_update_wp_conn_status",
               "sig": "_update_wp_conn_status(self)",
-              "start_line": 123,
-              "end_line": 131,
+              "start_line": 120,
+              "end_line": 128,
               "doc": ""
             },
             {
               "name": "_open_wp_settings",
               "sig": "_open_wp_settings(self)",
-              "start_line": 133,
-              "end_line": 137,
+              "start_line": 130,
+              "end_line": 134,
               "doc": ""
             },
             {
               "name": "_filter_authors_list",
               "sig": "_filter_authors_list(self, text)",
-              "start_line": 139,
-              "end_line": 143,
+              "start_line": 136,
+              "end_line": 140,
               "doc": ""
             },
             {
               "name": "_filter_categories_list",
               "sig": "_filter_categories_list(self, text)",
-              "start_line": 145,
-              "end_line": 149,
+              "start_line": 142,
+              "end_line": 146,
               "doc": ""
             },
             {
               "name": "_sync_to_proj",
               "sig": "_sync_to_proj(self, idx)",
-              "start_line": 151,
-              "end_line": 153,
+              "start_line": 148,
+              "end_line": 150,
               "doc": ""
             },
             {
               "name": "_on_title_edited",
               "sig": "_on_title_edited(self, text)",
-              "start_line": 155,
-              "end_line": 168,
+              "start_line": 152,
+              "end_line": 165,
               "doc": ""
             },
             {
               "name": "_on_excerpt_edited",
               "sig": "_on_excerpt_edited(self)",
-              "start_line": 170,
-              "end_line": 175,
+              "start_line": 167,
+              "end_line": 172,
               "doc": ""
             },
             {
               "name": "_auto_generate_current_excerpt",
               "sig": "_auto_generate_current_excerpt(self)",
-              "start_line": 177,
-              "end_line": 185,
+              "start_line": 174,
+              "end_line": 182,
               "doc": ""
             },
             {
               "name": "_autofill_all_excerpts",
               "sig": "_autofill_all_excerpts(self)",
-              "start_line": 187,
-              "end_line": 198,
+              "start_line": 184,
+              "end_line": 195,
               "doc": ""
             },
             {
               "name": "_on_author_item_changed",
               "sig": "_on_author_item_changed(self, item)",
-              "start_line": 200,
-              "end_line": 208,
+              "start_line": 197,
+              "end_line": 205,
               "doc": ""
             },
             {
               "name": "_sync_categories_to_all_stories",
               "sig": "_sync_categories_to_all_stories(self, cat_ids)",
-              "start_line": 210,
-              "end_line": 217,
+              "start_line": 207,
+              "end_line": 214,
               "doc": "Copy category_ids to every Story item in wp_post_items without altering Full Episode."
             },
             {
               "name": "_on_cats_apply_all_stories_toggled",
               "sig": "_on_cats_apply_all_stories_toggled(self, checked)",
-              "start_line": 219,
-              "end_line": 226,
+              "start_line": 216,
+              "end_line": 223,
               "doc": ""
             },
             {
               "name": "_on_category_item_changed",
               "sig": "_on_category_item_changed(self, item)",
-              "start_line": 228,
-              "end_line": 237,
+              "start_line": 225,
+              "end_line": 234,
               "doc": ""
             },
             {
               "name": "_clear_current_authors",
               "sig": "_clear_current_authors(self)",
-              "start_line": 239,
-              "end_line": 245,
+              "start_line": 236,
+              "end_line": 242,
               "doc": ""
             },
             {
               "name": "_clear_current_categories",
               "sig": "_clear_current_categories(self)",
-              "start_line": 247,
-              "end_line": 255,
+              "start_line": 244,
+              "end_line": 252,
               "doc": ""
             },
             {
               "name": "_get_selected_story_indices",
               "sig": "_get_selected_story_indices(self)",
-              "start_line": 257,
-              "end_line": 261,
+              "start_line": 254,
+              "end_line": 258,
               "doc": ""
             },
             {
               "name": "_apply_authors_to_selected_stories",
               "sig": "_apply_authors_to_selected_stories(self)",
-              "start_line": 263,
-              "end_line": 264,
+              "start_line": 260,
+              "end_line": 261,
               "doc": ""
             },
             {
               "name": "_apply_categories_to_selected_stories",
               "sig": "_apply_categories_to_selected_stories(self)",
-              "start_line": 266,
-              "end_line": 267,
+              "start_line": 263,
+              "end_line": 264,
               "doc": ""
             },
             {
               "name": "_apply_thumbnails_to_selected_stories",
               "sig": "_apply_thumbnails_to_selected_stories(self)",
-              "start_line": 269,
-              "end_line": 270,
+              "start_line": 266,
+              "end_line": 267,
               "doc": ""
             },
             {
               "name": "_bulk_apply_to_selected",
               "sig": "_bulk_apply_to_selected(self, *keys)",
-              "start_line": 272,
-              "end_line": 304,
+              "start_line": 269,
+              "end_line": 301,
               "doc": ""
             },
             {
               "name": "_apply_authors_to_all_posts",
               "sig": "_apply_authors_to_all_posts(self)",
-              "start_line": 306,
-              "end_line": 307,
+              "start_line": 303,
+              "end_line": 304,
               "doc": ""
             },
             {
               "name": "_apply_categories_to_all_posts",
               "sig": "_apply_categories_to_all_posts(self)",
-              "start_line": 309,
-              "end_line": 310,
+              "start_line": 306,
+              "end_line": 307,
               "doc": ""
             },
             {
               "name": "_apply_thumbnails_to_all_posts",
               "sig": "_apply_thumbnails_to_all_posts(self)",
-              "start_line": 312,
-              "end_line": 313,
+              "start_line": 309,
+              "end_line": 310,
               "doc": ""
             },
             {
               "name": "_bulk_apply_to_all",
               "sig": "_bulk_apply_to_all(self, *keys)",
-              "start_line": 315,
-              "end_line": 334,
+              "start_line": 312,
+              "end_line": 331,
               "doc": ""
             },
             {
               "name": "_apply_podcast_to_selected_stories",
               "sig": "_apply_podcast_to_selected_stories(self)",
-              "start_line": 336,
-              "end_line": 366,
+              "start_line": 333,
+              "end_line": 363,
               "doc": ""
             },
             {
               "name": "_apply_podcast_to_all_posts",
               "sig": "_apply_podcast_to_all_posts(self)",
-              "start_line": 368,
-              "end_line": 383,
+              "start_line": 365,
+              "end_line": 380,
               "doc": ""
             },
             {
               "name": "_sync_post_to_project",
               "sig": "_sync_post_to_project(self, idx, log_reason)",
-              "start_line": 385,
-              "end_line": 487,
+              "start_line": 382,
+              "end_line": 484,
               "doc": ""
             },
             {
               "name": "save_all_posts_to_project",
               "sig": "save_all_posts_to_project(self)",
-              "start_line": 489,
-              "end_line": 514,
+              "start_line": 486,
+              "end_line": 511,
               "doc": "Persist all post metadata and export options back into stories and project_metadata."
             },
             {
               "name": "get_sidebar_decorations",
               "sig": "get_sidebar_decorations(self)",
-              "start_line": 516,
-              "end_line": 518,
+              "start_line": 513,
+              "end_line": 515,
               "doc": ""
             },
             {
               "name": "_notify_export_sidebar_decorations",
               "sig": "_notify_export_sidebar_decorations(self)",
-              "start_line": 520,
-              "end_line": 525,
+              "start_line": 517,
+              "end_line": 522,
               "doc": ""
             },
             {
               "name": "_update_post_list_item_label",
               "sig": "_update_post_list_item_label(self, idx)",
-              "start_line": 527,
-              "end_line": 537,
+              "start_line": 524,
+              "end_line": 534,
               "doc": ""
             },
             {
               "name": "_on_wp_post_selection_changed",
               "sig": "_on_wp_post_selection_changed(self, row)",
-              "start_line": 539,
-              "end_line": 542,
+              "start_line": 536,
+              "end_line": 539,
               "doc": ""
             },
             {
               "name": "_get_editor_checked_authors",
               "sig": "_get_editor_checked_authors(self)",
-              "start_line": 544,
-              "end_line": 552,
+              "start_line": 541,
+              "end_line": 549,
               "doc": ""
             },
             {
               "name": "_set_editor_checked_authors",
               "sig": "_set_editor_checked_authors(self, author_ids, author_term_ids)",
-              "start_line": 554,
-              "end_line": 561,
+              "start_line": 551,
+              "end_line": 558,
               "doc": ""
             },
             {
               "name": "_get_editor_checked_categories",
               "sig": "_get_editor_checked_categories(self)",
-              "start_line": 563,
-              "end_line": 571,
+              "start_line": 560,
+              "end_line": 568,
               "doc": ""
             },
             {
               "name": "_set_editor_checked_categories",
               "sig": "_set_editor_checked_categories(self, cat_ids)",
-              "start_line": 573,
-              "end_line": 581,
+              "start_line": 570,
+              "end_line": 578,
               "doc": ""
             },
             {
               "name": "_get_wp_post_bounds",
               "sig": "_get_wp_post_bounds(self, post_index)",
-              "start_line": 583,
-              "end_line": 592,
+              "start_line": 580,
+              "end_line": 589,
               "doc": ""
             },
             {
               "name": "_sync_wp_slider_to_pos",
               "sig": "_sync_wp_slider_to_pos(self, pos)",
-              "start_line": 594,
-              "end_line": 604,
+              "start_line": 591,
+              "end_line": 601,
               "doc": ""
             },
             {
               "name": "_on_wp_slider_value_changed",
               "sig": "_on_wp_slider_value_changed(self, val)",
-              "start_line": 606,
-              "end_line": 615,
+              "start_line": 603,
+              "end_line": 612,
               "doc": ""
             },
             {
               "name": "_on_wp_scrub_timer_timeout",
               "sig": "_on_wp_scrub_timer_timeout(self)",
-              "start_line": 617,
-              "end_line": 621,
+              "start_line": 614,
+              "end_line": 618,
               "doc": ""
             },
             {
               "name": "_on_wp_step",
               "sig": "_on_wp_step(self, delta_secs)",
-              "start_line": 623,
-              "end_line": 631,
+              "start_line": 620,
+              "end_line": 628,
               "doc": ""
             },
             {
               "name": "_on_wp_sync_playhead",
               "sig": "_on_wp_sync_playhead(self)",
-              "start_line": 633,
-              "end_line": 640,
+              "start_line": 630,
+              "end_line": 637,
               "doc": ""
             },
             {
               "name": "_load_post_editor_state",
               "sig": "_load_post_editor_state(self, index)",
-              "start_line": 642,
-              "end_line": 676,
+              "start_line": 639,
+              "end_line": 673,
               "doc": ""
             },
             {
               "name": "_on_wp_thumb_mode_changed",
               "sig": "_on_wp_thumb_mode_changed(self)",
-              "start_line": 678,
-              "end_line": 679,
+              "start_line": 675,
+              "end_line": 676,
               "doc": ""
             },
             {
               "name": "_on_wp_thumb_meta_changed",
               "sig": "_on_wp_thumb_meta_changed(self)",
-              "start_line": 681,
-              "end_line": 688,
+              "start_line": 678,
+              "end_line": 685,
               "doc": ""
             },
             {
               "name": "_capture_wp_frame",
               "sig": "_capture_wp_frame(self, pos, user_initiated)",
-              "start_line": 690,
-              "end_line": 729,
+              "start_line": 687,
+              "end_line": 726,
               "doc": ""
             },
             {
               "name": "_on_wp_browse_thumb",
               "sig": "_on_wp_browse_thumb(self)",
-              "start_line": 731,
-              "end_line": 753,
+              "start_line": 728,
+              "end_line": 750,
               "doc": ""
             },
             {
               "name": "_cleanup_temp_files",
               "sig": "_cleanup_temp_files(self)",
-              "start_line": 755,
-              "end_line": 764,
+              "start_line": 752,
+              "end_line": 761,
               "doc": "Purge temporary frame grabs and preview images."
             },
             {
               "name": "closeEvent",
               "sig": "closeEvent(self, event)",
-              "start_line": 766,
-              "end_line": 783,
+              "start_line": 763,
+              "end_line": 780,
               "doc": "Persist current post state, stop background thumbnail workers, and clean up temp files."
             },
             {
               "name": "select_full_episode",
               "sig": "select_full_episode(self)",
-              "start_line": 785,
-              "end_line": 794,
+              "start_line": 782,
+              "end_line": 791,
               "doc": ""
             },
             {
               "name": "select_story_index",
               "sig": "select_story_index(self, story_idx)",
-              "start_line": 796,
-              "end_line": 805,
+              "start_line": 793,
+              "end_line": 802,
               "doc": ""
             },
             {
               "name": "rebuild_post_items",
               "sig": "rebuild_post_items(self, scope)",
-              "start_line": 807,
-              "end_line": 879,
+              "start_line": 804,
+              "end_line": 876,
               "doc": ""
             },
             {
               "name": "_populate_wp_export_metadata",
               "sig": "_populate_wp_export_metadata(self, force_refresh)",
-              "start_line": 881,
-              "end_line": 950,
+              "start_line": 878,
+              "end_line": 945,
               "doc": ""
             },
             {
               "name": "_prompt_wp_credentials",
               "sig": "_prompt_wp_credentials(self, title, message)",
-              "start_line": 952,
-              "end_line": 965,
+              "start_line": 947,
+              "end_line": 960,
               "doc": ""
             },
             {
               "name": "_refresh_castos_feeds",
               "sig": "_refresh_castos_feeds(self)",
-              "start_line": 967,
-              "end_line": 984,
+              "start_line": 962,
+              "end_line": 979,
               "doc": ""
             },
             {
               "name": "_refresh_wp_metadata",
               "sig": "_refresh_wp_metadata(self)",
-              "start_line": 986,
-              "end_line": 1002,
+              "start_line": 981,
+              "end_line": 997,
               "doc": ""
             }
           ]
@@ -10249,7 +10291,7 @@
     },
     "plugins/youtube/yt_import_dialog.py": {
       "path": "plugins/youtube/yt_import_dialog.py",
-      "lines": 755,
+      "lines": 796,
       "summary": "Qt Dialogs for importing existing YouTube videos, re-downloading archived sources, and updating yt-dlp.",
       "exports": [
         "populate_project_from_youtube_import",
@@ -10265,7 +10307,7 @@
             "QDialog"
           ],
           "start_line": 187,
-          "end_line": 633,
+          "end_line": 647,
           "doc": "Dialog for fetching, configuring, downloading, and opening an existing YouTube video.",
           "methods": [
             {
@@ -10368,23 +10410,30 @@
             },
             {
               "name": "_cancel_active_workers",
-              "sig": "_cancel_active_workers(self)",
+              "sig": "_cancel_active_workers(self, detach)",
               "start_line": 618,
-              "end_line": 621,
+              "end_line": 631,
               "doc": ""
             },
             {
               "name": "_on_cancel_clicked",
               "sig": "_on_cancel_clicked(self)",
-              "start_line": 623,
-              "end_line": 629,
+              "start_line": 633,
+              "end_line": 639,
+              "doc": ""
+            },
+            {
+              "name": "reject",
+              "sig": "reject(self)",
+              "start_line": 641,
+              "end_line": 643,
               "doc": ""
             },
             {
               "name": "closeEvent",
               "sig": "closeEvent(self, event)",
-              "start_line": 631,
-              "end_line": 633,
+              "start_line": 645,
+              "end_line": 647,
               "doc": ""
             }
           ]
@@ -10406,24 +10455,31 @@
           "doc": "Populate project metadata, WordPress YouTube embed state, and optional chapters."
         },
         {
+          "name": "_detach_or_wait_yt_worker",
+          "sig": "_detach_or_wait_yt_worker(worker, wait_ms)",
+          "start_line": 653,
+          "end_line": 675,
+          "doc": "Cancel a YouTube/yt-dlp QThread and detach it if still winding down so Qt never aborts on dialog teardown."
+        },
+        {
           "name": "open_yt_dlp_updater_dialog",
           "sig": "open_yt_dlp_updater_dialog(parent)",
-          "start_line": 636,
-          "end_line": 682,
+          "start_line": 678,
+          "end_line": 723,
           "doc": "Quick standalone updater dialog triggered from Cache Manager or Preferences."
         },
         {
           "name": "prompt_load_youtube_episode_dialog",
           "sig": "prompt_load_youtube_episode_dialog(main_window, parent)",
-          "start_line": 685,
-          "end_line": 723,
+          "start_line": 726,
+          "end_line": 764,
           "doc": "Launch the YouTube import dialog, respect unsaved-project guard, and load downloaded media."
         },
         {
           "name": "redownload_youtube_source_dialog",
           "sig": "redownload_youtube_source_dialog(main_window, source_meta, parent)",
-          "start_line": 726,
-          "end_line": 746,
+          "start_line": 767,
+          "end_line": 787,
           "doc": "Re-download an archived YouTube source for an existing .rtvs project."
         }
       ]
@@ -20372,7 +20428,7 @@
     "transcript_story.py": {
       "path": "transcript_story.py",
       "lines": 856,
-      "summary": "Radio & TV Segmenter v3.10.33-beta \u2014 transcript story responsibilities.",
+      "summary": "Radio & TV Segmenter v3.10.34-beta \u2014 transcript story responsibilities.",
       "exports": [
         "TranscriptStoryMixin",
         "Story",

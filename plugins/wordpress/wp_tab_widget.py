@@ -897,7 +897,7 @@ class WordPressExportTabWidget(QWidget):
                 except Exception:
                     pass
 
-        if not os.environ.get("RTVS_TEST_MODE") and (not categories or not authors or not podcast_feeds or len(podcast_feeds) <= 1 or force_refresh):
+        if not os.environ.get("RTVS_TEST_MODE") and (not categories or not authors or not podcast_feeds or force_refresh):
             from plugins.wordpress.client import get_wp_client
             client = get_wp_client()
             if client:

@@ -615,22 +615,64 @@ class LoadYouTubeEpisodeDialog(QDialog):
         else:
             self._start_download()
 
-    def _cancel_active_workers(self) -> None:
-        for w in (self._probe_worker, self._download_worker, self._update_worker):
-            if w is not None and w.isRunning():
-                w.cancel()
+    def _cancel_active_workers(self, detach: bool = False) -> None:
+        for attr in ("_probe_worker", "_download_worker", "_update_worker"):
+            w = getattr(self, attr, None)
+            if w is None:
+                continue
+            if detach:
+                setattr(self, attr, None)
+                _detach_or_wait_yt_worker(w)
+            else:
+                try:
+                    if w.isRunning():
+                        w.cancel()
+                except RuntimeError:
+                    pass
 
     def _on_cancel_clicked(self) -> None:
         running = any(w is not None and w.isRunning() for w in (self._probe_worker, self._download_worker, self._update_worker))
         if running:
-            self._cancel_active_workers()
+            self._cancel_active_workers(detach=False)
             self.status_label.setText("Cancelling...")
         else:
             self.reject()
 
+    def reject(self) -> None:
+        self._cancel_active_workers(detach=True)
+        super().reject()
+
     def closeEvent(self, event) -> None:
-        self._cancel_active_workers()
+        self._cancel_active_workers(detach=True)
         super().closeEvent(event)
+
+
+_DETACHED_YT_WORKERS: set = set()
+
+
+def _detach_or_wait_yt_worker(worker: Any, wait_ms: int = 300) -> None:
+    """Cancel a YouTube/yt-dlp QThread and detach it if still winding down so Qt never aborts on dialog teardown."""
+    if worker is None:
+        return
+    for sig_name in ("progress", "finished", "failed", "metadata_ready"):
+        sig = getattr(worker, sig_name, None)
+        if sig is not None:
+            try:
+                sig.disconnect()
+            except Exception:
+                pass
+    try:
+        if worker.isRunning():
+            if hasattr(worker, "cancel"):
+                worker.cancel()
+            worker.requestInterruption()
+            if not worker.wait(wait_ms):
+                worker.setParent(None)
+                _DETACHED_YT_WORKERS.add(worker)
+                worker.finished.connect(lambda *_, w=worker: _DETACHED_YT_WORKERS.discard(w))
+                worker.finished.connect(worker.deleteLater)
+    except RuntimeError:
+        pass
 
 
 def open_yt_dlp_updater_dialog(parent: Optional[QWidget] = None) -> None:
@@ -678,8 +720,7 @@ def open_yt_dlp_updater_dialog(parent: Optional[QWidget] = None) -> None:
     update_btn.clicked.connect(_run_update)
     dlg.exec()
     for w in worker_holder:
-        if w.isRunning():
-            w.cancel()
+        _detach_or_wait_yt_worker(w)
 
 
 def prompt_load_youtube_episode_dialog(main_window: Any, parent: Optional[QWidget] = None) -> bool:

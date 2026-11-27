@@ -578,3 +578,36 @@ class GitHubPluginsDialog(QDialog):
             QMessageBox.information(self, "Plugin Removed", f"'{plugin_name}' has been successfully uninstalled.")
             self.render_table()
 
+    def _cleanup_workers(self):
+        for attr in ("fetch_worker", "download_worker", "batch_worker"):
+            worker = getattr(self, attr, None)
+            if worker is None:
+                continue
+            setattr(self, attr, None)
+            for sig_name in ("finished", "progress"):
+                sig = getattr(worker, sig_name, None)
+                if sig is not None:
+                    try:
+                        sig.disconnect()
+                    except Exception:
+                        pass
+            try:
+                if worker.isRunning():
+                    worker.requestInterruption()
+                    worker.setParent(None)
+                    _DETACHED_PLUGIN_WORKERS.add(worker)
+                    worker.finished.connect(lambda *_, w=worker: _DETACHED_PLUGIN_WORKERS.discard(w))
+                    worker.finished.connect(worker.deleteLater)
+            except RuntimeError:
+                pass
+
+    def reject(self):
+        self._cleanup_workers()
+        super().reject()
+
+    def closeEvent(self, event):
+        self._cleanup_workers()
+        super().closeEvent(event)
+
+
+_DETACHED_PLUGIN_WORKERS: set = set()

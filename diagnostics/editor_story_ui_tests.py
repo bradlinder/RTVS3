@@ -441,6 +441,12 @@ class DiagnosticEditorStoryUiTestsMixin:
             assert "closeEvent" in UnifiedExportDialog.__dict__, (
                 "UnifiedExportDialog must forward closeEvent to embedded plugin tabs"
             )
+            from plugins.github_dialog import GitHubPluginsDialog
+            from plugins.manager_dialog import PluginManagerDialog
+            for _dlg_cls in (GitHubPluginsDialog, PluginManagerDialog, LoadYouTubeEpisodeDialog):
+                assert "closeEvent" in _dlg_cls.__dict__ and "reject" in _dlg_cls.__dict__, (
+                    f"{_dlg_cls.__name__} must implement closeEvent and reject for safe QThread teardown"
+                )
             sweep_widgets = [
                 exp_dlg,
                 LoadYouTubeEpisodeDialog(flash_mw),
