@@ -107,6 +107,7 @@ HIDDEN_IMPORTS = [
     "voice_profile_dialog",
     "model_cleanup_dialog",
     "speaker_dialogs",
+    "story_detect_dialog",
     "story_fades_dialog",
     "shortcuts",
     "shortcuts.schema",

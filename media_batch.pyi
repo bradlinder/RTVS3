@@ -19,7 +19,10 @@ class MediaBatchMixin:
     def stop_waveform_worker(self, timeout_ms=...):
         ...
 
-    def start_video_thumbnail_generation(self, force_regenerate: bool=...):
+    def _effective_thumbnail_density(self, density: Optional[str]=...) -> str:
+        ...
+
+    def start_video_thumbnail_generation(self, force_regenerate: bool=..., density: Optional[str]=...):
         ...
 
     def _video_thumbnail_thread_finished(self):
@@ -34,7 +37,7 @@ class MediaBatchMixin:
     def regenerate_waveform(self):
         ...
 
-    def regenerate_video_thumbnails(self):
+    def regenerate_video_thumbnails(self, density: Optional[str]=...):
         ...
 
     def load_waveform_async(self, force_regenerate: bool=...):

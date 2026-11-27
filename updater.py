@@ -20,7 +20,7 @@ except ImportError:
     try:
         from prs_shared import PROJECT_VERSION
     except Exception:
-        PROJECT_VERSION = "3.10.22-beta"
+        PROJECT_VERSION = "3.10.23-beta"
 
 from updater_core import (
     APP_DISPLAY_NAME,

@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-27 13:03:15",
-  "total_files": 208,
+  "generated_at": "2026-11-27 13:16:26",
+  "total_files": 209,
   "files": {
     "RadioTVSegmenter.py": {
       "path": "RadioTVSegmenter.py",
-      "lines": 684,
-      "summary": "Radio & TV Segmenter \u2014 v3.10.22-beta",
+      "lines": 686,
+      "summary": "Radio & TV Segmenter \u2014 v3.10.23-beta",
       "exports": null,
       "classes": [
         {
@@ -23,7 +23,7 @@
             "QMainWindow"
           ],
           "start_line": 160,
-          "end_line": 581,
+          "end_line": 583,
           "doc": "Main application window for Radio & TV Segmenter.",
           "methods": [
             {
@@ -51,42 +51,42 @@
               "name": "load_persistent_settings",
               "sig": "load_persistent_settings(self)",
               "start_line": 433,
-              "end_line": 526,
+              "end_line": 528,
               "doc": "Loads all persistent user preferences from QSettings into MainWindow attributes."
             },
             {
               "name": "toggle_transcript_auto_scroll",
               "sig": "toggle_transcript_auto_scroll(self, checked)",
-              "start_line": 528,
-              "end_line": 538,
+              "start_line": 530,
+              "end_line": 540,
               "doc": "Toggle transcript auto-scrolling during playback and persist setting."
             },
             {
               "name": "changeEvent",
               "sig": "changeEvent(self, event)",
-              "start_line": 540,
-              "end_line": 547,
+              "start_line": 542,
+              "end_line": 549,
               "doc": "Handle window state changes (e.g. maximize, restore, minimize) safely."
             },
             {
               "name": "dragEnterEvent",
               "sig": "dragEnterEvent(self, event)",
-              "start_line": 549,
-              "end_line": 556,
+              "start_line": 551,
+              "end_line": 558,
               "doc": ""
             },
             {
               "name": "dragMoveEvent",
               "sig": "dragMoveEvent(self, event)",
-              "start_line": 558,
-              "end_line": 565,
+              "start_line": 560,
+              "end_line": 567,
               "doc": ""
             },
             {
               "name": "dropEvent",
               "sig": "dropEvent(self, event)",
-              "start_line": 567,
-              "end_line": 581,
+              "start_line": 569,
+              "end_line": 583,
               "doc": ""
             }
           ]
@@ -96,8 +96,8 @@
         {
           "name": "main",
           "sig": "main()",
-          "start_line": 584,
-          "end_line": 680,
+          "start_line": 586,
+          "end_line": 682,
           "doc": ""
         }
       ]
@@ -222,7 +222,7 @@
     },
     "background_workers.py": {
       "path": "background_workers.py",
-      "lines": 1051,
+      "lines": 1097,
       "summary": "Radio & TV Story Segmenter \u2014 Background Worker Threads & Waveform Cache Helpers.",
       "exports": null,
       "classes": [
@@ -309,29 +309,29 @@
           "bases": [
             "QObject"
           ],
-          "start_line": 981,
-          "end_line": 1040,
+          "start_line": 1027,
+          "end_line": 1086,
           "doc": "",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, media_path, duration, output_dir, count)",
-              "start_line": 985,
-              "end_line": 992,
+              "start_line": 1031,
+              "end_line": 1038,
               "doc": ""
             },
             {
               "name": "cancel",
               "sig": "cancel(self)",
-              "start_line": 994,
-              "end_line": 1001,
+              "start_line": 1040,
+              "end_line": 1047,
               "doc": ""
             },
             {
               "name": "run",
               "sig": "run(self)",
-              "start_line": 1003,
-              "end_line": 1040,
+              "start_line": 1049,
+              "end_line": 1086,
               "doc": ""
             }
           ]
@@ -374,24 +374,38 @@
           "doc": "Delete any cached waveform peak binary file for audio_file, including legacy paths."
         },
         {
+          "name": "normalize_thumbnail_density",
+          "sig": "normalize_thumbnail_density(density)",
+          "start_line": 877,
+          "end_line": 880,
+          "doc": "Normalize a timeline thumbnail density setting to 'standard', 'detailed', or 'high'."
+        },
+        {
+          "name": "get_thumbnail_count_for_density",
+          "sig": "get_thumbnail_count_for_density(density)",
+          "start_line": 883,
+          "end_line": 885,
+          "doc": "Return the bounded frame extraction count for a timeline thumbnail density preset."
+        },
+        {
           "name": "get_video_thumbnail_cache_dir",
-          "sig": "get_video_thumbnail_cache_dir(media_file, project_file)",
-          "start_line": 868,
-          "end_line": 907,
+          "sig": "get_video_thumbnail_cache_dir(media_file, project_file, target_count)",
+          "start_line": 888,
+          "end_line": 936,
           "doc": "Return the deterministic thumbnail cache directory for a media file, associating with project if available."
         },
         {
           "name": "read_video_thumbnail_cache",
-          "sig": "read_video_thumbnail_cache(media_file, duration, project_file)",
-          "start_line": 910,
-          "end_line": 952,
+          "sig": "read_video_thumbnail_cache(media_file, duration, project_file, target_count)",
+          "start_line": 939,
+          "end_line": 991,
           "doc": "Read pre-extracted video thumbnail items [(timestamp, image_path), ...] from disk cache."
         },
         {
           "name": "invalidate_video_thumbnail_cache",
-          "sig": "invalidate_video_thumbnail_cache(media_file, project_file)",
-          "start_line": 955,
-          "end_line": 978,
+          "sig": "invalidate_video_thumbnail_cache(media_file, project_file, target_count)",
+          "start_line": 994,
+          "end_line": 1024,
           "doc": "Delete the thumbnail cache directory for a given media file."
         }
       ]
@@ -2425,7 +2439,7 @@
     },
     "diagnostics/editor_story_ui_tests.py": {
       "path": "diagnostics/editor_story_ui_tests.py",
-      "lines": 539,
+      "lines": 603,
       "summary": "Story transcript highlighting, smart copy, duration & header diagnostic tests.",
       "exports": null,
       "classes": [
@@ -2433,21 +2447,21 @@
           "name": "DiagnosticEditorStoryUiTestsMixin",
           "bases": [],
           "start_line": 9,
-          "end_line": 539,
+          "end_line": 603,
           "doc": "",
           "methods": [
             {
               "name": "_test_story_transcript_highlighting_and_smart_copy",
               "sig": "_test_story_transcript_highlighting_and_smart_copy(self, item)",
               "start_line": 10,
-              "end_line": 356,
+              "end_line": 420,
               "doc": "Validates story selection synchronization with transcript highlight overlay and smart clipboard copying."
             },
             {
               "name": "_test_story_duration_visibility_and_header_aggregation",
               "sig": "_test_story_duration_visibility_and_header_aggregation(self, item)",
-              "start_line": 358,
-              "end_line": 539,
+              "start_line": 422,
+              "end_line": 603,
               "doc": "Validates story clock duration formatting, 2-line sidebar item format, and multi-selection header aggregation."
             }
           ]
@@ -2634,7 +2648,7 @@
     },
     "diagnostics/system_runtime_tests.py": {
       "path": "diagnostics/system_runtime_tests.py",
-      "lines": 445,
+      "lines": 446,
       "summary": "System runtime, updater, theme, packaging, roadmap, and modularity diagnostic tests.",
       "exports": null,
       "classes": [
@@ -2642,7 +2656,7 @@
           "name": "DiagnosticSystemRuntimeTestsMixin",
           "bases": [],
           "start_line": 14,
-          "end_line": 445,
+          "end_line": 446,
           "doc": "",
           "methods": [
             {
@@ -2705,7 +2719,7 @@
               "name": "_test_source_file_modularity_and_1000_line_budget_invariant",
               "sig": "_test_source_file_modularity_and_1000_line_budget_invariant(self, item)",
               "start_line": 357,
-              "end_line": 445,
+              "end_line": 446,
               "doc": "Validates that recently decomposed modules adhere to the 1,000-line modular budget,"
             }
           ]
@@ -4726,7 +4740,7 @@
     },
     "installer/build_tools/config.py": {
       "path": "installer/build_tools/config.py",
-      "lines": 212,
+      "lines": 213,
       "summary": "Build configuration constants and CLI argument parser.",
       "exports": null,
       "classes": [],
@@ -4734,8 +4748,8 @@
         {
           "name": "parse_build_args",
           "sig": "parse_build_args()",
-          "start_line": 137,
-          "end_line": 212,
+          "start_line": 138,
+          "end_line": 213,
           "doc": "Parse build target, plugin selection, installer, and version CLI flags."
         }
       ]
@@ -4838,7 +4852,7 @@
     },
     "media_batch.py": {
       "path": "media_batch.py",
-      "lines": 1737,
+      "lines": 1777,
       "summary": "Radio & TV Segmenter v1.1.1 \u2014 media batch responsibilities.",
       "exports": null,
       "classes": [
@@ -4846,7 +4860,7 @@
           "name": "MediaBatchMixin",
           "bases": [],
           "start_line": 21,
-          "end_line": 1737,
+          "end_line": 1777,
           "doc": "",
           "methods": [
             {
@@ -4871,388 +4885,395 @@
               "doc": "Stop the current waveform worker completely before replacing it or closing."
             },
             {
-              "name": "start_video_thumbnail_generation",
-              "sig": "start_video_thumbnail_generation(self, force_regenerate)",
+              "name": "_effective_thumbnail_density",
+              "sig": "_effective_thumbnail_density(self, density)",
               "start_line": 85,
-              "end_line": 141,
+              "end_line": 92,
+              "doc": ""
+            },
+            {
+              "name": "start_video_thumbnail_generation",
+              "sig": "start_video_thumbnail_generation(self, force_regenerate, density)",
+              "start_line": 94,
+              "end_line": 167,
               "doc": ""
             },
             {
               "name": "_video_thumbnail_thread_finished",
               "sig": "_video_thumbnail_thread_finished(self)",
-              "start_line": 143,
-              "end_line": 150,
+              "start_line": 169,
+              "end_line": 176,
               "doc": ""
             },
             {
               "name": "_video_thumbnails_finished",
               "sig": "_video_thumbnails_finished(self, items)",
-              "start_line": 152,
-              "end_line": 158,
+              "start_line": 178,
+              "end_line": 184,
               "doc": ""
             },
             {
               "name": "stop_video_thumbnail_worker",
               "sig": "stop_video_thumbnail_worker(self, timeout_ms)",
-              "start_line": 160,
-              "end_line": 190,
+              "start_line": 186,
+              "end_line": 216,
               "doc": ""
             },
             {
               "name": "regenerate_waveform",
               "sig": "regenerate_waveform(self)",
-              "start_line": 192,
-              "end_line": 213,
+              "start_line": 218,
+              "end_line": 239,
               "doc": "Force recalculation of waveform peaks by clearing disk cache and restarting generation."
             },
             {
               "name": "regenerate_video_thumbnails",
-              "sig": "regenerate_video_thumbnails(self)",
-              "start_line": 215,
-              "end_line": 228,
-              "doc": "Force regeneration of video filmstrip thumbnails."
+              "sig": "regenerate_video_thumbnails(self, density)",
+              "start_line": 241,
+              "end_line": 268,
+              "doc": "Force regeneration of video filmstrip thumbnails (optionally updating density preset)."
             },
             {
               "name": "load_waveform_async",
               "sig": "load_waveform_async(self, force_regenerate)",
-              "start_line": 230,
-              "end_line": 287,
+              "start_line": 270,
+              "end_line": 327,
               "doc": ""
             },
             {
               "name": "_waveform_progress",
               "sig": "_waveform_progress(self, partial_peaks, pps, pct)",
-              "start_line": 289,
-              "end_line": 297,
+              "start_line": 329,
+              "end_line": 337,
               "doc": ""
             },
             {
               "name": "_waveform_finished",
               "sig": "_waveform_finished(self, peaks, cancelled)",
-              "start_line": 299,
-              "end_line": 316,
+              "start_line": 339,
+              "end_line": 356,
               "doc": ""
             },
             {
               "name": "_waveform_thread_finished",
               "sig": "_waveform_thread_finished(self)",
-              "start_line": 318,
-              "end_line": 322,
+              "start_line": 358,
+              "end_line": 362,
               "doc": ""
             },
             {
               "name": "open_batch_processing_dialog",
               "sig": "open_batch_processing_dialog(self)",
-              "start_line": 324,
-              "end_line": 429,
+              "start_line": 364,
+              "end_line": 469,
               "doc": ""
             },
             {
               "name": "_batch_next_media",
               "sig": "_batch_next_media(self)",
-              "start_line": 431,
-              "end_line": 548,
+              "start_line": 471,
+              "end_line": 588,
               "doc": ""
             },
             {
               "name": "_batch_next_document",
               "sig": "_batch_next_document(self)",
-              "start_line": 550,
-              "end_line": 578,
+              "start_line": 590,
+              "end_line": 618,
               "doc": ""
             },
             {
               "name": "_batch_document_error",
               "sig": "_batch_document_error(self, msg)",
-              "start_line": 580,
-              "end_line": 589,
+              "start_line": 620,
+              "end_line": 629,
               "doc": "Handles document batch translation errors safely."
             },
             {
               "name": "_load_user_preferences",
               "sig": "_load_user_preferences(self)",
-              "start_line": 591,
-              "end_line": 674,
+              "start_line": 631,
+              "end_line": 714,
               "doc": ""
             },
             {
               "name": "set_thumbnail_position",
               "sig": "set_thumbnail_position(self, position)",
-              "start_line": 676,
-              "end_line": 680,
+              "start_line": 716,
+              "end_line": 720,
               "doc": ""
             },
             {
               "name": "_remember_saved_project",
               "sig": "_remember_saved_project(self, path)",
-              "start_line": 682,
-              "end_line": 713,
+              "start_line": 722,
+              "end_line": 753,
               "doc": "Remember only projects that have actually been saved."
             },
             {
               "name": "_dialog_directory",
               "sig": "_dialog_directory(self, fallback)",
-              "start_line": 715,
-              "end_line": 727,
+              "start_line": 755,
+              "end_line": 767,
               "doc": ""
             },
             {
               "name": "_remember_open_directory",
               "sig": "_remember_open_directory(self, path)",
-              "start_line": 729,
-              "end_line": 736,
+              "start_line": 769,
+              "end_line": 776,
               "doc": ""
             },
             {
               "name": "_sync_startup_project_actions",
               "sig": "_sync_startup_project_actions(self)",
-              "start_line": 738,
-              "end_line": 744,
+              "start_line": 778,
+              "end_line": 784,
               "doc": "Synchronize the Project Settings startup radio/check actions."
             },
             {
               "name": "set_startup_project_mode",
               "sig": "set_startup_project_mode(self, mode)",
-              "start_line": 746,
-              "end_line": 752,
+              "start_line": 786,
+              "end_line": 792,
               "doc": "Set the startup project policy."
             },
             {
               "name": "restore_last_opened",
               "sig": "restore_last_opened(self)",
-              "start_line": 754,
-              "end_line": 894,
+              "start_line": 794,
+              "end_line": 934,
               "doc": "Apply startup policy and offer recovery from a newer autosave snapshot."
             },
             {
               "name": "toggle_speaker_labels",
               "sig": "toggle_speaker_labels(self, checked)",
-              "start_line": 896,
-              "end_line": 901,
+              "start_line": 936,
+              "end_line": 941,
               "doc": ""
             },
             {
               "name": "toggle_colorize_speaker_labels",
               "sig": "toggle_colorize_speaker_labels(self, checked)",
-              "start_line": 903,
-              "end_line": 910,
+              "start_line": 943,
+              "end_line": 950,
               "doc": ""
             },
             {
               "name": "toggle_timestamps",
               "sig": "toggle_timestamps(self, checked)",
-              "start_line": 912,
-              "end_line": 919,
+              "start_line": 952,
+              "end_line": 959,
               "doc": ""
             },
             {
               "name": "toggle_milliseconds",
               "sig": "toggle_milliseconds(self, checked)",
-              "start_line": 921,
-              "end_line": 928,
+              "start_line": 961,
+              "end_line": 968,
               "doc": ""
             },
             {
               "name": "toggle_waveform_view",
               "sig": "toggle_waveform_view(self, checked)",
-              "start_line": 930,
-              "end_line": 934,
+              "start_line": 970,
+              "end_line": 974,
               "doc": ""
             },
             {
               "name": "toggle_thumbnail_view",
               "sig": "toggle_thumbnail_view(self, checked)",
-              "start_line": 936,
-              "end_line": 940,
+              "start_line": 976,
+              "end_line": 980,
               "doc": ""
             },
             {
               "name": "choose_default_project_directory",
               "sig": "choose_default_project_directory(self)",
-              "start_line": 942,
-              "end_line": 957,
+              "start_line": 982,
+              "end_line": 997,
               "doc": ""
             },
             {
               "name": "open_document_path",
               "sig": "open_document_path(self, path)",
-              "start_line": 959,
-              "end_line": 994,
+              "start_line": 999,
+              "end_line": 1034,
               "doc": ""
             },
             {
               "name": "open_clear_cache_dialog",
               "sig": "open_clear_cache_dialog(self)",
-              "start_line": 996,
-              "end_line": 1009,
+              "start_line": 1036,
+              "end_line": 1049,
               "doc": ""
             },
             {
               "name": "open_manage_cached_media_dialog",
               "sig": "open_manage_cached_media_dialog(self)",
-              "start_line": 1011,
-              "end_line": 1014,
+              "start_line": 1051,
+              "end_line": 1054,
               "doc": ""
             },
             {
               "name": "redownload_current_project_remote_media",
               "sig": "redownload_current_project_remote_media(self)",
-              "start_line": 1016,
-              "end_line": 1027,
+              "start_line": 1056,
+              "end_line": 1067,
               "doc": ""
             },
             {
               "name": "open_glossary_dialog",
               "sig": "open_glossary_dialog(self)",
-              "start_line": 1029,
-              "end_line": 1033,
+              "start_line": 1069,
+              "end_line": 1073,
               "doc": "Edit persistent terminology used by every ASR and translation backend."
             },
             {
               "name": "_save_glossary",
               "sig": "_save_glossary(self)",
-              "start_line": 1035,
-              "end_line": 1042,
+              "start_line": 1075,
+              "end_line": 1082,
               "doc": ""
             },
             {
               "name": "apply_glossary_to_current_transcript",
               "sig": "apply_glossary_to_current_transcript(self, entries)",
-              "start_line": 1044,
-              "end_line": 1076,
+              "start_line": 1084,
+              "end_line": 1116,
               "doc": "Apply glossary rules and contextual name resolution to the active transcript with Undo support."
             },
             {
               "name": "add_to_glossary",
               "sig": "add_to_glossary(self, text)",
-              "start_line": 1078,
-              "end_line": 1098,
+              "start_line": 1118,
+              "end_line": 1138,
               "doc": ""
             },
             {
               "name": "prompt_add_alternate_spelling",
               "sig": "prompt_add_alternate_spelling(self, alternate_text)",
-              "start_line": 1100,
-              "end_line": 1143,
+              "start_line": 1140,
+              "end_line": 1183,
               "doc": "Prompt user for the preferred glossary spelling that `alternate_text` should map to."
             },
             {
               "name": "apply_glossary_to_whisper_context",
               "sig": "apply_glossary_to_whisper_context(self)",
-              "start_line": 1145,
-              "end_line": 1156,
+              "start_line": 1185,
+              "end_line": 1196,
               "doc": ""
             },
             {
               "name": "add_custom_speaker_to_glossary",
               "sig": "add_custom_speaker_to_glossary(self, name)",
-              "start_line": 1158,
-              "end_line": 1160,
+              "start_line": 1198,
+              "end_line": 1200,
               "doc": ""
             },
             {
               "name": "set_language",
               "sig": "set_language(self, language, persist)",
-              "start_line": 1162,
-              "end_line": 1183,
+              "start_line": 1202,
+              "end_line": 1223,
               "doc": ""
             },
             {
               "name": "_apply_localization",
               "sig": "_apply_localization(self)",
-              "start_line": 1185,
-              "end_line": 1222,
+              "start_line": 1225,
+              "end_line": 1262,
               "doc": ""
             },
             {
               "name": "update_story_segment_terminology",
               "sig": "update_story_segment_terminology(self)",
-              "start_line": 1224,
-              "end_line": 1311,
+              "start_line": 1264,
+              "end_line": 1351,
               "doc": "Update all user-facing labels and tooltips using active vocabulary settings."
             },
             {
               "name": "open_document",
               "sig": "open_document(self)",
-              "start_line": 1313,
-              "end_line": 1367,
+              "start_line": 1353,
+              "end_line": 1407,
               "doc": ""
             },
             {
               "name": "export_text_file",
               "sig": "export_text_file(self)",
-              "start_line": 1369,
-              "end_line": 1377,
+              "start_line": 1409,
+              "end_line": 1417,
               "doc": ""
             },
             {
               "name": "open_media",
               "sig": "open_media(self)",
-              "start_line": 1379,
-              "end_line": 1388,
+              "start_line": 1419,
+              "end_line": 1428,
               "doc": ""
             },
             {
               "name": "prepare_for_new_media",
               "sig": "prepare_for_new_media(self)",
-              "start_line": 1390,
-              "end_line": 1423,
+              "start_line": 1430,
+              "end_line": 1463,
               "doc": "Checks for unsaved changes before loading new media."
             },
             {
               "name": "_batch_media_error",
               "sig": "_batch_media_error(self, message)",
-              "start_line": 1425,
-              "end_line": 1447,
+              "start_line": 1465,
+              "end_line": 1487,
               "doc": ""
             },
             {
               "name": "_get_batch_project_target_path",
               "sig": "_get_batch_project_target_path(self, base_name)",
-              "start_line": 1449,
-              "end_line": 1476,
+              "start_line": 1489,
+              "end_line": 1516,
               "doc": "Determines consistent target .rtvs project file path during batch processing."
             },
             {
               "name": "_batch_save_project_file",
               "sig": "_batch_save_project_file(self)",
-              "start_line": 1478,
-              "end_line": 1493,
+              "start_line": 1518,
+              "end_line": 1533,
               "doc": "Saves project .rtvs to dedicated directory structure during batch processing."
             },
             {
               "name": "_batch_export_current",
               "sig": "_batch_export_current(self)",
-              "start_line": 1495,
-              "end_line": 1579,
+              "start_line": 1535,
+              "end_line": 1619,
               "doc": "Handles automatic export or project saving during batch processing."
             },
             {
               "name": "load_media_file",
               "sig": "load_media_file(self, filename, source, restore_adjacent_project)",
-              "start_line": 1581,
-              "end_line": 1696,
+              "start_line": 1621,
+              "end_line": 1736,
               "doc": ""
             },
             {
               "name": "update_active_media_source",
               "sig": "update_active_media_source(self)",
-              "start_line": 1698,
-              "end_line": 1731,
+              "start_line": 1738,
+              "end_line": 1771,
               "doc": "Update media player source and refresh waveform when normalization state changes."
             },
             {
               "name": "open_audio",
               "sig": "open_audio(self)",
-              "start_line": 1733,
-              "end_line": 1734,
+              "start_line": 1773,
+              "end_line": 1774,
               "doc": ""
             },
             {
               "name": "handle_media_drop",
               "sig": "handle_media_drop(self, filename)",
-              "start_line": 1736,
-              "end_line": 1737,
+              "start_line": 1776,
+              "end_line": 1777,
               "doc": ""
             }
           ]
@@ -10361,7 +10382,7 @@
     },
     "preferences_dialog.py": {
       "path": "preferences_dialog.py",
-      "lines": 885,
+      "lines": 899,
       "summary": "Radio & TV Story Segmenter \u2014 Preferences Modal Dialog.",
       "exports": null,
       "classes": [
@@ -10371,14 +10392,14 @@
             "PreferencesResetMixin"
           ],
           "start_line": 32,
-          "end_line": 885,
+          "end_line": 899,
           "doc": "Provides the main open_preferences_dialog method and settings persistence.",
           "methods": [
             {
               "name": "open_preferences_dialog",
               "sig": "open_preferences_dialog(self, initial_category, modal)",
               "start_line": 35,
-              "end_line": 885,
+              "end_line": 899,
               "doc": "Open the multi-category Preferences dialog as a non-modal floating inspector."
             }
           ]
@@ -10388,7 +10409,7 @@
     },
     "preferences_reset.py": {
       "path": "preferences_reset.py",
-      "lines": 678,
+      "lines": 684,
       "summary": "Radio & TV Story Segmenter \u2014 Preferences Reset & Factory Defaults Engine.",
       "exports": null,
       "classes": [
@@ -10435,21 +10456,21 @@
           "name": "PreferencesResetMixin",
           "bases": [],
           "start_line": 168,
-          "end_line": 678,
+          "end_line": 684,
           "doc": "Provides methods for resetting settings to defaults across all app categories.",
           "methods": [
             {
               "name": "apply_settings_reset",
               "sig": "apply_settings_reset(self, selected_ids, live_widgets)",
               "start_line": 171,
-              "end_line": 667,
+              "end_line": 673,
               "doc": "Apply factory default settings to the requested categories and update live widgets if present."
             },
             {
               "name": "open_restore_system_defaults_dialog",
               "sig": "open_restore_system_defaults_dialog(self)",
-              "start_line": 669,
-              "end_line": 678,
+              "start_line": 675,
+              "end_line": 684,
               "doc": "Open the Restore System Defaults dialog directly from Settings menu or Backup & Restore Center."
             }
           ]
@@ -10459,7 +10480,7 @@
     },
     "preferences_reset_dialog.py": {
       "path": "preferences_reset_dialog.py",
-      "lines": 637,
+      "lines": 643,
       "summary": "Radio & TV Segmenter \u2014 Preferences reset and factory default restore engine.",
       "exports": null,
       "classes": [
@@ -10506,21 +10527,21 @@
           "name": "PreferencesResetMixin",
           "bases": [],
           "start_line": 166,
-          "end_line": 636,
+          "end_line": 642,
           "doc": "Mixin providing settings reset and restore dialog actions.",
           "methods": [
             {
               "name": "apply_settings_reset",
               "sig": "apply_settings_reset(self, selected_ids, live_widgets)",
               "start_line": 169,
-              "end_line": 625,
+              "end_line": 631,
               "doc": "Apply factory default settings to the requested categories and update live widgets if present."
             },
             {
               "name": "open_restore_system_defaults_dialog",
               "sig": "open_restore_system_defaults_dialog(self)",
-              "start_line": 627,
-              "end_line": 636,
+              "start_line": 633,
+              "end_line": 642,
               "doc": "Open the Restore System Defaults dialog directly from Settings menu or Backup & Restore Center."
             }
           ]
@@ -10597,7 +10618,7 @@
     },
     "preferences_tabs_media.py": {
       "path": "preferences_tabs_media.py",
-      "lines": 692,
+      "lines": 712,
       "summary": "Radio & TV Story Segmenter \u2014 Preferences Modal Media & Workflow Tab Builders.",
       "exports": null,
       "classes": [],
@@ -10606,35 +10627,35 @@
           "name": "build_playback_timeline_tab",
           "sig": "build_playback_timeline_tab(win, dialog, live_widgets, add_custom_defaults_btn)",
           "start_line": 22,
-          "end_line": 143,
+          "end_line": 163,
           "doc": ""
         },
         {
           "name": "build_detection_tab",
           "sig": "build_detection_tab(win, dialog, live_widgets, add_custom_defaults_btn)",
-          "start_line": 146,
-          "end_line": 271,
+          "start_line": 166,
+          "end_line": 291,
           "doc": ""
         },
         {
           "name": "build_batch_tab",
           "sig": "build_batch_tab(win, dialog, live_widgets, add_custom_defaults_btn)",
-          "start_line": 274,
-          "end_line": 397,
+          "start_line": 294,
+          "end_line": 417,
           "doc": ""
         },
         {
           "name": "build_cleanup_tab",
           "sig": "build_cleanup_tab(win, dialog, live_widgets, add_custom_defaults_btn)",
-          "start_line": 400,
-          "end_line": 607,
+          "start_line": 420,
+          "end_line": 627,
           "doc": ""
         },
         {
           "name": "build_youtube_tab",
           "sig": "build_youtube_tab(win, dialog, live_widgets, add_custom_defaults_btn)",
-          "start_line": 610,
-          "end_line": 692,
+          "start_line": 630,
+          "end_line": 712,
           "doc": ""
         }
       ]
@@ -16983,45 +17004,95 @@
       ],
       "functions": []
     },
+    "story_detect_dialog.py": {
+      "path": "story_detect_dialog.py",
+      "lines": 209,
+      "summary": "Compact one-time threshold override dialog for standalone Story/Segment Detection.",
+      "exports": [
+        "StandaloneDetectStoriesDialog"
+      ],
+      "classes": [
+        {
+          "name": "StandaloneDetectStoriesDialog",
+          "bases": [
+            "QDialog"
+          ],
+          "start_line": 23,
+          "end_line": 206,
+          "doc": "Run-time dialog allowing one-time overrides of silence/length thresholds for standalone detection.",
+          "methods": [
+            {
+              "name": "__init__",
+              "sig": "__init__(self, parent, *, existing_count, silence_threshold, min_story_duration, detection_mode, lead_in_padding, is_es, term, term_plural)",
+              "start_line": 26,
+              "end_line": 187,
+              "doc": ""
+            },
+            {
+              "name": "reset_to_defaults",
+              "sig": "reset_to_defaults(self)",
+              "start_line": 189,
+              "end_line": 196,
+              "doc": "Restore spinboxes and mode selector back to the caller's saved Preferences defaults."
+            },
+            {
+              "name": "get_values",
+              "sig": "get_values(self)",
+              "start_line": 198,
+              "end_line": 206,
+              "doc": "Return the selected run-time parameters and default-save flag."
+            }
+          ]
+        }
+      ],
+      "functions": []
+    },
     "story_detection_processing.py": {
       "path": "story_detection_processing.py",
-      "lines": 213,
+      "lines": 290,
       "summary": "Story boundary detection processing mixin for Radio & TV Story Segmenter.",
       "exports": null,
       "classes": [
         {
           "name": "StoryDetectionProcessingMixin",
           "bases": [],
-          "start_line": 19,
-          "end_line": 212,
+          "start_line": 22,
+          "end_line": 289,
           "doc": "",
           "methods": [
             {
               "name": "start_auto_detect_stories",
-              "sig": "start_auto_detect_stories(self)",
-              "start_line": 20,
-              "end_line": 90,
+              "sig": "start_auto_detect_stories(self, overrides)",
+              "start_line": 23,
+              "end_line": 145,
+              "doc": ""
+            },
+            {
+              "name": "_persist_story_detect_defaults",
+              "sig": "_persist_story_detect_defaults(self, detection_mode, silence_threshold, lead_in_padding, min_story_duration)",
+              "start_line": 147,
+              "end_line": 165,
               "doc": ""
             },
             {
               "name": "auto_detect_progress",
               "sig": "auto_detect_progress(self, message, percent)",
-              "start_line": 92,
-              "end_line": 93,
+              "start_line": 167,
+              "end_line": 168,
               "doc": ""
             },
             {
               "name": "auto_detect_finished",
               "sig": "auto_detect_finished(self, new_stories)",
-              "start_line": 95,
-              "end_line": 166,
+              "start_line": 170,
+              "end_line": 243,
               "doc": ""
             },
             {
               "name": "auto_detect_error",
               "sig": "auto_detect_error(self, message)",
-              "start_line": 168,
-              "end_line": 212,
+              "start_line": 245,
+              "end_line": 289,
               "doc": ""
             }
           ]
@@ -18130,7 +18201,7 @@
     },
     "timeline_context_menus.py": {
       "path": "timeline_context_menus.py",
-      "lines": 175,
+      "lines": 188,
       "summary": "Context menu builders and event handlers for the timeline canvas.",
       "exports": null,
       "classes": [],
@@ -18139,14 +18210,14 @@
           "name": "show_timeline_context_menu",
           "sig": "show_timeline_context_menu(canvas, global_pos, pos_x, exec_menu)",
           "start_line": 12,
-          "end_line": 139,
+          "end_line": 152,
           "doc": "Display the primary right-click context menu on the timeline canvas."
         },
         {
           "name": "show_selection_context_menu",
           "sig": "show_selection_context_menu(canvas, global_pos, exec_menu)",
-          "start_line": 142,
-          "end_line": 175,
+          "start_line": 155,
+          "end_line": 188,
           "doc": "Display the range selection context menu on the timeline canvas."
         }
       ]
@@ -19881,7 +19952,7 @@
     "transcript_story.py": {
       "path": "transcript_story.py",
       "lines": 856,
-      "summary": "Radio & TV Segmenter v3.10.22-beta \u2014 transcript story responsibilities.",
+      "summary": "Radio & TV Segmenter v3.10.23-beta \u2014 transcript story responsibilities.",
       "exports": [
         "TranscriptStoryMixin",
         "Story",

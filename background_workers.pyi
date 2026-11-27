@@ -71,13 +71,19 @@ class WaveformWorker(QObject):
     def run(self):
         ...
 
-def get_video_thumbnail_cache_dir(media_file: str | Path | None, project_file: str | Path | None=...) -> Path | None:
+def normalize_thumbnail_density(density) -> str:
     ...
 
-def read_video_thumbnail_cache(media_file: str | Path | None, duration: float, project_file: str | Path | None=...) -> list | None:
+def get_thumbnail_count_for_density(density) -> int:
     ...
 
-def invalidate_video_thumbnail_cache(media_file: str | Path | None, project_file: str | Path | None=...) -> bool:
+def get_video_thumbnail_cache_dir(media_file: str | Path | None, project_file: str | Path | None=..., target_count: int | None=...) -> Path | None:
+    ...
+
+def read_video_thumbnail_cache(media_file: str | Path | None, duration: float, project_file: str | Path | None=..., target_count: int | None=...) -> list | None:
+    ...
+
+def invalidate_video_thumbnail_cache(media_file: str | Path | None, project_file: str | Path | None=..., target_count: int | None=...) -> bool:
     ...
 
 class VideoThumbnailWorker(QObject):

@@ -656,10 +656,24 @@ class PreferencesDialogMixin(PreferencesResetMixin):
                 self.timeline_thumbnail_position = new_thumb_pos
                 self.settings_store.setValue("timeline_thumbnail_position", new_thumb_pos)
 
+            thumb_density_combo = live_widgets.get("thumb_density_combo")
+            thumb_density_changed = False
+            if thumb_density_combo:
+                from background_workers import normalize_thumbnail_density
+                old_thumb_density = normalize_thumbnail_density(getattr(self, "timeline_thumbnail_density", "standard"))
+                new_thumb_density = normalize_thumbnail_density(thumb_density_combo.currentData() or "standard")
+                self.timeline_thumbnail_density = new_thumb_density
+                self.settings_store.setValue("timeline_thumbnail_density", new_thumb_density)
+                thumb_density_changed = (new_thumb_density != old_thumb_density)
+
             if hasattr(self, "timeline"):
                 self.timeline.set_timeline_views(getattr(self, "timeline_show_waveform", True), getattr(self, "timeline_show_thumbnails", True))
                 if hasattr(self.timeline, "set_thumbnail_position"):
                     self.timeline.set_thumbnail_position(getattr(self, "timeline_thumbnail_position", "below"))
+
+            if thumb_density_changed and getattr(self, "current_media_is_video", False) and getattr(self, "audio_file", None):
+                if hasattr(self, "start_video_thumbnail_generation"):
+                    self.start_video_thumbnail_generation(force_regenerate=False)
 
             # Save Selection Mode
             sel_mode_combo = live_widgets.get("sel_mode_combo")

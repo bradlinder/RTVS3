@@ -865,14 +865,43 @@ class WaveformWorker(QObject):
 # Video Thumbnail Caching & Background Extraction
 # ============================================================
 
-def get_video_thumbnail_cache_dir(media_file: str | Path | None, project_file: str | Path | None = None) -> Path | None:
+TIMELINE_THUMBNAIL_DENSITY_PRESETS = {
+    "standard": 36,
+    "detailed": 90,
+    "high": 180,
+}
+DEFAULT_TIMELINE_THUMBNAIL_DENSITY = "standard"
+MAX_TIMELINE_THUMBNAIL_COUNT = 200
+
+
+def normalize_thumbnail_density(density) -> str:
+    """Normalize a timeline thumbnail density setting to 'standard', 'detailed', or 'high'."""
+    key = str(density or DEFAULT_TIMELINE_THUMBNAIL_DENSITY).strip().lower()
+    return key if key in TIMELINE_THUMBNAIL_DENSITY_PRESETS else DEFAULT_TIMELINE_THUMBNAIL_DENSITY
+
+
+def get_thumbnail_count_for_density(density) -> int:
+    """Return the bounded frame extraction count for a timeline thumbnail density preset."""
+    return TIMELINE_THUMBNAIL_DENSITY_PRESETS[normalize_thumbnail_density(density)]
+
+
+def get_video_thumbnail_cache_dir(
+    media_file: str | Path | None,
+    project_file: str | Path | None = None,
+    target_count: int | None = None,
+) -> Path | None:
     """Return the deterministic thumbnail cache directory for a media file, associating with project if available."""
     if not media_file:
         return None
+    count_suffix = ""
+    if target_count is not None:
+        eff_c = max(8, min(MAX_TIMELINE_THUMBNAIL_COUNT, int(target_count)))
+        if eff_c != TIMELINE_THUMBNAIL_DENSITY_PRESETS[DEFAULT_TIMELINE_THUMBNAIL_DENSITY]:
+            count_suffix = f"_n{eff_c}"
     try:
         p = Path(media_file).resolve()
         stat = p.stat()
-        key_raw = f"{p.name}_{stat.st_size}_{int(stat.st_mtime)}"
+        key_raw = f"{p.name}_{stat.st_size}_{int(stat.st_mtime)}{count_suffix}"
         h = hashlib.sha256(key_raw.encode("utf-8")).hexdigest()[:24]
         
         # 1. Project-level thumbnail directory
@@ -900,14 +929,19 @@ def get_video_thumbnail_cache_dir(media_file: str | Path | None, project_file: s
         return base / h
     except Exception:
         try:
-            h = hashlib.sha256(str(Path(media_file)).encode("utf-8")).hexdigest()[:24]
+            h = hashlib.sha256(f"{Path(media_file)}{count_suffix}".encode("utf-8")).hexdigest()[:24]
             base = Path(tempfile.gettempdir()) / "radio_tv_story_segmenter_thumbnails"
             return base / h
         except Exception:
             return None
 
 
-def read_video_thumbnail_cache(media_file: str | Path | None, duration: float, project_file: str | Path | None = None) -> list | None:
+def read_video_thumbnail_cache(
+    media_file: str | Path | None,
+    duration: float,
+    project_file: str | Path | None = None,
+    target_count: int | None = None,
+) -> list | None:
     """Read pre-extracted video thumbnail items [(timestamp, image_path), ...] from disk cache.
     
     Returns list of items if the cache exists, contains valid thumbnail images, and is
@@ -916,10 +950,15 @@ def read_video_thumbnail_cache(media_file: str | Path | None, duration: float, p
     if not media_file or duration <= 0:
         return None
     try:
-        cache_dir = get_video_thumbnail_cache_dir(media_file, project_file=project_file)
+        cache_dir = get_video_thumbnail_cache_dir(media_file, project_file=project_file, target_count=target_count)
         if not cache_dir or not cache_dir.exists() or not cache_dir.is_dir():
             # Try global fallback
-            alt_dir = Path(tempfile.gettempdir()) / "radio_tv_story_segmenter_thumbnails" / hashlib.sha256(str(Path(media_file)).encode("utf-8")).hexdigest()[:24]
+            count_suffix = ""
+            if target_count is not None:
+                eff_c = max(8, min(MAX_TIMELINE_THUMBNAIL_COUNT, int(target_count)))
+                if eff_c != TIMELINE_THUMBNAIL_DENSITY_PRESETS[DEFAULT_TIMELINE_THUMBNAIL_DENSITY]:
+                    count_suffix = f"_n{eff_c}"
+            alt_dir = Path(tempfile.gettempdir()) / "radio_tv_story_segmenter_thumbnails" / hashlib.sha256(f"{Path(media_file)}{count_suffix}".encode("utf-8")).hexdigest()[:24]
             if alt_dir.exists() and alt_dir.is_dir():
                 cache_dir = alt_dir
             else:
@@ -952,27 +991,34 @@ def read_video_thumbnail_cache(media_file: str | Path | None, duration: float, p
         return None
 
 
-def invalidate_video_thumbnail_cache(media_file: str | Path | None, project_file: str | Path | None = None) -> bool:
+def invalidate_video_thumbnail_cache(
+    media_file: str | Path | None,
+    project_file: str | Path | None = None,
+    target_count: int | None = None,
+) -> bool:
     """Delete the thumbnail cache directory for a given media file."""
     deleted = False
+    counts_to_clear = [target_count] if target_count is not None else [None, *TIMELINE_THUMBNAIL_DENSITY_PRESETS.values()]
     try:
-        cache_dir = get_video_thumbnail_cache_dir(media_file, project_file=project_file)
-        if cache_dir and cache_dir.exists():
-            shutil.rmtree(cache_dir, ignore_errors=True)
-            deleted = True
-        # Also clean up tempdir thumbnail cache
-        if media_file:
-            try:
-                p = Path(media_file).resolve()
-                stat = p.stat()
-                key_raw = f"{p.name}_{stat.st_size}_{int(stat.st_mtime)}"
-                h = hashlib.sha256(key_raw.encode("utf-8")).hexdigest()[:24]
-                t_dir = Path(tempfile.gettempdir()) / "radio_tv_story_segmenter_thumbnails" / h
-                if t_dir.exists():
-                    shutil.rmtree(t_dir, ignore_errors=True)
-                    deleted = True
-            except Exception:
-                pass
+        for tc in counts_to_clear:
+            cache_dir = get_video_thumbnail_cache_dir(media_file, project_file=project_file, target_count=tc)
+            if cache_dir and cache_dir.exists():
+                shutil.rmtree(cache_dir, ignore_errors=True)
+                deleted = True
+            # Also clean up tempdir thumbnail cache
+            if media_file:
+                try:
+                    p = Path(media_file).resolve()
+                    stat = p.stat()
+                    c_suf = f"_n{int(tc)}" if (tc is not None and int(tc) != TIMELINE_THUMBNAIL_DENSITY_PRESETS[DEFAULT_TIMELINE_THUMBNAIL_DENSITY]) else ""
+                    key_raw = f"{p.name}_{stat.st_size}_{int(stat.st_mtime)}{c_suf}"
+                    h = hashlib.sha256(key_raw.encode("utf-8")).hexdigest()[:24]
+                    t_dir = Path(tempfile.gettempdir()) / "radio_tv_story_segmenter_thumbnails" / h
+                    if t_dir.exists():
+                        shutil.rmtree(t_dir, ignore_errors=True)
+                        deleted = True
+                except Exception:
+                    pass
     except Exception:
         pass
     return deleted
@@ -987,7 +1033,7 @@ class VideoThumbnailWorker(QObject):
         self.media_path = Path(media_path)
         self.duration = max(0.1, float(duration or 0))
         self.output_dir = Path(output_dir)
-        self.count = max(8, min(80, int(count)))
+        self.count = max(8, min(MAX_TIMELINE_THUMBNAIL_COUNT, int(count)))
         self._cancelled = False
         self._process = None
 

@@ -2,38 +2,96 @@
 from __future__ import annotations
 
 import logging
+import os
 from pathlib import Path
+from typing import Any, Dict, Optional
 from PySide6.QtCore import Qt, QThread, QTimer
-from PySide6.QtWidgets import QMessageBox
+from PySide6.QtWidgets import QDialog, QMessageBox
 
 from prs_shared import (
     Story,
     SetStoriesCommand,
     StoryAutoDetectWorker,
     format_time,
+    get_story_vocabulary,
 )
 
 logger = logging.getLogger(__name__)
 
 
 class StoryDetectionProcessingMixin:
-    def start_auto_detect_stories(self):
+    def start_auto_detect_stories(self, overrides: Optional[Dict[str, Any]] = None):
+        if not isinstance(overrides, dict):
+            overrides = None
         if not self.audio_file:
             return
 
-        is_music = (getattr(self, "story_detection_mode", "voice") == "music")
-        term = "Song" if is_music else "Story"
-        term_plural = "Songs" if is_music else "Stories"
+        default_mode = str(getattr(self, "story_detection_mode", "voice") or "voice")
+        default_silence = float(getattr(self, "silence_threshold", 3.0) or 3.0)
+        default_padding = float(getattr(self, "lead_in_padding", 0.5) if getattr(self, "lead_in_padding", None) is not None else 0.5)
+        raw_min_story = getattr(self, "min_story_duration", 3.0)
+        try:
+            default_min_story = max(0.0, float(raw_min_story if raw_min_story is not None else 3.0))
+        except (TypeError, ValueError):
+            default_min_story = 3.0
 
-        if self.stories and not self.pipeline_active and not getattr(self, "pipeline_rerun_confirmed", False):
-            answer = QMessageBox.question(
-                self,
-                f"Detect {term_plural}",
-                f"Detecting {term.lower()} boundaries will replace your current {term_plural} list.\n\nDo you want to proceed?",
-                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+        eff_mode = default_mode
+        eff_silence = default_silence
+        eff_padding = default_padding
+        eff_min_story = default_min_story
+        is_one_time_override = False
+
+        is_standalone = (not getattr(self, "pipeline_active", False)) and (not getattr(self, "batch_active", False))
+        if isinstance(overrides, dict):
+            eff_mode = str(overrides.get("story_detection_mode", default_mode) or default_mode)
+            eff_silence = float(overrides.get("silence_threshold", default_silence))
+            eff_padding = float(overrides.get("lead_in_padding", default_padding))
+            eff_min_story = max(0.0, float(overrides.get("min_story_duration", default_min_story)))
+            save_as_defaults = bool(overrides.get("save_as_defaults", False))
+            if save_as_defaults:
+                self._persist_story_detect_defaults(eff_mode, eff_silence, eff_padding, eff_min_story)
+            else:
+                is_one_time_override = (
+                    eff_mode != default_mode
+                    or abs(eff_silence - default_silence) > 1e-6
+                    or abs(eff_padding - default_padding) > 1e-6
+                    or abs(eff_min_story - default_min_story) > 1e-6
+                )
+        elif is_standalone and not os.environ.get("RTVS_HEADLESS_SKIP_DETECT_DIALOG"):
+            vocab = get_story_vocabulary(self)
+            from story_detect_dialog import StandaloneDetectStoriesDialog
+
+            dlg = StandaloneDetectStoriesDialog(
+                parent=self,
+                existing_count=len(getattr(self, "stories", []) or []),
+                silence_threshold=default_silence,
+                min_story_duration=default_min_story,
+                detection_mode=default_mode,
+                lead_in_padding=default_padding,
+                is_es=vocab.is_es,
+                term=vocab.singular,
+                term_plural=vocab.plural,
             )
-            if answer != QMessageBox.StandardButton.Yes:
+            if dlg.exec() != QDialog.DialogCode.Accepted:
                 return
+            vals = dlg.get_values()
+            eff_mode = vals["story_detection_mode"]
+            eff_silence = vals["silence_threshold"]
+            eff_padding = vals["lead_in_padding"]
+            eff_min_story = max(0.0, vals["min_story_duration"])
+            if vals["save_as_defaults"]:
+                self._persist_story_detect_defaults(eff_mode, eff_silence, eff_padding, eff_min_story)
+            else:
+                is_one_time_override = (
+                    eff_mode != default_mode
+                    or abs(eff_silence - default_silence) > 1e-6
+                    or abs(eff_padding - default_padding) > 1e-6
+                    or abs(eff_min_story - default_min_story) > 1e-6
+                )
+
+        is_music = (eff_mode == "music")
+        term = "Song" if is_music else "Story"
+        self._active_story_detect_mode = eff_mode
 
         self.set_tools_actions_enabled(False)
         self.set_processing_stage(f"{term} Detection")
@@ -42,15 +100,12 @@ class StoryDetectionProcessingMixin:
         self.progress.setValue(0)
         self.progress.show()
         self.cancel_button.show()
-        mode_str = str(getattr(self, "story_detection_mode", "voice") or "voice").capitalize()
-        raw_min_story = getattr(self, "min_story_duration", 3.0)
-        try:
-            min_story_duration = max(0.0, float(raw_min_story if raw_min_story is not None else 3.0))
-        except (TypeError, ValueError):
-            min_story_duration = 3.0
+        mode_str = eff_mode.capitalize()
+        override_note = ", one-time override" if is_one_time_override else ""
         self.log_activity(
             f"[{'SONG' if is_music else 'STORY'} DETECT] Started {term.lower()} detection "
-            f"(Mode: {mode_str}, Threshold: {self.silence_threshold}s, Min Segment Length: {min_story_duration:.1f}s)"
+            f"(Mode: {mode_str}, Threshold: {eff_silence:.1f}s, Padding: {eff_padding:.1f}s, "
+            f"Min Segment Length: {eff_min_story:.1f}s{override_note})"
         )
 
         self.story_job_token += 1
@@ -66,13 +121,13 @@ class StoryDetectionProcessingMixin:
 
         self.worker = StoryAutoDetectWorker(
             self.audio_file,
-            silence_threshold=self.silence_threshold,
-            lead_in_padding=self.lead_in_padding,
+            silence_threshold=eff_silence,
+            lead_in_padding=eff_padding,
             audio_duration=getattr(self, "duration", 0),
             transcript_segments=transcript_segments,
             whisper_model=getattr(self, "whisper_model", "parakeet-onnx"),
-            detection_mode=getattr(self, "story_detection_mode", "voice"),
-            min_story_duration=min_story_duration,
+            detection_mode=eff_mode,
+            min_story_duration=eff_min_story,
         )
         self.worker.moveToThread(self.thread)
         self.worker._job_token = job_token
@@ -88,6 +143,26 @@ class StoryDetectionProcessingMixin:
         self.thread.finished.connect(self.worker_thread_finished)
 
         self.thread.start()
+
+    def _persist_story_detect_defaults(
+        self,
+        detection_mode: str,
+        silence_threshold: float,
+        lead_in_padding: float,
+        min_story_duration: float,
+    ) -> None:
+        self.story_detection_mode = str(detection_mode or "voice")
+        self.silence_threshold = float(silence_threshold)
+        self.lead_in_padding = float(lead_in_padding)
+        self.min_story_duration = max(0.0, float(min_story_duration))
+        store = getattr(self, "settings_store", None)
+        if store is not None:
+            store.setValue("story_detection_mode", self.story_detection_mode)
+            store.setValue("silence_threshold", self.silence_threshold)
+            store.setValue("lead_in_padding", self.lead_in_padding)
+            store.setValue("min_story_duration", self.min_story_duration)
+        if hasattr(self, "update_story_segment_terminology"):
+            self.update_story_segment_terminology()
 
     def auto_detect_progress(self, message, percent):
         self.update_processing_progress(percent, message)
@@ -123,7 +198,9 @@ class StoryDetectionProcessingMixin:
             self.set_tools_actions_enabled(True)
 
             # 2. Commit stories to project state and update UI lists
-            is_music = (getattr(self, "story_detection_mode", "voice") == "music")
+            active_mode = getattr(self, "_active_story_detect_mode", None) or getattr(self, "story_detection_mode", "voice")
+            is_music = (active_mode == "music")
+            self._active_story_detect_mode = None
             term = "Song" if is_music else "Story"
             term_plural = "Songs" if is_music else "Stories"
             old_stories = [Story.from_dict(s.to_dict()) for s in self.stories]

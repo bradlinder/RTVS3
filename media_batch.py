@@ -82,16 +82,38 @@ class MediaBatchMixin:
         self.wf_worker = None
         return True
 
-    def start_video_thumbnail_generation(self, force_regenerate: bool = False):
+    def _effective_thumbnail_density(self, density: Optional[str] = None) -> str:
+        from background_workers import normalize_thumbnail_density
+        if density is not None:
+            return normalize_thumbnail_density(density)
+        raw = getattr(self, "timeline_thumbnail_density", None)
+        if not raw and hasattr(self, "settings_store") and self.settings_store is not None:
+            raw = self.settings_store.value("timeline_thumbnail_density", "standard")
+        return normalize_thumbnail_density(raw)
+
+    def start_video_thumbnail_generation(self, force_regenerate: bool = False, density: Optional[str] = None):
         if not self.current_media_is_video or not self.audio_file or self.duration <= 0:
             if hasattr(self, "timeline"):
                 self.timeline.set_video_thumbnails([])
             return
 
+        from background_workers import get_thumbnail_count_for_density
+        eff_density = self._effective_thumbnail_density(density)
+        target_count = get_thumbnail_count_for_density(eff_density)
+
         if not force_regenerate:
-            cached_thumbs = read_video_thumbnail_cache(self.audio_file, self.duration)
+            cached_thumbs = read_video_thumbnail_cache(
+                self.audio_file,
+                self.duration,
+                project_file=getattr(self, "project_file", None),
+                target_count=target_count,
+            )
             if cached_thumbs:
-                self.video_thumbnail_dir = get_video_thumbnail_cache_dir(self.audio_file)
+                self.video_thumbnail_dir = get_video_thumbnail_cache_dir(
+                    self.audio_file,
+                    project_file=getattr(self, "project_file", None),
+                    target_count=target_count,
+                )
                 if self.video_thumbnail_dir:
                     register_active_thumbnail_dir(self.video_thumbnail_dir)
                 if hasattr(self, "timeline"):
@@ -100,7 +122,7 @@ class MediaBatchMixin:
                     except Exception:
                         pass
                     self.timeline.set_video_thumbnails(cached_thumbs)
-                self.log_activity(f"[MEDIA] Loaded {len(cached_thumbs)} cached video thumbnails.", mark_dirty=False)
+                self.log_activity(f"[MEDIA] Loaded {len(cached_thumbs)} cached video thumbnails ({eff_density}).", mark_dirty=False)
                 return
 
         if not self.stop_video_thumbnail_worker():
@@ -108,18 +130,22 @@ class MediaBatchMixin:
             self.log_activity("[MEDIA] Previous thumbnail worker is still stopping; thumbnail generation will restart once it finishes.", mark_dirty=False)
             return
         try:
-            job = get_video_thumbnail_cache_dir(self.audio_file)
+            job = get_video_thumbnail_cache_dir(
+                self.audio_file,
+                project_file=getattr(self, "project_file", None),
+                target_count=target_count,
+            )
             if job is None:
                 base = Path(tempfile.gettempdir()) / "radio_tv_story_segmenter_thumbnails"
                 base.mkdir(parents=True, exist_ok=True)
-                job = base / hashlib.sha1(str(self.audio_file).encode("utf-8")).hexdigest()[:16]
+                job = base / hashlib.sha1(f"{self.audio_file}_{target_count}".encode("utf-8")).hexdigest()[:16]
             if job.exists():
                 shutil.rmtree(job, ignore_errors=True)
             job.mkdir(parents=True, exist_ok=True)
             self.video_thumbnail_dir = job
             register_active_thumbnail_dir(self.video_thumbnail_dir)
             thread = QThread(self)
-            worker = VideoThumbnailWorker(self.audio_file, self.duration, job)
+            worker = VideoThumbnailWorker(self.audio_file, self.duration, job, count=target_count)
             worker.moveToThread(thread)
             self.video_thumbnail_thread = thread
             self.video_thumbnail_worker = worker
@@ -212,20 +238,34 @@ class MediaBatchMixin:
         self.statusBar().showMessage("Regenerando forma de onda..." if is_es else "Regenerating waveform...")
         self.load_waveform_async(force_regenerate=True)
 
-    def regenerate_video_thumbnails(self):
-        """Force regeneration of video filmstrip thumbnails."""
+    def regenerate_video_thumbnails(self, density: Optional[str] = None):
+        """Force regeneration of video filmstrip thumbnails (optionally updating density preset)."""
+        if isinstance(density, bool):
+            density = None
         if not getattr(self, "audio_file", None) or not getattr(self, "current_media_is_video", False):
             return
+        from background_workers import get_thumbnail_count_for_density, normalize_thumbnail_density
+        eff_density = self._effective_thumbnail_density(density)
+        if density is not None:
+            self.timeline_thumbnail_density = normalize_thumbnail_density(density)
+            if hasattr(self, "settings_store") and self.settings_store is not None:
+                self.settings_store.setValue("timeline_thumbnail_density", self.timeline_thumbnail_density)
+        target_count = get_thumbnail_count_for_density(eff_density)
+
         self.stop_video_thumbnail_worker()
         if hasattr(self, "timeline"):
             self.timeline.set_video_thumbnails([])
-        invalidate_video_thumbnail_cache(self.audio_file)
+        invalidate_video_thumbnail_cache(
+            self.audio_file,
+            project_file=getattr(self, "project_file", None),
+            target_count=target_count,
+        )
         unregister_active_thumbnail_dir(self.video_thumbnail_dir)
         self.video_thumbnail_dir = None
-        self.log_activity("[MEDIA] Manually regenerating video thumbnails...")
+        self.log_activity(f"[MEDIA] Manually regenerating video thumbnails ({eff_density}, {target_count} frames)...")
         is_es = getattr(self, "language", "en") == "es"
-        self.statusBar().showMessage("Regenerando miniaturas de video..." if is_es else "Regenerating video thumbnails...")
-        self.start_video_thumbnail_generation(force_regenerate=True)
+        self.statusBar().showMessage("Regenerando miniaturas de video..." if is_es else f"Regenerating video thumbnails ({eff_density}, {target_count} frames)...")
+        self.start_video_thumbnail_generation(force_regenerate=True, density=eff_density)
 
     def load_waveform_async(self, force_regenerate: bool = False):
         if not self.audio_file:

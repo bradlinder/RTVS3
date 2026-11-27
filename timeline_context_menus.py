@@ -84,16 +84,29 @@ def show_timeline_context_menu(canvas: Any, global_pos: QPoint, pos_x: float, ex
         has_video = bool(getattr(win, "current_media_is_video", False))
 
         regen_wf_act = None
-        regen_th_act = None
+        regen_th_actions = {}
         if hasattr(win, "regenerate_waveform"):
             label = "Regenerar forma de onda" if is_es else "Regenerate Waveform"
             regen_wf_act = menu.addAction(label)
             regen_wf_act.setEnabled(has_audio)
 
         if has_video and hasattr(win, "regenerate_video_thumbnails"):
-            label = "Regenerar miniaturas de video" if is_es else "Regenerate Video Thumbnails"
-            regen_th_act = menu.addAction(label)
-            regen_th_act.setEnabled(has_audio)
+            from background_workers import normalize_thumbnail_density
+            curr_density = normalize_thumbnail_density(getattr(win, "timeline_thumbnail_density", "standard"))
+            sub_label = "Regenerar miniaturas de video" if is_es else "Regenerate Video Thumbnails"
+            regen_th_menu = menu.addMenu(sub_label)
+            regen_th_menu.setEnabled(has_audio)
+            preset_labels = [
+                ("standard", "Estándar (36 fotogramas)" if is_es else "Standard (36 frames)"),
+                ("detailed", "Detallado (90 fotogramas)" if is_es else "Detailed (90 frames)"),
+                ("high", "Alto (180 fotogramas)" if is_es else "High (180 frames)"),
+            ]
+            for key, p_label in preset_labels:
+                act = regen_th_menu.addAction(p_label)
+                act.setCheckable(True)
+                act.setChecked(curr_density == key)
+                act.setEnabled(has_audio)
+                regen_th_actions[act] = key
 
     if not menu.actions():
         return
@@ -135,8 +148,8 @@ def show_timeline_context_menu(canvas: Any, global_pos: QPoint, pos_x: float, ex
                 win.apply_story_selection_indices([])
         elif 'regen_wf_act' in locals() and regen_wf_act and selected == regen_wf_act:
             win.regenerate_waveform()
-        elif 'regen_th_act' in locals() and regen_th_act and selected == regen_th_act:
-            win.regenerate_video_thumbnails()
+        elif 'regen_th_actions' in locals() and selected in regen_th_actions:
+            win.regenerate_video_thumbnails(density=regen_th_actions[selected])
 
 
 def show_selection_context_menu(canvas: Any, global_pos: QPoint, exec_menu: bool = True):

@@ -395,6 +395,7 @@ class PreferencesResetMixin:
             self.settings_store.setValue("timeline_show_waveform", "true")
             self.settings_store.setValue("timeline_show_thumbnails", "true")
             self.settings_store.setValue("timeline_thumbnail_position", "below")
+            self.settings_store.setValue("timeline_thumbnail_density", "standard")
             self.settings_store.setValue("transcript_selection_mode", "replace")
             self.settings_store.setValue("transcript_font_scale", 1.0)
             self.settings_store.setValue("show_speaker_labels", "true")
@@ -402,6 +403,7 @@ class PreferencesResetMixin:
             self.timeline_show_waveform = True
             self.timeline_show_thumbnails = True
             self.timeline_thumbnail_position = "below"
+            self.timeline_thumbnail_density = "standard"
             self.transcript_selection_mode = "replace"
             self.transcript_font_scale = 1.0
             self.show_speaker_labels = True
@@ -435,6 +437,10 @@ class PreferencesResetMixin:
                 pos_idx = lw["thumb_pos_combo"].findData("below")
                 if pos_idx >= 0:
                     lw["thumb_pos_combo"].setCurrentIndex(pos_idx)
+            if "thumb_density_combo" in lw and lw["thumb_density_combo"]:
+                dens_idx = lw["thumb_density_combo"].findData("standard")
+                if dens_idx >= 0:
+                    lw["thumb_density_combo"].setCurrentIndex(dens_idx)
             if "sel_mode_combo" in lw and lw["sel_mode_combo"]:
                 idx = lw["sel_mode_combo"].findData("replace")
                 if idx >= 0:

@@ -178,14 +178,78 @@ class DiagnosticEditorStoryUiTestsMixin:
 
         mock_canvas.selection_start = 1.0
         mock_canvas.selection_end = 5.0
+        win.audio_file = "sample_video.mp4"
+        win.current_media_is_video = True
+        win.timeline_thumbnail_density = "detailed"
+        win.regenerate_video_thumbnails = lambda density=None: None
         for lang in ("en", "es"):
             win.language = lang
             m_story = show_timeline_context_menu(mock_canvas, QPoint(50, 50), 100.0, exec_menu=False)
             assert m_story is not None and len(m_story.actions()) > 0
             m_empty = show_timeline_context_menu(mock_canvas, QPoint(50, 50), 999.0, exec_menu=False)
             assert m_empty is not None and len(m_empty.actions()) > 0
+            submenus = [act.menu() for act in m_empty.actions() if act.menu() is not None]
+            assert submenus, f"Expected Regenerate Video Thumbnails density submenu in {lang}"
+            preset_acts = submenus[0].actions()
+            assert len(preset_acts) == 3, f"Expected 3 thumbnail density presets, got {len(preset_acts)}"
+            assert preset_acts[1].isChecked(), "Expected 'detailed' thumbnail density preset to be checked"
             m_sel = show_selection_context_menu(mock_canvas, QPoint(50, 50), exec_menu=False)
             assert m_sel is not None and len(m_sel.actions()) > 0
+
+        # 6b-2. Verify StandaloneDetectStoriesDialog one-time override & thumbnail density helpers (v3.10.23-beta)
+        from story_detect_dialog import StandaloneDetectStoriesDialog
+        from background_workers import (
+            VideoThumbnailWorker,
+            get_thumbnail_count_for_density,
+            get_video_thumbnail_cache_dir,
+            normalize_thumbnail_density,
+        )
+        import tempfile
+
+        det_dlg = StandaloneDetectStoriesDialog(
+            existing_count=3,
+            silence_threshold=3.0,
+            min_story_duration=15.0,
+            detection_mode="voice",
+            lead_in_padding=0.5,
+            term="Segment",
+            term_plural="Segments",
+        )
+        assert det_dlg.replace_warning_label is not None and "3 segments" in det_dlg.replace_warning_label.text().lower()
+        assert not det_dlg.more_options_section.is_expanded(), "More Options should start collapsed"
+        assert not det_dlg.save_defaults_chk.isChecked(), "Save as defaults should default to unchecked"
+        det_dlg.silence_spin.setValue(1.5)
+        det_dlg.min_story_spin.setValue(30.0)
+        vals = det_dlg.get_values()
+        assert abs(vals["silence_threshold"] - 1.5) < 1e-6 and abs(vals["min_story_duration"] - 30.0) < 1e-6
+        assert vals["save_as_defaults"] is False
+        det_dlg.reset_to_defaults()
+        assert abs(det_dlg.silence_spin.value() - 3.0) < 1e-6 and abs(det_dlg.min_story_spin.value() - 15.0) < 1e-6
+        det_dlg.close()
+        det_dlg.deleteLater()
+
+        det_dlg_fresh = StandaloneDetectStoriesDialog(existing_count=0)
+        assert det_dlg_fresh.replace_warning_label is None, "Fresh project should not show replace warning"
+        det_dlg_fresh.close()
+        det_dlg_fresh.deleteLater()
+
+        assert normalize_thumbnail_density("DETAILED") == "detailed"
+        assert normalize_thumbnail_density("invalid") == "standard"
+        assert get_thumbnail_count_for_density("standard") == 36
+        assert get_thumbnail_count_for_density("detailed") == 90
+        assert get_thumbnail_count_for_density("high") == 180
+        with tempfile.TemporaryDirectory(prefix="rtvs_thumb_dens_") as td_str:
+            fake_vid = Path(td_str) / "clip.mp4"
+            fake_vid.write_bytes(b"\x00" * 64)
+            w_high = VideoThumbnailWorker(fake_vid, 3600.0, Path(td_str) / "out", count=180)
+            w_cap = VideoThumbnailWorker(fake_vid, 3600.0, Path(td_str) / "out", count=9999)
+            assert w_high.count == 180 and w_cap.count == 200
+            d_std = get_video_thumbnail_cache_dir(fake_vid, target_count=36)
+            d_default = get_video_thumbnail_cache_dir(fake_vid)
+            d_det = get_video_thumbnail_cache_dir(fake_vid, target_count=90)
+            d_hi = get_video_thumbnail_cache_dir(fake_vid, target_count=180)
+            assert d_std == d_default, "Standard (36) must reuse legacy thumbnail cache dir"
+            assert len({d_std, d_det, d_hi}) == 3, "Density presets must map to distinct cache dirs"
 
         # 6c. Verify progressive waveform streaming on TimelineCanvas and timeline_painter
         from timeline_widgets import TimelineCanvas

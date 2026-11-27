@@ -1,4 +1,4 @@
-"""Radio & TV Segmenter — v3.10.22-beta
+"""Radio & TV Segmenter — v3.10.23-beta
 
 This is the thin application composition root. UI/processing responsibilities
 are implemented in focused mixins so future changes can target smaller files
@@ -441,6 +441,8 @@ class MainWindow(
         self.timeline_thumbnail_position = str(s.value("timeline_thumbnail_position", "below")).lower()
         if self.timeline_thumbnail_position not in ("above", "below"):
             self.timeline_thumbnail_position = "below"
+        from background_workers import normalize_thumbnail_density
+        self.timeline_thumbnail_density = normalize_thumbnail_density(s.value("timeline_thumbnail_density", "standard"))
         self.transcript_selection_mode = str(s.value("transcript_selection_mode", "replace") or "replace")
         self.transcript_auto_scroll = str(s.value("transcript_auto_scroll", "true")).lower() in {"1", "true", "yes"}
         if hasattr(self, "transcript_view"):

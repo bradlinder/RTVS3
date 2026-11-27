@@ -70,6 +70,26 @@ def build_playback_timeline_tab(win, dialog, live_widgets, add_custom_defaults_b
     play_form.addRow("Thumbnail Placement:", thumb_pos_combo)
     live_widgets["thumb_pos_combo"] = thumb_pos_combo
 
+    thumb_density_combo = QComboBox()
+    thumb_density_combo.addItem("Standard (36 frames)", "standard")
+    thumb_density_combo.addItem("Detailed (90 frames)", "detailed")
+    thumb_density_combo.addItem("High (180 frames)", "high")
+    curr_thumb_density = str(
+        getattr(
+            win,
+            "timeline_thumbnail_density",
+            win.settings_store.value("timeline_thumbnail_density", "standard") if hasattr(win, "settings_store") else "standard",
+        ) or "standard"
+    ).strip().lower()
+    dens_idx = thumb_density_combo.findData(curr_thumb_density)
+    thumb_density_combo.setCurrentIndex(dens_idx if dens_idx >= 0 else 0)
+    thumb_density_combo.setToolTip(
+        "Controls how many preview frames are extracted across the video timeline. "
+        "Higher presets reduce gaps when zoomed in on long broadcasts while keeping memory usage bounded."
+    )
+    play_form.addRow("Thumbnail Density:", thumb_density_combo)
+    live_widgets["thumb_density_combo"] = thumb_density_combo
+
     sel_mode_combo = QComboBox()
     sel_mode_combo.addItem("Clear previous selection (Single selection)", "replace")
     sel_mode_combo.addItem("Keep previous selections (Multi-selection: create separate stories)", "keep")
