@@ -1714,3 +1714,22 @@ class UnifiedExportDialog(QDialog):
                     self.maximize_btn.setToolTip("Maximize Export window")
         elif event.type() == QEvent.Type.WindowActivate:
             self.refresh_from_main_window()
+
+    def closeEvent(self, event):
+        """Persist draft edits and propagate close to embedded plugin tabs so workers/temp files clean up."""
+        try:
+            self._persist_plugin_draft_states()
+        except Exception:
+            pass
+        closed_widgets = set()
+        for _, dest, page in getattr(self, "_plugin_destinations", []):
+            for widget in (getattr(dest, "tab_widget", None), page):
+                if widget is None or id(widget) in closed_widgets:
+                    continue
+                closed_widgets.add(id(widget))
+                try:
+                    if hasattr(widget, "close"):
+                        widget.close()
+                except Exception:
+                    pass
+        super().closeEvent(event)

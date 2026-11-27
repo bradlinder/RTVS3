@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
 from __future__ import annotations
+import os
 import sys
 from diagnostic_helpers import DiagnosticItem
 

@@ -1,6 +1,7 @@
 """Story transcript highlighting, smart copy, duration & header diagnostic tests."""
 from __future__ import annotations
 
+import os
 import sys
 
 from diagnostic_helpers import DiagnosticItem
@@ -350,7 +351,16 @@ class DiagnosticEditorStoryUiTestsMixin:
         if app_inst is not None:
             app_inst.installEventFilter(flash_spy)
         pref_live = {}
-        pref_store = type("PrefStore", (), {"value": lambda s, k, d=None: d})()
+        class _IsolatedPrefStore:
+            def __init__(self):
+                self._data = {}
+            def value(self, k, d=None):
+                return self._data.get(k, d)
+            def setValue(self, k, v):
+                self._data[k] = v
+            def contains(self, k):
+                return k in self._data
+        pref_store = _IsolatedPrefStore()
         pref_win = type("PrefWin", (), {
             "settings_store": pref_store,
             "skip_seconds": 5,
@@ -367,6 +377,8 @@ class DiagnosticEditorStoryUiTestsMixin:
             "whisper_model": "small",
             "is_whisper_model_available": lambda s, m: False,
         })()
+        _prev_rtvs_test_mode = os.environ.get("RTVS_TEST_MODE")
+        os.environ["RTVS_TEST_MODE"] = "1"
         try:
             play_tab = build_playback_timeline_tab(pref_win, None, pref_live, lambda *a, **kw: None)
             ai_tab = build_ai_models_tab(pref_win, None, pref_live, lambda *a, **kw: None)
@@ -421,15 +433,23 @@ class DiagnosticEditorStoryUiTestsMixin:
                     return False
 
             flash_mw = _FlashDummyMW()
+            exp_dlg = UnifiedExportDialog(flash_mw, initial_scope="selected_stories", initial_dest="wordpress")
+            upd_dlg = CheckUpdateDialog(flash_mw, auto_start=False)
+            assert hasattr(upd_dlg, "_cleanup_workers") and "closeEvent" in CheckUpdateDialog.__dict__, (
+                "CheckUpdateDialog must define closeEvent worker teardown to prevent QThread destruction crashes"
+            )
+            assert "closeEvent" in UnifiedExportDialog.__dict__, (
+                "UnifiedExportDialog must forward closeEvent to embedded plugin tabs"
+            )
             sweep_widgets = [
-                UnifiedExportDialog(flash_mw, initial_scope="selected_stories", initial_dest="wordpress"),
+                exp_dlg,
                 LoadYouTubeEpisodeDialog(flash_mw),
                 StoryFadesDialog(parent=flash_mw, story=flash_mw.stories[0]),
                 CommentEditorDialog(flash_mw, "Sample", "Existing note"),
                 BatchProcessingDialog(flash_mw),
-                ClearCacheDialog(flash_mw),
+                ClearCacheDialog(flash_mw, auto_refresh=False),
                 ReorderExportDestinationsDialog(flash_mw),
-                CheckUpdateDialog(flash_mw),
+                upd_dlg,
             ]
             QApplication.processEvents()
             assert not flash_spy.flashed, f"Dialog/tab construction flashed orphan top-level windows: {flash_spy.flashed}"
@@ -440,11 +460,16 @@ class DiagnosticEditorStoryUiTestsMixin:
             ai_tab.close()
             ai_tab.deleteLater()
 
-            # Static AST orphan-window flash guard across entire repository
-            from scripts.dev_check import check_qt_orphan_widget_flashes
-            ast_ok, ast_msg = check_qt_orphan_widget_flashes()
-            assert ast_ok, f"Static Qt orphan-window AST guard failed: {ast_msg}"
+            # Static AST orphan-window flash guard across entire repository (dev/source runs only; scripts/ is excluded from frozen installers)
+            if not getattr(sys, "frozen", False):
+                from scripts.dev_check import check_qt_orphan_widget_flashes
+                ast_ok, ast_msg = check_qt_orphan_widget_flashes()
+                assert ast_ok, f"Static Qt orphan-window AST guard failed: {ast_msg}"
         finally:
+            if _prev_rtvs_test_mode is None:
+                os.environ.pop("RTVS_TEST_MODE", None)
+            else:
+                os.environ["RTVS_TEST_MODE"] = _prev_rtvs_test_mode
             if app_inst is not None:
                 app_inst.removeEventFilter(flash_spy)
         play_tab.resize(480, 520)
@@ -587,7 +612,6 @@ class DiagnosticEditorStoryUiTestsMixin:
         tl_rc.deleteLater()
 
         # 6f. Verify skip_if_exists skips redundant .peaks rewrites when cache is valid and newer than audio
-        import os
         import tempfile
         from background_workers import (
             get_waveform_peak_cache_path,

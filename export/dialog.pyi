@@ -116,3 +116,6 @@ class UnifiedExportDialog(QDialog):
 
     def changeEvent(self, event):
         ...
+
+    def closeEvent(self, event):
+        ...

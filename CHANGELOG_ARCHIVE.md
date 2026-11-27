@@ -1,3 +1,8 @@
+## v3.10.31-beta
+- **Fix Frozen Installed-App Startup Crash (`NameError: name 'Optional' is not defined`) (`media_batch.py`, `diagnostics/youtube_import_cache_tests.py`)**:
+  - Added the missing `from typing import Optional` import at the top of `media_batch.py` required by `MediaBatchMixin._effective_thumbnail_density()` and `start_video_thumbnail_generation()` type annotations when imported in frozen PyInstaller builds where `Optional` is not leaked via `prs_shared`.
+  - Audited all repository modules via AST for missing typing imports and added a direct `import media_batch` startup regression check in `diagnostics/youtube_import_cache_tests.py`.
+
 ## v3.10.30-beta
 - **Eliminate Phantom Extra Speakers in Diarization (Zero-Padding-Free WeSpeaker Batching, Silero VAD Pause Trimming, Embedding-Gated Island Smoothing & 1-Based Speaker Labeling) (`worker_diarization_engine.py`, `worker_diarization_clustering.py`, `speaker_editing_mixin.py`, `diagnostics/voice_and_media_tests.py`, `test_runner.py`)**:
   - **Zero-Padding-Free WeSpeaker Batching & Clean Tail Windows (`worker_diarization_engine.py`)**:

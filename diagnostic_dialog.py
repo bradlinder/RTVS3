@@ -7,6 +7,7 @@ inspecting hardware health, and exporting diagnostic reports.
 from __future__ import annotations
 
 import inspect
+import os
 import time
 from typing import TYPE_CHECKING, Dict, Optional
 
@@ -22,6 +23,7 @@ _MAIN_THREAD_TEST_HANDLERS: frozenset[str] = frozenset({
     "_test_wordpress_featured_image_caption_and_alt_text",
     "_test_quick_sample_audio_preview_and_speaker_manager_dialog_invariants",
     "_test_plugin_interface_sandbox_testing",
+    "_test_project_serialization_round_trip",
     "_test_project_file_integrity_and_portable_path_resolution",
     "_test_audio_loudness_preferences_and_manual_normalization_dialog",
     "_test_find_and_replace_project_synchronization_and_undo",
@@ -116,6 +118,8 @@ def create_diagnostic_dialog(parent=None, include_dev_tests: Optional[bool] = No
                 self._orig_dispatch_test(item)
 
         def run(self):
+            prev_test_mode = os.environ.get("RTVS_TEST_MODE")
+            os.environ["RTVS_TEST_MODE"] = "1"
             try:
                 self.engine.on_update = lambda it: self.item_updated.emit(it)
                 self.engine._dispatch_test = self._thread_safe_dispatch
@@ -123,6 +127,10 @@ def create_diagnostic_dialog(parent=None, include_dev_tests: Optional[bool] = No
             except Exception:
                 pass
             finally:
+                if prev_test_mode is None:
+                    os.environ.pop("RTVS_TEST_MODE", None)
+                else:
+                    os.environ["RTVS_TEST_MODE"] = prev_test_mode
                 self.engine._dispatch_test = self._orig_dispatch_test
                 self.finished.emit()
 

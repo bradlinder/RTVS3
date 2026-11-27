@@ -5,6 +5,7 @@ All yt-dlp execution lives in yt_dlp_runner.py; background QThreads live in yt_i
 """
 from __future__ import annotations
 
+import os
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -379,7 +380,7 @@ class LoadYouTubeEpisodeDialog(QDialog):
         if bin_path is None:
             self.ytdlp_status_label.setText("yt-dlp: Not installed yet (will auto-install on first use).")
         else:
-            ver = get_yt_dlp_version(bin_path)
+            ver = "" if os.environ.get("RTVS_TEST_MODE") else get_yt_dlp_version(bin_path)
             ver_str = f"v{ver}" if ver else "installed"
             self.ytdlp_status_label.setText(f"yt-dlp: {ver_str} ({bin_path.name})")
 

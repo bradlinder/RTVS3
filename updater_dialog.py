@@ -644,19 +644,65 @@ class CheckUpdateDialog(QDialog):
         url = self.release_info.get("html_url") or f"https://github.com/{self.repo}/releases"
         QDesktopServices.openUrl(QUrl(url))
 
-    def _handle_close(self):
-        if self.check_worker and self.check_worker.isRunning():
+    def _cleanup_workers(self):
+        worker = getattr(self, "check_worker", None)
+        if worker is not None:
             try:
-                self.check_worker.releases_loaded.disconnect(self._on_releases_loaded)
-                self.check_worker.update_available.disconnect(self._on_update_available)
-                self.check_worker.up_to_date.disconnect(self._on_up_to_date)
-                self.check_worker.error.disconnect(self._on_check_error)
+                worker.releases_loaded.disconnect(self._on_releases_loaded)
             except Exception:
                 pass
-        if self.download_worker and self.download_worker.isRunning():
-            self.download_worker.cancel()
-            self.download_worker.wait(2000)
+            try:
+                worker.update_available.disconnect(self._on_update_available)
+            except Exception:
+                pass
+            try:
+                worker.up_to_date.disconnect(self._on_up_to_date)
+            except Exception:
+                pass
+            try:
+                worker.error.disconnect(self._on_check_error)
+            except Exception:
+                pass
+            try:
+                if worker.isRunning():
+                    worker.requestInterruption()
+                    # Detach from dialog so Qt never aborts with "QThread: Destroyed while thread is still running"
+                    worker.setParent(None)
+                    _DETACHED_UPDATE_WORKERS.add(worker)
+                    worker.finished.connect(lambda w=worker: _DETACHED_UPDATE_WORKERS.discard(w))
+                    worker.finished.connect(worker.deleteLater)
+            except RuntimeError:
+                pass
+            self.check_worker = None
+
+        dl_worker = getattr(self, "download_worker", None)
+        if dl_worker is not None:
+            try:
+                if dl_worker.isRunning():
+                    dl_worker.cancel()
+                    if not dl_worker.wait(2000):
+                        dl_worker.setParent(None)
+                        _DETACHED_UPDATE_WORKERS.add(dl_worker)
+                        dl_worker.finished.connect(lambda w=dl_worker: _DETACHED_UPDATE_WORKERS.discard(w))
+                        dl_worker.finished.connect(dl_worker.deleteLater)
+            except RuntimeError:
+                pass
+            self.download_worker = None
+
+    def _handle_close(self):
+        self._cleanup_workers()
         self.reject()
+
+    def reject(self):
+        self._cleanup_workers()
+        super().reject()
+
+    def closeEvent(self, event):
+        self._cleanup_workers()
+        super().closeEvent(event)
+
+
+_DETACHED_UPDATE_WORKERS: set = set()
 
 
 class UpdaterMixin:

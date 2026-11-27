@@ -519,7 +519,7 @@ def purge_caches(clear_thumbnails=True, clear_waveforms=True, clear_audio_extrac
 class ClearCacheDialog(QDialog):
     """Dialog for inspecting disk cache sizes and clearing temporary data."""
 
-    def __init__(self, parent=None, language="en", project_dirs=None):
+    def __init__(self, parent=None, language="en", project_dirs=None, auto_refresh=True):
         super().__init__(parent)
         self.language = language
         self.is_es = (language == "es")
@@ -529,7 +529,8 @@ class ClearCacheDialog(QDialog):
         self.setModal(True)
 
         self._init_ui()
-        self.refresh_stats()
+        if auto_refresh:
+            self.refresh_stats()
 
     def _init_ui(self):
         layout = QVBoxLayout(self)

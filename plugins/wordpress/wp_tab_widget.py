@@ -56,7 +56,8 @@ class WordPressExportTabWidget(QWidget):
         super().__init__(parent)
         self.main_window = main_window
         self.metadata_editor_mode = metadata_editor_mode
-        self.settings = QSettings(INTERNAL_APP_ID, INTERNAL_APP_ID)
+        _ms = getattr(main_window, "settings_store", None)
+        self.settings = _ms if (_ms is not None and hasattr(_ms, "value") and hasattr(_ms, "setValue") and hasattr(_ms, "contains")) else QSettings(INTERNAL_APP_ID, INTERNAL_APP_ID)
         self._is_video_project = bool(getattr(self.main_window, "current_media_is_video", False))
         self._temp_preview_files = set()
         self._yt_thumb_worker = None
@@ -896,7 +897,7 @@ class WordPressExportTabWidget(QWidget):
                 except Exception:
                     pass
 
-        if not categories or not authors or not podcast_feeds or len(podcast_feeds) <= 1 or force_refresh:
+        if not os.environ.get("RTVS_TEST_MODE") and (not categories or not authors or not podcast_feeds or len(podcast_feeds) <= 1 or force_refresh):
             from plugins.wordpress.client import get_wp_client
             client = get_wp_client()
             if client:
