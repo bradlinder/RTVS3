@@ -196,8 +196,8 @@ class DiagnosticEditorStoryUiTestsMixin:
             m_sel = show_selection_context_menu(mock_canvas, QPoint(50, 50), exec_menu=False)
             assert m_sel is not None and len(m_sel.actions()) > 0
 
-        # 6b-2. Verify StandaloneDetectStoriesDialog one-time override & thumbnail density helpers (v3.10.23-beta)
-        from story_detect_dialog import StandaloneDetectStoriesDialog
+        # 6b-2. Verify two-step StandaloneDetectStoriesDialog + DetectStoriesSettingsDialog & thumbnail density helpers
+        from story_detect_dialog import DetectStoriesSettingsDialog, StandaloneDetectStoriesDialog
         from background_workers import (
             VideoThumbnailWorker,
             get_thumbnail_count_for_density,
@@ -216,15 +216,24 @@ class DiagnosticEditorStoryUiTestsMixin:
             term_plural="Segments",
         )
         assert det_dlg.replace_warning_label is not None and "3 segments" in det_dlg.replace_warning_label.text().lower()
-        assert not det_dlg.more_options_section.is_expanded(), "More Options should start collapsed"
-        assert not det_dlg.save_defaults_chk.isChecked(), "Save as defaults should default to unchecked"
-        det_dlg.silence_spin.setValue(1.5)
-        det_dlg.min_story_spin.setValue(30.0)
+        assert "3.0s silence gap" in det_dlg.summary_label.text()
+        assert det_dlg.adjust_btn.text() == "Adjust Settings..."
+
+        # Open secondary settings dialog, apply one-time changes, verify return updates summary
+        settings_dlg = det_dlg.create_settings_dialog()
+        assert isinstance(settings_dlg, DetectStoriesSettingsDialog)
+        assert not settings_dlg.save_defaults_chk.isChecked(), "Save as defaults should default to unchecked"
+        settings_dlg.silence_spin.setValue(1.5)
+        settings_dlg.min_story_spin.setValue(30.0)
+        det_dlg.apply_settings_values(settings_dlg.get_values())
         vals = det_dlg.get_values()
         assert abs(vals["silence_threshold"] - 1.5) < 1e-6 and abs(vals["min_story_duration"] - 30.0) < 1e-6
         assert vals["save_as_defaults"] is False
-        det_dlg.reset_to_defaults()
-        assert abs(det_dlg.silence_spin.value() - 3.0) < 1e-6 and abs(det_dlg.min_story_spin.value() - 15.0) < 1e-6
+        assert "1.5s silence gap" in det_dlg.summary_label.text() and "this run only" in det_dlg.summary_label.text()
+        settings_dlg.reset_to_defaults()
+        assert abs(settings_dlg.silence_spin.value() - 3.0) < 1e-6 and abs(settings_dlg.min_story_spin.value() - 15.0) < 1e-6
+        settings_dlg.close()
+        settings_dlg.deleteLater()
         det_dlg.close()
         det_dlg.deleteLater()
 

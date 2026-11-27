@@ -1,13 +1,13 @@
 # Repository Symbol Index & API Map
 
-> Generated: 2026-11-27 13:16:26 | Total Files: 209
+> Generated: 2026-11-27 13:31:07 | Total Files: 209
 > Use `python scripts/generate_symbol_index.py --outline <file>` for exact line numbers.
 
 ## Modules Overview
 
 | Module | Lines | Summary | Primary Classes / Functions |
 | :--- | :---: | :--- | :--- |
-| `RadioTVSegmenter.py` | 686 | Radio & TV Segmenter — v3.10.23-beta | `MainWindow`, `main()` |
+| `RadioTVSegmenter.py` | 686 | Radio & TV Segmenter — v3.10.24-beta | `MainWindow`, `main()` |
 | `audio_normalization.py` | 474 | Radio & TV Story Segmenter — Audio Loudness Probing & Nor... | `LoudnessReport`, `parse_ebur128_summary()`, `probe_media_duration_seconds()`, `probe_media_loudness()` *(+2 more)* |
 | `audio_normalization_worker.py` | 89 | Background QThread worker for non-blocking EBU R128 loudn... | `AudioLoudnessProbeWorker` |
 | `background_workers.py` | 1097 | Radio & TV Story Segmenter — Background Worker Threads & ... | `StoryAutoDetectWorker`, `WaveformWorker`, `VideoThumbnailWorker`, `get_waveform_peak_cache_path()` *(+8 more)* |
@@ -39,9 +39,9 @@
 | `diagnostics/cloud_storage_tests.py` | 592 | Plugin interface, project persistence, cache management, ... | `DiagnosticCloudStorageTestsMixin` |
 | `diagnostics/editing_workflow_tests.py` | 590 | Fades, translation routing, speaker dialog flow, story bo... | `DiagnosticEditingWorkflowTestsMixin` |
 | `diagnostics/editor_guides_and_daw_tests.py` | 500 | Find-replace, user guides viewer, and REAPER DAW companio... | `DiagnosticEditorGuidesAndDawTestsMixin` |
-| `diagnostics/editor_story_ui_tests.py` | 603 | Story transcript highlighting, smart copy, duration & hea... | `DiagnosticEditorStoryUiTestsMixin` |
+| `diagnostics/editor_story_ui_tests.py` | 612 | Story transcript highlighting, smart copy, duration & hea... | `DiagnosticEditorStoryUiTestsMixin` |
 | `diagnostics/export_pipeline.py` | 485 | Multi-format export pipeline, scope slicing, and audio ca... | `DiagnosticExportPipelineMixin` |
-| `diagnostics/export_wordpress_core.py` | 828 | WordPress export scope, content formatting, and YouTube e... | `DiagnosticExportWordPressCoreMixin` |
+| `diagnostics/export_wordpress_core.py` | 830 | WordPress export scope, content formatting, and YouTube e... | `DiagnosticExportWordPressCoreMixin` |
 | `diagnostics/export_wordpress_media.py` | 670 | WordPress featured image metadata and Castos podcast diag... | `DiagnosticExportWordPressMediaMixin` |
 | `diagnostics/export_wordpress_upload.py` | 668 | WordPress multi-story upload, Gutenberg hygiene, and audi... | `DiagnosticExportWordPressUploadMixin` |
 | `diagnostics/system_runtime_tests.py` | 446 | System runtime, updater, theme, packaging, roadmap, and m... | `DiagnosticSystemRuntimeTestsMixin` |
@@ -166,7 +166,7 @@
 | `spellcheck_helper.py` | 779 | spellcheck_helper.py — Headless Tier 1 Offline Spellcheck... | `SpellIssue`, `OfflineSpellChecker`, `is_pyspellchecker_available()`, `match_case()` *(+5 more)* |
 | `spellcheck_widgets.py` | 697 | spellcheck_widgets.py — Inline Qt Spellcheck Highlighting... | `SpellCheckHighlighter`, `_LineEditSpellOverlay`, `SpellCheckController`, `add_word_to_glossary()` *(+2 more)* |
 | `story_crud_mixin.py` | 931 | Radio & TV Story Segmenter — Story CRUD & Timeline Select... | `StoryCrudMixin` |
-| `story_detect_dialog.py` | 209 | Compact one-time threshold override dialog for standalone... | `StandaloneDetectStoriesDialog` |
+| `story_detect_dialog.py` | 333 | Lightweight two-step confirmation and threshold-override ... | `DetectStoriesSettingsDialog`, `StandaloneDetectStoriesDialog` |
 | `story_detection_processing.py` | 290 | Story boundary detection processing mixin for Radio & TV ... | `StoryDetectionProcessingMixin` |
 | `story_fades_dialog.py` | 215 | story_fades_dialog.py — Dialog for fine-grained audio fad... | `StoryFadesDialog` |
 | `story_metadata_dialog.py` | 313 | Radio & TV Story Segmenter — Universal Story & Post Metad... | `StoryMetadataDialog`, `generate_story_excerpt()` |
@@ -191,7 +191,7 @@
 | `transcript_navigation_mixin.py` | 300 | transcript_navigation_mixin.py - Timestamp discovery, car... | `TranscriptNavigationMixin` |
 | `transcript_playback_highlight_mixin.py` | 277 | Radio & TV Story Segmenter — Interactive Transcript Playb... | `TranscriptPlaybackHighlightMixin` |
 | `transcript_selection_mixin.py` | 473 | transcript_selection_mixin.py - Multi-selection, timeline... | `TranscriptSelectionMixin` |
-| `transcript_story.py` | 856 | Radio & TV Segmenter v3.10.23-beta — transcript story res... | `TranscriptStoryMixin` |
+| `transcript_story.py` | 856 | Radio & TV Segmenter v3.10.24-beta — transcript story res... | `TranscriptStoryMixin` |
 | `transcript_styles.py` | 104 | transcript_styles.py - Transcript view stylesheets and da... | `transcript_text_view_stylesheet()`, `clean_dark_mode_clipboard_html()` |
 | `transcript_timeline_sync_mixin.py` | 655 | Radio & TV Story Segmenter — Transcript Timeline & Playba... | `TranscriptTimelineSyncMixin` |
 | `transcription_processing.py` | 579 | Transcription background process management for Radio & T... | `TranscriptionProcessingMixin` |
@@ -220,7 +220,7 @@
 ## Detailed Symbol Catalog
 
 ### `RadioTVSegmenter.py` (686 lines)
-*Radio & TV Segmenter — v3.10.23-beta*
+*Radio & TV Segmenter — v3.10.24-beta*
 - **class `MainWindow(ModelManagementMixin, MediaBatchMixin, PlaybackPreferencesMixin, UiLayoutMixin, ProcessingMixin, TranslationMixin, TranscriptStoryMixin, ProjectExportMixin, GpuAccelerationMixin, QMainWindow)`** (lines 160–583):
   *Main application window for Radio & TV Segmenter.*
   - `__init__(self)` [L178-L355]
@@ -639,11 +639,11 @@
   - `_test_in_app_user_guides_and_documentation_viewer(self, item)` [L210-L301] — *Validates in-app user guide resolution, fallback to embedded content, and bundling invariants.*
   - `_test_reaper_daw_companion_and_universal_clipboard_pipeline(self, item)` [L303-L500] — *Validates REAPER DAW clip cue JSON schema, sidecar emission, Lua script syntax,*
 
-### `diagnostics/editor_story_ui_tests.py` (603 lines)
+### `diagnostics/editor_story_ui_tests.py` (612 lines)
 *Story transcript highlighting, smart copy, duration & header diagnostic tests.*
-- **class `DiagnosticEditorStoryUiTestsMixin`** (lines 9–603):
-  - `_test_story_transcript_highlighting_and_smart_copy(self, item)` [L10-L420] — *Validates story selection synchronization with transcript highlight overlay and smart clipboard copying.*
-  - `_test_story_duration_visibility_and_header_aggregation(self, item)` [L422-L603] — *Validates story clock duration formatting, 2-line sidebar item format, and multi-selection header aggregation.*
+- **class `DiagnosticEditorStoryUiTestsMixin`** (lines 9–612):
+  - `_test_story_transcript_highlighting_and_smart_copy(self, item)` [L10-L429] — *Validates story selection synchronization with transcript highlight overlay and smart clipboard copying.*
+  - `_test_story_duration_visibility_and_header_aggregation(self, item)` [L431-L612] — *Validates story clock duration formatting, 2-line sidebar item format, and multi-selection header aggregation.*
 
 ### `diagnostics/export_pipeline.py` (485 lines)
 *Multi-format export pipeline, scope slicing, and audio cancellation tests.*
@@ -656,12 +656,12 @@
   - `_test_audio_export_non_blocking_and_cancellation_pipeline(self, item)` [L334-L443]
   - `_test_modal_dialog_maximizable_import_integrity(self, item)` [L445-L485]
 
-### `diagnostics/export_wordpress_core.py` (828 lines)
+### `diagnostics/export_wordpress_core.py` (830 lines)
 *WordPress export scope, content formatting, and YouTube embed diagnostic tests.*
-- **class `DiagnosticExportWordPressCoreMixin`** (lines 9–828):
-  - `_test_wordpress_export_scope_post_builder(self, item)` [L10-L276]
-  - `_test_wordpress_export_content_and_transcript_formatter(self, item)` [L278-L488]
-  - `_test_wordpress_youtube_video_embed(self, item)` [L490-L828] — *Verify YouTube URL parsing, iframe block generation, video project defaults, and Gutenberg placement.*
+- **class `DiagnosticExportWordPressCoreMixin`** (lines 9–830):
+  - `_test_wordpress_export_scope_post_builder(self, item)` [L10-L278]
+  - `_test_wordpress_export_content_and_transcript_formatter(self, item)` [L280-L490]
+  - `_test_wordpress_youtube_video_embed(self, item)` [L492-L830] — *Verify YouTube URL parsing, iframe block generation, video project defaults, and Gutenberg placement.*
 
 ### `diagnostics/export_wordpress_media.py` (670 lines)
 *WordPress featured image metadata and Castos podcast diagnostic tests.*
@@ -3017,14 +3017,23 @@
   - `_notify_floating_dialogs(self)` [L899-L913] — *Refresh any open non-modal export, metadata, or speaker management floating windows after main window edits.*
   - `_close_floating_dialogs(self, persist_drafts)` [L915-L931] — *Persist drafts and close any active non-modal floating windows on project close or shutdown.*
 
-### `story_detect_dialog.py` (209 lines)
-*Compact one-time threshold override dialog for standalone Story/Segment Detection.*
-- **Public Exports (`__all__`)**: StandaloneDetectStoriesDialog
-- **class `StandaloneDetectStoriesDialog(QDialog)`** (lines 23–206):
-  *Run-time dialog allowing one-time overrides of silence/length thresholds for standalone detection.*
-  - `__init__(self, parent, *, existing_count, silence_threshold, min_story_duration, detection_mode, lead_in_padding, is_es, term, term_plural)` [L26-L187]
-  - `reset_to_defaults(self)` [L189-L196] — *Restore spinboxes and mode selector back to the caller's saved Preferences defaults.*
-  - `get_values(self)` [L198-L206] — *Return the selected run-time parameters and default-save flag.*
+### `story_detect_dialog.py` (333 lines)
+*Lightweight two-step confirmation and threshold-override dialogs for standalone Story/Segment Detection.*
+- **Public Exports (`__all__`)**: DetectStoriesSettingsDialog, StandaloneDetectStoriesDialog
+- **class `DetectStoriesSettingsDialog(QDialog)`** (lines 22–168):
+  *Dedicated dialog for adjusting silence/length detection thresholds for a run or as new defaults.*
+  - `__init__(self, parent, *, silence_threshold, min_story_duration, detection_mode, lead_in_padding, save_as_defaults, default_silence, default_min_story, default_mode, default_padding, is_es)` [L25-L150]
+  - `reset_to_defaults(self)` [L152-L159] — *Restore all fields to the saved Preferences defaults.*
+  - `get_values(self)` [L161-L168]
+- **class `StandaloneDetectStoriesDialog(QDialog)`** (lines 171–330):
+  *Simple confirmation dialog for standalone detection with an Adjust Settings... button.*
+  - `__init__(self, parent, *, existing_count, silence_threshold, min_story_duration, detection_mode, lead_in_padding, is_es, term, term_plural)` [L174-L262]
+  - `_is_modified(self)` [L264-L270]
+  - `_refresh_summary_label(self)` [L272-L292]
+  - `create_settings_dialog(self)` [L294-L308] — *Build the secondary Detection Settings dialog pre-filled with the active staged values.*
+  - `apply_settings_values(self, values)` [L310-L319] — *Apply confirmed threshold values from DetectStoriesSettingsDialog and refresh summary.*
+  - `open_settings_dialog(self)` [L321-L327] — *Open the dedicated Detection Settings dialog and return to this confirmation dialog on Apply.*
+  - `get_values(self)` [L329-L330]
 
 ### `story_detection_processing.py` (290 lines)
 *Story boundary detection processing mixin for Radio & TV Story Segmenter.*
@@ -3503,7 +3512,7 @@
   - `_on_bubble_export(self)` [L468-L473]
 
 ### `transcript_story.py` (856 lines)
-*Radio & TV Segmenter v3.10.23-beta — transcript story responsibilities.*
+*Radio & TV Segmenter v3.10.24-beta — transcript story responsibilities.*
 - **Public Exports (`__all__`)**: TranscriptStoryMixin, Story, SetStoriesCommand, SelectStoriesCommand, StoryBoundaryChangeCommand, StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin, ChangeSpeakerDialog, VoiceProfileMatchDialog, StoryFadesDialog, SpeakerManagerDialog, FADE_CURVE_TABLES, get_fade_curve_factors
 - **class `TranscriptStoryMixin(StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin)`** (lines 63–855):
   - `render_transcript(self)` [L64-L471]

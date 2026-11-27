@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-27 13:16:26",
+  "generated_at": "2026-11-27 13:31:07",
   "total_files": 209,
   "files": {
     "RadioTVSegmenter.py": {
       "path": "RadioTVSegmenter.py",
       "lines": 686,
-      "summary": "Radio & TV Segmenter \u2014 v3.10.23-beta",
+      "summary": "Radio & TV Segmenter \u2014 v3.10.24-beta",
       "exports": null,
       "classes": [
         {
@@ -2439,7 +2439,7 @@
     },
     "diagnostics/editor_story_ui_tests.py": {
       "path": "diagnostics/editor_story_ui_tests.py",
-      "lines": 603,
+      "lines": 612,
       "summary": "Story transcript highlighting, smart copy, duration & header diagnostic tests.",
       "exports": null,
       "classes": [
@@ -2447,21 +2447,21 @@
           "name": "DiagnosticEditorStoryUiTestsMixin",
           "bases": [],
           "start_line": 9,
-          "end_line": 603,
+          "end_line": 612,
           "doc": "",
           "methods": [
             {
               "name": "_test_story_transcript_highlighting_and_smart_copy",
               "sig": "_test_story_transcript_highlighting_and_smart_copy(self, item)",
               "start_line": 10,
-              "end_line": 420,
+              "end_line": 429,
               "doc": "Validates story selection synchronization with transcript highlight overlay and smart clipboard copying."
             },
             {
               "name": "_test_story_duration_visibility_and_header_aggregation",
               "sig": "_test_story_duration_visibility_and_header_aggregation(self, item)",
-              "start_line": 422,
-              "end_line": 603,
+              "start_line": 431,
+              "end_line": 612,
               "doc": "Validates story clock duration formatting, 2-line sidebar item format, and multi-selection header aggregation."
             }
           ]
@@ -2538,7 +2538,7 @@
     },
     "diagnostics/export_wordpress_core.py": {
       "path": "diagnostics/export_wordpress_core.py",
-      "lines": 828,
+      "lines": 830,
       "summary": "WordPress export scope, content formatting, and YouTube embed diagnostic tests.",
       "exports": null,
       "classes": [
@@ -2546,28 +2546,28 @@
           "name": "DiagnosticExportWordPressCoreMixin",
           "bases": [],
           "start_line": 9,
-          "end_line": 828,
+          "end_line": 830,
           "doc": "",
           "methods": [
             {
               "name": "_test_wordpress_export_scope_post_builder",
               "sig": "_test_wordpress_export_scope_post_builder(self, item)",
               "start_line": 10,
-              "end_line": 276,
+              "end_line": 278,
               "doc": ""
             },
             {
               "name": "_test_wordpress_export_content_and_transcript_formatter",
               "sig": "_test_wordpress_export_content_and_transcript_formatter(self, item)",
-              "start_line": 278,
-              "end_line": 488,
+              "start_line": 280,
+              "end_line": 490,
               "doc": ""
             },
             {
               "name": "_test_wordpress_youtube_video_embed",
               "sig": "_test_wordpress_youtube_video_embed(self, item)",
-              "start_line": 490,
-              "end_line": 828,
+              "start_line": 492,
+              "end_line": 830,
               "doc": "Verify YouTube URL parsing, iframe block generation, video project defaults, and Gutenberg placement."
             }
           ]
@@ -17006,41 +17006,102 @@
     },
     "story_detect_dialog.py": {
       "path": "story_detect_dialog.py",
-      "lines": 209,
-      "summary": "Compact one-time threshold override dialog for standalone Story/Segment Detection.",
+      "lines": 333,
+      "summary": "Lightweight two-step confirmation and threshold-override dialogs for standalone Story/Segment Detection.",
       "exports": [
+        "DetectStoriesSettingsDialog",
         "StandaloneDetectStoriesDialog"
       ],
       "classes": [
         {
-          "name": "StandaloneDetectStoriesDialog",
+          "name": "DetectStoriesSettingsDialog",
           "bases": [
             "QDialog"
           ],
-          "start_line": 23,
-          "end_line": 206,
-          "doc": "Run-time dialog allowing one-time overrides of silence/length thresholds for standalone detection.",
+          "start_line": 22,
+          "end_line": 168,
+          "doc": "Dedicated dialog for adjusting silence/length detection thresholds for a run or as new defaults.",
           "methods": [
             {
               "name": "__init__",
-              "sig": "__init__(self, parent, *, existing_count, silence_threshold, min_story_duration, detection_mode, lead_in_padding, is_es, term, term_plural)",
-              "start_line": 26,
-              "end_line": 187,
+              "sig": "__init__(self, parent, *, silence_threshold, min_story_duration, detection_mode, lead_in_padding, save_as_defaults, default_silence, default_min_story, default_mode, default_padding, is_es)",
+              "start_line": 25,
+              "end_line": 150,
               "doc": ""
             },
             {
               "name": "reset_to_defaults",
               "sig": "reset_to_defaults(self)",
-              "start_line": 189,
-              "end_line": 196,
-              "doc": "Restore spinboxes and mode selector back to the caller's saved Preferences defaults."
+              "start_line": 152,
+              "end_line": 159,
+              "doc": "Restore all fields to the saved Preferences defaults."
             },
             {
               "name": "get_values",
               "sig": "get_values(self)",
-              "start_line": 198,
-              "end_line": 206,
-              "doc": "Return the selected run-time parameters and default-save flag."
+              "start_line": 161,
+              "end_line": 168,
+              "doc": ""
+            }
+          ]
+        },
+        {
+          "name": "StandaloneDetectStoriesDialog",
+          "bases": [
+            "QDialog"
+          ],
+          "start_line": 171,
+          "end_line": 330,
+          "doc": "Simple confirmation dialog for standalone detection with an Adjust Settings... button.",
+          "methods": [
+            {
+              "name": "__init__",
+              "sig": "__init__(self, parent, *, existing_count, silence_threshold, min_story_duration, detection_mode, lead_in_padding, is_es, term, term_plural)",
+              "start_line": 174,
+              "end_line": 262,
+              "doc": ""
+            },
+            {
+              "name": "_is_modified",
+              "sig": "_is_modified(self)",
+              "start_line": 264,
+              "end_line": 270,
+              "doc": ""
+            },
+            {
+              "name": "_refresh_summary_label",
+              "sig": "_refresh_summary_label(self)",
+              "start_line": 272,
+              "end_line": 292,
+              "doc": ""
+            },
+            {
+              "name": "create_settings_dialog",
+              "sig": "create_settings_dialog(self)",
+              "start_line": 294,
+              "end_line": 308,
+              "doc": "Build the secondary Detection Settings dialog pre-filled with the active staged values."
+            },
+            {
+              "name": "apply_settings_values",
+              "sig": "apply_settings_values(self, values)",
+              "start_line": 310,
+              "end_line": 319,
+              "doc": "Apply confirmed threshold values from DetectStoriesSettingsDialog and refresh summary."
+            },
+            {
+              "name": "open_settings_dialog",
+              "sig": "open_settings_dialog(self)",
+              "start_line": 321,
+              "end_line": 327,
+              "doc": "Open the dedicated Detection Settings dialog and return to this confirmation dialog on Apply."
+            },
+            {
+              "name": "get_values",
+              "sig": "get_values(self)",
+              "start_line": 329,
+              "end_line": 330,
+              "doc": ""
             }
           ]
         }
@@ -19952,7 +20013,7 @@
     "transcript_story.py": {
       "path": "transcript_story.py",
       "lines": 856,
-      "summary": "Radio & TV Segmenter v3.10.23-beta \u2014 transcript story responsibilities.",
+      "summary": "Radio & TV Segmenter v3.10.24-beta \u2014 transcript story responsibilities.",
       "exports": [
         "TranscriptStoryMixin",
         "Story",

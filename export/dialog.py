@@ -163,7 +163,7 @@ class UnifiedExportDialog(QDialog):
         term_plural = vocab.plural
         self.scope_section = CollapsibleSection("Export Scope", self, is_expanded=True)
         self.scope_combo = QComboBox()
-        self.scope_combo.addItem(f"Selected {term_plural} / Custom Selection", "selected_stories")
+        self.scope_combo.addItem("Custom Selection", "selected_stories")
         self.scope_combo.addItem(f"All {term_plural}", "all_stories")
         self.scope_combo.addItem("Full Episode", "full")
         self.scope_combo.addItem(f"Full Episode & All {term_plural}", "full_and_all_stories")

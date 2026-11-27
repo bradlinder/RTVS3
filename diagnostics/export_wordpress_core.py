@@ -162,6 +162,8 @@ class DiagnosticExportWordPressCoreMixin:
             idx_sel = exp_dlg.scope_combo.findData("selected_stories")
             if idx_sel < 0:
                 raise AssertionError("UnifiedExportDialog missing 'selected_stories' scope item")
+            if exp_dlg.scope_combo.itemText(idx_sel) != "Custom Selection":
+                raise AssertionError(f"Expected 'Custom Selection' scope label, got {exp_dlg.scope_combo.itemText(idx_sel)!r}")
             exp_dlg.scope_combo.setCurrentIndex(idx_sel)
             if not exp_dlg.is_story_selector_visible():
                 raise AssertionError("Story selector sidebar should be visible when scope is 'selected_stories'")

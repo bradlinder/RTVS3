@@ -1,5 +1,13 @@
 # Changelog
 
+## v3.10.24-beta
+- **Two-Step Standalone Detect Segments Dialog & Concise `Custom Selection` Export Scope Label (`story_detect_dialog.py`, `export/dialog.py`, `diagnostics/editor_story_ui_tests.py`, `diagnostics/export_wordpress_core.py`)**:
+  - **Streamlined Two-Step Standalone Detect Segments Flow (`story_detect_dialog.py`)**:
+    - Simplified `StandaloneDetectStoriesDialog` into a clean confirmation prompt showing a single-line summary of the active thresholds plus an **Adjust Settings...** button that opens a dedicated `DetectStoriesSettingsDialog` for editing silence gap, minimum segment length, detection basis, lead-in padding, and the opt-in **Save these values as my new defaults** checkbox.
+    - Clicking **Apply** in `DetectStoriesSettingsDialog` returns the user to the confirmation dialog with the updated summary line (marking one-time overrides vs. saved defaults) before running detection.
+  - **Concise Export Scope Label (`export/dialog.py`)**:
+    - Shortened the `"selected_stories"` scope dropdown label in `UnifiedExportDialog` from `Selected Segments / Custom Selection` to **`Custom Selection`** and updated diagnostic assertions.
+
 ## v3.10.23-beta
 - **Standalone Detect Stories One-Time Threshold Override Dialog & Bounded Timeline Thumbnail Density Presets (`story_detect_dialog.py`, `story_detection_processing.py`, `background_workers.py`, `media_batch.py`, `RadioTVSegmenter.py`, `preferences_tabs_media.py`, `preferences_dialog.py`, `preferences_reset.py`, `preferences_reset_dialog.py`, `timeline_context_menus.py`, `installer/build_tools/config.py`, `diagnostics/editor_story_ui_tests.py`, `diagnostics/system_runtime_tests.py`)**:
   - **Standalone Detect Stories One-Time Override Dialog (`story_detect_dialog.py`, `story_detection_processing.py`, `installer/build_tools/config.py`)**:
@@ -8,11 +16,3 @@
   - **Bounded Timeline Thumbnail Density Presets (`background_workers.py`, `media_batch.py`, `RadioTVSegmenter.py`, `preferences_tabs_media.py`, `preferences_dialog.py`, `preferences_reset.py`, `preferences_reset_dialog.py`, `timeline_context_menus.py`)**:
     - Added three memory-bounded timeline thumbnail density presets — **Standard (36 frames)**, **Detailed (90 frames)**, and **High (180 frames)** (capped safely at 200 frames in `VideoThumbnailWorker`) — selectable in **Preferences → Media / Timeline** and via a checkable **Regenerate Video Thumbnails** submenu on the timeline right-click menu.
     - Isolated cache directories per density preset while preserving backward-compatible cache reuse for Standard (36), added automatic background regeneration when changing density in Preferences, guarded `QAction.triggered(bool)` slot dispatch, and added regression tests.
-
-## v3.10.22-beta
-- **Checkable Full Episode Option in Export Dialog Custom Selection Sidebar (`export/story_selector.py`, `export/dialog.py`, `export_dialogs.py`, `export_story_pipeline.py`, `export_media_clipper.py`, `plugins/wordpress/wp_post_builder.py`, `plugins/wordpress/wp_tab_widget.py`, `plugins/wordpress/export_destination.py`, `plugins/wordpress/manifest.json`, `plugins/youtube/export_destination.py`, `plugins/youtube/manifest.json`, `diagnostics/export_wordpress_core.py`)**:
-  - **Full Episode Toggle in Export Sidebar (`export/story_selector.py`, `export/dialog.py`)**:
-    - Added a bold, checkable **Full Episode** row at the top of `ExportStorySelectorSidebar` (unchecked by default so plain selected-segments workflows stay unchanged) and clarified the scope label to **Selected Stories / Custom Selection** (preserving the `"selected_stories"` scope key).
-    - Updated **Select All**, **Clear**, `(X of Y)` count, empty-selection validation, and `get_result()` (`include_full_episode`) so users can export **Full Episode + any subset of segments** (or Full Episode alone) in a single pass without altering main-window timeline story selection.
-  - **Cross-Destination Support & WordPress Parent/TOC Linking (`export_dialogs.py`, `export_story_pipeline.py`, `export_media_clipper.py`, `plugins/wordpress/*.py`, `plugins/youtube/export_destination.py`)**:
-    - Wired `include_full_episode` across WordPress (`build_wp_post_items()`, `select_full_episode()`, and `execute_export()` with automatic parent-episode cross-linking and filtered story TOC), Local Files (`export_full_and_all_stories(..., story_indices=...)` / `export_full_episode()`), Timeline/DAW interchange, and YouTube Video Publisher, repackaged `wordpress` and `youtube` addons (`3.10.22-beta`), and added live dialog regression tests.
