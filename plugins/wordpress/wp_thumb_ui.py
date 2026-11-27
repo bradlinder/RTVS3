@@ -3,10 +3,11 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
-from PySide6.QtCore import Qt
-from PySide6.QtGui import QPixmap
+from PySide6.QtCore import Qt, Signal
+from PySide6.QtGui import QGuiApplication, QPixmap
+from PySide6.QtWidgets import QDialog, QHBoxLayout, QLabel, QPushButton, QVBoxLayout, QWidget
 
 from prs_shared import format_time
 from plugins.wordpress.wp_thumbnail_defaults import (
@@ -17,14 +18,164 @@ from plugins.wordpress.wp_thumbnail_defaults import (
 )
 
 
-def _set_preview_pixmap(tab_widget: Any, image_path: str) -> None:
+class ClickableThumbnailLabel(QLabel):
+    """QLabel preview that opens a full-size preview dialog when clicked."""
+
+    clicked = Signal()
+
+    def __init__(self, text: str = "", parent: Optional[QWidget] = None):
+        super().__init__(text, parent)
+        self._full_image_path: Optional[str] = None
+        self._source_description: str = ""
+
+    def set_full_image(self, image_path: Optional[str], source_description: str = "") -> None:
+        if image_path and Path(str(image_path)).is_file():
+            self._full_image_path = str(image_path)
+            self._source_description = str(source_description or "").strip()
+            self.setCursor(Qt.CursorShape.PointingHandCursor)
+            self.setToolTip("Click to view full-size preview")
+        else:
+            self.clear_full_image()
+
+    def clear_full_image(self) -> None:
+        self._full_image_path = None
+        self._source_description = ""
+        self.unsetCursor()
+        self.setToolTip("")
+
+    def full_image_path(self) -> Optional[str]:
+        return self._full_image_path
+
+    def mousePressEvent(self, event: Any) -> None:
+        if (
+            event is not None
+            and event.button() == Qt.MouseButton.LeftButton
+            and self._full_image_path
+            and Path(self._full_image_path).is_file()
+        ):
+            self.clicked.emit()
+            event.accept()
+            return
+        super().mousePressEvent(event)
+
+
+class FeaturedImageLightboxDialog(QDialog):
+    """Lightweight resizable modal lightbox displaying a full-resolution featured image."""
+
+    def __init__(self, image_path: str, source_description: str = "", parent: Optional[QWidget] = None):
+        super().__init__(parent)
+        self.setWindowTitle("Featured Image Preview")
+        self.setMinimumSize(420, 280)
+        self._image_path = str(image_path)
+        self._source_pixmap = QPixmap(self._image_path)
+
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(12, 12, 12, 12)
+        layout.setSpacing(8)
+
+        w_px = self._source_pixmap.width()
+        h_px = self._source_pixmap.height()
+        dim_str = f"{w_px} x {h_px} px" if (w_px > 0 and h_px > 0) else "Unavailable"
+        desc = str(source_description or Path(self._image_path).name).strip()
+        header_text = f"{desc}  ({dim_str})" if desc else dim_str
+        self.header_label = QLabel(header_text)
+        self.header_label.setStyleSheet("font-size: 11px; color: #94a3b8;")
+        self.header_label.setWordWrap(True)
+        layout.addWidget(self.header_label)
+
+        self.image_label = QLabel()
+        self.image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.image_label.setMinimumSize(320, 180)
+        layout.addWidget(self.image_label, 1)
+
+        btn_row = QHBoxLayout()
+        btn_row.addStretch()
+        self.close_btn = QPushButton("Close")
+        self.close_btn.setDefault(True)
+        self.close_btn.clicked.connect(self.accept)
+        btn_row.addWidget(self.close_btn)
+        layout.addLayout(btn_row)
+
+        # Size dialog proportionally to image capped to available screen bounds
+        max_w, max_h = 960, 620
+        try:
+            screen = QGuiApplication.primaryScreen()
+            if screen is not None:
+                avail = screen.availableGeometry()
+                max_w = max(480, int(avail.width() * 0.78))
+                max_h = max(320, int(avail.height() * 0.78))
+        except Exception:
+            pass
+        if w_px > 0 and h_px > 0:
+            init_w = max(460, min(max_w, w_px + 32))
+            init_h = max(320, min(max_h, h_px + 92))
+            self.resize(init_w, init_h)
+        else:
+            self.resize(560, 380)
+        self._update_scaled_pixmap()
+
+    def _update_scaled_pixmap(self) -> None:
+        if self._source_pixmap.isNull():
+            self.image_label.setText("Could not load preview image.")
+            return
+        avail = self.image_label.size()
+        target_w = max(120, min(avail.width(), self._source_pixmap.width()))
+        target_h = max(90, min(avail.height(), self._source_pixmap.height()))
+        scaled = self._source_pixmap.scaled(
+            target_w,
+            target_h,
+            Qt.AspectRatioMode.KeepAspectRatio,
+            Qt.TransformationMode.SmoothTransformation,
+        )
+        self.image_label.setPixmap(scaled)
+
+    def resizeEvent(self, event: Any) -> None:
+        super().resizeEvent(event)
+        self._update_scaled_pixmap()
+
+
+def set_preview_pixmap(tab_widget: Any, image_path: str, source_description: str = "") -> None:
+    """Display scaled preview thumbnail and enable click-to-enlarge for *image_path*."""
+    lbl = getattr(tab_widget, "wp_thumb_preview_label", None)
+    if lbl is None:
+        return
     pix = QPixmap(str(image_path)).scaled(
         160,
         90,
         Qt.AspectRatioMode.KeepAspectRatio,
         Qt.TransformationMode.SmoothTransformation,
     )
-    tab_widget.wp_thumb_preview_label.setPixmap(pix)
+    lbl.setPixmap(pix)
+    if hasattr(lbl, "set_full_image"):
+        lbl.set_full_image(str(image_path), source_description=source_description)
+
+
+def clear_preview_pixmap(tab_widget: Any, placeholder_text: str) -> None:
+    """Clear preview pixmap, disable click-to-enlarge, and show *placeholder_text*."""
+    lbl = getattr(tab_widget, "wp_thumb_preview_label", None)
+    if lbl is None:
+        return
+    lbl.clear()
+    lbl.setText(placeholder_text)
+    if hasattr(lbl, "clear_full_image"):
+        lbl.clear_full_image()
+
+
+def open_featured_image_preview(tab_widget: Any) -> Optional[FeaturedImageLightboxDialog]:
+    """Open the full-resolution lightbox preview for the current WordPress featured image."""
+    lbl = getattr(tab_widget, "wp_thumb_preview_label", None)
+    img_path = lbl.full_image_path() if (lbl is not None and hasattr(lbl, "full_image_path")) else None
+    if not img_path or not Path(img_path).is_file():
+        return None
+    desc = getattr(lbl, "_source_description", "") or ""
+    dlg = FeaturedImageLightboxDialog(img_path, source_description=desc, parent=tab_widget)
+    if not os.environ.get("RTVS_TEST_MODE"):
+        dlg.exec()
+    return dlg
+
+
+def _set_preview_pixmap(tab_widget: Any, image_path: str, source_description: str = "") -> None:
+    set_preview_pixmap(tab_widget, image_path, source_description=source_description)
 
 
 def _start_youtube_thumbnail_fetch(tab_widget: Any, video_id: str, thumbnail_url: str = "") -> None:
@@ -76,12 +227,12 @@ def on_youtube_thumbnail_fetched(tab_widget: Any, video_id: str, local_path: str
         return
 
     if local_path and Path(local_path).is_file():
-        tab_widget.wp_thumb_path_label.setText(f"YouTube default thumbnail ({Path(local_path).name})")
-        _set_preview_pixmap(tab_widget, local_path)
+        desc = f"YouTube default thumbnail ({Path(local_path).name})"
+        tab_widget.wp_thumb_path_label.setText(desc)
+        _set_preview_pixmap(tab_widget, local_path, source_description=desc)
     else:
         tab_widget.wp_thumb_path_label.setText("YouTube default thumbnail (will download on export)")
-        tab_widget.wp_thumb_preview_label.clear()
-        tab_widget.wp_thumb_preview_label.setText("YouTube\nThumbnail")
+        clear_preview_pixmap(tab_widget, "YouTube\nThumbnail")
 
 
 def load_featured_image_from_post(tab_widget: Any, index: int, post: Dict[str, Any]) -> None:
@@ -115,12 +266,12 @@ def load_featured_image_from_post(tab_widget: Any, index: int, post: Dict[str, A
             allow_network=False,
         )
         if cached_path and Path(cached_path).is_file():
-            tab_widget.wp_thumb_path_label.setText(f"YouTube default thumbnail ({Path(cached_path).name})")
-            _set_preview_pixmap(tab_widget, cached_path)
+            desc = f"YouTube default thumbnail ({Path(cached_path).name})"
+            tab_widget.wp_thumb_path_label.setText(desc)
+            _set_preview_pixmap(tab_widget, cached_path, source_description=desc)
         else:
             tab_widget.wp_thumb_path_label.setText("YouTube default thumbnail (fetching preview...)")
-            tab_widget.wp_thumb_preview_label.clear()
-            tab_widget.wp_thumb_preview_label.setText("YouTube\nThumbnail")
+            clear_preview_pixmap(tab_widget, "YouTube\nThumbnail")
             _start_youtube_thumbnail_fetch(tab_widget, yt_vid, yt_src.get("thumbnail_url", ""))
     elif mode == "grab" and tab_widget._is_video_project:
         tab_widget.wp_rad_thumb_grab.setChecked(True)
@@ -132,29 +283,28 @@ def load_featured_image_from_post(tab_widget: Any, index: int, post: Dict[str, A
             if media_file and Path(str(media_file)).is_file():
                 img = tab_widget._capture_wp_frame(pos=frame_pos, user_initiated=False)
         if img and Path(str(img)).exists():
-            tab_widget.wp_thumb_path_label.setText(f"Video frame captured at {format_time(frame_pos, include_millis=True)}")
-            _set_preview_pixmap(tab_widget, str(img))
+            desc = f"Video frame captured at {format_time(frame_pos, include_millis=True)}"
+            tab_widget.wp_thumb_path_label.setText(desc)
+            _set_preview_pixmap(tab_widget, str(img), source_description=desc)
         else:
             tab_widget.wp_thumb_path_label.setText(f"Video frame will be captured at {format_time(frame_pos, include_millis=True)}")
-            tab_widget.wp_thumb_preview_label.clear()
-            tab_widget.wp_thumb_preview_label.setText("Video Frame")
+            clear_preview_pixmap(tab_widget, "Video Frame")
     elif mode == "file" and img:
         tab_widget.wp_rad_thumb_file.setChecked(True)
         tab_widget.wp_scrub_widget.setVisible(False)
         tab_widget.wp_browse_widget.setVisible(True)
-        tab_widget.wp_thumb_path_label.setText(Path(str(img)).name)
+        desc = Path(str(img)).name
+        tab_widget.wp_thumb_path_label.setText(desc)
         if Path(str(img)).exists():
-            _set_preview_pixmap(tab_widget, str(img))
+            _set_preview_pixmap(tab_widget, str(img), source_description=desc)
         else:
-            tab_widget.wp_thumb_preview_label.clear()
-            tab_widget.wp_thumb_preview_label.setText("Image not found")
+            clear_preview_pixmap(tab_widget, "Image not found")
     else:
         tab_widget.wp_rad_thumb_none.setChecked(True)
         tab_widget.wp_scrub_widget.setVisible(False)
         tab_widget.wp_browse_widget.setVisible(False)
         tab_widget.wp_thumb_path_label.setText("No image selected")
-        tab_widget.wp_thumb_preview_label.clear()
-        tab_widget.wp_thumb_preview_label.setText("No Thumbnail")
+        clear_preview_pixmap(tab_widget, "No Thumbnail")
 
     tab_widget.wp_thumb_caption_edit.setText(str(post.get("featured_image_caption") or ""))
     tab_widget.wp_thumb_alt_edit.setText(str(post.get("featured_image_alt_text") or ""))
@@ -178,8 +328,7 @@ def on_featured_image_mode_changed(tab_widget: Any) -> None:
         tab_widget.wp_browse_widget.setVisible(False)
         tab_widget.wp_img_meta_widget.setVisible(False)
         tab_widget.wp_thumb_path_label.setText("No image selected")
-        tab_widget.wp_thumb_preview_label.clear()
-        tab_widget.wp_thumb_preview_label.setText("No Thumbnail")
+        clear_preview_pixmap(tab_widget, "No Thumbnail")
         post["featured_image"] = None
         post["featured_image_mode"] = "none"
     elif hasattr(tab_widget, "wp_rad_thumb_youtube") and tab_widget.wp_rad_thumb_youtube.isChecked():
@@ -197,12 +346,12 @@ def on_featured_image_mode_changed(tab_widget: Any) -> None:
             allow_network=False,
         )
         if cached_path and Path(cached_path).is_file():
-            tab_widget.wp_thumb_path_label.setText(f"YouTube default thumbnail ({Path(cached_path).name})")
-            _set_preview_pixmap(tab_widget, cached_path)
+            desc = f"YouTube default thumbnail ({Path(cached_path).name})"
+            tab_widget.wp_thumb_path_label.setText(desc)
+            _set_preview_pixmap(tab_widget, cached_path, source_description=desc)
         else:
             tab_widget.wp_thumb_path_label.setText("YouTube default thumbnail (fetching preview...)")
-            tab_widget.wp_thumb_preview_label.clear()
-            tab_widget.wp_thumb_preview_label.setText("YouTube\nThumbnail")
+            clear_preview_pixmap(tab_widget, "YouTube\nThumbnail")
             _start_youtube_thumbnail_fetch(tab_widget, yt_vid, yt_src.get("thumbnail_url", ""))
     elif tab_widget.wp_rad_thumb_grab.isChecked():
         tab_widget.wp_browse_widget.setVisible(False)
@@ -223,14 +372,14 @@ def on_featured_image_mode_changed(tab_widget: Any) -> None:
         tab_widget.wp_img_meta_widget.setVisible(True)
         custom_path = post.get("featured_image")
         if custom_path and Path(str(custom_path)).exists() and post.get("featured_image_mode") == "file":
-            tab_widget.wp_thumb_path_label.setText(Path(str(custom_path)).name)
-            _set_preview_pixmap(tab_widget, str(custom_path))
+            desc = Path(str(custom_path)).name
+            tab_widget.wp_thumb_path_label.setText(desc)
+            _set_preview_pixmap(tab_widget, str(custom_path), source_description=desc)
         else:
             post["featured_image_mode"] = "file"
             post["featured_image"] = None
             tab_widget.wp_thumb_path_label.setText("Click Browse to select image file")
-            tab_widget.wp_thumb_preview_label.clear()
-            tab_widget.wp_thumb_preview_label.setText("No Image\nSelected")
+            clear_preview_pixmap(tab_widget, "No Image\nSelected")
 
     if hasattr(tab_widget, "_update_post_list_item_label"):
         tab_widget._update_post_list_item_label(tab_widget._current_post_index)
@@ -239,6 +388,11 @@ def on_featured_image_mode_changed(tab_widget: Any) -> None:
 
 
 __all__ = [
+    "ClickableThumbnailLabel",
+    "FeaturedImageLightboxDialog",
+    "set_preview_pixmap",
+    "clear_preview_pixmap",
+    "open_featured_image_preview",
     "load_featured_image_from_post",
     "on_featured_image_mode_changed",
     "on_youtube_thumbnail_fetched",

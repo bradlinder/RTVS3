@@ -1,16 +1,16 @@
 # Repository Symbol Index & API Map
 
-> Generated: 2026-11-27 13:52:05 | Total Files: 209
+> Generated: 2026-11-27 14:15:03 | Total Files: 210
 > Use `python scripts/generate_symbol_index.py --outline <file>` for exact line numbers.
 
 ## Modules Overview
 
 | Module | Lines | Summary | Primary Classes / Functions |
 | :--- | :---: | :--- | :--- |
-| `RadioTVSegmenter.py` | 686 | Radio & TV Segmenter — v3.10.26-beta | `MainWindow`, `main()` |
+| `RadioTVSegmenter.py` | 686 | Radio & TV Segmenter — v3.10.27-beta | `MainWindow`, `main()` |
 | `audio_normalization.py` | 474 | Radio & TV Story Segmenter — Audio Loudness Probing & Nor... | `LoudnessReport`, `parse_ebur128_summary()`, `probe_media_duration_seconds()`, `probe_media_loudness()` *(+2 more)* |
 | `audio_normalization_worker.py` | 89 | Background QThread worker for non-blocking EBU R128 loudn... | `AudioLoudnessProbeWorker` |
-| `background_workers.py` | 1105 | Radio & TV Story Segmenter — Background Worker Threads & ... | `StoryAutoDetectWorker`, `WaveformWorker`, `VideoThumbnailWorker`, `get_waveform_peak_cache_path()` *(+8 more)* |
+| `background_workers.py` | 911 | Radio & TV Story Segmenter — Background Worker Threads & ... | `StoryAutoDetectWorker`, `WaveformWorker`, `get_waveform_peak_cache_path()`, `read_waveform_peak_cache()` *(+2 more)* |
 | `backup_manager.py` | 622 | Unified State Serialization & Local Backup & Restore Engine. | `compute_data_checksum()`, `serialize_preferences()`, `serialize_keyboard_shortcuts()`, `serialize_glossary()` *(+7 more)* |
 | `batch_dialog.py` | 702 | Radio & TV Story Segmenter — Batch Processing Dialog & Dr... | `BatchFileListWidget`, `BatchProcessingDialog` |
 | `benchmark.py` | 216 | Radio & TV Story Segmenter — Performance & Speed Benchmar... | `run_cli_benchmark()`, `main()` |
@@ -39,10 +39,10 @@
 | `diagnostics/cloud_storage_tests.py` | 592 | Plugin interface, project persistence, cache management, ... | `DiagnosticCloudStorageTestsMixin` |
 | `diagnostics/editing_workflow_tests.py` | 590 | Fades, translation routing, speaker dialog flow, story bo... | `DiagnosticEditingWorkflowTestsMixin` |
 | `diagnostics/editor_guides_and_daw_tests.py` | 500 | Find-replace, user guides viewer, and REAPER DAW companio... | `DiagnosticEditorGuidesAndDawTestsMixin` |
-| `diagnostics/editor_story_ui_tests.py` | 666 | Story transcript highlighting, smart copy, duration & hea... | `DiagnosticEditorStoryUiTestsMixin` |
+| `diagnostics/editor_story_ui_tests.py` | 755 | Story transcript highlighting, smart copy, duration & hea... | `DiagnosticEditorStoryUiTestsMixin` |
 | `diagnostics/export_pipeline.py` | 485 | Multi-format export pipeline, scope slicing, and audio ca... | `DiagnosticExportPipelineMixin` |
 | `diagnostics/export_wordpress_core.py` | 830 | WordPress export scope, content formatting, and YouTube e... | `DiagnosticExportWordPressCoreMixin` |
-| `diagnostics/export_wordpress_media.py` | 670 | WordPress featured image metadata and Castos podcast diag... | `DiagnosticExportWordPressMediaMixin` |
+| `diagnostics/export_wordpress_media.py` | 723 | WordPress featured image metadata and Castos podcast diag... | `DiagnosticExportWordPressMediaMixin` |
 | `diagnostics/export_wordpress_upload.py` | 668 | WordPress multi-story upload, Gutenberg hygiene, and audi... | `DiagnosticExportWordPressUploadMixin` |
 | `diagnostics/system_runtime_tests.py` | 446 | System runtime, updater, theme, packaging, roadmap, and m... | `DiagnosticSystemRuntimeTestsMixin` |
 | `diagnostics/voice_and_media_tests.py` | 438 | Voice profile matching, waveform peak cache, and playback... | `DiagnosticVoiceAndMediaTestsMixin` |
@@ -53,11 +53,11 @@
 | `export/__init__.py` | 67 | Export package for Radio & TV Story Segmenter. | - |
 | `export/audio.py` | 287 | Radio & TV Story Segmenter — Broadcast Audio Rendering & ... | `build_audio_fade_filter()`, `export_audio_track()`, `extract_audio_clip()` |
 | `export/daw.py` | 37 | DAW and NLE timeline interchange formatters for Radio & T... | - |
-| `export/dialog.py` | 1676 | Unified Export Dialog for Radio & TV Story Segmenter. | `UnifiedExportDialog` |
+| `export/dialog.py` | 1716 | Unified Export Dialog for Radio & TV Story Segmenter. | `UnifiedExportDialog` |
 | `export/docx.py` | 541 | Word (.docx) export formatter for Radio & TV Story Segmen... | `inject_native_comments_to_docx()`, `create_story_docx()` |
 | `export/pdf.py` | 369 | PDF export formatter for Radio & TV Story Segmenter. | `TranscriptPdfWriter` |
 | `export/reorder_dialog.py` | 255 | export/reorder_dialog.py — Dialog for customizing the dis... | `ReorderExportDestinationsDialog`, `get_export_destinations_order()`, `save_export_destinations_order()` |
-| `export/story_selector.py` | 324 | Checkable story/segment selection sidebar for UnifiedExpo... | `ExportStorySelectorSidebar` |
+| `export/story_selector.py` | 395 | Checkable story/segment selection sidebar for UnifiedExpo... | `ExportStorySelectorSidebar` |
 | `export/subtitles.py` | 222 | Subtitle and timeline formatters for Radio & TV Story Seg... | `format_subtitle_timestamp()`, `format_srt_timestamp()`, `format_vtt_timestamp()`, `format_cue_timestamp()` *(+9 more)* |
 | `export/timeline.py` | 873 | Multi-Platform Timeline and DAW Interchange Engine for Ra... | `reaper_color_from_hex()`, `format_edl_timestamp()`, `build_timeline_clips()`, `generate_reaper_project()` *(+8 more)* |
 | `export_dialogs.py` | 476 | Radio & TV Story Segmenter — Export Dialogs & Scope Selec... | `ExportDialogsMixin`, `show_export_completion_dialog()` |
@@ -68,11 +68,11 @@
 | `gpu_acceleration.py` | 276 | Radio & TV Segmenter v1.1.1 — optional GPU acceleration r... | `GpuAccelerationInstallWorker`, `GpuAccelerationMixin` |
 | `id3_editor.py` | 704 | ID3 Tag Editor module for Radio & TV Segmenter. | `ID3TagEditorDialog`, `read_id3_tags()`, `write_id3_tags()` |
 | `installer/build_tools/__init__.py` | 50 | Modular build utilities for Radio & TV Segmenter PyInstal... | - |
-| `installer/build_tools/config.py` | 213 | Build configuration constants and CLI argument parser. | `parse_build_args()` |
+| `installer/build_tools/config.py` | 214 | Build configuration constants and CLI argument parser. | `parse_build_args()` |
 | `installer/build_tools/env_checks.py` | 188 | Environment validation, external tool resolution, and sub... | `exe_name()`, `find_tool()`, `check_cpu_only_torch()`, `torch_windows_binary_flags()` *(+1 more)* |
 | `installer/build_tools/packaging.py` | 368 | Bundle pruning, plugin archive packaging, runtime tools, ... | `provision_optional_runtime_tools()`, `prune_unneeded_bundled_files()`, `sync_installer_scripts()`, `compile_windows_installer()` *(+1 more)* |
 | `installer/pyinstaller/torch_dll_hook.py` | 70 | PyInstaller runtime hook for Windows ML/native DLL resolu... | - |
-| `media_batch.py` | 1785 | Radio & TV Segmenter v1.1.1 — media batch responsibilities. | `MediaBatchMixin` |
+| `media_batch.py` | 1905 | Radio & TV Segmenter v1.1.1 — media batch responsibilities. | `MediaBatchMixin` |
 | `model_cleanup_dialog.py` | 468 | Manage Models dialog and shared runtime cleanup helpers f... | `ModelCleanupDialog`, `format_directory_size()` |
 | `model_install_workers.py` | 189 | Radio & TV Segmenter — Model Download and Installation Ba... | `WhisperModelInstallWorker`, `DiarizationModelInstallWorker`, `get_diarization_model_dir()`, `is_diarization_model_available()` |
 | `model_management.py` | 621 | Radio & TV Segmenter v1.1.1 — model management responsibi... | `_DummyTranslationWorker`, `ModelManagementMixin` |
@@ -104,12 +104,12 @@
 | `plugins/wordpress/wordpress_dialog.py` | 28 | Backward-compatible facade for legacy WordPress dialog im... | `generate_wp_excerpt()` |
 | `plugins/wordpress/wp_post_builder.py` | 456 | Post item builder, transcript slicing, and video frame ex... | `capture_video_frame()`, `get_primary_text_slice()`, `build_wp_post_items()`, `sync_featured_image_meta()` |
 | `plugins/wordpress/wp_publish_dialog.py` | 524 | WordPress single-story publish dialog with featured image... | `WordPressPublishDialog` |
-| `plugins/wordpress/wp_tab_widget.py` | 968 | WordPress export tab configuration widget and preview con... | `WordPressExportTabWidget` |
-| `plugins/wordpress/wp_thumb_ui.py` | 245 | UI presentation controller for WordPress Featured Image c... | `on_youtube_thumbnail_fetched()`, `load_featured_image_from_post()`, `on_featured_image_mode_changed()` |
+| `plugins/wordpress/wp_tab_widget.py` | 988 | WordPress export tab configuration widget and preview con... | `WordPressExportTabWidget` |
+| `plugins/wordpress/wp_thumb_ui.py` | 399 | UI presentation controller for WordPress Featured Image c... | `ClickableThumbnailLabel`, `FeaturedImageLightboxDialog`, `set_preview_pixmap()`, `clear_preview_pixmap()` *(+4 more)* |
 | `plugins/wordpress/wp_thumbnail_defaults.py` | 445 | Headless YouTube-source featured image defaults, thumbnai... | `extract_youtube_id_headless()`, `get_youtube_thumbnail_cache_path()`, `get_youtube_source_info()`, `resolve_post_youtube_video_id()` *(+6 more)* |
-| `plugins/wordpress/wp_ui_builder.py` | 817 | UI layout construction and widget setup for WordPressExpo... | `setup_wp_tab_ui()` |
+| `plugins/wordpress/wp_ui_builder.py` | 827 | UI layout construction and widget setup for WordPressExpo... | `setup_wp_tab_ui()` |
 | `plugins/wordpress/wp_workers.py` | 106 | Background QThread worker for publishing individual WordP... | `WordPressPublishWorker`, `YouTubeThumbnailFetchWorker` |
-| `plugins/wordpress/youtube_embed.py` | 654 | YouTube Video Embed helpers, Gutenberg iframe generator, ... | `extract_youtube_video_id()`, `build_youtube_embed_block()`, `setup_wp_youtube_ui()`, `update_youtube_status_label()` *(+3 more)* |
+| `plugins/wordpress/youtube_embed.py` | 672 | YouTube Video Embed helpers, Gutenberg iframe generator, ... | `extract_youtube_video_id()`, `build_youtube_embed_block()`, `setup_wp_youtube_ui()`, `update_youtube_status_label()` *(+4 more)* |
 | `plugins/youtube/__init__.py` | 9 | YouTube Video Publisher Plugin for Radio & TV Segmenter. | - |
 | `plugins/youtube/export_destination.py` | 619 | YouTube Export Destination for UnifiedExportDialog with Z... | `YouTubeExportTabWidget`, `YouTubeExportDestination`, `capture_video_frame()` |
 | `plugins/youtube/guide_dialog.py` | 147 | Interactive Assisted Upload Guide Dialog for YouTube Studio. | `YouTubeAssistedUploadGuideDialog` |
@@ -117,7 +117,7 @@
 | `plugins/youtube/yt_dlp_runner.py` | 871 | Headless yt-dlp runtime provisioner, URL parser, metadata... | `extract_youtube_id_strict()`, `normalize_quality_preset()`, `normalize_cookie_browser()`, `get_format_selector_for_preset()` *(+18 more)* |
 | `plugins/youtube/yt_import_dialog.py` | 754 | Qt Dialogs for importing existing YouTube videos, re-down... | `LoadYouTubeEpisodeDialog`, `populate_project_from_youtube_import()`, `open_yt_dlp_updater_dialog()`, `prompt_load_youtube_episode_dialog()` *(+1 more)* |
 | `plugins/youtube/yt_import_workers.py` | 250 | Background QThread workers for yt-dlp provisioning, YouTu... | `YtDlpInstallWorker`, `YouTubeProbeWorker`, `YouTubeDownloadWorker` |
-| `preferences_dialog.py` | 899 | Radio & TV Story Segmenter — Preferences Modal Dialog. | `PreferencesDialogMixin` |
+| `preferences_dialog.py` | 911 | Radio & TV Story Segmenter — Preferences Modal Dialog. | `PreferencesDialogMixin` |
 | `preferences_reset.py` | 684 | Radio & TV Story Segmenter — Preferences Reset & Factory ... | `RestoreSelectedSettingsDialog`, `PreferencesResetMixin` |
 | `preferences_reset_dialog.py` | 643 | Radio & TV Segmenter — Preferences reset and factory defa... | `RestoreSelectedSettingsDialog`, `PreferencesResetMixin` |
 | `preferences_tab_daw.py` | 138 | preferences_tab_daw.py — External Audio & Video Editors P... | `build_external_editors_tab()` |
@@ -128,7 +128,7 @@
 | `processing.py` | 1273 | Radio & TV Segmenter v3.3.29 — processing responsibilities. | `RuntimeSetupWorker`, `ProcessingMixin` |
 | `project_data_purge_dialog.py` | 169 | Modal dialog allowing users to selectively clear/purge pr... | `ProjectDataPurgeDialog` |
 | `project_export.py` | 458 | Radio & TV Story Segmenter — Unified Project & Media Expo... | `ProjectExportMixin` |
-| `project_lifecycle.py` | 992 | Radio & TV Story Segmenter — Project Lifecycle & Persiste... | `ProjectLifecycleMixin` |
+| `project_lifecycle.py` | 994 | Radio & TV Story Segmenter — Project Lifecycle & Persiste... | `ProjectLifecycleMixin` |
 | `project_serialization.py` | 126 | Radio & TV Segmenter — Project file serialization and saf... | `sanitize_project_data_for_storage()`, `serialize_rtvs_project()`, `deserialize_rtvs_project()`, `read_rtvs_project_file()` *(+1 more)* |
 | `project_state_mixin.py` | 364 | Radio & TV Story Segmenter — Project State, Undo/Redo & P... | `ProjectStateMixin` |
 | `prs_shared.py` | 1495 |  | `ProjectMetadataDict`, `ResizableTextEdit`, `CollapsibleSection`, `ExportDialog` *(+8 more)* |
@@ -177,12 +177,13 @@
 | `theme_preferences.py` | 606 | Radio & TV Story Segmenter — Theme Preferences & Styling ... | `ThemePreferencesMixin` |
 | `theme_qss.py` | 330 | Targeted QSS for the Radio & TV Segmenter visual design s... | - |
 | `theme_tokens.py` | 307 | Theme Tokens for Radio & TV Story Segmenter. | `ThemeTokens`, `theme_tokens_for_mode()` |
+| `thumbnail_workers.py` | 523 | Video thumbnail cache helpers, network-share detection, a... | `VideoThumbnailCacheLoader`, `VideoThumbnailWorker`, `is_network_path()`, `normalize_thumbnail_density()` *(+6 more)* |
 | `timeline_context_menus.py` | 197 | Context menu builders and event handlers for the timeline... | `show_timeline_context_menu()`, `show_selection_context_menu()` |
 | `timeline_overview.py` | 351 | Timeline Resize Handle and Overview Navigation Bar widgets. | `TimelineResizeHandle`, `TimelineOverviewBar` |
 | `timeline_overview_widget.py` | 372 | Timeline overview bar, mini-map navigator, and resize han... | `TimelineResizeHandle`, `TimelineOverviewBar` |
-| `timeline_painter.py` | 430 | Timeline canvas rendering engine, waveform drawing, and p... | `render_waveform_buffer()`, `paint_timeline_canvas()` |
+| `timeline_painter.py` | 436 | Timeline canvas rendering engine, waveform drawing, and p... | `render_waveform_buffer()`, `paint_timeline_canvas()` |
 | `timeline_snap.py` | 195 | Timeline snapping algorithms, edge detection, and collisi... | `snap_time()`, `find_edge_at_pos()`, `find_fade_handle_at_pos()`, `find_story_at_time()` *(+4 more)* |
-| `timeline_widgets.py` | 971 | Radio & TV Story Segmenter — Timeline Ruler, Track Views,... | `TimelineCanvas`, `TimelineWidget` |
+| `timeline_widgets.py` | 995 | Radio & TV Story Segmenter — Timeline Ruler, Track Views,... | `TimelineCanvas`, `TimelineWidget` |
 | `transcript_cleaner.py` | 216 | Radio & TV Segmenter — Transcript cleaning, loop collapsi... | `collapse_repeating_ngrams()`, `strip_hallucination_phrases()`, `trim_trailing_degenerate_tail()`, `scrub_transcript_segments()` *(+1 more)* |
 | `transcript_context_menu_mixin.py` | 746 | Radio & TV Story Segmenter — Interactive Transcript Conte... | `TranscriptContextMenuMixin` |
 | `transcript_editor.py` | 953 | transcript_editor.py - Interactive Transcript Editor & Vi... | `InteractiveTranscriptEdit` |
@@ -191,7 +192,7 @@
 | `transcript_navigation_mixin.py` | 300 | transcript_navigation_mixin.py - Timestamp discovery, car... | `TranscriptNavigationMixin` |
 | `transcript_playback_highlight_mixin.py` | 277 | Radio & TV Story Segmenter — Interactive Transcript Playb... | `TranscriptPlaybackHighlightMixin` |
 | `transcript_selection_mixin.py` | 473 | transcript_selection_mixin.py - Multi-selection, timeline... | `TranscriptSelectionMixin` |
-| `transcript_story.py` | 856 | Radio & TV Segmenter v3.10.26-beta — transcript story res... | `TranscriptStoryMixin` |
+| `transcript_story.py` | 856 | Radio & TV Segmenter v3.10.27-beta — transcript story res... | `TranscriptStoryMixin` |
 | `transcript_styles.py` | 104 | transcript_styles.py - Transcript view stylesheets and da... | `transcript_text_view_stylesheet()`, `clean_dark_mode_clipboard_html()` |
 | `transcript_timeline_sync_mixin.py` | 655 | Radio & TV Story Segmenter — Transcript Timeline & Playba... | `TranscriptTimelineSyncMixin` |
 | `transcription_processing.py` | 579 | Transcription background process management for Radio & T... | `TranscriptionProcessingMixin` |
@@ -220,7 +221,7 @@
 ## Detailed Symbol Catalog
 
 ### `RadioTVSegmenter.py` (686 lines)
-*Radio & TV Segmenter — v3.10.26-beta*
+*Radio & TV Segmenter — v3.10.27-beta*
 - **class `MainWindow(ModelManagementMixin, MediaBatchMixin, PlaybackPreferencesMixin, UiLayoutMixin, ProcessingMixin, TranslationMixin, TranscriptStoryMixin, ProjectExportMixin, GpuAccelerationMixin, QMainWindow)`** (lines 160–583):
   *Main application window for Radio & TV Segmenter.*
   - `__init__(self)` [L178-L355]
@@ -258,33 +259,24 @@
   - `cancel(self)` [L67-L69] — *Request worker cancellation.*
   - `run(self)` [L71-L86] — *Execute non-blocking probe in background.*
 
-### `background_workers.py` (1105 lines)
+### `background_workers.py` (911 lines)
 *Radio & TV Story Segmenter — Background Worker Threads & Waveform Cache Helpers.*
-- **class `StoryAutoDetectWorker(QObject)`** (lines 93–467):
-  - `__init__(self, audio_file, silence_threshold, lead_in_padding, audio_duration, transcript_segments, whisper_model, detection_mode, min_story_duration, **kwargs)` [L104-L128]
-  - `cancel(self)` [L130-L131]
-  - `_emit_progress(self, message, percent)` [L133-L147]
-  - `_is_real_speech(self, text)` [L149-L155]
-  - `run(self)` [L157-L467]
-- **class `WaveformWorker(QObject)`** (lines 696–861):
-  - `__init__(self, audio_file, points_per_second, project_file)` [L700-L707]
-  - `cancel(self)` [L709-L717] — *Thread-safe cancellation request; also stops the FFmpeg child process.*
-  - `run(self)` [L719-L861] — *Build a compact peak envelope without loading the whole recording into RAM.*
-- **class `VideoThumbnailWorker(QObject)`** (lines 1035–1094):
-  - `__init__(self, media_path, duration, output_dir, count)` [L1039-L1046]
-  - `cancel(self)` [L1048-L1055]
-  - `run(self)` [L1057-L1094]
+- **class `StoryAutoDetectWorker(QObject)`** (lines 94–468):
+  - `__init__(self, audio_file, silence_threshold, lead_in_padding, audio_duration, transcript_segments, whisper_model, detection_mode, min_story_duration, **kwargs)` [L105-L129]
+  - `cancel(self)` [L131-L132]
+  - `_emit_progress(self, message, percent)` [L134-L148]
+  - `_is_real_speech(self, text)` [L150-L156]
+  - `run(self)` [L158-L468]
+- **class `WaveformWorker(QObject)`** (lines 713–878):
+  - `__init__(self, audio_file, points_per_second, project_file)` [L717-L724]
+  - `cancel(self)` [L726-L734] — *Thread-safe cancellation request; also stops the FFmpeg child process.*
+  - `run(self)` [L736-L878] — *Build a compact peak envelope without loading the whole recording into RAM.*
 - **Functions**:
-  - `get_waveform_peak_cache_path(audio_file, project_file)` [L491-L545] — *Return local project or appdata path for waveform peak binary cache file.*
-  - `read_waveform_peak_cache(audio_file, points_per_second, project_file)` [L550-L619] — *Read cached waveform peak envelope from binary cache.*
-  - `_pack_f32(values)` [L621-L625]
-  - `write_waveform_peak_cache(audio_file, peaks, points_per_second, project_file, levels, skip_if_exists)` [L628-L670] — *Write waveform peak envelope and multi-resolution mipmapped levels to binary cache with atomic rename.*
-  - `invalidate_waveform_peak_cache(audio_file, project_file)` [L673-L693] — *Delete any cached waveform peak binary file for audio_file, including legacy paths.*
-  - `normalize_thumbnail_density(density)` [L882-L885] — *Normalize a timeline thumbnail density setting to 'standard', 'detailed', 'high', or 'extra_high'.*
-  - `get_thumbnail_count_for_density(density, duration)` [L888-L893] — *Return the duration-scaled, memory-bounded thumbnail count for a density preset.*
-  - `get_video_thumbnail_cache_dir(media_file, project_file, target_count)` [L896-L944] — *Return the deterministic thumbnail cache directory for a media file, associating with project if available.*
-  - `read_video_thumbnail_cache(media_file, duration, project_file, target_count)` [L947-L999] — *Read pre-extracted video thumbnail items [(timestamp, image_path), ...] from disk cache.*
-  - `invalidate_video_thumbnail_cache(media_file, project_file, target_count)` [L1002-L1032] — *Delete the thumbnail cache directory for a given media file.*
+  - `get_waveform_peak_cache_path(audio_file, project_file)` [L492-L552] — *Return local project or appdata path for waveform peak binary cache file.*
+  - `read_waveform_peak_cache(audio_file, points_per_second, project_file)` [L557-L636] — *Read cached waveform peak envelope from binary cache.*
+  - `_pack_f32(values)` [L638-L642]
+  - `write_waveform_peak_cache(audio_file, peaks, points_per_second, project_file, levels, skip_if_exists)` [L645-L687] — *Write waveform peak envelope and multi-resolution mipmapped levels to binary cache with atomic rename.*
+  - `invalidate_waveform_peak_cache(audio_file, project_file)` [L690-L710] — *Delete any cached waveform peak binary file for audio_file, including legacy paths.*
 
 ### `backup_manager.py` (622 lines)
 *Unified State Serialization & Local Backup & Restore Engine.*
@@ -639,11 +631,11 @@
   - `_test_in_app_user_guides_and_documentation_viewer(self, item)` [L210-L301] — *Validates in-app user guide resolution, fallback to embedded content, and bundling invariants.*
   - `_test_reaper_daw_companion_and_universal_clipboard_pipeline(self, item)` [L303-L500] — *Validates REAPER DAW clip cue JSON schema, sidecar emission, Lua script syntax,*
 
-### `diagnostics/editor_story_ui_tests.py` (666 lines)
+### `diagnostics/editor_story_ui_tests.py` (755 lines)
 *Story transcript highlighting, smart copy, duration & header diagnostic tests.*
-- **class `DiagnosticEditorStoryUiTestsMixin`** (lines 9–666):
-  - `_test_story_transcript_highlighting_and_smart_copy(self, item)` [L10-L483] — *Validates story selection synchronization with transcript highlight overlay and smart clipboard copying.*
-  - `_test_story_duration_visibility_and_header_aggregation(self, item)` [L485-L666] — *Validates story clock duration formatting, 2-line sidebar item format, and multi-selection header aggregation.*
+- **class `DiagnosticEditorStoryUiTestsMixin`** (lines 9–755):
+  - `_test_story_transcript_highlighting_and_smart_copy(self, item)` [L10-L572] — *Validates story selection synchronization with transcript highlight overlay and smart clipboard copying.*
+  - `_test_story_duration_visibility_and_header_aggregation(self, item)` [L574-L755] — *Validates story clock duration formatting, 2-line sidebar item format, and multi-selection header aggregation.*
 
 ### `diagnostics/export_pipeline.py` (485 lines)
 *Multi-format export pipeline, scope slicing, and audio cancellation tests.*
@@ -663,11 +655,11 @@
   - `_test_wordpress_export_content_and_transcript_formatter(self, item)` [L280-L490]
   - `_test_wordpress_youtube_video_embed(self, item)` [L492-L830] — *Verify YouTube URL parsing, iframe block generation, video project defaults, and Gutenberg placement.*
 
-### `diagnostics/export_wordpress_media.py` (670 lines)
+### `diagnostics/export_wordpress_media.py` (723 lines)
 *WordPress featured image metadata and Castos podcast diagnostic tests.*
-- **class `DiagnosticExportWordPressMediaMixin`** (lines 10–670):
-  - `_test_wordpress_featured_image_caption_and_alt_text(self, item)` [L11-L252] — *Verify Featured Image caption & alt_text across WordPressClient, post builder, tab UI, and PublishWorker.*
-  - `_test_wordpress_castos_podcast_integration(self, item)` [L254-L670]
+- **class `DiagnosticExportWordPressMediaMixin`** (lines 10–723):
+  - `_test_wordpress_featured_image_caption_and_alt_text(self, item)` [L11-L305] — *Verify Featured Image caption & alt_text across WordPressClient, post builder, tab UI, and PublishWorker.*
+  - `_test_wordpress_castos_podcast_integration(self, item)` [L307-L723]
 
 ### `diagnostics/export_wordpress_upload.py` (668 lines)
 *WordPress multi-story upload, Gutenberg hygiene, and audio toggle diagnostic tests.*
@@ -766,9 +758,9 @@
 *DAW and NLE timeline interchange formatters for Radio & TV Story Segmenter.*
 - **Public Exports (`__all__`)**: format_edl_timestamp, build_timeline_clips, generate_reaper_project, generate_samplitude_edl, generate_fcp7_xml, generate_audition_xml, generate_fcpxml, generate_aaf_interchange, generate_hindenburg_session, generate_audacity_labels, generate_cue_sheet, generate_daw_marker_csv
 
-### `export/dialog.py` (1676 lines)
+### `export/dialog.py` (1716 lines)
 *Unified Export Dialog for Radio & TV Story Segmenter.*
-- **class `UnifiedExportDialog(QDialog)`** (lines 64–1676):
+- **class `UnifiedExportDialog(QDialog)`** (lines 64–1716):
   *Unified Export Center supporting Local Files and dynamic plugin destinations.*
   - `__init__(self, main_window, initial_scope, initial_dest, parent)` [L67-L270]
   - `showEvent(self, event)` [L272-L274]
@@ -781,29 +773,30 @@
   - `_on_timeline_location_radio_toggled(self)` [L1050-L1053]
   - `_browse_custom_timeline_location(self)` [L1055-L1060]
   - `_toggle_all_sections(self)` [L1062-L1076]
-  - `_update_export_button_label(self)` [L1078-L1091]
-  - `_on_dest_changed(self)` [L1093-L1101]
-  - `is_story_selector_visible(self)` [L1103-L1110] — *Return True when the Export Dialog's left selected-stories sidebar is active.*
-  - `get_selected_story_indices(self)` [L1112-L1116] — *Return the currently checked 0-based story indices.*
-  - `is_full_episode_selected(self)` [L1118-L1122] — *Return True when Full Episode is checked in the Custom Selection sidebar.*
-  - `_sync_story_selector_visibility(self)` [L1124-L1132]
-  - `_on_export_full_episode_toggled(self, include_full)` [L1134-L1142]
-  - `_on_export_story_selection_changed(self, indices)` [L1144-L1163]
-  - `_on_export_story_activated(self, story_idx)` [L1165-L1180]
-  - `_on_scope_changed(self)` [L1182-L1194]
-  - `_open_id3_editor(self)` [L1196-L1206] — *Open the ID3 Tag Editor for MP3 files.*
-  - `_copy_youtube_chapters(self)` [L1208-L1224]
-  - `_load_saved_options(self)` [L1226-L1315]
-  - `save_options_to_settings(self, as_default)` [L1317-L1389]
-  - `_handle_accept(self)` [L1391-L1469]
-  - `get_result(self)` [L1471-L1583]
-  - `_persist_plugin_draft_states(self)` [L1585-L1593] — *Persist any unsaved plugin destination edits (such as WordPress post drafts) back to the project.*
-  - `done(self, r)` [L1595-L1597]
-  - `toggle_float_mode(self, pinned)` [L1599-L1615] — *Toggle whether the non-modal floating window stays pinned on top of other windows.*
-  - `set_scope_and_destination(self, scope, dest_id)` [L1617-L1628] — *Update export scope and active destination tab on an open modeless export window.*
-  - `refresh_from_main_window(self)` [L1630-L1653] — *Synchronize post items, excerpts, and story lists from the main window without losing draft edits.*
-  - `_toggle_maximize(self)` [L1655-L1663]
-  - `changeEvent(self, event)` [L1665-L1676]
+  - `_update_export_button_label(self)` [L1078-L1103]
+  - `_sync_sidebar_decorations(self)` [L1105-L1127] — *Mirror destination-specific badges/tooltips (e.g. WordPress) onto checked sidebar rows.*
+  - `_on_dest_changed(self)` [L1129-L1138]
+  - `is_story_selector_visible(self)` [L1140-L1147] — *Return True when the Export Dialog's left selected-stories sidebar is active.*
+  - `get_selected_story_indices(self)` [L1149-L1153] — *Return the currently checked 0-based story indices.*
+  - `is_full_episode_selected(self)` [L1155-L1159] — *Return True when Full Episode is checked in the Custom Selection sidebar.*
+  - `_sync_story_selector_visibility(self)` [L1161-L1169]
+  - `_on_export_full_episode_toggled(self, include_full)` [L1171-L1180]
+  - `_on_export_story_selection_changed(self, indices)` [L1182-L1202]
+  - `_on_export_story_activated(self, story_idx)` [L1204-L1219]
+  - `_on_scope_changed(self)` [L1221-L1234]
+  - `_open_id3_editor(self)` [L1236-L1246] — *Open the ID3 Tag Editor for MP3 files.*
+  - `_copy_youtube_chapters(self)` [L1248-L1264]
+  - `_load_saved_options(self)` [L1266-L1355]
+  - `save_options_to_settings(self, as_default)` [L1357-L1429]
+  - `_handle_accept(self)` [L1431-L1509]
+  - `get_result(self)` [L1511-L1623]
+  - `_persist_plugin_draft_states(self)` [L1625-L1633] — *Persist any unsaved plugin destination edits (such as WordPress post drafts) back to the project.*
+  - `done(self, r)` [L1635-L1637]
+  - `toggle_float_mode(self, pinned)` [L1639-L1655] — *Toggle whether the non-modal floating window stays pinned on top of other windows.*
+  - `set_scope_and_destination(self, scope, dest_id)` [L1657-L1668] — *Update export scope and active destination tab on an open modeless export window.*
+  - `refresh_from_main_window(self)` [L1670-L1693] — *Synchronize post items, excerpts, and story lists from the main window without losing draft edits.*
+  - `_toggle_maximize(self)` [L1695-L1703]
+  - `changeEvent(self, event)` [L1705-L1716]
 
 ### `export/docx.py` (541 lines)
 *Word (.docx) export formatter for Radio & TV Story Segmenter.*
@@ -843,26 +836,29 @@
   - `get_export_destinations_order()` [L30-L41] — *Retrieve user-configured export destination ordering.*
   - `save_export_destinations_order(order)` [L44-L49] — *Persist user-configured export destination ordering.*
 
-### `export/story_selector.py` (324 lines)
+### `export/story_selector.py` (395 lines)
 *Checkable story/segment selection sidebar for UnifiedExportDialog.*
 - **Public Exports (`__all__`)**: ExportStorySelectorSidebar, FULL_EPISODE_ROLE_VALUE
-- **class `ExportStorySelectorSidebar(QWidget)`** (lines 42–321):
+- **class `ExportStorySelectorSidebar(QWidget)`** (lines 47–392):
   *Left sidebar with checkable Full Episode and story/segment items plus Select All / Clear.*
-  - `__init__(self, main_window, parent)` [L49-L98]
-  - `_resolve_full_episode_title(self)` [L100-L111]
-  - `populate(self, stories, selected_indices, include_full_episode)` [L113-L197] — *Rebuild the checkable list with Full Episode at top followed by project stories.*
-  - `is_full_episode_included(self)` [L199-L205] — *Return True if the Full Episode row is checked.*
-  - `set_include_full_episode(self, checked, emit)` [L207-L224] — *Programmatically check or uncheck the Full Episode row.*
-  - `get_selected_indices(self)` [L226-L235] — *Return sorted 0-based indices of all checked story items (excluding Full Episode).*
-  - `has_any_selection(self)` [L237-L239] — *Return True if Full Episode or at least one story/segment is checked.*
-  - `set_selected_indices(self, selected_indices, emit)` [L241-L260] — *Update story item check states without altering the Full Episode item.*
-  - `select_all(self)` [L262-L266]
-  - `clear_selection(self)` [L268-L272]
-  - `update_count_label(self)` [L274-L277]
-  - `_sync_current_item_quietly(self, item)` [L279-L286]
-  - `_on_item_changed(self, item)` [L288-L304]
-  - `_on_item_clicked(self, item)` [L306-L311]
-  - `_on_current_row_changed(self, row)` [L313-L321]
+  - `__init__(self, main_window, parent)` [L54-L104]
+  - `_resolve_full_episode_title(self)` [L106-L117]
+  - `populate(self, stories, selected_indices, include_full_episode)` [L119-L208] — *Rebuild the checkable list with Full Episode at top followed by project stories.*
+  - `is_full_episode_included(self)` [L210-L216] — *Return True if the Full Episode row is checked.*
+  - `_apply_item_visual_state(self, item)` [L218-L243] — *Apply destination badges/tooltips to checked rows and visually mute unchecked rows.*
+  - `set_item_decorations(self, decorations)` [L245-L262] — *Apply destination-specific (label, tooltip) overrides onto checked sidebar rows.*
+  - `clear_item_decorations(self)` [L264-L267] — *Clear destination-specific badges/tooltips and restore default labels.*
+  - `set_include_full_episode(self, checked, emit)` [L269-L287] — *Programmatically check or uncheck the Full Episode row.*
+  - `get_selected_indices(self)` [L289-L298] — *Return sorted 0-based indices of all checked story items (excluding Full Episode).*
+  - `has_any_selection(self)` [L300-L302] — *Return True if Full Episode or at least one story/segment is checked.*
+  - `set_selected_indices(self, selected_indices, emit)` [L304-L324] — *Update story item check states without altering the Full Episode item.*
+  - `select_all(self)` [L326-L330]
+  - `clear_selection(self)` [L332-L336]
+  - `update_count_label(self)` [L338-L341]
+  - `_sync_current_item_quietly(self, item)` [L343-L350]
+  - `_on_item_changed(self, item)` [L352-L375]
+  - `_on_item_clicked(self, item)` [L377-L382]
+  - `_on_current_row_changed(self, row)` [L384-L392]
 
 ### `export/subtitles.py` (222 lines)
 *Subtitle and timeline formatters for Radio & TV Story Segmenter.*
@@ -1026,10 +1022,10 @@
 *Modular build utilities for Radio & TV Segmenter PyInstaller & installer packaging.*
 - **Public Exports (`__all__`)**: UV_VERSION, UV_URLS, PYSIDE6_USED_SUBMODULES, PYSIDE6_EXCLUDES, TEST_AND_BENCHMARK_EXCLUDES, COLLECT_ALL_PACKAGES, COPY_METADATA_PACKAGES, HIDDEN_IMPORTS, parse_build_args, exe_name, find_tool, check_cpu_only_torch, torch_windows_binary_flags, run, provision_optional_runtime_tools, prune_unneeded_bundled_files, sync_installer_scripts, compile_windows_installer, package_plugins
 
-### `installer/build_tools/config.py` (213 lines)
+### `installer/build_tools/config.py` (214 lines)
 *Build configuration constants and CLI argument parser.*
 - **Functions**:
-  - `parse_build_args()` [L138-L213] — *Parse build target, plugin selection, installer, and version CLI flags.*
+  - `parse_build_args()` [L139-L214] — *Parse build target, plugin selection, installer, and version CLI flags.*
 
 ### `installer/build_tools/env_checks.py` (188 lines)
 *Environment validation, external tool resolution, and subprocess execution helpers.*
@@ -1052,68 +1048,70 @@
 ### `installer/pyinstaller/torch_dll_hook.py` (70 lines)
 *PyInstaller runtime hook for Windows ML/native DLL resolution.*
 
-### `media_batch.py` (1785 lines)
+### `media_batch.py` (1905 lines)
 *Radio & TV Segmenter v1.1.1 — media batch responsibilities.*
-- **class `MediaBatchMixin`** (lines 21–1785):
-  - `probe_media_duration(self, path)` [L22-L36] — *Probe duration locally so video timelines can be populated immediately.*
-  - `_track_worker_thread(self, thread)` [L38-L50] — *Keep a strong reference to active worker threads so Python GC never destroys them while executing.*
-  - `stop_waveform_worker(self, timeout_ms)` [L52-L83] — *Stop the current waveform worker completely before replacing it or closing.*
-  - `_effective_thumbnail_density(self, density)` [L85-L92]
-  - `start_video_thumbnail_generation(self, force_regenerate, density)` [L94-L167]
-  - `_video_thumbnail_thread_finished(self)` [L169-L176]
-  - `_video_thumbnails_finished(self, items)` [L178-L184]
-  - `stop_video_thumbnail_worker(self, timeout_ms)` [L186-L216]
-  - `regenerate_waveform(self)` [L218-L239] — *Force recalculation of waveform peaks by clearing disk cache and restarting generation.*
-  - `regenerate_video_thumbnails(self, density)` [L241-L276] — *Force regeneration of video filmstrip thumbnails (optionally updating density preset).*
-  - `load_waveform_async(self, force_regenerate)` [L278-L335]
-  - `_waveform_progress(self, partial_peaks, pps, pct)` [L337-L345]
-  - `_waveform_finished(self, peaks, cancelled)` [L347-L364]
-  - `_waveform_thread_finished(self)` [L366-L370]
-  - `open_batch_processing_dialog(self)` [L372-L477]
-  - `_batch_next_media(self)` [L479-L596]
-  - `_batch_next_document(self)` [L598-L626]
-  - `_batch_document_error(self, msg)` [L628-L637] — *Handles document batch translation errors safely.*
-  - `_load_user_preferences(self)` [L639-L722]
-  - `set_thumbnail_position(self, position)` [L724-L728]
-  - `_remember_saved_project(self, path)` [L730-L761] — *Remember only projects that have actually been saved.*
-  - `_dialog_directory(self, fallback)` [L763-L775]
-  - `_remember_open_directory(self, path)` [L777-L784]
-  - `_sync_startup_project_actions(self)` [L786-L792] — *Synchronize the Project Settings startup radio/check actions.*
-  - `set_startup_project_mode(self, mode)` [L794-L800] — *Set the startup project policy.*
-  - `restore_last_opened(self)` [L802-L942] — *Apply startup policy and offer recovery from a newer autosave snapshot.*
-  - `toggle_speaker_labels(self, checked)` [L944-L949]
-  - `toggle_colorize_speaker_labels(self, checked)` [L951-L958]
-  - `toggle_timestamps(self, checked)` [L960-L967]
-  - `toggle_milliseconds(self, checked)` [L969-L976]
-  - `toggle_waveform_view(self, checked)` [L978-L982]
-  - `toggle_thumbnail_view(self, checked)` [L984-L988]
-  - `choose_default_project_directory(self)` [L990-L1005]
-  - `open_document_path(self, path)` [L1007-L1042]
-  - `open_clear_cache_dialog(self)` [L1044-L1057]
-  - `open_manage_cached_media_dialog(self)` [L1059-L1062]
-  - `redownload_current_project_remote_media(self)` [L1064-L1075]
-  - `open_glossary_dialog(self)` [L1077-L1081] — *Edit persistent terminology used by every ASR and translation backend.*
-  - `_save_glossary(self)` [L1083-L1090]
-  - `apply_glossary_to_current_transcript(self, entries)` [L1092-L1124] — *Apply glossary rules and contextual name resolution to the active transcript with Undo support.*
-  - `add_to_glossary(self, text)` [L1126-L1146]
-  - `prompt_add_alternate_spelling(self, alternate_text)` [L1148-L1191] — *Prompt user for the preferred glossary spelling that `alternate_text` should map to.*
-  - `apply_glossary_to_whisper_context(self)` [L1193-L1204]
-  - `add_custom_speaker_to_glossary(self, name)` [L1206-L1208]
-  - `set_language(self, language, persist)` [L1210-L1231]
-  - `_apply_localization(self)` [L1233-L1270]
-  - `update_story_segment_terminology(self)` [L1272-L1359] — *Update all user-facing labels and tooltips using active vocabulary settings.*
-  - `open_document(self)` [L1361-L1415]
-  - `export_text_file(self)` [L1417-L1425]
-  - `open_media(self)` [L1427-L1436]
-  - `prepare_for_new_media(self)` [L1438-L1471] — *Checks for unsaved changes before loading new media.*
-  - `_batch_media_error(self, message)` [L1473-L1495]
-  - `_get_batch_project_target_path(self, base_name)` [L1497-L1524] — *Determines consistent target .rtvs project file path during batch processing.*
-  - `_batch_save_project_file(self)` [L1526-L1541] — *Saves project .rtvs to dedicated directory structure during batch processing.*
-  - `_batch_export_current(self)` [L1543-L1627] — *Handles automatic export or project saving during batch processing.*
-  - `load_media_file(self, filename, source, restore_adjacent_project)` [L1629-L1744]
-  - `update_active_media_source(self)` [L1746-L1779] — *Update media player source and refresh waveform when normalization state changes.*
-  - `open_audio(self)` [L1781-L1782]
-  - `handle_media_drop(self, filename)` [L1784-L1785]
+- **class `MediaBatchMixin`** (lines 22–1905):
+  - `probe_media_duration(self, path)` [L23-L37] — *Probe duration locally so video timelines can be populated immediately.*
+  - `_track_worker_thread(self, thread)` [L39-L51] — *Keep a strong reference to active worker threads so Python GC never destroys them while executing.*
+  - `stop_waveform_worker(self, timeout_ms)` [L53-L84] — *Stop the current waveform worker completely before replacing it or closing.*
+  - `_effective_thumbnail_density(self, density)` [L86-L93]
+  - `start_video_thumbnail_generation(self, force_regenerate, density)` [L95-L241]
+  - `_video_thumbnail_progress(self, pct)` [L243-L251]
+  - `_video_thumbnail_thread_finished(self)` [L253-L261]
+  - `_cached_thumbnails_loaded(self, items, req_key, eff_density, expected_count)` [L263-L281]
+  - `_video_thumbnails_finished(self, items, req_key)` [L283-L298]
+  - `stop_video_thumbnail_worker(self, timeout_ms)` [L300-L332]
+  - `regenerate_waveform(self)` [L334-L355] — *Force recalculation of waveform peaks by clearing disk cache and restarting generation.*
+  - `regenerate_video_thumbnails(self, density)` [L357-L394] — *Force regeneration of video filmstrip thumbnails (optionally updating density preset).*
+  - `load_waveform_async(self, force_regenerate)` [L396-L453]
+  - `_waveform_progress(self, partial_peaks, pps, pct)` [L455-L463]
+  - `_waveform_finished(self, peaks, cancelled)` [L465-L482]
+  - `_waveform_thread_finished(self)` [L484-L488]
+  - `open_batch_processing_dialog(self)` [L490-L595]
+  - `_batch_next_media(self)` [L597-L714]
+  - `_batch_next_document(self)` [L716-L744]
+  - `_batch_document_error(self, msg)` [L746-L755] — *Handles document batch translation errors safely.*
+  - `_load_user_preferences(self)` [L757-L840]
+  - `set_thumbnail_position(self, position)` [L842-L846]
+  - `_remember_saved_project(self, path)` [L848-L879] — *Remember only projects that have actually been saved.*
+  - `_dialog_directory(self, fallback)` [L881-L893]
+  - `_remember_open_directory(self, path)` [L895-L902]
+  - `_sync_startup_project_actions(self)` [L904-L910] — *Synchronize the Project Settings startup radio/check actions.*
+  - `set_startup_project_mode(self, mode)` [L912-L918] — *Set the startup project policy.*
+  - `restore_last_opened(self)` [L920-L1060] — *Apply startup policy and offer recovery from a newer autosave snapshot.*
+  - `toggle_speaker_labels(self, checked)` [L1062-L1067]
+  - `toggle_colorize_speaker_labels(self, checked)` [L1069-L1076]
+  - `toggle_timestamps(self, checked)` [L1078-L1085]
+  - `toggle_milliseconds(self, checked)` [L1087-L1094]
+  - `toggle_waveform_view(self, checked)` [L1096-L1100]
+  - `toggle_thumbnail_view(self, checked)` [L1102-L1106]
+  - `choose_default_project_directory(self)` [L1108-L1123]
+  - `open_document_path(self, path)` [L1125-L1160]
+  - `open_clear_cache_dialog(self)` [L1162-L1175]
+  - `open_manage_cached_media_dialog(self)` [L1177-L1180]
+  - `redownload_current_project_remote_media(self)` [L1182-L1193]
+  - `open_glossary_dialog(self)` [L1195-L1199] — *Edit persistent terminology used by every ASR and translation backend.*
+  - `_save_glossary(self)` [L1201-L1208]
+  - `apply_glossary_to_current_transcript(self, entries)` [L1210-L1242] — *Apply glossary rules and contextual name resolution to the active transcript with Undo support.*
+  - `add_to_glossary(self, text)` [L1244-L1264]
+  - `prompt_add_alternate_spelling(self, alternate_text)` [L1266-L1309] — *Prompt user for the preferred glossary spelling that `alternate_text` should map to.*
+  - `apply_glossary_to_whisper_context(self)` [L1311-L1322]
+  - `add_custom_speaker_to_glossary(self, name)` [L1324-L1326]
+  - `set_language(self, language, persist)` [L1328-L1349]
+  - `_apply_localization(self)` [L1351-L1388]
+  - `update_story_segment_terminology(self)` [L1390-L1477] — *Update all user-facing labels and tooltips using active vocabulary settings.*
+  - `open_document(self)` [L1479-L1533]
+  - `export_text_file(self)` [L1535-L1543]
+  - `open_media(self)` [L1545-L1554]
+  - `prepare_for_new_media(self)` [L1556-L1589] — *Checks for unsaved changes before loading new media.*
+  - `_batch_media_error(self, message)` [L1591-L1613]
+  - `_get_batch_project_target_path(self, base_name)` [L1615-L1642] — *Determines consistent target .rtvs project file path during batch processing.*
+  - `_batch_save_project_file(self)` [L1644-L1659] — *Saves project .rtvs to dedicated directory structure during batch processing.*
+  - `_batch_export_current(self)` [L1661-L1745] — *Handles automatic export or project saving during batch processing.*
+  - `load_media_file(self, filename, source, restore_adjacent_project)` [L1747-L1864]
+  - `update_active_media_source(self)` [L1866-L1899] — *Update media player source and refresh waveform when normalization state changes.*
+  - `open_audio(self)` [L1901-L1902]
+  - `handle_media_drop(self, filename)` [L1904-L1905]
 
 ### `model_cleanup_dialog.py` (468 lines)
 *Manage Models dialog and shared runtime cleanup helpers for Radio & TV Segmenter.*
@@ -1682,9 +1680,9 @@
   - `on_publish_finished(self, success, msg, post_data)` [L481-L514]
   - `closeEvent(self, event)` [L516-L521]
 
-### `plugins/wordpress/wp_tab_widget.py` (968 lines)
+### `plugins/wordpress/wp_tab_widget.py` (988 lines)
 *WordPress export tab configuration widget and preview controller.*
-- **class `WordPressExportTabWidget(QWidget)`** (lines 43–967):
+- **class `WordPressExportTabWidget(QWidget)`** (lines 43–987):
   *Configuration and preview panel for WordPress Draft Posts.*
   - `__init__(self, parent, main_window, metadata_editor_mode)` [L55-L75]
   - `_setup_ui(self)` [L77-L78]
@@ -1717,42 +1715,59 @@
   - `_apply_podcast_to_all_posts(self)` [L364-L379]
   - `_sync_post_to_project(self, idx, log_reason)` [L381-L483]
   - `save_all_posts_to_project(self)` [L485-L510] — *Persist all post metadata and export options back into stories and project_metadata.*
-  - `_update_post_list_item_label(self, idx)` [L512-L520]
-  - `_on_wp_post_selection_changed(self, row)` [L522-L525]
-  - `_get_editor_checked_authors(self)` [L527-L535]
-  - `_set_editor_checked_authors(self, author_ids, author_term_ids)` [L537-L544]
-  - `_get_editor_checked_categories(self)` [L546-L554]
-  - `_set_editor_checked_categories(self, cat_ids)` [L556-L564]
-  - `_get_wp_post_bounds(self, post_index)` [L566-L575]
-  - `_sync_wp_slider_to_pos(self, pos)` [L577-L587]
-  - `_on_wp_slider_value_changed(self, val)` [L589-L598]
-  - `_on_wp_scrub_timer_timeout(self)` [L600-L604]
-  - `_on_wp_step(self, delta_secs)` [L606-L614]
-  - `_on_wp_sync_playhead(self)` [L616-L623]
-  - `_load_post_editor_state(self, index)` [L625-L657]
-  - `_on_wp_thumb_mode_changed(self)` [L659-L660]
-  - `_on_wp_thumb_meta_changed(self)` [L662-L669]
-  - `_capture_wp_frame(self, pos, user_initiated)` [L671-L708]
-  - `_on_wp_browse_thumb(self)` [L710-L731]
-  - `_cleanup_temp_files(self)` [L733-L742] — *Purge temporary frame grabs and preview images.*
-  - `closeEvent(self, event)` [L744-L761] — *Persist current post state, stop background thumbnail workers, and clean up temp files.*
-  - `select_full_episode(self)` [L763-L770]
-  - `select_story_index(self, story_idx)` [L772-L779]
-  - `rebuild_post_items(self, scope)` [L781-L846]
-  - `_populate_wp_export_metadata(self, force_refresh)` [L848-L915]
-  - `_prompt_wp_credentials(self, title, message)` [L917-L930]
-  - `_refresh_castos_feeds(self)` [L932-L949]
-  - `_refresh_wp_metadata(self)` [L951-L967]
+  - `get_sidebar_decorations(self)` [L512-L514]
+  - `_notify_export_sidebar_decorations(self)` [L516-L521]
+  - `_update_post_list_item_label(self, idx)` [L523-L533]
+  - `_on_wp_post_selection_changed(self, row)` [L535-L538]
+  - `_get_editor_checked_authors(self)` [L540-L548]
+  - `_set_editor_checked_authors(self, author_ids, author_term_ids)` [L550-L557]
+  - `_get_editor_checked_categories(self)` [L559-L567]
+  - `_set_editor_checked_categories(self, cat_ids)` [L569-L577]
+  - `_get_wp_post_bounds(self, post_index)` [L579-L588]
+  - `_sync_wp_slider_to_pos(self, pos)` [L590-L600]
+  - `_on_wp_slider_value_changed(self, val)` [L602-L611]
+  - `_on_wp_scrub_timer_timeout(self)` [L613-L617]
+  - `_on_wp_step(self, delta_secs)` [L619-L627]
+  - `_on_wp_sync_playhead(self)` [L629-L636]
+  - `_load_post_editor_state(self, index)` [L638-L670]
+  - `_on_wp_thumb_mode_changed(self)` [L672-L673]
+  - `_on_wp_thumb_meta_changed(self)` [L675-L682]
+  - `_capture_wp_frame(self, pos, user_initiated)` [L684-L723]
+  - `_on_wp_browse_thumb(self)` [L725-L747]
+  - `_cleanup_temp_files(self)` [L749-L758] — *Purge temporary frame grabs and preview images.*
+  - `closeEvent(self, event)` [L760-L777] — *Persist current post state, stop background thumbnail workers, and clean up temp files.*
+  - `select_full_episode(self)` [L779-L786]
+  - `select_story_index(self, story_idx)` [L788-L795]
+  - `rebuild_post_items(self, scope)` [L797-L866]
+  - `_populate_wp_export_metadata(self, force_refresh)` [L868-L935]
+  - `_prompt_wp_credentials(self, title, message)` [L937-L950]
+  - `_refresh_castos_feeds(self)` [L952-L969]
+  - `_refresh_wp_metadata(self)` [L971-L987]
 
-### `plugins/wordpress/wp_thumb_ui.py` (245 lines)
+### `plugins/wordpress/wp_thumb_ui.py` (399 lines)
 *UI presentation controller for WordPress Featured Image controls and preview.*
-- **Public Exports (`__all__`)**: load_featured_image_from_post, on_featured_image_mode_changed, on_youtube_thumbnail_fetched
+- **Public Exports (`__all__`)**: ClickableThumbnailLabel, FeaturedImageLightboxDialog, set_preview_pixmap, clear_preview_pixmap, open_featured_image_preview, load_featured_image_from_post, on_featured_image_mode_changed, on_youtube_thumbnail_fetched
+- **class `ClickableThumbnailLabel(QLabel)`** (lines 21–59):
+  *QLabel preview that opens a full-size preview dialog when clicked.*
+  - `__init__(self, text, parent)` [L26-L29]
+  - `set_full_image(self, image_path, source_description)` [L31-L38]
+  - `clear_full_image(self)` [L40-L44]
+  - `full_image_path(self)` [L46-L47]
+  - `mousePressEvent(self, event)` [L49-L59]
+- **class `FeaturedImageLightboxDialog(QDialog)`** (lines 62–134):
+  *Lightweight resizable modal lightbox displaying a full-resolution featured image.*
+  - `__init__(self, image_path, source_description, parent)` [L65-L115]
+  - `_update_scaled_pixmap(self)` [L117-L130]
+  - `resizeEvent(self, event)` [L132-L134]
 - **Functions**:
-  - `_set_preview_pixmap(tab_widget, image_path)` [L20-L27]
-  - `_start_youtube_thumbnail_fetch(tab_widget, video_id, thumbnail_url)` [L30-L52] — *Kick off a non-blocking background QThread fetch for a YouTube default thumbnail.*
-  - `on_youtube_thumbnail_fetched(tab_widget, video_id, local_path)` [L55-L84] — *Apply downloaded YouTube thumbnail preview on the Qt main thread if still relevant.*
-  - `load_featured_image_from_post(tab_widget, index, post)` [L87-L166] — *Populate Featured Image radio buttons, scrubber, and preview from a post dict.*
-  - `on_featured_image_mode_changed(tab_widget)` [L169-L238] — *Handle user selection of Featured Image radio buttons.*
+  - `set_preview_pixmap(tab_widget, image_path, source_description)` [L137-L150] — *Display scaled preview thumbnail and enable click-to-enlarge for *image_path*.*
+  - `clear_preview_pixmap(tab_widget, placeholder_text)` [L153-L161] — *Clear preview pixmap, disable click-to-enlarge, and show *placeholder_text*.*
+  - `open_featured_image_preview(tab_widget)` [L164-L174] — *Open the full-resolution lightbox preview for the current WordPress featured image.*
+  - `_set_preview_pixmap(tab_widget, image_path, source_description)` [L177-L178]
+  - `_start_youtube_thumbnail_fetch(tab_widget, video_id, thumbnail_url)` [L181-L203] — *Kick off a non-blocking background QThread fetch for a YouTube default thumbnail.*
+  - `on_youtube_thumbnail_fetched(tab_widget, video_id, local_path)` [L206-L235] — *Apply downloaded YouTube thumbnail preview on the Qt main thread if still relevant.*
+  - `load_featured_image_from_post(tab_widget, index, post)` [L238-L316] — *Populate Featured Image radio buttons, scrubber, and preview from a post dict.*
+  - `on_featured_image_mode_changed(tab_widget)` [L319-L387] — *Handle user selection of Featured Image radio buttons.*
 
 ### `plugins/wordpress/wp_thumbnail_defaults.py` (445 lines)
 *Headless YouTube-source featured image defaults, thumbnail caching, and embed inheritance.*
@@ -1771,10 +1786,10 @@
   - `ensure_youtube_thumbnail_cached(video_id, thumbnail_url, timeout, cache_dir, fetcher)` [L315-L346] — *Download (if needed) and atomically cache a YouTube video's default thumbnail.*
   - `materialize_post_featured_image(post, main_window, post_index, temp_files_out, allow_network, cache_dir, fetcher, frame_capturer)` [L349-L431] — *Ensure a post's configured featured image exists on disk and return its path.*
 
-### `plugins/wordpress/wp_ui_builder.py` (817 lines)
+### `plugins/wordpress/wp_ui_builder.py` (827 lines)
 *UI layout construction and widget setup for WordPressExportTabWidget.*
 - **Functions**:
-  - `setup_wp_tab_ui(self)` [L36-L817] — *Construct all controls, forms, sliders, list widgets, and tabbed panels for the WordPress export tab.*
+  - `setup_wp_tab_ui(self)` [L36-L827] — *Construct all controls, forms, sliders, list widgets, and tabbed panels for the WordPress export tab.*
 
 ### `plugins/wordpress/wp_workers.py` (106 lines)
 *Background QThread worker for publishing individual WordPress stories.*
@@ -1788,7 +1803,7 @@
   - `__init__(self, video_id, thumbnail_url, timeout)` [L83-L87]
   - `run(self)` [L89-L103]
 
-### `plugins/wordpress/youtube_embed.py` (654 lines)
+### `plugins/wordpress/youtube_embed.py` (672 lines)
 *YouTube Video Embed helpers, Gutenberg iframe generator, and UI setup for WordPress export.*
 - **Functions**:
   - `extract_youtube_video_id(url_or_id)` [L29-L142] — *Extract the clean 11-character YouTube Video ID and optional start timestamp (seconds).*
@@ -1805,6 +1820,7 @@
   - `_on_youtube_stop_at_end_toggled(tab_widget, checked)` [L538-L548]
   - `_on_youtube_placement_toggled(tab_widget, placement)` [L551-L561]
   - `format_post_list_label_and_tooltip(tab_widget, idx)` [L564-L654] — *Return formatted label text and rich multi-line tooltip for an item in wp_posts_list.*
+  - `build_wp_sidebar_decorations(tab_widget)` [L657-L672] — *Build {role_value: (label_text, tooltip_text)} map for ExportStorySelectorSidebar.*
 
 ### `plugins/youtube/__init__.py` (9 lines)
 *YouTube Video Publisher Plugin for Radio & TV Segmenter.*
@@ -1954,11 +1970,11 @@
   - `_set_active_proc(self, proc)` [L150-L151]
   - `run(self)` [L153-L243]
 
-### `preferences_dialog.py` (899 lines)
+### `preferences_dialog.py` (911 lines)
 *Radio & TV Story Segmenter — Preferences Modal Dialog.*
-- **class `PreferencesDialogMixin(PreferencesResetMixin)`** (lines 32–899):
+- **class `PreferencesDialogMixin(PreferencesResetMixin)`** (lines 32–911):
   *Provides the main open_preferences_dialog method and settings persistence.*
-  - `open_preferences_dialog(self, initial_category, modal)` [L35-L899] — *Open the multi-category Preferences dialog as a non-modal floating inspector.*
+  - `open_preferences_dialog(self, initial_category, modal)` [L35-L911] — *Open the multi-category Preferences dialog as a non-modal floating inspector.*
 
 ### `preferences_reset.py` (684 lines)
 *Radio & TV Story Segmenter — Preferences Reset & Factory Defaults Engine.*
@@ -2085,30 +2101,30 @@
   - `resolve_project_media(self, project_file, audio_reference, audio_file_abs)` [L205-L263] — *Resolves portable or absolute project media reference with security extension validation.*
   - `closeEvent(self, event)` [L265-L458] — *MainWindow close event handling shutdown, worker cancellation, and QSettings sync.*
 
-### `project_lifecycle.py` (992 lines)
+### `project_lifecycle.py` (994 lines)
 *Radio & TV Story Segmenter — Project Lifecycle & Persistence Management.*
 - **Public Exports (`__all__`)**: ProjectLifecycleMixin, ProjectDataPurgeDialog
-- **class `ProjectLifecycleMixin`** (lines 49–988):
+- **class `ProjectLifecycleMixin`** (lines 49–990):
   *Provides project lifecycle and persistence methods for MainWindow.*
-  - `close_project(self, prompt)` [L52-L182]
-  - `new_project(self)` [L184-L186]
-  - `project_audio_reference(self)` [L188-L196]
-  - `project_data(self)` [L198-L238]
-  - `_write_project_file(self, file_path)` [L240-L309] — *Writes project state dictionary directly to disk.*
-  - `prepare_export_directories(self, target_base_dir, default_name, prompt_user)` [L311-L372] — *Resolves project export subfolders (Transcripts, Media).*
-  - `get_default_save_directory(self)` [L374-L387] — *Returns target base directory based on preferences and loaded media.*
-  - `validate_project_data(self, data)` [L389-L447] — *Return a list of structural project-data problems before saving.*
-  - `save_project_as(self)` [L449-L499]
-  - `schedule_project_save(self, delay_ms)` [L501-L521] — *Schedule a coalesced disk save after interactive micro-edits without prompting on unsaved projects.*
-  - `_run_debounced_save(self)` [L523-L529]
-  - `cancel_pending_project_save(self)` [L531-L536] — *Cancel any queued debounced save timer without writing to disk.*
-  - `flush_pending_project_save(self)` [L538-L547] — *Immediately execute any pending debounced project save.*
-  - `save_project(self, force)` [L549-L662]
-  - `open_backup_restore_dialog(self)` [L664-L671] — *Opens the unified Backup & Restore Center dialog.*
-  - `load_project_file(self, filename, prompt, preserve_media)` [L673-L825]
-  - `load_project(self, filename)` [L827-L841]
-  - `open_purge_project_data_dialog(self)` [L843-L855] — *Open the modal dialog allowing users to selectively wipe project data.*
-  - `purge_project_data(self, purge_transcript, purge_translations, purge_speakers, purge_stories, purge_media)` [L857-L988] — *Selectively wipe project components while preserving user undo history.*
+  - `close_project(self, prompt)` [L52-L184]
+  - `new_project(self)` [L186-L188]
+  - `project_audio_reference(self)` [L190-L198]
+  - `project_data(self)` [L200-L240]
+  - `_write_project_file(self, file_path)` [L242-L311] — *Writes project state dictionary directly to disk.*
+  - `prepare_export_directories(self, target_base_dir, default_name, prompt_user)` [L313-L374] — *Resolves project export subfolders (Transcripts, Media).*
+  - `get_default_save_directory(self)` [L376-L389] — *Returns target base directory based on preferences and loaded media.*
+  - `validate_project_data(self, data)` [L391-L449] — *Return a list of structural project-data problems before saving.*
+  - `save_project_as(self)` [L451-L501]
+  - `schedule_project_save(self, delay_ms)` [L503-L523] — *Schedule a coalesced disk save after interactive micro-edits without prompting on unsaved projects.*
+  - `_run_debounced_save(self)` [L525-L531]
+  - `cancel_pending_project_save(self)` [L533-L538] — *Cancel any queued debounced save timer without writing to disk.*
+  - `flush_pending_project_save(self)` [L540-L549] — *Immediately execute any pending debounced project save.*
+  - `save_project(self, force)` [L551-L664]
+  - `open_backup_restore_dialog(self)` [L666-L673] — *Opens the unified Backup & Restore Center dialog.*
+  - `load_project_file(self, filename, prompt, preserve_media, preloaded_data)` [L675-L827]
+  - `load_project(self, filename)` [L829-L843]
+  - `open_purge_project_data_dialog(self)` [L845-L857] — *Open the modal dialog allowing users to selectively wipe project data.*
+  - `purge_project_data(self, purge_transcript, purge_translations, purge_speakers, purge_stories, purge_media)` [L859-L990] — *Selectively wipe project components while preserving user undo history.*
 
 ### `project_serialization.py` (126 lines)
 *Radio & TV Segmenter — Project file serialization and safe decompression.*
@@ -3228,6 +3244,31 @@
 - **Functions**:
   - `theme_tokens_for_mode(mode)` [L297-L307] — *Return the ThemeTokens preset matching a Preferences theme_mode value*
 
+### `thumbnail_workers.py` (523 lines)
+*Video thumbnail cache helpers, network-share detection, and background thumbnail workers.*
+- **Public Exports (`__all__`)**: TIMELINE_THUMBNAIL_DENSITY_SPECS, TIMELINE_THUMBNAIL_DENSITY_PRESETS, DEFAULT_TIMELINE_THUMBNAIL_DENSITY, MAX_TIMELINE_THUMBNAIL_COUNT, _LEGACY_DEFAULT_THUMBNAIL_COUNT, is_network_path, normalize_thumbnail_density, get_thumbnail_count_for_density, should_use_keyframe_skip, parse_ffmpeg_progress_seconds, get_video_thumbnail_cache_dir, read_video_thumbnail_cache, invalidate_video_thumbnail_cache, VideoThumbnailCacheLoader, VideoThumbnailWorker
+- **class `VideoThumbnailCacheLoader(QObject)`** (lines 293–336):
+  *Decode cached JPEG thumbnails into thread-safe QImages on a background QThread.*
+  - `__init__(self, items, media_path, target_count, density)` [L299-L305]
+  - `cancel(self)` [L307-L308]
+  - `run(self)` [L310-L336]
+- **class `VideoThumbnailWorker(QObject)`** (lines 339–504):
+  *Background FFmpeg video thumbnail extractor with keyframe acceleration and live progress.*
+  - `__init__(self, media_path, duration, output_dir, count, density, use_keyframe_skip)` [L346-L367]
+  - `build_ffmpeg_command(self, keyframe_skip)` [L369-L388] — *Construct the FFmpeg command vector for thumbnail extraction.*
+  - `cancel(self)` [L390-L398]
+  - `_run_ffmpeg_pass(self, keyframe_skip)` [L400-L454]
+  - `run(self)` [L456-L504]
+- **Functions**:
+  - `is_network_path(path)` [L47-L73] — *Return True if *path* points to a UNC network share or Windows mapped network drive.*
+  - `normalize_thumbnail_density(density)` [L76-L79] — *Normalize a timeline thumbnail density setting to 'standard', 'detailed', 'high', or 'extra_high'.*
+  - `get_thumbnail_count_for_density(density, duration)` [L82-L87] — *Return the duration-scaled, memory-bounded thumbnail count for a density preset.*
+  - `should_use_keyframe_skip(duration, count, density)` [L90-L108] — *Return True when FFmpeg `-skip_frame nokey` can safely accelerate thumbnail extraction.*
+  - `parse_ffmpeg_progress_seconds(line)` [L111-L135] — *Parse elapsed media seconds from an FFmpeg `-progress pipe:1` key=value line.*
+  - `get_video_thumbnail_cache_dir(media_file, project_file, target_count)` [L138-L197] — *Return the deterministic thumbnail cache directory for a media file.*
+  - `read_video_thumbnail_cache(media_file, duration, project_file, target_count)` [L200-L258] — *Read pre-extracted video thumbnail items [(timestamp, image_path), ...] from disk cache.*
+  - `invalidate_video_thumbnail_cache(media_file, project_file, target_count)` [L261-L290] — *Delete the thumbnail cache directory for a given media file.*
+
 ### `timeline_context_menus.py` (197 lines)
 *Context menu builders and event handlers for the timeline canvas.*
 - **Functions**:
@@ -3286,11 +3327,11 @@
   - `setSingleStep(self, step)` [L368-L369]
   - `setValue(self, val)` [L371-L372]
 
-### `timeline_painter.py` (430 lines)
+### `timeline_painter.py` (436 lines)
 *Timeline canvas rendering engine, waveform drawing, and paint pipeline.*
 - **Functions**:
-  - `render_waveform_buffer(canvas, width, height)` [L32-L206] — *Render background waveform peaks and video thumbnail strip onto an offscreen QPixmap.*
-  - `paint_timeline_canvas(canvas, painter, event)` [L209-L430] — *Execute full timeline paint pipeline onto the canvas QPainter.*
+  - `render_waveform_buffer(canvas, width, height)` [L32-L212] — *Render background waveform peaks and video thumbnail strip onto an offscreen QPixmap.*
+  - `paint_timeline_canvas(canvas, painter, event)` [L215-L436] — *Execute full timeline paint pipeline onto the canvas QPainter.*
 
 ### `timeline_snap.py` (195 lines)
 *Timeline snapping algorithms, edge detection, and collision hit-testing.*
@@ -3304,65 +3345,66 @@
   - `format_selection_drag_info(start, end)` [L177-L185] — *Format tooltip and status bar readout for live selection dragging.*
   - `format_edge_drag_info(story, edge_type, current_time)` [L188-L195] — *Format tooltip and status bar readout for live edge dragging.*
 
-### `timeline_widgets.py` (971 lines)
+### `timeline_widgets.py` (995 lines)
 *Radio & TV Story Segmenter — Timeline Ruler, Track Views, Playhead, Overview & Canvas Widgets.*
-- **class `TimelineCanvas(QWidget)`** (lines 71–883):
-  - `__init__(self, parent, tokens)` [L91-L180]
-  - `set_is_video(self, is_video)` [L182-L185]
-  - `set_background_generation_active(self, task_name, active)` [L187-L206] — *Set generation state for 'waveform' or 'thumbnails'.*
-  - `_activate_background_banner(self)` [L208-L213]
-  - `_update_background_status_text(self)` [L215-L231]
-  - `dragEnterEvent(self, event)` [L233-L233]
-  - `dragMoveEvent(self, event)` [L234-L234]
-  - `dragLeaveEvent(self, event)` [L235-L235]
-  - `dropEvent(self, event)` [L236-L236]
-  - `set_audio_filename(self, filename)` [L238-L241]
-  - `set_duration(self, duration)` [L243-L251]
-  - `set_position(self, position)` [L253-L256]
-  - `set_playing_state(self, is_playing)` [L258-L259]
-  - `ensure_position_visible(self, target_time)` [L261-L284]
-  - `clear_selection_range(self)` [L286-L291] — *Clear active timeline drag selection range without affecting committed stories.*
-  - `set_transcript_selection_range(self, start, end)` [L293-L295]
-  - `set_stories(self, stories, selected_indices)` [L297-L301]
-  - `set_waveform_peaks(self, peaks, levels)` [L303-L314]
-  - `set_progressive_waveform_peaks(self, peaks, pps, pct)` [L316-L323]
-  - `set_timeline_views(self, show_waveform, show_thumbnails)` [L325-L329]
-  - `set_video_thumbnails(self, thumbnails)` [L331-L334]
-  - `set_skip_seconds(self, seconds)` [L336-L337]
-  - `visible_duration(self)` [L339-L340]
-  - `clamp_scroll_offset(self)` [L342-L345]
-  - `time_to_x(self, time_val, width)` [L347-L350]
-  - `x_to_time(self, x_val, width)` [L352-L354]
-  - `snap_time(self, raw_time, exclude_story_idx, width, pixel_threshold)` [L356-L357]
-  - `find_edge_at_pos(self, pos_x, width)` [L361-L362]
-  - `find_fade_handle_at_pos(self, pos_x, pos_y, width)` [L364-L365]
-  - `find_story_at_time(self, time)` [L367-L368]
-  - `is_near_playhead(self, pos_x, width)` [L370-L371]
-  - `set_zoom(self, new_zoom, center_x, focus_time)` [L373-L399]
-  - `resizeEvent(self, event)` [L401-L403]
-  - `wheelEvent(self, event)` [L405-L455]
-  - `mousePressEvent(self, event)` [L457-L537]
-  - `mouseMoveEvent(self, event)` [L539-L676]
-  - `mouseReleaseEvent(self, event)` [L678-L750]
-  - `_check_right_drag(self, pos_x)` [L752-L757]
-  - `_show_timeline_context_menu(self, global_pos, pos_x)` [L759-L760]
-  - `_show_selection_context_menu(self, global_pos)` [L762-L763]
-  - `keyPressEvent(self, event)` [L765-L864]
-  - `set_thumbnail_position(self, position)` [L866-L870]
-  - `render_waveform_buffer(self, width, height)` [L872-L873]
-  - `paintEvent(self, event)` [L875-L883]
-- **class `TimelineWidget(QWidget)`** (lines 886–970):
-  - `__init__(self, parent, tokens)` [L889-L923]
-  - `set_is_video(self, is_video)` [L925-L927]
-  - `set_background_generation_active(self, task_name, active)` [L929-L931]
-  - `dragEnterEvent(self, event)` [L933-L933]
-  - `dragMoveEvent(self, event)` [L934-L934]
-  - `dragLeaveEvent(self, event)` [L935-L935]
-  - `dropEvent(self, event)` [L936-L936]
-  - `update_scrollbar_range(self)` [L938-L947]
-  - `update_scrollbar_from_canvas(self, offset)` [L949-L956]
-  - `update_canvas_from_scrollbar(self, val)` [L958-L967]
-  - `__getattr__(self, name)` [L969-L970]
+- **class `TimelineCanvas(QWidget)`** (lines 71–907):
+  - `__init__(self, parent, tokens)` [L91-L181]
+  - `set_is_video(self, is_video)` [L183-L186]
+  - `set_background_generation_active(self, task_name, active)` [L188-L209] — *Set generation state for 'waveform' or 'thumbnails'.*
+  - `_activate_background_banner(self)` [L211-L216]
+  - `set_thumbnail_progress(self, pct)` [L218-L223] — *Update live percentage progress (1-99) for background video thumbnail extraction.*
+  - `_update_background_status_text(self)` [L225-L244]
+  - `dragEnterEvent(self, event)` [L246-L246]
+  - `dragMoveEvent(self, event)` [L247-L247]
+  - `dragLeaveEvent(self, event)` [L248-L248]
+  - `dropEvent(self, event)` [L249-L249]
+  - `set_audio_filename(self, filename)` [L251-L254]
+  - `set_duration(self, duration)` [L256-L264]
+  - `set_position(self, position)` [L266-L269]
+  - `set_playing_state(self, is_playing)` [L271-L272]
+  - `ensure_position_visible(self, target_time)` [L274-L297]
+  - `clear_selection_range(self)` [L299-L304] — *Clear active timeline drag selection range without affecting committed stories.*
+  - `set_transcript_selection_range(self, start, end)` [L306-L308]
+  - `set_stories(self, stories, selected_indices)` [L310-L314]
+  - `set_waveform_peaks(self, peaks, levels)` [L316-L327]
+  - `set_progressive_waveform_peaks(self, peaks, pps, pct)` [L329-L336]
+  - `set_timeline_views(self, show_waveform, show_thumbnails)` [L338-L342]
+  - `set_video_thumbnails(self, thumbnails)` [L344-L358]
+  - `set_skip_seconds(self, seconds)` [L360-L361]
+  - `visible_duration(self)` [L363-L364]
+  - `clamp_scroll_offset(self)` [L366-L369]
+  - `time_to_x(self, time_val, width)` [L371-L374]
+  - `x_to_time(self, x_val, width)` [L376-L378]
+  - `snap_time(self, raw_time, exclude_story_idx, width, pixel_threshold)` [L380-L381]
+  - `find_edge_at_pos(self, pos_x, width)` [L385-L386]
+  - `find_fade_handle_at_pos(self, pos_x, pos_y, width)` [L388-L389]
+  - `find_story_at_time(self, time)` [L391-L392]
+  - `is_near_playhead(self, pos_x, width)` [L394-L395]
+  - `set_zoom(self, new_zoom, center_x, focus_time)` [L397-L423]
+  - `resizeEvent(self, event)` [L425-L427]
+  - `wheelEvent(self, event)` [L429-L479]
+  - `mousePressEvent(self, event)` [L481-L561]
+  - `mouseMoveEvent(self, event)` [L563-L700]
+  - `mouseReleaseEvent(self, event)` [L702-L774]
+  - `_check_right_drag(self, pos_x)` [L776-L781]
+  - `_show_timeline_context_menu(self, global_pos, pos_x)` [L783-L784]
+  - `_show_selection_context_menu(self, global_pos)` [L786-L787]
+  - `keyPressEvent(self, event)` [L789-L888]
+  - `set_thumbnail_position(self, position)` [L890-L894]
+  - `render_waveform_buffer(self, width, height)` [L896-L897]
+  - `paintEvent(self, event)` [L899-L907]
+- **class `TimelineWidget(QWidget)`** (lines 910–994):
+  - `__init__(self, parent, tokens)` [L913-L947]
+  - `set_is_video(self, is_video)` [L949-L951]
+  - `set_background_generation_active(self, task_name, active)` [L953-L955]
+  - `dragEnterEvent(self, event)` [L957-L957]
+  - `dragMoveEvent(self, event)` [L958-L958]
+  - `dragLeaveEvent(self, event)` [L959-L959]
+  - `dropEvent(self, event)` [L960-L960]
+  - `update_scrollbar_range(self)` [L962-L971]
+  - `update_scrollbar_from_canvas(self, offset)` [L973-L980]
+  - `update_canvas_from_scrollbar(self, val)` [L982-L991]
+  - `__getattr__(self, name)` [L993-L994]
 - **Functions**:
   - `_handle_media_drag_event(event, drop_signal)` [L59-L68]
 
@@ -3512,7 +3554,7 @@
   - `_on_bubble_export(self)` [L468-L473]
 
 ### `transcript_story.py` (856 lines)
-*Radio & TV Segmenter v3.10.26-beta — transcript story responsibilities.*
+*Radio & TV Segmenter v3.10.27-beta — transcript story responsibilities.*
 - **Public Exports (`__all__`)**: TranscriptStoryMixin, Story, SetStoriesCommand, SelectStoriesCommand, StoryBoundaryChangeCommand, StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin, ChangeSpeakerDialog, VoiceProfileMatchDialog, StoryFadesDialog, SpeakerManagerDialog, FADE_CURVE_TABLES, get_fade_curve_factors
 - **class `TranscriptStoryMixin(StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin)`** (lines 63–855):
   - `render_transcript(self)` [L64-L471]

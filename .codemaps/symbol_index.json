@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-27 13:52:05",
-  "total_files": 209,
+  "generated_at": "2026-11-27 14:15:03",
+  "total_files": 210,
   "files": {
     "RadioTVSegmenter.py": {
       "path": "RadioTVSegmenter.py",
       "lines": 686,
-      "summary": "Radio & TV Segmenter \u2014 v3.10.26-beta",
+      "summary": "Radio & TV Segmenter \u2014 v3.10.27-beta",
       "exports": null,
       "classes": [
         {
@@ -222,7 +222,7 @@
     },
     "background_workers.py": {
       "path": "background_workers.py",
-      "lines": 1105,
+      "lines": 911,
       "summary": "Radio & TV Story Segmenter \u2014 Background Worker Threads & Waveform Cache Helpers.",
       "exports": null,
       "classes": [
@@ -231,43 +231,43 @@
           "bases": [
             "QObject"
           ],
-          "start_line": 93,
-          "end_line": 467,
+          "start_line": 94,
+          "end_line": 468,
           "doc": "",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, audio_file, silence_threshold, lead_in_padding, audio_duration, transcript_segments, whisper_model, detection_mode, min_story_duration, **kwargs)",
-              "start_line": 104,
-              "end_line": 128,
+              "start_line": 105,
+              "end_line": 129,
               "doc": ""
             },
             {
               "name": "cancel",
               "sig": "cancel(self)",
-              "start_line": 130,
-              "end_line": 131,
+              "start_line": 131,
+              "end_line": 132,
               "doc": ""
             },
             {
               "name": "_emit_progress",
               "sig": "_emit_progress(self, message, percent)",
-              "start_line": 133,
-              "end_line": 147,
+              "start_line": 134,
+              "end_line": 148,
               "doc": ""
             },
             {
               "name": "_is_real_speech",
               "sig": "_is_real_speech(self, text)",
-              "start_line": 149,
-              "end_line": 155,
+              "start_line": 150,
+              "end_line": 156,
               "doc": ""
             },
             {
               "name": "run",
               "sig": "run(self)",
-              "start_line": 157,
-              "end_line": 467,
+              "start_line": 158,
+              "end_line": 468,
               "doc": ""
             }
           ]
@@ -277,62 +277,30 @@
           "bases": [
             "QObject"
           ],
-          "start_line": 696,
-          "end_line": 861,
+          "start_line": 713,
+          "end_line": 878,
           "doc": "",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, audio_file, points_per_second, project_file)",
-              "start_line": 700,
-              "end_line": 707,
+              "start_line": 717,
+              "end_line": 724,
               "doc": ""
             },
             {
               "name": "cancel",
               "sig": "cancel(self)",
-              "start_line": 709,
-              "end_line": 717,
+              "start_line": 726,
+              "end_line": 734,
               "doc": "Thread-safe cancellation request; also stops the FFmpeg child process."
             },
             {
               "name": "run",
               "sig": "run(self)",
-              "start_line": 719,
-              "end_line": 861,
+              "start_line": 736,
+              "end_line": 878,
               "doc": "Build a compact peak envelope without loading the whole recording into RAM."
-            }
-          ]
-        },
-        {
-          "name": "VideoThumbnailWorker",
-          "bases": [
-            "QObject"
-          ],
-          "start_line": 1035,
-          "end_line": 1094,
-          "doc": "",
-          "methods": [
-            {
-              "name": "__init__",
-              "sig": "__init__(self, media_path, duration, output_dir, count)",
-              "start_line": 1039,
-              "end_line": 1046,
-              "doc": ""
-            },
-            {
-              "name": "cancel",
-              "sig": "cancel(self)",
-              "start_line": 1048,
-              "end_line": 1055,
-              "doc": ""
-            },
-            {
-              "name": "run",
-              "sig": "run(self)",
-              "start_line": 1057,
-              "end_line": 1094,
-              "doc": ""
             }
           ]
         }
@@ -341,72 +309,37 @@
         {
           "name": "get_waveform_peak_cache_path",
           "sig": "get_waveform_peak_cache_path(audio_file, project_file)",
-          "start_line": 491,
-          "end_line": 545,
+          "start_line": 492,
+          "end_line": 552,
           "doc": "Return local project or appdata path for waveform peak binary cache file."
         },
         {
           "name": "read_waveform_peak_cache",
           "sig": "read_waveform_peak_cache(audio_file, points_per_second, project_file)",
-          "start_line": 550,
-          "end_line": 619,
+          "start_line": 557,
+          "end_line": 636,
           "doc": "Read cached waveform peak envelope from binary cache."
         },
         {
           "name": "_pack_f32",
           "sig": "_pack_f32(values)",
-          "start_line": 621,
-          "end_line": 625,
+          "start_line": 638,
+          "end_line": 642,
           "doc": ""
         },
         {
           "name": "write_waveform_peak_cache",
           "sig": "write_waveform_peak_cache(audio_file, peaks, points_per_second, project_file, levels, skip_if_exists)",
-          "start_line": 628,
-          "end_line": 670,
+          "start_line": 645,
+          "end_line": 687,
           "doc": "Write waveform peak envelope and multi-resolution mipmapped levels to binary cache with atomic rename."
         },
         {
           "name": "invalidate_waveform_peak_cache",
           "sig": "invalidate_waveform_peak_cache(audio_file, project_file)",
-          "start_line": 673,
-          "end_line": 693,
+          "start_line": 690,
+          "end_line": 710,
           "doc": "Delete any cached waveform peak binary file for audio_file, including legacy paths."
-        },
-        {
-          "name": "normalize_thumbnail_density",
-          "sig": "normalize_thumbnail_density(density)",
-          "start_line": 882,
-          "end_line": 885,
-          "doc": "Normalize a timeline thumbnail density setting to 'standard', 'detailed', 'high', or 'extra_high'."
-        },
-        {
-          "name": "get_thumbnail_count_for_density",
-          "sig": "get_thumbnail_count_for_density(density, duration)",
-          "start_line": 888,
-          "end_line": 893,
-          "doc": "Return the duration-scaled, memory-bounded thumbnail count for a density preset."
-        },
-        {
-          "name": "get_video_thumbnail_cache_dir",
-          "sig": "get_video_thumbnail_cache_dir(media_file, project_file, target_count)",
-          "start_line": 896,
-          "end_line": 944,
-          "doc": "Return the deterministic thumbnail cache directory for a media file, associating with project if available."
-        },
-        {
-          "name": "read_video_thumbnail_cache",
-          "sig": "read_video_thumbnail_cache(media_file, duration, project_file, target_count)",
-          "start_line": 947,
-          "end_line": 999,
-          "doc": "Read pre-extracted video thumbnail items [(timestamp, image_path), ...] from disk cache."
-        },
-        {
-          "name": "invalidate_video_thumbnail_cache",
-          "sig": "invalidate_video_thumbnail_cache(media_file, project_file, target_count)",
-          "start_line": 1002,
-          "end_line": 1032,
-          "doc": "Delete the thumbnail cache directory for a given media file."
         }
       ]
     },
@@ -2439,7 +2372,7 @@
     },
     "diagnostics/editor_story_ui_tests.py": {
       "path": "diagnostics/editor_story_ui_tests.py",
-      "lines": 666,
+      "lines": 755,
       "summary": "Story transcript highlighting, smart copy, duration & header diagnostic tests.",
       "exports": null,
       "classes": [
@@ -2447,21 +2380,21 @@
           "name": "DiagnosticEditorStoryUiTestsMixin",
           "bases": [],
           "start_line": 9,
-          "end_line": 666,
+          "end_line": 755,
           "doc": "",
           "methods": [
             {
               "name": "_test_story_transcript_highlighting_and_smart_copy",
               "sig": "_test_story_transcript_highlighting_and_smart_copy(self, item)",
               "start_line": 10,
-              "end_line": 483,
+              "end_line": 572,
               "doc": "Validates story selection synchronization with transcript highlight overlay and smart clipboard copying."
             },
             {
               "name": "_test_story_duration_visibility_and_header_aggregation",
               "sig": "_test_story_duration_visibility_and_header_aggregation(self, item)",
-              "start_line": 485,
-              "end_line": 666,
+              "start_line": 574,
+              "end_line": 755,
               "doc": "Validates story clock duration formatting, 2-line sidebar item format, and multi-selection header aggregation."
             }
           ]
@@ -2577,7 +2510,7 @@
     },
     "diagnostics/export_wordpress_media.py": {
       "path": "diagnostics/export_wordpress_media.py",
-      "lines": 670,
+      "lines": 723,
       "summary": "WordPress featured image metadata and Castos podcast diagnostic tests.",
       "exports": null,
       "classes": [
@@ -2585,21 +2518,21 @@
           "name": "DiagnosticExportWordPressMediaMixin",
           "bases": [],
           "start_line": 10,
-          "end_line": 670,
+          "end_line": 723,
           "doc": "",
           "methods": [
             {
               "name": "_test_wordpress_featured_image_caption_and_alt_text",
               "sig": "_test_wordpress_featured_image_caption_and_alt_text(self, item)",
               "start_line": 11,
-              "end_line": 252,
+              "end_line": 305,
               "doc": "Verify Featured Image caption & alt_text across WordPressClient, post builder, tab UI, and PublishWorker."
             },
             {
               "name": "_test_wordpress_castos_podcast_integration",
               "sig": "_test_wordpress_castos_podcast_integration(self, item)",
-              "start_line": 254,
-              "end_line": 670,
+              "start_line": 307,
+              "end_line": 723,
               "doc": ""
             }
           ]
@@ -3165,7 +3098,7 @@
     },
     "export/dialog.py": {
       "path": "export/dialog.py",
-      "lines": 1676,
+      "lines": 1716,
       "summary": "Unified Export Dialog for Radio & TV Story Segmenter.",
       "exports": null,
       "classes": [
@@ -3175,7 +3108,7 @@
             "QDialog"
           ],
           "start_line": 64,
-          "end_line": 1676,
+          "end_line": 1716,
           "doc": "Unified Export Center supporting Local Files and dynamic plugin destinations.",
           "methods": [
             {
@@ -3259,161 +3192,168 @@
               "name": "_update_export_button_label",
               "sig": "_update_export_button_label(self)",
               "start_line": 1078,
-              "end_line": 1091,
+              "end_line": 1103,
               "doc": ""
+            },
+            {
+              "name": "_sync_sidebar_decorations",
+              "sig": "_sync_sidebar_decorations(self)",
+              "start_line": 1105,
+              "end_line": 1127,
+              "doc": "Mirror destination-specific badges/tooltips (e.g. WordPress) onto checked sidebar rows."
             },
             {
               "name": "_on_dest_changed",
               "sig": "_on_dest_changed(self)",
-              "start_line": 1093,
-              "end_line": 1101,
+              "start_line": 1129,
+              "end_line": 1138,
               "doc": ""
             },
             {
               "name": "is_story_selector_visible",
               "sig": "is_story_selector_visible(self)",
-              "start_line": 1103,
-              "end_line": 1110,
+              "start_line": 1140,
+              "end_line": 1147,
               "doc": "Return True when the Export Dialog's left selected-stories sidebar is active."
             },
             {
               "name": "get_selected_story_indices",
               "sig": "get_selected_story_indices(self)",
-              "start_line": 1112,
-              "end_line": 1116,
+              "start_line": 1149,
+              "end_line": 1153,
               "doc": "Return the currently checked 0-based story indices."
             },
             {
               "name": "is_full_episode_selected",
               "sig": "is_full_episode_selected(self)",
-              "start_line": 1118,
-              "end_line": 1122,
+              "start_line": 1155,
+              "end_line": 1159,
               "doc": "Return True when Full Episode is checked in the Custom Selection sidebar."
             },
             {
               "name": "_sync_story_selector_visibility",
               "sig": "_sync_story_selector_visibility(self)",
-              "start_line": 1124,
-              "end_line": 1132,
+              "start_line": 1161,
+              "end_line": 1169,
               "doc": ""
             },
             {
               "name": "_on_export_full_episode_toggled",
               "sig": "_on_export_full_episode_toggled(self, include_full)",
-              "start_line": 1134,
-              "end_line": 1142,
+              "start_line": 1171,
+              "end_line": 1180,
               "doc": ""
             },
             {
               "name": "_on_export_story_selection_changed",
               "sig": "_on_export_story_selection_changed(self, indices)",
-              "start_line": 1144,
-              "end_line": 1163,
+              "start_line": 1182,
+              "end_line": 1202,
               "doc": ""
             },
             {
               "name": "_on_export_story_activated",
               "sig": "_on_export_story_activated(self, story_idx)",
-              "start_line": 1165,
-              "end_line": 1180,
+              "start_line": 1204,
+              "end_line": 1219,
               "doc": ""
             },
             {
               "name": "_on_scope_changed",
               "sig": "_on_scope_changed(self)",
-              "start_line": 1182,
-              "end_line": 1194,
+              "start_line": 1221,
+              "end_line": 1234,
               "doc": ""
             },
             {
               "name": "_open_id3_editor",
               "sig": "_open_id3_editor(self)",
-              "start_line": 1196,
-              "end_line": 1206,
+              "start_line": 1236,
+              "end_line": 1246,
               "doc": "Open the ID3 Tag Editor for MP3 files."
             },
             {
               "name": "_copy_youtube_chapters",
               "sig": "_copy_youtube_chapters(self)",
-              "start_line": 1208,
-              "end_line": 1224,
+              "start_line": 1248,
+              "end_line": 1264,
               "doc": ""
             },
             {
               "name": "_load_saved_options",
               "sig": "_load_saved_options(self)",
-              "start_line": 1226,
-              "end_line": 1315,
+              "start_line": 1266,
+              "end_line": 1355,
               "doc": ""
             },
             {
               "name": "save_options_to_settings",
               "sig": "save_options_to_settings(self, as_default)",
-              "start_line": 1317,
-              "end_line": 1389,
+              "start_line": 1357,
+              "end_line": 1429,
               "doc": ""
             },
             {
               "name": "_handle_accept",
               "sig": "_handle_accept(self)",
-              "start_line": 1391,
-              "end_line": 1469,
+              "start_line": 1431,
+              "end_line": 1509,
               "doc": ""
             },
             {
               "name": "get_result",
               "sig": "get_result(self)",
-              "start_line": 1471,
-              "end_line": 1583,
+              "start_line": 1511,
+              "end_line": 1623,
               "doc": ""
             },
             {
               "name": "_persist_plugin_draft_states",
               "sig": "_persist_plugin_draft_states(self)",
-              "start_line": 1585,
-              "end_line": 1593,
+              "start_line": 1625,
+              "end_line": 1633,
               "doc": "Persist any unsaved plugin destination edits (such as WordPress post drafts) back to the project."
             },
             {
               "name": "done",
               "sig": "done(self, r)",
-              "start_line": 1595,
-              "end_line": 1597,
+              "start_line": 1635,
+              "end_line": 1637,
               "doc": ""
             },
             {
               "name": "toggle_float_mode",
               "sig": "toggle_float_mode(self, pinned)",
-              "start_line": 1599,
-              "end_line": 1615,
+              "start_line": 1639,
+              "end_line": 1655,
               "doc": "Toggle whether the non-modal floating window stays pinned on top of other windows."
             },
             {
               "name": "set_scope_and_destination",
               "sig": "set_scope_and_destination(self, scope, dest_id)",
-              "start_line": 1617,
-              "end_line": 1628,
+              "start_line": 1657,
+              "end_line": 1668,
               "doc": "Update export scope and active destination tab on an open modeless export window."
             },
             {
               "name": "refresh_from_main_window",
               "sig": "refresh_from_main_window(self)",
-              "start_line": 1630,
-              "end_line": 1653,
+              "start_line": 1670,
+              "end_line": 1693,
               "doc": "Synchronize post items, excerpts, and story lists from the main window without losing draft edits."
             },
             {
               "name": "_toggle_maximize",
               "sig": "_toggle_maximize(self)",
-              "start_line": 1655,
-              "end_line": 1663,
+              "start_line": 1695,
+              "end_line": 1703,
               "doc": ""
             },
             {
               "name": "changeEvent",
               "sig": "changeEvent(self, event)",
-              "start_line": 1665,
-              "end_line": 1676,
+              "start_line": 1705,
+              "end_line": 1716,
               "doc": ""
             }
           ]
@@ -3632,7 +3572,7 @@
     },
     "export/story_selector.py": {
       "path": "export/story_selector.py",
-      "lines": 324,
+      "lines": 395,
       "summary": "Checkable story/segment selection sidebar for UnifiedExportDialog.",
       "exports": [
         "ExportStorySelectorSidebar",
@@ -3644,113 +3584,134 @@
           "bases": [
             "QWidget"
           ],
-          "start_line": 42,
-          "end_line": 321,
+          "start_line": 47,
+          "end_line": 392,
           "doc": "Left sidebar with checkable Full Episode and story/segment items plus Select All / Clear.",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, main_window, parent)",
-              "start_line": 49,
-              "end_line": 98,
+              "start_line": 54,
+              "end_line": 104,
               "doc": ""
             },
             {
               "name": "_resolve_full_episode_title",
               "sig": "_resolve_full_episode_title(self)",
-              "start_line": 100,
-              "end_line": 111,
+              "start_line": 106,
+              "end_line": 117,
               "doc": ""
             },
             {
               "name": "populate",
               "sig": "populate(self, stories, selected_indices, include_full_episode)",
-              "start_line": 113,
-              "end_line": 197,
+              "start_line": 119,
+              "end_line": 208,
               "doc": "Rebuild the checkable list with Full Episode at top followed by project stories."
             },
             {
               "name": "is_full_episode_included",
               "sig": "is_full_episode_included(self)",
-              "start_line": 199,
-              "end_line": 205,
+              "start_line": 210,
+              "end_line": 216,
               "doc": "Return True if the Full Episode row is checked."
+            },
+            {
+              "name": "_apply_item_visual_state",
+              "sig": "_apply_item_visual_state(self, item)",
+              "start_line": 218,
+              "end_line": 243,
+              "doc": "Apply destination badges/tooltips to checked rows and visually mute unchecked rows."
+            },
+            {
+              "name": "set_item_decorations",
+              "sig": "set_item_decorations(self, decorations)",
+              "start_line": 245,
+              "end_line": 262,
+              "doc": "Apply destination-specific (label, tooltip) overrides onto checked sidebar rows."
+            },
+            {
+              "name": "clear_item_decorations",
+              "sig": "clear_item_decorations(self)",
+              "start_line": 264,
+              "end_line": 267,
+              "doc": "Clear destination-specific badges/tooltips and restore default labels."
             },
             {
               "name": "set_include_full_episode",
               "sig": "set_include_full_episode(self, checked, emit)",
-              "start_line": 207,
-              "end_line": 224,
+              "start_line": 269,
+              "end_line": 287,
               "doc": "Programmatically check or uncheck the Full Episode row."
             },
             {
               "name": "get_selected_indices",
               "sig": "get_selected_indices(self)",
-              "start_line": 226,
-              "end_line": 235,
+              "start_line": 289,
+              "end_line": 298,
               "doc": "Return sorted 0-based indices of all checked story items (excluding Full Episode)."
             },
             {
               "name": "has_any_selection",
               "sig": "has_any_selection(self)",
-              "start_line": 237,
-              "end_line": 239,
+              "start_line": 300,
+              "end_line": 302,
               "doc": "Return True if Full Episode or at least one story/segment is checked."
             },
             {
               "name": "set_selected_indices",
               "sig": "set_selected_indices(self, selected_indices, emit)",
-              "start_line": 241,
-              "end_line": 260,
+              "start_line": 304,
+              "end_line": 324,
               "doc": "Update story item check states without altering the Full Episode item."
             },
             {
               "name": "select_all",
               "sig": "select_all(self)",
-              "start_line": 262,
-              "end_line": 266,
+              "start_line": 326,
+              "end_line": 330,
               "doc": ""
             },
             {
               "name": "clear_selection",
               "sig": "clear_selection(self)",
-              "start_line": 268,
-              "end_line": 272,
+              "start_line": 332,
+              "end_line": 336,
               "doc": ""
             },
             {
               "name": "update_count_label",
               "sig": "update_count_label(self)",
-              "start_line": 274,
-              "end_line": 277,
+              "start_line": 338,
+              "end_line": 341,
               "doc": ""
             },
             {
               "name": "_sync_current_item_quietly",
               "sig": "_sync_current_item_quietly(self, item)",
-              "start_line": 279,
-              "end_line": 286,
+              "start_line": 343,
+              "end_line": 350,
               "doc": ""
             },
             {
               "name": "_on_item_changed",
               "sig": "_on_item_changed(self, item)",
-              "start_line": 288,
-              "end_line": 304,
+              "start_line": 352,
+              "end_line": 375,
               "doc": ""
             },
             {
               "name": "_on_item_clicked",
               "sig": "_on_item_clicked(self, item)",
-              "start_line": 306,
-              "end_line": 311,
+              "start_line": 377,
+              "end_line": 382,
               "doc": ""
             },
             {
               "name": "_on_current_row_changed",
               "sig": "_on_current_row_changed(self, row)",
-              "start_line": 313,
-              "end_line": 321,
+              "start_line": 384,
+              "end_line": 392,
               "doc": ""
             }
           ]
@@ -4740,7 +4701,7 @@
     },
     "installer/build_tools/config.py": {
       "path": "installer/build_tools/config.py",
-      "lines": 213,
+      "lines": 214,
       "summary": "Build configuration constants and CLI argument parser.",
       "exports": null,
       "classes": [],
@@ -4748,8 +4709,8 @@
         {
           "name": "parse_build_args",
           "sig": "parse_build_args()",
-          "start_line": 138,
-          "end_line": 213,
+          "start_line": 139,
+          "end_line": 214,
           "doc": "Parse build target, plugin selection, installer, and version CLI flags."
         }
       ]
@@ -4852,428 +4813,442 @@
     },
     "media_batch.py": {
       "path": "media_batch.py",
-      "lines": 1785,
+      "lines": 1905,
       "summary": "Radio & TV Segmenter v1.1.1 \u2014 media batch responsibilities.",
       "exports": null,
       "classes": [
         {
           "name": "MediaBatchMixin",
           "bases": [],
-          "start_line": 21,
-          "end_line": 1785,
+          "start_line": 22,
+          "end_line": 1905,
           "doc": "",
           "methods": [
             {
               "name": "probe_media_duration",
               "sig": "probe_media_duration(self, path)",
-              "start_line": 22,
-              "end_line": 36,
+              "start_line": 23,
+              "end_line": 37,
               "doc": "Probe duration locally so video timelines can be populated immediately."
             },
             {
               "name": "_track_worker_thread",
               "sig": "_track_worker_thread(self, thread)",
-              "start_line": 38,
-              "end_line": 50,
+              "start_line": 39,
+              "end_line": 51,
               "doc": "Keep a strong reference to active worker threads so Python GC never destroys them while executing."
             },
             {
               "name": "stop_waveform_worker",
               "sig": "stop_waveform_worker(self, timeout_ms)",
-              "start_line": 52,
-              "end_line": 83,
+              "start_line": 53,
+              "end_line": 84,
               "doc": "Stop the current waveform worker completely before replacing it or closing."
             },
             {
               "name": "_effective_thumbnail_density",
               "sig": "_effective_thumbnail_density(self, density)",
-              "start_line": 85,
-              "end_line": 92,
+              "start_line": 86,
+              "end_line": 93,
               "doc": ""
             },
             {
               "name": "start_video_thumbnail_generation",
               "sig": "start_video_thumbnail_generation(self, force_regenerate, density)",
-              "start_line": 94,
-              "end_line": 167,
+              "start_line": 95,
+              "end_line": 241,
+              "doc": ""
+            },
+            {
+              "name": "_video_thumbnail_progress",
+              "sig": "_video_thumbnail_progress(self, pct)",
+              "start_line": 243,
+              "end_line": 251,
               "doc": ""
             },
             {
               "name": "_video_thumbnail_thread_finished",
               "sig": "_video_thumbnail_thread_finished(self)",
-              "start_line": 169,
-              "end_line": 176,
+              "start_line": 253,
+              "end_line": 261,
+              "doc": ""
+            },
+            {
+              "name": "_cached_thumbnails_loaded",
+              "sig": "_cached_thumbnails_loaded(self, items, req_key, eff_density, expected_count)",
+              "start_line": 263,
+              "end_line": 281,
               "doc": ""
             },
             {
               "name": "_video_thumbnails_finished",
-              "sig": "_video_thumbnails_finished(self, items)",
-              "start_line": 178,
-              "end_line": 184,
+              "sig": "_video_thumbnails_finished(self, items, req_key)",
+              "start_line": 283,
+              "end_line": 298,
               "doc": ""
             },
             {
               "name": "stop_video_thumbnail_worker",
               "sig": "stop_video_thumbnail_worker(self, timeout_ms)",
-              "start_line": 186,
-              "end_line": 216,
+              "start_line": 300,
+              "end_line": 332,
               "doc": ""
             },
             {
               "name": "regenerate_waveform",
               "sig": "regenerate_waveform(self)",
-              "start_line": 218,
-              "end_line": 239,
+              "start_line": 334,
+              "end_line": 355,
               "doc": "Force recalculation of waveform peaks by clearing disk cache and restarting generation."
             },
             {
               "name": "regenerate_video_thumbnails",
               "sig": "regenerate_video_thumbnails(self, density)",
-              "start_line": 241,
-              "end_line": 276,
+              "start_line": 357,
+              "end_line": 394,
               "doc": "Force regeneration of video filmstrip thumbnails (optionally updating density preset)."
             },
             {
               "name": "load_waveform_async",
               "sig": "load_waveform_async(self, force_regenerate)",
-              "start_line": 278,
-              "end_line": 335,
+              "start_line": 396,
+              "end_line": 453,
               "doc": ""
             },
             {
               "name": "_waveform_progress",
               "sig": "_waveform_progress(self, partial_peaks, pps, pct)",
-              "start_line": 337,
-              "end_line": 345,
+              "start_line": 455,
+              "end_line": 463,
               "doc": ""
             },
             {
               "name": "_waveform_finished",
               "sig": "_waveform_finished(self, peaks, cancelled)",
-              "start_line": 347,
-              "end_line": 364,
+              "start_line": 465,
+              "end_line": 482,
               "doc": ""
             },
             {
               "name": "_waveform_thread_finished",
               "sig": "_waveform_thread_finished(self)",
-              "start_line": 366,
-              "end_line": 370,
+              "start_line": 484,
+              "end_line": 488,
               "doc": ""
             },
             {
               "name": "open_batch_processing_dialog",
               "sig": "open_batch_processing_dialog(self)",
-              "start_line": 372,
-              "end_line": 477,
+              "start_line": 490,
+              "end_line": 595,
               "doc": ""
             },
             {
               "name": "_batch_next_media",
               "sig": "_batch_next_media(self)",
-              "start_line": 479,
-              "end_line": 596,
+              "start_line": 597,
+              "end_line": 714,
               "doc": ""
             },
             {
               "name": "_batch_next_document",
               "sig": "_batch_next_document(self)",
-              "start_line": 598,
-              "end_line": 626,
+              "start_line": 716,
+              "end_line": 744,
               "doc": ""
             },
             {
               "name": "_batch_document_error",
               "sig": "_batch_document_error(self, msg)",
-              "start_line": 628,
-              "end_line": 637,
+              "start_line": 746,
+              "end_line": 755,
               "doc": "Handles document batch translation errors safely."
             },
             {
               "name": "_load_user_preferences",
               "sig": "_load_user_preferences(self)",
-              "start_line": 639,
-              "end_line": 722,
+              "start_line": 757,
+              "end_line": 840,
               "doc": ""
             },
             {
               "name": "set_thumbnail_position",
               "sig": "set_thumbnail_position(self, position)",
-              "start_line": 724,
-              "end_line": 728,
+              "start_line": 842,
+              "end_line": 846,
               "doc": ""
             },
             {
               "name": "_remember_saved_project",
               "sig": "_remember_saved_project(self, path)",
-              "start_line": 730,
-              "end_line": 761,
+              "start_line": 848,
+              "end_line": 879,
               "doc": "Remember only projects that have actually been saved."
             },
             {
               "name": "_dialog_directory",
               "sig": "_dialog_directory(self, fallback)",
-              "start_line": 763,
-              "end_line": 775,
+              "start_line": 881,
+              "end_line": 893,
               "doc": ""
             },
             {
               "name": "_remember_open_directory",
               "sig": "_remember_open_directory(self, path)",
-              "start_line": 777,
-              "end_line": 784,
+              "start_line": 895,
+              "end_line": 902,
               "doc": ""
             },
             {
               "name": "_sync_startup_project_actions",
               "sig": "_sync_startup_project_actions(self)",
-              "start_line": 786,
-              "end_line": 792,
+              "start_line": 904,
+              "end_line": 910,
               "doc": "Synchronize the Project Settings startup radio/check actions."
             },
             {
               "name": "set_startup_project_mode",
               "sig": "set_startup_project_mode(self, mode)",
-              "start_line": 794,
-              "end_line": 800,
+              "start_line": 912,
+              "end_line": 918,
               "doc": "Set the startup project policy."
             },
             {
               "name": "restore_last_opened",
               "sig": "restore_last_opened(self)",
-              "start_line": 802,
-              "end_line": 942,
+              "start_line": 920,
+              "end_line": 1060,
               "doc": "Apply startup policy and offer recovery from a newer autosave snapshot."
             },
             {
               "name": "toggle_speaker_labels",
               "sig": "toggle_speaker_labels(self, checked)",
-              "start_line": 944,
-              "end_line": 949,
+              "start_line": 1062,
+              "end_line": 1067,
               "doc": ""
             },
             {
               "name": "toggle_colorize_speaker_labels",
               "sig": "toggle_colorize_speaker_labels(self, checked)",
-              "start_line": 951,
-              "end_line": 958,
+              "start_line": 1069,
+              "end_line": 1076,
               "doc": ""
             },
             {
               "name": "toggle_timestamps",
               "sig": "toggle_timestamps(self, checked)",
-              "start_line": 960,
-              "end_line": 967,
+              "start_line": 1078,
+              "end_line": 1085,
               "doc": ""
             },
             {
               "name": "toggle_milliseconds",
               "sig": "toggle_milliseconds(self, checked)",
-              "start_line": 969,
-              "end_line": 976,
+              "start_line": 1087,
+              "end_line": 1094,
               "doc": ""
             },
             {
               "name": "toggle_waveform_view",
               "sig": "toggle_waveform_view(self, checked)",
-              "start_line": 978,
-              "end_line": 982,
+              "start_line": 1096,
+              "end_line": 1100,
               "doc": ""
             },
             {
               "name": "toggle_thumbnail_view",
               "sig": "toggle_thumbnail_view(self, checked)",
-              "start_line": 984,
-              "end_line": 988,
+              "start_line": 1102,
+              "end_line": 1106,
               "doc": ""
             },
             {
               "name": "choose_default_project_directory",
               "sig": "choose_default_project_directory(self)",
-              "start_line": 990,
-              "end_line": 1005,
+              "start_line": 1108,
+              "end_line": 1123,
               "doc": ""
             },
             {
               "name": "open_document_path",
               "sig": "open_document_path(self, path)",
-              "start_line": 1007,
-              "end_line": 1042,
+              "start_line": 1125,
+              "end_line": 1160,
               "doc": ""
             },
             {
               "name": "open_clear_cache_dialog",
               "sig": "open_clear_cache_dialog(self)",
-              "start_line": 1044,
-              "end_line": 1057,
+              "start_line": 1162,
+              "end_line": 1175,
               "doc": ""
             },
             {
               "name": "open_manage_cached_media_dialog",
               "sig": "open_manage_cached_media_dialog(self)",
-              "start_line": 1059,
-              "end_line": 1062,
+              "start_line": 1177,
+              "end_line": 1180,
               "doc": ""
             },
             {
               "name": "redownload_current_project_remote_media",
               "sig": "redownload_current_project_remote_media(self)",
-              "start_line": 1064,
-              "end_line": 1075,
+              "start_line": 1182,
+              "end_line": 1193,
               "doc": ""
             },
             {
               "name": "open_glossary_dialog",
               "sig": "open_glossary_dialog(self)",
-              "start_line": 1077,
-              "end_line": 1081,
+              "start_line": 1195,
+              "end_line": 1199,
               "doc": "Edit persistent terminology used by every ASR and translation backend."
             },
             {
               "name": "_save_glossary",
               "sig": "_save_glossary(self)",
-              "start_line": 1083,
-              "end_line": 1090,
+              "start_line": 1201,
+              "end_line": 1208,
               "doc": ""
             },
             {
               "name": "apply_glossary_to_current_transcript",
               "sig": "apply_glossary_to_current_transcript(self, entries)",
-              "start_line": 1092,
-              "end_line": 1124,
+              "start_line": 1210,
+              "end_line": 1242,
               "doc": "Apply glossary rules and contextual name resolution to the active transcript with Undo support."
             },
             {
               "name": "add_to_glossary",
               "sig": "add_to_glossary(self, text)",
-              "start_line": 1126,
-              "end_line": 1146,
+              "start_line": 1244,
+              "end_line": 1264,
               "doc": ""
             },
             {
               "name": "prompt_add_alternate_spelling",
               "sig": "prompt_add_alternate_spelling(self, alternate_text)",
-              "start_line": 1148,
-              "end_line": 1191,
+              "start_line": 1266,
+              "end_line": 1309,
               "doc": "Prompt user for the preferred glossary spelling that `alternate_text` should map to."
             },
             {
               "name": "apply_glossary_to_whisper_context",
               "sig": "apply_glossary_to_whisper_context(self)",
-              "start_line": 1193,
-              "end_line": 1204,
+              "start_line": 1311,
+              "end_line": 1322,
               "doc": ""
             },
             {
               "name": "add_custom_speaker_to_glossary",
               "sig": "add_custom_speaker_to_glossary(self, name)",
-              "start_line": 1206,
-              "end_line": 1208,
+              "start_line": 1324,
+              "end_line": 1326,
               "doc": ""
             },
             {
               "name": "set_language",
               "sig": "set_language(self, language, persist)",
-              "start_line": 1210,
-              "end_line": 1231,
+              "start_line": 1328,
+              "end_line": 1349,
               "doc": ""
             },
             {
               "name": "_apply_localization",
               "sig": "_apply_localization(self)",
-              "start_line": 1233,
-              "end_line": 1270,
+              "start_line": 1351,
+              "end_line": 1388,
               "doc": ""
             },
             {
               "name": "update_story_segment_terminology",
               "sig": "update_story_segment_terminology(self)",
-              "start_line": 1272,
-              "end_line": 1359,
+              "start_line": 1390,
+              "end_line": 1477,
               "doc": "Update all user-facing labels and tooltips using active vocabulary settings."
             },
             {
               "name": "open_document",
               "sig": "open_document(self)",
-              "start_line": 1361,
-              "end_line": 1415,
+              "start_line": 1479,
+              "end_line": 1533,
               "doc": ""
             },
             {
               "name": "export_text_file",
               "sig": "export_text_file(self)",
-              "start_line": 1417,
-              "end_line": 1425,
+              "start_line": 1535,
+              "end_line": 1543,
               "doc": ""
             },
             {
               "name": "open_media",
               "sig": "open_media(self)",
-              "start_line": 1427,
-              "end_line": 1436,
+              "start_line": 1545,
+              "end_line": 1554,
               "doc": ""
             },
             {
               "name": "prepare_for_new_media",
               "sig": "prepare_for_new_media(self)",
-              "start_line": 1438,
-              "end_line": 1471,
+              "start_line": 1556,
+              "end_line": 1589,
               "doc": "Checks for unsaved changes before loading new media."
             },
             {
               "name": "_batch_media_error",
               "sig": "_batch_media_error(self, message)",
-              "start_line": 1473,
-              "end_line": 1495,
+              "start_line": 1591,
+              "end_line": 1613,
               "doc": ""
             },
             {
               "name": "_get_batch_project_target_path",
               "sig": "_get_batch_project_target_path(self, base_name)",
-              "start_line": 1497,
-              "end_line": 1524,
+              "start_line": 1615,
+              "end_line": 1642,
               "doc": "Determines consistent target .rtvs project file path during batch processing."
             },
             {
               "name": "_batch_save_project_file",
               "sig": "_batch_save_project_file(self)",
-              "start_line": 1526,
-              "end_line": 1541,
+              "start_line": 1644,
+              "end_line": 1659,
               "doc": "Saves project .rtvs to dedicated directory structure during batch processing."
             },
             {
               "name": "_batch_export_current",
               "sig": "_batch_export_current(self)",
-              "start_line": 1543,
-              "end_line": 1627,
+              "start_line": 1661,
+              "end_line": 1745,
               "doc": "Handles automatic export or project saving during batch processing."
             },
             {
               "name": "load_media_file",
               "sig": "load_media_file(self, filename, source, restore_adjacent_project)",
-              "start_line": 1629,
-              "end_line": 1744,
+              "start_line": 1747,
+              "end_line": 1864,
               "doc": ""
             },
             {
               "name": "update_active_media_source",
               "sig": "update_active_media_source(self)",
-              "start_line": 1746,
-              "end_line": 1779,
+              "start_line": 1866,
+              "end_line": 1899,
               "doc": "Update media player source and refresh waveform when normalization state changes."
             },
             {
               "name": "open_audio",
               "sig": "open_audio(self)",
-              "start_line": 1781,
-              "end_line": 1782,
+              "start_line": 1901,
+              "end_line": 1902,
               "doc": ""
             },
             {
               "name": "handle_media_drop",
               "sig": "handle_media_drop(self, filename)",
-              "start_line": 1784,
-              "end_line": 1785,
+              "start_line": 1904,
+              "end_line": 1905,
               "doc": ""
             }
           ]
@@ -8712,7 +8687,7 @@
     },
     "plugins/wordpress/wp_tab_widget.py": {
       "path": "plugins/wordpress/wp_tab_widget.py",
-      "lines": 968,
+      "lines": 988,
       "summary": "WordPress export tab configuration widget and preview controller.",
       "exports": null,
       "classes": [
@@ -8722,7 +8697,7 @@
             "QWidget"
           ],
           "start_line": 43,
-          "end_line": 967,
+          "end_line": 987,
           "doc": "Configuration and preview panel for WordPress Draft Posts.",
           "methods": [
             {
@@ -8943,185 +8918,199 @@
               "doc": "Persist all post metadata and export options back into stories and project_metadata."
             },
             {
+              "name": "get_sidebar_decorations",
+              "sig": "get_sidebar_decorations(self)",
+              "start_line": 512,
+              "end_line": 514,
+              "doc": ""
+            },
+            {
+              "name": "_notify_export_sidebar_decorations",
+              "sig": "_notify_export_sidebar_decorations(self)",
+              "start_line": 516,
+              "end_line": 521,
+              "doc": ""
+            },
+            {
               "name": "_update_post_list_item_label",
               "sig": "_update_post_list_item_label(self, idx)",
-              "start_line": 512,
-              "end_line": 520,
+              "start_line": 523,
+              "end_line": 533,
               "doc": ""
             },
             {
               "name": "_on_wp_post_selection_changed",
               "sig": "_on_wp_post_selection_changed(self, row)",
-              "start_line": 522,
-              "end_line": 525,
+              "start_line": 535,
+              "end_line": 538,
               "doc": ""
             },
             {
               "name": "_get_editor_checked_authors",
               "sig": "_get_editor_checked_authors(self)",
-              "start_line": 527,
-              "end_line": 535,
+              "start_line": 540,
+              "end_line": 548,
               "doc": ""
             },
             {
               "name": "_set_editor_checked_authors",
               "sig": "_set_editor_checked_authors(self, author_ids, author_term_ids)",
-              "start_line": 537,
-              "end_line": 544,
+              "start_line": 550,
+              "end_line": 557,
               "doc": ""
             },
             {
               "name": "_get_editor_checked_categories",
               "sig": "_get_editor_checked_categories(self)",
-              "start_line": 546,
-              "end_line": 554,
+              "start_line": 559,
+              "end_line": 567,
               "doc": ""
             },
             {
               "name": "_set_editor_checked_categories",
               "sig": "_set_editor_checked_categories(self, cat_ids)",
-              "start_line": 556,
-              "end_line": 564,
+              "start_line": 569,
+              "end_line": 577,
               "doc": ""
             },
             {
               "name": "_get_wp_post_bounds",
               "sig": "_get_wp_post_bounds(self, post_index)",
-              "start_line": 566,
-              "end_line": 575,
+              "start_line": 579,
+              "end_line": 588,
               "doc": ""
             },
             {
               "name": "_sync_wp_slider_to_pos",
               "sig": "_sync_wp_slider_to_pos(self, pos)",
-              "start_line": 577,
-              "end_line": 587,
+              "start_line": 590,
+              "end_line": 600,
               "doc": ""
             },
             {
               "name": "_on_wp_slider_value_changed",
               "sig": "_on_wp_slider_value_changed(self, val)",
-              "start_line": 589,
-              "end_line": 598,
+              "start_line": 602,
+              "end_line": 611,
               "doc": ""
             },
             {
               "name": "_on_wp_scrub_timer_timeout",
               "sig": "_on_wp_scrub_timer_timeout(self)",
-              "start_line": 600,
-              "end_line": 604,
+              "start_line": 613,
+              "end_line": 617,
               "doc": ""
             },
             {
               "name": "_on_wp_step",
               "sig": "_on_wp_step(self, delta_secs)",
-              "start_line": 606,
-              "end_line": 614,
+              "start_line": 619,
+              "end_line": 627,
               "doc": ""
             },
             {
               "name": "_on_wp_sync_playhead",
               "sig": "_on_wp_sync_playhead(self)",
-              "start_line": 616,
-              "end_line": 623,
+              "start_line": 629,
+              "end_line": 636,
               "doc": ""
             },
             {
               "name": "_load_post_editor_state",
               "sig": "_load_post_editor_state(self, index)",
-              "start_line": 625,
-              "end_line": 657,
+              "start_line": 638,
+              "end_line": 670,
               "doc": ""
             },
             {
               "name": "_on_wp_thumb_mode_changed",
               "sig": "_on_wp_thumb_mode_changed(self)",
-              "start_line": 659,
-              "end_line": 660,
+              "start_line": 672,
+              "end_line": 673,
               "doc": ""
             },
             {
               "name": "_on_wp_thumb_meta_changed",
               "sig": "_on_wp_thumb_meta_changed(self)",
-              "start_line": 662,
-              "end_line": 669,
+              "start_line": 675,
+              "end_line": 682,
               "doc": ""
             },
             {
               "name": "_capture_wp_frame",
               "sig": "_capture_wp_frame(self, pos, user_initiated)",
-              "start_line": 671,
-              "end_line": 708,
+              "start_line": 684,
+              "end_line": 723,
               "doc": ""
             },
             {
               "name": "_on_wp_browse_thumb",
               "sig": "_on_wp_browse_thumb(self)",
-              "start_line": 710,
-              "end_line": 731,
+              "start_line": 725,
+              "end_line": 747,
               "doc": ""
             },
             {
               "name": "_cleanup_temp_files",
               "sig": "_cleanup_temp_files(self)",
-              "start_line": 733,
-              "end_line": 742,
+              "start_line": 749,
+              "end_line": 758,
               "doc": "Purge temporary frame grabs and preview images."
             },
             {
               "name": "closeEvent",
               "sig": "closeEvent(self, event)",
-              "start_line": 744,
-              "end_line": 761,
+              "start_line": 760,
+              "end_line": 777,
               "doc": "Persist current post state, stop background thumbnail workers, and clean up temp files."
             },
             {
               "name": "select_full_episode",
               "sig": "select_full_episode(self)",
-              "start_line": 763,
-              "end_line": 770,
+              "start_line": 779,
+              "end_line": 786,
               "doc": ""
             },
             {
               "name": "select_story_index",
               "sig": "select_story_index(self, story_idx)",
-              "start_line": 772,
-              "end_line": 779,
+              "start_line": 788,
+              "end_line": 795,
               "doc": ""
             },
             {
               "name": "rebuild_post_items",
               "sig": "rebuild_post_items(self, scope)",
-              "start_line": 781,
-              "end_line": 846,
+              "start_line": 797,
+              "end_line": 866,
               "doc": ""
             },
             {
               "name": "_populate_wp_export_metadata",
               "sig": "_populate_wp_export_metadata(self, force_refresh)",
-              "start_line": 848,
-              "end_line": 915,
+              "start_line": 868,
+              "end_line": 935,
               "doc": ""
             },
             {
               "name": "_prompt_wp_credentials",
               "sig": "_prompt_wp_credentials(self, title, message)",
-              "start_line": 917,
-              "end_line": 930,
+              "start_line": 937,
+              "end_line": 950,
               "doc": ""
             },
             {
               "name": "_refresh_castos_feeds",
               "sig": "_refresh_castos_feeds(self)",
-              "start_line": 932,
-              "end_line": 949,
+              "start_line": 952,
+              "end_line": 969,
               "doc": ""
             },
             {
               "name": "_refresh_wp_metadata",
               "sig": "_refresh_wp_metadata(self)",
-              "start_line": 951,
-              "end_line": 967,
+              "start_line": 971,
+              "end_line": 987,
               "doc": ""
             }
           ]
@@ -9131,48 +9120,153 @@
     },
     "plugins/wordpress/wp_thumb_ui.py": {
       "path": "plugins/wordpress/wp_thumb_ui.py",
-      "lines": 245,
+      "lines": 399,
       "summary": "UI presentation controller for WordPress Featured Image controls and preview.",
       "exports": [
+        "ClickableThumbnailLabel",
+        "FeaturedImageLightboxDialog",
+        "set_preview_pixmap",
+        "clear_preview_pixmap",
+        "open_featured_image_preview",
         "load_featured_image_from_post",
         "on_featured_image_mode_changed",
         "on_youtube_thumbnail_fetched"
       ],
-      "classes": [],
+      "classes": [
+        {
+          "name": "ClickableThumbnailLabel",
+          "bases": [
+            "QLabel"
+          ],
+          "start_line": 21,
+          "end_line": 59,
+          "doc": "QLabel preview that opens a full-size preview dialog when clicked.",
+          "methods": [
+            {
+              "name": "__init__",
+              "sig": "__init__(self, text, parent)",
+              "start_line": 26,
+              "end_line": 29,
+              "doc": ""
+            },
+            {
+              "name": "set_full_image",
+              "sig": "set_full_image(self, image_path, source_description)",
+              "start_line": 31,
+              "end_line": 38,
+              "doc": ""
+            },
+            {
+              "name": "clear_full_image",
+              "sig": "clear_full_image(self)",
+              "start_line": 40,
+              "end_line": 44,
+              "doc": ""
+            },
+            {
+              "name": "full_image_path",
+              "sig": "full_image_path(self)",
+              "start_line": 46,
+              "end_line": 47,
+              "doc": ""
+            },
+            {
+              "name": "mousePressEvent",
+              "sig": "mousePressEvent(self, event)",
+              "start_line": 49,
+              "end_line": 59,
+              "doc": ""
+            }
+          ]
+        },
+        {
+          "name": "FeaturedImageLightboxDialog",
+          "bases": [
+            "QDialog"
+          ],
+          "start_line": 62,
+          "end_line": 134,
+          "doc": "Lightweight resizable modal lightbox displaying a full-resolution featured image.",
+          "methods": [
+            {
+              "name": "__init__",
+              "sig": "__init__(self, image_path, source_description, parent)",
+              "start_line": 65,
+              "end_line": 115,
+              "doc": ""
+            },
+            {
+              "name": "_update_scaled_pixmap",
+              "sig": "_update_scaled_pixmap(self)",
+              "start_line": 117,
+              "end_line": 130,
+              "doc": ""
+            },
+            {
+              "name": "resizeEvent",
+              "sig": "resizeEvent(self, event)",
+              "start_line": 132,
+              "end_line": 134,
+              "doc": ""
+            }
+          ]
+        }
+      ],
       "functions": [
         {
+          "name": "set_preview_pixmap",
+          "sig": "set_preview_pixmap(tab_widget, image_path, source_description)",
+          "start_line": 137,
+          "end_line": 150,
+          "doc": "Display scaled preview thumbnail and enable click-to-enlarge for *image_path*."
+        },
+        {
+          "name": "clear_preview_pixmap",
+          "sig": "clear_preview_pixmap(tab_widget, placeholder_text)",
+          "start_line": 153,
+          "end_line": 161,
+          "doc": "Clear preview pixmap, disable click-to-enlarge, and show *placeholder_text*."
+        },
+        {
+          "name": "open_featured_image_preview",
+          "sig": "open_featured_image_preview(tab_widget)",
+          "start_line": 164,
+          "end_line": 174,
+          "doc": "Open the full-resolution lightbox preview for the current WordPress featured image."
+        },
+        {
           "name": "_set_preview_pixmap",
-          "sig": "_set_preview_pixmap(tab_widget, image_path)",
-          "start_line": 20,
-          "end_line": 27,
+          "sig": "_set_preview_pixmap(tab_widget, image_path, source_description)",
+          "start_line": 177,
+          "end_line": 178,
           "doc": ""
         },
         {
           "name": "_start_youtube_thumbnail_fetch",
           "sig": "_start_youtube_thumbnail_fetch(tab_widget, video_id, thumbnail_url)",
-          "start_line": 30,
-          "end_line": 52,
+          "start_line": 181,
+          "end_line": 203,
           "doc": "Kick off a non-blocking background QThread fetch for a YouTube default thumbnail."
         },
         {
           "name": "on_youtube_thumbnail_fetched",
           "sig": "on_youtube_thumbnail_fetched(tab_widget, video_id, local_path)",
-          "start_line": 55,
-          "end_line": 84,
+          "start_line": 206,
+          "end_line": 235,
           "doc": "Apply downloaded YouTube thumbnail preview on the Qt main thread if still relevant."
         },
         {
           "name": "load_featured_image_from_post",
           "sig": "load_featured_image_from_post(tab_widget, index, post)",
-          "start_line": 87,
-          "end_line": 166,
+          "start_line": 238,
+          "end_line": 316,
           "doc": "Populate Featured Image radio buttons, scrubber, and preview from a post dict."
         },
         {
           "name": "on_featured_image_mode_changed",
           "sig": "on_featured_image_mode_changed(tab_widget)",
-          "start_line": 169,
-          "end_line": 238,
+          "start_line": 319,
+          "end_line": 387,
           "doc": "Handle user selection of Featured Image radio buttons."
         }
       ]
@@ -9283,7 +9377,7 @@
     },
     "plugins/wordpress/wp_ui_builder.py": {
       "path": "plugins/wordpress/wp_ui_builder.py",
-      "lines": 817,
+      "lines": 827,
       "summary": "UI layout construction and widget setup for WordPressExportTabWidget.",
       "exports": null,
       "classes": [],
@@ -9292,7 +9386,7 @@
           "name": "setup_wp_tab_ui",
           "sig": "setup_wp_tab_ui(self)",
           "start_line": 36,
-          "end_line": 817,
+          "end_line": 827,
           "doc": "Construct all controls, forms, sliders, list widgets, and tabbed panels for the WordPress export tab."
         }
       ]
@@ -9361,7 +9455,7 @@
     },
     "plugins/wordpress/youtube_embed.py": {
       "path": "plugins/wordpress/youtube_embed.py",
-      "lines": 654,
+      "lines": 672,
       "summary": "YouTube Video Embed helpers, Gutenberg iframe generator, and UI setup for WordPress export.",
       "exports": null,
       "classes": [],
@@ -9463,6 +9557,13 @@
           "start_line": 564,
           "end_line": 654,
           "doc": "Return formatted label text and rich multi-line tooltip for an item in wp_posts_list."
+        },
+        {
+          "name": "build_wp_sidebar_decorations",
+          "sig": "build_wp_sidebar_decorations(tab_widget)",
+          "start_line": 657,
+          "end_line": 672,
+          "doc": "Build {role_value: (label_text, tooltip_text)} map for ExportStorySelectorSidebar."
         }
       ]
     },
@@ -10382,7 +10483,7 @@
     },
     "preferences_dialog.py": {
       "path": "preferences_dialog.py",
-      "lines": 899,
+      "lines": 911,
       "summary": "Radio & TV Story Segmenter \u2014 Preferences Modal Dialog.",
       "exports": null,
       "classes": [
@@ -10392,14 +10493,14 @@
             "PreferencesResetMixin"
           ],
           "start_line": 32,
-          "end_line": 899,
+          "end_line": 911,
           "doc": "Provides the main open_preferences_dialog method and settings persistence.",
           "methods": [
             {
               "name": "open_preferences_dialog",
               "sig": "open_preferences_dialog(self, initial_category, modal)",
               "start_line": 35,
-              "end_line": 899,
+              "end_line": 911,
               "doc": "Open the multi-category Preferences dialog as a non-modal floating inspector."
             }
           ]
@@ -11114,7 +11215,7 @@
     },
     "project_lifecycle.py": {
       "path": "project_lifecycle.py",
-      "lines": 992,
+      "lines": 994,
       "summary": "Radio & TV Story Segmenter \u2014 Project Lifecycle & Persistence Management.",
       "exports": [
         "ProjectLifecycleMixin",
@@ -11125,140 +11226,140 @@
           "name": "ProjectLifecycleMixin",
           "bases": [],
           "start_line": 49,
-          "end_line": 988,
+          "end_line": 990,
           "doc": "Provides project lifecycle and persistence methods for MainWindow.",
           "methods": [
             {
               "name": "close_project",
               "sig": "close_project(self, prompt)",
               "start_line": 52,
-              "end_line": 182,
+              "end_line": 184,
               "doc": ""
             },
             {
               "name": "new_project",
               "sig": "new_project(self)",
-              "start_line": 184,
-              "end_line": 186,
+              "start_line": 186,
+              "end_line": 188,
               "doc": ""
             },
             {
               "name": "project_audio_reference",
               "sig": "project_audio_reference(self)",
-              "start_line": 188,
-              "end_line": 196,
+              "start_line": 190,
+              "end_line": 198,
               "doc": ""
             },
             {
               "name": "project_data",
               "sig": "project_data(self)",
-              "start_line": 198,
-              "end_line": 238,
+              "start_line": 200,
+              "end_line": 240,
               "doc": ""
             },
             {
               "name": "_write_project_file",
               "sig": "_write_project_file(self, file_path)",
-              "start_line": 240,
-              "end_line": 309,
+              "start_line": 242,
+              "end_line": 311,
               "doc": "Writes project state dictionary directly to disk."
             },
             {
               "name": "prepare_export_directories",
               "sig": "prepare_export_directories(self, target_base_dir, default_name, prompt_user)",
-              "start_line": 311,
-              "end_line": 372,
+              "start_line": 313,
+              "end_line": 374,
               "doc": "Resolves project export subfolders (Transcripts, Media)."
             },
             {
               "name": "get_default_save_directory",
               "sig": "get_default_save_directory(self)",
-              "start_line": 374,
-              "end_line": 387,
+              "start_line": 376,
+              "end_line": 389,
               "doc": "Returns target base directory based on preferences and loaded media."
             },
             {
               "name": "validate_project_data",
               "sig": "validate_project_data(self, data)",
-              "start_line": 389,
-              "end_line": 447,
+              "start_line": 391,
+              "end_line": 449,
               "doc": "Return a list of structural project-data problems before saving."
             },
             {
               "name": "save_project_as",
               "sig": "save_project_as(self)",
-              "start_line": 449,
-              "end_line": 499,
+              "start_line": 451,
+              "end_line": 501,
               "doc": ""
             },
             {
               "name": "schedule_project_save",
               "sig": "schedule_project_save(self, delay_ms)",
-              "start_line": 501,
-              "end_line": 521,
+              "start_line": 503,
+              "end_line": 523,
               "doc": "Schedule a coalesced disk save after interactive micro-edits without prompting on unsaved projects."
             },
             {
               "name": "_run_debounced_save",
               "sig": "_run_debounced_save(self)",
-              "start_line": 523,
-              "end_line": 529,
+              "start_line": 525,
+              "end_line": 531,
               "doc": ""
             },
             {
               "name": "cancel_pending_project_save",
               "sig": "cancel_pending_project_save(self)",
-              "start_line": 531,
-              "end_line": 536,
+              "start_line": 533,
+              "end_line": 538,
               "doc": "Cancel any queued debounced save timer without writing to disk."
             },
             {
               "name": "flush_pending_project_save",
               "sig": "flush_pending_project_save(self)",
-              "start_line": 538,
-              "end_line": 547,
+              "start_line": 540,
+              "end_line": 549,
               "doc": "Immediately execute any pending debounced project save."
             },
             {
               "name": "save_project",
               "sig": "save_project(self, force)",
-              "start_line": 549,
-              "end_line": 662,
+              "start_line": 551,
+              "end_line": 664,
               "doc": ""
             },
             {
               "name": "open_backup_restore_dialog",
               "sig": "open_backup_restore_dialog(self)",
-              "start_line": 664,
-              "end_line": 671,
+              "start_line": 666,
+              "end_line": 673,
               "doc": "Opens the unified Backup & Restore Center dialog."
             },
             {
               "name": "load_project_file",
-              "sig": "load_project_file(self, filename, prompt, preserve_media)",
-              "start_line": 673,
-              "end_line": 825,
+              "sig": "load_project_file(self, filename, prompt, preserve_media, preloaded_data)",
+              "start_line": 675,
+              "end_line": 827,
               "doc": ""
             },
             {
               "name": "load_project",
               "sig": "load_project(self, filename)",
-              "start_line": 827,
-              "end_line": 841,
+              "start_line": 829,
+              "end_line": 843,
               "doc": ""
             },
             {
               "name": "open_purge_project_data_dialog",
               "sig": "open_purge_project_data_dialog(self)",
-              "start_line": 843,
-              "end_line": 855,
+              "start_line": 845,
+              "end_line": 857,
               "doc": "Open the modal dialog allowing users to selectively wipe project data."
             },
             {
               "name": "purge_project_data",
               "sig": "purge_project_data(self, purge_transcript, purge_translations, purge_speakers, purge_stories, purge_media)",
-              "start_line": 857,
-              "end_line": 988,
+              "start_line": 859,
+              "end_line": 990,
               "doc": "Selectively wipe project components while preserving user undo history."
             }
           ]
@@ -18260,6 +18361,166 @@
         }
       ]
     },
+    "thumbnail_workers.py": {
+      "path": "thumbnail_workers.py",
+      "lines": 523,
+      "summary": "Video thumbnail cache helpers, network-share detection, and background thumbnail workers.",
+      "exports": [
+        "TIMELINE_THUMBNAIL_DENSITY_SPECS",
+        "TIMELINE_THUMBNAIL_DENSITY_PRESETS",
+        "DEFAULT_TIMELINE_THUMBNAIL_DENSITY",
+        "MAX_TIMELINE_THUMBNAIL_COUNT",
+        "_LEGACY_DEFAULT_THUMBNAIL_COUNT",
+        "is_network_path",
+        "normalize_thumbnail_density",
+        "get_thumbnail_count_for_density",
+        "should_use_keyframe_skip",
+        "parse_ffmpeg_progress_seconds",
+        "get_video_thumbnail_cache_dir",
+        "read_video_thumbnail_cache",
+        "invalidate_video_thumbnail_cache",
+        "VideoThumbnailCacheLoader",
+        "VideoThumbnailWorker"
+      ],
+      "classes": [
+        {
+          "name": "VideoThumbnailCacheLoader",
+          "bases": [
+            "QObject"
+          ],
+          "start_line": 293,
+          "end_line": 336,
+          "doc": "Decode cached JPEG thumbnails into thread-safe QImages on a background QThread.",
+          "methods": [
+            {
+              "name": "__init__",
+              "sig": "__init__(self, items, media_path, target_count, density)",
+              "start_line": 299,
+              "end_line": 305,
+              "doc": ""
+            },
+            {
+              "name": "cancel",
+              "sig": "cancel(self)",
+              "start_line": 307,
+              "end_line": 308,
+              "doc": ""
+            },
+            {
+              "name": "run",
+              "sig": "run(self)",
+              "start_line": 310,
+              "end_line": 336,
+              "doc": ""
+            }
+          ]
+        },
+        {
+          "name": "VideoThumbnailWorker",
+          "bases": [
+            "QObject"
+          ],
+          "start_line": 339,
+          "end_line": 504,
+          "doc": "Background FFmpeg video thumbnail extractor with keyframe acceleration and live progress.",
+          "methods": [
+            {
+              "name": "__init__",
+              "sig": "__init__(self, media_path, duration, output_dir, count, density, use_keyframe_skip)",
+              "start_line": 346,
+              "end_line": 367,
+              "doc": ""
+            },
+            {
+              "name": "build_ffmpeg_command",
+              "sig": "build_ffmpeg_command(self, keyframe_skip)",
+              "start_line": 369,
+              "end_line": 388,
+              "doc": "Construct the FFmpeg command vector for thumbnail extraction."
+            },
+            {
+              "name": "cancel",
+              "sig": "cancel(self)",
+              "start_line": 390,
+              "end_line": 398,
+              "doc": ""
+            },
+            {
+              "name": "_run_ffmpeg_pass",
+              "sig": "_run_ffmpeg_pass(self, keyframe_skip)",
+              "start_line": 400,
+              "end_line": 454,
+              "doc": ""
+            },
+            {
+              "name": "run",
+              "sig": "run(self)",
+              "start_line": 456,
+              "end_line": 504,
+              "doc": ""
+            }
+          ]
+        }
+      ],
+      "functions": [
+        {
+          "name": "is_network_path",
+          "sig": "is_network_path(path)",
+          "start_line": 47,
+          "end_line": 73,
+          "doc": "Return True if *path* points to a UNC network share or Windows mapped network drive."
+        },
+        {
+          "name": "normalize_thumbnail_density",
+          "sig": "normalize_thumbnail_density(density)",
+          "start_line": 76,
+          "end_line": 79,
+          "doc": "Normalize a timeline thumbnail density setting to 'standard', 'detailed', 'high', or 'extra_high'."
+        },
+        {
+          "name": "get_thumbnail_count_for_density",
+          "sig": "get_thumbnail_count_for_density(density, duration)",
+          "start_line": 82,
+          "end_line": 87,
+          "doc": "Return the duration-scaled, memory-bounded thumbnail count for a density preset."
+        },
+        {
+          "name": "should_use_keyframe_skip",
+          "sig": "should_use_keyframe_skip(duration, count, density)",
+          "start_line": 90,
+          "end_line": 108,
+          "doc": "Return True when FFmpeg `-skip_frame nokey` can safely accelerate thumbnail extraction."
+        },
+        {
+          "name": "parse_ffmpeg_progress_seconds",
+          "sig": "parse_ffmpeg_progress_seconds(line)",
+          "start_line": 111,
+          "end_line": 135,
+          "doc": "Parse elapsed media seconds from an FFmpeg `-progress pipe:1` key=value line."
+        },
+        {
+          "name": "get_video_thumbnail_cache_dir",
+          "sig": "get_video_thumbnail_cache_dir(media_file, project_file, target_count)",
+          "start_line": 138,
+          "end_line": 197,
+          "doc": "Return the deterministic thumbnail cache directory for a media file."
+        },
+        {
+          "name": "read_video_thumbnail_cache",
+          "sig": "read_video_thumbnail_cache(media_file, duration, project_file, target_count)",
+          "start_line": 200,
+          "end_line": 258,
+          "doc": "Read pre-extracted video thumbnail items [(timestamp, image_path), ...] from disk cache."
+        },
+        {
+          "name": "invalidate_video_thumbnail_cache",
+          "sig": "invalidate_video_thumbnail_cache(media_file, project_file, target_count)",
+          "start_line": 261,
+          "end_line": 290,
+          "doc": "Delete the thumbnail cache directory for a given media file."
+        }
+      ]
+    },
     "timeline_context_menus.py": {
       "path": "timeline_context_menus.py",
       "lines": 197,
@@ -18613,7 +18874,7 @@
     },
     "timeline_painter.py": {
       "path": "timeline_painter.py",
-      "lines": 430,
+      "lines": 436,
       "summary": "Timeline canvas rendering engine, waveform drawing, and paint pipeline.",
       "exports": null,
       "classes": [],
@@ -18622,14 +18883,14 @@
           "name": "render_waveform_buffer",
           "sig": "render_waveform_buffer(canvas, width, height)",
           "start_line": 32,
-          "end_line": 206,
+          "end_line": 212,
           "doc": "Render background waveform peaks and video thumbnail strip onto an offscreen QPixmap."
         },
         {
           "name": "paint_timeline_canvas",
           "sig": "paint_timeline_canvas(canvas, painter, event)",
-          "start_line": 209,
-          "end_line": 430,
+          "start_line": 215,
+          "end_line": 436,
           "doc": "Execute full timeline paint pipeline onto the canvas QPainter."
         }
       ]
@@ -18701,7 +18962,7 @@
     },
     "timeline_widgets.py": {
       "path": "timeline_widgets.py",
-      "lines": 971,
+      "lines": 995,
       "summary": "Radio & TV Story Segmenter \u2014 Timeline Ruler, Track Views, Playhead, Overview & Canvas Widgets.",
       "exports": null,
       "classes": [
@@ -18711,315 +18972,322 @@
             "QWidget"
           ],
           "start_line": 71,
-          "end_line": 883,
+          "end_line": 907,
           "doc": "",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, parent, tokens)",
               "start_line": 91,
-              "end_line": 180,
+              "end_line": 181,
               "doc": ""
             },
             {
               "name": "set_is_video",
               "sig": "set_is_video(self, is_video)",
-              "start_line": 182,
-              "end_line": 185,
+              "start_line": 183,
+              "end_line": 186,
               "doc": ""
             },
             {
               "name": "set_background_generation_active",
               "sig": "set_background_generation_active(self, task_name, active)",
-              "start_line": 187,
-              "end_line": 206,
+              "start_line": 188,
+              "end_line": 209,
               "doc": "Set generation state for 'waveform' or 'thumbnails'."
             },
             {
               "name": "_activate_background_banner",
               "sig": "_activate_background_banner(self)",
-              "start_line": 208,
-              "end_line": 213,
+              "start_line": 211,
+              "end_line": 216,
               "doc": ""
+            },
+            {
+              "name": "set_thumbnail_progress",
+              "sig": "set_thumbnail_progress(self, pct)",
+              "start_line": 218,
+              "end_line": 223,
+              "doc": "Update live percentage progress (1-99) for background video thumbnail extraction."
             },
             {
               "name": "_update_background_status_text",
               "sig": "_update_background_status_text(self)",
-              "start_line": 215,
-              "end_line": 231,
+              "start_line": 225,
+              "end_line": 244,
               "doc": ""
             },
             {
               "name": "dragEnterEvent",
               "sig": "dragEnterEvent(self, event)",
-              "start_line": 233,
-              "end_line": 233,
+              "start_line": 246,
+              "end_line": 246,
               "doc": ""
             },
             {
               "name": "dragMoveEvent",
               "sig": "dragMoveEvent(self, event)",
-              "start_line": 234,
-              "end_line": 234,
+              "start_line": 247,
+              "end_line": 247,
               "doc": ""
             },
             {
               "name": "dragLeaveEvent",
               "sig": "dragLeaveEvent(self, event)",
-              "start_line": 235,
-              "end_line": 235,
+              "start_line": 248,
+              "end_line": 248,
               "doc": ""
             },
             {
               "name": "dropEvent",
               "sig": "dropEvent(self, event)",
-              "start_line": 236,
-              "end_line": 236,
+              "start_line": 249,
+              "end_line": 249,
               "doc": ""
             },
             {
               "name": "set_audio_filename",
               "sig": "set_audio_filename(self, filename)",
-              "start_line": 238,
-              "end_line": 241,
+              "start_line": 251,
+              "end_line": 254,
               "doc": ""
             },
             {
               "name": "set_duration",
               "sig": "set_duration(self, duration)",
-              "start_line": 243,
-              "end_line": 251,
+              "start_line": 256,
+              "end_line": 264,
               "doc": ""
             },
             {
               "name": "set_position",
               "sig": "set_position(self, position)",
-              "start_line": 253,
-              "end_line": 256,
+              "start_line": 266,
+              "end_line": 269,
               "doc": ""
             },
             {
               "name": "set_playing_state",
               "sig": "set_playing_state(self, is_playing)",
-              "start_line": 258,
-              "end_line": 259,
+              "start_line": 271,
+              "end_line": 272,
               "doc": ""
             },
             {
               "name": "ensure_position_visible",
               "sig": "ensure_position_visible(self, target_time)",
-              "start_line": 261,
-              "end_line": 284,
+              "start_line": 274,
+              "end_line": 297,
               "doc": ""
             },
             {
               "name": "clear_selection_range",
               "sig": "clear_selection_range(self)",
-              "start_line": 286,
-              "end_line": 291,
+              "start_line": 299,
+              "end_line": 304,
               "doc": "Clear active timeline drag selection range without affecting committed stories."
             },
             {
               "name": "set_transcript_selection_range",
               "sig": "set_transcript_selection_range(self, start, end)",
-              "start_line": 293,
-              "end_line": 295,
+              "start_line": 306,
+              "end_line": 308,
               "doc": ""
             },
             {
               "name": "set_stories",
               "sig": "set_stories(self, stories, selected_indices)",
-              "start_line": 297,
-              "end_line": 301,
+              "start_line": 310,
+              "end_line": 314,
               "doc": ""
             },
             {
               "name": "set_waveform_peaks",
               "sig": "set_waveform_peaks(self, peaks, levels)",
-              "start_line": 303,
-              "end_line": 314,
+              "start_line": 316,
+              "end_line": 327,
               "doc": ""
             },
             {
               "name": "set_progressive_waveform_peaks",
               "sig": "set_progressive_waveform_peaks(self, peaks, pps, pct)",
-              "start_line": 316,
-              "end_line": 323,
+              "start_line": 329,
+              "end_line": 336,
               "doc": ""
             },
             {
               "name": "set_timeline_views",
               "sig": "set_timeline_views(self, show_waveform, show_thumbnails)",
-              "start_line": 325,
-              "end_line": 329,
+              "start_line": 338,
+              "end_line": 342,
               "doc": ""
             },
             {
               "name": "set_video_thumbnails",
               "sig": "set_video_thumbnails(self, thumbnails)",
-              "start_line": 331,
-              "end_line": 334,
+              "start_line": 344,
+              "end_line": 358,
               "doc": ""
             },
             {
               "name": "set_skip_seconds",
               "sig": "set_skip_seconds(self, seconds)",
-              "start_line": 336,
-              "end_line": 337,
+              "start_line": 360,
+              "end_line": 361,
               "doc": ""
             },
             {
               "name": "visible_duration",
               "sig": "visible_duration(self)",
-              "start_line": 339,
-              "end_line": 340,
+              "start_line": 363,
+              "end_line": 364,
               "doc": ""
             },
             {
               "name": "clamp_scroll_offset",
               "sig": "clamp_scroll_offset(self)",
-              "start_line": 342,
-              "end_line": 345,
+              "start_line": 366,
+              "end_line": 369,
               "doc": ""
             },
             {
               "name": "time_to_x",
               "sig": "time_to_x(self, time_val, width)",
-              "start_line": 347,
-              "end_line": 350,
+              "start_line": 371,
+              "end_line": 374,
               "doc": ""
             },
             {
               "name": "x_to_time",
               "sig": "x_to_time(self, x_val, width)",
-              "start_line": 352,
-              "end_line": 354,
+              "start_line": 376,
+              "end_line": 378,
               "doc": ""
             },
             {
               "name": "snap_time",
               "sig": "snap_time(self, raw_time, exclude_story_idx, width, pixel_threshold)",
-              "start_line": 356,
-              "end_line": 357,
+              "start_line": 380,
+              "end_line": 381,
               "doc": ""
             },
             {
               "name": "find_edge_at_pos",
               "sig": "find_edge_at_pos(self, pos_x, width)",
-              "start_line": 361,
-              "end_line": 362,
+              "start_line": 385,
+              "end_line": 386,
               "doc": ""
             },
             {
               "name": "find_fade_handle_at_pos",
               "sig": "find_fade_handle_at_pos(self, pos_x, pos_y, width)",
-              "start_line": 364,
-              "end_line": 365,
+              "start_line": 388,
+              "end_line": 389,
               "doc": ""
             },
             {
               "name": "find_story_at_time",
               "sig": "find_story_at_time(self, time)",
-              "start_line": 367,
-              "end_line": 368,
+              "start_line": 391,
+              "end_line": 392,
               "doc": ""
             },
             {
               "name": "is_near_playhead",
               "sig": "is_near_playhead(self, pos_x, width)",
-              "start_line": 370,
-              "end_line": 371,
+              "start_line": 394,
+              "end_line": 395,
               "doc": ""
             },
             {
               "name": "set_zoom",
               "sig": "set_zoom(self, new_zoom, center_x, focus_time)",
-              "start_line": 373,
-              "end_line": 399,
+              "start_line": 397,
+              "end_line": 423,
               "doc": ""
             },
             {
               "name": "resizeEvent",
               "sig": "resizeEvent(self, event)",
-              "start_line": 401,
-              "end_line": 403,
+              "start_line": 425,
+              "end_line": 427,
               "doc": ""
             },
             {
               "name": "wheelEvent",
               "sig": "wheelEvent(self, event)",
-              "start_line": 405,
-              "end_line": 455,
+              "start_line": 429,
+              "end_line": 479,
               "doc": ""
             },
             {
               "name": "mousePressEvent",
               "sig": "mousePressEvent(self, event)",
-              "start_line": 457,
-              "end_line": 537,
+              "start_line": 481,
+              "end_line": 561,
               "doc": ""
             },
             {
               "name": "mouseMoveEvent",
               "sig": "mouseMoveEvent(self, event)",
-              "start_line": 539,
-              "end_line": 676,
+              "start_line": 563,
+              "end_line": 700,
               "doc": ""
             },
             {
               "name": "mouseReleaseEvent",
               "sig": "mouseReleaseEvent(self, event)",
-              "start_line": 678,
-              "end_line": 750,
+              "start_line": 702,
+              "end_line": 774,
               "doc": ""
             },
             {
               "name": "_check_right_drag",
               "sig": "_check_right_drag(self, pos_x)",
-              "start_line": 752,
-              "end_line": 757,
+              "start_line": 776,
+              "end_line": 781,
               "doc": ""
             },
             {
               "name": "_show_timeline_context_menu",
               "sig": "_show_timeline_context_menu(self, global_pos, pos_x)",
-              "start_line": 759,
-              "end_line": 760,
+              "start_line": 783,
+              "end_line": 784,
               "doc": ""
             },
             {
               "name": "_show_selection_context_menu",
               "sig": "_show_selection_context_menu(self, global_pos)",
-              "start_line": 762,
-              "end_line": 763,
+              "start_line": 786,
+              "end_line": 787,
               "doc": ""
             },
             {
               "name": "keyPressEvent",
               "sig": "keyPressEvent(self, event)",
-              "start_line": 765,
-              "end_line": 864,
+              "start_line": 789,
+              "end_line": 888,
               "doc": ""
             },
             {
               "name": "set_thumbnail_position",
               "sig": "set_thumbnail_position(self, position)",
-              "start_line": 866,
-              "end_line": 870,
+              "start_line": 890,
+              "end_line": 894,
               "doc": ""
             },
             {
               "name": "render_waveform_buffer",
               "sig": "render_waveform_buffer(self, width, height)",
-              "start_line": 872,
-              "end_line": 873,
+              "start_line": 896,
+              "end_line": 897,
               "doc": ""
             },
             {
               "name": "paintEvent",
               "sig": "paintEvent(self, event)",
-              "start_line": 875,
-              "end_line": 883,
+              "start_line": 899,
+              "end_line": 907,
               "doc": ""
             }
           ]
@@ -19029,85 +19297,85 @@
           "bases": [
             "QWidget"
           ],
-          "start_line": 886,
-          "end_line": 970,
+          "start_line": 910,
+          "end_line": 994,
           "doc": "",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, parent, tokens)",
-              "start_line": 889,
-              "end_line": 923,
+              "start_line": 913,
+              "end_line": 947,
               "doc": ""
             },
             {
               "name": "set_is_video",
               "sig": "set_is_video(self, is_video)",
-              "start_line": 925,
-              "end_line": 927,
+              "start_line": 949,
+              "end_line": 951,
               "doc": ""
             },
             {
               "name": "set_background_generation_active",
               "sig": "set_background_generation_active(self, task_name, active)",
-              "start_line": 929,
-              "end_line": 931,
+              "start_line": 953,
+              "end_line": 955,
               "doc": ""
             },
             {
               "name": "dragEnterEvent",
               "sig": "dragEnterEvent(self, event)",
-              "start_line": 933,
-              "end_line": 933,
+              "start_line": 957,
+              "end_line": 957,
               "doc": ""
             },
             {
               "name": "dragMoveEvent",
               "sig": "dragMoveEvent(self, event)",
-              "start_line": 934,
-              "end_line": 934,
+              "start_line": 958,
+              "end_line": 958,
               "doc": ""
             },
             {
               "name": "dragLeaveEvent",
               "sig": "dragLeaveEvent(self, event)",
-              "start_line": 935,
-              "end_line": 935,
+              "start_line": 959,
+              "end_line": 959,
               "doc": ""
             },
             {
               "name": "dropEvent",
               "sig": "dropEvent(self, event)",
-              "start_line": 936,
-              "end_line": 936,
+              "start_line": 960,
+              "end_line": 960,
               "doc": ""
             },
             {
               "name": "update_scrollbar_range",
               "sig": "update_scrollbar_range(self)",
-              "start_line": 938,
-              "end_line": 947,
+              "start_line": 962,
+              "end_line": 971,
               "doc": ""
             },
             {
               "name": "update_scrollbar_from_canvas",
               "sig": "update_scrollbar_from_canvas(self, offset)",
-              "start_line": 949,
-              "end_line": 956,
+              "start_line": 973,
+              "end_line": 980,
               "doc": ""
             },
             {
               "name": "update_canvas_from_scrollbar",
               "sig": "update_canvas_from_scrollbar(self, val)",
-              "start_line": 958,
-              "end_line": 967,
+              "start_line": 982,
+              "end_line": 991,
               "doc": ""
             },
             {
               "name": "__getattr__",
               "sig": "__getattr__(self, name)",
-              "start_line": 969,
-              "end_line": 970,
+              "start_line": 993,
+              "end_line": 994,
               "doc": ""
             }
           ]
@@ -20013,7 +20281,7 @@
     "transcript_story.py": {
       "path": "transcript_story.py",
       "lines": 856,
-      "summary": "Radio & TV Segmenter v3.10.26-beta \u2014 transcript story responsibilities.",
+      "summary": "Radio & TV Segmenter v3.10.27-beta \u2014 transcript story responsibilities.",
       "exports": [
         "TranscriptStoryMixin",
         "Story",

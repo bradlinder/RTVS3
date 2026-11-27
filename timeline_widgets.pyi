@@ -7,7 +7,7 @@ from pathlib import Path
 import time
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
 from PySide6.QtCore import QLineF, QPointF, QRectF, QSettings, Qt, QTimer, Signal
-from PySide6.QtGui import QColor, QKeySequence, QPainter, QPainterPath, QPen, QPixmap
+from PySide6.QtGui import QColor, QImage, QKeySequence, QPainter, QPainterPath, QPen, QPixmap
 from PySide6.QtWidgets import QMenu, QToolTip, QVBoxLayout, QWidget
 from core_utils import INTERNAL_APP_ID, calculate_fade_curve_factor, calculate_fade_out_factor, extract_dropped_file_paths
 from theme_tokens import ThemeTokens
@@ -50,6 +50,9 @@ class TimelineCanvas(QWidget):
         ...
 
     def _activate_background_banner(self):
+        ...
+
+    def set_thumbnail_progress(self, pct: Optional[int]):
         ...
 
     def _update_background_status_text(self):

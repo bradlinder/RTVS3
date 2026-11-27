@@ -10,7 +10,7 @@ from PySide6.QtCore import Qt, QSettings
 from PySide6.QtWidgets import (
     QDialog, QVBoxLayout, QHBoxLayout, QListWidget, QListWidgetItem,
     QStackedWidget, QPushButton, QDialogButtonBox, QMessageBox, QLabel,
-    QLineEdit, QWidget, QComboBox, QTableWidget
+    QLineEdit, QWidget, QComboBox, QTableWidget, QScrollArea, QFrame
 )
 
 from prs_shared import APP_DISPLAY_NAME, DEFAULT_GITHUB_REPO, INTERNAL_APP_ID, set_models_storage_dir
@@ -185,20 +185,32 @@ class PreferencesDialogMixin(PreferencesResetMixin):
             row.addStretch()
             layout.addLayout(row)
 
-        # Build Core Tabs
-        stack.addWidget(build_general_tab(self, dialog, live_widgets, _add_custom_defaults_btn))
+        def _wrap_page_scroll(page: QWidget) -> QWidget:
+            """Wrap vertical form preference pages in a borderless scroll area so no controls clip at minimum size."""
+            if page is None or isinstance(page, QScrollArea):
+                return page
+            scroll = QScrollArea(dialog)
+            scroll.setWidgetResizable(True)
+            scroll.setFrameShape(QFrame.Shape.NoFrame)
+            scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+            scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+            scroll.setWidget(page)
+            return scroll
+
+        # Build Core Tabs (Shortcuts keeps its own full-height self-scrolling QTableWidget)
+        stack.addWidget(_wrap_page_scroll(build_general_tab(self, dialog, live_widgets, _add_custom_defaults_btn)))
         stack.addWidget(build_shortcuts_tab(self, dialog, live_widgets))
-        stack.addWidget(build_audio_hardware_tab(self, dialog, live_widgets, _add_custom_defaults_btn))
-        stack.addWidget(build_updates_tab(self, dialog, live_widgets, _add_custom_defaults_btn))
-        stack.addWidget(build_ai_models_tab(self, dialog, live_widgets, _add_custom_defaults_btn))
-        stack.addWidget(build_gpu_tab(self, dialog, live_widgets, _add_custom_defaults_btn))
+        stack.addWidget(_wrap_page_scroll(build_audio_hardware_tab(self, dialog, live_widgets, _add_custom_defaults_btn)))
+        stack.addWidget(_wrap_page_scroll(build_updates_tab(self, dialog, live_widgets, _add_custom_defaults_btn)))
+        stack.addWidget(_wrap_page_scroll(build_ai_models_tab(self, dialog, live_widgets, _add_custom_defaults_btn)))
+        stack.addWidget(_wrap_page_scroll(build_gpu_tab(self, dialog, live_widgets, _add_custom_defaults_btn)))
 
         # Build Media & Processing Tabs
-        stack.addWidget(build_playback_timeline_tab(self, dialog, live_widgets, _add_custom_defaults_btn))
-        stack.addWidget(build_external_editors_tab(self, dialog, live_widgets, _add_custom_defaults_btn))
-        stack.addWidget(build_detection_tab(self, dialog, live_widgets, _add_custom_defaults_btn))
-        stack.addWidget(build_batch_tab(self, dialog, live_widgets, _add_custom_defaults_btn))
-        stack.addWidget(build_cleanup_tab(self, dialog, live_widgets, _add_custom_defaults_btn))
+        stack.addWidget(_wrap_page_scroll(build_playback_timeline_tab(self, dialog, live_widgets, _add_custom_defaults_btn)))
+        stack.addWidget(_wrap_page_scroll(build_external_editors_tab(self, dialog, live_widgets, _add_custom_defaults_btn)))
+        stack.addWidget(_wrap_page_scroll(build_detection_tab(self, dialog, live_widgets, _add_custom_defaults_btn)))
+        stack.addWidget(_wrap_page_scroll(build_batch_tab(self, dialog, live_widgets, _add_custom_defaults_btn)))
+        stack.addWidget(_wrap_page_scroll(build_cleanup_tab(self, dialog, live_widgets, _add_custom_defaults_btn)))
 
         # Build Plugin Tabs
         page_wp = None
@@ -208,10 +220,10 @@ class PreferencesDialogMixin(PreferencesResetMixin):
                 page_wp = wp_plugin.get_preferences_widget(dialog)
                 if page_wp and page_wp.layout():
                     _add_custom_defaults_btn(page_wp.layout(), "WordPress Connection")
-                stack.addWidget(page_wp)
+                stack.addWidget(_wrap_page_scroll(page_wp))
 
         if show_yt:
-            stack.addWidget(build_youtube_tab(self, dialog, live_widgets, _add_custom_defaults_btn))
+            stack.addWidget(_wrap_page_scroll(build_youtube_tab(self, dialog, live_widgets, _add_custom_defaults_btn)))
 
         content_layout.addWidget(stack, 1)
         main_layout.addLayout(content_layout)

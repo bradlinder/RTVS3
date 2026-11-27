@@ -244,6 +244,59 @@ class DiagnosticExportWordPressMediaMixin:
                 assert tab.wp_post_items[2]["featured_image_caption"] == "Story 1 Caption"
             finally:
                 QMessageBox.information = orig_info
+
+            # 6. Click-to-enlarge Featured Image preview + Custom Selection sidebar parity & live export count (v3.10.27-beta)
+            from plugins.wordpress.wp_thumb_ui import (
+                ClickableThumbnailLabel,
+                FeaturedImageLightboxDialog,
+                open_featured_image_preview,
+                set_preview_pixmap,
+                clear_preview_pixmap,
+            )
+            from export.story_selector import ExportStorySelectorSidebar, FULL_EPISODE_ROLE_VALUE
+            from export.dialog import UnifiedExportDialog
+            from PySide6.QtCore import Qt
+
+            assert isinstance(tab.wp_thumb_preview_label, ClickableThumbnailLabel)
+            set_preview_pixmap(tab, tmp_img, source_description="Test Featured Image")
+            assert tab.wp_thumb_preview_label.full_image_path() == tmp_img
+            assert "full-size" in tab.wp_thumb_preview_label.toolTip().lower()
+            lb_dlg = open_featured_image_preview(tab)
+            assert isinstance(lb_dlg, FeaturedImageLightboxDialog)
+            assert "Test Featured Image" in lb_dlg.header_label.text()
+            lb_dlg.close()
+            lb_dlg.deleteLater()
+            clear_preview_pixmap(tab, "No Thumbnail")
+            assert tab.wp_thumb_preview_label.full_image_path() is None
+            assert tab.wp_thumb_preview_label.toolTip() == ""
+
+            # Verify WordPress sidebar decorations, unchecked dimming, inline Auto-fill All Excerpts, and live count
+            decs = tab.get_sidebar_decorations()
+            assert FULL_EPISODE_ROLE_VALUE in decs and 0 in decs and 1 in decs, f"Missing sidebar decorations: {decs.keys()}"
+            sidebar = ExportStorySelectorSidebar(tab_mw)
+            sidebar.populate(tab_mw.stories, selected_indices=[0], include_full_episode=False)
+            sidebar.set_item_decorations(decs)
+            full_row = sidebar.story_list.item(0)
+            st0_row = sidebar.story_list.item(1)
+            st1_row = sidebar.story_list.item(2)
+            assert full_row.data(Qt.ItemDataRole.ForegroundRole) is not None, "Unchecked Full Episode row must be muted"
+            assert st0_row.data(Qt.ItemDataRole.ForegroundRole) is None, "Checked story row must use normal foreground"
+            assert st1_row.data(Qt.ItemDataRole.ForegroundRole) is not None, "Unchecked story row must be muted"
+            assert "[" in st0_row.text() and "Img" in st0_row.text(), f"Checked row should mirror WP badge: {st0_row.text()}"
+            assert "[" not in st1_row.text(), f"Unchecked row should not show active WP badge: {st1_row.text()}"
+            sidebar.close()
+            sidebar.deleteLater()
+
+            exp_dlg = UnifiedExportDialog(tab_mw, initial_scope="selected_stories", initial_dest="local")
+            try:
+                assert exp_dlg.is_story_selector_visible()
+                assert "(1)" in exp_dlg.export_btn.text(), f"Expected live count (1), got: {exp_dlg.export_btn.text()}"
+                exp_dlg.story_selector_sidebar.set_include_full_episode(True, emit=True)
+                assert "(2)" in exp_dlg.export_btn.text(), f"Expected live count (2), got: {exp_dlg.export_btn.text()}"
+            finally:
+                exp_dlg.close()
+                exp_dlg.deleteLater()
+
             tab.close()
         finally:
             try:

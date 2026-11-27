@@ -277,6 +277,60 @@ class DiagnosticEditorStoryUiTestsMixin:
             assert d_std == d_default, "Legacy 36-frame count must reuse default thumbnail cache dir"
             assert len({d_std, d_det, d_hi, d_xhi}) == 4, "Density presets must map to distinct cache dirs"
 
+            # v3.10.27-beta: Network/UNC cache routing, keyframe-only acceleration, FFmpeg progress parser, async QImage loader
+            from background_workers import (
+                VideoThumbnailCacheLoader,
+                get_waveform_peak_cache_path,
+                is_network_path,
+                parse_ffmpeg_progress_seconds,
+                read_video_thumbnail_cache,
+                should_use_keyframe_skip,
+            )
+            assert is_network_path(r"\\Ollie\Archive\project\test.rtvs") is True
+            assert is_network_path("//server/share/test.rtvs") is True
+            assert is_network_path(fake_vid) is False
+            unc_proj = r"\\Ollie\Archive\Brad\test.rtvs"
+            unc_thumb_dir = get_video_thumbnail_cache_dir(fake_vid, project_file=unc_proj, target_count=480)
+            assert unc_thumb_dir is not None and not is_network_path(unc_thumb_dir), (
+                f"Network project thumbnail cache must stay on local disk, got {unc_thumb_dir}"
+            )
+            unc_peaks = get_waveform_peak_cache_path(fake_vid, project_file=unc_proj)
+            assert unc_peaks is not None and not is_network_path(unc_peaks), (
+                f"Network project peaks cache must stay on local disk, got {unc_peaks}"
+            )
+            assert should_use_keyframe_skip(1800.0, 60, density="standard") is True
+            assert should_use_keyframe_skip(1800.0, 120, density="detailed") is True
+            assert should_use_keyframe_skip(1800.0, 240, density="high") is False
+            assert should_use_keyframe_skip(1800.0, 480, density="extra_high") is False
+            w_std = VideoThumbnailWorker(fake_vid, 1800.0, Path(td_str) / "out_std", count=60, density="standard")
+            cmd_std = w_std.build_ffmpeg_command()
+            assert "-skip_frame" in cmd_std and "nokey" in cmd_std, f"Standard density should use nokey: {cmd_std}"
+            assert "-progress" in cmd_std and "pipe:1" in cmd_std, f"Missing progress pipe: {cmd_std}"
+            cmd_hi = w_high.build_ffmpeg_command()
+            assert "-skip_frame" not in cmd_hi, f"High density should decode full frames: {cmd_hi}"
+            assert abs((parse_ffmpeg_progress_seconds("out_time_us=45500000") or 0.0) - 45.5) < 1e-6
+            assert abs((parse_ffmpeg_progress_seconds("out_time=00:01:30.250000") or 0.0) - 90.25) < 1e-6
+            assert parse_ffmpeg_progress_seconds("out_time_us=N/A") is None
+
+            # Verify single-pass scandir thumbnail cache read + VideoThumbnailCacheLoader QImage decoding
+            from PySide6.QtGui import QImage
+            thumb_dir_test = get_video_thumbnail_cache_dir(fake_vid, target_count=480)
+            thumb_dir_test.mkdir(parents=True, exist_ok=True)
+            sample_img = QImage(32, 18, QImage.Format.Format_RGB32)
+            sample_img.fill(0x336699)
+            sample_img.save(str(thumb_dir_test / "thumb_0001.jpg"), "JPG")
+            sample_img.save(str(thumb_dir_test / "thumb_0002.jpg"), "JPG")
+            cached_list = read_video_thumbnail_cache(fake_vid, 120.0, target_count=480)
+            assert cached_list is not None and len(cached_list) == 2
+            decoded_holder = []
+            loader = VideoThumbnailCacheLoader(cached_list, media_path=str(fake_vid), target_count=480, density="high")
+            loader.finished.connect(lambda items: decoded_holder.append(items))
+            loader.run()
+            assert len(decoded_holder) == 1 and len(decoded_holder[0]) == 2
+            assert isinstance(decoded_holder[0][0][1], QImage) and not decoded_holder[0][0][1].isNull()
+            import shutil as _shutil
+            _shutil.rmtree(thumb_dir_test, ignore_errors=True)
+
         # 6b-3. Verify Preferences Playback & Timeline Audio Fades layout has zero card overlap or clipping (v3.10.25-beta)
         from preferences_tabs_media import build_playback_timeline_tab
         pref_live = {}
@@ -337,7 +391,42 @@ class DiagnosticEditorStoryUiTestsMixin:
         assert tl_canvas.background_status_text == ""
         pix_full = render_waveform_buffer(tl_canvas, 800, 120)
         assert pix_full is not None and not pix_full.isNull()
+
+        # Verify live video thumbnail progress % and QImage thumbnail loading on TimelineCanvas (v3.10.27-beta)
+        tl_canvas.set_is_video(True)
+        tl_canvas.set_background_generation_active("thumbnails", True)
+        tl_canvas.set_thumbnail_progress(42)
+        assert tl_canvas.thumbnail_progress_pct == 42
+        assert "42%" in tl_canvas.background_status_text
+        pix_th_prog = render_waveform_buffer(tl_canvas, 800, 120)
+        assert pix_th_prog is not None and not pix_th_prog.isNull()
+        from PySide6.QtGui import QImage as _QImg
+        qi = _QImg(40, 22, _QImg.Format.Format_RGB32)
+        qi.fill(0x224466)
+        tl_canvas.set_background_generation_active("thumbnails", False)
+        tl_canvas.set_video_thumbnails([(0.0, qi), (30.0, qi)])
+        assert len(tl_canvas.video_thumbnails) == 2
+        assert tl_canvas.thumbnail_progress_pct is None
         tl_canvas.deleteLater()
+
+        # 6d. Verify Preferences dialog wraps all non-table category pages in borderless QScrollAreas (v3.10.27-beta)
+        from PySide6.QtWidgets import QScrollArea, QStackedWidget, QFrame
+        if hasattr(self, "main_window") and self.main_window and hasattr(self.main_window, "open_preferences_dialog"):
+            pref_dlg = self.main_window.open_preferences_dialog(initial_category="Detection", modal=False)
+            try:
+                stack_w = pref_dlg.findChild(QStackedWidget)
+                assert stack_w is not None and stack_w.count() >= 10
+                for idx in range(stack_w.count()):
+                    cat_name = pref_dlg.cat_list.item(idx).text() if idx < pref_dlg.cat_list.count() else ""
+                    page_w = stack_w.widget(idx)
+                    if cat_name == "Keyboard Shortcuts":
+                        continue
+                    assert isinstance(page_w, QScrollArea), f"Preferences page '{cat_name}' must be wrapped in QScrollArea"
+                    assert page_w.widgetResizable(), f"Preferences scroll area for '{cat_name}' must have widgetResizable=True"
+                    assert page_w.frameShape() == QFrame.Shape.NoFrame, f"Preferences scroll area for '{cat_name}' must be borderless"
+            finally:
+                pref_dlg.close()
+                pref_dlg.deleteLater()
 
         # 6d. Verify floating selection toolbar stays hidden when disabled and positions viewport-locally when enabled
         from PySide6.QtWidgets import QWidget

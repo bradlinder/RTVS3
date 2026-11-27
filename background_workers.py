@@ -61,6 +61,7 @@ from core_utils import (
     ffmpeg_path,
     ffprobe_path,
 )
+from thumbnail_workers import is_network_path
 from bootstrap import setup_windows_dll_directories
 from process_lifecycle import (
     register_process,
@@ -499,11 +500,11 @@ def get_waveform_peak_cache_path(audio_file, project_file=None):
     try:
         audio_p = Path(audio_file).resolve()
         
-        # 1. If explicit project_file provided, store in project folder's .cache/peaks/
-        if project_file:
+        # 1. If explicit project_file provided, store in project folder's .cache/peaks/ (local drives only)
+        if project_file and not is_network_path(project_file):
             proj_p = Path(project_file).resolve()
             proj_dir = proj_p.parent if (proj_p.is_file() or proj_p.suffix.lower() in ('.rtvs', '.json')) else proj_p
-            if proj_dir.exists() and os.access(str(proj_dir), os.W_OK):
+            if not is_network_path(proj_dir) and proj_dir.exists() and os.access(str(proj_dir), os.W_OK):
                 cache_peaks_dir = proj_dir / ".cache" / "peaks"
                 cache_peaks_dir.mkdir(parents=True, exist_ok=True)
                 if sys.platform == "win32":
@@ -514,24 +515,30 @@ def get_waveform_peak_cache_path(audio_file, project_file=None):
                         pass
                 return cache_peaks_dir / f"{audio_p.stem}.peaks"
 
-        # 2. Check if audio_file is located inside an existing project folder bundle
-        candidate_proj = None
-        if audio_p.parent.name.lower() in ("media", "audio"):
-            if list(audio_p.parent.parent.glob("*.rtvs")) or (audio_p.parent.parent / ".cache").exists():
-                candidate_proj = audio_p.parent.parent
-        elif list(audio_p.parent.glob("*.rtvs")) or (audio_p.parent / ".cache").exists():
-            candidate_proj = audio_p.parent
+        # 2. Check if audio_file is located inside an existing local project folder bundle
+        if not is_network_path(audio_p):
+            candidate_proj = None
+            if audio_p.parent.name.lower() in ("media", "audio"):
+                if list(audio_p.parent.parent.glob("*.rtvs")) or (audio_p.parent.parent / ".cache").exists():
+                    candidate_proj = audio_p.parent.parent
+            elif list(audio_p.parent.glob("*.rtvs")) or (audio_p.parent / ".cache").exists():
+                candidate_proj = audio_p.parent
 
-        if candidate_proj and candidate_proj.exists() and os.access(str(candidate_proj), os.W_OK):
-            cache_peaks_dir = candidate_proj / ".cache" / "peaks"
-            cache_peaks_dir.mkdir(parents=True, exist_ok=True)
-            if sys.platform == "win32":
-                try:
-                    import ctypes
-                    ctypes.windll.kernel32.SetFileAttributesW(str(candidate_proj / ".cache"), 0x02)
-                except Exception:
-                    pass
-            return cache_peaks_dir / f"{audio_p.stem}.peaks"
+            if (
+                candidate_proj
+                and not is_network_path(candidate_proj)
+                and candidate_proj.exists()
+                and os.access(str(candidate_proj), os.W_OK)
+            ):
+                cache_peaks_dir = candidate_proj / ".cache" / "peaks"
+                cache_peaks_dir.mkdir(parents=True, exist_ok=True)
+                if sys.platform == "win32":
+                    try:
+                        import ctypes
+                        ctypes.windll.kernel32.SetFileAttributesW(str(candidate_proj / ".cache"), 0x02)
+                    except Exception:
+                        pass
+                return cache_peaks_dir / f"{audio_p.stem}.peaks"
     except Exception:
         pass
 
@@ -571,6 +578,16 @@ def read_waveform_peak_cache(audio_file, points_per_second=WAVEFORM_POINTS_PER_S
         legacy_path = audio_p.with_name(audio_p.name + ".peaks")
         if legacy_path != cache_path:
             candidate_paths.append((legacy_path, True))
+        # One-time migration fallback for projects on network shares that previously cached peaks on SMB
+        if project_file and is_network_path(project_file):
+            try:
+                proj_p = Path(project_file)
+                proj_dir = proj_p.parent if (proj_p.suffix.lower() in (".rtvs", ".json")) else proj_p
+                smb_peaks = proj_dir / ".cache" / "peaks" / f"{audio_p.stem}.peaks"
+                if smb_peaks != cache_path:
+                    candidate_paths.append((smb_peaks, True))
+            except Exception:
+                pass
 
     for p, is_legacy in candidate_paths:
         if not p.exists():
@@ -862,236 +879,25 @@ class WaveformWorker(QObject):
 
 
 # ============================================================
-# Video Thumbnail Caching & Background Extraction
+# Video Thumbnail Caching & Background Extraction (Extracted to thumbnail_workers.py)
 # ============================================================
-
-TIMELINE_THUMBNAIL_DENSITY_SPECS = {
-    "standard": {"per_min": 2, "min_count": 16, "max_count": 180},
-    "detailed": {"per_min": 4, "min_count": 24, "max_count": 300},
-    "high": {"per_min": 8, "min_count": 36, "max_count": 480},
-    "extra_high": {"per_min": 16, "min_count": 48, "max_count": 960},
-}
-TIMELINE_THUMBNAIL_DENSITY_PRESETS = {
-    k: spec["per_min"] for k, spec in TIMELINE_THUMBNAIL_DENSITY_SPECS.items()
-}
-DEFAULT_TIMELINE_THUMBNAIL_DENSITY = "standard"
-MAX_TIMELINE_THUMBNAIL_COUNT = 960
-_LEGACY_DEFAULT_THUMBNAIL_COUNT = 36
-
-
-def normalize_thumbnail_density(density) -> str:
-    """Normalize a timeline thumbnail density setting to 'standard', 'detailed', 'high', or 'extra_high'."""
-    key = str(density or DEFAULT_TIMELINE_THUMBNAIL_DENSITY).strip().lower()
-    return key if key in TIMELINE_THUMBNAIL_DENSITY_SPECS else DEFAULT_TIMELINE_THUMBNAIL_DENSITY
-
-
-def get_thumbnail_count_for_density(density, duration: float | None = None) -> int:
-    """Return the duration-scaled, memory-bounded thumbnail count for a density preset."""
-    spec = TIMELINE_THUMBNAIL_DENSITY_SPECS[normalize_thumbnail_density(density)]
-    dur_sec = float(duration) if (duration is not None and float(duration) > 0) else 1800.0
-    raw = int(round((dur_sec / 60.0) * spec["per_min"]))
-    return max(spec["min_count"], min(spec["max_count"], raw))
-
-
-def get_video_thumbnail_cache_dir(
-    media_file: str | Path | None,
-    project_file: str | Path | None = None,
-    target_count: int | None = None,
-) -> Path | None:
-    """Return the deterministic thumbnail cache directory for a media file, associating with project if available."""
-    if not media_file:
-        return None
-    count_suffix = ""
-    if target_count is not None:
-        eff_c = max(8, min(MAX_TIMELINE_THUMBNAIL_COUNT, int(target_count)))
-        if eff_c != _LEGACY_DEFAULT_THUMBNAIL_COUNT:
-            count_suffix = f"_n{eff_c}"
-    try:
-        p = Path(media_file).resolve()
-        stat = p.stat()
-        key_raw = f"{p.name}_{stat.st_size}_{int(stat.st_mtime)}{count_suffix}"
-        h = hashlib.sha256(key_raw.encode("utf-8")).hexdigest()[:24]
-        
-        # 1. Project-level thumbnail directory
-        if project_file:
-            proj_p = Path(project_file).resolve()
-            proj_dir = proj_p.parent if (proj_p.is_file() or proj_p.suffix.lower() in ('.rtvs', '.json')) else proj_p
-            if proj_dir.exists() and os.access(str(proj_dir), os.W_OK):
-                base = proj_dir / ".cache" / "thumbnails"
-                return base / h
-
-        # 2. Check if media resides in project bundle
-        candidate_proj = None
-        if p.parent.name.lower() in ("media", "audio"):
-            if list(p.parent.parent.glob("*.rtvs")) or (p.parent.parent / ".cache").exists():
-                candidate_proj = p.parent.parent
-        elif list(p.parent.glob("*.rtvs")) or (p.parent / ".cache").exists():
-            candidate_proj = p.parent
-
-        if candidate_proj and candidate_proj.exists() and os.access(str(candidate_proj), os.W_OK):
-            base = candidate_proj / ".cache" / "thumbnails"
-            return base / h
-
-        # 3. Global AppData / Temp directory fallback
-        base = get_app_data_dir() / "cache" / "thumbnails"
-        return base / h
-    except Exception:
-        try:
-            h = hashlib.sha256(f"{Path(media_file)}{count_suffix}".encode("utf-8")).hexdigest()[:24]
-            base = Path(tempfile.gettempdir()) / "radio_tv_story_segmenter_thumbnails"
-            return base / h
-        except Exception:
-            return None
-
-
-def read_video_thumbnail_cache(
-    media_file: str | Path | None,
-    duration: float,
-    project_file: str | Path | None = None,
-    target_count: int | None = None,
-) -> list | None:
-    """Read pre-extracted video thumbnail items [(timestamp, image_path), ...] from disk cache.
-    
-    Returns list of items if the cache exists, contains valid thumbnail images, and is
-    not older than the media file; otherwise returns None.
-    """
-    if not media_file or duration <= 0:
-        return None
-    try:
-        cache_dir = get_video_thumbnail_cache_dir(media_file, project_file=project_file, target_count=target_count)
-        if not cache_dir or not cache_dir.exists() or not cache_dir.is_dir():
-            # Try global fallback
-            count_suffix = ""
-            if target_count is not None:
-                eff_c = max(8, min(MAX_TIMELINE_THUMBNAIL_COUNT, int(target_count)))
-                if eff_c != _LEGACY_DEFAULT_THUMBNAIL_COUNT:
-                    count_suffix = f"_n{eff_c}"
-            alt_dir = Path(tempfile.gettempdir()) / "radio_tv_story_segmenter_thumbnails" / hashlib.sha256(f"{Path(media_file)}{count_suffix}".encode("utf-8")).hexdigest()[:24]
-            if alt_dir.exists() and alt_dir.is_dir():
-                cache_dir = alt_dir
-            else:
-                return None
-
-        media_p = Path(media_file)
-        if media_p.exists():
-            if media_p.stat().st_mtime > cache_dir.stat().st_mtime:
-                return None
-
-        thumbs = sorted(cache_dir.glob("thumb_*.jpg"))
-        if not thumbs or len(thumbs) < 2:
-            return None
-
-        valid_thumbs = []
-        for t in thumbs:
-            if t.exists() and t.stat().st_size > 0:
-                valid_thumbs.append(t)
-
-        if not valid_thumbs or len(valid_thumbs) != len(thumbs):
-            return None
-
-        items = []
-        num = len(valid_thumbs)
-        for i, p in enumerate(valid_thumbs):
-            ts = (i / max(1, num - 1)) * duration if num > 1 else 0.0
-            items.append((ts, str(p)))
-        return items
-    except Exception:
-        return None
-
-
-def invalidate_video_thumbnail_cache(
-    media_file: str | Path | None,
-    project_file: str | Path | None = None,
-    target_count: int | None = None,
-) -> bool:
-    """Delete the thumbnail cache directory for a given media file."""
-    deleted = False
-    counts_to_clear = [target_count] if target_count is not None else [None, _LEGACY_DEFAULT_THUMBNAIL_COUNT]
-    try:
-        for tc in counts_to_clear:
-            cache_dir = get_video_thumbnail_cache_dir(media_file, project_file=project_file, target_count=tc)
-            if cache_dir and cache_dir.exists():
-                shutil.rmtree(cache_dir, ignore_errors=True)
-                deleted = True
-            # Also clean up tempdir thumbnail cache
-            if media_file:
-                try:
-                    p = Path(media_file).resolve()
-                    stat = p.stat()
-                    c_suf = f"_n{int(tc)}" if (tc is not None and int(tc) != _LEGACY_DEFAULT_THUMBNAIL_COUNT) else ""
-                    key_raw = f"{p.name}_{stat.st_size}_{int(stat.st_mtime)}{c_suf}"
-                    h = hashlib.sha256(key_raw.encode("utf-8")).hexdigest()[:24]
-                    t_dir = Path(tempfile.gettempdir()) / "radio_tv_story_segmenter_thumbnails" / h
-                    if t_dir.exists():
-                        shutil.rmtree(t_dir, ignore_errors=True)
-                        deleted = True
-                except Exception:
-                    pass
-    except Exception:
-        pass
-    return deleted
-
-
-class VideoThumbnailWorker(QObject):
-    finished = Signal(object)
-    error = Signal(str)
-
-    def __init__(self, media_path, duration, output_dir, count=36):
-        super().__init__()
-        self.media_path = Path(media_path)
-        self.duration = max(0.1, float(duration or 0))
-        self.output_dir = Path(output_dir)
-        self.count = max(8, min(MAX_TIMELINE_THUMBNAIL_COUNT, int(count)))
-        self._cancelled = False
-        self._process = None
-
-    def cancel(self):
-        self._cancelled = True
-        process = self._process
-        if process is not None and process.poll() is None:
-            try:
-                process.kill()
-            except Exception:
-                pass
-
-    def run(self):
-        try:
-            self.output_dir.mkdir(parents=True, exist_ok=True)
-            dur = max(0.001, float(self.duration or 0.0))
-            fps = max(0.001, float(self.count or 1)) / dur
-            vf = f"fps={fps:.8f},scale=240:-2:force_original_aspect_ratio=decrease"
-            pattern = str(self.output_dir / "thumb_%04d.jpg")
-            cmd = [ffmpeg_path() or "ffmpeg", "-hide_banner", "-loglevel", "error", "-y", "-i", str(self.media_path), "-map", "0:v:0", "-vf", vf, "-q:v", "4", pattern]
-            creationflags = subprocess.CREATE_NO_WINDOW if sys.platform == 'win32' else 0
-            self._process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, creationflags=creationflags)
-            register_process(self._process)
-            _stdout, stderr = self._process.communicate()
-            returncode = self._process.returncode
-            if self._cancelled:
-                self.finished.emit([])
-                return
-            if returncode != 0:
-                raise RuntimeError(stderr.strip() or "FFmpeg could not create video thumbnails.")
-            files = sorted(self.output_dir.glob("thumb_*.jpg"))
-            if not files:
-                raise RuntimeError("No video thumbnails were generated.")
-            actual_count = len(files)
-            items = []
-            for i, path in enumerate(files):
-                if self._cancelled:
-                    break
-                timestamp = (i / max(1, actual_count - 1)) * self.duration if actual_count > 1 else 0.0
-                items.append((timestamp, str(path)))
-            self.finished.emit(items)
-        except Exception as exc:
-            if not self._cancelled:
-                self.error.emit(str(exc))
-            else:
-                self.finished.emit([])
-        finally:
-            if self._process is not None:
-                unregister_process(self._process)
-            self._process = None
+from thumbnail_workers import (
+    TIMELINE_THUMBNAIL_DENSITY_SPECS,
+    TIMELINE_THUMBNAIL_DENSITY_PRESETS,
+    DEFAULT_TIMELINE_THUMBNAIL_DENSITY,
+    MAX_TIMELINE_THUMBNAIL_COUNT,
+    _LEGACY_DEFAULT_THUMBNAIL_COUNT,
+    is_network_path,
+    normalize_thumbnail_density,
+    get_thumbnail_count_for_density,
+    should_use_keyframe_skip,
+    parse_ffmpeg_progress_seconds,
+    get_video_thumbnail_cache_dir,
+    read_video_thumbnail_cache,
+    invalidate_video_thumbnail_cache,
+    VideoThumbnailCacheLoader,
+    VideoThumbnailWorker,
+)
 
 
 # ============================================================

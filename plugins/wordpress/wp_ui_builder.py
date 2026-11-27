@@ -118,6 +118,13 @@ def setup_wp_tab_ui(self: Any):
     self.wp_auto_excerpt_btn.setToolTip("Auto-generate excerpt from the current story's transcript")
     self.wp_auto_excerpt_btn.clicked.connect(self._auto_generate_current_excerpt)
     exc_hdr.addWidget(self.wp_auto_excerpt_btn)
+    self.wp_inline_autofill_all_excerpts_btn = QPushButton("Auto-fill All Excerpts")
+    self.wp_inline_autofill_all_excerpts_btn.setToolTip(
+        "Auto-generate snippet (≤55 words) from transcript for every selected post"
+    )
+    self.wp_inline_autofill_all_excerpts_btn.clicked.connect(self._autofill_all_excerpts)
+    self.wp_inline_autofill_all_excerpts_btn.setVisible(False)
+    exc_hdr.addWidget(self.wp_inline_autofill_all_excerpts_btn)
     excerpt_box.addLayout(exc_hdr)
 
     self.wp_excerpt_edit = QTextEdit()
@@ -341,9 +348,12 @@ def setup_wp_tab_ui(self: Any):
 
     wp_mode = get_active_theme_mode("dark")
 
-    self.wp_thumb_preview_label = QLabel("No Thumbnail")
+    from plugins.wordpress.wp_thumb_ui import ClickableThumbnailLabel, open_featured_image_preview
+
+    self.wp_thumb_preview_label = ClickableThumbnailLabel("No Thumbnail")
     self.wp_thumb_preview_label.setFixedSize(160, 90)
     self.wp_thumb_preview_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+    self.wp_thumb_preview_label.clicked.connect(lambda: open_featured_image_preview(self))
     if wp_mode == "light":
         self.wp_thumb_preview_label.setStyleSheet("border: 1px dashed #b6bcc4; border-radius: 4px; background-color: #eaedf0; color: #78808d; font-size: 10px;")
     elif wp_mode == "high_contrast":

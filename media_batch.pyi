@@ -6,7 +6,7 @@ from PySide6.QtCore import Qt, QThread, QTimer
 from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QApplication, QDialog, QFileDialog, QGroupBox, QLabel, QMessageBox, QPushButton, QWidget, QVBoxLayout, QHBoxLayout, QTableWidget, QHeaderView, QAbstractItemView
 from prs_shared import *
-from background_workers import get_video_thumbnail_cache_dir, read_video_thumbnail_cache, invalidate_video_thumbnail_cache
+from background_workers import get_video_thumbnail_cache_dir, read_video_thumbnail_cache, invalidate_video_thumbnail_cache, VideoThumbnailCacheLoader
 
 class MediaBatchMixin:
 
@@ -25,10 +25,16 @@ class MediaBatchMixin:
     def start_video_thumbnail_generation(self, force_regenerate: bool=..., density: Optional[str]=...):
         ...
 
+    def _video_thumbnail_progress(self, pct: int):
+        ...
+
     def _video_thumbnail_thread_finished(self):
         ...
 
-    def _video_thumbnails_finished(self, items):
+    def _cached_thumbnails_loaded(self, items, req_key, eff_density: str, expected_count: int):
+        ...
+
+    def _video_thumbnails_finished(self, items, req_key=...):
         ...
 
     def stop_video_thumbnail_worker(self, timeout_ms=...):

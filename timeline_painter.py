@@ -118,7 +118,13 @@ def render_waveform_buffer(canvas: Any, width: int, height: int) -> QPixmap:
         elif "thumbnails" in canvas.active_background_tasks or is_video_mode:
             win = canvas.window()
             is_es = getattr(win, "language", "en") == "es"
-            gen_text = "Generando miniaturas de video..." if is_es else "Generating video thumbnails..."
+            pct = getattr(canvas, "thumbnail_progress_pct", None)
+            pct_suffix = f" ({int(pct)}%)" if pct else ""
+            gen_text = (
+                f"Generando miniaturas de video{pct_suffix}..."
+                if is_es
+                else f"Generating video thumbnails{pct_suffix}..."
+            )
 
             target_h = max(14, int((thumbnail_height - 6) * 0.88))
             aspect = 16.0 / 9.0

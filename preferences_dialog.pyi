@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 from typing import Optional
 from PySide6.QtCore import Qt, QSettings
-from PySide6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QListWidget, QListWidgetItem, QStackedWidget, QPushButton, QDialogButtonBox, QMessageBox, QLabel, QLineEdit, QWidget, QComboBox, QTableWidget
+from PySide6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QListWidget, QListWidgetItem, QStackedWidget, QPushButton, QDialogButtonBox, QMessageBox, QLabel, QLineEdit, QWidget, QComboBox, QTableWidget, QScrollArea, QFrame
 from prs_shared import APP_DISPLAY_NAME, DEFAULT_GITHUB_REPO, INTERNAL_APP_ID, set_models_storage_dir
 from core_utils import make_dialog_maximizable, apply_window_titlebar_theme, get_active_theme_mode
 from preferences_reset import RestoreSelectedSettingsDialog, PreferencesResetMixin

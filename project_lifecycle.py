@@ -169,6 +169,8 @@ class ProjectLifecycleMixin:
         except Exception:
             pass
         self.video_thumbnail_dir = None
+        self._loaded_thumbnail_key = None
+        self._active_thumbnail_key = None
 
         if hasattr(self, "update_window_title"):
             self.update_window_title()
@@ -670,7 +672,7 @@ class ProjectLifecycleMixin:
         except Exception as exc:
             QMessageBox.critical(self, "Backup & Restore Error", f"Could not open Backup & Restore Center: {exc}")
 
-    def load_project_file(self, filename, prompt=True, preserve_media=False):
+    def load_project_file(self, filename, prompt=True, preserve_media=False, preloaded_data=None):
         project_path = Path(filename).expanduser().resolve()
         if not project_path.exists():
             QMessageBox.critical(self, "Error", f"Project file not found: {filename}")
@@ -697,7 +699,7 @@ class ProjectLifecycleMixin:
             self.project_dirty = False
 
         try:
-            data = read_rtvs_project_file(project_path)
+            data = preloaded_data if isinstance(preloaded_data, dict) else read_rtvs_project_file(project_path)
         except Exception as exc:
             QMessageBox.critical(self, "Error", f"Could not read project file: {exc}")
             return False

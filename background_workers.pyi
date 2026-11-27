@@ -17,6 +17,7 @@ from pathlib import Path
 from typing import Optional, List, Dict, Any, Tuple
 from PySide6.QtCore import QObject, Signal
 from core_utils import get_app_data_dir, safe_replace, ffmpeg_path, ffprobe_path
+from thumbnail_workers import is_network_path
 from bootstrap import setup_windows_dll_directories
 from process_lifecycle import register_process, unregister_process
 from timeline_widgets import WaveformEnvelope, build_waveform_pyramid
@@ -70,32 +71,5 @@ class WaveformWorker(QObject):
 
     def run(self):
         ...
-
-def normalize_thumbnail_density(density) -> str:
-    ...
-
-def get_thumbnail_count_for_density(density, duration: float | None=...) -> int:
-    ...
-
-def get_video_thumbnail_cache_dir(media_file: str | Path | None, project_file: str | Path | None=..., target_count: int | None=...) -> Path | None:
-    ...
-
-def read_video_thumbnail_cache(media_file: str | Path | None, duration: float, project_file: str | Path | None=..., target_count: int | None=...) -> list | None:
-    ...
-
-def invalidate_video_thumbnail_cache(media_file: str | Path | None, project_file: str | Path | None=..., target_count: int | None=...) -> bool:
-    ...
-
-class VideoThumbnailWorker(QObject):
-    finished = ...
-    error = ...
-
-    def __init__(self, media_path, duration, output_dir, count=...):
-        ...
-
-    def cancel(self):
-        ...
-
-    def run(self):
-        ...
+from thumbnail_workers import TIMELINE_THUMBNAIL_DENSITY_SPECS, TIMELINE_THUMBNAIL_DENSITY_PRESETS, DEFAULT_TIMELINE_THUMBNAIL_DENSITY, MAX_TIMELINE_THUMBNAIL_COUNT, _LEGACY_DEFAULT_THUMBNAIL_COUNT, is_network_path, normalize_thumbnail_density, get_thumbnail_count_for_density, should_use_keyframe_skip, parse_ffmpeg_progress_seconds, get_video_thumbnail_cache_dir, read_video_thumbnail_cache, invalidate_video_thumbnail_cache, VideoThumbnailCacheLoader, VideoThumbnailWorker
 from timeline_widgets import TimelineCanvas, TimelineResizeHandle, TimelineOverviewBar, TimelineWidget

@@ -26,7 +26,7 @@ except ImportError:
     HAVE_NUMPY = False
 
 from PySide6.QtCore import QLineF, QPointF, QRectF, QSettings, Qt, QTimer, Signal
-from PySide6.QtGui import QColor, QKeySequence, QPainter, QPainterPath, QPen, QPixmap
+from PySide6.QtGui import QColor, QImage, QKeySequence, QPainter, QPainterPath, QPen, QPixmap
 from PySide6.QtWidgets import QMenu, QToolTip, QVBoxLayout, QWidget
 
 from core_utils import (
@@ -114,6 +114,7 @@ class TimelineCanvas(QWidget):
         self.waveform_levels = []
         self.waveform_pps = None
         self.waveform_progress_pct = None
+        self.thumbnail_progress_pct = None
         self.video_thumbnails = []
         self.is_video = False
         self.show_waveform = True
@@ -193,6 +194,8 @@ class TimelineCanvas(QWidget):
                 self._background_delay_timer.stop()
         else:
             self.active_background_tasks.discard(task_name)
+            if task_name == "thumbnails":
+                self.thumbnail_progress_pct = None
             if not self.active_background_tasks:
                 self._background_delay_timer.stop()
                 self.show_background_banner = False
@@ -212,6 +215,13 @@ class TimelineCanvas(QWidget):
             self.pixmap_dirty = True
             self.update()
 
+    def set_thumbnail_progress(self, pct: Optional[int]):
+        """Update live percentage progress (1-99) for background video thumbnail extraction."""
+        self.thumbnail_progress_pct = int(pct) if (pct is not None and int(pct) > 0) else None
+        self._update_background_status_text()
+        self.pixmap_dirty = True
+        self.update()
+
     def _update_background_status_text(self):
         win = self.window()
         is_es = getattr(win, "language", "en") == "es"
@@ -222,7 +232,10 @@ class TimelineCanvas(QWidget):
                 wf_lbl += f" ({self.waveform_progress_pct}%)"
             labels.append(wf_lbl)
         if "thumbnails" in self.active_background_tasks:
-            labels.append("miniaturas de video" if is_es else "video thumbnails")
+            th_lbl = "miniaturas de video" if is_es else "video thumbnails"
+            if getattr(self, "thumbnail_progress_pct", None):
+                th_lbl += f" ({self.thumbnail_progress_pct}%)"
+            labels.append(th_lbl)
         if labels:
             prefix = "Generando " if is_es else "Generating "
             sep = " y " if is_es else " and "
@@ -329,7 +342,18 @@ class TimelineCanvas(QWidget):
         self.update()
 
     def set_video_thumbnails(self, thumbnails):
-        self.video_thumbnails = [(float(t), pix) for t, f in (thumbnails or []) if not (pix := QPixmap(str(f))).isNull()]
+        loaded = []
+        for t, src in (thumbnails or []):
+            if isinstance(src, QPixmap):
+                pix = src
+            elif isinstance(src, QImage):
+                pix = QPixmap.fromImage(src) if not src.isNull() else QPixmap()
+            else:
+                pix = QPixmap(str(src))
+            if not pix.isNull():
+                loaded.append((float(t), pix))
+        self.video_thumbnails = loaded
+        self.thumbnail_progress_pct = None
         self.pixmap_dirty = True
         self.update()
 

@@ -652,3 +652,21 @@ def format_post_list_label_and_tooltip(tab_widget: Any, idx: int) -> Tuple[str, 
 
     tooltip_text = "\n".join(tt_lines)
     return label_text, tooltip_text
+
+
+def build_wp_sidebar_decorations(tab_widget: Any) -> Dict[int, Tuple[str, str]]:
+    """Build {role_value: (label_text, tooltip_text)} map for ExportStorySelectorSidebar."""
+    decorations: Dict[int, Tuple[str, str]] = {}
+    items = getattr(tab_widget, "wp_post_items", None) or []
+    for idx, post in enumerate(items):
+        label_text, tooltip_text = format_post_list_label_and_tooltip(tab_widget, idx)
+        if not label_text:
+            continue
+        is_full = bool(
+            post.get("is_parent_episode")
+            or post.get("task_label") == "Full Episode"
+            or post.get("story_index") is None
+        )
+        key = -1 if is_full else int(post["story_index"])
+        decorations[key] = (label_text, tooltip_text)
+    return decorations

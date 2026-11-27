@@ -61,7 +61,7 @@ class ProjectLifecycleMixin:
     def open_backup_restore_dialog(self):
         ...
 
-    def load_project_file(self, filename, prompt=..., preserve_media=...):
+    def load_project_file(self, filename, prompt=..., preserve_media=..., preloaded_data=...):
         ...
 
     def load_project(self, filename=...):

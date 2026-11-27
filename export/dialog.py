@@ -1078,22 +1078,59 @@ class UnifiedExportDialog(QDialog):
     def _update_export_button_label(self):
         if not hasattr(self, "export_btn") or not self.export_btn:
             return
+        base_lbl = None
         for entry in self._dest_entries:
             if entry["radio"].isChecked():
                 if entry["id"] == "local":
-                    self.export_btn.setText("Export Files...")
+                    base_lbl = "Export Files..."
                 elif entry["id"] == "timeline":
-                    self.export_btn.setText("Export Timeline / DAW...")
+                    base_lbl = "Export Timeline / DAW..."
                 else:
                     dest = entry.get("dest_obj")
-                    btn_lbl = getattr(dest, "button_label", None) or f"Export to {getattr(dest, 'title', 'Destination')}..."
-                    self.export_btn.setText(btn_lbl)
+                    base_lbl = getattr(dest, "button_label", None) or f"Export to {getattr(dest, 'title', 'Destination')}..."
                 break
+        if not base_lbl:
+            return
+        if self.is_story_selector_visible():
+            checked_count = len(self.story_selector_sidebar.get_selected_indices()) + (
+                1 if self.story_selector_sidebar.is_full_episode_included() else 0
+            )
+            if checked_count > 0:
+                if base_lbl.endswith("..."):
+                    base_lbl = f"{base_lbl[:-3]} ({checked_count})..."
+                else:
+                    base_lbl = f"{base_lbl} ({checked_count})"
+        self.export_btn.setText(base_lbl)
+
+    def _sync_sidebar_decorations(self) -> None:
+        """Mirror destination-specific badges/tooltips (e.g. WordPress) onto checked sidebar rows."""
+        if not hasattr(self, "story_selector_sidebar") or not self.story_selector_sidebar:
+            return
+        if not self.is_story_selector_visible():
+            self.story_selector_sidebar.clear_item_decorations()
+            return
+        active_page = None
+        active_dest = None
+        for entry in self._dest_entries:
+            if entry["radio"].isChecked():
+                active_page = entry.get("page")
+                active_dest = entry.get("dest_obj")
+                break
+        tab = getattr(active_dest, "tab_widget", None) or active_page
+        if tab is not None and callable(getattr(tab, "get_sidebar_decorations", None)):
+            try:
+                decs = tab.get_sidebar_decorations() or {}
+                self.story_selector_sidebar.set_item_decorations(decs)
+                return
+            except Exception:
+                pass
+        self.story_selector_sidebar.clear_item_decorations()
 
     def _on_dest_changed(self):
         for entry in self._dest_entries:
             if entry["radio"].isChecked():
                 self.stacked_widget.setCurrentWidget(entry["page"])
+                self._sync_sidebar_decorations()
                 self._update_export_button_label()
                 proj_meta = getattr(self.main_window, "project_metadata", None)
                 if isinstance(proj_meta, dict):
@@ -1139,6 +1176,7 @@ class UnifiedExportDialog(QDialog):
                 dest.on_scope_changed(scope, stories)
             except Exception as exc:
                 print(f"[EXPORT] Warning: Plugin destination on_scope_changed failed for '{getattr(dest, 'id', 'unknown')}': {exc}")
+        self._sync_sidebar_decorations()
         self._update_export_button_label()
 
     def _on_export_story_selection_changed(self, indices: List[int]) -> None:
@@ -1160,6 +1198,7 @@ class UnifiedExportDialog(QDialog):
                 dest.on_scope_changed(scope, stories)
             except Exception as exc:
                 print(f"[EXPORT] Warning: Plugin destination on_scope_changed failed for '{getattr(dest, 'id', 'unknown')}': {exc}")
+        self._sync_sidebar_decorations()
         self._update_export_button_label()
 
     def _on_export_story_activated(self, story_idx: int) -> None:
@@ -1191,6 +1230,7 @@ class UnifiedExportDialog(QDialog):
                 dest.on_scope_changed(scope, stories)
             except Exception as exc:
                 print(f"[EXPORT] Warning: Plugin destination on_scope_changed failed for '{getattr(dest, 'id', 'unknown')}': {exc}")
+        self._sync_sidebar_decorations()
         self._update_export_button_label()
 
     def _open_id3_editor(self):

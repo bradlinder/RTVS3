@@ -509,6 +509,17 @@ class WordPressExportTabWidget(QWidget):
             except Exception as e:
                 print(f"[WP METADATA] Error auto-saving project: {e}")
 
+    def get_sidebar_decorations(self) -> Dict[int, Tuple[str, str]]:
+        from plugins.wordpress.youtube_embed import build_wp_sidebar_decorations
+        return build_wp_sidebar_decorations(self)
+
+    def _notify_export_sidebar_decorations(self):
+        dlg = self.window() if hasattr(self, "window") else None
+        for host in (dlg, self.parent()):
+            if host is not None and callable(getattr(host, "_sync_sidebar_decorations", None)):
+                host._sync_sidebar_decorations()
+                break
+
     def _update_post_list_item_label(self, idx: int):
         if not (0 <= idx < len(self.wp_post_items)) or not hasattr(self, "wp_posts_list") or idx >= self.wp_posts_list.count():
             return
@@ -518,6 +529,8 @@ class WordPressExportTabWidget(QWidget):
         if item:
             item.setText(label_text)
             item.setToolTip(tooltip_text)
+        if hasattr(self, "_notify_export_sidebar_decorations"):
+            self._notify_export_sidebar_decorations()
 
     def _on_wp_post_selection_changed(self, row: int):
         if row < 0 or row >= len(self.wp_post_items):
@@ -697,14 +710,16 @@ class WordPressExportTabWidget(QWidget):
             post["featured_image"] = str(out_path)
             post["featured_image_mode"] = "grab"
             self._temp_preview_files.add(str(out_path))
-            self.wp_thumb_path_label.setText(f"Video frame captured at {format_time(pos, include_millis=True)}")
-            pix = QPixmap(str(out_path)).scaled(160, 90, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
-            self.wp_thumb_preview_label.setPixmap(pix)
+            desc = f"Video frame captured at {format_time(pos, include_millis=True)}"
+            self.wp_thumb_path_label.setText(desc)
+            from plugins.wordpress.wp_thumb_ui import set_preview_pixmap
+            set_preview_pixmap(self, str(out_path), source_description=desc)
             self._update_post_list_item_label(self._current_post_index)
             if user_initiated and hasattr(self, "_sync_post_to_project"):
                 self._sync_post_to_project(self._current_post_index)
             return str(out_path)
-        self.wp_thumb_preview_label.setText("Frame capture\nfailed")
+        from plugins.wordpress.wp_thumb_ui import clear_preview_pixmap
+        clear_preview_pixmap(self, "Frame capture\nfailed")
         return None
 
     def _on_wp_browse_thumb(self):
@@ -723,9 +738,10 @@ class WordPressExportTabWidget(QWidget):
             post["featured_image_user_set"] = True
             self.wp_rad_thumb_file.setChecked(True)
             self.wp_img_meta_widget.setVisible(True)
-            self.wp_thumb_path_label.setText(Path(fn).name)
-            pix = QPixmap(fn).scaled(160, 90, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
-            self.wp_thumb_preview_label.setPixmap(pix)
+            desc = Path(fn).name
+            self.wp_thumb_path_label.setText(desc)
+            from plugins.wordpress.wp_thumb_ui import set_preview_pixmap
+            set_preview_pixmap(self, fn, source_description=desc)
             self._update_post_list_item_label(self._current_post_index)
             if hasattr(self, "_sync_post_to_project"):
                 self._sync_post_to_project(self._current_post_index)
@@ -835,11 +851,15 @@ class WordPressExportTabWidget(QWidget):
 
         ext_sidebar = bool(scope == "selected_stories" and dlg is not None and callable(getattr(dlg, "is_story_selector_visible", None)) and dlg.is_story_selector_visible())
         self.wp_post_nav_widget.setVisible((len(self.wp_post_items) > 1) and not ext_sidebar)
+        if hasattr(self, "wp_inline_autofill_all_excerpts_btn") and self.wp_inline_autofill_all_excerpts_btn is not None:
+            self.wp_inline_autofill_all_excerpts_btn.setVisible(ext_sidebar and len(self.wp_post_items) > 1)
         if hasattr(self, "wp_bulk_box") and self.wp_bulk_box is not None:
             self.wp_bulk_box.setVisible(False)
         if self.wp_posts_list.count() > 0:
             self.wp_posts_list.setCurrentRow(target_row)
         self._load_post_editor_state(target_row)
+        if hasattr(self, "_notify_export_sidebar_decorations"):
+            self._notify_export_sidebar_decorations()
         for host in (dlg, self.parent()):
             if host is not None and callable(getattr(host, "_update_export_button_label", None)):
                 host._update_export_button_label()

@@ -6,10 +6,11 @@ destinations (Local Files, WordPress, Timeline/DAW, and YouTube).
 """
 from __future__ import annotations
 
-from typing import Any, Iterable, List, Optional
+from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 try:
     from PySide6.QtCore import Qt, Signal
+    from PySide6.QtGui import QBrush, QColor
     from PySide6.QtWidgets import (
         QHBoxLayout,
         QLabel,
@@ -23,6 +24,7 @@ except Exception:
     from qt_compat import _ensure_pyside6_fallback
     _ensure_pyside6_fallback()
     from PySide6.QtCore import Qt, Signal
+    from PySide6.QtGui import QBrush, QColor
     from PySide6.QtWidgets import (
         QHBoxLayout,
         QLabel,
@@ -37,6 +39,9 @@ from pathlib import Path
 from prs_shared import format_time, get_story_vocabulary
 
 FULL_EPISODE_ROLE_VALUE = -1
+_BASE_LABEL_ROLE = int(Qt.ItemDataRole.UserRole) + 1
+_BASE_TOOLTIP_ROLE = int(Qt.ItemDataRole.UserRole) + 2
+_UNCHECKED_MUTED_COLOR = QColor("#64748b")
 
 
 class ExportStorySelectorSidebar(QWidget):
@@ -52,6 +57,7 @@ class ExportStorySelectorSidebar(QWidget):
         self._syncing = False
         self._stories_count = 0
         self._include_full_episode = False
+        self._decorations: Dict[int, Tuple[str, str]] = {}
 
         self.setObjectName("export_story_selector_sidebar")
         self.setMinimumWidth(185)
@@ -137,6 +143,11 @@ class ExportStorySelectorSidebar(QWidget):
             full_label = f"Full Episode: {ep_title}" if ep_title else "Full Episode"
             full_item = QListWidgetItem(full_label)
             full_item.setData(Qt.ItemDataRole.UserRole, FULL_EPISODE_ROLE_VALUE)
+            full_tooltip = (
+                f"{full_label}\nCheck to include the Full Episode alongside selected {vocab.plural.lower()}."
+            )
+            full_item.setData(_BASE_LABEL_ROLE, full_label)
+            full_item.setData(_BASE_TOOLTIP_ROLE, full_tooltip)
             font = full_item.font()
             font.setBold(True)
             full_item.setFont(font)
@@ -148,9 +159,7 @@ class ExportStorySelectorSidebar(QWidget):
             full_item.setCheckState(
                 Qt.CheckState.Checked if self._include_full_episode else Qt.CheckState.Unchecked
             )
-            full_item.setToolTip(
-                f"{full_label}\nCheck to include the Full Episode alongside selected {vocab.plural.lower()}."
-            )
+            self._apply_item_visual_state(full_item)
             self.story_list.addItem(full_item)
 
             for idx, st in enumerate(stories):
@@ -172,13 +181,15 @@ class ExportStorySelectorSidebar(QWidget):
 
                 item = QListWidgetItem(label)
                 item.setData(Qt.ItemDataRole.UserRole, idx)
+                item.setData(_BASE_LABEL_ROLE, label)
+                item.setData(_BASE_TOOLTIP_ROLE, f"{label}{time_suffix}")
                 item.setFlags(
                     Qt.ItemFlag.ItemIsEnabled
                     | Qt.ItemFlag.ItemIsSelectable
                     | Qt.ItemFlag.ItemIsUserCheckable
                 )
                 item.setCheckState(Qt.CheckState.Checked if idx in valid_sel else Qt.CheckState.Unchecked)
-                item.setToolTip(f"{label}{time_suffix}")
+                self._apply_item_visual_state(item)
                 self.story_list.addItem(item)
 
             if self.story_list.count() > 0:
@@ -204,6 +215,57 @@ class ExportStorySelectorSidebar(QWidget):
                 return first.checkState() == Qt.CheckState.Checked
         return bool(self._include_full_episode)
 
+    def _apply_item_visual_state(self, item: Optional[QListWidgetItem]) -> None:
+        """Apply destination badges/tooltips to checked rows and visually mute unchecked rows."""
+        if item is None:
+            return
+        role_val = item.data(Qt.ItemDataRole.UserRole)
+        base_label = item.data(_BASE_LABEL_ROLE)
+        if base_label is None:
+            base_label = item.text()
+        base_tooltip = item.data(_BASE_TOOLTIP_ROLE)
+        if base_tooltip is None:
+            base_tooltip = item.toolTip()
+
+        checked = item.checkState() == Qt.CheckState.Checked
+        dec = self._decorations.get(int(role_val)) if (checked and role_val is not None) else None
+        if dec:
+            dec_label, dec_tooltip = dec
+            item.setText(str(dec_label or base_label))
+            item.setToolTip(str(dec_tooltip or base_tooltip))
+        else:
+            item.setText(str(base_label))
+            item.setToolTip(str(base_tooltip))
+
+        if checked:
+            item.setData(Qt.ItemDataRole.ForegroundRole, None)
+        else:
+            item.setForeground(QBrush(_UNCHECKED_MUTED_COLOR))
+
+    def set_item_decorations(self, decorations: Optional[Dict[int, Tuple[str, str]]]) -> None:
+        """Apply destination-specific (label, tooltip) overrides onto checked sidebar rows."""
+        normalized: Dict[int, Tuple[str, str]] = {}
+        for k, v in (decorations or {}).items():
+            try:
+                if isinstance(v, (tuple, list)) and len(v) >= 2:
+                    normalized[int(k)] = (str(v[0] or ""), str(v[1] or ""))
+            except Exception:
+                continue
+        self._decorations = normalized
+        self._syncing = True
+        self.story_list.blockSignals(True)
+        try:
+            for row in range(self.story_list.count()):
+                self._apply_item_visual_state(self.story_list.item(row))
+        finally:
+            self.story_list.blockSignals(False)
+            self._syncing = False
+
+    def clear_item_decorations(self) -> None:
+        """Clear destination-specific badges/tooltips and restore default labels."""
+        if self._decorations:
+            self.set_item_decorations({})
+
     def set_include_full_episode(self, checked: bool, emit: bool = False) -> None:
         """Programmatically check or uncheck the Full Episode row."""
         self._include_full_episode = bool(checked)
@@ -216,6 +278,7 @@ class ExportStorySelectorSidebar(QWidget):
                     first.setCheckState(
                         Qt.CheckState.Checked if self._include_full_episode else Qt.CheckState.Unchecked
                     )
+                    self._apply_item_visual_state(first)
         finally:
             self.story_list.blockSignals(False)
             self._syncing = False
@@ -252,6 +315,7 @@ class ExportStorySelectorSidebar(QWidget):
                 if idx is None or int(idx) < 0:
                     continue
                 item.setCheckState(Qt.CheckState.Checked if int(idx) in target else Qt.CheckState.Unchecked)
+                self._apply_item_visual_state(item)
         finally:
             self.story_list.blockSignals(False)
             self._syncing = False
@@ -289,6 +353,13 @@ class ExportStorySelectorSidebar(QWidget):
         if self._syncing or item is None:
             return
         role_val = item.data(Qt.ItemDataRole.UserRole)
+        self._syncing = True
+        self.story_list.blockSignals(True)
+        try:
+            self._apply_item_visual_state(item)
+        finally:
+            self.story_list.blockSignals(False)
+            self._syncing = False
         self.update_count_label()
         if role_val == FULL_EPISODE_ROLE_VALUE:
             checked = item.checkState() == Qt.CheckState.Checked

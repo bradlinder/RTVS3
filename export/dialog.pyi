@@ -48,6 +48,9 @@ class UnifiedExportDialog(QDialog):
     def _update_export_button_label(self):
         ...
 
+    def _sync_sidebar_decorations(self) -> None:
+        ...
+
     def _on_dest_changed(self):
         ...
 

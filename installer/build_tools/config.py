@@ -99,6 +99,7 @@ HIDDEN_IMPORTS = [
     "transcript_editor",
     "comment_widgets",
     "background_workers",
+    "thumbnail_workers",
     "batch_dialog",
     "theme_tokens",
     "bootstrap",

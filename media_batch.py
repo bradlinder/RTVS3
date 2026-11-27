@@ -15,6 +15,7 @@ from background_workers import (
     get_video_thumbnail_cache_dir,
     read_video_thumbnail_cache,
     invalidate_video_thumbnail_cache,
+    VideoThumbnailCacheLoader,
 )
 
 
@@ -93,6 +94,8 @@ class MediaBatchMixin:
 
     def start_video_thumbnail_generation(self, force_regenerate: bool = False, density: Optional[str] = None):
         if not self.current_media_is_video or not self.audio_file or self.duration <= 0:
+            self._loaded_thumbnail_key = None
+            self._active_thumbnail_key = None
             if hasattr(self, "timeline"):
                 self.timeline.set_video_thumbnails([])
             return
@@ -100,6 +103,27 @@ class MediaBatchMixin:
         from background_workers import get_thumbnail_count_for_density
         eff_density = self._effective_thumbnail_density(density)
         target_count = get_thumbnail_count_for_density(eff_density, duration=self.duration)
+        try:
+            media_key_str = str(Path(self.audio_file).resolve())
+        except Exception:
+            media_key_str = str(self.audio_file)
+        req_key = (media_key_str, int(target_count))
+
+        # Deduplicate back-to-back triggers (e.g. load_project_file followed immediately by QMediaPlayer durationChanged)
+        if not force_regenerate:
+            if (
+                getattr(self, "_loaded_thumbnail_key", None) == req_key
+                and hasattr(self, "timeline")
+                and getattr(self.timeline, "video_thumbnails", None)
+            ):
+                return
+            active_thread = getattr(self, "video_thumbnail_thread", None)
+            if (
+                getattr(self, "_active_thumbnail_key", None) == req_key
+                and active_thread is not None
+                and active_thread.isRunning()
+            ):
+                return
 
         if not force_regenerate:
             cached_thumbs = read_video_thumbnail_cache(
@@ -116,14 +140,53 @@ class MediaBatchMixin:
                 )
                 if self.video_thumbnail_dir:
                     register_active_thumbnail_dir(self.video_thumbnail_dir)
-                if hasattr(self, "timeline"):
-                    try:
-                        self.timeline.set_background_generation_active("thumbnails", False)
-                    except Exception:
-                        pass
-                    self.timeline.set_video_thumbnails(cached_thumbs)
-                self.log_activity(f"[MEDIA] Loaded {len(cached_thumbs)} cached video thumbnails ({eff_density}).", mark_dirty=False)
-                return
+                if os.environ.get("RTVS_TEST_MODE") or len(cached_thumbs) <= 12:
+                    if hasattr(self, "timeline"):
+                        try:
+                            self.timeline.set_background_generation_active("thumbnails", False)
+                        except Exception:
+                            pass
+                        self.timeline.set_video_thumbnails(cached_thumbs)
+                    self._loaded_thumbnail_key = req_key
+                    self._active_thumbnail_key = None
+                    self.log_activity(f"[MEDIA] Loaded {len(cached_thumbs)} cached video thumbnails ({eff_density}).", mark_dirty=False)
+                    return
+
+                # Decode larger cached thumbnail strips off the GUI thread to avoid project-open freezes
+                if not self.stop_video_thumbnail_worker():
+                    self._pending_thumbnail_restart = True
+                    return
+                try:
+                    thread = QThread(self)
+                    loader = VideoThumbnailCacheLoader(
+                        cached_thumbs,
+                        media_path=media_key_str,
+                        target_count=target_count,
+                        density=eff_density,
+                    )
+                    loader.moveToThread(thread)
+                    self.video_thumbnail_thread = thread
+                    self.video_thumbnail_worker = loader
+                    self._active_thumbnail_key = req_key
+                    self._track_worker_thread(thread)
+
+                    thread.started.connect(loader.run)
+                    loader.finished.connect(
+                        lambda items, k=req_key, d=eff_density, n=len(cached_thumbs): self._cached_thumbnails_loaded(items, k, d, n)
+                    )
+                    loader.finished.connect(thread.quit)
+                    loader.error.connect(lambda msg: self.log_activity(f"[MEDIA] Cached thumbnail decode failed: {msg}", mark_dirty=False))
+                    loader.error.connect(thread.quit)
+                    thread.finished.connect(self._video_thumbnail_thread_finished)
+                    thread.start()
+                    return
+                except Exception:
+                    if hasattr(self, "timeline"):
+                        self.timeline.set_video_thumbnails(cached_thumbs)
+                    self._loaded_thumbnail_key = req_key
+                    self._active_thumbnail_key = None
+                    self.log_activity(f"[MEDIA] Loaded {len(cached_thumbs)} cached video thumbnails ({eff_density}).", mark_dirty=False)
+                    return
 
         if not self.stop_video_thumbnail_worker():
             self._pending_thumbnail_restart = True
@@ -145,48 +208,100 @@ class MediaBatchMixin:
             self.video_thumbnail_dir = job
             register_active_thumbnail_dir(self.video_thumbnail_dir)
             thread = QThread(self)
-            worker = VideoThumbnailWorker(self.audio_file, self.duration, job, count=target_count)
+            worker = VideoThumbnailWorker(
+                self.audio_file,
+                self.duration,
+                job,
+                count=target_count,
+                density=eff_density,
+            )
             worker.moveToThread(thread)
             self.video_thumbnail_thread = thread
             self.video_thumbnail_worker = worker
+            self._active_thumbnail_key = req_key
             self._track_worker_thread(thread)
 
             thread.started.connect(worker.run)
-            worker.finished.connect(self._video_thumbnails_finished)
+            worker.progress.connect(self._video_thumbnail_progress)
+            worker.finished.connect(lambda items, k=req_key: self._video_thumbnails_finished(items, req_key=k))
             worker.finished.connect(thread.quit)
             worker.error.connect(lambda msg: self.log_activity(f"[MEDIA] Video thumbnail generation failed: {msg}", mark_dirty=False))
             worker.error.connect(thread.quit)
             thread.finished.connect(self._video_thumbnail_thread_finished)
             if hasattr(self, "timeline"):
                 try:
+                    if hasattr(self.timeline, "set_thumbnail_progress"):
+                        self.timeline.set_thumbnail_progress(None)
                     self.timeline.set_background_generation_active("thumbnails", True)
                 except Exception:
                     pass
             thread.start()
         except Exception as exc:
+            self._active_thumbnail_key = None
             self.log_activity(f"[MEDIA] Could not start thumbnail generation: {exc}", mark_dirty=False)
+
+    def _video_thumbnail_progress(self, pct: int):
+        worker = self.sender()
+        if worker is not None and worker is not getattr(self, "video_thumbnail_worker", None):
+            return
+        if hasattr(self, "timeline") and hasattr(self.timeline, "set_thumbnail_progress"):
+            try:
+                self.timeline.set_thumbnail_progress(int(pct))
+            except Exception:
+                pass
 
     def _video_thumbnail_thread_finished(self):
         thread = self.sender()
         if thread is getattr(self, "video_thumbnail_thread", None):
             self.video_thumbnail_thread = None
             self.video_thumbnail_worker = None
+            self._active_thumbnail_key = None
         if getattr(self, "_pending_thumbnail_restart", False):
             self._pending_thumbnail_restart = False
             QTimer.singleShot(50, self.start_video_thumbnail_generation)
 
-    def _video_thumbnails_finished(self, items):
+    def _cached_thumbnails_loaded(self, items, req_key, eff_density: str, expected_count: int):
+        if not self.audio_file:
+            return
+        try:
+            cur_media = str(Path(self.audio_file).resolve())
+        except Exception:
+            cur_media = str(self.audio_file)
+        if req_key and req_key[0] != cur_media:
+            return
+        if hasattr(self, "timeline"):
+            try:
+                self.timeline.set_background_generation_active("thumbnails", False)
+            except Exception:
+                pass
+            if items:
+                self.timeline.set_video_thumbnails(items)
+        if items:
+            self._loaded_thumbnail_key = req_key
+            self.log_activity(f"[MEDIA] Loaded {len(items)} cached video thumbnails ({eff_density}).", mark_dirty=False)
+
+    def _video_thumbnails_finished(self, items, req_key=None):
+        if req_key is not None and self.audio_file:
+            try:
+                cur_media = str(Path(self.audio_file).resolve())
+            except Exception:
+                cur_media = str(self.audio_file)
+            if req_key[0] != cur_media:
+                return
         if hasattr(self, "timeline"):
             try:
                 self.timeline.set_background_generation_active("thumbnails", False)
             except Exception:
                 pass
             self.timeline.set_video_thumbnails(items)
+        if items and req_key is not None:
+            self._loaded_thumbnail_key = req_key
 
     def stop_video_thumbnail_worker(self, timeout_ms=3000):
         thread = getattr(self, "video_thumbnail_thread", None)
         worker = getattr(self, "video_thumbnail_worker", None)
         if thread is None:
+            self._active_thumbnail_key = None
             return True
         if worker:
             try:
@@ -213,6 +328,7 @@ class MediaBatchMixin:
                 pass
         self.video_thumbnail_thread = None
         self.video_thumbnail_worker = None
+        self._active_thumbnail_key = None
         return True
 
     def regenerate_waveform(self):
@@ -258,6 +374,8 @@ class MediaBatchMixin:
         rate_per_min = TIMELINE_THUMBNAIL_DENSITY_PRESETS.get(eff_density, 2)
 
         self.stop_video_thumbnail_worker()
+        self._loaded_thumbnail_key = None
+        self._active_thumbnail_key = None
         if hasattr(self, "timeline"):
             self.timeline.set_video_thumbnails([])
         invalidate_video_thumbnail_cache(
@@ -931,7 +1049,7 @@ class MediaBatchMixin:
             data = read_rtvs_project_file(path)
             media = self.resolve_project_media(path, data.get("audio_file"))
             if not data.get("audio_file") or media is not None:
-                self.load_project_file(path, prompt=False, preserve_media=False)
+                self.load_project_file(path, prompt=False, preserve_media=False, preloaded_data=data)
                 self.log_activity(f"[STARTUP] Restored last project: {path.name}", mark_dirty=False)
             else:
                 self.log_activity(
@@ -1719,6 +1837,8 @@ class MediaBatchMixin:
 
             self.timeline.set_audio_filename(path.name)
             self.timeline.set_waveform_peaks([])
+            self._loaded_thumbnail_key = None
+            self._active_thumbnail_key = None
             self.timeline.set_position(0)
             self.timeline.set_zoom(1.0)
             self.timeline.scroll_offset = 0.0
