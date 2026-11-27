@@ -315,7 +315,9 @@ class SpeakerEditingMixin(SpeakerDialogRefinementMixin):
         if custom_name:
             return custom_name
 
-        match = re.search(r"(\d+)$", speaker)
+        # Convert legacy 0-indexed pyannote/diarize raw IDs ("SPEAKER_00" -> "Speaker 1")
+        # while preserving already 1-indexed labels ("Speaker 1"..) and custom names (e.g. "Caller 1").
+        match = re.match(r"^SPEAKER_(\d+)$", speaker, re.IGNORECASE)
         if match:
             number = int(match.group(1)) + 1
             return f"Speaker {number}"

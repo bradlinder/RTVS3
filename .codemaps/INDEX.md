@@ -1,13 +1,13 @@
 # Repository Symbol Index & API Map
 
-> Generated: 2026-11-27 14:42:23 | Total Files: 210
+> Generated: 2026-11-27 15:12:09 | Total Files: 210
 > Use `python scripts/generate_symbol_index.py --outline <file>` for exact line numbers.
 
 ## Modules Overview
 
 | Module | Lines | Summary | Primary Classes / Functions |
 | :--- | :---: | :--- | :--- |
-| `RadioTVSegmenter.py` | 686 | Radio & TV Segmenter — v3.10.29-beta | `MainWindow`, `main()` |
+| `RadioTVSegmenter.py` | 686 | Radio & TV Segmenter — v3.10.30-beta | `MainWindow`, `main()` |
 | `audio_normalization.py` | 474 | Radio & TV Story Segmenter — Audio Loudness Probing & Nor... | `LoudnessReport`, `parse_ebur128_summary()`, `probe_media_duration_seconds()`, `probe_media_loudness()` *(+2 more)* |
 | `audio_normalization_worker.py` | 89 | Background QThread worker for non-blocking EBU R128 loudn... | `AudioLoudnessProbeWorker` |
 | `background_workers.py` | 911 | Radio & TV Story Segmenter — Background Worker Threads & ... | `StoryAutoDetectWorker`, `WaveformWorker`, `get_waveform_peak_cache_path()`, `read_waveform_peak_cache()` *(+2 more)* |
@@ -45,7 +45,7 @@
 | `diagnostics/export_wordpress_media.py` | 752 | WordPress featured image metadata and Castos podcast diag... | `DiagnosticExportWordPressMediaMixin` |
 | `diagnostics/export_wordpress_upload.py` | 668 | WordPress multi-story upload, Gutenberg hygiene, and audi... | `DiagnosticExportWordPressUploadMixin` |
 | `diagnostics/system_runtime_tests.py` | 446 | System runtime, updater, theme, packaging, roadmap, and m... | `DiagnosticSystemRuntimeTestsMixin` |
-| `diagnostics/voice_and_media_tests.py` | 438 | Voice profile matching, waveform peak cache, and playback... | `DiagnosticVoiceAndMediaTestsMixin` |
+| `diagnostics/voice_and_media_tests.py` | 595 | Voice profile matching, waveform peak cache, and playback... | `DiagnosticVoiceAndMediaTestsMixin` |
 | `diagnostics/youtube_import_cache_tests.py` | 350 | Diagnostic tests for YouTube Episode Import, yt-dlp runne... | `DiagnosticYouTubeImportCacheTestsMixin` |
 | `dialogs.py` | 433 | Radio & TV Story Segmenter — Audio Loudness Normalization... | `AudioLoudnessNormalizationDialog` |
 | `diarization_processing.py` | 772 | Speaker diarization process management for Radio & TV Sto... | `DiarizationProcessingMixin` |
@@ -156,7 +156,7 @@
 | `snapshot_manager.py` | 276 | Snapshot Manager for Radio & TV Story Segmenter | `load_manifest()`, `save_manifest()`, `get_current_project_version()`, `ensure_git_repo()` *(+4 more)* |
 | `speaker_dialog_refinement_mixin.py` | 555 | Radio & TV Story Segmenter — Speaker Dialog Refinement & ... | `SpeakerDialogRefinementMixin` |
 | `speaker_dialogs.py` | 897 | speaker_dialogs.py — Dialogs for speaker renaming, turn a... | `ChangeSpeakerDialog`, `SpeakerNameDelegate`, `SpeakerManagerDialog` |
-| `speaker_editing_mixin.py` | 635 | Radio & TV Story Segmenter — Speaker Label, Renaming & Se... | `SpeakerEditingMixin` |
+| `speaker_editing_mixin.py` | 637 | Radio & TV Story Segmenter — Speaker Label, Renaming & Se... | `SpeakerEditingMixin` |
 | `speaker_identity.py` | 260 | Radio & TV Segmenter | `VoiceMatch`, `cosine_similarity()`, `normalize_vector()`, `centroid()` *(+3 more)* |
 | `speaker_name_cleanup_dialog.py` | 295 | speaker_name_cleanup_dialog.py — Modal review dialog for ... | `SpeakerNameCleanupDialog` |
 | `speaker_name_matcher.py` | 583 | speaker_name_matcher.py — Headless phonetic and fuzzy cle... | `SpeakerNameCandidate`, `is_generic_speaker_label()`, `is_generic_role_label()`, `preserve_case_replace()` *(+7 more)* |
@@ -192,7 +192,7 @@
 | `transcript_navigation_mixin.py` | 300 | transcript_navigation_mixin.py - Timestamp discovery, car... | `TranscriptNavigationMixin` |
 | `transcript_playback_highlight_mixin.py` | 277 | Radio & TV Story Segmenter — Interactive Transcript Playb... | `TranscriptPlaybackHighlightMixin` |
 | `transcript_selection_mixin.py` | 473 | transcript_selection_mixin.py - Multi-selection, timeline... | `TranscriptSelectionMixin` |
-| `transcript_story.py` | 856 | Radio & TV Segmenter v3.10.29-beta — transcript story res... | `TranscriptStoryMixin` |
+| `transcript_story.py` | 856 | Radio & TV Segmenter v3.10.30-beta — transcript story res... | `TranscriptStoryMixin` |
 | `transcript_styles.py` | 104 | transcript_styles.py - Transcript view stylesheets and da... | `transcript_text_view_stylesheet()`, `clean_dark_mode_clipboard_html()` |
 | `transcript_timeline_sync_mixin.py` | 655 | Radio & TV Story Segmenter — Transcript Timeline & Playba... | `TranscriptTimelineSyncMixin` |
 | `transcription_processing.py` | 579 | Transcription background process management for Radio & T... | `TranscriptionProcessingMixin` |
@@ -213,15 +213,15 @@
 | `waveform_envelope.py` | 55 | Waveform envelope data structures, downsampling pyramids,... | `WaveformEnvelope`, `build_waveform_pyramid()` |
 | `worker_asr_engines.py` | 958 | worker_asr_engines.py - Faster-Whisper, CTranslate2 & She... | `set_emit_callback()`, `get_optimal_transcription_threads()`, `get_app_data_dir_pure()`, `get_models_storage_dir_pure()` *(+4 more)* |
 | `worker_clustering.py` | 457 | worker_clustering.py - Acoustic clustering, VAD pause bri... | `normalize_audio_for_diarization()`, `configure_optimal_pytorch_threads()`, `fast_cluster_ahc()`, `apply_clustering_patches()` *(+2 more)* |
-| `worker_diarization_clustering.py` | 434 | worker_diarization_clustering.py - Speaker Clustering, Ce... | `consolidate_speaker_clusters()`, `merge_adjacent_diarization_segments()`, `cluster_speakers_ahc()`, `fast_cluster_ahc()` *(+2 more)* |
-| `worker_diarization_engine.py` | 970 | worker_diarization_engine.py - Speaker Diarization, Neura... | `set_emit_callback()`, `normalize_audio_for_diarization()`, `configure_optimal_pytorch_threads()`, `extract_embeddings_batched()` *(+3 more)* |
+| `worker_diarization_clustering.py` | 634 | worker_diarization_clustering.py - Speaker Clustering, Ce... | `consolidate_speaker_clusters()`, `merge_adjacent_diarization_segments()`, `smooth_short_speaker_islands()`, `prepare_transcript_speech_segments()` *(+4 more)* |
+| `worker_diarization_engine.py` | 979 | worker_diarization_engine.py - Speaker Diarization, Neura... | `set_emit_callback()`, `normalize_audio_for_diarization()`, `configure_optimal_pytorch_threads()`, `extract_embeddings_batched()` *(+3 more)* |
 | `worker_ipc.py` | 216 | worker_ipc.py - Subprocess IPC protocol, environment setu... | `emit()`, `emit_hello()` |
 | `worker_story_engine.py` | 396 | worker_story_engine.py - Acoustic & Lexical Story Boundar... | `is_real_speech()`, `detect_story_boundaries()` |
 
 ## Detailed Symbol Catalog
 
 ### `RadioTVSegmenter.py` (686 lines)
-*Radio & TV Segmenter — v3.10.29-beta*
+*Radio & TV Segmenter — v3.10.30-beta*
 - **class `MainWindow(ModelManagementMixin, MediaBatchMixin, PlaybackPreferencesMixin, UiLayoutMixin, ProcessingMixin, TranslationMixin, TranscriptStoryMixin, ProjectExportMixin, GpuAccelerationMixin, QMainWindow)`** (lines 160–583):
   *Main application window for Radio & TV Segmenter.*
   - `__init__(self)` [L178-L355]
@@ -681,13 +681,14 @@
   - `_test_roadmap_n_1_sliding_window_and_status_integrity(self, item)` [L336-L355] — *Validates roadmap.txt N-1 sliding window retention, status indicator syntax, and version sync.*
   - `_test_source_file_modularity_and_1000_line_budget_invariant(self, item)` [L357-L446] — *Validates that recently decomposed modules adhere to the 1,000-line modular budget,*
 
-### `diagnostics/voice_and_media_tests.py` (438 lines)
+### `diagnostics/voice_and_media_tests.py` (595 lines)
 *Voice profile matching, waveform peak cache, and playback rate diagnostic tests.*
-- **class `DiagnosticVoiceAndMediaTestsMixin`** (lines 13–438):
+- **class `DiagnosticVoiceAndMediaTestsMixin`** (lines 13–595):
   - `_test_acoustic_voice_profile_matcher(self, item)` [L14-L273]
   - `_test_station_voice_profiles_store_and_matching_engine(self, item)` [L275-L388] — *Validates StationVoiceProfileStore persistence, vector normalization, profile addition, matching logic, and JSON export/import.*
   - `_test_multi_tier_mipmapped_waveform_peak_cache_serialization(self, item)` [L390-L425] — *Validates Version 2 .peaks binary cache read/write with 4x/16x/64x LOD pyramid levels and transparent Version 1 upgrade.*
   - `_test_speed_listening_proofreading_rate_and_context_controls(self, item)` [L427-L438] — *Validates playback speed rates (0.75x to 2.0x), WSOLA pitch preservation parameters, and proofreading pre-roll configuration.*
+  - `_test_diarization_zero_padding_vad_trimming_and_speaker_labels(self, item)` [L440-L595] — *Validates exact-length zero-padding-free WeSpeaker batching, <1.0s tail right-alignment,*
 
 ### `diagnostics/youtube_import_cache_tests.py` (350 lines)
 *Diagnostic tests for YouTube Episode Import, yt-dlp runner, Managed Remote Media Cache, and Shortcut/Guide sync.*
@@ -2823,21 +2824,21 @@
   - `_is_gui_thread()` [L114-L122] — *Check whether execution is on the main Qt GUI thread.*
   - `_should_init_audio_preview()` [L125-L132]
 
-### `speaker_editing_mixin.py` (635 lines)
+### `speaker_editing_mixin.py` (637 lines)
 *Radio & TV Story Segmenter — Speaker Label, Renaming & Segment Editing Mixin.*
-- **class `SpeakerEditingMixin(SpeakerDialogRefinementMixin)`** (lines 54–635):
+- **class `SpeakerEditingMixin(SpeakerDialogRefinementMixin)`** (lines 54–637):
   *Mixin for speaker labeling, splitting, renaming, and dialog turn refinement.*
   - `handle_insert_speaker_request(self, seg_idx, split_time, speaker_name)` [L57-L61]
   - `add_speaker_label_at(self, seg_idx, split_time, name)` [L63-L177]
   - `split_segment_at_time(self, seg_idx, split_time, new_speaker_name)` [L179-L284]
   - `prompt_rename_custom_speaker(self, old_name)` [L286-L307]
-  - `display_speaker(self, speaker)` [L309-L323]
-  - `get_all_known_speakers(self)` [L325-L355]
-  - `execute_speaker_rename(self, seg_idx, raw_speaker, target_name)` [L357-L514]
-  - `prompt_rename_speaker(self, seg_idx, speaker)` [L516-L517]
-  - `remove_speaker_label_at_segment(self, seg_idx)` [L519-L602]
-  - `register_confirmed_speaker_turn(self, seg_idx, speaker_name)` [L604-L632]
-  - `register_confirmed_speaker_sample(self, seg_idx, speaker_name)` [L634-L635]
+  - `display_speaker(self, speaker)` [L309-L325]
+  - `get_all_known_speakers(self)` [L327-L357]
+  - `execute_speaker_rename(self, seg_idx, raw_speaker, target_name)` [L359-L516]
+  - `prompt_rename_speaker(self, seg_idx, speaker)` [L518-L519]
+  - `remove_speaker_label_at_segment(self, seg_idx)` [L521-L604]
+  - `register_confirmed_speaker_turn(self, seg_idx, speaker_name)` [L606-L634]
+  - `register_confirmed_speaker_sample(self, seg_idx, speaker_name)` [L636-L637]
 
 ### `speaker_identity.py` (260 lines)
 *Radio & TV Segmenter*
@@ -3565,7 +3566,7 @@
   - `_on_bubble_export(self)` [L468-L473]
 
 ### `transcript_story.py` (856 lines)
-*Radio & TV Segmenter v3.10.29-beta — transcript story responsibilities.*
+*Radio & TV Segmenter v3.10.30-beta — transcript story responsibilities.*
 - **Public Exports (`__all__`)**: TranscriptStoryMixin, Story, SetStoriesCommand, SelectStoriesCommand, StoryBoundaryChangeCommand, StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin, ChangeSpeakerDialog, VoiceProfileMatchDialog, StoryFadesDialog, SpeakerManagerDialog, FADE_CURVE_TABLES, get_fade_curve_factors
 - **class `TranscriptStoryMixin(StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin)`** (lines 63–855):
   - `render_transcript(self)` [L64-L471]
@@ -3914,35 +3915,37 @@
   - `assign_short_segments_to_centroids(short_segments, audio_path, centroids, label_values, raw_segments, min_confidence, model)` [L320-L429] — *Extract acoustic embeddings for short segments (< 0.8s) with symmetric audio context padding,*
   - `_calculate_embedding_for_interval(start, end, subsegments, embeddings)` [L432-L457] — *Compute unit-normalized 256-dimensional embedding vector for an interval [start, end].*
 
-### `worker_diarization_clustering.py` (434 lines)
+### `worker_diarization_clustering.py` (634 lines)
 *worker_diarization_clustering.py - Speaker Clustering, Centroid Matching & Math Helpers.*
 - **Functions**:
-  - `_normalize_expected_speakers(value)` [L20-L29] — *Map a CLI/UI expected-speakers hint to one of 'auto', '1', '2', '3+'.*
-  - `_normalize_speaker_labels(segments)` [L32-L45] — *Relabel raw diarize-package speaker ids to 'Speaker 1', 'Speaker 2',*
-  - `_sensitivity_distance_threshold(sensitivity)` [L48-L56] — *Cosine-distance clustering threshold derived from PRS_DIARIZATION_SENSITIVITY.*
-  - `_sensitivity_centroid_merge_threshold(sensitivity)` [L59-L64] — *Post-clustering centroid cosine-distance threshold calibrated for WeSpeaker embeddings.*
-  - `consolidate_speaker_clusters(embeddings, labels, min_fraction, max_min_cluster, centroid_merge_dist)` [L67-L123] — *Absorb noisy micro-clusters into nearest major speakers and merge redundant centroids.*
-  - `merge_adjacent_diarization_segments(segments, max_gap)` [L126-L147] — *Merge consecutive diarization segments from the same speaker separated by < max_gap seconds.*
-  - `cluster_speakers_ahc(embeddings, min_speakers, max_speakers, num_speakers, distance_threshold, sensitivity)` [L150-L182] — *Cluster speaker embeddings with O(N^2) cosine AHC, honoring sensitivity and speaker bounds.*
-  - `fast_cluster_ahc(embeddings, k, distance_threshold)` [L185-L241] — *Agglomerative Hierarchical Clustering with cosine metric and average linkage (O(N^2)).*
-  - `apply_clustering_patches()` [L244-L281] — *Globally monkey-patch SpectralClustering and diarize.clustering to use O(N^2) AHC.*
-  - `assign_short_segments_to_centroids(short_segments, audio_path, centroids, label_values, raw_segments, min_confidence, get_wespeaker_model_fn, safe_tensor_fn)` [L284-L406] — *Extract acoustic embeddings for short segments (< 0.8s) with symmetric context padding,*
-  - `_calculate_embedding_for_interval(start, end, subsegments, embeddings)` [L409-L434] — *Compute unit-normalized 256-dimensional embedding vector for an interval [start, end].*
+  - `_normalize_expected_speakers(value)` [L24-L33] — *Map a CLI/UI expected-speakers hint to one of 'auto', '1', '2', '3+'.*
+  - `_normalize_speaker_labels(segments)` [L36-L49] — *Relabel raw diarize-package speaker ids to 'Speaker 1', 'Speaker 2',*
+  - `_sensitivity_distance_threshold(sensitivity)` [L52-L60] — *Cosine-distance clustering threshold derived from PRS_DIARIZATION_SENSITIVITY.*
+  - `_sensitivity_centroid_merge_threshold(sensitivity)` [L63-L68] — *Post-clustering centroid cosine-distance threshold calibrated for WeSpeaker embeddings.*
+  - `consolidate_speaker_clusters(embeddings, labels, min_fraction, max_min_cluster, centroid_merge_dist)` [L71-L127] — *Absorb noisy micro-clusters into nearest major speakers and merge redundant centroids.*
+  - `merge_adjacent_diarization_segments(segments, max_gap)` [L130-L151] — *Merge consecutive diarization segments from the same speaker separated by < max_gap seconds.*
+  - `smooth_short_speaker_islands(segments, unconditional_threshold, gated_max_duration, max_foreign_margin, min_surround_sim, max_gap)` [L154-L259] — *Smooth brief A -> B -> A mid-turn speaker islands in place.*
+  - `prepare_transcript_speech_segments(valid_segments, vad_segments, speech_segment_cls, min_primary_duration, min_vad_span, vad_bridge_gap, min_total_vad_coverage)` [L262-L347] — *Split transcript segments into primary (>= min_primary_duration) and short segments,*
+  - `cluster_speakers_ahc(embeddings, min_speakers, max_speakers, num_speakers, distance_threshold, sensitivity)` [L350-L382] — *Cluster speaker embeddings with O(N^2) cosine AHC, honoring sensitivity and speaker bounds.*
+  - `fast_cluster_ahc(embeddings, k, distance_threshold)` [L385-L441] — *Agglomerative Hierarchical Clustering with cosine metric and average linkage (O(N^2)).*
+  - `apply_clustering_patches()` [L444-L481] — *Globally monkey-patch SpectralClustering and diarize.clustering to use O(N^2) AHC.*
+  - `assign_short_segments_to_centroids(short_segments, audio_path, centroids, label_values, raw_segments, min_confidence, get_wespeaker_model_fn, safe_tensor_fn)` [L484-L606] — *Extract acoustic embeddings for short segments (< 0.8s) with symmetric context padding,*
+  - `_calculate_embedding_for_interval(start, end, subsegments, embeddings)` [L609-L634] — *Compute unit-normalized 256-dimensional embedding vector for an interval [start, end].*
 
-### `worker_diarization_engine.py` (970 lines)
+### `worker_diarization_engine.py` (979 lines)
 *worker_diarization_engine.py - Speaker Diarization, Neural VAD & Embedding Pipeline.*
 - **Functions**:
-  - `set_emit_callback(fn)` [L53-L56] — *Set custom IPC emitter function.*
-  - `_emit(message_type, **payload)` [L59-L65]
-  - `_safe_tensor_from_numpy(arr)` [L68-L83] — *Safely convert a numpy float32 array into a PyTorch tensor.*
-  - `normalize_audio_for_diarization(source_path, apply_bandpass)` [L86-L149] — *Extract a normalized 16 kHz mono WAV using the local FFmpeg binary.*
-  - `configure_optimal_pytorch_threads()` [L152-L165] — *Clamp torch's intra-op/inter-op thread pools to match the*
-  - `_diarize_solo_fast_path(audio_file, transcript_file)` [L168-L242] — *Solo fast-path: a single expected speaker means there is nothing to*
-  - `_get_wespeaker_model()` [L250-L258] — *Retrieve or initialize the cached WeSpeaker ONNX model instance.*
-  - `extract_embeddings_batched(audio_path, speech_segments, batch_size, min_segment_duration, embedding_window, embedding_step, progress_callback)` [L261-L380] — *Extract 256-dim speaker embeddings using WeSpeaker ResNet34-LM (ONNX)*
-  - `run_vad_two_pass(audio_path, threshold, min_speech_duration_ms, min_silence_duration_ms, speech_pad_ms, bridge_pause_threshold_sec)` [L383-L453] — *Silero VAD with Pass 1 Pause Bridging (< 100ms).*
-  - `run_transcript_guided_diarization(normalized_wav, transcript_file, expected_speakers, sensitivity, progress_callback)` [L456-L607] — *Execute transcript-guided speaker diarization directly from sentence boundaries.*
-  - `diarize(audio_file, expected_speakers, transcript_file, sensitivity)` [L610-L970] — *Execute complete speaker diarization pipeline on an audio media file.*
+  - `set_emit_callback(fn)` [L55-L58] — *Set custom IPC emitter function.*
+  - `_emit(message_type, **payload)` [L61-L67]
+  - `_safe_tensor_from_numpy(arr)` [L70-L85] — *Safely convert a numpy float32 array into a PyTorch tensor.*
+  - `normalize_audio_for_diarization(source_path, apply_bandpass)` [L88-L151] — *Extract a normalized 16 kHz mono WAV using the local FFmpeg binary.*
+  - `configure_optimal_pytorch_threads()` [L154-L167] — *Clamp torch's intra-op/inter-op thread pools to match the*
+  - `_diarize_solo_fast_path(audio_file, transcript_file)` [L170-L244] — *Solo fast-path: a single expected speaker means there is nothing to*
+  - `_get_wespeaker_model()` [L252-L260] — *Retrieve or initialize the cached WeSpeaker ONNX model instance.*
+  - `extract_embeddings_batched(audio_path, speech_segments, batch_size, min_segment_duration, embedding_window, embedding_step, progress_callback)` [L263-L407] — *Extract 256-dim speaker embeddings using WeSpeaker ResNet34-LM (ONNX)*
+  - `run_vad_two_pass(audio_path, threshold, min_speech_duration_ms, min_silence_duration_ms, speech_pad_ms, bridge_pause_threshold_sec)` [L410-L480] — *Silero VAD with Pass 1 Pause Bridging (< 100ms).*
+  - `run_transcript_guided_diarization(normalized_wav, transcript_file, expected_speakers, sensitivity, progress_callback)` [L483-L632] — *Execute transcript-guided speaker diarization directly from sentence boundaries.*
+  - `diarize(audio_file, expected_speakers, transcript_file, sensitivity)` [L635-L979] — *Execute complete speaker diarization pipeline on an audio media file.*
 
 ### `worker_ipc.py` (216 lines)
 *worker_ipc.py - Subprocess IPC protocol, environment setup, and DLL initialization.*

@@ -15,6 +15,10 @@ import os
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 SHORT_FRAGMENT_MERGE_THRESHOLD = 0.7
+EMBEDDING_GATED_ISLAND_MAX_DURATION = 1.5
+EMBEDDING_GATED_ISLAND_MAX_MARGIN = 0.08
+EMBEDDING_GATED_ISLAND_MIN_SURROUND_SIM = 0.45
+EMBEDDING_GATED_ISLAND_MAX_GAP = 2.0
 
 
 def _normalize_expected_speakers(value: Any) -> str:
@@ -145,6 +149,202 @@ def merge_adjacent_diarization_segments(segments, max_gap: float = SHORT_FRAGMEN
     except Exception:
         from types import SimpleNamespace
         return [SimpleNamespace(start=st, end=en, speaker=spk) for st, en, spk in merged]
+
+
+def smooth_short_speaker_islands(
+    segments: List[Dict[str, Any]],
+    unconditional_threshold: float = SHORT_FRAGMENT_MERGE_THRESHOLD,
+    gated_max_duration: float = EMBEDDING_GATED_ISLAND_MAX_DURATION,
+    max_foreign_margin: float = EMBEDDING_GATED_ISLAND_MAX_MARGIN,
+    min_surround_sim: float = EMBEDDING_GATED_ISLAND_MIN_SURROUND_SIM,
+    max_gap: float = EMBEDDING_GATED_ISLAND_MAX_GAP,
+) -> int:
+    """Smooth brief A -> B -> A mid-turn speaker islands in place.
+
+    - Islands with duration <= unconditional_threshold (0.7s) are smoothed unconditionally.
+    - Islands with unconditional_threshold < duration <= gated_max_duration (1.5s) are
+      smoothed ONLY when tightly embedded between adjacent A turns (gap <= max_gap) AND
+      their acoustic embedding is close to Speaker A rather than decisively matching Speaker B,
+      preserving genuine 1-second interjections from distinct speakers.
+    """
+    if len(segments) <= 2:
+        return 0
+
+    import numpy as np
+
+    starts = np.array([float(s.get("start", 0.0)) for s in segments], dtype=np.float64)
+    ends = np.array([float(s.get("end", 0.0)) for s in segments], dtype=np.float64)
+    durations = np.maximum(0.0, ends - starts)
+    speakers = [str(s.get("speaker", "")) for s in segments]
+
+    # Build duration-weighted unit-normalized centroids per speaker from reliable turns
+    long_acc: Dict[str, Tuple[Any, float]] = {}
+    all_acc: Dict[str, Tuple[Any, float]] = {}
+    for seg, spk, dur in zip(segments, speakers, durations):
+        emb = seg.get("embedding")
+        if not spk or emb is None:
+            continue
+        try:
+            vec = np.asarray(emb, dtype=np.float32)
+            norm = float(np.linalg.norm(vec))
+            if norm <= 1e-9:
+                continue
+            vec = vec / norm
+        except Exception:
+            continue
+        w = max(0.05, float(dur))
+        if spk in all_acc:
+            all_acc[spk] = (all_acc[spk][0] + vec * w, all_acc[spk][1] + w)
+        else:
+            all_acc[spk] = (vec * w, w)
+        if dur > unconditional_threshold:
+            if spk in long_acc:
+                long_acc[spk] = (long_acc[spk][0] + vec * w, long_acc[spk][1] + w)
+            else:
+                long_acc[spk] = (vec * w, w)
+
+    centroids: Dict[str, Any] = {}
+    for spk in all_acc:
+        acc_vec, _ = long_acc.get(spk, all_acc[spk])
+        norm = float(np.linalg.norm(acc_vec))
+        if norm > 1e-9:
+            centroids[spk] = acc_vec / norm
+
+    merged_count = 0
+    for i in range(1, len(segments) - 1):
+        surround_spk = speakers[i - 1]
+        island_spk = speakers[i]
+        if surround_spk != speakers[i + 1] or island_spk == surround_spk:
+            continue
+
+        dur = float(durations[i])
+        if dur <= unconditional_threshold:
+            segments[i]["speaker"] = surround_spk
+            speakers[i] = surround_spk
+            merged_count += 1
+            continue
+
+        if dur > gated_max_duration:
+            continue
+
+        left_gap = max(0.0, float(starts[i] - ends[i - 1]))
+        right_gap = max(0.0, float(starts[i + 1] - ends[i]))
+        if left_gap > max_gap or right_gap > max_gap:
+            continue
+
+        emb = segments[i].get("embedding")
+        c_surround = centroids.get(surround_spk)
+        c_island = centroids.get(island_spk)
+        if emb is None or c_surround is None or c_island is None:
+            continue
+
+        try:
+            vec = np.asarray(emb, dtype=np.float32)
+            norm = float(np.linalg.norm(vec))
+            if norm <= 1e-9:
+                continue
+            vec = vec / norm
+            if vec.shape != c_surround.shape or vec.shape != c_island.shape:
+                continue
+            sim_surround = float(np.dot(vec, c_surround))
+            sim_island = float(np.dot(vec, c_island))
+        except Exception:
+            continue
+
+        if sim_surround >= min_surround_sim and (sim_island - sim_surround) <= max_foreign_margin:
+            segments[i]["speaker"] = surround_spk
+            speakers[i] = surround_spk
+            merged_count += 1
+
+    return merged_count
+
+
+def prepare_transcript_speech_segments(
+    valid_segments: List[Dict[str, Any]],
+    vad_segments: Optional[List[Any]] = None,
+    speech_segment_cls: Any = None,
+    min_primary_duration: float = 0.8,
+    min_vad_span: float = 0.15,
+    vad_bridge_gap: float = 0.30,
+    min_total_vad_coverage: float = 0.15,
+) -> Tuple[List[Any], List[Any]]:
+    """Split transcript segments into primary (>= min_primary_duration) and short segments,
+    optionally trimming non-speech silence/breath padding using Silero VAD spans.
+
+    When vad_segments is supplied, each transcript segment is intersected with active
+    VAD speech spans so WeSpeaker never extracts embeddings from Whisper-padded silence
+    or room tone (which otherwise clusters across an episode into a phantom speaker).
+    If VAD detects too little speech (e.g. very quiet audio or synthetic test tones),
+    gracefully falls back to the untrimmed transcript boundaries.
+    """
+    if speech_segment_cls is None:
+        try:
+            from diarize.utils import SpeechSegment as speech_segment_cls
+        except Exception:
+            from types import SimpleNamespace
+            speech_segment_cls = lambda start, end: SimpleNamespace(start=start, end=end, duration=end - start)
+
+    def _raw_split():
+        prim, shrt = [], []
+        for s in valid_segments:
+            st, en = float(s["start"]), float(s["end"])
+            if (en - st) < min_primary_duration:
+                shrt.append(speech_segment_cls(start=st, end=en))
+            else:
+                prim.append(speech_segment_cls(start=st, end=en))
+        if len(prim) < 2 and shrt:
+            prim.extend(shrt)
+            shrt = []
+        return prim, shrt
+
+    if not vad_segments:
+        return _raw_split()
+
+    ordered_vad = sorted(vad_segments, key=lambda v: float(v.start))
+    vad_primary: List[Any] = []
+    vad_short: List[Any] = []
+    total_tr_dur = 0.0
+    total_vad_dur = 0.0
+    v_idx = 0
+    n_vad = len(ordered_vad)
+
+    for s in valid_segments:
+        st, en = float(s["start"]), float(s["end"])
+        seg_dur = max(0.0, en - st)
+        total_tr_dur += seg_dur
+
+        while v_idx < n_vad and float(ordered_vad[v_idx].end) <= st:
+            v_idx += 1
+
+        j = v_idx
+        sub_spans: List[List[float]] = []
+        while j < n_vad and float(ordered_vad[j].start) < en:
+            ov_st = max(st, float(ordered_vad[j].start))
+            ov_en = min(en, float(ordered_vad[j].end))
+            if (ov_en - ov_st) >= min_vad_span:
+                if sub_spans and (ov_st - sub_spans[-1][1]) <= vad_bridge_gap:
+                    sub_spans[-1][1] = max(sub_spans[-1][1], ov_en)
+                else:
+                    sub_spans.append([ov_st, ov_en])
+            j += 1
+
+        if not sub_spans:
+            # Keep silent/unvoiced transcript turns via short fallback so no turn is dropped
+            vad_short.append(speech_segment_cls(start=st, end=en))
+            continue
+
+        for sp_st, sp_en in sub_spans:
+            sp_dur = sp_en - sp_st
+            total_vad_dur += sp_dur
+            if sp_dur >= min_primary_duration:
+                vad_primary.append(speech_segment_cls(start=sp_st, end=sp_en))
+            else:
+                vad_short.append(speech_segment_cls(start=sp_st, end=sp_en))
+
+    if len(vad_primary) >= 2 and total_tr_dur > 0.0 and (total_vad_dur / total_tr_dur) >= min_total_vad_coverage:
+        return vad_primary, vad_short
+
+    return _raw_split()
 
 
 def cluster_speakers_ahc(

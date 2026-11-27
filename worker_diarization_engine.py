@@ -44,6 +44,8 @@ from worker_diarization_clustering import (
     cluster_speakers_ahc,
     fast_cluster_ahc,
     merge_adjacent_diarization_segments,
+    prepare_transcript_speech_segments,
+    smooth_short_speaker_islands,
 )
 
 # Callback for IPC message emission; default to stdout JSON
@@ -294,26 +296,44 @@ def extract_embeddings_batched(
         audio_tensor = _safe_tensor_from_numpy(audio_data)
 
     window_slices = []
+    total_samples = len(audio_tensor)
+    full_window_samples = int(round(embedding_window * sr))
+    min_full_tail = min(embedding_window, max(min_segment_duration, 1.0))
 
     for idx, seg in enumerate(speech_segments):
-        seg_duration = getattr(seg, "duration", float(seg.end) - float(seg.start))
+        seg_start = float(seg.start)
+        seg_end = float(seg.end)
+        seg_duration = getattr(seg, "duration", seg_end - seg_start)
         if seg_duration < min_segment_duration:
             continue
 
         if seg_duration <= embedding_window * 1.5:
-            windows = [(float(seg.start), float(seg.end))]
+            windows = [(seg_start, seg_end, seg_start, seg_end)]
         else:
             windows = []
-            win_start = float(seg.start)
-            seg_end = float(seg.end)
+            win_start = seg_start
             while win_start + min_segment_duration < seg_end:
                 win_end = min(win_start + embedding_window, seg_end)
-                windows.append((win_start, win_end))
+                tail_dur = win_end - win_start
+                if tail_dur < min_full_tail:
+                    # Right-align the audio slice for short (<1.0s) trailing stubs so WeSpeaker
+                    # receives a full acoustic window while keeping the subsegment boundary crisp.
+                    audio_start = max(seg_start, seg_end - embedding_window)
+                    audio_end = seg_end
+                else:
+                    audio_start = win_start
+                    audio_end = win_end
+                windows.append((win_start, win_end, audio_start, audio_end))
+                if win_end >= seg_end:
+                    break
                 win_start += embedding_step
 
-        for win_start, win_end in windows:
-            start_sample = int(win_start * sr)
-            end_sample = int(win_end * sr)
+        for win_start, win_end, audio_start, audio_end in windows:
+            start_sample = max(0, int(round(audio_start * sr)))
+            if abs((audio_end - audio_start) - embedding_window) < 1e-6:
+                end_sample = min(total_samples, start_sample + full_window_samples)
+            else:
+                end_sample = min(total_samples, int(round(audio_end * sr)))
             if end_sample <= start_sample:
                 continue
             window_slices.append((win_start, win_end, start_sample, end_sample, idx))
@@ -350,29 +370,36 @@ def extract_embeddings_batched(
     if not all_feats:
         return np.empty((0, 256), dtype=np.float32), []
 
-    embeddings = []
+    # Bucket windows by exact frame length so batched ONNX inference uses ZERO zero-padding
+    # (WeSpeaker ResNet34-LM lacks a length mask; zero-padded frames corrupt temporal pooling)
+    # while preserving exact 1-to-1 ordering with valid_subsegments.
+    from collections import defaultdict
+
     total_feats = len(all_feats)
-    total_batches = (total_feats + batch_size - 1) // batch_size
+    length_buckets: Dict[int, List[int]] = defaultdict(list)
+    for orig_idx, feat in enumerate(all_feats):
+        length_buckets[int(feat.shape[0])].append(orig_idx)
 
-    for b in range(total_batches):
-        batch_slice = all_feats[b * batch_size : (b + 1) * batch_size]
-        max_t = max(f.shape[0] for f in batch_slice)
-        batch_feats = np.zeros((len(batch_slice), max_t, 80), dtype=np.float32)
-        for i, f in enumerate(batch_slice):
-            batch_feats[i, : f.shape[0], :] = f
+    embeddings: List[Any] = [None] * total_feats
+    done_count = 0
+    ordered_buckets = sorted(length_buckets.items(), key=lambda kv: (-len(kv[1]), kv[0]))
 
-        try:
-            embs = session.run(output_names=["embs"], input_feed={"feats": batch_feats})[0]
-            for emb in embs:
-                embeddings.append(emb)
-        except Exception:
-            for f in batch_slice:
-                single_in = np.expand_dims(f, 0).astype(np.float32)
-                emb = session.run(output_names=["embs"], input_feed={"feats": single_in})[0][0]
-                embeddings.append(emb)
+    for _frame_len, bucket_indices in ordered_buckets:
+        for b_start in range(0, len(bucket_indices), batch_size):
+            chunk_idxs = bucket_indices[b_start : b_start + batch_size]
+            batch_feats = np.stack([all_feats[i] for i in chunk_idxs], axis=0).astype(np.float32, copy=False)
+            try:
+                embs = session.run(output_names=["embs"], input_feed={"feats": batch_feats})[0]
+                for orig_i, emb in zip(chunk_idxs, embs):
+                    embeddings[orig_i] = emb
+            except Exception:
+                for orig_i in chunk_idxs:
+                    single_in = np.expand_dims(all_feats[orig_i], 0).astype(np.float32, copy=False)
+                    embeddings[orig_i] = session.run(output_names=["embs"], input_feed={"feats": single_in})[0][0]
 
-        if progress_callback:
-            progress_callback(len(embeddings), total_feats)
+            done_count += len(chunk_idxs)
+            if progress_callback:
+                progress_callback(done_count, total_feats)
 
     X = np.stack(embeddings)
     global _LAST_EXTRACTED_EMBEDDINGS
@@ -498,22 +525,20 @@ def run_transcript_guided_diarization(
         glued_segments.append(cur)
     valid_segments = glued_segments
 
-    primary_speech_segments = []
-    short_speech_segments = []
+    if progress_callback:
+        progress_callback(38, "Trimming transcript pauses with neural VAD...")
 
-    for s in valid_segments:
-        st = s["start"]
-        en = s["end"]
-        dur = en - st
+    vad_segments = None
+    try:
+        vad_segments = run_vad_two_pass(normalized_wav)
+    except Exception:
+        vad_segments = None
 
-        if dur < 0.8:
-            short_speech_segments.append(SpeechSegment(start=st, end=en))
-        else:
-            primary_speech_segments.append(SpeechSegment(start=st, end=en))
-
-    if len(primary_speech_segments) < 2 and short_speech_segments:
-        primary_speech_segments.extend(short_speech_segments)
-        short_speech_segments = []
+    primary_speech_segments, short_speech_segments = prepare_transcript_speech_segments(
+        valid_segments,
+        vad_segments=vad_segments,
+        speech_segment_cls=SpeechSegment,
+    )
 
     if progress_callback:
         progress_callback(45, "Extracting acoustic embeddings from transcript boundaries...")
@@ -876,30 +901,14 @@ def diarize(audio_file, expected_speakers="auto", transcript_file=None, sensitiv
                     seg_dict["embedding"] = calc_emb
             segments.append(seg_dict)
 
-        merged_count = 0
-        if len(segments) > 2:
-            import numpy as np
-
-            starts = np.array([s["start"] for s in segments], dtype=np.float64)
-            ends = np.array([s["end"] for s in segments], dtype=np.float64)
-            durations = np.maximum(0.0, ends - starts)
-            speakers = [s["speaker"] for s in segments]
-
-            short_mask = (durations[1:-1] <= SHORT_FRAGMENT_MERGE_THRESHOLD)
-
-            for offset_i, is_short in enumerate(short_mask):
-                i = offset_i + 1
-                if is_short and speakers[i - 1] == speakers[i + 1] and speakers[i] != speakers[i - 1]:
-                    segments[i]["speaker"] = speakers[i - 1]
-                    speakers[i] = speakers[i - 1]
-                    merged_count += 1
+        merged_count = smooth_short_speaker_islands(segments)
 
         merged_segments = []
         for segment in segments:
             if (
                 merged_segments
                 and merged_segments[-1]["speaker"] == segment["speaker"]
-                and segment["start"] <= merged_segments[-1]["end"] + 0.05
+                and segment["start"] <= merged_segments[-1]["end"] + SHORT_FRAGMENT_MERGE_THRESHOLD
             ):
                 merged_segments[-1]["end"] = max(merged_segments[-1]["end"], segment["end"])
                 e1 = merged_segments[-1].get("embedding")

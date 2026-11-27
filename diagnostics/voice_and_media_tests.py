@@ -436,3 +436,160 @@ class DiagnosticVoiceAndMediaTestsMixin:
 
         item.status = "PASS"
         item.message = "Speed-listening playback rates (0.75x to 2.0x) and proofreading pre-roll verified"
+
+    def _test_diarization_zero_padding_vad_trimming_and_speaker_labels(self, item: DiagnosticItem):
+        """Validates exact-length zero-padding-free WeSpeaker batching, <1.0s tail right-alignment,
+        Silero VAD transcript silence trimming, embedding-gated A->B->A smoothing, and 1-based display_speaker()."""
+        import numpy as np
+        import wave
+        from types import SimpleNamespace
+        import worker_diarization_engine as wde
+        import worker_diarization_clustering as wdc
+        from speaker_editing_mixin import SpeakerEditingMixin
+
+        # 1. Zero-padding elimination + tail right-alignment + index ordering in extract_embeddings_batched()
+        temp_dir = tempfile.mkdtemp(prefix="rtvs_test_diar_pad_")
+        orig_get_model = wde._get_wespeaker_model
+        try:
+            wav_path = Path(temp_dir) / "mixed_speech.wav"
+            sr = 16000
+            dur_sec = 7.0
+            t = np.linspace(0.0, dur_sec, int(sr * dur_sec), endpoint=False, dtype=np.float32)
+            # Time-varying harmonic tone so every window has non-zero Fbank features
+            sig = (0.35 * np.sin(2.0 * np.pi * (240.0 + 40.0 * t) * t) + 0.15 * np.sin(2.0 * np.pi * 680.0 * t))
+            pcm = np.clip(sig * 32767.0, -32768, 32767).astype(np.int16)
+            with wave.open(str(wav_path), "wb") as wf:
+                wf.setnchannels(1)
+                wf.setsampwidth(2)
+                wf.setframerate(sr)
+                wf.writeframes(pcm.tobytes())
+
+            observed_batches = []
+
+            class _MockOnnxSession:
+                def run(self, output_names, input_feed):
+                    feats = input_feed["feats"]  # (B, T, 80)
+                    observed_batches.append(feats.shape)
+                    # Every frame in every batch item must contain real non-zero signal (zero-padding = 0 frames)
+                    last_frame_norms = np.linalg.norm(feats[:, -1, :], axis=-1)
+                    if np.any(last_frame_norms < 1e-6):
+                        raise AssertionError(f"Detected zero-padded trailing frames in batch shape {feats.shape}")
+                    # Mimic WeSpeaker temporal statistics pooling (mean + std across all T frames)
+                    mean_f = np.mean(feats, axis=1)  # (B, 80)
+                    std_f = np.std(feats, axis=1)    # (B, 80)
+                    raw_256 = np.concatenate([mean_f, std_f, mean_f * 0.5, std_f[:, :16]], axis=1).astype(np.float32)
+                    norms = np.maximum(1e-9, np.linalg.norm(raw_256, axis=1, keepdims=True))
+                    return [raw_256 / norms]
+
+            mock_model = SimpleNamespace(session=_MockOnnxSession())
+            wde._get_wespeaker_model = lambda: mock_model
+
+            segs = [
+                SimpleNamespace(start=0.0, end=2.0, duration=2.0),    # standalone 2.0s
+                SimpleNamespace(start=2.1, end=2.95, duration=0.85),  # standalone 0.85s (previously zero-padded to 2.0s)
+                SimpleNamespace(start=3.0, end=6.15, duration=3.15),  # multi-window with 0.90s tail (<1.0s)
+            ]
+            X_mixed, subsegs_mixed = wde.extract_embeddings_batched(
+                str(wav_path),
+                segs,
+                batch_size=32,
+                min_segment_duration=0.4,
+                embedding_window=1.5,
+                embedding_step=0.75,
+            )
+            # 1 (seg0) + 1 (seg1) + 4 (seg2: [3.0,4.5], [3.75,5.25], [4.5,6.0], [5.25,6.15]) = 6 (no redundant stub)
+            assert len(subsegs_mixed) == 6, f"Expected 6 subsegments without redundant stub, got {len(subsegs_mixed)}"
+            assert X_mixed.shape == (6, 256), f"Unexpected embedding matrix shape: {X_mixed.shape}"
+            # Exact original order must be preserved after exact-length bucketing
+            starts_mixed = [float(s.start) for s in subsegs_mixed]
+            assert starts_mixed == sorted(starts_mixed), f"Subsegment order drifted across buckets: {starts_mixed}"
+            assert abs(float(subsegs_mixed[-1].start) - 5.25) < 1e-6 and abs(float(subsegs_mixed[-1].end) - 6.15) < 1e-6, (
+                f"Right-aligned tail subsegment timestamp shifted unexpectedly: {subsegs_mixed[-1]}"
+            )
+
+            # Standalone 0.85s embedding must match its mixed-batch embedding identically (0% padding drift)
+            X_solo, _ = wde.extract_embeddings_batched(
+                str(wav_path),
+                [segs[1]],
+                batch_size=32,
+                min_segment_duration=0.4,
+                embedding_window=1.5,
+                embedding_step=0.75,
+            )
+            max_diff = float(np.max(np.abs(X_mixed[1] - X_solo[0])))
+            assert max_diff < 1e-5, f"Short window embedding drifted when batched with longer windows: diff={max_diff}"
+        finally:
+            wde._get_wespeaker_model = orig_get_model
+            shutil.rmtree(temp_dir, ignore_errors=True)
+
+        # 2. Silero VAD transcript silence trimming + graceful low-coverage fallback
+        tr_segs = [
+            {"start": 0.0, "end": 4.0, "text": "Intro with trailing silence."},
+            {"start": 4.5, "end": 8.5, "text": "Second turn with leading pause."},
+            {"start": 9.0, "end": 10.2, "text": "Quiet breath."},
+        ]
+        vad_spans = [
+            SimpleNamespace(start=0.5, end=2.0),
+            SimpleNamespace(start=5.1, end=7.3),
+        ]
+        prim, shrt = wdc.prepare_transcript_speech_segments(
+            tr_segs,
+            vad_segments=vad_spans,
+            speech_segment_cls=lambda start, end: SimpleNamespace(start=start, end=end, duration=end - start),
+        )
+        assert len(prim) == 2, f"Expected 2 VAD-trimmed primary spans, got {len(prim)}"
+        assert abs(prim[0].start - 0.5) < 1e-6 and abs(prim[0].end - 2.0) < 1e-6
+        assert abs(prim[1].start - 5.1) < 1e-6 and abs(prim[1].end - 7.3) < 1e-6
+        assert len(shrt) == 1 and abs(shrt[0].start - 9.0) < 1e-6, "Silent transcript turn must route to short fallback"
+
+        # Low-coverage / empty VAD must fall back cleanly to raw transcript spans
+        prim_fb, shrt_fb = wdc.prepare_transcript_speech_segments(
+            tr_segs,
+            vad_segments=[],
+            speech_segment_cls=lambda start, end: SimpleNamespace(start=start, end=end, duration=end - start),
+        )
+        assert len(prim_fb) == 3 and len(shrt_fb) == 0, "Empty VAD must fall back to untrimmed transcript spans"
+
+        # 3. Embedding-gated A -> B -> A short-island smoothing
+        vec_a = np.zeros(256, dtype=np.float32)
+        vec_a[0] = 1.0
+        vec_b = np.zeros(256, dtype=np.float32)
+        vec_b[1] = 1.0
+        vec_noisy_a = 0.85 * vec_a + 0.52 * vec_b
+        vec_noisy_a /= np.linalg.norm(vec_noisy_a)
+
+        smooth_segs = [
+            {"start": 0.0, "end": 5.0, "speaker": "SPEAKER_00", "embedding": vec_a.tolist()},
+            {"start": 5.1, "end": 5.6, "speaker": "SPEAKER_01", "embedding": vec_b.tolist()},        # 0.5s <= 0.7s -> unconditional smooth
+            {"start": 5.7, "end": 10.0, "speaker": "SPEAKER_00", "embedding": vec_a.tolist()},
+            {"start": 10.1, "end": 11.2, "speaker": "SPEAKER_01", "embedding": vec_noisy_a.tolist()}, # 1.1s ambiguous -> gated smooth
+            {"start": 11.3, "end": 16.0, "speaker": "SPEAKER_00", "embedding": vec_a.tolist()},
+            {"start": 16.1, "end": 17.2, "speaker": "SPEAKER_01", "embedding": vec_b.tolist()},       # 1.1s distinct voice -> PRESERVE
+            {"start": 17.3, "end": 22.0, "speaker": "SPEAKER_00", "embedding": vec_a.tolist()},
+            {"start": 26.0, "end": 27.1, "speaker": "SPEAKER_01", "embedding": vec_noisy_a.tolist()}, # 1.1s wide gap (>2s) -> PRESERVE
+            {"start": 31.0, "end": 36.0, "speaker": "SPEAKER_00", "embedding": vec_a.tolist()},
+            {"start": 37.0, "end": 45.0, "speaker": "SPEAKER_01", "embedding": vec_b.tolist()},       # anchor for SPEAKER_01 centroid
+        ]
+        merged_cnt = wdc.smooth_short_speaker_islands(smooth_segs)
+        assert merged_cnt == 2, f"Expected exactly 2 smoothed islands, got {merged_cnt}"
+        assert smooth_segs[1]["speaker"] == "SPEAKER_00", "Sub-0.7s island should be smoothed unconditionally"
+        assert smooth_segs[3]["speaker"] == "SPEAKER_00", "Ambiguous 1.1s island should be smoothed into Speaker A"
+        assert smooth_segs[5]["speaker"] == "SPEAKER_01", "Genuine 1.1s distinct-voice interjection must be preserved"
+        assert smooth_segs[7]["speaker"] == "SPEAKER_01", "1.1s island across wide silence gap must be preserved"
+
+        # 4. 1-based display_speaker() off-by-one fix
+        mock_disp = SimpleNamespace(speaker_names={"Speaker 1": "Dounya Ramadan", "SPEAKER_01": "Host"})
+        assert SpeakerEditingMixin.display_speaker(mock_disp, "SPEAKER_00") == "Speaker 1"
+        assert SpeakerEditingMixin.display_speaker(mock_disp, "SPEAKER_01") == "Host"
+        assert SpeakerEditingMixin.display_speaker(mock_disp, "SPEAKER_02") == "Speaker 3"
+        assert SpeakerEditingMixin.display_speaker(mock_disp, "Speaker 1") == "Dounya Ramadan"
+        assert SpeakerEditingMixin.display_speaker(mock_disp, "Speaker 2") == "Speaker 2"
+        assert SpeakerEditingMixin.display_speaker(mock_disp, "Speaker 4") == "Speaker 4"
+        assert SpeakerEditingMixin.display_speaker(mock_disp, "Caller 1") == "Caller 1"
+        assert SpeakerEditingMixin.display_speaker(mock_disp, None) == ""
+
+        item.status = "PASS"
+        item.message = (
+            "Zero-padding-free WeSpeaker batching, <1.0s tail alignment, VAD pause trimming, "
+            "embedding-gated A->B->A smoothing, and 1-based display_speaker() verified"
+        )

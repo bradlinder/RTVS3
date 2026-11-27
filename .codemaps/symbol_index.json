@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-27 14:42:23",
+  "generated_at": "2026-11-27 15:12:09",
   "total_files": 210,
   "files": {
     "RadioTVSegmenter.py": {
       "path": "RadioTVSegmenter.py",
       "lines": 686,
-      "summary": "Radio & TV Segmenter \u2014 v3.10.29-beta",
+      "summary": "Radio & TV Segmenter \u2014 v3.10.30-beta",
       "exports": null,
       "classes": [
         {
@@ -2662,7 +2662,7 @@
     },
     "diagnostics/voice_and_media_tests.py": {
       "path": "diagnostics/voice_and_media_tests.py",
-      "lines": 438,
+      "lines": 595,
       "summary": "Voice profile matching, waveform peak cache, and playback rate diagnostic tests.",
       "exports": null,
       "classes": [
@@ -2670,7 +2670,7 @@
           "name": "DiagnosticVoiceAndMediaTestsMixin",
           "bases": [],
           "start_line": 13,
-          "end_line": 438,
+          "end_line": 595,
           "doc": "",
           "methods": [
             {
@@ -2700,6 +2700,13 @@
               "start_line": 427,
               "end_line": 438,
               "doc": "Validates playback speed rates (0.75x to 2.0x), WSOLA pitch preservation parameters, and proofreading pre-roll configuration."
+            },
+            {
+              "name": "_test_diarization_zero_padding_vad_trimming_and_speaker_labels",
+              "sig": "_test_diarization_zero_padding_vad_trimming_and_speaker_labels(self, item)",
+              "start_line": 440,
+              "end_line": 595,
+              "doc": "Validates exact-length zero-padding-free WeSpeaker batching, <1.0s tail right-alignment,"
             }
           ]
         }
@@ -15838,7 +15845,7 @@
     },
     "speaker_editing_mixin.py": {
       "path": "speaker_editing_mixin.py",
-      "lines": 635,
+      "lines": 637,
       "summary": "Radio & TV Story Segmenter \u2014 Speaker Label, Renaming & Segment Editing Mixin.",
       "exports": null,
       "classes": [
@@ -15848,7 +15855,7 @@
             "SpeakerDialogRefinementMixin"
           ],
           "start_line": 54,
-          "end_line": 635,
+          "end_line": 637,
           "doc": "Mixin for speaker labeling, splitting, renaming, and dialog turn refinement.",
           "methods": [
             {
@@ -15883,49 +15890,49 @@
               "name": "display_speaker",
               "sig": "display_speaker(self, speaker)",
               "start_line": 309,
-              "end_line": 323,
+              "end_line": 325,
               "doc": ""
             },
             {
               "name": "get_all_known_speakers",
               "sig": "get_all_known_speakers(self)",
-              "start_line": 325,
-              "end_line": 355,
+              "start_line": 327,
+              "end_line": 357,
               "doc": ""
             },
             {
               "name": "execute_speaker_rename",
               "sig": "execute_speaker_rename(self, seg_idx, raw_speaker, target_name)",
-              "start_line": 357,
-              "end_line": 514,
+              "start_line": 359,
+              "end_line": 516,
               "doc": ""
             },
             {
               "name": "prompt_rename_speaker",
               "sig": "prompt_rename_speaker(self, seg_idx, speaker)",
-              "start_line": 516,
-              "end_line": 517,
+              "start_line": 518,
+              "end_line": 519,
               "doc": ""
             },
             {
               "name": "remove_speaker_label_at_segment",
               "sig": "remove_speaker_label_at_segment(self, seg_idx)",
-              "start_line": 519,
-              "end_line": 602,
+              "start_line": 521,
+              "end_line": 604,
               "doc": ""
             },
             {
               "name": "register_confirmed_speaker_turn",
               "sig": "register_confirmed_speaker_turn(self, seg_idx, speaker_name)",
-              "start_line": 604,
-              "end_line": 632,
+              "start_line": 606,
+              "end_line": 634,
               "doc": ""
             },
             {
               "name": "register_confirmed_speaker_sample",
               "sig": "register_confirmed_speaker_sample(self, seg_idx, speaker_name)",
-              "start_line": 634,
-              "end_line": 635,
+              "start_line": 636,
+              "end_line": 637,
               "doc": ""
             }
           ]
@@ -20358,7 +20365,7 @@
     "transcript_story.py": {
       "path": "transcript_story.py",
       "lines": 856,
-      "summary": "Radio & TV Segmenter v3.10.29-beta \u2014 transcript story responsibilities.",
+      "summary": "Radio & TV Segmenter v3.10.30-beta \u2014 transcript story responsibilities.",
       "exports": [
         "TranscriptStoryMixin",
         "Story",
@@ -22525,7 +22532,7 @@
     },
     "worker_diarization_clustering.py": {
       "path": "worker_diarization_clustering.py",
-      "lines": 434,
+      "lines": 634,
       "summary": "worker_diarization_clustering.py - Speaker Clustering, Centroid Matching & Math Helpers.",
       "exports": null,
       "classes": [],
@@ -22533,85 +22540,99 @@
         {
           "name": "_normalize_expected_speakers",
           "sig": "_normalize_expected_speakers(value)",
-          "start_line": 20,
-          "end_line": 29,
+          "start_line": 24,
+          "end_line": 33,
           "doc": "Map a CLI/UI expected-speakers hint to one of 'auto', '1', '2', '3+'."
         },
         {
           "name": "_normalize_speaker_labels",
           "sig": "_normalize_speaker_labels(segments)",
-          "start_line": 32,
-          "end_line": 45,
+          "start_line": 36,
+          "end_line": 49,
           "doc": "Relabel raw diarize-package speaker ids to 'Speaker 1', 'Speaker 2',"
         },
         {
           "name": "_sensitivity_distance_threshold",
           "sig": "_sensitivity_distance_threshold(sensitivity)",
-          "start_line": 48,
-          "end_line": 56,
+          "start_line": 52,
+          "end_line": 60,
           "doc": "Cosine-distance clustering threshold derived from PRS_DIARIZATION_SENSITIVITY."
         },
         {
           "name": "_sensitivity_centroid_merge_threshold",
           "sig": "_sensitivity_centroid_merge_threshold(sensitivity)",
-          "start_line": 59,
-          "end_line": 64,
+          "start_line": 63,
+          "end_line": 68,
           "doc": "Post-clustering centroid cosine-distance threshold calibrated for WeSpeaker embeddings."
         },
         {
           "name": "consolidate_speaker_clusters",
           "sig": "consolidate_speaker_clusters(embeddings, labels, min_fraction, max_min_cluster, centroid_merge_dist)",
-          "start_line": 67,
-          "end_line": 123,
+          "start_line": 71,
+          "end_line": 127,
           "doc": "Absorb noisy micro-clusters into nearest major speakers and merge redundant centroids."
         },
         {
           "name": "merge_adjacent_diarization_segments",
           "sig": "merge_adjacent_diarization_segments(segments, max_gap)",
-          "start_line": 126,
-          "end_line": 147,
+          "start_line": 130,
+          "end_line": 151,
           "doc": "Merge consecutive diarization segments from the same speaker separated by < max_gap seconds."
+        },
+        {
+          "name": "smooth_short_speaker_islands",
+          "sig": "smooth_short_speaker_islands(segments, unconditional_threshold, gated_max_duration, max_foreign_margin, min_surround_sim, max_gap)",
+          "start_line": 154,
+          "end_line": 259,
+          "doc": "Smooth brief A -> B -> A mid-turn speaker islands in place."
+        },
+        {
+          "name": "prepare_transcript_speech_segments",
+          "sig": "prepare_transcript_speech_segments(valid_segments, vad_segments, speech_segment_cls, min_primary_duration, min_vad_span, vad_bridge_gap, min_total_vad_coverage)",
+          "start_line": 262,
+          "end_line": 347,
+          "doc": "Split transcript segments into primary (>= min_primary_duration) and short segments,"
         },
         {
           "name": "cluster_speakers_ahc",
           "sig": "cluster_speakers_ahc(embeddings, min_speakers, max_speakers, num_speakers, distance_threshold, sensitivity)",
-          "start_line": 150,
-          "end_line": 182,
+          "start_line": 350,
+          "end_line": 382,
           "doc": "Cluster speaker embeddings with O(N^2) cosine AHC, honoring sensitivity and speaker bounds."
         },
         {
           "name": "fast_cluster_ahc",
           "sig": "fast_cluster_ahc(embeddings, k, distance_threshold)",
-          "start_line": 185,
-          "end_line": 241,
+          "start_line": 385,
+          "end_line": 441,
           "doc": "Agglomerative Hierarchical Clustering with cosine metric and average linkage (O(N^2))."
         },
         {
           "name": "apply_clustering_patches",
           "sig": "apply_clustering_patches()",
-          "start_line": 244,
-          "end_line": 281,
+          "start_line": 444,
+          "end_line": 481,
           "doc": "Globally monkey-patch SpectralClustering and diarize.clustering to use O(N^2) AHC."
         },
         {
           "name": "assign_short_segments_to_centroids",
           "sig": "assign_short_segments_to_centroids(short_segments, audio_path, centroids, label_values, raw_segments, min_confidence, get_wespeaker_model_fn, safe_tensor_fn)",
-          "start_line": 284,
-          "end_line": 406,
+          "start_line": 484,
+          "end_line": 606,
           "doc": "Extract acoustic embeddings for short segments (< 0.8s) with symmetric context padding,"
         },
         {
           "name": "_calculate_embedding_for_interval",
           "sig": "_calculate_embedding_for_interval(start, end, subsegments, embeddings)",
-          "start_line": 409,
-          "end_line": 434,
+          "start_line": 609,
+          "end_line": 634,
           "doc": "Compute unit-normalized 256-dimensional embedding vector for an interval [start, end]."
         }
       ]
     },
     "worker_diarization_engine.py": {
       "path": "worker_diarization_engine.py",
-      "lines": 970,
+      "lines": 979,
       "summary": "worker_diarization_engine.py - Speaker Diarization, Neural VAD & Embedding Pipeline.",
       "exports": null,
       "classes": [],
@@ -22619,78 +22640,78 @@
         {
           "name": "set_emit_callback",
           "sig": "set_emit_callback(fn)",
-          "start_line": 53,
-          "end_line": 56,
+          "start_line": 55,
+          "end_line": 58,
           "doc": "Set custom IPC emitter function."
         },
         {
           "name": "_emit",
           "sig": "_emit(message_type, **payload)",
-          "start_line": 59,
-          "end_line": 65,
+          "start_line": 61,
+          "end_line": 67,
           "doc": ""
         },
         {
           "name": "_safe_tensor_from_numpy",
           "sig": "_safe_tensor_from_numpy(arr)",
-          "start_line": 68,
-          "end_line": 83,
+          "start_line": 70,
+          "end_line": 85,
           "doc": "Safely convert a numpy float32 array into a PyTorch tensor."
         },
         {
           "name": "normalize_audio_for_diarization",
           "sig": "normalize_audio_for_diarization(source_path, apply_bandpass)",
-          "start_line": 86,
-          "end_line": 149,
+          "start_line": 88,
+          "end_line": 151,
           "doc": "Extract a normalized 16 kHz mono WAV using the local FFmpeg binary."
         },
         {
           "name": "configure_optimal_pytorch_threads",
           "sig": "configure_optimal_pytorch_threads()",
-          "start_line": 152,
-          "end_line": 165,
+          "start_line": 154,
+          "end_line": 167,
           "doc": "Clamp torch's intra-op/inter-op thread pools to match the"
         },
         {
           "name": "_diarize_solo_fast_path",
           "sig": "_diarize_solo_fast_path(audio_file, transcript_file)",
-          "start_line": 168,
-          "end_line": 242,
+          "start_line": 170,
+          "end_line": 244,
           "doc": "Solo fast-path: a single expected speaker means there is nothing to"
         },
         {
           "name": "_get_wespeaker_model",
           "sig": "_get_wespeaker_model()",
-          "start_line": 250,
-          "end_line": 258,
+          "start_line": 252,
+          "end_line": 260,
           "doc": "Retrieve or initialize the cached WeSpeaker ONNX model instance."
         },
         {
           "name": "extract_embeddings_batched",
           "sig": "extract_embeddings_batched(audio_path, speech_segments, batch_size, min_segment_duration, embedding_window, embedding_step, progress_callback)",
-          "start_line": 261,
-          "end_line": 380,
+          "start_line": 263,
+          "end_line": 407,
           "doc": "Extract 256-dim speaker embeddings using WeSpeaker ResNet34-LM (ONNX)"
         },
         {
           "name": "run_vad_two_pass",
           "sig": "run_vad_two_pass(audio_path, threshold, min_speech_duration_ms, min_silence_duration_ms, speech_pad_ms, bridge_pause_threshold_sec)",
-          "start_line": 383,
-          "end_line": 453,
+          "start_line": 410,
+          "end_line": 480,
           "doc": "Silero VAD with Pass 1 Pause Bridging (< 100ms)."
         },
         {
           "name": "run_transcript_guided_diarization",
           "sig": "run_transcript_guided_diarization(normalized_wav, transcript_file, expected_speakers, sensitivity, progress_callback)",
-          "start_line": 456,
-          "end_line": 607,
+          "start_line": 483,
+          "end_line": 632,
           "doc": "Execute transcript-guided speaker diarization directly from sentence boundaries."
         },
         {
           "name": "diarize",
           "sig": "diarize(audio_file, expected_speakers, transcript_file, sensitivity)",
-          "start_line": 610,
-          "end_line": 970,
+          "start_line": 635,
+          "end_line": 979,
           "doc": "Execute complete speaker diarization pipeline on an audio media file."
         }
       ]

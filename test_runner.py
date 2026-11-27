@@ -559,6 +559,11 @@ class DiagnosticEngine(
                 "Core Logic & File I/O",
                 "Validates Managed Remote Media Cache path-jail safety, exported-first LRU eviction, active-file immunity, remote-open plugin hooks, shortcuts, and user guide parity",
             ),
+            DiagnosticItem(
+                "Diarization Zero-Padding, VAD Trimming & Speaker Labels",
+                "Audio Diarization & VAD",
+                "Validates exact-length zero-padding-free WeSpeaker batching, <1.0s tail right-alignment, Silero VAD transcript pause trimming, embedding-gated A->B->A island smoothing, and 1-based display_speaker() numbering",
+            ),
         ]
 
     def run_all(self, stop_requested_fn: Optional[Callable[[], bool]] = None) -> List[DiagnosticItem]:
