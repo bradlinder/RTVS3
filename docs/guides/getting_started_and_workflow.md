@@ -22,7 +22,7 @@ You can load media into RTVS3 in several ways:
 
 When media is loaded:
 - RTVS3 automatically generates a multi-resolution waveform pyramid on the timeline.
-- For video files, a thumbnail filmstrip is generated above the timeline tracks.
+- For video files, a thumbnail filmstrip is generated along the timeline. Configure **Thumbnail Placement** (*Below* or *Above* waveform) and **Thumbnail Density** (**Standard (2 per min)**, **Detailed (4 per min)**, **High (8 per min)**, or **Extra High (16 per min)**—scaled automatically to video duration within safe memory caps) in **Settings > Preferences... > Playback & Timeline**, or right-click anywhere on the timeline (even over existing segments) to run **Regenerate Waveform** (**Ctrl+Shift+W**) or **Regenerate Video Thumbnails** (**Ctrl+Shift+T**).
 - Press **Ctrl+Shift+V** (**View > Timeline > Video Preview Window**) to open a floating video player that synchronizes with timeline scrubbing.
 - **Broadcast Loudness Normalization**: Press **Ctrl+Alt+N** (**Tools > Normalize Audio Loudness...**) to inspect EBU R128 / ITU BS.1770 metrics (Integrated LUFS, LRA, True Peak) with non-destructive boost preview, or configure automatic normalization in **Settings > Preferences... > Audio Settings**.
 
@@ -34,7 +34,7 @@ When media is loaded:
 - **Scrubbing**: Click and drag anywhere along the timeline ruler or waveform.
 - **Zooming**: Use **Ctrl + Mouse Wheel** over the timeline, or press the **+** and **-** zoom buttons. You can zoom from full-episode overview down to a fraction of a second (300x zoom) for precise edits.
 - **Playback Speed**: Adjust the speed dropdown between **0.5x** and **3.0x** to listen at your preferred pace.
-- **Volume & Fades**: Use the master volume slider. Configure **Audio Fades** (**Ctrl+Shift+F**) to preview real-time volume fade-ins and fade-outs on segments.
+- **Volume & Fades**: Use the master volume slider. Configure per-segment **Audio Fades** (**Ctrl+Shift+F**), or set default fade durations, real-time preview, and the 2×2 **Default Fade Curve** selector (*Linear*, *S-Curve*, *Logarithmic*, *Exponential*) in **Settings > Preferences... > Playback & Timeline**.
 
 ---
 
@@ -71,7 +71,7 @@ The center panel features an interactive transcript editor:
 RTVS3 organizes broadcasts into distinct, individual segments that can be exported separately or together.
 
 ### Automatic Segment Detection:
-Press **Ctrl+Shift+A** (**Tools > Detect Segments...**). The engine analyzes topic boundaries, speech pauses, and speaker turns to segment your episode automatically.
+Press **Ctrl+Shift+A** (**Tools > Detect Segments...**). A lightweight confirmation dialog displays your active detection thresholds so you can run immediately, or click **Adjust Settings...** to override **Silence Gap Threshold**, **Minimum Segment Length**, **Detection Basis** (*Voice / Speech* vs. *Music / Track Breaks*), and **Lead-In Padding** for that single run without altering Preferences (or check **Save these values as my new defaults** to persist them).
 
 ### Manual Segment Creation:
 1. Press `[` to mark a segment start and `]` to mark a segment end at the current playhead position.
@@ -80,14 +80,14 @@ Press **Ctrl+Shift+A** (**Tools > Detect Segments...**). The engine analyzes top
 
 ### Adjusting Segment Boundaries & Fades:
 - **Move Boundaries**: Click and drag the left or right edge handle of any segment box on the timeline.
-- **Audio Fades**: Drag the fade handle at the top corners of a segment to set fade-in and fade-out durations (e.g., 1.5 seconds) with linear, exponential, or S-curve shapes.
+- **Audio Fades**: Drag the fade handle at the top corners of a segment to set fade-in and fade-out durations (e.g., 1.5 seconds) with *Linear*, *S-Curve*, *Logarithmic*, or *Exponential* shapes.
 - **Segment Metadata & ID3 Tags**: Select a segment to edit its title, summary, author, and categories, or press **Ctrl+Shift+I** (**Tools > ID3 Tag Editor (MP3)...**) to embed broadcast MP3 metadata and artwork.
 
 ---
 
 ## 6. Unified Export, Batch Processing & Maintenance
 
-- **Unified Export Center**: Press **Ctrl+E** (**File > Export...**) to export split audio cuts, Word/PDF cue sheets, WordPress draft posts, or DAW timelines.
+- **Unified Export Center**: Press **Ctrl+E** (**File > Export...**) to export split audio cuts, Word/PDF cue sheets, WordPress draft posts, or DAW timelines. Choose **Export Scope > Custom Selection** to reveal the checkable **Items to Export:** sidebar (**Full Episode** plus individual segments, with **Select All** and **Clear** controls) across every export destination.
 - **Copy YouTube Chapters**: Press **Ctrl+Shift+Y** (**File > Copy YouTube Chapters to Clipboard**) to copy formatted chapter markers instantly.
 - **Batch Processing Center**: Go to **Tools > Batch Processing...** (**Ctrl+Shift+B**) to queue and process multiple episodes or media files sequentially in the background.
 - **Settings, Shortcuts & Maintenance**: Customize hotkeys under **Settings > Customize Keyboard Shortcuts...** (**F8**), back up/restore settings via **Settings > Backup & Restore Settings...**, free cached waveforms/sidecars via **Tools > Clear Temporary Cache...**, inspect/cap/clear downloaded YouTube & WordPress episodes via **Tools > Manage Cached Remote Media...** (or **Settings > Preferences... > Cleanup Data**), or selectively reset open project data under **Edit > Clear / Purge Project Data...**.

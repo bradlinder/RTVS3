@@ -78,28 +78,32 @@ def show_timeline_context_menu(canvas: Any, global_pos: QPoint, pos_x: float, ex
         has_selected_stories = bool(getattr(canvas, "selected_story_indices", None) or getattr(win, "current_selected_story_indices", None))
         if has_selected_stories:
             clear_action = menu.addAction("Borrar selección (Esc)" if is_es else "Clear Selection (Esc)")
+
+    # Timeline media regeneration actions — accessible anywhere on the timeline (even over assigned segments)
+    has_audio = bool(getattr(win, "audio_file", None))
+    has_video = bool(getattr(win, "current_media_is_video", False))
+    regen_wf_act = None
+    regen_th_actions = {}
+    has_regen_wf = hasattr(win, "regenerate_waveform")
+    has_regen_th = has_video and hasattr(win, "regenerate_video_thumbnails")
+    if has_regen_wf or has_regen_th:
+        if menu.actions():
             menu.addSeparator()
-
-        has_audio = bool(getattr(win, "audio_file", None))
-        has_video = bool(getattr(win, "current_media_is_video", False))
-
-        regen_wf_act = None
-        regen_th_actions = {}
-        if hasattr(win, "regenerate_waveform"):
+        if has_regen_wf:
             label = "Regenerar forma de onda" if is_es else "Regenerate Waveform"
             regen_wf_act = menu.addAction(label)
             regen_wf_act.setEnabled(has_audio)
-
-        if has_video and hasattr(win, "regenerate_video_thumbnails"):
+        if has_regen_th:
             from background_workers import normalize_thumbnail_density
             curr_density = normalize_thumbnail_density(getattr(win, "timeline_thumbnail_density", "standard"))
             sub_label = "Regenerar miniaturas de video" if is_es else "Regenerate Video Thumbnails"
             regen_th_menu = menu.addMenu(sub_label)
             regen_th_menu.setEnabled(has_audio)
             preset_labels = [
-                ("standard", "Estándar (36 fotogramas)" if is_es else "Standard (36 frames)"),
-                ("detailed", "Detallado (90 fotogramas)" if is_es else "Detailed (90 frames)"),
-                ("high", "Alto (180 fotogramas)" if is_es else "High (180 frames)"),
+                ("standard", "Estándar (2 por min)" if is_es else "Standard (2 per min)"),
+                ("detailed", "Detallado (4 por min)" if is_es else "Detailed (4 per min)"),
+                ("high", "Alto (8 por min)" if is_es else "High (8 per min)"),
+                ("extra_high", "Extra alto (16 por min)" if is_es else "Extra High (16 per min)"),
             ]
             for key, p_label in preset_labels:
                 act = regen_th_menu.addAction(p_label)
@@ -115,6 +119,15 @@ def show_timeline_context_menu(canvas: Any, global_pos: QPoint, pos_x: float, ex
         return menu
 
     selected = menu.exec(global_pos)
+    if selected is None:
+        return
+    if regen_wf_act and selected == regen_wf_act:
+        win.regenerate_waveform()
+        return
+    if selected in regen_th_actions:
+        win.regenerate_video_thumbnails(density=regen_th_actions[selected])
+        return
+
     if story_idx is not None and 0 <= story_idx < len(canvas.stories):
         if audition_action and selected == audition_action:
             if hasattr(win, "audition_story"):
@@ -146,10 +159,6 @@ def show_timeline_context_menu(canvas: Any, global_pos: QPoint, pos_x: float, ex
         if clear_action and selected == clear_action:
             if hasattr(win, "apply_story_selection_indices"):
                 win.apply_story_selection_indices([])
-        elif 'regen_wf_act' in locals() and regen_wf_act and selected == regen_wf_act:
-            win.regenerate_waveform()
-        elif 'regen_th_actions' in locals() and selected in regen_th_actions:
-            win.regenerate_video_thumbnails(density=regen_th_actions[selected])
 
 
 def show_selection_context_menu(canvas: Any, global_pos: QPoint, exec_menu: bool = True):

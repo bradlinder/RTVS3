@@ -99,7 +99,7 @@ class MediaBatchMixin:
 
         from background_workers import get_thumbnail_count_for_density
         eff_density = self._effective_thumbnail_density(density)
-        target_count = get_thumbnail_count_for_density(eff_density)
+        target_count = get_thumbnail_count_for_density(eff_density, duration=self.duration)
 
         if not force_regenerate:
             cached_thumbs = read_video_thumbnail_cache(
@@ -244,13 +244,18 @@ class MediaBatchMixin:
             density = None
         if not getattr(self, "audio_file", None) or not getattr(self, "current_media_is_video", False):
             return
-        from background_workers import get_thumbnail_count_for_density, normalize_thumbnail_density
+        from background_workers import (
+            TIMELINE_THUMBNAIL_DENSITY_PRESETS,
+            get_thumbnail_count_for_density,
+            normalize_thumbnail_density,
+        )
         eff_density = self._effective_thumbnail_density(density)
         if density is not None:
             self.timeline_thumbnail_density = normalize_thumbnail_density(density)
             if hasattr(self, "settings_store") and self.settings_store is not None:
                 self.settings_store.setValue("timeline_thumbnail_density", self.timeline_thumbnail_density)
-        target_count = get_thumbnail_count_for_density(eff_density)
+        target_count = get_thumbnail_count_for_density(eff_density, duration=getattr(self, "duration", 0))
+        rate_per_min = TIMELINE_THUMBNAIL_DENSITY_PRESETS.get(eff_density, 2)
 
         self.stop_video_thumbnail_worker()
         if hasattr(self, "timeline"):
@@ -262,9 +267,12 @@ class MediaBatchMixin:
         )
         unregister_active_thumbnail_dir(self.video_thumbnail_dir)
         self.video_thumbnail_dir = None
-        self.log_activity(f"[MEDIA] Manually regenerating video thumbnails ({eff_density}, {target_count} frames)...")
+        self.log_activity(f"[MEDIA] Manually regenerating video thumbnails ({eff_density}, {rate_per_min}/min, {target_count} frames)...")
         is_es = getattr(self, "language", "en") == "es"
-        self.statusBar().showMessage("Regenerando miniaturas de video..." if is_es else f"Regenerating video thumbnails ({eff_density}, {target_count} frames)...")
+        self.statusBar().showMessage(
+            "Regenerando miniaturas de video..." if is_es
+            else f"Regenerating video thumbnails ({rate_per_min} per min, {target_count} frames)..."
+        )
         self.start_video_thumbnail_generation(force_regenerate=True, density=eff_density)
 
     def load_waveform_async(self, force_regenerate: bool = False):

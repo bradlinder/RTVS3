@@ -181,17 +181,23 @@ class DiagnosticEditorStoryUiTestsMixin:
         win.audio_file = "sample_video.mp4"
         win.current_media_is_video = True
         win.timeline_thumbnail_density = "detailed"
+        win.regenerate_waveform = lambda: None
         win.regenerate_video_thumbnails = lambda density=None: None
         for lang in ("en", "es"):
             win.language = lang
             m_story = show_timeline_context_menu(mock_canvas, QPoint(50, 50), 100.0, exec_menu=False)
             assert m_story is not None and len(m_story.actions()) > 0
+            story_submenus = [act.menu() for act in m_story.actions() if act.menu() is not None]
+            assert story_submenus, f"Expected Regenerate Video Thumbnails submenu when right-clicking a segment in {lang}"
+            story_preset_acts = story_submenus[0].actions()
+            assert len(story_preset_acts) == 4, f"Expected 4 per-min thumbnail presets on segment menu, got {len(story_preset_acts)}"
+            assert story_preset_acts[1].isChecked(), "Expected 'detailed' thumbnail density preset checked on segment menu"
             m_empty = show_timeline_context_menu(mock_canvas, QPoint(50, 50), 999.0, exec_menu=False)
             assert m_empty is not None and len(m_empty.actions()) > 0
             submenus = [act.menu() for act in m_empty.actions() if act.menu() is not None]
             assert submenus, f"Expected Regenerate Video Thumbnails density submenu in {lang}"
             preset_acts = submenus[0].actions()
-            assert len(preset_acts) == 3, f"Expected 3 thumbnail density presets, got {len(preset_acts)}"
+            assert len(preset_acts) == 4, f"Expected 4 thumbnail density presets, got {len(preset_acts)}"
             assert preset_acts[1].isChecked(), "Expected 'detailed' thumbnail density preset to be checked"
             m_sel = show_selection_context_menu(mock_canvas, QPoint(50, 50), exec_menu=False)
             assert m_sel is not None and len(m_sel.actions()) > 0
@@ -243,22 +249,33 @@ class DiagnosticEditorStoryUiTestsMixin:
         det_dlg_fresh.deleteLater()
 
         assert normalize_thumbnail_density("DETAILED") == "detailed"
+        assert normalize_thumbnail_density("EXTRA_HIGH") == "extra_high"
         assert normalize_thumbnail_density("invalid") == "standard"
-        assert get_thumbnail_count_for_density("standard") == 36
-        assert get_thumbnail_count_for_density("detailed") == 90
-        assert get_thumbnail_count_for_density("high") == 180
+        # Duration-scaled per-minute counts (2 / 4 / 8 / 16 per min) with safety floors & caps
+        assert get_thumbnail_count_for_density("standard", duration=60.0) == 16
+        assert get_thumbnail_count_for_density("standard", duration=600.0) == 20
+        assert get_thumbnail_count_for_density("standard", duration=3600.0) == 120
+        assert get_thumbnail_count_for_density("standard", duration=14400.0) == 180
+        assert get_thumbnail_count_for_density("detailed", duration=3600.0) == 240
+        assert get_thumbnail_count_for_density("detailed", duration=14400.0) == 300
+        assert get_thumbnail_count_for_density("high", duration=3600.0) == 480
+        assert get_thumbnail_count_for_density("high", duration=14400.0) == 480
+        assert get_thumbnail_count_for_density("extra_high", duration=600.0) == 160
+        assert get_thumbnail_count_for_density("extra_high", duration=3600.0) == 960
+        assert get_thumbnail_count_for_density("extra_high", duration=14400.0) == 960
         with tempfile.TemporaryDirectory(prefix="rtvs_thumb_dens_") as td_str:
             fake_vid = Path(td_str) / "clip.mp4"
             fake_vid.write_bytes(b"\x00" * 64)
-            w_high = VideoThumbnailWorker(fake_vid, 3600.0, Path(td_str) / "out", count=180)
+            w_high = VideoThumbnailWorker(fake_vid, 3600.0, Path(td_str) / "out", count=480)
             w_cap = VideoThumbnailWorker(fake_vid, 3600.0, Path(td_str) / "out", count=9999)
-            assert w_high.count == 180 and w_cap.count == 200
+            assert w_high.count == 480 and w_cap.count == 960
             d_std = get_video_thumbnail_cache_dir(fake_vid, target_count=36)
             d_default = get_video_thumbnail_cache_dir(fake_vid)
-            d_det = get_video_thumbnail_cache_dir(fake_vid, target_count=90)
-            d_hi = get_video_thumbnail_cache_dir(fake_vid, target_count=180)
-            assert d_std == d_default, "Standard (36) must reuse legacy thumbnail cache dir"
-            assert len({d_std, d_det, d_hi}) == 3, "Density presets must map to distinct cache dirs"
+            d_det = get_video_thumbnail_cache_dir(fake_vid, target_count=240)
+            d_hi = get_video_thumbnail_cache_dir(fake_vid, target_count=480)
+            d_xhi = get_video_thumbnail_cache_dir(fake_vid, target_count=960)
+            assert d_std == d_default, "Legacy 36-frame count must reuse default thumbnail cache dir"
+            assert len({d_std, d_det, d_hi, d_xhi}) == 4, "Density presets must map to distinct cache dirs"
 
         # 6b-3. Verify Preferences Playback & Timeline Audio Fades layout has zero card overlap or clipping (v3.10.25-beta)
         from preferences_tabs_media import build_playback_timeline_tab

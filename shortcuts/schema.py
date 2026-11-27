@@ -310,7 +310,7 @@ SHORTCUT_DEFINITIONS: List[ShortcutDef] = [
         category="AI Pipeline & Tools",
         default_seq="Ctrl+Shift+A",
         default_mac="Meta+Shift+A",
-        description="Automatically divide recording into segments or songs based on topic shifts and pauses",
+        description="Automatically divide recording into segments or songs (with optional one-time threshold overrides via Adjust Settings...)",
         attr_name="auto_detect_action",
     ),
     ShortcutDef(
@@ -346,7 +346,7 @@ SHORTCUT_DEFINITIONS: List[ShortcutDef] = [
         category="AI Pipeline & Tools",
         default_seq="Ctrl+Shift+T",
         default_mac="Meta+Shift+T",
-        description="Extract new frame thumbnails across video duration",
+        description="Extract new video timeline thumbnails using the active Thumbnail Density preset",
         attr_name="regen_thumbnails_action",
     ),
     ShortcutDef(

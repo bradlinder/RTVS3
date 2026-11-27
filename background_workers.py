@@ -865,24 +865,32 @@ class WaveformWorker(QObject):
 # Video Thumbnail Caching & Background Extraction
 # ============================================================
 
+TIMELINE_THUMBNAIL_DENSITY_SPECS = {
+    "standard": {"per_min": 2, "min_count": 16, "max_count": 180},
+    "detailed": {"per_min": 4, "min_count": 24, "max_count": 300},
+    "high": {"per_min": 8, "min_count": 36, "max_count": 480},
+    "extra_high": {"per_min": 16, "min_count": 48, "max_count": 960},
+}
 TIMELINE_THUMBNAIL_DENSITY_PRESETS = {
-    "standard": 36,
-    "detailed": 90,
-    "high": 180,
+    k: spec["per_min"] for k, spec in TIMELINE_THUMBNAIL_DENSITY_SPECS.items()
 }
 DEFAULT_TIMELINE_THUMBNAIL_DENSITY = "standard"
-MAX_TIMELINE_THUMBNAIL_COUNT = 200
+MAX_TIMELINE_THUMBNAIL_COUNT = 960
+_LEGACY_DEFAULT_THUMBNAIL_COUNT = 36
 
 
 def normalize_thumbnail_density(density) -> str:
-    """Normalize a timeline thumbnail density setting to 'standard', 'detailed', or 'high'."""
+    """Normalize a timeline thumbnail density setting to 'standard', 'detailed', 'high', or 'extra_high'."""
     key = str(density or DEFAULT_TIMELINE_THUMBNAIL_DENSITY).strip().lower()
-    return key if key in TIMELINE_THUMBNAIL_DENSITY_PRESETS else DEFAULT_TIMELINE_THUMBNAIL_DENSITY
+    return key if key in TIMELINE_THUMBNAIL_DENSITY_SPECS else DEFAULT_TIMELINE_THUMBNAIL_DENSITY
 
 
-def get_thumbnail_count_for_density(density) -> int:
-    """Return the bounded frame extraction count for a timeline thumbnail density preset."""
-    return TIMELINE_THUMBNAIL_DENSITY_PRESETS[normalize_thumbnail_density(density)]
+def get_thumbnail_count_for_density(density, duration: float | None = None) -> int:
+    """Return the duration-scaled, memory-bounded thumbnail count for a density preset."""
+    spec = TIMELINE_THUMBNAIL_DENSITY_SPECS[normalize_thumbnail_density(density)]
+    dur_sec = float(duration) if (duration is not None and float(duration) > 0) else 1800.0
+    raw = int(round((dur_sec / 60.0) * spec["per_min"]))
+    return max(spec["min_count"], min(spec["max_count"], raw))
 
 
 def get_video_thumbnail_cache_dir(
@@ -896,7 +904,7 @@ def get_video_thumbnail_cache_dir(
     count_suffix = ""
     if target_count is not None:
         eff_c = max(8, min(MAX_TIMELINE_THUMBNAIL_COUNT, int(target_count)))
-        if eff_c != TIMELINE_THUMBNAIL_DENSITY_PRESETS[DEFAULT_TIMELINE_THUMBNAIL_DENSITY]:
+        if eff_c != _LEGACY_DEFAULT_THUMBNAIL_COUNT:
             count_suffix = f"_n{eff_c}"
     try:
         p = Path(media_file).resolve()
@@ -956,7 +964,7 @@ def read_video_thumbnail_cache(
             count_suffix = ""
             if target_count is not None:
                 eff_c = max(8, min(MAX_TIMELINE_THUMBNAIL_COUNT, int(target_count)))
-                if eff_c != TIMELINE_THUMBNAIL_DENSITY_PRESETS[DEFAULT_TIMELINE_THUMBNAIL_DENSITY]:
+                if eff_c != _LEGACY_DEFAULT_THUMBNAIL_COUNT:
                     count_suffix = f"_n{eff_c}"
             alt_dir = Path(tempfile.gettempdir()) / "radio_tv_story_segmenter_thumbnails" / hashlib.sha256(f"{Path(media_file)}{count_suffix}".encode("utf-8")).hexdigest()[:24]
             if alt_dir.exists() and alt_dir.is_dir():
@@ -998,7 +1006,7 @@ def invalidate_video_thumbnail_cache(
 ) -> bool:
     """Delete the thumbnail cache directory for a given media file."""
     deleted = False
-    counts_to_clear = [target_count] if target_count is not None else [None, *TIMELINE_THUMBNAIL_DENSITY_PRESETS.values()]
+    counts_to_clear = [target_count] if target_count is not None else [None, _LEGACY_DEFAULT_THUMBNAIL_COUNT]
     try:
         for tc in counts_to_clear:
             cache_dir = get_video_thumbnail_cache_dir(media_file, project_file=project_file, target_count=tc)
@@ -1010,7 +1018,7 @@ def invalidate_video_thumbnail_cache(
                 try:
                     p = Path(media_file).resolve()
                     stat = p.stat()
-                    c_suf = f"_n{int(tc)}" if (tc is not None and int(tc) != TIMELINE_THUMBNAIL_DENSITY_PRESETS[DEFAULT_TIMELINE_THUMBNAIL_DENSITY]) else ""
+                    c_suf = f"_n{int(tc)}" if (tc is not None and int(tc) != _LEGACY_DEFAULT_THUMBNAIL_COUNT) else ""
                     key_raw = f"{p.name}_{stat.st_size}_{int(stat.st_mtime)}{c_suf}"
                     h = hashlib.sha256(key_raw.encode("utf-8")).hexdigest()[:24]
                     t_dir = Path(tempfile.gettempdir()) / "radio_tv_story_segmenter_thumbnails" / h
@@ -1051,8 +1059,8 @@ class VideoThumbnailWorker(QObject):
             self.output_dir.mkdir(parents=True, exist_ok=True)
             dur = max(0.001, float(self.duration or 0.0))
             fps = max(0.001, float(self.count or 1)) / dur
-            vf = f"fps={fps:.8f},scale=320:-2:force_original_aspect_ratio=decrease"
-            pattern = str(self.output_dir / "thumb_%03d.jpg")
+            vf = f"fps={fps:.8f},scale=240:-2:force_original_aspect_ratio=decrease"
+            pattern = str(self.output_dir / "thumb_%04d.jpg")
             cmd = [ffmpeg_path() or "ffmpeg", "-hide_banner", "-loglevel", "error", "-y", "-i", str(self.media_path), "-map", "0:v:0", "-vf", vf, "-q:v", "4", pattern]
             creationflags = subprocess.CREATE_NO_WINDOW if sys.platform == 'win32' else 0
             self._process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, creationflags=creationflags)

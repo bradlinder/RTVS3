@@ -14,13 +14,16 @@ At the top of the Unified Export Center, choose between the available export des
 3. **Timeline & DAW Interchange**: Non-destructive multi-track project sequences for digital audio workstations and NLEs.
 4. **YouTube Video Publisher**: Zero-Auth assisted YouTube export packages (MP4, thumbnail, captions, and clipboard chapters for YouTube Studio).
 
+### Export Scope & Custom Selection
+Use the **Export Scope** dropdown to export **Custom Selection**, **All Segments**, **Full Episode**, or **Full Episode & All Segments**. Choosing **Custom Selection** displays the checkable **Items to Export:** sidebar on the left (**Full Episode** plus every segment, with **Select All** and **Clear** buttons) so you can mix and match the Full Episode and any subset of segments across all four destinations.
+
 ---
 
 ## 2. Split Audio Cuts with Real-Time Fades
 
 Under **Local Files (Media & Transcripts)**, export each detected segment as an independent audio file for broadcast syndication, podcasting, or archiving:
 - **Formats**: MP3 (configurable bitrate), WAV (lossless 16/24-bit), FLAC, M4A, OGG.
-- **Loudness & Audio Fades**: Automatically renders user-defined fade-in and fade-out volume curves into each cut, and pairs with **Tools > Normalize Audio Loudness...** (**Ctrl+Alt+N**) or automatic EBU R128 boost in **Preferences > Audio Settings**.
+- **Loudness & Audio Fades**: Automatically renders user-defined fade-in and fade-out volume curves (*Linear*, *S-Curve*, *Logarithmic*, or *Exponential*—configurable as defaults under **Settings > Preferences... > Playback & Timeline**) into each cut, and pairs with **Tools > Normalize Audio Loudness...** (**Ctrl+Alt+N**) or automatic EBU R128 boost in **Preferences > Audio Settings**.
 - **ID3 Metadata**: Automatically embeds episode title, artist, year, track numbers, and cover art into exported MP3 and FLAC files (also editable standalone via **Ctrl+Shift+I**).
 - **Naming Patterns**: Automatically names files based on segment titles, episode numbers, and dates (e.g. `2026-11-04_Segment01_EnergyGrid.mp3`).
 

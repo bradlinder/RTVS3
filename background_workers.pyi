@@ -74,7 +74,7 @@ class WaveformWorker(QObject):
 def normalize_thumbnail_density(density) -> str:
     ...
 
-def get_thumbnail_count_for_density(density) -> int:
+def get_thumbnail_count_for_density(density, duration: float | None=...) -> int:
     ...
 
 def get_video_thumbnail_cache_dir(media_file: str | Path | None, project_file: str | Path | None=..., target_count: int | None=...) -> Path | None:

@@ -65,7 +65,7 @@ In **both modes**, use the shared scheduling & status bar:
 
 ### Choosing Export Scope:
 In the **Export Scope** dropdown, choose which posts you want to generate:
-- **Selected Segments**: Generates drafts only for the segments currently highlighted in the Segments panel.
+- **Custom Selection**: Opens the checkable **Items to Export:** sidebar on the left (**Full Episode** at the top plus every segment, with live `(X of Y)` counts and **Select All** / **Clear** controls). Check any combination—such as the Full Episode plus a chosen subset of segments—to export them in one pass with automatic parent-episode cross-linking and a filtered Table of Contents.
 - **All Segments**: Generates separate draft posts for every detected segment.
 - **Full Episode**: Generates one post containing the complete episode transcript.
 - **Full Episode & All Segments**: Generates one master episode post plus individual segment posts.
@@ -74,7 +74,7 @@ In the **Export Scope** dropdown, choose which posts you want to generate:
 
 ## 4. Customizing Individual Post Details Across the 4 Tabs
 
-Under **WordPress Post Configuration**, select any post in the left-hand **Posts to Export:** list. The divider between the post list and the editor pane is an expandable splitter that you can drag to widen the sidebar.
+Under **WordPress Post Configuration**, select any post in the left-hand **Posts to Export:** list (or in the shared **Items to Export:** sidebar when **Custom Selection** is active). The divider between the post list and the editor pane is an expandable splitter that you can drag to widen the sidebar.
 
 Configure each post across the 4 editor tabs:
 
@@ -96,8 +96,10 @@ Configure each post across the 4 editor tabs:
 
 ![WordPress Media Tab](../images/wordpress_export_media_tab.png)
 
-- **Featured Image, Caption & Alt Text**: Choose a captured video thumbnail frame, custom image file, or disabled, and optionally set an image **Caption** and **Alt Text** (with offline spellcheck and bulk apply across posts).
+- **Featured Image, Caption & Alt Text**: Choose **YouTube default thumbnail** (available whenever a YouTube video is attached), **Grab frame from video**, **Select custom image file...**, or **None**, and optionally set an image **Caption** and **Alt Text** (with offline spellcheck and bulk apply across posts).
+  - **YouTube-Source Defaults**: When your project was imported from a YouTube video, **Full Episode** defaults to **YouTube default thumbnail** (fetched and cached locally) and individual **segments** default to **Grab frame from video** at a representative frame strictly inside each segment's time range—captured automatically during export even if you do not visit each segment's **Media** tab. Any manual override (custom image, scrubbed frame, or **None**) is preserved.
 - **YouTube Video Link**: Paste a YouTube watch link, short link, or studio URL.
+  - **Automatic Segment Inheritance**: YouTube-imported projects—and projects with **Apply this YouTube URL to the full episode and all stories** enabled—automatically inherit the project's YouTube video embed at each segment's start timestamp on individual segment pages (including newly detected segments) unless explicitly cleared.
   - **Context-Aware Auto-Dimming**: Controls automatically dim when the URL field is empty and illuminate as soon as a valid video link is detected.
   - **Stop Video at Story End**: When checked, the embedded player automatically pauses playback when the segment concludes.
   - **Embed Placement**: Choose whether the responsive 16:9 player appears at the **Top** (above transcript) or **Bottom** (below transcript).
@@ -125,8 +127,8 @@ In the **Posts to Export:** list, compact prefix tags appear immediately after t
 - **`[YT]`**: A responsive YouTube embed with story timestamps is attached.
 - **`[Pod]`**: Podcast RSS enclosure tags are configured.
 - **`[A]`**: An MP3 audio cut will be uploaded.
-- **`[Img]`**: A featured image or video thumbnail will be uploaded.
-- **Example**: `Story 1 [YT, A]: Demonstrators push for more funding...`
+- **`[Img]`**: A featured image (YouTube default thumbnail, video frame grab, or custom image file) will be uploaded.
+- **Example**: `Story 1 [YT, Img]: Demonstrators push for more funding...`
 - **Hover Tooltips**: Hover your mouse over any post in the list to view a multi-line tooltip detailing exact start/end timecodes, author names, and category tags.
 - **Resizable Sidebar**: Drag the vertical splitter bar between the post list and the editor tabs to expand or shrink the sidebar.
 

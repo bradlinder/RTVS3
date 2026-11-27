@@ -11,9 +11,9 @@ Radio & TV Segmenter is a cross-platform desktop application built with Python a
 * Bilingual Translation: Direct in-app Spanish/English translation using local Helsinki-NLP MarianMT / CTranslate2 models via an isolated plugin runtime.
 * Interactive Transcript Editor & Offline Spellcheck: Click-to-seek playback navigation, inline text correction, editorial comments (`Ctrl+M`), inline red-underline offline spellcheck with **Glossary & Custom Vocabulary** (`Ctrl+Alt+V`) allowlisting, and customizable font scaling.
 * Broadcast Loudness Probing & Normalization: Non-destructive EBU R128 / ITU BS.1770 loudness analysis (`Tools > Normalize Audio Loudness...`, `Ctrl+Alt+N`) and optional auto-boost.
-* Visual Waveform Timeline: Synchronized timeline with zoom up to 300x, scrub markers, region selection, and optional video thumbnail strips.
+* Visual Waveform Timeline: Synchronized timeline with zoom up to 300x, scrub markers, region selection, configurable **Thumbnail Density** presets (`Standard (2 per min)` through `Extra High (16 per min)`) accessible in Preferences or by right-clicking anywhere on the timeline, and real-time audio fade curve previews.
 * Hardware Acceleration: Optional NVIDIA CUDA acceleration (Windows) for faster-whisper transcription via an on-demand download, keeping the default application CPU-first and lightweight across platforms.
-* Multi-Format Publishing & Exports:
+* Multi-Format Publishing & Exports (with **Custom Selection** checkable sidebar for mixing **Full Episode** and any subset of segments):
   * Standard Subtitles (`SRT`, `VTT`) and Red Book CUE (`CUE`)
   * Documents & transcripts (`TXT`, `DOCX`, `PDF`, YouTube Chapter `.txt`)
   * Broadcast timelines (`REAPER .rpp`, `FCP 7 .xml`, `FCP X .fcpxml`, Universal `.aaf`, `Magix Samplitude .edl`, `Hindenburg .nhx`, `Audacity .txt`, `DAW .csv`)
@@ -72,7 +72,7 @@ Run_RadioTVSegmenter.bat
 ### Segmenting Broadcasts
 
 1. Load Media: Drag and drop an audio or video file onto the timeline canvas, select **File > Open Media...** (`Ctrl+O`) or **File > Open Document...** (`Ctrl+Alt+O`), or import back-catalog episodes via **File > Open Remote Episode** (**From YouTube Video...** `Ctrl+Alt+Y` or **From Existing WordPress Post...**).
-2. Process Pipeline: Use **Tools > Multi-Stage Processing...** (`Ctrl+R` / `Cmd+R`) to run transcription, speaker detection, and automated segment detection in sequence.
+2. Process Pipeline: Use **Tools > Multi-Stage Processing...** (`Ctrl+R` / `Cmd+R`) to run transcription, speaker detection, and automated segment detection in sequence, or run **Tools > Detect Segments...** (`Ctrl+Shift+A`) standalone with optional one-time threshold overrides via **Adjust Settings...**.
 3. Refine Segments: Highlight text in the transcript or drag region handles on the timeline, mark in/out points with `[` and `]`, or click **Add Segment**.
 
 ### REAPER DAW & Digital Audio Workstation Live Bridge
@@ -94,7 +94,7 @@ RTVS3 features a real-time, two-way bridge connecting speech intelligence direct
 
 ### WordPress & PublishPress Direct Publishing
 
-* Pushes selected segments and full episodes directly to WordPress sites via the REST API, supporting both **WordPress Users** (`author`) and **PublishPress Guest Authors** (`ppma_author`, with overwrite-on-checked and preserve-on-empty semantics on updates), Featured Image **Caption & Alt Text**, and inline **Offline Spellcheck**.
+* Pushes **Custom Selection** subsets, individual segments, and full episodes directly to WordPress sites via the REST API, supporting both **WordPress Users** (`author`) and **PublishPress Guest Authors** (`ppma_author`, with overwrite-on-checked and preserve-on-empty semantics on updates), YouTube-source Featured Image defaults (**YouTube default thumbnail** for Full Episode, in-bounds video frames for segments), automatic timestamped YouTube embed inheritance across segments, Featured Image **Caption & Alt Text**, and inline **Offline Spellcheck**.
 * Setup & Authentication:
 1. In WordPress Admin, navigate to **Users -> Profile**.
 2. Scroll down to **Application Passwords**, enter a descriptive name (e.g., `RTVS3 Desktop`), and click **Add New Application Password**.
@@ -133,11 +133,11 @@ All keyboard shortcuts can be viewed at any time by pressing <kbd>F1</kbd> (or <
 | **File & Project** | Exit Application | `Ctrl+Q` | `Cmd+Q` | Close the application |
 | **AI Pipeline & Tools** | Transcribe Audio... | `Ctrl+T` | `Cmd+T` | Run automated speech-to-text transcription on loaded media |
 | **AI Pipeline & Tools** | Detect Speakers (Diarization)... | `Ctrl+D` | `Cmd+D` | Perform speaker diarization and voice cluster detection |
-| **AI Pipeline & Tools** | Detect Segments... | `Ctrl+Shift+A` | `Cmd+Shift+A` | Automatically divide recording into segments or songs based on topic shifts and pauses |
+| **AI Pipeline & Tools** | Detect Segments... | `Ctrl+Shift+A` | `Cmd+Shift+A` | Automatically divide recording into segments or songs (with optional one-time threshold overrides via Adjust Settings...) |
 | **AI Pipeline & Tools** | Translate Transcript... | `Ctrl+Shift+L` | `Cmd+Shift+L` | Translate transcript text into Spanish or target language |
 | **AI Pipeline & Tools** | Multi-Stage Processing Pipeline... | `Ctrl+R` | `Cmd+R` | Execute automated multi-model transcription, diarization, and segment detection |
 | **AI Pipeline & Tools** | Regenerate Waveform | `Ctrl+Shift+W` | `Cmd+Shift+W` | Rebuild audio peak envelope cache for the timeline |
-| **AI Pipeline & Tools** | Regenerate Video Thumbnails | `Ctrl+Shift+T` | `Cmd+Shift+T` | Extract new frame thumbnails across video duration |
+| **AI Pipeline & Tools** | Regenerate Video Thumbnails | `Ctrl+Shift+T` | `Cmd+Shift+T` | Extract new video timeline thumbnails using the active Thumbnail Density preset |
 | **AI Pipeline & Tools** | Normalize Audio Loudness... | `Ctrl+Alt+N` | `Cmd+Alt+N` | Analyze and normalize broadcast loudness according to EBU R128 / ITU BS.1770 |
 | **Panels & Views** | Toggle Timeline Panel | `Alt+1` | `Ctrl+Alt+1` | Show or hide the audio/video timeline and waveform panel |
 | **Panels & Views** | Toggle Transcript Panel | `Alt+2` | `Ctrl+Alt+2` | Show or hide the interactive text transcript panel |

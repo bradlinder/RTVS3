@@ -77,9 +77,10 @@ def build_playback_timeline_tab(win, dialog, live_widgets, add_custom_defaults_b
     live_widgets["thumb_pos_combo"] = thumb_pos_combo
 
     thumb_density_combo = QComboBox()
-    thumb_density_combo.addItem("Standard (36 frames)", "standard")
-    thumb_density_combo.addItem("Detailed (90 frames)", "detailed")
-    thumb_density_combo.addItem("High (180 frames)", "high")
+    thumb_density_combo.addItem("Standard (2 per min)", "standard")
+    thumb_density_combo.addItem("Detailed (4 per min)", "detailed")
+    thumb_density_combo.addItem("High (8 per min)", "high")
+    thumb_density_combo.addItem("Extra High (16 per min)", "extra_high")
     curr_thumb_density = str(
         getattr(
             win,
@@ -90,8 +91,8 @@ def build_playback_timeline_tab(win, dialog, live_widgets, add_custom_defaults_b
     dens_idx = thumb_density_combo.findData(curr_thumb_density)
     thumb_density_combo.setCurrentIndex(dens_idx if dens_idx >= 0 else 0)
     thumb_density_combo.setToolTip(
-        "Controls how many preview frames are extracted across the video timeline. "
-        "Higher presets reduce gaps when zoomed in on long broadcasts while keeping memory usage bounded."
+        "Controls how frequently preview frames are extracted per minute of video across the timeline. "
+        "Counts scale automatically with video duration while staying within safe memory caps."
     )
     play_form.addRow("Thumbnail Density:", thumb_density_combo)
     live_widgets["thumb_density_combo"] = thumb_density_combo

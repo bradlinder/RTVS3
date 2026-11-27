@@ -840,6 +840,7 @@ class UserGuideDialog(QDialog):
             "",
             "- **Click Word in Transcript**: Seek audio playback directly to that spoken word.",
             "- **Drag Waveform Ruler / Canvas**: Scrub playhead or paint an active time selection range.",
+            "- **Right-Click Timeline**: Open segment actions over an assigned segment, plus **Regenerate Waveform** and **Regenerate Video Thumbnails** density presets anywhere on the timeline.",
             "- **Ctrl + Mouse Wheel** (**Cmd + Mouse Wheel** on macOS): Zoom timeline smoothly up to 300x.",
         ])
         return "\n".join(lines) + "\n"
