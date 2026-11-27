@@ -1,13 +1,13 @@
 # Repository Symbol Index & API Map
 
-> Generated: 2026-11-27 20:56:23 | Total Files: 210
+> Generated: 2026-11-27 21:03:51 | Total Files: 210
 > Use `python scripts/generate_symbol_index.py --outline <file>` for exact line numbers.
 
 ## Modules Overview
 
 | Module | Lines | Summary | Primary Classes / Functions |
 | :--- | :---: | :--- | :--- |
-| `RadioTVSegmenter.py` | 686 | Radio & TV Segmenter — v3.10.31-beta | `MainWindow`, `main()` |
+| `RadioTVSegmenter.py` | 686 | Radio & TV Segmenter — v3.10.32-beta | `MainWindow`, `main()` |
 | `audio_normalization.py` | 474 | Radio & TV Story Segmenter — Audio Loudness Probing & Nor... | `LoudnessReport`, `parse_ebur128_summary()`, `probe_media_duration_seconds()`, `probe_media_loudness()` *(+2 more)* |
 | `audio_normalization_worker.py` | 89 | Background QThread worker for non-blocking EBU R128 loudn... | `AudioLoudnessProbeWorker` |
 | `background_workers.py` | 911 | Radio & TV Story Segmenter — Background Worker Threads & ... | `StoryAutoDetectWorker`, `WaveformWorker`, `get_waveform_peak_cache_path()`, `read_waveform_peak_cache()` *(+2 more)* |
@@ -46,7 +46,7 @@
 | `diagnostics/export_wordpress_upload.py` | 668 | WordPress multi-story upload, Gutenberg hygiene, and audi... | `DiagnosticExportWordPressUploadMixin` |
 | `diagnostics/system_runtime_tests.py` | 446 | System runtime, updater, theme, packaging, roadmap, and m... | `DiagnosticSystemRuntimeTestsMixin` |
 | `diagnostics/voice_and_media_tests.py` | 595 | Voice profile matching, waveform peak cache, and playback... | `DiagnosticVoiceAndMediaTestsMixin` |
-| `diagnostics/youtube_import_cache_tests.py` | 354 | Diagnostic tests for YouTube Episode Import, yt-dlp runne... | `DiagnosticYouTubeImportCacheTestsMixin` |
+| `diagnostics/youtube_import_cache_tests.py` | 362 | Diagnostic tests for YouTube Episode Import, yt-dlp runne... | `DiagnosticYouTubeImportCacheTestsMixin` |
 | `dialogs.py` | 433 | Radio & TV Story Segmenter — Audio Loudness Normalization... | `AudioLoudnessNormalizationDialog` |
 | `diarization_processing.py` | 772 | Speaker diarization process management for Radio & TV Sto... | `DiarizationProcessingMixin` |
 | `embedded_guides.py` | 28 | Radio & TV Story Segmenter — Built-In Embedded User Guide... | `get_embedded_guide()`, `get_all_embedded_guide_ids()` |
@@ -68,7 +68,7 @@
 | `gpu_acceleration.py` | 276 | Radio & TV Segmenter v1.1.1 — optional GPU acceleration r... | `GpuAccelerationInstallWorker`, `GpuAccelerationMixin` |
 | `id3_editor.py` | 704 | ID3 Tag Editor module for Radio & TV Segmenter. | `ID3TagEditorDialog`, `read_id3_tags()`, `write_id3_tags()` |
 | `installer/build_tools/__init__.py` | 50 | Modular build utilities for Radio & TV Segmenter PyInstal... | - |
-| `installer/build_tools/config.py` | 214 | Build configuration constants and CLI argument parser. | `parse_build_args()` |
+| `installer/build_tools/config.py` | 222 | Build configuration constants and CLI argument parser. | `parse_build_args()` |
 | `installer/build_tools/env_checks.py` | 188 | Environment validation, external tool resolution, and sub... | `exe_name()`, `find_tool()`, `check_cpu_only_torch()`, `torch_windows_binary_flags()` *(+1 more)* |
 | `installer/build_tools/packaging.py` | 368 | Bundle pruning, plugin archive packaging, runtime tools, ... | `provision_optional_runtime_tools()`, `prune_unneeded_bundled_files()`, `sync_installer_scripts()`, `compile_windows_installer()` *(+1 more)* |
 | `installer/pyinstaller/torch_dll_hook.py` | 70 | PyInstaller runtime hook for Windows ML/native DLL resolu... | - |
@@ -77,7 +77,7 @@
 | `model_install_workers.py` | 189 | Radio & TV Segmenter — Model Download and Installation Ba... | `WhisperModelInstallWorker`, `DiarizationModelInstallWorker`, `get_diarization_model_dir()`, `is_diarization_model_available()` |
 | `model_management.py` | 621 | Radio & TV Segmenter v1.1.1 — model management responsibi... | `_DummyTranslationWorker`, `ModelManagementMixin` |
 | `playback_controller.py` | 630 | Radio & TV Story Segmenter — Media Player Transport & Pla... | `PlaybackControllerMixin` |
-| `playback_preferences.py` | 815 | Radio & TV Story Segmenter — Playback Preferences & Appli... | `PlaybackPreferencesMixin` |
+| `playback_preferences.py` | 816 | Radio & TV Story Segmenter — Playback Preferences & Appli... | `PlaybackPreferencesMixin` |
 | `plugin_base.py` | 225 | Radio & TV Segmenter — Plugin Base Interfaces and Manifest. | `PluginManifest`, `BasePlugin`, `ExportDestination` |
 | `plugins/__init__.py` | 6 | Radio & TV Segmenter — Plugin Architecture Package. | - |
 | `plugins/base.py` | 6 | Radio & TV Segmenter — Plugin Base Interfaces and Manifes... | - |
@@ -138,7 +138,7 @@
 | `remote_media_cache.py` | 610 | Headless Managed Remote Media Cache for YouTube and WordP... | `RemoteMediaCacheManager`, `format_bytes_human()`, `get_remote_media_cache_dir()`, `is_path_inside_cache()` *(+2 more)* |
 | `remote_media_cache_dialog.py` | 447 | Qt Dialog for inspecting and managing the Managed Remote ... | `ManageCachedMediaDialog`, `get_configured_cache_cap_gb()`, `find_redownload_provider()`, `reattach_downloaded_media_to_project()` *(+1 more)* |
 | `roadmap_manager.py` | 259 | roadmap_manager.py — Automated Roadmap & N-1 Sliding-Wind... | `RoadmapManager`, `get_current_app_version()`, `main()` |
-| `runtime_manager.py` | 1037 |  | `RuntimeManager`, `register_process()`, `unregister_process()`, `kill_all_subprocesses()` *(+1 more)* |
+| `runtime_manager.py` | 989 |  | `RuntimeManager`, `register_process()`, `unregister_process()`, `kill_all_subprocesses()` *(+1 more)* |
 | `scripts/capture_guide_screenshots.py` | 152 | Programmatic headless screenshot generator for RTVS3 user... | `MockCaptureMainWindow`, `capture_widget()`, `main()` |
 | `scripts/dev_check.py` | 338 | scripts/dev_check.py - Ultra-Fast Pre-Flight Development ... | `check_syntax()`, `check_typing_stubs()`, `check_preview_sync()`, `check_modular_budget()` *(+3 more)* |
 | `scripts/generate_pyi_stubs.py` | 214 | generate_pyi_stubs.py — Automated Interface Typing Stub (... | `StubTransformer`, `generate_stub_source()`, `get_large_modules()`, `generate_stub_file()` *(+1 more)* |
@@ -185,14 +185,14 @@
 | `timeline_snap.py` | 195 | Timeline snapping algorithms, edge detection, and collisi... | `snap_time()`, `find_edge_at_pos()`, `find_fade_handle_at_pos()`, `find_story_at_time()` *(+4 more)* |
 | `timeline_widgets.py` | 995 | Radio & TV Story Segmenter — Timeline Ruler, Track Views,... | `TimelineCanvas`, `TimelineWidget` |
 | `transcript_cleaner.py` | 216 | Radio & TV Segmenter — Transcript cleaning, loop collapsi... | `collapse_repeating_ngrams()`, `strip_hallucination_phrases()`, `trim_trailing_degenerate_tail()`, `scrub_transcript_segments()` *(+1 more)* |
-| `transcript_context_menu_mixin.py` | 746 | Radio & TV Story Segmenter — Interactive Transcript Conte... | `TranscriptContextMenuMixin` |
+| `transcript_context_menu_mixin.py` | 749 | Radio & TV Story Segmenter — Interactive Transcript Conte... | `TranscriptContextMenuMixin` |
 | `transcript_editor.py` | 953 | transcript_editor.py - Interactive Transcript Editor & Vi... | `InteractiveTranscriptEdit` |
 | `transcript_editor_dialogs.py` | 808 | transcript_editor_dialogs.py - Dialog and floating toolba... | `FindReplaceDialog`, `TranscriptSelectionBubble` |
 | `transcript_formatting_mixin.py` | 340 | Radio & TV Story Segmenter — Interactive Transcript Forma... | `TranscriptFormattingMixin` |
 | `transcript_navigation_mixin.py` | 300 | transcript_navigation_mixin.py - Timestamp discovery, car... | `TranscriptNavigationMixin` |
 | `transcript_playback_highlight_mixin.py` | 277 | Radio & TV Story Segmenter — Interactive Transcript Playb... | `TranscriptPlaybackHighlightMixin` |
 | `transcript_selection_mixin.py` | 473 | transcript_selection_mixin.py - Multi-selection, timeline... | `TranscriptSelectionMixin` |
-| `transcript_story.py` | 856 | Radio & TV Segmenter v3.10.31-beta — transcript story res... | `TranscriptStoryMixin` |
+| `transcript_story.py` | 856 | Radio & TV Segmenter v3.10.32-beta — transcript story res... | `TranscriptStoryMixin` |
 | `transcript_styles.py` | 104 | transcript_styles.py - Transcript view stylesheets and da... | `transcript_text_view_stylesheet()`, `clean_dark_mode_clipboard_html()` |
 | `transcript_timeline_sync_mixin.py` | 655 | Radio & TV Story Segmenter — Transcript Timeline & Playba... | `TranscriptTimelineSyncMixin` |
 | `transcription_processing.py` | 579 | Transcription background process management for Radio & T... | `TranscriptionProcessingMixin` |
@@ -221,7 +221,7 @@
 ## Detailed Symbol Catalog
 
 ### `RadioTVSegmenter.py` (686 lines)
-*Radio & TV Segmenter — v3.10.31-beta*
+*Radio & TV Segmenter — v3.10.32-beta*
 - **class `MainWindow(ModelManagementMixin, MediaBatchMixin, PlaybackPreferencesMixin, UiLayoutMixin, ProcessingMixin, TranslationMixin, TranscriptStoryMixin, ProjectExportMixin, GpuAccelerationMixin, QMainWindow)`** (lines 160–583):
   *Main application window for Radio & TV Segmenter.*
   - `__init__(self)` [L178-L355]
@@ -690,13 +690,13 @@
   - `_test_speed_listening_proofreading_rate_and_context_controls(self, item)` [L427-L438] — *Validates playback speed rates (0.75x to 2.0x), WSOLA pitch preservation parameters, and proofreading pre-roll configuration.*
   - `_test_diarization_zero_padding_vad_trimming_and_speaker_labels(self, item)` [L440-L595] — *Validates exact-length zero-padding-free WeSpeaker batching, <1.0s tail right-alignment,*
 
-### `diagnostics/youtube_import_cache_tests.py` (354 lines)
+### `diagnostics/youtube_import_cache_tests.py` (362 lines)
 *Diagnostic tests for YouTube Episode Import, yt-dlp runner, Managed Remote Media Cache, and Shortcut/Guide sync.*
 - **Public Exports (`__all__`)**: DiagnosticYouTubeImportCacheTestsMixin
-- **class `DiagnosticYouTubeImportCacheTestsMixin`** (lines 10–351):
+- **class `DiagnosticYouTubeImportCacheTestsMixin`** (lines 10–359):
   *Automated verification mixin for YouTube import & Managed Remote Media Cache.*
   - `_test_youtube_episode_import_and_yt_dlp_provisioning(self, item)` [L13-L247]
-  - `_test_managed_remote_media_cache_and_menu_shortcut_sync(self, item)` [L249-L351]
+  - `_test_managed_remote_media_cache_and_menu_shortcut_sync(self, item)` [L249-L359]
 
 ### `dialogs.py` (433 lines)
 *Radio & TV Story Segmenter — Audio Loudness Normalization & Telemetry Dialog.*
@@ -1025,10 +1025,10 @@
 *Modular build utilities for Radio & TV Segmenter PyInstaller & installer packaging.*
 - **Public Exports (`__all__`)**: UV_VERSION, UV_URLS, PYSIDE6_USED_SUBMODULES, PYSIDE6_EXCLUDES, TEST_AND_BENCHMARK_EXCLUDES, COLLECT_ALL_PACKAGES, COPY_METADATA_PACKAGES, HIDDEN_IMPORTS, parse_build_args, exe_name, find_tool, check_cpu_only_torch, torch_windows_binary_flags, run, provision_optional_runtime_tools, prune_unneeded_bundled_files, sync_installer_scripts, compile_windows_installer, package_plugins
 
-### `installer/build_tools/config.py` (214 lines)
+### `installer/build_tools/config.py` (222 lines)
 *Build configuration constants and CLI argument parser.*
 - **Functions**:
-  - `parse_build_args()` [L139-L214] — *Parse build target, plugin selection, installer, and version CLI flags.*
+  - `parse_build_args()` [L147-L222] — *Parse build target, plugin selection, installer, and version CLI flags.*
 
 ### `installer/build_tools/env_checks.py` (188 lines)
 *Environment validation, external tool resolution, and subprocess execution helpers.*
@@ -1217,37 +1217,37 @@
   - `_on_fade_timer_tick(self)` [L622-L624]
   - `audio_duration_changed(self, duration)` [L626-L630]
 
-### `playback_preferences.py` (815 lines)
+### `playback_preferences.py` (816 lines)
 *Radio & TV Story Segmenter — Playback Preferences & Application Facade.*
 - **Public Exports (`__all__`)**: PlaybackPreferencesMixin, RestoreSelectedSettingsDialog, ThemePreferencesMixin, PlaybackControllerMixin, PreferencesDialogMixin, PreferencesResetMixin, ProjectStateMixin
-- **class `PlaybackPreferencesMixin(ThemePreferencesMixin, PlaybackControllerMixin, PreferencesDialogMixin, ProjectStateMixin)`** (lines 51–815):
+- **class `PlaybackPreferencesMixin(ThemePreferencesMixin, PlaybackControllerMixin, PreferencesDialogMixin, ProjectStateMixin)`** (lines 52–816):
   *Aggregates all playback, preferences, styling, and application lifecycle mixins.*
-  - `_install_diagnostic_logging(self)` [L54-L181] — *Install startup-safe diagnostics that never depend on the GUI widgets.*
-  - `export_activity_log(self)` [L183-L216] — *Export session activity log entries to a timestamped plain-text file.*
-  - `log_activity(self, action_text, mark_dirty)` [L218-L256]
-  - `handle_activity_click(self, item)` [L258-L261]
-  - `restore_snapshot(self, index)` [L263-L302]
-  - `clear_activity_log(self)` [L304-L307]
-  - `_find_all_transcript_matches(self, query)` [L309-L327]
-  - `_on_transcript_search_text_changed(self, text)` [L329-L370] — *Update auto-highlights and match count badge in real time as search query changes.*
-  - `_sync_search_match_ui(self, scroll_to_match)` [L372-L411]
-  - `trigger_find_next(self)` [L413-L443] — *Find Next shortcut (Ctrl+G) handler: advances to next search match in transcript.*
-  - `trigger_find_prev(self)` [L445-L475] — *Find Previous shortcut (Ctrl+Shift+G) handler: retreats to previous search match in transcript.*
-  - `open_diagnostic_log_folder(self)` [L477-L492]
-  - `open_user_documentation(self, guide_id)` [L494-L504] — *Display the in-app User Guides & Documentation dialog.*
-  - `show_about_dialog(self)` [L506-L545]
-  - `check_for_updates(self, interactive)` [L547-L558] — *Open the Check for Updates dialog to query GitHub releases and install updates.*
-  - `trigger_silent_update_check(self)` [L560-L585] — *Perform a background update check without showing UI unless an update is found.*
-  - `apply_audio_output_device(self, device_name, volume)` [L587-L611] — *Apply selected audio output device and volume to the active player.*
-  - `show_licenses_dialog(self)` [L613-L652]
-  - `on_expected_speakers_changed(self, value)` [L654-L665] — *Kept as a public hook in case a future toolbar control adjusts the expected-speakers hint directly.*
-  - `on_diarization_sensitivity_changed(self, value)` [L667-L678] — *Public hook for adjusting speaker separation sensitivity.*
-  - `update_auto_save_timer(self)` [L680-L684]
-  - `prompt_set_whisper_model(self)` [L686-L689]
-  - `prompt_set_skip_seconds(self)` [L691-L705]
-  - `prompt_set_auto_detect_thresholds(self)` [L707-L773]
-  - `prompt_set_auto_save(self)` [L775-L793]
-  - `trigger_auto_save(self)` [L795-L815]
+  - `_install_diagnostic_logging(self)` [L55-L182] — *Install startup-safe diagnostics that never depend on the GUI widgets.*
+  - `export_activity_log(self)` [L184-L217] — *Export session activity log entries to a timestamped plain-text file.*
+  - `log_activity(self, action_text, mark_dirty)` [L219-L257]
+  - `handle_activity_click(self, item)` [L259-L262]
+  - `restore_snapshot(self, index)` [L264-L303]
+  - `clear_activity_log(self)` [L305-L308]
+  - `_find_all_transcript_matches(self, query)` [L310-L328]
+  - `_on_transcript_search_text_changed(self, text)` [L330-L371] — *Update auto-highlights and match count badge in real time as search query changes.*
+  - `_sync_search_match_ui(self, scroll_to_match)` [L373-L412]
+  - `trigger_find_next(self)` [L414-L444] — *Find Next shortcut (Ctrl+G) handler: advances to next search match in transcript.*
+  - `trigger_find_prev(self)` [L446-L476] — *Find Previous shortcut (Ctrl+Shift+G) handler: retreats to previous search match in transcript.*
+  - `open_diagnostic_log_folder(self)` [L478-L493]
+  - `open_user_documentation(self, guide_id)` [L495-L505] — *Display the in-app User Guides & Documentation dialog.*
+  - `show_about_dialog(self)` [L507-L546]
+  - `check_for_updates(self, interactive)` [L548-L559] — *Open the Check for Updates dialog to query GitHub releases and install updates.*
+  - `trigger_silent_update_check(self)` [L561-L586] — *Perform a background update check without showing UI unless an update is found.*
+  - `apply_audio_output_device(self, device_name, volume)` [L588-L612] — *Apply selected audio output device and volume to the active player.*
+  - `show_licenses_dialog(self)` [L614-L653]
+  - `on_expected_speakers_changed(self, value)` [L655-L666] — *Kept as a public hook in case a future toolbar control adjusts the expected-speakers hint directly.*
+  - `on_diarization_sensitivity_changed(self, value)` [L668-L679] — *Public hook for adjusting speaker separation sensitivity.*
+  - `update_auto_save_timer(self)` [L681-L685]
+  - `prompt_set_whisper_model(self)` [L687-L690]
+  - `prompt_set_skip_seconds(self)` [L692-L706]
+  - `prompt_set_auto_detect_thresholds(self)` [L708-L774]
+  - `prompt_set_auto_save(self)` [L776-L794]
+  - `trigger_auto_save(self)` [L796-L816]
 
 ### `plugin_base.py` (225 lines)
 *Radio & TV Segmenter — Plugin Base Interfaces and Manifest.*
@@ -2551,8 +2551,8 @@
   - `get_current_app_version()` [L23-L43] — *Extract PROJECT_VERSION from core_utils.py or prs_shared.py.*
   - `main()` [L207-L256]
 
-### `runtime_manager.py` (1037 lines)
-- **class `RuntimeManager`** (lines 363–1037):
+### `runtime_manager.py` (989 lines)
+- **class `RuntimeManager`** (lines 363–989):
   *Manages isolated Python virtual environments for ML features with auto-upgrade support.*
   - `__init__(self, base_dir)` [L366-L377]
   - `get_last_error(self)` [L379-L381] — *Returns the most recent detailed error message from environment setup or execution.*
@@ -2569,12 +2569,12 @@
   - `ensure_managed_python(self, target_version, progress_cb)` [L626-L682] — *Provision a private Python runtime with uv when the host has no matching Python.*
   - `kill_all_subprocesses(self)` [L684-L686] — *Force terminate any lingering isolated worker subprocesses.*
   - `remove_environment(self, feature_name)` [L688-L728] — *Remove an isolated feature environment without touching its models.*
-  - `prune_cuda_artifacts(env_dir)` [L731-L787] — *Strip unused CUDA/cuDNN packages, heavy C++ dev headers, test suites,*
-  - `get_runtime_executable(self, feature_name, progress_cb)` [L789-L793] — *Ensure and return the executable for an isolated feature runtime.*
-  - `get_plugin_requirements(self, feature_name, plugin_dir)` [L795-L824] — *Read requirements-runtime.txt from plugin directory if available, fallback to ENV_CONFIGS.*
-  - `is_env_up_to_date(self, feature_name)` [L826-L849] — *Verifies if environment exists and matches current config version and specs.*
-  - `write_manifest(self, feature_name, python_used, packages)` [L851-L862] — *Writes configuration metadata upon successful environment creation.*
-  - `ensure_environment(self, feature_name, force_rebuild, progress_cb, plugin_dir, cancel_event)` [L864-L1037] — *Creates or upgrades an isolated feature environment.*
+  - `prune_cuda_artifacts(env_dir)` [L731-L739] — *No-op safeguard retained for backward compatibility with callers.*
+  - `get_runtime_executable(self, feature_name, progress_cb)` [L741-L745] — *Ensure and return the executable for an isolated feature runtime.*
+  - `get_plugin_requirements(self, feature_name, plugin_dir)` [L747-L776] — *Read requirements-runtime.txt from plugin directory if available, fallback to ENV_CONFIGS.*
+  - `is_env_up_to_date(self, feature_name)` [L778-L801] — *Verifies if environment exists and matches current config version and specs.*
+  - `write_manifest(self, feature_name, python_used, packages)` [L803-L814] — *Writes configuration metadata upon successful environment creation.*
+  - `ensure_environment(self, feature_name, force_rebuild, progress_cb, plugin_dir, cancel_event)` [L816-L989] — *Creates or upgrades an isolated feature environment.*
 - **Functions**:
   - `register_process(proc)` [L41-L49] — *Register an active Popen process for teardown monitoring.*
   - `unregister_process(proc)` [L52-L60] — *Remove completed process from tracking.*
@@ -3429,19 +3429,19 @@
   - `scrub_transcript_segments(segments, collapse_loops)` [L124-L202] — *Comprehensive scrubber for transcript segment lists:*
   - `scrub_transcript(transcript)` [L205-L216] — *Clean and sanitize a complete transcript payload dictionary.*
 
-### `transcript_context_menu_mixin.py` (746 lines)
+### `transcript_context_menu_mixin.py` (749 lines)
 *Radio & TV Story Segmenter — Interactive Transcript Context Menu & Bubble Actions Mixin.*
-- **class `TranscriptContextMenuMixin`** (lines 48–745):
+- **class `TranscriptContextMenuMixin`** (lines 51–748):
   *Mixin for context menu construction and selection bubble quick-actions.*
-  - `_on_bubble_play(self)` [L51-L56]
-  - `_on_bubble_story(self)` [L58-L63]
-  - `_on_bubble_note(self)` [L65-L78]
-  - `_on_bubble_cut(self)` [L80-L85]
-  - `_on_bubble_export(self)` [L87-L92]
-  - `show_context_menu(self, position)` [L94-L497]
-  - `copy_highlighted_selection(self)` [L499-L628] — *Copy the active story or timeline selection span to clipboard when no cursor text is selected.*
-  - `copy_selection_for_reaper(self)` [L630-L695] — *Explicitly build and copy REAPER DAW clip cue payload for the active text or story selection.*
-  - `copy_selection_as_daw_wav(self)` [L697-L745] — *Render temporary WAV audio clip and copy it to the OS clipboard (CF_HDROP) for any DAW.*
+  - `_on_bubble_play(self)` [L54-L59]
+  - `_on_bubble_story(self)` [L61-L66]
+  - `_on_bubble_note(self)` [L68-L81]
+  - `_on_bubble_cut(self)` [L83-L88]
+  - `_on_bubble_export(self)` [L90-L95]
+  - `show_context_menu(self, position)` [L97-L500]
+  - `copy_highlighted_selection(self)` [L502-L631] — *Copy the active story or timeline selection span to clipboard when no cursor text is selected.*
+  - `copy_selection_for_reaper(self)` [L633-L698] — *Explicitly build and copy REAPER DAW clip cue payload for the active text or story selection.*
+  - `copy_selection_as_daw_wav(self)` [L700-L748] — *Render temporary WAV audio clip and copy it to the OS clipboard (CF_HDROP) for any DAW.*
 
 ### `transcript_editor.py` (953 lines)
 *transcript_editor.py - Interactive Transcript Editor & Viewer Components*
@@ -3566,7 +3566,7 @@
   - `_on_bubble_export(self)` [L468-L473]
 
 ### `transcript_story.py` (856 lines)
-*Radio & TV Segmenter v3.10.31-beta — transcript story responsibilities.*
+*Radio & TV Segmenter v3.10.32-beta — transcript story responsibilities.*
 - **Public Exports (`__all__`)**: TranscriptStoryMixin, Story, SetStoriesCommand, SelectStoriesCommand, StoryBoundaryChangeCommand, StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin, ChangeSpeakerDialog, VoiceProfileMatchDialog, StoryFadesDialog, SpeakerManagerDialog, FADE_CURVE_TABLES, get_fade_curve_factors
 - **class `TranscriptStoryMixin(StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin)`** (lines 63–855):
   - `render_transcript(self)` [L64-L471]

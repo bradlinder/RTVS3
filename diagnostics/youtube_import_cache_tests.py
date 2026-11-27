@@ -347,6 +347,14 @@ class DiagnosticYouTubeImportCacheTestsMixin:
         assert "From YouTube Video" in embedded_guides.get_embedded_guide("video_shows")
         assert "Managed Remote Media Cache" in embedded_guides.get_embedded_guide("youtube")
 
+        # 5. Core module NameError regression guards (v3.10.32-beta)
+        import playback_preferences as _pp_mod
+        import preferences_reset_dialog as _prd_mod
+        import transcript_context_menu_mixin as _tcmm_mod
+        assert hasattr(_pp_mod, "Story") and hasattr(_pp_mod, "copy")
+        assert hasattr(_prd_mod, "DEFAULT_GITHUB_REPO") and bool(_prd_mod.DEFAULT_GITHUB_REPO)
+        assert hasattr(_tcmm_mod, "logger") and hasattr(_tcmm_mod.logger, "warning")
+
         item.status = "PASS"
         item.message = "Managed Remote Media Cache (LRU, path jail, active-file immunity), plugin hooks, shortcuts, and user guides parity verified"
 

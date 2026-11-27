@@ -132,6 +132,14 @@ HIDDEN_IMPORTS = [
     "export.reorder_dialog",
     "export.audio",
     "export.timeline",
+    "backup_manager",
+    "benchmark",
+    "dialogs",
+    "glossary_dialog",
+    "id3_editor",
+    "speaker_name_cleanup_dialog",
+    "speaker_profiles_dialog",
+    "user_guide_dialog",
     "plugins.manager",
 ]
 

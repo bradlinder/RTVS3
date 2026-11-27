@@ -5,6 +5,7 @@ project state undo/redo, activity logging, and diagnostic lifecycle handlers.
 Provides 100% backward-compatible facade re-exports for all components.
 """
 
+import copy
 import json
 import logging
 import os
@@ -25,7 +26,7 @@ from PySide6.QtWidgets import (
 )
 
 from prs_shared import (
-    INTERNAL_APP_ID, PROJECT_VERSION, APP_DISPLAY_NAME,
+    INTERNAL_APP_ID, PROJECT_VERSION, APP_DISPLAY_NAME, Story,
     get_app_data_dir, get_app_icon, get_github_repo,
     get_license_file_path, safe_replace
 )

@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-27 20:56:23",
+  "generated_at": "2026-11-27 21:03:51",
   "total_files": 210,
   "files": {
     "RadioTVSegmenter.py": {
       "path": "RadioTVSegmenter.py",
       "lines": 686,
-      "summary": "Radio & TV Segmenter \u2014 v3.10.31-beta",
+      "summary": "Radio & TV Segmenter \u2014 v3.10.32-beta",
       "exports": null,
       "classes": [
         {
@@ -2715,7 +2715,7 @@
     },
     "diagnostics/youtube_import_cache_tests.py": {
       "path": "diagnostics/youtube_import_cache_tests.py",
-      "lines": 354,
+      "lines": 362,
       "summary": "Diagnostic tests for YouTube Episode Import, yt-dlp runner, Managed Remote Media Cache, and Shortcut/Guide sync.",
       "exports": [
         "DiagnosticYouTubeImportCacheTestsMixin"
@@ -2725,7 +2725,7 @@
           "name": "DiagnosticYouTubeImportCacheTestsMixin",
           "bases": [],
           "start_line": 10,
-          "end_line": 351,
+          "end_line": 359,
           "doc": "Automated verification mixin for YouTube import & Managed Remote Media Cache.",
           "methods": [
             {
@@ -2739,7 +2739,7 @@
               "name": "_test_managed_remote_media_cache_and_menu_shortcut_sync",
               "sig": "_test_managed_remote_media_cache_and_menu_shortcut_sync(self, item)",
               "start_line": 249,
-              "end_line": 351,
+              "end_line": 359,
               "doc": ""
             }
           ]
@@ -4722,7 +4722,7 @@
     },
     "installer/build_tools/config.py": {
       "path": "installer/build_tools/config.py",
-      "lines": 214,
+      "lines": 222,
       "summary": "Build configuration constants and CLI argument parser.",
       "exports": null,
       "classes": [],
@@ -4730,8 +4730,8 @@
         {
           "name": "parse_build_args",
           "sig": "parse_build_args()",
-          "start_line": 139,
-          "end_line": 214,
+          "start_line": 147,
+          "end_line": 222,
           "doc": "Parse build target, plugin selection, installer, and version CLI flags."
         }
       ]
@@ -5908,7 +5908,7 @@
     },
     "playback_preferences.py": {
       "path": "playback_preferences.py",
-      "lines": 815,
+      "lines": 816,
       "summary": "Radio & TV Story Segmenter \u2014 Playback Preferences & Application Facade.",
       "exports": [
         "PlaybackPreferencesMixin",
@@ -5928,190 +5928,190 @@
             "PreferencesDialogMixin",
             "ProjectStateMixin"
           ],
-          "start_line": 51,
-          "end_line": 815,
+          "start_line": 52,
+          "end_line": 816,
           "doc": "Aggregates all playback, preferences, styling, and application lifecycle mixins.",
           "methods": [
             {
               "name": "_install_diagnostic_logging",
               "sig": "_install_diagnostic_logging(self)",
-              "start_line": 54,
-              "end_line": 181,
+              "start_line": 55,
+              "end_line": 182,
               "doc": "Install startup-safe diagnostics that never depend on the GUI widgets."
             },
             {
               "name": "export_activity_log",
               "sig": "export_activity_log(self)",
-              "start_line": 183,
-              "end_line": 216,
+              "start_line": 184,
+              "end_line": 217,
               "doc": "Export session activity log entries to a timestamped plain-text file."
             },
             {
               "name": "log_activity",
               "sig": "log_activity(self, action_text, mark_dirty)",
-              "start_line": 218,
-              "end_line": 256,
+              "start_line": 219,
+              "end_line": 257,
               "doc": ""
             },
             {
               "name": "handle_activity_click",
               "sig": "handle_activity_click(self, item)",
-              "start_line": 258,
-              "end_line": 261,
+              "start_line": 259,
+              "end_line": 262,
               "doc": ""
             },
             {
               "name": "restore_snapshot",
               "sig": "restore_snapshot(self, index)",
-              "start_line": 263,
-              "end_line": 302,
+              "start_line": 264,
+              "end_line": 303,
               "doc": ""
             },
             {
               "name": "clear_activity_log",
               "sig": "clear_activity_log(self)",
-              "start_line": 304,
-              "end_line": 307,
+              "start_line": 305,
+              "end_line": 308,
               "doc": ""
             },
             {
               "name": "_find_all_transcript_matches",
               "sig": "_find_all_transcript_matches(self, query)",
-              "start_line": 309,
-              "end_line": 327,
+              "start_line": 310,
+              "end_line": 328,
               "doc": ""
             },
             {
               "name": "_on_transcript_search_text_changed",
               "sig": "_on_transcript_search_text_changed(self, text)",
-              "start_line": 329,
-              "end_line": 370,
+              "start_line": 330,
+              "end_line": 371,
               "doc": "Update auto-highlights and match count badge in real time as search query changes."
             },
             {
               "name": "_sync_search_match_ui",
               "sig": "_sync_search_match_ui(self, scroll_to_match)",
-              "start_line": 372,
-              "end_line": 411,
+              "start_line": 373,
+              "end_line": 412,
               "doc": ""
             },
             {
               "name": "trigger_find_next",
               "sig": "trigger_find_next(self)",
-              "start_line": 413,
-              "end_line": 443,
+              "start_line": 414,
+              "end_line": 444,
               "doc": "Find Next shortcut (Ctrl+G) handler: advances to next search match in transcript."
             },
             {
               "name": "trigger_find_prev",
               "sig": "trigger_find_prev(self)",
-              "start_line": 445,
-              "end_line": 475,
+              "start_line": 446,
+              "end_line": 476,
               "doc": "Find Previous shortcut (Ctrl+Shift+G) handler: retreats to previous search match in transcript."
             },
             {
               "name": "open_diagnostic_log_folder",
               "sig": "open_diagnostic_log_folder(self)",
-              "start_line": 477,
-              "end_line": 492,
+              "start_line": 478,
+              "end_line": 493,
               "doc": ""
             },
             {
               "name": "open_user_documentation",
               "sig": "open_user_documentation(self, guide_id)",
-              "start_line": 494,
-              "end_line": 504,
+              "start_line": 495,
+              "end_line": 505,
               "doc": "Display the in-app User Guides & Documentation dialog."
             },
             {
               "name": "show_about_dialog",
               "sig": "show_about_dialog(self)",
-              "start_line": 506,
-              "end_line": 545,
+              "start_line": 507,
+              "end_line": 546,
               "doc": ""
             },
             {
               "name": "check_for_updates",
               "sig": "check_for_updates(self, interactive)",
-              "start_line": 547,
-              "end_line": 558,
+              "start_line": 548,
+              "end_line": 559,
               "doc": "Open the Check for Updates dialog to query GitHub releases and install updates."
             },
             {
               "name": "trigger_silent_update_check",
               "sig": "trigger_silent_update_check(self)",
-              "start_line": 560,
-              "end_line": 585,
+              "start_line": 561,
+              "end_line": 586,
               "doc": "Perform a background update check without showing UI unless an update is found."
             },
             {
               "name": "apply_audio_output_device",
               "sig": "apply_audio_output_device(self, device_name, volume)",
-              "start_line": 587,
-              "end_line": 611,
+              "start_line": 588,
+              "end_line": 612,
               "doc": "Apply selected audio output device and volume to the active player."
             },
             {
               "name": "show_licenses_dialog",
               "sig": "show_licenses_dialog(self)",
-              "start_line": 613,
-              "end_line": 652,
+              "start_line": 614,
+              "end_line": 653,
               "doc": ""
             },
             {
               "name": "on_expected_speakers_changed",
               "sig": "on_expected_speakers_changed(self, value)",
-              "start_line": 654,
-              "end_line": 665,
+              "start_line": 655,
+              "end_line": 666,
               "doc": "Kept as a public hook in case a future toolbar control adjusts the expected-speakers hint directly."
             },
             {
               "name": "on_diarization_sensitivity_changed",
               "sig": "on_diarization_sensitivity_changed(self, value)",
-              "start_line": 667,
-              "end_line": 678,
+              "start_line": 668,
+              "end_line": 679,
               "doc": "Public hook for adjusting speaker separation sensitivity."
             },
             {
               "name": "update_auto_save_timer",
               "sig": "update_auto_save_timer(self)",
-              "start_line": 680,
-              "end_line": 684,
+              "start_line": 681,
+              "end_line": 685,
               "doc": ""
             },
             {
               "name": "prompt_set_whisper_model",
               "sig": "prompt_set_whisper_model(self)",
-              "start_line": 686,
-              "end_line": 689,
+              "start_line": 687,
+              "end_line": 690,
               "doc": ""
             },
             {
               "name": "prompt_set_skip_seconds",
               "sig": "prompt_set_skip_seconds(self)",
-              "start_line": 691,
-              "end_line": 705,
+              "start_line": 692,
+              "end_line": 706,
               "doc": ""
             },
             {
               "name": "prompt_set_auto_detect_thresholds",
               "sig": "prompt_set_auto_detect_thresholds(self)",
-              "start_line": 707,
-              "end_line": 773,
+              "start_line": 708,
+              "end_line": 774,
               "doc": ""
             },
             {
               "name": "prompt_set_auto_save",
               "sig": "prompt_set_auto_save(self)",
-              "start_line": 775,
-              "end_line": 793,
+              "start_line": 776,
+              "end_line": 794,
               "doc": ""
             },
             {
               "name": "trigger_auto_save",
               "sig": "trigger_auto_save(self)",
-              "start_line": 795,
-              "end_line": 815,
+              "start_line": 796,
+              "end_line": 816,
               "doc": ""
             }
           ]
@@ -14255,7 +14255,7 @@
     },
     "runtime_manager.py": {
       "path": "runtime_manager.py",
-      "lines": 1037,
+      "lines": 989,
       "summary": "",
       "exports": null,
       "classes": [
@@ -14263,7 +14263,7 @@
           "name": "RuntimeManager",
           "bases": [],
           "start_line": 363,
-          "end_line": 1037,
+          "end_line": 989,
           "doc": "Manages isolated Python virtual environments for ML features with auto-upgrade support.",
           "methods": [
             {
@@ -14375,42 +14375,42 @@
               "name": "prune_cuda_artifacts",
               "sig": "prune_cuda_artifacts(env_dir)",
               "start_line": 731,
-              "end_line": 787,
-              "doc": "Strip unused CUDA/cuDNN packages, heavy C++ dev headers, test suites,"
+              "end_line": 739,
+              "doc": "No-op safeguard retained for backward compatibility with callers."
             },
             {
               "name": "get_runtime_executable",
               "sig": "get_runtime_executable(self, feature_name, progress_cb)",
-              "start_line": 789,
-              "end_line": 793,
+              "start_line": 741,
+              "end_line": 745,
               "doc": "Ensure and return the executable for an isolated feature runtime."
             },
             {
               "name": "get_plugin_requirements",
               "sig": "get_plugin_requirements(self, feature_name, plugin_dir)",
-              "start_line": 795,
-              "end_line": 824,
+              "start_line": 747,
+              "end_line": 776,
               "doc": "Read requirements-runtime.txt from plugin directory if available, fallback to ENV_CONFIGS."
             },
             {
               "name": "is_env_up_to_date",
               "sig": "is_env_up_to_date(self, feature_name)",
-              "start_line": 826,
-              "end_line": 849,
+              "start_line": 778,
+              "end_line": 801,
               "doc": "Verifies if environment exists and matches current config version and specs."
             },
             {
               "name": "write_manifest",
               "sig": "write_manifest(self, feature_name, python_used, packages)",
-              "start_line": 851,
-              "end_line": 862,
+              "start_line": 803,
+              "end_line": 814,
               "doc": "Writes configuration metadata upon successful environment creation."
             },
             {
               "name": "ensure_environment",
               "sig": "ensure_environment(self, feature_name, force_rebuild, progress_cb, plugin_dir, cancel_event)",
-              "start_line": 864,
-              "end_line": 1037,
+              "start_line": 816,
+              "end_line": 989,
               "doc": "Creates or upgrades an isolated feature environment."
             }
           ]
@@ -19521,78 +19521,78 @@
     },
     "transcript_context_menu_mixin.py": {
       "path": "transcript_context_menu_mixin.py",
-      "lines": 746,
+      "lines": 749,
       "summary": "Radio & TV Story Segmenter \u2014 Interactive Transcript Context Menu & Bubble Actions Mixin.",
       "exports": null,
       "classes": [
         {
           "name": "TranscriptContextMenuMixin",
           "bases": [],
-          "start_line": 48,
-          "end_line": 745,
+          "start_line": 51,
+          "end_line": 748,
           "doc": "Mixin for context menu construction and selection bubble quick-actions.",
           "methods": [
             {
               "name": "_on_bubble_play",
               "sig": "_on_bubble_play(self)",
-              "start_line": 51,
-              "end_line": 56,
+              "start_line": 54,
+              "end_line": 59,
               "doc": ""
             },
             {
               "name": "_on_bubble_story",
               "sig": "_on_bubble_story(self)",
-              "start_line": 58,
-              "end_line": 63,
+              "start_line": 61,
+              "end_line": 66,
               "doc": ""
             },
             {
               "name": "_on_bubble_note",
               "sig": "_on_bubble_note(self)",
-              "start_line": 65,
-              "end_line": 78,
+              "start_line": 68,
+              "end_line": 81,
               "doc": ""
             },
             {
               "name": "_on_bubble_cut",
               "sig": "_on_bubble_cut(self)",
-              "start_line": 80,
-              "end_line": 85,
+              "start_line": 83,
+              "end_line": 88,
               "doc": ""
             },
             {
               "name": "_on_bubble_export",
               "sig": "_on_bubble_export(self)",
-              "start_line": 87,
-              "end_line": 92,
+              "start_line": 90,
+              "end_line": 95,
               "doc": ""
             },
             {
               "name": "show_context_menu",
               "sig": "show_context_menu(self, position)",
-              "start_line": 94,
-              "end_line": 497,
+              "start_line": 97,
+              "end_line": 500,
               "doc": ""
             },
             {
               "name": "copy_highlighted_selection",
               "sig": "copy_highlighted_selection(self)",
-              "start_line": 499,
-              "end_line": 628,
+              "start_line": 502,
+              "end_line": 631,
               "doc": "Copy the active story or timeline selection span to clipboard when no cursor text is selected."
             },
             {
               "name": "copy_selection_for_reaper",
               "sig": "copy_selection_for_reaper(self)",
-              "start_line": 630,
-              "end_line": 695,
+              "start_line": 633,
+              "end_line": 698,
               "doc": "Explicitly build and copy REAPER DAW clip cue payload for the active text or story selection."
             },
             {
               "name": "copy_selection_as_daw_wav",
               "sig": "copy_selection_as_daw_wav(self)",
-              "start_line": 697,
-              "end_line": 745,
+              "start_line": 700,
+              "end_line": 748,
               "doc": "Render temporary WAV audio clip and copy it to the OS clipboard (CF_HDROP) for any DAW."
             }
           ]
@@ -20365,7 +20365,7 @@
     "transcript_story.py": {
       "path": "transcript_story.py",
       "lines": 856,
-      "summary": "Radio & TV Segmenter v3.10.31-beta \u2014 transcript story responsibilities.",
+      "summary": "Radio & TV Segmenter v3.10.32-beta \u2014 transcript story responsibilities.",
       "exports": [
         "TranscriptStoryMixin",
         "Story",

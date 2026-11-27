@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
+import copy
 import json
 import logging
 import os
@@ -16,7 +17,7 @@ from pathlib import Path
 from PySide6.QtCore import Qt, QSettings, QTime, QUrl
 from PySide6.QtGui import QDesktopServices
 from PySide6.QtWidgets import QDialog, QFormLayout, QHBoxLayout, QInputDialog, QMessageBox, QPushButton, QVBoxLayout, QWidget, QComboBox, QDoubleSpinBox
-from prs_shared import INTERNAL_APP_ID, PROJECT_VERSION, APP_DISPLAY_NAME, get_app_data_dir, get_app_icon, get_github_repo, get_license_file_path, safe_replace
+from prs_shared import INTERNAL_APP_ID, PROJECT_VERSION, APP_DISPLAY_NAME, Story, get_app_data_dir, get_app_icon, get_github_repo, get_license_file_path, safe_replace
 from theme_preferences import ThemePreferencesMixin
 from playback_controller import PlaybackControllerMixin
 from preferences_reset import RestoreSelectedSettingsDialog, PreferencesResetMixin

@@ -38,14 +38,13 @@ ROADMAP MAINTENANCE POLICY: N-1 SLIDING-WINDOW & STATUS TRACKING
 --------------------------------------------------------------------------------
 TABLE OF CONTENTS & STATUS OVERVIEW
 --------------------------------------------------------------------------------
-1. Immediate Predecessor Release: Eliminate Phantom Extra Speakers in Diarization (Zero-Padding-Free Batching, Silero VAD Pause Trimming, Embedding-Gated Island Smoothing & 1-Based Speaker Labels) (`worker_diarization_engine.py`, `worker_diarization_clustering.py`, `speaker_editing_mixin.py`, `diagnostics/voice_and_media_tests.py`, `test_runner.py`) [x] [COMPLETED in v3.10.30-beta]
-   [x] 1.1 Zero-Padding-Free WeSpeaker Batching & Clean Tail Windows (`worker_diarization_engine.py`): Replaced zero-padded batching in `extract_embeddings_batched()` with exact-frame-length bucketing preserving 1-to-1 ordering, eliminated redundant `<0.75s` trailing stubs once `win_end` reaches `seg_end`, and right-aligned `<1.0s` trailing audio slices to full `1.5s` windows while keeping subsegment timestamps crisp.
-   [x] 1.2 Silero VAD Pause Trimming & Embedding-Gated Island Smoothing (`worker_diarization_engine.py`, `worker_diarization_clustering.py`): Trimmed Whisper-padded silence/room-tone tails using `run_vad_two_pass()` + `prepare_transcript_speech_segments()` (with safe unvoiced-turn routing and quiet-audio fallback), and added `smooth_short_speaker_islands()` preserving genuine 1-second interjections while smoothing ambiguous mid-turn flickers (`0.7s–1.5s`).
-   [x] 1.3 Fix `+1` Off-by-One Speaker Numbering & Automated Regression Coverage (`speaker_editing_mixin.py`, `diagnostics/voice_and_media_tests.py`, `test_runner.py`): Restricted `display_speaker()`'s `+1` increment strictly to legacy 0-indexed `SPEAKER_XX` IDs so `Speaker 1..N` and custom digit-suffixed names stay accurate, backed by unit tests and real-episode A/B verification.
+1. Immediate Predecessor Release: Fix Frozen Installed-App Startup Crash (`NameError: name 'Optional' is not defined`) (`media_batch.py`, `diagnostics/youtube_import_cache_tests.py`) [x] [COMPLETED in v3.10.31-beta]
+   [x] 1.1 Add Explicit `Optional` Import in `media_batch.py` (`media_batch.py`): Imported `Optional` from `typing` so `MediaBatchMixin._effective_thumbnail_density()` and `start_video_thumbnail_generation()` evaluate cleanly at module load time inside compiled PyInstaller executables.
+   [x] 1.2 Repo-Wide Typing Import Audit & Startup Regression Guard (`diagnostics/youtube_import_cache_tests.py`): Verified via AST across all repository modules that no other files use unimported typing symbols without `from __future__ import annotations`, and added a direct `import media_batch` regression check.
 
-2. Active Release: Fix Frozen Installed-App Startup Crash (`NameError: name 'Optional' is not defined`) (`media_batch.py`, `diagnostics/youtube_import_cache_tests.py`) [x] [COMPLETED in v3.10.31-beta]
-   [x] 2.1 Add Explicit `Optional` Import in `media_batch.py` (`media_batch.py`): Imported `Optional` from `typing` so `MediaBatchMixin._effective_thumbnail_density()` and `start_video_thumbnail_generation()` evaluate cleanly at module load time inside compiled PyInstaller executables.
-   [x] 2.2 Repo-Wide Typing Import Audit & Startup Regression Guard (`diagnostics/youtube_import_cache_tests.py`): Verified via AST across all repository modules that no other files use unimported typing symbols without `from __future__ import annotations`, and added a direct `import media_batch` regression check.
+2. Active Release: Fix Missing Imports (`NameError` Crashes) in Activity Snapshot Restore, Preferences Reset & REAPER Clipboard Fallback + Dead Code & PyInstaller Hardening (`playback_preferences.py`, `preferences_reset_dialog.py`, `transcript_context_menu_mixin.py`, `runtime_manager.py`, `installer/build_tools/config.py`, `diagnostics/youtube_import_cache_tests.py`) [x] [COMPLETED in v3.10.32-beta]
+   [x] 2.1 Fix Runtime `NameError` Imports (`playback_preferences.py`, `preferences_reset_dialog.py`, `transcript_context_menu_mixin.py`): Imported `copy` and `Story` for `restore_snapshot()`, imported `DEFAULT_GITHUB_REPO` (and aligned the `parakeet-onnx` label) for Software Updates reset, and defined `logger` for REAPER clipboard fallback handlers.
+   [x] 2.2 Dead Code Cleanup, PyInstaller `HIDDEN_IMPORTS` Hardening & Regression Guards (`runtime_manager.py`, `installer/build_tools/config.py`, `diagnostics/youtube_import_cache_tests.py`): Removed unreachable dead code referencing undefined `target` in `prune_cuda_artifacts()` (bringing `runtime_manager.py` under 1,000 lines), registered 8 lazy-imported core modules in `HIDDEN_IMPORTS`, and added automated regression checks.
 
 3. Deferred Milestone: Domain Separation & Purpose-Driven Monolithic File Modularization [-] [IN-PROGRESS]
    - *Purpose*: Systematic architectural refactoring prioritizing **file purpose, single responsibility, and domain cohesion** alongside line count reduction (<800 lines target, 1,000 lines ceiling), systematically decoupling grandfathered multi-domain monoliths into focused submodules with 100% backward-compatible facade re-exports.
@@ -101,22 +100,21 @@ TABLE OF CONTENTS & STATUS OVERVIEW
 DETAILED MILESTONE SPECIFICATIONS
 ================================================================================
 
-1. IMMEDIATE PREDECESSOR RELEASE: ELIMINATE PHANTOM EXTRA SPEAKERS IN DIARIZATION (ZERO-PADDING-FREE BATCHING, SILERO VAD PAUSE TRIMMING, EMBEDDING-GATED ISLAND SMOOTHING & 1-BASED SPEAKER LABELS) (`worker_diarization_engine.py`, `worker_diarization_clustering.py`, `speaker_editing_mixin.py`, `diagnostics/voice_and_media_tests.py`, `test_runner.py`):
-- Purpose: Eliminate episode-wide phantom extra speakers caused by unmasked WeSpeaker zero-padding and Whisper-padded silence/room-tone windows in transcript-guided diarization, safely smooth brief mid-monologue acoustic flickers without erasing real interjections, and fix the `+1` off-by-one shift in default speaker display numbers.
-- Target Release: v3.10.30-beta (Immediate Predecessor Release)
-- Technical References: `worker_diarization_engine.py`, `worker_diarization_clustering.py`, `speaker_editing_mixin.py`, `diagnostics/voice_and_media_tests.py`, `test_runner.py`.
-- Implementation Details:
-  * [x] Zero-Padding-Free Batching & Tail Alignment: Bucketed Fbank tensors by exact frame length in `extract_embeddings_batched()` with exact 1-to-1 ordering, removed redundant trailing stubs after `win_end >= seg_end`, and right-aligned `<1.0s` trailing audio slices to full `1.5s` windows while preserving crisp subsegment timestamps.
-  * [x] Silero VAD Pause Trimming & Embedding-Gated Smoothing: Intersected transcript segments with `run_vad_two_pass()` via `prepare_transcript_speech_segments()` (routing unvoiced turns safely to short fallback with quiet-audio fallback) and added `smooth_short_speaker_islands()` for embedding-gated `0.7s–1.5s` `A → B → A` smoothing.
-  * [x] 1-Based `display_speaker()` Fix & Regression Tests: Restricted `+1` shifting to legacy `SPEAKER_XX` IDs and added automated regression coverage in `diagnostics/voice_and_media_tests.py` plus read-only real-episode A/B verification across `high`, `normal`, and `low` sensitivity.
-
-2. ACTIVE RELEASE: FIX FROZEN INSTALLED-APP STARTUP CRASH (`NameError: name 'Optional' is not defined`) (`media_batch.py`, `diagnostics/youtube_import_cache_tests.py`):
+1. IMMEDIATE PREDECESSOR RELEASE: FIX FROZEN INSTALLED-APP STARTUP CRASH (`NameError: name 'Optional' is not defined`) (`media_batch.py`, `diagnostics/youtube_import_cache_tests.py`):
 - Purpose: Fix the startup `NameError: name 'Optional' is not defined` crash in `media_batch.py` when launching the compiled PyInstaller executable.
-- Target Release: v3.10.31-beta (Active Release)
+- Target Release: v3.10.31-beta (Immediate Predecessor Release)
 - Technical References: `media_batch.py`, `diagnostics/youtube_import_cache_tests.py`.
 - Implementation Details:
   * [x] Explicit Typing Import (`media_batch.py`): Added `from typing import Optional` at top-level in `media_batch.py` so `MediaBatchMixin` method annotations evaluate cleanly at import time without relying on implicit re-exports.
   * [x] AST Typing Audit & Regression Test (`diagnostics/youtube_import_cache_tests.py`): Confirmed `media_batch.py` was the sole module missing an explicit typing import across the repository and added a direct `import media_batch` regression assertion.
+
+2. ACTIVE RELEASE: FIX MISSING IMPORTS (`NameError` CRASHES) IN ACTIVITY SNAPSHOT RESTORE, PREFERENCES RESET & REAPER CLIPBOARD FALLBACK + DEAD CODE & PYINSTALLER HARDENING (`playback_preferences.py`, `preferences_reset_dialog.py`, `transcript_context_menu_mixin.py`, `runtime_manager.py`, `installer/build_tools/config.py`, `diagnostics/youtube_import_cache_tests.py`):
+- Purpose: Eliminate all remaining missing-import runtime `NameError` traps identified by AST auditing across core UI mixins and dialogs, remove dead unreachable code in `runtime_manager.py`, and harden PyInstaller `HIDDEN_IMPORTS` for lazy-imported core modules.
+- Target Release: v3.10.32-beta (Active Release)
+- Technical References: `playback_preferences.py`, `preferences_reset_dialog.py`, `transcript_context_menu_mixin.py`, `runtime_manager.py`, `installer/build_tools/config.py`, `diagnostics/youtube_import_cache_tests.py`.
+- Implementation Details:
+  * [x] Runtime `NameError` Fixes: Added `import copy` and `Story` import in `playback_preferences.py`, imported `DEFAULT_GITHUB_REPO` (and aligned the `parakeet-onnx` label) in `preferences_reset_dialog.py`, and defined `logger` in `transcript_context_menu_mixin.py`.
+  * [x] Dead Code Cleanup & Packaging Hardening: Removed unreachable dead code referencing undefined `target` in `runtime_manager.prune_cuda_artifacts()` (bringing `runtime_manager.py` under 1,000 lines), registered 8 lazy-imported core dialog/utility modules in `HIDDEN_IMPORTS`, and added regression guards.
 
 3. DEFERRED MILESTONE: DOMAIN SEPARATION & PURPOSE-DRIVEN MONOLITHIC FILE MODULARIZATION:
 - Purpose: Systematic architectural refactoring ordered by **safety and payoff** — prioritizing low-blast-radius monoliths and SRP fixes first (`3.1`), moderate-risk monoliths and warning-zone files second (`3.2`), and deferring higher-risk core, subprocess, and interactive canvas modules (`3.3`) unless actively modifying them with frozen-build verification.

@@ -12,7 +12,7 @@ from PySide6.QtWidgets import (
     QWidget, QCheckBox, QMessageBox
 )
 
-from core_utils import make_dialog_maximizable, INTERNAL_APP_ID
+from core_utils import make_dialog_maximizable, INTERNAL_APP_ID, DEFAULT_GITHUB_REPO
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +27,7 @@ class RestoreSelectedSettingsDialog(QDialog):
         ("keyboard_shortcuts", "Keyboard Shortcuts", "Custom keyboard shortcut assignments for all menu actions, tools, navigation, and editing commands."),
         ("audio_hardware", "Audio Settings & Volume", "Audio output device (System Default), default volume (100%), and automatic loudness normalization settings."),
         ("software_updates", "Software Updates & Repository", "Automatic update checks (Enabled), release channel (Stable), and official GitHub repository."),
-        ("ai_models", "AI Models & Storage Directory", "Whisper speech recognition model (small, beam size 5), translation model (tiny), and models storage folder."),
+        ("ai_models", "AI Models & Storage Directory", "Speech recognition model (parakeet-onnx, beam size 5), translation model (tiny), and models storage folder."),
         ("gpu_acceleration", "Hardware / GPU Acceleration", "GPU and DirectML hardware acceleration settings."),
         ("playback_timeline", "Playback & Timeline Display", "Skip duration (5s), waveform visibility, thumbnail strip, and transcript selection mode."),
         ("audio_fades", "Audio Fades & Fade Curve Defaults", "Enable audio fades (disabled), fade audio preview (disabled), default fade-in duration (0.0s), default fade-out duration (1.0s), and default fade curve (linear)."),

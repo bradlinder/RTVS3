@@ -7,7 +7,10 @@ Provides:
 """
 
 from __future__ import annotations
+import logging
 from typing import Any, Dict, List, Optional, Tuple
+
+logger = logging.getLogger(__name__)
 
 from reaper_bridge import (
     build_reaper_cue_payload,

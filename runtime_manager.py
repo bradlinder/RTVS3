@@ -729,62 +729,14 @@ class RuntimeManager:
 
     @staticmethod
     def prune_cuda_artifacts(env_dir: Path) -> int:
-        """Strip unused CUDA/cuDNN packages, heavy C++ dev headers, test suites,
-        distributed training modules, and native DLLs/so files from CPU runtimes.
+        """No-op safeguard retained for backward compatibility with callers.
 
-        Reduces runtime disk space (e.g. diarize_env) from ~2.0 GB down to ~500-650 MB.
+        Clean CPU wheels from download.pytorch.org are already lightweight and
+        contain zero CUDA bloat, so post-install file deletion is bypassed to
+        prevent Windows DLL or circular-import corruption.
         """
-        # Bypassed completely to ensure total environment stability and prevent Windows DLL/circular import crashes.
-        # Clean CPU wheels from download.pytorch.org are already extremely lightweight (~200MB) and contain zero CUDA bloat.
+        _ = env_dir
         return 0
-
-        # 1. Non-runtime heavy directories (C++ headers, cmake files, tests, distributed modules, GPU compilers)
-        non_runtime_dirs = (
-            "nvidia", "triton",
-            "torch/include", "torch/share", "torch/testing", "torch/test",
-            "scipy/tests", "scipy/doc", "numpy/tests", "torchaudio/tests"
-        )
-        for rel_dir in non_runtime_dirs:
-            for matching_path in list(target.glob(f"**/{rel_dir}")):
-                if matching_path.is_dir():
-                    try:
-                        shutil.rmtree(matching_path, ignore_errors=True)
-                        purged_count += 1
-                        logger.info("Purged non-runtime directory from %s: %s", target.name, matching_path)
-                    except Exception:
-                        pass
-
-        # 2. Purge loose CUDA shared libraries / DLLs
-        cuda_lib_prefixes = (
-            "libnvrtc", "nvrtc", "libcudnn", "cudnn",
-            "libcublas", "cublas", "libcusolver", "cusolver", "libcurand", "curand",
-            "libcufft", "cufft", "libnccl", "nccl", "libnvJitLink", "libnvblas",
-            "nvjitlink", "cusparse", "nvjpeg", "torch_cuda", "c10_cuda", "libtorch_cuda",
-        )
-        try:
-            for item in list(target.rglob("*")):
-                if item.is_file() and any(item.name.lower().startswith(p.lower()) for p in cuda_lib_prefixes):
-                    try:
-                        item.unlink(missing_ok=True)
-                        purged_count += 1
-                    except Exception:
-                        pass
-        except Exception as exc:
-            logger.warning("Error while purging loose CUDA libraries from %s: %s", target, exc)
-
-        # 3. Clean __pycache__ bytecode folders
-        try:
-            for pycache_dir in list(target.rglob("__pycache__")):
-                if pycache_dir.is_dir():
-                    try:
-                        shutil.rmtree(pycache_dir, ignore_errors=True)
-                        purged_count += 1
-                    except Exception:
-                        pass
-        except Exception:
-            pass
-
-        return purged_count
 
     def get_runtime_executable(self, feature_name: str, progress_cb=None) -> str:
         """Ensure and return the executable for an isolated feature runtime."""
