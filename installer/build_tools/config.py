@@ -126,6 +126,7 @@ HIDDEN_IMPORTS = [
     "export.pdf",
     "export.docx",
     "export.dialog",
+    "export.story_selector",
     "export.reorder_dialog",
     "export.audio",
     "export.timeline",

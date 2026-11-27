@@ -70,7 +70,7 @@ def _ensure_runtime_bin_on_path():
 _ensure_runtime_bin_on_path()
 
 # Re-exports from Phase 1 modularization (core_utils, transcript_cleaner, project_serialization, process_lifecycle)
-PROJECT_VERSION = "3.10.19-beta"
+PROJECT_VERSION = "3.10.20-beta"
 from core_utils import (
     INTERNAL_APP_ID,
     APP_DISPLAY_NAME,
@@ -654,11 +654,12 @@ class CollapsibleSection(QWidget):
         self._main_layout.setContentsMargins(0, 0, 0, 4)
         self._main_layout.setSpacing(0)
 
-        # Header button
+        # Header button (Ignored horizontal policy allows narrow windows without clipping)
         self.toggle_btn = QToolButton(self)
         self.toggle_btn.setCheckable(True)
         self.toggle_btn.setChecked(self._is_expanded)
-        self.toggle_btn.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        self.toggle_btn.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Fixed)
+        self.toggle_btn.setMinimumWidth(0)
         self.toggle_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         self.toggle_btn.clicked.connect(self._on_btn_clicked)
 

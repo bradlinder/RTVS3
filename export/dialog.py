@@ -28,6 +28,7 @@ try:
         QRadioButton,
         QScrollArea,
         QSpinBox,
+        QSplitter,
         QStackedWidget,
         QTabWidget,
         QVBoxLayout,
@@ -57,6 +58,7 @@ from export.reorder_dialog import (
     save_export_destinations_order,
     ReorderExportDestinationsDialog,
 )
+from export.story_selector import ExportStorySelectorSidebar
 
 
 class UnifiedExportDialog(QDialog):
@@ -77,7 +79,8 @@ class UnifiedExportDialog(QDialog):
             | Qt.WindowType.WindowMaximizeButtonHint
             | Qt.WindowType.WindowCloseButtonHint
         )
-        self.setSizeGripEnabled(True)
+        # Avoid QSizeGrip on top-level windows: Qt6 + qdarktheme size-grip rules can occlude lower-right buttons when unmaximized
+        self.setSizeGripEnabled(False)
         self.setMinimumWidth(780)
         self.setMinimumHeight(560)
         self.resize(860, 700)
@@ -196,8 +199,19 @@ class UnifiedExportDialog(QDialog):
         layout.addWidget(self.dest_section)
         layout.addWidget(self.scope_section)
 
-        # Stacked Widget for Destinations
+        # Stacked Widget for Destinations paired with checkable Selected-Stories Sidebar
+        self.export_body_splitter = QSplitter(Qt.Orientation.Horizontal)
+        self.export_body_splitter.setChildrenCollapsible(False)
+        self.story_selector_sidebar = ExportStorySelectorSidebar(self.main_window, parent=self)
+        self.story_selector_sidebar.setVisible(False)
+        self.story_selector_sidebar.selection_changed.connect(self._on_export_story_selection_changed)
+        self.story_selector_sidebar.story_activated.connect(self._on_export_story_activated)
         self.stacked_widget = QStackedWidget()
+        self.export_body_splitter.addWidget(self.story_selector_sidebar)
+        self.export_body_splitter.addWidget(self.stacked_widget)
+        self.export_body_splitter.setStretchFactor(0, 0)
+        self.export_body_splitter.setStretchFactor(1, 1)
+        self.export_body_splitter.setSizes([230, 680])
 
         # Bottom Buttons & Actions initialized early to prevent AttributeError during destination setup
         self.export_btn = QPushButton("Export Files...")
@@ -218,7 +232,7 @@ class UnifiedExportDialog(QDialog):
         self._build_destinations_layout()
         self.dest_section.add_layout(self.dest_content_layout)
 
-        layout.addWidget(self.stacked_widget)
+        layout.addWidget(self.export_body_splitter, 1)
 
         self.scope_combo.currentIndexChanged.connect(self._on_scope_changed)
         self._on_scope_changed()
@@ -455,7 +469,7 @@ class UnifiedExportDialog(QDialog):
         local_scroll = QScrollArea()
         local_scroll.setWidgetResizable(True)
         local_scroll.setFrameShape(QFrame.Shape.NoFrame)
-        local_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        local_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         local_scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
 
         local_scroll_content = QWidget()
@@ -827,7 +841,7 @@ class UnifiedExportDialog(QDialog):
         tl_scroll = QScrollArea()
         tl_scroll.setWidgetResizable(True)
         tl_scroll.setFrameShape(QFrame.Shape.NoFrame)
-        tl_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        tl_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         tl_scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
 
         tl_scroll_content = QWidget()
@@ -1085,11 +1099,67 @@ class UnifiedExportDialog(QDialog):
                     proj_meta["last_export_dest"] = entry["id"]
                 break
 
+    def is_story_selector_visible(self) -> bool:
+        """Return True when the Export Dialog's left selected-stories sidebar is active."""
+        stories = getattr(self.main_window, "stories", []) or []
+        return bool(
+            hasattr(self, "story_selector_sidebar")
+            and self.scope_combo.currentData() == "selected_stories"
+            and len(stories) > 0
+        )
+
+    def get_selected_story_indices(self) -> List[int]:
+        """Return the currently checked 0-based story indices."""
+        if self.is_story_selector_visible():
+            return self.story_selector_sidebar.get_selected_indices()
+        return list(getattr(self.main_window, "current_selected_story_indices", []) or [])
+
+    def _sync_story_selector_visibility(self) -> None:
+        if not hasattr(self, "story_selector_sidebar"):
+            return
+        stories = getattr(self.main_window, "stories", []) or []
+        show_sidebar = self.scope_combo.currentData() == "selected_stories" and len(stories) > 0
+        if show_sidebar:
+            selected = list(getattr(self.main_window, "current_selected_story_indices", []) or [])
+            self.story_selector_sidebar.populate(stories, selected)
+        self.story_selector_sidebar.setVisible(show_sidebar)
+
+    def _on_export_story_selection_changed(self, indices: List[int]) -> None:
+        clean_indices = sorted({int(i) for i in (indices or [])})
+        if hasattr(self.main_window, "apply_story_selection_indices"):
+            try:
+                self.main_window.apply_story_selection_indices(clean_indices, seek=False)
+            except TypeError:
+                self.main_window.current_selected_story_indices = list(clean_indices)
+            except Exception:
+                self.main_window.current_selected_story_indices = list(clean_indices)
+        else:
+            self.main_window.current_selected_story_indices = list(clean_indices)
+
+        stories = getattr(self.main_window, "stories", []) or []
+        scope = self.scope_combo.currentData()
+        for _, dest, _ in self._plugin_destinations:
+            try:
+                dest.on_scope_changed(scope, stories)
+            except Exception as exc:
+                print(f"[EXPORT] Warning: Plugin destination on_scope_changed failed for '{getattr(dest, 'id', 'unknown')}': {exc}")
+        self._update_export_button_label()
+
+    def _on_export_story_activated(self, story_idx: int) -> None:
+        for _, dest, page in self._plugin_destinations:
+            tab = getattr(dest, "tab_widget", None) or page
+            if tab and hasattr(tab, "select_story_index") and callable(tab.select_story_index):
+                try:
+                    tab.select_story_index(int(story_idx))
+                except Exception:
+                    pass
+
     def _on_scope_changed(self):
         scope = self.scope_combo.currentData()
         proj_meta = getattr(self.main_window, "project_metadata", None)
         if isinstance(proj_meta, dict) and scope:
             proj_meta["last_export_scope"] = scope
+        self._sync_story_selector_visibility()
         stories = getattr(self.main_window, "stories", []) or []
         for _, dest, _ in self._plugin_destinations:
             try:
@@ -1299,6 +1369,16 @@ class UnifiedExportDialog(QDialog):
                 self.main_window.flush_pending_transcript_undo()
             except Exception:
                 pass
+        if self.scope_combo.currentData() == "selected_stories":
+            stories = getattr(self.main_window, "stories", []) or []
+            if stories and not self.get_selected_story_indices():
+                vocab = get_story_vocabulary(self.main_window)
+                QMessageBox.warning(
+                    self,
+                    "Export",
+                    f"Please select at least one {vocab.singular.lower()} to export.",
+                )
+                return
         if self.radio_local.isChecked():
             if self.loc_radio_custom.isChecked():
                 custom_path = self.loc_custom_path_edit.text().strip()
@@ -1530,6 +1610,7 @@ class UnifiedExportDialog(QDialog):
                 except Exception:
                     pass
             self._persist_plugin_draft_states()
+            self._sync_story_selector_visibility()
             for _, dest, page in getattr(self, "_plugin_destinations", []):
                 tab = getattr(dest, "tab_widget", None) or page
                 if tab and hasattr(tab, "rebuild_post_items") and callable(tab.rebuild_post_items):

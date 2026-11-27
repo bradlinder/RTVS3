@@ -816,14 +816,28 @@ class WordPressExportTabWidget(QWidget):
         self._cleanup_temp_files()
         super().closeEvent(event)
 
+    def select_story_index(self, story_idx: int) -> bool:
+        for row, post in enumerate(getattr(self, "wp_post_items", []) or []):
+            if post.get("story_index") == story_idx:
+                if hasattr(self, "wp_posts_list") and row < self.wp_posts_list.count():
+                    self.wp_posts_list.setCurrentRow(row)
+                self._load_post_editor_state(row)
+                return True
+        return False
+
     def rebuild_post_items(self, scope: Optional[str] = None):
-        if getattr(self, "wp_post_items", None) and hasattr(self, "_sync_post_to_project"):
-            for idx in range(len(self.wp_post_items)):
-                self._sync_post_to_project(idx)
+        prev_story_idx = None
+        if getattr(self, "wp_post_items", None):
+            cur_i = getattr(self, "_current_post_index", 0)
+            if 0 <= cur_i < len(self.wp_post_items):
+                prev_story_idx = self.wp_post_items[cur_i].get("story_index")
+            if hasattr(self, "_sync_post_to_project"):
+                for idx in range(len(self.wp_post_items)):
+                    self._sync_post_to_project(idx)
+        dlg = self.window() if hasattr(self, "window") else None
         if getattr(self, "metadata_editor_mode", False):
             scope = "full_and_all_stories"
         elif scope is None:
-            dlg = self.window()
             if hasattr(dlg, "scope_combo"):
                 scope = dlg.scope_combo.currentData()
             elif hasattr(self.parent(), "scope_combo"):
@@ -832,7 +846,8 @@ class WordPressExportTabWidget(QWidget):
                 scope = "full"
         prim_lang = self.wp_primary_lang_combo.currentData() if hasattr(self, "wp_primary_lang_combo") and self.wp_primary_lang_combo else "en"
         self.wp_post_items = build_wp_post_items(self.main_window, scope, prim_lang, getattr(self, "wp_post_items", []))
-        self._current_post_index = 0
+        target_row = next((i for i, p in enumerate(self.wp_post_items) if prev_story_idx is not None and p.get("story_index") == prev_story_idx), 0)
+        self._current_post_index = target_row
 
         self.wp_posts_list.blockSignals(True)
         self.wp_posts_list.clear()
@@ -841,20 +856,17 @@ class WordPressExportTabWidget(QWidget):
             self._update_post_list_item_label(idx)
         self.wp_posts_list.blockSignals(False)
 
-        has_multi = len(self.wp_post_items) > 1
-        self.wp_post_nav_widget.setVisible(has_multi)
+        ext_sidebar = bool(scope == "selected_stories" and dlg is not None and callable(getattr(dlg, "is_story_selector_visible", None)) and dlg.is_story_selector_visible())
+        self.wp_post_nav_widget.setVisible((len(self.wp_post_items) > 1) and not ext_sidebar)
         if hasattr(self, "wp_bulk_box") and self.wp_bulk_box is not None:
             self.wp_bulk_box.setVisible(False)
-
         if self.wp_posts_list.count() > 0:
-            self.wp_posts_list.setCurrentRow(0)
-        self._load_post_editor_state(0)
-
-        dlg = self.window()
-        if hasattr(dlg, "_update_export_button_label") and callable(dlg._update_export_button_label):
-            dlg._update_export_button_label()
-        elif hasattr(self.parent(), "_update_export_button_label") and callable(self.parent()._update_export_button_label):
-            self.parent()._update_export_button_label()
+            self.wp_posts_list.setCurrentRow(target_row)
+        self._load_post_editor_state(target_row)
+        for host in (dlg, self.parent()):
+            if host is not None and callable(getattr(host, "_update_export_button_label", None)):
+                host._update_export_button_label()
+                break
 
     def _populate_wp_export_metadata(self, force_refresh: bool = False):
         categories = []

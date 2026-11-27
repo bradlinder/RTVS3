@@ -169,6 +169,9 @@ class WordPressExportTabWidget(QWidget):
     def closeEvent(self, event: Any) -> None:
         ...
 
+    def select_story_index(self, story_idx: int) -> bool:
+        ...
+
     def rebuild_post_items(self, scope: Optional[str]=...):
         ...
 

@@ -41,7 +41,7 @@ def setup_wp_tab_ui(self: Any):
     wp_scroll = QScrollArea()
     wp_scroll.setWidgetResizable(True)
     wp_scroll.setFrameShape(QFrame.Shape.NoFrame)
-    wp_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+    wp_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
     wp_scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
 
     wp_scroll_content = QWidget()

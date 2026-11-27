@@ -413,6 +413,7 @@ class DiagnosticSystemRuntimeTestsMixin:
             "updater_core.py",
             "updater_workers.py",
             "updater_dialog.py",
+            "export/story_selector.py",
         ]
 
         violations = []

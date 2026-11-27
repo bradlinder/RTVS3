@@ -8,6 +8,7 @@ from prs_shared import INTERNAL_APP_ID, CollapsibleSection, format_time, safe_fi
 from core_utils import apply_window_titlebar_theme, get_active_theme_mode
 from plugin_base import ExportDestination
 from export.reorder_dialog import DEFAULT_EXPORT_DESTINATIONS_ORDER, _get_export_theme_mode, get_export_destinations_order, save_export_destinations_order, ReorderExportDestinationsDialog
+from export.story_selector import ExportStorySelectorSidebar
 
 class UnifiedExportDialog(QDialog):
 
@@ -48,6 +49,21 @@ class UnifiedExportDialog(QDialog):
         ...
 
     def _on_dest_changed(self):
+        ...
+
+    def is_story_selector_visible(self) -> bool:
+        ...
+
+    def get_selected_story_indices(self) -> List[int]:
+        ...
+
+    def _sync_story_selector_visibility(self) -> None:
+        ...
+
+    def _on_export_story_selection_changed(self, indices: List[int]) -> None:
+        ...
+
+    def _on_export_story_activated(self, story_idx: int) -> None:
         ...
 
     def _on_scope_changed(self):

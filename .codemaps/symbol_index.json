@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-27 12:20:15",
-  "total_files": 205,
+  "generated_at": "2026-11-27 12:39:34",
+  "total_files": 206,
   "files": {
     "RadioTVSegmenter.py": {
       "path": "RadioTVSegmenter.py",
       "lines": 684,
-      "summary": "Radio & TV Segmenter \u2014 v3.10.19-beta",
+      "summary": "Radio & TV Segmenter \u2014 v3.10.20-beta",
       "exports": null,
       "classes": [
         {
@@ -2524,7 +2524,7 @@
     },
     "diagnostics/export_wordpress_core.py": {
       "path": "diagnostics/export_wordpress_core.py",
-      "lines": 579,
+      "lines": 606,
       "summary": "WordPress export scope, content formatting, and YouTube embed diagnostic tests.",
       "exports": null,
       "classes": [
@@ -2532,28 +2532,28 @@
           "name": "DiagnosticExportWordPressCoreMixin",
           "bases": [],
           "start_line": 9,
-          "end_line": 579,
+          "end_line": 606,
           "doc": "",
           "methods": [
             {
               "name": "_test_wordpress_export_scope_post_builder",
               "sig": "_test_wordpress_export_scope_post_builder(self, item)",
               "start_line": 10,
-              "end_line": 221,
+              "end_line": 248,
               "doc": ""
             },
             {
               "name": "_test_wordpress_export_content_and_transcript_formatter",
               "sig": "_test_wordpress_export_content_and_transcript_formatter(self, item)",
-              "start_line": 223,
-              "end_line": 433,
+              "start_line": 250,
+              "end_line": 460,
               "doc": ""
             },
             {
               "name": "_test_wordpress_youtube_video_embed",
               "sig": "_test_wordpress_youtube_video_embed(self, item)",
-              "start_line": 435,
-              "end_line": 579,
+              "start_line": 462,
+              "end_line": 606,
               "doc": "Verify YouTube URL parsing, iframe block generation, video project defaults, and Gutenberg placement."
             }
           ]
@@ -2634,7 +2634,7 @@
     },
     "diagnostics/system_runtime_tests.py": {
       "path": "diagnostics/system_runtime_tests.py",
-      "lines": 442,
+      "lines": 443,
       "summary": "System runtime, updater, theme, packaging, roadmap, and modularity diagnostic tests.",
       "exports": null,
       "classes": [
@@ -2642,7 +2642,7 @@
           "name": "DiagnosticSystemRuntimeTestsMixin",
           "bases": [],
           "start_line": 14,
-          "end_line": 442,
+          "end_line": 443,
           "doc": "",
           "methods": [
             {
@@ -2705,7 +2705,7 @@
               "name": "_test_source_file_modularity_and_1000_line_budget_invariant",
               "sig": "_test_source_file_modularity_and_1000_line_budget_invariant(self, item)",
               "start_line": 357,
-              "end_line": 442,
+              "end_line": 443,
               "doc": "Validates that recently decomposed modules adhere to the 1,000-line modular budget,"
             }
           ]
@@ -3151,7 +3151,7 @@
     },
     "export/dialog.py": {
       "path": "export/dialog.py",
-      "lines": 1566,
+      "lines": 1647,
       "summary": "Unified Export Dialog for Radio & TV Story Segmenter.",
       "exports": null,
       "classes": [
@@ -3160,197 +3160,232 @@
           "bases": [
             "QDialog"
           ],
-          "start_line": 62,
-          "end_line": 1566,
+          "start_line": 64,
+          "end_line": 1647,
           "doc": "Unified Export Center supporting Local Files and dynamic plugin destinations.",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, main_window, initial_scope, initial_dest, parent)",
-              "start_line": 65,
-              "end_line": 255,
+              "start_line": 67,
+              "end_line": 269,
               "doc": ""
             },
             {
               "name": "showEvent",
               "sig": "showEvent(self, event)",
-              "start_line": 257,
-              "end_line": 259,
+              "start_line": 271,
+              "end_line": 273,
               "doc": ""
             },
             {
               "name": "_build_destinations_layout",
               "sig": "_build_destinations_layout(self)",
-              "start_line": 261,
-              "end_line": 427,
+              "start_line": 275,
+              "end_line": 441,
               "doc": "Construct destination radio buttons in customized user order."
             },
             {
               "name": "_on_reorder_destinations",
               "sig": "_on_reorder_destinations(self)",
-              "start_line": 429,
-              "end_line": 448,
+              "start_line": 443,
+              "end_line": 462,
               "doc": "Open reorder dialog and rebuild layout on change."
             },
             {
               "name": "_create_local_page",
               "sig": "_create_local_page(self)",
-              "start_line": 450,
-              "end_line": 808,
+              "start_line": 464,
+              "end_line": 822,
               "doc": ""
             },
             {
               "name": "_on_location_radio_toggled",
               "sig": "_on_location_radio_toggled(self)",
-              "start_line": 810,
-              "end_line": 813,
+              "start_line": 824,
+              "end_line": 827,
               "doc": ""
             },
             {
               "name": "_browse_custom_export_location",
               "sig": "_browse_custom_export_location(self)",
-              "start_line": 815,
-              "end_line": 820,
+              "start_line": 829,
+              "end_line": 834,
               "doc": ""
             },
             {
               "name": "_create_timeline_page",
               "sig": "_create_timeline_page(self)",
-              "start_line": 822,
-              "end_line": 1033,
+              "start_line": 836,
+              "end_line": 1047,
               "doc": ""
             },
             {
               "name": "_on_timeline_location_radio_toggled",
               "sig": "_on_timeline_location_radio_toggled(self)",
-              "start_line": 1035,
-              "end_line": 1038,
+              "start_line": 1049,
+              "end_line": 1052,
               "doc": ""
             },
             {
               "name": "_browse_custom_timeline_location",
               "sig": "_browse_custom_timeline_location(self)",
-              "start_line": 1040,
-              "end_line": 1045,
+              "start_line": 1054,
+              "end_line": 1059,
               "doc": ""
             },
             {
               "name": "_toggle_all_sections",
               "sig": "_toggle_all_sections(self)",
-              "start_line": 1047,
-              "end_line": 1061,
+              "start_line": 1061,
+              "end_line": 1075,
               "doc": ""
             },
             {
               "name": "_update_export_button_label",
               "sig": "_update_export_button_label(self)",
-              "start_line": 1063,
-              "end_line": 1076,
+              "start_line": 1077,
+              "end_line": 1090,
               "doc": ""
             },
             {
               "name": "_on_dest_changed",
               "sig": "_on_dest_changed(self)",
-              "start_line": 1078,
-              "end_line": 1086,
+              "start_line": 1092,
+              "end_line": 1100,
+              "doc": ""
+            },
+            {
+              "name": "is_story_selector_visible",
+              "sig": "is_story_selector_visible(self)",
+              "start_line": 1102,
+              "end_line": 1109,
+              "doc": "Return True when the Export Dialog's left selected-stories sidebar is active."
+            },
+            {
+              "name": "get_selected_story_indices",
+              "sig": "get_selected_story_indices(self)",
+              "start_line": 1111,
+              "end_line": 1115,
+              "doc": "Return the currently checked 0-based story indices."
+            },
+            {
+              "name": "_sync_story_selector_visibility",
+              "sig": "_sync_story_selector_visibility(self)",
+              "start_line": 1117,
+              "end_line": 1125,
+              "doc": ""
+            },
+            {
+              "name": "_on_export_story_selection_changed",
+              "sig": "_on_export_story_selection_changed(self, indices)",
+              "start_line": 1127,
+              "end_line": 1146,
+              "doc": ""
+            },
+            {
+              "name": "_on_export_story_activated",
+              "sig": "_on_export_story_activated(self, story_idx)",
+              "start_line": 1148,
+              "end_line": 1155,
               "doc": ""
             },
             {
               "name": "_on_scope_changed",
               "sig": "_on_scope_changed(self)",
-              "start_line": 1088,
-              "end_line": 1099,
+              "start_line": 1157,
+              "end_line": 1169,
               "doc": ""
             },
             {
               "name": "_open_id3_editor",
               "sig": "_open_id3_editor(self)",
-              "start_line": 1101,
-              "end_line": 1111,
+              "start_line": 1171,
+              "end_line": 1181,
               "doc": "Open the ID3 Tag Editor for MP3 files."
             },
             {
               "name": "_copy_youtube_chapters",
               "sig": "_copy_youtube_chapters(self)",
-              "start_line": 1113,
-              "end_line": 1129,
+              "start_line": 1183,
+              "end_line": 1199,
               "doc": ""
             },
             {
               "name": "_load_saved_options",
               "sig": "_load_saved_options(self)",
-              "start_line": 1131,
-              "end_line": 1220,
+              "start_line": 1201,
+              "end_line": 1290,
               "doc": ""
             },
             {
               "name": "save_options_to_settings",
               "sig": "save_options_to_settings(self, as_default)",
-              "start_line": 1222,
-              "end_line": 1294,
+              "start_line": 1292,
+              "end_line": 1364,
               "doc": ""
             },
             {
               "name": "_handle_accept",
               "sig": "_handle_accept(self)",
-              "start_line": 1296,
-              "end_line": 1364,
+              "start_line": 1366,
+              "end_line": 1444,
               "doc": ""
             },
             {
               "name": "get_result",
               "sig": "get_result(self)",
-              "start_line": 1366,
-              "end_line": 1474,
+              "start_line": 1446,
+              "end_line": 1554,
               "doc": ""
             },
             {
               "name": "_persist_plugin_draft_states",
               "sig": "_persist_plugin_draft_states(self)",
-              "start_line": 1476,
-              "end_line": 1484,
+              "start_line": 1556,
+              "end_line": 1564,
               "doc": "Persist any unsaved plugin destination edits (such as WordPress post drafts) back to the project."
             },
             {
               "name": "done",
               "sig": "done(self, r)",
-              "start_line": 1486,
-              "end_line": 1488,
+              "start_line": 1566,
+              "end_line": 1568,
               "doc": ""
             },
             {
               "name": "toggle_float_mode",
               "sig": "toggle_float_mode(self, pinned)",
-              "start_line": 1490,
-              "end_line": 1506,
+              "start_line": 1570,
+              "end_line": 1586,
               "doc": "Toggle whether the non-modal floating window stays pinned on top of other windows."
             },
             {
               "name": "set_scope_and_destination",
               "sig": "set_scope_and_destination(self, scope, dest_id)",
-              "start_line": 1508,
-              "end_line": 1519,
+              "start_line": 1588,
+              "end_line": 1599,
               "doc": "Update export scope and active destination tab on an open modeless export window."
             },
             {
               "name": "refresh_from_main_window",
               "sig": "refresh_from_main_window(self)",
-              "start_line": 1521,
-              "end_line": 1543,
+              "start_line": 1601,
+              "end_line": 1624,
               "doc": "Synchronize post items, excerpts, and story lists from the main window without losing draft edits."
             },
             {
               "name": "_toggle_maximize",
               "sig": "_toggle_maximize(self)",
-              "start_line": 1545,
-              "end_line": 1553,
+              "start_line": 1626,
+              "end_line": 1634,
               "doc": ""
             },
             {
               "name": "changeEvent",
               "sig": "changeEvent(self, event)",
-              "start_line": 1555,
-              "end_line": 1566,
+              "start_line": 1636,
+              "end_line": 1647,
               "doc": ""
             }
           ]
@@ -3566,6 +3601,91 @@
           "doc": "Persist user-configured export destination ordering."
         }
       ]
+    },
+    "export/story_selector.py": {
+      "path": "export/story_selector.py",
+      "lines": 210,
+      "summary": "Checkable story/segment selection sidebar for UnifiedExportDialog.",
+      "exports": [
+        "ExportStorySelectorSidebar"
+      ],
+      "classes": [
+        {
+          "name": "ExportStorySelectorSidebar",
+          "bases": [
+            "QWidget"
+          ],
+          "start_line": 39,
+          "end_line": 207,
+          "doc": "Left sidebar with checkable story/segment items and quick Select All / Clear controls.",
+          "methods": [
+            {
+              "name": "__init__",
+              "sig": "__init__(self, main_window, parent)",
+              "start_line": 45,
+              "end_line": 93,
+              "doc": ""
+            },
+            {
+              "name": "populate",
+              "sig": "populate(self, stories, selected_indices)",
+              "start_line": 95,
+              "end_line": 147,
+              "doc": "Rebuild the checkable list from project stories and active selection indices."
+            },
+            {
+              "name": "get_selected_indices",
+              "sig": "get_selected_indices(self)",
+              "start_line": 149,
+              "end_line": 157,
+              "doc": "Return sorted 0-based indices of all checked story items."
+            },
+            {
+              "name": "set_selected_indices",
+              "sig": "set_selected_indices(self, selected_indices, emit)",
+              "start_line": 159,
+              "end_line": 177,
+              "doc": "Update item check states without rebuilding the list."
+            },
+            {
+              "name": "select_all",
+              "sig": "select_all(self)",
+              "start_line": 179,
+              "end_line": 180,
+              "doc": ""
+            },
+            {
+              "name": "clear_selection",
+              "sig": "clear_selection(self)",
+              "start_line": 182,
+              "end_line": 183,
+              "doc": ""
+            },
+            {
+              "name": "update_count_label",
+              "sig": "update_count_label(self)",
+              "start_line": 185,
+              "end_line": 188,
+              "doc": ""
+            },
+            {
+              "name": "_on_item_changed",
+              "sig": "_on_item_changed(self, item)",
+              "start_line": 190,
+              "end_line": 198,
+              "doc": ""
+            },
+            {
+              "name": "_on_current_row_changed",
+              "sig": "_on_current_row_changed(self, row)",
+              "start_line": 200,
+              "end_line": 207,
+              "doc": ""
+            }
+          ]
+        }
+      ],
+      "functions": []
     },
     "export/subtitles.py": {
       "path": "export/subtitles.py",
@@ -4549,7 +4669,7 @@
     },
     "installer/build_tools/config.py": {
       "path": "installer/build_tools/config.py",
-      "lines": 211,
+      "lines": 212,
       "summary": "Build configuration constants and CLI argument parser.",
       "exports": null,
       "classes": [],
@@ -4557,8 +4677,8 @@
         {
           "name": "parse_build_args",
           "sig": "parse_build_args()",
-          "start_line": 136,
-          "end_line": 211,
+          "start_line": 137,
+          "end_line": 212,
           "doc": "Parse build target, plugin selection, installer, and version CLI flags."
         }
       ]
@@ -8514,7 +8634,7 @@
     },
     "plugins/wordpress/wp_tab_widget.py": {
       "path": "plugins/wordpress/wp_tab_widget.py",
-      "lines": 979,
+      "lines": 991,
       "summary": "WordPress export tab configuration widget and preview controller.",
       "exports": null,
       "classes": [
@@ -8524,7 +8644,7 @@
             "QWidget"
           ],
           "start_line": 42,
-          "end_line": 978,
+          "end_line": 990,
           "doc": "Configuration and preview panel for WordPress Draft Posts.",
           "methods": [
             {
@@ -8878,38 +8998,45 @@
               "doc": "Persist current post state and clean up temp files on widget/dialog closure."
             },
             {
+              "name": "select_story_index",
+              "sig": "select_story_index(self, story_idx)",
+              "start_line": 819,
+              "end_line": 826,
+              "doc": ""
+            },
+            {
               "name": "rebuild_post_items",
               "sig": "rebuild_post_items(self, scope)",
-              "start_line": 819,
-              "end_line": 857,
+              "start_line": 828,
+              "end_line": 869,
               "doc": ""
             },
             {
               "name": "_populate_wp_export_metadata",
               "sig": "_populate_wp_export_metadata(self, force_refresh)",
-              "start_line": 859,
-              "end_line": 926,
+              "start_line": 871,
+              "end_line": 938,
               "doc": ""
             },
             {
               "name": "_prompt_wp_credentials",
               "sig": "_prompt_wp_credentials(self, title, message)",
-              "start_line": 928,
-              "end_line": 941,
+              "start_line": 940,
+              "end_line": 953,
               "doc": ""
             },
             {
               "name": "_refresh_castos_feeds",
               "sig": "_refresh_castos_feeds(self)",
-              "start_line": 943,
-              "end_line": 960,
+              "start_line": 955,
+              "end_line": 972,
               "doc": ""
             },
             {
               "name": "_refresh_wp_metadata",
               "sig": "_refresh_wp_metadata(self)",
-              "start_line": 962,
-              "end_line": 978,
+              "start_line": 974,
+              "end_line": 990,
               "doc": ""
             }
           ]
@@ -11066,7 +11193,7 @@
     },
     "prs_shared.py": {
       "path": "prs_shared.py",
-      "lines": 1494,
+      "lines": 1495,
       "summary": "",
       "exports": null,
       "classes": [
@@ -11301,77 +11428,77 @@
             "QWidget"
           ],
           "start_line": 640,
-          "end_line": 807,
+          "end_line": 808,
           "doc": "A clean, collapsible and expandable section widget with a styled toggle button,",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, title, parent, is_expanded, subtitle)",
               "start_line": 647,
-              "end_line": 676,
+              "end_line": 677,
               "doc": ""
             },
             {
               "name": "_update_ui",
               "sig": "_update_ui(self)",
-              "start_line": 678,
-              "end_line": 776,
+              "start_line": 679,
+              "end_line": 777,
               "doc": ""
             },
             {
               "name": "refresh_theme",
               "sig": "refresh_theme(self)",
-              "start_line": 778,
-              "end_line": 780,
+              "start_line": 779,
+              "end_line": 781,
               "doc": "Re-render header and container styling when application theme changes."
             },
             {
               "name": "_on_btn_clicked",
               "sig": "_on_btn_clicked(self)",
-              "start_line": 782,
-              "end_line": 783,
+              "start_line": 783,
+              "end_line": 784,
               "doc": ""
             },
             {
               "name": "set_expanded",
               "sig": "set_expanded(self, expanded)",
-              "start_line": 785,
-              "end_line": 790,
+              "start_line": 786,
+              "end_line": 791,
               "doc": ""
             },
             {
               "name": "is_expanded",
               "sig": "is_expanded(self)",
-              "start_line": 792,
-              "end_line": 793,
+              "start_line": 793,
+              "end_line": 794,
               "doc": ""
             },
             {
               "name": "set_title",
               "sig": "set_title(self, title)",
-              "start_line": 795,
-              "end_line": 797,
+              "start_line": 796,
+              "end_line": 798,
               "doc": ""
             },
             {
               "name": "set_subtitle",
               "sig": "set_subtitle(self, subtitle)",
-              "start_line": 799,
-              "end_line": 801,
+              "start_line": 800,
+              "end_line": 802,
               "doc": ""
             },
             {
               "name": "add_widget",
               "sig": "add_widget(self, widget)",
-              "start_line": 803,
-              "end_line": 804,
+              "start_line": 804,
+              "end_line": 805,
               "doc": ""
             },
             {
               "name": "add_layout",
               "sig": "add_layout(self, layout)",
-              "start_line": 806,
-              "end_line": 807,
+              "start_line": 807,
+              "end_line": 808,
               "doc": ""
             }
           ]
@@ -11381,29 +11508,29 @@
           "bases": [
             "QDialog"
           ],
-          "start_line": 917,
-          "end_line": 1006,
+          "start_line": 918,
+          "end_line": 1007,
           "doc": "",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, parent, has_media, default_name)",
-              "start_line": 918,
-              "end_line": 926,
+              "start_line": 919,
+              "end_line": 927,
               "doc": ""
             },
             {
               "name": "init_ui",
               "sig": "init_ui(self)",
-              "start_line": 928,
-              "end_line": 994,
+              "start_line": 929,
+              "end_line": 995,
               "doc": ""
             },
             {
               "name": "get_settings",
               "sig": "get_settings(self)",
-              "start_line": 996,
-              "end_line": 1006,
+              "start_line": 997,
+              "end_line": 1007,
               "doc": ""
             }
           ]
@@ -11411,29 +11538,29 @@
         {
           "name": "Story",
           "bases": [],
-          "start_line": 1167,
-          "end_line": 1245,
+          "start_line": 1168,
+          "end_line": 1246,
           "doc": "",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, start, end, title, suggestion, metadata, fade_in, fade_out, fade_curve)",
-              "start_line": 1168,
-              "end_line": 1213,
+              "start_line": 1169,
+              "end_line": 1214,
               "doc": ""
             },
             {
               "name": "to_dict",
               "sig": "to_dict(self)",
-              "start_line": 1215,
-              "end_line": 1227,
+              "start_line": 1216,
+              "end_line": 1228,
               "doc": ""
             },
             {
               "name": "from_dict",
               "sig": "from_dict(cls, data)",
-              "start_line": 1230,
-              "end_line": 1245,
+              "start_line": 1231,
+              "end_line": 1246,
               "doc": ""
             }
           ]
@@ -11443,29 +11570,29 @@
           "bases": [
             "QUndoCommand"
           ],
-          "start_line": 1255,
-          "end_line": 1279,
+          "start_line": 1256,
+          "end_line": 1280,
           "doc": "Undo/redo a complete editable project state.",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, main_window, before_state, after_state, description)",
-              "start_line": 1262,
-              "end_line": 1270,
+              "start_line": 1263,
+              "end_line": 1271,
               "doc": ""
             },
             {
               "name": "undo",
               "sig": "undo(self)",
-              "start_line": 1272,
-              "end_line": 1273,
+              "start_line": 1273,
+              "end_line": 1274,
               "doc": ""
             },
             {
               "name": "redo",
               "sig": "redo(self)",
-              "start_line": 1275,
-              "end_line": 1279,
+              "start_line": 1276,
+              "end_line": 1280,
               "doc": ""
             }
           ]
@@ -11482,50 +11609,50 @@
         {
           "name": "platform_seq",
           "sig": "platform_seq(key_str)",
-          "start_line": 832,
-          "end_line": 841,
+          "start_line": 833,
+          "end_line": 842,
           "doc": "Return a QKeySequence adapted for macOS vs Windows/Linux."
         },
         {
           "name": "get_app_icon",
           "sig": "get_app_icon()",
-          "start_line": 843,
-          "end_line": 889,
+          "start_line": 844,
+          "end_line": 890,
           "doc": "Return the application QIcon loaded from bundled resources or fallback to empty."
         },
         {
           "name": "get_license_file_path",
           "sig": "get_license_file_path(filename)",
-          "start_line": 891,
-          "end_line": 909,
+          "start_line": 892,
+          "end_line": 910,
           "doc": "Return the path to a licensing or notice file, checking bundle and source paths."
         },
         {
           "name": "create_fade_curve_pixmap",
           "sig": "create_fade_curve_pixmap(curve_type, width, height, is_selected, accent_color, bg_color)",
-          "start_line": 1050,
-          "end_line": 1142,
+          "start_line": 1051,
+          "end_line": 1143,
           "doc": "Render a high-DPI visual curve representation showing the volume attenuation shape."
         },
         {
           "name": "create_fade_curve_icon",
           "sig": "create_fade_curve_icon(curve_type, width, height)",
-          "start_line": 1145,
-          "end_line": 1160,
+          "start_line": 1146,
+          "end_line": 1161,
           "doc": "Return a QIcon containing visual render of the specified audio fade curve."
         },
         {
           "name": "read_document_text",
           "sig": "read_document_text(path)",
-          "start_line": 1317,
-          "end_line": 1383,
+          "start_line": 1318,
+          "end_line": 1384,
           "doc": ""
         },
         {
           "name": "__getattr__",
           "sig": "__getattr__(name)",
-          "start_line": 1470,
-          "end_line": 1487,
+          "start_line": 1471,
+          "end_line": 1488,
           "doc": "Lazy resolver for extracted UI and worker components to eliminate circular import chains."
         }
       ]
@@ -19512,7 +19639,7 @@
     "transcript_story.py": {
       "path": "transcript_story.py",
       "lines": 856,
-      "summary": "Radio & TV Segmenter v3.10.19-beta \u2014 transcript story responsibilities.",
+      "summary": "Radio & TV Segmenter v3.10.20-beta \u2014 transcript story responsibilities.",
       "exports": [
         "TranscriptStoryMixin",
         "Story",

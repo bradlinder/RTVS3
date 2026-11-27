@@ -278,7 +278,7 @@ def setup_wp_mode_and_date_ui(tab_widget: Any, parent_section: Any) -> None:
         "Optional publication date/time applied to the Full Episode and all Stories in this export. "
         "Click to pick from the calendar/time popup or type a date directly; leave blank for the current time."
     )
-    tab_widget.wp_pub_date_edit.setMinimumWidth(260)
+    tab_widget.wp_pub_date_edit.setMinimumWidth(160)
     sched_row.addWidget(tab_widget.wp_pub_date_edit, 1)
 
     tab_widget.wp_clear_date_btn = QPushButton("Clear")
