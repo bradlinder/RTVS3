@@ -260,6 +260,43 @@ class DiagnosticEditorStoryUiTestsMixin:
             assert d_std == d_default, "Standard (36) must reuse legacy thumbnail cache dir"
             assert len({d_std, d_det, d_hi}) == 3, "Density presets must map to distinct cache dirs"
 
+        # 6b-3. Verify Preferences Playback & Timeline Audio Fades layout has zero card overlap or clipping (v3.10.25-beta)
+        from preferences_tabs_media import build_playback_timeline_tab
+        pref_live = {}
+        pref_store = type("PrefStore", (), {"value": lambda s, k, d=None: d})()
+        pref_win = type("PrefWin", (), {
+            "settings_store": pref_store,
+            "skip_seconds": 5,
+            "playback_rate": 1.0,
+            "speed_listening_preroll_seconds": 0.5,
+            "timeline_show_waveform": True,
+            "timeline_show_thumbnails": True,
+            "timeline_thumbnail_position": "below",
+            "timeline_thumbnail_density": "standard",
+            "transcript_selection_mode": "replace",
+            "transcript_auto_scroll": True,
+            "enable_audio_fades": True,
+            "preview_audio_fades": True,
+        })()
+        play_tab = build_playback_timeline_tab(pref_win, None, pref_live, lambda *a, **kw: None)
+        play_tab.resize(480, 520)
+        play_tab.show()
+        QApplication.processEvents()
+        curve_sel = pref_live["fade_curve_combo"]
+        curve_rects = [btn.geometry() for _, btn in curve_sel._buttons]
+        assert len(curve_rects) == 4, f"Expected 4 fade curve cards, got {len(curve_rects)}"
+        for i in range(len(curve_rects)):
+            for j in range(i + 1, len(curve_rects)):
+                assert not curve_rects[i].intersects(curve_rects[j]), (
+                    f"Fade curve buttons {i} and {j} overlap: {curve_rects[i]} vs {curve_rects[j]}"
+                )
+        assert max(r.right() for r in curve_rects) <= curve_sel.width() + 2, "Fade curve cards overflow selector width"
+        pref_live["enable_fades_chk"].setChecked(False)
+        QApplication.processEvents()
+        assert not pref_live["fade_curve_combo"].isVisible(), "Unchecking Audio Fades must hide fade curve selector"
+        play_tab.close()
+        play_tab.deleteLater()
+
         # 6c. Verify progressive waveform streaming on TimelineCanvas and timeline_painter
         from timeline_widgets import TimelineCanvas
         from timeline_painter import render_waveform_buffer

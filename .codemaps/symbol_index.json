@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-27 13:31:07",
+  "generated_at": "2026-11-27 13:42:58",
   "total_files": 209,
   "files": {
     "RadioTVSegmenter.py": {
       "path": "RadioTVSegmenter.py",
       "lines": 686,
-      "summary": "Radio & TV Segmenter \u2014 v3.10.24-beta",
+      "summary": "Radio & TV Segmenter \u2014 v3.10.25-beta",
       "exports": null,
       "classes": [
         {
@@ -2439,7 +2439,7 @@
     },
     "diagnostics/editor_story_ui_tests.py": {
       "path": "diagnostics/editor_story_ui_tests.py",
-      "lines": 612,
+      "lines": 649,
       "summary": "Story transcript highlighting, smart copy, duration & header diagnostic tests.",
       "exports": null,
       "classes": [
@@ -2447,21 +2447,21 @@
           "name": "DiagnosticEditorStoryUiTestsMixin",
           "bases": [],
           "start_line": 9,
-          "end_line": 612,
+          "end_line": 649,
           "doc": "",
           "methods": [
             {
               "name": "_test_story_transcript_highlighting_and_smart_copy",
               "sig": "_test_story_transcript_highlighting_and_smart_copy(self, item)",
               "start_line": 10,
-              "end_line": 429,
+              "end_line": 466,
               "doc": "Validates story selection synchronization with transcript highlight overlay and smart clipboard copying."
             },
             {
               "name": "_test_story_duration_visibility_and_header_aggregation",
               "sig": "_test_story_duration_visibility_and_header_aggregation(self, item)",
-              "start_line": 431,
-              "end_line": 612,
+              "start_line": 468,
+              "end_line": 649,
               "doc": "Validates story clock duration formatting, 2-line sidebar item format, and multi-selection header aggregation."
             }
           ]
@@ -10618,7 +10618,7 @@
     },
     "preferences_tabs_media.py": {
       "path": "preferences_tabs_media.py",
-      "lines": 712,
+      "lines": 730,
       "summary": "Radio & TV Story Segmenter \u2014 Preferences Modal Media & Workflow Tab Builders.",
       "exports": null,
       "classes": [],
@@ -10627,35 +10627,35 @@
           "name": "build_playback_timeline_tab",
           "sig": "build_playback_timeline_tab(win, dialog, live_widgets, add_custom_defaults_btn)",
           "start_line": 22,
-          "end_line": 163,
+          "end_line": 181,
           "doc": ""
         },
         {
           "name": "build_detection_tab",
           "sig": "build_detection_tab(win, dialog, live_widgets, add_custom_defaults_btn)",
-          "start_line": 166,
-          "end_line": 291,
+          "start_line": 184,
+          "end_line": 309,
           "doc": ""
         },
         {
           "name": "build_batch_tab",
           "sig": "build_batch_tab(win, dialog, live_widgets, add_custom_defaults_btn)",
-          "start_line": 294,
-          "end_line": 417,
+          "start_line": 312,
+          "end_line": 435,
           "doc": ""
         },
         {
           "name": "build_cleanup_tab",
           "sig": "build_cleanup_tab(win, dialog, live_widgets, add_custom_defaults_btn)",
-          "start_line": 420,
-          "end_line": 627,
+          "start_line": 438,
+          "end_line": 645,
           "doc": ""
         },
         {
           "name": "build_youtube_tab",
           "sig": "build_youtube_tab(win, dialog, live_widgets, add_custom_defaults_btn)",
-          "start_line": 630,
-          "end_line": 712,
+          "start_line": 648,
+          "end_line": 730,
           "doc": ""
         }
       ]
@@ -17552,7 +17552,7 @@
     },
     "story_widgets.py": {
       "path": "story_widgets.py",
-      "lines": 576,
+      "lines": 592,
       "summary": "Radio & TV Story Segmenter \u2014 Story Sidebar Widgets, Item Delegates, and Undo Commands.",
       "exports": null,
       "classes": [
@@ -17561,57 +17561,57 @@
           "bases": [
             "QWidget"
           ],
-          "start_line": 60,
-          "end_line": 162,
+          "start_line": 61,
+          "end_line": 178,
           "doc": "Visual selector widget providing interactive card buttons for audio fade curves.",
           "methods": [
             {
               "name": "__init__",
-              "sig": "__init__(self, parent, button_width, button_height)",
-              "start_line": 65,
-              "end_line": 118,
+              "sig": "__init__(self, parent, button_width, button_height, columns)",
+              "start_line": 66,
+              "end_line": 134,
               "doc": ""
             },
             {
               "name": "_on_button_toggled",
               "sig": "_on_button_toggled(self, checked)",
-              "start_line": 120,
-              "end_line": 129,
+              "start_line": 136,
+              "end_line": 145,
               "doc": ""
             },
             {
               "name": "currentData",
               "sig": "currentData(self)",
-              "start_line": 131,
-              "end_line": 132,
+              "start_line": 147,
+              "end_line": 148,
               "doc": ""
             },
             {
               "name": "setCurrentData",
               "sig": "setCurrentData(self, curve_type)",
-              "start_line": 134,
-              "end_line": 145,
+              "start_line": 150,
+              "end_line": 161,
               "doc": ""
             },
             {
               "name": "findData",
               "sig": "findData(self, curve_type)",
-              "start_line": 147,
-              "end_line": 152,
+              "start_line": 163,
+              "end_line": 168,
               "doc": ""
             },
             {
               "name": "currentIndex",
               "sig": "currentIndex(self)",
-              "start_line": 154,
-              "end_line": 158,
+              "start_line": 170,
+              "end_line": 174,
               "doc": ""
             },
             {
               "name": "setCurrentIndex",
               "sig": "setCurrentIndex(self, idx)",
-              "start_line": 160,
-              "end_line": 162,
+              "start_line": 176,
+              "end_line": 178,
               "doc": ""
             }
           ]
@@ -17621,36 +17621,36 @@
           "bases": [
             "QUndoCommand"
           ],
-          "start_line": 179,
-          "end_line": 213,
+          "start_line": 195,
+          "end_line": 229,
           "doc": "Discrete undo/redo command for story audio fade-in, fade-out, and curve adjustments.",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, main_window, story_index, old_in, old_out, new_in, new_out, old_curve, new_curve, description)",
-              "start_line": 182,
-              "end_line": 191,
+              "start_line": 198,
+              "end_line": 207,
               "doc": ""
             },
             {
               "name": "undo",
               "sig": "undo(self)",
-              "start_line": 193,
-              "end_line": 198,
+              "start_line": 209,
+              "end_line": 214,
               "doc": ""
             },
             {
               "name": "redo",
               "sig": "redo(self)",
-              "start_line": 200,
-              "end_line": 205,
+              "start_line": 216,
+              "end_line": 221,
               "doc": ""
             },
             {
               "name": "_sync_ui",
               "sig": "_sync_ui(self)",
-              "start_line": 207,
-              "end_line": 213,
+              "start_line": 223,
+              "end_line": 229,
               "doc": ""
             }
           ]
@@ -17660,29 +17660,29 @@
           "bases": [
             "QUndoCommand"
           ],
-          "start_line": 216,
-          "end_line": 240,
+          "start_line": 232,
+          "end_line": 256,
           "doc": "",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, main_window, old_stories, new_stories, description)",
-              "start_line": 217,
-              "end_line": 222,
+              "start_line": 233,
+              "end_line": 238,
               "doc": ""
             },
             {
               "name": "undo",
               "sig": "undo(self)",
-              "start_line": 224,
-              "end_line": 231,
+              "start_line": 240,
+              "end_line": 247,
               "doc": ""
             },
             {
               "name": "redo",
               "sig": "redo(self)",
-              "start_line": 233,
-              "end_line": 240,
+              "start_line": 249,
+              "end_line": 256,
               "doc": ""
             }
           ]
@@ -17692,36 +17692,36 @@
           "bases": [
             "QUndoCommand"
           ],
-          "start_line": 243,
-          "end_line": 278,
+          "start_line": 259,
+          "end_line": 294,
           "doc": "Discrete undo/redo command for story boundary adjustments (start/end times).",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, main_window, story_index, old_start, old_end, new_start, new_end, description)",
-              "start_line": 246,
-              "end_line": 253,
+              "start_line": 262,
+              "end_line": 269,
               "doc": ""
             },
             {
               "name": "undo",
               "sig": "undo(self)",
-              "start_line": 255,
-              "end_line": 259,
+              "start_line": 271,
+              "end_line": 275,
               "doc": ""
             },
             {
               "name": "redo",
               "sig": "redo(self)",
-              "start_line": 261,
-              "end_line": 265,
+              "start_line": 277,
+              "end_line": 281,
               "doc": ""
             },
             {
               "name": "_sync_ui",
               "sig": "_sync_ui(self, start, end)",
-              "start_line": 267,
-              "end_line": 278,
+              "start_line": 283,
+              "end_line": 294,
               "doc": ""
             }
           ]
@@ -17731,29 +17731,29 @@
           "bases": [
             "QUndoCommand"
           ],
-          "start_line": 281,
-          "end_line": 292,
+          "start_line": 297,
+          "end_line": 308,
           "doc": "",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, main_window, old_selection, new_selection, description)",
-              "start_line": 282,
-              "end_line": 286,
+              "start_line": 298,
+              "end_line": 302,
               "doc": ""
             },
             {
               "name": "undo",
               "sig": "undo(self)",
-              "start_line": 288,
-              "end_line": 289,
+              "start_line": 304,
+              "end_line": 305,
               "doc": ""
             },
             {
               "name": "redo",
               "sig": "redo(self)",
-              "start_line": 291,
-              "end_line": 292,
+              "start_line": 307,
+              "end_line": 308,
               "doc": ""
             }
           ]
@@ -17763,29 +17763,29 @@
           "bases": [
             "QStyledItemDelegate"
           ],
-          "start_line": 299,
-          "end_line": 426,
+          "start_line": 315,
+          "end_line": 442,
           "doc": "Renders story items as clean cards with color-coded accent bars, pill badges, and time metadata.",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, parent)",
-              "start_line": 301,
-              "end_line": 302,
+              "start_line": 317,
+              "end_line": 318,
               "doc": ""
             },
             {
               "name": "sizeHint",
               "sig": "sizeHint(self, option, index)",
-              "start_line": 304,
-              "end_line": 306,
+              "start_line": 320,
+              "end_line": 322,
               "doc": ""
             },
             {
               "name": "paint",
               "sig": "paint(self, painter, option, index)",
-              "start_line": 308,
-              "end_line": 426,
+              "start_line": 324,
+              "end_line": 442,
               "doc": ""
             }
           ]
@@ -17795,57 +17795,57 @@
           "bases": [
             "QListWidget"
           ],
-          "start_line": 433,
-          "end_line": 576,
+          "start_line": 449,
+          "end_line": 592,
           "doc": "QListWidget subclass for story segmentation list with right-click context menu and drag-drop support.",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, parent)",
-              "start_line": 440,
-              "end_line": 444,
+              "start_line": 456,
+              "end_line": 460,
               "doc": ""
             },
             {
               "name": "dragEnterEvent",
               "sig": "dragEnterEvent(self, event)",
-              "start_line": 446,
-              "end_line": 450,
+              "start_line": 462,
+              "end_line": 466,
               "doc": ""
             },
             {
               "name": "dragMoveEvent",
               "sig": "dragMoveEvent(self, event)",
-              "start_line": 452,
-              "end_line": 456,
+              "start_line": 468,
+              "end_line": 472,
               "doc": ""
             },
             {
               "name": "dropEvent",
               "sig": "dropEvent(self, event)",
-              "start_line": 458,
-              "end_line": 465,
+              "start_line": 474,
+              "end_line": 481,
               "doc": ""
             },
             {
               "name": "keyPressEvent",
               "sig": "keyPressEvent(self, event)",
-              "start_line": 467,
-              "end_line": 499,
+              "start_line": 483,
+              "end_line": 515,
               "doc": ""
             },
             {
               "name": "_show_context_menu",
               "sig": "_show_context_menu(self, pos)",
-              "start_line": 501,
-              "end_line": 565,
+              "start_line": 517,
+              "end_line": 581,
               "doc": ""
             },
             {
               "name": "adjust_height_to_contents",
               "sig": "adjust_height_to_contents(self, min_h, max_h)",
-              "start_line": 567,
-              "end_line": 576,
+              "start_line": 583,
+              "end_line": 592,
               "doc": "Dynamically size the list widget to only fit the number of stories."
             }
           ]
@@ -17855,22 +17855,22 @@
         {
           "name": "_get_fade_curve_profiles",
           "sig": "_get_fade_curve_profiles()",
-          "start_line": 46,
-          "end_line": 48,
+          "start_line": 47,
+          "end_line": 49,
           "doc": ""
         },
         {
           "name": "_get_fade_curve_icon",
           "sig": "_get_fade_curve_icon(cid, width, height)",
-          "start_line": 51,
-          "end_line": 53,
+          "start_line": 52,
+          "end_line": 54,
           "doc": ""
         },
         {
           "name": "_trigger_project_save",
           "sig": "_trigger_project_save(main_window)",
-          "start_line": 169,
-          "end_line": 176,
+          "start_line": 185,
+          "end_line": 192,
           "doc": "Queue a debounced save when supported, falling back to immediate save."
         }
       ]
@@ -20013,7 +20013,7 @@
     "transcript_story.py": {
       "path": "transcript_story.py",
       "lines": 856,
-      "summary": "Radio & TV Segmenter v3.10.24-beta \u2014 transcript story responsibilities.",
+      "summary": "Radio & TV Segmenter v3.10.25-beta \u2014 transcript story responsibilities.",
       "exports": [
         "TranscriptStoryMixin",
         "Story",

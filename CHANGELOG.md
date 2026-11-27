@@ -1,5 +1,12 @@
 # Changelog
 
+## v3.10.25-beta
+- **Fix Overlapping & Clipped Controls in Preferences Audio Fades (`preferences_tabs_media.py`, `story_widgets.py`, `diagnostics/editor_story_ui_tests.py`)**:
+  - **Eliminate Double-Indented Audio Fades Form Layout (`preferences_tabs_media.py`)**:
+    - Removed the nested `play_form.addRow("", fades_sub_widget)` sub-form that pushed Audio Fades sub-controls into the narrow right column, placing **Fade Audio Preview**, **Default Story Fade-In**, **Default Story Fade-Out**, and **Default Fade Curve** directly into `play_form` with `setRowVisible()` toggling and wrapping the **Playback & Timeline** tab in a borderless `QScrollArea`.
+  - **2×2 Responsive Grid Mode for `FadeCurveVisualSelector` (`story_widgets.py`)**:
+    - Added an optional `columns` parameter to `FadeCurveVisualSelector` (using a `2×2` `QGridLayout` at `118×58px` per card in Preferences while keeping the horizontal `1×4` strip intact in `StoryFadesDialog`), fixing overlapping `Linear` / `S-Curve` / `Logarithmic` / `Exponential` curve cards and right-edge text clipping on `Preview audio fades in real-time during playback`, backed by a live Qt geometry-overlap regression test.
+
 ## v3.10.24-beta
 - **Two-Step Standalone Detect Segments Dialog & Concise `Custom Selection` Export Scope Label (`story_detect_dialog.py`, `export/dialog.py`, `diagnostics/editor_story_ui_tests.py`, `diagnostics/export_wordpress_core.py`)**:
   - **Streamlined Two-Step Standalone Detect Segments Flow (`story_detect_dialog.py`)**:
@@ -7,12 +14,3 @@
     - Clicking **Apply** in `DetectStoriesSettingsDialog` returns the user to the confirmation dialog with the updated summary line (marking one-time overrides vs. saved defaults) before running detection.
   - **Concise Export Scope Label (`export/dialog.py`)**:
     - Shortened the `"selected_stories"` scope dropdown label in `UnifiedExportDialog` from `Selected Segments / Custom Selection` to **`Custom Selection`** and updated diagnostic assertions.
-
-## v3.10.23-beta
-- **Standalone Detect Stories One-Time Threshold Override Dialog & Bounded Timeline Thumbnail Density Presets (`story_detect_dialog.py`, `story_detection_processing.py`, `background_workers.py`, `media_batch.py`, `RadioTVSegmenter.py`, `preferences_tabs_media.py`, `preferences_dialog.py`, `preferences_reset.py`, `preferences_reset_dialog.py`, `timeline_context_menus.py`, `installer/build_tools/config.py`, `diagnostics/editor_story_ui_tests.py`, `diagnostics/system_runtime_tests.py`)**:
-  - **Standalone Detect Stories One-Time Override Dialog (`story_detect_dialog.py`, `story_detection_processing.py`, `installer/build_tools/config.py`)**:
-    - Added compact `StandaloneDetectStoriesDialog` (registered in PyInstaller `HIDDEN_IMPORTS`) shown whenever running standalone **Detect Stories / Segments** (while keeping multi-stage **Run Processing** and Batch mode non-interactive).
-    - Presents **Silence Gap Threshold** and **Minimum Segment Length** up front, tucks **Detection Basis** and **Lead-In Padding** inside a collapsed **More Options** section, merges the existing overwrite warning inline when stories already exist, and defaults to a one-time run-only override unless **Save these values as my new defaults** is checked.
-  - **Bounded Timeline Thumbnail Density Presets (`background_workers.py`, `media_batch.py`, `RadioTVSegmenter.py`, `preferences_tabs_media.py`, `preferences_dialog.py`, `preferences_reset.py`, `preferences_reset_dialog.py`, `timeline_context_menus.py`)**:
-    - Added three memory-bounded timeline thumbnail density presets — **Standard (36 frames)**, **Detailed (90 frames)**, and **High (180 frames)** (capped safely at 200 frames in `VideoThumbnailWorker`) — selectable in **Preferences → Media / Timeline** and via a checkable **Regenerate Video Thumbnails** submenu on the timeline right-click menu.
-    - Isolated cache directories per density preset while preserving backward-compatible cache reuse for Standard (36), added automatic background regeneration when changing density in Preferences, guarded `QAction.triggered(bool)` slot dispatch, and added regression tests.

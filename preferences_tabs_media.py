@@ -6,11 +6,11 @@ data cleanup, and YouTube Studio tab builders.
 
 import logging
 from pathlib import Path
-from PySide6.QtCore import QSettings
+from PySide6.QtCore import QSettings, Qt
 from PySide6.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QFormLayout, QGroupBox, QLabel,
-    QLineEdit, QSpinBox, QDoubleSpinBox, QComboBox, QCheckBox, QPushButton,
-    QFileDialog, QMessageBox
+    QWidget, QVBoxLayout, QHBoxLayout, QFormLayout, QFrame, QGroupBox, QLabel,
+    QLineEdit, QScrollArea, QSpinBox, QDoubleSpinBox, QComboBox, QCheckBox,
+    QPushButton, QFileDialog, QMessageBox
 )
 
 from prs_shared import INTERNAL_APP_ID, FadeCurveVisualSelector
@@ -20,6 +20,12 @@ logger = logging.getLogger(__name__)
 
 
 def build_playback_timeline_tab(win, dialog, live_widgets, add_custom_defaults_btn) -> QWidget:
+    page_play_scroll = QScrollArea()
+    page_play_scroll.setWidgetResizable(True)
+    page_play_scroll.setFrameShape(QFrame.Shape.NoFrame)
+    page_play_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+    page_play_scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+
     page_play = QWidget()
     play_layout = QVBoxLayout(page_play)
     play_form = QFormLayout()
@@ -111,16 +117,14 @@ def build_playback_timeline_tab(win, dialog, live_widgets, add_custom_defaults_b
     play_form.addRow("Audio Fades:", enable_fades_chk)
     live_widgets["enable_fades_chk"] = enable_fades_chk
 
-    fades_sub_widget = QWidget()
-    fades_sub_layout = QFormLayout(fades_sub_widget)
-    fades_sub_layout.setContentsMargins(0, 0, 0, 0)
-
+    preview_fades_lbl = QLabel("Fade Audio Preview:")
     preview_fades_chk = QCheckBox("Preview audio fades in real-time during playback")
     preview_fades_chk.setToolTip("Modulates preview audio playback volume in real-time when crossing story fade-in and fade-out envelopes.")
     preview_fades_chk.setChecked(getattr(win, "preview_audio_fades", False))
-    fades_sub_layout.addRow("Fade Audio Preview:", preview_fades_chk)
+    play_form.addRow(preview_fades_lbl, preview_fades_chk)
     live_widgets["preview_fades_chk"] = preview_fades_chk
 
+    fade_in_lbl = QLabel("Default Story Fade-In:")
     fade_in_spin = QDoubleSpinBox()
     fade_in_spin.setRange(0.0, 10.0)
     fade_in_spin.setSingleStep(0.1)
@@ -128,9 +132,10 @@ def build_playback_timeline_tab(win, dialog, live_widgets, add_custom_defaults_b
     fade_in_spin.setValue(float(win.settings_store.value("default_fade_in_duration", 0.0)))
     fade_in_spin.setSuffix(" sec")
     fade_in_spin.setToolTip("Default audio fade-in duration automatically applied to newly created stories.")
-    fades_sub_layout.addRow("Default Story Fade-In:", fade_in_spin)
+    play_form.addRow(fade_in_lbl, fade_in_spin)
     live_widgets["fade_in_spin"] = fade_in_spin
 
+    fade_out_lbl = QLabel("Default Story Fade-Out:")
     fade_out_spin = QDoubleSpinBox()
     fade_out_spin.setRange(0.0, 10.0)
     fade_out_spin.setSingleStep(0.1)
@@ -138,20 +143,32 @@ def build_playback_timeline_tab(win, dialog, live_widgets, add_custom_defaults_b
     fade_out_spin.setValue(float(win.settings_store.value("default_fade_out_duration", 1.0)))
     fade_out_spin.setSuffix(" sec")
     fade_out_spin.setToolTip("Default audio fade-out duration automatically applied to newly created stories.")
-    fades_sub_layout.addRow("Default Story Fade-Out:", fade_out_spin)
+    play_form.addRow(fade_out_lbl, fade_out_spin)
     live_widgets["fade_out_spin"] = fade_out_spin
 
-    fade_curve_combo = FadeCurveVisualSelector(parent=fades_sub_widget)
+    fade_curve_lbl = QLabel("Default Fade Curve:")
+    fade_curve_combo = FadeCurveVisualSelector(parent=page_play, button_width=118, button_height=58, columns=2)
     curr_def_curve = str(win.settings_store.value("default_fade_curve", "linear") or "linear")
     fade_curve_combo.setCurrentData(curr_def_curve)
     fade_curve_combo.setToolTip("Default volume envelope curve profile applied to audio fade transitions.")
-    fades_sub_layout.addRow("Default Fade Curve:", fade_curve_combo)
+    play_form.addRow(fade_curve_lbl, fade_curve_combo)
     live_widgets["fade_curve_combo"] = fade_curve_combo
 
-    play_form.addRow("", fades_sub_widget)
+    fade_sub_rows = [
+        (preview_fades_lbl, preview_fades_chk),
+        (fade_in_lbl, fade_in_spin),
+        (fade_out_lbl, fade_out_spin),
+        (fade_curve_lbl, fade_curve_combo),
+    ]
 
     def _update_fades_options_visibility(enabled):
-        fades_sub_widget.setVisible(bool(enabled))
+        vis = bool(enabled)
+        for lbl_w, fld_w in fade_sub_rows:
+            if hasattr(play_form, "setRowVisible"):
+                play_form.setRowVisible(fld_w, vis)
+            else:
+                lbl_w.setVisible(vis)
+                fld_w.setVisible(vis)
 
     enable_fades_chk.toggled.connect(_update_fades_options_visibility)
     _update_fades_options_visibility(enable_fades_chk.isChecked())
@@ -160,7 +177,8 @@ def build_playback_timeline_tab(win, dialog, live_widgets, add_custom_defaults_b
 
     add_custom_defaults_btn(play_layout, "Playback & Timeline", ["playback_timeline", "audio_fades"])
     play_layout.addStretch()
-    return page_play
+    page_play_scroll.setWidget(page_play)
+    return page_play_scroll
 
 
 def build_detection_tab(win, dialog, live_widgets, add_custom_defaults_btn) -> QWidget:

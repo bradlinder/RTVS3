@@ -28,6 +28,7 @@ from PySide6.QtGui import (
 )
 from PySide6.QtWidgets import (
     QButtonGroup,
+    QGridLayout,
     QListWidget,
     QListWidgetItem,
     QMenu,
@@ -62,18 +63,27 @@ class FadeCurveVisualSelector(QWidget):
     currentDataChanged = Signal(str)
     currentIndexChanged = Signal(int)
 
-    def __init__(self, parent=None, button_width=92, button_height=60):
+    def __init__(self, parent=None, button_width=92, button_height=60, columns=4):
         super().__init__(parent)
         self._current_data = "linear"
         self._buttons = []
         self._button_group = QButtonGroup(self)
         self._button_group.setExclusive(True)
 
-        layout = QHBoxLayout(self)
-        layout.setContentsMargins(0, 2, 0, 2)
-        layout.setSpacing(8)
-
         profiles = _get_fade_curve_profiles()
+        eff_cols = max(1, int(columns or len(profiles) or 1))
+        use_grid = eff_cols < len(profiles)
+
+        if use_grid:
+            layout = QGridLayout(self)
+            layout.setContentsMargins(0, 2, 0, 2)
+            layout.setHorizontalSpacing(8)
+            layout.setVerticalSpacing(8)
+        else:
+            layout = QHBoxLayout(self)
+            layout.setContentsMargins(0, 2, 0, 2)
+            layout.setSpacing(8)
+
         for idx, profile in enumerate(profiles):
             cid = profile["id"]
             btn = QToolButton(self)
@@ -111,10 +121,16 @@ class FadeCurveVisualSelector(QWidget):
 
             self._button_group.addButton(btn, idx)
             btn.toggled.connect(self._on_button_toggled)
-            layout.addWidget(btn)
+            if use_grid:
+                layout.addWidget(btn, idx // eff_cols, idx % eff_cols)
+            else:
+                layout.addWidget(btn)
             self._buttons.append((cid, btn))
 
-        layout.addStretch()
+        if use_grid:
+            layout.setColumnStretch(eff_cols, 1)
+        else:
+            layout.addStretch()
         self.setCurrentData("linear")
 
     def _on_button_toggled(self, checked):
