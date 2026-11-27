@@ -53,7 +53,6 @@ GRANDFATHERED_LEGACY_MODULES = {
     "media_batch.py",
     "voice_profile_dialog.py",
     "runtime_manager.py",
-    "updater.py",
     "background_workers.py",
     "speaker_dialogs.py",
     "worker_asr_engines.py",

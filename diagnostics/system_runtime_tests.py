@@ -57,8 +57,45 @@ class DiagnosticSystemRuntimeTestsMixin:
                     code_str = eval('(' + m.group(1) + ')')
                     compile(code_str, '<rtvs_update_helper.py>', 'exec')
 
+            # Verify Milestone 3.1a modular decomposition & facade identity parity
+            import updater_core
+            import updater_workers
+            import updater_dialog
+
+            assert updater.launch_and_install is updater_core.launch_and_install
+            assert updater.cleanup_old_installers is updater_core.cleanup_old_installers
+            assert updater.fetch_releases is updater_core.fetch_releases
+            assert updater.CheckUpdateWorker is updater_workers.CheckUpdateWorker
+            assert updater.DownloadUpdateWorker is updater_workers.DownloadUpdateWorker
+            assert updater.CheckUpdateDialog is updater_dialog.CheckUpdateDialog
+            assert updater.UpdaterMixin is updater_dialog.UpdaterMixin
+
+            # Verify CheckUpdateDialog instantiates safely with auto_start=False
+            from PySide6.QtWidgets import QApplication
+            _app = QApplication.instance() or QApplication([])
+            dlg = updater.CheckUpdateDialog(parent=None, auto_start=False)
+            assert dlg.repo
+            assert dlg.action_btn is not None
+            dlg.close()
+
+            # Source-mode checks: headless core/workers isolation & PyInstaller HIDDEN_IMPORTS
+            for headless_mod_name in ("updater_core.py", "updater_workers.py"):
+                mod_file = PROJECT_ROOT / headless_mod_name
+                if mod_file.is_file():
+                    import ast
+                    tree = ast.parse(mod_file.read_text(encoding="utf-8"))
+                    for node in tree.body:
+                        if isinstance(node, ast.ImportFrom) and node.module and "QtWidgets" in node.module:
+                            raise AssertionError(f"{headless_mod_name} must not have top-level QtWidgets imports")
+
+            cfg_file = PROJECT_ROOT / "installer" / "build_tools" / "config.py"
+            if cfg_file.is_file():
+                from installer.build_tools.config import HIDDEN_IMPORTS
+                for hidden_mod in ("updater", "updater_core", "updater_workers", "updater_dialog"):
+                    assert hidden_mod in HIDDEN_IMPORTS, f"Missing {hidden_mod} in PyInstaller HIDDEN_IMPORTS"
+
         item.status = "PASS"
-        item.message = "Detached update helper script architecture, script syntax compilation, and logging validated"
+        item.message = "Detached update helper script architecture, modular facade parity, dialog init, and logging validated"
 
     def _test_multiprocessing_freeze_support_and_spawn_intercept(self, item: DiagnosticItem):
         """Validates that frozen process spawn intercepts -c invocations from resource_tracker and multiprocessing."""
@@ -372,6 +409,10 @@ class DiagnosticSystemRuntimeTestsMixin:
             "plugins/wordpress/episode_lookup.py",
             "plugins/wordpress/episode_updater_ui.py",
             "plugins/wordpress/pub_date_picker.py",
+            "updater.py",
+            "updater_core.py",
+            "updater_workers.py",
+            "updater_dialog.py",
         ]
 
         violations = []

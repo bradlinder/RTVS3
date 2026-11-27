@@ -33,6 +33,7 @@ _MAIN_THREAD_TEST_HANDLERS: frozenset[str] = frozenset({
     "_test_station_voice_checkbox_and_threshold_normalization",
     "_test_offline_spellcheck_and_metadata_terminology_alignment",
     "_test_menu_bar_deduplication_and_escaping_integrity",
+    "_test_windows_detached_update_helper_architecture",
 })
 
 _GUI_SOURCE_MARKERS = (
@@ -51,6 +52,7 @@ _GUI_SOURCE_MARKERS = (
     "GlossaryDialog",
     "ManageVoiceProfilesDialog",
     "AudioLoudnessNormalizationDialog",
+    "CheckUpdateDialog",
 )
 
 

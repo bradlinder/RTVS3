@@ -67,7 +67,7 @@ def check_modular_budget() -> Tuple[bool, str]:
     GRANDFATHERED = {
         "prs_shared.py", "processing.py",
         "media_batch.py", "voice_profile_dialog.py",
-        "runtime_manager.py", "updater.py",
+        "runtime_manager.py",
         "background_workers.py", "ui_layout.py",
         "plugins/wordpress/client.py", "export/dialog.py"
     }

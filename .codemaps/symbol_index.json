@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-26 13:25:49",
-  "total_files": 202,
+  "generated_at": "2026-11-27 12:20:15",
+  "total_files": 205,
   "files": {
     "RadioTVSegmenter.py": {
       "path": "RadioTVSegmenter.py",
       "lines": 684,
-      "summary": "Radio & TV Segmenter \u2014 v3.10.18-beta",
+      "summary": "Radio & TV Segmenter \u2014 v3.10.19-beta",
       "exports": null,
       "classes": [
         {
@@ -1897,7 +1897,7 @@
     },
     "diagnostic_dialog.py": {
       "path": "diagnostic_dialog.py",
-      "lines": 386,
+      "lines": 388,
       "summary": "PySide6 Graphical Test Bench Dialog for Radio & TV Story Segmenter.",
       "exports": null,
       "classes": [],
@@ -1905,8 +1905,8 @@
         {
           "name": "create_diagnostic_dialog",
           "sig": "create_diagnostic_dialog(parent, include_dev_tests)",
-          "start_line": 57,
-          "end_line": 386,
+          "start_line": 59,
+          "end_line": 388,
           "doc": "Builds the Diagnostic Test Bench Qt Dialog."
         }
       ]
@@ -2634,7 +2634,7 @@
     },
     "diagnostics/system_runtime_tests.py": {
       "path": "diagnostics/system_runtime_tests.py",
-      "lines": 401,
+      "lines": 442,
       "summary": "System runtime, updater, theme, packaging, roadmap, and modularity diagnostic tests.",
       "exports": null,
       "classes": [
@@ -2642,70 +2642,70 @@
           "name": "DiagnosticSystemRuntimeTestsMixin",
           "bases": [],
           "start_line": 14,
-          "end_line": 401,
+          "end_line": 442,
           "doc": "",
           "methods": [
             {
               "name": "_test_windows_detached_update_helper_architecture",
               "sig": "_test_windows_detached_update_helper_architecture(self, item)",
               "start_line": 15,
-              "end_line": 61,
+              "end_line": 98,
               "doc": "Validates update helper architecture: helper script generation, exit polling, and logging."
             },
             {
               "name": "_test_multiprocessing_freeze_support_and_spawn_intercept",
               "sig": "_test_multiprocessing_freeze_support_and_spawn_intercept(self, item)",
-              "start_line": 63,
-              "end_line": 84,
+              "start_line": 100,
+              "end_line": 121,
               "doc": "Validates that frozen process spawn intercepts -c invocations from resource_tracker and multiprocessing."
             },
             {
               "name": "_resolve_worker_cmd",
               "sig": "_resolve_worker_cmd(self)",
-              "start_line": 86,
-              "end_line": 100,
+              "start_line": 123,
+              "end_line": 137,
               "doc": "Resolves the executable and arguments to launch the AI background worker."
             },
             {
               "name": "_test_ai_worker_subprocess_execution_and_ipc_handshake",
               "sig": "_test_ai_worker_subprocess_execution_and_ipc_handshake(self, item)",
-              "start_line": 102,
-              "end_line": 168,
+              "start_line": 139,
+              "end_line": 205,
               "doc": "Spawns the AI worker binary in an isolated subprocess, verifying IPC hello handshake and self-test."
             },
             {
               "name": "_test_frozen_subprocess_multiprocessing_spawn_protocol",
               "sig": "_test_frozen_subprocess_multiprocessing_spawn_protocol(self, item)",
-              "start_line": 170,
-              "end_line": 208,
+              "start_line": 207,
+              "end_line": 245,
               "doc": "Spawns the AI worker executable with Python -c to verify multiprocessing resource tracker interception."
             },
             {
               "name": "_test_option_c_muted_silver_fog_light_theme_and_dark_mode_clipboard_formatting",
               "sig": "_test_option_c_muted_silver_fog_light_theme_and_dark_mode_clipboard_formatting(self, item)",
-              "start_line": 210,
-              "end_line": 263,
+              "start_line": 247,
+              "end_line": 300,
               "doc": "Validates Option C muted low-contrast silver/fog palette and dark-mode clipboard rich styling."
             },
             {
               "name": "_test_windows_ci_build_and_packaging_optimization_invariants",
               "sig": "_test_windows_ci_build_and_packaging_optimization_invariants(self, item)",
-              "start_line": 265,
-              "end_line": 297,
+              "start_line": 302,
+              "end_line": 334,
               "doc": "Validates Inno Setup compression parameters, Stage 3 PyInstaller optimizations, and CI settings."
             },
             {
               "name": "_test_roadmap_n_1_sliding_window_and_status_integrity",
               "sig": "_test_roadmap_n_1_sliding_window_and_status_integrity(self, item)",
-              "start_line": 299,
-              "end_line": 318,
+              "start_line": 336,
+              "end_line": 355,
               "doc": "Validates roadmap.txt N-1 sliding window retention, status indicator syntax, and version sync."
             },
             {
               "name": "_test_source_file_modularity_and_1000_line_budget_invariant",
               "sig": "_test_source_file_modularity_and_1000_line_budget_invariant(self, item)",
-              "start_line": 320,
-              "end_line": 401,
+              "start_line": 357,
+              "end_line": 442,
               "doc": "Validates that recently decomposed modules adhere to the 1,000-line modular budget,"
             }
           ]
@@ -4549,7 +4549,7 @@
     },
     "installer/build_tools/config.py": {
       "path": "installer/build_tools/config.py",
-      "lines": 208,
+      "lines": 211,
       "summary": "Build configuration constants and CLI argument parser.",
       "exports": null,
       "classes": [],
@@ -4557,8 +4557,8 @@
         {
           "name": "parse_build_args",
           "sig": "parse_build_args()",
-          "start_line": 133,
-          "end_line": 208,
+          "start_line": 136,
+          "end_line": 211,
           "doc": "Parse build target, plugin selection, installer, and version CLI flags."
         }
       ]
@@ -14200,50 +14200,50 @@
     },
     "scripts/modular_audit.py": {
       "path": "scripts/modular_audit.py",
-      "lines": 771,
+      "lines": 770,
       "summary": "scripts/modular_audit.py \u2014 AST Decomposition Suggester & Modular Budget Guard.",
       "exports": null,
       "classes": [
         {
           "name": "ModuleStructure",
           "bases": [],
-          "start_line": 76,
-          "end_line": 249,
+          "start_line": 75,
+          "end_line": 248,
           "doc": "Detailed structural metrics extracted from a Python module.",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, file_path)",
-              "start_line": 79,
-              "end_line": 96,
+              "start_line": 78,
+              "end_line": 95,
               "doc": ""
             },
             {
               "name": "_analyze",
               "sig": "_analyze(self)",
-              "start_line": 98,
-              "end_line": 172,
+              "start_line": 97,
+              "end_line": 171,
               "doc": ""
             },
             {
               "name": "_extract_class_info",
               "sig": "_extract_class_info(self, node, lines)",
-              "start_line": 174,
-              "end_line": 202,
+              "start_line": 173,
+              "end_line": 201,
               "doc": ""
             },
             {
               "name": "_extract_func_info",
               "sig": "_extract_func_info(self, node, lines)",
-              "start_line": 204,
-              "end_line": 213,
+              "start_line": 203,
+              "end_line": 212,
               "doc": ""
             },
             {
               "name": "_classify_domain",
               "sig": "_classify_domain(name, bases, method_names)",
-              "start_line": 216,
-              "end_line": 249,
+              "start_line": 215,
+              "end_line": 248,
               "doc": "Classifies a class or function into a logical domain based on naming and signatures."
             }
           ]
@@ -14251,36 +14251,36 @@
         {
           "name": "DecompositionPlan",
           "bases": [],
-          "start_line": 256,
-          "end_line": 418,
+          "start_line": 255,
+          "end_line": 417,
           "doc": "Proposed modular decomposition plan for a monolithic source file.",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, structure)",
-              "start_line": 259,
-              "end_line": 267,
+              "start_line": 258,
+              "end_line": 266,
               "doc": ""
             },
             {
               "name": "_classify_method_domain",
               "sig": "_classify_method_domain(m_name)",
-              "start_line": 270,
-              "end_line": 280,
+              "start_line": 269,
+              "end_line": 279,
               "doc": ""
             },
             {
               "name": "_build_plan",
               "sig": "_build_plan(self)",
-              "start_line": 282,
-              "end_line": 385,
+              "start_line": 281,
+              "end_line": 384,
               "doc": ""
             },
             {
               "name": "render_markdown_blueprint",
               "sig": "render_markdown_blueprint(self)",
-              "start_line": 387,
-              "end_line": 418,
+              "start_line": 386,
+              "end_line": 417,
               "doc": ""
             }
           ]
@@ -14290,43 +14290,43 @@
         {
           "name": "scan_repository",
           "sig": "scan_repository(root_dir)",
-          "start_line": 425,
-          "end_line": 437,
+          "start_line": 424,
+          "end_line": 436,
           "doc": "Scans all Python modules in the repository, excluding build/venv directories."
         },
         {
           "name": "print_audit_report",
           "sig": "print_audit_report(structures, warn_threshold, hard_ceiling, sort_by)",
-          "start_line": 440,
-          "end_line": 481,
+          "start_line": 439,
+          "end_line": 480,
           "doc": "Prints a formatted terminal table showing modularity compliance."
         },
         {
           "name": "check_budget_guard",
           "sig": "check_budget_guard(structures, hard_ceiling, warn_threshold, exempt_paths)",
-          "start_line": 484,
-          "end_line": 517,
+          "start_line": 483,
+          "end_line": 516,
           "doc": "Programmatic budget check suitable for test runner and CI pipelines."
         },
         {
           "name": "check_single_responsibility",
           "sig": "check_single_responsibility(structure, strict)",
-          "start_line": 520,
-          "end_line": 608,
+          "start_line": 519,
+          "end_line": 607,
           "doc": "Analyzes AST domain classification to verify Single Responsibility & Domain Separation."
         },
         {
           "name": "print_srp_report",
           "sig": "print_srp_report(results, strict)",
-          "start_line": 611,
-          "end_line": 655,
+          "start_line": 610,
+          "end_line": 654,
           "doc": "Prints a structured terminal report for Single Responsibility & Domain Separation."
         },
         {
           "name": "main",
           "sig": "main()",
-          "start_line": 658,
-          "end_line": 767,
+          "start_line": 657,
+          "end_line": 766,
           "doc": ""
         }
       ]
@@ -19512,7 +19512,7 @@
     "transcript_story.py": {
       "path": "transcript_story.py",
       "lines": 856,
-      "summary": "Radio & TV Segmenter v3.10.18-beta \u2014 transcript story responsibilities.",
+      "summary": "Radio & TV Segmenter v3.10.19-beta \u2014 transcript story responsibilities.",
       "exports": [
         "TranscriptStoryMixin",
         "Story",
@@ -20503,31 +20503,367 @@
     },
     "updater.py": {
       "path": "updater.py",
-      "lines": 1549,
-      "summary": "Update manager and GitHub release installer for Radio & TV Segmenter.",
-      "exports": null,
+      "lines": 80,
+      "summary": "Update manager and GitHub release installer facade for Radio & TV Segmenter.",
+      "exports": [
+        "APP_DISPLAY_NAME",
+        "DEFAULT_GITHUB_REPO",
+        "INTERNAL_APP_ID",
+        "PROJECT_VERSION",
+        "get_app_data_dir",
+        "get_github_repo",
+        "get_update_channel",
+        "get_app_icon",
+        "parse_version_tuple",
+        "is_version_newer",
+        "is_version_older",
+        "format_byte_size",
+        "_is_trusted_download_url",
+        "_find_release_checksum",
+        "select_best_asset_for_platform",
+        "fetch_releases",
+        "fetch_latest_release",
+        "_write_update_log",
+        "launch_and_install",
+        "cleanup_old_installers",
+        "CheckUpdateWorker",
+        "DownloadUpdateWorker",
+        "CheckUpdateDialog",
+        "UpdaterMixin"
+      ],
+      "classes": [],
+      "functions": []
+    },
+    "updater_core.py": {
+      "path": "updater_core.py",
+      "lines": 758,
+      "summary": "Headless GitHub release metadata, semantic versioning, checksum verification,",
+      "exports": [
+        "APP_DISPLAY_NAME",
+        "DEFAULT_GITHUB_REPO",
+        "INTERNAL_APP_ID",
+        "PROJECT_VERSION",
+        "get_app_data_dir",
+        "get_github_repo",
+        "get_update_channel",
+        "parse_version_tuple",
+        "is_version_newer",
+        "is_version_older",
+        "format_byte_size",
+        "_is_trusted_download_url",
+        "_find_release_checksum",
+        "select_best_asset_for_platform",
+        "fetch_releases",
+        "fetch_latest_release",
+        "_write_update_log",
+        "launch_and_install",
+        "cleanup_old_installers"
+      ],
+      "classes": [],
+      "functions": [
+        {
+          "name": "_show_install_error",
+          "sig": "_show_install_error(parent, title, message)",
+          "start_line": 75,
+          "end_line": 83,
+          "doc": "Lazy Qt error dialog helper invoked only when a GUI parent widget is provided."
+        },
+        {
+          "name": "parse_version_tuple",
+          "sig": "parse_version_tuple(version_str)",
+          "start_line": 86,
+          "end_line": 119,
+          "doc": "Parse version string into comparable numerical components and a pre-release weight tuple."
+        },
+        {
+          "name": "is_version_newer",
+          "sig": "is_version_newer(remote_version_str, current_version_str)",
+          "start_line": 122,
+          "end_line": 129,
+          "doc": "Return True if remote_version_str is strictly newer than current_version_str."
+        },
+        {
+          "name": "is_version_older",
+          "sig": "is_version_older(remote_version_str, current_version_str)",
+          "start_line": 132,
+          "end_line": 139,
+          "doc": "Return True if remote_version_str is strictly older than current_version_str."
+        },
+        {
+          "name": "format_byte_size",
+          "sig": "format_byte_size(num_bytes)",
+          "start_line": 142,
+          "end_line": 149,
+          "doc": ""
+        },
+        {
+          "name": "_is_trusted_download_url",
+          "sig": "_is_trusted_download_url(url)",
+          "start_line": 152,
+          "end_line": 161,
+          "doc": ""
+        },
+        {
+          "name": "_find_release_checksum",
+          "sig": "_find_release_checksum(release_info, asset_name)",
+          "start_line": 164,
+          "end_line": 203,
+          "doc": ""
+        },
+        {
+          "name": "select_best_asset_for_platform",
+          "sig": "select_best_asset_for_platform(assets, target_version, repo)",
+          "start_line": 206,
+          "end_line": 276,
+          "doc": "Select the most suitable release asset dictionary for the current operating system,"
+        },
+        {
+          "name": "fetch_releases",
+          "sig": "fetch_releases(repo, max_releases, channel)",
+          "start_line": 279,
+          "end_line": 342,
+          "doc": "Query GitHub API for published releases, sorted semantically by version number."
+        },
+        {
+          "name": "fetch_latest_release",
+          "sig": "fetch_latest_release(repo)",
+          "start_line": 345,
+          "end_line": 350,
+          "doc": "Query GitHub API for the most recent release (backward-compatibility wrapper)."
+        },
+        {
+          "name": "_write_update_log",
+          "sig": "_write_update_log(msg)",
+          "start_line": 353,
+          "end_line": 363,
+          "doc": "Append timestamped message to the update helper log in LocalAppData."
+        },
+        {
+          "name": "launch_and_install",
+          "sig": "launch_and_install(file_path, parent)",
+          "start_line": 366,
+          "end_line": 673,
+          "doc": ""
+        },
+        {
+          "name": "cleanup_old_installers",
+          "sig": "cleanup_old_installers(max_to_keep, force_all)",
+          "start_line": 676,
+          "end_line": 735,
+          "doc": "Clean up old downloaded application update installers from AppData/updates directory."
+        }
+      ]
+    },
+    "updater_dialog.py": {
+      "path": "updater_dialog.py",
+      "lines": 702,
+      "summary": "Qt UI dialog and main-window mixin for checking, downloading, and installing updates.",
+      "exports": [
+        "get_app_icon",
+        "CheckUpdateDialog",
+        "UpdaterMixin"
+      ],
+      "classes": [
+        {
+          "name": "CheckUpdateDialog",
+          "bases": [
+            "QDialog"
+          ],
+          "start_line": 78,
+          "end_line": 659,
+          "doc": "",
+          "methods": [
+            {
+              "name": "__init__",
+              "sig": "__init__(self, parent, auto_start)",
+              "start_line": 79,
+              "end_line": 109,
+              "doc": ""
+            },
+            {
+              "name": "_build_ui",
+              "sig": "_build_ui(self)",
+              "start_line": 111,
+              "end_line": 246,
+              "doc": ""
+            },
+            {
+              "name": "_on_channel_changed",
+              "sig": "_on_channel_changed(self, index)",
+              "start_line": 248,
+              "end_line": 255,
+              "doc": ""
+            },
+            {
+              "name": "start_check",
+              "sig": "start_check(self)",
+              "start_line": 257,
+              "end_line": 277,
+              "doc": ""
+            },
+            {
+              "name": "_on_releases_loaded",
+              "sig": "_on_releases_loaded(self, releases)",
+              "start_line": 279,
+              "end_line": 314,
+              "doc": ""
+            },
+            {
+              "name": "_on_version_selected",
+              "sig": "_on_version_selected(self, index)",
+              "start_line": 316,
+              "end_line": 320,
+              "doc": ""
+            },
+            {
+              "name": "_display_release",
+              "sig": "_display_release(self, release_info)",
+              "start_line": 322,
+              "end_line": 429,
+              "doc": ""
+            },
+            {
+              "name": "_on_up_to_date",
+              "sig": "_on_up_to_date(self, current_ver, remote_tag)",
+              "start_line": 431,
+              "end_line": 443,
+              "doc": ""
+            },
+            {
+              "name": "_on_update_available",
+              "sig": "_on_update_available(self, release_info, asset_info, is_newer)",
+              "start_line": 445,
+              "end_line": 446,
+              "doc": ""
+            },
+            {
+              "name": "_on_check_error",
+              "sig": "_on_check_error(self, message)",
+              "start_line": 448,
+              "end_line": 454,
+              "doc": ""
+            },
+            {
+              "name": "_handle_primary_action",
+              "sig": "_handle_primary_action(self)",
+              "start_line": 456,
+              "end_line": 470,
+              "doc": ""
+            },
+            {
+              "name": "_confirm_downgrade",
+              "sig": "_confirm_downgrade(self, target_version)",
+              "start_line": 472,
+              "end_line": 487,
+              "doc": "Modal Warning Dialog when selecting a version lower than installed PROJECT_VERSION."
+            },
+            {
+              "name": "start_download",
+              "sig": "start_download(self)",
+              "start_line": 489,
+              "end_line": 519,
+              "doc": ""
+            },
+            {
+              "name": "_on_download_progress",
+              "sig": "_on_download_progress(self, percent, downloaded, total, speed_str)",
+              "start_line": 521,
+              "end_line": 525,
+              "doc": ""
+            },
+            {
+              "name": "_on_download_finished",
+              "sig": "_on_download_finished(self, file_path)",
+              "start_line": 527,
+              "end_line": 534,
+              "doc": ""
+            },
+            {
+              "name": "_on_download_error",
+              "sig": "_on_download_error(self, message)",
+              "start_line": 536,
+              "end_line": 555,
+              "doc": ""
+            },
+            {
+              "name": "_install_and_restart",
+              "sig": "_install_and_restart(self)",
+              "start_line": 557,
+              "end_line": 641,
+              "doc": ""
+            },
+            {
+              "name": "_open_github_release",
+              "sig": "_open_github_release(self)",
+              "start_line": 643,
+              "end_line": 645,
+              "doc": ""
+            },
+            {
+              "name": "_handle_close",
+              "sig": "_handle_close(self)",
+              "start_line": 647,
+              "end_line": 659,
+              "doc": ""
+            }
+          ]
+        },
+        {
+          "name": "UpdaterMixin",
+          "bases": [],
+          "start_line": 662,
+          "end_line": 695,
+          "doc": "",
+          "methods": [
+            {
+              "name": "check_for_updates",
+              "sig": "check_for_updates(self, interactive)",
+              "start_line": 663,
+              "end_line": 669,
+              "doc": ""
+            },
+            {
+              "name": "trigger_silent_update_check",
+              "sig": "trigger_silent_update_check(self)",
+              "start_line": 671,
+              "end_line": 695,
+              "doc": ""
+            }
+          ]
+        }
+      ],
+      "functions": []
+    },
+    "updater_workers.py": {
+      "path": "updater_workers.py",
+      "lines": 189,
+      "summary": "Background QThread workers for GitHub release checking and installer downloads.",
+      "exports": [
+        "CheckUpdateWorker",
+        "DownloadUpdateWorker"
+      ],
       "classes": [
         {
           "name": "CheckUpdateWorker",
           "bases": [
             "QThread"
           ],
-          "start_line": 717,
-          "end_line": 775,
+          "start_line": 37,
+          "end_line": 95,
           "doc": "",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, repo, parent, channel)",
-              "start_line": 723,
-              "end_line": 729,
+              "start_line": 43,
+              "end_line": 49,
               "doc": ""
             },
             {
               "name": "run",
               "sig": "run(self)",
-              "start_line": 731,
-              "end_line": 775,
+              "start_line": 51,
+              "end_line": 95,
               "doc": ""
             }
           ]
@@ -20537,287 +20873,35 @@
           "bases": [
             "QThread"
           ],
-          "start_line": 840,
-          "end_line": 925,
+          "start_line": 98,
+          "end_line": 183,
           "doc": "",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, download_url, file_name, parent, release_info)",
-              "start_line": 845,
-              "end_line": 850,
+              "start_line": 103,
+              "end_line": 108,
               "doc": ""
             },
             {
               "name": "cancel",
               "sig": "cancel(self)",
-              "start_line": 852,
-              "end_line": 853,
+              "start_line": 110,
+              "end_line": 111,
               "doc": ""
             },
             {
               "name": "run",
               "sig": "run(self)",
-              "start_line": 855,
-              "end_line": 925,
-              "doc": ""
-            }
-          ]
-        },
-        {
-          "name": "CheckUpdateDialog",
-          "bases": [
-            "QDialog"
-          ],
-          "start_line": 928,
-          "end_line": 1513,
-          "doc": "",
-          "methods": [
-            {
-              "name": "__init__",
-              "sig": "__init__(self, parent, auto_start)",
-              "start_line": 929,
-              "end_line": 960,
-              "doc": ""
-            },
-            {
-              "name": "_build_ui",
-              "sig": "_build_ui(self)",
-              "start_line": 962,
-              "end_line": 1097,
-              "doc": ""
-            },
-            {
-              "name": "_on_channel_changed",
-              "sig": "_on_channel_changed(self, index)",
-              "start_line": 1099,
-              "end_line": 1106,
-              "doc": ""
-            },
-            {
-              "name": "start_check",
-              "sig": "start_check(self)",
-              "start_line": 1108,
-              "end_line": 1128,
-              "doc": ""
-            },
-            {
-              "name": "_on_releases_loaded",
-              "sig": "_on_releases_loaded(self, releases)",
-              "start_line": 1130,
-              "end_line": 1165,
-              "doc": ""
-            },
-            {
-              "name": "_on_version_selected",
-              "sig": "_on_version_selected(self, index)",
-              "start_line": 1167,
-              "end_line": 1171,
-              "doc": ""
-            },
-            {
-              "name": "_display_release",
-              "sig": "_display_release(self, release_info)",
-              "start_line": 1173,
-              "end_line": 1280,
-              "doc": ""
-            },
-            {
-              "name": "_on_up_to_date",
-              "sig": "_on_up_to_date(self, current_ver, remote_tag)",
-              "start_line": 1282,
-              "end_line": 1294,
-              "doc": ""
-            },
-            {
-              "name": "_on_update_available",
-              "sig": "_on_update_available(self, release_info, asset_info, is_newer)",
-              "start_line": 1296,
-              "end_line": 1297,
-              "doc": ""
-            },
-            {
-              "name": "_on_check_error",
-              "sig": "_on_check_error(self, message)",
-              "start_line": 1299,
-              "end_line": 1305,
-              "doc": ""
-            },
-            {
-              "name": "_handle_primary_action",
-              "sig": "_handle_primary_action(self)",
-              "start_line": 1307,
-              "end_line": 1321,
-              "doc": ""
-            },
-            {
-              "name": "_confirm_downgrade",
-              "sig": "_confirm_downgrade(self, target_version)",
-              "start_line": 1323,
-              "end_line": 1338,
-              "doc": "Modal Warning Dialog when selecting a version lower than installed PROJECT_VERSION."
-            },
-            {
-              "name": "start_download",
-              "sig": "start_download(self)",
-              "start_line": 1340,
-              "end_line": 1370,
-              "doc": ""
-            },
-            {
-              "name": "_on_download_progress",
-              "sig": "_on_download_progress(self, percent, downloaded, total, speed_str)",
-              "start_line": 1372,
-              "end_line": 1376,
-              "doc": ""
-            },
-            {
-              "name": "_on_download_finished",
-              "sig": "_on_download_finished(self, file_path)",
-              "start_line": 1378,
-              "end_line": 1385,
-              "doc": ""
-            },
-            {
-              "name": "_on_download_error",
-              "sig": "_on_download_error(self, message)",
-              "start_line": 1387,
-              "end_line": 1406,
-              "doc": ""
-            },
-            {
-              "name": "_install_and_restart",
-              "sig": "_install_and_restart(self)",
-              "start_line": 1408,
-              "end_line": 1495,
-              "doc": ""
-            },
-            {
-              "name": "_open_github_release",
-              "sig": "_open_github_release(self)",
-              "start_line": 1497,
-              "end_line": 1499,
-              "doc": ""
-            },
-            {
-              "name": "_handle_close",
-              "sig": "_handle_close(self)",
-              "start_line": 1501,
-              "end_line": 1513,
-              "doc": ""
-            }
-          ]
-        },
-        {
-          "name": "UpdaterMixin",
-          "bases": [],
-          "start_line": 1516,
-          "end_line": 1549,
-          "doc": "",
-          "methods": [
-            {
-              "name": "check_for_updates",
-              "sig": "check_for_updates(self, interactive)",
-              "start_line": 1517,
-              "end_line": 1523,
-              "doc": ""
-            },
-            {
-              "name": "trigger_silent_update_check",
-              "sig": "trigger_silent_update_check(self)",
-              "start_line": 1525,
-              "end_line": 1549,
+              "start_line": 113,
+              "end_line": 183,
               "doc": ""
             }
           ]
         }
       ],
-      "functions": [
-        {
-          "name": "parse_version_tuple",
-          "sig": "parse_version_tuple(version_str)",
-          "start_line": 122,
-          "end_line": 155,
-          "doc": "Parse version string into comparable numerical components and a pre-release weight tuple."
-        },
-        {
-          "name": "is_version_newer",
-          "sig": "is_version_newer(remote_version_str, current_version_str)",
-          "start_line": 158,
-          "end_line": 165,
-          "doc": "Return True if remote_version_str is strictly newer than current_version_str."
-        },
-        {
-          "name": "is_version_older",
-          "sig": "is_version_older(remote_version_str, current_version_str)",
-          "start_line": 168,
-          "end_line": 175,
-          "doc": "Return True if remote_version_str is strictly older than current_version_str."
-        },
-        {
-          "name": "format_byte_size",
-          "sig": "format_byte_size(num_bytes)",
-          "start_line": 178,
-          "end_line": 185,
-          "doc": ""
-        },
-        {
-          "name": "_is_trusted_download_url",
-          "sig": "_is_trusted_download_url(url)",
-          "start_line": 188,
-          "end_line": 197,
-          "doc": ""
-        },
-        {
-          "name": "_find_release_checksum",
-          "sig": "_find_release_checksum(release_info, asset_name)",
-          "start_line": 200,
-          "end_line": 239,
-          "doc": ""
-        },
-        {
-          "name": "select_best_asset_for_platform",
-          "sig": "select_best_asset_for_platform(assets, target_version, repo)",
-          "start_line": 242,
-          "end_line": 312,
-          "doc": "Select the most suitable release asset dictionary for the current operating system,"
-        },
-        {
-          "name": "fetch_releases",
-          "sig": "fetch_releases(repo, max_releases, channel)",
-          "start_line": 315,
-          "end_line": 378,
-          "doc": "Query GitHub API for published releases, sorted semantically by version number."
-        },
-        {
-          "name": "fetch_latest_release",
-          "sig": "fetch_latest_release(repo)",
-          "start_line": 381,
-          "end_line": 386,
-          "doc": "Query GitHub API for the most recent release (backward-compatibility wrapper)."
-        },
-        {
-          "name": "_write_update_log",
-          "sig": "_write_update_log(msg)",
-          "start_line": 389,
-          "end_line": 399,
-          "doc": "Append timestamped message to the update helper log in LocalAppData."
-        },
-        {
-          "name": "launch_and_install",
-          "sig": "launch_and_install(file_path, parent)",
-          "start_line": 402,
-          "end_line": 714,
-          "doc": ""
-        },
-        {
-          "name": "cleanup_old_installers",
-          "sig": "cleanup_old_installers(max_to_keep, force_all)",
-          "start_line": 778,
-          "end_line": 837,
-          "doc": "Clean up old downloaded application update installers from AppData/updates directory."
-        }
-      ]
+      "functions": []
     },
     "user_guide_dialog.py": {
       "path": "user_guide_dialog.py",

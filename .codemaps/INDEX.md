@@ -1,13 +1,13 @@
 # Repository Symbol Index & API Map
 
-> Generated: 2026-11-26 13:25:49 | Total Files: 202
+> Generated: 2026-11-27 12:20:15 | Total Files: 205
 > Use `python scripts/generate_symbol_index.py --outline <file>` for exact line numbers.
 
 ## Modules Overview
 
 | Module | Lines | Summary | Primary Classes / Functions |
 | :--- | :---: | :--- | :--- |
-| `RadioTVSegmenter.py` | 684 | Radio & TV Segmenter — v3.10.18-beta | `MainWindow`, `main()` |
+| `RadioTVSegmenter.py` | 684 | Radio & TV Segmenter — v3.10.19-beta | `MainWindow`, `main()` |
 | `audio_normalization.py` | 474 | Radio & TV Story Segmenter — Audio Loudness Probing & Nor... | `LoudnessReport`, `parse_ebur128_summary()`, `probe_media_duration_seconds()`, `probe_media_loudness()` *(+2 more)* |
 | `audio_normalization_worker.py` | 89 | Background QThread worker for non-blocking EBU R128 loudn... | `AudioLoudnessProbeWorker` |
 | `background_workers.py` | 1051 | Radio & TV Story Segmenter — Background Worker Threads & ... | `StoryAutoDetectWorker`, `WaveformWorker`, `VideoThumbnailWorker`, `get_waveform_peak_cache_path()` *(+6 more)* |
@@ -26,7 +26,7 @@
 | `diagnostic_batch_tests.py` | 19 | Diagnostic batch and editing workflow test bench facade. | `DiagnosticBatchTestsMixin` |
 | `diagnostic_cloud_and_system_tests.py` | 22 | Diagnostic cloud, voice, and system runtime test bench fa... | `DiagnosticCloudAndSystemTestsMixin` |
 | `diagnostic_core_tests.py` | 969 | Diagnostic test bench suite component. | `DiagnosticCoreTestsMixin` |
-| `diagnostic_dialog.py` | 386 | PySide6 Graphical Test Bench Dialog for Radio & TV Story ... | `create_diagnostic_dialog()` |
+| `diagnostic_dialog.py` | 388 | PySide6 Graphical Test Bench Dialog for Radio & TV Story ... | `create_diagnostic_dialog()` |
 | `diagnostic_editor_tests.py` | 19 | Diagnostic editor and find-replace test bench facade. | `DiagnosticEditorTestsMixin` |
 | `diagnostic_export_tests.py` | 25 | Diagnostic export test bench facade aggregating modular t... | `DiagnosticExportTestsMixin` |
 | `diagnostic_helpers.py` | 155 | Helper fixtures, module resolvers, and DiagnosticItem for... | `DiagnosticItem`, `generate_synthetic_wav()` |
@@ -44,7 +44,7 @@
 | `diagnostics/export_wordpress_core.py` | 579 | WordPress export scope, content formatting, and YouTube e... | `DiagnosticExportWordPressCoreMixin` |
 | `diagnostics/export_wordpress_media.py` | 670 | WordPress featured image metadata and Castos podcast diag... | `DiagnosticExportWordPressMediaMixin` |
 | `diagnostics/export_wordpress_upload.py` | 668 | WordPress multi-story upload, Gutenberg hygiene, and audi... | `DiagnosticExportWordPressUploadMixin` |
-| `diagnostics/system_runtime_tests.py` | 401 | System runtime, updater, theme, packaging, roadmap, and m... | `DiagnosticSystemRuntimeTestsMixin` |
+| `diagnostics/system_runtime_tests.py` | 442 | System runtime, updater, theme, packaging, roadmap, and m... | `DiagnosticSystemRuntimeTestsMixin` |
 | `diagnostics/voice_and_media_tests.py` | 438 | Voice profile matching, waveform peak cache, and playback... | `DiagnosticVoiceAndMediaTestsMixin` |
 | `diagnostics/youtube_import_cache_tests.py` | 350 | Diagnostic tests for YouTube Episode Import, yt-dlp runne... | `DiagnosticYouTubeImportCacheTestsMixin` |
 | `dialogs.py` | 433 | Radio & TV Story Segmenter — Audio Loudness Normalization... | `AudioLoudnessNormalizationDialog` |
@@ -67,7 +67,7 @@
 | `gpu_acceleration.py` | 276 | Radio & TV Segmenter v1.1.1 — optional GPU acceleration r... | `GpuAccelerationInstallWorker`, `GpuAccelerationMixin` |
 | `id3_editor.py` | 704 | ID3 Tag Editor module for Radio & TV Segmenter. | `ID3TagEditorDialog`, `read_id3_tags()`, `write_id3_tags()` |
 | `installer/build_tools/__init__.py` | 50 | Modular build utilities for Radio & TV Segmenter PyInstal... | - |
-| `installer/build_tools/config.py` | 208 | Build configuration constants and CLI argument parser. | `parse_build_args()` |
+| `installer/build_tools/config.py` | 211 | Build configuration constants and CLI argument parser. | `parse_build_args()` |
 | `installer/build_tools/env_checks.py` | 188 | Environment validation, external tool resolution, and sub... | `exe_name()`, `find_tool()`, `check_cpu_only_torch()`, `torch_windows_binary_flags()` *(+1 more)* |
 | `installer/build_tools/packaging.py` | 368 | Bundle pruning, plugin archive packaging, runtime tools, ... | `provision_optional_runtime_tools()`, `prune_unneeded_bundled_files()`, `sync_installer_scripts()`, `compile_windows_installer()` *(+1 more)* |
 | `installer/pyinstaller/torch_dll_hook.py` | 70 | PyInstaller runtime hook for Windows ML/native DLL resolu... | - |
@@ -141,7 +141,7 @@
 | `scripts/generate_pyi_stubs.py` | 214 | generate_pyi_stubs.py — Automated Interface Typing Stub (... | `StubTransformer`, `generate_stub_source()`, `get_large_modules()`, `generate_stub_file()` *(+1 more)* |
 | `scripts/generate_symbol_index.py` | 380 | generate_symbol_index.py — Fast AST Symbol Indexer & Repo... | `parse_function_signature()`, `analyze_file()`, `scan_repository()`, `generate_index_markdown()` *(+4 more)* |
 | `scripts/log_summary.py` | 150 | log_summary.py — Compact Error & Exception Extraction Engine | `is_project_frame()`, `extract_log_summary()`, `main()` |
-| `scripts/modular_audit.py` | 771 | scripts/modular_audit.py — AST Decomposition Suggester & ... | `ModuleStructure`, `DecompositionPlan`, `scan_repository()`, `print_audit_report()` *(+4 more)* |
+| `scripts/modular_audit.py` | 770 | scripts/modular_audit.py — AST Decomposition Suggester & ... | `ModuleStructure`, `DecompositionPlan`, `scan_repository()`, `print_audit_report()` *(+4 more)* |
 | `sentence_boundaries.py` | 140 | Context-aware sentence-boundary and abbreviation detectio... | `is_ambiguous_abbreviation()`, `is_non_terminal_abbreviation()`, `is_sentence_end()` |
 | `shortcuts/__init__.py` | 26 | shortcuts package — Modular Keyboard Shortcuts Management... | - |
 | `shortcuts/definitions.py` | 22 | shortcuts/definitions.py — Shortcut definitions and schem... | - |
@@ -187,7 +187,7 @@
 | `transcript_navigation_mixin.py` | 300 | transcript_navigation_mixin.py - Timestamp discovery, car... | `TranscriptNavigationMixin` |
 | `transcript_playback_highlight_mixin.py` | 277 | Radio & TV Story Segmenter — Interactive Transcript Playb... | `TranscriptPlaybackHighlightMixin` |
 | `transcript_selection_mixin.py` | 473 | transcript_selection_mixin.py - Multi-selection, timeline... | `TranscriptSelectionMixin` |
-| `transcript_story.py` | 856 | Radio & TV Segmenter v3.10.18-beta — transcript story res... | `TranscriptStoryMixin` |
+| `transcript_story.py` | 856 | Radio & TV Segmenter v3.10.19-beta — transcript story res... | `TranscriptStoryMixin` |
 | `transcript_styles.py` | 104 | transcript_styles.py - Transcript view stylesheets and da... | `transcript_text_view_stylesheet()`, `clean_dark_mode_clipboard_html()` |
 | `transcript_timeline_sync_mixin.py` | 655 | Radio & TV Story Segmenter — Transcript Timeline & Playba... | `TranscriptTimelineSyncMixin` |
 | `transcription_processing.py` | 579 | Transcription background process management for Radio & T... | `TranscriptionProcessingMixin` |
@@ -195,7 +195,10 @@
 | `ui_dialog_launchers.py` | 370 | Dialog launchers and external modal helpers for Radio & T... | `UiDialogLaunchersMixin` |
 | `ui_layout.py` | 1103 | Radio & TV Segmenter — UI Layout & Menu Construction Mixin. | `UiLayoutMixin` |
 | `ui_menus.py` | 923 | Main application menu bar and action assembly for Radio &... | `PersistentMenu`, `UiMenusMixin` |
-| `updater.py` | 1549 | Update manager and GitHub release installer for Radio & T... | `CheckUpdateWorker`, `DownloadUpdateWorker`, `CheckUpdateDialog`, `UpdaterMixin` *(+9 more)* |
+| `updater.py` | 80 | Update manager and GitHub release installer facade for Ra... | - |
+| `updater_core.py` | 758 | Headless GitHub release metadata, semantic versioning, ch... | `parse_version_tuple()`, `is_version_newer()`, `is_version_older()`, `format_byte_size()` *(+5 more)* |
+| `updater_dialog.py` | 702 | Qt UI dialog and main-window mixin for checking, download... | `CheckUpdateDialog`, `UpdaterMixin` |
+| `updater_workers.py` | 189 | Background QThread workers for GitHub release checking an... | `CheckUpdateWorker`, `DownloadUpdateWorker` |
 | `user_guide_dialog.py` | 845 | Radio & TV Story Segmenter — In-App User Guide & Document... | `ResponsiveTextBrowser`, `UserGuideDialog` |
 | `utils/__init__.py` | 36 | Utility modules for Radio & TV Story Segmenter. | - |
 | `utils/constants.py` | 41 | Application constants and environment configuration. | - |
@@ -213,7 +216,7 @@
 ## Detailed Symbol Catalog
 
 ### `RadioTVSegmenter.py` (684 lines)
-*Radio & TV Segmenter — v3.10.18-beta*
+*Radio & TV Segmenter — v3.10.19-beta*
 - **class `MainWindow(ModelManagementMixin, MediaBatchMixin, PlaybackPreferencesMixin, UiLayoutMixin, ProcessingMixin, TranslationMixin, TranscriptStoryMixin, ProjectExportMixin, GpuAccelerationMixin, QMainWindow)`** (lines 160–581):
   *Main application window for Radio & TV Segmenter.*
   - `__init__(self)` [L178-L355]
@@ -527,10 +530,10 @@
   - `_test_daw_timeline_interchange_and_gap_handling(self, item)` [L634-L750]
   - `_test_quick_sample_audio_preview_and_speaker_manager_dialog_invariants(self, item)` [L752-L968]
 
-### `diagnostic_dialog.py` (386 lines)
+### `diagnostic_dialog.py` (388 lines)
 *PySide6 Graphical Test Bench Dialog for Radio & TV Story Segmenter.*
 - **Functions**:
-  - `create_diagnostic_dialog(parent, include_dev_tests)` [L57-L386] — *Builds the Diagnostic Test Bench Qt Dialog.*
+  - `create_diagnostic_dialog(parent, include_dev_tests)` [L59-L388] — *Builds the Diagnostic Test Bench Qt Dialog.*
 
 ### `diagnostic_editor_tests.py` (19 lines)
 *Diagnostic editor and find-replace test bench facade.*
@@ -667,18 +670,18 @@
   - `_test_gutenberg_html_structural_hygiene_audit(self, item)` [L302-L338]
   - `_test_wordpress_audio_inclusion_toggle_and_error_resilience(self, item)` [L340-L668]
 
-### `diagnostics/system_runtime_tests.py` (401 lines)
+### `diagnostics/system_runtime_tests.py` (442 lines)
 *System runtime, updater, theme, packaging, roadmap, and modularity diagnostic tests.*
-- **class `DiagnosticSystemRuntimeTestsMixin`** (lines 14–401):
-  - `_test_windows_detached_update_helper_architecture(self, item)` [L15-L61] — *Validates update helper architecture: helper script generation, exit polling, and logging.*
-  - `_test_multiprocessing_freeze_support_and_spawn_intercept(self, item)` [L63-L84] — *Validates that frozen process spawn intercepts -c invocations from resource_tracker and multiprocessing.*
-  - `_resolve_worker_cmd(self)` [L86-L100] — *Resolves the executable and arguments to launch the AI background worker.*
-  - `_test_ai_worker_subprocess_execution_and_ipc_handshake(self, item)` [L102-L168] — *Spawns the AI worker binary in an isolated subprocess, verifying IPC hello handshake and self-test.*
-  - `_test_frozen_subprocess_multiprocessing_spawn_protocol(self, item)` [L170-L208] — *Spawns the AI worker executable with Python -c to verify multiprocessing resource tracker interception.*
-  - `_test_option_c_muted_silver_fog_light_theme_and_dark_mode_clipboard_formatting(self, item)` [L210-L263] — *Validates Option C muted low-contrast silver/fog palette and dark-mode clipboard rich styling.*
-  - `_test_windows_ci_build_and_packaging_optimization_invariants(self, item)` [L265-L297] — *Validates Inno Setup compression parameters, Stage 3 PyInstaller optimizations, and CI settings.*
-  - `_test_roadmap_n_1_sliding_window_and_status_integrity(self, item)` [L299-L318] — *Validates roadmap.txt N-1 sliding window retention, status indicator syntax, and version sync.*
-  - `_test_source_file_modularity_and_1000_line_budget_invariant(self, item)` [L320-L401] — *Validates that recently decomposed modules adhere to the 1,000-line modular budget,*
+- **class `DiagnosticSystemRuntimeTestsMixin`** (lines 14–442):
+  - `_test_windows_detached_update_helper_architecture(self, item)` [L15-L98] — *Validates update helper architecture: helper script generation, exit polling, and logging.*
+  - `_test_multiprocessing_freeze_support_and_spawn_intercept(self, item)` [L100-L121] — *Validates that frozen process spawn intercepts -c invocations from resource_tracker and multiprocessing.*
+  - `_resolve_worker_cmd(self)` [L123-L137] — *Resolves the executable and arguments to launch the AI background worker.*
+  - `_test_ai_worker_subprocess_execution_and_ipc_handshake(self, item)` [L139-L205] — *Spawns the AI worker binary in an isolated subprocess, verifying IPC hello handshake and self-test.*
+  - `_test_frozen_subprocess_multiprocessing_spawn_protocol(self, item)` [L207-L245] — *Spawns the AI worker executable with Python -c to verify multiprocessing resource tracker interception.*
+  - `_test_option_c_muted_silver_fog_light_theme_and_dark_mode_clipboard_formatting(self, item)` [L247-L300] — *Validates Option C muted low-contrast silver/fog palette and dark-mode clipboard rich styling.*
+  - `_test_windows_ci_build_and_packaging_optimization_invariants(self, item)` [L302-L334] — *Validates Inno Setup compression parameters, Stage 3 PyInstaller optimizations, and CI settings.*
+  - `_test_roadmap_n_1_sliding_window_and_status_integrity(self, item)` [L336-L355] — *Validates roadmap.txt N-1 sliding window retention, status indicator syntax, and version sync.*
+  - `_test_source_file_modularity_and_1000_line_budget_invariant(self, item)` [L357-L442] — *Validates that recently decomposed modules adhere to the 1,000-line modular budget,*
 
 ### `diagnostics/voice_and_media_tests.py` (438 lines)
 *Voice profile matching, waveform peak cache, and playback rate diagnostic tests.*
@@ -989,10 +992,10 @@
 *Modular build utilities for Radio & TV Segmenter PyInstaller & installer packaging.*
 - **Public Exports (`__all__`)**: UV_VERSION, UV_URLS, PYSIDE6_USED_SUBMODULES, PYSIDE6_EXCLUDES, TEST_AND_BENCHMARK_EXCLUDES, COLLECT_ALL_PACKAGES, COPY_METADATA_PACKAGES, HIDDEN_IMPORTS, parse_build_args, exe_name, find_tool, check_cpu_only_torch, torch_windows_binary_flags, run, provision_optional_runtime_tools, prune_unneeded_bundled_files, sync_installer_scripts, compile_windows_installer, package_plugins
 
-### `installer/build_tools/config.py` (208 lines)
+### `installer/build_tools/config.py` (211 lines)
 *Build configuration constants and CLI argument parser.*
 - **Functions**:
-  - `parse_build_args()` [L133-L208] — *Parse build target, plugin selection, installer, and version CLI flags.*
+  - `parse_build_args()` [L136-L211] — *Parse build target, plugin selection, installer, and version CLI flags.*
 
 ### `installer/build_tools/env_checks.py` (188 lines)
 *Environment validation, external tool resolution, and subprocess execution helpers.*
@@ -2543,28 +2546,28 @@
   - `extract_log_summary(raw_log)` [L42-L128] — *Extract a high-density summary from a raw log or traceback string.*
   - `main()` [L130-L147]
 
-### `scripts/modular_audit.py` (771 lines)
+### `scripts/modular_audit.py` (770 lines)
 *scripts/modular_audit.py — AST Decomposition Suggester & Modular Budget Guard.*
-- **class `ModuleStructure`** (lines 76–249):
+- **class `ModuleStructure`** (lines 75–248):
   *Detailed structural metrics extracted from a Python module.*
-  - `__init__(self, file_path)` [L79-L96]
-  - `_analyze(self)` [L98-L172]
-  - `_extract_class_info(self, node, lines)` [L174-L202]
-  - `_extract_func_info(self, node, lines)` [L204-L213]
-  - `_classify_domain(name, bases, method_names)` [L216-L249] — *Classifies a class or function into a logical domain based on naming and signatures.*
-- **class `DecompositionPlan`** (lines 256–418):
+  - `__init__(self, file_path)` [L78-L95]
+  - `_analyze(self)` [L97-L171]
+  - `_extract_class_info(self, node, lines)` [L173-L201]
+  - `_extract_func_info(self, node, lines)` [L203-L212]
+  - `_classify_domain(name, bases, method_names)` [L215-L248] — *Classifies a class or function into a logical domain based on naming and signatures.*
+- **class `DecompositionPlan`** (lines 255–417):
   *Proposed modular decomposition plan for a monolithic source file.*
-  - `__init__(self, structure)` [L259-L267]
-  - `_classify_method_domain(m_name)` [L270-L280]
-  - `_build_plan(self)` [L282-L385]
-  - `render_markdown_blueprint(self)` [L387-L418]
+  - `__init__(self, structure)` [L258-L266]
+  - `_classify_method_domain(m_name)` [L269-L279]
+  - `_build_plan(self)` [L281-L384]
+  - `render_markdown_blueprint(self)` [L386-L417]
 - **Functions**:
-  - `scan_repository(root_dir)` [L425-L437] — *Scans all Python modules in the repository, excluding build/venv directories.*
-  - `print_audit_report(structures, warn_threshold, hard_ceiling, sort_by)` [L440-L481] — *Prints a formatted terminal table showing modularity compliance.*
-  - `check_budget_guard(structures, hard_ceiling, warn_threshold, exempt_paths)` [L484-L517] — *Programmatic budget check suitable for test runner and CI pipelines.*
-  - `check_single_responsibility(structure, strict)` [L520-L608] — *Analyzes AST domain classification to verify Single Responsibility & Domain Separation.*
-  - `print_srp_report(results, strict)` [L611-L655] — *Prints a structured terminal report for Single Responsibility & Domain Separation.*
-  - `main()` [L658-L767]
+  - `scan_repository(root_dir)` [L424-L436] — *Scans all Python modules in the repository, excluding build/venv directories.*
+  - `print_audit_report(structures, warn_threshold, hard_ceiling, sort_by)` [L439-L480] — *Prints a formatted terminal table showing modularity compliance.*
+  - `check_budget_guard(structures, hard_ceiling, warn_threshold, exempt_paths)` [L483-L516] — *Programmatic budget check suitable for test runner and CI pipelines.*
+  - `check_single_responsibility(structure, strict)` [L519-L607] — *Analyzes AST domain classification to verify Single Responsibility & Domain Separation.*
+  - `print_srp_report(results, strict)` [L610-L654] — *Prints a structured terminal report for Single Responsibility & Domain Separation.*
+  - `main()` [L657-L766]
 
 ### `sentence_boundaries.py` (140 lines)
 *Context-aware sentence-boundary and abbreviation detection for Radio & TV Segmenter.*
@@ -3422,7 +3425,7 @@
   - `_on_bubble_export(self)` [L468-L473]
 
 ### `transcript_story.py` (856 lines)
-*Radio & TV Segmenter v3.10.18-beta — transcript story responsibilities.*
+*Radio & TV Segmenter v3.10.19-beta — transcript story responsibilities.*
 - **Public Exports (`__all__`)**: TranscriptStoryMixin, Story, SetStoriesCommand, SelectStoriesCommand, StoryBoundaryChangeCommand, StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin, ChangeSpeakerDialog, VoiceProfileMatchDialog, StoryFadesDialog, SpeakerManagerDialog, FADE_CURVE_TABLES, get_fade_curve_factors
 - **class `TranscriptStoryMixin(StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin)`** (lines 63–855):
   - `render_transcript(self)` [L64-L471]
@@ -3580,51 +3583,65 @@
   - `trigger_smart_copy(self)` [L884-L904] — *Smart copy routing: active text cursor selection -> focused widget -> highlighted story transcript.*
   - `trigger_deselect_all(self)` [L906-L922] — *Clear all active selections across stories, timeline range, and transcript.*
 
-### `updater.py` (1549 lines)
-*Update manager and GitHub release installer for Radio & TV Segmenter.*
-- **class `CheckUpdateWorker(QThread)`** (lines 717–775):
-  - `__init__(self, repo, parent, channel)` [L723-L729]
-  - `run(self)` [L731-L775]
-- **class `DownloadUpdateWorker(QThread)`** (lines 840–925):
-  - `__init__(self, download_url, file_name, parent, release_info)` [L845-L850]
-  - `cancel(self)` [L852-L853]
-  - `run(self)` [L855-L925]
-- **class `CheckUpdateDialog(QDialog)`** (lines 928–1513):
-  - `__init__(self, parent, auto_start)` [L929-L960]
-  - `_build_ui(self)` [L962-L1097]
-  - `_on_channel_changed(self, index)` [L1099-L1106]
-  - `start_check(self)` [L1108-L1128]
-  - `_on_releases_loaded(self, releases)` [L1130-L1165]
-  - `_on_version_selected(self, index)` [L1167-L1171]
-  - `_display_release(self, release_info)` [L1173-L1280]
-  - `_on_up_to_date(self, current_ver, remote_tag)` [L1282-L1294]
-  - `_on_update_available(self, release_info, asset_info, is_newer)` [L1296-L1297]
-  - `_on_check_error(self, message)` [L1299-L1305]
-  - `_handle_primary_action(self)` [L1307-L1321]
-  - `_confirm_downgrade(self, target_version)` [L1323-L1338] — *Modal Warning Dialog when selecting a version lower than installed PROJECT_VERSION.*
-  - `start_download(self)` [L1340-L1370]
-  - `_on_download_progress(self, percent, downloaded, total, speed_str)` [L1372-L1376]
-  - `_on_download_finished(self, file_path)` [L1378-L1385]
-  - `_on_download_error(self, message)` [L1387-L1406]
-  - `_install_and_restart(self)` [L1408-L1495]
-  - `_open_github_release(self)` [L1497-L1499]
-  - `_handle_close(self)` [L1501-L1513]
-- **class `UpdaterMixin`** (lines 1516–1549):
-  - `check_for_updates(self, interactive)` [L1517-L1523]
-  - `trigger_silent_update_check(self)` [L1525-L1549]
+### `updater.py` (80 lines)
+*Update manager and GitHub release installer facade for Radio & TV Segmenter.*
+- **Public Exports (`__all__`)**: APP_DISPLAY_NAME, DEFAULT_GITHUB_REPO, INTERNAL_APP_ID, PROJECT_VERSION, get_app_data_dir, get_github_repo, get_update_channel, get_app_icon, parse_version_tuple, is_version_newer, is_version_older, format_byte_size, _is_trusted_download_url, _find_release_checksum, select_best_asset_for_platform, fetch_releases, fetch_latest_release, _write_update_log, launch_and_install, cleanup_old_installers, CheckUpdateWorker, DownloadUpdateWorker, CheckUpdateDialog, UpdaterMixin
+
+### `updater_core.py` (758 lines)
+*Headless GitHub release metadata, semantic versioning, checksum verification,*
+- **Public Exports (`__all__`)**: APP_DISPLAY_NAME, DEFAULT_GITHUB_REPO, INTERNAL_APP_ID, PROJECT_VERSION, get_app_data_dir, get_github_repo, get_update_channel, parse_version_tuple, is_version_newer, is_version_older, format_byte_size, _is_trusted_download_url, _find_release_checksum, select_best_asset_for_platform, fetch_releases, fetch_latest_release, _write_update_log, launch_and_install, cleanup_old_installers
 - **Functions**:
-  - `parse_version_tuple(version_str)` [L122-L155] — *Parse version string into comparable numerical components and a pre-release weight tuple.*
-  - `is_version_newer(remote_version_str, current_version_str)` [L158-L165] — *Return True if remote_version_str is strictly newer than current_version_str.*
-  - `is_version_older(remote_version_str, current_version_str)` [L168-L175] — *Return True if remote_version_str is strictly older than current_version_str.*
-  - `format_byte_size(num_bytes)` [L178-L185]
-  - `_is_trusted_download_url(url)` [L188-L197]
-  - `_find_release_checksum(release_info, asset_name)` [L200-L239]
-  - `select_best_asset_for_platform(assets, target_version, repo)` [L242-L312] — *Select the most suitable release asset dictionary for the current operating system,*
-  - `fetch_releases(repo, max_releases, channel)` [L315-L378] — *Query GitHub API for published releases, sorted semantically by version number.*
-  - `fetch_latest_release(repo)` [L381-L386] — *Query GitHub API for the most recent release (backward-compatibility wrapper).*
-  - `_write_update_log(msg)` [L389-L399] — *Append timestamped message to the update helper log in LocalAppData.*
-  - `launch_and_install(file_path, parent)` [L402-L714]
-  - `cleanup_old_installers(max_to_keep, force_all)` [L778-L837] — *Clean up old downloaded application update installers from AppData/updates directory.*
+  - `_show_install_error(parent, title, message)` [L75-L83] — *Lazy Qt error dialog helper invoked only when a GUI parent widget is provided.*
+  - `parse_version_tuple(version_str)` [L86-L119] — *Parse version string into comparable numerical components and a pre-release weight tuple.*
+  - `is_version_newer(remote_version_str, current_version_str)` [L122-L129] — *Return True if remote_version_str is strictly newer than current_version_str.*
+  - `is_version_older(remote_version_str, current_version_str)` [L132-L139] — *Return True if remote_version_str is strictly older than current_version_str.*
+  - `format_byte_size(num_bytes)` [L142-L149]
+  - `_is_trusted_download_url(url)` [L152-L161]
+  - `_find_release_checksum(release_info, asset_name)` [L164-L203]
+  - `select_best_asset_for_platform(assets, target_version, repo)` [L206-L276] — *Select the most suitable release asset dictionary for the current operating system,*
+  - `fetch_releases(repo, max_releases, channel)` [L279-L342] — *Query GitHub API for published releases, sorted semantically by version number.*
+  - `fetch_latest_release(repo)` [L345-L350] — *Query GitHub API for the most recent release (backward-compatibility wrapper).*
+  - `_write_update_log(msg)` [L353-L363] — *Append timestamped message to the update helper log in LocalAppData.*
+  - `launch_and_install(file_path, parent)` [L366-L673]
+  - `cleanup_old_installers(max_to_keep, force_all)` [L676-L735] — *Clean up old downloaded application update installers from AppData/updates directory.*
+
+### `updater_dialog.py` (702 lines)
+*Qt UI dialog and main-window mixin for checking, downloading, and installing updates.*
+- **Public Exports (`__all__`)**: get_app_icon, CheckUpdateDialog, UpdaterMixin
+- **class `CheckUpdateDialog(QDialog)`** (lines 78–659):
+  - `__init__(self, parent, auto_start)` [L79-L109]
+  - `_build_ui(self)` [L111-L246]
+  - `_on_channel_changed(self, index)` [L248-L255]
+  - `start_check(self)` [L257-L277]
+  - `_on_releases_loaded(self, releases)` [L279-L314]
+  - `_on_version_selected(self, index)` [L316-L320]
+  - `_display_release(self, release_info)` [L322-L429]
+  - `_on_up_to_date(self, current_ver, remote_tag)` [L431-L443]
+  - `_on_update_available(self, release_info, asset_info, is_newer)` [L445-L446]
+  - `_on_check_error(self, message)` [L448-L454]
+  - `_handle_primary_action(self)` [L456-L470]
+  - `_confirm_downgrade(self, target_version)` [L472-L487] — *Modal Warning Dialog when selecting a version lower than installed PROJECT_VERSION.*
+  - `start_download(self)` [L489-L519]
+  - `_on_download_progress(self, percent, downloaded, total, speed_str)` [L521-L525]
+  - `_on_download_finished(self, file_path)` [L527-L534]
+  - `_on_download_error(self, message)` [L536-L555]
+  - `_install_and_restart(self)` [L557-L641]
+  - `_open_github_release(self)` [L643-L645]
+  - `_handle_close(self)` [L647-L659]
+- **class `UpdaterMixin`** (lines 662–695):
+  - `check_for_updates(self, interactive)` [L663-L669]
+  - `trigger_silent_update_check(self)` [L671-L695]
+
+### `updater_workers.py` (189 lines)
+*Background QThread workers for GitHub release checking and installer downloads.*
+- **Public Exports (`__all__`)**: CheckUpdateWorker, DownloadUpdateWorker
+- **class `CheckUpdateWorker(QThread)`** (lines 37–95):
+  - `__init__(self, repo, parent, channel)` [L43-L49]
+  - `run(self)` [L51-L95]
+- **class `DownloadUpdateWorker(QThread)`** (lines 98–183):
+  - `__init__(self, download_url, file_name, parent, release_info)` [L103-L108]
+  - `cancel(self)` [L110-L111]
+  - `run(self)` [L113-L183]
 
 ### `user_guide_dialog.py` (845 lines)
 *Radio & TV Story Segmenter — In-App User Guide & Documentation Viewer Dialog.*
