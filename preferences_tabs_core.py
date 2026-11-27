@@ -449,11 +449,13 @@ def build_ai_models_tab(win, dialog, live_widgets, add_custom_defaults_btn) -> Q
     def _update_beam_visibility():
         selected_model = str(pref_whisper_combo.currentData() or "").lower()
         is_whisper = selected_model != "parakeet-onnx" and bool(selected_model)
-        pref_beam_label.setVisible(is_whisper)
-        pref_beam_combo.setVisible(is_whisper)
+        if hasattr(mod_form, "setRowVisible"):
+            mod_form.setRowVisible(pref_beam_combo, is_whisper)
+        else:
+            pref_beam_label.setVisible(is_whisper)
+            pref_beam_combo.setVisible(is_whisper)
 
     pref_whisper_combo.currentIndexChanged.connect(_update_beam_visibility)
-    _update_beam_visibility()
 
     pref_trans_combo = QComboBox()
     translation_installed = (
@@ -497,6 +499,7 @@ def build_ai_models_tab(win, dialog, live_widgets, add_custom_defaults_btn) -> Q
         mod_form.addRow("Translation Model:", unavailable)
 
     mod_layout.addLayout(mod_form)
+    _update_beam_visibility()
 
     manage_models_btn = QPushButton("Open Model Manager (Download / Remove Models)…")
     manage_models_btn.setToolTip("View exact disk sizes, pre-download, or delete local models.")

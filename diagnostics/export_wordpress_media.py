@@ -293,6 +293,35 @@ class DiagnosticExportWordPressMediaMixin:
                 assert "(1)" in exp_dlg.export_btn.text(), f"Expected live count (1), got: {exp_dlg.export_btn.text()}"
                 exp_dlg.story_selector_sidebar.set_include_full_episode(True, emit=True)
                 assert "(2)" in exp_dlg.export_btn.text(), f"Expected live count (2), got: {exp_dlg.export_btn.text()}"
+
+                # 7. WordPress "Not Included in Export" placeholder on unchecked Custom Selection items (v3.10.28-beta)
+                from plugins.wordpress.wp_ui_builder import include_excluded_item_in_export
+                wp_tab_in_dlg = WordPressExportTabWidget(exp_dlg, tab_mw)
+                exp_dlg._plugin_destinations.append(("wordpress", type("FakeDest", (), {
+                    "id": "wordpress",
+                    "tab_widget": wp_tab_in_dlg,
+                    "on_scope_changed": lambda s, sc, sts: wp_tab_in_dlg.rebuild_post_items(scope=sc),
+                })(), wp_tab_in_dlg))
+                exp_dlg.story_selector_sidebar.set_include_full_episode(False, emit=True)
+                exp_dlg.story_selector_sidebar.set_selected_indices([1], emit=True)
+                # Click unchecked Story 1 (index 0) -> must hide metadata and show Not Included placeholder
+                assert wp_tab_in_dlg.select_story_index(0) is False
+                assert wp_tab_in_dlg.wp_post_editor_stack.currentWidget() is wp_tab_in_dlg.wp_excluded_placeholder
+                assert "not included" in wp_tab_in_dlg.wp_excluded_title_label.text().lower()
+                assert wp_tab_in_dlg.wp_include_in_export_btn.isVisible() or not wp_tab_in_dlg.wp_include_in_export_btn.isHidden()
+                # Click unchecked Full Episode -> placeholder switches to Full Episode
+                assert wp_tab_in_dlg.select_full_episode() is False
+                assert wp_tab_in_dlg.wp_post_editor_stack.currentWidget() is wp_tab_in_dlg.wp_excluded_placeholder
+                assert "full episode" in wp_tab_in_dlg.wp_excluded_title_label.text().lower()
+                # One-click Include in Export checks Full Episode and restores full metadata editor
+                assert include_excluded_item_in_export(wp_tab_in_dlg) is True
+                assert exp_dlg.story_selector_sidebar.is_full_episode_included() is True
+                assert wp_tab_in_dlg.wp_post_editor_stack.currentWidget() is wp_tab_in_dlg.wp_editor_body_page
+                # Clearing all items shows Not Included placeholder rather than stale story metadata
+                exp_dlg.story_selector_sidebar.clear_selection()
+                assert wp_tab_in_dlg.wp_post_editor_stack.currentWidget() is wp_tab_in_dlg.wp_excluded_placeholder
+                wp_tab_in_dlg.close()
+                wp_tab_in_dlg.deleteLater()
             finally:
                 exp_dlg.close()
                 exp_dlg.deleteLater()

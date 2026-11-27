@@ -638,6 +638,8 @@ class WordPressExportTabWidget(QWidget):
     def _load_post_editor_state(self, index: int):
         if not (0 <= index < len(self.wp_post_items)):
             return
+        from plugins.wordpress.wp_ui_builder import hide_wp_excluded_placeholder
+        hide_wp_excluded_placeholder(self)
         self._current_post_index = index
         post = self.wp_post_items[index]
 
@@ -783,6 +785,8 @@ class WordPressExportTabWidget(QWidget):
                     self.wp_posts_list.setCurrentRow(row)
                 self._load_post_editor_state(row)
                 return True
+        from plugins.wordpress.wp_ui_builder import show_wp_excluded_placeholder
+        show_wp_excluded_placeholder(self, -1)
         return False
 
     def select_story_index(self, story_idx: int) -> bool:
@@ -792,6 +796,8 @@ class WordPressExportTabWidget(QWidget):
                     self.wp_posts_list.setCurrentRow(row)
                 self._load_post_editor_state(row)
                 return True
+        from plugins.wordpress.wp_ui_builder import show_wp_excluded_placeholder
+        show_wp_excluded_placeholder(self, int(story_idx))
         return False
 
     def rebuild_post_items(self, scope: Optional[str] = None):
@@ -855,9 +861,12 @@ class WordPressExportTabWidget(QWidget):
             self.wp_inline_autofill_all_excerpts_btn.setVisible(ext_sidebar and len(self.wp_post_items) > 1)
         if hasattr(self, "wp_bulk_box") and self.wp_bulk_box is not None:
             self.wp_bulk_box.setVisible(False)
-        if self.wp_posts_list.count() > 0:
-            self.wp_posts_list.setCurrentRow(target_row)
-        self._load_post_editor_state(target_row)
+        from plugins.wordpress.wp_ui_builder import sync_wp_excluded_state_for_sidebar
+        resolved_row = sync_wp_excluded_state_for_sidebar(self, ext_sidebar, fallback_row=target_row)
+        if resolved_row is not None:
+            if self.wp_posts_list.count() > 0:
+                self.wp_posts_list.setCurrentRow(resolved_row)
+            self._load_post_editor_state(resolved_row)
         if hasattr(self, "_notify_export_sidebar_decorations"):
             self._notify_export_sidebar_decorations()
         for host in (dlg, self.parent()):

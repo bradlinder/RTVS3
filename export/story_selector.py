@@ -301,6 +301,23 @@ class ExportStorySelectorSidebar(QWidget):
         """Return True if Full Episode or at least one story/segment is checked."""
         return self.is_full_episode_included() or bool(self.get_selected_indices())
 
+    def get_active_role_value(self) -> Optional[int]:
+        """Return UserRole value (-1 for Full Episode, 0..N-1 for story) of the currently highlighted row."""
+        row = self.story_list.currentRow()
+        if 0 <= row < self.story_list.count():
+            item = self.story_list.item(row)
+            if item is not None:
+                role_val = item.data(Qt.ItemDataRole.UserRole)
+                if role_val is not None:
+                    return int(role_val)
+        return None
+
+    def is_role_checked(self, role_val: int) -> bool:
+        """Return True if the row matching *role_val* (-1 or 0..N-1) is checked."""
+        if int(role_val) == FULL_EPISODE_ROLE_VALUE:
+            return self.is_full_episode_included()
+        return int(role_val) in self.get_selected_indices()
+
     def set_selected_indices(self, selected_indices: Iterable[int], emit: bool = False) -> None:
         """Update story item check states without altering the Full Episode item."""
         target = {int(i) for i in (selected_indices or []) if int(i) >= 0}

@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-27 14:15:03",
+  "generated_at": "2026-11-27 14:30:20",
   "total_files": 210,
   "files": {
     "RadioTVSegmenter.py": {
       "path": "RadioTVSegmenter.py",
       "lines": 686,
-      "summary": "Radio & TV Segmenter \u2014 v3.10.27-beta",
+      "summary": "Radio & TV Segmenter \u2014 v3.10.28-beta",
       "exports": null,
       "classes": [
         {
@@ -2372,7 +2372,7 @@
     },
     "diagnostics/editor_story_ui_tests.py": {
       "path": "diagnostics/editor_story_ui_tests.py",
-      "lines": 755,
+      "lines": 782,
       "summary": "Story transcript highlighting, smart copy, duration & header diagnostic tests.",
       "exports": null,
       "classes": [
@@ -2380,21 +2380,21 @@
           "name": "DiagnosticEditorStoryUiTestsMixin",
           "bases": [],
           "start_line": 9,
-          "end_line": 755,
+          "end_line": 782,
           "doc": "",
           "methods": [
             {
               "name": "_test_story_transcript_highlighting_and_smart_copy",
               "sig": "_test_story_transcript_highlighting_and_smart_copy(self, item)",
               "start_line": 10,
-              "end_line": 572,
+              "end_line": 599,
               "doc": "Validates story selection synchronization with transcript highlight overlay and smart clipboard copying."
             },
             {
               "name": "_test_story_duration_visibility_and_header_aggregation",
               "sig": "_test_story_duration_visibility_and_header_aggregation(self, item)",
-              "start_line": 574,
-              "end_line": 755,
+              "start_line": 601,
+              "end_line": 782,
               "doc": "Validates story clock duration formatting, 2-line sidebar item format, and multi-selection header aggregation."
             }
           ]
@@ -2510,7 +2510,7 @@
     },
     "diagnostics/export_wordpress_media.py": {
       "path": "diagnostics/export_wordpress_media.py",
-      "lines": 723,
+      "lines": 752,
       "summary": "WordPress featured image metadata and Castos podcast diagnostic tests.",
       "exports": null,
       "classes": [
@@ -2518,21 +2518,21 @@
           "name": "DiagnosticExportWordPressMediaMixin",
           "bases": [],
           "start_line": 10,
-          "end_line": 723,
+          "end_line": 752,
           "doc": "",
           "methods": [
             {
               "name": "_test_wordpress_featured_image_caption_and_alt_text",
               "sig": "_test_wordpress_featured_image_caption_and_alt_text(self, item)",
               "start_line": 11,
-              "end_line": 305,
+              "end_line": 334,
               "doc": "Verify Featured Image caption & alt_text across WordPressClient, post builder, tab UI, and PublishWorker."
             },
             {
               "name": "_test_wordpress_castos_podcast_integration",
               "sig": "_test_wordpress_castos_podcast_integration(self, item)",
-              "start_line": 307,
-              "end_line": 723,
+              "start_line": 336,
+              "end_line": 752,
               "doc": ""
             }
           ]
@@ -3572,7 +3572,7 @@
     },
     "export/story_selector.py": {
       "path": "export/story_selector.py",
-      "lines": 395,
+      "lines": 412,
       "summary": "Checkable story/segment selection sidebar for UnifiedExportDialog.",
       "exports": [
         "ExportStorySelectorSidebar",
@@ -3585,7 +3585,7 @@
             "QWidget"
           ],
           "start_line": 47,
-          "end_line": 392,
+          "end_line": 409,
           "doc": "Left sidebar with checkable Full Episode and story/segment items plus Select All / Clear.",
           "methods": [
             {
@@ -3659,59 +3659,73 @@
               "doc": "Return True if Full Episode or at least one story/segment is checked."
             },
             {
+              "name": "get_active_role_value",
+              "sig": "get_active_role_value(self)",
+              "start_line": 304,
+              "end_line": 313,
+              "doc": "Return UserRole value (-1 for Full Episode, 0..N-1 for story) of the currently highlighted row."
+            },
+            {
+              "name": "is_role_checked",
+              "sig": "is_role_checked(self, role_val)",
+              "start_line": 315,
+              "end_line": 319,
+              "doc": "Return True if the row matching *role_val* (-1 or 0..N-1) is checked."
+            },
+            {
               "name": "set_selected_indices",
               "sig": "set_selected_indices(self, selected_indices, emit)",
-              "start_line": 304,
-              "end_line": 324,
+              "start_line": 321,
+              "end_line": 341,
               "doc": "Update story item check states without altering the Full Episode item."
             },
             {
               "name": "select_all",
               "sig": "select_all(self)",
-              "start_line": 326,
-              "end_line": 330,
+              "start_line": 343,
+              "end_line": 347,
               "doc": ""
             },
             {
               "name": "clear_selection",
               "sig": "clear_selection(self)",
-              "start_line": 332,
-              "end_line": 336,
+              "start_line": 349,
+              "end_line": 353,
               "doc": ""
             },
             {
               "name": "update_count_label",
               "sig": "update_count_label(self)",
-              "start_line": 338,
-              "end_line": 341,
+              "start_line": 355,
+              "end_line": 358,
               "doc": ""
             },
             {
               "name": "_sync_current_item_quietly",
               "sig": "_sync_current_item_quietly(self, item)",
-              "start_line": 343,
-              "end_line": 350,
+              "start_line": 360,
+              "end_line": 367,
               "doc": ""
             },
             {
               "name": "_on_item_changed",
               "sig": "_on_item_changed(self, item)",
-              "start_line": 352,
-              "end_line": 375,
+              "start_line": 369,
+              "end_line": 392,
               "doc": ""
             },
             {
               "name": "_on_item_clicked",
               "sig": "_on_item_clicked(self, item)",
-              "start_line": 377,
-              "end_line": 382,
+              "start_line": 394,
+              "end_line": 399,
               "doc": ""
             },
             {
               "name": "_on_current_row_changed",
               "sig": "_on_current_row_changed(self, row)",
-              "start_line": 384,
-              "end_line": 392,
+              "start_line": 401,
+              "end_line": 409,
               "doc": ""
             }
           ]
@@ -8687,7 +8701,7 @@
     },
     "plugins/wordpress/wp_tab_widget.py": {
       "path": "plugins/wordpress/wp_tab_widget.py",
-      "lines": 988,
+      "lines": 997,
       "summary": "WordPress export tab configuration widget and preview controller.",
       "exports": null,
       "classes": [
@@ -8697,7 +8711,7 @@
             "QWidget"
           ],
           "start_line": 43,
-          "end_line": 987,
+          "end_line": 996,
           "doc": "Configuration and preview panel for WordPress Draft Posts.",
           "methods": [
             {
@@ -9019,98 +9033,98 @@
               "name": "_load_post_editor_state",
               "sig": "_load_post_editor_state(self, index)",
               "start_line": 638,
-              "end_line": 670,
+              "end_line": 672,
               "doc": ""
             },
             {
               "name": "_on_wp_thumb_mode_changed",
               "sig": "_on_wp_thumb_mode_changed(self)",
-              "start_line": 672,
-              "end_line": 673,
+              "start_line": 674,
+              "end_line": 675,
               "doc": ""
             },
             {
               "name": "_on_wp_thumb_meta_changed",
               "sig": "_on_wp_thumb_meta_changed(self)",
-              "start_line": 675,
-              "end_line": 682,
+              "start_line": 677,
+              "end_line": 684,
               "doc": ""
             },
             {
               "name": "_capture_wp_frame",
               "sig": "_capture_wp_frame(self, pos, user_initiated)",
-              "start_line": 684,
-              "end_line": 723,
+              "start_line": 686,
+              "end_line": 725,
               "doc": ""
             },
             {
               "name": "_on_wp_browse_thumb",
               "sig": "_on_wp_browse_thumb(self)",
-              "start_line": 725,
-              "end_line": 747,
+              "start_line": 727,
+              "end_line": 749,
               "doc": ""
             },
             {
               "name": "_cleanup_temp_files",
               "sig": "_cleanup_temp_files(self)",
-              "start_line": 749,
-              "end_line": 758,
+              "start_line": 751,
+              "end_line": 760,
               "doc": "Purge temporary frame grabs and preview images."
             },
             {
               "name": "closeEvent",
               "sig": "closeEvent(self, event)",
-              "start_line": 760,
-              "end_line": 777,
+              "start_line": 762,
+              "end_line": 779,
               "doc": "Persist current post state, stop background thumbnail workers, and clean up temp files."
             },
             {
               "name": "select_full_episode",
               "sig": "select_full_episode(self)",
-              "start_line": 779,
-              "end_line": 786,
+              "start_line": 781,
+              "end_line": 790,
               "doc": ""
             },
             {
               "name": "select_story_index",
               "sig": "select_story_index(self, story_idx)",
-              "start_line": 788,
-              "end_line": 795,
+              "start_line": 792,
+              "end_line": 801,
               "doc": ""
             },
             {
               "name": "rebuild_post_items",
               "sig": "rebuild_post_items(self, scope)",
-              "start_line": 797,
-              "end_line": 866,
+              "start_line": 803,
+              "end_line": 875,
               "doc": ""
             },
             {
               "name": "_populate_wp_export_metadata",
               "sig": "_populate_wp_export_metadata(self, force_refresh)",
-              "start_line": 868,
-              "end_line": 935,
+              "start_line": 877,
+              "end_line": 944,
               "doc": ""
             },
             {
               "name": "_prompt_wp_credentials",
               "sig": "_prompt_wp_credentials(self, title, message)",
-              "start_line": 937,
-              "end_line": 950,
+              "start_line": 946,
+              "end_line": 959,
               "doc": ""
             },
             {
               "name": "_refresh_castos_feeds",
               "sig": "_refresh_castos_feeds(self)",
-              "start_line": 952,
-              "end_line": 969,
+              "start_line": 961,
+              "end_line": 978,
               "doc": ""
             },
             {
               "name": "_refresh_wp_metadata",
               "sig": "_refresh_wp_metadata(self)",
-              "start_line": 971,
-              "end_line": 987,
+              "start_line": 980,
+              "end_line": 996,
               "doc": ""
             }
           ]
@@ -9377,7 +9391,7 @@
     },
     "plugins/wordpress/wp_ui_builder.py": {
       "path": "plugins/wordpress/wp_ui_builder.py",
-      "lines": 827,
+      "lines": 996,
       "summary": "UI layout construction and widget setup for WordPressExportTabWidget.",
       "exports": null,
       "classes": [],
@@ -9385,9 +9399,44 @@
         {
           "name": "setup_wp_tab_ui",
           "sig": "setup_wp_tab_ui(self)",
-          "start_line": 36,
-          "end_line": 827,
+          "start_line": 39,
+          "end_line": 885,
           "doc": "Construct all controls, forms, sliders, list widgets, and tabbed panels for the WordPress export tab."
+        },
+        {
+          "name": "_format_excluded_role_label",
+          "sig": "_format_excluded_role_label(tab_widget, role_value)",
+          "start_line": 888,
+          "end_line": 903,
+          "doc": "Return a clean human-readable name for a sidebar role value (-1 or story index)."
+        },
+        {
+          "name": "show_wp_excluded_placeholder",
+          "sig": "show_wp_excluded_placeholder(tab_widget, role_value)",
+          "start_line": 906,
+          "end_line": 931,
+          "doc": "Hide per-post metadata controls and explain that the focused item is unchecked for export."
+        },
+        {
+          "name": "hide_wp_excluded_placeholder",
+          "sig": "hide_wp_excluded_placeholder(tab_widget)",
+          "start_line": 934,
+          "end_line": 939,
+          "doc": "Restore the active WordPress post metadata editor controls."
+        },
+        {
+          "name": "include_excluded_item_in_export",
+          "sig": "include_excluded_item_in_export(tab_widget)",
+          "start_line": 942,
+          "end_line": 961,
+          "doc": "Check the currently focused excluded item in ExportStorySelectorSidebar and open its editor."
+        },
+        {
+          "name": "sync_wp_excluded_state_for_sidebar",
+          "sig": "sync_wp_excluded_state_for_sidebar(tab_widget, ext_sidebar, fallback_row)",
+          "start_line": 964,
+          "end_line": 996,
+          "doc": "Return the wp_post_items row to display, or None if the Not Included placeholder was shown."
         }
       ]
     },
@@ -10668,7 +10717,7 @@
     },
     "preferences_tabs_core.py": {
       "path": "preferences_tabs_core.py",
-      "lines": 623,
+      "lines": 626,
       "summary": "Radio & TV Story Segmenter \u2014 Preferences Modal Core Tab Builders.",
       "exports": null,
       "classes": [],
@@ -10705,14 +10754,14 @@
           "name": "build_ai_models_tab",
           "sig": "build_ai_models_tab(win, dialog, live_widgets, add_custom_defaults_btn)",
           "start_line": 389,
-          "end_line": 512,
+          "end_line": 515,
           "doc": ""
         },
         {
           "name": "build_gpu_tab",
           "sig": "build_gpu_tab(win, dialog, live_widgets, add_custom_defaults_btn)",
-          "start_line": 515,
-          "end_line": 623,
+          "start_line": 518,
+          "end_line": 626,
           "doc": ""
         }
       ]
@@ -20281,7 +20330,7 @@
     "transcript_story.py": {
       "path": "transcript_story.py",
       "lines": 856,
-      "summary": "Radio & TV Segmenter v3.10.27-beta \u2014 transcript story responsibilities.",
+      "summary": "Radio & TV Segmenter v3.10.28-beta \u2014 transcript story responsibilities.",
       "exports": [
         "TranscriptStoryMixin",
         "Story",

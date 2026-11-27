@@ -331,8 +331,24 @@ class DiagnosticEditorStoryUiTestsMixin:
             import shutil as _shutil
             _shutil.rmtree(thumb_dir_test, ignore_errors=True)
 
-        # 6b-3. Verify Preferences Playback & Timeline Audio Fades layout has zero card overlap or clipping (v3.10.25-beta)
+        # 6b-3. Verify Preferences Playback & Timeline Audio Fades layout has zero card overlap, clipping, or orphan window flash (v3.10.25-beta / v3.10.28-beta)
+        from PySide6.QtCore import QEvent as _QEv, QObject as _QObj
+        from preferences_tabs_core import build_ai_models_tab
         from preferences_tabs_media import build_playback_timeline_tab
+
+        class _OrphanFlashSpy(_QObj):
+            def __init__(self):
+                super().__init__()
+                self.flashed = []
+            def eventFilter(self, obj, ev):
+                if ev.type() == _QEv.Type.Show and hasattr(obj, "parentWidget") and obj.parentWidget() is None:
+                    self.flashed.append(type(obj).__name__)
+                return False
+
+        flash_spy = _OrphanFlashSpy()
+        app_inst = QApplication.instance()
+        if app_inst is not None:
+            app_inst.installEventFilter(flash_spy)
         pref_live = {}
         pref_store = type("PrefStore", (), {"value": lambda s, k, d=None: d})()
         pref_win = type("PrefWin", (), {
@@ -348,8 +364,19 @@ class DiagnosticEditorStoryUiTestsMixin:
             "transcript_auto_scroll": True,
             "enable_audio_fades": True,
             "preview_audio_fades": True,
+            "whisper_model": "small",
+            "is_whisper_model_available": lambda s, m: False,
         })()
-        play_tab = build_playback_timeline_tab(pref_win, None, pref_live, lambda *a, **kw: None)
+        try:
+            play_tab = build_playback_timeline_tab(pref_win, None, pref_live, lambda *a, **kw: None)
+            ai_tab = build_ai_models_tab(pref_win, None, pref_live, lambda *a, **kw: None)
+            QApplication.processEvents()
+            assert not flash_spy.flashed, f"Preferences tab build flashed orphan top-level windows: {flash_spy.flashed}"
+            ai_tab.close()
+            ai_tab.deleteLater()
+        finally:
+            if app_inst is not None:
+                app_inst.removeEventFilter(flash_spy)
         play_tab.resize(480, 520)
         play_tab.show()
         QApplication.processEvents()

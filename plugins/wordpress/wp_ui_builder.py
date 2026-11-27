@@ -1,7 +1,8 @@
 """UI layout construction and widget setup for WordPressExportTabWidget."""
 from __future__ import annotations
 
-from typing import Any
+import html
+from typing import Any, Optional
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QButtonGroup,
@@ -21,6 +22,7 @@ from PySide6.QtWidgets import (
     QSizePolicy,
     QSlider,
     QSplitter,
+    QStackedWidget,
     QTabWidget,
     QTextEdit,
     QVBoxLayout,
@@ -30,6 +32,7 @@ from PySide6.QtWidgets import (
 from prs_shared import (
     CollapsibleSection,
     get_active_theme_mode,
+    get_story_vocabulary,
 )
 
 
@@ -96,6 +99,13 @@ def setup_wp_tab_ui(self: Any):
     self.wp_current_post_header = QLabel("<b>Post Settings</b>")
     self.wp_current_post_header.setStyleSheet("color: #38bdf8; font-size: 12px;")
     editor_layout.addWidget(self.wp_current_post_header)
+
+    self.wp_post_editor_stack = QStackedWidget()
+    self.wp_editor_body_page = QWidget()
+    editor_body_layout = QVBoxLayout(self.wp_editor_body_page)
+    editor_body_layout.setContentsMargins(0, 0, 0, 0)
+    editor_body_layout.setSpacing(6)
+    self._excluded_role_value = None
 
     # Determine layout style preference: 'tabs' (default), 'split', or 'classic'
     layout_style = str(self.settings.value("wordpress_layout_style", "tabs") or "tabs").lower().strip()
@@ -715,7 +725,7 @@ def setup_wp_tab_ui(self: Any):
             t4_outer.addWidget(tab_pub_scroll)
             self.wp_editor_tabs.addTab(tab_pub, "Publishing && Formatting")
 
-        editor_layout.addWidget(self.wp_editor_tabs, 1)
+        editor_body_layout.addWidget(self.wp_editor_tabs, 1)
 
     elif layout_style == "split":
         self.wp_split_widget = QWidget()
@@ -746,21 +756,69 @@ def setup_wp_tab_ui(self: Any):
         right_col.addStretch()
         split_layout.addLayout(right_col, 2)
 
-        editor_layout.addWidget(self.wp_split_widget, 1)
+        editor_body_layout.addWidget(self.wp_split_widget, 1)
 
     else:
         # Classic Vertical Accordion Stack
-        editor_layout.addLayout(post_title_row)
-        editor_layout.addLayout(excerpt_box)
-        editor_layout.addLayout(tax_container)
-        editor_layout.addWidget(self.wp_thumb_section)
-        editor_layout.addWidget(self.wp_youtube_container_widget)
-        editor_layout.addWidget(self.wp_media_section)
-        editor_layout.addWidget(self.wp_castos_container_widget)
-        editor_layout.addWidget(self.wp_custom_section)
+        editor_body_layout.addLayout(post_title_row)
+        editor_body_layout.addLayout(excerpt_box)
+        editor_body_layout.addLayout(tax_container)
+        editor_body_layout.addWidget(self.wp_thumb_section)
+        editor_body_layout.addWidget(self.wp_youtube_container_widget)
+        editor_body_layout.addWidget(self.wp_media_section)
+        editor_body_layout.addWidget(self.wp_castos_container_widget)
+        editor_body_layout.addWidget(self.wp_custom_section)
         if not getattr(self, "metadata_editor_mode", False):
-            editor_layout.addWidget(self.wp_lang_section)
-            editor_layout.addWidget(self.wp_crosslink_section)
+            editor_body_layout.addWidget(self.wp_lang_section)
+            editor_body_layout.addWidget(self.wp_crosslink_section)
+
+    # Page 1: Clean placeholder shown when focusing an unchecked item in Custom Selection
+    self.wp_excluded_placeholder = QWidget()
+    excl_outer = QVBoxLayout(self.wp_excluded_placeholder)
+    excl_outer.setContentsMargins(16, 24, 16, 24)
+    excl_outer.addStretch(1)
+
+    excl_card = QFrame()
+    excl_card.setObjectName("wp_excluded_placeholder_card")
+    excl_card.setFrameShape(QFrame.Shape.StyledPanel)
+    excl_card.setStyleSheet(
+        f"QFrame#wp_excluded_placeholder_card {{ background-color: {p_bg}; border: 1px solid {p_bd}; border-radius: 8px; }}"
+    )
+    excl_card_layout = QVBoxLayout(excl_card)
+    excl_card_layout.setContentsMargins(24, 24, 24, 24)
+    excl_card_layout.setSpacing(10)
+
+    self.wp_excluded_title_label = QLabel("<b>Not included in this export</b>")
+    self.wp_excluded_title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+    self.wp_excluded_title_label.setWordWrap(True)
+    self.wp_excluded_title_label.setStyleSheet("font-size: 13px; border: none; background: transparent;")
+    excl_card_layout.addWidget(self.wp_excluded_title_label)
+
+    self.wp_excluded_desc_label = QLabel(
+        "Check the box next to this item in the Items to Export sidebar (or click below) "
+        "to include it in this export and configure its WordPress settings."
+    )
+    self.wp_excluded_desc_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+    self.wp_excluded_desc_label.setWordWrap(True)
+    self.wp_excluded_desc_label.setStyleSheet(f"color: {t_fg}; font-size: 11px; border: none; background: transparent;")
+    excl_card_layout.addWidget(self.wp_excluded_desc_label)
+
+    btn_center_row = QHBoxLayout()
+    btn_center_row.addStretch()
+    self.wp_include_in_export_btn = QPushButton("Include in Export")
+    self.wp_include_in_export_btn.setToolTip("Check this item in the Items to Export sidebar and open its WordPress settings")
+    self.wp_include_in_export_btn.clicked.connect(lambda: include_excluded_item_in_export(self))
+    btn_center_row.addWidget(self.wp_include_in_export_btn)
+    btn_center_row.addStretch()
+    excl_card_layout.addLayout(btn_center_row)
+
+    excl_outer.addWidget(excl_card)
+    excl_outer.addStretch(2)
+
+    self.wp_post_editor_stack.addWidget(self.wp_editor_body_page)
+    self.wp_post_editor_stack.addWidget(self.wp_excluded_placeholder)
+    self.wp_post_editor_stack.setCurrentWidget(self.wp_editor_body_page)
+    editor_layout.addWidget(self.wp_post_editor_stack, 1)
 
     self.wp_posts_container.addWidget(self.wp_post_editor_widget)
     self.wp_posts_container.setSizes([260, 680])
@@ -825,3 +883,114 @@ def setup_wp_tab_ui(self: Any):
 
     wp_scroll.setWidget(wp_scroll_content)
     wp_page_layout.addWidget(wp_scroll)
+
+
+def _format_excluded_role_label(tab_widget: Any, role_value: Optional[int]) -> str:
+    """Return a clean human-readable name for a sidebar role value (-1 or story index)."""
+    if role_value is None:
+        return ""
+    mw = getattr(tab_widget, "main_window", None)
+    if int(role_value) < 0:
+        return "Full Episode"
+    vocab = get_story_vocabulary(mw)
+    stories = getattr(mw, "stories", []) or []
+    idx = int(role_value)
+    prefix = f"{vocab.singular} {idx + 1}"
+    if 0 <= idx < len(stories):
+        raw_title = str(getattr(stories[idx], "title", "") or "").strip()
+        if raw_title and raw_title.lower() != prefix.lower():
+            return f"{prefix}: {raw_title}"
+    return prefix
+
+
+def show_wp_excluded_placeholder(tab_widget: Any, role_value: Optional[int]) -> None:
+    """Hide per-post metadata controls and explain that the focused item is unchecked for export."""
+    if not hasattr(tab_widget, "wp_post_editor_stack") or not hasattr(tab_widget, "wp_excluded_placeholder"):
+        return
+    tab_widget._excluded_role_value = int(role_value) if role_value is not None else None
+    item_label = _format_excluded_role_label(tab_widget, tab_widget._excluded_role_value)
+    if item_label:
+        esc = html.escape(item_label)
+        if hasattr(tab_widget, "wp_current_post_header"):
+            tab_widget.wp_current_post_header.setText(f"<b>{esc} — Not Included in Export</b>")
+        tab_widget.wp_excluded_title_label.setText(f"<b>{esc} is not included in this export.</b>")
+        tab_widget.wp_excluded_desc_label.setText(
+            "Check the box next to this item in the Items to Export sidebar (or click below) "
+            "to include it in this export and configure its WordPress settings."
+        )
+        tab_widget.wp_include_in_export_btn.setVisible(True)
+    else:
+        if hasattr(tab_widget, "wp_current_post_header"):
+            tab_widget.wp_current_post_header.setText("<b>Post Settings — No Items Selected</b>")
+        tab_widget.wp_excluded_title_label.setText("<b>No items are selected for export.</b>")
+        tab_widget.wp_excluded_desc_label.setText(
+            "Check one or more items in the Items to Export sidebar to include them "
+            "and configure their WordPress settings."
+        )
+        tab_widget.wp_include_in_export_btn.setVisible(False)
+    tab_widget.wp_post_editor_stack.setCurrentWidget(tab_widget.wp_excluded_placeholder)
+
+
+def hide_wp_excluded_placeholder(tab_widget: Any) -> None:
+    """Restore the active WordPress post metadata editor controls."""
+    if not hasattr(tab_widget, "wp_post_editor_stack") or not hasattr(tab_widget, "wp_editor_body_page"):
+        return
+    tab_widget._excluded_role_value = None
+    tab_widget.wp_post_editor_stack.setCurrentWidget(tab_widget.wp_editor_body_page)
+
+
+def include_excluded_item_in_export(tab_widget: Any) -> bool:
+    """Check the currently focused excluded item in ExportStorySelectorSidebar and open its editor."""
+    role_val = getattr(tab_widget, "_excluded_role_value", None)
+    if role_val is None:
+        return False
+    dlg = tab_widget.window() if callable(getattr(tab_widget, "window", None)) else None
+    sidebar = getattr(dlg, "story_selector_sidebar", None)
+    if sidebar is None:
+        return False
+    if int(role_val) < 0:
+        sidebar.set_include_full_episode(True, emit=True)
+        if hasattr(tab_widget, "select_full_episode"):
+            tab_widget.select_full_episode()
+        return True
+    existing = sidebar.get_selected_indices()
+    updated = sorted(set(existing) | {int(role_val)})
+    sidebar.set_selected_indices(updated, emit=True)
+    if hasattr(tab_widget, "select_story_index"):
+        tab_widget.select_story_index(int(role_val))
+    return True
+
+
+def sync_wp_excluded_state_for_sidebar(
+    tab_widget: Any,
+    ext_sidebar: bool,
+    fallback_row: int = 0,
+) -> Optional[int]:
+    """Return the wp_post_items row to display, or None if the Not Included placeholder was shown."""
+    if not ext_sidebar:
+        hide_wp_excluded_placeholder(tab_widget)
+        return fallback_row
+    dlg = tab_widget.window() if callable(getattr(tab_widget, "window", None)) else None
+    sidebar = getattr(dlg, "story_selector_sidebar", None)
+    active_role = sidebar.get_active_role_value() if (sidebar is not None and hasattr(sidebar, "get_active_role_value")) else None
+    items = getattr(tab_widget, "wp_post_items", None) or []
+
+    if not items:
+        show_wp_excluded_placeholder(tab_widget, active_role)
+        return None
+    if active_role is not None and sidebar is not None and hasattr(sidebar, "is_role_checked"):
+        if not sidebar.is_role_checked(active_role):
+            show_wp_excluded_placeholder(tab_widget, active_role)
+            return None
+        # Match active checked row so including/clicking stays locked to the focused sidebar item
+        for idx, post in enumerate(items):
+            is_full = bool(
+                post.get("is_parent_episode")
+                or post.get("task_label") == "Full Episode"
+                or post.get("story_index") is None
+            )
+            if (active_role < 0 and is_full) or (active_role >= 0 and post.get("story_index") == active_role):
+                hide_wp_excluded_placeholder(tab_widget)
+                return idx
+    hide_wp_excluded_placeholder(tab_widget)
+    return fallback_row
