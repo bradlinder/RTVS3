@@ -217,13 +217,33 @@ class ExportDialogsMixin:
                     is_custom_location=is_custom,
                 )
             elif scope == "selected_stories":
-                self.export_selected_stories(
-                    custom_formats=formats,
-                    custom_base=chosen_name,
-                    custom_options=options,
-                    directory=str(project_dir),
-                    is_custom_location=is_custom,
-                )
+                include_full = bool(result.get("include_full_episode", False))
+                sel_indices = list(getattr(self, "current_selected_story_indices", []) or [])
+                if include_full and sel_indices:
+                    self.export_full_and_all_stories(
+                        custom_formats=formats,
+                        custom_base=chosen_name,
+                        custom_options=options,
+                        directory=str(project_dir),
+                        is_custom_location=is_custom,
+                        story_indices=sel_indices,
+                    )
+                elif include_full:
+                    self.export_full_episode(
+                        custom_formats=formats,
+                        custom_base=chosen_name,
+                        custom_options=options,
+                        directory=str(project_dir),
+                        is_custom_location=is_custom,
+                    )
+                else:
+                    self.export_selected_stories(
+                        custom_formats=formats,
+                        custom_base=chosen_name,
+                        custom_options=options,
+                        directory=str(project_dir),
+                        is_custom_location=is_custom,
+                    )
             elif scope == "all_stories":
                 self.export_all_stories(
                     custom_formats=formats,
@@ -270,12 +290,21 @@ class ExportDialogsMixin:
             if not project_dir:
                 return
 
+            tl_scope = (
+                "full"
+                if (
+                    scope == "selected_stories"
+                    and bool(result.get("include_full_episode", False))
+                    and not getattr(self, "current_selected_story_indices", [])
+                )
+                else scope
+            )
             self.export_timeline_interchange(
                 formats=formats,
                 base=chosen_name or base,
                 options=options,
                 directory=str(project_dir),
-                scope=scope,
+                scope=tl_scope,
                 is_custom_location=is_custom,
             )
         else:

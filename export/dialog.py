@@ -163,7 +163,7 @@ class UnifiedExportDialog(QDialog):
         term_plural = vocab.plural
         self.scope_section = CollapsibleSection("Export Scope", self, is_expanded=True)
         self.scope_combo = QComboBox()
-        self.scope_combo.addItem(f"Selected {term_plural}", "selected_stories")
+        self.scope_combo.addItem(f"Selected {term_plural} / Custom Selection", "selected_stories")
         self.scope_combo.addItem(f"All {term_plural}", "all_stories")
         self.scope_combo.addItem("Full Episode", "full")
         self.scope_combo.addItem(f"Full Episode & All {term_plural}", "full_and_all_stories")
@@ -205,6 +205,7 @@ class UnifiedExportDialog(QDialog):
         self.story_selector_sidebar = ExportStorySelectorSidebar(self.main_window, parent=self)
         self.story_selector_sidebar.setVisible(False)
         self.story_selector_sidebar.selection_changed.connect(self._on_export_story_selection_changed)
+        self.story_selector_sidebar.full_episode_toggled.connect(self._on_export_full_episode_toggled)
         self.story_selector_sidebar.story_activated.connect(self._on_export_story_activated)
         self.stacked_widget = QStackedWidget()
         self.export_body_splitter.addWidget(self.story_selector_sidebar)
@@ -1114,6 +1115,12 @@ class UnifiedExportDialog(QDialog):
             return self.story_selector_sidebar.get_selected_indices()
         return list(getattr(self.main_window, "current_selected_story_indices", []) or [])
 
+    def is_full_episode_selected(self) -> bool:
+        """Return True when Full Episode is checked in the Custom Selection sidebar."""
+        if self.is_story_selector_visible():
+            return bool(self.story_selector_sidebar.is_full_episode_included())
+        return False
+
     def _sync_story_selector_visibility(self) -> None:
         if not hasattr(self, "story_selector_sidebar"):
             return
@@ -1123,6 +1130,16 @@ class UnifiedExportDialog(QDialog):
             selected = list(getattr(self.main_window, "current_selected_story_indices", []) or [])
             self.story_selector_sidebar.populate(stories, selected)
         self.story_selector_sidebar.setVisible(show_sidebar)
+
+    def _on_export_full_episode_toggled(self, include_full: bool) -> None:
+        stories = getattr(self.main_window, "stories", []) or []
+        scope = self.scope_combo.currentData()
+        for _, dest, _ in self._plugin_destinations:
+            try:
+                dest.on_scope_changed(scope, stories)
+            except Exception as exc:
+                print(f"[EXPORT] Warning: Plugin destination on_scope_changed failed for '{getattr(dest, 'id', 'unknown')}': {exc}")
+        self._update_export_button_label()
 
     def _on_export_story_selection_changed(self, indices: List[int]) -> None:
         clean_indices = sorted({int(i) for i in (indices or [])})
@@ -1148,7 +1165,15 @@ class UnifiedExportDialog(QDialog):
     def _on_export_story_activated(self, story_idx: int) -> None:
         for _, dest, page in self._plugin_destinations:
             tab = getattr(dest, "tab_widget", None) or page
-            if tab and hasattr(tab, "select_story_index") and callable(tab.select_story_index):
+            if not tab:
+                continue
+            if int(story_idx) < 0:
+                if hasattr(tab, "select_full_episode") and callable(tab.select_full_episode):
+                    try:
+                        tab.select_full_episode()
+                    except Exception:
+                        pass
+            elif hasattr(tab, "select_story_index") and callable(tab.select_story_index):
                 try:
                     tab.select_story_index(int(story_idx))
                 except Exception:
@@ -1371,12 +1396,12 @@ class UnifiedExportDialog(QDialog):
                 pass
         if self.scope_combo.currentData() == "selected_stories":
             stories = getattr(self.main_window, "stories", []) or []
-            if stories and not self.get_selected_story_indices():
+            if stories and not self.get_selected_story_indices() and not self.is_full_episode_selected():
                 vocab = get_story_vocabulary(self.main_window)
                 QMessageBox.warning(
                     self,
                     "Export",
-                    f"Please select at least one {vocab.singular.lower()} to export.",
+                    f"Please select the Full Episode or at least one {vocab.singular.lower()} to export.",
                 )
                 return
         if self.radio_local.isChecked():
@@ -1445,6 +1470,7 @@ class UnifiedExportDialog(QDialog):
 
     def get_result(self) -> Dict[str, Any]:
         scope = self.scope_combo.currentData()
+        include_full_episode = bool(scope == "selected_stories" and self.is_full_episode_selected())
         if self.radio_local.isChecked():
             formats = {
                 "txt": self.cb_txt.isChecked(),
@@ -1491,6 +1517,7 @@ class UnifiedExportDialog(QDialog):
             return {
                 "destination": "local",
                 "scope": scope,
+                "include_full_episode": include_full_episode,
                 "formats": formats,
                 "options": options,
                 "base": base,
@@ -1532,6 +1559,7 @@ class UnifiedExportDialog(QDialog):
             return {
                 "destination": "timeline",
                 "scope": scope,
+                "include_full_episode": include_full_episode,
                 "formats": formats,
                 "options": options,
                 "base": base,
@@ -1548,10 +1576,11 @@ class UnifiedExportDialog(QDialog):
                 return {
                     "destination": dest.id,
                     "scope": scope,
+                    "include_full_episode": include_full_episode,
                     **data,
                 }
 
-        return {"destination": "local", "scope": scope}
+        return {"destination": "local", "scope": scope, "include_full_episode": include_full_episode}
 
     def _persist_plugin_draft_states(self):
         """Persist any unsaved plugin destination edits (such as WordPress post drafts) back to the project."""

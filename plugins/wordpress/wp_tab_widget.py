@@ -760,6 +760,15 @@ class WordPressExportTabWidget(QWidget):
         self._cleanup_temp_files()
         super().closeEvent(event)
 
+    def select_full_episode(self) -> bool:
+        for row, post in enumerate(getattr(self, "wp_post_items", []) or []):
+            if post.get("is_parent_episode") or post.get("task_label") == "Full Episode" or post.get("story_index") is None:
+                if hasattr(self, "wp_posts_list") and row < self.wp_posts_list.count():
+                    self.wp_posts_list.setCurrentRow(row)
+                self._load_post_editor_state(row)
+                return True
+        return False
+
     def select_story_index(self, story_idx: int) -> bool:
         for row, post in enumerate(getattr(self, "wp_post_items", []) or []):
             if post.get("story_index") == story_idx:
@@ -771,10 +780,13 @@ class WordPressExportTabWidget(QWidget):
 
     def rebuild_post_items(self, scope: Optional[str] = None):
         prev_story_idx = None
+        prev_was_full = False
         if getattr(self, "wp_post_items", None):
             cur_i = getattr(self, "_current_post_index", 0)
             if 0 <= cur_i < len(self.wp_post_items):
-                prev_story_idx = self.wp_post_items[cur_i].get("story_index")
+                cur_post = self.wp_post_items[cur_i]
+                prev_story_idx = cur_post.get("story_index")
+                prev_was_full = bool(cur_post.get("is_parent_episode") or cur_post.get("task_label") == "Full Episode" or prev_story_idx is None)
             if hasattr(self, "_sync_post_to_project"):
                 for idx in range(len(self.wp_post_items)):
                     self._sync_post_to_project(idx)
@@ -788,9 +800,30 @@ class WordPressExportTabWidget(QWidget):
                 scope = self.parent().scope_combo.currentData()
             else:
                 scope = "full"
+        include_full = bool(
+            scope == "selected_stories"
+            and dlg is not None
+            and callable(getattr(dlg, "is_full_episode_selected", None))
+            and dlg.is_full_episode_selected()
+        )
         prim_lang = self.wp_primary_lang_combo.currentData() if hasattr(self, "wp_primary_lang_combo") and self.wp_primary_lang_combo else "en"
-        self.wp_post_items = build_wp_post_items(self.main_window, scope, prim_lang, getattr(self, "wp_post_items", []))
-        target_row = next((i for i, p in enumerate(self.wp_post_items) if prev_story_idx is not None and p.get("story_index") == prev_story_idx), 0)
+        self.wp_post_items = build_wp_post_items(
+            self.main_window,
+            scope,
+            prim_lang,
+            getattr(self, "wp_post_items", []),
+            include_full_episode=include_full,
+        )
+        if prev_was_full:
+            target_row = next(
+                (i for i, p in enumerate(self.wp_post_items) if p.get("is_parent_episode") or p.get("task_label") == "Full Episode" or p.get("story_index") is None),
+                0,
+            )
+        else:
+            target_row = next(
+                (i for i, p in enumerate(self.wp_post_items) if prev_story_idx is not None and p.get("story_index") == prev_story_idx),
+                0,
+            )
         self._current_post_index = target_row
 
         self.wp_posts_list.blockSignals(True)

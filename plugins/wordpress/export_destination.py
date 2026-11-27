@@ -145,8 +145,15 @@ class WordPressExportDestination(ExportDestination):
             return {}
         w = self.tab_widget
         is_upd = hasattr(w, "wp_rad_mode_update") and w.wp_rad_mode_update.isChecked()
+        dlg = w.window() if hasattr(w, "window") else None
+        inc_full = bool(
+            dlg is not None
+            and callable(getattr(dlg, "is_full_episode_selected", None))
+            and dlg.is_full_episode_selected()
+        )
         return {
             "wp_posts": list(w.wp_post_items),
+            "include_full_episode": inc_full,
             "include_english": w.wp_cb_en.isChecked(),
             "include_spanish": w.wp_cb_es.isChecked(),
             "spanish_presentation": w.wp_pres_combo.currentData(),
@@ -306,6 +313,8 @@ class WordPressExportDestination(ExportDestination):
             ordered_wp_posts = [chosen]
             parent_posts = [chosen]
             child_posts = []
+        elif scope == "selected_stories" and export_data.get("include_full_episode"):
+            ordered_wp_posts = parent_posts + child_posts
         elif scope in ("all_stories", "selected_stories"):
             ordered_wp_posts = [p for p in child_posts if p]
             if not ordered_wp_posts and wp_posts:

@@ -57,7 +57,13 @@ class UnifiedExportDialog(QDialog):
     def get_selected_story_indices(self) -> List[int]:
         ...
 
+    def is_full_episode_selected(self) -> bool:
+        ...
+
     def _sync_story_selector_visibility(self) -> None:
+        ...
+
+    def _on_export_full_episode_toggled(self, include_full: bool) -> None:
         ...
 
     def _on_export_story_selection_changed(self, indices: List[int]) -> None:

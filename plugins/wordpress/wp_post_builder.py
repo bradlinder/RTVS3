@@ -78,6 +78,7 @@ def build_wp_post_items(
     scope: str,
     primary_lang: str = "en",
     existing_items: Optional[List[Dict[str, Any]]] = None,
+    include_full_episode: bool = False,
 ) -> List[Dict[str, Any]]:
     """Build the list of WordPress post definitions according to the export scope."""
     audio_file = getattr(main_window, "audio_file", None)
@@ -388,8 +389,10 @@ def build_wp_post_items(
     if scope == "full":
         new_items.append(build_full_item())
     elif scope == "selected_stories":
+        if include_full_episode:
+            new_items.append(build_full_item())
         indices = getattr(main_window, "current_selected_story_indices", []) or []
-        if not indices and stories:
+        if not indices and stories and not include_full_episode:
             indices = [0]
         for idx in indices:
             if 0 <= idx < len(stories):

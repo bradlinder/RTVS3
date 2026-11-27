@@ -170,6 +170,9 @@ class WordPressExportTabWidget(QWidget):
     def closeEvent(self, event: Any) -> None:
         ...
 
+    def select_full_episode(self) -> bool:
+        ...
+
     def select_story_index(self, story_idx: int) -> bool:
         ...
 

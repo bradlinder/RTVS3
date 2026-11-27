@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-27 12:51:59",
+  "generated_at": "2026-11-27 13:03:15",
   "total_files": 208,
   "files": {
     "RadioTVSegmenter.py": {
       "path": "RadioTVSegmenter.py",
       "lines": 684,
-      "summary": "Radio & TV Segmenter \u2014 v3.10.21-beta",
+      "summary": "Radio & TV Segmenter \u2014 v3.10.22-beta",
       "exports": null,
       "classes": [
         {
@@ -2524,7 +2524,7 @@
     },
     "diagnostics/export_wordpress_core.py": {
       "path": "diagnostics/export_wordpress_core.py",
-      "lines": 800,
+      "lines": 828,
       "summary": "WordPress export scope, content formatting, and YouTube embed diagnostic tests.",
       "exports": null,
       "classes": [
@@ -2532,28 +2532,28 @@
           "name": "DiagnosticExportWordPressCoreMixin",
           "bases": [],
           "start_line": 9,
-          "end_line": 800,
+          "end_line": 828,
           "doc": "",
           "methods": [
             {
               "name": "_test_wordpress_export_scope_post_builder",
               "sig": "_test_wordpress_export_scope_post_builder(self, item)",
               "start_line": 10,
-              "end_line": 248,
+              "end_line": 276,
               "doc": ""
             },
             {
               "name": "_test_wordpress_export_content_and_transcript_formatter",
               "sig": "_test_wordpress_export_content_and_transcript_formatter(self, item)",
-              "start_line": 250,
-              "end_line": 460,
+              "start_line": 278,
+              "end_line": 488,
               "doc": ""
             },
             {
               "name": "_test_wordpress_youtube_video_embed",
               "sig": "_test_wordpress_youtube_video_embed(self, item)",
-              "start_line": 462,
-              "end_line": 800,
+              "start_line": 490,
+              "end_line": 828,
               "doc": "Verify YouTube URL parsing, iframe block generation, video project defaults, and Gutenberg placement."
             }
           ]
@@ -3151,7 +3151,7 @@
     },
     "export/dialog.py": {
       "path": "export/dialog.py",
-      "lines": 1647,
+      "lines": 1676,
       "summary": "Unified Export Dialog for Radio & TV Story Segmenter.",
       "exports": null,
       "classes": [
@@ -3161,231 +3161,245 @@
             "QDialog"
           ],
           "start_line": 64,
-          "end_line": 1647,
+          "end_line": 1676,
           "doc": "Unified Export Center supporting Local Files and dynamic plugin destinations.",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, main_window, initial_scope, initial_dest, parent)",
               "start_line": 67,
-              "end_line": 269,
+              "end_line": 270,
               "doc": ""
             },
             {
               "name": "showEvent",
               "sig": "showEvent(self, event)",
-              "start_line": 271,
-              "end_line": 273,
+              "start_line": 272,
+              "end_line": 274,
               "doc": ""
             },
             {
               "name": "_build_destinations_layout",
               "sig": "_build_destinations_layout(self)",
-              "start_line": 275,
-              "end_line": 441,
+              "start_line": 276,
+              "end_line": 442,
               "doc": "Construct destination radio buttons in customized user order."
             },
             {
               "name": "_on_reorder_destinations",
               "sig": "_on_reorder_destinations(self)",
-              "start_line": 443,
-              "end_line": 462,
+              "start_line": 444,
+              "end_line": 463,
               "doc": "Open reorder dialog and rebuild layout on change."
             },
             {
               "name": "_create_local_page",
               "sig": "_create_local_page(self)",
-              "start_line": 464,
-              "end_line": 822,
+              "start_line": 465,
+              "end_line": 823,
               "doc": ""
             },
             {
               "name": "_on_location_radio_toggled",
               "sig": "_on_location_radio_toggled(self)",
-              "start_line": 824,
-              "end_line": 827,
+              "start_line": 825,
+              "end_line": 828,
               "doc": ""
             },
             {
               "name": "_browse_custom_export_location",
               "sig": "_browse_custom_export_location(self)",
-              "start_line": 829,
-              "end_line": 834,
+              "start_line": 830,
+              "end_line": 835,
               "doc": ""
             },
             {
               "name": "_create_timeline_page",
               "sig": "_create_timeline_page(self)",
-              "start_line": 836,
-              "end_line": 1047,
+              "start_line": 837,
+              "end_line": 1048,
               "doc": ""
             },
             {
               "name": "_on_timeline_location_radio_toggled",
               "sig": "_on_timeline_location_radio_toggled(self)",
-              "start_line": 1049,
-              "end_line": 1052,
+              "start_line": 1050,
+              "end_line": 1053,
               "doc": ""
             },
             {
               "name": "_browse_custom_timeline_location",
               "sig": "_browse_custom_timeline_location(self)",
-              "start_line": 1054,
-              "end_line": 1059,
+              "start_line": 1055,
+              "end_line": 1060,
               "doc": ""
             },
             {
               "name": "_toggle_all_sections",
               "sig": "_toggle_all_sections(self)",
-              "start_line": 1061,
-              "end_line": 1075,
+              "start_line": 1062,
+              "end_line": 1076,
               "doc": ""
             },
             {
               "name": "_update_export_button_label",
               "sig": "_update_export_button_label(self)",
-              "start_line": 1077,
-              "end_line": 1090,
+              "start_line": 1078,
+              "end_line": 1091,
               "doc": ""
             },
             {
               "name": "_on_dest_changed",
               "sig": "_on_dest_changed(self)",
-              "start_line": 1092,
-              "end_line": 1100,
+              "start_line": 1093,
+              "end_line": 1101,
               "doc": ""
             },
             {
               "name": "is_story_selector_visible",
               "sig": "is_story_selector_visible(self)",
-              "start_line": 1102,
-              "end_line": 1109,
+              "start_line": 1103,
+              "end_line": 1110,
               "doc": "Return True when the Export Dialog's left selected-stories sidebar is active."
             },
             {
               "name": "get_selected_story_indices",
               "sig": "get_selected_story_indices(self)",
-              "start_line": 1111,
-              "end_line": 1115,
+              "start_line": 1112,
+              "end_line": 1116,
               "doc": "Return the currently checked 0-based story indices."
+            },
+            {
+              "name": "is_full_episode_selected",
+              "sig": "is_full_episode_selected(self)",
+              "start_line": 1118,
+              "end_line": 1122,
+              "doc": "Return True when Full Episode is checked in the Custom Selection sidebar."
             },
             {
               "name": "_sync_story_selector_visibility",
               "sig": "_sync_story_selector_visibility(self)",
-              "start_line": 1117,
-              "end_line": 1125,
+              "start_line": 1124,
+              "end_line": 1132,
+              "doc": ""
+            },
+            {
+              "name": "_on_export_full_episode_toggled",
+              "sig": "_on_export_full_episode_toggled(self, include_full)",
+              "start_line": 1134,
+              "end_line": 1142,
               "doc": ""
             },
             {
               "name": "_on_export_story_selection_changed",
               "sig": "_on_export_story_selection_changed(self, indices)",
-              "start_line": 1127,
-              "end_line": 1146,
+              "start_line": 1144,
+              "end_line": 1163,
               "doc": ""
             },
             {
               "name": "_on_export_story_activated",
               "sig": "_on_export_story_activated(self, story_idx)",
-              "start_line": 1148,
-              "end_line": 1155,
+              "start_line": 1165,
+              "end_line": 1180,
               "doc": ""
             },
             {
               "name": "_on_scope_changed",
               "sig": "_on_scope_changed(self)",
-              "start_line": 1157,
-              "end_line": 1169,
+              "start_line": 1182,
+              "end_line": 1194,
               "doc": ""
             },
             {
               "name": "_open_id3_editor",
               "sig": "_open_id3_editor(self)",
-              "start_line": 1171,
-              "end_line": 1181,
+              "start_line": 1196,
+              "end_line": 1206,
               "doc": "Open the ID3 Tag Editor for MP3 files."
             },
             {
               "name": "_copy_youtube_chapters",
               "sig": "_copy_youtube_chapters(self)",
-              "start_line": 1183,
-              "end_line": 1199,
+              "start_line": 1208,
+              "end_line": 1224,
               "doc": ""
             },
             {
               "name": "_load_saved_options",
               "sig": "_load_saved_options(self)",
-              "start_line": 1201,
-              "end_line": 1290,
+              "start_line": 1226,
+              "end_line": 1315,
               "doc": ""
             },
             {
               "name": "save_options_to_settings",
               "sig": "save_options_to_settings(self, as_default)",
-              "start_line": 1292,
-              "end_line": 1364,
+              "start_line": 1317,
+              "end_line": 1389,
               "doc": ""
             },
             {
               "name": "_handle_accept",
               "sig": "_handle_accept(self)",
-              "start_line": 1366,
-              "end_line": 1444,
+              "start_line": 1391,
+              "end_line": 1469,
               "doc": ""
             },
             {
               "name": "get_result",
               "sig": "get_result(self)",
-              "start_line": 1446,
-              "end_line": 1554,
+              "start_line": 1471,
+              "end_line": 1583,
               "doc": ""
             },
             {
               "name": "_persist_plugin_draft_states",
               "sig": "_persist_plugin_draft_states(self)",
-              "start_line": 1556,
-              "end_line": 1564,
+              "start_line": 1585,
+              "end_line": 1593,
               "doc": "Persist any unsaved plugin destination edits (such as WordPress post drafts) back to the project."
             },
             {
               "name": "done",
               "sig": "done(self, r)",
-              "start_line": 1566,
-              "end_line": 1568,
+              "start_line": 1595,
+              "end_line": 1597,
               "doc": ""
             },
             {
               "name": "toggle_float_mode",
               "sig": "toggle_float_mode(self, pinned)",
-              "start_line": 1570,
-              "end_line": 1586,
+              "start_line": 1599,
+              "end_line": 1615,
               "doc": "Toggle whether the non-modal floating window stays pinned on top of other windows."
             },
             {
               "name": "set_scope_and_destination",
               "sig": "set_scope_and_destination(self, scope, dest_id)",
-              "start_line": 1588,
-              "end_line": 1599,
+              "start_line": 1617,
+              "end_line": 1628,
               "doc": "Update export scope and active destination tab on an open modeless export window."
             },
             {
               "name": "refresh_from_main_window",
               "sig": "refresh_from_main_window(self)",
-              "start_line": 1601,
-              "end_line": 1624,
+              "start_line": 1630,
+              "end_line": 1653,
               "doc": "Synchronize post items, excerpts, and story lists from the main window without losing draft edits."
             },
             {
               "name": "_toggle_maximize",
               "sig": "_toggle_maximize(self)",
-              "start_line": 1626,
-              "end_line": 1634,
+              "start_line": 1655,
+              "end_line": 1663,
               "doc": ""
             },
             {
               "name": "changeEvent",
               "sig": "changeEvent(self, event)",
-              "start_line": 1636,
-              "end_line": 1647,
+              "start_line": 1665,
+              "end_line": 1676,
               "doc": ""
             }
           ]
@@ -3604,10 +3618,11 @@
     },
     "export/story_selector.py": {
       "path": "export/story_selector.py",
-      "lines": 210,
+      "lines": 324,
       "summary": "Checkable story/segment selection sidebar for UnifiedExportDialog.",
       "exports": [
-        "ExportStorySelectorSidebar"
+        "ExportStorySelectorSidebar",
+        "FULL_EPISODE_ROLE_VALUE"
       ],
       "classes": [
         {
@@ -3615,71 +3630,113 @@
           "bases": [
             "QWidget"
           ],
-          "start_line": 39,
-          "end_line": 207,
-          "doc": "Left sidebar with checkable story/segment items and quick Select All / Clear controls.",
+          "start_line": 42,
+          "end_line": 321,
+          "doc": "Left sidebar with checkable Full Episode and story/segment items plus Select All / Clear.",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, main_window, parent)",
-              "start_line": 45,
-              "end_line": 93,
+              "start_line": 49,
+              "end_line": 98,
+              "doc": ""
+            },
+            {
+              "name": "_resolve_full_episode_title",
+              "sig": "_resolve_full_episode_title(self)",
+              "start_line": 100,
+              "end_line": 111,
               "doc": ""
             },
             {
               "name": "populate",
-              "sig": "populate(self, stories, selected_indices)",
-              "start_line": 95,
-              "end_line": 147,
-              "doc": "Rebuild the checkable list from project stories and active selection indices."
+              "sig": "populate(self, stories, selected_indices, include_full_episode)",
+              "start_line": 113,
+              "end_line": 197,
+              "doc": "Rebuild the checkable list with Full Episode at top followed by project stories."
+            },
+            {
+              "name": "is_full_episode_included",
+              "sig": "is_full_episode_included(self)",
+              "start_line": 199,
+              "end_line": 205,
+              "doc": "Return True if the Full Episode row is checked."
+            },
+            {
+              "name": "set_include_full_episode",
+              "sig": "set_include_full_episode(self, checked, emit)",
+              "start_line": 207,
+              "end_line": 224,
+              "doc": "Programmatically check or uncheck the Full Episode row."
             },
             {
               "name": "get_selected_indices",
               "sig": "get_selected_indices(self)",
-              "start_line": 149,
-              "end_line": 157,
-              "doc": "Return sorted 0-based indices of all checked story items."
+              "start_line": 226,
+              "end_line": 235,
+              "doc": "Return sorted 0-based indices of all checked story items (excluding Full Episode)."
+            },
+            {
+              "name": "has_any_selection",
+              "sig": "has_any_selection(self)",
+              "start_line": 237,
+              "end_line": 239,
+              "doc": "Return True if Full Episode or at least one story/segment is checked."
             },
             {
               "name": "set_selected_indices",
               "sig": "set_selected_indices(self, selected_indices, emit)",
-              "start_line": 159,
-              "end_line": 177,
-              "doc": "Update item check states without rebuilding the list."
+              "start_line": 241,
+              "end_line": 260,
+              "doc": "Update story item check states without altering the Full Episode item."
             },
             {
               "name": "select_all",
               "sig": "select_all(self)",
-              "start_line": 179,
-              "end_line": 180,
+              "start_line": 262,
+              "end_line": 266,
               "doc": ""
             },
             {
               "name": "clear_selection",
               "sig": "clear_selection(self)",
-              "start_line": 182,
-              "end_line": 183,
+              "start_line": 268,
+              "end_line": 272,
               "doc": ""
             },
             {
               "name": "update_count_label",
               "sig": "update_count_label(self)",
-              "start_line": 185,
-              "end_line": 188,
+              "start_line": 274,
+              "end_line": 277,
+              "doc": ""
+            },
+            {
+              "name": "_sync_current_item_quietly",
+              "sig": "_sync_current_item_quietly(self, item)",
+              "start_line": 279,
+              "end_line": 286,
               "doc": ""
             },
             {
               "name": "_on_item_changed",
               "sig": "_on_item_changed(self, item)",
-              "start_line": 190,
-              "end_line": 198,
+              "start_line": 288,
+              "end_line": 304,
+              "doc": ""
+            },
+            {
+              "name": "_on_item_clicked",
+              "sig": "_on_item_clicked(self, item)",
+              "start_line": 306,
+              "end_line": 311,
               "doc": ""
             },
             {
               "name": "_on_current_row_changed",
               "sig": "_on_current_row_changed(self, row)",
-              "start_line": 200,
-              "end_line": 207,
+              "start_line": 313,
+              "end_line": 321,
               "doc": ""
             }
           ]
@@ -3917,7 +3974,7 @@
     },
     "export_dialogs.py": {
       "path": "export_dialogs.py",
-      "lines": 447,
+      "lines": 476,
       "summary": "Radio & TV Story Segmenter \u2014 Export Dialogs & Scope Selection Interface.",
       "exports": null,
       "classes": [
@@ -3925,7 +3982,7 @@
           "name": "ExportDialogsMixin",
           "bases": [],
           "start_line": 53,
-          "end_line": 447,
+          "end_line": 476,
           "doc": "Provides dialog launchers, format selectors, and destination routing for MainWindow.",
           "methods": [
             {
@@ -3960,14 +4017,14 @@
               "name": "_dispatch_unified_export_result",
               "sig": "_dispatch_unified_export_result(self, result)",
               "start_line": 158,
-              "end_line": 294,
+              "end_line": 323,
               "doc": "Execute the selected export operation after UnifiedExportDialog is accepted."
             },
             {
               "name": "_choose_export_formats",
               "sig": "_choose_export_formats(self, title, allow_media)",
-              "start_line": 296,
-              "end_line": 447,
+              "start_line": 325,
+              "end_line": 476,
               "doc": "Modal dialog to choose formats and transcript options for classic export flows."
             }
           ]
@@ -4136,7 +4193,7 @@
     },
     "export_media_clipper.py": {
       "path": "export_media_clipper.py",
-      "lines": 337,
+      "lines": 338,
       "summary": "Radio & TV Story Segmenter \u2014 Media Clipper & Audio Track Renderer.",
       "exports": null,
       "classes": [
@@ -4144,7 +4201,7 @@
           "name": "ExportMediaClipperMixin",
           "bases": [],
           "start_line": 26,
-          "end_line": 337,
+          "end_line": 338,
           "doc": "Provides audio/video track rendering, story clip extraction, and YouTube media handling.",
           "methods": [
             {
@@ -4179,7 +4236,7 @@
               "name": "_handle_youtube_export_result",
               "sig": "_handle_youtube_export_result(self, result)",
               "start_line": 109,
-              "end_line": 337,
+              "end_line": 338,
               "doc": ""
             }
           ]
@@ -4189,7 +4246,7 @@
     },
     "export_story_pipeline.py": {
       "path": "export_story_pipeline.py",
-      "lines": 964,
+      "lines": 968,
       "summary": "Radio & TV Story Segmenter \u2014 Story & Full Episode Export Pipeline.",
       "exports": null,
       "classes": [
@@ -4197,7 +4254,7 @@
           "name": "ExportStoryPipelineMixin",
           "bases": [],
           "start_line": 36,
-          "end_line": 964,
+          "end_line": 968,
           "doc": "Provides story batch export and full episode export orchestration.",
           "methods": [
             {
@@ -4237,30 +4294,30 @@
             },
             {
               "name": "export_full_and_all_stories",
-              "sig": "export_full_and_all_stories(self, custom_formats, custom_base, custom_options, directory, is_custom_location)",
+              "sig": "export_full_and_all_stories(self, custom_formats, custom_base, custom_options, directory, is_custom_location, story_indices)",
               "start_line": 539,
-              "end_line": 623,
+              "end_line": 627,
               "doc": ""
             },
             {
               "name": "export_full_episode",
               "sig": "export_full_episode(self, custom_formats, custom_base, custom_options, directory, show_completion, progress_dialog, progress_value, is_custom_location)",
-              "start_line": 625,
-              "end_line": 934,
+              "start_line": 629,
+              "end_line": 938,
               "doc": ""
             },
             {
               "name": "perform_stories_export",
               "sig": "perform_stories_export(self, target_stories, custom_formats, custom_base, custom_options, directory, show_completion, is_custom_location)",
-              "start_line": 936,
-              "end_line": 958,
+              "start_line": 940,
+              "end_line": 962,
               "doc": ""
             },
             {
               "name": "export_youtube_manual_package",
               "sig": "export_youtube_manual_package(self, export_data)",
-              "start_line": 960,
-              "end_line": 964,
+              "start_line": 964,
+              "end_line": 968,
               "doc": "Render and package zero-auth manual YouTube export (MP4, thumbnail, SRT, metadata .txt)."
             }
           ]
@@ -7961,7 +8018,7 @@
     },
     "plugins/wordpress/export_destination.py": {
       "path": "plugins/wordpress/export_destination.py",
-      "lines": 871,
+      "lines": 880,
       "summary": "WordPress Export Destination for UnifiedExportDialog.",
       "exports": [
         "WordPressExportDestination",
@@ -7991,7 +8048,7 @@
             "ExportDestination"
           ],
           "start_line": 37,
-          "end_line": 750,
+          "end_line": 759,
           "doc": "Export destination handler for WordPress REST API Draft Posts.",
           "methods": [
             {
@@ -8068,14 +8125,14 @@
               "name": "get_export_data",
               "sig": "get_export_data(self)",
               "start_line": 143,
-              "end_line": 169,
+              "end_line": 176,
               "doc": ""
             },
             {
               "name": "execute_export",
               "sig": "execute_export(self, main_window, export_data, progress_dialog)",
-              "start_line": 171,
-              "end_line": 750,
+              "start_line": 178,
+              "end_line": 759,
               "doc": ""
             }
           ]
@@ -8085,43 +8142,43 @@
           "bases": [
             "QDialog"
           ],
-          "start_line": 753,
-          "end_line": 833,
+          "start_line": 762,
+          "end_line": 842,
           "doc": "Full-featured WordPress post & story metadata editor dialog.",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, parent, main_window, target_story_index)",
-              "start_line": 756,
-              "end_line": 812,
+              "start_line": 765,
+              "end_line": 821,
               "doc": ""
             },
             {
               "name": "_on_save_clicked",
               "sig": "_on_save_clicked(self)",
-              "start_line": 814,
-              "end_line": 819,
+              "start_line": 823,
+              "end_line": 828,
               "doc": ""
             },
             {
               "name": "_on_close_clicked",
               "sig": "_on_close_clicked(self)",
-              "start_line": 821,
-              "end_line": 823,
+              "start_line": 830,
+              "end_line": 832,
               "doc": ""
             },
             {
               "name": "_on_save_and_close",
               "sig": "_on_save_and_close(self)",
-              "start_line": 825,
-              "end_line": 826,
+              "start_line": 834,
+              "end_line": 835,
               "doc": ""
             },
             {
               "name": "done",
               "sig": "done(self, r)",
-              "start_line": 828,
-              "end_line": 833,
+              "start_line": 837,
+              "end_line": 842,
               "doc": ""
             }
           ]
@@ -8484,7 +8541,7 @@
     },
     "plugins/wordpress/wp_post_builder.py": {
       "path": "plugins/wordpress/wp_post_builder.py",
-      "lines": 453,
+      "lines": 456,
       "summary": "Post item builder, transcript slicing, and video frame extraction for WordPress export.",
       "exports": null,
       "classes": [],
@@ -8505,16 +8562,16 @@
         },
         {
           "name": "build_wp_post_items",
-          "sig": "build_wp_post_items(main_window, scope, primary_lang, existing_items)",
+          "sig": "build_wp_post_items(main_window, scope, primary_lang, existing_items, include_full_episode)",
           "start_line": 76,
-          "end_line": 428,
+          "end_line": 431,
           "doc": "Build the list of WordPress post definitions according to the export scope."
         },
         {
           "name": "sync_featured_image_meta",
           "sig": "sync_featured_image_meta(wp_meta, post, container_meta)",
-          "start_line": 431,
-          "end_line": 453,
+          "start_line": 434,
+          "end_line": 456,
           "doc": "Persist featured image path, mode, user-set flag, caption, alt text, and frame position."
         }
       ]
@@ -8634,7 +8691,7 @@
     },
     "plugins/wordpress/wp_tab_widget.py": {
       "path": "plugins/wordpress/wp_tab_widget.py",
-      "lines": 935,
+      "lines": 968,
       "summary": "WordPress export tab configuration widget and preview controller.",
       "exports": null,
       "classes": [
@@ -8644,7 +8701,7 @@
             "QWidget"
           ],
           "start_line": 43,
-          "end_line": 934,
+          "end_line": 967,
           "doc": "Configuration and preview panel for WordPress Draft Posts.",
           "methods": [
             {
@@ -8998,45 +9055,52 @@
               "doc": "Persist current post state, stop background thumbnail workers, and clean up temp files."
             },
             {
-              "name": "select_story_index",
-              "sig": "select_story_index(self, story_idx)",
+              "name": "select_full_episode",
+              "sig": "select_full_episode(self)",
               "start_line": 763,
               "end_line": 770,
               "doc": ""
             },
             {
+              "name": "select_story_index",
+              "sig": "select_story_index(self, story_idx)",
+              "start_line": 772,
+              "end_line": 779,
+              "doc": ""
+            },
+            {
               "name": "rebuild_post_items",
               "sig": "rebuild_post_items(self, scope)",
-              "start_line": 772,
-              "end_line": 813,
+              "start_line": 781,
+              "end_line": 846,
               "doc": ""
             },
             {
               "name": "_populate_wp_export_metadata",
               "sig": "_populate_wp_export_metadata(self, force_refresh)",
-              "start_line": 815,
-              "end_line": 882,
+              "start_line": 848,
+              "end_line": 915,
               "doc": ""
             },
             {
               "name": "_prompt_wp_credentials",
               "sig": "_prompt_wp_credentials(self, title, message)",
-              "start_line": 884,
-              "end_line": 897,
+              "start_line": 917,
+              "end_line": 930,
               "doc": ""
             },
             {
               "name": "_refresh_castos_feeds",
               "sig": "_refresh_castos_feeds(self)",
-              "start_line": 899,
-              "end_line": 916,
+              "start_line": 932,
+              "end_line": 949,
               "doc": ""
             },
             {
               "name": "_refresh_wp_metadata",
               "sig": "_refresh_wp_metadata(self)",
-              "start_line": 918,
-              "end_line": 934,
+              "start_line": 951,
+              "end_line": 967,
               "doc": ""
             }
           ]
@@ -9391,7 +9455,7 @@
     },
     "plugins/youtube/export_destination.py": {
       "path": "plugins/youtube/export_destination.py",
-      "lines": 613,
+      "lines": 619,
       "summary": "YouTube Export Destination for UnifiedExportDialog with Zero-Auth Manual Publishing.",
       "exports": null,
       "classes": [
@@ -9401,7 +9465,7 @@
             "QWidget"
           ],
           "start_line": 87,
-          "end_line": 529,
+          "end_line": 535,
           "doc": "Configuration and preview panel for YouTube Zero-Auth Manual Publishing.",
           "methods": [
             {
@@ -9422,98 +9486,98 @@
               "name": "_get_yt_bounds",
               "sig": "_get_yt_bounds(self)",
               "start_line": 353,
-              "end_line": 371,
+              "end_line": 377,
               "doc": ""
             },
             {
               "name": "_on_yt_thumb_mode_changed",
               "sig": "_on_yt_thumb_mode_changed(self)",
-              "start_line": 373,
-              "end_line": 390,
+              "start_line": 379,
+              "end_line": 396,
               "doc": ""
             },
             {
               "name": "_update_yt_scrub_slider_range",
               "sig": "_update_yt_scrub_slider_range(self)",
-              "start_line": 392,
-              "end_line": 401,
+              "start_line": 398,
+              "end_line": 407,
               "doc": ""
             },
             {
               "name": "_on_yt_slider_value_changed",
               "sig": "_on_yt_slider_value_changed(self, value)",
-              "start_line": 403,
-              "end_line": 409,
+              "start_line": 409,
+              "end_line": 415,
               "doc": ""
             },
             {
               "name": "_on_yt_step",
               "sig": "_on_yt_step(self, delta_sec)",
-              "start_line": 411,
-              "end_line": 416,
+              "start_line": 417,
+              "end_line": 422,
               "doc": ""
             },
             {
               "name": "_on_yt_sync_playhead",
               "sig": "_on_yt_sync_playhead(self)",
-              "start_line": 418,
-              "end_line": 423,
+              "start_line": 424,
+              "end_line": 429,
               "doc": ""
             },
             {
               "name": "_schedule_yt_frame_preview",
               "sig": "_schedule_yt_frame_preview(self)",
-              "start_line": 425,
-              "end_line": 428,
+              "start_line": 431,
+              "end_line": 434,
               "doc": ""
             },
             {
               "name": "_on_yt_scrub_timer_timeout",
               "sig": "_on_yt_scrub_timer_timeout(self)",
-              "start_line": 430,
-              "end_line": 444,
+              "start_line": 436,
+              "end_line": 450,
               "doc": ""
             },
             {
               "name": "_on_yt_browse_thumb",
               "sig": "_on_yt_browse_thumb(self)",
-              "start_line": 446,
-              "end_line": 457,
+              "start_line": 452,
+              "end_line": 463,
               "doc": ""
             },
             {
               "name": "_cleanup_temp_files",
               "sig": "_cleanup_temp_files(self)",
-              "start_line": 459,
-              "end_line": 468,
+              "start_line": 465,
+              "end_line": 474,
               "doc": "Purge temporary thumbnail frame grabs."
             },
             {
               "name": "closeEvent",
               "sig": "closeEvent(self, event)",
-              "start_line": 470,
-              "end_line": 473,
+              "start_line": 476,
+              "end_line": 479,
               "doc": "Clean up temporary thumbnail files on closure."
             },
             {
               "name": "reject",
               "sig": "reject(self)",
-              "start_line": 475,
-              "end_line": 478,
+              "start_line": 481,
+              "end_line": 484,
               "doc": "Ensure temp preview files are purged on dialog rejection."
             },
             {
               "name": "done",
               "sig": "done(self, r)",
-              "start_line": 480,
-              "end_line": 483,
+              "start_line": 486,
+              "end_line": 489,
               "doc": "Ensure temp preview files are purged on dialog completion."
             },
             {
               "name": "populate_metadata",
               "sig": "populate_metadata(self)",
-              "start_line": 485,
-              "end_line": 529,
+              "start_line": 491,
+              "end_line": 535,
               "doc": "Builds default title, description, chapter timestamps, and speaker credits from current stories."
             }
           ]
@@ -9523,57 +9587,57 @@
           "bases": [
             "ExportDestination"
           ],
-          "start_line": 532,
-          "end_line": 613,
+          "start_line": 538,
+          "end_line": 619,
           "doc": "Export destination handler for YouTube Zero-Auth Manual Publishing.",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, plugin)",
-              "start_line": 535,
-              "end_line": 543,
+              "start_line": 541,
+              "end_line": 549,
               "doc": ""
             },
             {
               "name": "create_widget",
               "sig": "create_widget(self, parent, main_window)",
-              "start_line": 545,
-              "end_line": 547,
+              "start_line": 551,
+              "end_line": 553,
               "doc": ""
             },
             {
               "name": "_ensure_tab_widget",
               "sig": "_ensure_tab_widget(self)",
-              "start_line": 549,
-              "end_line": 565,
+              "start_line": 555,
+              "end_line": 571,
               "doc": "Defensive resolver to bind tab_widget from cached dialog entries if unlinked."
             },
             {
               "name": "on_scope_changed",
               "sig": "on_scope_changed(self, scope, stories)",
-              "start_line": 567,
-              "end_line": 570,
+              "start_line": 573,
+              "end_line": 576,
               "doc": ""
             },
             {
               "name": "validate",
               "sig": "validate(self)",
-              "start_line": 572,
-              "end_line": 578,
+              "start_line": 578,
+              "end_line": 584,
               "doc": ""
             },
             {
               "name": "get_export_data",
               "sig": "get_export_data(self)",
-              "start_line": 580,
-              "end_line": 607,
+              "start_line": 586,
+              "end_line": 613,
               "doc": ""
             },
             {
               "name": "execute_export",
               "sig": "execute_export(self, main_window, export_data, progress_dialog)",
-              "start_line": 609,
-              "end_line": 613,
+              "start_line": 615,
+              "end_line": 619,
               "doc": ""
             }
           ]
@@ -19817,7 +19881,7 @@
     "transcript_story.py": {
       "path": "transcript_story.py",
       "lines": 856,
-      "summary": "Radio & TV Segmenter v3.10.21-beta \u2014 transcript story responsibilities.",
+      "summary": "Radio & TV Segmenter v3.10.22-beta \u2014 transcript story responsibilities.",
       "exports": [
         "TranscriptStoryMixin",
         "Story",

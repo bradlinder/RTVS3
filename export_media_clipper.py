@@ -190,7 +190,8 @@ class ExportMediaClipperMixin:
 
             start_sec = 0.0
             dur_sec: Optional[float] = None
-            if scope == "selected_stories":
+            include_full = bool(result.get("include_full_episode", False))
+            if scope == "selected_stories" and not include_full:
                 sel_indices = getattr(self, "current_selected_story_indices", [])
                 stories = getattr(self, "stories", [])
                 target_stories = [stories[i] for i in sel_indices if 0 <= i < len(stories)]
@@ -258,7 +259,7 @@ class ExportMediaClipperMixin:
             transcript = getattr(self, "transcript", None)
             if transcript and transcript.get("segments"):
                 sub_path = out_dir / f"{base_name}.srt"
-                if scope == "selected_stories":
+                if scope == "selected_stories" and not bool(result.get("include_full_episode", False)):
                     sel_indices = getattr(self, "current_selected_story_indices", [])
                     stories = getattr(self, "stories", [])
                     target_stories = [stories[i] for i in sel_indices if 0 <= i < len(stories)]

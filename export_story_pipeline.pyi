@@ -32,7 +32,7 @@ class ExportStoryPipelineMixin:
     def export_all_stories(self, custom_formats: Optional[Dict[str, bool]]=..., custom_base: Optional[str]=..., custom_options: Optional[Dict[str, Any]]=..., directory: Optional[str]=..., is_custom_location: bool=...):
         ...
 
-    def export_full_and_all_stories(self, custom_formats: Optional[Dict[str, bool]]=..., custom_base: Optional[str]=..., custom_options: Optional[Dict[str, Any]]=..., directory: Optional[str]=..., is_custom_location: bool=...):
+    def export_full_and_all_stories(self, custom_formats: Optional[Dict[str, bool]]=..., custom_base: Optional[str]=..., custom_options: Optional[Dict[str, Any]]=..., directory: Optional[str]=..., is_custom_location: bool=..., story_indices: Optional[List[int]]=...):
         ...
 
     def export_full_episode(self, custom_formats: Optional[Dict[str, bool]]=..., custom_base: Optional[str]=..., custom_options: Optional[Dict[str, Any]]=..., directory: Optional[str]=..., show_completion: bool=..., progress_dialog: Optional[QProgressDialog]=..., progress_value: int=..., is_custom_location: bool=...) -> bool:

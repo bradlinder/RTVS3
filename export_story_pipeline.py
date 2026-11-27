@@ -543,6 +543,7 @@ class ExportStoryPipelineMixin:
         custom_options: Optional[Dict[str, Any]] = None,
         directory: Optional[str] = None,
         is_custom_location: bool = False,
+        story_indices: Optional[List[int]] = None,
     ):
         project_file = getattr(self, "project_file", None)
         audio_file = getattr(self, "audio_file", None)
@@ -564,7 +565,10 @@ class ExportStoryPipelineMixin:
         formats = custom_formats or {"txt": True, "docx": True, "pdf": True, "srt": False, "vtt": False, "media": False}
         options = custom_options or {"include_speakers": True, "include_timestamps": False, "include_english": True, "include_spanish": False}
         stories = getattr(self, "stories", [])
-        stories_to_export = list(enumerate(stories)) if stories else []
+        if story_indices is not None:
+            stories_to_export = [(int(i), stories[int(i)]) for i in story_indices if 0 <= int(i) < len(stories)]
+        else:
+            stories_to_export = list(enumerate(stories)) if stories else []
         total_items = 1 + len(stories_to_export)
 
         self.export_cancelled = False

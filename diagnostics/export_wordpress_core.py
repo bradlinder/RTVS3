@@ -158,27 +158,55 @@ class DiagnosticExportWordPressCoreMixin:
             if exp_dlg.is_story_selector_visible():
                 raise AssertionError("Story selector sidebar should be hidden when scope is 'all_stories'")
 
-            # Verify checkable story selector sidebar in 'selected_stories' scope
+            # Verify checkable story selector sidebar (Full Episode + stories) in 'selected_stories' scope
             idx_sel = exp_dlg.scope_combo.findData("selected_stories")
             if idx_sel < 0:
                 raise AssertionError("UnifiedExportDialog missing 'selected_stories' scope item")
             exp_dlg.scope_combo.setCurrentIndex(idx_sel)
             if not exp_dlg.is_story_selector_visible():
                 raise AssertionError("Story selector sidebar should be visible when scope is 'selected_stories'")
+            if exp_dlg.is_full_episode_selected():
+                raise AssertionError("Full Episode should start unchecked by default in 'selected_stories' scope")
+            if exp_dlg.story_selector_sidebar.story_list.count() != 3:
+                raise AssertionError(f"Expected Full Episode + 2 stories (3 rows), got {exp_dlg.story_selector_sidebar.story_list.count()}")
+            if "Full Episode" not in exp_dlg.story_selector_sidebar.story_list.item(0).text():
+                raise AssertionError(f"Expected row 0 to be Full Episode, got {exp_dlg.story_selector_sidebar.story_list.item(0).text()!r}")
             if exp_dlg.get_selected_story_indices() != [1]:
                 raise AssertionError(f"Expected initial checked story [1], got {exp_dlg.get_selected_story_indices()}")
-            exp_dlg.story_selector_sidebar.story_list.item(0).setCheckState(Qt.CheckState.Checked)
+            # Check Story 1 (row 1, since row 0 is Full Episode)
+            exp_dlg.story_selector_sidebar.story_list.item(1).setCheckState(Qt.CheckState.Checked)
             if exp_dlg.get_selected_story_indices() != [0, 1]:
                 raise AssertionError(f"Expected checked stories [0, 1] after checking Story 1, got {exp_dlg.get_selected_story_indices()}")
             if list(mock_widget.main_window.current_selected_story_indices) != [0, 1]:
                 raise AssertionError("Checking stories in Export Dialog did not sync main_window.current_selected_story_indices")
+            # Check Full Episode (row 0) alongside subset of stories
+            exp_dlg.story_selector_sidebar.set_selected_indices([1], emit=True)
+            exp_dlg.story_selector_sidebar.story_list.item(0).setCheckState(Qt.CheckState.Checked)
+            if not exp_dlg.is_full_episode_selected():
+                raise AssertionError("Checking row 0 did not set is_full_episode_selected() to True")
+            if exp_dlg.get_selected_story_indices() != [1]:
+                raise AssertionError("Checking Full Episode must not alter selected story indices")
+            res_combo = exp_dlg.get_result()
+            if not res_combo.get("include_full_episode"):
+                raise AssertionError("get_result() missing include_full_episode=True when Full Episode is checked")
+            # Verify WordPress post builder includes Full Episode + ONLY checked stories when include_full_episode=True
+            from plugins.wordpress.wp_post_builder import build_wp_post_items
+            combo_posts = build_wp_post_items(mock_widget.main_window, "selected_stories", "en", [], include_full_episode=True)
+            if [p.get("task_label") for p in combo_posts] != ["Full Episode", "Story 2"]:
+                raise AssertionError(f"Expected ['Full Episode', 'Story 2'], got {[p.get('task_label') for p in combo_posts]}")
+            # Verify checking ONLY Full Episode builds [Full Episode] without forcing Story 1 fallback
+            mock_widget.main_window.current_selected_story_indices = []
+            full_only_posts = build_wp_post_items(mock_widget.main_window, "selected_stories", "en", [], include_full_episode=True)
+            if [p.get("task_label") for p in full_only_posts] != ["Full Episode"]:
+                raise AssertionError(f"Expected ['Full Episode'] when only Full Episode checked, got {[p.get('task_label') for p in full_only_posts]}")
             exp_dlg.story_selector_sidebar.clear_selection()
-            if exp_dlg.get_selected_story_indices() != []:
-                raise AssertionError("Clear button did not uncheck all stories")
+            if exp_dlg.get_selected_story_indices() != [] or exp_dlg.is_full_episode_selected():
+                raise AssertionError("Clear button did not uncheck Full Episode and all stories")
             exp_dlg.story_selector_sidebar.select_all()
-            if exp_dlg.get_selected_story_indices() != [0, 1]:
-                raise AssertionError("Select All button did not check all stories")
-            # Restore original selection [1]
+            if exp_dlg.get_selected_story_indices() != [0, 1] or not exp_dlg.is_full_episode_selected():
+                raise AssertionError("Select All button did not check Full Episode and all stories")
+            # Restore original selection [1] with Full Episode unchecked
+            exp_dlg.story_selector_sidebar.set_include_full_episode(False, emit=True)
             exp_dlg.story_selector_sidebar.set_selected_indices([1], emit=True)
 
             # Verify saving options as default persists export_opt_default_scope

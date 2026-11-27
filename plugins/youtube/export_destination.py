@@ -359,11 +359,17 @@ class YouTubeExportTabWidget(QWidget):
             scope = self.parent().scope_combo.currentData()
         stories = getattr(self.main_window, "stories", [])
         if scope == "selected_stories":
-            sel_indices = getattr(self.main_window, "current_selected_story_indices", [])
-            if sel_indices:
-                sel_stories = [stories[i] for i in sel_indices if 0 <= i < len(stories)]
-                if sel_stories:
-                    return float(min(getattr(s, "start", 0.0) for s in sel_stories)), float(max(getattr(s, "end", 0.0) for s in sel_stories))
+            include_full = bool(
+                dlg is not None
+                and callable(getattr(dlg, "is_full_episode_selected", None))
+                and dlg.is_full_episode_selected()
+            )
+            if not include_full:
+                sel_indices = getattr(self.main_window, "current_selected_story_indices", [])
+                if sel_indices:
+                    sel_stories = [stories[i] for i in sel_indices if 0 <= i < len(stories)]
+                    if sel_stories:
+                        return float(min(getattr(s, "start", 0.0) for s in sel_stories)), float(max(getattr(s, "end", 0.0) for s in sel_stories))
         elif scope == "all_stories" and stories:
             return float(min(getattr(s, "start", 0.0) for s in stories)), float(max(getattr(s, "end", 0.0) for s in stories))
 
