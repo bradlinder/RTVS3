@@ -370,10 +370,80 @@ class DiagnosticEditorStoryUiTestsMixin:
         try:
             play_tab = build_playback_timeline_tab(pref_win, None, pref_live, lambda *a, **kw: None)
             ai_tab = build_ai_models_tab(pref_win, None, pref_live, lambda *a, **kw: None)
+
+            # System-wide zero-flash sweep across Export (WP + YT plugins), Open Remote Episode & core dialogs (v3.10.29-beta)
+            from export.dialog import UnifiedExportDialog
+            from plugins.wordpress.export_destination import WordPressExportDestination
+            from plugins.youtube.export_destination import YouTubeExportDestination
+            from plugins.youtube.yt_import_dialog import LoadYouTubeEpisodeDialog
+            from story_fades_dialog import StoryFadesDialog
+            from comment_widgets import CommentEditorDialog
+            from batch_dialog import BatchProcessingDialog
+            from cache_manager import ClearCacheDialog
+            from export.reorder_dialog import ReorderExportDestinationsDialog
+            from updater_dialog import CheckUpdateDialog
+            from PySide6.QtWidgets import QWidget as _FlashQWidget
+            from prs_shared import Story as _FlashStory
+
+            class _FlashFakePM:
+                def get_export_destinations(self):
+                    return [WordPressExportDestination(), YouTubeExportDestination()]
+                def get_all_plugins(self):
+                    return []
+                def is_plugin_enabled(self, n):
+                    return True
+                def is_plugin_installed(self, n):
+                    return True
+
+            class _FlashDummyMW(_FlashQWidget):
+                def __init__(self):
+                    super().__init__()
+                    self.settings_store = pref_store
+                    self.language = "en"
+                    self.audio_file = Path(tempfile.gettempdir()) / "flash_check_vid.mp4"
+                    self.current_media_is_video = True
+                    self.duration = 600.0
+                    self.current_position = 10.0
+                    self.stories = [_FlashStory(0.0, 120.0, "Story 1"), _FlashStory(120.0, 240.0, "Story 2")]
+                    self.current_selected_story_indices = [0]
+                    self.project_metadata = {"wordpress": {"youtube_url": "https://youtu.be/VaVL92lOhUI"}}
+                    self.transcript = {"segments": [{"start": 0.0, "end": 10.0, "text": "Hello world.", "speaker": "SPEAKER_00"}]}
+                    self.translations = {}
+                    self.speaker_names = {"SPEAKER_00": "Host"}
+                    self.segment_speaker_overrides = {}
+                    self.plugin_manager = _FlashFakePM()
+                    self.story_detection_mode = "voice"
+                def source_language_code(self):
+                    return "en"
+                def get_spanish_translation_item(self):
+                    return None
+                def has_spanish_translation(self):
+                    return False
+
+            flash_mw = _FlashDummyMW()
+            sweep_widgets = [
+                UnifiedExportDialog(flash_mw, initial_scope="selected_stories", initial_dest="wordpress"),
+                LoadYouTubeEpisodeDialog(flash_mw),
+                StoryFadesDialog(parent=flash_mw, story=flash_mw.stories[0]),
+                CommentEditorDialog(flash_mw, "Sample", "Existing note"),
+                BatchProcessingDialog(flash_mw),
+                ClearCacheDialog(flash_mw),
+                ReorderExportDestinationsDialog(flash_mw),
+                CheckUpdateDialog(flash_mw),
+            ]
             QApplication.processEvents()
-            assert not flash_spy.flashed, f"Preferences tab build flashed orphan top-level windows: {flash_spy.flashed}"
+            assert not flash_spy.flashed, f"Dialog/tab construction flashed orphan top-level windows: {flash_spy.flashed}"
+            for _sw in sweep_widgets:
+                _sw.close()
+                _sw.deleteLater()
+            flash_mw.deleteLater()
             ai_tab.close()
             ai_tab.deleteLater()
+
+            # Static AST orphan-window flash guard across entire repository
+            from scripts.dev_check import check_qt_orphan_widget_flashes
+            ast_ok, ast_msg = check_qt_orphan_widget_flashes()
+            assert ast_ok, f"Static Qt orphan-window AST guard failed: {ast_msg}"
         finally:
             if app_inst is not None:
                 app_inst.removeEventFilter(flash_spy)

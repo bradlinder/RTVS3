@@ -1,13 +1,13 @@
 # Repository Symbol Index & API Map
 
-> Generated: 2026-11-27 14:30:20 | Total Files: 210
+> Generated: 2026-11-27 14:42:23 | Total Files: 210
 > Use `python scripts/generate_symbol_index.py --outline <file>` for exact line numbers.
 
 ## Modules Overview
 
 | Module | Lines | Summary | Primary Classes / Functions |
 | :--- | :---: | :--- | :--- |
-| `RadioTVSegmenter.py` | 686 | Radio & TV Segmenter — v3.10.28-beta | `MainWindow`, `main()` |
+| `RadioTVSegmenter.py` | 686 | Radio & TV Segmenter — v3.10.29-beta | `MainWindow`, `main()` |
 | `audio_normalization.py` | 474 | Radio & TV Story Segmenter — Audio Loudness Probing & Nor... | `LoudnessReport`, `parse_ebur128_summary()`, `probe_media_duration_seconds()`, `probe_media_loudness()` *(+2 more)* |
 | `audio_normalization_worker.py` | 89 | Background QThread worker for non-blocking EBU R128 loudn... | `AudioLoudnessProbeWorker` |
 | `background_workers.py` | 911 | Radio & TV Story Segmenter — Background Worker Threads & ... | `StoryAutoDetectWorker`, `WaveformWorker`, `get_waveform_peak_cache_path()`, `read_waveform_peak_cache()` *(+2 more)* |
@@ -39,7 +39,7 @@
 | `diagnostics/cloud_storage_tests.py` | 592 | Plugin interface, project persistence, cache management, ... | `DiagnosticCloudStorageTestsMixin` |
 | `diagnostics/editing_workflow_tests.py` | 590 | Fades, translation routing, speaker dialog flow, story bo... | `DiagnosticEditingWorkflowTestsMixin` |
 | `diagnostics/editor_guides_and_daw_tests.py` | 500 | Find-replace, user guides viewer, and REAPER DAW companio... | `DiagnosticEditorGuidesAndDawTestsMixin` |
-| `diagnostics/editor_story_ui_tests.py` | 782 | Story transcript highlighting, smart copy, duration & hea... | `DiagnosticEditorStoryUiTestsMixin` |
+| `diagnostics/editor_story_ui_tests.py` | 852 | Story transcript highlighting, smart copy, duration & hea... | `DiagnosticEditorStoryUiTestsMixin` |
 | `diagnostics/export_pipeline.py` | 485 | Multi-format export pipeline, scope slicing, and audio ca... | `DiagnosticExportPipelineMixin` |
 | `diagnostics/export_wordpress_core.py` | 830 | WordPress export scope, content formatting, and YouTube e... | `DiagnosticExportWordPressCoreMixin` |
 | `diagnostics/export_wordpress_media.py` | 752 | WordPress featured image metadata and Castos podcast diag... | `DiagnosticExportWordPressMediaMixin` |
@@ -111,7 +111,7 @@
 | `plugins/wordpress/wp_workers.py` | 106 | Background QThread worker for publishing individual WordP... | `WordPressPublishWorker`, `YouTubeThumbnailFetchWorker` |
 | `plugins/wordpress/youtube_embed.py` | 672 | YouTube Video Embed helpers, Gutenberg iframe generator, ... | `extract_youtube_video_id()`, `build_youtube_embed_block()`, `setup_wp_youtube_ui()`, `update_youtube_status_label()` *(+4 more)* |
 | `plugins/youtube/__init__.py` | 9 | YouTube Video Publisher Plugin for Radio & TV Segmenter. | - |
-| `plugins/youtube/export_destination.py` | 619 | YouTube Export Destination for UnifiedExportDialog with Z... | `YouTubeExportTabWidget`, `YouTubeExportDestination`, `capture_video_frame()` |
+| `plugins/youtube/export_destination.py` | 618 | YouTube Export Destination for UnifiedExportDialog with Z... | `YouTubeExportTabWidget`, `YouTubeExportDestination`, `capture_video_frame()` |
 | `plugins/youtube/guide_dialog.py` | 147 | Interactive Assisted Upload Guide Dialog for YouTube Studio. | `YouTubeAssistedUploadGuideDialog` |
 | `plugins/youtube/plugin.py` | 291 | YouTube Video Publisher Plugin for Radio & TV Segmenter. | `YouTubeSettingsDialog`, `Plugin`, `capture_video_frame()` |
 | `plugins/youtube/yt_dlp_runner.py` | 871 | Headless yt-dlp runtime provisioner, URL parser, metadata... | `extract_youtube_id_strict()`, `normalize_quality_preset()`, `normalize_cookie_browser()`, `get_format_selector_for_preset()` *(+18 more)* |
@@ -140,7 +140,7 @@
 | `roadmap_manager.py` | 259 | roadmap_manager.py — Automated Roadmap & N-1 Sliding-Wind... | `RoadmapManager`, `get_current_app_version()`, `main()` |
 | `runtime_manager.py` | 1037 |  | `RuntimeManager`, `register_process()`, `unregister_process()`, `kill_all_subprocesses()` *(+1 more)* |
 | `scripts/capture_guide_screenshots.py` | 152 | Programmatic headless screenshot generator for RTVS3 user... | `MockCaptureMainWindow`, `capture_widget()`, `main()` |
-| `scripts/dev_check.py` | 154 | scripts/dev_check.py - Ultra-Fast Pre-Flight Development ... | `check_syntax()`, `check_typing_stubs()`, `check_preview_sync()`, `check_modular_budget()` *(+2 more)* |
+| `scripts/dev_check.py` | 338 | scripts/dev_check.py - Ultra-Fast Pre-Flight Development ... | `check_syntax()`, `check_typing_stubs()`, `check_preview_sync()`, `check_modular_budget()` *(+3 more)* |
 | `scripts/generate_pyi_stubs.py` | 214 | generate_pyi_stubs.py — Automated Interface Typing Stub (... | `StubTransformer`, `generate_stub_source()`, `get_large_modules()`, `generate_stub_file()` *(+1 more)* |
 | `scripts/generate_symbol_index.py` | 380 | generate_symbol_index.py — Fast AST Symbol Indexer & Repo... | `parse_function_signature()`, `analyze_file()`, `scan_repository()`, `generate_index_markdown()` *(+4 more)* |
 | `scripts/log_summary.py` | 150 | log_summary.py — Compact Error & Exception Extraction Engine | `is_project_frame()`, `extract_log_summary()`, `main()` |
@@ -192,7 +192,7 @@
 | `transcript_navigation_mixin.py` | 300 | transcript_navigation_mixin.py - Timestamp discovery, car... | `TranscriptNavigationMixin` |
 | `transcript_playback_highlight_mixin.py` | 277 | Radio & TV Story Segmenter — Interactive Transcript Playb... | `TranscriptPlaybackHighlightMixin` |
 | `transcript_selection_mixin.py` | 473 | transcript_selection_mixin.py - Multi-selection, timeline... | `TranscriptSelectionMixin` |
-| `transcript_story.py` | 856 | Radio & TV Segmenter v3.10.28-beta — transcript story res... | `TranscriptStoryMixin` |
+| `transcript_story.py` | 856 | Radio & TV Segmenter v3.10.29-beta — transcript story res... | `TranscriptStoryMixin` |
 | `transcript_styles.py` | 104 | transcript_styles.py - Transcript view stylesheets and da... | `transcript_text_view_stylesheet()`, `clean_dark_mode_clipboard_html()` |
 | `transcript_timeline_sync_mixin.py` | 655 | Radio & TV Story Segmenter — Transcript Timeline & Playba... | `TranscriptTimelineSyncMixin` |
 | `transcription_processing.py` | 579 | Transcription background process management for Radio & T... | `TranscriptionProcessingMixin` |
@@ -221,7 +221,7 @@
 ## Detailed Symbol Catalog
 
 ### `RadioTVSegmenter.py` (686 lines)
-*Radio & TV Segmenter — v3.10.28-beta*
+*Radio & TV Segmenter — v3.10.29-beta*
 - **class `MainWindow(ModelManagementMixin, MediaBatchMixin, PlaybackPreferencesMixin, UiLayoutMixin, ProcessingMixin, TranslationMixin, TranscriptStoryMixin, ProjectExportMixin, GpuAccelerationMixin, QMainWindow)`** (lines 160–583):
   *Main application window for Radio & TV Segmenter.*
   - `__init__(self)` [L178-L355]
@@ -631,11 +631,11 @@
   - `_test_in_app_user_guides_and_documentation_viewer(self, item)` [L210-L301] — *Validates in-app user guide resolution, fallback to embedded content, and bundling invariants.*
   - `_test_reaper_daw_companion_and_universal_clipboard_pipeline(self, item)` [L303-L500] — *Validates REAPER DAW clip cue JSON schema, sidecar emission, Lua script syntax,*
 
-### `diagnostics/editor_story_ui_tests.py` (782 lines)
+### `diagnostics/editor_story_ui_tests.py` (852 lines)
 *Story transcript highlighting, smart copy, duration & header diagnostic tests.*
-- **class `DiagnosticEditorStoryUiTestsMixin`** (lines 9–782):
-  - `_test_story_transcript_highlighting_and_smart_copy(self, item)` [L10-L599] — *Validates story selection synchronization with transcript highlight overlay and smart clipboard copying.*
-  - `_test_story_duration_visibility_and_header_aggregation(self, item)` [L601-L782] — *Validates story clock duration formatting, 2-line sidebar item format, and multi-selection header aggregation.*
+- **class `DiagnosticEditorStoryUiTestsMixin`** (lines 9–852):
+  - `_test_story_transcript_highlighting_and_smart_copy(self, item)` [L10-L669] — *Validates story selection synchronization with transcript highlight overlay and smart clipboard copying.*
+  - `_test_story_duration_visibility_and_header_aggregation(self, item)` [L671-L852] — *Validates story clock duration formatting, 2-line sidebar item format, and multi-selection header aggregation.*
 
 ### `diagnostics/export_pipeline.py` (485 lines)
 *Multi-format export pipeline, scope slicing, and audio cancellation tests.*
@@ -1832,35 +1832,35 @@
 ### `plugins/youtube/__init__.py` (9 lines)
 *YouTube Video Publisher Plugin for Radio & TV Segmenter.*
 
-### `plugins/youtube/export_destination.py` (619 lines)
+### `plugins/youtube/export_destination.py` (618 lines)
 *YouTube Export Destination for UnifiedExportDialog with Zero-Auth Manual Publishing.*
-- **class `YouTubeExportTabWidget(QWidget)`** (lines 87–535):
+- **class `YouTubeExportTabWidget(QWidget)`** (lines 87–534):
   *Configuration and preview panel for YouTube Zero-Auth Manual Publishing.*
   - `__init__(self, parent, main_window)` [L90-L103]
-  - `_setup_ui(self)` [L105-L351]
-  - `_get_yt_bounds(self)` [L353-L377]
-  - `_on_yt_thumb_mode_changed(self)` [L379-L396]
-  - `_update_yt_scrub_slider_range(self)` [L398-L407]
-  - `_on_yt_slider_value_changed(self, value)` [L409-L415]
-  - `_on_yt_step(self, delta_sec)` [L417-L422]
-  - `_on_yt_sync_playhead(self)` [L424-L429]
-  - `_schedule_yt_frame_preview(self)` [L431-L434]
-  - `_on_yt_scrub_timer_timeout(self)` [L436-L450]
-  - `_on_yt_browse_thumb(self)` [L452-L463]
-  - `_cleanup_temp_files(self)` [L465-L474] — *Purge temporary thumbnail frame grabs.*
-  - `closeEvent(self, event)` [L476-L479] — *Clean up temporary thumbnail files on closure.*
-  - `reject(self)` [L481-L484] — *Ensure temp preview files are purged on dialog rejection.*
-  - `done(self, r)` [L486-L489] — *Ensure temp preview files are purged on dialog completion.*
-  - `populate_metadata(self)` [L491-L535] — *Builds default title, description, chapter timestamps, and speaker credits from current stories.*
-- **class `YouTubeExportDestination(ExportDestination)`** (lines 538–619):
+  - `_setup_ui(self)` [L105-L350]
+  - `_get_yt_bounds(self)` [L352-L376]
+  - `_on_yt_thumb_mode_changed(self)` [L378-L395]
+  - `_update_yt_scrub_slider_range(self)` [L397-L406]
+  - `_on_yt_slider_value_changed(self, value)` [L408-L414]
+  - `_on_yt_step(self, delta_sec)` [L416-L421]
+  - `_on_yt_sync_playhead(self)` [L423-L428]
+  - `_schedule_yt_frame_preview(self)` [L430-L433]
+  - `_on_yt_scrub_timer_timeout(self)` [L435-L449]
+  - `_on_yt_browse_thumb(self)` [L451-L462]
+  - `_cleanup_temp_files(self)` [L464-L473] — *Purge temporary thumbnail frame grabs.*
+  - `closeEvent(self, event)` [L475-L478] — *Clean up temporary thumbnail files on closure.*
+  - `reject(self)` [L480-L483] — *Ensure temp preview files are purged on dialog rejection.*
+  - `done(self, r)` [L485-L488] — *Ensure temp preview files are purged on dialog completion.*
+  - `populate_metadata(self)` [L490-L534] — *Builds default title, description, chapter timestamps, and speaker credits from current stories.*
+- **class `YouTubeExportDestination(ExportDestination)`** (lines 537–618):
   *Export destination handler for YouTube Zero-Auth Manual Publishing.*
-  - `__init__(self, plugin)` [L541-L549]
-  - `create_widget(self, parent, main_window)` [L551-L553]
-  - `_ensure_tab_widget(self)` [L555-L571] — *Defensive resolver to bind tab_widget from cached dialog entries if unlinked.*
-  - `on_scope_changed(self, scope, stories)` [L573-L576]
-  - `validate(self)` [L578-L584]
-  - `get_export_data(self)` [L586-L613]
-  - `execute_export(self, main_window, export_data, progress_dialog)` [L615-L619]
+  - `__init__(self, plugin)` [L540-L548]
+  - `create_widget(self, parent, main_window)` [L550-L552]
+  - `_ensure_tab_widget(self)` [L554-L570] — *Defensive resolver to bind tab_widget from cached dialog entries if unlinked.*
+  - `on_scope_changed(self, scope, stories)` [L572-L575]
+  - `validate(self)` [L577-L583]
+  - `get_export_data(self)` [L585-L612]
+  - `execute_export(self, main_window, export_data, progress_dialog)` [L614-L618]
 - **Functions**:
   - `capture_video_frame(video_path, timestamp, output_path)` [L69-L84]
 
@@ -2595,15 +2595,19 @@
   - `capture_widget(widget, output_path, size)` [L72-L87] — *Render a QWidget to a high-resolution PNG image file capped at max 850px width.*
   - `main()` [L90-L148]
 
-### `scripts/dev_check.py` (154 lines)
+### `scripts/dev_check.py` (338 lines)
 *scripts/dev_check.py - Ultra-Fast Pre-Flight Development & AI Safety Gate*
 - **Functions**:
-  - `check_syntax()` [L32-L43] — *Compiles all tracked python files in root and scripts.*
-  - `check_typing_stubs()` [L46-L52] — *Verifies interface stubs for modules exceeding 800 lines.*
-  - `check_preview_sync()` [L55-L61] — *Ensures zero-dependency preview files match prs_shared.py.*
-  - `check_modular_budget()` [L64-L98] — *Guards against new monolithic files exceeding the 1,000 line ceiling.*
-  - `check_regression_tests()` [L101-L109] — *Executes change-aware Tier 2 diagnostic test suite.*
-  - `main()` [L112-L150]
+  - `check_syntax()` [L34-L45] — *Compiles all tracked python files in root and scripts.*
+  - `check_typing_stubs()` [L48-L54] — *Verifies interface stubs for modules exceeding 800 lines.*
+  - `check_preview_sync()` [L57-L63] — *Ensures zero-dependency preview files match prs_shared.py.*
+  - `check_modular_budget()` [L66-L100] — *Guards against new monolithic files exceeding the 1,000 line ceiling.*
+  - `_ctor_has_explicit_parent(call_node, cname)` [L113-L130] — *Return True if a Qt widget constructor call passes an explicit parent argument.*
+  - `_is_literal_false_visibility(call_node, attr)` [L133-L138]
+  - `_iter_direct_nodes(stmts)` [L141-L153] — *Yield AST nodes inside *stmts* without descending into nested def/class definitions.*
+  - `check_qt_orphan_widget_flashes(root_dir)` [L156-L281] — *Static AST guard: flag setVisible(non-False) / setRowVisible(..., non-False) on unparented*
+  - `check_regression_tests()` [L284-L292] — *Executes change-aware Tier 2 diagnostic test suite.*
+  - `main()` [L295-L334]
 
 ### `scripts/generate_pyi_stubs.py` (214 lines)
 *generate_pyi_stubs.py — Automated Interface Typing Stub (.pyi) Generator.*
@@ -3561,7 +3565,7 @@
   - `_on_bubble_export(self)` [L468-L473]
 
 ### `transcript_story.py` (856 lines)
-*Radio & TV Segmenter v3.10.28-beta — transcript story responsibilities.*
+*Radio & TV Segmenter v3.10.29-beta — transcript story responsibilities.*
 - **Public Exports (`__all__`)**: TranscriptStoryMixin, Story, SetStoriesCommand, SelectStoriesCommand, StoryBoundaryChangeCommand, StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin, ChangeSpeakerDialog, VoiceProfileMatchDialog, StoryFadesDialog, SpeakerManagerDialog, FADE_CURVE_TABLES, get_fade_curve_factors
 - **class `TranscriptStoryMixin(StoryCrudMixin, SpeakerEditingMixin, VoiceProfileOpsMixin)`** (lines 63–855):
   - `render_transcript(self)` [L64-L471]

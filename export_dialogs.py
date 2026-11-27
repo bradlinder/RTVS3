@@ -338,14 +338,13 @@ class ExportDialogsMixin:
         pdf = QCheckBox("PDF document (.pdf)")
         srt = QCheckBox("SubRip subtitles (.srt)")
         vtt = QCheckBox("WebVTT subtitles (.vtt)")
-        media = QCheckBox(f"Media ({audio_file.suffix.lower() if audio_file else 'source format'})")
+        media = QCheckBox(f"Media ({audio_file.suffix.lower() if audio_file else 'source format'})", dialog)
         media_available = allow_media and audio_file is not None
 
         txt.setChecked(True)
         docx.setChecked(True)
         pdf.setChecked(True)
         media.setChecked(media_available)
-        media.setVisible(media_available)
 
         layout.addWidget(txt)
         layout.addWidget(docx)
@@ -354,6 +353,7 @@ class ExportDialogsMixin:
         layout.addWidget(vtt)
         if allow_media:
             layout.addWidget(media)
+            media.setVisible(media_available)
 
         default = safe_filename(
             project_file.stem if project_file else (audio_file.stem if audio_file else "export")

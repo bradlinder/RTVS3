@@ -138,6 +138,7 @@ Instead, the agent MUST actively perform deep, adversarial code-level inspection
 5. **Qt / PySide6 Stability & Reliability**:
    - Thread affinity: No background workers directly touching GUI widgets (signals/slots only).
    - Object parentage & lifecycle: Proper widget hierarchy to prevent memory leaks and `Internal C++ object already deleted` crashes.
+   - Zero-flash parenting discipline: Never call `.setVisible(True)`, `.show()`, or `QFormLayout.setRowVisible(..., True)` on widgets created with `parent=None` while their containing layout is still unattached; pass an explicit parent or invoke initial visibility sync only *after* `addLayout()` / `setLayout()` (enforced by `scripts/dev_check.py` and the multi-dialog orphan-window diagnostic test).
    - Clean timer and worker termination: `QTimer.stop()` and worker `.cancel()` / `.kill()` handlers on close events.
 
 6. **Code Bloat, Dead Code & Asset Hygiene**:

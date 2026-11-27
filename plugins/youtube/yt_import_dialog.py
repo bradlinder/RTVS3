@@ -248,11 +248,11 @@ class LoadYouTubeEpisodeDialog(QDialog):
         self.url_edit.returnPressed.connect(self._start_probe)
         url_row.addWidget(self.url_edit, 1)
 
-        self.fetch_btn = QPushButton("Fetch Info")
+        self.fetch_btn = QPushButton("Fetch Info", self)
         self.fetch_btn.clicked.connect(self._start_probe)
-        self.fetch_btn.setVisible(not self.redownload_mode)
         url_row.addWidget(self.fetch_btn)
         layout.addLayout(url_row)
+        self.fetch_btn.setVisible(not self.redownload_mode)
 
         # Video metadata summary
         self.meta_label = QLabel("Paste a YouTube URL and click Fetch Info (or Download & Open directly).")
@@ -292,13 +292,13 @@ class LoadYouTubeEpisodeDialog(QDialog):
         self.chapters_chk.setVisible(False)
         form.addRow("", self.chapters_chk)
 
-        self.wp_link_edit = QLineEdit()
+        self.wp_link_edit = QLineEdit(self)
         self.wp_link_edit.setPlaceholderText("Optional: paste existing WordPress post URL to enable Update Mode on export")
-        self.wp_link_edit.setVisible(not self.redownload_mode)
         if not self.redownload_mode:
             form.addRow("Existing WordPress Post:", self.wp_link_edit)
 
         layout.addLayout(form)
+        self.wp_link_edit.setVisible(not self.redownload_mode)
 
         # Advanced collapsible section: Browser Cookies + yt-dlp status/update
         self.advanced_section = CollapsibleSection("Advanced (Browser Cookies & yt-dlp)", self, is_expanded=False)

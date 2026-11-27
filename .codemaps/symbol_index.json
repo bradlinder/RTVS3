@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-27 14:30:20",
+  "generated_at": "2026-11-27 14:42:23",
   "total_files": 210,
   "files": {
     "RadioTVSegmenter.py": {
       "path": "RadioTVSegmenter.py",
       "lines": 686,
-      "summary": "Radio & TV Segmenter \u2014 v3.10.28-beta",
+      "summary": "Radio & TV Segmenter \u2014 v3.10.29-beta",
       "exports": null,
       "classes": [
         {
@@ -2372,7 +2372,7 @@
     },
     "diagnostics/editor_story_ui_tests.py": {
       "path": "diagnostics/editor_story_ui_tests.py",
-      "lines": 782,
+      "lines": 852,
       "summary": "Story transcript highlighting, smart copy, duration & header diagnostic tests.",
       "exports": null,
       "classes": [
@@ -2380,21 +2380,21 @@
           "name": "DiagnosticEditorStoryUiTestsMixin",
           "bases": [],
           "start_line": 9,
-          "end_line": 782,
+          "end_line": 852,
           "doc": "",
           "methods": [
             {
               "name": "_test_story_transcript_highlighting_and_smart_copy",
               "sig": "_test_story_transcript_highlighting_and_smart_copy(self, item)",
               "start_line": 10,
-              "end_line": 599,
+              "end_line": 669,
               "doc": "Validates story selection synchronization with transcript highlight overlay and smart clipboard copying."
             },
             {
               "name": "_test_story_duration_visibility_and_header_aggregation",
               "sig": "_test_story_duration_visibility_and_header_aggregation(self, item)",
-              "start_line": 601,
-              "end_line": 782,
+              "start_line": 671,
+              "end_line": 852,
               "doc": "Validates story clock duration formatting, 2-line sidebar item format, and multi-selection header aggregation."
             }
           ]
@@ -9626,7 +9626,7 @@
     },
     "plugins/youtube/export_destination.py": {
       "path": "plugins/youtube/export_destination.py",
-      "lines": 619,
+      "lines": 618,
       "summary": "YouTube Export Destination for UnifiedExportDialog with Zero-Auth Manual Publishing.",
       "exports": null,
       "classes": [
@@ -9636,7 +9636,7 @@
             "QWidget"
           ],
           "start_line": 87,
-          "end_line": 535,
+          "end_line": 534,
           "doc": "Configuration and preview panel for YouTube Zero-Auth Manual Publishing.",
           "methods": [
             {
@@ -9650,105 +9650,105 @@
               "name": "_setup_ui",
               "sig": "_setup_ui(self)",
               "start_line": 105,
-              "end_line": 351,
+              "end_line": 350,
               "doc": ""
             },
             {
               "name": "_get_yt_bounds",
               "sig": "_get_yt_bounds(self)",
-              "start_line": 353,
-              "end_line": 377,
+              "start_line": 352,
+              "end_line": 376,
               "doc": ""
             },
             {
               "name": "_on_yt_thumb_mode_changed",
               "sig": "_on_yt_thumb_mode_changed(self)",
-              "start_line": 379,
-              "end_line": 396,
+              "start_line": 378,
+              "end_line": 395,
               "doc": ""
             },
             {
               "name": "_update_yt_scrub_slider_range",
               "sig": "_update_yt_scrub_slider_range(self)",
-              "start_line": 398,
-              "end_line": 407,
+              "start_line": 397,
+              "end_line": 406,
               "doc": ""
             },
             {
               "name": "_on_yt_slider_value_changed",
               "sig": "_on_yt_slider_value_changed(self, value)",
-              "start_line": 409,
-              "end_line": 415,
+              "start_line": 408,
+              "end_line": 414,
               "doc": ""
             },
             {
               "name": "_on_yt_step",
               "sig": "_on_yt_step(self, delta_sec)",
-              "start_line": 417,
-              "end_line": 422,
+              "start_line": 416,
+              "end_line": 421,
               "doc": ""
             },
             {
               "name": "_on_yt_sync_playhead",
               "sig": "_on_yt_sync_playhead(self)",
-              "start_line": 424,
-              "end_line": 429,
+              "start_line": 423,
+              "end_line": 428,
               "doc": ""
             },
             {
               "name": "_schedule_yt_frame_preview",
               "sig": "_schedule_yt_frame_preview(self)",
-              "start_line": 431,
-              "end_line": 434,
+              "start_line": 430,
+              "end_line": 433,
               "doc": ""
             },
             {
               "name": "_on_yt_scrub_timer_timeout",
               "sig": "_on_yt_scrub_timer_timeout(self)",
-              "start_line": 436,
-              "end_line": 450,
+              "start_line": 435,
+              "end_line": 449,
               "doc": ""
             },
             {
               "name": "_on_yt_browse_thumb",
               "sig": "_on_yt_browse_thumb(self)",
-              "start_line": 452,
-              "end_line": 463,
+              "start_line": 451,
+              "end_line": 462,
               "doc": ""
             },
             {
               "name": "_cleanup_temp_files",
               "sig": "_cleanup_temp_files(self)",
-              "start_line": 465,
-              "end_line": 474,
+              "start_line": 464,
+              "end_line": 473,
               "doc": "Purge temporary thumbnail frame grabs."
             },
             {
               "name": "closeEvent",
               "sig": "closeEvent(self, event)",
-              "start_line": 476,
-              "end_line": 479,
+              "start_line": 475,
+              "end_line": 478,
               "doc": "Clean up temporary thumbnail files on closure."
             },
             {
               "name": "reject",
               "sig": "reject(self)",
-              "start_line": 481,
-              "end_line": 484,
+              "start_line": 480,
+              "end_line": 483,
               "doc": "Ensure temp preview files are purged on dialog rejection."
             },
             {
               "name": "done",
               "sig": "done(self, r)",
-              "start_line": 486,
-              "end_line": 489,
+              "start_line": 485,
+              "end_line": 488,
               "doc": "Ensure temp preview files are purged on dialog completion."
             },
             {
               "name": "populate_metadata",
               "sig": "populate_metadata(self)",
-              "start_line": 491,
-              "end_line": 535,
+              "start_line": 490,
+              "end_line": 534,
               "doc": "Builds default title, description, chapter timestamps, and speaker credits from current stories."
             }
           ]
@@ -9758,57 +9758,57 @@
           "bases": [
             "ExportDestination"
           ],
-          "start_line": 538,
-          "end_line": 619,
+          "start_line": 537,
+          "end_line": 618,
           "doc": "Export destination handler for YouTube Zero-Auth Manual Publishing.",
           "methods": [
             {
               "name": "__init__",
               "sig": "__init__(self, plugin)",
-              "start_line": 541,
-              "end_line": 549,
+              "start_line": 540,
+              "end_line": 548,
               "doc": ""
             },
             {
               "name": "create_widget",
               "sig": "create_widget(self, parent, main_window)",
-              "start_line": 551,
-              "end_line": 553,
+              "start_line": 550,
+              "end_line": 552,
               "doc": ""
             },
             {
               "name": "_ensure_tab_widget",
               "sig": "_ensure_tab_widget(self)",
-              "start_line": 555,
-              "end_line": 571,
+              "start_line": 554,
+              "end_line": 570,
               "doc": "Defensive resolver to bind tab_widget from cached dialog entries if unlinked."
             },
             {
               "name": "on_scope_changed",
               "sig": "on_scope_changed(self, scope, stories)",
-              "start_line": 573,
-              "end_line": 576,
+              "start_line": 572,
+              "end_line": 575,
               "doc": ""
             },
             {
               "name": "validate",
               "sig": "validate(self)",
-              "start_line": 578,
-              "end_line": 584,
+              "start_line": 577,
+              "end_line": 583,
               "doc": ""
             },
             {
               "name": "get_export_data",
               "sig": "get_export_data(self)",
-              "start_line": 586,
-              "end_line": 613,
+              "start_line": 585,
+              "end_line": 612,
               "doc": ""
             },
             {
               "name": "execute_export",
               "sig": "execute_export(self, main_window, export_data, progress_dialog)",
-              "start_line": 615,
-              "end_line": 619,
+              "start_line": 614,
+              "end_line": 618,
               "doc": ""
             }
           ]
@@ -14524,7 +14524,7 @@
     },
     "scripts/dev_check.py": {
       "path": "scripts/dev_check.py",
-      "lines": 154,
+      "lines": 338,
       "summary": "scripts/dev_check.py - Ultra-Fast Pre-Flight Development & AI Safety Gate",
       "exports": null,
       "classes": [],
@@ -14532,43 +14532,71 @@
         {
           "name": "check_syntax",
           "sig": "check_syntax()",
-          "start_line": 32,
-          "end_line": 43,
+          "start_line": 34,
+          "end_line": 45,
           "doc": "Compiles all tracked python files in root and scripts."
         },
         {
           "name": "check_typing_stubs",
           "sig": "check_typing_stubs()",
-          "start_line": 46,
-          "end_line": 52,
+          "start_line": 48,
+          "end_line": 54,
           "doc": "Verifies interface stubs for modules exceeding 800 lines."
         },
         {
           "name": "check_preview_sync",
           "sig": "check_preview_sync()",
-          "start_line": 55,
-          "end_line": 61,
+          "start_line": 57,
+          "end_line": 63,
           "doc": "Ensures zero-dependency preview files match prs_shared.py."
         },
         {
           "name": "check_modular_budget",
           "sig": "check_modular_budget()",
-          "start_line": 64,
-          "end_line": 98,
+          "start_line": 66,
+          "end_line": 100,
           "doc": "Guards against new monolithic files exceeding the 1,000 line ceiling."
+        },
+        {
+          "name": "_ctor_has_explicit_parent",
+          "sig": "_ctor_has_explicit_parent(call_node, cname)",
+          "start_line": 113,
+          "end_line": 130,
+          "doc": "Return True if a Qt widget constructor call passes an explicit parent argument."
+        },
+        {
+          "name": "_is_literal_false_visibility",
+          "sig": "_is_literal_false_visibility(call_node, attr)",
+          "start_line": 133,
+          "end_line": 138,
+          "doc": ""
+        },
+        {
+          "name": "_iter_direct_nodes",
+          "sig": "_iter_direct_nodes(stmts)",
+          "start_line": 141,
+          "end_line": 153,
+          "doc": "Yield AST nodes inside *stmts* without descending into nested def/class definitions."
+        },
+        {
+          "name": "check_qt_orphan_widget_flashes",
+          "sig": "check_qt_orphan_widget_flashes(root_dir)",
+          "start_line": 156,
+          "end_line": 281,
+          "doc": "Static AST guard: flag setVisible(non-False) / setRowVisible(..., non-False) on unparented"
         },
         {
           "name": "check_regression_tests",
           "sig": "check_regression_tests()",
-          "start_line": 101,
-          "end_line": 109,
+          "start_line": 284,
+          "end_line": 292,
           "doc": "Executes change-aware Tier 2 diagnostic test suite."
         },
         {
           "name": "main",
           "sig": "main()",
-          "start_line": 112,
-          "end_line": 150,
+          "start_line": 295,
+          "end_line": 334,
           "doc": ""
         }
       ]
@@ -20330,7 +20358,7 @@
     "transcript_story.py": {
       "path": "transcript_story.py",
       "lines": 856,
-      "summary": "Radio & TV Segmenter v3.10.28-beta \u2014 transcript story responsibilities.",
+      "summary": "Radio & TV Segmenter v3.10.29-beta \u2014 transcript story responsibilities.",
       "exports": [
         "TranscriptStoryMixin",
         "Story",

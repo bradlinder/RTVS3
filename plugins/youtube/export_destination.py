@@ -264,7 +264,7 @@ class YouTubeExportTabWidget(QWidget):
         yt_extras_layout.addWidget(thumb_subgroup)
 
         # Frame Scrub Controls
-        self.yt_scrub_widget = QWidget()
+        self.yt_scrub_widget = QWidget(self)
         scrub_layout = QVBoxLayout(self.yt_scrub_widget)
         scrub_layout.setContentsMargins(0, 0, 0, 0)
         scrub_layout.setSpacing(4)
@@ -308,7 +308,7 @@ class YouTubeExportTabWidget(QWidget):
         yt_extras_layout.addWidget(self.yt_scrub_widget)
 
         # File browse row
-        self.yt_browse_widget = QWidget()
+        self.yt_browse_widget = QWidget(self)
         browse_layout = QHBoxLayout(self.yt_browse_widget)
         browse_layout.setContentsMargins(0, 0, 0, 0)
         self.yt_thumb_path_label = QLabel("No file selected")
@@ -318,8 +318,6 @@ class YouTubeExportTabWidget(QWidget):
         btn_browse.clicked.connect(self._on_yt_browse_thumb)
         browse_layout.addWidget(btn_browse)
         yt_extras_layout.addWidget(self.yt_browse_widget)
-
-        self._on_yt_thumb_mode_changed()
 
         # Checkbox extras
         self.yt_cb_subtitles = QCheckBox("Generate Closed Captions (.srt)")
@@ -340,6 +338,7 @@ class YouTubeExportTabWidget(QWidget):
 
         self.yt_extras_section.add_layout(yt_extras_layout)
         yt_layout.addWidget(self.yt_extras_section)
+        self._on_yt_thumb_mode_changed()
 
         # Bottom stretch
         yt_layout.addStretch()
